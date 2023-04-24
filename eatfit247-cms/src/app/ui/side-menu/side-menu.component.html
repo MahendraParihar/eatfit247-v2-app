@@ -1,0 +1,20 @@
+<mat-list-item
+  (click)="onMenuClick(item)"
+  [ngStyle]="{'padding-left': (depth * 12) + 'px'}"
+  class="menu-list-item" routerLinkActive="is-active">
+  <mat-icon class="icon-18 m-r-medium" fontSet="material-icons-outlined">{{item.iconName}}</mat-icon>
+  <span>{{item.title}}</span>
+  <span class="twistie-separator" fxflex></span>
+  <span *ngIf="item.children && item.children.length">
+    <mat-icon *ngIf="!expanded">
+      expand_more
+    </mat-icon>
+    <mat-icon *ngIf="expanded">
+          expand_less
+        </mat-icon>
+  </span>
+</mat-list-item>
+<div *ngIf="expanded">
+  <app-side-menu (onNavigate)="onChildNavigate()" *ngFor="let child of item.children"
+                 [depth]="depth+1" [item]="child" class="menu-child"></app-side-menu>
+</div>

@@ -1,0 +1,67 @@
+@import "../../../../theme/margin";
+@import "../../../../theme/variable";
+
+.header-section {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: $padding-medium;
+}
+
+.cycle-plan {
+  .cycle-plan-item {
+    display: grid;
+    align-items: center;
+    align-content: center;
+    padding: $padding-normal;
+    grid-template-columns: 1fr 1fr 1fr auto;
+    border-bottom: $border-color 1px solid;
+  }
+}
+
+.cp-container {
+  margin-top: $margin-medium;
+  margin-bottom: $margin-medium;
+
+  .cp-header {
+    display: flex;
+    align-items: center;
+    column-gap: $margin-medium;
+  }
+
+  .cp-header-text {
+    color: $secondary-text-color;
+    font-style: italic;
+  }
+
+  .dp-table {
+    min-width: auto !important;
+    width: 100%;
+
+    .mat-header-row {
+      width: 100%;
+    }
+
+    .mat-row {
+      width: 100%;
+    }
+
+    .mat-column-dayNo {
+      min-width: 100px !important;
+      flex: 0 0 25% !important;
+      cursor: pointer;
+    }
+
+    .mat-column-startDate {
+      min-width: 100px !important;
+      flex: 0 0 75% !important;
+    }
+
+
+  }
+
+  .diet-link {
+    color: #3949ab;
+    cursor: pointer;
+    text-decoration: none;
+  }
+}

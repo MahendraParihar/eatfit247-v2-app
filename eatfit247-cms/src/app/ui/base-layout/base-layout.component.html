@@ -1,0 +1,66 @@
+<div class="base-container">
+  <div class="base-toolbar">
+    <mat-toolbar *ngIf="authUserObj" color="primary">
+      <button (click)="sidenav.toggle()" mat-icon-button>
+        <mat-icon>menu</mat-icon>
+      </button>
+      <span [ngClass]="{ 'hidden': !opened}">{{appTitle}}</span>
+      <div class="m-medium breadcrumb">
+        <div *ngFor="let item of breadcrumbList; let i = index;">
+          <button (click)="onItemClicked(item)" color="primary" disabled="{{i===breadcrumbList.length-1}}"
+                  mat-button>{{item.title}}</button>
+          <span *ngIf="i!==breadcrumbList.length-1">/</span>
+        </div>
+      </div>
+      <span class="toolbar-spacer"></span>
+      <div>
+        <button [matMenuTriggerFor]="accountMenu" aria-label="Account"
+                mat-icon-button>
+          <mat-icon fontSet="material-icons-outlined">account_circle</mat-icon>
+        </button>
+        <mat-menu #accountMenu="matMenu">
+          <button (click)="setting()" mat-menu-item>
+            <mat-icon fontSet="material-icons-outlined">lock</mat-icon>
+            <span>{{stringRes.SETTING}}</span>
+          </button>
+          <button (click)="signOut()" mat-menu-item>
+            <mat-icon fontSet="material-icons-outlined">logout</mat-icon>
+            <span>{{stringRes.LOGOUT}}</span>
+          </button>
+        </mat-menu>
+      </div>
+    </mat-toolbar>
+  </div>
+  <div class="base-main-container">
+    <mat-sidenav-container>
+      <mat-sidenav #sidenav [mode]="opened === false ? 'over' : 'side'"
+                   [opened]="opened === true">
+        <mat-nav-list>
+          <!--<div style="text-align: center;">
+            <img class="avatar mat-elevation-z8"
+                 src="{{authUserObj.imagePath}}"/>
+            <h4>{{authUserObj.firstName ? authUserObj.firstName : ''}} {{authUserObj.lastName ? authUserObj.lastName
+              : ''}}</h4>
+            <p class="designation">{{authUserObj.role}}</p>
+            <mat-divider></mat-divider>
+          </div>-->
+          <!-- Here we are using menu-list-item -->
+          <app-side-menu (onNavigate)="closeDrawer()"
+                         *ngFor="let item of menu" [item]="item"></app-side-menu>
+        </mat-nav-list>
+      </mat-sidenav>
+      <mat-sidenav-content>
+        <!--<mat-card class="m-medium breadcrumb">
+          <div *ngFor="let item of breadcrumbList; let i = index;">
+            <button mat-button color="primary" (click)="onItemClicked(item)"
+                    disabled="{{i===breadcrumbList.length-1}}">{{item.title}}</button>
+            <span *ngIf="i!==breadcrumbList.length-1">/</span>
+          </div>
+        </mat-card>-->
+        <div class="main-container">
+          <router-outlet></router-outlet>
+        </div>
+      </mat-sidenav-content>
+    </mat-sidenav-container>
+  </div>
+</div>

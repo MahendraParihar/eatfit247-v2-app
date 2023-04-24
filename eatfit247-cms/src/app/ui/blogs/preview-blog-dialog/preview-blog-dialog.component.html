@@ -1,0 +1,15 @@
+<ng-container *ngIf="dialogData">
+  <div mat-dialog-content>
+    <app-custom-img-tag [alt]="dialogData.title" [isAvatar]="false"
+                        [webUrl]="dialogData.imagePath"></app-custom-img-tag>
+    <h4 class="m-t-medium" mat-dialog-title>{{dialogData.title}}</h4>
+    <div [innerHTML]="dialogData.description" class="m-t-medium"></div>
+    <div *ngIf="dialogData.tags" class="tags m-t-medium"><span *ngFor="let s of dialogData.tags.toString().split(',')"
+                                                               class="tag">{{s}}</span>
+    </div>
+  </div>
+  <div align="end" mat-dialog-actions>
+    <button (click)="onPositiveClick()" [mat-dialog-close]="true" cdkFocusInitial class="success-btn"
+            mat-flat-button>{{stringRes.CLOSE}}</button>
+  </div>
+</ng-container>

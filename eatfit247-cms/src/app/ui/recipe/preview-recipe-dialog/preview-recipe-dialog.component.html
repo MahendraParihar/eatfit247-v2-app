@@ -1,0 +1,28 @@
+<ng-container *ngIf="dialogData">
+  <div mat-dialog-content>
+    <app-custom-img-tag [alt]="dialogData.title" [isAvatar]="false"
+                        [webUrl]="dialogData.imagePath"></app-custom-img-tag>
+    <h4 class="m-t-medium" mat-dialog-title>{{dialogData.title}}</h4>
+    <mat-chip-list aria-label="">
+      <mat-chip>{{dialogData.recipeType}}</mat-chip>
+      <mat-chip *ngFor="let s of dialogData.recipeCategoryList">{{s.recipeCategory}}</mat-chip>
+      <mat-chip *ngFor="let s of dialogData.recipeCuisineList">{{s.recipeCuisine}}</mat-chip>
+    </mat-chip-list>
+    <div class="m-t-medium">&nbsp;</div>
+    <h5>{{stringRes.DESCRIPTION}}</h5>
+    <div [innerHTML]="dialogData.details" class="m-t-medium"></div>
+    <h5>{{stringRes.BENEFITS}}</h5>
+    <div [innerHTML]="dialogData.benefits" class="m-t-medium"></div>
+    <h5>{{stringRes.INGREDIENTS}}</h5>
+    <div [innerHTML]="dialogData.ingredients" class="m-t-medium"></div>
+    <h5>{{stringRes.PREPARATION_METHOD}}</h5>
+    <div [innerHTML]="dialogData.preparationMethod" class="m-t-medium"></div>
+    <div *ngIf="dialogData.tags" class="tags m-t-medium"><span *ngFor="let s of dialogData.tags.toString().split(',')"
+                                                               class="tag">{{s}}</span>
+    </div>
+  </div>
+  <div align="end" mat-dialog-actions>
+    <button (click)="onPositiveClick()" [mat-dialog-close]="true" cdkFocusInitial class="success-btn"
+            mat-flat-button>{{stringRes.CLOSE}}</button>
+  </div>
+</ng-container>

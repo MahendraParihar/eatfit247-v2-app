@@ -1,0 +1,121 @@
+@import "variable";
+
+.m-small {
+  margin: $padding-small !important;
+}
+
+.m-normal {
+  margin: $padding-normal !important;
+}
+
+.m-medium {
+  margin: $padding-medium !important;
+}
+
+.m-large {
+  margin: $padding-large !important;
+}
+
+.m-t-small {
+  margin-top: $margin-small !important;
+}
+
+.m-t-normal {
+  margin-top: $margin-normal !important;
+}
+
+.m-t-medium {
+  margin-top: $margin-medium !important;
+}
+
+.m-t-large {
+  margin-top: $margin-large !important;
+}
+
+.m-b-small {
+  margin-bottom: $margin-small !important;
+}
+
+.m-b-normal {
+  margin-bottom: $margin-normal !important;
+}
+
+.m-b-medium {
+  margin-bottom: $margin-medium !important;
+}
+
+.m-b-large {
+  margin-bottom: $margin-large !important;
+}
+
+.m-l-small {
+  margin-left: $margin-small !important;
+}
+
+.m-l-normal {
+  margin-left: $margin-normal !important;
+}
+
+.m-l-medium {
+  margin-left: $margin-medium !important;
+}
+
+.m-l-large {
+  margin-left: $margin-large !important;
+}
+
+.m-r-small {
+  margin-right: $margin-small !important;
+}
+
+.m-r-normal {
+  margin-right: $margin-normal !important;
+}
+
+.m-r-medium {
+  margin-right: $margin-medium !important;
+}
+
+.m-r-large {
+  margin-right: $margin-large !important;
+}
+
+.m-x-small {
+  margin-left: $margin-small !important;
+  margin-right: $margin-small !important;
+}
+
+.m-x-normal {
+  margin-left: $margin-normal !important;
+  margin-right: $margin-normal !important;
+}
+
+.m-x-medium {
+  margin-left: $margin-medium !important;
+  margin-right: $margin-medium !important;
+}
+
+.m-x-large {
+  margin-left: $margin-large !important;
+  margin-right: $margin-large !important;
+}
+
+.m-y-small {
+  margin-top: $margin-small !important;
+  margin-bottom: $margin-small !important;
+}
+
+.m-y-normal {
+  margin-top: $margin-normal !important;
+  margin-bottom: $margin-normal !important;
+}
+
+.m-y-medium {
+  margin-top: $margin-medium !important;
+  margin-bottom: $margin-medium !important;
+}
+
+.m-y-large {
+  margin-top: $margin-large !important;
+  margin-bottom: $margin-large !important;
+}

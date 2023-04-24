@@ -1,0 +1,51 @@
+<div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start">
+  <div class="form-item"
+       fxFlex="calc(10%)"
+       fxFlex.lt-lg="calc(10%)"
+       fxFlex.lt-md="calc(10%)"
+       fxFlex.lt-sm="10%">
+    <mat-label *ngIf="mediaType === mediaTypeEnum.PDF">{{stringRes.CHOOSE_ATTACHMENT}}</mat-label>
+    <mat-label *ngIf="mediaType !== mediaTypeEnum.PDF">{{stringRes.CHOOSE_FILE}}</mat-label>
+  </div>
+  <div class="form-item"
+       fxFlex="calc(90%)"
+       fxFlex.lt-lg="calc(90%)"
+       fxFlex.lt-md="calc(90%)"
+       fxFlex.lt-sm="90%">
+    <div
+      (files)="filesDropped($event)"
+      appImageDrag
+      class="file-upload-box">
+      <mat-icon *ngIf="mediaTypeEnum.PDF  !== mediaType">imagesmode</mat-icon>
+      <mat-icon *ngIf="mediaTypeEnum.PDF  === mediaType">picture_as_pdf</mat-icon>
+      <span *ngIf="mediaTypeEnum.PDF  === mediaType" style="font-size: 25px;">{{stringRes.DRAG_DROP_PDF_FILE}}</span>
+      <span *ngIf="mediaTypeEnum.PDF  !== mediaType" style="font-size: 25px;">{{stringRes.DRAG_DROP_IMAGE_FILE}}</span>
+      <input #fileInput (change)="selectFile($event)" hidden type="file">
+      <span style="font-size: 14px; font-weight: 500">OR</span>
+      <button (click)="fileInput.click()" class="gradient-btn" mat-raised-button type="button">Select File</button>
+    </div>
+    <div class="file-upload-list" style="margin-top: 20px;">
+      <div *ngFor="let file of uploadedFiles; let i = index;" class="file-upload-list-item">
+        <img [src]="file.isPastFile? mediaPath+file.url : file.url" alt=""/>
+        <div class="file-upload-list-text">
+          <span *ngIf="file.file" class="title">{{file.file.name}}</span>
+          <span *ngIf="file.file" class="size">{{getFileSize(file.file.size)}}</span>
+          <span *ngIf="!file.file" class="title">{{file.name}}</span>
+          <span *ngIf="!file.file" class="size">{{getFileSize(file.size)}}</span>
+          <mat-progress-bar
+            [color]="'primary'"
+            [mode]="'determinate'"
+            [value]="file.progress"
+            class="example-margin">
+          </mat-progress-bar>
+          <span *ngIf="file.fileUpdateStatus === 1" class="primary-text">file uploaded successfully</span>
+          <span *ngIf="file.fileUpdateStatus === -1" class="warn-text">file upload failed, please again</span>
+          <span *ngIf="file.fileUpdateStatus === 0">file upload in progress</span>
+        </div>
+        <button (click)="removeItem(i)" color="warn" mat-icon-button type="button">
+          <mat-icon>delete_forever</mat-icon>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

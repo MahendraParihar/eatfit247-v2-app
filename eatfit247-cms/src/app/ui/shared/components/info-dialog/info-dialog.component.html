@@ -1,0 +1,10 @@
+<div *ngIf="dialogData" class="alert">
+  <mat-icon class="warning" fontSet="material-icons-outlined">error</mat-icon>
+  <h4>{{dialogData.title}}</h4>
+  <div mat-dialog-content>
+    <p>{{dialogData.message}}</p>
+  </div>
+  <div align="end" mat-dialog-actions>
+    <button (click)="onPositiveClick()" class="warning-btn" mat-flat-button>{{dialogData.positiveBtnTxt}}</button>
+  </div>
+</div>

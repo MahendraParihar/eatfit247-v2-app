@@ -1,0 +1,161 @@
+<div *ngIf="dbModel" class="counter-container" fxLayout="row" fxLayout.lt-md="column" fxLayout.lt-sm="column"
+     fxLayoutGap="12px">
+  <div class="counter-item">
+    <mat-card class="gradient-45deg-light-blue-cyan">
+      <mat-card-content class="count-card">
+        <div class="icon-block">
+          <mat-icon class="round-bg" fontSet="material-icons-outlined">diversity_1</mat-icon>
+        </div>
+        <div class="count-block">
+          <span class="count">{{dbModel.totalDietPlans}}</span>
+          <span>{{stringResources.TOTAL_DIET_SESSIONS}}</span>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+  <div class="counter-item">
+    <mat-card class="gradient-45deg-red-pink">
+      <mat-card-content class="count-card">
+        <div class="icon-block">
+          <mat-icon class="round-bg" fontSet="material-icons-outlined">work</mat-icon>
+        </div>
+        <div class="count-block">
+          <span class="count">{{dbModel.totalMembers}}</span>
+          <span>{{stringResources.TOTAL_MEMBERS}}</span>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+  <div class="counter-item">
+    <mat-card class="gradient-45deg-amber-yellow">
+      <mat-card-content class="count-card">
+        <div class="icon-block">
+          <mat-icon class="round-bg" fontSet="material-icons-outlined">diversity_1</mat-icon>
+        </div>
+        <div class="count-block">
+          <span class="count">{{dbModel.totalRecipes}}</span>
+          <span>{{stringResources.TOTAL_RECIPES}}</span>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+  <div class="counter-item">
+    <mat-card class="gradient-45deg-green-teal">
+      <mat-card-content class="count-card">
+        <div class="icon-block">
+          <mat-icon class="round-bg" fontSet="material-icons-outlined">work</mat-icon>
+
+        </div>
+        <div class="count-block">
+          <span class="count">{{dbModel.totalRenewedPlans}}</span>
+          <span>{{stringResources.TOTAL_RENEWED_PLAN}}</span>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+  <div class="counter-item">
+    <mat-card class="gradient-45deg-light-blue-cyan">
+      <mat-card-content class="count-card">
+        <div class="icon-block">
+          <mat-icon class="round-bg" fontSet="material-icons-outlined">diversity_1</mat-icon>
+        </div>
+        <div class="count-block">
+          <span class="count">{{dbModel.totalAverageNewPlans}}</span>
+          <span>{{stringResources.AVG_PLANS_PER_MONTH}}</span>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+  <div class="counter-item">
+    <mat-card class="gradient-45deg-red-pink">
+      <mat-card-content class="count-card">
+        <div class="icon-block">
+          <mat-icon class="round-bg" fontSet="material-icons-outlined">work</mat-icon>
+        </div>
+        <div class="count-block">
+          <span class="count">{{dbModel.totalNewPlans}}</span>
+          <span>{{stringResources.AVG_NEW_PLANS_PER_MONTH}}</span>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>
+
+<div class="chart-container" fxLayout="row wrap" fxLayout.lt-sm="column">
+  <div class="chart-item" fxFlex.lt-lg="calc(50%)" fxFlex.lt-md="calc(50%)" fxFlex.lt-xl="calc(50%)">
+    <mat-card class="chart-card">
+      <mat-card-header>
+        <mat-card-title>{{stringResources.ISSUES_BY_STATUS}}</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="chart-height" id="issueStatusChartdiv"></div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+  <div class="chart-item" fxFlex.lt-lg="calc(50%)" fxFlex.lt-md="calc(50%)" fxFlex.lt-xl="calc(50%)">
+    <mat-card class="chart-card">
+      <mat-card-header>
+        <mat-card-title>{{stringResources.MEMBERS_BY_STATUS}}</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="chart-height" id="memberStatusChartdiv"></div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>
+<div class="chart-container" fxLayout="row wrap" fxLayout.lt-sm="column">
+  <div class="chart-item" fxFlex.lt-lg="calc(50%)" fxFlex.lt-md="calc(50%)" fxFlex.lt-xl="calc(50%)">
+    <mat-card class="chart-card">
+      <mat-card-header>
+        <mat-card-title>{{stringResources.MEMBERS_BY_PROGRAM}}</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="chart-height" id="memberProgramChartdiv"></div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+  <div class="chart-item" fxFlex.lt-lg="calc(50%)" fxFlex.lt-md="calc(50%)" fxFlex.lt-xl="calc(50%)">
+    <mat-card class="chart-card">
+      <mat-card-header>
+        <mat-card-title>{{stringResources.MEMBERS_BY_PLANS}}</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="chart-height" id="memberPlanChartdiv"></div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>
+<div class="chart-container" fxLayout="row wrap" fxLayout.lt-sm="column">
+  <div class="chart-item" fxFlex.lt-lg="calc(50%)" fxFlex.lt-md="calc(50%)" fxFlex.lt-xl="calc(50%)">
+    <mat-card class="chart-card">
+      <mat-card-header>
+        <mat-card-title>{{stringResources.PAYMENTS_BY_MODE}}</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="chart-height" id="paymentModeChartdiv"></div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>
+<div class="chart-container" fxLayout="row wrap" fxLayout.lt-sm="column">
+  <div class="chart-item" fxFlex.lt-lg="calc(50%)" fxFlex.lt-md="calc(50%)" fxFlex.lt-xl="calc(50%)">
+    <mat-card class="chart-card">
+      <mat-card-header>
+        <mat-card-title>{{stringResources.MEMBERS_BY_MONTH}}</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div>
+          <form *ngIf="formGroup" [formGroup]="formGroup">
+            <mat-form-field>
+              <mat-label>{{stringResources.YEAR}}</mat-label>
+              <mat-select (selectionChange)="loadDataByYear()" formControlName="year">
+                <mat-option *ngFor="let yr of yearList" [value]="yr">{{yr}}</mat-option>
+              </mat-select>
+            </mat-form-field>
+          </form>
+        </div>
+        <div class="chart-height" id="membersByMonthChartdiv"></div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

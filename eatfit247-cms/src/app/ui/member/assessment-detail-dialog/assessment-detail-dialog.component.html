@@ -1,0 +1,656 @@
+<h4>{{stringRes.ASSESSMENT}}</h4>
+<mat-dialog-content *ngIf="assessmentObj">
+  <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start">
+    <div fxFlex="calc(50%)"
+         fxFlex.lt-lg="calc(50%)"
+         fxFlex.lt-md="calc(50%)"
+         fxFlex.lt-sm="100%">
+      <div class="table-item">
+        <span class="dark-text w-500">{{stringRes.DATE_OF_BIRTH}}</span>
+        <span class="secondary-text">{{assessmentObj.dateOfBirth }}</span>
+      </div>
+    </div>
+    <div fxFlex="calc(50%)"
+         fxFlex.lt-lg="calc(50%)"
+         fxFlex.lt-md="calc(50%)"
+         fxFlex.lt-sm="100%">
+      <div class="table-item">
+        <span class="dark-text w-500">{{stringRes.GENDER}}</span>
+        <span class="secondary-text">{{assessmentObj.gender }}</span>
+      </div>
+    </div>
+    <div fxFlex="calc(50%)"
+         fxFlex.lt-lg="calc(50%)"
+         fxFlex.lt-md="calc(50%)"
+         fxFlex.lt-sm="100%">
+      <div class="table-item">
+        <span class="dark-text w-500">{{stringRes.MARITAL_STATUS}}</span>
+        <span class="secondary-text">{{assessmentObj.maritalStatus }}</span>
+      </div>
+    </div>
+    <div fxFlex="calc(50%)"
+         fxFlex.lt-lg="calc(50%)"
+         fxFlex.lt-md="calc(50%)"
+         fxFlex.lt-sm="100%">
+      <div class="table-item">
+        <span class="dark-text w-500">{{stringRes.RELIGION}}</span>
+        <span class="secondary-text">{{assessmentObj.religion }}</span>
+      </div>
+    </div>
+  </div>
+  <h5 class="m-t-medium">{{stringRes.WORK_DETAILS}}</h5>
+  <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start">
+    <div fxFlex="calc(50%)"
+         fxFlex.lt-lg="calc(50%)"
+         fxFlex.lt-md="calc(50%)"
+         fxFlex.lt-sm="100%">
+      <div class="table-item">
+        <span class="dark-text w-500">{{stringRes.LIFESTYLE}}</span>
+        <span class="secondary-text">{{assessmentObj.lifestyle ? assessmentObj.lifestyle : 'NA' }}</span>
+      </div>
+    </div>
+    <div fxFlex="calc(50%)"
+         fxFlex.lt-lg="calc(50%)"
+         fxFlex.lt-md="calc(50%)"
+         fxFlex.lt-sm="100%">
+      <div class="table-item">
+        <span class="dark-text w-500">{{stringRes.EATING_HABIT}}</span>
+        <span class="secondary-text">{{assessmentObj.eatingHabit ? assessmentObj.eatingHabit : 'NA' }}</span>
+      </div>
+    </div>
+    <div fxFlex="calc(50%)"
+         fxFlex.lt-lg="calc(50%)"
+         fxFlex.lt-md="calc(50%)"
+         fxFlex.lt-sm="100%">
+      <div class="table-item">
+        <span class="dark-text w-500">{{stringRes.TOBACCO}}</span>
+        <span class="secondary-text">{{assessmentObj.tobaccoAmount }} {{assessmentObj.tobaccoFrequency}}</span>
+      </div>
+    </div>
+    <div fxFlex="calc(50%)"
+         fxFlex.lt-lg="calc(50%)"
+         fxFlex.lt-md="calc(50%)"
+         fxFlex.lt-sm="100%">
+      <div class="table-item">
+        <span class="dark-text w-500">{{stringRes.SMOKING}}</span>
+        <span class="secondary-text">{{assessmentObj.smokingAmount }} {{assessmentObj.smokingFrequency}}</span>
+      </div>
+    </div>
+    <div fxFlex="calc(50%)"
+         fxFlex.lt-lg="calc(50%)"
+         fxFlex.lt-md="calc(50%)"
+         fxFlex.lt-sm="100%">
+      <div class="table-item">
+        <span class="dark-text w-500">{{stringRes.ALCOHOL}}</span>
+        <span
+          class="secondary-text">{{assessmentObj.alcoholDrink }} {{assessmentObj.alcoholAmount}} {{assessmentObj.alcoholFrequency}}</span>
+      </div>
+    </div>
+    <div fxFlex="calc(50%)"
+         fxFlex.lt-lg="calc(50%)"
+         fxFlex.lt-md="calc(50%)"
+         fxFlex.lt-sm="100%">
+      <div class="table-item">
+        <span class="dark-text w-500">{{stringRes.PAAN}}</span>
+        <span class="secondary-text">{{assessmentObj.paan ? assessmentObj.paan : 'NA' }}</span>
+      </div>
+    </div>
+    <div fxFlex="calc(100%)"
+         fxFlex.lt-lg="calc(100%)"
+         fxFlex.lt-md="calc(100%)"
+         fxFlex.lt-sm="100%">
+      <div class="table-item">
+        <span class="dark-text w-500">{{stringRes.FASTING}}</span>
+        <span class="secondary-text">{{assessmentObj.fasting ? assessmentObj.fasting : 'NA' }}</span>
+      </div>
+    </div>
+    <div fxFlex="calc(50%)"
+         fxFlex.lt-lg="calc(50%)"
+         fxFlex.lt-md="calc(50%)"
+         fxFlex.lt-sm="100%">
+      <div class="table-item">
+        <span class="dark-text w-500">{{stringRes.AREATED_DRINK}}</span>
+        <span class="secondary-text">{{assessmentObj.aeratedDrinks ? assessmentObj.aeratedDrinks : 'NA' }}</span>
+      </div>
+    </div>
+    <div fxFlex="calc(50%)"
+         fxFlex.lt-lg="calc(50%)"
+         fxFlex.lt-md="calc(50%)"
+         fxFlex.lt-sm="100%">
+      <div class="table-item">
+        <span class="dark-text w-500">{{stringRes.WATER_INTAKE}}</span>
+        <span class="secondary-text">{{assessmentObj.waterIntake ? assessmentObj.waterIntake : 'NA' }}</span>
+      </div>
+    </div>
+    <div fxFlex="calc(50%)"
+         fxFlex.lt-lg="calc(50%)"
+         fxFlex.lt-md="calc(50%)"
+         fxFlex.lt-sm="100%">
+      <div class="table-item">
+        <span class="dark-text w-500">{{stringRes.RESTAURANT_VISIT}}</span>
+        <span class="secondary-text">{{assessmentObj.restaurantVisit ? assessmentObj.restaurantVisit : 'NA' }}</span>
+      </div>
+    </div>
+    <div fxFlex="calc(50%)"
+         fxFlex.lt-lg="calc(50%)"
+         fxFlex.lt-md="calc(50%)"
+         fxFlex.lt-sm="100%">
+      <div class="table-item">
+        <span class="dark-text w-500">{{stringRes.PREFERRED_CUISINE}}</span>
+        <span class="secondary-text">{{assessmentObj.preferredCuisine ? assessmentObj.preferredCuisine : 'NA' }}</span>
+      </div>
+    </div>
+    <div fxFlex="calc(50%)"
+         fxFlex.lt-lg="calc(50%)"
+         fxFlex.lt-md="calc(50%)"
+         fxFlex.lt-sm="100%">
+      <div class="table-item">
+        <span class="dark-text w-500">{{stringRes.WHO_COOK}}</span>
+        <span class="secondary-text">{{assessmentObj.whoCooks ? assessmentObj.whoCooks : 'NA' }}</span>
+      </div>
+    </div>
+    <div fxFlex="calc(50%)"
+         fxFlex.lt-lg="calc(50%)"
+         fxFlex.lt-md="calc(50%)"
+         fxFlex.lt-sm="100%">
+      <div class="table-item">
+        <span class="dark-text w-500">{{stringRes.HUNGER_PEAK_TIME}}</span>
+        <span class="secondary-text">{{assessmentObj.hungerPeak ? assessmentObj.hungerPeak : 'NA' }}</span>
+      </div>
+    </div>
+    <div fxFlex="calc(50%)"
+         fxFlex.lt-lg="calc(50%)"
+         fxFlex.lt-md="calc(50%)"
+         fxFlex.lt-sm="100%">
+      <div class="table-item">
+        <span class="dark-text w-500">{{stringRes.FOOD_DISLIKE}}</span>
+        <span class="secondary-text">{{assessmentObj.foodDislikes ? assessmentObj.foodDislikes : 'NA' }}</span>
+      </div>
+    </div>
+    <div fxFlex="calc(50%)"
+         fxFlex.lt-lg="calc(50%)"
+         fxFlex.lt-md="calc(50%)"
+         fxFlex.lt-sm="100%">
+      <div class="table-item">
+        <span class="dark-text w-500">{{stringRes.ANY_FOOD_PREFERENCE}}</span>
+        <span
+          class="secondary-text">{{assessmentObj.otherFoodPreferences ? assessmentObj.otherFoodPreferences : 'NA' }}</span>
+      </div>
+    </div>
+  </div>
+  <h5 class="m-t-medium">{{stringRes.EXERCISE_DETAILS}}</h5>
+  <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start">
+    <div fxFlex="calc(100%)"
+         fxFlex.lt-lg="calc(100%)"
+         fxFlex.lt-md="calc(100%)"
+         fxFlex.lt-sm="100%">
+      <div class="table-item">
+        <span class="dark-text w-500">{{stringRes.DO_YOU_EXERCISE}}</span>
+        <span class="secondary-text">{{assessmentObj.doYouExercise ? assessmentObj.doYouExercise : 'NA' }}</span>
+      </div>
+    </div>
+    <div fxFlex="calc(50%)"
+         fxFlex.lt-lg="calc(50%)"
+         fxFlex.lt-md="calc(50%)"
+         fxFlex.lt-sm="100%">
+      <div class="table-item">
+        <span class="dark-text w-500">{{stringRes.TYPE_OF_EXERCISE}}</span>
+        <span class="secondary-text">{{assessmentObj.typeOfExercise ? assessmentObj.typeOfExercise : 'NA' }}</span>
+      </div>
+    </div>
+    <div fxFlex="calc(50%)"
+         fxFlex.lt-lg="calc(50%)"
+         fxFlex.lt-md="calc(50%)"
+         fxFlex.lt-sm="100%">
+      <div class="table-item">
+        <span class="dark-text w-500">{{stringRes.DURATION}}</span>
+        <span class="secondary-text">{{assessmentObj.duration ? assessmentObj.duration : 'NA' }}</span>
+      </div>
+    </div>
+    <div fxFlex="calc(50%)"
+         fxFlex.lt-lg="calc(50%)"
+         fxFlex.lt-md="calc(50%)"
+         fxFlex.lt-sm="100%">
+      <div class="table-item">
+        <span class="dark-text w-500">{{stringRes.TIMING}}</span>
+        <span class="secondary-text">{{assessmentObj.time ? assessmentObj.time : 'NA' }}</span>
+      </div>
+    </div>
+  </div>
+  <h5 class="m-t-medium">{{stringRes.MEDICAL_DETAILS}}</h5>
+  <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start">
+    <div fxFlex="calc(50%)"
+         fxFlex.lt-lg="calc(50%)"
+         fxFlex.lt-md="calc(50%)"
+         fxFlex.lt-sm="100%">
+      <div class="table-item">
+        <span class="dark-text w-500">{{stringRes.ANY_ALLERGIES}}</span>
+        <span class="secondary-text">{{assessmentObj.allergies ? assessmentObj.allergies : 'NA' }}</span>
+      </div>
+    </div>
+    <div fxFlex="calc(50%)"
+         fxFlex.lt-lg="calc(50%)"
+         fxFlex.lt-md="calc(50%)"
+         fxFlex.lt-sm="100%">
+      <div class="table-item">
+        <span class="dark-text w-500">{{stringRes.ALLERGIES_NAME}}</span>
+        <span class="secondary-text">{{assessmentObj.allergySpecify ? assessmentObj.allergySpecify : 'NA' }}</span>
+      </div>
+    </div>
+    <div fxFlex="calc(50%)"
+         fxFlex.lt-lg="calc(50%)"
+         fxFlex.lt-md="calc(50%)"
+         fxFlex.lt-sm="100%">
+      <div class="table-item">
+        <span class="dark-text w-500">{{stringRes.SLEEPING_PATTERN}}</span>
+        <span class="secondary-text">{{assessmentObj.sleepingPattern ? assessmentObj.sleepingPattern : 'NA' }}</span>
+      </div>
+    </div>
+    <div fxFlex="calc(50%)"
+         fxFlex.lt-lg="calc(50%)"
+         fxFlex.lt-md="calc(50%)"
+         fxFlex.lt-sm="100%">
+      <div class="table-item">
+        <span class="dark-text w-500">{{stringRes.SLEEPING_DURATION}}</span>
+        <span class="secondary-text">{{assessmentObj.sleepDuration ? assessmentObj.sleepDuration : 'NA' }}</span>
+      </div>
+    </div>
+    <div fxFlex="calc(50%)"
+         fxFlex.lt-lg="calc(50%)"
+         fxFlex.lt-md="calc(50%)"
+         fxFlex.lt-sm="100%">
+      <div class="table-item">
+        <span class="dark-text w-500">{{stringRes.GAS}}</span>
+        <span class="secondary-text">{{assessmentObj.gas ? assessmentObj.gas : 'NA' }}</span>
+      </div>
+    </div>
+    <div fxFlex="calc(50%)"
+         fxFlex.lt-lg="calc(50%)"
+         fxFlex.lt-md="calc(50%)"
+         fxFlex.lt-sm="100%">
+      <div class="table-item">
+        <span class="dark-text w-500">{{stringRes.HYPER_ACIDITY}}</span>
+        <span class="secondary-text">{{assessmentObj.hyperAcidity ? assessmentObj.hyperAcidity : 'NA' }}</span>
+      </div>
+    </div>
+    <div fxFlex="calc(50%)"
+         fxFlex.lt-lg="calc(50%)"
+         fxFlex.lt-md="calc(50%)"
+         fxFlex.lt-sm="100%">
+      <div class="table-item">
+        <span class="dark-text w-500">{{stringRes.CONSTIPATION}}</span>
+        <span class="secondary-text">{{assessmentObj.constipation ? assessmentObj.constipation : 'NA' }}</span>
+      </div>
+    </div>
+    <div fxFlex="calc(50%)"
+         fxFlex.lt-lg="calc(50%)"
+         fxFlex.lt-md="calc(50%)"
+         fxFlex.lt-sm="100%">
+      <div class="table-item">
+        <span class="dark-text w-500">{{stringRes.PERIOD_REGULAR}}</span>
+        <span class="secondary-text">{{assessmentObj.periods ? assessmentObj.periods : 'NA' }}</span>
+      </div>
+    </div>
+    <div fxFlex="calc(50%)"
+         fxFlex.lt-lg="calc(50%)"
+         fxFlex.lt-md="calc(50%)"
+         fxFlex.lt-sm="100%">
+      <div class="table-item">
+        <span class="dark-text w-500">{{stringRes.LMP}}</span>
+        <span class="secondary-text">{{assessmentObj.lmp ? assessmentObj.lmp : 'NA' }}</span>
+      </div>
+    </div>
+    <div fxFlex="calc(50%)"
+         fxFlex.lt-lg="calc(50%)"
+         fxFlex.lt-md="calc(50%)"
+         fxFlex.lt-sm="100%">
+      <div class="table-item">
+        <span class="dark-text w-500">{{stringRes.DAYS_CYCLE}}</span>
+        <span class="secondary-text">{{assessmentObj.daysCycle ? assessmentObj.daysCycle : 'NA' }}</span>
+      </div>
+    </div>
+    <div fxFlex="calc(50%)"
+         fxFlex.lt-lg="calc(50%)"
+         fxFlex.lt-md="calc(50%)"
+         fxFlex.lt-sm="100%">
+      <div class="table-item">
+        <span class="dark-text w-500">{{stringRes.BACK_PAIN}}</span>
+        <span class="secondary-text">{{assessmentObj.backPain ? assessmentObj.backPain : 'NA' }}</span>
+      </div>
+    </div>
+    <div fxFlex="calc(50%)"
+         fxFlex.lt-lg="calc(50%)"
+         fxFlex.lt-md="calc(50%)"
+         fxFlex.lt-sm="100%">
+      <div class="table-item">
+        <span class="dark-text w-500">{{stringRes.KNEE_PAIN}}</span>
+        <span class="secondary-text">{{assessmentObj.kneePain ? assessmentObj.kneePain : 'NA' }}</span>
+      </div>
+    </div>
+    <div fxFlex="calc(50%)"
+         fxFlex.lt-lg="calc(50%)"
+         fxFlex.lt-md="calc(50%)"
+         fxFlex.lt-sm="100%">
+      <div class="table-item">
+        <span class="dark-text w-500">{{stringRes.HAIR_FALL}}</span>
+        <span class="secondary-text">{{assessmentObj.hairFall ? assessmentObj.hairFall : 'NA' }}</span>
+      </div>
+    </div>
+    <div fxFlex="calc(50%)"
+         fxFlex.lt-lg="calc(50%)"
+         fxFlex.lt-md="calc(50%)"
+         fxFlex.lt-sm="100%">
+      <div class="table-item">
+        <span class="dark-text w-500">{{stringRes.URINE_OUTPUT}}</span>
+        <span class="secondary-text">{{assessmentObj.urineOutput ? assessmentObj.urineOutput : 'NA' }}</span>
+      </div>
+    </div>
+    <div fxFlex="calc(50%)"
+         fxFlex.lt-lg="calc(50%)"
+         fxFlex.lt-md="calc(50%)"
+         fxFlex.lt-sm="100%">
+      <div class="table-item">
+        <span class="dark-text w-500">{{stringRes.BLOOD_SUGAR}}</span>
+        <span class="secondary-text">{{assessmentObj.bloodSugar ? assessmentObj.hyperAcidity : 'NA' }}</span>
+      </div>
+    </div>
+    <div fxFlex="calc(50%)"
+         fxFlex.lt-lg="calc(50%)"
+         fxFlex.lt-md="calc(50%)"
+         fxFlex.lt-sm="100%">
+      <div class="table-item">
+        <span class="dark-text w-500">{{stringRes.BLOOD_SUGAR_VALUE}}</span>
+        <span class="secondary-text">{{assessmentObj.bloodSugarValue ? assessmentObj.bloodSugarValue : 'NA' }}</span>
+      </div>
+    </div>
+    <div fxFlex="calc(50%)"
+         fxFlex.lt-lg="calc(50%)"
+         fxFlex.lt-md="calc(50%)"
+         fxFlex.lt-sm="100%">
+      <div class="table-item">
+        <span class="dark-text w-500">{{stringRes.TOTAL_CHOLESTEROL}}</span>
+        <span class="secondary-text">{{assessmentObj.cholesterol ? assessmentObj.cholesterol : 'NA' }}</span>
+      </div>
+    </div>
+    <div fxFlex="calc(50%)"
+         fxFlex.lt-lg="calc(50%)"
+         fxFlex.lt-md="calc(50%)"
+         fxFlex.lt-sm="100%">
+      <div class="table-item">
+        <span class="dark-text w-500">{{stringRes.TRIGLYCERIDES}}</span>
+        <span class="secondary-text">{{assessmentObj.triglycerides ? assessmentObj.triglycerides : 'NA' }}</span>
+      </div>
+    </div>
+    <div fxFlex="calc(50%)"
+         fxFlex.lt-lg="calc(50%)"
+         fxFlex.lt-md="calc(50%)"
+         fxFlex.lt-sm="100%">
+      <div class="table-item">
+        <span class="dark-text w-500">{{stringRes.HDL_CHOLESTEROL}}</span>
+        <span class="secondary-text">{{assessmentObj.hdlCholesterol ? assessmentObj.hdlCholesterol : 'NA' }}</span>
+      </div>
+    </div>
+    <div fxFlex="calc(50%)"
+         fxFlex.lt-lg="calc(50%)"
+         fxFlex.lt-md="calc(50%)"
+         fxFlex.lt-sm="100%">
+      <div class="table-item">
+        <span class="dark-text w-500">{{stringRes.LDL_CHOLESTEROL}}</span>
+        <span class="secondary-text">{{assessmentObj.ldlCholesterol ? assessmentObj.ldlCholesterol : 'NA' }}</span>
+      </div>
+    </div>
+    <div fxFlex="calc(50%)"
+         fxFlex.lt-lg="calc(50%)"
+         fxFlex.lt-md="calc(50%)"
+         fxFlex.lt-sm="100%">
+      <div class="table-item">
+        <span class="dark-text w-500">{{stringRes.VLDL_CHOLESTEROL}}</span>
+        <span class="secondary-text">{{assessmentObj.vldlCholesterol ? assessmentObj.vldlCholesterol : 'NA' }}</span>
+      </div>
+    </div>
+    <div fxFlex="calc(50%)"
+         fxFlex.lt-lg="calc(50%)"
+         fxFlex.lt-md="calc(50%)"
+         fxFlex.lt-sm="100%">
+      <div class="table-item">
+        <span class="dark-text w-500">{{stringRes.HEMOGLOBIN_LEVEL}}</span>
+        <span class="secondary-text">{{assessmentObj.hgLevel ? assessmentObj.hgLevel : 'NA' }}</span>
+      </div>
+    </div>
+    <div fxFlex="calc(100%)"
+         fxFlex.lt-lg="calc(100%)"
+         fxFlex.lt-md="calc(100%)"
+         fxFlex.lt-sm="100%">
+      <div class="table-item">
+        <span class="dark-text w-500">{{stringRes.MEDICINE_DOSAGE}}</span>
+        <span
+          class="secondary-text">{{assessmentObj.supplementMedicine ? assessmentObj.supplementMedicine : 'NA' }}</span>
+      </div>
+    </div>
+  </div>
+  <h5 class="m-t-medium">{{stringRes.EATING_PATTERN}}</h5>
+  <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start">
+    <div fxFlex="calc(100%)"
+         fxFlex.lt-lg="calc(100%)"
+         fxFlex.lt-md="calc(100%)"
+         fxFlex.lt-sm="100%">
+      <div class="table-item">
+        <span class="dark-text w-500">{{stringRes.WAKE_UP_TIME}}</span>
+        <span class="secondary-text">{{assessmentObj.wakeupTiming ? assessmentObj.wakeupTiming : 'NA' }}</span>
+      </div>
+    </div>
+    <div fxFlex="calc(50%)"
+         fxFlex.lt-lg="calc(50%)"
+         fxFlex.lt-md="calc(50%)"
+         fxFlex.lt-sm="50%">
+      <div class="table-item">
+        <span class="dark-text w-500">{{stringRes.BREAKFAST}}</span>
+        <span class="secondary-text">{{assessmentObj.bfMenu ? assessmentObj.bfMenu : 'NA' }}</span>
+      </div>
+    </div>
+    <div fxFlex="calc(50%)"
+         fxFlex.lt-lg="calc(50%)"
+         fxFlex.lt-md="calc(50%)"
+         fxFlex.lt-sm="50%">
+      <div class="table-item">
+        <span class="dark-text w-500">{{stringRes.TIMING}}</span>
+        <span class="secondary-text">{{assessmentObj.bfTime ? assessmentObj.bfTime : 'NA' }}</span>
+      </div>
+    </div>
+    <div fxFlex="calc(50%)"
+         fxFlex.lt-lg="calc(50%)"
+         fxFlex.lt-md="calc(50%)"
+         fxFlex.lt-sm="50%">
+      <div class="table-item">
+        <span class="dark-text w-500">{{stringRes.MID_MORNING}}</span>
+        <span class="secondary-text">{{assessmentObj.mmMenu ? assessmentObj.mmMenu : 'NA' }}</span>
+      </div>
+    </div>
+    <div fxFlex="calc(50%)"
+         fxFlex.lt-lg="calc(50%)"
+         fxFlex.lt-md="calc(50%)"
+         fxFlex.lt-sm="50%">
+      <div class="table-item">
+        <span class="dark-text w-500">{{stringRes.TIMING}}</span>
+        <span class="secondary-text">{{assessmentObj.mmTime ? assessmentObj.mmTime : 'NA' }}</span>
+      </div>
+    </div>
+    <div fxFlex="calc(50%)"
+         fxFlex.lt-lg="calc(50%)"
+         fxFlex.lt-md="calc(50%)"
+         fxFlex.lt-sm="50%">
+      <div class="table-item">
+        <span class="dark-text w-500">{{stringRes.LUNCH}}</span>
+        <span class="secondary-text">{{assessmentObj.lunchMenu ? assessmentObj.lunchMenu : 'NA' }}</span>
+      </div>
+    </div>
+    <div fxFlex="calc(50%)"
+         fxFlex.lt-lg="calc(50%)"
+         fxFlex.lt-md="calc(50%)"
+         fxFlex.lt-sm="50%">
+      <div class="table-item">
+        <span class="dark-text w-500">{{stringRes.TIMING}}</span>
+        <span class="secondary-text">{{assessmentObj.lunchTime ? assessmentObj.lunchTime : 'NA' }}</span>
+      </div>
+    </div>
+    <div fxFlex="calc(50%)"
+         fxFlex.lt-lg="calc(50%)"
+         fxFlex.lt-md="calc(50%)"
+         fxFlex.lt-sm="50%">
+      <div class="table-item">
+        <span class="dark-text w-500">{{stringRes.EVENING}}</span>
+        <span class="secondary-text">{{assessmentObj.eveMenu ? assessmentObj.eveMenu : 'NA' }}</span>
+      </div>
+    </div>
+    <div fxFlex="calc(50%)"
+         fxFlex.lt-lg="calc(50%)"
+         fxFlex.lt-md="calc(50%)"
+         fxFlex.lt-sm="50%">
+      <div class="table-item">
+        <span class="dark-text w-500">{{stringRes.TIMING}}</span>
+        <span class="secondary-text">{{assessmentObj.eveTime ? assessmentObj.eveTime : 'NA' }}</span>
+      </div>
+    </div>
+    <div fxFlex="calc(50%)"
+         fxFlex.lt-lg="calc(50%)"
+         fxFlex.lt-md="calc(50%)"
+         fxFlex.lt-sm="50%">
+      <div class="table-item">
+        <span class="dark-text w-500">{{stringRes.MID_EVENING}}</span>
+        <span class="secondary-text">{{assessmentObj.midEveMenu ? assessmentObj.midEveMenu : 'NA' }}</span>
+      </div>
+    </div>
+    <div fxFlex="calc(50%)"
+         fxFlex.lt-lg="calc(50%)"
+         fxFlex.lt-md="calc(50%)"
+         fxFlex.lt-sm="50%">
+      <div class="table-item">
+        <span class="dark-text w-500">{{stringRes.TIMING}}</span>
+        <span class="secondary-text">{{assessmentObj.midEveTime ? assessmentObj.midEveTime : 'NA' }}</span>
+      </div>
+    </div>
+    <div fxFlex="calc(50%)"
+         fxFlex.lt-lg="calc(50%)"
+         fxFlex.lt-md="calc(50%)"
+         fxFlex.lt-sm="50%">
+      <div class="table-item">
+        <span class="dark-text w-500">{{stringRes.DINNER}}</span>
+        <span class="secondary-text">{{assessmentObj.dinnerMenu ? assessmentObj.dinnerMenu : 'NA' }}</span>
+      </div>
+    </div>
+    <div fxFlex="calc(50%)"
+         fxFlex.lt-lg="calc(50%)"
+         fxFlex.lt-md="calc(50%)"
+         fxFlex.lt-sm="50%">
+      <div class="table-item">
+        <span class="dark-text w-500">{{stringRes.TIMING}}</span>
+        <span class="secondary-text">{{assessmentObj.dinnerTime ? assessmentObj.dinnerTime : 'NA' }}</span>
+      </div>
+    </div>
+    <div fxFlex="calc(100%)"
+         fxFlex.lt-lg="calc(100%)"
+         fxFlex.lt-md="calc(100%)"
+         fxFlex.lt-sm="100%">
+      <div class="table-item">
+        <span class="dark-text w-500">{{stringRes.NIGHT_SNACKS}}</span>
+        <span class="secondary-text">{{assessmentObj.nightSnacks ? assessmentObj.nightSnacks : 'NA' }}</span>
+      </div>
+    </div>
+    <div fxFlex="calc(100%)"
+         fxFlex.lt-lg="calc(100%)"
+         fxFlex.lt-md="calc(100%)"
+         fxFlex.lt-sm="100%">
+      <div class="table-item">
+        <span class="dark-text w-500">{{stringRes.BED_TIME}}</span>
+        <span class="secondary-text">{{assessmentObj.bedTime ? assessmentObj.bedTime : 'NA' }}</span>
+      </div>
+    </div>
+    <div fxFlex="calc(100%)"
+         fxFlex.lt-lg="calc(100%)"
+         fxFlex.lt-md="calc(100%)"
+         fxFlex.lt-sm="100%">
+      <div class="table-item">
+        <span class="dark-text w-500">{{stringRes.FRUITS}}</span>
+        <span class="secondary-text">{{assessmentObj.fruitsFrequency ? assessmentObj.fruitsFrequency : 'NA' }}</span>
+      </div>
+    </div>
+    <div fxFlex="calc(50%)"
+         fxFlex.lt-lg="calc(50%)"
+         fxFlex.lt-md="calc(50%)"
+         fxFlex.lt-sm="50%">
+      <div class="table-item">
+        <span class="dark-text w-500">{{stringRes.BREAD}}</span>
+        <span class="secondary-text">{{assessmentObj.breadAmount ? assessmentObj.breadAmount : 'NA' }}</span>
+      </div>
+    </div>
+    <div fxFlex="calc(50%)"
+         fxFlex.lt-lg="calc(50%)"
+         fxFlex.lt-md="calc(50%)"
+         fxFlex.lt-sm="50%">
+      <div class="table-item">
+        <span class="dark-text w-500">{{stringRes.FREQUENCY}}</span>
+        <span class="secondary-text">{{assessmentObj.breakFrequency ? assessmentObj.breakFrequency : 'NA' }}</span>
+      </div>
+    </div>
+    <div fxFlex="calc(50%)"
+         fxFlex.lt-lg="calc(50%)"
+         fxFlex.lt-md="calc(50%)"
+         fxFlex.lt-sm="50%">
+      <div class="table-item">
+        <span class="dark-text w-500">{{stringRes.SWEET_CHOCOLATE}}</span>
+        <span class="secondary-text">{{assessmentObj.sweetAmount ? assessmentObj.sweetAmount : 'NA' }}</span>
+      </div>
+    </div>
+    <div fxFlex="calc(50%)"
+         fxFlex.lt-lg="calc(50%)"
+         fxFlex.lt-md="calc(50%)"
+         fxFlex.lt-sm="50%">
+      <div class="table-item">
+        <span class="dark-text w-500">{{stringRes.FREQUENCY}}</span>
+        <span class="secondary-text">{{assessmentObj.sweetFrequency ? assessmentObj.sweetFrequency : 'NA' }}</span>
+      </div>
+    </div>
+    <div fxFlex="calc(50%)"
+         fxFlex.lt-lg="calc(50%)"
+         fxFlex.lt-md="calc(50%)"
+         fxFlex.lt-sm="50%">
+      <div class="table-item">
+        <span class="dark-text w-500">{{stringRes.TEA_COFFEE}}</span>
+        <span class="secondary-text">{{assessmentObj.teaAmount ? assessmentObj.teaAmount : 'NA' }}</span>
+      </div>
+    </div>
+    <div fxFlex="calc(50%)"
+         fxFlex.lt-lg="calc(50%)"
+         fxFlex.lt-md="calc(50%)"
+         fxFlex.lt-sm="50%">
+      <div class="table-item">
+        <span class="dark-text w-500">{{stringRes.FREQUENCY}}</span>
+        <span class="secondary-text">{{assessmentObj.teaFrequency ? assessmentObj.teaFrequency : 'NA' }}</span>
+      </div>
+    </div>
+    <div fxFlex="calc(100%)"
+         fxFlex.lt-lg="calc(100%)"
+         fxFlex.lt-md="calc(100%)"
+         fxFlex.lt-sm="100%">
+      <div class="table-item">
+        <span class="dark-text w-500">{{stringRes.REMARK}}</span>
+        <span class="secondary-text">{{assessmentObj.remark ? assessmentObj.remark : 'NA' }}</span>
+      </div>
+    </div>
+    <h5 class="m-t-medium">{{stringRes.NUTRITIONIST_SUMMARY}}</h5>
+    <div fxFlex="calc(100%)"
+         fxFlex.lt-lg="calc(100%)"
+         fxFlex.lt-md="calc(100%)"
+         fxFlex.lt-sm="100%">
+      <div class="table-item">
+        <span
+          class="secondary-text">{{assessmentObj.nutritionistSummery ? assessmentObj.nutritionistSummery : 'NA' }}</span>
+      </div>
+    </div>
+  </div>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button (click)="onPositiveClick()" class="round-btn gradient-btn" color="primary" mat-raised-button>
+    {{stringRes.CLOSE}}
+  </button>
+</mat-dialog-actions>

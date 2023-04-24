@@ -1,0 +1,37 @@
+<h4>{{stringRes.DIET_PLAN}} - {{stringRes.CYCLE}} {{dietPlanDetail.cycleNo}}
+  ({{dietPlanDetail.startDate | appDateTime:'onlyDate'}})</h4>
+<mat-dialog-content class="diet-plan-dialog">
+  <mat-table *ngIf="dietPlanDetail && dietPlanDetail.dietPlan" [dataSource]="dietPlanDetail.dietPlan" class="dp-table">
+    <ng-container matColumnDef="category">
+      <th *matHeaderCellDef mat-header-cell> {{stringRes.RECIPE_CATEGORY}}</th>
+      <td *matCellDef="let item" class="link" mat-cell> {{item.recipeCategory}}</td>
+    </ng-container>
+    <ng-container matColumnDef="detail">
+      <th *matHeaderCellDef mat-header-cell>{{stringRes.DETAILS}}</th>
+      <td *matCellDef="let item" mat-cell>
+        <div [innerHtml]="item.dietDetail"></div>
+      </td>
+    </ng-container>
+    <ng-container matColumnDef="recipes">
+      <th *matHeaderCellDef mat-header-cell> {{stringRes.RECIPES}}</th>
+      <td *matCellDef="let item" mat-cell>
+        <ul *ngIf="item.recipeList">
+          <li *ngFor="let r of item.recipeList" [innerHtml]="r.name"></li>
+        </ul>
+      </td>
+    </ng-container>
+    <tr *matHeaderRowDef="displayColumns" mat-header-row></tr>
+    <tr *matRowDef="let myRowData; columns: displayColumns" mat-row></tr>
+  </mat-table>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button (click)="onClose()" class="round-btn" mat-raised-button>
+    {{stringRes.CLOSE}}
+  </button>
+  <button (click)="sendEmail()" class="round-btn gradient-btn" color="primary" mat-raised-button>
+    {{stringRes.SEND_MAIL}}
+  </button>
+  <button (click)="downloadDietPlan()" class="round-btn gradient-btn" color="primary" mat-raised-button>
+    {{stringRes.DOWNLOAD}}
+  </button>
+</mat-dialog-actions>

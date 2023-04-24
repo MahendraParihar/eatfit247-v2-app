@@ -1,0 +1,62 @@
+.counter-container {
+  display: flex;
+
+  .counter-item {
+    flex-grow: 1;
+  }
+}
+
+.count-card {
+  color: white !important;
+  display: grid;
+  grid-template-columns: 30% 70%;
+
+  .round-bg {
+    padding: 15px;
+    border-radius: 50%;
+    background-color: rgba(0, 0, 0, .18);
+  }
+
+  .mat-icon {
+    border-radius: 50%;
+  }
+
+  .icon-block {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 5px;
+  }
+
+  .count-block {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: flex-end;
+
+    .count {
+      font-size: 2em;
+    }
+  }
+}
+
+.chart-container {
+  display: flex;
+  gap: 12px;
+  margin-top: 12px;
+
+  .chart-item {
+    flex-grow: 1;
+
+    .chart-card {
+
+    }
+  }
+
+
+  .chart-height {
+    height: 250px;
+    width: 100%;
+  }
+}

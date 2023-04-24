@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>Eatfit247</title>
+  <style type="text/css">
+    body {
+      padding: 10px;
+    }
+
+    tr {
+      page-break-inside: avoid;
+      page-break-after: auto;
+    }
+
+    thead {
+      display: table-header-group;
+    }
+
+    table {
+      width: 100%;
+      border: 1px solid #d3d3d3;;
+      margin-top: 10px;
+      margin-bottom: 10px;
+      border-collapse: collapse;
+      page-break-inside: auto;
+    }
+
+    td,
+    th {
+      border: 1px solid #d3d3d3;
+      border-collapse: collapse;
+      padding: 10px;
+    }
+
+    th {
+      font-weight: bold
+    }
+
+    .diet-header {
+      text-align: center;
+    }
+
+    .recipe-img {
+      width: 100%;
+      display: flex;
+      flex-direction: row;
+      column-gap: 10px;
+      align-items: center;
+    }
+
+    .img {
+      height: 100px;
+      width: 100px;
+      border-radius: 50%;
+    }
+
+    .bold-text {
+      font-weight: bold;
+    }
+  </style>
+
+</head>
+
+<body>
+<table>
+  <tbody>
+  <tr>
+    <td colspan="2">
+      <div class="recipe-img">
+        <div>
+          {{#each imagePath}}
+            {{img webUrl "img"}}
+          {{/each}}
+        </div>
+        <div class="bold-text">{{name}}</div>
+      </div>
+    </td>
+  </tr>
+  <tr>
+    <td class="bold-text" style="width:20%">Ingredients</td>
+    <td>
+      <div>{{{ingredient}}}</div>
+    </td>
+  </tr>
+  <tr>
+    <td class="bold-text" style="width:20%">Method</td>
+    <td>
+      <div>{{{howToMake}}}</div>
+    </td>
+  </tr>
+  </tbody>
+</table>
+
+</body>
+
+</html>

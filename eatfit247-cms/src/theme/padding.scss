@@ -1,0 +1,125 @@
+@import "variable";
+
+.p-x-small {
+  padding: $padding-x-small;
+}
+
+.p-small {
+  padding: $padding-small;
+}
+
+.p-normal {
+  padding: $padding-normal;
+}
+
+.p-medium {
+  padding: $padding-medium;
+}
+
+.p-large {
+  padding: $padding-large;
+}
+
+.p-t-small {
+  padding-top: $padding-small;
+}
+
+.p-t-normal {
+  padding-top: $padding-normal;
+}
+
+.p-t-medium {
+  padding-top: $padding-medium;
+}
+
+.p-t-large {
+  padding-top: $padding-large;
+}
+
+.p-b-small {
+  padding-bottom: $padding-small;
+}
+
+.p-b-normal {
+  padding-bottom: $padding-normal;
+}
+
+.p-b-medium {
+  padding-bottom: $padding-medium;
+}
+
+.p-b-large {
+  padding-bottom: $padding-large;
+}
+
+.p-l-small {
+  padding-left: $padding-small;
+}
+
+.p-l-normal {
+  padding-left: $padding-normal;
+}
+
+.p-l-medium {
+  padding-left: $padding-medium;
+}
+
+.p-l-large {
+  padding-left: $padding-large;
+}
+
+.p-r-small {
+  padding-right: $padding-small;
+}
+
+.p-r-normal {
+  padding-right: $padding-normal;
+}
+
+.p-r-medium {
+  padding-right: $padding-medium;
+}
+
+.p-r-large {
+  padding-right: $padding-large;
+}
+
+.p-x-small {
+  padding-left: $padding-small;
+  padding-right: $padding-small;
+}
+
+.p-x-normal {
+  padding-left: $padding-normal;
+  padding-right: $padding-normal;
+}
+
+.p-x-medium {
+  padding-left: $padding-medium;
+  padding-right: $padding-medium;
+}
+
+.p-x-large {
+  padding-left: $padding-large;
+  padding-right: $padding-large;
+}
+
+.p-y-small {
+  padding-top: $padding-small;
+  padding-bottom: $padding-small;
+}
+
+.p-y-normal {
+  padding-top: $padding-normal;
+  padding-bottom: $padding-normal;
+}
+
+.p-y-medium {
+  padding-top: $padding-medium;
+  padding-bottom: $padding-medium;
+}
+
+.p-y-large {
+  padding-top: $padding-large;
+  padding-bottom: $padding-large;
+}

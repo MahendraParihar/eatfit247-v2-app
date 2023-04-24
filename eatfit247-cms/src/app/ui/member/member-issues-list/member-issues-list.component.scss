@@ -1,0 +1,27 @@
+@import "../../../theme/padding";
+
+.data-table .mat-table {
+  height: calc(100vh - 240px) !important;
+  overflow-y: scroll;
+}
+
+
+.mat-column-createdBy, .mat-column-respondedBy {
+  min-width: 150px !important;
+  max-width: 150px !important;
+}
+
+.mat-column-status {
+  min-width: 150px !important;
+  max-width: 150px !important;
+}
+
+.mat-column-issue {
+  min-width: 150px !important;
+  max-width: 150px !important;
+}
+
+.mat-column-action {
+  min-width: 100px !important;
+  max-width: 100px !important;
+}

@@ -1,0 +1,16 @@
+@import "../../../theme/padding";
+
+.data-table .mat-table {
+  height: calc(100vh - 240px) !important;
+  overflow-y: scroll;
+}
+
+.footer-action {
+  display: flex;
+  flex-direction: row;
+  align-content: center;
+  justify-content: flex-end;
+  align-items: center;
+  gap: $padding-normal;
+  padding: $padding-medium;
+}

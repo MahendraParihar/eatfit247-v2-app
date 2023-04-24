@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <title>App</title>
+  <style type="text/css">
+    body {
+      padding: 10px;
+      font-size: 14px;
+    }
+
+    .member-info {
+      width: 100%;
+      margin-top: 10px;
+      margin-bottom: 10px;
+      border: 1px solid grey;
+      padding: 10px;
+
+    .member-addr {
+      text-align: start;
+    }
+
+    }
+
+    .invoice-table {
+      width: 100%;
+      border: 1px solid grey;
+      padding: 10px;
+
+    td {
+      width: 80%;
+      padding: 10px;
+    }
+
+    .seperator {
+      padding: 0;
+    }
+
+    }
+
+    .text-bold {
+      font-weight: bold;
+    }
+
+    .amount-cell {
+      text-align: right;
+    }
+  </style>
+
+</head>
+
+<body>
+<table class="member-info">
+  <tr>
+    <td style="width:50%;" class="member-addr">
+      <div class="text-bold">Invoice To:</div>
+      <div><br></div>
+      <div>{{data.memberName}}</div>
+      <div><br></div>
+      <div>
+        {{data.address.postalAddress}},
+        {{data.address.cityVillage}}
+        <br>
+        {{data.address.state}},
+        {{data.address.country}}.
+      </div>
+    </td>
+    <td>
+      <table>
+        <tr>
+          <td>Invoice Number :</td>
+          <td>{{data.invoiceId}}</td>
+        </tr>
+        <tr>
+          <td>Payment Date :</td>
+          <td>{{data.date}}</td>
+        </tr>
+        <tr>
+          <td>Payment Mode:</td>
+          <td>{{data.paymentMode }}</td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+
+<div>
+  <div><br></div>
+  <div><br></div>
+  <div class="text-bold">Payment Details:</div>
+  <table class="invoice-table">
+    <tr>
+      <td style="width: 75%;">Plan Amount</td>
+      <td class="amount-cell">{{{data.paymentObj.user.currency}}} {{data.paymentObj.user.orderAmount }}</td>
+    </tr>
+    <tr>
+      <td>
+        CGST({{data.paymentObj.user.taxObj.CGST.taxPercentage}} %)
+      </td>
+      <td class="amount-cell">{{data.paymentObj.user.currency}} {{data.paymentObj.user.taxObj.CGST.amount }}
+      </td>
+    </tr>
+    <tr>
+      <td> SGST({{data.paymentObj.user.taxObj.SGST.taxPercentage}} %)</td>
+      <td class="amount-cell">{{data.paymentObj.user.currency}} {{data.paymentObj.user.taxObj.SGST.amount }}
+      </td>
+    </tr>
+    <tr>
+      <td style="width: 75%;">Discount Amount</td>
+      <td class="amount-cell">{{data.paymentObj.user.currency}} {{data.paymentObj.user.discountAmount}}</td>
+    </tr>
+    <tr>
+      <td colspan="2" class="seperator">
+        <hr>
+      </td>
+    </tr>
+    <tr>
+      <td class="text-bold">Total Amount</td>
+      <td class="amount-cell text-bold">{{data.paymentObj.user.currency}} {{data.paymentObj.user.totalAmount}}</td>
+    </tr>
+  </table>
+</div>
+</body>
+
+</html>

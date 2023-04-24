@@ -1,0 +1,126 @@
+<!--<div class="header-section" style="padding: 0 54px 0 24px">
+  <div class="header">Total Cycle</div>
+  <div class="header">Days/Cycle</div>
+  <div class="header">Current Cycle</div>
+  <div class="header">Current Day</div>
+  <div class="header">Start Date</div>
+  <div class="header">End Date</div>
+  <div class="header">Status</div>
+  <div class="header">Updated By</div>
+  <div class="header">{{stringRes.ACTION}}</div>
+</div>-->
+<mat-accordion *ngIf="list && list.length > 0" multi>
+  <mat-expansion-panel *ngFor="let d of list">
+    <mat-expansion-panel-header>
+      <mat-panel-title class="header-section">
+        <div>{{d.program}} <span class="tag-primary">{{d.programCategory}}</span></div>
+
+
+        <!--<div>{{d.noOfCycle}} {{stringRes.CYCLE}}</div>
+                <div>{{d.noOfDaysInCycle}} Days/Cycle</div>
+                <div>{{stringRes.CYCLE}} {{d.currentCycleNo}}</div>
+                <div>{{(d.currentDayNo && d.currentDayNo > 0 ? stringRes.DAY + ' ' + d.currentDayNo : '')}}</div>
+                <div>{{d.startDate | appDateTime:'onlyDate'}}</div>
+                <div>{{d.endDate | appDateTime:'onlyDate'}}</div>
+                <div>
+                  <button matTooltip="{{d.dietPlanStatus}}" appStatusBtn
+                          [flag]="d.dietPlanStatusId === dietPlanStatusEnum.NOT_STARTED || d.dietPlanStatusId === dietPlanStatusEnum.IN_PROGRESS"
+                          mat-flat-button>
+                    {{d.dietPlanStatus}}
+                  </button>
+                </div>
+                <div>{{d.updatedBy | appCreatedBy}}<br>{{d.updatedAt | appDateTime}}</div>
+                <div class="header">
+                  <button mat-icon-button color="primary" [matMenuTriggerFor]="menu" aria-label="Add Diet Detail"
+                          matTooltip="Add Diet Details" *ngIf="d.showActionBtn">
+                    <mat-icon>add</mat-icon>
+                  </button>
+                  <mat-menu #menu="matMenu">
+                    <button mat-menu-item *ngIf="d.showDaily" (click)="onAddClick(true, d)">
+                      <span>Day Plan</span>
+                    </button>
+                    <button mat-menu-item *ngIf="d.showWeekly" (click)="onAddClick(false, d)">
+                      <span>Cycle Plan</span>
+                    </button>
+                  </mat-menu>
+                </div>-->
+      </mat-panel-title>
+    </mat-expansion-panel-header>
+    <!--<div class="cycle-plan">
+          <div class="cycle-plan-item" *ngFor="let s of d.cyclePlans">
+            <span>{{stringRes.CYCLE}} {{s.cycleNo}}</span>
+            <span>{{s.startDate | appDateTime:'onlyDate'}} - {{s.endDate | appDateTime:'onlyDate'}}</span>
+            <div><span class="tag-error">{{s.type}}</span></div>
+            <div>
+              <button mat-icon-button color="primary" [matMenuTriggerFor]="menu" aria-label="View Diet Plan"
+                      matTooltip="View Diet Plan">
+                <mat-icon>list</mat-icon>
+              </button>
+            </div>
+          </div>
+        </div>-->
+    <ng-container *ngIf="d.cyclePlans">
+      <mat-accordion>
+        <mat-expansion-panel (opened)="viewCycleDietPlan(cpItem)" *ngFor="let cpItem of d.cyclePlans; let ixCP = index;"
+                             class="cp-container"
+                             hideToggle="{{cpItem.type=='CYCLE'? true: false}}">
+          <mat-expansion-panel-header>
+            <div class="cp-header">
+              <div [ngClass]="{'diet-link':cpItem.type=='CYCLE'}">{{stringRes.CYCLE}} {{cpItem.cycleNo}}</div>
+              <div class="cp-header-text">({{cpItem.startDate | appDateTime:'onlyDate'}} - {{cpItem.endDate |
+                appDateTime:'onlyDate'}})
+              </div>
+              <div *ngIf="cpItem.type=='CYCLE'">
+                <button (click)="onEditCycleDietPlan(d.id, cpItem)" color="primary" mat-icon-button>
+                  <mat-icon>edit</mat-icon>
+                </button>
+              </div>
+            </div>
+          </mat-expansion-panel-header>
+          <ng-container *ngIf="cpItem.dietPlans && cpItem.type=='DAY'">
+
+            <mat-table [dataSource]="cpItem.dietPlans" class="dp-table">
+              <ng-container matColumnDef="dayNo">
+                <th *matHeaderCellDef mat-header-cell> {{stringRes.DAY}} </th>
+                <td (click)="onViewDietPlanClick(item)" *matCellDef="let item" class="diet-link" mat-cell>
+                  {{stringRes.DAY}} {{item.dayNo}}
+                </td>
+              </ng-container>
+              <ng-container matColumnDef="startDate">
+                <th *matHeaderCellDef mat-header-cell> Date</th>
+                <td *matCellDef="let item" mat-cell>{{item.startDate | appDateTime:'onlyDate'}} </td>
+              </ng-container>
+              <ng-container matColumnDef="action">
+                <mat-header-cell *matHeaderCellDef>Action</mat-header-cell>
+                <mat-cell *matCellDef="let d; let i = index">
+                  <button (click)="onEditDailyDietPlan(d)" color="primary" mat-icon-button>
+                    <mat-icon>edit</mat-icon>
+                  </button>
+                </mat-cell>
+              </ng-container>
+              <tr *matHeaderRowDef="dietPlanDayDisplayColumns" mat-header-row></tr>
+              <tr *matRowDef="let myRowData; columns: dietPlanDayDisplayColumns" mat-row></tr>
+            </mat-table>
+          </ng-container>
+        </mat-expansion-panel>
+      </mat-accordion>
+    </ng-container>
+    <ng-container *ngIf="!d.currentCycleNo && (!d.cyclePlans || d.cyclePlans.length === 0)">
+      <form [formGroup]="formGroup" class="form-group">
+        <mat-form-field *ngIf="dietTemplateList && dietTemplateList.length > 0">
+          <mat-label>{{stringRes.DIET_TEMPLATE}}</mat-label>
+          <mat-select formControlName="dietTemplateId" required>
+            <mat-option *ngFor="let item of dietTemplateList" [value]="item.id">{{item.name}}</mat-option>
+          </mat-select>
+          <mat-error>
+            <app-input-error [controlName]="stringRes.DIET_TEMPLATE"
+                             [control]="formGroup.controls['dietTemplateId']"></app-input-error>
+          </mat-error>
+        </mat-form-field>
+        <button (click)="onDietTemplateSubmit(d)" class="round-btn gradient-btn" color="primary" mat-raised-button>
+          {{stringRes.SAVE}}
+        </button>
+      </form>
+    </ng-container>
+  </mat-expansion-panel>
+</mat-accordion>

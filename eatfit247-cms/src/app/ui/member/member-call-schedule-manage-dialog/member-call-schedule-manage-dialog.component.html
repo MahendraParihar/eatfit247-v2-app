@@ -1,0 +1,165 @@
+<form [formGroup]="formGroup" class="form-group">
+  <div class="form-card">
+    <h4>{{!dialogData.new ? stringRes.EDIT_CALL_SCHEDULE : stringRes.ADD_CALL_SCHEDULE}}</h4>
+    <mat-dialog-content class="form-body">
+      <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start">
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(100%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.CALL_TYPE}}</mat-label>
+            <mat-select formControlName="callTypeId" required>
+              <mat-option *ngFor="let o of callTypeList" [value]="o.id">{{o.name}}</mat-option>
+            </mat-select>
+            <mat-error>
+              <app-input-error [controlName]="stringRes.CALL_TYPE"
+                               [control]="formControl['callTypeId']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(100%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.CALL_PURPOSE}}</mat-label>
+            <mat-select formControlName="callPurposeId" required>
+              <mat-option *ngFor="let o of callPurposeList" [value]="o.id">{{o.name}}</mat-option>
+            </mat-select>
+            <mat-error>
+              <app-input-error [controlName]="stringRes.CALL_PURPOSE"
+                               [control]="formControl['callPurposeId']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(100%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.CALL_STATUS}}</mat-label>
+            <mat-select formControlName="callStatusId" required>
+              <mat-option *ngFor="let o of callStatusList" [value]="o.id">{{o.name}}</mat-option>
+            </mat-select>
+            <mat-error>
+              <app-input-error [controlName]="stringRes.CALL_STATUS"
+                               [control]="formControl['callStatusId']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(50%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.DATE}}</mat-label>
+            <input (click)="startDatePicker.open()" [matDatepicker]="startDatePicker" formControlName="date" matInput
+                   placeholder="Enter date"
+                   readonly
+                   required
+                   type="text">
+            <mat-datepicker-toggle [for]="startDatePicker" matSuffix></mat-datepicker-toggle>
+            <mat-datepicker #startDatePicker></mat-datepicker>
+            <mat-error>
+              <app-input-error [controlName]="stringRes.DATE"
+                               [control]="formControl['date']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(50%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.START_TIME}}</mat-label>
+            <input [ngxMatTimepicker]="startTimePicker" formControlName="startTime" matInput placeholder="Enter date"
+                   readonly
+                   required
+                   type="text">
+            <mat-icon (click)="startTimePicker.open()" matSuffix>watch_later</mat-icon>
+            <mat-error>
+              <app-input-error [controlName]="stringRes.START_TIME"
+                               [control]="formControl['startTime']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+          <ngx-mat-timepicker #startTimePicker></ngx-mat-timepicker>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(50%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.END_TIME}}</mat-label>
+            <input [ngxMatTimepicker]="endTimePicker" formControlName="endTime" matInput placeholder="Enter date"
+                   readonly
+                   required
+                   type="text">
+            <mat-icon (click)="endTimePicker.open()" matSuffix>watch_later</mat-icon>
+            <mat-error>
+              <app-input-error [controlName]="stringRes.END_TIME"
+                               [control]="formControl['endTime']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+          <ngx-mat-timepicker #endTimePicker></ngx-mat-timepicker>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(100%)"
+             fxFlex.lt-lg="calc(100%)"
+             fxFlex.lt-md="calc(100%)"
+             fxFlex.lt-sm="100%">
+          <mat-label>{{stringRes.DETAIL}}</mat-label>
+          <textarea #detail formControlName="detail" matInput maxlength="{{inputLength.CHAR_200}}"
+                    placeholder="Enter detail" rows="3"></textarea>
+          <mat-hint align="end">{{detail.value.length}}
+            / {{inputLength.CHAR_200}}</mat-hint>
+          <mat-error>
+            <app-input-error [controlName]="stringRes.DETAIL"
+                             [control]="formControl['detail']"></app-input-error>
+          </mat-error>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(100%)"
+             fxFlex.lt-lg="calc(100%)"
+             fxFlex.lt-md="calc(100%)"
+             fxFlex.lt-sm="100%">
+          <mat-label>{{stringRes.CONVERSION_HISTORY}}</mat-label>
+          <textarea #conversionHistory formControlName="conversionHistory" matInput
+                    maxlength="{{inputLength.CHAR_200}}" placeholder="Enter conversion history" rows="3"></textarea>
+          <mat-hint align="end">{{conversionHistory.value.length}}
+            / {{inputLength.CHAR_200}}</mat-hint>
+          <mat-error>
+            <app-input-error [controlName]="stringRes.CONVERSION_HISTORY"
+                             [control]="formControl['conversionHistory']"></app-input-error>
+          </mat-error>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(100%)"
+             fxFlex.lt-lg="calc(100%)"
+             fxFlex.lt-md="calc(100%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.STATUS}}</mat-label>
+            <mat-select formControlName="active">
+              <mat-option *ngFor="let o of statusList" [value]="o.value">{{o.name}}</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </div>
+    </mat-dialog-content>
+    <mat-dialog-actions align="end">
+      <button (click)="onNegativeClick()" class="round-btn" mat-raised-button>
+        {{stringRes.CANCEL}}
+      </button>
+      <button (click)="onSubmit()" class="round-btn gradient-btn" color="primary" mat-raised-button>
+        {{!dialogData.new ? stringRes.UPDATE : stringRes.SAVE}}
+      </button>
+    </mat-dialog-actions>
+  </div>
+</form>

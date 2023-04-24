@@ -1,0 +1,44 @@
+@import "../../../../theme/padding";
+@import "../../../../theme/margin";
+@import "../../../../theme/variable";
+
+.invoice-dialog-container {
+  .member-info {
+    width: 100%;
+    margin-top: $margin-normal;
+    margin-bottom: $margin-normal;
+    border: 1px solid $border-color;
+    padding: $padding-normal;
+
+    .member-addr {
+      width: 35%;
+      vertical-align: top;
+      padding-left: $padding-normal;
+    }
+
+  }
+
+  .invoice-margin {
+    margin-top: $margin-normal;
+    margin-bottom: $margin-normal;
+  }
+
+  .invoice-table {
+    width: 100%;
+    border: 1px solid $border-color;
+    padding: $padding-normal;
+
+    td {
+      width: 80%;
+      padding: $padding-normal;
+    }
+
+    .amount-cell {
+      text-align: right;
+    }
+
+    .seperator {
+      padding: 0px;
+    }
+  }
+}

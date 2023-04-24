@@ -1,0 +1,137 @@
+<app-search-form (searchResultEvent)="searchResult($event)"
+                 [searchModel]="payload"></app-search-form>
+
+<div class="data-table">
+
+  <div class="action-panel">
+    <button (click)="onAddClick()" class="btn gradient-btn" color="primary" mat-raised-button>
+      <mat-icon>add</mat-icon>
+      {{stringRes.APP_USER_CREATE}}
+    </button>
+  </div>
+
+  <mat-table [dataSource]="dataSource" class="m-t-medium">
+    <ng-container matColumnDef="image">
+      <mat-header-cell *matHeaderCellDef>Image</mat-header-cell>
+      <mat-cell *matCellDef="let d;">
+        <app-custom-img-tag [alt]="" [isAvatar]="true" [webUrl]="d.imagePath"></app-custom-img-tag>
+      </mat-cell>
+    </ng-container>
+    <ng-container matColumnDef="data">
+      <mat-header-cell *matHeaderCellDef>Member Info</mat-header-cell>
+      <mat-cell *matCellDef="let d; let i = index;">
+        <div class="member">
+          <div class="member-info">
+            <a (click)="onViewClick(d.id)" class="link">{{d.firstName}} {{d.lastName}}</a>
+            <span>{{d.emailId}}</span>
+            <span>{{d.countryCode}}-{{d.contactNumber}}</span>
+          </div>
+          <div class="connection-info">
+            <div>
+              {{stringRes.FRANCHISE}} : <a *ngIf="d.memberFranchise" class="link"
+                                           routerLink="/{{navigationPathEnum.FRANCHISE_DETAIL}}/{{d.memberFranchise.franchiseId}}"
+                                           routerLinkActive="active"
+                                           target="_blank">{{ d.memberFranchise.companyName}}</a>
+            </div>
+            <div>
+              {{stringRes.REFERRER}} : <a *ngIf="d.memberReferrer" class="link"
+                                          routerLink="/{{navigationPathEnum.REFERRER_DETAIL}}/{{d.memberReferrer.referrerId}}"
+                                          routerLinkActive="active"
+                                          target="_blank">{{ d.memberReferrer.companyName}}</a>
+            </div>
+            <div>
+              {{stringRes.NUTRITIONIST}} : <span *ngIf="d.nutritionist">{{d.nutritionist | appCreatedBy }}</span>
+            </div>
+          </div>
+          <div class="diet-info">
+            <span [ngClass]="d.isAssessmentSubmitted ? 'green-bg':'red-bg'"
+                  class="chip">{{d.isAssessmentSubmitted ? 'Assessment Submitted' : 'Assessment Pending'}}</span>
+          </div>
+        </div>
+      </mat-cell>
+    </ng-container>
+    <ng-container matColumnDef="status">
+      <mat-header-cell *matHeaderCellDef>Status</mat-header-cell>
+      <mat-cell *matCellDef="let d; let i = index">
+        <button (click)="onDeleteClick(d, i)" [flag]="d.userStatusId" appUserStatusBtn mat-flat-button>
+          {{d.userStatusId === adminUserStatusEnum.ACTIVE ? stringRes.ACTIVE : d.userStatusId === adminUserStatusEnum.IN_ACTIVE ? stringRes.IN_ACTIVE : stringRes.PENDING_VERIFICATION}}
+        </button>
+      </mat-cell>
+    </ng-container>
+    <ng-container matColumnDef="action">
+      <mat-header-cell *matHeaderCellDef>Action</mat-header-cell>
+      <mat-cell *matCellDef="let d; let i = index">
+        <button (click)="onEditClick(d.id)" aria-label="Update" color="primary" mat-icon-button matTooltip="Edit">
+          <mat-icon>edit</mat-icon>
+        </button>
+        <button (click)="onResetPasswordClick(d)" aria-label="Reset Password" color="primary" mat-icon-button
+                matTooltip="Reset Password">
+          <mat-icon>lock_reset</mat-icon>
+        </button>
+      </mat-cell>
+    </ng-container>
+    <!--<ng-container matColumnDef="seqNo">
+      <mat-header-cell *matHeaderCellDef>#</mat-header-cell>
+      <mat-cell *matCellDef="let d; let i = index;">{{i + 1}}</mat-cell>
+    </ng-container>
+    <ng-container matColumnDef="image">
+      <mat-header-cell *matHeaderCellDef>Image</mat-header-cell>
+      <mat-cell *matCellDef="let d;">
+        <img *ngIf="d.imagePath && d.imagePath.length > 0" class="avatar" alt=""
+             src="{{d.imagePath[0].webUrl}}"/>
+      </mat-cell>
+    </ng-container>
+    <ng-container matColumnDef="name">
+      <mat-header-cell *matHeaderCellDef>Name</mat-header-cell>
+      <mat-cell *matCellDef="let d;">
+        <a class="link" (click)="onViewClick(d.id)">{{d.firstName}} {{d.lastName}}</a>
+      </mat-cell>
+    </ng-container>
+    <ng-container matColumnDef="emailId">
+      <mat-header-cell *matHeaderCellDef>Contact Info</mat-header-cell>
+      <mat-cell *matCellDef="let d;">{{d.emailId}}<br>
+        {{d.countryCode}}-{{d.contactNumber}}</mat-cell>
+    </ng-container>
+    <ng-container matColumnDef="country">
+      <mat-header-cell *matHeaderCellDef>Country</mat-header-cell>
+      <mat-cell *matCellDef="let d;">{{d.countryName}}</mat-cell>
+    </ng-container>
+    <ng-container matColumnDef="franchise">
+      <mat-header-cell *matHeaderCellDef>Franchise</mat-header-cell>
+      <mat-cell *matCellDef="let d;">
+        <a class="link" target="_blank" routerLink="/{{navigationPathEnum.FRANCHISE_DETAIL}}/{{d.memberFranchise.franchiseId}}"
+           routerLinkActive="active" *ngIf="d.memberFranchise">{{ d.memberFranchise.companyName}}</a>
+      </mat-cell>
+    </ng-container>
+    <ng-container matColumnDef="referrer">
+      <mat-header-cell *matHeaderCellDef>Referrer</mat-header-cell>
+      <mat-cell *matCellDef="let d;">
+        <a class="link" target="_blank" routerLink="/{{navigationPathEnum.REFERRER_DETAIL}}/{{d.memberReferrer.referrerId}}"
+           routerLinkActive="active" *ngIf="d.memberReferrer">{{ d.memberReferrer.companyName}}</a>
+      </mat-cell>
+    </ng-container>
+    <ng-container matColumnDef="status">
+      <mat-header-cell *matHeaderCellDef>Status</mat-header-cell>
+      <mat-cell *matCellDef="let d; let i = index">
+        <button appUserStatusBtn [flag]="d.userStatusId" mat-flat-button (click)="onDeleteClick(d, i)">
+          {{d.userStatusId === adminUserStatusEnum.ACTIVE ? stringRes.ACTIVE : d.userStatusId === adminUserStatusEnum.IN_ACTIVE ? stringRes.IN_ACTIVE : stringRes.PENDING_VERIFICATION}}
+        </button>
+      </mat-cell>
+    </ng-container>
+    <ng-container matColumnDef="action">
+      <mat-header-cell *matHeaderCellDef>Action</mat-header-cell>
+      <mat-cell *matCellDef="let d; let i = index">
+        <button mat-icon-button color="primary" (click)="onEditClick(d.id)" aria-label="Update" matTooltip="Edit">
+          <mat-icon>edit</mat-icon>
+        </button>
+      </mat-cell>
+    </ng-container>-->
+
+    <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+
+    <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
+  </mat-table>
+
+  <mat-paginator [length]="totalCount" [pageSizeOptions]="pageSizeList"
+                 [pageSize]="defaultPageSize"></mat-paginator>
+</div>

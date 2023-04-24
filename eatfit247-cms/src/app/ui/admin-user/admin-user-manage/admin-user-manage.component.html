@@ -1,0 +1,222 @@
+<form [formGroup]="formGroup" class="form-group">
+  <mat-card class="form-card">
+    <mat-card-header>
+      <mat-card-title>{{id > 0 ? stringRes.ADMIN_EDIT : stringRes.ADMIN_CREATE}}</mat-card-title>
+    </mat-card-header>
+    <mat-card-content class="form-body">
+      <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start">
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(50%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.FIRST_NAME}}</mat-label>
+            <input #firstName formControlName="firstName" matInput maxlength="{{inputLength.MAX_NAME}}"
+                   placeholder="Enter first name"
+                   required type="text">
+            <mat-hint align="end">{{firstName.value.length}} / {{inputLength.MAX_NAME}}</mat-hint>
+            <mat-error>
+              <app-input-error [controlName]="stringRes.FIRST_NAME"
+                               [control]="formControl['firstName']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(50%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.LAST_NAME}}</mat-label>
+            <input #lastName formControlName="lastName" matInput maxlength="{{inputLength.MAX_NAME}}"
+                   placeholder="Enter last name"
+                   required type="text">
+            <mat-hint align="end">{{lastName.value.length}} / {{inputLength.MAX_NAME}}</mat-hint>
+            <mat-error>
+              <app-input-error [controlName]="stringRes.LAST_NAME"
+                               [control]="formControl['lastName']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+      <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start">
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(50%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.EMAIL_ID}}</mat-label>
+            <input #emailId formControlName="emailId" matInput maxlength="{{inputLength.MAX_EMAIL}}" placeholder="Enter email id"
+                   required type="text">
+            <mat-hint align="end">{{emailId.value.length}} / {{inputLength.MAX_EMAIL}}</mat-hint>
+            <mat-error>
+              <app-input-error [controlName]="stringRes.EMAIL_ID"
+                               [control]="formControl['emailId']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(50%)"
+             fxFlex.lt-sm="100%">
+          <div
+            style="display: grid; gap:12px; grid-template-columns: 30% 70%; flex-direction: row; align-content: center; align-items: center;">
+            <mat-form-field>
+              <mat-label>{{stringRes.COUNTRY_CODE}}</mat-label>
+              <mat-select #countryCode formControlName="countryCode" required>
+                <mat-option *ngFor="let s of countryCodeList" [value]="s.id">{{s.name}}</mat-option>
+              </mat-select>
+              <mat-error>
+                <app-input-error [controlName]="stringRes.CONTACT_NUMBER"
+                                 [control]="formControl['contactNumber']"></app-input-error>
+              </mat-error>
+            </mat-form-field>
+            <mat-form-field>
+              <mat-label>{{stringRes.CONTACT_NUMBER}}</mat-label>
+              <input #contactNo formControlName="contactNumber" matInput maxlength="{{inputLength.MAX_CONTACT_NUMBER}}"
+                     placeholder="Enter contact number"
+                     required type="number">
+              <mat-error>
+                <app-input-error [controlName]="stringRes.CONTACT_NUMBER"
+                                 [control]="formControl['contactNumber']"></app-input-error>
+              </mat-error>
+            </mat-form-field>
+          </div>
+        </div>
+      </div>
+      <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start">
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(50%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.ROLE}}</mat-label>
+            <mat-select (selectionChange)="onRoleChange($event)" formControlName="roleId" required>
+              <mat-option *ngFor="let o of roleList" [value]="o.id">{{o.name}}</mat-option>
+            </mat-select>
+            <mat-error>
+              <app-input-error [controlName]="stringRes.ROLE"
+                               [control]="formControl['roleId']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(50%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field *ngIf="showFranchise">
+            <mat-label>{{stringRes.FRANCHISE}}</mat-label>
+            <mat-select formControlName="franchiseId" required>
+              <mat-option>-- None --</mat-option>
+              <mat-option *ngFor="let o of franchiseList" [value]="o.id">{{o.name}}</mat-option>
+            </mat-select>
+            <mat-error>
+              <app-input-error [controlName]="stringRes.FRANCHISE"
+                               [control]="formControl['franchiseId']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+      <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start">
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(50%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.START_DATE}}</mat-label>
+            <input (click)="startPicker.open()" [matDatepicker]="startPicker" formControlName="startDate" matInput
+                   placeholder="Enter {{stringRes.START_DATE}}"
+                   readonly
+                   required
+                   type="text">
+            <mat-datepicker-toggle [for]="startPicker" matSuffix></mat-datepicker-toggle>
+            <mat-datepicker #startPicker></mat-datepicker>
+            <mat-error>
+              <app-input-error [controlName]="stringRes.START_DATE"
+                               [control]="formControl['startDate']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(50%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.END_DATE}}</mat-label>
+            <input (click)="endDatePicker.open()" [matDatepicker]="endDatePicker" formControlName="endDate" matInput
+                   placeholder="Enter {{stringRes.END_DATE}}"
+                   readonly
+                   type="text">
+            <mat-datepicker-toggle [for]="endDatePicker" matSuffix></mat-datepicker-toggle>
+            <mat-datepicker #endDatePicker></mat-datepicker>
+            <mat-error>
+              <app-input-error [controlName]="stringRes.END_DATE"
+                               [control]="formControl['endDate']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+      <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start">
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(50%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.STATUS}}</mat-label>
+            <mat-select (selectionChange)="onStatusChange($event)" formControlName="adminUserStatusId" required>
+              <mat-option *ngFor="let o of statusList" [value]="o.id">{{o.name}}</mat-option>
+            </mat-select>
+            <mat-error>
+              <app-input-error [controlName]="stringRes.STATUS"
+                               [control]="formControl['adminUserStatusId']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(50%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.REASON}}</mat-label>
+            <textarea #reason formControlName="reason" matInput maxlength="{{inputLength.CHAR_1000}}" placeholder="Enter reason for status change"
+                      rows="3">
+            </textarea>
+            <mat-hint align="end">{{reason.value.length}} / {{inputLength.CHAR_1000}}</mat-hint>
+            <mat-error>
+              <app-input-error [controlName]="stringRes.REASON"
+                               [control]="formControl['reason']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+      <app-file-selector [controlName]="'uploadFiles'" [formGroup]="formGroup"
+                         [isMultiFile]="false"
+                         [isRequired]="true"
+                         [mediaFor]="mediaForEnum.ADMIN"
+                         [mediaType]="fileTypeEnum.IMAGE"
+                         [uploadedMediaList]="adminUserObj ? adminUserObj.imagePath : []"></app-file-selector>
+
+      <app-address-selector [addressModel]="adminUserObj && adminUserObj.addressObj ? adminUserObj.addressObj : null"
+                            [formGroup]="formGroup"
+                            [showAddressType]="false" [showLatLong]="false"></app-address-selector>
+    </mat-card-content>
+
+    <mat-card-actions align="end">
+      <button (click)="onCancel()" class="round-btn" mat-raised-button>
+        {{stringRes.CANCEL}}
+      </button>
+      <button (click)="onSubmit()" class="round-btn gradient-btn" color="primary" mat-raised-button>
+        {{id > 0 ? stringRes.UPDATE : stringRes.SAVE}}
+      </button>
+    </mat-card-actions>
+  </mat-card>
+</form>

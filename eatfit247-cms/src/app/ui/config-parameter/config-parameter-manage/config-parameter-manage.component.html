@@ -1,0 +1,48 @@
+<form *ngIf="configParamList" [formGroup]="formGroup" class="form-group">
+  <mat-card class="form-card">
+    <mat-card-header>
+      <mat-card-title>{{stringRes.SETTING}}</mat-card-title>
+    </mat-card-header>
+    <mat-card-content class="form-body" formArrayName="configParams">
+      <div *ngFor="let item of configParamList; let idx = index; " [formGroupName]="idx" fxLayout="row wrap"
+           fxLayout.lt-sm="column" fxLayoutAlign="flex-start">
+        <div class="form-item"
+             fxFlex="calc(70%)"
+             fxFlex.lt-lg="calc(70%)"
+             fxFlex.lt-md="calc(70%)"
+             fxFlex.lt-sm="70%">
+          <mat-label>{{item.configParamName}}</mat-label>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(30%)"
+             fxFlex.lt-lg="calc(30%)"
+             fxFlex.lt-md="calc(30%)"
+             fxFlex.lt-sm="30%">
+          <mat-form-field
+            *ngIf="item.fieldType === fieldTypeEnum.NUMBER || item.fieldType === fieldTypeEnum.TEXT">
+            <mat-label>{{item.configParamName}}</mat-label>
+            <ng-container>
+              <input formControlName="configParamValue" matInput
+                     placeholder="Enter {{item.configParamName}}" type="{{item.fieldType}}">
+            </ng-container>
+          </mat-form-field>
+          <ng-container *ngIf="item.fieldType === fieldTypeEnum.RADIO">
+            <mat-slide-toggle formControlName="configParamValue"></mat-slide-toggle>
+          </ng-container>
+          <mat-error>
+            <app-input-error [controlName]="item.configParamName"
+                             [control]="configParamControls[idx]"></app-input-error>
+          </mat-error>
+        </div>
+      </div>
+    </mat-card-content>
+    <mat-card-actions align="end">
+      <button (click)="onCancel()" class="round-btn" mat-raised-button>
+        {{stringRes.CANCEL}}
+      </button>
+      <button (click)="onSubmit()" class="round-btn gradient-btn" color="primary" mat-raised-button>
+        {{stringRes.UPDATE}}
+      </button>
+    </mat-card-actions>
+  </mat-card>
+</form>

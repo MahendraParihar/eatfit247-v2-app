@@ -1,0 +1,163 @@
+<mat-expansion-panel class="search-form">
+  <mat-expansion-panel-header>
+    <mat-panel-title>
+      {{stringRes.SEARCH_FILTER}}
+    </mat-panel-title>
+  </mat-expansion-panel-header>
+  <form *ngIf="searchFormGroup" [formGroup]="searchFormGroup">
+    <div class="form-body">
+      <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start">
+        <div class="form-item" fxFlex="calc(25%)" fxFlex.lt-lg="calc(25%)" fxFlex.lt-md="calc(50%)" fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.SEARCH_TEXT}}</mat-label>
+            <input formControlName="name" matInput placeholder="{{stringRes.SEARCH_TEXT}}">
+          </mat-form-field>
+        </div>
+        <div class="form-item" fxFlex="calc(25%)" fxFlex.lt-lg="calc(25%)" fxFlex.lt-md="calc(50%)" fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.STATUS}}</mat-label>
+            <mat-select formControlName="active">
+              <mat-option *ngFor="let o of statusList" [value]="o.value">{{o.name}}</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+        <div class="form-item" fxFlex="calc(25%)" fxFlex.lt-lg="calc(25%)" fxFlex.lt-md="calc(50%)" fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.CREATED_AT_FROM_TO_DATE}}</mat-label>
+            <mat-date-range-input [formGroup]="searchFormGroup" [rangePicker]="createdFromToDatePicker">
+              <input (click)="createdFromToDatePicker.open()" formControlName="createdFrom" matStartDate
+                     placeholder="{{stringRes.CREATED_AT_FROM_TO_DATE}}" readonly>
+              <input (click)="createdFromToDatePicker.open()" formControlName="createdTo" matEndDate
+                     placeholder="{{stringRes.CREATED_AT_FROM_TO_DATE}}" readonly>
+            </mat-date-range-input>
+            <mat-hint>DD/MM/YYYY – DD/MM/YYYY</mat-hint>
+            <mat-datepicker-toggle [for]="createdFromToDatePicker" matSuffix></mat-datepicker-toggle>
+            <mat-date-range-picker #createdFromToDatePicker></mat-date-range-picker>
+          </mat-form-field>
+        </div>
+        <div class="form-item" fxFlex="calc(25%)" fxFlex.lt-lg="calc(25%)" fxFlex.lt-md="calc(50%)" fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.RECIPE_CUISINE}}</mat-label>
+            <mat-select formControlName="recipeCuisineIds" multiple>
+              <mat-option *ngFor="let s of recipeCuisineList" [value]="s.id">{{s.name}}</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+        <div class="form-item" fxFlex="calc(25%)" fxFlex.lt-lg="calc(25%)" fxFlex.lt-md="calc(50%)" fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.RECIPE_TYPE}}</mat-label>
+            <mat-select formControlName="recipeTypeId">
+              <mat-option *ngFor="let s of recipeTypeList" [value]="s.id">{{s.name}}</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <div class="form-item"
+             fxFlex="calc(25%)"
+             fxFlex.lt-lg="calc(25%)"
+             fxFlex.lt-md="calc(50%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.RECIPE_CATEGORY}}</mat-label>
+            <mat-select formControlName="recipeCategoryIds" multiple>
+              <mat-option *ngFor="let s of recipeCategoryList" [value]="s.id">{{s.name}}</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </div>
+    </div>
+  </form>
+  <mat-action-row>
+    <button (click)="clearSearchForm()" color="warn" mat-button>{{stringRes.CLEAR}}</button>
+    <button (click)="searchResult()" color="primary" mat-button>{{stringRes.SEARCH}}</button>
+  </mat-action-row>
+</mat-expansion-panel>
+
+<div class="data-table">
+
+  <div class="action-panel">
+    <button (click)="onAddClick()" class="btn gradient-btn" color="primary" mat-raised-button>
+      <mat-icon>add</mat-icon>
+      {{stringRes.ADD_RECIPE}}
+    </button>
+  </div>
+
+  <mat-table [dataSource]="dataSource">
+
+    <ng-container matColumnDef="seqNo">
+      <mat-header-cell *matHeaderCellDef>#</mat-header-cell>
+      <mat-cell *matCellDef="let d; let i = index;">{{i + 1}}</mat-cell>
+    </ng-container>
+    <ng-container matColumnDef="image">
+      <mat-header-cell *matHeaderCellDef>Image</mat-header-cell>
+      <mat-cell *matCellDef="let d;">
+        <app-custom-img-tag [isAvatar]="true" [webUrl]="d.imagePath"></app-custom-img-tag>
+      </mat-cell>
+    </ng-container>
+    <ng-container matColumnDef="title">
+      <mat-header-cell *matHeaderCellDef>{{stringRes.RECIPE_NAME}}</mat-header-cell>
+      <mat-cell *matCellDef="let d;">{{d.title}}</mat-cell>
+    </ng-container>
+    <ng-container matColumnDef="category">
+      <mat-header-cell *matHeaderCellDef>Category</mat-header-cell>
+      <mat-cell *matCellDef="let d;">{{d.recipeType}}</mat-cell>
+    </ng-container>
+    <ng-container matColumnDef="isPublic">
+      <mat-header-cell *matHeaderCellDef>Is Public</mat-header-cell>
+      <mat-cell *matCellDef="let d;">
+        <button [flag]="d.isVisibleToAll" appStatusBtn
+                disabled mat-flat-button matTooltip="{{d.isVisibleToAll ? 'Mark '+stringRes.PRIVATE: 'Mark '+stringRes.PUBLIC}}">
+          {{d.isVisibleToAll ? stringRes.PUBLIC : stringRes.PRIVATE}}
+        </button>
+      </mat-cell>
+    </ng-container>
+    <ng-container matColumnDef="status">
+      <mat-header-cell *matHeaderCellDef>Status</mat-header-cell>
+      <mat-cell *matCellDef="let d; let i = index">
+        <button (click)="onDeleteClick(d, i)" [flag]="d.active"
+                appStatusBtn mat-flat-button matTooltip="{{d.active ? 'Mark '+stringRes.IN_ACTIVE: 'Mark '+stringRes.ACTIVE}}">
+          {{d.active ? stringRes.ACTIVE : stringRes.IN_ACTIVE}}
+        </button>
+      </mat-cell>
+    </ng-container>
+    <ng-container matColumnDef="createdBy">
+      <mat-header-cell *matHeaderCellDef>Created By</mat-header-cell>
+      <mat-cell *matCellDef="let d;">{{d.createdBy | appCreatedBy}}</mat-cell>
+    </ng-container>
+    <ng-container matColumnDef="createdAt">
+      <mat-header-cell *matHeaderCellDef>Created At</mat-header-cell>
+      <mat-cell *matCellDef="let d;">{{d.createdAt | appDateTime:'dateTime'}}</mat-cell>
+    </ng-container>
+    <ng-container matColumnDef="updatedBy">
+      <mat-header-cell *matHeaderCellDef>Updated By</mat-header-cell>
+      <mat-cell *matCellDef="let d;">{{d.updatedBy | appCreatedBy}}</mat-cell>
+    </ng-container>
+    <ng-container matColumnDef="updatedAt">
+      <mat-header-cell *matHeaderCellDef>Updated At</mat-header-cell>
+      <mat-cell *matCellDef="let d;">{{d.updatedAt | appDateTime}}</mat-cell>
+    </ng-container>
+    <ng-container matColumnDef="action">
+      <mat-header-cell *matHeaderCellDef>Action</mat-header-cell>
+      <mat-cell *matCellDef="let d; let i = index">
+        <button (click)="openPreviewDialog(d)" aria-label="Preview" color="primary" mat-icon-button
+                matTooltip="{{stringRes.PREVIEW}}">
+          <mat-icon>visibility</mat-icon>
+        </button>
+        <button (click)="onEditClick(d.id)" aria-label="Update" color="primary" mat-icon-button
+                matTooltip="{{stringRes.EDIT}}">
+          <mat-icon>edit</mat-icon>
+        </button>
+        <button (click)="onDownloadClick(d)" *ngIf="d && d.downloadPath" aria-label="Download" color="primary"
+                mat-icon-button matTooltip="{{stringRes.DOWNLOAD}}">
+          <mat-icon>download</mat-icon>
+        </button>
+      </mat-cell>
+    </ng-container>
+
+    <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+
+    <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
+  </mat-table>
+
+  <mat-paginator [length]="totalCount" [pageSizeOptions]="pageSizeList" [pageSize]="defaultPageSize"></mat-paginator>
+</div>

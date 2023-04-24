@@ -1,0 +1,63 @@
+<ng-container *ngIf="dialogData">
+  <div mat-dialog-title>{{dialogData.name}}</div>
+  <div mat-dialog-content>
+    <table [cellSpacing]="10">
+      <tr>
+        <td>{{stringRes.EMAIL_ID}}</td>
+        <td>{{dialogData.emailId}}</td>
+      </tr>
+      <tr>
+        <td>{{stringRes.CONTACT_NUMBER}}</td>
+        <td>{{dialogData.countryCode}}-{{dialogData.contactNumber}}</td>
+      </tr>
+      <tr>
+        <td>{{stringRes.MESSAGE}}</td>
+        <td>{{dialogData.message}}</td>
+      </tr>
+      <tr *ngIf="dialogData.respondedBy">
+        <td>{{stringRes.RESPONDED_BY}}</td>
+        <td>{{dialogData.respondedBy | appCreatedBy}}</td>
+      </tr>
+      <tr *ngIf="dialogData.respondedBy">
+        <td>{{stringRes.RESPONDED_MESSAGE}}</td>
+        <td>{{dialogData.respondedMessage ? dialogData.respondedMessage : 'NA'}}</td>
+      </tr>
+    </table>
+  </div>
+  <div mat-dialog-content>
+    <form *ngIf="formGroup" [formGroup]="formGroup" class="form-group">
+      <div class="form-body">
+        <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start">
+          <div class="form-item"
+               fxFlex="calc(100%)"
+               fxFlex.lt-lg="calc(100%)"
+               fxFlex.lt-md="calc(100%)"
+               fxFlex.lt-sm="100%">
+            <mat-form-field>
+              <mat-label>{{stringRes.RESPOND_MESSAGE}}</mat-label>
+              <textarea #title formControlName="respondedMessage"
+                        matInput
+                        maxlength="{{inputLength.CHAR_1000}}"
+                        placeholder="Enter {{stringRes.RESPOND_MESSAGE}}"
+                        required rows="3"></textarea>
+              <mat-hint align="end">{{title.value.length}} / {{inputLength.CHAR_1000}}</mat-hint>
+              <mat-error>
+                <app-input-error [controlName]="stringRes.RESPOND_MESSAGE"
+                                 [control]="formControl['respondedMessage']"></app-input-error>
+              </mat-error>
+            </mat-form-field>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <div align="end" mat-dialog-actions>
+    <button (click)="onNegativeClick()" class="round-btn" mat-raised-button>
+      {{stringRes.CANCEL}}
+    </button>
+    <button (click)="onPositiveClick()" class="round-btn gradient-btn" color="primary" mat-raised-button>
+      {{stringRes.SAVE}}
+    </button>
+  </div>
+</ng-container>

@@ -1,0 +1,100 @@
+<form *ngIf="memberHealthLogObj" [formGroup]="formGroup" class="form-group">
+  <div class="form-card">
+    <h4>{{!dialogData.new ? stringRes.EDIT_BODY_STATS : stringRes.ADD_BODY_STATS}}</h4>
+    <mat-dialog-content class="form-body">
+      <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start">
+        <div class="form-item"
+             fxFlex="calc(100%)"
+             fxFlex.lt-lg="calc(100%)"
+             fxFlex.lt-md="calc(100%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.DATE}}</mat-label>
+            <input (click)="startDatePicker.open()" [matDatepicker]="startDatePicker" [max]="currentDate" [min]="minDate"
+                   formControlName="logDate"
+                   matInput
+                   placeholder="Select date"
+                   readonly
+                   required
+                   type="text">
+            <mat-datepicker-toggle [for]="startDatePicker" matSuffix></mat-datepicker-toggle>
+            <mat-datepicker #startDatePicker></mat-datepicker>
+            <mat-error>
+              <app-input-error [controlName]="stringRes.DATE"
+                               [control]="formControl['logDate']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+      <ng-container formArrayName="bodyStats">
+        <ng-container *ngFor="let agd of healthParameterArray().controls; let i=index" [formGroupName]="i">
+          <div *ngIf="memberHealthLogObj.memberHealthParameters[i].fieldType === fieldTypeEnum.NUMBER" fxLayout="row wrap" fxLayout.lt-sm="column"
+               fxLayoutAlign="flex-start">
+            <div class="form-item"
+                 fxFlex="calc(60%)"
+                 fxFlex.lt-lg="calc(60%)"
+                 fxFlex.lt-md="calc(60%)"
+                 fxFlex.lt-sm="60%">
+              <mat-form-field>
+                <mat-label>{{memberHealthLogObj.memberHealthParameters[i].healthParameter}}</mat-label>
+                <input [required]="memberHealthLogObj.memberHealthParameters[i].requiredField"
+                       formControlName="value"
+                       matInput
+                       placeholder="Enter {{memberHealthLogObj.memberHealthParameters[i].healthParameter}}" type="{{memberHealthLogObj.memberHealthParameters[i].fieldType}}">
+                <mat-error>
+                  <app-input-error [controlName]="memberHealthLogObj.memberHealthParameters[i].healthParameter"
+                                   [control]="formControl['value']"></app-input-error>
+                </mat-error>
+              </mat-form-field>
+            </div>
+            <div class="form-item"
+                 fxFlex="calc(30%)"
+                 fxFlex.lt-lg="calc(30%)"
+                 fxFlex.lt-md="calc(30%)"
+                 fxFlex.lt-sm="30%">
+              <mat-button-toggle-group formControlName="healthParameterUnitId">
+                <mat-button-toggle *ngFor="let opt of memberHealthLogObj.memberHealthParameters[i].unitList"
+                                   value="{{opt.healthParameterUnitId}}">
+                  {{opt.healthParameterUnit}}
+                </mat-button-toggle>
+              </mat-button-toggle-group>
+            </div>
+          </div>
+          <div *ngIf="memberHealthLogObj.memberHealthParameters[i].fieldType === fieldTypeEnum.DATE" fxLayout="row wrap" fxLayout.lt-sm="column"
+               fxLayoutAlign="flex-start">
+            <div class="form-item"
+                 fxFlex="calc(100%)"
+                 fxFlex.lt-lg="calc(100%)"
+                 fxFlex.lt-md="calc(100%)"
+                 fxFlex.lt-sm="100%">
+              <mat-form-field>
+                <mat-label>{{memberHealthLogObj.memberHealthParameters[i].healthParameter}}</mat-label>
+                <input (click)="bodyStatsPicker.open()"
+                       [matDatepicker]="bodyStatsPicker"
+                       [required]="memberHealthLogObj.memberHealthParameters[i].requiredField"
+                       formControlName="inputValue" matInput
+                       placeholder="Enter {{memberHealthLogObj.memberHealthParameters[i].healthParameter}}"
+                       readonly
+                       type="{{memberHealthLogObj.memberHealthParameters[i].fieldType}}">
+                <mat-datepicker-toggle [for]="bodyStatsPicker" matSuffix></mat-datepicker-toggle>
+                <mat-datepicker #bodyStatsPicker></mat-datepicker>
+                <mat-error>
+                  <app-input-error [controlName]="memberHealthLogObj.memberHealthParameters[i].healthParameter"
+                                   [control]="formControl['inputValue']"></app-input-error>
+                </mat-error>
+              </mat-form-field>
+            </div>
+          </div>
+        </ng-container>
+      </ng-container>
+    </mat-dialog-content>
+    <mat-dialog-actions align="end">
+      <button (click)="onNegativeClick()" class="round-btn" mat-raised-button>
+        {{stringRes.CANCEL}}
+      </button>
+      <button (click)="onSubmit()" class="round-btn gradient-btn" color="primary" mat-raised-button>
+        {{!dialogData.new ? stringRes.UPDATE : stringRes.SAVE}}
+      </button>
+    </mat-dialog-actions>
+  </div>
+</form>

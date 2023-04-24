@@ -1,0 +1,42 @@
+<form *ngIf="this.dietPlanDetail" [formGroup]="formGroup" class="form-group diet-template-details">
+  <mat-card class="form-card">
+    <mat-card-header>
+      <div class="cycle-header">
+        <mat-form-field *ngIf="cycleList && cycleList.length > 0">
+          <mat-label>{{stringRes.CYCLE}}</mat-label>
+          <mat-select (selectionChange)="reloadData();" formControlName="cycleNo" required>
+            <mat-option *ngFor="let item of cycleList" [value]="item">{{stringRes.CYCLE}} {{item}}</mat-option>
+          </mat-select>
+          <mat-error>
+            <app-input-error [controlName]="stringRes.CYCLE"
+                             [control]="formGroup.controls['cycleNo']"></app-input-error>
+          </mat-error>
+        </mat-form-field>
+        <mat-form-field *ngIf="dayList && dayList.length > 0">
+          <mat-label>{{stringRes.DAY}}</mat-label>
+          <mat-select (selectionChange)="reloadData();" formControlName="dayNo">
+            <mat-option *ngFor="let item of dayList" [value]="item">{{stringRes.DAY}} {{item}}</mat-option>
+          </mat-select>
+          <mat-error>
+            <app-input-error [controlName]="stringRes.DAY"
+                             [control]="formGroup.controls['dayNo']"></app-input-error>
+          </mat-error>
+        </mat-form-field>
+      </div>
+    </mat-card-header>
+    <mat-card-content class="form-body">
+
+      <app-diet-details-selector [dietPlans]="this.dietPlanDetail.dietPlan" [formArrayName]="'dietPlan'"
+                                 [formGroup]="formGroup"
+                                 [recipeList]="this.recipeList"></app-diet-details-selector>
+    </mat-card-content>
+    <mat-card-actions align="end">
+      <button (click)="onCancel()" class="round-btn" mat-raised-button>
+        {{stringRes.CANCEL}}
+      </button>
+      <button (click)="onSubmit()" class="round-btn gradient-btn" color="primary" mat-raised-button>
+        {{id > 0 ? stringRes.UPDATE : stringRes.SAVE}}
+      </button>
+    </mat-card-actions>
+  </mat-card>
+</form>

@@ -1,0 +1,8 @@
+<img *ngIf="isAvatar && imageUrl" alt="{{alt}}" class="avatar" src="{{apiUrlEnum.MEDIA_PATH}}{{imageUrl}}">
+<img *ngIf="!isAvatar && imageUrl" [src.lg]="apiUrlEnum.MEDIA_PATH+imageUrl" [src.md]="apiUrlEnum.MEDIA_PATH+imageUrl" [src.sm]="apiUrlEnum.MEDIA_PATH+imageUrl"
+     [src.xl]="apiUrlEnum.MEDIA_PATH+imageUrl"
+     [src.xs]="apiUrlEnum.MEDIA_PATH+imageUrl"
+     [src]="apiUrlEnum.MEDIA_PATH+imageUrl"
+     alt="{{alt}}"
+     class="banner"
+     src="{{apiUrlEnum.MEDIA_PATH}}{{imageUrl}}">

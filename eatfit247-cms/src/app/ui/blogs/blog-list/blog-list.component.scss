@@ -1,0 +1,12 @@
+.data-table {
+  .mat-column-action {
+    width: 120px !important;
+    max-width: 120px !important;
+    justify-content: center;
+  }
+
+  .mat-column-createdBy, .mat-column-updatedBy {
+    width: 160px !important;
+    max-width: 160px !important;
+  }
+}

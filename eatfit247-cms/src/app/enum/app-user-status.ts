@@ -1,0 +1,6 @@
+export enum AppUserStatusEnum {
+  ACTIVE = 1,
+  PENDING_FOR_OTP_VARIFICATION = 2,
+  PENDING_FOR_ADMIN_VARIFICATION = 3,
+  IN_ACTIVE = 0
+}

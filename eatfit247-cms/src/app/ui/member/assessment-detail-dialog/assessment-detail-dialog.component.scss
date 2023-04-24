@@ -1,0 +1,8 @@
+@import "../../../../theme/padding";
+
+.table-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: $padding-medium;
+}

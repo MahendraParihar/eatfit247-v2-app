@@ -1,0 +1,22 @@
+::ng-deep {
+  .mat-menu-panel {
+    .mat-menu-content {
+      .admin-info {
+        display: grid;
+        grid-template-columns: 60px 1fr;
+
+        .img-container {
+
+        }
+
+        .data-container {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+          justify-content: center;
+        }
+      }
+    }
+  }
+}
+

@@ -1,0 +1,78 @@
+<app-search-form (searchResultEvent)="searchResult($event)"
+                 [searchModel]="payload"></app-search-form>
+
+<div class="data-table">
+
+  <!--<div class="action-panel">
+    <button mat-raised-button color="primary" class="btn gradient-btn" (click)="onAddClick()">
+      <mat-icon>add</mat-icon>
+      {{stringRes.ADD_PROGRAM_PLAN}}
+    </button>
+  </div>-->
+
+  <mat-table [dataSource]="dataSource">
+
+    <ng-container matColumnDef="seqNo">
+      <mat-header-cell *matHeaderCellDef>#</mat-header-cell>
+      <mat-cell *matCellDef="let d; let i = index;">{{i + 1}}</mat-cell>
+    </ng-container>
+    <ng-container matColumnDef="name">
+      <mat-header-cell *matHeaderCellDef>Name</mat-header-cell>
+      <mat-cell *matCellDef="let d;">{{d.name}}</mat-cell>
+    </ng-container>
+    <ng-container matColumnDef="emailId">
+      <mat-header-cell *matHeaderCellDef>Email Id</mat-header-cell>
+      <mat-cell *matCellDef="let d;">{{d.emailId}}</mat-cell>
+    </ng-container>
+    <ng-container matColumnDef="contactNo">
+      <mat-header-cell *matHeaderCellDef>Contact Number</mat-header-cell>
+      <mat-cell *matCellDef="let d;">{{d.countryCode}}-{{d.contactNumber}}</mat-cell>
+    </ng-container>
+    <ng-container matColumnDef="status">
+      <mat-header-cell *matHeaderCellDef>Status</mat-header-cell>
+      <mat-cell *matCellDef="let d; let i = index">
+        <button (click)="onDeleteClick(d, i)" [flag]="d.active"
+                appStatusBtn mat-flat-button matTooltip="{{d.active ? 'Mark '+stringRes.IN_ACTIVE: 'Mark '+stringRes.ACTIVE}}">
+          {{d.active ? stringRes.ACTIVE : stringRes.IN_ACTIVE}}
+        </button>
+      </mat-cell>
+    </ng-container>
+    <ng-container matColumnDef="respondedBy">
+      <mat-header-cell *matHeaderCellDef>Responded By</mat-header-cell>
+      <mat-cell *matCellDef="let d;">{{d.respondedBy | appCreatedBy}}</mat-cell>
+    </ng-container>
+    <ng-container matColumnDef="createdAt">
+      <mat-header-cell *matHeaderCellDef>Created At</mat-header-cell>
+      <mat-cell *matCellDef="let d;">{{d.createdAt | appDateTime:'dateTime'}}</mat-cell>
+    </ng-container>
+    <ng-container matColumnDef="updatedAt">
+      <mat-header-cell *matHeaderCellDef>Updated At</mat-header-cell>
+      <mat-cell *matCellDef="let d;">{{d.updatedAt | appDateTime}}</mat-cell>
+    </ng-container>
+    <ng-container matColumnDef="action">
+      <mat-header-cell *matHeaderCellDef>Action</mat-header-cell>
+      <mat-cell *matCellDef="let d; let i = index">
+        <button (click)="onEditClick(d, i)" *ngIf="!d.respondedBy" aria-label="Update" color="primary" mat-icon-button
+                matTooltip="{{stringRes.EDIT}}">
+          <mat-icon>edit</mat-icon>
+        </button>
+        <button (click)="onEditClick(d, i)" *ngIf="d.respondedBy" aria-label="View" color="primary" mat-icon-button
+                matTooltip="{{stringRes.PREVIEW}}">
+          <mat-icon>visibility</mat-icon>
+        </button>
+        <button (click)="onSendResponseMailClick(d, i)" *ngIf="d.respondedBy && d.respondedMessage" aria-label="View"
+                color="primary" mat-icon-button
+                matTooltip="{{stringRes.SEND_MAIL}}">
+          <mat-icon>forward_to_inbox</mat-icon>
+        </button>
+      </mat-cell>
+    </ng-container>
+
+    <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+
+    <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
+  </mat-table>
+
+  <mat-paginator [length]="totalCount" [pageSizeOptions]="pageSizeList"
+                 [pageSize]="defaultPageSize"></mat-paginator>
+</div>

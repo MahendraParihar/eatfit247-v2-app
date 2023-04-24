@@ -1,0 +1,287 @@
+<form [formGroup]="formGroup" class="form-group">
+  <mat-card class="form-card">
+    <mat-card-header>
+      <mat-card-title>{{id > 0 ? stringRes.EDIT_REFERRER : stringRes.ADD_REFERRER}}</mat-card-title>
+    </mat-card-header>
+    <mat-card-content class="form-body">
+      <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start">
+        <div class="form-item"
+             fxFlex="calc(100%)"
+             fxFlex.lt-lg="calc(100%)"
+             fxFlex.lt-md="calc(100%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.REFERRER}}</mat-label>
+            <input #templeName formControlName="name" matInput maxlength="{{inputLength.CHAR_100}}"
+                   placeholder="Enter {{stringRes.REFERRER}}"
+                   required type="text">
+            <mat-hint align="end">{{templeName.value.length}} / {{inputLength.CHAR_100}}</mat-hint>
+            <mat-error>
+              <app-input-error [controlName]="stringRes.REFERRER"
+                               [control]="formControl['name']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+      <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start">
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(50%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.COMPANY_NAME}}</mat-label>
+            <input #companyName formControlName="companyName" matInput maxlength="{{inputLength.CHAR_100}}"
+                   placeholder="Enter {{stringRes.COMPANY_NAME}}"
+                   type="text">
+            <mat-hint align="end">{{companyName.value.length}} / {{inputLength.CHAR_100}}</mat-hint>
+            <mat-error>
+              <app-input-error [controlName]="stringRes.COMPANY_NAME"
+                               [control]="formControl['companyName']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(50%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.WEBSITE_LINK}}</mat-label>
+            <input #websiteLink formControlName="websiteLink" matInput maxlength="{{inputLength.CHAR_100}}"
+                   placeholder="Enter {{stringRes.WEBSITE_LINK}}"
+                   type="text">
+            <mat-hint align="end">{{websiteLink.value.length}} / {{inputLength.CHAR_100}}</mat-hint>
+            <mat-error>
+              <app-input-error [controlName]="stringRes.WEBSITE_LINK"
+                               [control]="formControl['websiteLink']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+      <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start">
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(50%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.CONTACT_NUMBER}}</mat-label>
+            <input #contactNumber formControlName="contactNumber" matInput
+                   maxlength="{{inputLength.MAX_CONTACT_NUMBER}}"
+                   placeholder="Enter {{stringRes.CONTACT_NUMBER}}"
+                   required type="text">
+            <mat-hint align="end">{{contactNumber.value.length}} / {{inputLength.MAX_CONTACT_NUMBER}}</mat-hint>
+            <mat-error>
+              <app-input-error [controlName]="stringRes.CONTACT_NUMBER"
+                               [control]="formControl['contactNumber']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(50%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.ALTERNATE_CONTACT_NUMBER}}</mat-label>
+            <input #alternateContactNumber formControlName="alternateContactNumber" matInput
+                   maxlength="{{inputLength.MAX_CONTACT_NUMBER}}"
+                   placeholder="Enter {{stringRes.ALTERNATE_CONTACT_NUMBER}}"
+                   type="text">
+            <mat-hint align="end">{{alternateContactNumber.value.length}}
+              / {{inputLength.MAX_CONTACT_NUMBER}}</mat-hint>
+            <mat-error>
+              <app-input-error [controlName]="stringRes.ALTERNATE_CONTACT_NUMBER"
+                               [control]="formControl['alternateContactNumber']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+      <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start">
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(50%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.EMAIL_ID}}</mat-label>
+            <input #emailId formControlName="emailId" matInput
+                   maxlength="{{inputLength.MAX_EMAIL}}"
+                   placeholder="Enter {{stringRes.EMAIL_ID}}"
+                   required type="text">
+            <mat-hint align="end">{{emailId.value.length}} / {{inputLength.MAX_EMAIL}}</mat-hint>
+            <mat-error>
+              <app-input-error [controlName]="stringRes.EMAIL_ID"
+                               [control]="formControl['emailId']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(50%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.ALTERNATE_EMAIL_ID}}</mat-label>
+            <input #alternateEmailId formControlName="alternateEmailId" matInput
+                   maxlength="{{inputLength.MAX_EMAIL}}"
+                   placeholder="Enter {{stringRes.ALTERNATE_EMAIL_ID}}"
+                   type="text">
+            <mat-hint align="end">{{alternateEmailId.value.length}}
+              / {{inputLength.MAX_EMAIL}}</mat-hint>
+            <mat-error>
+              <app-input-error [controlName]="stringRes.ALTERNATE_EMAIL_ID"
+                               [control]="formControl['alternateEmailId']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+      <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start">
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(50%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.PAN_NUMBER}}</mat-label>
+            <input #panNumber formControlName="panNumber" matInput
+                   maxlength="{{inputLength.CHAR_20}}"
+                   placeholder="Enter {{stringRes.PAN_NUMBER}}"
+                   type="text">
+            <mat-hint align="end">{{panNumber.value.length}} / {{inputLength.CHAR_20}}</mat-hint>
+            <mat-error>
+              <app-input-error [controlName]="stringRes.PAN_NUMBER"
+                               [control]="formControl['panNumber']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(50%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.TAN_NUMBER}}</mat-label>
+            <input #tanNumber formControlName="tanNumber" matInput
+                   maxlength="{{inputLength.CHAR_20}}"
+                   placeholder="Enter {{stringRes.TAN_NUMBER}}"
+                   type="text">
+            <mat-hint align="end">{{tanNumber.value.length}}
+              / {{inputLength.CHAR_20}}</mat-hint>
+            <mat-error>
+              <app-input-error [controlName]="stringRes.TAN_NUMBER"
+                               [control]="formControl['tanNumber']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(50%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.GST_NUMBER}}</mat-label>
+            <input #gstNumber formControlName="gstNumber" matInput
+                   maxlength="{{inputLength.CHAR_20}}"
+                   placeholder="Enter {{stringRes.GST_NUMBER}}"
+                   type="text">
+            <mat-hint align="end">{{gstNumber.value.length}}
+              / {{inputLength.CHAR_20}}</mat-hint>
+            <mat-error>
+              <app-input-error [controlName]="stringRes.GST_NUMBER"
+                               [control]="formControl['gstNumber']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(100%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.FRANCHISE}}</mat-label>
+            <mat-select formControlName="franchiseId" required>
+              <mat-option *ngFor="let o of franchiseList" [value]="o.id">{{o.name}}</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </div>
+      <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start">
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(50%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.START_DATE}}</mat-label>
+            <input (click)="startDatePicker.open()" [matDatepicker]="startDatePicker" formControlName="startDate" matInput
+                   placeholder="Enter date"
+                   readonly
+                   required
+                   type="text">
+            <mat-datepicker-toggle [for]="startDatePicker" matSuffix></mat-datepicker-toggle>
+            <mat-datepicker #startDatePicker></mat-datepicker>
+            <mat-error>
+              <app-input-error [controlName]="stringRes.START_DATE"
+                               [control]="formControl['startDate']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(50%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.END_DATE}}</mat-label>
+            <input (click)="endDatePicker.open()" [matDatepicker]="endDatePicker" formControlName="endDate" matInput
+                   placeholder="Enter date"
+                   readonly
+                   type="text">
+            <mat-datepicker-toggle [for]="endDatePicker" matSuffix></mat-datepicker-toggle>
+            <mat-datepicker #endDatePicker></mat-datepicker>
+            <mat-error>
+              <app-input-error [controlName]="stringRes.END_DATE"
+                               [control]="formControl['endDate']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+      <div *ngIf="id > 0" fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start">
+        <div class="form-item"
+             fxFlex="calc(100%)"
+             fxFlex.lt-lg="calc(100%)"
+             fxFlex.lt-md="calc(100%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.STATUS}}</mat-label>
+            <mat-select (selectionChange)="onStatusChange($event)" formControlName="active">
+              <mat-option *ngFor="let o of statusList" [value]="o.value">{{o.name}}</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </div>
+      <app-file-selector [controlName]="'uploadFiles'" [formGroup]="formGroup"
+                         [isMultiFile]="false"
+                         [isRequired]="true"
+                         [mediaFor]="mediaForEnum.REFERRER"
+                         [mediaType]="fileTypeEnum.IMAGE"
+                         [uploadedMediaList]="lovModelObj ? lovModelObj.imagePath : []"></app-file-selector>
+    </mat-card-content>
+
+    <app-address-selector [addressModel]="lovModelObj && lovModelObj.addressObj ? lovModelObj.addressObj : null"
+                          [formGroup]="formGroup"
+                          [showAddressType]="false" [showLatLong]="false"></app-address-selector>
+
+
+    <mat-card-actions align="end">
+      <button (click)="onCancel()" class="round-btn" mat-raised-button>
+        {{stringRes.CANCEL}}
+      </button>
+      <button (click)="onSubmit()" class="round-btn gradient-btn" color="primary" mat-raised-button>
+        {{id > 0 ? stringRes.UPDATE : stringRes.SAVE}}
+      </button>
+    </mat-card-actions>
+  </mat-card>
+</form>

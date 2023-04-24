@@ -1,0 +1,179 @@
+<form *ngIf="formGroup" [formGroup]="addressForm" class="m-t-medium">
+
+  <mat-card-header>
+    <mat-card-title>{{stringRes.ADDRESS}}</mat-card-title>
+  </mat-card-header>
+  <mat-card-content class="form-body">
+    <div *ngIf="addressList && addressList.length>0" fxLayout="row wrap" fxLayout.lt-sm="column"
+         fxLayoutAlign="flex-start">
+      <div class="form-item"
+           fxFlex="calc(100%)"
+           fxFlex.lt-lg="calc(100%)"
+           fxFlex.lt-md="calc(100%)"
+           fxFlex.lt-sm="100%">
+        <mat-form-field>
+          <mat-label>{{stringRes.ADDRESS}}</mat-label>
+          <mat-select (selectionChange)="onAddressChange()" formControlName="addressId" placeholder="Select address">
+            <mat-optgroup>Add Address</mat-optgroup>
+            <mat-option [value]="-1">Add New Address</mat-option>
+            <mat-optgroup *ngIf="addressList && addressList.length>0">Existing Address</mat-optgroup>
+            <mat-option *ngFor="let option of addressList"
+                        [value]="option.addressId">{{option.postalAddress}} {{option.cityVillage}} {{option.state}} {{option.country}}</mat-option>
+            <mat-error>
+              <app-input-error [controlName]="stringRes.ADDRESS"
+                               [control]="formControl['addressId']"></app-input-error>
+            </mat-error>
+          </mat-select>
+        </mat-form-field>
+      </div>
+    </div>
+    <ng-container *ngIf="showManageAddressForm">
+      <div *ngIf="showAddressType" fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start">
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(50%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.ADDRESS_TYPE}}</mat-label>
+            <mat-select formControlName="addressTypeId" placeholder="Select address type"
+                        required="{{!showAddressType}}">
+              <mat-option *ngFor="let option of addressTypeList" [value]="option.id">{{option.name}}</mat-option>
+              <mat-error>
+                <app-input-error [controlName]="stringRes.ADDRESS_TYPE"
+                                 [control]="formControl['addressTypeId']"></app-input-error>
+              </mat-error>
+            </mat-select>
+          </mat-form-field>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(50%)"
+             fxFlex.lt-sm="100%">
+        </div>
+      </div>
+      <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start">
+        <div class="form-item"
+             fxFlex="calc(100%)"
+             fxFlex.lt-lg="calc(100%)"
+             fxFlex.lt-md="calc(100%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.ADDRESS}}</mat-label>
+            <input #address formControlName="postalAddress" matInput maxlength="{{inputLength.MAX_ADDRESS}}"
+                   minlength="{{inputLength.MIN_ADDRESS}}"
+                   placeholder="Enter address" required type="text">
+            <mat-hint align="end">{{address.value.length}} / {{inputLength.MAX_ADDRESS}}</mat-hint>
+            <mat-error>
+              <app-input-error [controlName]="stringRes.ADDRESS"
+                               [control]="formControl['postalAddress']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+      <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start">
+        <div class="form-item"
+             fxFlex="calc(100%)"
+             fxFlex.lt-lg="calc(100%)"
+             fxFlex.lt-md="calc(100%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.CITY_VILLAGE}}</mat-label>
+            <input formControlName="cityVillage" matInput maxlength="{{50}}" minlength="{{inputLength.CHAR_5}}" placeholder="Enter city/village name"
+                   required type="text">
+            <mat-error>
+              <app-input-error [controlName]="stringRes.CITY_VILLAGE"
+                               [control]="formControl['cityVillage']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(50%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.COUNTRY}}</mat-label>
+            <mat-select (selectionChange)="onCountryChange()" formControlName="countryId" placeholder="Select country"
+                        required>
+              <mat-option *ngFor="let option of addressCountryList" [value]="option.id">{{option.name}}</mat-option>
+              <mat-error>
+                <app-input-error [controlName]="stringRes.COUNTRY"
+                                 [control]="formControl['countryId']"></app-input-error>
+              </mat-error>
+            </mat-select>
+          </mat-form-field>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(50%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.STATE}}</mat-label>
+            <mat-select formControlName="stateId" placeholder="Select state" required>
+              <mat-option>--- Select State ---</mat-option>
+              <mat-option *ngFor="let option of addressStateList" [value]="option.id">{{option.name}}</mat-option>
+            </mat-select>
+            <mat-error>
+              <app-input-error [controlName]="stringRes.STATE"
+                               [control]="formControl['stateId']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(50%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.PIN_CODE}}</mat-label>
+            <input formControlName="pinCode" matInput maxlength="{{inputLength.PIN_CODE}}" minlength="{{inputLength.PIN_CODE}}"
+                   placeholder="Enter pin code" type="number">
+            <mat-error>
+              <app-input-error [controlName]="stringRes.PIN_CODE"
+                               [control]="formControl['pinCode']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(50%)"
+             fxFlex.lt-sm="100%">
+        </div>
+      </div>
+      <div *ngIf="showLatLong" fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start">
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(50%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.LATITUDE}}</mat-label>
+            <input formControlName="latitude" matInput placeholder="Enter latitude" type="number">
+            <mat-error>
+              <app-input-error [controlName]="stringRes.LATITUDE"
+                               [control]="formControl['latitude']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div *ngIf="showLatLong"
+             class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(50%)" fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.LONGITUDE}}</mat-label>
+            <input formControlName="longitude" matInput placeholder="Select longitude" type="number">
+            <mat-error>
+              <app-input-error [controlName]="stringRes.LONGITUDE"
+                               [control]="formControl['LONGITUDE']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+    </ng-container>
+  </mat-card-content>
+</form>

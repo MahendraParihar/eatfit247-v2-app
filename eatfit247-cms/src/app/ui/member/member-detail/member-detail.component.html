@@ -1,0 +1,248 @@
+<ng-container *ngIf="memberObj">
+  <mat-card>
+    <mat-card-content>
+      <div class="top-profile">
+        <div class="profile">
+          <div class="image-section">
+            <app-custom-img-tag [alt]="" [isAvatar]="true"
+                                [webUrl]="memberObj.basicInfo.imagePath"></app-custom-img-tag>
+          </div>
+          <div class="data-section">
+            <h5 mat-card-title>{{memberObj.basicInfo.firstName}} {{memberObj.basicInfo.lastName}}</h5>
+            <div id="navigation">
+              <ul>
+                <li>{{memberObj.basicInfo.countryCode}}-{{memberObj.basicInfo.contactNumber}}</li>
+                <li>{{memberObj.basicInfo.emailId}}</li>
+                <li>{{memberObj.basicInfo.countryName}}</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="summary">
+          <h5>{{stringRes.NUTRITIONIST_SUMMARY}}</h5>
+          <span *ngIf="memberObj.assessmentObj">{{memberObj.assessmentObj.nutritionistSummery}}</span>
+          <span *ngIf="!memberObj.assessmentObj"></span>
+        </div>
+        <div class="nutritionist">
+          <h5>{{stringRes.NUTRITIONIST}}</h5>
+          <span>{{memberObj.basicInfo.nutritionist | appCreatedBy}}</span>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</ng-container>
+
+<div *ngIf="memberObj" class="m-t-medium" fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start"
+     fxLayoutGap="12px">
+  <div fxFlex="calc(17%)"
+       fxFlex.lt-lg="calc(17%)"
+       fxFlex.lt-md="calc(17%)"
+       fxFlex.lt-sm="100%">
+    <mat-card class="custom-list" style="padding-left: 0">
+      <mat-selection-list [multiple]="false">
+        <mat-list-option (click)="navigateTo(0)" [selected]='activeTag ===0' [value]="0" class="menu-list-item">
+          <mat-icon class="icon-18" fontSet="material-icons-outlined" mat-list-icon>home</mat-icon>
+          <span>{{stringRes.HOME}}</span>
+          <span class="twistie-separator" fxflex></span>
+        </mat-list-option>
+        <mat-list-option (click)="navigateTo(1)" [selected]='activeTag ===1' [value]="1" class="menu-list-item">
+          <mat-icon class="icon-18" fontSet="material-icons-outlined" mat-list-icon>analytics</mat-icon>
+          <span>{{stringRes.ASSESSMENT}}</span>
+          <span class="twistie-separator" fxflex></span>
+          <span class="font-12">{{memberObj.assessmentObj ? '' : 'Pending'}}</span>
+        </mat-list-option>
+        <mat-list-option (click)="navigateTo(2)" [selected]='activeTag ===2' [value]="2" class="menu-list-item">
+          <mat-icon class="icon-18" fontSet="material-icons-outlined" mat-list-icon>medical_information</mat-icon>
+          <span>{{stringRes.HEALTH_ISSUES}}</span>
+          <span class="twistie-separator" fxflex></span>
+          <span class="font-12">{{memberObj.healthIssueCount}}</span>
+        </mat-list-option>
+        <mat-list-option (click)="navigateTo(3)" [selected]='activeTag ===3' [value]="3" class="menu-list-item">
+          <mat-icon class="icon-18" fontSet="material-icons-outlined" mat-list-icon>fitness_center</mat-icon>
+          <span>{{stringRes.BODY_STATS}}</span>
+          <span class="twistie-separator" fxflex></span>
+          <span class="font-12">{{memberObj.healthParameterCount}}</span>
+        </mat-list-option>
+        <mat-list-option (click)="navigateTo(4)" [selected]='activeTag ===4' [value]="4" class="menu-list-item">
+          <mat-icon class="icon-18" fontSet="material-icons-outlined" mat-list-icon>menu_book</mat-icon>
+          <span>{{stringRes.DIET_PLAN}}</span>
+          <span class="twistie-separator" fxflex></span>
+          <span class="font-12"></span>
+        </mat-list-option>
+        <mat-list-option (click)="navigateTo(5)" [selected]='activeTag ===5' [value]="5" class="menu-list-item">
+          <mat-icon class="icon-18" fontSet="material-icons-outlined" mat-list-icon>contacts</mat-icon>
+          <span>{{stringRes.CALL_SCHEDULE}}</span>
+          <span class="twistie-separator" fxflex></span>
+          <span class="font-12">{{memberObj.callScheduleCount}}</span>
+        </mat-list-option>
+        <mat-list-option (click)="navigateTo(6)" [selected]='activeTag ===6' [value]="6" class="menu-list-item">
+          <mat-icon class="icon-18" fontSet="material-icons-outlined" mat-list-icon>sticky_note_2</mat-icon>
+          <span>{{stringRes.POCKET_GUIDES}}</span>
+          <span class="twistie-separator" fxflex></span>
+          <span class="font-12">{{memberObj.pocketGuideCount}}</span>
+        </mat-list-option>
+        <mat-list-option (click)="navigateTo(7)" [selected]='activeTag ===7' [value]="7" class="menu-list-item">
+          <mat-icon class="icon-18" fontSet="material-icons-outlined" mat-list-icon>assignment_late</mat-icon>
+          <span>{{stringRes.MEMBER_ISSUES}}</span>
+          <span class="twistie-separator" fxflex></span>
+          <span class="font-12"></span>
+        </mat-list-option>
+        <mat-list-option (click)="navigateTo(8)" [selected]='activeTag ===8' [value]="8" class="menu-list-item">
+          <mat-icon class="icon-18" fontSet="material-icons-outlined" mat-list-icon>receipt_long</mat-icon>
+          <span>{{stringRes.PAYMENT_HISTORY}}</span>
+          <span class="twistie-separator" fxflex></span>
+          <span class="font-12">{{memberObj.paymentCount}}</span>
+        </mat-list-option>
+      </mat-selection-list>
+    </mat-card>
+  </div>
+  <div class="member-detail-section"
+       fxFlex="calc(82%)"
+       fxFlex.lt-lg="calc(82%)"
+       fxFlex.lt-md="calc(82%)"
+       fxFlex.lt-sm="100%">
+    <router-outlet></router-outlet>
+  </div>
+</div>
+
+<!--
+<ng-container *ngIf="memberObj">
+  <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start" fxLayoutGap="12px">
+    <div fxFlex="calc(29%)"
+         fxFlex.lt-lg="calc(29%)"
+         fxFlex.lt-md="calc(29%)"
+         fxFlex.lt-sm="100%">
+      <mat-card>
+        <mat-card-header>
+          <div mat-card-avatar></div>
+          <mat-card-title>{{memberObj.basicInfo.firstName}} {{memberObj.basicInfo.lastName}}</mat-card-title>
+          <mat-card-subtitle>{{memberObj.basicInfo.emailId}}</mat-card-subtitle>
+          <mat-card-subtitle>{{memberObj.basicInfo.countryCode}}-{{memberObj.basicInfo.contactNumber}}</mat-card-subtitle>
+          <mat-card-subtitle>{{memberObj.basicInfo.countryName}}</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="list-view">
+            <div class="list-item">
+              <mat-icon class="indigo-icon" fontSet="material-icons-outlined" mat-list-icon>badge</mat-icon>
+              <div class="list-data">
+                <div class="list-title">{{stringRes.NUTRITIONIST}}</div>
+                <div matTooltip="Nutritionist"
+                     class="list-subtitle">{{memberObj.basicInfo.nutritionist | appCreatedBy}}</div>
+              </div>
+              <button mat-icon-button>
+                <mat-icon fontSet="material-icons-outlined" mat-list-icon>edit</mat-icon>
+              </button>
+            </div>
+            <div class="list-item">
+              <mat-icon fontSet="material-icons-outlined" mat-list-icon>summarize</mat-icon>
+              <div class="list-data" (click)="openAssessment()">
+                <div class="list-title">{{stringRes.NUTRITIONIST_SUMMARY}}</div>
+                <div class="list-subtitle" matTooltip="Nutritionist Summery">
+                  {{memberObj.assessmentObj && memberObj.assessmentObj.nutritionistSummery ? memberObj.assessmentObj.nutritionistSummery : 'Nutritionist summery not available'}}
+                </div>
+              </div>
+              <button mat-icon-button>
+                <mat-icon fontSet="material-icons-outlined" mat-list-icon>edit</mat-icon>
+              </button>
+            </div>
+            <div class="list-item">
+              <mat-icon class="red-icon" fontSet="material-icons-outlined" mat-list-icon>medical_services</mat-icon>
+              <div class="list-data">
+                <div class="list-title">{{stringRes.HEALTH_ISSUES}}</div>
+                <div class="list-subtitle" *ngIf="memberObj.healthIssueCount > 0">{{memberObj.healthIssues.join(', ')}}</div>
+              </div>
+              <div *ngIf="memberObj.healthIssueCount === 0"><span class="chip red-bg">{{'Select Health Issues'}}</span></div>
+              <button class="round-btn" mat-icon-button (click)="openHealthIssueSelectionDialog()">
+                <mat-icon fontSet="material-icons-outlined" mat-list-icon>edit</mat-icon>
+              </button>
+            </div>
+            <div class="list-item">
+              <mat-icon class="red-icon" fontSet="material-icons-outlined" mat-list-icon>menu_book</mat-icon>
+              <div class="list-data">
+                <div class="list-title">{{stringRes.POCKET_GUIDES}}</div>
+                <div class="list-subtitle" *ngIf="memberObj.pocketGuideCount > 0">{{memberObj.pocketGuides.join(', ')}}</div>
+              </div>
+              <div *ngIf="memberObj.pocketGuideCount === 0"><span class="chip red-bg">{{memberObj.pocketGuides + 'No Pocket Guide'}}</span></div>
+              <button class="round-btn" mat-icon-button (click)="openPocketGuideSelectionDialog()">
+                <mat-icon fontSet="material-icons-outlined" mat-list-icon>edit</mat-icon>
+              </button>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+    <div fxFlex="calc(29%)"
+         fxFlex.lt-lg="calc(29%)"
+         fxFlex.lt-md="calc(29%)"
+         fxFlex.lt-sm="100%">
+      <mat-card>
+        <h4>Current Plan</h4>
+        <mat-card-content>
+
+        </mat-card-content>
+      </mat-card>
+    </div>
+    <div fxFlex="calc(39%)"
+         fxFlex.lt-lg="calc(39%)"
+         fxFlex.lt-md="calc(39%)"
+         fxFlex.lt-sm="100%">
+      <mat-card>
+        <h4>Quick Links</h4>
+        <div class="list-view">
+          <div class="list-item" (click)="activeTab = 0; navigateTo(0)">
+            <mat-icon fontSet="material-icons-outlined" mat-list-icon>summarize</mat-icon>
+            <div class="list-data">
+              <span class="list-subtitle">{{stringRes.ASSESSMENT}}</span>
+            </div>
+            <div [ngClass]="memberObj.basicInfo.isAssessmentSubmitted ? 'green-bg':'red-bg'"
+                  class="chip">{{memberObj.basicInfo.isAssessmentSubmitted ? 'Assessment Submitted' : 'Assessment Pending'}}</div>
+          </div>
+          <div class="list-item" (click)="activeTab = 1; navigateTo(1)">
+            <mat-icon fontSet="material-icons-outlined" mat-list-icon>monitor_weight</mat-icon>
+            <div class="list-data">
+              <div class="list-subtitle">{{stringRes.BODY_STATS}}</div>
+            </div>
+            <span *ngIf="memberObj.healthParameterCount === 0" [ngClass]="memberObj.healthParameterCount ? 'green-bg':'red-bg'"
+                 class="chip">{{memberObj.healthParameterCount ? '' : 'Health Parameters Pending'}}</span>
+          </div>
+          <div class="list-item" (click)="activeTab = 2; navigateTo(2)">
+            <mat-icon fontSet="material-icons-outlined" mat-list-icon>analytics</mat-icon>
+            <div class="list-data">
+              <span class="list-subtitle">{{stringRes.DIET_PLAN}}</span>
+            </div>
+          </div>
+          <div class="list-item" (click)="openPocketGuideSelectionDialog()">
+            <mat-icon fontSet="material-icons-outlined" mat-list-icon>menu_book</mat-icon>
+            <div class="list-data">
+              <div class="list-subtitle">{{stringRes.POCKET_GUIDES}}</div>
+            </div>
+            <span *ngIf="memberObj.pocketGuideCount > 0"
+                  class="chip green-bg">{{memberObj.pocketGuideCount + ' Pocket Guide Selected'}}</span>
+          </div>
+          <div class="list-item" (click)="activeTab = 4; navigateTo(4)">
+            <mat-icon fontSet="material-icons-outlined" mat-list-icon>receipt_long</mat-icon>
+            <div class="list-data">
+              <span class="list-subtitle">{{stringRes.PAYMENT_HISTORY}}</span>
+            </div>
+          </div>
+          <div class="list-item" (click)="activeTab = 5; navigateTo(5)">
+            <mat-icon fontSet="material-icons-outlined" mat-list-icon>list_alt</mat-icon>
+            <div class="list-data">
+              <span class="list-subtitle">{{stringRes.CALL_SCHEDULE}}</span>
+            </div>
+            <span *ngIf="memberObj.callScheduleCount > 0"
+                  class="chip red-bg">{{memberObj.callScheduleCount + ' Pending Calls'}}</span>
+          </div>
+          <div class="list-item" (click)="activeTab = 6; navigateTo(6)">
+            <mat-icon fontSet="material-icons-outlined" mat-list-icon>privacy_tip</mat-icon>
+            <div class="list-data">
+              <span class="list-subtitle">{{stringRes.MEMBER_ISSUES}}</span>
+            </div>
+          </div>
+        </div>
+      </mat-card>
+    </div>
+  </div>
+</ng-container>
+
+-->

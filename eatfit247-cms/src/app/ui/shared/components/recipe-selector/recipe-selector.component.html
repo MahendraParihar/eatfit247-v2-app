@@ -1,0 +1,34 @@
+<mat-form-field>
+  <mat-label>{{label}}</mat-label>
+  <mat-chip-list #chipList aria-label="Recipe selection">
+    <mat-chip (removed)="remove(j)" *ngFor="let item of selectedItemList; let j = index" [removable]="removable"
+              [selectable]="selectable">
+      {{item.name}}
+      <mat-icon *ngIf="removable" matChipRemove>cancel</mat-icon>
+    </mat-chip>
+    <input #searchInput (matChipInputTokenEnd)="add($event)" [formControl]="searchCtrl" [matAutocomplete]="auto" [matChipInputAddOnBlur]="addOnBlur"
+           [matChipInputFor]="chipList" [matChipInputSeparatorKeyCodes]="separatorKeysCodes" [required]="isRequired"
+           aria-label="Recipes" matInput
+           placeholder="Search recipes">
+  </mat-chip-list>
+  <mat-autocomplete #auto="matAutocomplete" (optionSelected)="selected($event)">
+    <mat-option *ngIf="isLoading" class="is-loading">Loading...</mat-option>
+    <mat-option *ngIf="!isLoading && (!searchCtrl.value || searchCtrl.value.length === 0)" class="is-loading">
+      Enter Text To Search
+    </mat-option>
+    <mat-option
+      *ngIf="!isLoading &&  (searchCtrl.value && searchCtrl.value.length > 0) && (!filteredList || filteredList.length === 0)"
+      class="is-loading">
+      No result found
+    </mat-option>
+    <ng-container *ngIf="!isLoading && filteredList && filteredList.length > 0">
+      <mat-option *ngFor="let obj of filteredList" [value]="obj">
+        <div class="user-item">
+          <div class="text-container">
+            {{obj.name}}
+          </div>
+        </div>
+      </mat-option>
+    </ng-container>
+  </mat-autocomplete>
+</mat-form-field>

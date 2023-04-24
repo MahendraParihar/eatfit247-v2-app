@@ -1,0 +1,60 @@
+<div [formGroup]="formGroupCtr" fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start center">
+  <div class="form-item"
+       fxFlex="calc(10%)"
+       fxFlex.lt-lg="calc(10%)"
+       fxFlex.lt-md="calc(10%)"
+       fxFlex.lt-sm="10%">
+    <mat-label>{{label}}</mat-label>
+  </div>
+  <div class="form-item"
+       fxFlex="calc(90%)"
+       fxFlex.lt-lg="calc(90%)"
+       fxFlex.lt-md="calc(90%)"
+       fxFlex.lt-sm="90%">
+    <mat-form-field>
+      <mat-label>{{label}}</mat-label>
+      <mat-chip-list #chipList aria-label="User selection">
+        <mat-chip
+          (removed)="remove(j)"
+          *ngFor="let user of selectedUserList; let j = index"
+          [removable]="removable"
+          [selectable]="selectable">
+          <img *ngIf="user.imagePath && user.imagePath.length>0" alt="" matChipAvatar
+               src="{{user.imagePath[0].webUrl}}"/>
+          {{user.name}} ({{user.subText}})
+          <mat-icon *ngIf="removable" matChipRemove>cancel</mat-icon>
+        </mat-chip>
+        <input #searchInput (matChipInputTokenEnd)="add($event)"
+               [formControl]="searchCtrl"
+               [matAutocomplete]="auto"
+               [matChipInputAddOnBlur]="addOnBlur"
+               [matChipInputFor]="chipList"
+               [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+               aria-label="Users"
+               matInput
+               placeholder="Search user">
+      </mat-chip-list>
+      <mat-autocomplete #auto="matAutocomplete" (optionSelected)="selected($event)">
+        <mat-option *ngIf="isLoading" class="is-loading">Loading...</mat-option>
+        <mat-option *ngIf="!isLoading && (!userList || userList.length === 0)" class="is-loading">No result found
+        </mat-option>
+        <ng-container *ngIf="!isLoading && userList && userList.length > 0">
+          <mat-option *ngFor="let obj of userList" [value]="obj">
+            <div class="user-item">
+              <img alt="" class="avatar" src="{{obj.imagePath}}">
+              <div class="text-container">
+                {{obj.name}} ({{obj.subText}})
+              </div>
+            </div>
+          </mat-option>
+        </ng-container>
+      </mat-autocomplete>
+      <input formControlName="{{controlName}}" hidden
+             matInput>
+      <mat-error>
+        <app-input-error [controlName]="label"
+                         [control]="formGroupControl['coordinator']"></app-input-error>
+      </mat-error>
+    </mat-form-field>
+  </div>
+</div>

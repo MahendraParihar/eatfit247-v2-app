@@ -1,0 +1,82 @@
+<form [formGroup]="formGroup" class="form-group">
+  <mat-card class="form-card">
+    <mat-card-header>
+      <mat-card-title>{{id > 0 ? stringRes.EDIT_FAQ : stringRes.ADD_FAQ}}</mat-card-title>
+    </mat-card-header>
+    <mat-card-content class="form-body">
+      <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start">
+        <div class="form-item"
+             fxFlex="calc(100%)"
+             fxFlex.lt-lg="calc(100%)"
+             fxFlex.lt-md="calc(100%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.QUESTION}}</mat-label>
+            <input #title formControlName="faq" matInput maxlength="{{inputLength.CHAR_500}}"
+                   placeholder="Enter {{stringRes.QUESTION}}"
+                   required type="text">
+            <mat-hint align="end">{{title.value.length}} / {{inputLength.CHAR_500}}</mat-hint>
+            <mat-error>
+              <app-input-error [controlName]="stringRes.QUESTION"
+                               [control]="formControl['faq']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+      <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start">
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(50%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.FAQ_CATEGORY}}</mat-label>
+            <mat-select formControlName="faqCategoryId">
+              <mat-option>----------- Select -----------</mat-option>
+              <mat-option *ngFor="let s of faqCategoryList" [value]="s.id">{{s.name}}</mat-option>
+            </mat-select>
+            <mat-error>
+              <app-input-error [controlName]="stringRes.FAQ_CATEGORY"
+                               [control]="formControl['faqCategoryId']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+      <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start">
+        <div class="form-item"
+             fxFlex="calc(100%)"
+             fxFlex.lt-lg="calc(100%)"
+             fxFlex.lt-md="calc(100%)"
+             fxFlex.lt-sm="100%">
+          <angular-editor [config]="editorConfig" formControlName="answer" matInput></angular-editor>
+          <mat-error>
+            <app-input-error [controlName]="stringRes.ANSWER"
+                             [control]="formControl['answer']"></app-input-error>
+          </mat-error>
+        </div>
+      </div>
+      <div *ngIf="id > 0" fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start">
+        <div class="form-item"
+             fxFlex="calc(100%)"
+             fxFlex.lt-lg="calc(100%)"
+             fxFlex.lt-md="calc(100%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.STATUS}}</mat-label>
+            <mat-select (selectionChange)="onStatusChange($event)" formControlName="active">
+              <mat-option *ngFor="let o of statusList" [value]="o.value">{{o.name}}</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </div>
+    </mat-card-content>
+    <mat-card-actions align="end">
+      <button (click)="onCancel()" class="round-btn" mat-raised-button>
+        {{stringRes.CANCEL}}
+      </button>
+      <button (click)="onSubmit()" class="round-btn gradient-btn" color="primary" mat-raised-button>
+        {{id > 0 ? stringRes.UPDATE : stringRes.SAVE}}
+      </button>
+    </mat-card-actions>
+  </mat-card>
+</form>

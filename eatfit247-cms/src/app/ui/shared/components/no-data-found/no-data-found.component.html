@@ -1,0 +1,7 @@
+<div class="error-layout">
+  <img alt="" src="{{image ? image : 'assets/errors/error-2.png'}}">
+  <h2 *ngIf="title">{{title}}</h2>
+  <p *ngIf="message">{{message}}</p>
+  <button (click)="backToPage()" class="gradient-btn" mat-button
+          type="button">{{stringResources.BACK_TO_PREVIOUS_PAGE}}</button>
+</div>

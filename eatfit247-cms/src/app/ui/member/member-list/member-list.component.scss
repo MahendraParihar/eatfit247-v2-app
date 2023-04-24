@@ -1,0 +1,26 @@
+@import "../../../theme/padding";
+
+.member {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: $padding-medium;
+  width: 100%;
+
+  .member-info {
+    display: flex;
+    flex-direction: column;
+    align-content: flex-start;
+    gap: $padding-small;
+  }
+
+  .connection-info {
+    display: flex;
+    flex-direction: column;
+    align-content: flex-start;
+    gap: $padding-small;
+  }
+
+  .diet-info {
+
+  }
+}

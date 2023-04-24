@@ -1,0 +1,211 @@
+<form [formGroup]="formGroup" class="form-group">
+  <mat-card class="form-card">
+    <mat-card-header>
+      <mat-card-title>{{id > 0 ? stringRes.EDIT_PROGRAM_PLAN : stringRes.ADD_PROGRAM_PLAN}}</mat-card-title>
+    </mat-card-header>
+    <mat-card-content class="form-body">
+      <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start">
+        <div class="form-item"
+             fxFlex="calc(100%)"
+             fxFlex.lt-lg="calc(100%)"
+             fxFlex.lt-md="calc(100%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.TITLE}}</mat-label>
+            <input #title formControlName="title" matInput maxlength="{{inputLength.CHAR_100}}"
+                   placeholder="Enter {{stringRes.TITLE}}"
+                   required type="text">
+            <mat-hint align="end">{{title.value.length}} / {{inputLength.CHAR_100}}</mat-hint>
+            <mat-error>
+              <app-input-error [controlName]="stringRes.TITLE"
+                               [control]="formControl['title']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+      <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start">
+        <div class="form-item"
+             fxFlex="calc(100%)"
+             fxFlex.lt-lg="calc(100%)"
+             fxFlex.lt-md="calc(100%)"
+             fxFlex.lt-sm="100%">
+          <angular-editor [config]="editorConfig" formControlName="details" matInput></angular-editor>
+          <mat-error>
+            <app-input-error [controlName]="stringRes.DESCRIPTION"
+                             [control]="formControl['details']"></app-input-error>
+          </mat-error>
+        </div>
+      </div>
+      <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start">
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(50%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.INR_AMOUNT}}</mat-label>
+            <input formControlName="inrAmount" matInput placeholder="Enter {{stringRes.INR_AMOUNT}}"
+                   required
+                   type="number">
+            <mat-error>
+              <app-input-error [controlName]="stringRes.INR_AMOUNT"
+                               [control]="formControl['inrAmount']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(50%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.SEQUENCE}}</mat-label>
+            <input formControlName="sequenceNumber" matInput placeholder="Enter {{stringRes.SEQUENCE}}"
+                   required
+                   type="number">
+            <mat-error>
+              <app-input-error [controlName]="stringRes.SEQUENCE"
+                               [control]="formControl['sequenceNumber']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+      <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start">
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(50%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.NO_OF_CYCLE}}</mat-label>
+            <input formControlName="noOfCycle" matInput placeholder="Enter {{stringRes.NO_OF_CYCLE}}"
+                   required
+                   type="number">
+            <mat-error>
+              <app-input-error [controlName]="stringRes.NO_OF_CYCLE"
+                               [control]="formControl['noOfCycle']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(50%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.NO_OF_DAYS_IN_CYCLE}}</mat-label>
+            <input formControlName="noOfDaysInCycle" matInput placeholder="Enter {{stringRes.NO_OF_DAYS_IN_CYCLE}}"
+                   required
+                   type="number">
+            <mat-error>
+              <app-input-error [controlName]="stringRes.NO_OF_DAYS_IN_CYCLE"
+                               [control]="formControl['noOfDaysInCycle']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+      <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start">
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(50%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.TYPE_OF_PLAN}}</mat-label>
+            <mat-select formControlName="programPlanTypeId" required>
+              <mat-option *ngFor="let o of programPlanTypeList" [value]="o.id">{{o.name}}</mat-option>
+            </mat-select>
+            <mat-error>
+              <app-input-error [controlName]="stringRes.TYPE_OF_PLAN"
+                               [control]="formControl['programPlanTypeId']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(50%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.VISIBLE_ON_WEB}}</mat-label>
+            <mat-select formControlName="isVisibleOnWeb" required>
+              <mat-option [value]="true">{{stringRes.YES}}</mat-option>
+              <mat-option [value]="false">{{stringRes.NO}}</mat-option>
+            </mat-select>
+            <mat-error>
+              <app-input-error [controlName]="stringRes.VISIBLE_ON_WEB"
+                               [control]="formControl['isVisibleOnWeb']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(50%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.IS_ONLINE_PLAN}}</mat-label>
+            <mat-select formControlName="isOnline" required>
+              <mat-option [value]="true">{{stringRes.YES}}</mat-option>
+              <mat-option [value]="false">{{stringRes.NO}}</mat-option>
+            </mat-select>
+            <mat-error>
+              <app-input-error [controlName]="stringRes.IS_ONLINE_PLAN"
+                               [control]="formControl['isOnline']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+      <div *ngIf="id > 0" fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start">
+        <div class="form-item"
+             fxFlex="calc(100%)"
+             fxFlex.lt-lg="calc(100%)"
+             fxFlex.lt-md="calc(100%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.STATUS}}</mat-label>
+            <mat-select formControlName="active">
+              <mat-option *ngFor="let o of statusList" [value]="o.value">{{o.name}}</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </div>
+      <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start">
+        <div class="form-item"
+             fxFlex="calc(100%)"
+             fxFlex.lt-lg="calc(100%)"
+             fxFlex.lt-md="calc(100%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.TAGS}}</mat-label>
+            <mat-chip-list #chipList>
+              <mat-chip (removed)="remove(tag)" *ngFor="let tag of tagsList">
+                {{tag}}
+                <button matChipRemove>
+                  <mat-icon>cancel</mat-icon>
+                </button>
+              </mat-chip>
+              <input (matChipInputTokenEnd)="add($event)"
+                     [matChipInputAddOnBlur]="addOnBlur"
+                     [matChipInputFor]="chipList"
+                     [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+                     placeholder="New tag...">
+            </mat-chip-list>
+            <mat-error>
+              <app-input-error [controlName]="stringRes.TAGS"
+                               [control]="formControl['tags']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+    </mat-card-content>
+    <mat-card-actions align="end">
+      <button (click)="onCancel()" class="round-btn" mat-raised-button>
+        {{stringRes.CANCEL}}
+      </button>
+      <button (click)="onSubmit()" class="round-btn gradient-btn" color="primary" mat-raised-button>
+        {{id > 0 ? stringRes.UPDATE : stringRes.SAVE}}
+      </button>
+    </mat-card-actions>
+  </mat-card>
+</form>

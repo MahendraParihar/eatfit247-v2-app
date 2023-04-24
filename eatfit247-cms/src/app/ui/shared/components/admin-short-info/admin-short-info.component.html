@@ -1,0 +1,21 @@
+<!--
+<span [matMenuTriggerFor]="adminBasicInfoMenu" *ngIf="adminShortInfo"
+      #menuTrigger="matMenuTrigger"
+      (mouseover)="menuTrigger.openMenu()">{{adminShortInfo.firstName}} {{adminShortInfo.lastName}}</span>
+<mat-menu #adminBasicInfoMenu="matMenu" matMenuContent>
+
+    <div class="admin-info">
+
+
+      <div class="img-container">
+        <img *ngIf="adminShortInfo.imagePath && adminShortInfo.imagePath.length > 0"
+             class="avatar"
+             src="{{adminShortInfo.imagePath[0].webUrl}}"/></div>
+      <div class="data-container">
+        <span>{{adminShortInfo.firstName}} {{adminShortInfo.lastName}}</span>
+        <span>{{adminShortInfo.cityVillage}}</span>
+      </div>
+    </div>
+</mat-menu>
+-->
+<span *ngIf="adminShortInfo">{{adminShortInfo.firstName}} {{adminShortInfo.lastName}}</span>

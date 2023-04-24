@@ -1,0 +1,29 @@
+<div *ngIf="dialogData" class="alert">
+  <mat-icon *ngIf="data.alertType === alertTypeEnum.HELP" class="help" fontSet="material-icons-outlined">help</mat-icon>
+  <mat-icon *ngIf="data.alertType === alertTypeEnum.WARNING" class="warning" fontSet="material-icons-outlined">error
+  </mat-icon>
+  <mat-icon *ngIf="data.alertType === alertTypeEnum.ERROR" class="error" fontSet="material-icons-outlined">error
+  </mat-icon>
+  <mat-icon *ngIf="data.alertType === alertTypeEnum.SUCCESS" class="success" fontSet="material-icons-outlined">
+    check_circle
+  </mat-icon>
+  <mat-icon *ngIf="data.alertType === alertTypeEnum.INFO" class="info" fontSet="material-icons-outlined">info</mat-icon>
+  <!--<img src="assets/icons/icons8-ok.gif" alt="">-->
+  <h4>{{dialogData.title}}</h4>
+  <div mat-dialog-content>
+    <p>{{dialogData.message}}</p>
+  </div>
+  <div align="end" mat-dialog-actions>
+    <button (click)="onNegativeClick()" class="light-btn" mat-flat-button>{{dialogData.negativeBtnTxt}}</button>
+    <button (click)="onPositiveClick()" *ngIf="data.alertType === alertTypeEnum.WARNING" cdkFocusInitial class="warning-btn"
+            mat-flat-button>{{dialogData.positiveBtnTxt}}</button>
+    <button (click)="onPositiveClick()" *ngIf="data.alertType === alertTypeEnum.SUCCESS" cdkFocusInitial class="success-btn"
+            mat-flat-button>{{dialogData.positiveBtnTxt}}</button>
+    <button (click)="onPositiveClick()" *ngIf="data.alertType === alertTypeEnum.INFO" cdkFocusInitial class="success-btn"
+            mat-flat-button>{{dialogData.positiveBtnTxt}}</button>
+    <button (click)="onPositiveClick()" *ngIf="data.alertType === alertTypeEnum.HELP" cdkFocusInitial class="success-btn"
+            mat-flat-button>{{dialogData.positiveBtnTxt}}</button>
+    <button (click)="onPositiveClick()" *ngIf="data.alertType === alertTypeEnum.ERROR" cdkFocusInitial class="warning-btn"
+            mat-flat-button>{{dialogData.positiveBtnTxt}}</button>
+  </div>
+</div>

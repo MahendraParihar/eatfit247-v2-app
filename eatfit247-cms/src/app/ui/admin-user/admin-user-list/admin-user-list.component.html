@@ -1,0 +1,82 @@
+<app-search-form (searchResultEvent)="searchResult($event)"
+                 [searchModel]="payload"></app-search-form>
+
+<div class="data-table">
+
+  <div class="action-panel">
+    <button (click)="onAddClick()" class="btn gradient-btn" color="primary" mat-raised-button>
+      <mat-icon>add</mat-icon>
+      {{stringRes.ADMIN_CREATE}}
+    </button>
+  </div>
+
+  <mat-table [dataSource]="dataSource" class="m-t-medium">
+
+    <ng-container matColumnDef="seqNo">
+      <mat-header-cell *matHeaderCellDef>#</mat-header-cell>
+      <mat-cell *matCellDef="let d; let i = index;">{{i + 1}}</mat-cell>
+    </ng-container>
+    <ng-container matColumnDef="image">
+      <mat-header-cell *matHeaderCellDef>Image</mat-header-cell>
+      <mat-cell *matCellDef="let d;">
+        <img *ngIf="d.imagePath && d.imagePath.length > 0" alt="" class="avatar"
+             src="{{d.imagePath[0].webUrl}}"/>
+      </mat-cell>
+    </ng-container>
+    <ng-container matColumnDef="name">
+      <mat-header-cell *matHeaderCellDef>Name</mat-header-cell>
+      <mat-cell *matCellDef="let d;">
+        <a (click)="onEditClick(d.id)" class="link">{{d.firstName}} {{d.lastName}}</a>
+      </mat-cell>
+    </ng-container>
+    <ng-container matColumnDef="role">
+      <mat-header-cell *matHeaderCellDef>Role</mat-header-cell>
+      <mat-cell *matCellDef="let d;">
+        <div class="chip-list"><span *ngFor="let s of d.roleList" class="chip">{{s.role}}</span></div>
+      </mat-cell>
+    </ng-container>
+    <ng-container matColumnDef="emailId">
+      <mat-header-cell *matHeaderCellDef>Email Id</mat-header-cell>
+      <mat-cell *matCellDef="let d;">{{d.emailId}}</mat-cell>
+    </ng-container>
+    <ng-container matColumnDef="contactNumber">
+      <mat-header-cell *matHeaderCellDef>Contact Number</mat-header-cell>
+      <mat-cell *matCellDef="let d;">{{d.countryCode}}-{{d.contactNumber}}</mat-cell>
+    </ng-container>
+    <ng-container matColumnDef="startDate">
+      <mat-header-cell *matHeaderCellDef>Start Date</mat-header-cell>
+      <mat-cell *matCellDef="let d;">{{d.startDate | appDateTime: 'onlyDate'}}</mat-cell>
+    </ng-container>
+    <ng-container matColumnDef="endDate">
+      <mat-header-cell *matHeaderCellDef>End Date</mat-header-cell>
+      <mat-cell *matCellDef="let d;">{{d.endDate | appDateTime:'onlyDate' }}</mat-cell>
+    </ng-container>
+    <ng-container matColumnDef="status">
+      <mat-header-cell *matHeaderCellDef>Status</mat-header-cell>
+      <mat-cell *matCellDef="let d; let i = index">
+        <button (click)="onDeleteClick(d, i)" [flag]="d.adminUserStatusId" appUserStatusBtn mat-flat-button>
+          {{d.adminUserStatusId === adminUserStatusEnum.ACTIVE ? stringRes.ACTIVE : d.adminUserStatusId === adminUserStatusEnum.IN_ACTIVE ? stringRes.IN_ACTIVE : stringRes.PENDING_VERIFICATION}}
+        </button>
+      </mat-cell>
+    </ng-container>
+    <ng-container matColumnDef="action">
+      <mat-header-cell *matHeaderCellDef>Action</mat-header-cell>
+      <mat-cell *matCellDef="let d; let i = index">
+        <button (click)="onEditClick(d.id)" aria-label="Update" color="primary" mat-icon-button matTooltip="Edit">
+          <mat-icon>edit</mat-icon>
+        </button>
+        <button (click)="onResetPasswordClick(d)" aria-label="Reset Password" color="primary" mat-icon-button
+                matTooltip="Reset Password">
+          <mat-icon>lock_reset</mat-icon>
+        </button>
+      </mat-cell>
+    </ng-container>
+
+    <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+
+    <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
+  </mat-table>
+
+  <mat-paginator [length]="totalCount" [pageSizeOptions]="pageSizeList"
+                 [pageSize]="defaultPageSize"></mat-paginator>
+</div>

@@ -1,0 +1,32 @@
+@import "../../../theme/variable";
+@import "../../../theme/padding";
+@import "../../../theme/margin";
+@import "../../../theme/gradient";
+
+.twistie-separator {
+  flex: 1 1 0;
+}
+
+::ng-deep {
+  .mat-list-single-selected-option, .mat-list-single-selected-option:hover, .mat-list-single-selected-option:focus {
+    @extend .gradient-45deg-indigo-purple;
+    color: white !important;
+    border-radius: 0 5px 5px 0;
+  }
+
+  .custom-list {
+    .mat-list-base .mat-list-item .mat-list-text, .mat-list-base .mat-list-option .mat-list-text {
+      display: flex !important;
+      flex-direction: row !important;
+      justify-content: space-between !important;
+      align-items: center !important;
+      padding: 0 0 0 16px !important;
+    }
+  }
+}
+
+.member-detail-section {
+  overflow: auto;
+  height: calc(100vh - 100px);
+  box-sizing: border-box;
+}

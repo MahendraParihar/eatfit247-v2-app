@@ -1,0 +1,31 @@
+<div class="data-table m-t-0">
+  <mat-table *ngIf="memberHealthIssues && memberHealthIssues.length>0" [dataSource]="memberHealthIssues">
+
+    <ng-container matColumnDef="seqNo">
+      <mat-header-cell *matHeaderCellDef>#</mat-header-cell>
+      <mat-cell *matCellDef="let d; let i = index;">{{i + 1}}</mat-cell>
+    </ng-container>
+    <ng-container matColumnDef="title">
+      <mat-header-cell *matHeaderCellDef>Health Issue</mat-header-cell>
+      <mat-cell *matCellDef="let d;">{{d.name}}</mat-cell>
+    </ng-container>
+    <ng-container matColumnDef="selected">
+      <mat-header-cell *matHeaderCellDef>Select</mat-header-cell>
+      <mat-cell *matCellDef="let d;">
+        <mat-checkbox [(ngModel)]="d.isSelected"></mat-checkbox>
+      </mat-cell>
+    </ng-container>
+
+    <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+
+    <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
+  </mat-table>
+  <div class="footer-action">
+    <button (click)="onCancel()" class="round-btn" mat-raised-button>
+      {{stringRes.CANCEL}}
+    </button>
+    <button (click)="onSubmit()" class="round-btn gradient-btn" color="primary" mat-raised-button>
+      {{id > 0 ? stringRes.UPDATE : stringRes.SAVE}}
+    </button>
+  </div>
+</div>

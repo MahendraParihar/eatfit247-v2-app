@@ -1,0 +1,59 @@
+<form [formGroup]="formGroup" class="form-group">
+  <mat-card class="form-card">
+    <mat-card-header>
+      <mat-card-title>{{id > 0 ? stringRes.EDIT_MARITAL_STATUS : stringRes.ADD_MARITAL_STATUS}}</mat-card-title>
+    </mat-card-header>
+    <mat-card-content class="form-body">
+      <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start">
+        <div class="form-item"
+             fxFlex="calc(100%)"
+             fxFlex.lt-lg="calc(100%)"
+             fxFlex.lt-md="calc(100%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.MARITAL_STATUS}}</mat-label>
+            <input #templeName formControlName="name" matInput maxlength="{{inputLength.CHAR_50}}"
+                   placeholder="Enter {{stringRes.MARITAL_STATUS}}"
+                   required type="text">
+            <mat-hint align="end">{{templeName.value.length}} / {{inputLength.CHAR_50}}</mat-hint>
+            <mat-error>
+              <app-input-error [controlName]="stringRes.MARITAL_STATUS"
+                               [control]="formControl['name']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+      <div *ngIf="id > 0" fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start">
+        <div class="form-item"
+             fxFlex="calc(100%)"
+             fxFlex.lt-lg="calc(100%)"
+             fxFlex.lt-md="calc(100%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.STATUS}}</mat-label>
+            <mat-select formControlName="active">
+              <mat-option *ngFor="let o of statusList" [value]="o.value">{{o.name}}</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </div>
+      <app-file-selector [controlName]="'uploadFiles'" [formGroup]="formGroup"
+                         [isMultiFile]="false"
+                         [isRequired]="false"
+                         [mediaFor]="mediaForEnum.MARITAL_STATUS"
+                         [mediaType]="fileTypeEnum.IMAGE"
+                         [uploadedMediaList]="lovModelObj ? lovModelObj.imagePath : []"></app-file-selector>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card class="form-card">
+    <mat-card-actions align="end">
+      <button (click)="onCancel()" class="round-btn" mat-raised-button>
+        {{stringRes.CANCEL}}
+      </button>
+      <button (click)="onSubmit()" class="round-btn gradient-btn" color="primary" mat-raised-button>
+        {{id > 0 ? stringRes.UPDATE : stringRes.SAVE}}
+      </button>
+    </mat-card-actions>
+  </mat-card>
+</form>

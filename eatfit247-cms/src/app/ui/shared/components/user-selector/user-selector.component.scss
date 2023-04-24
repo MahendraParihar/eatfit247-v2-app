@@ -1,0 +1,21 @@
+.user-item {
+  display: flex;
+  flex-direction: row;
+  align-content: center;
+  align-items: center;
+  justify-content: flex-start;
+  column-gap: 16px;
+
+  img {
+    width: 36px;
+    height: 36px;
+  }
+
+  .text-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+  }
+
+}

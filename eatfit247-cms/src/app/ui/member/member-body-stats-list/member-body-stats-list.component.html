@@ -1,0 +1,63 @@
+<div class="data-table  m-t-0">
+
+  <div class="action-panel">
+    <button (click)="onAddClick()" class="btn gradient-btn" color="primary" mat-raised-button>
+      <mat-icon>add</mat-icon>
+      {{stringRes.ADD_MEMBER_BODY_STATS}}
+    </button>
+  </div>
+
+  <mat-table [dataSource]="dataSource">
+
+    <ng-container matColumnDef="seqNo">
+      <mat-header-cell *matHeaderCellDef>#</mat-header-cell>
+      <mat-cell *matCellDef="let d; let i = index;">{{i + 1}}</mat-cell>
+    </ng-container>
+    <ng-container matColumnDef="logDate">
+      <mat-header-cell *matHeaderCellDef>Date</mat-header-cell>
+      <mat-cell *matCellDef="let d;">{{d.logDate | appDateTime: 'onlyDate'}}</mat-cell>
+    </ng-container>
+    <ng-container matColumnDef="status">
+      <mat-header-cell *matHeaderCellDef>Status</mat-header-cell>
+      <mat-cell *matCellDef="let d; let i = index">
+        <button (click)="onDeleteClick(d, i)" [flag]="d.active"
+                appStatusBtn
+                mat-flat-button matTooltip="{{d.active ? 'Mark '+stringRes.IN_ACTIVE: 'Mark '+stringRes.ACTIVE}}">
+          {{d.active ? stringRes.ACTIVE : stringRes.IN_ACTIVE}}
+        </button>
+      </mat-cell>
+    </ng-container>
+    <ng-container matColumnDef="createdBy">
+      <mat-header-cell *matHeaderCellDef>Created By</mat-header-cell>
+      <mat-cell *matCellDef="let d;">{{d.createdBy | appCreatedBy}}</mat-cell>
+    </ng-container>
+    <ng-container matColumnDef="createdAt">
+      <mat-header-cell *matHeaderCellDef>Created At</mat-header-cell>
+      <mat-cell *matCellDef="let d;">{{d.createdAt | appDateTime:'dateTime'}}</mat-cell>
+    </ng-container>
+    <ng-container matColumnDef="updatedBy">
+      <mat-header-cell *matHeaderCellDef>Updated By</mat-header-cell>
+      <mat-cell *matCellDef="let d;">{{d.updatedBy | appCreatedBy}}</mat-cell>
+    </ng-container>
+    <ng-container matColumnDef="updatedAt">
+      <mat-header-cell *matHeaderCellDef>Updated At</mat-header-cell>
+      <mat-cell *matCellDef="let d;">{{d.updatedAt | appDateTime}}</mat-cell>
+    </ng-container>
+    <ng-container matColumnDef="action">
+      <mat-header-cell *matHeaderCellDef>Action</mat-header-cell>
+      <mat-cell *matCellDef="let d; let i = index">
+        <button (click)="onEditClick(d.id)" aria-label="Update" color="primary" mat-icon-button
+                matTooltip="{{stringRes.EDIT}}">
+          <mat-icon>edit</mat-icon>
+        </button>
+      </mat-cell>
+    </ng-container>
+
+    <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+
+    <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
+  </mat-table>
+
+  <mat-paginator [length]="totalCount" [pageSizeOptions]="pageSizeList"
+                 [pageSize]="defaultPageSize"></mat-paginator>
+</div>

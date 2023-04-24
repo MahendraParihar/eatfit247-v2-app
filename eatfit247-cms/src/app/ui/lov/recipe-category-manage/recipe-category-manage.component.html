@@ -1,0 +1,117 @@
+<form [formGroup]="formGroup" class="form-group">
+  <mat-card class="form-card">
+    <mat-card-header>
+      <mat-card-title>{{id > 0 ? stringRes.EDIT_RECIPE_CATEGORY : stringRes.ADD_RECIPE_CATEGORY}}</mat-card-title>
+    </mat-card-header>
+    <mat-card-content class="form-body">
+      <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start">
+        <div class="form-item"
+             fxFlex="calc(100%)"
+             fxFlex.lt-lg="calc(100%)"
+             fxFlex.lt-md="calc(100%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.RECIPE_CATEGORY}}</mat-label>
+            <input #templeName formControlName="name" matInput maxlength="{{inputLength.CHAR_50}}"
+                   placeholder="Enter {{stringRes.RECIPE_CATEGORY}}"
+                   required type="text">
+            <mat-hint align="end">{{templeName.value.length}} / {{inputLength.CHAR_50}}</mat-hint>
+            <mat-error>
+              <app-input-error [controlName]="stringRes.RECIPE_CATEGORY"
+                               [control]="formControl['name']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+      <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start">
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(50%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.FROM_TIME}}</mat-label>
+            <input [ngxMatTimepicker]="toTimePicker" formControlName="fromTime" matInput placeholder="Select {{stringRes.FROM_TIME}}"
+                   readonly
+                   required
+                   type="text">
+            <mat-icon (click)="toTimePicker.open()" matSuffix>watch_later</mat-icon>
+            <mat-error>
+              <app-input-error [controlName]="stringRes.FROM_TIME"
+                               [control]="formControl['fromTime']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+          <ngx-mat-timepicker #toTimePicker></ngx-mat-timepicker>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(50%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.TO_TIME}}</mat-label>
+            <input [ngxMatTimepicker]="fromTimePicker" formControlName="toTime" matInput placeholder="Select {{stringRes.TO_TIME}}"
+                   readonly
+                   required
+                   type="text">
+            <mat-icon (click)="fromTimePicker.open()" matSuffix>watch_later</mat-icon>
+            <mat-error>
+              <app-input-error [controlName]="stringRes.TO_TIME"
+                               [control]="formControl['toTime']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+          <ngx-mat-timepicker #fromTimePicker></ngx-mat-timepicker>
+        </div>
+      </div>
+      <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start">
+        <div class="form-item"
+             fxFlex="calc(100%)"
+             fxFlex.lt-lg="calc(100%)"
+             fxFlex.lt-md="calc(100%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.SEQUENCE}}</mat-label>
+            <input formControlName="sequence" matInput placeholder="Enter {{stringRes.SEQUENCE}}"
+                   required
+                   type="number">
+            <mat-error>
+              <app-input-error [controlName]="stringRes.SEQUENCE"
+                               [control]="formControl['sequence']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+      <div *ngIf="id > 0" fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start">
+        <div class="form-item"
+             fxFlex="calc(100%)"
+             fxFlex.lt-lg="calc(100%)"
+             fxFlex.lt-md="calc(100%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.STATUS}}</mat-label>
+            <mat-select formControlName="active">
+              <mat-option *ngFor="let o of statusList" [value]="o.value">{{o.name}}</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </div>
+      <app-file-selector [controlName]="'uploadFiles'" [formGroup]="formGroup"
+                         [isMultiFile]="false"
+                         [isRequired]="false"
+                         [mediaFor]="mediaForEnum.RECIPE_CATEGORY"
+                         [mediaType]="fileTypeEnum.IMAGE"
+                         [uploadedMediaList]="lovModelObj ? lovModelObj.imagePath : []"></app-file-selector>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card class="form-card">
+    <mat-card-actions align="end">
+      <button (click)="onCancel()" class="round-btn" mat-raised-button>
+        {{stringRes.CANCEL}}
+      </button>
+      <button (click)="onSubmit()" class="round-btn gradient-btn" color="primary" mat-raised-button>
+        {{id > 0 ? stringRes.UPDATE : stringRes.SAVE}}
+      </button>
+    </mat-card-actions>
+  </mat-card>
+</form>

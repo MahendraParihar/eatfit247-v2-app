@@ -1,0 +1,26 @@
+<ng-container [formGroup]="formGroup">
+  <ng-container *ngIf="formArrayName && dietPlanList && dietPlanList.length > 0 && formArray"
+                formArrayName="{{formArrayName}}">
+    <ng-container *ngFor="let agd of formArray.controls; let i=index" [formGroupName]="i">
+      <div *ngIf="dietPlanList[i]" fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start">
+        <div class="form-item" fxFlex="calc(10%)" fxFlex.lt-lg="calc(10%)" fxFlex.lt-md="calc(10%)" fxFlex.lt-sm="100%">
+          <h6>{{dietPlanList[i].recipeCategory}}</h6>
+        </div>
+        <div class="form-item" fxFlex="calc(64%)" fxFlex.lt-lg="calc(64%)" fxFlex.lt-md="calc(64%)" fxFlex.lt-sm="100%">
+          <angular-editor [config]="editorConfig" formControlName="dietDetail" matInput></angular-editor>
+          <mat-error>
+            <app-input-error [controlName]="stringRes.DIET_PLAN"
+                             [control]="formGroup.controls['dietDetail']"></app-input-error>
+          </mat-error>
+        </div>
+        <div class="form-item" fxFlex="calc(25%)" fxFlex.lt-lg="calc(25%)" fxFlex.lt-md="calc(25%)" fxFlex.lt-sm="100%">
+          <input formControlName="recipeIds" type="hidden">
+          <app-recipe-selector (userChangeEvent)="onRecipeChange($event, i)" [isMultiSelection]="true"
+                               [isRequired]="true" [label]="stringRes.RECIPES"
+                               [masterList]="this.recipeList"
+                               [selectedIds]="this.dietPlanList[i].recipeIds"></app-recipe-selector>
+        </div>
+      </div>
+    </ng-container>
+  </ng-container>
+</ng-container>

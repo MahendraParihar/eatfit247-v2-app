@@ -1,0 +1,1383 @@
+<form [formGroup]="formGroup" class="form-group">
+  <mat-card class="form-card">
+    <mat-card-content class="form-body">
+      <h5 class="sub-section-heading">{{stringRes.PERSONAL_DETAILS}}</h5>
+      <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start">
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(50%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.DATE_OF_BIRTH}}</mat-label>
+            <input (click)="startDatePicker.open()" [matDatepicker]="startDatePicker" formControlName="dateOfBirth" matInput
+                   placeholder="Enter date of birth"
+                   readonly
+                   required
+                   type="text">
+            <mat-datepicker-toggle [for]="startDatePicker" matSuffix></mat-datepicker-toggle>
+            <mat-datepicker #startDatePicker></mat-datepicker>
+            <mat-error>
+              <app-input-error [controlName]="stringRes.DATE_OF_BIRTH"
+                               [control]="formControl['dateOfBirth']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(50%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.GENDER}}</mat-label>
+            <mat-select formControlName="genderId" required>
+              <mat-option>--- Select ---</mat-option>
+              <mat-option *ngFor="let o of genderList" [value]="o.id">{{o.name}}</mat-option>
+            </mat-select>
+            <mat-error>
+              <app-input-error [controlName]="stringRes.GENDER"
+                               [control]="formControl['genderId']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(50%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.MARITAL_STATUS}}</mat-label>
+            <mat-select formControlName="maritalStatusId" required>
+              <mat-option>--- Select ---</mat-option>
+              <mat-option *ngFor="let o of maritalStatusList" [value]="o.id">{{o.name}}</mat-option>
+            </mat-select>
+            <mat-error>
+              <app-input-error [controlName]="stringRes.MARITAL_STATUS"
+                               [control]="formControl['maritalStatusId']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(50%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.RELIGION}}</mat-label>
+            <mat-select formControlName="religionId" required>
+              <mat-option>--- Select ---</mat-option>
+              <mat-option *ngFor="let o of religionList" [value]="o.id">{{o.name}}</mat-option>
+            </mat-select>
+            <mat-error>
+              <app-input-error [controlName]="stringRes.RELIGION"
+                               [control]="formControl['religionId']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <h5 class="sub-section-heading">{{stringRes.WORK_DETAILS}}</h5>
+      <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start">
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(50%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.LIFESTYLE}}</mat-label>
+            <mat-select formControlName="lifestyleId" required>
+              <mat-option>--- Select ---</mat-option>
+              <mat-option *ngFor="let o of lifestyleList" [value]="o.id">{{o.name}}</mat-option>
+            </mat-select>
+            <mat-error>
+              <app-input-error [controlName]="stringRes.LIFESTYLE"
+                               [control]="formControl['lifestyleId']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(50%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.EATING_HABIT}}</mat-label>
+            <mat-select formControlName="eatingHabitId" required>
+              <mat-option>--- Select ---</mat-option>
+              <mat-option *ngFor="let o of eatingHabitList" [value]="o.id">{{o.name}}</mat-option>
+            </mat-select>
+            <mat-error>
+              <app-input-error [controlName]="stringRes.EATING_HABIT"
+                               [control]="formControl['eatingHabitId']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+      <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start">
+        <div class="form-item"
+             fxFlex="calc(20%)"
+             fxFlex.lt-lg="calc(20%)"
+             fxFlex.lt-md="calc(20%)"
+             fxFlex.lt-sm="20%">
+          <h6>{{stringRes.TOBACCO}}</h6>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(40%)"
+             fxFlex.lt-lg="calc(40%)"
+             fxFlex.lt-md="calc(40%)"
+             fxFlex.lt-sm="40%">
+          <mat-form-field>
+            <mat-label>{{stringRes.AMOUNT}}</mat-label>
+            <input formControlName="tobaccoAmount" matInput placeholder="Enter tobacco amount" type="text">
+            <mat-error>
+              <app-input-error [controlName]="stringRes.AMOUNT"
+                               [control]="formControl['tobaccoAmount']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(40%)"
+             fxFlex.lt-lg="calc(40%)"
+             fxFlex.lt-md="calc(40%)"
+             fxFlex.lt-sm="40%">
+          <mat-form-field>
+            <mat-label>{{stringRes.FREQUENCY}}</mat-label>
+            <input formControlName="tobaccoFrequency" matInput placeholder="Enter tobacco frequency" type="text">
+            <mat-error>
+              <app-input-error [controlName]="stringRes.FREQUENCY"
+                               [control]="formControl['tobaccoFrequency']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+      <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start">
+        <div class="form-item"
+             fxFlex="calc(20%)"
+             fxFlex.lt-lg="calc(20%)"
+             fxFlex.lt-md="calc(20%)"
+             fxFlex.lt-sm="20%">
+          <h6>{{stringRes.SMOKING}}</h6>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(40%)"
+             fxFlex.lt-lg="calc(40%)"
+             fxFlex.lt-md="calc(40%)"
+             fxFlex.lt-sm="40%">
+          <mat-form-field>
+            <mat-label>{{stringRes.AMOUNT}}</mat-label>
+            <input formControlName="smokingAmount" matInput placeholder="Enter smoking amount" type="text">
+            <mat-error>
+              <app-input-error [controlName]="stringRes.AMOUNT"
+                               [control]="formControl['smokingAmount']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(40%)"
+             fxFlex.lt-lg="calc(40%)"
+             fxFlex.lt-md="calc(40%)"
+             fxFlex.lt-sm="40%">
+          <mat-form-field>
+            <mat-label>{{stringRes.FREQUENCY}}</mat-label>
+            <input formControlName="smokingFrequency" matInput placeholder="Enter smoking frequency" type="text">
+            <mat-error>
+              <app-input-error [controlName]="stringRes.FREQUENCY"
+                               [control]="formControl['smokingFrequency']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+      <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start">
+        <div class="form-item"
+             fxFlex="calc(20%)"
+             fxFlex.lt-lg="calc(20%)"
+             fxFlex.lt-md="calc(20%)"
+             fxFlex.lt-sm="20%">
+          <h6>{{stringRes.ALCOHOL}}</h6>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(40%)"
+             fxFlex.lt-lg="calc(40%)"
+             fxFlex.lt-md="calc(40%)"
+             fxFlex.lt-sm="40%">
+          <mat-form-field>
+            <mat-label>{{stringRes.ALCOHOL_NAME}}</mat-label>
+            <input formControlName="alcoholDrink" matInput placeholder="Enter alcohol name" type="text">
+            <mat-error>
+              <app-input-error [controlName]="stringRes.ALCOHOL_NAME"
+                               [control]="formControl['alcoholDrink']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(20%)"
+             fxFlex.lt-lg="calc(20%)"
+             fxFlex.lt-md="calc(20%)"
+             fxFlex.lt-sm="20%">
+          <mat-form-field>
+            <mat-label>{{stringRes.AMOUNT}}</mat-label>
+            <input formControlName="alcoholAmount" matInput placeholder="Enter alcohol amount" type="text">
+            <mat-error>
+              <app-input-error [controlName]="stringRes.AMOUNT"
+                               [control]="formControl['alcoholAmount']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(20%)"
+             fxFlex.lt-lg="calc(20%)"
+             fxFlex.lt-md="calc(20%)"
+             fxFlex.lt-sm="20%">
+          <mat-form-field>
+            <mat-label>{{stringRes.FREQUENCY}}</mat-label>
+            <input formControlName="alcoholFrequency" matInput placeholder="Enter alcohol frequency" type="text">
+            <mat-error>
+              <app-input-error [controlName]="stringRes.FREQUENCY"
+                               [control]="formControl['alcoholFrequency']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+      <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start">
+        <div class="form-item"
+             fxFlex="calc(20%)"
+             fxFlex.lt-lg="calc(20%)"
+             fxFlex.lt-md="calc(20%)"
+             fxFlex.lt-sm="20%">
+          <h6>{{stringRes.PAAN}}</h6>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(80%)"
+             fxFlex.lt-lg="calc(80%)"
+             fxFlex.lt-md="calc(80%)"
+             fxFlex.lt-sm="80%">
+          <mat-form-field>
+            <mat-label>{{stringRes.PAAN}}</mat-label>
+            <input formControlName="paan" matInput placeholder="Enter paan name" type="text">
+            <mat-error>
+              <app-input-error [controlName]="stringRes.PAAN"
+                               [control]="formControl['paan']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+      <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start">
+        <div class="form-item"
+             fxFlex="calc(100%)"
+             fxFlex.lt-lg="calc(100%)"
+             fxFlex.lt-md="calc(100%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.FASTING}}</mat-label>
+            <input formControlName="fasting" matInput placeholder="Enter details" type="text">
+            <mat-error>
+              <app-input-error [controlName]="stringRes.FASTING"
+                               [control]="formControl['fasting']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+      <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start">
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(50%)"
+             fxFlex.lt-sm="50%">
+          <mat-form-field>
+            <mat-label>{{stringRes.AREATED_DRINK}}</mat-label>
+            <input formControlName="aeratedDrinks" matInput placeholder="Enter details" type="text">
+            <mat-error>
+              <app-input-error [controlName]="stringRes.AREATED_DRINK"
+                               [control]="formControl['aeratedDrinks']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(50%)"
+             fxFlex.lt-sm="50%">
+          <mat-form-field>
+            <mat-label>{{stringRes.WATER_INTAKE}}</mat-label>
+            <input formControlName="waterIntake" matInput placeholder="Enter details" type="text">
+            <mat-error>
+              <app-input-error [controlName]="stringRes.WATER_INTAKE"
+                               [control]="formControl['waterIntake']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(50%)"
+             fxFlex.lt-sm="50%">
+          <mat-form-field>
+            <mat-label>{{stringRes.RESTAURANT_VISIT}}</mat-label>
+            <input formControlName="restaurantVisit" matInput placeholder="Enter details" type="text">
+            <mat-error>
+              <app-input-error [controlName]="stringRes.RESTAURANT_VISIT"
+                               [control]="formControl['restaurantVisit']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(50%)"
+             fxFlex.lt-sm="50%">
+          <mat-form-field>
+            <mat-label>{{stringRes.PREFERRED_CUISINE}}</mat-label>
+            <input formControlName="preferredCuisine" matInput placeholder="Enter details" type="text">
+            <mat-error>
+              <app-input-error [controlName]="stringRes.PREFERRED_CUISINE"
+                               [control]="formControl['preferredCuisine']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(50%)"
+             fxFlex.lt-sm="50%">
+          <mat-form-field>
+            <mat-label>{{stringRes.WHO_COOK}}</mat-label>
+            <input formControlName="whoCooks" matInput placeholder="Eg. mummy" type="text">
+            <mat-error>
+              <app-input-error [controlName]="stringRes.WHO_COOK"
+                               [control]="formControl['whoCooks']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(50%)"
+             fxFlex.lt-sm="50%">
+          <mat-form-field>
+            <mat-label>{{stringRes.HUNGER_PEAK_TIME}}</mat-label>
+            <input formControlName="hungerPeak" matInput placeholder="Eg. evening" type="text">
+            <mat-error>
+              <app-input-error [controlName]="stringRes.HUNGER_PEAK_TIME"
+                               [control]="formControl['hungerPeak']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(50%)"
+             fxFlex.lt-sm="50%">
+          <mat-form-field>
+            <mat-label>{{stringRes.FOOD_DISLIKE}}</mat-label>
+            <input formControlName="foodDislikes" matInput placeholder="Food name" type="text">
+            <mat-error>
+              <app-input-error [controlName]="stringRes.FOOD_DISLIKE"
+                               [control]="formControl['foodDislikes']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(50%)"
+             fxFlex.lt-sm="50%">
+          <mat-form-field>
+            <mat-label>{{stringRes.ANY_FOOD_PREFERENCE}}</mat-label>
+            <input formControlName="otherFoodPreferences" matInput placeholder="Food name" type="text">
+            <mat-error>
+              <app-input-error [controlName]="stringRes.ANY_FOOD_PREFERENCE"
+                               [control]="formControl['otherFoodPreferences']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <h5 class="sub-section-heading">{{stringRes.EXERCISE_DETAILS}}</h5>
+      <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start">
+        <div class="form-item"
+             fxFlex="calc(100%)"
+             fxFlex.lt-lg="calc(100%)"
+             fxFlex.lt-md="calc(100%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.DO_YOU_EXERCISE}}</mat-label>
+            <input formControlName="doYouExercise" matInput placeholder="Yes/No" type="text">
+            <mat-error>
+              <app-input-error [controlName]="stringRes.DO_YOU_EXERCISE"
+                               [control]="formControl['doYouExercise']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+      <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start">
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(50%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.TYPE_OF_EXERCISE}}</mat-label>
+            <mat-select formControlName="typeOfExerciseId">
+              <mat-option>--- Select ---</mat-option>
+              <mat-option *ngFor="let o of typeOfExerciseList" [value]="o.id">{{o.name}}</mat-option>
+            </mat-select>
+            <mat-error>
+              <app-input-error [controlName]="stringRes.TYPE_OF_EXERCISE"
+                               [control]="formControl['typeOfExerciseId']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(50%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.FREQUENCY}}</mat-label>
+            <input formControlName="frequency" matInput placeholder="Eg. Twice a day" type="text">
+            <mat-error>
+              <app-input-error [controlName]="stringRes.FREQUENCY"
+                               [control]="formControl['frequency']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(50%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.DURATION}}</mat-label>
+            <input formControlName="duration" matInput placeholder="Eg. 2 hrs" type="text">
+            <mat-error>
+              <app-input-error [controlName]="stringRes.DURATION"
+                               [control]="formControl['duration']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(50%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.TIMING}}</mat-label>
+            <input formControlName="time" matInput placeholder="Eg. Morning" type="text">
+            <mat-error>
+              <app-input-error [controlName]="stringRes.TIMING"
+                               [control]="formControl['time']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <h5 class="sub-section-heading">{{stringRes.MEDICAL_DETAILS}}</h5>
+      <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start">
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(50%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.ANY_ALLERGIES}}</mat-label>
+            <input formControlName="allergies" matInput placeholder="Yes/No" type="text">
+            <mat-error>
+              <app-input-error [controlName]="stringRes.ANY_ALLERGIES"
+                               [control]="formControl['allergies']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(50%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.ALLERGIES_NAME}}</mat-label>
+            <input formControlName="allergySpecify" matInput placeholder="Allergy name" type="text">
+            <mat-error>
+              <app-input-error [controlName]="stringRes.ALLERGIES_NAME"
+                               [control]="formControl['allergySpecify']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(50%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.SLEEPING_PATTERN}}</mat-label>
+            <mat-select formControlName="sleepingPatternId" required>
+              <mat-option>--- Select ---</mat-option>
+              <mat-option *ngFor="let o of sleepingPatternList" [value]="o.id">{{o.name}}</mat-option>
+            </mat-select>
+            <mat-error>
+              <app-input-error [controlName]="stringRes.SLEEPING_PATTERN"
+                               [control]="formControl['sleepingPatternId']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(50%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.SLEEPING_DURATION}}</mat-label>
+            <input formControlName="sleepDuration" matInput placeholder="Duration" type="text">
+            <mat-error>
+              <app-input-error [controlName]="stringRes.SLEEPING_DURATION"
+                               [control]="formControl['sleepDuration']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(50%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.GAS}}</mat-label>
+            <input formControlName="gas" matInput placeholder="Yes/No" type="text">
+            <mat-error>
+              <app-input-error [controlName]="stringRes.GAS"
+                               [control]="formControl['gas']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(50%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.HYPER_ACIDITY}}</mat-label>
+            <input formControlName="hyperAcidity" matInput placeholder="Yes/No" type="text">
+            <mat-error>
+              <app-input-error [controlName]="stringRes.HYPER_ACIDITY"
+                               [control]="formControl['hyperAcidity']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(50%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.CONSTIPATION}}</mat-label>
+            <input formControlName="constipation" matInput placeholder="Yes/No" type="text">
+            <mat-error>
+              <app-input-error [controlName]="stringRes.CONSTIPATION"
+                               [control]="formControl['constipation']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(50%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.PERIOD_REGULAR}}</mat-label>
+            <input formControlName="periods" matInput placeholder="Yes/No" type="text">
+            <mat-error>
+              <app-input-error [controlName]="stringRes.PERIOD_REGULAR"
+                               [control]="formControl['periods']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(50%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.LMP}}</mat-label>
+            <input formControlName="lmp" matInput placeholder="" type="text">
+            <mat-error>
+              <app-input-error [controlName]="stringRes.CONSTIPATION"
+                               [control]="formControl['lmp']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(50%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.DAYS_CYCLE}}</mat-label>
+            <input formControlName="daysCycle" matInput placeholder="" type="text">
+            <mat-error>
+              <app-input-error [controlName]="stringRes.DAYS_CYCLE"
+                               [control]="formControl['daysCycle']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(50%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.BACK_PAIN}}</mat-label>
+            <input formControlName="backPain" matInput placeholder="Yes/No" type="text">
+            <mat-error>
+              <app-input-error [controlName]="stringRes.BACK_PAIN"
+                               [control]="formControl['backPain']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(50%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.KNEE_PAIN}}</mat-label>
+            <input formControlName="kneePain" matInput placeholder="Yes/No" type="text">
+            <mat-error>
+              <app-input-error [controlName]="stringRes.KNEE_PAIN"
+                               [control]="formControl['kneePain']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(50%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.HAIR_FALL}}</mat-label>
+            <input formControlName="hairFall" matInput placeholder="Yes/No" type="text">
+            <mat-error>
+              <app-input-error [controlName]="stringRes.HAIR_FALL"
+                               [control]="formControl['hairFall']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(50%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.URINE_OUTPUT}}</mat-label>
+            <mat-select formControlName="urineOutputId">
+              <mat-option>--- Select ---</mat-option>
+              <mat-option *ngFor="let o of sleepingPatternList" [value]="o.id">{{o.name}}</mat-option>
+            </mat-select>
+            <mat-error>
+              <app-input-error [controlName]="stringRes.URINE_OUTPUT"
+                               [control]="formControl['urineOutputId']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(50%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.BLOOD_SUGAR}}</mat-label>
+            <mat-select formControlName="bloodSugarId">
+              <mat-option>--- Select ---</mat-option>
+              <mat-option *ngFor="let o of bloodSugarList" [value]="o.id">{{o.name}}</mat-option>
+            </mat-select>
+            <mat-error>
+              <app-input-error [controlName]="stringRes.BLOOD_SUGAR"
+                               [control]="formControl['bloodSugarId']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(50%)"
+             fxFlex.lt-lg="calc(50%)"
+             fxFlex.lt-md="calc(50%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.BLOOD_SUGAR_VALUE}}</mat-label>
+            <input formControlName="bloodSugarValue" matInput placeholder="Value" type="text">
+            <mat-error>
+              <app-input-error [controlName]="stringRes.BLOOD_SUGAR_VALUE"
+                               [control]="formControl['bloodSugarValue']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+      <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start">
+        <div class="form-item"
+             fxFlex="calc(20%)"
+             fxFlex.lt-lg="calc(20%)"
+             fxFlex.lt-md="calc(20%)"
+             fxFlex.lt-sm="20%">
+          <h6>{{stringRes.LIPID_PROFILE}}</h6>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(40%)"
+             fxFlex.lt-lg="calc(40%)"
+             fxFlex.lt-md="calc(40%)"
+             fxFlex.lt-sm="40%">
+          <mat-form-field>
+            <mat-label>{{stringRes.TOTAL_CHOLESTEROL}}</mat-label>
+            <input formControlName="cholesterol" matInput placeholder="Enter value" type="text">
+            <mat-error>
+              <app-input-error [controlName]="stringRes.TOTAL_CHOLESTEROL"
+                               [control]="formControl['cholesterol']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(40%)"
+             fxFlex.lt-lg="calc(40%)"
+             fxFlex.lt-md="calc(40%)"
+             fxFlex.lt-sm="40%">
+          <mat-form-field>
+            <mat-label>{{stringRes.TRIGLYCERIDES}}</mat-label>
+            <input formControlName="triglycerides" matInput placeholder="Enter value" type="text">
+            <mat-error>
+              <app-input-error [controlName]="stringRes.TRIGLYCERIDES"
+                               [control]="formControl['triglycerides']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(20%)"
+             fxFlex.lt-lg="calc(20%)"
+             fxFlex.lt-md="calc(20%)"
+             fxFlex.lt-sm="20%">
+        </div>
+        <div class="form-item"
+             fxFlex="calc(40%)"
+             fxFlex.lt-lg="calc(40%)"
+             fxFlex.lt-md="calc(40%)"
+             fxFlex.lt-sm="40%">
+          <mat-form-field>
+            <mat-label>{{stringRes.HDL_CHOLESTEROL}}</mat-label>
+            <input formControlName="hdlCholesterol" matInput placeholder="Enter value" type="text">
+            <mat-error>
+              <app-input-error [controlName]="stringRes.HDL_CHOLESTEROL"
+                               [control]="formControl['hdlCholesterol']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(40%)"
+             fxFlex.lt-lg="calc(40%)"
+             fxFlex.lt-md="calc(40%)"
+             fxFlex.lt-sm="40%">
+          <mat-form-field>
+            <mat-label>{{stringRes.LDL_CHOLESTEROL}}</mat-label>
+            <input formControlName="ldlCholesterol" matInput placeholder="Enter value" type="text">
+            <mat-error>
+              <app-input-error [controlName]="stringRes.LDL_CHOLESTEROL"
+                               [control]="formControl['ldlCholesterol']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(20%)"
+             fxFlex.lt-lg="calc(20%)"
+             fxFlex.lt-md="calc(20%)"
+             fxFlex.lt-sm="20%">
+        </div>
+        <div class="form-item"
+             fxFlex="calc(40%)"
+             fxFlex.lt-lg="calc(40%)"
+             fxFlex.lt-md="calc(40%)"
+             fxFlex.lt-sm="40%">
+          <mat-form-field>
+            <mat-label>{{stringRes.VLDL_CHOLESTEROL}}</mat-label>
+            <input formControlName="vldlCholesterol" matInput placeholder="Enter value" type="text">
+            <mat-error>
+              <app-input-error [controlName]="stringRes.VLDL_CHOLESTEROL"
+                               [control]="formControl['vldlCholesterol']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(40%)"
+             fxFlex.lt-lg="calc(40%)"
+             fxFlex.lt-md="calc(40%)"
+             fxFlex.lt-sm="40%">
+          <mat-form-field>
+            <mat-label>{{stringRes.HEMOGLOBIN_LEVEL}}</mat-label>
+            <input formControlName="hgLevel" matInput placeholder="Enter value" type="text">
+            <mat-error>
+              <app-input-error [controlName]="stringRes.HEMOGLOBIN_LEVEL"
+                               [control]="formControl['hgLevel']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+      <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start">
+        <div class="form-item"
+             fxFlex="calc(100%)"
+             fxFlex.lt-lg="calc(100%)"
+             fxFlex.lt-md="calc(100%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.MEDICINE_DOSAGE}}</mat-label>
+            <input formControlName="supplementMedicine" matInput placeholder="Enter list of medicine and dosage"
+                   type="text">
+            <mat-error>
+              <app-input-error [controlName]="stringRes.MEDICINE_DOSAGE"
+                               [control]="formControl['supplementMedicine']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <h5 class="sub-section-heading">{{stringRes.EATING_PATTERN}}</h5>
+      <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start">
+        <div class="form-item"
+             fxFlex="calc(20%)"
+             fxFlex.lt-lg="calc(20%)"
+             fxFlex.lt-md="calc(20%)"
+             fxFlex.lt-sm="20%">
+          <h6>{{stringRes.WAKE_UP_TIME}}</h6>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(60%)"
+             fxFlex.lt-lg="calc(60%)"
+             fxFlex.lt-md="calc(60%)"
+             fxFlex.lt-sm="60%">
+          <mat-form-field>
+            <mat-label>{{stringRes.TIME}}</mat-label>
+            <input formControlName="wakeupTiming" matInput placeholder="Enter time"
+                   type="text">
+            <mat-error>
+              <app-input-error [controlName]="stringRes.TIME"
+                               [control]="formControl['wakeupTiming']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(20%)"
+             fxFlex.lt-lg="calc(20%)"
+             fxFlex.lt-md="calc(20%)"
+             fxFlex.lt-sm="20%">
+        </div>
+      </div>
+      <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start">
+        <div class="form-item"
+             fxFlex="calc(20%)"
+             fxFlex.lt-lg="calc(20%)"
+             fxFlex.lt-md="calc(20%)"
+             fxFlex.lt-sm="20%">
+          <h6>{{stringRes.BREAKFAST}}</h6>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(60%)"
+             fxFlex.lt-lg="calc(60%)"
+             fxFlex.lt-md="calc(60%)"
+             fxFlex.lt-sm="60%">
+          <mat-form-field>
+            <mat-label>{{stringRes.MENU}}</mat-label>
+            <input formControlName="bfMenu" matInput placeholder="Enter menu"
+                   type="text">
+            <mat-error>
+              <app-input-error [controlName]="stringRes.MENU"
+                               [control]="formControl['bfMenu']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(20%)"
+             fxFlex.lt-lg="calc(20%)"
+             fxFlex.lt-md="calc(20%)"
+             fxFlex.lt-sm="20%">
+          <mat-form-field>
+            <mat-label>{{stringRes.TIME}}</mat-label>
+            <input formControlName="bfTime" matInput placeholder="Enter time"
+                   type="text">
+            <mat-error>
+              <app-input-error [controlName]="stringRes.TIME"
+                               [control]="formControl['bfTime']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start">
+        <div class="form-item"
+             fxFlex="calc(20%)"
+             fxFlex.lt-lg="calc(20%)"
+             fxFlex.lt-md="calc(20%)"
+             fxFlex.lt-sm="20%">
+          <h6>{{stringRes.MID_MORNING}}</h6>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(60%)"
+             fxFlex.lt-lg="calc(60%)"
+             fxFlex.lt-md="calc(60%)"
+             fxFlex.lt-sm="60%">
+          <mat-form-field>
+            <mat-label>{{stringRes.MENU}}</mat-label>
+            <input formControlName="mmMenu" matInput placeholder="Enter menu"
+                   type="text">
+            <mat-error>
+              <app-input-error [controlName]="stringRes.MENU"
+                               [control]="formControl['mmMenu']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(20%)"
+             fxFlex.lt-lg="calc(20%)"
+             fxFlex.lt-md="calc(20%)"
+             fxFlex.lt-sm="20%">
+          <mat-form-field>
+            <mat-label>{{stringRes.TIME}}</mat-label>
+            <input formControlName="mmTime" matInput placeholder="Enter time"
+                   type="text">
+            <mat-error>
+              <app-input-error [controlName]="stringRes.TIME"
+                               [control]="formControl['mmTime']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start">
+        <div class="form-item"
+             fxFlex="calc(20%)"
+             fxFlex.lt-lg="calc(20%)"
+             fxFlex.lt-md="calc(20%)"
+             fxFlex.lt-sm="20%">
+          <h6>{{stringRes.LUNCH}}</h6>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(60%)"
+             fxFlex.lt-lg="calc(60%)"
+             fxFlex.lt-md="calc(60%)"
+             fxFlex.lt-sm="60%">
+          <mat-form-field>
+            <mat-label>{{stringRes.MENU}}</mat-label>
+            <input formControlName="lunchMenu" matInput placeholder="Enter menu"
+                   type="text">
+            <mat-error>
+              <app-input-error [controlName]="stringRes.MENU"
+                               [control]="formControl['lunchMenu']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(20%)"
+             fxFlex.lt-lg="calc(20%)"
+             fxFlex.lt-md="calc(20%)"
+             fxFlex.lt-sm="20%">
+          <mat-form-field>
+            <mat-label>{{stringRes.TIME}}</mat-label>
+            <input formControlName="lunchTime" matInput placeholder="Enter time"
+                   type="text">
+            <mat-error>
+              <app-input-error [controlName]="stringRes.TIME"
+                               [control]="formControl['lunchTime']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start">
+        <div class="form-item"
+             fxFlex="calc(20%)"
+             fxFlex.lt-lg="calc(20%)"
+             fxFlex.lt-md="calc(20%)"
+             fxFlex.lt-sm="20%">
+          <h6>{{stringRes.EVENING}}</h6>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(60%)"
+             fxFlex.lt-lg="calc(60%)"
+             fxFlex.lt-md="calc(60%)"
+             fxFlex.lt-sm="60%">
+          <mat-form-field>
+            <mat-label>{{stringRes.MENU}}</mat-label>
+            <input formControlName="eveMenu" matInput placeholder="Enter menu"
+                   type="text">
+            <mat-error>
+              <app-input-error [controlName]="stringRes.MENU"
+                               [control]="formControl['eveMenu']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(20%)"
+             fxFlex.lt-lg="calc(20%)"
+             fxFlex.lt-md="calc(20%)"
+             fxFlex.lt-sm="20%">
+          <mat-form-field>
+            <mat-label>{{stringRes.TIME}}</mat-label>
+            <input formControlName="eveTime" matInput placeholder="Enter time"
+                   type="text">
+            <mat-error>
+              <app-input-error [controlName]="stringRes.TIME"
+                               [control]="formControl['eveTime']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start">
+        <div class="form-item"
+             fxFlex="calc(20%)"
+             fxFlex.lt-lg="calc(20%)"
+             fxFlex.lt-md="calc(20%)"
+             fxFlex.lt-sm="20%">
+          <h6>{{stringRes.MID_EVENING}}</h6>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(60%)"
+             fxFlex.lt-lg="calc(60%)"
+             fxFlex.lt-md="calc(60%)"
+             fxFlex.lt-sm="60%">
+          <mat-form-field>
+            <mat-label>{{stringRes.MENU}}</mat-label>
+            <input formControlName="midEveMenu" matInput placeholder="Enter menu"
+                   type="text">
+            <mat-error>
+              <app-input-error [controlName]="stringRes.MENU"
+                               [control]="formControl['midEveMenu']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(20%)"
+             fxFlex.lt-lg="calc(20%)"
+             fxFlex.lt-md="calc(20%)"
+             fxFlex.lt-sm="20%">
+          <mat-form-field>
+            <mat-label>{{stringRes.TIME}}</mat-label>
+            <input formControlName="midEveTime" matInput placeholder="Enter time"
+                   type="text">
+            <mat-error>
+              <app-input-error [controlName]="stringRes.TIME"
+                               [control]="formControl['midEveTime']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start">
+        <div class="form-item"
+             fxFlex="calc(20%)"
+             fxFlex.lt-lg="calc(20%)"
+             fxFlex.lt-md="calc(20%)"
+             fxFlex.lt-sm="20%">
+          <h6>{{stringRes.DINNER}}</h6>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(60%)"
+             fxFlex.lt-lg="calc(60%)"
+             fxFlex.lt-md="calc(60%)"
+             fxFlex.lt-sm="60%">
+          <mat-form-field>
+            <mat-label>{{stringRes.MENU}}</mat-label>
+            <input formControlName="dinnerMenu" matInput placeholder="Enter menu"
+                   type="text">
+            <mat-error>
+              <app-input-error [controlName]="stringRes.MENU"
+                               [control]="formControl['dinnerMenu']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(20%)"
+             fxFlex.lt-lg="calc(20%)"
+             fxFlex.lt-md="calc(20%)"
+             fxFlex.lt-sm="20%">
+          <mat-form-field>
+            <mat-label>{{stringRes.TIME}}</mat-label>
+            <input formControlName="dinnerTime" matInput placeholder="Enter time"
+                   type="text">
+            <mat-error>
+              <app-input-error [controlName]="stringRes.TIME"
+                               [control]="formControl['dinnerTime']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start">
+        <div class="form-item"
+             fxFlex="calc(20%)"
+             fxFlex.lt-lg="calc(20%)"
+             fxFlex.lt-md="calc(20%)"
+             fxFlex.lt-sm="20%">
+          <h6>{{stringRes.NIGHT_SNACKS}}</h6>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(60%)"
+             fxFlex.lt-lg="calc(60%)"
+             fxFlex.lt-md="calc(60%)"
+             fxFlex.lt-sm="60%">
+          <mat-form-field>
+            <mat-label>{{stringRes.MENU}}</mat-label>
+            <input formControlName="nightSnacks" matInput placeholder="Enter menu"
+                   type="text">
+            <mat-error>
+              <app-input-error [controlName]="stringRes.MENU"
+                               [control]="formControl['nightSnacks']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(20%)"
+             fxFlex.lt-lg="calc(20%)"
+             fxFlex.lt-md="calc(20%)"
+             fxFlex.lt-sm="20%">
+        </div>
+      </div>
+
+      <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start">
+        <div class="form-item"
+             fxFlex="calc(20%)"
+             fxFlex.lt-lg="calc(20%)"
+             fxFlex.lt-md="calc(20%)"
+             fxFlex.lt-sm="20%">
+          <h6>{{stringRes.BED_TIME}}</h6>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(60%)"
+             fxFlex.lt-lg="calc(60%)"
+             fxFlex.lt-md="calc(60%)"
+             fxFlex.lt-sm="60%">
+          <mat-form-field>
+            <mat-label>{{stringRes.TIME}}</mat-label>
+            <input formControlName="bedTime" matInput placeholder="Enter time"
+                   type="text">
+            <mat-error>
+              <app-input-error [controlName]="stringRes.TIME"
+                               [control]="formControl['bedTime']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(20%)"
+             fxFlex.lt-lg="calc(20%)"
+             fxFlex.lt-md="calc(20%)"
+             fxFlex.lt-sm="20%">
+        </div>
+      </div>
+
+      <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start">
+        <div class="form-item"
+             fxFlex="calc(20%)"
+             fxFlex.lt-lg="calc(20%)"
+             fxFlex.lt-md="calc(20%)"
+             fxFlex.lt-sm="20%">
+          <h6>{{stringRes.FRUITS}}</h6>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(60%)"
+             fxFlex.lt-lg="calc(60%)"
+             fxFlex.lt-md="calc(60%)"
+             fxFlex.lt-sm="60%">
+          <mat-form-field>
+            <mat-label>{{stringRes.FRUITS}}</mat-label>
+            <input formControlName="fruitsFrequency" matInput placeholder="Enter fruits name"
+                   type="text">
+            <mat-error>
+              <app-input-error [controlName]="stringRes.FRUITS"
+                               [control]="formControl['fruitsFrequency']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(20%)"
+             fxFlex.lt-lg="calc(20%)"
+             fxFlex.lt-md="calc(20%)"
+             fxFlex.lt-sm="20%">
+        </div>
+      </div>
+
+      <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start">
+        <div class="form-item"
+             fxFlex="calc(20%)"
+             fxFlex.lt-lg="calc(20%)"
+             fxFlex.lt-md="calc(20%)"
+             fxFlex.lt-sm="20%">
+          <h6>{{stringRes.BREAD}}</h6>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(60%)"
+             fxFlex.lt-lg="calc(60%)"
+             fxFlex.lt-md="calc(60%)"
+             fxFlex.lt-sm="60%">
+          <mat-form-field>
+            <mat-label>{{stringRes.AMOUNT}}</mat-label>
+            <input formControlName="breadAmount" matInput placeholder="Enter count"
+                   type="text">
+            <mat-error>
+              <app-input-error [controlName]="stringRes.AMOUNT"
+                               [control]="formControl['breadAmount']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(20%)"
+             fxFlex.lt-lg="calc(20%)"
+             fxFlex.lt-md="calc(20%)"
+             fxFlex.lt-sm="20%">
+          <mat-form-field>
+            <mat-label>{{stringRes.FREQUENCY}}</mat-label>
+            <input formControlName="breakFrequency" matInput placeholder="Enter frequency"
+                   type="text">
+            <mat-error>
+              <app-input-error [controlName]="stringRes.FREQUENCY"
+                               [control]="formControl['breakFrequency']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start">
+        <div class="form-item"
+             fxFlex="calc(20%)"
+             fxFlex.lt-lg="calc(20%)"
+             fxFlex.lt-md="calc(20%)"
+             fxFlex.lt-sm="20%">
+          <h6>{{stringRes.SWEET_CHOCOLATE}}</h6>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(60%)"
+             fxFlex.lt-lg="calc(60%)"
+             fxFlex.lt-md="calc(60%)"
+             fxFlex.lt-sm="60%">
+          <mat-form-field>
+            <mat-label>{{stringRes.AMOUNT}}</mat-label>
+            <input formControlName="sweetAmount" matInput placeholder="Enter count"
+                   type="text">
+            <mat-error>
+              <app-input-error [controlName]="stringRes.AMOUNT"
+                               [control]="formControl['sweetAmount']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(20%)"
+             fxFlex.lt-lg="calc(20%)"
+             fxFlex.lt-md="calc(20%)"
+             fxFlex.lt-sm="20%">
+          <mat-form-field>
+            <mat-label>{{stringRes.FREQUENCY}}</mat-label>
+            <input formControlName="sweetFrequency" matInput placeholder="Enter frequency"
+                   type="text">
+            <mat-error>
+              <app-input-error [controlName]="stringRes.FREQUENCY"
+                               [control]="formControl['sweetFrequency']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start">
+        <div class="form-item"
+             fxFlex="calc(20%)"
+             fxFlex.lt-lg="calc(20%)"
+             fxFlex.lt-md="calc(20%)"
+             fxFlex.lt-sm="20%">
+          <h6>{{stringRes.TEA_COFFEE}}</h6>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(60%)"
+             fxFlex.lt-lg="calc(60%)"
+             fxFlex.lt-md="calc(60%)"
+             fxFlex.lt-sm="60%">
+          <mat-form-field>
+            <mat-label>{{stringRes.AMOUNT}}</mat-label>
+            <input formControlName="teaAmount" matInput placeholder="Enter count"
+                   type="text">
+            <mat-error>
+              <app-input-error [controlName]="stringRes.AMOUNT"
+                               [control]="formControl['teaAmount']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(20%)"
+             fxFlex.lt-lg="calc(20%)"
+             fxFlex.lt-md="calc(20%)"
+             fxFlex.lt-sm="20%">
+          <mat-form-field>
+            <mat-label>{{stringRes.FREQUENCY}}</mat-label>
+            <input formControlName="teaFrequency" matInput placeholder="Enter frequency"
+                   type="text">
+            <mat-error>
+              <app-input-error [controlName]="stringRes.FREQUENCY"
+                               [control]="formControl['teaFrequency']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start">
+        <div class="form-item"
+             fxFlex="calc(20%)"
+             fxFlex.lt-lg="calc(20%)"
+             fxFlex.lt-md="calc(20%)"
+             fxFlex.lt-sm="20%">
+          <h6>{{stringRes.REMARK}}</h6>
+        </div>
+        <div class="form-item"
+             fxFlex="calc(80%)"
+             fxFlex.lt-lg="calc(80%)"
+             fxFlex.lt-md="calc(80%)"
+             fxFlex.lt-sm="80%">
+          <mat-form-field>
+            <mat-label>{{stringRes.REMARK}}</mat-label>
+            <textarea #remark formControlName="remark" matInput placeholder="Enter remark" rows="5"
+                      type="text"></textarea>
+            <mat-hint align="end">{{remark.value.length}}
+              / {{inputLength.CHAR_2000}}</mat-hint>
+            <mat-error>
+              <app-input-error [controlName]="stringRes.REMARK"
+                               [control]="formControl['remark']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <h5>{{stringRes.NUTRITIONIST_SUMMARY}}</h5>
+      <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start">
+        <div class="form-item"
+             fxFlex="calc(100%)"
+             fxFlex.lt-lg="calc(100%)"
+             fxFlex.lt-md="calc(100%)"
+             fxFlex.lt-sm="100%">
+          <mat-form-field>
+            <mat-label>{{stringRes.NUTRITIONIST_SUMMARY}}</mat-label>
+            <textarea #nutritionistSummery formControlName="nutritionistSummery" matInput placeholder="Enter summary"
+                      rows="5"
+                      type="text"></textarea>
+            <mat-hint align="end">{{nutritionistSummery.value.length}}
+              / {{inputLength.CHAR_2000}}</mat-hint>
+            <mat-error>
+              <app-input-error [controlName]="stringRes.NUTRITIONIST_SUMMARY"
+                               [control]="formControl['nutritionistSummery']"></app-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+    </mat-card-content>
+
+    <mat-card-actions align="end">
+      <button (click)="onCancel()" class="round-btn" mat-raised-button>
+        {{stringRes.CANCEL}}
+      </button>
+      <button (click)="onSubmit()" class="round-btn gradient-btn" color="primary" mat-raised-button>
+        {{id > 0 ? stringRes.UPDATE : stringRes.SAVE}}
+      </button>
+    </mat-card-actions>
+  </mat-card>
+</form>
