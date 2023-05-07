@@ -39,6 +39,7 @@ export class RecipeMigrationController {
           recipeTypeId: Number(s.is_veg) === 1 ? 1 : 2,
           details: s.details,
           benefits: s.benefits,
+          isVeg: Number(s.is_veg) === 1,
           imagePath: [
             {
               size: 227093,
@@ -80,9 +81,24 @@ export class RecipeMigrationController {
           modifiedIp: ':0',
         });
       }
+      await this.sequelize.query(`truncate table mst_recipe_cuisine_mappings restart identity CASCADE`);
+      await this.sequelize.query(`truncate table mst_recipe_category_mappings restart identity CASCADE`);
+      await this.sequelize.query(`truncate table mst_recipes restart identity CASCADE`);
       await this.recipeRepository.bulkCreate(recipeList);
       await this.recipeCategoryRepository.bulkCreate(recipeCategoryList);
       await this.recipeCuisineRepository.bulkCreate(recipeCuisineList);
+      await this.sequelize.query(
+        `SELECT SETVAL('mst_recipe_cuisine_mappings_recipe_cuisine_mapping_id_seq',
+                       (SELECT MAX(recipe_cuisine_mapping_id) + 1 FROM mst_recipe_cuisine_mappings));`,
+      );
+      await this.sequelize.query(
+        `SELECT SETVAL('mst_recipe_category_mappings_recipe_category_mapping_id_seq',
+                       (SELECT MAX(recipe_category_mapping_id) + 1 FROM mst_recipe_category_mappings));`,
+      );
+      await this.sequelize.query(
+        `SELECT SETVAL('mst_recipes_recipe_id_seq',
+                       (SELECT MAX(recipe_id) + 1 FROM mst_recipes));`,
+      );
       await t.commit();
     } catch (e) {
       console.log(e);
