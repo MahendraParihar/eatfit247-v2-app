@@ -39,7 +39,7 @@ export class TxnContactForm extends Model<TxnContactForm> {
   @Column({
     allowNull: false,
     field: 'contact_number',
-    type: DataType.STRING(16),
+    type: DataType.STRING(20),
   })
   contactNumber: string;
 

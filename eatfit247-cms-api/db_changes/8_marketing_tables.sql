@@ -2,8 +2,9 @@ DROP TABLE IF EXISTS txn_subscribers;
 CREATE TABLE IF NOT EXISTS txn_subscribers
 (
     subscriber_id SERIAL       NOT NULL PRIMARY KEY,
-    name          VARCHAR(100) NOT NULL,
-    email_id       VARCHAR(100) NOT NULL,
+    name          VARCHAR(100) NULL,
+    email_id      VARCHAR(100) NOT NULL,
+    is_subscribe  boolean               default true,
     active        BOOLEAN      NULL     DEFAULT true,
     created_at    TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at    TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -19,9 +20,9 @@ CREATE TABLE IF NOT EXISTS txn_contact_forms
 (
     contact_form_id   SERIAL        NOT NULL PRIMARY KEY,
     name              VARCHAR(100)  NOT NULL,
-    email_id           VARCHAR(100)  NOT NULL,
+    email_id          VARCHAR(100)  NOT NULL,
     country_code      VARCHAR(5)    NOT NULL,
-    contact_number    VARCHAR(15)   NOT NULL,
+    contact_number    VARCHAR(20)   NOT NULL,
     message           VARCHAR(1000) NOT NULL,
     responded_by      INT           NULL     DEFAULT NULL,
     responded_message VARCHAR(1000) NULL     DEFAULT NULL,

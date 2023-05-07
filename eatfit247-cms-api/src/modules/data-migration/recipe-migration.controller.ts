@@ -6,75 +6,87 @@ import { MstRecipeNutritive } from '../../core/database/models/mst-recipe-nutrit
 import { Controller, Get } from '@nestjs/common';
 import * as csv from 'csvtojson';
 import { CommonFunctionsUtil } from '../../util/common-functions-util';
+import { Sequelize } from 'sequelize-typescript';
 
 @Controller('migration')
 export class RecipeMigrationController {
+  folderPath = '/Users/mahendraparihar/Projects/EatFit247/Migration/mst_recipe.json';
+
   constructor(
     @InjectModel(MstRecipe) private readonly recipeRepository: typeof MstRecipe,
     @InjectModel(MstRecipeCategoryMapping) private readonly recipeCategoryRepository: typeof MstRecipeCategoryMapping,
     @InjectModel(MstRecipeCuisineMapping) private readonly recipeCuisineRepository: typeof MstRecipeCuisineMapping,
     @InjectModel(MstRecipeNutritive) private readonly recipeNutritiveRepository: typeof MstRecipeNutritive,
-  ) {}
+    private sequelize: Sequelize,
+  ) {
+  }
 
   @Get('recipe')
   async init() {
-    const recipeList = [];
-    const recipeCategoryList = [];
-    const recipeCuisineList = [];
-    const recipeNutritiveList = [];
-    let data = await csv({ delimiter: '|' }).fromFile('/home/mahendra/Downloads/mst_recipe.csv');
-    for (const s of data) {
-      const imagePath = s.image_path ? s.image_path.split('/')[1] : null;
-      recipeList.push({
-        recipeId: Number(s.id),
-        name: s.name,
-        recipeTypeId: Number(s.is_veg) === 1 ? 1 : 2,
-        details: s.details,
-        benefits: s.benefits,
-        imagePath: [
-          {
-            size: 227093,
-            webUrl: 'media-files/recipe/' + imagePath,
-            encoding: '7bit',
-            fileName: imagePath,
-            mimetype: 'image/jpeg',
-            fieldName: 'file',
-            originalName: s.name + '.jpg',
-          },
-        ],
-        url: CommonFunctionsUtil.removeSpecialChar(s.name.toString().toLowerCase(), '-'),
-        ingredient: this.getIng(s.ingredient_json),
-        howToMake: this.getMethod(s.method_json),
-        visitedCount: s.visited_count ? Number(s.visited_count) : null,
-        servingCount: s.serving_count ? Number(s.serving_count) : null,
-        shareCount: s.share_count ? Number(s.share_count) : null,
-        tags: s.name,
-        isVisibleToAll: Number(s.is_visible_to_all),
-        createdBy: 1,
-        modifiedBy: 1,
-        createdIp: ':0',
-        modifiedIp: ':0',
-      });
-      recipeCategoryList.push({
-        recipeId: s.id,
-        recipeCategoryId: s.recipe_category_id,
-        createdBy: 1,
-        modifiedBy: 1,
-        createdIp: ':0',
-        modifiedIp: ':0',
-      });
-      recipeCuisineList.push({
-        recipeId: s.id,
-        recipeCuisineId: s.recipe_cuisine_id,
-        createdBy: 1,
-        modifiedBy: 1,
-        createdIp: ':0',
-        modifiedIp: ':0',
-      });
+    const t = await this.sequelize.transaction();
+    try {
+      const recipeList = [];
+      const recipeCategoryList = [];
+      const recipeCuisineList = [];
+      const recipeNutritiveList = [];
+      const data = await csv({ delimiter: '|' }).fromFile(this.folderPath);
+      for (const s of data) {
+        const imagePath = s.image_path ? s.image_path.split('/')[1] : null;
+        recipeList.push({
+          recipeId: Number(s.id),
+          name: s.name,
+          recipeTypeId: Number(s.is_veg) === 1 ? 1 : 2,
+          details: s.details,
+          benefits: s.benefits,
+          imagePath: [
+            {
+              size: 227093,
+              webUrl: 'media-files/recipe/' + imagePath,
+              encoding: '7bit',
+              fileName: imagePath,
+              mimetype: 'image/jpeg',
+              fieldName: 'file',
+              originalName: s.name + '.jpg',
+            },
+          ],
+          url: CommonFunctionsUtil.removeSpecialChar(s.name.toString().toLowerCase(), '-'),
+          ingredient: this.getIng(s.ingredient_json),
+          howToMake: this.getMethod(s.method_json),
+          visitedCount: s.visited_count ? Number(s.visited_count) : null,
+          servingCount: s.serving_count ? Number(s.serving_count) : null,
+          shareCount: s.share_count ? Number(s.share_count) : null,
+          tags: s.name,
+          isVisibleToAll: Number(s.is_visible_to_all),
+          createdBy: 1,
+          modifiedBy: 1,
+          createdIp: ':0',
+          modifiedIp: ':0',
+        });
+        recipeCategoryList.push({
+          recipeId: s.id,
+          recipeCategoryId: s.recipe_category_id,
+          createdBy: 1,
+          modifiedBy: 1,
+          createdIp: ':0',
+          modifiedIp: ':0',
+        });
+        recipeCuisineList.push({
+          recipeId: s.id,
+          recipeCuisineId: s.recipe_cuisine_id,
+          createdBy: 1,
+          modifiedBy: 1,
+          createdIp: ':0',
+          modifiedIp: ':0',
+        });
+      }
+      await this.recipeRepository.bulkCreate(recipeList);
+      await this.recipeCategoryRepository.bulkCreate(recipeCategoryList);
+      await this.recipeCuisineRepository.bulkCreate(recipeCuisineList);
+      await t.commit();
+    } catch (e) {
+      console.log(e);
+      await t.rollback();
     }
-    const rr = await this.recipeRepository.bulkCreate(recipeList);
-    const rCC = await this.recipeCategoryRepository.bulkCreate(recipeCategoryList);
-    const rrCR = await this.recipeCuisineRepository.bulkCreate(recipeCuisineList);
   }
 
   getIng(ingJson): string {

@@ -115,7 +115,7 @@ export class AccountService {
   public async signUp(user: AdminUserDTO): Promise<IServerResponse> {
     let res: IServerResponse;
     try {
-      const checkUser = await this.findOneByEmail(user.emailId);
+      const checkUser: MstAdminUser = await this.findOneByEmail(user.emailId);
       if (checkUser) {
         res = {
           code: ServerResponseEnum.WARNING,
@@ -153,7 +153,7 @@ export class AccountService {
       const token = await this.generateEmailConformationLink(tempUser.emailId, user.verificationCode);
 
       // deleting password from response object
-      delete result.password;
+      // delete result.password;
 
       /*if (user.address && user.cityVillageId) {
           const adminAddress: AddressDto = {

@@ -338,7 +338,7 @@ VALUES (1, 'Kgs', TRUE, 1, '2017-04-18 00:00:00', 1, '2017-04-18 00:00:00', ':0'
        (3, 'Lbh', TRUE, 1, '2017-04-18 00:00:00', 1, '2017-04-18 00:00:00', ':0', ':0'),
        (4, 'Cms', TRUE, 1, '2017-04-18 00:00:00', 1, '2017-04-18 00:00:00', ':0', ':0');
 
-TRUNCATE mst_health_parameters;
+TRUNCATE mst_health_parameters CASCADE;
 INSERT INTO mst_health_parameters (health_parameter_id, health_parameter, hint_text, image_path, active, created_at,
                                    updated_at, created_by, modified_by, sequence, created_ip, modified_ip, field_type)
 VALUES (1, 'Weight', 'Weight', NULL, TRUE, '2017-03-24 00:00:00', '2017-03-24 00:00:00', 1, 1, 1, ':0', ':0', 'number'),
@@ -527,12 +527,6 @@ VALUES (1, 'Personal Visit', true, '2017-07-31 00:00:00', '2017-07-31 00:00:00',
        (2, 'Video Call', true, '2017-07-31 00:00:00', '2017-07-31 00:00:00', 1, 1, ':0', ':0'),
        (3, 'Personal Call', true, '2017-08-01 00:00:00', '2017-08-01 00:00:00', 1, 1, ':0', ':0'),
        (4, 'Whatsapp Message', true, '2017-08-01 00:00:00', '2017-08-01 00:00:00', 1, 1, ':0', ':0');
-
-INSERT INTO mst_call_log_statuses (call_log_status_id, call_log_status, active, created_at, updated_at, created_by,
-                                   modified_by, created_ip, modified_ip)
-VALUES (1, 'Pending', true, '2017-03-06 00:00:00', '2017-03-06 00:00:00', 1, 1, ':0', ':0'),
-       (2, 'Completed', true, '2017-03-06 00:00:00', '2017-03-06 00:00:00', 1, 1, ':0', ':0'),
-       (3, 'Cancelled', true, '2017-03-06 00:00:00', '2017-03-06 00:00:00', 1, 1, ':0', ':0');
 
 INSERT INTO mst_call_purposes (call_purpose_id, call_purpose, active, created_at, updated_at, created_by, modified_by,
                                created_ip, modified_ip)
@@ -852,7 +846,7 @@ VALUES (1, 96, 'Jammu & Kashmir', 1, TRUE, current_timestamp, current_timestamp,
        (36, 96, 'Telengana', 36, TRUE, current_timestamp, current_timestamp, 1, 1, ':0', ':0'),
        (37, 96, 'Andrapradesh', 37, TRUE, current_timestamp, current_timestamp, 1, 1, ':0', ':0');
 
-
+SELECT SETVAL('mst_states_state_id_seq', (SELECT MAX(state_id) + 1 FROM mst_states));
 INSERT INTO mst_states (country_id, state, code, active, created_at, updated_at, created_by, modified_by,
                         created_ip, modified_ip)
 VALUES (223, 'United States', 1, TRUE, current_timestamp, current_timestamp, 1, 1, ':0', ':0'),

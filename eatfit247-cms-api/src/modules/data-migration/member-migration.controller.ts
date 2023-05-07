@@ -36,7 +36,7 @@ import * as moment from 'moment';
 
 @Controller('migration')
 export class MemberMigrationController {
-  folderPath = '/home/mahendra/Mahendra/EatFit247/Data/Migration/';
+  folderPath = '/Users/mahendraparihar/Projects/EatFit247/Migration';
 
   constructor(
     @InjectModel(TxnMember) private readonly memberRepository: typeof TxnMember,
@@ -80,6 +80,7 @@ export class MemberMigrationController {
       /*try {
         await this.createProgramPlan();
       } catch (e) {
+        console.log(e);
         await t.rollback();
         exit();
       }*/
@@ -90,26 +91,26 @@ export class MemberMigrationController {
       } catch (e) {
         await t.rollback();
         exit();
-      }
+      }*/
 
       // Member health issues
-      try {
+      /*try {
         await this.createMemberHealthIssues();
       } catch (e) {
         await t.rollback();
         exit();
-      }
+      }*/
 
       // Member pocket guide
-      try {
+      /*try {
         await this.createMemberPocketGuide();
       } catch (e) {
         await t.rollback();
         exit();
-      }
+      }*/
 
       // Member Assessment
-      try {
+      /*try {
         await this.createMemberAssessment();
       } catch (e) {
         await t.rollback();
@@ -133,12 +134,12 @@ export class MemberMigrationController {
       }*/
 
       // Member Health Parameter
-      try {
-        await this.createMemberHealthParameter();
-      } catch (e) {
-        await t.rollback();
-        exit();
-      }
+      // try {
+      //   await this.createMemberHealthParameter();
+      // } catch (e) {
+      //   await t.rollback();
+      //   exit();
+      // }
 
       /*
       //Member Diet Plan
@@ -228,6 +229,7 @@ export class MemberMigrationController {
 
       await t.commit();
     } catch (e) {
+      console.log(e);
       await t.rollback();
       throw e;
     }

@@ -7,10 +7,11 @@ import { ConfigParameterService } from '../config-parameter/config-parameter.ser
 import { CurrencyService } from '../lov/services/currency.service';
 import { CommonService } from '../common/common.service';
 import { ExceptionService } from '../common/exception.service';
+import { BlogMigrationController } from './blog-migration.controller';
 
 @Module({
   imports: [SequelizeModule.forFeature(ModelList)],
-  controllers: [RecipeMigrationController, MemberMigrationController],
+  controllers: [RecipeMigrationController, MemberMigrationController, BlogMigrationController],
   providers: [ConfigParameterService, CurrencyService, CommonService, ExceptionService],
 })
 export class DataMigrationModule {}

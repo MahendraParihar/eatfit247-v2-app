@@ -14,7 +14,7 @@ export class TxnSubscriber extends Model<TxnSubscriber> {
   subscriberId: number;
 
   @Column({
-    allowNull: false,
+    allowNull: true,
     field: 'name',
     type: DataType.STRING(100),
   })
@@ -28,6 +28,14 @@ export class TxnSubscriber extends Model<TxnSubscriber> {
     type: DataType.STRING(100),
   })
   emailId: string;
+
+  @Column({
+    allowNull: false,
+    field: 'is_subscribe',
+    defaultValue: true,
+    type: DataType.BOOLEAN,
+  })
+  isSubscribe: boolean;
 
   @Column({
     allowNull: false,

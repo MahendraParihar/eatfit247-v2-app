@@ -94,11 +94,6 @@ VALUES (1, 1, 'How do I pay ?', 'The payment process is like that of Internet ba
         'You can add your favorite recipe/Recipe mentioned by your mentors in this section. This will work as your personalized recipe book and you don’t have to search same recipe repeatedly.',
         TRUE, current_timestamp, 1, current_timestamp, 1, ':0', ':0');
 
-INSERT INTO mst_program_categories (program_category_id, program_category, url, active, created_at, updated_at,
-                                    created_by, modified_by, created_ip, modified_ip)
-VALUES (1, 'Weight Loss', 'weight-loss', true, '2017-03-06 00:00:00', '2017-04-01 07:07:27', 1, 1, ':0', ':0'),
-       (2, 'Health Plans', 'health-plans', true, '2017-03-06 00:00:00', '2017-04-01 07:07:43', 1, 1, ':0', ':0');
-
 INSERT INTO txn_program_faqs (program_faq_id, program_id, question, answer, active, created_by, modified_by, created_at,
                               updated_at, created_ip, modified_ip)
 VALUES (5, 2, 'I have high cholesterol. Will your weight loss program lower it?',

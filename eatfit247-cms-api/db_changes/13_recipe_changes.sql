@@ -81,6 +81,3 @@ alter table mst_recipe_categories
     add column from_time varchar(50) not null,
     add column to_time   varchar(50) not null,
     add column sequence  integer     not null;
-
-alter table mst_programs
-    add column sequence_number integer not null;
