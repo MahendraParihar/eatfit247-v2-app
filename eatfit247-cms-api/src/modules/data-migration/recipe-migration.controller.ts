@@ -4,9 +4,10 @@ import { MstRecipeCategoryMapping } from '../../core/database/models/mst-recipe-
 import { MstRecipeCuisineMapping } from '../../core/database/models/mst-recipe-cuisine-mapping.model';
 import { MstRecipeNutritive } from '../../core/database/models/mst-recipe-nutritive.model';
 import { Controller, Get } from '@nestjs/common';
-import * as csv from 'csvtojson';
 import { CommonFunctionsUtil } from '../../util/common-functions-util';
 import { Sequelize } from 'sequelize-typescript';
+import { readFileSync } from 'fs';
+import { resolve } from 'path';
 
 @Controller('migration')
 export class RecipeMigrationController {
@@ -29,7 +30,7 @@ export class RecipeMigrationController {
       const recipeCategoryList = [];
       const recipeCuisineList = [];
       const recipeNutritiveList = [];
-      const data = await csv({ delimiter: '|' }).fromFile(this.folderPath);
+      const data = JSON.parse(readFileSync(resolve(`${this.folderPath}`), 'utf8'));
       for (const s of data) {
         const imagePath = s.image_path ? s.image_path.split('/')[1] : null;
         recipeList.push({
