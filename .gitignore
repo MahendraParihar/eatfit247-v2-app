@@ -1,0 +1,4 @@
+/eatfit247-cms-api/dist/*
+/eatfit247-cms-api/node_modules/*
+/eatfit247-cms/node_modules/*
+/eatfit247-cms-api/.env
