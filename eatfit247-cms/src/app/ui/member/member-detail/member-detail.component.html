@@ -8,24 +8,21 @@
                                 [webUrl]="memberObj.basicInfo.imagePath"></app-custom-img-tag>
           </div>
           <div class="data-section">
-            <h5 mat-card-title>{{memberObj.basicInfo.firstName}} {{memberObj.basicInfo.lastName}}</h5>
+            <h6 mat-card-title>{{memberObj.basicInfo.firstName}} {{memberObj.basicInfo.lastName}}</h6>
             <div id="navigation">
               <ul>
                 <li>{{memberObj.basicInfo.countryCode}}-{{memberObj.basicInfo.contactNumber}}</li>
                 <li>{{memberObj.basicInfo.emailId}}</li>
                 <li>{{memberObj.basicInfo.countryName}}</li>
+                <li>{{memberObj.basicInfo.nutritionist | appCreatedBy}}</li>
               </ul>
             </div>
           </div>
         </div>
         <div class="summary">
-          <h5>{{stringRes.NUTRITIONIST_SUMMARY}}</h5>
+          <h6>{{stringRes.NUTRITIONIST_SUMMARY}}</h6>
           <span *ngIf="memberObj.assessmentObj">{{memberObj.assessmentObj.nutritionistSummery}}</span>
           <span *ngIf="!memberObj.assessmentObj"></span>
-        </div>
-        <div class="nutritionist">
-          <h5>{{stringRes.NUTRITIONIST}}</h5>
-          <span>{{memberObj.basicInfo.nutritionist | appCreatedBy}}</span>
         </div>
       </div>
     </mat-card-content>

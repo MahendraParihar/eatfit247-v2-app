@@ -23,8 +23,7 @@
         <div class="member">
           <div class="member-info">
             <a (click)="onViewClick(d.id)" class="link">{{d.firstName}} {{d.lastName}}</a>
-            <span>{{d.emailId}}</span>
-            <span>{{d.countryCode}}-{{d.contactNumber}}</span>
+            <span class='secondary-text'>{{d.emailId}} | {{d.countryCode}}-{{d.contactNumber}} | <span *ngIf="d.nutritionist">{{d.nutritionist | appCreatedBy }}</span></span>
           </div>
           <div class="connection-info">
             <div>
@@ -38,9 +37,6 @@
                                           routerLink="/{{navigationPathEnum.REFERRER_DETAIL}}/{{d.memberReferrer.referrerId}}"
                                           routerLinkActive="active"
                                           target="_blank">{{ d.memberReferrer.companyName}}</a>
-            </div>
-            <div>
-              {{stringRes.NUTRITIONIST}} : <span *ngIf="d.nutritionist">{{d.nutritionist | appCreatedBy }}</span>
             </div>
           </div>
           <div class="diet-info">
