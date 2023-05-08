@@ -33,6 +33,7 @@ import { CurrencyService } from '../lov/services/currency.service';
 import { CommonService } from '../common/common.service';
 import { exit } from '@nestjs/cli/actions';
 import * as moment from 'moment';
+import { DietTypeEnum } from '../../enums/diet-type-enum';
 
 @Controller('migration')
 export class MemberMigrationController {
@@ -64,7 +65,8 @@ export class MemberMigrationController {
     private configParameterService: ConfigParameterService,
     private currencyConfigService: CurrencyService,
     private commonService: CommonService,
-  ) {}
+  ) {
+  }
 
   @Get('member')
   async init() {
@@ -117,22 +119,6 @@ export class MemberMigrationController {
         exit();
       }*/
 
-      // Member Address
-      /*try {
-        await this.createMemberAddress();
-      } catch (e) {
-        await t.rollback();
-        exit();
-      }*/
-
-      // Member Program Plan
-      /*try {
-        await this.createMemberProgramPlan();
-      } catch (e) {
-        await t.rollback();
-        exit();
-      }*/
-
       // Member Health Parameter
       // try {
       //   await this.createMemberHealthParameter();
@@ -141,92 +127,32 @@ export class MemberMigrationController {
       //   exit();
       // }
 
-      /*
+      // Member Address
+      // try {
+      //   await this.createMemberAddress();
+      // } catch (e) {
+      //   console.log(e);
+      //   await t.rollback();
+      //   exit();
+      // }
+
+      // Member Program Plan
+      // try {
+      //   await this.createMemberProgramPlan();
+      // } catch (e) {
+      //   console.log(e);
+      //   await t.rollback();
+      //   exit();
+      // }
+
       //Member Diet Plan
-      const memberDietPlanList = [];
-
-      for (const s of dietPlanV1List) {
-        memberDietPlanList.push({
-          memberDietPlanId: Number(s.id),
-          memberId: s.member_id,
-          memberPaymentId: s.member_plan_id,
-          noOfCycle: s.total_week,
-          noOfDaysInCycle: s.no_of_days || 7,
-          currentWeek: s.currentWeek,
-          startDate: s.start_date ? moment(s.start_date) : null,
-          endDate: s.end_date ? moment(s.end_date) : null,
-          active: s.active,
-          createdAt: s.created_at,
-          createdBy: s.created_by == 0 ? adminUserId : s.created_by,
-          updatedAt: s.updated_at,
-          modifiedBy: s.modified_by == 0 ? adminUserId : s.modified_by,
-          createdIp: ':0',
-          modifiedIp: ':0',
-        });
+      try {
+        await this.createMemberDietPlan();
+      } catch (error) {
+        console.log(error);
+        await t.rollback();
+        exit();
       }
-      const memberDietPlanResult = await this.memberDietPlanRepository.bulkCreate(memberDietPlanList);
-
-      //Member Diet Plan Details
-      const memberDietPlanDetailList = [];
-      const detailV1List = await csv({ delimiter: '|' }).fromFile(`${this.folderPath}\\txn_diet_plan_details.csv`);
-      const recipeV1List = await csv({ delimiter: '|' }).fromFile(`${this.folderPath}\\txn_diet_plan_recipe.csv`);
-      const recipeCategoryList = await this.getAllRecipeCategories();
-      let dietdetailRecipeList = [];
-      let recipeIdList;
-      let dietDetailV1FilterList = [];
-      let weekList = [];
-      let dietWeekV1List = [];
-      let startDt;
-      let endDt;
-
-      for (const dp of dietPlanV1List) {
-        dietDetailV1FilterList = detailV1List.filter((x) => x.diet_plan_id === dp.id && x.active == 1);
-        weekList = uniq(dietDetailV1FilterList.map((x) => x.week_id));
-
-        //Diet details table will have one entry per week against diet plan
-        for (const wk of weekList) {
-          dietdetailRecipeList = [];
-          dietWeekV1List = dietDetailV1FilterList.filter((x) => x.week_id === wk);
-
-          for (const category of dietWeekV1List) {
-            recipeIdList = recipeV1List
-              .filter((x) => x.diet_plan_details_id === category.id)
-              .map((x) => Number(x.recipe_id));
-
-            dietdetailRecipeList.push({
-              recipeCategoryId: Number(category.recipe_category_id),
-              recipeCategory: recipeCategoryList.find((x) => x.recipeCategoryId === Number(category.recipe_category_id))
-                ?.recipeCategory,
-              recipeIds: recipeIdList,
-              dietDetail: category.diet_plan,
-            });
-          }
-
-          startDt = dietWeekV1List && dietWeekV1List.length > 0 ? dietWeekV1List[0].start_date : null;
-          endDt = startDt ? moment(startDt).add(7, 'day').format(DB_DATE_FORMAT) : null;
-
-          //ONE ENTRY PER WEEK
-          memberDietPlanDetailList.push({
-            memberDietPlanId: dp.id,
-            dietPlan: dietdetailRecipeList,
-            cycleNo: wk,
-            type: DietTypeEnum.CYCLE,
-            startDate: startDt,
-            endDate: endDt,
-            createdAt: dp.created_at,
-            createdBy: dp.created_by == 0 ? adminUserId : dp.created_by,
-            updatedAt: dp.updated_at,
-            modifiedBy: dp.modified_by == 0 ? adminUserId : dp.modified_by,
-            createdIp: ':0',
-            modifiedIp: ':0',
-          });
-        }
-      }
-
-      const memberDietPlanDetailResult = await this.memberDietPlanDetailRepository.bulkCreate(memberDietPlanDetailList);
-
-      */
-
       await t.commit();
     } catch (e) {
       console.log(e);
@@ -780,6 +706,25 @@ export class MemberMigrationController {
             createdIp: ':0',
             modifiedIp: ':0',
           });
+        } else {
+          const m = await this.memberRepository.findOne({ where: { memberId: Number(s.member_id) } });
+          memberAddressList.push({
+            tableId: TableEnum.TXN_MEMBER,
+            pkOfTable: s.member_id,
+            addressTypeId: AddressTypeEnum.PERMANENT_ADDRESS,
+            postalAddress: ' ',
+            cityVillage: ' ',
+            countryId: m.countryId,
+            stateId: this.getStateId('', m.countryId, stateList),
+            pinCode: ' ',
+            active: s.active,
+            createdAt: s.created_at,
+            createdBy: adminUserId,
+            updatedAt: s.updated_at,
+            modifiedBy: adminUserId,
+            createdIp: ':0',
+            modifiedIp: ':0',
+          });
         }
       }
 
@@ -933,6 +878,8 @@ export class MemberMigrationController {
       );
       for (const s of tempV1List) {
         const address = find(memberAddresses, { pkOfTable: Number(s.member_id) });
+        console.log('----------------->', s.member_id);
+        console.log('----------------->', address);
         const v1Plan = find(tempV1PlanList, (obj) => {
           return Number(obj.id) === Number(s.program_plan_id);
         });
@@ -997,6 +944,7 @@ export class MemberMigrationController {
         `SELECT SETVAL('txn_addresses_address_id_seq', (SELECT MAX(address_id) + 1 FROM txn_addresses));`,
       );
     } catch (e) {
+      console.log(e);
       throw new Error(e);
     }
   }
@@ -1124,6 +1072,111 @@ export class MemberMigrationController {
       await this.sequelize.query(
         `SELECT SETVAL('txn_member_health_parameters_member_health_parameter_id_seq',
                        (SELECT MAX(member_health_parameter_id) + 1 FROM txn_member_health_parameters));`,
+      );
+    } catch (e) {
+      console.log(e);
+      throw new Error(e);
+    }
+  }
+
+  private async createMemberDietPlan() {
+    try {
+      await this.sequelize.query(`truncate table txn_member_diet_details restart identity CASCADE`);
+      await this.sequelize.query(`truncate table txn_member_diet_plans restart identity CASCADE`);
+
+      const adminUserId = 1;
+      const memberDietPlanList = [];
+      const dietPlanV1List = JSON.parse(readFileSync(resolve(`${this.folderPath}/txn_diet_plan.json`), 'utf8'));
+
+      for (const s of dietPlanV1List) {
+        memberDietPlanList.push({
+          memberDietPlanId: Number(s.id),
+          memberId: Number(s.member_id),
+          memberPaymentId: Number(s.member_plan_id),
+          noOfCycle: Number(s.total_week),
+          noOfDaysInCycle: Number(s.no_of_days) || 7,
+          currentCycleNo: Number(s.current_week),
+          currentDayNo: null,
+          isCompleted: s.end_date ? true : false,
+          startDate: s.start_date ? moment(s.start_date) : null,
+          endDate: s.end_date ? moment(s.end_date) : null,
+          active: s.active,
+          createdAt: s.created_at,
+          createdBy: s.created_by == 0 ? adminUserId : s.created_by,
+          updatedAt: s.updated_at,
+          modifiedBy: s.modified_by == 0 ? adminUserId : s.modified_by,
+          createdIp: ':0',
+          modifiedIp: ':0',
+        });
+      }
+      await this.memberDietPlanRepository.bulkCreate(memberDietPlanList);
+
+      //Member Diet Plan Details
+      const memberDietPlanDetailList = [];
+      const detailV1List = JSON.parse(readFileSync(resolve(`${this.folderPath}/txn_diet_plan_details.json`), 'utf8'));
+      const recipeV1List = JSON.parse(readFileSync(resolve(`${this.folderPath}/txn_diet_plan_recipe.json`), 'utf8'));
+      const recipeCategoryList = await this.getAllRecipeCategories();
+      let dietDetailRecipeList = [];
+      let recipeIdList;
+      let dietDetailV1FilterList = [];
+      let weekList = [];
+      let dietWeekV1List = [];
+      let startDt;
+      let endDt;
+
+      for (const dp of dietPlanV1List) {
+        dietDetailV1FilterList = detailV1List.filter((x) => x.diet_plan_id === dp.id && x.active == 1);
+        weekList = uniq(dietDetailV1FilterList.map((x) => x.week_id));
+
+        //Diet details table will have one entry per week against diet plan
+        for (const wk of weekList) {
+          dietDetailRecipeList = [];
+          dietWeekV1List = dietDetailV1FilterList.filter((x) => x.week_id === wk);
+
+          for (const category of dietWeekV1List) {
+            recipeIdList = recipeV1List
+              .filter((x) => x.diet_plan_details_id === category.id)
+              .map((x) => Number(x.recipe_id));
+
+            dietDetailRecipeList.push({
+              recipeCategoryId: Number(category.recipe_category_id),
+              recipeCategory: recipeCategoryList.find((x) => x.recipeCategoryId === Number(category.recipe_category_id))
+                ?.recipeCategory,
+              recipeIds: recipeIdList,
+              dietDetail: category.diet_plan,
+            });
+          }
+
+          startDt = dietWeekV1List && dietWeekV1List.length > 0 ? dietWeekV1List[0].start_date : null;
+          endDt = startDt ? moment(startDt).add(7, 'day').format(DB_DATE_FORMAT) : null;
+
+          //ONE ENTRY PER WEEK
+          memberDietPlanDetailList.push({
+            memberDietPlanId: dp.id,
+            dietPlan: dietDetailRecipeList,
+            cycleNo: wk,
+            type: DietTypeEnum.CYCLE,
+            startDate: startDt,
+            endDate: endDt,
+            createdAt: dp.created_at,
+            createdBy: dp.created_by == 0 ? adminUserId : dp.created_by,
+            updatedAt: dp.updated_at,
+            modifiedBy: dp.modified_by == 0 ? adminUserId : dp.modified_by,
+            createdIp: ':0',
+            modifiedIp: ':0',
+          });
+        }
+      }
+
+      await this.memberDietPlanDetailRepository.bulkCreate(memberDietPlanDetailList);
+
+      await this.sequelize.query(
+        `SELECT SETVAL('txn_member_diet_details_member_diet_detail_id_seq',
+                       (SELECT MAX(member_diet_detail_id) + 1 FROM txn_member_diet_details));`,
+      );
+      await this.sequelize.query(
+        `SELECT SETVAL('txn_member_diet_plans_member_diet_plan_id_seq',
+                       (SELECT MAX(member_diet_plan_id) + 1 FROM txn_member_diet_plans));`,
       );
     } catch (e) {
       console.log(e);

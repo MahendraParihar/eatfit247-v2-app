@@ -16,7 +16,8 @@ export class PdfService {
   headerTemplate: string;
   footerTemplate: string;
 
-  constructor(private franchiseService: FranchiseService, @Inject(REQUEST) private request) {}
+  constructor(private franchiseService: FranchiseService, @Inject(REQUEST) private request) {
+  }
 
   /**
    * Generate PDF
@@ -27,11 +28,13 @@ export class PdfService {
     fileName: string,
     data: any,
   ): Promise<IFileModel> {
+    const rPath = `${process.cwd()}/media-files`;
+    console.log(rPath);
     const fileNameWithExtension = `${fileName}.pdf`;
-    const relativePath = `${downloadFolderPath}\\${fileNameWithExtension}`;
-    const downloadFullPath = `${MediaFolderEnum.MEDIA_FOLDER_PHYSICAL_PATH}\\${MediaFolderEnum.DOWNLOADS}`;
-    const physicalFolderPath = `${downloadFullPath}\\${downloadFolderPath}`;
-    const physicalFilePath = `${downloadFullPath}\\${relativePath}`;
+    const relativePath = `${downloadFolderPath}/${fileNameWithExtension}`;
+    const downloadFullPath = `${rPath}/${MediaFolderEnum.DOWNLOADS}`;
+    const physicalFolderPath = `${downloadFullPath}/${downloadFolderPath}`;
+    const physicalFilePath = `${downloadFullPath}/${relativePath}`;
 
     //CREATE DIRECTORY IF NOT EXISTS
     if (!existsSync(physicalFolderPath)) {
@@ -65,7 +68,7 @@ export class PdfService {
   }
 
   async getData(templateName: string, data: any) {
-    const filePath = path.join(__dirname, '..', '..', `${TEMPLATE_FOLDER}\\${templateName}.hbs`);
+    const filePath = path.join(__dirname, '..', '..', `${TEMPLATE_FOLDER}/${templateName}.hbs`);
     const hbsTemplate = await readFileSync(filePath, 'utf8');
     const html = hbs.compile(hbsTemplate)(data);
     return html;
@@ -76,11 +79,11 @@ export class PdfService {
       this.registerHbsControls();
 
       const franchise: IFranchise = await this.franchiseService.fetchPrimaryFranchise();
-      let filePath = path.join(__dirname, '..', '..', `${TEMPLATE_FOLDER}\\header.hbs`);
+      let filePath = path.join(__dirname, '..', '..', `${TEMPLATE_FOLDER}/header.hbs`);
       const headerHbsTemplate = await readFileSync(filePath, 'utf8');
 
       this.headerTemplate = hbs.compile(headerHbsTemplate)(franchise);
-      filePath = path.join(__dirname, '..', '..', `${TEMPLATE_FOLDER}\\footer.hbs`);
+      filePath = path.join(__dirname, '..', '..', `${TEMPLATE_FOLDER}/footer.hbs`);
       const footerHbsTemplate = await readFileSync(filePath, 'utf8');
       this.footerTemplate = hbs.compile(footerHbsTemplate)(franchise);
       this.isHeaderFooterRegistered = true;
@@ -92,9 +95,9 @@ export class PdfService {
    */
   registerHbsControls() {
     const baseUrl = this.getBaseUrl();
-    hbs.registerHelper('img', function (url, cssClass) {
+    hbs.registerHelper('img', function(url, cssClass) {
       url = hbs.escapeExpression(baseUrl) + hbs.escapeExpression(url);
-      return new hbs.SafeString("<img class='" + cssClass + "' src='" + url + "' alt ='' />");
+      return new hbs.SafeString('<img class=\'' + cssClass + '\' src=\'' + url + '\' alt =\'\' />');
     });
   }
 
@@ -102,6 +105,6 @@ export class PdfService {
    * Get Base Api Url like https://localhost:3000
    */
   getBaseUrl() {
-    return this.request ? `${this.request.protocol}://${this.request.headers.host}/` : '';
+    return this.request ? `${this.request.protocol}:\${this.request.headers.host}\\` : '';
   }
 }

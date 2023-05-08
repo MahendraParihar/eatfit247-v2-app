@@ -93,7 +93,7 @@ export class MemberPaymentService {
           {
             model: TxnMemberDietPlan,
             attributes: ['noOfCycle', 'noOfDaysInCycle', 'currentCycleNo', 'currentDayNo'],
-            required: true,
+            required: false,
           },
           {
             model: TxnAddress,
@@ -185,7 +185,7 @@ export class MemberPaymentService {
           {
             model: TxnMemberDietPlan,
             attributes: ['noOfCycle', 'noOfDaysInCycle', 'currentCycleNo', 'currentDayNo'],
-            required: true,
+            required: false,
           },
           {
             model: TxnAddress,

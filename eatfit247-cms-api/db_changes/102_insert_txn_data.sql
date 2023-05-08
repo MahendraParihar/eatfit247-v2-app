@@ -241,10 +241,10 @@ VALUES (5, 2, 'I have high cholesterol. Will your weight loss program lower it?'
 INSERT INTO mst_franchises (franchise_id, company_name, first_name, last_name, email_id, alternate_email_id,
                             contact_number, alternate_contact_number, pan_number, tan_number, gst_number, start_date,
                             end_date, active, created_by, modified_by, created_ip, modified_ip, created_at, updated_at,
-                            logo)
+                            logo, is_primary)
 VALUES (1, 'EATFIT247', 'Shweta', 'Shah', 'eatfit24by7@gmail.com', '', '+919594768888', '', 'AAGFE6471M', '',
         '27AAGFE6471M1ZY', '2017-10-05', null, true, 1, 1, '115.96.212.175', '115.96.212.175', '2017-10-05 14:17:17',
-        '2017-10-05 14:17:17', '[]');
+        '2017-10-05 14:17:17', '[]', true);
 insert into txn_addresses (address_type_id, table_id, pk_of_table, postal_address, city_village, state_id, country_id,
                            pin_code, latitude, longitude, active, created_at, created_by, updated_at, modified_by,
                            created_ip, modified_ip)

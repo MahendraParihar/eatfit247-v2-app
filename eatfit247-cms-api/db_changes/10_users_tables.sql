@@ -391,7 +391,7 @@ create table txn_member_diet_details
     member_diet_detail_id serial primary key,
     member_diet_plan_id   integer                  not null,
     cycle_no              integer                  not null,
-    day_no                integer                  not null,
+    day_no                integer                  null default null,
     diet_plan             jsonb                    not null,
     start_date            date                     not null,
     end_date              date                     not null,
