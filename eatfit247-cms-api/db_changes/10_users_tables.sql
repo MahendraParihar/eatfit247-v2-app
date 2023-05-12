@@ -414,6 +414,8 @@ create table txn_diet_templates
     diet_template    varchar(100)             not null,
     cycle_no         integer                  not null,
     day_no           integer                  not null,
+    no_of_cycle      integer                  null,
+    days_in_cycle    integer                  null,
     is_weekly        boolean                  not null,
     active           boolean                  not null default true,
     created_by       integer,

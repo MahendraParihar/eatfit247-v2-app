@@ -144,18 +144,28 @@ form {
       margin-right: 12px;
     }
   }
+
+  .mat-form-field {
+    width: 100% !important;
+  }
 }
 
-.mat-form-field {
-  width: 100% !important;
-}
 
 .form-item {
   width: 100%;
   padding: $padding-medium;
+
+  .mat-form-field {
+    width: 100% !important;
+  }
 }
 
 .form-group {
+
+  .mat-form-field {
+    width: 100% !important;
+  }
+
   .form-card {
 
     /*:first-child {
@@ -174,6 +184,10 @@ form {
   display: flex;
   column-gap: $margin-large;
   margin-bottom: $margin-medium;
+
+  .mat-form-field {
+    width: 100% !important;
+  }
   /*width: 100%;
   grid-template-columns: repeat(6, 1fr);
   grid-column-gap: 10px;
@@ -687,7 +701,7 @@ h1, h2, h3, h4, h5, h6 {
     /*border-right: 1px solid rgba(0, 0, 0, .12) !important;*/
     padding: 0.2rem 0.7rem;
     vertical-align: middle;
-    word-break: break-all;
+    word-break: break-word;
   }
 
   .mat-header-cell {

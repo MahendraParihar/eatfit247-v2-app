@@ -116,6 +116,7 @@ export class MemberPaymentModel extends LovModel {
 export class TaxModel {
   CGST: BaseTaxModel;
   SGST: BaseTaxModel;
+  IGST: BaseTaxModel;
 
   static fromJson(data: any): TaxModel | null {
     if (!data) {
@@ -124,6 +125,7 @@ export class TaxModel {
     const obj: TaxModel = new TaxModel();
     obj.CGST = BaseTaxModel.fromJson(data.CGST);
     obj.SGST = BaseTaxModel.fromJson(data.SGST);
+    obj.IGST = BaseTaxModel.fromJson(data.IGST);
     return obj;
   }
 

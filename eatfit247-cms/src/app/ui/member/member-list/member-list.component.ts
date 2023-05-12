@@ -29,8 +29,8 @@ import {DialogAlertComponent} from "../../shared/components/dialog-alert/dialog-
 })
 export class MemberListComponent implements OnInit, AfterViewInit, OnDestroy {
 
-  // displayedColumns = ["seqNo", 'image', 'name', 'emailId', 'franchise','referrer', 'country', 'status', "action"];
-  displayedColumns = ['image', "data", 'status', "action"];
+  displayedColumns = ["seqNo", 'name', 'emailId', 'nutritionist','franchise','referrer', 'country', 'status', "action"];
+  // displayedColumns = ['image', "data", 'status', "action"];
   dataSource: MemberDatasource;
   totalCount = 0;
   stringRes = StringResources;

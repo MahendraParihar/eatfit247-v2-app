@@ -20,7 +20,11 @@
       flex-direction: row !important;
       justify-content: space-between !important;
       align-items: center !important;
-      padding: 0 0 0 16px !important;
+      padding: 0 0 0 $padding-medium !important;
+    }
+    .mat-list-option{
+      height: 42px !important;
+      font-size: 14px !important;
     }
   }
 }

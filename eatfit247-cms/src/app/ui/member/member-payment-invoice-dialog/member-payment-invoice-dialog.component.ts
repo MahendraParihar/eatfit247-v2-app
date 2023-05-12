@@ -7,6 +7,8 @@ import {MemberPaymentModel} from 'src/app/models/member-payment.model';
 import {ResponseDataModel} from 'src/app/models/response-data.model';
 import {HttpService} from 'src/app/service/http.service';
 import {SnackBarService} from 'src/app/service/snack-bar.service';
+import { AddressModel } from '../../../models/address.model';
+import { CommonUtil } from '../../../utilites/common-util';
 
 @Component({
   selector: 'app-member-payment-invoice-dialog',
@@ -40,6 +42,10 @@ export class MemberPaymentInvoiceDialogComponent implements OnInit {
 
   closeDialog(flag: boolean) {
     this.dialogRef.close(flag);
+  }
+
+  getAddress(address: AddressModel):string{
+    return CommonUtil.convertAddressObj(address);
   }
 
   async downloadInvoice(): Promise<void> {

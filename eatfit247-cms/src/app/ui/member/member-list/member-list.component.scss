@@ -5,28 +5,11 @@
   overflow-y: scroll;
 }
 
-.member {
-  display: grid;
-  grid-template-columns: 2fr 1fr auto;
-  gap: $padding-medium;
-  width: 100%;
-  align-items: center;
-
-  .member-info {
-    display: flex;
-    flex-direction: column;
-    align-content: flex-start;
-    gap: $padding-small;
-  }
-
-  .connection-info {
-    display: flex;
-    flex-direction: column;
-    align-content: flex-start;
-    gap: $padding-small;
-  }
-
-  .diet-info {
-
-  }
+.mat-column-referrer{
+  width: 100px;
+  max-width: 100px;
+}
+.mat-column-country{
+  width: 100px;
+  max-width: 100px;
 }

@@ -17,65 +17,58 @@
         <app-custom-img-tag [alt]="" [isAvatar]="true" [webUrl]="d.imagePath"></app-custom-img-tag>
       </mat-cell>
     </ng-container>
-    <ng-container matColumnDef="data">
-      <mat-header-cell *matHeaderCellDef>Member Info</mat-header-cell>
-      <mat-cell *matCellDef="let d; let i = index;">
-        <div class="member">
-          <div class="member-info">
-            <a (click)="onViewClick(d.id)" class="link">{{d.firstName}} {{d.lastName}}</a>
-            <span class='secondary-text'>{{d.emailId}} | {{d.countryCode}}-{{d.contactNumber}} | <span *ngIf="d.nutritionist">{{d.nutritionist | appCreatedBy }}</span></span>
-          </div>
-          <div class="connection-info">
-            <div>
-              {{stringRes.FRANCHISE}} : <a *ngIf="d.memberFranchise" class="link"
-                                           routerLink="/{{navigationPathEnum.FRANCHISE_DETAIL}}/{{d.memberFranchise.franchiseId}}"
-                                           routerLinkActive="active"
-                                           target="_blank">{{ d.memberFranchise.companyName}}</a>
-            </div>
-            <div>
-              {{stringRes.REFERRER}} : <a *ngIf="d.memberReferrer" class="link"
-                                          routerLink="/{{navigationPathEnum.REFERRER_DETAIL}}/{{d.memberReferrer.referrerId}}"
-                                          routerLinkActive="active"
-                                          target="_blank">{{ d.memberReferrer.companyName}}</a>
-            </div>
-          </div>
-          <div class="diet-info">
-            <span [ngClass]="d.isAssessmentSubmitted ? 'green-bg':'red-bg'"
-                  class="chip">{{d.isAssessmentSubmitted ? 'Assessment Submitted' : 'Assessment Pending'}}</span>
-          </div>
-        </div>
-      </mat-cell>
-    </ng-container>
-    <ng-container matColumnDef="status">
-      <mat-header-cell *matHeaderCellDef>Status</mat-header-cell>
-      <mat-cell *matCellDef="let d; let i = index">
-        <button (click)="onDeleteClick(d, i)" [flag]="d.userStatusId" appUserStatusBtn mat-flat-button>
-          {{d.userStatusId === adminUserStatusEnum.ACTIVE ? stringRes.ACTIVE : d.userStatusId === adminUserStatusEnum.IN_ACTIVE ? stringRes.IN_ACTIVE : stringRes.PENDING_VERIFICATION}}
-        </button>
-      </mat-cell>
-    </ng-container>
-    <ng-container matColumnDef="action">
-      <mat-header-cell *matHeaderCellDef>Action</mat-header-cell>
-      <mat-cell *matCellDef="let d; let i = index">
-        <button (click)="onEditClick(d.id)" aria-label="Update" color="primary" mat-icon-button matTooltip="Edit">
-          <mat-icon>edit</mat-icon>
-        </button>
-        <button (click)="onResetPasswordClick(d)" aria-label="Reset Password" color="primary" mat-icon-button
-                matTooltip="Reset Password">
-          <mat-icon>lock_reset</mat-icon>
-        </button>
-      </mat-cell>
-    </ng-container>
-    <!--<ng-container matColumnDef="seqNo">
+<!--    <ng-container matColumnDef="data">-->
+<!--      <mat-header-cell *matHeaderCellDef>Member Info</mat-header-cell>-->
+<!--      <mat-cell *matCellDef="let d; let i = index;">-->
+<!--        <div class="member">-->
+<!--          <div class="member-info">-->
+<!--            <a (click)="onViewClick(d.id)" class="link">{{d.firstName}} {{d.lastName}}</a>-->
+<!--            <span class='secondary-text'>{{d.emailId}} | {{d.countryCode}}-{{d.contactNumber}} | <span *ngIf="d.nutritionist">{{d.nutritionist | appCreatedBy }}</span></span>-->
+<!--          </div>-->
+<!--          <div class="connection-info">-->
+<!--            <div>-->
+<!--              {{stringRes.FRANCHISE}} : <a *ngIf="d.memberFranchise" class="link"-->
+<!--                                           routerLink="/{{navigationPathEnum.FRANCHISE_DETAIL}}/{{d.memberFranchise.franchiseId}}"-->
+<!--                                           routerLinkActive="active"-->
+<!--                                           target="_blank">{{ d.memberFranchise.companyName}}</a>-->
+<!--            </div>-->
+<!--            <div>-->
+<!--              {{stringRes.REFERRER}} : <a *ngIf="d.memberReferrer" class="link"-->
+<!--                                          routerLink="/{{navigationPathEnum.REFERRER_DETAIL}}/{{d.memberReferrer.referrerId}}"-->
+<!--                                          routerLinkActive="active"-->
+<!--                                          target="_blank">{{ d.memberReferrer.companyName}}</a>-->
+<!--            </div>-->
+<!--          </div>-->
+<!--          <div class="diet-info">-->
+<!--            <span [ngClass]="d.isAssessmentSubmitted ? 'green-bg':'red-bg'"-->
+<!--                  class="chip">{{d.isAssessmentSubmitted ? 'Assessment Submitted' : 'Assessment Pending'}}</span>-->
+<!--          </div>-->
+<!--        </div>-->
+<!--      </mat-cell>-->
+<!--    </ng-container>-->
+<!--    <ng-container matColumnDef="status">-->
+<!--      <mat-header-cell *matHeaderCellDef>Status</mat-header-cell>-->
+<!--      <mat-cell *matCellDef="let d; let i = index">-->
+<!--        <button (click)="onDeleteClick(d, i)" [flag]="d.userStatusId" appUserStatusBtn mat-flat-button>-->
+<!--          {{d.userStatusId === adminUserStatusEnum.ACTIVE ? stringRes.ACTIVE : d.userStatusId === adminUserStatusEnum.IN_ACTIVE ? stringRes.IN_ACTIVE : stringRes.PENDING_VERIFICATION}}-->
+<!--        </button>-->
+<!--      </mat-cell>-->
+<!--    </ng-container>-->
+<!--    <ng-container matColumnDef="action">-->
+<!--      <mat-header-cell *matHeaderCellDef>Action</mat-header-cell>-->
+<!--      <mat-cell *matCellDef="let d; let i = index">-->
+<!--        <button (click)="onEditClick(d.id)" aria-label="Update" color="primary" mat-icon-button matTooltip="Edit">-->
+<!--          <mat-icon>edit</mat-icon>-->
+<!--        </button>-->
+<!--        <button (click)="onResetPasswordClick(d)" aria-label="Reset Password" color="primary" mat-icon-button-->
+<!--                matTooltip="Reset Password">-->
+<!--          <mat-icon>lock_reset</mat-icon>-->
+<!--        </button>-->
+<!--      </mat-cell>-->
+<!--    </ng-container>-->
+    <ng-container matColumnDef="seqNo">
       <mat-header-cell *matHeaderCellDef>#</mat-header-cell>
       <mat-cell *matCellDef="let d; let i = index;">{{i + 1}}</mat-cell>
-    </ng-container>
-    <ng-container matColumnDef="image">
-      <mat-header-cell *matHeaderCellDef>Image</mat-header-cell>
-      <mat-cell *matCellDef="let d;">
-        <img *ngIf="d.imagePath && d.imagePath.length > 0" class="avatar" alt=""
-             src="{{d.imagePath[0].webUrl}}"/>
-      </mat-cell>
     </ng-container>
     <ng-container matColumnDef="name">
       <mat-header-cell *matHeaderCellDef>Name</mat-header-cell>
@@ -85,8 +78,13 @@
     </ng-container>
     <ng-container matColumnDef="emailId">
       <mat-header-cell *matHeaderCellDef>Contact Info</mat-header-cell>
-      <mat-cell *matCellDef="let d;">{{d.emailId}}<br>
+      <mat-cell *matCellDef="let d;">
         {{d.countryCode}}-{{d.contactNumber}}</mat-cell>
+    </ng-container>
+    <ng-container matColumnDef="nutritionist">
+      <mat-header-cell *matHeaderCellDef>Nutritionist</mat-header-cell>
+      <mat-cell *matCellDef="let d;">{{d.nutritionist ? (d.nutritionist | appCreatedBy) : '' }}
+      </mat-cell>
     </ng-container>
     <ng-container matColumnDef="country">
       <mat-header-cell *matHeaderCellDef>Country</mat-header-cell>
@@ -121,7 +119,7 @@
           <mat-icon>edit</mat-icon>
         </button>
       </mat-cell>
-    </ng-container>-->
+    </ng-container>
 
     <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
 
