@@ -5,12 +5,19 @@ import { CreateMemberPocketGuideDto } from '../dto/member-pocket-guide.dto';
 
 @Controller('member-pocket-guide')
 export class MemberPocketGuideController {
-  constructor(private readonly service: MemberPocketGuideService) {}
+  constructor(private readonly service: MemberPocketGuideService) {
+  }
 
   @UseGuards(JwtAuthGuard)
   @Get('manage/:id')
   async getById(@Param('id') id: number) {
     return await this.service.fetchById(id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('list/:id')
+  async getMemberPocketGuideById(@Param('id') id: number) {
+    return await this.service.fetchMemberPocketGuide(id);
   }
 
   @UseGuards(JwtAuthGuard)

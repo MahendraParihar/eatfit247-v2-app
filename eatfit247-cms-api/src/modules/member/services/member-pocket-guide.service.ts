@@ -22,7 +22,99 @@ export class MemberPocketGuideService {
     @InjectModel(MstPocketGuide) private readonly pocketGuideRepository: typeof MstPocketGuide,
     private exceptionService: ExceptionService,
     private sequelize: Sequelize,
-  ) {}
+  ) {
+  }
+
+  public async fetchMemberPocketGuide(id: number): Promise<IServerResponse> {
+    let res: IServerResponse;
+    try {
+      MstPocketGuide.belongsTo(TxnMemberPocketGuide, {
+        targetKey: 'pocketGuideId',
+        foreignKey: 'pocketGuideId',
+      });
+      const { rows, count } = await this.pocketGuideRepository.findAndCountAll({
+        include: [
+          {
+            attributes: ['memberPocketGuideId', 'createdAt', 'updatedAt'],
+            model: TxnMemberPocketGuide,
+            required: true,
+            where: {
+              memberId: id,
+            },
+            include: [
+              {
+                model: MstAdminUser,
+                required: false,
+                as: 'CreatedBy',
+                attributes: ADMIN_USER_SHORT_INFO_ATTRIBUTE,
+              },
+              {
+                model: MstAdminUser,
+                required: false,
+                as: 'ModifiedBy',
+                attributes: ADMIN_USER_SHORT_INFO_ATTRIBUTE,
+              },
+            ],
+          },
+        ],
+        where: {
+          active: true,
+        },
+        order: [['pocketGuide', 'ASC']],
+        raw: true,
+        nest: true,
+      });
+
+      if (!rows || rows.length === 0) {
+        res = {
+          code: ServerResponseEnum.WARNING,
+          message: StringResource.NO_DATA_FOUND,
+          data: null,
+        };
+        return res;
+      }
+
+      const resList: IMemberPocketGuide[] = [];
+      for (const s of rows) {
+        resList.push(<IMemberPocketGuide>{
+          id: s.pocketGuideId,
+          name: s.pocketGuide,
+          description: s.description,
+          isSelected: !!s['txn_member_pocket_guide']['memberPocketGuideId'],
+          active: s.active,
+          imagePath: CommonFunctionsUtil.getImagesObj(s.imagePath),
+          filePath: CommonFunctionsUtil.getImagesObj(s.filePath),
+          createdBy: CommonFunctionsUtil.getAdminShortInfo(s['txn_member_pocket_guide']['CreatedBy'], 'CreatedBy'),
+          updatedBy: CommonFunctionsUtil.getAdminShortInfo(s['txn_member_pocket_guide']['ModifiedBy'], 'ModifiedBy'),
+          createdAt: s['txn_member_pocket_guide'].createdAt
+            ? moment(s['txn_member_pocket_guide'].createdAt).format(DEFAULT_DATE_TIME_FORMAT)
+            : null,
+          updatedAt: s['txn_member_pocket_guide'].updatedAt
+            ? moment(s['txn_member_pocket_guide'].updatedAt).format(DEFAULT_DATE_TIME_FORMAT)
+            : null,
+        });
+      }
+
+      res = {
+        code: ServerResponseEnum.SUCCESS,
+        message: StringResource.SUCCESS,
+        data: {
+          list: resList,
+          count: count,
+        },
+      };
+
+      return res;
+    } catch (e) {
+      this.exceptionService.logException(e);
+      res = {
+        code: ServerResponseEnum.ERROR,
+        message: IS_DEV ? e['message'] : StringResource.SOMETHING_WENT_WRONG,
+        data: null,
+      };
+      return res;
+    }
+  }
 
   public async fetchById(id: number): Promise<IServerResponse> {
     let res: IServerResponse;

@@ -41,6 +41,9 @@ import {
 } from './member-payment-invoice-dialog/member-payment-invoice-dialog.component';
 import {MemberIssueDialogComponent} from './member-issue-dialog/member-issue-dialog.component';
 import {MemberDashboardComponent} from './member-dashboard/member-dashboard.component';
+import {
+  MemberPocketGuideManageDialogComponent
+} from './member-pocket-guide-manage-dialog/member-pocket-guide-manage-dialog.component';
 
 
 @NgModule({
@@ -67,7 +70,8 @@ import {MemberDashboardComponent} from './member-dashboard/member-dashboard.comp
     MemberDietPlanDetailsDialogComponent,
     MemberPaymentInvoiceDialogComponent,
     MemberIssueDialogComponent,
-    MemberDashboardComponent
+    MemberDashboardComponent,
+    MemberPocketGuideManageDialogComponent
   ],
   imports: [
     MaterialModule,
@@ -80,7 +84,8 @@ import {MemberDashboardComponent} from './member-dashboard/member-dashboard.comp
     MemberCallScheduleManageDialogComponent,
     MemberBodyStatsManageDialogComponent,
     AssessmentDetailDialogComponent,
-    MemberPaymentManageDialogComponent
+    MemberPaymentManageDialogComponent,
+    MemberPocketGuideManageDialogComponent
   ]
 })
 export class MemberModule {

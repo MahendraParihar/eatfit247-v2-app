@@ -1,0 +1,32 @@
+<h4>{{stringRes.POCKET_GUIDES}}</h4>
+<mat-dialog-content>
+<div class="data-table m-t-0">
+  <mat-table *ngIf="memberPocketGuides && memberPocketGuides.length>0" [dataSource]="memberPocketGuides">
+    <ng-container matColumnDef="seqNo">
+      <mat-header-cell *matHeaderCellDef>#</mat-header-cell>
+      <mat-cell *matCellDef="let d; let i = index;">{{i + 1}}</mat-cell>
+    </ng-container>
+    <ng-container matColumnDef="selected">
+      <mat-header-cell *matHeaderCellDef>Select</mat-header-cell>
+      <mat-cell *matCellDef="let d;">
+        <mat-checkbox [(ngModel)]="d.isSelected"></mat-checkbox>
+      </mat-cell>
+    </ng-container>
+    <ng-container matColumnDef="title">
+      <mat-header-cell *matHeaderCellDef>Pocket Guide</mat-header-cell>
+      <mat-cell *matCellDef="let d;">{{d.name}}</mat-cell>
+    </ng-container>
+    <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+
+    <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
+  </mat-table>
+</div>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button (click)="onCancel(true)" class="round-btn" mat-raised-button>
+    {{stringRes.CANCEL}}
+  </button>
+  <button (click)="onSubmit()" class="round-btn gradient-btn" color="primary" mat-raised-button>
+    {{stringRes.SAVE}}
+  </button>
+</mat-dialog-actions>

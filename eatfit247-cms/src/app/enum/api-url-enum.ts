@@ -167,6 +167,7 @@ export enum ApiUrlEnum {
 
   MEMBER_ASSESSMENT_MANAGEMENT = 'member-assessment/manage',
   MEMBER_ASSESSMENT_MASTER_DATA = 'member-assessment/master-data',
+  MEMBER_POCKET_GUIDE_LIST = 'member-pocket-guide/list',
   MEMBER_POCKET_GUIDE_MANAGE = 'member-pocket-guide/manage',
   MEMBER_HEALTH_ISSUE_MANAGE = 'member-health-issue/manage',
 

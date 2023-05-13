@@ -1,4 +1,4 @@
-<div class="data-table m-t-0">
+<div class="data-table m-t-0"  *ngIf='totalCount > 0'>
 
   <div class="action-panel">
     <button (click)="onAddClick()" class="btn gradient-btn" color="primary" mat-raised-button>
@@ -6,7 +6,7 @@
       {{stringRes.ADD_MEMBER_PAYMENT}}
     </button>
   </div>
-
+  <ng-container>
   <mat-table [dataSource]="dataSource">
 
     <ng-container matColumnDef="seqNo">
@@ -59,4 +59,9 @@
 
     <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
   </mat-table>
+  </ng-container>
 </div>
+<app-no-data-found *ngIf='totalCount === 0' (buttonClick)='onAddClick()' [title]='"No Pocket Guide"'
+                   [btnText]='stringRes.ADD_MEMBER_PAYMENT'
+                   [image]='"empty-data.jpg"'
+                   [message]='"No plan subscribed, click on add button to add plan"'></app-no-data-found>

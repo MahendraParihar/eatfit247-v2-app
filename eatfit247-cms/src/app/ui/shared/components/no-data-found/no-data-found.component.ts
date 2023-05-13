@@ -17,10 +17,14 @@ export class NoDataFoundComponent implements OnInit {
   @Input()
   image: string;
 
+  @Input()
+  btnText: string = StringResources.BACK_TO_PREVIOUS_PAGE;
+
+  @Input()
+  showBtn:boolean = true;
+
   @Output()
   buttonClick: EventEmitter<any> = new EventEmitter<any>();
-
-  stringResources = StringResources;
 
   constructor() {
   }

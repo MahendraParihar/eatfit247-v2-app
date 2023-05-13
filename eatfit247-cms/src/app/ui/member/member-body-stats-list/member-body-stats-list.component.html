@@ -1,4 +1,4 @@
-<div class="data-table  m-t-0">
+<div class="data-table  m-t-0" *ngIf='totalCount > 0'>
 
   <div class="action-panel">
     <button (click)="onAddClick()" class="btn gradient-btn" color="primary" mat-raised-button>
@@ -61,3 +61,9 @@
   <mat-paginator [length]="totalCount" [pageSizeOptions]="pageSizeList"
                  [pageSize]="defaultPageSize"></mat-paginator>
 </div>
+
+<app-no-data-found *ngIf='totalCount === 0' (buttonClick)='onAddClick()' [title]='"No Body Stats"'
+                   [btnText]='stringRes.ADD_MEMBER_BODY_STATS'
+                   [image]='"empty-data.jpg"'
+                   [message]='"No body stats present, click on add button to add body stats"'>
+</app-no-data-found>

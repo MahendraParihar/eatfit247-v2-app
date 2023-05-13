@@ -1,10 +1,5 @@
 @import "../../../theme/padding";
 
-.data-table .mat-table {
-  height: calc(100vh - 260px) !important;
-  overflow-y: scroll;
-}
-
 .footer-action {
   display: flex;
   flex-direction: row;
