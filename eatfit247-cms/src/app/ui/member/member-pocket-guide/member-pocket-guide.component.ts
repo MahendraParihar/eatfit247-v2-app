@@ -8,7 +8,6 @@ import { ResponseDataModel } from '../../../models/response-data.model';
 import { ApiUrlEnum } from '../../../enum/api-url-enum';
 import { ServerResponseEnum } from '../../../enum/server-response-enum';
 import { MemberPocketGuideModel } from '../../../models/member-pocket-guide.model';
-import { filter, map } from 'lodash';
 import { MatDialog } from '@angular/material/dialog';
 import {
   MemberPocketGuideManageDialogComponent,
@@ -64,7 +63,6 @@ export class MemberPocketGuideComponent implements OnInit, AfterViewInit, OnDest
           }
           return true;
         case ServerResponseEnum.WARNING:
-          this.snackBarService.showWarning(apiResponse.message);
           return false;
         case ServerResponseEnum.ERROR:
         default:
@@ -92,37 +90,4 @@ export class MemberPocketGuideComponent implements OnInit, AfterViewInit, OnDest
       }
     });
   }
-
-  onCancel(): void {
-    this.navigationService.back();
-  }
-
-  async onSubmit(): Promise<void> {
-    const ids = map(filter(this.memberPocketGuides, { isSelected: true }), 'id');
-    let payload: any = {
-      pocketGuideIds: ids,
-    };
-    let res: ResponseDataModel;
-    if (this.id > 0) {
-      res = await this.httpService.putRequest(ApiUrlEnum.MEMBER_POCKET_GUIDE_MANAGE, this.id, payload, true);
-    } else {
-      res = await this.httpService.postRequest(ApiUrlEnum.MEMBER_POCKET_GUIDE_MANAGE, payload, true);
-    }
-    if (res) {
-      switch (res.code) {
-        case ServerResponseEnum.SUCCESS:
-          this.snackBarService.showSuccess(res.message);
-          this.onCancel();
-          break;
-        case ServerResponseEnum.WARNING:
-          this.snackBarService.showWarning(res.message);
-          break;
-        case ServerResponseEnum.ERROR:
-          this.snackBarService.showError(res.message);
-          break;
-      }
-    }
-  }
-
-  protected readonly MemberPocketGuideManageDialogComponent = MemberPocketGuideManageDialogComponent;
 }

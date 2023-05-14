@@ -1,7 +1,11 @@
-<div class="error-layout">
-  <img alt="" src="{{'assets/errors/'+(image ? image: 'error-2.png')}}">
-  <h2 *ngIf="title">{{title}}</h2>
-  <p *ngIf="message">{{message}}</p>
-  <button *ngIf='showBtn' (click)="backToPage()" class="gradient-btn" mat-button
-          type="button">{{btnText}}</button>
+<div class='error-layout p-medium'>
+  <div class='data-section'>
+    <div>
+      <h2 *ngIf='title'>{{title}}</h2>
+      <p *ngIf='message'>{{message}}</p>
+    </div>
+    <button *ngIf='showBtn' (click)='backToPage()' class='gradient-btn m-t-large' mat-button
+            type='button'>{{btnText}}</button>
+  </div>
+  <img alt='' src="{{'assets/errors/'+(image ? image: 'error-2.png')}}">
 </div>

@@ -381,6 +381,8 @@ export enum StringResources {
   ADD_POCKET_GUIDE = 'Add Pocket Guide',
   EDIT_POCKET_GUIDE = 'Edit Pocket Guide',
 
+  ADD_HEALTH_ISSUE = '̄Add Health Issue',
+
   ADD_DIET_TEMPLATE = 'Add Diet Template',
   EDIT_DIET_TEMPLATE = 'Edit Diet Template',
 

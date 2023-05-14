@@ -14,6 +14,12 @@ export class MemberHealthIssueController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Get('list/:id')
+  async getMemberPocketGuideById(@Param('id') id: number) {
+    return await this.service.fetchMemberHealthIssues(id);
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Put('manage/:id')
   async createOrUpdate(@Param('id') id: number, @Req() req, @Body() body: CreateMemberHealthIssueDto) {
     return await this.service.createOrUpdate(id, body, req.ip, req.user.userId);

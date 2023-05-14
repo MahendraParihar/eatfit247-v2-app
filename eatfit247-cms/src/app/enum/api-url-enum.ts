@@ -170,6 +170,7 @@ export enum ApiUrlEnum {
   MEMBER_POCKET_GUIDE_LIST = 'member-pocket-guide/list',
   MEMBER_POCKET_GUIDE_MANAGE = 'member-pocket-guide/manage',
   MEMBER_HEALTH_ISSUE_MANAGE = 'member-health-issue/manage',
+  MEMBER_HEALTH_ISSUE_LIST = 'member-health-issue/list',
 
   MEMBER_CALL_LOG = 'member-call-schedule/list',
   MEMBER_CALL_LOG_MANAGE = 'member-call-schedule/manage',

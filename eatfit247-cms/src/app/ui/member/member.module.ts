@@ -44,6 +44,9 @@ import {MemberDashboardComponent} from './member-dashboard/member-dashboard.comp
 import {
   MemberPocketGuideManageDialogComponent
 } from './member-pocket-guide-manage-dialog/member-pocket-guide-manage-dialog.component';
+import {
+  MemberHealthIssueManageDialogComponent
+} from './member-health-issue-manage-dialog/member-health-issue-manage-dialog.component';
 
 
 @NgModule({
@@ -71,7 +74,8 @@ import {
     MemberPaymentInvoiceDialogComponent,
     MemberIssueDialogComponent,
     MemberDashboardComponent,
-    MemberPocketGuideManageDialogComponent
+    MemberPocketGuideManageDialogComponent,
+    MemberHealthIssueManageDialogComponent
   ],
   imports: [
     MaterialModule,
@@ -85,7 +89,8 @@ import {
     MemberBodyStatsManageDialogComponent,
     AssessmentDetailDialogComponent,
     MemberPaymentManageDialogComponent,
-    MemberPocketGuideManageDialogComponent
+    MemberPocketGuideManageDialogComponent,
+    MemberHealthIssueManageDialogComponent
   ]
 })
 export class MemberModule {
