@@ -34,6 +34,7 @@ import { CommonService } from '../common/common.service';
 import { exit } from '@nestjs/cli/actions';
 import * as moment from 'moment';
 import { DietTypeEnum } from '../../enums/diet-type-enum';
+import { MstConfig } from '../../core/database/models/mst-config.model';
 
 @Controller('migration')
 export class MemberMigrationController {
@@ -70,14 +71,9 @@ export class MemberMigrationController {
 
   @Get('member')
   async init() {
-    const adminUserId = 1;
-
     const t = await this.sequelize.transaction();
 
     try {
-      const countryList = await this.getAllCountries();
-      const stateList = await this.getAllStates();
-
       // Program Plan
       /*try {
         await this.createProgramPlan();
@@ -137,22 +133,22 @@ export class MemberMigrationController {
       // }
 
       // Member Program Plan
-      // try {
-      //   await this.createMemberProgramPlan();
-      // } catch (e) {
-      //   console.log(e);
-      //   await t.rollback();
-      //   exit();
-      // }
-
-      //Member Diet Plan
       try {
-        await this.createMemberDietPlan();
-      } catch (error) {
-        console.log(error);
+        await this.createMemberProgramPlan();
+      } catch (e) {
+        console.log(e);
         await t.rollback();
         exit();
       }
+
+      //Member Diet Plan
+      // try {
+      //   await this.createMemberDietPlan();
+      // } catch (error) {
+      //   console.log(error);
+      //   await t.rollback();
+      //   exit();
+      // }
       await t.commit();
     } catch (e) {
       console.log(e);
@@ -198,21 +194,28 @@ export class MemberMigrationController {
     isTaxApplicable: boolean,
     systemDiscountAmount: number,
     address: TxnAddress,
+    oldTaxObject: any,
   ) {
     try {
       const planFees = programPlan;
-      const configParameters = await this.configParameterService.findAll();
+      const configParameters: MstConfig[] = (await this.configParameterService.findAll()).data;
       const currencyConfigList = await this.currencyConfigService.getCurrencyConfigList();
       const franchiseAddresses = await this.commonService.findAddresses(TableEnum.MST_FRANCHISE, PRIMARY_FRANCHISE);
       let franchiseAddress;
       if (franchiseAddresses && franchiseAddresses.length > 0) {
         franchiseAddress = franchiseAddresses[0];
       }
+      const tempUC = _.find(configParameters, { configName: DEFAULT_CURRENCY });
+      const userCurrency = tempUC.configValue;
 
-      const userCurrency = userCurrencys ? userCurrencys : configParameters[DEFAULT_CURRENCY];
-      const systemCurrency = configParameters[DEFAULT_CURRENCY];
+      const tempSC = _.find(configParameters, { configName: DEFAULT_CURRENCY });
+      const systemCurrency = tempSC.configValue;
+
       const taxApplicable = isTaxApplicable;
-      const taxPercentage = configParameters[TAX_PERCENTAGE];
+
+      const tempTP = _.find(configParameters, { configName: TAX_PERCENTAGE });
+      const taxPercentage = Number(tempTP.configValue);
+
       const targetCurrencyConfig = _.find(currencyConfigList, {
         sourceCurrencyCode: userCurrency,
       });
@@ -254,7 +257,7 @@ export class MemberMigrationController {
           address.stateId,
           franchiseAddress.countryId,
           franchiseAddress.stateId,
-          userTaxObj,
+          userCurrencyTaxAmount,
           taxPercentage,
         );
       }
@@ -685,7 +688,7 @@ export class MemberMigrationController {
       const memberPlanV1List = JSON.parse(readFileSync(resolve(`${this.folderPath}/txn_member_plan.json`), 'utf8'));
 
       for (const s of memberPlanV1List) {
-        //CREATED BY = 1 here as entries made by member and cantnot put member id as it is FK with admin table
+        //CREATED BY = 1 here as entries made by member and cant not put member id as it is FK with admin table
         if (s.address_field) {
           countryId = s.address_field.country_id || IN_COUNTRY_ID;
 
@@ -878,8 +881,6 @@ export class MemberMigrationController {
       );
       for (const s of tempV1List) {
         const address = find(memberAddresses, { pkOfTable: Number(s.member_id) });
-        console.log('----------------->', s.member_id);
-        console.log('----------------->', address);
         const v1Plan = find(tempV1PlanList, (obj) => {
           return Number(obj.id) === Number(s.program_plan_id);
         });
@@ -902,7 +903,7 @@ export class MemberMigrationController {
           addressId: address.addressId,
           transactionId: s.invoice_id ? s.invoice_id : null,
           invoiceId: s.invoice_no || `EF24B7${s.id}`,
-          paymentStatusId: s.payment_status == 'paid' || s.payment_status == 'success' ? 1 : 2,
+          paymentStatusId: (s.payment_status == 'paid' || s.payment_status == 'Success') ? 1 : 2,
           promoCode: s.discount_code,
           paymentDate: s.start_date ? s.start_date : s.created_at,
           paymentGatewayResponse: s.razor_json ? s.razor_json : null,
@@ -912,6 +913,7 @@ export class MemberMigrationController {
             Number(s.tax_amount) > 0,
             Number(s.discount_amount),
             address,
+            s.tax_json_object,
           ),
           isTaxApplicable: Number(s.tax_amount) > 0,
           createdAt: s.created_at,
@@ -999,7 +1001,6 @@ export class MemberMigrationController {
       let memberHealthLogId = dp[0][0]['max_id'];
 
       const unitList = await this.getAllHealthParamUnits();
-      console.log(unitList);
       const healthParamListV1List = JSON.parse(
         readFileSync(resolve(`${this.folderPath}/txn_member_key_parameter.json`), 'utf8'),
       );
@@ -1040,7 +1041,6 @@ export class MemberMigrationController {
                     x.healthParameterId == s.key_parameter_id,
                 )
               ) {
-                console.log(s.unit);
                 memberHealthParamList.push({
                   memberId: s.member_id,
                   memberHealthParameterLogId: memberHealthLogId,

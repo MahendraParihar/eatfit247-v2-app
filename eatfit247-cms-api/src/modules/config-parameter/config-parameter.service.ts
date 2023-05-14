@@ -18,10 +18,10 @@ export class ConfigParameterService {
     private sequelize: Sequelize,
   ) {}
 
-  public async findAll(): Promise<any> {
+  public async findAll(): Promise<IServerResponse> {
     let res: IServerResponse;
     try {
-      const list = await this.configParameterRepository.findAll({
+      const list: MstConfig[] = await this.configParameterRepository.findAll({
         raw: true,
         nest: true,
         include: {
