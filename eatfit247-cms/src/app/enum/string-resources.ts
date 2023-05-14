@@ -239,7 +239,7 @@ export enum StringResources {
   MEMBERS = 'Members',
   ASSESSMENT = 'Assessment',
   BASIC_INFORMATION = 'Basic Information',
-  BODY_STATS = 'Health Parameters',
+  BODY_STATS = 'Body Stats',
   DIET_PLAN = 'Diet Plan',
   RECIPES = 'Recipes',
   DIET_TEMPLATE = 'Diet Templates',
@@ -318,8 +318,8 @@ export enum StringResources {
   ADD_GENDER = 'Add Gender',
   EDIT_GENDER = 'Edit Gender',
 
-  ADD_HEALTH_PARAMETERS = 'Add Health Parameters',
-  EDIT_HEALTH_PARAMETERS = 'Edit Health Parameters',
+  ADD_HEALTH_PARAMETERS = 'Add Health Body Stats',
+  EDIT_HEALTH_PARAMETERS = 'Edit Health Body Stats',
 
   ADD_LIFESTYLE = 'Add Lifestyle',
   EDIT_LIFESTYLE = 'Edit Lifestyle',

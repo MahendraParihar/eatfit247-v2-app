@@ -36,27 +36,11 @@
       <mat-sidenav #sidenav [mode]="opened === false ? 'over' : 'side'"
                    [opened]="opened === true">
         <mat-nav-list>
-          <!--<div style="text-align: center;">
-            <img class="avatar mat-elevation-z8"
-                 src="{{authUserObj.imagePath}}"/>
-            <h4>{{authUserObj.firstName ? authUserObj.firstName : ''}} {{authUserObj.lastName ? authUserObj.lastName
-              : ''}}</h4>
-            <p class="designation">{{authUserObj.role}}</p>
-            <mat-divider></mat-divider>
-          </div>-->
-          <!-- Here we are using menu-list-item -->
           <app-side-menu (onNavigate)="closeDrawer()"
                          *ngFor="let item of menu" [item]="item"></app-side-menu>
         </mat-nav-list>
       </mat-sidenav>
       <mat-sidenav-content>
-        <!--<mat-card class="m-medium breadcrumb">
-          <div *ngFor="let item of breadcrumbList; let i = index;">
-            <button mat-button color="primary" (click)="onItemClicked(item)"
-                    disabled="{{i===breadcrumbList.length-1}}">{{item.title}}</button>
-            <span *ngIf="i!==breadcrumbList.length-1">/</span>
-          </div>
-        </mat-card>-->
         <div class="main-container">
           <router-outlet></router-outlet>
         </div>
