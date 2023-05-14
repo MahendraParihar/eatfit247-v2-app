@@ -1,6 +1,6 @@
-<div class="data-table  m-t-0">
+<div class="data-table  m-t-0" *ngIf='totalCount > 0'>
 
-  <ng-container *ngIf='totalCount > 0'>
+  <ng-container >
   <mat-table [dataSource]="dataSource">
 
     <ng-container matColumnDef="seqNo">
@@ -60,8 +60,9 @@
 
   <mat-paginator [length]="totalCount" [pageSizeOptions]="pageSizeList" [pageSize]="defaultPageSize"></mat-paginator>
   </ng-container>
-  <app-no-data-found *ngIf='totalCount === 0' [title]='"No issue raised"'
-                     [showBtn]='false'
-                     [image]='"empty-data.jpg"'
-                     [message]='"Member havent raised any issue yet"'></app-no-data-found>
 </div>
+
+<app-no-data-found *ngIf='totalCount === 0' [title]='"No issue raised"'
+                   [showBtn]='false'
+                   [image]='"empty-data.jpg"'
+                   [message]='"Member havent raised any issue yet"'></app-no-data-found>
