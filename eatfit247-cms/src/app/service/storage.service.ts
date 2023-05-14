@@ -48,7 +48,6 @@ export class StorageService {
   }
 
   public clearAuthUser(): void {
-    this.sharedService.setLoginUser(null);
     StorageService.clearStorage();
   }
 

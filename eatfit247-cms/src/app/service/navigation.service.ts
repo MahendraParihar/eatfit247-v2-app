@@ -93,9 +93,9 @@ export class NavigationService {
   }
 
   signOut() {
-    this.storageService.clearAuthUser();
     this.router.navigateByUrl(NavigationPathEnum.LOGIN, {replaceUrl: true})
       .then((suc: any) => {
+        this.storageService.clearAuthUser();
         console.log(suc);
       }).catch((e: any) => {
       console.log(e)

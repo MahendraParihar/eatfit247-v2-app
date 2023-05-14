@@ -133,22 +133,22 @@ export class MemberMigrationController {
       // }
 
       // Member Program Plan
-      try {
-        await this.createMemberProgramPlan();
-      } catch (e) {
-        console.log(e);
-        await t.rollback();
-        exit();
-      }
-
-      //Member Diet Plan
       // try {
-      //   await this.createMemberDietPlan();
-      // } catch (error) {
-      //   console.log(error);
+      //   await this.createMemberProgramPlan();
+      // } catch (e) {
+      //   console.log(e);
       //   await t.rollback();
       //   exit();
       // }
+
+      //Member Diet Plan
+      try {
+        await this.createMemberDietPlan();
+      } catch (error) {
+        console.log(error);
+        await t.rollback();
+        exit();
+      }
       await t.commit();
     } catch (e) {
       console.log(e);
