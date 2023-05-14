@@ -76,7 +76,8 @@
                  fxFlex.lt-lg="calc(64%)"
                  fxFlex.lt-md="calc(64%)"
                  fxFlex.lt-sm="100%">
-              <angular-editor matInput formControlName="dietDetail" [config]="editorConfig"></angular-editor>
+              <angular-editor
+                matInput formControlName="dietDetail" [config]="editorConfig"></angular-editor>
               <mat-error>
                 <app-input-error [control]="formControl['dietDetail']"
                                  [controlName]="stringRes.DIET_PLAN"></app-input-error>
