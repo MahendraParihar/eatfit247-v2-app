@@ -141,7 +141,7 @@ export class BaseTaxModel {
     }
     const obj: BaseTaxModel = new BaseTaxModel();
     obj.amount = data.amount;
-    obj.percentage = data.percentage;
+    obj.percentage = data.taxPercentage;
     return obj;
   }
 }

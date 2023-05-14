@@ -42,33 +42,30 @@
         <td class='amount-cell'>{{memberPaymentObj.paymentObj.user.orderAmount |
           currency:memberPaymentObj.paymentObj.user.currency}}</td>
       </tr>
-      <ng-container>
-        <tr
-          *ngIf='memberPaymentObj.paymentObj.user.taxObj.CGST.percentage && memberPaymentObj.paymentObj.user.taxObj.CGST.percentage > 0'>
+
+      <ng-container *ngIf='memberPaymentObj.paymentObj.user.taxObj'>
+        <tr *ngIf='memberPaymentObj.paymentObj.user.taxObj.CGST'>
           <td>
-            {{stringRes.CGST}}({{memberPaymentObj.paymentObj.user.taxObj.CGST.percentage}} %)
+            {{stringRes.CGST}}({{memberPaymentObj.paymentObj.user.taxObj.CGST.percentage}}%)
           </td>
           <td class='amount-cell'>{{memberPaymentObj.paymentObj.user.taxObj.CGST.amount |
             currency:memberPaymentObj.paymentObj.user.currency}}
           </td>
         </tr>
-        <tr
-          *ngIf='memberPaymentObj.paymentObj.user.taxObj.SGST.percentage && memberPaymentObj.paymentObj.user.taxObj.SGST.percentage > 0'>
-          <td> {{stringRes.SGST}}({{memberPaymentObj.paymentObj.user.taxObj.SGST.percentage}} %)</td>
+        <tr *ngIf='memberPaymentObj.paymentObj.user.taxObj.SGST'>
+          <td> {{stringRes.SGST}}({{memberPaymentObj.paymentObj.user.taxObj.SGST.percentage}}%)</td>
           <td class='amount-cell'>{{memberPaymentObj.paymentObj.user.taxObj.SGST.amount |
             currency:memberPaymentObj.paymentObj.user.currency}}
           </td>
         </tr>
-        <tr
-          *ngIf='memberPaymentObj.paymentObj.user.taxObj.IGST.percentage && memberPaymentObj.paymentObj.user.taxObj.IGST.percentage > 0'>
-          <td> {{stringRes.SGST}}({{memberPaymentObj.paymentObj.user.taxObj.IGST.percentage}} %)</td>
+        <tr *ngIf='memberPaymentObj.paymentObj.user.taxObj.IGST'>
+          <td> {{stringRes.SGST}}({{memberPaymentObj.paymentObj.user.taxObj.IGST.percentage}}%)</td>
           <td class='amount-cell'>{{memberPaymentObj.paymentObj.user.taxObj.IGST.amount |
             currency:memberPaymentObj.paymentObj.user.currency}}
           </td>
         </tr>
       </ng-container>
-      <tr
-        *ngIf='memberPaymentObj.paymentObj.user.discountAmount && memberPaymentObj.paymentObj.user.discountAmount > 0'>
+      <tr *ngIf='memberPaymentObj.paymentObj.user.discountAmount > 0'>
         <td style='width: 75%;'>{{stringRes.DISCOUNT_AMOUNT}}</td>
         <td class='amount-cell'>{{memberPaymentObj.paymentObj.user.discountAmount|
           currency:memberPaymentObj.paymentObj.user.currency}}</td>

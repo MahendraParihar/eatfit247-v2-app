@@ -18,6 +18,7 @@ import {UserStatusButtonDirective} from "./directive/user-status-button.directiv
 import {CustomImgTagComponent} from './components/custom-img-tag/custom-img-tag.component';
 import {RecipeSelectorComponent} from './components/recipe-selector/recipe-selector.component';
 import {DietDetailsSelectorComponent} from './components/diet-details-selector/diet-details-selector.component';
+import { AddressPipe } from './pipe/address.pipe';
 
 @NgModule({
   declarations: [
@@ -32,6 +33,7 @@ import {DietDetailsSelectorComponent} from './components/diet-details-selector/d
     AdminShortInfoComponent,
     NoDataFoundComponent,
     DateTimePipe,
+    AddressPipe,
     CreatedByUserPipe,
     CustomImgTagComponent,
     RecipeSelectorComponent,
@@ -57,6 +59,7 @@ import {DietDetailsSelectorComponent} from './components/diet-details-selector/d
     AdminShortInfoComponent,
     NoDataFoundComponent,
     FlexLayoutModule,
+    AddressPipe,
     DateTimePipe,
     CreatedByUserPipe,
     CurrencyPipe,
