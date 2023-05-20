@@ -60,7 +60,7 @@ export class PdfService {
         left: '20px',
       },
     });
-    await browser.close();
+    // await browser.close();
 
     return {
       filePath: relativePath,
