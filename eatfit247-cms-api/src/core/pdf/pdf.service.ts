@@ -44,7 +44,10 @@ export class PdfService {
     await this.registerHeaderFooter();
 
     const html = await this.getData(templateName, data);
-    const browser = await puppeteer.launch({ headless: 'new' });
+    const browser = await puppeteer.launch({ headless: 'new', args:[
+        '--no-sandbox',
+        '--disable-dev-shm-usage',
+      ] });
     const page = await browser.newPage();
     await page.setContent(html);
     await page.pdf({
