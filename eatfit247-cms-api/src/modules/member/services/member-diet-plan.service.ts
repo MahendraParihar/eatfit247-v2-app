@@ -531,7 +531,7 @@ export class MemberDietPlanService {
         attachments: [
           {
             name: fileModel.fileName,
-            path: `${MediaFolderEnum.MEDIA_FOLDER_PHYSICAL_PATH}//${MediaFolderEnum.DOWNLOADS}//${fileModel.filePath}`,
+            path: `${CommonFunctionsUtil.getMediaFolderPath()}/${MediaFolderEnum.DOWNLOADS}/${fileModel.filePath}`,
           } as IAttachment,
         ] as IAttachment[],
       };
@@ -566,7 +566,7 @@ export class MemberDietPlanService {
 
     const fileModel = await this.pdfService.generatePDF(
       `${PDFTemplateEnum.DIET_PLAN}`,
-      `${MediaFolderEnum.DIET_PLAN}\\${memberId}`,
+      `${MediaFolderEnum.DIET_PLAN}/${memberId}`,
       `${dietPlanId}`,
       data,
     );

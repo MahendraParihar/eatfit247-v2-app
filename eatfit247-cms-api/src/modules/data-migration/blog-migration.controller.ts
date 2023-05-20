@@ -70,7 +70,7 @@ export class BlogMigrationController {
           imagePath: [
             {
               size: 227093,
-              webUrl: 'media-files/recipe/' + pln.image_path.replace('blog', ''),
+              webUrl: 'media-files/' + pln.image_path,
               encoding: '7bit',
               fileName: pln.image_path,
               mimetype: 'image/jpeg',

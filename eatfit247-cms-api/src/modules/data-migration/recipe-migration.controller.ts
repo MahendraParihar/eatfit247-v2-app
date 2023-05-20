@@ -32,7 +32,7 @@ export class RecipeMigrationController {
       const recipeNutritiveList = [];
       const data = JSON.parse(readFileSync(resolve(`${this.folderPath}`), 'utf8'));
       for (const s of data) {
-        const imagePath = s.image_path ? s.image_path.split('/')[1] : null;
+        const imagePath = s.image_path.replace('recipe_images', '');
         recipeList.push({
           recipeId: Number(s.id),
           name: s.name,
@@ -43,7 +43,7 @@ export class RecipeMigrationController {
           imagePath: [
             {
               size: 227093,
-              webUrl: 'media-files/recipe/' + imagePath,
+              webUrl: 'media-files/recipe' + imagePath,
               encoding: '7bit',
               fileName: imagePath,
               mimetype: 'image/jpeg',

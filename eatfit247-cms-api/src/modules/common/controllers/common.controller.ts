@@ -5,23 +5,22 @@ import { ServerResponseEnum } from '../../../enums/server-response-enum';
 import { StringResource } from '../../../enums/string-resource';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { MediaDto } from '../../../common-dto/media.dto';
-
 import { promisify } from 'util';
 import * as fs from 'fs';
 import { IS_DEV } from '../../../constants/config-constants';
 import { MediaFolderEnum } from '../../../enums/media-folder-enum';
 import { FileHelper } from 'src/util/file-helper';
 import { MulterOptions } from '@nestjs/platform-express/multer/interfaces/multer-options.interface';
-
 import { diskStorage } from 'multer';
-
-const { join } = require('path');
+import { join } from 'path';
+import { CommonFunctionsUtil } from '../../../util/common-functions-util';
 
 const mv = promisify(fs.rename);
 
 @Controller('common')
 export class CommonController {
-  constructor(private service: CommonService) {}
+  constructor(private service: CommonService) {
+  }
 
   private static async moveFile(currentPath: string, destinationPath: string) {
     const original = join(currentPath);
@@ -65,7 +64,7 @@ export class CommonController {
     FileInterceptor('file', {
       storage: diskStorage({
         destination: (req: any, file: any, cb: any) => {
-          cb(null, `${MediaFolderEnum.UPLOAD_FILE_PATH}/${MediaFolderEnum.UPLOADS}`);
+          cb(null, `${CommonFunctionsUtil.getMediaFolderPath()}/${MediaFolderEnum.UPLOADS}`);
         },
         filename: FileHelper.customFileName,
       }),
@@ -74,7 +73,7 @@ export class CommonController {
   async uploadFile(@Body() mediaDto: MediaDto, @UploadedFile() file: Express.Multer.File, a: MulterOptions) {
     try {
       const currentPath = `${file.destination}/${file.filename}`;
-      const destinationFolderPath = `${MediaFolderEnum.UPLOAD_FILE_PATH}/${mediaDto.mediaFor}`;
+      const destinationFolderPath = `${CommonFunctionsUtil.getMediaFolderPath()}/${mediaDto.mediaFor}`;
       const destinationPath = `${destinationFolderPath}/${file.filename}`;
 
       //CREATE DIRECTORY IF NOT EXISTS

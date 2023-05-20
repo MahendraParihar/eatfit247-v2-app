@@ -1,4 +1,4 @@
-import {Component, Inject, OnInit} from '@angular/core';
+import { Component, Inject, OnInit, Renderer2 } from '@angular/core';
 import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
 import {ApiUrlEnum} from 'src/app/enum/api-url-enum';
 import {ServerResponseEnum} from 'src/app/enum/server-response-enum';
@@ -20,6 +20,7 @@ export class MemberDietPlanDetailsDialogComponent implements OnInit {
 
   constructor(public dialogRef: MatDialogRef<MemberDietPlanDetailsDialogComponent>,
               @Inject(MAT_DIALOG_DATA) public data: any,
+              private renderer: Renderer2,
               private httpService: HttpService,
               private snackBarService: SnackBarService,) {
     this.dietPlanDetail = data.dietPlanDetails;
@@ -49,7 +50,7 @@ export class MemberDietPlanDetailsDialogComponent implements OnInit {
     switch (res.code) {
       case ServerResponseEnum.SUCCESS:
         if (res.data) {
-          await this.httpService.downloadFile(res.data.filePath, res.data.fileName);
+          this.downloadTemplate(res.data.buffer, res.data.fileName);
         }
 
         return true;
@@ -62,6 +63,18 @@ export class MemberDietPlanDetailsDialogComponent implements OnInit {
         return false;
     }
 
+  }
+
+  downloadTemplate(base64String: string, fileName:string) {
+    if (base64String) {
+      const mediaType = 'data:application/pdf;base64,';
+      const link = this.renderer.createElement('a');
+      link.setAttribute('target', '_blank');
+      link.setAttribute('href', mediaType + base64String);
+      link.setAttribute('download', `${fileName}`);
+      link.click();
+      link.remove();
+    }
   }
 
   async sendEmail(): Promise<boolean> {

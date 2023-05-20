@@ -47,9 +47,11 @@ export class PdfService {
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
     await page.setContent(html);
-    await page.pdf({
+    await page.setContent(html, { waitUntil: 'domcontentloaded' });
+    const tempFile = await page.pdf({
       path: physicalFilePath,
       format: 'A4',
+      printBackground: true,
       displayHeaderFooter: true,
       headerTemplate: this.headerTemplate,
       footerTemplate: this.footerTemplate,
@@ -65,6 +67,7 @@ export class PdfService {
     return {
       filePath: relativePath,
       fileName: fileNameWithExtension,
+      buffer: tempFile.toString('base64'),
     } as IFileModel;
   }
 

@@ -880,7 +880,10 @@ VALUES (223, 'United States', 1, TRUE, current_timestamp, current_timestamp, 1, 
        (71, 'France', 1, TRUE, current_timestamp, current_timestamp, 1, 1, ':0', ':0'),
        (78, 'Germany', 1, TRUE, current_timestamp, current_timestamp, 1, 1, ':0', ':0'),
        (93, 'Hong Kong', 1, TRUE, current_timestamp, current_timestamp, 1, 1, ':0', ':0'),
-       (97, 'Indonesia', 1, TRUE, current_timestamp, current_timestamp, 1, 1, ':0', ':0');
+       (97, 'Indonesia', 1, TRUE, current_timestamp, current_timestamp, 1, 1, ':0', ':0'),
+       (37, 'Canada', 1, TRUE, current_timestamp, current_timestamp, 1, 1, ':0', ':0'),
+       (16, 'Bahrain', 1, TRUE, current_timestamp, current_timestamp, 1, 1, ':0', ':0'),
+       (43, 'China', 1, TRUE, current_timestamp, current_timestamp, 1, 1, ':0', ':0');
 
 update mst_countries
 set phone_number_code = '+353'

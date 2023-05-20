@@ -1,9 +1,12 @@
 import { IAdminShortInfo } from '../response-interface/admin-user.interface';
 import { IMediaUpload } from '../response-interface/media-upload.interface';
 import * as moment from 'moment/moment';
+import * as path from 'path';
+import { join } from 'path';
 
 export class CommonFunctionsUtil {
-  constructor() {}
+  constructor() {
+  }
 
   public static removeSpecialChar(tempStr: string, replaceChar: string = '_'): string {
     if (!tempStr) {
@@ -73,5 +76,9 @@ export class CommonFunctionsUtil {
 
   public static getInvoiceNumber(paymentId: number) {
     return `EF24B7${paymentId}${moment().format('YYYYMMDD')}`;
+  }
+
+  public static getMediaFolderPath(): string {
+    return join(__dirname, '..', '../media-files');
   }
 }

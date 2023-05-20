@@ -75,47 +75,47 @@ export class MemberMigrationController {
 
     try {
       // Program Plan
-      /*try {
-        await this.createProgramPlan();
-      } catch (e) {
-        console.log(e);
-        await t.rollback();
-        exit();
-      }*/
+      // try {
+      //   await this.createProgramPlan();
+      // } catch (e) {
+      //   console.log(e);
+      //   await t.rollback();
+      //   exit();
+      // }
 
       // Member
-      /*try {
-        await this.createMemberData();
-      } catch (e) {
-        await t.rollback();
-        exit();
-      }*/
+      // try {
+      //   await this.createMemberData();
+      // } catch (e) {
+      //   await t.rollback();
+      //   exit();
+      // }
 
       // Member health issues
-      /*try {
-        await this.createMemberHealthIssues();
-      } catch (e) {
-        await t.rollback();
-        exit();
-      }*/
+      // try {
+      //   await this.createMemberHealthIssues();
+      // } catch (e) {
+      //   await t.rollback();
+      //   exit();
+      // }
 
       // Member pocket guide
-      /*try {
-        await this.createMemberPocketGuide();
-      } catch (e) {
-        await t.rollback();
-        exit();
-      }*/
+      // try {
+      //   await this.createMemberPocketGuide();
+      // } catch (e) {
+      //   await t.rollback();
+      //   exit();
+      // }
 
       // Member Assessment
-      /*try {
-        await this.createMemberAssessment();
-      } catch (e) {
-        await t.rollback();
-        exit();
-      }*/
-
-      // Member Health Parameter
+      // try {
+      //   await this.createMemberAssessment();
+      // } catch (e) {
+      //   await t.rollback();
+      //   exit();
+      // }
+      //
+      // // Member Health Parameter
       // try {
       //   await this.createMemberHealthParameter();
       // } catch (e) {
@@ -142,13 +142,13 @@ export class MemberMigrationController {
       // }
 
       //Member Diet Plan
-      try {
-        await this.createMemberDietPlan();
-      } catch (error) {
-        console.log(error);
-        await t.rollback();
-        exit();
-      }
+      // try {
+      //   await this.createMemberDietPlan();
+      // } catch (error) {
+      //   console.log(error);
+      //   await t.rollback();
+      //   exit();
+      // }
       await t.commit();
     } catch (e) {
       console.log(e);
@@ -733,13 +733,14 @@ export class MemberMigrationController {
 
       const tempV1List = JSON.parse(readFileSync(resolve(`${this.folderPath}/txn_member_plan.json`), 'utf8'));
       for (const s of tempV1List) {
-        const address = await this.findMemberAddress(
-          Number(s.member_id),
-          s.created_at,
-          s.updated_at,
-          s.created_by == 0 ? adminUserId : s.created_by,
-          s.modified_by == 0 ? adminUserId : s.modified_by,
-        );
+        const address =
+          await this.findMemberAddress(
+            Number(s.member_id),
+            s.created_at,
+            s.updated_at,
+            s.created_by == 0 ? adminUserId : s.created_by,
+            s.modified_by == 0 ? adminUserId : s.modified_by,
+          );
         if (address) {
           memberAddressList.push(address);
         }
@@ -763,6 +764,7 @@ export class MemberMigrationController {
         `SELECT SETVAL('txn_addresses_address_id_seq', (SELECT MAX(address_id) + 1 FROM txn_addresses));`,
       );
     } catch (e) {
+      console.log(e);
       throw new Error(e);
     }
   }
@@ -840,6 +842,8 @@ export class MemberMigrationController {
     if (member.countryId === IN_COUNTRY_ID) {
       whereCondition['stateId'] = 27;
     }
+    console.log(member);
+    console.log(whereCondition);
     const state = await this.stateRepository.findOne({
       where: whereCondition,
       nest: true,
@@ -884,6 +888,7 @@ export class MemberMigrationController {
         const v1Plan = find(tempV1PlanList, (obj) => {
           return Number(obj.id) === Number(s.program_plan_id);
         });
+        console.log(v1Plan);
         const plan: MstProgramPlan = find(programPlanPlan, (obj: MstProgramPlan) => {
           return (
             obj.noOfCycle === Number(v1Plan.no_of_week) &&

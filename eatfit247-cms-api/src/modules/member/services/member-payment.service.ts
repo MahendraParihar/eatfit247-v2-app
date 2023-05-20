@@ -529,7 +529,7 @@ export class MemberPaymentService {
           attachments: [
             {
               name: result.fileModel.fileName,
-              path: `${MediaFolderEnum.MEDIA_FOLDER_PHYSICAL_PATH}//${MediaFolderEnum.DOWNLOADS}//${result.fileModel.filePath}`,
+              path: `${CommonFunctionsUtil.getMediaFolderPath()}/${MediaFolderEnum.DOWNLOADS}/${result.fileModel.filePath}`,
             } as IAttachment,
           ] as IAttachment[],
         };
