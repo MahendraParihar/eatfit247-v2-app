@@ -26,7 +26,7 @@ import {PocketGuideModel} from "../../../models/pocket-guide.model";
 })
 export class PocketGuideListComponent implements OnInit, AfterViewInit, OnDestroy {
 
-  displayedColumns = ["seqNo", 'title', 'file', 'status', 'createdBy', 'createdAt', 'updatedBy', 'updatedAt', "action"];
+  displayedColumns = ["seqNo", 'imagePath', 'title', 'file', 'status', 'createdBy', 'createdAt', 'updatedBy', 'updatedAt', "action"];
   dataSource: PocketGuideDatasource;
   totalCount = 0;
 

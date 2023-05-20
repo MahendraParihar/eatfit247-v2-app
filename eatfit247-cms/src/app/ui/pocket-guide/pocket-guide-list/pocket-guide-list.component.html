@@ -16,6 +16,10 @@
       <mat-header-cell *matHeaderCellDef>#</mat-header-cell>
       <mat-cell *matCellDef="let d; let i = index;">{{i + 1}}</mat-cell>
     </ng-container>
+    <ng-container matColumnDef="imagePath">
+      <mat-header-cell *matHeaderCellDef>Image</mat-header-cell>
+      <mat-cell *matCellDef="let d;"><app-custom-img-tag [isAvatar]="true" [webUrl]="d.imagePath"></app-custom-img-tag></mat-cell>
+    </ng-container>
     <ng-container matColumnDef="title">
       <mat-header-cell *matHeaderCellDef>Pocket Guide</mat-header-cell>
       <mat-cell *matCellDef="let d;">{{d.name}}</mat-cell>

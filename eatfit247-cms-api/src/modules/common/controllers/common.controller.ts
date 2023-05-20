@@ -25,6 +25,8 @@ export class CommonController {
   private static async moveFile(currentPath: string, destinationPath: string) {
     const original = join(currentPath);
     const target = join(destinationPath);
+    console.log(original);
+    console.log(target);
     await mv(original, target);
   }
 
@@ -97,6 +99,7 @@ export class CommonController {
         data: res,
       };
     } catch (e) {
+      console.log(e);
       return {
         code: ServerResponseEnum.ERROR,
         message: IS_DEV ? e['message'] : StringResource.SOMETHING_WENT_WRONG,
