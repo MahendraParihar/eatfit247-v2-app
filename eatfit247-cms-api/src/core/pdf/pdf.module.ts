@@ -5,7 +5,7 @@ import { PdfService } from './pdf.service';
 import { Browser } from 'puppeteer';
 
 @Module({
-  imports: [PuppeteerModule.forRoot({ isGlobal: true }), FranchiseModule],
+  imports: [PuppeteerModule.forRoot(), FranchiseModule],
   providers: [PdfService],
   exports: [PdfService],
 })

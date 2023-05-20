@@ -44,7 +44,7 @@ export class PdfService {
     await this.registerHeaderFooter();
 
     const html = await this.getData(templateName, data);
-    const browser = await puppeteer.launch({ headless: 'new' });
+    const browser = await puppeteer.launch();
     const page = await browser.newPage();
     await page.setContent(html);
     await page.pdf({
@@ -60,7 +60,7 @@ export class PdfService {
         left: '20px',
       },
     });
-    // await browser.close();
+    await browser.close();
 
     return {
       filePath: relativePath,
