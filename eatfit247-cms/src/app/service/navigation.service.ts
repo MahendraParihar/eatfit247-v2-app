@@ -118,12 +118,16 @@ export class NavigationService {
         id = Number(temp[temp.length - 1]);
         temp.pop()
         path = <NavigationPathEnum>temp.join('/');
+      }else if(this.isNumeric(temp[temp.length - 2])){
+        id = Number(temp[temp.length - 2]);
+        path = NavigationPathEnum.MEMBERS_DETAIL;
       } else {
         path = <NavigationPathEnum>temp.join('/');
       }
     }
     const breadcrumbList: BreadcrumbItem[] = [];
     breadcrumbList.push({title: StringResources.HOME, path: NavigationPathEnum.HOME});
+    if(path)
     switch (path) {
       case NavigationPathEnum.ADMIN_USERS:
         breadcrumbList.push({title: StringResources.ADMIN_LIST, path: NavigationPathEnum.ADMIN_USERS});

@@ -29,7 +29,7 @@ import {DialogAlertComponent} from "../../shared/components/dialog-alert/dialog-
 })
 export class MemberListComponent implements OnInit, AfterViewInit, OnDestroy {
 
-  displayedColumns = ["seqNo", 'name', 'emailId', 'nutritionist','franchise','referrer', 'country', 'status', "action"];
+  displayedColumns = ["seqNo", 'name', 'contactNo', 'emailId', 'nutritionist','franchise','referrer', 'country', 'status', "action"];
   // displayedColumns = ['image', "data", 'status', "action"];
   dataSource: MemberDatasource;
   totalCount = 0;

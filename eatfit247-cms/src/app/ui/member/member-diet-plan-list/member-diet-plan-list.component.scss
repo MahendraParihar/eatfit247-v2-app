@@ -1,6 +1,21 @@
 @import "../../../../theme/margin";
 @import "../../../../theme/variable";
 
+.data-table .mat-table {
+  height: calc(100vh - 260px) !important;
+  overflow-y: scroll;
+}
+
+.mat-column-totalWeek, .mat-column-planStatus, .mat-column-planType {
+  min-width: 90px !important;
+  max-width: 90px !important;
+}
+
+.mat-column-updatedBy {
+  min-width: 180px !important;
+  max-width: 180px !important;
+}
+
 .header-section {
   display: grid;
   grid-template-columns: 2fr 1fr 1fr;

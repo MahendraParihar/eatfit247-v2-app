@@ -76,10 +76,14 @@
         <a class="link" (click)="onViewClick(d.id)">{{d.firstName}} {{d.lastName}}</a>
       </mat-cell>
     </ng-container>
-    <ng-container matColumnDef="emailId">
+    <ng-container matColumnDef="contactNo">
       <mat-header-cell *matHeaderCellDef>Contact Info</mat-header-cell>
       <mat-cell *matCellDef="let d;">
         {{d.countryCode}}-{{d.contactNumber}}</mat-cell>
+    </ng-container>
+    <ng-container matColumnDef="emailId">
+      <mat-header-cell *matHeaderCellDef>Email Id</mat-header-cell>
+      <mat-cell *matCellDef="let d;">{{d.emailId}}</mat-cell>
     </ng-container>
     <ng-container matColumnDef="nutritionist">
       <mat-header-cell *matHeaderCellDef>Nutritionist</mat-header-cell>
