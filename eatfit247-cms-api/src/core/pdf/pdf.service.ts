@@ -9,6 +9,8 @@ import { FranchiseService } from 'src/modules/franchise/franchise.service';
 import { IFranchise } from 'src/response-interface/franchise.interface';
 import { REQUEST } from '@nestjs/core';
 import { MediaFolderEnum } from 'src/enums/media-folder-enum';
+import { InjectBrowser } from 'nest-puppeteer';
+import { Browser } from 'puppeteer';
 
 @Injectable()
 export class PdfService {
@@ -16,7 +18,15 @@ export class PdfService {
   headerTemplate: string;
   footerTemplate: string;
 
-  constructor(private franchiseService: FranchiseService, @Inject(REQUEST) private request) {
+  constructor(@InjectBrowser() private readonly browser: Browser,
+              private franchiseService: FranchiseService,
+              @Inject(REQUEST) private request) {
+  }
+
+  async create() {
+    const version = await this.browser.version();
+    console.log(version);
+    return { version };
   }
 
   /**

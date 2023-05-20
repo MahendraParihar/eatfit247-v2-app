@@ -4,8 +4,9 @@ import { FranchiseModule } from 'src/modules/franchise/franchise.module';
 import { PdfService } from './pdf.service';
 
 @Module({
-  imports: [PuppeteerModule.forRoot({}, 'BrowserInstanceName'), FranchiseModule],
+  imports: [PuppeteerModule.forRoot({ pipe: true, isGlobal: true }), FranchiseModule],
   providers: [PdfService],
   exports: [PdfService],
 })
-export class PdfModule {}
+export class PdfModule {
+}
