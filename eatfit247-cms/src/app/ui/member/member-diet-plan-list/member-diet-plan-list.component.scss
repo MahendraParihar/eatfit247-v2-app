@@ -1,6 +1,37 @@
 @import "../../../../theme/margin";
 @import "../../../../theme/variable";
 
+table {
+  width: 100%;
+}
+
+tr.example-detail-row {
+  height: 0;
+}
+
+.cycle-item{
+  height: 40px;
+  border-bottom: 1px rgba(0,0,0,.12) solid;
+}
+
+tr.diet-element-row:not(.diet-element-row):hover {
+  background: whitesmoke;
+}
+
+tr.diet-element-row:not(.diet-element-row):active {
+  background: #efefef;
+}
+
+.diet-element-row td {
+  border-bottom-width: 0;
+}
+
+.example-element-detail {
+  overflow: hidden;
+  display: flex;
+}
+
+
 .data-table .mat-table {
   height: calc(100vh - 260px) !important;
   overflow-y: scroll;
@@ -33,50 +64,50 @@
   }
 }
 
-.cp-container {
-  margin-top: $margin-medium;
-  margin-bottom: $margin-medium;
+//.cp-container {
+//  margin-top: $margin-medium;
+//  margin-bottom: $margin-medium;
+//
+//  .cp-header {
+//    display: flex;
+//    align-items: center;
+//    column-gap: $margin-medium;
+//  }
+//
+//  .cp-header-text {
+//    color: $secondary-text-color;
+//    font-style: italic;
+//  }
+//
+//  .dp-table {
+//    min-width: auto !important;
+//    width: 100%;
+//
+//    .mat-header-row {
+//      width: 100%;
+//    }
+//
+//    .mat-row {
+//      width: 100%;
+//    }
+//
+//    .mat-column-dayNo {
+//      min-width: 100px !important;
+//      flex: 0 0 25% !important;
+//      cursor: pointer;
+//    }
+//
+//    .mat-column-startDate {
+//      min-width: 100px !important;
+//      flex: 0 0 75% !important;
+//    }
+//
+//
+//  }
+//}
 
-  .cp-header {
-    display: flex;
-    align-items: center;
-    column-gap: $margin-medium;
-  }
-
-  .cp-header-text {
-    color: $secondary-text-color;
-    font-style: italic;
-  }
-
-  .dp-table {
-    min-width: auto !important;
-    width: 100%;
-
-    .mat-header-row {
-      width: 100%;
-    }
-
-    .mat-row {
-      width: 100%;
-    }
-
-    .mat-column-dayNo {
-      min-width: 100px !important;
-      flex: 0 0 25% !important;
-      cursor: pointer;
-    }
-
-    .mat-column-startDate {
-      min-width: 100px !important;
-      flex: 0 0 75% !important;
-    }
-
-
-  }
-
-  .diet-link {
-    color: #3949ab;
-    cursor: pointer;
-    text-decoration: none;
-  }
+.diet-link {
+  color: #3949ab;
+  cursor: pointer;
+  text-decoration: none;
 }

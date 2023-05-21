@@ -15,6 +15,7 @@ export class MemberDietPlanDatasource implements DataSource<MemberDietPlanModel>
   totalCount = this.totalCountSubject.asObservable();
   dietTemplate = this.dietTemplateSubject.asObservable();
   expanded = this.expandedSubject.asObservable();
+  data = this.dataSubject.asObservable();
 
   constructor(private httpService: HttpService,
               private snackBarService: SnackBarService) {

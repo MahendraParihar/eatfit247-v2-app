@@ -17,23 +17,36 @@ import { DropdownItem } from 'src/app/interfaces/dropdown-item';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ValidationUtil } from 'src/app/utilites/validation-util';
 import { MemberDietPlanDatasource } from '../member-diet-plan.datasource';
+import { animate, state, style, transition, trigger } from '@angular/animations';
+import { cubic } from '@amcharts/amcharts5/.internal/core/util/Ease';
 
 @Component({
   selector: 'app-member-diet-plan-list',
   templateUrl: './member-diet-plan-list.component.html',
   styleUrls: ['./member-diet-plan-list.component.scss'],
+  animations: [
+    trigger('detailExpand', [
+      state('collapsed', style({ height: '0px', minHeight: '0' })),
+      state('expanded', style({ height: '*' })),
+      transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
+    ]),
+  ],
 })
+
 export class MemberDietPlanListComponent implements OnInit, AfterViewInit, OnDestroy {
 
   totalCount = 0;
   list: MemberDietPlanModel[];
+  columnsToDisplay: string[] = ['program', 'programCategory', 'noOfCycle', 'dietPlanStatus', 'updatedBy'];
+  columnsToDisplayWithExpand = [...this.columnsToDisplay, 'expand'];
+  expandedElement: MemberDietPlanModel | null;
+
   id: number;
   dietPlanStatusEnum = DietPlanStatusEnum;
   dietTemplateList: DropdownItem[];
   expandArray: boolean[] = [];
 
   stringRes = StringResources;
-  parentTableColumns: string[] = ['planName', 'planType', 'totalWeek', 'planStatus', 'updatedBy', 'action'];
   dietPlanDayDisplayColumns = ['dayNo', 'startDate', 'action'];
 
   dataSource: MemberDietPlanDatasource;
@@ -56,6 +69,7 @@ export class MemberDietPlanListComponent implements OnInit, AfterViewInit, OnDes
     this.dataSource.totalCount.subscribe((count: number) => this.totalCount = count);
     this.dataSource.dietTemplate.subscribe((count: DropdownItem[]) => this.dietTemplateList = count);
     this.dataSource.expanded.subscribe((count: boolean[]) => this.expandArray = count);
+    this.dataSource.data.subscribe((count: MemberDietPlanModel[]) => this.list = count);
   }
 
   async ngOnInit(): Promise<void> {
@@ -66,6 +80,10 @@ export class MemberDietPlanListComponent implements OnInit, AfterViewInit, OnDes
   }
 
   ngOnDestroy(): void {
+  }
+
+  onAddClick(isDaily: boolean, obj:MemberDietPlanModel){
+
   }
 
   onEditDailyDietPlan(dietPlan: MemberDietDetail) {
@@ -91,7 +109,6 @@ export class MemberDietPlanListComponent implements OnInit, AfterViewInit, OnDes
   }
 
   onViewDietPlanClick(dietPlanDetails: MemberDietDetail) {
-
     const dialogRef = this.dialog.open(MemberDietPlanDetailsDialogComponent, {
       width: '550px',
       data: { id: this.id, dietPlanDetails: dietPlanDetails },
@@ -143,4 +160,6 @@ export class MemberDietPlanListComponent implements OnInit, AfterViewInit, OnDes
       }
     }
   }
+
+  protected readonly cubic = cubic;
 }
