@@ -39,7 +39,7 @@ export class MemberPaymentDatasource implements DataSource<MemberPaymentModel> {
         return true;
       case ServerResponseEnum.WARNING:
         this.dataSubject.next([]);
-        this.snackBarService.showWarning(apiResponse.message);
+        // this.snackBarService.showWarning(apiResponse.message);
         return false;
       case ServerResponseEnum.ERROR:
       default:

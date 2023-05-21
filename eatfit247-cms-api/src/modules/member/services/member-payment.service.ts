@@ -63,7 +63,8 @@ export class MemberPaymentService {
     private sequelize: Sequelize,
     private pdfService: PdfService,
     private readonly emailService: EmailService,
-  ) {}
+  ) {
+  }
 
   public async findAll(id: number): Promise<IServerResponse> {
     let res: IServerResponse;
@@ -260,6 +261,8 @@ export class MemberPaymentService {
             countryId: obj.address.countryId,
             latitude: obj.address.latitude,
             longitude: obj.address.longitude,
+            createdBy: adminId,
+            modifiedBy: adminId,
             createdIp: cIp,
             modifiedIp: cIp,
           });
@@ -604,7 +607,7 @@ export class MemberPaymentService {
       memberId: obj.memberId,
       memberName: obj['MemberPayment']
         ? obj['MemberPayment']['firstName'] +
-          (obj['MemberPayment']['lastName'] ? ' ' + obj['MemberPayment']['lastName'] : '')
+        (obj['MemberPayment']['lastName'] ? ' ' + obj['MemberPayment']['lastName'] : '')
         : null,
       programId: obj.programId,
       programPlanId: obj.programPlanId,
@@ -711,7 +714,7 @@ export class MemberPaymentService {
       if (!planFees) {
         throw Error('Plan not exists');
       }
-      const configParameters = await this.configParameterService.findAll();
+      const configParameters = CommonFunctionsUtil.getConfigArray((await this.configParameterService.findAll()).data);
       const currencyConfigList = await this.currencyConfigService.getCurrencyConfigList();
       const franchiseAddresses = await this.commonService.findAddresses(TableEnum.MST_FRANCHISE, PRIMARY_FRANCHISE);
       let franchiseAddress;
@@ -722,7 +725,7 @@ export class MemberPaymentService {
       const userCurrency = obj.userCurrency ? obj.userCurrency : configParameters[DEFAULT_CURRENCY];
       const systemCurrency = configParameters[DEFAULT_CURRENCY];
       const taxApplicable = obj.isTaxApplicable;
-      const taxPercentage = configParameters[TAX_PERCENTAGE];
+      const taxPercentage = Number(configParameters[TAX_PERCENTAGE]);
       const targetCurrencyConfig = _.find(currencyConfigList, {
         sourceCurrencyCode: userCurrency,
       });
@@ -768,7 +771,7 @@ export class MemberPaymentService {
           obj.address.stateId,
           franchiseAddress.countryId,
           franchiseAddress.stateId,
-          userTaxObj,
+          userCurrencyTaxAmount,
           taxPercentage,
         );
       }

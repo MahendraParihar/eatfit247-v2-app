@@ -14,6 +14,7 @@ import { CommonService } from '../../common/common.service';
 import { TableEnum } from '../../../enums/table-enum';
 import { ConfigParameterService } from '../../config-parameter/config-parameter.service';
 import { GST_ENABLED, TAX_PERCENTAGE } from '../../../constants/config-parameters';
+import { find } from 'lodash';
 
 @Controller('member-payment')
 export class MemberPaymentController {
@@ -71,7 +72,9 @@ export class MemberPaymentController {
       this.configParameterService.findAll(),
     ]);
 
-    const configParameters = pro[6];
+    const configParameters = pro[6].data;
+    const tp = find(configParameters, {configName: GST_ENABLED});
+    const tper = find(configParameters, {configName: TAX_PERCENTAGE});
 
     return {
       code: ServerResponseEnum.SUCCESS,
@@ -83,8 +86,8 @@ export class MemberPaymentController {
         currencyConfig: pro[3],
         paymentStatus: pro[4],
         addresses: pro[5],
-        taxPercentage: Number(configParameters[TAX_PERCENTAGE]),
-        taxApplicable: configParameters[GST_ENABLED] === '1',
+        taxPercentage: Number(tper.configValue),
+        taxApplicable: tp.configValue === '1',
       },
     };
   }

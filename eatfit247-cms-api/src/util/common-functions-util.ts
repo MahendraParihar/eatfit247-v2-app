@@ -3,6 +3,7 @@ import { IMediaUpload } from '../response-interface/media-upload.interface';
 import * as moment from 'moment/moment';
 import * as path from 'path';
 import { join } from 'path';
+import { MstConfig } from '../core/database/models/mst-config.model';
 
 export class CommonFunctionsUtil {
   constructor() {
@@ -80,5 +81,13 @@ export class CommonFunctionsUtil {
 
   public static getMediaFolderPath(): string {
     return join(__dirname, '..', '../media-files');
+  }
+
+  public static getConfigArray(config: MstConfig[]) {
+    const list = {};
+    for (const s of config) {
+      list[s.configName] = s.configValue;
+    }
+    return list;
   }
 }

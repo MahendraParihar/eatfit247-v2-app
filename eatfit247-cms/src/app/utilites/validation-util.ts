@@ -24,10 +24,10 @@ export class ValidationUtil {
     });
   }
 
-  static weightValidation(control: AbstractControl) {
+  static floatValidation(control: AbstractControl) {
     const regexp = new RegExp(Constants.FLOAT_REGEX);
     if (!regexp.test(control.value)) {
-      return {invalidWeight: true};
+      return {invalidNumber: true};
     }
     return null;
   }
