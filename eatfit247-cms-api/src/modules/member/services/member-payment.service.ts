@@ -115,7 +115,7 @@ export class MemberPaymentService {
           },
         ],
         where: whereCondition,
-        order: [['paymentDate', 'ASC']],
+        order: [['createdAt', 'ASC']],
         raw: true,
         nest: true,
       });
