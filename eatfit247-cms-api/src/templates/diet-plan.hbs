@@ -77,17 +77,17 @@
 <br>
 <table>
   <thead>
-  <th>Category</th>
-  <th>Details</th>
-  <th>Recipes</th>
+  <th style="width: 20%">Category</th>
+  <th style="width: 50%;">Details</th>
+  <th style="width: 30%">Recipes</th>
   </thead>
   <tbody>
 
   {{#each data.diet.dietPlan}}
     <tr>
       <td style="width:20%;">{{recipeCategory}}</td>
-      <td style="width:20%;">{{dietDetail}}</td>
-      <td style="width:60%;">
+      <td style="width:50%;">{{{dietDetail}}}</td>
+      <td style="width:30%;">
         <ul>
           {{#each recipeList}}
             <li>{{name}}</li>

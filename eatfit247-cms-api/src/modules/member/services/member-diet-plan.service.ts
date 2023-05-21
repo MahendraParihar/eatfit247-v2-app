@@ -63,7 +63,8 @@ export class MemberDietPlanService {
     private dietTemplateService: DietTemplateService,
     private pdfService: PdfService,
     private emailService: EmailService,
-  ) {}
+  ) {
+  }
 
   public async findAll(id: number): Promise<IServerResponse> {
     let res: IServerResponse;
@@ -457,7 +458,7 @@ export class MemberDietPlanService {
         }
       }
 
-      let updateObj = {
+      const updateObj = {
         startDate: dietStartDate,
         endDate: dietEndDate,
         currentCycleNo: body.cycleNo,
@@ -556,6 +557,7 @@ export class MemberDietPlanService {
 
   async generateDietPlan(memberId: number, dietPlanId: number, cycleNo: number, dayNo: number = null) {
     const data = await this.fetchDietDetail(memberId, dietPlanId, cycleNo, dayNo);
+    const memberData = await this.memberService.loadBasicInfo(memberId);
     const recipeIdArr = data.data.diet.dietPlan.map((a) => a.recipeIds);
     const recipeIds = recipeIdArr.flat();
     data.data.recipes = [];
@@ -564,13 +566,12 @@ export class MemberDietPlanService {
     }
     data.data.memberName = await this.memberService.getMemberName(memberId);
 
-    const fileModel = await this.pdfService.generatePDF(
+    return await this.pdfService.generatePDF(
       `${PDFTemplateEnum.DIET_PLAN}`,
       `${MediaFolderEnum.DIET_PLAN}/${memberId}`,
-      `${dietPlanId}`,
+      `${memberData.firstName}_${memberData.lastName}_${data.data.diet.cycleNo}_${dietPlanId}`,
       data,
     );
-    return fileModel;
   }
 
   async applyDietTemplate(memberId: number, body: MemberDietTemplateDto, cIp: string, adminId: number) {
@@ -715,13 +716,13 @@ export class MemberDietPlanService {
       dietPlanStatusId: obj.isCompleted
         ? DietPlanStatusEnum.COMPLETED
         : obj.currentCycleNo && obj.currentCycleNo > 0
-        ? DietPlanStatusEnum.IN_PROGRESS
-        : DietPlanStatusEnum.NOT_STARTED,
+          ? DietPlanStatusEnum.IN_PROGRESS
+          : DietPlanStatusEnum.NOT_STARTED,
       dietPlanStatus: obj.isCompleted
         ? 'Completed'
         : obj.currentCycleNo && obj.currentCycleNo > 0
-        ? 'In Progress'
-        : 'Not Started',
+          ? 'In Progress'
+          : 'Not Started',
       startDate: obj.startDate ? moment(obj.startDate, DB_DATE_FORMAT) : null,
       endDate: obj.endDate ? moment(obj.endDate, DB_DATE_FORMAT) : null,
       active: obj.active,

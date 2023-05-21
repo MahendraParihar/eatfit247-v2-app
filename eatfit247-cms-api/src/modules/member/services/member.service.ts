@@ -553,7 +553,7 @@ export class MemberService {
     return await this.memberRepository.findOne<TxnMember>({ where: { emailId: emailId }, raw: true, nest: true });
   }
 
-  private async loadBasicInfo(memberId: number): Promise<IMemberList> {
+  public async loadBasicInfo(memberId: number): Promise<IMemberList> {
     TxnMember.belongsTo(TxnAssessment, {
       targetKey: 'memberId',
       foreignKey: 'memberId',
