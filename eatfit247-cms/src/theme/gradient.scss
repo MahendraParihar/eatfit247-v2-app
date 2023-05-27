@@ -1,9 +1,60 @@
 @import 'variable';
 
+@import 'variable';
+
+.gradient-blue-green {
+  background: #92E275 !important;
+  background: -webkit-linear-gradient(90deg, #92E275, #71DEFF) !important;
+  background: linear-gradient(90deg, #92E275, #71DEFF) !important;
+  background: -moz-linear-gradient(90deg, #92E275, #71DEFF) !important;
+}
+
+.gradient-orange {
+  background: #FF9771 !important;
+  background: -webkit-linear-gradient(90deg, #FF9771, #FF9771) !important;
+  background: linear-gradient(90deg, #FF9771, #FF9771) !important;
+  background: -moz-linear-gradient(90deg, #FF9771, #FF9771) !important;
+}
+
+.gradient-orange-pink {
+  background: #FF9771 !important;
+  background: -webkit-linear-gradient(90deg, #FF9771, #FF81A3) !important;
+  background: linear-gradient(90deg, #FF9771, #FF81A3) !important;
+  background: -moz-linear-gradient(90deg, #FF9771, #FF81A3) !important;
+}
+
+.gradient-orange-yellow {
+  background: #F58345 !important;
+  background: -webkit-linear-gradient(90deg, #F58345, #F6C45A) !important;
+  background: linear-gradient(90deg, #F58345, #F6C45A) !important;
+  background: -moz-linear-gradient(90deg, #F58345, #F6C45A) !important;
+}
+
+.gradient-blue-l-green {
+  background: #4CDAF3 !important;
+  background: -webkit-linear-gradient(90deg, #4CDAF3, #69F8D3) !important;
+  background: linear-gradient(90deg, #4CDAF3, #69F8D3) !important;
+  background: -moz-linear-gradient(90deg, #4CDAF3, #69F8D3) !important;
+}
+
+.gradient-red{
+  background: #ff5252 !important;
+  background: linear-gradient(45deg, #ff5252 0%, #f48fb1 80%) !important;
+  background: -webkit-linear-gradient(45deg, #ff5252 0%, #f48fb1 80%) !important;
+  background: -moz-linear-gradient(45deg, #ff5252 0%, #f48fb1 80%) !important;
+}
+
+.gradient-light-blue-teal {
+  background: #D550F5 !important;
+  background: -webkit-linear-gradient(90deg, #D550F5, #9BAFFC) !important;
+  background: linear-gradient(90deg, #D550F5, #9BAFFC) !important;
+  background: -moz-linear-gradient(90deg, #D550F5, #9BAFFC) !important;
+}
+
 .gradient-45deg-amber-yellow {
-  background: -webkit-linear-gradient(45deg, #ff6f00, #ffca28) !important;
-  background: linear-gradient(45deg, #ff6f00, #ffca28) !important;
-  background: -moz-linear-gradient(45deg, #ff6f00, #ffca28) !important;
+  background: -webkit-linear-gradient(45deg, #FF9771, #FF81A3) !important;
+  background: linear-gradient(45deg, #FF9771, #FF81A3) !important;
+  background: -moz-linear-gradient(45deg, #FF9771, #FF81A3) !important;
 }
 
 .gradient-45deg-blue-indigo {

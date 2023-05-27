@@ -1,13 +1,16 @@
-@use '@angular/material' as mat;
-@import "color";
+$blue: #4CDAF3;
+$yellow: #F6C45A;
+$orange: #FA8547;
+$green: #40CC3A;
+$m-green: #81BE66;
+$l-green: #9CD592;
+$red: #F84141;
+$black: #000000;
+$white: #FFFFFF;
 
-$my-custom-level: mat.define-typography-level(
-  $font-family: Roboto,
-  $font-weight: 400,
-  $font-size: 1rem,
-  $line-height: 1,
-  $letter-spacing: normal
-);
+$primary-text-color: #393939;
+$secondary-text-color: #797979;
+$tertiary-text-color: #B9B9B9;
 
 $padding-x-small: 4px;
 $padding-small: 8px;
@@ -30,12 +33,3 @@ $error-icon-color: #f27474;
 $success-icon-color: #a5dc86;
 $info-icon-color: #c9dae1;
 $help-icon-color: #c9dae1;
-
-
-$my-custom-level: mat.define-typography-level(
-  $font-family: Roboto,
-  $font-weight: 400,
-  $font-size: 1rem,
-  $line-height: 1,
-  $letter-spacing: normal
-);

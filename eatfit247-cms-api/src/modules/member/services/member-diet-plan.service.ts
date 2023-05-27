@@ -201,9 +201,10 @@ export class MemberDietPlanService {
           dietPlan: this.convertDietDetail(categoryList, recipeList, s),
         });
       }
-      for (const s of planList) {
+
+      for (let i = 0; i < planList.length; i++) {
         const cyclePlanList = [];
-        const tempCycleList = _.filter(dietPlanDetailList, { dietPlanId: s.id });
+        const tempCycleList = _.filter(dietPlanDetailList, { dietPlanId: planList[i].id });
         const cycleNos = _.uniqWith(_.map(tempCycleList, 'cycleNo'), _.isEqual);
         for (const c of cycleNos) {
           const cS = _.filter(tempCycleList, { cycleNo: c });
@@ -215,7 +216,7 @@ export class MemberDietPlanService {
             type: cS && cS.length > 0 ? cS[0].type : null,
           });
         }
-        s.cyclePlans = cyclePlanList;
+        planList[i].cyclePlans = cyclePlanList;
       }
 
       res = {

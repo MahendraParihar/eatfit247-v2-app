@@ -152,6 +152,12 @@ export class MemberDetailComponent implements OnInit, AfterViewInit, OnDestroy {
       case NavigationPathEnum.MEMBER_PAYMENT_HISTORY:
         this.activeTag = 8;
         break;
+      case NavigationPathEnum.MEMBER_DIET_PLAN_DETAIL:
+        this.activeTag = 4;
+        break;
+      case NavigationPathEnum.MEMBER_DIET_PLAN_DETAIL_DAY:
+        this.activeTag = 4;
+        break;
       default:
         this.activeTag = 0;
         break;

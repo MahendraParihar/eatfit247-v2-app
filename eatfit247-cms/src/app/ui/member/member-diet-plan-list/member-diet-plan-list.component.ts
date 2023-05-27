@@ -18,7 +18,6 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ValidationUtil } from 'src/app/utilites/validation-util';
 import { MemberDietPlanDatasource } from '../member-diet-plan.datasource';
 import { animate, state, style, transition, trigger } from '@angular/animations';
-import { cubic } from '@amcharts/amcharts5/.internal/core/util/Ease';
 
 @Component({
   selector: 'app-member-diet-plan-list',
@@ -39,7 +38,6 @@ export class MemberDietPlanListComponent implements OnInit, AfterViewInit, OnDes
   list: MemberDietPlanModel[];
   columnsToDisplay: string[] = ['program', 'programCategory', 'noOfCycle', 'dietPlanStatus', 'updatedBy'];
   columnsToDisplayWithExpand = [...this.columnsToDisplay, 'expand'];
-  expandedElement: MemberDietPlanModel | null;
 
   id: number;
   dietPlanStatusEnum = DietPlanStatusEnum;
@@ -47,7 +45,6 @@ export class MemberDietPlanListComponent implements OnInit, AfterViewInit, OnDes
   expandArray: boolean[] = [];
 
   stringRes = StringResources;
-  dietPlanDayDisplayColumns = ['dayNo', 'startDate', 'action'];
 
   dataSource: MemberDietPlanDatasource;
 
@@ -82,8 +79,21 @@ export class MemberDietPlanListComponent implements OnInit, AfterViewInit, OnDes
   ngOnDestroy(): void {
   }
 
-  onAddClick(isDaily: boolean, obj:MemberDietPlanModel){
-
+  onAddClick(isDaily: boolean, dietPlan: MemberDietPlanModel) {
+    if (isDaily) {
+      this.navigationService.navigateByStrPath(NavigationPathEnum.MEMBER_DIET_PLAN_DETAIL_DAY.toString()
+        .replace(':id', this.id.toString())
+        .replace(':dietId', dietPlan.id.toString())
+        .replace(':cycleNo', dietPlan.upcomingCycle.toString())
+        .replace(':dayNo', dietPlan.upcomingDay.toString()),
+      );
+    } else {
+      this.navigationService.navigateByStrPath(NavigationPathEnum.MEMBER_DIET_PLAN_DETAIL.toString()
+        .replace(':id', this.id.toString())
+        .replace(':dietId', dietPlan.id.toString())
+        .replace(':cycleNo', dietPlan.upcomingCycle.toString()),
+      );
+    }
   }
 
   onEditDailyDietPlan(dietPlan: MemberDietDetail) {
@@ -160,6 +170,4 @@ export class MemberDietPlanListComponent implements OnInit, AfterViewInit, OnDes
       }
     }
   }
-
-  protected readonly cubic = cubic;
 }

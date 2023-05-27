@@ -47,4 +47,5 @@ export interface IMemberDietDetail {
   noOfDaysInCycle: number;
   dietPlan: IDietPlanDetail[];
   type: string;
+  isDeletable: boolean;
 }

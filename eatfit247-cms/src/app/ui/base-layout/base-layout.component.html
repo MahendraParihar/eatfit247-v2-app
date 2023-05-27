@@ -4,7 +4,9 @@
       <button (click)="sidenav.toggle()" mat-icon-button>
         <mat-icon>menu</mat-icon>
       </button>
-      <span [ngClass]="{ 'hidden': !opened}">{{appTitle}}</span>
+      <span [ngClass]="{ 'hidden': !opened}" class="title-section">
+        {{appTitle}}
+      </span>
       <div class="m-medium breadcrumb">
         <div *ngFor="let item of breadcrumbList; let i = index;">
           <button (click)="onItemClicked(item)" color="primary" disabled="{{i===breadcrumbList.length-1}}"

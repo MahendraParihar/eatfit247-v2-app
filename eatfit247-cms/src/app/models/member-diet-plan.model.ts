@@ -22,6 +22,8 @@ export class MemberDietPlanModel extends LovModel {
   showDaily: boolean;
   showWeekly: boolean;
   cyclePlans: CyclePlan[];
+  isExpanded: boolean;
+  isDeletable: boolean;
 
   static override fromJson(data: any): MemberDietPlanModel | null {
     if (!data) {
@@ -54,6 +56,8 @@ export class MemberDietPlanModel extends LovModel {
     for (const s of data.cyclePlans) {
       authUserObj.cyclePlans.push(CyclePlan.fromJson(s));
     }
+    authUserObj.isExpanded = true;
+    authUserObj.isDeletable = data.isDeletable;
     return authUserObj;
   }
 }

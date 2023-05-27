@@ -431,46 +431,31 @@ h1, h2, h3, h4, h5, h6 {
 
 .gradient-btn {
   min-width: 120px !important;
-  background: #ff4081 !important;
-  background: linear-gradient(45deg, #8e24aa, #ff6e40) !important;
-  background: -webkit-linear-gradient(45deg, #8e24aa 0%, #ff6e40 80%) !important;
-  background: -moz-linear-gradient(45deg, #8e24aa 0%, #ff6e40 80%) !important;
+  @extend .gradient-orange-yellow;
   color: white !important;
   @extend .waves-effect;
 }
 
 .blue-gradient-btn {
-  background: #0288d1 !important;
-  background: linear-gradient(45deg, #0288d1 0%, #26c6da 80%) !important;
-  background: -webkit-linear-gradient(45deg, #0288d1 0%, #26c6da 80%) !important;
-  background: -moz-linear-gradient(45deg, #0288d1 0%, #26c6da 80%) !important;
+  @extend .gradient-blue-green;
   color: white !important;
   @extend .waves-effect;
 }
 
 .red-gradient-btn {
-  background: #ff5252 !important;
-  background: linear-gradient(45deg, #ff5252 0%, #f48fb1 80%) !important;
-  background: -webkit-linear-gradient(45deg, #ff5252 0%, #f48fb1 80%) !important;
-  background: -moz-linear-gradient(45deg, #ff5252 0%, #f48fb1 80%) !important;
+  @extend .gradient-red;
   color: white !important;
   @extend .waves-effect;
 }
 
 .yellow-gradient-btn {
-  background: #ff6f00 !important;
-  background: linear-gradient(45deg, #ff6f00 0%, #ffca28 80%) !important;
-  background: -webkit-linear-gradient(45deg, #ff6f00 0%, #ffca28 80%) !important;
-  background: -moz-linear-gradient(45deg, #ff6f00 0%, #ffca28 80%) !important;
+  @extend .gradient-orange-yellow;
   color: white !important;
   @extend .waves-effect;
 }
 
 .green-gradient-btn {
-  background: #43a047 !important;
-  background: linear-gradient(45deg, #43a047 0%, #1de9b6 80%) !important;
-  background: -webkit-linear-gradient(45deg, #43a047 0%, #1de9b6 80%) !important;
-  background: -moz-linear-gradient(45deg, #43a047 0%, #1de9b6 80%) !important;
+  @extend .gradient-blue-green;
   color: white !important;
   @extend .waves-effect;
 }

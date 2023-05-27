@@ -39,7 +39,6 @@ export class MemberBodyStatsDatasource implements DataSource<MemberHealthParamet
         this.dataSubject.next(tempList);
         return true;
       case ServerResponseEnum.WARNING:
-        this.snackBarService.showWarning(apiResponse.message);
         return false;
       case ServerResponseEnum.ERROR:
       default:
