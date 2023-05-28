@@ -10,7 +10,8 @@
              fxFlex.lt-sm="100%">
           <mat-form-field>
             <mat-label>{{stringRes.DATE}}</mat-label>
-            <input (click)="startDatePicker.open()" [matDatepicker]="startDatePicker" [max]="currentDate" [min]="minDate"
+            <input (click)="startDatePicker.open()" [matDatepicker]="startDatePicker" [max]="currentDate"
+                   [min]="minDate"
                    formControlName="logDate"
                    matInput
                    placeholder="Select date"
@@ -28,7 +29,8 @@
       </div>
       <ng-container formArrayName="bodyStats">
         <ng-container *ngFor="let agd of healthParameterArray().controls; let i=index" [formGroupName]="i">
-          <div *ngIf="memberHealthLogObj.memberHealthParameters[i].fieldType === fieldTypeEnum.NUMBER" fxLayout="row wrap" fxLayout.lt-sm="column"
+          <div *ngIf="memberHealthLogObj.memberHealthParameters[i].fieldType === fieldTypeEnum.NUMBER"
+               fxLayout="row wrap" fxLayout.lt-sm="column"
                fxLayoutAlign="flex-start">
             <div class="form-item"
                  fxFlex="calc(60%)"
@@ -40,7 +42,8 @@
                 <input [required]="memberHealthLogObj.memberHealthParameters[i].requiredField"
                        formControlName="value"
                        matInput
-                       placeholder="Enter {{memberHealthLogObj.memberHealthParameters[i].healthParameter}}" type="{{memberHealthLogObj.memberHealthParameters[i].fieldType}}">
+                       placeholder="Enter {{memberHealthLogObj.memberHealthParameters[i].healthParameter}}"
+                       type="{{memberHealthLogObj.memberHealthParameters[i].fieldType}}">
                 <mat-error>
                   <app-input-error [controlName]="memberHealthLogObj.memberHealthParameters[i].healthParameter"
                                    [control]="formControl['value']"></app-input-error>
@@ -60,7 +63,8 @@
               </mat-button-toggle-group>
             </div>
           </div>
-          <div *ngIf="memberHealthLogObj.memberHealthParameters[i].fieldType === fieldTypeEnum.DATE" fxLayout="row wrap" fxLayout.lt-sm="column"
+          <div *ngIf="memberHealthLogObj.memberHealthParameters[i].fieldType === fieldTypeEnum.DATE" fxLayout="row wrap"
+               fxLayout.lt-sm="column"
                fxLayoutAlign="flex-start">
             <div class="form-item"
                  fxFlex="calc(100%)"

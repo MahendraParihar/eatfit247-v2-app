@@ -1,16 +1,16 @@
 @import "../../../../../theme/variable";
+@import "../../../../../theme/padding";
 
 .alert {
   display: flex;
   flex-direction: column;
   align-content: center;
   justify-content: space-around;
-  gap: 12px;
 
   mat-icon, img {
-    width: 80px;
-    height: 80px;
-    font-size: 80px;
+    width: 60px;
+    height: 60px;
+    font-size: 60px;
     margin: auto;
   }
 
@@ -52,7 +52,7 @@
     text-transform: none;
     position: relative;
     display: block;
-    padding: 13px 16px;
+    @extend .p-medium;
     font-size: 27px !important;
     line-height: normal !important;
     text-align: center;

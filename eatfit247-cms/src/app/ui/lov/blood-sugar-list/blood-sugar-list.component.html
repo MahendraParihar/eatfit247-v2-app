@@ -24,7 +24,8 @@
       <mat-header-cell *matHeaderCellDef>Status</mat-header-cell>
       <mat-cell *matCellDef="let d; let i = index">
         <button (click)="onDeleteClick(d, i)" [flag]="d.active"
-                appStatusBtn mat-flat-button matTooltip="{{d.active ? 'Mark '+stringRes.IN_ACTIVE: 'Mark '+stringRes.ACTIVE}}">
+                appStatusBtn mat-flat-button
+                matTooltip="{{d.active ? 'Mark '+stringRes.IN_ACTIVE: 'Mark '+stringRes.ACTIVE}}">
           {{d.active ? stringRes.ACTIVE : stringRes.IN_ACTIVE}}
         </button>
       </mat-cell>

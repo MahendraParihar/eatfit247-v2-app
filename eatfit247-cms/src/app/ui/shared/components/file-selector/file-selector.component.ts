@@ -1,67 +1,61 @@
-import {Component, Input, IterableDiffers, OnChanges, OnInit, SimpleChanges} from '@angular/core';
-import {StringResources} from "../../../../enum/string-resources";
-import {FormArray, FormGroup, UntypedFormArray, UntypedFormBuilder, UntypedFormGroup, Validators} from "@angular/forms";
-import {FileHandle} from "../../directive/file-handle";
-import {DomSanitizer} from "@angular/platform-browser";
-import {FileTypeEnum} from "../../../../enum/file-type-enum";
-import {MediaForEnum} from "../../../../enum/media-for-enum";
-import {HttpService} from "../../../../service/http.service";
-import {HttpEventType, HttpResponse, HttpStatusCode} from "@angular/common/http";
-import {ServerResponseEnum} from "../../../../enum/server-response-enum";
-import {MediaUploadResponseModel} from "../../../../models/media-upload-response.model";
-import {AlertDialogDataInterface} from "../../../../interfaces/alert-dialog-data.interface";
-import {MatDialog} from "@angular/material/dialog";
-import {InfoDialogComponent} from "../info-dialog/info-dialog.component";
-import {AlertTypeEnum} from "../../../../enum/alert-type-enum";
-import {ApiUrlEnum} from "../../../../enum/api-url-enum";
+import { Component, Input, IterableDiffers, OnChanges, OnInit, SimpleChanges } from '@angular/core';
+import { StringResources } from '../../../../enum/string-resources';
+import {
+  FormArray,
+  FormGroup,
+  UntypedFormArray,
+  UntypedFormBuilder,
+  UntypedFormGroup,
+  Validators,
+} from '@angular/forms';
+import { FileHandle } from '../../directive/file-handle';
+import { DomSanitizer } from '@angular/platform-browser';
+import { FileTypeEnum } from '../../../../enum/file-type-enum';
+import { MediaForEnum } from '../../../../enum/media-for-enum';
+import { HttpService } from '../../../../service/http.service';
+import { HttpEventType, HttpResponse, HttpStatusCode } from '@angular/common/http';
+import { ServerResponseEnum } from '../../../../enum/server-response-enum';
+import { MediaUploadResponseModel } from '../../../../models/media-upload-response.model';
+import { AlertDialogDataInterface } from '../../../../interfaces/alert-dialog-data.interface';
+import { MatDialog } from '@angular/material/dialog';
+import { InfoDialogComponent } from '../info-dialog/info-dialog.component';
+import { AlertTypeEnum } from '../../../../enum/alert-type-enum';
+import { ApiUrlEnum } from '../../../../enum/api-url-enum';
 
 @Component({
   selector: 'app-file-selector',
   templateUrl: './file-selector.component.html',
-  styleUrls: ['./file-selector.component.scss']
+  styleUrls: ['./file-selector.component.scss'],
 })
 export class FileSelectorComponent implements OnInit, OnChanges {
-
   apiUrlEnum = ApiUrlEnum;
-
   @Input()
   formGroup: UntypedFormGroup;
-
   @Input()
   isMultiFile: boolean = false;
-
   @Input()
   mediaFor: MediaForEnum;
-
   @Input()
   mediaType: FileTypeEnum = FileTypeEnum.IMAGE;
-
   @Input()
   isRequired: boolean = true;
-
   @Input()
   uploadedMediaList: MediaUploadResponseModel[] = [];
-
   @Input()
   controlName: string;
-
   stringRes = StringResources;
-
   fileUploadForm: UntypedFormArray = this.fb.array([]);
-
   selectedFiles: any;
-
   mediaTypeEnum = FileTypeEnum;
-
   uploadedFiles: FileHandle[] = [];
   mediaPath = ApiUrlEnum.MEDIA_PATH;
   private differ: IterableDiffers;
 
   constructor(private fb: UntypedFormBuilder,
-              private sanitizer: DomSanitizer,
-              private httpService: HttpService,
-              private differs: IterableDiffers,
-              public dialog: MatDialog) {
+    private sanitizer: DomSanitizer,
+    private httpService: HttpService,
+    private differs: IterableDiffers,
+    public dialog: MatDialog) {
     this.differ = this.differs;
   }
 
@@ -81,7 +75,7 @@ export class FileSelectorComponent implements OnInit, OnChanges {
           progress: 100,
           fileUpdateStatus: 1,
           isRequested: true,
-          isPastFile: true
+          isPastFile: true,
         });
       }
     }
@@ -89,7 +83,7 @@ export class FileSelectorComponent implements OnInit, OnChanges {
   }
 
   fileArray(): FormArray {
-    return this.formGroup.get(this.controlName) as FormArray
+    return this.formGroup.get(this.controlName) as FormArray;
   }
 
   newFile(f: MediaUploadResponseModel): FormGroup {
@@ -100,7 +94,7 @@ export class FileSelectorComponent implements OnInit, OnChanges {
       mimetype: [f.mimetype, [Validators.required]],
       fileName: [f.fileName, [Validators.required]],
       webUrl: [f.webUrl, [Validators.required]],
-      size: [f.size, [Validators.required]]
+      size: [f.size, [Validators.required]],
     });
   }
 
@@ -122,7 +116,7 @@ export class FileSelectorComponent implements OnInit, OnChanges {
         url: url,
         progress: 0,
         isRequested: false,
-        isPastFile: false
+        isPastFile: false,
       });
     }
     this.validateNAddFiles(files);
@@ -182,17 +176,14 @@ export class FileSelectorComponent implements OnInit, OnChanges {
         continue;
       }
       f.isRequested = true;
-
       const formData: FormData = new FormData();
       formData.append('file', f.file);
       formData.append('mediaFor', this.mediaFor);
       formData.append('mediaType', this.mediaType);
-
       console.log('f.file', f.file);
-
       f.progress = 0;
       this.httpService.uploadMedia(formData).subscribe((event: any) => {
-          console.log(event)
+          console.log(event);
           if (event.type === HttpEventType.UploadProgress) {
             f.progress = Math.round(100 * event.loaded / event.total);
           } else if (event instanceof HttpResponse) {
@@ -233,7 +224,7 @@ export class FileSelectorComponent implements OnInit, OnChanges {
       message: StringResources.SINGLE_MEDIA_FILE_ALERT,
       positiveBtnTxt: StringResources.OK,
       negativeBtnTxt: null,
-      alertType: AlertTypeEnum.WARNING
+      alertType: AlertTypeEnum.WARNING,
     };
     const dialogRef = this.dialog.open(InfoDialogComponent, {
       width: '350px',

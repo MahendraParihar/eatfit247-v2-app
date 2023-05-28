@@ -1,12 +1,11 @@
-import {Directive, EventEmitter, HostBinding, HostListener, Output,} from '@angular/core';
-import {FileHandle} from './file-handle';
-import {DomSanitizer} from '@angular/platform-browser';
+import { Directive, EventEmitter, HostBinding, HostListener, Output } from '@angular/core';
+import { FileHandle } from './file-handle';
+import { DomSanitizer } from '@angular/platform-browser';
 
 @Directive({
-  selector: '[appImageDrag]'
+  selector: '[appImageDrag]',
 })
 export class ImageDragDirective {
-
   @Output('files') files: EventEmitter<FileHandle[]> = new EventEmitter();
   @HostBinding('style.background') public background = '#eee';
 
@@ -42,12 +41,11 @@ export class ImageDragDirective {
         progress: 0,
         isRequested: false,
         fileUpdateStatus: 0,
-        isPastFile: false
+        isPastFile: false,
       });
     }
     if (files.length > 0) {
       this.files.emit(files);
     }
   }
-
 }

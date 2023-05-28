@@ -1,25 +1,24 @@
-import {AfterViewInit, Component, OnDestroy, OnInit} from '@angular/core';
-import {HttpService} from "../../../service/http.service";
-import {SnackBarService} from "../../../service/snack-bar.service";
-import {NavigationService} from "../../../service/navigation.service";
-import {ActivatedRoute} from "@angular/router";
-import {FormBuilder, FormGroup, Validators} from "@angular/forms";
-import {StringResources} from "../../../enum/string-resources";
-import {InputLength} from "../../../constants/input-length";
-import {ResponseDataModel} from "../../../models/response-data.model";
-import {ApiUrlEnum} from "../../../enum/api-url-enum";
-import {ServerResponseEnum} from "../../../enum/server-response-enum";
-import {MemberAssessmentModel} from "../../../models/member.model";
-import {ValidationUtil} from "../../../utilites/validation-util";
-import {DropdownItem} from "../../../interfaces/dropdown-item";
+import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
+import { HttpService } from '../../../service/http.service';
+import { SnackBarService } from '../../../service/snack-bar.service';
+import { NavigationService } from '../../../service/navigation.service';
+import { ActivatedRoute } from '@angular/router';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { StringResources } from '../../../enum/string-resources';
+import { InputLength } from '../../../constants/input-length';
+import { ResponseDataModel } from '../../../models/response-data.model';
+import { ApiUrlEnum } from '../../../enum/api-url-enum';
+import { ServerResponseEnum } from '../../../enum/server-response-enum';
+import { MemberAssessmentModel } from '../../../models/member.model';
+import { ValidationUtil } from '../../../utilites/validation-util';
+import { DropdownItem } from '../../../interfaces/dropdown-item';
 
 @Component({
   selector: 'app-assessment-manage',
   templateUrl: './assessment-manage.component.html',
-  styleUrls: ['./assessment-manage.component.scss']
+  styleUrls: ['./assessment-manage.component.scss'],
 })
 export class AssessmentManageComponent implements OnInit, AfterViewInit, OnDestroy {
-
   memberAssessmentObj: MemberAssessmentModel;
   id: number;
   stringRes = StringResources;
@@ -33,7 +32,6 @@ export class AssessmentManageComponent implements OnInit, AfterViewInit, OnDestr
   sleepingPatternList: DropdownItem[] = [];
   bloodSugarList: DropdownItem[] = [];
   urineOutputList: DropdownItem[] = [];
-
   formGroup: FormGroup = this.fb.group({
     dateOfBirth: [null, [Validators.required]],
     age: [null, [Validators.maxLength(6)]],
@@ -115,10 +113,10 @@ export class AssessmentManageComponent implements OnInit, AfterViewInit, OnDestr
   });
 
   constructor(private httpService: HttpService,
-              private snackBarService: SnackBarService,
-              private navigationService: NavigationService,
-              private activatedRoute: ActivatedRoute,
-              private fb: FormBuilder) {
+    private snackBarService: SnackBarService,
+    private navigationService: NavigationService,
+    private activatedRoute: ActivatedRoute,
+    private fb: FormBuilder) {
     this.activatedRoute.parent.params.subscribe(params => {
       this.id = Number(params['id']);
     });
@@ -220,7 +218,7 @@ export class AssessmentManageComponent implements OnInit, AfterViewInit, OnDestr
         teaFrequency: this.memberAssessmentObj.teaFrequency ? this.memberAssessmentObj.teaFrequency : null,
         teaAmount: this.memberAssessmentObj.teaAmount ? this.memberAssessmentObj.teaAmount : null,
         remark: this.memberAssessmentObj.remark ? this.memberAssessmentObj.remark : null,
-        nutritionistSummery: this.memberAssessmentObj.nutritionistSummery ? this.memberAssessmentObj.nutritionistSummery : null
+        nutritionistSummery: this.memberAssessmentObj.nutritionistSummery ? this.memberAssessmentObj.nutritionistSummery : null,
       });
     }
   }
@@ -306,14 +304,12 @@ export class AssessmentManageComponent implements OnInit, AfterViewInit, OnDestr
     if (!this.formGroup.valid) {
       return;
     }
-
     let payload: any = this.formGroup.value;
-
     let res: ResponseDataModel;
     if (this.id > 0) {
-      res = await this.httpService.putRequest(ApiUrlEnum.MEMBER_ASSESSMENT_MANAGEMENT, this.id, payload, true)
+      res = await this.httpService.putRequest(ApiUrlEnum.MEMBER_ASSESSMENT_MANAGEMENT, this.id, payload, true);
     } else {
-      res = await this.httpService.postRequest(ApiUrlEnum.MEMBER_ASSESSMENT_MANAGEMENT, payload, true)
+      res = await this.httpService.postRequest(ApiUrlEnum.MEMBER_ASSESSMENT_MANAGEMENT, payload, true);
     }
     if (res) {
       switch (res.code) {
@@ -330,5 +326,4 @@ export class AssessmentManageComponent implements OnInit, AfterViewInit, OnDestr
       }
     }
   }
-
 }

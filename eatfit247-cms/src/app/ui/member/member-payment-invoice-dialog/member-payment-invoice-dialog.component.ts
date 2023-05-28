@@ -1,22 +1,21 @@
-import {Component, Inject, OnInit, Renderer2} from '@angular/core';
-import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
-import {ApiUrlEnum} from 'src/app/enum/api-url-enum';
-import {ServerResponseEnum} from 'src/app/enum/server-response-enum';
-import {StringResources} from 'src/app/enum/string-resources';
-import {MemberPaymentModel} from 'src/app/models/member-payment.model';
-import {ResponseDataModel} from 'src/app/models/response-data.model';
-import {HttpService} from 'src/app/service/http.service';
-import {SnackBarService} from 'src/app/service/snack-bar.service';
+import { Component, Inject, OnInit, Renderer2 } from '@angular/core';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { ApiUrlEnum } from 'src/app/enum/api-url-enum';
+import { ServerResponseEnum } from 'src/app/enum/server-response-enum';
+import { StringResources } from 'src/app/enum/string-resources';
+import { MemberPaymentModel } from 'src/app/models/member-payment.model';
+import { ResponseDataModel } from 'src/app/models/response-data.model';
+import { HttpService } from 'src/app/service/http.service';
+import { SnackBarService } from 'src/app/service/snack-bar.service';
 import { AddressModel } from '../../../models/address.model';
 import { CommonUtil } from '../../../utilites/common-util';
 
 @Component({
   selector: 'app-member-payment-invoice-dialog',
   templateUrl: './member-payment-invoice-dialog.component.html',
-  styleUrls: ['./member-payment-invoice-dialog.component.scss']
+  styleUrls: ['./member-payment-invoice-dialog.component.scss'],
 })
 export class MemberPaymentInvoiceDialogComponent implements OnInit {
-
   memberId: number;
   id: number;
   stringRes = StringResources;
@@ -24,10 +23,10 @@ export class MemberPaymentInvoiceDialogComponent implements OnInit {
   memberPaymentObj: MemberPaymentModel;
 
   constructor(public dialogRef: MatDialogRef<MemberPaymentInvoiceDialogComponent>,
-              @Inject(MAT_DIALOG_DATA) public data: any,
-              private renderer: Renderer2,
-              private httpService: HttpService,
-              private snackBarService: SnackBarService) {
+    @Inject(MAT_DIALOG_DATA) public data: any,
+    private renderer: Renderer2,
+    private httpService: HttpService,
+    private snackBarService: SnackBarService) {
     this.dialogData = data;
     this.memberId = data.memberId;
     this.id = this.dialogData.memberCallLogId;
@@ -45,7 +44,7 @@ export class MemberPaymentInvoiceDialogComponent implements OnInit {
     this.dialogRef.close(flag);
   }
 
-  getAddress(address: AddressModel):string{
+  getAddress(address: AddressModel): string {
     return CommonUtil.convertAddressObj(address);
   }
 
@@ -68,7 +67,7 @@ export class MemberPaymentInvoiceDialogComponent implements OnInit {
     }
   }
 
-  downloadTemplate(base64String: string, fileName:string) {
+  downloadTemplate(base64String: string, fileName: string) {
     if (base64String) {
       const mediaType = 'data:application/pdf;base64,';
       const link = this.renderer.createElement('a');
@@ -113,6 +112,4 @@ export class MemberPaymentInvoiceDialogComponent implements OnInit {
       }
     }
   }
-
-
 }

@@ -1,17 +1,15 @@
-import {Component, Input, OnInit} from '@angular/core';
-import {AbstractControl, AbstractControlDirective} from "@angular/forms";
-import {StringResources} from "../../../../enum/string-resources";
+import { Component, Input, OnInit } from '@angular/core';
+import { AbstractControl, AbstractControlDirective } from '@angular/forms';
+import { StringResources } from '../../../../enum/string-resources';
 
 @Component({
   selector: 'app-input-error',
   templateUrl: './input-error.component.html',
-  styleUrls: ['./input-error.component.scss']
+  styleUrls: ['./input-error.component.scss'],
 })
 export class InputErrorComponent implements OnInit {
-
   @Input()
   public control?: AbstractControlDirective | AbstractControl | null;
-
   @Input()
   public controlName?: string;
 
@@ -19,7 +17,6 @@ export class InputErrorComponent implements OnInit {
   }
 
   ngOnInit() {
-
   }
 
   shouldShowErrors(): boolean | null {
@@ -28,7 +25,6 @@ export class InputErrorComponent implements OnInit {
     } else {
       return false;
     }
-
   }
 
   getError(): string[] | null {
@@ -71,7 +67,5 @@ export class InputErrorComponent implements OnInit {
       default:
         return null;
     }
-
   }
-
 }

@@ -1,18 +1,17 @@
-import {CollectionViewer, DataSource} from "@angular/cdk/collections";
-import {BehaviorSubject, Observable} from 'rxjs';
-import {HttpService} from "../../service/http.service";
-import {ServerResponseEnum} from "../../enum/server-response-enum";
-import {SnackBarService} from "../../service/snack-bar.service";
-import {MemberCallLogModel} from "../../models/member-call-log.model";
+import { CollectionViewer, DataSource } from '@angular/cdk/collections';
+import { BehaviorSubject, Observable } from 'rxjs';
+import { HttpService } from '../../service/http.service';
+import { ServerResponseEnum } from '../../enum/server-response-enum';
+import { SnackBarService } from '../../service/snack-bar.service';
+import { MemberCallLogModel } from '../../models/member-call-log.model';
 
 export class MemberCallLogDatasource implements DataSource<MemberCallLogModel> {
-
   private dataSubject = new BehaviorSubject<MemberCallLogModel[]>([]);
   private totalCountSubject = new BehaviorSubject<number>(0);
   totalCount = this.totalCountSubject.asObservable();
 
   constructor(private httpService: HttpService,
-              private snackBarService: SnackBarService) {
+    private snackBarService: SnackBarService) {
   }
 
   connect(collectionViewer: CollectionViewer): Observable<MemberCallLogModel[]> {

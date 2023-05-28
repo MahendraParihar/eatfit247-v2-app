@@ -1,26 +1,25 @@
-import {Component, Inject, OnInit} from '@angular/core';
-import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
-import {FormArray, FormBuilder, FormGroup, Validators} from "@angular/forms";
-import {HttpService} from "../../../service/http.service";
-import {SnackBarService} from "../../../service/snack-bar.service";
-import {StringResources} from "../../../enum/string-resources";
-import {InputLength} from "../../../constants/input-length";
-import * as moment from "moment";
-import {Constants} from "../../../constants/Constants";
-import {ValidationUtil} from "../../../utilites/validation-util";
-import {ResponseDataModel} from "../../../models/response-data.model";
-import {ApiUrlEnum} from "../../../enum/api-url-enum";
-import {ServerResponseEnum} from "../../../enum/server-response-enum";
-import {MemberHealthParameter, MemberHealthParameterModelLog} from "../../../models/member-body-stats.model";
-import {FieldTypeEnum} from "../../../enum/field-type-enum";
+import { Component, Inject, OnInit } from '@angular/core';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { HttpService } from '../../../service/http.service';
+import { SnackBarService } from '../../../service/snack-bar.service';
+import { StringResources } from '../../../enum/string-resources';
+import { InputLength } from '../../../constants/input-length';
+import * as moment from 'moment';
+import { Constants } from '../../../constants/Constants';
+import { ValidationUtil } from '../../../utilites/validation-util';
+import { ResponseDataModel } from '../../../models/response-data.model';
+import { ApiUrlEnum } from '../../../enum/api-url-enum';
+import { ServerResponseEnum } from '../../../enum/server-response-enum';
+import { MemberHealthParameter, MemberHealthParameterModelLog } from '../../../models/member-body-stats.model';
+import { FieldTypeEnum } from '../../../enum/field-type-enum';
 
 @Component({
   selector: 'app-member-body-stats-manage-dialog',
   templateUrl: './member-body-stats-manage-dialog.component.html',
-  styleUrls: ['./member-body-stats-manage-dialog.component.scss']
+  styleUrls: ['./member-body-stats-manage-dialog.component.scss'],
 })
 export class MemberBodyStatsManageDialogComponent implements OnInit {
-
   memberId: number;
   id: number;
   stringRes = StringResources;
@@ -28,20 +27,18 @@ export class MemberBodyStatsManageDialogComponent implements OnInit {
   dialogData: any;
   memberHealthLogObj: MemberHealthParameterModelLog;
   fieldTypeEnum = FieldTypeEnum;
-
   formGroup: FormGroup = this.fb.group({
     logDate: [null, [Validators.required]],
-    bodyStats: this.fb.array([])
+    bodyStats: this.fb.array([]),
   });
-
   currentDate = new Date();
   minDate = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth() - 2, this.currentDate.getDay() + 1);
 
   constructor(public dialogRef: MatDialogRef<MemberBodyStatsManageDialogComponent>,
-              @Inject(MAT_DIALOG_DATA) public data: any,
-              private fb: FormBuilder,
-              private httpService: HttpService,
-              private snackBarService: SnackBarService) {
+    @Inject(MAT_DIALOG_DATA) public data: any,
+    private fb: FormBuilder,
+    private httpService: HttpService,
+    private snackBarService: SnackBarService) {
     this.dialogData = data;
     this.memberId = data.memberId;
     if (!this.dialogData.new) {
@@ -63,7 +60,7 @@ export class MemberBodyStatsManageDialogComponent implements OnInit {
 
   // region body stats item
   healthParameterArray(): FormArray {
-    return this.formGroup.get("bodyStats") as FormArray
+    return this.formGroup.get('bodyStats') as FormArray;
   }
 
   newHealthParameter(healthParameterObj: MemberHealthParameter): FormGroup {
@@ -83,7 +80,6 @@ export class MemberBodyStatsManageDialogComponent implements OnInit {
   }
 
   // endregion
-
   onPositiveClick(): void {
     this.closeDialog(true);
   }
@@ -107,7 +103,7 @@ export class MemberBodyStatsManageDialogComponent implements OnInit {
         }
       }
     }
-    console.log(this.formGroup)
+    console.log(this.formGroup);
   }
 
   async onSubmit(): Promise<void> {
@@ -115,10 +111,9 @@ export class MemberBodyStatsManageDialogComponent implements OnInit {
     if (!this.formGroup.valid) {
       return;
     }
-
     let payload: any = this.formGroup.value;
     if (this.formGroup.value.date) {
-      payload['logDate'] = moment(this.formGroup.value.logDate).toDate()
+      payload['logDate'] = moment(this.formGroup.value.logDate).toDate();
     }
     payload['memberId'] = this.memberId;
     const bodyStats = [];
@@ -178,7 +173,7 @@ export class MemberBodyStatsManageDialogComponent implements OnInit {
         case ServerResponseEnum.SUCCESS:
           this.memberHealthLogObj.memberHealthParameters = [];
           for (const s of res.data) {
-            this.memberHealthLogObj.memberHealthParameters.push(MemberHealthParameter.fromJson(s))
+            this.memberHealthLogObj.memberHealthParameters.push(MemberHealthParameter.fromJson(s));
           }
           this.bindData();
           break;
@@ -191,5 +186,4 @@ export class MemberBodyStatsManageDialogComponent implements OnInit {
       }
     }
   }
-
 }

@@ -121,7 +121,8 @@
              fxFlex.lt-sm="100%">
           <mat-form-field>
             <mat-label>{{stringRes.DISCOUNT_AMOUNT}}</mat-label>
-            <input (input)="bindPlanFees()" formControlName="systemDiscountAmount" matInput placeholder="Enter discount" required
+            <input (input)="bindPlanFees()" formControlName="systemDiscountAmount" matInput placeholder="Enter discount"
+                   required
                    type="number">
             <mat-error>
               <app-input-error [controlName]="stringRes.DISCOUNT_AMOUNT"
@@ -201,7 +202,8 @@
              fxFlex.lt-sm="100%">
           <mat-form-field>
             <mat-label>{{stringRes.PAYMENT_DATE}}</mat-label>
-            <input (click)="startDatePicker.open()" [matDatepicker]="startDatePicker" formControlName="paymentDate" matInput
+            <input (click)="startDatePicker.open()" [matDatepicker]="startDatePicker" formControlName="paymentDate"
+                   matInput
                    placeholder="Enter payment date"
                    readonly
                    required

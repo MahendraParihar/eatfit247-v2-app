@@ -31,7 +31,8 @@
              fxFlex.lt-sm="100%">
           <mat-form-field>
             <mat-label>{{stringRes.FROM_TIME}}</mat-label>
-            <input [ngxMatTimepicker]="toTimePicker" formControlName="fromTime" matInput placeholder="Select {{stringRes.FROM_TIME}}"
+            <input [ngxMatTimepicker]="toTimePicker" formControlName="fromTime" matInput
+                   placeholder="Select {{stringRes.FROM_TIME}}"
                    readonly
                    required
                    type="text">
@@ -50,7 +51,8 @@
              fxFlex.lt-sm="100%">
           <mat-form-field>
             <mat-label>{{stringRes.TO_TIME}}</mat-label>
-            <input [ngxMatTimepicker]="fromTimePicker" formControlName="toTime" matInput placeholder="Select {{stringRes.TO_TIME}}"
+            <input [ngxMatTimepicker]="fromTimePicker" formControlName="toTime" matInput
+                   placeholder="Select {{stringRes.TO_TIME}}"
                    readonly
                    required
                    type="text">

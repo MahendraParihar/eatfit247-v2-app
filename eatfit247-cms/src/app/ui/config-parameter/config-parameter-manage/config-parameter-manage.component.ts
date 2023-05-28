@@ -1,35 +1,34 @@
-import {Component, OnInit} from '@angular/core';
-import {FormArray, FormBuilder, FormGroup, Validators} from '@angular/forms';
-import {ApiUrlEnum} from 'src/app/enum/api-url-enum';
-import {FieldTypeEnum} from 'src/app/enum/field-type-enum';
-import {ServerResponseEnum} from 'src/app/enum/server-response-enum';
-import {StringResources} from 'src/app/enum/string-resources';
-import {ConfigParameterModel} from 'src/app/models/config-parameter.model';
-import {ResponseDataModel} from 'src/app/models/response-data.model';
-import {HttpService} from 'src/app/service/http.service';
-import {SnackBarService} from 'src/app/service/snack-bar.service';
-import {ValidationUtil} from 'src/app/utilites/validation-util';
-import {NavigationService} from "../../../service/navigation.service";
+import { Component, OnInit } from '@angular/core';
+import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ApiUrlEnum } from 'src/app/enum/api-url-enum';
+import { FieldTypeEnum } from 'src/app/enum/field-type-enum';
+import { ServerResponseEnum } from 'src/app/enum/server-response-enum';
+import { StringResources } from 'src/app/enum/string-resources';
+import { ConfigParameterModel } from 'src/app/models/config-parameter.model';
+import { ResponseDataModel } from 'src/app/models/response-data.model';
+import { HttpService } from 'src/app/service/http.service';
+import { SnackBarService } from 'src/app/service/snack-bar.service';
+import { ValidationUtil } from 'src/app/utilites/validation-util';
+import { NavigationService } from '../../../service/navigation.service';
 
 @Component({
   selector: 'app-config-parameter-manage',
   templateUrl: './config-parameter-manage.component.html',
-  styleUrls: ['./config-parameter-manage.component.scss']
+  styleUrls: ['./config-parameter-manage.component.scss'],
 })
 export class ConfigParameterManageComponent implements OnInit {
-
   configParamList: ConfigParameterModel[];
   configParamControls: any;
   fieldTypeEnum = FieldTypeEnum;
   stringRes = StringResources;
   formGroup: FormGroup = this.fb.group({
-    configParams: this.fb.array([])
+    configParams: this.fb.array([]),
   });
 
   constructor(private httpService: HttpService,
-              private snackBarService: SnackBarService,
-              private navigationService: NavigationService,
-              private fb: FormBuilder) {
+    private snackBarService: SnackBarService,
+    private navigationService: NavigationService,
+    private fb: FormBuilder) {
   }
 
   ngOnInit(): void {
@@ -60,7 +59,7 @@ export class ConfigParameterManageComponent implements OnInit {
   }
 
   setConfigParamFormControls() {
-    const configFormArray = this.formGroup.get("configParams") as FormArray;
+    const configFormArray = this.formGroup.get('configParams') as FormArray;
     if (this.configParamList) {
       for (const item of this.configParamList) {
         configFormArray.push(this.createConfigParamControl(item));
@@ -77,7 +76,7 @@ export class ConfigParameterManageComponent implements OnInit {
     }
     return this.fb.group({
       configParamId: [obj.configParamId],
-      configParamValue: [value, [Validators.required]]
+      configParamValue: [value, [Validators.required]],
     });
   }
 
@@ -90,9 +89,7 @@ export class ConfigParameterManageComponent implements OnInit {
     if (!this.formGroup.valid) {
       return;
     }
-
     console.log('FORM VALUE', this.formGroup.value);
-
     const configs = [];
     for (const item of this.formGroup.value.configParams) {
       const mFieldType = this.configParamList.find(x => x.configParamId === item.configParamId).fieldType;
@@ -100,14 +97,11 @@ export class ConfigParameterManageComponent implements OnInit {
       if (mFieldType === FieldTypeEnum.RADIO) {
         value = item.configParamValue === true ? '1' : '0';
       }
-      configs.push({configParamId: item.configParamId, configParamValue: value});
+      configs.push({ configParamId: item.configParamId, configParamValue: value });
     }
-
     const payload = configs;
     console.log('PAYLOAD', payload);
-
-    const res = await this.httpService.postRequest(ApiUrlEnum.CONFIG_PARAMETER_UPDATE, payload, true)
-
+    const res = await this.httpService.postRequest(ApiUrlEnum.CONFIG_PARAMETER_UPDATE, payload, true);
     if (res) {
       switch (res.code) {
         case ServerResponseEnum.SUCCESS:
@@ -122,6 +116,4 @@ export class ConfigParameterManageComponent implements OnInit {
       }
     }
   }
-
-
 }

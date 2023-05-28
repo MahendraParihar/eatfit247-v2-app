@@ -73,12 +73,10 @@ export class MemberPaymentService {
         memberId: id,
         active: true,
       };
-
       TxnMemberPayment.belongsTo(TxnMemberDietPlan, {
         targetKey: 'memberPaymentId',
         foreignKey: 'memberPaymentId',
       });
-
       const { rows, count } = await this.memberPaymentRepository.findAndCountAll<TxnMemberPayment>({
         include: [
           {
@@ -127,12 +125,10 @@ export class MemberPaymentService {
         };
         return res;
       }
-
       const resList: IMemberPayment[] = [];
       for (const s of rows) {
         resList.push(this.convertDBObject(s));
       }
-
       res = {
         code: ServerResponseEnum.SUCCESS,
         message: StringResource.SUCCESS,
@@ -141,7 +137,6 @@ export class MemberPaymentService {
           count: count,
         },
       };
-
       return res;
     } catch (e) {
       this.exceptionService.logException(e);
@@ -205,11 +200,9 @@ export class MemberPaymentService {
         raw: true,
         nest: true,
       });
-
       if (find) {
         find['address'] = await this.commonService.findAddressById(find.addressId);
         const dataObj = this.convertDBObject(find);
-
         res = {
           code: ServerResponseEnum.SUCCESS,
           message: StringResource.SUCCESS,
@@ -241,11 +234,8 @@ export class MemberPaymentService {
     adminId: number,
   ): Promise<IServerResponse> {
     let res: IServerResponse;
-
     const t = await this.sequelize.transaction();
-
     let addressId = null;
-
     try {
       if (obj.address) {
         if (obj.address.addressId && obj.address.addressId > 0) addressId = obj.address.addressId;
@@ -271,7 +261,6 @@ export class MemberPaymentService {
           }
         }
       }
-
       const createObj = {
         memberId: memberId,
         paymentDate: moment(obj.paymentDate),
@@ -293,7 +282,6 @@ export class MemberPaymentService {
         modifiedIp: cIp,
       };
       const createdObj = await this.createInDB(createObj);
-
       const update = this.memberPaymentRepository.update(
         {
           invoiceId: CommonFunctionsUtil.getInvoiceNumber(createdObj['memberPaymentId']),
@@ -304,7 +292,6 @@ export class MemberPaymentService {
           },
         },
       );
-
       const dietPlan = this.createDietPlanDB({
         memberId: memberId,
         memberPaymentId: createdObj['memberPaymentId'],
@@ -319,7 +306,6 @@ export class MemberPaymentService {
         createdIp: cIp,
         modifiedIp: cIp,
       });
-
       if (createdObj && update && dietPlan) {
         await t.commit();
         res = {
@@ -350,9 +336,7 @@ export class MemberPaymentService {
 
   public async update(id: number, obj: CreateMemberPaymentDto, cIp: string, adminId: number): Promise<IServerResponse> {
     let res: IServerResponse;
-
     const t = await this.sequelize.transaction();
-
     try {
       const find = await this.memberPaymentRepository.findOne({
         where: {
@@ -368,7 +352,6 @@ export class MemberPaymentService {
           modifiedIp: cIp,
         };
         const updatedObj = await this.updateInDB(id, updateObj);
-
         if (updatedObj) {
           await t.commit();
           res = {
@@ -394,7 +377,6 @@ export class MemberPaymentService {
       return res;
     } catch (e) {
       await t.rollback();
-
       this.exceptionService.logException(e);
       res = {
         code: ServerResponseEnum.ERROR,
@@ -429,7 +411,6 @@ export class MemberPaymentService {
                 memberPaymentId: id,
               },
             });
-
             if (memberDietPlan) {
               const deleteDietDetails = await this.memberDietPlanDetailRepository.destroy({
                 where: {
@@ -441,21 +422,18 @@ export class MemberPaymentService {
                   active: obj.active,
                   modifiedBy: adminId,
                 };
-                const updateDietPlanResult = await this.updateDietPlanStatusInDB(
-                  memberDietPlan.memberDietPlanId,
-                  updateDietPlanObj,
-                );
+                await this.updateDietPlanStatusInDB(memberDietPlan.memberDietPlanId, updateDietPlanObj);
               }
             }
           }
-          transaction.commit();
+          await transaction.commit();
           res = {
             code: ServerResponseEnum.SUCCESS,
             message: StringResource.SUCCESS_DATA_STATUS_CHANGE,
             data: null,
           };
         } else {
-          transaction.rollback();
+          await transaction.rollback();
           res = {
             code: ServerResponseEnum.ERROR,
             message: StringResource.SOMETHING_WENT_WRONG,
@@ -463,7 +441,7 @@ export class MemberPaymentService {
           };
         }
       } else {
-        transaction.rollback();
+        await transaction.rollback();
         res = {
           code: ServerResponseEnum.WARNING,
           message: StringResource.NO_DATA_FOUND,
@@ -472,7 +450,7 @@ export class MemberPaymentService {
       }
       return res;
     } catch (e) {
-      transaction.rollback();
+      await transaction.rollback();
       this.exceptionService.logException(e);
       res = {
         code: ServerResponseEnum.ERROR,
@@ -516,7 +494,6 @@ export class MemberPaymentService {
         data: null,
       };
     }
-
     return res;
   }
 
@@ -524,7 +501,6 @@ export class MemberPaymentService {
     let res: IServerResponse;
     try {
       const result = await this.generateInvoicePdf(memberPaymentId);
-
       if (result && result.fileModel) {
         const emailParams: IEmailParams = {
           emailType: EmailTypeEnum.SEND_INVOICE,
@@ -532,13 +508,13 @@ export class MemberPaymentService {
           attachments: [
             {
               name: result.fileModel.fileName,
-              path: `${CommonFunctionsUtil.getMediaFolderPath()}/${MediaFolderEnum.DOWNLOADS}/${result.fileModel.filePath}`,
+              path: `${CommonFunctionsUtil.getMediaFolderPath()}/${MediaFolderEnum.DOWNLOADS}/${
+                result.fileModel.filePath
+              }`,
             } as IAttachment,
           ] as IAttachment[],
         };
-
         this.emailService.sendEmail(emailParams);
-
         res = {
           code: ServerResponseEnum.SUCCESS,
           message: StringResource.SUCCESS,
@@ -559,7 +535,6 @@ export class MemberPaymentService {
         data: null,
       };
     }
-
     return res;
   }
 
@@ -569,7 +544,6 @@ export class MemberPaymentService {
       raw: true,
       attributes: ['firstName', 'lastName', 'emailId'],
     });
-
     return {
       name: member ? member.firstName + ' ' + member.lastName || '' : '',
       emailId: member.emailId,
@@ -582,15 +556,12 @@ export class MemberPaymentService {
     const res = await this.fetchById(memberPaymentId);
     if (res.code === ServerResponseEnum.SUCCESS) {
       memberId = res.data.memberId;
-
       const parts = new Intl.NumberFormat('en-IN', {
         style: 'currency',
         currency: res.data.paymentObj.user.currency,
       }).formatToParts(10000);
       const symbol = parts.find((p) => p.type === 'currency').value;
-
       res.data.paymentObj.user.currency = symbol;
-
       fileModel = await this.pdfService.generatePDF(
         `${PDFTemplateEnum.INVOICE}`,
         `${MediaFolderEnum.INVOICE}\\${res.data.memberId}`,
@@ -607,7 +578,7 @@ export class MemberPaymentService {
       memberId: obj.memberId,
       memberName: obj['MemberPayment']
         ? obj['MemberPayment']['firstName'] +
-        (obj['MemberPayment']['lastName'] ? ' ' + obj['MemberPayment']['lastName'] : '')
+          (obj['MemberPayment']['lastName'] ? ' ' + obj['MemberPayment']['lastName'] : '')
         : null,
       programId: obj.programId,
       programPlanId: obj.programPlanId,
@@ -721,7 +692,6 @@ export class MemberPaymentService {
       if (franchiseAddresses && franchiseAddresses.length > 0) {
         franchiseAddress = franchiseAddresses[0];
       }
-
       const userCurrency = obj.userCurrency ? obj.userCurrency : configParameters[DEFAULT_CURRENCY];
       const systemCurrency = configParameters[DEFAULT_CURRENCY];
       const taxApplicable = obj.isTaxApplicable;
@@ -729,7 +699,6 @@ export class MemberPaymentService {
       const targetCurrencyConfig = _.find(currencyConfigList, {
         sourceCurrencyCode: userCurrency,
       });
-
       const systemCurrencyOrderAmount = Number(planFees.inrAmount);
       const systemCurrencyDiscountAmount = Number(obj.systemDiscountAmount ? obj.systemDiscountAmount : 0);
       const systemCurrencyTaxAmount = taxApplicable

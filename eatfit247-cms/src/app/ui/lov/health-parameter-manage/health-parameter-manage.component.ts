@@ -1,27 +1,26 @@
-import {AfterViewInit, Component, OnDestroy, OnInit} from '@angular/core';
-import {StringResources} from "../../../enum/string-resources";
-import {InputLength} from "../../../constants/input-length";
-import {FileTypeEnum} from "../../../enum/file-type-enum";
-import {MediaForEnum} from "../../../enum/media-for-enum";
-import {StatusList} from "../../../constants/status-list";
-import {FormBuilder, FormGroup, Validators} from "@angular/forms";
-import {HttpService} from "../../../service/http.service";
-import {SnackBarService} from "../../../service/snack-bar.service";
-import {NavigationService} from "../../../service/navigation.service";
-import {ActivatedRoute} from "@angular/router";
-import {ResponseDataModel} from "../../../models/response-data.model";
-import {ApiUrlEnum} from "../../../enum/api-url-enum";
-import {ServerResponseEnum} from "../../../enum/server-response-enum";
-import {ValidationUtil} from "../../../utilites/validation-util";
-import {HealthParameterModel} from "../../../models/health-parameter.model";
+import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
+import { StringResources } from '../../../enum/string-resources';
+import { InputLength } from '../../../constants/input-length';
+import { FileTypeEnum } from '../../../enum/file-type-enum';
+import { MediaForEnum } from '../../../enum/media-for-enum';
+import { StatusList } from '../../../constants/status-list';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { HttpService } from '../../../service/http.service';
+import { SnackBarService } from '../../../service/snack-bar.service';
+import { NavigationService } from '../../../service/navigation.service';
+import { ActivatedRoute } from '@angular/router';
+import { ResponseDataModel } from '../../../models/response-data.model';
+import { ApiUrlEnum } from '../../../enum/api-url-enum';
+import { ServerResponseEnum } from '../../../enum/server-response-enum';
+import { ValidationUtil } from '../../../utilites/validation-util';
+import { HealthParameterModel } from '../../../models/health-parameter.model';
 
 @Component({
   selector: 'app-health-parameter-manage',
   templateUrl: './health-parameter-manage.component.html',
-  styleUrls: ['./health-parameter-manage.component.scss']
+  styleUrls: ['./health-parameter-manage.component.scss'],
 })
 export class HealthParameterManageComponent implements OnInit, AfterViewInit, OnDestroy {
-
   healthParameterModelObj: HealthParameterModel;
   id: number;
   stringRes = StringResources;
@@ -29,18 +28,17 @@ export class HealthParameterManageComponent implements OnInit, AfterViewInit, On
   fileTypeEnum = FileTypeEnum;
   mediaForEnum = MediaForEnum;
   statusList = StatusList;
-
   formGroup: FormGroup = this.fb.group({
     name: [null, [Validators.required, Validators.minLength(this.inputLength.CHAR_5), Validators.maxLength(this.inputLength.CHAR_50)]],
     isLength: [true, [Validators.required]],
-    active: [true, [Validators.required]]
+    active: [true, [Validators.required]],
   });
 
   constructor(private httpService: HttpService,
-              private snackBarService: SnackBarService,
-              private navigationService: NavigationService,
-              private activatedRoute: ActivatedRoute,
-              private fb: FormBuilder) {
+    private snackBarService: SnackBarService,
+    private navigationService: NavigationService,
+    private activatedRoute: ActivatedRoute,
+    private fb: FormBuilder) {
     this.id = Number(this.activatedRoute.snapshot.paramMap.get('id'));
   }
 
@@ -69,7 +67,7 @@ export class HealthParameterManageComponent implements OnInit, AfterViewInit, On
       this.formGroup.patchValue({
         name: this.healthParameterModelObj.name,
         isLength: this.healthParameterModelObj.isLength,
-        active: this.healthParameterModelObj.active
+        active: this.healthParameterModelObj.active,
       });
     }
   }
@@ -97,9 +95,7 @@ export class HealthParameterManageComponent implements OnInit, AfterViewInit, On
     if (!this.formGroup.valid) {
       return;
     }
-
     let payload: any = this.formGroup.value;
-
     let res: ResponseDataModel;
     if (this.id > 0) {
       res = await this.httpService.putRequest(ApiUrlEnum.HEALTH_PARAMETER_MANAGE, this.id, payload, true);
@@ -121,5 +117,4 @@ export class HealthParameterManageComponent implements OnInit, AfterViewInit, On
       }
     }
   }
-
 }

@@ -17,15 +17,11 @@ import { MatSidenav } from '@angular/material/sidenav';
   selector: 'app-base-layout',
   templateUrl: './base-layout.component.html',
   styleUrls: ['./base-layout.component.scss'],
-
 })
 export class BaseLayoutComponent implements OnInit {
-
   authUserObj?: AuthUserModel;
-
   stringRes = StringResources;
   appTitle = StringResources.APP_TITLE;
-
   public opened = false;
   public menu: NavItem[] = menuList;
   breadcrumbList: BreadcrumbItem[];
@@ -33,10 +29,10 @@ export class BaseLayoutComponent implements OnInit {
   private mediaWatcher: Subscription;
 
   constructor(private media: MediaObserver,
-              private navService: NavigationService,
-              private router: Router,
-              private cdr: ChangeDetectorRef,
-              private sharedService: SharedService) {
+    private navService: NavigationService,
+    private router: Router,
+    private cdr: ChangeDetectorRef,
+    private sharedService: SharedService) {
     this.mediaWatcher = this.media.asObservable().pipe(
       filter((changes: MediaChange[]) => changes.length > 0),
       map((changes: MediaChange[]) => changes[0]),
@@ -106,6 +102,5 @@ export class BaseLayoutComponent implements OnInit {
   private handleMediaChange(mediaChange: MediaChange): void {
     this.opened = !this.media.isActive('lt-md');
   }
-
 }
 

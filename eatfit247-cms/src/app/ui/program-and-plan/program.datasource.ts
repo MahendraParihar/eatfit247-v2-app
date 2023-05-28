@@ -1,22 +1,21 @@
-import {CollectionViewer, DataSource} from "@angular/cdk/collections";
-import {BehaviorSubject, Observable} from 'rxjs';
-import {HttpService} from "../../service/http.service";
-import {SnackBarService} from "../../service/snack-bar.service";
-import {ApiUrlEnum} from "../../enum/api-url-enum";
-import {ServerResponseEnum} from "../../enum/server-response-enum";
-import {ProgramModel} from "../../models/program.model";
-import {CommonUtil} from "src/app/utilites/common-util";
+import { CollectionViewer, DataSource } from '@angular/cdk/collections';
+import { BehaviorSubject, Observable } from 'rxjs';
+import { HttpService } from '../../service/http.service';
+import { SnackBarService } from '../../service/snack-bar.service';
+import { ApiUrlEnum } from '../../enum/api-url-enum';
+import { ServerResponseEnum } from '../../enum/server-response-enum';
+import { ProgramModel } from '../../models/program.model';
+import { CommonUtil } from 'src/app/utilites/common-util';
 
 declare var _: any;
 
 export class ProgramDatasource implements DataSource<ProgramModel> {
-
   private dataSubject = new BehaviorSubject<ProgramModel[]>([]);
   private totalCountSubject = new BehaviorSubject<number>(0);
   totalCount = this.totalCountSubject.asObservable();
 
   constructor(private httpService: HttpService,
-              private snackBarService: SnackBarService) {
+    private snackBarService: SnackBarService) {
   }
 
   connect(collectionViewer: CollectionViewer): Observable<ProgramModel[]> {
@@ -29,9 +28,7 @@ export class ProgramDatasource implements DataSource<ProgramModel> {
 
   async loadData(url: ApiUrlEnum, payload: any): Promise<boolean> {
     console.log('Loading', this.constructor.name);
-
     payload = CommonUtil.removeEmptyPayloadAttributes(payload);
-
     const apiResponse = await this.httpService.getRequest(url, null, payload, true);
     if (!apiResponse) {
       return false;
@@ -46,12 +43,10 @@ export class ProgramDatasource implements DataSource<ProgramModel> {
         this.dataSubject.next(tempList);
         return true;
       case ServerResponseEnum.WARNING:
-
         const tempProgramList: ProgramModel[] = [];
         this.totalCountSubject.next(tempProgramList.length);
         this.dataSubject.next(tempProgramList);
         this.snackBarService.showWarning(apiResponse.message);
-
         return false;
       case ServerResponseEnum.ERROR:
       default:

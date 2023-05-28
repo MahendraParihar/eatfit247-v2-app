@@ -24,19 +24,18 @@ import {
   styleUrls: ['./member-detail.component.scss'],
 })
 export class MemberDetailComponent implements OnInit, AfterViewInit, OnDestroy {
-
   memberObj: MemberDetailModel;
   id: number;
   stringRes = StringResources;
   activeTag = 0;
 
   constructor(private httpService: HttpService,
-              private snackBarService: SnackBarService,
-              private navigationService: NavigationService,
-              private activatedRoute: ActivatedRoute,
-              private cdr: ChangeDetectorRef,
-              private router: Router,
-              public dialog: MatDialog) {
+    private snackBarService: SnackBarService,
+    private navigationService: NavigationService,
+    private activatedRoute: ActivatedRoute,
+    private cdr: ChangeDetectorRef,
+    private router: Router,
+    public dialog: MatDialog) {
     this.id = Number(this.activatedRoute.snapshot.paramMap.get('id'));
     router.events.subscribe((val) => {
       if (val instanceof NavigationEnd) {

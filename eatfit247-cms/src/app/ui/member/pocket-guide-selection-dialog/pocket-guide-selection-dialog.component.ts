@@ -1,26 +1,25 @@
-import {Component, Inject, OnInit} from '@angular/core';
-import {StringResources} from "../../../enum/string-resources";
-import {HttpService} from "../../../service/http.service";
-import {SnackBarService} from "../../../service/snack-bar.service";
-import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
-import {ResponseDataModel} from "../../../models/response-data.model";
-import {ApiUrlEnum} from "../../../enum/api-url-enum";
-import {ServerResponseEnum} from "../../../enum/server-response-enum";
-import {MemberHealthIssueModel} from "../../../models/member-health-issue.model";
-import {filter, map} from "lodash";
-import {MemberPocketGuideModel} from "../../../models/member-pocket-guide.model";
+import { Component, Inject, OnInit } from '@angular/core';
+import { StringResources } from '../../../enum/string-resources';
+import { HttpService } from '../../../service/http.service';
+import { SnackBarService } from '../../../service/snack-bar.service';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { ResponseDataModel } from '../../../models/response-data.model';
+import { ApiUrlEnum } from '../../../enum/api-url-enum';
+import { ServerResponseEnum } from '../../../enum/server-response-enum';
+import { MemberHealthIssueModel } from '../../../models/member-health-issue.model';
+import { filter, map } from 'lodash';
+import { MemberPocketGuideModel } from '../../../models/member-pocket-guide.model';
 
 @Component({
   selector: 'app-pocket-guide-selection-dialog',
   templateUrl: './pocket-guide-selection-dialog.component.html',
-  styleUrls: ['./pocket-guide-selection-dialog.component.scss']
+  styleUrls: ['./pocket-guide-selection-dialog.component.scss'],
 })
 export class PocketGuideSelectionDialogComponent implements OnInit {
-
   memberId: number;
   stringRes = StringResources;
   memberPocketGuides: MemberPocketGuideModel[] = [];
-  displayedColumns = ["seqNo", 'title', 'selected'];
+  displayedColumns = ['seqNo', 'title', 'selected'];
 
   constructor(
     private httpService: HttpService,
@@ -68,15 +67,15 @@ export class PocketGuideSelectionDialogComponent implements OnInit {
   }
 
   async onSubmit(): Promise<void> {
-    const ids = map(filter(this.memberPocketGuides, {isSelected: true}), 'id');
+    const ids = map(filter(this.memberPocketGuides, { isSelected: true }), 'id');
     let payload: any = {
-      pocketGuideIds: ids
+      pocketGuideIds: ids,
     };
     let res: ResponseDataModel;
     if (this.memberId > 0) {
-      res = await this.httpService.putRequest(ApiUrlEnum.MEMBER_POCKET_GUIDE_MANAGE, this.memberId, payload, true)
+      res = await this.httpService.putRequest(ApiUrlEnum.MEMBER_POCKET_GUIDE_MANAGE, this.memberId, payload, true);
     } else {
-      res = await this.httpService.postRequest(ApiUrlEnum.MEMBER_POCKET_GUIDE_MANAGE, payload, true)
+      res = await this.httpService.postRequest(ApiUrlEnum.MEMBER_POCKET_GUIDE_MANAGE, payload, true);
     }
     if (res) {
       switch (res.code) {
@@ -93,5 +92,4 @@ export class PocketGuideSelectionDialogComponent implements OnInit {
       }
     }
   }
-
 }

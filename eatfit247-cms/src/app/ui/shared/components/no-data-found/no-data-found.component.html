@@ -1,11 +1,11 @@
-<div class='error-layout p-medium'>
-  <div class='data-section'>
+<div class="error-layout p-medium">
+  <div class="data-section">
     <div>
-      <h2 *ngIf='title'>{{title}}</h2>
-      <p *ngIf='message'>{{message}}</p>
+      <h2 *ngIf="title">{{title}}</h2>
+      <p *ngIf="message">{{message}}</p>
     </div>
-    <button *ngIf='showBtn' (click)='backToPage()' class='gradient-btn m-t-large' mat-button
-            type='button'>{{btnText}}</button>
+    <button *ngIf="showBtn" (click)="backToPage()" class="gradient-btn m-t-large" mat-button
+            type="button">{{btnText}}</button>
   </div>
-  <img alt='' src="{{'assets/errors/'+(image ? image: 'error-2.png')}}">
+  <img alt="" src="{{'assets/errors/'+(image ? image: 'error-2.png')}}">
 </div>

@@ -20,7 +20,7 @@
       <mat-header-cell *matHeaderCellDef>Image</mat-header-cell>
       <mat-cell *matCellDef="let d;">
         <img *ngIf="d.imagePath && d.imagePath.length > 0" alt="" class="avatar"
-             src="{{d.imagePath[0].webUrl}}"/>
+             src="{{d.imagePath[0].webUrl}}" />
       </mat-cell>
     </ng-container>
     <ng-container matColumnDef="name">

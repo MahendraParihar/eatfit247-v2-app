@@ -1,14 +1,14 @@
-import {Component, OnInit} from '@angular/core';
-import {StringResources} from '../../../enum/string-resources';
-import {HttpService} from '../../../service/http.service';
-import {SnackBarService} from '../../../service/snack-bar.service';
-import {FormBuilder, FormGroup, Validators} from '@angular/forms';
-import {NavigationService} from '../../../service/navigation.service';
-import {ValidationUtil} from '../../../utilites/validation-util';
-import {ServerResponseEnum} from '../../../enum/server-response-enum';
-import {ApiUrlEnum} from '../../../enum/api-url-enum';
-import {ResponseDataModel} from '../../../models/response-data.model';
-import {InputLength} from '../../../constants/input-length';
+import { Component, OnInit } from '@angular/core';
+import { StringResources } from '../../../enum/string-resources';
+import { HttpService } from '../../../service/http.service';
+import { SnackBarService } from '../../../service/snack-bar.service';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { NavigationService } from '../../../service/navigation.service';
+import { ValidationUtil } from '../../../utilites/validation-util';
+import { ServerResponseEnum } from '../../../enum/server-response-enum';
+import { ApiUrlEnum } from '../../../enum/api-url-enum';
+import { ResponseDataModel } from '../../../models/response-data.model';
+import { InputLength } from '../../../constants/input-length';
 
 @Component({
   selector: 'app-admin-user-change-password',
@@ -18,11 +18,9 @@ import {InputLength} from '../../../constants/input-length';
 export class AdminUserChangePasswordComponent implements OnInit {
   stringRes = StringResources;
   inputLength = InputLength;
-
   hide1 = true;
   hide2 = true;
   hide3 = true;
-
   formGroup: FormGroup = this.fb.group({
     currentPassword: [null, [Validators.required]],
     newPassword: [null, [Validators.required]],
@@ -33,7 +31,7 @@ export class AdminUserChangePasswordComponent implements OnInit {
     private httpService: HttpService,
     private snackBarService: SnackBarService,
     private navigationService: NavigationService,
-    private fb: FormBuilder
+    private fb: FormBuilder,
   ) {
   }
 
@@ -53,13 +51,11 @@ export class AdminUserChangePasswordComponent implements OnInit {
     if (!this.formGroup.valid) {
       return;
     }
-
     const payload = this.formGroup.value;
-
     const res: ResponseDataModel = await this.httpService.postRequest(
       ApiUrlEnum.ADMIN_CHANGE_PASSWORD,
       payload,
-      true
+      true,
     );
     if (res) {
       switch (res.code) {

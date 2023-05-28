@@ -1,40 +1,36 @@
-import {AfterViewInit, Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
-import {StringResources} from "../../../enum/string-resources";
-import {Constants} from "../../../constants/Constants";
-import {CommonSearchModel} from "../../../models/common-search.model";
-import {MatPaginator} from "@angular/material/paginator";
-import {HttpService} from "../../../service/http.service";
-import {SnackBarService} from "../../../service/snack-bar.service";
-import {NavigationService} from "../../../service/navigation.service";
-import {MatDialog} from "@angular/material/dialog";
-import {tap} from "rxjs";
-import {ApiUrlEnum} from "../../../enum/api-url-enum";
-import {NavigationPathEnum} from "../../../enum/navigation-path-enum";
-import {AlertDialogDataInterface} from "../../../interfaces/alert-dialog-data.interface";
-import {AlertTypeEnum} from "../../../enum/alert-type-enum";
-import {DialogAlertComponent} from "../../shared/components/dialog-alert/dialog-alert.component";
-import {ResponseDataModel} from "../../../models/response-data.model";
-import {ServerResponseEnum} from "../../../enum/server-response-enum";
-import {ReferrerDatasource} from "../referrer.datasource";
-import {ReferrerModel} from "../../../models/referrer.model";
+import { AfterViewInit, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { StringResources } from '../../../enum/string-resources';
+import { Constants } from '../../../constants/Constants';
+import { CommonSearchModel } from '../../../models/common-search.model';
+import { MatPaginator } from '@angular/material/paginator';
+import { HttpService } from '../../../service/http.service';
+import { SnackBarService } from '../../../service/snack-bar.service';
+import { NavigationService } from '../../../service/navigation.service';
+import { MatDialog } from '@angular/material/dialog';
+import { tap } from 'rxjs';
+import { ApiUrlEnum } from '../../../enum/api-url-enum';
+import { NavigationPathEnum } from '../../../enum/navigation-path-enum';
+import { AlertDialogDataInterface } from '../../../interfaces/alert-dialog-data.interface';
+import { AlertTypeEnum } from '../../../enum/alert-type-enum';
+import { DialogAlertComponent } from '../../shared/components/dialog-alert/dialog-alert.component';
+import { ResponseDataModel } from '../../../models/response-data.model';
+import { ServerResponseEnum } from '../../../enum/server-response-enum';
+import { ReferrerDatasource } from '../referrer.datasource';
+import { ReferrerModel } from '../../../models/referrer.model';
 
 @Component({
   selector: 'app-referrer-list',
   templateUrl: './referrer-list.component.html',
-  styleUrls: ['./referrer-list.component.scss']
+  styleUrls: ['./referrer-list.component.scss'],
 })
 export class ReferrerListComponent implements OnInit, AfterViewInit, OnDestroy {
-
-  displayedColumns = ["seqNo", 'image', 'title', 'company', 'website', 'startDate', 'status', 'createdBy', 'createdAt', 'updatedBy', 'updatedAt', "action"];
+  displayedColumns = ['seqNo', 'image', 'title', 'company', 'website', 'startDate', 'status', 'createdBy', 'createdAt', 'updatedBy', 'updatedAt', 'action'];
   dataSource: ReferrerDatasource;
   totalCount = 0;
-
   stringRes = StringResources;
-
   defaultPageSize = Constants.DEFAULT_PAGE_SIZE;
   pageSizeList = Constants.PAGE_SIZE_LIST;
   payload: CommonSearchModel = new CommonSearchModel();
-
   @ViewChild(MatPaginator) paginator: MatPaginator;
 
   constructor(
@@ -53,7 +49,7 @@ export class ReferrerListComponent implements OnInit, AfterViewInit, OnDestroy {
   ngAfterViewInit() {
     this.paginator.page
       .pipe(
-        tap(() => this.loadDataSet())
+        tap(() => this.loadDataSet()),
       )
       .subscribe();
   }
@@ -99,7 +95,7 @@ export class ReferrerListComponent implements OnInit, AfterViewInit, OnDestroy {
       message: StringResources.CHANGE_STATUS_DESC,
       positiveBtnTxt: StringResources.YES,
       negativeBtnTxt: StringResources.NO,
-      alertType: AlertTypeEnum.WARNING
+      alertType: AlertTypeEnum.WARNING,
     };
     const dialogRef = this.dialog.open(DialogAlertComponent, {
       width: '350px',
@@ -115,9 +111,8 @@ export class ReferrerListComponent implements OnInit, AfterViewInit, OnDestroy {
 
   async updateStatusTask(item: ReferrerModel, index: number): Promise<void> {
     const payload = {
-      active: !item.active
+      active: !item.active,
     };
-
     const res: ResponseDataModel = await this.httpService.patchRequest(ApiUrlEnum.REFERRER_STATUS_CHANGE, item.id, payload, true);
     if (res) {
       switch (res.code) {
@@ -134,5 +129,4 @@ export class ReferrerListComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     }
   }
-
 }

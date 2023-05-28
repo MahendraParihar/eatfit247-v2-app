@@ -63,8 +63,7 @@ export class MemberDietPlanService {
     private dietTemplateService: DietTemplateService,
     private pdfService: PdfService,
     private emailService: EmailService,
-  ) {
-  }
+  ) { }
 
   public async findAll(id: number): Promise<IServerResponse> {
     let res: IServerResponse;
@@ -73,7 +72,6 @@ export class MemberDietPlanService {
         targetKey: 'memberPaymentId',
         foreignKey: 'memberPaymentId',
       });
-
       const { rows, count } = await this.memberDietPlanRepository.findAndCountAll<TxnMemberDietPlan>({
         include: [
           {
@@ -147,12 +145,10 @@ export class MemberDietPlanService {
         };
         return res;
       }
-
       const planList: IMemberDietPlan[] = [];
       for (const s of rows) {
         planList.push(this.convertDBObject(s));
       }
-
       const promiseAll = await Promise.all([
         this.recipeCategory.fetchAllRecipeCategory(),
         this.recipeService.getAllRecipeDD(),
@@ -180,12 +176,10 @@ export class MemberDietPlanService {
         }),
         this.dietTemplateService.getAllDietTemplateDD(),
       ]);
-
       const categoryList = promiseAll[0];
       const recipeList = promiseAll[1];
       const dpDetails = promiseAll[2];
       const dietTemplateList = promiseAll[3];
-
       const dietPlanDetailList: IMemberDietDetail[] = [];
       for (const s of dpDetails) {
         dietPlanDetailList.push(<IMemberDietDetail>{
@@ -201,15 +195,17 @@ export class MemberDietPlanService {
           dietPlan: this.convertDietDetail(categoryList, recipeList, s),
         });
       }
-
       for (let i = 0; i < planList.length; i++) {
         const cyclePlanList = [];
         const tempCycleList = _.filter(dietPlanDetailList, { dietPlanId: planList[i].id });
         const cycleNos = _.uniqWith(_.map(tempCycleList, 'cycleNo'), _.isEqual);
-        for (const c of cycleNos) {
-          const cS = _.filter(tempCycleList, { cycleNo: c });
+        for (let j = 0; j < cycleNos.length; j++) {
+          const cS = _.filter(tempCycleList, { cycleNo: cycleNos[j] });
+          for (let k = 0; k < cS.length; k++) {
+            cS[k].isDeletable = k === cS.length - 1 && j === cycleNos.length - 1;
+          }
           cyclePlanList.push(<ICyclePlan>{
-            cycleNo: c,
+            cycleNo: cycleNos[j],
             dietPlans: cS,
             startDate: cS && cS.length > 0 ? cS[0].startDate : null,
             endDate: cS && cS.length > 0 ? cS[cS.length - 1].endDate : null,
@@ -218,7 +214,6 @@ export class MemberDietPlanService {
         }
         planList[i].cyclePlans = cyclePlanList;
       }
-
       res = {
         code: ServerResponseEnum.SUCCESS,
         message: StringResource.SUCCESS,
@@ -228,7 +223,6 @@ export class MemberDietPlanService {
           dietTemplateList: dietTemplateList,
         },
       };
-
       return res;
     } catch (e) {
       this.exceptionService.logException(e);
@@ -248,16 +242,13 @@ export class MemberDietPlanService {
     dayNo: number = null,
   ): Promise<IServerResponse> {
     let res: IServerResponse;
-
     cycleNo = cycleNo ? Number(cycleNo) : cycleNo;
     dayNo = dayNo ? Number(dayNo) : dayNo;
     dietPlanId = dietPlanId ? Number(dietPlanId) : dietPlanId;
-
     const where = {
       memberDietPlanId: dietPlanId,
       cycleNo: cycleNo,
     };
-
     if (dayNo) {
       where['dayNo'] = dayNo;
     }
@@ -265,7 +256,6 @@ export class MemberDietPlanService {
       let dietPlanStartDate = null;
       let dietPlanEndDate = null;
       let dietCategory: IDietPlanDetail[] = [];
-
       const promiseAll = await Promise.all([
         this.recipeCategory.fetchAllRecipeCategory(),
         this.memberDietPlanRepository.findOne({
@@ -304,14 +294,11 @@ export class MemberDietPlanService {
         }),
         this.recipeService.getAllRecipeDD(),
       ]);
-
       const categoryList = promiseAll[0];
       const planDetail = promiseAll[1];
       const dietDetail = promiseAll[2];
       const recipeList = promiseAll[3];
-
       dietCategory = this.convertDietDetail(categoryList, recipeList, dietDetail);
-
       // calculate start and end date
       if (cycleNo && cycleNo === 1 && (!dayNo || dayNo === 0)) {
         // cycle plan
@@ -332,7 +319,6 @@ export class MemberDietPlanService {
           dietPlanStartDate = moment().format(DB_DATE_FORMAT);
         }
       }
-
       if (!dayNo || dayNo === 0) {
         dietPlanEndDate = moment(dietPlanStartDate)
           .add(planDetail.noOfDaysInCycle - 1, 'day')
@@ -340,7 +326,6 @@ export class MemberDietPlanService {
       } else {
         dietPlanEndDate = dietPlanStartDate;
       }
-
       res = {
         code: ServerResponseEnum.SUCCESS,
         message: StringResource.SUCCESS,
@@ -373,9 +358,7 @@ export class MemberDietPlanService {
 
   public async createDietPlanDetail(memberId: number, body: MemberDietPlanDetailDto, cIp: string, adminId: number) {
     let res: IServerResponse;
-
     const t = await this.sequelize.transaction();
-
     try {
       const dietPlanDetail = await this.memberDietPlanRepository.findOne({
         where: {
@@ -383,7 +366,6 @@ export class MemberDietPlanService {
           memberId: memberId,
         },
       });
-
       if (!dietPlanDetail) {
         res = {
           code: ServerResponseEnum.ERROR,
@@ -392,27 +374,22 @@ export class MemberDietPlanService {
         };
         return res;
       }
-
       const condition = {
         cycleNo: body.cycleNo,
         memberDietPlanId: body.dietPlanId,
       };
-
       if (body.dayNo && body.dayNo > 0) {
         condition['dayNo'] = body.dayNo;
       }
-
       const planArray: DietPlanDetailDto[] = [];
       for (const s of body.dietPlan) {
         if (s.dietDetail || s.recipeIds) {
           planArray.push(s);
         }
       }
-
       const findD = await this.memberDietPlanDetailRepository.findOne({
         where: condition,
       });
-
       const dietDObj: any = {
         cycleNo: body.cycleNo,
         memberDietPlanId: body.dietPlanId,
@@ -434,7 +411,6 @@ export class MemberDietPlanService {
         dietDObj['createdIp'] = cIp;
         createUpdateDP = await this.memberDietPlanDetailRepository.create(dietDObj);
       }
-
       let dietStartDate;
       let dietEndDate;
       let isEnd = false;
@@ -458,7 +434,6 @@ export class MemberDietPlanService {
           isEnd = true;
         }
       }
-
       const updateObj = {
         startDate: dietStartDate,
         endDate: dietEndDate,
@@ -468,7 +443,6 @@ export class MemberDietPlanService {
         modifiedIp: cIp,
         modifiedBy: adminId,
       };
-
       const updateD = await this.memberDietPlanRepository.update(updateObj, {
         where: {
           memberDietPlanId: body.dietPlanId,
@@ -526,7 +500,6 @@ export class MemberDietPlanService {
     let res: IServerResponse;
     try {
       const fileModel: IFileModel = await this.generateDietPlan(memberId, dietPlanId, cycleNo, dayNo);
-
       const emailParams: IEmailParams = {
         emailType: EmailTypeEnum.DIET_PLAN,
         toUserInfo: await this.memberService.getMemberBasicDetails(memberId),
@@ -537,9 +510,7 @@ export class MemberDietPlanService {
           } as IAttachment,
         ] as IAttachment[],
       };
-
       this.emailService.sendEmail(emailParams);
-
       res = {
         code: ServerResponseEnum.SUCCESS,
         message: StringResource.SUCCESS,
@@ -566,7 +537,6 @@ export class MemberDietPlanService {
       data.data.recipes = await this.recipeService.fetchByIds(recipeIds);
     }
     data.data.memberName = await this.memberService.getMemberName(memberId);
-
     return await this.pdfService.generatePDF(
       `${PDFTemplateEnum.DIET_PLAN}`,
       `${MediaFolderEnum.DIET_PLAN}/${memberId}`,
@@ -578,32 +548,26 @@ export class MemberDietPlanService {
   async applyDietTemplate(memberId: number, body: MemberDietTemplateDto, cIp: string, adminId: number) {
     let res: IServerResponse;
     const t = await this.sequelize.transaction();
-
     try {
       const promiseAll = await Promise.all([
         //this.recipeCategory.fetchAllRecipeCategory(),
         this.dietTemplateService.getDietTemplate(body.dietTemplateId),
         this.dietTemplateService.getAllDietDetailsByTemplateId(body.dietTemplateId),
       ]);
-
       //const categoryList: MstRecipeCategory[] = promiseAll[0];
       const dietTemplate: TxnDietTemplate = promiseAll[0];
       const dietTemplateDetails: TxnDietTemplateDietDetail[] = promiseAll[1];
       const emptyDietList = []; //this.getEmptyDietPlan(categoryList)
-
       if (dietTemplateDetails) {
         let dietObject: any;
         const dietPlanList = [];
         let startDate, endDate;
         let item: TxnDietTemplateDietDetail;
-
         for (let cycle = 1; cycle <= dietTemplate.noOfCycle; cycle++) {
           if (dietTemplate.isWeekly) {
             item = dietTemplateDetails.find((x) => x.cycleNumber === cycle && x.dayNumber === null);
-
             startDate = !startDate ? moment() : moment(endDate).add(1, 'day');
             endDate = moment(startDate).add(dietTemplate.noOfDaysInCycle, 'day');
-
             dietObject = {
               cycleNo: cycle,
               memberDietPlanId: body.memberDietPlanId,
@@ -621,10 +585,8 @@ export class MemberDietPlanService {
           } else {
             for (let day = 1; day <= dietTemplate.noOfDaysInCycle; day++) {
               item = dietTemplateDetails.find((x) => x.cycleNumber === cycle && x.dayNumber === day);
-
               startDate = !startDate ? moment() : moment(endDate).add(1, 'day');
               endDate = startDate;
-
               dietObject = {
                 cycleNo: cycle,
                 memberDietPlanId: body.memberDietPlanId,
@@ -642,10 +604,8 @@ export class MemberDietPlanService {
             }
           }
         }
-
         const createDP = await this.memberDietPlanDetailRepository.bulkCreate(dietPlanList);
-
-        let updateObj = {
+        const updateObj = {
           currentCycleNo: 1,
           currentDayNo: 1,
           startDate: moment(),
@@ -653,7 +613,6 @@ export class MemberDietPlanService {
           modifiedIp: cIp,
           modifiedBy: adminId,
         };
-
         const updateDP = await this.memberDietPlanRepository.update(updateObj, {
           where: {
             memberDietPlanId: body.memberDietPlanId,
@@ -675,6 +634,71 @@ export class MemberDietPlanService {
           };
         }
       }
+    } catch (e) {
+      await t.rollback();
+      this.exceptionService.logException(e);
+      res = {
+        code: ServerResponseEnum.ERROR,
+        message: IS_DEV ? e['message'] : StringResource.SOMETHING_WENT_WRONG,
+        data: null,
+      };
+    }
+    return res;
+  }
+
+  async deleteDietPlan(
+    dietPlanId: number,
+    cycleNo: number,
+    ip: string,
+    adminId: number,
+    dayNo?: number,
+  ): Promise<IServerResponse> {
+    let res: IServerResponse;
+    const t = await this.sequelize.transaction();
+    try {
+      const dietDetails = await this.memberDietPlanDetailRepository.findAll({
+        where: {
+          memberDietPlanId: dietPlanId,
+        },
+        order: [
+          ['cycleNo', 'asc'],
+          ['dayNo', 'asc'],
+        ],
+        raw: true,
+        nest: true,
+      });
+      const indexCheckCondition = { cycleNo: Number(cycleNo) };
+      if (dayNo) {
+        indexCheckCondition['dayNo'] = Number(dayNo);
+      }
+      const cIndex = _.findIndex(dietDetails, indexCheckCondition);
+      await this.memberDietPlanDetailRepository.destroy({
+        where: {
+          ...indexCheckCondition,
+          memberDietPlanId: dietPlanId,
+        },
+      });
+      await this.memberDietPlanRepository.update(
+        {
+          currentCycleNo: cIndex === 0 ? null : dietDetails[cIndex - 1].cycleNo,
+          currentDayNo: cIndex === 0 ? null : dietDetails[cIndex - 1].dayNo,
+          isCompleted: false,
+          endDate: cIndex === 0 ? null : dietDetails[cIndex - 1].endDate,
+          modifiedIp: ip,
+          modifiedBy: adminId,
+        },
+        {
+          where: {
+            memberDietPlanId: dietPlanId,
+          },
+        },
+      );
+      await t.commit();
+      res = {
+        code: ServerResponseEnum.SUCCESS,
+        message: StringResource.SUCCESS,
+        data: null,
+      };
     } catch (e) {
       await t.rollback();
       this.exceptionService.logException(e);
@@ -745,7 +769,6 @@ export class MemberDietPlanService {
         showWeekly: false,
       };
     }
-
     // diet plan not started yet
     if ((!obj.currentCycleNo || obj.currentCycleNo === 0) && !(obj.currentDayNo || obj.currentDayNo === 0)) {
       return {
@@ -756,7 +779,6 @@ export class MemberDietPlanService {
         showWeekly: true,
       };
     }
-
     if (obj.currentCycleNo < obj.noOfCycle) {
       if (!obj.currentDayNo || obj.currentDayNo === 0) {
         // weekly plan

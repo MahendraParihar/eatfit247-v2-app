@@ -15,15 +15,20 @@
   </div>
   <div align="end" mat-dialog-actions>
     <button (click)="onNegativeClick()" class="light-btn" mat-flat-button>{{dialogData.negativeBtnTxt}}</button>
-    <button (click)="onPositiveClick()" *ngIf="data.alertType === alertTypeEnum.WARNING" cdkFocusInitial class="warning-btn"
+    <button (click)="onPositiveClick()" *ngIf="data.alertType === alertTypeEnum.WARNING" cdkFocusInitial
+            class="red-gradient-btn"
             mat-flat-button>{{dialogData.positiveBtnTxt}}</button>
-    <button (click)="onPositiveClick()" *ngIf="data.alertType === alertTypeEnum.SUCCESS" cdkFocusInitial class="success-btn"
+    <button (click)="onPositiveClick()" *ngIf="data.alertType === alertTypeEnum.SUCCESS" cdkFocusInitial
+            class="gradient-blue-green"
             mat-flat-button>{{dialogData.positiveBtnTxt}}</button>
-    <button (click)="onPositiveClick()" *ngIf="data.alertType === alertTypeEnum.INFO" cdkFocusInitial class="success-btn"
+    <button (click)="onPositiveClick()" *ngIf="data.alertType === alertTypeEnum.INFO" cdkFocusInitial
+            class="gradient-blue-green"
             mat-flat-button>{{dialogData.positiveBtnTxt}}</button>
-    <button (click)="onPositiveClick()" *ngIf="data.alertType === alertTypeEnum.HELP" cdkFocusInitial class="success-btn"
+    <button (click)="onPositiveClick()" *ngIf="data.alertType === alertTypeEnum.HELP" cdkFocusInitial
+            class="gradient-blue-green"
             mat-flat-button>{{dialogData.positiveBtnTxt}}</button>
-    <button (click)="onPositiveClick()" *ngIf="data.alertType === alertTypeEnum.ERROR" cdkFocusInitial class="warning-btn"
+    <button (click)="onPositiveClick()" *ngIf="data.alertType === alertTypeEnum.ERROR" cdkFocusInitial
+            class="red-gradient-btn"
             mat-flat-button>{{dialogData.positiveBtnTxt}}</button>
   </div>
 </div>

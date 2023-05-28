@@ -1,32 +1,31 @@
-import {AfterViewInit, ChangeDetectorRef, Component, OnDestroy, OnInit} from '@angular/core';
-import {DropdownItem} from "../../../interfaces/dropdown-item";
-import {StringResources} from "../../../enum/string-resources";
-import {InputLength} from "../../../constants/input-length";
-import {FileTypeEnum} from "../../../enum/file-type-enum";
-import {MediaForEnum} from "../../../enum/media-for-enum";
-import {StatusList} from "../../../constants/status-list";
-import {AngularEditorConfig} from "@kolkov/angular-editor";
-import {Constants} from "../../../constants/Constants";
-import {COMMA, ENTER} from "@angular/cdk/keycodes";
-import {FormBuilder, FormGroup, Validators} from "@angular/forms";
-import {HttpService} from "../../../service/http.service";
-import {SnackBarService} from "../../../service/snack-bar.service";
-import {NavigationService} from "../../../service/navigation.service";
-import {ActivatedRoute} from "@angular/router";
-import {MatChipInputEvent} from "@angular/material/chips";
-import {ResponseDataModel} from "../../../models/response-data.model";
-import {ApiUrlEnum} from "../../../enum/api-url-enum";
-import {ServerResponseEnum} from "../../../enum/server-response-enum";
-import {ValidationUtil} from "../../../utilites/validation-util";
-import {ProgramModel} from "../../../models/program.model";
+import { AfterViewInit, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { DropdownItem } from '../../../interfaces/dropdown-item';
+import { StringResources } from '../../../enum/string-resources';
+import { InputLength } from '../../../constants/input-length';
+import { FileTypeEnum } from '../../../enum/file-type-enum';
+import { MediaForEnum } from '../../../enum/media-for-enum';
+import { StatusList } from '../../../constants/status-list';
+import { AngularEditorConfig } from '@kolkov/angular-editor';
+import { Constants } from '../../../constants/Constants';
+import { COMMA, ENTER } from '@angular/cdk/keycodes';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { HttpService } from '../../../service/http.service';
+import { SnackBarService } from '../../../service/snack-bar.service';
+import { NavigationService } from '../../../service/navigation.service';
+import { ActivatedRoute } from '@angular/router';
+import { MatChipInputEvent } from '@angular/material/chips';
+import { ResponseDataModel } from '../../../models/response-data.model';
+import { ApiUrlEnum } from '../../../enum/api-url-enum';
+import { ServerResponseEnum } from '../../../enum/server-response-enum';
+import { ValidationUtil } from '../../../utilites/validation-util';
+import { ProgramModel } from '../../../models/program.model';
 
 @Component({
   selector: 'app-program-manage',
   templateUrl: './program-manage.component.html',
-  styleUrls: ['./program-manage.component.scss']
+  styleUrls: ['./program-manage.component.scss'],
 })
 export class ProgramManageComponent implements OnInit, AfterViewInit, OnDestroy {
-
   programCategoryList: DropdownItem[] = [];
   lovModelObj: ProgramModel;
   id: number;
@@ -37,11 +36,9 @@ export class ProgramManageComponent implements OnInit, AfterViewInit, OnDestroy 
   statusList = StatusList;
   tagsList: string[] = [];
   idealForList: string[] = [];
-
   editorConfig: AngularEditorConfig = Constants.editorConfig;
   addOnBlur = true;
   readonly separatorKeysCodes = [ENTER, COMMA] as const;
-
   formGroup: FormGroup = this.fb.group({
     title: [null, [Validators.required, Validators.minLength(this.inputLength.CHAR_2), Validators.maxLength(this.inputLength.CHAR_100)]],
     details: [null, [Validators.required]],
@@ -52,15 +49,15 @@ export class ProgramManageComponent implements OnInit, AfterViewInit, OnDestroy 
     videoUrl: [null, []],
     idealFor: [null, [Validators.required]],
     tags: [null, [Validators.required]],
-    active: [true, [Validators.required]]
+    active: [true, [Validators.required]],
   });
 
   constructor(private httpService: HttpService,
-              private snackBarService: SnackBarService,
-              private navigationService: NavigationService,
-              private activatedRoute: ActivatedRoute,
-              private cdr: ChangeDetectorRef,
-              private fb: FormBuilder) {
+    private snackBarService: SnackBarService,
+    private navigationService: NavigationService,
+    private activatedRoute: ActivatedRoute,
+    private cdr: ChangeDetectorRef,
+    private fb: FormBuilder) {
     this.id = Number(this.activatedRoute.snapshot.paramMap.get('id'));
   }
 
@@ -99,14 +96,13 @@ export class ProgramManageComponent implements OnInit, AfterViewInit, OnDestroy 
         videoUrl: this.lovModelObj.videoUrl,
         tags: this.tagsList.join(','),
         idealFor: this.idealForList.join(','),
-        active: this.lovModelObj.active
+        active: this.lovModelObj.active,
       });
     }
   }
 
   add(event: MatChipInputEvent, type: number): void {
     const value = (event.value || '').trim();
-
     // Add our data
     if (value) {
       if (type === 1) {
@@ -116,7 +112,6 @@ export class ProgramManageComponent implements OnInit, AfterViewInit, OnDestroy 
           event.chipInput!.clear();
           return;
         }
-
         this.idealForList.push(value);
       } else {
         const index = this.tagsList.indexOf(value);
@@ -125,38 +120,32 @@ export class ProgramManageComponent implements OnInit, AfterViewInit, OnDestroy 
           event.chipInput!.clear();
           return;
         }
-
         this.tagsList.push(value);
       }
-
     }
-
     // Clear the input value
     event.chipInput!.clear();
     if (type === 1) {
-      this.formGroup.patchValue({idealFor: this.idealForList.join(',')})
+      this.formGroup.patchValue({ idealFor: this.idealForList.join(',') });
     } else {
-      this.formGroup.patchValue({tags: this.tagsList.join(',')})
+      this.formGroup.patchValue({ tags: this.tagsList.join(',') });
     }
   }
 
   remove(tag: string, type: number): void {
     if (type === 1) {
       const index = this.idealForList.indexOf(tag);
-
       if (index >= 0) {
         this.idealForList.splice(index, 1);
       }
-      this.formGroup.patchValue({idealFor: this.idealForList.join(',')})
+      this.formGroup.patchValue({ idealFor: this.idealForList.join(',') });
     } else {
       const index = this.tagsList.indexOf(tag);
-
       if (index >= 0) {
         this.tagsList.splice(index, 1);
       }
-      this.formGroup.patchValue({tags: this.tagsList.join(',')})
+      this.formGroup.patchValue({ tags: this.tagsList.join(',') });
     }
-
   }
 
   async loadDataById(id: number): Promise<void> {
@@ -225,5 +214,4 @@ export class ProgramManageComponent implements OnInit, AfterViewInit, OnDestroy 
       }
     }
   }
-
 }

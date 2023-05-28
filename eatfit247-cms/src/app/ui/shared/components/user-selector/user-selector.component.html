@@ -20,7 +20,7 @@
           [removable]="removable"
           [selectable]="selectable">
           <img *ngIf="user.imagePath && user.imagePath.length>0" alt="" matChipAvatar
-               src="{{user.imagePath[0].webUrl}}"/>
+               src="{{user.imagePath[0].webUrl}}" />
           {{user.name}} ({{user.subText}})
           <mat-icon *ngIf="removable" matChipRemove>cancel</mat-icon>
         </mat-chip>

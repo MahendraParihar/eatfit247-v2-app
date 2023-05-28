@@ -1,24 +1,24 @@
-import {Component, Inject, OnInit} from '@angular/core';
-import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
-import {ResponseDataModel} from "../../../models/response-data.model";
-import {ApiUrlEnum} from "../../../enum/api-url-enum";
-import {ServerResponseEnum} from "../../../enum/server-response-enum";
-import {DropdownItem} from "../../../interfaces/dropdown-item";
-import {FormBuilder, FormGroup, Validators} from "@angular/forms";
-import {HttpService} from "../../../service/http.service";
-import {SnackBarService} from "../../../service/snack-bar.service";
-import {StringResources} from "../../../enum/string-resources";
-import {InputLength} from "../../../constants/input-length";
-import {StatusList} from "../../../constants/status-list";
-import {MemberCallLogModel} from "../../../models/member-call-log.model";
-import {ValidationUtil} from "../../../utilites/validation-util";
-import * as moment from "moment/moment";
-import {Constants} from "../../../constants/Constants";
+import { Component, Inject, OnInit } from '@angular/core';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { ResponseDataModel } from '../../../models/response-data.model';
+import { ApiUrlEnum } from '../../../enum/api-url-enum';
+import { ServerResponseEnum } from '../../../enum/server-response-enum';
+import { DropdownItem } from '../../../interfaces/dropdown-item';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { HttpService } from '../../../service/http.service';
+import { SnackBarService } from '../../../service/snack-bar.service';
+import { StringResources } from '../../../enum/string-resources';
+import { InputLength } from '../../../constants/input-length';
+import { StatusList } from '../../../constants/status-list';
+import { MemberCallLogModel } from '../../../models/member-call-log.model';
+import { ValidationUtil } from '../../../utilites/validation-util';
+import * as moment from 'moment/moment';
+import { Constants } from '../../../constants/Constants';
 
 @Component({
   selector: 'app-member-call-schedule-manage-dialog',
   templateUrl: './member-call-schedule-manage-dialog.component.html',
-  styleUrls: ['./member-call-schedule-manage-dialog.component.scss']
+  styleUrls: ['./member-call-schedule-manage-dialog.component.scss'],
 })
 export class MemberCallScheduleManageDialogComponent implements OnInit {
   memberId: number;
@@ -31,7 +31,6 @@ export class MemberCallScheduleManageDialogComponent implements OnInit {
   callPurposeList: DropdownItem[];
   callStatusList: DropdownItem[];
   callLogObj: MemberCallLogModel;
-
   formGroup: FormGroup = this.fb.group({
     callTypeId: [null, [Validators.required]],
     callPurposeId: [null, [Validators.required]],
@@ -41,14 +40,14 @@ export class MemberCallScheduleManageDialogComponent implements OnInit {
     date: [null, [Validators.maxLength(this.inputLength.CHAR_200)]],
     startTime: [null, [Validators.maxLength(this.inputLength.CHAR_200)]],
     endTime: [null, [Validators.maxLength(this.inputLength.CHAR_200)]],
-    active: [true, [Validators.required]]
+    active: [true, [Validators.required]],
   });
 
   constructor(public dialogRef: MatDialogRef<MemberCallScheduleManageDialogComponent>,
-              @Inject(MAT_DIALOG_DATA) public data: any,
-              private fb: FormBuilder,
-              private httpService: HttpService,
-              private snackBarService: SnackBarService) {
+    @Inject(MAT_DIALOG_DATA) public data: any,
+    private fb: FormBuilder,
+    private httpService: HttpService,
+    private snackBarService: SnackBarService) {
     this.dialogData = data;
     this.memberId = data.memberId;
     if (!this.dialogData.new) {
@@ -90,7 +89,7 @@ export class MemberCallScheduleManageDialogComponent implements OnInit {
         date: this.callLogObj.date,
         startTime: this.callLogObj.startTime ? moment(this.callLogObj.startTime, Constants.DEFAULT_TIME_FORMAT).format(Constants.DISPLAY_TIME_FORMAT) : null,
         endTime: this.callLogObj.endTime ? moment(this.callLogObj.endTime, Constants.DEFAULT_TIME_FORMAT).format(Constants.DISPLAY_TIME_FORMAT) : null,
-        active: this.callLogObj.active
+        active: this.callLogObj.active,
       });
     }
   }
@@ -100,10 +99,9 @@ export class MemberCallScheduleManageDialogComponent implements OnInit {
     if (!this.formGroup.valid) {
       return;
     }
-
     let payload: any = this.formGroup.value;
     if (this.formGroup.value.date) {
-      payload['date'] = moment(this.formGroup.value.date).toDate()
+      payload['date'] = moment(this.formGroup.value.date).toDate();
     }
     if (this.formGroup.value.startTime) {
       payload['startTime'] = moment(this.formGroup.value.startTime, Constants.DISPLAY_TIME_FORMAT).format(Constants.DEFAULT_TIME_FORMAT);
@@ -179,5 +177,4 @@ export class MemberCallScheduleManageDialogComponent implements OnInit {
       }
     }
   }
-
 }

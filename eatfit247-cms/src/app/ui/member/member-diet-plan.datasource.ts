@@ -7,7 +7,6 @@ import { MemberDietPlanModel } from '../../models/member-diet-plan.model';
 import { DropdownItem } from '../../interfaces/dropdown-item';
 
 export class MemberDietPlanDatasource implements DataSource<MemberDietPlanModel> {
-
   private dataSubject = new BehaviorSubject<MemberDietPlanModel[]>([]);
   private dietTemplateSubject = new BehaviorSubject<DropdownItem[]>([]);
   private expandedSubject = new BehaviorSubject<boolean[]>([]);
@@ -18,7 +17,7 @@ export class MemberDietPlanDatasource implements DataSource<MemberDietPlanModel>
   data = this.dataSubject.asObservable();
 
   constructor(private httpService: HttpService,
-              private snackBarService: SnackBarService) {
+    private snackBarService: SnackBarService) {
   }
 
   connect(collectionViewer: CollectionViewer): Observable<MemberDietPlanModel[]> {

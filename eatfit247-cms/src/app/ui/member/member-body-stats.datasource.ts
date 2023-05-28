@@ -1,18 +1,17 @@
-import {CollectionViewer, DataSource} from "@angular/cdk/collections";
-import {BehaviorSubject, Observable} from 'rxjs';
-import {HttpService} from "../../service/http.service";
-import {ServerResponseEnum} from "../../enum/server-response-enum";
-import {SnackBarService} from "../../service/snack-bar.service";
-import {MemberHealthParameterModelLog} from "../../models/member-body-stats.model";
+import { CollectionViewer, DataSource } from '@angular/cdk/collections';
+import { BehaviorSubject, Observable } from 'rxjs';
+import { HttpService } from '../../service/http.service';
+import { ServerResponseEnum } from '../../enum/server-response-enum';
+import { SnackBarService } from '../../service/snack-bar.service';
+import { MemberHealthParameterModelLog } from '../../models/member-body-stats.model';
 
 export class MemberBodyStatsDatasource implements DataSource<MemberHealthParameterModelLog> {
-
   private dataSubject = new BehaviorSubject<MemberHealthParameterModelLog[]>([]);
   private totalCountSubject = new BehaviorSubject<number>(0);
   totalCount = this.totalCountSubject.asObservable();
 
   constructor(private httpService: HttpService,
-              private snackBarService: SnackBarService) {
+    private snackBarService: SnackBarService) {
   }
 
   connect(collectionViewer: CollectionViewer): Observable<MemberHealthParameterModelLog[]> {

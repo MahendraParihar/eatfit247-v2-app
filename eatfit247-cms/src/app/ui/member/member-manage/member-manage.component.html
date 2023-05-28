@@ -48,7 +48,8 @@
              fxFlex.lt-sm="100%">
           <mat-form-field>
             <mat-label>{{stringRes.EMAIL_ID}}</mat-label>
-            <input #emailId formControlName="emailId" matInput maxlength="{{inputLength.MAX_EMAIL}}" placeholder="Enter email id"
+            <input #emailId formControlName="emailId" matInput maxlength="{{inputLength.MAX_EMAIL}}"
+                   placeholder="Enter email id"
                    required type="text">
             <mat-hint align="end">{{emailId.value.length}} / {{inputLength.MAX_EMAIL}}</mat-hint>
             <mat-error>
@@ -180,7 +181,8 @@
              fxFlex.lt-sm="100%">
           <mat-form-field>
             <mat-label>{{stringRes.REASON}}</mat-label>
-            <textarea #reason formControlName="reason" matInput maxlength="{{inputLength.CHAR_1000}}" placeholder="Enter reason for status change"
+            <textarea #reason formControlName="reason" matInput maxlength="{{inputLength.CHAR_1000}}"
+                      placeholder="Enter reason for status change"
                       rows="3">
             </textarea>
             <mat-hint align="end">{{reason.value.length}} / {{inputLength.CHAR_1000}}</mat-hint>

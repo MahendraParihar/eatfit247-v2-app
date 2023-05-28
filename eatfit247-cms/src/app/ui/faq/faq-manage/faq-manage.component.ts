@@ -1,52 +1,49 @@
-import {AfterViewInit, ChangeDetectorRef, Component, OnDestroy, OnInit} from '@angular/core';
-import {DropdownItem} from "../../../interfaces/dropdown-item";
-import {StringResources} from "../../../enum/string-resources";
-import {InputLength} from "../../../constants/input-length";
-import {StatusList} from "../../../constants/status-list";
-import {AngularEditorConfig} from "@kolkov/angular-editor";
-import {Constants} from "../../../constants/Constants";
-import {FormBuilder, FormGroup, Validators} from "@angular/forms";
-import {HttpService} from "../../../service/http.service";
-import {SnackBarService} from "../../../service/snack-bar.service";
-import {NavigationService} from "../../../service/navigation.service";
-import {ActivatedRoute} from "@angular/router";
-import {MatSelectChange} from "@angular/material/select";
-import {ResponseDataModel} from "../../../models/response-data.model";
-import {ApiUrlEnum} from "../../../enum/api-url-enum";
-import {ServerResponseEnum} from "../../../enum/server-response-enum";
-import {ValidationUtil} from "../../../utilites/validation-util";
-import * as moment from "moment";
-import {FaqModel} from "../../../models/faq.model";
+import { AfterViewInit, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { DropdownItem } from '../../../interfaces/dropdown-item';
+import { StringResources } from '../../../enum/string-resources';
+import { InputLength } from '../../../constants/input-length';
+import { StatusList } from '../../../constants/status-list';
+import { AngularEditorConfig } from '@kolkov/angular-editor';
+import { Constants } from '../../../constants/Constants';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { HttpService } from '../../../service/http.service';
+import { SnackBarService } from '../../../service/snack-bar.service';
+import { NavigationService } from '../../../service/navigation.service';
+import { ActivatedRoute } from '@angular/router';
+import { MatSelectChange } from '@angular/material/select';
+import { ResponseDataModel } from '../../../models/response-data.model';
+import { ApiUrlEnum } from '../../../enum/api-url-enum';
+import { ServerResponseEnum } from '../../../enum/server-response-enum';
+import { ValidationUtil } from '../../../utilites/validation-util';
+import * as moment from 'moment';
+import { FaqModel } from '../../../models/faq.model';
 
 @Component({
   selector: 'app-faq-manage',
   templateUrl: './faq-manage.component.html',
-  styleUrls: ['./faq-manage.component.scss']
+  styleUrls: ['./faq-manage.component.scss'],
 })
 export class FaqManageComponent implements OnInit, AfterViewInit, OnDestroy {
-
   faqCategoryList: DropdownItem[] = [];
   lovModelObj: FaqModel;
   id: number;
   stringRes = StringResources;
   inputLength = InputLength;
   statusList = StatusList;
-
   editorConfig: AngularEditorConfig = Constants.editorConfig;
-
   formGroup: FormGroup = this.fb.group({
     faq: [null, [Validators.required, Validators.minLength(this.inputLength.CHAR_2), Validators.maxLength(this.inputLength.CHAR_500)]],
     answer: [null, [Validators.required]],
     faqCategoryId: [null, [Validators.required]],
-    active: [true, [Validators.required]]
+    active: [true, [Validators.required]],
   });
 
   constructor(private httpService: HttpService,
-              private snackBarService: SnackBarService,
-              private navigationService: NavigationService,
-              private activatedRoute: ActivatedRoute,
-              private cdr: ChangeDetectorRef,
-              private fb: FormBuilder) {
+    private snackBarService: SnackBarService,
+    private navigationService: NavigationService,
+    private activatedRoute: ActivatedRoute,
+    private cdr: ChangeDetectorRef,
+    private fb: FormBuilder) {
     this.id = Number(this.activatedRoute.snapshot.paramMap.get('id'));
   }
 
@@ -76,7 +73,7 @@ export class FaqManageComponent implements OnInit, AfterViewInit, OnDestroy {
       this.formGroup.get('endDate').setValidators([Validators.required]);
       this.formGroup.get('endDate').updateValueAndValidity();
     } else {
-      this.formGroup.patchValue({endDate: null});
+      this.formGroup.patchValue({ endDate: null });
       this.formGroup.get('endDate').setValidators([]);
       this.formGroup.get('endDate').updateValueAndValidity();
     }
@@ -88,7 +85,7 @@ export class FaqManageComponent implements OnInit, AfterViewInit, OnDestroy {
         faq: this.lovModelObj.faq,
         answer: this.lovModelObj.answer,
         faqCategoryId: this.lovModelObj.faqCategoryId,
-        active: this.lovModelObj.active
+        active: this.lovModelObj.active,
       });
     }
   }
@@ -117,13 +114,12 @@ export class FaqManageComponent implements OnInit, AfterViewInit, OnDestroy {
     if (!this.formGroup.valid) {
       return;
     }
-
     let payload: any = this.formGroup.value;
     if (this.formGroup.value.startDate) {
-      payload['startDate'] = moment(this.formGroup.value.startDate).toDate()
+      payload['startDate'] = moment(this.formGroup.value.startDate).toDate();
     }
     if (this.formGroup.value.endDate) {
-      payload['endDate'] = moment(this.formGroup.value.endDate).toDate()
+      payload['endDate'] = moment(this.formGroup.value.endDate).toDate();
     }
     let res: ResponseDataModel;
     if (this.id > 0) {

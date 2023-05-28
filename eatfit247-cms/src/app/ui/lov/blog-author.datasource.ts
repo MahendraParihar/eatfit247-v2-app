@@ -1,22 +1,21 @@
-import {CollectionViewer, DataSource} from "@angular/cdk/collections";
-import {BehaviorSubject, Observable} from 'rxjs';
-import {HttpService} from "../../service/http.service";
-import {SnackBarService} from "../../service/snack-bar.service";
-import {ApiUrlEnum} from "../../enum/api-url-enum";
-import {ServerResponseEnum} from "../../enum/server-response-enum";
-import {BlogAuthorModel} from "src/app/models/blog-author.model";
-import {CommonUtil} from "src/app/utilites/common-util";
+import { CollectionViewer, DataSource } from '@angular/cdk/collections';
+import { BehaviorSubject, Observable } from 'rxjs';
+import { HttpService } from '../../service/http.service';
+import { SnackBarService } from '../../service/snack-bar.service';
+import { ApiUrlEnum } from '../../enum/api-url-enum';
+import { ServerResponseEnum } from '../../enum/server-response-enum';
+import { BlogAuthorModel } from 'src/app/models/blog-author.model';
+import { CommonUtil } from 'src/app/utilites/common-util';
 
 declare var _: any;
 
 export class BlogAuthorDatasource implements DataSource<BlogAuthorModel> {
-
   private dataSubject = new BehaviorSubject<BlogAuthorModel[]>([]);
   private totalCountSubject = new BehaviorSubject<number>(0);
   totalCount = this.totalCountSubject.asObservable();
 
   constructor(private httpService: HttpService,
-              private snackBarService: SnackBarService) {
+    private snackBarService: SnackBarService) {
   }
 
   connect(collectionViewer: CollectionViewer): Observable<BlogAuthorModel[]> {
@@ -29,9 +28,7 @@ export class BlogAuthorDatasource implements DataSource<BlogAuthorModel> {
 
   async loadData(url: ApiUrlEnum, payload: any): Promise<boolean> {
     console.log('Loading', this.constructor.name);
-
     payload = CommonUtil.removeEmptyPayloadAttributes(payload);
-
     const apiResponse = await this.httpService.getRequest(url, null, payload, true);
     if (!apiResponse) {
       return false;

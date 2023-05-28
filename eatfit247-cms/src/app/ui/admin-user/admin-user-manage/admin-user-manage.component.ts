@@ -1,44 +1,40 @@
-import {AfterViewInit, Component, OnDestroy, OnInit} from '@angular/core';
-import {HttpService} from "../../../service/http.service";
-import {SnackBarService} from "../../../service/snack-bar.service";
-import {NavigationService} from "../../../service/navigation.service";
-import {ActivatedRoute} from "@angular/router";
-import {FormBuilder, FormGroup, Validators} from "@angular/forms";
-import {StringResources} from "../../../enum/string-resources";
-import {AdminUserModel} from "../../../models/admin-user.model";
-import {ValidationUtil} from "../../../utilites/validation-util";
-import {ResponseDataModel} from "../../../models/response-data.model";
-import {ApiUrlEnum} from "../../../enum/api-url-enum";
-import {ServerResponseEnum} from "../../../enum/server-response-enum";
-import {InputLength} from "../../../constants/input-length";
-import {DropdownItem} from "../../../interfaces/dropdown-item";
-import {FileTypeEnum} from "../../../enum/file-type-enum";
-import {MediaForEnum} from "../../../enum/media-for-enum";
-import {MatSelectChange} from "@angular/material/select";
-import {AdminRoleEnum} from "../../../enum/admin-role-enum";
-import * as moment from "moment/moment";
+import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
+import { HttpService } from '../../../service/http.service';
+import { SnackBarService } from '../../../service/snack-bar.service';
+import { NavigationService } from '../../../service/navigation.service';
+import { ActivatedRoute } from '@angular/router';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { StringResources } from '../../../enum/string-resources';
+import { AdminUserModel } from '../../../models/admin-user.model';
+import { ValidationUtil } from '../../../utilites/validation-util';
+import { ResponseDataModel } from '../../../models/response-data.model';
+import { ApiUrlEnum } from '../../../enum/api-url-enum';
+import { ServerResponseEnum } from '../../../enum/server-response-enum';
+import { InputLength } from '../../../constants/input-length';
+import { DropdownItem } from '../../../interfaces/dropdown-item';
+import { FileTypeEnum } from '../../../enum/file-type-enum';
+import { MediaForEnum } from '../../../enum/media-for-enum';
+import { MatSelectChange } from '@angular/material/select';
+import { AdminRoleEnum } from '../../../enum/admin-role-enum';
+import * as moment from 'moment/moment';
 
 @Component({
   selector: 'app-admin-user-manage',
   templateUrl: './admin-user-manage.component.html',
-  styleUrls: ['./admin-user-manage.component.scss']
+  styleUrls: ['./admin-user-manage.component.scss'],
 })
 export class AdminUserManageComponent implements OnInit, AfterViewInit, OnDestroy {
-
   adminUserObj: AdminUserModel;
   id: number;
   stringRes = StringResources;
   inputLength = InputLength;
   fileTypeEnum = FileTypeEnum;
   mediaForEnum = MediaForEnum;
-
   roleList: DropdownItem[] = [];
   franchiseList: DropdownItem[] = [];
   statusList: DropdownItem[] = [];
   countryCodeList: DropdownItem[] = [];
-
   showFranchise = false;
-
   formGroup: FormGroup = this.fb.group({
     firstName: [null, [Validators.required, Validators.minLength(InputLength.MIN_NAME), Validators.maxLength(InputLength.MAX_NAME)]],
     lastName: [null, [Validators.required, Validators.minLength(InputLength.MIN_NAME), Validators.maxLength(InputLength.MAX_NAME)]],
@@ -50,14 +46,14 @@ export class AdminUserManageComponent implements OnInit, AfterViewInit, OnDestro
     roleId: [null, []],
     franchiseId: [null, []],
     adminUserStatusId: [null, [Validators.required]],
-    reason: [null, []]
+    reason: [null, []],
   });
 
   constructor(private httpService: HttpService,
-              private snackBarService: SnackBarService,
-              private navigationService: NavigationService,
-              private activatedRoute: ActivatedRoute,
-              private fb: FormBuilder) {
+    private snackBarService: SnackBarService,
+    private navigationService: NavigationService,
+    private activatedRoute: ActivatedRoute,
+    private fb: FormBuilder) {
     this.id = Number(this.activatedRoute.snapshot.paramMap.get('id'));
   }
 
@@ -97,7 +93,6 @@ export class AdminUserManageComponent implements OnInit, AfterViewInit, OnDestro
         adminUserStatusId: this.adminUserObj.adminUserStatusId,
         reason: this.adminUserObj.deactivationReason,
       });
-
       if (this.adminUserObj.roleList && this.adminUserObj.roleList.length > 0) {
         this.setValidationBasedOnRole(this.adminUserObj.roleList[0].roleId);
       }
@@ -124,7 +119,7 @@ export class AdminUserManageComponent implements OnInit, AfterViewInit, OnDestro
     switch (roleId) {
       case AdminRoleEnum.SUPER_ADMIN:
       case AdminRoleEnum.BLOG_ADMIN:
-        this.formGroup.patchValue({franchiseId: null});
+        this.formGroup.patchValue({ franchiseId: null });
         this.formGroup.get('franchiseId').setValidators([]);
         this.formGroup.get('franchiseId').updateValueAndValidity();
         this.showFranchise = false;
@@ -190,20 +185,18 @@ export class AdminUserManageComponent implements OnInit, AfterViewInit, OnDestro
     if (!this.formGroup.valid) {
       return;
     }
-
     let payload: any = this.formGroup.value;
     if (this.formGroup.value.startDate) {
-      payload['startDate'] = moment(this.formGroup.value.startDate).toDate()
+      payload['startDate'] = moment(this.formGroup.value.startDate).toDate();
     }
     if (this.formGroup.value.endDate) {
-      payload['endDate'] = moment(this.formGroup.value.endDate).toDate()
+      payload['endDate'] = moment(this.formGroup.value.endDate).toDate();
     }
-
     let res: ResponseDataModel;
     if (this.id > 0) {
-      res = await this.httpService.putRequest(ApiUrlEnum.ADMIN_MANAGE, this.id, payload, true)
+      res = await this.httpService.putRequest(ApiUrlEnum.ADMIN_MANAGE, this.id, payload, true);
     } else {
-      res = await this.httpService.postRequest(ApiUrlEnum.ADMIN_MANAGE, payload, true)
+      res = await this.httpService.postRequest(ApiUrlEnum.ADMIN_MANAGE, payload, true);
     }
     if (res) {
       switch (res.code) {
@@ -220,5 +213,4 @@ export class AdminUserManageComponent implements OnInit, AfterViewInit, OnDestro
       }
     }
   }
-
 }

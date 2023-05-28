@@ -26,7 +26,7 @@
     </div>
     <div class="file-upload-list" style="margin-top: 20px;">
       <div *ngFor="let file of uploadedFiles; let i = index;" class="file-upload-list-item">
-        <img [src]="file.isPastFile? mediaPath+file.url : file.url" alt=""/>
+        <img [src]="file.isPastFile? mediaPath+file.url : file.url" alt="" />
         <div class="file-upload-list-text">
           <span *ngIf="file.file" class="title">{{file.file.name}}</span>
           <span *ngIf="file.file" class="size">{{getFileSize(file.file.size)}}</span>

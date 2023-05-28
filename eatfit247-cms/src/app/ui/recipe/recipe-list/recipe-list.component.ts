@@ -1,39 +1,36 @@
-import {AfterViewInit, Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
-import {StringResources} from "../../../enum/string-resources";
-import {Constants} from "../../../constants/Constants";
-import {MatPaginator} from "@angular/material/paginator";
-import {FormBuilder} from "@angular/forms";
-import {HttpService} from "../../../service/http.service";
-import {SnackBarService} from "../../../service/snack-bar.service";
-import {NavigationService} from "../../../service/navigation.service";
-import {MatDialog} from "@angular/material/dialog";
-import {tap} from "rxjs";
-import {ApiUrlEnum} from "../../../enum/api-url-enum";
-import {NavigationPathEnum} from "../../../enum/navigation-path-enum";
-import {AlertDialogDataInterface} from "../../../interfaces/alert-dialog-data.interface";
-import {AlertTypeEnum} from "../../../enum/alert-type-enum";
-import {DialogAlertComponent} from "../../shared/components/dialog-alert/dialog-alert.component";
-import {ResponseDataModel} from "../../../models/response-data.model";
-import {ServerResponseEnum} from "../../../enum/server-response-enum";
-import {RecipeDatasource} from "../recipe.datasource";
-import {RecipeModel} from "../../../models/recipe.model";
-import {PreviewRecipeDialogComponent} from "../preview-recipe-dialog/preview-recipe-dialog.component";
-import {StatusList} from 'src/app/constants/status-list';
-import {DropdownItem} from 'src/app/interfaces/dropdown-item';
+import { AfterViewInit, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { StringResources } from '../../../enum/string-resources';
+import { Constants } from '../../../constants/Constants';
+import { MatPaginator } from '@angular/material/paginator';
+import { FormBuilder } from '@angular/forms';
+import { HttpService } from '../../../service/http.service';
+import { SnackBarService } from '../../../service/snack-bar.service';
+import { NavigationService } from '../../../service/navigation.service';
+import { MatDialog } from '@angular/material/dialog';
+import { tap } from 'rxjs';
+import { ApiUrlEnum } from '../../../enum/api-url-enum';
+import { NavigationPathEnum } from '../../../enum/navigation-path-enum';
+import { AlertDialogDataInterface } from '../../../interfaces/alert-dialog-data.interface';
+import { AlertTypeEnum } from '../../../enum/alert-type-enum';
+import { DialogAlertComponent } from '../../shared/components/dialog-alert/dialog-alert.component';
+import { ResponseDataModel } from '../../../models/response-data.model';
+import { ServerResponseEnum } from '../../../enum/server-response-enum';
+import { RecipeDatasource } from '../recipe.datasource';
+import { RecipeModel } from '../../../models/recipe.model';
+import { PreviewRecipeDialogComponent } from '../preview-recipe-dialog/preview-recipe-dialog.component';
+import { StatusList } from 'src/app/constants/status-list';
+import { DropdownItem } from 'src/app/interfaces/dropdown-item';
 
 @Component({
   selector: 'app-recipe-list',
   templateUrl: './recipe-list.component.html',
-  styleUrls: ['./recipe-list.component.scss']
+  styleUrls: ['./recipe-list.component.scss'],
 })
 export class RecipeListComponent implements OnInit, AfterViewInit, OnDestroy {
-
-  displayedColumns = ["seqNo", 'title', 'image', 'category', 'isPublic', 'status', 'createdBy', 'createdAt', 'updatedBy', 'updatedAt', "action"];
+  displayedColumns = ['seqNo', 'title', 'image', 'category', 'isPublic', 'status', 'createdBy', 'createdAt', 'updatedBy', 'updatedAt', 'action'];
   dataSource: RecipeDatasource;
   totalCount = 0;
-
   stringRes = StringResources;
-
   defaultPageSize = Constants.DEFAULT_PAGE_SIZE;
   pageSizeList = Constants.PAGE_SIZE_LIST;
   payload: any = {};
@@ -41,7 +38,6 @@ export class RecipeListComponent implements OnInit, AfterViewInit, OnDestroy {
   recipeCuisineList: DropdownItem[] = [];
   recipeTypeList: DropdownItem[] = [];
   recipeCategoryList: DropdownItem[] = [];
-
   searchFormGroup = this.fb.group({
     name: [null],
     active: [null],
@@ -49,16 +45,15 @@ export class RecipeListComponent implements OnInit, AfterViewInit, OnDestroy {
     createdTo: [null],
     recipeTypeId: [null],
     recipeCuisineIds: [null],
-    recipeCategoryIds: [null]
+    recipeCategoryIds: [null],
   });
-
   @ViewChild(MatPaginator) paginator: MatPaginator;
 
   constructor(private fb: FormBuilder,
-              private httpService: HttpService,
-              private snackBarService: SnackBarService,
-              private navigationService: NavigationService,
-              public dialog: MatDialog) {
+    private httpService: HttpService,
+    private snackBarService: SnackBarService,
+    private navigationService: NavigationService,
+    public dialog: MatDialog) {
     this.dataSource = new RecipeDatasource(this.httpService, this.snackBarService);
     this.dataSource.totalCount.subscribe((count: number) => this.totalCount = count);
   }
@@ -71,7 +66,7 @@ export class RecipeListComponent implements OnInit, AfterViewInit, OnDestroy {
   ngAfterViewInit() {
     this.paginator.page
       .pipe(
-        tap(() => this.loadDataSet())
+        tap(() => this.loadDataSet()),
       )
       .subscribe();
   }
@@ -83,7 +78,6 @@ export class RecipeListComponent implements OnInit, AfterViewInit, OnDestroy {
   async loadDataSet(): Promise<void> {
     this.payload.pageNumber = this.paginator ? this.paginator.pageIndex : 0;
     this.payload.pageSize = this.paginator ? this.paginator.pageSize : Constants.DEFAULT_PAGE_SIZE;
-
     await this.dataSource.loadData(ApiUrlEnum.RECIPE_LIST, this.payload);
   }
 
@@ -91,17 +85,15 @@ export class RecipeListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.searchFormGroup.reset();
   }
 
-
   async searchResult(): Promise<void> {
     const formValue = this.searchFormGroup.value;
     this.payload.name = formValue.name ? formValue.name : null;
     this.payload.active = formValue.active; // Send value as it is
-    this.payload.createdFrom = formValue.createdFrom ? formValue.createdFrom.format("YYYY-MM-DD") : null;
-    this.payload.createdTo = formValue.createdTo ? formValue.createdTo.format("YYYY-MM-DD") : null;
+    this.payload.createdFrom = formValue.createdFrom ? formValue.createdFrom.format('YYYY-MM-DD') : null;
+    this.payload.createdTo = formValue.createdTo ? formValue.createdTo.format('YYYY-MM-DD') : null;
     this.payload.recipeTypeId = formValue.recipeTypeId ? formValue.recipeTypeId : null;
     this.payload.recipeCuisineIds = formValue.recipeCuisineIds ? formValue.recipeCuisineIds.toString() : null;
     this.payload.recipeCategoryIds = formValue.recipeCategoryIds ? formValue.recipeCategoryIds.toString() : null;
-
     this.paginator.firstPage();
     await this.loadDataSet();
   }
@@ -120,7 +112,7 @@ export class RecipeListComponent implements OnInit, AfterViewInit, OnDestroy {
       message: StringResources.CHANGE_STATUS_DESC,
       positiveBtnTxt: StringResources.YES,
       negativeBtnTxt: StringResources.NO,
-      alertType: AlertTypeEnum.WARNING
+      alertType: AlertTypeEnum.WARNING,
     };
     const dialogRef = this.dialog.open(DialogAlertComponent, {
       width: '350px',
@@ -136,9 +128,8 @@ export class RecipeListComponent implements OnInit, AfterViewInit, OnDestroy {
 
   async updateStatusTask(item: RecipeModel, index: number): Promise<void> {
     const payload = {
-      active: !item.active
+      active: !item.active,
     };
-
     const res: ResponseDataModel = await this.httpService.patchRequest(ApiUrlEnum.RECIPE_STATUS_CHANGE, item.id, payload, true);
     if (res) {
       switch (res.code) {
@@ -159,7 +150,7 @@ export class RecipeListComponent implements OnInit, AfterViewInit, OnDestroy {
   openPreviewDialog(detailObj: RecipeModel): void {
     const dialogRef = this.dialog.open(PreviewRecipeDialogComponent, {
       data: detailObj,
-      disableClose: true
+      disableClose: true,
     });
     dialogRef.afterClosed().subscribe(result => {
       console.log('The dialog was closed', JSON.stringify(result));
@@ -199,5 +190,4 @@ export class RecipeListComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     }
   }
-
 }

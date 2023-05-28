@@ -1,25 +1,24 @@
-import {Component, Inject, OnInit} from '@angular/core';
-import {StringResources} from "../../../enum/string-resources";
-import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
-import {ResponseDataModel} from "../../../models/response-data.model";
-import {ApiUrlEnum} from "../../../enum/api-url-enum";
-import {ServerResponseEnum} from "../../../enum/server-response-enum";
-import {MemberHealthIssueModel} from "../../../models/member-health-issue.model";
-import {HttpService} from "../../../service/http.service";
-import {SnackBarService} from "../../../service/snack-bar.service";
-import {filter, map} from "lodash";
+import { Component, Inject, OnInit } from '@angular/core';
+import { StringResources } from '../../../enum/string-resources';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { ResponseDataModel } from '../../../models/response-data.model';
+import { ApiUrlEnum } from '../../../enum/api-url-enum';
+import { ServerResponseEnum } from '../../../enum/server-response-enum';
+import { MemberHealthIssueModel } from '../../../models/member-health-issue.model';
+import { HttpService } from '../../../service/http.service';
+import { SnackBarService } from '../../../service/snack-bar.service';
+import { filter, map } from 'lodash';
 
 @Component({
   selector: 'app-health-issue-selection-dialog',
   templateUrl: './health-issue-selection-dialog.component.html',
-  styleUrls: ['./health-issue-selection-dialog.component.scss']
+  styleUrls: ['./health-issue-selection-dialog.component.scss'],
 })
 export class HealthIssueSelectionDialogComponent implements OnInit {
-
   memberId: number;
   stringRes = StringResources;
   memberHealthIssues: MemberHealthIssueModel[] = [];
-  displayedColumns = ["seqNo", 'title', 'selected'];
+  displayedColumns = ['seqNo', 'title', 'selected'];
 
   constructor(
     private httpService: HttpService,
@@ -67,15 +66,15 @@ export class HealthIssueSelectionDialogComponent implements OnInit {
   }
 
   async onSubmit(): Promise<void> {
-    const ids = map(filter(this.memberHealthIssues, {isSelected: true}), 'id');
+    const ids = map(filter(this.memberHealthIssues, { isSelected: true }), 'id');
     let payload: any = {
-      healthIssueIds: ids
+      healthIssueIds: ids,
     };
     let res: ResponseDataModel;
     if (this.memberId > 0) {
-      res = await this.httpService.putRequest(ApiUrlEnum.MEMBER_HEALTH_ISSUE_MANAGE, this.memberId, payload, true)
+      res = await this.httpService.putRequest(ApiUrlEnum.MEMBER_HEALTH_ISSUE_MANAGE, this.memberId, payload, true);
     } else {
-      res = await this.httpService.postRequest(ApiUrlEnum.MEMBER_HEALTH_ISSUE_MANAGE, payload, true)
+      res = await this.httpService.postRequest(ApiUrlEnum.MEMBER_HEALTH_ISSUE_MANAGE, payload, true);
     }
     if (res) {
       switch (res.code) {
@@ -92,5 +91,4 @@ export class HealthIssueSelectionDialogComponent implements OnInit {
       }
     }
   }
-
 }

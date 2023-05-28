@@ -1,68 +1,70 @@
-<div class="data-table  m-t-0" *ngIf='totalCount > 0'>
+<div class="data-table  m-t-0" *ngIf="totalCount > 0">
 
-  <ng-container >
-  <mat-table [dataSource]="dataSource">
+  <ng-container>
+    <mat-table [dataSource]="dataSource">
 
-    <ng-container matColumnDef="seqNo">
-      <mat-header-cell *matHeaderCellDef>#</mat-header-cell>
-      <mat-cell *matCellDef="let d; let i = index;">{{i + 1}}</mat-cell>
-    </ng-container>
-    <ng-container matColumnDef="issue">
-      <mat-header-cell *matHeaderCellDef>Issue</mat-header-cell>
-      <mat-cell *matCellDef="let d;">{{d.issue}}</mat-cell>
-    </ng-container>
-    <ng-container matColumnDef="response">
-      <mat-header-cell *matHeaderCellDef>Response</mat-header-cell>
-      <mat-cell *matCellDef="let d;">{{d.response}}</mat-cell>
-    </ng-container>
-    <ng-container matColumnDef="status">
-      <mat-header-cell *matHeaderCellDef>Status</mat-header-cell>
-      <mat-cell *matCellDef="let d;">
+      <ng-container matColumnDef="seqNo">
+        <mat-header-cell *matHeaderCellDef>#</mat-header-cell>
+        <mat-cell *matCellDef="let d; let i = index;">{{i + 1}}</mat-cell>
+      </ng-container>
+      <ng-container matColumnDef="issue">
+        <mat-header-cell *matHeaderCellDef>Issue</mat-header-cell>
+        <mat-cell *matCellDef="let d;">{{d.issue}}</mat-cell>
+      </ng-container>
+      <ng-container matColumnDef="response">
+        <mat-header-cell *matHeaderCellDef>Response</mat-header-cell>
+        <mat-cell *matCellDef="let d;">{{d.response}}</mat-cell>
+      </ng-container>
+      <ng-container matColumnDef="status">
+        <mat-header-cell *matHeaderCellDef>Status</mat-header-cell>
+        <mat-cell *matCellDef="let d;">
         <span [ngClass]="d.issueStatusId ? 'green-bg':'red-bg'" class="chip">
           {{d.status}}
         </span>
-      </mat-cell>
-    </ng-container>
-    <ng-container matColumnDef="createdBy">
-      <mat-header-cell *matHeaderCellDef>Created By</mat-header-cell>
-      <mat-cell *matCellDef="let d;">{{d.createdBy | appCreatedBy}}
-        <br>
-        {{d.createdAt | appDateTime:'onlyDate'}}
-      </mat-cell>
-    </ng-container>
-    <ng-container matColumnDef="respondedBy">
-      <mat-header-cell *matHeaderCellDef>Responded By</mat-header-cell>
-      <mat-cell *matCellDef="let d;">{{d.respondedBy | appCreatedBy}}
-        <br>
-        {{d.respondedAt | appDateTime:'onlyDate'}}
-      </mat-cell>
-    </ng-container>
+        </mat-cell>
+      </ng-container>
+      <ng-container matColumnDef="createdBy">
+        <mat-header-cell *matHeaderCellDef>Created By</mat-header-cell>
+        <mat-cell *matCellDef="let d;">{{d.createdBy | appCreatedBy}}
+          <br>
+          {{d.createdAt | appDateTime:'onlyDate'}}
+        </mat-cell>
+      </ng-container>
+      <ng-container matColumnDef="respondedBy">
+        <mat-header-cell *matHeaderCellDef>Responded By</mat-header-cell>
+        <mat-cell *matCellDef="let d;">{{d.respondedBy | appCreatedBy}}
+          <br>
+          {{d.respondedAt | appDateTime:'onlyDate'}}
+        </mat-cell>
+      </ng-container>
 
-    <ng-container matColumnDef="action">
-      <mat-header-cell *matHeaderCellDef>Action</mat-header-cell>
-      <mat-cell *matCellDef="let d; let i = index">
-        <button (click)="onEditClick(d)" *ngIf="d.issueStatusId===issueStatusEnum.IN_PROGRESS" aria-label="Update" color="primary"
-                mat-icon-button matTooltip="{{stringRes.EDIT}}">
-          <mat-icon>edit</mat-icon>
-        </button>
+      <ng-container matColumnDef="action">
+        <mat-header-cell *matHeaderCellDef>Action</mat-header-cell>
+        <mat-cell *matCellDef="let d; let i = index">
+          <button (click)="onEditClick(d)" *ngIf="d.issueStatusId===issueStatusEnum.IN_PROGRESS" aria-label="Update"
+                  color="primary"
+                  mat-icon-button matTooltip="{{stringRes.EDIT}}">
+            <mat-icon>edit</mat-icon>
+          </button>
 
-        <button (click)="markIssueCancelled(d)" *ngIf="d.issueStatusId===issueStatusEnum.IN_PROGRESS" aria-label="Cancelled" color="primary"
-                mat-icon-button matTooltip="{{stringRes.CANCEL}}">
-          <mat-icon>delete</mat-icon>
-        </button>
-      </mat-cell>
-    </ng-container>
+          <button (click)="markIssueCancelled(d)" *ngIf="d.issueStatusId===issueStatusEnum.IN_PROGRESS"
+                  aria-label="Cancelled" color="primary"
+                  mat-icon-button matTooltip="{{stringRes.CANCEL}}">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </mat-cell>
+      </ng-container>
 
-    <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+      <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
 
-    <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
-  </mat-table>
+      <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
+    </mat-table>
 
-  <mat-paginator [length]="totalCount" [pageSizeOptions]="pageSizeList" [pageSize]="defaultPageSize"></mat-paginator>
+    <mat-paginator [length]="totalCount" [pageSizeOptions]="pageSizeList" [pageSize]="defaultPageSize"></mat-paginator>
   </ng-container>
 </div>
 
-<app-no-data-found *ngIf='totalCount === 0' [title]='"No issue raised"'
-                   [showBtn]='false'
+<app-no-data-found *ngIf="totalCount === 0" [title]='"No issue raised"'
+                   [showBtn]="false"
                    [image]='"empty-data.jpg"'
                    [message]='"Member havent raised any issue yet"'></app-no-data-found>

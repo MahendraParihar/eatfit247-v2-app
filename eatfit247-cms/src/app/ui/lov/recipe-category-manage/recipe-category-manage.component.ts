@@ -1,27 +1,26 @@
-import {AfterViewInit, Component, OnDestroy, OnInit} from '@angular/core';
-import {FormBuilder, FormGroup, Validators} from "@angular/forms";
-import {ActivatedRoute} from "@angular/router";
-import {InputLength} from "../../../constants/input-length";
-import {StatusList} from "../../../constants/status-list";
-import {ApiUrlEnum} from "../../../enum/api-url-enum";
-import {FileTypeEnum} from "../../../enum/file-type-enum";
-import {MediaForEnum} from "../../../enum/media-for-enum";
-import {ServerResponseEnum} from "../../../enum/server-response-enum";
-import {StringResources} from "../../../enum/string-resources";
-import {RecipeCategoryModel} from "../../../models/recipe-category.model";
-import {ResponseDataModel} from "../../../models/response-data.model";
-import {HttpService} from "../../../service/http.service";
-import {NavigationService} from "../../../service/navigation.service";
-import {SnackBarService} from "../../../service/snack-bar.service";
-import {ValidationUtil} from "../../../utilites/validation-util";
+import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
+import { InputLength } from '../../../constants/input-length';
+import { StatusList } from '../../../constants/status-list';
+import { ApiUrlEnum } from '../../../enum/api-url-enum';
+import { FileTypeEnum } from '../../../enum/file-type-enum';
+import { MediaForEnum } from '../../../enum/media-for-enum';
+import { ServerResponseEnum } from '../../../enum/server-response-enum';
+import { StringResources } from '../../../enum/string-resources';
+import { RecipeCategoryModel } from '../../../models/recipe-category.model';
+import { ResponseDataModel } from '../../../models/response-data.model';
+import { HttpService } from '../../../service/http.service';
+import { NavigationService } from '../../../service/navigation.service';
+import { SnackBarService } from '../../../service/snack-bar.service';
+import { ValidationUtil } from '../../../utilites/validation-util';
 
 @Component({
   selector: 'app-recipe-category-manage',
   templateUrl: './recipe-category-manage.component.html',
-  styleUrls: ['./recipe-category-manage.component.scss']
+  styleUrls: ['./recipe-category-manage.component.scss'],
 })
 export class RecipeCategoryManageComponent implements OnInit, AfterViewInit, OnDestroy {
-
   lovModelObj: RecipeCategoryModel;
   id: number;
   stringRes = StringResources;
@@ -29,7 +28,6 @@ export class RecipeCategoryManageComponent implements OnInit, AfterViewInit, OnD
   fileTypeEnum = FileTypeEnum;
   mediaForEnum = MediaForEnum;
   statusList = StatusList;
-
   formGroup: FormGroup = this.fb.group({
     name: [null, [Validators.required, Validators.minLength(this.inputLength.CHAR_5), Validators.maxLength(this.inputLength.CHAR_50)]],
     active: [true, [Validators.required]],
@@ -39,10 +37,10 @@ export class RecipeCategoryManageComponent implements OnInit, AfterViewInit, OnD
   });
 
   constructor(private httpService: HttpService,
-              private snackBarService: SnackBarService,
-              private navigationService: NavigationService,
-              private activatedRoute: ActivatedRoute,
-              private fb: FormBuilder) {
+    private snackBarService: SnackBarService,
+    private navigationService: NavigationService,
+    private activatedRoute: ActivatedRoute,
+    private fb: FormBuilder) {
     this.id = Number(this.activatedRoute.snapshot.paramMap.get('id'));
   }
 
@@ -73,7 +71,7 @@ export class RecipeCategoryManageComponent implements OnInit, AfterViewInit, OnD
         fromTime: this.lovModelObj.fromTime,
         toTime: this.lovModelObj.toTime,
         sequence: this.lovModelObj.sequence,
-        active: this.lovModelObj.active
+        active: this.lovModelObj.active,
       });
     }
   }
@@ -102,9 +100,7 @@ export class RecipeCategoryManageComponent implements OnInit, AfterViewInit, OnD
     if (!this.formGroup.valid) {
       return;
     }
-
     let payload: any = this.formGroup.value;
-
     let res: ResponseDataModel;
     if (this.id > 0) {
       res = await this.httpService.putRequest(ApiUrlEnum.RECIPE_CATEGORY_MANAGE, this.id, payload, true);
@@ -126,5 +122,4 @@ export class RecipeCategoryManageComponent implements OnInit, AfterViewInit, OnD
       }
     }
   }
-
 }

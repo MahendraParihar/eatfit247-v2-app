@@ -1,5 +1,5 @@
 export enum StringResources {
-  APP_TITLE = 'EatFit247',
+  APP_TITLE = 'Eat Fit 247',
 
   BACK_TO_PREVIOUS_PAGE = 'Back to Previous Page',
 
@@ -201,6 +201,7 @@ export enum StringResources {
 
   DELETE_CONTACT_NUMBER_DESC = 'Are you sure, you want to delete this contact number ?',
   CHANGE_STATUS_DESC = 'Are you sure, you want to change status of this item ?',
+  DELETE_DIET_PLAN_DESC = 'Are you sure, you want to delete this diet plan ?',
   RESET_PASSWORD_TITLE = 'Reset Password',
   RESET_PASSWORD_DESC = 'Are you sure, you want to reset password for this user ?',
   SINGLE_MEDIA_FILE_ALERT = 'Only single file upload allow, please delete old one for upload new file',

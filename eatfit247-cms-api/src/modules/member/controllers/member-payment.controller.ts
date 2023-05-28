@@ -71,11 +71,9 @@ export class MemberPaymentController {
       this.commonService.findAddresses(TableEnum.TXN_MEMBER, id),
       this.configParameterService.findAll(),
     ]);
-
     const configParameters = pro[6].data;
-    const tp = find(configParameters, {configName: GST_ENABLED});
-    const tper = find(configParameters, {configName: TAX_PERCENTAGE});
-
+    const tp = find(configParameters, { configName: GST_ENABLED });
+    const tper = find(configParameters, { configName: TAX_PERCENTAGE });
     return {
       code: ServerResponseEnum.SUCCESS,
       message: StringResource.SUCCESS,

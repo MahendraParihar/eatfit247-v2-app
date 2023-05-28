@@ -1,48 +1,44 @@
-import {AfterViewInit, Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
-import {StringResources} from "../../../enum/string-resources";
-import {Constants} from "../../../constants/Constants";
-import {CommonSearchModel} from "../../../models/common-search.model";
-import {MatPaginator} from "@angular/material/paginator";
-import {FormBuilder} from "@angular/forms";
-import {HttpService} from "../../../service/http.service";
-import {SnackBarService} from "../../../service/snack-bar.service";
-import {NavigationService} from "../../../service/navigation.service";
-import {MatDialog} from "@angular/material/dialog";
-import {tap} from "rxjs";
-import {ApiUrlEnum} from "../../../enum/api-url-enum";
-import {AlertDialogDataInterface} from "../../../interfaces/alert-dialog-data.interface";
-import {AlertTypeEnum} from "../../../enum/alert-type-enum";
-import {DialogAlertComponent} from "../../shared/components/dialog-alert/dialog-alert.component";
-import {ResponseDataModel} from "../../../models/response-data.model";
-import {ServerResponseEnum} from "../../../enum/server-response-enum";
-import {ContactUsDatasource} from "../contact-us.datasource";
-import {ContactUsModel} from "../../../models/contact-us.model";
-import {PreviewContactUsDialogComponent} from "../preview-contact-us-dialog/preview-contact-us-dialog.component";
+import { AfterViewInit, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { StringResources } from '../../../enum/string-resources';
+import { Constants } from '../../../constants/Constants';
+import { CommonSearchModel } from '../../../models/common-search.model';
+import { MatPaginator } from '@angular/material/paginator';
+import { FormBuilder } from '@angular/forms';
+import { HttpService } from '../../../service/http.service';
+import { SnackBarService } from '../../../service/snack-bar.service';
+import { NavigationService } from '../../../service/navigation.service';
+import { MatDialog } from '@angular/material/dialog';
+import { tap } from 'rxjs';
+import { ApiUrlEnum } from '../../../enum/api-url-enum';
+import { AlertDialogDataInterface } from '../../../interfaces/alert-dialog-data.interface';
+import { AlertTypeEnum } from '../../../enum/alert-type-enum';
+import { DialogAlertComponent } from '../../shared/components/dialog-alert/dialog-alert.component';
+import { ResponseDataModel } from '../../../models/response-data.model';
+import { ServerResponseEnum } from '../../../enum/server-response-enum';
+import { ContactUsDatasource } from '../contact-us.datasource';
+import { ContactUsModel } from '../../../models/contact-us.model';
+import { PreviewContactUsDialogComponent } from '../preview-contact-us-dialog/preview-contact-us-dialog.component';
 
 @Component({
   selector: 'app-contact-us-report',
   templateUrl: './contact-us-report.component.html',
-  styleUrls: ['./contact-us-report.component.scss']
+  styleUrls: ['./contact-us-report.component.scss'],
 })
 export class ContactUsReportComponent implements OnInit, AfterViewInit, OnDestroy {
-
-  displayedColumns = ["seqNo", 'name', 'emailId', 'contactNo', 'status', 'respondedBy', 'createdAt', 'updatedAt', "action"];
+  displayedColumns = ['seqNo', 'name', 'emailId', 'contactNo', 'status', 'respondedBy', 'createdAt', 'updatedAt', 'action'];
   dataSource: ContactUsDatasource;
   totalCount = 0;
-
   stringRes = StringResources;
-
   defaultPageSize = Constants.DEFAULT_PAGE_SIZE;
   pageSizeList = Constants.PAGE_SIZE_LIST;
   payload: CommonSearchModel = new CommonSearchModel();
-
   @ViewChild(MatPaginator) paginator: MatPaginator;
 
   constructor(private fb: FormBuilder,
-              private httpService: HttpService,
-              private snackBarService: SnackBarService,
-              private navigationService: NavigationService,
-              public dialog: MatDialog) {
+    private httpService: HttpService,
+    private snackBarService: SnackBarService,
+    private navigationService: NavigationService,
+    public dialog: MatDialog) {
     this.dataSource = new ContactUsDatasource(this.httpService, this.snackBarService);
     this.dataSource.totalCount.subscribe((count: number) => this.totalCount = count);
   }
@@ -54,7 +50,7 @@ export class ContactUsReportComponent implements OnInit, AfterViewInit, OnDestro
   ngAfterViewInit() {
     this.paginator.page
       .pipe(
-        tap(() => this.loadDataSet())
+        tap(() => this.loadDataSet()),
       )
       .subscribe();
   }
@@ -89,11 +85,10 @@ export class ContactUsReportComponent implements OnInit, AfterViewInit, OnDestro
   /*onAddClick() {
     this.navigationService.navigateTo(NavigationPathEnum.PROGRAM_PLAN_MANAGE);
   }*/
-
   onEditClick(item: ContactUsModel, index: number) {
     const dialogRef = this.dialog.open(PreviewContactUsDialogComponent, {
       data: item,
-      disableClose: true
+      disableClose: true,
     });
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
@@ -125,7 +120,7 @@ export class ContactUsReportComponent implements OnInit, AfterViewInit, OnDestro
       message: StringResources.CHANGE_STATUS_DESC,
       positiveBtnTxt: StringResources.YES,
       negativeBtnTxt: StringResources.NO,
-      alertType: AlertTypeEnum.WARNING
+      alertType: AlertTypeEnum.WARNING,
     };
     const dialogRef = this.dialog.open(DialogAlertComponent, {
       width: '350px',
@@ -141,9 +136,8 @@ export class ContactUsReportComponent implements OnInit, AfterViewInit, OnDestro
 
   async updateStatusTask(item: ContactUsModel, index: number): Promise<void> {
     const payload = {
-      active: !item.active
+      active: !item.active,
     };
-
     const res: ResponseDataModel = await this.httpService.patchRequest(ApiUrlEnum.CONTACT_US_STATUS_CHANGE, item.id, payload, true);
     if (res) {
       switch (res.code) {
@@ -178,5 +172,4 @@ export class ContactUsReportComponent implements OnInit, AfterViewInit, OnDestro
       }
     }
   }
-
 }

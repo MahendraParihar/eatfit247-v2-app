@@ -1,30 +1,26 @@
-import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
-import {FormBuilder} from "@angular/forms";
-import {StringResources} from "../../../../enum/string-resources";
-import {CommonSearchModel} from "../../../../models/common-search.model";
-import {StatusList} from "../../../../constants/status-list";
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { FormBuilder } from '@angular/forms';
+import { StringResources } from '../../../../enum/string-resources';
+import { CommonSearchModel } from '../../../../models/common-search.model';
+import { StatusList } from '../../../../constants/status-list';
 
 @Component({
   selector: 'app-search-form',
   templateUrl: './search-form.component.html',
-  styleUrls: ['./search-form.component.scss']
+  styleUrls: ['./search-form.component.scss'],
 })
 export class SearchFormComponent implements OnInit {
-
   @Input()
   searchModel: CommonSearchModel;
-
   @Output()
   searchResultEvent = new EventEmitter<CommonSearchModel>();
-
   stringRes = StringResources;
   statusList = StatusList;
-
   searchFormGroup = this.fb.group({
     name: [null],
     active: [null],
     createdFrom: [null],
-    createdTo: [null]
+    createdTo: [null],
   });
 
   constructor(private fb: FormBuilder) {
@@ -59,8 +55,7 @@ export class SearchFormComponent implements OnInit {
     }
     this.searchModel.name = formValue.name ? formValue.name : null;
     this.searchModel.active = formValue.active; // Send value as it is
-    this.searchModel.createdFrom = formValue.createdFrom ? formValue.createdFrom.format("YYYY-MM-DD") : null;
-    this.searchModel.createdTo = formValue.createdTo ? formValue.createdTo.format("YYYY-MM-DD") : null;
+    this.searchModel.createdFrom = formValue.createdFrom ? formValue.createdFrom.format('YYYY-MM-DD') : null;
+    this.searchModel.createdTo = formValue.createdTo ? formValue.createdTo.format('YYYY-MM-DD') : null;
   }
-
 }

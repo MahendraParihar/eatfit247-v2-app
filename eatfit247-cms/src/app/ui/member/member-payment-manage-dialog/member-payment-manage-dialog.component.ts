@@ -1,30 +1,29 @@
-import {Component, Inject, OnInit} from '@angular/core';
-import {StringResources} from "../../../enum/string-resources";
-import {InputLength} from "../../../constants/input-length";
-import {DropdownItem} from "../../../interfaces/dropdown-item";
-import {FormBuilder, FormGroup, Validators} from "@angular/forms";
-import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
-import {HttpService} from "../../../service/http.service";
-import {SnackBarService} from "../../../service/snack-bar.service";
-import * as moment from "moment";
-import {find, round} from "lodash";
-import {Constants} from "../../../constants/Constants";
-import {ValidationUtil} from "../../../utilites/validation-util";
-import {ResponseDataModel} from "../../../models/response-data.model";
-import {ApiUrlEnum} from "../../../enum/api-url-enum";
-import {ServerResponseEnum} from "../../../enum/server-response-enum";
-import {MemberPaymentModel} from "../../../models/member-payment.model";
-import {PlanFees} from "../../../models/plan.model";
-import {CurrencyConfigList} from "../../../models/currency-config.model";
-import {AddressModel} from "../../../models/address.model";
+import { Component, Inject, OnInit } from '@angular/core';
+import { StringResources } from '../../../enum/string-resources';
+import { InputLength } from '../../../constants/input-length';
+import { DropdownItem } from '../../../interfaces/dropdown-item';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { HttpService } from '../../../service/http.service';
+import { SnackBarService } from '../../../service/snack-bar.service';
+import * as moment from 'moment';
+import { find, round } from 'lodash';
+import { Constants } from '../../../constants/Constants';
+import { ValidationUtil } from '../../../utilites/validation-util';
+import { ResponseDataModel } from '../../../models/response-data.model';
+import { ApiUrlEnum } from '../../../enum/api-url-enum';
+import { ServerResponseEnum } from '../../../enum/server-response-enum';
+import { MemberPaymentModel } from '../../../models/member-payment.model';
+import { PlanFees } from '../../../models/plan.model';
+import { CurrencyConfigList } from '../../../models/currency-config.model';
+import { AddressModel } from '../../../models/address.model';
 
 @Component({
   selector: 'app-member-payment-manage-dialog',
   templateUrl: './member-payment-manage-dialog.component.html',
-  styleUrls: ['./member-payment-manage-dialog.component.scss']
+  styleUrls: ['./member-payment-manage-dialog.component.scss'],
 })
 export class MemberPaymentManageDialogComponent implements OnInit {
-
   memberId: number;
   id: number;
   stringRes = StringResources;
@@ -40,7 +39,6 @@ export class MemberPaymentManageDialogComponent implements OnInit {
   taxPercentage: number;
   taxApplicable: boolean;
   showPaymentNote: boolean = false;
-
   userCurrencyOrderAmount: number = null;
   userCurrencyDiscountAmount: number = null;
   userCurrencyTaxAmount: number = null;
@@ -49,7 +47,6 @@ export class MemberPaymentManageDialogComponent implements OnInit {
   systemCurrencyDiscountAmount: number = null;
   systemCurrencyTaxAmount: number = null;
   systemCurrencyTotalAmount: number = null;
-
   formGroup: FormGroup = this.fb.group({
     programId: [null, [Validators.required]],
     planId: [null, [Validators.required]],
@@ -71,14 +68,14 @@ export class MemberPaymentManageDialogComponent implements OnInit {
     systemTotalAmount: [null, [Validators.required, ValidationUtil.floatValidation, Validators.min(0)]],
     systemCurrency: [null, [Validators.required]],
     paymentDate: [null, [Validators.required]],
-    active: [true, [Validators.required]]
+    active: [true, [Validators.required]],
   });
 
   constructor(public dialogRef: MatDialogRef<MemberPaymentManageDialogComponent>,
-              @Inject(MAT_DIALOG_DATA) public data: any,
-              private fb: FormBuilder,
-              private httpService: HttpService,
-              private snackBarService: SnackBarService) {
+    @Inject(MAT_DIALOG_DATA) public data: any,
+    private fb: FormBuilder,
+    private httpService: HttpService,
+    private snackBarService: SnackBarService) {
     this.dialogData = data;
     this.memberId = data.memberId;
     if (!this.dialogData.new) {
@@ -151,7 +148,7 @@ export class MemberPaymentManageDialogComponent implements OnInit {
         systemTaxAmount: this.memberPaymentObj.paymentObj.user.taxAmount,
         systemTotalAmount: this.memberPaymentObj.paymentObj.system.totalAmount,
         systemCurrency: this.memberPaymentObj.paymentObj.system.currency,
-        active: this.memberPaymentObj.active
+        active: this.memberPaymentObj.active,
       });
     }
   }
@@ -161,7 +158,7 @@ export class MemberPaymentManageDialogComponent implements OnInit {
       this.resetPayment();
       return;
     }
-    const planFees = find(this.planList, {id: this.formGroup.value.planId});
+    const planFees = find(this.planList, { id: this.formGroup.value.planId });
     if (planFees) {
       this.calculatePayment(planFees);
     } else {
@@ -174,10 +171,9 @@ export class MemberPaymentManageDialogComponent implements OnInit {
     if (!this.formGroup.valid) {
       return;
     }
-
     let payload: any = this.formGroup.value;
     if (this.formGroup.value.date) {
-      payload['date'] = moment(this.formGroup.value.date).toDate()
+      payload['date'] = moment(this.formGroup.value.date).toDate();
     }
     if (this.formGroup.value.startTime) {
       payload['startTime'] = moment(this.formGroup.value.startTime, Constants.DISPLAY_TIME_FORMAT).format(Constants.DEFAULT_TIME_FORMAT);
@@ -300,26 +296,22 @@ export class MemberPaymentManageDialogComponent implements OnInit {
       systemDiscountAmount: null,
       systemTaxAmount: null,
       systemTotalAmount: null,
-    })
+    });
   }
 
   private calculatePayment(planFees: PlanFees) {
     const userCurrency = this.formGroup.value.userCurrency ? this.formGroup.value.userCurrency : Constants.DEFAULT_CURRENCY;
     const taxApplicable = this.formGroup.value.isTaxApplicable;
-
-    const targetCurrencyConfig = find(this.currencyConfigList, {sourceCurrencyCode: userCurrency});
+    const targetCurrencyConfig = find(this.currencyConfigList, { sourceCurrencyCode: userCurrency });
     this.showPaymentNote = targetCurrencyConfig.targetCurrencyCode !== userCurrency;
-
     this.systemCurrencyOrderAmount = planFees.inrAmount;
     this.systemCurrencyDiscountAmount = this.formGroup.value.systemDiscountAmount ? this.formGroup.value.systemDiscountAmount : 0;
     this.systemCurrencyTaxAmount = taxApplicable ? ((this.systemCurrencyOrderAmount - this.systemCurrencyDiscountAmount) * this.taxPercentage) / 100 : 0;
     this.systemCurrencyTotalAmount = this.systemCurrencyOrderAmount - this.systemCurrencyDiscountAmount + this.systemCurrencyTaxAmount;
-
     this.userCurrencyOrderAmount = this.convertAmount(this.systemCurrencyOrderAmount, targetCurrencyConfig.conversionRate, targetCurrencyConfig.conversionRateFeesInPercent);
     this.userCurrencyDiscountAmount = this.convertAmount(this.systemCurrencyDiscountAmount, targetCurrencyConfig.conversionRate, targetCurrencyConfig.conversionRateFeesInPercent);
     this.userCurrencyTaxAmount = taxApplicable ? ((this.userCurrencyOrderAmount - this.userCurrencyDiscountAmount) * this.taxPercentage) / 100 : 0;
     this.userCurrencyTotalAmount = this.userCurrencyOrderAmount - this.userCurrencyDiscountAmount + this.userCurrencyTaxAmount;
-
     this.formGroup.patchValue({
       noOfCycle: planFees.noOfCycle,
       daysInCycle: planFees.noOfDaysInCycle,
@@ -331,11 +323,10 @@ export class MemberPaymentManageDialogComponent implements OnInit {
       systemDiscountAmount: this.systemCurrencyDiscountAmount,
       systemTaxAmount: this.systemCurrencyTaxAmount,
       systemTotalAmount: this.systemCurrencyTotalAmount,
-    })
+    });
   }
 
   private convertAmount(primaryAmount: number, conversionRate: number, conversionFees: number): number {
     return round(primaryAmount / conversionRate);
   }
-
 }

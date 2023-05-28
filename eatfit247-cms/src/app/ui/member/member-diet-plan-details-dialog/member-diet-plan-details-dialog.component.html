@@ -4,7 +4,7 @@
   <mat-table *ngIf="dietPlanDetail && dietPlanDetail.dietPlan" [dataSource]="dietPlanDetail.dietPlan" class="dp-table">
     <ng-container matColumnDef="category">
       <th *matHeaderCellDef mat-header-cell> {{stringRes.RECIPE_CATEGORY}}</th>
-      <td *matCellDef="let item" mat-cell> <strong>{{item.recipeCategory}}</strong></td>
+      <td *matCellDef="let item" mat-cell><strong>{{item.recipeCategory}}</strong></td>
     </ng-container>
     <ng-container matColumnDef="detail">
       <th *matHeaderCellDef mat-header-cell>{{stringRes.DETAILS}}</th>

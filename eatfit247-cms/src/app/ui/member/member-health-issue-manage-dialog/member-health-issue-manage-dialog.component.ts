@@ -15,16 +15,15 @@ import { MemberHealthIssueModel } from '../../../models/member-health-issue.mode
   styleUrls: ['./member-health-issue-manage-dialog.component.scss'],
 })
 export class MemberHealthIssueManageDialogComponent implements OnInit {
-
   id: number;
   stringRes = StringResources;
   memberHealthIssues: MemberHealthIssueModel[] = [];
   displayedColumns = ['seqNo', 'title', 'selected'];
 
   constructor(private httpService: HttpService,
-              private snackBarService: SnackBarService,
-              public dialogRef: MatDialogRef<MemberHealthIssueManageDialogComponent>,
-              @Inject(MAT_DIALOG_DATA) public data: any) {
+    private snackBarService: SnackBarService,
+    public dialogRef: MatDialogRef<MemberHealthIssueManageDialogComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: any) {
     this.id = data.memberId;
   }
 
@@ -56,20 +55,20 @@ export class MemberHealthIssueManageDialogComponent implements OnInit {
     }
   }
 
-  onCancel(flag:boolean): void {
+  onCancel(flag: boolean): void {
     this.dialogRef.close(flag);
   }
 
   async onSubmit(): Promise<void> {
-    const ids = map(filter(this.memberHealthIssues, {isSelected: true}), 'id');
+    const ids = map(filter(this.memberHealthIssues, { isSelected: true }), 'id');
     let payload: any = {
-      healthIssueIds: ids
+      healthIssueIds: ids,
     };
     let res: ResponseDataModel;
     if (this.id > 0) {
-      res = await this.httpService.putRequest(ApiUrlEnum.MEMBER_HEALTH_ISSUE_MANAGE, this.id, payload, true)
+      res = await this.httpService.putRequest(ApiUrlEnum.MEMBER_HEALTH_ISSUE_MANAGE, this.id, payload, true);
     } else {
-      res = await this.httpService.postRequest(ApiUrlEnum.MEMBER_HEALTH_ISSUE_MANAGE, payload, true)
+      res = await this.httpService.postRequest(ApiUrlEnum.MEMBER_HEALTH_ISSUE_MANAGE, payload, true);
     }
     if (res) {
       switch (res.code) {
@@ -86,5 +85,4 @@ export class MemberHealthIssueManageDialogComponent implements OnInit {
       }
     }
   }
-
 }

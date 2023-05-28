@@ -6,7 +6,8 @@
       {{item.name}}
       <mat-icon *ngIf="removable" matChipRemove>cancel</mat-icon>
     </mat-chip>
-    <input #searchInput (matChipInputTokenEnd)="add($event)" [formControl]="searchCtrl" [matAutocomplete]="auto" [matChipInputAddOnBlur]="addOnBlur"
+    <input #searchInput (matChipInputTokenEnd)="add($event)" [formControl]="searchCtrl" [matAutocomplete]="auto"
+           [matChipInputAddOnBlur]="addOnBlur"
            [matChipInputFor]="chipList" [matChipInputSeparatorKeyCodes]="separatorKeysCodes" [required]="isRequired"
            aria-label="Recipes" matInput
            placeholder="Search recipes">

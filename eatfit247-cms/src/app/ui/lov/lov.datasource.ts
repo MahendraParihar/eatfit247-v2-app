@@ -1,21 +1,19 @@
-import {CollectionViewer, DataSource} from "@angular/cdk/collections";
-import {BehaviorSubject, Observable} from 'rxjs';
-import {HttpService} from "../../service/http.service";
-import {SnackBarService} from "../../service/snack-bar.service";
-import {ApiUrlEnum} from "../../enum/api-url-enum";
-import {ServerResponseEnum} from "../../enum/server-response-enum";
-import {LovModel} from "../../models/lov.model";
-import {CommonUtil} from "src/app/utilites/common-util";
-
+import { CollectionViewer, DataSource } from '@angular/cdk/collections';
+import { BehaviorSubject, Observable } from 'rxjs';
+import { HttpService } from '../../service/http.service';
+import { SnackBarService } from '../../service/snack-bar.service';
+import { ApiUrlEnum } from '../../enum/api-url-enum';
+import { ServerResponseEnum } from '../../enum/server-response-enum';
+import { LovModel } from '../../models/lov.model';
+import { CommonUtil } from 'src/app/utilites/common-util';
 
 export class LovDatasource implements DataSource<LovModel> {
-
   private dataSubject = new BehaviorSubject<LovModel[]>([]);
   private totalCountSubject = new BehaviorSubject<number>(0);
   totalCount = this.totalCountSubject.asObservable();
 
   constructor(private httpService: HttpService,
-              private snackBarService: SnackBarService) {
+    private snackBarService: SnackBarService) {
   }
 
   connect(collectionViewer: CollectionViewer): Observable<LovModel[]> {
@@ -28,9 +26,7 @@ export class LovDatasource implements DataSource<LovModel> {
 
   async loadData(url: ApiUrlEnum, payload: any): Promise<boolean> {
     console.log('Loading', this.constructor.name);
-
     payload = CommonUtil.removeEmptyPayloadAttributes(payload);
-
     const apiResponse = await this.httpService.getRequest(url, null, payload, true);
     if (!apiResponse) {
       return false;

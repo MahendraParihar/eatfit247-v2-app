@@ -1,4 +1,4 @@
-<form  [formGroup]="formGroup" class="form-group diet-table">
+<form [formGroup]="formGroup" class="form-group diet-table">
   <mat-card class="form-card">
     <mat-card-header>
       <mat-card-title *ngIf="dayNo && dayNo > 0">Diet Plan
@@ -14,7 +14,8 @@
              fxFlex.lt-sm="100%">
           <mat-form-field>
             <mat-label>{{stringRes.START_DATE}}</mat-label>
-            <input (click)="startDatePicker.open()" (dateChange)="onStartDateChange('change', $event)" [matDatepicker]="startDatePicker"
+            <input (click)="startDatePicker.open()" (dateChange)="onStartDateChange('change', $event)"
+                   [matDatepicker]="startDatePicker"
                    formControlName="startDate"
                    matInput
                    placeholder="select start date"
@@ -60,7 +61,7 @@
              fxFlex.lt-md="calc(50%)"
              fxFlex.lt-sm="100%"></div>
       </div>
-       <ng-container formArrayName="dietPlan" *ngIf="this.dietPlanDetail.dietPlan">
+      <ng-container formArrayName="dietPlan" *ngIf="this.dietPlanDetail.dietPlan">
 
         <ng-container *ngFor="let agd of detailArray().controls; let i=index" [formGroupName]="i">
           <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start">
@@ -99,7 +100,8 @@
           </div>
         </ng-container>
       </ng-container>
-      <app-diet-details-selector *ngIf='this.dietPlanDetail'  [dietPlans]="this.dietPlanDetail.dietPlan" [formArrayName]="'dietPlan'"
+      <app-diet-details-selector *ngIf="this.dietPlanDetail" [dietPlans]="this.dietPlanDetail.dietPlan"
+                                 [formArrayName]="'dietPlan'"
                                  [formGroup]="formGroup"
                                  [recipeList]="this.recipeList"></app-diet-details-selector>
     </mat-card-content>

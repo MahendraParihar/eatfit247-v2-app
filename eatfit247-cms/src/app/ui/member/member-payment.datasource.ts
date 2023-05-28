@@ -1,18 +1,17 @@
-import {CollectionViewer, DataSource} from "@angular/cdk/collections";
-import {BehaviorSubject, Observable} from 'rxjs';
-import {HttpService} from "../../service/http.service";
-import {ServerResponseEnum} from "../../enum/server-response-enum";
-import {SnackBarService} from "../../service/snack-bar.service";
-import {MemberPaymentModel} from "src/app/models/member-payment.model";
+import { CollectionViewer, DataSource } from '@angular/cdk/collections';
+import { BehaviorSubject, Observable } from 'rxjs';
+import { HttpService } from '../../service/http.service';
+import { ServerResponseEnum } from '../../enum/server-response-enum';
+import { SnackBarService } from '../../service/snack-bar.service';
+import { MemberPaymentModel } from 'src/app/models/member-payment.model';
 
 export class MemberPaymentDatasource implements DataSource<MemberPaymentModel> {
-
   private dataSubject = new BehaviorSubject<MemberPaymentModel[]>([]);
   private totalCountSubject = new BehaviorSubject<number>(0);
   totalCount = this.totalCountSubject.asObservable();
 
   constructor(private httpService: HttpService,
-              private snackBarService: SnackBarService) {
+    private snackBarService: SnackBarService) {
   }
 
   connect(collectionViewer: CollectionViewer): Observable<MemberPaymentModel[]> {

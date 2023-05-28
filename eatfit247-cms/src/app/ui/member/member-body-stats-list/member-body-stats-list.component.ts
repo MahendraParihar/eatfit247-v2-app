@@ -1,53 +1,49 @@
-import {AfterViewInit, Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
-import {StringResources} from "../../../enum/string-resources";
-import {Constants} from "../../../constants/Constants";
-import {CommonSearchModel} from "../../../models/common-search.model";
-import {MatPaginator} from "@angular/material/paginator";
-import {FormBuilder} from "@angular/forms";
-import {HttpService} from "../../../service/http.service";
-import {SnackBarService} from "../../../service/snack-bar.service";
-import {NavigationService} from "../../../service/navigation.service";
-import {ActivatedRoute} from "@angular/router";
-import {MatDialog} from "@angular/material/dialog";
-import {tap} from "rxjs";
-import {ApiUrlEnum} from "../../../enum/api-url-enum";
-import {AlertDialogDataInterface} from "../../../interfaces/alert-dialog-data.interface";
-import {AlertTypeEnum} from "../../../enum/alert-type-enum";
-import {DialogAlertComponent} from "../../shared/components/dialog-alert/dialog-alert.component";
-import {ResponseDataModel} from "../../../models/response-data.model";
-import {ServerResponseEnum} from "../../../enum/server-response-enum";
-import {MemberBodyStatsDatasource} from "../member-body-stats.datasource";
+import { AfterViewInit, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { StringResources } from '../../../enum/string-resources';
+import { Constants } from '../../../constants/Constants';
+import { CommonSearchModel } from '../../../models/common-search.model';
+import { MatPaginator } from '@angular/material/paginator';
+import { FormBuilder } from '@angular/forms';
+import { HttpService } from '../../../service/http.service';
+import { SnackBarService } from '../../../service/snack-bar.service';
+import { NavigationService } from '../../../service/navigation.service';
+import { ActivatedRoute } from '@angular/router';
+import { MatDialog } from '@angular/material/dialog';
+import { tap } from 'rxjs';
+import { ApiUrlEnum } from '../../../enum/api-url-enum';
+import { AlertDialogDataInterface } from '../../../interfaces/alert-dialog-data.interface';
+import { AlertTypeEnum } from '../../../enum/alert-type-enum';
+import { DialogAlertComponent } from '../../shared/components/dialog-alert/dialog-alert.component';
+import { ResponseDataModel } from '../../../models/response-data.model';
+import { ServerResponseEnum } from '../../../enum/server-response-enum';
+import { MemberBodyStatsDatasource } from '../member-body-stats.datasource';
 import {
-  MemberBodyStatsManageDialogComponent
-} from "../member-body-stats-manage-dialog/member-body-stats-manage-dialog.component";
-import {MemberHealthParameterModelLog} from "../../../models/member-body-stats.model";
+  MemberBodyStatsManageDialogComponent,
+} from '../member-body-stats-manage-dialog/member-body-stats-manage-dialog.component';
+import { MemberHealthParameterModelLog } from '../../../models/member-body-stats.model';
 
 @Component({
   selector: 'app-member-body-stats-list',
   templateUrl: './member-body-stats-list.component.html',
-  styleUrls: ['./member-body-stats-list.component.scss']
+  styleUrls: ['./member-body-stats-list.component.scss'],
 })
 export class MemberBodyStatsListComponent implements OnInit, AfterViewInit, OnDestroy {
-
-  displayedColumns = ["seqNo", 'logDate', 'status', 'createdBy', 'createdAt', 'updatedBy', 'updatedAt', "action"];
+  displayedColumns = ['seqNo', 'logDate', 'status', 'createdBy', 'createdAt', 'updatedBy', 'updatedAt', 'action'];
   dataSource: MemberBodyStatsDatasource;
   totalCount = 0;
   id: number;
-
   stringRes = StringResources;
-
   defaultPageSize = Constants.DEFAULT_PAGE_SIZE;
   pageSizeList = Constants.PAGE_SIZE_LIST;
   payload: CommonSearchModel = new CommonSearchModel();
-
   @ViewChild(MatPaginator) paginator: MatPaginator;
 
   constructor(private fb: FormBuilder,
-              private httpService: HttpService,
-              private snackBarService: SnackBarService,
-              private navigationService: NavigationService,
-              private activatedRoute: ActivatedRoute,
-              public dialog: MatDialog) {
+    private httpService: HttpService,
+    private snackBarService: SnackBarService,
+    private navigationService: NavigationService,
+    private activatedRoute: ActivatedRoute,
+    public dialog: MatDialog) {
     this.activatedRoute.parent.params.subscribe(params => {
       this.id = Number(params['id']);
     });
@@ -62,7 +58,7 @@ export class MemberBodyStatsListComponent implements OnInit, AfterViewInit, OnDe
   ngAfterViewInit() {
     this.paginator.page
       .pipe(
-        tap(() => this.loadDataSet())
+        tap(() => this.loadDataSet()),
       )
       .subscribe();
   }
@@ -97,13 +93,13 @@ export class MemberBodyStatsListComponent implements OnInit, AfterViewInit, OnDe
   onAddClick() {
     const dialogData = {
       new: true,
-      memberId: this.id
+      memberId: this.id,
     };
     const dialogRef = this.dialog.open(MemberBodyStatsManageDialogComponent, {
       width: '550px',
       data: dialogData,
       closeOnNavigation: false,
-      disableClose: true
+      disableClose: true,
     });
     dialogRef.afterClosed().subscribe(result => {
       console.log('The dialog was closed', JSON.stringify(result));
@@ -118,13 +114,13 @@ export class MemberBodyStatsListComponent implements OnInit, AfterViewInit, OnDe
     const dialogData = {
       new: false,
       memberId: this.id,
-      memberHealthLogId: id
+      memberHealthLogId: id,
     };
     const dialogRef = this.dialog.open(MemberBodyStatsManageDialogComponent, {
       width: '550px',
       data: dialogData,
       closeOnNavigation: false,
-      disableClose: true
+      disableClose: true,
     });
     dialogRef.afterClosed().subscribe(result => {
       console.log('The dialog was closed', JSON.stringify(result));
@@ -140,7 +136,7 @@ export class MemberBodyStatsListComponent implements OnInit, AfterViewInit, OnDe
       message: StringResources.CHANGE_STATUS_DESC,
       positiveBtnTxt: StringResources.YES,
       negativeBtnTxt: StringResources.NO,
-      alertType: AlertTypeEnum.WARNING
+      alertType: AlertTypeEnum.WARNING,
     };
     const dialogRef = this.dialog.open(DialogAlertComponent, {
       width: '350px',
@@ -156,9 +152,8 @@ export class MemberBodyStatsListComponent implements OnInit, AfterViewInit, OnDe
 
   async updateStatusTask(item: MemberHealthParameterModelLog, index: number): Promise<void> {
     const payload = {
-      active: !item.active
+      active: !item.active,
     };
-
     const res: ResponseDataModel = await this.httpService.patchRequest(ApiUrlEnum.MEMBER_BODY_STATS_UPDATE_STATUS, item.id, payload, true);
     if (res) {
       switch (res.code) {

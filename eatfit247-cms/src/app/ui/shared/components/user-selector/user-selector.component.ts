@@ -1,59 +1,46 @@
-import {Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild} from '@angular/core';
-import {StringResources} from "../../../../enum/string-resources";
-import {FormControl, UntypedFormGroup, Validators} from "@angular/forms";
-import {debounceTime, switchMap, tap} from "rxjs";
-import {UserDropdownItem} from "../../../../interfaces/dropdown-item";
-import {HttpService} from "../../../../service/http.service";
-import {ApiUrlEnum} from "../../../../enum/api-url-enum";
-import {ServerResponseEnum} from "../../../../enum/server-response-enum";
-import {COMMA, ENTER} from "@angular/cdk/keycodes";
-import {MatChipInputEvent} from "@angular/material/chips";
-import {MatAutocomplete, MatAutocompleteSelectedEvent} from "@angular/material/autocomplete";
-import {find} from 'lodash';
-
+import { Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
+import { StringResources } from '../../../../enum/string-resources';
+import { FormControl, UntypedFormGroup, Validators } from '@angular/forms';
+import { debounceTime, switchMap, tap } from 'rxjs';
+import { UserDropdownItem } from '../../../../interfaces/dropdown-item';
+import { HttpService } from '../../../../service/http.service';
+import { ApiUrlEnum } from '../../../../enum/api-url-enum';
+import { ServerResponseEnum } from '../../../../enum/server-response-enum';
+import { COMMA, ENTER } from '@angular/cdk/keycodes';
+import { MatChipInputEvent } from '@angular/material/chips';
+import { MatAutocomplete, MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
+import { find } from 'lodash';
 
 @Component({
   selector: 'app-user-selector',
   templateUrl: './user-selector.component.html',
-  styleUrls: ['./user-selector.component.scss']
+  styleUrls: ['./user-selector.component.scss'],
 })
 export class UserSelectorComponent implements OnInit {
-
   @Input()
   isMultiSelection: boolean = false;
-
   @Input()
   controlName: string;
-
   @Input()
   formGroupCtr: UntypedFormGroup;
-
   @Input()
   label: string;
-
   @Input()
   isRequired: boolean = true;
-
   @Output() userChangeEvent = new EventEmitter<any>();
-
   stringRes = StringResources;
-
   searchCtrl = new FormControl();
   isLoading = false;
   errorMsg: string;
-
-  userList: UserDropdownItem[]
-
+  userList: UserDropdownItem[];
   @Input()
   selectedUserList: UserDropdownItem[] = [];
-
   selectable = true;
   removable = true;
   addOnBlur = true;
   separatorKeysCodes: number[] = [ENTER, COMMA];
-
-  @ViewChild('auto', {static: false}) matAutocomplete: MatAutocomplete;
-  @ViewChild('searchInput', {static: false}) searchInput: ElementRef<HTMLInputElement>;
+  @ViewChild('auto', { static: false }) matAutocomplete: MatAutocomplete;
+  @ViewChild('searchInput', { static: false }) searchInput: ElementRef<HTMLInputElement>;
 
   constructor(
     private httpService: HttpService) {
@@ -68,12 +55,12 @@ export class UserSelectorComponent implements OnInit {
     this.searchCtrl.valueChanges.pipe(
       debounceTime(500),
       tap(() => {
-          this.errorMsg = "";
+          this.errorMsg = '';
           this.userList = [];
           this.isLoading = true;
-        }
+        },
       ),
-      switchMap((value: string) => this.getUserList(value))
+      switchMap((value: string) => this.getUserList(value)),
     ).subscribe(data => {
       this.userList = data;
     });
@@ -95,15 +82,15 @@ export class UserSelectorComponent implements OnInit {
       return ddList;
     }
     const payload = {
-      searchStr: searchStr
-    }
+      searchStr: searchStr,
+    };
     const res = await this.httpService.getRequest(ApiUrlEnum.SEARCH_USER, null, payload, false);
     this.isLoading = false;
     if (res) {
       switch (res.code) {
         case ServerResponseEnum.SUCCESS:
           for (const s of res.data) {
-            const findObj = find(this.selectedUserList, {id: s.id});
+            const findObj = find(this.selectedUserList, { id: s.id });
             if (!findObj) {
               ddList.push(<UserDropdownItem>{
                 id: s.id,
@@ -127,7 +114,7 @@ export class UserSelectorComponent implements OnInit {
 
   selected(event: MatAutocompleteSelectedEvent): void {
     if (event.option.value) {
-      const findObj = find(this.selectedUserList, {id: event.option.value.id});
+      const findObj = find(this.selectedUserList, { id: event.option.value.id });
       if (!findObj) {
         this.selectedUserList.push(event.option.value);
         this.emitEvent();
@@ -142,7 +129,7 @@ export class UserSelectorComponent implements OnInit {
       const input = event.input;
       const value: any = event.value;
       if (value) {
-        const findObj = find(this.selectedUserList, {id: value.id});
+        const findObj = find(this.selectedUserList, { id: value.id });
         if (!findObj) {
           this.selectedUserList.push(value);
           this.emitEvent();

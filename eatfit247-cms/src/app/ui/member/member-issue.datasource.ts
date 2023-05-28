@@ -1,18 +1,17 @@
-import {CollectionViewer, DataSource} from "@angular/cdk/collections";
-import {BehaviorSubject, Observable} from 'rxjs';
-import {HttpService} from "../../service/http.service";
-import {ServerResponseEnum} from "../../enum/server-response-enum";
-import {SnackBarService} from "../../service/snack-bar.service";
-import {MemberIssueModel} from "src/app/models/member-isssue.model";
+import { CollectionViewer, DataSource } from '@angular/cdk/collections';
+import { BehaviorSubject, Observable } from 'rxjs';
+import { HttpService } from '../../service/http.service';
+import { ServerResponseEnum } from '../../enum/server-response-enum';
+import { SnackBarService } from '../../service/snack-bar.service';
+import { MemberIssueModel } from 'src/app/models/member-isssue.model';
 
 export class MemberIssueDatasource implements DataSource<MemberIssueModel> {
-
   private dataSubject = new BehaviorSubject<MemberIssueModel[]>([]);
   private totalCountSubject = new BehaviorSubject<number>(0);
   totalCount = this.totalCountSubject.asObservable();
 
   constructor(private httpService: HttpService,
-              private snackBarService: SnackBarService) {
+    private snackBarService: SnackBarService) {
   }
 
   connect(collectionViewer: CollectionViewer): Observable<MemberIssueModel[]> {
@@ -24,7 +23,6 @@ export class MemberIssueDatasource implements DataSource<MemberIssueModel> {
   }
 
   async loadData(url: string, memberId: number, payload: {}): Promise<boolean> {
-
     const apiResponse = await this.httpService.getRequest(url, memberId, payload, true);
     if (!apiResponse) {
       return false;
@@ -39,10 +37,8 @@ export class MemberIssueDatasource implements DataSource<MemberIssueModel> {
         this.dataSubject.next(tempList);
         return true;
       case ServerResponseEnum.WARNING:
-
         const tempIssueList: MemberIssueModel[] = [];
         this.totalCountSubject.next(tempIssueList.length);
-
         this.dataSubject.next(tempIssueList);
         this.snackBarService.showWarning(apiResponse.message);
         return false;

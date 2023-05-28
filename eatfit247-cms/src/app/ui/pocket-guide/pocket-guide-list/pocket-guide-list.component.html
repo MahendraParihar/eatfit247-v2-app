@@ -18,7 +18,9 @@
     </ng-container>
     <ng-container matColumnDef="imagePath">
       <mat-header-cell *matHeaderCellDef>Image</mat-header-cell>
-      <mat-cell *matCellDef="let d;"><app-custom-img-tag [isAvatar]="true" [webUrl]="d.imagePath"></app-custom-img-tag></mat-cell>
+      <mat-cell *matCellDef="let d;">
+        <app-custom-img-tag [isAvatar]="true" [webUrl]="d.imagePath"></app-custom-img-tag>
+      </mat-cell>
     </ng-container>
     <ng-container matColumnDef="title">
       <mat-header-cell *matHeaderCellDef>Pocket Guide</mat-header-cell>
@@ -32,7 +34,8 @@
       <mat-header-cell *matHeaderCellDef>Status</mat-header-cell>
       <mat-cell *matCellDef="let d; let i = index">
         <button (click)="onDeleteClick(d, i)" [flag]="d.active"
-                appStatusBtn mat-flat-button matTooltip="{{d.active ? 'Mark '+stringRes.IN_ACTIVE: 'Mark '+stringRes.ACTIVE}}">
+                appStatusBtn mat-flat-button
+                matTooltip="{{d.active ? 'Mark '+stringRes.IN_ACTIVE: 'Mark '+stringRes.ACTIVE}}">
           {{d.active ? stringRes.ACTIVE : stringRes.IN_ACTIVE}}
         </button>
       </mat-cell>

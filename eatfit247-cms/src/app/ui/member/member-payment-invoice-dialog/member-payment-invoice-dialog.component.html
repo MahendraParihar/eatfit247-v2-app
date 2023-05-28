@@ -1,32 +1,32 @@
-<mat-dialog-content *ngIf='memberPaymentObj' class='invoice-dialog-container'>
+<mat-dialog-content *ngIf="memberPaymentObj" class="invoice-dialog-container">
   <h4>{{stringRes.INVOICE}}</h4>
 
-  <div class='dark-text invoice-margin'>Invoice To:</div>
-  <table class='member-info'>
+  <div class="dark-text invoice-margin">Invoice To:</div>
+  <table class="member-info">
     <tr>
-      <td class='member-addr'>
+      <td class="member-addr">
         <div><strong>{{memberPaymentObj.memberName}}</strong></div>
 
-        <div *ngIf='memberPaymentObj.address'>
+        <div *ngIf="memberPaymentObj.address">
           {{getAddress(memberPaymentObj.address)}}
         </div>
       </td>
       <td>
         <table>
           <tr>
-            <td class='dark-text'>{{stringRes.INVOICE_NUMBER}} :</td>
+            <td class="dark-text">{{stringRes.INVOICE_NUMBER}} :</td>
             <td>{{memberPaymentObj.invoiceId}}</td>
           </tr>
           <tr>
-            <td class='dark-text'>{{stringRes.PAYMENT_DATE}} :</td>
+            <td class="dark-text">{{stringRes.PAYMENT_DATE}} :</td>
             <td>{{memberPaymentObj.paymentDate | appDateTime: 'onlyDate'}}</td>
           </tr>
           <tr>
-            <td class='dark-text'>{{stringRes.PAYMENT_MODE}} :</td>
+            <td class="dark-text">{{stringRes.PAYMENT_MODE}} :</td>
             <td>{{memberPaymentObj.paymentMode }}</td>
           </tr>
           <tr>
-            <td class='dark-text'>{{stringRes.PAYMENT_STATUS}} :</td>
+            <td class="dark-text">{{stringRes.PAYMENT_STATUS}} :</td>
             <td>{{memberPaymentObj.paymentStatus }}</td>
           </tr>
         </table>
@@ -35,63 +35,63 @@
   </table>
 
   <div>
-    <div class='dark-text invoice-margin'>{{stringRes.INVOICE_DETAILS}}</div>
-    <table *ngIf='memberPaymentObj.paymentObj && memberPaymentObj.paymentObj.user' class='invoice-table'>
+    <div class="dark-text invoice-margin">{{stringRes.INVOICE_DETAILS}}</div>
+    <table *ngIf="memberPaymentObj.paymentObj && memberPaymentObj.paymentObj.user" class="invoice-table">
       <tr>
-        <td style='width: 75%;'>{{memberPaymentObj.program}}({{memberPaymentObj.plan}})</td>
-        <td class='amount-cell'>{{memberPaymentObj.paymentObj.user.orderAmount |
+        <td style="width: 75%;">{{memberPaymentObj.program}}({{memberPaymentObj.plan}})</td>
+        <td class="amount-cell">{{memberPaymentObj.paymentObj.user.orderAmount |
           currency:memberPaymentObj.paymentObj.user.currency}}</td>
       </tr>
 
-      <ng-container *ngIf='memberPaymentObj.paymentObj.user.taxObj'>
-        <tr *ngIf='memberPaymentObj.paymentObj.user.taxObj.CGST'>
+      <ng-container *ngIf="memberPaymentObj.paymentObj.user.taxObj">
+        <tr *ngIf="memberPaymentObj.paymentObj.user.taxObj.CGST">
           <td>
             {{stringRes.CGST}}({{memberPaymentObj.paymentObj.user.taxObj.CGST.percentage}}%)
           </td>
-          <td class='amount-cell'>{{memberPaymentObj.paymentObj.user.taxObj.CGST.amount |
+          <td class="amount-cell">{{memberPaymentObj.paymentObj.user.taxObj.CGST.amount |
             currency:memberPaymentObj.paymentObj.user.currency}}
           </td>
         </tr>
-        <tr *ngIf='memberPaymentObj.paymentObj.user.taxObj.SGST'>
+        <tr *ngIf="memberPaymentObj.paymentObj.user.taxObj.SGST">
           <td> {{stringRes.SGST}}({{memberPaymentObj.paymentObj.user.taxObj.SGST.percentage}}%)</td>
-          <td class='amount-cell'>{{memberPaymentObj.paymentObj.user.taxObj.SGST.amount |
+          <td class="amount-cell">{{memberPaymentObj.paymentObj.user.taxObj.SGST.amount |
             currency:memberPaymentObj.paymentObj.user.currency}}
           </td>
         </tr>
-        <tr *ngIf='memberPaymentObj.paymentObj.user.taxObj.IGST'>
+        <tr *ngIf="memberPaymentObj.paymentObj.user.taxObj.IGST">
           <td> {{stringRes.SGST}}({{memberPaymentObj.paymentObj.user.taxObj.IGST.percentage}}%)</td>
-          <td class='amount-cell'>{{memberPaymentObj.paymentObj.user.taxObj.IGST.amount |
+          <td class="amount-cell">{{memberPaymentObj.paymentObj.user.taxObj.IGST.amount |
             currency:memberPaymentObj.paymentObj.user.currency}}
           </td>
         </tr>
       </ng-container>
-      <tr *ngIf='memberPaymentObj.paymentObj.user.discountAmount > 0'>
-        <td style='width: 75%;'>{{stringRes.DISCOUNT_AMOUNT}}</td>
-        <td class='amount-cell'>{{memberPaymentObj.paymentObj.user.discountAmount|
+      <tr *ngIf="memberPaymentObj.paymentObj.user.discountAmount > 0">
+        <td style="width: 75%;">{{stringRes.DISCOUNT_AMOUNT}}</td>
+        <td class="amount-cell">{{memberPaymentObj.paymentObj.user.discountAmount|
           currency:memberPaymentObj.paymentObj.user.currency}}</td>
       </tr>
       <tr>
-        <td class='seperator' colspan='2'>
+        <td class="seperator" colspan="2">
           <hr>
         </td>
       </tr>
       <tr>
-        <td class='dark-text'>{{stringRes.TOTAL_AMOUNT}}</td>
-        <td class='dark-text amount-cell'>{{memberPaymentObj.paymentObj.user.totalAmount|
+        <td class="dark-text">{{stringRes.TOTAL_AMOUNT}}</td>
+        <td class="dark-text amount-cell">{{memberPaymentObj.paymentObj.user.totalAmount|
           currency:memberPaymentObj.paymentObj.user.currency}}</td>
       </tr>
     </table>
   </div>
 </mat-dialog-content>
-<mat-dialog-actions align='end'>
+<mat-dialog-actions align="end">
 
-  <button (click)='onClose()' class='round-btn' mat-raised-button>
+  <button (click)="onClose()" class="round-btn" mat-raised-button>
     {{stringRes.CLOSE}}
   </button>
-  <button (click)='sendInvoice()' class='round-btn gradient-btn' color='primary' mat-raised-button>
+  <button (click)="sendInvoice()" class="round-btn gradient-btn" color="primary" mat-raised-button>
     {{stringRes.SEND_MAIL}}
   </button>
-  <button (click)='downloadInvoice()' class='round-btn gradient-btn' color='primary' mat-raised-button>
+  <button (click)="downloadInvoice()" class="round-btn gradient-btn" color="primary" mat-raised-button>
     {{stringRes.DOWNLOAD}}
   </button>
 </mat-dialog-actions>

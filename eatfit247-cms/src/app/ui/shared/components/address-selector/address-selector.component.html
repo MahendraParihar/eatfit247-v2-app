@@ -80,7 +80,8 @@
              fxFlex.lt-sm="100%">
           <mat-form-field>
             <mat-label>{{stringRes.CITY_VILLAGE}}</mat-label>
-            <input formControlName="cityVillage" matInput maxlength="{{50}}" minlength="{{inputLength.CHAR_5}}" placeholder="Enter city/village name"
+            <input formControlName="cityVillage" matInput maxlength="{{50}}" minlength="{{inputLength.CHAR_5}}"
+                   placeholder="Enter city/village name"
                    required type="text">
             <mat-error>
               <app-input-error [controlName]="stringRes.CITY_VILLAGE"
@@ -129,7 +130,8 @@
              fxFlex.lt-sm="100%">
           <mat-form-field>
             <mat-label>{{stringRes.PIN_CODE}}</mat-label>
-            <input formControlName="pinCode" matInput maxlength="{{inputLength.PIN_CODE}}" minlength="{{inputLength.PIN_CODE}}"
+            <input formControlName="pinCode" matInput maxlength="{{inputLength.PIN_CODE}}"
+                   minlength="{{inputLength.PIN_CODE}}"
                    placeholder="Enter pin code" type="number">
             <mat-error>
               <app-input-error [controlName]="stringRes.PIN_CODE"

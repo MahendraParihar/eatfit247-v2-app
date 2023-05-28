@@ -1,52 +1,49 @@
-import {AfterViewInit, Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
-import {StringResources} from "../../../enum/string-resources";
-import {AdminUserStatusEnum} from "../../../enum/admin-user-status-enum";
-import {Constants} from "../../../constants/Constants";
-import {CommonSearchModel} from "../../../models/common-search.model";
-import {MatPaginator} from "@angular/material/paginator";
-import {HttpService} from "../../../service/http.service";
-import {SnackBarService} from "../../../service/snack-bar.service";
-import {NavigationService} from "../../../service/navigation.service";
-import {MatDialog} from "@angular/material/dialog";
-import {tap} from "rxjs";
-import {NavigationPathEnum} from "../../../enum/navigation-path-enum";
-import {AlertDialogDataInterface} from "../../../interfaces/alert-dialog-data.interface";
-import {AlertTypeEnum} from "../../../enum/alert-type-enum";
+import { AfterViewInit, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { StringResources } from '../../../enum/string-resources';
+import { AdminUserStatusEnum } from '../../../enum/admin-user-status-enum';
+import { Constants } from '../../../constants/Constants';
+import { CommonSearchModel } from '../../../models/common-search.model';
+import { MatPaginator } from '@angular/material/paginator';
+import { HttpService } from '../../../service/http.service';
+import { SnackBarService } from '../../../service/snack-bar.service';
+import { NavigationService } from '../../../service/navigation.service';
+import { MatDialog } from '@angular/material/dialog';
+import { tap } from 'rxjs';
+import { NavigationPathEnum } from '../../../enum/navigation-path-enum';
+import { AlertDialogDataInterface } from '../../../interfaces/alert-dialog-data.interface';
+import { AlertTypeEnum } from '../../../enum/alert-type-enum';
 import {
-  DialogUserStatusChangeComponent
-} from "../../shared/components/dialog-user-status-change/dialog-user-status-change.component";
-import {ResponseDataModel} from "../../../models/response-data.model";
-import {ApiUrlEnum} from "../../../enum/api-url-enum";
-import {ServerResponseEnum} from "../../../enum/server-response-enum";
-import {MemberListModel} from "../../../models/member.model";
-import {MemberDatasource} from "../member.datasource";
-import {DialogAlertComponent} from "../../shared/components/dialog-alert/dialog-alert.component";
+  DialogUserStatusChangeComponent,
+} from '../../shared/components/dialog-user-status-change/dialog-user-status-change.component';
+import { ResponseDataModel } from '../../../models/response-data.model';
+import { ApiUrlEnum } from '../../../enum/api-url-enum';
+import { ServerResponseEnum } from '../../../enum/server-response-enum';
+import { MemberListModel } from '../../../models/member.model';
+import { MemberDatasource } from '../member.datasource';
+import { DialogAlertComponent } from '../../shared/components/dialog-alert/dialog-alert.component';
 
 @Component({
   selector: 'app-member-list',
   templateUrl: './member-list.component.html',
-  styleUrls: ['./member-list.component.scss']
+  styleUrls: ['./member-list.component.scss'],
 })
 export class MemberListComponent implements OnInit, AfterViewInit, OnDestroy {
-
-  displayedColumns = ["seqNo", 'name', 'contactNo', 'emailId', 'nutritionist','franchise','referrer', 'country', 'status', "action"];
+  displayedColumns = ['seqNo', 'name', 'contactNo', 'emailId', 'nutritionist', 'franchise', 'referrer', 'country', 'status', 'action'];
   // displayedColumns = ['image', "data", 'status', "action"];
   dataSource: MemberDatasource;
   totalCount = 0;
   stringRes = StringResources;
   adminUserStatusEnum = AdminUserStatusEnum;
   navigationPathEnum = NavigationPathEnum;
-
   defaultPageSize = Constants.DEFAULT_PAGE_SIZE;
   pageSizeList = Constants.PAGE_SIZE_LIST;
   payload: CommonSearchModel = new CommonSearchModel();
-
   @ViewChild(MatPaginator) paginator: MatPaginator;
 
   constructor(private httpService: HttpService,
-              private snackBarService: SnackBarService,
-              private navigationService: NavigationService,
-              public dialog: MatDialog) {
+    private snackBarService: SnackBarService,
+    private navigationService: NavigationService,
+    public dialog: MatDialog) {
     this.dataSource = new MemberDatasource(this.httpService, this.snackBarService);
     this.dataSource.totalCount.subscribe((count: number) => this.totalCount = count);
   }
@@ -58,13 +55,12 @@ export class MemberListComponent implements OnInit, AfterViewInit, OnDestroy {
   ngAfterViewInit() {
     this.paginator.page
       .pipe(
-        tap(() => this.loadDataSet())
+        tap(() => this.loadDataSet()),
       )
       .subscribe();
   }
 
   ngOnDestroy(): void {
-
   }
 
   async loadDataSet(): Promise<void> {
@@ -116,7 +112,7 @@ export class MemberListComponent implements OnInit, AfterViewInit, OnDestroy {
       message: StringResources.CHANGE_STATUS_DESC,
       positiveBtnTxt: StringResources.YES,
       negativeBtnTxt: StringResources.NO,
-      alertType: AlertTypeEnum.WARNING
+      alertType: AlertTypeEnum.WARNING,
     };
     const dialogRef = this.dialog.open(DialogUserStatusChangeComponent, {
       width: '400px',
@@ -155,7 +151,7 @@ export class MemberListComponent implements OnInit, AfterViewInit, OnDestroy {
       message: StringResources.RESET_PASSWORD_DESC,
       positiveBtnTxt: StringResources.YES,
       negativeBtnTxt: StringResources.NO,
-      alertType: AlertTypeEnum.WARNING
+      alertType: AlertTypeEnum.WARNING,
     };
     const dialogRef = this.dialog.open(DialogAlertComponent, {
       width: '400px',
@@ -186,5 +182,4 @@ export class MemberListComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     }
   }
-
 }

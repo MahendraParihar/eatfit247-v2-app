@@ -106,7 +106,8 @@
       <mat-header-cell *matHeaderCellDef>Is Public</mat-header-cell>
       <mat-cell *matCellDef="let d;">
         <button [flag]="d.isVisibleToAll" appStatusBtn
-                disabled mat-flat-button matTooltip="{{d.isVisibleToAll ? 'Mark '+stringRes.PRIVATE: 'Mark '+stringRes.PUBLIC}}">
+                disabled mat-flat-button
+                matTooltip="{{d.isVisibleToAll ? 'Mark '+stringRes.PRIVATE: 'Mark '+stringRes.PUBLIC}}">
           {{d.isVisibleToAll ? stringRes.PUBLIC : stringRes.PRIVATE}}
         </button>
       </mat-cell>
@@ -115,7 +116,8 @@
       <mat-header-cell *matHeaderCellDef>Status</mat-header-cell>
       <mat-cell *matCellDef="let d; let i = index">
         <button (click)="onDeleteClick(d, i)" [flag]="d.active"
-                appStatusBtn mat-flat-button matTooltip="{{d.active ? 'Mark '+stringRes.IN_ACTIVE: 'Mark '+stringRes.ACTIVE}}">
+                appStatusBtn mat-flat-button
+                matTooltip="{{d.active ? 'Mark '+stringRes.IN_ACTIVE: 'Mark '+stringRes.ACTIVE}}">
           {{d.active ? stringRes.ACTIVE : stringRes.IN_ACTIVE}}
         </button>
       </mat-cell>

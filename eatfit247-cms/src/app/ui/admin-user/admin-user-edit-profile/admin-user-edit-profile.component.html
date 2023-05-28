@@ -48,7 +48,8 @@
              fxFlex.lt-sm="100%">
           <mat-form-field>
             <mat-label>{{stringRes.EMAIL_ID}}</mat-label>
-            <input #emailId formControlName="emailId" matInput maxlength="{{inputLength.MAX_EMAIL}}" placeholder="Enter email id"
+            <input #emailId formControlName="emailId" matInput maxlength="{{inputLength.MAX_EMAIL}}"
+                   placeholder="Enter email id"
                    required type="text">
             <mat-hint align="end">{{emailId.value.length}} / {{inputLength.MAX_EMAIL}}</mat-hint>
             <mat-error>
@@ -115,7 +116,8 @@
              fxFlex.lt-sm="100%">
           <mat-form-field>
             <mat-label>{{stringRes.END_DATE}}</mat-label>
-            <input (click)="endDatePicker.open()" [disabled]="true" [matDatepicker]="endDatePicker" formControlName="endDate"
+            <input (click)="endDatePicker.open()" [disabled]="true" [matDatepicker]="endDatePicker"
+                   formControlName="endDate"
                    matInput
                    placeholder="Enter {{stringRes.END_DATE}}"
                    readonly

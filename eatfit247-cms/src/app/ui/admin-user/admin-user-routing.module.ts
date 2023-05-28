@@ -1,28 +1,28 @@
-import {NgModule} from '@angular/core';
-import {RouterModule, Routes} from '@angular/router';
-import {AdminUserListComponent} from "./admin-user-list/admin-user-list.component";
-import {AdminUserManageComponent} from "./admin-user-manage/admin-user-manage.component";
-import {AdminUserChangePasswordComponent} from "./admin-user-change-password/admin-user-change-password.component";
-import {AdminUserEditProfileComponent} from "./admin-user-edit-profile/admin-user-edit-profile.component";
-import {AdminUserSettingComponent} from "./admin-user-setting/admin-user-setting.component";
+import { NgModule } from '@angular/core';
+import { RouterModule, Routes } from '@angular/router';
+import { AdminUserListComponent } from './admin-user-list/admin-user-list.component';
+import { AdminUserManageComponent } from './admin-user-manage/admin-user-manage.component';
+import { AdminUserChangePasswordComponent } from './admin-user-change-password/admin-user-change-password.component';
+import { AdminUserEditProfileComponent } from './admin-user-edit-profile/admin-user-edit-profile.component';
+import { AdminUserSettingComponent } from './admin-user-setting/admin-user-setting.component';
 
 const routes: Routes = [
   {
     path: '',
     pathMatch: 'full',
-    redirectTo: 'list'
+    redirectTo: 'list',
   },
   {
     path: 'list',
-    component: AdminUserListComponent
+    component: AdminUserListComponent,
   },
   {
     path: 'manage',
-    component: AdminUserManageComponent
+    component: AdminUserManageComponent,
   },
   {
     path: 'manage/:id',
-    component: AdminUserManageComponent
+    component: AdminUserManageComponent,
   },
   {
     path: 'setting',
@@ -30,23 +30,23 @@ const routes: Routes = [
     children: [
       {
         path: '',
-        component: AdminUserEditProfileComponent
+        component: AdminUserEditProfileComponent,
       },
       {
         path: 'edit-profile',
-        component: AdminUserEditProfileComponent
+        component: AdminUserEditProfileComponent,
       },
       {
         path: 'change-password',
-        component: AdminUserChangePasswordComponent
-      }
-    ]
-  }
+        component: AdminUserChangePasswordComponent,
+      },
+    ],
+  },
 ];
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
-  exports: [RouterModule]
+  exports: [RouterModule],
 })
 export class AdminUserRoutingModule {
 }

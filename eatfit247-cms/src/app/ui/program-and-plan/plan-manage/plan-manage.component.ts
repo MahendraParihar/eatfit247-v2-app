@@ -1,30 +1,29 @@
-import {AfterViewInit, ChangeDetectorRef, Component, OnDestroy, OnInit} from '@angular/core';
-import {StringResources} from "../../../enum/string-resources";
-import {InputLength} from "../../../constants/input-length";
-import {StatusList} from "../../../constants/status-list";
-import {AngularEditorConfig} from "@kolkov/angular-editor";
-import {Constants} from "../../../constants/Constants";
-import {COMMA, ENTER} from "@angular/cdk/keycodes";
-import {FormBuilder, FormGroup, Validators} from "@angular/forms";
-import {ValidationUtil} from "../../../utilites/validation-util";
-import {HttpService} from "../../../service/http.service";
-import {SnackBarService} from "../../../service/snack-bar.service";
-import {NavigationService} from "../../../service/navigation.service";
-import {ActivatedRoute} from "@angular/router";
-import {MatChipInputEvent} from "@angular/material/chips";
-import {ResponseDataModel} from "../../../models/response-data.model";
-import {ApiUrlEnum} from "../../../enum/api-url-enum";
-import {ServerResponseEnum} from "../../../enum/server-response-enum";
-import {PlanModel} from "../../../models/plan.model";
-import {DropdownItem} from "../../../interfaces/dropdown-item";
+import { AfterViewInit, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { StringResources } from '../../../enum/string-resources';
+import { InputLength } from '../../../constants/input-length';
+import { StatusList } from '../../../constants/status-list';
+import { AngularEditorConfig } from '@kolkov/angular-editor';
+import { Constants } from '../../../constants/Constants';
+import { COMMA, ENTER } from '@angular/cdk/keycodes';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ValidationUtil } from '../../../utilites/validation-util';
+import { HttpService } from '../../../service/http.service';
+import { SnackBarService } from '../../../service/snack-bar.service';
+import { NavigationService } from '../../../service/navigation.service';
+import { ActivatedRoute } from '@angular/router';
+import { MatChipInputEvent } from '@angular/material/chips';
+import { ResponseDataModel } from '../../../models/response-data.model';
+import { ApiUrlEnum } from '../../../enum/api-url-enum';
+import { ServerResponseEnum } from '../../../enum/server-response-enum';
+import { PlanModel } from '../../../models/plan.model';
+import { DropdownItem } from '../../../interfaces/dropdown-item';
 
 @Component({
   selector: 'app-plan-manage',
   templateUrl: './plan-manage.component.html',
-  styleUrls: ['./plan-manage.component.scss']
+  styleUrls: ['./plan-manage.component.scss'],
 })
 export class PlanManageComponent implements OnInit, AfterViewInit, OnDestroy {
-
   lovModelObj: PlanModel;
   id: number;
   stringRes = StringResources;
@@ -33,11 +32,9 @@ export class PlanManageComponent implements OnInit, AfterViewInit, OnDestroy {
   tagsList: string[] = [];
   idealForList: string[] = [];
   programPlanTypeList: DropdownItem[] = [];
-
   editorConfig: AngularEditorConfig = Constants.editorConfig;
   addOnBlur = true;
   readonly separatorKeysCodes = [ENTER, COMMA] as const;
-
   formGroup: FormGroup = this.fb.group({
     title: [null, [Validators.required, Validators.minLength(this.inputLength.CHAR_2), Validators.maxLength(this.inputLength.CHAR_100)]],
     details: [null, [Validators.required]],
@@ -49,15 +46,15 @@ export class PlanManageComponent implements OnInit, AfterViewInit, OnDestroy {
     noOfDaysInCycle: [null, [Validators.required, ValidationUtil.numberValidation]],
     sequenceNumber: [null, [Validators.required, ValidationUtil.numberValidation]],
     tags: [null, [Validators.required]],
-    active: [true, [Validators.required]]
+    active: [true, [Validators.required]],
   });
 
   constructor(private httpService: HttpService,
-              private snackBarService: SnackBarService,
-              private navigationService: NavigationService,
-              private activatedRoute: ActivatedRoute,
-              private cdr: ChangeDetectorRef,
-              private fb: FormBuilder) {
+    private snackBarService: SnackBarService,
+    private navigationService: NavigationService,
+    private activatedRoute: ActivatedRoute,
+    private cdr: ChangeDetectorRef,
+    private fb: FormBuilder) {
     this.id = Number(this.activatedRoute.snapshot.paramMap.get('id'));
   }
 
@@ -96,43 +93,34 @@ export class PlanManageComponent implements OnInit, AfterViewInit, OnDestroy {
         isOnline: this.lovModelObj.isOnline,
         sequenceNumber: this.lovModelObj.sequenceNumber,
         tags: this.tagsList.join(','),
-        active: this.lovModelObj.active
+        active: this.lovModelObj.active,
       });
     }
   }
 
   add(event: MatChipInputEvent): void {
     const value = (event.value || '').trim();
-
     // Add our data
     if (value) {
-
       const index = this.tagsList.indexOf(value);
       if (index >= 0) {
         // Clear the input value
         event.chipInput!.clear();
         return;
       }
-
       this.tagsList.push(value);
-
     }
-
     // Clear the input value
     event.chipInput!.clear();
-
-    this.formGroup.patchValue({tags: this.tagsList.join(',')})
+    this.formGroup.patchValue({ tags: this.tagsList.join(',') });
   }
 
   remove(tag: string): void {
-
     const index = this.tagsList.indexOf(tag);
-
     if (index >= 0) {
       this.tagsList.splice(index, 1);
     }
-    this.formGroup.patchValue({tags: this.tagsList.join(',')})
-
+    this.formGroup.patchValue({ tags: this.tagsList.join(',') });
   }
 
   async loadDataById(id: number): Promise<void> {
@@ -201,5 +189,4 @@ export class PlanManageComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     }
   }
-
 }

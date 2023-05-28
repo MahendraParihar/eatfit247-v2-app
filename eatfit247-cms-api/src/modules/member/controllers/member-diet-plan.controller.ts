@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../../account/jwt-auth.guard';
 import { CommonService } from '../../common/common.service';
 import { ConfigParameterService } from '../../config-parameter/config-parameter.service';
@@ -11,7 +11,8 @@ export class MemberDietPlanController {
     private readonly service: MemberDietPlanService,
     private readonly configParameterService: ConfigParameterService,
     private readonly commonService: CommonService,
-  ) {}
+  ) {
+  }
 
   @UseGuards(JwtAuthGuard)
   @Get('list/:id')
@@ -72,13 +73,18 @@ export class MemberDietPlanController {
   @Put("manage/:id")
   async update(@Param("id") id: number, @Req() req: any, @Body() body: CreateMemberPaymentDto) {
     return await this.service.update(id, body, req.ip, req.user.userId);
+  }*/
+  @UseGuards(JwtAuthGuard)
+  @Delete('delete-cycle/:id/:cycleNo')
+  async deleteCycle(@Param('id') id: number, @Param('cycleNo') cycleNo: number, @Req() req: any) {
+    return await this.service.deleteDietPlan(id, cycleNo, req.ip, req.user.userId);
   }
 
   @UseGuards(JwtAuthGuard)
-  @Patch("update-status/:id")
-  async changeStatus(@Param("id") id: number, @Body() body: UpdateActiveDto, @Req() req: any) {
-    return await this.service.changeStatus(id, body, req.ip, req.user.userId);
-  }*/
+  @Delete('delete-day/:id/:cycleNo/:dayNo')
+  async deleteDay(@Param('id') id: number, @Param('cycleNo') cycleNo: number, @Param('dayNo') dayNo: number, @Req() req: any) {
+    return await this.service.deleteDietPlan(id, cycleNo, req.ip, req.user.userId, dayNo);
+  }
 
   @UseGuards(JwtAuthGuard)
   @Post('update-details/:id')

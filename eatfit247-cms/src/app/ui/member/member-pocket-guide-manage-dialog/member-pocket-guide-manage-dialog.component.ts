@@ -15,16 +15,15 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
   styleUrls: ['./member-pocket-guide-manage-dialog.component.scss'],
 })
 export class MemberPocketGuideManageDialogComponent implements OnInit {
-
   id: number;
   stringRes = StringResources;
   memberPocketGuides: MemberPocketGuideModel[] = [];
   displayedColumns = ['seqNo', 'title', 'selected'];
 
   constructor(private httpService: HttpService,
-              private snackBarService: SnackBarService,
-              public dialogRef: MatDialogRef<MemberPocketGuideManageDialogComponent>,
-              @Inject(MAT_DIALOG_DATA) public data: any) {
+    private snackBarService: SnackBarService,
+    public dialogRef: MatDialogRef<MemberPocketGuideManageDialogComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: any) {
     this.id = data.memberId;
   }
 
@@ -56,7 +55,7 @@ export class MemberPocketGuideManageDialogComponent implements OnInit {
     }
   }
 
-  onCancel(flag:boolean): void {
+  onCancel(flag: boolean): void {
     this.dialogRef.close(flag);
   }
 
@@ -86,5 +85,4 @@ export class MemberPocketGuideManageDialogComponent implements OnInit {
       }
     }
   }
-
 }

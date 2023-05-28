@@ -1,47 +1,38 @@
-import {AfterViewInit, Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges} from '@angular/core';
-import {HttpService} from "../../../../service/http.service";
-import {AddressModel} from "../../../../models/address.model";
-import {ApiUrlEnum} from "../../../../enum/api-url-enum";
-import {ServerResponseEnum} from "../../../../enum/server-response-enum";
-import {SnackBarService} from "../../../../service/snack-bar.service";
-import {FormBuilder, FormGroup, Validators} from "@angular/forms";
-import {InputLength} from "../../../../constants/input-length";
-import {StringResources} from "../../../../enum/string-resources";
-import {filter, find} from "lodash";
-import {DropdownItem} from "../../../../interfaces/dropdown-item";
+import { AfterViewInit, Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
+import { HttpService } from '../../../../service/http.service';
+import { AddressModel } from '../../../../models/address.model';
+import { ApiUrlEnum } from '../../../../enum/api-url-enum';
+import { ServerResponseEnum } from '../../../../enum/server-response-enum';
+import { SnackBarService } from '../../../../service/snack-bar.service';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { InputLength } from '../../../../constants/input-length';
+import { StringResources } from '../../../../enum/string-resources';
+import { filter, find } from 'lodash';
+import { DropdownItem } from '../../../../interfaces/dropdown-item';
 
 @Component({
   selector: 'app-address-selector',
   templateUrl: './address-selector.component.html',
-  styleUrls: ['./address-selector.component.scss']
+  styleUrls: ['./address-selector.component.scss'],
 })
 export class AddressSelectorComponent implements OnInit, AfterViewInit, OnDestroy, OnChanges {
-
   @Input()
-  addressList: AddressModel[]
-
+  addressList: AddressModel[];
   @Input()
   addressModel?: AddressModel;
-
   @Input()
   formGroup: FormGroup;
-
   @Input()
   showLatLong: boolean = false;
-
   @Input()
   showAddressType: boolean = false;
-
   stringRes = StringResources;
   inputLength = InputLength;
-
   addressCountryList: DropdownItem[] = [];
   masterStateList: DropdownItem[] = [];
   addressStateList: DropdownItem[] = [];
   addressTypeList: DropdownItem[] = [];
-
   showManageAddressForm = false;
-
   addressForm: FormGroup = this.fb.group({
     addressId: [null, []],
     addressTypeId: [null, []],
@@ -51,12 +42,12 @@ export class AddressSelectorComponent implements OnInit, AfterViewInit, OnDestro
     stateId: [null, [Validators.required]],
     cityVillage: [null, [Validators.required]],
     latitude: [null, []],
-    longitude: [null, []]
+    longitude: [null, []],
   });
 
   constructor(private httpService: HttpService,
-              private fb: FormBuilder,
-              private snackBarService: SnackBarService) {
+    private fb: FormBuilder,
+    private snackBarService: SnackBarService) {
   }
 
   get formControl() {
@@ -69,7 +60,7 @@ export class AddressSelectorComponent implements OnInit, AfterViewInit, OnDestro
       this.addressModel = new AddressModel();
     } else {
       this.addressForm.patchValue({
-        addressId: this.addressModel.addressId
+        addressId: this.addressModel.addressId,
       });
     }
     this.addAddressFormControl();
@@ -82,7 +73,7 @@ export class AddressSelectorComponent implements OnInit, AfterViewInit, OnDestro
       this.addressModel = new AddressModel();
     } else {
       this.addressForm.patchValue({
-        addressId: this.addressModel.addressId
+        addressId: this.addressModel.addressId,
       });
     }
     this.addAddressFormControl();
@@ -150,7 +141,7 @@ export class AddressSelectorComponent implements OnInit, AfterViewInit, OnDestro
       this.showManageAddressForm = true;
       this.enableDisableAddressId();
     } else {
-      const selectedAddress = find(this.addressList, {addressId: this.addressForm.value.addressId});
+      const selectedAddress = find(this.addressList, { addressId: this.addressForm.value.addressId });
       if (selectedAddress) {
         this.showManageAddressForm = false;
         this.enableDisableAddressId();
@@ -162,7 +153,7 @@ export class AddressSelectorComponent implements OnInit, AfterViewInit, OnDestro
           stateId: selectedAddress.stateId,
           cityVillage: selectedAddress.cityVillage,
           latitude: selectedAddress.latitude,
-          longitude: selectedAddress.longitude
+          longitude: selectedAddress.longitude,
         });
         this.addressForm.get('stateId').enable();
       } else {
@@ -175,7 +166,7 @@ export class AddressSelectorComponent implements OnInit, AfterViewInit, OnDestro
   onCountryChange() {
     if (this.addressForm.value.countryId && this.addressForm.value.countryId > 0) {
       // enable state
-      this.addressStateList = filter(this.masterStateList, {parentId: this.addressForm.value.countryId})
+      this.addressStateList = filter(this.masterStateList, { parentId: this.addressForm.value.countryId });
       this.addressForm.get('stateId').enable();
     } else {
       // disable state

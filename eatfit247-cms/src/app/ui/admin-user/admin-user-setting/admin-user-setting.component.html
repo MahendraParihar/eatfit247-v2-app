@@ -5,12 +5,12 @@
        fxFlex.lt-sm="100%">
     <mat-card class="custom-list" style="padding-left: 0">
       <mat-selection-list [multiple]="false">
-        <mat-list-option (click)="navigateTo(0)" [selected]='activeTag === 0' [value]="0" class="menu-list-item">
+        <mat-list-option (click)="navigateTo(0)" [selected]="activeTag === 0" [value]="0" class="menu-list-item">
           <mat-icon fontSet="material-icons-outlined" mat-list-icon>person</mat-icon>
           <span>{{stringRes.EDIT_PROFILE}}</span>
           <span class="twistie-separator" fxflex></span>
         </mat-list-option>
-        <mat-list-option (click)="navigateTo(1)" [selected]='activeTag === 1' [value]="1" class="menu-list-item">
+        <mat-list-option (click)="navigateTo(1)" [selected]="activeTag === 1" [value]="1" class="menu-list-item">
           <mat-icon fontSet="material-icons-outlined" mat-list-icon>lock</mat-icon>
           <span>{{stringRes.RESET_PASSWORD}}</span>
           <span class="twistie-separator" fxflex></span>

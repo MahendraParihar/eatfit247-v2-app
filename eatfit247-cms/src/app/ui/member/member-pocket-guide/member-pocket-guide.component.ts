@@ -19,7 +19,6 @@ import {
   styleUrls: ['./member-pocket-guide.component.scss'],
 })
 export class MemberPocketGuideComponent implements OnInit, AfterViewInit, OnDestroy {
-
   id: number;
   totalCount = 0;
   stringRes = StringResources;
@@ -27,10 +26,10 @@ export class MemberPocketGuideComponent implements OnInit, AfterViewInit, OnDest
   displayedColumns = ['seqNo', 'title', 'file', 'createdBy', 'createdAt', 'updatedBy', 'updatedAt'];
 
   constructor(private httpService: HttpService,
-              private snackBarService: SnackBarService,
-              private navigationService: NavigationService,
-              private activatedRoute: ActivatedRoute,
-              public dialog: MatDialog) {
+    private snackBarService: SnackBarService,
+    private navigationService: NavigationService,
+    private activatedRoute: ActivatedRoute,
+    public dialog: MatDialog) {
     this.activatedRoute.parent.params.subscribe(params => {
       this.id = Number(params['id']);
     });

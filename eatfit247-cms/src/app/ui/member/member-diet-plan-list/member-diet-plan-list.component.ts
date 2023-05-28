@@ -18,6 +18,10 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ValidationUtil } from 'src/app/utilites/validation-util';
 import { MemberDietPlanDatasource } from '../member-diet-plan.datasource';
 import { animate, state, style, transition, trigger } from '@angular/animations';
+import { AlertDialogDataInterface } from '../../../interfaces/alert-dialog-data.interface';
+import { AlertTypeEnum } from '../../../enum/alert-type-enum';
+import { DialogAlertComponent } from '../../shared/components/dialog-alert/dialog-alert.component';
+import { DietTypeEnum } from '../../../enum/diet-type-enum';
 
 @Component({
   selector: 'app-member-diet-plan-list',
@@ -31,23 +35,18 @@ import { animate, state, style, transition, trigger } from '@angular/animations'
     ]),
   ],
 })
-
 export class MemberDietPlanListComponent implements OnInit, AfterViewInit, OnDestroy {
-
   totalCount = 0;
   list: MemberDietPlanModel[];
   columnsToDisplay: string[] = ['program', 'programCategory', 'noOfCycle', 'dietPlanStatus', 'updatedBy'];
   columnsToDisplayWithExpand = [...this.columnsToDisplay, 'expand'];
-
   id: number;
   dietPlanStatusEnum = DietPlanStatusEnum;
+  dietTypeEnum = DietTypeEnum;
   dietTemplateList: DropdownItem[];
   expandArray: boolean[] = [];
-
   stringRes = StringResources;
-
   dataSource: MemberDietPlanDatasource;
-
   formGroup: FormGroup = this.formBuilder.group({
     dietTemplateId: [null, [Validators.required]],
   });
@@ -113,6 +112,49 @@ export class MemberDietPlanListComponent implements OnInit, AfterViewInit, OnDes
     );
   }
 
+  async onDeleteDietPlan(dietPlan: MemberDietDetail) {
+    const dialogData: AlertDialogDataInterface = {
+      title: StringResources.ALERT,
+      message: StringResources.DELETE_DIET_PLAN_DESC,
+      positiveBtnTxt: StringResources.YES,
+      negativeBtnTxt: StringResources.NO,
+      alertType: AlertTypeEnum.WARNING,
+    };
+    const dialogRef = this.dialog.open(DialogAlertComponent, {
+      width: '350px',
+      data: dialogData,
+    });
+    dialogRef.afterClosed().subscribe(result => {
+      console.log('The dialog was closed', JSON.stringify(result));
+      if (result) {
+        this.deleteDietPlanTask(dietPlan);
+      }
+    });
+  }
+
+  async deleteDietPlanTask(dietPlan: MemberDietDetail) {
+    let apiUrl;
+    if (dietPlan.dayNo){
+      apiUrl = `${ApiUrlEnum.MEMBER_DIET_PLAN_DAY_DELETE}/${dietPlan.dietPlanId}/${dietPlan.cycleNo}/${dietPlan.dayNo}`;
+    }else{
+      apiUrl = `${ApiUrlEnum.MEMBER_DIET_PLAN_CYCLE_DELETE}/${dietPlan.dietPlanId}/${dietPlan.cycleNo}`
+    }
+    const res = await this.httpService.deleteRequest(apiUrl, null,true);
+    if (res) {
+      switch (res.code) {
+        case ServerResponseEnum.SUCCESS:
+          this.loadData();
+          this.snackBarService.showSuccess(res.message);
+          break;
+        case ServerResponseEnum.WARNING:
+          this.snackBarService.showWarning(res.message);
+          break;
+        case ServerResponseEnum.ERROR:
+          this.snackBarService.showError(res.message);
+          break;
+      }
+    }
+  }
 
   async loadData(): Promise<void> {
     await this.dataSource.loadData(ApiUrlEnum.MEMBER_DIET_PLAN, this.id);
@@ -128,7 +170,6 @@ export class MemberDietPlanListComponent implements OnInit, AfterViewInit, OnDes
     dialogRef.afterClosed().subscribe(result => {
       console.log('The dialog was closed', JSON.stringify(result));
       if (result) {
-
       }
     });
   }
@@ -146,15 +187,12 @@ export class MemberDietPlanListComponent implements OnInit, AfterViewInit, OnDes
     if (!this.formGroup.valid) {
       return;
     }
-
     let payload: any =
       {
         dietTemplateId: this.formGroup.value.dietTemplateId,
         memberDietPlanId: model.id,
       };
-
     const res = await this.httpService.postRequest(ApiUrlEnum.MEMBER_DIET_PLAN_TEMPLATE_UPDATE + '/' + this.id, payload, true);
-
     if (res) {
       switch (res.code) {
         case ServerResponseEnum.SUCCESS:

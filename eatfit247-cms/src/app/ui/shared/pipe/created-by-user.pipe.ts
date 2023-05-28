@@ -1,8 +1,8 @@
-import {Pipe, PipeTransform} from '@angular/core';
-import {AdminShortInfoModel} from "../../../models/admin-short-info.model";
+import { Pipe, PipeTransform } from '@angular/core';
+import { AdminShortInfoModel } from '../../../models/admin-short-info.model';
 
 @Pipe({
-  name: 'appCreatedBy'
+  name: 'appCreatedBy',
 })
 export class CreatedByUserPipe implements PipeTransform {
   transform(createdBy: AdminShortInfoModel): string {

@@ -20,17 +20,16 @@ import { MatDialog } from '@angular/material/dialog';
   styleUrls: ['./member-health-issue.component.scss'],
 })
 export class MemberHealthIssueComponent implements OnInit, AfterViewInit, OnDestroy {
-
   id: number;
   stringRes = StringResources;
   memberHealthIssues: MemberHealthIssueModel[] = [];
   displayedColumns = ['seqNo', 'title', 'createdBy', 'createdAt', 'updatedBy', 'updatedAt'];
 
   constructor(private httpService: HttpService,
-              private snackBarService: SnackBarService,
-              private navigationService: NavigationService,
-              private activatedRoute: ActivatedRoute,
-              public dialog: MatDialog) {
+    private snackBarService: SnackBarService,
+    private navigationService: NavigationService,
+    private activatedRoute: ActivatedRoute,
+    public dialog: MatDialog) {
     this.activatedRoute.parent.params.subscribe(params => {
       this.id = Number(params['id']);
     });

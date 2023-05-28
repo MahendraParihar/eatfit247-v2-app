@@ -1,44 +1,40 @@
-import {AfterViewInit, Component, OnDestroy, OnInit} from '@angular/core';
-import {StringResources} from "../../../enum/string-resources";
-import {InputLength} from "../../../constants/input-length";
-import {FileTypeEnum} from "../../../enum/file-type-enum";
-import {MediaForEnum} from "../../../enum/media-for-enum";
-import {DropdownItem} from "../../../interfaces/dropdown-item";
-import {FormBuilder, FormGroup, Validators} from "@angular/forms";
-import {ValidationUtil} from "../../../utilites/validation-util";
-import {HttpService} from "../../../service/http.service";
-import {SnackBarService} from "../../../service/snack-bar.service";
-import {NavigationService} from "../../../service/navigation.service";
-import {ActivatedRoute} from "@angular/router";
-import {MatSelectChange} from "@angular/material/select";
-import {ResponseDataModel} from "../../../models/response-data.model";
-import {ApiUrlEnum} from "../../../enum/api-url-enum";
-import {ServerResponseEnum} from "../../../enum/server-response-enum";
-import {MemberListModel} from "../../../models/member.model";
+import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
+import { StringResources } from '../../../enum/string-resources';
+import { InputLength } from '../../../constants/input-length';
+import { FileTypeEnum } from '../../../enum/file-type-enum';
+import { MediaForEnum } from '../../../enum/media-for-enum';
+import { DropdownItem } from '../../../interfaces/dropdown-item';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ValidationUtil } from '../../../utilites/validation-util';
+import { HttpService } from '../../../service/http.service';
+import { SnackBarService } from '../../../service/snack-bar.service';
+import { NavigationService } from '../../../service/navigation.service';
+import { ActivatedRoute } from '@angular/router';
+import { MatSelectChange } from '@angular/material/select';
+import { ResponseDataModel } from '../../../models/response-data.model';
+import { ApiUrlEnum } from '../../../enum/api-url-enum';
+import { ServerResponseEnum } from '../../../enum/server-response-enum';
+import { MemberListModel } from '../../../models/member.model';
 
 @Component({
   selector: 'app-member-manage',
   templateUrl: './member-manage.component.html',
-  styleUrls: ['./member-manage.component.scss']
+  styleUrls: ['./member-manage.component.scss'],
 })
 export class MemberManageComponent implements OnInit, AfterViewInit, OnDestroy {
-
   adminUserObj: MemberListModel;
   id: number;
   stringRes = StringResources;
   inputLength = InputLength;
   fileTypeEnum = FileTypeEnum;
   mediaForEnum = MediaForEnum;
-
   nutritionistList: DropdownItem[] = [];
   referrerList: DropdownItem[] = [];
   franchiseList: DropdownItem[] = [];
   statusList: DropdownItem[] = [];
   countryCodeList: DropdownItem[] = [];
   countryList: DropdownItem[] = [];
-
   showFranchise = false;
-
   formGroup: FormGroup = this.fb.group({
     firstName: [null, [Validators.required, Validators.minLength(InputLength.MIN_NAME), Validators.maxLength(InputLength.MAX_NAME)]],
     lastName: [null, [Validators.required, Validators.minLength(InputLength.MIN_NAME), Validators.maxLength(InputLength.MAX_NAME)]],
@@ -50,14 +46,14 @@ export class MemberManageComponent implements OnInit, AfterViewInit, OnDestroy {
     countryId: [null, [Validators.required]],
     referrerId: [null, []],
     userStatusId: [null, [Validators.required]],
-    reason: [null, []]
+    reason: [null, []],
   });
 
   constructor(private httpService: HttpService,
-              private snackBarService: SnackBarService,
-              private navigationService: NavigationService,
-              private activatedRoute: ActivatedRoute,
-              private fb: FormBuilder) {
+    private snackBarService: SnackBarService,
+    private navigationService: NavigationService,
+    private activatedRoute: ActivatedRoute,
+    private fb: FormBuilder) {
     this.id = Number(this.activatedRoute.snapshot.paramMap.get('id'));
   }
 
@@ -86,8 +82,8 @@ export class MemberManageComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.adminUserObj) {
       await Promise.all([
         this.loadReferrer(this.adminUserObj.franchiseId),
-        this.loadNutritionist(this.adminUserObj.franchiseId)
-      ])
+        this.loadNutritionist(this.adminUserObj.franchiseId),
+      ]);
       this.formGroup.patchValue({
         firstName: this.adminUserObj.firstName,
         lastName: this.adminUserObj.lastName,
@@ -110,8 +106,8 @@ export class MemberManageComponent implements OnInit, AfterViewInit, OnDestroy {
     if (event.value) {
       await Promise.all([
         this.loadReferrer(event.value),
-        this.loadNutritionist(event.value)
-      ])
+        this.loadNutritionist(event.value),
+      ]);
     }
   }
 
@@ -214,14 +210,12 @@ export class MemberManageComponent implements OnInit, AfterViewInit, OnDestroy {
     if (!this.formGroup.valid) {
       return;
     }
-
     let payload: any = this.formGroup.value;
-
     let res: ResponseDataModel;
     if (this.id > 0) {
-      res = await this.httpService.putRequest(ApiUrlEnum.MEMBER_MANAGE, this.id, payload, true)
+      res = await this.httpService.putRequest(ApiUrlEnum.MEMBER_MANAGE, this.id, payload, true);
     } else {
-      res = await this.httpService.postRequest(ApiUrlEnum.MEMBER_MANAGE, payload, true)
+      res = await this.httpService.postRequest(ApiUrlEnum.MEMBER_MANAGE, payload, true);
     }
     if (res) {
       switch (res.code) {

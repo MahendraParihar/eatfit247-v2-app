@@ -196,6 +196,8 @@ export enum ApiUrlEnum {
   MEMBER_DIET_PLAN_DOWNLOAD = 'member-diet-plan/download',
   MEMBER_DIET_PLAN_SEND_EMAIL = 'member-diet-plan/send-email',
   MEMBER_DIET_PLAN_TEMPLATE_UPDATE = 'member-diet-plan/update-details',
+  MEMBER_DIET_PLAN_CYCLE_DELETE = 'member-diet-plan/delete-cycle',
+  MEMBER_DIET_PLAN_DAY_DELETE = 'member-diet-plan/delete-day',
 
   MEMBER_ISSUES = 'member-issue/list',
   MEMBER_ISSUE_MANAGE = 'member-issue/manage',
