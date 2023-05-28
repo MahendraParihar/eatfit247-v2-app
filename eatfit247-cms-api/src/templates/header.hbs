@@ -32,14 +32,12 @@
   <div class="header-container">
     <div class="header-info">
       <div>
-        {{#each imagePath}}
-          {{img webUrl "img-logo"}}
-        {{/each}}
+        <img src="http://localhost:3000/media-files/brand/logo.jpg" alt="{{companyName}}" class="img-logo">
       </div>
       <div>
         {{addressObj.postalAddress}}<br>
-        {{addressObj.cityVillage}} , {{addressObj.state}}<br>
-        {{addressObj.country}} ,{{addressObj.pinCode}}
+        {{addressObj.cityVillage}}, {{addressObj.state}}<br>
+        {{addressObj.country}}, {{addressObj.pinCode}}
       </div>
     </div>
     <div class="contact-info">

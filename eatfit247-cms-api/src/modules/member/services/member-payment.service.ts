@@ -564,8 +564,8 @@ export class MemberPaymentService {
       res.data.paymentObj.user.currency = symbol;
       fileModel = await this.pdfService.generatePDF(
         `${PDFTemplateEnum.INVOICE}`,
-        `${MediaFolderEnum.INVOICE}\\${res.data.memberId}`,
-        `${memberPaymentId}`,
+        `${MediaFolderEnum.INVOICE}`,
+        `Invoice_${res.data.invoiceId}_${moment(res.data.date).format('DD-MM-YYYY')}_${memberPaymentId}`,
         res,
       );
     }

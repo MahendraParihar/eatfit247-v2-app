@@ -17,7 +17,7 @@ export class PdfService {
   footerTemplate: string;
 
   constructor(private franchiseService: FranchiseService,
-              @Inject(REQUEST) private request) {
+    @Inject(REQUEST) private request) {
   }
 
   /**
@@ -36,18 +36,17 @@ export class PdfService {
     const downloadFullPath = `${rPath}/${MediaFolderEnum.DOWNLOADS}`;
     const physicalFolderPath = `${downloadFullPath}/${downloadFolderPath}`;
     const physicalFilePath = `${downloadFullPath}/${relativePath}`;
-
     //CREATE DIRECTORY IF NOT EXISTS
     if (!existsSync(physicalFolderPath)) {
       mkdirSync(physicalFolderPath, { recursive: true });
     }
     await this.registerHeaderFooter();
-
     const html = await this.getData(templateName, data);
     const browser = await puppeteer.launch();
+    console.log(this.headerTemplate);
     const page = await browser.newPage();
-    await page.setContent(html);
     await page.setContent(html, { waitUntil: 'domcontentloaded' });
+    await page.emulateMediaType('screen');
     const tempFile = await page.pdf({
       path: physicalFilePath,
       format: 'A4',
@@ -73,22 +72,19 @@ export class PdfService {
 
   async getData(templateName: string, data: any) {
     const filePath = path.join(__dirname, '..', '..', `${TEMPLATE_FOLDER}/${templateName}.hbs`);
-    const hbsTemplate = await readFileSync(filePath, 'utf8');
-    const html = hbs.compile(hbsTemplate)(data);
-    return html;
+    const hbsTemplate = readFileSync(filePath, 'utf-8');
+    return hbs.compile(hbsTemplate)(data);
   }
 
   async registerHeaderFooter() {
     if (!this.isHeaderFooterRegistered) {
       this.registerHbsControls();
-
       const franchise: IFranchise = await this.franchiseService.fetchPrimaryFranchise();
       let filePath = path.join(__dirname, '..', '..', `${TEMPLATE_FOLDER}/header.hbs`);
-      const headerHbsTemplate = await readFileSync(filePath, 'utf8');
-
+      const headerHbsTemplate = readFileSync(filePath, 'utf-8');
       this.headerTemplate = hbs.compile(headerHbsTemplate)(franchise);
       filePath = path.join(__dirname, '..', '..', `${TEMPLATE_FOLDER}/footer.hbs`);
-      const footerHbsTemplate = await readFileSync(filePath, 'utf8');
+      const footerHbsTemplate = readFileSync(filePath, 'utf-8');
       this.footerTemplate = hbs.compile(footerHbsTemplate)(franchise);
       this.isHeaderFooterRegistered = true;
     }
@@ -101,7 +97,7 @@ export class PdfService {
     const baseUrl = this.getBaseUrl();
     hbs.registerHelper('img', function(url, cssClass) {
       url = hbs.escapeExpression(baseUrl) + hbs.escapeExpression(url);
-      return new hbs.SafeString('<img class=\'' + cssClass + '\' src=\'' + url + '\' alt =\'\' />');
+      return new hbs.SafeString(`<img class="'${cssClass}'" src="${url}" alt="''" />`);
     });
   }
 
@@ -109,6 +105,6 @@ export class PdfService {
    * Get Base Api Url like https://localhost:3000
    */
   getBaseUrl() {
-    return this.request ? `${this.request.protocol}:\${this.request.headers.host}\\` : '';
+    return this.request ? `${this.request.protocol}:/${this.request.headers.host}/` : '';
   }
 }

@@ -21,7 +21,7 @@
         </div>
         <div class="summary">
           <h6>{{stringRes.NUTRITIONIST_SUMMARY}}</h6>
-          <span>{{memberObj.assessmentObj && memberObj.assessmentObj.nutritionistSummery ? memberObj.assessmentObj.nutritionistSummery : 'NA'}}</span>
+          <span [innerHTML]="memberObj.assessmentObj && memberObj.assessmentObj.nutritionistSummery ? memberObj.assessmentObj.nutritionistSummery : 'NA'"></span>
         </div>
       </div>
     </mat-card-content>

@@ -72,7 +72,6 @@ export class MemberMigrationController {
   @Get('member')
   async init() {
     const t = await this.sequelize.transaction();
-
     try {
       // Program Plan
       // try {
@@ -82,15 +81,13 @@ export class MemberMigrationController {
       //   await t.rollback();
       //   exit();
       // }
-
       // Member
-      // try {
-      //   await this.createMemberData();
-      // } catch (e) {
-      //   await t.rollback();
-      //   exit();
-      // }
-
+      try {
+        await this.createMemberData();
+      } catch (e) {
+        await t.rollback();
+        exit();
+      }
       // Member health issues
       // try {
       //   await this.createMemberHealthIssues();
@@ -98,7 +95,6 @@ export class MemberMigrationController {
       //   await t.rollback();
       //   exit();
       // }
-
       // Member pocket guide
       // try {
       //   await this.createMemberPocketGuide();
@@ -106,49 +102,45 @@ export class MemberMigrationController {
       //   await t.rollback();
       //   exit();
       // }
-
       // Member Assessment
-      // try {
-      //   await this.createMemberAssessment();
-      // } catch (e) {
-      //   await t.rollback();
-      //   exit();
-      // }
+      try {
+        await this.createMemberAssessment();
+      } catch (e) {
+        await t.rollback();
+        exit();
+      }
       //
       // // Member Health Parameter
-      // try {
-      //   await this.createMemberHealthParameter();
-      // } catch (e) {
-      //   await t.rollback();
-      //   exit();
-      // }
-
+      try {
+        await this.createMemberHealthParameter();
+      } catch (e) {
+        await t.rollback();
+        exit();
+      }
       // Member Address
-      // try {
-      //   await this.createMemberAddress();
-      // } catch (e) {
-      //   console.log(e);
-      //   await t.rollback();
-      //   exit();
-      // }
-
+      try {
+        await this.createMemberAddress();
+      } catch (e) {
+        console.log(e);
+        await t.rollback();
+        exit();
+      }
       // Member Program Plan
-      // try {
-      //   await this.createMemberProgramPlan();
-      // } catch (e) {
-      //   console.log(e);
-      //   await t.rollback();
-      //   exit();
-      // }
-
+      try {
+        await this.createMemberProgramPlan();
+      } catch (e) {
+        console.log(e);
+        await t.rollback();
+        exit();
+      }
       //Member Diet Plan
-      // try {
-      //   await this.createMemberDietPlan();
-      // } catch (error) {
-      //   console.log(error);
-      //   await t.rollback();
-      //   exit();
-      // }
+      try {
+        await this.createMemberDietPlan();
+      } catch (error) {
+        console.log(error);
+        await t.rollback();
+        exit();
+      }
       await t.commit();
     } catch (e) {
       console.log(e);
@@ -207,19 +199,14 @@ export class MemberMigrationController {
       }
       const tempUC = _.find(configParameters, { configName: DEFAULT_CURRENCY });
       const userCurrency = tempUC.configValue;
-
       const tempSC = _.find(configParameters, { configName: DEFAULT_CURRENCY });
       const systemCurrency = tempSC.configValue;
-
       const taxApplicable = isTaxApplicable;
-
       const tempTP = _.find(configParameters, { configName: TAX_PERCENTAGE });
       const taxPercentage = Number(tempTP.configValue);
-
       const targetCurrencyConfig = _.find(currencyConfigList, {
         sourceCurrencyCode: userCurrency,
       });
-
       const systemCurrencyOrderAmount = Number(planFees.inrAmount);
       const systemCurrencyDiscountAmount = Number(systemDiscountAmount ? systemDiscountAmount : 0);
       const systemCurrencyTaxAmount = taxApplicable
@@ -429,9 +416,7 @@ export class MemberMigrationController {
           modifiedIp: s.updated_ip ? s.updated_ip : s.created_ip ? s.created_ip : ':0',
         });
       }
-
       await this.sequelize.query(`truncate table txn_members restart identity CASCADE;`);
-
       let tempList = [];
       for (let i = 0; i < memberList.length; i++) {
         tempList.push(memberList[i]);
@@ -441,7 +426,6 @@ export class MemberMigrationController {
         }
       }
       await this.memberRepository.bulkCreate(tempList);
-
       await this.sequelize.query(
         `SELECT SETVAL('txn_members_member_id_seq', (SELECT MAX(member_id) + 1 FROM txn_members));`,
       );
@@ -470,9 +454,7 @@ export class MemberMigrationController {
           });
         }
       }
-
       await this.sequelize.query(`truncate table txn_member_health_issues restart identity CASCADE;`);
-
       let tempHealthIssueList = [];
       for (let i = 0; i < memberHealthIssueList.length; i++) {
         tempHealthIssueList.push(memberHealthIssueList[i]);
@@ -482,7 +464,6 @@ export class MemberMigrationController {
         }
       }
       await this.memberHealthIssueRepository.bulkCreate(tempHealthIssueList);
-
       await this.sequelize.query(
         `SELECT SETVAL('txn_member_health_issues_member_health_issue_id_seq',
                        (SELECT MAX(member_health_issue_id) + 1 FROM txn_member_health_issues));`,
@@ -499,7 +480,6 @@ export class MemberMigrationController {
       const pocketGuideV1List = JSON.parse(
         readFileSync(resolve(`${this.folderPath}/txn_member_pocket_guide.json`), 'utf8'),
       );
-
       for (const s of pocketGuideV1List) {
         if (!memberPocketGuideList.find((x) => x.memberId === s.member_id && x.pocketGuideId == s.pocket_guide_id)) {
           memberPocketGuideList.push({
@@ -514,9 +494,7 @@ export class MemberMigrationController {
           });
         }
       }
-
       await this.sequelize.query(`truncate table txn_member_pocket_guides restart identity CASCADE`);
-
       let tempList = [];
       for (let i = 0; i < memberPocketGuideList.length; i++) {
         tempList.push(memberPocketGuideList[i]);
@@ -526,7 +504,6 @@ export class MemberMigrationController {
         }
       }
       await this.pocketGuideRepository.bulkCreate(tempList);
-
       await this.sequelize.query(
         `SELECT SETVAL('txn_member_pocket_guides_member_pocket_guide_id_seq',
                        (SELECT MAX(member_pocket_guide_id) + 1 FROM txn_member_pocket_guides));`,
@@ -541,7 +518,6 @@ export class MemberMigrationController {
       const adminUserId = 1;
       const memberAssessmentList = [];
       const assessmentV1List = JSON.parse(readFileSync(resolve(`${this.folderPath}/mst_assessment.json`), 'utf8'));
-
       for (const item of assessmentV1List) {
         memberAssessmentList.push({
           assessmentId: Number(item.id),
@@ -631,9 +607,7 @@ export class MemberMigrationController {
           modifiedIp: ':0',
         });
       }
-
       await this.sequelize.query(`truncate table txn_assessments restart identity CASCADE;`);
-
       let tempList = [];
       for (let i = 0; i < memberAssessmentList.length; i++) {
         tempList.push(memberAssessmentList[i]);
@@ -643,7 +617,6 @@ export class MemberMigrationController {
         }
       }
       await this.assessmentRepository.bulkCreate(tempList);
-
       await this.sequelize.query(
         `SELECT SETVAL('txn_assessments_assessment_id_seq', (SELECT MAX(assessment_id) + 1 FROM txn_assessments));`,
       );
@@ -655,14 +628,11 @@ export class MemberMigrationController {
   private async createMemberAddress() {
     try {
       const adminUserId = 1;
-
       const countryList = await this.getAllCountries();
       const stateList = await this.getAllStates();
-
       const memberAddressList = [];
       let countryId;
       const addressV1List = JSON.parse(readFileSync(resolve(`${this.folderPath}/txn_member_address.json`), 'utf8'));
-
       for (const s of addressV1List) {
         countryId = countryList.find((x) => x.country?.toLowerCase() === s.country?.toLowerCase())?.countryId || 96;
         memberAddressList.push({
@@ -683,15 +653,12 @@ export class MemberMigrationController {
           modifiedIp: ':0',
         });
       }
-
       //Member Plan
       const memberPlanV1List = JSON.parse(readFileSync(resolve(`${this.folderPath}/txn_member_plan.json`), 'utf8'));
-
       for (const s of memberPlanV1List) {
         //CREATED BY = 1 here as entries made by member and cant not put member id as it is FK with admin table
         if (s.address_field) {
           countryId = s.address_field.country_id || IN_COUNTRY_ID;
-
           memberAddressList.push({
             tableId: TableEnum.TXN_MEMBER,
             pkOfTable: s.member_id,
@@ -715,11 +682,11 @@ export class MemberMigrationController {
             tableId: TableEnum.TXN_MEMBER,
             pkOfTable: s.member_id,
             addressTypeId: AddressTypeEnum.PERMANENT_ADDRESS,
-            postalAddress: ' ',
-            cityVillage: ' ',
+            postalAddress: '',
+            cityVillage: '',
             countryId: m.countryId,
             stateId: this.getStateId('', m.countryId, stateList),
-            pinCode: ' ',
+            pinCode: '',
             active: s.active,
             createdAt: s.created_at,
             createdBy: adminUserId,
@@ -730,7 +697,6 @@ export class MemberMigrationController {
           });
         }
       }
-
       const tempV1List = JSON.parse(readFileSync(resolve(`${this.folderPath}/txn_member_plan.json`), 'utf8'));
       for (const s of tempV1List) {
         const address =
@@ -745,11 +711,9 @@ export class MemberMigrationController {
           memberAddressList.push(address);
         }
       }
-
       await this.sequelize.query(`delete
                                   from txn_addresses
                                   where table_id = ${TableEnum.TXN_MEMBER};`);
-
       let tempList = [];
       for (let i = 0; i < memberAddressList.length; i++) {
         tempList.push(memberAddressList[i]);
@@ -759,7 +723,6 @@ export class MemberMigrationController {
         }
       }
       await this.memberAddressRepository.bulkCreate(tempList);
-
       await this.sequelize.query(
         `SELECT SETVAL('txn_addresses_address_id_seq', (SELECT MAX(address_id) + 1 FROM txn_addresses));`,
       );
@@ -800,9 +763,7 @@ export class MemberMigrationController {
         });
         seq++;
       }
-
       await this.sequelize.query(`truncate table mst_program_plans restart identity CASCADE`);
-
       let tempList = [];
       for (let i = 0; i < insertList.length; i++) {
         tempList.push(insertList[i]);
@@ -812,7 +773,6 @@ export class MemberMigrationController {
         }
       }
       await this.programPlanRepository.bulkCreate(tempList);
-
       await this.sequelize.query(
         `SELECT SETVAL('mst_program_plans_program_plan_id_seq',
                        (SELECT MAX(program_plan_id) + 1 FROM mst_program_plans));`,
@@ -896,7 +856,6 @@ export class MemberMigrationController {
             (obj.isOnline ? 'WEEK-ONLINE' : 'WEEK-PERSONAL') === v1Plan.week_text
           );
         });
-
         const payObj = {
           memberPaymentId: Number(s.id),
           memberId: Number(s.member_id),
@@ -930,9 +889,7 @@ export class MemberMigrationController {
         };
         insertList.push(payObj);
       }
-
       await this.sequelize.query(`truncate table txn_member_payments restart identity CASCADE`);
-
       let tempList = [];
       for (let i = 0; i < insertList.length; i++) {
         tempList.push(insertList[i]);
@@ -942,7 +899,6 @@ export class MemberMigrationController {
         }
       }
       await this.memberPaymentRepository.bulkCreate(tempList);
-
       await this.sequelize.query(
         `SELECT SETVAL('txn_member_payments_member_payment_id_seq',
                        (SELECT MAX(member_payment_id) + 1 FROM txn_member_payments));`,
@@ -960,7 +916,6 @@ export class MemberMigrationController {
     try {
       const adminUserId = 1;
       const memberV1List = JSON.parse(readFileSync(resolve(`${this.folderPath}/mst_member.json`), 'utf8'));
-
       await this.sequelize.query(`truncate table txn_member_health_parameters restart identity CASCADE`);
       await this.sequelize.query(`truncate table txn_member_health_parameter_logs restart identity CASCADE`);
       /*const logs = [];
@@ -996,34 +951,27 @@ export class MemberMigrationController {
       }
 
       await this.memberHealthParamRepository.bulkCreate(logs);*/
-
       const memberHealthParamList = [];
       const memberHealthParamLogList = [];
       let logDate;
-
       const dp = await this.sequelize.query(`SELECT (MAX(member_health_parameter_log_id) + 1) as max_id
                                              FROM txn_member_health_parameter_logs;`);
       let memberHealthLogId = dp[0][0]['max_id'];
-
       const unitList = await this.getAllHealthParamUnits();
       const healthParamListV1List = JSON.parse(
         readFileSync(resolve(`${this.folderPath}/txn_member_key_parameter.json`), 'utf8'),
       );
       let keyWeekIds;
       let paramList;
-
       const memberIdList = uniq(healthParamListV1List.map((x) => x.member_id));
       for (const mId of memberIdList) {
         keyWeekIds = healthParamListV1List.filter((x) => x.member_id === mId).map((x) => x.week_id);
-
         for (const wk of keyWeekIds) {
           paramList = healthParamListV1List.filter((x) => x.member_id === mId && x.week_id === wk);
           const s = paramList[0];
           logDate = moment(s.created_at).format(DB_DATE_FORMAT);
-
           if (!memberHealthParamLogList.find((x) => x.memberId === s.member_id && x.logDate == logDate)) {
             memberHealthLogId = memberHealthLogId + 1;
-
             memberHealthParamLogList.push({
               memberHealthParameterLogId: memberHealthLogId,
               memberId: s.member_id,
@@ -1036,7 +984,6 @@ export class MemberMigrationController {
               createdIp: ':0',
               modifiedIp: ':0',
             });
-
             for (const s of paramList) {
               if (
                 !memberHealthParamList.find(
@@ -1069,7 +1016,6 @@ export class MemberMigrationController {
       //First save Log as it is used as FK
       await this.memberHealthParamLogRepository.bulkCreate(memberHealthParamLogList);
       await this.memberHealthParamRepository.bulkCreate(memberHealthParamList);
-
       await this.sequelize.query(
         `SELECT SETVAL('txn_member_health_parameter_l_member_health_parameter_log_i_seq',
                        (SELECT MAX(member_health_parameter_log_id) + 1 FROM txn_member_health_parameter_logs));`,
@@ -1088,11 +1034,9 @@ export class MemberMigrationController {
     try {
       await this.sequelize.query(`truncate table txn_member_diet_details restart identity CASCADE`);
       await this.sequelize.query(`truncate table txn_member_diet_plans restart identity CASCADE`);
-
       const adminUserId = 1;
       const memberDietPlanList = [];
       const dietPlanV1List = JSON.parse(readFileSync(resolve(`${this.folderPath}/txn_diet_plan.json`), 'utf8'));
-
       for (const s of dietPlanV1List) {
         memberDietPlanList.push({
           memberDietPlanId: Number(s.id),
@@ -1115,7 +1059,6 @@ export class MemberMigrationController {
         });
       }
       await this.memberDietPlanRepository.bulkCreate(memberDietPlanList);
-
       //Member Diet Plan Details
       const memberDietPlanDetailList = [];
       const detailV1List = JSON.parse(readFileSync(resolve(`${this.folderPath}/txn_diet_plan_details.json`), 'utf8'));
@@ -1128,21 +1071,17 @@ export class MemberMigrationController {
       let dietWeekV1List = [];
       let startDt;
       let endDt;
-
       for (const dp of dietPlanV1List) {
         dietDetailV1FilterList = detailV1List.filter((x) => x.diet_plan_id === dp.id && x.active == 1);
         weekList = uniq(dietDetailV1FilterList.map((x) => x.week_id));
-
         //Diet details table will have one entry per week against diet plan
         for (const wk of weekList) {
           dietDetailRecipeList = [];
           dietWeekV1List = dietDetailV1FilterList.filter((x) => x.week_id === wk);
-
           for (const category of dietWeekV1List) {
             recipeIdList = recipeV1List
               .filter((x) => x.diet_plan_details_id === category.id)
               .map((x) => Number(x.recipe_id));
-
             dietDetailRecipeList.push({
               recipeCategoryId: Number(category.recipe_category_id),
               recipeCategory: recipeCategoryList.find((x) => x.recipeCategoryId === Number(category.recipe_category_id))
@@ -1151,10 +1090,8 @@ export class MemberMigrationController {
               dietDetail: category.diet_plan,
             });
           }
-
           startDt = dietWeekV1List && dietWeekV1List.length > 0 ? dietWeekV1List[0].start_date : null;
           endDt = startDt ? moment(startDt).add(7, 'day').format(DB_DATE_FORMAT) : null;
-
           //ONE ENTRY PER WEEK
           memberDietPlanDetailList.push({
             memberDietPlanId: dp.id,
@@ -1172,9 +1109,7 @@ export class MemberMigrationController {
           });
         }
       }
-
       await this.memberDietPlanDetailRepository.bulkCreate(memberDietPlanDetailList);
-
       await this.sequelize.query(
         `SELECT SETVAL('txn_member_diet_details_member_diet_detail_id_seq',
                        (SELECT MAX(member_diet_detail_id) + 1 FROM txn_member_diet_details));`,
