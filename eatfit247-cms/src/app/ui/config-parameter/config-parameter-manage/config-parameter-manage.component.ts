@@ -89,7 +89,6 @@ export class ConfigParameterManageComponent implements OnInit {
     if (!this.formGroup.valid) {
       return;
     }
-    console.log('FORM VALUE', this.formGroup.value);
     const configs = [];
     for (const item of this.formGroup.value.configParams) {
       const mFieldType = this.configParamList.find(x => x.configParamId === item.configParamId).fieldType;
@@ -100,7 +99,6 @@ export class ConfigParameterManageComponent implements OnInit {
       configs.push({ configParamId: item.configParamId, configParamValue: value });
     }
     const payload = configs;
-    console.log('PAYLOAD', payload);
     const res = await this.httpService.postRequest(ApiUrlEnum.CONFIG_PARAMETER_UPDATE, payload, true);
     if (res) {
       switch (res.code) {

@@ -77,7 +77,7 @@ export class MemberMigrationController {
       // try {
       //   await this.createProgramPlan();
       // } catch (e) {
-      //   console.log(e);
+      //
       //   await t.rollback();
       //   exit();
       // }
@@ -121,7 +121,7 @@ export class MemberMigrationController {
       try {
         await this.createMemberAddress();
       } catch (e) {
-        console.log(e);
+
         await t.rollback();
         exit();
       }
@@ -129,7 +129,7 @@ export class MemberMigrationController {
       try {
         await this.createMemberProgramPlan();
       } catch (e) {
-        console.log(e);
+
         await t.rollback();
         exit();
       }
@@ -137,13 +137,11 @@ export class MemberMigrationController {
       try {
         await this.createMemberDietPlan();
       } catch (error) {
-        console.log(error);
         await t.rollback();
         exit();
       }
       await t.commit();
     } catch (e) {
-      console.log(e);
       await t.rollback();
       throw e;
     }
@@ -727,7 +725,7 @@ export class MemberMigrationController {
         `SELECT SETVAL('txn_addresses_address_id_seq', (SELECT MAX(address_id) + 1 FROM txn_addresses));`,
       );
     } catch (e) {
-      console.log(e);
+
       throw new Error(e);
     }
   }
@@ -802,8 +800,6 @@ export class MemberMigrationController {
     if (member.countryId === IN_COUNTRY_ID) {
       whereCondition['stateId'] = 27;
     }
-    console.log(member);
-    console.log(whereCondition);
     const state = await this.stateRepository.findOne({
       where: whereCondition,
       nest: true,
@@ -848,7 +844,6 @@ export class MemberMigrationController {
         const v1Plan = find(tempV1PlanList, (obj) => {
           return Number(obj.id) === Number(s.program_plan_id);
         });
-        console.log(v1Plan);
         const plan: MstProgramPlan = find(programPlanPlan, (obj: MstProgramPlan) => {
           return (
             obj.noOfCycle === Number(v1Plan.no_of_week) &&
@@ -907,7 +902,7 @@ export class MemberMigrationController {
         `SELECT SETVAL('txn_addresses_address_id_seq', (SELECT MAX(address_id) + 1 FROM txn_addresses));`,
       );
     } catch (e) {
-      console.log(e);
+
       throw new Error(e);
     }
   }
@@ -1025,7 +1020,7 @@ export class MemberMigrationController {
                        (SELECT MAX(member_health_parameter_id) + 1 FROM txn_member_health_parameters));`,
       );
     } catch (e) {
-      console.log(e);
+
       throw new Error(e);
     }
   }
@@ -1119,7 +1114,7 @@ export class MemberMigrationController {
                        (SELECT MAX(member_diet_plan_id) + 1 FROM txn_member_diet_plans));`,
       );
     } catch (e) {
-      console.log(e);
+
       throw new Error(e);
     }
   }

@@ -45,7 +45,6 @@ export class NavigationService {
     this.router.navigate([navEnum]).then((suc: any) => {
       this.setBreadcrumb(navEnum);
     }).catch((e: any) => {
-      console.log(e)
     });
   }
 
@@ -53,7 +52,6 @@ export class NavigationService {
     this.router.navigate([navEnum]).then((suc: any) => {
       // this.setBreadcrumb(navEnum);
     }).catch((e: any) => {
-      console.log(e)
     });
   }
 
@@ -61,7 +59,6 @@ export class NavigationService {
     this.router.navigate([NavigationPathEnum.LOGIN], {replaceUrl: true})
       .then((suc: any) => {
       }).catch((e: any) => {
-      console.log(e)
     })
   }
 
@@ -70,7 +67,6 @@ export class NavigationService {
       .then((suc: any) => {
         this.setBreadcrumb(NavigationPathEnum.HOME);
       }).catch((e: any) => {
-      console.log(e)
     })
   }
 
@@ -79,7 +75,6 @@ export class NavigationService {
     this.router.navigateByUrl(tempUrl).then((suc: any) => {
       this.setBreadcrumb(navEnum, navId);
     }).catch((e: any) => {
-      console.log(e)
     });
   }
 
@@ -88,7 +83,6 @@ export class NavigationService {
     this.router.navigate([navEnum, {id: navId}]).then((suc: any) => {
       this.setBreadcrumb(navEnum, navId);
     }).catch((e: any) => {
-      console.log(e)
     });
   }
 
@@ -96,9 +90,7 @@ export class NavigationService {
     this.router.navigateByUrl(NavigationPathEnum.LOGIN, {replaceUrl: true})
       .then((suc: any) => {
         this.storageService.clearAuthUser();
-        console.log(suc);
       }).catch((e: any) => {
-      console.log(e)
     })
   }
 

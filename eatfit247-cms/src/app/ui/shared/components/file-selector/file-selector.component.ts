@@ -79,7 +79,6 @@ export class FileSelectorComponent implements OnInit, OnChanges {
         });
       }
     }
-    console.log(this.uploadedFiles);
   }
 
   fileArray(): FormArray {
@@ -165,12 +164,10 @@ export class FileSelectorComponent implements OnInit, OnChanges {
         break;
       }
     }
-    console.log(this.uploadedFiles);
     this.validateNUploadFiles();
   }
 
   validateNUploadFiles(): void {
-    console.log('this.uploadedFiles', this.uploadedFiles);
     for (const f of this.uploadedFiles) {
       if (f.isRequested || f.fileUpdateStatus === 1) {
         continue;
@@ -180,10 +177,8 @@ export class FileSelectorComponent implements OnInit, OnChanges {
       formData.append('file', f.file);
       formData.append('mediaFor', this.mediaFor);
       formData.append('mediaType', this.mediaType);
-      console.log('f.file', f.file);
       f.progress = 0;
       this.httpService.uploadMedia(formData).subscribe((event: any) => {
-          console.log(event);
           if (event.type === HttpEventType.UploadProgress) {
             f.progress = Math.round(100 * event.loaded / event.total);
           } else if (event instanceof HttpResponse) {
@@ -211,7 +206,6 @@ export class FileSelectorComponent implements OnInit, OnChanges {
           }
         },
         (err: any) => {
-          console.log(err);
           f.progress = 0;
           f.fileUpdateStatus = -1;
         });

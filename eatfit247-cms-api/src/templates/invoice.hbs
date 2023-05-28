@@ -94,22 +94,37 @@
       <td style="width: 75%;">Plan Amount</td>
       <td class="amount-cell">{{{data.paymentObj.user.currency}}} {{data.paymentObj.user.orderAmount }}</td>
     </tr>
-    <tr>
-      <td>
-        CGST({{data.paymentObj.user.taxObj.CGST.taxPercentage}} %)
-      </td>
-      <td class="amount-cell">{{data.paymentObj.user.currency}} {{data.paymentObj.user.taxObj.CGST.amount }}
-      </td>
-    </tr>
-    <tr>
-      <td> SGST({{data.paymentObj.user.taxObj.SGST.taxPercentage}} %)</td>
-      <td class="amount-cell">{{data.paymentObj.user.currency}} {{data.paymentObj.user.taxObj.SGST.amount }}
-      </td>
-    </tr>
-    <tr>
-      <td style="width: 75%;">Discount Amount</td>
-      <td class="amount-cell">{{data.paymentObj.user.currency}} {{data.paymentObj.user.discountAmount}}</td>
-    </tr>
+    {{#if data.paymentObj.user.taxObj}}
+      {{#if data.paymentObj.user.taxObj.CGST}}
+        <tr>
+          <td>
+            CGST({{data.paymentObj.user.taxObj.CGST.taxPercentage}} %)
+          </td>
+          <td class="amount-cell">{{data.paymentObj.user.currency}} {{data.paymentObj.user.taxObj.CGST.amount }}
+          </td>
+        </tr>
+      {{/if}}
+      {{#if data.paymentObj.user.taxObj.SGST}}
+        <tr>
+          <td> SGST({{data.paymentObj.user.taxObj.SGST.taxPercentage}} %)</td>
+          <td class="amount-cell">{{data.paymentObj.user.currency}} {{data.paymentObj.user.taxObj.SGST.amount }}
+          </td>
+        </tr>
+      {{/if}}
+      {{#if data.paymentObj.user.taxObj.IGST}}
+        <tr>
+          <td> IGST({{data.paymentObj.user.taxObj.IGST.taxPercentage}} %)</td>
+          <td class="amount-cell">{{data.paymentObj.user.currency}} {{data.paymentObj.user.taxObj.IGST.amount }}
+          </td>
+        </tr>
+      {{/if}}
+    {{/if}}
+    {{#if data.paymentObj.user.discountAmount > 0 }}
+      <tr>
+        <td style="width: 75%;">Discount Amount</td>
+        <td class="amount-cell">{{data.paymentObj.user.currency}} {{data.paymentObj.user.discountAmount}}</td>
+      </tr>
+    {{/if}}
     <tr>
       <td colspan="2" class="seperator">
         <hr>

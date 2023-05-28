@@ -16,7 +16,6 @@ export class PdfModule {
 
   async create() {
     const version = await this.browser.version();
-    console.log(version);
     return { version };
   }
 }

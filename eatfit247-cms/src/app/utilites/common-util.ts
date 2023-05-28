@@ -12,7 +12,6 @@ export class CommonUtil {
         delete payload[s];
       }
     }
-    console.log(payload);
     return payload;
   }
 

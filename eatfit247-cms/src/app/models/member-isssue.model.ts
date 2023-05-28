@@ -34,7 +34,6 @@ export class MemberIssueModel {
     issueObj.respondedBy = AdminShortInfoModel.fromJson(data.txn_member_issue_response?.ModifiedBy);
     issueObj.createdAt = data.createdAt;
     issueObj.respondedAt = data.txn_member_issue_response?.updatedAt;
-    console.log('issueObj', issueObj)
     return issueObj;
   }
 }

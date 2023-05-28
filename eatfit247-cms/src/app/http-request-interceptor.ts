@@ -17,15 +17,12 @@ export class HttpRequestInterceptor implements HttpInterceptor {
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     const url = ApiUrlEnum.BASE_URL + request.url;
     const body = request.body;
-    console.log(url);
     let headerIn;
     if (!request.hasOwnProperty('headers') || !request.headers) {
-      console.log('header not present');
       headerIn = new HttpHeaders();
       headerIn = headerIn
         .set('Content-Type', 'application/json; charset=utf-8')
     } else {
-      console.log('header present');
       headerIn = request.headers;
     }
     headerIn = headerIn
@@ -49,7 +46,6 @@ export class HttpRequestInterceptor implements HttpInterceptor {
         retry(1),
         tap((event: HttpEvent<any>) => {
             if (event instanceof HttpResponse) {
-              console.log(event);
               event = event.clone({body: this.modifyBody(event.body, event.status)});
             }
             return event;
@@ -59,7 +55,5 @@ export class HttpRequestInterceptor implements HttpInterceptor {
   }
 
   private modifyBody(body: any, status: any): void {
-    console.log(body);
-    console.log(status);
   }
 }

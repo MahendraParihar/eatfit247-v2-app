@@ -25,7 +25,7 @@ export class HealthParameterDatasource implements DataSource<HealthParameterMode
   }
 
   async loadData(url: ApiUrlEnum, payload: any): Promise<boolean> {
-    console.log('Loading', this.constructor.name);
+
     payload = CommonUtil.removeEmptyPayloadAttributes(payload);
     const apiResponse = await this.httpService.getRequest(url, null, payload, true);
     if (!apiResponse) {

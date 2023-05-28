@@ -60,7 +60,6 @@ import { CommonFunctionsUtil } from './util/common-functions-util';
 export class AppModule {
 
   constructor() {
-    console.log(CommonFunctionsUtil.getMediaFolderPath());
   }
 
   /**

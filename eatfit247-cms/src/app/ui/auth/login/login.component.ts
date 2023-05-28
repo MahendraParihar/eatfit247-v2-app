@@ -96,7 +96,6 @@ export class LoginComponent implements OnInit {
       data: dialogData,
     });
     dialogRef.afterClosed().subscribe(result => {
-      console.log('The dialog was closed', JSON.stringify(result));
       if (result) {
         this.navigationService.navigateToById(NavigationPathEnum.RESET_PASSWORD, AESCryptoUtil.encryptUsingAES256(result.emailId));
       }
@@ -136,7 +135,7 @@ export class LoginComponent implements OnInit {
       data: dialogData,
     });
     dialogRef.afterClosed().subscribe(result => {
-      console.log('The dialog was closed', JSON.stringify(result));
+
     });
   }
 }

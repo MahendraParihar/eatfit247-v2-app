@@ -101,7 +101,7 @@ export class RecipeMigrationController {
       );
       await t.commit();
     } catch (e) {
-      console.log(e);
+
       await t.rollback();
     }
   }

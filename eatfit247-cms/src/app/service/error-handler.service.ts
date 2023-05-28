@@ -82,7 +82,6 @@ export class ErrorHandlerService implements ErrorHandler {
     } catch (e: any) {
       tempString = e.message;
     }
-    console.log(tempString);
     return tempString;
   }
 
@@ -100,7 +99,6 @@ export class ErrorHandlerService implements ErrorHandler {
   }
 
   handleError(error: Error | HttpErrorResponse): void {
-    console.log(error);
     const logger = this.injector.get(ErrorHandlerService);
     const notifier = this.injector.get(SnackBarService);
     const navigation = this.injector.get(NavigationService);

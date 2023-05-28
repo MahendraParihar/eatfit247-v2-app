@@ -105,7 +105,7 @@ export class AdminUserListComponent implements OnInit, AfterViewInit, OnDestroy 
       data: dialogData,
     });
     dialogRef.afterClosed().subscribe(result => {
-      console.log('The dialog was closed', JSON.stringify(result));
+
       if (result) {
         this.updateStatusTask(item, result, index);
       }
@@ -144,7 +144,7 @@ export class AdminUserListComponent implements OnInit, AfterViewInit, OnDestroy 
       data: dialogData,
     });
     dialogRef.afterClosed().subscribe(result => {
-      console.log('The dialog was closed', JSON.stringify(result));
+
       if (result) {
         this.resetPassword(item.id);
       }

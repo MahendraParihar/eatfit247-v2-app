@@ -66,7 +66,7 @@ export class ContactUsReportComponent implements OnInit, AfterViewInit, OnDestro
   }
 
   async searchResult(searchObj: CommonSearchModel): Promise<void> {
-    console.log(searchObj);
+
     if (searchObj) {
       this.payload.name = searchObj.name ? searchObj.name : null;
       this.payload.active = searchObj.active;
@@ -127,7 +127,7 @@ export class ContactUsReportComponent implements OnInit, AfterViewInit, OnDestro
       data: dialogData,
     });
     dialogRef.afterClosed().subscribe(result => {
-      console.log('The dialog was closed', JSON.stringify(result));
+
       if (result) {
         this.updateStatusTask(item, index);
       }

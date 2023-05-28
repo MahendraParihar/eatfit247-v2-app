@@ -15,7 +15,6 @@ export class AdminUserSettingComponent implements OnInit {
 
   constructor(private navigationService: NavigationService,
     private activatedRoute: ActivatedRoute) {
-    console.log(activatedRoute.url);
   }
 
   ngOnInit(): void {

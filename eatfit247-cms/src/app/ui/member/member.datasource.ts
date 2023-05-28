@@ -24,7 +24,6 @@ export class MemberDatasource implements DataSource<MemberListModel> {
   }
 
   async loadData(payload: {}): Promise<boolean> {
-    console.log('Loading', this.constructor.name);
     const apiResponse = await this.httpService.getRequest(ApiUrlEnum.MEMBER_LIST, null, payload, true);
     if (!apiResponse) {
       return false;

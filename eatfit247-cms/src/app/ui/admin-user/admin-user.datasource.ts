@@ -24,7 +24,6 @@ export class AdminUserDatasource implements DataSource<AdminUserModel> {
   }
 
   async loadData(payload: {}): Promise<boolean> {
-    console.log('Loading', this.constructor.name);
     const apiResponse = await this.httpService.getRequest(ApiUrlEnum.ADMIN_LIST, null, payload, true);
     if (!apiResponse) {
       return false;

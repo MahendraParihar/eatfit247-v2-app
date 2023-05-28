@@ -47,7 +47,6 @@ export class MemberDetailComponent implements OnInit, AfterViewInit, OnDestroy {
           val.url.replace(dietPlanId.toString(), ':dietId');
           val.url.replace(cycleNo.toString(), ':cycleNo');
           val.url.replace(dayNo.toString(), ':dayNo');
-          console.log('Diet Detail Page');
         }
         this.selectItem(val.url.replace(this.id.toString(), ':id').substring(1) as NavigationPathEnum);
         this.cdr.detectChanges();
@@ -82,7 +81,7 @@ export class MemberDetailComponent implements OnInit, AfterViewInit, OnDestroy {
       disableClose: true,
     });
     dialogRef.afterClosed().subscribe(result => {
-      console.log('The dialog was closed', JSON.stringify(result));
+
       if (result) {
         this.loadDataById(this.id);
       }
@@ -96,7 +95,7 @@ export class MemberDetailComponent implements OnInit, AfterViewInit, OnDestroy {
       disableClose: true,
     });
     dialogRef.afterClosed().subscribe(result => {
-      console.log('The dialog was closed', JSON.stringify(result));
+
       if (result) {
         this.loadDataById(this.id);
       }

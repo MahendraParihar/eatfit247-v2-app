@@ -8,7 +8,7 @@ import { PaymentModeService } from '../../lov/services/payment-mode.service';
 import { ProgramService } from '../../program-and-plan/services/program.service';
 import { PlanService } from '../../program-and-plan/services/plan.service';
 import { CurrencyService } from '../../lov/services/currency.service';
-import { CreateMemberPaymentDto } from '../dto/member-payment.dto';
+import { CreateMemberPaymentDto, PaymentReportDto } from '../dto/member-payment.dto';
 import { PaymentStatusService } from '../../lov/services/payment-status.service';
 import { CommonService } from '../../common/common.service';
 import { TableEnum } from '../../../enums/table-enum';
@@ -100,5 +100,11 @@ export class MemberPaymentController {
   @Get('send-invoice/:id')
   async sendDietPlanViaEmail(@Param('id') memberPaymentId: number) {
     return await this.service.sendInvoice(memberPaymentId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('generate-invoice')
+  async generateInvoice(@Body() body: PaymentReportDto) {
+    return await this.service.generatePaymentReport(body);
   }
 }

@@ -73,7 +73,7 @@ export class MemberPaymentHistoryComponent implements OnInit, AfterViewInit, OnD
       disableClose: true,
     });
     dialogRef.afterClosed().subscribe(result => {
-      console.log('The dialog was closed', JSON.stringify(result));
+
       if (result) {
         this.loadDataSet();
       }
@@ -94,7 +94,7 @@ export class MemberPaymentHistoryComponent implements OnInit, AfterViewInit, OnD
       disableClose: true,
     });
     dialogRef.afterClosed().subscribe(result => {
-      console.log('The dialog was closed', JSON.stringify(result));
+
       if (result) {
         this.loadDataSet();
       }
@@ -115,7 +115,7 @@ export class MemberPaymentHistoryComponent implements OnInit, AfterViewInit, OnD
       disableClose: true,
     });
     // dialogRef.afterClosed().subscribe(result => {
-    //   console.log('The dialog was closed', JSON.stringify(result));
+    //
     //   if (result) {
     //   }
     // });
@@ -134,7 +134,7 @@ export class MemberPaymentHistoryComponent implements OnInit, AfterViewInit, OnD
       data: dialogData,
     });
     dialogRef.afterClosed().subscribe(result => {
-      console.log('The dialog was closed', JSON.stringify(result));
+
       if (result) {
         this.updateStatusTask(item, index);
       }

@@ -22,7 +22,7 @@ import { IMemberPayment } from '../../../response-interface/member-payment.inter
 import { MstPaymentMode } from '../../../core/database/models/mst-payment-mode.model';
 import { TxnAddress } from '../../../core/database/models/txn-address.model';
 import { ICreateUpdate } from '../../../response-interface/lov.interface';
-import { CreateMemberPaymentDto } from '../dto/member-payment.dto';
+import { CreateMemberPaymentDto, PaymentReportDto } from '../dto/member-payment.dto';
 import { MstPaymentStatus } from '../../../core/database/models/mst-payment-status.model';
 import { CommonService } from '../../common/common.service';
 import { TableEnum } from '../../../enums/table-enum';
@@ -44,6 +44,7 @@ import { IAttachment, IEmailParams } from 'src/core/mail/email-params.interface'
 import { EmailTypeEnum } from 'src/enums/email-type-enum';
 import { EmailService } from 'src/core/mail/email.service';
 import { IBaseUser } from '../interfaces/member.interface';
+import { Op } from 'sequelize';
 
 @Injectable()
 export class MemberPaymentService {
@@ -572,13 +573,45 @@ export class MemberPaymentService {
     return { fileModel: fileModel, memberId: memberId };
   }
 
+  async generatePaymentReport(body: PaymentReportDto) {
+    let res: IServerResponse;
+    try {
+      const list = await this.memberPaymentRepository.findAll({
+        where: {
+          paymentDate: {
+            [Op.between]: [body.fromDate, body.toDate],
+          },
+        },
+        raw: true,
+        nest: true,
+      });
+      for (const s of list) {
+        const data = await this.generateInvoicePdf(s.memberPaymentId);
+        console.log(data.fileModel.filePath);
+      }
+      res = {
+        code: ServerResponseEnum.SUCCESS,
+        message: StringResource.SUCCESS,
+        data: null,
+      };
+    } catch (e) {
+      this.exceptionService.logException(e);
+      res = {
+        code: ServerResponseEnum.ERROR,
+        message: IS_DEV ? e['message'] : StringResource.SOMETHING_WENT_WRONG,
+        data: null,
+      };
+    }
+    return res;
+  }
+
   private convertDBObject(obj: TxnMemberPayment): IMemberPayment {
     return <IMemberPayment>(<ICreateUpdate>{
       id: obj.memberPaymentId,
       memberId: obj.memberId,
       memberName: obj['MemberPayment']
         ? obj['MemberPayment']['firstName'] +
-          (obj['MemberPayment']['lastName'] ? ' ' + obj['MemberPayment']['lastName'] : '')
+        (obj['MemberPayment']['lastName'] ? ' ' + obj['MemberPayment']['lastName'] : '')
         : null,
       programId: obj.programId,
       programPlanId: obj.programPlanId,

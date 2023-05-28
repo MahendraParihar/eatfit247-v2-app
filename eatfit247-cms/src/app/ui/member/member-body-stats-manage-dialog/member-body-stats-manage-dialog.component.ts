@@ -103,7 +103,6 @@ export class MemberBodyStatsManageDialogComponent implements OnInit {
         }
       }
     }
-    console.log(this.formGroup);
   }
 
   async onSubmit(): Promise<void> {
@@ -151,7 +150,6 @@ export class MemberBodyStatsManageDialogComponent implements OnInit {
       switch (res.code) {
         case ServerResponseEnum.SUCCESS:
           this.memberHealthLogObj = MemberHealthParameterModelLog.fromJson(res.data);
-          console.log(this.memberHealthLogObj);
           this.bindData();
           break;
         case ServerResponseEnum.WARNING:

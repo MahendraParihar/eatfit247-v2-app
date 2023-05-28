@@ -71,7 +71,6 @@ export class MemberIssuesListComponent implements OnInit {
   }
 
   async searchResult(searchObj: CommonSearchModel): Promise<void> {
-    console.log(searchObj);
     if (searchObj) {
       this.payload.name = searchObj.name ? searchObj.name : null;
       this.payload.active = searchObj.active;

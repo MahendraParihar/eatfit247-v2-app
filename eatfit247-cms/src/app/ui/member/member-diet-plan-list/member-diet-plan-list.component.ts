@@ -125,7 +125,7 @@ export class MemberDietPlanListComponent implements OnInit, AfterViewInit, OnDes
       data: dialogData,
     });
     dialogRef.afterClosed().subscribe(result => {
-      console.log('The dialog was closed', JSON.stringify(result));
+
       if (result) {
         this.deleteDietPlanTask(dietPlan);
       }
@@ -168,7 +168,7 @@ export class MemberDietPlanListComponent implements OnInit, AfterViewInit, OnDes
       disableClose: true,
     });
     dialogRef.afterClosed().subscribe(result => {
-      console.log('The dialog was closed', JSON.stringify(result));
+
       if (result) {
       }
     });

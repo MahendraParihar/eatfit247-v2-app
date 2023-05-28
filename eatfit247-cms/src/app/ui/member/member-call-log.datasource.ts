@@ -23,7 +23,6 @@ export class MemberCallLogDatasource implements DataSource<MemberCallLogModel> {
   }
 
   async loadData(url: string, memberId: number, payload: {}): Promise<boolean> {
-    console.log('Loading', this.constructor.name);
     const apiResponse = await this.httpService.getRequest(url, memberId, payload, true);
     if (!apiResponse) {
       return false;

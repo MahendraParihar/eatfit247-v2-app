@@ -203,7 +203,6 @@ export class HttpService {
         message: response['message'],
       };
     }
-    console.log(responseObject);
     return responseObject;
   }
 }

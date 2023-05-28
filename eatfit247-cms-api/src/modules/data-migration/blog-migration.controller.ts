@@ -30,7 +30,7 @@ export class BlogMigrationController {
       try {
         await this.createBlog();
       } catch (e) {
-        console.log(e);
+
         await t.rollback();
         exit();
       }
@@ -38,7 +38,7 @@ export class BlogMigrationController {
       try {
         await this.createSubscription();
       } catch (e) {
-        console.log(e);
+
         await t.rollback();
         exit();
       }
@@ -46,7 +46,7 @@ export class BlogMigrationController {
       try {
         await this.createContactUs();
       } catch (e) {
-        console.log(e);
+
         await t.rollback();
         exit();
       }

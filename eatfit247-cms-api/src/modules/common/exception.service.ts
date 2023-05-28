@@ -9,7 +9,7 @@ export class ExceptionService {
 
   public async logException(e: any) {
     if (IS_DEV) {
-      console.log(e);
+
     }
   }
 

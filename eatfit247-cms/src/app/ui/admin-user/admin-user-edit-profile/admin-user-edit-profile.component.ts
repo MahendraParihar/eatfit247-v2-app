@@ -97,7 +97,6 @@ export class AdminUserEditProfileComponent implements OnInit, AfterViewInit, OnD
       switch (res.code) {
         case ServerResponseEnum.SUCCESS:
           this.adminUserObj = AdminUserModel.fromJson(res.data);
-          console.log(this.adminUserObj);
           this.bindData();
           break;
         case ServerResponseEnum.WARNING:

@@ -58,7 +58,7 @@ export class MemberHealthIssueComponent implements OnInit, AfterViewInit, OnDest
       disableClose: true,
     });
     dialogRef.afterClosed().subscribe(result => {
-      console.log('The dialog was closed', JSON.stringify(result));
+
       if (result) {
         this.loadDataById();
       }

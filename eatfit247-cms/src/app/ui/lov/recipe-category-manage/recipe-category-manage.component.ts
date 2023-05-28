@@ -82,7 +82,6 @@ export class RecipeCategoryManageComponent implements OnInit, AfterViewInit, OnD
       switch (res.code) {
         case ServerResponseEnum.SUCCESS:
           this.lovModelObj = RecipeCategoryModel.fromJson(res.data);
-          console.log(this.lovModelObj);
           this.bindData();
           break;
         case ServerResponseEnum.WARNING:
