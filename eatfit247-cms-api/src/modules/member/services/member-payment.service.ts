@@ -563,6 +563,7 @@ export class MemberPaymentService {
       }).formatToParts(10000);
       const symbol = parts.find((p) => p.type === 'currency').value;
       res.data.paymentObj.user.currency = symbol;
+      res.data.date = moment(res.data.date).format('DD-MM-YYYY');
       fileModel = await this.pdfService.generatePDF(
         `${PDFTemplateEnum.INVOICE}`,
         `${MediaFolderEnum.INVOICE}`,
