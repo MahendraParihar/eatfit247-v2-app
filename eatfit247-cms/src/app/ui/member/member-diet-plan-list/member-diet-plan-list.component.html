@@ -102,7 +102,7 @@
     </td>
   </ng-container>
 
-  <tr mat-header-row *matHeaderRowDef="columnsToDisplayWithExpand"></tr>
+  <tr mat-header-row *matHeaderRowDef="columnsToDisplayWithExpand;sticky: true"></tr>
   <tr mat-row *matRowDef="let d; columns: columnsToDisplayWithExpand;"
       class="example-element-row"
       [class.example-expanded-row]="d.isExpanded"

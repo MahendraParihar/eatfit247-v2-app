@@ -7,7 +7,7 @@
           <mat-icon class="round-bg" fontSet="material-icons-outlined">diversity_1</mat-icon>
         </div>
         <div class="count-block">
-          <span class="count">{{dbModel.totalDietPlans}}</span>
+          <span class="count">{{dbModel.totalDietPlans | number}}</span>
           <span>{{stringResources.TOTAL_DIET_SESSIONS}}</span>
         </div>
       </mat-card-content>
@@ -20,7 +20,7 @@
           <mat-icon class="round-bg" fontSet="material-icons-outlined">work</mat-icon>
         </div>
         <div class="count-block">
-          <span class="count">{{dbModel.totalMembers}}</span>
+          <span class="count">{{dbModel.totalMembers | number}}</span>
           <span>{{stringResources.TOTAL_MEMBERS}}</span>
         </div>
       </mat-card-content>
@@ -33,7 +33,7 @@
           <mat-icon class="round-bg" fontSet="material-icons-outlined">diversity_1</mat-icon>
         </div>
         <div class="count-block">
-          <span class="count">{{dbModel.totalRecipes}}</span>
+          <span class="count">{{dbModel.totalRecipes | number}}</span>
           <span>{{stringResources.TOTAL_RECIPES}}</span>
         </div>
       </mat-card-content>
@@ -47,7 +47,7 @@
 
         </div>
         <div class="count-block">
-          <span class="count">{{dbModel.totalRenewedPlans}}</span>
+          <span class="count">{{dbModel.totalRenewedPlans | number}}</span>
           <span>{{stringResources.TOTAL_RENEWED_PLAN}}</span>
         </div>
       </mat-card-content>
@@ -60,7 +60,7 @@
           <mat-icon class="round-bg" fontSet="material-icons-outlined">diversity_1</mat-icon>
         </div>
         <div class="count-block">
-          <span class="count">{{dbModel.totalAverageNewPlans}}</span>
+          <span class="count">{{dbModel.totalAverageNewPlans | number}}</span>
           <span>{{stringResources.AVG_PLANS_PER_MONTH}}</span>
         </div>
       </mat-card-content>
@@ -73,7 +73,7 @@
           <mat-icon class="round-bg" fontSet="material-icons-outlined">work</mat-icon>
         </div>
         <div class="count-block">
-          <span class="count">{{dbModel.totalNewPlans}}</span>
+          <span class="count">{{dbModel.totalNewPlans | number}}</span>
           <span>{{stringResources.AVG_NEW_PLANS_PER_MONTH}}</span>
         </div>
       </mat-card-content>

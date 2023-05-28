@@ -39,6 +39,16 @@ export class MemberDetailComponent implements OnInit, AfterViewInit, OnDestroy {
     this.id = Number(this.activatedRoute.snapshot.paramMap.get('id'));
     router.events.subscribe((val) => {
       if (val instanceof NavigationEnd) {
+        if(val.url.includes('diet-plan-detail')){
+          const dietPlanId = Number(this.activatedRoute.snapshot.paramMap.get('dietId'));
+          const cycleNo = Number(this.activatedRoute.snapshot.paramMap.get('cycleNo'));
+          const dayNo = Number(this.activatedRoute.snapshot.paramMap.get('dayNo'));
+          val.url.replace(this.id.toString(), ':id');
+          val.url.replace(dietPlanId.toString(), ':dietId');
+          val.url.replace(cycleNo.toString(), ':cycleNo');
+          val.url.replace(dayNo.toString(), ':dayNo');
+          console.log('Diet Detail Page');
+        }
         this.selectItem(val.url.replace(this.id.toString(), ':id').substring(1) as NavigationPathEnum);
         this.cdr.detectChanges();
       }
@@ -152,8 +162,6 @@ export class MemberDetailComponent implements OnInit, AfterViewInit, OnDestroy {
         this.activeTag = 8;
         break;
       case NavigationPathEnum.MEMBER_DIET_PLAN_DETAIL:
-        this.activeTag = 4;
-        break;
       case NavigationPathEnum.MEMBER_DIET_PLAN_DETAIL_DAY:
         this.activeTag = 4;
         break;

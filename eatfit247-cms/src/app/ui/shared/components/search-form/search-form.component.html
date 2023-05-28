@@ -4,7 +4,7 @@
       {{stringRes.SEARCH_FILTER}}
     </mat-panel-title>
   </mat-expansion-panel-header>
-  <form *ngIf="searchFormGroup" [formGroup]="searchFormGroup">
+  <form *ngIf="searchFormGroup" [formGroup]="searchFormGroup" (submit)="searchResult()">
     <div class="form-body">
       <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start">
         <div class="form-item"
@@ -54,6 +54,6 @@
   </form>
   <mat-action-row>
     <button (click)="clearSearchForm()" color="warn" mat-button>{{stringRes.CLEAR}}</button>
-    <button (click)="searchResult()" color="primary" mat-button>{{stringRes.SEARCH}}</button>
+    <button type="submit" (click)="searchResult()" color="primary" mat-button>{{stringRes.SEARCH}}</button>
   </mat-action-row>
 </mat-expansion-panel>
