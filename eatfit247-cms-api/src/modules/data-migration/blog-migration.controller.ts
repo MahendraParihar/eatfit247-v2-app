@@ -30,7 +30,6 @@ export class BlogMigrationController {
       try {
         await this.createBlog();
       } catch (e) {
-
         await t.rollback();
         exit();
       }
@@ -113,6 +112,7 @@ export class BlogMigrationController {
                        (SELECT MAX(blog_id) + 1 FROM txn_blogs));`,
       );
     } catch (e) {
+      console.log(e);
       throw new Error(e);
     }
   }

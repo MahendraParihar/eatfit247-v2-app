@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS mst_configs
 
 INSERT INTO mst_configs (config_id, config_name, config_value)
 values
-    (1, 'GST_ENABLED', '1'),
+    (1, 'GST_ENABLED', '0'),
     (2, 'CALL_LOG_ENABLED', '0'),
     (3, 'DIET_FEEDBACK_ENABLED', '0'),
     (4, 'SEND_WELCOME_MAIL', '0'),

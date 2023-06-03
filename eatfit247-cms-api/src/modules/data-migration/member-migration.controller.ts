@@ -73,66 +73,62 @@ export class MemberMigrationController {
   async init() {
     const t = await this.sequelize.transaction();
     try {
-      // Program Plan
+      // // Program Plan
       // try {
       //   await this.createProgramPlan();
       // } catch (e) {
-      //
       //   await t.rollback();
       //   exit();
       // }
-      // Member
-      try {
-        await this.createMemberData();
-      } catch (e) {
-        await t.rollback();
-        exit();
-      }
-      // Member health issues
+      // // // Member
+      // try {
+      //   await this.createMemberData();
+      // } catch (e) {
+      //   await t.rollback();
+      //   exit();
+      // }
+      // // Member health issues
       // try {
       //   await this.createMemberHealthIssues();
       // } catch (e) {
       //   await t.rollback();
       //   exit();
       // }
-      // Member pocket guide
+      // // Member pocket guide
       // try {
       //   await this.createMemberPocketGuide();
       // } catch (e) {
       //   await t.rollback();
       //   exit();
       // }
-      // Member Assessment
-      try {
-        await this.createMemberAssessment();
-      } catch (e) {
-        await t.rollback();
-        exit();
-      }
-      //
+      // // Member Assessment
+      // try {
+      //   await this.createMemberAssessment();
+      // } catch (e) {
+      //   await t.rollback();
+      //   exit();
+      // }
       // // Member Health Parameter
-      try {
-        await this.createMemberHealthParameter();
-      } catch (e) {
-        await t.rollback();
-        exit();
-      }
-      // Member Address
-      try {
-        await this.createMemberAddress();
-      } catch (e) {
-
-        await t.rollback();
-        exit();
-      }
-      // Member Program Plan
-      try {
-        await this.createMemberProgramPlan();
-      } catch (e) {
-
-        await t.rollback();
-        exit();
-      }
+      // try {
+      //   await this.createMemberHealthParameter();
+      // } catch (e) {
+      //   await t.rollback();
+      //   exit();
+      // }
+      // // Member Address
+      // try {
+      //   await this.createMemberAddress();
+      // } catch (e) {
+      //   await t.rollback();
+      //   exit();
+      // }
+      // // Member Program Plan
+      // try {
+      //   await this.createMemberProgramPlan();
+      // } catch (e) {
+      //   await t.rollback();
+      //   exit();
+      // }
       //Member Diet Plan
       try {
         await this.createMemberDietPlan();
@@ -709,9 +705,13 @@ export class MemberMigrationController {
           memberAddressList.push(address);
         }
       }
+      await this.sequelize.query(`truncate table txn_member_payments restart identity CASCADE`);
       await this.sequelize.query(`delete
                                   from txn_addresses
                                   where table_id = ${TableEnum.TXN_MEMBER};`);
+      await this.sequelize.query(
+        `SELECT SETVAL('txn_addresses_address_id_seq', (SELECT MAX(address_id) + 1 FROM txn_addresses));`,
+      );
       let tempList = [];
       for (let i = 0; i < memberAddressList.length; i++) {
         tempList.push(memberAddressList[i]);
@@ -725,7 +725,7 @@ export class MemberMigrationController {
         `SELECT SETVAL('txn_addresses_address_id_seq', (SELECT MAX(address_id) + 1 FROM txn_addresses));`,
       );
     } catch (e) {
-
+      console.log(e);
       throw new Error(e);
     }
   }
@@ -776,6 +776,7 @@ export class MemberMigrationController {
                        (SELECT MAX(program_plan_id) + 1 FROM mst_program_plans));`,
       );
     } catch (e) {
+      console.log(e);
       throw new Error(e);
     }
   }
@@ -1114,7 +1115,7 @@ export class MemberMigrationController {
                        (SELECT MAX(member_diet_plan_id) + 1 FROM txn_member_diet_plans));`,
       );
     } catch (e) {
-
+      console.log(e);
       throw new Error(e);
     }
   }

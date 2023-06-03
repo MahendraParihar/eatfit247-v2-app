@@ -64,8 +64,7 @@ export class MemberPaymentService {
     private sequelize: Sequelize,
     private pdfService: PdfService,
     private readonly emailService: EmailService,
-  ) {
-  }
+  ) { }
 
   public async findAll(id: number): Promise<IServerResponse> {
     let res: IServerResponse;
@@ -567,7 +566,7 @@ export class MemberPaymentService {
       fileModel = await this.pdfService.generatePDF(
         `${PDFTemplateEnum.INVOICE}`,
         `${MediaFolderEnum.INVOICE}`,
-        `Invoice_${res.data.invoiceId}_${moment(res.data.date).format('DD-MM-YYYY')}_${memberPaymentId}`,
+        `Invoice_${res.data.invoiceId}_${res.data.date}_${memberPaymentId}`,
         res,
       );
     }
