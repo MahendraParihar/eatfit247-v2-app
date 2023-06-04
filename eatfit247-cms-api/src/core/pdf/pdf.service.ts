@@ -60,7 +60,6 @@ export class PdfService {
       },
     });
     await browser.close();
-
     return {
       filePath: relativePath,
       fileName: fileNameWithExtension,
@@ -92,17 +91,23 @@ export class PdfService {
    * Register Image Tad with Src having escape chars
    */
   registerHbsControls() {
-    const baseUrl = this.getBaseUrl();
+    // const baseUrl = this.getBaseUrl();
     hbs.registerHelper('img', function(url, cssClass) {
-      url = hbs.escapeExpression(baseUrl) + hbs.escapeExpression(url);
-      return new hbs.SafeString(`<img class="'${cssClass}'" src="${url}" alt="''" />`);
+      console.log(cssClass);
+      url = `data:image/jpeg;base64,${readFileSync(path.join(__dirname, '..', '..', '..', url)).toString('base64')}`;
+      if (cssClass === 'img-logo') {
+        return new hbs.SafeString(`<img class="'${cssClass}'" src='${url}' style='height: 100%;width: 100%;' alt="''" />`);
+      } else if (cssClass === 'recipe-image') {
+        return new hbs.SafeString(`<img class="'${cssClass}'" src='${url}' style='width: 100%;height: 250px;border-radius: 25px;border: 1px solid #d3d3d3;' alt="''" />`);
+      }
+      return new hbs.SafeString(`<img class="'${cssClass}'" src='${url}' style='height: 100%;width: 100%;' alt="''" />`);
     });
   }
 
   /***
    * Get Base Api Url like https://localhost:3000
    */
-  getBaseUrl() {
-    return this.request ? `${this.request.protocol}:/${this.request.headers.host}/` : '';
-  }
+  // getBaseUrl() {
+  //   return this.request ? `${this.request.protocol}://${this.request.headers.host}/` : '';
+  // }
 }

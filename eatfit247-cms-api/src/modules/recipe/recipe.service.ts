@@ -49,16 +49,13 @@ export class RecipeService {
       if (searchDto.active) {
         whereCondition['active'] = searchDto.active;
       }
-
       const dateFilter = SearchUtil.filterDateRange(searchDto.createdFrom, searchDto.createdTo);
       if (dateFilter) {
         whereCondition['createdAt'] = dateFilter;
       }
-
       if (searchDto.recipeTypeId && searchDto.recipeTypeId > 0) {
         whereCondition['recipeTypeId'] = searchDto.recipeTypeId;
       }
-
       let recipeIdList = [];
       let loopCount = 0;
       //CUISINE IDS
@@ -71,11 +68,9 @@ export class RecipeService {
             },
           },
         });
-
         recipeIdList = uniq(cuisineResult.map((x) => x.recipeId));
         loopCount = loopCount + 1;
       }
-
       //CATEGORIES
       if (searchDto.recipeCategoryIds && searchDto.recipeCategoryIds.length > 0) {
         const categoryResult = await this.recipeCategoryMappingRepository.findAll({
@@ -86,9 +81,7 @@ export class RecipeService {
             },
           },
         });
-
         const recipeIds = uniq(categoryResult.map((x) => x.recipeId));
-
         if (loopCount > 0) {
           recipeIdList = intersection(recipeIdList, recipeIds);
         } else {
@@ -96,17 +89,14 @@ export class RecipeService {
         }
         loopCount = loopCount + 1;
       }
-
       if (loopCount > 0) {
         whereCondition['recipeId'] = {
           [Op.in]: recipeIdList,
         };
       }
-
       const pageNumber = searchDto.pageNumber;
       const pageSize = searchDto.pageSize;
       let offset = pageNumber === 0 ? 0 : pageNumber * pageSize;
-
       const { rows, count } = await this.recipeRepository.findAndCountAll<MstRecipe>({
         include: [
           {
@@ -142,7 +132,6 @@ export class RecipeService {
         };
         return res;
       }
-
       const resList: IRecipe[] = [];
       for (const s of rows) {
         const iEvent: IRecipe = {
@@ -172,7 +161,6 @@ export class RecipeService {
         };
         resList.push(iEvent);
       }
-
       res = {
         code: ServerResponseEnum.SUCCESS,
         message: StringResource.SUCCESS,
@@ -181,7 +169,6 @@ export class RecipeService {
           count: count,
         },
       };
-
       return res;
     } catch (e) {
       this.exceptionService.logException(e);
@@ -226,7 +213,6 @@ export class RecipeService {
           recipeCategoryList: await this.getRecipeCategoryList(find.recipeId),
           recipeCuisineList: await this.getRecipeCuisineList(find.recipeId),
         };
-
         res = {
           code: ServerResponseEnum.SUCCESS,
           message: StringResource.SUCCESS,
@@ -291,7 +277,6 @@ export class RecipeService {
         await t.commit();
         //GENERATE PDF
         this.generateRecipePdf(createdObj['recipeId'], createObj);
-
         res = {
           code: ServerResponseEnum.SUCCESS,
           message: StringResource.SUCCESS_DATA_UPDATE,
@@ -351,7 +336,6 @@ export class RecipeService {
           await t.commit();
           //GENERATE PDF
           this.generateRecipePdf(id, updateObj);
-
           res = {
             code: ServerResponseEnum.SUCCESS,
             message: StringResource.SUCCESS_DATA_UPDATE,
@@ -446,6 +430,12 @@ export class RecipeService {
 
   public async fetchByIds(ids: number[]) {
     const records = await this.recipeRepository.findAll({
+      include: [
+        {
+          model: MstRecipeType,
+          required: true,
+        },
+      ],
       where: {
         recipeId: {
           [Op.in]: ids,
@@ -459,6 +449,8 @@ export class RecipeService {
         preparationMethod: x.howToMake,
         ingredients: x.ingredient,
         imagePath: x.imagePath,
+        serving: x.servingCount,
+        recipeType: x.recipeType.recipeType
       };
     });
     return recipes;
@@ -571,7 +563,6 @@ export class RecipeService {
           modifiedIp: cIp,
         });
       }
-
       await this.recipeCuisineMappingRepository.bulkCreate(tempList);
       return true;
     } catch (e) {

@@ -22,7 +22,6 @@ async function bootstrap() {
   app.enableCors(options);
   app.setGlobalPrefix('api/v1');
   app.useGlobalFilters(new AllExceptionsFilter());
-
   app.useStaticAssets(join(__dirname, '..', 'media-files'), {
     prefix: '/media-files',
   });
