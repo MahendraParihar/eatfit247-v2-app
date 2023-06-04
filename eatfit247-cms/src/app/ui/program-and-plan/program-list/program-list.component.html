@@ -16,7 +16,7 @@
     <ng-container matColumnDef="image">
       <mat-header-cell *matHeaderCellDef>Image</mat-header-cell>
       <mat-cell *matCellDef="let d;">
-        <app-custom-img-tag [alt]="" [isAvatar]="true" [webUrl]="d.imagePath"></app-custom-img-tag>
+        <app-custom-img-tag [isAvatar]="true" [webUrl]="d.imagePath"></app-custom-img-tag>
       </mat-cell>
     </ng-container>
     <ng-container matColumnDef="category">

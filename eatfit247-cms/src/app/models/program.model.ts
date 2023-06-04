@@ -29,11 +29,11 @@ export class ProgramModel extends BaseModel {
     authUserObj.punchLine = data.punchLine;
     authUserObj.sequenceNumber = data.sequenceNumber;
     authUserObj.isSpecialProgram = data.isSpecialProgram;
+    authUserObj.imagePath = data.imagePath ? <MediaUploadResponseModel[]>data.imagePath : null;
     authUserObj.videoUrl = data.videoUrl;
     authUserObj.tags = data.tags;
     authUserObj.url = data.url;
     authUserObj.active = data.active;
-    authUserObj.imagePath = data.imagePath ? <MediaUploadResponseModel[]>data.imagePath : null;
     authUserObj.createdBy = AdminShortInfoModel.fromJson(data.createdBy);
     authUserObj.updatedBy = AdminShortInfoModel.fromJson(data.updatedBy);
     authUserObj.createdAt = data.createdAt;

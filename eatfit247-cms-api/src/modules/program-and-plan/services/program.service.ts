@@ -34,7 +34,7 @@ export class ProgramService {
 
       const pageNumber = searchDto.pageNumber;
       const pageSize = searchDto.pageSize;
-      let offset = pageNumber === 0 ? 0 : pageNumber * pageSize;
+      const offset = pageNumber === 0 ? 0 : pageNumber * pageSize;
 
       const { rows, count } = await this.programRepository.findAndCountAll<MstProgram>({
         include: [
