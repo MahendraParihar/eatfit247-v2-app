@@ -1,6 +1,7 @@
-import {AdminShortInfoModel} from "./admin-short-info.model";
-import {MediaUploadResponseModel} from "./media-upload-response.model";
-import {LovModel} from "./lov.model";
+import { AdminShortInfoModel } from "./admin-short-info.model";
+import { MediaUploadResponseModel } from "./media-upload-response.model";
+import { LovModel } from "./lov.model";
+import { ApiUrlEnum } from "../enum/api-url-enum";
 
 export class PocketGuideModel extends LovModel {
   filePath: MediaUploadResponseModel[];

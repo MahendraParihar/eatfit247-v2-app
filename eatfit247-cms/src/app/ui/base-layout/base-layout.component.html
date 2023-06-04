@@ -38,8 +38,7 @@
       <mat-sidenav #sidenav [mode]="opened === false ? 'over' : 'side'"
                    [opened]="opened === true">
         <mat-nav-list>
-          <app-side-menu (onNavigate)="closeDrawer()"
-                         *ngFor="let item of menu" [item]="item"></app-side-menu>
+          <app-side-menu *ngFor="let item of menu" [item]="item"></app-side-menu>
         </mat-nav-list>
       </mat-sidenav>
       <mat-sidenav-content>

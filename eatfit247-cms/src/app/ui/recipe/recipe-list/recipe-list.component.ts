@@ -159,7 +159,7 @@ export class RecipeListComponent implements OnInit, AfterViewInit, OnDestroy {
 
   async onDownloadClick(detailObj: RecipeModel) {
     if (detailObj.downloadPath) {
-      await this.httpService.downloadFile(detailObj.downloadPath, `${detailObj.title}.pdf`);
+      await this.httpService.downloadFile(`${ApiUrlEnum.DOWNLOAD_PATH}${detailObj.downloadPath}`, `${detailObj.title}.pdf`);
     }
   }
 

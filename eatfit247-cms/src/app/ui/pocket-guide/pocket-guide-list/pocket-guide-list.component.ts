@@ -1,37 +1,41 @@
-import { AfterViewInit, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { StringResources } from '../../../enum/string-resources';
-import { Constants } from '../../../constants/Constants';
-import { CommonSearchModel } from '../../../models/common-search.model';
-import { MatPaginator } from '@angular/material/paginator';
-import { FormBuilder } from '@angular/forms';
-import { HttpService } from '../../../service/http.service';
-import { SnackBarService } from '../../../service/snack-bar.service';
-import { NavigationService } from '../../../service/navigation.service';
-import { MatDialog } from '@angular/material/dialog';
-import { tap } from 'rxjs';
-import { ApiUrlEnum } from '../../../enum/api-url-enum';
-import { NavigationPathEnum } from '../../../enum/navigation-path-enum';
-import { AlertDialogDataInterface } from '../../../interfaces/alert-dialog-data.interface';
-import { AlertTypeEnum } from '../../../enum/alert-type-enum';
-import { DialogAlertComponent } from '../../shared/components/dialog-alert/dialog-alert.component';
-import { ResponseDataModel } from '../../../models/response-data.model';
-import { ServerResponseEnum } from '../../../enum/server-response-enum';
-import { PocketGuideDatasource } from '../pocket-guide.datasource';
-import { PocketGuideModel } from '../../../models/pocket-guide.model';
+import { AfterViewInit, Component, OnDestroy, OnInit, ViewChild } from "@angular/core";
+import { StringResources } from "../../../enum/string-resources";
+import { Constants } from "../../../constants/Constants";
+import { CommonSearchModel } from "../../../models/common-search.model";
+import { MatPaginator } from "@angular/material/paginator";
+import { FormBuilder } from "@angular/forms";
+import { HttpService } from "../../../service/http.service";
+import { SnackBarService } from "../../../service/snack-bar.service";
+import { NavigationService } from "../../../service/navigation.service";
+import { MatDialog } from "@angular/material/dialog";
+import { tap } from "rxjs";
+import { ApiUrlEnum } from "../../../enum/api-url-enum";
+import { NavigationPathEnum } from "../../../enum/navigation-path-enum";
+import { AlertDialogDataInterface } from "../../../interfaces/alert-dialog-data.interface";
+import { AlertTypeEnum } from "../../../enum/alert-type-enum";
+import { DialogAlertComponent } from "../../shared/components/dialog-alert/dialog-alert.component";
+import { ResponseDataModel } from "../../../models/response-data.model";
+import { ServerResponseEnum } from "../../../enum/server-response-enum";
+import { PocketGuideDatasource } from "../pocket-guide.datasource";
+import { PocketGuideModel } from "../../../models/pocket-guide.model";
+import { HttpHeaders } from "@angular/common/http";
+import { addWarning } from "@angular-devkit/build-angular/src/utils/webpack-diagnostics";
+import { MediaForEnum } from "../../../enum/media-for-enum";
 
 @Component({
-  selector: 'app-pocket-guide-list',
-  templateUrl: './pocket-guide-list.component.html',
-  styleUrls: ['./pocket-guide-list.component.scss'],
+  selector: "app-pocket-guide-list",
+  templateUrl: "./pocket-guide-list.component.html",
+  styleUrls: ["./pocket-guide-list.component.scss"]
 })
 export class PocketGuideListComponent implements OnInit, AfterViewInit, OnDestroy {
-  displayedColumns = ['seqNo', 'imagePath', 'title', 'file', 'status', 'createdBy', 'createdAt', 'updatedBy', 'updatedAt', 'action'];
+  displayedColumns = ["seqNo", "imagePath", "title", "file", "status", "createdBy", "createdAt", "updatedBy", "updatedAt", "action"];
   dataSource: PocketGuideDatasource;
   totalCount = 0;
   stringRes = StringResources;
-  defaultPageSize = Constants.DEFAULT_PAGE_SIZE;
+  defaultPageSize = Constants.MASTER_PAGE_SIZE;
   pageSizeList = Constants.PAGE_SIZE_LIST;
   payload: CommonSearchModel = new CommonSearchModel();
+  baseUrl = ApiUrlEnum.MEDIA_PATH;
   @ViewChild(MatPaginator) paginator: MatPaginator;
 
   constructor(private fb: FormBuilder,
@@ -50,7 +54,7 @@ export class PocketGuideListComponent implements OnInit, AfterViewInit, OnDestro
   ngAfterViewInit() {
     this.paginator.page
       .pipe(
-        tap(() => this.loadDataSet()),
+        tap(() => this.loadDataSet())
       )
       .subscribe();
   }
@@ -61,12 +65,11 @@ export class PocketGuideListComponent implements OnInit, AfterViewInit, OnDestro
 
   async loadDataSet(): Promise<void> {
     this.payload.pageNumber = this.paginator ? this.paginator.pageIndex : 0;
-    this.payload.pageSize = this.paginator ? this.paginator.pageSize : Constants.DEFAULT_PAGE_SIZE;
+    this.payload.pageSize = this.paginator ? this.paginator.pageSize : Constants.MASTER_PAGE_SIZE;
     await this.dataSource.loadData(ApiUrlEnum.POCKET_GUIDE_LIST, this.payload);
   }
 
   async searchResult(searchObj: CommonSearchModel): Promise<void> {
-
     if (searchObj) {
       this.payload.name = searchObj.name ? searchObj.name : null;
       this.payload.active = searchObj.active;
@@ -96,14 +99,13 @@ export class PocketGuideListComponent implements OnInit, AfterViewInit, OnDestro
       message: StringResources.CHANGE_STATUS_DESC,
       positiveBtnTxt: StringResources.YES,
       negativeBtnTxt: StringResources.NO,
-      alertType: AlertTypeEnum.WARNING,
+      alertType: AlertTypeEnum.WARNING
     };
     const dialogRef = this.dialog.open(DialogAlertComponent, {
-      width: '350px',
-      data: dialogData,
+      width: "350px",
+      data: dialogData
     });
     dialogRef.afterClosed().subscribe(result => {
-
       if (result) {
         this.updateStatusTask(item, index);
       }
@@ -112,7 +114,7 @@ export class PocketGuideListComponent implements OnInit, AfterViewInit, OnDestro
 
   async updateStatusTask(item: PocketGuideModel, index: number): Promise<void> {
     const payload = {
-      active: !item.active,
+      active: !item.active
     };
     const res: ResponseDataModel = await this.httpService.patchRequest(ApiUrlEnum.POCKET_GUIDE_STATUS_CHANGE, item.id, payload, true);
     if (res) {
@@ -128,6 +130,12 @@ export class PocketGuideListComponent implements OnInit, AfterViewInit, OnDestro
           this.snackBarService.showError(res.message);
           break;
       }
+    }
+  }
+
+  async downloadFile(obj: PocketGuideModel) {
+    if (obj.filePath && obj.filePath.length > 0) {
+      await this.httpService.downloadFile(`${ApiUrlEnum.MEDIA_PATH}${obj.filePath[0].webUrl}`, obj.name, true);
     }
   }
 }

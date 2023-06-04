@@ -172,7 +172,7 @@ export class HttpService {
       if (showWaiting) {
         this.loaderService.load();
       }
-      saveAs(`${ApiUrlEnum.DOWNLOAD_PATH}${url}`, fileName);
+      saveAs(`${url}`, fileName);
       if (showWaiting) {
         this.loaderService.dismiss();
       }

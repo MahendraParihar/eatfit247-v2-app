@@ -269,61 +269,75 @@ values (1, 3, 1, '1st Floor, The Point,Opp. Royal Enfield showroom, 30th Road', 
 
 INSERT INTO mst_pocket_guides (pocket_guide_id, pocket_guide, description, file_path, active, created_at, updated_at,
                                created_by, modified_by, image_path, created_ip, modified_ip)
-VALUES (3, 'Cleansing Diet', 'Cleansing Diet', '[]', true, '2017-05-30 00:00:00',
-        '2018-08-28 14:36:16', 1, 1, '[]', ':0', ':0'),
-       (4, 'De-bloat Powder', 'De-bloat Powder', '[]', false, '2017-06-13 00:00:00',
-        '2018-08-28 14:36:57', 1, 1, '[]', ':0', ':0'),
-       (5, 'No Salt Diet', 'No Salt Diet', '[]', true, '2017-06-18 00:00:00', '2018-08-28 14:37:42', 1,
-        1, '[]', ':0', ':0'),
-       (6, 'Restaurant Guide - Non Veg',
-        'Heading out for dinner or lunch with friends or family and fear you \''ll will fall off from the weight loss goals ???\r\nNow Keep your both  weight loss goals and social life intact  with our guide to make healthy food choices  that  wont leave you feeling left out .\r\n. ',
-        '[]', true, '2017-07-19 00:00:00', '2018-12-28 13:37:40', 1, 1, '[]', ':0', ':0'),
-       (7, 'Restaurant Guide Veg',
-        'Heading out for dinner or lunch with friends or family and fear you \''ll will fall off from the weight loss goals ???\r\nNow Keep your both  weight loss goals and social life intact  with our guide to make healthy food choices  that  wont leave you feeling left out .\r\n. ',
-        '[]', true, '2017-07-19 00:00:00', '2018-12-28 13:36:57', 1, 1, '[]', ':0', ':0'),
-       (8, 'Cleansing Juice Day', 'Cleansing Juice Day', '[]', true, '2017-10-23 00:00:00',
-        '2018-08-28 14:39:35', 1, 1, '[]', ':0', ':0'),
-       (9, 'Detox Diet', 'Detox Diet', '[]', true, '2017-11-02 00:00:00', '2018-08-28 14:40:33', 1, 1,
-        '[]', ':0', ':0'),
-       (10, 'Post Delivery', 'Post Delivery', '[]', true, '2018-01-22 00:00:00', '2018-08-28 14:41:15',
-        1, 1, '[]', ':0', ':0'),
-       (11, 'Veg Travel guide', 'Veg Travel guide', '[]', false, '2018-03-15 00:00:00',
-        '2018-11-16 14:24:25', 1, 1, '[]', ':0', ':0'),
-       (12, 'Healthy Bites',
-        'Sometimes you simply get too busy to prepare and eat a healthy meal. Having some healthy snacks on hand can be useful when this happens.',
-        '[]', true, '2018-06-05 00:00:00', '2018-12-28 13:31:23', 1, 1, '[]', ':0', ':0'),
-       (13, 'Travel guide ',
-        'Eating healthy is too hard when you’re traveling because airports are not well-known for healthy food options. Hence it’s very difficult to make good food choices. To help you travel like an expert, Shweta would love to share the golden tips to follow while travelling ',
-        '[]', true, '2018-06-11 00:00:00', '2018-12-28 13:29:32', 1, 1, '[]', ':0', ':0'),
-       (14, 'Liquid diet', 'Liquid diet ', '[]', true, '2018-06-18 00:00:00', '2018-08-28 15:00:21', 1,
-        1, '[]', ':0', ':0'),
-       (15, 'Non Veg Travel Guide  Keto', 'Non Veg Travel Guide  Keto', '[]', true,
-        '2018-09-26 00:00:00', '2018-09-26 14:55:15', 1, 1, '[]', ':0', ':0'),
-       (16, 'Navratri',
-        'Navratri is celebrated twice a year and if we notice, every time it falls during the change of season. Change in the seasons has different effects on your physical, mental and spiritual level. By observing fast during this time balances your energy and connects you to the mother goddess.\r\n From an Ayurvedic perspective, eating foods like meat, grains, alcohol, onion, garlic etc. attract and absorb negative energies and should be avoided during a seasonal change when our bodies tend to have low immunity and are more susceptible to fall sick.\r\n',
-        '[]', true, '2018-10-03 00:00:00', '2018-12-28 13:24:09', 1, 1, '[]', ':0', ':0'),
-       (17, 'Banana Diet', 'Banana Diet', '[]', true, '2018-10-10 00:00:00', '2018-10-10 00:00:00', 1,
-        1, '[]', ':0', ':0'),
-       (18, 'Veg Travel Guide Keto', 'Veg Travel Guide Keto', '[]', true, '2018-10-10 00:00:00',
-        '2018-10-10 00:00:00', 1, 1, '[]', ':0', ':0'),
-       (19, 'Maintenance Diet',
-        'To improve your chances of permanent weight-loss success, try to incorporate small changes in food choices and   your lifestyle as you move through all phases of the dieting journey.',
-        '[]', true, '2018-10-10 00:00:00', '2018-12-28 13:42:09', 1, 1, '[]', ':0', ':0'),
-       (20, 'Diwali Guide',
-        'Diwali makes for one of the biggest celebrations in the year- and one of the topmost highlights of this extravaganza must be its indulgent sweetmeats, savoury snacks and lavish meals. But before you start digging in, have a look at this essential guide for Diwali celebrations that will may help you make most of the festivities, fun and of course lots of food.\r\n',
-        '[]', true, '2018-10-11 00:00:00', '2018-12-28 13:27:53', 1, 1, '[]', ':0', ':0'),
+VALUES
+(3, 'Cleansing Diet', 'Cleansing Diet', '[]', true, '2017-05-30 00:00:00','2018-08-28 14:36:16', 1, 1, '', ':0', ':0'),
+(4, 'De-bloat Powder', 'De-bloat Powder', '[]', false, '2017-06-13 00:00:00','2018-08-28 14:36:57', 1, 1, '', ':0', ':0'),
+(5, 'No Salt Diet', 'No Salt Diet', '[]', true, '2017-06-18 00:00:00', '2018-08-28 14:37:42', 1,1, '', ':0', ':0'),
+(6, 'Restaurant Guide - Non Veg','Heading out for dinner or lunch with friends or family and fear you \''ll will fall off from the weight loss goals ???\r\nNow Keep your both  weight loss goals and social life intact  with our guide to make healthy food choices  that  wont leave you feeling left out .\r\n. ','[]', true, '2017-07-19 00:00:00', '2018-12-28 13:37:40', 1, 1, '[]', ':0', ':0'),
+(7, 'Restaurant Guide Veg','Heading out for dinner or lunch with friends or family and fear you \''ll will fall off from the weight loss goals ???\r\nNow Keep your both  weight loss goals and social life intact  with our guide to make healthy food choices  that  wont leave you feeling left out .\r\n. ','[]', true, '2017-07-19 00:00:00', '2018-12-28 13:36:57', 1, 1, '[]', ':0', ':0'),
+(8, 'Cleansing Juice Day', 'Cleansing Juice Day', '[]', true, '2017-10-23 00:00:00','2018-08-28 14:39:35', 1, 1, '[]', ':0', ':0'),
+(9, 'Detox Diet', 'Detox Diet', '[]', true, '2017-11-02 00:00:00', '2018-08-28 14:40:33', 1, 1,'[]', ':0', ':0'),
+(10, 'Post Delivery', 'Post Delivery', '[]', true, '2018-01-22 00:00:00', '2018-08-28 14:41:15',1, 1, '[]', ':0', ':0'),
+(11, 'Veg Travel guide', 'Veg Travel guide', '[]', false, '2018-03-15 00:00:00','2018-11-16 14:24:25', 1, 1, '[]', ':0', ':0'),
+(12, 'Healthy Bites','Sometimes you simply get too busy to prepare and eat a healthy meal. Having some healthy snacks on hand can be useful when this happens.','[]', true, '2018-06-05 00:00:00', '2018-12-28 13:31:23', 1, 1, '[]', ':0', ':0'),
+(13, 'Travel guide ','Eating healthy is too hard when you’re traveling because airports are not well-known for healthy food options. Hence it’s very difficult to make good food choices. To help you travel like an expert, Shweta would love to share the golden tips to follow while travelling ','[]', true, '2018-06-11 00:00:00', '2018-12-28 13:29:32', 1, 1, '[]', ':0', ':0'),
+(14, 'Liquid diet', 'Liquid diet ', '[]', true, '2018-06-18 00:00:00', '2018-08-28 15:00:21', 1, 1, '[]', ':0', ':0'),
+(15, 'Non Veg Travel Guide  Keto', 'Non Veg Travel Guide  Keto', '[]', true,'2018-09-26 00:00:00', '2018-09-26 14:55:15', 1, 1, '[]', ':0', ':0'),
+(16, 'Navratri','Navratri is celebrated twice a year and if we notice, every time it falls during the change of season. Change in the seasons has different effects on your physical, mental and spiritual level. By observing fast during this time balances your energy and connects you to the mother goddess.\r\n From an Ayurvedic perspective, eating foods like meat, grains, alcohol, onion, garlic etc. attract and absorb negative energies and should be avoided during a seasonal change when our bodies tend to have low immunity and are more susceptible to fall sick.\r\n','[]', true, '2018-10-03 00:00:00', '2018-12-28 13:24:09', 1, 1, '[]', ':0', ':0'),
+(17, 'Banana Diet', 'Banana Diet', '[]', true, '2018-10-10 00:00:00', '2018-10-10 00:00:00', 1,1, '[]', ':0', ':0'),
+(18, 'Veg Travel Guide Keto', 'Veg Travel Guide Keto', '[]', true, '2018-10-10 00:00:00','2018-10-10 00:00:00', 1, 1, '[]', ':0', ':0'),
+(19, 'Maintenance Diet','To improve your chances of permanent weight-loss success, try to incorporate small changes in food choices and   your lifestyle as you move through all phases of the dieting journey.','[]', true, '2018-10-10 00:00:00', '2018-12-28 13:42:09', 1, 1, '[]', ':0', ':0'),
+(20, 'Diwali Guide','Diwali makes for one of the biggest celebrations in the year- and one of the topmost highlights of this extravaganza must be its indulgent sweetmeats, savoury snacks and lavish meals. But before you start digging in, have a look at this essential guide for Diwali celebrations that will may help you make most of the festivities, fun and of course lots of food.\r\n','[]', true, '2018-10-11 00:00:00', '2018-12-28 13:27:53', 1, 1, '[]', ':0', ':0'),
+(21, 'Cheat Sheet','Even though nutrition / weight loss plan are highly personalized, one thing all of us share is the urge to let loose every now and then. It’s impossible to stick to a healthy diet 100 percent of the time.   Whether giving into these cravings helps or hurts you in the long run is largely a matter of How you approach and How much you eat ! \r\n','[]', true, '2018-11-30 00:00:00', '2018-12-28 13:38:57', 1, 1, '[]', ':0', ':0'),
+(22, 'Alcohol Guide','Alcohol can cause weight gain in a couple of ways. While you do not have to cut out all alcohol if you are trying to lose weight, you may need to make some changes. You should watch the number, and type, of drinks you choose. You will also want to keep an eye on how drinking affects your eating habits.This guide will help yo to so .','[]', true, '2018-11-30 00:00:00', '2018-12-28 13:26:12', 1, 1, '[]', ':0', ':0'),
+(23, 'Wedding guide', 'Wedding guide\"', '[]', true, '2019-03-25 00:00:00','2019-03-25 00:00:00', 5, 5, '[]', ':0', ':0'),
+(24, 'Party guide', 'Party guide', '[]', true, '2019-03-25 00:00:00', '2019-03-25 00:00:00', 5,5, '[]', ':0', ':0'),
+(25, 'Juice Diet ', 'juice diet', '[]', true, '2021-11-08 00:00:00', '2021-11-08 00:00:00', 5,5, '[]', ':0', ':0');
 
-       (21, 'Cheat Sheet',
-        'Even though nutrition / weight loss plan are highly personalized, one thing all of us share is the urge to let loose every now and then. It’s impossible to stick to a healthy diet 100 percent of the time.   Whether giving into these cravings helps or hurts you in the long run is largely a matter of How you approach and How much you eat ! \r\n',
-        '[]', true, '2018-11-30 00:00:00', '2018-12-28 13:38:57', 1, 1, '[]', ':0', ':0'),
+update mst_pocket_guides set image_path = '[{"size": 1454, "webUrl": "media-files/pocket-guide/CleansingDiet.png", "encoding": "7bit", "fileName": "CleansingDiet.png", "mimetype": "image/png", "fieldName": "file", "originalName": "CleansingDiet.png"}]' where pocket_guide_id = 3;
+update mst_pocket_guides set image_path = '[{"size": 1454, "webUrl": "media-files/pocket-guide/DetoxDiet.png", "encoding": "7bit", "fileName": "DetoxDiet.png", "mimetype": "image/png", "fieldName": "file", "originalName": "DetoxDiet.png"}]' where pocket_guide_id = 4;
+update mst_pocket_guides set image_path = '[{"size": 1454, "webUrl": "media-files/pocket-guide/NoSaltDiet.png", "encoding": "7bit", "fileName": "NoSaltDiet.png", "mimetype": "image/png", "fieldName": "file", "originalName": "NoSaltDiet.png"}]' where pocket_guide_id = 5;
+update mst_pocket_guides set image_path = '[{"size": 1454, "webUrl": "media-files/pocket-guide/RestaurantGuideNonVeg.png", "encoding": "7bit", "fileName": "RestaurantGuideNonVeg.png", "mimetype": "image/png", "fieldName": "file", "originalName": "RestaurantGuideNonVeg.png"}]' where pocket_guide_id = 6;
+update mst_pocket_guides set image_path = '[{"size": 1454, "webUrl": "media-files/pocket-guide/RestaurantGuideVeg.png", "encoding": "7bit", "fileName": "RestaurantGuideVeg.png", "mimetype": "image/png", "fieldName": "file", "originalName": "RestaurantGuideVeg.png"}]' where pocket_guide_id = 7;
+update mst_pocket_guides set image_path = '[{"size": 1454, "webUrl": "media-files/pocket-guide/CleansingJuiceDay.png", "encoding": "7bit", "fileName": "CleansingJuiceDay.png", "mimetype": "image/png", "fieldName": "file", "originalName": "CleansingJuiceDay.png"}]' where pocket_guide_id = 8;
+update mst_pocket_guides set image_path = '[{"size": 1454, "webUrl": "media-files/pocket-guide/DetoxDiet.png", "encoding": "7bit", "fileName": "DetoxDiet.png", "mimetype": "image/png", "fieldName": "file", "originalName": "DetoxDiet.png"}]' where pocket_guide_id = 9;
+update mst_pocket_guides set image_path = '[{"size": 1454, "webUrl": "media-files/pocket-guide/PostDelivery.png", "encoding": "7bit", "fileName": "PostDelivery.png", "mimetype": "image/png", "fieldName": "file", "originalName": "PostDelivery.png"}]' where pocket_guide_id = 10;
+update mst_pocket_guides set image_path = '[{"size": 1454, "webUrl": "media-files/pocket-guide/VegTravelGuideKeto.png", "encoding": "7bit", "fileName": "VegTravelGuideKeto.png", "mimetype": "image/png", "fieldName": "file", "originalName": "VegTravelGuideKeto.png"}]' where pocket_guide_id = 11;
+update mst_pocket_guides set image_path = '[{"size": 1454, "webUrl": "media-files/pocket-guide/HealthyBites.png", "encoding": "7bit", "fileName": "HealthyBites.png", "mimetype": "image/png", "fieldName": "file", "originalName": "HealthyBites.png"}]' where pocket_guide_id = 12;
+update mst_pocket_guides set image_path = '[{"size": 1454, "webUrl": "media-files/pocket-guide/TravelGuide.png", "encoding": "7bit", "fileName": "TravelGuide.png", "mimetype": "image/png", "fieldName": "file", "originalName": "TravelGuide.png"}]' where pocket_guide_id = 13;
+update mst_pocket_guides set image_path = '[{"size": 1454, "webUrl": "media-files/pocket-guide/LiquidDiet.png", "encoding": "7bit", "fileName": "LiquidDiet.png", "mimetype": "image/png", "fieldName": "file", "originalName": "LiquidDiet.png"}]' where pocket_guide_id = 14;
+update mst_pocket_guides set image_path = '[{"size": 1454, "webUrl": "media-files/pocket-guide/NonVegTravelGuideKeto.png", "encoding": "7bit", "fileName": "NonVegTravelGuideKeto.png", "mimetype": "image/png", "fieldName": "file", "originalName": "NonVegTravelGuideKeto.png"}]' where pocket_guide_id = 15;
+update mst_pocket_guides set image_path = '[{"size": 1454, "webUrl": "media-files/pocket-guide/Navratri.png", "encoding": "7bit", "fileName": "Navratri.png", "mimetype": "image/png", "fieldName": "file", "originalName": "Navratri.png"}]' where pocket_guide_id = 16;
+update mst_pocket_guides set image_path = '[{"size": 1454, "webUrl": "media-files/pocket-guide/BananaDiet.png", "encoding": "7bit", "fileName": "BananaDiet.png", "mimetype": "image/png", "fieldName": "file", "originalName": "BananaDiet.png"}]' where pocket_guide_id = 17;
+update mst_pocket_guides set image_path = '[{"size": 1454, "webUrl": "media-files/pocket-guide/VegTravelGuideKeto.png", "encoding": "7bit", "fileName": "VegTravelGuideKeto.png", "mimetype": "image/png", "fieldName": "file", "originalName": "VegTravelGuideKeto.png"}]' where pocket_guide_id = 18;
+update mst_pocket_guides set image_path = '[{"size": 1454, "webUrl": "media-files/pocket-guide/MaintenanceDiet.png", "encoding": "7bit", "fileName": "MaintenanceDiet.png", "mimetype": "image/png", "fieldName": "file", "originalName": "MaintenanceDiet.png"}]' where pocket_guide_id = 19;
+update mst_pocket_guides set image_path = '[{"size": 1454, "webUrl": "media-files/pocket-guide/DiwaliGuide.png", "encoding": "7bit", "fileName": "DiwaliGuide.png", "mimetype": "image/png", "fieldName": "file", "originalName": "DiwaliGuide.png"}]' where pocket_guide_id = 20;
+update mst_pocket_guides set image_path = '[{"size": 1454, "webUrl": "media-files/pocket-guide/CheatSheet.png", "encoding": "7bit", "fileName": "CheatSheet.png", "mimetype": "image/png", "fieldName": "file", "originalName": "CheatSheet.png"}]' where pocket_guide_id = 21;
+update mst_pocket_guides set image_path = '[{"size": 1454, "webUrl": "media-files/pocket-guide/AlcoholGuide.png", "encoding": "7bit", "fileName": "AlcoholGuide.png", "mimetype": "image/png", "fieldName": "file", "originalName": "AlcoholGuide.png"}]' where pocket_guide_id = 22;
+update mst_pocket_guides set image_path = '[{"size": 1454, "webUrl": "media-files/pocket-guide/WeddingGuide.png", "encoding": "7bit", "fileName": "WeddingGuide.png", "mimetype": "image/png", "fieldName": "file", "originalName": "WeddingGuide.png"}]' where pocket_guide_id = 23;
+update mst_pocket_guides set image_path = '[{"size": 1454, "webUrl": "media-files/pocket-guide/PartyGuide.png", "encoding": "7bit", "fileName": "PartyGuide.png", "mimetype": "image/png", "fieldName": "file", "originalName": "PartyGuide.png"}]' where pocket_guide_id = 24;
+update mst_pocket_guides set image_path = '[{"size": 1454, "webUrl": "media-files/pocket-guide/CleansingJuiceDay.png", "encoding": "7bit", "fileName": "CleansingJuiceDay.png", "mimetype": "image/png", "fieldName": "file", "originalName": "CleansingJuiceDay.png"}]' where pocket_guide_id = 25;
 
-       (22, 'Alcohol Guide',
-        'Alcohol can cause weight gain in a couple of ways. While you do not have to cut out all alcohol if you are trying to lose weight, you may need to make some changes. You should watch the number, and type, of drinks you choose. You will also want to keep an eye on how drinking affects your eating habits.This guide will help yo to so .',
-        '[]', true, '2018-11-30 00:00:00', '2018-12-28 13:26:12', 1, 1, '[]', ':0', ':0'),
-
-       (23, 'Wedding guide', 'Wedding guide\"', '[]', true, '2019-03-25 00:00:00',
-        '2019-03-25 00:00:00', 5, 5, '[]', ':0', ':0'),
-       (24, 'Party guide', 'Party guide', '[]', true, '2019-03-25 00:00:00', '2019-03-25 00:00:00', 5,
-        5, '[]', ':0', ':0'),
-       (25, 'Juice Diet ', 'juice diet', '[]', true, '2021-11-08 00:00:00', '2021-11-08 00:00:00', 5,
-        5, '[]', ':0', ':0');
+update mst_pocket_guides set file_path = '[{"size": 1454, "webUrl": "media-files/pocket-guide/CleansingDiet.pdf", "encoding": "7bit", "fileName": "CleansingDiet.pdf", "mimetype": "application/pdf", "fieldName": "file", "originalName": "CleansingDiet.pdf"}]' where pocket_guide_id = 3;
+update mst_pocket_guides set file_path = '[{"size": 1454, "webUrl": "media-files/pocket-guide/DetoxDiet.pdf", "encoding": "7bit", "fileName": "DetoxDiet.pdf", "mimetype": "application/pdf", "fieldName": "file", "originalName": "DetoxDiet.pdf"}]' where pocket_guide_id = 4;
+update mst_pocket_guides set file_path = '[{"size": 1454, "webUrl": "media-files/pocket-guide/NoSaltDiet.pdf", "encoding": "7bit", "fileName": "NoSaltDiet.pdf", "mimetype": "application/pdf", "fieldName": "file", "originalName": "NoSaltDiet.pdf"}]' where pocket_guide_id = 5;
+update mst_pocket_guides set file_path = '[{"size": 1454, "webUrl": "media-files/pocket-guide/RestaurantGuideNonVeg.pdf", "encoding": "7bit", "fileName": "RestaurantGuideNonVeg.pdf", "mimetype": "application/pdf", "fieldName": "file", "originalName": "RestaurantGuideNonVeg.pdf"}]' where pocket_guide_id = 6;
+update mst_pocket_guides set file_path = '[{"size": 1454, "webUrl": "media-files/pocket-guide/RestaurantGuideVeg.pdf", "encoding": "7bit", "fileName": "RestaurantGuideVeg.pdf", "mimetype": "application/pdf", "fieldName": "file", "originalName": "RestaurantGuideVeg.pdf"}]' where pocket_guide_id = 7;
+update mst_pocket_guides set file_path = '[{"size": 1454, "webUrl": "media-files/pocket-guide/CleansingJuiceDay.pdf", "encoding": "7bit", "fileName": "CleansingJuiceDay.pdf", "mimetype": "application/pdf", "fieldName": "file", "originalName": "CleansingJuiceDay.pdf"}]' where pocket_guide_id = 8;
+update mst_pocket_guides set file_path = '[{"size": 1454, "webUrl": "media-files/pocket-guide/DetoxDiet.pdf", "encoding": "7bit", "fileName": "DetoxDiet.pdf", "mimetype": "application/pdf", "fieldName": "file", "originalName": "DetoxDiet.pdf"}]' where pocket_guide_id = 9;
+update mst_pocket_guides set file_path = '[{"size": 1454, "webUrl": "media-files/pocket-guide/PostDelivery.pdf", "encoding": "7bit", "fileName": "PostDelivery.pdf", "mimetype": "application/pdf", "fieldName": "file", "originalName": "PostDelivery.pdf"}]' where pocket_guide_id = 10;
+update mst_pocket_guides set file_path = '[{"size": 1454, "webUrl": "media-files/pocket-guide/VegTravelGuideKeto.pdf", "encoding": "7bit", "fileName": "VegTravelGuideKeto.pdf", "mimetype": "application/pdf", "fieldName": "file", "originalName": "VegTravelGuideKeto.pdf"}]' where pocket_guide_id = 11;
+update mst_pocket_guides set file_path = '[{"size": 1454, "webUrl": "media-files/pocket-guide/HealthyBites.pdf", "encoding": "7bit", "fileName": "HealthyBites.pdf", "mimetype": "application/pdf", "fieldName": "file", "originalName": "HealthyBites.pdf"}]' where pocket_guide_id = 12;
+update mst_pocket_guides set file_path = '[{"size": 1454, "webUrl": "media-files/pocket-guide/TravelGuide.pdf", "encoding": "7bit", "fileName": "TravelGuide.pdf", "mimetype": "application/pdf", "fieldName": "file", "originalName": "TravelGuide.pdf"}]' where pocket_guide_id = 13;
+update mst_pocket_guides set file_path = '[{"size": 1454, "webUrl": "media-files/pocket-guide/LiquidDiet.pdf", "encoding": "7bit", "fileName": "LiquidDiet.pdf", "mimetype": "application/pdf", "fieldName": "file", "originalName": "LiquidDiet.pdf"}]' where pocket_guide_id = 14;
+update mst_pocket_guides set file_path = '[{"size": 1454, "webUrl": "media-files/pocket-guide/NonVegTravelGuideKeto.pdf", "encoding": "7bit", "fileName": "NonVegTravelGuideKeto.pdf", "mimetype": "application/pdf", "fieldName": "file", "originalName": "NonVegTravelGuideKeto.pdf"}]' where pocket_guide_id = 15;
+update mst_pocket_guides set file_path = '[{"size": 1454, "webUrl": "media-files/pocket-guide/Navratri.pdf", "encoding": "7bit", "fileName": "Navratri.pdf", "mimetype": "application/pdf", "fieldName": "file", "originalName": "Navratri.pdf"}]' where pocket_guide_id = 16;
+update mst_pocket_guides set file_path = '[{"size": 1454, "webUrl": "media-files/pocket-guide/BananaDiet.pdf", "encoding": "7bit", "fileName": "BananaDiet.pdf", "mimetype": "application/pdf", "fieldName": "file", "originalName": "BananaDiet.pdf"}]' where pocket_guide_id = 17;
+update mst_pocket_guides set file_path = '[{"size": 1454, "webUrl": "media-files/pocket-guide/VegTravelGuideKeto.pdf", "encoding": "7bit", "fileName": "VegTravelGuideKeto.pdf", "mimetype": "application/pdf", "fieldName": "file", "originalName": "VegTravelGuideKeto.pdf"}]' where pocket_guide_id = 18;
+update mst_pocket_guides set file_path = '[{"size": 1454, "webUrl": "media-files/pocket-guide/MaintenanceDiet.pdf", "encoding": "7bit", "fileName": "MaintenanceDiet.pdf", "mimetype": "application/pdf", "fieldName": "file", "originalName": "MaintenanceDiet.pdf"}]' where pocket_guide_id = 19;
+update mst_pocket_guides set file_path = '[{"size": 1454, "webUrl": "media-files/pocket-guide/DiwaliGuide.pdf", "encoding": "7bit", "fileName": "DiwaliGuide.pdf", "mimetype": "application/pdf", "fieldName": "file", "originalName": "DiwaliGuide.pdf"}]' where pocket_guide_id = 20;
+update mst_pocket_guides set file_path = '[{"size": 1454, "webUrl": "media-files/pocket-guide/CheatSheet.pdf", "encoding": "7bit", "fileName": "CheatSheet.pdf", "mimetype": "application/pdf", "fieldName": "file", "originalName": "CheatSheet.pdf"}]' where pocket_guide_id = 21;
+update mst_pocket_guides set file_path = '[{"size": 1454, "webUrl": "media-files/pocket-guide/AlcoholGuide.pdf", "encoding": "7bit", "fileName": "AlcoholGuide.pdf", "mimetype": "application/pdf", "fieldName": "file", "originalName": "AlcoholGuide.pdf"}]' where pocket_guide_id = 22;
+update mst_pocket_guides set file_path = '[{"size": 1454, "webUrl": "media-files/pocket-guide/WeddingGuide.pdf", "encoding": "7bit", "fileName": "WeddingGuide.pdf", "mimetype": "application/pdf", "fieldName": "file", "originalName": "WeddingGuide.pdf"}]' where pocket_guide_id = 23;
+update mst_pocket_guides set file_path = '[{"size": 1454, "webUrl": "media-files/pocket-guide/PartyGuide.pdf", "encoding": "7bit", "fileName": "PartyGuide.pdf", "mimetype": "application/pdf", "fieldName": "file", "originalName": "PartyGuide.pdf"}]' where pocket_guide_id = 24;
+update mst_pocket_guides set file_path = '[{"size": 1454, "webUrl": "media-files/pocket-guide/CleansingJuiceDay.pdf", "encoding": "7bit", "fileName": "CleansingJuiceDay.pdf", "mimetype": "application/pdf", "fieldName": "file", "originalName": "CleansingJuiceDay.pdf"}]' where pocket_guide_id = 25;

@@ -29,7 +29,7 @@ export class RecipeCategoryListComponent implements OnInit, AfterViewInit, OnDes
   dataSource: RecipeCategoryDatasource;
   totalCount = 0;
   stringRes = StringResources;
-  defaultPageSize = Constants.DEFAULT_PAGE_SIZE;
+  defaultPageSize = Constants.MASTER_PAGE_SIZE;
   pageSizeList = Constants.PAGE_SIZE_LIST;
   payload: CommonSearchModel = new CommonSearchModel();
   @ViewChild(MatPaginator) paginator: MatPaginator;
@@ -61,7 +61,7 @@ export class RecipeCategoryListComponent implements OnInit, AfterViewInit, OnDes
 
   async loadDataSet(): Promise<void> {
     this.payload.pageNumber = this.paginator ? this.paginator.pageIndex : 0;
-    this.payload.pageSize = this.paginator ? this.paginator.pageSize : Constants.DEFAULT_PAGE_SIZE;
+    this.payload.pageSize = this.paginator ? this.paginator.pageSize : Constants.MASTER_PAGE_SIZE;
     await this.dataSource.loadData(ApiUrlEnum.RECIPE_CATEGORY_LIST, this.payload);
   }
 

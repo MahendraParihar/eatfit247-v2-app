@@ -1,0 +1,8 @@
+.data-table {
+  height: calc(100vh - 100px);
+  margin-top: 0px;
+
+  .mat-table {
+    height: calc(100vh - 210px) !important;
+  }
+}
