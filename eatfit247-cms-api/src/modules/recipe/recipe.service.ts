@@ -96,13 +96,12 @@ export class RecipeService {
       }
       const pageNumber = searchDto.pageNumber;
       const pageSize = searchDto.pageSize;
-      let offset = pageNumber === 0 ? 0 : pageNumber * pageSize;
+      const offset = pageNumber === 0 ? 0 : pageNumber * pageSize;
       const { rows, count } = await this.recipeRepository.findAndCountAll<MstRecipe>({
         include: [
           {
             model: MstRecipeType,
             required: true,
-            as: 'RecipeType',
           },
           {
             model: MstAdminUser,
@@ -139,7 +138,7 @@ export class RecipeService {
           title: s.name,
           details: s.details,
           recipeTypeId: s.recipeTypeId,
-          recipeType: s['RecipeType']['recipeType'],
+          recipeType: s.recipeType.recipeType,
           preparationMethod: s.howToMake,
           ingredients: s.ingredient,
           benefits: s.benefits,
