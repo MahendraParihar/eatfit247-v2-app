@@ -50,7 +50,9 @@ async function bootstrap() {
       },
     }),
   );
-  await app.listen(process.env.PORT).then();
+  const port = process.env.PORT || 3000;
+  await app.listen(port).then();
+  console.log(`Application is running on: http://localhost:${port}/api/v1`, 'bootstrap');
 }
 
 bootstrap();

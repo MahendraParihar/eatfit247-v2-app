@@ -24,7 +24,6 @@ import { DataMigrationModule } from './modules/data-migration/data-migration.mod
 import { ConfigParameterModule } from './modules/config-parameter/config-parameter.module';
 import { MailModule } from './core/mail/mail.module';
 import { PdfModule } from './core/pdf/pdf.module';
-import { CommonFunctionsUtil } from './util/common-functions-util';
 
 @Module({
   imports: [
