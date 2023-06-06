@@ -40,7 +40,6 @@ export class MemberIssueDatasource implements DataSource<MemberIssueModel> {
         const tempIssueList: MemberIssueModel[] = [];
         this.totalCountSubject.next(tempIssueList.length);
         this.dataSubject.next(tempIssueList);
-        this.snackBarService.showWarning(apiResponse.message);
         return false;
       case ServerResponseEnum.ERROR:
       default:
