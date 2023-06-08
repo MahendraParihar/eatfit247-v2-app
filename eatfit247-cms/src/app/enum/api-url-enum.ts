@@ -1,5 +1,6 @@
 export class ApiUrlEnum {
-  static MEDIA_PATH = window.location.origin+'/';
+  // static MEDIA_PATH = window.location.origin+'/';
+  static MEDIA_PATH = `http://localhost:3000`+'/';
   static BASE_URL = `${ApiUrlEnum.MEDIA_PATH}api/v1/`;
   static BASE_IMAGE_URL = `media/images/`;
   static DOWNLOAD_PATH = `${ApiUrlEnum.MEDIA_PATH}media-files/downloads/`;

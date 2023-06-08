@@ -1,6 +1,11 @@
 @import "../../../../theme/margin";
 @import "../../../../theme/variable";
 
+.diet-table{
+    height: calc(100vh - 180px) !important;
+    overflow-y: scroll;
+}
+
 table {
   width: 100%;
 }

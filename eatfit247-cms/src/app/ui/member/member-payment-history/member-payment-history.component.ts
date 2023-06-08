@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, Component, OnDestroy, OnInit, Renderer2 } from '@angular/core';
 import { StringResources } from '../../../enum/string-resources';
 import { FormBuilder } from '@angular/forms';
 import { HttpService } from '../../../service/http.service';
@@ -38,6 +38,7 @@ export class MemberPaymentHistoryComponent implements OnInit, AfterViewInit, OnD
     private snackBarService: SnackBarService,
     private navigationService: NavigationService,
     private activatedRoute: ActivatedRoute,
+    private renderer: Renderer2,
     public dialog: MatDialog) {
     this.activatedRoute.parent.params.subscribe(params => {
       this.id = Number(params['id']);
@@ -106,7 +107,7 @@ export class MemberPaymentHistoryComponent implements OnInit, AfterViewInit, OnD
     const dialogData = {
       new: false,
       memberId: this.id,
-      memberCallLogId: id,
+      memberPaymentId: id,
     };
     const dialogRef = this.dialog.open(MemberPaymentInvoiceDialogComponent, {
       width: '550px',
@@ -159,6 +160,37 @@ export class MemberPaymentHistoryComponent implements OnInit, AfterViewInit, OnD
           this.snackBarService.showError(res.message);
           break;
       }
+    }
+  }
+
+  async downloadInvoice(paymentId: number): Promise<void> {
+    const res: ResponseDataModel = await this.httpService.getRequest(ApiUrlEnum.MEMBER_PAYMENT_INVOICE_DOWNLOAD, paymentId, null, true);
+    if (res) {
+      switch (res.code) {
+        case ServerResponseEnum.SUCCESS:
+          if (res.data) {
+            this.downloadTemplate(res.data.buffer, res.data.fileName);
+          }
+          break;
+        case ServerResponseEnum.WARNING:
+          this.snackBarService.showWarning(res.message);
+          break;
+        case ServerResponseEnum.ERROR:
+          this.snackBarService.showError(res.message);
+          break;
+      }
+    }
+  }
+
+  downloadTemplate(base64String: string, fileName: string) {
+    if (base64String) {
+      const mediaType = 'data:application/pdf;base64,';
+      const link = this.renderer.createElement('a');
+      link.setAttribute('target', '_blank');
+      link.setAttribute('href', mediaType + base64String);
+      link.setAttribute('download', `${fileName}`);
+      link.click();
+      link.remove();
     }
   }
 }

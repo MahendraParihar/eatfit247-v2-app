@@ -1,225 +1,117 @@
-<table mat-table
-       [dataSource]="dataSource" multiTemplateDataRows
-       class="mat-elevation-z8">
-  <ng-container matColumnDef="program">
-    <th mat-header-cell *matHeaderCellDef>Plan</th>
-    <td mat-cell *matCellDef="let d"> {{d.program}} </td>
-  </ng-container>
-  <ng-container matColumnDef="programCategory">
-    <th mat-header-cell *matHeaderCellDef>Plan Type</th>
-    <td mat-cell *matCellDef="let d"> {{d.programCategory}} </td>
-  </ng-container>
-  <ng-container matColumnDef="noOfCycle">
-    <th mat-header-cell *matHeaderCellDef>No of Cycle</th>
-    <td mat-cell *matCellDef="let d"> {{d.noOfCycle}} {{stringRes.CYCLE}} </td>
-  </ng-container>
-  <ng-container matColumnDef="dietPlanStatus">
-    <th mat-header-cell *matHeaderCellDef>Diet Plan Status</th>
-    <td mat-cell *matCellDef="let d">
-      <button matTooltip="{{d.dietPlanStatus}}" appStatusBtn
-              [flag]="d.dietPlanStatusId === dietPlanStatusEnum.NOT_STARTED || d.dietPlanStatusId === dietPlanStatusEnum.IN_PROGRESS"
-              mat-flat-button>
-        {{d.dietPlanStatus}}
-      </button>
-    </td>
-  </ng-container>
-  <ng-container matColumnDef="updatedBy">
-    <th mat-header-cell *matHeaderCellDef>Updated By</th>
-    <td mat-cell *matCellDef="let d"> {{d.updatedBy  | appCreatedBy}}<br>{{d.updatedAt | appDateTime}} </td>
-  </ng-container>
-  <ng-container matColumnDef="expand">
-    <th mat-header-cell *matHeaderCellDef aria-label="row actions">&nbsp;</th>
-    <td mat-cell *matCellDef="let d" style="text-align: right">
-      <button mat-icon-button color="primary" [matMenuTriggerFor]="menu" aria-label="Add Diet Detail"
-              matTooltip="Add Diet Details" (click)="$event.stopPropagation()" *ngIf="d.showActionBtn">
-        <mat-icon>add</mat-icon>
-      </button>
-      <mat-menu #menu="matMenu">
-        <button mat-menu-item *ngIf="d.showDaily" (click)="onAddClick(true, d)">
-          <span>Day Plan</span>
-        </button>
-        <button mat-menu-item *ngIf="d.showWeekly" (click)="onAddClick(false, d)">
-          <span>Cycle Plan</span>
-        </button>
-      </mat-menu>
-      <button mat-icon-button aria-label="expand row"
-              (click)="(d.isExpanded  = !d.isExpanded); $event.stopPropagation()">
-        <mat-icon *ngIf="d.isExpanded">keyboard_arrow_down</mat-icon>
-        <mat-icon *ngIf="!d.isExpanded">keyboard_arrow_up</mat-icon>
-      </button>
-    </td>
-  </ng-container>
+<div class='diet-table'>
+  <ng-container>
+    <table mat-table
+           [dataSource]='dataSource' multiTemplateDataRows
+           class='mat-elevation-z8'>
+      <ng-container matColumnDef='program'>
+        <th mat-header-cell *matHeaderCellDef>Plan</th>
+        <td mat-cell *matCellDef='let d'> {{d.program}} </td>
+      </ng-container>
+      <ng-container matColumnDef='programCategory'>
+        <th mat-header-cell *matHeaderCellDef>Plan Type</th>
+        <td mat-cell *matCellDef='let d'> {{d.programCategory}} </td>
+      </ng-container>
+      <ng-container matColumnDef='noOfCycle'>
+        <th mat-header-cell *matHeaderCellDef>No of Cycle</th>
+        <td mat-cell *matCellDef='let d'> {{d.noOfCycle}} {{stringRes.CYCLE}} </td>
+      </ng-container>
+      <ng-container matColumnDef='dietPlanStatus'>
+        <th mat-header-cell *matHeaderCellDef>Diet Plan Status</th>
+        <td mat-cell *matCellDef='let d'>
+          <button matTooltip='{{d.dietPlanStatus}}' appStatusBtn
+                  [flag]='d.dietPlanStatusId === dietPlanStatusEnum.NOT_STARTED || d.dietPlanStatusId === dietPlanStatusEnum.IN_PROGRESS'
+                  mat-flat-button>
+            {{d.dietPlanStatus}}
+          </button>
+        </td>
+      </ng-container>
+      <ng-container matColumnDef='updatedBy'>
+        <th mat-header-cell *matHeaderCellDef>Updated By</th>
+        <td mat-cell *matCellDef='let d'> {{d.updatedBy  | appCreatedBy}}<br>{{d.updatedAt | appDateTime}} </td>
+      </ng-container>
+      <ng-container matColumnDef='expand'>
+        <th mat-header-cell *matHeaderCellDef aria-label='row actions'>&nbsp;</th>
+        <td mat-cell *matCellDef='let d' style='text-align: right'>
+          <button mat-icon-button color='primary' [matMenuTriggerFor]='menu' aria-label='Add Diet Detail'
+                  matTooltip='Add Diet Details' (click)='$event.stopPropagation()' *ngIf='d.showActionBtn'>
+            <mat-icon>add</mat-icon>
+          </button>
+          <mat-menu #menu='matMenu'>
+            <button mat-menu-item *ngIf='d.showDaily' (click)='onAddClick(true, d)'>
+              <span>Day Plan</span>
+            </button>
+            <button mat-menu-item *ngIf='d.showWeekly' (click)='onAddClick(false, d)'>
+              <span>Cycle Plan</span>
+            </button>
+          </mat-menu>
+          <button mat-icon-button aria-label='expand row'
+                  (click)='(d.isExpanded  = !d.isExpanded); $event.stopPropagation()'>
+            <mat-icon *ngIf='d.isExpanded'>keyboard_arrow_down</mat-icon>
+            <mat-icon *ngIf='!d.isExpanded'>keyboard_arrow_up</mat-icon>
+          </button>
+        </td>
+      </ng-container>
 
-  <!-- Expanded Content Column - The detail row is made up of this one column that spans across all columns -->
-  <ng-container matColumnDef="expandedDetail">
-    <td mat-cell *matCellDef="let d" [attr.colspan]="columnsToDisplayWithExpand.length">
-      <div class="example-element-detail"
-           [@detailExpand]="d.isExpanded ? 'expanded' : 'collapsed'">
-        <table>
-          <ng-container *ngFor="let cycle of d.cyclePlans">
-            <tr *ngFor="let day of cycle.dietPlans" class="cycle-item">
-              <td (click)="cycle.type==dietTypeEnum.CYCLE ? viewCycleDietPlan(cycle) : onViewDietPlanClick(day)">
-                <ng-container *ngIf="cycle.type==dietTypeEnum.CYCLE">
-                  <span [ngClass]="{'diet-link':cycle.type==dietTypeEnum.CYCLE}">{{stringRes.CYCLE}} {{cycle.cycleNo}}</span>
-                </ng-container>
-                <ng-container *ngIf="cycle.type!=dietTypeEnum.CYCLE">
+      <!-- Expanded Content Column - The detail row is made up of this one column that spans across all columns -->
+      <ng-container matColumnDef='expandedDetail'>
+        <td mat-cell *matCellDef='let d' [attr.colspan]='columnsToDisplayWithExpand.length'>
+          <div class='example-element-detail'
+               [@detailExpand]="d.isExpanded ? 'expanded' : 'collapsed'">
+            <table>
+              <ng-container *ngFor='let cycle of d.cyclePlans'>
+                <tr *ngFor='let day of cycle.dietPlans' class='cycle-item'>
+                  <td (click)='cycle.type==dietTypeEnum.CYCLE ? viewCycleDietPlan(cycle) : onViewDietPlanClick(day)'>
+                    <ng-container *ngIf='cycle.type==dietTypeEnum.CYCLE'>
+                    <span
+                      [ngClass]="{'diet-link':cycle.type==dietTypeEnum.CYCLE}">{{stringRes.CYCLE}} {{cycle.cycleNo}}</span>
+                    </ng-container>
+                    <ng-container *ngIf='cycle.type!=dietTypeEnum.CYCLE'>
                   <span
                     [ngClass]="{'diet-link':true}">{{stringRes.CYCLE}} {{cycle.cycleNo}} {{stringRes.DAY}} {{day.dayNo}}</span>
-                </ng-container>
-              </td>
-              <td>{{day.startDate | appDateTime:'onlyDate'}} - {{day.endDate | appDateTime:'onlyDate'}}</td>
-              <td>
-                <span *ngIf="cycle.type==dietTypeEnum.CYCLE" class="chip red-bg">{{cycle.type}}</span>
-                <span *ngIf="cycle.type!=dietTypeEnum.CYCLE" class="chip green-bg">{{cycle.type}}</span>
-              </td>
-              <td style="text-align: right">
-                <ng-container *ngIf="cycle.type==dietTypeEnum.CYCLE && day.isDeletable">
-                  <button (click)="onEditCycleDietPlan(d.id, cycle)" color="primary"
-                          mat-icon-button>
-                    <mat-icon>edit</mat-icon>
-                  </button>
-                  <button (click)="onDeleteDietPlan(day)" color="warn"
-                          mat-icon-button>
-                    <mat-icon>delete</mat-icon>
-                  </button>
-                </ng-container>
-                <ng-container *ngIf="cycle.type!=dietTypeEnum.CYCLE && day.isDeletable">
-                  <button (click)="onEditDailyDietPlan(day)" color="primary"
-                          mat-icon-button>
-                    <mat-icon>edit</mat-icon>
-                  </button>
-                  <button (click)="onDeleteDietPlan(day)" color="warn"
-                          mat-icon-button>
-                    <mat-icon>delete</mat-icon>
-                  </button>
-                </ng-container>
+                    </ng-container>
+                  </td>
+                  <td>{{day.startDate | appDateTime:'onlyDate'}} - {{day.endDate | appDateTime:'onlyDate'}}</td>
+                  <td>
+                    <span *ngIf='cycle.type==dietTypeEnum.CYCLE' class='chip red-bg'>{{cycle.type}}</span>
+                    <span *ngIf='cycle.type!=dietTypeEnum.CYCLE' class='chip green-bg'>{{cycle.type}}</span>
+                  </td>
+                  <td style='text-align: right'>
+                    <ng-container *ngIf='cycle.type==dietTypeEnum.CYCLE && day.isDeletable'>
+                      <button (click)='onEditCycleDietPlan(d.id, cycle)' color='primary'
+                              mat-icon-button>
+                        <mat-icon>edit</mat-icon>
+                      </button>
+                      <button (click)='onDeleteDietPlan(day)' color='warn'
+                              mat-icon-button>
+                        <mat-icon>delete</mat-icon>
+                      </button>
+                    </ng-container>
+                    <ng-container *ngIf='cycle.type!=dietTypeEnum.CYCLE && day.isDeletable'>
+                      <button (click)='onEditDailyDietPlan(day)' color='primary'
+                              mat-icon-button>
+                        <mat-icon>edit</mat-icon>
+                      </button>
+                      <button (click)='onDeleteDietPlan(day)' color='warn'
+                              mat-icon-button>
+                        <mat-icon>delete</mat-icon>
+                      </button>
+                    </ng-container>
 
-              </td>
-            </tr>
-          </ng-container>
-        </table>
-      </div>
-    </td>
+                  </td>
+                </tr>
+              </ng-container>
+            </table>
+          </div>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef='columnsToDisplayWithExpand;sticky: true'></tr>
+      <tr mat-row *matRowDef='let d; columns: columnsToDisplayWithExpand;'
+          class='example-element-row'
+          [class.example-expanded-row]='d.isExpanded'
+          (click)='d.isExpanded  = !d.isExpanded'>
+      </tr>
+      <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class='example-detail-row'></tr>
+    </table>
   </ng-container>
-
-  <tr mat-header-row *matHeaderRowDef="columnsToDisplayWithExpand;sticky: true"></tr>
-  <tr mat-row *matRowDef="let d; columns: columnsToDisplayWithExpand;"
-      class="example-element-row"
-      [class.example-expanded-row]="d.isExpanded"
-      (click)="d.isExpanded  = !d.isExpanded">
-  </tr>
-  <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="example-detail-row"></tr>
-</table>
-<!--<mat-accordion *ngIf='list && list.length > 0' multi>-->
-<!--  <mat-expansion-panel *ngFor='let d of list'>-->
-<!--    <mat-expansion-panel-header>-->
-<!--      <mat-panel-title class='header-section'>-->
-<!--        <div>{{d.program}} <span class='tag-primary'>{{d.programCategory}}</span></div>-->
-<!--        <div>{{d.noOfCycle}} {{stringRes.CYCLE}}</div>-->
-<!--        <div>{{d.noOfDaysInCycle}} Days/Cycle</div>-->
-<!--        <div>{{stringRes.CYCLE}} {{d.currentCycleNo}}</div>-->
-<!--        <div>{{(d.currentDayNo && d.currentDayNo > 0 ? stringRes.DAY + ' ' + d.currentDayNo : '')}}</div>-->
-<!--        <div>{{d.startDate | appDateTime:'onlyDate'}} - {{d.endDate | appDateTime:'onlyDate'}}</div>-->
-<!--        <div>-->
-<!--          <button matTooltip='{{d.dietPlanStatus}}' appStatusBtn-->
-<!--                  [flag]='d.dietPlanStatusId === dietPlanStatusEnum.NOT_STARTED || d.dietPlanStatusId === dietPlanStatusEnum.IN_PROGRESS'-->
-<!--                  mat-flat-button>-->
-<!--            {{d.dietPlanStatus}}-->
-<!--          </button>-->
-<!--        </div>-->
-<!--        <div>{{d.updatedBy | appCreatedBy}}<br>{{d.updatedAt | appDateTime}}</div>-->
-<!--        <div class='header'>-->
-<!--          <button mat-icon-button color='primary' [matMenuTriggerFor]='menu' aria-label='Add Diet Detail'-->
-<!--                  matTooltip='Add Diet Details' *ngIf='d.showActionBtn'>-->
-<!--            <mat-icon>add</mat-icon>-->
-<!--          </button>-->
-<!--          <mat-menu #menu='matMenu'>-->
-<!--            <button mat-menu-item *ngIf='d.showDaily' (click)='onAddClick(true, d)'>-->
-<!--              <span>Day Plan</span>-->
-<!--            </button>-->
-<!--            <button mat-menu-item *ngIf='d.showWeekly' (click)='onAddClick(false, d)'>-->
-<!--              <span>Cycle Plan</span>-->
-<!--            </button>-->
-<!--          </mat-menu>-->
-<!--        </div>-->
-<!--      </mat-panel-title>-->
-<!--    </mat-expansion-panel-header>-->
-<!--    <div class='cycle-plan'>-->
-<!--      <div class='cycle-plan-item' *ngFor='let s of d.cyclePlans'>-->
-<!--        <span>{{stringRes.CYCLE}} {{s.cycleNo}}</span>-->
-<!--        <span>{{s.startDate | appDateTime:'onlyDate'}} - {{s.endDate | appDateTime:'onlyDate'}}</span>-->
-<!--        <div><span class='tag-error'>{{s.type}}</span></div>-->
-<!--        <div>-->
-<!--          <button mat-icon-button color='primary' [matMenuTriggerFor]='menu' aria-label='View Diet Plan'-->
-<!--                  matTooltip='View Diet Plan'>-->
-<!--            <mat-icon>list</mat-icon>-->
-<!--          </button>-->
-<!--        </div>-->
-<!--      </div>-->
-<!--    </div>-->
-<!--    <ng-container *ngIf='d.cyclePlans'>-->
-<!--      <mat-accordion>-->
-<!--        <mat-expansion-panel (opened)='viewCycleDietPlan(cpItem)' *ngFor='let cpItem of d.cyclePlans; let ixCP = index;'-->
-<!--                             class='cp-container'-->
-<!--                             hideToggle="{{cpItem.type==dietTypeEnum.CYCLE? true: false}}">-->
-<!--          <mat-expansion-panel-header>-->
-<!--            <div class='cp-header'>-->
-<!--              <div [ngClass]="{'diet-link':cpItem.type==dietTypeEnum.CYCLE}">{{stringRes.CYCLE}} {{cpItem.cycleNo}}</div>-->
-<!--              <div class='cp-header-text'>({{cpItem.startDate | appDateTime:'onlyDate'}} - {{cpItem.endDate |-->
-<!--                appDateTime:'onlyDate'}})-->
-<!--              </div>-->
-<!--              <div *ngIf="cpItem.type==dietTypeEnum.CYCLE">-->
-<!--                <button (click)='onEditCycleDietPlan(d.id, cpItem)' color='primary' mat-icon-button>-->
-<!--                  <mat-icon>edit</mat-icon>-->
-<!--                </button>-->
-<!--              </div>-->
-<!--            </div>-->
-<!--          </mat-expansion-panel-header>-->
-<!--          <ng-container *ngIf="cpItem.dietPlans && cpItem.type=='DAY'">-->
-
-<!--            <mat-table [dataSource]='cpItem.dietPlans' class='dp-table'>-->
-<!--              <ng-container matColumnDef='dayNo'>-->
-<!--                <th *matHeaderCellDef mat-header-cell> {{stringRes.DAY}} </th>-->
-<!--                <td (click)='onViewDietPlanClick(item)' *matCellDef='let item' class='diet-link' mat-cell>-->
-<!--                  {{stringRes.DAY}} {{item.dayNo}}-->
-<!--                </td>-->
-<!--              </ng-container>-->
-<!--              <ng-container matColumnDef='startDate'>-->
-<!--                <th *matHeaderCellDef mat-header-cell> Date</th>-->
-<!--                <td *matCellDef='let item' mat-cell>{{item.startDate | appDateTime:'onlyDate'}} </td>-->
-<!--              </ng-container>-->
-<!--              <ng-container matColumnDef='action'>-->
-<!--                <mat-header-cell *matHeaderCellDef>Action</mat-header-cell>-->
-<!--                <mat-cell *matCellDef='let d; let i = index'>-->
-<!--                  <button (click)='onEditDailyDietPlan(d)' color='primary' mat-icon-button>-->
-<!--                    <mat-icon>edit</mat-icon>-->
-<!--                  </button>-->
-<!--                </mat-cell>-->
-<!--              </ng-container>-->
-<!--              <tr *matHeaderRowDef='dietPlanDayDisplayColumns' mat-header-row></tr>-->
-<!--              <tr *matRowDef='let myRowData; columns: dietPlanDayDisplayColumns' mat-row></tr>-->
-<!--            </mat-table>-->
-<!--          </ng-container>-->
-<!--        </mat-expansion-panel>-->
-<!--      </mat-accordion>-->
-<!--    </ng-container>-->
-<!--    <ng-container-->
-<!--      *ngIf='(!d.currentCycleNo && (!d.cyclePlans || d.cyclePlans.length === 0) && (dietTemplateList && dietTemplateList.length > 0))'>-->
-<!--      <form [formGroup]='formGroup' class='form-group'>-->
-<!--        <mat-form-field>-->
-<!--          <mat-label>{{stringRes.DIET_TEMPLATE}}</mat-label>-->
-<!--          <mat-select formControlName='dietTemplateId' required>-->
-<!--            <mat-option *ngFor='let item of dietTemplateList' [value]='item.id'>{{item.name}}</mat-option>-->
-<!--          </mat-select>-->
-<!--          <mat-error>-->
-<!--            <app-input-error [controlName]='stringRes.DIET_TEMPLATE'-->
-<!--                             [control]="formGroup.controls['dietTemplateId']"></app-input-error>-->
-<!--          </mat-error>-->
-<!--        </mat-form-field>-->
-<!--        <button (click)='onDietTemplateSubmit(d)' class='round-btn gradient-btn' color='primary' mat-raised-button>-->
-<!--          {{stringRes.SAVE}}-->
-<!--        </button>-->
-<!--      </form>-->
-<!--    </ng-container>-->
-<!--  </mat-expansion-panel>-->
-<!--</mat-accordion>-->
+</div>

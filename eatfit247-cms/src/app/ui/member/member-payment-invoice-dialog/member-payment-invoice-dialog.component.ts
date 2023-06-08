@@ -29,7 +29,7 @@ export class MemberPaymentInvoiceDialogComponent implements OnInit {
     private snackBarService: SnackBarService) {
     this.dialogData = data;
     this.memberId = data.memberId;
-    this.id = this.dialogData.memberCallLogId;
+    this.id = this.dialogData.memberPaymentId;
   }
 
   ngOnInit(): void {

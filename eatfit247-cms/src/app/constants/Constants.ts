@@ -1,7 +1,7 @@
 export class Constants {
   public static IS_DEV = true;
   public static DEVICE = 'Admin Panel';
-  public static DEFAULT_PAGE_SIZE = 15;
+  public static DEFAULT_PAGE_SIZE = 50;
   public static MASTER_PAGE_SIZE = 50;
   public static CH_PK = 'FJK&SDFF%7$8EW50';
   public static CH_IV_K = 'FHA*HJK%U5U@TE87';

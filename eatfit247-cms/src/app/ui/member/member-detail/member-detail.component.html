@@ -1,15 +1,15 @@
-<ng-container *ngIf="memberObj">
+<ng-container *ngIf='memberObj'>
   <mat-card>
     <mat-card-content>
-      <div class="top-profile">
-        <div class="profile">
-          <div class="image-section">
-            <app-custom-img-tag [alt]="" [isAvatar]="true"
-                                [webUrl]="memberObj.basicInfo.imagePath"></app-custom-img-tag>
+      <div class='top-profile'>
+        <div class='profile'>
+          <div class='image-section'>
+            <app-custom-img-tag [alt]='' [isAvatar]='true'
+                                [webUrl]='memberObj.basicInfo.imagePath'></app-custom-img-tag>
           </div>
-          <div class="data-section">
+          <div class='data-section'>
             <h6 mat-card-title>{{memberObj.basicInfo.firstName}} {{memberObj.basicInfo.lastName}}</h6>
-            <div id="navigation">
+            <div id='navigation'>
               <ul>
                 <li>{{memberObj.basicInfo.countryCode}}-{{memberObj.basicInfo.contactNumber}}</li>
                 <li>{{memberObj.basicInfo.emailId}}</li>
@@ -19,76 +19,78 @@
             </div>
           </div>
         </div>
-        <div class="summary">
+        <div class='summary'>
           <h6>{{stringRes.NUTRITIONIST_SUMMARY}}</h6>
-          <span [innerHTML]="memberObj.assessmentObj && memberObj.assessmentObj.nutritionistSummery ? memberObj.assessmentObj.nutritionistSummery : 'NA'"></span>
+          <span
+            [matTooltip]="memberObj.assessmentObj && memberObj.assessmentObj.nutritionistSummery ? memberObj.assessmentObj.nutritionistSummery : 'NA'"
+            [innerHTML]="memberObj.assessmentObj && memberObj.assessmentObj.nutritionistSummery ? memberObj.assessmentObj.nutritionistSummery : 'NA'"></span>
         </div>
       </div>
     </mat-card-content>
   </mat-card>
 </ng-container>
 
-<div *ngIf="memberObj" class="m-t-medium" fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start"
-     fxLayoutGap="12px">
-  <div fxFlex="calc(17%)"
-       fxFlex.lt-lg="calc(17%)"
-       fxFlex.lt-md="calc(17%)"
-       fxFlex.lt-sm="100%">
-    <mat-card class="custom-list" style="padding-left: 0">
-      <mat-selection-list [multiple]="false">
-        <mat-list-option (click)="navigateTo(0)" [selected]="activeTag ===0" [value]="0" class="menu-list-item">
-          <mat-icon class="icon-18" fontSet="material-icons-outlined" mat-list-icon>home</mat-icon>
+<div *ngIf='memberObj' class='m-t-medium' fxLayout='row wrap' fxLayout.lt-sm='column' fxLayoutAlign='flex-start'
+     fxLayoutGap='12px'>
+  <div fxFlex='calc(17%)'
+       fxFlex.lt-lg='calc(17%)'
+       fxFlex.lt-md='calc(17%)'
+       fxFlex.lt-sm='100%'>
+    <mat-card class='custom-list' style='padding-left: 0'>
+      <mat-selection-list [multiple]='false'>
+        <mat-list-option (click)='navigateTo(0)' [selected]='activeTag ===0' [value]='0' class='menu-list-item'>
+          <mat-icon class='icon-18' fontSet='material-icons-outlined' mat-list-icon>home</mat-icon>
           <span>{{stringRes.HOME}}</span>
-          <span class="twistie-separator" fxflex></span>
+          <span class='twistie-separator' fxflex></span>
         </mat-list-option>
-        <mat-list-option (click)="navigateTo(1)" [selected]="activeTag ===1" [value]="1" class="menu-list-item">
-          <mat-icon class="icon-18" fontSet="material-icons-outlined" mat-list-icon>analytics</mat-icon>
+        <mat-list-option (click)='navigateTo(1)' [selected]='activeTag ===1' [value]='1' class='menu-list-item'>
+          <mat-icon class='icon-18' fontSet='material-icons-outlined' mat-list-icon>analytics</mat-icon>
           <span>{{stringRes.ASSESSMENT}}</span>
-          <span class="twistie-separator" fxflex></span>
+          <span class='twistie-separator' fxflex></span>
         </mat-list-option>
-        <mat-list-option (click)="navigateTo(2)" [selected]="activeTag ===2" [value]="2" class="menu-list-item">
-          <mat-icon class="icon-18" fontSet="material-icons-outlined" mat-list-icon>medical_information</mat-icon>
+        <mat-list-option (click)='navigateTo(2)' [selected]='activeTag ===2' [value]='2' class='menu-list-item'>
+          <mat-icon class='icon-18' fontSet='material-icons-outlined' mat-list-icon>medical_information</mat-icon>
           <span>{{stringRes.HEALTH_ISSUES}}</span>
-          <span class="twistie-separator" fxflex></span>
+          <span class='twistie-separator' fxflex></span>
         </mat-list-option>
-        <mat-list-option (click)="navigateTo(3)" [selected]="activeTag ===3" [value]="3" class="menu-list-item">
-          <mat-icon class="icon-18" fontSet="material-icons-outlined" mat-list-icon>fitness_center</mat-icon>
+        <mat-list-option (click)='navigateTo(3)' [selected]='activeTag ===3' [value]='3' class='menu-list-item'>
+          <mat-icon class='icon-18' fontSet='material-icons-outlined' mat-list-icon>fitness_center</mat-icon>
           <span>{{stringRes.BODY_STATS}}</span>
-          <span class="twistie-separator" fxflex></span>
+          <span class='twistie-separator' fxflex></span>
         </mat-list-option>
-        <mat-list-option (click)="navigateTo(4)" [selected]="activeTag ===4" [value]="4" class="menu-list-item">
-          <mat-icon class="icon-18" fontSet="material-icons-outlined" mat-list-icon>menu_book</mat-icon>
+        <mat-list-option (click)='navigateTo(4)' [selected]='activeTag ===4' [value]='4' class='menu-list-item'>
+          <mat-icon class='icon-18' fontSet='material-icons-outlined' mat-list-icon>menu_book</mat-icon>
           <span>{{stringRes.DIET_PLAN}}</span>
-          <span class="twistie-separator" fxflex></span>
+          <span class='twistie-separator' fxflex></span>
         </mat-list-option>
-        <mat-list-option (click)="navigateTo(5)" [selected]="activeTag ===5" [value]="5" class="menu-list-item">
-          <mat-icon class="icon-18" fontSet="material-icons-outlined" mat-list-icon>contacts</mat-icon>
+        <mat-list-option (click)='navigateTo(5)' [selected]='activeTag ===5' [value]='5' class='menu-list-item'>
+          <mat-icon class='icon-18' fontSet='material-icons-outlined' mat-list-icon>contacts</mat-icon>
           <span>{{stringRes.CALL_SCHEDULE}}</span>
-          <span class="twistie-separator" fxflex></span>
+          <span class='twistie-separator' fxflex></span>
         </mat-list-option>
-        <mat-list-option (click)="navigateTo(6)" [selected]="activeTag ===6" [value]="6" class="menu-list-item">
-          <mat-icon class="icon-18" fontSet="material-icons-outlined" mat-list-icon>sticky_note_2</mat-icon>
+        <mat-list-option (click)='navigateTo(6)' [selected]='activeTag ===6' [value]='6' class='menu-list-item'>
+          <mat-icon class='icon-18' fontSet='material-icons-outlined' mat-list-icon>sticky_note_2</mat-icon>
           <span>{{stringRes.POCKET_GUIDES}}</span>
-          <span class="twistie-separator" fxflex></span>
+          <span class='twistie-separator' fxflex></span>
         </mat-list-option>
-        <mat-list-option (click)="navigateTo(7)" [selected]="activeTag ===7" [value]="7" class="menu-list-item">
-          <mat-icon class="icon-18" fontSet="material-icons-outlined" mat-list-icon>assignment_late</mat-icon>
+        <mat-list-option (click)='navigateTo(7)' [selected]='activeTag ===7' [value]='7' class='menu-list-item'>
+          <mat-icon class='icon-18' fontSet='material-icons-outlined' mat-list-icon>assignment_late</mat-icon>
           <span>{{stringRes.MEMBER_ISSUES}}</span>
-          <span class="twistie-separator" fxflex></span>
+          <span class='twistie-separator' fxflex></span>
         </mat-list-option>
-        <mat-list-option (click)="navigateTo(8)" [selected]="activeTag ===8" [value]="8" class="menu-list-item">
-          <mat-icon class="icon-18" fontSet="material-icons-outlined" mat-list-icon>receipt_long</mat-icon>
+        <mat-list-option (click)='navigateTo(8)' [selected]='activeTag ===8' [value]='8' class='menu-list-item'>
+          <mat-icon class='icon-18' fontSet='material-icons-outlined' mat-list-icon>receipt_long</mat-icon>
           <span>{{stringRes.PAYMENT_HISTORY}}</span>
-          <span class="twistie-separator" fxflex></span>
+          <span class='twistie-separator' fxflex></span>
         </mat-list-option>
       </mat-selection-list>
     </mat-card>
   </div>
-  <div class="member-detail-section"
-       fxFlex="calc(82%)"
-       fxFlex.lt-lg="calc(82%)"
-       fxFlex.lt-md="calc(82%)"
-       fxFlex.lt-sm="100%">
+  <div class='member-detail-section'
+       fxFlex='calc(82%)'
+       fxFlex.lt-lg='calc(82%)'
+       fxFlex.lt-md='calc(82%)'
+       fxFlex.lt-sm='100%'>
     <router-outlet></router-outlet>
   </div>
 </div>

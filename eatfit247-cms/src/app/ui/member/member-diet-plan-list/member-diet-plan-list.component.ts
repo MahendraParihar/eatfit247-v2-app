@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, Component, OnDestroy, OnInit, Renderer2 } from '@angular/core';
 import { StringResources } from '../../../enum/string-resources';
 import { HttpService } from '../../../service/http.service';
 import { SnackBarService } from '../../../service/snack-bar.service';
@@ -57,6 +57,7 @@ export class MemberDietPlanListComponent implements OnInit, AfterViewInit, OnDes
     private navigationService: NavigationService,
     private activatedRoute: ActivatedRoute,
     private formBuilder: FormBuilder,
+    private renderer: Renderer2,
     public dialog: MatDialog) {
     this.activatedRoute.parent.params.subscribe(params => {
       this.id = Number(params['id']);
@@ -206,6 +207,39 @@ export class MemberDietPlanListComponent implements OnInit, AfterViewInit, OnDes
           this.snackBarService.showError(res.message);
           break;
       }
+    }
+  }
+
+  async downloadDietPlan(dietPlanDetails: MemberDietDetail): Promise<boolean> {
+    const res = await this.httpService.getRequest(ApiUrlEnum.MEMBER_DIET_PLAN_DOWNLOAD + `/${this.id}/${dietPlanDetails.dietPlanId}/${dietPlanDetails.cycleNo}/${dietPlanDetails.dayNo}`, null, null, true);
+    if (!res) {
+      return false;
+    }
+    switch (res.code) {
+      case ServerResponseEnum.SUCCESS:
+        if (res.data) {
+          this.downloadTemplate(res.data.buffer, res.data.fileName);
+        }
+        return true;
+      case ServerResponseEnum.WARNING:
+        this.snackBarService.showWarning(res.message);
+        return false;
+      case ServerResponseEnum.ERROR:
+      default:
+        this.snackBarService.showError(res.message);
+        return false;
+    }
+  }
+
+  downloadTemplate(base64String: string, fileName: string) {
+    if (base64String) {
+      const mediaType = 'data:application/pdf;base64,';
+      const link = this.renderer.createElement('a');
+      link.setAttribute('target', '_blank');
+      link.setAttribute('href', mediaType + base64String);
+      link.setAttribute('download', `${fileName}`);
+      link.click();
+      link.remove();
     }
   }
 }

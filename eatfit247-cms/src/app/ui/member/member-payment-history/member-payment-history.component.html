@@ -44,6 +44,10 @@
                   matTooltip="{{stringRes.VIEW_INVOICE}}">
             <mat-icon>receipt_long</mat-icon>
           </button>
+          <button (click)="downloadInvoice(d.id)" aria-label="Download" color="accent" mat-icon-button
+                  matTooltip="{{stringRes.DOWNLOAD}}">
+            <mat-icon>download</mat-icon>
+          </button>
           <button (click)="onEditClick(d.id)" aria-label="Update" color="primary" mat-icon-button
                   matTooltip="{{stringRes.EDIT}}">
             <mat-icon>edit</mat-icon>
