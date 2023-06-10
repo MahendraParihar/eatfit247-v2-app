@@ -16,21 +16,22 @@ export class CommonUtil {
   }
 
   static convertAddressObj(address: AddressModel): string {
+    console.log(address);
     let tempStr = '';
     if (address.postalAddress && address.postalAddress.trim().length > 0) {
-      tempStr = `${tempStr} ${address.postalAddress.trim()}`;
+      tempStr =  tempStr + address.postalAddress.trim() + ', ';
     }
     if (address.cityVillage && address.cityVillage.trim().length > 0) {
-      tempStr = `, ${tempStr} ${address.cityVillage.trim()}`;
+      tempStr = tempStr + address.cityVillage.trim() + ', ';
     }
     if (address.state && address.state.trim().length > 0) {
-      tempStr = `, ${tempStr} ${address.state.trim()}`;
+      tempStr = tempStr + address.state.trim() + ', ';
     }
     if (address.country && address.country.trim().length > 0) {
-      tempStr = `, ${tempStr} ${address.country.trim()}`;
+      tempStr = tempStr + address.country.trim() + ', ';
     }
     if (address.pinCode && address.pinCode.trim().length > 0) {
-      tempStr = `, ${tempStr} - ${address.pinCode.trim()}`;
+      tempStr = tempStr + address.pinCode.trim();
     }
     if (tempStr) {
       tempStr = `${tempStr}.`;
