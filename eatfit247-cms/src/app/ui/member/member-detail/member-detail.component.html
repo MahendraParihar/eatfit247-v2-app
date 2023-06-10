@@ -1,5 +1,5 @@
 <ng-container *ngIf='memberObj'>
-  <mat-card>
+  <mat-card class="profile-section">
     <mat-card-content>
       <div class='top-profile'>
         <div class='profile'>
@@ -30,13 +30,12 @@
   </mat-card>
 </ng-container>
 
-<div *ngIf='memberObj' class='m-t-medium' fxLayout='row wrap' fxLayout.lt-sm='column' fxLayoutAlign='flex-start'
-     fxLayoutGap='12px'>
+<div *ngIf='memberObj' class='m-t-medium' fxLayout='row wrap' fxLayout.lt-sm='column' fxLayoutAlign='flex-start'>
   <div fxFlex='calc(17%)'
        fxFlex.lt-lg='calc(17%)'
        fxFlex.lt-md='calc(17%)'
        fxFlex.lt-sm='100%'>
-    <mat-card class='custom-list' style='padding-left: 0'>
+    <mat-card class='custom-list' style='padding-left: 0; padding-bottom: 4px; padding-top: 0'>
       <mat-selection-list [multiple]='false'>
         <mat-list-option (click)='navigateTo(0)' [selected]='activeTag ===0' [value]='0' class='menu-list-item'>
           <mat-icon class='icon-18' fontSet='material-icons-outlined' mat-list-icon>home</mat-icon>

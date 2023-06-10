@@ -2,11 +2,11 @@
 @import "color";
 
 $my-custom-level: mat.define-typography-level(
-  $font-family: Roboto,
-  $font-weight: 400,
-  $font-size: 1rem,
-  $line-height: 1,
-  $letter-spacing: normal
+        $font-family: Roboto,
+        $font-weight: 400,
+        $font-size: 1rem,
+        $line-height: 1,
+        $letter-spacing: normal
 );
 
 $padding-x-small: 4px;
@@ -31,11 +31,13 @@ $success-icon-color: #a5dc86;
 $info-icon-color: #c9dae1;
 $help-icon-color: #c9dae1;
 
+$profile-section-height: 75px;
+$member-detail-layout-height: calc(100vh - 295px);
 
 $my-custom-level: mat.define-typography-level(
-  $font-family: Roboto,
-  $font-weight: 400,
-  $font-size: 1rem,
-  $line-height: 1,
-  $letter-spacing: normal
+        $font-family: Roboto,
+        $font-weight: 400,
+        $font-size: 1rem,
+        $line-height: 1,
+        $letter-spacing: normal
 );

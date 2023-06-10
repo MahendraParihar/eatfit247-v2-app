@@ -52,11 +52,13 @@ export class PocketGuideListComponent implements OnInit, AfterViewInit, OnDestro
   }
 
   ngAfterViewInit() {
-    this.paginator.page
-      .pipe(
-        tap(() => this.loadDataSet())
-      )
-      .subscribe();
+    if(this.paginator) {
+      this.paginator.page
+        .pipe(
+          tap(() => this.loadDataSet())
+        )
+        .subscribe();
+    }
   }
 
   ngOnDestroy(): void {

@@ -48,11 +48,13 @@ export class SleepingPatternListComponent implements OnInit, AfterViewInit, OnDe
   }
 
   ngAfterViewInit() {
-    this.paginator.page
-      .pipe(
-        tap(() => this.loadDataSet()),
-      )
-      .subscribe();
+    if(this.paginator) {
+      this.paginator.page
+        .pipe(
+          tap(() => this.loadDataSet()),
+        )
+        .subscribe();
+    }
   }
 
   ngOnDestroy(): void {

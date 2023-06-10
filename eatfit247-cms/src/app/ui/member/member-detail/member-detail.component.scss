@@ -1,7 +1,15 @@
-@import "../../../theme/variable";
-@import "../../../theme/padding";
-@import "../../../theme/margin";
-@import "../../../theme/gradient";
+@import "../../../../theme/variable";
+@import "../../../../theme/padding";
+@import "../../../../theme/margin";
+@import "../../../../theme/gradient";
+
+.profile-section {
+  ::ng-deep {
+    .mat-card-content {
+      height: $profile-section-height !important;
+    }
+  }
+}
 
 .twistie-separator {
   flex: 1 1 0;
@@ -85,6 +93,16 @@
 
 .member-detail-section {
   overflow: auto;
-  height: calc(100vh - 153px);
+  padding: $padding-x-small $padding-x-small $padding-x-small $padding-medium;
+  height: calc(100vh - $profile-section-height - 64px - $padding-large - $padding-large - $padding-large - $padding-large);
   box-sizing: border-box;
+
+  ::ng-deep {
+    .data-table {
+      .mat-table{
+        height: calc(100vh - 352px) !important;
+        overflow-y: scroll;
+      }
+    }
+  }
 }

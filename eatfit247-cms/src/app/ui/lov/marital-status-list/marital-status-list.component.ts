@@ -48,11 +48,13 @@ export class MaritalStatusListComponent implements OnInit, AfterViewInit, OnDest
   }
 
   ngAfterViewInit() {
-    this.paginator.page
-      .pipe(
-        tap(() => this.loadDataSet()),
-      )
-      .subscribe();
+    if(this.paginator) {
+      this.paginator.page
+        .pipe(
+          tap(() => this.loadDataSet()),
+        )
+        .subscribe();
+    }
   }
 
   ngOnDestroy(): void {

@@ -1,9 +1,4 @@
-@import "../../../theme/padding";
-
-.data-table .mat-table {
-  height: calc(100vh - 240px) !important;
-  overflow-y: scroll;
-}
+@import "../../../../theme/padding";
 
 
 .mat-column-createdBy, .mat-column-respondedBy {
