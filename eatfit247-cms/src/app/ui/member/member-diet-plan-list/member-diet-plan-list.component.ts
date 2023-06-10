@@ -22,6 +22,7 @@ import { AlertDialogDataInterface } from '../../../interfaces/alert-dialog-data.
 import { AlertTypeEnum } from '../../../enum/alert-type-enum';
 import { DialogAlertComponent } from '../../shared/components/dialog-alert/dialog-alert.component';
 import { DietTypeEnum } from '../../../enum/diet-type-enum';
+import { MemberPaymentModel } from '../../../models/member-payment.model';
 
 @Component({
   selector: 'app-member-diet-plan-list',
@@ -113,6 +114,25 @@ export class MemberDietPlanListComponent implements OnInit, AfterViewInit, OnDes
     );
   }
 
+  onStatusChangeDialog(item: MemberDietPlanModel) {
+    const dialogData: AlertDialogDataInterface = {
+      title: StringResources.ALERT,
+      message: StringResources.CHANGE_STATUS_DESC,
+      positiveBtnTxt: StringResources.YES,
+      negativeBtnTxt: StringResources.NO,
+      alertType: AlertTypeEnum.WARNING,
+    };
+    const dialogRef = this.dialog.open(DialogAlertComponent, {
+      width: '350px',
+      data: dialogData,
+    });
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.updateStatus(item.id);
+      }
+    });
+  }
+
   async onDeleteDietPlan(dietPlan: MemberDietDetail) {
     const dialogData: AlertDialogDataInterface = {
       title: StringResources.ALERT,
@@ -126,7 +146,6 @@ export class MemberDietPlanListComponent implements OnInit, AfterViewInit, OnDes
       data: dialogData,
     });
     dialogRef.afterClosed().subscribe(result => {
-
       if (result) {
         this.deleteDietPlanTask(dietPlan);
       }
@@ -135,12 +154,12 @@ export class MemberDietPlanListComponent implements OnInit, AfterViewInit, OnDes
 
   async deleteDietPlanTask(dietPlan: MemberDietDetail) {
     let apiUrl;
-    if (dietPlan.dayNo){
+    if (dietPlan.dayNo) {
       apiUrl = `${ApiUrlEnum.MEMBER_DIET_PLAN_DAY_DELETE}/${dietPlan.dietPlanId}/${dietPlan.cycleNo}/${dietPlan.dayNo}`;
-    }else{
-      apiUrl = `${ApiUrlEnum.MEMBER_DIET_PLAN_CYCLE_DELETE}/${dietPlan.dietPlanId}/${dietPlan.cycleNo}`
+    } else {
+      apiUrl = `${ApiUrlEnum.MEMBER_DIET_PLAN_CYCLE_DELETE}/${dietPlan.dietPlanId}/${dietPlan.cycleNo}`;
     }
-    const res = await this.httpService.deleteRequest(apiUrl, null,true);
+    const res = await this.httpService.deleteRequest(apiUrl, null, true);
     if (res) {
       switch (res.code) {
         case ServerResponseEnum.SUCCESS:
@@ -169,7 +188,6 @@ export class MemberDietPlanListComponent implements OnInit, AfterViewInit, OnDes
       disableClose: true,
     });
     dialogRef.afterClosed().subscribe(result => {
-
       if (result) {
       }
     });
@@ -179,6 +197,24 @@ export class MemberDietPlanListComponent implements OnInit, AfterViewInit, OnDes
     if (cyclePlanItem.type === 'CYCLE') {
       if (cyclePlanItem.dietPlans && cyclePlanItem.dietPlans.length > 0) {
         this.onViewDietPlanClick(cyclePlanItem.dietPlans[0]);
+      }
+    }
+  }
+
+  async updateStatus(dietPlanId: number) {
+    const res = await this.httpService.putRequest(`${ApiUrlEnum.MEMBER_DIET_PLAN_UPDATE_STATUS}/${this.id}/${dietPlanId}`, null, null, true);
+    if (res) {
+      switch (res.code) {
+        case ServerResponseEnum.SUCCESS:
+          this.loadData();
+          this.snackBarService.showSuccess(res.message);
+          break;
+        case ServerResponseEnum.WARNING:
+          this.snackBarService.showWarning(res.message);
+          break;
+        case ServerResponseEnum.ERROR:
+          this.snackBarService.showError(res.message);
+          break;
       }
     }
   }
@@ -210,8 +246,14 @@ export class MemberDietPlanListComponent implements OnInit, AfterViewInit, OnDes
     }
   }
 
-  async downloadDietPlan(dietPlanDetails: MemberDietDetail): Promise<boolean> {
-    const res = await this.httpService.getRequest(ApiUrlEnum.MEMBER_DIET_PLAN_DOWNLOAD + `/${this.id}/${dietPlanDetails.dietPlanId}/${dietPlanDetails.cycleNo}/${dietPlanDetails.dayNo}`, null, null, true);
+  async downloadDietPlan(dietPlanDetail: MemberDietDetail): Promise<boolean> {
+    let url;
+    if (dietPlanDetail.dayNo) {
+      url = ApiUrlEnum.MEMBER_DIET_PLAN_DOWNLOAD_DAY + `/${this.id}/${dietPlanDetail.dietPlanId}/${dietPlanDetail.cycleNo}/${dietPlanDetail.dayNo}`;
+    } else {
+      url = ApiUrlEnum.MEMBER_DIET_PLAN_DOWNLOAD_CYCLE + `/${this.id}/${dietPlanDetail.dietPlanId}/${dietPlanDetail.cycleNo}`;
+    }
+    const res = await this.httpService.getRequest(url, null, null, true);
     if (!res) {
       return false;
     }

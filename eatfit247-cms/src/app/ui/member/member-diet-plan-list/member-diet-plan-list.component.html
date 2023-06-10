@@ -19,6 +19,7 @@
         <th mat-header-cell *matHeaderCellDef>Diet Plan Status</th>
         <td mat-cell *matCellDef='let d'>
           <button matTooltip='{{d.dietPlanStatus}}' appStatusBtn
+                  (click)="onStatusChangeDialog(d);$event.stopPropagation()"
                   [flag]='d.dietPlanStatusId === dietPlanStatusEnum.NOT_STARTED || d.dietPlanStatusId === dietPlanStatusEnum.IN_PROGRESS'
                   mat-flat-button>
             {{d.dietPlanStatus}}

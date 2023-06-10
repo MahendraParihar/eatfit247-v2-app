@@ -5,7 +5,7 @@ export class InputLength {
   public static MAX_EMAIL = 100;
   public static MIN_CONTACT_NUMBER = 6;
   public static MAX_CONTACT_NUMBER = 16;
-  public static MAX_COUNTRY_CODE = 3;
+  public static MAX_COUNTRY_CODE = 4;
   public static MAX_PROFILE_DESCRIPTION = 1000;
   public static MAX_HOBBIES = 500;
   public static MAX_PASSWORD = 16;

@@ -63,7 +63,7 @@ export class MemberDietPlanService {
     private dietTemplateService: DietTemplateService,
     private pdfService: PdfService,
     private emailService: EmailService,
-  ) { }
+  ) {}
 
   public async findAll(id: number): Promise<IServerResponse> {
     let res: IServerResponse;
@@ -132,7 +132,7 @@ export class MemberDietPlanService {
         },
         order: [
           ['memberPaymentId', 'asc'],
-          ['startDate', 'DESC'],
+          ['startDate', 'ASC'],
         ],
         raw: true,
         nest: true,
@@ -197,12 +197,12 @@ export class MemberDietPlanService {
       }
       for (let i = 0; i < planList.length; i++) {
         const cyclePlanList = [];
-        const tempCycleList = _.filter(dietPlanDetailList, { dietPlanId: planList[i].id });
+        const tempCycleList: IMemberDietDetail[] = _.filter(dietPlanDetailList, { dietPlanId: planList[i].id });
         const cycleNos = _.uniqWith(_.map(tempCycleList, 'cycleNo'), _.isEqual);
         for (let j = 0; j < cycleNos.length; j++) {
           const cS = _.filter(tempCycleList, { cycleNo: cycleNos[j] });
           for (let k = 0; k < cS.length; k++) {
-            cS[k].isDeletable = k === cS.length - 1 && j === cycleNos.length - 1;
+            cS[k].isDeletable = (k === cS.length - 1 && j === cycleNos.length - 1) && planList[i].showActionBtn;
           }
           cyclePlanList.push(<ICyclePlan>{
             cycleNo: cycleNos[j],
@@ -711,7 +711,52 @@ export class MemberDietPlanService {
     return res;
   }
 
-  getEmptyDietPlan(categoryList: MstRecipeCategory[]) {
+  async updateStatus(memberId: number, dietPlanId: number, adminId: number, ip: string): Promise<IServerResponse> {
+    let res: IServerResponse;
+    try {
+      const dietPlan = await this.memberDietPlanRepository.findOne({
+        where: {
+          memberDietPlanId: dietPlanId,
+          memberId: memberId,
+        },
+      });
+      if (dietPlan) {
+        await this.memberDietPlanRepository.update(
+          {
+            isCompleted: !dietPlan.isCompleted,
+            modifiedBy: adminId,
+            modifiedIp: ip,
+          },
+          {
+            where: {
+              memberDietPlanId: dietPlanId,
+            },
+          },
+        );
+        res = {
+          code: ServerResponseEnum.SUCCESS,
+          message: StringResource.DIET_PLAN_UPDATE_STATUS,
+          data: null,
+        };
+      } else {
+        res = {
+          code: ServerResponseEnum.WARNING,
+          message: StringResource.WARNING_DIET_PLAN_NOT_FOUND,
+          data: null,
+        };
+      }
+    } catch (error) {
+      this.exceptionService.logException(error);
+      res = {
+        code: ServerResponseEnum.ERROR,
+        message: IS_DEV ? error['message'] : StringResource.SOMETHING_WENT_WRONG,
+        data: null,
+      };
+    }
+    return res;
+  }
+
+  private getEmptyDietPlan(categoryList: MstRecipeCategory[]) {
     const dietCategoryList = [];
     for (const c of categoryList) {
       dietCategoryList.push(<IDietPlanDetail>{

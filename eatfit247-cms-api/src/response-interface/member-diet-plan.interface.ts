@@ -1,6 +1,6 @@
-import { ICreateUpdate } from './lov.interface';
+import {ICreateUpdate} from './lov.interface';
 import moment from 'moment/moment';
-import { DropdownListInterface } from './dropdown-list.interface';
+import {DropdownListInterface} from './dropdown-list.interface';
 
 export interface IMemberDietPlan extends ICreateUpdate {
   program: string;
@@ -13,10 +13,15 @@ export interface IMemberDietPlan extends ICreateUpdate {
   noOfDaysInCycle: number;
   currentCycleNo?: number;
   currentDayNo?: number;
-  deletable: boolean;
   dietPlanStatusId: number;
   dietPlanStatus: string;
   cyclePlans: any[];
+  deletable: boolean;
+  upcomingDay?: number;
+  upcomingCycle?: number;
+  showActionBtn: boolean;
+  showDaily: boolean;
+  showWeekly: boolean;
 }
 
 export interface ICyclePlan {

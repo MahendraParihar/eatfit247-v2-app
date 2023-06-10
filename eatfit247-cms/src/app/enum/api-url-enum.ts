@@ -152,8 +152,10 @@ export class ApiUrlEnum {
   static MEMBER_DIET_PLAN_MANAGE = "member-diet-plan/manage";
   static MEMBER_DIET_PLAN_UPDATE_STATUS = "member-diet-plan/update-status";
   static MEMBER_DIET_PLAN_MASTER_DATA = "member-diet-plan/master-data";
-  static MEMBER_DIET_PLAN_DOWNLOAD = "member-diet-plan/download";
-  static MEMBER_DIET_PLAN_SEND_EMAIL = "member-diet-plan/send-email";
+  static MEMBER_DIET_PLAN_DOWNLOAD_CYCLE = "member-diet-plan/download-cycle";
+  static MEMBER_DIET_PLAN_DOWNLOAD_DAY = "member-diet-plan/download-day";
+  static MEMBER_DIET_PLAN_SEND_EMAIL_CYCLE = "member-diet-plan/send-email-cycle";
+  static MEMBER_DIET_PLAN_SEND_EMAIL_DAY = "member-diet-plan/send-email-day";
   static MEMBER_DIET_PLAN_TEMPLATE_UPDATE = "member-diet-plan/update-details";
   static MEMBER_DIET_PLAN_CYCLE_DELETE = "member-diet-plan/delete-cycle";
   static MEMBER_DIET_PLAN_DAY_DELETE = "member-diet-plan/delete-day";

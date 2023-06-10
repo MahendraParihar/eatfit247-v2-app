@@ -38,7 +38,13 @@ export class MemberDietPlanDetailsDialogComponent implements OnInit {
   }
 
   async downloadDietPlan(): Promise<boolean> {
-    const res = await this.httpService.getRequest(ApiUrlEnum.MEMBER_DIET_PLAN_DOWNLOAD + `/${this.id}/${this.dietPlanDetail.dietPlanId}/${this.dietPlanDetail.cycleNo}/${this.dietPlanDetail.dayNo}`, null, null, true);
+    let url;
+    if (this.dietPlanDetail.dayNo) {
+      url = ApiUrlEnum.MEMBER_DIET_PLAN_DOWNLOAD_DAY + `/${this.id}/${this.dietPlanDetail.dietPlanId}/${this.dietPlanDetail.cycleNo}/${this.dietPlanDetail.dayNo}`;
+    } else {
+      url = ApiUrlEnum.MEMBER_DIET_PLAN_DOWNLOAD_CYCLE + `/${this.id}/${this.dietPlanDetail.dietPlanId}/${this.dietPlanDetail.cycleNo}`;
+    }
+    const res = await this.httpService.getRequest(url, null, null, true);
     if (!res) {
       return false;
     }
@@ -71,7 +77,13 @@ export class MemberDietPlanDetailsDialogComponent implements OnInit {
   }
 
   async sendEmail(): Promise<boolean> {
-    const apiResponse = await this.httpService.getRequest(ApiUrlEnum.MEMBER_DIET_PLAN_SEND_EMAIL + `/${this.id}/${this.dietPlanDetail.dietPlanId}/${this.dietPlanDetail.cycleNo}/${this.dietPlanDetail.dayNo}`, null, null, true);
+    let url;
+    if (this.dietPlanDetail.dayNo) {
+      url = `${ApiUrlEnum.MEMBER_DIET_PLAN_SEND_EMAIL_DAY}/${this.id}/${this.dietPlanDetail.dietPlanId}/${this.dietPlanDetail.cycleNo}/${this.dietPlanDetail.dayNo}`;
+    } else {
+      url = `${ApiUrlEnum.MEMBER_DIET_PLAN_SEND_EMAIL_CYCLE}/${this.id}/${this.dietPlanDetail.dietPlanId}/${this.dietPlanDetail.cycleNo}`;
+    }
+    const apiResponse = await this.httpService.getRequest(url, null, null, true);
     if (!apiResponse) {
       return false;
     }

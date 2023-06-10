@@ -1,17 +1,11 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Req, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../../account/jwt-auth.guard';
-import { CommonService } from '../../common/common.service';
-import { ConfigParameterService } from '../../config-parameter/config-parameter.service';
 import { MemberDietPlanService } from '../services/member-diet-plan.service';
 import { MemberDietPlanDetailDto, MemberDietTemplateDto } from '../dto/member-diet-plan-detail.dto';
 
 @Controller('member-diet-plan')
 export class MemberDietPlanController {
-  constructor(
-    private readonly service: MemberDietPlanService,
-    private readonly configParameterService: ConfigParameterService,
-    private readonly commonService: CommonService,
-  ) {
+  constructor(private readonly service: MemberDietPlanService) {
   }
 
   @UseGuards(JwtAuthGuard)
@@ -42,7 +36,17 @@ export class MemberDietPlanController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Get('download/:id/:dietPlanId/:cycleNo/:dayNo')
+  @Get('download-cycle/:id/:dietPlanId/:cycleNo')
+  async downloadDietPlanByCycle(
+    @Param('id') memberId: number,
+    @Param('dietPlanId') dietPlanId: number,
+    @Param('cycleNo') cycleNo: number,
+  ) {
+    return await this.service.downloadDietPlan(memberId, dietPlanId, cycleNo, null);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('download-day/:id/:dietPlanId/:cycleNo/:dayNo')
   async downloadDietPlanByDay(
     @Param('id') memberId: number,
     @Param('dietPlanId') dietPlanId: number,
@@ -53,8 +57,18 @@ export class MemberDietPlanController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Get('send-email/:id/:dietPlanId/:cycleNo/:dayNo')
-  async sendDietPlanViaEmail(
+  @Get('send-email-cycle/:id/:dietPlanId/:cycleNo')
+  async sendDietPlanViaEmailCycle(
+    @Param('id') memberId: number,
+    @Param('dietPlanId') dietPlanId: number,
+    @Param('cycleNo') cycleNo: number,
+  ) {
+    return await this.service.sendDietPlan(memberId, dietPlanId, cycleNo);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('send-email-day/:id/:dietPlanId/:cycleNo/:dayNo')
+  async sendDietPlanViaEmailDay(
     @Param('id') memberId: number,
     @Param('dietPlanId') dietPlanId: number,
     @Param('cycleNo') cycleNo: number,
@@ -90,5 +104,11 @@ export class MemberDietPlanController {
   @Post('update-details/:id')
   async applyDietTemplate(@Param('id') memberId: number, @Req() req, @Body() body: MemberDietTemplateDto) {
     return await this.service.applyDietTemplate(memberId, body, req.ip, req.user.userId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Put('update-status/:id/:dietPlanId')
+  async updateStatus(@Param('id') id: number, @Param('dietPlanId') dietPlanId: number, @Req() req) {
+    return await this.service.updateStatus(id, dietPlanId, req.user.userId, req.ip);
   }
 }

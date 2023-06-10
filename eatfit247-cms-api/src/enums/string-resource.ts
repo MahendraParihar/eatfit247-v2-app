@@ -32,4 +32,6 @@ export enum StringResource {
   CURRENT_PASSWORD = `Current password not matched`,
 
   NO_DIET_PLAN_FOUND = 'No diet plan found for this member',
+  DIET_PLAN_UPDATE_STATUS = 'Diet plan status changed successfully',
+  WARNING_DIET_PLAN_NOT_FOUND = 'Diet plan not found',
 }

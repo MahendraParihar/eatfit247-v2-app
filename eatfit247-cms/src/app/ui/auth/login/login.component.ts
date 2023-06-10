@@ -28,8 +28,8 @@ export class LoginComponent implements OnInit {
   stringRes = StringResources;
   hide = true;
   formGroup: UntypedFormGroup = this.fb.group({
-    emailId: ['mahendra.parihar10@gmail.com', [Validators.required, Validators.email, Validators.maxLength(InputLength.MAX_EMAIL)]],
-    password: ['Mahendra@123', [Validators.required, Validators.maxLength(100)]],
+    emailId: [null, [Validators.required, Validators.email, Validators.maxLength(InputLength.MAX_EMAIL)]],
+    password: [null, [Validators.required, Validators.maxLength(100)]],
   });
 
   constructor(private fb: UntypedFormBuilder,

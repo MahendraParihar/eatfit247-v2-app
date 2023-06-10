@@ -9,28 +9,30 @@ export class ExceptionService {
 
   public async logException(e: any) {
     if (IS_DEV) {
-
+      console.log(e);
     }
   }
 
   public async logError(method: string, controller: string, error: any): Promise<boolean> {
     if (IS_DEV) {
+      console.log(error);
+      return true;
     }
-    return true;
-    /*try {
-      const addressObj = await this.logErrorRepository.create({
+    try {
+      this.logErrorRepository.create({
         environment: '',
-        hosturl: '',
-        controllers: controllers,
-        methodname: method,
+        hostUrl: window.location.origin.toString(),
+        controller: controller,
+        methodName: method,
         exceptionMessage: '',
         exceptionMessageSQL: '',
-        exceptionCode: '',
+        exceptionSource: '',
         exceptionType: '',
         exceptionStacktrace: error,
       });
     } catch (e) {
-      return null;
-    }*/
+      console.log(e);
+    }
+    return true;
   }
 }
