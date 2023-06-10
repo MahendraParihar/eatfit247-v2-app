@@ -1,6 +1,6 @@
-import {ICreateUpdate} from './lov.interface';
+import { ICreateUpdate } from './lov.interface';
 import moment from 'moment/moment';
-import {DropdownListInterface} from './dropdown-list.interface';
+import { DropdownListInterface } from './dropdown-list.interface';
 
 export interface IMemberDietPlan extends ICreateUpdate {
   program: string;

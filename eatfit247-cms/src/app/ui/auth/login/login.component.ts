@@ -134,8 +134,5 @@ export class LoginComponent implements OnInit {
       width: '300px',
       data: dialogData,
     });
-    dialogRef.afterClosed().subscribe(result => {
-
-    });
   }
 }

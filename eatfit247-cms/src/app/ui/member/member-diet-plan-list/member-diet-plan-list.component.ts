@@ -22,7 +22,6 @@ import { AlertDialogDataInterface } from '../../../interfaces/alert-dialog-data.
 import { AlertTypeEnum } from '../../../enum/alert-type-enum';
 import { DialogAlertComponent } from '../../shared/components/dialog-alert/dialog-alert.component';
 import { DietTypeEnum } from '../../../enum/diet-type-enum';
-import { MemberPaymentModel } from '../../../models/member-payment.model';
 
 @Component({
   selector: 'app-member-diet-plan-list',

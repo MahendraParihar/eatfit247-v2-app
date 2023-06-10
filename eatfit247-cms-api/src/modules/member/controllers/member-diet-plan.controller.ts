@@ -5,8 +5,7 @@ import { MemberDietPlanDetailDto, MemberDietTemplateDto } from '../dto/member-di
 
 @Controller('member-diet-plan')
 export class MemberDietPlanController {
-  constructor(private readonly service: MemberDietPlanService) {
-  }
+  constructor(private readonly service: MemberDietPlanService) { }
 
   @UseGuards(JwtAuthGuard)
   @Get('list/:id')
