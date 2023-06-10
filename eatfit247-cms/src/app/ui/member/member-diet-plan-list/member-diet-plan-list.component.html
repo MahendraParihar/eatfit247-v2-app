@@ -18,9 +18,9 @@
       <ng-container matColumnDef='dietPlanStatus'>
         <th mat-header-cell *matHeaderCellDef>Diet Plan Status</th>
         <td mat-cell *matCellDef='let d'>
-          <button matTooltip='{{d.dietPlanStatus}}' appStatusBtn
+          <button matTooltip='{{d.dietPlanStatus}}' triStatusBtn
                   (click)="onStatusChangeDialog(d);$event.stopPropagation()"
-                  [flag]='d.dietPlanStatusId === dietPlanStatusEnum.NOT_STARTED || d.dietPlanStatusId === dietPlanStatusEnum.IN_PROGRESS'
+                  [flag]='d.dietPlanStatusId === dietPlanStatusEnum.NOT_STARTED ? 1 : (d.dietPlanStatusId === dietPlanStatusEnum.IN_PROGRESS ? 0 : -1)'
                   mat-flat-button>
             {{d.dietPlanStatus}}
           </button>

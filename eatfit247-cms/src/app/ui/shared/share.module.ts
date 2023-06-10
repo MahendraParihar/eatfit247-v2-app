@@ -19,6 +19,7 @@ import { CustomImgTagComponent } from './components/custom-img-tag/custom-img-ta
 import { RecipeSelectorComponent } from './components/recipe-selector/recipe-selector.component';
 import { DietDetailsSelectorComponent } from './components/diet-details-selector/diet-details-selector.component';
 import { AddressPipe } from './pipe/address.pipe';
+import { TriStatusButtonDirective } from './directive/tri-status-button.directive';
 
 @NgModule({
   declarations: [
@@ -27,6 +28,7 @@ import { AddressPipe } from './pipe/address.pipe';
     FileSelectorComponent,
     ImageDragDirective,
     StatusButtonDirective,
+    TriStatusButtonDirective,
     UserStatusButtonDirective,
     UserSelectorComponent,
     SearchFormComponent,
@@ -60,6 +62,7 @@ import { AddressPipe } from './pipe/address.pipe';
     FlexLayoutModule,
     AddressPipe,
     DateTimePipe,
+    TriStatusButtonDirective,
     CreatedByUserPipe,
     CurrencyPipe,
     RecipeSelectorComponent,
