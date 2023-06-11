@@ -1,0 +1,14 @@
+
+.mat-column-createdBy, .mat-column-updatedBy {
+  width: 180px;
+  max-width: 180px;
+}
+.mat-column-action {
+  width: 110px;
+  max-width: 110px;
+}
+
+.data-table .mat-table {
+  height: calc(100vh - 285px) !important;
+  overflow-y: scroll;
+}

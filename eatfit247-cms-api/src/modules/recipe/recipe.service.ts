@@ -456,12 +456,14 @@ export class RecipeService {
   }
 
   async generateRecipePdf(recipeId: number, recipeObj: any) {
+    const name = `${recipeObj.name
+      .replace(/[^\w\s]/gi, '')
+      .replace(/ /g, '_')}_${recipeId}`;
+    console.log(name);
     const fileModel = await this.pdfService.generatePDF(
       `${PDFTemplateEnum.RECIPE}`,
       `${MediaFolderEnum.RECIPES}`,
-      `${recipeObj.name
-        .replace(/[^\w\s]/gi, "")
-        .replace(/ /g, "_")}_${recipeId}`,
+      name,
       recipeObj
     );
     if (fileModel) {

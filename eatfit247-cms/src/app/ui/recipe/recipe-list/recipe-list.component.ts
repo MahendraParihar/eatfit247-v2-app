@@ -27,7 +27,7 @@ import { DropdownItem } from 'src/app/interfaces/dropdown-item';
   styleUrls: ['./recipe-list.component.scss'],
 })
 export class RecipeListComponent implements OnInit, AfterViewInit, OnDestroy {
-  displayedColumns = ['seqNo', 'title', 'image', 'category', 'isPublic', 'status', 'createdBy', 'createdAt', 'updatedBy', 'updatedAt', 'action'];
+  displayedColumns = ['seqNo', 'title', 'image', 'category', 'isPublic', 'status', 'createdBy',  'updatedBy', 'action'];
   dataSource: RecipeDatasource;
   totalCount = 0;
   stringRes = StringResources;
