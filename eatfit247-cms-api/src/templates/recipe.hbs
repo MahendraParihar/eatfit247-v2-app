@@ -4,7 +4,13 @@
 <head>
   <meta charset="utf-8">
   <title>Eatfit247</title>
-  <style type="text/css">
+  <style>
+    @media print {
+      .myDiv {
+        break-inside: avoid;
+      }
+    }
+
     body {
       padding: 10px;
     }
@@ -45,9 +51,15 @@
     .recipe-img {
       width: 100%;
       display: flex;
-      flex-direction: row;
-      column-gap: 10px;
-      align-items: center;
+      flex-direction: column;
+      row-gap: 10px;
+      justify-content: center;
+    }
+
+    .image-container {
+      height: 100%;
+      width: 100px;
+      border-radius: 50%;
     }
 
     .img {
@@ -59,39 +71,100 @@
     .bold-text {
       font-weight: bold;
     }
-  </style>
 
+    .recipe-section {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .recipe-item {
+      display: flex;
+      flex-direction: column;
+      border: 1px solid #d3d3d3;
+      margin-top: 12px;
+      padding: 12px;
+    }
+
+    .recipe-title-section {
+      display: grid;
+      grid-template-columns: 60% 40%;
+      align-items: center;
+    }
+
+    .recipe-image {
+      width: 100%;
+      height: 250px;
+      border-radius: 25px;
+      border: 1px solid #d3d3d3;
+    }
+
+    .recipe-title {
+      margin-left: -60px;
+      padding: 20px;
+      background: whitesmoke;
+      font-size: 26px;
+    }
+
+    .recipe-meta-section {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      margin-top: 12px;
+      padding: 12px;
+      background: whitesmoke;
+    }
+
+    .recipe-data {
+      margin-top: 12px;
+      display: grid;
+      grid-template-columns: 40% 60%;
+      flex-direction: row;
+    }
+
+    .recipe-ingredient {
+
+    }
+
+    .recipe-method {
+
+    }
+  </style>
 </head>
 
 <body>
-<table>
-  <tbody>
-  <tr>
-    <td colspan="2">
-      <div class="recipe-img">
-        <div>
-          {{#each imagePath}}
-            {{img webUrl "img"}}
-          {{/each}}
-        </div>
-        <div class="bold-text">{{name}}</div>
+<div class='recipe-section'>
+  <div class='recipe-item myDiv'>
+    <div class='recipe-title-section'>
+      <div class='recipe-image'>
+        {{#each imagePath}}
+          {{img webUrl "recipe-image"}}
+        {{/each}}
       </div>
-    </td>
-  </tr>
-  <tr>
-    <td class="bold-text" style="width:20%">Ingredients</td>
-    <td>
-      <div>{{{ingredient}}}</div>
-    </td>
-  </tr>
-  <tr>
-    <td class="bold-text" style="width:20%">Method</td>
-    <td>
-      <div>{{{howToMake}}}</div>
-    </td>
-  </tr>
-  </tbody>
-</table>
+      <div class='recipe-title'>
+        {{name}}
+      </div>
+    </div>
+    <div class='recipe-meta-section'>
+      <div>Serving: {{serving}}</div>
+      <div>{{recipeType}}</div>
+    </div>
+    <div class='recipe-data'>
+      <div class='recipe-ingredient'>
+        <div style='font-size: 20px; font-style: italic; text-align: center'>Ingredients</div>
+        <div>
+          {{{ingredient}}}
+        </div>
+      </div>
+      <div class='recipe-method'>
+        <div style='font-size: 20px; font-style: italic; text-align: center'>Preparation Method</div>
+        <div>
+          {{{howToMake}}}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 </body>
 

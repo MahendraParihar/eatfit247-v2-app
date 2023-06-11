@@ -8,6 +8,8 @@ import { CommonFunctionsUtil } from '../../util/common-functions-util';
 import { Sequelize } from 'sequelize-typescript';
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
+import { RecipeService } from '../recipe/recipe.service';
+import { MstRecipeType } from '../../core/database/models/mst-recipe-type.model';;
 
 @Controller('migration')
 export class RecipeMigrationController {
@@ -19,6 +21,7 @@ export class RecipeMigrationController {
     @InjectModel(MstRecipeCuisineMapping) private readonly recipeCuisineRepository: typeof MstRecipeCuisineMapping,
     @InjectModel(MstRecipeNutritive) private readonly recipeNutritiveRepository: typeof MstRecipeNutritive,
     private sequelize: Sequelize,
+    private recipeService: RecipeService,
   ) {
   }
 
@@ -183,6 +186,37 @@ export class RecipeMigrationController {
       return tempText;
     } else {
       return '';
+    }
+  }
+
+  @Get('recipe-pdf')
+  async generateRecipePdfs() {
+    try {
+      const records = await this.recipeRepository.findAll({
+        include: [
+          {
+            model: MstRecipeType,
+            required: true,
+          },
+        ],
+      });
+      const recipes = records.map((x) => {
+        return {
+          id: x.recipeId,
+          name: x.name,
+          howToMake: x.howToMake,
+          ingredient: x.ingredient,
+          imagePath: x.imagePath,
+          serving: x.servingCount,
+          recipeType: x.recipeType.recipeType,
+        };
+      });
+      console.log(recipes.length);
+      for (const r of recipes) {
+        await this.recipeService.generateRecipePdf(r.id, r);
+      }
+    } catch (e) {
+      console.log(e);
     }
   }
 }

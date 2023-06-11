@@ -449,7 +449,7 @@ export class RecipeService {
         ingredients: x.ingredient,
         imagePath: x.imagePath,
         serving: x.servingCount,
-        recipeType: x.recipeType.recipeType
+        recipeType: x.recipeType.recipeType,
       };
     });
     return recipes;
@@ -459,11 +459,15 @@ export class RecipeService {
     const fileModel = await this.pdfService.generatePDF(
       `${PDFTemplateEnum.RECIPE}`,
       `${MediaFolderEnum.RECIPES}`,
-      `${recipeId}`,
-      recipeObj,
+      `${recipeObj.name
+        .replace(/[^\w\s]/gi, "")
+        .replace(/ /g, "_")}_${recipeId}`,
+      recipeObj
     );
     if (fileModel) {
-      this.updateDowloadPath(recipeId, { downloadPath: fileModel.filePath });
+      await this.updateDownloadPath(recipeId, {
+        downloadPath: fileModel.filePath,
+      });
     }
     return fileModel;
   }
@@ -602,7 +606,7 @@ export class RecipeService {
     }
   }
 
-  private async updateDowloadPath(id: number, obj: any) {
+  private async updateDownloadPath(id: number, obj: any) {
     return await this.recipeRepository
       .update(obj, { where: { recipeId: id } })
       .then((result) => {
