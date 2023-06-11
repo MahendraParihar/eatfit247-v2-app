@@ -63,7 +63,8 @@ export class MemberDietPlanService {
     private dietTemplateService: DietTemplateService,
     private pdfService: PdfService,
     private emailService: EmailService,
-  ) {}
+  ) {
+  }
 
   public async findAll(id: number): Promise<IServerResponse> {
     let res: IServerResponse;
@@ -72,7 +73,7 @@ export class MemberDietPlanService {
         targetKey: 'memberPaymentId',
         foreignKey: 'memberPaymentId',
       });
-      const { rows, count } = await this.memberDietPlanRepository.findAndCountAll<TxnMemberDietPlan>({
+      const {rows, count} = await this.memberDietPlanRepository.findAndCountAll<TxnMemberDietPlan>({
         include: [
           {
             model: TxnMemberPayment,
@@ -197,10 +198,10 @@ export class MemberDietPlanService {
       }
       for (let i = 0; i < planList.length; i++) {
         const cyclePlanList = [];
-        const tempCycleList: IMemberDietDetail[] = _.filter(dietPlanDetailList, { dietPlanId: planList[i].id });
+        const tempCycleList: IMemberDietDetail[] = _.filter(dietPlanDetailList, {dietPlanId: planList[i].id});
         const cycleNos = _.uniqWith(_.map(tempCycleList, 'cycleNo'), _.isEqual);
         for (let j = 0; j < cycleNos.length; j++) {
-          const cS = _.filter(tempCycleList, { cycleNo: cycleNos[j] });
+          const cS = _.filter(tempCycleList, {cycleNo: cycleNos[j]});
           for (let k = 0; k < cS.length; k++) {
             cS[k].isDeletable = (k === cS.length - 1 && j === cycleNos.length - 1) && planList[i].showActionBtn;
           }
@@ -530,6 +531,13 @@ export class MemberDietPlanService {
   async generateDietPlan(memberId: number, dietPlanId: number, cycleNo: number, dayNo: number = null) {
     const data = await this.fetchDietDetail(memberId, dietPlanId, cycleNo, dayNo);
     const memberData = await this.memberService.loadBasicInfo(memberId);
+    const tempDietPlanDetails = [];
+    for (const d of data.data.diet.dietPlan) {
+      if (d.dietDetail || (d.recipeIds && d.recipeIds.length > 0)) {
+        tempDietPlanDetails.push(d);
+      }
+    }
+    data.data.diet.dietPlan = tempDietPlanDetails;
     const recipeIdArr = data.data.diet.dietPlan.map((a) => a.recipeIds);
     const recipeIds = recipeIdArr.flat();
     data.data.recipes = [];
@@ -667,7 +675,7 @@ export class MemberDietPlanService {
         raw: true,
         nest: true,
       });
-      const indexCheckCondition = { cycleNo: Number(cycleNo) };
+      const indexCheckCondition = {cycleNo: Number(cycleNo)};
       if (dayNo) {
         indexCheckCondition['dayNo'] = Number(dayNo);
       }
@@ -902,11 +910,11 @@ export class MemberDietPlanService {
   ): IDietPlanDetail[] {
     const dietCategory: IDietPlanDetail[] = [];
     for (const c of categoryList) {
-      const f = dietDetail ? _.find(dietDetail.dietPlan, { recipeCategoryId: c.recipeCategoryId }) : null;
+      const f = dietDetail ? _.find(dietDetail.dietPlan, {recipeCategoryId: c.recipeCategoryId}) : null;
       const dietRecipeList = [];
       if (f) {
         for (const r of f['recipeIds']) {
-          const tR = _.find(recipeList, { id: r });
+          const tR = _.find(recipeList, {id: r});
           if (tR) {
             dietRecipeList.push(tR);
           }
