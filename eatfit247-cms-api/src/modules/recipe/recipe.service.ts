@@ -502,7 +502,6 @@ export class RecipeService {
         {
           model: MstRecipeCategory,
           required: true,
-          as: 'RecipeCategory',
         },
       ],
       where: { recipeId: recipeId, active: true },
@@ -513,7 +512,7 @@ export class RecipeService {
     for (const s of tempList) {
       list.push(<IRecipeCategoryMapped>{
         recipeCategoryId: s.recipeCategoryId,
-        recipeCategory: s['RecipeCategory']['recipeCategory'],
+        recipeCategory: s.recipeCategory.recipeCategory,
         recipeId: s.recipeId,
       });
     }
@@ -525,8 +524,7 @@ export class RecipeService {
       include: [
         {
           model: MstRecipeCuisine,
-          required: true,
-          as: 'RecipeCuisine',
+          required: true
         },
       ],
       where: { recipeId: recipeId, active: true },
@@ -537,7 +535,7 @@ export class RecipeService {
     for (const s of tempList) {
       list.push(<IRecipeCuisineMapped>{
         recipeCuisineId: s.recipeCuisineId,
-        recipeCuisine: s['RecipeCuisine']['recipeCuisine'],
+        recipeCuisine: s.recipeCuisine.recipeCuisine,
         recipeId: s.recipeId,
       });
     }

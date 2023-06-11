@@ -1,4 +1,4 @@
-import { BelongsTo, Column, CreatedAt, DataType, Model, Table, UpdatedAt } from 'sequelize-typescript';
+import { BelongsTo, Column, CreatedAt, DataType, ForeignKey, Model, Table, UpdatedAt } from 'sequelize-typescript';
 import { MstAdminUser } from './mst-admin-user.model';
 import { MstRecipe } from './mst-recipe.model';
 import { MstRecipeCuisine } from './mst-recipe-cuisine.model';
@@ -16,27 +16,27 @@ export class MstRecipeCuisineMapping extends Model<MstRecipeCuisineMapping> {
   })
   recipeCuisineMappingId: number;
 
-  @BelongsTo(() => MstRecipe, {
-    foreignKey: 'recipeId',
-    targetKey: 'recipeId',
-    as: 'Recipe',
-  })
+  @ForeignKey(() => MstRecipe)
   @Column({
     allowNull: false,
     field: 'recipe_id',
     type: DataType.INTEGER,
+    references: {
+      model: MstRecipe,
+      key: 'recipe_id',
+    },
   })
   recipeId: number;
 
-  @BelongsTo(() => MstRecipeCuisine, {
-    foreignKey: 'recipeCuisineId',
-    targetKey: 'recipeCuisineId',
-    as: 'RecipeCuisine',
-  })
+  @ForeignKey(() => MstRecipeCuisine)
   @Column({
     allowNull: false,
     field: 'recipe_cuisine_id',
     type: DataType.INTEGER,
+    references: {
+      model: MstRecipeCuisine,
+      key: 'recipe_cuisine_id',
+    },
   })
   recipeCuisineId: number;
 
@@ -94,4 +94,9 @@ export class MstRecipeCuisineMapping extends Model<MstRecipeCuisineMapping> {
     field: 'modified_ip',
   })
   modifiedIp: string;
+
+  @BelongsTo(() => MstRecipeCuisine)
+  recipeCuisine: MstRecipeCuisine;
+  @BelongsTo(() => MstRecipe)
+  recipe: MstRecipe;
 }

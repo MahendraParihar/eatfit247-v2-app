@@ -86,6 +86,7 @@ export class MstRecipeCategoryMapping extends Model<MstRecipeCategoryMapping> {
     field: 'modified_ip',
   })
   modifiedIp: string;
+
   @BelongsTo(() => MstRecipeCategory)
   recipeCategory: MstRecipeCategory;
   @BelongsTo(() => MstRecipe)
