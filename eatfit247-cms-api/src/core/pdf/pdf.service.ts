@@ -41,7 +41,7 @@ export class PdfService {
     }
     await this.registerHeaderFooter();
     const html = await this.getData(templateName, data);
-    const browser = await puppeteer.launch();
+    const browser = await puppeteer.launch({args:['--no-sandbox']});
     const page = await browser.newPage();
     await page.setContent(html, { waitUntil: 'domcontentloaded' });
     await page.emulateMediaType('screen');
