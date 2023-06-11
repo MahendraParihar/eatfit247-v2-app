@@ -245,12 +245,13 @@ export class MemberDietPlanListComponent implements OnInit, AfterViewInit, OnDes
     }
   }
 
-  async downloadDietPlan(dietPlanDetail: MemberDietDetail): Promise<boolean> {
+  async downloadDietPlan(dietPlanDetail: CyclePlan, index: number): Promise<boolean> {
+    console.log(dietPlanDetail, index);
     let url;
-    if (dietPlanDetail.dayNo) {
-      url = ApiUrlEnum.MEMBER_DIET_PLAN_DOWNLOAD_DAY + `/${this.id}/${dietPlanDetail.dietPlanId}/${dietPlanDetail.cycleNo}/${dietPlanDetail.dayNo}`;
+    if (dietPlanDetail.type === DietTypeEnum.CYCLE) {
+      url = ApiUrlEnum.MEMBER_DIET_PLAN_DOWNLOAD_CYCLE + `/${this.id}/${dietPlanDetail.dietPlans[index].dietPlanId}/${dietPlanDetail.dietPlans[index].cycleNo}`;
     } else {
-      url = ApiUrlEnum.MEMBER_DIET_PLAN_DOWNLOAD_CYCLE + `/${this.id}/${dietPlanDetail.dietPlanId}/${dietPlanDetail.cycleNo}`;
+      url = ApiUrlEnum.MEMBER_DIET_PLAN_DOWNLOAD_DAY + `/${this.id}/${dietPlanDetail.dietPlans[index].dietPlanId}/${dietPlanDetail.dietPlans[index].cycleNo}/${dietPlanDetail.dietPlans[index].dayNo}`;
     }
     const res = await this.httpService.getRequest(url, null, null, true);
     if (!res) {

@@ -16,7 +16,6 @@ export class CommonUtil {
   }
 
   static convertAddressObj(address: AddressModel): string {
-    console.log(address);
     let tempStr = '';
     if (address.postalAddress && address.postalAddress.trim().length > 0) {
       tempStr =  tempStr + address.postalAddress.trim() + ', ';

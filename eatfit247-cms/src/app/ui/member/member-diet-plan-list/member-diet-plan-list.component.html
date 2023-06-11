@@ -59,8 +59,8 @@
           <div class='example-element-detail'
                [@detailExpand]="d.isExpanded ? 'expanded' : 'collapsed'">
             <table>
-              <ng-container *ngFor='let cycle of d.cyclePlans'>
-                <tr *ngFor='let day of cycle.dietPlans' class='cycle-item'>
+              <ng-container *ngFor='let cycle of d.cyclePlans; let cycleIndex=index'>
+                <tr *ngFor='let day of cycle.dietPlans; let dayIndex= index' class='cycle-item'>
                   <td (click)='cycle.type==dietTypeEnum.CYCLE ? viewCycleDietPlan(cycle) : onViewDietPlanClick(day)'>
                     <ng-container *ngIf='cycle.type==dietTypeEnum.CYCLE'>
                     <span
@@ -77,6 +77,10 @@
                     <span *ngIf='cycle.type!=dietTypeEnum.CYCLE' class='chip green-bg'>{{cycle.type}}</span>
                   </td>
                   <td style='text-align: right'>
+                    <button (click)='downloadDietPlan(cycle, dayIndex)' color='warn'
+                            mat-icon-button>
+                      <mat-icon>download</mat-icon>
+                    </button>
                     <ng-container *ngIf='cycle.type==dietTypeEnum.CYCLE && day.isDeletable'>
                       <button (click)='onEditCycleDietPlan(d.id, cycle)' color='primary'
                               mat-icon-button>

@@ -93,7 +93,6 @@ export class PdfService {
   registerHbsControls() {
     // const baseUrl = this.getBaseUrl();
     hbs.registerHelper('img', function(url, cssClass) {
-      console.log(cssClass);
       url = `data:image/jpeg;base64,${readFileSync(path.join(__dirname, '..', '..', '..', url)).toString('base64')}`;
       if (cssClass === 'img-logo') {
         return new hbs.SafeString(`<img class="'${cssClass}'" src='${url}' style='height: 100%;width: 100%;' alt="''" />`);
