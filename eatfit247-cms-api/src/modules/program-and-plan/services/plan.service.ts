@@ -344,6 +344,7 @@ export class PlanService {
       where: {
         active: true,
       },
+      order: [['noOfCycle', 'asc'], ['noOfDaysInCycle', 'asc'], ['inr_amount', 'asc']],
       raw: true,
     });
     const list: IPlanFees[] = [];

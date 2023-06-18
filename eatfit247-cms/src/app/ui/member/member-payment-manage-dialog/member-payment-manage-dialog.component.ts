@@ -107,12 +107,12 @@ export class MemberPaymentManageDialogComponent implements OnInit {
     this.dialogRef.close(flag);
   }
 
-  getUserCurrencyFormValues() {
-    return this.formGroup.value['userCurrency'];
+  getCurrencyFormValues(isSystem : boolean) {
+    return this.formGroup.value[isSystem ? 'systemCurrency' : 'userCurrency'];
   }
 
-  getSystemCurrencyFormValues() {
-    return this.formGroup.value['systemCurrency'];
+  getTotalAmount(isSystem : boolean){
+    return this.formGroup.value[isSystem ? 'systemTotalAmount': 'userTotalAmount'];
   }
 
   intiForm() {
@@ -306,12 +306,12 @@ export class MemberPaymentManageDialogComponent implements OnInit {
     this.showPaymentNote = targetCurrencyConfig.targetCurrencyCode !== userCurrency;
     this.systemCurrencyOrderAmount = planFees.inrAmount;
     this.systemCurrencyDiscountAmount = this.formGroup.value.systemDiscountAmount ? this.formGroup.value.systemDiscountAmount : 0;
-    this.systemCurrencyTaxAmount = taxApplicable ? ((this.systemCurrencyOrderAmount - this.systemCurrencyDiscountAmount) * this.taxPercentage) / 100 : 0;
-    this.systemCurrencyTotalAmount = this.systemCurrencyOrderAmount - this.systemCurrencyDiscountAmount + this.systemCurrencyTaxAmount;
+    this.systemCurrencyTaxAmount = round(taxApplicable ? ((this.systemCurrencyOrderAmount - this.systemCurrencyDiscountAmount) * this.taxPercentage) / 100 : 0);
+    this.systemCurrencyTotalAmount = round(this.systemCurrencyOrderAmount - this.systemCurrencyDiscountAmount + this.systemCurrencyTaxAmount);
     this.userCurrencyOrderAmount = this.convertAmount(this.systemCurrencyOrderAmount, targetCurrencyConfig.conversionRate, targetCurrencyConfig.conversionRateFeesInPercent);
     this.userCurrencyDiscountAmount = this.convertAmount(this.systemCurrencyDiscountAmount, targetCurrencyConfig.conversionRate, targetCurrencyConfig.conversionRateFeesInPercent);
-    this.userCurrencyTaxAmount = taxApplicable ? ((this.userCurrencyOrderAmount - this.userCurrencyDiscountAmount) * this.taxPercentage) / 100 : 0;
-    this.userCurrencyTotalAmount = this.userCurrencyOrderAmount - this.userCurrencyDiscountAmount + this.userCurrencyTaxAmount;
+    this.userCurrencyTaxAmount = round(taxApplicable ? ((this.userCurrencyOrderAmount - this.userCurrencyDiscountAmount) * this.taxPercentage) / 100 : 0);
+    this.userCurrencyTotalAmount = round(this.userCurrencyOrderAmount - this.userCurrencyDiscountAmount + this.userCurrencyTaxAmount);
     this.formGroup.patchValue({
       noOfCycle: planFees.noOfCycle,
       daysInCycle: planFees.noOfDaysInCycle,

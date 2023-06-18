@@ -1,10 +1,10 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { StringResources } from '../../../../enum/string-resources';
+import { Component, EventEmitter, Input, OnInit, Output } from "@angular/core";
+import { StringResources } from "../../../../enum/string-resources";
 
 @Component({
-  selector: 'app-no-data-found',
-  templateUrl: './no-data-found.component.html',
-  styleUrls: ['./no-data-found.component.scss'],
+  selector: "app-no-data-found",
+  templateUrl: "./no-data-found.component.html",
+  styleUrls: ["./no-data-found.component.scss"]
 })
 export class NoDataFoundComponent implements OnInit {
   @Input()

@@ -71,7 +71,7 @@
              fxFlex.lt-sm="100%">
           <mat-form-field>
             <mat-label>{{stringRes.TAX_APPLICABLE}}</mat-label>
-            <mat-select formControlName="isTaxApplicable">
+            <mat-select formControlName="isTaxApplicable" (selectionChange)="bindPlanFees();">
               <mat-option [value]="true">{{stringRes.YES}}</mat-option>
               <mat-option [value]="false">{{stringRes.NO}}</mat-option>
             </mat-select>
@@ -111,7 +111,7 @@
               <app-input-error [controlName]="stringRes.PLAN_AMOUNT"
                                [control]="formControl['systemOrderAmount']"></app-input-error>
             </mat-error>
-            <mat-hint *ngIf="showPaymentNote">{{getUserCurrencyFormValues()}} {{userCurrencyOrderAmount}}</mat-hint>
+            <mat-hint *ngIf="showPaymentNote">{{getCurrencyFormValues(false)}} {{userCurrencyOrderAmount}}</mat-hint>
           </mat-form-field>
         </div>
         <div class="form-item"
@@ -128,7 +128,7 @@
               <app-input-error [controlName]="stringRes.DISCOUNT_AMOUNT"
                                [control]="formControl['systemDiscountAmount']"></app-input-error>
             </mat-error>
-            <mat-hint *ngIf="showPaymentNote">{{getUserCurrencyFormValues()}} {{userCurrencyDiscountAmount}}</mat-hint>
+            <mat-hint *ngIf="showPaymentNote">{{getCurrencyFormValues(false)}} {{userCurrencyDiscountAmount}}</mat-hint>
           </mat-form-field>
         </div>
         <div class="form-item"
@@ -146,7 +146,7 @@
               <app-input-error [controlName]="stringRes.TAX_AMOUNT"
                                [control]="formControl['systemTaxAmount']"></app-input-error>
             </mat-error>
-            <mat-hint *ngIf="showPaymentNote">{{getUserCurrencyFormValues()}} {{userCurrencyTaxAmount}}</mat-hint>
+            <mat-hint *ngIf="showPaymentNote">{{getCurrencyFormValues(false)}} {{userCurrencyTaxAmount}}</mat-hint>
           </mat-form-field>
         </div>
         <div class="form-item"
@@ -162,7 +162,7 @@
               <app-input-error [controlName]="stringRes.TOTAL_AMOUNT"
                                [control]="formControl['systemTotalAmount']"></app-input-error>
             </mat-error>
-            <mat-hint *ngIf="showPaymentNote">{{getUserCurrencyFormValues()}} {{userCurrencyTotalAmount}}</mat-hint>
+            <mat-hint *ngIf="showPaymentNote">{{getCurrencyFormValues(false)}} {{userCurrencyTotalAmount}}</mat-hint>
           </mat-form-field>
         </div>
         <div class="form-item"
@@ -240,11 +240,11 @@
                             [showLatLong]="false"></app-address-selector>
     </mat-dialog-content>
     <mat-dialog-actions class="footer-div">
-      <div style="display: flex;flex-direction: column;align-items: flex-start;justify-content: center;">
+      <div class="total-amount-div">
         <span
-          class="primary-text w-500 font-18">Total Amount : {{getSystemCurrencyFormValues()}} {{systemCurrencyOrderAmount}}</span>
+          class="primary-text w-500 font-18">Total Amount : {{getCurrencyFormValues(true)}} {{getTotalAmount(true)}}</span>
         <span *ngIf="showPaymentNote"
-              class="warn-text w-500 font-12">Total Amount : {{getUserCurrencyFormValues()}}  {{userCurrencyTotalAmount}}</span>
+              class="warn-text w-500 font-12">Total Amount : {{getCurrencyFormValues(false)}}  {{getTotalAmount(false)}}</span>
       </div>
       <div>
         <button (click)="onNegativeClick()" class="round-btn" mat-raised-button>
