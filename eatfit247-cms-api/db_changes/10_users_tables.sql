@@ -407,6 +407,9 @@ create table txn_member_diet_details
 create unique index ix_uk_txn_member_diet_details_dp_cy_dy
     on txn_member_diet_details (member_diet_plan_id, cycle_no, day_no);
 
+create index txn_member_diet_details_member_index
+    on txn_member_diet_details (member_diet_plan_id);
+
 DROP TABLE IF EXISTS txn_diet_templates;
 create table txn_diet_templates
 (

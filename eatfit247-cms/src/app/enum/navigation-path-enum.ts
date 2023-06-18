@@ -24,6 +24,7 @@ export enum NavigationPathEnum {
   MEMBER_BODY_STATS = 'member/detail/:id/body-stats',
   MEMBER_DIET_PLAN = 'member/detail/:id/diet-plan',
   MEMBER_DIET_PLAN_DETAIL = 'member/detail/:id/diet-plan-detail/:dietId/:cycleNo',
+  MEMBER_DIET_PLAN_COPY_DETAIL = 'member/detail/:id/diet-plan-detail/copy/:dietId/:cycleNo/:copyCycleId',
   MEMBER_DIET_PLAN_DETAIL_DAY = 'member/detail/:id/diet-plan-detail/:dietId/:cycleNo/:dayNo',
 
   RECIPES = 'recipe/recipe-list',

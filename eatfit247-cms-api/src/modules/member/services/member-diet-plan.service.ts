@@ -1,53 +1,53 @@
-import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/sequelize';
-import { ExceptionService } from '../../common/exception.service';
-import { Sequelize } from 'sequelize-typescript';
-import { IServerResponse } from '../../../common-dto/response-interface';
-import { MstAdminUser } from '../../../core/database/models/mst-admin-user.model';
+import { Injectable } from "@nestjs/common";
+import { InjectModel } from "@nestjs/sequelize";
+import { ExceptionService } from "../../common/exception.service";
+import { Sequelize } from "sequelize-typescript";
+import { IServerResponse } from "../../../common-dto/response-interface";
+import { MstAdminUser } from "../../../core/database/models/mst-admin-user.model";
 import {
   ADMIN_USER_SHORT_INFO_ATTRIBUTE,
   DB_DATE_FORMAT,
   DEFAULT_DATE_TIME_FORMAT,
-  IS_DEV,
-} from '../../../constants/config-constants';
-import { ServerResponseEnum } from '../../../enums/server-response-enum';
-import { StringResource } from '../../../enums/string-resource';
-import * as moment from 'moment';
-import * as _ from 'lodash';
-import { CommonFunctionsUtil } from '../../../util/common-functions-util';
-import { TxnMemberPayment } from '../../../core/database/models/txn-member-payment.model';
-import { ICreateUpdate } from '../../../response-interface/lov.interface';
-import { TxnMemberDietPlan } from '../../../core/database/models/txn-member-diet-plan.model';
+  IS_DEV
+} from "../../../constants/config-constants";
+import { ServerResponseEnum } from "../../../enums/server-response-enum";
+import { StringResource } from "../../../enums/string-resource";
+import * as moment from "moment";
+import * as _ from "lodash";
+import { CommonFunctionsUtil } from "../../../util/common-functions-util";
+import { TxnMemberPayment } from "../../../core/database/models/txn-member-payment.model";
+import { ICreateUpdate } from "../../../response-interface/lov.interface";
+import { TxnMemberDietPlan } from "../../../core/database/models/txn-member-diet-plan.model";
 import {
   ICyclePlan,
   IDietPlanDetail,
   IMemberDietDetail,
-  IMemberDietPlan,
-} from '../../../response-interface/member-diet-plan.interface';
-import { RecipeCategoryService } from '../../lov/services/recipe-category.service';
-import { TxnMemberDietPlanDetail } from '../../../core/database/models/txn-member-diet-plan-detail.model';
-import { RecipeService } from '../../recipe/recipe.service';
-import { DietPlanStatusEnum } from '../../../enums/diet-plan-status-enum';
-import { DietPlanDetailDto, MemberDietPlanDetailDto, MemberDietTemplateDto } from '../dto/member-diet-plan-detail.dto';
-import { DietTypeEnum } from '../../../enums/diet-type-enum';
-import { DropdownListInterface } from '../../../response-interface/dropdown-list.interface';
-import { MstRecipeCategory } from '../../../core/database/models/mst-recipe-category.model';
-import { MstProgram } from '../../../core/database/models/mst-program.model';
-import { MstProgramCategory } from '../../../core/database/models/mst-program-category.model';
-import { MstPaymentMode } from '../../../core/database/models/mst-payment-mode.model';
-import { MstPaymentStatus } from '../../../core/database/models/mst-payment-status.model';
-import { TxnAddress } from '../../../core/database/models/txn-address.model';
-import { PdfService } from 'src/core/pdf/pdf.service';
-import { EmailService } from 'src/core/mail/email.service';
-import { IAttachment, IEmailParams } from 'src/core/mail/email-params.interface';
-import { MediaFolderEnum } from 'src/enums/media-folder-enum';
-import { PDFTemplateEnum } from 'src/enums/pdf-template-enum';
-import { IFileModel } from 'src/core/pdf/file-model.interface';
-import { EmailTypeEnum } from 'src/enums/email-type-enum';
-import { MemberService } from './member.service';
-import { DietTemplateService } from 'src/modules/diet-template/diet-template.service';
-import { TxnDietTemplateDietDetail } from 'src/core/database/models/txn-diet-template-diet-detail.model';
-import { TxnDietTemplate } from 'src/core/database/models/txn-diet-template.model';
+  IMemberDietPlan
+} from "../../../response-interface/member-diet-plan.interface";
+import { RecipeCategoryService } from "../../lov/services/recipe-category.service";
+import { TxnMemberDietPlanDetail } from "../../../core/database/models/txn-member-diet-plan-detail.model";
+import { RecipeService } from "../../recipe/recipe.service";
+import { DietPlanStatusEnum } from "../../../enums/diet-plan-status-enum";
+import { DietPlanDetailDto, MemberDietPlanDetailDto, MemberDietTemplateDto } from "../dto/member-diet-plan-detail.dto";
+import { DietTypeEnum } from "../../../enums/diet-type-enum";
+import { DropdownListInterface } from "../../../response-interface/dropdown-list.interface";
+import { MstRecipeCategory } from "../../../core/database/models/mst-recipe-category.model";
+import { MstProgram } from "../../../core/database/models/mst-program.model";
+import { MstProgramCategory } from "../../../core/database/models/mst-program-category.model";
+import { MstPaymentMode } from "../../../core/database/models/mst-payment-mode.model";
+import { MstPaymentStatus } from "../../../core/database/models/mst-payment-status.model";
+import { TxnAddress } from "../../../core/database/models/txn-address.model";
+import { PdfService } from "src/core/pdf/pdf.service";
+import { EmailService } from "src/core/mail/email.service";
+import { IAttachment, IEmailParams } from "src/core/mail/email-params.interface";
+import { MediaFolderEnum } from "src/enums/media-folder-enum";
+import { PDFTemplateEnum } from "src/enums/pdf-template-enum";
+import { IFileModel } from "src/core/pdf/file-model.interface";
+import { EmailTypeEnum } from "src/enums/email-type-enum";
+import { MemberService } from "./member.service";
+import { DietTemplateService } from "src/modules/diet-template/diet-template.service";
+import { TxnDietTemplateDietDetail } from "src/core/database/models/txn-diet-template-diet-detail.model";
+import { TxnDietTemplate } from "src/core/database/models/txn-diet-template.model";
 
 @Injectable()
 export class MemberDietPlanService {
@@ -62,7 +62,7 @@ export class MemberDietPlanService {
     private memberService: MemberService,
     private dietTemplateService: DietTemplateService,
     private pdfService: PdfService,
-    private emailService: EmailService,
+    private emailService: EmailService
   ) {
   }
 
@@ -70,10 +70,10 @@ export class MemberDietPlanService {
     let res: IServerResponse;
     try {
       TxnMemberDietPlan.belongsTo(TxnMemberPayment, {
-        targetKey: 'memberPaymentId',
-        foreignKey: 'memberPaymentId',
+        targetKey: "memberPaymentId",
+        foreignKey: "memberPaymentId"
       });
-      const {rows, count} = await this.memberDietPlanRepository.findAndCountAll<TxnMemberDietPlan>({
+      const { rows, count } = await this.memberDietPlanRepository.findAndCountAll<TxnMemberDietPlan>({
         include: [
           {
             model: TxnMemberPayment,
@@ -81,68 +81,68 @@ export class MemberDietPlanService {
               {
                 model: MstPaymentMode,
                 required: true,
-                as: 'MemberPaymentMode',
+                as: "MemberPaymentMode"
               },
               {
                 model: MstPaymentStatus,
                 required: true,
-                as: 'MemberPaymentStatus',
+                as: "MemberPaymentStatus"
               },
               {
                 model: TxnAddress,
                 required: false,
-                as: 'MemberAddress',
+                as: "MemberAddress"
               },
               {
-                attributes: ['program'],
+                attributes: ["program"],
                 model: MstProgram,
                 required: true,
-                as: 'MemberPaymentProgram',
+                as: "MemberPaymentProgram",
                 include: [
                   {
-                    attributes: ['programCategory'],
+                    attributes: ["programCategory"],
                     model: MstProgramCategory,
                     required: true,
-                    as: 'ProgramCategory',
-                  },
-                ],
-              },
+                    as: "ProgramCategory"
+                  }
+                ]
+              }
             ],
             where: {
               active: true,
-              memberId: id,
+              memberId: id
             },
-            required: true,
+            required: true
           },
           {
             model: MstAdminUser,
             required: false,
-            as: 'CreatedBy',
-            attributes: ADMIN_USER_SHORT_INFO_ATTRIBUTE,
+            as: "CreatedBy",
+            attributes: ADMIN_USER_SHORT_INFO_ATTRIBUTE
           },
           {
             model: MstAdminUser,
             required: false,
-            as: 'ModifiedBy',
-            attributes: ADMIN_USER_SHORT_INFO_ATTRIBUTE,
-          },
+            as: "ModifiedBy",
+            attributes: ADMIN_USER_SHORT_INFO_ATTRIBUTE
+          }
         ],
         where: {
           memberId: id,
-          active: true,
+          active: true
         },
         order: [
-          ['memberPaymentId', 'asc'],
-          ['startDate', 'ASC'],
+          ["memberPaymentId", "asc"],
+          ["startDate", "ASC"]
         ],
         raw: true,
-        nest: true,
+        nest: true
       });
       if (!rows || rows.length === 0) {
         res = {
           code: ServerResponseEnum.WARNING,
           message: StringResource.NO_DATA_FOUND,
-          data: null,
+          data: null
         };
         return res;
       }
@@ -155,27 +155,27 @@ export class MemberDietPlanService {
         this.recipeService.getAllRecipeDD(),
         this.memberDietPlanDetailRepository.findAll({
           attributes: [
-            'memberDietPlanDetailId',
-            'cycleNo',
-            'dayNo',
-            'dietPlan',
-            'type',
-            'startDate',
-            'endDate',
-            'memberDietPlanId',
+            "memberDietPlanDetailId",
+            "cycleNo",
+            "dayNo",
+            "dietPlan",
+            "type",
+            "startDate",
+            "endDate",
+            "memberDietPlanId"
           ],
           where: {
-            memberDietPlanId: _.map(planList, 'id'),
+            memberDietPlanId: _.map(planList, "id")
           },
           order: [
-            ['memberDietPlanId', 'asc'],
-            ['cycleNo', 'asc'],
-            ['dayNo', 'asc'],
+            ["memberDietPlanId", "asc"],
+            ["cycleNo", "asc"],
+            ["dayNo", "asc"]
           ],
           raw: true,
-          nest: true,
+          nest: true
         }),
-        this.dietTemplateService.getAllDietTemplateDD(),
+        this.dietTemplateService.getAllDietTemplateDD()
       ]);
       const categoryList = promiseAll[0];
       const recipeList = promiseAll[1];
@@ -193,15 +193,15 @@ export class MemberDietPlanService {
           type: s.type,
           noOfCycle: 0,
           noOfDaysInCycle: 0,
-          dietPlan: this.convertDietDetail(categoryList, recipeList, s),
+          dietPlan: this.convertDietDetail(categoryList, recipeList, s)
         });
       }
       for (let i = 0; i < planList.length; i++) {
         const cyclePlanList = [];
-        const tempCycleList: IMemberDietDetail[] = _.filter(dietPlanDetailList, {dietPlanId: planList[i].id});
-        const cycleNos = _.uniqWith(_.map(tempCycleList, 'cycleNo'), _.isEqual);
+        const tempCycleList: IMemberDietDetail[] = _.filter(dietPlanDetailList, { dietPlanId: planList[i].id });
+        const cycleNos = _.uniqWith(_.map(tempCycleList, "cycleNo"), _.isEqual);
         for (let j = 0; j < cycleNos.length; j++) {
-          const cS = _.filter(tempCycleList, {cycleNo: cycleNos[j]});
+          const cS = _.filter(tempCycleList, { cycleNo: cycleNos[j] });
           for (let k = 0; k < cS.length; k++) {
             cS[k].isDeletable = (k === cS.length - 1 && j === cycleNos.length - 1) && planList[i].showActionBtn;
           }
@@ -210,7 +210,7 @@ export class MemberDietPlanService {
             dietPlans: cS,
             startDate: cS && cS.length > 0 ? cS[0].startDate : null,
             endDate: cS && cS.length > 0 ? cS[cS.length - 1].endDate : null,
-            type: cS && cS.length > 0 ? cS[0].type : null,
+            type: cS && cS.length > 0 ? cS[0].type : null
           });
         }
         planList[i].cyclePlans = cyclePlanList;
@@ -221,16 +221,16 @@ export class MemberDietPlanService {
         data: {
           list: planList,
           count: count,
-          dietTemplateList: dietTemplateList,
-        },
+          dietTemplateList: dietTemplateList
+        }
       };
       return res;
     } catch (e) {
       this.exceptionService.logException(e);
       res = {
         code: ServerResponseEnum.ERROR,
-        message: IS_DEV ? e['message'] : StringResource.SOMETHING_WENT_WRONG,
-        data: null,
+        message: IS_DEV ? e["message"] : StringResource.SOMETHING_WENT_WRONG,
+        data: null
       };
       return res;
     }
@@ -241,6 +241,8 @@ export class MemberDietPlanService {
     dietPlanId: number,
     cycleNo: number,
     dayNo: number = null,
+    copyFromCycleNo: number = null,
+    copyFromDayNo: number = null
   ): Promise<IServerResponse> {
     let res: IServerResponse;
     cycleNo = cycleNo ? Number(cycleNo) : cycleNo;
@@ -248,16 +250,26 @@ export class MemberDietPlanService {
     dietPlanId = dietPlanId ? Number(dietPlanId) : dietPlanId;
     const where = {
       memberDietPlanId: dietPlanId,
-      cycleNo: cycleNo,
+      cycleNo: cycleNo
     };
     if (dayNo) {
-      where['dayNo'] = dayNo;
+      where["dayNo"] = dayNo;
     }
+    if (copyFromCycleNo) {
+      where.cycleNo = copyFromCycleNo;
+    }
+    if (copyFromDayNo) {
+      where["dayNo"] = copyFromDayNo;
+    }
+    console.log('Where', where);
     try {
       let dietPlanStartDate = null;
       let dietPlanEndDate = null;
       let dietCategory: IDietPlanDetail[] = [];
-      const promiseAll = await Promise.all([
+      const [categoryList,
+        planDetail,
+        dietDetail,
+        recipeList] = await Promise.all([
         this.recipeCategory.fetchAllRecipeCategory(),
         this.memberDietPlanRepository.findOne({
           include: [
@@ -265,40 +277,36 @@ export class MemberDietPlanService {
               model: TxnMemberPayment,
               where: {
                 active: true,
-                memberId: memberId,
+                memberId: memberId
               },
-              required: true,
-            },
+              required: true
+            }
           ],
           where: {
             memberDietPlanId: dietPlanId,
-            active: true,
+            active: true
           },
           raw: true,
-          nest: true,
+          nest: true
         }),
         this.memberDietPlanDetailRepository.findOne({
           include: [
             {
               model: TxnMemberDietPlan,
-              as: 'MemberDietDetailDietPlan',
+              as: "MemberDietDetailDietPlan",
               required: true,
               where: {
                 memberId: memberId,
-                active: true,
-              },
-            },
+                active: true
+              }
+            }
           ],
           where: where,
           nest: true,
-          raw: true,
+          raw: true
         }),
-        this.recipeService.getAllRecipeDD(),
+        this.recipeService.getAllRecipeDD()
       ]);
-      const categoryList = promiseAll[0];
-      const planDetail = promiseAll[1];
-      const dietDetail = promiseAll[2];
-      const recipeList = promiseAll[3];
       dietCategory = this.convertDietDetail(categoryList, recipeList, dietDetail);
       // calculate start and end date
       if (cycleNo && cycleNo === 1 && (!dayNo || dayNo === 0)) {
@@ -307,22 +315,22 @@ export class MemberDietPlanService {
       } else {
         const lastDietPlan = await this.memberDietPlanDetailRepository.findOne({
           where: {
-            memberDietPlanId: dietPlanId,
+            memberDietPlanId: dietPlanId
           },
           order: [
-            ['cycleNo', 'DESC'],
-            ['dayNo', 'DESC'],
-          ],
+            ["cycleNo", "DESC"],
+            ["dayNo", "DESC"]
+          ]
         });
         if (lastDietPlan) {
-          dietPlanStartDate = moment(lastDietPlan.endDate).add(1, 'day').format(DB_DATE_FORMAT);
+          dietPlanStartDate = moment(lastDietPlan.endDate).add(1, "day").format(DB_DATE_FORMAT);
         } else {
           dietPlanStartDate = moment().format(DB_DATE_FORMAT);
         }
       }
       if (!dayNo || dayNo === 0) {
         dietPlanEndDate = moment(dietPlanStartDate)
-          .add(planDetail.noOfDaysInCycle - 1, 'day')
+          .add(planDetail.noOfDaysInCycle - 1, "day")
           .format(DB_DATE_FORMAT);
       } else {
         dietPlanEndDate = dietPlanStartDate;
@@ -341,17 +349,17 @@ export class MemberDietPlanService {
             startDate: dietPlanStartDate,
             endDate: dietPlanEndDate,
             id: dietDetail ? dietDetail.id : null,
-            dietPlan: dietCategory,
-          },
-        },
+            dietPlan: dietCategory
+          }
+        }
       };
       return res;
     } catch (e) {
       this.exceptionService.logException(e);
       res = {
         code: ServerResponseEnum.ERROR,
-        message: IS_DEV ? e['message'] : StringResource.SOMETHING_WENT_WRONG,
-        data: null,
+        message: IS_DEV ? e["message"] : StringResource.SOMETHING_WENT_WRONG,
+        data: null
       };
       return res;
     }
@@ -364,23 +372,23 @@ export class MemberDietPlanService {
       const dietPlanDetail = await this.memberDietPlanRepository.findOne({
         where: {
           memberDietPlanId: body.dietPlanId,
-          memberId: memberId,
-        },
+          memberId: memberId
+        }
       });
       if (!dietPlanDetail) {
         res = {
           code: ServerResponseEnum.ERROR,
           message: StringResource.NO_DIET_PLAN_FOUND,
-          data: null,
+          data: null
         };
         return res;
       }
       const condition = {
         cycleNo: body.cycleNo,
-        memberDietPlanId: body.dietPlanId,
+        memberDietPlanId: body.dietPlanId
       };
       if (body.dayNo && body.dayNo > 0) {
-        condition['dayNo'] = body.dayNo;
+        condition["dayNo"] = body.dayNo;
       }
       const planArray: DietPlanDetailDto[] = [];
       for (const s of body.dietPlan) {
@@ -389,7 +397,7 @@ export class MemberDietPlanService {
         }
       }
       const findD = await this.memberDietPlanDetailRepository.findOne({
-        where: condition,
+        where: condition
       });
       const dietDObj: any = {
         cycleNo: body.cycleNo,
@@ -400,16 +408,16 @@ export class MemberDietPlanService {
         type: body.dayNo && body.dayNo > 0 ? DietTypeEnum.DAY : DietTypeEnum.CYCLE,
         dietPlan: planArray,
         modifiedIp: cIp,
-        modifiedBy: adminId,
+        modifiedBy: adminId
       };
       let createUpdateDP;
       if (findD) {
         createUpdateDP = await this.memberDietPlanDetailRepository.update(dietDObj, {
-          where: condition,
+          where: condition
         });
       } else {
-        dietDObj['createdBy'] = adminId;
-        dietDObj['createdIp'] = cIp;
+        dietDObj["createdBy"] = adminId;
+        dietDObj["createdIp"] = cIp;
         createUpdateDP = await this.memberDietPlanDetailRepository.create(dietDObj);
       }
       let dietStartDate;
@@ -428,11 +436,15 @@ export class MemberDietPlanService {
         if (!body.dayNo || body.dayNo === 0) {
           // cycle plan
           dietEndDate = body.endDate ? moment(body.endDate) : null;
-          isEnd = true;
+          if (dietEndDate && moment(dietEndDate, "YYYY-MM-DD").isBefore(moment(moment(), "YYYY-MM-DD"), "date")) {
+            isEnd = true;
+          }
         } else if (body.dayNo === dietPlanDetail.noOfDaysInCycle) {
           // day plan
           dietEndDate = body.endDate ? moment(body.endDate) : null;
-          isEnd = true;
+          if (dietEndDate && moment(dietEndDate, "YYYY-MM-DD").isBefore(moment(moment(), "YYYY-MM-DD"), "date")) {
+            isEnd = true;
+          }
         }
       }
       const updateObj = {
@@ -442,26 +454,26 @@ export class MemberDietPlanService {
         currentDayNo: body.dayNo && body.dayNo > 0 ? body.dayNo : null,
         isCompleted: isEnd,
         modifiedIp: cIp,
-        modifiedBy: adminId,
+        modifiedBy: adminId
       };
       const updateD = await this.memberDietPlanRepository.update(updateObj, {
         where: {
-          memberDietPlanId: body.dietPlanId,
-        },
+          memberDietPlanId: body.dietPlanId
+        }
       });
       if (createUpdateDP && updateD) {
         await t.commit();
         res = {
           code: ServerResponseEnum.SUCCESS,
           message: StringResource.SUCCESS,
-          data: null,
+          data: null
         };
       } else {
         await t.rollback();
         res = {
           code: ServerResponseEnum.ERROR,
           message: StringResource.SOMETHING_WENT_WRONG,
-          data: null,
+          data: null
         };
       }
       return res;
@@ -470,8 +482,8 @@ export class MemberDietPlanService {
       this.exceptionService.logException(e);
       res = {
         code: ServerResponseEnum.ERROR,
-        message: IS_DEV ? e['message'] : StringResource.SOMETHING_WENT_WRONG,
-        data: null,
+        message: IS_DEV ? e["message"] : StringResource.SOMETHING_WENT_WRONG,
+        data: null
       };
       return res;
     }
@@ -484,14 +496,14 @@ export class MemberDietPlanService {
       res = {
         code: ServerResponseEnum.SUCCESS,
         message: StringResource.SUCCESS,
-        data: filePath,
+        data: filePath
       };
     } catch (e) {
       this.exceptionService.logException(e);
       res = {
         code: ServerResponseEnum.ERROR,
-        message: IS_DEV ? e['message'] : StringResource.SOMETHING_WENT_WRONG,
-        data: null,
+        message: IS_DEV ? e["message"] : StringResource.SOMETHING_WENT_WRONG,
+        data: null
       };
     }
     return res;
@@ -507,22 +519,22 @@ export class MemberDietPlanService {
         attachments: [
           {
             name: fileModel.fileName,
-            path: `${CommonFunctionsUtil.getMediaFolderPath()}/${MediaFolderEnum.DOWNLOADS}/${fileModel.filePath}`,
-          } as IAttachment,
-        ] as IAttachment[],
+            path: `${CommonFunctionsUtil.getMediaFolderPath()}/${MediaFolderEnum.DOWNLOADS}/${fileModel.filePath}`
+          } as IAttachment
+        ] as IAttachment[]
       };
       this.emailService.sendEmail(emailParams);
       res = {
         code: ServerResponseEnum.SUCCESS,
         message: StringResource.SUCCESS,
-        data: null,
+        data: null
       };
     } catch (e) {
       this.exceptionService.logException(e);
       res = {
         code: ServerResponseEnum.ERROR,
-        message: IS_DEV ? e['message'] : StringResource.SOMETHING_WENT_WRONG,
-        data: null,
+        message: IS_DEV ? e["message"] : StringResource.SOMETHING_WENT_WRONG,
+        data: null
       };
     }
     return res;
@@ -548,8 +560,8 @@ export class MemberDietPlanService {
     return await this.pdfService.generatePDF(
       `${PDFTemplateEnum.DIET_PLAN}`,
       `${MediaFolderEnum.DIET_PLAN}/${memberId}`,
-      `${memberData.firstName}_${memberData.lastName}_${data.data.diet.cycleNo}_${dietPlanId}`,
-      data,
+      `${memberData.firstName}_${memberData.lastName}_Diet_Plan_${data.data.diet.cycleNo}_${dietPlanId}`,
+      data
     );
   }
 
@@ -560,7 +572,7 @@ export class MemberDietPlanService {
       const promiseAll = await Promise.all([
         //this.recipeCategory.fetchAllRecipeCategory(),
         this.dietTemplateService.getDietTemplate(body.dietTemplateId),
-        this.dietTemplateService.getAllDietDetailsByTemplateId(body.dietTemplateId),
+        this.dietTemplateService.getAllDietDetailsByTemplateId(body.dietTemplateId)
       ]);
       //const categoryList: MstRecipeCategory[] = promiseAll[0];
       const dietTemplate: TxnDietTemplate = promiseAll[0];
@@ -574,8 +586,8 @@ export class MemberDietPlanService {
         for (let cycle = 1; cycle <= dietTemplate.noOfCycle; cycle++) {
           if (dietTemplate.isWeekly) {
             item = dietTemplateDetails.find((x) => x.cycleNumber === cycle && x.dayNumber === null);
-            startDate = !startDate ? moment() : moment(endDate).add(1, 'day');
-            endDate = moment(startDate).add(dietTemplate.noOfDaysInCycle, 'day');
+            startDate = !startDate ? moment() : moment(endDate).add(1, "day");
+            endDate = moment(startDate).add(dietTemplate.noOfDaysInCycle, "day");
             dietObject = {
               cycleNo: cycle,
               memberDietPlanId: body.memberDietPlanId,
@@ -587,13 +599,13 @@ export class MemberDietPlanService {
               createdIp: cIp,
               createdBy: adminId,
               modifiedIp: cIp,
-              modifiedBy: adminId,
+              modifiedBy: adminId
             };
             dietPlanList.push(dietObject);
           } else {
             for (let day = 1; day <= dietTemplate.noOfDaysInCycle; day++) {
               item = dietTemplateDetails.find((x) => x.cycleNumber === cycle && x.dayNumber === day);
-              startDate = !startDate ? moment() : moment(endDate).add(1, 'day');
+              startDate = !startDate ? moment() : moment(endDate).add(1, "day");
               endDate = startDate;
               dietObject = {
                 cycleNo: cycle,
@@ -606,7 +618,7 @@ export class MemberDietPlanService {
                 createdIp: cIp,
                 createdBy: adminId,
                 modifiedIp: cIp,
-                modifiedBy: adminId,
+                modifiedBy: adminId
               };
               dietPlanList.push(dietObject);
             }
@@ -617,28 +629,28 @@ export class MemberDietPlanService {
           currentCycleNo: 1,
           currentDayNo: 1,
           startDate: moment(),
-          endDate: moment(endDate).add(dietTemplate.noOfCycle * dietTemplate.noOfDaysInCycle, 'day'),
+          endDate: moment(endDate).add(dietTemplate.noOfCycle * dietTemplate.noOfDaysInCycle, "day"),
           modifiedIp: cIp,
-          modifiedBy: adminId,
+          modifiedBy: adminId
         };
         const updateDP = await this.memberDietPlanRepository.update(updateObj, {
           where: {
-            memberDietPlanId: body.memberDietPlanId,
-          },
+            memberDietPlanId: body.memberDietPlanId
+          }
         });
         if (createDP && updateDP) {
           await t.commit();
           res = {
             code: ServerResponseEnum.SUCCESS,
             message: StringResource.SUCCESS,
-            data: null,
+            data: null
           };
         } else {
           await t.rollback();
           res = {
             code: ServerResponseEnum.ERROR,
             message: StringResource.SOMETHING_WENT_WRONG,
-            data: null,
+            data: null
           };
         }
       }
@@ -647,8 +659,8 @@ export class MemberDietPlanService {
       this.exceptionService.logException(e);
       res = {
         code: ServerResponseEnum.ERROR,
-        message: IS_DEV ? e['message'] : StringResource.SOMETHING_WENT_WRONG,
-        data: null,
+        message: IS_DEV ? e["message"] : StringResource.SOMETHING_WENT_WRONG,
+        data: null
       };
     }
     return res;
@@ -659,32 +671,32 @@ export class MemberDietPlanService {
     cycleNo: number,
     ip: string,
     adminId: number,
-    dayNo?: number,
+    dayNo?: number
   ): Promise<IServerResponse> {
     let res: IServerResponse;
     const t = await this.sequelize.transaction();
     try {
       const dietDetails = await this.memberDietPlanDetailRepository.findAll({
         where: {
-          memberDietPlanId: dietPlanId,
+          memberDietPlanId: dietPlanId
         },
         order: [
-          ['cycleNo', 'asc'],
-          ['dayNo', 'asc'],
+          ["cycleNo", "asc"],
+          ["dayNo", "asc"]
         ],
         raw: true,
-        nest: true,
+        nest: true
       });
-      const indexCheckCondition = {cycleNo: Number(cycleNo)};
+      const indexCheckCondition = { cycleNo: Number(cycleNo) };
       if (dayNo) {
-        indexCheckCondition['dayNo'] = Number(dayNo);
+        indexCheckCondition["dayNo"] = Number(dayNo);
       }
       const cIndex = _.findIndex(dietDetails, indexCheckCondition);
       await this.memberDietPlanDetailRepository.destroy({
         where: {
           ...indexCheckCondition,
-          memberDietPlanId: dietPlanId,
-        },
+          memberDietPlanId: dietPlanId
+        }
       });
       await this.memberDietPlanRepository.update(
         {
@@ -693,27 +705,27 @@ export class MemberDietPlanService {
           isCompleted: false,
           endDate: cIndex === 0 ? null : dietDetails[cIndex - 1].endDate,
           modifiedIp: ip,
-          modifiedBy: adminId,
+          modifiedBy: adminId
         },
         {
           where: {
-            memberDietPlanId: dietPlanId,
-          },
-        },
+            memberDietPlanId: dietPlanId
+          }
+        }
       );
       await t.commit();
       res = {
         code: ServerResponseEnum.SUCCESS,
         message: StringResource.SUCCESS,
-        data: null,
+        data: null
       };
     } catch (e) {
       await t.rollback();
       this.exceptionService.logException(e);
       res = {
         code: ServerResponseEnum.ERROR,
-        message: IS_DEV ? e['message'] : StringResource.SOMETHING_WENT_WRONG,
-        data: null,
+        message: IS_DEV ? e["message"] : StringResource.SOMETHING_WENT_WRONG,
+        data: null
       };
     }
     return res;
@@ -725,40 +737,40 @@ export class MemberDietPlanService {
       const dietPlan = await this.memberDietPlanRepository.findOne({
         where: {
           memberDietPlanId: dietPlanId,
-          memberId: memberId,
-        },
+          memberId: memberId
+        }
       });
       if (dietPlan) {
         await this.memberDietPlanRepository.update(
           {
             isCompleted: !dietPlan.isCompleted,
             modifiedBy: adminId,
-            modifiedIp: ip,
+            modifiedIp: ip
           },
           {
             where: {
-              memberDietPlanId: dietPlanId,
-            },
-          },
+              memberDietPlanId: dietPlanId
+            }
+          }
         );
         res = {
           code: ServerResponseEnum.SUCCESS,
           message: StringResource.DIET_PLAN_UPDATE_STATUS,
-          data: null,
+          data: null
         };
       } else {
         res = {
           code: ServerResponseEnum.WARNING,
           message: StringResource.WARNING_DIET_PLAN_NOT_FOUND,
-          data: null,
+          data: null
         };
       }
     } catch (error) {
       this.exceptionService.logException(error);
       res = {
         code: ServerResponseEnum.ERROR,
-        message: IS_DEV ? error['message'] : StringResource.SOMETHING_WENT_WRONG,
-        data: null,
+        message: IS_DEV ? error["message"] : StringResource.SOMETHING_WENT_WRONG,
+        data: null
       };
     }
     return res;
@@ -773,7 +785,7 @@ export class MemberDietPlanService {
         recipeList: [],
         recipeCategory: c.recipeCategory,
         recipeCategoryId: c.recipeCategoryId,
-        sequence: c.sequence,
+        sequence: c.sequence
       });
     }
     return dietCategoryList;
@@ -781,10 +793,10 @@ export class MemberDietPlanService {
 
   private convertDBObject(obj: TxnMemberDietPlan): IMemberDietPlan {
     return <IMemberDietPlan>(<ICreateUpdate>{
-      program: obj['MemberPayment']['MemberPaymentProgram']['program'],
+      program: obj["MemberPayment"]["MemberPaymentProgram"]["program"],
       programCategory:
-        obj['MemberPayment']['MemberPaymentProgram']['ProgramCategory']['programCateg'] ||
-        obj['MemberPayment']['MemberPaymentProgram']['ProgramCategory']['programCategory'],
+        obj["MemberPayment"]["MemberPaymentProgram"]["ProgramCategory"]["programCateg"] ||
+        obj["MemberPayment"]["MemberPaymentProgram"]["ProgramCategory"]["programCategory"],
       id: obj.memberDietPlanId,
       memberId: obj.memberId,
       noOfCycle: obj.noOfCycle,
@@ -797,18 +809,18 @@ export class MemberDietPlanService {
           ? DietPlanStatusEnum.IN_PROGRESS
           : DietPlanStatusEnum.NOT_STARTED,
       dietPlanStatus: obj.isCompleted
-        ? 'Completed'
+        ? "Completed"
         : obj.currentCycleNo && obj.currentCycleNo > 0
-          ? 'In Progress'
-          : 'Not Started',
+          ? "In Progress"
+          : "Not Started",
       startDate: obj.startDate ? moment(obj.startDate, DB_DATE_FORMAT) : null,
       endDate: obj.endDate ? moment(obj.endDate, DB_DATE_FORMAT) : null,
       active: obj.active,
-      createdBy: CommonFunctionsUtil.getAdminShortInfo(obj['CreatedBy'], 'CreatedBy'),
-      updatedBy: CommonFunctionsUtil.getAdminShortInfo(obj['ModifiedBy'], 'ModifiedBy'),
+      createdBy: CommonFunctionsUtil.getAdminShortInfo(obj["CreatedBy"], "CreatedBy"),
+      updatedBy: CommonFunctionsUtil.getAdminShortInfo(obj["ModifiedBy"], "ModifiedBy"),
       createdAt: moment(obj.createdAt).format(DEFAULT_DATE_TIME_FORMAT),
       updatedAt: moment(obj.updatedAt).format(DEFAULT_DATE_TIME_FORMAT),
-      ...this.findUpcomingDiet(obj),
+      ...this.findUpcomingDiet(obj)
     });
   }
 
@@ -819,7 +831,7 @@ export class MemberDietPlanService {
         upcomingCycle: null,
         showActionBtn: false,
         showDaily: false,
-        showWeekly: false,
+        showWeekly: false
       };
     }
     // diet plan not started yet
@@ -829,7 +841,7 @@ export class MemberDietPlanService {
         upcomingCycle: 1,
         showActionBtn: true,
         showDaily: true,
-        showWeekly: true,
+        showWeekly: true
       };
     }
     if (obj.currentCycleNo < obj.noOfCycle) {
@@ -840,7 +852,7 @@ export class MemberDietPlanService {
           upcomingCycle: obj.currentCycleNo + 1,
           showActionBtn: true,
           showDaily: true,
-          showWeekly: true,
+          showWeekly: true
         };
       } else {
         // daily plan
@@ -850,7 +862,7 @@ export class MemberDietPlanService {
             upcomingCycle: obj.currentCycleNo,
             showActionBtn: true,
             showDaily: true,
-            showWeekly: false,
+            showWeekly: false
           };
         } else if (obj.currentDayNo === obj.noOfDaysInCycle) {
           return {
@@ -858,7 +870,7 @@ export class MemberDietPlanService {
             upcomingCycle: obj.currentCycleNo + 1,
             showActionBtn: true,
             showDaily: true,
-            showWeekly: true,
+            showWeekly: true
           };
         }
       }
@@ -869,9 +881,9 @@ export class MemberDietPlanService {
         return {
           upcomingDay: null,
           upcomingCycle: null,
-          showActionBtn: false,
+          showActionBtn: !(moment(obj.endDate, "YYYY-MM-DD").isBefore(moment(moment(), "YYYY-MM-DD"), "date")),
           showDaily: false,
-          showWeekly: false,
+          showWeekly: false
         };
       } else {
         // daily plan
@@ -881,15 +893,15 @@ export class MemberDietPlanService {
             upcomingCycle: obj.currentCycleNo,
             showActionBtn: true,
             showDaily: true,
-            showWeekly: false,
+            showWeekly: false
           };
         } else if (obj.currentDayNo === obj.noOfDaysInCycle) {
           return {
             upcomingDay: null,
             upcomingCycle: null,
-            showActionBtn: false,
+            showActionBtn: !(moment(obj.endDate, "YYYY-MM-DD").isBefore(moment(moment(), "YYYY-MM-DD"), "date")),
             showDaily: false,
-            showWeekly: false,
+            showWeekly: false
           };
         }
       }
@@ -899,34 +911,34 @@ export class MemberDietPlanService {
       upcomingCycle: null,
       showActionBtn: false,
       showDaily: false,
-      showWeekly: false,
+      showWeekly: false
     };
   }
 
   private convertDietDetail(
     categoryList: MstRecipeCategory[],
     recipeList: DropdownListInterface[],
-    dietDetail: any,
+    dietDetail: any
   ): IDietPlanDetail[] {
     const dietCategory: IDietPlanDetail[] = [];
     for (const c of categoryList) {
-      const f = dietDetail ? _.find(dietDetail.dietPlan, {recipeCategoryId: c.recipeCategoryId}) : null;
+      const f = dietDetail ? _.find(dietDetail.dietPlan, { recipeCategoryId: c.recipeCategoryId }) : null;
       const dietRecipeList = [];
       if (f) {
-        for (const r of f['recipeIds']) {
-          const tR = _.find(recipeList, {id: r});
+        for (const r of f["recipeIds"]) {
+          const tR = _.find(recipeList, { id: r });
           if (tR) {
             dietRecipeList.push(tR);
           }
         }
       }
       dietCategory.push(<IDietPlanDetail>{
-        dietDetail: f ? f['dietDetail'] : null,
-        recipeIds: f ? f['recipeIds'] : [],
+        dietDetail: f ? f["dietDetail"] : null,
+        recipeIds: f ? f["recipeIds"] : [],
         recipeList: dietRecipeList,
         recipeCategory: c.recipeCategory,
         recipeCategoryId: c.recipeCategoryId,
-        sequence: c.sequence,
+        sequence: c.sequence
       });
     }
     return dietCategory;

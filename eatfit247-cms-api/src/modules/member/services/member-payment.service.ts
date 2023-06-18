@@ -586,8 +586,7 @@ export class MemberPaymentService {
         nest: true
       });
       for (const s of list) {
-        const data = await this.generateInvoicePdf(s.memberPaymentId);
-        console.log(data.fileModel.filePath);
+        await this.generateInvoicePdf(s.memberPaymentId);
       }
       res = {
         code: ServerResponseEnum.SUCCESS,

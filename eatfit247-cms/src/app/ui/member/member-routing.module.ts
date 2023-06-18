@@ -82,7 +82,17 @@ const routes: Routes = [
         component: MemberDietPlanDetailComponent,
       },
       {
+        path: 'diet-plan-detail/copy/:dietId/:cycleId/:copyCycleId',
+        canActivate: [AuthGuard],
+        component: MemberDietPlanDetailComponent,
+      },
+      {
         path: 'diet-plan-detail/:dietId/:cycleId/:dayNo',
+        canActivate: [AuthGuard],
+        component: MemberDietPlanDetailComponent,
+      },
+      {
+        path: 'diet-plan-detail/copy/:dietId/:cycleId/:dayNo/:copyCycleId/:copyDayNo',
         canActivate: [AuthGuard],
         component: MemberDietPlanDetailComponent,
       },

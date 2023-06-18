@@ -1,28 +1,28 @@
-import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
-import { StringResources } from '../../../enum/string-resources';
-import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { HttpService } from '../../../service/http.service';
-import { SnackBarService } from '../../../service/snack-bar.service';
-import { NavigationService } from '../../../service/navigation.service';
-import { ActivatedRoute } from '@angular/router';
-import { MatDialog } from '@angular/material/dialog';
-import { ResponseDataModel } from '../../../models/response-data.model';
-import { ApiUrlEnum } from '../../../enum/api-url-enum';
-import { ServerResponseEnum } from '../../../enum/server-response-enum';
-import { DietPlanDetail, MemberDietDetail } from '../../../models/member-diet-plan.model';
-import { DropdownItem } from '../../../interfaces/dropdown-item';
-import { AngularEditorConfig } from '@kolkov/angular-editor';
-import { Constants } from '../../../constants/Constants';
-import { COMMA, ENTER } from '@angular/cdk/keycodes';
-import { map } from 'lodash';
-import { ValidationUtil } from '../../../utilites/validation-util';
-import { MatDatepickerInputEvent } from '@angular/material/datepicker';
-import * as moment from 'moment';
+import { AfterViewInit, Component, OnDestroy, OnInit } from "@angular/core";
+import { StringResources } from "../../../enum/string-resources";
+import { FormArray, FormBuilder, FormGroup, Validators } from "@angular/forms";
+import { HttpService } from "../../../service/http.service";
+import { SnackBarService } from "../../../service/snack-bar.service";
+import { NavigationService } from "../../../service/navigation.service";
+import { ActivatedRoute } from "@angular/router";
+import { MatDialog } from "@angular/material/dialog";
+import { ResponseDataModel } from "../../../models/response-data.model";
+import { ApiUrlEnum } from "../../../enum/api-url-enum";
+import { ServerResponseEnum } from "../../../enum/server-response-enum";
+import { DietPlanDetail, MemberDietDetail } from "../../../models/member-diet-plan.model";
+import { DropdownItem } from "../../../interfaces/dropdown-item";
+import { AngularEditorConfig } from "@kolkov/angular-editor";
+import { Constants } from "../../../constants/Constants";
+import { COMMA, ENTER } from "@angular/cdk/keycodes";
+import { map } from "lodash";
+import { ValidationUtil } from "../../../utilites/validation-util";
+import { MatDatepickerInputEvent } from "@angular/material/datepicker";
+import * as moment from "moment";
 
 @Component({
-  selector: 'app-member-diet-plan-detail',
-  templateUrl: './member-diet-plan-detail.component.html',
-  styleUrls: ['./member-diet-plan-detail.component.scss'],
+  selector: "app-member-diet-plan-detail",
+  templateUrl: "./member-diet-plan-detail.component.html",
+  styleUrls: ["./member-diet-plan-detail.component.scss"]
 })
 export class MemberDietPlanDetailComponent implements OnInit, AfterViewInit, OnDestroy {
   id: number;
@@ -30,6 +30,8 @@ export class MemberDietPlanDetailComponent implements OnInit, AfterViewInit, OnD
   dietPlanId: number;
   cycleNo: number;
   dayNo?: number;
+  copyFromCycleNo?: number;
+  copyFromDayNo?: number;
   dietPlanDetail: MemberDietDetail;
   recipeList: DropdownItem[] = [];
   editorConfig: AngularEditorConfig = Constants.editorConfigOnlyText;
@@ -41,7 +43,7 @@ export class MemberDietPlanDetailComponent implements OnInit, AfterViewInit, OnD
     dietPlanId: [null, [Validators.required]],
     cycleNo: [null, [Validators.required, ValidationUtil.numberValidation, Validators.min(1), Validators.max(64)]],
     dayNo: [null, [Validators.required, ValidationUtil.numberValidation, Validators.min(1), Validators.max(365)]],
-    dietPlan: this.fb.array([]),
+    dietPlan: this.fb.array([])
   });
 
   constructor(private fb: FormBuilder,
@@ -51,12 +53,14 @@ export class MemberDietPlanDetailComponent implements OnInit, AfterViewInit, OnD
     private activatedRoute: ActivatedRoute,
     public dialog: MatDialog) {
     this.activatedRoute.parent.params.subscribe(params => {
-      this.id = Number(params['id']);
+      this.id = Number(params["id"]);
     });
     this.activatedRoute.params.subscribe((params) => {
-      this.dietPlanId = Number(params['dietId']);
-      this.cycleNo = Number(params['cycleId']);
-      this.dayNo = params['dayNo'] ? Number(params['dayNo']) : null;
+      this.dietPlanId = Number(params["dietId"]);
+      this.cycleNo = Number(params["cycleId"]);
+      this.dayNo = params["dayNo"] ? Number(params["dayNo"]) : null;
+      this.copyFromCycleNo = params["copyCycleId"] ? Number(params["copyCycleId"]) : null;
+      this.copyFromDayNo = params["copyDayNo"] ? Number(params["copyDayNo"]) : null;
     });
   }
 
@@ -78,7 +82,7 @@ export class MemberDietPlanDetailComponent implements OnInit, AfterViewInit, OnD
     if (this.dayNo && this.dayNo > 0) {
       this.formGroup.patchValue({ endDate: event.value });
     } else {
-      const endDate = moment(event.value).add(this.dietPlanDetail.noOfDaysInCycle - 1, 'day');
+      const endDate = moment(event.value).add(this.dietPlanDetail.noOfDaysInCycle - 1, "day");
       this.formGroup.patchValue({ endDate: endDate });
     }
   }
@@ -86,14 +90,14 @@ export class MemberDietPlanDetailComponent implements OnInit, AfterViewInit, OnD
   onRecipeChange(event: DropdownItem[], index: number): void {
     if (event && event.length > 0) {
       const s = this.detailArray().value;
-      s[index].recipeIds = map(event, 'id');
+      s[index].recipeIds = map(event, "id");
       this.detailArray().patchValue(s);
     }
   }
 
   // region body stats item
   detailArray(): FormArray {
-    return this.formGroup.get('dietPlan') as FormArray;
+    return this.formGroup.get("dietPlan") as FormArray;
   }
 
   getArrayFormGroup(index: number): FormGroup {
@@ -105,7 +109,7 @@ export class MemberDietPlanDetailComponent implements OnInit, AfterViewInit, OnD
       recipeCategoryId: [obj.recipeCategoryId, [Validators.required, ValidationUtil.numberValidation]],
       recipeCategory: [obj.recipeCategory, [Validators.required]],
       dietDetail: [obj.dietDetail, []],
-      recipeIds: [obj.recipeIds, []],
+      recipeIds: [obj.recipeIds, []]
     });
   }
 
@@ -119,7 +123,17 @@ export class MemberDietPlanDetailComponent implements OnInit, AfterViewInit, OnD
 
   // endregion
   async loadData(): Promise<void> {
-    const res: ResponseDataModel = await this.httpService.getRequest(`${ApiUrlEnum.MEMBER_DIET_PLAN_MANAGE}/${this.id}/${this.dietPlanId}/${this.cycleNo}`, this.dayNo, null, true);
+    let url = `${ApiUrlEnum.MEMBER_DIET_PLAN_MANAGE}/${this.id}/${this.dietPlanId}/${this.cycleNo}`;
+    if (this.dayNo) {
+      url = url + `/${this.dayNo}`;
+    }
+    if (this.copyFromCycleNo) {
+      url = url + `?copyFromCycleNo=${this.copyFromCycleNo}`;
+    }
+    if (this.copyFromDayNo) {
+      url = url + `&copyFromDayNo=${this.copyFromDayNo}`;
+    }
+    const res: ResponseDataModel = await this.httpService.getRequest(url, null, null, true);
     if (res) {
       switch (res.code) {
         case ServerResponseEnum.SUCCESS:
@@ -132,13 +146,13 @@ export class MemberDietPlanDetailComponent implements OnInit, AfterViewInit, OnD
             cycleNo: this.dietPlanDetail.cycleNo,
             dayNo: this.dietPlanDetail.dayNo,
             startDate: this.dietPlanDetail.startDate,
-            endDate: this.dietPlanDetail.endDate,
+            endDate: this.dietPlanDetail.endDate
           });
-          this.formGroup.get('cycleNo').setValidators([Validators.required, Validators.min(1), Validators.max(this.dietPlanDetail.noOfCycle)]);
+          this.formGroup.get("cycleNo").setValidators([Validators.required, Validators.min(1), Validators.max(this.dietPlanDetail.noOfCycle)]);
           if (this.dayNo && this.dayNo > 0) {
-            this.formGroup.get('dayNo').setValidators([Validators.required, Validators.min(1), Validators.max(this.dietPlanDetail.noOfDaysInCycle)]);
+            this.formGroup.get("dayNo").setValidators([Validators.required, Validators.min(1), Validators.max(this.dietPlanDetail.noOfDaysInCycle)]);
           } else {
-            this.formGroup.get('dayNo').setValidators([]);
+            this.formGroup.get("dayNo").setValidators([]);
           }
           for (const s of this.dietPlanDetail.dietPlan) {
             this.addDetail(s);
@@ -164,7 +178,7 @@ export class MemberDietPlanDetailComponent implements OnInit, AfterViewInit, OnD
       return;
     }
     let payload: any = this.formGroup.value;
-    const res = await this.httpService.postRequest(ApiUrlEnum.MEMBER_DIET_PLAN_MANAGE + '/' + this.id, payload, true);
+    const res = await this.httpService.postRequest(ApiUrlEnum.MEMBER_DIET_PLAN_MANAGE + "/" + this.id, payload, true);
     if (res) {
       switch (res.code) {
         case ServerResponseEnum.SUCCESS:
