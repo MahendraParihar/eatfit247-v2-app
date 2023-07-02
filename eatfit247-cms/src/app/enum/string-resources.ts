@@ -416,6 +416,7 @@ export enum StringResources {
   INVOICE_DETAILS = 'Order Summary',
   CGST = 'CGST',
   SGST = 'SGST',
+  IGST = 'IGST',
   RESPONSE = 'Response',
   ISSUE_CATEGORY = 'Issue Category',
   ISSUE_STATUS = 'Issue Status',

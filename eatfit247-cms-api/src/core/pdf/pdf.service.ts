@@ -39,7 +39,10 @@ export class PdfService {
     if (!existsSync(physicalFolderPath)) {
       mkdirSync(physicalFolderPath, { recursive: true });
     }
-    await this.registerHeaderFooter();
+    data.signImg = 'media-files/brand/SS_Sign.png';
+    const franchise: IFranchise = await this.franchiseService.fetchPrimaryFranchise();
+    data.franchise = franchise;
+    await this.registerHeaderFooter(franchise);
     const html = await this.getData(templateName, data);
     const browser = await puppeteer.launch({args:['--no-sandbox']});
     const page = await browser.newPage();
@@ -73,10 +76,9 @@ export class PdfService {
     return hbs.compile(hbsTemplate)(data);
   }
 
-  async registerHeaderFooter() {
+  async registerHeaderFooter(franchise: IFranchise) {
     if (!this.isHeaderFooterRegistered) {
       this.registerHbsControls();
-      const franchise: IFranchise = await this.franchiseService.fetchPrimaryFranchise();
       let filePath = path.join(__dirname, '..', '..', `${TEMPLATE_FOLDER}/header.hbs`);
       const headerHbsTemplate = readFileSync(filePath, 'utf-8');
       this.headerTemplate = hbs.compile(headerHbsTemplate)(franchise);
@@ -98,6 +100,8 @@ export class PdfService {
         return new hbs.SafeString(`<img class="'${cssClass}'" src='${url}' style='height: 100%;width: 100%;' alt="''" />`);
       } else if (cssClass === 'recipe-image') {
         return new hbs.SafeString(`<img class="'${cssClass}'" src='${url}' style='width: 150px;height: 150px;border-radius: 25px;border: 1px solid #d3d3d3;' alt="''" />`);
+      } else if (cssClass === 'owner-sign') {
+        return new hbs.SafeString(`<img class="'${cssClass}'" src='${url}' style='width: 150px;height: 80px;border-radius: 0px;border: 1px solid #d3d3d3;' alt="''" />`);
       }
       return new hbs.SafeString(`<img class="'${cssClass}'" src='${url}' style='height: 100%;width: 100%;' alt="''" />`);
     });

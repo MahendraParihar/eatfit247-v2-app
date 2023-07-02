@@ -10,6 +10,11 @@
       font-size: 14px;
     }
 
+    .owner-sign {
+      width: 150px;
+      height: 80px;
+    }
+
     .member-info {
       width: 100%;
       margin-top: 10px;
@@ -53,9 +58,40 @@
 <body>
 <table class="member-info">
   <tr>
+    <td style="width: 50%" class="member-addr">
+      <div class="text-bold">Invoice By:</div>
+      <div><strong>{{franchise.companyName}}</strong></div>
+      <div>
+        {{franchise.addressObj.postalAddress}}<br>
+        {{franchise.addressObj.cityVillage}}, {{franchise.addressObj.state}},
+        {{franchise.addressObj.country}}, {{franchise.addressObj.pinCode}}
+      </div>
+    </td>
+    <td>
+      <table>
+        <tr>
+          <td>Contact No:</td>
+          <td>{{franchise.contactNumber}}</td>
+        </tr>
+        <tr>
+          <td>Email Id:</td>
+          <td>{{franchise.emailId}}</td>
+        </tr>
+        {{#if data.isTaxApplicable}}
+          <tr>
+            <td>GST Number:</td>
+            <td>{{franchise.gstNumber}}</td>
+          </tr>
+        {{/if}}
+      </table>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2">&nbsp;</td>
+  </tr>
+  <tr>
     <td style="width:50%;" class="member-addr">
       <div class="text-bold">Invoice To:</div>
-      <div><br></div>
       <div>{{data.memberName}}</div>
       <div><br></div>
       <div>
@@ -143,6 +179,18 @@
       <td class="amount-cell text-bold">{{data.paymentObj.user.currency}} {{data.paymentObj.user.totalAmount}}</td>
     </tr>
   </table>
+  <div><br></div>
+  <div><br></div>
+  <div style="display: flex; justify-content: space-between">
+    <div></div>
+    <div>
+      <div class="owner-sign">
+        {{img signImg "owner-sign"}}
+      </div>
+      <br>
+      <span>&nbsp;&nbsp;&nbsp;&nbsp;{{franchise.firstName}} {{franchise.lastName}}</span>
+    </div>
+  </div>
 </div>
 </body>
 

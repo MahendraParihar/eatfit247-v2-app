@@ -59,7 +59,7 @@
           </td>
         </tr>
         <tr *ngIf="memberPaymentObj.paymentObj.user.taxObj.IGST">
-          <td> {{stringRes.SGST}}({{memberPaymentObj.paymentObj.user.taxObj.IGST.percentage}}%)</td>
+          <td> {{stringRes.IGST}}({{memberPaymentObj.paymentObj.user.taxObj.IGST.percentage}}%)</td>
           <td class="amount-cell">{{memberPaymentObj.paymentObj.user.taxObj.IGST.amount |
             currency:memberPaymentObj.paymentObj.user.currency}}
           </td>

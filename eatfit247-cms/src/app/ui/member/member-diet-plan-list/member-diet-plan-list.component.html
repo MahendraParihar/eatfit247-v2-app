@@ -78,6 +78,7 @@
                   </td>
                   <td style="text-align: right">
                     <button (click)="copyCycleDietPlan(d.id, cycle, d)" color="primary"
+                            *ngIf="d.showDaily || d.showWeekly"
                             mat-icon-button>
                       <mat-icon>content_copy</mat-icon>
                     </button>
