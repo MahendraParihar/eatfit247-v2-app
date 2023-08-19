@@ -580,7 +580,8 @@ export class MemberPaymentService {
         where: {
           paymentDate: {
             [Op.between]: [body.fromDate, body.toDate]
-          }
+          },
+          isTaxApplicable: body.gstOnly
         },
         raw: true,
         nest: true

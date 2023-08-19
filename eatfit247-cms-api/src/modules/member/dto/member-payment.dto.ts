@@ -58,4 +58,7 @@ export class PaymentReportDto {
   @IsNotEmpty()
   @IsString()
   toDate: string;
+  @IsNotEmpty()
+  @IsBoolean()
+  gstOnly: boolean;
 }
