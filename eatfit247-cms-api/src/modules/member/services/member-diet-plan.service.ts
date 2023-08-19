@@ -881,7 +881,7 @@ export class MemberDietPlanService {
         return {
           upcomingDay: null,
           upcomingCycle: null,
-          showActionBtn: !(moment(obj.endDate, "YYYY-MM-DD").isBefore(moment(moment(), "YYYY-MM-DD"), "date")),
+          showActionBtn: true,
           showDaily: false,
           showWeekly: false
         };

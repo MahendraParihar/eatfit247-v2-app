@@ -1,4 +1,4 @@
-import { Component, Input, IterableDiffers, OnChanges, OnInit, SimpleChanges } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, IterableDiffers, OnChanges, OnInit, SimpleChanges } from "@angular/core";
 import { StringResources } from '../../../../enum/string-resources';
 import {
   FormArray,
@@ -55,6 +55,7 @@ export class FileSelectorComponent implements OnInit, OnChanges {
     private sanitizer: DomSanitizer,
     private httpService: HttpService,
     private differs: IterableDiffers,
+    private cdr: ChangeDetectorRef,
     public dialog: MatDialog) {
     this.differ = this.differs;
   }
@@ -103,6 +104,7 @@ export class FileSelectorComponent implements OnInit, OnChanges {
 
   removeFile(i: number) {
     this.fileArray().removeAt(i);
+    this.cdr.detectChanges();
   }
 
   selectFile(event: any): void {
@@ -128,6 +130,7 @@ export class FileSelectorComponent implements OnInit, OnChanges {
   removeItem(index: number): void {
     this.uploadedFiles.splice(index, 1);
     this.removeFile(index);
+    this.cdr.detectChanges();
   }
 
   getFileSize(size: number): string {
