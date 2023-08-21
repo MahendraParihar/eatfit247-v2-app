@@ -92,6 +92,18 @@ export class TxnMemberPayment extends Model<TxnMemberPayment> {
   })
   addressId: number;
 
+  @BelongsTo(() => TxnAddress, {
+    foreignKey: 'billingAddressId',
+    targetKey: 'addressId',
+    as: 'MemberBillingAddress',
+  })
+  @Column({
+    allowNull: true,
+    field: 'billing_address_id',
+    type: DataType.INTEGER,
+  })
+  billingAddressId: number;
+
   @Column({
     allowNull: true,
     field: 'transaction_id',
@@ -146,6 +158,14 @@ export class TxnMemberPayment extends Model<TxnMemberPayment> {
     type: DataType.JSONB,
   })
   paymentObj: string;
+
+  @Column({
+    allowNull: true,
+    defaultValue: null,
+    field: 'gst_number',
+    type: DataType.STRING(50),
+  })
+  gstNumber: string;
 
   @Column({
     allowNull: true,

@@ -109,6 +109,13 @@ export class TxnAddress extends Model<TxnAddress> {
   longitude: number;
 
   @Column({
+    allowNull: true,
+    type: DataType.STRING(100),
+    field: 'address_name',
+  })
+  addressName: number;
+
+  @Column({
     allowNull: false,
     defaultValue: true,
     field: 'active',
