@@ -21,11 +21,10 @@
       margin-bottom: 10px;
       border: 1px solid grey;
       padding: 10px;
+    }
 
     .member-addr {
       text-align: start;
-    }
-
     }
 
     .invoice-table {
@@ -37,11 +36,10 @@
       width: 80%;
       padding: 10px;
     }
+    }
 
     .seperator {
       padding: 0;
-    }
-
     }
 
     .text-bold {
@@ -92,23 +90,28 @@
   <tr>
     <td style="width:50%;" class="member-addr">
       <div class="text-bold">Invoice To:</div>
-      <div>{{data.memberName}}</div>
-      <div><br></div>
+      <div><b>{{data.memberName}}</b></div>
       <div>
-        {{#if data.address.postalAddress}}
-          {{data.address.postalAddress}},
+        {{#if data.billingAddress.addressName}}
+          {{data.billingAddress.addressName}},<br>
         {{/if}}
-        {{#if data.address.cityVillage}}
-          {{data.address.cityVillage}}
+        {{#if data.billingAddress.postalAddress}}
+          {{data.billingAddress.postalAddress}},
+        {{/if}}
+        {{#if data.billingAddress.cityVillage}}
+          {{data.billingAddress.cityVillage}}
           <br>
         {{/if}}
-        {{#if data.address.state}}
-          {{data.address.state}},
+        {{#if data.billingAddress.state}}
+          {{data.billingAddress.state}},
         {{/if}}
-        {{#if data.address.country}}
-          {{data.address.country}}.
+        {{#if data.billingAddress.country}}
+          {{data.billingAddress.country}}.
         {{/if}}
       </div>
+      <div>{{#if data.gstNumber}}
+        GST No. {{data.gstNumber}},
+      {{/if}}</div>
     </td>
     <td>
       <table>

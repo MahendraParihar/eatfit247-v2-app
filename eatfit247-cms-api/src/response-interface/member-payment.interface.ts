@@ -30,6 +30,8 @@ export interface IMemberPayment extends ICreateUpdate {
   currentDayNo?: number;
   deletable: boolean;
   address?: IAddress;
+  billingAddress?: IAddress;
+  gstNumber?: string;
   program: string;
   plan: string;
 }

@@ -189,6 +189,11 @@ export class MemberPaymentService {
             as: "MemberAddress"
           },
           {
+            model: TxnAddress,
+            required: false,
+            as: "MemberBillingAddress"
+          },
+          {
             model: TxnMember,
             required: true,
             attributes: ["firstName", "lastName"]
@@ -201,7 +206,8 @@ export class MemberPaymentService {
         nest: true
       });
       if (find) {
-        find["address"] = await this.commonService.findAddressById(find.addressId);
+        find["address"] = find['MemberAddress'] ? find['MemberAddress'] : null;
+        find["billingAddress"] = find['MemberBillingAddress'] ? find['MemberBillingAddress'] : null;
         const dataObj = this.convertDBObject(find);
         res = {
           code: ServerResponseEnum.SUCCESS,
@@ -638,6 +644,8 @@ export class MemberPaymentService {
         (!obj["txn_member_diet_plan"]["currentDayNo"] || obj["txn_member_diet_plan"]["currentDayNo"] === 0),
       date: obj.paymentDate ? moment(obj.paymentDate, DB_DATE_FORMAT) : null,
       address: obj["address"] ? obj["address"] : null,
+      billingAddress: obj["billingAddress"] ? obj["billingAddress"] : null,
+      gstNumber: obj["gstNumber"] ? obj["gstNumber"] : null,
       active: obj.active,
       createdBy: CommonFunctionsUtil.getAdminShortInfo(obj["CreatedBy"], "CreatedBy"),
       updatedBy: CommonFunctionsUtil.getAdminShortInfo(obj["ModifiedBy"], "ModifiedBy"),
