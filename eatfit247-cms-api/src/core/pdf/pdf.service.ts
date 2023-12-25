@@ -1,14 +1,14 @@
-import { Inject, Injectable } from '@nestjs/common';
-import * as path from 'path';
-import { existsSync, mkdirSync, readFileSync } from 'fs';
-import * as hbs from 'handlebars';
-import * as puppeteer from 'puppeteer';
-import { TEMPLATE_FOLDER } from 'src/constants/config-constants';
-import { IFileModel } from './file-model.interface';
-import { FranchiseService } from 'src/modules/franchise/franchise.service';
-import { IFranchise } from 'src/response-interface/franchise.interface';
-import { REQUEST } from '@nestjs/core';
-import { MediaFolderEnum } from 'src/enums/media-folder-enum';
+import { Inject, Injectable } from "@nestjs/common";
+import * as path from "path";
+import { existsSync, mkdirSync, readFileSync } from "fs";
+import * as hbs from "handlebars";
+import * as puppeteer from "puppeteer";
+import { TEMPLATE_FOLDER } from "src/constants/config-constants";
+import { IFileModel } from "./file-model.interface";
+import { FranchiseService } from "src/modules/franchise/franchise.service";
+import { IFranchise } from "src/response-interface/franchise.interface";
+import { REQUEST } from "@nestjs/core";
+import { MediaFolderEnum } from "src/enums/media-folder-enum";
 
 @Injectable()
 export class PdfService {
@@ -27,7 +27,7 @@ export class PdfService {
     templateName: string,
     downloadFolderPath: string,
     fileName: string,
-    data: any,
+    data: any
   ): Promise<IFileModel> {
     const rPath = `${process.cwd()}/media-files`;
     const fileNameWithExtension = `${fileName}.pdf`;
@@ -39,51 +39,51 @@ export class PdfService {
     if (!existsSync(physicalFolderPath)) {
       mkdirSync(physicalFolderPath, { recursive: true });
     }
-    data.signImg = 'media-files/brand/SS_Sign.png';
+    data.signImg = "media-files/brand/SS_Sign.png";
     const franchise: IFranchise = await this.franchiseService.fetchPrimaryFranchise();
     data.franchise = franchise;
     await this.registerHeaderFooter(franchise);
     const html = await this.getData(templateName, data);
-    const browser = await puppeteer.launch({args:['--no-sandbox']});
+    const browser = await puppeteer.launch({ headless: "new", args: ["--no-sandbox"] });
     const page = await browser.newPage();
-    await page.setContent(html, { waitUntil: 'domcontentloaded' });
-    await page.emulateMediaType('screen');
+    await page.setContent(html, { waitUntil: "domcontentloaded" });
+    await page.emulateMediaType("screen");
     const tempFile = await page.pdf({
       path: physicalFilePath,
-      format: 'A4',
+      format: "A4",
       printBackground: true,
       displayHeaderFooter: true,
       headerTemplate: this.headerTemplate,
       footerTemplate: this.footerTemplate,
       margin: {
-        top: '100px',
-        bottom: '80px',
-        right: '20px',
-        left: '20px',
-      },
+        top: "100px",
+        bottom: "80px",
+        right: "20px",
+        left: "20px"
+      }
     });
     await browser.close();
     return {
       filePath: relativePath,
       fileName: fileNameWithExtension,
-      buffer: tempFile.toString('base64'),
+      buffer: tempFile.toString("base64")
     } as IFileModel;
   }
 
   async getData(templateName: string, data: any) {
-    const filePath = path.join(__dirname, '..', '..', `${TEMPLATE_FOLDER}/${templateName}.hbs`);
-    const hbsTemplate = readFileSync(filePath, 'utf-8');
+    const filePath = path.join(__dirname, "..", "..", `${TEMPLATE_FOLDER}/${templateName}.hbs`);
+    const hbsTemplate = readFileSync(filePath, "utf-8");
     return hbs.compile(hbsTemplate)(data);
   }
 
   async registerHeaderFooter(franchise: IFranchise) {
     if (!this.isHeaderFooterRegistered) {
       this.registerHbsControls();
-      let filePath = path.join(__dirname, '..', '..', `${TEMPLATE_FOLDER}/header.hbs`);
-      const headerHbsTemplate = readFileSync(filePath, 'utf-8');
+      let filePath = path.join(__dirname, "..", "..", `${TEMPLATE_FOLDER}/header.hbs`);
+      const headerHbsTemplate = readFileSync(filePath, "utf-8");
       this.headerTemplate = hbs.compile(headerHbsTemplate)(franchise);
-      filePath = path.join(__dirname, '..', '..', `${TEMPLATE_FOLDER}/footer.hbs`);
-      const footerHbsTemplate = readFileSync(filePath, 'utf-8');
+      filePath = path.join(__dirname, "..", "..", `${TEMPLATE_FOLDER}/footer.hbs`);
+      const footerHbsTemplate = readFileSync(filePath, "utf-8");
       this.footerTemplate = hbs.compile(footerHbsTemplate)(franchise);
       this.isHeaderFooterRegistered = true;
     }
@@ -94,16 +94,16 @@ export class PdfService {
    */
   registerHbsControls() {
     // const baseUrl = this.getBaseUrl();
-    hbs.registerHelper('img', function(url, cssClass) {
-      url = `data:image/jpeg;base64,${readFileSync(path.join(__dirname, '..', '..', '..', url)).toString('base64')}`;
-      if (cssClass === 'img-logo') {
-        return new hbs.SafeString(`<img class="'${cssClass}'" src='${url}' style='height: 100%;width: 100%;' alt="''" />`);
-      } else if (cssClass === 'recipe-image') {
-        return new hbs.SafeString(`<img class="'${cssClass}'" src='${url}' style='width: 150px;height: 150px;border-radius: 25px;border: 1px solid #d3d3d3;' alt="''" />`);
-      } else if (cssClass === 'owner-sign') {
-        return new hbs.SafeString(`<img class="'${cssClass}'" src='${url}' style='width: 100px;height: 50px;border-radius: 0px;border: 1px solid #d3d3d3;' alt="''" />`);
+    hbs.registerHelper("img", function(url, cssClass) {
+      url = `data:image/jpeg;base64,${readFileSync(path.join(__dirname, "..", "..", "..", url)).toString("base64")}`;
+      if (cssClass === "img-logo") {
+        return new hbs.SafeString(`<img class="'${cssClass}'" src="${url}" style="height: 100%;width: 100%;" alt="''" />`);
+      } else if (cssClass === "recipe-image") {
+        return new hbs.SafeString(`<img class="'${cssClass}'" src="${url}" style="width: 150px;height: 150px;border-radius: 25px;border: 1px solid #d3d3d3;" alt="''" />`);
+      } else if (cssClass === "owner-sign") {
+        return new hbs.SafeString(`<img class="'${cssClass}'" src="${url}" style="width: 100px;height: 50px;border-radius: 0px;border: 1px solid #d3d3d3;" alt="''" />`);
       }
-      return new hbs.SafeString(`<img class="'${cssClass}'" src='${url}' style='height: 100%;width: 100%;' alt="''" />`);
+      return new hbs.SafeString(`<img class="'${cssClass}'" src="${url}" style="height: 100%;width: 100%;" alt="''" />`);
     });
   }
 
