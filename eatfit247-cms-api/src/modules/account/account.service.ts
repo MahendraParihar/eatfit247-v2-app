@@ -10,7 +10,6 @@ import {
 import { IS_DEV, OTP_LENGTH } from '../../constants/config-constants';
 import { JwtService } from '@nestjs/jwt';
 import { UserStatusEnum } from '../../enums/user-status-enum';
-import { Sequelize } from 'sequelize-typescript';
 import { StringResource } from '../../enums/string-resource';
 import * as bcrypt from 'bcrypt';
 import { Op } from 'sequelize';
@@ -35,9 +34,7 @@ export class AccountService {
     private readonly adminLoginHistoryRepository: typeof TxnAdminLastLoginDetail,
     @InjectModel(TxnAdminUserForgotPasswordOtp)
     private readonly adminForgotPasswordRepository: typeof TxnAdminUserForgotPasswordOtp,
-    private jwtService: JwtService,
-    private commonService: CommonService,
-    private sequelize: Sequelize,
+    private jwtService: JwtService
   ) {}
 
   public async login(authLoginDto: AuthAdminUserDTO, ipAddress: string, device: string): Promise<IServerResponse> {

@@ -139,7 +139,7 @@ export class MemberPaymentService {
       };
       return res;
     } catch (e) {
-      this.exceptionService.logException(e);
+      this.exceptionService.logError(e);
       res = {
         code: ServerResponseEnum.ERROR,
         message: IS_DEV ? e["message"] : StringResource.SOMETHING_WENT_WRONG,
@@ -223,7 +223,7 @@ export class MemberPaymentService {
       }
       return res;
     } catch (e) {
-      this.exceptionService.logException(e);
+      this.exceptionService.logError(e);
       res = {
         code: ServerResponseEnum.ERROR,
         message: IS_DEV ? e["message"] : StringResource.SOMETHING_WENT_WRONG,
@@ -330,7 +330,7 @@ export class MemberPaymentService {
       return res;
     } catch (e) {
       await t.rollback();
-      this.exceptionService.logException(e);
+      this.exceptionService.logError(e);
       res = {
         code: ServerResponseEnum.ERROR,
         message: IS_DEV ? e["message"] : StringResource.SOMETHING_WENT_WRONG,
@@ -383,7 +383,7 @@ export class MemberPaymentService {
       return res;
     } catch (e) {
       await t.rollback();
-      this.exceptionService.logException(e);
+      this.exceptionService.logError(e);
       res = {
         code: ServerResponseEnum.ERROR,
         message: IS_DEV ? e["message"] : StringResource.SOMETHING_WENT_WRONG,
@@ -457,7 +457,7 @@ export class MemberPaymentService {
       return res;
     } catch (e) {
       await transaction.rollback();
-      this.exceptionService.logException(e);
+      this.exceptionService.logError(e);
       res = {
         code: ServerResponseEnum.ERROR,
         message: IS_DEV ? e["message"] : StringResource.SOMETHING_WENT_WRONG,
@@ -493,7 +493,7 @@ export class MemberPaymentService {
         };
       }
     } catch (e) {
-      this.exceptionService.logException(e);
+      this.exceptionService.logError(e);
       res = {
         code: ServerResponseEnum.ERROR,
         message: IS_DEV ? e["message"] : StringResource.SOMETHING_WENT_WRONG,
@@ -534,7 +534,7 @@ export class MemberPaymentService {
         };
       }
     } catch (e) {
-      this.exceptionService.logException(e);
+      this.exceptionService.logError(e);
       res = {
         code: ServerResponseEnum.ERROR,
         message: IS_DEV ? e["message"] : StringResource.SOMETHING_WENT_WRONG,
@@ -586,8 +586,7 @@ export class MemberPaymentService {
         where: {
           paymentDate: {
             [Op.between]: [body.fromDate, body.toDate]
-          },
-          isTaxApplicable: body.gstOnly
+          }
         },
         raw: true,
         nest: true
@@ -601,7 +600,7 @@ export class MemberPaymentService {
         data: null
       };
     } catch (e) {
-      this.exceptionService.logException(e);
+      this.exceptionService.logError(e);
       res = {
         code: ServerResponseEnum.ERROR,
         message: IS_DEV ? e["message"] : StringResource.SOMETHING_WENT_WRONG,
@@ -765,7 +764,7 @@ export class MemberPaymentService {
       let systemTaxObj = null;
       if (obj.isTaxApplicable) {
         if (!franchiseAddress) {
-          this.exceptionService.logException(Error("Franchise address not found for tax calculation"));
+          this.exceptionService.logError(Error("Franchise address not found for tax calculation"));
           throw Error("Franchise not found");
         }
         systemTaxObj = this.calcTaxObj(

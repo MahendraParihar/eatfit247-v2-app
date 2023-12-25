@@ -1,4 +1,4 @@
-export const IS_DEV = true;
+export const IS_DEV = false;
 export const OTP_LENGTH = 6;
 export const DEFAULT_PAGE_SIZE = 15;
 

@@ -13,7 +13,7 @@ export class ExceptionService {
     }
   }
 
-  public async logError(method: string, controller: string, error: any): Promise<boolean> {
+  public async logError(error: any, method: string = null, controller: string = null, ): Promise<boolean> {
     if (IS_DEV) {
       console.log(error);
       return true;
@@ -21,13 +21,15 @@ export class ExceptionService {
     try {
       this.logErrorRepository.create({
         environment: '',
-        hostUrl: window.location.origin.toString(),
+        hostUrl: '',
         controller: controller,
         methodName: method,
         exceptionMessage: '',
         exceptionMessageSQL: '',
         exceptionSource: '',
         exceptionType: '',
+        serverName:'',
+        browser:'',
         exceptionStacktrace: error,
       });
     } catch (e) {

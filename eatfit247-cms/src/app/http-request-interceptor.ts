@@ -43,7 +43,6 @@ export class HttpRequestInterceptor implements HttpInterceptor {
     return next
       .handle(this.updatedRequest)
       .pipe(
-        retry(1),
         tap((event: HttpEvent<any>) => {
             if (event instanceof HttpResponse) {
               event = event.clone({body: this.modifyBody(event.body, event.status)});

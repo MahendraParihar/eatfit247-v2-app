@@ -89,7 +89,7 @@ export class PocketGuideService {
 
       return res;
     } catch (e) {
-      this.exceptionService.logException(e);
+      this.exceptionService.logError(e);
       res = {
         code: ServerResponseEnum.ERROR,
         message: IS_DEV ? e['message'] : StringResource.SOMETHING_WENT_WRONG,
@@ -135,7 +135,7 @@ export class PocketGuideService {
       }
       return res;
     } catch (e) {
-      this.exceptionService.logException(e);
+      this.exceptionService.logError(e);
       res = {
         code: ServerResponseEnum.ERROR,
         message: IS_DEV ? e['message'] : StringResource.SOMETHING_WENT_WRONG,
@@ -174,7 +174,7 @@ export class PocketGuideService {
       }
       return res;
     } catch (e) {
-      this.exceptionService.logException(e);
+      this.exceptionService.logError(e);
       res = {
         code: ServerResponseEnum.ERROR,
         message: IS_DEV ? e['message'] : StringResource.SOMETHING_WENT_WRONG,
@@ -225,7 +225,7 @@ export class PocketGuideService {
       }
       return res;
     } catch (e) {
-      this.exceptionService.logException(e);
+      this.exceptionService.logError(e);
       res = {
         code: ServerResponseEnum.ERROR,
         message: IS_DEV ? e['message'] : StringResource.SOMETHING_WENT_WRONG,
@@ -272,7 +272,7 @@ export class PocketGuideService {
       }
       return res;
     } catch (e) {
-      this.exceptionService.logException(e);
+      this.exceptionService.logError(e);
       res = {
         code: ServerResponseEnum.ERROR,
         message: IS_DEV ? e['message'] : StringResource.SOMETHING_WENT_WRONG,

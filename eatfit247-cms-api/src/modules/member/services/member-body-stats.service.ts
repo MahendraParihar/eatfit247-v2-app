@@ -98,7 +98,7 @@ export class MemberBodyStatsService {
 
       return res;
     } catch (e) {
-      this.exceptionService.logException(e);
+      this.exceptionService.logError(e);
       res = {
         code: ServerResponseEnum.ERROR,
         message: IS_DEV ? e['message'] : StringResource.SOMETHING_WENT_WRONG,
@@ -153,7 +153,7 @@ export class MemberBodyStatsService {
       }
       return res;
     } catch (e) {
-      this.exceptionService.logException(e);
+      this.exceptionService.logError(e);
       res = {
         code: ServerResponseEnum.ERROR,
         message: IS_DEV ? e['message'] : StringResource.SOMETHING_WENT_WRONG,
@@ -212,7 +212,7 @@ export class MemberBodyStatsService {
       return res;
     } catch (e) {
       await t.rollback();
-      this.exceptionService.logException(e);
+      this.exceptionService.logError(e);
       res = {
         code: ServerResponseEnum.ERROR,
         message: IS_DEV ? e['message'] : StringResource.SOMETHING_WENT_WRONG,
@@ -286,7 +286,7 @@ export class MemberBodyStatsService {
     } catch (e) {
       await t.rollback();
 
-      this.exceptionService.logException(e);
+      this.exceptionService.logError(e);
       res = {
         code: ServerResponseEnum.ERROR,
         message: IS_DEV ? e['message'] : StringResource.SOMETHING_WENT_WRONG,
@@ -333,7 +333,7 @@ export class MemberBodyStatsService {
       }
       return res;
     } catch (e) {
-      this.exceptionService.logException(e);
+      this.exceptionService.logError(e);
       res = {
         code: ServerResponseEnum.ERROR,
         message: IS_DEV ? e['message'] : StringResource.SOMETHING_WENT_WRONG,

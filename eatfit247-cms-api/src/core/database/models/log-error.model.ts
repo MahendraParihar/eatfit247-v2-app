@@ -3,6 +3,8 @@ import { Column, CreatedAt, DataType, Model, Table } from 'sequelize-typescript'
 @Table({
   modelName: 'log_errors',
   schema: 'public',
+  updatedAt: false,
+  createdAt: false
 })
 export class LogError extends Model<LogError> {
   @Column({

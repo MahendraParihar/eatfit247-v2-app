@@ -226,7 +226,7 @@ export class MemberDietPlanService {
       };
       return res;
     } catch (e) {
-      this.exceptionService.logException(e);
+      this.exceptionService.logError(e);
       res = {
         code: ServerResponseEnum.ERROR,
         message: IS_DEV ? e["message"] : StringResource.SOMETHING_WENT_WRONG,
@@ -355,7 +355,7 @@ export class MemberDietPlanService {
       };
       return res;
     } catch (e) {
-      this.exceptionService.logException(e);
+      this.exceptionService.logError(e);
       res = {
         code: ServerResponseEnum.ERROR,
         message: IS_DEV ? e["message"] : StringResource.SOMETHING_WENT_WRONG,
@@ -479,7 +479,7 @@ export class MemberDietPlanService {
       return res;
     } catch (e) {
       await t.rollback();
-      this.exceptionService.logException(e);
+      this.exceptionService.logError(e);
       res = {
         code: ServerResponseEnum.ERROR,
         message: IS_DEV ? e["message"] : StringResource.SOMETHING_WENT_WRONG,
@@ -499,7 +499,7 @@ export class MemberDietPlanService {
         data: filePath
       };
     } catch (e) {
-      this.exceptionService.logException(e);
+      this.exceptionService.logError(e);
       res = {
         code: ServerResponseEnum.ERROR,
         message: IS_DEV ? e["message"] : StringResource.SOMETHING_WENT_WRONG,
@@ -530,7 +530,7 @@ export class MemberDietPlanService {
         data: null
       };
     } catch (e) {
-      this.exceptionService.logException(e);
+      this.exceptionService.logError(e);
       res = {
         code: ServerResponseEnum.ERROR,
         message: IS_DEV ? e["message"] : StringResource.SOMETHING_WENT_WRONG,
@@ -656,7 +656,7 @@ export class MemberDietPlanService {
       }
     } catch (e) {
       await t.rollback();
-      this.exceptionService.logException(e);
+      this.exceptionService.logError(e);
       res = {
         code: ServerResponseEnum.ERROR,
         message: IS_DEV ? e["message"] : StringResource.SOMETHING_WENT_WRONG,
@@ -721,7 +721,7 @@ export class MemberDietPlanService {
       };
     } catch (e) {
       await t.rollback();
-      this.exceptionService.logException(e);
+      this.exceptionService.logError(e);
       res = {
         code: ServerResponseEnum.ERROR,
         message: IS_DEV ? e["message"] : StringResource.SOMETHING_WENT_WRONG,
@@ -766,7 +766,7 @@ export class MemberDietPlanService {
         };
       }
     } catch (error) {
-      this.exceptionService.logException(error);
+      this.exceptionService.logError(error);
       res = {
         code: ServerResponseEnum.ERROR,
         message: IS_DEV ? error["message"] : StringResource.SOMETHING_WENT_WRONG,
