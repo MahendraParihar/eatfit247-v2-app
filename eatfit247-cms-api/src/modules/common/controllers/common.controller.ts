@@ -97,7 +97,7 @@ export class CommonController {
         data: res,
       };
     } catch (e) {
-
+      console.log(e);
       return {
         code: ServerResponseEnum.ERROR,
         message: IS_DEV ? e['message'] : StringResource.SOMETHING_WENT_WRONG,
