@@ -95,15 +95,19 @@ export class PdfService {
   registerHbsControls() {
     // const baseUrl = this.getBaseUrl();
     hbs.registerHelper("img", function(url, cssClass) {
-      url = `data:image/jpeg;base64,${readFileSync(path.join(__dirname, "..", "..", "..", url)).toString("base64")}`;
-      if (cssClass === "img-logo") {
+      try {
+        url = `data:image/jpeg;base64,${readFileSync(path.join(__dirname, "..", "..", "..", url)).toString("base64")}`;
+        if (cssClass === "img-logo") {
+          return new hbs.SafeString(`<img class="'${cssClass}'" src="${url}" style="height: 100%;width: 100%;" alt="''" />`);
+        } else if (cssClass === "recipe-image") {
+          return new hbs.SafeString(`<img class="'${cssClass}'" src="${url}" style="width: 150px;height: 150px;border-radius: 25px;border: 1px solid #d3d3d3;" alt="''" />`);
+        } else if (cssClass === "owner-sign") {
+          return new hbs.SafeString(`<img class="'${cssClass}'" src="${url}" style="width: 100px;height: 50px;border-radius: 0px;border: 1px solid #d3d3d3;" alt="''" />`);
+        }
         return new hbs.SafeString(`<img class="'${cssClass}'" src="${url}" style="height: 100%;width: 100%;" alt="''" />`);
-      } else if (cssClass === "recipe-image") {
-        return new hbs.SafeString(`<img class="'${cssClass}'" src="${url}" style="width: 150px;height: 150px;border-radius: 25px;border: 1px solid #d3d3d3;" alt="''" />`);
-      } else if (cssClass === "owner-sign") {
-        return new hbs.SafeString(`<img class="'${cssClass}'" src="${url}" style="width: 100px;height: 50px;border-radius: 0px;border: 1px solid #d3d3d3;" alt="''" />`);
+      } catch (e) {
+        return new hbs.SafeString(``);
       }
-      return new hbs.SafeString(`<img class="'${cssClass}'" src="${url}" style="height: 100%;width: 100%;" alt="''" />`);
     });
   }
 
