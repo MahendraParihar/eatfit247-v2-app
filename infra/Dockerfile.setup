@@ -1,0 +1,4 @@
+FROM ubuntu:latest
+WORKDIR /home/infra
+RUN mkdir -p certs && mkdir -p config && mkdir -p keys
+COPY ./infra/main.env ./main.env
