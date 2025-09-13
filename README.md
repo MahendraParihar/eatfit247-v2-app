@@ -8,13 +8,13 @@ Note: the Following commands should be executed from root of the project.
 For building Server image
 
 ```shell
-docker build . -f ./infra/Dockerfile.server -t vsd-server
+docker build . -f ./infra/Dockerfile.server -t eatfit247-cms-api
 ```
 
 For building website image
 
 ```shell
-docker build . -f ./infra/Dockerfile.client -t vsd-client
+docker build . -f ./infra/Dockerfile.client -t eatfit247-cms
 ```
 
 ### Docker container up
