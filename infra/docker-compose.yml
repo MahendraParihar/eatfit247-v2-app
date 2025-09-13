@@ -1,36 +1,54 @@
 services:
-  core:
+  eatfit247-api:
     container_name: eatfit247-cms-api
     image: eatfit247-cms-server
-    command: sh -c "cd eatfit247-cms-api && node dist/main.js"
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile.server
     restart: always
     volumes:
+      - media_files:/home/app/assets/media-files
       - assets:/home/app/assets
     env_file:
       - main.env
     environment:
       API_PORT: '3000'
+      NODE_ENV: 'production'
     ports:
       - "8001:3000"
     healthcheck:
-      test: [ 'CMD', 'curl', '-f', 'http://localhost:3330/api/v1/health' ]
+      test: [ 'CMD', 'curl', '-f', 'http://localhost:3000/api/v1/health' ]
       interval: 20s
       retries: 5
       start_period: 5s
       timeout: 10s
-  vsd-client:
+    networks:
+      - eatfit247-network
+
+  eatfit247-client:
     container_name: eatfit247-cms-client
     image: eatfit247-cms-client
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile.client
     restart: always
-    volumes:
-      - ./eatfit247.conf:/etc/nginx/conf.d/eatfit247.conf
-      - ./certs/eatfit247.key:/etc/ssl/certs/eatfit247.key
-      - ./certs/eatfit247.pem:/etc/ssl/certs/eatfit247.pem
     ports:
+      - "80:80"
       - "443:443"
     depends_on:
-      - core
+      eatfit247-api:
+        condition: service_healthy
+    networks:
+      - eatfit247-network
 
 volumes:
+  media_files:
+    driver: local
+    external: false
   assets:
     driver: local
+    external: false
+
+networks:
+  eatfit247-network:
+    driver: bridge

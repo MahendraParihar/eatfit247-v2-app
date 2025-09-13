@@ -24,6 +24,8 @@ import { DataMigrationModule } from './modules/data-migration/data-migration.mod
 import { ConfigParameterModule } from './modules/config-parameter/config-parameter.module';
 import { MailModule } from './core/mail/mail.module';
 import { PdfModule } from './core/pdf/pdf.module';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
 
 @Module({
   imports: [
@@ -32,8 +34,8 @@ import { PdfModule } from './core/pdf/pdf.module';
     AccountModule,
     CommonModule,
     ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', '../media-files'), // added ../ to get one folder back
-      serveRoot: '/media-files/', //last slash was important
+      rootPath: join('/home/app/assets/media-files'),
+      serveRoot: '/media-files',
     }),
     MemberModule,
     RecipeModule,
@@ -53,8 +55,8 @@ import { PdfModule } from './core/pdf/pdf.module';
     MailModule,
     PdfModule,
   ],
-  controllers: AppModule.getControllers(),
-  providers: AppModule.getProviders(),
+  controllers: [AppController, ...AppModule.getControllers()],
+  providers: [AppService, ...AppModule.getProviders()],
 })
 export class AppModule {
 

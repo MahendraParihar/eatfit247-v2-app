@@ -80,7 +80,7 @@ export class CommonFunctionsUtil {
   }
 
   public static getMediaFolderPath(): string {
-    return join(__dirname, '..', '../media-files');
+    return join('/home/app/assets/media-files');
   }
 
   public static getConfigArray(config: MstConfig[]) {
