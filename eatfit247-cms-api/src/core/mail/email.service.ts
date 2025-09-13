@@ -21,7 +21,13 @@ export class EmailService {
         html: template.body,
         attachments: this.getAttachmentList(emailParams.attachments),
       });
-    } catch (e) {}
+      console.log(`Email sent successfully to ${emailId}`);
+      return result;
+    } catch (e) {
+      console.error('Error sending email:', e.message);
+      // Log the error but don't throw to prevent application crash
+      return null;
+    }
   }
 
   getAttachmentList(attachmentList: IAttachment[]) {
