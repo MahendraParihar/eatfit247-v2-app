@@ -1,10 +1,30 @@
+# Environment files
+/eatfit247-cms-api/.env
+/infra/main.env
+
+# Build outputs
 /eatfit247-cms-api/dist/
 /eatfit247-cms/.angular/
+/eatfit247-cms/dist
+
+# Dependencies
 /eatfit247-cms-api/node_modules/
 /eatfit247-cms/node_modules/
-/eatfit247-cms-api/.env
+
+# IDE files
 /.idea
-/eatfit247-cms/dist
+
+# Media files (sensitive content)
 /eatfit247-cms-api/media-files/downloads/diet-Plans/*
 /eatfit247-cms-api/media-files/downloads/invoice/*
-/infra/main.env
+
+# OS files
+.DS_Store
+**/.DS_Store
+
+# SSL certificates
+/infra/certs/*.crt
+/infra/certs/*.pem
+
+# Backup files
+/infra/media-backups/
