@@ -12,33 +12,7 @@ eatfit247-v2-app/
 └── README.md              # This file
 ```
 
-## 🚀 Quick Start with Docker
-
-### Prerequisites
-- Docker and Docker Compose
-- Node.js 22+ (for local development)
-
-### Build and Run
-```bash
-# Build server image
-docker build . -f ./infra/Dockerfile.server -t eatfit247-cms-server
-
-# Build client image
-docker build . -f ./infra/Dockerfile.client -t eatfit247-cms-client
-
-# Start all services
-docker compose -f ./infra/docker-compose.yml up -d
-
-# Stop all services
-docker compose -f ./infra/docker-compose.yml down
-```
-
-### Access Points
-- **Frontend**: http://localhost:80
-- **Backend API**: http://localhost:8001
-- **Health Check**: http://localhost:8001/api/v1/health
-
-## 🔧 Environment Setup
+## 🔧 Environment Setup (Required First!)
 
 ### 1. Copy Environment Templates
 ```bash
@@ -47,12 +21,77 @@ cp infra/main.env.example infra/main.env
 ```
 
 ### 2. Configure Environment Variables
-Update the following in both files:
-- Database credentials
-- JWT secret key
+Update `infra/main.env` with your settings:
+- Database credentials (DB_USERNAME, DB_PASSWORD, DB_NAME, DB_SERVER)
+- JWT secret key (JWTKEY)
+- Mail server configuration
 - Application paths
 
 See [ENVIRONMENT_SETUP.md](ENVIRONMENT_SETUP.md) for detailed configuration guide.
+
+## 🚀 Quick Start with Docker
+
+### Prerequisites
+- Docker Desktop running (macOS/Windows) or Docker Engine (Linux)
+- Docker Compose v2.x+
+- Node.js 22+ (for local development only)
+
+### Option 1: Using Docker Compose (Recommended)
+
+```bash
+# Navigate to infra directory
+cd infra
+
+# Build and start all services
+docker compose up -d
+
+# Verify services are running
+docker ps
+
+# Check health
+curl http://localhost:8001/api/v1/health
+
+# Stop all services
+docker compose down
+```
+
+**Note for macOS users**: If `docker compose` doesn't work, use the full path:
+```bash
+/Applications/Docker.app/Contents/Resources/cli-plugins/docker-compose up -d
+```
+
+### Option 2: Manual Build (From Project Root)
+
+```bash
+# Build server image
+docker build -f ./infra/Dockerfile.server -t eatfit247-cms-server:latest .
+
+# Build client image
+docker build -f ./infra/Dockerfile.client -t eatfit247-cms-client:latest .
+
+# Start services
+cd infra && docker compose up -d
+```
+
+### Access Points
+- **Frontend**: http://localhost:80
+- **Backend API**: http://localhost:8001  
+- **API via Proxy**: http://localhost:80/api/v1
+- **Health Check**: http://localhost:8001/api/v1/health
+
+### Verify Deployment
+```bash
+# Check container status
+docker ps
+
+# View logs
+docker logs eatfit247-cms-api
+docker logs eatfit247-cms-client
+
+# Test health endpoint
+curl http://localhost:8001/api/v1/health
+# Expected: {"status":"ok","timestamp":"..."}
+```
 
 ## 💻 Local Development
 
@@ -170,11 +209,15 @@ docker ps
 docker logs eatfit247-cms-api
 docker logs eatfit247-cms-client
 
-# Access container shell
-docker exec -it eatfit247-cms-api bash
+# Access container shell (Alpine uses sh, not bash)
+docker exec -it eatfit247-cms-api sh
+docker exec -it eatfit247-cms-client sh
 
-# Restart containers
+# Restart containers (from project root)
 docker compose -f ./infra/docker-compose.yml restart
+
+# Or from infra directory
+cd infra && docker compose restart
 ```
 
 ### Volume Management

@@ -1,25 +1,35 @@
-FROM node:22-alpine AS build
-RUN apk add --no-cache g++ make python3 py3-pip chromium curl
+FROM node:22 AS build
+RUN apt-get update
+RUN apt-get install -y g++ make python3-pip
+RUN apt-get install -y curl
+RUN apt-get install -y chromium
 WORKDIR /home/app
+RUN mkdir -p eatfit247-cms-api
 COPY ./eatfit247-cms-api/package*.json ./eatfit247-cms-api/
 COPY ./eatfit247-cms-api ./eatfit247-cms-api
 RUN npm --prefix eatfit247-cms-api install --legacy-peer-deps
 RUN npm --prefix eatfit247-cms-api run build
 
-FROM node:22-alpine AS production
-RUN apk add --no-cache chromium curl g++ make python3 py3-pip
-WORKDIR /home/app
-COPY --from=build /home/app/eatfit247-cms-api/dist ./eatfit247-cms-api/dist
-COPY --from=build /home/app/eatfit247-cms-api/package*.json ./eatfit247-cms-api/
-# Install all dependencies and rebuild native modules
-RUN npm --prefix eatfit247-cms-api install --legacy-peer-deps && \
-    npm --prefix eatfit247-cms-api rebuild bcrypt --build-from-source
-# Copy initialization script
 COPY ./infra/init-media-dirs.sh /home/app/init-media-dirs.sh
 RUN chmod +x /home/app/init-media-dirs.sh
+
 # Create assets directory for Docker volume mounting
 RUN mkdir -p /home/app/assets
+
+# Run initialization script to create media directory structure
+RUN /home/app/init-media-dirs.sh
+
+# Copy media files from host to container
+COPY ./media-files /home/app/assets/media-files
+
+# Set proper permissions
+RUN chmod -R 755 /home/app/assets/media-files
+
 EXPOSE 3000
+
+# Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD curl -f http://localhost:3000/api/v1/health || exit 1
+
+# Start the application
 CMD ["sh", "-c", "/home/app/init-media-dirs.sh && node eatfit247-cms-api/dist/main.js"]

@@ -13,7 +13,6 @@ services:
       - main.env
     environment:
       API_PORT: '3000'
-      NODE_ENV: 'production'
     ports:
       - "8001:3000"
     healthcheck:
@@ -22,8 +21,6 @@ services:
       retries: 5
       start_period: 5s
       timeout: 10s
-    networks:
-      - eatfit247-network
 
   eatfit247-client:
     container_name: eatfit247-cms-client
@@ -32,23 +29,19 @@ services:
       context: ..
       dockerfile: infra/Dockerfile.client
     restart: always
+    volumes:
+      - ./eatfit247.conf:/etc/nginx/conf.d/eatfit247.conf
+      - ./certs/eatfit247.key:/etc/ssl/certs/eatfit247.key
+      - ./certs/eatfit247.pem:/etc/ssl/certs/eatfit247.pem
     ports:
       - "80:80"
       - "443:443"
     depends_on:
       eatfit247-api:
         condition: service_healthy
-    networks:
-      - eatfit247-network
 
 volumes:
   media_files:
     driver: local
-    external: false
   assets:
     driver: local
-    external: false
-
-networks:
-  eatfit247-network:
-    driver: bridge
