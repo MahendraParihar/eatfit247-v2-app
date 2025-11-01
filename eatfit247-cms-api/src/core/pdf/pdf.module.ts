@@ -11,11 +11,19 @@ import { Browser } from 'puppeteer';
 })
 export class PdfModule {
   constructor(@InjectBrowser() private readonly browser: Browser) {
-    this.create();
+    this.create().catch(err => {
+      console.log('Browser initialization failed, will use puppeteer.launch() directly:', err.message);
+    });
   }
 
   async create() {
-    const version = await this.browser.version();
-    return { version };
+    try {
+      const version = await this.browser.version();
+      console.log('Puppeteer browser initialized, version:', version);
+      return { version };
+    } catch (error) {
+      console.log('Browser version check failed:', error.message);
+      return { version: 'unknown' };
+    }
   }
 }

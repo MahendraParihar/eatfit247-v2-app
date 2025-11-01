@@ -1,15 +1,36 @@
 FROM node:22 AS build
-RUN apt-get update
-RUN apt-get install -y g++ make python3-pip
-RUN apt-get install -y curl
-RUN apt-get install -y chromium
+RUN apt-get update && apt-get install -y \
+    g++ \
+    make \
+    python3-pip \
+    curl \
+    chromium \
+    && rm -rf /var/lib/apt/lists/*
 WORKDIR /home/app
-RUN mkdir -p eatfit247-cms-api
 COPY ./eatfit247-cms-api/package*.json ./eatfit247-cms-api/
 COPY ./eatfit247-cms-api ./eatfit247-cms-api
 RUN npm --prefix eatfit247-cms-api install --legacy-peer-deps
 RUN npm --prefix eatfit247-cms-api run build
 
+FROM node:22 AS production
+RUN apt-get update && apt-get install -y \
+    chromium \
+    curl \
+    g++ \
+    make \
+    python3-pip \
+    && rm -rf /var/lib/apt/lists/*
+WORKDIR /home/app
+
+# Copy built application from build stage
+COPY --from=build /home/app/eatfit247-cms-api/dist ./eatfit247-cms-api/dist
+COPY --from=build /home/app/eatfit247-cms-api/package*.json ./eatfit247-cms-api/
+
+# Install dependencies fresh in production stage and rebuild native modules
+RUN npm --prefix eatfit247-cms-api install --legacy-peer-deps && \
+    npm --prefix eatfit247-cms-api rebuild bcrypt --build-from-source
+
+# Copy initialization script
 COPY ./infra/init-media-dirs.sh /home/app/init-media-dirs.sh
 RUN chmod +x /home/app/init-media-dirs.sh
 
@@ -24,6 +45,13 @@ COPY ./media-files /home/app/assets/media-files
 
 # Set proper permissions
 RUN chmod -R 755 /home/app/assets/media-files
+
+# Set Chromium/Puppeteer environment variables for Docker
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
+    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium \
+    PUPPETEER_ARGS="--no-sandbox --disable-setuid-sandbox --disable-dev-shm-usage --disable-gpu --no-first-run --no-zygote --single-process" \
+    CHROME_BIN=/usr/bin/chromium \
+    CHROME_PATH=/usr/bin/chromium
 
 EXPOSE 3000
 

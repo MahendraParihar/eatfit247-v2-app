@@ -34,7 +34,7 @@ import { AppService } from './app.service';
     AccountModule,
     CommonModule,
     ServeStaticModule.forRoot({
-      rootPath: join('/home/app/assets/media-files'),
+      rootPath: process.env.ASSET_PATH,
       serveRoot: '/media-files',
     }),
     MemberModule,

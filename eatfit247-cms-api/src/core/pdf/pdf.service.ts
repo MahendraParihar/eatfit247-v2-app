@@ -44,7 +44,19 @@ export class PdfService {
     data.franchise = franchise;
     await this.registerHeaderFooter(franchise);
     const html = await this.getData(templateName, data);
-    const browser = await puppeteer.launch({ headless: "new", args: ["--no-sandbox"] });
+    const browser = await puppeteer.launch({ 
+      headless: "new", 
+      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/chromium',
+      args: [
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-dev-shm-usage",
+        "--disable-gpu",
+        "--no-first-run",
+        "--no-zygote",
+        "--single-process"
+      ] 
+    });
     const page = await browser.newPage();
     await page.setContent(html, { waitUntil: "domcontentloaded" });
     await page.emulateMediaType("screen");
