@@ -7,11 +7,13 @@ RUN npm --prefix eatfit247-cms-api install --legacy-peer-deps
 RUN npm --prefix eatfit247-cms-api run build
 
 FROM node:22-alpine AS production
-RUN apk add --no-cache chromium curl
+RUN apk add --no-cache chromium curl g++ make python3 py3-pip
 WORKDIR /home/app
 COPY --from=build /home/app/eatfit247-cms-api/dist ./eatfit247-cms-api/dist
-COPY --from=build /home/app/eatfit247-cms-api/node_modules ./eatfit247-cms-api/node_modules
 COPY --from=build /home/app/eatfit247-cms-api/package*.json ./eatfit247-cms-api/
+# Install all dependencies and rebuild native modules
+RUN npm --prefix eatfit247-cms-api install --legacy-peer-deps && \
+    npm --prefix eatfit247-cms-api rebuild bcrypt --build-from-source
 # Copy initialization script
 COPY ./infra/init-media-dirs.sh /home/app/init-media-dirs.sh
 RUN chmod +x /home/app/init-media-dirs.sh
