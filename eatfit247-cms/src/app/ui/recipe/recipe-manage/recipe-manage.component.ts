@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { DropdownItem } from '../../../interfaces/dropdown-item';
 import { StringResources } from '../../../enum/string-resources';
 import { InputLength } from '../../../constants/input-length';
@@ -23,11 +23,13 @@ import { RecipeModel } from '../../../models/recipe.model';
 declare var _: any;
 
 @Component({
+  standalone: false,
   selector: 'app-recipe-manage',
   templateUrl: './recipe-manage.component.html',
   styleUrls: ['./recipe-manage.component.scss'],
 })
 export class RecipeManageComponent implements OnInit, AfterViewInit, OnDestroy {
+  fb: FormBuilder = inject(FormBuilder);
   recipeCategoryList: DropdownItem[] = [];
   recipeCuisineList: DropdownItem[] = [];
   recipeTypeList: DropdownItem[] = [];
@@ -61,8 +63,7 @@ export class RecipeManageComponent implements OnInit, AfterViewInit, OnDestroy {
     private snackBarService: SnackBarService,
     private navigationService: NavigationService,
     private activatedRoute: ActivatedRoute,
-    private cdr: ChangeDetectorRef,
-    private fb: FormBuilder) {
+    private cdr: ChangeDetectorRef) {
     this.id = Number(this.activatedRoute.snapshot.paramMap.get('id'));
   }
 

@@ -7,11 +7,12 @@ import {Subscription} from 'rxjs';
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss']
+  styleUrls: ['./app.component.scss'],
+  standalone: false
 })
 export class AppComponent implements OnDestroy, AfterContentChecked {
   loader = false;
-  loaderSubscription: Subscription;
+  loaderSubscription?: Subscription;
 
   constructor(private storageService: StorageService,
               private sharedService: SharedService,

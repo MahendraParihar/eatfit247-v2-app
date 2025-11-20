@@ -20,6 +20,7 @@ import { ResponseDataModel } from '../../../models/response-data.model';
 import { ServerResponseEnum } from '../../../enum/server-response-enum';
 
 @Component({
+  standalone: false,
   selector: 'app-program-category-list',
   templateUrl: './program-category-list.component.html',
   styleUrls: ['./program-category-list.component.scss'],

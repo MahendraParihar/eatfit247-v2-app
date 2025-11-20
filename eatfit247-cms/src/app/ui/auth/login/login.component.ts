@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core';
-import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
+import { Component, inject, OnInit } from '@angular/core';
+import { FormBuilder, UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { HttpService } from '../../../service/http.service';
 import { ApiUrlEnum } from '../../../enum/api-url-enum';
 import { ResponseDataModel } from '../../../models/response-data.model';
@@ -20,11 +20,13 @@ import { StorageService } from '../../../service/storage.service';
 import { AlertTypeEnum } from '../../../enum/alert-type-enum';
 
 @Component({
+  standalone: false,
   selector: 'app-login',
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
 })
 export class LoginComponent implements OnInit {
+  fb: FormBuilder = inject(FormBuilder);
   stringRes = StringResources;
   hide = true;
   formGroup: UntypedFormGroup = this.fb.group({
@@ -32,8 +34,7 @@ export class LoginComponent implements OnInit {
     password: [null, [Validators.required, Validators.maxLength(100)]],
   });
 
-  constructor(private fb: UntypedFormBuilder,
-    private httpService: HttpService,
+  constructor(private httpService: HttpService,
     private snackBarService: SnackBarService,
     private storageService: StorageService,
     private navigationService: NavigationService,

@@ -1,6 +1,6 @@
-import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { StringResources } from '../../../enum/string-resources';
-import { FormGroup, UntypedFormBuilder, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, UntypedFormBuilder, Validators } from '@angular/forms';
 import { HttpService } from '../../../service/http.service';
 import { SnackBarService } from '../../../service/snack-bar.service';
 import { NavigationService } from '../../../service/navigation.service';
@@ -15,14 +15,16 @@ import { InputLength } from '../../../constants/input-length';
 import { StorageService } from '../../../service/storage.service';
 import { MediaForEnum } from '../../../enum/media-for-enum';
 import { FileTypeEnum } from '../../../enum/file-type-enum';
-import * as moment from 'moment';
+import moment from 'moment';
 
 @Component({
+  standalone: false,
   selector: 'app-admin-user-edit-profile',
   templateUrl: './admin-user-edit-profile.component.html',
   styleUrls: ['./admin-user-edit-profile.component.scss'],
 })
 export class AdminUserEditProfileComponent implements OnInit, AfterViewInit, OnDestroy {
+  fb: FormBuilder = inject(FormBuilder);
   adminUserObj: AdminUserModel;
   stringRes = StringResources;
   inputLength = InputLength;
@@ -48,10 +50,7 @@ export class AdminUserEditProfileComponent implements OnInit, AfterViewInit, OnD
 
   constructor(private httpService: HttpService,
     private snackBarService: SnackBarService,
-    private navigationService: NavigationService,
-    private activatedRoute: ActivatedRoute,
-    private storageService: StorageService,
-    private fb: UntypedFormBuilder) {
+    private navigationService: NavigationService) {
   }
 
   get formControl() {

@@ -3,6 +3,7 @@ import { AdminUserStatusEnum } from '../../../enum/admin-user-status-enum';
 
 @Directive({
   selector: '[appUserStatusBtn]',
+  standalone: false
 })
 export class UserStatusButtonDirective implements OnInit, OnChanges {
   adminStatusEnum = AdminUserStatusEnum;

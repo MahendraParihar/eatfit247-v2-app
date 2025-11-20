@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { StringResources } from '../../../enum/string-resources';
 import { InputLength } from '../../../constants/input-length';
 import { StatusList } from '../../../constants/status-list';
@@ -19,11 +19,13 @@ import { PlanModel } from '../../../models/plan.model';
 import { DropdownItem } from '../../../interfaces/dropdown-item';
 
 @Component({
+  standalone: false,
   selector: 'app-plan-manage',
   templateUrl: './plan-manage.component.html',
   styleUrls: ['./plan-manage.component.scss'],
 })
 export class PlanManageComponent implements OnInit, AfterViewInit, OnDestroy {
+  fb: FormBuilder = inject(FormBuilder);
   lovModelObj: PlanModel;
   id: number;
   stringRes = StringResources;
@@ -53,8 +55,7 @@ export class PlanManageComponent implements OnInit, AfterViewInit, OnDestroy {
     private snackBarService: SnackBarService,
     private navigationService: NavigationService,
     private activatedRoute: ActivatedRoute,
-    private cdr: ChangeDetectorRef,
-    private fb: FormBuilder) {
+    private cdr: ChangeDetectorRef) {
     this.id = Number(this.activatedRoute.snapshot.paramMap.get('id'));
   }
 

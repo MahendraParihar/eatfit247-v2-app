@@ -20,6 +20,7 @@ import { ServerResponseEnum } from '../../../enum/server-response-enum';
 import { CountryDatasource } from '../country.datasource';
 
 @Component({
+  standalone: false,
   selector: 'app-country-list',
   templateUrl: './country-list.component.html',
   styleUrls: ['./country-list.component.scss'],

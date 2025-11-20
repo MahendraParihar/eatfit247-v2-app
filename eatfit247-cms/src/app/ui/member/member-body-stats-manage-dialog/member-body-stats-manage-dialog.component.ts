@@ -1,11 +1,11 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, inject, Inject, OnInit } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { HttpService } from '../../../service/http.service';
 import { SnackBarService } from '../../../service/snack-bar.service';
 import { StringResources } from '../../../enum/string-resources';
 import { InputLength } from '../../../constants/input-length';
-import * as moment from 'moment';
+import moment from 'moment';
 import { Constants } from '../../../constants/Constants';
 import { ValidationUtil } from '../../../utilites/validation-util';
 import { ResponseDataModel } from '../../../models/response-data.model';
@@ -15,11 +15,13 @@ import { MemberHealthParameter, MemberHealthParameterModelLog } from '../../../m
 import { FieldTypeEnum } from '../../../enum/field-type-enum';
 
 @Component({
+  standalone: false,
   selector: 'app-member-body-stats-manage-dialog',
   templateUrl: './member-body-stats-manage-dialog.component.html',
   styleUrls: ['./member-body-stats-manage-dialog.component.scss'],
 })
 export class MemberBodyStatsManageDialogComponent implements OnInit {
+  fb: FormBuilder = inject(FormBuilder);
   memberId: number;
   id: number;
   stringRes = StringResources;
@@ -36,7 +38,6 @@ export class MemberBodyStatsManageDialogComponent implements OnInit {
 
   constructor(public dialogRef: MatDialogRef<MemberBodyStatsManageDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any,
-    private fb: FormBuilder,
     private httpService: HttpService,
     private snackBarService: SnackBarService) {
     this.dialogData = data;

@@ -3,6 +3,7 @@ import { AdminShortInfoModel } from '../../../models/admin-short-info.model';
 
 @Pipe({
   name: 'appCreatedBy',
+  standalone: false
 })
 export class CreatedByUserPipe implements PipeTransform {
   transform(createdBy: AdminShortInfoModel): string {

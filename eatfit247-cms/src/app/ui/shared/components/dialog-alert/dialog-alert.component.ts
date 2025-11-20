@@ -7,6 +7,7 @@ import { AlertTypeEnum } from '../../../../enum/alert-type-enum';
   selector: 'app-dialog-alert',
   templateUrl: './dialog-alert.component.html',
   styleUrls: ['./dialog-alert.component.scss'],
+  standalone: false
 })
 export class DialogAlertComponent implements OnInit {
   dialogData: AlertDialogDataInterface;

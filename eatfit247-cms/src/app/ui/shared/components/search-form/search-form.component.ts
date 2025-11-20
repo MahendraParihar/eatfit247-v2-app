@@ -1,15 +1,17 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, inject, Input, OnInit, Output } from '@angular/core';
 import { FormBuilder } from '@angular/forms';
 import { StringResources } from '../../../../enum/string-resources';
 import { CommonSearchModel } from '../../../../models/common-search.model';
 import { StatusList } from '../../../../constants/status-list';
 
 @Component({
+  standalone: false,
   selector: 'app-search-form',
   templateUrl: './search-form.component.html',
   styleUrls: ['./search-form.component.scss'],
 })
 export class SearchFormComponent implements OnInit {
+  fb: FormBuilder = inject(FormBuilder);
   @Input()
   searchModel: CommonSearchModel;
   @Output()
@@ -23,7 +25,7 @@ export class SearchFormComponent implements OnInit {
     createdTo: [null],
   });
 
-  constructor(private fb: FormBuilder) {
+  constructor() {
   }
 
   ngOnInit(): void {

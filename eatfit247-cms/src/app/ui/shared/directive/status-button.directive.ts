@@ -2,6 +2,7 @@ import { Directive, ElementRef, HostListener, Input, OnChanges, OnInit, Renderer
 
 @Directive({
   selector: '[appStatusBtn]',
+  standalone: false
 })
 export class StatusButtonDirective implements OnInit, OnChanges {
   @Input()

@@ -20,6 +20,7 @@ import { BlogModel } from '../../../models/blog.model';
 import { PreviewBlogDialogComponent } from '../preview-blog-dialog/preview-blog-dialog.component';
 
 @Component({
+  standalone: false,
   selector: 'app-blog-list',
   templateUrl: './blog-list.component.html',
   styleUrls: ['./blog-list.component.scss'],

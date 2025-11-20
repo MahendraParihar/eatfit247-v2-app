@@ -14,6 +14,7 @@ import {
 } from '../member-pocket-guide-manage-dialog/member-pocket-guide-manage-dialog.component';
 
 @Component({
+  standalone: false,
   selector: 'app-member-pocket-guide',
   templateUrl: './member-pocket-guide.component.html',
   styleUrls: ['./member-pocket-guide.component.scss'],

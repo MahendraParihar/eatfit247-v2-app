@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { StringResources } from '../../../enum/string-resources';
 import { InputLength } from '../../../constants/input-length';
 import { FileTypeEnum } from '../../../enum/file-type-enum';
@@ -17,11 +17,13 @@ import { StateModel } from '../../../models/state.model';
 import { DropdownItem } from '../../../interfaces/dropdown-item';
 
 @Component({
+  standalone: false,
   selector: 'app-state-manage',
   templateUrl: './state-manage.component.html',
   styleUrls: ['./state-manage.component.scss'],
 })
 export class StateManageComponent implements OnInit, AfterViewInit, OnDestroy {
+  fb: FormBuilder = inject(FormBuilder);
   countryList: DropdownItem[] = [];
   stateModelObj: StateModel;
   id: number;
@@ -40,8 +42,7 @@ export class StateManageComponent implements OnInit, AfterViewInit, OnDestroy {
   constructor(private httpService: HttpService,
     private snackBarService: SnackBarService,
     private navigationService: NavigationService,
-    private activatedRoute: ActivatedRoute,
-    private fb: FormBuilder) {
+    private activatedRoute: ActivatedRoute) {
     this.id = Number(this.activatedRoute.snapshot.paramMap.get('id'));
   }
 

@@ -20,6 +20,7 @@ import { ServerResponseEnum } from '../../../enum/server-response-enum';
 import { BlogAuthorDatasource } from '../blog-author.datasource';
 
 @Component({
+  standalone: false,
   selector: 'app-blog-author-list',
   templateUrl: './blog-author-list.component.html',
   styleUrls: ['./blog-author-list.component.scss'],

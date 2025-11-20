@@ -4,6 +4,7 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { StringResources } from '../../../enum/string-resources';
 
 @Component({
+  standalone: false,
   selector: 'app-preview-blog-dialog',
   templateUrl: './preview-blog-dialog.component.html',
   styleUrls: ['./preview-blog-dialog.component.scss'],

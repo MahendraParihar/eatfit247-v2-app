@@ -19,6 +19,7 @@ import { FranchiseDatasource } from '../franchise.datasource';
 import { FranchiseModel } from '../../../models/franchise.model';
 
 @Component({
+  standalone: false,
   selector: 'app-franchise-list',
   templateUrl: './franchise-list.component.html',
   styleUrls: ['./franchise-list.component.scss'],

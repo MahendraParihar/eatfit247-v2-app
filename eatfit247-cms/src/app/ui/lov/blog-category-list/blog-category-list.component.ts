@@ -19,6 +19,7 @@ import { ResponseDataModel } from '../../../models/response-data.model';
 import { ServerResponseEnum } from '../../../enum/server-response-enum';
 
 @Component({
+  standalone: false,
   selector: 'app-blog-category-list',
   templateUrl: './blog-category-list.component.html',
   styleUrls: ['./blog-category-list.component.scss'],

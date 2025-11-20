@@ -61,19 +61,19 @@
              fxFlex.lt-sm="100%">
           <mat-form-field>
             <mat-label>{{stringRes.IDEAL_FOR}}</mat-label>
-            <mat-chip-list #idealForChipList>
-              <mat-chip (removed)="remove(tag, 1)" *ngFor="let tag of idealForList">
+            <mat-chip-grid #idealForChipList>
+              <mat-chip-row (removed)="remove(tag, 1)" *ngFor="let tag of idealForList">
                 {{tag}}
                 <button matChipRemove>
                   <mat-icon>cancel</mat-icon>
                 </button>
-              </mat-chip>
+              </mat-chip-row>
               <input (matChipInputTokenEnd)="add($event, 1)"
                      [matChipInputAddOnBlur]="addOnBlur"
                      [matChipInputFor]="idealForChipList"
                      [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
                      placeholder="New ideal for...">
-            </mat-chip-list>
+            </mat-chip-grid>
             <mat-error>
               <app-input-error [controlName]="stringRes.IDEAL_FOR"
                                [control]="formControl['idealFor']"></app-input-error>
@@ -177,19 +177,19 @@
              fxFlex.lt-sm="100%">
           <mat-form-field>
             <mat-label>{{stringRes.TAGS}}</mat-label>
-            <mat-chip-list #chipList>
-              <mat-chip (removed)="remove(tag,2)" *ngFor="let tag of tagsList">
+            <mat-chip-grid #chipList>
+              <mat-chip-row (removed)="remove(tag,2)" *ngFor="let tag of tagsList">
                 {{tag}}
                 <button matChipRemove>
                   <mat-icon>cancel</mat-icon>
                 </button>
-              </mat-chip>
+              </mat-chip-row>
               <input (matChipInputTokenEnd)="add($event,2)"
                      [matChipInputAddOnBlur]="addOnBlur"
                      [matChipInputFor]="chipList"
                      [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
                      placeholder="New tag...">
-            </mat-chip-list>
+            </mat-chip-grid>
             <mat-error>
               <app-input-error [controlName]="stringRes.TAGS"
                                [control]="formControl['tags']"></app-input-error>

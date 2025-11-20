@@ -23,6 +23,7 @@ import { addWarning } from "@angular-devkit/build-angular/src/utils/webpack-diag
 import { MediaForEnum } from "../../../enum/media-for-enum";
 
 @Component({
+  standalone: false,
   selector: "app-pocket-guide-list",
   templateUrl: "./pocket-guide-list.component.html",
   styleUrls: ["./pocket-guide-list.component.scss"]

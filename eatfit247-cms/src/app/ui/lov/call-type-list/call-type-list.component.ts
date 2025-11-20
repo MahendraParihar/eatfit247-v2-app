@@ -19,6 +19,7 @@ import { ResponseDataModel } from '../../../models/response-data.model';
 import { ServerResponseEnum } from '../../../enum/server-response-enum';
 
 @Component({
+  standalone: false,
   selector: 'app-call-type-list',
   templateUrl: './call-type-list.component.html',
   styleUrls: ['./call-type-list.component.scss'],

@@ -23,6 +23,7 @@ import {
 } from '../member-call-schedule-manage-dialog/member-call-schedule-manage-dialog.component';
 
 @Component({
+  standalone: false,
   selector: 'app-member-call-schedule',
   templateUrl: './member-call-schedule.component.html',
   styleUrls: ['./member-call-schedule.component.scss'],

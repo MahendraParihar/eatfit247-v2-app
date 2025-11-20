@@ -1,17 +1,16 @@
 <mat-form-field>
   <mat-label>{{label}}</mat-label>
-  <mat-chip-list #chipList aria-label="Recipe selection">
-    <mat-chip (removed)="remove(j)" *ngFor="let item of selectedItemList; let j = index" [removable]="removable"
-              [selectable]="selectable">
+  <mat-chip-grid #chipList aria-label="Recipe selection">
+    <mat-chip-row (removed)="remove(j)" *ngFor="let item of selectedItemList; let j = index" [removable]="removable">
       {{item.name}}
       <mat-icon *ngIf="removable" matChipRemove>cancel</mat-icon>
-    </mat-chip>
+    </mat-chip-row>
     <input #searchInput (matChipInputTokenEnd)="add($event)" [formControl]="searchCtrl" [matAutocomplete]="auto"
            [matChipInputAddOnBlur]="addOnBlur"
            [matChipInputFor]="chipList" [matChipInputSeparatorKeyCodes]="separatorKeysCodes" [required]="isRequired"
            aria-label="Recipes" matInput
            placeholder="Search recipes">
-  </mat-chip-list>
+  </mat-chip-grid>
   <mat-autocomplete #auto="matAutocomplete" (optionSelected)="selected($event)">
     <mat-option *ngIf="isLoading" class="is-loading">Loading...</mat-option>
     <mat-option *ngIf="!isLoading && (!searchCtrl.value || searchCtrl.value.length === 0)" class="is-loading">

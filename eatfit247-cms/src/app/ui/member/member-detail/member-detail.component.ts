@@ -19,6 +19,7 @@ import {
 } from '../pocket-guide-selection-dialog/pocket-guide-selection-dialog.component';
 
 @Component({
+  standalone: false,
   selector: 'app-member-detail',
   templateUrl: './member-detail.component.html',
   styleUrls: ['./member-detail.component.scss'],

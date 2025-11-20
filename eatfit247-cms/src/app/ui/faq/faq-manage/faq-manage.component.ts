@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { DropdownItem } from '../../../interfaces/dropdown-item';
 import { StringResources } from '../../../enum/string-resources';
 import { InputLength } from '../../../constants/input-length';
@@ -15,15 +15,17 @@ import { ResponseDataModel } from '../../../models/response-data.model';
 import { ApiUrlEnum } from '../../../enum/api-url-enum';
 import { ServerResponseEnum } from '../../../enum/server-response-enum';
 import { ValidationUtil } from '../../../utilites/validation-util';
-import * as moment from 'moment';
+import moment from 'moment';
 import { FaqModel } from '../../../models/faq.model';
 
 @Component({
+  standalone: false,
   selector: 'app-faq-manage',
   templateUrl: './faq-manage.component.html',
   styleUrls: ['./faq-manage.component.scss'],
 })
 export class FaqManageComponent implements OnInit, AfterViewInit, OnDestroy {
+  fb: FormBuilder = inject(FormBuilder);
   faqCategoryList: DropdownItem[] = [];
   lovModelObj: FaqModel;
   id: number;
@@ -42,8 +44,7 @@ export class FaqManageComponent implements OnInit, AfterViewInit, OnDestroy {
     private snackBarService: SnackBarService,
     private navigationService: NavigationService,
     private activatedRoute: ActivatedRoute,
-    private cdr: ChangeDetectorRef,
-    private fb: FormBuilder) {
+    private cdr: ChangeDetectorRef) {
     this.id = Number(this.activatedRoute.snapshot.paramMap.get('id'));
   }
 

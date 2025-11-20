@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
+import { AfterViewInit, Component, inject, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
 import { HttpService } from '../../../../service/http.service';
 import { AddressModel } from '../../../../models/address.model';
 import { ApiUrlEnum } from '../../../../enum/api-url-enum';
@@ -11,11 +11,13 @@ import { filter, find } from 'lodash';
 import { DropdownItem } from '../../../../interfaces/dropdown-item';
 
 @Component({
+  standalone: false,
   selector: 'app-address-selector',
   templateUrl: './address-selector.component.html',
   styleUrls: ['./address-selector.component.scss'],
 })
 export class AddressSelectorComponent implements OnInit, AfterViewInit, OnDestroy, OnChanges {
+  fb: FormBuilder = inject(FormBuilder);
   @Input()
   addressList: AddressModel[];
   @Input()
@@ -46,7 +48,6 @@ export class AddressSelectorComponent implements OnInit, AfterViewInit, OnDestro
   });
 
   constructor(private httpService: HttpService,
-    private fb: FormBuilder,
     private snackBarService: SnackBarService) {
   }
 

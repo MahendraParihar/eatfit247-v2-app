@@ -10,6 +10,7 @@ import { SnackBarService } from '../../../service/snack-bar.service';
 import { filter, map } from 'lodash';
 
 @Component({
+  standalone: false,
   selector: 'app-health-issue-selection-dialog',
   templateUrl: './health-issue-selection-dialog.component.html',
   styleUrls: ['./health-issue-selection-dialog.component.scss'],

@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, inject, Inject, OnInit } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { ResponseDataModel } from '../../../models/response-data.model';
 import { ApiUrlEnum } from '../../../enum/api-url-enum';
@@ -12,15 +12,17 @@ import { InputLength } from '../../../constants/input-length';
 import { StatusList } from '../../../constants/status-list';
 import { MemberCallLogModel } from '../../../models/member-call-log.model';
 import { ValidationUtil } from '../../../utilites/validation-util';
-import * as moment from 'moment/moment';
+import moment from 'moment';
 import { Constants } from '../../../constants/Constants';
 
 @Component({
+  standalone: false,
   selector: 'app-member-call-schedule-manage-dialog',
   templateUrl: './member-call-schedule-manage-dialog.component.html',
   styleUrls: ['./member-call-schedule-manage-dialog.component.scss'],
 })
 export class MemberCallScheduleManageDialogComponent implements OnInit {
+  fb: FormBuilder = inject(FormBuilder);
   memberId: number;
   id: number;
   stringRes = StringResources;
@@ -45,7 +47,6 @@ export class MemberCallScheduleManageDialogComponent implements OnInit {
 
   constructor(public dialogRef: MatDialogRef<MemberCallScheduleManageDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any,
-    private fb: FormBuilder,
     private httpService: HttpService,
     private snackBarService: SnackBarService) {
     this.dialogData = data;

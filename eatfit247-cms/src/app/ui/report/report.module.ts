@@ -18,8 +18,7 @@ import { PreviewContactUsDialogComponent } from './preview-contact-us-dialog/pre
     ShareModule,
     CommonModule,
     ReportRoutingModule,
-  ],
-  entryComponents: [PreviewContactUsDialogComponent],
+  ]
 })
 export class ReportModule {
 }

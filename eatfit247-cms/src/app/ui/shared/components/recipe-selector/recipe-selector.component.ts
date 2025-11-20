@@ -10,6 +10,7 @@ import { MatChipInputEvent } from '@angular/material/chips';
 import { SnackBarService } from '../../../../service/snack-bar.service';
 
 @Component({
+  standalone: false,
   selector: 'app-recipe-selector',
   templateUrl: './recipe-selector.component.html',
   styleUrls: ['./recipe-selector.component.scss'],
@@ -36,8 +37,8 @@ export class RecipeSelectorComponent implements OnInit {
   removable = true;
   addOnBlur = true;
   separatorKeysCodes: number[] = [ENTER, COMMA];
-  @ViewChild('auto', { static: false }) matAutocomplete: MatAutocomplete;
-  @ViewChild('searchInput', { static: false }) searchInput: ElementRef<HTMLInputElement>;
+  @ViewChild('auto', { static: false }) matAutocomplete!: MatAutocomplete;
+  @ViewChild('searchInput', { static: false }) searchInput!: ElementRef<HTMLInputElement>;
 
   constructor(private snackbarService: SnackBarService) {
   }

@@ -23,6 +23,7 @@ import {
 import { MemberHealthParameterModelLog } from '../../../models/member-body-stats.model';
 
 @Component({
+  standalone: false,
   selector: 'app-member-body-stats-list',
   templateUrl: './member-body-stats-list.component.html',
   styleUrls: ['./member-body-stats-list.component.scss'],

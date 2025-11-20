@@ -20,6 +20,7 @@ import { ResponseDataModel } from '../../../models/response-data.model';
 import { ServerResponseEnum } from '../../../enum/server-response-enum';
 
 @Component({
+  standalone: false,
   selector: 'app-marital-status-list',
   templateUrl: './marital-status-list.component.html',
   styleUrls: ['./marital-status-list.component.scss'],

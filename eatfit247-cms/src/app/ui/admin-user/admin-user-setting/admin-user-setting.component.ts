@@ -5,6 +5,7 @@ import { StringResources } from '../../../enum/string-resources';
 import { ActivatedRoute } from '@angular/router';
 
 @Component({
+  standalone: false,
   selector: 'app-admin-user-setting',
   templateUrl: './admin-user-setting.component.html',
   styleUrls: ['./admin-user-setting.component.scss'],

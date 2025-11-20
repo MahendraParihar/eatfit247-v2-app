@@ -12,6 +12,7 @@ import { MatAutocomplete, MatAutocompleteSelectedEvent } from '@angular/material
 import { find } from 'lodash';
 
 @Component({
+  standalone: false,
   selector: 'app-user-selector',
   templateUrl: './user-selector.component.html',
   styleUrls: ['./user-selector.component.scss'],
@@ -31,16 +32,16 @@ export class UserSelectorComponent implements OnInit {
   stringRes = StringResources;
   searchCtrl = new FormControl();
   isLoading = false;
-  errorMsg: string;
-  userList: UserDropdownItem[];
+  errorMsg: string = '';
+  userList: UserDropdownItem[] = [];
   @Input()
   selectedUserList: UserDropdownItem[] = [];
   selectable = true;
   removable = true;
   addOnBlur = true;
   separatorKeysCodes: number[] = [ENTER, COMMA];
-  @ViewChild('auto', { static: false }) matAutocomplete: MatAutocomplete;
-  @ViewChild('searchInput', { static: false }) searchInput: ElementRef<HTMLInputElement>;
+  @ViewChild('auto', { static: false }) matAutocomplete!: MatAutocomplete;
+  @ViewChild('searchInput', { static: false }) searchInput!: ElementRef<HTMLInputElement>;
 
   constructor(
     private httpService: HttpService) {
@@ -84,7 +85,7 @@ export class UserSelectorComponent implements OnInit {
     const payload = {
       searchStr: searchStr,
     };
-    const res = await this.httpService.getRequest(ApiUrlEnum.SEARCH_USER, null, payload, false);
+    const res = await this.httpService.getRequest(ApiUrlEnum.SEARCH_USER, undefined, payload, false);
     this.isLoading = false;
     if (res) {
       switch (res.code) {

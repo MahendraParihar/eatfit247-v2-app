@@ -20,6 +20,7 @@ import { ResponseDataModel } from '../../../models/response-data.model';
 import { ServerResponseEnum } from '../../../enum/server-response-enum';
 
 @Component({
+  standalone: false,
   selector: 'app-gender-list',
   templateUrl: './gender-list.component.html',
   styleUrls: ['./gender-list.component.scss'],

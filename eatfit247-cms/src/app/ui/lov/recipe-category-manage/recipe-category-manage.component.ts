@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { InputLength } from '../../../constants/input-length';
@@ -16,11 +16,13 @@ import { SnackBarService } from '../../../service/snack-bar.service';
 import { ValidationUtil } from '../../../utilites/validation-util';
 
 @Component({
+  standalone: false,
   selector: 'app-recipe-category-manage',
   templateUrl: './recipe-category-manage.component.html',
   styleUrls: ['./recipe-category-manage.component.scss'],
 })
 export class RecipeCategoryManageComponent implements OnInit, AfterViewInit, OnDestroy {
+  fb: FormBuilder = inject(FormBuilder);
   lovModelObj: RecipeCategoryModel;
   id: number;
   stringRes = StringResources;
@@ -39,8 +41,7 @@ export class RecipeCategoryManageComponent implements OnInit, AfterViewInit, OnD
   constructor(private httpService: HttpService,
     private snackBarService: SnackBarService,
     private navigationService: NavigationService,
-    private activatedRoute: ActivatedRoute,
-    private fb: FormBuilder) {
+    private activatedRoute: ActivatedRoute) {
     this.id = Number(this.activatedRoute.snapshot.paramMap.get('id'));
   }
 

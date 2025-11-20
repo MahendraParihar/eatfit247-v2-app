@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, inject, Inject, OnInit } from '@angular/core';
 import { AlertDialogDataInterface } from '../../../../interfaces/alert-dialog-data.interface';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { FormBuilder, Validators } from '@angular/forms';
@@ -9,11 +9,13 @@ import { MatSelectChange } from '@angular/material/select';
 import { ValidationUtil } from '../../../../utilites/validation-util';
 
 @Component({
+  standalone: false,
   selector: 'app-dialog-user-status-change',
   templateUrl: './dialog-user-status-change.component.html',
   styleUrls: ['./dialog-user-status-change.component.scss'],
 })
 export class DialogUserStatusChangeComponent implements OnInit {
+  fb: FormBuilder = inject(FormBuilder);
   dialogData: AlertDialogDataInterface;
   inputLength = InputLength;
   stringRes = StringResources;
@@ -23,7 +25,7 @@ export class DialogUserStatusChangeComponent implements OnInit {
     statusId: [null, [Validators.required]],
   });
 
-  constructor(public fb: FormBuilder,
+  constructor(
     public dialogRef: MatDialogRef<DialogUserStatusChangeComponent>,
     @Inject(MAT_DIALOG_DATA) public data: AlertDialogDataInterface) {
     this.dialogData = data;

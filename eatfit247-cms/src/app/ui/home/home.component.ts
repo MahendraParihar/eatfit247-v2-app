@@ -1,4 +1,4 @@
-import { Component, NgZone, OnInit } from '@angular/core';
+import { Component, inject, NgZone, OnInit } from '@angular/core';
 import { ApiUrlEnum } from 'src/app/enum/api-url-enum';
 import { ServerResponseEnum } from 'src/app/enum/server-response-enum';
 import { ResponseDataModel } from 'src/app/models/response-data.model';
@@ -14,11 +14,13 @@ import { FormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { uniq } from 'lodash';
 
 @Component({
+  standalone: false,
   selector: 'app-home',
   templateUrl: './home.component.html',
-  styleUrls: ['./home.component.scss'],
+  styleUrls: ['./home.component.scss']
 })
 export class HomeComponent implements OnInit {
+  formBuilder: FormBuilder = inject(FormBuilder);
   dbModel: DashboardModel;
   lineSeries: any;
   stringResources = StringResources;
@@ -30,7 +32,6 @@ export class HomeComponent implements OnInit {
 
   constructor(private httpService: HttpService,
     private snackBarService: SnackBarService,
-    private formBuilder: FormBuilder,
     private zone: NgZone) {
   }
 

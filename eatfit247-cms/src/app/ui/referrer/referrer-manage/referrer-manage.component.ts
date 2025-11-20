@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { StringResources } from '../../../enum/string-resources';
 import { InputLength } from '../../../constants/input-length';
 import { FileTypeEnum } from '../../../enum/file-type-enum';
@@ -16,14 +16,16 @@ import { ValidationUtil } from '../../../utilites/validation-util';
 import { ReferrerModel } from '../../../models/referrer.model';
 import { DropdownItem } from '../../../interfaces/dropdown-item';
 import { MatSelectChange } from '@angular/material/select';
-import * as moment from 'moment';
+import moment from 'moment';
 
 @Component({
+  standalone: false,
   selector: 'app-referrer-manage',
   templateUrl: './referrer-manage.component.html',
   styleUrls: ['./referrer-manage.component.scss'],
 })
 export class ReferrerManageComponent implements OnInit, AfterViewInit, OnDestroy {
+  fb: FormBuilder = inject(FormBuilder);
   franchiseList: DropdownItem[] = [];
   lovModelObj: ReferrerModel;
   id: number;
@@ -53,8 +55,7 @@ export class ReferrerManageComponent implements OnInit, AfterViewInit, OnDestroy
     private snackBarService: SnackBarService,
     private navigationService: NavigationService,
     private activatedRoute: ActivatedRoute,
-    private cdr: ChangeDetectorRef,
-    private fb: FormBuilder) {
+    private cdr: ChangeDetectorRef) {
     this.id = Number(this.activatedRoute.snapshot.paramMap.get('id'));
   }
 

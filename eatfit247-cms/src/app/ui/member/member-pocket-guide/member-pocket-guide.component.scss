@@ -1,4 +1,4 @@
-@import "../../../../theme/padding";
+@use "../../../../theme/variable" as *;
 
 .footer-action {
   display: flex;

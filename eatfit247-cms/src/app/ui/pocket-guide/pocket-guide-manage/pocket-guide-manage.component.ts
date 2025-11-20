@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { StringResources } from '../../../enum/string-resources';
 import { InputLength } from '../../../constants/input-length';
 import { FileTypeEnum } from '../../../enum/file-type-enum';
@@ -16,11 +16,13 @@ import { ValidationUtil } from '../../../utilites/validation-util';
 import { PocketGuideModel } from '../../../models/pocket-guide.model';
 
 @Component({
+  standalone: false,
   selector: 'app-pocket-guide-manage',
   templateUrl: './pocket-guide-manage.component.html',
   styleUrls: ['./pocket-guide-manage.component.scss'],
 })
 export class PocketGuideManageComponent implements OnInit, AfterViewInit, OnDestroy {
+  fb: FormBuilder = inject(FormBuilder);
   lovModelObj: PocketGuideModel;
   id: number;
   stringRes = StringResources;
@@ -37,8 +39,7 @@ export class PocketGuideManageComponent implements OnInit, AfterViewInit, OnDest
   constructor(private httpService: HttpService,
     private snackBarService: SnackBarService,
     private navigationService: NavigationService,
-    private activatedRoute: ActivatedRoute,
-    private fb: FormBuilder) {
+    private activatedRoute: ActivatedRoute) {
     this.id = Number(this.activatedRoute.snapshot.paramMap.get('id'));
   }
 

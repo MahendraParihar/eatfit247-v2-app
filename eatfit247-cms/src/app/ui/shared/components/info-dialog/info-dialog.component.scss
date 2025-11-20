@@ -1,4 +1,4 @@
-@import "../../../../../theme/variable";
+@use "../../../../../theme/variable" as *;
 
 .alert {
   display: flex;

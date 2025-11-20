@@ -1,4 +1,4 @@
-@import "../../../../theme/padding";
+@use "../../../../theme/padding" as *;
 
 
 .mat-column-createdBy, .mat-column-respondedBy {

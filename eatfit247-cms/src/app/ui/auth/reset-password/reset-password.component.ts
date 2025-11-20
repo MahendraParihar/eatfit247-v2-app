@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core';
-import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
+import { Component, inject, OnInit } from '@angular/core';
+import { FormBuilder, UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { SnackBarService } from '../../../service/snack-bar.service';
 import { NavigationService } from '../../../service/navigation.service';
@@ -16,11 +16,13 @@ import { AESCryptoUtil } from '../../../utilites/crypto-aes';
 import { ValidationUtil } from '../../../utilites/validation-util';
 
 @Component({
+  standalone: false,
   selector: 'app-reset-password',
   templateUrl: './reset-password.component.html',
   styleUrls: ['./reset-password.component.scss'],
 })
 export class ResetPasswordComponent implements OnInit {
+  fb: FormBuilder = inject(FormBuilder);
   hide = true;
   hide1 = true;
   stringRes = StringResources;
@@ -31,8 +33,7 @@ export class ResetPasswordComponent implements OnInit {
     repeatPassword: ['', [Validators.required, Validators.minLength(InputLength.MIN_PASSWORD), Validators.maxLength(InputLength.MAX_PASSWORD)]],
   });
 
-  constructor(private fb: UntypedFormBuilder,
-    private httpService: HttpService,
+  constructor(private httpService: HttpService,
     private activatedRoute: ActivatedRoute,
     private errorHandlerService: ErrorHandlerService,
     private snackBarService: SnackBarService,

@@ -20,6 +20,7 @@ import { ResponseDataModel } from '../../../models/response-data.model';
 import { ServerResponseEnum } from '../../../enum/server-response-enum';
 
 @Component({
+  standalone: false,
   selector: 'app-call-purpose-list',
   templateUrl: './call-purpose-list.component.html',
   styleUrls: ['./call-purpose-list.component.scss'],

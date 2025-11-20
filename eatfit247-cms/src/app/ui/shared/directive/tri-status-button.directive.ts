@@ -3,6 +3,7 @@ import { AdminUserStatusEnum } from '../../../enum/admin-user-status-enum';
 
 @Directive({
   selector: '[triStatusBtn]',
+  standalone: false
 })
 export class TriStatusButtonDirective implements OnInit, OnChanges {
   adminStatusEnum = AdminUserStatusEnum;

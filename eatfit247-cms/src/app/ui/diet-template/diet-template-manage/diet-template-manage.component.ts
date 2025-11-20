@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 
 @Component({
+  standalone: false,
   selector: 'app-diet-template-manage',
   templateUrl: './diet-template-manage.component.html',
   styleUrls: ['./diet-template-manage.component.scss'],

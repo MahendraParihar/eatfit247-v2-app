@@ -24,6 +24,7 @@ import {ShareModule} from "./ui/shared/share.module";
 import {InfoDialogComponent} from './ui/shared/components/info-dialog/info-dialog.component';
 import {PageNotFoundComponent} from "./ui/error-pages/page-not-found/page-not-found.component";
 import {MatIconRegistry} from "@angular/material/icon";
+import {DomSanitizer} from '@angular/platform-browser';
 import {FlexLayoutModule} from "@angular/flex-layout";
 import {
   DialogUserStatusChangeComponent
@@ -68,16 +69,16 @@ import {
       useClass: ErrorHandlerService
     }*/
   ],
-  bootstrap: [AppComponent],
-  entryComponents: [
-    DialogAlertComponent,
-    InfoDialogComponent,
-    DialogUserStatusChangeComponent
-  ]
+  bootstrap: [AppComponent]
 })
 export class AppModule {
-  constructor(private matIconRegistry: MatIconRegistry) {
-    this.matIconRegistry.addSvgIcon("ic_check_circle", "assets/icons/ic_check_circle.svg");
+  constructor(private matIconRegistry: MatIconRegistry, private domSanitizer: DomSanitizer) {
+    // In Angular Material, MatIconRegistry.addSvgIcon expects a SafeResourceUrl.
+    // Passing a plain string can trigger a runtime error: "unsafe value used in a resource URL context".
+    this.matIconRegistry.addSvgIcon(
+      "ic_check_circle",
+      this.domSanitizer.bypassSecurityTrustResourceUrl("assets/icons/ic_check_circle.svg")
+    );
     // iconRegistry.setDefaultFontSetClass('material-icons-outlined');
   }
 }

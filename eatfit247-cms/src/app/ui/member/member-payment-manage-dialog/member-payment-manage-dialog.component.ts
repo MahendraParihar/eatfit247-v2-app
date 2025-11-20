@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, inject, Inject, OnInit } from '@angular/core';
 import { StringResources } from '../../../enum/string-resources';
 import { InputLength } from '../../../constants/input-length';
 import { DropdownItem } from '../../../interfaces/dropdown-item';
@@ -6,7 +6,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { HttpService } from '../../../service/http.service';
 import { SnackBarService } from '../../../service/snack-bar.service';
-import * as moment from 'moment';
+import moment from 'moment';
 import { find, round } from 'lodash';
 import { Constants } from '../../../constants/Constants';
 import { ValidationUtil } from '../../../utilites/validation-util';
@@ -19,11 +19,13 @@ import { CurrencyConfigList } from '../../../models/currency-config.model';
 import { AddressModel } from '../../../models/address.model';
 
 @Component({
+  standalone: false,
   selector: 'app-member-payment-manage-dialog',
   templateUrl: './member-payment-manage-dialog.component.html',
   styleUrls: ['./member-payment-manage-dialog.component.scss'],
 })
 export class MemberPaymentManageDialogComponent implements OnInit {
+  fb: FormBuilder = inject(FormBuilder);
   memberId: number;
   id: number;
   stringRes = StringResources;
@@ -73,7 +75,6 @@ export class MemberPaymentManageDialogComponent implements OnInit {
 
   constructor(public dialogRef: MatDialogRef<MemberPaymentManageDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any,
-    private fb: FormBuilder,
     private httpService: HttpService,
     private snackBarService: SnackBarService) {
     this.dialogData = data;

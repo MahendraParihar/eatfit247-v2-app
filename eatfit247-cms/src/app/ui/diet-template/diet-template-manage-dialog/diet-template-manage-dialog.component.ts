@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, inject, Inject, OnInit } from '@angular/core';
 import { StringResources } from '../../../enum/string-resources';
 import { InputLength } from '../../../constants/input-length';
 import { StatusList } from '../../../constants/status-list';
@@ -13,11 +13,13 @@ import { ServerResponseEnum } from '../../../enum/server-response-enum';
 import { DietTemplateModel } from '../../../models/diet-template.model';
 
 @Component({
+  standalone: false,
   selector: 'app-diet-template-manage-dialog',
   templateUrl: './diet-template-manage-dialog.component.html',
   styleUrls: ['./diet-template-manage-dialog.component.scss'],
 })
 export class DietTemplateManageDialogComponent implements OnInit {
+  fb: FormBuilder = inject(FormBuilder);
   id: number;
   stringRes = StringResources;
   inputLength = InputLength;
@@ -34,7 +36,6 @@ export class DietTemplateManageDialogComponent implements OnInit {
 
   constructor(public dialogRef: MatDialogRef<DietTemplateManageDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any,
-    private fb: FormBuilder,
     private httpService: HttpService,
     private snackBarService: SnackBarService) {
     this.dialogData = data;

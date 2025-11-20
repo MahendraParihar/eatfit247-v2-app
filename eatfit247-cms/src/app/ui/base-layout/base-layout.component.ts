@@ -17,6 +17,7 @@ import { MatSidenav } from '@angular/material/sidenav';
   selector: 'app-base-layout',
   templateUrl: './base-layout.component.html',
   styleUrls: ['./base-layout.component.scss'],
+  standalone: false
 })
 export class BaseLayoutComponent implements OnInit {
   authUserObj?: AuthUserModel;

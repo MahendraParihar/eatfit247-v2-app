@@ -20,6 +20,7 @@ import { ResponseDataModel } from '../../../models/response-data.model';
 import { ServerResponseEnum } from '../../../enum/server-response-enum';
 
 @Component({
+  standalone: false,
   selector: 'app-type-of-exercise-list',
   templateUrl: './type-of-exercise-list.component.html',
   styleUrls: ['./type-of-exercise-list.component.scss'],

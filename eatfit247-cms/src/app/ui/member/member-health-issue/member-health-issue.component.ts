@@ -15,6 +15,7 @@ import {
 import { MatDialog } from '@angular/material/dialog';
 
 @Component({
+  standalone: false,
   selector: 'app-member-health-issue',
   templateUrl: './member-health-issue.component.html',
   styleUrls: ['./member-health-issue.component.scss'],

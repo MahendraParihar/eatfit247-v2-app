@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { HttpService } from '../../../service/http.service';
 import { SnackBarService } from '../../../service/snack-bar.service';
 import { NavigationService } from '../../../service/navigation.service';
@@ -14,11 +14,13 @@ import { ValidationUtil } from '../../../utilites/validation-util';
 import { DropdownItem } from '../../../interfaces/dropdown-item';
 
 @Component({
+  standalone: false,
   selector: 'app-assessment-manage',
   templateUrl: './assessment-manage.component.html',
-  styleUrls: ['./assessment-manage.component.scss'],
+  styleUrls: ['./assessment-manage.component.scss']
 })
 export class AssessmentManageComponent implements OnInit, AfterViewInit, OnDestroy {
+  fb: FormBuilder = inject(FormBuilder);
   memberAssessmentObj: MemberAssessmentModel;
   id: number;
   stringRes = StringResources;
@@ -109,14 +111,13 @@ export class AssessmentManageComponent implements OnInit, AfterViewInit, OnDestr
     teaFrequency: [null, [Validators.maxLength(InputLength.CHAR_100)]],
     teaAmount: [null, [Validators.maxLength(InputLength.CHAR_100)]],
     remark: [null, [Validators.maxLength(InputLength.CHAR_2000)]],
-    nutritionistSummery: [null, [Validators.maxLength(InputLength.CHAR_2000)]],
+    nutritionistSummery: [null, [Validators.maxLength(InputLength.CHAR_2000)]]
   });
 
   constructor(private httpService: HttpService,
     private snackBarService: SnackBarService,
     private navigationService: NavigationService,
-    private activatedRoute: ActivatedRoute,
-    private fb: FormBuilder) {
+    private activatedRoute: ActivatedRoute) {
     this.activatedRoute.parent.params.subscribe(params => {
       this.id = Number(params['id']);
     });
@@ -218,7 +219,7 @@ export class AssessmentManageComponent implements OnInit, AfterViewInit, OnDestr
         teaFrequency: this.memberAssessmentObj.teaFrequency ? this.memberAssessmentObj.teaFrequency : null,
         teaAmount: this.memberAssessmentObj.teaAmount ? this.memberAssessmentObj.teaAmount : null,
         remark: this.memberAssessmentObj.remark ? this.memberAssessmentObj.remark : null,
-        nutritionistSummery: this.memberAssessmentObj.nutritionistSummery ? this.memberAssessmentObj.nutritionistSummery : null,
+        nutritionistSummery: this.memberAssessmentObj.nutritionistSummery ? this.memberAssessmentObj.nutritionistSummery : null
       });
     }
   }

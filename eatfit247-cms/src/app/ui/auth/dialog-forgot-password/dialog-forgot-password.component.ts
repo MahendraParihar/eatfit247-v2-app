@@ -1,7 +1,7 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, inject, Inject, OnInit } from '@angular/core';
 import { AlertDialogDataInterface } from '../../../interfaces/alert-dialog-data.interface';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
+import { FormBuilder, UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { ServerResponseEnum } from '../../../enum/server-response-enum';
 import { ApiUrlEnum } from '../../../enum/api-url-enum';
 import { ResponseDataModel } from '../../../models/response-data.model';
@@ -14,19 +14,20 @@ import { ValidationUtil } from '../../../utilites/validation-util';
 import { AESCryptoUtil } from '../../../utilites/crypto-aes';
 
 @Component({
+  standalone: false,
   selector: 'app-dialog-forgot-password',
   templateUrl: './dialog-forgot-password.component.html',
   styleUrls: ['./dialog-forgot-password.component.scss'],
 })
 export class DialogForgotPasswordComponent implements OnInit {
+  fb: FormBuilder = inject(FormBuilder);
   stringRes = StringResources;
   dialogData: AlertDialogDataInterface;
   formGroup: UntypedFormGroup = this.fb.group({
     emailId: ['mahendra.parihar10@gmail.com', [Validators.required, Validators.email, Validators.maxLength(InputLength.MAX_EMAIL)]],
   });
 
-  constructor(private fb: UntypedFormBuilder,
-    private httpService: HttpService,
+  constructor(private httpService: HttpService,
     private snackBarService: SnackBarService,
     private errorHandlerService: ErrorHandlerService,
     public dialogRef: MatDialogRef<DialogForgotPasswordComponent>,

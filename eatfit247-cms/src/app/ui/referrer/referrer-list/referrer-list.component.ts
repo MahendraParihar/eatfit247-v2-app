@@ -19,6 +19,7 @@ import { ReferrerDatasource } from '../referrer.datasource';
 import { ReferrerModel } from '../../../models/referrer.model';
 
 @Component({
+  standalone: false,
   selector: 'app-referrer-list',
   templateUrl: './referrer-list.component.html',
   styleUrls: ['./referrer-list.component.scss'],

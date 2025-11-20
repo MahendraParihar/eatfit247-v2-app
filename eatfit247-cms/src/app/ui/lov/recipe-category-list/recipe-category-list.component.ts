@@ -20,6 +20,7 @@ import { ServerResponseEnum } from '../../../enum/server-response-enum';
 import { RecipeCategoryDatasource } from '../recipe-category.datasource';
 
 @Component({
+  standalone: false,
   selector: 'app-recipe-category-list',
   templateUrl: './recipe-category-list.component.html',
   styleUrls: ['./recipe-category-list.component.scss'],

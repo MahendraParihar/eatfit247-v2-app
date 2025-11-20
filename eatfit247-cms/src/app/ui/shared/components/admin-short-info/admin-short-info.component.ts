@@ -2,6 +2,7 @@ import { Component, Input, OnInit } from '@angular/core';
 import { AdminShortInfoModel } from '../../../../models/admin-short-info.model';
 
 @Component({
+  standalone: false,
   selector: 'app-admin-short-info',
   templateUrl: './admin-short-info.component.html',
   styleUrls: ['./admin-short-info.component.scss'],

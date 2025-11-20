@@ -3,11 +3,11 @@
     <app-custom-img-tag [alt]="dialogData.title" [isAvatar]="false"
                         [webUrl]="dialogData.imagePath"></app-custom-img-tag>
     <h4 class="m-t-medium" mat-dialog-title>{{dialogData.title}}</h4>
-    <mat-chip-list aria-label="">
+    <mat-chip-set aria-label="">
       <mat-chip>{{dialogData.recipeType}}</mat-chip>
       <mat-chip *ngFor="let s of dialogData.recipeCategoryList">{{s.recipeCategory}}</mat-chip>
       <mat-chip *ngFor="let s of dialogData.recipeCuisineList">{{s.recipeCuisine}}</mat-chip>
-    </mat-chip-list>
+    </mat-chip-set>
     <div class="m-t-medium">&nbsp;</div>
     <h5>{{stringRes.DESCRIPTION}}</h5>
     <div [innerHTML]="dialogData.details" class="m-t-medium"></div>

@@ -1,5 +1,5 @@
-@import "../../../../theme/margin";
-@import "../../../../theme/variable";
+@use "../../../../theme/margin" as *;
+@use "../../../../theme/variable" as *;
 
 table {
   width: 100%;

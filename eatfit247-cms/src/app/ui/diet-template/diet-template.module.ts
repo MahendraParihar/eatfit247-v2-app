@@ -22,10 +22,7 @@ import { DietTemplateDetailsComponent } from './diet-template-details/diet-templ
     ShareModule,
     CommonModule,
     DietTemplateRoutingModule,
-  ],
-  entryComponents: [
-    DietTemplateManageDialogComponent,
-  ],
+  ]
 })
 export class DietTemplateModule {
 }

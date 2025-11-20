@@ -22,6 +22,7 @@ import {
 } from '../member-payment-invoice-dialog/member-payment-invoice-dialog.component';
 
 @Component({
+  standalone: false,
   selector: 'app-member-payment-history',
   templateUrl: './member-payment-history.component.html',
   styleUrls: ['./member-payment-history.component.scss'],

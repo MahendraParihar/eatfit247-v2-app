@@ -1,8 +1,8 @@
-@import "~@angular/material/prebuilt-themes/indigo-pink.css";
-@import "theme/variable";
-@import "theme/padding";
-@import "theme/margin";
-@import "theme/gradient";
+@use "@angular/material/prebuilt-themes/indigo-pink.css";
+@use "theme/variable" as *;
+@use "theme/padding" as *;
+@use "theme/margin" as *;
+@use "theme/gradient" as *;
 
 /** {
   font-family: "Material Icons'", Times, serif;

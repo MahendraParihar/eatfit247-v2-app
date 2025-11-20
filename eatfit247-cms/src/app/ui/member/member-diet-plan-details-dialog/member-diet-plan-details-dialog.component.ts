@@ -7,6 +7,7 @@ import { SnackBarService } from 'src/app/service/snack-bar.service';
 import { StringResources } from '../../../enum/string-resources';
 
 @Component({
+  standalone: false,
   selector: 'app-member-diet-plan-details-dialog',
   templateUrl: './member-diet-plan-details-dialog.component.html',
   styleUrls: ['./member-diet-plan-details-dialog.component.scss'],

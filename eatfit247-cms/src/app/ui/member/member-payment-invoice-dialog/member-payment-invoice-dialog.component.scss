@@ -1,6 +1,6 @@
-@import "../../../../theme/padding";
-@import "../../../../theme/margin";
-@import "../../../../theme/variable";
+@use "../../../../theme/padding" as *;
+@use "../../../../theme/margin" as *;
+@use "../../../../theme/variable" as *;
 
 .invoice-dialog-container {
   .member-info {

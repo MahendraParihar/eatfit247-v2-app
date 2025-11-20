@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { StringResources } from '../../../enum/string-resources';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { HttpService } from '../../../service/http.service';
@@ -21,11 +21,13 @@ import { COMMA, ENTER } from '@angular/cdk/keycodes';
 import { MatChipInputEvent } from '@angular/material/chips';
 
 @Component({
+  standalone: false,
   selector: 'app-blog-manage',
   templateUrl: './blog-manage.component.html',
   styleUrls: ['./blog-manage.component.scss'],
 })
 export class BlogManageComponent implements OnInit, AfterViewInit, OnDestroy {
+  fb: FormBuilder = inject(FormBuilder);
   blogCategoryList: DropdownItem[] = [];
   blogAuthorList: DropdownItem[] = [];
   lovModelObj: BlogModel;
@@ -56,8 +58,7 @@ export class BlogManageComponent implements OnInit, AfterViewInit, OnDestroy {
     private snackBarService: SnackBarService,
     private navigationService: NavigationService,
     private activatedRoute: ActivatedRoute,
-    private cdr: ChangeDetectorRef,
-    private fb: FormBuilder) {
+    private cdr: ChangeDetectorRef,) {
     this.id = Number(this.activatedRoute.snapshot.paramMap.get('id'));
   }
 

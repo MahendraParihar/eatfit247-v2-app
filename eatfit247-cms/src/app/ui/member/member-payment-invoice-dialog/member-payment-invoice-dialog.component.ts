@@ -11,6 +11,7 @@ import { AddressModel } from '../../../models/address.model';
 import { CommonUtil } from '../../../utilites/common-util';
 
 @Component({
+  standalone: false,
   selector: 'app-member-payment-invoice-dialog',
   templateUrl: './member-payment-invoice-dialog.component.html',
   styleUrls: ['./member-payment-invoice-dialog.component.scss'],

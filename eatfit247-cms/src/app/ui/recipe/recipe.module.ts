@@ -20,10 +20,7 @@ import { PreviewRecipeDialogComponent } from './preview-recipe-dialog/preview-re
     ShareModule,
     CommonModule,
     RecipeRoutingModule,
-  ],
-  entryComponents: [
-    PreviewRecipeDialogComponent,
-  ],
+  ]
 })
 export class RecipeModule {
 }

@@ -4,6 +4,7 @@ import { AddressModel } from '../../../models/address.model';
 
 @Pipe({
   name: 'address',
+  standalone: false
 })
 export class AddressPipe implements PipeTransform {
   transform(address: AddressModel): string {

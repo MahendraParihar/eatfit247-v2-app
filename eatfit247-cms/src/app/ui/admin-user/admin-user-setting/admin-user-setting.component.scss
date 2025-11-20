@@ -1,7 +1,4 @@
-@import "../../../../theme/variable";
-@import "../../../../theme/padding";
-@import "../../../../theme/margin";
-@import "../../../../theme/gradient";
+@use "../../../../theme/gradient" as *;
 
 .twistie-separator {
   flex: 1 1 0;

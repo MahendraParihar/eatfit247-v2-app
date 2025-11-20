@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ApiUrlEnum } from 'src/app/enum/api-url-enum';
 import { FieldTypeEnum } from 'src/app/enum/field-type-enum';
@@ -15,8 +15,10 @@ import { NavigationService } from '../../../service/navigation.service';
   selector: 'app-config-parameter-manage',
   templateUrl: './config-parameter-manage.component.html',
   styleUrls: ['./config-parameter-manage.component.scss'],
+  standalone: false
 })
 export class ConfigParameterManageComponent implements OnInit {
+  fb: FormBuilder = inject(FormBuilder);
   configParamList: ConfigParameterModel[];
   configParamControls: any;
   fieldTypeEnum = FieldTypeEnum;
@@ -27,8 +29,7 @@ export class ConfigParameterManageComponent implements OnInit {
 
   constructor(private httpService: HttpService,
     private snackBarService: SnackBarService,
-    private navigationService: NavigationService,
-    private fb: FormBuilder) {
+    private navigationService: NavigationService,) {
   }
 
   ngOnInit(): void {

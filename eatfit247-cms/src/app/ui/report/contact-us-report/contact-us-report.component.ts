@@ -20,6 +20,7 @@ import { ContactUsModel } from '../../../models/contact-us.model';
 import { PreviewContactUsDialogComponent } from '../preview-contact-us-dialog/preview-contact-us-dialog.component';
 
 @Component({
+  standalone: false,
   selector: 'app-contact-us-report',
   templateUrl: './contact-us-report.component.html',
   styleUrls: ['./contact-us-report.component.scss'],

@@ -22,6 +22,7 @@ import {
 } from '../diet-template-manage-dialog/diet-template-manage-dialog.component';
 
 @Component({
+  standalone: false,
   selector: 'app-diet-template-list',
   templateUrl: './diet-template-list.component.html',
   styleUrls: ['./diet-template-list.component.scss'],

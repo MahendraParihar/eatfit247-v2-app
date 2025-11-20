@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { LovModel } from '../../../models/lov.model';
 import { StringResources } from '../../../enum/string-resources';
 import { InputLength } from '../../../constants/input-length';
@@ -16,11 +16,13 @@ import { ServerResponseEnum } from '../../../enum/server-response-enum';
 import { ValidationUtil } from '../../../utilites/validation-util';
 
 @Component({
+  standalone: false,
   selector: 'app-sleeping-pattern-manage',
   templateUrl: './sleeping-pattern-manage.component.html',
   styleUrls: ['./sleeping-pattern-manage.component.scss'],
 })
 export class SleepingPatternManageComponent implements OnInit, AfterViewInit, OnDestroy {
+  fb: FormBuilder = inject(FormBuilder);
   lovModelObj: LovModel;
   id: number;
   stringRes = StringResources;
@@ -36,8 +38,7 @@ export class SleepingPatternManageComponent implements OnInit, AfterViewInit, On
   constructor(private httpService: HttpService,
     private snackBarService: SnackBarService,
     private navigationService: NavigationService,
-    private activatedRoute: ActivatedRoute,
-    private fb: FormBuilder) {
+    private activatedRoute: ActivatedRoute) {
     this.id = Number(this.activatedRoute.snapshot.paramMap.get('id'));
   }
 

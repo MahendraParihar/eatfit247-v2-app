@@ -20,6 +20,7 @@ import { ServerResponseEnum } from '../../../enum/server-response-enum';
 import { StateDatasource } from '../state.datasource';
 
 @Component({
+  standalone: false,
   selector: 'app-state-list',
   templateUrl: './state-list.component.html',
   styleUrls: ['./state-list.component.scss'],

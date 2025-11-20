@@ -19,6 +19,7 @@ import { FaqDatasource } from '../faq.datasource';
 import { FaqModel } from '../../../models/faq.model';
 
 @Component({
+  standalone: false,
   selector: 'app-faq-list',
   templateUrl: './faq-list.component.html',
   styleUrls: ['./faq-list.component.scss'],

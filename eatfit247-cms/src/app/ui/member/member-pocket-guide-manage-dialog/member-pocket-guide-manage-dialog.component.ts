@@ -10,6 +10,7 @@ import { filter, map } from 'lodash';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 
 @Component({
+  standalone: false,
   selector: 'app-member-pocket-guide-manage-dialog',
   templateUrl: './member-pocket-guide-manage-dialog.component.html',
   styleUrls: ['./member-pocket-guide-manage-dialog.component.scss'],

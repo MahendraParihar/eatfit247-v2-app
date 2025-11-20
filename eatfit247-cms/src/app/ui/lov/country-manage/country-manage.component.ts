@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { StringResources } from '../../../enum/string-resources';
 import { InputLength } from '../../../constants/input-length';
 import { FileTypeEnum } from '../../../enum/file-type-enum';
@@ -16,11 +16,13 @@ import { ValidationUtil } from '../../../utilites/validation-util';
 import { CountryModel } from '../../../models/country.model';
 
 @Component({
+  standalone: false,
   selector: 'app-country-manage',
   templateUrl: './country-manage.component.html',
   styleUrls: ['./country-manage.component.scss'],
 })
 export class CountryManageComponent implements OnInit, AfterViewInit, OnDestroy {
+  fb: FormBuilder = inject(FormBuilder);
   countryModelObj: CountryModel;
   id: number;
   stringRes = StringResources;
@@ -38,8 +40,7 @@ export class CountryManageComponent implements OnInit, AfterViewInit, OnDestroy 
   constructor(private httpService: HttpService,
     private snackBarService: SnackBarService,
     private navigationService: NavigationService,
-    private activatedRoute: ActivatedRoute,
-    private fb: FormBuilder) {
+    private activatedRoute: ActivatedRoute) {
     this.id = Number(this.activatedRoute.snapshot.paramMap.get('id'));
   }
 

@@ -3,6 +3,7 @@ import { AlertDialogDataInterface } from '../../../../interfaces/alert-dialog-da
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 
 @Component({
+  standalone: false,
   selector: 'app-info-dialog',
   templateUrl: './info-dialog.component.html',
   styleUrls: ['./info-dialog.component.scss'],

@@ -20,6 +20,7 @@ import { ResponseDataModel } from '../../../models/response-data.model';
 import { ServerResponseEnum } from '../../../enum/server-response-enum';
 
 @Component({
+  standalone: false,
   selector: 'app-urine-output-list',
   templateUrl: './urine-output-list.component.html',
   styleUrls: ['./urine-output-list.component.scss'],

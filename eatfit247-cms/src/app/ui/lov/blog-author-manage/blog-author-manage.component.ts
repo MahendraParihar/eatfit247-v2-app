@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 
 @Component({
+  standalone: false,
   selector: 'app-blog-author-manage',
   templateUrl: './blog-author-manage.component.html',
   styleUrls: ['./blog-author-manage.component.scss'],

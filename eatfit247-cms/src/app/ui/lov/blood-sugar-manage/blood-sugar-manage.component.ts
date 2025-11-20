@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { StringResources } from '../../../enum/string-resources';
 import { InputLength } from '../../../constants/input-length';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -16,11 +16,13 @@ import { MediaForEnum } from '../../../enum/media-for-enum';
 import { StatusList } from '../../../constants/status-list';
 
 @Component({
+  standalone: false,
   selector: 'app-blood-sugar-manage',
   templateUrl: './blood-sugar-manage.component.html',
   styleUrls: ['./blood-sugar-manage.component.scss'],
 })
 export class BloodSugarManageComponent implements OnInit, AfterViewInit, OnDestroy {
+  fb: FormBuilder = inject(FormBuilder);
   lovModelObj: LovModel;
   id: number;
   stringRes = StringResources;
@@ -36,8 +38,7 @@ export class BloodSugarManageComponent implements OnInit, AfterViewInit, OnDestr
   constructor(private httpService: HttpService,
     private snackBarService: SnackBarService,
     private navigationService: NavigationService,
-    private activatedRoute: ActivatedRoute,
-    private fb: FormBuilder) {
+    private activatedRoute: ActivatedRoute) {
     this.id = Number(this.activatedRoute.snapshot.paramMap.get('id'));
   }
 

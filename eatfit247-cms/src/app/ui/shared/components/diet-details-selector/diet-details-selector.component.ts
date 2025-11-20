@@ -9,6 +9,7 @@ import { AngularEditorConfig } from '@kolkov/angular-editor';
 import { Constants } from 'src/app/constants/Constants';
 
 @Component({
+  standalone: false,
   selector: 'app-diet-details-selector',
   templateUrl: './diet-details-selector.component.html',
   styleUrls: ['./diet-details-selector.component.scss'],

@@ -20,6 +20,7 @@ import { ServerResponseEnum } from '../../../enum/server-response-enum';
 import { CommonSearchModel } from '../../../models/common-search.model';
 
 @Component({
+  standalone: false,
   selector: 'app-blood-sugar-list',
   templateUrl: './blood-sugar-list.component.html',
   styleUrls: ['./blood-sugar-list.component.scss'],

@@ -4,6 +4,7 @@ import { Component, OnInit } from '@angular/core';
   selector: 'app-config-parameter-list',
   templateUrl: './config-parameter-list.component.html',
   styleUrls: ['./config-parameter-list.component.scss'],
+  standalone: false
 })
 export class ConfigParameterListComponent implements OnInit {
   constructor() {

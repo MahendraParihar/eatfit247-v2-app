@@ -23,6 +23,7 @@ import { MemberDatasource } from '../member.datasource';
 import { DialogAlertComponent } from '../../shared/components/dialog-alert/dialog-alert.component';
 
 @Component({
+  standalone: false,
   selector: 'app-member-list',
   templateUrl: './member-list.component.html',
   styleUrls: ['./member-list.component.scss'],

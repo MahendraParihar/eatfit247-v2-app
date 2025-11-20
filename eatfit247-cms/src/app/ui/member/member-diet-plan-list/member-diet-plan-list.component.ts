@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnDestroy, OnInit, Renderer2 } from "@angular/core";
+import { AfterViewInit, Component, inject, OnDestroy, OnInit, Renderer2 } from "@angular/core";
 import { StringResources } from "../../../enum/string-resources";
 import { HttpService } from "../../../service/http.service";
 import { SnackBarService } from "../../../service/snack-bar.service";
@@ -24,6 +24,7 @@ import { DialogAlertComponent } from "../../shared/components/dialog-alert/dialo
 import { DietTypeEnum } from "../../../enum/diet-type-enum";
 
 @Component({
+  standalone: false,
   selector: "app-member-diet-plan-list",
   templateUrl: "./member-diet-plan-list.component.html",
   styleUrls: ["./member-diet-plan-list.component.scss"],
@@ -36,6 +37,7 @@ import { DietTypeEnum } from "../../../enum/diet-type-enum";
   ]
 })
 export class MemberDietPlanListComponent implements OnInit, AfterViewInit, OnDestroy {
+  formBuilder: FormBuilder = inject(FormBuilder);
   totalCount = 0;
   list: MemberDietPlanModel[];
   columnsToDisplay: string[] = ["program", "programCategory", "noOfCycle", "dietPlanStatus", "updatedBy"];
@@ -56,7 +58,6 @@ export class MemberDietPlanListComponent implements OnInit, AfterViewInit, OnDes
     private snackBarService: SnackBarService,
     private navigationService: NavigationService,
     private activatedRoute: ActivatedRoute,
-    private formBuilder: FormBuilder,
     private renderer: Renderer2,
     public dialog: MatDialog) {
     this.activatedRoute.parent.params.subscribe(params => {

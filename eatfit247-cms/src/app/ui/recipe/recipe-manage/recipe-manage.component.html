@@ -194,19 +194,19 @@
              fxFlex.lt-sm="100%">
           <mat-form-field>
             <mat-label>{{stringRes.TAGS}}</mat-label>
-            <mat-chip-list #chipList>
-              <mat-chip (removed)="remove(tag)" *ngFor="let tag of tagsList">
+            <mat-chip-grid #chipList>
+              <mat-chip-row (removed)="remove(tag)" *ngFor="let tag of tagsList">
                 {{tag}}
                 <button matChipRemove>
                   <mat-icon>cancel</mat-icon>
                 </button>
-              </mat-chip>
+              </mat-chip-row>
               <input (matChipInputTokenEnd)="add($event)"
                      [matChipInputAddOnBlur]="addOnBlur"
                      [matChipInputFor]="chipList"
                      [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
                      placeholder="New tag...">
-            </mat-chip-list>
+            </mat-chip-grid>
           </mat-form-field>
           <mat-error>
             <app-input-error [controlName]="stringRes.TAGS"

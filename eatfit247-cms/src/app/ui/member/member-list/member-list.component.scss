@@ -1,4 +1,4 @@
-@import "../../../../theme/padding";
+@use "../../../../theme/padding" as *;
 
 .data-table .mat-table {
   height: calc(100vh - 300px) !important;

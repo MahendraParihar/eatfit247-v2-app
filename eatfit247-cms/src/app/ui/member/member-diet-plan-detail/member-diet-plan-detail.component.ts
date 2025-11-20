@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnDestroy, OnInit } from "@angular/core";
+import { AfterViewInit, Component, inject, OnDestroy, OnInit } from "@angular/core";
 import { StringResources } from "../../../enum/string-resources";
 import { FormArray, FormBuilder, FormGroup, Validators } from "@angular/forms";
 import { HttpService } from "../../../service/http.service";
@@ -17,14 +17,16 @@ import { COMMA, ENTER } from "@angular/cdk/keycodes";
 import { map } from "lodash";
 import { ValidationUtil } from "../../../utilites/validation-util";
 import { MatDatepickerInputEvent } from "@angular/material/datepicker";
-import * as moment from "moment";
+import moment from "moment";
 
 @Component({
+  standalone: false,
   selector: "app-member-diet-plan-detail",
   templateUrl: "./member-diet-plan-detail.component.html",
   styleUrls: ["./member-diet-plan-detail.component.scss"]
 })
 export class MemberDietPlanDetailComponent implements OnInit, AfterViewInit, OnDestroy {
+  fb: FormBuilder = inject(FormBuilder);
   id: number;
   stringRes = StringResources;
   dietPlanId: number;
@@ -46,7 +48,7 @@ export class MemberDietPlanDetailComponent implements OnInit, AfterViewInit, OnD
     dietPlan: this.fb.array([])
   });
 
-  constructor(private fb: FormBuilder,
+  constructor(
     private httpService: HttpService,
     private snackBarService: SnackBarService,
     private navigationService: NavigationService,

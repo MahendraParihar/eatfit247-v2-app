@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { StringResources } from '../../../enum/string-resources';
 import { Constants } from '../../../constants/Constants';
 import { MatPaginator } from '@angular/material/paginator';
@@ -22,11 +22,13 @@ import { StatusList } from 'src/app/constants/status-list';
 import { DropdownItem } from 'src/app/interfaces/dropdown-item';
 
 @Component({
+  standalone: false,
   selector: 'app-recipe-list',
   templateUrl: './recipe-list.component.html',
   styleUrls: ['./recipe-list.component.scss'],
 })
 export class RecipeListComponent implements OnInit, AfterViewInit, OnDestroy {
+  fb: FormBuilder = inject(FormBuilder);
   displayedColumns = ['seqNo', 'title', 'image', 'category', 'isPublic', 'status', 'createdBy',  'updatedBy', 'action'];
   dataSource: RecipeDatasource;
   totalCount = 0;
@@ -49,7 +51,7 @@ export class RecipeListComponent implements OnInit, AfterViewInit, OnDestroy {
   });
   @ViewChild(MatPaginator) paginator: MatPaginator;
 
-  constructor(private fb: FormBuilder,
+  constructor(
     private httpService: HttpService,
     private snackBarService: SnackBarService,
     private navigationService: NavigationService,

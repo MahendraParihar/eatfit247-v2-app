@@ -20,6 +20,7 @@ import { ResponseDataModel } from '../../../models/response-data.model';
 import { ServerResponseEnum } from '../../../enum/server-response-enum';
 
 @Component({
+  standalone: false,
   selector: 'app-recipe-cuisine-list',
   templateUrl: './recipe-cuisine-list.component.html',
   styleUrls: ['./recipe-cuisine-list.component.scss'],

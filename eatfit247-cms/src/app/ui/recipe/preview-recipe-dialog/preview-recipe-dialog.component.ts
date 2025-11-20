@@ -4,6 +4,7 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { RecipeModel } from '../../../models/recipe.model';
 
 @Component({
+  standalone: false,
   selector: 'app-preview-recipe-dialog',
   templateUrl: './preview-recipe-dialog.component.html',
   styleUrls: ['./preview-recipe-dialog.component.scss'],

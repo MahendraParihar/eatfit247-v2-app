@@ -20,6 +20,7 @@ import { ServerResponseEnum } from '../../../enum/server-response-enum';
 import { HealthParameterDatasource } from '../health-parameter.datasource';
 
 @Component({
+  standalone: false,
   selector: 'app-health-parameter-list',
   templateUrl: './health-parameter-list.component.html',
   styleUrls: ['./health-parameter-list.component.scss'],

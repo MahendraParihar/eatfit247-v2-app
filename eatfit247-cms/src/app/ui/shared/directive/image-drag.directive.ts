@@ -4,6 +4,7 @@ import { DomSanitizer } from '@angular/platform-browser';
 
 @Directive({
   selector: '[appImageDrag]',
+  standalone: false
 })
 export class ImageDragDirective {
   @Output('files') files: EventEmitter<FileHandle[]> = new EventEmitter();
@@ -31,6 +32,9 @@ export class ImageDragDirective {
     evt.preventDefault();
     evt.stopPropagation();
     this.background = '#eee';
+    if (!evt.dataTransfer) {
+      return;
+    }
     let files: FileHandle[] = [];
     for (let i = 0; i < evt.dataTransfer.files.length; i++) {
       const file = evt.dataTransfer.files[i];

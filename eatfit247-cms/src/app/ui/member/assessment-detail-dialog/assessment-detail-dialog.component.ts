@@ -4,6 +4,7 @@ import { MemberAssessmentModel } from '../../../models/member.model';
 import { StringResources } from '../../../enum/string-resources';
 
 @Component({
+  standalone: false,
   selector: 'app-assessment-detail-dialog',
   templateUrl: './assessment-detail-dialog.component.html',
   styleUrls: ['./assessment-detail-dialog.component.scss'],

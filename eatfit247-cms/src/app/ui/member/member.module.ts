@@ -82,15 +82,7 @@ import {
     CommonModule,
     ShareModule,
     MemberRoutingModule,
-  ],
-  entryComponents: [
-    MemberCallScheduleManageDialogComponent,
-    MemberBodyStatsManageDialogComponent,
-    AssessmentDetailDialogComponent,
-    MemberPaymentManageDialogComponent,
-    MemberPocketGuideManageDialogComponent,
-    MemberHealthIssueManageDialogComponent,
-  ],
+  ]
 })
 export class MemberModule {
 }

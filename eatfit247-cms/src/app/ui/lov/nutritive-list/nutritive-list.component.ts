@@ -20,6 +20,7 @@ import { ResponseDataModel } from '../../../models/response-data.model';
 import { ServerResponseEnum } from '../../../enum/server-response-enum';
 
 @Component({
+  standalone: false,
   selector: 'app-nutritive-list',
   templateUrl: './nutritive-list.component.html',
   styleUrls: ['./nutritive-list.component.scss'],

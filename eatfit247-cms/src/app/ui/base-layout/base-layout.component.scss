@@ -1,5 +1,5 @@
-@import "../../../theme/padding";
-@import "../../../theme/gradient";
+@use "../../../theme/variable.scss" as *;
+@use "../../../theme/gradient" as *;
 
 .base-container {
   display: flex;

@@ -20,6 +20,7 @@ import { ResponseDataModel } from '../../../models/response-data.model';
 import { ServerResponseEnum } from '../../../enum/server-response-enum';
 
 @Component({
+  standalone: false,
   selector: 'app-lifestyle-list',
   templateUrl: './lifestyle-list.component.html',
   styleUrls: ['./lifestyle-list.component.scss'],

@@ -67,8 +67,7 @@ import { TriStatusButtonDirective } from './directive/tri-status-button.directiv
     CurrencyPipe,
     RecipeSelectorComponent,
     DietDetailsSelectorComponent,
-  ],
-  entryComponents: [],
+  ]
 })
 export class ShareModule {
 }

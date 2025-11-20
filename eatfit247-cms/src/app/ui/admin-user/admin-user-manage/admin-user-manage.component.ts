@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { HttpService } from '../../../service/http.service';
 import { SnackBarService } from '../../../service/snack-bar.service';
 import { NavigationService } from '../../../service/navigation.service';
@@ -16,14 +16,16 @@ import { FileTypeEnum } from '../../../enum/file-type-enum';
 import { MediaForEnum } from '../../../enum/media-for-enum';
 import { MatSelectChange } from '@angular/material/select';
 import { AdminRoleEnum } from '../../../enum/admin-role-enum';
-import * as moment from 'moment/moment';
+import moment from 'moment';
 
 @Component({
+  standalone: false,
   selector: 'app-admin-user-manage',
   templateUrl: './admin-user-manage.component.html',
   styleUrls: ['./admin-user-manage.component.scss'],
 })
 export class AdminUserManageComponent implements OnInit, AfterViewInit, OnDestroy {
+  fb: FormBuilder = inject(FormBuilder);
   adminUserObj: AdminUserModel;
   id: number;
   stringRes = StringResources;
@@ -52,8 +54,7 @@ export class AdminUserManageComponent implements OnInit, AfterViewInit, OnDestro
   constructor(private httpService: HttpService,
     private snackBarService: SnackBarService,
     private navigationService: NavigationService,
-    private activatedRoute: ActivatedRoute,
-    private fb: FormBuilder) {
+    private activatedRoute: ActivatedRoute,) {
     this.id = Number(this.activatedRoute.snapshot.paramMap.get('id'));
   }
 

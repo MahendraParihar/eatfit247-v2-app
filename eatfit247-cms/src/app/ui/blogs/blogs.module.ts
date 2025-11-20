@@ -20,10 +20,7 @@ import { PreviewBlogDialogComponent } from './preview-blog-dialog/preview-blog-d
     FlexLayoutModule,
     ShareModule,
     BlogsRoutingModule,
-  ],
-  entryComponents: [
-    PreviewBlogDialogComponent,
-  ],
+  ]
 })
 export class BlogsModule {
 }

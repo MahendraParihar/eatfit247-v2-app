@@ -20,6 +20,7 @@ import { ResponseDataModel } from '../../../models/response-data.model';
 import { ServerResponseEnum } from '../../../enum/server-response-enum';
 
 @Component({
+  standalone: false,
   selector: 'app-sleeping-pattern-list',
   templateUrl: './sleeping-pattern-list.component.html',
   styleUrls: ['./sleeping-pattern-list.component.scss'],

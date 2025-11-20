@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, Inject, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, inject, Inject, OnInit } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { InputLength } from 'src/app/constants/input-length';
@@ -13,11 +13,13 @@ import { SnackBarService } from 'src/app/service/snack-bar.service';
 import { ValidationUtil } from 'src/app/utilites/validation-util';
 
 @Component({
+  standalone: false,
   selector: 'app-member-issue-dialog',
   templateUrl: './member-issue-dialog.component.html',
   styleUrls: ['./member-issue-dialog.component.scss'],
 })
 export class MemberIssueDialogComponent implements OnInit {
+  fb: UntypedFormBuilder = inject(UntypedFormBuilder);
   stringRes = StringResources;
   memberIssueModel: MemberIssueModel;
   memberId: number;
@@ -31,7 +33,6 @@ export class MemberIssueDialogComponent implements OnInit {
     @Inject(MAT_DIALOG_DATA) public data: any,
     private httpService: HttpService,
     private snackBarService: SnackBarService,
-    private fb: UntypedFormBuilder,
     private cdr: ChangeDetectorRef) {
     this.memberId = data.memberId;
     this.memberIssueModel = data.memberIssueModel;

@@ -10,6 +10,7 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MemberHealthIssueModel } from '../../../models/member-health-issue.model';
 
 @Component({
+  standalone: false,
   selector: 'app-member-pocket-guide-manage-dialog',
   templateUrl: './member-health-issue-manage-dialog.component.html',
   styleUrls: ['./member-health-issue-manage-dialog.component.scss'],

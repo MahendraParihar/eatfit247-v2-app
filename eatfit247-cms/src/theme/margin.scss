@@ -1,4 +1,4 @@
-@import "variable";
+@use "variable" as *;
 
 .m-small {
   margin: $padding-small !important;

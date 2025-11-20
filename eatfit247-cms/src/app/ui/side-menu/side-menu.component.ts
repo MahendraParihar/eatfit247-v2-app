@@ -8,6 +8,7 @@ import { NavItem } from '../../interfaces/nav-item';
   selector: 'app-side-menu',
   templateUrl: './side-menu.component.html',
   styleUrls: ['./side-menu.component.scss'],
+  standalone: false,
   animations: [
     trigger('indicatorRotate', [
       state('collapsed', style({ transform: 'rotate(0deg)' })),
@@ -34,7 +35,7 @@ export class SideMenuComponent implements OnInit {
 
   ngOnInit(): void {
     this.navService.getCurrentUrl().subscribe((url: string) => {
-      if (this.item.path) {
+      if (this.item?.path) {
         this.expanded = url.indexOf(`/${this.item.path}`) === 0;
         this.ariaExpanded = this.expanded;
       }

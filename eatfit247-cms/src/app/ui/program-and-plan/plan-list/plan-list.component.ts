@@ -20,6 +20,7 @@ import { PlanDatasource } from '../plan.datasource';
 import { PlanModel } from '../../../models/plan.model';
 
 @Component({
+  standalone: false,
   selector: 'app-plan-list',
   templateUrl: './plan-list.component.html',
   styleUrls: ['./plan-list.component.scss'],

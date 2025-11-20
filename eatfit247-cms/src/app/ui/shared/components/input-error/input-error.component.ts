@@ -3,6 +3,7 @@ import { AbstractControl, AbstractControlDirective } from '@angular/forms';
 import { StringResources } from '../../../../enum/string-resources';
 
 @Component({
+  standalone: false,
   selector: 'app-input-error',
   templateUrl: './input-error.component.html',
   styleUrls: ['./input-error.component.scss'],

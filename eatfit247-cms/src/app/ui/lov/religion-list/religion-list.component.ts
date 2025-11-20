@@ -20,6 +20,7 @@ import { ResponseDataModel } from '../../../models/response-data.model';
 import { ServerResponseEnum } from '../../../enum/server-response-enum';
 
 @Component({
+  standalone: false,
   selector: 'app-religion-list',
   templateUrl: './religion-list.component.html',
   styleUrls: ['./religion-list.component.scss'],

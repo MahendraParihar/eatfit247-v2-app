@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, Input, IterableDiffers, OnChanges, OnInit, SimpleChanges } from "@angular/core";
+import { ChangeDetectorRef, Component, inject, Input, IterableDiffers, OnChanges, OnInit, SimpleChanges } from "@angular/core";
 import { StringResources } from '../../../../enum/string-resources';
 import {
   FormArray,
@@ -23,11 +23,13 @@ import { AlertTypeEnum } from '../../../../enum/alert-type-enum';
 import { ApiUrlEnum } from '../../../../enum/api-url-enum';
 
 @Component({
+  standalone: false,
   selector: 'app-file-selector',
   templateUrl: './file-selector.component.html',
   styleUrls: ['./file-selector.component.scss'],
 })
 export class FileSelectorComponent implements OnInit, OnChanges {
+  fb: UntypedFormBuilder = inject(UntypedFormBuilder);
   apiUrlEnum = ApiUrlEnum;
   @Input()
   formGroup: UntypedFormGroup;
@@ -51,7 +53,7 @@ export class FileSelectorComponent implements OnInit, OnChanges {
   mediaPath = ApiUrlEnum.MEDIA_PATH;
   private differ: IterableDiffers;
 
-  constructor(private fb: UntypedFormBuilder,
+  constructor(
     private sanitizer: DomSanitizer,
     private httpService: HttpService,
     private differs: IterableDiffers,

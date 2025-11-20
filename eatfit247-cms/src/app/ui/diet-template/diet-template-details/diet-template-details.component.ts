@@ -1,5 +1,5 @@
 import { COMMA, ENTER } from '@angular/cdk/keycodes';
-import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute } from '@angular/router';
@@ -17,11 +17,13 @@ import { SnackBarService } from 'src/app/service/snack-bar.service';
 import { ValidationUtil } from 'src/app/utilites/validation-util';
 
 @Component({
+  standalone: false,
   selector: 'app-diet-template-details',
   templateUrl: './diet-template-details.component.html',
   styleUrls: ['./diet-template-details.component.scss'],
 })
 export class DietTemplateDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
+  fb: FormBuilder = inject(FormBuilder);
   id: number;
   stringRes = StringResources;
   dietTemplateId: number;
@@ -39,7 +41,7 @@ export class DietTemplateDetailsComponent implements OnInit, AfterViewInit, OnDe
     dietPlan: this.fb.array([]),
   });
 
-  constructor(private fb: FormBuilder,
+  constructor(
     private httpService: HttpService,
     private snackBarService: SnackBarService,
     private navigationService: NavigationService,

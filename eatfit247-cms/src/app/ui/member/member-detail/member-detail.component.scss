@@ -1,7 +1,7 @@
-@import "../../../../theme/variable";
-@import "../../../../theme/padding";
-@import "../../../../theme/margin";
-@import "../../../../theme/gradient";
+@use "../../../../theme/variable" as *;
+@use "../../../../theme/padding" as *;
+@use "../../../../theme/margin" as *;
+@use "../../../../theme/gradient" as *;
 
 .profile-section {
   ::ng-deep {

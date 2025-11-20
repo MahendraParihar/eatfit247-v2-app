@@ -20,6 +20,7 @@ import { ResponseDataModel } from '../../../models/response-data.model';
 import { ServerResponseEnum } from '../../../enum/server-response-enum';
 
 @Component({
+  standalone: false,
   selector: 'app-eating-habit-list',
   templateUrl: './eating-habit-list.component.html',
   styleUrls: ['./eating-habit-list.component.scss'],

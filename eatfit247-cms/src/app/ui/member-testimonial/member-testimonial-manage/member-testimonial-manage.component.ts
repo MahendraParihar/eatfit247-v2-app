@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 
 @Component({
+  standalone: false,
   selector: 'app-member-testimonial-manage',
   templateUrl: './member-testimonial-manage.component.html',
   styleUrls: ['./member-testimonial-manage.component.scss'],

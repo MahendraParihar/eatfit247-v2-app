@@ -23,6 +23,7 @@ import {
 import { DialogAlertComponent } from '../../shared/components/dialog-alert/dialog-alert.component';
 
 @Component({
+  standalone: false,
   selector: 'app-admin-user-list',
   templateUrl: './admin-user-list.component.html',
   styleUrls: ['./admin-user-list.component.scss'],

@@ -11,6 +11,7 @@ import { filter, map } from 'lodash';
 import { MemberPocketGuideModel } from '../../../models/member-pocket-guide.model';
 
 @Component({
+  standalone: false,
   selector: 'app-pocket-guide-selection-dialog',
   templateUrl: './pocket-guide-selection-dialog.component.html',
   styleUrls: ['./pocket-guide-selection-dialog.component.scss'],

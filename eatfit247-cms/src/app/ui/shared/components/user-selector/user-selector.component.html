@@ -13,17 +13,16 @@
        fxFlex.lt-sm="90%">
     <mat-form-field>
       <mat-label>{{label}}</mat-label>
-      <mat-chip-list #chipList aria-label="User selection">
-        <mat-chip
+      <mat-chip-grid #chipList aria-label="User selection">
+        <mat-chip-row
           (removed)="remove(j)"
           *ngFor="let user of selectedUserList; let j = index"
-          [removable]="removable"
-          [selectable]="selectable">
+          [removable]="removable">
           <img *ngIf="user.imagePath && user.imagePath.length>0" alt="" matChipAvatar
                src="{{user.imagePath[0].webUrl}}" />
           {{user.name}} ({{user.subText}})
           <mat-icon *ngIf="removable" matChipRemove>cancel</mat-icon>
-        </mat-chip>
+        </mat-chip-row>
         <input #searchInput (matChipInputTokenEnd)="add($event)"
                [formControl]="searchCtrl"
                [matAutocomplete]="auto"
@@ -33,7 +32,7 @@
                aria-label="Users"
                matInput
                placeholder="Search user">
-      </mat-chip-list>
+      </mat-chip-grid>
       <mat-autocomplete #auto="matAutocomplete" (optionSelected)="selected($event)">
         <mat-option *ngIf="isLoading" class="is-loading">Loading...</mat-option>
         <mat-option *ngIf="!isLoading && (!userList || userList.length === 0)" class="is-loading">No result found

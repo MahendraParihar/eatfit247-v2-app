@@ -20,6 +20,7 @@ import { ProgramDatasource } from '../program.datasource';
 import { ProgramModel } from '../../../models/program.model';
 
 @Component({
+  standalone: false,
   selector: 'app-program-list',
   templateUrl: './program-list.component.html',
   styleUrls: ['./program-list.component.scss'],

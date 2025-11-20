@@ -20,6 +20,7 @@ import { MemberIssueDialogComponent } from '../member-issue-dialog/member-issue-
 import { MemberIssueDatasource } from '../member-issue.datasource';
 
 @Component({
+  standalone: false,
   selector: 'app-member-issues-list',
   templateUrl: './member-issues-list.component.html',
   styleUrls: ['./member-issues-list.component.scss'],
