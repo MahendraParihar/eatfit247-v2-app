@@ -92,6 +92,9 @@ export class ApiUrlEnum {
   static BLOG_STATUS_CHANGE = "blog/update-status";
   static BLOG_MASTER_DATA = "blog/blog-master";
   static BLOG_SEND_MAIL = "blog/send-mail";
+  static PRESS_MEDIA_LIST = "press-media/list";
+  static PRESS_MEDIA_MANAGE = "press-media/manage";
+  static PRESS_MEDIA_STATUS_CHANGE = "press-media/update-status";
   static FAQ_LIST = "faq/list";
   static FAQ_MANAGE = "faq/manage";
   static FAQ_STATUS_CHANGE = "faq/update-status";

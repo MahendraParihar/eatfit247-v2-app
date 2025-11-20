@@ -1,8 +1,38 @@
-/**
- * Interfaces Index
- * Export all interface types
- */
-
-export * from './api-response.interface.js';
-export * from './user.interface.js';
-export * from './common.interface.js';
+export * from './address.interface';
+export * from './admin-user-list.interface';
+export * from './admin-user.interface';
+export * from './basic-search-field.interface';
+export * from './blog-author.interface';
+export * from './blog.interface';
+export * from './config-parameter.interface';
+export * from './contact-us.interface';
+export * from './country.interface';
+export * from './currency.interface';
+export * from './dashboard-item.interface';
+export * from './diet-detail.interface';
+export * from './diet-template-detail.interface';
+export * from './diet-template.interface';
+export * from './dropdown-list.interface';
+export * from './faq.interface';
+export * from './franchise.interface';
+export * from './health-parameter-unit.interface';
+export * from './health-parameter.interface';
+export * from './lov.interface';
+export * from './media-upload.interface';
+export * from './member-assessment.interface';
+export * from './member-call-log.interface';
+export * from './member-diet-plan.interface';
+export * from './member-health-issue.interface';
+export * from './member-health-parameter.interface';
+export * from './member-list.interface';
+export * from './member-payment.interface';
+export * from './member-pocket-guide.interface';
+export * from './pocket-guide.interface';
+export * from './press-media.interface';
+export * from './program-plan.interface';
+export * from './program.interface';
+export * from './recipe-category.interface';
+export * from './recipe.interface';
+export * from './referrer.interface';
+export * from './role.interface';
+export * from './state.interface';

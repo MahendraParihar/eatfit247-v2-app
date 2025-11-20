@@ -58,6 +58,11 @@ const routes: Routes = [
         loadChildren: () => import('./ui/blogs/blogs.module').then(m => m.BlogsModule)
       },
       {
+        path: 'press-media',
+        canActivate: [AuthGuard],
+        loadChildren: () => import('./ui/press-media/press-media.module').then(m => m.PressMediaModule)
+      },
+      {
         path: 'member-testimonial',
         canActivate: [AuthGuard],
         loadChildren: () => import('./ui/member-testimonial/member-testimonial.module').then(m => m.MemberTestimonialModule)

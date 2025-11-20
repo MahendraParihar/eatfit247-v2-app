@@ -50,6 +50,9 @@ export enum NavigationPathEnum {
   BLOGS = 'blogs/list',
   BLOGS_MANAGE = 'blogs/manage',
 
+  PRESS_MEDIA = 'press-media/list',
+  PRESS_MEDIA_MANAGE = 'press-media/manage',
+
   MEMBER_TESTIMONIAL = 'member-testimonial/list',
   MEMBER_TESTIMONIAL_MANAGE = 'member-testimonial/manage',
 

@@ -396,6 +396,10 @@ export enum StringResources {
   ADD_BLOG = 'Add Blog',
   EDIT_BLOG = 'Edit Blog',
 
+  PRESS_MEDIA = 'Press & Media',
+  ADD_PRESS_MEDIA = 'Add Press & Media',
+  EDIT_PRESS_MEDIA = 'Edit Press & Media',
+
   ADD_RECIPE = 'Add Recipe',
   EDIT_RECIPE = 'Edit Recipe',
 

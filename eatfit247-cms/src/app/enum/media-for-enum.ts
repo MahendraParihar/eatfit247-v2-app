@@ -5,6 +5,7 @@ export enum MediaForEnum {
   PROGRAM = 'program',
   SPECIAL_PLAN = 'special-plan',
   BLOG = 'blog',
+  PRESS_MEDIA = 'press-media',
   POCKET_GUIDE = 'pocket-guide',
   REFERRER = 'referrer',
   FRANCHISE = 'franchise',

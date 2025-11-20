@@ -21,6 +21,7 @@ export let menuList: NavItem[] = [
   { title: StringResources.POCKET_GUIDES, path: NavigationPathEnum.POCKET_GUIDES, iconName: 'auto_stories' },
   { title: StringResources.CONTACT_US, path: NavigationPathEnum.CONTACT_US, iconName: 'contact_support' },
   { title: StringResources.BLOGS, path: NavigationPathEnum.BLOGS, iconName: 'rss_feed' },
+  { title: StringResources.PRESS_MEDIA, path: NavigationPathEnum.PRESS_MEDIA, iconName: 'video_library' },
   // {title: StringResources.MEMBER_TESTIMONIAL, path: NavigationPathEnum.MEMBER_TESTIMONIAL, iconName: 'quiz'},
   { title: StringResources.ADMIN_USERS, path: NavigationPathEnum.ADMIN_USERS, iconName: 'admin_panel_settings' },
   { title: StringResources.REFERRER, path: NavigationPathEnum.REFERRER, iconName: 'settings' },

@@ -1,7 +1,7 @@
-/**
- * Standard API Response Interface
- * Used for consistent API responses across all applications
- */
+export interface IResponse<T> {
+  data?: T;
+}
+
 export interface IApiResponse<T = any> {
   code: number;
   message: string;

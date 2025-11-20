@@ -19,7 +19,6 @@ import { ServerResponseEnum } from "../../../enum/server-response-enum";
 import { PocketGuideDatasource } from "../pocket-guide.datasource";
 import { PocketGuideModel } from "../../../models/pocket-guide.model";
 import { HttpHeaders } from "@angular/common/http";
-import { addWarning } from "@angular-devkit/build-angular/src/utils/webpack-diagnostics";
 import { MediaForEnum } from "../../../enum/media-for-enum";
 
 @Component({
