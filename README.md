@@ -1,16 +1,29 @@
-# EatFit247 v2 - CMS Application
+# EatFit247 v2 - Full Stack Monorepo
 
-A full-stack content management system built with Angular Material frontend and NestJS backend for managing EatFit247's digital content and operations.
+A comprehensive monorepo containing CMS admin panel, backend API, web application, and shared libraries for EatFit247's digital ecosystem.
 
 ## 🏗️ Project Structure
 
 ```
 eatfit247-v2-app/
-├── eatfit247-cms/          # Angular Material frontend
-├── eatfit247-cms-api/      # NestJS backend API
-├── infra/                  # Docker configuration and deployment
-└── README.md              # This file
+├── eatfit247-cms/          # Angular Material CMS (Admin Panel)
+├── eatfit247-cms-api/      # NestJS Backend API
+├── eatfit247-web/          # Angular Material M3 Web App 🆕
+├── shared-lib/             # Shared TypeScript Library 🆕
+├── infra/                  # Docker & Infrastructure
+├── media-files/            # Static media assets
+├── ARCHITECTURE.md         # Architecture documentation
+└── README.md               # This file
 ```
+
+## 🚀 Applications
+
+| Project | Type | Technology | Port | Purpose |
+|---------|------|------------|------|---------|
+| **eatfit247-cms** | Frontend | Angular Material | 4200 | Admin CMS Panel |
+| **eatfit247-cms-api** | Backend | NestJS + PostgreSQL | 8001 | RESTful API |
+| **eatfit247-web** 🆕 | Frontend | Angular M3 | 4200 | Public Web App |
+| **shared-lib** 🆕 | Library | TypeScript | N/A | Shared Resources |
 
 ## 🔧 Environment Setup (Required First!)
 
@@ -95,7 +108,23 @@ curl http://localhost:8001/api/v1/health
 
 ## 💻 Local Development
 
-### Frontend (Angular)
+### 1. Shared Library (Build First!)
+```bash
+cd shared-lib
+npm install
+npm run build
+# Builds TypeScript library used by all projects
+```
+
+### 2. Backend API (NestJS)
+```bash
+cd eatfit247-cms-api
+npm install --legacy-peer-deps
+npm run start:dev
+# Runs on http://localhost:3000 (or 8001 via Docker)
+```
+
+### 3. Admin CMS (Angular Material)
 ```bash
 cd eatfit247-cms
 npm install --legacy-peer-deps
@@ -103,13 +132,15 @@ npm start
 # Runs on http://localhost:4200
 ```
 
-### Backend (NestJS)
+### 4. Web App (Angular Material M3) 🆕
 ```bash
-cd eatfit247-cms-api
-npm install --legacy-peer-deps
-npm run start:dev
-# Runs on http://localhost:3000
+cd eatfit247-web
+npm install
+npm start
+# Runs on http://localhost:4200 with API proxy
 ```
+
+**Note**: Build `shared-lib` first as all projects depend on it!
 
 ## 📁 Media Files Management
 
@@ -310,11 +341,62 @@ curl -I http://localhost:80/
 curl http://localhost:80/media-files/admin/
 ```
 
+## 📚 Shared Library (@eatfit247/shared-lib)
+
+The shared library provides common resources across all projects:
+
+### Available Resources
+
+**Enums**:
+- `ServerResponseEnum` - API response codes
+- `UserStatusEnum`, `AdminRoleEnum` - User statuses
+- `DietPlanStatusEnum`, `DietTypeEnum` - Diet management
+- `MediaFolderEnum`, `FileTypeEnum` - File handling
+
+**Interfaces**:
+- `IApiResponse<T>` - Standard API responses
+- `IUser`, `IAdminUser`, `IMember` - User models
+- `IDropdownItem`, `IBreadcrumbItem` - UI components
+- `IFileModel`, `ITableColumn` - Common models
+
+**Utilities**:
+- `ValidationUtil` - Email, phone, PAN, GST, Aadhar validation
+- `CommonUtil` - Date, currency formatting, age calculation
+- `CryptoUtil` - Base64 encoding, UUID generation
+
+### Usage Example
+
+```typescript
+import { 
+  ServerResponseEnum,
+  IApiResponse,
+  IUser,
+  ValidationUtil,
+  CommonUtil 
+} from '@eatfit247/shared-lib';
+
+// Validate input
+if (ValidationUtil.isValidEmail(email)) {
+  // Format date
+  const formatted = CommonUtil.formatDate(new Date());
+  
+  // Check API response
+  if (response.code === ServerResponseEnum.SUCCESS) {
+    const user: IUser = response.data;
+  }
+}
+```
+
+See [shared-lib/README.md](shared-lib/README.md) for complete documentation.
+
 ## 📖 Documentation
 
-- [Environment Setup Guide](ENVIRONMENT_SETUP.md) - Detailed environment configuration
-- [Media Persistence Documentation](infra/MEDIA_PERSISTENCE.md) - Media files management
-- [Backup Script Documentation](infra/backup-media.sh) - Backup and restore procedures
+- **Architecture Overview**: [ARCHITECTURE.md](ARCHITECTURE.md) - System architecture & data flow
+- **Environment Setup**: [ENVIRONMENT_SETUP.md](ENVIRONMENT_SETUP.md) - Configuration guide
+- **Shared Library**: [shared-lib/README.md](shared-lib/README.md) - Common resources
+- **Web Application**: [eatfit247-web/README.md](eatfit247-web/README.md) - Angular M3 web app
+- **Docker Guide**: [infra/DOCKER_GUIDE.md](infra/DOCKER_GUIDE.md) - Docker deployment
+- **Media Backup**: [infra/backup-media.sh](infra/backup-media.sh) - Backup procedures
 
 ## 🤝 Contributing
 
