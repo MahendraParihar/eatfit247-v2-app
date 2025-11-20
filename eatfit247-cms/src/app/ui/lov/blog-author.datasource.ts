@@ -7,8 +7,6 @@ import { ServerResponseEnum } from '../../enum/server-response-enum';
 import { BlogAuthorModel } from 'src/app/models/blog-author.model';
 import { CommonUtil } from 'src/app/utilites/common-util';
 
-declare var _: any;
-
 export class BlogAuthorDatasource implements DataSource<BlogAuthorModel> {
   private dataSubject = new BehaviorSubject<BlogAuthorModel[]>([]);
   private totalCountSubject = new BehaviorSubject<number>(0);

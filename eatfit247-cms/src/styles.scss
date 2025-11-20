@@ -145,6 +145,8 @@ form {
     }
   }
 
+  /* Material 3 form field styles */
+  .mat-mdc-form-field,
   .mat-form-field {
     width: 100% !important;
   }
@@ -155,6 +157,8 @@ form {
   width: 100%;
   padding: $padding-medium;
 
+  /* Material 3 form field styles */
+  .mat-mdc-form-field,
   .mat-form-field {
     width: 100% !important;
   }
@@ -162,6 +166,8 @@ form {
 
 .form-group {
 
+  /* Material 3 form field styles */
+  .mat-mdc-form-field,
   .mat-form-field {
     width: 100% !important;
   }
@@ -175,6 +181,8 @@ form {
     margin-top: $margin-large;*/
 
     .form-body {
+      /* Form body content styles - add specific styles here if needed */
+      display: block;
     }
   }
 }
@@ -185,6 +193,8 @@ form {
   column-gap: $margin-large;
   margin-bottom: $margin-medium;
 
+  /* Material 3 form field styles */
+  .mat-mdc-form-field,
   .mat-form-field {
     width: 100% !important;
   }
@@ -512,6 +522,98 @@ h1, h2, h3, h4, h5, h6 {
   align-items: center;
 }
 
+/* Material 3 Chip Styles */
+::ng-deep {
+  /* mat-chip-grid styles (replaces mat-chip-list) */
+  mat-chip-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    min-height: 40px;
+    width: 100%;
+    
+    input {
+      flex: 1;
+      min-width: 150px;
+      border: none;
+      outline: none;
+      background: transparent;
+    }
+  }
+
+  /* mat-chip-row styles (replaces mat-chip) */
+  mat-chip-row {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-size: 13px;
+    font-weight: 500;
+    min-height: 32px;
+    max-height: 32px;
+    
+    mat-icon[matChipRemove] {
+      margin-left: 8px;
+      margin-right: -4px;
+      cursor: pointer;
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+    }
+    
+    img[matChipAvatar] {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      margin-right: 8px;
+    }
+  }
+
+  /* mat-chip-set styles (for display-only chips) */
+  mat-chip-set {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    
+    mat-chip {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px 12px;
+      border-radius: 16px;
+      font-size: 13px;
+      font-weight: 500;
+      min-height: 32px;
+      max-height: 32px;
+    }
+  }
+
+  /* Ensure form field integration works */
+  .mat-mdc-form-field {
+    mat-chip-grid {
+      width: 100%;
+    }
+  }
+  
+  /* Legacy support - if any old mat-chip-list still exists */
+  mat-chip-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    
+    mat-chip {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 12px;
+      border-radius: 16px;
+      font-size: 13px;
+      font-weight: 500;
+      min-height: 32px;
+    }
+  }
+}
+
 .border-small {
   border-radius: 5px;
 }
@@ -529,6 +631,335 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /*  ------------------- End Chip ------------------------ */
+
+/*  ------------------- Start List (Material 3) ---------------------- */
+::ng-deep {
+  /* Material 3 List Styles */
+  
+  /* mat-list base styles */
+  mat-list, .mat-mdc-list {
+    padding: 0;
+    
+    mat-list-item, .mat-mdc-list-item {
+      height: auto;
+      min-height: 48px;
+      padding: 8px 16px;
+      cursor: pointer;
+      
+      &:hover {
+        background-color: rgba(0, 0, 0, 0.04);
+      }
+      
+      &.is-active {
+        background-color: rgba(63, 81, 181, 0.1);
+      }
+    }
+  }
+  
+  /* mat-selection-list styles */
+  mat-selection-list, .mat-mdc-selection-list {
+    padding: 0;
+    
+    mat-list-option, .mat-mdc-list-option {
+      height: auto;
+      min-height: 48px;
+      padding: 8px 16px;
+      cursor: pointer;
+      
+      &:hover {
+        background-color: rgba(0, 0, 0, 0.04);
+      }
+      
+      &.mat-mdc-list-option-selected,
+      &[aria-selected="true"] {
+        background-color: rgba(63, 81, 181, 0.1);
+      }
+    }
+  }
+  
+  /* List item icon styles (Material 3 uses matListItemIcon) */
+  [matListItemIcon], [mat-list-icon], .mat-mdc-list-item-icon {
+    margin-right: 16px;
+    width: 24px;
+    height: 24px;
+    font-size: 24px;
+    
+    &.icon-18 {
+      width: 18px !important;
+      height: 18px !important;
+      font-size: 18px !important;
+    }
+  }
+  
+  /* List item avatar styles */
+  [matListItemAvatar], [mat-list-avatar], .mat-mdc-list-item-avatar {
+    margin-right: 16px;
+    width: 40px;
+    height: 40px;
+  }
+  
+  /* List item title styles */
+  [matListItemTitle], .mat-mdc-list-item-title {
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 24px;
+  }
+  
+  /* List item line styles */
+  [matListItemLine], .mat-mdc-list-item-line {
+    font-size: 14px;
+    color: rgba(0, 0, 0, 0.6);
+  }
+  
+  /* List item meta styles */
+  [matListItemMeta], .mat-mdc-list-item-meta {
+    margin-left: auto;
+  }
+  
+  /* Legacy support for old Material classes */
+  .mat-list-base {
+    .mat-list-item, .mat-list-option {
+      height: auto;
+      min-height: 48px;
+      padding: 8px 16px;
+      
+      .mat-list-text {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        padding: 0;
+      }
+    }
+    
+    .mat-list-item {
+      cursor: pointer;
+      
+      &:hover {
+        background-color: rgba(0, 0, 0, 0.04);
+      }
+    }
+    
+    .mat-list-option {
+      cursor: pointer;
+      
+      &:hover {
+        background-color: rgba(0, 0, 0, 0.04);
+      }
+      
+      &.mat-list-single-selected-option,
+      &[aria-selected="true"] {
+        background-color: rgba(63, 81, 181, 0.1);
+      }
+    }
+  }
+  
+  /* Custom list styles */
+  .custom-list {
+    .mat-mdc-list-item, .mat-mdc-list-option {
+      .mat-mdc-list-item-title,
+      [matListItemTitle] {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+      }
+    }
+    
+    /* Legacy support */
+    .mat-list-base {
+      .mat-list-item .mat-list-text,
+      .mat-list-option .mat-list-text {
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        padding: 0 0 0 16px !important;
+      }
+      
+      .mat-list-option {
+        height: 42px !important;
+        font-size: 14px !important;
+      }
+    }
+  }
+  
+  /* Selected option styles */
+  .mat-list-single-selected-option,
+  .mat-mdc-list-option-selected,
+  .mat-mdc-list-option[aria-selected="true"] {
+    background-color: rgba(63, 81, 181, 0.1) !important;
+    color: rgba(63, 81, 181, 1) !important;
+    border-radius: 0 5px 5px 0;
+    
+    &:hover, &:focus {
+      background-color: rgba(63, 81, 181, 0.15) !important;
+    }
+  }
+  
+  /* Menu list item styles */
+  .menu-list-item {
+    border-radius: 4px;
+    margin: 2px 0;
+    
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.04);
+    }
+  }
+}
+
+/*  ------------------- End List (Material 3) ------------------------ */
+
+/*  ------------------- Start Form Field (Material 3) ---------------------- */
+::ng-deep {
+  /* Material 3 Form Field Styles */
+  
+  /* Base form field styles */
+  mat-form-field, .mat-mdc-form-field {
+    width: 100%;
+    display: block;
+    
+    /* Ensure proper spacing */
+    margin-bottom: 16px;
+    
+    /* Font size inheritance */
+    font-size: inherit;
+  }
+  
+  /* Form field appearance variants */
+  .mat-mdc-form-field {
+    /* Fill appearance (default in M3) */
+    &.mat-mdc-form-field-appearance-fill {
+      .mat-mdc-text-field-wrapper {
+        background-color: rgba(0, 0, 0, 0.04);
+        border-radius: 4px 4px 0 0;
+      }
+    }
+    
+    /* Outline appearance */
+    &.mat-mdc-form-field-appearance-outline {
+      .mat-mdc-text-field-wrapper {
+        .mat-mdc-form-field-outline {
+          border-radius: 4px;
+        }
+      }
+    }
+  }
+  
+  /* Form field label styles */
+  .mat-mdc-form-field-label,
+  .mat-mdc-floating-label {
+    font-size: 16px;
+    color: rgba(0, 0, 0, 0.6);
+    
+    &.mdc-floating-label--float-above {
+      color: rgba(63, 81, 181, 0.87);
+    }
+  }
+  
+  /* Input element styles */
+  .mat-mdc-input-element,
+  .mat-mdc-form-field-input-control {
+    font-size: 16px;
+    line-height: 24px;
+    color: rgba(0, 0, 0, 0.87);
+    
+    &::placeholder {
+      color: rgba(0, 0, 0, 0.38);
+    }
+  }
+  
+  /* Form field hint styles */
+  .mat-mdc-form-field-hint {
+    font-size: 12px;
+    color: rgba(0, 0, 0, 0.6);
+    
+    &.mat-mdc-form-field-hint-wrapper {
+      padding: 0 16px;
+    }
+  }
+  
+  /* Form field error styles */
+  .mat-mdc-form-field-error {
+    font-size: 12px;
+    color: #f44336;
+    
+    &.mat-mdc-form-field-error-wrapper {
+      padding: 0 16px;
+    }
+  }
+  
+  /* Subscript sizing */
+  .mat-mdc-form-field-subscript-wrapper {
+    min-height: 20px;
+    
+    &.mat-mdc-form-field-subscript-wrapper--dynamic {
+      min-height: 0;
+    }
+  }
+  
+  /* Prefix and suffix styles */
+  .mat-mdc-form-field-prefix,
+  .mat-mdc-form-field-suffix {
+    display: flex;
+    align-items: center;
+    
+    [matTextPrefix],
+    [matTextSuffix],
+    [matIconPrefix],
+    [matIconSuffix] {
+      margin: 0 8px;
+    }
+  }
+  
+  /* Legacy support for old Material classes */
+  .mat-form-field {
+    width: 100%;
+    display: block;
+    margin-bottom: 16px;
+    
+    .mat-form-field-wrapper {
+      width: 100%;
+    }
+    
+    .mat-form-field-label {
+      font-size: 16px;
+      color: rgba(0, 0, 0, 0.6);
+    }
+    
+    .mat-input-element {
+      font-size: 16px;
+      line-height: 24px;
+      color: rgba(0, 0, 0, 0.87);
+    }
+    
+    .mat-form-field-hint {
+      font-size: 12px;
+      color: rgba(0, 0, 0, 0.6);
+    }
+    
+    .mat-form-field-error {
+      font-size: 12px;
+      color: #f44336;
+    }
+  }
+  
+  /* Full width form fields */
+  .mat-mdc-form-field-full-width,
+  .mat-form-field-full-width {
+    width: 100%;
+  }
+  
+  /* Form field with chips integration */
+  .mat-mdc-form-field {
+    mat-chip-grid {
+      width: 100%;
+      margin-top: 8px;
+    }
+  }
+}
+
+/*  ------------------- End Form Field (Material 3) ------------------------ */
 
 /*  ------------------- Start Custom List ------------------------ */
 .list-view {
@@ -672,6 +1103,7 @@ h1, h2, h3, h4, h5, h6 {
 
   .mat-header-row, .mat-row {
     /*border: 1px solid rgba(0, 0, 0, .12) !important;*/
+    display: table-row;
   }
 
   .mat-header-row {
@@ -817,7 +1249,8 @@ h1, h2, h3, h4, h5, h6 {
 
     .text-container {
       .title {
-
+        /* Title styles - add specific styles here if needed */
+        display: block;
       }
 
       .sub-title {

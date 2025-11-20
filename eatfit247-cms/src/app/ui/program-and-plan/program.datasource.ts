@@ -7,8 +7,6 @@ import { ServerResponseEnum } from '../../enum/server-response-enum';
 import { ProgramModel } from '../../models/program.model';
 import { CommonUtil } from 'src/app/utilites/common-util';
 
-declare var _: any;
-
 export class ProgramDatasource implements DataSource<ProgramModel> {
   private dataSubject = new BehaviorSubject<ProgramModel[]>([]);
   private totalCountSubject = new BehaviorSubject<number>(0);

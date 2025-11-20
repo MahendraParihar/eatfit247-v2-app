@@ -16,13 +16,36 @@
 }
 
 ::ng-deep {
-  .mat-list-single-selected-option, .mat-list-single-selected-option:hover, .mat-list-single-selected-option:focus {
+  /* Material 3 compatible styles */
+  .mat-list-single-selected-option,
+  .mat-mdc-list-option-selected,
+  .mat-mdc-list-option[aria-selected="true"],
+  .mat-list-single-selected-option:hover,
+  .mat-list-single-selected-option:focus {
     @extend .gradient-45deg-indigo-purple;
     color: white !important;
     border-radius: 0 5px 5px 0;
   }
 
   .custom-list {
+    /* Material 3 styles */
+    .mat-mdc-list-item, .mat-mdc-list-option {
+      .mat-mdc-list-item-title,
+      [matListItemTitle] {
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        padding: 0 0 0 $padding-medium !important;
+      }
+    }
+    
+    .mat-mdc-list-option {
+      height: 42px !important;
+      font-size: 14px !important;
+    }
+    
+    /* Legacy support */
     .mat-list-base .mat-list-item .mat-list-text, .mat-list-base .mat-list-option .mat-list-text {
       display: flex !important;
       flex-direction: row !important;

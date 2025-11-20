@@ -19,8 +19,7 @@ import { ApiUrlEnum } from '../../../enum/api-url-enum';
 import { ServerResponseEnum } from '../../../enum/server-response-enum';
 import { ValidationUtil } from '../../../utilites/validation-util';
 import { RecipeModel } from '../../../models/recipe.model';
-
-declare var _: any;
+import { map } from 'lodash';
 
 @Component({
   standalone: false,
@@ -98,8 +97,8 @@ export class RecipeManageComponent implements OnInit, AfterViewInit, OnDestroy {
         servingCount: this.lovModelObj.servingCount,
         preparationMethod: this.lovModelObj.preparationMethod,
         ingredients: this.lovModelObj.ingredients,
-        recipeCategoryIds: _.map(this.lovModelObj.recipeCategoryList, 'recipeCategoryId'),
-        recipeCuisineIds: _.map(this.lovModelObj.recipeCuisineList, 'recipeCuisineId'),
+        recipeCategoryIds: map(this.lovModelObj.recipeCategoryList, 'recipeCategoryId'),
+        recipeCuisineIds: map(this.lovModelObj.recipeCuisineList, 'recipeCuisineId'),
         isVisibleToAll: this.lovModelObj.isVisibleToAll,
         recipeTypeId: this.lovModelObj.recipeTypeId,
         tags: this.tagsList.join(','),
