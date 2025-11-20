@@ -1,0 +1,133 @@
+<div class="press-and-media">
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="hero-content">
+      <h1 class="hero-title">Press & Media</h1>
+      <p class="hero-subtitle">
+        A well-balanced diet that leads to a well-balanced life.
+      </p>
+      <p class="hero-description">
+        Discover press coverage, media features, and articles about EatFit24By7
+        and our celebrity nutritionist Shweta Shah.
+      </p>
+    </div>
+  </section>
+
+  <!-- Main Content -->
+  <div class="press-media-container">
+    <!-- Category Filter -->
+    <div class="category-filter">
+      <button
+        mat-flat-button
+        [class.active]="selectedCategory === null"
+        (click)="filterByCategory(null)"
+        class="filter-btn"
+      >
+        <mat-icon>article</mat-icon>
+        All Articles
+      </button>
+      @for (category of categories; track category) {
+        <button
+          mat-flat-button
+          [class.active]="selectedCategory === category"
+          (click)="filterByCategory(category)"
+          class="filter-btn"
+        >
+          <mat-icon>
+            @switch (category) {
+              @case ('Blog') {
+                article
+              }
+              @case ('News') {
+                new_releases
+              }
+              @case ('Interview') {
+                mic
+              }
+              @case ('Feature') {
+                star
+              }
+            }
+          </mat-icon>
+          {{ category }}
+        </button>
+      }
+    </div>
+
+    <!-- Articles Section -->
+    <section class="articles-section">
+      <h2 class="section-title">
+        <mat-icon>newspaper</mat-icon>
+        EatFit24/7 on Blogs
+      </h2>
+
+      <!-- Articles Grid -->
+      <div class="articles-grid">
+        @for (article of articles; track article.id) {
+          <mat-card class="article-card">
+            <!-- Article Image Placeholder -->
+            <div class="article-image-container">
+              <div class="article-image-placeholder">
+                <mat-icon class="image-icon">article</mat-icon>
+              </div>
+              @if (article.category) {
+                <mat-chip class="category-chip-overlay">{{ article.category }}</mat-chip>
+              }
+            </div>
+
+            <mat-card-content class="card-content">
+              <!-- Source Badge -->
+              <div class="source-badge">
+                <mat-icon class="source-icon">public</mat-icon>
+                <span class="source-text">{{ article.source }}</span>
+              </div>
+
+              <!-- Article Title -->
+              <h3 class="article-title">{{ article.title }}</h3>
+
+              <!-- Article Excerpt -->
+              <p class="article-excerpt">{{ article.excerpt }}</p>
+
+              <!-- Article Meta -->
+              <div class="article-meta">
+                <div class="meta-item">
+                  <mat-icon class="meta-icon">calendar_today</mat-icon>
+                  <span class="meta-text">{{ formatDate(article.publishDate) }}</span>
+                </div>
+              </div>
+            </mat-card-content>
+
+            <mat-card-actions class="card-actions">
+              @if (article.articleUrl) {
+                <button
+                  mat-raised-button
+                  color="primary"
+                  (click)="openArticle(article)"
+                  class="read-more-btn"
+                >
+                  <mat-icon>open_in_new</mat-icon>
+                  Read More
+                </button>
+              } @else {
+                <button
+                  mat-stroked-button
+                  color="primary"
+                  disabled
+                  class="read-more-btn"
+                >
+                  <mat-icon>lock</mat-icon>
+                  Coming Soon
+                </button>
+              }
+            </mat-card-actions>
+          </mat-card>
+        } @empty {
+          <div class="no-articles">
+            <mat-icon class="empty-icon">search_off</mat-icon>
+            <p class="empty-message">No articles found in this category.</p>
+          </div>
+        }
+      </div>
+    </section>
+  </div>
+</div>

@@ -1,0 +1,86 @@
+<div class="our-programs">
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="hero-content">
+      <h1 class="hero-title">Our Programs</h1>
+      <p class="hero-subtitle">
+        It's time to take matter into your own hands, if you don't work for
+        your health, no one will!
+      </p>
+      <p class="hero-description">
+        A dream venture to lead you to your best self in the most natural way
+        possible. Lead a healthy life without tweaking your lifestyle.
+      </p>
+    </div>
+  </section>
+
+  <!-- Programs Grid -->
+  <section class="programs-section">
+    <div class="programs-container">
+      @for (program of programs; track program.id) {
+        <mat-card class="program-card" [attr.data-category]="program.category">
+          <!-- Program Image -->
+          @if (program.image) {
+            <div class="program-image-container">
+              <img
+                [src]="program.image"
+                [alt]="program.imageAlt || program.title"
+                class="program-image"
+                loading="lazy"
+                (error)="$event.target.src = '/assets/images/programs/placeholder.jpg'"
+              />
+              @if (program.category) {
+                <mat-chip class="category-chip-overlay">{{ program.category }}</mat-chip>
+              }
+            </div>
+          } @else {
+            <!-- Fallback: Icon if no image -->
+            <div class="card-header">
+              @if (program.icon) {
+                <div class="program-icon">
+                  <mat-icon>{{ program.icon }}</mat-icon>
+                </div>
+              }
+              @if (program.category) {
+                <mat-chip class="category-chip">{{ program.category }}</mat-chip>
+              }
+            </div>
+          }
+
+          <mat-card-content class="card-content">
+            <h3 class="program-title">{{ program.title }}</h3>
+            @if (program.description) {
+              <p class="program-description">{{ program.description }}</p>
+            }
+            @if (program.priceRange) {
+              <div class="price-range">
+                <span class="price-label">Price Range:</span>
+                <span class="price-value">{{ program.priceRange }}</span>
+              </div>
+            }
+          </mat-card-content>
+
+          <mat-card-actions class="card-actions">
+            <button
+              mat-stroked-button
+              class="quick-view-btn"
+              (click)="onQuickView(program)"
+            >
+              <mat-icon>visibility</mat-icon>
+              Quick View
+            </button>
+            <button
+              mat-raised-button
+              color="primary"
+              class="buy-now-btn"
+              (click)="onBuyNow(program)"
+            >
+              <mat-icon>shopping_cart</mat-icon>
+              Buy Now
+            </button>
+          </mat-card-actions>
+        </mat-card>
+      }
+    </div>
+  </section>
+</div>

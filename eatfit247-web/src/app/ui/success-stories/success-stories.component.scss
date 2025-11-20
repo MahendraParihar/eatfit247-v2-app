@@ -1,0 +1,616 @@
+@use '../../../theme/variables' as *;
+.success-stories {
+  padding: 0;
+}
+
+// Hero Section
+.hero-section {
+  background: linear-gradient(
+    135deg,
+    var(--mat-sys-primary-container) 0%,
+    var(--mat-sys-tertiary-container) 100%
+  );
+  color: var(--mat-sys-on-primary-container);
+  padding: $spacing-3xl $spacing-lg;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  border-bottom-left-radius: $border-radius-3xl;
+  border-bottom-right-radius: $border-radius-3xl;
+  margin-bottom: $spacing-2xl;
+
+  .hero-content {
+    max-width: 900px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero-title {
+    font-size: 3.5rem;
+    font-weight: 700;
+    margin-bottom: $spacing-lg;
+    line-height: 1.1;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+
+    @media (max-width: 768px) {
+      font-size: 2.5rem;
+      letter-spacing: 1px;
+    }
+  }
+
+  .hero-subtitle {
+    font-size: 1.25rem;
+    font-weight: 400;
+    margin-bottom: $spacing-xl;
+    line-height: 1.6;
+    opacity: 0.95;
+
+    @media (max-width: 768px) {
+      font-size: 1.125rem;
+    }
+  }
+
+  .hero-quote {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: $spacing-md;
+    margin: $spacing-xl 0;
+    padding: $spacing-lg;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: $border-radius-xl;
+    backdrop-filter: blur(10px);
+
+    .quote-icon {
+      font-size: 48px;
+      width: 48px;
+      height: 48px;
+      opacity: 0.8;
+    }
+
+    .quote-text {
+      font-size: 1.125rem;
+      font-style: italic;
+      margin: 0;
+      font-weight: 500;
+      opacity: 0.95;
+    }
+  }
+
+  .cta-button {
+    margin-top: $spacing-xl;
+    height: 48px;
+    padding: 0 $spacing-xl;
+    font-size: 1rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-radius: $border-radius-2xl;
+
+    mat-icon {
+      margin-right: 0.5rem;
+    }
+  }
+}
+
+// Timeline Section
+.timeline-section {
+  padding: $spacing-2xl $spacing-lg;
+  background-color: var(--mat-sys-surface-container-lowest);
+}
+
+.timeline-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: $spacing-lg;
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 3rem;
+  color: var(--mat-sys-on-surface);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+
+  mat-icon {
+    font-size: 40px;
+    width: 40px;
+    height: 40px;
+    color: var(--mat-sys-primary);
+  }
+
+  @media (max-width: 768px) {
+    font-size: 2rem;
+
+    mat-icon {
+      font-size: 32px;
+      width: 32px;
+      height: 32px;
+    }
+  }
+}
+
+// Timeline
+.timeline {
+  position: relative;
+  padding: $spacing-xl 0;
+
+  // Vertical line in the center
+  &::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: linear-gradient(
+      to bottom,
+      var(--mat-sys-primary),
+      var(--mat-sys-tertiary)
+    );
+    transform: translateX(-50%);
+    border-radius: $border-width-medium;
+
+    @media (max-width: 960px) {
+      left: 30px; // Move to left side on mobile
+    }
+  }
+}
+
+// Year Label
+.timeline-year-label {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: $spacing-xl 0;
+  position: relative;
+  z-index: 2;
+
+  .year-badge {
+    background: linear-gradient(
+      135deg,
+      var(--mat-sys-primary) 0%,
+      var(--mat-sys-tertiary) 100%
+    );
+    color: var(--mat-sys-on-primary);
+    padding: $spacing-lg $spacing-xl;
+    border-radius: $border-radius-2xl;
+    font-size: 1.5rem;
+    font-weight: 700;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+
+    @media (max-width: 768px) {
+      font-size: 1.25rem;
+      padding: $spacing-sm $spacing-lg;
+    }
+  }
+}
+
+// Timeline Item
+.timeline-item {
+  position: relative;
+  margin-bottom: 3rem;
+  display: flex;
+  align-items: center;
+  width: 100%;
+
+  // Left side items
+  &.left {
+    justify-content: flex-end;
+    padding-right: calc(50% + 2rem);
+
+    @media (max-width: 960px) {
+      justify-content: flex-start;
+      padding-right: 0;
+      padding-left: 4rem;
+    }
+
+    .timeline-connector {
+      right: calc(50% - 2px);
+      left: auto;
+
+      @media (max-width: 960px) {
+        right: auto;
+        left: 30px;
+      }
+    }
+  }
+
+  // Right side items
+  &.right {
+    justify-content: flex-start;
+    padding-left: calc(50% + 2rem);
+
+    @media (max-width: 960px) {
+      justify-content: flex-start;
+      padding-left: 4rem;
+    }
+
+    .timeline-connector {
+      left: calc(50% - 2px);
+      right: auto;
+
+      @media (max-width: 960px) {
+        left: 30px;
+        right: auto;
+      }
+    }
+  }
+}
+
+// Timeline Connector
+.timeline-connector {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  z-index: 3;
+
+  .timeline-dot {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: linear-gradient(
+      135deg,
+      var(--mat-sys-primary) 0%,
+      var(--mat-sys-tertiary) 100%
+    );
+    border: 4px solid var(--mat-sys-surface-container-lowest);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    animation: pulse 2s infinite;
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+}
+
+// Story Card
+.story-card {
+  max-width: 450px;
+  width: 100%;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  background-color: var(--mat-sys-surface-container);
+  border: 1px solid var(--mat-sys-outline-variant);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: fadeInUp 0.6s ease-out backwards;
+
+  &:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+    border-color: var(--mat-sys-primary);
+  }
+
+  .story-image-container {
+    width: 100%;
+    height: 250px;
+    overflow: hidden;
+    background: linear-gradient(
+      135deg,
+      var(--mat-sys-primary-container) 0%,
+      var(--mat-sys-tertiary-container) 100%
+    );
+
+    .story-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform $transition-slow;
+    }
+
+    .story-image-placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      .placeholder-icon {
+        font-size: 80px;
+        width: 80px;
+        height: 80px;
+        color: var(--mat-sys-on-primary-container);
+        opacity: 0.7;
+      }
+    }
+
+    &:hover .story-image {
+      transform: scale(1.05);
+    }
+  }
+
+  .story-content {
+    padding: $spacing-lg;
+  }
+
+  .story-header {
+    margin-bottom: 1rem;
+
+    .story-name {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin: 0 0 $spacing-sm 0;
+      color: var(--mat-sys-on-surface);
+    }
+
+    .story-role {
+      display: inline-block;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--mat-sys-primary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: $spacing-xs $spacing-lg;
+      background-color: var(--mat-sys-primary-container);
+      border-radius: $border-radius-lg;
+    }
+  }
+
+  .story-testimonial {
+    position: relative;
+    margin: $spacing-lg 0;
+    padding: $spacing-md;
+    background-color: var(--mat-sys-surface-variant);
+    border-radius: $border-radius-lg;
+    border-left: $border-width-thick $border-style-solid var(--mat-sys-primary);
+
+    .quote-icon-start {
+      position: absolute;
+      top: -8px;
+      left: 8px;
+      font-size: 32px;
+      width: 32px;
+      height: 32px;
+      color: var(--mat-sys-primary);
+      opacity: 0.3;
+    }
+
+    .quote-icon-end {
+      position: absolute;
+      bottom: -8px;
+      right: 8px;
+      font-size: 32px;
+      width: 32px;
+      height: 32px;
+      color: var(--mat-sys-primary);
+      opacity: 0.3;
+      transform: rotate(180deg);
+    }
+
+    .testimonial-text {
+      font-size: 1rem;
+      line-height: 1.6;
+      color: var(--mat-sys-on-surface-variant);
+      margin: 0;
+      font-style: italic;
+      padding: 0.5rem 0;
+    }
+  }
+
+  .story-year-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--mat-sys-on-surface-variant);
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--mat-sys-outline-variant);
+
+    .year-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+      color: var(--mat-sys-primary);
+    }
+  }
+}
+
+// Stagger animation delays
+@for $i from 1 through 10 {
+  .timeline-item:nth-child(#{$i}) .story-card {
+    animation-delay: #{$i * 0.1}s;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Timeline End
+.timeline-end {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 3rem;
+  padding-top: 2rem;
+  position: relative;
+
+  .final-dot {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: linear-gradient(
+      135deg,
+      var(--mat-sys-primary) 0%,
+      var(--mat-sys-tertiary) 100%
+    );
+    border: 4px solid var(--mat-sys-surface-container-lowest);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    margin-bottom: 1rem;
+  }
+
+  .timeline-end-text {
+    font-size: 1rem;
+    color: var(--mat-sys-on-surface-variant);
+    font-style: italic;
+    margin: 0;
+  }
+}
+
+// Call to Action Section
+.cta-section {
+  background: linear-gradient(
+    135deg,
+    var(--mat-sys-primary-container) 0%,
+    var(--mat-sys-tertiary-container) 100%
+  );
+  color: var(--mat-sys-on-primary-container);
+  padding: 4rem 1.5rem;
+  text-align: center;
+  border-top-left-radius: 32px;
+  border-top-right-radius: 32px;
+  margin-top: 3rem;
+
+  .cta-content {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .cta-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    line-height: 1.2;
+
+    @media (max-width: 768px) {
+      font-size: 2rem;
+    }
+  }
+
+  .cta-description {
+    font-size: 1.125rem;
+    line-height: 1.6;
+    margin-bottom: $spacing-xl;
+    opacity: 0.95;
+  }
+
+  .cta-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+
+    button {
+      height: 48px;
+      padding: 0 2rem;
+      font-size: 1rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-radius: 24px;
+
+      mat-icon {
+        margin-right: 0.5rem;
+      }
+    }
+
+    .cta-btn-primary {
+      background-color: var(--mat-sys-primary);
+      color: var(--mat-sys-on-primary);
+
+      &:hover {
+        background-color: var(--mat-sys-primary-hover);
+      }
+    }
+
+    .cta-btn-secondary {
+      color: var(--mat-sys-on-primary-container);
+      border-color: var(--mat-sys-on-primary-container);
+
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+      }
+    }
+  }
+}
+
+// Mobile Responsive
+@media (max-width: 960px) {
+  .timeline {
+    &::before {
+      left: 30px;
+    }
+  }
+
+  .timeline-item {
+    &.left,
+    &.right {
+      padding-left: 4rem;
+      padding-right: 0;
+    }
+  }
+
+  .story-card {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero-section {
+    padding: 3rem 1rem;
+  }
+
+  .timeline-section {
+    padding: 2rem 1rem;
+  }
+
+  .timeline-item {
+    margin-bottom: $spacing-xl;
+  }
+
+  .story-card {
+    .story-image-container {
+      height: 200px;
+    }
+
+    .story-content {
+      padding: 1rem;
+    }
+
+    .story-header .story-name {
+      font-size: 1.25rem;
+    }
+
+    .story-testimonial .testimonial-text {
+      font-size: 0.9375rem;
+    }
+  }
+
+  .cta-section {
+    padding: 3rem 1rem;
+
+    .cta-buttons {
+      flex-direction: column;
+
+      button {
+        width: 100%;
+      }
+    }
+  }
+}

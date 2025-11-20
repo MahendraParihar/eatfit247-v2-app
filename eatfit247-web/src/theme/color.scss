@@ -1,0 +1,123 @@
+// EatFit247 Color Palettes
+// Material Design 3 color system palettes
+@use 'sass:map';
+
+// Primary Palette (Red - #cf2e2e)
+$primary-palette: (
+  0: #000000,
+  10: #2a0a0a,
+  20: #4d1414,
+  25: #5d1a1a,
+  30: #6d2020,
+  35: #7d2626,
+  40: #8d2c2c,
+  50: #cf2e2e, // Base primary color
+  60: #d94a4a,
+  70: #e36666,
+  80: #ed8282,
+  90: #f79e9e,
+  95: #fbb5b5,
+  98: #fdd8d8,
+  99: #feebeb,
+  100: #ffffff,
+);
+
+// Secondary Palette (Blue-grey)
+$secondary-palette: (
+  0: #000000,
+  10: #051f24,
+  20: #1a3439,
+  25: #253f44,
+  30: #304b50,
+  35: #3c565c,
+  40: #486268,
+  50: #617b81,
+  60: #7a959b,
+  70: #94afb5,
+  80: #afcad1,
+  90: #cbe6ed,
+  95: #d9f4fb,
+  98: #edfcff,
+  99: #f6feff,
+  100: #ffffff,
+);
+
+// Tertiary Palette (Deep blue)
+$tertiary-palette: (
+  0: #000000,
+  10: #141c2e,
+  20: #293144,
+  25: #343c4f,
+  30: #40485b,
+  35: #4b5367,
+  40: #575f73,
+  50: #70788c,
+  60: #8991a6,
+  70: #a4acc1,
+  80: #bfc7dc,
+  90: #dbe3f8,
+  95: #ecf1ff,
+  98: #f9f9ff,
+  99: #fdfcff,
+  100: #ffffff,
+);
+
+// Neutral Palette (Grey scale)
+$neutral-palette: (
+  0: #000000,
+  4: #0c0e0f,
+  6: #111415,
+  10: #191c1d,
+  12: #1d2021,
+  17: #282a2b,
+  20: #2e3132,
+  22: #333536,
+  24: #383a3b,
+  25: #393c3d,
+  30: #444748,
+  35: #505254,
+  40: #5c5e5f,
+  50: #747678,
+  60: #8e9092,
+  70: #a9aaac,
+  80: #c4c6c7,
+  87: #d6d8d9,
+  90: #e0e2e3,
+  92: #e6e8e9,
+  94: #eceeef,
+  95: #eff1f2,
+  96: #f2f4f5,
+  98: #f8fafb,
+  99: #fbfdfe,
+  100: #ffffff,
+);
+
+// Semantic Color Helpers
+$color-primary: map.get($primary-palette, 50); // #cf2e2e
+$color-primary-light: map.get($primary-palette, 80); // #ed8282
+$color-primary-dark: map.get($primary-palette, 20); // #4d1414
+
+$color-secondary: map.get($secondary-palette, 50); // #617b81
+$color-tertiary: map.get($tertiary-palette, 50); // #70788c
+
+$color-success: #4caf50;
+$color-warning: #ff9800;
+$color-error: #f44336;
+$color-info: #2196f3;
+
+// Text Colors
+$color-text-primary: rgba(0, 0, 0, 0.87);
+$color-text-secondary: rgba(0, 0, 0, 0.6);
+$color-text-disabled: rgba(0, 0, 0, 0.38);
+$color-text-hint: rgba(0, 0, 0, 0.5);
+
+// Background Colors
+$color-background: #ffffff;
+$color-background-hover: rgba(0, 0, 0, 0.04);
+$color-background-selected: rgba(0, 0, 0, 0.08);
+
+// Border Colors
+$color-border: rgba(0, 0, 0, 0.12);
+$color-border-light: rgba(0, 0, 0, 0.06);
+$color-border-dark: rgba(0, 0, 0, 0.24);
+

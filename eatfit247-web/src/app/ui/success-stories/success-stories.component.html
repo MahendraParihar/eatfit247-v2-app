@@ -1,0 +1,126 @@
+<div class="success-stories">
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="hero-content">
+      <h1 class="hero-title">EATFIT24/7 HALL OF FAME</h1>
+      <p class="hero-subtitle">
+        Here's an assortment of our healthy superstars who decided to take charge
+        and came out of the journey healthier and happier. Let their story be the
+        one that moves you to write yours.
+      </p>
+      <div class="hero-quote">
+        <mat-icon class="quote-icon">format_quote</mat-icon>
+        <p class="quote-text">
+          Those who believe they can change the world are the ones who do.
+        </p>
+      </div>
+      <button mat-raised-button color="primary" class="cta-button">
+        <mat-icon>calendar_today</mat-icon>
+        Book an Appointment
+      </button>
+    </div>
+  </section>
+
+  <!-- Timeline Section -->
+  <section class="timeline-section">
+    <div class="timeline-container">
+      <h2 class="section-title">
+        <mat-icon>emoji_events</mat-icon>
+        HALL OF FAME
+      </h2>
+
+      <!-- Timeline -->
+      <div class="timeline">
+        @for (story of stories; track story.id; let i = $index) {
+          <!-- Year Label (shown only once per year) -->
+          @if (getYearGroup(story, i) !== null) {
+            <div class="timeline-year-label">
+              <div class="year-badge">{{ story.year }}</div>
+            </div>
+          }
+
+          <!-- Timeline Item -->
+          <div
+            class="timeline-item"
+            [class.left]="isLeftSide(i)"
+            [class.right]="isRightSide(i)"
+          >
+            <!-- Timeline Line Connector -->
+            <div class="timeline-connector">
+              <div class="timeline-dot"></div>
+            </div>
+
+            <!-- Story Card -->
+            <mat-card class="story-card">
+              <!-- Story Image -->
+              <div class="story-image-container">
+                @if (story.imageUrl) {
+                  <img
+                    [src]="story.imageUrl"
+                    [alt]="story.imageAlt || story.name"
+                    class="story-image"
+                    loading="lazy"
+                    (error)="onImageError($event)"
+                    crossorigin="anonymous"
+                  />
+                } @else {
+                  <div class="story-image-placeholder">
+                    <mat-icon class="placeholder-icon">person</mat-icon>
+                  </div>
+                }
+              </div>
+
+              <!-- Story Content -->
+              <mat-card-content class="story-content">
+                <div class="story-header">
+                  <h3 class="story-name">{{ story.name }}</h3>
+                  @if (story.role) {
+                    <span class="story-role">{{ story.role }}</span>
+                  }
+                </div>
+
+                <div class="story-testimonial">
+                  <mat-icon class="quote-icon-start">format_quote</mat-icon>
+                  <p class="testimonial-text">{{ story.testimonial }}</p>
+                  <mat-icon class="quote-icon-end">format_quote</mat-icon>
+                </div>
+
+                <div class="story-year-badge">
+                  <mat-icon class="year-icon">calendar_today</mat-icon>
+                  <span>{{ story.year }}</span>
+                </div>
+              </mat-card-content>
+            </mat-card>
+          </div>
+        }
+      </div>
+
+      <!-- Timeline End -->
+      <div class="timeline-end">
+        <div class="timeline-dot final-dot"></div>
+        <p class="timeline-end-text">More Success Stories Coming Soon...</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Call to Action Section -->
+  <section class="cta-section">
+    <div class="cta-content">
+      <h2 class="cta-title">Ready to Write Your Success Story?</h2>
+      <p class="cta-description">
+        Join our community of healthy superstars and transform your life with
+        personalized nutrition plans from EatFit24By7.
+      </p>
+      <div class="cta-buttons">
+        <button mat-raised-button color="primary" class="cta-btn-primary">
+          <mat-icon>calendar_today</mat-icon>
+          Book an Appointment
+        </button>
+        <button mat-stroked-button color="primary" class="cta-btn-secondary">
+          <mat-icon>info</mat-icon>
+          Learn More About Our Programs
+        </button>
+      </div>
+    </div>
+  </section>
+</div>

@@ -1,0 +1,20 @@
+// EatFit247 Global Styles
+// Main entry point for application styles
+
+// Import theme configuration
+@use './theme';
+
+// Import utility classes
+@use './padding';
+@use './margin';
+
+/* You can add global styles to this file, and also import other style files */
+
+html, body { 
+  height: 100%;
+  background-color: #ffffff;
+}
+
+body {
+  background-color: #ffffff;
+}

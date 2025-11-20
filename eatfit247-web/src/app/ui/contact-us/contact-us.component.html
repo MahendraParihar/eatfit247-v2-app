@@ -1,0 +1,212 @@
+<div class="contact-us">
+  <!-- Hero Section using Banner Component -->
+  @if (heroSliderItems.length > 0) {
+    <section class="hero-banner-section">
+      <app-image-slider
+        [items]="heroSliderItems"
+        [autoPlay]="false"
+        [showArrows]="false"
+        [showDots]="false"
+      ></app-image-slider>
+    </section>
+  }
+
+  <!-- Contact Us Section -->
+  @if (getSection('form'); as formSection) {
+    <section class="contact-us-section">
+      <div class="contact-sections-wrapper">
+        <!-- Left Side: Contact Form -->
+        <div class="contact-form-side">
+          <div class="form-header">
+            <h2 class="form-title">Contact Us</h2>
+            <p class="form-description">
+              We are deeply committed to delivering unparalleled service and unwavering support to ensure your experience exceeds expectations.
+            </p>
+          </div>
+          <div class="form-container">
+
+        @if (formSuccess) {
+          <div class="form-success-message">
+            <mat-icon>check_circle</mat-icon>
+            <p>{{ formSection['success_message'] }}</p>
+          </div>
+        } @else {
+          <form [formGroup]="contactForm" (ngSubmit)="onSubmit()" class="contact-form">
+            <!-- Name Fields Row -->
+            <div class="form-row">
+              <mat-form-field appearance="outline" class="form-field">
+                <mat-label>First Name <span class="required-asterisk">*</span></mat-label>
+                <input matInput type="text" formControlName="name" placeholder="First Name" />
+                @if (contactForm.get('name')?.hasError('required') && contactForm.get('name')?.touched) {
+                  <mat-error>First Name is required</mat-error>
+                }
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="form-field">
+                <mat-label>Last Name <span class="required-asterisk">*</span></mat-label>
+                <input matInput type="text" formControlName="lastName" placeholder="Last Name" />
+                @if (contactForm.get('lastName')?.hasError('required') && contactForm.get('lastName')?.touched) {
+                  <mat-error>Last Name is required</mat-error>
+                }
+              </mat-form-field>
+            </div>
+
+            <!-- Email Field -->
+            <mat-form-field appearance="outline" class="form-field">
+              <mat-label>Email <span class="required-asterisk">*</span></mat-label>
+              <input matInput type="email" formControlName="email" placeholder="Email" />
+              @if (contactForm.get('email')?.hasError('required') && contactForm.get('email')?.touched) {
+                <mat-error>Email is required</mat-error>
+              }
+              @if (contactForm.get('email')?.hasError('email') && contactForm.get('email')?.touched) {
+                <mat-error>Please enter a valid email address</mat-error>
+              }
+            </mat-form-field>
+
+            <!-- Message Field -->
+            <mat-form-field appearance="outline" class="form-field textarea-field">
+              <mat-label>Message</mat-label>
+              <textarea matInput formControlName="message" rows="4" placeholder="Your Message"></textarea>
+            </mat-form-field>
+
+            @for (field of formSection['fields']; track field['name']) {
+              @if (field['name'] !== 'name' && field['name'] !== 'email' && field['name'] !== 'lastName') {
+                @if (field['type'] === 'text' || field['type'] === 'phone') {
+                  <mat-form-field appearance="outline" class="form-field">
+                    <mat-label>{{ field['label'] }}@if (field['required']) {<span class="required-asterisk">*</span>}</mat-label>
+                    <input
+                      matInput
+                      [type]="field['type'] === 'phone' ? 'tel' : field['type']"
+                      [formControlName]="field['name']"
+                      [required]="field['required']"
+                    />
+                    @if (contactForm.get(field['name'])?.hasError('required') && contactForm.get(field['name'])?.touched) {
+                      <mat-error>{{ getFieldError(field['name']) }}</mat-error>
+                    }
+                    @if (contactForm.get(field['name'])?.hasError('pattern') && contactForm.get(field['name'])?.touched) {
+                      <mat-error>{{ getFieldError(field['name']) }}</mat-error>
+                    }
+                  </mat-form-field>
+                }
+              }
+            }
+
+            <button
+              mat-flat-button
+              type="submit"
+              color="primary"
+              class="submit-button"
+              [disabled]="contactForm.invalid || formSubmitted"
+            >
+              <mat-icon>send</mat-icon>
+              <span>{{ formSection['submit_button']['label'] }}</span>
+            </button>
+          </form>
+        }
+          </div>
+        </div>
+
+        <!-- Right Side: Contact Information Cards -->
+        <div class="contact-info-side">
+          <!-- Phone Card -->
+          <mat-card class="contact-info-card">
+            <mat-card-content>
+              <div class="card-content-wrapper">
+                <mat-icon class="info-icon">phone</mat-icon>
+                <div class="info-content">
+                  <h3 class="info-title">Contact</h3>
+                  <p class="info-details">Talk to us and see how we can work<br>1800-14-0147</p>
+                </div>
+              </div>
+            </mat-card-content>
+          </mat-card>
+
+          <!-- Email Card -->
+          <mat-card class="contact-info-card">
+            <mat-card-content>
+              <div class="card-content-wrapper">
+                <mat-icon class="info-icon">email</mat-icon>
+                <div class="info-content">
+                  <h3 class="info-title">Email</h3>
+                  <p class="info-details">We're usually replying within 24 hours<br>support@eatfit247.com</p>
+                </div>
+              </div>
+            </mat-card-content>
+          </mat-card>
+
+          <!-- Working Hours Card -->
+          <mat-card class="contact-info-card">
+            <mat-card-content>
+              <div class="card-content-wrapper">
+                <mat-icon class="info-icon">schedule</mat-icon>
+                <div class="info-content">
+                  <h3 class="info-title">Working Hours</h3>
+                  <p class="info-details">Mon To Sat - 10 am To 7 pm<br>Sunday - 11am To 5 pm</p>
+                </div>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+      </div>
+    </section>
+  }
+
+  <!-- Testimonials Section -->
+  @if (getSection('social_proof'); as testimonialsSection) {
+    <section class="testimonials-section">
+      <div class="testimonials-container">
+        <h2 class="testimonials-title">{{ testimonialsSection['title'] }}</h2>
+        
+        @if (reviewsLoading) {
+          <div class="reviews-loading">
+            <mat-spinner diameter="40"></mat-spinner>
+            <p>Loading reviews...</p>
+          </div>
+        } @else {
+          @if (googleReviews.length > 0) {
+            <!-- Google Reviews -->
+            <div class="testimonials-grid">
+              @for (review of googleReviews; track review.author_name) {
+                <mat-card class="testimonial-card">
+                  <mat-card-content>
+                    @if (review.profile_photo_url) {
+                      <div class="reviewer-avatar">
+                        <img [src]="review.profile_photo_url" [alt]="review.author_name" />
+                      </div>
+                    }
+                    <div class="testimonial-rating">
+                      @for (star of [1,2,3,4,5]; track star) {
+                        <mat-icon [class.filled]="star <= review.rating">star</mat-icon>
+                      }
+                    </div>
+                    <p class="testimonial-text">"{{ review.text }}"</p>
+                    <div class="testimonial-footer">
+                      <p class="testimonial-author">— {{ review.author_name }}</p>
+                      <p class="testimonial-date">{{ review.relative_time_description }}</p>
+                    </div>
+                  </mat-card-content>
+                </mat-card>
+              }
+            </div>
+          } @else {
+            <!-- Fallback: Use JSON testimonials -->
+            <div class="testimonials-grid">
+              @for (testimonial of testimonialsSection['items']; track testimonial['author']) {
+                <mat-card class="testimonial-card">
+                  <mat-card-content>
+                    <div class="testimonial-rating">
+                      @for (star of [1,2,3,4,5]; track star) {
+                        <mat-icon [class.filled]="star <= testimonial['rating']">star</mat-icon>
+                      }
+                    </div>
+                    <p class="testimonial-text">"{{ testimonial['text'] }}"</p>
+                    <p class="testimonial-author">— {{ testimonial['author'] }}</p>
+                  </mat-card-content>
+                </mat-card>
+              }
+            </div>
+          }
+        }
+      </div>
+    </section>
+  }
+</div>

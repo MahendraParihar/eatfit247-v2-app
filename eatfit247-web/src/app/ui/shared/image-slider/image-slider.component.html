@@ -1,0 +1,152 @@
+@if (items.length > 0) {
+  <div
+    class="image-slider"
+    [style.height]="height"
+    (mouseenter)="onMouseEnter()"
+    (mouseleave)="onMouseLeave()"
+  >
+    <!-- Slider Container -->
+    <div class="slider-container">
+      <!-- Slides -->
+      <div
+        class="slides-wrapper"
+        [style.transform]="'translateX(-' + (currentIndex() * 100) + '%)'"
+        [style.transition-duration]="transitionDuration + 'ms'"
+      >
+        @for (item of items; track item.id) {
+          <div
+            class="slide"
+            [class.active]="currentIndex() === $index"
+            [class.image-left]="isImageLeft(item)"
+            [class.image-right]="isImageRight(item)"
+            [attr.data-slide-key]="slideKey()"
+          >
+            <!-- Background Image for Entire Slide -->
+            @if (item.backgroundImageUrl) {
+              <div
+                class="slide-background"
+                [style.background-image]="'url(' + item.backgroundImageUrl + ')'"
+                [style.background-position]="'center center'"
+                [style.background-size]="'cover'"
+              ></div>
+            }
+
+            <!-- Two Section Layout -->
+            <div class="slide-sections">
+              <!-- Image Section (Left or Right based on imagePosition) -->
+              <div
+                class="section image-section"
+                [class.left-section]="isImageLeft(item)"
+                [class.right-section]="isImageRight(item)"
+                [style.background-image]="'url(' + item.imageUrl + ')'"
+                [style.background-position]="isImageLeft(item) ? 'left center' : 'right center'"
+                [style.background-size]="'cover'"
+                [style.background-repeat]="'no-repeat'"
+              >
+                <div class="image-section-content">
+                  <!-- Image is shown as background, this section can have additional content if needed -->
+                </div>
+              </div>
+
+              <!-- Text Section (Right or Left based on imagePosition) -->
+              <div
+                class="section text-section"
+                [class.left-section]="isImageRight(item)"
+                [class.right-section]="isImageLeft(item)"
+              >
+                <div 
+                  class="text-section-content" 
+                  [class.animate]="currentIndex() === $index"
+                  [class.slide-animate]="currentIndex() === $index"
+                  [attr.data-slide-key]="slideKey()"
+                >
+                  <!-- Short Description (Two Lines) -->
+                  @if (item.shortDescription) {
+                    <p class="short-description">{{ item.shortDescription }}</p>
+                  }
+
+                  <!-- Big Title with Icon -->
+                  @if (item.title) {
+                    <h1 class="main-title">
+                      @if (item.titleIcon) {
+                        <mat-icon class="title-icon">{{ item.titleIcon }}</mat-icon>
+                      }
+                      <span>{{ item.title }}</span>
+                    </h1>
+                  }
+
+                  <!-- Two-line Description -->
+                  @if (item.description) {
+                    <p class="main-description">{{ item.description }}</p>
+                  }
+
+                  <!-- Action Buttons -->
+                  <div class="action-buttons">
+                    @if (item.primaryActionText) {
+                      <button
+                        mat-flat-button
+                        color="primary"
+                        class="action-btn primary-btn"
+                        (click)="onPrimaryActionClick(item)"
+                      >
+                        {{ item.primaryActionText }}
+                        <mat-icon>arrow_forward</mat-icon>
+                      </button>
+                    }
+                    @if (item.secondaryActionText) {
+                      <button
+                        mat-outlined-button
+                        color="primary"
+                        class="action-btn secondary-btn"
+                        (click)="onSecondaryActionClick(item)"
+                      >
+                        {{ item.secondaryActionText }}
+                      </button>
+                    }
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Navigation Arrows -->
+      @if (showArrows && hasMultipleItems()) {
+        <button
+          class="slider-nav-btn prev-btn"
+          (click)="previous()"
+          aria-label="Previous slide"
+        >
+          <mat-icon>chevron_left</mat-icon>
+        </button>
+        <button
+          class="slider-nav-btn next-btn"
+          (click)="next()"
+          aria-label="Next slide"
+        >
+          <mat-icon>chevron_right</mat-icon>
+        </button>
+      }
+
+      <!-- Dots Indicator -->
+      @if (showDots && hasMultipleItems()) {
+        <div class="slider-dots">
+          @for (item of items; track item.id; let i = $index) {
+            <button
+              class="dot"
+              [class.active]="currentIndex() === i"
+              (click)="goToSlide(i)"
+              [attr.aria-label]="'Go to slide ' + (i + 1)"
+            ></button>
+          }
+        </div>
+      }
+    </div>
+  </div>
+} @else {
+  <div class="slider-empty">
+    <mat-icon class="empty-icon">image_not_supported</mat-icon>
+    <p class="empty-message">No slides to display</p>
+  </div>
+}

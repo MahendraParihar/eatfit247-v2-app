@@ -1,0 +1,446 @@
+@use '../../../theme/variables' as *;
+
+.header-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 64px;
+  max-height: 64px;
+  overflow: visible;
+  background-color: #000000 !important;
+  
+  // On large screens, use grid for proper centering
+  @media (min-width: 961px) {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: $spacing-md;
+  }
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  
+  // On large screens, position in first grid column
+  @media (min-width: 961px) {
+    grid-column: 1;
+    justify-self: start;
+  }
+  
+  // On mobile, add margin after container
+  @media (max-width: 960px) {
+    margin-right: $spacing-xl;
+  }
+}
+
+.menu-button {
+  margin-right: 0;
+  color: #ffffff !important;
+  
+  mat-icon {
+    color: #ffffff !important;
+  }
+}
+
+.logo-link {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  cursor: pointer;
+  
+  &:hover {
+    opacity: 0.9;
+  }
+}
+
+.logo-image {
+  height: 40px;
+  width: auto;
+  object-fit: contain;
+  cursor: pointer;
+  
+  &:hover {
+    opacity: 0.9;
+  }
+}
+
+.spacer {
+  flex: 1 1 auto;
+  
+  // Hide spacer on large screens (using grid instead)
+  @media (min-width: 961px) {
+    display: none;
+  }
+}
+
+// Desktop: Toolbar Navigation
+.toolbar-nav {
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+  justify-content: center;
+  
+  // On large screens, center in middle grid column
+  @media (min-width: 961px) {
+    grid-column: 2;
+    margin: 0;
+    flex: none;
+  }
+  
+  // On mobile, keep original behavior
+  @media (max-width: 960px) {
+    margin-left: auto;
+    margin-right: auto;
+    flex: 1;
+  }
+}
+
+.menu-wrapper {
+  position: relative;
+  display: inline-block;
+  
+  // Add padding-bottom to create a bridge to the menu
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 0;
+    right: 0;
+    height: 10px;
+    z-index: 1000;
+  }
+}
+
+.nav-link {
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+  gap: $spacing-sm;
+  padding: 0 $spacing-md;
+  height: 48px;
+  border-radius: $border-radius-2xl;
+  transition: background-color $transition-base;
+  color: #ffffff !important;
+  
+  // Ensure Material button content is flex
+  :host ::ng-deep .mdc-button__label {
+    display: flex !important;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    gap: $spacing-sm;
+    
+    // Ensure label doesn't grow
+    .nav-label {
+      flex: 0 1 auto;
+      color: #ffffff !important;
+    }
+    
+    // Ensure icon is on the right
+    .dropdown-icon {
+      margin-left: auto !important;
+      flex-shrink: 0;
+      color: #ffffff !important;
+    }
+  }
+  
+  // Override Material button internal structure
+  :host ::ng-deep .mat-mdc-button-persistent-ripple,
+  :host ::ng-deep .mdc-button__ripple {
+    display: none;
+  }
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+
+  &.active {
+    background-color: rgba(255, 255, 255, 0.2);
+    font-weight: 500;
+  }
+  
+  // Ensure all text and icons are white
+  mat-icon {
+    color: #ffffff !important;
+  }
+}
+
+.nav-label {
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  flex: 0 1 auto;
+  order: 1;
+  color: #ffffff !important;
+}
+
+.dropdown-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  margin-left: auto !important;
+  flex-shrink: 0;
+  order: 2;
+  color: #ffffff !important;
+  
+  // Ensure icon is positioned on the right within Material button label
+  :host ::ng-deep .mdc-button__label & {
+    margin-left: auto !important;
+  }
+}
+
+// Uppercase for dropdown menu items
+:host ::ng-deep .mat-mdc-menu-panel {
+  .mat-mdc-menu-item {
+    span {
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-size: 0.875rem;
+    }
+  }
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: $spacing-lg;
+  position: relative;
+  
+  // On large screens, position in third grid column
+  @media (min-width: 961px) {
+    grid-column: 3;
+    justify-self: end;
+  }
+}
+
+.region-button {
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+  color: #ffffff !important;
+  text-transform: none;
+  font-size: 0.875rem;
+  padding: $spacing-xs $spacing-sm;
+  min-width: 85px;
+  height: 40px;
+  border-radius: $border-radius-2xl;
+  background-color: rgba(255, 255, 255, 0.1);
+  transition: background-color $transition-base;
+  
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+  
+  .region-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    color: #ffffff !important;
+    flex-shrink: 0;
+  }
+  
+  .region-label {
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+    min-width: 0;
+    text-align: left;
+    font-size: 0.875rem;
+    line-height: 1.2;
+    color: #ffffff !important;
+  }
+  
+  .dropdown-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    margin-left: $spacing-xs;
+    flex-shrink: 0;
+    color: #ffffff !important;
+  }
+}
+
+.region-menu {
+  .mat-mdc-menu-item {
+    min-height: 48px;
+    
+    &.active {
+      background-color: rgba(0, 0, 0, 0.04);
+    }
+  }
+}
+
+.search-icon-button {
+  color: #ffffff !important;
+  
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  mat-icon {
+    color: #ffffff !important;
+  }
+}
+
+.search-container {
+  display: flex;
+  align-items: center;
+  animation: expandSearch 0.3s ease-out;
+  height: 40px;
+  max-height: 40px;
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1001;
+  
+  // On large screens, position absolutely to not affect grid layout
+  @media (min-width: 961px) {
+    position: fixed;
+    right: 1rem;
+    top: 0.75rem;
+    transform: none;
+    background-color: transparent;
+  }
+  
+  // On mobile, keep relative positioning
+  @media (max-width: 960px) {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+}
+
+@keyframes expandSearch {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.search-field {
+  width: 400px;
+  font-size: 0.875rem;
+  transition: width 0.3s ease-out;
+  margin: 0;
+  
+  // Constrain form field height to match toolbar
+  :host ::ng-deep .mat-mdc-form-field {
+    height: 40px;
+    max-height: 40px;
+  }
+  
+  :host ::ng-deep .mat-mdc-text-field-wrapper {
+    background-color: rgba(255, 255, 255, 0.95);
+    border-radius: $border-radius-2xl;
+    padding: 0 $spacing-md;
+    height: 40px;
+    max-height: 40px;
+    align-items: center;
+    transition: background-color $transition-base, box-shadow $transition-base;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    
+    &:hover {
+      background-color: rgba(255, 255, 255, 1);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+  }
+  
+  :host ::ng-deep .mdc-text-field--filled {
+    height: 40px;
+    border-radius: $border-radius-2xl;
+  }
+  
+  :host ::ng-deep .mdc-text-field {
+    height: 40px;
+    max-height: 40px;
+    padding: 0;
+  }
+  
+  :host ::ng-deep .mat-mdc-form-field-infix {
+    min-height: 40px;
+    padding: 0;
+    border-top: 0;
+    display: flex;
+    align-items: center;
+  }
+  
+  :host ::ng-deep .mat-mdc-form-field-focus-overlay {
+    background-color: transparent;
+    border-radius: $border-radius-2xl;
+  }
+  
+  :host ::ng-deep .mdc-text-field--filled.mdc-text-field--focused {
+    .mat-mdc-text-field-wrapper {
+      background-color: rgba(255, 255, 255, 1);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+    }
+  }
+  
+  :host ::ng-deep .mdc-text-field__input {
+    color: rgba(0, 0, 0, 0.87);
+    caret-color: var(--mat-sys-primary);
+    
+    &::placeholder {
+      color: rgba(0, 0, 0, 0.5);
+      opacity: 1;
+    }
+  }
+  
+  :host ::ng-deep .mat-mdc-form-field-icon-prefix {
+    color: rgba(0, 0, 0, 0.6);
+    margin-right: $spacing-lg;
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+  
+  :host ::ng-deep .mat-mdc-form-field-icon-suffix {
+    color: rgba(0, 0, 0, 0.6);
+  }
+  
+  // Mobile responsive
+  @media (max-width: 960px) {
+    width: calc(100vw - 2rem);
+    max-width: 350px;
+  }
+  
+  @media (max-width: 600px) {
+    width: calc(100vw - 1.5rem);
+    max-width: 280px;
+  }
+}
+
+.search-close-button {
+  color: rgba(0, 0, 0, 0.6);
+  width: 24px;
+  height: 24px;
+  font-size: 18px;
+  line-height: 18px;
+  
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    line-height: 18px;
+  }
+  
+  &:hover {
+    color: rgba(0, 0, 0, 0.87);
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+}
+

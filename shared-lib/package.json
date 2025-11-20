@@ -1,0 +1,30 @@
+{
+  "name": "shared-lib",
+  "version": "1.0.0",
+  "description": "Shared library for EatFit247 projects",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch"
+  },
+  "keywords": [
+    "eatfit247",
+    "shared",
+    "library"
+  ],
+  "author": "EatFit247",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.5.0"
+  }
+}
+

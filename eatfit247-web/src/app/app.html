@@ -1,0 +1,71 @@
+<!-- Main App Component using Shared Library -->
+<mat-toolbar color="primary">
+  <mat-icon>restaurant_menu</mat-icon>
+  <span>{{ title() }}</span>
+  <span class="spacer"></span>
+  <button mat-icon-button>
+    <mat-icon>account_circle</mat-icon>
+  </button>
+</mat-toolbar>
+
+<main class="main-content">
+  <!-- Shared Library Info Card -->
+  @if (showSharedLibInfo()) {
+    <mat-card class="info-card">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>info</mat-icon>
+          Using shared-lib
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <p>
+          This application uses the shared library for consistent types, enums, and utilities across all EatFit24By7 projects.
+        </p>
+        <div class="chips-container">
+          <mat-chip-set>
+            <mat-chip>
+              Server Status: {{ serverStatus() === ServerResponseEnum.SUCCESS ? 'SUCCESS' : 'ERROR' }}
+            </mat-chip>
+            <mat-chip>
+              Alert Type: {{ alertType() }}
+            </mat-chip>
+            <mat-chip>
+              User Status: {{ userStatus() === UserStatusEnum.ACTIVE ? 'ACTIVE' : 'INACTIVE' }}
+            </mat-chip>
+            <mat-chip>
+              Today: {{ currentDate() }}
+            </mat-chip>
+          </mat-chip-set>
+        </div>
+        <button mat-button (click)="showSharedLibInfo.set(false)">
+          <mat-icon>close</mat-icon>
+          Dismiss
+        </button>
+      </mat-card-content>
+    </mat-card>
+  }
+
+  <!-- Router Outlet for Routes -->
+  <router-outlet />
+</main>
+
+<style>
+  .spacer {
+    flex: 1 1 auto;
+  }
+
+  .main-content {
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .info-card {
+    margin-bottom: 2rem;
+  }
+
+  .chips-container {
+    margin: 1rem 0;
+  }
+</style>

@@ -1,0 +1,58 @@
+@use '../../../theme/variables' as *;
+
+.home {
+  padding: 0;
+}
+
+.hero-slider-section {
+  margin-bottom: $spacing-2xl;
+}
+
+.welcome-section {
+  padding: $spacing-3xl $spacing-lg;
+  text-align: center;
+  background: linear-gradient(
+    135deg,
+    var(--mat-sys-primary-container) 0%,
+    var(--mat-sys-tertiary-container) 100%
+  );
+  color: var(--mat-sys-on-primary-container);
+  border-radius: $border-radius-xl;
+  margin: 0 $spacing-lg $spacing-2xl;
+
+  .welcome-content {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .welcome-title {
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: $spacing-md;
+    line-height: 1.2;
+
+    @media (max-width: 768px) {
+      font-size: 2rem;
+    }
+  }
+
+  .welcome-subtitle {
+    font-size: 1.5rem;
+    margin-bottom: $spacing-xl;
+    opacity: 0.95;
+
+    @media (max-width: 768px) {
+      font-size: 1.25rem;
+    }
+  }
+
+  .cta-button {
+    height: 48px;
+    padding: 0 $spacing-xl;
+    font-size: 1rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-radius: $border-radius-2xl;
+  }
+}

@@ -1,0 +1,190 @@
+@if (loading) {
+  <div class="blog-detail-loading">
+    <mat-icon class="loading-icon">hourglass_empty</mat-icon>
+    <p>Loading blog post...</p>
+  </div>
+} @else if (notFound || !blogPost) {
+  <div class="blog-detail-not-found">
+    <mat-icon class="error-icon">error_outline</mat-icon>
+    <h2>Blog Post Not Found</h2>
+    <p>The blog post you're looking for doesn't exist or has been removed.</p>
+    <button mat-raised-button color="primary" (click)="goBack()">
+      <mat-icon>arrow_back</mat-icon>
+      Back to Blog
+    </button>
+  </div>
+} @else {
+  <div class="blog-detail">
+    <!-- Back Button -->
+    <div class="back-button-container">
+      <button mat-icon-button (click)="goBack()" aria-label="Go back">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+    </div>
+
+    <!-- Main Content -->
+    <div class="blog-detail-container">
+      <!-- Blog Post Content -->
+      <article class="blog-article">
+        <!-- Blog Header -->
+        <header class="blog-header">
+          @if (blogPost.category) {
+            <mat-chip class="blog-category-chip">{{ blogPost.category }}</mat-chip>
+          }
+          <h1 class="blog-title">{{ blogPost.title }}</h1>
+          
+          <!-- Blog Meta -->
+          <div class="blog-meta">
+            <div class="meta-item">
+              <mat-icon class="meta-icon">person</mat-icon>
+              <span class="meta-text">{{ blogPost.author }}</span>
+            </div>
+            <div class="meta-item">
+              <mat-icon class="meta-icon">calendar_today</mat-icon>
+              <span class="meta-text">{{ formatDate(blogPost.publishDate) }}</span>
+            </div>
+            @if (blogPost.readTime) {
+              <div class="meta-item">
+                <mat-icon class="meta-icon">schedule</mat-icon>
+                <span class="meta-text">{{ blogPost.readTime }} min read</span>
+              </div>
+            }
+          </div>
+        </header>
+
+        <!-- Blog Image -->
+        @if (blogPost.imageUrl) {
+          <div class="blog-image-container">
+            <img
+              [src]="blogPost.imageUrl"
+              [alt]="blogPost.imageAlt || blogPost.title"
+              class="blog-image"
+              loading="eager"
+            />
+          </div>
+        } @else {
+          <div class="blog-image-placeholder">
+            <mat-icon class="placeholder-icon">article</mat-icon>
+          </div>
+        }
+
+        <!-- Blog Content -->
+        <div class="blog-content" [innerHTML]="sanitizedContent"></div>
+
+        <!-- Tags -->
+        @if (blogPost.tags && blogPost.tags.length > 0) {
+          <div class="blog-tags">
+            <span class="tags-label">Tags:</span>
+            @for (tag of blogPost.tags; track tag) {
+              <mat-chip class="tag-chip">{{ tag }}</mat-chip>
+            }
+          </div>
+        }
+
+        <!-- Social Sharing -->
+        <div class="blog-sharing">
+          <span class="sharing-label">Share this article:</span>
+          <div class="social-share-buttons">
+            <button
+              mat-icon-button
+              (click)="shareOnSocial('facebook')"
+              aria-label="Share on Facebook"
+              class="share-btn facebook"
+            >
+              <mat-icon>facebook</mat-icon>
+            </button>
+            <button
+              mat-icon-button
+              (click)="shareOnSocial('twitter')"
+              aria-label="Share on Twitter"
+              class="share-btn twitter"
+            >
+              <mat-icon>share</mat-icon>
+            </button>
+            <button
+              mat-icon-button
+              (click)="shareOnSocial('linkedin')"
+              aria-label="Share on LinkedIn"
+              class="share-btn linkedin"
+            >
+              <mat-icon>work</mat-icon>
+            </button>
+            <button
+              mat-icon-button
+              (click)="shareOnSocial('pinterest')"
+              aria-label="Share on Pinterest"
+              class="share-btn pinterest"
+            >
+              <mat-icon>photo</mat-icon>
+            </button>
+          </div>
+        </div>
+
+        <mat-divider class="blog-divider"></mat-divider>
+
+        <!-- Related Posts -->
+        @if (relatedPosts.length > 0) {
+          <section class="related-posts">
+            <h2 class="related-posts-title">Related Articles</h2>
+            <div class="related-posts-grid">
+              @for (post of relatedPosts; track post.id) {
+                <mat-card class="related-post-card">
+                  <mat-card-content>
+                    <h3 class="related-post-title">
+                      <a [routerLink]="getPostUrl(post)" class="related-post-link">
+                        {{ post.title }}
+                      </a>
+                    </h3>
+                    <p class="related-post-date">{{ formatDate(post.publishDate) }}</p>
+                  </mat-card-content>
+                </mat-card>
+              }
+            </div>
+          </section>
+        }
+      </article>
+
+      <!-- Sidebar -->
+      <aside class="blog-sidebar">
+        <!-- Recent Posts -->
+        <mat-card class="sidebar-card">
+          <mat-card-header>
+            <mat-card-title>Recent Posts</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <ul class="recent-posts-list">
+              @for (post of recentPosts; track post.id) {
+                <li class="recent-post-item">
+                  <a [routerLink]="getPostUrl(post)" class="recent-post-link">
+                    <div class="recent-post-content">
+                      <h3 class="recent-post-title">{{ post.title }}</h3>
+                      <span class="recent-post-date">
+                        {{ formatDate(post.publishDate) }}
+                      </span>
+                    </div>
+                  </a>
+                </li>
+              }
+            </ul>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Back to Blog -->
+        <mat-card class="sidebar-card">
+          <mat-card-content>
+            <button
+              mat-raised-button
+              color="primary"
+              (click)="goBack()"
+              class="back-to-blog-btn"
+            >
+              <mat-icon>arrow_back</mat-icon>
+              Back to Blog
+            </button>
+          </mat-card-content>
+        </mat-card>
+      </aside>
+    </div>
+  </div>
+}
+

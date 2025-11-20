@@ -1,0 +1,140 @@
+@use '../../../../theme/variables' as *;
+@use '../../../../theme/color' as *;
+
+.about-shweta-shah {
+  width: 100%;
+  padding: 0;
+}
+
+// Banner Section
+.banner-section {
+  width: 100%;
+  margin-bottom: $spacing-3xl;
+}
+
+// Information Section
+.info-section {
+  padding: $spacing-3xl $spacing-lg;
+  background-color: var(--mat-sys-surface);
+}
+
+.info-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: $spacing-3xl;
+  align-items: flex-start;
+
+  @media (max-width: 1024px) {
+    grid-template-columns: 1fr;
+    gap: $spacing-2xl;
+  }
+}
+
+// Left Column: Image
+.image-column {
+  position: sticky;
+  top: $spacing-xl;
+  height: fit-content;
+
+  @media (max-width: 1024px) {
+    position: relative;
+    top: 0;
+  }
+}
+
+.image-wrapper {
+  width: 100%;
+  border-radius: $border-radius-xl;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  background-color: var(--mat-sys-surface-container);
+
+  .profile-image {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: cover;
+  }
+}
+
+// Right Column: Content
+.content-column {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-2xl;
+}
+
+.text-content {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+  align-items: center;
+}
+
+.section-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--mat-sys-on-surface);
+  margin: 0;
+  line-height: 1.2;
+
+  @media (max-width: 768px) {
+    font-size: 2rem;
+  }
+}
+
+.bio-text {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-lg;
+
+  p {
+    font-size: 1.125rem;
+    line-height: 1.8;
+    color: var(--mat-sys-on-surface-variant);
+    margin: 0;
+
+    @media (max-width: 768px) {
+      font-size: 1rem;
+      line-height: 1.6;
+    }
+  }
+}
+
+// Social Links Section
+.social-links-section {
+  padding: 0 $spacing-xl;
+  background-color: var(--mat-sys-surface-container-low);
+  border-radius: $border-radius-xl;
+  border: $border-width-thin $border-style-solid var(--mat-sys-outline-variant);
+}
+
+// Signature Section
+.signature-section {
+  border-top: $border-width-thin $border-style-solid var(--mat-sys-outline-variant);
+
+  .signature-image {
+    max-width: 300px;
+    height: auto;
+    opacity: 0.8;
+    filter: grayscale(20%);
+
+    @media (max-width: 768px) {
+      max-width: 250px;
+    }
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .info-section {
+    padding: $spacing-2xl $spacing-md;
+  }
+
+  .social-links-section {
+    padding: $spacing-lg;
+  }
+}
+

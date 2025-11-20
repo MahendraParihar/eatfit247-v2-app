@@ -1,0 +1,72 @@
+<div class="base-layout">
+  <!-- Header Component -->
+  <app-header (menuToggle)="onMenuToggle()" />
+
+  <!-- Sidebar Navigation (Mobile Only) -->
+  <mat-sidenav-container class="sidenav-container">
+    @if (isMobile()) {
+      <mat-sidenav
+        #sidenav
+        mode="over"
+        [opened]="sidenavOpen()"
+        class="sidenav"
+      >
+        <mat-nav-list>
+          @for (item of navItems(); track item.label) {
+            @if (hasChildren(item)) {
+              <!-- Expandable menu item with children -->
+              <mat-expansion-panel
+                [expanded]="isExpanded(item.label)"
+                (opened)="toggleExpanded(item.label)"
+                (closed)="toggleExpanded(item.label)"
+                class="nav-expansion-panel"
+              >
+                <mat-expansion-panel-header>
+                  <mat-panel-title>
+                    <span>{{ item.label }}</span>
+                  </mat-panel-title>
+                </mat-expansion-panel-header>
+                <mat-nav-list class="sub-nav-list">
+                  @for (child of item.children; track child.label) {
+                    <a
+                      mat-list-item
+                      [routerLink]="child.url"
+                      routerLinkActive="active"
+                      [routerLinkActiveOptions]="{ exact: false }"
+                      (click)="sidenav.close()"
+                      class="sub-nav-item"
+                    >
+                      <span matListItemTitle>{{ child.label }}</span>
+                    </a>
+                  }
+                </mat-nav-list>
+              </mat-expansion-panel>
+            } @else {
+              <!-- Regular menu item -->
+              <a
+                mat-list-item
+                [routerLink]="item.url"
+                routerLinkActive="active"
+                [routerLinkActiveOptions]="{ exact: item.exact || false }"
+                (click)="sidenav.close()"
+              >
+                <span matListItemTitle>{{ item.label }}</span>
+              </a>
+            }
+          }
+        </mat-nav-list>
+      </mat-sidenav>
+    }
+
+    <!-- Main Content Area -->
+    <mat-sidenav-content class="main-content">
+      <div class="content-wrapper">
+        <ng-content></ng-content>
+        <router-outlet />
+      </div>
+      <!-- Footer Component -->
+      <app-footer />
+    </mat-sidenav-content>
+  </mat-sidenav-container>
+</div>
+

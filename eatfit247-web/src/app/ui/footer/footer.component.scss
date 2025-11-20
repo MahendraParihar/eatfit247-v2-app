@@ -1,0 +1,203 @@
+@use '../../../theme/variables' as *;
+
+.footer {
+  background-color: #000000;
+  color: #ffffff;
+  padding: $spacing-2xl $spacing-lg $spacing-lg;
+  margin-top: auto;
+}
+
+.footer-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: $spacing-xl;
+  margin-bottom: $spacing-xl;
+}
+
+.footer-section {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+}
+
+.footer-logo-link {
+  display: inline-block;
+  text-decoration: none;
+  margin-bottom: $spacing-md;
+  transition: opacity $transition-slow;
+  
+  &:hover {
+    opacity: 0.9;
+  }
+}
+
+.footer-logo {
+  height: 50px;
+  width: auto;
+  object-fit: contain;
+  display: block;
+}
+
+.footer-description {
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0;
+}
+
+.footer-heading {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 $spacing-md 0;
+  color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.footer-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+}
+
+.footer-link {
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  font-size: 0.875rem;
+  transition: color $transition-slow;
+
+  &:hover {
+    color: #ffffff;
+    text-decoration: underline;
+  }
+}
+
+// Social icons component handles all styling
+// Add margin-top for spacing
+.footer-social-icons {
+  margin-top: $spacing-md;
+}
+
+.contact-info {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+}
+
+.contact-item {
+  display: flex;
+  align-items: center;
+  gap: $spacing-lg;
+}
+
+.contact-icon {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+
+.contact-link {
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  font-size: 0.875rem;
+  transition: color $transition-slow;
+
+  &:hover {
+    color: #ffffff;
+    text-decoration: underline;
+  }
+}
+
+.footer-bottom {
+  border-top: $border-width-thin $border-style-solid rgba(255, 255, 255, 0.1);
+  padding-top: $spacing-lg;
+  text-align: center;
+}
+
+.copyright {
+  margin: 0;
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .footer {
+    padding: $spacing-xl $spacing-md $spacing-md;
+  }
+
+  .footer-content {
+    grid-template-columns: 1fr;
+    gap: $spacing-xl;
+  }
+
+  .footer-section {
+    gap: $spacing-lg;
+  }
+
+  .footer-title {
+    font-size: 1.25rem;
+  }
+
+  .footer-description {
+    font-size: 0.8125rem;
+    line-height: 1.5;
+  }
+
+  .footer-heading {
+    font-size: 0.9375rem;
+    margin-bottom: $spacing-lg;
+  }
+
+  .footer-links {
+    gap: $spacing-sm;
+  }
+
+  .footer-link {
+    font-size: 0.8125rem;
+  }
+
+  // Social icons component handles responsive styling
+
+  .contact-info {
+    gap: $spacing-lg;
+  }
+
+  .contact-item {
+    gap: $spacing-sm;
+    flex-wrap: wrap;
+  }
+
+  .contact-link {
+    font-size: 0.8125rem;
+    word-break: break-word;
+  }
+
+  .footer-bottom {
+    padding-top: $spacing-md;
+  }
+
+  .copyright {
+    font-size: 0.75rem;
+  }
+}
+
+// Extra small devices
+@media (max-width: 480px) {
+  .footer {
+    padding: $spacing-lg $spacing-lg $spacing-lg;
+  }
+
+  .footer-content {
+    gap: $spacing-lg;
+  }
+
+  // Social icons component handles responsive styling
+}
+

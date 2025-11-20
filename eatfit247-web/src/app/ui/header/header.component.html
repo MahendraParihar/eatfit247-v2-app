@@ -1,0 +1,183 @@
+<mat-toolbar color="primary" class="header-toolbar">
+  <!-- Logo and Menu Button Container -->
+  <div class="logo-container">
+    <!-- Mobile: Hamburger Menu Button -->
+    @if (isMobile()) {
+      <button
+        mat-icon-button
+        (click)="onMenuToggle()"
+        class="menu-button"
+        aria-label="Toggle menu"
+      >
+        <mat-icon>menu</mat-icon>
+      </button>
+    }
+
+    <!-- Logo -->
+    <a [routerLink]="['/']" class="logo-link">
+      <img src="/assets/images/logo-white.png" alt="EatFit24By7" class="logo-image" />
+    </a>
+  </div>
+
+  <!-- Desktop: Menu Items in Toolbar (Centered) -->
+  @if (isDesktop()) {
+    <nav class="toolbar-nav">
+      @for (item of navItems(); track item.label; let i = $index) {
+        @if (hasChildren(item)) {
+          <!-- Menu with dropdown -->
+          @if (item.label === 'About Us') {
+            <div
+              class="menu-wrapper"
+              (mouseenter)="openAboutMenu(aboutMenuTrigger)"
+              (mouseleave)="closeAboutMenu(aboutMenuTrigger)"
+            >
+              <button
+                mat-button
+                #aboutMenuTrigger="matMenuTrigger"
+                [matMenuTriggerFor]="aboutMenu"
+                class="nav-link"
+              >
+                <span class="nav-label">{{ item.label }}</span>
+                <mat-icon class="dropdown-icon">arrow_drop_down</mat-icon>
+              </button>
+              <mat-menu 
+                #aboutMenu="matMenu" 
+                class="hover-menu"
+                (opened)="onAboutMenuOpened()"
+              >
+                @for (child of item.children; track child.label) {
+                  <a
+                    mat-menu-item
+                    [routerLink]="child.url"
+                    routerLinkActive="active"
+                    [routerLinkActiveOptions]="{ exact: false }"
+                    (mouseenter)="cancelCloseAboutMenu()"
+                    (mouseleave)="cancelCloseAboutMenu()"
+                  >
+                    <span>{{ child.label }}</span>
+                  </a>
+                }
+              </mat-menu>
+            </div>
+          }
+          @if (item.label === 'Quiz') {
+            <div
+              class="menu-wrapper"
+              (mouseenter)="openQuizMenu(quizMenuTrigger)"
+              (mouseleave)="closeQuizMenu(quizMenuTrigger)"
+            >
+              <button
+                mat-button
+                #quizMenuTrigger="matMenuTrigger"
+                [matMenuTriggerFor]="quizMenu"
+                class="nav-link"
+              >
+                <span class="nav-label">{{ item.label }}</span>
+                <mat-icon class="dropdown-icon">arrow_drop_down</mat-icon>
+              </button>
+              <mat-menu 
+                #quizMenu="matMenu" 
+                class="hover-menu"
+                (opened)="onQuizMenuOpened()"
+              >
+                @for (child of item.children; track child.label) {
+                  <a
+                    mat-menu-item
+                    [routerLink]="child.url"
+                    routerLinkActive="active"
+                    [routerLinkActiveOptions]="{ exact: false }"
+                    (mouseenter)="cancelCloseQuizMenu()"
+                    (mouseleave)="cancelCloseQuizMenu()"
+                  >
+                    <span>{{ child.label }}</span>
+                  </a>
+                }
+              </mat-menu>
+            </div>
+          }
+        } @else {
+          <!-- Regular menu item -->
+          <a
+            mat-button
+            [routerLink]="item.url"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: item.exact || false }"
+            class="nav-link"
+          >
+            <span class="nav-label">{{ item.label }}</span>
+          </a>
+        }
+      }
+    </nav>
+  }
+
+  <span class="spacer"></span>
+
+  <!-- Global Search and Region Selector -->
+  <div class="header-actions">
+    <!-- Region Dropdown -->
+    <button
+      mat-button
+      [matMenuTriggerFor]="regionMenu"
+      class="region-button"
+      aria-label="Select region"
+    >
+      <mat-icon class="region-icon">public</mat-icon>
+      <span class="region-label">{{ getCurrentRegionLabel() }}</span>
+      <mat-icon class="dropdown-icon">arrow_drop_down</mat-icon>
+    </button>
+    <mat-menu #regionMenu="matMenu" class="region-menu">
+      @for (region of regions; track region.code) {
+        <button
+          mat-menu-item
+          (click)="onRegionChange(region.code)"
+          [class.active]="selectedRegion() === region.code"
+        >
+          <span>{{ region.label }}</span>
+        </button>
+      }
+    </mat-menu>
+
+    @if (!searchExpanded()) {
+      <!-- Search Icon Button (Collapsed) -->
+      <button
+        mat-icon-button
+        (click)="toggleSearch()"
+        aria-label="Search"
+        class="search-icon-button"
+      >
+        <mat-icon>search</mat-icon>
+      </button>
+    } @else {
+      <!-- Search Input Field (Expanded) -->
+      <div class="search-container">
+        <mat-form-field appearance="fill" class="search-field">
+          <input
+            matInput
+            type="text"
+            placeholder="Search..."
+            [(ngModel)]="searchQuery"
+            (input)="onSearch($any($event.target).value)"
+            (blur)="onSearchBlur()"
+            (keydown.escape)="closeSearch()"
+            class="search-input"
+            #searchInput
+          />
+          <mat-icon matPrefix>search</mat-icon>
+          @if (searchQuery) {
+            <button
+              mat-icon-button
+              matSuffix
+              (click)="closeSearch()"
+              aria-label="Clear search"
+              class="search-close-button"
+            >
+              <mat-icon>close</mat-icon>
+            </button>
+          }
+        </mat-form-field>
+      </div>
+    }
+  </div>
+</mat-toolbar>
+

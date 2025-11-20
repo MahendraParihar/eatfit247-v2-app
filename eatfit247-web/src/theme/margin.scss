@@ -1,0 +1,113 @@
+// EatFit247 Margin Utilities
+// Utility classes and mixins for consistent margin
+
+@use './variables' as *;
+
+// Margin Utility Classes
+.m-0 { margin: 0 !important; }
+.m-xs { margin: $spacing-xs !important; }
+.m-sm { margin: $spacing-sm !important; }
+.m-md { margin: $spacing-md !important; }
+.m-lg { margin: $spacing-lg !important; }
+.m-xl { margin: $spacing-xl !important; }
+.m-2xl { margin: $spacing-2xl !important; }
+.m-3xl { margin: $spacing-3xl !important; }
+.m-auto { margin: auto !important; }
+
+// Margin Top
+.mt-0 { margin-top: 0 !important; }
+.mt-xs { margin-top: $spacing-xs !important; }
+.mt-sm { margin-top: $spacing-sm !important; }
+.mt-md { margin-top: $spacing-md !important; }
+.mt-lg { margin-top: $spacing-lg !important; }
+.mt-xl { margin-top: $spacing-xl !important; }
+.mt-2xl { margin-top: $spacing-2xl !important; }
+.mt-3xl { margin-top: $spacing-3xl !important; }
+.mt-auto { margin-top: auto !important; }
+
+// Margin Right
+.mr-0 { margin-right: 0 !important; }
+.mr-xs { margin-right: $spacing-xs !important; }
+.mr-sm { margin-right: $spacing-sm !important; }
+.mr-md { margin-right: $spacing-md !important; }
+.mr-lg { margin-right: $spacing-lg !important; }
+.mr-xl { margin-right: $spacing-xl !important; }
+.mr-2xl { margin-right: $spacing-2xl !important; }
+.mr-3xl { margin-right: $spacing-3xl !important; }
+.mr-auto { margin-right: auto !important; }
+
+// Margin Bottom
+.mb-0 { margin-bottom: 0 !important; }
+.mb-xs { margin-bottom: $spacing-xs !important; }
+.mb-sm { margin-bottom: $spacing-sm !important; }
+.mb-md { margin-bottom: $spacing-md !important; }
+.mb-lg { margin-bottom: $spacing-lg !important; }
+.mb-xl { margin-bottom: $spacing-xl !important; }
+.mb-2xl { margin-bottom: $spacing-2xl !important; }
+.mb-3xl { margin-bottom: $spacing-3xl !important; }
+.mb-auto { margin-bottom: auto !important; }
+
+// Margin Left
+.ml-0 { margin-left: 0 !important; }
+.ml-xs { margin-left: $spacing-xs !important; }
+.ml-sm { margin-left: $spacing-sm !important; }
+.ml-md { margin-left: $spacing-md !important; }
+.ml-lg { margin-left: $spacing-lg !important; }
+.ml-xl { margin-left: $spacing-xl !important; }
+.ml-2xl { margin-left: $spacing-2xl !important; }
+.ml-3xl { margin-left: $spacing-3xl !important; }
+.ml-auto { margin-left: auto !important; }
+
+// Margin Horizontal (X-axis)
+.mx-0 { margin-left: 0 !important; margin-right: 0 !important; }
+.mx-xs { margin-left: $spacing-xs !important; margin-right: $spacing-xs !important; }
+.mx-sm { margin-left: $spacing-sm !important; margin-right: $spacing-sm !important; }
+.mx-md { margin-left: $spacing-md !important; margin-right: $spacing-md !important; }
+.mx-lg { margin-left: $spacing-lg !important; margin-right: $spacing-lg !important; }
+.mx-xl { margin-left: $spacing-xl !important; margin-right: $spacing-xl !important; }
+.mx-2xl { margin-left: $spacing-2xl !important; margin-right: $spacing-2xl !important; }
+.mx-3xl { margin-left: $spacing-3xl !important; margin-right: $spacing-3xl !important; }
+.mx-auto { margin-left: auto !important; margin-right: auto !important; }
+
+// Margin Vertical (Y-axis)
+.my-0 { margin-top: 0 !important; margin-bottom: 0 !important; }
+.my-xs { margin-top: $spacing-xs !important; margin-bottom: $spacing-xs !important; }
+.my-sm { margin-top: $spacing-sm !important; margin-bottom: $spacing-sm !important; }
+.my-md { margin-top: $spacing-md !important; margin-bottom: $spacing-md !important; }
+.my-lg { margin-top: $spacing-lg !important; margin-bottom: $spacing-lg !important; }
+.my-xl { margin-top: $spacing-xl !important; margin-bottom: $spacing-xl !important; }
+.my-2xl { margin-top: $spacing-2xl !important; margin-bottom: $spacing-2xl !important; }
+.my-3xl { margin-top: $spacing-3xl !important; margin-bottom: $spacing-3xl !important; }
+.my-auto { margin-top: auto !important; margin-bottom: auto !important; }
+
+// Margin Mixins
+@mixin margin($size) {
+  margin: $size;
+}
+
+@mixin margin-x($size) {
+  margin-left: $size;
+  margin-right: $size;
+}
+
+@mixin margin-y($size) {
+  margin-top: $size;
+  margin-bottom: $size;
+}
+
+@mixin margin-top($size) {
+  margin-top: $size;
+}
+
+@mixin margin-right($size) {
+  margin-right: $size;
+}
+
+@mixin margin-bottom($size) {
+  margin-bottom: $size;
+}
+
+@mixin margin-left($size) {
+  margin-left: $size;
+}
+

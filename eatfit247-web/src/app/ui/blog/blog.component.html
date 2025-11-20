@@ -1,0 +1,164 @@
+<div class="blog-page">
+  <!-- Hero Section -->
+  <section class="blog-hero">
+    <div class="hero-content">
+      <h1 class="hero-title">Blog</h1>
+      <p class="hero-subtitle">
+        Discover expert insights, success stories, and wellness tips from our
+        nutrition experts
+      </p>
+    </div>
+  </section>
+
+  <!-- Main Content -->
+  <div class="blog-container">
+    <!-- Blog Posts Section -->
+    <main class="blog-main">
+      <!-- Category Filter -->
+      @if (categories.length > 0) {
+        <div class="category-filter">
+          <button
+            mat-stroked-button
+            [class.active]="selectedCategory === null"
+            (click)="filterByCategory(null)"
+            class="category-btn"
+          >
+            All Posts
+          </button>
+          @for (category of categories; track category) {
+            <button
+              mat-stroked-button
+              [class.active]="selectedCategory === category"
+              (click)="filterByCategory(category)"
+              class="category-btn"
+            >
+              {{ category }}
+            </button>
+          }
+        </div>
+      }
+
+      <!-- Blog Posts Grid -->
+      <div class="blog-posts-grid">
+        @for (post of blogPosts; track post.id) {
+          <mat-card class="blog-card">
+            <!-- Blog Image Placeholder -->
+            <div class="blog-image-container">
+              <div class="blog-image-placeholder">
+                <mat-icon class="image-icon">article</mat-icon>
+              </div>
+              @if (post.category) {
+                <mat-chip class="category-chip">{{ post.category }}</mat-chip>
+              }
+            </div>
+
+            <mat-card-content class="blog-card-content">
+              <!-- Date and Read Time -->
+              <div class="blog-meta">
+                <span class="blog-date">
+                  <mat-icon class="meta-icon">calendar_today</mat-icon>
+                  {{ formatDate(post.publishDate) }}
+                </span>
+                @if (post.readTime) {
+                  <span class="blog-read-time">
+                    <mat-icon class="meta-icon">schedule</mat-icon>
+                    {{ post.readTime }} min read
+                  </span>
+                }
+              </div>
+
+              <!-- Blog Title -->
+              <h2 class="blog-title">
+                <a [routerLink]="getPostUrl(post)" class="blog-title-link">
+                  {{ post.title }}
+                </a>
+              </h2>
+
+              <!-- Blog Excerpt -->
+              <p class="blog-excerpt">{{ post.excerpt }}</p>
+
+              <!-- Blog Footer -->
+              <div class="blog-footer">
+                <div class="blog-author">
+                  <mat-icon class="author-icon">person</mat-icon>
+                  <span>{{ post.author }}</span>
+                </div>
+                <a
+                  mat-button
+                  color="primary"
+                  [routerLink]="getPostUrl(post)"
+                  class="read-more-btn"
+                >
+                  Read More
+                  <mat-icon>arrow_forward</mat-icon>
+                </a>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        }
+      </div>
+
+      <!-- Pagination -->
+      @if (totalPosts > pageSize) {
+        <mat-paginator
+          [length]="totalPosts"
+          [pageSize]="pageSize"
+          [pageIndex]="currentPage - 1"
+          [pageSizeOptions]="[6, 9, 12, 18]"
+          (page)="onPageChange($event)"
+          class="blog-paginator"
+        >
+        </mat-paginator>
+      }
+    </main>
+
+    <!-- Sidebar -->
+    <aside class="blog-sidebar">
+      <!-- Recent Posts -->
+      <mat-card class="sidebar-card">
+        <mat-card-header>
+          <mat-card-title>Recent Posts</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <ul class="recent-posts-list">
+            @for (post of recentPosts; track post.id) {
+              <li class="recent-post-item">
+                <a [routerLink]="getPostUrl(post)" class="recent-post-link">
+                  <div class="recent-post-content">
+                    <h3 class="recent-post-title">{{ post.title }}</h3>
+                    <span class="recent-post-date">
+                      {{ formatDate(post.publishDate) }}
+                    </span>
+                  </div>
+                </a>
+              </li>
+            }
+          </ul>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Categories -->
+      @if (categories.length > 0) {
+        <mat-card class="sidebar-card">
+          <mat-card-header>
+            <mat-card-title>Categories</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="categories-list">
+              @for (category of categories; track category) {
+                <button
+                  mat-stroked-button
+                  [class.active]="selectedCategory === category"
+                  (click)="filterByCategory(category)"
+                  class="sidebar-category-btn"
+                >
+                  {{ category }}
+                </button>
+              }
+            </div>
+          </mat-card-content>
+        </mat-card>
+      }
+    </aside>
+  </div>
+</div>

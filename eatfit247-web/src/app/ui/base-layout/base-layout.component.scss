@@ -1,0 +1,157 @@
+@use '../../../theme/variables' as *;
+
+.base-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  overflow: hidden;
+  background-color: #ffffff;
+}
+
+.sidenav-container {
+  flex: 1;
+  overflow: hidden;
+  background-color: #ffffff;
+}
+
+// Override Material drawer container background
+::ng-deep .mat-drawer-container {
+  background-color: #ffffff !important;
+}
+
+::ng-deep mat-sidenav-container {
+  background-color: #ffffff !important;
+}
+
+::ng-deep .mat-drawer-backdrop {
+  background-color: rgba(0, 0, 0, 0.5) !important;
+}
+
+.sidenav {
+  width: 280px;
+  border-right: $border-width-thin $border-style-solid var(--mat-sys-outline-variant);
+}
+
+.main-content {
+  overflow-y: auto;
+  overflow-x: hidden;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.content-wrapper {
+  width: 100%;
+}
+
+// Mobile: Sidenav Navigation
+mat-nav-list {
+  padding-top: $spacing-sm;
+  
+  // Uppercase for all menu items
+  a, span[matListItemTitle] {
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 0.875rem;
+  }
+}
+
+mat-nav-list a {
+  border-radius: $border-radius-md;
+  margin: $spacing-xs $spacing-sm;
+  z-index: 0;
+  position: relative;
+}
+
+mat-nav-list a.active {
+  background-color: var(--mat-sys-primary-container);
+  color: var(--mat-sys-on-primary-container);
+}
+
+mat-nav-list a:hover:not(.active) {
+  background-color: var(--mat-sys-surface-variant);
+}
+
+// Expansion panel for nested navigation (Mobile) - Flat styling matching regular menu items
+.nav-expansion-panel {
+  box-shadow: none !important;
+  border-radius: $border-radius-md !important;
+  margin: $spacing-xs $spacing-sm;
+  background-color: transparent !important;
+  z-index: 0 !important;
+  position: relative;
+
+  :host ::ng-deep .mat-expansion-panel-header {
+    padding: 0 $spacing-md;
+    height: 48px;
+    border-radius: $border-radius-md;
+    background-color: transparent !important;
+    
+    mat-panel-title {
+      span {
+        font-weight: normal;
+        font-size: inherit;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+    }
+    
+    &:hover {
+      background-color: var(--mat-sys-surface-variant) !important;
+    }
+  }
+
+  :host ::ng-deep .mat-expansion-panel-body {
+    padding: 0;
+  }
+
+  // Match active state styling when expanded
+  :host ::ng-deep &.mat-expanded {
+    box-shadow: none !important;
+    z-index: 0 !important;
+    
+    .mat-expansion-panel-header {
+      background-color: var(--mat-sys-primary-container) !important;
+      color: var(--mat-sys-on-primary-container) !important;
+    }
+  }
+}
+
+.sub-nav-list {
+  padding: 0;
+}
+
+.sub-nav-item {
+  padding-left: $spacing-md !important;
+  font-size: 0.875rem;
+  
+  // Uppercase for sub-menu items
+  span[matListItemTitle] {
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  
+  // Remove icon placeholder space
+  :host ::ng-deep .mat-mdc-list-item-icon {
+    display: none !important;
+  }
+  
+  :host ::ng-deep .mdc-list-item__start {
+    display: none !important;
+    width: 0 !important;
+    margin: 0 !important;
+  }
+  
+  // Remove any icon spacing
+  :host ::ng-deep .mdc-list-item__content {
+    padding-left: 0 !important;
+  }
+}
+
+// Mobile responsive adjustments
+@media (max-width: 768px) {
+  .header-toolbar {
+    padding: 0 $spacing-sm;
+  }
+}
+
