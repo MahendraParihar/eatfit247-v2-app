@@ -81,7 +81,8 @@
     }
 
     .data-section {
-      mat-icon {
+      mat-icon,
+      .mat-mdc-icon {
         margin-right: 12px;
         width: 18px !important;
         height: 18px !important;

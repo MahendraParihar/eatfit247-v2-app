@@ -67,6 +67,22 @@ button {
   }
 }
 
+/* Material 3 Button Focus Styles */
+::ng-deep {
+  .mat-mdc-button,
+  .mat-mdc-raised-button,
+  .mat-mdc-flat-button,
+  .mat-mdc-stroked-button,
+  .mat-mdc-icon-button,
+  .mat-mdc-fab,
+  .mat-mdc-mini-fab {
+    &:focus {
+      outline: 0 !important;
+      border: 0 !important;
+    }
+  }
+}
+
 mat-card {
   transition: box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms !important;
 }
@@ -390,6 +406,7 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
+/* Legacy FAB button styles */
 .mat-fab.mat-primary, .mat-mini-fab.mat-primary {
   background: #3f51b5 !important;
   background: linear-gradient(45deg, #3f51b5 0%, #fb7572 80%) !important;
@@ -414,9 +431,49 @@ h1, h2, h3, h4, h5, h6 {
   @extend .waves-effect;
 }
 
+/* Material 3 FAB button styles */
+::ng-deep {
+  .mat-mdc-fab.mat-primary,
+  .mat-mdc-mini-fab.mat-primary {
+    background: #3f51b5 !important;
+    background: linear-gradient(45deg, #3f51b5 0%, #fb7572 80%) !important;
+    background: -webkit-linear-gradient(45deg, #3f51b5 0%, #fb7572 80%) !important;
+    background: -moz-linear-gradient(45deg, #3f51b5 0%, #fb7572 80%) !important;
+    @extend .waves-effect;
+  }
+
+  .mat-mdc-fab.mat-warn,
+  .mat-mdc-mini-fab.mat-warn {
+    background: #ff5252 !important;
+    background: linear-gradient(45deg, #ff5252 0%, #f48fb1 80%) !important;
+    background: -webkit-linear-gradient(45deg, #ff5252 0%, #f48fb1 80%) !important;
+    background: -moz-linear-gradient(45deg, #ff5252 0%, #f48fb1 80%) !important;
+    @extend .waves-effect;
+  }
+
+  .mat-mdc-fab.mat-accent,
+  .mat-mdc-mini-fab.mat-accent {
+    background: #ff5252 !important;
+    background: linear-gradient(45deg, #ff5252 0%, #f48fb1 80%) !important;
+    background: -webkit-linear-gradient(45deg, #ff5252 0%, #f48fb1 80%) !important;
+    background: -moz-linear-gradient(45deg, #ff5252 0%, #f48fb1 80%) !important;
+    @extend .waves-effect;
+  }
+}
+
 .round-btn {
   border-radius: 25px !important;
   @extend .waves-effect;
+  
+  /* Material 3 support */
+  &.mat-mdc-button,
+  &.mat-mdc-raised-button,
+  &.mat-mdc-flat-button,
+  &.mat-mdc-stroked-button,
+  &.mat-mdc-outlined-button,
+  &.mat-mdc-icon-button {
+    border-radius: 25px !important;
+  }
 }
 
 .gradient-shadow {
@@ -450,18 +507,51 @@ h1, h2, h3, h4, h5, h6 {
   @extend .gradient-blue-green;
   color: white !important;
   @extend .waves-effect;
+  
+  /* Material 3 support */
+  &.mat-mdc-button,
+  &.mat-mdc-raised-button,
+  &.mat-mdc-flat-button,
+  &.mat-mdc-stroked-button,
+  &.mat-mdc-outlined-button {
+    @extend .gradient-blue-green;
+    color: white !important;
+    border: none !important;
+  }
 }
 
 .red-gradient-btn {
   @extend .gradient-red;
   color: white !important;
   @extend .waves-effect;
+  
+  /* Material 3 support */
+  &.mat-mdc-button,
+  &.mat-mdc-raised-button,
+  &.mat-mdc-flat-button,
+  &.mat-mdc-stroked-button,
+  &.mat-mdc-outlined-button {
+    @extend .gradient-red;
+    color: white !important;
+    border: none !important;
+  }
 }
 
 .yellow-gradient-btn {
   @extend .gradient-orange-yellow;
   color: white !important;
   @extend .waves-effect;
+  
+  /* Material 3 support */
+  &.mat-mdc-button,
+  &.mat-mdc-raised-button,
+  &.mat-mdc-flat-button,
+  &.mat-mdc-stroked-button,
+  &.mat-mdc-outlined-button {
+    @extend .gradient-orange-yellow;
+    color: white !important;
+    border: none !important;
+  }
 }
 
 .green-gradient-btn {
@@ -487,6 +577,203 @@ h1, h2, h3, h4, h5, h6 {
   color: white !important;
 }
 
+/* Material 3 Button Styles */
+::ng-deep {
+  /* Base button styles */
+  .mat-mdc-button,
+  .mat-mdc-raised-button,
+  .mat-mdc-flat-button,
+  .mat-mdc-stroked-button,
+  .mat-mdc-outlined-button {
+    text-transform: uppercase !important;
+    font-weight: 500;
+    letter-spacing: 0.0892857143em;
+    min-width: 64px;
+    padding: 0 16px;
+    border-radius: 4px;
+    
+    &:disabled {
+      opacity: 0.38;
+      cursor: not-allowed;
+    }
+  }
+  
+  /* Icon button styles */
+  .mat-mdc-icon-button {
+    padding: 8px;
+    width: 40px;
+    height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    
+    &:disabled {
+      opacity: 0.38;
+      cursor: not-allowed;
+    }
+  }
+  
+  /* FAB button styles */
+  .mat-mdc-fab {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    padding: 0;
+    min-width: 0;
+    
+    &:disabled {
+      opacity: 0.38;
+      cursor: not-allowed;
+    }
+  }
+  
+  /* Mini FAB button styles */
+  .mat-mdc-mini-fab {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    padding: 0;
+    min-width: 0;
+    
+    &:disabled {
+      opacity: 0.38;
+      cursor: not-allowed;
+    }
+  }
+  
+  /* Button with icon alignment */
+  .mat-mdc-button,
+  .mat-mdc-raised-button,
+  .mat-mdc-flat-button,
+  .mat-mdc-stroked-button,
+  .mat-mdc-outlined-button {
+    mat-icon,
+    .mat-mdc-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 4px;
+    }
+  }
+  
+  /* Custom button classes for Material 3 */
+  .mat-mdc-button.round-btn,
+  .mat-mdc-raised-button.round-btn,
+  .mat-mdc-flat-button.round-btn,
+  .mat-mdc-stroked-button.round-btn,
+  .mat-mdc-outlined-button.round-btn {
+    border-radius: 25px !important;
+  }
+  
+  .mat-mdc-button.gradient-btn,
+  .mat-mdc-raised-button.gradient-btn,
+  .mat-mdc-flat-button.gradient-btn {
+    min-width: 120px !important;
+    color: white !important;
+  }
+  
+  /* Status button styles for Material 3 */
+  .mat-mdc-button.blue-gradient-btn,
+  .mat-mdc-raised-button.blue-gradient-btn,
+  .mat-mdc-flat-button.blue-gradient-btn {
+    background: linear-gradient(45deg, #26c6da 0%, #00acc1 80%) !important;
+    background: -webkit-linear-gradient(45deg, #26c6da 0%, #00acc1 80%) !important;
+    background: -moz-linear-gradient(45deg, #26c6da 0%, #00acc1 80%) !important;
+    color: white !important;
+    border: none !important;
+  }
+  
+  .mat-mdc-button.red-gradient-btn,
+  .mat-mdc-raised-button.red-gradient-btn,
+  .mat-mdc-flat-button.red-gradient-btn {
+    background: linear-gradient(45deg, #ff5252 0%, #f48fb1 80%) !important;
+    background: -webkit-linear-gradient(45deg, #ff5252 0%, #f48fb1 80%) !important;
+    background: -moz-linear-gradient(45deg, #ff5252 0%, #f48fb1 80%) !important;
+    color: white !important;
+    border: none !important;
+  }
+  
+  .mat-mdc-button.yellow-gradient-btn,
+  .mat-mdc-raised-button.yellow-gradient-btn,
+  .mat-mdc-flat-button.yellow-gradient-btn {
+    background: linear-gradient(45deg, #ffc107 0%, #ff9800 80%) !important;
+    background: -webkit-linear-gradient(45deg, #ffc107 0%, #ff9800 80%) !important;
+    background: -moz-linear-gradient(45deg, #ffc107 0%, #ff9800 80%) !important;
+    color: white !important;
+    border: none !important;
+  }
+  
+  .mat-mdc-button.success-btn,
+  .mat-mdc-raised-button.success-btn,
+  .mat-mdc-flat-button.success-btn {
+    background: #7cd1f9 !important;
+    color: white !important;
+    border: none !important;
+  }
+  
+  .mat-mdc-button.warning-btn,
+  .mat-mdc-button.error-btn,
+  .mat-mdc-raised-button.warning-btn,
+  .mat-mdc-raised-button.error-btn,
+  .mat-mdc-flat-button.warning-btn,
+  .mat-mdc-flat-button.error-btn {
+    background: #ff5a92 !important;
+    color: white !important;
+    border: none !important;
+  }
+  
+  .mat-mdc-button.light-btn,
+  .mat-mdc-raised-button.light-btn,
+  .mat-mdc-flat-button.light-btn {
+    background: #efefef !important;
+    border: none !important;
+  }
+  
+  /* Status button opacity and hover effects for Material 3 */
+  .mat-mdc-button.blue-gradient-btn,
+  .mat-mdc-button.red-gradient-btn,
+  .mat-mdc-button.yellow-gradient-btn,
+  .mat-mdc-raised-button.blue-gradient-btn,
+  .mat-mdc-raised-button.red-gradient-btn,
+  .mat-mdc-raised-button.yellow-gradient-btn,
+  .mat-mdc-flat-button.blue-gradient-btn,
+  .mat-mdc-flat-button.red-gradient-btn,
+  .mat-mdc-flat-button.yellow-gradient-btn {
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+    
+    &:hover:not(:disabled) {
+      opacity: 1;
+    }
+    
+    &:disabled {
+      opacity: 0.38;
+    }
+  }
+  
+  /* Button ripple effects */
+  .mat-mdc-button-ripple,
+  .mat-mdc-button-persistent-ripple {
+    border-radius: inherit;
+  }
+  
+  /* Legacy button support */
+  .mat-button,
+  .mat-raised-button,
+  .mat-flat-button,
+  .mat-stroked-button,
+  .mat-icon-button {
+    text-transform: uppercase !important;
+    
+    &:focus {
+      outline: 0 !important;
+      border: 0 !important;
+      box-shadow: none !important;
+    }
+  }
+}
+
 /*  ------------------- End Button ---------------------- */
 
 /*  ------------------- Start Icon ---------------------- */
@@ -494,6 +781,121 @@ h1, h2, h3, h4, h5, h6 {
   width: 20px !important;
   height: 20px !important;
   font-size: 18px !important;
+}
+
+/* Material 3 Icon Styles */
+::ng-deep {
+  /* Legacy Material Icon Styles */
+  mat-icon,
+  .mat-icon {
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+    line-height: 24px;
+    display: inline-block;
+    
+    /* Icon size variants */
+    &.icon-18 {
+      width: 18px !important;
+      height: 18px !important;
+      font-size: 18px !important;
+      line-height: 18px !important;
+    }
+    
+    /* Icon in buttons */
+    button &,
+    .mat-button &,
+    .mat-icon-button &,
+    .mat-fab &,
+    .mat-mini-fab &,
+    .mat-raised-button &,
+    .mat-flat-button & {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+  }
+  
+  /* Material 3 Icon Styles */
+  .mat-mdc-icon {
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+    line-height: 24px;
+    display: inline-block;
+    
+    /* Icon size variants */
+    &.icon-18 {
+      width: 18px !important;
+      height: 18px !important;
+      font-size: 18px !important;
+      line-height: 18px !important;
+    }
+  }
+  
+  /* Icon button styles for Material 3 */
+  .mat-mdc-icon-button {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    
+    .mat-mdc-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    /* Remove focus overlay if needed */
+    .mat-mdc-button-persistent-ripple {
+      display: none;
+    }
+  }
+  
+  /* Icon in Material 3 buttons */
+  .mat-mdc-button,
+  .mat-mdc-raised-button,
+  .mat-mdc-flat-button,
+  .mat-mdc-fab,
+  .mat-mdc-mini-fab {
+    mat-icon,
+    .mat-mdc-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 4px;
+    }
+  }
+  
+  /* Icon in list items */
+  [matListItemIcon],
+  [mat-list-icon] {
+    mat-icon,
+    .mat-icon,
+    .mat-mdc-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+  }
+  
+  /* Icon color variants */
+  mat-icon[color="primary"],
+  .mat-icon[color="primary"],
+  .mat-mdc-icon[color="primary"] {
+    color: rgba(63, 81, 181, 0.87);
+  }
+  
+  mat-icon[color="accent"],
+  .mat-icon[color="accent"],
+  .mat-mdc-icon[color="accent"] {
+    color: rgba(255, 64, 129, 0.87);
+  }
+  
+  mat-icon[color="warn"],
+  .mat-icon[color="warn"],
+  .mat-mdc-icon[color="warn"] {
+    color: rgba(244, 67, 54, 0.87);
+  }
 }
 
 /*  ------------------- End Icon ---------------------- */
@@ -1096,116 +1498,311 @@ h1, h2, h3, h4, h5, h6 {
     justify-content: flex-end;
   }
 
+  /* Legacy Material table styles (keep for backward compatibility) */
   .mat-table {
     height: calc(100vh - 370px) !important;
     overflow-y: scroll;
+    width: 100%;
+    background-color: transparent;
+    display: table;
   }
 
-  .mat-header-row, .mat-row {
-    /*border: 1px solid rgba(0, 0, 0, .12) !important;*/
+  /* Legacy row styles */
+  .mat-header-row,
+  .mat-row {
     display: table-row;
   }
 
+  /* Legacy header row styles */
   .mat-header-row {
     position: sticky !important;
     top: 0 !important;
     z-index: 100 !important;
-    /*background-color: #f6f6fb;*/
     text-transform: uppercase;
     background-color: rgb(245, 245, 247);
   }
 
-  .mat-row, .mat-footer-row, .mat-header-row {
+  /* Legacy row height and border styles */
+  .mat-row,
+  .mat-footer-row,
+  .mat-header-row {
     min-height: 40px !important;
     border-bottom: 1px solid rgba(0, 0, 0, .12);
   }
 
-  .mat-cell, .mat-header-cell {
-    /*border-right: 1px solid rgba(0, 0, 0, .12) !important;*/
+  /* Legacy cell styles */
+  .mat-cell,
+  .mat-header-cell {
     padding: 0.2rem 0.7rem;
     vertical-align: middle;
     word-break: break-word;
+    display: table-cell;
   }
 
+  /* Legacy header cell styles */
   .mat-header-cell {
-    display: flex !important;
-    /*justify-content: center;*/
+    display: table-cell !important;
     font-weight: 500 !important;
-    /*color: #6b6f82 !important;*/
   }
 
+  /* Legacy cell styles */
   .mat-cell {
     font-weight: 400 !important;
-    /*color: #6b6f82 !important;*/
+    
     .link {
       color: #3949ab;
       cursor: pointer;
       text-decoration: none;
+      
+      &:hover {
+        text-decoration: underline;
+      }
     }
   }
 
-  .mat-column-image {
+  /* Material 3 table styles */
+  .mat-mdc-table {
+    height: calc(100vh - 370px) !important;
+    overflow-y: scroll;
+    width: 100%;
+    background-color: transparent;
+  }
+
+  /* Material 3 row styles */
+  .mat-mdc-header-row,
+  .mat-mdc-row {
+    display: table-row;
+    
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.02);
+    }
+  }
+
+  /* Material 3 header row styles */
+  .mat-mdc-header-row {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 100 !important;
+    text-transform: uppercase;
+    background-color: rgb(245, 245, 247);
+  }
+
+  /* Material 3 row height and border styles */
+  .mat-mdc-row,
+  .mat-mdc-footer-row,
+  .mat-mdc-header-row {
+    min-height: 40px !important;
+    border-bottom: 1px solid rgba(0, 0, 0, .12);
+  }
+
+  /* Material 3 cell styles */
+  .mat-mdc-cell,
+  .mat-mdc-header-cell {
+    padding: 0.2rem 0.7rem;
+    vertical-align: middle;
+    word-break: break-word;
+    display: table-cell;
+  }
+
+  /* Material 3 header cell styles */
+  .mat-mdc-header-cell {
+    font-weight: 500 !important;
+    font-size: 12px;
+    color: rgba(0, 0, 0, 0.87);
+  }
+
+  /* Material 3 cell styles */
+  .mat-mdc-cell {
+    font-weight: 400 !important;
+    font-size: 14px;
+    color: rgba(0, 0, 0, 0.87);
+    
+    .link {
+      color: #3949ab;
+      cursor: pointer;
+      text-decoration: none;
+      
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+
+  /* Column-specific styles - works for both Material 3 and legacy */
+  .mat-column-image,
+  .mat-mdc-column-image {
     img {
       width: 40px;
       height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
     }
   }
 
-  .mat-column-seqNo {
+  .mat-column-seqNo,
+  .mat-mdc-column-seqNo {
     min-width: 40px;
     max-width: 40px;
   }
 
-  .mat-column-selected {
+  .mat-column-selected,
+  .mat-mdc-column-selected {
     min-width: 60px;
     max-width: 60px;
   }
 
-  .mat-column-image {
+  .mat-column-image,
+  .mat-mdc-column-image {
     min-width: 40px;
     max-width: 40px;
   }
 
-  .mat-column-contactNumber {
+  .mat-column-contactNumber,
+  .mat-mdc-column-contactNumber {
     width: 115px;
     min-width: 115px;
     max-width: 115px;
   }
 
-  .mat-column-action {
-    width: 75px;
-    max-width: 75px;
-    justify-content: center;
-
-    /*.mat-icon {
-      width: 18px !important;
-      height: 18px !important;
-    }*/
+  .mat-column-action,
+  .mat-mdc-column-action {
+    width: auto;
+    min-width: 140px;
+    max-width: none;
+    text-align: center;
   }
 
-  .mat-column-status {
+  .mat-column-status,
+  .mat-mdc-column-status {
     width: 95px;
     max-width: 95px;
     justify-content: center;
   }
 
-  .mat-column-startDate, .mat-column-endDate {
+  .mat-column-startDate,
+  .mat-column-endDate,
+  .mat-mdc-column-startDate,
+  .mat-mdc-column-endDate {
     width: 80px;
     max-width: 80px;
     justify-content: center;
   }
 
-  .mat-column-createdBy, .mat-column-updatedBy {
+  .mat-column-createdBy,
+  .mat-column-updatedBy,
+  .mat-mdc-column-createdBy,
+  .mat-mdc-column-updatedBy {
     width: 120px;
     max-width: 120px;
   }
 
-  .mat-column-updatedAt, .mat-column-createdAt {
+  .mat-column-updatedAt,
+  .mat-column-createdAt,
+  .mat-mdc-column-updatedAt,
+  .mat-mdc-column-createdAt {
     width: 160px;
     min-width: 160px;
     max-width: 160px;
   }
 }
+
+/*  ------------------- Start Table (Material 3 Global) ---------------------- */
+::ng-deep {
+  /* Legacy Material Table Global Styles */
+  mat-table,
+  .mat-table {
+    width: 100%;
+    background-color: transparent;
+    display: table;
+    border-collapse: collapse;
+  }
+  
+  /* Legacy row hover effects */
+  .mat-row {
+    transition: background-color 0.2s ease;
+    
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.04);
+    }
+  }
+  
+  /* Action column cell styles - ensure buttons are on one line */
+  .mat-cell.mat-column-action,
+  .mat-mdc-cell.mat-mdc-column-action {
+    text-align: center;
+    white-space: nowrap;
+    
+    button {
+      display: inline-block;
+      margin: 0 2px;
+      vertical-align: middle;
+    }
+  }
+  
+  .mat-header-cell.mat-column-action,
+  .mat-mdc-header-cell.mat-mdc-column-action {
+    text-align: center;
+  }
+  
+  /* Material 3 Table Global Styles */
+  .mat-mdc-table {
+    width: 100%;
+    background-color: transparent;
+    border-collapse: collapse;
+  }
+  
+  /* Table wrapper */
+  .mat-mdc-table-container {
+    overflow-x: auto;
+    overflow-y: auto;
+  }
+  
+  /* Sticky header support */
+  .mat-mdc-header-row {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background-color: rgb(245, 245, 247);
+  }
+  
+  /* Row hover effects */
+  .mat-mdc-row {
+    transition: background-color 0.2s ease;
+    
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.04);
+    }
+    
+    &.mat-mdc-row-selected {
+      background-color: rgba(63, 81, 181, 0.12);
+    }
+  }
+  
+  /* Alternating row colors (optional) */
+  .mat-mdc-row:nth-child(even) {
+    background-color: rgba(0, 0, 0, 0.01);
+  }
+  
+  /* Cell alignment helpers */
+  .mat-mdc-header-cell,
+  .mat-mdc-cell {
+    &[align="center"] {
+      text-align: center;
+      justify-content: center;
+    }
+    
+    &[align="right"] {
+      text-align: right;
+      justify-content: flex-end;
+    }
+    
+    &[align="left"] {
+      text-align: left;
+      justify-content: flex-start;
+    }
+  }
+}
+/*  ------------------- End Table (Material 3 Global) ---------------------- */
 
 /*  ------------------- End Table ---------------------- */
 
