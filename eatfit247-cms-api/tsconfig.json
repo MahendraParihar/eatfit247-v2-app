@@ -1,4 +1,5 @@
 {
+  "compileOnSave": false,
   "compilerOptions": {
     "module": "commonjs",
     "declaration": true,
@@ -7,6 +8,7 @@
     "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,
     "target": "es2020",
+    "rootDir": ".",
     "sourceMap": true,
     "outDir": "./dist",
     "baseUrl": "./",
@@ -16,7 +18,16 @@
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
-    "noFallthroughCasesInSwitch": false
-    
+    "noFallthroughCasesInSwitch": false,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "paths": {
+      "@eatfit247-common/lib": ["../shared-lib/dist/index.js"]
+    },
+    "references": [
+      {
+        "path": "../shared-lib"
+      }
+    ]
   }
 }
