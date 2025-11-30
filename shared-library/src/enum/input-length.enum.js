@@ -1,0 +1,34 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.InputLengthEnum = void 0;
+var InputLengthEnum;
+(function (InputLengthEnum) {
+    InputLengthEnum[InputLengthEnum["MIN_NAME"] = 2] = "MIN_NAME";
+    InputLengthEnum[InputLengthEnum["MAX_NAME"] = 100] = "MAX_NAME";
+    InputLengthEnum[InputLengthEnum["MAX_EMAIL"] = 100] = "MAX_EMAIL";
+    InputLengthEnum[InputLengthEnum["MAX_CONTACT_NUMBER"] = 15] = "MAX_CONTACT_NUMBER";
+    InputLengthEnum[InputLengthEnum["CHAR_2"] = 2] = "CHAR_2";
+    InputLengthEnum[InputLengthEnum["CHAR_5"] = 5] = "CHAR_5";
+    InputLengthEnum[InputLengthEnum["CHAR_10"] = 10] = "CHAR_10";
+    InputLengthEnum[InputLengthEnum["CHAR_20"] = 20] = "CHAR_20";
+    InputLengthEnum[InputLengthEnum["CHAR_50"] = 50] = "CHAR_50";
+    InputLengthEnum[InputLengthEnum["CHAR_60"] = 60] = "CHAR_60";
+    InputLengthEnum[InputLengthEnum["CHAR_100"] = 100] = "CHAR_100";
+    InputLengthEnum[InputLengthEnum["CHAR_160"] = 160] = "CHAR_160";
+    InputLengthEnum[InputLengthEnum["CHAR_200"] = 200] = "CHAR_200";
+    InputLengthEnum[InputLengthEnum["CHAR_250"] = 250] = "CHAR_250";
+    InputLengthEnum[InputLengthEnum["CHAR_500"] = 500] = "CHAR_500";
+    InputLengthEnum[InputLengthEnum["CHAR_1000"] = 1000] = "CHAR_1000";
+    InputLengthEnum[InputLengthEnum["OTP"] = 6] = "OTP";
+    InputLengthEnum[InputLengthEnum["MIN_CONTACT_NUMBER"] = 6] = "MIN_CONTACT_NUMBER";
+    InputLengthEnum[InputLengthEnum["MAX_COUNTRY_CODE"] = 4] = "MAX_COUNTRY_CODE";
+    InputLengthEnum[InputLengthEnum["MAX_PROFILE_DESCRIPTION"] = 1000] = "MAX_PROFILE_DESCRIPTION";
+    InputLengthEnum[InputLengthEnum["MAX_HOBBIES"] = 500] = "MAX_HOBBIES";
+    InputLengthEnum[InputLengthEnum["MAX_PASSWORD"] = 16] = "MAX_PASSWORD";
+    InputLengthEnum[InputLengthEnum["MIN_PASSWORD"] = 6] = "MIN_PASSWORD";
+    InputLengthEnum[InputLengthEnum["MAX_ADDRESS"] = 200] = "MAX_ADDRESS";
+    InputLengthEnum[InputLengthEnum["MIN_ADDRESS"] = 2] = "MIN_ADDRESS";
+    InputLengthEnum[InputLengthEnum["PIN_CODE"] = 6] = "PIN_CODE";
+    InputLengthEnum[InputLengthEnum["IP"] = 21] = "IP";
+})(InputLengthEnum || (exports.InputLengthEnum = InputLengthEnum = {}));
+//# sourceMappingURL=input-length.enum.js.map

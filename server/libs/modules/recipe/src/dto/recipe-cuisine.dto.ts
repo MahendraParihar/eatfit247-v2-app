@@ -1,0 +1,24 @@
+import { IsBoolean, IsNotEmpty, IsOptional, MaxLength, MinLength, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
+import { InputLengthEnum, IManageRecipeCuisine } from 'eatfit247-shared-lib';
+import { MediaUploadDto } from '@server/common';
+
+export class CreateRecipeCuisineDto implements IManageRecipeCuisine {
+  @MinLength(InputLengthEnum.CHAR_2)
+  @MaxLength(InputLengthEnum.CHAR_100)
+  @IsNotEmpty()
+  recipeCuisine: string;
+
+  @IsNotEmpty()
+  @IsBoolean()
+  active: boolean;
+
+  @IsOptional()
+  @ValidateNested({ each: true })
+  @Type(() => MediaUploadDto)
+  uploadFiles?: MediaUploadDto[];
+
+  recipeCuisineId?: number;
+  imagePath?: any;
+}
+
