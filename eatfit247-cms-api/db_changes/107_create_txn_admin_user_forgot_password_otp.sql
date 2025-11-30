@@ -6,13 +6,13 @@ DROP TABLE IF EXISTS txn_admin_user_forgot_password_otp;
 CREATE TABLE IF NOT EXISTS txn_admin_user_forgot_password_otp
 (
     forgot_password_otp_id SERIAL      NOT NULL PRIMARY KEY,
-    admin_id              INT         NOT NULL,
-    otp                   VARCHAR(6)  NOT NULL,
-    active                BOOLEAN     NOT NULL DEFAULT true,
-    created_at            TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at            TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    created_ip            VARCHAR(50) NULL,
-    CONSTRAINT fk_txn_admin_user_forgot_password_otp_mst_admin_admin_id 
+    admin_id               INT         NOT NULL,
+    otp                    VARCHAR(6)  NOT NULL,
+    active                 BOOLEAN     NOT NULL DEFAULT true,
+    created_at             TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at             TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_ip             VARCHAR(50) NULL,
+    CONSTRAINT fk_txn_admin_user_forgot_password_otp_mst_admin_admin_id
         FOREIGN KEY (admin_id) REFERENCES mst_admin_users (admin_id)
 );
 
@@ -31,3 +31,70 @@ CREATE INDEX ix_txn_admin_user_forgot_password_otp_created_at
 -- Create composite index for finding active OTP by admin_id and otp
 CREATE INDEX ix_txn_admin_user_forgot_password_otp_admin_otp_active
     ON txn_admin_user_forgot_password_otp (admin_id, otp, active);
+
+alter table public.mst_configs
+    drop column field_type_id;
+
+alter table public.mst_configs
+    add column module varchar(20);
+
+create table public.mst_label
+(
+    label_id      SERIAL                 NOT NULL PRIMARY KEY,
+    label_key     character varying(100) not null,
+    label         text,
+    applicability character varying(10)
+);
+create unique index mst_label_label_key_applicability_uindex on mst_label using btree (label_key, applicability);
+
+
+alter table txn_blogs
+    add column meta_title varchar(60);
+alter table txn_blogs
+    add column meta_description varchar(160);
+
+alter table mst_programs
+    add column meta_title varchar(60);
+alter table mst_programs
+    add column meta_description varchar(160);
+
+alter table mst_recipes
+    add column meta_title varchar(60);
+alter table mst_recipes
+    add column meta_description varchar(160);
+
+DROP TABLE IF EXISTS txn_admin_refresh_tokens;
+
+CREATE TABLE IF NOT EXISTS txn_admin_refresh_tokens
+(
+    admin_refresh_token_id SERIAL      NOT NULL PRIMARY KEY,
+    admin_id               INT         NOT NULL,
+    token_hash             TEXT        NOT NULL,
+    expires_at             date        not null,
+    revoked                boolean     not null default false,
+    created_at             TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_ip             VARCHAR(50) NULL,
+    CONSTRAINT fk_txn_admin_password_reset_tokens_admin_id
+        FOREIGN KEY (admin_id) REFERENCES mst_admin_users (admin_id)
+);
+
+DROP TABLE IF EXISTS txn_admin_password_reset_tokens;
+
+CREATE TABLE IF NOT EXISTS txn_admin_password_reset_tokens
+(
+    admin_password_reset_token_id SERIAL      NOT NULL PRIMARY KEY,
+    admin_id                      INT         NOT NULL,
+    token_hash                    TEXT        NOT NULL,
+    expires_at                    date        not null,
+    used                          boolean     not null default false,
+    created_at                    TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_ip                    VARCHAR(50) NULL,
+    CONSTRAINT fk_txn_admin_password_reset_tokens_admin_id
+        FOREIGN KEY (admin_id) REFERENCES mst_admin_users (admin_id)
+);
+
+INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
+VALUES (DEFAULT, 'JWT_ACCESS_SECRET', 'GrdlksuiFEFjbwiuwkjbcwfdkjhsa&UFehjc7iuidy3jn89dy478', 'Auth');
+
+INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
+VALUES (DEFAULT, 'JWT_REFRESH_SECRET', 'GrdlksuiFEFjbwiuwkjbcwfdkjhsa&dkldg74682jsadkfly478', 'Auth');
