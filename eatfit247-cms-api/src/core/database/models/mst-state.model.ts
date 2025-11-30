@@ -3,7 +3,8 @@ import { MstAdminUser } from './mst-admin-user.model';
 import { MstCountries } from './mst-countries.model';
 
 @Table({
-  modelName: 'mst_state',
+  freezeTableName: true,
+  modelName: 'mst_states',
   schema: 'public',
 })
 export class MstState extends Model<MstState> {
@@ -64,7 +65,7 @@ export class MstState extends Model<MstState> {
     allowNull: false,
     field: 'created_at',
   })
-  createdAt: Date;
+  declare createdAt: Date;
 
   @BelongsTo(() => MstAdminUser, {
     foreignKey: 'modifiedBy',
@@ -82,7 +83,7 @@ export class MstState extends Model<MstState> {
     allowNull: false,
     field: 'updated_at',
   })
-  updatedAt: Date;
+  declare updatedAt: Date;
 
   @Column({
     allowNull: false,

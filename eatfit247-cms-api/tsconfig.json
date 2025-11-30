@@ -7,7 +7,8 @@
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,
-    "target": "es2020",
+    "target": "ES2022",
+    "lib": ["ES2022"],
     "rootDir": ".",
     "sourceMap": true,
     "outDir": "./dist",
@@ -21,6 +22,7 @@
     "noFallthroughCasesInSwitch": false,
     "esModuleInterop": true,
     "resolveJsonModule": true,
+    "moduleResolution": "node",
     "paths": {
       "@eatfit247-common/lib": ["../shared-lib/dist/index.js"]
     },

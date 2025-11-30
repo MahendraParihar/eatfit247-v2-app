@@ -4,7 +4,8 @@ import { TxnMember } from './txn-member.model';
 import { TxnMemberPayment } from './txn-member-payment.model';
 
 @Table({
-  modelName: 'txn_member_diet_plan',
+  freezeTableName: true,
+  modelName: 'txn_member_diet_plans',
   schema: 'public',
   indexes: [
     {
@@ -128,7 +129,7 @@ export class TxnMemberDietPlan extends Model<TxnMemberDietPlan> {
     allowNull: false,
     field: 'created_at',
   })
-  createdAt: Date;
+  declare createdAt: Date;
 
   @BelongsTo(() => MstAdminUser, {
     foreignKey: 'modifiedBy',
@@ -146,7 +147,7 @@ export class TxnMemberDietPlan extends Model<TxnMemberDietPlan> {
     allowNull: false,
     field: 'updated_at',
   })
-  updatedAt: Date;
+  declare updatedAt: Date;
 
   @Column({
     allowNull: false,

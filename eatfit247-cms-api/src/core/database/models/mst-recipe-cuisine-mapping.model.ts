@@ -4,7 +4,8 @@ import { MstRecipe } from './mst-recipe.model';
 import { MstRecipeCuisine } from './mst-recipe-cuisine.model';
 
 @Table({
-  modelName: 'mst_recipe_cuisine_mapping',
+  freezeTableName: true,
+  modelName: 'mst_recipe_cuisine_mappings',
   schema: 'public',
 })
 export class MstRecipeCuisineMapping extends Model<MstRecipeCuisineMapping> {
@@ -63,7 +64,7 @@ export class MstRecipeCuisineMapping extends Model<MstRecipeCuisineMapping> {
     allowNull: false,
     field: 'created_at',
   })
-  createdAt: Date;
+  declare createdAt: Date;
 
   @BelongsTo(() => MstAdminUser, {
     foreignKey: 'modifiedBy',
@@ -81,7 +82,7 @@ export class MstRecipeCuisineMapping extends Model<MstRecipeCuisineMapping> {
     allowNull: false,
     field: 'updated_at',
   })
-  updatedAt: Date;
+  declare updatedAt: Date;
 
   @Column({
     allowNull: false,

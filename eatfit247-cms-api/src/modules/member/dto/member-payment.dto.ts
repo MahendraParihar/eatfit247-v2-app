@@ -1,8 +1,9 @@
 import { IsBoolean, IsDateString, IsNotEmpty, IsNumber, IsOptional, IsString, Max, Min } from 'class-validator';
 import { Type } from 'class-transformer';
 import { AddressBasicDto } from '../../../common-dto/address.dto';
+import { IManageMemberPayment, IPaymentReport } from 'shared-lib';
 
-export class CreateMemberPaymentDto {
+export class CreateMemberPaymentDto implements IManageMemberPayment {
   @IsNotEmpty()
   @Type(() => Date)
   paymentDate: Date;
@@ -51,7 +52,7 @@ export class CreateMemberPaymentDto {
   address?: AddressBasicDto;
 }
 
-export class PaymentReportDto {
+export class PaymentReportDto implements IPaymentReport {
   @IsString()
   @IsNotEmpty()
   fromDate: string;

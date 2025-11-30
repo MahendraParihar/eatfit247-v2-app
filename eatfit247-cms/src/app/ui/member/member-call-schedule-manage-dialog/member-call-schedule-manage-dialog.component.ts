@@ -1,25 +1,22 @@
 import { Component, inject, Inject, OnInit } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { ResponseDataModel } from '../../../models/response-data.model';
 import { ApiUrlEnum } from '../../../enum/api-url-enum';
-import { ServerResponseEnum } from '../../../enum/server-response-enum';
-import { DropdownItem } from '../../../interfaces/dropdown-item';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { HttpService } from '../../../service/http.service';
 import { SnackBarService } from '../../../service/snack-bar.service';
 import { StringResources } from '../../../enum/string-resources';
 import { InputLength } from '../../../constants/input-length';
 import { StatusList } from '../../../constants/status-list';
-import { MemberCallLogModel } from '../../../models/member-call-log.model';
 import { ValidationUtil } from '../../../utilites/validation-util';
 import moment from 'moment';
 import { Constants } from '../../../constants/Constants';
+import { ICallLogMasterData, IDropdownItem, IManageMemberCallLog, IResponse } from 'shared-lib';
 
 @Component({
   standalone: false,
   selector: 'app-member-call-schedule-manage-dialog',
   templateUrl: './member-call-schedule-manage-dialog.component.html',
-  styleUrls: ['./member-call-schedule-manage-dialog.component.scss'],
+  styleUrls: ['./member-call-schedule-manage-dialog.component.scss']
 })
 export class MemberCallScheduleManageDialogComponent implements OnInit {
   fb: FormBuilder = inject(FormBuilder);
@@ -29,10 +26,10 @@ export class MemberCallScheduleManageDialogComponent implements OnInit {
   inputLength = InputLength;
   statusList = StatusList;
   dialogData: any;
-  callTypeList: DropdownItem[];
-  callPurposeList: DropdownItem[];
-  callStatusList: DropdownItem[];
-  callLogObj: MemberCallLogModel;
+  callTypeList: IDropdownItem[];
+  callPurposeList: IDropdownItem[];
+  callStatusList: IDropdownItem[];
+  callLogObj: IManageMemberCallLog;
   formGroup: FormGroup = this.fb.group({
     callTypeId: [null, [Validators.required]],
     callPurposeId: [null, [Validators.required]],
@@ -42,7 +39,7 @@ export class MemberCallScheduleManageDialogComponent implements OnInit {
     date: [null, [Validators.maxLength(this.inputLength.CHAR_200)]],
     startTime: [null, [Validators.maxLength(this.inputLength.CHAR_200)]],
     endTime: [null, [Validators.maxLength(this.inputLength.CHAR_200)]],
-    active: [true, [Validators.required]],
+    active: [true, [Validators.required]]
   });
 
   constructor(public dialogRef: MatDialogRef<MemberCallScheduleManageDialogComponent>,
@@ -84,13 +81,13 @@ export class MemberCallScheduleManageDialogComponent implements OnInit {
       this.formGroup.patchValue({
         callTypeId: this.callLogObj.callTypeId,
         callPurposeId: this.callLogObj.callPurposeId,
-        callStatusId: this.callLogObj.callLogStatusId,
+        callStatusId: this.callLogObj.callStatusId,
         detail: this.callLogObj.detail,
         conversionHistory: this.callLogObj.conversionHistory,
         date: this.callLogObj.date,
         startTime: this.callLogObj.startTime ? moment(this.callLogObj.startTime, Constants.DEFAULT_TIME_FORMAT).format(Constants.DISPLAY_TIME_FORMAT) : null,
         endTime: this.callLogObj.endTime ? moment(this.callLogObj.endTime, Constants.DEFAULT_TIME_FORMAT).format(Constants.DISPLAY_TIME_FORMAT) : null,
-        active: this.callLogObj.active,
+        active: this.callLogObj.active
       });
     }
   }
@@ -111,43 +108,19 @@ export class MemberCallScheduleManageDialogComponent implements OnInit {
       payload['endTime'] = moment(this.formGroup.value.endTime, Constants.DISPLAY_TIME_FORMAT).format(Constants.DEFAULT_TIME_FORMAT);
     }
     payload['memberId'] = this.memberId;
-    let res: ResponseDataModel;
     if (!this.dialogData.new) {
-      res = await this.httpService.putRequest(ApiUrlEnum.MEMBER_CALL_LOG_MANAGE, this.callLogObj.id, payload, true);
+      await this.httpService.putRequest(ApiUrlEnum.MEMBER_CALL_LOG_MANAGE, this.callLogObj.memberId, payload, true);
     } else {
-      res = await this.httpService.postRequest(ApiUrlEnum.MEMBER_CALL_LOG_MANAGE + '/' + this.memberId, payload, true);
+      await this.httpService.postRequest(ApiUrlEnum.MEMBER_CALL_LOG_MANAGE + '/' + this.memberId, payload, true);
     }
-    if (res) {
-      switch (res.code) {
-        case ServerResponseEnum.SUCCESS:
-          this.snackBarService.showSuccess(res.message);
-          this.onPositiveClick();
-          break;
-        case ServerResponseEnum.WARNING:
-          this.snackBarService.showWarning(res.message);
-          break;
-        case ServerResponseEnum.ERROR:
-          this.snackBarService.showError(res.message);
-          break;
-      }
-    }
+    this.snackBarService.showSuccess('Data updated successfully');
   }
 
   async loadDataById(id: number): Promise<void> {
-    const res: ResponseDataModel = await this.httpService.getRequest(ApiUrlEnum.MEMBER_CALL_LOG_MANAGE, id, null, true);
+    const res = await this.httpService.getRequest<IResponse<IManageMemberCallLog>>(ApiUrlEnum.MEMBER_CALL_LOG_MANAGE, id, null, true);
     if (res) {
-      switch (res.code) {
-        case ServerResponseEnum.SUCCESS:
-          this.callLogObj = MemberCallLogModel.fromJson(res.data);
-          this.bindData();
-          break;
-        case ServerResponseEnum.WARNING:
-          this.snackBarService.showWarning(res.message);
-          break;
-        case ServerResponseEnum.ERROR:
-          this.snackBarService.showError(res.message);
-          break;
-      }
+      this.callLogObj = res.data;
+      this.bindData();
     }
   }
 
@@ -155,27 +128,11 @@ export class MemberCallScheduleManageDialogComponent implements OnInit {
     this.callTypeList = [];
     this.callPurposeList = [];
     this.callStatusList = [];
-    const res: ResponseDataModel = await this.httpService.getRequest(ApiUrlEnum.MEMBER_CALL_LOG_MASTER_DATA, null, null, true);
+    const res = await this.httpService.getRequest<IResponse<ICallLogMasterData>>(ApiUrlEnum.MEMBER_CALL_LOG_MASTER_DATA, null, null, true);
     if (res) {
-      switch (res.code) {
-        case ServerResponseEnum.SUCCESS:
-          for (const s of res.data.callType) {
-            this.callTypeList.push(DropdownItem.fromJson(s));
-          }
-          for (const s of res.data.callPurpose) {
-            this.callPurposeList.push(DropdownItem.fromJson(s));
-          }
-          for (const s of res.data.callStatus) {
-            this.callStatusList.push(DropdownItem.fromJson(s));
-          }
-          break;
-        case ServerResponseEnum.WARNING:
-          this.snackBarService.showWarning(res.message);
-          break;
-        case ServerResponseEnum.ERROR:
-          this.snackBarService.showError(res.message);
-          break;
-      }
+      this.callTypeList = res.data.callType;
+      this.callPurposeList = res.data.callPurpose;
+      this.callStatusList = res.data.callStatus;
     }
   }
 }

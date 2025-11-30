@@ -1,13 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { MstCountries } from '../../core/database/models/mst-countries.model';
-import { DropdownListInterface } from '../../response-interface/dropdown-list.interface';
+import { IDropdownItem } from 'shared-lib';
 import { MstAdminRole } from '../../core/database/models/mst-admin-role.model';
 import { InjectModel } from '@nestjs/sequelize';
-import { UserStatusEnum } from '../../enums/user-status-enum';
+import { UserStatusEnum } from 'shared-lib';
 import { MstState } from '../../core/database/models/mst-state.model';
 import { TxnAddress } from '../../core/database/models/txn-address.model';
-import { IAddress } from '../../response-interface/address.interface';
+import { IAddress } from 'shared-lib';
 import { MstAddressType } from '../../core/database/models/mst-address-type.model';
+import { Transaction } from 'sequelize';
 
 @Injectable()
 export class CommonService {
@@ -164,9 +165,9 @@ export class CommonService {
     };
   }
 
-  public async addAddress(addressObj: any): Promise<TxnAddress> {
+  public async addAddress(addressObj: any, t: Transaction): Promise<TxnAddress> {
     try {
-      const createdObj = await this.addressRepository.create(addressObj);
+      const createdObj = await this.addressRepository.create(addressObj, {transaction: t});
       if (createdObj) {
         return createdObj;
       } else {
@@ -181,6 +182,7 @@ export class CommonService {
     tableId: number,
     pkOfTable: number,
     addressObj: any,
+    t: Transaction
   ): Promise<TxnAddress> {
     try {
       const updateObj = await this.addressRepository.update(addressObj, {
@@ -189,6 +191,7 @@ export class CommonService {
           tableId: tableId,
           pkOfTable: pkOfTable,
         },
+        transaction: t,
       });
       if (updateObj) {
         return updateObj[1][0];
@@ -200,18 +203,18 @@ export class CommonService {
     }
   }
 
-  public async getAddressTypeList(): Promise<DropdownListInterface[]> {
+  public async getAddressTypeList(): Promise<IDropdownItem[]> {
     const tempList = await this.addressTypeRepository.findAll<MstAddressType>({
       where: {
         active: true,
       },
       order: [['addressType', 'ASC']],
     });
-    const list: DropdownListInterface[] = [];
+    const list: IDropdownItem[] = [];
     for (const t of tempList) {
       list.push({
         id: t.addressTypeId,
-        name: t.addressType,
+        label: t.addressType,
         selected: false,
       });
     }
@@ -221,14 +224,14 @@ export class CommonService {
   // endregion
 
   // region Contact Type
-  /*public async getContactTypeList(): Promise<DropdownListInterface[]> {
+  /*public async getContactTypeList(): Promise<IDropdownItem[]> {
     const tempList = await this.contactTypeRepository.findAll<MstContactType>({
       where: {
         active: true,
       },
       order: [['contactType', 'ASC']],
     });
-    const list: DropdownListInterface[] = [];
+    const list: IDropdownItem[] = [];
     for (const t of tempList) {
       list.push({
         id: t.contactTypeId,
@@ -241,72 +244,72 @@ export class CommonService {
 
   // endregion
 
-  public async getCountryList(): Promise<DropdownListInterface[]> {
+  public async getCountryList(): Promise<IDropdownItem[]> {
     const tempList = await this.countryRepository.findAll<MstCountries>({
       where: {
         active: true,
       },
       order: [['country', 'ASC']],
     });
-    const list: DropdownListInterface[] = [];
+    const list: IDropdownItem[] = [];
     for (const t of tempList) {
       list.push({
         id: t.countryId,
-        name: t.country,
+        label: t.country,
         selected: false,
       });
     }
     return list;
   }
 
-  public async getCountryCodeList(): Promise<DropdownListInterface[]> {
+  public async getCountryCodeList(): Promise<IDropdownItem[]> {
     const tempList = await this.countryRepository.findAll<MstCountries>({
       where: {
         active: true,
       },
       order: [['country', 'ASC']],
     });
-    const list: DropdownListInterface[] = [];
+    const list: IDropdownItem[] = [];
     for (const t of tempList) {
       list.push({
         id: t.countryCode,
-        name: `${t.country} (${t.countryCode})`,
+        label: `${t.country} (${t.countryCode})`,
         selected: false,
       });
     }
     return list;
   }
 
-  public async getCountryPhoneCodeList(): Promise<DropdownListInterface[]> {
+  public async getCountryPhoneCodeList(): Promise<IDropdownItem[]> {
     const tempList = await this.countryRepository.findAll<MstCountries>({
       where: {
         active: true,
       },
       order: [['country', 'ASC']],
     });
-    const list: DropdownListInterface[] = [];
+    const list: IDropdownItem[] = [];
     for (const t of tempList) {
       list.push({
         id: t.phoneNumberCode,
-        name: `${t.country} (${t.phoneNumberCode})`,
+        label: `${t.country} (${t.phoneNumberCode})`,
         selected: false,
       });
     }
     return list;
   }
 
-  public async getStateList(): Promise<DropdownListInterface[]> {
+  public async getStateList(): Promise<IDropdownItem[]> {
     const tempList = await this.stateRepository.findAll<MstState>({
       where: {
         active: true,
       },
       order: [['state', 'ASC']],
     });
-    const list: DropdownListInterface[] = [];
+    const list: IDropdownItem[] = [];
     for (const t of tempList) {
       list.push({
         id: t.stateId,
-        name: t.state,
+        label: t.state,
         selected: false,
         parentId: t.countryId,
       });
@@ -314,34 +317,34 @@ export class CommonService {
     return list;
   }
 
-  public async getAdminRoleList(adminId: number): Promise<DropdownListInterface[]> {
+  public async getAdminRoleList(adminId: number): Promise<IDropdownItem[]> {
     const tempList = await this.adminRoleRepository.findAll<MstAdminRole>();
-    const list: DropdownListInterface[] = [];
+    const list: IDropdownItem[] = [];
     for (const t of tempList) {
       list.push({
         id: t.roleId,
-        name: t.role,
+        label: t.role,
         selected: false,
       });
     }
     return list;
   }
 
-  public async getAdminStatsList(): Promise<DropdownListInterface[]> {
-    const list: DropdownListInterface[] = [];
+  public async getAdminStatsList(): Promise<IDropdownItem[]> {
+    const list: IDropdownItem[] = [];
     list.push({
       id: UserStatusEnum.ACTIVE,
-      name: 'Active',
+      label: 'Active',
       selected: false,
     });
     list.push({
       id: UserStatusEnum.VERIFICATION_PENDING,
-      name: 'Email Id verification pending',
+      label: 'Email Id verification pending',
       selected: false,
     });
     list.push({
       id: UserStatusEnum.IN_ACTIVE,
-      name: 'In-Active',
+      label: 'In-Active',
       selected: false,
     });
     return list;

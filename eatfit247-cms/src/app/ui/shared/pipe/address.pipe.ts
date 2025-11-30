@@ -1,13 +1,12 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import { AdminShortInfoModel } from '../../../models/admin-short-info.model';
-import { AddressModel } from '../../../models/address.model';
+import { IAddress } from "shared-lib";
 
 @Pipe({
   name: 'address',
   standalone: false
 })
 export class AddressPipe implements PipeTransform {
-  transform(address: AddressModel): string {
+  transform(address: IAddress): string {
     if (!address) {
       return '';
     }

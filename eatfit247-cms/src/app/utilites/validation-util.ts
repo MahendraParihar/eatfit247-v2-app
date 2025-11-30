@@ -3,6 +3,16 @@ import {Constants} from "../constants/Constants";
 
 export class ValidationUtil {
 
+  public static EMAIL_REGEX = '^[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,4}$';
+  public static AGE_REGEX = '^(0?[1-9]|[1-9][0-9]|[1][1-9][1-9]|200)$';
+  public static PASSWORD_REGEX =
+    '^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$';
+  public static PHONE_REGEX = '/^([+]\\d{2})?\\d{10}$/';
+  public static FLOAT_REGEX = '^[0-9]\\d*(\\.\\d+)?$';
+  public static LAT_REGEX = '/^-?([1-8]?[1-9]|[1-9]0)\\.{1}\\d{1,15}/g';
+  public static LONG_REGEX = '/^-?(([-+]?)([\\d]{1,3})((\\.)(\\d+))?)/g';
+  public static NUMBER_REGEX = '^[0-9]*$';
+  public static DEFAULT_CURRENCY = 'INR';
 
   static validateAllFormFields(formGroup: UntypedFormGroup): any {
     Object.keys(formGroup.controls).forEach(field => {

@@ -1,28 +1,28 @@
 import { Component, inject, Inject, OnInit } from '@angular/core';
 import { StringResources } from '../../../enum/string-resources';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { ContactUsModel } from '../../../models/contact-us.model';
 import { InputLength } from '../../../constants/input-length';
 import { FormBuilder, Validators } from '@angular/forms';
 import { ValidationUtil } from '../../../utilites/validation-util';
+import { IContactUs } from 'shared-lib';
 
 @Component({
   standalone: false,
   selector: 'app-preview-contact-us-dialog',
   templateUrl: './preview-contact-us-dialog.component.html',
-  styleUrls: ['./preview-contact-us-dialog.component.scss'],
+  styleUrls: ['./preview-contact-us-dialog.component.scss']
 })
 export class PreviewContactUsDialogComponent implements OnInit {
   fb: FormBuilder = inject(FormBuilder);
-  dialogData: ContactUsModel;
+  dialogData: IContactUs;
   stringRes = StringResources;
   inputLength = InputLength;
   formGroup = this.fb.group({
-    respondedMessage: [null, [Validators.required, Validators.maxLength(this.inputLength.CHAR_1000)]],
+    respondedMessage: [null, [Validators.required, Validators.maxLength(this.inputLength.CHAR_1000)]]
   });
 
   constructor(public dialogRef: MatDialogRef<PreviewContactUsDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: ContactUsModel) {
+    @Inject(MAT_DIALOG_DATA) public data: IContactUs) {
     this.dialogData = data;
   }
 

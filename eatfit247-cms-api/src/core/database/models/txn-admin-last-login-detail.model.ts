@@ -2,7 +2,8 @@ import { BelongsTo, Column, CreatedAt, DataType, Model, Table } from 'sequelize-
 import { MstAdminUser } from './mst-admin-user.model';
 
 @Table({
-  modelName: 'txn_admin_last_login_detail',
+  freezeTableName: true,
+  modelName: 'txn_admin_last_login_details',
   schema: 'public',
   createdAt: false,
   updatedAt: false,

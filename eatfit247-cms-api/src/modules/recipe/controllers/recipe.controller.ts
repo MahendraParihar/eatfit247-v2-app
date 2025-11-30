@@ -1,8 +1,6 @@
 import { Body, Controller, Get, Param, Patch, Post, Put, Query, Req, UseGuards } from "@nestjs/common";
 import { JwtAuthGuard } from "../../account/jwt-auth.guard";
 import { UpdateActiveDto } from "../../../common-dto/basic-input.dto";
-import { ServerResponseEnum } from "../../../enums/server-response-enum";
-import { StringResource } from "../../../enums/string-resource";
 import { RecipeService } from "../recipe.service";
 import { RecipeCategoryService } from "../../lov/services/recipe-category.service";
 import { RecipeCuisineService } from "../../lov/services/recipe-cuisine.service";
@@ -50,20 +48,16 @@ export class RecipeController {
 
   @UseGuards(JwtAuthGuard)
   @Get("master-data")
-  async blogMasterData(@Query() req) {
+  async blogMasterData() {
     const promiseAll = await Promise.all([
       this.recipeCategoryService.getRecipeCategoryList(),
       this.recipeCuisineService.getRecipeCuisineList(),
       this.recipeTypeService.getRecipeTypeList()
     ]);
     return {
-      code: ServerResponseEnum.SUCCESS,
-      message: StringResource.SUCCESS,
-      data: {
-        recipeCategory: promiseAll[0],
-        recipeCuisine: promiseAll[1],
-        recipeType: promiseAll[2]
-      }
+      recipeCategory: promiseAll[0],
+      recipeCuisine: promiseAll[1],
+      recipeType: promiseAll[2]
     };
   }
 }

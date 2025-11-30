@@ -1,27 +1,25 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { ExceptionService } from '../../common/exception.service';
-import { DropdownListInterface } from '../../../response-interface/dropdown-list.interface';
+import { IDropdownItem } from 'shared-lib';
 import { MstCallLogStatus } from '../../../core/database/models/mst-call-log-status.model';
 
 @Injectable()
 export class CallStatusService {
   constructor(
     @InjectModel(MstCallLogStatus) private readonly callStatusRepository: typeof MstCallLogStatus,
-    private exceptionService: ExceptionService,
   ) {}
 
-  public async getCallLogStatusList(): Promise<DropdownListInterface[]> {
+  public async getCallLogStatusList(): Promise<IDropdownItem[]> {
     const tempList = await this.callStatusRepository.findAll<MstCallLogStatus>({
       where: {
         active: true,
       },
     });
-    const list: DropdownListInterface[] = [];
+    const list: IDropdownItem[] = [];
     for (const t of tempList) {
       list.push({
         id: t.callLogStatusId,
-        name: t.callLogStatus,
+        label: t.callLogStatus,
         selected: false,
       });
     }

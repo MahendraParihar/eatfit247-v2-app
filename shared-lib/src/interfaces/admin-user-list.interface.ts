@@ -1,9 +1,9 @@
-import { IAdminShortInfo } from './admin-user.interface';
 import { IMediaUpload } from './media-upload.interface';
 import { IAddress } from './address.interface';
 import { IRole } from './role.interface';
+import { ICreateUpdate } from './common.interface';
 
-export interface IAdminUserList {
+export interface IAdminUserList extends ICreateUpdate {
   adminId: number;
   firstName: string;
   lastName: string;
@@ -12,14 +12,10 @@ export interface IAdminUserList {
   emailId: string;
   franchiseId?: number;
   adminUserStatusId: number;
-  deactivationReason?: string;
+  reason?: string;
   startDate: string | Date;
   endDate?: string | Date;
   imagePath: IMediaUpload[];
-  createdBy: IAdminShortInfo;
-  updatedBy: IAdminShortInfo;
-  createdAt: string;
-  updatedAt: string;
   addressObj?: IAddress;
   roleList: IRole[];
 }

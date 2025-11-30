@@ -1,16 +1,16 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { ApiUrlEnum } from '../../../../enum/api-url-enum';
-import { MediaUploadResponseModel } from '../../../../models/media-upload-response.model';
+import { IMediaUpload } from 'shared-lib';
 
 @Component({
   standalone: false,
   selector: 'app-custom-img-tag',
   templateUrl: './custom-img-tag.component.html',
-  styleUrls: ['./custom-img-tag.component.scss'],
+  styleUrls: ['./custom-img-tag.component.scss']
 })
 export class CustomImgTagComponent implements OnInit {
   @Input()
-  webUrl: MediaUploadResponseModel[];
+  webUrl: IMediaUpload[];
   @Input()
   isAvatar: boolean = true;
   @Input()

@@ -5,7 +5,8 @@ import { MstRecipeCategory } from './mst-recipe-category.model';
 import { MstRecipeType } from './mst-recipe-type.model';
 
 @Table({
-  modelName: 'mst_recipe_category_mapping',
+  freezeTableName: true,
+  modelName: 'mst_recipe_category_mappings',
   schema: 'public',
 })
 export class MstRecipeCategoryMapping extends Model<MstRecipeCategoryMapping> {
@@ -59,7 +60,7 @@ export class MstRecipeCategoryMapping extends Model<MstRecipeCategoryMapping> {
     allowNull: false,
     field: 'created_at',
   })
-  createdAt: Date;
+  declare createdAt: Date;
   @BelongsTo(() => MstAdminUser, {
     foreignKey: 'modifiedBy',
     targetKey: 'adminId',
@@ -75,7 +76,7 @@ export class MstRecipeCategoryMapping extends Model<MstRecipeCategoryMapping> {
     allowNull: false,
     field: 'updated_at',
   })
-  updatedAt: Date;
+  declare updatedAt: Date;
   @Column({
     allowNull: false,
     field: 'created_ip',

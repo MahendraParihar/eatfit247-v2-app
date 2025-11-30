@@ -1,8 +1,9 @@
-import { BelongsTo, Column, DataType, Model, Table } from 'sequelize-typescript';
+import { BelongsTo, Column, CreatedAt, DataType, Model, Table, UpdatedAt } from 'sequelize-typescript';
 import { MstAdminUser } from './mst-admin-user.model';
 
 @Table({
   modelName: 'txn_admin_user_forgot_password_otp',
+  freezeTableName: true,
   timestamps: true,
 })
 export class TxnAdminUserForgotPasswordOtp extends Model<TxnAdminUserForgotPasswordOtp> {
@@ -12,7 +13,7 @@ export class TxnAdminUserForgotPasswordOtp extends Model<TxnAdminUserForgotPassw
     autoIncrement: true,
     field: 'forgot_password_otp_id',
   })
-  forgotPasswordOtpId: number;
+  declare forgotPasswordOtpId: number;
 
   @BelongsTo(() => MstAdminUser, {
     foreignKey: 'adminId',
@@ -23,14 +24,14 @@ export class TxnAdminUserForgotPasswordOtp extends Model<TxnAdminUserForgotPassw
     allowNull: false,
     field: 'admin_id',
   })
-  adminId: number;
+  declare adminId: number;
 
   @Column({
     type: DataType.STRING(6),
     allowNull: false,
     field: 'otp',
   })
-  otp: string;
+  declare otp: string;
 
   @Column({
     type: DataType.BOOLEAN,
@@ -38,5 +39,19 @@ export class TxnAdminUserForgotPasswordOtp extends Model<TxnAdminUserForgotPassw
     defaultValue: true,
     field: 'active',
   })
-  active: boolean;
+  declare active: boolean;
+
+  @CreatedAt
+  @Column({
+    allowNull: false,
+    field: 'created_at',
+  })
+  declare createdAt: Date;
+
+  @UpdatedAt
+  @Column({
+    allowNull: false,
+    field: 'updated_at',
+  })
+  declare updatedAt: Date;
 }

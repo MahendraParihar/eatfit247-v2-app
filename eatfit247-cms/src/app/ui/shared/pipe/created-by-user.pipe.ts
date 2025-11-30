@@ -1,12 +1,12 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import { AdminShortInfoModel } from '../../../models/admin-short-info.model';
+import { IAdminShortInfo } from 'shared-lib';
 
 @Pipe({
   name: 'appCreatedBy',
   standalone: false
 })
 export class CreatedByUserPipe implements PipeTransform {
-  transform(createdBy: AdminShortInfoModel): string {
+  transform(createdBy: IAdminShortInfo): string {
     if (createdBy) {
       return (`${createdBy.firstName ? createdBy.firstName : ''} ${createdBy.lastName ? createdBy.lastName : ''}`).trim();
     }

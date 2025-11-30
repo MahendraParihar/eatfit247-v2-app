@@ -4,9 +4,8 @@
  */
 export enum UserStatusEnum {
   ACTIVE = 1,
-  INACTIVE = 0,
-  DELETED = -1,
-  SUSPENDED = 2,
+  VERIFICATION_PENDING = -1,
+  IN_ACTIVE = 0,
 }
 
 export enum AdminRoleEnum {

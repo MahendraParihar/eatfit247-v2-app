@@ -1,6 +1,5 @@
 import { AfterViewInit, Component, OnDestroy, OnInit, Renderer2 } from '@angular/core';
 import { StringResources } from '../../../enum/string-resources';
-import { FormBuilder } from '@angular/forms';
 import { HttpService } from '../../../service/http.service';
 import { SnackBarService } from '../../../service/snack-bar.service';
 import { NavigationService } from '../../../service/navigation.service';
@@ -10,16 +9,17 @@ import { ApiUrlEnum } from '../../../enum/api-url-enum';
 import { AlertDialogDataInterface } from '../../../interfaces/alert-dialog-data.interface';
 import { AlertTypeEnum } from '../../../enum/alert-type-enum';
 import { DialogAlertComponent } from '../../shared/components/dialog-alert/dialog-alert.component';
-import { ResponseDataModel } from '../../../models/response-data.model';
-import { ServerResponseEnum } from '../../../enum/server-response-enum';
-import { MemberPaymentDatasource } from '../member-payment.datasource';
-import { MemberPaymentModel } from '../../../models/member-payment.model';
 import {
   MemberPaymentManageDialogComponent,
 } from '../member-payment-manage-dialog/member-payment-manage-dialog.component';
 import {
   MemberPaymentInvoiceDialogComponent,
 } from '../member-payment-invoice-dialog/member-payment-invoice-dialog.component';
+import { TableDataDatasource } from 'src/app/ui/table-data.datasource';
+import { IMemberPayment, IResponse, ITableListFilter } from 'shared-lib';
+import { Constants } from '../../../constants/Constants';
+import { MatPaginator } from '@angular/material/paginator';
+import { ViewChild } from '@angular/core';
 
 @Component({
   standalone: false,
@@ -29,13 +29,19 @@ import {
 })
 export class MemberPaymentHistoryComponent implements OnInit, AfterViewInit, OnDestroy {
   displayedColumns = ['seqNo', 'plan', 'dateTime', 'paymentStatus', 'paymentMode', 'amount', 'updatedBy', 'action'];
-  dataSource: MemberPaymentDatasource;
+  dataSource: TableDataDatasource<IMemberPayment>;
   totalCount = 0;
   id: number;
   stringRes = StringResources;
+  defaultPageSize = Constants.DEFAULT_PAGE_SIZE;
+  pageSizeList = Constants.PAGE_SIZE_LIST;
+  payload: ITableListFilter = {
+    page: this.pageSizeList[0],
+    limit: this.defaultPageSize
+  };
+  @ViewChild(MatPaginator) paginator: MatPaginator;
 
-  constructor(private fb: FormBuilder,
-    private httpService: HttpService,
+  constructor(private httpService: HttpService,
     private snackBarService: SnackBarService,
     private navigationService: NavigationService,
     private activatedRoute: ActivatedRoute,
@@ -44,7 +50,7 @@ export class MemberPaymentHistoryComponent implements OnInit, AfterViewInit, OnD
     this.activatedRoute.parent.params.subscribe(params => {
       this.id = Number(params['id']);
     });
-    this.dataSource = new MemberPaymentDatasource(this.httpService, this.snackBarService);
+    this.dataSource = new TableDataDatasource(this.httpService);
     this.dataSource.totalCount.subscribe((count: number) => this.totalCount = count);
   }
 
@@ -56,11 +62,13 @@ export class MemberPaymentHistoryComponent implements OnInit, AfterViewInit, OnD
   }
 
   ngOnDestroy(): void {
-    // this.dataSource = null;
+    this.dataSource = null;
   }
 
   async loadDataSet(): Promise<void> {
-    await this.dataSource.loadData(ApiUrlEnum.MEMBER_PAYMENT, this.id);
+    this.payload.page = this.paginator ? this.paginator.pageIndex : 0;
+    this.payload.limit = this.paginator ? this.paginator.pageSize : Constants.DEFAULT_PAGE_SIZE;
+    await this.dataSource.loadData(ApiUrlEnum.MEMBER_PAYMENT, this.payload);
   }
 
   onAddClick() {
@@ -75,12 +83,10 @@ export class MemberPaymentHistoryComponent implements OnInit, AfterViewInit, OnD
       disableClose: true,
     });
     dialogRef.afterClosed().subscribe(result => {
-
       if (result) {
         this.loadDataSet();
       }
     });
-    // this.navigationService.navigateToById(NavigationPathEnum.MEMBER_CALL_SCHEDULE, this.id);
   }
 
   onEditClick(id: number) {
@@ -96,12 +102,10 @@ export class MemberPaymentHistoryComponent implements OnInit, AfterViewInit, OnD
       disableClose: true,
     });
     dialogRef.afterClosed().subscribe(result => {
-
       if (result) {
         this.loadDataSet();
       }
     });
-    // this.navigationService.navigateToById(NavigationPathEnum.MEMBER_CALL_SCHEDULE, id);
   }
 
   onViewClick(id: number) {
@@ -116,70 +120,40 @@ export class MemberPaymentHistoryComponent implements OnInit, AfterViewInit, OnD
       closeOnNavigation: false,
       disableClose: true,
     });
-    // dialogRef.afterClosed().subscribe(result => {
-    //
-    //   if (result) {
-    //   }
-    // });
   }
 
-  onDeleteClick(item: MemberPaymentModel, index: number) {
+  onDeleteClick(item: IMemberPayment, index: number) {
     const dialogData: AlertDialogDataInterface = {
       title: StringResources.ALERT,
       message: StringResources.CHANGE_STATUS_DESC,
       positiveBtnTxt: StringResources.YES,
       negativeBtnTxt: StringResources.NO,
-      alertType: AlertTypeEnum.WARNING,
+      alertType: AlertTypeEnum.WARNING
     };
     const dialogRef = this.dialog.open(DialogAlertComponent, {
       width: '350px',
-      data: dialogData,
+      data: dialogData
     });
     dialogRef.afterClosed().subscribe(result => {
-
       if (result) {
         this.updateStatusTask(item, index);
       }
     });
   }
 
-  async updateStatusTask(item: MemberPaymentModel, index: number): Promise<void> {
+  async updateStatusTask(item: IMemberPayment, index: number): Promise<void> {
     const payload = {
-      active: !item.active,
+      active: !item.active
     };
-    const res: ResponseDataModel = await this.httpService.patchRequest(ApiUrlEnum.MEMBER_PAYMENT_UPDATE_STATUS, item.id, payload, true);
-    if (res) {
-      switch (res.code) {
-        case ServerResponseEnum.SUCCESS:
-          this.snackBarService.showSuccess(res.message);
-          await this.loadDataSet();
-          break;
-        case ServerResponseEnum.WARNING:
-          this.snackBarService.showWarning(res.message);
-          break;
-        case ServerResponseEnum.ERROR:
-          this.snackBarService.showError(res.message);
-          break;
-      }
-    }
+    const res = await this.httpService.patchRequest(ApiUrlEnum.MEMBER_PAYMENT_UPDATE_STATUS, item.id, payload, true);
+    this.snackBarService.showSuccess('Status changed successfully');
+    await this.loadDataSet();
   }
 
   async downloadInvoice(paymentId: number): Promise<void> {
-    const res: ResponseDataModel = await this.httpService.getRequest(ApiUrlEnum.MEMBER_PAYMENT_INVOICE_DOWNLOAD, paymentId, null, true);
-    if (res) {
-      switch (res.code) {
-        case ServerResponseEnum.SUCCESS:
-          if (res.data) {
-            this.downloadTemplate(res.data.buffer, res.data.fileName);
-          }
-          break;
-        case ServerResponseEnum.WARNING:
-          this.snackBarService.showWarning(res.message);
-          break;
-        case ServerResponseEnum.ERROR:
-          this.snackBarService.showError(res.message);
-          break;
-      }
+    const res = await this.httpService.getRequest<IResponse<any>>(ApiUrlEnum.MEMBER_PAYMENT_INVOICE_DOWNLOAD, paymentId, null, true);
+    if (res && res.data) {
+      this.downloadTemplate(res.data.buffer, res.data.fileName);
     }
   }
 

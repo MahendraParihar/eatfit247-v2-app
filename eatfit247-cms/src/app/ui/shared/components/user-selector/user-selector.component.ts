@@ -5,7 +5,6 @@ import { debounceTime, switchMap, tap } from 'rxjs';
 import { UserDropdownItem } from '../../../../interfaces/dropdown-item';
 import { HttpService } from '../../../../service/http.service';
 import { ApiUrlEnum } from '../../../../enum/api-url-enum';
-import { ServerResponseEnum } from '../../../../enum/server-response-enum';
 import { COMMA, ENTER } from '@angular/cdk/keycodes';
 import { MatChipInputEvent } from '@angular/material/chips';
 import { MatAutocomplete, MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
@@ -15,7 +14,7 @@ import { find } from 'lodash';
   standalone: false,
   selector: 'app-user-selector',
   templateUrl: './user-selector.component.html',
-  styleUrls: ['./user-selector.component.scss'],
+  styleUrls: ['./user-selector.component.scss']
 })
 export class UserSelectorComponent implements OnInit {
   @Input()
@@ -59,9 +58,9 @@ export class UserSelectorComponent implements OnInit {
           this.errorMsg = '';
           this.userList = [];
           this.isLoading = true;
-        },
+        }
       ),
-      switchMap((value: string) => this.getUserList(value)),
+      switchMap((value: string) => this.getUserList(value))
     ).subscribe(data => {
       this.userList = data;
     });
@@ -83,31 +82,23 @@ export class UserSelectorComponent implements OnInit {
       return ddList;
     }
     const payload = {
-      searchStr: searchStr,
+      searchStr: searchStr
     };
-    const res = await this.httpService.getRequest(ApiUrlEnum.SEARCH_USER, undefined, payload, false);
+    const res: any = await this.httpService.getRequest(ApiUrlEnum.SEARCH_USER, undefined, payload, false);
     this.isLoading = false;
     if (res) {
-      switch (res.code) {
-        case ServerResponseEnum.SUCCESS:
-          for (const s of res.data) {
-            const findObj = find(this.selectedUserList, { id: s.id });
-            if (!findObj) {
-              ddList.push(<UserDropdownItem>{
-                id: s.id,
-                name: s.name,
-                subText: s.subText,
-                imagePath: s.imagePath ? (Array.isArray(s.imagePath) ? s.imagePath : [s.imagePath]) : [],
-                isSelected: s.isSelected,
-                parentId: s.parentId,
-              });
-            }
-          }
-          break;
-        case ServerResponseEnum.WARNING:
-        case ServerResponseEnum.ERROR:
-          this.errorMsg = res.message;
-          break;
+      for (const s of res.data) {
+        const findObj = find(this.selectedUserList, { id: s.id });
+        if (!findObj) {
+          ddList.push(<UserDropdownItem>{
+            id: s.id,
+            name: s.name,
+            subText: s.subText,
+            imagePath: s.imagePath ? (Array.isArray(s.imagePath) ? s.imagePath : [s.imagePath]) : [],
+            isSelected: s.isSelected,
+            parentId: s.parentId
+          });
+        }
       }
     }
     return ddList;

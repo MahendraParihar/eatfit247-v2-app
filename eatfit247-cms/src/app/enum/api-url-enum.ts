@@ -5,6 +5,10 @@ export class ApiUrlEnum {
   static BASE_IMAGE_URL = `media/images/`;
   static DOWNLOAD_PATH = `${ApiUrlEnum.MEDIA_PATH}media-files/downloads/`;
   static LOGIN = "account/sign-in";
+  static REFRESH_TOKEN = "account/refresh-token";
+  static LOGOUT = "account/logout";
+  static CHANGE_PASSWORD = "account/change-password";
+  static PROFILE = "account/profile";
   static SEND_ACTIVATION_LINK = "account/resend-verification-link";
   static SEND_FORGOT_PASSWORD_OTP = "account/send-forgot-password-otp";
   static RESET_PASSWORD = "account/reset-password";

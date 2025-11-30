@@ -1,5 +1,7 @@
-import { ICreateUpdate } from './lov.interface';
-import { IAddress } from './address.interface';
+import { ICreateUpdate, IDropdownItem } from "./common.interface";
+import { IAddress, IAddressBasic } from "./address.interface";
+import { IPlanFees } from "./program-plan.interface";
+import { ICurrencyConfigList } from "./currency.interface";
 
 export interface IMemberPayment extends ICreateUpdate {
   id: number;
@@ -33,4 +35,38 @@ export interface IMemberPayment extends ICreateUpdate {
   gstNumber?: string;
   program: string;
   plan: string;
+}
+
+export interface IManageMemberPayment {
+  paymentDate: Date;
+  noOfCycle: number;
+  daysInCycle: number;
+  isTaxApplicable: boolean;
+  memberId: number;
+  paymentModeId: number;
+  programId: number;
+  planId: number;
+  paymentStatusId: number;
+  transactionId?: string;
+  systemDiscountAmount: number;
+  userCurrency: string;
+  active?: boolean;
+  address?: IAddressBasic;
+}
+
+export class IPaymentReport {
+  fromDate: string;
+  toDate: string;
+  gstOnly: boolean;
+}
+
+export interface IMemberPaymentMasterData {
+  paymentMode: IDropdownItem[];
+  program: IDropdownItem[];
+  plan: IPlanFees[];
+  currencyConfig: ICurrencyConfigList[];
+  paymentStatus: IDropdownItem[];
+  addresses: IAddress[];
+  taxPercentage: number;
+  taxApplicable: boolean;
 }

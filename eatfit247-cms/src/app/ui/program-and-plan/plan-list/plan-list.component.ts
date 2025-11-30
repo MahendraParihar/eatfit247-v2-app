@@ -1,7 +1,6 @@
 import { AfterViewInit, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { StringResources } from '../../../enum/string-resources';
 import { Constants } from '../../../constants/Constants';
-import { CommonSearchModel } from '../../../models/common-search.model';
 import { MatPaginator } from '@angular/material/paginator';
 import { FormBuilder } from '@angular/forms';
 import { HttpService } from '../../../service/http.service';
@@ -14,10 +13,9 @@ import { NavigationPathEnum } from '../../../enum/navigation-path-enum';
 import { AlertDialogDataInterface } from '../../../interfaces/alert-dialog-data.interface';
 import { AlertTypeEnum } from '../../../enum/alert-type-enum';
 import { DialogAlertComponent } from '../../shared/components/dialog-alert/dialog-alert.component';
-import { ResponseDataModel } from '../../../models/response-data.model';
-import { ServerResponseEnum } from '../../../enum/server-response-enum';
-import { PlanDatasource } from '../plan.datasource';
-import { PlanModel } from '../../../models/plan.model';
+import { TableDataDatasource } from 'src/app/ui/table-data.datasource';
+import { IProgramPlan, ITableListFilter } from 'shared-lib';
+
 
 @Component({
   standalone: false,
@@ -27,12 +25,15 @@ import { PlanModel } from '../../../models/plan.model';
 })
 export class PlanListComponent implements OnInit, AfterViewInit, OnDestroy {
   displayedColumns = ['seqNo', 'title', 'noOfCycle', 'daysInCycle', 'isOnline', 'inrAmount', 'status', 'createdBy', 'createdAt', 'updatedBy', 'updatedAt', 'action'];
-  dataSource: PlanDatasource;
+  dataSource: TableDataDatasource<IProgramPlan>;
   totalCount = 0;
   stringRes = StringResources;
   defaultPageSize = Constants.MASTER_PAGE_SIZE;
   pageSizeList = Constants.PAGE_SIZE_LIST;
-  payload: CommonSearchModel = new CommonSearchModel();
+  payload: ITableListFilter = {
+    page: this.pageSizeList[0],
+    limit: this.defaultPageSize
+  };
   @ViewChild(MatPaginator) paginator: MatPaginator;
 
   constructor(private fb: FormBuilder,
@@ -40,7 +41,7 @@ export class PlanListComponent implements OnInit, AfterViewInit, OnDestroy {
     private snackBarService: SnackBarService,
     private navigationService: NavigationService,
     public dialog: MatDialog) {
-    this.dataSource = new PlanDatasource(this.httpService, this.snackBarService);
+    this.dataSource = new TableDataDatasource(this.httpService);
     this.dataSource.totalCount.subscribe((count: number) => this.totalCount = count);
   }
 
@@ -59,30 +60,13 @@ export class PlanListComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    // this.dataSource = null;
+    this.dataSource = null;
   }
 
   async loadDataSet(): Promise<void> {
-    this.payload.pageNumber = this.paginator ? this.paginator.pageIndex : 0;
-    this.payload.pageSize = this.paginator ? this.paginator.pageSize : Constants.MASTER_PAGE_SIZE;
+    this.payload.page = this.paginator ? this.paginator.pageIndex : 0;
+    this.payload.limit = this.paginator ? this.paginator.pageSize : Constants.DEFAULT_PAGE_SIZE;
     await this.dataSource.loadData(ApiUrlEnum.PROGRAM_PLAN_LIST, this.payload);
-  }
-
-  async searchResult(searchObj: CommonSearchModel): Promise<void> {
-
-    if (searchObj) {
-      this.payload.name = searchObj.name ? searchObj.name : null;
-      this.payload.active = searchObj.active;
-      this.payload.createdFrom = searchObj.createdFrom;
-      this.payload.createdTo = searchObj.createdTo;
-    } else {
-      this.payload.name = null;
-      this.payload.active = null;
-      this.payload.createdFrom = null;
-      this.payload.createdTo = null;
-    }
-    this.paginator.firstPage();
-    await this.loadDataSet();
   }
 
   onAddClick() {
@@ -93,7 +77,7 @@ export class PlanListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.navigationService.navigateToById(NavigationPathEnum.PROGRAM_PLAN_MANAGE, id);
   }
 
-  onDeleteClick(item: PlanModel, index: number) {
+  onDeleteClick(item: IProgramPlan, index: number) {
     const dialogData: AlertDialogDataInterface = {
       title: StringResources.ALERT,
       message: StringResources.CHANGE_STATUS_DESC,
@@ -113,24 +97,14 @@ export class PlanListComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  async updateStatusTask(item: PlanModel, index: number): Promise<void> {
+  async updateStatusTask(item: IProgramPlan, index: number): Promise<void> {
     const payload = {
       active: !item.active,
     };
-    const res: ResponseDataModel = await this.httpService.patchRequest(ApiUrlEnum.PROGRAM_PLAN_STATUS_CHANGE, item.id, payload, true);
+    const res = await this.httpService.patchRequest(ApiUrlEnum.PROGRAM_PLAN_STATUS_CHANGE, item.id, payload, true);
     if (res) {
-      switch (res.code) {
-        case ServerResponseEnum.SUCCESS:
-          this.snackBarService.showSuccess(res.message);
-          await this.loadDataSet();
-          break;
-        case ServerResponseEnum.WARNING:
-          this.snackBarService.showWarning(res.message);
-          break;
-        case ServerResponseEnum.ERROR:
-          this.snackBarService.showError(res.message);
-          break;
-      }
+      this.snackBarService.showSuccess('Status changed successfully');
+      await this.loadDataSet();
     }
   }
 }

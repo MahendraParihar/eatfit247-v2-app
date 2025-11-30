@@ -13,33 +13,30 @@ import { NavigationPathEnum } from '../../../enum/navigation-path-enum';
 import { AlertDialogDataInterface } from '../../../interfaces/alert-dialog-data.interface';
 import { AlertTypeEnum } from '../../../enum/alert-type-enum';
 import { DialogAlertComponent } from '../../shared/components/dialog-alert/dialog-alert.component';
-import { ResponseDataModel } from '../../../models/response-data.model';
-import { ServerResponseEnum } from '../../../enum/server-response-enum';
-import { RecipeDatasource } from '../recipe.datasource';
-import { RecipeModel } from '../../../models/recipe.model';
 import { PreviewRecipeDialogComponent } from '../preview-recipe-dialog/preview-recipe-dialog.component';
 import { StatusList } from 'src/app/constants/status-list';
-import { DropdownItem } from 'src/app/interfaces/dropdown-item';
+import { TableDataDatasource } from 'src/app/ui/table-data.datasource';
+import { IDropdownItem, IRecipe, IResponse } from 'shared-lib';
 
 @Component({
   standalone: false,
   selector: 'app-recipe-list',
   templateUrl: './recipe-list.component.html',
-  styleUrls: ['./recipe-list.component.scss'],
+  styleUrls: ['./recipe-list.component.scss']
 })
 export class RecipeListComponent implements OnInit, AfterViewInit, OnDestroy {
   fb: FormBuilder = inject(FormBuilder);
-  displayedColumns = ['seqNo', 'title', 'image', 'category', 'isPublic', 'status', 'createdBy',  'updatedBy', 'action'];
-  dataSource: RecipeDatasource;
+  displayedColumns = ['seqNo', 'title', 'image', 'category', 'isPublic', 'status', 'createdBy', 'updatedBy', 'action'];
+  dataSource: TableDataDatasource<IRecipe>;
   totalCount = 0;
   stringRes = StringResources;
   defaultPageSize = Constants.DEFAULT_PAGE_SIZE;
   pageSizeList = Constants.PAGE_SIZE_LIST;
   payload: any = {};
   statusList = StatusList;
-  recipeCuisineList: DropdownItem[] = [];
-  recipeTypeList: DropdownItem[] = [];
-  recipeCategoryList: DropdownItem[] = [];
+  recipeCuisineList: IDropdownItem[] = [];
+  recipeTypeList: IDropdownItem[] = [];
+  recipeCategoryList: IDropdownItem[] = [];
   searchFormGroup = this.fb.group({
     name: [null],
     active: [null],
@@ -47,7 +44,7 @@ export class RecipeListComponent implements OnInit, AfterViewInit, OnDestroy {
     createdTo: [null],
     recipeTypeId: [null],
     recipeCuisineIds: [null],
-    recipeCategoryIds: [null],
+    recipeCategoryIds: [null]
   });
   @ViewChild(MatPaginator) paginator: MatPaginator;
 
@@ -56,7 +53,7 @@ export class RecipeListComponent implements OnInit, AfterViewInit, OnDestroy {
     private snackBarService: SnackBarService,
     private navigationService: NavigationService,
     public dialog: MatDialog) {
-    this.dataSource = new RecipeDatasource(this.httpService, this.snackBarService);
+    this.dataSource = new TableDataDatasource(this.httpService);
     this.dataSource.totalCount.subscribe((count: number) => this.totalCount = count);
   }
 
@@ -66,22 +63,22 @@ export class RecipeListComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit() {
-    if(this.paginator) {
+    if (this.paginator) {
       this.paginator.page
         .pipe(
-          tap(() => this.loadDataSet()),
+          tap(() => this.loadDataSet())
         )
         .subscribe();
     }
   }
 
   ngOnDestroy(): void {
-    // this.dataSource = null;
+    this.dataSource = null;
   }
 
   async loadDataSet(): Promise<void> {
-    this.payload.pageNumber = this.paginator ? this.paginator.pageIndex : 0;
-    this.payload.pageSize = this.paginator ? this.paginator.pageSize : Constants.DEFAULT_PAGE_SIZE;
+    this.payload.page = this.paginator ? this.paginator.pageIndex : 0;
+    this.payload.limit = this.paginator ? this.paginator.pageSize : Constants.DEFAULT_PAGE_SIZE;
     await this.dataSource.loadData(ApiUrlEnum.RECIPE_LIST, this.payload);
   }
 
@@ -110,58 +107,46 @@ export class RecipeListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.navigationService.navigateToById(NavigationPathEnum.RECIPES_MANAGE, id);
   }
 
-  onDeleteClick(item: RecipeModel, index: number) {
+  onDeleteClick(item: IRecipe, index: number) {
     const dialogData: AlertDialogDataInterface = {
       title: StringResources.ALERT,
       message: StringResources.CHANGE_STATUS_DESC,
       positiveBtnTxt: StringResources.YES,
       negativeBtnTxt: StringResources.NO,
-      alertType: AlertTypeEnum.WARNING,
+      alertType: AlertTypeEnum.WARNING
     };
     const dialogRef = this.dialog.open(DialogAlertComponent, {
       width: '350px',
-      data: dialogData,
+      data: dialogData
     });
     dialogRef.afterClosed().subscribe(result => {
-
       if (result) {
         this.updateStatusTask(item, index);
       }
     });
   }
 
-  async updateStatusTask(item: RecipeModel, index: number): Promise<void> {
+  async updateStatusTask(item: IRecipe, index: number): Promise<void> {
     const payload = {
-      active: !item.active,
+      active: !item.active
     };
-    const res: ResponseDataModel = await this.httpService.patchRequest(ApiUrlEnum.RECIPE_STATUS_CHANGE, item.id, payload, true);
+    const res = await this.httpService.patchRequest(ApiUrlEnum.RECIPE_STATUS_CHANGE, item.id, payload, true);
     if (res) {
-      switch (res.code) {
-        case ServerResponseEnum.SUCCESS:
-          this.snackBarService.showSuccess(res.message);
-          await this.loadDataSet();
-          break;
-        case ServerResponseEnum.WARNING:
-          this.snackBarService.showWarning(res.message);
-          break;
-        case ServerResponseEnum.ERROR:
-          this.snackBarService.showError(res.message);
-          break;
-      }
+      this.snackBarService.showSuccess('Status changed successfully');
+      await this.loadDataSet();
     }
   }
 
-  openPreviewDialog(detailObj: RecipeModel): void {
+  openPreviewDialog(detailObj: IRecipe): void {
     const dialogRef = this.dialog.open(PreviewRecipeDialogComponent, {
       data: detailObj,
-      disableClose: true,
+      disableClose: true
     });
     dialogRef.afterClosed().subscribe(result => {
-
     });
   }
 
-  async onDownloadClick(detailObj: RecipeModel) {
+  async onDownloadClick(detailObj: IRecipe) {
     if (detailObj.downloadPath) {
       await this.httpService.downloadFile(`${ApiUrlEnum.DOWNLOAD_PATH}${detailObj.downloadPath}`, `${detailObj.title}.pdf`);
     }
@@ -171,27 +156,15 @@ export class RecipeListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.recipeCategoryList = [];
     this.recipeCuisineList = [];
     this.recipeTypeList = [];
-    const res: ResponseDataModel = await this.httpService.getRequest(ApiUrlEnum.RECIPE_MASTER_DATA, null, null, true);
+    const res = await this.httpService.getRequest<IResponse<{
+      recipeCategory: IDropdownItem[];
+      recipeCuisine: IDropdownItem[];
+      recipeType: IDropdownItem[]
+    }>>(ApiUrlEnum.RECIPE_MASTER_DATA, null, null, true);
     if (res) {
-      switch (res.code) {
-        case ServerResponseEnum.SUCCESS:
-          for (const s of res.data.recipeCategory) {
-            this.recipeCategoryList.push(DropdownItem.fromJson(s));
-          }
-          for (const s of res.data.recipeCuisine) {
-            this.recipeCuisineList.push(DropdownItem.fromJson(s));
-          }
-          for (const s of res.data.recipeType) {
-            this.recipeTypeList.push(DropdownItem.fromJson(s));
-          }
-          break;
-        case ServerResponseEnum.WARNING:
-          this.snackBarService.showWarning(res.message);
-          break;
-        case ServerResponseEnum.ERROR:
-          this.snackBarService.showError(res.message);
-          break;
-      }
+      this.recipeCategoryList = res.data.recipeCategory;
+      this.recipeCuisineList = res.data.recipeCuisine;
+      this.recipeTypeList = res.data.recipeType;
     }
   }
 }

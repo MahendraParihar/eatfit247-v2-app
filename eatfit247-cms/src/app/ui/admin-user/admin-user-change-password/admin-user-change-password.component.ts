@@ -5,16 +5,14 @@ import { SnackBarService } from '../../../service/snack-bar.service';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { NavigationService } from '../../../service/navigation.service';
 import { ValidationUtil } from '../../../utilites/validation-util';
-import { ServerResponseEnum } from '../../../enum/server-response-enum';
 import { ApiUrlEnum } from '../../../enum/api-url-enum';
-import { ResponseDataModel } from '../../../models/response-data.model';
 import { InputLength } from '../../../constants/input-length';
 
 @Component({
   standalone: false,
   selector: 'app-admin-user-change-password',
   templateUrl: './admin-user-change-password.component.html',
-  styleUrls: ['./admin-user-change-password.component.scss'],
+  styleUrls: ['./admin-user-change-password.component.scss']
 })
 export class AdminUserChangePasswordComponent implements OnInit {
   fb: FormBuilder = inject(FormBuilder);
@@ -26,13 +24,13 @@ export class AdminUserChangePasswordComponent implements OnInit {
   formGroup: FormGroup = this.fb.group({
     currentPassword: [null, [Validators.required]],
     newPassword: [null, [Validators.required]],
-    repeatPassword: [null, [Validators.required]],
+    repeatPassword: [null, [Validators.required]]
   });
 
   constructor(
     private httpService: HttpService,
     private snackBarService: SnackBarService,
-    private navigationService: NavigationService,
+    private navigationService: NavigationService
   ) {
   }
 
@@ -53,24 +51,13 @@ export class AdminUserChangePasswordComponent implements OnInit {
       return;
     }
     const payload = this.formGroup.value;
-    const res: ResponseDataModel = await this.httpService.postRequest(
+    const res = await this.httpService.postRequest(
       ApiUrlEnum.ADMIN_CHANGE_PASSWORD,
       payload,
-      true,
+      true
     );
     if (res) {
-      switch (res.code) {
-        case ServerResponseEnum.SUCCESS:
-          this.formGroup.reset();
-          this.snackBarService.showSuccess(res.message);
-          break;
-        case ServerResponseEnum.WARNING:
-          this.snackBarService.showWarning(res.message);
-          break;
-        case ServerResponseEnum.ERROR:
-          this.snackBarService.showError(res.message);
-          break;
-      }
+      this.snackBarService.showSuccess('Password changed successfully');
     }
   }
 }

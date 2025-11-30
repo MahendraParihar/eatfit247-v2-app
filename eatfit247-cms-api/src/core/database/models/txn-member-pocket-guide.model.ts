@@ -4,7 +4,8 @@ import { TxnMember } from './txn-member.model';
 import { MstPocketGuide } from './mst-pocket-guide.model';
 
 @Table({
-  modelName: 'txn_member_pocket_guide',
+  freezeTableName: true,
+  modelName: 'txn_member_pocket_guides',
   schema: 'public',
   indexes: [
     {
@@ -70,7 +71,7 @@ export class TxnMemberPocketGuide extends Model<TxnMemberPocketGuide> {
     allowNull: false,
     field: 'created_at',
   })
-  createdAt: Date;
+  declare createdAt: Date;
 
   @BelongsTo(() => MstAdminUser, {
     foreignKey: 'modifiedBy',
@@ -88,7 +89,7 @@ export class TxnMemberPocketGuide extends Model<TxnMemberPocketGuide> {
     allowNull: false,
     field: 'updated_at',
   })
-  updatedAt: Date;
+  declare updatedAt: Date;
 
   @Column({
     allowNull: false,

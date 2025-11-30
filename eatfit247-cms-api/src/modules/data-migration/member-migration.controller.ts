@@ -16,24 +16,23 @@ import { MstProgramPlan } from 'src/core/database/models/mst-program-plan.model'
 import { TxnAssessment } from 'src/core/database/models/txn-assessment.model';
 import { TxnMemberHealthIssue } from 'src/core/database/models/txn-member-health-issue.model';
 import { TxnMemberHealthParameter } from 'src/core/database/models/txn-member-health-parameter.model';
-import { UserStatusEnum } from 'src/enums/user-status-enum';
+import { ConfigParam, UserStatusEnum } from 'shared-lib';
 import { MstHealthParameter } from 'src/core/database/models/mst-health-parameter.model';
 import { MstHealthParameterUnit } from 'src/core/database/models/mst-health-parameter-unit.model';
 import { TxnMemberHealthParameterLog } from 'src/core/database/models/txn-member-health-parameter-log.model';
-import { TableEnum } from '../../enums/table-enum';
-import { AddressTypeEnum } from '../../enums/address-type-enum';
+import { TableEnum } from 'shared-lib';
+import { AddressTypeEnum } from 'shared-lib';
 import { DB_DATE_FORMAT, IN_COUNTRY_ID, PRIMARY_FRANCHISE } from '../../constants/config-constants';
 import * as _ from 'lodash';
 import { filter, find, uniq } from 'lodash';
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
-import { DEFAULT_CURRENCY, TAX_PERCENTAGE } from '../../constants/config-parameters';
 import { ConfigParameterService } from '../config-parameter/config-parameter.service';
 import { CurrencyService } from '../lov/services/currency.service';
 import { CommonService } from '../common/common.service';
 import { exit } from '@nestjs/cli/actions';
-import * as moment from 'moment';
-import { DietTypeEnum } from '../../enums/diet-type-enum';
+import moment from 'moment';
+import { DietTypeEnum } from 'shared-lib';
 import { MstConfig } from '../../core/database/models/mst-config.model';
 
 @Controller('migration')
@@ -184,19 +183,19 @@ export class MemberMigrationController {
   ) {
     try {
       const planFees = programPlan;
-      const configParameters: MstConfig[] = (await this.configParameterService.findAll()).data;
+      const configParameters: MstConfig[] = (await this.configParameterService.findAll());
       const currencyConfigList = await this.currencyConfigService.getCurrencyConfigList();
       const franchiseAddresses = await this.commonService.findAddresses(TableEnum.MST_FRANCHISE, PRIMARY_FRANCHISE);
       let franchiseAddress;
       if (franchiseAddresses && franchiseAddresses.length > 0) {
         franchiseAddress = franchiseAddresses[0];
       }
-      const tempUC = _.find(configParameters, { configName: DEFAULT_CURRENCY });
+      const tempUC = _.find(configParameters, { configName: ConfigParam.DEFAULT_CURRENCY });
       const userCurrency = tempUC.configValue;
-      const tempSC = _.find(configParameters, { configName: DEFAULT_CURRENCY });
+      const tempSC = _.find(configParameters, { configName: ConfigParam.DEFAULT_CURRENCY });
       const systemCurrency = tempSC.configValue;
       const taxApplicable = isTaxApplicable;
-      const tempTP = _.find(configParameters, { configName: TAX_PERCENTAGE });
+      const tempTP = _.find(configParameters, { configName: ConfigParam.TAX_PERCENTAGE });
       const taxPercentage = Number(tempTP.configValue);
       const targetCurrencyConfig = _.find(currencyConfigList, {
         sourceCurrencyCode: userCurrency,
@@ -903,7 +902,6 @@ export class MemberMigrationController {
         `SELECT SETVAL('txn_addresses_address_id_seq', (SELECT MAX(address_id) + 1 FROM txn_addresses));`,
       );
     } catch (e) {
-
       throw new Error(e);
     }
   }
@@ -1021,7 +1019,6 @@ export class MemberMigrationController {
                        (SELECT MAX(member_health_parameter_id) + 1 FROM txn_member_health_parameters));`,
       );
     } catch (e) {
-
       throw new Error(e);
     }
   }

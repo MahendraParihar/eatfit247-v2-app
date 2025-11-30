@@ -1,7 +1,23 @@
-import { IMediaUpload } from './media-upload.interface';
-import { IAdminShortInfo } from './admin-user.interface';
+import { IMediaUpload } from "./media-upload.interface";
+import { ICreateUpdate } from "./common.interface";
 
-export interface IRecipe {
+export class IManageRecipe {
+  title: string;
+  details: string;
+  preparationMethod: string;
+  benefits: string;
+  ingredients: string;
+  recipeCategoryIds: number[];
+  recipeCuisineIds: number[];
+  recipeTypeId: number;
+  servingCount: number;
+  isVisibleToAll: boolean;
+  tags: string[];
+  uploadFiles?: IMediaUpload[];
+  active: boolean;
+}
+
+export interface IRecipe extends ICreateUpdate {
   id: any;
   title: string;
   recipeTypeId: number;
@@ -21,10 +37,6 @@ export interface IRecipe {
   active: boolean;
   downloadPath?: string;
   imagePath: IMediaUpload[];
-  createdBy: IAdminShortInfo;
-  updatedBy: IAdminShortInfo;
-  createdAt: string;
-  updatedAt: string;
 }
 
 export interface IRecipeCategoryMapped {

@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, AfterViewInit, OnDestroy } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatPaginator } from '@angular/material/paginator';
 import { ActivatedRoute } from '@angular/router';
@@ -6,18 +6,15 @@ import { tap } from 'rxjs';
 import { Constants } from 'src/app/constants/Constants';
 import { AlertTypeEnum } from 'src/app/enum/alert-type-enum';
 import { ApiUrlEnum } from 'src/app/enum/api-url-enum';
-import { IssueStatusEnum } from 'src/app/enum/issue-status-enum';
-import { ServerResponseEnum } from 'src/app/enum/server-response-enum';
+import { IssueStatusEnum } from 'shared-lib';
 import { StringResources } from 'src/app/enum/string-resources';
 import { AlertDialogDataInterface } from 'src/app/interfaces/alert-dialog-data.interface';
-import { CommonSearchModel } from 'src/app/models/common-search.model';
-import { MemberIssueModel } from 'src/app/models/member-isssue.model';
-import { ResponseDataModel } from 'src/app/models/response-data.model';
 import { HttpService } from 'src/app/service/http.service';
 import { SnackBarService } from 'src/app/service/snack-bar.service';
 import { DialogAlertComponent } from '../../shared/components/dialog-alert/dialog-alert.component';
 import { MemberIssueDialogComponent } from '../member-issue-dialog/member-issue-dialog.component';
-import { MemberIssueDatasource } from '../member-issue.datasource';
+import { TableDataDatasource } from 'src/app/ui/table-data.datasource';
+import { IMemberHealthIssue, ITableListFilter, IResponse } from 'shared-lib';
 
 @Component({
   standalone: false,
@@ -25,16 +22,19 @@ import { MemberIssueDatasource } from '../member-issue.datasource';
   templateUrl: './member-issues-list.component.html',
   styleUrls: ['./member-issues-list.component.scss'],
 })
-export class MemberIssuesListComponent implements OnInit {
+export class MemberIssuesListComponent implements OnInit, AfterViewInit, OnDestroy {
   displayedColumns = ['seqNo', 'issue', 'response', 'status', 'createdBy', 'respondedBy', 'action'];
-  dataSource: MemberIssueDatasource;
+  dataSource: TableDataDatasource<IMemberHealthIssue>;
   totalCount = 0;
   id: number;
   issueStatusEnum = IssueStatusEnum;
   stringRes = StringResources;
   defaultPageSize = Constants.DEFAULT_PAGE_SIZE;
   pageSizeList = Constants.PAGE_SIZE_LIST;
-  payload: CommonSearchModel = new CommonSearchModel();
+  payload: ITableListFilter = {
+    page: this.pageSizeList[0],
+    limit: this.defaultPageSize
+  };
   @ViewChild(MatPaginator) paginator: MatPaginator;
 
   constructor(
@@ -45,7 +45,7 @@ export class MemberIssuesListComponent implements OnInit {
     this.activatedRoute.parent.params.subscribe(params => {
       this.id = Number(params['id']);
     });
-    this.dataSource = new MemberIssueDatasource(this.httpService, this.snackBarService);
+    this.dataSource = new TableDataDatasource(this.httpService);
     this.dataSource.totalCount.subscribe((count: number) => this.totalCount = count);
   }
 
@@ -54,10 +54,10 @@ export class MemberIssuesListComponent implements OnInit {
   }
 
   ngAfterViewInit() {
-    if(this.paginator) {
+    if (this.paginator) {
       this.paginator.page
         .pipe(
-          tap(() => this.loadDataSet()),
+          tap(() => this.loadDataSet())
         )
         .subscribe();
     }
@@ -68,28 +68,12 @@ export class MemberIssuesListComponent implements OnInit {
   }
 
   async loadDataSet(): Promise<void> {
-    this.payload.pageNumber = this.paginator ? this.paginator.pageIndex : 0;
-    this.payload.pageSize = this.paginator ? this.paginator.pageSize : Constants.DEFAULT_PAGE_SIZE;
-    await this.dataSource.loadData(ApiUrlEnum.MEMBER_ISSUES, this.id, this.payload);
+    this.payload.page = this.paginator ? this.paginator.pageIndex : 0;
+    this.payload.limit = this.paginator ? this.paginator.pageSize : Constants.DEFAULT_PAGE_SIZE;
+    await this.dataSource.loadData(ApiUrlEnum.MEMBER_ISSUES, this.payload);
   }
 
-  async searchResult(searchObj: CommonSearchModel): Promise<void> {
-    if (searchObj) {
-      this.payload.name = searchObj.name ? searchObj.name : null;
-      this.payload.active = searchObj.active;
-      this.payload.createdFrom = searchObj.createdFrom;
-      this.payload.createdTo = searchObj.createdTo;
-    } else {
-      this.payload.name = null;
-      this.payload.active = null;
-      this.payload.createdFrom = null;
-      this.payload.createdTo = null;
-    }
-    this.paginator.firstPage();
-    await this.loadDataSet();
-  }
-
-  onEditClick(memberIssueModel: MemberIssueModel) {
+  onEditClick(memberIssueModel: IMemberHealthIssue) {
     const dialogData = {
       new: false,
       memberId: this.id,
@@ -108,17 +92,17 @@ export class MemberIssuesListComponent implements OnInit {
     });
   }
 
-  updateIssueStatus(item: MemberIssueModel, newStatus: number) {
+  updateIssueStatus(item: IMemberHealthIssue, newStatus: number) {
     const dialogData: AlertDialogDataInterface = {
       title: StringResources.ALERT,
       message: newStatus == IssueStatusEnum.CANCELLED ? StringResources.CHANGE_ISSUE_STATUS_CANCEL_DESC : StringResources.CHANGE_ISSUE_STATUS_CLOSE_DESC,
       positiveBtnTxt: StringResources.YES,
       negativeBtnTxt: StringResources.NO,
-      alertType: AlertTypeEnum.WARNING,
+      alertType: AlertTypeEnum.WARNING
     };
     const dialogRef = this.dialog.open(DialogAlertComponent, {
       width: '350px',
-      data: dialogData,
+      data: dialogData
     });
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
@@ -131,49 +115,29 @@ export class MemberIssuesListComponent implements OnInit {
     });
   }
 
-  markIssueCancelled(item: MemberIssueModel) {
+  markIssueCancelled(item: IMemberHealthIssue) {
     this.updateIssueStatus(item, IssueStatusEnum.CANCELLED);
   }
 
-  async updateStatusTask(item: MemberIssueModel, newStatus: number): Promise<void> {
+  async updateStatusTask(item: IMemberHealthIssue, newStatus: number): Promise<void> {
     const payload = {
-      statusId: newStatus,
+      statusId: newStatus
     };
-    const res: ResponseDataModel = await this.httpService.patchRequest(ApiUrlEnum.MEMBER_ISSUE_UPDATE_STATUS, item.issueId, payload, true);
+    const res = await this.httpService.patchRequest<IResponse<void>>(ApiUrlEnum.MEMBER_ISSUE_UPDATE_STATUS, item.id, payload, true);
     if (res) {
-      switch (res.code) {
-        case ServerResponseEnum.SUCCESS:
-          this.snackBarService.showSuccess(res.message);
-          await this.loadDataSet();
-          break;
-        case ServerResponseEnum.WARNING:
-          this.snackBarService.showWarning(res.message);
-          break;
-        case ServerResponseEnum.ERROR:
-          this.snackBarService.showError(res.message);
-          break;
-      }
+      this.snackBarService.showSuccess('Status changed successfully');
+      await this.loadDataSet();
     }
   }
 
-  async deleteIssue(item: MemberIssueModel): Promise<void> {
+  async deleteIssue(item: IMemberHealthIssue): Promise<void> {
     const payload = {
-      statusId: IssueStatusEnum.CANCELLED,
+      statusId: IssueStatusEnum.CANCELLED
     };
-    const res: ResponseDataModel = await this.httpService.deleteRequest(ApiUrlEnum.MEMBER_ISSUE_DELETE, item.issueId, true);
+    const res = await this.httpService.deleteRequest<IResponse<void>>(ApiUrlEnum.MEMBER_ISSUE_DELETE, item.id, true);
     if (res) {
-      switch (res.code) {
-        case ServerResponseEnum.SUCCESS:
-          this.snackBarService.showSuccess(res.message);
-          await this.loadDataSet();
-          break;
-        case ServerResponseEnum.WARNING:
-          this.snackBarService.showWarning(res.message);
-          break;
-        case ServerResponseEnum.ERROR:
-          this.snackBarService.showError(res.message);
-          break;
-      }
+      this.snackBarService.showSuccess('Status changed successfully');
+      await this.loadDataSet();
     }
   }
 }

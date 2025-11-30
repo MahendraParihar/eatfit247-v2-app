@@ -2,8 +2,9 @@ import { IsNotEmpty, MaxLength, ValidateNested } from 'class-validator';
 import { InputLength } from '../../../constants/input-length';
 import { Type } from 'class-transformer';
 import { MediaUploadDto } from '../../../common-dto/media-upload.dto';
+import { IManagePocketGuide } from "@eatfit247-common/lib";
 
-export class CreatePocketGuideDto {
+export class CreatePocketGuideDto implements IManagePocketGuide {
   @MaxLength(InputLength.CHAR_100)
   @IsNotEmpty()
   name: string;

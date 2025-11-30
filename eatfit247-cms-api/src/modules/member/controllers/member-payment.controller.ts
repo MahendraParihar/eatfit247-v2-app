@@ -1,8 +1,6 @@
 import { Body, Controller, Get, Param, Patch, Post, Put, Req, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../../account/jwt-auth.guard';
 import { UpdateActiveDto } from '../../../common-dto/basic-input.dto';
-import { ServerResponseEnum } from '../../../enums/server-response-enum';
-import { StringResource } from '../../../enums/string-resource';
 import { MemberPaymentService } from '../services/member-payment.service';
 import { PaymentModeService } from '../../lov/services/payment-mode.service';
 import { ProgramService } from '../../program-and-plan/services/program.service';
@@ -11,9 +9,8 @@ import { CurrencyService } from '../../lov/services/currency.service';
 import { CreateMemberPaymentDto, PaymentReportDto } from '../dto/member-payment.dto';
 import { PaymentStatusService } from '../../lov/services/payment-status.service';
 import { CommonService } from '../../common/common.service';
-import { TableEnum } from '../../../enums/table-enum';
+import { TableEnum, ConfigParam, IMemberPaymentMasterData } from 'shared-lib';
 import { ConfigParameterService } from '../../config-parameter/config-parameter.service';
-import { GST_ENABLED, TAX_PERCENTAGE } from '../../../constants/config-parameters';
 import { find } from 'lodash';
 
 @Controller('member-payment')
@@ -71,22 +68,18 @@ export class MemberPaymentController {
       this.commonService.findAddresses(TableEnum.TXN_MEMBER, id),
       this.configParameterService.findAll(),
     ]);
-    const configParameters = pro[6].data;
-    const tp = find(configParameters, { configName: GST_ENABLED });
-    const tper = find(configParameters, { configName: TAX_PERCENTAGE });
-    return {
-      code: ServerResponseEnum.SUCCESS,
-      message: StringResource.SUCCESS,
-      data: {
-        paymentMode: pro[0],
-        program: pro[1],
-        plan: pro[2],
-        currencyConfig: pro[3],
-        paymentStatus: pro[4],
-        addresses: pro[5],
-        taxPercentage: Number(tper.configValue),
-        taxApplicable: tp.configValue === '1',
-      },
+    const configParameters = pro[6];
+    const tp = find(configParameters, { configName: ConfigParam.GST_ENABLED });
+    const tper = find(configParameters, { configName: ConfigParam.TAX_PERCENTAGE });
+    return <IMemberPaymentMasterData>{
+      paymentMode: pro[0],
+      program: pro[1],
+      plan: pro[2],
+      currencyConfig: pro[3],
+      paymentStatus: pro[4],
+      addresses: pro[5],
+      taxPercentage: Number(tper.configValue),
+      taxApplicable: tp.configValue === '1',
     };
   }
 

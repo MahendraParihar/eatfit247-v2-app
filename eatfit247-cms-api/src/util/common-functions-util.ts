@@ -1,6 +1,6 @@
-import { IAdminShortInfo } from '../response-interface/admin-user.interface';
-import { IMediaUpload } from '../response-interface/media-upload.interface';
-import * as moment from 'moment/moment';
+import { IAdminShortInfo } from 'shared-lib';
+import { IMediaUpload } from 'shared-lib';
+import moment from 'moment';
 import * as path from 'path';
 import { join } from 'path';
 import { MstConfig } from '../core/database/models/mst-config.model';
@@ -89,5 +89,15 @@ export class CommonFunctionsUtil {
       list[s.configName] = s.configValue;
     }
     return list;
+  }
+
+  public static buildImageUrl(images: IMediaUpload[], baseUrl: string): IMediaUpload[] {
+    if (!images || images.length === 0) {
+      return images;
+    }
+    return images.map((image, i) => {
+      image.webUrl = `${baseUrl}/${image.webUrl}`;
+      return image;
+    });
   }
 }

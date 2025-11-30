@@ -2,15 +2,14 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpEvent, HttpHeaders, HttpRequest } from '@angular/common/http';
 import { timeout } from 'rxjs/operators';
 import { ErrorHandlerService } from './error-handler.service';
-import { ResponseDataModel } from '../models/response-data.model';
 import { LoaderService } from './loader.service';
 import { ApiUrlEnum } from '../enum/api-url-enum';
-import { firstValueFrom, Observable } from 'rxjs';
+import { lastValueFrom, Observable } from 'rxjs';
 import { keysIn } from 'lodash';
 import { saveAs } from 'file-saver';
 
 @Injectable({
-  providedIn: 'root',
+  providedIn: 'root'
 })
 export class HttpService {
   DEFAULT_TIME_OUT = 30000;
@@ -38,19 +37,16 @@ export class HttpService {
     return url;
   }
 
-  public async postRequest(url: any, postData: any = {}, showWaiting: boolean): Promise<any> {
+  public async postRequest<T>(url: any, postData: any = {}, showWaiting: boolean = true): Promise<T> {
     if (showWaiting) {
       this.loaderService.load();
     }
     try {
-      const resp = await firstValueFrom(this.http.post(url, postData).pipe(timeout(this.DEFAULT_TIME_OUT)));
+      const res = await lastValueFrom(this.http.post<T>(url, postData).pipe(timeout(this.DEFAULT_TIME_OUT)));
       if (showWaiting) {
         this.loaderService.dismiss();
       }
-      if (resp) {
-        return this.convertResponse(resp);
-      }
-      return this.returnNull();
+      return res;
     } catch (e: any) {
       if (showWaiting) {
         this.loaderService.dismiss();
@@ -60,19 +56,16 @@ export class HttpService {
     }
   }
 
-  public async patchRequest(url: any, id: number, postData: any = {}, showWaiting: boolean): Promise<any> {
+  public async patchRequest<T>(url: any, id: number, postData: any = {}, showWaiting: boolean = true): Promise<T> {
     if (showWaiting) {
       this.loaderService.load();
     }
     try {
-      const resp = await firstValueFrom(this.http.patch(url + '/' + id, postData).pipe(timeout(this.DEFAULT_TIME_OUT)));
+      const resp = await lastValueFrom(this.http.patch<T>(url + '/' + id, postData).pipe(timeout(this.DEFAULT_TIME_OUT)));
       if (showWaiting) {
         this.loaderService.dismiss();
       }
-      if (resp) {
-        return this.convertResponse(resp);
-      }
-      return this.returnNull();
+      return resp;
     } catch (e: any) {
       if (showWaiting) {
         this.loaderService.dismiss();
@@ -82,19 +75,16 @@ export class HttpService {
     }
   }
 
-  public async deleteRequest(url: any, id: number, showWaiting: boolean): Promise<any> {
+  public async deleteRequest<T>(url: any, id: number, showWaiting: boolean = true): Promise<T> {
     if (showWaiting) {
       this.loaderService.load();
     }
     try {
-      const resp = await firstValueFrom(this.http.delete(url + (id ? '/' + id : '')).pipe(timeout(this.DEFAULT_TIME_OUT)));
+      const res = await lastValueFrom(this.http.delete<T>(url + (id ? '/' + id : '')).pipe(timeout(this.DEFAULT_TIME_OUT)));
       if (showWaiting) {
         this.loaderService.dismiss();
       }
-      if (resp) {
-        return this.convertResponse(resp);
-      }
-      return this.returnNull();
+      return res;
     } catch (e: any) {
       if (showWaiting) {
         this.loaderService.dismiss();
@@ -104,7 +94,7 @@ export class HttpService {
     }
   }
 
-  public async putRequest(url: any, id: number, postData: any = {}, showWaiting: boolean): Promise<any> {
+  public async putRequest<T>(url: any, id: number, postData: any = {}, showWaiting: boolean = true): Promise<T> {
     if (showWaiting) {
       this.loaderService.load();
     }
@@ -112,14 +102,11 @@ export class HttpService {
       if (id) {
         url = `${url}/${id}`;
       }
-      const resp = await firstValueFrom(this.http.put(url, postData).pipe(timeout(this.DEFAULT_TIME_OUT)));
+      const res = await lastValueFrom(this.http.put<T>(url, postData).pipe(timeout(this.DEFAULT_TIME_OUT)));
       if (showWaiting) {
         this.loaderService.dismiss();
       }
-      if (resp) {
-        return this.convertResponse(resp);
-      }
-      return this.returnNull();
+      return res;
     } catch (e: any) {
       if (showWaiting) {
         this.loaderService.dismiss();
@@ -129,7 +116,7 @@ export class HttpService {
     }
   }
 
-  public async getRequest(url: any, id: number = null, postData: any, showWaiting: boolean): Promise<any> {
+  public async getRequest<T>(url: any, id: number = null, postData: any = null, showWaiting: boolean = true): Promise<T> {
     if (showWaiting) {
       this.loaderService.load();
     }
@@ -138,14 +125,11 @@ export class HttpService {
         url = `${url}/${id}`;
       }
       url = HttpService.convertMapToUrlParam(url, postData);
-      const resp = await firstValueFrom(this.http.get<ResponseDataModel>(url).pipe(timeout(this.DEFAULT_TIME_OUT)));
+      const res = await lastValueFrom(this.http.get<T>(url).pipe(timeout(this.DEFAULT_TIME_OUT)));
       if (showWaiting) {
         this.loaderService.dismiss();
       }
-      if (resp) {
-        return this.convertResponse(resp);
-      }
-      return this.returnNull();
+      return res;
     } catch (e: any) {
       if (showWaiting) {
         this.loaderService.dismiss();
@@ -162,7 +146,7 @@ export class HttpService {
       .set('enctype', 'multipart/form-data');
     const req = new HttpRequest('POST', ApiUrlEnum.MEDIA_UPLOAD, formData, {
       reportProgress: true,
-      responseType: 'json',
+      responseType: 'json'
     });
     return this.http.request(req);
   }
@@ -187,22 +171,5 @@ export class HttpService {
 
   public returnNull(): any {
     return null;
-  }
-
-  private convertResponse(response: any): ResponseDataModel {
-    let responseObject: ResponseDataModel;
-    if (response) {
-      responseObject = {
-        code: response['code'],
-        message: response['message'],
-        data: response['data'],
-      };
-    } else {
-      responseObject = {
-        code: response['code'],
-        message: response['message'],
-      };
-    }
-    return responseObject;
   }
 }

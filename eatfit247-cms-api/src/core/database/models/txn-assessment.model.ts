@@ -12,7 +12,8 @@ import { MstBloodSugar } from './mst-blood-sugar.model';
 import { MstUrineOutput } from './mst-urine-output.model';
 
 @Table({
-  modelName: 'txn_assessment',
+  freezeTableName: true,
+  modelName: 'txn_assessments',
   schema: 'public',
   indexes: [
     {
@@ -643,7 +644,7 @@ export class TxnAssessment extends Model<TxnAssessment> {
     allowNull: false,
     field: 'created_at',
   })
-  createdAt: Date;
+  declare createdAt: Date;
 
   @BelongsTo(() => MstAdminUser, {
     foreignKey: 'modifiedBy',
@@ -661,7 +662,7 @@ export class TxnAssessment extends Model<TxnAssessment> {
     allowNull: false,
     field: 'updated_at',
   })
-  updatedAt: Date;
+  declare updatedAt: Date;
 
   @Column({
     allowNull: false,

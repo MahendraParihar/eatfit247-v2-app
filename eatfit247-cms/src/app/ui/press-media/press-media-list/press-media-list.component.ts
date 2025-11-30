@@ -1,7 +1,6 @@
 import { AfterViewInit, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { StringResources } from '../../../enum/string-resources';
 import { Constants } from '../../../constants/Constants';
-import { CommonSearchModel } from '../../../models/common-search.model';
 import { MatPaginator } from '@angular/material/paginator';
 import { HttpService } from '../../../service/http.service';
 import { SnackBarService } from '../../../service/snack-bar.service';
@@ -13,25 +12,26 @@ import { NavigationPathEnum } from '../../../enum/navigation-path-enum';
 import { AlertDialogDataInterface } from '../../../interfaces/alert-dialog-data.interface';
 import { AlertTypeEnum } from '../../../enum/alert-type-enum';
 import { DialogAlertComponent } from '../../shared/components/dialog-alert/dialog-alert.component';
-import { ResponseDataModel } from '../../../models/response-data.model';
-import { ServerResponseEnum } from '../../../enum/server-response-enum';
-import { PressMediaDatasource } from '../press-media.datasource';
-import { PressMediaModel } from '../../../models/press-media.model';
+import { TableDataDatasource } from 'src/app/ui/table-data.datasource';
+import { IPressMedia, ITableListFilter } from 'shared-lib';
 
 @Component({
   standalone: false,
   selector: 'app-press-media-list',
   templateUrl: './press-media-list.component.html',
-  styleUrls: ['./press-media-list.component.scss'],
+  styleUrls: ['./press-media-list.component.scss']
 })
 export class PressMediaListComponent implements OnInit, AfterViewInit, OnDestroy {
   displayedColumns = ['seqNo', 'image', 'title', 'type', 'link', 'status', 'createdBy', 'updatedBy', 'action'];
-  dataSource: PressMediaDatasource;
+  dataSource: TableDataDatasource<IPressMedia>;
   totalCount = 0;
   stringRes = StringResources;
   defaultPageSize = Constants.DEFAULT_PAGE_SIZE;
   pageSizeList = Constants.PAGE_SIZE_LIST;
-  payload: CommonSearchModel = new CommonSearchModel();
+  payload: ITableListFilter = {
+    page: this.pageSizeList[0],
+    limit: this.defaultPageSize
+  };
   @ViewChild(MatPaginator) paginator: MatPaginator;
 
   constructor(
@@ -39,7 +39,7 @@ export class PressMediaListComponent implements OnInit, AfterViewInit, OnDestroy
     private snackBarService: SnackBarService,
     private navigationService: NavigationService,
     public dialog: MatDialog) {
-    this.dataSource = new PressMediaDatasource(this.httpService, this.snackBarService);
+    this.dataSource = new TableDataDatasource(this.httpService);
     this.dataSource.totalCount.subscribe((count: number) => this.totalCount = count);
   }
 
@@ -48,39 +48,32 @@ export class PressMediaListComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   ngAfterViewInit() {
-    if(this.paginator) {
+    if (this.paginator) {
       this.paginator.page
         .pipe(
-          tap(() => this.loadDataSet()),
+          tap(() => this.loadDataSet())
         )
         .subscribe();
     }
   }
 
   ngOnDestroy(): void {
-    // this.dataSource = null;
+    this.dataSource = null;
+  }
+
+  async searchResult(payload: ITableListFilter): Promise<void> {
+    this.payload.search = payload.search;
+    this.payload.createdTo = payload.createdTo;
+    this.payload.createdFrom = payload.createdFrom;
+    this.payload.name = payload.name;
+    this.paginator.firstPage();
+    await this.loadDataSet();
   }
 
   async loadDataSet(): Promise<void> {
-    this.payload.pageNumber = this.paginator ? this.paginator.pageIndex : 0;
-    this.payload.pageSize = this.paginator ? this.paginator.pageSize : Constants.DEFAULT_PAGE_SIZE;
+    this.payload.page = this.paginator ? this.paginator.pageIndex : 0;
+    this.payload.limit = this.paginator ? this.paginator.pageSize : Constants.DEFAULT_PAGE_SIZE;
     await this.dataSource.loadData(ApiUrlEnum.PRESS_MEDIA_LIST, this.payload);
-  }
-
-  async searchResult(searchObj: CommonSearchModel): Promise<void> {
-    if (searchObj) {
-      this.payload.name = searchObj.name ? searchObj.name : null;
-      this.payload.active = searchObj.active;
-      this.payload.createdFrom = searchObj.createdFrom;
-      this.payload.createdTo = searchObj.createdTo;
-    } else {
-      this.payload.name = null;
-      this.payload.active = null;
-      this.payload.createdFrom = null;
-      this.payload.createdTo = null;
-    }
-    this.paginator.firstPage();
-    await this.loadDataSet();
   }
 
   onAddClick() {
@@ -91,17 +84,17 @@ export class PressMediaListComponent implements OnInit, AfterViewInit, OnDestroy
     this.navigationService.navigateToById(NavigationPathEnum.PRESS_MEDIA_MANAGE, id);
   }
 
-  onDeleteClick(item: PressMediaModel, index: number) {
+  onDeleteClick(item: IPressMedia, index: number) {
     const dialogData: AlertDialogDataInterface = {
       title: StringResources.ALERT,
       message: StringResources.CHANGE_STATUS_DESC,
       positiveBtnTxt: StringResources.YES,
       negativeBtnTxt: StringResources.NO,
-      alertType: AlertTypeEnum.WARNING,
+      alertType: AlertTypeEnum.WARNING
     };
     const dialogRef = this.dialog.open(DialogAlertComponent, {
       width: '350px',
-      data: dialogData,
+      data: dialogData
     });
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
@@ -110,24 +103,14 @@ export class PressMediaListComponent implements OnInit, AfterViewInit, OnDestroy
     });
   }
 
-  async updateStatusTask(item: PressMediaModel, index: number): Promise<void> {
+  async updateStatusTask(item: IPressMedia, index: number): Promise<void> {
     const payload = {
-      active: !item.active,
+      active: !item.active
     };
-    const res: ResponseDataModel = await this.httpService.patchRequest(ApiUrlEnum.PRESS_MEDIA_STATUS_CHANGE, item.id, payload, true);
+    const res = await this.httpService.patchRequest(ApiUrlEnum.PRESS_MEDIA_STATUS_CHANGE, item.id, payload, true);
     if (res) {
-      switch (res.code) {
-        case ServerResponseEnum.SUCCESS:
-          this.snackBarService.showSuccess(res.message);
-          await this.loadDataSet();
-          break;
-        case ServerResponseEnum.WARNING:
-          this.snackBarService.showWarning(res.message);
-          break;
-        case ServerResponseEnum.ERROR:
-          this.snackBarService.showError(res.message);
-          break;
-      }
+      this.snackBarService.showSuccess('Status changed successfully');
+      await this.loadDataSet();
     }
   }
 }

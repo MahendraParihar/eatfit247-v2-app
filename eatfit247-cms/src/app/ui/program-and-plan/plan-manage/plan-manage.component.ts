@@ -12,28 +12,25 @@ import { SnackBarService } from '../../../service/snack-bar.service';
 import { NavigationService } from '../../../service/navigation.service';
 import { ActivatedRoute } from '@angular/router';
 import { MatChipInputEvent } from '@angular/material/chips';
-import { ResponseDataModel } from '../../../models/response-data.model';
 import { ApiUrlEnum } from '../../../enum/api-url-enum';
-import { ServerResponseEnum } from '../../../enum/server-response-enum';
-import { PlanModel } from '../../../models/plan.model';
-import { DropdownItem } from '../../../interfaces/dropdown-item';
+import { IDropdownItem, IProgramPlan, IResponse } from 'shared-lib';
 
 @Component({
   standalone: false,
   selector: 'app-plan-manage',
   templateUrl: './plan-manage.component.html',
-  styleUrls: ['./plan-manage.component.scss'],
+  styleUrls: ['./plan-manage.component.scss']
 })
 export class PlanManageComponent implements OnInit, AfterViewInit, OnDestroy {
   fb: FormBuilder = inject(FormBuilder);
-  lovModelObj: PlanModel;
+  lovModelObj: IProgramPlan;
   id: number;
   stringRes = StringResources;
   inputLength = InputLength;
   statusList = StatusList;
   tagsList: string[] = [];
   idealForList: string[] = [];
-  programPlanTypeList: DropdownItem[] = [];
+  programPlanTypeList: IDropdownItem[] = [];
   editorConfig: AngularEditorConfig = Constants.editorConfig;
   addOnBlur = true;
   readonly separatorKeysCodes = [ENTER, COMMA] as const;
@@ -48,7 +45,7 @@ export class PlanManageComponent implements OnInit, AfterViewInit, OnDestroy {
     noOfDaysInCycle: [null, [Validators.required, ValidationUtil.numberValidation]],
     sequenceNumber: [null, [Validators.required, ValidationUtil.numberValidation]],
     tags: [null, [Validators.required]],
-    active: [true, [Validators.required]],
+    active: [true, [Validators.required]]
   });
 
   constructor(private httpService: HttpService,
@@ -94,7 +91,7 @@ export class PlanManageComponent implements OnInit, AfterViewInit, OnDestroy {
         isOnline: this.lovModelObj.isOnline,
         sequenceNumber: this.lovModelObj.sequenceNumber,
         tags: this.tagsList.join(','),
-        active: this.lovModelObj.active,
+        active: this.lovModelObj.active
       });
     }
   }
@@ -125,21 +122,11 @@ export class PlanManageComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   async loadDataById(id: number): Promise<void> {
-    const res: ResponseDataModel = await this.httpService.getRequest(ApiUrlEnum.PROGRAM_PLAN_MANAGE, id, null, true);
-    if (res) {
-      switch (res.code) {
-        case ServerResponseEnum.SUCCESS:
-          this.lovModelObj = PlanModel.fromJson(res.data);
-          this.bindData();
-          this.cdr.detectChanges();
-          break;
-        case ServerResponseEnum.WARNING:
-          this.snackBarService.showWarning(res.message);
-          break;
-        case ServerResponseEnum.ERROR:
-          this.snackBarService.showError(res.message);
-          break;
-      }
+    const res = await this.httpService.getRequest<IResponse<IProgramPlan>>(ApiUrlEnum.PROGRAM_PLAN_MANAGE, id, null, true);
+    if (res && res.data) {
+      this.lovModelObj = res.data;
+      this.bindData();
+      this.cdr.detectChanges();
     }
   }
 
@@ -149,45 +136,19 @@ export class PlanManageComponent implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
     let payload: any = this.formGroup.value;
-    let res: ResponseDataModel;
     if (this.id > 0) {
-      res = await this.httpService.putRequest(ApiUrlEnum.PROGRAM_PLAN_MANAGE, this.id, payload, true);
+      await this.httpService.putRequest<IResponse<void>>(ApiUrlEnum.PROGRAM_PLAN_MANAGE, this.id, payload, true);
     } else {
-      res = await this.httpService.postRequest(ApiUrlEnum.PROGRAM_PLAN_MANAGE, payload, true);
+      await this.httpService.postRequest<IResponse<void>>(ApiUrlEnum.PROGRAM_PLAN_MANAGE, payload, true);
     }
-    if (res) {
-      switch (res.code) {
-        case ServerResponseEnum.SUCCESS:
-          this.snackBarService.showSuccess(res.message);
-          this.navigationService.back();
-          break;
-        case ServerResponseEnum.WARNING:
-          this.snackBarService.showWarning(res.message);
-          break;
-        case ServerResponseEnum.ERROR:
-          this.snackBarService.showError(res.message);
-          break;
-      }
-    }
+    this.snackBarService.showSuccess('Data updated successfully');
   }
 
   async loadMetaData(): Promise<void> {
     this.programPlanTypeList = [];
-    const res: ResponseDataModel = await this.httpService.getRequest(ApiUrlEnum.PROGRAM_PLAN_MASTER_DATA, null, null, true);
-    if (res) {
-      switch (res.code) {
-        case ServerResponseEnum.SUCCESS:
-          for (const s of res.data.programPlanType) {
-            this.programPlanTypeList.push(DropdownItem.fromJson(s));
-          }
-          break;
-        case ServerResponseEnum.WARNING:
-          this.snackBarService.showWarning(res.message);
-          break;
-        case ServerResponseEnum.ERROR:
-          this.snackBarService.showError(res.message);
-          break;
-      }
+    const res = await this.httpService.getRequest<IResponse<{ programPlanType: IDropdownItem[] }>>(ApiUrlEnum.PROGRAM_PLAN_MASTER_DATA, null, null, true);
+    if (res && res.data) {
+      this.programPlanTypeList = res.data.programPlanType;
     }
   }
 }

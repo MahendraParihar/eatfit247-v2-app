@@ -2,7 +2,8 @@ import { BelongsTo, Column, CreatedAt, DataType, Model, Table, UpdatedAt } from 
 import { MstAdminUser } from './mst-admin-user.model';
 
 @Table({
-  modelName: 'txn_promotion_mail',
+  freezeTableName: true,
+  modelName: 'txn_promotion_mails',
   schema: 'public',
 })
 export class TxnPromotionMail extends Model<TxnPromotionMail> {
@@ -79,7 +80,7 @@ export class TxnPromotionMail extends Model<TxnPromotionMail> {
     allowNull: false,
     field: 'created_at',
   })
-  createdAt: Date;
+  declare createdAt: Date;
 
   @BelongsTo(() => MstAdminUser, {
     foreignKey: 'modifiedBy',
@@ -97,7 +98,7 @@ export class TxnPromotionMail extends Model<TxnPromotionMail> {
     allowNull: false,
     field: 'updated_at',
   })
-  updatedAt: Date;
+  declare updatedAt: Date;
 
   @Column({
     allowNull: false,

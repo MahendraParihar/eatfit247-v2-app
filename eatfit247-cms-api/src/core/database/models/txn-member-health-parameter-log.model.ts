@@ -3,6 +3,7 @@ import { MstAdminUser } from './mst-admin-user.model';
 import { TxnMember } from './txn-member.model';
 
 @Table({
+  freezeTableName: true,
   modelName: 'txn_member_health_parameter_logs',
   schema: 'public',
   indexes: [
@@ -64,7 +65,7 @@ export class TxnMemberHealthParameterLog extends Model<TxnMemberHealthParameterL
     allowNull: false,
     field: 'created_at',
   })
-  createdAt: Date;
+  declare createdAt: Date;
 
   @BelongsTo(() => MstAdminUser, {
     foreignKey: 'modifiedBy',
@@ -82,7 +83,7 @@ export class TxnMemberHealthParameterLog extends Model<TxnMemberHealthParameterL
     allowNull: false,
     field: 'updated_at',
   })
-  updatedAt: Date;
+  declare updatedAt: Date;
 
   @Column({
     allowNull: false,

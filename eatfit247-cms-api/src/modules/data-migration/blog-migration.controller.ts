@@ -7,7 +7,7 @@ import { exit } from '@nestjs/cli/actions';
 import { TxnBlog } from '../../core/database/models/txn-blog.model';
 import { TxnSubscriber } from '../../core/database/models/txn-subscriber.model';
 import { TxnContactForm } from '../../core/database/models/txn-contact-form.model';
-import * as moment from 'moment';
+import moment from 'moment';
 import { CommonFunctionsUtil } from '../../util/common-functions-util';
 
 @Controller('migration')

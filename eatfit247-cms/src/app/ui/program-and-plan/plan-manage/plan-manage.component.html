@@ -113,7 +113,7 @@
           <mat-form-field>
             <mat-label>{{stringRes.TYPE_OF_PLAN}}</mat-label>
             <mat-select formControlName="programPlanTypeId" required>
-              <mat-option *ngFor="let o of programPlanTypeList" [value]="o.id">{{o.name}}</mat-option>
+              <mat-option *ngFor="let o of programPlanTypeList" [value]="o.id">{{o.label}}</mat-option>
             </mat-select>
             <mat-error>
               <app-input-error [controlName]="stringRes.TYPE_OF_PLAN"

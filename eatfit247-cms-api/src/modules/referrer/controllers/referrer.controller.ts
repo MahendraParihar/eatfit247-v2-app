@@ -3,9 +3,6 @@ import { JwtAuthGuard } from '../../account/jwt-auth.guard';
 import { BasicSearchDto, UpdateActiveDto } from '../../../common-dto/basic-input.dto';
 import { CreateReferrerDto } from '../dto/referrer.dto';
 import { ReferrerService } from '../referrer.service';
-import { IServerResponse } from '../../../common-dto/response-interface';
-import { ServerResponseEnum } from '../../../enums/server-response-enum';
-import { StringResource } from '../../../enums/string-resource';
 
 @Controller('referrer')
 export class ReferrerController {
@@ -43,13 +40,9 @@ export class ReferrerController {
 
   @UseGuards(JwtAuthGuard)
   @Get('referrer-by-franchise/:id')
-  async loadReferrerByFranchise(@Param('id') id: number, @Req() req: any) {
-    return <IServerResponse>{
-      code: ServerResponseEnum.SUCCESS,
-      message: StringResource.SUCCESS,
-      data: {
-        referrer: await this.service.fetchFranchiseBasedReferrer(id),
-      },
+  async loadReferrerByFranchise(@Param('id') id: number) {
+    return {
+      referrer: await this.service.fetchFranchiseBasedReferrer(id),
     };
   }
 }

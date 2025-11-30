@@ -17,7 +17,7 @@
           <mat-form-field>
             <mat-label>{{stringRes.STATUS}}</mat-label>
             <mat-select formControlName="active">
-              <mat-option *ngFor="let o of statusList" [value]="o.value">{{o.name}}</mat-option>
+              <mat-option *ngFor="let o of statusList" [value]="o.id">{{o.label}}</mat-option>
             </mat-select>
           </mat-form-field>
         </div>
@@ -39,7 +39,7 @@
           <mat-form-field>
             <mat-label>{{stringRes.RECIPE_CUISINE}}</mat-label>
             <mat-select formControlName="recipeCuisineIds" multiple>
-              <mat-option *ngFor="let s of recipeCuisineList" [value]="s.id">{{s.name}}</mat-option>
+              <mat-option *ngFor="let s of recipeCuisineList" [value]="s.id">{{s.label}}</mat-option>
             </mat-select>
           </mat-form-field>
         </div>
@@ -47,7 +47,7 @@
           <mat-form-field>
             <mat-label>{{stringRes.RECIPE_TYPE}}</mat-label>
             <mat-select formControlName="recipeTypeId">
-              <mat-option *ngFor="let s of recipeTypeList" [value]="s.id">{{s.name}}</mat-option>
+              <mat-option *ngFor="let s of recipeTypeList" [value]="s.id">{{s.label}}</mat-option>
             </mat-select>
           </mat-form-field>
         </div>
@@ -60,7 +60,7 @@
           <mat-form-field>
             <mat-label>{{stringRes.RECIPE_CATEGORY}}</mat-label>
             <mat-select formControlName="recipeCategoryIds" multiple>
-              <mat-option *ngFor="let s of recipeCategoryList" [value]="s.id">{{s.name}}</mat-option>
+              <mat-option *ngFor="let s of recipeCategoryList" [value]="s.id">{{s.label}}</mat-option>
             </mat-select>
           </mat-form-field>
         </div>

@@ -1,11 +1,8 @@
 import { keysIn } from 'lodash';
-import { AddressModel } from '../models/address.model';
-
+import { IAddress } from "shared-lib";
 
 export class CommonUtil {
-
   static removeEmptyPayloadAttributes(payload: any): any {
-
     const keys = keysIn(payload);
     for (const s of keys) {
       if (!payload[s] && payload[s] !== false) {
@@ -15,10 +12,10 @@ export class CommonUtil {
     return payload;
   }
 
-  static convertAddressObj(address: AddressModel): string {
+  static convertAddressObj(address: IAddress): string {
     let tempStr = '';
     if (address.postalAddress && address.postalAddress.trim().length > 0) {
-      tempStr =  tempStr + address.postalAddress.trim() + ', ';
+      tempStr = tempStr + address.postalAddress.trim() + ', ';
     }
     if (address.cityVillage && address.cityVillage.trim().length > 0) {
       tempStr = tempStr + address.cityVillage.trim() + ', ';

@@ -1,9 +1,7 @@
 import { AfterViewInit, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { StringResources } from '../../../enum/string-resources';
 import { Constants } from '../../../constants/Constants';
-import { CommonSearchModel } from '../../../models/common-search.model';
 import { MatPaginator } from '@angular/material/paginator';
-import { FormBuilder } from '@angular/forms';
 import { HttpService } from '../../../service/http.service';
 import { SnackBarService } from '../../../service/snack-bar.service';
 import { NavigationService } from '../../../service/navigation.service';
@@ -13,14 +11,12 @@ import { ApiUrlEnum } from '../../../enum/api-url-enum';
 import { AlertDialogDataInterface } from '../../../interfaces/alert-dialog-data.interface';
 import { AlertTypeEnum } from '../../../enum/alert-type-enum';
 import { DialogAlertComponent } from '../../shared/components/dialog-alert/dialog-alert.component';
-import { ResponseDataModel } from '../../../models/response-data.model';
-import { ServerResponseEnum } from '../../../enum/server-response-enum';
-import { MemberCallLogDatasource } from '../member-call-log.datasource';
 import { ActivatedRoute } from '@angular/router';
-import { MemberCallLogModel } from '../../../models/member-call-log.model';
 import {
   MemberCallScheduleManageDialogComponent,
 } from '../member-call-schedule-manage-dialog/member-call-schedule-manage-dialog.component';
+import { TableDataDatasource } from 'src/app/ui/table-data.datasource';
+import { IMemberCallLog, ITableListFilter } from 'shared-lib';
 
 @Component({
   standalone: false,
@@ -30,17 +26,19 @@ import {
 })
 export class MemberCallScheduleComponent implements OnInit, AfterViewInit, OnDestroy {
   displayedColumns = ['seqNo', 'detail', 'dateTime', 'callStatus', 'status', 'createdBy', 'updatedBy', 'action'];
-  dataSource: MemberCallLogDatasource;
+  dataSource: TableDataDatasource<IMemberCallLog>;
   totalCount = 0;
   id: number;
   stringRes = StringResources;
   defaultPageSize = Constants.DEFAULT_PAGE_SIZE;
   pageSizeList = Constants.PAGE_SIZE_LIST;
-  payload: CommonSearchModel = new CommonSearchModel();
+  payload: ITableListFilter = {
+    page: this.pageSizeList[0],
+    limit: this.defaultPageSize
+  };
   @ViewChild(MatPaginator) paginator: MatPaginator;
 
-  constructor(private fb: FormBuilder,
-    private httpService: HttpService,
+  constructor(private httpService: HttpService,
     private snackBarService: SnackBarService,
     private navigationService: NavigationService,
     private activatedRoute: ActivatedRoute,
@@ -48,7 +46,7 @@ export class MemberCallScheduleComponent implements OnInit, AfterViewInit, OnDes
     this.activatedRoute.parent.params.subscribe(params => {
       this.id = Number(params['id']);
     });
-    this.dataSource = new MemberCallLogDatasource(this.httpService, this.snackBarService);
+    this.dataSource = new TableDataDatasource(this.httpService);
     this.dataSource.totalCount.subscribe((count: number) => this.totalCount = count);
   }
 
@@ -57,38 +55,30 @@ export class MemberCallScheduleComponent implements OnInit, AfterViewInit, OnDes
   }
 
   ngAfterViewInit() {
-    if(this.paginator) {
+    if (this.paginator) {
       this.paginator.page
         .pipe(
-          tap(() => this.loadDataSet()),
+          tap(() => this.loadDataSet())
         )
         .subscribe();
     }
   }
 
   ngOnDestroy(): void {
-    // this.dataSource = null;
+    this.dataSource = null;
   }
 
   async loadDataSet(): Promise<void> {
-    this.payload.pageNumber = this.paginator ? this.paginator.pageIndex : 0;
-    this.payload.pageSize = this.paginator ? this.paginator.pageSize : Constants.DEFAULT_PAGE_SIZE;
-    await this.dataSource.loadData(ApiUrlEnum.MEMBER_CALL_LOG, this.id, this.payload);
+    this.payload.page = this.paginator ? this.paginator.pageIndex : 0;
+    this.payload.limit = this.paginator ? this.paginator.pageSize : Constants.DEFAULT_PAGE_SIZE;
+    await this.dataSource.loadData(ApiUrlEnum.MEMBER_CALL_LOG, this.payload);
   }
 
-  async searchResult(searchObj: CommonSearchModel): Promise<void> {
-
-    if (searchObj) {
-      this.payload.name = searchObj.name ? searchObj.name : null;
-      this.payload.active = searchObj.active;
-      this.payload.createdFrom = searchObj.createdFrom;
-      this.payload.createdTo = searchObj.createdTo;
-    } else {
-      this.payload.name = null;
-      this.payload.active = null;
-      this.payload.createdFrom = null;
-      this.payload.createdTo = null;
-    }
+  async searchResult(payload: ITableListFilter): Promise<void> {
+    this.payload.search = payload.search;
+    this.payload.createdTo = payload.createdTo;
+    this.payload.createdFrom = payload.createdFrom;
+    this.payload.name = payload.name;
     this.paginator.firstPage();
     await this.loadDataSet();
   }
@@ -105,12 +95,10 @@ export class MemberCallScheduleComponent implements OnInit, AfterViewInit, OnDes
       disableClose: true,
     });
     dialogRef.afterClosed().subscribe(result => {
-
       if (result) {
         this.loadDataSet();
       }
     });
-    // this.navigationService.navigateToById(NavigationPathEnum.MEMBER_CALL_SCHEDULE, this.id);
   }
 
   onEditClick(id: number) {
@@ -126,52 +114,37 @@ export class MemberCallScheduleComponent implements OnInit, AfterViewInit, OnDes
       disableClose: true,
     });
     dialogRef.afterClosed().subscribe(result => {
-
       if (result) {
         this.loadDataSet();
       }
     });
-    // this.navigationService.navigateToById(NavigationPathEnum.MEMBER_CALL_SCHEDULE, id);
   }
 
-  onDeleteClick(item: MemberCallLogModel, index: number) {
+  onDeleteClick(item: IMemberCallLog, index: number) {
     const dialogData: AlertDialogDataInterface = {
       title: StringResources.ALERT,
       message: StringResources.CHANGE_STATUS_DESC,
       positiveBtnTxt: StringResources.YES,
       negativeBtnTxt: StringResources.NO,
-      alertType: AlertTypeEnum.WARNING,
+      alertType: AlertTypeEnum.WARNING
     };
     const dialogRef = this.dialog.open(DialogAlertComponent, {
       width: '350px',
-      data: dialogData,
+      data: dialogData
     });
     dialogRef.afterClosed().subscribe(result => {
-
       if (result) {
         this.updateStatusTask(item, index);
       }
     });
   }
 
-  async updateStatusTask(item: MemberCallLogModel, index: number): Promise<void> {
+  async updateStatusTask(item: IMemberCallLog, index: number): Promise<void> {
     const payload = {
-      active: !item.active,
+      active: !item.active
     };
-    const res: ResponseDataModel = await this.httpService.patchRequest(ApiUrlEnum.MEMBER_CALL_LOG_UPDATE_STATUS, item.id, payload, true);
-    if (res) {
-      switch (res.code) {
-        case ServerResponseEnum.SUCCESS:
-          this.snackBarService.showSuccess(res.message);
-          await this.loadDataSet();
-          break;
-        case ServerResponseEnum.WARNING:
-          this.snackBarService.showWarning(res.message);
-          break;
-        case ServerResponseEnum.ERROR:
-          this.snackBarService.showError(res.message);
-          break;
-      }
-    }
+    const res = await this.httpService.patchRequest(ApiUrlEnum.MEMBER_CALL_LOG_UPDATE_STATUS, item.id, payload, true);
+    this.snackBarService.showSuccess('Status changed successfully');
+    await this.loadDataSet();
   }
 }

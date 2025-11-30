@@ -1,10 +1,12 @@
 import { BelongsTo, Column, CreatedAt, DataType, Model, Table, UpdatedAt } from 'sequelize-typescript';
-import { UserStatusEnum } from '../../../enums/user-status-enum';
+import { UserStatusEnum } from 'shared-lib';
 import { MstFranchise } from './mst-franchise.model';
 
 @Table({
-  modelName: 'mst_admin_user',
+  freezeTableName: true,
+  modelName: 'mst_admin_users',
   schema: 'public',
+  timestamps: true,
 })
 export class MstAdminUser extends Model<MstAdminUser> {
   @Column({
@@ -13,58 +15,50 @@ export class MstAdminUser extends Model<MstAdminUser> {
     field: 'admin_id',
     autoIncrement: true,
   })
-  adminId: number;
-
+  declare adminId: number;
   @Column({
     allowNull: false,
     field: 'first_name',
     type: DataType.STRING(50),
   })
-  firstName: string;
-
+  declare firstName: string;
   @Column({
     allowNull: false,
     field: 'last_name',
     type: DataType.STRING(50),
   })
-  lastName: string;
-
+  declare lastName: string;
   @Column({
     allowNull: true,
     field: 'profile_picture',
     type: DataType.JSONB,
   })
-  profilePicture: string;
-
+  declare profilePicture: string;
   @Column({
     allowNull: false,
     field: 'password',
     type: DataType.TEXT,
   })
-  password: string;
-
+  declare password: string;
   @Column({
     allowNull: true,
     field: 'password_temp',
     type: DataType.TEXT,
   })
-  passwordTemp: string;
-
+  declare passwordTemp: string;
   @Column({
     allowNull: false,
     field: 'country_code',
     type: DataType.STRING(5),
   })
-  countryCode: string;
-
+  declare countryCode: string;
   @Column({
     allowNull: false,
     field: 'contact_number',
     unique: true,
     type: DataType.STRING(16),
   })
-  contactNumber: string;
-
+  declare contactNumber: string;
   @Column({
     allowNull: false,
     field: 'email_id',
@@ -72,29 +66,25 @@ export class MstAdminUser extends Model<MstAdminUser> {
     validate: { isEmail: true },
     type: DataType.STRING(100),
   })
-  emailId: string;
-
+  declare emailId: string;
   @Column({
     allowNull: true,
     field: 'address_id',
     type: DataType.INTEGER,
   })
-  addressId: number;
-
+  declare addressId: number;
   @Column({
     allowNull: false,
     field: 'start_date',
-    type: DataType.DATEONLY,
+    type: DataType.DATE,
   })
-  startDate: Date;
-
+  declare startDate: Date;
   @Column({
     allowNull: true,
     field: 'end_date',
-    type: DataType.DATEONLY,
+    type: DataType.DATE,
   })
-  endDate: Date;
-
+  declare endDate: Date;
   @BelongsTo(() => MstFranchise, {
     foreignKey: 'franchiseId',
     targetKey: 'franchiseId',
@@ -105,65 +95,64 @@ export class MstAdminUser extends Model<MstAdminUser> {
     field: 'franchise_id',
     type: DataType.INTEGER,
   })
-  franchiseId: number;
-
+  declare franchiseId: number;
   @Column({
-    allowNull: true,
+    allowNull: false,
     field: 'admin_user_status_id',
     type: DataType.INTEGER,
     defaultValue: UserStatusEnum.VERIFICATION_PENDING,
   })
-  adminUserStatusId: number;
-
+  declare adminUserStatusId: number;
   @Column({
     allowNull: true,
     field: 'deactivation_reason',
     type: DataType.STRING(1000),
   })
-  deactivationReason: string;
-
+  declare deactivationReason: string;
   @Column({
     allowNull: true,
     field: 'verification_code',
     type: DataType.TEXT,
   })
-  verificationCode: string;
-
+  declare verificationCode: string;
   @Column({
     allowNull: true,
     field: 'created_by',
   })
-  createdBy: number;
+  declare createdBy: number;
 
   @CreatedAt
   @Column({
     allowNull: false,
     field: 'created_at',
+    defaultValue: DataType.NOW,
   })
-  createdAt: Date;
+  declare createdAt: Date;
 
   @Column({
     allowNull: true,
     field: 'modified_by',
+    defaultValue: DataType.NOW,
   })
-  modifiedBy: number;
+  declare modifiedBy: number;
 
   @UpdatedAt
   @Column({
     allowNull: false,
     field: 'updated_at',
   })
-  updatedAt: Date;
+  declare updatedAt: Date;
 
   @Column({
     allowNull: false,
     field: 'created_ip',
+    type: DataType.STRING(50),
   })
-  createdIp: string;
-
+  declare createdIp: string;
   @Column({
     allowNull: false,
     field: 'modified_ip',
+    type: DataType.STRING(50),
   })
-  modifiedIp: string;
+  declare modifiedIp: string;
 }

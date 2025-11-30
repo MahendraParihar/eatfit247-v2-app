@@ -5,45 +5,45 @@ import { SnackBarService } from '../../../service/snack-bar.service';
 import { Constants } from '../../../constants/Constants';
 import { MatPaginator } from '@angular/material/paginator';
 import { tap } from 'rxjs';
-import { AdminUserDatasource } from '../admin-user.datasource';
 import { MatDialog } from '@angular/material/dialog';
 import { AlertDialogDataInterface } from '../../../interfaces/alert-dialog-data.interface';
-import { AdminUserModel } from '../../../models/admin-user.model';
 import { NavigationService } from '../../../service/navigation.service';
 import { NavigationPathEnum } from '../../../enum/navigation-path-enum';
-import { ResponseDataModel } from '../../../models/response-data.model';
 import { ApiUrlEnum } from '../../../enum/api-url-enum';
-import { ServerResponseEnum } from '../../../enum/server-response-enum';
 import { AlertTypeEnum } from '../../../enum/alert-type-enum';
-import { CommonSearchModel } from '../../../models/common-search.model';
 import { AdminUserStatusEnum } from '../../../enum/admin-user-status-enum';
 import {
-  DialogUserStatusChangeComponent,
+  DialogUserStatusChangeComponent
 } from '../../shared/components/dialog-user-status-change/dialog-user-status-change.component';
 import { DialogAlertComponent } from '../../shared/components/dialog-alert/dialog-alert.component';
+import { TableDataDatasource } from 'src/app/ui/table-data.datasource';
+import { IAdminUserList, ITableListFilter } from 'shared-lib';
 
 @Component({
   standalone: false,
   selector: 'app-admin-user-list',
   templateUrl: './admin-user-list.component.html',
-  styleUrls: ['./admin-user-list.component.scss'],
+  styleUrls: ['./admin-user-list.component.scss']
 })
 export class AdminUserListComponent implements OnInit, AfterViewInit, OnDestroy {
   displayedColumns = ['seqNo', 'image', 'name', 'role', 'emailId', 'contactNumber', 'startDate', 'endDate', 'status', 'action'];
-  dataSource: AdminUserDatasource;
+  dataSource: TableDataDatasource<IAdminUserList>;
   totalCount = 0;
   stringRes = StringResources;
   adminUserStatusEnum = AdminUserStatusEnum;
   defaultPageSize = Constants.DEFAULT_PAGE_SIZE;
   pageSizeList = Constants.PAGE_SIZE_LIST;
-  payload: CommonSearchModel = new CommonSearchModel();
+  payload: ITableListFilter = {
+    page: this.pageSizeList[0],
+    limit: this.defaultPageSize
+  };
   @ViewChild(MatPaginator) paginator: MatPaginator;
 
   constructor(private httpService: HttpService,
     private snackBarService: SnackBarService,
     private navigationService: NavigationService,
     public dialog: MatDialog) {
-    this.dataSource = new AdminUserDatasource(this.httpService, this.snackBarService);
+    this.dataSource = new TableDataDatasource(this.httpService);
     this.dataSource.totalCount.subscribe((count: number) => this.totalCount = count);
   }
 
@@ -52,38 +52,32 @@ export class AdminUserListComponent implements OnInit, AfterViewInit, OnDestroy 
   }
 
   ngAfterViewInit() {
-    if(this.paginator) {
+    if (this.paginator) {
       this.paginator.page
         .pipe(
-          tap(() => this.loadDataSet()),
+          tap(() => this.loadDataSet())
         )
         .subscribe();
     }
   }
 
   ngOnDestroy(): void {
+    this.dataSource = null;
+  }
+
+  async searchResult(payload: ITableListFilter): Promise<void> {
+    this.payload.search = payload.search;
+    this.payload.createdTo = payload.createdTo;
+    this.payload.createdFrom = payload.createdFrom;
+    this.payload.name = payload.name;
+    this.paginator.firstPage();
+    await this.loadDataSet();
   }
 
   async loadDataSet(): Promise<void> {
-    this.payload.pageNumber = this.paginator ? this.paginator.pageIndex : 0;
-    this.payload.pageSize = this.paginator ? this.paginator.pageSize : Constants.DEFAULT_PAGE_SIZE;
-    await this.dataSource.loadData(this.payload);
-  }
-
-  async searchResult(searchObj: CommonSearchModel): Promise<void> {
-    if (searchObj) {
-      this.payload.name = searchObj.name ? searchObj.name : null;
-      this.payload.active = searchObj.active;
-      this.payload.createdFrom = searchObj.createdFrom;
-      this.payload.createdTo = searchObj.createdTo;
-    } else {
-      this.payload.name = null;
-      this.payload.active = null;
-      this.payload.createdFrom = null;
-      this.payload.createdTo = null;
-    }
-    this.paginator.firstPage();
-    await this.loadDataSet();
+    this.payload.page = this.paginator ? this.paginator.pageIndex : 0;
+    this.payload.limit = this.paginator ? this.paginator.pageSize : Constants.DEFAULT_PAGE_SIZE;
+    await this.dataSource.loadData(ApiUrlEnum.ADMIN_LIST, this.payload);
   }
 
   onAddClick() {
@@ -94,80 +88,58 @@ export class AdminUserListComponent implements OnInit, AfterViewInit, OnDestroy 
     this.navigationService.navigateToById(NavigationPathEnum.ADMIN_MANAGE, id);
   }
 
-  onDeleteClick(item: AdminUserModel, index: number) {
+  onDeleteClick(item: IAdminUserList, index: number) {
     const dialogData: AlertDialogDataInterface = {
       title: StringResources.ALERT,
       message: StringResources.CHANGE_STATUS_DESC,
       positiveBtnTxt: StringResources.YES,
       negativeBtnTxt: StringResources.NO,
-      alertType: AlertTypeEnum.WARNING,
+      alertType: AlertTypeEnum.WARNING
     };
     const dialogRef = this.dialog.open(DialogUserStatusChangeComponent, {
       width: '400px',
       disableClose: true,
-      data: dialogData,
+      data: dialogData
     });
     dialogRef.afterClosed().subscribe(result => {
-
       if (result) {
         this.updateStatusTask(item, result, index);
       }
     });
   }
 
-  async updateStatusTask(item: AdminUserModel, result: {}, index: number): Promise<void> {
-    const res: ResponseDataModel = await this.httpService.putRequest(ApiUrlEnum.ADMIN_UPDATE_STATUS, item.id, result, true);
+  async updateStatusTask(item: IAdminUserList, result: {}, index: number): Promise<void> {
+    const res = await this.httpService.putRequest(ApiUrlEnum.ADMIN_UPDATE_STATUS, item.adminId, result, true);
     if (res) {
-      switch (res.code) {
-        case ServerResponseEnum.SUCCESS:
-          this.snackBarService.showSuccess(res.message);
-          await this.loadDataSet();
-          break;
-        case ServerResponseEnum.WARNING:
-          this.snackBarService.showWarning(res.message);
-          break;
-        case ServerResponseEnum.ERROR:
-          this.snackBarService.showError(res.message);
-          break;
-      }
+      this.snackBarService.showSuccess('Status change successfully');
+      await this.loadDataSet();
     }
   }
 
-  onResetPasswordClick(item: AdminUserModel) {
+  onResetPasswordClick(item: IAdminUserList) {
     const dialogData: AlertDialogDataInterface = {
       title: StringResources.RESET_PASSWORD_TITLE,
       message: StringResources.RESET_PASSWORD_DESC,
       positiveBtnTxt: StringResources.YES,
       negativeBtnTxt: StringResources.NO,
-      alertType: AlertTypeEnum.WARNING,
+      alertType: AlertTypeEnum.WARNING
     };
     const dialogRef = this.dialog.open(DialogAlertComponent, {
       width: '400px',
       disableClose: true,
-      data: dialogData,
+      data: dialogData
     });
     dialogRef.afterClosed().subscribe(result => {
-
       if (result) {
-        this.resetPassword(item.id);
+        this.resetPassword(item.adminId);
       }
     });
   }
 
   async resetPassword(id: number): Promise<void> {
-    const res: ResponseDataModel = await this.httpService.getRequest(ApiUrlEnum.ADMIN_RESET_PASSWORD, id, null, true);
+    const res = await this.httpService.getRequest(ApiUrlEnum.ADMIN_RESET_PASSWORD, id, null, true);
     if (res) {
-      switch (res.code) {
-        case ServerResponseEnum.SUCCESS:
-          this.snackBarService.showSuccess(res.message);
-          break;
-        case ServerResponseEnum.WARNING:
-          this.snackBarService.showWarning(res.message);
-          break;
-        case ServerResponseEnum.ERROR:
-          this.snackBarService.showError(res.message);
-          break;
-      }
+      this.snackBarService.showSuccess('Password reset successfully');
     }
   }
 }

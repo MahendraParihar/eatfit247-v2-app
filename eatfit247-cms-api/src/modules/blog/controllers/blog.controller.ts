@@ -2,8 +2,6 @@ import { Body, Controller, Get, Param, Patch, Post, Put, Query, Req, UseGuards }
 import { JwtAuthGuard } from '../../account/jwt-auth.guard';
 import { BasicSearchDto, UpdateActiveDto } from '../../../common-dto/basic-input.dto';
 import { BlogService } from '../blog.service';
-import { ServerResponseEnum } from '../../../enums/server-response-enum';
-import { StringResource } from '../../../enums/string-resource';
 import { BlogCategoryService } from '../../lov/services/blog-category.service';
 import { BlogAuthorService } from '../../lov/services/blog-author.service';
 import { CreateBlogDto } from '../dto/blog.dto';
@@ -54,23 +52,14 @@ export class BlogController {
       this.blogAuthorService.getBlogAuthorList(),
     ]);
     return {
-      code: ServerResponseEnum.SUCCESS,
-      message: StringResource.SUCCESS,
-      data: {
-        blogCategory: promiseAll[0],
-        blogAuthor: promiseAll[1],
-      },
+      blogCategory: promiseAll[0],
+      blogAuthor: promiseAll[1],
     };
   }
 
   @UseGuards(JwtAuthGuard)
   @Get('send-mail/:id')
   async sendResponseMail(@Param('id') id: number, @Req() req: any) {
-    // TODO SEND MAIL
-    return {
-      code: ServerResponseEnum.SUCCESS,
-      message: StringResource.SUCCESS_MAIL_SCHEDULE,
-      data: null,
-    };
+    return;
   }
 }

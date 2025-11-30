@@ -3,11 +3,10 @@ import { MemberCallScheduleService } from '../services/member-call-schedule.serv
 import { JwtAuthGuard } from '../../account/jwt-auth.guard';
 import { BasicSearchDto, UpdateActiveDto } from '../../../common-dto/basic-input.dto';
 import { CreateMemberCallLogDto } from '../dto/member-call-log.dto';
-import { ServerResponseEnum } from '../../../enums/server-response-enum';
-import { StringResource } from '../../../enums/string-resource';
 import { CallTypeService } from '../../lov/services/call-type.service';
 import { CallPurposeService } from '../../lov/services/call-purpose.service';
 import { CallStatusService } from '../../lov/services/call-status.service';
+import { ICallLogMasterData } from 'shared-lib';
 
 @Controller('member-call-schedule')
 export class MemberCallScheduleController {
@@ -51,14 +50,10 @@ export class MemberCallScheduleController {
   @UseGuards(JwtAuthGuard)
   @Get('master-data')
   async memberMaster(@Req() req: any) {
-    return {
-      code: ServerResponseEnum.SUCCESS,
-      message: StringResource.SUCCESS,
-      data: {
-        callType: await this.callTypeService.getCallTypeList(),
-        callPurpose: await this.callPurposeService.getCallPurposeList(),
-        callStatus: await this.callStatusService.getCallLogStatusList(),
-      },
+    return <ICallLogMasterData>{
+      callType: await this.callTypeService.getCallTypeList(),
+      callPurpose: await this.callPurposeService.getCallPurposeList(),
+      callStatus: await this.callStatusService.getCallLogStatusList(),
     };
   }
 }

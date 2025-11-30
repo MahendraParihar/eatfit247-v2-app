@@ -4,10 +4,8 @@ import { BasicSearchDto, UpdateUserStatusDto } from '../../../common-dto/basic-i
 import { AdminUserService } from '../admin-user.service';
 import { ChangePasswordDto, CreateAdminUserDto } from '../dto/admin-user.dto';
 import { CommonService } from '../../common/common.service';
-import { ServerResponseEnum } from '../../../enums/server-response-enum';
-import { StringResource } from '../../../enums/string-resource';
 import { FranchiseService } from '../../franchise/franchise.service';
-import { IServerResponse } from '../../../common-dto/response-interface';
+import { IAdminMasterData } from '@eatfit247-common/lib';
 
 @Controller('admin-user')
 export class AdminUserController {
@@ -73,28 +71,18 @@ export class AdminUserController {
 
   @UseGuards(JwtAuthGuard)
   @Get('master-data')
-  async referrerMaster(@Req() req: any) {
-    return {
-      code: ServerResponseEnum.SUCCESS,
-      message: StringResource.SUCCESS,
-      data: {
-        role: await this.commonService.getAdminRoleList(req.user.userId),
-        franchise: await this.franchiseService.fetchRoleBasedFranchise(req.user.userId),
-        adminStatus: await this.commonService.getAdminStatsList(),
-        countryCode: await this.commonService.getCountryPhoneCodeList(),
-      },
+  async referrerMaster(@Req() req: any): Promise<IAdminMasterData> {
+    return <IAdminMasterData>{
+      role: await this.commonService.getAdminRoleList(req.user.userId),
+      franchise: await this.franchiseService.fetchRoleBasedFranchise(req.user.userId),
+      adminStatus: await this.commonService.getAdminStatsList(),
+      countryCode: await this.commonService.getCountryPhoneCodeList(),
     };
   }
 
   @UseGuards(JwtAuthGuard)
   @Get('nutritionist-by-franchise/:id')
   async loadNutritionistByFranchise(@Param('id') id: number, @Req() req: any) {
-    return <IServerResponse>{
-      code: ServerResponseEnum.SUCCESS,
-      message: StringResource.SUCCESS,
-      data: {
-        nutritionist: await this.service.fetchFranchiseBasedNutritionist(id),
-      },
-    };
+    return await this.service.fetchFranchiseBasedNutritionist(id);
   }
 }

@@ -5,6 +5,7 @@ import { MstIssueStatus } from './mst-issue-status.model';
 import { TxnMember } from './txn-member.model';
 
 @Table({
+  freezeTableName: true,
   modelName: 'txn_member_issues',
   schema: 'public',
   indexes: [
@@ -83,7 +84,7 @@ export class TxnMemberIssue extends Model<TxnMemberIssue> {
     allowNull: false,
     field: 'created_at',
   })
-  createdAt: Date;
+  declare createdAt: Date;
 
   @BelongsTo(() => MstAdminUser, {
     foreignKey: 'modifiedBy',
@@ -101,5 +102,5 @@ export class TxnMemberIssue extends Model<TxnMemberIssue> {
     allowNull: false,
     field: 'updated_at',
   })
-  updatedAt: Date;
+  declare updatedAt: Date;
 }

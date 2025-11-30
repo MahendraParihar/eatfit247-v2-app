@@ -1,19 +1,15 @@
 import { IMediaUpload } from './media-upload.interface';
-import { IAdminShortInfo } from './admin-user.interface';
+import { ICreateUpdate } from './common.interface';
 
-export interface IHealthParameter {
+export interface IHealthParameter extends ICreateUpdate {
   id: any;
   name: string;
   hintText: string;
   fieldType: string;
   requiredField: boolean;
+  isLength: boolean;
   sequence: number;
-  active?: boolean;
   imagePath?: IMediaUpload[];
-  createdBy: IAdminShortInfo;
-  updatedBy: IAdminShortInfo;
-  createdAt: string;
-  updatedAt: string;
 }
 
 export interface IHealthParameterUnitMapping {

@@ -1,0 +1,34 @@
+import * as dotenv from 'dotenv';
+import { converterFactory, valueToBoolean, valueToNumber, valueToString } from './config.utils';
+
+// Load environment variables before anything else
+dotenv.config();
+
+export const envExtractor = (key: string) => process.env[key];
+
+const envToString = converterFactory(envExtractor, valueToString);
+const envToBoolean = converterFactory(envExtractor, valueToBoolean);
+const envToNumber = converterFactory(envExtractor, valueToNumber);
+
+export class Env {
+  public static databaseUsername = envToString('DB_USER');
+  public static databasePassword = envToString('DB_PASSWORD');
+  public static databaseName = envToString('DB_NAME');
+  public static databaseHost = envToString('DB_HOST');
+  public static databasePort = envToNumber('DB_PORT');
+  public static databaseSchema = envToString('DB_SCHEMA', false, 'public');
+
+  public static jwtSecret = envToString('JWT_SECRET');
+  public static jwtRefreshSecret = envToString('JWT_REFRESH_SECRET', false) || Env.jwtSecret + '_refresh';
+  public static accessTokenTime = envToString('TOKEN_EXPIRATION', false, '15m');
+  public static refreshTokenTime = envToString('REFRESH_TOKEN_TIME', false, '7d');
+  
+  // Rate limiting and security
+  public static maxLoginAttempts = envToNumber('MAX_LOGIN_ATTEMPTS', false, 5);
+  public static lockoutDurationMinutes = envToNumber('LOCKOUT_DURATION_MINUTES', false, 30);
+
+  public static apiPort = envToNumber('PORT', false, 3000);
+
+  public static readonly staticAssetPath = envToString('ASSET_PATH');
+  public static readonly persistentStorageAssetPath = `${Env.staticAssetPath}`;
+}

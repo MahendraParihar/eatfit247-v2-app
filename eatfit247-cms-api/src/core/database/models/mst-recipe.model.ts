@@ -1,9 +1,11 @@
 import { BelongsTo, Column, CreatedAt, DataType, ForeignKey, Model, Table, UpdatedAt } from 'sequelize-typescript';
 import { MstAdminUser } from './mst-admin-user.model';
 import { MstRecipeType } from './mst-recipe-type.model';
+import { IMediaUpload } from "shared-lib";
 
 @Table({
-  modelName: 'mst_recipe',
+  freezeTableName: true,
+  modelName: 'mst_recipes',
   schema: 'public',
 })
 export class MstRecipe extends Model<MstRecipe> {
@@ -66,7 +68,7 @@ export class MstRecipe extends Model<MstRecipe> {
     field: 'image_path',
     type: DataType.JSONB,
   })
-  imagePath: string;
+  imagePath: IMediaUpload[];
   @Column({
     allowNull: false,
     field: 'visited_count',
@@ -123,7 +125,7 @@ export class MstRecipe extends Model<MstRecipe> {
     allowNull: false,
     field: 'created_at',
   })
-  createdAt: Date;
+  declare createdAt: Date;
   @BelongsTo(() => MstAdminUser, {
     foreignKey: 'modifiedBy',
     targetKey: 'adminId',
@@ -139,7 +141,7 @@ export class MstRecipe extends Model<MstRecipe> {
     allowNull: false,
     field: 'updated_at',
   })
-  updatedAt: Date;
+  declare updatedAt: Date;
   @Column({
     allowNull: false,
     field: 'created_ip',

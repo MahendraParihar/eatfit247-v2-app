@@ -11,7 +11,7 @@
           <mat-form-field>
             <mat-label>{{stringRes.PROGRAM}}</mat-label>
             <mat-select formControlName="programId" required>
-              <mat-option *ngFor="let o of programList" [value]="o.id">{{o.name}}</mat-option>
+              <mat-option *ngFor="let o of programList" [value]="o.id">{{o.label}}</mat-option>
             </mat-select>
             <mat-error>
               <app-input-error [controlName]="stringRes.PROGRAM"
@@ -173,7 +173,7 @@
           <mat-form-field>
             <mat-label>{{stringRes.PAYMENT_MODE}}</mat-label>
             <mat-select formControlName="paymentModeId" required>
-              <mat-option *ngFor="let o of paymentModeList" [value]="o.id">{{o.name}}</mat-option>
+              <mat-option *ngFor="let o of paymentModeList" [value]="o.id">{{o.label}}</mat-option>
             </mat-select>
             <mat-error>
               <app-input-error [controlName]="stringRes.PAYMENT_MODE"
@@ -224,7 +224,7 @@
           <mat-form-field>
             <mat-label>{{stringRes.PAYMENT_STATUS}}</mat-label>
             <mat-select formControlName="paymentStatusId">
-              <mat-option *ngFor="let o of paymentStatusList" [value]="o.id">{{o.name}}</mat-option>
+              <mat-option *ngFor="let o of paymentStatusList" [value]="o.id">{{o.label}}</mat-option>
             </mat-select>
             <mat-error>
               <app-input-error [controlName]="stringRes.PAYMENT_STATUS"

@@ -1,13 +1,14 @@
 import { BelongsTo, Column, CreatedAt, DataType, Model, Table, UpdatedAt } from 'sequelize-typescript';
 import { MstAdminUser } from './mst-admin-user.model';
 import { MstReferrer } from './mst-referrer.model';
-import { UserStatusEnum } from '../../../enums/user-status-enum';
+import { UserStatusEnum } from 'shared-lib';
 import { MstFranchise } from './mst-franchise.model';
 import { MstCountries } from './mst-countries.model';
 import { MstUserStatus } from './mst_user_status.model';
 
 @Table({
-  modelName: 'txn_member',
+  freezeTableName: true,
+  modelName: 'txn_members',
   schema: 'public',
 })
 export class TxnMember extends Model<TxnMember> {
@@ -168,7 +169,7 @@ export class TxnMember extends Model<TxnMember> {
     allowNull: false,
     field: 'created_at',
   })
-  createdAt: Date;
+  declare createdAt: Date;
 
   @BelongsTo(() => MstAdminUser, {
     foreignKey: 'modifiedBy',
@@ -186,7 +187,7 @@ export class TxnMember extends Model<TxnMember> {
     allowNull: false,
     field: 'updated_at',
   })
-  updatedAt: Date;
+  declare updatedAt: Date;
 
   @Column({
     allowNull: false,

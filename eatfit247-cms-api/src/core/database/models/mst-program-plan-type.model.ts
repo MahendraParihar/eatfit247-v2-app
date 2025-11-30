@@ -2,7 +2,8 @@ import { BelongsTo, Column, CreatedAt, DataType, Model, Table, UpdatedAt } from 
 import { MstAdminUser } from './mst-admin-user.model';
 
 @Table({
-  modelName: 'mst_program_plan_type',
+  freezeTableName: true,
+  modelName: 'mst_program_plan_types',
   schema: 'public',
 })
 export class MstProgramPlanType extends Model<MstProgramPlanType> {
@@ -44,7 +45,7 @@ export class MstProgramPlanType extends Model<MstProgramPlanType> {
     allowNull: false,
     field: 'created_at',
   })
-  createdAt: Date;
+  declare createdAt: Date;
 
   @BelongsTo(() => MstAdminUser, {
     foreignKey: 'modifiedBy',
@@ -62,5 +63,5 @@ export class MstProgramPlanType extends Model<MstProgramPlanType> {
     allowNull: false,
     field: 'updated_at',
   })
-  updatedAt: Date;
+  declare updatedAt: Date;
 }

@@ -2,7 +2,8 @@ import { BelongsTo, Column, CreatedAt, DataType, Model, Table, UpdatedAt } from 
 import { MstAdminUser } from './mst-admin-user.model';
 
 @Table({
-  modelName: 'mst_blog_category',
+  freezeTableName: true,
+  modelName: 'mst_blog_categories',
   schema: 'public',
 })
 export class MstBlogCategory extends Model<MstBlogCategory> {
@@ -59,7 +60,7 @@ export class MstBlogCategory extends Model<MstBlogCategory> {
     allowNull: false,
     field: 'created_at',
   })
-  createdAt: Date;
+  declare createdAt: Date;
 
   @BelongsTo(() => MstAdminUser, {
     foreignKey: 'modifiedBy',
@@ -77,7 +78,7 @@ export class MstBlogCategory extends Model<MstBlogCategory> {
     allowNull: false,
     field: 'updated_at',
   })
-  updatedAt: Date;
+  declare updatedAt: Date;
 
   @Column({
     allowNull: false,

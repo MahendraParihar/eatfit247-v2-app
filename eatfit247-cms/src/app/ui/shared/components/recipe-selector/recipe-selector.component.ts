@@ -3,21 +3,21 @@ import { Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild }
 import { FormControl } from '@angular/forms';
 import { MatAutocomplete, MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { StringResources } from '../../../../enum/string-resources';
-import { DropdownItem } from '../../../../interfaces/dropdown-item';
 import { debounceTime, switchMap, tap } from 'rxjs';
 import { find } from 'lodash';
 import { MatChipInputEvent } from '@angular/material/chips';
 import { SnackBarService } from '../../../../service/snack-bar.service';
+import { IDropdownItem } from 'shared-lib';
 
 @Component({
   standalone: false,
   selector: 'app-recipe-selector',
   templateUrl: './recipe-selector.component.html',
-  styleUrls: ['./recipe-selector.component.scss'],
+  styleUrls: ['./recipe-selector.component.scss']
 })
 export class RecipeSelectorComponent implements OnInit {
   @Input()
-  masterList: DropdownItem[];
+  masterList: IDropdownItem[];
   @Input()
   isMultiSelection: boolean = false;
   @Input()
@@ -29,8 +29,8 @@ export class RecipeSelectorComponent implements OnInit {
   searchCtrl = new FormControl();
   isLoading = false;
   errorMsg: string;
-  filteredList: DropdownItem[];
-  selectedItemList: DropdownItem[] = [];
+  filteredList: IDropdownItem[];
+  selectedItemList: IDropdownItem[] = [];
   @Input()
   selectedIds: number[] = [];
   selectable = true;
@@ -56,9 +56,9 @@ export class RecipeSelectorComponent implements OnInit {
           this.errorMsg = '';
           this.filteredList = [];
           this.isLoading = true;
-        },
+        }
       ),
-      switchMap((value: string) => this.getFilteredList(value)),
+      switchMap((value: string) => this.getFilteredList(value))
     ).subscribe(data => {
       this.filteredList = data;
     });
@@ -67,8 +67,8 @@ export class RecipeSelectorComponent implements OnInit {
     }
   }
 
-  async getFilteredList(searchStr: string): Promise<DropdownItem[]> {
-    let ddList: DropdownItem[] = [];
+  async getFilteredList(searchStr: string): Promise<IDropdownItem[]> {
+    let ddList: IDropdownItem[] = [];
     try {
       if (!searchStr) {
         this.errorMsg = 'empty search text';
@@ -80,7 +80,7 @@ export class RecipeSelectorComponent implements OnInit {
         this.isLoading = false;
         return ddList;
       }
-      ddList = this.masterList.filter(o => o.name.toLowerCase().includes(searchStr.toLowerCase()));
+      ddList = this.masterList.filter(o => o.label.toLowerCase().includes(searchStr.toLowerCase()));
       this.isLoading = false;
       if (ddList.length === 0) {
         this.errorMsg = 'No recipe found';

@@ -1,6 +1,7 @@
 import { Column, CreatedAt, DataType, Model, Table } from 'sequelize-typescript';
 
 @Table({
+  freezeTableName: true,
   modelName: 'log_errors',
   schema: 'public',
   updatedAt: false,

@@ -1,11 +1,6 @@
-import { IAdminShortInfo } from './admin-user.interface';
+import { ICreateUpdate } from './common.interface';
 
-export interface IHealthParameterUnit {
+export interface IHealthParameterUnit extends ICreateUpdate {
   id: any;
   name: string;
-  active?: boolean;
-  createdBy: IAdminShortInfo;
-  updatedBy: IAdminShortInfo;
-  createdAt: string;
-  updatedAt: string;
 }

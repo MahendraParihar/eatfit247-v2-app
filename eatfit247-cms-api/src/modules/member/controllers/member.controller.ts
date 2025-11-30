@@ -1,8 +1,7 @@
 import { Body, Controller, Get, Param, Post, Put, Query, Req, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../../account/jwt-auth.guard';
 import { BasicSearchDto, UpdateUserStatusDto } from '../../../common-dto/basic-input.dto';
-import { ServerResponseEnum } from '../../../enums/server-response-enum';
-import { StringResource } from '../../../enums/string-resource';
+import { StringResource } from 'shared-lib';
 import { CommonService } from '../../common/common.service';
 import { FranchiseService } from '../../franchise/franchise.service';
 import { MemberService } from '../services/member.service';
@@ -64,14 +63,10 @@ export class MemberController {
   @Get('master-data')
   async memberMaster(@Req() req: any) {
     return {
-      code: ServerResponseEnum.SUCCESS,
-      message: StringResource.SUCCESS,
-      data: {
-        franchise: await this.franchiseService.fetchRoleBasedFranchise(req.user.userId),
-        memberStatus: await this.commonService.getAdminStatsList(),
-        countryCode: await this.commonService.getCountryPhoneCodeList(),
-        country: await this.commonService.getCountryList(),
-      },
+      franchise: await this.franchiseService.fetchRoleBasedFranchise(req.user.userId),
+      memberStatus: await this.commonService.getAdminStatsList(),
+      countryCode: await this.commonService.getCountryPhoneCodeList(),
+      country: await this.commonService.getCountryList(),
     };
   }
 

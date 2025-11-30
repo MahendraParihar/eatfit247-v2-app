@@ -2,7 +2,6 @@
  * User Related Interfaces
  * Shared across all EatFit247 applications
  */
-
 export interface IAuthUser {
   adminUserId: number;
   firstName: string;
@@ -13,6 +12,22 @@ export interface IAuthUser {
   contactNumber: string;
 }
 
+export interface IAdminUser extends IAuthUser {
+  roleId?: number;
+  roleName?: string;
+  franchiseId?: number;
+  permissions?: string[];
+}
+
+export interface IToken {
+  accessToken: string;
+  refreshToken: string;
+}
+
+export interface IAdminUserLogin extends IToken {
+  admin: IAdminUser;
+}
+
 export interface IUser {
   id: number;
   name: string;
@@ -21,19 +36,6 @@ export interface IUser {
   status: number;
   createdAt?: Date;
   updatedAt?: Date;
-}
-
-export interface IChangePassword {
-  password: string;
-  newPassword: string;
-  repeatPassword: string;
-}
-
-export interface IAdminUser extends IUser {
-  roleId: number;
-  roleName?: string;
-  franchiseId?: number;
-  permissions?: string[];
 }
 
 export interface IMember extends IUser {

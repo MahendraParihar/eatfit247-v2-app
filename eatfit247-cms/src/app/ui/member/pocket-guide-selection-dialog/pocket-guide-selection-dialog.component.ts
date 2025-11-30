@@ -3,23 +3,20 @@ import { StringResources } from '../../../enum/string-resources';
 import { HttpService } from '../../../service/http.service';
 import { SnackBarService } from '../../../service/snack-bar.service';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { ResponseDataModel } from '../../../models/response-data.model';
 import { ApiUrlEnum } from '../../../enum/api-url-enum';
-import { ServerResponseEnum } from '../../../enum/server-response-enum';
-import { MemberHealthIssueModel } from '../../../models/member-health-issue.model';
 import { filter, map } from 'lodash';
-import { MemberPocketGuideModel } from '../../../models/member-pocket-guide.model';
+import { ITableList, IMemberPocketGuide } from 'shared-lib';
 
 @Component({
   standalone: false,
   selector: 'app-pocket-guide-selection-dialog',
   templateUrl: './pocket-guide-selection-dialog.component.html',
-  styleUrls: ['./pocket-guide-selection-dialog.component.scss'],
+  styleUrls: ['./pocket-guide-selection-dialog.component.scss']
 })
 export class PocketGuideSelectionDialogComponent implements OnInit {
   memberId: number;
   stringRes = StringResources;
-  memberPocketGuides: MemberPocketGuideModel[] = [];
+  memberPocketGuides: IMemberPocketGuide[] = [];
   displayedColumns = ['seqNo', 'title', 'selected'];
 
   constructor(
@@ -48,49 +45,22 @@ export class PocketGuideSelectionDialogComponent implements OnInit {
 
   async loadDataById(id: number): Promise<void> {
     this.memberPocketGuides = [];
-    const res: ResponseDataModel = await this.httpService.getRequest(ApiUrlEnum.MEMBER_POCKET_GUIDE_MANAGE, id, null, true);
-    if (res) {
-      switch (res.code) {
-        case ServerResponseEnum.SUCCESS:
-          if (res.data.list) {
-            for (const s of res.data.list) {
-              this.memberPocketGuides.push(MemberHealthIssueModel.fromJson(s));
-            }
-          }
-          break;
-        case ServerResponseEnum.WARNING:
-          break;
-        case ServerResponseEnum.ERROR:
-          this.snackBarService.showError(res.message);
-          break;
-      }
+    const res: ITableList<IMemberPocketGuide> = await this.httpService.getRequest<ITableList<IMemberPocketGuide>>(ApiUrlEnum.MEMBER_POCKET_GUIDE_MANAGE, id, null, true);
+    if (res.data) {
+      this.memberPocketGuides = res.data;
     }
   }
 
   async onSubmit(): Promise<void> {
     const ids = map(filter(this.memberPocketGuides, { isSelected: true }), 'id');
     let payload: any = {
-      pocketGuideIds: ids,
+      pocketGuideIds: ids
     };
-    let res: ResponseDataModel;
     if (this.memberId > 0) {
-      res = await this.httpService.putRequest(ApiUrlEnum.MEMBER_POCKET_GUIDE_MANAGE, this.memberId, payload, true);
+      await this.httpService.putRequest(ApiUrlEnum.MEMBER_POCKET_GUIDE_MANAGE, this.memberId, payload, true);
     } else {
-      res = await this.httpService.postRequest(ApiUrlEnum.MEMBER_POCKET_GUIDE_MANAGE, payload, true);
+      await this.httpService.postRequest(ApiUrlEnum.MEMBER_POCKET_GUIDE_MANAGE, payload, true);
     }
-    if (res) {
-      switch (res.code) {
-        case ServerResponseEnum.SUCCESS:
-          this.snackBarService.showSuccess(res.message);
-          this.onPositiveClick();
-          break;
-        case ServerResponseEnum.WARNING:
-          this.snackBarService.showWarning(res.message);
-          break;
-        case ServerResponseEnum.ERROR:
-          this.snackBarService.showError(res.message);
-          break;
-      }
-    }
+    this.snackBarService.showSuccess('Data updated successfully');
   }
 }

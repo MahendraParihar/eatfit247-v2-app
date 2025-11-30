@@ -1,8 +1,6 @@
 import { Body, Controller, Get, Param, Patch, Post, Put, Query, Req, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../../account/jwt-auth.guard';
 import { BasicSearchDto, UpdateActiveDto } from '../../../common-dto/basic-input.dto';
-import { ServerResponseEnum } from '../../../enums/server-response-enum';
-import { StringResource } from '../../../enums/string-resource';
 import { CreateProgramDto } from '../dto/program.dto';
 import { ProgramService } from '../services/program.service';
 import { ProgramCategoryService } from '../../lov/services/program-category.service';
@@ -46,14 +44,7 @@ export class ProgramController {
 
   @UseGuards(JwtAuthGuard)
   @Get('program-master')
-  async programMasterData(@Query() req) {
-    const promiseAll = await Promise.all([this.programCategoryService.getProgramCategoryList()]);
-    return {
-      code: ServerResponseEnum.SUCCESS,
-      message: StringResource.SUCCESS,
-      data: {
-        programCategory: promiseAll[0],
-      },
-    };
+  async programMasterData() {
+    return await this.programCategoryService.getProgramCategoryList();
   }
 }

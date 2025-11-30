@@ -2,7 +2,8 @@ import { BelongsTo, Column, CreatedAt, DataType, Model, Table, UpdatedAt } from 
 import { MstAdminUser } from './mst-admin-user.model';
 
 @Table({
-  modelName: 'mst_currency_config',
+  freezeTableName: true,
+  modelName: 'mst_currency_configs',
   schema: 'public',
 })
 export class MstCurrencyConfig extends Model<MstCurrencyConfig> {
@@ -65,7 +66,7 @@ export class MstCurrencyConfig extends Model<MstCurrencyConfig> {
     allowNull: false,
     field: 'created_at',
   })
-  createdAt: Date;
+  declare createdAt: Date;
 
   @BelongsTo(() => MstAdminUser, {
     foreignKey: 'modifiedBy',
@@ -83,7 +84,7 @@ export class MstCurrencyConfig extends Model<MstCurrencyConfig> {
     allowNull: false,
     field: 'updated_at',
   })
-  updatedAt: Date;
+  declare updatedAt: Date;
 
   @Column({
     allowNull: false,

@@ -1,7 +1,6 @@
 import { Body, Controller, Get, Param, Put, Req, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../../account/jwt-auth.guard';
-import { ServerResponseEnum } from '../../../enums/server-response-enum';
-import { StringResource } from '../../../enums/string-resource';
+import { IMemberAssessmentMasterData } from 'shared-lib';
 import { CommonService } from '../../common/common.service';
 import { FranchiseService } from '../../franchise/franchise.service';
 import { GenderService } from '../../lov/services/gender.service';
@@ -47,21 +46,17 @@ export class AssessmentController {
 
   @UseGuards(JwtAuthGuard)
   @Get('master-data')
-  async memberMaster(@Req() req: any) {
-    return {
-      code: ServerResponseEnum.SUCCESS,
-      message: StringResource.SUCCESS,
-      data: {
-        gender: await this.genderService.getGenderList(),
-        maritalStatus: await this.maritalStatusService.getMaritalStatusList(),
-        religion: await this.religionService.getReligionList(),
-        lifestyle: await this.lifestyleService.getLifestyleList(),
-        eatingHabit: await this.eatingHabitService.getEatingHabitList(),
-        typeOfExercise: await this.typeOfExerciseService.getTypeOfExerciseList(),
-        sleepingPattern: await this.sleepingPatternService.getSleepingPatternList(),
-        bloodSugar: await this.bloodSugarService.getBloodSugarList(),
-        urineOutput: await this.urineOutputService.getUrineOutputList(),
-      },
+  async memberMaster(@Req() req: any): Promise<IMemberAssessmentMasterData> {
+    return <IMemberAssessmentMasterData>{
+      gender: await this.genderService.getGenderList(),
+      maritalStatus: await this.maritalStatusService.getMaritalStatusList(),
+      religion: await this.religionService.getReligionList(),
+      lifestyle: await this.lifestyleService.getLifestyleList(),
+      eatingHabit: await this.eatingHabitService.getEatingHabitList(),
+      typeOfExercise: await this.typeOfExerciseService.getTypeOfExerciseList(),
+      sleepingPattern: await this.sleepingPatternService.getSleepingPatternList(),
+      bloodSugar: await this.bloodSugarService.getBloodSugarList(),
+      urineOutput: await this.urineOutputService.getUrineOutputList(),
     };
   }
 }

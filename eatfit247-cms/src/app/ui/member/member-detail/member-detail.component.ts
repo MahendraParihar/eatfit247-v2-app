@@ -1,31 +1,29 @@
 import { AfterViewInit, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
-import { MemberDetailModel } from '../../../models/member.model';
 import { StringResources } from '../../../enum/string-resources';
 import { HttpService } from '../../../service/http.service';
 import { SnackBarService } from '../../../service/snack-bar.service';
 import { NavigationService } from '../../../service/navigation.service';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
-import { ResponseDataModel } from '../../../models/response-data.model';
 import { ApiUrlEnum } from '../../../enum/api-url-enum';
-import { ServerResponseEnum } from '../../../enum/server-response-enum';
 import { NavigationPathEnum } from '../../../enum/navigation-path-enum';
 import { AssessmentDetailDialogComponent } from '../assessment-detail-dialog/assessment-detail-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
 import {
-  HealthIssueSelectionDialogComponent,
+  HealthIssueSelectionDialogComponent
 } from '../health-issue-selection-dialog/health-issue-selection-dialog.component';
 import {
-  PocketGuideSelectionDialogComponent,
+  PocketGuideSelectionDialogComponent
 } from '../pocket-guide-selection-dialog/pocket-guide-selection-dialog.component';
+import { IMemberDetails, IResponse } from 'shared-lib';
 
 @Component({
   standalone: false,
   selector: 'app-member-detail',
   templateUrl: './member-detail.component.html',
-  styleUrls: ['./member-detail.component.scss'],
+  styleUrls: ['./member-detail.component.scss']
 })
 export class MemberDetailComponent implements OnInit, AfterViewInit, OnDestroy {
-  memberObj: MemberDetailModel;
+  memberObj: IMemberDetails;
   id: number;
   stringRes = StringResources;
   activeTag = 0;
@@ -40,7 +38,7 @@ export class MemberDetailComponent implements OnInit, AfterViewInit, OnDestroy {
     this.id = Number(this.activatedRoute.snapshot.paramMap.get('id'));
     router.events.subscribe((val) => {
       if (val instanceof NavigationEnd) {
-        if(val.url.includes('diet-plan-detail')){
+        if (val.url.includes('diet-plan-detail')) {
           const dietPlanId = Number(this.activatedRoute.snapshot.paramMap.get('dietId'));
           const cycleNo = Number(this.activatedRoute.snapshot.paramMap.get('cycleNo'));
           const dayNo = Number(this.activatedRoute.snapshot.paramMap.get('dayNo'));
@@ -70,7 +68,7 @@ export class MemberDetailComponent implements OnInit, AfterViewInit, OnDestroy {
   openAssessment(): void {
     const dialogRef = this.dialog.open(AssessmentDetailDialogComponent, {
       width: '650px',
-      data: this.memberObj.assessmentObj,
+      data: this.memberObj.assessment
     });
     dialogRef.afterClosed().subscribe();
   }
@@ -79,10 +77,9 @@ export class MemberDetailComponent implements OnInit, AfterViewInit, OnDestroy {
     const dialogRef = this.dialog.open(HealthIssueSelectionDialogComponent, {
       width: '650px',
       data: this.id,
-      disableClose: true,
+      disableClose: true
     });
     dialogRef.afterClosed().subscribe(result => {
-
       if (result) {
         this.loadDataById(this.id);
       }
@@ -93,10 +90,9 @@ export class MemberDetailComponent implements OnInit, AfterViewInit, OnDestroy {
     const dialogRef = this.dialog.open(PocketGuideSelectionDialogComponent, {
       width: '650px',
       data: this.id,
-      disableClose: true,
+      disableClose: true
     });
     dialogRef.afterClosed().subscribe(result => {
-
       if (result) {
         this.loadDataById(this.id);
       }
@@ -172,18 +168,9 @@ export class MemberDetailComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   async loadDataById(id: number): Promise<void> {
-    const res: ResponseDataModel = await this.httpService.getRequest(ApiUrlEnum.MEMBER_DETAILS, id, null, true);
+    const res = await this.httpService.getRequest<IResponse<IMemberDetails>>(ApiUrlEnum.MEMBER_DETAILS, id, null, true);
     if (res) {
-      switch (res.code) {
-        case ServerResponseEnum.SUCCESS:
-          this.memberObj = MemberDetailModel.fromJson(res.data);
-          break;
-        case ServerResponseEnum.WARNING:
-          break;
-        case ServerResponseEnum.ERROR:
-          this.snackBarService.showError(res.message);
-          break;
-      }
+      this.memberObj = res.data;
     }
   }
 }

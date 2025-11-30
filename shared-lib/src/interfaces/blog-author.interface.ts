@@ -1,7 +1,7 @@
 import { IMediaUpload } from './media-upload.interface';
-import { IAdminShortInfo } from './admin-user.interface';
+import { ICreateUpdate } from './common.interface';
 
-export interface IBlogAuthor {
+export interface IBlogAuthor extends ICreateUpdate {
   id: any;
   firstName: string;
   lastName: string;
@@ -10,9 +10,4 @@ export interface IBlogAuthor {
   emailId: string;
   linkedUrl?: string;
   imagePath?: IMediaUpload[];
-  active?: boolean;
-  createdBy: IAdminShortInfo;
-  updatedBy: IAdminShortInfo;
-  createdAt: string;
-  updatedAt: string;
 }

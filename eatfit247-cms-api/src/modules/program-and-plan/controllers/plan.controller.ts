@@ -3,8 +3,6 @@ import { JwtAuthGuard } from '../../account/jwt-auth.guard';
 import { BasicSearchDto, UpdateActiveDto } from '../../../common-dto/basic-input.dto';
 import { CreatePlanDto } from '../dto/plan.dto';
 import { PlanService } from '../services/plan.service';
-import { ServerResponseEnum } from '../../../enums/server-response-enum';
-import { StringResource } from '../../../enums/string-resource';
 
 @Controller('program-plan')
 export class PlanController {
@@ -42,14 +40,10 @@ export class PlanController {
 
   @UseGuards(JwtAuthGuard)
   @Get('master-data')
-  async programPlanMasterData(@Query() req) {
+  async programPlanMasterData() {
     const promiseAll = await Promise.all([this.service.getProgramPlanTypeList()]);
     return {
-      code: ServerResponseEnum.SUCCESS,
-      message: StringResource.SUCCESS,
-      data: {
-        programPlanType: promiseAll[0],
-      },
+      programPlanType: promiseAll[0],
     };
   }
 }

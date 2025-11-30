@@ -2,45 +2,36 @@ import { IsBoolean, IsDate, IsNotEmpty, IsNumber, MaxLength, MinLength, Validate
 import { Type } from 'class-transformer';
 import { InputLength } from '../../../constants/input-length';
 import { MediaUploadDto } from '../../../common-dto/media-upload.dto';
+import { IManageBlog } from '@eatfit247-common/lib';
 
-export class CreateBlogDto {
+export class CreateBlogDto implements IManageBlog {
   @MinLength(InputLength.CHAR_2)
   @MaxLength(InputLength.CHAR_100)
   @IsNotEmpty()
   title: string;
-
   @MinLength(InputLength.CHAR_2)
   @IsNotEmpty()
   description: string;
-
   @IsNotEmpty()
   @IsNumber()
   blogCategoryId: number;
-
   @IsNotEmpty()
   @IsNumber()
   blogAuthorId: number;
-
   @IsBoolean()
   isPublished: boolean;
-
   @IsBoolean()
   isCommentAllow: boolean;
-
   @IsBoolean()
   isMailSentToSubscriber: boolean;
-
   @IsDate()
   @Type(() => Date)
   writtenAt: Date;
-
   @IsNotEmpty()
   tags: string[];
-
   @ValidateNested({ each: true })
   @Type(() => MediaUploadDto)
   uploadFiles?: MediaUploadDto[];
-
   @IsNotEmpty()
   active: boolean;
 }

@@ -2,6 +2,7 @@ import { BelongsTo, Column, CreatedAt, DataType, Model, Table, UpdatedAt } from 
 import { MstAdminUser } from './mst-admin-user.model';
 
 @Table({
+  freezeTableName: true,
   modelName: 'mst_user_statuses',
   schema: 'public',
 })
@@ -44,7 +45,7 @@ export class MstUserStatus extends Model<MstUserStatus> {
     allowNull: false,
     field: 'created_at',
   })
-  createdAt: Date;
+  declare createdAt: Date;
 
   @BelongsTo(() => MstAdminUser, {
     foreignKey: 'modifiedBy',
@@ -62,5 +63,5 @@ export class MstUserStatus extends Model<MstUserStatus> {
     allowNull: false,
     field: 'updated_at',
   })
-  updatedAt: Date;
+  declare updatedAt: Date;
 }

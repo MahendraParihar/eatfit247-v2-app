@@ -1,17 +1,15 @@
 import { Component, inject, NgZone, OnInit } from '@angular/core';
 import { ApiUrlEnum } from 'src/app/enum/api-url-enum';
-import { ServerResponseEnum } from 'src/app/enum/server-response-enum';
-import { ResponseDataModel } from 'src/app/models/response-data.model';
 import { HttpService } from 'src/app/service/http.service';
 import { SnackBarService } from 'src/app/service/snack-bar.service';
 import * as am5 from '@amcharts/amcharts5';
 import * as am5percent from '@amcharts/amcharts5/percent';
 import * as am5xy from '@amcharts/amcharts5/xy';
 import am5themes_Animated from '@amcharts/amcharts5/themes/Animated';
-import { DashboardItemModel, DashboardModel } from 'src/app/models/dashboard-item.model';
 import { StringResources } from 'src/app/enum/string-resources';
 import { FormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { uniq } from 'lodash';
+import { IDashboardCount, IDashboardItem, IResponse } from 'shared-lib';
 
 @Component({
   standalone: false,
@@ -21,12 +19,12 @@ import { uniq } from 'lodash';
 })
 export class HomeComponent implements OnInit {
   formBuilder: FormBuilder = inject(FormBuilder);
-  dbModel: DashboardModel;
+  dbModel: IDashboardCount;
   lineSeries: any;
   stringResources = StringResources;
   yearList: number[] = [];
   formGroup: UntypedFormGroup = this.formBuilder.group({
-    year: [null, [Validators.required]],
+    year: [null, [Validators.required]]
   });
   chartList: any = [];
 
@@ -51,33 +49,23 @@ export class HomeComponent implements OnInit {
 
   loadDataByYear() {
     const year = this.formGroup.value.year;
-    const find = this.dbModel.memberMonthlyCountList.filter(x => x.id === year);
+    const find = this.dbModel.memberCountByMonthList.filter(x => x.id === year);
     this.initLineChart('membersByMonthChartdiv', find && find.length > 0 ? find[0].items : []);
   }
 
   private async loadDashboardData() {
-    const res: ResponseDataModel = await this.httpService.getRequest(ApiUrlEnum.MEMBER_DASHBOARD, null, null, true);
+    const res = await this.httpService.getRequest<IResponse<IDashboardCount>>(ApiUrlEnum.MEMBER_DASHBOARD, null, null, true);
     if (res) {
-      switch (res.code) {
-        case ServerResponseEnum.SUCCESS:
-          this.dbModel = DashboardModel.fromJson(res.data);
-          this.initializeChartData();
-          break;
-        case ServerResponseEnum.WARNING:
-          this.snackBarService.showWarning(res.message);
-          break;
-        case ServerResponseEnum.ERROR:
-          this.snackBarService.showError(res.message);
-          break;
-      }
+      this.dbModel = res.data;
+      this.initializeChartData();
     }
   }
 
   private initializeControls() {
     const currentYear: number = new Date().getFullYear();
-    this.yearList = uniq(this.dbModel.memberMonthlyCountList.map(x => x.id));
+    this.yearList = uniq(this.dbModel.memberCountByMonthList.map(x => x.id));
     this.formGroup.patchValue({
-      year: currentYear,
+      year: currentYear
     });
     this.loadDataByYear();
   }
@@ -91,7 +79,7 @@ export class HomeComponent implements OnInit {
     this.initializeControls();
   }
 
-  private initLineChart(chartName: string, dbItemList: DashboardItemModel[]): void {
+  private initLineChart(chartName: string, dbItemList: IDashboardItem[]): void {
     if (this.lineSeries) {
       this.lineSeries.data.setAll(dbItemList);
       this.lineSeries.appear(1000);
@@ -99,7 +87,7 @@ export class HomeComponent implements OnInit {
     }
     const root = am5.Root.new(chartName);
     root.setThemes([
-      am5themes_Animated.new(root),
+      am5themes_Animated.new(root)
     ]);
     if (root._logo) {
       root._logo.dispose();
@@ -110,24 +98,24 @@ export class HomeComponent implements OnInit {
       panY: false,
       wheelX: 'panX',
       wheelY: 'zoomX',
-      layout: root.verticalLayout,
+      layout: root.verticalLayout
     }));
     chart.set(
       'scrollbarX',
       am5.Scrollbar.new(root, {
-        orientation: 'horizontal',
-      }),
+        orientation: 'horizontal'
+      })
     );
     let xRenderer = am5xy.AxisRendererX.new(root, {});
     let xAxis = chart.xAxes.push(
       am5xy.CategoryAxis.new(root, {
         categoryField: 'name',
         renderer: xRenderer,
-        tooltip: am5.Tooltip.new(root, {}),
-      }),
+        tooltip: am5.Tooltip.new(root, {})
+      })
     );
     xRenderer.grid.template.setAll({
-      location: 1,
+      location: 1
     });
     xAxis.data.setAll(dbItemList);
     let yAxis = chart.yAxes.push(
@@ -135,9 +123,9 @@ export class HomeComponent implements OnInit {
         min: 0,
         max: 100,
         renderer: am5xy.AxisRendererY.new(root, {
-          strokeOpacity: 0.1,
-        }),
-      }),
+          strokeOpacity: 0.1
+        })
+      })
     );
     const series = chart.series.push(am5xy.LineSeries.new(root, {
       name: 'Monthly Member Count',
@@ -147,8 +135,8 @@ export class HomeComponent implements OnInit {
       categoryXField: 'name',
       tooltip: am5.Tooltip.new(root, {
         pointerOrientation: 'horizontal',
-        labelText: '{categoryX}: {valueY}',
-      }),
+        labelText: '{categoryX}: {valueY}'
+      })
     }));
     series.bullets.push(function() {
       return am5.Bullet.new(root, {
@@ -156,26 +144,26 @@ export class HomeComponent implements OnInit {
           strokeWidth: 3,
           stroke: series.get('stroke'),
           radius: 5,
-          fill: root.interfaceColors.get('background'),
-        }),
+          fill: root.interfaceColors.get('background')
+        })
       });
     });
     series.strokes.template.setAll({
       strokeWidth: 3,
-      templateField: 'strokeSettings',
+      templateField: 'strokeSettings'
     });
     chart.set('cursor', am5xy.XYCursor.new(root, {}));
     // Add legend
     let legend = chart.children.push(
       am5.Legend.new(root, {
         centerX: am5.p50,
-        x: am5.p50,
-      }),
+        x: am5.p50
+      })
     );
     legend.data.setAll(chart.series.values);
     // Add scrollbar
     chart.set('scrollbarX', am5.Scrollbar.new(root, {
-      orientation: 'horizontal',
+      orientation: 'horizontal'
     }));
     this.lineSeries = series;
     this.lineSeries.data.setAll(dbItemList);
@@ -183,11 +171,11 @@ export class HomeComponent implements OnInit {
     chart.appear(1000, 100);
   }
 
-  private initPieChart(chartName: string, dbItemList: DashboardItemModel[]): void {
+  private initPieChart(chartName: string, dbItemList: IDashboardItem[]): void {
     const root = am5.Root.new(chartName);
     this.chartList.push(root);
     root.setThemes([
-      am5themes_Animated.new(root),
+      am5themes_Animated.new(root)
     ]);
     if (root._logo) {
       root._logo.dispose();
@@ -195,7 +183,7 @@ export class HomeComponent implements OnInit {
     // Create chart
     const chart = root.container.children.push(am5percent.PieChart.new(root, {
       layout: root.horizontalLayout,
-      innerRadius: am5.percent(50),
+      innerRadius: am5.percent(50)
     }));
     const series = chart.series.push(am5percent.PieSeries.new(root, {
       valueField: 'value',
@@ -205,8 +193,8 @@ export class HomeComponent implements OnInit {
       legendValueText: '{value}',
       tooltip: am5.Tooltip.new(root, {
         pointerOrientation: 'horizontal',
-        labelText: '{category}: {value}',
-      }),
+        labelText: '{category}: {value}'
+      })
     }));
     series.labels.template.set('visible', false);
     series.ticks.template.set('visible', false);
@@ -215,15 +203,15 @@ export class HomeComponent implements OnInit {
       layout: root.verticalLayout,
       height: am5.percent(100),
       verticalScrollbar: am5.Scrollbar.new(root, {
-        orientation: 'vertical',
-      }),
+        orientation: 'vertical'
+      })
     }));
     legend.data.setAll(series.dataItems);
     // set value labels align to right
     legend.valueLabels.template.setAll({ textAlign: 'left' });
     // set width and max width of labels
     legend.labels.template.setAll({
-      oversizedBehavior: 'wrap',
+      oversizedBehavior: 'wrap'
     });
     // Play initial series animation
     series.appear(1000, 100);

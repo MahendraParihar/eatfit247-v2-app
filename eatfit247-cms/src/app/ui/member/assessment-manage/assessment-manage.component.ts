@@ -6,12 +6,9 @@ import { ActivatedRoute } from '@angular/router';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { StringResources } from '../../../enum/string-resources';
 import { InputLength } from '../../../constants/input-length';
-import { ResponseDataModel } from '../../../models/response-data.model';
 import { ApiUrlEnum } from '../../../enum/api-url-enum';
-import { ServerResponseEnum } from '../../../enum/server-response-enum';
-import { MemberAssessmentModel } from '../../../models/member.model';
 import { ValidationUtil } from '../../../utilites/validation-util';
-import { DropdownItem } from '../../../interfaces/dropdown-item';
+import { IDropdownItem, IManageMemberAssessment, IMemberAssessmentMasterData, IResponse } from 'shared-lib';
 
 @Component({
   standalone: false,
@@ -21,19 +18,19 @@ import { DropdownItem } from '../../../interfaces/dropdown-item';
 })
 export class AssessmentManageComponent implements OnInit, AfterViewInit, OnDestroy {
   fb: FormBuilder = inject(FormBuilder);
-  memberAssessmentObj: MemberAssessmentModel;
+  memberAssessmentObj: IManageMemberAssessment;
   id: number;
   stringRes = StringResources;
   inputLength = InputLength;
-  genderList: DropdownItem[] = [];
-  maritalStatusList: DropdownItem[] = [];
-  religionList: DropdownItem[] = [];
-  lifestyleList: DropdownItem[] = [];
-  eatingHabitList: DropdownItem[] = [];
-  typeOfExerciseList: DropdownItem[] = [];
-  sleepingPatternList: DropdownItem[] = [];
-  bloodSugarList: DropdownItem[] = [];
-  urineOutputList: DropdownItem[] = [];
+  genderList: IDropdownItem[] = [];
+  maritalStatusList: IDropdownItem[] = [];
+  religionList: IDropdownItem[] = [];
+  lifestyleList: IDropdownItem[] = [];
+  eatingHabitList: IDropdownItem[] = [];
+  typeOfExerciseList: IDropdownItem[] = [];
+  sleepingPatternList: IDropdownItem[] = [];
+  bloodSugarList: IDropdownItem[] = [];
+  urineOutputList: IDropdownItem[] = [];
   formGroup: FormGroup = this.fb.group({
     dateOfBirth: [null, [Validators.required]],
     age: [null, [Validators.maxLength(6)]],
@@ -234,65 +231,25 @@ export class AssessmentManageComponent implements OnInit, AfterViewInit, OnDestr
     this.sleepingPatternList = [];
     this.bloodSugarList = [];
     this.urineOutputList = [];
-    const res: ResponseDataModel = await this.httpService.getRequest(ApiUrlEnum.MEMBER_ASSESSMENT_MASTER_DATA, null, null, true);
+    const res = await this.httpService.getRequest<IResponse<IMemberAssessmentMasterData>>(ApiUrlEnum.MEMBER_ASSESSMENT_MASTER_DATA, null, null, true);
     if (res) {
-      switch (res.code) {
-        case ServerResponseEnum.SUCCESS:
-          for (const s of res.data.gender) {
-            this.genderList.push(DropdownItem.fromJson(s));
-          }
-          for (const s of res.data.maritalStatus) {
-            this.maritalStatusList.push(DropdownItem.fromJson(s));
-          }
-          for (const s of res.data.religion) {
-            this.religionList.push(DropdownItem.fromJson(s));
-          }
-          for (const s of res.data.lifestyle) {
-            this.lifestyleList.push(DropdownItem.fromJson(s));
-          }
-          for (const s of res.data.eatingHabit) {
-            this.eatingHabitList.push(DropdownItem.fromJson(s));
-          }
-          for (const s of res.data.typeOfExercise) {
-            this.typeOfExerciseList.push(DropdownItem.fromJson(s));
-          }
-          for (const s of res.data.sleepingPattern) {
-            this.sleepingPatternList.push(DropdownItem.fromJson(s));
-          }
-          for (const s of res.data.bloodSugar) {
-            this.bloodSugarList.push(DropdownItem.fromJson(s));
-          }
-          for (const s of res.data.urineOutput) {
-            this.urineOutputList.push(DropdownItem.fromJson(s));
-          }
-          break;
-        case ServerResponseEnum.WARNING:
-          break;
-        case ServerResponseEnum.ERROR:
-          this.snackBarService.showError(res.message);
-          break;
-      }
+      this.genderList = res.data.gender;
+      this.maritalStatusList = res.data.maritalStatus;
+      this.religionList = res.data.religion;
+      this.lifestyleList = res.data.lifestyle;
+      this.eatingHabitList = res.data.eatingHabit;
+      this.typeOfExerciseList = res.data.typeOfExercise;
+      this.sleepingPatternList = res.data.sleepingPattern;
+      this.bloodSugarList = res.data.bloodSugar;
+      this.urineOutputList = res.data.urineOutput;
     }
   }
 
   async loadDataById(id: number): Promise<void> {
-    const res: ResponseDataModel = await this.httpService.getRequest(ApiUrlEnum.MEMBER_ASSESSMENT_MANAGEMENT, id, null, true);
-    if (res) {
-      switch (res.code) {
-        case ServerResponseEnum.SUCCESS:
-          if (res.data) {
-            this.memberAssessmentObj = MemberAssessmentModel.fromJson(res.data);
-          } else {
-            this.memberAssessmentObj = new MemberAssessmentModel();
-          }
-          await this.bindData();
-          break;
-        case ServerResponseEnum.WARNING:
-          break;
-        case ServerResponseEnum.ERROR:
-          this.snackBarService.showError(res.message);
-          break;
-      }
+    const res = await this.httpService.getRequest<IResponse<IManageMemberAssessment>>(ApiUrlEnum.MEMBER_ASSESSMENT_MANAGEMENT, id, null, true);
+    if (res && res.data) {
+      this.memberAssessmentObj = res.data;
+      await this.bindData();
     }
   }
 
@@ -306,25 +263,12 @@ export class AssessmentManageComponent implements OnInit, AfterViewInit, OnDestr
       return;
     }
     let payload: any = this.formGroup.value;
-    let res: ResponseDataModel;
     if (this.id > 0) {
-      res = await this.httpService.putRequest(ApiUrlEnum.MEMBER_ASSESSMENT_MANAGEMENT, this.id, payload, true);
+      await this.httpService.putRequest(ApiUrlEnum.MEMBER_ASSESSMENT_MANAGEMENT, this.id, payload, true);
     } else {
-      res = await this.httpService.postRequest(ApiUrlEnum.MEMBER_ASSESSMENT_MANAGEMENT, payload, true);
+      await this.httpService.postRequest(ApiUrlEnum.MEMBER_ASSESSMENT_MANAGEMENT, payload, true);
     }
-    if (res) {
-      switch (res.code) {
-        case ServerResponseEnum.SUCCESS:
-          this.snackBarService.showSuccess(res.message);
-          this.onCancel();
-          break;
-        case ServerResponseEnum.WARNING:
-          this.snackBarService.showWarning(res.message);
-          break;
-        case ServerResponseEnum.ERROR:
-          this.snackBarService.showError(res.message);
-          break;
-      }
-    }
+    this.snackBarService.showSuccess('Data updated successfully');
+    this.onCancel();
   }
 }

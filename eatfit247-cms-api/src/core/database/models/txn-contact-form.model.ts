@@ -2,7 +2,8 @@ import { BelongsTo, Column, CreatedAt, DataType, Model, Table, UpdatedAt } from 
 import { MstAdminUser } from './mst-admin-user.model';
 
 @Table({
-  modelName: 'txn_contact_form',
+  freezeTableName: true,
+  modelName: 'txn_contact_forms',
   schema: 'public',
 })
 export class TxnContactForm extends Model<TxnContactForm> {
@@ -81,14 +82,14 @@ export class TxnContactForm extends Model<TxnContactForm> {
     allowNull: false,
     field: 'created_at',
   })
-  createdAt: Date;
+  declare createdAt: Date;
 
   @UpdatedAt
   @Column({
     allowNull: false,
     field: 'updated_at',
   })
-  updatedAt: Date;
+  declare updatedAt: Date;
 
   @Column({
     allowNull: false,

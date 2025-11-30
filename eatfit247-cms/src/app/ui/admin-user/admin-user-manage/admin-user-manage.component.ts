@@ -5,14 +5,10 @@ import { NavigationService } from '../../../service/navigation.service';
 import { ActivatedRoute } from '@angular/router';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { StringResources } from '../../../enum/string-resources';
-import { AdminUserModel } from '../../../models/admin-user.model';
 import { ValidationUtil } from '../../../utilites/validation-util';
-import { ResponseDataModel } from '../../../models/response-data.model';
 import { ApiUrlEnum } from '../../../enum/api-url-enum';
-import { ServerResponseEnum } from '../../../enum/server-response-enum';
 import { InputLength } from '../../../constants/input-length';
-import { DropdownItem } from '../../../interfaces/dropdown-item';
-import { FileTypeEnum } from '../../../enum/file-type-enum';
+import { FileTypeEnum, IAdminMasterData, IDropdownItem, IManageAdminUser, IResponse } from 'shared-lib';
 import { MediaForEnum } from '../../../enum/media-for-enum';
 import { MatSelectChange } from '@angular/material/select';
 import { AdminRoleEnum } from '../../../enum/admin-role-enum';
@@ -22,20 +18,20 @@ import moment from 'moment';
   standalone: false,
   selector: 'app-admin-user-manage',
   templateUrl: './admin-user-manage.component.html',
-  styleUrls: ['./admin-user-manage.component.scss'],
+  styleUrls: ['./admin-user-manage.component.scss']
 })
 export class AdminUserManageComponent implements OnInit, AfterViewInit, OnDestroy {
   fb: FormBuilder = inject(FormBuilder);
-  adminUserObj: AdminUserModel;
+  adminUserObj: IManageAdminUser;
   id: number;
   stringRes = StringResources;
   inputLength = InputLength;
   fileTypeEnum = FileTypeEnum;
   mediaForEnum = MediaForEnum;
-  roleList: DropdownItem[] = [];
-  franchiseList: DropdownItem[] = [];
-  statusList: DropdownItem[] = [];
-  countryCodeList: DropdownItem[] = [];
+  roleList: IDropdownItem[] = [];
+  franchiseList: IDropdownItem[] = [];
+  statusList: IDropdownItem[] = [];
+  countryCodeList: IDropdownItem[] = [];
   showFranchise = false;
   formGroup: FormGroup = this.fb.group({
     firstName: [null, [Validators.required, Validators.minLength(InputLength.MIN_NAME), Validators.maxLength(InputLength.MAX_NAME)]],
@@ -48,13 +44,13 @@ export class AdminUserManageComponent implements OnInit, AfterViewInit, OnDestro
     roleId: [null, []],
     franchiseId: [null, []],
     adminUserStatusId: [null, [Validators.required]],
-    reason: [null, []],
+    reason: [null, []]
   });
 
   constructor(private httpService: HttpService,
     private snackBarService: SnackBarService,
     private navigationService: NavigationService,
-    private activatedRoute: ActivatedRoute,) {
+    private activatedRoute: ActivatedRoute) {
     this.id = Number(this.activatedRoute.snapshot.paramMap.get('id'));
   }
 
@@ -88,14 +84,14 @@ export class AdminUserManageComponent implements OnInit, AfterViewInit, OnDestro
         contactNumber: this.adminUserObj.contactNumber,
         emailId: this.adminUserObj.emailId,
         startDate: this.adminUserObj.startDate,
-        roleId: this.adminUserObj.roleList ? this.adminUserObj.roleList[0].roleId : null,
+        roleId: this.adminUserObj.roleId ? this.adminUserObj.roleId : null,
         endDate: this.adminUserObj.endDate,
         franchiseId: this.adminUserObj.franchiseId,
         adminUserStatusId: this.adminUserObj.adminUserStatusId,
-        reason: this.adminUserObj.deactivationReason,
+        reason: this.adminUserObj.reason
       });
-      if (this.adminUserObj.roleList && this.adminUserObj.roleList.length > 0) {
-        this.setValidationBasedOnRole(this.adminUserObj.roleList[0].roleId);
+      if (this.adminUserObj.roleId) {
+        this.setValidationBasedOnRole(this.adminUserObj.roleId);
       }
     }
   }
@@ -138,46 +134,20 @@ export class AdminUserManageComponent implements OnInit, AfterViewInit, OnDestro
     this.franchiseList = [];
     this.statusList = [];
     this.countryCodeList = [];
-    const res: ResponseDataModel = await this.httpService.getRequest(ApiUrlEnum.ADMIN_MASTER_DATA, null, null, true);
+    const res = await this.httpService.getRequest<IResponse<IAdminMasterData>>(ApiUrlEnum.ADMIN_MASTER_DATA, null, null, true);
     if (res) {
-      switch (res.code) {
-        case ServerResponseEnum.SUCCESS:
-          for (const s of res.data.role) {
-            this.roleList.push(DropdownItem.fromJson(s));
-          }
-          for (const s of res.data.franchise) {
-            this.franchiseList.push(DropdownItem.fromJson(s));
-          }
-          for (const s of res.data.adminStatus) {
-            this.statusList.push(DropdownItem.fromJson(s));
-          }
-          for (const s of res.data.countryCode) {
-            this.countryCodeList.push(DropdownItem.fromJson(s));
-          }
-          break;
-        case ServerResponseEnum.WARNING:
-          break;
-        case ServerResponseEnum.ERROR:
-          this.snackBarService.showError(res.message);
-          break;
-      }
+      this.roleList = res.data.role;
+      this.franchiseList = res.data.franchise;
+      this.statusList = res.data.adminStatus;
+      this.countryCodeList = res.data.countryCode;
     }
   }
 
   async loadDataById(id: number): Promise<void> {
-    const res: ResponseDataModel = await this.httpService.getRequest(ApiUrlEnum.ADMIN_MANAGE, id, null, true);
-    if (res) {
-      switch (res.code) {
-        case ServerResponseEnum.SUCCESS:
-          this.adminUserObj = AdminUserModel.fromJson(res.data);
-          this.bindData();
-          break;
-        case ServerResponseEnum.WARNING:
-          break;
-        case ServerResponseEnum.ERROR:
-          this.snackBarService.showError(res.message);
-          break;
-      }
+    const res = await this.httpService.getRequest<IResponse<any>>(ApiUrlEnum.ADMIN_MANAGE, id, null, true);
+    if (res && res.data) {
+      this.adminUserObj = res.data;
+      this.bindData();
     }
   }
 
@@ -193,25 +163,11 @@ export class AdminUserManageComponent implements OnInit, AfterViewInit, OnDestro
     if (this.formGroup.value.endDate) {
       payload['endDate'] = moment(this.formGroup.value.endDate).toDate();
     }
-    let res: ResponseDataModel;
     if (this.id > 0) {
-      res = await this.httpService.putRequest(ApiUrlEnum.ADMIN_MANAGE, this.id, payload, true);
+      await this.httpService.putRequest<IResponse<void>>(ApiUrlEnum.ADMIN_MANAGE, this.id, payload, true);
     } else {
-      res = await this.httpService.postRequest(ApiUrlEnum.ADMIN_MANAGE, payload, true);
+      await this.httpService.postRequest<IResponse<void>>(ApiUrlEnum.ADMIN_MANAGE, payload, true);
     }
-    if (res) {
-      switch (res.code) {
-        case ServerResponseEnum.SUCCESS:
-          this.snackBarService.showSuccess(res.message);
-          this.navigationService.back();
-          break;
-        case ServerResponseEnum.WARNING:
-          this.snackBarService.showWarning(res.message);
-          break;
-        case ServerResponseEnum.ERROR:
-          this.snackBarService.showError(res.message);
-          break;
-      }
-    }
+    this.snackBarService.showSuccess('Data updated successfully');
   }
 }

@@ -1,17 +1,12 @@
-import { IAdminShortInfo } from './admin-user.interface';
-import { IDietDetail } from './diet-detail.interface';
+import { ICreateUpdate } from "./common.interface";
+import { IDietDetail } from "./member-diet-plan.interface";
 
-export interface IDietTemplate {
+export interface IDietTemplate extends ICreateUpdate {
   id: number;
   name: string;
   noOfCycle: number;
   noOfDaysInCycle: number;
   isWeekly: boolean;
-  active?: boolean;
-  createdBy: IAdminShortInfo;
-  updatedBy: IAdminShortInfo;
-  createdAt: string;
-  updatedAt: string;
 }
 
 export interface IDietDetailTemplate {

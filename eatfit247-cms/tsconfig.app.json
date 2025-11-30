@@ -7,7 +7,9 @@
     "types": [],
     "baseUrl": "./",
     "paths": {
-      "src/*": ["src/*"]
+      "src/*": ["src/*"],
+      "shared-lib": ["../shared-lib/dist/index"],
+      "shared-lib/*": ["../shared-lib/dist/*"]
     }
   },
   "include": [

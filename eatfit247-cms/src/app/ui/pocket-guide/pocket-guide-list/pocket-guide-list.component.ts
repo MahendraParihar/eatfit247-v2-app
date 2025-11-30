@@ -1,7 +1,6 @@
 import { AfterViewInit, Component, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { StringResources } from "../../../enum/string-resources";
 import { Constants } from "../../../constants/Constants";
-import { CommonSearchModel } from "../../../models/common-search.model";
 import { MatPaginator } from "@angular/material/paginator";
 import { FormBuilder } from "@angular/forms";
 import { HttpService } from "../../../service/http.service";
@@ -14,12 +13,9 @@ import { NavigationPathEnum } from "../../../enum/navigation-path-enum";
 import { AlertDialogDataInterface } from "../../../interfaces/alert-dialog-data.interface";
 import { AlertTypeEnum } from "../../../enum/alert-type-enum";
 import { DialogAlertComponent } from "../../shared/components/dialog-alert/dialog-alert.component";
-import { ResponseDataModel } from "../../../models/response-data.model";
-import { ServerResponseEnum } from "../../../enum/server-response-enum";
-import { PocketGuideDatasource } from "../pocket-guide.datasource";
-import { PocketGuideModel } from "../../../models/pocket-guide.model";
-import { HttpHeaders } from "@angular/common/http";
-import { MediaForEnum } from "../../../enum/media-for-enum";
+import { TableDataDatasource } from 'src/app/ui/table-data.datasource';
+import { IPocketGuide, ITableListFilter } from 'shared-lib';
+
 
 @Component({
   standalone: false,
@@ -29,12 +25,15 @@ import { MediaForEnum } from "../../../enum/media-for-enum";
 })
 export class PocketGuideListComponent implements OnInit, AfterViewInit, OnDestroy {
   displayedColumns = ["seqNo", "imagePath", "title", "file", "status", "createdBy", "createdAt", "updatedBy", "updatedAt", "action"];
-  dataSource: PocketGuideDatasource;
+  dataSource: TableDataDatasource<IPocketGuide>;
   totalCount = 0;
   stringRes = StringResources;
   defaultPageSize = Constants.MASTER_PAGE_SIZE;
   pageSizeList = Constants.PAGE_SIZE_LIST;
-  payload: CommonSearchModel = new CommonSearchModel();
+  payload: ITableListFilter = {
+    page: this.pageSizeList[0],
+    limit: this.defaultPageSize
+  };
   baseUrl = ApiUrlEnum.MEDIA_PATH;
   @ViewChild(MatPaginator) paginator: MatPaginator;
 
@@ -43,7 +42,7 @@ export class PocketGuideListComponent implements OnInit, AfterViewInit, OnDestro
     private snackBarService: SnackBarService,
     private navigationService: NavigationService,
     public dialog: MatDialog) {
-    this.dataSource = new PocketGuideDatasource(this.httpService, this.snackBarService);
+    this.dataSource = new TableDataDatasource(this.httpService);
     this.dataSource.totalCount.subscribe((count: number) => this.totalCount = count);
   }
 
@@ -62,29 +61,13 @@ export class PocketGuideListComponent implements OnInit, AfterViewInit, OnDestro
   }
 
   ngOnDestroy(): void {
-    // this.dataSource = null;
+    this.dataSource = null;
   }
 
   async loadDataSet(): Promise<void> {
-    this.payload.pageNumber = this.paginator ? this.paginator.pageIndex : 0;
-    this.payload.pageSize = this.paginator ? this.paginator.pageSize : Constants.MASTER_PAGE_SIZE;
+    this.payload.page = this.paginator ? this.paginator.pageIndex : 0;
+    this.payload.limit = this.paginator ? this.paginator.pageSize : Constants.DEFAULT_PAGE_SIZE;
     await this.dataSource.loadData(ApiUrlEnum.POCKET_GUIDE_LIST, this.payload);
-  }
-
-  async searchResult(searchObj: CommonSearchModel): Promise<void> {
-    if (searchObj) {
-      this.payload.name = searchObj.name ? searchObj.name : null;
-      this.payload.active = searchObj.active;
-      this.payload.createdFrom = searchObj.createdFrom;
-      this.payload.createdTo = searchObj.createdTo;
-    } else {
-      this.payload.name = null;
-      this.payload.active = null;
-      this.payload.createdFrom = null;
-      this.payload.createdTo = null;
-    }
-    this.paginator.firstPage();
-    await this.loadDataSet();
   }
 
   onAddClick() {
@@ -95,7 +78,7 @@ export class PocketGuideListComponent implements OnInit, AfterViewInit, OnDestro
     this.navigationService.navigateToById(NavigationPathEnum.POCKET_GUIDES_MANAGE, id);
   }
 
-  onDeleteClick(item: PocketGuideModel, index: number) {
+  onDeleteClick(item: IPocketGuide, index: number) {
     const dialogData: AlertDialogDataInterface = {
       title: StringResources.ALERT,
       message: StringResources.CHANGE_STATUS_DESC,
@@ -114,28 +97,18 @@ export class PocketGuideListComponent implements OnInit, AfterViewInit, OnDestro
     });
   }
 
-  async updateStatusTask(item: PocketGuideModel, index: number): Promise<void> {
+  async updateStatusTask(item: IPocketGuide, index: number): Promise<void> {
     const payload = {
       active: !item.active
     };
-    const res: ResponseDataModel = await this.httpService.patchRequest(ApiUrlEnum.POCKET_GUIDE_STATUS_CHANGE, item.id, payload, true);
+    const res = await this.httpService.patchRequest(ApiUrlEnum.POCKET_GUIDE_STATUS_CHANGE, item.id, payload, true);
     if (res) {
-      switch (res.code) {
-        case ServerResponseEnum.SUCCESS:
-          this.snackBarService.showSuccess(res.message);
-          await this.loadDataSet();
-          break;
-        case ServerResponseEnum.WARNING:
-          this.snackBarService.showWarning(res.message);
-          break;
-        case ServerResponseEnum.ERROR:
-          this.snackBarService.showError(res.message);
-          break;
-      }
+      this.snackBarService.showSuccess('Status changed successfully');
+      await this.loadDataSet();
     }
   }
 
-  async downloadFile(obj: PocketGuideModel) {
+  async downloadFile(obj: IPocketGuide) {
     if (obj.filePath && obj.filePath.length > 0) {
       await this.httpService.downloadFile(`${ApiUrlEnum.MEDIA_PATH}${obj.filePath[0].webUrl}`, obj.name, true);
     }

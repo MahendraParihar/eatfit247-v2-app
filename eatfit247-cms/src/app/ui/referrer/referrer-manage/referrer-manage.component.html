@@ -202,7 +202,7 @@
           <mat-form-field>
             <mat-label>{{stringRes.FRANCHISE}}</mat-label>
             <mat-select formControlName="franchiseId" required>
-              <mat-option *ngFor="let o of franchiseList" [value]="o.id">{{o.name}}</mat-option>
+              <mat-option *ngFor="let o of franchiseList" [value]="o.id">{{o.label}}</mat-option>
             </mat-select>
           </mat-form-field>
         </div>
@@ -258,7 +258,7 @@
           <mat-form-field>
             <mat-label>{{stringRes.STATUS}}</mat-label>
             <mat-select (selectionChange)="onStatusChange($event)" formControlName="active">
-              <mat-option *ngFor="let o of statusList" [value]="o.value">{{o.name}}</mat-option>
+              <mat-option *ngFor="let o of statusList" [value]="o.id">{{o.label}}</mat-option>
             </mat-select>
           </mat-form-field>
         </div>

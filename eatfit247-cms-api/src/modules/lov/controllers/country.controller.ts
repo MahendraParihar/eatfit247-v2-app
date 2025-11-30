@@ -4,8 +4,7 @@ import { BasicSearchDto, UpdateActiveDto } from '../../../common-dto/basic-input
 import { CountryService } from '../services/country.service';
 import { CreateCountryDto } from '../dto/country.dto';
 import { CommonService } from '../../common/common.service';
-import { ServerResponseEnum } from '../../../enums/server-response-enum';
-import { StringResource } from '../../../enums/string-resource';
+import { StringResource } from 'shared-lib';
 
 @Controller('lov/country')
 export class CountryController {
@@ -44,11 +43,6 @@ export class CountryController {
   @UseGuards(JwtAuthGuard)
   @Get('country-list')
   async countryList() {
-    const countryList = await this.commonService.getCountryList();
-    return {
-      code: ServerResponseEnum.SUCCESS,
-      message: StringResource.SUCCESS,
-      data: countryList,
-    };
+    return await this.commonService.getCountryList();
   }
 }

@@ -4,6 +4,7 @@ import { MstBlogCategory } from './mst-blog-category.model';
 import { MstBlogAuthor } from './mst-blog-author.model';
 
 @Table({
+  freezeTableName: true,
   modelName: 'txn_blogs',
   schema: 'public',
 })
@@ -147,7 +148,7 @@ export class TxnBlog extends Model<TxnBlog> {
     allowNull: false,
     field: 'created_at',
   })
-  createdAt: Date;
+  declare createdAt: Date;
 
   @BelongsTo(() => MstAdminUser, {
     foreignKey: 'modifiedBy',
@@ -165,7 +166,7 @@ export class TxnBlog extends Model<TxnBlog> {
     allowNull: false,
     field: 'updated_at',
   })
-  updatedAt: Date;
+  declare updatedAt: Date;
 
   @Column({
     allowNull: false,

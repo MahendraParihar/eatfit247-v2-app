@@ -1,9 +1,8 @@
 import { AfterViewInit, Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { StringResources } from '../../../enum/string-resources';
 import { InputLength } from '../../../constants/input-length';
-import { FileTypeEnum } from '../../../enum/file-type-enum';
+import { FileTypeEnum, IMemberList, IResponse, IDropdownItem } from 'shared-lib';
 import { MediaForEnum } from '../../../enum/media-for-enum';
-import { DropdownItem } from '../../../interfaces/dropdown-item';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ValidationUtil } from '../../../utilites/validation-util';
 import { HttpService } from '../../../service/http.service';
@@ -11,31 +10,28 @@ import { SnackBarService } from '../../../service/snack-bar.service';
 import { NavigationService } from '../../../service/navigation.service';
 import { ActivatedRoute } from '@angular/router';
 import { MatSelectChange } from '@angular/material/select';
-import { ResponseDataModel } from '../../../models/response-data.model';
 import { ApiUrlEnum } from '../../../enum/api-url-enum';
-import { ServerResponseEnum } from '../../../enum/server-response-enum';
-import { MemberListModel } from '../../../models/member.model';
 
 @Component({
   standalone: false,
   selector: 'app-member-manage',
   templateUrl: './member-manage.component.html',
-  styleUrls: ['./member-manage.component.scss'],
+  styleUrls: ['./member-manage.component.scss']
 })
 export class MemberManageComponent implements OnInit, AfterViewInit, OnDestroy {
   fb: FormBuilder = inject(FormBuilder);
-  adminUserObj: MemberListModel;
+  adminUserObj: IMemberList;
   id: number;
   stringRes = StringResources;
   inputLength = InputLength;
   fileTypeEnum = FileTypeEnum;
   mediaForEnum = MediaForEnum;
-  nutritionistList: DropdownItem[] = [];
-  referrerList: DropdownItem[] = [];
-  franchiseList: DropdownItem[] = [];
-  statusList: DropdownItem[] = [];
-  countryCodeList: DropdownItem[] = [];
-  countryList: DropdownItem[] = [];
+  nutritionistList: IDropdownItem[] = [];
+  referrerList: IDropdownItem[] = [];
+  franchiseList: IDropdownItem[] = [];
+  statusList: IDropdownItem[] = [];
+  countryCodeList: IDropdownItem[] = [];
+  countryList: IDropdownItem[] = [];
   showFranchise = false;
   formGroup: FormGroup = this.fb.group({
     firstName: [null, [Validators.required, Validators.minLength(InputLength.MIN_NAME), Validators.maxLength(InputLength.MAX_NAME)]],
@@ -48,7 +44,7 @@ export class MemberManageComponent implements OnInit, AfterViewInit, OnDestroy {
     countryId: [null, [Validators.required]],
     referrerId: [null, []],
     userStatusId: [null, [Validators.required]],
-    reason: [null, []],
+    reason: [null, []]
   });
 
   constructor(private httpService: HttpService,
@@ -83,7 +79,7 @@ export class MemberManageComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.adminUserObj) {
       await Promise.all([
         this.loadReferrer(this.adminUserObj.franchiseId),
-        this.loadNutritionist(this.adminUserObj.franchiseId),
+        this.loadNutritionist(this.adminUserObj.franchiseId)
       ]);
       this.formGroup.patchValue({
         firstName: this.adminUserObj.firstName,
@@ -96,7 +92,7 @@ export class MemberManageComponent implements OnInit, AfterViewInit, OnDestroy {
         countryId: this.adminUserObj.countryId,
         referrerId: this.adminUserObj.referrerId,
         userStatusId: this.adminUserObj.userStatusId,
-        reason: this.adminUserObj.deactivationReason,
+        reason: this.adminUserObj.deactivationReason
       });
     }
   }
@@ -107,44 +103,22 @@ export class MemberManageComponent implements OnInit, AfterViewInit, OnDestroy {
     if (event.value) {
       await Promise.all([
         this.loadReferrer(event.value),
-        this.loadNutritionist(event.value),
+        this.loadNutritionist(event.value)
       ]);
     }
   }
 
   async loadReferrer(franchiseId: number): Promise<void> {
-    const res: ResponseDataModel = await this.httpService.getRequest(ApiUrlEnum.REFERRER_BY_FRANCHISE, franchiseId, null, true);
-    if (res) {
-      switch (res.code) {
-        case ServerResponseEnum.SUCCESS:
-          for (const s of res.data.referrer) {
-            this.referrerList.push(DropdownItem.fromJson(s));
-          }
-          break;
-        case ServerResponseEnum.WARNING:
-          break;
-        case ServerResponseEnum.ERROR:
-          this.snackBarService.showError(res.message);
-          break;
-      }
+    const res = await this.httpService.getRequest<IResponse<{ referrer: IDropdownItem[] }>>(ApiUrlEnum.REFERRER_BY_FRANCHISE, franchiseId, null, true);
+    if (res && res.data) {
+      this.referrerList = res.data.referrer;
     }
   }
 
   async loadNutritionist(franchiseId: number): Promise<void> {
-    const res: ResponseDataModel = await this.httpService.getRequest(ApiUrlEnum.ADMIN_NUTRITIONIST_BY_FRANCHISE, franchiseId, null, true);
-    if (res) {
-      switch (res.code) {
-        case ServerResponseEnum.SUCCESS:
-          for (const s of res.data.nutritionist) {
-            this.nutritionistList.push(DropdownItem.fromJson(s));
-          }
-          break;
-        case ServerResponseEnum.WARNING:
-          break;
-        case ServerResponseEnum.ERROR:
-          this.snackBarService.showError(res.message);
-          break;
-      }
+    const res = await this.httpService.getRequest<IResponse<{ nutritionist: IDropdownItem[] }>>(ApiUrlEnum.ADMIN_NUTRITIONIST_BY_FRANCHISE, franchiseId, null, true);
+    if (res && res.data) {
+      this.nutritionistList = res.data.nutritionist;
     }
   }
 
@@ -163,46 +137,25 @@ export class MemberManageComponent implements OnInit, AfterViewInit, OnDestroy {
     this.statusList = [];
     this.countryCodeList = [];
     this.countryList = [];
-    const res: ResponseDataModel = await this.httpService.getRequest(ApiUrlEnum.MEMBER_MASTER_DATA, null, null, true);
-    if (res) {
-      switch (res.code) {
-        case ServerResponseEnum.SUCCESS:
-          for (const s of res.data.franchise) {
-            this.franchiseList.push(DropdownItem.fromJson(s));
-          }
-          for (const s of res.data.memberStatus) {
-            this.statusList.push(DropdownItem.fromJson(s));
-          }
-          for (const s of res.data.countryCode) {
-            this.countryCodeList.push(DropdownItem.fromJson(s));
-          }
-          for (const s of res.data.country) {
-            this.countryList.push(DropdownItem.fromJson(s));
-          }
-          break;
-        case ServerResponseEnum.WARNING:
-          break;
-        case ServerResponseEnum.ERROR:
-          this.snackBarService.showError(res.message);
-          break;
-      }
+    const res = await this.httpService.getRequest<IResponse<{
+      franchise: IDropdownItem[];
+      memberStatus: IDropdownItem[];
+      countryCode: IDropdownItem[];
+      country: IDropdownItem[];
+    }>>(ApiUrlEnum.MEMBER_MASTER_DATA, null, null, true);
+    if (res && res.data) {
+      this.franchiseList = res.data.franchise;
+      this.statusList = res.data.memberStatus;
+      this.countryCodeList = res.data.countryCode;
+      this.countryList = res.data.country;
     }
   }
 
   async loadDataById(id: number): Promise<void> {
-    const res: ResponseDataModel = await this.httpService.getRequest(ApiUrlEnum.MEMBER_MANAGE, id, null, true);
-    if (res) {
-      switch (res.code) {
-        case ServerResponseEnum.SUCCESS:
-          this.adminUserObj = MemberListModel.fromJson(res.data);
-          await this.bindData();
-          break;
-        case ServerResponseEnum.WARNING:
-          break;
-        case ServerResponseEnum.ERROR:
-          this.snackBarService.showError(res.message);
-          break;
-      }
+    const res = await this.httpService.getRequest<IResponse<IMemberList>>(ApiUrlEnum.MEMBER_MANAGE, id, null, true);
+    if (res && res.data) {
+      this.adminUserObj = res.data;
+      await this.bindData();
     }
   }
 
@@ -212,25 +165,11 @@ export class MemberManageComponent implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
     let payload: any = this.formGroup.value;
-    let res: ResponseDataModel;
     if (this.id > 0) {
-      res = await this.httpService.putRequest(ApiUrlEnum.MEMBER_MANAGE, this.id, payload, true);
+      await this.httpService.putRequest<IResponse<void>>(ApiUrlEnum.MEMBER_MANAGE, this.id, payload, true);
     } else {
-      res = await this.httpService.postRequest(ApiUrlEnum.MEMBER_MANAGE, payload, true);
+      await this.httpService.postRequest<IResponse<void>>(ApiUrlEnum.MEMBER_MANAGE, payload, true);
     }
-    if (res) {
-      switch (res.code) {
-        case ServerResponseEnum.SUCCESS:
-          this.snackBarService.showSuccess(res.message);
-          this.navigationService.back();
-          break;
-        case ServerResponseEnum.WARNING:
-          this.snackBarService.showWarning(res.message);
-          break;
-        case ServerResponseEnum.ERROR:
-          this.snackBarService.showError(res.message);
-          break;
-      }
-    }
+    this.snackBarService.showSuccess('Data updated successfully');
   }
 }

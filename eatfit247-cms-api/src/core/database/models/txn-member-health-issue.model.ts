@@ -4,7 +4,8 @@ import { TxnMember } from './txn-member.model';
 import { MstHealthIssues } from './mst-health-issues.model';
 
 @Table({
-  modelName: 'txn_member_health_issue',
+  freezeTableName: true,
+  modelName: 'txn_member_health_issues',
   schema: 'public',
   indexes: [
     {
@@ -69,7 +70,7 @@ export class TxnMemberHealthIssue extends Model<TxnMemberHealthIssue> {
     allowNull: false,
     field: 'created_at',
   })
-  createdAt: Date;
+  declare createdAt: Date;
 
   @BelongsTo(() => MstAdminUser, {
     foreignKey: 'modifiedBy',
@@ -87,7 +88,7 @@ export class TxnMemberHealthIssue extends Model<TxnMemberHealthIssue> {
     allowNull: false,
     field: 'updated_at',
   })
-  updatedAt: Date;
+  declare updatedAt: Date;
 
   @Column({
     allowNull: false,

@@ -5,32 +5,29 @@ import { HttpService } from '../../../service/http.service';
 import { SnackBarService } from '../../../service/snack-bar.service';
 import { NavigationService } from '../../../service/navigation.service';
 import { ApiUrlEnum } from '../../../enum/api-url-enum';
-import { ResponseDataModel } from '../../../models/response-data.model';
-import { ServerResponseEnum } from '../../../enum/server-response-enum';
-import { DropdownItem } from '../../../interfaces/dropdown-item';
 import { InputLength } from '../../../constants/input-length';
-import { FileTypeEnum } from '../../../enum/file-type-enum';
+import { FileTypeEnum, IManageBlog } from 'shared-lib';
 import { MediaForEnum } from '../../../enum/media-for-enum';
 import { StatusList } from '../../../constants/status-list';
 import { ActivatedRoute } from '@angular/router';
 import { ValidationUtil } from '../../../utilites/validation-util';
-import { BlogModel } from '../../../models/blog.model';
 import { Constants } from '../../../constants/Constants';
 import { AngularEditorConfig } from '@kolkov/angular-editor';
 import { COMMA, ENTER } from '@angular/cdk/keycodes';
 import { MatChipInputEvent } from '@angular/material/chips';
+import { IDropdownItem, IResponse, IBlog } from 'shared-lib';
 
 @Component({
   standalone: false,
   selector: 'app-blog-manage',
   templateUrl: './blog-manage.component.html',
-  styleUrls: ['./blog-manage.component.scss'],
+  styleUrls: ['./blog-manage.component.scss']
 })
 export class BlogManageComponent implements OnInit, AfterViewInit, OnDestroy {
   fb: FormBuilder = inject(FormBuilder);
-  blogCategoryList: DropdownItem[] = [];
-  blogAuthorList: DropdownItem[] = [];
-  lovModelObj: BlogModel;
+  blogCategoryList: IDropdownItem[] = [];
+  blogAuthorList: IDropdownItem[] = [];
+  lovModelObj: IBlog;
   id: number;
   stringRes = StringResources;
   inputLength = InputLength;
@@ -51,14 +48,14 @@ export class BlogManageComponent implements OnInit, AfterViewInit, OnDestroy {
     isMailSentToSubscriber: [null, [Validators.required]],
     writtenAt: [null, [Validators.required]],
     tags: [null, [Validators.required]],
-    active: [true, [Validators.required]],
+    active: [true, [Validators.required]]
   });
 
   constructor(private httpService: HttpService,
     private snackBarService: SnackBarService,
     private navigationService: NavigationService,
     private activatedRoute: ActivatedRoute,
-    private cdr: ChangeDetectorRef,) {
+    private cdr: ChangeDetectorRef) {
     this.id = Number(this.activatedRoute.snapshot.paramMap.get('id'));
   }
 
@@ -96,7 +93,7 @@ export class BlogManageComponent implements OnInit, AfterViewInit, OnDestroy {
         isCommentAllow: this.lovModelObj.isCommentAllow,
         isMailSentToSubscriber: this.lovModelObj.isMailSentToSubscriber,
         tags: this.tagsList.join(','),
-        active: this.lovModelObj.active,
+        active: this.lovModelObj.active
       });
     }
   }
@@ -127,21 +124,11 @@ export class BlogManageComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   async loadDataById(id: number): Promise<void> {
-    const res: ResponseDataModel = await this.httpService.getRequest(ApiUrlEnum.BLOG_MANAGE, id, null, true);
-    if (res) {
-      switch (res.code) {
-        case ServerResponseEnum.SUCCESS:
-          this.lovModelObj = BlogModel.fromJson(res.data);
-          this.bindData();
-          this.cdr.detectChanges();
-          break;
-        case ServerResponseEnum.WARNING:
-          this.snackBarService.showWarning(res.message);
-          break;
-        case ServerResponseEnum.ERROR:
-          this.snackBarService.showError(res.message);
-          break;
-      }
+    const res = await this.httpService.getRequest<IResponse<IBlog>>(ApiUrlEnum.BLOG_MANAGE, id, null, true);
+    if (res && res.data) {
+      this.lovModelObj = res.data;
+      this.bindData();
+      this.cdr.detectChanges();
     }
   }
 
@@ -151,49 +138,24 @@ export class BlogManageComponent implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
     let payload: any = this.formGroup.value;
-    let res: ResponseDataModel;
     if (this.id > 0) {
-      res = await this.httpService.putRequest(ApiUrlEnum.BLOG_MANAGE, this.id, payload, true);
+      await this.httpService.putRequest<IResponse<void>>(ApiUrlEnum.BLOG_MANAGE, this.id, payload, true);
     } else {
-      res = await this.httpService.postRequest(ApiUrlEnum.BLOG_MANAGE, payload, true);
+      await this.httpService.postRequest<IResponse<void>>(ApiUrlEnum.BLOG_MANAGE, payload, true);
     }
-    if (res) {
-      switch (res.code) {
-        case ServerResponseEnum.SUCCESS:
-          this.snackBarService.showSuccess(res.message);
-          this.navigationService.back();
-          break;
-        case ServerResponseEnum.WARNING:
-          this.snackBarService.showWarning(res.message);
-          break;
-        case ServerResponseEnum.ERROR:
-          this.snackBarService.showError(res.message);
-          break;
-      }
-    }
+    this.snackBarService.showSuccess('Data updated successfully');
   }
 
   async loadMetaData(): Promise<void> {
     this.blogCategoryList = [];
     this.blogAuthorList = [];
-    const res: ResponseDataModel = await this.httpService.getRequest(ApiUrlEnum.BLOG_MASTER_DATA, null, null, true);
-    if (res) {
-      switch (res.code) {
-        case ServerResponseEnum.SUCCESS:
-          for (const s of res.data.blogCategory) {
-            this.blogCategoryList.push(DropdownItem.fromJson(s));
-          }
-          for (const s of res.data.blogAuthor) {
-            this.blogAuthorList.push(DropdownItem.fromJson(s));
-          }
-          break;
-        case ServerResponseEnum.WARNING:
-          this.snackBarService.showWarning(res.message);
-          break;
-        case ServerResponseEnum.ERROR:
-          this.snackBarService.showError(res.message);
-          break;
-      }
+    const res = await this.httpService.getRequest<IResponse<{
+      blogCategory: IDropdownItem[];
+      blogAuthor: IDropdownItem[];
+    }>>(ApiUrlEnum.BLOG_MASTER_DATA, null, null, true);
+    if (res && res.data) {
+      this.blogCategoryList = res.data.blogCategory;
+      this.blogAuthorList = res.data.blogAuthor;
     }
   }
 }

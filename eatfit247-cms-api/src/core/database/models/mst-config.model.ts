@@ -2,7 +2,8 @@ import { BelongsTo, Column, DataType, Model, Table } from 'sequelize-typescript'
 import { MstFieldType } from './mst_field_type.model';
 
 @Table({
-  modelName: 'mst_config',
+  freezeTableName: true,
+  modelName: 'mst_configs',
   schema: 'public',
   timestamps: false,
 })

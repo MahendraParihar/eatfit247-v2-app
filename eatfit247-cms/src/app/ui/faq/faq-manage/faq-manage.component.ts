@@ -1,5 +1,4 @@
 import { AfterViewInit, ChangeDetectorRef, Component, inject, OnDestroy, OnInit } from '@angular/core';
-import { DropdownItem } from '../../../interfaces/dropdown-item';
 import { StringResources } from '../../../enum/string-resources';
 import { InputLength } from '../../../constants/input-length';
 import { StatusList } from '../../../constants/status-list';
@@ -11,23 +10,21 @@ import { SnackBarService } from '../../../service/snack-bar.service';
 import { NavigationService } from '../../../service/navigation.service';
 import { ActivatedRoute } from '@angular/router';
 import { MatSelectChange } from '@angular/material/select';
-import { ResponseDataModel } from '../../../models/response-data.model';
 import { ApiUrlEnum } from '../../../enum/api-url-enum';
-import { ServerResponseEnum } from '../../../enum/server-response-enum';
 import { ValidationUtil } from '../../../utilites/validation-util';
 import moment from 'moment';
-import { FaqModel } from '../../../models/faq.model';
+import { IDropdownItem, IResponse, IFaq } from 'shared-lib';
 
 @Component({
   standalone: false,
   selector: 'app-faq-manage',
   templateUrl: './faq-manage.component.html',
-  styleUrls: ['./faq-manage.component.scss'],
+  styleUrls: ['./faq-manage.component.scss']
 })
 export class FaqManageComponent implements OnInit, AfterViewInit, OnDestroy {
   fb: FormBuilder = inject(FormBuilder);
-  faqCategoryList: DropdownItem[] = [];
-  lovModelObj: FaqModel;
+  faqCategoryList: IDropdownItem[] = [];
+  lovModelObj: IFaq;
   id: number;
   stringRes = StringResources;
   inputLength = InputLength;
@@ -37,7 +34,7 @@ export class FaqManageComponent implements OnInit, AfterViewInit, OnDestroy {
     faq: [null, [Validators.required, Validators.minLength(this.inputLength.CHAR_2), Validators.maxLength(this.inputLength.CHAR_500)]],
     answer: [null, [Validators.required]],
     faqCategoryId: [null, [Validators.required]],
-    active: [true, [Validators.required]],
+    active: [true, [Validators.required]]
   });
 
   constructor(private httpService: HttpService,
@@ -86,27 +83,17 @@ export class FaqManageComponent implements OnInit, AfterViewInit, OnDestroy {
         faq: this.lovModelObj.faq,
         answer: this.lovModelObj.answer,
         faqCategoryId: this.lovModelObj.faqCategoryId,
-        active: this.lovModelObj.active,
+        active: this.lovModelObj.active
       });
     }
   }
 
   async loadDataById(id: number): Promise<void> {
-    const res: ResponseDataModel = await this.httpService.getRequest(ApiUrlEnum.FAQ_MANAGE, id, null, true);
-    if (res) {
-      switch (res.code) {
-        case ServerResponseEnum.SUCCESS:
-          this.lovModelObj = FaqModel.fromJson(res.data);
-          this.bindData();
-          this.cdr.detectChanges();
-          break;
-        case ServerResponseEnum.WARNING:
-          this.snackBarService.showWarning(res.message);
-          break;
-        case ServerResponseEnum.ERROR:
-          this.snackBarService.showError(res.message);
-          break;
-      }
+    const res = await this.httpService.getRequest<IResponse<IFaq>>(ApiUrlEnum.FAQ_MANAGE, id, null, true);
+    if (res && res.data) {
+      this.lovModelObj = res.data;
+      this.bindData();
+      this.cdr.detectChanges();
     }
   }
 
@@ -122,45 +109,19 @@ export class FaqManageComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.formGroup.value.endDate) {
       payload['endDate'] = moment(this.formGroup.value.endDate).toDate();
     }
-    let res: ResponseDataModel;
     if (this.id > 0) {
-      res = await this.httpService.putRequest(ApiUrlEnum.FAQ_MANAGE, this.id, payload, true);
+      await this.httpService.putRequest<IResponse<void>>(ApiUrlEnum.FAQ_MANAGE, this.id, payload, true);
     } else {
-      res = await this.httpService.postRequest(ApiUrlEnum.FAQ_MANAGE, payload, true);
+      await this.httpService.postRequest<IResponse<void>>(ApiUrlEnum.FAQ_MANAGE, payload, true);
     }
-    if (res) {
-      switch (res.code) {
-        case ServerResponseEnum.SUCCESS:
-          this.snackBarService.showSuccess(res.message);
-          this.navigationService.back();
-          break;
-        case ServerResponseEnum.WARNING:
-          this.snackBarService.showWarning(res.message);
-          break;
-        case ServerResponseEnum.ERROR:
-          this.snackBarService.showError(res.message);
-          break;
-      }
-    }
+    this.snackBarService.showSuccess('Data updated successfully');
   }
 
   async loadMetaData(): Promise<void> {
     this.faqCategoryList = [];
-    const res: ResponseDataModel = await this.httpService.getRequest(ApiUrlEnum.FAQ_MASTER_DATA, null, null, true);
-    if (res) {
-      switch (res.code) {
-        case ServerResponseEnum.SUCCESS:
-          for (const s of res.data.faqCategory) {
-            this.faqCategoryList.push(DropdownItem.fromJson(s));
-          }
-          break;
-        case ServerResponseEnum.WARNING:
-          this.snackBarService.showWarning(res.message);
-          break;
-        case ServerResponseEnum.ERROR:
-          this.snackBarService.showError(res.message);
-          break;
-      }
+    const res = await this.httpService.getRequest<IResponse<IDropdownItem[]>>(ApiUrlEnum.FAQ_MASTER_DATA, null, null, true);
+    if (res && res.data) {
+      this.faqCategoryList = res.data;
     }
   }
 }

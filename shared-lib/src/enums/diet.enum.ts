@@ -3,18 +3,14 @@
  * Shared across all EatFit247 applications
  */
 export enum DietPlanStatusEnum {
-  PENDING = 0,
-  APPROVED = 1,
-  REJECTED = 2,
-  DRAFT = 3,
+  NOT_STARTED = 1,
+  IN_PROGRESS = 2,
+  COMPLETED = 3,
 }
 
 export enum DietTypeEnum {
-  WEIGHT_LOSS = 1,
-  WEIGHT_GAIN = 2,
-  MAINTENANCE = 3,
-  THERAPEUTIC = 4,
-  SPORTS_NUTRITION = 5,
+  DAY = 'DAY',
+  CYCLE = 'CYCLE',
 }
 
 export enum MealTypeEnum {

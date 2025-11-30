@@ -8,7 +8,8 @@ import { MstProgram } from './mst-program.model';
 import { MstProgramPlan } from './mst-program-plan.model';
 
 @Table({
-  modelName: 'txn_member_payment',
+  freezeTableName: true,
+  modelName: 'txn_member_payments',
   schema: 'public',
   indexes: [
     {
@@ -206,7 +207,7 @@ export class TxnMemberPayment extends Model<TxnMemberPayment> {
     allowNull: false,
     field: 'created_at',
   })
-  createdAt: Date;
+  declare createdAt: Date;
 
   @BelongsTo(() => MstAdminUser, {
     foreignKey: 'modifiedBy',
@@ -224,7 +225,7 @@ export class TxnMemberPayment extends Model<TxnMemberPayment> {
     allowNull: false,
     field: 'updated_at',
   })
-  updatedAt: Date;
+  declare updatedAt: Date;
 
   @Column({
     allowNull: false,

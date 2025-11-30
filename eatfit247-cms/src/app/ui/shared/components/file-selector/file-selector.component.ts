@@ -1,4 +1,13 @@
-import { ChangeDetectorRef, Component, inject, Input, IterableDiffers, OnChanges, OnInit, SimpleChanges } from "@angular/core";
+import {
+  ChangeDetectorRef,
+  Component,
+  inject,
+  Input,
+  IterableDiffers,
+  OnChanges,
+  OnInit,
+  SimpleChanges
+} from '@angular/core';
 import { StringResources } from '../../../../enum/string-resources';
 import {
   FormArray,
@@ -6,16 +15,14 @@ import {
   UntypedFormArray,
   UntypedFormBuilder,
   UntypedFormGroup,
-  Validators,
+  Validators
 } from '@angular/forms';
 import { FileHandle } from '../../directive/file-handle';
 import { DomSanitizer } from '@angular/platform-browser';
-import { FileTypeEnum } from '../../../../enum/file-type-enum';
+import { FileTypeEnum, IMediaUpload } from 'shared-lib';
 import { MediaForEnum } from '../../../../enum/media-for-enum';
 import { HttpService } from '../../../../service/http.service';
 import { HttpEventType, HttpResponse, HttpStatusCode } from '@angular/common/http';
-import { ServerResponseEnum } from '../../../../enum/server-response-enum';
-import { MediaUploadResponseModel } from '../../../../models/media-upload-response.model';
 import { AlertDialogDataInterface } from '../../../../interfaces/alert-dialog-data.interface';
 import { MatDialog } from '@angular/material/dialog';
 import { InfoDialogComponent } from '../info-dialog/info-dialog.component';
@@ -26,7 +33,7 @@ import { ApiUrlEnum } from '../../../../enum/api-url-enum';
   standalone: false,
   selector: 'app-file-selector',
   templateUrl: './file-selector.component.html',
-  styleUrls: ['./file-selector.component.scss'],
+  styleUrls: ['./file-selector.component.scss']
 })
 export class FileSelectorComponent implements OnInit, OnChanges {
   fb: UntypedFormBuilder = inject(UntypedFormBuilder);
@@ -42,7 +49,7 @@ export class FileSelectorComponent implements OnInit, OnChanges {
   @Input()
   isRequired: boolean = true;
   @Input()
-  uploadedMediaList: MediaUploadResponseModel[] = [];
+  uploadedMediaList: IMediaUpload[] = [];
   @Input()
   controlName: string;
   stringRes = StringResources;
@@ -78,7 +85,7 @@ export class FileSelectorComponent implements OnInit, OnChanges {
           progress: 100,
           fileUpdateStatus: 1,
           isRequested: true,
-          isPastFile: true,
+          isPastFile: true
         });
       }
     }
@@ -88,7 +95,7 @@ export class FileSelectorComponent implements OnInit, OnChanges {
     return this.formGroup.get(this.controlName) as FormArray;
   }
 
-  newFile(f: MediaUploadResponseModel): FormGroup {
+  newFile(f: IMediaUpload): FormGroup {
     return this.fb.group({
       fieldName: [f.fieldName, [Validators.required]],
       originalName: [f.originalName, [Validators.required]],
@@ -96,11 +103,11 @@ export class FileSelectorComponent implements OnInit, OnChanges {
       mimetype: [f.mimetype, [Validators.required]],
       fileName: [f.fileName, [Validators.required]],
       webUrl: [f.webUrl, [Validators.required]],
-      size: [f.size, [Validators.required]],
+      size: [f.size, [Validators.required]]
     });
   }
 
-  addFile(f: MediaUploadResponseModel) {
+  addFile(f: IMediaUpload) {
     this.fileArray().push(this.newFile(f));
   }
 
@@ -119,7 +126,7 @@ export class FileSelectorComponent implements OnInit, OnChanges {
         url: url,
         progress: 0,
         isRequested: false,
-        isPastFile: false,
+        isPastFile: false
       });
     }
     this.validateNAddFiles(files);
@@ -189,21 +196,9 @@ export class FileSelectorComponent implements OnInit, OnChanges {
           } else if (event instanceof HttpResponse) {
             if (event.status === HttpStatusCode.Created) {
               const res = event.body;
-              switch (res.code) {
-                case ServerResponseEnum.SUCCESS:
-                  f.fileUpdateStatus = 1;
-                  const mediaResponse = MediaUploadResponseModel.fromJson(res.data);
-                  this.addFile(mediaResponse);
-                  break;
-                case ServerResponseEnum.WARNING:
-                  f.progress = 0;
-                  f.fileUpdateStatus = -1;
-                  break;
-                case ServerResponseEnum.ERROR:
-                  f.progress = 0;
-                  f.fileUpdateStatus = -1;
-                  break;
-              }
+              f.fileUpdateStatus = 1;
+              const mediaResponse = res.data as IMediaUpload;
+              this.addFile(mediaResponse);
             } else {
               f.progress = 0;
               f.fileUpdateStatus = -1;
@@ -223,11 +218,11 @@ export class FileSelectorComponent implements OnInit, OnChanges {
       message: StringResources.SINGLE_MEDIA_FILE_ALERT,
       positiveBtnTxt: StringResources.OK,
       negativeBtnTxt: null,
-      alertType: AlertTypeEnum.WARNING,
+      alertType: AlertTypeEnum.WARNING
     };
     const dialogRef = this.dialog.open(InfoDialogComponent, {
       width: '350px',
-      data: dialogData,
+      data: dialogData
     });
     dialogRef.afterClosed().subscribe(result => {
       return;

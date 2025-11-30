@@ -3,7 +3,8 @@ import { MstAdminUser } from './mst-admin-user.model';
 import { MstAdminRole } from './mst-admin-role.model';
 
 @Table({
-  modelName: 'mst_admin_role_permission',
+  freezeTableName: true,
+  modelName: 'mst_admin_role_permissions',
   schema: 'public',
 })
 export class MstAdminRolePermission extends Model<MstAdminRolePermission> {
@@ -57,7 +58,7 @@ export class MstAdminRolePermission extends Model<MstAdminRolePermission> {
     allowNull: false,
     field: 'created_at',
   })
-  createdAt: Date;
+  declare createdAt: Date;
 
   @BelongsTo(() => MstAdminUser, {
     foreignKey: 'modifiedBy',
@@ -75,7 +76,7 @@ export class MstAdminRolePermission extends Model<MstAdminRolePermission> {
     allowNull: false,
     field: 'updated_at',
   })
-  updatedAt: Date;
+  declare updatedAt: Date;
 
   @Column({
     allowNull: false,

@@ -3,7 +3,8 @@ import { MstAdminUser } from './mst-admin-user.model';
 import { TxnMemberDietPlan } from './txn-member-diet-plan.model';
 
 @Table({
-  modelName: 'txn_member_diet_detail',
+  freezeTableName: true,
+  modelName: 'txn_member_diet_details',
   schema: 'public',
   indexes: [
     {
@@ -99,7 +100,7 @@ export class TxnMemberDietPlanDetail extends Model<TxnMemberDietPlanDetail> {
     allowNull: false,
     field: 'created_at',
   })
-  createdAt: Date;
+  declare createdAt: Date;
 
   @BelongsTo(() => MstAdminUser, {
     foreignKey: 'modifiedBy',
@@ -117,7 +118,7 @@ export class TxnMemberDietPlanDetail extends Model<TxnMemberDietPlanDetail> {
     allowNull: false,
     field: 'updated_at',
   })
-  updatedAt: Date;
+  declare updatedAt: Date;
 
   @Column({
     allowNull: false,

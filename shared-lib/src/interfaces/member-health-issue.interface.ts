@@ -1,14 +1,9 @@
 import { IMediaUpload } from './media-upload.interface';
-import { IAdminShortInfo } from './admin-user.interface';
+import { ICreateUpdate } from './common.interface';
 
-export interface IMemberHealthIssue {
+export interface IMemberHealthIssue extends ICreateUpdate {
   id: any;
   name: string;
   isSelected: boolean;
-  active?: boolean;
   imagePath?: IMediaUpload[];
-  createdBy: IAdminShortInfo;
-  updatedBy: IAdminShortInfo;
-  createdAt: string;
-  updatedAt: string;
 }

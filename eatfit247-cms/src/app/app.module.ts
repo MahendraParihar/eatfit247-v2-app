@@ -1,34 +1,29 @@
-import {CUSTOM_ELEMENTS_SCHEMA, NgModule, NO_ERRORS_SCHEMA} from '@angular/core';
-import {BrowserModule} from '@angular/platform-browser';
-import {AppRoutingModule} from './app-routing.module';
-import {AppComponent} from './app.component';
-import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
+import { CUSTOM_ELEMENTS_SCHEMA, NgModule, NO_ERRORS_SCHEMA } from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser';
+import { AppRoutingModule } from './app-routing.module';
+import { AppComponent } from './app.component';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import {
   DialogSendPushNotificationComponent
 } from './ui/shared/components/dialog-send-push-notification/dialog-send-push-notification.component';
-import {BaseLayoutComponent} from './ui/base-layout/base-layout.component';
-import {MaterialModule} from "./material.module";
-import {AuthGuard} from "./guard/auth-guard";
-import {SideMenuComponent} from './ui/side-menu/side-menu.component';
-import {HomeComponent} from './ui/home/home.component';
-import {HTTP_INTERCEPTORS, HttpClientModule} from '@angular/common/http';
-import {HttpRequestInterceptor} from './http-request-interceptor';
-import {DialogAlertComponent} from './ui/shared/components/dialog-alert/dialog-alert.component';
-import {
-  ConfigParameterListComponent
-} from "./ui/config-parameter/config-parameter-list/config-parameter-list.component";
-import {
-  ConfigParameterManageComponent
-} from "./ui/config-parameter/config-parameter-manage/config-parameter-manage.component";
-import {ShareModule} from "./ui/shared/share.module";
-import {InfoDialogComponent} from './ui/shared/components/info-dialog/info-dialog.component';
-import {PageNotFoundComponent} from "./ui/error-pages/page-not-found/page-not-found.component";
-import {MatIconRegistry} from "@angular/material/icon";
-import {DomSanitizer} from '@angular/platform-browser';
-import {FlexLayoutModule} from "@angular/flex-layout";
+import { BaseLayoutComponent } from './ui/base-layout/base-layout.component';
+import { MaterialModule } from './material.module';
+import { AuthGuard } from './guard/auth-guard';
+import { SideMenuComponent } from './ui/side-menu/side-menu.component';
+import { HomeComponent } from './ui/home/home.component';
+import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
+import { HttpRequestInterceptor } from './http-request-interceptor';
+import { AuthInterceptor } from './interceptors/auth.interceptor';
+import { DialogAlertComponent } from './ui/shared/components/dialog-alert/dialog-alert.component';
+import { ShareModule } from './ui/shared/share.module';
+import { InfoDialogComponent } from './ui/shared/components/info-dialog/info-dialog.component';
+import { PageNotFoundComponent } from './ui/error-pages/page-not-found/page-not-found.component';
+import { MatIconRegistry } from '@angular/material/icon';
+import { DomSanitizer } from '@angular/platform-browser';
+import { FlexLayoutModule } from '@angular/flex-layout';
 import {
   DialogUserStatusChangeComponent
-} from "./ui/shared/components/dialog-user-status-change/dialog-user-status-change.component";
+} from './ui/shared/components/dialog-user-status-change/dialog-user-status-change.component';
 
 @NgModule({
   declarations: [
@@ -38,8 +33,6 @@ import {
     SideMenuComponent,
     HomeComponent,
     DialogAlertComponent,
-    ConfigParameterListComponent,
-    ConfigParameterManageComponent,
     DialogUserStatusChangeComponent,
     InfoDialogComponent,
     PageNotFoundComponent
@@ -64,6 +57,10 @@ import {
       provide: HTTP_INTERCEPTORS,
       useClass: HttpRequestInterceptor, multi: true
     },
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: AuthInterceptor, multi: true
+    }
     /*{
       provide: ErrorHandler,
       useClass: ErrorHandlerService
@@ -76,8 +73,8 @@ export class AppModule {
     // In Angular Material, MatIconRegistry.addSvgIcon expects a SafeResourceUrl.
     // Passing a plain string can trigger a runtime error: "unsafe value used in a resource URL context".
     this.matIconRegistry.addSvgIcon(
-      "ic_check_circle",
-      this.domSanitizer.bypassSecurityTrustResourceUrl("assets/icons/ic_check_circle.svg")
+      'ic_check_circle',
+      this.domSanitizer.bypassSecurityTrustResourceUrl('assets/icons/ic_check_circle.svg')
     );
     // iconRegistry.setDefaultFontSetClass('material-icons-outlined');
   }

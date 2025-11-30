@@ -1,7 +1,7 @@
 import { IMediaUpload } from './media-upload.interface';
-import { IAdminShortInfo } from './admin-user.interface';
+import { ICreateUpdate } from './common.interface';
 
-export interface IProgram {
+export interface IProgram extends ICreateUpdate {
   id: any;
   title: string;
   programCategoryId: number;
@@ -16,8 +16,4 @@ export interface IProgram {
   tags: string[];
   active: boolean;
   imagePath: IMediaUpload[];
-  createdBy: IAdminShortInfo;
-  updatedBy: IAdminShortInfo;
-  createdAt: string;
-  updatedAt: string;
 }

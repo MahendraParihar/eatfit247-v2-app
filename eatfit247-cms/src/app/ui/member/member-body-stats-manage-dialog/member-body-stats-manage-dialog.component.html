@@ -56,7 +56,7 @@
                  fxFlex.lt-md="calc(30%)"
                  fxFlex.lt-sm="30%">
               <mat-button-toggle-group formControlName="healthParameterUnitId">
-                <mat-button-toggle *ngFor="let opt of memberHealthLogObj.memberHealthParameters[i].unitList"
+                <mat-button-toggle *ngFor="let opt of memberHealthLogObj.memberHealthParameters[i].healthParameterUnitList"
                                    value="{{opt.healthParameterUnitId}}">
                   {{opt.healthParameterUnit}}
                 </mat-button-toggle>

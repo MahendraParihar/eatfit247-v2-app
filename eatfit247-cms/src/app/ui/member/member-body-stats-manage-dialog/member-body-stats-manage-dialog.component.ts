@@ -8,17 +8,14 @@ import { InputLength } from '../../../constants/input-length';
 import moment from 'moment';
 import { Constants } from '../../../constants/Constants';
 import { ValidationUtil } from '../../../utilites/validation-util';
-import { ResponseDataModel } from '../../../models/response-data.model';
 import { ApiUrlEnum } from '../../../enum/api-url-enum';
-import { ServerResponseEnum } from '../../../enum/server-response-enum';
-import { MemberHealthParameter, MemberHealthParameterModelLog } from '../../../models/member-body-stats.model';
-import { FieldTypeEnum } from '../../../enum/field-type-enum';
+import { FieldTypeEnum, IMemberHealthParameter, IMemberHealthParameterLog, IResponse } from 'shared-lib';
 
 @Component({
   standalone: false,
   selector: 'app-member-body-stats-manage-dialog',
   templateUrl: './member-body-stats-manage-dialog.component.html',
-  styleUrls: ['./member-body-stats-manage-dialog.component.scss'],
+  styleUrls: ['./member-body-stats-manage-dialog.component.scss']
 })
 export class MemberBodyStatsManageDialogComponent implements OnInit {
   fb: FormBuilder = inject(FormBuilder);
@@ -27,11 +24,11 @@ export class MemberBodyStatsManageDialogComponent implements OnInit {
   stringRes = StringResources;
   inputLength = InputLength;
   dialogData: any;
-  memberHealthLogObj: MemberHealthParameterModelLog;
+  memberHealthLogObj: IMemberHealthParameterLog;
   fieldTypeEnum = FieldTypeEnum;
   formGroup: FormGroup = this.fb.group({
     logDate: [null, [Validators.required]],
-    bodyStats: this.fb.array([]),
+    bodyStats: this.fb.array([])
   });
   currentDate = new Date();
   minDate = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth() - 2, this.currentDate.getDay() + 1);
@@ -64,15 +61,15 @@ export class MemberBodyStatsManageDialogComponent implements OnInit {
     return this.formGroup.get('bodyStats') as FormArray;
   }
 
-  newHealthParameter(healthParameterObj: MemberHealthParameter): FormGroup {
+  newHealthParameter(healthParameterObj: IMemberHealthParameter): FormGroup {
     return this.fb.group({
       healthParameterId: [healthParameterObj.healthParameterId, [Validators.required]],
-      value: [healthParameterObj.inputValue ? healthParameterObj.inputValue : null, healthParameterObj.requiredField ? [Validators.required] : []],
-      healthParameterUnitId: [healthParameterObj.healthParameterUnitId ? healthParameterObj.healthParameterUnitId : null, []],
+      value: [healthParameterObj.value ? healthParameterObj.value : null, healthParameterObj.requiredField ? [Validators.required] : []],
+      healthParameterUnitId: [healthParameterObj.healthParameterUnitId ? healthParameterObj.healthParameterUnitId : null, []]
     });
   }
 
-  addHealthParameter(healthParameterObj: MemberHealthParameter): void {
+  addHealthParameter(healthParameterObj: IMemberHealthParameter): void {
     this.healthParameterArray().push(this.newHealthParameter(healthParameterObj));
   }
 
@@ -96,7 +93,7 @@ export class MemberBodyStatsManageDialogComponent implements OnInit {
   bindData(): void {
     if (this.memberHealthLogObj) {
       this.formGroup.patchValue({
-        logDate: this.memberHealthLogObj.logDate ? this.memberHealthLogObj.logDate : null,
+        logDate: this.memberHealthLogObj.logDate ? this.memberHealthLogObj.logDate : null
       });
       if (this.memberHealthLogObj.memberHealthParameters && this.memberHealthLogObj.memberHealthParameters.length > 0) {
         for (const s of this.memberHealthLogObj.memberHealthParameters) {
@@ -123,66 +120,29 @@ export class MemberBodyStatsManageDialogComponent implements OnInit {
       }
     }
     payload['bodyStats'] = bodyStats;
-    let res: ResponseDataModel;
     if (!this.dialogData.new) {
-      res = await this.httpService.putRequest(ApiUrlEnum.MEMBER_BODY_STATS_MANAGE, this.memberHealthLogObj.id, payload, true);
+      await this.httpService.putRequest(ApiUrlEnum.MEMBER_BODY_STATS_MANAGE, this.memberHealthLogObj.id, payload, true);
     } else {
-      res = await this.httpService.postRequest(ApiUrlEnum.MEMBER_BODY_STATS_MANAGE + '/' + this.memberId, payload, true);
+      await this.httpService.postRequest(ApiUrlEnum.MEMBER_BODY_STATS_MANAGE + '/' + this.memberId, payload, true);
     }
-    if (res) {
-      switch (res.code) {
-        case ServerResponseEnum.SUCCESS:
-          this.snackBarService.showSuccess(res.message);
-          this.onPositiveClick();
-          break;
-        case ServerResponseEnum.WARNING:
-          this.snackBarService.showWarning(res.message);
-          break;
-        case ServerResponseEnum.ERROR:
-          this.snackBarService.showError(res.message);
-          break;
-      }
-    }
+    this.snackBarService.showSuccess('Data updated successfully');
   }
 
   async loadDataById(id: number): Promise<void> {
-    const res: ResponseDataModel = await this.httpService.getRequest(ApiUrlEnum.MEMBER_BODY_STATS_MANAGE, id, null, true);
+    const res = await this.httpService.getRequest<IResponse<IMemberHealthParameterLog>>(ApiUrlEnum.MEMBER_BODY_STATS_MANAGE, id, null, true);
     if (res) {
-      switch (res.code) {
-        case ServerResponseEnum.SUCCESS:
-          this.memberHealthLogObj = MemberHealthParameterModelLog.fromJson(res.data);
-          this.bindData();
-          break;
-        case ServerResponseEnum.WARNING:
-          this.snackBarService.showWarning(res.message);
-          break;
-        case ServerResponseEnum.ERROR:
-          this.snackBarService.showError(res.message);
-          break;
-      }
+      this.memberHealthLogObj = res.data;
+      this.bindData();
     }
   }
 
   async loadMetaData(): Promise<void> {
-    this.memberHealthLogObj = new MemberHealthParameterModelLog();
     this.memberHealthLogObj.logDate = moment().format(Constants.APP_DATE_FORMATS.parse.dateInput);
-    const res: ResponseDataModel = await this.httpService.getRequest(ApiUrlEnum.MEMBER_BODY_STATS_MASTER_DATA, null, null, true);
-    if (res) {
-      switch (res.code) {
-        case ServerResponseEnum.SUCCESS:
-          this.memberHealthLogObj.memberHealthParameters = [];
-          for (const s of res.data) {
-            this.memberHealthLogObj.memberHealthParameters.push(MemberHealthParameter.fromJson(s));
-          }
-          this.bindData();
-          break;
-        case ServerResponseEnum.WARNING:
-          this.snackBarService.showWarning(res.message);
-          break;
-        case ServerResponseEnum.ERROR:
-          this.snackBarService.showError(res.message);
-          break;
-      }
+    const res = await this.httpService.getRequest<IResponse<IMemberHealthParameter[]>>(ApiUrlEnum.MEMBER_BODY_STATS_MASTER_DATA, null, null, true);
+    if (res.data) {
+      this.memberHealthLogObj.memberHealthParameters = [];
+      this.memberHealthLogObj.memberHealthParameters = res.data;
+      this.bindData();
     }
   }
 }

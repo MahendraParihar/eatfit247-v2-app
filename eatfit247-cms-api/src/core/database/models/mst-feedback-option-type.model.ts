@@ -2,7 +2,8 @@ import { BelongsTo, Column, CreatedAt, DataType, Model, Table, UpdatedAt } from 
 import { MstAdminUser } from './mst-admin-user.model';
 
 @Table({
-  modelName: 'mst_feedback_option_type',
+  freezeTableName: true,
+  modelName: 'mst_feedback_option_types',
   schema: 'public',
 })
 export class MstFeedbackOptionType extends Model<MstFeedbackOptionType> {
@@ -44,7 +45,7 @@ export class MstFeedbackOptionType extends Model<MstFeedbackOptionType> {
     allowNull: false,
     field: 'created_at',
   })
-  createdAt: Date;
+  declare createdAt: Date;
 
   @BelongsTo(() => MstAdminUser, {
     foreignKey: 'modifiedBy',
@@ -62,7 +63,7 @@ export class MstFeedbackOptionType extends Model<MstFeedbackOptionType> {
     allowNull: false,
     field: 'updated_at',
   })
-  updatedAt: Date;
+  declare updatedAt: Date;
 
   @Column({
     allowNull: false,

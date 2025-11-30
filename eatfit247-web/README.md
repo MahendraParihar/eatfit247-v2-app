@@ -184,11 +184,6 @@ import {
   CommonUtil 
 } from 'shared-lib';
 
-// Use server response codes
-if (response.code === ServerResponseEnum.SUCCESS) {
-  console.log('Success!');
-}
-
 // Validate email
 if (ValidationUtil.isValidEmail('user@example.com')) {
   // Valid email

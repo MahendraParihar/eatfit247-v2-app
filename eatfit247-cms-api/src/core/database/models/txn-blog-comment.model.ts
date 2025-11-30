@@ -3,6 +3,7 @@ import { MstAdminUser } from './mst-admin-user.model';
 import { TxnBlog } from './txn-blog.model';
 
 @Table({
+  freezeTableName: true,
   modelName: 'txn_blog_comment',
   schema: 'public',
 })
@@ -68,7 +69,7 @@ export class TxnBlogComment extends Model<TxnBlogComment> {
     allowNull: false,
     field: 'created_at',
   })
-  createdAt: Date;
+  declare createdAt: Date;
 
   @BelongsTo(() => MstAdminUser, {
     foreignKey: 'modifiedBy',
@@ -86,7 +87,7 @@ export class TxnBlogComment extends Model<TxnBlogComment> {
     allowNull: false,
     field: 'updated_at',
   })
-  updatedAt: Date;
+  declare updatedAt: Date;
 
   @Column({
     allowNull: false,

@@ -6,7 +6,8 @@ import { MstState } from './mst-state.model';
 import { MstCountries } from './mst-countries.model';
 
 @Table({
-  modelName: 'txn_address',
+  freezeTableName: true,
+  modelName: 'txn_addresses',
   schema: 'public',
 })
 export class TxnAddress extends Model<TxnAddress> {
@@ -138,7 +139,7 @@ export class TxnAddress extends Model<TxnAddress> {
     allowNull: false,
     field: 'created_at',
   })
-  createdAt: Date;
+  declare createdAt: Date;
 
   @BelongsTo(() => MstAdminUser, {
     foreignKey: 'modifiedBy',
@@ -156,7 +157,7 @@ export class TxnAddress extends Model<TxnAddress> {
     allowNull: false,
     field: 'updated_at',
   })
-  updatedAt: Date;
+  declare updatedAt: Date;
 
   @Column({
     allowNull: false,

@@ -46,7 +46,7 @@
             <mat-label>{{stringRes.BLOG_CATEGORY}}</mat-label>
             <mat-select formControlName="blogCategoryId">
               <mat-option>----------- Select -----------</mat-option>
-              <mat-option *ngFor="let s of blogCategoryList" [value]="s.id">{{s.name}}</mat-option>
+              <mat-option *ngFor="let s of blogCategoryList" [value]="s.id">{{s.label}}</mat-option>
             </mat-select>
             <mat-error>
               <app-input-error [controlName]="stringRes.BLOG_CATEGORY"
@@ -63,7 +63,7 @@
             <mat-label>{{stringRes.BLOG_AUTHOR}}</mat-label>
             <mat-select formControlName="blogAuthorId">
               <mat-option>----------- Select -----------</mat-option>
-              <mat-option *ngFor="let s of blogAuthorList" [value]="s.id">{{s.name}}</mat-option>
+              <mat-option *ngFor="let s of blogAuthorList" [value]="s.id">{{s.label}}</mat-option>
             </mat-select>
             <mat-error>
               <app-input-error [controlName]="stringRes.BLOG_AUTHOR"
@@ -156,7 +156,7 @@
           <mat-form-field>
             <mat-label>{{stringRes.STATUS}}</mat-label>
             <mat-select formControlName="active">
-              <mat-option *ngFor="let o of statusList" [value]="o.value">{{o.name}}</mat-option>
+              <mat-option *ngFor="let o of statusList" [value]="o.id">{{o.label}}</mat-option>
             </mat-select>
           </mat-form-field>
         </div>

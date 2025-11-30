@@ -1,27 +1,25 @@
 import { AfterViewInit, Component, inject, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
 import { HttpService } from '../../../../service/http.service';
-import { AddressModel } from '../../../../models/address.model';
 import { ApiUrlEnum } from '../../../../enum/api-url-enum';
-import { ServerResponseEnum } from '../../../../enum/server-response-enum';
 import { SnackBarService } from '../../../../service/snack-bar.service';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { InputLength } from '../../../../constants/input-length';
 import { StringResources } from '../../../../enum/string-resources';
 import { filter, find } from 'lodash';
-import { DropdownItem } from '../../../../interfaces/dropdown-item';
+import { IDropdownItem, IAddressMaster, IResponse, IAddress, IAddressBasic } from 'shared-lib';
 
 @Component({
   standalone: false,
   selector: 'app-address-selector',
   templateUrl: './address-selector.component.html',
-  styleUrls: ['./address-selector.component.scss'],
+  styleUrls: ['./address-selector.component.scss']
 })
 export class AddressSelectorComponent implements OnInit, AfterViewInit, OnDestroy, OnChanges {
   fb: FormBuilder = inject(FormBuilder);
   @Input()
-  addressList: AddressModel[];
+  addressList: IAddress[];
   @Input()
-  addressModel?: AddressModel;
+  addressModel?: IAddressBasic;
   @Input()
   formGroup: FormGroup;
   @Input()
@@ -30,10 +28,10 @@ export class AddressSelectorComponent implements OnInit, AfterViewInit, OnDestro
   showAddressType: boolean = false;
   stringRes = StringResources;
   inputLength = InputLength;
-  addressCountryList: DropdownItem[] = [];
-  masterStateList: DropdownItem[] = [];
-  addressStateList: DropdownItem[] = [];
-  addressTypeList: DropdownItem[] = [];
+  addressCountryList: IDropdownItem[] = [];
+  masterStateList: IDropdownItem[] = [];
+  addressStateList: IDropdownItem[] = [];
+  addressTypeList: IDropdownItem[] = [];
   showManageAddressForm = false;
   addressForm: FormGroup = this.fb.group({
     addressId: [null, []],
@@ -44,7 +42,7 @@ export class AddressSelectorComponent implements OnInit, AfterViewInit, OnDestro
     stateId: [null, [Validators.required]],
     cityVillage: [null, [Validators.required]],
     latitude: [null, []],
-    longitude: [null, []],
+    longitude: [null, []]
   });
 
   constructor(private httpService: HttpService,
@@ -57,11 +55,9 @@ export class AddressSelectorComponent implements OnInit, AfterViewInit, OnDestro
 
   async ngOnInit(): Promise<void> {
     await this.loadMasterData();
-    if (!this.addressModel) {
-      this.addressModel = new AddressModel();
-    } else {
+    if (this.addressModel) {
       this.addressForm.patchValue({
-        addressId: this.addressModel.addressId,
+        addressId: this.addressModel.addressId
       });
     }
     this.addAddressFormControl();
@@ -70,11 +66,9 @@ export class AddressSelectorComponent implements OnInit, AfterViewInit, OnDestro
   }
 
   ngOnChanges(change: SimpleChanges): void {
-    if (!this.addressModel) {
-      this.addressModel = new AddressModel();
-    } else {
+    if (this.addressModel) {
       this.addressForm.patchValue({
-        addressId: this.addressModel.addressId,
+        addressId: this.addressModel.addressId
       });
     }
     this.addAddressFormControl();
@@ -86,36 +80,11 @@ export class AddressSelectorComponent implements OnInit, AfterViewInit, OnDestro
   ngOnDestroy(): void {
   }
 
-  async loadMasterData(): Promise<boolean> {
-    const apiResponse = await this.httpService.getRequest(ApiUrlEnum.ADDRESS_MASTER, null, null, true);
-    if (!apiResponse) {
-      return false;
-    }
-    switch (apiResponse.code) {
-      case ServerResponseEnum.SUCCESS:
-        const tempCountry = apiResponse.data.country;
-        const tempState = apiResponse.data.state;
-        const addressType = apiResponse.data.addressType;
-        this.addressCountryList = [];
-        this.masterStateList = [];
-        for (const s of tempCountry) {
-          this.addressCountryList.push(DropdownItem.fromJson(s));
-        }
-        for (const s of tempState) {
-          this.masterStateList.push(DropdownItem.fromJson(s));
-        }
-        for (const s of addressType) {
-          this.addressTypeList.push(DropdownItem.fromJson(s));
-        }
-        return true;
-      case ServerResponseEnum.WARNING:
-        this.snackBarService.showWarning(apiResponse.message);
-        return false;
-      case ServerResponseEnum.ERROR:
-      default:
-        this.snackBarService.showError(apiResponse.message);
-        return false;
-    }
+  async loadMasterData(): Promise<void> {
+    const res = await this.httpService.getRequest<IResponse<IAddressMaster>>(ApiUrlEnum.ADDRESS_MASTER, null, null, true);
+    this.addressCountryList = res.data.country;
+    this.masterStateList = res.data.state;
+    this.addressTypeList = res.data.addressType;
   }
 
   addAddressFormControl(): void {
@@ -131,7 +100,7 @@ export class AddressSelectorComponent implements OnInit, AfterViewInit, OnDestro
       stateId: this.addressModel ? this.addressModel.stateId : null,
       cityVillage: this.addressModel ? this.addressModel.cityVillage : null,
       latitude: this.addressModel ? this.addressModel.latitude : null,
-      longitude: this.addressModel ? this.addressModel.longitude : null,
+      longitude: this.addressModel ? this.addressModel.longitude : null
     });
     this.formGroup.addControl('address', this.addressForm);
     this.onCountryChange();
@@ -154,7 +123,7 @@ export class AddressSelectorComponent implements OnInit, AfterViewInit, OnDestro
           stateId: selectedAddress.stateId,
           cityVillage: selectedAddress.cityVillage,
           latitude: selectedAddress.latitude,
-          longitude: selectedAddress.longitude,
+          longitude: selectedAddress.longitude
         });
         this.addressForm.get('stateId').enable();
       } else {
@@ -173,7 +142,7 @@ export class AddressSelectorComponent implements OnInit, AfterViewInit, OnDestro
       // disable state
       this.addressForm.get('stateId').disable();
       this.addressForm.patchValue({
-        stateId: null,
+        stateId: null
       });
     }
   }

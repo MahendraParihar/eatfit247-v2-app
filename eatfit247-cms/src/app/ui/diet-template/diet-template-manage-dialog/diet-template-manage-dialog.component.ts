@@ -7,16 +7,13 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { HttpService } from '../../../service/http.service';
 import { SnackBarService } from '../../../service/snack-bar.service';
 import { ValidationUtil } from '../../../utilites/validation-util';
-import { ResponseDataModel } from '../../../models/response-data.model';
 import { ApiUrlEnum } from '../../../enum/api-url-enum';
-import { ServerResponseEnum } from '../../../enum/server-response-enum';
-import { DietTemplateModel } from '../../../models/diet-template.model';
 
 @Component({
   standalone: false,
   selector: 'app-diet-template-manage-dialog',
   templateUrl: './diet-template-manage-dialog.component.html',
-  styleUrls: ['./diet-template-manage-dialog.component.scss'],
+  styleUrls: ['./diet-template-manage-dialog.component.scss']
 })
 export class DietTemplateManageDialogComponent implements OnInit {
   fb: FormBuilder = inject(FormBuilder);
@@ -31,7 +28,7 @@ export class DietTemplateManageDialogComponent implements OnInit {
     noOfCycle: [null, [Validators.required, Validators.min(1), Validators.maxLength(64)]],
     noOfDaysInCycle: [null, [Validators.required, Validators.min(1), Validators.maxLength(364)]],
     isWeekly: [null, [Validators.required]],
-    active: [true, [Validators.required]],
+    active: [true, [Validators.required]]
   });
 
   constructor(public dialogRef: MatDialogRef<DietTemplateManageDialogComponent>,
@@ -73,7 +70,7 @@ export class DietTemplateManageDialogComponent implements OnInit {
         noOfCycle: this.dietTemplateObj.noOfCycle,
         noOfDaysInCycle: this.dietTemplateObj.noOfDaysInCycle,
         isWeekly: this.dietTemplateObj.isWeekly,
-        active: this.dietTemplateObj.active,
+        active: this.dietTemplateObj.active
       });
     }
   }
@@ -84,43 +81,19 @@ export class DietTemplateManageDialogComponent implements OnInit {
       return;
     }
     let payload: any = this.formGroup.value;
-    let res: ResponseDataModel;
     if (!this.dialogData.new) {
-      res = await this.httpService.putRequest(ApiUrlEnum.DIET_TEMPLATE_MANAGE, this.dietTemplateObj.id, payload, true);
+      await this.httpService.putRequest(ApiUrlEnum.DIET_TEMPLATE_MANAGE, this.dietTemplateObj.id, payload, true);
     } else {
-      res = await this.httpService.postRequest(ApiUrlEnum.DIET_TEMPLATE_MANAGE, payload, true);
+      await this.httpService.postRequest(ApiUrlEnum.DIET_TEMPLATE_MANAGE, payload, true);
     }
-    if (res) {
-      switch (res.code) {
-        case ServerResponseEnum.SUCCESS:
-          this.snackBarService.showSuccess(res.message);
-          this.onPositiveClick();
-          break;
-        case ServerResponseEnum.WARNING:
-          this.snackBarService.showWarning(res.message);
-          break;
-        case ServerResponseEnum.ERROR:
-          this.snackBarService.showError(res.message);
-          break;
-      }
-    }
+    this.snackBarService.showSuccess('Data updated successfully');
   }
 
   async loadDataById(id: number): Promise<void> {
-    const res: ResponseDataModel = await this.httpService.getRequest(ApiUrlEnum.DIET_TEMPLATE_MANAGE, id, null, true);
+    const res = await this.httpService.getRequest(ApiUrlEnum.DIET_TEMPLATE_MANAGE, id, null, true);
     if (res) {
-      switch (res.code) {
-        case ServerResponseEnum.SUCCESS:
-          this.dietTemplateObj = DietTemplateModel.fromJson(res.data);
-          this.bindData();
-          break;
-        case ServerResponseEnum.WARNING:
-          this.snackBarService.showWarning(res.message);
-          break;
-        case ServerResponseEnum.ERROR:
-          this.snackBarService.showError(res.message);
-          break;
-      }
+      this.dietTemplateObj = DietTemplateModel.fromJson(res.data);
+      this.bindData();
     }
   }
 }

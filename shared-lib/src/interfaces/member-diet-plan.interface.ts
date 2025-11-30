@@ -1,5 +1,5 @@
-import { ICreateUpdate } from './lov.interface';
-import { DropdownListInterface } from './dropdown-list.interface';
+import { ICreateUpdate, IDropdownItem } from "./common.interface";
+import { IMediaUpload } from "./media-upload.interface";
 
 export interface IMemberDietPlan extends ICreateUpdate {
   program: string;
@@ -31,13 +31,23 @@ export interface ICyclePlan {
   dietPlans: any[];
 }
 
+export interface IDietPlanRecipes {
+  id: number;
+  title: string;
+  preparationMethod: string;
+  ingredients: string;
+  imagePath: IMediaUpload[];
+  serving: number;
+  recipeType: string;
+}
+
 export interface IDietPlanDetail {
   recipeCategoryId: number;
   recipeCategory: string;
   dietDetail: string;
   sequence: number;
   recipeIds: number[];
-  recipeList: DropdownListInterface[];
+  recipeList: IDropdownItem[] | IDietPlanRecipes[];
 }
 
 export interface IMemberDietDetail {
@@ -52,4 +62,34 @@ export interface IMemberDietDetail {
   dietPlan: IDietPlanDetail[];
   type: string;
   isDeletable: boolean;
+}
+
+export interface IDietDetail {
+  recipeCategoryId: number;
+  recipeCategory: string;
+  startTime: string;
+  endTime: string;
+  diet: string;
+  recipeIds: number[];
+}
+
+export class IMemberDietPlanDetail {
+  startDate: Date;
+  endDate: Date;
+  cycleNo: number;
+  dayNo: number;
+  dietPlanId: number;
+  dietPlan: IDietPlanDetail[];
+}
+
+export class IDietPlanDetail {
+  dietDetail: string;
+  recipeCategory: string;
+  recipeCategoryId: number;
+  recipeIds: number[];
+}
+
+export class IMemberDietTemplate {
+  dietTemplateId: number;
+  memberDietPlanId: number;
 }

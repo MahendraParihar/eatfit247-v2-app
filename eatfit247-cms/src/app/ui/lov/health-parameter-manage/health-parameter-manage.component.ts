@@ -1,7 +1,7 @@
 import { AfterViewInit, Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { StringResources } from '../../../enum/string-resources';
 import { InputLength } from '../../../constants/input-length';
-import { FileTypeEnum } from '../../../enum/file-type-enum';
+import { FileTypeEnum, IHealthParameter, IResponse } from 'shared-lib';
 import { MediaForEnum } from '../../../enum/media-for-enum';
 import { StatusList } from '../../../constants/status-list';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -9,21 +9,18 @@ import { HttpService } from '../../../service/http.service';
 import { SnackBarService } from '../../../service/snack-bar.service';
 import { NavigationService } from '../../../service/navigation.service';
 import { ActivatedRoute } from '@angular/router';
-import { ResponseDataModel } from '../../../models/response-data.model';
 import { ApiUrlEnum } from '../../../enum/api-url-enum';
-import { ServerResponseEnum } from '../../../enum/server-response-enum';
 import { ValidationUtil } from '../../../utilites/validation-util';
-import { HealthParameterModel } from '../../../models/health-parameter.model';
 
 @Component({
   standalone: false,
   selector: 'app-health-parameter-manage',
   templateUrl: './health-parameter-manage.component.html',
-  styleUrls: ['./health-parameter-manage.component.scss'],
+  styleUrls: ['./health-parameter-manage.component.scss']
 })
 export class HealthParameterManageComponent implements OnInit, AfterViewInit, OnDestroy {
   fb: FormBuilder = inject(FormBuilder);
-  healthParameterModelObj: HealthParameterModel;
+  healthParameterModelObj: IHealthParameter;
   id: number;
   stringRes = StringResources;
   inputLength = InputLength;
@@ -33,7 +30,7 @@ export class HealthParameterManageComponent implements OnInit, AfterViewInit, On
   formGroup: FormGroup = this.fb.group({
     name: [null, [Validators.required, Validators.minLength(this.inputLength.CHAR_5), Validators.maxLength(this.inputLength.CHAR_50)]],
     isLength: [true, [Validators.required]],
-    active: [true, [Validators.required]],
+    active: [true, [Validators.required]]
   });
 
   constructor(private httpService: HttpService,
@@ -68,26 +65,16 @@ export class HealthParameterManageComponent implements OnInit, AfterViewInit, On
       this.formGroup.patchValue({
         name: this.healthParameterModelObj.name,
         isLength: this.healthParameterModelObj.isLength,
-        active: this.healthParameterModelObj.active,
+        active: this.healthParameterModelObj.active
       });
     }
   }
 
   async loadDataById(id: number): Promise<void> {
-    const res: ResponseDataModel = await this.httpService.getRequest(ApiUrlEnum.HEALTH_PARAMETER_MANAGE, id, null, true);
+    const res = await this.httpService.getRequest<IResponse<IHealthParameter>>(ApiUrlEnum.HEALTH_PARAMETER_MANAGE, id, null, true);
     if (res) {
-      switch (res.code) {
-        case ServerResponseEnum.SUCCESS:
-          this.healthParameterModelObj = HealthParameterModel.fromJson(res.data);
-          this.bindData();
-          break;
-        case ServerResponseEnum.WARNING:
-          this.snackBarService.showWarning(res.message);
-          break;
-        case ServerResponseEnum.ERROR:
-          this.snackBarService.showError(res.message);
-          break;
-      }
+      this.healthParameterModelObj = res.data;
+      this.bindData();
     }
   }
 
@@ -97,25 +84,11 @@ export class HealthParameterManageComponent implements OnInit, AfterViewInit, On
       return;
     }
     let payload: any = this.formGroup.value;
-    let res: ResponseDataModel;
     if (this.id > 0) {
-      res = await this.httpService.putRequest(ApiUrlEnum.HEALTH_PARAMETER_MANAGE, this.id, payload, true);
+      await this.httpService.putRequest(ApiUrlEnum.HEALTH_PARAMETER_MANAGE, this.id, payload, true);
     } else {
-      res = await this.httpService.postRequest(ApiUrlEnum.HEALTH_PARAMETER_MANAGE, payload, true);
+      await this.httpService.postRequest(ApiUrlEnum.HEALTH_PARAMETER_MANAGE, payload, true);
     }
-    if (res) {
-      switch (res.code) {
-        case ServerResponseEnum.SUCCESS:
-          this.snackBarService.showSuccess(res.message);
-          this.navigationService.back();
-          break;
-        case ServerResponseEnum.WARNING:
-          this.snackBarService.showWarning(res.message);
-          break;
-        case ServerResponseEnum.ERROR:
-          this.snackBarService.showError(res.message);
-          break;
-      }
-    }
+    this.snackBarService.showSuccess('Data updated successfully');
   }
 }

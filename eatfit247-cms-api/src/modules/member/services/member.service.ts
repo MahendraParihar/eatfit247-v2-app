@@ -1,23 +1,20 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { Injectable, Logger, NotFoundException, BadRequestException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/sequelize";
-import { ExceptionService } from "../../common/exception.service";
-import { IServerResponse } from "../../../common-dto/response-interface";
-import { ServerResponseEnum } from "../../../enums/server-response-enum";
-import { StringResource } from "../../../enums/string-resource";
 import { CommonFunctionsUtil } from "../../../util/common-functions-util";
-import * as moment from "moment";
+import moment from "moment";
 import { Sequelize } from "sequelize-typescript";
 import { MstFranchise } from "../../../core/database/models/mst-franchise.model";
 import { TxnMember } from "../../../core/database/models/txn-member.model";
 import { MstReferrer } from "../../../core/database/models/mst-referrer.model";
-import { IMemberFranchise, IMemberList, IMemberReferrer } from "../../../response-interface/member-list.interface";
-import { ADMIN_USER_SHORT_INFO_ATTRIBUTE, DEFAULT_DATE_TIME_FORMAT, IS_DEV } from "../../../constants/config-constants";
+import { IBasicSearch, IMemberDetails, IMemberFranchise, IMemberList, IMemberReferrer, ITableList } from 'shared-lib';
+import { ADMIN_USER_SHORT_INFO_ATTRIBUTE, DEFAULT_DATE_TIME_FORMAT } from "../../../constants/config-constants";
+import { StringResource } from 'shared-lib';
 import { CreateMemberDto } from "../dto/member.dto";
 import { CryptoUtil } from "../../../util/crypto-util";
 import { MstAdminUser } from "../../../core/database/models/mst-admin-user.model";
 import { MstCountries } from "../../../core/database/models/mst-countries.model";
 import { BasicSearchDto, UpdateUserStatusDto } from "../../../common-dto/basic-input.dto";
-import { UserStatusEnum } from "../../../enums/user-status-enum";
+import { UserStatusEnum } from 'shared-lib';
 import { TxnAssessment } from "../../../core/database/models/txn-assessment.model";
 import { MemberPocketGuideService } from "./member-pocket-guide.service";
 import { MemberCallScheduleService } from "./member-call-schedule.service";
@@ -27,7 +24,7 @@ import { MemberBodyStatsService } from "./member-body-stats.service";
 import { MemberPaymentService } from "./member-payment.service";
 import { IBaseUser } from "../interfaces/member.interface";
 import { IEmailParams } from "src/core/mail/email-params.interface";
-import { EmailTypeEnum } from "src/enums/email-type-enum";
+import { EmailTypeEnum } from 'shared-lib';
 import { EmailService } from "src/core/mail/email.service";
 import { Op } from "sequelize";
 import { SearchUtil } from "src/util/search-util";
@@ -37,7 +34,6 @@ import { MemberDashboardService } from "./member-dashboard.service";
 export class MemberService {
   constructor(
     @InjectModel(TxnMember) private readonly memberRepository: typeof TxnMember,
-    private exceptionService: ExceptionService,
     private memberPocketGuideService: MemberPocketGuideService,
     private memberCallScheduleService: MemberCallScheduleService,
     private memberHealthIssueService: MemberHealthIssueService,
@@ -49,145 +45,92 @@ export class MemberService {
     private emailService: EmailService
   ) {}
 
-  public async findAll(searchDto: BasicSearchDto): Promise<IServerResponse> {
-    let res: IServerResponse;
-    try {
-      let whereCondition: any = {};
-      if (searchDto.name) {
-        whereCondition = {
-          [Op.or]: [
-            { firstName: { [Op.iLike]: `%${searchDto.name}%` } },
-            { lastName: { [Op.iLike]: `%${searchDto.name}%` } }
-          ]
-        };
-      }
-      const dateFilter = SearchUtil.filterDateRange(searchDto.createdFrom, searchDto.createdTo);
-      if (dateFilter) {
-        whereCondition["createdAt"] = dateFilter;
-      }
-      const pageNumber = searchDto.pageNumber;
-      const pageSize = searchDto.pageSize;
-      let offset = pageNumber === 0 ? 0 : pageNumber * pageSize;
-      TxnMember.belongsTo(TxnAssessment, {
-        targetKey: "memberId",
-        foreignKey: "memberId"
-      });
-      const { rows, count } = await this.memberRepository.findAndCountAll<TxnMember>({
-        include: [
-          {
-            model: TxnAssessment,
-            required: false,
-            attributes: ["assessmentId"]
-          },
-          {
-            model: MstAdminUser,
-            required: false,
-            as: "MemberNutritionist",
-            attributes: ADMIN_USER_SHORT_INFO_ATTRIBUTE
-          },
-          {
-            model: MstCountries,
-            required: true,
-            as: "MemberCountry",
-            attributes: ["country", "countryId"]
-          },
-          {
-            model: MstFranchise,
-            required: false,
-            as: "MemberFranchise",
-            attributes: ["franchiseId", "firstName", "lastName", "companyName", "logo", "emailId", "contactNumber"]
-          },
-          {
-            model: MstReferrer,
-            required: false,
-            as: "MemberReferrer",
-            attributes: ["referrerId", "name", "companyName", "logo", "emailId", "contactNumber"]
-          }
-        ],
-        where: whereCondition,
-        order: [
-          ["firstName", "ASC"],
-          ["lastName", "ASC"]
-        ],
-        offset: offset,
-        limit: pageSize,
-        raw: true,
-        nest: true
-      });
-      if (!rows || rows.length === 0) {
-        res = {
-          code: ServerResponseEnum.WARNING,
-          message: StringResource.NO_DATA_FOUND,
-          data: null
-        };
-        return res;
-      }
-      const resList: IMemberList[] = [];
-      for (const s of rows) {
-        resList.push(this.convertDBToInterface(s));
-      }
-      res = {
-        code: ServerResponseEnum.SUCCESS,
-        message: StringResource.SUCCESS,
-        data: {
-          list: resList,
-          count: count
+  public async findAll(searchDto: IBasicSearch): Promise<ITableList<IMemberList>> {
+    let whereCondition: any = {};
+    if (searchDto.name) {
+      whereCondition = {
+        [Op.or]: [
+          { firstName: { [Op.iLike]: `%${searchDto.name}%` } },
+          { lastName: { [Op.iLike]: `%${searchDto.name}%` } }
+        ]
+      };
+    }
+    const dateFilter = SearchUtil.filterDateRange(searchDto.createdFrom, searchDto.createdTo);
+    if (dateFilter) {
+      whereCondition["createdAt"] = dateFilter;
+    }
+    const pageNumber = searchDto.pageNumber;
+    const pageSize = searchDto.pageSize;
+    const offset = pageNumber === 0 ? 0 : pageNumber * pageSize;
+    TxnMember.belongsTo(TxnAssessment, {
+      targetKey: "memberId",
+      foreignKey: "memberId"
+    });
+    const { rows, count } = await this.memberRepository.findAndCountAll<TxnMember>({
+      include: [
+        {
+          model: TxnAssessment,
+          required: false,
+          attributes: ["assessmentId"]
+        },
+        {
+          model: MstAdminUser,
+          required: false,
+          as: "MemberNutritionist",
+          attributes: ADMIN_USER_SHORT_INFO_ATTRIBUTE
+        },
+        {
+          model: MstCountries,
+          required: true,
+          as: "MemberCountry",
+          attributes: ["country", "countryId"]
+        },
+        {
+          model: MstFranchise,
+          required: false,
+          as: "MemberFranchise",
+          attributes: ["franchiseId", "firstName", "lastName", "companyName", "logo", "emailId", "contactNumber"]
+        },
+        {
+          model: MstReferrer,
+          required: false,
+          as: "MemberReferrer",
+          attributes: ["referrerId", "name", "companyName", "logo", "emailId", "contactNumber"]
         }
-      };
-      return res;
-    } catch (e) {
-      this.exceptionService.logError("findAll", MemberService.name, e);
-      res = {
-        code: ServerResponseEnum.ERROR,
-        message: IS_DEV ? e["message"] : StringResource.SOMETHING_WENT_WRONG,
-        data: null
-      };
-      return res;
+      ],
+      where: whereCondition,
+      order: [
+        ["firstName", "ASC"],
+        ["lastName", "ASC"]
+      ],
+      offset: offset,
+      limit: pageSize,
+      raw: true,
+      nest: true
+    });
+    const resList: IMemberList[] = [];
+    for (const s of rows) {
+      resList.push(this.convertDBToInterface(s));
     }
+    return <ITableList<IMemberList>>{
+      data: resList,
+      count: count
+    };
   }
 
-  public async fetchById(id: number): Promise<IServerResponse> {
-    let res: IServerResponse;
-    try {
-      const find = await this.loadBasicInfo(id);
-      if (find) {
-        res = {
-          code: ServerResponseEnum.SUCCESS,
-          message: StringResource.SUCCESS,
-          data: find
-        };
-      } else {
-        res = {
-          code: ServerResponseEnum.WARNING,
-          message: StringResource.NO_DATA_FOUND,
-          data: null
-        };
-      }
-      return res;
-    } catch (e) {
-      this.exceptionService.logError('fetchById',MemberService.name,e);
-      res = {
-        code: ServerResponseEnum.ERROR,
-        message: IS_DEV ? e["message"] : StringResource.SOMETHING_WENT_WRONG,
-        data: null
-      };
-      return res;
+  public async fetchById(id: number): Promise<IMemberList> {
+    const find = await this.loadBasicInfo(id);
+    if (!find) {
+      throw new NotFoundException(StringResource.NO_DATA_FOUND);
     }
+    return find;
   }
 
-  public async fetchDetailById(id: number): Promise<IServerResponse> {
-    let res: IServerResponse;
-    try {
-      const find = await this.loadBasicInfo(id);
-      if (!find) {
-        this.exceptionService.logError("fetchDetailById", MemberService.name, 'Member not found');
-        res = {
-          code: ServerResponseEnum.WARNING,
-          message: StringResource.NO_DATA_FOUND,
-          data: null
-        };
-        return res;
-      }
+  public async fetchDetailById(id: number): Promise<IMemberDetails> {
+    const find = await this.loadBasicInfo(id);
+    if (!find) {
+      throw new NotFoundException(StringResource.NO_DATA_FOUND);
+    }
       const [
         memberPocketGuide,
         memberCallSchedule,
@@ -203,51 +146,32 @@ export class MemberService {
         this.memberHealthParameterService.findAllById(id),
         this.memberPaymentService.findAllById(id)
       ]);
-      const assessment = memberAssessment.code === ServerResponseEnum.SUCCESS ? memberAssessment.data : null;
-      const healthIssueCsv = [];
-      for (const s of memberHealthIssues) {
-        healthIssueCsv.push(s["HealthIssueMemberMap"]["healthIssue"]);
-      }
-      const pocketGuideCsv = [];
-      for (const s of memberPocketGuide) {
-        pocketGuideCsv.push(s["MemberPocketGuidePocketGuide"]["pocketGuide"]);
-      }
-      res = {
-        code: ServerResponseEnum.SUCCESS,
-        message: StringResource.SUCCESS,
-        data: {
-          basicInfo: find,
-          pocketGuideCount: memberPocketGuide.length,
-          callScheduleCount: memberCallSchedule.length,
-          healthIssueCount: memberHealthIssues.length,
-          healthParameterCount: memberHealthParameters.length,
-          paymentCount: memberPayment.length,
-          healthIssues: healthIssueCsv,
-          pocketGuides: pocketGuideCsv,
-          assessment: assessment
-        }
-      };
-    } catch (e) {
-      this.exceptionService.logError("fetchDetailById", MemberService.name, e);
-      res = {
-        code: ServerResponseEnum.ERROR,
-        message: IS_DEV ? e["message"] : StringResource.SOMETHING_WENT_WRONG,
-        data: null
-      };
+      const assessment = memberAssessment;
+    const healthIssueCsv = [];
+    for (const s of memberHealthIssues) {
+      healthIssueCsv.push(s["HealthIssueMemberMap"]["healthIssue"]);
     }
-    return res;
+    const pocketGuideCsv = [];
+    for (const s of memberPocketGuide) {
+      pocketGuideCsv.push(s["MemberPocketGuidePocketGuide"]["pocketGuide"]);
+    }
+    return <IMemberDetails>{
+      basicInfo: find,
+      pocketGuideCount: memberPocketGuide.length,
+      callScheduleCount: memberCallSchedule.length,
+      healthIssueCount: memberHealthIssues.length,
+      healthParameterCount: memberHealthParameters.length,
+      paymentCount: memberPayment.length,
+      healthIssues: healthIssueCsv,
+      pocketGuides: pocketGuideCsv,
+      assessment: assessment
+    };
   }
 
-  public async create(obj: CreateMemberDto, cIp: string, adminId: number): Promise<IServerResponse> {
-    let res: IServerResponse;
+  public async create(obj: CreateMemberDto, cIp: string, adminId: number): Promise<void> {
     const checkUser = await this.findOneByEmail(obj.emailId);
     if (checkUser) {
-      res = {
-        code: ServerResponseEnum.WARNING,
-        message: StringResource.ACCOUNT_ALREADY_PRESENT,
-        data: null
-      };
-      return res;
+      throw new BadRequestException(StringResource.ACCOUNT_ALREADY_PRESENT);
     }
     const t = await this.sequelize.transaction();
     try {
@@ -257,8 +181,8 @@ export class MemberService {
         countryCode: obj.countryCode,
         contactNumber: obj.contactNumber,
         emailId: obj.emailId,
-        password: await CryptoUtil.hashPassword(`${CommonFunctionsUtil.removeSpecialChar(obj.firstName)}@123456`),
-        passwordTemp: await CryptoUtil.hashPassword(`${CommonFunctionsUtil.removeSpecialChar(obj.firstName)}@123456`),
+        password: await CryptoUtil.generateHash(`${CommonFunctionsUtil.removeSpecialChar(obj.firstName)}@123456`),
+        passwordTemp: await CryptoUtil.generateHash(`${CommonFunctionsUtil.removeSpecialChar(obj.firstName)}@123456`),
         franchiseId: obj.franchiseId,
         nutritionistId: obj.nutritionistId ? obj.nutritionistId : null,
         countryId: obj.countryId,
@@ -271,103 +195,50 @@ export class MemberService {
         createdIp: cIp,
         modifiedIp: cIp
       };
-      const createdObj = await this.createInDB(createObj);
-      if (createdObj) {
-        await t.commit();
-        res = {
-          code: ServerResponseEnum.SUCCESS,
-          message: StringResource.SUCCESS_DATA_UPDATE,
-          data: null
-        };
-      } else {
-        await t.rollback();
-        res = {
-          code: ServerResponseEnum.ERROR,
-          message: StringResource.SOMETHING_WENT_WRONG,
-          data: null
-        };
-      }
-      return res;
+      await this.createInDB(createObj);
+      await t.commit();
     } catch (e) {
       await t.rollback();
-      this.exceptionService.logError("create", MemberService.name, e);
-      res = {
-        code: ServerResponseEnum.ERROR,
-        message: IS_DEV ? e["message"] : StringResource.SOMETHING_WENT_WRONG,
-        data: null
-      };
-      return res;
+      throw e;
     }
   }
 
-  public async update(id: number, obj: CreateMemberDto, cIp: string, adminId: number): Promise<IServerResponse> {
-    let res: IServerResponse;
+  public async update(id: number, obj: CreateMemberDto, cIp: string, adminId: number): Promise<void> {
     const checkUser = await this.findOneByEmail(obj.emailId);
     if (checkUser && Number(checkUser.memberId) !== Number(id)) {
-      res = {
-        code: ServerResponseEnum.WARNING,
-        message: StringResource.ACCOUNT_ALREADY_PRESENT,
-        data: null
-      };
-      return res;
+      throw new BadRequestException(StringResource.ACCOUNT_ALREADY_PRESENT);
+    }
+    const find = await this.memberRepository.findOne({
+      where: {
+        memberId: id
+      }
+    });
+    if (!find) {
+      throw new NotFoundException(StringResource.NO_DATA_FOUND);
     }
     const t = await this.sequelize.transaction();
     try {
-      const find = await this.memberRepository.findOne({
-        where: {
-          memberId: id
-        }
-      });
-      if (find) {
-        const updateObj = {
-          firstName: obj.firstName,
-          lastName: obj.lastName,
-          countryCode: obj.countryCode,
-          contactNumber: obj.contactNumber,
-          emailId: obj.emailId,
-          franchiseId: obj.franchiseId,
-          nutritionistId: obj.nutritionistId ? obj.nutritionistId : null,
-          countryId: obj.countryId,
-          referrerId: obj.franchiseId ? obj.referrerId : null,
-          userStatusId: obj.userStatusId,
-          deactivationReason: obj.reason ? obj.reason : null,
-          profilePicture: obj.uploadFiles && obj.uploadFiles.length > 0 ? obj.uploadFiles : null,
-          modifiedBy: adminId,
-          modifiedIp: cIp
-        };
-        const updatedObj = await this.updateInDB(id, updateObj);
-        if (updatedObj) {
-          await t.commit();
-          res = {
-            code: ServerResponseEnum.SUCCESS,
-            message: StringResource.SUCCESS_DATA_UPDATE,
-            data: null
-          };
-        } else {
-          await t.rollback();
-          res = {
-            code: ServerResponseEnum.ERROR,
-            message: StringResource.SOMETHING_WENT_WRONG,
-            data: null
-          };
-        }
-      } else {
-        await t.rollback();
-        res = {
-          code: ServerResponseEnum.WARNING,
-          message: StringResource.NO_DATA_FOUND,
-          data: null
-        };
-      }
-      return res;
-    } catch (e) {
-      this.exceptionService.logError(this.update.caller.name,MemberService.name,e);
-      res = {
-        code: ServerResponseEnum.ERROR,
-        message: IS_DEV ? e["message"] : StringResource.SOMETHING_WENT_WRONG,
-        data: null
+      const updateObj = {
+        firstName: obj.firstName,
+        lastName: obj.lastName,
+        countryCode: obj.countryCode,
+        contactNumber: obj.contactNumber,
+        emailId: obj.emailId,
+        franchiseId: obj.franchiseId,
+        nutritionistId: obj.nutritionistId ? obj.nutritionistId : null,
+        countryId: obj.countryId,
+        referrerId: obj.franchiseId ? obj.referrerId : null,
+        userStatusId: obj.userStatusId,
+        deactivationReason: obj.reason ? obj.reason : null,
+        profilePicture: obj.uploadFiles && obj.uploadFiles.length > 0 ? obj.uploadFiles : null,
+        modifiedBy: adminId,
+        modifiedIp: cIp
       };
-      return res;
+      await this.updateInDB(id, updateObj);
+      await t.commit();
+    } catch (e) {
+      await t.rollback();
+      throw e;
     }
   }
 
@@ -376,115 +247,50 @@ export class MemberService {
     obj: UpdateUserStatusDto,
     cIp: string,
     memberId: number
-  ): Promise<IServerResponse> {
-    let res: IServerResponse;
-    try {
-      const find = await this.memberRepository.findOne({
-        where: {
-          memberId: id
-        }
-      });
-      if (find) {
-        const updateObj = {
-          userStatusId: obj.statusId,
-          deactivationReason: obj.reason,
-          modifiedBy: memberId,
-          modifiedIp: cIp
-        };
-        const updatedObj = await this.updateInDB(id, updateObj);
-        if (updatedObj) {
-          res = {
-            code: ServerResponseEnum.SUCCESS,
-            message: StringResource.SUCCESS_DATA_STATUS_CHANGE,
-            data: null
-          };
-        } else {
-          res = {
-            code: ServerResponseEnum.ERROR,
-            message: StringResource.SOMETHING_WENT_WRONG,
-            data: null
-          };
-        }
-      } else {
-        res = {
-          code: ServerResponseEnum.WARNING,
-          message: StringResource.NO_DATA_FOUND,
-          data: null
-        };
+  ): Promise<void> {
+    const find = await this.memberRepository.findOne({
+      where: {
+        memberId: id
       }
-      return res;
-    } catch (e) {
-      this.exceptionService.logError(e);
-      res = {
-        code: ServerResponseEnum.ERROR,
-        message: IS_DEV ? e["message"] : StringResource.SOMETHING_WENT_WRONG,
-        data: null
-      };
-      return res;
+    });
+    if (!find) {
+      throw new NotFoundException(StringResource.NO_DATA_FOUND);
     }
+    const updateObj = {
+      userStatusId: obj.statusId,
+      deactivationReason: obj.reason,
+      modifiedBy: memberId,
+      modifiedIp: cIp
+    };
+    await this.updateInDB(id, updateObj);
   }
 
-  public async resetPassword(id: number, cIp: string, adminId: number): Promise<IServerResponse> {
-    let res: IServerResponse;
-    try {
-      const find = await this.memberRepository.findOne({
-        where: {
-          memberId: id
-        },
-        raw: true
-      });
-      if (find.userStatusId === UserStatusEnum.IN_ACTIVE) {
-        res = {
-          code: ServerResponseEnum.WARNING,
-          message: StringResource.INACTIVE_USER,
-          data: null
-        };
-        return res;
-      }
-      if (find) {
-        const newPassword = CommonFunctionsUtil.generateRandomString(12);
-        const updateObj = {
-          password: newPassword,
-          modifiedBy: adminId,
-          modifiedIp: cIp
-        };
-        const updatedObj = await this.updateInDB(id, updateObj);
-        if (updatedObj) {
-          const emailParams: IEmailParams = {
-            emailType: EmailTypeEnum.PASSWORD_RESET,
-            toUserInfo: await this.getMemberBasicDetails(id),
-            message: newPassword
-          };
-          this.emailService.sendEmail(emailParams);
-          res = {
-            code: ServerResponseEnum.SUCCESS,
-            message: StringResource.SUCCESS_PASSWORD_CHANGE,
-            data: null
-          };
-        } else {
-          res = {
-            code: ServerResponseEnum.ERROR,
-            message: StringResource.SOMETHING_WENT_WRONG,
-            data: null
-          };
-        }
-      } else {
-        res = {
-          code: ServerResponseEnum.WARNING,
-          message: StringResource.NO_DATA_FOUND,
-          data: null
-        };
-      }
-      return res;
-    } catch (e) {
-      this.exceptionService.logError(e);
-      res = {
-        code: ServerResponseEnum.ERROR,
-        message: IS_DEV ? e["message"] : StringResource.SOMETHING_WENT_WRONG,
-        data: null
-      };
-      return res;
+  public async resetPassword(id: number, cIp: string, adminId: number): Promise<void> {
+    const find = await this.memberRepository.findOne({
+      where: {
+        memberId: id
+      },
+      raw: true
+    });
+    if (!find) {
+      throw new NotFoundException(StringResource.NO_DATA_FOUND);
     }
+    if (find.userStatusId === UserStatusEnum.IN_ACTIVE) {
+      throw new BadRequestException(StringResource.INACTIVE_USER);
+    }
+    const newPassword = CommonFunctionsUtil.generateRandomString(12);
+    const updateObj = {
+      password: newPassword,
+      modifiedBy: adminId,
+      modifiedIp: cIp
+    };
+    await this.updateInDB(id, updateObj);
+    const emailParams: IEmailParams = {
+      emailType: EmailTypeEnum.PASSWORD_RESET,
+      toUserInfo: await this.getMemberBasicDetails(id),
+      message: newPassword
+    };
+    this.emailService.sendEmail(emailParams);
   }
 
   async getMemberName(id: number): Promise<string> {
@@ -509,25 +315,11 @@ export class MemberService {
   }
 
   private async createInDB(obj: any) {
-    return await this.memberRepository
-      .create(obj)
-      .then((result) => {
-        return result;
-      })
-      .catch((e) => {
-        throw e;
-      });
+    return await this.memberRepository.create(obj);
   }
 
   private async updateInDB(id: number, obj: any) {
-    return await this.memberRepository
-      .update(obj, { where: { memberId: id } })
-      .then((result) => {
-        return result;
-      })
-      .catch((e) => {
-        throw e;
-      });
+    return await this.memberRepository.update(obj, { where: { memberId: id } });
   }
 
   private async findOneByEmail(emailId: string): Promise<TxnMember | null> {

@@ -1,15 +1,18 @@
-import { IMediaUpload } from './media-upload.interface';
-import { IAdminShortInfo } from './admin-user.interface';
+import { IMediaUpload } from "./media-upload.interface";
+import { ICreateUpdate } from "./common.interface";
 
-export interface IPocketGuide {
+export interface IPocketGuide extends ICreateUpdate {
   id: any;
   name: string;
   description: string;
-  active?: boolean;
   imagePath?: IMediaUpload[];
   filePath?: IMediaUpload[];
-  createdBy: IAdminShortInfo;
-  updatedBy: IAdminShortInfo;
-  createdAt: string;
-  updatedAt: string;
+}
+
+export class IManagePocketGuide {
+  name: string;
+  description?: string;
+  uploadFiles?: IMediaUpload[];
+  uploadAttachment?: IMediaUpload[];
+  active: boolean;
 }

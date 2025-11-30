@@ -1,5 +1,5 @@
 import { IMediaUpload } from './media-upload.interface';
-import { ICreateUpdate } from './lov.interface';
+import { ICreateUpdate } from './common.interface';
 
 export interface IProgramPlan extends ICreateUpdate {
   id: any;

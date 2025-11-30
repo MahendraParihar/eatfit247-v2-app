@@ -1,28 +1,28 @@
 import { Component, EventEmitter, inject, Input, OnInit, Output } from '@angular/core';
 import { FormBuilder } from '@angular/forms';
 import { StringResources } from '../../../../enum/string-resources';
-import { CommonSearchModel } from '../../../../models/common-search.model';
 import { StatusList } from '../../../../constants/status-list';
+import { ITableListFilter } from 'shared-lib';
 
 @Component({
   standalone: false,
   selector: 'app-search-form',
   templateUrl: './search-form.component.html',
-  styleUrls: ['./search-form.component.scss'],
+  styleUrls: ['./search-form.component.scss']
 })
 export class SearchFormComponent implements OnInit {
   fb: FormBuilder = inject(FormBuilder);
   @Input()
-  searchModel: CommonSearchModel;
+  searchModel: ITableListFilter;
   @Output()
-  searchResultEvent = new EventEmitter<CommonSearchModel>();
+  searchResultEvent = new EventEmitter<ITableListFilter>();
   stringRes = StringResources;
   statusList = StatusList;
   searchFormGroup = this.fb.group({
     name: [null],
     active: [null],
     createdFrom: [null],
-    createdTo: [null],
+    createdTo: [null]
   });
 
   constructor() {
@@ -52,9 +52,6 @@ export class SearchFormComponent implements OnInit {
 
   private setFormDataToModel(): void {
     const formValue = this.searchFormGroup.value;
-    if (!this.searchModel) {
-      this.searchModel = new CommonSearchModel();
-    }
     this.searchModel.name = formValue.name ? formValue.name : null;
     this.searchModel.active = formValue.active; // Send value as it is
     this.searchModel.createdFrom = formValue.createdFrom ? formValue.createdFrom.format('YYYY-MM-DD') : null;

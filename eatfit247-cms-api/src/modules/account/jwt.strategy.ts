@@ -2,24 +2,30 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { AccountService } from './account.service';
+import { Env } from '../../util/env.values';
+import { IAuthUser, StringResource, UserStatusEnum } from 'shared-lib';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(private userService: AccountService) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      ignoreExpiration: false,
-      secretOrKey: process.env.JWTKEY,
+      secretOrKey: Env.jwtSecret,
     });
   }
 
-  async validate(payload: { userId: number }) {
-    const user = await this.userService.findOneById(payload.userId);
+  async validate(payload: IAuthUser) {
+    // Fix: JWT payload uses adminUserId, not userId
+    const user = await this.userService.findOneById(payload.adminUserId);
     if (!user) {
       throw new UnauthorizedException('You are not authorized to perform the operation');
     }
+    if (user.adminUserStatusId !== UserStatusEnum.ACTIVE) {
+      throw new UnauthorizedException(StringResource.ADMIN_INACTIVE);
+    }
     return {
-      userId: payload.userId,
+      adminUserId: payload.adminUserId,
+      emailId: payload.emailId,
     };
   }
 }

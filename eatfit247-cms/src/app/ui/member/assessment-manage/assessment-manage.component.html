@@ -33,7 +33,7 @@
             <mat-label>{{stringRes.GENDER}}</mat-label>
             <mat-select formControlName="genderId" required>
               <mat-option>--- Select ---</mat-option>
-              <mat-option *ngFor="let o of genderList" [value]="o.id">{{o.name}}</mat-option>
+              <mat-option *ngFor="let o of genderList" [value]="o.id">{{o.label}}</mat-option>
             </mat-select>
             <mat-error>
               <app-input-error [controlName]="stringRes.GENDER"
@@ -50,7 +50,7 @@
             <mat-label>{{stringRes.MARITAL_STATUS}}</mat-label>
             <mat-select formControlName="maritalStatusId" required>
               <mat-option>--- Select ---</mat-option>
-              <mat-option *ngFor="let o of maritalStatusList" [value]="o.id">{{o.name}}</mat-option>
+              <mat-option *ngFor="let o of maritalStatusList" [value]="o.id">{{o.label}}</mat-option>
             </mat-select>
             <mat-error>
               <app-input-error [controlName]="stringRes.MARITAL_STATUS"
@@ -67,7 +67,7 @@
             <mat-label>{{stringRes.RELIGION}}</mat-label>
             <mat-select formControlName="religionId" required>
               <mat-option>--- Select ---</mat-option>
-              <mat-option *ngFor="let o of religionList" [value]="o.id">{{o.name}}</mat-option>
+              <mat-option *ngFor="let o of religionList" [value]="o.id">{{o.label}}</mat-option>
             </mat-select>
             <mat-error>
               <app-input-error [controlName]="stringRes.RELIGION"
@@ -88,7 +88,7 @@
             <mat-label>{{stringRes.LIFESTYLE}}</mat-label>
             <mat-select formControlName="lifestyleId" required>
               <mat-option>--- Select ---</mat-option>
-              <mat-option *ngFor="let o of lifestyleList" [value]="o.id">{{o.name}}</mat-option>
+              <mat-option *ngFor="let o of lifestyleList" [value]="o.id">{{o.label}}</mat-option>
             </mat-select>
             <mat-error>
               <app-input-error [controlName]="stringRes.LIFESTYLE"
@@ -105,7 +105,7 @@
             <mat-label>{{stringRes.EATING_HABIT}}</mat-label>
             <mat-select formControlName="eatingHabitId" required>
               <mat-option>--- Select ---</mat-option>
-              <mat-option *ngFor="let o of eatingHabitList" [value]="o.id">{{o.name}}</mat-option>
+              <mat-option *ngFor="let o of eatingHabitList" [value]="o.id">{{o.label}}</mat-option>
             </mat-select>
             <mat-error>
               <app-input-error [controlName]="stringRes.EATING_HABIT"
@@ -420,7 +420,7 @@
             <mat-label>{{stringRes.TYPE_OF_EXERCISE}}</mat-label>
             <mat-select formControlName="typeOfExerciseId">
               <mat-option>--- Select ---</mat-option>
-              <mat-option *ngFor="let o of typeOfExerciseList" [value]="o.id">{{o.name}}</mat-option>
+              <mat-option *ngFor="let o of typeOfExerciseList" [value]="o.id">{{o.label}}</mat-option>
             </mat-select>
             <mat-error>
               <app-input-error [controlName]="stringRes.TYPE_OF_EXERCISE"
@@ -512,7 +512,7 @@
             <mat-label>{{stringRes.SLEEPING_PATTERN}}</mat-label>
             <mat-select formControlName="sleepingPatternId" required>
               <mat-option>--- Select ---</mat-option>
-              <mat-option *ngFor="let o of sleepingPatternList" [value]="o.id">{{o.name}}</mat-option>
+              <mat-option *ngFor="let o of sleepingPatternList" [value]="o.id">{{o.label}}</mat-option>
             </mat-select>
             <mat-error>
               <app-input-error [controlName]="stringRes.SLEEPING_PATTERN"
@@ -674,7 +674,7 @@
             <mat-label>{{stringRes.URINE_OUTPUT}}</mat-label>
             <mat-select formControlName="urineOutputId">
               <mat-option>--- Select ---</mat-option>
-              <mat-option *ngFor="let o of sleepingPatternList" [value]="o.id">{{o.name}}</mat-option>
+              <mat-option *ngFor="let o of sleepingPatternList" [value]="o.id">{{o.label}}</mat-option>
             </mat-select>
             <mat-error>
               <app-input-error [controlName]="stringRes.URINE_OUTPUT"
@@ -692,7 +692,7 @@
             <mat-label>{{stringRes.BLOOD_SUGAR}}</mat-label>
             <mat-select formControlName="bloodSugarId">
               <mat-option>--- Select ---</mat-option>
-              <mat-option *ngFor="let o of bloodSugarList" [value]="o.id">{{o.name}}</mat-option>
+              <mat-option *ngFor="let o of bloodSugarList" [value]="o.id">{{o.label}}</mat-option>
             </mat-select>
             <mat-error>
               <app-input-error [controlName]="stringRes.BLOOD_SUGAR"

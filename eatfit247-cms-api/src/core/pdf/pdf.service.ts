@@ -1,4 +1,4 @@
-import { Inject, Injectable } from "@nestjs/common";
+import { Inject, Injectable, forwardRef } from "@nestjs/common";
 import * as path from "path";
 import { existsSync, mkdirSync, readFileSync } from "fs";
 import * as hbs from "handlebars";
@@ -6,9 +6,9 @@ import * as puppeteer from "puppeteer";
 import { TEMPLATE_FOLDER } from "src/constants/config-constants";
 import { IFileModel } from "./file-model.interface";
 import { FranchiseService } from "src/modules/franchise/franchise.service";
-import { IFranchise } from "src/response-interface/franchise.interface";
+import { IFranchise } from "shared-lib";
 import { REQUEST } from "@nestjs/core";
-import { MediaFolderEnum } from "src/enums/media-folder-enum";
+import { MediaFolderEnum } from 'shared-lib';
 
 @Injectable()
 export class PdfService {
@@ -16,7 +16,9 @@ export class PdfService {
   headerTemplate: string;
   footerTemplate: string;
 
-  constructor(private franchiseService: FranchiseService,
+  constructor(
+    @Inject(forwardRef(() => FranchiseService))
+    private franchiseService: FranchiseService,
     @Inject(REQUEST) private request) {
   }
 
@@ -45,7 +47,7 @@ export class PdfService {
     await this.registerHeaderFooter(franchise);
     const html = await this.getData(templateName, data);
     const browser = await puppeteer.launch({ 
-      headless: "new", 
+      headless: true, 
       executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/chromium',
       args: [
         "--no-sandbox",
@@ -60,7 +62,7 @@ export class PdfService {
     const page = await browser.newPage();
     await page.setContent(html, { waitUntil: "domcontentloaded" });
     await page.emulateMediaType("screen");
-    const tempFile = await page.pdf({
+    await page.pdf({
       path: physicalFilePath,
       format: "A4",
       printBackground: true,
@@ -74,6 +76,7 @@ export class PdfService {
         left: "20px"
       }
     });
+    const tempFile = readFileSync(physicalFilePath);
     await browser.close();
     return {
       filePath: relativePath,

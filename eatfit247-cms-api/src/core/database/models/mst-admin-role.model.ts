@@ -1,7 +1,8 @@
 import { Column, CreatedAt, DataType, Model, Table } from 'sequelize-typescript';
 
 @Table({
-  modelName: 'mst_admin_role',
+  freezeTableName: true,
+  modelName: 'mst_admin_roles',
   schema: 'public',
   createdAt: true,
   updatedAt: false,
@@ -26,5 +27,5 @@ export class MstAdminRole extends Model<MstAdminRole> {
     allowNull: false,
     field: 'created_at',
   })
-  createdAt: Date;
+  declare createdAt: Date;
 }

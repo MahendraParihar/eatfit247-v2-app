@@ -3,7 +3,8 @@ import { MstAdminUser } from './mst-admin-user.model';
 import { MstProgramCategory } from './mst-program-category.model';
 
 @Table({
-  modelName: 'mst_program',
+  freezeTableName: true,
+  modelName: 'mst_programs',
   schema: 'public',
 })
 export class MstProgram extends Model<MstProgram> {
@@ -122,7 +123,7 @@ export class MstProgram extends Model<MstProgram> {
     allowNull: false,
     field: 'created_at',
   })
-  createdAt: Date;
+  declare createdAt: Date;
 
   @BelongsTo(() => MstAdminUser, {
     foreignKey: 'modifiedBy',
@@ -140,7 +141,7 @@ export class MstProgram extends Model<MstProgram> {
     allowNull: false,
     field: 'updated_at',
   })
-  updatedAt: Date;
+  declare updatedAt: Date;
 
   @Column({
     allowNull: false,

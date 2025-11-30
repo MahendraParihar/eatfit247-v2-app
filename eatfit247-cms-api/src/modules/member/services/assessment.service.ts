@@ -1,13 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { ExceptionService } from '../../common/exception.service';
-import { IServerResponse } from '../../../common-dto/response-interface';
-import { ServerResponseEnum } from '../../../enums/server-response-enum';
-import { StringResource } from '../../../enums/string-resource';
+import { IManageMemberAssessment, StringResource } from 'shared-lib';
 import { CommonFunctionsUtil } from '../../../util/common-functions-util';
-import * as moment from 'moment';
+import moment from 'moment';
 import { Sequelize } from 'sequelize-typescript';
-import { DB_DATE_FORMAT, DEFAULT_DATE_TIME_FORMAT, IS_DEV } from '../../../constants/config-constants';
+import { DB_DATE_FORMAT, DEFAULT_DATE_TIME_FORMAT } from '../../../constants/config-constants';
 import { MstGender } from '../../../core/database/models/mst-gender.model';
 import { MstMaritalStatus } from '../../../core/database/models/mst-marital-status.model';
 import { MstReligion } from '../../../core/database/models/mst-religion.model';
@@ -17,7 +14,7 @@ import { MstTypeOfExercise } from '../../../core/database/models/mst-type-of-exe
 import { MstSleepingPattern } from '../../../core/database/models/mst-sleeping-pattern.model';
 import { MstBloodSugar } from '../../../core/database/models/mst-blood-sugar.model';
 import { MstUrineOutput } from '../../../core/database/models/mst-urine-output.model';
-import { IMemberAssessment } from '../../../response-interface/member-assessment.interface';
+import { IMemberAssessment } from 'shared-lib';
 import { TxnAssessment } from '../../../core/database/models/txn-assessment.model';
 import { CreateMemberAssessmentDto } from '../dto/member-assessment.dto';
 
@@ -25,200 +22,175 @@ import { CreateMemberAssessmentDto } from '../dto/member-assessment.dto';
 export class AssessmentService {
   constructor(
     @InjectModel(TxnAssessment) private readonly assessmentRepository: typeof TxnAssessment,
-    private exceptionService: ExceptionService,
     private sequelize: Sequelize,
   ) {}
 
-  public async fetchById(id: number): Promise<IServerResponse> {
-    let res: IServerResponse;
-    try {
-      const find = await this.assessmentRepository.findOne({
-        include: [
-          {
-            model: MstGender,
-            required: false,
-            as: 'MemberAssessmentGender',
-          },
-          {
-            model: MstMaritalStatus,
-            required: false,
-            as: 'MemberAssessmentMaritalStatus',
-          },
-          {
-            model: MstReligion,
-            required: false,
-            as: 'MemberAssessmentReligion',
-          },
-          {
-            model: MstLifestyle,
-            required: false,
-            as: 'MemberAssessmentLifestyle',
-          },
-          {
-            model: MstEatingHabit,
-            required: false,
-            as: 'MemberAssessmentEatingHabit',
-          },
-          {
-            model: MstTypeOfExercise,
-            required: false,
-            as: 'MemberAssessmentTypeOfExercise',
-          },
-          {
-            model: MstSleepingPattern,
-            required: false,
-            as: 'MemberAssessmentSleepingPattern',
-          },
-          {
-            model: MstBloodSugar,
-            required: false,
-            as: 'MemberAssessmentBloodSugar',
-          },
-          {
-            model: MstUrineOutput,
-            required: false,
-            as: 'MemberAssessmentUrineOutput',
-          },
-        ],
-        where: {
-          memberId: id,
+  public async fetchById(id: number): Promise<IMemberAssessment | null> {
+    const find = await this.assessmentRepository.findOne({
+      include: [
+        {
+          model: MstGender,
+          required: false,
+          as: 'MemberAssessmentGender',
         },
-        raw: true,
-        nest: true,
-      });
-      if (find) {
-        const dataObj = <IMemberAssessment>{
-          assessmentId: find.assessmentId,
-          memberId: find.memberId,
-          dateOfBirth: find.dateOfBirth ? moment(find.dateOfBirth, DB_DATE_FORMAT) : null,
-          age: find.age,
-          genderId: find.genderId,
-          maritalStatusId: find.maritalStatusId,
-          religionId: find.religionId,
-          lifestyleId: find.lifestyleId,
-          eatingHabitId: find.eatingHabitId,
-          tobaccoAmount: find.tobaccoAmount,
-          tobaccoFrequency: find.tobaccoFrequency,
-          paan: find.paan,
-          smokingAmount: find.smokingAmount,
-          smokingFrequency: find.smokingFrequency,
-          alcoholDrink: find.alcoholDrink,
-          alcoholFrequency: find.alcoholFrequency,
-          alcoholAmount: find.alcoholAmount,
-          aeratedDrinks: find.aeratedDrinks,
-          waterIntake: find.waterIntake,
-          religious: find.religious,
-          fasting: find.fasting,
-          restaurantVisit: find.restaurantVisit,
-          preferredCuisine: find.preferredCuisine,
-          whoCooks: find.whoCooks,
-          hungerPeak: find.hungerPeak,
-          foodDislikes: find.foodDislikes,
-          otherFoodPreferences: find.otherFoodPreferences,
-          doYouExercise: find.doYouExercise,
-          typeOfExerciseId: find.typeOfExerciseId,
-          frequency: find.frequency,
-          duration: find.duration,
-          time: find.time,
-          allergies: find.allergies,
-          allergySpecify: find.allergySpecify,
-          sleepingPatternId: find.sleepingPatternId,
-          sleepDuration: find.sleepDuration,
-          gas: find.gas,
-          hyperAcidity: find.hyperAcidity,
-          constipation: find.constipation,
-          periods: find.periods,
-          lmp: find.lmp,
-          daysCycle: find.daysCycle,
-          hairFall: find.hairFall,
-          kneePain: find.kneePain,
-          backPain: find.backPain,
-          bloodSugarId: find.bloodSugarId,
-          bloodSugarValue: find.bloodSugarValue,
-          cholesterol: find.cholesterol,
-          triglycerides: find.triglycerides,
-          hdlCholesterol: find.hdlCholesterol,
-          ldlCholesterol: find.ldlCholesterol,
-          vldlCholesterol: find.vldlCholesterol,
-          hgLevel: find.hgLevel,
-          urineOutputId: find.urineOutputId,
-          supplementMedicine: find.supplementMedicine,
-          wakeupTiming: find.wakeupTiming,
-          bfMenu: find.bfMenu,
-          bfTime: find.bfTime,
-          mmMenu: find.mmMenu,
-          mmTime: find.mmTime,
-          lunchMenu: find.lunchMenu,
-          lunchTime: find.lunchTime,
-          eveMenu: find.eveMenu,
-          eveTime: find.eveTime,
-          midEveMenu: find.midEveMenu,
-          midEveTime: find.midEveTime,
-          dinnerMenu: find.dinnerMenu,
-          dinnerTime: find.dinnerTime,
-          nightSnacks: find.nightSnacks,
-          bedTime: find.bedTime,
-          fruitsFrequency: find.fruitsFrequency,
-          breakFrequency: find.breakFrequency,
-          breadAmount: find.breadAmount,
-          sweetFrequency: find.sweetFrequency,
-          sweetAmount: find.sweetAmount,
-          teaFrequency: find.teaFrequency,
-          teaAmount: find.teaAmount,
-          remark: find.remark,
-          nutritionistSummery: find.nutritionistSummery,
-          createdBy: CommonFunctionsUtil.getAdminShortInfo(find['CreatedBy'], 'CreatedBy'),
-          updatedBy: CommonFunctionsUtil.getAdminShortInfo(find['ModifiedBy'], 'ModifiedBy'),
-          createdAt: moment(find.createdAt).format(DEFAULT_DATE_TIME_FORMAT),
-          updatedAt: moment(find.updatedAt).format(DEFAULT_DATE_TIME_FORMAT),
-          gender: find['MemberAssessmentGender'] ? find['MemberAssessmentGender']['gender'] : null,
-          maritalStatus: find['MemberAssessmentMaritalStatus']
-            ? find['MemberAssessmentMaritalStatus']['maritalStatus']
-            : null,
-          religion: find['MemberAssessmentReligion'] ? find['MemberAssessmentReligion']['religion'] : null,
-          lifestyle: find['MemberAssessmentLifestyle'] ? find['MemberAssessmentLifestyle']['lifestyle'] : null,
-          eatingHabit: find['MemberAssessmentEatingHabit'] ? find['MemberAssessmentEatingHabit']['eatingHabit'] : null,
-          typeOfExercise: find['MemberAssessmentTypeOfExercise']
-            ? find['MemberAssessmentTypeOfExercise']['typeOfExercise']
-            : null,
-          sleepingPattern: find['MemberAssessmentSleepingPattern']
-            ? find['MemberAssessmentSleepingPattern']['sleepingPattern']
-            : null,
-          bloodSugar: find['MemberAssessmentBloodSugar'] ? find['MemberAssessmentBloodSugar']['bloodSugar'] : null,
-          urineOutput: find['MemberAssessmentUrineOutput'] ? find['MemberAssessmentUrineOutput']['urineOutput'] : null,
-        };
-
-        res = {
-          code: ServerResponseEnum.SUCCESS,
-          message: StringResource.SUCCESS,
-          data: dataObj,
-        };
-      } else {
-        res = {
-          code: ServerResponseEnum.SUCCESS,
-          message: StringResource.NO_DATA_FOUND,
-          data: null,
-        };
-      }
-      return res;
-    } catch (e) {
-      this.exceptionService.logError(e);
-      res = {
-        code: ServerResponseEnum.ERROR,
-        message: IS_DEV ? e['message'] : StringResource.SOMETHING_WENT_WRONG,
-        data: null,
-      };
-      return res;
+        {
+          model: MstMaritalStatus,
+          required: false,
+          as: 'MemberAssessmentMaritalStatus',
+        },
+        {
+          model: MstReligion,
+          required: false,
+          as: 'MemberAssessmentReligion',
+        },
+        {
+          model: MstLifestyle,
+          required: false,
+          as: 'MemberAssessmentLifestyle',
+        },
+        {
+          model: MstEatingHabit,
+          required: false,
+          as: 'MemberAssessmentEatingHabit',
+        },
+        {
+          model: MstTypeOfExercise,
+          required: false,
+          as: 'MemberAssessmentTypeOfExercise',
+        },
+        {
+          model: MstSleepingPattern,
+          required: false,
+          as: 'MemberAssessmentSleepingPattern',
+        },
+        {
+          model: MstBloodSugar,
+          required: false,
+          as: 'MemberAssessmentBloodSugar',
+        },
+        {
+          model: MstUrineOutput,
+          required: false,
+          as: 'MemberAssessmentUrineOutput',
+        },
+      ],
+      where: {
+        memberId: id,
+      },
+      raw: true,
+      nest: true,
+    });
+    if (!find) {
+      return null;
     }
+    return <IMemberAssessment>{
+      assessmentId: find.assessmentId,
+      memberId: find.memberId,
+      dateOfBirth: find.dateOfBirth ? moment(find.dateOfBirth, DB_DATE_FORMAT).toDate() : null,
+      age: find.age,
+      genderId: find.genderId,
+      maritalStatusId: find.maritalStatusId,
+      religionId: find.religionId,
+      lifestyleId: find.lifestyleId,
+      eatingHabitId: find.eatingHabitId,
+      tobaccoAmount: find.tobaccoAmount,
+      tobaccoFrequency: find.tobaccoFrequency,
+      paan: find.paan,
+      smokingAmount: find.smokingAmount,
+      smokingFrequency: find.smokingFrequency,
+      alcoholDrink: find.alcoholDrink,
+      alcoholFrequency: find.alcoholFrequency,
+      alcoholAmount: find.alcoholAmount,
+      aeratedDrinks: find.aeratedDrinks,
+      waterIntake: find.waterIntake,
+      religious: find.religious,
+      fasting: find.fasting,
+      restaurantVisit: find.restaurantVisit,
+      preferredCuisine: find.preferredCuisine,
+      whoCooks: find.whoCooks,
+      hungerPeak: find.hungerPeak,
+      foodDislikes: find.foodDislikes,
+      otherFoodPreferences: find.otherFoodPreferences,
+      doYouExercise: find.doYouExercise,
+      typeOfExerciseId: find.typeOfExerciseId,
+      frequency: find.frequency,
+      duration: find.duration,
+      time: find.time,
+      allergies: find.allergies,
+      allergySpecify: find.allergySpecify,
+      sleepingPatternId: find.sleepingPatternId,
+      sleepDuration: find.sleepDuration,
+      gas: find.gas,
+      hyperAcidity: find.hyperAcidity,
+      constipation: find.constipation,
+      periods: find.periods,
+      lmp: find.lmp,
+      daysCycle: find.daysCycle,
+      hairFall: find.hairFall,
+      kneePain: find.kneePain,
+      backPain: find.backPain,
+      bloodSugarId: find.bloodSugarId,
+      bloodSugarValue: find.bloodSugarValue,
+      cholesterol: find.cholesterol,
+      triglycerides: find.triglycerides,
+      hdlCholesterol: find.hdlCholesterol,
+      ldlCholesterol: find.ldlCholesterol,
+      vldlCholesterol: find.vldlCholesterol,
+      hgLevel: find.hgLevel,
+      urineOutputId: find.urineOutputId,
+      supplementMedicine: find.supplementMedicine,
+      wakeupTiming: find.wakeupTiming,
+      bfMenu: find.bfMenu,
+      bfTime: find.bfTime,
+      mmMenu: find.mmMenu,
+      mmTime: find.mmTime,
+      lunchMenu: find.lunchMenu,
+      lunchTime: find.lunchTime,
+      eveMenu: find.eveMenu,
+      eveTime: find.eveTime,
+      midEveMenu: find.midEveMenu,
+      midEveTime: find.midEveTime,
+      dinnerMenu: find.dinnerMenu,
+      dinnerTime: find.dinnerTime,
+      nightSnacks: find.nightSnacks,
+      bedTime: find.bedTime,
+      fruitsFrequency: find.fruitsFrequency,
+      breakFrequency: find.breakFrequency,
+      breadAmount: find.breadAmount,
+      sweetFrequency: find.sweetFrequency,
+      sweetAmount: find.sweetAmount,
+      teaFrequency: find.teaFrequency,
+      teaAmount: find.teaAmount,
+      remark: find.remark,
+      nutritionistSummery: find.nutritionistSummery,
+      createdBy: CommonFunctionsUtil.getAdminShortInfo(find['CreatedBy'], 'CreatedBy'),
+      updatedBy: CommonFunctionsUtil.getAdminShortInfo(find['ModifiedBy'], 'ModifiedBy'),
+      createdAt: moment(find.createdAt).format(DEFAULT_DATE_TIME_FORMAT),
+      updatedAt: moment(find.updatedAt).format(DEFAULT_DATE_TIME_FORMAT),
+      gender: find['MemberAssessmentGender'] ? find['MemberAssessmentGender']['gender'] : null,
+      maritalStatus: find['MemberAssessmentMaritalStatus']
+        ? find['MemberAssessmentMaritalStatus']['maritalStatus']
+        : null,
+      religion: find['MemberAssessmentReligion'] ? find['MemberAssessmentReligion']['religion'] : null,
+      lifestyle: find['MemberAssessmentLifestyle'] ? find['MemberAssessmentLifestyle']['lifestyle'] : null,
+      eatingHabit: find['MemberAssessmentEatingHabit'] ? find['MemberAssessmentEatingHabit']['eatingHabit'] : null,
+      typeOfExercise: find['MemberAssessmentTypeOfExercise']
+        ? find['MemberAssessmentTypeOfExercise']['typeOfExercise']
+        : null,
+      sleepingPattern: find['MemberAssessmentSleepingPattern']
+        ? find['MemberAssessmentSleepingPattern']['sleepingPattern']
+        : null,
+      bloodSugar: find['MemberAssessmentBloodSugar'] ? find['MemberAssessmentBloodSugar']['bloodSugar'] : null,
+      urineOutput: find['MemberAssessmentUrineOutput'] ? find['MemberAssessmentUrineOutput']['urineOutput'] : null,
+    };
   }
 
   public async createOrUpdate(
     memberId: number,
-    obj: CreateMemberAssessmentDto,
+    obj: IManageMemberAssessment,
     cIp: string,
     adminId: number,
-  ): Promise<IServerResponse> {
-    let res: IServerResponse;
+  ): Promise<void> {
     const t = await this.sequelize.transaction();
     try {
       const dbObj = {
@@ -305,40 +277,18 @@ export class AssessmentService {
       };
 
       const checkUser = await this.findOneById(memberId);
-      let dbRes;
       if (checkUser) {
-        dbRes = await this.updateInDB(memberId, dbObj);
+        await this.updateInDB(memberId, dbObj);
       } else {
         dbObj['createdBy'] = adminId;
         dbObj['createdIp'] = cIp;
-        dbRes = await this.createInDB(dbObj);
+        await this.createInDB(dbObj);
       }
 
-      if (dbRes) {
-        await t.commit();
-        res = {
-          code: ServerResponseEnum.SUCCESS,
-          message: StringResource.SUCCESS_DATA_UPDATE,
-          data: null,
-        };
-      } else {
-        await t.rollback();
-        res = {
-          code: ServerResponseEnum.ERROR,
-          message: StringResource.SOMETHING_WENT_WRONG,
-          data: null,
-        };
-      }
-      return res;
+      await t.commit();
     } catch (e) {
       await t.rollback();
-      this.exceptionService.logError(e);
-      res = {
-        code: ServerResponseEnum.ERROR,
-        message: IS_DEV ? e['message'] : StringResource.SOMETHING_WENT_WRONG,
-        data: null,
-      };
-      return res;
+      throw e;
     }
   }
 

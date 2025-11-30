@@ -1,8 +1,7 @@
 import { AfterViewInit, ChangeDetectorRef, Component, inject, OnDestroy, OnInit } from '@angular/core';
-import { DropdownItem } from '../../../interfaces/dropdown-item';
 import { StringResources } from '../../../enum/string-resources';
 import { InputLength } from '../../../constants/input-length';
-import { FileTypeEnum } from '../../../enum/file-type-enum';
+import { IDropdownItem, FileTypeEnum, IProgram, IResponse } from 'shared-lib';
 import { MediaForEnum } from '../../../enum/media-for-enum';
 import { StatusList } from '../../../constants/status-list';
 import { AngularEditorConfig } from '@kolkov/angular-editor';
@@ -14,22 +13,19 @@ import { SnackBarService } from '../../../service/snack-bar.service';
 import { NavigationService } from '../../../service/navigation.service';
 import { ActivatedRoute } from '@angular/router';
 import { MatChipInputEvent } from '@angular/material/chips';
-import { ResponseDataModel } from '../../../models/response-data.model';
 import { ApiUrlEnum } from '../../../enum/api-url-enum';
-import { ServerResponseEnum } from '../../../enum/server-response-enum';
 import { ValidationUtil } from '../../../utilites/validation-util';
-import { ProgramModel } from '../../../models/program.model';
 
 @Component({
   standalone: false,
   selector: 'app-program-manage',
   templateUrl: './program-manage.component.html',
-  styleUrls: ['./program-manage.component.scss'],
+  styleUrls: ['./program-manage.component.scss']
 })
 export class ProgramManageComponent implements OnInit, AfterViewInit, OnDestroy {
   fb: FormBuilder = inject(FormBuilder);
-  programCategoryList: DropdownItem[] = [];
-  lovModelObj: ProgramModel;
+  programCategoryList: IDropdownItem[] = [];
+  lovModelObj: IProgram;
   id: number;
   stringRes = StringResources;
   inputLength = InputLength;
@@ -51,7 +47,7 @@ export class ProgramManageComponent implements OnInit, AfterViewInit, OnDestroy 
     videoUrl: [null, []],
     idealFor: [null, [Validators.required]],
     tags: [null, [Validators.required]],
-    active: [true, [Validators.required]],
+    active: [true, [Validators.required]]
   });
 
   constructor(private httpService: HttpService,
@@ -97,7 +93,7 @@ export class ProgramManageComponent implements OnInit, AfterViewInit, OnDestroy 
         videoUrl: this.lovModelObj.videoUrl,
         tags: this.tagsList.join(','),
         idealFor: this.idealForList.join(','),
-        active: this.lovModelObj.active,
+        active: this.lovModelObj.active
       });
     }
   }
@@ -150,21 +146,11 @@ export class ProgramManageComponent implements OnInit, AfterViewInit, OnDestroy 
   }
 
   async loadDataById(id: number): Promise<void> {
-    const res: ResponseDataModel = await this.httpService.getRequest(ApiUrlEnum.PROGRAM_MANAGE, id, null, true);
-    if (res) {
-      switch (res.code) {
-        case ServerResponseEnum.SUCCESS:
-          this.lovModelObj = ProgramModel.fromJson(res.data);
-          this.bindData();
-          this.cdr.detectChanges();
-          break;
-        case ServerResponseEnum.WARNING:
-          this.snackBarService.showWarning(res.message);
-          break;
-        case ServerResponseEnum.ERROR:
-          this.snackBarService.showError(res.message);
-          break;
-      }
+    const res = await this.httpService.getRequest<IResponse<IProgram>>(ApiUrlEnum.PROGRAM_MANAGE, id, null, true);
+    if (res && res.data) {
+      this.lovModelObj = res.data;
+      this.bindData();
+      this.cdr.detectChanges();
     }
   }
 
@@ -174,45 +160,19 @@ export class ProgramManageComponent implements OnInit, AfterViewInit, OnDestroy 
       return;
     }
     let payload: any = this.formGroup.value;
-    let res: ResponseDataModel;
     if (this.id > 0) {
-      res = await this.httpService.putRequest(ApiUrlEnum.PROGRAM_MANAGE, this.id, payload, true);
+      await this.httpService.putRequest<IResponse<void>>(ApiUrlEnum.PROGRAM_MANAGE, this.id, payload, true);
     } else {
-      res = await this.httpService.postRequest(ApiUrlEnum.PROGRAM_MANAGE, payload, true);
+      await this.httpService.postRequest<IResponse<void>>(ApiUrlEnum.PROGRAM_MANAGE, payload, true);
     }
-    if (res) {
-      switch (res.code) {
-        case ServerResponseEnum.SUCCESS:
-          this.snackBarService.showSuccess(res.message);
-          this.navigationService.back();
-          break;
-        case ServerResponseEnum.WARNING:
-          this.snackBarService.showWarning(res.message);
-          break;
-        case ServerResponseEnum.ERROR:
-          this.snackBarService.showError(res.message);
-          break;
-      }
-    }
+    this.snackBarService.showSuccess('Data updated successfully');
   }
 
   async loadMetaData(): Promise<void> {
     this.programCategoryList = [];
-    const res: ResponseDataModel = await this.httpService.getRequest(ApiUrlEnum.PROGRAM_MASTER_DATA, null, null, true);
-    if (res) {
-      switch (res.code) {
-        case ServerResponseEnum.SUCCESS:
-          for (const s of res.data.programCategory) {
-            this.programCategoryList.push(DropdownItem.fromJson(s));
-          }
-          break;
-        case ServerResponseEnum.WARNING:
-          this.snackBarService.showWarning(res.message);
-          break;
-        case ServerResponseEnum.ERROR:
-          this.snackBarService.showError(res.message);
-          break;
-      }
+    const res = await this.httpService.getRequest<IResponse<{ programPlanType: IDropdownItem[] }>>(ApiUrlEnum.PROGRAM_MASTER_DATA, null, null, true);
+    if (res && res.data) {
+      this.programCategoryList = res.data.programPlanType;
     }
   }
 }

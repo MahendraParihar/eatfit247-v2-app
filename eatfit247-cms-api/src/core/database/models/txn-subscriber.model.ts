@@ -1,7 +1,8 @@
 import { Column, CreatedAt, DataType, Model, Table, UpdatedAt } from 'sequelize-typescript';
 
 @Table({
-  modelName: 'txn_subscriber',
+  freezeTableName: true,
+  modelName: 'txn_subscribers',
   schema: 'public',
 })
 export class TxnSubscriber extends Model<TxnSubscriber> {
@@ -49,14 +50,14 @@ export class TxnSubscriber extends Model<TxnSubscriber> {
     allowNull: false,
     field: 'created_at',
   })
-  createdAt: Date;
+  declare createdAt: Date;
 
   @UpdatedAt
   @Column({
     allowNull: false,
     field: 'updated_at',
   })
-  updatedAt: Date;
+  declare updatedAt: Date;
 
   @Column({
     allowNull: false,

@@ -1,7 +1,6 @@
 import { Component, Inject, OnInit, Renderer2 } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { ApiUrlEnum } from 'src/app/enum/api-url-enum';
-import { ServerResponseEnum } from 'src/app/enum/server-response-enum';
 import { HttpService } from 'src/app/service/http.service';
 import { SnackBarService } from 'src/app/service/snack-bar.service';
 import { StringResources } from '../../../enum/string-resources';
@@ -38,31 +37,15 @@ export class MemberDietPlanDetailsDialogComponent implements OnInit {
     this.dialogRef.close(flag);
   }
 
-  async downloadDietPlan(): Promise<boolean> {
+  async downloadDietPlan(): Promise<void> {
     let url;
     if (this.dietPlanDetail.dayNo) {
       url = ApiUrlEnum.MEMBER_DIET_PLAN_DOWNLOAD_DAY + `/${this.id}/${this.dietPlanDetail.dietPlanId}/${this.dietPlanDetail.cycleNo}/${this.dietPlanDetail.dayNo}`;
     } else {
       url = ApiUrlEnum.MEMBER_DIET_PLAN_DOWNLOAD_CYCLE + `/${this.id}/${this.dietPlanDetail.dietPlanId}/${this.dietPlanDetail.cycleNo}`;
     }
-    const res = await this.httpService.getRequest(url, null, null, true);
-    if (!res) {
-      return false;
-    }
-    switch (res.code) {
-      case ServerResponseEnum.SUCCESS:
-        if (res.data) {
-          this.downloadTemplate(res.data.buffer, res.data.fileName);
-        }
-        return true;
-      case ServerResponseEnum.WARNING:
-        this.snackBarService.showWarning(res.message);
-        return false;
-      case ServerResponseEnum.ERROR:
-      default:
-        this.snackBarService.showError(res.message);
-        return false;
-    }
+    const res: any = await this.httpService.getRequest(url, null, null, true);
+    this.downloadTemplate(res.data.buffer, res.data.fileName);
   }
 
   downloadTemplate(base64String: string, fileName: string) {
@@ -77,28 +60,14 @@ export class MemberDietPlanDetailsDialogComponent implements OnInit {
     }
   }
 
-  async sendEmail(): Promise<boolean> {
+  async sendEmail(): Promise<void> {
     let url;
     if (this.dietPlanDetail.dayNo) {
       url = `${ApiUrlEnum.MEMBER_DIET_PLAN_SEND_EMAIL_DAY}/${this.id}/${this.dietPlanDetail.dietPlanId}/${this.dietPlanDetail.cycleNo}/${this.dietPlanDetail.dayNo}`;
     } else {
       url = `${ApiUrlEnum.MEMBER_DIET_PLAN_SEND_EMAIL_CYCLE}/${this.id}/${this.dietPlanDetail.dietPlanId}/${this.dietPlanDetail.cycleNo}`;
     }
-    const apiResponse = await this.httpService.getRequest(url, null, null, true);
-    if (!apiResponse) {
-      return false;
-    }
-    switch (apiResponse.code) {
-      case ServerResponseEnum.SUCCESS:
-        this.snackBarService.showSuccess(apiResponse.message);
-        return true;
-      case ServerResponseEnum.WARNING:
-        this.snackBarService.showWarning(apiResponse.message);
-        return false;
-      case ServerResponseEnum.ERROR:
-      default:
-        this.snackBarService.showError(apiResponse.message);
-        return false;
-    }
+    const res = await this.httpService.getRequest(url, null, null, true);
+    this.snackBarService.showSuccess('Email sent successfully');
   }
 }

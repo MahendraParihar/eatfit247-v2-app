@@ -1,6 +1,6 @@
 import { MailerService } from '@nestjs-modules/mailer';
 import { Injectable } from '@nestjs/common';
-import { EmailTypeEnum } from 'src/enums/email-type-enum';
+import { EmailTypeEnum } from 'shared-lib';
 import { MstEmailTemplate } from '../database/models/mst-email-template.model';
 import { IAttachment, IEmailParams } from './email-params.interface';
 import { EmailTemplateService } from './email-template.service';
@@ -56,7 +56,9 @@ export class EmailService {
         break;
 
       case EmailTypeEnum.PASSWORD_RESET:
-        template.body = template.body.replace('REPLACE_MESSAGE', emailParams.message);
+        template.body = template.body
+          .replace('REPLACE_MESSAGE', emailParams.message || '')
+          .replace('REPLACE_OTP', emailParams.otp || '');
         break;
     }
     return template;

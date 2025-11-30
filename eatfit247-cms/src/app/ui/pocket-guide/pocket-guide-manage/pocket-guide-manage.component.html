@@ -49,13 +49,13 @@
                          [isRequired]="false"
                          [mediaFor]="mediaForEnum.POCKET_GUIDE"
                          [mediaType]="fileTypeEnum.IMAGE"
-                         [uploadedMediaList]="lovModelObj ? lovModelObj.imagePath : []"></app-file-selector>
+                         [uploadedMediaList]="lovModelObj ? lovModelObj.uploadFiles : []"></app-file-selector>
       <app-file-selector [controlName]="'uploadAttachment'" [formGroup]="formGroup"
                          [isMultiFile]="false"
                          [isRequired]="false"
                          [mediaFor]="mediaForEnum.POCKET_GUIDE"
                          [mediaType]="fileTypeEnum.PDF"
-                         [uploadedMediaList]="lovModelObj ? lovModelObj.filePath : []"></app-file-selector>
+                         [uploadedMediaList]="lovModelObj ? lovModelObj.uploadAttachment : []"></app-file-selector>
       <div *ngIf="id > 0" fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="flex-start">
         <div class="form-item"
              fxFlex="calc(100%)"
@@ -65,7 +65,7 @@
           <mat-form-field>
             <mat-label>{{stringRes.STATUS}}</mat-label>
             <mat-select formControlName="active">
-              <mat-option *ngFor="let o of statusList" [value]="o.value">{{o.name}}</mat-option>
+              <mat-option *ngFor="let o of statusList" [value]="o.id">{{o.label}}</mat-option>
             </mat-select>
           </mat-form-field>
         </div>

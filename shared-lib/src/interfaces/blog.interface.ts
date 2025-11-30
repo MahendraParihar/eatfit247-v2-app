@@ -1,7 +1,7 @@
-import { IMediaUpload } from './media-upload.interface';
-import { IAdminShortInfo } from './admin-user.interface';
+import { IMediaUpload } from "./media-upload.interface";
+import { ICreateUpdate } from "./common.interface";
 
-export interface IBlog {
+export interface IBlog extends ICreateUpdate {
   id: any;
   title: string;
   blogCategoryId: number;
@@ -19,8 +19,18 @@ export interface IBlog {
   url: string;
   active: boolean;
   imagePath: IMediaUpload[];
-  createdBy: IAdminShortInfo;
-  updatedBy: IAdminShortInfo;
-  createdAt: string;
-  updatedAt: string;
+}
+
+export interface IManageBlog {
+  title: string;
+  description: string;
+  blogCategoryId: number;
+  blogAuthorId: number;
+  isPublished: boolean;
+  isCommentAllow: boolean;
+  isMailSentToSubscriber: boolean;
+  writtenAt: Date;
+  tags: string[];
+  uploadFiles?: IMediaUpload[];
+  active: boolean;
 }

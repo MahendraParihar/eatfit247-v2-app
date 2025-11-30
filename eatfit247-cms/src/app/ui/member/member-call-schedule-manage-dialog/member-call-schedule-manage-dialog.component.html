@@ -11,7 +11,7 @@
           <mat-form-field>
             <mat-label>{{stringRes.CALL_TYPE}}</mat-label>
             <mat-select formControlName="callTypeId" required>
-              <mat-option *ngFor="let o of callTypeList" [value]="o.id">{{o.name}}</mat-option>
+              <mat-option *ngFor="let o of callTypeList" [value]="o.id">{{o.label}}</mat-option>
             </mat-select>
             <mat-error>
               <app-input-error [controlName]="stringRes.CALL_TYPE"
@@ -27,7 +27,7 @@
           <mat-form-field>
             <mat-label>{{stringRes.CALL_PURPOSE}}</mat-label>
             <mat-select formControlName="callPurposeId" required>
-              <mat-option *ngFor="let o of callPurposeList" [value]="o.id">{{o.name}}</mat-option>
+              <mat-option *ngFor="let o of callPurposeList" [value]="o.id">{{o.label}}</mat-option>
             </mat-select>
             <mat-error>
               <app-input-error [controlName]="stringRes.CALL_PURPOSE"
@@ -43,7 +43,7 @@
           <mat-form-field>
             <mat-label>{{stringRes.CALL_STATUS}}</mat-label>
             <mat-select formControlName="callStatusId" required>
-              <mat-option *ngFor="let o of callStatusList" [value]="o.id">{{o.name}}</mat-option>
+              <mat-option *ngFor="let o of callStatusList" [value]="o.id">{{o.label}}</mat-option>
             </mat-select>
             <mat-error>
               <app-input-error [controlName]="stringRes.CALL_STATUS"
@@ -147,7 +147,7 @@
           <mat-form-field>
             <mat-label>{{stringRes.STATUS}}</mat-label>
             <mat-select formControlName="active">
-              <mat-option *ngFor="let o of statusList" [value]="o.value">{{o.name}}</mat-option>
+              <mat-option *ngFor="let o of statusList" [value]="o.value">{{o.label}}</mat-option>
             </mat-select>
           </mat-form-field>
         </div>

@@ -33,7 +33,7 @@
             <mat-label>{{stringRes.FAQ_CATEGORY}}</mat-label>
             <mat-select formControlName="faqCategoryId">
               <mat-option>----------- Select -----------</mat-option>
-              <mat-option *ngFor="let s of faqCategoryList" [value]="s.id">{{s.name}}</mat-option>
+              <mat-option *ngFor="let s of faqCategoryList" [value]="s.id">{{s.label}}</mat-option>
             </mat-select>
             <mat-error>
               <app-input-error [controlName]="stringRes.FAQ_CATEGORY"
@@ -64,7 +64,7 @@
           <mat-form-field>
             <mat-label>{{stringRes.STATUS}}</mat-label>
             <mat-select (selectionChange)="onStatusChange($event)" formControlName="active">
-              <mat-option *ngFor="let o of statusList" [value]="o.value">{{o.name}}</mat-option>
+              <mat-option *ngFor="let o of statusList" [value]="o.id">{{o.label}}</mat-option>
             </mat-select>
           </mat-form-field>
         </div>

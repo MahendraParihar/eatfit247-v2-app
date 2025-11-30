@@ -3,8 +3,7 @@ import { JwtAuthGuard } from '../../account/jwt-auth.guard';
 import { BasicSearchDto, UpdateActiveDto } from '../../../common-dto/basic-input.dto';
 import { ContactUsReportService } from '../contact-us-report.service';
 import { CreateContactUsDto, SendResponseDto } from '../dto/contact-us.dto';
-import { ServerResponseEnum } from '../../../enums/server-response-enum';
-import { StringResource } from '../../../enums/string-resource';
+import { StringResource } from 'shared-lib';
 
 @Controller('contact-us-report')
 export class ContactUsReportController {
@@ -50,10 +49,6 @@ export class ContactUsReportController {
   @Get('send-mail/:id')
   async sendResponseMail(@Param('id') id: number, @Req() req: any) {
     await this.service.sendEmail(id, req.user.userId);
-    return {
-      code: ServerResponseEnum.SUCCESS,
-      message: StringResource.SUCCESS_MAIL_SENT,
-      data: null,
-    };
+    return null;
   }
 }

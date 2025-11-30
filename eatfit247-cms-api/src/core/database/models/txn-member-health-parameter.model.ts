@@ -4,6 +4,7 @@ import { MstHealthParameterUnit } from './mst-health-parameter-unit.model';
 import { TxnMemberHealthParameterLog } from './txn-member-health-parameter-log.model';
 
 @Table({
+  freezeTableName: true,
   modelName: 'txn_member_health_parameters',
   schema: 'public',
   timestamps: false,

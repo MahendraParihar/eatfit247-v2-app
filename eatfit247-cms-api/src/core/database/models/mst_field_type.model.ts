@@ -1,7 +1,8 @@
 import { Column, DataType, Model, Table } from 'sequelize-typescript';
 
 @Table({
-  modelName: 'mst_field_type',
+  freezeTableName: true,
+  modelName: 'mst_field_types',
   schema: 'public',
 })
 export class MstFieldType extends Model<MstFieldType> {

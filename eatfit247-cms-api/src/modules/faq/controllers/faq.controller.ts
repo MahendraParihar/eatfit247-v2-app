@@ -3,8 +3,7 @@ import { JwtAuthGuard } from '../../account/jwt-auth.guard';
 import { BasicSearchDto, UpdateActiveDto } from '../../../common-dto/basic-input.dto';
 import { FaqService } from '../faq.service';
 import { CreateFaqDto } from '../dto/faq.dto';
-import { ServerResponseEnum } from '../../../enums/server-response-enum';
-import { StringResource } from '../../../enums/string-resource';
+import { StringResource } from 'shared-lib';
 import { FaqCategoryService } from '../../lov/services/faq-category.service';
 
 @Controller('faq')
@@ -45,12 +44,6 @@ export class FaqController {
   @Get('faq-master')
   async faqMasterData(@Query() req) {
     const promiseAll = await Promise.all([this.faqCategoryService.getFaqCategoryList()]);
-    return {
-      code: ServerResponseEnum.SUCCESS,
-      message: StringResource.SUCCESS,
-      data: {
-        faqCategory: promiseAll[0],
-      },
-    };
+    return promiseAll[0];
   }
 }

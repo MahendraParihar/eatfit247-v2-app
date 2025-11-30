@@ -6,12 +6,12 @@ import { NavigationService } from '../../service/navigation.service';
 import { menuList } from './menu-list';
 import { MediaChange, MediaObserver } from '@angular/flex-layout';
 import { StringResources } from '../../enum/string-resources';
-import { AuthUserModel } from '../../models/auth-user.model';
 import { SharedService } from '../../service/shared.service';
 import { NavigationPathEnum } from '../../enum/navigation-path-enum';
 import { BreadcrumbItem } from '../../interfaces/breadcrumb-item';
 import { Router } from '@angular/router';
 import { MatSidenav } from '@angular/material/sidenav';
+import { IAuthUser } from 'shared-lib';
 
 @Component({
   selector: 'app-base-layout',
@@ -20,7 +20,7 @@ import { MatSidenav } from '@angular/material/sidenav';
   standalone: false
 })
 export class BaseLayoutComponent implements OnInit {
-  authUserObj?: AuthUserModel;
+  authUserObj?: IAuthUser;
   stringRes = StringResources;
   appTitle = StringResources.APP_TITLE;
   public opened = false;
@@ -36,11 +36,11 @@ export class BaseLayoutComponent implements OnInit {
     private sharedService: SharedService) {
     this.mediaWatcher = this.media.asObservable().pipe(
       filter((changes: MediaChange[]) => changes.length > 0),
-      map((changes: MediaChange[]) => changes[0]),
+      map((changes: MediaChange[]) => changes[0])
     ).subscribe((mediaChange: MediaChange) => {
       this.handleMediaChange(mediaChange);
     });
-    this.sharedService.loginUser.subscribe((authUser: AuthUserModel) => {
+    this.sharedService.loginUser.subscribe((authUser: IAuthUser) => {
       if (!authUser) {
         this.signOut();
         this.cdr.detectChanges();

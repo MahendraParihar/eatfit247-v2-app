@@ -1,16 +1,15 @@
 import { IMediaUpload } from './media-upload.interface';
-import { IAdminShortInfo } from './admin-user.interface';
+import { ICreateUpdate } from './common.interface';
 
-export interface IMemberPocketGuide {
+export interface IMemberPocketGuide extends ICreateUpdate {
   id: any;
   name: string;
   description: string;
   isSelected: boolean;
-  active?: boolean;
   imagePath?: IMediaUpload[];
   filePath?: IMediaUpload[];
-  createdBy: IAdminShortInfo;
-  updatedBy: IAdminShortInfo;
-  createdAt: string;
-  updatedAt: string;
+}
+
+export interface IManageMemberPocketGuide {
+  pocketGuideIds: number[];
 }

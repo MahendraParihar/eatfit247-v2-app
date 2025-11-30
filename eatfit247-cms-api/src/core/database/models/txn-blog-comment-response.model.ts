@@ -4,6 +4,7 @@ import { TxnBlog } from './txn-blog.model';
 import { TxnBlogComment } from './txn-blog-comment.model';
 
 @Table({
+  freezeTableName: true,
   modelName: 'txn_blog_comment_response',
   schema: 'public',
 })
@@ -69,14 +70,14 @@ export class TxnBlogCommentResponse extends Model<TxnBlogCommentResponse> {
     allowNull: false,
     field: 'created_at',
   })
-  createdAt: Date;
+  declare createdAt: Date;
 
   @UpdatedAt
   @Column({
     allowNull: false,
     field: 'updated_at',
   })
-  updatedAt: Date;
+  declare updatedAt: Date;
 
   @Column({
     allowNull: false,

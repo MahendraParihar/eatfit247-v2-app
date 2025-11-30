@@ -4,6 +4,13 @@
  */
 export enum MediaFolderEnum {
   ADMIN = 'admin',
+  LOVS = 'lovs',
+  MEDIA_FOLDER = 'media-files',
+  UPLOADS = 'uploads',
+  DOWNLOADS = 'downloads',
+  DIET_PLAN = 'diet-Plans',
+  INVOICE = 'invoice',
+  RECIPES = 'recipes',
   MEMBER = 'member',
   RECIPE = 'recipe',
   BLOG = 'blog',
@@ -11,9 +18,6 @@ export enum MediaFolderEnum {
   FRANCHISE = 'franchise',
   REFERRER = 'referrer',
   POCKET_GUIDE = 'pocket-guide',
-  DOWNLOADS = 'downloads',
-  INVOICE = 'invoice',
-  DIET_PLANS = 'diet-Plans',
   BRAND = 'brand',
 }
 

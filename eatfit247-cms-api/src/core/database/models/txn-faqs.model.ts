@@ -3,6 +3,7 @@ import { MstAdminUser } from './mst-admin-user.model';
 import { MstFaqCategory } from './mst-faq-category.model';
 
 @Table({
+  freezeTableName: true,
   modelName: 'txn_faqs',
   schema: 'public',
 })
@@ -64,7 +65,7 @@ export class TxnFaqs extends Model<TxnFaqs> {
     allowNull: false,
     field: 'created_at',
   })
-  createdAt: Date;
+  declare createdAt: Date;
 
   @BelongsTo(() => MstAdminUser, {
     foreignKey: 'modifiedBy',
@@ -82,7 +83,7 @@ export class TxnFaqs extends Model<TxnFaqs> {
     allowNull: false,
     field: 'updated_at',
   })
-  updatedAt: Date;
+  declare updatedAt: Date;
 
   @Column({
     allowNull: false,

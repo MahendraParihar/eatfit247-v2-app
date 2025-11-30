@@ -4,12 +4,9 @@ import { ActivatedRoute } from '@angular/router';
 import { InputLength } from '../../../constants/input-length';
 import { StatusList } from '../../../constants/status-list';
 import { ApiUrlEnum } from '../../../enum/api-url-enum';
-import { FileTypeEnum } from '../../../enum/file-type-enum';
+import { FileTypeEnum, IRecipeCategory, IResponse } from 'shared-lib';
 import { MediaForEnum } from '../../../enum/media-for-enum';
-import { ServerResponseEnum } from '../../../enum/server-response-enum';
 import { StringResources } from '../../../enum/string-resources';
-import { RecipeCategoryModel } from '../../../models/recipe-category.model';
-import { ResponseDataModel } from '../../../models/response-data.model';
 import { HttpService } from '../../../service/http.service';
 import { NavigationService } from '../../../service/navigation.service';
 import { SnackBarService } from '../../../service/snack-bar.service';
@@ -19,11 +16,11 @@ import { ValidationUtil } from '../../../utilites/validation-util';
   standalone: false,
   selector: 'app-recipe-category-manage',
   templateUrl: './recipe-category-manage.component.html',
-  styleUrls: ['./recipe-category-manage.component.scss'],
+  styleUrls: ['./recipe-category-manage.component.scss']
 })
 export class RecipeCategoryManageComponent implements OnInit, AfterViewInit, OnDestroy {
   fb: FormBuilder = inject(FormBuilder);
-  lovModelObj: RecipeCategoryModel;
+  lovModelObj: IRecipeCategory;
   id: number;
   stringRes = StringResources;
   inputLength = InputLength;
@@ -35,7 +32,7 @@ export class RecipeCategoryManageComponent implements OnInit, AfterViewInit, OnD
     active: [true, [Validators.required]],
     fromTime: [null, [Validators.required]],
     toTime: [null, [Validators.required]],
-    sequence: [true, [Validators.required]],
+    sequence: [true, [Validators.required]]
   });
 
   constructor(private httpService: HttpService,
@@ -72,26 +69,16 @@ export class RecipeCategoryManageComponent implements OnInit, AfterViewInit, OnD
         fromTime: this.lovModelObj.fromTime,
         toTime: this.lovModelObj.toTime,
         sequence: this.lovModelObj.sequence,
-        active: this.lovModelObj.active,
+        active: this.lovModelObj.active
       });
     }
   }
 
   async loadDataById(id: number): Promise<void> {
-    const res: ResponseDataModel = await this.httpService.getRequest(ApiUrlEnum.RECIPE_CATEGORY_MANAGE, id, null, true);
+    const res = await this.httpService.getRequest<IResponse<IRecipeCategory>>(ApiUrlEnum.RECIPE_CATEGORY_MANAGE, id, null, true);
     if (res) {
-      switch (res.code) {
-        case ServerResponseEnum.SUCCESS:
-          this.lovModelObj = RecipeCategoryModel.fromJson(res.data);
-          this.bindData();
-          break;
-        case ServerResponseEnum.WARNING:
-          this.snackBarService.showWarning(res.message);
-          break;
-        case ServerResponseEnum.ERROR:
-          this.snackBarService.showError(res.message);
-          break;
-      }
+      this.lovModelObj = res.data;
+      this.bindData();
     }
   }
 
@@ -101,25 +88,11 @@ export class RecipeCategoryManageComponent implements OnInit, AfterViewInit, OnD
       return;
     }
     let payload: any = this.formGroup.value;
-    let res: ResponseDataModel;
     if (this.id > 0) {
-      res = await this.httpService.putRequest(ApiUrlEnum.RECIPE_CATEGORY_MANAGE, this.id, payload, true);
+      await this.httpService.putRequest(ApiUrlEnum.RECIPE_CATEGORY_MANAGE, this.id, payload, true);
     } else {
-      res = await this.httpService.postRequest(ApiUrlEnum.RECIPE_CATEGORY_MANAGE, payload, true);
+      await this.httpService.postRequest(ApiUrlEnum.RECIPE_CATEGORY_MANAGE, payload, true);
     }
-    if (res) {
-      switch (res.code) {
-        case ServerResponseEnum.SUCCESS:
-          this.snackBarService.showSuccess(res.message);
-          this.navigationService.back();
-          break;
-        case ServerResponseEnum.WARNING:
-          this.snackBarService.showWarning(res.message);
-          break;
-        case ServerResponseEnum.ERROR:
-          this.snackBarService.showError(res.message);
-          break;
-      }
-    }
+    this.snackBarService.showSuccess('Data updated successfully');
   }
 }

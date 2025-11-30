@@ -1,15 +1,11 @@
-import {NgModule} from '@angular/core';
-import {NavigationEnd, Router, RouterModule, Routes} from '@angular/router';
-import {AuthGuard} from "./guard/auth-guard";
-import {BaseLayoutComponent} from "./ui/base-layout/base-layout.component";
-import {HomeComponent} from "./ui/home/home.component";
-
-import {
-  ConfigParameterManageComponent
-} from "./ui/config-parameter/config-parameter-manage/config-parameter-manage.component";
-import {NavigationService} from "./service/navigation.service";
-import {NavigationPathEnum} from "./enum/navigation-path-enum";
-import {PageNotFoundComponent} from "./ui/error-pages/page-not-found/page-not-found.component";
+import { NgModule } from '@angular/core';
+import { NavigationEnd, Router, RouterModule, Routes } from '@angular/router';
+import { AuthGuard } from './guard/auth-guard';
+import { BaseLayoutComponent } from './ui/base-layout/base-layout.component';
+import { HomeComponent } from './ui/home/home.component';
+import { NavigationService } from './service/navigation.service';
+import { NavigationPathEnum } from './enum/navigation-path-enum';
+import { PageNotFoundComponent } from './ui/error-pages/page-not-found/page-not-found.component';
 
 const routes: Routes = [
   {
@@ -96,21 +92,6 @@ const routes: Routes = [
         path: 'pocket-guide',
         canActivate: [AuthGuard],
         loadChildren: () => import('./ui/pocket-guide/pocket-guide.module').then(m => m.PocketGuideModule)
-      },
-      {
-        path: 'settings',
-        canActivate: [AuthGuard],
-        component: ConfigParameterManageComponent
-      },
-      {
-        path: 'config-param-manage',
-        canActivate: [AuthGuard],
-        component: ConfigParameterManageComponent
-      },
-      {
-        path: 'config-param-manage/:id',
-        canActivate: [AuthGuard],
-        component: ConfigParameterManageComponent
       }
     ]
   },
@@ -122,12 +103,12 @@ const routes: Routes = [
 ];
 
 @NgModule({
-  imports: [RouterModule.forRoot(routes, {useHash: true})],
+  imports: [RouterModule.forRoot(routes, { useHash: true })],
   exports: [RouterModule]
 })
 export class AppRoutingModule {
   constructor(private router: Router,
-              private navigationService: NavigationService) {
+    private navigationService: NavigationService) {
     this.router.events.subscribe((ev) => {
       if (ev instanceof NavigationEnd) {
         if (ev.url) {

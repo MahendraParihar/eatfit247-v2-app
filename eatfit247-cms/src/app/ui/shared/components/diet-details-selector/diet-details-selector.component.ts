@@ -1,18 +1,17 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { StringResources } from 'src/app/enum/string-resources';
-import { DropdownItem } from 'src/app/interfaces/dropdown-item';
-import { DietPlanDetail } from 'src/app/models/member-diet-plan.model';
 import { ValidationUtil } from 'src/app/utilites/validation-util';
 import { map } from 'lodash';
 import { AngularEditorConfig } from '@kolkov/angular-editor';
 import { Constants } from 'src/app/constants/Constants';
+import { IDietPlanDetail, IDropdownItem } from 'shared-lib';
 
 @Component({
   standalone: false,
   selector: 'app-diet-details-selector',
   templateUrl: './diet-details-selector.component.html',
-  styleUrls: ['./diet-details-selector.component.scss'],
+  styleUrls: ['./diet-details-selector.component.scss']
 })
 export class DietDetailsSelectorComponent implements OnInit {
   stringRes = StringResources;
@@ -21,8 +20,8 @@ export class DietDetailsSelectorComponent implements OnInit {
   @Input()
   formArrayName: string;
   @Input()
-  recipeList!: DropdownItem[];
-  dietPlanList!: DietPlanDetail[];
+  recipeList!: IDropdownItem[];
+  dietPlanList!: IDietPlanDetail[];
   formArray!: FormArray;
   editorConfig: AngularEditorConfig = Constants.editorConfigOnlyText;
 
@@ -30,7 +29,7 @@ export class DietDetailsSelectorComponent implements OnInit {
   }
 
   @Input()
-  set dietPlans(value: DietPlanDetail[]) {
+  set dietPlans(value: IDietPlanDetail[]) {
     this.dietPlanList = value;
     this.setFormArray();
   }
@@ -45,16 +44,16 @@ export class DietDetailsSelectorComponent implements OnInit {
     }
   }
 
-  newDetail(obj: DietPlanDetail): FormGroup {
+  newDetail(obj: IDietPlanDetail): FormGroup {
     return this.fb.group({
       recipeCategoryId: [obj.recipeCategoryId, [Validators.required, ValidationUtil.numberValidation]],
       recipeCategory: [obj.recipeCategory, [Validators.required]],
       dietDetail: [obj.dietDetail, []],
-      recipeIds: [obj.recipeIds, []],
+      recipeIds: [obj.recipeIds, []]
     });
   }
 
-  onRecipeChange(event: DropdownItem[], index: number): void {
+  onRecipeChange(event: IDropdownItem[], index: number): void {
     if (event && event.length > 0) {
       const s = this.formArray.value;
       s[index].recipeIds = map(event, 'id');

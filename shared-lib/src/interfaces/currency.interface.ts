@@ -1,4 +1,4 @@
-import { ICreateUpdate } from './lov.interface';
+import { ICreateUpdate } from './common.interface';
 
 export interface ICurrencyConfig extends ICreateUpdate {
   id: any;

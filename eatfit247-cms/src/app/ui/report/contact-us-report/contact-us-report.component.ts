@@ -1,7 +1,6 @@
 import { AfterViewInit, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { StringResources } from '../../../enum/string-resources';
 import { Constants } from '../../../constants/Constants';
-import { CommonSearchModel } from '../../../models/common-search.model';
 import { MatPaginator } from '@angular/material/paginator';
 import { FormBuilder } from '@angular/forms';
 import { HttpService } from '../../../service/http.service';
@@ -13,26 +12,27 @@ import { ApiUrlEnum } from '../../../enum/api-url-enum';
 import { AlertDialogDataInterface } from '../../../interfaces/alert-dialog-data.interface';
 import { AlertTypeEnum } from '../../../enum/alert-type-enum';
 import { DialogAlertComponent } from '../../shared/components/dialog-alert/dialog-alert.component';
-import { ResponseDataModel } from '../../../models/response-data.model';
-import { ServerResponseEnum } from '../../../enum/server-response-enum';
-import { ContactUsDatasource } from '../contact-us.datasource';
-import { ContactUsModel } from '../../../models/contact-us.model';
 import { PreviewContactUsDialogComponent } from '../preview-contact-us-dialog/preview-contact-us-dialog.component';
+import { TableDataDatasource } from 'src/app/ui/table-data.datasource';
+import { IContactUs, ITableListFilter } from 'shared-lib';
 
 @Component({
   standalone: false,
   selector: 'app-contact-us-report',
   templateUrl: './contact-us-report.component.html',
-  styleUrls: ['./contact-us-report.component.scss'],
+  styleUrls: ['./contact-us-report.component.scss']
 })
 export class ContactUsReportComponent implements OnInit, AfterViewInit, OnDestroy {
   displayedColumns = ['seqNo', 'name', 'emailId', 'contactNo', 'status', 'respondedBy', 'createdAt', 'updatedAt', 'action'];
-  dataSource: ContactUsDatasource;
+  dataSource: TableDataDatasource<IContactUs>;
   totalCount = 0;
   stringRes = StringResources;
   defaultPageSize = Constants.DEFAULT_PAGE_SIZE;
   pageSizeList = Constants.PAGE_SIZE_LIST;
-  payload: CommonSearchModel = new CommonSearchModel();
+  payload: ITableListFilter = {
+    page: this.pageSizeList[0],
+    limit: this.defaultPageSize
+  };
   @ViewChild(MatPaginator) paginator: MatPaginator;
 
   constructor(private fb: FormBuilder,
@@ -40,7 +40,7 @@ export class ContactUsReportComponent implements OnInit, AfterViewInit, OnDestro
     private snackBarService: SnackBarService,
     private navigationService: NavigationService,
     public dialog: MatDialog) {
-    this.dataSource = new ContactUsDatasource(this.httpService, this.snackBarService);
+    this.dataSource = new TableDataDatasource(this.httpService);
     this.dataSource.totalCount.subscribe((count: number) => this.totalCount = count);
   }
 
@@ -49,38 +49,30 @@ export class ContactUsReportComponent implements OnInit, AfterViewInit, OnDestro
   }
 
   ngAfterViewInit() {
-    if(this.paginator) {
+    if (this.paginator) {
       this.paginator.page
         .pipe(
-          tap(() => this.loadDataSet()),
+          tap(() => this.loadDataSet())
         )
         .subscribe();
     }
   }
 
   ngOnDestroy(): void {
-    // this.dataSource = null;
+    this.dataSource = null;
   }
 
   async loadDataSet(): Promise<void> {
-    this.payload.pageNumber = this.paginator ? this.paginator.pageIndex : 0;
-    this.payload.pageSize = this.paginator ? this.paginator.pageSize : Constants.DEFAULT_PAGE_SIZE;
+    this.payload.page = this.paginator ? this.paginator.pageIndex : 0;
+    this.payload.limit = this.paginator ? this.paginator.pageSize : Constants.DEFAULT_PAGE_SIZE;
     await this.dataSource.loadData(ApiUrlEnum.CONTACT_US_LIST, this.payload);
   }
 
-  async searchResult(searchObj: CommonSearchModel): Promise<void> {
-
-    if (searchObj) {
-      this.payload.name = searchObj.name ? searchObj.name : null;
-      this.payload.active = searchObj.active;
-      this.payload.createdFrom = searchObj.createdFrom;
-      this.payload.createdTo = searchObj.createdTo;
-    } else {
-      this.payload.name = null;
-      this.payload.active = null;
-      this.payload.createdFrom = null;
-      this.payload.createdTo = null;
-    }
+  async searchResult(payload: ITableListFilter): Promise<void> {
+    this.payload.search = payload.search;
+    this.payload.createdTo = payload.createdTo;
+    this.payload.createdFrom = payload.createdFrom;
+    this.payload.name = payload.name;
     this.paginator.firstPage();
     await this.loadDataSet();
   }
@@ -88,10 +80,10 @@ export class ContactUsReportComponent implements OnInit, AfterViewInit, OnDestro
   /*onAddClick() {
     this.navigationService.navigateTo(NavigationPathEnum.PROGRAM_PLAN_MANAGE);
   }*/
-  onEditClick(item: ContactUsModel, index: number) {
+  onEditClick(item: IContactUs, index: number) {
     const dialogRef = this.dialog.open(PreviewContactUsDialogComponent, {
       data: item,
-      disableClose: true,
+      disableClose: true
     });
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
@@ -100,79 +92,48 @@ export class ContactUsReportComponent implements OnInit, AfterViewInit, OnDestro
     });
   }
 
-  async onSendResponseMailClick(item: ContactUsModel, index: number): Promise<void> {
-    const res: ResponseDataModel = await this.httpService.getRequest(ApiUrlEnum.CONTACT_US_SEND_MAIL, item.id, null, true);
+  async onSendResponseMailClick(item: IContactUs, index: number): Promise<void> {
+    const res = await this.httpService.getRequest(ApiUrlEnum.CONTACT_US_SEND_MAIL, item.id, null, true);
     if (res) {
-      switch (res.code) {
-        case ServerResponseEnum.SUCCESS:
-          this.snackBarService.showSuccess(res.message);
-          break;
-        case ServerResponseEnum.WARNING:
-          this.snackBarService.showWarning(res.message);
-          break;
-        case ServerResponseEnum.ERROR:
-          this.snackBarService.showError(res.message);
-          break;
-      }
+      this.snackBarService.showSuccess('Email sent successfully');
     }
   }
 
-  onDeleteClick(item: ContactUsModel, index: number) {
+  onDeleteClick(item: IContactUs, index: number) {
     const dialogData: AlertDialogDataInterface = {
       title: StringResources.ALERT,
       message: StringResources.CHANGE_STATUS_DESC,
       positiveBtnTxt: StringResources.YES,
       negativeBtnTxt: StringResources.NO,
-      alertType: AlertTypeEnum.WARNING,
+      alertType: AlertTypeEnum.WARNING
     };
     const dialogRef = this.dialog.open(DialogAlertComponent, {
       width: '350px',
-      data: dialogData,
+      data: dialogData
     });
     dialogRef.afterClosed().subscribe(result => {
-
       if (result) {
         this.updateStatusTask(item, index);
       }
     });
   }
 
-  async updateStatusTask(item: ContactUsModel, index: number): Promise<void> {
+  async updateStatusTask(item: IContactUs, index: number): Promise<void> {
     const payload = {
-      active: !item.active,
+      active: !item.active
     };
-    const res: ResponseDataModel = await this.httpService.patchRequest(ApiUrlEnum.CONTACT_US_STATUS_CHANGE, item.id, payload, true);
+    const res = await this.httpService.patchRequest(ApiUrlEnum.CONTACT_US_STATUS_CHANGE, item.id, payload, true);
     if (res) {
-      switch (res.code) {
-        case ServerResponseEnum.SUCCESS:
-          this.snackBarService.showSuccess(res.message);
-          await this.loadDataSet();
-          break;
-        case ServerResponseEnum.WARNING:
-          this.snackBarService.showWarning(res.message);
-          break;
-        case ServerResponseEnum.ERROR:
-          this.snackBarService.showError(res.message);
-          break;
-      }
+      this.snackBarService.showSuccess('Status changed successfully');
+      await this.loadDataSet();
     }
   }
 
-  async sendResponseTask(item: ContactUsModel, formData: any, index: number): Promise<void> {
-    const res: ResponseDataModel = await this.httpService.putRequest(ApiUrlEnum.CONTACT_US_SEND_RESPONSE, item.id, formData, true);
+  async sendResponseTask(item: IContactUs, formData: any, index: number): Promise<void> {
+    const res = await this.httpService.putRequest(ApiUrlEnum.CONTACT_US_SEND_RESPONSE, item.id, formData, true);
     if (res) {
-      switch (res.code) {
-        case ServerResponseEnum.SUCCESS:
-          this.snackBarService.showSuccess(res.message);
-          await this.loadDataSet();
-          break;
-        case ServerResponseEnum.WARNING:
-          this.snackBarService.showWarning(res.message);
-          break;
-        case ServerResponseEnum.ERROR:
-          this.snackBarService.showError(res.message);
-          break;
-      }
+      this.snackBarService.showSuccess('Respond sent successfully');
+      await this.loadDataSet();
     }
   }
 }

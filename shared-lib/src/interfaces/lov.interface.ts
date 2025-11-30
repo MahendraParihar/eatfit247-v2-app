@@ -1,13 +1,5 @@
 import { IMediaUpload } from './media-upload.interface';
-import { IAdminShortInfo } from './admin-user.interface';
-
-export interface ICreateUpdate {
-  active?: boolean;
-  createdBy: IAdminShortInfo;
-  updatedBy: IAdminShortInfo;
-  createdAt: string;
-  updatedAt: string;
-}
+import { ICreateUpdate } from './common.interface';
 
 export interface ILov extends ICreateUpdate {
   id: any;

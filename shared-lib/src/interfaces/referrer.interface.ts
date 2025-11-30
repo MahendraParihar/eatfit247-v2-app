@@ -1,8 +1,8 @@
 import { IMediaUpload } from './media-upload.interface';
-import { IAdminShortInfo } from './admin-user.interface';
 import { IAddress } from './address.interface';
+import { ICreateUpdate } from './common.interface';
 
-export interface IReferrer {
+export interface IReferrer extends ICreateUpdate {
   id: any;
   name: string;
   companyName?: string;
@@ -17,12 +17,7 @@ export interface IReferrer {
   gstNumber?: string;
   startDate?: string | Date;
   endDate?: string | Date;
-  active?: boolean;
   imagePath?: IMediaUpload[];
-  createdBy: IAdminShortInfo;
-  updatedBy: IAdminShortInfo;
-  createdAt: string;
-  updatedAt: string;
 
   addressObj?: IAddress;
 }

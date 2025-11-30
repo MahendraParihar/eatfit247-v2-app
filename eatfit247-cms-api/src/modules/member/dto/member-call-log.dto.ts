@@ -1,8 +1,9 @@
 import { IsBoolean, IsNotEmpty, IsNumber, IsOptional, MaxLength } from 'class-validator';
 import { InputLength } from '../../../constants/input-length';
 import { Type } from 'class-transformer';
+import { IManageMemberCallLog } from 'shared-lib';
 
-export class CreateMemberCallLogDto {
+export class CreateMemberCallLogDto implements IManageMemberCallLog {
   @IsNumber()
   @IsNotEmpty()
   callPurposeId: number;

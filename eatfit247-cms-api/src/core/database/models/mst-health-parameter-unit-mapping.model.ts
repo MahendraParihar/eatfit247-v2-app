@@ -4,6 +4,7 @@ import { MstHealthParameterUnit } from './mst-health-parameter-unit.model';
 import { MstHealthParameter } from './mst-health-parameter.model';
 
 @Table({
+  freezeTableName: true,
   modelName: 'mst_health_parameter_unit_mappings',
   schema: 'public',
   indexes: [
@@ -83,7 +84,7 @@ export class MstHealthParameterUnitMapping extends Model<MstHealthParameterUnitM
     allowNull: false,
     field: 'created_at',
   })
-  createdAt: Date;
+  declare createdAt: Date;
 
   @BelongsTo(() => MstAdminUser, {
     foreignKey: 'modifiedBy',
@@ -101,5 +102,5 @@ export class MstHealthParameterUnitMapping extends Model<MstHealthParameterUnitM
     allowNull: false,
     field: 'updated_at',
   })
-  updatedAt: Date;
+  declare updatedAt: Date;
 }

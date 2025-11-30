@@ -1,21 +1,29 @@
 import { Module } from '@nestjs/common';
 import { Sequelize } from 'sequelize-typescript';
-import * as dotenv from 'dotenv';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { ModelList } from './db.model-list';
-
-dotenv.config();
+import { Env } from '../../util/env.values';
 
 @Module({
   imports: [
     SequelizeModule.forRoot({
+      username: Env.databaseUsername,
+      password: Env.databasePassword,
+      database: Env.databaseName,
+      host: Env.databaseHost,
+      port: Env.databasePort,
       dialect: 'postgres',
-      host: process.env.DB_HOST,
-      port: Number(process.env.DB_PORT),
-      username: process.env.DB_USER,
-      password: process.env.DB_PASSWORD,
-      database: process.env.DB_NAME_DEVELOPMENT,
       logging: process.env.DB_LOGGING === 'true' ? console.log : false,
+      logQueryParameters: true,
+      schema: Env.databaseSchema,
+      dialectOptions: {
+        statement_timeout: 60000,
+        query_timeout: 60000,
+      },
+      pool: {
+        max: 100,
+        min: 10,
+      },
       retryAttempts: 10,
       retryDelay: 3000,
       autoLoadModels: false,

@@ -2,7 +2,8 @@ import { BelongsTo, Column, DataType, Model, Table } from 'sequelize-typescript'
 import { TxnDietTemplate } from './txn-diet-template.model';
 
 @Table({
-  modelName: 'txn_diet_template_diet_detail',
+  freezeTableName: true,
+  modelName: 'txn_diet_template_diet_details',
   schema: 'public',
   timestamps: false,
   indexes: [

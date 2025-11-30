@@ -1,7 +1,6 @@
 import { Component, inject, Inject, OnInit } from '@angular/core';
 import { StringResources } from '../../../enum/string-resources';
 import { InputLength } from '../../../constants/input-length';
-import { DropdownItem } from '../../../interfaces/dropdown-item';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { HttpService } from '../../../service/http.service';
@@ -10,19 +9,21 @@ import moment from 'moment';
 import { find, round } from 'lodash';
 import { Constants } from '../../../constants/Constants';
 import { ValidationUtil } from '../../../utilites/validation-util';
-import { ResponseDataModel } from '../../../models/response-data.model';
 import { ApiUrlEnum } from '../../../enum/api-url-enum';
-import { ServerResponseEnum } from '../../../enum/server-response-enum';
-import { MemberPaymentModel } from '../../../models/member-payment.model';
-import { PlanFees } from '../../../models/plan.model';
-import { CurrencyConfigList } from '../../../models/currency-config.model';
-import { AddressModel } from '../../../models/address.model';
+import {
+  IAddress,
+  ICurrencyConfigList,
+  IDropdownItem, IManageMemberPayment, IMemberPayment,
+  IMemberPaymentMasterData,
+  IPlanFees,
+  IResponse
+} from 'shared-lib';
 
 @Component({
   standalone: false,
   selector: 'app-member-payment-manage-dialog',
   templateUrl: './member-payment-manage-dialog.component.html',
-  styleUrls: ['./member-payment-manage-dialog.component.scss'],
+  styleUrls: ['./member-payment-manage-dialog.component.scss']
 })
 export class MemberPaymentManageDialogComponent implements OnInit {
   fb: FormBuilder = inject(FormBuilder);
@@ -31,13 +32,13 @@ export class MemberPaymentManageDialogComponent implements OnInit {
   stringRes = StringResources;
   inputLength = InputLength;
   dialogData: any;
-  paymentModeList: DropdownItem[];
-  paymentStatusList: DropdownItem[];
-  programList: DropdownItem[];
-  planList: PlanFees[];
-  currencyConfigList: CurrencyConfigList[];
-  addressList: AddressModel[];
-  memberPaymentObj: MemberPaymentModel;
+  paymentModeList: IDropdownItem[];
+  paymentStatusList: IDropdownItem[];
+  programList: IDropdownItem[];
+  planList: IPlanFees[];
+  currencyConfigList: ICurrencyConfigList[];
+  addressList: IAddress[];
+  memberPaymentObj: IManageMemberPayment;
   taxPercentage: number;
   taxApplicable: boolean;
   showPaymentNote: boolean = false;
@@ -70,7 +71,7 @@ export class MemberPaymentManageDialogComponent implements OnInit {
     systemTotalAmount: [null, [Validators.required, ValidationUtil.floatValidation, Validators.min(0)]],
     systemCurrency: [null, [Validators.required]],
     paymentDate: [null, [Validators.required]],
-    active: [true, [Validators.required]],
+    active: [true, [Validators.required]]
   });
 
   constructor(public dialogRef: MatDialogRef<MemberPaymentManageDialogComponent>,
@@ -108,12 +109,12 @@ export class MemberPaymentManageDialogComponent implements OnInit {
     this.dialogRef.close(flag);
   }
 
-  getCurrencyFormValues(isSystem : boolean) {
+  getCurrencyFormValues(isSystem: boolean) {
     return this.formGroup.value[isSystem ? 'systemCurrency' : 'userCurrency'];
   }
 
-  getTotalAmount(isSystem : boolean){
-    return this.formGroup.value[isSystem ? 'systemTotalAmount': 'userTotalAmount'];
+  getTotalAmount(isSystem: boolean) {
+    return this.formGroup.value[isSystem ? 'systemTotalAmount' : 'userTotalAmount'];
   }
 
   intiForm() {
@@ -121,7 +122,7 @@ export class MemberPaymentManageDialogComponent implements OnInit {
       isTaxApplicable: this.taxApplicable,
       taxPercentage: this.taxApplicable ? this.taxPercentage : 0,
       userCurrency: Constants.DEFAULT_CURRENCY,
-      systemCurrency: Constants.DEFAULT_CURRENCY,
+      systemCurrency: Constants.DEFAULT_CURRENCY
     });
   }
 
@@ -129,16 +130,16 @@ export class MemberPaymentManageDialogComponent implements OnInit {
     if (this.memberPaymentObj) {
       this.formGroup.patchValue({
         programId: this.memberPaymentObj.programId,
-        planId: this.memberPaymentObj.programPlanId,
+        planId: this.memberPaymentObj.planId,
         noOfCycle: this.memberPaymentObj.noOfCycle,
-        daysInCycle: this.memberPaymentObj.noOfDaysInCycle,
+        daysInCycle: this.memberPaymentObj.daysInCycle,
         paymentModeId: this.memberPaymentObj.paymentModeId,
         paymentStatusId: this.memberPaymentObj.paymentStatusId,
-        paymentId: this.memberPaymentObj.paymentId,
+        // paymentId: this.memberPaymentObj.paymentId,
         transactionId: this.memberPaymentObj.transactionId,
         paymentDate: this.memberPaymentObj.paymentDate,
         isTaxApplicable: this.memberPaymentObj.isTaxApplicable,
-        taxPercentage: this.memberPaymentObj.paymentObj.taxPercentage,
+        /*taxPercentage: this.memberPaymentObj.paymentObj.taxPercentage,
         userCurrency: this.memberPaymentObj.paymentObj.user.currency,
         userOrderAmount: this.memberPaymentObj.paymentObj.user.orderAmount,
         userDiscountAmount: this.memberPaymentObj.paymentObj.user.discountAmount,
@@ -148,8 +149,8 @@ export class MemberPaymentManageDialogComponent implements OnInit {
         systemDiscountAmount: this.memberPaymentObj.paymentObj.system.discountAmount,
         systemTaxAmount: this.memberPaymentObj.paymentObj.user.taxAmount,
         systemTotalAmount: this.memberPaymentObj.paymentObj.system.totalAmount,
-        systemCurrency: this.memberPaymentObj.paymentObj.system.currency,
-        active: this.memberPaymentObj.active,
+        systemCurrency: this.memberPaymentObj.paymentObj.system.currency,*/
+        active: this.memberPaymentObj.active
       });
     }
   }
@@ -192,43 +193,19 @@ export class MemberPaymentManageDialogComponent implements OnInit {
     delete payload['systemTaxAmount'];
     delete payload['systemTotalAmount'];
     delete payload['taxPercentage'];
-    let res: ResponseDataModel;
     if (!this.dialogData.new) {
-      res = await this.httpService.putRequest(ApiUrlEnum.MEMBER_PAYMENT_MANAGE, this.memberPaymentObj.id, payload, true);
+      await this.httpService.putRequest(ApiUrlEnum.MEMBER_PAYMENT_MANAGE, this.memberPaymentObj.memberId, payload, true);
     } else {
-      res = await this.httpService.postRequest(ApiUrlEnum.MEMBER_PAYMENT_MANAGE + '/' + this.memberId, payload, true);
+      await this.httpService.postRequest(ApiUrlEnum.MEMBER_PAYMENT_MANAGE + '/' + this.memberId, payload, true);
     }
-    if (res) {
-      switch (res.code) {
-        case ServerResponseEnum.SUCCESS:
-          this.snackBarService.showSuccess(res.message);
-          this.onPositiveClick();
-          break;
-        case ServerResponseEnum.WARNING:
-          this.snackBarService.showWarning(res.message);
-          break;
-        case ServerResponseEnum.ERROR:
-          this.snackBarService.showError(res.message);
-          break;
-      }
-    }
+    this.snackBarService.showSuccess('Data updated successfully');
   }
 
   private async loadDataById(id: number): Promise<void> {
-    const res: ResponseDataModel = await this.httpService.getRequest(ApiUrlEnum.MEMBER_PAYMENT_MANAGE, id, null, true);
+    const res = await this.httpService.getRequest<IResponse<IManageMemberPayment>>(ApiUrlEnum.MEMBER_PAYMENT_MANAGE, id, null, true);
     if (res) {
-      switch (res.code) {
-        case ServerResponseEnum.SUCCESS:
-          this.memberPaymentObj = MemberPaymentModel.fromJson(res.data);
-          this.bindData();
-          break;
-        case ServerResponseEnum.WARNING:
-          this.snackBarService.showWarning(res.message);
-          break;
-        case ServerResponseEnum.ERROR:
-          this.snackBarService.showError(res.message);
-          break;
-      }
+      this.memberPaymentObj = res.data;
+      this.bindData();
     }
   }
 
@@ -239,40 +216,18 @@ export class MemberPaymentManageDialogComponent implements OnInit {
     this.currencyConfigList = [];
     this.addressList = [];
     this.paymentStatusList = [];
-    const res: ResponseDataModel = await this.httpService.getRequest(ApiUrlEnum.MEMBER_PAYMENT_MASTER_DATA, this.memberId, null, true);
+    const res = await this.httpService.getRequest<IResponse<IMemberPaymentMasterData>>(ApiUrlEnum.MEMBER_PAYMENT_MASTER_DATA, this.memberId, null, true);
     if (res) {
-      switch (res.code) {
-        case ServerResponseEnum.SUCCESS:
-          for (const s of res.data.paymentMode) {
-            this.paymentModeList.push(DropdownItem.fromJson(s));
-          }
-          for (const s of res.data.program) {
-            this.programList.push(DropdownItem.fromJson(s));
-          }
-          for (const s of res.data.plan) {
-            this.planList.push(PlanFees.fromJson(s));
-          }
-          for (const s of res.data.paymentStatus) {
-            this.paymentStatusList.push(DropdownItem.fromJson(s));
-          }
-          for (const s of res.data.currencyConfig) {
-            this.currencyConfigList.push(CurrencyConfigList.fromJson(s));
-          }
-          if (res.data.addresses && res.data.addresses.length > 0) {
-            for (const s of res.data.addresses) {
-              this.addressList.push(AddressModel.fromJson(s));
-            }
-          }
-          this.taxPercentage = res.data.taxPercentage;
-          this.taxApplicable = res.data.taxApplicable;
-          break;
-        case ServerResponseEnum.WARNING:
-          this.snackBarService.showWarning(res.message);
-          break;
-        case ServerResponseEnum.ERROR:
-          this.snackBarService.showError(res.message);
-          break;
+      this.paymentModeList = res.data.paymentMode;
+      this.programList = res.data.program;
+      this.planList = res.data.plan;
+      this.paymentStatusList = res.data.paymentStatus;
+      this.currencyConfigList = res.data.currencyConfig;
+      if (res.data.addresses && res.data.addresses.length > 0) {
+        this.addressList = res.data.addresses;
       }
+      this.taxPercentage = res.data.taxPercentage;
+      this.taxApplicable = res.data.taxApplicable;
     }
   }
 
@@ -296,11 +251,11 @@ export class MemberPaymentManageDialogComponent implements OnInit {
       systemOrderAmount: null,
       systemDiscountAmount: null,
       systemTaxAmount: null,
-      systemTotalAmount: null,
+      systemTotalAmount: null
     });
   }
 
-  private calculatePayment(planFees: PlanFees) {
+  private calculatePayment(planFees: IPlanFees) {
     const userCurrency = this.formGroup.value.userCurrency ? this.formGroup.value.userCurrency : Constants.DEFAULT_CURRENCY;
     const taxApplicable = this.formGroup.value.isTaxApplicable;
     const targetCurrencyConfig = find(this.currencyConfigList, { sourceCurrencyCode: userCurrency });
@@ -323,7 +278,7 @@ export class MemberPaymentManageDialogComponent implements OnInit {
       systemOrderAmount: this.systemCurrencyOrderAmount,
       systemDiscountAmount: this.systemCurrencyDiscountAmount,
       systemTaxAmount: this.systemCurrencyTaxAmount,
-      systemTotalAmount: this.systemCurrencyTotalAmount,
+      systemTotalAmount: this.systemCurrencyTotalAmount
     });
   }
 

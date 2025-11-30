@@ -1,7 +1,6 @@
 import { AfterViewInit, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { StringResources } from '../../../enum/string-resources';
 import { Constants } from '../../../constants/Constants';
-import { CommonSearchModel } from '../../../models/common-search.model';
 import { MatPaginator } from '@angular/material/paginator';
 import { HttpService } from '../../../service/http.service';
 import { SnackBarService } from '../../../service/snack-bar.service';
@@ -13,10 +12,9 @@ import { NavigationPathEnum } from '../../../enum/navigation-path-enum';
 import { AlertDialogDataInterface } from '../../../interfaces/alert-dialog-data.interface';
 import { AlertTypeEnum } from '../../../enum/alert-type-enum';
 import { DialogAlertComponent } from '../../shared/components/dialog-alert/dialog-alert.component';
-import { ResponseDataModel } from '../../../models/response-data.model';
-import { ServerResponseEnum } from '../../../enum/server-response-enum';
-import { FranchiseDatasource } from '../franchise.datasource';
-import { FranchiseModel } from '../../../models/franchise.model';
+import { TableDataDatasource } from 'src/app/ui/table-data.datasource';
+import { IFranchise, ITableListFilter } from 'shared-lib';
+
 
 @Component({
   standalone: false,
@@ -26,12 +24,15 @@ import { FranchiseModel } from '../../../models/franchise.model';
 })
 export class FranchiseListComponent implements OnInit, AfterViewInit, OnDestroy {
   displayedColumns = ['seqNo', 'company', 'owner', 'contactNumber', 'emailId', 'status', 'createdBy', 'createdAt', 'updatedBy', 'updatedAt', 'action'];
-  dataSource: FranchiseDatasource;
+  dataSource: TableDataDatasource<IFranchise>;
   totalCount = 0;
   stringRes = StringResources;
   defaultPageSize = Constants.DEFAULT_PAGE_SIZE;
   pageSizeList = Constants.PAGE_SIZE_LIST;
-  payload: CommonSearchModel = new CommonSearchModel();
+  payload: ITableListFilter = {
+    page: this.pageSizeList[0],
+    limit: this.defaultPageSize
+  };
   @ViewChild(MatPaginator) paginator: MatPaginator;
 
   constructor(
@@ -39,7 +40,7 @@ export class FranchiseListComponent implements OnInit, AfterViewInit, OnDestroy 
     private snackBarService: SnackBarService,
     private navigationService: NavigationService,
     public dialog: MatDialog) {
-    this.dataSource = new FranchiseDatasource(this.httpService, this.snackBarService);
+    this.dataSource = new TableDataDatasource(this.httpService);
     this.dataSource.totalCount.subscribe((count: number) => this.totalCount = count);
   }
 
@@ -58,29 +59,22 @@ export class FranchiseListComponent implements OnInit, AfterViewInit, OnDestroy 
   }
 
   ngOnDestroy(): void {
-    // this.dataSource = null;
+    this.dataSource = null;
+  }
+
+  async searchResult(payload: ITableListFilter): Promise<void> {
+    this.payload.search = payload.search;
+    this.payload.createdTo = payload.createdTo;
+    this.payload.createdFrom = payload.createdFrom;
+    this.payload.name = payload.name;
+    this.paginator.firstPage();
+    await this.loadDataSet();
   }
 
   async loadDataSet(): Promise<void> {
-    this.payload.pageNumber = this.paginator ? this.paginator.pageIndex : 0;
-    this.payload.pageSize = this.paginator ? this.paginator.pageSize : Constants.DEFAULT_PAGE_SIZE;
+    this.payload.page = this.paginator ? this.paginator.pageIndex : 0;
+    this.payload.limit = this.paginator ? this.paginator.pageSize : Constants.DEFAULT_PAGE_SIZE;
     await this.dataSource.loadData(ApiUrlEnum.FRANCHISE_LIST, this.payload);
-  }
-
-  async searchResult(searchObj: CommonSearchModel): Promise<void> {
-    if (searchObj) {
-      this.payload.name = searchObj.name ? searchObj.name : null;
-      this.payload.active = searchObj.active;
-      this.payload.createdFrom = searchObj.createdFrom;
-      this.payload.createdTo = searchObj.createdTo;
-    } else {
-      this.payload.name = null;
-      this.payload.active = null;
-      this.payload.createdFrom = null;
-      this.payload.createdTo = null;
-    }
-    this.paginator.firstPage();
-    await this.loadDataSet();
   }
 
   onAddClick() {
@@ -91,7 +85,7 @@ export class FranchiseListComponent implements OnInit, AfterViewInit, OnDestroy 
     this.navigationService.navigateToById(NavigationPathEnum.FRANCHISE_MANAGE, id);
   }
 
-  onDeleteClick(item: FranchiseModel, index: number) {
+  onDeleteClick(item: IFranchise, index: number) {
     const dialogData: AlertDialogDataInterface = {
       title: StringResources.ALERT,
       message: StringResources.CHANGE_STATUS_DESC,
@@ -111,24 +105,14 @@ export class FranchiseListComponent implements OnInit, AfterViewInit, OnDestroy 
     });
   }
 
-  async updateStatusTask(item: FranchiseModel, index: number): Promise<void> {
+  async updateStatusTask(item: IFranchise, index: number): Promise<void> {
     const payload = {
       active: !item.active,
     };
-    const res: ResponseDataModel = await this.httpService.patchRequest(ApiUrlEnum.FRANCHISE_STATUS_CHANGE, item.id, payload, true);
+    const res = await this.httpService.patchRequest(ApiUrlEnum.FRANCHISE_STATUS_CHANGE, item.id, payload, true);
     if (res) {
-      switch (res.code) {
-        case ServerResponseEnum.SUCCESS:
-          this.snackBarService.showSuccess(res.message);
-          await this.loadDataSet();
-          break;
-        case ServerResponseEnum.WARNING:
-          this.snackBarService.showWarning(res.message);
-          break;
-        case ServerResponseEnum.ERROR:
-          this.snackBarService.showError(res.message);
-          break;
-      }
+      this.snackBarService.showSuccess('Status changed successfully');
+      await this.loadDataSet();
     }
   }
 }

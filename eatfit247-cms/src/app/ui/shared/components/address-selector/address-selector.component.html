@@ -38,7 +38,7 @@
             <mat-label>{{stringRes.ADDRESS_TYPE}}</mat-label>
             <mat-select formControlName="addressTypeId" placeholder="Select address type"
                         required="{{!showAddressType}}">
-              <mat-option *ngFor="let option of addressTypeList" [value]="option.id">{{option.name}}</mat-option>
+              <mat-option *ngFor="let option of addressTypeList" [value]="option.id">{{option.label}}</mat-option>
               <mat-error>
                 <app-input-error [controlName]="stringRes.ADDRESS_TYPE"
                                  [control]="formControl['addressTypeId']"></app-input-error>
@@ -98,7 +98,7 @@
             <mat-label>{{stringRes.COUNTRY}}</mat-label>
             <mat-select (selectionChange)="onCountryChange()" formControlName="countryId" placeholder="Select country"
                         required>
-              <mat-option *ngFor="let option of addressCountryList" [value]="option.id">{{option.name}}</mat-option>
+              <mat-option *ngFor="let option of addressCountryList" [value]="option.id">{{option.label}}</mat-option>
               <mat-error>
                 <app-input-error [controlName]="stringRes.COUNTRY"
                                  [control]="formControl['countryId']"></app-input-error>
@@ -115,7 +115,7 @@
             <mat-label>{{stringRes.STATE}}</mat-label>
             <mat-select formControlName="stateId" placeholder="Select state" required>
               <mat-option>--- Select State ---</mat-option>
-              <mat-option *ngFor="let option of addressStateList" [value]="option.id">{{option.name}}</mat-option>
+              <mat-option *ngFor="let option of addressStateList" [value]="option.id">{{option.label}}</mat-option>
             </mat-select>
             <mat-error>
               <app-input-error [controlName]="stringRes.STATE"

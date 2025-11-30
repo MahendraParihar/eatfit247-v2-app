@@ -3,7 +3,8 @@ import { MstAdminUser } from './mst-admin-user.model';
 import { MstFranchise } from './mst-franchise.model';
 
 @Table({
-  modelName: 'mst_referrer',
+  freezeTableName: true,
+  modelName: 'mst_referrers',
   schema: 'public',
 })
 export class MstReferrer extends Model<MstReferrer> {
@@ -144,7 +145,7 @@ export class MstReferrer extends Model<MstReferrer> {
     allowNull: false,
     field: 'created_at',
   })
-  createdAt: Date;
+  declare createdAt: Date;
 
   @BelongsTo(() => MstAdminUser, {
     foreignKey: 'modifiedBy',
@@ -162,7 +163,7 @@ export class MstReferrer extends Model<MstReferrer> {
     allowNull: false,
     field: 'updated_at',
   })
-  updatedAt: Date;
+  declare updatedAt: Date;
 
   @Column({
     allowNull: false,

@@ -3,11 +3,9 @@ import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { InputLength } from 'src/app/constants/input-length';
 import { ApiUrlEnum } from 'src/app/enum/api-url-enum';
-import { IssueStatusEnum } from 'src/app/enum/issue-status-enum';
-import { ServerResponseEnum } from 'src/app/enum/server-response-enum';
+import { IResponse, IssueStatusEnum } from 'shared-lib';
 import { StringResources } from 'src/app/enum/string-resources';
 import { MemberIssueModel } from 'src/app/models/member-isssue.model';
-import { ResponseDataModel } from 'src/app/models/response-data.model';
 import { HttpService } from 'src/app/service/http.service';
 import { SnackBarService } from 'src/app/service/snack-bar.service';
 import { ValidationUtil } from 'src/app/utilites/validation-util';
@@ -60,33 +58,21 @@ export class MemberIssueDialogComponent implements OnInit {
     this.dialogRef.close(flag);
   }
 
-  async saveResponse(): Promise<boolean> {
+  async saveResponse(): Promise<void> {
     ValidationUtil.validateAllFormFields(this.formGroup);
     if (!this.formGroup.valid) {
-      return false;
+      return;
     }
-    let res: ResponseDataModel;
+    
     const payload = {
       response: this.formGroup.value.issueResponse,
       memberIssueId: this.memberIssueModel.issueId,
       memberIssueResponseId: this.memberIssueModel.memberIssueResponseId,
     };
-    res = await this.httpService.postRequest(ApiUrlEnum.MEMBER_ISSUE_MANAGE, payload, true);
-    if (!res) {
-      return false;
-    }
-    switch (res.code) {
-      case ServerResponseEnum.SUCCESS:
-        this.snackBarService.showSuccess(res.message);
-        this.closeDialog(true);
-        return true;
-      case ServerResponseEnum.WARNING:
-        this.snackBarService.showWarning(res.message);
-        return false;
-      case ServerResponseEnum.ERROR:
-      default:
-        this.snackBarService.showError(res.message);
-        return false;
+    const res = await this.httpService.postRequest<IResponse<void>>(ApiUrlEnum.MEMBER_ISSUE_MANAGE, payload, true);
+    if (res) {
+      this.snackBarService.showSuccess('Data updated successfully');
+      this.closeDialog(true);
     }
   }
 }

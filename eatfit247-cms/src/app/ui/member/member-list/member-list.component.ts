@@ -2,7 +2,6 @@ import { AfterViewInit, Component, OnDestroy, OnInit, ViewChild } from '@angular
 import { StringResources } from '../../../enum/string-resources';
 import { AdminUserStatusEnum } from '../../../enum/admin-user-status-enum';
 import { Constants } from '../../../constants/Constants';
-import { CommonSearchModel } from '../../../models/common-search.model';
 import { MatPaginator } from '@angular/material/paginator';
 import { HttpService } from '../../../service/http.service';
 import { SnackBarService } from '../../../service/snack-bar.service';
@@ -13,39 +12,40 @@ import { NavigationPathEnum } from '../../../enum/navigation-path-enum';
 import { AlertDialogDataInterface } from '../../../interfaces/alert-dialog-data.interface';
 import { AlertTypeEnum } from '../../../enum/alert-type-enum';
 import {
-  DialogUserStatusChangeComponent,
+  DialogUserStatusChangeComponent
 } from '../../shared/components/dialog-user-status-change/dialog-user-status-change.component';
-import { ResponseDataModel } from '../../../models/response-data.model';
 import { ApiUrlEnum } from '../../../enum/api-url-enum';
-import { ServerResponseEnum } from '../../../enum/server-response-enum';
-import { MemberListModel } from '../../../models/member.model';
-import { MemberDatasource } from '../member.datasource';
 import { DialogAlertComponent } from '../../shared/components/dialog-alert/dialog-alert.component';
+import { TableDataDatasource } from 'src/app/ui/table-data.datasource';
+import { IMemberList, ITableListFilter } from 'shared-lib';
 
 @Component({
   standalone: false,
   selector: 'app-member-list',
   templateUrl: './member-list.component.html',
-  styleUrls: ['./member-list.component.scss'],
+  styleUrls: ['./member-list.component.scss']
 })
 export class MemberListComponent implements OnInit, AfterViewInit, OnDestroy {
   displayedColumns = ['seqNo', 'name', 'contactNo', 'emailId', 'nutritionist', 'franchise', 'referrer', 'country', 'status', 'action'];
   // displayedColumns = ['image', "data", 'status', "action"];
-  dataSource: MemberDatasource;
+  dataSource: TableDataDatasource<IMemberList>;
   totalCount = 0;
   stringRes = StringResources;
   adminUserStatusEnum = AdminUserStatusEnum;
   navigationPathEnum = NavigationPathEnum;
   defaultPageSize = Constants.DEFAULT_PAGE_SIZE;
   pageSizeList = Constants.PAGE_SIZE_LIST;
-  payload: CommonSearchModel = new CommonSearchModel();
+  payload: ITableListFilter = {
+    page: this.pageSizeList[0],
+    limit: this.defaultPageSize
+  };
   @ViewChild(MatPaginator) paginator: MatPaginator;
 
   constructor(private httpService: HttpService,
     private snackBarService: SnackBarService,
     private navigationService: NavigationService,
     public dialog: MatDialog) {
-    this.dataSource = new MemberDatasource(this.httpService, this.snackBarService);
+    this.dataSource = new TableDataDatasource(this.httpService);
     this.dataSource.totalCount.subscribe((count: number) => this.totalCount = count);
   }
 
@@ -54,38 +54,32 @@ export class MemberListComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit() {
-    if(this.paginator) {
+    if (this.paginator) {
       this.paginator.page
         .pipe(
-          tap(() => this.loadDataSet()),
+          tap(() => this.loadDataSet())
         )
         .subscribe();
     }
   }
 
   ngOnDestroy(): void {
+    this.dataSource = null;
+  }
+
+  async searchResult(payload: ITableListFilter): Promise<void> {
+    this.payload.search = payload.search;
+    this.payload.createdTo = payload.createdTo;
+    this.payload.createdFrom = payload.createdFrom;
+    this.payload.name = payload.name;
+    this.paginator.firstPage();
+    await this.loadDataSet();
   }
 
   async loadDataSet(): Promise<void> {
-    this.payload.pageNumber = this.paginator ? this.paginator.pageIndex : 0;
-    this.payload.pageSize = this.paginator ? this.paginator.pageSize : Constants.DEFAULT_PAGE_SIZE;
-    await this.dataSource.loadData(this.payload);
-  }
-
-  async searchResult(searchObj: CommonSearchModel): Promise<void> {
-    if (searchObj) {
-      this.payload.name = searchObj.name ? searchObj.name : null;
-      this.payload.active = searchObj.active;
-      this.payload.createdFrom = searchObj.createdFrom;
-      this.payload.createdTo = searchObj.createdTo;
-    } else {
-      this.payload.name = null;
-      this.payload.active = null;
-      this.payload.createdFrom = null;
-      this.payload.createdTo = null;
-    }
-    this.paginator.firstPage();
-    await this.loadDataSet();
+    this.payload.page = this.paginator ? this.paginator.pageIndex : 0;
+    this.payload.limit = this.paginator ? this.paginator.pageSize : Constants.DEFAULT_PAGE_SIZE;
+    await this.dataSource.loadData(ApiUrlEnum.MEMBER_LIST, this.payload);
   }
 
   onAddClick() {
@@ -108,80 +102,59 @@ export class MemberListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.navigationService.navigateToById(NavigationPathEnum.REFERRER_DETAIL, id);
   }
 
-  onDeleteClick(item: MemberListModel, index: number) {
+  onDeleteClick(item: IMemberList, index: number) {
     const dialogData: AlertDialogDataInterface = {
       title: StringResources.ALERT,
       message: StringResources.CHANGE_STATUS_DESC,
       positiveBtnTxt: StringResources.YES,
       negativeBtnTxt: StringResources.NO,
-      alertType: AlertTypeEnum.WARNING,
+      alertType: AlertTypeEnum.WARNING
     };
     const dialogRef = this.dialog.open(DialogUserStatusChangeComponent, {
       width: '400px',
       disableClose: true,
-      data: dialogData,
+      data: dialogData
     });
     dialogRef.afterClosed().subscribe(result => {
-
       if (result) {
         this.updateStatusTask(item, result, index);
       }
     });
   }
 
-  async updateStatusTask(item: MemberListModel, result: {}, index: number): Promise<void> {
-    const res: ResponseDataModel = await this.httpService.putRequest(ApiUrlEnum.MEMBER_UPDATE_STATUS, item.id, result, true);
+  async updateStatusTask(item: IMemberList, result: {}, index: number): Promise<void> {
+    const res = await this.httpService.putRequest(ApiUrlEnum.MEMBER_UPDATE_STATUS, item.memberId, result, true);
     if (res) {
-      switch (res.code) {
-        case ServerResponseEnum.SUCCESS:
-          this.snackBarService.showSuccess(res.message);
-          await this.loadDataSet();
-          break;
-        case ServerResponseEnum.WARNING:
-          this.snackBarService.showWarning(res.message);
-          break;
-        case ServerResponseEnum.ERROR:
-          this.snackBarService.showError(res.message);
-          break;
-      }
+      this.snackBarService.showSuccess('Status changed successfully');
+      await this.loadDataSet();
     }
   }
 
-  onResetPasswordClick(item: MemberListModel) {
+  onResetPasswordClick(item: IMemberList) {
     const dialogData: AlertDialogDataInterface = {
       title: StringResources.RESET_PASSWORD_TITLE,
       message: StringResources.RESET_PASSWORD_DESC,
       positiveBtnTxt: StringResources.YES,
       negativeBtnTxt: StringResources.NO,
-      alertType: AlertTypeEnum.WARNING,
+      alertType: AlertTypeEnum.WARNING
     };
     const dialogRef = this.dialog.open(DialogAlertComponent, {
       width: '400px',
       disableClose: true,
-      data: dialogData,
+      data: dialogData
     });
     dialogRef.afterClosed().subscribe(result => {
-
       if (result) {
-        this.resetPassword(item.id);
+        this.resetPassword(item.memberId);
       }
     });
   }
 
   async resetPassword(id: number): Promise<void> {
-    const res: ResponseDataModel = await this.httpService.getRequest(ApiUrlEnum.MEMBER_RESET_PASSWORD, id, null, true);
+    const res = await this.httpService.getRequest(ApiUrlEnum.MEMBER_RESET_PASSWORD, id, null, true);
     if (res) {
-      switch (res.code) {
-        case ServerResponseEnum.SUCCESS:
-          this.snackBarService.showSuccess(res.message);
-          break;
-        case ServerResponseEnum.WARNING:
-          this.snackBarService.showWarning(res.message);
-          break;
-        case ServerResponseEnum.ERROR:
-          this.snackBarService.showError(res.message);
-          break;
-      }
+      this.snackBarService.showSuccess('Password reset successfully');
+      await this.loadDataSet();
     }
   }
 }

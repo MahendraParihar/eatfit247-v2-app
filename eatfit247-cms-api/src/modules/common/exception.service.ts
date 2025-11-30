@@ -19,18 +19,32 @@ export class ExceptionService {
       return true;
     }
     try {
+      // Convert error to string - handle different error types
+      let stacktrace = '';
+      if (error) {
+        if (typeof error === 'string') {
+          stacktrace = error;
+        } else if (error.stack) {
+          stacktrace = error.stack;
+        } else if (error.message) {
+          stacktrace = error.message;
+        } else {
+          stacktrace = JSON.stringify(error);
+        }
+      }
+
       this.logErrorRepository.create({
         environment: '',
         hostUrl: '',
         controller: controller,
         methodName: method,
-        exceptionMessage: '',
+        exceptionMessage: error?.message || '',
         exceptionMessageSQL: '',
         exceptionSource: '',
-        exceptionType: '',
+        exceptionType: error?.name || '',
         serverName:'',
         browser:'',
-        exceptionStacktrace: error,
+        exceptionStacktrace: stacktrace,
       });
     } catch (e) {
       console.log(e);

@@ -1,21 +1,18 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import * as moment from 'moment/moment';
+import moment from 'moment';
 import { Sequelize } from 'sequelize-typescript';
-import { ExceptionService } from '../../common/exception.service';
 import { MstProgramPlan } from '../../../core/database/models/mst-program-plan.model';
 import { BasicSearchDto, UpdateActiveDto } from '../../../common-dto/basic-input.dto';
-import { IServerResponse } from '../../../common-dto/response-interface';
 import { MstAdminUser } from '../../../core/database/models/mst-admin-user.model';
-import { ADMIN_USER_SHORT_INFO_ATTRIBUTE, DEFAULT_DATE_TIME_FORMAT, IS_DEV } from '../../../constants/config-constants';
-import { ServerResponseEnum } from '../../../enums/server-response-enum';
-import { StringResource } from '../../../enums/string-resource';
+import { ADMIN_USER_SHORT_INFO_ATTRIBUTE, DEFAULT_DATE_TIME_FORMAT } from '../../../constants/config-constants';
+import { StringResource, ITableList, IBasicSearch } from 'shared-lib';
 import { CommonFunctionsUtil } from '../../../util/common-functions-util';
 import { CreatePlanDto } from '../dto/plan.dto';
-import { IPlanFees, IProgramPlan } from '../../../response-interface/program-plan.interface';
-import { DropdownListInterface } from '../../../response-interface/dropdown-list.interface';
+import { IPlanFees, IProgramPlan } from 'shared-lib';
+import { IDropdownItem } from 'shared-lib';
 import { MstProgramPlanType } from '../../../core/database/models/mst-program-plan-type.model';
-import { ICreateUpdate } from '../../../response-interface/lov.interface';
+import { ICreateUpdate } from 'shared-lib';
 import { SearchUtil } from 'src/util/search-util';
 
 @Injectable()
@@ -23,115 +20,61 @@ export class PlanService {
   constructor(
     @InjectModel(MstProgramPlan) private readonly programRepository: typeof MstProgramPlan,
     @InjectModel(MstProgramPlanType) private readonly programPlanTypeRepository: typeof MstProgramPlanType,
-    private exceptionService: ExceptionService,
     private sequelize: Sequelize,
   ) {}
 
-  public async findAll(searchDto: BasicSearchDto): Promise<IServerResponse> {
-    let res: IServerResponse;
-    try {
-      const whereCondition: any = SearchUtil.filterBasicSearch(searchDto, 'plan');
+  public async findAll(searchDto: IBasicSearch): Promise<ITableList<IProgramPlan>> {
+    const whereCondition: any = SearchUtil.filterBasicSearch(searchDto, 'plan');
 
-      const pageNumber = searchDto.pageNumber;
-      const pageSize = searchDto.pageSize;
-      let offset = pageNumber === 0 ? 0 : pageNumber * pageSize;
+    const pageNumber = searchDto.pageNumber;
+    const pageSize = searchDto.pageSize;
+    const offset = pageNumber === 0 ? 0 : pageNumber * pageSize;
 
-      const { rows, count } = await this.programRepository.findAndCountAll<MstProgramPlan>({
-        include: [
-          {
-            model: MstProgramPlanType,
-            required: true,
-            as: 'ProgramPlanType',
-          },
-          {
-            model: MstAdminUser,
-            required: false,
-            as: 'CreatedBy',
-            attributes: ADMIN_USER_SHORT_INFO_ATTRIBUTE,
-          },
-          {
-            model: MstAdminUser,
-            required: false,
-            as: 'ModifiedBy',
-            attributes: ADMIN_USER_SHORT_INFO_ATTRIBUTE,
-          },
-        ],
-        where: whereCondition,
-        order: [['sequenceNumber', 'ASC']],
-        offset: offset,
-        limit: pageSize,
-        raw: true,
-        nest: true,
-      });
-      if (!rows) {
-        res = {
-          code: ServerResponseEnum.WARNING,
-          message: StringResource.NO_DATA_FOUND,
-          data: null,
-        };
-        return res;
-      } else if (rows.length === 0) {
-        res = {
-          code: ServerResponseEnum.WARNING,
-          message: StringResource.NO_DATA_FOUND,
-          data: null,
-        };
-        return res;
-      }
-
-      const resList: IProgramPlan[] = [];
-      for (const s of rows) {
-        resList.push(this.convertProgramPlanDBObject(s));
-      }
-
-      res = {
-        code: ServerResponseEnum.SUCCESS,
-        message: StringResource.SUCCESS,
-        data: {
-          list: resList,
-          count: count,
+    const { rows, count } = await this.programRepository.findAndCountAll<MstProgramPlan>({
+      include: [
+        {
+          model: MstProgramPlanType,
+          required: true,
+          as: 'ProgramPlanType',
         },
-      };
+        {
+          model: MstAdminUser,
+          required: false,
+          as: 'CreatedBy',
+          attributes: ADMIN_USER_SHORT_INFO_ATTRIBUTE,
+        },
+        {
+          model: MstAdminUser,
+          required: false,
+          as: 'ModifiedBy',
+          attributes: ADMIN_USER_SHORT_INFO_ATTRIBUTE,
+        },
+      ],
+      where: whereCondition,
+      order: [['sequenceNumber', 'ASC']],
+      offset: offset,
+      limit: pageSize,
+      raw: true,
+      nest: true,
+    });
 
-      return res;
-    } catch (e) {
-      this.exceptionService.logError(e);
-      res = {
-        code: ServerResponseEnum.ERROR,
-        message: IS_DEV ? e['message'] : StringResource.SOMETHING_WENT_WRONG,
-        data: null,
-      };
-      return res;
+    const resList: IProgramPlan[] = [];
+    for (const s of rows) {
+      resList.push(this.convertProgramPlanDBObject(s));
     }
+
+    return <ITableList<IProgramPlan>>{
+      data: resList,
+      count: count,
+    };
   }
 
-  public async fetchById(id: number): Promise<IServerResponse> {
-    let res: IServerResponse;
-    try {
-      const find = await this.findById(id);
-      if (find) {
-        res = {
-          code: ServerResponseEnum.SUCCESS,
-          message: StringResource.SUCCESS,
-          data: this.convertProgramPlanDBObject(find),
-        };
-      } else {
-        res = {
-          code: ServerResponseEnum.WARNING,
-          message: StringResource.NO_DATA_FOUND,
-          data: null,
-        };
-      }
-      return res;
-    } catch (e) {
-      this.exceptionService.logError(e);
-      res = {
-        code: ServerResponseEnum.ERROR,
-        message: IS_DEV ? e['message'] : StringResource.SOMETHING_WENT_WRONG,
-        data: null,
-      };
-      return res;
+  public async fetchById(id: number): Promise<IProgramPlan> {
+    const find = await this.findById(id);
+    if (!find) {
+      throw new NotFoundException(StringResource.NO_DATA_FOUND);
     }
+    return this.convertProgramPlanDBObject(find);
   }
 
   public async findById(id: number): Promise<MstProgramPlan> {
@@ -151,9 +94,7 @@ export class PlanService {
     });
   }
 
-  public async create(obj: CreatePlanDto, cIp: string, adminId: number): Promise<IServerResponse> {
-    let res: IServerResponse;
-
+  public async create(obj: CreatePlanDto, cIp: string, adminId: number): Promise<void> {
     const t = await this.sequelize.transaction();
 
     try {
@@ -176,151 +117,70 @@ export class PlanService {
         createdIp: cIp,
         modifiedIp: cIp,
       };
-      const createdObj = await this.createInDB(createObj);
-
-      if (createdObj) {
-        await t.commit();
-        res = {
-          code: ServerResponseEnum.SUCCESS,
-          message: StringResource.SUCCESS_DATA_UPDATE,
-          data: null,
-        };
-      } else {
-        await t.rollback();
-        res = {
-          code: ServerResponseEnum.ERROR,
-          message: StringResource.SOMETHING_WENT_WRONG,
-          data: null,
-        };
-      }
-      return res;
+      await this.createInDB(createObj);
+      await t.commit();
     } catch (e) {
       await t.rollback();
-      this.exceptionService.logError(e);
-      res = {
-        code: ServerResponseEnum.ERROR,
-        message: IS_DEV ? e['message'] : StringResource.SOMETHING_WENT_WRONG,
-        data: null,
-      };
-      return res;
+      throw e;
     }
   }
 
-  public async update(id: number, obj: CreatePlanDto, cIp: string, adminId: number): Promise<IServerResponse> {
-    let res: IServerResponse;
+  public async update(id: number, obj: CreatePlanDto, cIp: string, adminId: number): Promise<void> {
+    const find = await this.programRepository.findOne({
+      where: {
+        programPlanId: id,
+      },
+    });
+    if (!find) {
+      throw new NotFoundException(StringResource.NO_DATA_FOUND);
+    }
 
     const t = await this.sequelize.transaction();
 
     try {
-      const find = await this.programRepository.findOne({
-        where: {
-          programPlanId: id,
-        },
-      });
-      if (find) {
-        const updateObj = {
-          plan: obj.title,
-          details: obj.details,
-          inrAmount: obj.inrAmount,
-          noOfCycle: obj.noOfCycle,
-          programPlanTypeId: obj.programPlanTypeId,
-          isOnline: obj.isOnline,
-          isVisibleOnWeb: obj.isVisibleOnWeb,
-          noOfDaysInCycle: obj.noOfDaysInCycle,
-          sequenceNumber: obj.sequenceNumber,
-          tags: obj.tags,
-          url: CommonFunctionsUtil.removeSpecialChar(obj.title.toString().toLowerCase(), '-'),
-          active: obj.active,
-          imagePath: obj.uploadFiles && obj.uploadFiles.length > 0 ? obj.uploadFiles : null,
-          modifiedBy: adminId,
-          modifiedIp: cIp,
-        };
-        const updatedObj = await this.updateInDB(id, updateObj);
-
-        if (updatedObj) {
-          await t.commit();
-          res = {
-            code: ServerResponseEnum.SUCCESS,
-            message: StringResource.SUCCESS_DATA_UPDATE,
-            data: null,
-          };
-        } else {
-          await t.rollback();
-          res = {
-            code: ServerResponseEnum.ERROR,
-            message: StringResource.SOMETHING_WENT_WRONG,
-            data: null,
-          };
-        }
-      } else {
-        res = {
-          code: ServerResponseEnum.WARNING,
-          message: StringResource.NO_DATA_FOUND,
-          data: null,
-        };
-      }
-      return res;
+      const updateObj = {
+        plan: obj.title,
+        details: obj.details,
+        inrAmount: obj.inrAmount,
+        noOfCycle: obj.noOfCycle,
+        programPlanTypeId: obj.programPlanTypeId,
+        isOnline: obj.isOnline,
+        isVisibleOnWeb: obj.isVisibleOnWeb,
+        noOfDaysInCycle: obj.noOfDaysInCycle,
+        sequenceNumber: obj.sequenceNumber,
+        tags: obj.tags,
+        url: CommonFunctionsUtil.removeSpecialChar(obj.title.toString().toLowerCase(), '-'),
+        active: obj.active,
+        imagePath: obj.uploadFiles && obj.uploadFiles.length > 0 ? obj.uploadFiles : null,
+        modifiedBy: adminId,
+        modifiedIp: cIp,
+      };
+      await this.updateInDB(id, updateObj);
+      await t.commit();
     } catch (e) {
       await t.rollback();
-
-      this.exceptionService.logError(e);
-      res = {
-        code: ServerResponseEnum.ERROR,
-        message: IS_DEV ? e['message'] : StringResource.SOMETHING_WENT_WRONG,
-        data: null,
-      };
-      return res;
+      throw e;
     }
   }
 
-  public async changeStatus(id: number, obj: UpdateActiveDto, cIp: string, adminId: number): Promise<IServerResponse> {
-    let res: IServerResponse;
-    try {
-      const find = await this.programRepository.findOne({
-        where: {
-          programPlanId: id,
-        },
-      });
-      if (find) {
-        const updateObj = {
-          active: obj.active,
-          modifiedBy: adminId,
-          modifiedIp: cIp,
-        };
-        const updatedObj = await this.updateInDB(id, updateObj);
-        if (updatedObj) {
-          res = {
-            code: ServerResponseEnum.SUCCESS,
-            message: StringResource.SUCCESS_DATA_STATUS_CHANGE,
-            data: null,
-          };
-        } else {
-          res = {
-            code: ServerResponseEnum.ERROR,
-            message: StringResource.SOMETHING_WENT_WRONG,
-            data: null,
-          };
-        }
-      } else {
-        res = {
-          code: ServerResponseEnum.WARNING,
-          message: StringResource.NO_DATA_FOUND,
-          data: null,
-        };
-      }
-      return res;
-    } catch (e) {
-      this.exceptionService.logError(e);
-      res = {
-        code: ServerResponseEnum.ERROR,
-        message: IS_DEV ? e['message'] : StringResource.SOMETHING_WENT_WRONG,
-        data: null,
-      };
-      return res;
+  public async changeStatus(id: number, obj: UpdateActiveDto, cIp: string, adminId: number): Promise<void> {
+    const find = await this.programRepository.findOne({
+      where: {
+        programPlanId: id,
+      },
+    });
+    if (!find) {
+      throw new NotFoundException(StringResource.NO_DATA_FOUND);
     }
+    const updateObj = {
+      active: obj.active,
+      modifiedBy: adminId,
+      modifiedIp: cIp,
+    };
+    await this.updateInDB(id, updateObj);
   }
 
-  public async getProgramPlanTypeList(): Promise<DropdownListInterface[]> {
+  public async getProgramPlanTypeList(): Promise<IDropdownItem[]> {
     const tempList = await this.programPlanTypeRepository.findAll<MstProgramPlanType>({
       where: {
         active: true,
@@ -328,11 +188,11 @@ export class PlanService {
       raw: true,
       order: [['programPlanType', 'ASC']],
     });
-    const list: DropdownListInterface[] = [];
+    const list: IDropdownItem[] = [];
     for (const t of tempList) {
       list.push({
         id: t.programPlanTypeId,
-        name: t.programPlanType,
+        label: t.programPlanType,
         selected: false,
       });
     }
@@ -362,25 +222,11 @@ export class PlanService {
   }
 
   private async createInDB(obj: any) {
-    return await this.programRepository
-      .create(obj)
-      .then((result) => {
-        return result;
-      })
-      .catch((e) => {
-        throw e;
-      });
+    return await this.programRepository.create(obj);
   }
 
   private async updateInDB(id: number, obj: any) {
-    return await this.programRepository
-      .update(obj, { where: { programPlanId: id } })
-      .then((result) => {
-        return result;
-      })
-      .catch((e) => {
-        throw e;
-      });
+    return await this.programRepository.update(obj, { where: { programPlanId: id } });
   }
 
   private convertProgramPlanDBObject(obj: MstProgramPlan): IProgramPlan {

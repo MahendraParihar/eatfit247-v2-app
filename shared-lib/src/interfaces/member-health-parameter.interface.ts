@@ -1,15 +1,10 @@
-import { IAdminShortInfo } from './admin-user.interface';
+import { ICreateUpdate } from './common.interface';
 import { IHealthParameterUnitMapping } from './health-parameter.interface';
 
-export interface IMemberHealthParameterLog {
+export interface IMemberHealthParameterLog extends ICreateUpdate {
   id: number;
   memberId: number;
   logDate: string | Date;
-  active?: boolean;
-  createdBy: IAdminShortInfo;
-  updatedBy: IAdminShortInfo;
-  createdAt: string;
-  updatedAt: string;
   memberHealthParameters?: IMemberHealthParameter[];
 }
 

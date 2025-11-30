@@ -4,6 +4,7 @@ import { MstRecipe } from './mst-recipe.model';
 import { MstNutritive } from './mst-nutritive.model';
 
 @Table({
+  freezeTableName: true,
   modelName: 'mst_recipe_nutritive',
   schema: 'public',
 })
@@ -70,7 +71,7 @@ export class MstRecipeNutritive extends Model<MstRecipeNutritive> {
     allowNull: false,
     field: 'created_at',
   })
-  createdAt: Date;
+  declare createdAt: Date;
 
   @BelongsTo(() => MstAdminUser, {
     foreignKey: 'modifiedBy',
@@ -88,7 +89,7 @@ export class MstRecipeNutritive extends Model<MstRecipeNutritive> {
     allowNull: false,
     field: 'updated_at',
   })
-  updatedAt: Date;
+  declare updatedAt: Date;
 
   @Column({
     allowNull: false,

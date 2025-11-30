@@ -47,6 +47,7 @@ import { TxnContactForm } from './models/txn-contact-form.model';
 import { TxnFaqs } from './models/txn-faqs.model';
 import { TxnMember } from './models/txn-member.model';
 import { TxnProgramFaq } from './models/txn-program-faq.model';
+import { TxnPressMedia } from './models/txn-press-media.model';
 import { TxnPromotionMail } from './models/txn-promotion-mail.model';
 import { TxnSubscriber } from './models/txn-subscriber.model';
 import { TxnAdminUserForgotPasswordOtp } from './models/txn-admin-user-forgot-password-otp.model';
@@ -143,6 +144,7 @@ export const ModelList = [
   TxnFaqs,
   TxnMember,
   TxnAssessment,
+  TxnPressMedia,
   TxnProgramFaq,
   TxnPromotionMail,
   TxnSubscriber,

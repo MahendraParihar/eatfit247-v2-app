@@ -1,7 +1,7 @@
-import { IMediaUpload } from './media-upload.interface';
-import { IAdminShortInfo } from './admin-user.interface';
+import { IMediaUpload } from "./media-upload.interface";
+import { ICreateUpdate, IDropdownItem } from "./common.interface";
 
-export interface IMemberCallLog {
+export interface IMemberCallLog extends ICreateUpdate {
   id: number;
   callPurposeId: number;
   callLogStatusId: number;
@@ -14,10 +14,24 @@ export interface IMemberCallLog {
   date: string | Date;
   startTime: string;
   endTime: string;
-  active?: boolean;
   imagePath?: IMediaUpload[];
-  createdBy: IAdminShortInfo;
-  updatedBy: IAdminShortInfo;
-  createdAt: string;
-  updatedAt: string;
+}
+
+export interface IManageMemberCallLog {
+  callPurposeId: number;
+  memberId: number;
+  callStatusId: number;
+  callTypeId: number;
+  detail?: string;
+  conversionHistory?: string;
+  date: Date;
+  startTime: Date;
+  endTime: Date;
+  active?: boolean;
+}
+
+export interface ICallLogMasterData {
+  callType: IDropdownItem[];
+  callPurpose: IDropdownItem[];
+  callStatus: IDropdownItem[];
 }

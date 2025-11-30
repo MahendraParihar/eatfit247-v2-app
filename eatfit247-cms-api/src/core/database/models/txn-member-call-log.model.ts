@@ -6,7 +6,8 @@ import { MstCallPurpose } from './mst-call-purpose.model';
 import { MstCallLogStatus } from './mst-call-log-status.model';
 
 @Table({
-  modelName: 'txn_member_call_log',
+  freezeTableName: true,
+  modelName: 'txn_member_call_logs',
   schema: 'public',
   indexes: [
     {
@@ -143,7 +144,7 @@ export class TxnMemberCallLog extends Model<TxnMemberCallLog> {
     allowNull: false,
     field: 'created_at',
   })
-  createdAt: Date;
+  declare createdAt: Date;
 
   @BelongsTo(() => MstAdminUser, {
     foreignKey: 'modifiedBy',
@@ -161,7 +162,7 @@ export class TxnMemberCallLog extends Model<TxnMemberCallLog> {
     allowNull: false,
     field: 'updated_at',
   })
-  updatedAt: Date;
+  declare updatedAt: Date;
 
   @Column({
     allowNull: false,

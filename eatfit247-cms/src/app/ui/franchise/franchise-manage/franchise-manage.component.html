@@ -246,7 +246,7 @@
           <mat-form-field>
             <mat-label>{{stringRes.STATUS}}</mat-label>
             <mat-select (selectionChange)="onStatusChange($event)" formControlName="active">
-              <mat-option *ngFor="let o of statusList" [value]="o.value">{{o.name}}</mat-option>
+              <mat-option *ngFor="let o of statusList" [value]="o.id">{{o.label}}</mat-option>
             </mat-select>
           </mat-form-field>
         </div>
@@ -256,10 +256,10 @@
                          [isRequired]="false"
                          [mediaFor]="mediaForEnum.FRANCHISE"
                          [mediaType]="fileTypeEnum.IMAGE"
-                         [uploadedMediaList]="lovModelObj ? lovModelObj.imagePath : []"></app-file-selector>
+                         [uploadedMediaList]="lovModelObj ? lovModelObj.uploadFiles : []"></app-file-selector>
     </mat-card-content>
 
-    <app-address-selector [addressModel]="lovModelObj && lovModelObj.addressObj ? lovModelObj.addressObj : null"
+    <app-address-selector [addressModel]="lovModelObj && lovModelObj.address ? lovModelObj.address : null"
                           [formGroup]="formGroup"
                           [showAddressType]="false" [showLatLong]="false"></app-address-selector>
 
