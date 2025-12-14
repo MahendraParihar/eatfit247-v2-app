@@ -2,7 +2,7 @@ import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from
 import { JwtAuthGuard, CurrentUser, RequestedIp, BasicSearchDto, UpdateActiveDto } from '@server/common';
 import { LifestyleService } from '../../services';
 import { CreateLifestyleDto } from '../../dto';
-import { ITableList, ILifestyle, IDropdownItem } from 'eatfit247-shared-lib';
+import { ITableList, ILifestyle, IDropdownItem, IResponse } from 'eatfit247-shared-lib';
 
 @Controller('lifestyle')
 @UseGuards(JwtAuthGuard)
@@ -15,8 +15,9 @@ export class LifestyleController {
   }
 
   @Get('manage/:id')
-  async getById(@Param('id') id: number): Promise<ILifestyle> {
-    return await this.service.fetchById(id);
+  async getById(@Param('id') id: number): Promise<IResponse<ILifestyle>> {
+    const data = await this.service.fetchById(id);
+    return { data };
   }
 
   @Post('manage')

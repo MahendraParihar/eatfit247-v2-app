@@ -16,9 +16,8 @@ export class CreateRecipeCuisineDto implements IManageRecipeCuisine {
   @IsOptional()
   @ValidateNested({ each: true })
   @Type(() => MediaUploadDto)
-  uploadFiles?: MediaUploadDto[];
+  imagePath?: MediaUploadDto[];
 
   recipeCuisineId?: number;
-  imagePath?: any;
 }
 

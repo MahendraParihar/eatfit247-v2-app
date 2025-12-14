@@ -2,7 +2,7 @@ import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from
 import { JwtAuthGuard, CurrentUser, RequestedIp, BasicSearchDto, UpdateActiveDto } from '@server/common';
 import { LegalPagesService } from '../../services/legal-pages.service';
 import { CreateLegalPageDto } from '../../dto';
-import { ITableList, ILegalPageList } from 'eatfit247-shared-lib';
+import { ITableList, ILegalPageList, IResponse } from 'eatfit247-shared-lib';
 
 @Controller('legal-page')
 @UseGuards(JwtAuthGuard)
@@ -15,8 +15,9 @@ export class LegalPagesController {
   }
 
   @Get('manage/:id')
-  async getById(@Param('id') id: number): Promise<ILegalPageList> {
-    return await this.service.fetchById(id);
+  async getById(@Param('id') id: number): Promise<IResponse<ILegalPageList>> {
+    const data = await this.service.fetchById(id);
+    return { data };
   }
 
   @Post('manage')

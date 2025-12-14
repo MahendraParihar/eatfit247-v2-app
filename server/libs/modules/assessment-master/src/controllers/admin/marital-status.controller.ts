@@ -2,7 +2,7 @@ import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from
 import { JwtAuthGuard, CurrentUser, RequestedIp, BasicSearchDto, UpdateActiveDto } from '@server/common';
 import { MaritalStatusService } from '../../services';
 import { CreateMaritalStatusDto } from '../../dto';
-import { ITableList, IMaritalStatus, IDropdownItem } from 'eatfit247-shared-lib';
+import { ITableList, IMaritalStatus, IDropdownItem, IResponse } from 'eatfit247-shared-lib';
 
 @Controller('marital-status')
 @UseGuards(JwtAuthGuard)
@@ -15,8 +15,9 @@ export class MaritalStatusController {
   }
 
   @Get('manage/:id')
-  async getById(@Param('id') id: number): Promise<IMaritalStatus> {
-    return await this.service.fetchById(id);
+  async getById(@Param('id') id: number): Promise<IResponse<IMaritalStatus>> {
+    const data = await this.service.fetchById(id);
+    return { data };
   }
 
   @Post('manage')

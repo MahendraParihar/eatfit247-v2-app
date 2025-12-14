@@ -15,7 +15,6 @@ export class ProgramPlanService {
     const pageNumber = searchDto.page || 0;
     const pageSize = searchDto.limit || 15;
     const offset = pageNumber === 0 ? 0 : pageNumber * pageSize;
-
     const { rows, count } = await this.programPlanRepository.scope('list').findAndCountAll({
       where: whereCondition,
       order: [
@@ -27,7 +26,6 @@ export class ProgramPlanService {
       raw: true,
       nest: true,
     });
-
     const resList: IProgramPlan[] = rows.map((item: any) => {return this.convertToModel(item);});
     return {
       data: resList,
@@ -87,7 +85,7 @@ export class ProgramPlanService {
       programPlanTypeId: obj.programPlanTypeId,
       isOnline: obj.isOnline,
       isVisibleOnWeb: obj.isVisibleOnWeb,
-      imagePath: (obj.uploadFiles && obj.uploadFiles.length > 0) ? JSON.stringify(obj.uploadFiles) : null,
+      imagePath: (obj.imagePath && obj.imagePath.length > 0) ? obj.imagePath : null,
       active: obj.active,
       createdBy: adminId,
       modifiedBy: adminId,
@@ -116,7 +114,7 @@ export class ProgramPlanService {
       programPlanTypeId: obj.programPlanTypeId,
       isOnline: obj.isOnline,
       isVisibleOnWeb: obj.isVisibleOnWeb,
-      imagePath: (obj.uploadFiles && obj.uploadFiles.length > 0) ? JSON.stringify(obj.uploadFiles) : null,
+      imagePath: (obj.imagePath && obj.imagePath.length > 0) ? obj.imagePath : null,
       active: obj.active,
       modifiedBy: adminId,
       modifiedIp: cIp,

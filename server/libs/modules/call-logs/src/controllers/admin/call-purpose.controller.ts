@@ -2,7 +2,7 @@ import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from
 import { JwtAuthGuard, CurrentUser, RequestedIp, BasicSearchDto, UpdateActiveDto } from '@server/common';
 import { CallPurposeService } from '../../services';
 import { CreateCallPurposeDto } from '../../dto';
-import { ITableList, ICallPurpose, IDropdownItem } from 'eatfit247-shared-lib';
+import { ITableList, ICallPurpose, IDropdownItem, IResponse } from 'eatfit247-shared-lib';
 
 @Controller('call-purpose')
 @UseGuards(JwtAuthGuard)
@@ -15,8 +15,9 @@ export class CallPurposeController {
   }
 
   @Get('manage/:id')
-  async getById(@Param('id') id: number): Promise<ICallPurpose> {
-    return await this.service.fetchById(id);
+  async getById(@Param('id') id: number): Promise<IResponse<ICallPurpose>> {
+    const data = await this.service.fetchById(id);
+    return { data };
   }
 
   @Post('manage')

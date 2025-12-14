@@ -1,6 +1,6 @@
 import { BelongsTo, Column, CreatedAt, DataType, Model, Scopes, Table, UpdatedAt } from 'sequelize-typescript';
 import { MstAdminUser, getCreatedByUserInclude, getUpdatedByUserInclude } from '@server/common';
-import { InputLengthEnum } from 'eatfit247-shared-lib';
+import { IMediaUpload, InputLengthEnum } from 'eatfit247-shared-lib';
 import { MstProgramPlanType } from './mst-program-plan-type.model';
 
 @Table({
@@ -43,56 +43,48 @@ export class MstProgramPlan extends Model<MstProgramPlan> {
     autoIncrement: true,
   })
   programPlanId: number;
-
   @Column({
     allowNull: false,
     field: 'plan',
     type: DataType.STRING(100),
   })
   plan: string;
-
   @Column({
     allowNull: false,
     field: 'url',
     type: DataType.STRING(250),
   })
   url: string;
-
   @Column({
     allowNull: true,
     field: 'details',
     type: DataType.TEXT,
   })
   details: string;
-
   @Column({
     allowNull: true,
     field: 'image_path',
     type: DataType.JSONB,
   })
-  imagePath: string;
-
+  imagePath: IMediaUpload[];
   @Column({
     allowNull: true,
     field: 'tags',
     type: DataType.STRING(1000),
   })
-  tags: string;
-
+  tags: string[];
   @Column({
     allowNull: false,
     field: 'sequence_number',
     type: DataType.INTEGER,
   })
   sequenceNumber: number;
-
   @Column({
     allowNull: false,
     field: 'inr_amount',
     type: DataType.DOUBLE,
   })
   inrAmount: number;
-
   @Column({
     allowNull: false,
     defaultValue: 1,
@@ -100,7 +92,6 @@ export class MstProgramPlan extends Model<MstProgramPlan> {
     type: DataType.INTEGER,
   })
   noOfCycle: number;
-
   @Column({
     allowNull: false,
     defaultValue: 1,
@@ -108,17 +99,18 @@ export class MstProgramPlan extends Model<MstProgramPlan> {
     type: DataType.INTEGER,
   })
   noOfDaysInCycle: number;
-
-  @BelongsTo(() => MstProgramPlanType, { as: 'programPlanType', foreignKey: 'programPlanTypeId', targetKey: 'programPlanTypeId' })
+  @BelongsTo(() => MstProgramPlanType, {
+    as: 'programPlanType',
+    foreignKey: 'programPlanTypeId',
+    targetKey: 'programPlanTypeId',
+  })
   programPlanType: MstProgramPlanType;
-
   @Column({
     allowNull: false,
     field: 'program_plan_type_id',
     type: DataType.INTEGER,
   })
   programPlanTypeId: number;
-
   @Column({
     allowNull: false,
     defaultValue: true,
@@ -126,7 +118,6 @@ export class MstProgramPlan extends Model<MstProgramPlan> {
     type: DataType.BOOLEAN,
   })
   isOnline: boolean;
-
   @Column({
     allowNull: false,
     defaultValue: false,
@@ -134,7 +125,6 @@ export class MstProgramPlan extends Model<MstProgramPlan> {
     type: DataType.BOOLEAN,
   })
   isVisibleOnWeb: boolean;
-
   @Column({
     allowNull: false,
     defaultValue: true,
@@ -142,48 +132,40 @@ export class MstProgramPlan extends Model<MstProgramPlan> {
     type: DataType.BOOLEAN,
   })
   active: boolean;
-
   @BelongsTo(() => MstAdminUser, { as: 'createdByUser', foreignKey: 'createdBy', targetKey: 'adminId' })
   createdByUser: MstAdminUser;
-
   @BelongsTo(() => MstAdminUser, { as: 'updatedByUser', foreignKey: 'modifiedBy', targetKey: 'adminId' })
   updatedByUser: MstAdminUser;
-
   @Column({
     allowNull: false,
     field: 'created_by',
     type: DataType.INTEGER,
   })
   createdBy: number;
-
   @CreatedAt
   @Column({
     allowNull: false,
     field: 'created_at',
   })
   declare createdAt: Date;
-
   @Column({
     allowNull: false,
     field: 'modified_by',
     type: DataType.INTEGER,
   })
   modifiedBy: number;
-
   @UpdatedAt
   @Column({
     allowNull: false,
     field: 'updated_at',
   })
   declare updatedAt: Date;
-
   @Column({
     allowNull: false,
     field: 'created_ip',
     type: DataType.STRING(InputLengthEnum.IP),
   })
   createdIp: string;
-
   @Column({
     allowNull: false,
     field: 'modified_ip',

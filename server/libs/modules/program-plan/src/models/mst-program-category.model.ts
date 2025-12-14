@@ -1,6 +1,6 @@
 import { BelongsTo, Column, CreatedAt, DataType, Model, Scopes, Table, UpdatedAt } from 'sequelize-typescript';
 import { MstAdminUser, getCreatedByUserInclude, getUpdatedByUserInclude } from '@server/common';
-import { InputLengthEnum } from 'eatfit247-shared-lib';
+import { IMediaUpload, InputLengthEnum } from 'eatfit247-shared-lib';
 
 @Table({
   freezeTableName: true,
@@ -44,7 +44,7 @@ export class MstProgramCategory extends Model<MstProgramCategory> {
     type: DataType.JSONB,
     defaultValue: null,
   })
-  imagePath: string;
+  imagePath: IMediaUpload[];
 
   @Column({
     allowNull: true,

@@ -13,7 +13,6 @@ export interface IManageFaq extends IBaseFaq {
 
 export interface IFaq extends IBaseFaq {
   faqId: number;
-  id?: number; // For compatibility with old interface
   faqCategory: string;
   active: boolean;
   createdBy: number;

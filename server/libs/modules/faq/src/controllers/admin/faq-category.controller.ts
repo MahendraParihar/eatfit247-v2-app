@@ -2,7 +2,7 @@ import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from
 import { JwtAuthGuard, CurrentUser, RequestedIp, BasicSearchDto, UpdateActiveDto } from '@server/common';
 import { FaqCategoryService } from '../../services/faq-category.service';
 import { CreateFaqCategoryDto } from '../../dto/faq-category.dto';
-import { ITableList, IFaqCategory } from 'eatfit247-shared-lib';
+import { ITableList, IFaqCategory, IResponse } from 'eatfit247-shared-lib';
 
 @Controller('faq-category')
 @UseGuards(JwtAuthGuard)
@@ -15,8 +15,9 @@ export class FaqCategoryController {
   }
 
   @Get('manage/:id')
-  async getById(@Param('id') id: number): Promise<IFaqCategory> {
-    return await this.service.fetchById(id);
+  async getById(@Param('id') id: number): Promise<IResponse<IFaqCategory>> {
+    const data = await this.service.fetchById(id);
+    return { data };
   }
 
   @Post('manage')

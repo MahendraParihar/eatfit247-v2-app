@@ -2,7 +2,7 @@ import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from
 import { JwtAuthGuard, CurrentUser, RequestedIp, BasicSearchDto, UpdateActiveDto } from '@server/common';
 import { ReferrerService } from '../../services';
 import { CreateReferrerDto } from '../../dto';
-import { ITableList, IReferrer } from 'eatfit247-shared-lib';
+import { ITableList, IReferrer, IResponse } from 'eatfit247-shared-lib';
 
 @Controller('referrer')
 @UseGuards(JwtAuthGuard)
@@ -15,8 +15,9 @@ export class ReferrerController {
   }
 
   @Get('manage/:id')
-  async getById(@Param('id') id: number): Promise<IReferrer> {
-    return await this.service.fetchById(id);
+  async getById(@Param('id') id: number): Promise<IResponse<IReferrer>> {
+    const data = await this.service.fetchById(id);
+    return { data };
   }
 
   @Post('manage')

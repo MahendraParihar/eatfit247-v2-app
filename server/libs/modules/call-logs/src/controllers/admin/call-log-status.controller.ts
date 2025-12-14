@@ -2,7 +2,7 @@ import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from
 import { JwtAuthGuard, CurrentUser, RequestedIp, BasicSearchDto, UpdateActiveDto } from '@server/common';
 import { CallLogStatusService } from '../../services';
 import { CreateCallLogStatusDto } from '../../dto';
-import { ITableList, ICallLogStatus, IDropdownItem } from 'eatfit247-shared-lib';
+import { ITableList, ICallLogStatus, IDropdownItem, IResponse } from 'eatfit247-shared-lib';
 
 @Controller('call-log-status')
 @UseGuards(JwtAuthGuard)
@@ -15,8 +15,9 @@ export class CallLogStatusController {
   }
 
   @Get('manage/:id')
-  async getById(@Param('id') id: number): Promise<ICallLogStatus> {
-    return await this.service.fetchById(id);
+  async getById(@Param('id') id: number): Promise<IResponse<ICallLogStatus>> {
+    const data = await this.service.fetchById(id);
+    return { data };
   }
 
   @Post('manage')

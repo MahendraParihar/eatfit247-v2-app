@@ -63,7 +63,7 @@ export class GenderService {
   public async create(obj: IManageGender, cIp: string, adminId: number): Promise<void> {
     const createObj = {
       gender: obj.gender,
-      imagePath: (obj.uploadFiles && obj.uploadFiles.length > 0) ? JSON.stringify(obj.uploadFiles) : null,
+      imagePath: (obj.imagePath && obj.imagePath.length > 0) ? obj.imagePath : null,
       active: obj.active,
       createdBy: adminId,
       modifiedBy: adminId,
@@ -82,7 +82,7 @@ export class GenderService {
     }
     const updateObj = {
       gender: obj.gender,
-      imagePath: (obj.uploadFiles && obj.uploadFiles.length > 0) ? JSON.stringify(obj.uploadFiles) : (find.imagePath || null),
+      imagePath: (obj.imagePath && obj.imagePath.length > 0) ? obj.imagePath : null,
       active: obj.active,
       modifiedBy: adminId,
       modifiedIp: cIp,

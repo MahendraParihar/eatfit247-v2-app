@@ -28,9 +28,8 @@ export class CreateRecipeCategoryDto implements IManageRecipeCategory {
   @IsOptional()
   @ValidateNested({ each: true })
   @Type(() => MediaUploadDto)
-  uploadFiles?: MediaUploadDto[];
+  imagePath?: MediaUploadDto[];
 
   recipeCategoryId?: number;
-  imagePath?: any;
 }
 

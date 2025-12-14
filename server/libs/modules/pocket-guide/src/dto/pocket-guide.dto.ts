@@ -16,18 +16,16 @@ export class CreatePocketGuideDto implements IManagePocketGuide {
   @IsBoolean()
   active: boolean;
 
-  @IsNotEmpty()
+  @IsOptional()
   @ValidateNested({ each: true })
   @Type(() => MediaUploadDto)
-  uploadFile?: MediaUploadDto[];
+  filePath?: MediaUploadDto[];
 
   @IsOptional()
   @ValidateNested({ each: true })
   @Type(() => MediaUploadDto)
-  uploadFiles?: MediaUploadDto[];
+  imagePath?: MediaUploadDto[];
 
   pocketGuideId?: number;
-  filePath?: any;
-  imagePath?: any;
 }
 

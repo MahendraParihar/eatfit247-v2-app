@@ -12,13 +12,12 @@ export class CreateUrineOutputDto implements IManageUrineOutput {
   @IsOptional()
   @ValidateNested({ each: true })
   @Type(() => MediaUploadDto)
-  uploadFiles?: MediaUploadDto[];
+  imagePath?: MediaUploadDto[];
 
   @IsNotEmpty()
   @IsBoolean()
   active: boolean;
 
   urineOutputId?: number;
-  imagePath?: any;
 }
 

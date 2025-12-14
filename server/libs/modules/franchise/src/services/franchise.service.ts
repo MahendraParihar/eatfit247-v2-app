@@ -72,7 +72,7 @@ export class FranchiseService {
   public async create(obj: IManageFranchise, cIp: string, adminId: number): Promise<void> {
     const createObj = {
       companyName: obj.companyName,
-      logo: (obj.uploadFiles && obj.uploadFiles.length > 0) ? JSON.stringify(obj.uploadFiles) : null,
+      logo: (obj.logo && obj.logo.length > 0) ? obj.logo : null,
       firstName: obj.firstName,
       lastName: obj.lastName,
       emailId: obj.emailId,
@@ -103,7 +103,7 @@ export class FranchiseService {
     }
     const updateObj = {
       companyName: obj.companyName,
-      logo: (obj.uploadFiles && obj.uploadFiles.length > 0) ? JSON.stringify(obj.uploadFiles) : (find.logo || null),
+      logo: (obj.logo && obj.logo.length > 0) ? obj.logo : null,
       firstName: obj.firstName,
       lastName: obj.lastName,
       emailId: obj.emailId,

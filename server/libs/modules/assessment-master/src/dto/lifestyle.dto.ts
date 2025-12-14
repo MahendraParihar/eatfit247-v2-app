@@ -12,13 +12,12 @@ export class CreateLifestyleDto implements IManageLifestyle {
   @IsOptional()
   @ValidateNested({ each: true })
   @Type(() => MediaUploadDto)
-  uploadFiles?: MediaUploadDto[];
+  imagePath?: MediaUploadDto[];
 
   @IsNotEmpty()
   @IsBoolean()
   active: boolean;
 
   lifestyleId?: number;
-  imagePath?: any;
 }
 

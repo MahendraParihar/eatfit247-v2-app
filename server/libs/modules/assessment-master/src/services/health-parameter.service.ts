@@ -66,7 +66,7 @@ export class HealthParameterService {
     const createObj = {
       healthParameter: obj.healthParameter,
       hintText: obj.hintText,
-      imagePath: (obj.uploadFiles && obj.uploadFiles.length > 0) ? JSON.stringify(obj.uploadFiles) : null,
+      imagePath: (obj.imagePath && obj.imagePath.length > 0) ? obj.imagePath : null,
       isLength: obj.isLength,
       sequence: obj.sequence,
       fieldType: obj.fieldType,
@@ -88,7 +88,7 @@ export class HealthParameterService {
     const updateObj = {
       healthParameter: obj.healthParameter,
       hintText: obj.hintText,
-      imagePath: (obj.uploadFiles && obj.uploadFiles.length > 0) ? JSON.stringify(obj.uploadFiles) : (find.imagePath || null),
+      imagePath: (obj.imagePath && obj.imagePath.length > 0) ? obj.imagePath : null,
       isLength: obj.isLength,
       sequence: obj.sequence,
       fieldType: obj.fieldType,

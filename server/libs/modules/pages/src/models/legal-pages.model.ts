@@ -1,5 +1,5 @@
 import { BelongsTo, Column, CreatedAt, DataType, Model, Scopes, Table, UpdatedAt } from 'sequelize-typescript';
-import { InputLengthEnum } from 'eatfit247-shared-lib';
+import { IMediaUpload, InputLengthEnum } from 'eatfit247-shared-lib';
 import { MstAdminUser, getCreatedByUserInclude, getUpdatedByUserInclude } from '@server/common';
 
 @Table({
@@ -51,7 +51,7 @@ export class LegalPagesModel extends Model<LegalPagesModel> {
     allowNull: true,
     type: DataType.JSONB,
   })
-  imagePath: string;
+  imagePath: IMediaUpload[];
 
   @Column({
     field: 'tags',

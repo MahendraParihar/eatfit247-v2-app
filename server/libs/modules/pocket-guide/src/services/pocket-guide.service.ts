@@ -65,9 +65,9 @@ export class PocketGuideService {
   public async create(obj: IManagePocketGuide, cIp: string, adminId: number): Promise<void> {
     const createObj = {
       pocketGuide: obj.pocketGuide,
-      filePath: (obj.uploadFile && obj.uploadFile.length > 0) ? JSON.stringify(obj.uploadFile) : null,
+      filePath: (obj.filePath && obj.filePath.length > 0) ? JSON.stringify(obj.filePath) : null,
       description: obj.description || null,
-      imagePath: (obj.uploadFiles && obj.uploadFiles.length > 0) ? JSON.stringify(obj.uploadFiles) : null,
+      imagePath: (obj.imagePath && obj.imagePath.length > 0) ? obj.imagePath : null,
       active: obj.active,
       createdBy: adminId,
       modifiedBy: adminId,
@@ -86,9 +86,9 @@ export class PocketGuideService {
     }
     const updateObj = {
       pocketGuide: obj.pocketGuide,
-      filePath: (obj.uploadFile && obj.uploadFile.length > 0) ? JSON.stringify(obj.uploadFile) : (find.filePath || null),
+      filePath: (obj.filePath && obj.filePath.length > 0) ? JSON.stringify(obj.filePath) : (find.filePath || null),
       description: obj.description || null,
-      imagePath: (obj.uploadFiles && obj.uploadFiles.length > 0) ? JSON.stringify(obj.uploadFiles) : (find.imagePath || null),
+      imagePath: (obj.imagePath && obj.imagePath.length > 0) ? obj.imagePath : null,
       active: obj.active,
       modifiedBy: adminId,
       modifiedIp: cIp,

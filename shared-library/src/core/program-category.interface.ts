@@ -15,7 +15,6 @@ export interface IManageProgramCategory extends IBaseProgramCategory {
 
 export interface IProgramCategory extends IBaseProgramCategory {
   programCategoryId: number;
-  id?: number; // For compatibility with old interface
   active: boolean;
   createdBy: number;
   updatedBy: number;

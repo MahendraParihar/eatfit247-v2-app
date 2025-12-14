@@ -2,7 +2,7 @@ import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from
 import { JwtAuthGuard, CurrentUser, RequestedIp, BasicSearchDto, UpdateActiveDto } from '@server/common';
 import { ReligionService } from '../../services';
 import { CreateReligionDto } from '../../dto';
-import { ITableList, IReligion, IDropdownItem } from 'eatfit247-shared-lib';
+import { ITableList, IReligion, IDropdownItem, IResponse } from 'eatfit247-shared-lib';
 
 @Controller('religion')
 @UseGuards(JwtAuthGuard)
@@ -15,8 +15,9 @@ export class ReligionController {
   }
 
   @Get('manage/:id')
-  async getById(@Param('id') id: number): Promise<IReligion> {
-    return await this.service.fetchById(id);
+  async getById(@Param('id') id: number): Promise<IResponse<IReligion>> {
+    const data = await this.service.fetchById(id);
+    return { data };
   }
 
   @Post('manage')

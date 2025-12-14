@@ -2,7 +2,7 @@ import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from
 import { JwtAuthGuard, CurrentUser, RequestedIp, BasicSearchDto, UpdateActiveDto } from '@server/common';
 import { FranchiseService } from '../../services';
 import { CreateFranchiseDto } from '../../dto';
-import { ITableList, IFranchise, IDropdownItem } from 'eatfit247-shared-lib';
+import { ITableList, IFranchise, IDropdownItem, IResponse } from 'eatfit247-shared-lib';
 
 @Controller('franchise')
 @UseGuards(JwtAuthGuard)
@@ -15,8 +15,9 @@ export class FranchiseController {
   }
 
   @Get('manage/:id')
-  async getById(@Param('id') id: number): Promise<IFranchise> {
-    return await this.service.fetchById(id);
+  async getById(@Param('id') id: number): Promise<IResponse<IFranchise>> {
+    const data = await this.service.fetchById(id);
+    return { data };
   }
 
   @Post('manage')

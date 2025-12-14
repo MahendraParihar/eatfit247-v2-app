@@ -12,13 +12,12 @@ export class CreateTypeOfExerciseDto implements IManageTypeOfExercise {
   @IsOptional()
   @ValidateNested({ each: true })
   @Type(() => MediaUploadDto)
-  uploadFiles?: MediaUploadDto[];
+  imagePath?: MediaUploadDto[];
 
   @IsNotEmpty()
   @IsBoolean()
   active: boolean;
 
   typeOfExerciseId?: number;
-  imagePath?: any;
 }
 

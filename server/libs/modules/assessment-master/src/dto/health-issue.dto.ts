@@ -12,13 +12,12 @@ export class CreateHealthIssueDto implements IManageHealthIssue {
   @IsOptional()
   @ValidateNested({ each: true })
   @Type(() => MediaUploadDto)
-  uploadFiles?: MediaUploadDto[];
+  imagePath?: MediaUploadDto[];
 
   @IsNotEmpty()
   @IsBoolean()
   active: boolean;
 
   healthIssueId?: number;
-  imagePath?: any;
 }
 

@@ -60,7 +60,7 @@ export class BloodSugarService {
   public async create(obj: IManageBloodSugar, cIp: string, adminId: number): Promise<void> {
     const createObj = {
       bloodSugar: obj.bloodSugar,
-      imagePath: (obj.uploadFiles && obj.uploadFiles.length > 0) ? JSON.stringify(obj.uploadFiles) : null,
+      imagePath: (obj.imagePath && obj.imagePath.length > 0) ? obj.imagePath : null,
       active: obj.active,
       createdBy: adminId,
       modifiedBy: adminId,
@@ -77,7 +77,7 @@ export class BloodSugarService {
     }
     const updateObj = {
       bloodSugar: obj.bloodSugar,
-      imagePath: (obj.uploadFiles && obj.uploadFiles.length > 0) ? JSON.stringify(obj.uploadFiles) : (find.imagePath || null),
+      imagePath: (obj.imagePath && obj.imagePath.length > 0) ? obj.imagePath : null,
       active: obj.active,
       modifiedBy: adminId,
       modifiedIp: cIp,

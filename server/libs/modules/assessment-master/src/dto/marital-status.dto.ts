@@ -12,13 +12,12 @@ export class CreateMaritalStatusDto implements IManageMaritalStatus {
   @IsOptional()
   @ValidateNested({ each: true })
   @Type(() => MediaUploadDto)
-  uploadFiles?: MediaUploadDto[];
+  imagePath?: MediaUploadDto[];
 
   @IsNotEmpty()
   @IsBoolean()
   active: boolean;
 
   maritalStatusId?: number;
-  imagePath?: any;
 }
 

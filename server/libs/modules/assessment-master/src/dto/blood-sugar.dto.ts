@@ -12,13 +12,12 @@ export class CreateBloodSugarDto implements IManageBloodSugar {
   @IsOptional()
   @ValidateNested({ each: true })
   @Type(() => MediaUploadDto)
-  uploadFiles?: MediaUploadDto[];
+  imagePath?: MediaUploadDto[];
 
   @IsNotEmpty()
   @IsBoolean()
   active: boolean;
 
   bloodSugarId?: number;
-  imagePath?: any;
 }
 

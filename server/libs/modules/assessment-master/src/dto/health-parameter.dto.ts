@@ -17,7 +17,7 @@ export class CreateHealthParameterDto implements IManageHealthParameter {
   @IsOptional()
   @ValidateNested({ each: true })
   @Type(() => MediaUploadDto)
-  uploadFiles?: MediaUploadDto[];
+  imagePath?: MediaUploadDto[];
 
   @IsNotEmpty()
   @IsBoolean()
@@ -40,6 +40,5 @@ export class CreateHealthParameterDto implements IManageHealthParameter {
   active: boolean;
 
   healthParameterId?: number;
-  imagePath?: any;
 }
 

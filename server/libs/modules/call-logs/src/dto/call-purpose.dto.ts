@@ -12,13 +12,12 @@ export class CreateCallPurposeDto implements IManageCallPurpose {
   @IsOptional()
   @ValidateNested({ each: true })
   @Type(() => MediaUploadDto)
-  uploadFiles?: MediaUploadDto[];
+  imagePath?: MediaUploadDto[];
 
   @IsNotEmpty()
   @IsBoolean()
   active: boolean;
 
   callPurposeId?: number;
-  imagePath?: any;
 }
 

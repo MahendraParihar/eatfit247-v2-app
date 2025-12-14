@@ -12,13 +12,12 @@ export class CreateReligionDto implements IManageReligion {
   @IsOptional()
   @ValidateNested({ each: true })
   @Type(() => MediaUploadDto)
-  uploadFiles?: MediaUploadDto[];
+  imagePath?: MediaUploadDto[];
 
   @IsNotEmpty()
   @IsBoolean()
   active: boolean;
 
   religionId?: number;
-  imagePath?: any;
 }
 

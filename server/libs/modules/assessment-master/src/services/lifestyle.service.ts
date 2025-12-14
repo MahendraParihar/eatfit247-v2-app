@@ -60,7 +60,7 @@ export class LifestyleService {
   public async create(obj: IManageLifestyle, cIp: string, adminId: number): Promise<void> {
     const createObj = {
       lifestyle: obj.lifestyle,
-      imagePath: (obj.uploadFiles && obj.uploadFiles.length > 0) ? JSON.stringify(obj.uploadFiles) : null,
+      imagePath: (obj.imagePath && obj.imagePath.length > 0) ? obj.imagePath : null,
       active: obj.active,
       createdBy: adminId,
       modifiedBy: adminId,
@@ -77,7 +77,7 @@ export class LifestyleService {
     }
     const updateObj = {
       lifestyle: obj.lifestyle,
-      imagePath: (obj.uploadFiles && obj.uploadFiles.length > 0) ? JSON.stringify(obj.uploadFiles) : (find.imagePath || null),
+      imagePath: (obj.imagePath && obj.imagePath.length > 0) ? obj.imagePath : null,
       active: obj.active,
       modifiedBy: adminId,
       modifiedIp: cIp,

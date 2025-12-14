@@ -12,13 +12,12 @@ export class CreateEatingHabitDto implements IManageEatingHabit {
   @IsOptional()
   @ValidateNested({ each: true })
   @Type(() => MediaUploadDto)
-  uploadFiles?: MediaUploadDto[];
+  imagePath?: MediaUploadDto[];
 
   @IsNotEmpty()
   @IsBoolean()
   active: boolean;
 
   eatingHabitId?: number;
-  imagePath?: any;
 }
 

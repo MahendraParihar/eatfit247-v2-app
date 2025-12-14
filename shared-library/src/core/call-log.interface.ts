@@ -1,5 +1,5 @@
-import { IBaseAdminUser } from '../base.interface';
-import { IMediaUpload } from './media-upload.interface';
+import { IBaseAdminUser } from "../base.interface";
+import { IMediaUpload } from "./media-upload.interface";
 
 export interface IBaseCallLogStatus {
   callLogStatus: string;
@@ -29,7 +29,6 @@ export interface IBaseCallPurpose {
 
 export interface IManageCallPurpose extends IBaseCallPurpose {
   callPurposeId?: number;
-  uploadFiles?: IMediaUpload[];
   active: boolean;
 }
 
@@ -52,7 +51,6 @@ export interface IBaseCallType {
 
 export interface IManageCallType extends IBaseCallType {
   callTypeId?: number;
-  uploadFiles?: IMediaUpload[];
   active: boolean;
 }
 

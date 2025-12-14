@@ -1,28 +1,5 @@
-import { IBaseAdminUser } from '../base.interface';
-import { IMediaUpload } from './media-upload.interface';
-
-// Base interface for simple master tables (gender, blood_sugar, health_issue, eating_habit, lifestyle, marital_status, religion, sleeping_pattern, type_of_exercise, urine_output)
-export interface IBaseAssessmentMaster {
-  name: string;
-  imagePath?: IMediaUpload[];
-}
-
-export interface IManageAssessmentMaster extends IBaseAssessmentMaster {
-  id?: number;
-  uploadFiles?: IMediaUpload[];
-  active: boolean;
-}
-
-export interface IAssessmentMaster extends IBaseAssessmentMaster {
-  id: number;
-  active: boolean;
-  createdBy: number;
-  updatedBy: number;
-  createdAt: Date;
-  updatedAt: Date;
-  createdByUser?: IBaseAdminUser;
-  updatedByUser?: IBaseAdminUser;
-}
+import { IBaseAdminUser } from "../base.interface";
+import { IMediaUpload } from "./media-upload.interface";
 
 // Gender specific interfaces
 export interface IBaseGender {
@@ -30,16 +7,13 @@ export interface IBaseGender {
   imagePath?: IMediaUpload[];
 }
 
-export interface IManageGender {
-  gender: string;
+export interface IManageGender extends IBaseGender {
   genderId?: number;
-  uploadFiles?: IMediaUpload[];
   active: boolean;
 }
 
 export interface IGender extends IBaseGender {
   genderId: number;
-  id?: number;
   active: boolean;
   createdBy: number;
   updatedBy: number;
@@ -55,16 +29,13 @@ export interface IBaseBloodSugar {
   imagePath?: IMediaUpload[];
 }
 
-export interface IManageBloodSugar {
-  bloodSugar: string;
+export interface IManageBloodSugar extends IBaseBloodSugar {
   bloodSugarId?: number;
-  uploadFiles?: IMediaUpload[];
   active: boolean;
 }
 
 export interface IBloodSugar extends IBaseBloodSugar {
   bloodSugarId: number;
-  id?: number;
   active: boolean;
   createdBy: number;
   updatedBy: number;
@@ -80,16 +51,14 @@ export interface IBaseHealthIssue {
   imagePath?: IMediaUpload[];
 }
 
-export interface IManageHealthIssue {
+export interface IManageHealthIssue extends IBaseHealthIssue {
   healthIssue: string;
   healthIssueId?: number;
-  uploadFiles?: IMediaUpload[];
   active: boolean;
 }
 
 export interface IHealthIssue extends IBaseHealthIssue {
   healthIssueId: number;
-  id?: number;
   active: boolean;
   createdBy: number;
   updatedBy: number;
@@ -105,16 +74,13 @@ export interface IBaseEatingHabit {
   imagePath?: IMediaUpload[];
 }
 
-export interface IManageEatingHabit {
-  eatingHabit: string;
+export interface IManageEatingHabit extends IBaseEatingHabit {
   eatingHabitId?: number;
-  uploadFiles?: IMediaUpload[];
   active: boolean;
 }
 
 export interface IEatingHabit extends IBaseEatingHabit {
   eatingHabitId: number;
-  id?: number;
   active: boolean;
   createdBy: number;
   updatedBy: number;
@@ -124,22 +90,18 @@ export interface IEatingHabit extends IBaseEatingHabit {
   updatedByUser?: IBaseAdminUser;
 }
 
-// Lifestyle specific interfaces
 export interface IBaseLifestyle {
   lifestyle: string;
   imagePath?: IMediaUpload[];
 }
 
-export interface IManageLifestyle {
-  lifestyle: string;
+export interface IManageLifestyle extends IBaseLifestyle {
   lifestyleId?: number;
-  uploadFiles?: IMediaUpload[];
   active: boolean;
 }
 
 export interface ILifestyle extends IBaseLifestyle {
   lifestyleId: number;
-  id?: number;
   active: boolean;
   createdBy: number;
   updatedBy: number;
@@ -155,16 +117,13 @@ export interface IBaseMaritalStatus {
   imagePath?: IMediaUpload[];
 }
 
-export interface IManageMaritalStatus {
-  maritalStatus: string;
+export interface IManageMaritalStatus extends IBaseMaritalStatus {
   maritalStatusId?: number;
-  uploadFiles?: IMediaUpload[];
   active: boolean;
 }
 
 export interface IMaritalStatus extends IBaseMaritalStatus {
   maritalStatusId: number;
-  id?: number;
   active: boolean;
   createdBy: number;
   updatedBy: number;
@@ -180,16 +139,13 @@ export interface IBaseReligion {
   imagePath?: IMediaUpload[];
 }
 
-export interface IManageReligion {
-  religion: string;
+export interface IManageReligion extends IBaseReligion {
   religionId?: number;
-  uploadFiles?: IMediaUpload[];
   active: boolean;
 }
 
 export interface IReligion extends IBaseReligion {
   religionId: number;
-  id?: number;
   active: boolean;
   createdBy: number;
   updatedBy: number;
@@ -205,16 +161,13 @@ export interface IBaseSleepingPattern {
   imagePath?: IMediaUpload[];
 }
 
-export interface IManageSleepingPattern {
-  sleepingPattern: string;
+export interface IManageSleepingPattern extends IBaseSleepingPattern {
   sleepingPatternId?: number;
-  uploadFiles?: IMediaUpload[];
   active: boolean;
 }
 
 export interface ISleepingPattern extends IBaseSleepingPattern {
   sleepingPatternId: number;
-  id?: number;
   active: boolean;
   createdBy: number;
   updatedBy: number;
@@ -230,16 +183,13 @@ export interface IBaseTypeOfExercise {
   imagePath?: IMediaUpload[];
 }
 
-export interface IManageTypeOfExercise {
-  typeOfExercise: string;
+export interface IManageTypeOfExercise extends IBaseTypeOfExercise {
   typeOfExerciseId?: number;
-  uploadFiles?: IMediaUpload[];
   active: boolean;
 }
 
 export interface ITypeOfExercise extends IBaseTypeOfExercise {
   typeOfExerciseId: number;
-  id?: number;
   active: boolean;
   createdBy: number;
   updatedBy: number;
@@ -255,16 +205,13 @@ export interface IBaseUrineOutput {
   imagePath?: IMediaUpload[];
 }
 
-export interface IManageUrineOutput {
-  urineOutput: string;
+export interface IManageUrineOutput extends IBaseUrineOutput {
   urineOutputId?: number;
-  uploadFiles?: IMediaUpload[];
   active: boolean;
 }
 
 export interface IUrineOutput extends IBaseUrineOutput {
   urineOutputId: number;
-  id?: number;
   active: boolean;
   createdBy: number;
   updatedBy: number;
@@ -287,13 +234,11 @@ export interface IBaseHealthParameter {
 
 export interface IManageHealthParameter extends IBaseHealthParameter {
   healthParameterId?: number;
-  uploadFiles?: IMediaUpload[];
   active: boolean;
 }
 
 export interface IHealthParameter extends IBaseHealthParameter {
   healthParameterId: number;
-  id?: number;
   active: boolean;
   createdBy: number;
   updatedBy: number;

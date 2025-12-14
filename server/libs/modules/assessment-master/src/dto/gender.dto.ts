@@ -12,13 +12,12 @@ export class CreateGenderDto implements IManageGender {
   @IsOptional()
   @ValidateNested({ each: true })
   @Type(() => MediaUploadDto)
-  uploadFiles?: MediaUploadDto[];
+  imagePath?: MediaUploadDto[];
 
   @IsNotEmpty()
   @IsBoolean()
   active: boolean;
 
   genderId?: number;
-  imagePath?: any;
 }
 

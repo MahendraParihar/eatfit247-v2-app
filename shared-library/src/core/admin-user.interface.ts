@@ -1,5 +1,5 @@
-import { IBaseAdminUser } from '../base.interface';
-import { IMediaUpload } from './media-upload.interface';
+import { IBaseAdminUser } from "../base.interface";
+import { IMediaUpload } from "./media-upload.interface";
 
 export interface IBaseAdminUserFull {
   firstName: string;
@@ -19,14 +19,12 @@ export interface IBaseAdminUserFull {
 
 export interface IManageAdminUser extends IBaseAdminUserFull {
   adminId?: number;
-  uploadFiles?: IMediaUpload[];
   password?: string; // For create/update operations
   roleIds?: number[]; // For role permissions
 }
 
 export interface IAdminUser extends IBaseAdminUserFull {
   adminId: number;
-  id?: number; // For compatibility with old interface
   franchise?: string; // Franchise name from relationship
   createdBy: number;
   updatedBy: number;

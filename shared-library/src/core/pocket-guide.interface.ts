@@ -1,5 +1,5 @@
-import { IBaseAdminUser } from '../base.interface';
-import { IMediaUpload } from './media-upload.interface';
+import { IBaseAdminUser } from "../base.interface";
+import { IMediaUpload } from "./media-upload.interface";
 
 export interface IBasePocketGuide {
   pocketGuide: string;
@@ -8,18 +8,13 @@ export interface IBasePocketGuide {
   imagePath?: IMediaUpload[];
 }
 
-export interface IManagePocketGuide {
-  pocketGuide: string;
-  description?: string;
+export interface IManagePocketGuide extends IBasePocketGuide {
   pocketGuideId?: number;
-  uploadFile?: IMediaUpload[];
-  uploadFiles?: IMediaUpload[];
   active: boolean;
 }
 
 export interface IPocketGuide extends IBasePocketGuide {
   pocketGuideId: number;
-  id?: number; // For compatibility with old interface
   active: boolean;
   createdBy: number;
   updatedBy: number;

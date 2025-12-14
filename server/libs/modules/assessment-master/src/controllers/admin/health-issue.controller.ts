@@ -2,7 +2,7 @@ import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from
 import { JwtAuthGuard, CurrentUser, RequestedIp, BasicSearchDto, UpdateActiveDto } from '@server/common';
 import { HealthIssueService } from '../../services';
 import { CreateHealthIssueDto } from '../../dto';
-import { ITableList, IHealthIssue, IDropdownItem } from 'eatfit247-shared-lib';
+import { ITableList, IHealthIssue, IDropdownItem, IResponse } from 'eatfit247-shared-lib';
 
 @Controller('health-issue')
 @UseGuards(JwtAuthGuard)
@@ -15,8 +15,9 @@ export class HealthIssueController {
   }
 
   @Get('manage/:id')
-  async getById(@Param('id') id: number): Promise<IHealthIssue> {
-    return await this.service.fetchById(id);
+  async getById(@Param('id') id: number): Promise<IResponse<IHealthIssue>> {
+    const data = await this.service.fetchById(id);
+    return { data };
   }
 
   @Post('manage')

@@ -1,4 +1,4 @@
-import { IBaseAdminUser } from '../base.interface';
+import { IBaseAdminUser } from "../base.interface";
 
 export interface IBaseCountry {
   country: string;
@@ -13,7 +13,6 @@ export interface IManageCountry extends IBaseCountry {
 
 export interface ICountry extends IBaseCountry {
   countryId: number;
-  id?: number; // For compatibility with old interface
   active: boolean;
   createdBy: number;
   updatedBy: number;
@@ -36,7 +35,6 @@ export interface IManageState extends IBaseState {
 
 export interface IState extends IBaseState {
   stateId: number;
-  id?: number; // For compatibility with old interface
   country?: string; // Country name from relationship
   active: boolean;
   createdBy: number;

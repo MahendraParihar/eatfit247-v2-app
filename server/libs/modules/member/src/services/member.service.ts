@@ -112,7 +112,7 @@ export class MemberService {
     const createObj = {
       firstName: obj.firstName,
       lastName: obj.lastName,
-      profilePicture: (obj.uploadFiles && obj.uploadFiles.length > 0) ? JSON.stringify(obj.uploadFiles) : null,
+      profilePicture: (obj.profilePicture && obj.profilePicture.length > 0) ? JSON.stringify(obj.profilePicture) : null,
       password: hashedPassword,
       passwordTemp: hashedPassword, // Set same as password initially
       countryCode: obj.countryCode,
@@ -174,8 +174,8 @@ export class MemberService {
     }
 
     // Update profile picture if provided
-    if (obj.uploadFiles && obj.uploadFiles.length > 0) {
-      updateObj.profilePicture = JSON.stringify(obj.uploadFiles);
+    if (obj.profilePicture && obj.profilePicture.length > 0) {
+      updateObj.profilePicture = JSON.stringify(obj.profilePicture);
     }
 
     await this.memberRepository.update(updateObj, { where: { memberId: id } });

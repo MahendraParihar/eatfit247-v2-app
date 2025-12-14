@@ -25,7 +25,7 @@ export class CreatePressMediaDto implements IManagePressMedia {
   @IsOptional()
   @ValidateNested({ each: true })
   @Type(() => MediaUploadDto)
-  uploadFiles?: MediaUploadDto[];
+  imagePath?: MediaUploadDto[];
 
   pressMediaId?: number;
 }

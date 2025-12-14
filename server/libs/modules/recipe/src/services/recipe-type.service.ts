@@ -64,7 +64,7 @@ export class RecipeTypeService {
     const dataObj: any = {
       recipeType: obj.recipeType,
       active: obj.active,
-      imagePath: (obj.uploadFiles && obj.uploadFiles.length > 0) ? JSON.stringify(obj.uploadFiles) : null,
+      imagePath: (obj.imagePath && obj.imagePath.length > 0) ? obj.imagePath : null,
       createdBy: userId,
       modifiedBy: userId,
       createdIp: requestedIp,
@@ -81,7 +81,7 @@ export class RecipeTypeService {
     const dataObj: any = {
       recipeType: obj.recipeType,
       active: obj.active,
-      imagePath: (obj.uploadFiles && obj.uploadFiles.length > 0) ? JSON.stringify(obj.uploadFiles) : null,
+      imagePath: (obj.imagePath && obj.imagePath.length > 0) ? obj.imagePath : null,
       modifiedBy: userId,
       modifiedIp: requestedIp,
     };

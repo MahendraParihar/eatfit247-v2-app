@@ -1,4 +1,13 @@
-import { IsBoolean, IsDate, IsNotEmpty, IsNumber, MaxLength, MinLength, ValidateNested } from 'class-validator';
+import {
+  IsBoolean,
+  IsDate,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  MaxLength,
+  MinLength,
+  ValidateNested,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import { InputLengthEnum } from 'eatfit247-shared-lib';
 import { MediaUploadDto, SeoDto } from '@server/common';
@@ -27,9 +36,10 @@ export class CreateBlogDto extends SeoDto implements IManageBlog {
   @IsDate()
   @Type(() => Date)
   writtenAt: Date;
+  @IsOptional()
   @ValidateNested({ each: true })
   @Type(() => MediaUploadDto)
-  uploadFiles?: MediaUploadDto[];
+  imagePath?: MediaUploadDto[];
   @IsNotEmpty()
   active: boolean;
 }

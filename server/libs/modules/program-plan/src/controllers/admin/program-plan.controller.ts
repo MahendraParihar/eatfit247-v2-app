@@ -2,7 +2,7 @@ import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from
 import { JwtAuthGuard, CurrentUser, RequestedIp, BasicSearchDto, UpdateActiveDto } from '@server/common';
 import { ProgramPlanService } from '../../services';
 import { CreateProgramPlanDto } from '../../dto';
-import { ITableList, IProgramPlan } from 'eatfit247-shared-lib';
+import { ITableList, IProgramPlan, IResponse } from 'eatfit247-shared-lib';
 
 @Controller('program-plan')
 @UseGuards(JwtAuthGuard)
@@ -15,8 +15,9 @@ export class ProgramPlanController {
   }
 
   @Get('manage/:id')
-  async getById(@Param('id') id: number): Promise<IProgramPlan> {
-    return await this.service.fetchById(id);
+  async getById(@Param('id') id: number): Promise<IResponse<IProgramPlan>> {
+    const data = await this.service.fetchById(id);
+    return { data };
   }
 
   @Post('manage')

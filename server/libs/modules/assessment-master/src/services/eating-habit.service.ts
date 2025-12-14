@@ -60,7 +60,7 @@ export class EatingHabitService {
   public async create(obj: IManageEatingHabit, cIp: string, adminId: number): Promise<void> {
     const createObj = {
       eatingHabit: obj.eatingHabit,
-      imagePath: (obj.uploadFiles && obj.uploadFiles.length > 0) ? JSON.stringify(obj.uploadFiles) : null,
+      imagePath: (obj.imagePath && obj.imagePath.length > 0) ? obj.imagePath : null,
       active: obj.active,
       createdBy: adminId,
       modifiedBy: adminId,
@@ -77,7 +77,7 @@ export class EatingHabitService {
     }
     const updateObj = {
       eatingHabit: obj.eatingHabit,
-      imagePath: (obj.uploadFiles && obj.uploadFiles.length > 0) ? JSON.stringify(obj.uploadFiles) : (find.imagePath || null),
+      imagePath: (obj.imagePath && obj.imagePath.length > 0) ? obj.imagePath : null,
       active: obj.active,
       modifiedBy: adminId,
       modifiedIp: cIp,

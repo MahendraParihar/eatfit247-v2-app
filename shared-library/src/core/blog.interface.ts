@@ -15,7 +15,6 @@ export interface IBaseBlog extends ICommonSEO {
 
 export interface IManageBlog extends IBaseBlog {
   blogId?: number;
-  uploadFiles?: IMediaUpload[];
 }
 
 export interface IBlog extends IBaseBlog, ICommonTable {

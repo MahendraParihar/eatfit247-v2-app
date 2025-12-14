@@ -2,7 +2,7 @@ import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from
 import { JwtAuthGuard, CurrentUser, RequestedIp, BasicSearchDto } from '@server/common';
 import { MemberService } from '../../services';
 import { CreateMemberDto } from '../../dto';
-import { ITableList, IMember } from 'eatfit247-shared-lib';
+import { ITableList, IMember, IResponse } from 'eatfit247-shared-lib';
 
 @Controller('member')
 @UseGuards(JwtAuthGuard)
@@ -15,8 +15,9 @@ export class MemberController {
   }
 
   @Get('manage/:id')
-  async getById(@Param('id') id: number): Promise<IMember> {
-    return await this.service.fetchById(id);
+  async getById(@Param('id') id: number): Promise<IResponse<IMember>> {
+    const data = await this.service.fetchById(id);
+    return { data };
   }
 
   @Post('manage')

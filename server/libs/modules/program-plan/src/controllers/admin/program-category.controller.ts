@@ -2,7 +2,7 @@ import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from
 import { JwtAuthGuard, CurrentUser, RequestedIp, BasicSearchDto, UpdateActiveDto } from '@server/common';
 import { ProgramCategoryService } from '../../services';
 import { CreateProgramCategoryDto } from '../../dto';
-import { ITableList, IProgramCategory, IDropdownItem } from 'eatfit247-shared-lib';
+import { ITableList, IProgramCategory, IDropdownItem, IResponse } from 'eatfit247-shared-lib';
 
 @Controller('program-category')
 @UseGuards(JwtAuthGuard)
@@ -15,8 +15,9 @@ export class ProgramCategoryController {
   }
 
   @Get('manage/:id')
-  async getById(@Param('id') id: number): Promise<IProgramCategory> {
-    return await this.service.fetchById(id);
+  async getById(@Param('id') id: number): Promise<IResponse<IProgramCategory>> {
+    const data = await this.service.fetchById(id);
+    return { data };
   }
 
   @Post('manage')

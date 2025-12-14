@@ -20,9 +20,8 @@ export class CreateProgramCategoryDto implements IManageProgramCategory {
   @IsOptional()
   @ValidateNested({ each: true })
   @Type(() => MediaUploadDto)
-  uploadFiles?: MediaUploadDto[];
+  imagePath?: MediaUploadDto[];
 
   programCategoryId?: number;
-  imagePath?: any;
 }
 

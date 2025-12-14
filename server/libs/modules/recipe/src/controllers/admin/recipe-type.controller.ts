@@ -2,7 +2,7 @@ import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from
 import { JwtAuthGuard, CurrentUser, RequestedIp, BasicSearchDto, UpdateActiveDto } from '@server/common';
 import { RecipeTypeService } from '../../services';
 import { CreateRecipeTypeDto } from '../../dto';
-import { ITableList, IRecipeType, IDropdownItem } from 'eatfit247-shared-lib';
+import { ITableList, IRecipeType, IDropdownItem, IResponse } from 'eatfit247-shared-lib';
 
 @Controller('recipe-type')
 @UseGuards(JwtAuthGuard)
@@ -15,8 +15,9 @@ export class RecipeTypeController {
   }
 
   @Get('manage/:id')
-  async getById(@Param('id') id: number): Promise<IRecipeType> {
-    return await this.service.fetchById(id);
+  async getById(@Param('id') id: number): Promise<IResponse<IRecipeType>> {
+    const data = await this.service.fetchById(id);
+    return { data };
   }
 
   @Post('manage')

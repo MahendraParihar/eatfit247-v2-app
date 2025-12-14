@@ -1,5 +1,5 @@
-import { IBaseAdminUser } from '../base.interface';
-import { IMediaUpload } from './media-upload.interface';
+import { IBaseAdminUser, ICommonSEO } from "../base.interface";
+import { IMediaUpload } from "./media-upload.interface";
 
 // Recipe Category Interfaces
 export interface IBaseRecipeCategory {
@@ -12,13 +12,11 @@ export interface IBaseRecipeCategory {
 
 export interface IManageRecipeCategory extends IBaseRecipeCategory {
   recipeCategoryId?: number;
-  uploadFiles?: IMediaUpload[];
   active: boolean;
 }
 
 export interface IRecipeCategory extends IBaseRecipeCategory {
   recipeCategoryId: number;
-  id?: number;
   active: boolean;
   createdBy: number;
   updatedBy: number;
@@ -36,13 +34,11 @@ export interface IBaseRecipeCuisine {
 
 export interface IManageRecipeCuisine extends IBaseRecipeCuisine {
   recipeCuisineId?: number;
-  uploadFiles?: IMediaUpload[];
   active: boolean;
 }
 
 export interface IRecipeCuisine extends IBaseRecipeCuisine {
   recipeCuisineId: number;
-  id?: number;
   active: boolean;
   createdBy: number;
   updatedBy: number;
@@ -60,13 +56,11 @@ export interface IBaseRecipeType {
 
 export interface IManageRecipeType extends IBaseRecipeType {
   recipeTypeId?: number;
-  uploadFiles?: IMediaUpload[];
   active: boolean;
 }
 
 export interface IRecipeType extends IBaseRecipeType {
   recipeTypeId: number;
-  id?: number;
   active: boolean;
   createdBy: number;
   updatedBy: number;
@@ -77,7 +71,7 @@ export interface IRecipeType extends IBaseRecipeType {
 }
 
 // Recipe Interfaces
-export interface IBaseRecipe {
+export interface IBaseRecipe extends ICommonSEO {
   name: string;
   recipeTypeId: number;
   details?: string;
@@ -87,40 +81,20 @@ export interface IBaseRecipe {
   benefits?: string;
   imagePath: IMediaUpload[];
   servingCount: number;
-  tags?: string;
-  downloadPath?: string;
-  url: string;
-  metaTitle?: string;
-  metaDescription?: string;
+  downloadPath?: IMediaUpload[];
+  isVisibleToAll: boolean;
 }
 
-export interface IManageRecipe {
-  name: string;
-  recipeTypeId: number;
-  details?: string;
-  preparationMethod?: string;
-  ingredient?: string;
-  howToMake?: string;
-  benefits?: string;
-  servingCount: number;
-  tags?: string;
-  downloadPath?: string;
-  url?: string;
-  metaTitle?: string;
-  metaDescription?: string;
+export interface IManageRecipe extends IBaseRecipe {
   recipeId?: number;
-  uploadFiles?: IMediaUpload[];
-  isVisibleToAll: boolean;
   active: boolean;
 }
 
 export interface IRecipe extends IBaseRecipe {
   recipeId: number;
-  id?: number;
   recipeType?: string;
   visitedCount: number;
   shareCount: number;
-  isVisibleToAll: boolean;
   active: boolean;
   createdBy: number;
   updatedBy: number;
@@ -143,7 +117,6 @@ export interface IManageRecipeCategoryMapping extends IBaseRecipeCategoryMapping
 
 export interface IRecipeCategoryMapping extends IBaseRecipeCategoryMapping {
   recipeCategoryMappingId: number;
-  id?: number;
   active: boolean;
   createdBy: number;
   updatedBy: number;
@@ -164,7 +137,6 @@ export interface IManageRecipeCuisineMapping extends IBaseRecipeCuisineMapping {
 
 export interface IRecipeCuisineMapping extends IBaseRecipeCuisineMapping {
   recipeCuisineMappingId: number;
-  id?: number;
   active: boolean;
   createdBy: number;
   updatedBy: number;
@@ -186,7 +158,6 @@ export interface IManageRecipeNutritive extends IBaseRecipeNutritive {
 
 export interface IRecipeNutritive extends IBaseRecipeNutritive {
   recipeNutritiveId: number;
-  id?: number;
   active: boolean;
   createdBy: number;
   updatedBy: number;

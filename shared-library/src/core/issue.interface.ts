@@ -12,7 +12,6 @@ export interface IManageIssueCategory extends IBaseIssueCategory {
 
 export interface IIssueCategory extends IBaseIssueCategory, ICommonTable {
   issueCategoryId: number;
-  id?: number; // For compatibility with old interface
   active: boolean;
   createdBy: number;
   updatedBy: number;
@@ -34,7 +33,6 @@ export interface IManageIssueStatus extends IBaseIssueStatus {
 
 export interface IIssueStatus extends IBaseIssueStatus, ICommonTable {
   issueStatusId: number;
-  id?: number; // For compatibility with old interface
   active: boolean;
   createdBy: number;
   updatedBy: number;

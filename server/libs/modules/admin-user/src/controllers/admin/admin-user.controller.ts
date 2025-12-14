@@ -2,7 +2,7 @@ import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from
 import { JwtAuthGuard, CurrentUser, RequestedIp, BasicSearchDto } from '@server/common';
 import { AdminUserService } from '../../services';
 import { CreateAdminUserDto } from '../../dto';
-import { ITableList, IAdminUser } from 'eatfit247-shared-lib';
+import { ITableList, IAdminUser, IResponse } from 'eatfit247-shared-lib';
 
 @Controller('admin-user')
 @UseGuards(JwtAuthGuard)
@@ -15,8 +15,9 @@ export class AdminUserController {
   }
 
   @Get('manage/:id')
-  async getById(@Param('id') id: number): Promise<IAdminUser> {
-    return await this.service.fetchById(id);
+  async getById(@Param('id') id: number): Promise<IResponse<IAdminUser>> {
+    const data = await this.service.fetchById(id);
+    return { data };
   }
 
   @Post('manage')

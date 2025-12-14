@@ -75,7 +75,7 @@ export class ProgramCategoryService {
       programCategory: obj.programCategory,
       url: obj.url || CommonFunctionsUtil.removeSpecialChar(obj.programCategory.toString().toLowerCase(), '-'),
       active: obj.active,
-      imagePath: (obj.uploadFiles && obj.uploadFiles.length > 0) ? JSON.stringify(obj.uploadFiles) : null,
+      imagePath: (obj.imagePath && obj.imagePath.length > 0) ? obj.imagePath : null,
       createdBy: userId,
       modifiedBy: userId,
       createdIp: requestedIp,
@@ -93,7 +93,7 @@ export class ProgramCategoryService {
       programCategory: obj.programCategory,
       url: obj.url || CommonFunctionsUtil.removeSpecialChar(obj.programCategory.toString().toLowerCase(), '-'),
       active: obj.active,
-      imagePath: (obj.uploadFiles && obj.uploadFiles.length > 0) ? JSON.stringify(obj.uploadFiles) : null,
+      imagePath: (obj.imagePath && obj.imagePath.length > 0) ? obj.imagePath : null,
       modifiedBy: userId,
       modifiedIp: requestedIp,
     };

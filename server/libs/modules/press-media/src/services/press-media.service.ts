@@ -68,7 +68,7 @@ export class PressMediaService {
       type: obj.type,
       link: obj.link,
       active: obj.active,
-      imagePath: (obj.uploadFiles && obj.uploadFiles.length > 0) ? JSON.stringify(obj.uploadFiles) : null,
+      imagePath: (obj.imagePath && obj.imagePath.length > 0) ? obj.imagePath : null,
       createdBy: adminId,
       modifiedBy: adminId,
       createdIp: cIp,
@@ -89,7 +89,7 @@ export class PressMediaService {
       type: obj.type,
       link: obj.link,
       active: obj.active,
-      imagePath: (obj.uploadFiles && obj.uploadFiles.length > 0) ? JSON.stringify(obj.uploadFiles) : null,
+      imagePath: (obj.imagePath && obj.imagePath.length > 0) ? obj.imagePath : null,
       modifiedBy: adminId,
       modifiedIp: cIp,
     };

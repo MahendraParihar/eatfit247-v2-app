@@ -67,13 +67,11 @@ export class CreateFranchiseDto implements IManageFranchise {
   @IsBoolean()
   active: boolean;
 
-  @IsNotEmpty()
+  @IsOptional()
   @ValidateNested({ each: true })
   @Type(() => MediaUploadDto)
-  uploadFiles?: MediaUploadDto[];
+  logo?: MediaUploadDto[];
 
   franchiseId?: number;
-  logo?: any;
-  imagePath?: any;
 }
 

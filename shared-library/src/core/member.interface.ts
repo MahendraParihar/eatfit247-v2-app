@@ -19,7 +19,6 @@ export interface IBaseMember {
 
 export interface IManageMember extends IBaseMember {
   memberId?: number;
-  uploadFiles?: IMediaUpload[];
   password?: string; // For create/update operations
 }
 
