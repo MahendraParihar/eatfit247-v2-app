@@ -9,8 +9,8 @@ import { InputLengthEnum } from 'eatfit247-shared-lib';
   tableName: 'mst_call_log_status',
 })
 @Scopes(() => ({
-  list: CommonScopes.list,
-  details: CommonScopes.details,
+  list: CommonScopes.list(),
+  details: CommonScopes.details(),
 }))
 export class MstCallLogStatus extends Model<MstCallLogStatus> {
   @Column({

@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
-import { MstAdminUser } from '@server/common';
+import { MstAdminUser, modelRegistry } from '@server/common';
 import { MstCountry, MstState } from './models';
 import {
   CountryController,
@@ -13,9 +13,12 @@ import {
   StateService,
 } from './services';
 
+// Register models with the model registry
+modelRegistry.register([MstCountry, MstState]);
+
 @Module({
   imports: [
-    SequelizeModule.forFeature([MstCountry, MstState, MstAdminUser]),
+    SequelizeModule.forFeature([MstCountry, MstState]),
   ],
   controllers: [
     CountryController,

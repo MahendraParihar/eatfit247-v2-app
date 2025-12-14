@@ -1,6 +1,6 @@
 import { BelongsTo, Column, CreatedAt, DataType, Model, Scopes, Table, UpdatedAt } from 'sequelize-typescript';
 import { MstAdminUser, CommonScopes } from '@server/common';
-import { InputLengthEnum } from 'eatfit247-shared-lib';
+import { IMediaUpload, InputLengthEnum } from 'eatfit247-shared-lib';
 
 @Table({
   freezeTableName: true,
@@ -16,8 +16,8 @@ import { InputLengthEnum } from 'eatfit247-shared-lib';
   ],
 })
 @Scopes(() => ({
-  list: CommonScopes.list,
-  details: CommonScopes.details,
+  list: CommonScopes.list(),
+  details: CommonScopes.details(),
 }))
 export class MstFranchise extends Model<MstFranchise> {
   @Column({
@@ -38,7 +38,7 @@ export class MstFranchise extends Model<MstFranchise> {
     field: 'logo',
     type: DataType.JSONB,
   })
-  logo: string;
+  logo: IMediaUpload[];
   @Column({
     allowNull: false,
     field: 'first_name',

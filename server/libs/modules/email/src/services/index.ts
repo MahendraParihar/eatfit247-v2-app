@@ -1,2 +1,2 @@
-export * from './email-template.service';
+// Service moved to root level as email.service.ts
 

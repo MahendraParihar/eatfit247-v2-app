@@ -1,14 +1,18 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ValidationPipe } from '@nestjs/common';
+import { ValidationPipe, Logger } from '@nestjs/common';
 import { json, urlencoded } from 'express';
-import { ValidationFilter, ValidationException } from '@server/common';
+import { ValidationFilter, ValidationException, LogErrorService } from '@server/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
+import { ModuleRef } from '@nestjs/core';
+
+const logger = new Logger('Bootstrap');
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {});
   app.setGlobalPrefix('api/v2');
-  app.useGlobalFilters(new ValidationFilter());
+  const moduleRef = app.get(ModuleRef);
+  app.useGlobalFilters(new ValidationFilter(moduleRef));
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -30,7 +34,20 @@ async function bootstrap() {
 
   const port = process.env.PUBLIC_API_PORT || 3000;
   await app.listen(port);
-  console.log(`Public API is running on: http://localhost:${port}/api/v1`);
+  
+  const startupMessage = `Public API is running on: http://localhost:${port}/api/v1`;
+  logger.log(startupMessage);
+  
+  // Also log to database if LogErrorService is available
+  try {
+    const logErrorService = app.get(LogErrorService);
+    await logErrorService.logWarning(startupMessage, {
+      controller: 'Bootstrap',
+      methodName: 'bootstrap',
+    });
+  } catch (error) {
+    // Ignore if LogErrorService is not available
+  }
 }
 bootstrap();
 

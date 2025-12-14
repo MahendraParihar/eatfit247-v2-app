@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
-import { MstAdminUser } from '@server/common';
+import { MstAdminUser, modelRegistry } from '@server/common';
 import { TxnMember } from './models';
 import { MstReferrer } from '../../referrer/src/models/mst-referrer.model';
 import { MstFranchise } from '../../../common/src/models/mst-franchise.model';
@@ -12,6 +12,9 @@ import {
 import {
   MemberService,
 } from './services';
+
+// Register models with the model registry
+modelRegistry.register([TxnMember]);
 
 @Module({
   imports: [

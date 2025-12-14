@@ -1,0 +1,75 @@
+<div class="login-container">
+  <mat-card class="login-card">
+    <mat-card-header>
+      <mat-card-title>EatFit247 Admin</mat-card-title>
+      <mat-card-subtitle>Sign in to your account</mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Email</mat-label>
+          <input matInput type="email" formControlName="emailId" placeholder="Enter your email" />
+          <mat-icon matPrefix>email</mat-icon>
+          <mat-error *ngIf="loginForm.get('emailId')?.hasError('required')">
+            Email is required
+          </mat-error>
+          <mat-error *ngIf="loginForm.get('emailId')?.hasError('email')">
+            Please enter a valid email
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Password</mat-label>
+          <input
+            matInput
+            [type]="hidePassword ? 'password' : 'text'"
+            formControlName="password"
+            placeholder="Enter your password"
+          />
+          <mat-icon matPrefix>lock</mat-icon>
+          <button
+            mat-icon-button
+            matSuffix
+            (click)="togglePasswordVisibility()"
+            type="button"
+            [attr.aria-label]="'Hide password'"
+            [attr.aria-pressed]="hidePassword"
+          >
+            <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+          <mat-error *ngIf="loginForm.get('password')?.hasError('required')">
+            Password is required
+          </mat-error>
+          <mat-error *ngIf="loginForm.get('password')?.hasError('minlength')">
+            Password must be at least 6 characters
+          </mat-error>
+        </mat-form-field>
+
+        <div class="error-message" *ngIf="errorMessage">
+          <mat-icon>error</mat-icon>
+          <span>{{ errorMessage }}</span>
+        </div>
+
+        <button
+          mat-raised-button
+          color="primary"
+          type="submit"
+          class="full-width login-button"
+          [disabled]="loading || loginForm.invalid"
+        >
+          <mat-spinner *ngIf="loading" diameter="20" class="button-spinner"></mat-spinner>
+          <span *ngIf="!loading">Sign In</span>
+          <span *ngIf="loading">Signing In...</span>
+        </button>
+
+        <div class="forgot-password-link">
+          <button mat-button type="button" (click)="onForgotPassword()" color="primary">
+            Forgot Password?
+          </button>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</div>
+

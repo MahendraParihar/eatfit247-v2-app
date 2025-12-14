@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
-import { MstAdminUser } from '@server/common';
+import { MstAdminUser, modelRegistry } from '@server/common';
 import {
   MstRecipeCategory,
   MstRecipeCuisine,
@@ -23,6 +23,17 @@ import {
   RecipeTypeService,
   RecipeService,
 } from './services';
+
+// Register models with the model registry
+modelRegistry.register([
+  MstRecipeCategory,
+  MstRecipeCuisine,
+  MstRecipeType,
+  MstRecipe,
+  MstRecipeCategoryMapping,
+  MstRecipeCuisineMapping,
+  MstRecipeNutritive,
+]);
 
 @Module({
   imports: [

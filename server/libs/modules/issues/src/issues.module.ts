@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
-import { MstAdminUser } from '@server/common';
+import { MstAdminUser, modelRegistry } from '@server/common';
 import { MstIssueCategory, MstIssueStatus } from './models';
 import {
   IssueCategoryController,
@@ -12,6 +12,9 @@ import {
   IssueCategoryService,
   IssueStatusService,
 } from './services';
+
+// Register models with the model registry
+modelRegistry.register([MstIssueCategory, MstIssueStatus]);
 
 @Module({
   imports: [

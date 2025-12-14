@@ -1,0 +1,137 @@
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { DataTableComponent, TableColumn, TableConfig, TableAction, createdByUserFormatter, updatedByUserFormatter } from '@shared';
+import { ITableList, IPocketGuide } from '@eatfit247-shared-lib';
+import { PocketGuideApiService } from '../api.service';
+import { Subject, debounceTime, distinctUntilChanged, switchMap } from 'rxjs';
+
+@Component({
+  selector: 'lib-pocket-guide',
+  standalone: true,
+  imports: [CommonModule, DataTableComponent],
+  templateUrl: './pocket-guide.html',
+  styleUrl: './pocket-guide.scss',
+})
+export class PocketGuide implements OnInit {
+  data: IPocketGuide[] = [];
+  totalCount = 0;
+  loading = false;
+  tableConfig!: TableConfig<IPocketGuide>;
+  private searchSubject = new Subject<string>();
+
+  constructor(private apiService: PocketGuideApiService) {
+    this.setupSearch();
+  }
+
+  ngOnInit(): void {
+    this.initializeTable();
+    this.loadData();
+  }
+
+  private initializeTable(): void {
+    const columns: TableColumn<IPocketGuide>[] = [
+      { key: 'pocketGuideId', label: 'ID', dataKey: 'pocketGuideId', sortable: true, width: '80px' },
+      { key: 'pocketGuide', label: 'Title', dataKey: 'pocketGuide', sortable: true, searchable: true },
+      { key: 'url', label: 'URL', dataKey: 'url', sortable: true },
+      { key: 'visitedCount', label: 'Views', dataKey: 'visitedCount', sortable: true, width: '100px', align: 'center' },
+      { key: 'shareCount', label: 'Shares', dataKey: 'shareCount', sortable: true, width: '100px', align: 'center' },
+      { key: 'isVisibleToAll', label: 'Visible', dataKey: 'isVisibleToAll', sortable: true, width: '100px', align: 'center', formatter: (value) => (value ? 'Yes' : 'No') },
+      { key: 'active', label: 'Status', dataKey: 'active', sortable: true, width: '120px', align: 'center', formatter: (value) => (value ? 'Active' : 'Inactive') },
+      { key: 'createdByUser', label: 'Created By', dataKey: 'createdByUser', sortable: false, formatter: createdByUserFormatter() },
+      { key: 'updatedByUser', label: 'Updated By', dataKey: 'updatedByUser', sortable: false, formatter: updatedByUserFormatter() },
+      { key: 'createdAt', label: 'Created At', dataKey: 'createdAt', sortable: true, formatter: (value) => (value ? new Date(value).toLocaleString() : '') },
+      { key: 'updatedAt', label: 'Updated At', dataKey: 'updatedAt', sortable: true, formatter: (value) => (value ? new Date(value).toLocaleString() : '') },
+    ];
+
+    const actions: TableAction<IPocketGuide>[] = [
+      { label: 'Edit', icon: 'edit', color: 'primary', onClick: (row) => this.editItem(row) },
+      { label: 'View', icon: 'visibility', color: 'primary', onClick: (row) => this.viewItem(row) },
+      { label: 'Active', icon: 'check_circle', color: 'primary', visible: (row) => row.active === true, onClick: (row) => this.toggleStatus(row) },
+      { label: 'Inactive', icon: 'cancel', color: 'warn', visible: (row) => row.active === false, onClick: (row) => this.toggleStatus(row) },
+    ];
+
+    this.tableConfig = {
+      columns,
+      actions,
+      showSearch: true,
+      searchPlaceholder: 'Search pocket guide...',
+      showPagination: true,
+      pageSize: 10,
+      pageSizeOptions: [5, 10, 25, 50],
+      showHeader: true,
+      emptyMessage: 'No pocket guide records found',
+    };
+  }
+
+  private setupSearch(): void {
+    this.searchSubject.pipe(debounceTime(300), distinctUntilChanged(), switchMap((search) => {
+      this.loading = true;
+      return this.apiService.getList({ search, page: 0, limit: this.tableConfig.pageSize || 10 });
+    })).subscribe({
+      next: (response) => { this.data = response.data; this.totalCount = response.count; this.loading = false; },
+      error: () => { this.loading = false; },
+    });
+  }
+
+  async loadData(): Promise<void> {
+    this.loading = true;
+    try {
+      const response: ITableList<IPocketGuide> = await this.apiService.getList({ page: 0, limit: this.tableConfig.pageSize || 10 });
+      this.data = response.data;
+      this.totalCount = response.count;
+      this.loading = false;
+    } catch {
+      this.loading = false;
+    }
+  }
+
+  async onPageChange(pagination: any): Promise<void> {
+    this.loading = true;
+    try {
+      const response: ITableList<IPocketGuide> = await this.apiService.getList({ page: pagination.pageIndex, limit: pagination.pageSize });
+      this.data = response.data;
+      this.totalCount = response.count;
+      this.loading = false;
+    } catch {
+      this.loading = false;
+    }
+  }
+
+  async onSortChange(sort: any): Promise<void> {
+    this.loading = true;
+    try {
+      const response: ITableList<IPocketGuide> = await this.apiService.getList({ page: 0, limit: this.tableConfig.pageSize || 10, sortBy: sort.active, sortOrder: sort.direction });
+      this.data = response.data;
+      this.totalCount = response.count;
+      this.loading = false;
+    } catch {
+      this.loading = false;
+    }
+  }
+
+  onSearchChange(search: string): void {
+    this.searchSubject.next(search);
+  }
+
+  editItem(item: IPocketGuide): void {
+    console.log('Edit pocket guide:', item);
+  }
+
+  viewItem(item: IPocketGuide): void {
+    console.log('View pocket guide:', item);
+  }
+
+  async toggleStatus(item: IPocketGuide): Promise<void> {
+    const action = item.active ? 'deactivate' : 'activate';
+    const confirmed = confirm(`Are you sure you want to ${action} "${item.pocketGuide}"?`);
+    if (confirmed) {
+      this.loading = true;
+      try {
+        await this.apiService.updateStatus(item.pocketGuideId, !item.active);
+        await this.loadData();
+      } catch {
+        this.loading = false;
+      }
+    }
+  }
+}

@@ -41,11 +41,20 @@ export class CryptoUtil {
   }
 
   static async generateHash(password: string, round: number = 12): Promise<string> {
+    if (!password) {
+      throw new Error('Password is required for hashing');
+    }
+    if (round < 1 || round > 31) {
+      throw new Error('Bcrypt rounds must be between 1 and 31');
+    }
     const salt = await bcrypt.genSalt(round);
     return await bcrypt.hash(password, salt);
   }
 
   static async compareHash(password: string, hash: string): Promise<boolean> {
+    if (!password || !hash) {
+      throw new Error('Password and hash are required for comparison');
+    }
     return await bcrypt.compare(password, hash);
   }
 }

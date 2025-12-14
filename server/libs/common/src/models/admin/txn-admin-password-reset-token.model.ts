@@ -15,7 +15,7 @@ export class TxnAdminPasswordResetToken extends Model<TxnAdminPasswordResetToken
     field: 'admin_password_reset_token_id',
     autoIncrement: true,
   })
-  adminPasswordResetTokenId: number;
+  declare adminPasswordResetTokenId: number;
 
   @BelongsTo(() => MstAdminUser, {
     foreignKey: 'adminId',
@@ -29,21 +29,21 @@ export class TxnAdminPasswordResetToken extends Model<TxnAdminPasswordResetToken
     field: 'admin_id',
     type: DataType.INTEGER,
   })
-  adminId: number;
+  declare adminId: number;
 
   @Column({
     allowNull: false,
     field: 'token_hash',
     type: DataType.TEXT,
   })
-  tokenHash: string;
+  declare tokenHash: string;
 
   @Column({
     allowNull: false,
     field: 'expires_at',
     type: DataType.DATE,
   })
-  expiresAt: Date;
+  declare expiresAt: Date;
 
   @Column({
     allowNull: false,
@@ -51,12 +51,14 @@ export class TxnAdminPasswordResetToken extends Model<TxnAdminPasswordResetToken
     field: 'used',
     type: DataType.BOOLEAN,
   })
-  used: boolean;
+  declare used: boolean;
 
   @CreatedAt
   @Column({
     allowNull: false,
     field: 'created_at',
+    type: DataType.DATE,
+    defaultValue: DataType.NOW,
   })
   declare createdAt: Date;
 
@@ -65,6 +67,13 @@ export class TxnAdminPasswordResetToken extends Model<TxnAdminPasswordResetToken
     field: 'created_ip',
     type: DataType.STRING(InputLengthEnum.IP),
   })
-  createdIp: string;
+  declare createdIp: string;
+
+  @Column({
+    allowNull: true,
+    field: 'user_agent',
+    type: DataType.TEXT,
+  })
+  declare userAgent: string;
 }
 

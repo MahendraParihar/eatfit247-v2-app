@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inquiry Resolved</title>
+  <style>
+    body {
+      font-family: 'Inter', Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      margin: 0;
+      padding: 0;
+      background-color: #f5f5f5;
+    }
+    .email-container {
+      max-width: 600px;
+      margin: 0 auto;
+      background-color: #ffffff;
+      padding: 0;
+    }
+    .header {
+      background-color: #28a745;
+      color: white;
+      padding: 30px 20px;
+      text-align: center;
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 600;
+    }
+    .content {
+      padding: 40px 20px;
+    }
+    .greeting {
+      font-size: 18px;
+      font-weight: 500;
+      margin-bottom: 20px;
+      color: #333;
+    }
+    .message {
+      font-size: 16px;
+      color: #666;
+      margin-bottom: 30px;
+      line-height: 1.8;
+    }
+    .resolved-box {
+      background-color: #d4edda;
+      border: 1px solid #c3e6cb;
+      border-radius: 12px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+    .resolved-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #155724;
+      margin: 0 0 15px 0;
+    }
+    .resolved-text {
+      font-size: 16px;
+      color: #155724;
+      margin: 5px 0;
+    }
+    .inquiry-details {
+      background-color: #f8f9fa;
+      border-left: 4px solid #fc2305;
+      padding: 15px;
+      margin: 20px 0;
+      border-radius: 8px;
+    }
+    .detail-text {
+      font-size: 14px;
+      color: #666;
+      margin: 5px 0;
+    }
+    .footer {
+      background-color: #f8f9fa;
+      padding: 30px 20px;
+      text-align: center;
+      border-top: 1px solid #e9ecef;
+    }
+    .footer-text {
+      font-size: 12px;
+      color: #666;
+      margin: 5px 0;
+    }
+    .footer-brand {
+      font-size: 14px;
+      font-weight: 600;
+      color: #fc2305;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="email-container">
+    <div class="header">
+      <h1>✓ Inquiry Resolved</h1>
+    </div>
+    
+    <div class="content">
+      <div class="greeting">Hello <%= userName || 'User' %>,</div>
+      
+      <div class="resolved-box">
+        <p class="resolved-title">Your inquiry has been resolved!</p>
+        <% if (resolutionDate) { %>
+        <p class="resolved-text">Resolved on: <%= resolutionDate %></p>
+        <% } %>
+      </div>
+      
+      <div class="inquiry-details">
+        <% if (inquiryId) { %>
+        <p class="detail-text"><strong>Inquiry ID:</strong> <%= inquiryId %></p>
+        <% } %>
+        <% if (inquirySubject) { %>
+        <p class="detail-text"><strong>Subject:</strong> <%= inquirySubject %></p>
+        <% } %>
+        <% if (resolutionNotes) { %>
+        <p class="detail-text"><strong>Resolution Notes:</strong></p>
+        <p class="detail-text" style="margin-top: 10px;"><%= resolutionNotes %></p>
+        <% } %>
+      </div>
+      
+      <div class="message">
+        <p>If you have any further questions or concerns, please don't hesitate to contact our support team.</p>
+      </div>
+    </div>
+    
+    <div class="footer">
+      <p class="footer-text">This is an automated email. Please do not reply.</p>
+      <p class="footer-brand">EatFit247</p>
+      <p class="footer-text">© <%= new Date().getFullYear() %> EatFit247. All rights reserved.</p>
+    </div>
+  </div>
+</body>
+</html>
+

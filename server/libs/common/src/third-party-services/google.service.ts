@@ -1,10 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { RecaptchaEnterpriseServiceClient } from '@google-cloud/recaptcha-enterprise';
 import { AppConfigService } from '../app-config';
+import { LogErrorService } from '../common/log-error.service';
 
 @Injectable()
 export class GoogleService {
-  constructor(private appConfig: AppConfigService) {
+  constructor(
+    private appConfig: AppConfigService,
+    private logErrorService: LogErrorService,
+  ) {
   }
 
   // region Google Captcha
@@ -37,7 +41,13 @@ export class GoogleService {
 
     // Check if the token is valid.
     if (!response.tokenProperties.valid) {
-      console.log(`The CreateAssessment call failed because the token was: ${response.tokenProperties.invalidReason}`);
+      await this.logErrorService.logWarning(
+        `The CreateAssessment call failed because the token was: ${response.tokenProperties.invalidReason}`,
+        {
+          controller: 'GoogleService',
+          methodName: 'validateCaptcha',
+        },
+      );
       return null;
     }
 
@@ -47,14 +57,32 @@ export class GoogleService {
       // Get the risk score and the reason(s).
       // For more information on interpreting the assessment, see:
       // https://cloud.google.com/recaptcha-enterprise/docs/interpret-assessment
-      console.log(`The reCAPTCHA score is: ${response.riskAnalysis.score}`);
-      response.riskAnalysis.reasons.forEach((reason) => {
-        console.log(reason);
-      });
+      await this.logErrorService.logWarning(
+        `The reCAPTCHA score is: ${response.riskAnalysis.score}`,
+        {
+          controller: 'GoogleService',
+          methodName: 'validateCaptcha',
+        },
+      );
+      for (const reason of response.riskAnalysis.reasons) {
+        await this.logErrorService.logWarning(
+          String(reason),
+          {
+            controller: 'GoogleService',
+            methodName: 'validateCaptcha',
+          },
+        );
+      }
 
       return response.riskAnalysis.score;
     } else {
-      console.log('The action attribute in your reCAPTCHA tag does not match the action you are expecting to score');
+      await this.logErrorService.logWarning(
+        'The action attribute in your reCAPTCHA tag does not match the action you are expecting to score',
+        {
+          controller: 'GoogleService',
+          methodName: 'validateCaptcha',
+        },
+      );
       return null;
     }
   }

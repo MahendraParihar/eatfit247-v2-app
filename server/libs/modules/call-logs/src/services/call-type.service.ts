@@ -15,7 +15,6 @@ export class CallTypeService {
     const pageNumber = searchDto.page || 0;
     const pageSize = searchDto.limit || 15;
     const offset = pageNumber === 0 ? 0 : pageNumber * pageSize;
-
     const { rows, count } = await this.callTypeRepository.scope('list').findAndCountAll({
       where: whereCondition,
       order: [['callType', 'ASC']],
@@ -24,7 +23,6 @@ export class CallTypeService {
       raw: true,
       nest: true,
     });
-
     const resList: ICallType[] = rows.map((item: any) => {return this.convertToModel(item);});
     return {
       data: resList,
@@ -63,7 +61,7 @@ export class CallTypeService {
   public async create(obj: IManageCallType, cIp: string, adminId: number): Promise<void> {
     const createObj = {
       callType: obj.callType,
-      imagePath: (obj.uploadFiles && obj.uploadFiles.length > 0) ? JSON.stringify(obj.uploadFiles) : null,
+      imagePath: (obj.imagePath && obj.imagePath.length > 0) ? obj.imagePath : null,
       active: obj.active,
       createdBy: adminId,
       modifiedBy: adminId,
@@ -82,7 +80,7 @@ export class CallTypeService {
     }
     const updateObj = {
       callType: obj.callType,
-      imagePath: (obj.uploadFiles && obj.uploadFiles.length > 0) ? JSON.stringify(obj.uploadFiles) : (find.imagePath || null),
+      imagePath: (obj.imagePath && obj.imagePath.length > 0) ? obj.imagePath : null,
       active: obj.active,
       modifiedBy: adminId,
       modifiedIp: cIp,

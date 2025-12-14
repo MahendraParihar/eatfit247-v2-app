@@ -2,7 +2,7 @@ import { BelongsTo, Column, CreatedAt, DataType, Model, Scopes, Table, UpdatedAt
 import { MstAdminUser, getCreatedByUserInclude, getUpdatedByUserInclude } from '@server/common';
 import { MstBlogCategory } from './mst-blog-category.model';
 import { MstBlogAuthor } from './mst-blog-author.model';
-import { InputLengthEnum } from 'eatfit247-shared-lib';
+import { IMediaUpload, InputLengthEnum } from 'eatfit247-shared-lib';
 
 @Table({
   freezeTableName: true,
@@ -60,17 +60,22 @@ export class TxnBlog extends Model<TxnBlog> {
     targetKey: 'blogCategoryId',
     as: 'BlogCategory',
   })
+  blogCategory: MstBlogCategory;
+
   @Column({
     allowNull: false,
     field: 'blog_category_id',
     type: DataType.INTEGER,
   })
   blogCategoryId: number;
+
   @BelongsTo(() => MstBlogAuthor, {
     foreignKey: 'blogAuthorId',
     targetKey: 'blogAuthorId',
     as: 'BlogAuthor',
   })
+  blogAuthor: MstBlogAuthor;
+
   @Column({
     allowNull: false,
     field: 'blog_author_id',
@@ -94,7 +99,7 @@ export class TxnBlog extends Model<TxnBlog> {
     field: 'image_path',
     type: DataType.JSONB,
   })
-  imagePath: string;
+  imagePath: IMediaUpload[];
   @Column({
     allowNull: false,
     type: DataType.BOOLEAN,
@@ -131,12 +136,11 @@ export class TxnBlog extends Model<TxnBlog> {
   })
   shareCount: number;
   @Column({
-    allowNull: false,
-    type: DataType.STRING(1000),
-    defaultValue: null,
     field: 'tags',
+    allowNull: true,
+    type: DataType.ARRAY(DataType.STRING),
   })
-  tags: string;
+  tags: string[];
   @Column({
     allowNull: false,
     type: DataType.STRING(250),
@@ -168,57 +172,53 @@ export class TxnBlog extends Model<TxnBlog> {
     field: 'active',
   })
   active: boolean;
-  @BelongsTo(() => MstAdminUser, {
-    foreignKey: 'createdBy',
-    targetKey: 'adminId',
-    as: 'createdByUser',
-  })
+
+  @BelongsTo(() => MstAdminUser, { as: 'createdByUser', foreignKey: 'createdBy', targetKey: 'adminId' })
+  createdByUser: MstAdminUser;
+
+  @BelongsTo(() => MstAdminUser, { as: 'updatedByUser', foreignKey: 'modifiedBy', targetKey: 'adminId' })
+  updatedByUser: MstAdminUser;
+
   @Column({
     allowNull: false,
     field: 'created_by',
+    type: DataType.INTEGER,
   })
   createdBy: number;
+
   @CreatedAt
   @Column({
     allowNull: false,
     field: 'created_at',
   })
   declare createdAt: Date;
-  @BelongsTo(() => MstAdminUser, {
-    foreignKey: 'modifiedBy',
-    targetKey: 'adminId',
-    as: 'updatedByUser',
-  })
+
   @Column({
     allowNull: false,
     field: 'modified_by',
+    type: DataType.INTEGER,
   })
   modifiedBy: number;
+
   @UpdatedAt
   @Column({
     allowNull: false,
     field: 'updated_at',
   })
   declare updatedAt: Date;
+
   @Column({
     allowNull: false,
     field: 'created_ip',
     type: DataType.STRING(InputLengthEnum.IP),
   })
   createdIp: string;
+
   @Column({
     allowNull: false,
     field: 'modified_ip',
     type: DataType.STRING(InputLengthEnum.IP),
   })
   modifiedIp: string;
-  @BelongsTo(() => MstAdminUser, { as: 'createdByUser', foreignKey: 'createdBy', targetKey: 'adminUserId' })
-  createdByUser: MstAdminUser;
-  @BelongsTo(() => MstAdminUser, { as: 'updatedByUser', foreignKey: 'modifiedBy', targetKey: 'adminUserId' })
-  updatedByUser: MstAdminUser;
-  @BelongsTo(() => MstBlogCategory)
-  blogCategory: MstBlogCategory;
-  @BelongsTo(() => MstBlogAuthor)
-  blogAuthor: MstBlogAuthor;
 }
 

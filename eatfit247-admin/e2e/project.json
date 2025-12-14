@@ -1,0 +1,23 @@
+{
+  "name": "eatfit247-admin-e2e",
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "sourceRoot": "e2e/src",
+  "implicitDependencies": ["eatfit247-admin"],
+  "targets": {
+    "e2e": {
+      "executor": "@nx/playwright:playwright",
+      "outputs": ["{workspaceRoot}/dist/.playwright/e2e"],
+      "options": {
+        "config": "e2e/playwright.config.ts"
+      }
+    },
+    "e2e:ci": {
+      "executor": "@nx/playwright:playwright",
+      "outputs": ["{workspaceRoot}/dist/.playwright/e2e"],
+      "options": {
+        "config": "e2e/playwright.config.ts"
+      }
+    }
+  }
+}

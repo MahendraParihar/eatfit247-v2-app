@@ -183,6 +183,8 @@ export class MstAdminUser extends Model<MstAdminUser> {
   @Column({
     allowNull: false,
     field: 'updated_at',
+    type: DataType.DATE,
+    defaultValue: DataType.NOW,
   })
   declare updatedAt: Date;
   @BelongsTo(() => MstAdminUser, { as: 'createdByUser', foreignKey: 'createdBy', targetKey: 'adminId' })

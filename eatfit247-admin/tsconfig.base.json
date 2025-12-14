@@ -1,0 +1,39 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "sourceMap": true,
+    "declaration": false,
+    "moduleResolution": "node",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "importHelpers": true,
+    "target": "es2015",
+    "module": "esnext",
+    "lib": ["es2020", "dom"],
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "lov-master": ["libs/admin/lov-master/src/index.ts"],
+      "members": ["libs/admin/members/src/index.ts"],
+      "blogs": ["libs/admin/blogs/src/index.ts"],
+      "faq": ["libs/admin/faq/src/index.ts"],
+      "recipes": ["libs/admin/recipes/src/index.ts"],
+      "programs": ["libs/admin/programs/src/index.ts"],
+      "media-press": ["libs/admin/media-press/src/index.ts"],
+      "referrer": ["libs/admin/referrer/src/index.ts"],
+      "franchise": ["libs/admin/franchise/src/index.ts"],
+      "pocket-guide": ["libs/admin/pocket-guide/src/index.ts"],
+      "call-logs": ["libs/admin/call-logs/src/index.ts"],
+      "issues": ["libs/admin/issues/src/index.ts"],
+      "admin-user": ["libs/admin/admin-user/src/index.ts"],
+      "@env": ["src/environments/environment.ts"],
+      "@eatfit247-shared-lib": ["../shared-library/src/index.ts"],
+      "@core": ["libs/core/src/index.ts"],
+      "@shared": ["libs/shared-ui/src/index.ts"],
+      "@shared-ui": ["libs/shared-ui/src/index.ts"],
+      "@ui": ["libs/ui/src/index.ts"]
+    }
+  },
+  "exclude": ["node_modules", "tmp"]
+}

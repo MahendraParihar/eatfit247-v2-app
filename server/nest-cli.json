@@ -18,7 +18,11 @@
       "entryFile": "main",
       "sourceRoot": "apps/admin-api/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/admin-api/tsconfig.app.json"
+        "tsConfigPath": "apps/admin-api/tsconfig.app.json",
+        "assets": [
+          "../../libs/modules/email/src/templates/**/*"
+        ],
+        "watchAssets": true
       }
     },
     "public-api": {

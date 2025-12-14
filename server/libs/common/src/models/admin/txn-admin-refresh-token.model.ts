@@ -15,7 +15,7 @@ export class TxnAdminRefreshToken extends Model<TxnAdminRefreshToken> {
     field: 'admin_refresh_token_id',
     autoIncrement: true,
   })
-  adminRefreshTokenId: number;
+  declare adminRefreshTokenId: number;
   @BelongsTo(() => MstAdminUser, {
     foreignKey: 'adminId',
     targetKey: 'adminId',
@@ -27,30 +27,32 @@ export class TxnAdminRefreshToken extends Model<TxnAdminRefreshToken> {
     field: 'admin_id',
     type: DataType.INTEGER,
   })
-  adminId: number;
+  declare adminId: number;
   @Column({
     allowNull: false,
     field: 'token_hash',
     type: DataType.TEXT,
   })
-  tokenHash: string;
+  declare tokenHash: string;
   @Column({
     allowNull: false,
     field: 'expires_at',
     type: DataType.DATE,
   })
-  expiresAt: Date;
+  declare expiresAt: Date;
   @Column({
     allowNull: false,
     defaultValue: false,
     field: 'revoked',
     type: DataType.BOOLEAN,
   })
-  revoked: boolean;
+  declare revoked: boolean;
   @CreatedAt
   @Column({
     allowNull: false,
     field: 'created_at',
+    type: DataType.DATE,
+    defaultValue: DataType.NOW,
   })
   declare createdAt: Date;
   @Column({
@@ -58,6 +60,6 @@ export class TxnAdminRefreshToken extends Model<TxnAdminRefreshToken> {
     field: 'created_ip',
     type: DataType.STRING(InputLengthEnum.IP),
   })
-  createdIp: string;
+  declare createdIp: string;
 }
 

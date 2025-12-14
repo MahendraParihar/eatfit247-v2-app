@@ -6,7 +6,7 @@ import { FranchiseService } from './services';
 
 @Module({
   imports: [
-    SequelizeModule.forFeature([MstFranchise, MstAdminUser]),
+    SequelizeModule.forFeature([MstFranchise]),
   ],
   controllers: [
     FranchiseController,

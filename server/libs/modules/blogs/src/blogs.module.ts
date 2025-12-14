@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { TxnBlog, MstBlogAuthor, MstBlogCategory } from './models';
-import { MstAdminUser } from '@server/common';
+import { MstAdminUser, modelRegistry } from '@server/common';
 import { BlogService, BlogCategoryService, BlogAuthorService } from './services';
 import {
   BlogController,
@@ -11,9 +11,13 @@ import {
   PublicBlogController,
 } from './controllers';
 
+// Register models with the model registry before module initialization
+// This allows models with scopes to be included in the initial Sequelize connection
+modelRegistry.register([TxnBlog, MstBlogAuthor, MstBlogCategory]);
+
 @Module({
   imports: [
-    SequelizeModule.forFeature([TxnBlog, MstBlogAuthor, MstBlogCategory, MstAdminUser]),
+    SequelizeModule.forFeature([TxnBlog, MstBlogAuthor, MstBlogCategory]),
   ],
   controllers: [
     BlogController,

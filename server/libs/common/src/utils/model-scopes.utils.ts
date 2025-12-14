@@ -47,43 +47,44 @@ export function getAdminUserScope(required: boolean = false) {
 /**
  * Common scope definitions for models with admin user relationships
  * These can be used directly in @Scopes decorator
+ * Using functions to ensure includes are evaluated when scope is used, not at module load time
  */
 export const CommonScopes = {
   /**
    * List scope - includes admin user info (optional relationships)
    */
-  list: {
+  list: () => ({
     include: [
       getCreatedByUserInclude(false),
       getUpdatedByUserInclude(false),
     ],
-  },
+  }),
   /**
    * Details scope - includes admin user info (optional relationships)
    */
-  details: {
+  details: () => ({
     include: [
       getCreatedByUserInclude(false),
       getUpdatedByUserInclude(false),
     ],
-  },
+  }),
   /**
    * List scope with required relationships
    */
-  listRequired: {
+  listRequired: () => ({
     include: [
       getCreatedByUserInclude(true),
       getUpdatedByUserInclude(true),
     ],
-  },
+  }),
   /**
    * Details scope with required relationships
    */
-  detailsRequired: {
+  detailsRequired: () => ({
     include: [
       getCreatedByUserInclude(true),
       getUpdatedByUserInclude(true),
     ],
-  },
+  }),
 };
 

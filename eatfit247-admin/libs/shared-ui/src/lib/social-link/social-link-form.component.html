@@ -1,0 +1,23 @@
+<div class="social-link-form" [formGroup]="formGroup">
+  <div formArrayName="socialLinks">
+    <div
+      *ngFor="let linkControl of getSocialLinksControls(); let i = index"
+      [formGroupName]="i"
+      class="social-link-item"
+    >
+    <mat-form-field appearance="outline">
+      <mat-label>Platform</mat-label>
+      <input matInput formControlName="label" readonly />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="link-field">
+      <mat-label>URL</mat-label>
+      <input matInput formControlName="link" type="url" placeholder="https://..." />
+      <mat-icon matPrefix>link</mat-icon>
+      <app-input-error [control]="linkControl.get('link')" controlName="URL"></app-input-error>
+    </mat-form-field>
+
+    <input type="hidden" formControlName="icon" />
+    </div>
+  </div>
+</div>

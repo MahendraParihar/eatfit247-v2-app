@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { TxnFaq, MstFaqCategory } from './models';
-import { MstAdminUser } from '@server/common';
+import { modelRegistry } from '@server/common';
 import { FaqService, FaqCategoryService } from './services';
 import {
   FaqController,
@@ -9,9 +9,12 @@ import {
 } from './controllers/admin';
 import { PublicFaqController } from './controllers/public';
 
+// Register models with the model registry
+modelRegistry.register([TxnFaq, MstFaqCategory]);
+
 @Module({
   imports: [
-    SequelizeModule.forFeature([TxnFaq, MstFaqCategory, MstAdminUser]),
+    SequelizeModule.forFeature([TxnFaq, MstFaqCategory]),
   ],
   controllers: [
     FaqController,

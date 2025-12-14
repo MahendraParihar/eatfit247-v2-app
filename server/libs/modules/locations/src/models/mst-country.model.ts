@@ -9,8 +9,8 @@ import { InputLengthEnum } from 'eatfit247-shared-lib';
   tableName: 'mst_countries',
 })
 @Scopes(() => ({
-  list: CommonScopes.list,
-  details: CommonScopes.details,
+  list: CommonScopes.list(),
+  details: CommonScopes.details(),
 }))
 export class MstCountry extends Model<MstCountry> {
   @Column({

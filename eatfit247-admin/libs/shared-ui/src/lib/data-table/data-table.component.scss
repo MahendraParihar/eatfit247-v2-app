@@ -1,0 +1,192 @@
+.data-table-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  background: var(--md-sys-color-surface-container);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  box-shadow: var(--elevation-level-1);
+}
+
+.table-header {
+  padding: 16px;
+  background: var(--md-sys-color-surface-container-low);
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
+
+  .search-field {
+    width: 100%;
+    max-width: 400px;
+  }
+}
+
+.table-wrapper {
+  position: relative;
+  overflow-x: auto;
+  min-height: 200px;
+  background: var(--md-sys-color-surface-container);
+
+  &.loading {
+    opacity: 0.6;
+    pointer-events: none;
+  }
+}
+
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--md-sys-color-surface-container);
+  opacity: 0.9;
+  z-index: 10;
+}
+
+.data-table {
+  width: 100%;
+  background: var(--md-sys-color-surface-container);
+
+  th {
+    font-weight: 600;
+    color: var(--md-sys-color-on-surface);
+    background: var(--md-sys-color-surface-container-high);
+  }
+
+  td,
+  th {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+    color: var(--md-sys-color-on-surface);
+  }
+
+  tr.mat-row {
+    cursor: default;
+    transition: background-color 0.2s ease;
+    background: var(--md-sys-color-surface-container);
+
+    &:hover {
+      background-color: var(--md-sys-color-surface-container-low);
+    }
+
+    &.clickable {
+      cursor: pointer;
+    }
+  }
+
+  .sticky {
+    position: sticky;
+    background: var(--md-sys-color-surface-container);
+    z-index: 1;
+
+    &.sticky-end {
+      right: 0;
+      box-shadow: -2px 0 4px rgba(0, 0, 0, 0.1);
+    }
+
+    &:not(.sticky-end) {
+      left: 0;
+      box-shadow: 2px 0 4px rgba(0, 0, 0, 0.1);
+    }
+  }
+
+  th.sticky {
+    background: var(--md-sys-color-surface-container-high);
+  }
+}
+
+.actions-header {
+  width: 120px;
+  text-align: center;
+}
+
+.actions-cell {
+  text-align: center;
+  white-space: nowrap;
+
+  .action-buttons {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+    align-items: center;
+
+    mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+      line-height: 20px;
+    }
+
+    button[mat-icon-button] {
+      width: 40px;
+      height: 40px;
+      line-height: 40px;
+    }
+  }
+}
+
+.empty-state {
+  padding: 48px 16px;
+  text-align: center;
+
+  .empty-message {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    color: var(--md-sys-color-on-surface-variant);
+
+    mat-icon {
+      font-size: 48px;
+      width: 48px;
+      height: 48px;
+      line-height: 48px;
+      opacity: 0.5;
+      font-family: 'Material Icons';
+      color: var(--md-sys-color-on-surface-variant);
+    }
+
+    p {
+      margin: 0;
+      font-size: 16px;
+    }
+  }
+}
+
+// Ensure Material Icons are visible in search field
+.table-header {
+  mat-icon {
+    font-family: 'Material Icons';
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+    line-height: 24px;
+    color: var(--md-sys-color-on-surface-variant);
+  }
+}
+
+mat-paginator {
+  border-top: 1px solid var(--md-sys-color-outline-variant);
+  background: var(--md-sys-color-surface-container-high);
+  color: var(--md-sys-color-on-surface);
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .table-header {
+    .search-field {
+      max-width: 100%;
+    }
+  }
+
+  .data-table {
+    td,
+    th {
+      padding: 8px 12px;
+      font-size: 14px;
+    }
+  }
+}
+

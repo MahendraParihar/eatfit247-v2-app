@@ -1,0 +1,25 @@
+<div class="alert-dialog">
+  <div class="dialog-header">
+    <mat-icon [class]="getColorClass()">{{ getIcon() }}</mat-icon>
+    <h2 mat-dialog-title>{{ data.title }}</h2>
+  </div>
+  <mat-dialog-content>
+    <p>{{ data.message }}</p>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button
+      *ngIf="data.negativeBtnTxt"
+      mat-button
+      (click)="onNegativeClick()"
+    >
+      {{ data.negativeBtnTxt }}
+    </button>
+    <button
+      mat-raised-button
+      [color]="getColorClass()"
+      (click)="onPositiveClick()"
+    >
+      {{ data.positiveBtnTxt || 'OK' }}
+    </button>
+  </mat-dialog-actions>
+</div>

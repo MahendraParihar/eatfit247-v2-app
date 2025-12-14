@@ -4,8 +4,7 @@ export interface ILogin {
 }
 
 export interface IAuthUser {
-  adminUserId: number;
-  adminId?: number; // Alias for compatibility
+  adminId: number;
   firstName?: string;
   lastName?: string;
   emailId: string;

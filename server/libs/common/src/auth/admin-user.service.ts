@@ -4,15 +4,7 @@ import { MstAdminUser } from '../models/admin';
 
 @Injectable()
 export class AdminUserService {
-  constructor(
-    @InjectModel(MstAdminUser) private readonly adminRepository: typeof MstAdminUser,
-  ) {}
-
-  async findByEmailId(emailId: string): Promise<MstAdminUser | null> {
-    return await this.adminRepository.findOne({
-      where: { emailId: emailId },
-    });
-  }
+  constructor(@InjectModel(MstAdminUser) private readonly adminRepository: typeof MstAdminUser) {}
 
   async findById(adminId: number): Promise<MstAdminUser | null> {
     return await this.adminRepository.findOne({

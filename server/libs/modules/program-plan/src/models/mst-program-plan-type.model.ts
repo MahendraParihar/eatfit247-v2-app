@@ -9,8 +9,8 @@ import { InputLengthEnum } from 'eatfit247-shared-lib';
   tableName: 'mst_program_plan_types',
 })
 @Scopes(() => ({
-  list: CommonScopes.list,
-  details: CommonScopes.details,
+  list: CommonScopes.list(),
+  details: CommonScopes.details(),
 }))
 export class MstProgramPlanType extends Model<MstProgramPlanType> {
   @Column({

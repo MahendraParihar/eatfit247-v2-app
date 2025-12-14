@@ -1,0 +1,16 @@
+<mat-menu #appMenu="matMenu">
+  <ng-template matMenuContent>
+    <button mat-menu-item (click)="onPositiveClick($event)">
+      <mat-icon>check</mat-icon>
+      <span>{{ positiveBtnLabel }}</span>
+    </button>
+    <button mat-menu-item (click)="onNegativeClick($event)">
+      <mat-icon>close</mat-icon>
+      <span>{{ negativeBtnLabel }}</span>
+    </button>
+  </ng-template>
+</mat-menu>
+
+<button mat-icon-button [matMenuTriggerFor]="appMenu" [matTooltip]="title">
+  <mat-icon>{{ icon }}</mat-icon>
+</button>

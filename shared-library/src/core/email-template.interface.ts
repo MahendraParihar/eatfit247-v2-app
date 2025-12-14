@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import { IBaseAdminUser } from '../base.interface';
 
 export interface IBaseEmailTemplate {

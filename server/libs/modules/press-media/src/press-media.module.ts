@@ -1,13 +1,16 @@
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
-import { MstAdminUser } from '@server/common';
 import { TxnPressMedia } from './models';
+import { modelRegistry } from '@server/common';
 import { PressMediaController, PublicPressMediaController } from './controllers';
 import { PressMediaService } from './services';
 
+// Register models with the model registry
+modelRegistry.register([TxnPressMedia]);
+
 @Module({
   imports: [
-    SequelizeModule.forFeature([TxnPressMedia, MstAdminUser]),
+    SequelizeModule.forFeature([TxnPressMedia]),
   ],
   controllers: [
     PressMediaController,

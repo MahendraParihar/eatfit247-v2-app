@@ -1,0 +1,73 @@
+/**
+ * EatFit247 Admin - Main Stylesheet
+ * Material 3 Design System
+ * 
+ * ⚠️ AUTHORITATIVE REFERENCE: See DESIGN_SYSTEM.md in project root
+ * ⚠️ STORYBOOK IS PRIMARY SOURCE: http://localhost:4400
+ * If documentation and Storybook differ → Storybook wins
+ */
+
+// Use design tokens and theme (modern Sass module system)
+// @use must come before any other rules
+@use './styles/design-tokens';
+@use './styles/status-tokens';
+@use './styles/theme';
+@use '@angular/material' as mat;
+
+// Include Material core
+@include mat.core();
+
+// Global styles
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: var(--md-sys-color-surface);
+  color: var(--md-sys-color-on-surface);
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+body {
+  font-family: 'Inter', 'Roboto', 'Helvetica Neue', sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+// Material Icons
+.material-icons {
+  font-family: 'Material Icons';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+}
+
+mat-icon {
+  font-family: 'Material Icons';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+}
+
+// Utility classes
+.sidenav-container {
+  height: 100vh;
+  background-color: var(--md-sys-color-surface);
+}
+
+// Status utilities are in _status-tokens.scss
+// Use .status-chip class for status indicators (e.g., <span class="status-chip success">Active</span>)

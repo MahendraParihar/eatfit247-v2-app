@@ -1,8 +1,7 @@
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
-import { MstAdminUser, MstAdminRole } from '@server/common';
+import { MstAdminUser, MstAdminRole, modelRegistry } from '@server/common';
 import { MstAdminRolePermission } from './models/mst-admin-role-permission.model';
-import { MstFranchise } from '../../../common/src/models/mst-franchise.model';
 import {
   AdminUserController,
 } from './controllers';
@@ -10,13 +9,15 @@ import {
   AdminUserService,
 } from './services';
 
+// Register models with the model registry
+modelRegistry.register([MstAdminRolePermission]);
+
 @Module({
   imports: [
     SequelizeModule.forFeature([
       MstAdminUser,
       MstAdminRolePermission,
       MstAdminRole,
-      MstFranchise,
     ]),
   ],
   controllers: [

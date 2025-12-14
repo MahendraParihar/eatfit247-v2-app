@@ -3,50 +3,30 @@ import { InjectModel } from '@nestjs/sequelize';
 import { JwtService } from '@nestjs/jwt';
 import {
   MstAdminUser,
-  TxnAdminUserForgotPasswordOtp,
   TxnAdminLastLoginDetail,
   TxnAdminRefreshToken,
-  TxnAdminPasswordResetToken,
+  TxnAdminPasswordResetToken, AppConfigService, EmailNotificationService, EmailType, LogErrorService,
 } from '@server/common';
 import {
-  ILogin, IToken, IChangePassword, IForgotPasswordRequest, IResetPasswordRequest, IAuthUser,
+  ILogin, IToken, IChangePassword, IForgotPasswordRequest, IAuthUser,
 } from 'eatfit247-shared-lib';
-import { CryptoUtil, Env, CommonFunctionsUtil } from '@server/common';
+import { CryptoUtil, Env } from '@server/common';
 import { UserStatusEnum } from '@server/common';
 import { randomBytes } from 'node:crypto';
 import moment from 'moment';
 
 @Injectable()
 export class AuthService {
-  // In-memory rate limiting (use Redis in production)
-  private loginAttempts = new Map<string, { count: number; lockoutUntil: Date | null }>();
-
   constructor(
     @InjectModel(MstAdminUser) private readonly adminRepository: typeof MstAdminUser,
-    @InjectModel(TxnAdminUserForgotPasswordOtp) private readonly forgotPasswordOtpRepository: typeof TxnAdminUserForgotPasswordOtp,
     @InjectModel(TxnAdminLastLoginDetail) private readonly loginHistoryRepository: typeof TxnAdminLastLoginDetail,
     @InjectModel(TxnAdminRefreshToken) private readonly refreshTokenRepository: typeof TxnAdminRefreshToken,
     @InjectModel(TxnAdminPasswordResetToken) private readonly passwordResetTokenRepository: typeof TxnAdminPasswordResetToken,
     private jwtService: JwtService,
+    private emailNotificationService: EmailNotificationService,
+    private appConfigService: AppConfigService,
+    private logErrorService: LogErrorService,
   ) {}
-
-  async validateUser(username: string, password: string): Promise<IAuthUser> {
-    const user = await this.adminRepository.findOne({ where: [{ emailId: username }] });
-    if (!user || user.adminUserStatusId !== UserStatusEnum.ACTIVE) return null;
-    const ok = await CryptoUtil.compareHash(password, user.password);
-    return ok ? <IAuthUser>{
-      adminUserId: user.adminId,
-      adminId: user.adminId,
-      emailId: user.emailId,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      profilePicture: typeof user.profilePicture === 'string'
-        ? JSON.parse(user.profilePicture || '{}')
-        : user.profilePicture || {},
-      countryCode: user.countryCode,
-      contactNumber: user.contactNumber,
-    } : null;
-  }
 
   async findById(id: number): Promise<IAuthUser | null> {
     const user = await this.adminRepository.findOne({ where: [{ adminId: id }] });
@@ -67,17 +47,6 @@ export class AuthService {
 
   public async signIn(loginDto: ILogin, ipAddress: string, device: string): Promise<IToken> {
     const user: MstAdminUser = await this.findOneByEmail(loginDto.emailId);
-    // // Check rate limiting
-    // const rateLimitKey = `${loginDto.emailId}_${ipAddress}`;
-    // const rateLimit = this.loginAttempts.get(rateLimitKey);
-    // if (rateLimit?.lockoutUntil && rateLimit.lockoutUntil > new Date()) {
-    //   const minutesLeft = Math.ceil(
-    //     (rateLimit.lockoutUntil.getTime() - new Date().getTime()) / 60000,
-    //   );
-    //   throw new UnauthorizedException(
-    //     `Account temporarily locked. Try again in ${minutesLeft} minute(s).`,
-    //   );
-    // }
     if (!user) {
       // this.recordFailedAttempt(rateLimitKey);
       throw new UnauthorizedException('Invalid email or password');
@@ -118,7 +87,7 @@ export class AuthService {
     });
     const refreshPlain = randomBytes(64).toString('hex');
     const refreshHash = await CryptoUtil.generateHash(refreshPlain, +Env.bcryptSaltRounds || 12);
-    const expiresAt = moment().add(30, 'days').toDate();
+    const expiresAt = moment().add(14, 'days').toDate(); // 14 days expiry per auth flow document
     await this.refreshTokenRepository.create({
       adminId: user.adminId,
       tokenHash: refreshHash,
@@ -130,6 +99,20 @@ export class AuthService {
     };
   }
 
+  /**
+   * Refresh Token with Token Rotation
+   * ⚠️ AUTH FLOW: Follow eatfit247-admin-auth-flow.md
+   *
+   * Token Rotation:
+   * 1. Verify old refresh token
+   * 2. Revoke old refresh token in database
+   * 3. Generate new access token (10-15 min expiry)
+   * 4. Generate new refresh token (7-14 days expiry)
+   * 5. Store new refresh token in database
+   *
+   * @param refreshToken - Old refresh token from HttpOnly cookie
+   * @returns New access token and refresh token
+   */
   public async refreshToken(refreshToken: string): Promise<IToken> {
     try {
       // Verify refresh token with refresh secret
@@ -139,17 +122,45 @@ export class AuthService {
       if (!user || user.adminUserStatusId !== UserStatusEnum.ACTIVE) {
         throw new UnauthorizedException('User account is not active');
       }
+      // Token Rotation: Revoke old refresh token
+      // Find and revoke the old refresh token in database
+      const tokens = await this.refreshTokenRepository.findAll({
+        where: { adminId: user.adminId, revoked: false },
+      });
+      // Try to find and revoke the specific token
+      let tokenFound = false;
+      for (const t of tokens) {
+        // Since we're using JWT, we can't directly compare hashes
+        // Instead, we'll revoke all tokens for this user and create a new one
+        // In a production system, you'd store the JWT ID (jti) in the database
+        await this.refreshTokenRepository.update(
+          { revoked: true },
+          { where: { adminRefreshTokenId: t.adminRefreshTokenId } },
+        );
+        tokenFound = true;
+      }
+      // If no tokens found, still proceed (might be first refresh or token already revoked)
+      // Generate new tokens
       const jwtPayload = {
         emailId: payload.emailId,
         adminUserId: payload.adminUserId,
       };
-      // Generate new tokens
       const accessToken = this.jwtService.sign(jwtPayload, {
+        secret: Env.jwtSecret,
         expiresIn: Env.accessTokenTime as any,
       });
       const newRefreshToken = this.jwtService.sign(jwtPayload, {
         expiresIn: Env.refreshTokenTime as any,
         secret: Env.jwtRefreshSecret,
+      });
+      // Token Rotation: Store new refresh token in database
+      const refreshPlain = randomBytes(64).toString('hex');
+      const refreshHash = await CryptoUtil.generateHash(refreshPlain, +Env.bcryptSaltRounds || 12);
+      const expiresAt = moment().add(14, 'days').toDate(); // 14 days expiry
+      await this.refreshTokenRepository.create({
+        adminId: user.adminId,
+        tokenHash: refreshHash,
+        expiresAt,
       });
       return { accessToken, refreshToken: newRefreshToken };
     } catch (e) {
@@ -160,7 +171,7 @@ export class AuthService {
   public async signOut(adminId: number, refreshToken?: string): Promise<void> {
     if (refreshToken) {
       // revoke specific token
-      const tokens = await this.refreshTokenRepository.findAll({ where: { adminId: { id: adminId }, revoked: false } });
+      const tokens = await this.refreshTokenRepository.findAll({ where: { adminId: adminId, revoked: false } });
       for (const t of tokens) {
         const match = await CryptoUtil.compareHash(refreshToken, t.tokenHash);
         if (match) {
@@ -173,7 +184,7 @@ export class AuthService {
     await this.refreshTokenRepository.update({ revoked: true }, { where: { adminId: adminId } });
   }
 
-  public async forgotPassword(forgotPasswordDto: IForgotPasswordRequest, ipAddress: string): Promise<string> {
+  public async forgotPassword(forgotPasswordDto: IForgotPasswordRequest, ipAddress: string, userAgent?: string): Promise<string> {
     const user: MstAdminUser = await this.findOneByEmail(forgotPasswordDto.emailId);
     if (!user) {
       throw new NotFoundException('Account not found');
@@ -184,27 +195,52 @@ export class AuthService {
     if (user.adminUserStatusId === UserStatusEnum.IN_ACTIVE) {
       throw new BadRequestException(user.deactivationReason || 'Account is inactive');
     }
-    // Inactivate previous OTPs
-    await this.inactiveLastOtpByAdminId(user.adminId);
     // Generate new OTP
     const tokenPlain = randomBytes(32).toString('hex');
-    const tokenHash = await CryptoUtil.generateHash(tokenPlain, +Env.bcryptSaltRounds || 12);
+    const tokenHash = await CryptoUtil.generateHash(tokenPlain, +Env.bcryptSaltRounds);
     const expiresAt = moment().add(Env.passwordResetExpirationMin, 'minutes').toDate();
     await this.passwordResetTokenRepository.create({
       adminId: user.adminId,
       tokenHash,
       expiresAt,
       createdIp: ipAddress,
+      userAgent: userAgent || null,
     });
-    // send email via EmailService (in libs/core/email)
-    const resetLink = `http://localhost:4200/reset-password?token=${tokenPlain}&uid=${user.id}`;
-    // this.emailService.sendReset(user.email, resetLink);
-    return resetLink; // for dev; in prod don't return, just email
+    // Generate reset link
+    const resetLink = `${this.appConfigService.get('CLIENT_URL')}/reset-password?token=${tokenPlain}&uid=${user.emailId}`;
+    try {
+      const userName = user.firstName && user.lastName
+        ? `${user.firstName} ${user.lastName}`
+        : user.firstName || user.emailId;
+      await this.emailNotificationService.sendEmailByType({
+        to: user.emailId,
+        type: EmailType.FORGOT_PASSWORD,
+        data: {
+          userName,
+          resetLink,
+        },
+      });
+    } catch (error) {
+      await this.logErrorService.logError(
+        error instanceof Error ? error : new Error(String(error)),
+        {
+          controller: 'AuthService',
+          methodName: 'forgotPassword',
+        },
+      );
+    }
+    return 'Password reset link has been sent to your email address.';
   }
 
   public async resetPassword(tokenPlain: string, newPassword: string, requestedIp: string): Promise<boolean> {
-    const tokens = await this.passwordResetTokenRepository.findAll({ where: { used: false } });
+    if (!tokenPlain || !newPassword) {
+      throw new BadRequestException('Token and new password are required');
+    }
+    // Validate password strength
+    this.validatePasswordStrength(newPassword);
+    const tokens = await this.passwordResetTokenRepository.findAll({ where: { used: false }, nest: true, raw: true });
     for (const t of tokens) {
+      if (!t.tokenHash) continue;
       const ok = await CryptoUtil.compareHash(tokenPlain, t.tokenHash);
       if (!ok) continue;
       if (moment().isAfter(moment(t.expiresAt))) {
@@ -219,50 +255,43 @@ export class AuthService {
         password: pwHash,
         modifiedIp: requestedIp,
       }, { where: { adminId: t.adminId } });
+      // Get user details for email
+      const user = await this.findOneById(t.adminId);
       // Revoke all refresh tokens
       await this.refreshTokenRepository.update({ revoked: true }, { where: { adminId: t.adminId } });
+      // Send password reset success email using generic email service
+      if (user) {
+        try {
+          const userName = user.firstName && user.lastName
+            ? `${user.firstName} ${user.lastName}`
+            : user.firstName || user.emailId;
+          const resetTime = new Date().toLocaleString('en-US', {
+            dateStyle: 'long',
+            timeStyle: 'short',
+          });
+          await this.emailNotificationService.sendEmailByType({
+            to: user.emailId,
+            type: EmailType.PASSWORD_RESET_SUCCESS,
+            data: {
+              userName,
+              resetTime,
+            },
+          });
+        } catch (error) {
+          // Log error but don't fail the request
+          await this.logErrorService.logError(
+            error instanceof Error ? error : new Error(String(error)),
+            {
+              controller: 'AuthService',
+              methodName: 'resetPassword',
+            },
+          );
+        }
+      }
       return true;
     }
-    // throw new BadRequestException('Invalid reset token');
-    // const user: MstAdminUser = await this.findOneByEmail(resetPasswordDto.emailId);
-    // if (!user) {
-    //   throw new NotFoundException('Account not found');
-    // }
-    // if (resetPasswordDto.password !== resetPasswordDto.repeatPassword) {
-    //   throw new BadRequestException('Passwords do not match');
-    // }
-    // // Validate password strength
-    // this.validatePasswordStrength(resetPasswordDto.password);
-    // // Verify OTP
-    // const activeOtp = await this.findLastActiveOtp(user.adminId, resetPasswordDto.otp);
-    // if (!activeOtp || activeOtp.otp !== resetPasswordDto.otp) {
-    //   throw new BadRequestException('Invalid or expired OTP');
-    // }
-    // // Check OTP expiry (30 minutes)
-    // const otpAge = Date.now() - activeOtp.createdAt.getTime();
-    // const thirtyMinutes = 30 * 60 * 1000;
-    // if (otpAge > thirtyMinutes) {
-    //   throw new BadRequestException('OTP has expired. Please request a new one.');
-    // }
-    // // Hash new password
-    // const hashedPassword = await CryptoUtil.generateHash(resetPasswordDto.password);
-    // // Update password
-    // await this.adminRepository.update(
-    //   {
-    //     password: hashedPassword,
-    //     passwordTemp: hashedPassword,
-    //     modifiedBy: user.adminId,
-    //     modifiedIp: ipAddress,
-    //   },
-    //   {
-    //     where: { adminId: user.adminId },
-    //   },
-    // );
-    // // Inactivate OTP
-    // await this.forgotPasswordOtpRepository.update(
-    //   { active: false },
-    //   { where: { forgotPasswordOtpId: activeOtp.forgotPasswordOtpId } },
-    // );
+    // If we get here, no matching token was found
+    throw new BadRequestException('Invalid or expired reset token');
   }
 
   public async changePassword(changePasswordDto: IChangePassword, adminId: number, ipAddress: string): Promise<void> {
@@ -275,7 +304,7 @@ export class AuthService {
     }
     // Validate password strength
     this.validatePasswordStrength(changePasswordDto.newPassword);
-    // Verify current password
+    // Verify the current password
     const isMatch = await CryptoUtil.compareHash(changePasswordDto.password, user.password);
     if (!isMatch) {
       throw new UnauthorizedException('Current password is incorrect');
@@ -324,36 +353,6 @@ export class AuthService {
     });
   }
 
-  private async inactiveLastOtpByAdminId(adminId: number): Promise<void> {
-    await this.forgotPasswordOtpRepository.update(
-      { active: false },
-      { where: { adminId: adminId, active: true } },
-    );
-  }
-
-  private async findLastActiveOtp(adminId: number, otp: string): Promise<TxnAdminUserForgotPasswordOtp | null> {
-    return await this.forgotPasswordOtpRepository.findOne({
-      where: {
-        adminId: adminId,
-        otp: otp,
-        active: true,
-      },
-      order: [['createdAt', 'DESC']],
-    });
-  }
-
-  private async sendForgotPasswordOtpEmail(user: MstAdminUser, otp: string): Promise<void> {
-    try {
-      // Find password reset email template (assuming template ID 1 or use a constant)
-      // For now, we'll use a simple approach
-      // Log OTP for now - email service can be integrated later
-      console.log(`Password reset OTP for ${user.emailId}: ${otp}`);
-    } catch (error) {
-      // Log error but don't throw - OTP is already saved in database
-      console.error('Failed to send forgot password OTP email:', error.message);
-    }
-  }
-
   private validatePasswordStrength(password: string): void {
     if (!password || password.length < 8) {
       throw new BadRequestException('Password must be at least 8 characters long');
@@ -372,26 +371,6 @@ export class AuthService {
     }
     if (!/[#?!@$%^&*-]/.test(password)) {
       throw new BadRequestException('Password must contain at least one special character (#?!@$%^&*-)');
-    }
-  }
-
-  private recordFailedAttempt(key: string): void {
-    const current = this.loginAttempts.get(key) || { count: 0, lockoutUntil: null };
-    current.count += 1;
-    if (current.count >= Env.maxLoginAttempts) {
-      current.lockoutUntil = new Date(
-        Date.now() + Env.lockoutDurationMinutes * 60 * 1000,
-      );
-    }
-    this.loginAttempts.set(key, current);
-    // Clean up old entries
-    if (this.loginAttempts.size > 1000) {
-      const now = new Date();
-      for (const [k, v] of this.loginAttempts.entries()) {
-        if (v.lockoutUntil && v.lockoutUntil < now) {
-          this.loginAttempts.delete(k);
-        }
-      }
     }
   }
 }

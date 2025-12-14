@@ -1,0 +1,47 @@
+<div class="address-form" [formGroup]="addressFormGroup">
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Country</mat-label>
+    <mat-select formControlName="countryId">
+      <mat-option *ngFor="let country of getCountries()" [value]="country.id">
+        {{ country.label }}
+      </mat-option>
+    </mat-select>
+    <app-input-error [control]="addressFormGroup.get('countryId')" controlName="Country"></app-input-error>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>State</mat-label>
+    <mat-select formControlName="stateId" [disabled]="!addressFormGroup.get('countryId')?.value">
+      <mat-option *ngFor="let state of getStates()" [value]="state.id">
+        {{ state.label }}
+      </mat-option>
+    </mat-select>
+    <app-input-error [control]="addressFormGroup.get('stateId')" controlName="State"></app-input-error>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Address</mat-label>
+    <textarea matInput formControlName="address" rows="3"></textarea>
+    <app-input-error [control]="addressFormGroup.get('address')" controlName="Address"></app-input-error>
+  </mat-form-field>
+
+  <div class="row">
+    <mat-form-field appearance="outline" class="half-width">
+      <mat-label>Pin Code</mat-label>
+      <input matInput formControlName="pinCode" type="text" />
+      <app-input-error [control]="addressFormGroup.get('pinCode')" controlName="Pin Code"></app-input-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="half-width">
+      <mat-label>Latitude</mat-label>
+      <input matInput formControlName="latitude" type="text" />
+      <app-input-error [control]="addressFormGroup.get('latitude')" controlName="Latitude"></app-input-error>
+    </mat-form-field>
+  </div>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Longitude</mat-label>
+    <input matInput formControlName="longitude" type="text" />
+    <app-input-error [control]="addressFormGroup.get('longitude')" controlName="Longitude"></app-input-error>
+  </mat-form-field>
+</div>

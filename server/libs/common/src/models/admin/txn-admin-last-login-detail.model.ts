@@ -43,6 +43,8 @@ export class TxnAdminLastLoginDetail extends Model<TxnAdminLastLoginDetail> {
   @Column({
     allowNull: false,
     field: 'last_login_timestamp',
+    type: DataType.DATE,
+    defaultValue: DataType.NOW,
   })
   lastLoginTimestamp: Date;
 

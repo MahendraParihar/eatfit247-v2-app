@@ -1,2 +1,2 @@
-export * from './email-template.controller';
+export * from './email.controller';
 

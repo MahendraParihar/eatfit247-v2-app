@@ -1,6 +1,6 @@
-export * from './src/email.module';
-export * from './src/models';
-export * from './src/services';
+export * from './email.module';
+export * from './src/services/email.service';
+export * from './src/controllers/admin/email.controller';
 export * from './src/dto';
-export * from './src/controllers';
+export * from './src/interfaces/email-data.interface';
 

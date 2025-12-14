@@ -10,11 +10,11 @@ async function getLocalConfiguration(module: string[]) {
     where: {
       module: module,
     },
+    nest: true,
+    raw: true,
   });
 }
-
 export const APP_CONFIG_VALUES = 'APP_CONFIG_VALUES';
-
 export async function AppConfigFactory(modules: string[]) {
   const configs = await getLocalConfiguration(modules);
   if (configs && configs.length > 0) {

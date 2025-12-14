@@ -1,6 +1,6 @@
 import { BelongsTo, Column, CreatedAt, DataType, Model, Scopes, Table, UpdatedAt } from 'sequelize-typescript';
 import { MstAdminUser, CommonScopes } from '@server/common';
-import { InputLengthEnum } from 'eatfit247-shared-lib';
+import { IMediaUpload, InputLengthEnum } from 'eatfit247-shared-lib';
 
 @Table({
   freezeTableName: true,
@@ -9,8 +9,8 @@ import { InputLengthEnum } from 'eatfit247-shared-lib';
   tableName: 'mst_call_purposes',
 })
 @Scopes(() => ({
-  list: CommonScopes.list,
-  details: CommonScopes.details,
+  list: CommonScopes.list(),
+  details: CommonScopes.details(),
 }))
 export class MstCallPurpose extends Model<MstCallPurpose> {
   @Column({
@@ -33,7 +33,7 @@ export class MstCallPurpose extends Model<MstCallPurpose> {
     field: 'image_path',
     type: DataType.JSONB,
   })
-  imagePath: string;
+  imagePath: IMediaUpload[];
 
   @Column({
     allowNull: false,

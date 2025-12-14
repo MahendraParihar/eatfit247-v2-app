@@ -5,7 +5,9 @@ import { AppService } from './app.service';
 
 @Module({
   imports: [
-    CommonModule.forRoot([]),
+    // CommonModule initializes database connection with only common models
+    // Each lib module registers its own models via SequelizeModule.forFeature()
+    CommonModule.forRoot(),
   ],
   controllers: [AppController],
   providers: [AppService],

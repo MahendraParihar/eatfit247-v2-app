@@ -1,0 +1,19 @@
+.social-link-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.social-link-item {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.social-link-item mat-form-field {
+  flex: 1;
+}
+
+.link-field {
+  flex: 2;
+}

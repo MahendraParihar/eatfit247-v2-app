@@ -85,6 +85,7 @@ CREATE TABLE IF NOT EXISTS txn_admin_password_reset_tokens
     admin_password_reset_token_id SERIAL      NOT NULL PRIMARY KEY,
     admin_id                      INT         NOT NULL,
     token_hash                    TEXT        NOT NULL,
+    user_agent                    text,
     expires_at                    date        not null,
     used                          boolean     not null default false,
     created_at                    TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -98,3 +99,44 @@ VALUES (DEFAULT, 'JWT_ACCESS_SECRET', 'GrdlksuiFEFjbwiuwkjbcwfdkjhsa&UFehjc7iuid
 
 INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
 VALUES (DEFAULT, 'JWT_REFRESH_SECRET', 'GrdlksuiFEFjbwiuwkjbcwfdkjhsa&dkldg74682jsadkfly478', 'Auth');
+
+alter table public.mst_email_templates
+    alter column body type varchar(100) using body::varchar(100);
+
+INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
+VALUES (DEFAULT, 'CLIENT_URL', 'http://localhost:4200', 'Common');
+
+INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
+VALUES
+    (DEFAULT, 'SYSTEM_EMAIL_USER', 'info@eatfit247.com', 'Email'),
+    (DEFAULT, 'SYSTEM_EMAIL_PASSWORD', 'shweta@123456789', 'Email'),
+    (DEFAULT, 'SYSTEM_EMAIL_HOST', 'server.eatfit247.com', 'Email'),
+    (DEFAULT, 'SYSTEM_EMAIL_ENABLE', 'true', 'Email'),
+    (DEFAULT, 'SYSTEM_EMAIL_PORT', '587', 'Email');
+
+alter table public.log_errors
+    alter column environment type varchar(250) using environment::varchar(250);
+
+alter table public.log_errors
+    alter column browser type varchar(250) using browser::varchar(250);
+
+alter table public.log_errors
+    alter column host_url type text using host_url::text;
+
+alter table public.log_errors
+    alter column server_name type varchar(250) using server_name::varchar(250);
+
+alter table public.log_errors
+    alter column controller type varchar(250) using controller::varchar(250);
+
+alter table public.log_errors
+    alter column method_name type varchar(250) using method_name::varchar(250);
+
+alter table public.log_errors
+    alter column exception_type type varchar(250) using exception_type::varchar(250);
+
+alter table public.log_errors
+    alter column exception_source type varchar(250) using exception_source::varchar(250);
+
+alter table public.txn_admin_password_reset_tokens
+    alter column expires_at type timestamptz using expires_at::timestamptz;
