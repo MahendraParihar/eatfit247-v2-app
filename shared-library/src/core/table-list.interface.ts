@@ -1,7 +1,7 @@
 import { ICommonSEO } from '../base.interface';
 
 export interface ITableList<T> extends ICommonSEO {
-  data: T[];
+  tableData: T[];
   count: number;
 }
 

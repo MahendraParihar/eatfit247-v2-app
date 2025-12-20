@@ -34,7 +34,7 @@ export class FaqCategoryService {
     });
     const resList: IFaqCategory[] = rows.map((item: any) => {return this.convertToModel(item);});
     return {
-      data: resList,
+      tableData: resList,
       count: count,
     };
   }

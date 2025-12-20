@@ -87,7 +87,7 @@ export class ProgramService {
     }
 
     return <ITableList<IProgram>>{
-      data: resList,
+      tableData: resList,
       count: count,
     };
   }

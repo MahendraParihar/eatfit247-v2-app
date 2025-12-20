@@ -6,14 +6,16 @@ import {
   IManageLegalPage,
   ITableList,
   IBasicSearch,
+  ConfigParam,
 } from 'eatfit247-shared-lib';
-import { SearchUtil, CommonFunctionsUtil } from '@server/common';
+import { SearchUtil, CommonFunctionsUtil, AppConfigService } from '@server/common';
 import { LegalPagesModel } from '../models/legal-pages.model';
 
 @Injectable()
 export class LegalPagesService {
   constructor(
     @InjectModel(LegalPagesModel) private readonly legalPagesRepository: typeof LegalPagesModel,
+    private appConfigService: AppConfigService,
   ) {}
 
   public async findAll(searchDto: IBasicSearch): Promise<ITableList<ILegalPageList>> {
@@ -33,7 +35,7 @@ export class LegalPagesService {
 
     const resList: ILegalPageList[] = rows.map((item: any) => {return this.convertToModel(item);});
     return {
-      data: resList,
+      tableData: resList,
       count: count,
     };
   }
@@ -47,7 +49,10 @@ export class LegalPagesService {
       metaTitle: item.metaTitle,
       metaDescription: item.metaDescription,
       tags: item.tags,
-      imagePath: CommonFunctionsUtil.getImagesObj(item.imagePath),
+      imagePath: CommonFunctionsUtil.buildImageUrl(
+        item.imagePath,
+        this.appConfigService.getString(ConfigParam.CLIENT_URL),
+      ),
       active: item.active,
       createdBy: item.createdBy,
       updatedBy: item.updatedBy,

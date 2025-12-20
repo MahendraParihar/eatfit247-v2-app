@@ -1,13 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { MstProgramCategory } from '../models';
-import { ITableList, IBasicSearch, IProgramCategory, IManageProgramCategory, IDropdownItem } from 'eatfit247-shared-lib';
-import { SearchUtil, CommonFunctionsUtil } from '@server/common';
+import { ITableList, IBasicSearch, IProgramCategory, IManageProgramCategory, IDropdownItem, ConfigParam } from 'eatfit247-shared-lib';
+import { SearchUtil, CommonFunctionsUtil, AppConfigService } from '@server/common';
 
 @Injectable()
 export class ProgramCategoryService {
   constructor(
     @InjectModel(MstProgramCategory) private readonly programCategoryRepository: typeof MstProgramCategory,
+    private appConfigService: AppConfigService,
   ) {}
 
   public async findAll(searchDto: IBasicSearch): Promise<ITableList<IProgramCategory>> {
@@ -27,7 +28,7 @@ export class ProgramCategoryService {
 
     const resList: IProgramCategory[] = rows.map((item: any) => {return this.convertToModel(item);});
     return {
-      data: resList,
+      tableData: resList,
       count: count,
     };
   }
@@ -39,7 +40,10 @@ export class ProgramCategoryService {
       programCategory: item.programCategory,
       url: item.url,
       active: item.active,
-      imagePath: CommonFunctionsUtil.getImagesObj(item.imagePath),
+      imagePath: CommonFunctionsUtil.buildImageUrl(
+        item.imagePath,
+        this.appConfigService.getString(ConfigParam.CLIENT_URL),
+      ),
       createdBy: item.createdBy,
       updatedBy: item.modifiedBy,
       createdAt: item.createdAt,

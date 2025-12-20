@@ -1,13 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { MstHealthParameter } from '../models';
-import { ITableList, IBasicSearch, IHealthParameter, IManageHealthParameter, IDropdownItem } from 'eatfit247-shared-lib';
-import { SearchUtil, CommonFunctionsUtil } from '@server/common';
+import { ITableList, IBasicSearch, IHealthParameter, IManageHealthParameter, IDropdownItem, ConfigParam } from 'eatfit247-shared-lib';
+import { SearchUtil, CommonFunctionsUtil, AppConfigService } from '@server/common';
 
 @Injectable()
 export class HealthParameterService {
   constructor(
     @InjectModel(MstHealthParameter) private readonly healthParameterRepository: typeof MstHealthParameter,
+    private appConfigService: AppConfigService,
   ) {}
 
   public async findAll(searchDto: IBasicSearch): Promise<ITableList<IHealthParameter>> {
@@ -26,7 +27,7 @@ export class HealthParameterService {
     });
 
     const resList: IHealthParameter[] = rows.map((item: any) => {return this.convertToModel(item);});
-    return { data: resList, count: count };
+    return { tableData: resList, count: count };
   }
 
   private convertToModel(item: any): IHealthParameter {
@@ -35,7 +36,10 @@ export class HealthParameterService {
       id: item.healthParameterId,
       healthParameter: item.healthParameter,
       hintText: item.hintText,
-      imagePath: CommonFunctionsUtil.getImagesObj(item.imagePath),
+      imagePath: CommonFunctionsUtil.buildImageUrl(
+        item.imagePath,
+        this.appConfigService.getString(ConfigParam.CLIENT_URL),
+      ),
       isLength: item.isLength,
       sequence: item.sequence,
       fieldType: item.fieldType,

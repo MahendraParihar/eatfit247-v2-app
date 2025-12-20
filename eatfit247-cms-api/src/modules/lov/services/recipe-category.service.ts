@@ -44,7 +44,7 @@ export class RecipeCategoryService {
     }
 
     return <ITableList<IRecipeCategory>>{
-      data: resList,
+      tableData: resList,
       count: rows.length,
     };
   }

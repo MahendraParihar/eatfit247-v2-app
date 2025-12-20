@@ -60,7 +60,7 @@ export class BloodSugarService {
       resList.push(iEvent);
     }
     return <ITableList<ILov>>{
-      data: resList,
+      tableData: resList,
       count: count,
     };
   }

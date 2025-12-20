@@ -1,13 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { MstBlogCategory } from '../models';
-import { ITableList, IStatusChange, IBasicSearch, IBlogCategory, IManageBlogCategory } from 'eatfit247-shared-lib';
-import { SearchUtil, CommonFunctionsUtil } from '@server/common';
+import { ITableList, IStatusChange, IBasicSearch, IBlogCategory, IManageBlogCategory, ConfigParam } from 'eatfit247-shared-lib';
+import { SearchUtil, CommonFunctionsUtil, AppConfigService } from '@server/common';
 
 @Injectable()
 export class BlogCategoryService {
   constructor(
     @InjectModel(MstBlogCategory) private readonly blogCategoryRepository: typeof MstBlogCategory,
+    private appConfigService: AppConfigService,
   ) {}
 
   public async findAll(searchDto: IBasicSearch): Promise<ITableList<IBlogCategory>> {
@@ -25,7 +26,7 @@ export class BlogCategoryService {
     });
     const resList = rows.map((item: any) => {return this.convertToModel(item);});
     return {
-      data: resList,
+      tableData: resList,
       count: count,
     };
   }
@@ -37,7 +38,10 @@ export class BlogCategoryService {
       blogCategory: item.blogCategory,
       url: item.url,
       active: item.active,
-      imagePath: CommonFunctionsUtil.getImagesObj(item.imagePath),
+      imagePath: CommonFunctionsUtil.buildImageUrl(
+        item.imagePath,
+        this.appConfigService.getString(ConfigParam.CLIENT_URL),
+      ),
       createdBy: item.createdBy,
       updatedBy: item.modifiedBy,
       createdAt: item.createdAt,

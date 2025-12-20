@@ -113,7 +113,7 @@ export class MemberPaymentService {
       resList.push(this.convertDBObject(s));
     }
     return <ITableList<IMemberPayment>>{
-      data: resList,
+      tableData: resList,
       count: count,
     };
   }

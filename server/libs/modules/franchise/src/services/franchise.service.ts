@@ -1,12 +1,20 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { ITableList, IBasicSearch, IFranchise, IManageFranchise, IDropdownItem } from 'eatfit247-shared-lib';
-import { SearchUtil, CommonFunctionsUtil, MstFranchise } from '@server/common';
+import {
+  ITableList,
+  IBasicSearch,
+  IFranchise,
+  IManageFranchise,
+  IDropdownItem,
+  ConfigParam,
+} from 'eatfit247-shared-lib';
+import { SearchUtil, CommonFunctionsUtil, MstFranchise, AppConfigService } from '@server/common';
 
 @Injectable()
 export class FranchiseService {
   constructor(
     @InjectModel(MstFranchise) private readonly franchiseRepository: typeof MstFranchise,
+    private appConfigService: AppConfigService,
   ) {}
 
   public async findAll(searchDto: IBasicSearch): Promise<ITableList<IFranchise>> {
@@ -24,7 +32,7 @@ export class FranchiseService {
     });
     const resList: IFranchise[] = rows.map((item: any) => {return this.convertToModel(item);});
     return {
-      data: resList,
+      tableData: resList,
       count: count,
     };
   }
@@ -34,7 +42,10 @@ export class FranchiseService {
       franchiseId: item.franchiseId,
       id: item.franchiseId,
       companyName: item.companyName,
-      logo: CommonFunctionsUtil.getImagesObj(item.logo),
+      logo: CommonFunctionsUtil.buildImageUrl(
+        item.logo,
+        this.appConfigService.getString(ConfigParam.CLIENT_URL),
+      ),
       firstName: item.firstName,
       lastName: item.lastName,
       emailId: item.emailId,
@@ -52,8 +63,12 @@ export class FranchiseService {
       updatedBy: item.modifiedBy,
       createdAt: item.createdAt,
       updatedAt: item.updatedAt,
-      createdByUser: item.createdByUser ? CommonFunctionsUtil.getAdminShortInfo(item.createdByUser, 'createdByUser') : undefined,
-      updatedByUser: item.updatedByUser ? CommonFunctionsUtil.getAdminShortInfo(item.updatedByUser, 'updatedByUser') : undefined,
+      createdByUser: item.createdByUser
+        ? CommonFunctionsUtil.getAdminShortInfo(item.createdByUser, 'createdByUser')
+        : undefined,
+      updatedByUser: item.updatedByUser
+        ? CommonFunctionsUtil.getAdminShortInfo(item.updatedByUser, 'updatedByUser')
+        : undefined,
     };
   }
 

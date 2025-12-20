@@ -1,13 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { MstRecipe } from '../models';
-import { ITableList, IBasicSearch, IRecipe, IManageRecipe } from 'eatfit247-shared-lib';
-import { SearchUtil, CommonFunctionsUtil } from '@server/common';
+import { ITableList, IBasicSearch, IRecipe, IManageRecipe, ConfigParam } from 'eatfit247-shared-lib';
+import { SearchUtil, CommonFunctionsUtil, AppConfigService } from '@server/common';
 
 @Injectable()
 export class RecipeService {
   constructor(
     @InjectModel(MstRecipe) private readonly recipeRepository: typeof MstRecipe,
+    private appConfigService: AppConfigService,
   ) {}
 
   public async findAll(searchDto: IBasicSearch): Promise<ITableList<IRecipe>> {
@@ -27,7 +28,7 @@ export class RecipeService {
 
     const resList: IRecipe[] = rows.map((item: any) => {return this.convertToModel(item);});
     return {
-      data: resList,
+      tableData: resList,
       count: count,
     };
   }
@@ -44,7 +45,10 @@ export class RecipeService {
       ingredient: item.ingredient,
       howToMake: item.howToMake,
       benefits: item.benefits,
-      imagePath: CommonFunctionsUtil.getImagesObj(item.imagePath),
+      imagePath: CommonFunctionsUtil.buildImageUrl(
+        item.imagePath,
+        this.appConfigService.getString(ConfigParam.CLIENT_URL),
+      ),
       servingCount: item.servingCount,
       tags: item.tags,
       downloadPath: item.downloadPath,

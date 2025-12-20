@@ -62,12 +62,12 @@ export class BlogController {
     const categories = await this.blogCategoryService.findAll({ page: 0, limit: 1000 });
     const authors = await this.blogAuthorService.findAll({ page: 0, limit: 1000 });
     return {
-      blogCategory: categories.data.map((item: any) => ({
+      blogCategory: categories.tableData.map((item: any) => ({
         id: item.blogCategoryId,
         label: item.blogCategory,
         isActive: item.active,
       })),
-      blogAuthor: authors.data.map((item: any) => ({
+      blogAuthor: authors.tableData.map((item: any) => ({
         id: item.blogAuthorId,
         label: `${item.firstName} ${item.lastName}`,
         isActive: item.active,

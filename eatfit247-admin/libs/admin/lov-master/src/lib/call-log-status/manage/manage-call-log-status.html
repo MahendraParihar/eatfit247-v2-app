@@ -1,0 +1,55 @@
+<mat-card class="form-card">
+  <mat-card-header>
+    <mat-card-title>{{ pageTitle }}</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <form [formGroup]="formGroup" (ngSubmit)="onSubmit()">
+      <div class="form-fields">
+        <mat-form-field class="full-width">
+          <mat-label>Call Log Status</mat-label>
+          <input
+            matInput
+            type="text"
+            formControlName="callLogStatus"
+            placeholder="Enter call log status"
+            [maxlength]="50"
+            [minlength]="2"
+          />
+          <mat-hint align="end">
+            {{ formGroup.get('callLogStatus')?.value?.length || 0 }}/50
+          </mat-hint>
+          <app-input-error [control]="formGroup.get('callLogStatus')" controlName="Call Log Status"></app-input-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Status</mat-label>
+          <mat-select formControlName="active">
+            <mat-option [value]="true">Active</mat-option>
+            <mat-option [value]="false">Inactive</mat-option>
+          </mat-select>
+          <app-input-error [control]="formGroup.get('active')" controlName="Status"></app-input-error>
+        </mat-form-field>
+
+      </div>
+
+      <div class="form-actions">
+        <button
+          type="button"
+          mat-stroked-button
+          (click)="onCancel()"
+        >
+          <mat-icon>close</mat-icon>
+          Cancel
+        </button>
+        <button
+          type="submit"
+          mat-raised-button
+          color="primary"
+        >
+          <mat-icon>{{ isEditMode ? 'save' : 'add' }}</mat-icon>
+          {{ isEditMode ? 'Update' : 'Create' }}
+        </button>
+      </div>
+    </form>
+  </mat-card-content>
+</mat-card>

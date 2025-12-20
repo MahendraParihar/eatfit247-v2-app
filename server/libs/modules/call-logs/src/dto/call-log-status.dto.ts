@@ -1,4 +1,4 @@
-import { IsBoolean, IsNotEmpty, MaxLength, MinLength } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsNumber, IsOptional, MaxLength, MinLength } from 'class-validator';
 import { InputLengthEnum, IManageCallLogStatus } from 'eatfit247-shared-lib';
 
 export class CreateCallLogStatusDto implements IManageCallLogStatus {
@@ -11,6 +11,8 @@ export class CreateCallLogStatusDto implements IManageCallLogStatus {
   @IsBoolean()
   active: boolean;
 
+  @IsOptional()
+  @IsNumber()
   callLogStatusId?: number;
 }
 

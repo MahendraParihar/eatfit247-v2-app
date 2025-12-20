@@ -1,13 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { MstRecipeCuisine } from '../models';
-import { ITableList, IBasicSearch, IRecipeCuisine, IManageRecipeCuisine, IDropdownItem } from 'eatfit247-shared-lib';
-import { SearchUtil, CommonFunctionsUtil } from '@server/common';
+import { ITableList, IBasicSearch, IRecipeCuisine, IManageRecipeCuisine, IDropdownItem, ConfigParam } from 'eatfit247-shared-lib';
+import { SearchUtil, CommonFunctionsUtil, AppConfigService } from '@server/common';
 
 @Injectable()
 export class RecipeCuisineService {
   constructor(
     @InjectModel(MstRecipeCuisine) private readonly recipeCuisineRepository: typeof MstRecipeCuisine,
+    private appConfigService: AppConfigService,
   ) {}
 
   public async findAll(searchDto: IBasicSearch): Promise<ITableList<IRecipeCuisine>> {
@@ -27,7 +28,7 @@ export class RecipeCuisineService {
 
     const resList: IRecipeCuisine[] = rows.map((item: any) => {return this.convertToModel(item);});
     return {
-      data: resList,
+      tableData: resList,
       count: count,
     };
   }
@@ -37,7 +38,10 @@ export class RecipeCuisineService {
       recipeCuisineId: item.recipeCuisineId,
       id: item.recipeCuisineId,
       recipeCuisine: item.recipeCuisine,
-      imagePath: CommonFunctionsUtil.getImagesObj(item.imagePath),
+      imagePath: CommonFunctionsUtil.buildImageUrl(
+        item.imagePath,
+        this.appConfigService.getString(ConfigParam.CLIENT_URL),
+      ),
       active: item.active,
       createdBy: item.createdBy,
       updatedBy: item.modifiedBy,

@@ -1,13 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { MstGender } from '../models';
-import { ITableList, IBasicSearch, IGender, IManageGender, IDropdownItem } from 'eatfit247-shared-lib';
-import { SearchUtil, CommonFunctionsUtil } from '@server/common';
+import { ITableList, IBasicSearch, IGender, IManageGender, IDropdownItem, ConfigParam } from 'eatfit247-shared-lib';
+import { SearchUtil, CommonFunctionsUtil, AppConfigService } from '@server/common';
 
 @Injectable()
 export class GenderService {
   constructor(
     @InjectModel(MstGender) private readonly genderRepository: typeof MstGender,
+    private appConfigService: AppConfigService,
   ) {}
 
   public async findAll(searchDto: IBasicSearch): Promise<ITableList<IGender>> {
@@ -27,7 +28,7 @@ export class GenderService {
 
     const resList: IGender[] = rows.map((item: any) => {return this.convertToModel(item);});
     return {
-      data: resList,
+      tableData: resList,
       count: count,
     };
   }
@@ -37,7 +38,10 @@ export class GenderService {
       genderId: item.genderId,
       id: item.genderId,
       gender: item.gender,
-      imagePath: CommonFunctionsUtil.getImagesObj(item.imagePath),
+      imagePath: CommonFunctionsUtil.buildImageUrl(
+        item.imagePath,
+        this.appConfigService.getString(ConfigParam.CLIENT_URL),
+      ),
       active: item.active,
       createdBy: item.createdBy,
       updatedBy: item.modifiedBy,

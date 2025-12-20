@@ -81,7 +81,7 @@ export class MemberPocketGuideService {
     }
 
     return <ITableList<IMemberPocketGuide>>{
-      data: resList,
+      tableData: resList,
       count: count,
     };
   }
@@ -146,7 +146,7 @@ export class MemberPocketGuideService {
     }
 
     return <ITableList<IMemberPocketGuide>>{
-      data: resList,
+      tableData: resList,
       count: count,
     };
   }

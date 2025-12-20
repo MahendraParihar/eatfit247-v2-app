@@ -1,13 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { MstReferrer } from '../models';
-import { ITableList, IBasicSearch, IReferrer, IManageReferrer } from 'eatfit247-shared-lib';
-import { SearchUtil, CommonFunctionsUtil } from '@server/common';
+import { ITableList, IBasicSearch, IReferrer, IManageReferrer, ConfigParam } from 'eatfit247-shared-lib';
+import { SearchUtil, CommonFunctionsUtil, AppConfigService } from '@server/common';
 
 @Injectable()
 export class ReferrerService {
   constructor(
     @InjectModel(MstReferrer) private readonly referrerRepository: typeof MstReferrer,
+    private appConfigService: AppConfigService,
   ) {}
 
   public async findAll(searchDto: IBasicSearch): Promise<ITableList<IReferrer>> {
@@ -15,7 +16,6 @@ export class ReferrerService {
     const pageNumber = searchDto.page || 0;
     const pageSize = searchDto.limit || 15;
     const offset = pageNumber === 0 ? 0 : pageNumber * pageSize;
-
     const { rows, count } = await this.referrerRepository.scope('list').findAndCountAll({
       where: whereCondition,
       order: [['name', 'ASC']],
@@ -24,10 +24,9 @@ export class ReferrerService {
       raw: true,
       nest: true,
     });
-
     const resList: IReferrer[] = rows.map((item: any) => {return this.convertToModel(item);});
     return {
-      data: resList,
+      tableData: resList,
       count: count,
     };
   }
@@ -39,7 +38,10 @@ export class ReferrerService {
       name: item.name,
       companyName: item.companyName,
       websiteLink: item.websiteLink,
-      logo: CommonFunctionsUtil.getImagesObj(item.logo),
+      logo: CommonFunctionsUtil.buildImageUrl(
+        item.logo,
+        this.appConfigService.getString(ConfigParam.CLIENT_URL),
+      ),
       franchiseId: item.franchiseId,
       franchise: item.franchise || '',
       emailId: item.emailId,
@@ -62,8 +64,12 @@ export class ReferrerService {
       updatedBy: item.modifiedBy,
       createdAt: item.createdAt,
       updatedAt: item.updatedAt,
-      createdByUser: item.createdByUser ? CommonFunctionsUtil.getAdminShortInfo(item.createdByUser, 'createdByUser') : undefined,
-      updatedByUser: item.updatedByUser ? CommonFunctionsUtil.getAdminShortInfo(item.updatedByUser, 'updatedByUser') : undefined,
+      createdByUser: item.createdByUser
+        ? CommonFunctionsUtil.getAdminShortInfo(item.createdByUser, 'createdByUser')
+        : undefined,
+      updatedByUser: item.updatedByUser
+        ? CommonFunctionsUtil.getAdminShortInfo(item.updatedByUser, 'updatedByUser')
+        : undefined,
     };
   }
 

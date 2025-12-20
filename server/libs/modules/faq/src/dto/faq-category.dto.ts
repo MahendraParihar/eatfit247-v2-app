@@ -1,4 +1,4 @@
-import { IsBoolean, IsNotEmpty, MaxLength } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsNumber, IsOptional, MaxLength } from 'class-validator';
 import { InputLengthEnum, IManageFaqCategory } from 'eatfit247-shared-lib';
 
 export class CreateFaqCategoryDto implements IManageFaqCategory {
@@ -13,6 +13,8 @@ export class CreateFaqCategoryDto implements IManageFaqCategory {
   @IsBoolean()
   active: boolean;
 
+  @IsOptional()
+  @IsNumber()
   faqCategoryId?: number;
 }
 

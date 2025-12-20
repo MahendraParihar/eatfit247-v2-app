@@ -113,7 +113,7 @@ export class MemberService {
       resList.push(this.convertDBToInterface(s));
     }
     return <ITableList<IMemberList>>{
-      data: resList,
+      tableData: resList,
       count: count
     };
   }

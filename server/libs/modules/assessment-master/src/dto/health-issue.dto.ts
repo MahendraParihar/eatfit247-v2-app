@@ -1,4 +1,4 @@
-import { IsBoolean, IsNotEmpty, IsOptional, MaxLength, MinLength, ValidateNested } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsNumber, IsOptional, MaxLength, MinLength, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 import { InputLengthEnum, IManageHealthIssue } from 'eatfit247-shared-lib';
 import { MediaUploadDto } from '@server/common';
@@ -18,6 +18,8 @@ export class CreateHealthIssueDto implements IManageHealthIssue {
   @IsBoolean()
   active: boolean;
 
+  @IsOptional()
+  @IsNumber()
   healthIssueId?: number;
 }
 

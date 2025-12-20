@@ -64,7 +64,7 @@ export class ReligionService {
     }
 
     return <ITableList<ILov>>{
-      data: resList,
+      tableData: resList,
       count: count,
     };
   }

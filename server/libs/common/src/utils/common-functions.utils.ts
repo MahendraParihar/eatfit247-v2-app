@@ -23,28 +23,6 @@ export class CommonFunctionsUtil {
     }
   }
 
-  public static getImagesObj(images: any): IMediaUpload[] {
-    if (!images || images.length === 0) {
-      return null;
-    }
-    const temp: IMediaUpload[] = [];
-    if (images && images.length > 0) {
-      for (const i of images) {
-        temp.push(<IMediaUpload>{
-          fieldName: i.fieldName,
-          originalName: i.originalName,
-          encoding: i.encoding,
-          mimetype: i.mimetype,
-          fileName: i.fileName,
-          path: i.path,
-          size: i.size,
-          webUrl: `${i.webUrl}`,
-        });
-      }
-    }
-    return temp;
-  }
-
   public static generateRandomNumber(numberLength: number): string {
     let text = '';
     const possible = '123456789';
@@ -73,9 +51,19 @@ export class CommonFunctionsUtil {
     if (!images || images.length === 0) {
       return images;
     }
+    // Normalize baseUrl - remove trailing slash if present
+    const normalizedBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+    
     return images.map((image) => {
-      image.webUrl = `${baseUrl}/${image.webUrl}`;
-      return image;
+      // Create a new object to avoid mutating the original
+      const normalizedWebUrl = image.webUrl?.startsWith('/') 
+        ? image.webUrl.substring(1) 
+        : image.webUrl;
+      
+      return {
+        ...image,
+        webUrl: `${normalizedBaseUrl}/${normalizedWebUrl}`,
+      };
     });
   }
 }

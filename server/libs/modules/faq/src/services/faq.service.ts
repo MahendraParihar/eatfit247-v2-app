@@ -30,7 +30,7 @@ export class FaqService {
     });
     const resList: IFaq[] = rows.map((item: any) => {return this.convertToModel(item);});
     return {
-      data: resList,
+      tableData: resList,
       count: count,
     };
   }

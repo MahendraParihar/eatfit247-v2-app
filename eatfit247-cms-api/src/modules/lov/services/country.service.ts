@@ -65,7 +65,7 @@ export class CountryService {
     }
 
     return <ITableList<ICountry>>{
-      data: resList,
+      tableData: resList,
       count: count,
     };
   }

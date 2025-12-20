@@ -54,7 +54,7 @@ export class CurrencyService {
     }
 
     return <ITableList<ICurrencyConfig>>{
-      data: resList,
+      tableData: resList,
       count: count,
     };
   }

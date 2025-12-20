@@ -1,13 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { MstLifestyle } from '../models';
-import { ITableList, IBasicSearch, ILifestyle, IManageLifestyle, IDropdownItem } from 'eatfit247-shared-lib';
-import { SearchUtil, CommonFunctionsUtil } from '@server/common';
+import { ITableList, IBasicSearch, ILifestyle, IManageLifestyle, IDropdownItem, ConfigParam } from 'eatfit247-shared-lib';
+import { SearchUtil, CommonFunctionsUtil, AppConfigService } from '@server/common';
 
 @Injectable()
 export class LifestyleService {
   constructor(
     @InjectModel(MstLifestyle) private readonly lifestyleRepository: typeof MstLifestyle,
+    private appConfigService: AppConfigService,
   ) {}
 
   public async findAll(searchDto: IBasicSearch): Promise<ITableList<ILifestyle>> {
@@ -26,7 +27,7 @@ export class LifestyleService {
     });
 
     const resList: ILifestyle[] = rows.map((item: any) => {return this.convertToModel(item);});
-    return { data: resList, count: count };
+    return { tableData: resList, count: count };
   }
 
   private convertToModel(item: any): ILifestyle {
@@ -34,7 +35,10 @@ export class LifestyleService {
       lifestyleId: item.lifestyleId,
       id: item.lifestyleId,
       lifestyle: item.lifestyle,
-      imagePath: CommonFunctionsUtil.getImagesObj(item.imagePath),
+      imagePath: CommonFunctionsUtil.buildImageUrl(
+        item.imagePath,
+        this.appConfigService.getString(ConfigParam.CLIENT_URL),
+      ),
       active: item.active,
       createdBy: item.createdBy,
       updatedBy: item.modifiedBy,

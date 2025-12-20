@@ -1,13 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { MstProgram } from '../models';
-import { ITableList, IBasicSearch, IProgram, IManageProgram, IDropdownItem } from 'eatfit247-shared-lib';
-import { SearchUtil, CommonFunctionsUtil } from '@server/common';
+import { ITableList, IBasicSearch, IProgram, IManageProgram, IDropdownItem, ConfigParam } from 'eatfit247-shared-lib';
+import { SearchUtil, CommonFunctionsUtil, AppConfigService } from '@server/common';
 
 @Injectable()
 export class ProgramService {
   constructor(
     @InjectModel(MstProgram) private readonly programRepository: typeof MstProgram,
+    private appConfigService: AppConfigService,
   ) {}
 
   public async findAll(searchDto: IBasicSearch): Promise<ITableList<IProgram>> {
@@ -30,7 +31,7 @@ export class ProgramService {
 
     const resList: IProgram[] = rows.map((item: any) => {return this.convertToModel(item);});
     return {
-      data: resList,
+      tableData: resList,
       count: count,
     };
   }
@@ -52,7 +53,10 @@ export class ProgramService {
       tags: item.tags ? item.tags.split(', ') : undefined,
       metaTitle: item.metaTitle,
       metaDescription: item.metaDescription,
-      imagePath: CommonFunctionsUtil.getImagesObj(item.imagePath),
+      imagePath: CommonFunctionsUtil.buildImageUrl(
+        item.imagePath,
+        this.appConfigService.getString(ConfigParam.CLIENT_URL),
+      ),
       active: item.active,
       createdBy: item.createdBy,
       updatedBy: item.modifiedBy,

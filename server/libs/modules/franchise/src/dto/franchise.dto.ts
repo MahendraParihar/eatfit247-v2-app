@@ -1,4 +1,14 @@
-import { IsBoolean, IsDate, IsEmail, IsNotEmpty, IsOptional, MaxLength, MinLength, ValidateNested } from 'class-validator';
+import {
+  IsBoolean,
+  IsDate,
+  IsEmail,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  MaxLength,
+  MinLength,
+  ValidateNested,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import { InputLengthEnum, IManageFranchise } from 'eatfit247-shared-lib';
 import { MediaUploadDto } from '@server/common';
@@ -72,6 +82,8 @@ export class CreateFranchiseDto implements IManageFranchise {
   @Type(() => MediaUploadDto)
   logo?: MediaUploadDto[];
 
+  @IsOptional()
+  @IsNumber()
   franchiseId?: number;
 }
 

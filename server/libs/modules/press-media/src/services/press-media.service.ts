@@ -1,13 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { TxnPressMedia } from '../models';
-import { ITableList, IBasicSearch, IPressMedia, IManagePressMedia } from 'eatfit247-shared-lib';
-import { SearchUtil, CommonFunctionsUtil } from '@server/common';
+import { ITableList, IBasicSearch, IPressMedia, IManagePressMedia, ConfigParam } from 'eatfit247-shared-lib';
+import { SearchUtil, CommonFunctionsUtil, AppConfigService } from '@server/common';
 
 @Injectable()
 export class PressMediaService {
   constructor(
     @InjectModel(TxnPressMedia) private readonly pressMediaRepository: typeof TxnPressMedia,
+    private appConfigService: AppConfigService,
   ) {}
 
   public async findAll(searchDto: IBasicSearch): Promise<ITableList<IPressMedia>> {
@@ -27,7 +28,7 @@ export class PressMediaService {
 
     const resList: IPressMedia[] = rows.map((item: any) => {return this.convertToModel(item);});
     return {
-      data: resList,
+      tableData: resList,
       count: count,
     };
   }
@@ -40,7 +41,10 @@ export class PressMediaService {
       type: item.type as 'youtube' | 'press',
       link: item.link,
       active: item.active,
-      imagePath: CommonFunctionsUtil.getImagesObj(item.imagePath),
+      imagePath: CommonFunctionsUtil.buildImageUrl(
+        item.imagePath,
+        this.appConfigService.getString(ConfigParam.CLIENT_URL),
+      ),
       createdBy: item.createdBy,
       updatedBy: item.modifiedBy,
       createdAt: item.createdAt,

@@ -1,14 +1,15 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { TxnMember } from '../models';
-import { ITableList, IBasicSearch, IMember, IManageMember } from 'eatfit247-shared-lib';
-import { SearchUtil, CommonFunctionsUtil, CryptoUtil, generateRandomPassword } from '@server/common';
+import { ITableList, IBasicSearch, IMember, IManageMember, ConfigParam } from 'eatfit247-shared-lib';
+import { SearchUtil, CommonFunctionsUtil, CryptoUtil, generateRandomPassword, AppConfigService } from '@server/common';
 import { Op } from 'sequelize';
 
 @Injectable()
 export class MemberService {
   constructor(
     @InjectModel(TxnMember) private readonly memberRepository: typeof TxnMember,
+    private appConfigService: AppConfigService,
   ) {}
 
   public async findAll(searchDto: IBasicSearch): Promise<ITableList<IMember>> {
@@ -45,7 +46,7 @@ export class MemberService {
     });
 
     const resList: IMember[] = rows.map((item: any) => {return this.convertToModel(item);});
-    return { data: resList, count: count };
+    return { tableData: resList, count: count };
   }
 
   private convertToModel(item: any): IMember {
@@ -54,7 +55,10 @@ export class MemberService {
       id: item.memberId,
       firstName: item.firstName,
       lastName: item.lastName,
-      profilePicture: CommonFunctionsUtil.getImagesObj(item.profilePicture),
+      profilePicture: CommonFunctionsUtil.buildImageUrl(
+        item.profilePicture,
+        this.appConfigService.getString(ConfigParam.CLIENT_URL),
+      ),
       countryCode: item.countryCode,
       contactNumber: item.contactNumber,
       emailId: item.emailId,
@@ -66,15 +70,21 @@ export class MemberService {
       countryId: item.countryId,
       country: item.country?.country || '',
       nutritionistId: item.nutritionistId,
-      nutritionist: item.nutritionist ? `${item.nutritionist.firstName} ${item.nutritionist.lastName}` : '',
+      nutritionist: item.nutritionist
+        ? `${item.nutritionist.firstName} ${item.nutritionist.lastName}`
+        : '',
       userStatusId: item.userStatusId,
       deactivationReason: item.deactivationReason,
       createdBy: item.createdBy,
       updatedBy: item.modifiedBy,
       createdAt: item.createdAt,
       updatedAt: item.updatedAt,
-      createdByUser: item.createdByUser ? CommonFunctionsUtil.getAdminShortInfo(item.createdByUser, 'createdByUser') : undefined,
-      updatedByUser: item.updatedByUser ? CommonFunctionsUtil.getAdminShortInfo(item.updatedByUser, 'updatedByUser') : undefined,
+      createdByUser: item.createdByUser
+        ? CommonFunctionsUtil.getAdminShortInfo(item.createdByUser, 'createdByUser')
+        : undefined,
+      updatedByUser: item.updatedByUser
+        ? CommonFunctionsUtil.getAdminShortInfo(item.updatedByUser, 'updatedByUser')
+        : undefined,
     };
   }
 

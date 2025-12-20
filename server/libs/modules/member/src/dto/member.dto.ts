@@ -59,6 +59,9 @@ export class CreateMemberDto implements IManageMember {
   hasAnyPlan?: boolean;
   @IsOptional()
   password?: string;
+
+  @IsOptional()
+  @IsNumber()
   memberId?: number;
 }
 

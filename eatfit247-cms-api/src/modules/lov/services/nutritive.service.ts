@@ -63,7 +63,7 @@ export class NutritiveService {
     }
 
     return <ITableList<ILov>>{
-      data: resList,
+      tableData: resList,
       count: count,
     };
   }

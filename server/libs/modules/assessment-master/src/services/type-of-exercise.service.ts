@@ -1,13 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { MstTypeOfExercise } from '../models';
-import { ITableList, IBasicSearch, ITypeOfExercise, IManageTypeOfExercise, IDropdownItem } from 'eatfit247-shared-lib';
-import { SearchUtil, CommonFunctionsUtil } from '@server/common';
+import { ITableList, IBasicSearch, ITypeOfExercise, IManageTypeOfExercise, IDropdownItem, ConfigParam } from 'eatfit247-shared-lib';
+import { SearchUtil, CommonFunctionsUtil, AppConfigService } from '@server/common';
 
 @Injectable()
 export class TypeOfExerciseService {
   constructor(
     @InjectModel(MstTypeOfExercise) private readonly typeOfExerciseRepository: typeof MstTypeOfExercise,
+    private appConfigService: AppConfigService,
   ) {}
 
   public async findAll(searchDto: IBasicSearch): Promise<ITableList<ITypeOfExercise>> {
@@ -26,7 +27,7 @@ export class TypeOfExerciseService {
     });
 
     const resList: ITypeOfExercise[] = rows.map((item: any) => {return this.convertToModel(item);});
-    return { data: resList, count: count };
+    return { tableData: resList, count: count };
   }
 
   private convertToModel(item: any): ITypeOfExercise {
@@ -34,7 +35,10 @@ export class TypeOfExerciseService {
       typeOfExerciseId: item.typeOfExerciseId,
       id: item.typeOfExerciseId,
       typeOfExercise: item.typeOfExercise,
-      imagePath: CommonFunctionsUtil.getImagesObj(item.imagePath),
+      imagePath: CommonFunctionsUtil.buildImageUrl(
+        item.imagePath,
+        this.appConfigService.getString(ConfigParam.CLIENT_URL),
+      ),
       active: item.active,
       createdBy: item.createdBy,
       updatedBy: item.modifiedBy,

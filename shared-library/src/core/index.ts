@@ -22,4 +22,6 @@ export * from './member.interface';
 export * from './admin-user.interface';
 export * from './email-template.interface';
 export * from './issue.interface';
+export * from './banner.interface';
+export * from './call-log.interface';
 

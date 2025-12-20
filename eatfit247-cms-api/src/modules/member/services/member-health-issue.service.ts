@@ -73,7 +73,7 @@ export class MemberHealthIssueService {
     }
 
     return <ITableList<IMemberHealthIssue>>{
-      data: resList,
+      tableData: resList,
       count: count,
     };
   }
@@ -130,7 +130,7 @@ export class MemberHealthIssueService {
     }
 
     return <ITableList<IMemberHealthIssue>>{
-      data: resList,
+      tableData: resList,
       count: count,
     };
   }

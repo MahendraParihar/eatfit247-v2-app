@@ -78,6 +78,9 @@ export class CreateReferrerDto implements IManageReferrer {
   @ValidateNested({ each: true })
   @Type(() => MediaUploadDto)
   logo?: MediaUploadDto[];
+
+  @IsOptional()
+  @IsNumber()
   referrerId?: number;
 }
 

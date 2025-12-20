@@ -71,7 +71,7 @@ export class StateService {
     }
 
     return <ITableList<IState>>{
-      data: resList,
+      tableData: resList,
       count: count,
     };
   }

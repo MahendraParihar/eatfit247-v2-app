@@ -1,16 +1,24 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { MstBlogAuthor } from '../models';
-import { ITableList, IStatusChange, IBasicSearch, IBlogAuthor, IManageBlogAuthor } from 'eatfit247-shared-lib';
+import {
+  ITableList,
+  IStatusChange,
+  IBasicSearch,
+  IBlogAuthor,
+  IManageBlogAuthor,
+  ConfigParam,
+} from 'eatfit247-shared-lib';
 import {
   SearchUtil,
-  CommonFunctionsUtil,
+  CommonFunctionsUtil, AppConfigService,
 } from '@server/common';
 
 @Injectable()
 export class BlogAuthorService {
   constructor(
     @InjectModel(MstBlogAuthor) private readonly blogAuthorRepository: typeof MstBlogAuthor,
+    private appConfigService: AppConfigService,
   ) {}
 
   public async findAll(searchDto: IBasicSearch): Promise<ITableList<IBlogAuthor>> {
@@ -28,7 +36,7 @@ export class BlogAuthorService {
     });
     const resList = rows.map((item: any) => {return this.convertToModel(item);});
     return {
-      data: resList,
+      tableData: resList,
       count: count,
     };
   }
@@ -44,7 +52,7 @@ export class BlogAuthorService {
       contactNumber: item.contactNumber,
       linkedUrl: item.linkedUrl,
       active: item.active,
-      profilePicture: CommonFunctionsUtil.getImagesObj(item.profilePicture),
+      profilePicture: CommonFunctionsUtil.buildImageUrl(item.profilePicture, this.appConfigService.getString(ConfigParam.CLIENT_URL)),
       createdBy: item.createdBy,
       updatedBy: item.modifiedBy,
       createdAt: item.createdAt,

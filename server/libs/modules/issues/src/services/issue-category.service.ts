@@ -26,7 +26,7 @@ export class IssueCategoryService {
     });
 
     const resList: IIssueCategory[] = rows.map((item: any) => {return this.convertToModel(item);});
-    return { data: resList, count: count };
+    return { tableData: resList, count: count };
   }
 
   private convertToModel(item: any): IIssueCategory {

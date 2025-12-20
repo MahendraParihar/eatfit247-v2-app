@@ -38,6 +38,9 @@ export class CreateProgramPlanDto extends SeoDto implements IManageProgramPlan {
   @ValidateNested({ each: true })
   @Type(() => MediaUploadDto)
   imagePath?: MediaUploadDto[];
+
+  @IsOptional()
+  @IsNumber()
   programPlanId?: number;
 }
 

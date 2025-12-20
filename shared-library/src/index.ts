@@ -26,7 +26,7 @@ export type { IResponse, ITableList, ITableListFilter, IBasicSearch, IError, ISt
 export type { IAuthUser, ILogin, IChangePassword, IToken, IAdminUserLogin, IForgotPasswordRequest, IResetPasswordRequest } from './auth/index.js';
 export type { ICommonTable, ICommonSEO, IBaseAdminUser, IDropdownItem } from './base.interface.js';
 export type { ILegalPage, ILegalPageList, IManageLegalPage, IBaseLegalPage } from './core/legal-page.interface.js';
-export type { IBlog, IManageBlog, IBaseBlog, IBlogCategory, IManageBlogCategory, IBaseBlogCategory, IBlogAuthor, IManageBlogAuthor, IBaseBlogAuthor } from './core/blog.interface.js';
+export type { IBlog, IManageBlog, IBaseBlog, IBlogCategory, IManageBlogCategory, IBaseBlogCategory, IBlogAuthor, IManageBlogAuthor, IBaseBlogAuthor, IBlogComment, IManageBlogComment, IBaseBlogComment } from './core/blog.interface.js';
 export type { IFaq, IManageFaq, IBaseFaq, IFaqCategory, IManageFaqCategory, IBaseFaqCategory } from './core/faq.interface.js';
 export type { IPressMedia, IManagePressMedia, IBasePressMedia, PressMediaType } from './core/press-media.interface.js';
 export type { IProgramCategory, IManageProgramCategory, IBaseProgramCategory } from './core/program-category.interface.js';
@@ -42,6 +42,7 @@ export type { ICountry, IManageCountry, IBaseCountry, IState, IManageState, IBas
 export type { IMember, IManageMember, IBaseMember } from './core/member.interface.js';
 export type { IAdminUser, IManageAdminUser, IBaseAdminUserFull, IAdminRolePermission, IManageAdminRolePermission, IBaseAdminRolePermission } from './core/admin-user.interface.js';
 export type { IEmailTemplate, IManageEmailTemplate, IBaseEmailTemplate, ISendEmailParams, IEmailAttachment } from './core/email-template.interface.js';
-export type { IIssueCategory, IManageIssueCategory, IBaseIssueCategory, IIssueStatus, IManageIssueStatus, IBaseIssueStatus } from './core/issue.interface.js';
+export type { IIssueCategory, IManageIssueCategory, IBaseIssueCategory, IIssueStatus, IManageIssueStatus, IBaseIssueStatus, IIssue, IManageIssue, IBaseIssue } from './core/issue.interface.js';
+export type { IBanner, IManageBanner, IBaseBanner } from './core/banner.interface.js';
 export { LabelKey } from './enum/label-key.enum.js';
 

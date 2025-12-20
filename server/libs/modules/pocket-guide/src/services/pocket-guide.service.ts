@@ -1,13 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { MstPocketGuide } from '../models';
-import { ITableList, IBasicSearch, IPocketGuide, IManagePocketGuide } from 'eatfit247-shared-lib';
-import { SearchUtil, CommonFunctionsUtil } from '@server/common';
+import { ITableList, IBasicSearch, IPocketGuide, IManagePocketGuide, ConfigParam } from 'eatfit247-shared-lib';
+import { SearchUtil, CommonFunctionsUtil, AppConfigService } from '@server/common';
 
 @Injectable()
 export class PocketGuideService {
   constructor(
     @InjectModel(MstPocketGuide) private readonly pocketGuideRepository: typeof MstPocketGuide,
+    private appConfigService: AppConfigService,
   ) {}
 
   public async findAll(searchDto: IBasicSearch): Promise<ITableList<IPocketGuide>> {
@@ -15,7 +16,6 @@ export class PocketGuideService {
     const pageNumber = searchDto.page || 0;
     const pageSize = searchDto.limit || 15;
     const offset = pageNumber === 0 ? 0 : pageNumber * pageSize;
-
     const { rows, count } = await this.pocketGuideRepository.scope('list').findAndCountAll({
       where: whereCondition,
       order: [['pocketGuide', 'ASC']],
@@ -24,10 +24,9 @@ export class PocketGuideService {
       raw: true,
       nest: true,
     });
-
     const resList: IPocketGuide[] = rows.map((item: any) => {return this.convertToModel(item);});
     return {
-      data: resList,
+      tableData: resList,
       count: count,
     };
   }
@@ -37,9 +36,12 @@ export class PocketGuideService {
       pocketGuideId: item.pocketGuideId,
       id: item.pocketGuideId,
       pocketGuide: item.pocketGuide,
-      filePath: CommonFunctionsUtil.getImagesObj(item.filePath),
+      filePath: CommonFunctionsUtil.buildImageUrl(item.filePath, this.appConfigService.getString(ConfigParam.CLIENT_URL)),
       description: item.description,
-      imagePath: CommonFunctionsUtil.getImagesObj(item.imagePath),
+      imagePath: CommonFunctionsUtil.buildImageUrl(
+        item.imagePath,
+        this.appConfigService.getString(ConfigParam.CLIENT_URL),
+      ),
       active: item.active,
       createdBy: item.createdBy,
       updatedBy: item.modifiedBy,

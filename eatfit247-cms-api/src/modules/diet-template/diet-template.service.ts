@@ -76,7 +76,7 @@ export class DietTemplateService {
       resList.push(iEvent);
     }
     return <ITableList<IDietTemplate>>{
-      data: resList,
+      tableData: resList,
       count: count,
     };
   }

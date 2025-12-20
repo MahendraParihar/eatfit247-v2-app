@@ -82,3 +82,33 @@ export interface IBlogAuthor extends IBaseBlogAuthor {
   updatedByUser?: IBaseAdminUser;
 }
 
+// Blog Comment Interfaces
+export interface IBaseBlogComment {
+  comment: string;
+  blogId: number;
+  memberId?: number;
+  adminId?: number;
+  parentCommentId?: number;
+}
+
+export interface IManageBlogComment extends IBaseBlogComment {
+  blogCommentId?: number;
+  active: boolean;
+}
+
+export interface IBlogComment extends IBaseBlogComment {
+  blogCommentId: number;
+  active: boolean;
+  createdBy: number;
+  updatedBy: number;
+  createdAt: Date;
+  updatedAt: Date;
+  createdByUser?: IBaseAdminUser;
+  updatedByUser?: IBaseAdminUser;
+  member?: {
+    memberId: number;
+    firstName?: string;
+    lastName?: string;
+  };
+}
+

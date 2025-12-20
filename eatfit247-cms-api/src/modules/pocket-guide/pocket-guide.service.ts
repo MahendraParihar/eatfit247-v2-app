@@ -63,7 +63,7 @@ export class PocketGuideService {
     }
 
     return <ITableList<IPocketGuide>>{
-      data: resList,
+      tableData: resList,
       count: count,
     };
   }

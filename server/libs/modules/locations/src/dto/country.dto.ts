@@ -1,4 +1,4 @@
-import { IsBoolean, IsNotEmpty, IsOptional, MaxLength, MinLength } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsNumber, IsOptional, MaxLength, MinLength } from 'class-validator';
 import { InputLengthEnum, IManageCountry } from 'eatfit247-shared-lib';
 
 export class CreateCountryDto implements IManageCountry {
@@ -19,6 +19,8 @@ export class CreateCountryDto implements IManageCountry {
   @IsBoolean()
   active: boolean;
 
+  @IsOptional()
+  @IsNumber()
   countryId?: number;
 }
 

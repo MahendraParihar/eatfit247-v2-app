@@ -27,7 +27,7 @@ export class CallLogStatusService {
 
     const resList: ICallLogStatus[] = rows.map((item: any) => {return this.convertToModel(item);});
     return {
-      data: resList,
+      tableData: resList,
       count: count,
     };
   }

@@ -1,4 +1,14 @@
-import { IsBoolean, IsEnum, IsNotEmpty, IsOptional, IsString, MaxLength, MinLength, ValidateNested } from 'class-validator';
+import {
+  IsBoolean,
+  IsEnum,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  MaxLength,
+  MinLength,
+  ValidateNested,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import { InputLengthEnum, IManagePressMedia, PressMediaType } from 'eatfit247-shared-lib';
 import { MediaUploadDto } from '@server/common';
@@ -27,6 +37,8 @@ export class CreatePressMediaDto implements IManagePressMedia {
   @Type(() => MediaUploadDto)
   imagePath?: MediaUploadDto[];
 
+  @IsOptional()
+  @IsNumber()
   pressMediaId?: number;
 }
 

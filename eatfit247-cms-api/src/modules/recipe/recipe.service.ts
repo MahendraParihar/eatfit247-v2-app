@@ -143,7 +143,7 @@ export class RecipeService {
       resList.push(iEvent);
     }
     return <ITableList<IRecipe>>{
-      data: resList,
+      tableData: resList,
       count: count,
     };
   }

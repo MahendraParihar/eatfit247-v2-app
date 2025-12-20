@@ -1,4 +1,4 @@
-import { IsBoolean, IsNotEmpty, IsNumber, MaxLength, MinLength } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsNumber, IsOptional, MaxLength, MinLength } from 'class-validator';
 import { InputLengthEnum, IManageState } from 'eatfit247-shared-lib';
 
 export class CreateStateDto implements IManageState {
@@ -20,6 +20,8 @@ export class CreateStateDto implements IManageState {
   @IsBoolean()
   active: boolean;
 
+  @IsOptional()
+  @IsNumber()
   stateId?: number;
 }
 

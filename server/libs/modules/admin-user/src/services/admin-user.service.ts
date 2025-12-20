@@ -1,8 +1,8 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { MstAdminUser } from '../models';
-import { ITableList, IBasicSearch, IAdminUser, IManageAdminUser } from 'eatfit247-shared-lib';
-import { SearchUtil, CommonFunctionsUtil, CryptoUtil, generateRandomPassword } from '@server/common';
+import { ITableList, IBasicSearch, IAdminUser, IManageAdminUser, ConfigParam } from 'eatfit247-shared-lib';
+import { SearchUtil, CommonFunctionsUtil, CryptoUtil, generateRandomPassword, AppConfigService } from '@server/common';
 import { Op } from 'sequelize';
 import { MstAdminRolePermission } from '../models/mst-admin-role-permission.model';
 
@@ -11,6 +11,7 @@ export class AdminUserService {
   constructor(
     @InjectModel(MstAdminUser) private readonly adminUserRepository: typeof MstAdminUser,
     @InjectModel(MstAdminRolePermission) private readonly rolePermissionRepository: typeof MstAdminRolePermission,
+    private appConfigService: AppConfigService,
   ) {}
 
   public async findAll(searchDto: IBasicSearch): Promise<ITableList<IAdminUser>> {
@@ -47,7 +48,7 @@ export class AdminUserService {
     });
 
     const resList: IAdminUser[] = rows.map((item: any) => {return this.convertToModel(item);});
-    return { data: resList, count: count };
+    return { tableData: resList, count: count };
   }
 
   private convertToModel(item: any): IAdminUser {
@@ -56,7 +57,7 @@ export class AdminUserService {
       id: item.adminId,
       firstName: item.firstName,
       lastName: item.lastName,
-      profilePicture: CommonFunctionsUtil.getImagesObj(item.profilePicture),
+      profilePicture: CommonFunctionsUtil.buildImageUrl(item.profilePicture, this.appConfigService.getString(ConfigParam.CLIENT_URL)),
       countryCode: item.countryCode,
       contactNumber: item.contactNumber,
       emailId: item.emailId,
@@ -72,8 +73,12 @@ export class AdminUserService {
       updatedBy: item.modifiedBy,
       createdAt: item.createdAt,
       updatedAt: item.updatedAt,
-      createdByUser: item.createdByUser ? CommonFunctionsUtil.getAdminShortInfo(item.createdByUser, 'createdByUser') : undefined,
-      updatedByUser: item.updatedByUser ? CommonFunctionsUtil.getAdminShortInfo(item.updatedByUser, 'updatedByUser') : undefined,
+      createdByUser: item.createdByUser
+        ? CommonFunctionsUtil.getAdminShortInfo(item.createdByUser, 'createdByUser')
+        : undefined,
+      updatedByUser: item.updatedByUser
+        ? CommonFunctionsUtil.getAdminShortInfo(item.updatedByUser, 'updatedByUser')
+        : undefined,
     };
   }
 

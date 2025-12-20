@@ -73,7 +73,7 @@ export class FaqService {
     }
 
     return <ITableList<IFaq>>{
-      data: resList,
+      tableData: resList,
       count: count,
     };
   }

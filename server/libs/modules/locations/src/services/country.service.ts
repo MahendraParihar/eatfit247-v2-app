@@ -15,7 +15,6 @@ export class CountryService {
     const pageNumber = searchDto.page || 0;
     const pageSize = searchDto.limit || 15;
     const offset = pageNumber === 0 ? 0 : pageNumber * pageSize;
-
     const { rows, count } = await this.countryRepository.scope('list').findAndCountAll({
       where: whereCondition,
       order: [['country', 'ASC']],
@@ -24,9 +23,8 @@ export class CountryService {
       raw: true,
       nest: true,
     });
-
     const resList: ICountry[] = rows.map((item: any) => {return this.convertToModel(item);});
-    return { data: resList, count: count };
+    return { tableData: resList, count: count };
   }
 
   private convertToModel(item: any): ICountry {
@@ -100,8 +98,12 @@ export class CountryService {
     const tempList = await this.countryRepository.findAll<MstCountry>({
       where: { active: true },
       order: [['country', 'ASC']],
+      raw: true,
+      nest: true,
     });
-    return tempList.map((t) => ({ id: t.countryId, label: t.country, selected: false }));
+    return tempList.map((t) => {
+      return <IDropdownItem>{ id: t.countryId, label: t.country, selected: false };
+    });
   }
 }
 

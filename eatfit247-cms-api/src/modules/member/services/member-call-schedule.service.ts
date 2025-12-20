@@ -81,7 +81,7 @@ export class MemberCallScheduleService {
       resList.push(this.convertDBObject(s));
     }
     return <ITableList<IMemberCallLog>>{
-      data: resList,
+      tableData: resList,
       count: count,
     };
   }

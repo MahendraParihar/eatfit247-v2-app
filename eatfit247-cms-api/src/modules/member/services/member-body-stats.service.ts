@@ -70,7 +70,7 @@ export class MemberBodyStatsService {
       resList.push(this.convertDBObject(s));
     }
     return <ITableList<IMemberHealthParameterLog>>{
-      data: resList,
+      tableData: resList,
       count: count,
     };
   }

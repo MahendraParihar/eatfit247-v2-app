@@ -39,6 +39,8 @@ export class CreateHealthParameterDto implements IManageHealthParameter {
   @IsBoolean()
   active: boolean;
 
+  @IsOptional()
+  @IsNumber()
   healthParameterId?: number;
 }
 

@@ -1,13 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { MstEatingHabit } from '../models';
-import { ITableList, IBasicSearch, IEatingHabit, IManageEatingHabit, IDropdownItem } from 'eatfit247-shared-lib';
-import { SearchUtil, CommonFunctionsUtil } from '@server/common';
+import { ITableList, IBasicSearch, IEatingHabit, IManageEatingHabit, IDropdownItem, ConfigParam } from 'eatfit247-shared-lib';
+import { SearchUtil, CommonFunctionsUtil, AppConfigService } from '@server/common';
 
 @Injectable()
 export class EatingHabitService {
   constructor(
     @InjectModel(MstEatingHabit) private readonly eatingHabitRepository: typeof MstEatingHabit,
+    private appConfigService: AppConfigService,
   ) {}
 
   public async findAll(searchDto: IBasicSearch): Promise<ITableList<IEatingHabit>> {
@@ -26,7 +27,7 @@ export class EatingHabitService {
     });
 
     const resList: IEatingHabit[] = rows.map((item: any) => {return this.convertToModel(item);});
-    return { data: resList, count: count };
+    return { tableData: resList, count: count };
   }
 
   private convertToModel(item: any): IEatingHabit {
@@ -34,7 +35,10 @@ export class EatingHabitService {
       eatingHabitId: item.eatingHabitId,
       id: item.eatingHabitId,
       eatingHabit: item.eatingHabit,
-      imagePath: CommonFunctionsUtil.getImagesObj(item.imagePath),
+      imagePath: CommonFunctionsUtil.buildImageUrl(
+        item.imagePath,
+        this.appConfigService.getString(ConfigParam.CLIENT_URL),
+      ),
       active: item.active,
       createdBy: item.createdBy,
       updatedBy: item.modifiedBy,

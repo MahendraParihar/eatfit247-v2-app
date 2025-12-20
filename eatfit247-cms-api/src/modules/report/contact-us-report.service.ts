@@ -69,7 +69,7 @@ export class ContactUsReportService {
     }
 
     return <ITableList<IContactUs>>{
-      data: resList,
+      tableData: resList,
       count: count,
     };
   }

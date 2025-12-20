@@ -46,6 +46,9 @@ export class CreateRecipeDto extends SeoDto implements IManageRecipe {
   @ValidateNested({ each: true })
   @Type(() => MediaUploadDto)
   imagePath: MediaUploadDto[];
+
+  @IsOptional()
+  @IsNumber()
   recipeId?: number;
 }
 

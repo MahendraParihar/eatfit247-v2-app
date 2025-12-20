@@ -1,13 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { MstCallPurpose } from '../models';
-import { ITableList, IBasicSearch, ICallPurpose, IManageCallPurpose, IDropdownItem } from 'eatfit247-shared-lib';
-import { SearchUtil, CommonFunctionsUtil } from '@server/common';
+import { ITableList, IBasicSearch, ICallPurpose, IManageCallPurpose, IDropdownItem, ConfigParam } from 'eatfit247-shared-lib';
+import { SearchUtil, CommonFunctionsUtil, AppConfigService } from '@server/common';
 
 @Injectable()
 export class CallPurposeService {
   constructor(
     @InjectModel(MstCallPurpose) private readonly callPurposeRepository: typeof MstCallPurpose,
+    private appConfigService: AppConfigService,
   ) {}
 
   public async findAll(searchDto: IBasicSearch): Promise<ITableList<ICallPurpose>> {
@@ -27,7 +28,7 @@ export class CallPurposeService {
 
     const resList: ICallPurpose[] = rows.map((item: any) => {return this.convertToModel(item);});
     return {
-      data: resList,
+      tableData: resList,
       count: count,
     };
   }
@@ -37,7 +38,10 @@ export class CallPurposeService {
       callPurposeId: item.callPurposeId,
       id: item.callPurposeId,
       callPurpose: item.callPurpose,
-      imagePath: CommonFunctionsUtil.getImagesObj(item.imagePath),
+      imagePath: CommonFunctionsUtil.buildImageUrl(
+        item.imagePath,
+        this.appConfigService.getString(ConfigParam.CLIENT_URL),
+      ),
       active: item.active,
       createdBy: item.createdBy,
       updatedBy: item.modifiedBy,

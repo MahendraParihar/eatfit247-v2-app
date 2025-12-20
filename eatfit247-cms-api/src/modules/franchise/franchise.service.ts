@@ -84,7 +84,7 @@ export class FranchiseService {
       resList.push(iEvent);
     }
     return <ITableList<IFranchise>>{
-      data: resList,
+      tableData: resList,
       count: count,
     };
   }

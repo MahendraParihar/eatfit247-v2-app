@@ -30,6 +30,8 @@ export class CreateRecipeCategoryDto implements IManageRecipeCategory {
   @Type(() => MediaUploadDto)
   imagePath?: MediaUploadDto[];
 
+  @IsOptional()
+  @IsNumber()
   recipeCategoryId?: number;
 }
 

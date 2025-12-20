@@ -93,7 +93,7 @@ export class BlogService {
       resList.push(iEvent);
     }
     return <ITableList<IBlog>>{
-      data: resList,
+      tableData: resList,
       count: count,
     };
   }

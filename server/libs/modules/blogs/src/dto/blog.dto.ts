@@ -42,4 +42,8 @@ export class CreateBlogDto extends SeoDto implements IManageBlog {
   imagePath?: MediaUploadDto[];
   @IsNotEmpty()
   active: boolean;
+
+  @IsOptional()
+  @IsNumber()
+  blogId?: number;
 }

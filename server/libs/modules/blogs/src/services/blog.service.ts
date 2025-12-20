@@ -1,12 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { TxnBlog } from '../models';
-import { IManageBlog, IBlog, ITableList, IBasicSearch } from 'eatfit247-shared-lib';
+import { IManageBlog, IBlog, ITableList, IBasicSearch, ConfigParam } from 'eatfit247-shared-lib';
 import {
   CommonFunctionsUtil,
   SearchUtil,
   DB_DATE_FORMAT,
   DEFAULT_DATE_FORMAT,
+  AppConfigService,
 } from '@server/common';
 import moment from 'moment';
 
@@ -14,6 +15,7 @@ import moment from 'moment';
 export class BlogService {
   constructor(
     @InjectModel(TxnBlog) private readonly blogRepository: typeof TxnBlog,
+    private appConfigService: AppConfigService,
   ) {}
 
   public async findAll(searchDto: IBasicSearch): Promise<ITableList<IBlog>> {
@@ -34,7 +36,7 @@ export class BlogService {
       resList.push(this.convertToModel(s));
     }
     return <ITableList<IBlog>>{
-      data: resList,
+      tableData: resList,
       count: count,
     };
   }
@@ -75,7 +77,10 @@ export class BlogService {
       active: find.active,
       createdBy: find.createdBy,
       updatedBy: find.modifiedBy,
-      imagePath: CommonFunctionsUtil.getImagesObj(find.imagePath),
+      imagePath: CommonFunctionsUtil.buildImageUrl(
+        find.imagePath,
+        this.appConfigService.getString(ConfigParam.CLIENT_URL),
+      ),
       createdAt: find.createdAt,
       updatedAt: find.updatedAt,
     };

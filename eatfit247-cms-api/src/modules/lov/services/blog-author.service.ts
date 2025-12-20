@@ -81,7 +81,7 @@ export class BlogAuthorService {
       resList.push(iEvent);
     }
     return <ITableList<IBlogAuthor>>{
-      data: resList,
+      tableData: resList,
       count: count,
     };
   }

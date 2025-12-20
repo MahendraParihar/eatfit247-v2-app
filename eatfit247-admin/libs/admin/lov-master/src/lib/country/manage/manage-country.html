@@ -1,0 +1,85 @@
+<mat-card class="form-card">
+  <mat-card-header>
+    <mat-card-title>{{ pageTitle }}</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <form [formGroup]="formGroup" (ngSubmit)="onSubmit()">
+      <div class="form-fields">
+        <mat-form-field class="full-width">
+          <mat-label>Country</mat-label>
+          <input
+            matInput
+            type="text"
+            formControlName="country"
+            placeholder="Enter country name"
+            [maxlength]="50"
+            [minlength]="2"
+          />
+          <mat-hint align="end">
+            {{ formGroup.get('country')?.value?.length || 0 }}/50
+          </mat-hint>
+          <app-input-error [control]="formGroup.get('country')" controlName="Country"></app-input-error>
+        </mat-form-field>
+
+        <mat-form-field class="full-width">
+          <mat-label>Country Code</mat-label>
+          <input
+            matInput
+            type="text"
+            formControlName="countryCode"
+            placeholder="Enter country code (optional)"
+            [maxlength]="4"
+          />
+          <mat-hint align="end">
+            {{ formGroup.get('countryCode')?.value?.length || 0 }}/4
+          </mat-hint>
+          <app-input-error [control]="formGroup.get('countryCode')" controlName="Country Code"></app-input-error>
+        </mat-form-field>
+
+        <mat-form-field class="full-width">
+          <mat-label>Phone Number Code</mat-label>
+          <input
+            matInput
+            type="text"
+            formControlName="phoneNumberCode"
+            placeholder="Enter phone number code (optional)"
+            [maxlength]="4"
+          />
+          <mat-hint align="end">
+            {{ formGroup.get('phoneNumberCode')?.value?.length || 0 }}/4
+          </mat-hint>
+          <app-input-error [control]="formGroup.get('phoneNumberCode')" controlName="Phone Number Code"></app-input-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Status</mat-label>
+          <mat-select formControlName="active">
+            <mat-option [value]="true">Active</mat-option>
+            <mat-option [value]="false">Inactive</mat-option>
+          </mat-select>
+          <app-input-error [control]="formGroup.get('active')" controlName="Status"></app-input-error>
+        </mat-form-field>
+
+      </div>
+
+      <div class="form-actions">
+        <button
+          type="button"
+          mat-stroked-button
+          (click)="onCancel()"
+        >
+          <mat-icon>close</mat-icon>
+          Cancel
+        </button>
+        <button
+          type="submit"
+          mat-raised-button
+          color="primary"
+        >
+          <mat-icon>{{ isEditMode ? 'save' : 'add' }}</mat-icon>
+          {{ isEditMode ? 'Update' : 'Create' }}
+        </button>
+      </div>
+    </form>
+  </mat-card-content>
+</mat-card>

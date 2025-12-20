@@ -42,3 +42,34 @@ export interface IIssueStatus extends IBaseIssueStatus, ICommonTable {
   updatedByUser?: IBaseAdminUser;
 }
 
+// Issue Transaction Interface
+export interface IBaseIssue {
+  subject: string;
+  description?: string;
+  issueDate: Date;
+  resolvedDate?: Date;
+  issueCategoryId: number;
+  issueStatusId: number;
+  memberId: number;
+}
+
+export interface IManageIssue extends IBaseIssue {
+  issueId?: number;
+}
+
+export interface IIssue extends IBaseIssue {
+  issueId: number;
+  issueCategory?: IIssueCategory;
+  issueStatus?: IIssueStatus;
+  member?: {
+    memberId: number;
+    firstName?: string;
+    lastName?: string;
+  };
+  createdBy: number;
+  updatedBy: number;
+  createdAt: Date;
+  updatedAt: Date;
+  createdByUser?: IBaseAdminUser;
+  updatedByUser?: IBaseAdminUser;
+}

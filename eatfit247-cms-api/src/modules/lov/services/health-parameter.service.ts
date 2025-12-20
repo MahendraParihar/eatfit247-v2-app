@@ -76,7 +76,7 @@ export class HealthParameterService {
     }
 
     return <ITableList<IHealthParameter>>{
-      data: resList,
+      tableData: resList,
       count: count,
     };
   }

@@ -23,6 +23,7 @@ export class LogErrorService {
     },
   ): Promise<void> {
     try {
+      console.error(error);
       const errorMessage = error instanceof Error ? error.message : String(error);
       const errorStack = error instanceof Error ? error.stack : undefined;
 

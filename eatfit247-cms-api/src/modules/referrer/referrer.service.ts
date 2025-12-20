@@ -83,7 +83,7 @@ export class ReferrerService {
       resList.push(iEvent);
     }
     return <ITableList<IReferrer>>{
-      data: resList,
+      tableData: resList,
       count: count,
     };
   }

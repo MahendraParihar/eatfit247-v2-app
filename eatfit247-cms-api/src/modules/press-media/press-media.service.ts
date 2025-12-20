@@ -72,7 +72,7 @@ export class PressMediaService {
     }
 
     return <ITableList<IPressMedia>>{
-      data: resList,
+      tableData: resList,
       count: count,
     };
   }

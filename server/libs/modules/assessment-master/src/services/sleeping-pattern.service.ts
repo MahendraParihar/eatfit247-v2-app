@@ -1,13 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { MstSleepingPattern } from '../models';
-import { ITableList, IBasicSearch, ISleepingPattern, IManageSleepingPattern, IDropdownItem } from 'eatfit247-shared-lib';
-import { SearchUtil, CommonFunctionsUtil } from '@server/common';
+import { ITableList, IBasicSearch, ISleepingPattern, IManageSleepingPattern, IDropdownItem, ConfigParam } from 'eatfit247-shared-lib';
+import { SearchUtil, CommonFunctionsUtil, AppConfigService } from '@server/common';
 
 @Injectable()
 export class SleepingPatternService {
   constructor(
     @InjectModel(MstSleepingPattern) private readonly sleepingPatternRepository: typeof MstSleepingPattern,
+    private appConfigService: AppConfigService,
   ) {}
 
   public async findAll(searchDto: IBasicSearch): Promise<ITableList<ISleepingPattern>> {
@@ -26,7 +27,7 @@ export class SleepingPatternService {
     });
 
     const resList: ISleepingPattern[] = rows.map((item: any) => {return this.convertToModel(item);});
-    return { data: resList, count: count };
+    return { tableData: resList, count: count };
   }
 
   private convertToModel(item: any): ISleepingPattern {
@@ -34,7 +35,10 @@ export class SleepingPatternService {
       sleepingPatternId: item.sleepingPatternId,
       id: item.sleepingPatternId,
       sleepingPattern: item.sleepingPattern,
-      imagePath: CommonFunctionsUtil.getImagesObj(item.imagePath),
+      imagePath: CommonFunctionsUtil.buildImageUrl(
+        item.imagePath,
+        this.appConfigService.getString(ConfigParam.CLIENT_URL),
+      ),
       active: item.active,
       createdBy: item.createdBy,
       updatedBy: item.modifiedBy,

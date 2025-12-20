@@ -97,7 +97,7 @@ export class AdminUserService {
       resList.push(iEvent);
     }
     return <ITableList<IAdminUserList>>{
-      data: resList,
+      tableData: resList,
       count: count,
     };
   }

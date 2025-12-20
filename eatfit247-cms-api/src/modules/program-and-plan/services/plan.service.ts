@@ -64,7 +64,7 @@ export class PlanService {
     }
 
     return <ITableList<IProgramPlan>>{
-      data: resList,
+      tableData: resList,
       count: count,
     };
   }

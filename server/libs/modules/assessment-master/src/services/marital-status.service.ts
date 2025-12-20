@@ -1,13 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { MstMaritalStatus } from '../models';
-import { ITableList, IBasicSearch, IMaritalStatus, IManageMaritalStatus, IDropdownItem } from 'eatfit247-shared-lib';
-import { SearchUtil, CommonFunctionsUtil } from '@server/common';
+import { ITableList, IBasicSearch, IMaritalStatus, IManageMaritalStatus, IDropdownItem, ConfigParam } from 'eatfit247-shared-lib';
+import { SearchUtil, CommonFunctionsUtil, AppConfigService } from '@server/common';
 
 @Injectable()
 export class MaritalStatusService {
   constructor(
     @InjectModel(MstMaritalStatus) private readonly maritalStatusRepository: typeof MstMaritalStatus,
+    private appConfigService: AppConfigService,
   ) {}
 
   public async findAll(searchDto: IBasicSearch): Promise<ITableList<IMaritalStatus>> {
@@ -26,7 +27,7 @@ export class MaritalStatusService {
     });
 
     const resList: IMaritalStatus[] = rows.map((item: any) => {return this.convertToModel(item);});
-    return { data: resList, count: count };
+    return { tableData: resList, count: count };
   }
 
   private convertToModel(item: any): IMaritalStatus {
@@ -34,7 +35,10 @@ export class MaritalStatusService {
       maritalStatusId: item.maritalStatusId,
       id: item.maritalStatusId,
       maritalStatus: item.maritalStatus,
-      imagePath: CommonFunctionsUtil.getImagesObj(item.imagePath),
+      imagePath: CommonFunctionsUtil.buildImageUrl(
+        item.imagePath,
+        this.appConfigService.getString(ConfigParam.CLIENT_URL),
+      ),
       active: item.active,
       createdBy: item.createdBy,
       updatedBy: item.modifiedBy,

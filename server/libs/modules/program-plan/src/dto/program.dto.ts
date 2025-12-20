@@ -35,6 +35,9 @@ export class CreateProgramDto extends SeoDto implements IManageProgram {
   @ValidateNested({ each: true })
   @Type(() => MediaUploadDto)
   imagePath?: MediaUploadDto[];
+
+  @IsOptional()
+  @IsNumber()
   programId?: number;
 }
 
