@@ -1,0 +1,76 @@
+<mat-card class="form-card">
+  <mat-card-header>
+    <mat-card-title>{{ pageTitle }}</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <form [formGroup]="formGroup" (ngSubmit)="onSubmit()">
+      <div class="form-fields">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>FAQ Category</mat-label>
+          <mat-select formControlName="faqCategoryId">
+            <mat-option [value]="">Select FAQ Category</mat-option>
+            @for (category of faqCategoryOptions; track category.value) {
+              <mat-option [value]="category.value">{{ category.label }}</mat-option>
+            }
+          </mat-select>
+          <app-input-error [control]="formGroup.get('faqCategoryId')" controlName="FAQ Category"></app-input-error>
+        </mat-form-field>
+
+        <mat-form-field class="full-width">
+          <mat-label>Question</mat-label>
+          <textarea
+            matInput
+            formControlName="faq"
+            placeholder="Enter question"
+            [maxlength]="500"
+            rows="3"
+          ></textarea>
+          <mat-hint align="end">
+            {{ formGroup.get('faq')?.value?.length || 0 }}/500
+          </mat-hint>
+          <app-input-error [control]="formGroup.get('faq')" controlName="Question"></app-input-error>
+        </mat-form-field>
+
+        <mat-form-field class="full-width">
+          <mat-label>Answer</mat-label>
+          <textarea
+            matInput
+            formControlName="answer"
+            placeholder="Enter answer"
+            rows="6"
+          ></textarea>
+          <app-input-error [control]="formGroup.get('answer')" controlName="Answer"></app-input-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Status</mat-label>
+          <mat-select formControlName="active">
+            <mat-option [value]="true">Active</mat-option>
+            <mat-option [value]="false">Inactive</mat-option>
+          </mat-select>
+          <app-input-error [control]="formGroup.get('active')" controlName="Status"></app-input-error>
+        </mat-form-field>
+
+      </div>
+
+      <div class="form-actions">
+        <button
+          type="button"
+          mat-stroked-button
+          (click)="onCancel()"
+        >
+          <mat-icon>close</mat-icon>
+          Cancel
+        </button>
+        <button
+          type="submit"
+          mat-raised-button
+          color="primary"
+        >
+          <mat-icon>{{ isEditMode ? 'save' : 'add' }}</mat-icon>
+          {{ isEditMode ? 'Update' : 'Create' }}
+        </button>
+      </div>
+    </form>
+  </mat-card-content>
+</mat-card>

@@ -11,26 +11,26 @@ import {
   createdByUserFormatter,
   updatedByUserFormatter
 } from '@shared';
-import { ITableList, IProgram } from '@eatfit247-shared-lib';
-import { ProgramsApiService } from '../api.service';
+import { ITableList, IFaq } from '@eatfit247-shared-lib';
+import { FaqApiService } from './api.service';
 import { Subject, debounceTime, distinctUntilChanged, switchMap } from 'rxjs';
 
 @Component({
-  selector: 'lib-programs',
+  selector: 'lib-faq',
   standalone: true,
   imports: [CommonModule, DataTableComponent, MatButtonModule, MatIconModule],
-  templateUrl: './programs.html',
-  styleUrl: './programs.scss'
+  templateUrl: './faq.html',
+  styleUrl: './faq.scss'
 })
-export class Programs implements OnInit {
-  data: IProgram[] = [];
+export class Faq implements OnInit {
+  data: IFaq[] = [];
   totalCount = 0;
   loading = false;
-  tableConfig!: ITableConfig<IProgram>;
+  tableConfig!: ITableConfig<IFaq>;
   private searchSubject = new Subject<string>();
 
   constructor(
-    private apiService: ProgramsApiService,
+    private apiService: FaqApiService,
     private router: Router,
     private route: ActivatedRoute
   ) {
@@ -43,19 +43,10 @@ export class Programs implements OnInit {
   }
 
   private initializeTable(): void {
-    const columns: ITableColumn<IProgram>[] = [
-      { key: 'programId', label: 'ID', dataKey: 'programId', sortable: true, width: '80px' },
-      { key: 'program', label: 'Program', dataKey: 'program', sortable: true, searchable: true },
-      { key: 'programCategory', label: 'Category', dataKey: 'programCategory', sortable: false },
-      {
-        key: 'isSpecialProgram',
-        label: 'Special',
-        dataKey: 'isSpecialProgram',
-        sortable: true,
-        width: '100px',
-        align: 'center',
-        formatter: (value) => (value ? 'Yes' : 'No')
-      },
+    const columns: ITableColumn<IFaq>[] = [
+      { key: 'faqId', label: 'ID', dataKey: 'faqId', sortable: true, width: '80px' },
+      { key: 'faq', label: 'Question', dataKey: 'faq', sortable: true, searchable: true },
+      { key: 'faqCategory', label: 'Category', dataKey: 'faqCategory', sortable: false },
       {
         key: 'active',
         label: 'Status',
@@ -94,7 +85,7 @@ export class Programs implements OnInit {
         sortable: true
       }
     ];
-    const actions: ITableAction<IProgram>[] = [
+    const actions: ITableAction<IFaq>[] = [
       { label: 'Edit', icon: 'edit', color: 'primary', onClick: (row) => this.editItem(row) },
       { label: 'View', icon: 'visibility', color: 'primary', onClick: (row) => this.viewItem(row) },
       {
@@ -116,12 +107,12 @@ export class Programs implements OnInit {
       columns,
       actions,
       showSearch: true,
-      searchPlaceholder: 'Search programs...',
+      searchPlaceholder: 'Search FAQ...',
       showPagination: true,
       pageSize: 10,
       pageSizeOptions: [5, 10, 25, 50],
       showHeader: true,
-      emptyMessage: 'No programs found'
+      emptyMessage: 'No FAQ records found'
     };
   }
 
@@ -142,7 +133,7 @@ export class Programs implements OnInit {
   async loadData(): Promise<void> {
     this.loading = true;
     try {
-      const response: ITableList<IProgram> = await this.apiService.getList({
+      const response: ITableList<IFaq> = await this.apiService.getList({
         page: 0,
         limit: this.tableConfig.pageSize || 10
       });
@@ -157,7 +148,7 @@ export class Programs implements OnInit {
   async onPageChange(pagination: any): Promise<void> {
     this.loading = true;
     try {
-      const response: ITableList<IProgram> = await this.apiService.getList({
+      const response: ITableList<IFaq> = await this.apiService.getList({
         page: pagination.pageIndex,
         limit: pagination.pageSize
       });
@@ -172,7 +163,7 @@ export class Programs implements OnInit {
   async onSortChange(sort: any): Promise<void> {
     this.loading = true;
     try {
-      const response: ITableList<IProgram> = await this.apiService.getList({
+      const response: ITableList<IFaq> = await this.apiService.getList({
         page: 0,
         limit: this.tableConfig.pageSize || 10,
         sortBy: sort.active,
@@ -190,25 +181,25 @@ export class Programs implements OnInit {
     this.searchSubject.next(search);
   }
 
-  editItem(item: IProgram): void {
-    this.router.navigate(['/programs/edit', item.programId]);
+  editItem(item: IFaq): void {
+    this.router.navigate(['/faq/edit', item.faqId]);
   }
 
   createItem(): void {
-    this.router.navigate(['/programs/new']);
+    this.router.navigate(['/faq/new']);
   }
 
-  viewItem(item: IProgram): void {
-    console.log('View program:', item);
+  viewItem(item: IFaq): void {
+    console.log('View FAQ:', item);
   }
 
-  async toggleStatus(item: IProgram): Promise<void> {
+  async toggleStatus(item: IFaq): Promise<void> {
     const action = item.active ? 'deactivate' : 'activate';
-    const confirmed = confirm(`Are you sure you want to ${action} "${item.program}"?`);
+    const confirmed = confirm(`Are you sure you want to ${action} this FAQ?`);
     if (confirmed) {
       this.loading = true;
       try {
-        await this.apiService.updateStatus(item.programId, !item.active);
+        await this.apiService.updateStatus(item.faqId, !item.active);
         await this.loadData();
       } catch {
         this.loading = false;

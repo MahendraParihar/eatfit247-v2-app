@@ -8,7 +8,7 @@ import {
   ITableColumn, ITableConfig, ITableAction
 } from '@shared';
 import { ITableList, IBlog } from '@eatfit247-shared-lib';
-import { BlogsApiService } from '../api.service';
+import { BlogsApiService } from './api.service';
 import { Subject, debounceTime, distinctUntilChanged, switchMap } from 'rxjs';
 
 @Component({

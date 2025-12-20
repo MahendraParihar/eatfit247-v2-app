@@ -4,26 +4,26 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { DataTableComponent, ITableColumn, ITableConfig, ITableAction, createdByUserFormatter, updatedByUserFormatter } from '@shared';
-import { ITableList, IFranchise } from '@eatfit247-shared-lib';
-import { FranchiseApiService } from '../api.service';
+import { ITableList, IPocketGuide } from '@eatfit247-shared-lib';
+import { PocketGuideApiService } from './api.service';
 import { Subject, debounceTime, distinctUntilChanged, switchMap } from 'rxjs';
 
 @Component({
-  selector: 'lib-franchise',
+  selector: 'lib-pocket-guide',
   standalone: true,
   imports: [CommonModule, DataTableComponent, MatButtonModule, MatIconModule],
-  templateUrl: './franchise.html',
-  styleUrl: './franchise.scss',
+  templateUrl: './pocket-guide.html',
+  styleUrl: './pocket-guide.scss',
 })
-export class Franchise implements OnInit {
-  data: IFranchise[] = [];
+export class PocketGuide implements OnInit {
+  data: IPocketGuide[] = [];
   totalCount = 0;
   loading = false;
-  tableConfig!: ITableConfig<IFranchise>;
+  tableConfig!: ITableConfig<IPocketGuide>;
   private searchSubject = new Subject<string>();
 
   constructor(
-    private apiService: FranchiseApiService,
+    private apiService: PocketGuideApiService,
     private router: Router,
     private route: ActivatedRoute
   ) {
@@ -36,14 +36,13 @@ export class Franchise implements OnInit {
   }
 
   private initializeTable(): void {
-    const columns: ITableColumn<IFranchise>[] = [
-      { key: 'franchiseId', label: 'ID', dataKey: 'franchiseId', sortable: true, width: '80px' },
-      { key: 'companyName', label: 'Company Name', dataKey: 'companyName', sortable: true, searchable: true },
-      { key: 'firstName', label: 'First Name', dataKey: 'firstName', sortable: true },
-      { key: 'lastName', label: 'Last Name', dataKey: 'lastName', sortable: true },
-      { key: 'emailId', label: 'Email', dataKey: 'emailId', sortable: true, searchable: true },
-      { key: 'contactNumber', label: 'Contact', dataKey: 'contactNumber', sortable: true },
-      { key: 'isPrimary', label: 'Primary', dataKey: 'isPrimary', sortable: true, width: '100px', align: 'center', formatter: (value) => (value ? 'Yes' : 'No') },
+    const columns: ITableColumn<IPocketGuide>[] = [
+      { key: 'pocketGuideId', label: 'ID', dataKey: 'pocketGuideId', sortable: true, width: '80px' },
+      { key: 'pocketGuide', label: 'Title', dataKey: 'pocketGuide', sortable: true, searchable: true },
+      { key: 'url', label: 'URL', dataKey: 'url', sortable: true },
+      { key: 'visitedCount', label: 'Views', dataKey: 'visitedCount', sortable: true, width: '100px', align: 'center' },
+      { key: 'shareCount', label: 'Shares', dataKey: 'shareCount', sortable: true, width: '100px', align: 'center' },
+      { key: 'isVisibleToAll', label: 'Visible', dataKey: 'isVisibleToAll', sortable: true, width: '100px', align: 'center', formatter: (value) => (value ? 'Yes' : 'No') },
       { key: 'active', label: 'Status', dataKey: 'active', sortable: true, width: '120px', align: 'center', formatter: (value) => (value ? 'Active' : 'Inactive') },
       { key: 'createdByUser', label: 'Created By', dataKey: 'createdByUser', sortable: false, formatter: createdByUserFormatter() },
       { key: 'updatedByUser', label: 'Updated By', dataKey: 'updatedByUser', sortable: false, formatter: updatedByUserFormatter() },
@@ -63,7 +62,7 @@ export class Franchise implements OnInit {
       },
     ];
 
-    const actions: ITableAction<IFranchise>[] = [
+    const actions: ITableAction<IPocketGuide>[] = [
       { label: 'Edit', icon: 'edit', color: 'primary', onClick: (row) => this.editItem(row) },
       { label: 'View', icon: 'visibility', color: 'primary', onClick: (row) => this.viewItem(row) },
       { label: 'Active', icon: 'check_circle', color: 'primary', visible: (row) => row.active === true, onClick: (row) => this.toggleStatus(row) },
@@ -74,12 +73,12 @@ export class Franchise implements OnInit {
       columns,
       actions,
       showSearch: true,
-      searchPlaceholder: 'Search franchise...',
+      searchPlaceholder: 'Search pocket guide...',
       showPagination: true,
       pageSize: 10,
       pageSizeOptions: [5, 10, 25, 50],
       showHeader: true,
-      emptyMessage: 'No franchise records found',
+      emptyMessage: 'No pocket guide records found',
     };
   }
 
@@ -96,7 +95,7 @@ export class Franchise implements OnInit {
   async loadData(): Promise<void> {
     this.loading = true;
     try {
-      const response: ITableList<IFranchise> = await this.apiService.getList({ page: 0, limit: this.tableConfig.pageSize || 10 });
+      const response: ITableList<IPocketGuide> = await this.apiService.getList({ page: 0, limit: this.tableConfig.pageSize || 10 });
       this.data = response.tableData;
       this.totalCount = response.count;
       this.loading = false;
@@ -108,7 +107,7 @@ export class Franchise implements OnInit {
   async onPageChange(pagination: any): Promise<void> {
     this.loading = true;
     try {
-      const response: ITableList<IFranchise> = await this.apiService.getList({ page: pagination.pageIndex, limit: pagination.pageSize });
+      const response: ITableList<IPocketGuide> = await this.apiService.getList({ page: pagination.pageIndex, limit: pagination.pageSize });
       this.data = response.tableData;
       this.totalCount = response.count;
       this.loading = false;
@@ -120,7 +119,7 @@ export class Franchise implements OnInit {
   async onSortChange(sort: any): Promise<void> {
     this.loading = true;
     try {
-      const response: ITableList<IFranchise> = await this.apiService.getList({ page: 0, limit: this.tableConfig.pageSize || 10, sortBy: sort.active, sortOrder: sort.direction });
+      const response: ITableList<IPocketGuide> = await this.apiService.getList({ page: 0, limit: this.tableConfig.pageSize || 10, sortBy: sort.active, sortOrder: sort.direction });
       this.data = response.tableData;
       this.totalCount = response.count;
       this.loading = false;
@@ -133,25 +132,25 @@ export class Franchise implements OnInit {
     this.searchSubject.next(search);
   }
 
-  editItem(item: IFranchise): void {
-    this.router.navigate(['/franchise/edit', item.franchiseId]);
+  editItem(item: IPocketGuide): void {
+    this.router.navigate(['/pocket-guide/edit', item.pocketGuideId]);
   }
 
   createItem(): void {
-    this.router.navigate(['/franchise/new']);
+    this.router.navigate(['/pocket-guide/new']);
   }
 
-  viewItem(item: IFranchise): void {
-    console.log('View franchise:', item);
+  viewItem(item: IPocketGuide): void {
+    console.log('View pocket guide:', item);
   }
 
-  async toggleStatus(item: IFranchise): Promise<void> {
+  async toggleStatus(item: IPocketGuide): Promise<void> {
     const action = item.active ? 'deactivate' : 'activate';
-    const confirmed = confirm(`Are you sure you want to ${action} "${item.companyName}"?`);
+    const confirmed = confirm(`Are you sure you want to ${action} "${item.pocketGuide}"?`);
     if (confirmed) {
       this.loading = true;
       try {
-        await this.apiService.updateStatus(item.franchiseId, !item.active);
+        await this.apiService.updateStatus(item.pocketGuideId, !item.active);
         await this.loadData();
       } catch {
         this.loading = false;

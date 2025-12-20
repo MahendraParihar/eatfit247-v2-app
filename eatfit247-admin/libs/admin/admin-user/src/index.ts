@@ -1,2 +1,2 @@
 export * from './lib/lib.routes';
-export * from './lib/admin-user/admin-user.component';
+export * from './lib/admin-user.component';

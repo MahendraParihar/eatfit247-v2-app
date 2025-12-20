@@ -30,8 +30,8 @@ export class FaqApiService extends ApiBaseService {
     return await this.httpService.put<void>(`${this.endpoint}/manage/${id}`, data);
   }
 
-  async updateStatus(id: number, isActive: boolean): Promise<void> {
-    return await this.httpService.patch<void>(`${this.endpoint}/update-status/${id}`, { isActive });
+  async updateStatus(id: number, active: boolean): Promise<void> {
+    return await this.httpService.patch<void>(`${this.endpoint}/update-status/${id}`, { active });
   }
 
   // FAQ Category methods
@@ -60,5 +60,10 @@ export class FaqApiService extends ApiBaseService {
   async getCategoryDropdown(): Promise<IDropdownItem[]> {
     const res = await this.httpService.get<IResponse<IDropdownItem[]>>(`${this.endpoint}/category/dropdown`);
     return res.data as IDropdownItem[];
+  }
+
+  async getMasterData(): Promise<{ faqCategory: IDropdownItem[] }> {
+    const res = await this.httpService.get<IResponse<{ faqCategory: IDropdownItem[] }>>(`${this.endpoint}/faq-master`);
+    return res.data as { faqCategory: IDropdownItem[] };
   }
 }
