@@ -1,3 +1,3 @@
 export * from './lib/lib.routes';
 
-export * from './lib/franchise/franchise';
+export * from './lib/franchise/franchise.component';

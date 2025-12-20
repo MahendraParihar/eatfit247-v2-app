@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { ApiBaseService, HttpService } from '@core';
-import { ITableList, IPressMedia } from '@eatfit247-shared-lib';
+import { ITableList, IPressMedia, IResponse } from '@eatfit247-shared-lib';
 
 @Injectable({
   providedIn: 'root',
@@ -13,11 +13,13 @@ export class PressMediaApiService extends ApiBaseService {
   }
 
   async getList(params?: any): Promise<ITableList<IPressMedia>> {
-    return await this.httpService.get<ITableList<IPressMedia>>(`${this.endpoint}/list`, { params });
+    const res = await this.httpService.get<IResponse<ITableList<IPressMedia>>>(`${this.endpoint}/list`, { params });
+    return res.data as ITableList<IPressMedia>;
   }
 
   async getById(id: number): Promise<IPressMedia> {
-    return await this.httpService.get<IPressMedia>(`${this.endpoint}/manage/${id}`);
+    const res = await this.httpService.get<IResponse<IPressMedia>>(`${this.endpoint}/manage/${id}`);
+    return res.data as IPressMedia;
   }
 
   async create(data: any): Promise<void> {

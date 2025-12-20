@@ -1,3 +1,3 @@
 export * from './lib/lib.routes';
 
-export * from './lib/blogs/blogs';
+export * from './lib/blogs/blogs.component';

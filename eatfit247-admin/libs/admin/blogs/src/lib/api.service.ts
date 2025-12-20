@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { ApiBaseService, HttpService } from '@core';
-import { ITableList, IBlog, IDropdownItem } from '@eatfit247-shared-lib';
+import { ITableList, IBlog, IDropdownItem, IResponse } from '@eatfit247-shared-lib';
 
 @Injectable({
   providedIn: 'root',
@@ -13,11 +13,13 @@ export class BlogsApiService extends ApiBaseService {
   }
 
   async getList(params?: any): Promise<ITableList<IBlog>> {
-    return await this.httpService.get<ITableList<IBlog>>(`${this.endpoint}/list`, { params });
+    const res = await this.httpService.get<IResponse<ITableList<IBlog>>>(`${this.endpoint}/list`, { params });
+    return res.data as ITableList<IBlog>;
   }
 
   async getById(id: number): Promise<IBlog> {
-    return await this.httpService.get<IBlog>(`${this.endpoint}/manage/${id}`);
+    const res = await this.httpService.get<IResponse<IBlog>>(`${this.endpoint}/manage/${id}`);
+    return res.data as IBlog;
   }
 
   async create(data: any): Promise<void> {
@@ -33,9 +35,10 @@ export class BlogsApiService extends ApiBaseService {
   }
 
   async getMasterData(): Promise<{ blogCategory: IDropdownItem[]; blogAuthor: IDropdownItem[] }> {
-    return await this.httpService.get<{ blogCategory: IDropdownItem[]; blogAuthor: IDropdownItem[] }>(
+    const res = await this.httpService.get<IResponse<{ blogCategory: IDropdownItem[]; blogAuthor: IDropdownItem[] }>>(
       `${this.endpoint}/blog-master`
     );
+    return res.data as { blogCategory: IDropdownItem[]; blogAuthor: IDropdownItem[] };
   }
 }
 

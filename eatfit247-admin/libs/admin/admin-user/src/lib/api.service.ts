@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { ApiBaseService, HttpService } from '@core';
-import { ITableList, IAdminUser, IDropdownItem } from '@eatfit247-shared-lib';
+import { ITableList, IAdminUser, IDropdownItem, IResponse } from '@eatfit247-shared-lib';
 
 @Injectable({
   providedIn: 'root',
@@ -13,11 +13,13 @@ export class AdminUserApiService extends ApiBaseService {
   }
 
   async getList(params?: any): Promise<ITableList<IAdminUser>> {
-    return await this.httpService.get<ITableList<IAdminUser>>(`${this.endpoint}/list`, { params });
+    const res = await this.httpService.get<IResponse<ITableList<IAdminUser>>>(`${this.endpoint}/list`, { params });
+    return res.data as ITableList<IAdminUser>;
   }
 
   async getById(id: number): Promise<IAdminUser> {
-    return await this.httpService.get<IAdminUser>(`${this.endpoint}/manage/${id}`);
+    const res = await this.httpService.get<IResponse<IAdminUser>>(`${this.endpoint}/manage/${id}`);
+    return res.data as IAdminUser;
   }
 
   async create(data: any): Promise<void> {
@@ -33,7 +35,8 @@ export class AdminUserApiService extends ApiBaseService {
   }
 
   async getDropdown(): Promise<IDropdownItem[]> {
-    return await this.httpService.get<IDropdownItem[]>(`${this.endpoint}/dropdown`);
+    const res = await this.httpService.get<IResponse<IDropdownItem[]>>(`${this.endpoint}/dropdown`);
+    return res.data as IDropdownItem[];
   }
 }
 

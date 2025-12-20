@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { ApiBaseService, HttpService } from '@core';
-import { ITableList, IReferrer } from '@eatfit247-shared-lib';
+import { ITableList, IReferrer, IResponse } from '@eatfit247-shared-lib';
 
 @Injectable({
   providedIn: 'root',
@@ -13,11 +13,13 @@ export class ReferrerApiService extends ApiBaseService {
   }
 
   async getList(params?: any): Promise<ITableList<IReferrer>> {
-    return await this.httpService.get<ITableList<IReferrer>>(`${this.endpoint}/list`, { params });
+    const res = await this.httpService.get<IResponse<ITableList<IReferrer>>>(`${this.endpoint}/list`, { params });
+    return res.data as ITableList<IReferrer>;
   }
 
   async getById(id: number): Promise<IReferrer> {
-    return await this.httpService.get<IReferrer>(`${this.endpoint}/manage/${id}`);
+    const res = await this.httpService.get<IResponse<IReferrer>>(`${this.endpoint}/manage/${id}`);
+    return res.data as IReferrer;
   }
 
   async create(data: any): Promise<void> {

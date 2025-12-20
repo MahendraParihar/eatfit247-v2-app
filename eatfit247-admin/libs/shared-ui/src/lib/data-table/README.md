@@ -22,14 +22,14 @@ A generic, configurable table component built with Angular Material that support
 The component is already available in the `@shared` library. Import it in your component:
 
 ```typescript
-import { DataTableComponent, TableColumn, TableConfig, TableAction } from '@shared';
+import { DataTableComponent, ITableColumn, ITableConfig, ITableAction } from '@shared';
 ```
 
 ## Basic Usage
 
 ```typescript
 import { Component } from '@angular/core';
-import { DataTableComponent, TableColumn, TableConfig } from '@shared';
+import { DataTableComponent, ITableColumn, ITableConfig } from '@shared';
 import { IBlog, ITableList } from '@eatfit247-shared-lib';
 import { BlogsApiService } from 'blogs';
 
@@ -53,7 +53,7 @@ export class BlogsComponent {
   blogs: IBlog[] = [];
   totalCount = 0;
   loading = false;
-  tableConfig!: TableConfig<IBlog>;
+  tableConfig!: ITableConfig<IBlog>;
 
   constructor(private blogsApi: BlogsApiService) {
     this.initializeTable();
@@ -64,7 +64,7 @@ export class BlogsComponent {
   }
 
   private initializeTable(): void {
-    const columns: TableColumn<IBlog>[] = [
+    const columns: ITableColumn<IBlog>[] = [
       {
         key: 'blogId',
         label: 'ID',
@@ -138,7 +138,35 @@ export class BlogsComponent {
 
 ## Advanced Usage
 
+### Image Columns
+
+The data-table component has built-in support for image columns using the `app-img` component. Simply set `type: 'image'` on a column:
+
+```typescript
+const columns: ITableColumn[] = [
+  {
+    key: 'image',
+    label: 'Image',
+    dataKey: 'imageUrl', // or 'imagePath' for IMediaUpload[]
+    type: 'image',
+    isAvatar: true, // Optional: render as circular avatar
+    imageAlt: 'Product image', // Optional: alt text
+    mediaPath: '/api/media/', // Optional: prefix for relative URLs
+    width: '80px',
+    align: 'center',
+  },
+];
+```
+
+The `app-img` component automatically handles:
+- `IMediaUpload[]` arrays (uses first item's `webUrl`)
+- String URLs (absolute or relative)
+- Placeholder images on error
+- Avatar styling when `isAvatar: true`
+
 ### Custom Cell Templates
+
+For more complex custom rendering, you can still use custom templates:
 
 ```typescript
 @Component({
@@ -151,7 +179,7 @@ export class BlogsComponent {
         </mat-chip>
       </ng-template>
 
-      <!-- Custom image cell -->
+      <!-- Custom image cell (alternative to type: 'image') -->
       <ng-template #imageCell let-row let-value="value">
         <img [src]="value" alt="Image" class="table-image" />
       </ng-template>
@@ -162,7 +190,7 @@ export class MyComponent {
   @ViewChild('statusCell') statusCellTemplate!: TemplateRef<any>;
   @ViewChild('imageCell') imageCellTemplate!: TemplateRef<any>;
 
-  tableConfig: TableConfig = {
+  tableConfig: ITableConfig = {
     columns: [
       {
         key: 'status',
@@ -182,7 +210,7 @@ export class MyComponent {
 ### Row Actions
 
 ```typescript
-const actions: TableAction<IBlog>[] = [
+const actions: ITableAction<IBlog>[] = [
   {
     label: 'View',
     icon: 'visibility',
@@ -228,7 +256,7 @@ onSelectionChange(selected: IBlog[]): void {
 ### Nested Data Access
 
 ```typescript
-const columns: TableColumn<IBlog>[] = [
+const columns: ITableColumn<IBlog>[] = [
   {
     key: 'author',
     label: 'Author',
@@ -243,7 +271,7 @@ const columns: TableColumn<IBlog>[] = [
 ### Sticky Columns
 
 ```typescript
-const columns: TableColumn[] = [
+const columns: ITableColumn[] = [
   {
     key: 'id',
     label: 'ID',
@@ -274,12 +302,12 @@ this.tableConfig = {
 
 ## Configuration Options
 
-### TableConfig
+### ITableConfig
 
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
-| `columns` | `TableColumn[]` | Required | Array of column definitions |
-| `actions` | `TableAction[]` | `[]` | Array of row actions |
+| `columns` | `ITableColumn[]` | Required | Array of column definitions |
+| `actions` | `ITableAction[]` | `[]` | Array of row actions |
 | `selectable` | `boolean` | `false` | Enable row selection |
 | `showSearch` | `boolean` | `true` | Show search bar |
 | `searchPlaceholder` | `string` | `'Search...'` | Search input placeholder |
@@ -293,7 +321,7 @@ this.tableConfig = {
 | `onRowClick` | `(row: T) => void` | - | Row click handler |
 | `rowClass` | `(row: T) => string \| string[]` | - | Custom row class function |
 
-### TableColumn
+### ITableColumn
 
 | Property | Type | Description |
 |----------|------|-------------|
@@ -303,6 +331,7 @@ this.tableConfig = {
 | `sortable` | `boolean` | Enable sorting (default: `true`) |
 | `sortFn` | `(a: T, b: T) => number` | Custom sort function |
 | `searchable` | `boolean` | Include in search (default: `false`) |
+| `type` | `'image' \| 'text' \| 'number' \| 'date' \| 'boolean'` | Column type - 'image' uses app-img component |
 | `cellTemplate` | `TemplateRef` | Custom cell template |
 | `headerTemplate` | `TemplateRef` | Custom header template |
 | `width` | `string` | Column width (CSS value) |
@@ -311,8 +340,11 @@ this.tableConfig = {
 | `stickyEnd` | `boolean` | Sticky to right side |
 | `formatter` | `(value: any, row: T) => string` | Custom value formatter |
 | `hidden` | `boolean` | Hide column |
+| `isAvatar` | `boolean` | Image-specific: render as circular avatar |
+| `imageAlt` | `string` | Image-specific: alt text for image |
+| `mediaPath` | `string` | Image-specific: media path prefix for relative URLs |
 
-### TableAction
+### ITableAction
 
 | Property | Type | Description |
 |----------|------|-------------|

@@ -1,9 +1,18 @@
-<app-data-table
-  [config]="tableConfig"
-  [data]="data"
-  [totalCount]="totalCount"
-  [loading]="loading"
-  (pageChange)="onPageChange($event)"
-  (sortChange)="onSortChange($event)"
-  (searchChange)="onSearchChange($event)"
-></app-data-table>
+<div class="list-container">
+  <app-data-table
+    [config]="tableConfig"
+    [data]="data"
+    [totalCount]="totalCount"
+    [loading]="loading"
+    (pageChange)="onPageChange($event)"
+    (sortChange)="onSortChange($event)"
+    (searchChange)="onSearchChange($event)"
+  >
+    <div headerActions>
+      <button mat-raised-button color="primary" (click)="createItem()">
+        <mat-icon>add</mat-icon>
+        Create New
+      </button>
+    </div>
+  </app-data-table>
+</div>

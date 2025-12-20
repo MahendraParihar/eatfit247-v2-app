@@ -1,34 +1,34 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { TablePagination, TableSort } from './data-table.config';
+import { ITablePagination, ITableSort } from './data-table.interface';
 import { ITableListFilter } from '@eatfit247-shared-lib';
 
 @Injectable({
   providedIn: 'root',
 })
 export class DataTableService {
-  private paginationSubject = new BehaviorSubject<TablePagination>({
+  private paginationSubject = new BehaviorSubject<ITablePagination>({
     pageIndex: 0,
     pageSize: 10,
     length: 0,
   });
 
-  private sortSubject = new BehaviorSubject<TableSort>({
+  private sortSubject = new BehaviorSubject<ITableSort>({
     active: '',
     direction: '',
   });
 
   private searchSubject = new BehaviorSubject<string>('');
 
-  pagination$: Observable<TablePagination> = this.paginationSubject.asObservable();
-  sort$: Observable<TableSort> = this.sortSubject.asObservable();
+  pagination$: Observable<ITablePagination> = this.paginationSubject.asObservable();
+  sort$: Observable<ITableSort> = this.sortSubject.asObservable();
   search$: Observable<string> = this.searchSubject.asObservable();
 
-  updatePagination(pagination: TablePagination): void {
+  updatePagination(pagination: ITablePagination): void {
     this.paginationSubject.next(pagination);
   }
 
-  updateSort(sort: TableSort): void {
+  updateSort(sort: ITableSort): void {
     this.sortSubject.next(sort);
   }
 
@@ -36,11 +36,11 @@ export class DataTableService {
     this.searchSubject.next(search);
   }
 
-  getCurrentPagination(): TablePagination {
+  getCurrentPagination(): ITablePagination {
     return this.paginationSubject.value;
   }
 
-  getCurrentSort(): TableSort {
+  getCurrentSort(): ITableSort {
     return this.sortSubject.value;
   }
 

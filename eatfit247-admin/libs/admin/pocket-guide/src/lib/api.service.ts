@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { ApiBaseService, HttpService } from '@core';
-import { ITableList, IPocketGuide } from '@eatfit247-shared-lib';
+import { ITableList, IPocketGuide, IResponse } from '@eatfit247-shared-lib';
 
 @Injectable({
   providedIn: 'root',
@@ -13,11 +13,13 @@ export class PocketGuideApiService extends ApiBaseService {
   }
 
   async getList(params?: any): Promise<ITableList<IPocketGuide>> {
-    return await this.httpService.get<ITableList<IPocketGuide>>(`${this.endpoint}/list`, { params });
+    const res = await this.httpService.get<IResponse<ITableList<IPocketGuide>>>(`${this.endpoint}/list`, { params });
+    return res.data as ITableList<IPocketGuide>;
   }
 
   async getById(id: number): Promise<IPocketGuide> {
-    return await this.httpService.get<IPocketGuide>(`${this.endpoint}/manage/${id}`);
+    const res = await this.httpService.get<IResponse<IPocketGuide>>(`${this.endpoint}/manage/${id}`);
+    return res.data as IPocketGuide;
   }
 
   async create(data: any): Promise<void> {

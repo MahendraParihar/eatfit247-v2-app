@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { ApiBaseService, HttpService } from '@core';
-import { ITableList, IFaq, IFaqCategory, IDropdownItem } from '@eatfit247-shared-lib';
+import { ITableList, IFaq, IFaqCategory, IDropdownItem, IResponse } from '@eatfit247-shared-lib';
 
 @Injectable({
   providedIn: 'root',
@@ -13,11 +13,13 @@ export class FaqApiService extends ApiBaseService {
   }
 
   async getList(params?: any): Promise<ITableList<IFaq>> {
-    return await this.httpService.get<ITableList<IFaq>>(`${this.endpoint}/list`, { params });
+    const res = await this.httpService.get<IResponse<ITableList<IFaq>>>(`${this.endpoint}/list`, { params });
+    return res.data as ITableList<IFaq>;
   }
 
   async getById(id: number): Promise<IFaq> {
-    return await this.httpService.get<IFaq>(`${this.endpoint}/manage/${id}`);
+    const res = await this.httpService.get<IResponse<IFaq>>(`${this.endpoint}/manage/${id}`);
+    return res.data as IFaq;
   }
 
   async create(data: any): Promise<void> {
@@ -34,11 +36,13 @@ export class FaqApiService extends ApiBaseService {
 
   // FAQ Category methods
   async getCategoryList(params?: any): Promise<ITableList<IFaqCategory>> {
-    return await this.httpService.get<ITableList<IFaqCategory>>(`${this.endpoint}/category/list`, { params });
+    const res = await this.httpService.get<IResponse<ITableList<IFaqCategory>>>(`${this.endpoint}/category/list`, { params });
+    return res.data as ITableList<IFaqCategory>;
   }
 
   async getCategoryById(id: number): Promise<IFaqCategory> {
-    return await this.httpService.get<IFaqCategory>(`${this.endpoint}/category/manage/${id}`);
+    const res = await this.httpService.get<IResponse<IFaqCategory>>(`${this.endpoint}/category/manage/${id}`);
+    return res.data as IFaqCategory;
   }
 
   async createCategory(data: any): Promise<void> {
@@ -54,6 +58,7 @@ export class FaqApiService extends ApiBaseService {
   }
 
   async getCategoryDropdown(): Promise<IDropdownItem[]> {
-    return await this.httpService.get<IDropdownItem[]>(`${this.endpoint}/category/dropdown`);
+    const res = await this.httpService.get<IResponse<IDropdownItem[]>>(`${this.endpoint}/category/dropdown`);
+    return res.data as IDropdownItem[];
   }
 }

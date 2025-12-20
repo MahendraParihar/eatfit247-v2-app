@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { PocketGuide } from './pocket-guide';
+import { PocketGuide } from './pocket-guide.component';
 
 describe('PocketGuide', () => {
   let component: PocketGuide;

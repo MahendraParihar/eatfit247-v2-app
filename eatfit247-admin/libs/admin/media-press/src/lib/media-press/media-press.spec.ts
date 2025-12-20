@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { MediaPress } from './media-press';
+import { MediaPress } from './media-press.component';
 
 describe('MediaPress', () => {
   let component: MediaPress;

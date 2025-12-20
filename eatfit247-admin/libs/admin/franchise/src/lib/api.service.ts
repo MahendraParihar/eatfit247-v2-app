@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { ApiBaseService, HttpService } from '@core';
-import { ITableList, IFranchise, IDropdownItem } from '@eatfit247-shared-lib';
+import { ITableList, IFranchise, IDropdownItem, IResponse } from '@eatfit247-shared-lib';
 
 @Injectable({
   providedIn: 'root',
@@ -13,11 +13,13 @@ export class FranchiseApiService extends ApiBaseService {
   }
 
   async getList(params?: any): Promise<ITableList<IFranchise>> {
-    return await this.httpService.get<ITableList<IFranchise>>(`${this.endpoint}/list`, { params });
+    const res = await this.httpService.get<IResponse<ITableList<IFranchise>>>(`${this.endpoint}/list`, { params });
+    return res.data as ITableList<IFranchise>;
   }
 
   async getById(id: number): Promise<IFranchise> {
-    return await this.httpService.get<IFranchise>(`${this.endpoint}/manage/${id}`);
+    const res = await this.httpService.get<IResponse<IFranchise>>(`${this.endpoint}/manage/${id}`);
+    return res.data as IFranchise;
   }
 
   async create(data: any): Promise<void> {
@@ -33,6 +35,7 @@ export class FranchiseApiService extends ApiBaseService {
   }
 
   async getDropdown(): Promise<{ franchise: IDropdownItem[] }> {
-    return await this.httpService.get<{ franchise: IDropdownItem[] }>(`${this.endpoint}/dropdown`);
+    const res = await this.httpService.get<IResponse<{ franchise: IDropdownItem[] }>>(`${this.endpoint}/dropdown`);
+    return res.data as { franchise: IDropdownItem[] };
   }
 }

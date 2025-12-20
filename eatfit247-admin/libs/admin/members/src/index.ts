@@ -1,3 +1,3 @@
 export * from './lib/lib.routes';
 
-export * from './lib/members/members';
+export * from './lib/members/members.component';

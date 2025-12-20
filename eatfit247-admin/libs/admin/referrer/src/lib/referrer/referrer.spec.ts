@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Referrer } from './referrer';
+import { Referrer } from './referrer.component';
 
 describe('Referrer', () => {
   let component: Referrer;

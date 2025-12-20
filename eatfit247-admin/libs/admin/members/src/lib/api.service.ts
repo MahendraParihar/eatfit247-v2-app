@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { ApiBaseService, HttpService } from '@core';
-import { ITableList, IMember } from '@eatfit247-shared-lib';
+import { ITableList, IMember, IResponse } from '@eatfit247-shared-lib';
 
 @Injectable({
   providedIn: 'root',
@@ -13,11 +13,13 @@ export class MembersApiService extends ApiBaseService {
   }
 
   async getList(params?: any): Promise<ITableList<IMember>> {
-    return await this.httpService.get<ITableList<IMember>>(`${this.endpoint}/list`, { params });
+    const res = await this.httpService.get<IResponse<ITableList<IMember>>>(`${this.endpoint}/list`, { params });
+    return res.data as ITableList<IMember>;
   }
 
   async getById(id: number): Promise<IMember> {
-    return await this.httpService.get<IMember>(`${this.endpoint}/manage/${id}`);
+    const res = await this.httpService.get<IResponse<IMember>>(`${this.endpoint}/manage/${id}`);
+    return res.data as IMember;
   }
 
   async create(data: any): Promise<void> {

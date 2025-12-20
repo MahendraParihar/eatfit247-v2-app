@@ -3,7 +3,14 @@ import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { DataTableComponent, ITableColumn, ITableConfig, ITableAction, createdByUserFormatter, updatedByUserFormatter } from '@shared';
+import {
+  DataTableComponent,
+  ITableColumn,
+  ITableConfig,
+  ITableAction,
+  createdByUserFormatter,
+  updatedByUserFormatter
+} from '@shared';
 import { ITableList, IFaq } from '@eatfit247-shared-lib';
 import { FaqApiService } from '../api.service';
 import { Subject, debounceTime, distinctUntilChanged, switchMap } from 'rxjs';
@@ -13,7 +20,7 @@ import { Subject, debounceTime, distinctUntilChanged, switchMap } from 'rxjs';
   standalone: true,
   imports: [CommonModule, DataTableComponent, MatButtonModule, MatIconModule],
   templateUrl: './faq.html',
-  styleUrl: './faq.scss',
+  styleUrl: './faq.scss'
 })
 export class Faq implements OnInit {
   data: IFaq[] = [];
@@ -39,10 +46,30 @@ export class Faq implements OnInit {
     const columns: ITableColumn<IFaq>[] = [
       { key: 'faqId', label: 'ID', dataKey: 'faqId', sortable: true, width: '80px' },
       { key: 'faq', label: 'Question', dataKey: 'faq', sortable: true, searchable: true },
-      { key: 'faqCategory', label: 'Category', dataKey: 'faqCategory', sortable: false, formatter: (value) => value?.faqCategory || '-' },
-      { key: 'active', label: 'Status', dataKey: 'active', sortable: true, width: '120px', align: 'center', formatter: (value) => (value ? 'Active' : 'Inactive') },
-      { key: 'createdByUser', label: 'Created By', dataKey: 'createdByUser', sortable: false, formatter: createdByUserFormatter() },
-      { key: 'updatedByUser', label: 'Updated By', dataKey: 'updatedByUser', sortable: false, formatter: updatedByUserFormatter() },
+      { key: 'faqCategory', label: 'Category', dataKey: 'faqCategory', sortable: false },
+      {
+        key: 'active',
+        label: 'Status',
+        dataKey: 'active',
+        sortable: true,
+        width: '120px',
+        align: 'center',
+        formatter: (value) => (value ? 'Active' : 'Inactive')
+      },
+      {
+        key: 'createdByUser',
+        label: 'Created By',
+        dataKey: 'createdByUser',
+        sortable: false,
+        formatter: createdByUserFormatter()
+      },
+      {
+        key: 'updatedByUser',
+        label: 'Updated By',
+        dataKey: 'updatedByUser',
+        sortable: false,
+        formatter: updatedByUserFormatter()
+      },
       {
         key: 'createdAt',
         label: 'Created At',
@@ -56,16 +83,26 @@ export class Faq implements OnInit {
         dataKey: 'updatedAt',
         type: 'date',
         sortable: true
-      },
+      }
     ];
-
     const actions: ITableAction<IFaq>[] = [
       { label: 'Edit', icon: 'edit', color: 'primary', onClick: (row) => this.editItem(row) },
       { label: 'View', icon: 'visibility', color: 'primary', onClick: (row) => this.viewItem(row) },
-      { label: 'Active', icon: 'check_circle', color: 'primary', visible: (row) => row.active === true, onClick: (row) => this.toggleStatus(row) },
-      { label: 'Inactive', icon: 'cancel', color: 'warn', visible: (row) => row.active === false, onClick: (row) => this.toggleStatus(row) },
+      {
+        label: 'Active',
+        icon: 'check_circle',
+        color: 'primary',
+        visible: (row) => row.active === true,
+        onClick: (row) => this.toggleStatus(row)
+      },
+      {
+        label: 'Inactive',
+        icon: 'cancel',
+        color: 'warn',
+        visible: (row) => row.active === false,
+        onClick: (row) => this.toggleStatus(row)
+      }
     ];
-
     this.tableConfig = {
       columns,
       actions,
@@ -75,7 +112,7 @@ export class Faq implements OnInit {
       pageSize: 10,
       pageSizeOptions: [5, 10, 25, 50],
       showHeader: true,
-      emptyMessage: 'No FAQ records found',
+      emptyMessage: 'No FAQ records found'
     };
   }
 
@@ -84,15 +121,22 @@ export class Faq implements OnInit {
       this.loading = true;
       return this.apiService.getList({ search, page: 0, limit: this.tableConfig.pageSize || 10 });
     })).subscribe({
-      next: (response) => { this.data = response.tableData; this.totalCount = response.count; this.loading = false; },
-      error: () => { this.loading = false; },
+      next: (response) => {
+        this.data = response.tableData;
+        this.totalCount = response.count;
+        this.loading = false;
+      },
+      error: () => { this.loading = false; }
     });
   }
 
   async loadData(): Promise<void> {
     this.loading = true;
     try {
-      const response: ITableList<IFaq> = await this.apiService.getList({ page: 0, limit: this.tableConfig.pageSize || 10 });
+      const response: ITableList<IFaq> = await this.apiService.getList({
+        page: 0,
+        limit: this.tableConfig.pageSize || 10
+      });
       this.data = response.tableData;
       this.totalCount = response.count;
       this.loading = false;
@@ -104,7 +148,10 @@ export class Faq implements OnInit {
   async onPageChange(pagination: any): Promise<void> {
     this.loading = true;
     try {
-      const response: ITableList<IFaq> = await this.apiService.getList({ page: pagination.pageIndex, limit: pagination.pageSize });
+      const response: ITableList<IFaq> = await this.apiService.getList({
+        page: pagination.pageIndex,
+        limit: pagination.pageSize
+      });
       this.data = response.tableData;
       this.totalCount = response.count;
       this.loading = false;
@@ -116,7 +163,12 @@ export class Faq implements OnInit {
   async onSortChange(sort: any): Promise<void> {
     this.loading = true;
     try {
-      const response: ITableList<IFaq> = await this.apiService.getList({ page: 0, limit: this.tableConfig.pageSize || 10, sortBy: sort.active, sortOrder: sort.direction });
+      const response: ITableList<IFaq> = await this.apiService.getList({
+        page: 0,
+        limit: this.tableConfig.pageSize || 10,
+        sortBy: sort.active,
+        sortOrder: sort.direction
+      });
       this.data = response.tableData;
       this.totalCount = response.count;
       this.loading = false;

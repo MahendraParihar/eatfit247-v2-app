@@ -1,3 +1,3 @@
 export * from './lib/lib.routes';
 
-export * from './lib/referrer/referrer';
+export * from './lib/referrer/referrer.component';

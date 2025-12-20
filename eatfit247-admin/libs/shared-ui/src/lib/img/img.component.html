@@ -2,5 +2,5 @@
   [src]="imageUrl || 'assets/images/placeholder.png'"
   [alt]="alt"
   [class.avatar]="isAvatar"
-  (error)="imageUrl = 'assets/images/placeholder.png'"
+  (error)="onImageError()"
 />
