@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard, CurrentUser, RequestedIp, BasicSearchDto, UpdateActiveDto } from '@server/common';
-import { LegalPagesService } from '../../services/legal-pages.service';
+import { LegalPagesService } from '../../services';
 import { CreateLegalPageDto } from '../../dto';
 import { ITableList, ILegalPageList, IResponse } from 'eatfit247-shared-lib';
 
