@@ -107,12 +107,14 @@ INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
 VALUES (DEFAULT, 'CLIENT_URL', 'http://localhost:4200', 'Common');
 
 INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
-VALUES
-    (DEFAULT, 'SYSTEM_EMAIL_USER', 'info@eatfit247.com', 'Email'),
-    (DEFAULT, 'SYSTEM_EMAIL_PASSWORD', 'shweta@123456789', 'Email'),
-    (DEFAULT, 'SYSTEM_EMAIL_HOST', 'server.eatfit247.com', 'Email'),
-    (DEFAULT, 'SYSTEM_EMAIL_ENABLE', 'true', 'Email'),
-    (DEFAULT, 'SYSTEM_EMAIL_PORT', '587', 'Email');
+VALUES (DEFAULT, 'SYSTEM_EMAIL_USER', 'info@eatfit247.com', 'Email'),
+       (DEFAULT, 'SYSTEM_EMAIL_PASSWORD', 'shweta@123456789', 'Email'),
+       (DEFAULT, 'SYSTEM_EMAIL_HOST', 'server.eatfit247.com', 'Email'),
+       (DEFAULT, 'SYSTEM_EMAIL_ENABLE', 'true', 'Email'),
+       (DEFAULT, 'SYSTEM_EMAIL_PORT', '587', 'Email');
+
+INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
+VALUES (DEFAULT, 'CLIENT_URL', 'localhost:4200', 'Common');
 
 alter table public.log_errors
     alter column environment type varchar(250) using environment::varchar(250);
@@ -140,3 +142,24 @@ alter table public.log_errors
 
 alter table public.txn_admin_password_reset_tokens
     alter column expires_at type timestamptz using expires_at::timestamptz;
+
+create type public.banner_for as enum ('home', 'about_us', 'program', 'product', 'quiz', 'media_press', 'success_stories', 'blogs', 'contact_us');
+
+create table public.txn_banner
+(
+    banner_id       SERIAL                      NOT NULL PRIMARY KEY,
+    title           character varying(100)      not null,
+    image_path      jsonb                       not null,
+    active          boolean                     not null default true,
+    created_at      timestamp without time zone not null default CURRENT_TIMESTAMP,
+    updated_at      timestamp without time zone not null default CURRENT_TIMESTAMP,
+    created_by      integer                     not null,
+    updated_by      integer                     not null,
+    sub_title       character varying(200),
+    is_internal_url boolean                     not null default false,
+    url             character varying(200),
+    created_ip      character varying(50),
+    modified_ip     character varying(50),
+    banner_for      banner_for                  not null default 'home'::banner_for
+);
+
