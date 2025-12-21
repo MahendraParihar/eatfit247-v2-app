@@ -47,7 +47,7 @@ export class CommonFunctionsUtil {
     return `EF24B7${paymentId}${moment().format('YYYYMMDD')}`;
   }
 
-  public static buildImageUrl(images: IMediaUpload[], baseUrl: string): IMediaUpload[] {
+  public static buildImageUrl(images: IMediaUpload[], baseUrl: string | undefined): IMediaUpload[] {
     if (!images || images.length === 0) {
       return images;
     }

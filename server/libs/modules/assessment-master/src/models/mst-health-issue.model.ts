@@ -19,21 +19,21 @@ export class MstHealthIssue extends Model<MstHealthIssue> {
     field: 'health_issue_id',
     autoIncrement: true,
   })
-  healthIssueId: number;
+  declare healthIssueId: number;
 
   @Column({
     allowNull: false,
     field: 'health_issue',
     type: DataType.STRING(50),
   })
-  healthIssue: string;
+  declare healthIssue: string;
 
   @Column({
     allowNull: true,
     field: 'image_path',
     type: DataType.JSONB,
   })
-  imagePath: IMediaUpload[];
+  declare imagePath: IMediaUpload[];
 
   @Column({
     allowNull: false,
@@ -41,20 +41,20 @@ export class MstHealthIssue extends Model<MstHealthIssue> {
     field: 'active',
     type: DataType.BOOLEAN,
   })
-  active: boolean;
+  declare active: boolean;
 
   @BelongsTo(() => MstAdminUser, { as: 'createdByUser', foreignKey: 'createdBy', targetKey: 'adminId' })
-  createdByUser: MstAdminUser;
+  declare createdByUser: MstAdminUser;
 
   @BelongsTo(() => MstAdminUser, { as: 'updatedByUser', foreignKey: 'modifiedBy', targetKey: 'adminId' })
-  updatedByUser: MstAdminUser;
+  declare updatedByUser: MstAdminUser;
 
   @Column({
     allowNull: false,
     field: 'created_by',
     type: DataType.INTEGER,
   })
-  createdBy: number;
+  declare createdBy: number;
 
   @CreatedAt
   @Column({
@@ -68,7 +68,7 @@ export class MstHealthIssue extends Model<MstHealthIssue> {
     field: 'modified_by',
     type: DataType.INTEGER,
   })
-  modifiedBy: number;
+  declare modifiedBy: number;
 
   @UpdatedAt
   @Column({
@@ -82,13 +82,13 @@ export class MstHealthIssue extends Model<MstHealthIssue> {
     field: 'created_ip',
     type: DataType.STRING(InputLengthEnum.IP),
   })
-  createdIp: string;
+  declare createdIp: string;
 
   @Column({
     allowNull: false,
     field: 'modified_ip',
     type: DataType.STRING(InputLengthEnum.IP),
   })
-  modifiedIp: string;
+  declare modifiedIp: string;
 }
 

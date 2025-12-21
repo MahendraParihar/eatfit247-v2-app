@@ -29,14 +29,14 @@ export class MstIssueStatus extends Model<MstIssueStatus> {
     field: 'issue_status_id',
     autoIncrement: true,
   })
-  issueStatusId: number;
+  declare issueStatusId: number;
 
   @Column({
     allowNull: false,
     field: 'issue_status',
     type: DataType.STRING(InputLengthEnum.CHAR_50),
   })
-  issueStatus: string;
+  declare issueStatus: string;
 
   @Column({
     allowNull: false,
@@ -44,20 +44,20 @@ export class MstIssueStatus extends Model<MstIssueStatus> {
     field: 'active',
     type: DataType.BOOLEAN,
   })
-  active: boolean;
+  declare active: boolean;
 
   @BelongsTo(() => MstAdminUser, { as: 'createdByUser', foreignKey: 'createdBy', targetKey: 'adminId' })
-  createdByUser: MstAdminUser;
+  declare createdByUser: MstAdminUser;
 
   @BelongsTo(() => MstAdminUser, { as: 'updatedByUser', foreignKey: 'modifiedBy', targetKey: 'adminId' })
-  updatedByUser: MstAdminUser;
+  declare updatedByUser: MstAdminUser;
 
   @Column({
     allowNull: false,
     field: 'created_by',
     type: DataType.INTEGER,
   })
-  createdBy: number;
+  declare createdBy: number;
 
   @CreatedAt
   @Column({
@@ -71,7 +71,7 @@ export class MstIssueStatus extends Model<MstIssueStatus> {
     field: 'modified_by',
     type: DataType.INTEGER,
   })
-  modifiedBy: number;
+  declare modifiedBy: number;
 
   @UpdatedAt
   @Column({

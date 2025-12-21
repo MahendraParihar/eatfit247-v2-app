@@ -41,35 +41,35 @@ export class MstAdminRolePermission extends Model<MstAdminRolePermission> {
     field: 'admin_role_permission_id',
     autoIncrement: true,
   })
-  adminRolePermissionId: number;
+  declare adminRolePermissionId: number;
 
   @BelongsTo(() => MstAdminRole, {
     foreignKey: 'roleId',
     targetKey: 'roleId',
     as: 'role',
   })
-  role: any;
+  declare role: any;
 
   @Column({
     allowNull: false,
     field: 'role_id',
     type: DataType.INTEGER,
   })
-  roleId: number;
+  declare roleId: number;
 
   @BelongsTo(() => MstAdminUser, {
     foreignKey: 'adminId',
     targetKey: 'adminId',
     as: 'admin',
   })
-  admin: MstAdminUser;
+  declare admin: MstAdminUser;
 
   @Column({
     allowNull: false,
     field: 'admin_id',
     type: DataType.INTEGER,
   })
-  adminId: number;
+  declare adminId: number;
 
   @Column({
     allowNull: false,
@@ -77,20 +77,20 @@ export class MstAdminRolePermission extends Model<MstAdminRolePermission> {
     field: 'active',
     type: DataType.BOOLEAN,
   })
-  active: boolean;
+  declare active: boolean;
 
   @BelongsTo(() => MstAdminUser, { as: 'createdByUser', foreignKey: 'createdBy', targetKey: 'adminId' })
-  createdByUser: MstAdminUser;
+  declare createdByUser: MstAdminUser;
 
   @BelongsTo(() => MstAdminUser, { as: 'updatedByUser', foreignKey: 'modifiedBy', targetKey: 'adminId' })
-  updatedByUser: MstAdminUser;
+  declare updatedByUser: MstAdminUser;
 
   @Column({
     allowNull: false,
     field: 'created_by',
     type: DataType.INTEGER,
   })
-  createdBy: number;
+  declare createdBy: number;
 
   @CreatedAt
   @Column({
@@ -104,7 +104,7 @@ export class MstAdminRolePermission extends Model<MstAdminRolePermission> {
     field: 'modified_by',
     type: DataType.INTEGER,
   })
-  modifiedBy: number;
+  declare modifiedBy: number;
 
   @UpdatedAt
   @Column({
@@ -118,13 +118,13 @@ export class MstAdminRolePermission extends Model<MstAdminRolePermission> {
     field: 'created_ip',
     type: DataType.STRING(InputLengthEnum.IP),
   })
-  createdIp: string;
+  declare createdIp: string;
 
   @Column({
     allowNull: false,
     field: 'modified_ip',
     type: DataType.STRING(InputLengthEnum.IP),
   })
-  modifiedIp: string;
+  declare modifiedIp: string;
 }
 

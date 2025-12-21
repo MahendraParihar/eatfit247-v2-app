@@ -42,35 +42,35 @@ export class MstState extends Model<MstState> {
     field: 'state_id',
     autoIncrement: true,
   })
-  stateId: number;
+  declare stateId: number;
 
   @Column({
     allowNull: false,
     field: 'state',
     type: DataType.STRING(100),
   })
-  state: string;
+  declare state: string;
 
   @Column({
     allowNull: false,
     field: 'code',
     type: DataType.STRING(10),
   })
-  code: string;
+  declare code: string;
 
   @BelongsTo(() => MstCountry, {
     foreignKey: 'countryId',
     targetKey: 'countryId',
     as: 'country',
   })
-  country: MstCountry;
+  declare country: MstCountry;
 
   @Column({
     allowNull: false,
     field: 'country_id',
     type: DataType.INTEGER,
   })
-  countryId: number;
+  declare countryId: number;
 
   @Column({
     allowNull: false,
@@ -78,20 +78,20 @@ export class MstState extends Model<MstState> {
     field: 'active',
     type: DataType.BOOLEAN,
   })
-  active: boolean;
+  declare active: boolean;
 
   @BelongsTo(() => MstAdminUser, { as: 'createdByUser', foreignKey: 'createdBy', targetKey: 'adminId' })
-  createdByUser: MstAdminUser;
+  declare createdByUser: MstAdminUser;
 
   @BelongsTo(() => MstAdminUser, { as: 'updatedByUser', foreignKey: 'modifiedBy', targetKey: 'adminId' })
-  updatedByUser: MstAdminUser;
+  declare updatedByUser: MstAdminUser;
 
   @Column({
     allowNull: false,
     field: 'created_by',
     type: DataType.INTEGER,
   })
-  createdBy: number;
+  declare createdBy: number;
 
   @CreatedAt
   @Column({
@@ -105,7 +105,7 @@ export class MstState extends Model<MstState> {
     field: 'modified_by',
     type: DataType.INTEGER,
   })
-  modifiedBy: number;
+  declare modifiedBy: number;
 
   @UpdatedAt
   @Column({
@@ -119,13 +119,13 @@ export class MstState extends Model<MstState> {
     field: 'created_ip',
     type: DataType.STRING(InputLengthEnum.IP),
   })
-  createdIp: string;
+  declare createdIp: string;
 
   @Column({
     allowNull: false,
     field: 'modified_ip',
     type: DataType.STRING(InputLengthEnum.IP),
   })
-  modifiedIp: string;
+  declare modifiedIp: string;
 }
 

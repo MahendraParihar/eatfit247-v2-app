@@ -42,31 +42,31 @@ export class TxnFaq extends Model<TxnFaq> {
     field: 'faq_id',
     autoIncrement: true,
   })
-  faqId: number;
+  declare faqId: number;
 
   @BelongsTo(() => MstFaqCategory, { as: 'faqCategory', foreignKey: 'faqCategoryId', targetKey: 'faqCategoryId' })
-  faqCategory: MstFaqCategory;
+  declare faqCategory: MstFaqCategory;
 
   @Column({
     allowNull: false,
     field: 'faq_category_id',
     type: DataType.INTEGER,
   })
-  faqCategoryId: number;
+  declare faqCategoryId: number;
 
   @Column({
     allowNull: false,
     field: 'faq',
     type: DataType.STRING(InputLengthEnum.CHAR_500),
   })
-  faq: string;
+  declare faq: string;
 
   @Column({
     allowNull: false,
     field: 'answer',
     type: DataType.TEXT,
   })
-  answer: string;
+  declare answer: string;
 
   @Column({
     allowNull: false,
@@ -74,20 +74,20 @@ export class TxnFaq extends Model<TxnFaq> {
     field: 'active',
     type: DataType.BOOLEAN,
   })
-  active: boolean;
+  declare active: boolean;
 
   @BelongsTo(() => MstAdminUser, { as: 'createdByUser', foreignKey: 'createdBy', targetKey: 'adminId' })
-  createdByUser: MstAdminUser;
+  declare createdByUser: MstAdminUser;
 
   @BelongsTo(() => MstAdminUser, { as: 'updatedByUser', foreignKey: 'modifiedBy', targetKey: 'adminId' })
-  updatedByUser: MstAdminUser;
+  declare updatedByUser: MstAdminUser;
 
   @Column({
     allowNull: false,
     field: 'created_by',
     type: DataType.INTEGER,
   })
-  createdBy: number;
+  declare createdBy: number;
 
   @CreatedAt
   @Column({
@@ -101,7 +101,7 @@ export class TxnFaq extends Model<TxnFaq> {
     field: 'modified_by',
     type: DataType.INTEGER,
   })
-  modifiedBy: number;
+  declare modifiedBy: number;
 
   @UpdatedAt
   @Column({
@@ -115,13 +115,13 @@ export class TxnFaq extends Model<TxnFaq> {
     field: 'created_ip',
     type: DataType.STRING(InputLengthEnum.IP),
   })
-  createdIp: string;
+  declare createdIp: string;
 
   @Column({
     allowNull: false,
     field: 'modified_ip',
     type: DataType.STRING(InputLengthEnum.IP),
   })
-  modifiedIp: string;
+  declare modifiedIp: string;
 }
 

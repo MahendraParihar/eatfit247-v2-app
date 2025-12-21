@@ -19,28 +19,28 @@ export class MstCountry extends Model<MstCountry> {
     field: 'country_id',
     autoIncrement: true,
   })
-  countryId: number;
+  declare countryId: number;
 
   @Column({
     allowNull: false,
     field: 'country',
     type: DataType.STRING(100),
   })
-  country: string;
+  declare country: string;
 
   @Column({
     allowNull: true,
     field: 'country_code',
     type: DataType.STRING(5),
   })
-  countryCode: string;
+  declare countryCode: string;
 
   @Column({
     allowNull: true,
     field: 'phone_number_code',
     type: DataType.STRING(5),
   })
-  phoneNumberCode: string;
+  declare phoneNumberCode: string;
 
   @Column({
     allowNull: false,
@@ -48,20 +48,20 @@ export class MstCountry extends Model<MstCountry> {
     field: 'active',
     type: DataType.BOOLEAN,
   })
-  active: boolean;
+  declare active: boolean;
 
   @BelongsTo(() => MstAdminUser, { as: 'createdByUser', foreignKey: 'createdBy', targetKey: 'adminId' })
-  createdByUser: MstAdminUser;
+  declare createdByUser: MstAdminUser;
 
   @BelongsTo(() => MstAdminUser, { as: 'updatedByUser', foreignKey: 'modifiedBy', targetKey: 'adminId' })
-  updatedByUser: MstAdminUser;
+  declare updatedByUser: MstAdminUser;
 
   @Column({
     allowNull: false,
     field: 'created_by',
     type: DataType.INTEGER,
   })
-  createdBy: number;
+  declare createdBy: number;
 
   @CreatedAt
   @Column({
@@ -75,7 +75,7 @@ export class MstCountry extends Model<MstCountry> {
     field: 'modified_by',
     type: DataType.INTEGER,
   })
-  modifiedBy: number;
+  declare modifiedBy: number;
 
   @UpdatedAt
   @Column({
@@ -89,13 +89,13 @@ export class MstCountry extends Model<MstCountry> {
     field: 'created_ip',
     type: DataType.STRING(InputLengthEnum.IP),
   })
-  createdIp: string;
+  declare createdIp: string;
 
   @Column({
     allowNull: false,
     field: 'modified_ip',
     type: DataType.STRING(InputLengthEnum.IP),
   })
-  modifiedIp: string;
+  declare modifiedIp: string;
 }
 

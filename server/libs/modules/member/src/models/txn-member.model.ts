@@ -103,56 +103,56 @@ export class TxnMember extends Model<TxnMember> {
     field: 'member_id',
     autoIncrement: true,
   })
-  memberId: number;
+  declare memberId: number;
 
   @Column({
     allowNull: false,
     field: 'first_name',
     type: DataType.STRING(50),
   })
-  firstName: string;
+  declare firstName: string;
 
   @Column({
     allowNull: false,
     field: 'last_name',
     type: DataType.STRING(50),
   })
-  lastName: string;
+  declare lastName: string;
 
   @Column({
     allowNull: true,
     field: 'profile_picture',
     type: DataType.JSONB,
   })
-  profilePicture: string;
+  declare profilePicture: string;
 
   @Column({
     allowNull: false,
     field: 'password',
     type: DataType.TEXT,
   })
-  password: string;
+  declare password: string;
 
   @Column({
     allowNull: true,
     field: 'password_temp',
     type: DataType.TEXT,
   })
-  passwordTemp: string;
+  declare passwordTemp: string;
 
   @Column({
     allowNull: false,
     field: 'country_code',
     type: DataType.STRING(5),
   })
-  countryCode: string;
+  declare countryCode: string;
 
   @Column({
     allowNull: false,
     field: 'contact_number',
     type: DataType.STRING(16),
   })
-  contactNumber: string;
+  declare contactNumber: string;
 
   @Column({
     allowNull: false,
@@ -160,7 +160,7 @@ export class TxnMember extends Model<TxnMember> {
     unique: true,
     type: DataType.STRING(100),
   })
-  emailId: string;
+  declare emailId: string;
 
   @Column({
     allowNull: false,
@@ -168,63 +168,63 @@ export class TxnMember extends Model<TxnMember> {
     field: 'has_any_plan',
     type: DataType.BOOLEAN,
   })
-  hasAnyPlan: boolean;
+  declare hasAnyPlan: boolean;
 
   @BelongsTo(() => require('../../../referrer/src/models/mst-referrer.model').MstReferrer, {
     foreignKey: 'referrerId',
     targetKey: 'referrerId',
     as: 'referrer',
   })
-  referrer: any;
+  declare referrer: any;
 
   @Column({
     allowNull: true,
     field: 'referrer_id',
     type: DataType.INTEGER,
   })
-  referrerId: number;
+  declare referrerId: number;
 
   @BelongsTo(() => require('../../../../common/src/models/mst-franchise.model').MstFranchise, {
     foreignKey: 'franchiseId',
     targetKey: 'franchiseId',
     as: 'franchise',
   })
-  franchise: any;
+  declare franchise: any;
 
   @Column({
     allowNull: false,
     field: 'franchise_id',
     type: DataType.INTEGER,
   })
-  franchiseId: number;
+  declare franchiseId: number;
 
   @BelongsTo(() => require('../../../locations/src/models/mst-country.model').MstCountry, {
     foreignKey: 'countryId',
     targetKey: 'countryId',
     as: 'country',
   })
-  country: any;
+  declare country: any;
 
   @Column({
     allowNull: false,
     field: 'country_id',
     type: DataType.INTEGER,
   })
-  countryId: number;
+  declare countryId: number;
 
   @BelongsTo(() => MstAdminUser, {
     foreignKey: 'nutritionistId',
     targetKey: 'adminId',
     as: 'nutritionist',
   })
-  nutritionist: MstAdminUser;
+  declare nutritionist: MstAdminUser;
 
   @Column({
     allowNull: true,
     field: 'nutritionist_id',
     type: DataType.INTEGER,
   })
-  nutritionistId: number;
+  declare nutritionistId: number;
 
   @Column({
     allowNull: false,
@@ -232,27 +232,27 @@ export class TxnMember extends Model<TxnMember> {
     field: 'user_status_id',
     type: DataType.INTEGER,
   })
-  userStatusId: number;
+  declare userStatusId: number;
 
   @Column({
     allowNull: true,
     field: 'deactivation_reason',
     type: DataType.STRING(1000),
   })
-  deactivationReason: string;
+  declare deactivationReason: string;
 
   @BelongsTo(() => MstAdminUser, { as: 'createdByUser', foreignKey: 'createdBy', targetKey: 'adminId' })
-  createdByUser: MstAdminUser;
+  declare createdByUser: MstAdminUser;
 
   @BelongsTo(() => MstAdminUser, { as: 'updatedByUser', foreignKey: 'modifiedBy', targetKey: 'adminId' })
-  updatedByUser: MstAdminUser;
+  declare updatedByUser: MstAdminUser;
 
   @Column({
     allowNull: true,
     field: 'created_by',
     type: DataType.INTEGER,
   })
-  createdBy: number;
+  declare createdBy: number;
 
   @CreatedAt
   @Column({
@@ -266,7 +266,7 @@ export class TxnMember extends Model<TxnMember> {
     field: 'modified_by',
     type: DataType.INTEGER,
   })
-  modifiedBy: number;
+  declare modifiedBy: number;
 
   @UpdatedAt
   @Column({
@@ -280,13 +280,13 @@ export class TxnMember extends Model<TxnMember> {
     field: 'created_ip',
     type: DataType.STRING(InputLengthEnum.IP),
   })
-  createdIp: string;
+  declare createdIp: string;
 
   @Column({
     allowNull: false,
     field: 'modified_ip',
     type: DataType.STRING(InputLengthEnum.IP),
   })
-  modifiedIp: string;
+  declare modifiedIp: string;
 }
 

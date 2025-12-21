@@ -49,102 +49,102 @@ export class MstProgramPlan extends Model<MstProgramPlan> {
     field: 'program_plan_id',
     autoIncrement: true,
   })
-  programPlanId: number;
+  declare programPlanId: number;
   @Column({
     allowNull: false,
     field: 'plan',
     type: DataType.STRING(100),
   })
-  plan: string;
+  declare plan: string;
   @Column({
     allowNull: false,
     field: 'url',
     type: DataType.STRING(250),
   })
-  url: string;
+  declare url: string;
   @Column({
     allowNull: true,
     field: 'details',
     type: DataType.TEXT,
   })
-  details: string;
+  declare details: string;
   @Column({
     allowNull: true,
     field: 'image_path',
     type: DataType.JSONB,
   })
-  imagePath: IMediaUpload[];
+  declare imagePath: IMediaUpload[];
   @Column({
     allowNull: false,
     field: 'sequence_number',
     type: DataType.INTEGER,
   })
-  sequenceNumber: number;
+  declare sequenceNumber: number;
   @Column({
     allowNull: false,
     defaultValue: 1,
     field: 'no_of_cycle',
     type: DataType.INTEGER,
   })
-  noOfCycle: number;
+  declare noOfCycle: number;
   @Column({
     allowNull: false,
     defaultValue: 1,
     field: 'no_of_days_in_cycle',
     type: DataType.INTEGER,
   })
-  noOfDaysInCycle: number;
+  declare noOfDaysInCycle: number;
   @BelongsTo(() => MstProgramPlanType, {
     as: 'programPlanType',
     foreignKey: 'programPlanTypeId',
     targetKey: 'programPlanTypeId',
   })
-  programPlanType: MstProgramPlanType;
+  declare programPlanType: MstProgramPlanType;
   @Column({
     allowNull: false,
     field: 'program_plan_type_id',
     type: DataType.INTEGER,
   })
-  programPlanTypeId: number;
+  declare programPlanTypeId: number;
   @Column({
     allowNull: false,
     defaultValue: true,
     field: 'is_online',
     type: DataType.BOOLEAN,
   })
-  isOnline: boolean;
+  declare isOnline: boolean;
   @Column({
     allowNull: false,
     defaultValue: false,
     field: 'is_visible_on_web',
     type: DataType.BOOLEAN,
   })
-  isVisibleOnWeb: boolean;
+  declare isVisibleOnWeb: boolean;
   @Column({
     allowNull: false,
     defaultValue: true,
     field: 'active',
     type: DataType.BOOLEAN,
   })
-  active: boolean;
+  declare active: boolean;
   @BelongsTo(() => MstAdminUser, {
     as: 'createdByUser',
     foreignKey: 'createdBy',
     targetKey: 'adminId',
   })
-  createdByUser: MstAdminUser;
+  declare createdByUser: MstAdminUser;
   @BelongsTo(() => MstAdminUser, {
     as: 'updatedByUser',
     foreignKey: 'modifiedBy',
     targetKey: 'adminId',
   })
-  updatedByUser: MstAdminUser;
+  declare updatedByUser: MstAdminUser;
   @Column({
     allowNull: false,
     field: 'created_by',
     type: DataType.INTEGER,
   })
-  createdBy: number;
+  declare createdBy: number;
   @CreatedAt
   @Column({
     allowNull: false,
@@ -156,7 +156,7 @@ export class MstProgramPlan extends Model<MstProgramPlan> {
     field: 'modified_by',
     type: DataType.INTEGER,
   })
-  modifiedBy: number;
+  declare modifiedBy: number;
   @UpdatedAt
   @Column({
     allowNull: false,
@@ -168,14 +168,14 @@ export class MstProgramPlan extends Model<MstProgramPlan> {
     field: 'created_ip',
     type: DataType.STRING(InputLengthEnum.IP),
   })
-  createdIp: string;
+  declare createdIp: string;
   @Column({
     allowNull: false,
     field: 'modified_ip',
     type: DataType.STRING(InputLengthEnum.IP),
   })
-  modifiedIp: string;
+  declare modifiedIp: string;
   @HasMany(() => TxnProgramPlanFees, { foreignKey: 'programPlanId' })
-  programPlanFees: TxnProgramPlanFees[];
+  declare programPlanFees: TxnProgramPlanFees[];
 }
 

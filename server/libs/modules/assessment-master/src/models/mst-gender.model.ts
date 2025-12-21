@@ -19,21 +19,21 @@ export class MstGender extends Model<MstGender> {
     field: 'gender_id',
     autoIncrement: true,
   })
-  genderId: number;
+  declare genderId: number;
 
   @Column({
     allowNull: false,
     field: 'gender',
     type: DataType.STRING(50),
   })
-  gender: string;
+  declare gender: string;
 
   @Column({
     allowNull: true,
     field: 'image_path',
     type: DataType.JSONB,
   })
-  imagePath: IMediaUpload[];
+  declare imagePath: IMediaUpload[];
 
   @Column({
     allowNull: false,
@@ -41,20 +41,20 @@ export class MstGender extends Model<MstGender> {
     field: 'active',
     type: DataType.BOOLEAN,
   })
-  active: boolean;
+  declare active: boolean;
 
   @BelongsTo(() => MstAdminUser, { as: 'createdByUser', foreignKey: 'createdBy', targetKey: 'adminId' })
-  createdByUser: MstAdminUser;
+  declare createdByUser: MstAdminUser;
 
   @BelongsTo(() => MstAdminUser, { as: 'updatedByUser', foreignKey: 'modifiedBy', targetKey: 'adminId' })
-  updatedByUser: MstAdminUser;
+  declare updatedByUser: MstAdminUser;
 
   @Column({
     allowNull: false,
     field: 'created_by',
     type: DataType.INTEGER,
   })
-  createdBy: number;
+  declare createdBy: number;
 
   @CreatedAt
   @Column({
@@ -68,7 +68,7 @@ export class MstGender extends Model<MstGender> {
     field: 'modified_by',
     type: DataType.INTEGER,
   })
-  modifiedBy: number;
+  declare modifiedBy: number;
 
   @UpdatedAt
   @Column({
@@ -82,13 +82,13 @@ export class MstGender extends Model<MstGender> {
     field: 'created_ip',
     type: DataType.STRING(InputLengthEnum.IP),
   })
-  createdIp: string;
+  declare createdIp: string;
 
   @Column({
     allowNull: false,
     field: 'modified_ip',
     type: DataType.STRING(InputLengthEnum.IP),
   })
-  modifiedIp: string;
+  declare modifiedIp: string;
 }
 

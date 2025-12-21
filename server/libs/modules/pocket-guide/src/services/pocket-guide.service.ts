@@ -65,11 +65,11 @@ export class PocketGuideService {
   }
 
   public async create(obj: IManagePocketGuide, cIp: string, adminId: number): Promise<void> {
-    const createObj = {
+    const createObj = <MstPocketGuide>{
       pocketGuide: obj.pocketGuide,
-      filePath: (obj.filePath && obj.filePath.length > 0) ? JSON.stringify(obj.filePath) : null,
+      filePath: obj.filePath && obj.filePath.length > 0 ? obj.filePath : null,
       description: obj.description || null,
-      imagePath: (obj.imagePath && obj.imagePath.length > 0) ? obj.imagePath : null,
+      imagePath: obj.imagePath && obj.imagePath.length > 0 ? obj.imagePath : null,
       active: obj.active,
       createdBy: adminId,
       modifiedBy: adminId,
@@ -86,11 +86,11 @@ export class PocketGuideService {
     if (!find) {
       throw new NotFoundException('Pocket guide not found');
     }
-    const updateObj = {
+    const updateObj = <MstPocketGuide>{
       pocketGuide: obj.pocketGuide,
-      filePath: (obj.filePath && obj.filePath.length > 0) ? JSON.stringify(obj.filePath) : (find.filePath || null),
+      filePath: obj.filePath && obj.filePath.length > 0 ? obj.filePath : null,
       description: obj.description || null,
-      imagePath: (obj.imagePath && obj.imagePath.length > 0) ? obj.imagePath : null,
+      imagePath: obj.imagePath && obj.imagePath.length > 0 ? obj.imagePath : null,
       active: obj.active,
       modifiedBy: adminId,
       modifiedIp: cIp,

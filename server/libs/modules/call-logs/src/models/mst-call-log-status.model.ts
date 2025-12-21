@@ -19,14 +19,14 @@ export class MstCallLogStatus extends Model<MstCallLogStatus> {
     field: 'call_log_status_id',
     autoIncrement: true,
   })
-  callLogStatusId: number;
+  declare callLogStatusId: number;
 
   @Column({
     allowNull: false,
     field: 'call_log_status',
     type: DataType.STRING(50),
   })
-  callLogStatus: string;
+  declare callLogStatus: string;
 
   @Column({
     allowNull: false,
@@ -34,20 +34,20 @@ export class MstCallLogStatus extends Model<MstCallLogStatus> {
     field: 'active',
     type: DataType.BOOLEAN,
   })
-  active: boolean;
+  declare active: boolean;
 
   @BelongsTo(() => MstAdminUser, { as: 'createdByUser', foreignKey: 'createdBy', targetKey: 'adminId' })
-  createdByUser: MstAdminUser;
+  declare createdByUser: MstAdminUser;
 
   @BelongsTo(() => MstAdminUser, { as: 'updatedByUser', foreignKey: 'modifiedBy', targetKey: 'adminId' })
-  updatedByUser: MstAdminUser;
+  declare updatedByUser: MstAdminUser;
 
   @Column({
     allowNull: false,
     field: 'created_by',
     type: DataType.INTEGER,
   })
-  createdBy: number;
+  declare createdBy: number;
 
   @CreatedAt
   @Column({
@@ -61,7 +61,7 @@ export class MstCallLogStatus extends Model<MstCallLogStatus> {
     field: 'modified_by',
     type: DataType.INTEGER,
   })
-  modifiedBy: number;
+  declare modifiedBy: number;
 
   @UpdatedAt
   @Column({
@@ -75,13 +75,13 @@ export class MstCallLogStatus extends Model<MstCallLogStatus> {
     field: 'created_ip',
     type: DataType.STRING(InputLengthEnum.IP),
   })
-  createdIp: string;
+  declare createdIp: string;
 
   @Column({
     allowNull: false,
     field: 'modified_ip',
     type: DataType.STRING(InputLengthEnum.IP),
   })
-  modifiedIp: string;
+  declare modifiedIp: string;
 }
 

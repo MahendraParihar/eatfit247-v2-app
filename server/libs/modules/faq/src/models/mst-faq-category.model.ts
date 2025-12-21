@@ -19,21 +19,21 @@ export class MstFaqCategory extends Model<MstFaqCategory> {
     field: 'faq_category_id',
     autoIncrement: true,
   })
-  faqCategoryId: number;
+  declare faqCategoryId: number;
 
   @Column({
     allowNull: false,
     field: 'faq_category',
     type: DataType.STRING(InputLengthEnum.CHAR_50),
   })
-  faqCategory: string;
+  declare faqCategory: string;
 
   @Column({
     allowNull: false,
     field: 'url',
     type: DataType.STRING(InputLengthEnum.CHAR_250),
   })
-  url: string;
+  declare url: string;
 
   @Column({
     allowNull: false,
@@ -41,20 +41,20 @@ export class MstFaqCategory extends Model<MstFaqCategory> {
     field: 'active',
     type: DataType.BOOLEAN,
   })
-  active: boolean;
+  declare active: boolean;
 
   @BelongsTo(() => MstAdminUser, { as: 'createdByUser', foreignKey: 'createdBy', targetKey: 'adminId' })
-  createdByUser: MstAdminUser;
+  declare createdByUser: MstAdminUser;
 
   @BelongsTo(() => MstAdminUser, { as: 'updatedByUser', foreignKey: 'modifiedBy', targetKey: 'adminId' })
-  updatedByUser: MstAdminUser;
+  declare updatedByUser: MstAdminUser;
 
   @Column({
     allowNull: false,
     field: 'created_by',
     type: DataType.INTEGER,
   })
-  createdBy: number;
+  declare createdBy: number;
 
   @CreatedAt
   @Column({
@@ -68,7 +68,7 @@ export class MstFaqCategory extends Model<MstFaqCategory> {
     field: 'modified_by',
     type: DataType.INTEGER,
   })
-  modifiedBy: number;
+  declare modifiedBy: number;
 
   @UpdatedAt
   @Column({
@@ -82,13 +82,13 @@ export class MstFaqCategory extends Model<MstFaqCategory> {
     field: 'created_ip',
     type: DataType.STRING(InputLengthEnum.IP),
   })
-  createdIp: string;
+  declare createdIp: string;
 
   @Column({
     allowNull: false,
     field: 'modified_ip',
     type: DataType.STRING(InputLengthEnum.IP),
   })
-  modifiedIp: string;
+  declare modifiedIp: string;
 }
 

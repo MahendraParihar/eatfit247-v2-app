@@ -42,132 +42,132 @@ export class MstRecipe extends Model<MstRecipe> {
     field: 'recipe_id',
     autoIncrement: true,
   })
-  recipeId: number;
+  declare recipeId: number;
   @Column({
     allowNull: false,
     field: 'name',
     type: DataType.STRING(255),
   })
-  name: string;
+  declare name: string;
   @BelongsTo(() => MstRecipeType, { as: 'recipeType', foreignKey: 'recipeTypeId', targetKey: 'recipeTypeId' })
-  recipeType: MstRecipeType;
+  declare recipeType: MstRecipeType;
   @Column({
     allowNull: false,
     field: 'recipe_type_id',
     type: DataType.INTEGER,
   })
-  recipeTypeId: number;
+  declare recipeTypeId: number;
   @Column({
     allowNull: true,
     field: 'details',
     type: DataType.TEXT,
   })
-  details: string;
+  declare details: string;
   @Column({
     allowNull: true,
     field: 'preparation_method',
     type: DataType.TEXT,
   })
-  preparationMethod: string;
+  declare preparationMethod: string;
   @Column({
     allowNull: true,
     field: 'ingredient',
     type: DataType.TEXT,
   })
-  ingredient: string;
+  declare ingredient: string;
   @Column({
     allowNull: true,
     field: 'how_to_make',
     type: DataType.TEXT,
   })
-  howToMake: string;
+  declare howToMake: string;
   @Column({
     allowNull: true,
     field: 'benefits',
     type: DataType.TEXT,
   })
-  benefits: string;
+  declare benefits: string;
   @Column({
     allowNull: false,
     field: 'image_path',
     type: DataType.JSONB,
   })
-  imagePath: IMediaUpload[];
+  declare imagePath: IMediaUpload[];
   @Column({
     allowNull: false,
     defaultValue: 0,
     field: 'visited_count',
     type: DataType.INTEGER,
   })
-  visitedCount: number;
+  declare visitedCount: number;
   @Column({
     allowNull: false,
     defaultValue: false,
     field: 'is_visible_to_all',
     type: DataType.BOOLEAN,
   })
-  isVisibleToAll: boolean;
+  declare isVisibleToAll: boolean;
   @Column({
     allowNull: false,
     defaultValue: 1,
     field: 'serving_count',
     type: DataType.INTEGER,
   })
-  servingCount: number;
+  declare servingCount: number;
   @Column({
     allowNull: false,
     defaultValue: 0,
     field: 'share_count',
     type: DataType.INTEGER,
   })
-  shareCount: number;
+  declare shareCount: number;
   @Column({
     field: 'tags',
     allowNull: true,
     type: DataType.ARRAY(DataType.STRING),
   })
-  tags: string[];
+  declare tags: string[];
   @Column({
     allowNull: true,
     field: 'download_path',
     type: DataType.JSONB,
   })
-  downloadPath: IMediaUpload[];
+  declare downloadPath: IMediaUpload[];
   @Column({
     allowNull: false,
     field: 'url',
     type: DataType.STRING(250),
   })
-  url: string;
+  declare url: string;
   @Column({
     allowNull: true,
     field: 'meta_title',
     type: DataType.STRING(InputLengthEnum.CHAR_60),
   })
-  metaTitle: string;
+  declare metaTitle: string;
   @Column({
     allowNull: true,
     field: 'meta_description',
     type: DataType.STRING(InputLengthEnum.CHAR_160),
   })
-  metaDescription: string;
+  declare metaDescription: string;
   @Column({
     allowNull: false,
     defaultValue: true,
     field: 'active',
     type: DataType.BOOLEAN,
   })
-  active: boolean;
+  declare active: boolean;
   @BelongsTo(() => MstAdminUser, { as: 'createdByUser', foreignKey: 'createdBy', targetKey: 'adminId' })
-  createdByUser: MstAdminUser;
+  declare createdByUser: MstAdminUser;
   @BelongsTo(() => MstAdminUser, { as: 'updatedByUser', foreignKey: 'modifiedBy', targetKey: 'adminId' })
-  updatedByUser: MstAdminUser;
+  declare updatedByUser: MstAdminUser;
   @Column({
     allowNull: false,
     field: 'created_by',
     type: DataType.INTEGER,
   })
-  createdBy: number;
+  declare createdBy: number;
   @CreatedAt
   @Column({
     allowNull: false,
@@ -179,7 +179,7 @@ export class MstRecipe extends Model<MstRecipe> {
     field: 'modified_by',
     type: DataType.INTEGER,
   })
-  modifiedBy: number;
+  declare modifiedBy: number;
   @UpdatedAt
   @Column({
     allowNull: false,
@@ -191,12 +191,12 @@ export class MstRecipe extends Model<MstRecipe> {
     field: 'created_ip',
     type: DataType.STRING(InputLengthEnum.IP),
   })
-  createdIp: string;
+  declare createdIp: string;
   @Column({
     allowNull: false,
     field: 'modified_ip',
     type: DataType.STRING(InputLengthEnum.IP),
   })
-  modifiedIp: string;
+  declare modifiedIp: string;
 }
 

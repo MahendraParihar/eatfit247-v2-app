@@ -19,35 +19,35 @@ export class MstPocketGuide extends Model<MstPocketGuide> {
     field: 'pocket_guide_id',
     autoIncrement: true,
   })
-  pocketGuideId: number;
+  declare pocketGuideId: number;
 
   @Column({
     allowNull: false,
     field: 'pocket_guide',
     type: DataType.STRING(50),
   })
-  pocketGuide: string;
+  declare pocketGuide: string;
 
   @Column({
     allowNull: false,
     field: 'file_path',
     type: DataType.JSONB,
   })
-  filePath: string;
+  declare filePath: IMediaUpload[];
 
   @Column({
     allowNull: true,
     field: 'description',
     type: DataType.TEXT,
   })
-  description: string;
+  declare description: string;
 
   @Column({
     allowNull: true,
     field: 'image_path',
     type: DataType.JSONB,
   })
-  imagePath: IMediaUpload[];
+  declare imagePath: IMediaUpload[];
 
   @Column({
     allowNull: false,
@@ -55,20 +55,28 @@ export class MstPocketGuide extends Model<MstPocketGuide> {
     field: 'active',
     type: DataType.BOOLEAN,
   })
-  active: boolean;
+  declare active: boolean;
 
-  @BelongsTo(() => MstAdminUser, { as: 'createdByUser', foreignKey: 'createdBy', targetKey: 'adminId' })
-  createdByUser: MstAdminUser;
+  @BelongsTo(() => MstAdminUser, {
+    as: 'createdByUser',
+    foreignKey: 'createdBy',
+    targetKey: 'adminId',
+  })
+  declare createdByUser: MstAdminUser;
 
-  @BelongsTo(() => MstAdminUser, { as: 'updatedByUser', foreignKey: 'modifiedBy', targetKey: 'adminId' })
-  updatedByUser: MstAdminUser;
+  @BelongsTo(() => MstAdminUser, {
+    as: 'updatedByUser',
+    foreignKey: 'modifiedBy',
+    targetKey: 'adminId',
+  })
+  declare updatedByUser: MstAdminUser;
 
   @Column({
     allowNull: false,
     field: 'created_by',
     type: DataType.INTEGER,
   })
-  createdBy: number;
+  declare createdBy: number;
 
   @CreatedAt
   @Column({
@@ -82,7 +90,7 @@ export class MstPocketGuide extends Model<MstPocketGuide> {
     field: 'modified_by',
     type: DataType.INTEGER,
   })
-  modifiedBy: number;
+  declare modifiedBy: number;
 
   @UpdatedAt
   @Column({
@@ -96,13 +104,13 @@ export class MstPocketGuide extends Model<MstPocketGuide> {
     field: 'created_ip',
     type: DataType.STRING(InputLengthEnum.IP),
   })
-  createdIp: string;
+  declare createdIp: string;
 
   @Column({
     allowNull: false,
     field: 'modified_ip',
     type: DataType.STRING(InputLengthEnum.IP),
   })
-  modifiedIp: string;
+  declare modifiedIp: string;
 }
 

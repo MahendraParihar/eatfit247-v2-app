@@ -19,14 +19,14 @@ export class MstProgramPlanType extends Model<MstProgramPlanType> {
     field: 'program_plan_type_id',
     autoIncrement: true,
   })
-  programPlanTypeId: number;
+  declare programPlanTypeId: number;
 
   @Column({
     allowNull: false,
     field: 'program_plan_type',
     type: DataType.STRING(100),
   })
-  programPlanType: string;
+  declare programPlanType: string;
 
   @Column({
     allowNull: false,
@@ -34,20 +34,20 @@ export class MstProgramPlanType extends Model<MstProgramPlanType> {
     field: 'active',
     type: DataType.BOOLEAN,
   })
-  active: boolean;
+  declare active: boolean;
 
   @BelongsTo(() => MstAdminUser, { as: 'createdByUser', foreignKey: 'createdBy', targetKey: 'adminId' })
-  createdByUser: MstAdminUser;
+  declare createdByUser: MstAdminUser;
 
   @BelongsTo(() => MstAdminUser, { as: 'updatedByUser', foreignKey: 'modifiedBy', targetKey: 'adminId' })
-  updatedByUser: MstAdminUser;
+  declare updatedByUser: MstAdminUser;
 
   @Column({
     allowNull: false,
     field: 'created_by',
     type: DataType.INTEGER,
   })
-  createdBy: number;
+  declare createdBy: number;
 
   @CreatedAt
   @Column({
@@ -61,7 +61,7 @@ export class MstProgramPlanType extends Model<MstProgramPlanType> {
     field: 'modified_by',
     type: DataType.INTEGER,
   })
-  modifiedBy: number;
+  declare modifiedBy: number;
 
   @UpdatedAt
   @Column({

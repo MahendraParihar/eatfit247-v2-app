@@ -8,6 +8,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatSelectModule } from '@angular/material/select';
 import { NgxEditorComponent, NgxEditorMenuComponent, Editor } from 'ngx-editor';
 import { FormsModule } from '@angular/forms';
 import { InputErrorComponent, UploadFormComponent, ValidationUtil } from '@shared';
@@ -31,6 +32,7 @@ import {
     MatIconModule,
     MatCardModule,
     MatCheckboxModule,
+    MatSelectModule,
     FormsModule,
     NgxEditorComponent,
     NgxEditorMenuComponent,
@@ -47,7 +49,7 @@ export class ManagePocketGuide implements OnInit, OnDestroy {
     description: [''],
     active: [true, [Validators.required]]
   });
-  initialData!: IPocketGuide;
+  initialData: IPocketGuide | null = null;
   isEditMode = false;
   pageTitle = 'Create Pocket Guide';
   mediaFor = MediaForEnum.POCKET_GUIDE;
@@ -88,6 +90,34 @@ export class ManagePocketGuide implements OnInit, OnDestroy {
         active: this.initialData.active !== undefined ? this.initialData.active : true
       });
     }
+  }
+
+  getFilePathList(): any[] {
+    if (!this.initialData || !this.initialData.filePath) {
+      return [];
+    }
+    if (Array.isArray(this.initialData.filePath)) {
+      return this.initialData.filePath;
+    }
+    if (typeof this.initialData.filePath === 'string') {
+      try {
+        const parsed = JSON.parse(this.initialData.filePath);
+        return Array.isArray(parsed) ? parsed : [parsed];
+      } catch {
+        return [];
+      }
+    }
+    return [];
+  }
+
+  getImagePathList(): any[] {
+    if (!this.initialData || !this.initialData.imagePath) {
+      return [];
+    }
+    if (Array.isArray(this.initialData.imagePath)) {
+      return this.initialData.imagePath;
+    }
+    return [this.initialData.imagePath];
   }
 
   async loadData(id: number): Promise<void> {

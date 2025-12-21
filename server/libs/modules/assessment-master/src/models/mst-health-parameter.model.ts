@@ -26,28 +26,28 @@ export class MstHealthParameter extends Model<MstHealthParameter> {
     field: 'health_parameter_id',
     autoIncrement: true,
   })
-  healthParameterId: number;
+  declare healthParameterId: number;
 
   @Column({
     allowNull: false,
     field: 'health_parameter',
     type: DataType.STRING(50),
   })
-  healthParameter: string;
+  declare healthParameter: string;
 
   @Column({
     allowNull: false,
     field: 'hint_text',
     type: DataType.STRING(50),
   })
-  hintText: string;
+  declare hintText: string;
 
   @Column({
     allowNull: true,
     field: 'image_path',
     type: DataType.JSONB,
   })
-  imagePath: IMediaUpload[];
+  declare imagePath: IMediaUpload[];
 
   @Column({
     allowNull: false,
@@ -55,21 +55,21 @@ export class MstHealthParameter extends Model<MstHealthParameter> {
     field: 'is_length',
     type: DataType.BOOLEAN,
   })
-  isLength: boolean;
+  declare isLength: boolean;
 
   @Column({
     allowNull: false,
     field: 'sequence',
     type: DataType.INTEGER,
   })
-  sequence: number;
+  declare sequence: number;
 
   @Column({
     allowNull: false,
     field: 'field_type',
     type: DataType.STRING(10),
   })
-  fieldType: string;
+  declare fieldType: string;
 
   @Column({
     allowNull: false,
@@ -77,7 +77,7 @@ export class MstHealthParameter extends Model<MstHealthParameter> {
     field: 'required_field',
     type: DataType.BOOLEAN,
   })
-  requiredField: boolean;
+  declare requiredField: boolean;
 
   @Column({
     allowNull: false,
@@ -85,20 +85,20 @@ export class MstHealthParameter extends Model<MstHealthParameter> {
     field: 'active',
     type: DataType.BOOLEAN,
   })
-  active: boolean;
+  declare active: boolean;
 
   @BelongsTo(() => MstAdminUser, { as: 'createdByUser', foreignKey: 'createdBy', targetKey: 'adminId' })
-  createdByUser: MstAdminUser;
+  declare createdByUser: MstAdminUser;
 
   @BelongsTo(() => MstAdminUser, { as: 'updatedByUser', foreignKey: 'modifiedBy', targetKey: 'adminId' })
-  updatedByUser: MstAdminUser;
+  declare updatedByUser: MstAdminUser;
 
   @Column({
     allowNull: false,
     field: 'created_by',
     type: DataType.INTEGER,
   })
-  createdBy: number;
+  declare createdBy: number;
 
   @CreatedAt
   @Column({
@@ -112,7 +112,7 @@ export class MstHealthParameter extends Model<MstHealthParameter> {
     field: 'modified_by',
     type: DataType.INTEGER,
   })
-  modifiedBy: number;
+  declare modifiedBy: number;
 
   @UpdatedAt
   @Column({
@@ -126,13 +126,13 @@ export class MstHealthParameter extends Model<MstHealthParameter> {
     field: 'created_ip',
     type: DataType.STRING(InputLengthEnum.IP),
   })
-  createdIp: string;
+  declare createdIp: string;
 
   @Column({
     allowNull: false,
     field: 'modified_ip',
     type: DataType.STRING(InputLengthEnum.IP),
   })
-  modifiedIp: string;
+  declare modifiedIp: string;
 }
 

@@ -29,133 +29,133 @@ export class MstReferrer extends Model<MstReferrer> {
     field: 'referrer_id',
     autoIncrement: true,
   })
-  referrerId: number;
+  declare referrerId: number;
 
   @Column({
     allowNull: false,
     field: 'name',
     type: DataType.STRING(100),
   })
-  name: string;
+  declare name: string;
 
   @Column({
     allowNull: true,
     field: 'company_name',
     type: DataType.STRING(100),
   })
-  companyName: string;
+  declare companyName: string;
 
   @Column({
     allowNull: true,
     field: 'website_link',
     type: DataType.STRING(100),
   })
-  websiteLink: string;
+  declare websiteLink: string;
 
   @Column({
     allowNull: false,
     field: 'logo',
     type: DataType.JSONB,
   })
-  logo: string;
+  declare logo: string;
 
   @Column({
     allowNull: false,
     field: 'franchise_id',
     type: DataType.INTEGER,
   })
-  franchiseId: number;
+  declare franchiseId: number;
 
   @Column({
     allowNull: false,
     field: 'email_id',
     type: DataType.STRING(50),
   })
-  emailId: string;
+  declare emailId: string;
 
   @Column({
     allowNull: false,
     field: 'alternate_email_id',
     type: DataType.STRING(100),
   })
-  alternateEmailId: string;
+  declare alternateEmailId: string;
 
   @Column({
     allowNull: false,
     field: 'contact_number',
     type: DataType.STRING(16),
   })
-  contactNumber: string;
+  declare contactNumber: string;
 
   @Column({
     allowNull: false,
     field: 'alternate_contact_number',
     type: DataType.STRING(16),
   })
-  alternateContactNumber: string;
+  declare alternateContactNumber: string;
 
   @Column({
     allowNull: false,
     field: 'postal_address',
     type: DataType.STRING(100),
   })
-  postalAddress: string;
+  declare postalAddress: string;
 
   @Column({
     allowNull: true,
     field: 'state_id',
     type: DataType.INTEGER,
   })
-  stateId: number;
+  declare stateId: number;
 
   @Column({
     allowNull: true,
     field: 'country_id',
     type: DataType.INTEGER,
   })
-  countryId: number;
+  declare countryId: number;
 
   @Column({
     allowNull: true,
     field: 'pin_code',
     type: DataType.STRING(10),
   })
-  pinCode: string;
+  declare pinCode: string;
 
   @Column({
     allowNull: true,
     field: 'pan_number',
     type: DataType.STRING(20),
   })
-  panNumber: string;
+  declare panNumber: string;
 
   @Column({
     allowNull: true,
     field: 'tan_number',
     type: DataType.STRING(20),
   })
-  tanNumber: string;
+  declare tanNumber: string;
 
   @Column({
     allowNull: true,
     field: 'gst_number',
     type: DataType.STRING(50),
   })
-  gstNumber: string;
+  declare gstNumber: string;
 
   @Column({
     allowNull: true,
     field: 'start_date',
     type: DataType.DATEONLY,
   })
-  startDate: Date;
+  declare startDate: Date;
 
   @Column({
     allowNull: true,
     field: 'end_date',
     type: DataType.DATEONLY,
   })
-  endDate: Date;
+  declare endDate: Date;
 
   @Column({
     allowNull: false,
@@ -163,20 +163,20 @@ export class MstReferrer extends Model<MstReferrer> {
     field: 'active',
     type: DataType.BOOLEAN,
   })
-  active: boolean;
+  declare active: boolean;
 
   @BelongsTo(() => MstAdminUser, { as: 'createdByUser', foreignKey: 'createdBy', targetKey: 'adminId' })
-  createdByUser: MstAdminUser;
+  declare createdByUser: MstAdminUser;
 
   @BelongsTo(() => MstAdminUser, { as: 'updatedByUser', foreignKey: 'modifiedBy', targetKey: 'adminId' })
-  updatedByUser: MstAdminUser;
+  declare updatedByUser: MstAdminUser;
 
   @Column({
     allowNull: false,
     field: 'created_by',
     type: DataType.INTEGER,
   })
-  createdBy: number;
+  declare createdBy: number;
 
   @CreatedAt
   @Column({
@@ -190,7 +190,7 @@ export class MstReferrer extends Model<MstReferrer> {
     field: 'modified_by',
     type: DataType.INTEGER,
   })
-  modifiedBy: number;
+  declare modifiedBy: number;
 
   @UpdatedAt
   @Column({
@@ -204,13 +204,13 @@ export class MstReferrer extends Model<MstReferrer> {
     field: 'created_ip',
     type: DataType.STRING(InputLengthEnum.IP),
   })
-  createdIp: string;
+  declare createdIp: string;
 
   @Column({
     allowNull: false,
     field: 'modified_ip',
     type: DataType.STRING(InputLengthEnum.IP),
   })
-  modifiedIp: string;
+  declare modifiedIp: string;
 }
 

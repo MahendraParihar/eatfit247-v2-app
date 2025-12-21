@@ -3,7 +3,6 @@ import {
   IsNotEmpty,
   IsNumber,
   IsOptional,
-  IsString,
   MaxLength,
   MinLength,
   ValidateNested,
@@ -46,7 +45,6 @@ export class CreateRecipeDto extends SeoDto implements IManageRecipe {
   @ValidateNested({ each: true })
   @Type(() => MediaUploadDto)
   imagePath: MediaUploadDto[];
-
   @IsOptional()
   @IsNumber()
   recipeId?: number;

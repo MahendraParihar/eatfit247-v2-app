@@ -69,14 +69,14 @@ export class EmailNotificationService {
         throw new NotFoundException('Email template not found or inactive');
       }
       // Use provided subject/body or template defaults
-      let subject = params.subject || template.subject || '';
-      let body = params.body || template.body || '';
+      let subject = params.subject || template.subject;
+      let body = params.body || template.body;
       // Replace template variables if replacements provided
       if (params.replacements && subject && typeof subject === 'string' && body && typeof body === 'string') {
         Object.keys(params.replacements).forEach(key => {
           const regex = new RegExp(`{{${key}}}`, 'g');
-          subject = subject.replace(regex, String(params.replacements[key] || ''));
-          body = body.replace(regex, String(params.replacements[key] || ''));
+          subject = subject.replace(regex, String(params.replacements[key]));
+          body = body.replace(regex, String(params.replacements[key]));
         });
       }
       // Prepare recipients

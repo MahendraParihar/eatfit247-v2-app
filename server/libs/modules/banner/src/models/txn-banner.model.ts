@@ -29,28 +29,28 @@ export class TxnBanner extends Model<TxnBanner> {
     field: 'banner_id',
     autoIncrement: true,
   })
-  bannerId: number;
+  declare bannerId: number;
 
   @Column({
     allowNull: false,
     field: 'title',
     type: DataType.STRING(100),
   })
-  title: string;
+  declare title: string;
 
   @Column({
     allowNull: true,
     field: 'sub_title',
     type: DataType.STRING(200),
   })
-  subTitle: string;
+  declare subTitle: string;
 
   @Column({
     allowNull: false,
     field: 'image_path',
     type: DataType.JSONB,
   })
-  imagePath: IMediaUpload[];
+  declare imagePath: IMediaUpload[];
 
   @Column({
     allowNull: false,
@@ -58,7 +58,7 @@ export class TxnBanner extends Model<TxnBanner> {
     field: 'active',
     type: DataType.BOOLEAN,
   })
-  active: boolean;
+  declare active: boolean;
 
   @Column({
     allowNull: false,
@@ -66,14 +66,14 @@ export class TxnBanner extends Model<TxnBanner> {
     field: 'is_internal_url',
     type: DataType.BOOLEAN,
   })
-  isInternalUrl: boolean;
+  declare isInternalUrl: boolean;
 
   @Column({
     allowNull: true,
     field: 'url',
     type: DataType.STRING(200),
   })
-  url: string;
+  declare url: string;
 
   @Column({
     allowNull: false,
@@ -81,20 +81,20 @@ export class TxnBanner extends Model<TxnBanner> {
     field: 'banner_for',
     type: DataType.ENUM(...Object.values(BannerForEnum)),
   })
-  bannerFor: BannerForEnum;
+  declare bannerFor: BannerForEnum;
 
   @BelongsTo(() => MstAdminUser, { as: 'createdByUser', foreignKey: 'createdBy', targetKey: 'adminId' })
-  createdByUser: MstAdminUser;
+  declare createdByUser: MstAdminUser;
 
   @BelongsTo(() => MstAdminUser, { as: 'updatedByUser', foreignKey: 'updatedBy', targetKey: 'adminId' })
-  updatedByUser: MstAdminUser;
+  declare updatedByUser: MstAdminUser;
 
   @Column({
     allowNull: false,
     field: 'created_by',
     type: DataType.INTEGER,
   })
-  createdBy: number;
+  declare createdBy: number;
 
   @CreatedAt
   @Column({
@@ -108,7 +108,7 @@ export class TxnBanner extends Model<TxnBanner> {
     field: 'updated_by',
     type: DataType.INTEGER,
   })
-  updatedBy: number;
+  declare updatedBy: number;
 
   @UpdatedAt
   @Column({
@@ -122,12 +122,12 @@ export class TxnBanner extends Model<TxnBanner> {
     field: 'created_ip',
     type: DataType.STRING(InputLengthEnum.IP),
   })
-  createdIp: string;
+  declare createdIp: string;
 
   @Column({
     allowNull: true,
     field: 'modified_ip',
     type: DataType.STRING(InputLengthEnum.IP),
   })
-  modifiedIp: string;
+  declare modifiedIp: string;
 }

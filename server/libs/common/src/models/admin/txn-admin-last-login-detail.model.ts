@@ -16,29 +16,25 @@ export class TxnAdminLastLoginDetail extends Model<TxnAdminLastLoginDetail> {
     field: 'admin_last_login_detail_id',
     autoIncrement: true,
   })
-  adminLastLoginDetailId: number;
-
+  declare adminLastLoginDetailId: number;
   @BelongsTo(() => MstAdminUser, {
     foreignKey: 'adminId',
     targetKey: 'adminId',
     as: 'adminUser',
   })
-  adminUser: MstAdminUser;
-
+  declare adminUser: MstAdminUser;
   @Column({
     allowNull: false,
     field: 'admin_id',
     type: DataType.INTEGER,
   })
-  adminId: number;
-
+  declare adminId: number;
   @Column({
     allowNull: false,
     field: 'device_detail',
     type: DataType.JSONB,
   })
-  deviceDetail: string;
-
+  declare deviceDetail: string;
   @CreatedAt
   @Column({
     allowNull: false,
@@ -46,21 +42,19 @@ export class TxnAdminLastLoginDetail extends Model<TxnAdminLastLoginDetail> {
     type: DataType.DATE,
     defaultValue: DataType.NOW,
   })
-  lastLoginTimestamp: Date;
-
+  declare lastLoginTimestamp: Date;
   @Column({
     allowNull: false,
     defaultValue: true,
     field: 'is_latest',
     type: DataType.BOOLEAN,
   })
-  isLatest: boolean;
-
+  declare isLatest: boolean;
   @Column({
     allowNull: false,
     field: 'created_ip',
     type: DataType.STRING(InputLengthEnum.IP),
   })
-  createdIp: string;
+  declare createdIp: string;
 }
 

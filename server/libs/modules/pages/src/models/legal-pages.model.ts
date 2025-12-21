@@ -30,56 +30,56 @@ export class LegalPagesModel extends Model<LegalPagesModel> {
     primaryKey: true,
     autoIncrement: true,
   })
-  legalPageId: number;
+  declare legalPageId: number;
 
   @Column({
     field: 'title',
     allowNull: false,
     type: DataType.STRING(50),
   })
-  title: string;
+  declare title: string;
 
   @Column({
     field: 'details',
     allowNull: false,
     type: DataType.TEXT,
   })
-  details: string;
+  declare details: string;
 
   @Column({
     field: 'image_path',
     allowNull: true,
     type: DataType.JSONB,
   })
-  imagePath: IMediaUpload[];
+  declare imagePath: IMediaUpload[];
 
   @Column({
     field: 'tags',
     allowNull: true,
     type: DataType.ARRAY(DataType.STRING),
   })
-  tags: string[];
+  declare tags: string[];
 
   @Column({
     field: 'url',
     allowNull: true,
     type: DataType.TEXT,
   })
-  url: string;
+  declare url: string;
 
   @Column({
     field: 'meta_title',
     allowNull: true,
     type: DataType.STRING(60),
   })
-  metaTitle: string;
+  declare metaTitle: string;
 
   @Column({
     field: 'meta_description',
     allowNull: true,
     type: DataType.STRING(160),
   })
-  metaDescription: string;
+  declare metaDescription: string;
 
   @Column({
     allowNull: false,
@@ -87,20 +87,20 @@ export class LegalPagesModel extends Model<LegalPagesModel> {
     field: 'active',
     type: DataType.BOOLEAN,
   })
-  active: boolean;
+  declare active: boolean;
 
   @BelongsTo(() => MstAdminUser, { as: 'createdByUser', foreignKey: 'createdBy', targetKey: 'adminId' })
-  createdByUser: MstAdminUser;
+  declare createdByUser: MstAdminUser;
 
   @BelongsTo(() => MstAdminUser, { as: 'updatedByUser', foreignKey: 'updatedBy', targetKey: 'adminId' })
-  updatedByUser: MstAdminUser;
+  declare updatedByUser: MstAdminUser;
 
   @Column({
     allowNull: false,
     field: 'created_by',
     type: DataType.INTEGER,
   })
-  createdBy: number;
+  declare createdBy: number;
 
   @CreatedAt
   @Column({
@@ -114,7 +114,7 @@ export class LegalPagesModel extends Model<LegalPagesModel> {
     field: 'updated_by',
     type: DataType.INTEGER,
   })
-  updatedBy: number;
+  declare updatedBy: number;
 
   @UpdatedAt
   @Column({
@@ -128,12 +128,12 @@ export class LegalPagesModel extends Model<LegalPagesModel> {
     field: 'created_ip',
     type: DataType.STRING(InputLengthEnum.IP),
   })
-  createdIp: string;
+  declare createdIp: string;
 
   @Column({
     allowNull: false,
     field: 'modified_ip',
     type: DataType.STRING(InputLengthEnum.IP),
   })
-  modifiedIp: string;
+  declare modifiedIp: string;
 }
