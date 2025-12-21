@@ -1,0 +1,200 @@
+<mat-card class="form-card">
+  <mat-card-header>
+    <mat-card-title>{{ pageTitle }}</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <form [formGroup]="formGroup" (ngSubmit)="onSubmit()">
+      <div class="form-fields">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Recipe Type</mat-label>
+          <mat-select formControlName="recipeTypeId">
+            <mat-option [value]="">Select Recipe Type</mat-option>
+            @for (type of recipeTypeOptions; track type.id) {
+              <mat-option [value]="type.id">{{ type.label }}</mat-option>
+            }
+          </mat-select>
+          <app-input-error [control]="formGroup.get('recipeTypeId')" controlName="Recipe Type"></app-input-error>
+        </mat-form-field>
+
+        <mat-form-field class="full-width">
+          <mat-label>Recipe Name</mat-label>
+          <input
+            matInput
+            formControlName="name"
+            placeholder="Enter recipe name"
+          />
+          @if (getMaxLength('name')) {
+            <mat-hint align="end">
+              {{ getCurrentLength('name') }}/{{ getMaxLength('name') }}
+            </mat-hint>
+          }
+          <app-input-error [control]="formGroup.get('name')" controlName="Recipe Name"></app-input-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Recipe Categories</mat-label>
+          <mat-select formControlName="recipeCategoryIds" multiple>
+            @for (category of recipeCategoryOptions; track category.id) {
+              <mat-option [value]="category.id">{{ category.label }}</mat-option>
+            }
+          </mat-select>
+          <mat-hint>Select one or more categories</mat-hint>
+          <app-input-error [control]="formGroup.get('recipeCategoryIds')" controlName="Recipe Categories"></app-input-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Recipe Cuisines</mat-label>
+          <mat-select formControlName="recipeCuisineIds" multiple>
+            @for (cuisine of recipeCuisineOptions; track cuisine.id) {
+              <mat-option [value]="cuisine.id">{{ cuisine.label }}</mat-option>
+            }
+          </mat-select>
+          <mat-hint>Select one or more cuisines</mat-hint>
+          <app-input-error [control]="formGroup.get('recipeCuisineIds')" controlName="Recipe Cuisines"></app-input-error>
+        </mat-form-field>
+
+        <div class="full-width">
+          <label class="editor-label">Details</label>
+          @if (editor) {
+            <div class="NgxEditor__Wrapper">
+              <ngx-editor-menu [editor]="editor"></ngx-editor-menu>
+              <ngx-editor
+                [editor]="editor"
+                formControlName="details"
+                placeholder="Enter recipe details"
+              ></ngx-editor>
+            </div>
+          }
+          <app-input-error [control]="formGroup.get('details')" controlName="Details"></app-input-error>
+        </div>
+
+        <div class="full-width">
+          <label class="editor-label">Preparation Method</label>
+          @if (editor) {
+            <div class="NgxEditor__Wrapper">
+              <ngx-editor-menu [editor]="editor"></ngx-editor-menu>
+              <ngx-editor
+                [editor]="editor"
+                formControlName="preparationMethod"
+                placeholder="Enter preparation method"
+              ></ngx-editor>
+            </div>
+          }
+          <app-input-error [control]="formGroup.get('preparationMethod')" controlName="Preparation Method"></app-input-error>
+        </div>
+
+        <div class="full-width">
+          <label class="editor-label">Ingredients</label>
+          @if (editor) {
+            <div class="NgxEditor__Wrapper">
+              <ngx-editor-menu [editor]="editor"></ngx-editor-menu>
+              <ngx-editor
+                [editor]="editor"
+                formControlName="ingredient"
+                placeholder="Enter ingredients"
+              ></ngx-editor>
+            </div>
+          }
+          <app-input-error [control]="formGroup.get('ingredient')" controlName="Ingredients"></app-input-error>
+        </div>
+
+        <div class="full-width">
+          <label class="editor-label">How to Make</label>
+          @if (editor) {
+            <div class="NgxEditor__Wrapper">
+              <ngx-editor-menu [editor]="editor"></ngx-editor-menu>
+              <ngx-editor
+                [editor]="editor"
+                formControlName="howToMake"
+                placeholder="Enter how to make instructions"
+              ></ngx-editor>
+            </div>
+          }
+          <app-input-error [control]="formGroup.get('howToMake')" controlName="How to Make"></app-input-error>
+        </div>
+
+        <div class="full-width">
+          <label class="editor-label">Benefits</label>
+          @if (editor) {
+            <div class="NgxEditor__Wrapper">
+              <ngx-editor-menu [editor]="editor"></ngx-editor-menu>
+              <ngx-editor
+                [editor]="editor"
+                formControlName="benefits"
+                placeholder="Enter benefits"
+              ></ngx-editor>
+            </div>
+          }
+          <app-input-error [control]="formGroup.get('benefits')" controlName="Benefits"></app-input-error>
+        </div>
+
+        <div class="row">
+          <mat-form-field class="half-width">
+            <mat-label>Serving Count</mat-label>
+            <input
+              matInput
+              type="number"
+              formControlName="servingCount"
+              placeholder="Enter serving count"
+              [min]="1"
+            />
+            <app-input-error [control]="formGroup.get('servingCount')" controlName="Serving Count"></app-input-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>Status</mat-label>
+            <mat-select formControlName="active">
+              <mat-option [value]="true">Active</mat-option>
+              <mat-option [value]="false">Inactive</mat-option>
+            </mat-select>
+            <app-input-error [control]="formGroup.get('active')" controlName="Status"></app-input-error>
+          </mat-form-field>
+        </div>
+
+        <div class="row">
+          <mat-checkbox formControlName="isVisibleToAll" class="half-width">
+            Visible to All
+          </mat-checkbox>
+        </div>
+
+        <div class="full-width">
+          <label class="upload-label">Recipe Image</label>
+          <app-upload-form
+            [formGroup]="formGroup"
+            [isMultiFile]="false"
+            [isRequired]="false"
+            [uploadedMediaList]="getImagePathList()"
+            controlName="imagePath"
+            [mediaFor]="mediaFor"
+            [mediaType]="mediaType"
+          ></app-upload-form>
+        </div>
+
+        <app-seo-form
+          [formGroup]="formGroup"
+          [seo]="initialData && initialData.seo ? initialData.seo : {}"
+        ></app-seo-form>
+
+      </div>
+
+      <div class="form-actions">
+        <button
+          type="button"
+          mat-stroked-button
+          (click)="onCancel()"
+        >
+          <mat-icon>close</mat-icon>
+          Cancel
+        </button>
+        <button
+          type="submit"
+          mat-raised-button
+          color="primary"
+        >
+          <mat-icon>{{ isEditMode ? 'save' : 'add' }}</mat-icon>
+          {{ isEditMode ? 'Update' : 'Create' }}
+        </button>
+      </div>
+    </form>
+  </mat-card-content>
+</mat-card>

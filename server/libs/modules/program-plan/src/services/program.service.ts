@@ -33,58 +33,6 @@ export class ProgramService {
     };
   }
 
-  private parseTags(tags: any): string[] | null {
-    if (!tags) {
-      return null;
-    }
-    // If it's already an array, return it
-    if (Array.isArray(tags)) {
-      return tags;
-    }
-    // If it's a string, parse it
-    if (typeof tags === 'string') {
-      try {
-        let cleaned = tags.trim();
-        
-        // First, try to decode JSON if it's a JSON-encoded string (e.g., "{\"tag1\",\"tag2\"}")
-        if (cleaned.startsWith('"') && cleaned.endsWith('"')) {
-          try {
-            const decoded = JSON.parse(cleaned);
-            cleaned = typeof decoded === 'string' ? decoded : String(decoded);
-          } catch (e) {
-            // Not valid JSON, continue with original
-          }
-        }
-        
-        // Handle PostgreSQL array format: {tag1,tag2} or {"tag1","tag2"}
-        cleaned = cleaned.trim();
-        
-        // Remove outer braces if present
-        if (cleaned.startsWith('{') && cleaned.endsWith('}')) {
-          cleaned = cleaned.slice(1, -1).trim();
-        }
-        
-        // Extract quoted strings using regex to match "quoted" strings
-        const quotedMatches = cleaned.match(/"([^"]*)"/g);
-        if (quotedMatches && quotedMatches.length > 0) {
-          return quotedMatches.map((match) => {
-            // Remove quotes and handle escaped quotes
-            return match.slice(1, -1).replace(/\\"/g, '"');
-          });
-        }
-        
-        // If no quotes, split by comma (handles unquoted values)
-        if (cleaned) {
-          const result = cleaned.split(',').map((item) => item.trim()).filter((item) => item);
-          return result.length > 0 ? result : null;
-        }
-      } catch (error) {
-        console.error('Error parsing tags array:', error, tags);
-      }
-    }
-    return null;
-  }
-
   private convertToModel(item: any): IProgram {
     return <IProgram>{
       programId: item.programId,
@@ -101,7 +49,7 @@ export class ProgramService {
       seo: {
         metaTitle: item.metaTitle,
         metaDescription: item.metaDescription,
-        tags: this.parseTags(item.tags),
+        tags: item.tags,
         url: item.url,
       },
       imagePath: CommonFunctionsUtil.buildImageUrl(

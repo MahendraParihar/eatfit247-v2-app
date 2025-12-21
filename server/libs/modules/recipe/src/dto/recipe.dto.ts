@@ -11,7 +11,7 @@ import { Type } from 'class-transformer';
 import { InputLengthEnum, IManageRecipe } from 'eatfit247-shared-lib';
 import { MediaUploadDto, SeoDto } from '@server/common';
 
-export class CreateRecipeDto extends SeoDto implements IManageRecipe {
+export class CreateRecipeDto implements IManageRecipe {
   @MinLength(InputLengthEnum.CHAR_2)
   @MaxLength(255)
   @IsNotEmpty()
@@ -48,5 +48,8 @@ export class CreateRecipeDto extends SeoDto implements IManageRecipe {
   @IsOptional()
   @IsNumber()
   recipeId?: number;
+  @ValidateNested()
+  @Type(() => SeoDto)
+  seo: SeoDto;
 }
 

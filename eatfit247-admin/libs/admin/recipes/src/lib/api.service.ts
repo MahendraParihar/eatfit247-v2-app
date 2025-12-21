@@ -30,7 +30,14 @@ export class RecipesApiService extends ApiBaseService {
     return await this.httpService.put<void>(`${this.endpoint}/manage/${id}`, data);
   }
 
-  async updateStatus(id: number, isActive: boolean): Promise<void> {
-    return await this.httpService.patch<void>(`${this.endpoint}/update-status/${id}`, { active: isActive });
+  async updateStatus(id: number, active: boolean): Promise<void> {
+    return await this.httpService.patch<void>(`${this.endpoint}/update-status/${id}`, { active });
+  }
+
+  async getMasterData(): Promise<{ recipeType: IDropdownItem[]; recipeCategory: IDropdownItem[]; recipeCuisine: IDropdownItem[] }> {
+    const res = await this.httpService.get<IResponse<{ recipeType: IDropdownItem[]; recipeCategory: IDropdownItem[]; recipeCuisine: IDropdownItem[] }>>(
+      `${this.endpoint}/recipe-master`
+    );
+    return res.data as { recipeType: IDropdownItem[]; recipeCategory: IDropdownItem[]; recipeCuisine: IDropdownItem[] };
   }
 }

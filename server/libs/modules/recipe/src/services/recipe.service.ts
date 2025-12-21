@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { MstRecipe } from '../models';
+import { MstRecipe, MstRecipeCategoryMapping, MstRecipeCuisineMapping } from '../models';
 import { ITableList, IBasicSearch, IRecipe, IManageRecipe, ConfigParam } from 'eatfit247-shared-lib';
 import { SearchUtil, CommonFunctionsUtil, AppConfigService } from '@server/common';
 
@@ -16,17 +16,14 @@ export class RecipeService {
     const pageNumber = searchDto.page || 0;
     const pageSize = searchDto.limit || 15;
     const offset = pageNumber === 0 ? 0 : pageNumber * pageSize;
-
     const { rows, count } = await this.recipeRepository.scope('list').findAndCountAll({
       where: whereCondition,
       order: [['name', 'ASC']],
       offset: offset,
       limit: pageSize,
-      raw: true,
       nest: true,
     });
-
-    const resList: IRecipe[] = rows.map((item: any) => {return this.convertToModel(item);});
+    const resList: IRecipe[] = rows.map((item: any) => {return this.convertToModel(item.get({ plain: true }));});
     return {
       tableData: resList,
       count: count,
@@ -34,6 +31,26 @@ export class RecipeService {
   }
 
   private convertToModel(item: any): IRecipe {
+    const categories = [];
+    const cuisines = [];
+    if (item.recipeCategoryMappings && item.recipeCategoryMappings.length > 0) {
+      item.recipeCategoryMappings.forEach((rcm: MstRecipeCategoryMapping) => {
+        categories.push({
+          recipeCategoryId: rcm.recipeCategoryId,
+          recipeId: rcm.recipeId,
+          recipeCategory: rcm.recipeCategory.recipeCategory,
+        });
+      });
+    }
+    if (item.recipeCuisineMappings && item.recipeCuisineMappings.length > 0) {
+      item.recipeCuisineMappings.forEach((rcm: MstRecipeCuisineMapping) => {
+        cuisines.push({
+          recipeCuisineId: rcm.recipeCuisineId,
+          recipeId: rcm.recipeId,
+          recipeCuisine: rcm.recipeCuisine.recipeCuisine,
+        });
+      });
+    }
     return <IRecipe>{
       recipeId: item.recipeId,
       id: item.recipeId,
@@ -50,11 +67,13 @@ export class RecipeService {
         this.appConfigService.getString(ConfigParam.CLIENT_URL),
       ),
       servingCount: item.servingCount,
-      tags: item.tags,
       downloadPath: item.downloadPath,
-      url: item.url,
-      metaTitle: item.metaTitle,
-      metaDescription: item.metaDescription,
+      seo: {
+        metaTitle: item.metaTitle,
+        metaDescription: item.metaDescription,
+        tags: item.tags,
+        url: item.url,
+      },
       visitedCount: item.visitedCount,
       shareCount: item.shareCount,
       isVisibleToAll: item.isVisibleToAll,
@@ -63,21 +82,26 @@ export class RecipeService {
       updatedBy: item.modifiedBy,
       createdAt: item.createdAt,
       updatedAt: item.updatedAt,
-      createdByUser: item.createdByUser ? CommonFunctionsUtil.getAdminShortInfo(item.createdByUser, 'createdByUser') : undefined,
-      updatedByUser: item.updatedByUser ? CommonFunctionsUtil.getAdminShortInfo(item.updatedByUser, 'updatedByUser') : undefined,
+      createdByUser: item.createdByUser
+        ? CommonFunctionsUtil.getAdminShortInfo(item.createdByUser, 'createdByUser')
+        : undefined,
+      updatedByUser: item.updatedByUser
+        ? CommonFunctionsUtil.getAdminShortInfo(item.updatedByUser, 'updatedByUser')
+        : undefined,
+      recipeCategoryMappings: categories,
+      recipeCuisineMappings: cuisines,
     };
   }
 
   public async fetchById(id: number): Promise<IRecipe> {
     const find = await this.recipeRepository.scope('details').findOne({
       where: { recipeId: id },
-      raw: true,
       nest: true,
     });
     if (!find) {
       throw new NotFoundException('Recipe not found');
     }
-    return this.convertToModel(find);
+    return this.convertToModel(find.get({ plain: true }));
   }
 
   public async create(obj: IManageRecipe, cIp: string, adminId: number): Promise<void> {
@@ -89,13 +113,15 @@ export class RecipeService {
       ingredient: obj.ingredient || null,
       howToMake: obj.howToMake || null,
       benefits: obj.benefits || null,
-      imagePath: (obj.imagePath && obj.imagePath.length > 0) ? obj.imagePath : null,
+      imagePath: obj.imagePath && obj.imagePath.length > 0 ? obj.imagePath : null,
       servingCount: obj.servingCount,
-      tags: obj.tags || null,
       downloadPath: obj.downloadPath || null,
-      url: obj.url || CommonFunctionsUtil.removeSpecialChar(obj.name.toString().toLowerCase(), '-'),
-      metaTitle: obj.metaTitle || null,
-      metaDescription: obj.metaDescription || null,
+      url: obj.seo
+        ? obj.seo.url
+        : CommonFunctionsUtil.removeSpecialChar(obj.name.toString().toLowerCase(), '-'),
+      tags: obj.seo ? obj.seo.tags : null,
+      metaTitle: obj.seo ? obj.seo.metaTitle : null,
+      metaDescription: obj.seo ? obj.seo.metaDescription : null,
       visitedCount: 0,
       shareCount: 0,
       isVisibleToAll: obj.isVisibleToAll,
@@ -123,13 +149,15 @@ export class RecipeService {
       ingredient: obj.ingredient || null,
       howToMake: obj.howToMake || null,
       benefits: obj.benefits || null,
-      imagePath: (obj.imagePath && obj.imagePath.length > 0) ? obj.imagePath : null,
+      imagePath: obj.imagePath && obj.imagePath.length > 0 ? obj.imagePath : null,
       servingCount: obj.servingCount,
-      tags: obj.tags || null,
       downloadPath: obj.downloadPath || null,
-      url: obj.url || CommonFunctionsUtil.removeSpecialChar(obj.name.toString().toLowerCase(), '-'),
-      metaTitle: obj.metaTitle || null,
-      metaDescription: obj.metaDescription || null,
+      url: obj.seo
+        ? obj.seo.url
+        : CommonFunctionsUtil.removeSpecialChar(obj.name.toString().toLowerCase(), '-'),
+      tags: obj.seo ? obj.seo.tags : null,
+      metaTitle: obj.seo ? obj.seo.metaTitle : null,
+      metaDescription: obj.seo ? obj.seo.metaDescription : null,
       isVisibleToAll: obj.isVisibleToAll,
       active: obj.active,
       modifiedBy: adminId,

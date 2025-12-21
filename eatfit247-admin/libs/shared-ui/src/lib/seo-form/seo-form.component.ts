@@ -25,7 +25,13 @@ import { ICommonSEO, InputLengthEnum } from '@eatfit247-shared-lib';
 })
 export class SeoFormComponent implements OnInit {
   @Input() formGroup!: FormGroup;
-  @Input() seo?: ICommonSEO;
+
+  @Input() set seo(d: ICommonSEO) {
+    this._seo = d;
+    this.bindSEO();
+  };
+
+  _seo!: ICommonSEO;
   tagsList: string[] = [];
   addOnBlur = true;
   readonly separatorKeysCodes = [ENTER, COMMA] as const;
@@ -66,15 +72,16 @@ export class SeoFormComponent implements OnInit {
   }
 
   private bindSEO(): void {
-    if (!this.seo) {
+    if (!this._seo) {
       return;
     }
-    this.tagsList = this.seo.tags && Array.isArray(this.seo.tags) ? this.seo.tags : [];
+    this.tagsList =
+      this._seo.tags && Array.isArray(this._seo.tags) ? this._seo.tags : [];
     this.seoFormGroup.patchValue({
       tags: this.tagsList.join(', '),
-      metaTitle: this.seo.metaTitle,
-      metaDescription: this.seo.metaDescription,
-      url: this.seo.url
+      metaTitle: this._seo.metaTitle,
+      metaDescription: this._seo.metaDescription,
+      url: this._seo.url,
     });
   }
 }

@@ -130,7 +130,7 @@
 
         <app-seo-form
           [formGroup]="formGroup"
-          [seo]="initialData.seo"
+          [seo]="initialData && initialData.seo ? initialData.seo : {}"
         ></app-seo-form>
 
       </div>

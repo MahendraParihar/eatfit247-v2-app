@@ -83,6 +83,7 @@ export interface IBaseRecipe extends ICommonSEO {
   servingCount: number;
   downloadPath?: IMediaUpload[];
   isVisibleToAll: boolean;
+  seo: ICommonSEO;
 }
 
 export interface IManageRecipe extends IBaseRecipe {
@@ -102,6 +103,12 @@ export interface IRecipe extends IBaseRecipe {
   updatedAt: Date;
   createdByUser?: IBaseAdminUser;
   updatedByUser?: IBaseAdminUser;
+  recipeCategoryMappings: {
+    recipeCategoryId: number;
+    recipeCategory: string;
+    recipeId: number;
+  }[];
+  recipeCuisineMappings: { recipeCuisineId: number; recipeCuisine: string; recipeId: number }[];
 }
 
 // Recipe Category Mapping Interfaces

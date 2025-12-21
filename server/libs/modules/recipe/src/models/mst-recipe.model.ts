@@ -1,7 +1,12 @@
-import { BelongsTo, Column, CreatedAt, DataType, Model, Scopes, Table, UpdatedAt } from 'sequelize-typescript';
+import { BelongsTo, Column, CreatedAt, DataType, HasMany, Model, Scopes, Table, UpdatedAt } from 'sequelize-typescript';
 import { MstAdminUser, getCreatedByUserInclude, getUpdatedByUserInclude } from '@server/common';
 import { IMediaUpload, InputLengthEnum } from 'eatfit247-shared-lib';
 import { MstRecipeType } from './mst-recipe-type.model';
+import { TxnProgramPlanFees } from '../../../program-plan';
+import { MstRecipeCuisineMapping } from './mst-recipe-cuisine-mapping.model';
+import { MstRecipeCategoryMapping } from './mst-recipe-category-mapping.model';
+import { MstRecipeCategory } from './mst-recipe-category.model';
+import { MstRecipeCuisine } from './mst-recipe-cuisine.model';
 
 @Table({
   freezeTableName: true,
@@ -20,6 +25,34 @@ import { MstRecipeType } from './mst-recipe-type.model';
         required: false,
         attributes: ['recipeTypeId', 'recipeType'],
       },
+      {
+        model: MstRecipeCategoryMapping,
+        as: 'recipeCategoryMappings',
+        required: false,
+        attributes: ['recipeId', 'recipeCategoryId'],
+        include: [
+          {
+            model: MstRecipeCategory,
+            as: 'recipeCategory',
+            required: false,
+            attributes: ['recipeCategory', 'recipeCategoryId'],
+          },
+        ],
+      },
+      {
+        model: MstRecipeCuisineMapping,
+        as: 'recipeCuisineMappings',
+        required: false,
+        attributes: ['recipeId', 'recipeCuisineId'],
+        include: [
+          {
+            model: MstRecipeCuisine,
+            as: 'recipeCuisine',
+            required: false,
+            attributes: ['recipeCuisine', 'recipeCuisineId'],
+          },
+        ],
+      },
     ],
   },
   details: {
@@ -31,6 +64,34 @@ import { MstRecipeType } from './mst-recipe-type.model';
         as: 'recipeType',
         required: false,
         attributes: ['recipeTypeId', 'recipeType'],
+      },
+      {
+        model: MstRecipeCategoryMapping,
+        as: 'recipeCategoryMappings',
+        required: false,
+        attributes: ['recipeId', 'recipeCategoryId'],
+        include: [
+          {
+            model: MstRecipeCategory,
+            as: 'recipeCategory',
+            required: false,
+            attributes: ['recipeCategory', 'recipeCategoryId'],
+          },
+        ],
+      },
+      {
+        model: MstRecipeCuisineMapping,
+        as: 'recipeCuisineMappings',
+        required: false,
+        attributes: ['recipeId', 'recipeCuisineId'],
+        include: [
+          {
+            model: MstRecipeCuisine,
+            as: 'recipeCuisine',
+            required: false,
+            attributes: ['recipeCuisine', 'recipeCuisineId'],
+          },
+        ],
       },
     ],
   },
@@ -49,7 +110,11 @@ export class MstRecipe extends Model<MstRecipe> {
     type: DataType.STRING(255),
   })
   declare name: string;
-  @BelongsTo(() => MstRecipeType, { as: 'recipeType', foreignKey: 'recipeTypeId', targetKey: 'recipeTypeId' })
+  @BelongsTo(() => MstRecipeType, {
+    as: 'recipeType',
+    foreignKey: 'recipeTypeId',
+    targetKey: 'recipeTypeId',
+  })
   declare recipeType: MstRecipeType;
   @Column({
     allowNull: false,
@@ -158,9 +223,17 @@ export class MstRecipe extends Model<MstRecipe> {
     type: DataType.BOOLEAN,
   })
   declare active: boolean;
-  @BelongsTo(() => MstAdminUser, { as: 'createdByUser', foreignKey: 'createdBy', targetKey: 'adminId' })
+  @BelongsTo(() => MstAdminUser, {
+    as: 'createdByUser',
+    foreignKey: 'createdBy',
+    targetKey: 'adminId',
+  })
   declare createdByUser: MstAdminUser;
-  @BelongsTo(() => MstAdminUser, { as: 'updatedByUser', foreignKey: 'modifiedBy', targetKey: 'adminId' })
+  @BelongsTo(() => MstAdminUser, {
+    as: 'updatedByUser',
+    foreignKey: 'modifiedBy',
+    targetKey: 'adminId',
+  })
   declare updatedByUser: MstAdminUser;
   @Column({
     allowNull: false,
@@ -198,5 +271,9 @@ export class MstRecipe extends Model<MstRecipe> {
     type: DataType.STRING(InputLengthEnum.IP),
   })
   declare modifiedIp: string;
+  @HasMany(() => MstRecipeCuisineMapping, { foreignKey: 'recipeId' })
+  declare recipeCuisineMappings: MstRecipeCuisineMapping[];
+  @HasMany(() => MstRecipeCategoryMapping, { foreignKey: 'recipeId' })
+  declare recipeCategoryMappings: MstRecipeCategoryMapping[];
 }
 
