@@ -29,21 +29,22 @@ export class TxnPressMedia extends Model<TxnPressMedia> {
     field: 'press_media_id',
     autoIncrement: true,
   })
-  pressMediaId: number;
+  declare pressMediaId: number;
 
   @Column({
     allowNull: true,
     field: 'title',
     type: DataType.STRING(200),
   })
-  title: string;
+  declare title: string;
 
   @Column({
-    allowNull: false,
+    allowNull: true,
     field: 'image_path',
     type: DataType.JSONB,
+    defaultValue: null,
   })
-  imagePath: IMediaUpload[];
+  declare imagePath: IMediaUpload[];
 
   @Column({
     allowNull: false,
@@ -51,14 +52,14 @@ export class TxnPressMedia extends Model<TxnPressMedia> {
     type: DataType.ENUM('youtube', 'press'),
     defaultValue: 'press',
   })
-  type: 'youtube' | 'press';
+  declare type: 'youtube' | 'press';
 
   @Column({
     allowNull: false,
     field: 'link',
     type: DataType.TEXT,
   })
-  link: string;
+  declare link: string;
 
   @Column({
     allowNull: true,
@@ -66,20 +67,20 @@ export class TxnPressMedia extends Model<TxnPressMedia> {
     field: 'active',
     type: DataType.BOOLEAN,
   })
-  active: boolean;
+  declare active: boolean;
 
   @BelongsTo(() => MstAdminUser, { as: 'createdByUser', foreignKey: 'createdBy', targetKey: 'adminId' })
-  createdByUser: MstAdminUser;
+  declare createdByUser: MstAdminUser;
 
   @BelongsTo(() => MstAdminUser, { as: 'updatedByUser', foreignKey: 'modifiedBy', targetKey: 'adminId' })
-  updatedByUser: MstAdminUser;
+  declare updatedByUser: MstAdminUser;
 
   @Column({
     allowNull: false,
     field: 'created_by',
     type: DataType.INTEGER,
   })
-  createdBy: number;
+  declare createdBy: number;
 
   @CreatedAt
   @Column({
@@ -93,7 +94,7 @@ export class TxnPressMedia extends Model<TxnPressMedia> {
     field: 'modified_by',
     type: DataType.INTEGER,
   })
-  modifiedBy: number;
+  declare modifiedBy: number;
 
   @UpdatedAt
   @Column({
@@ -107,13 +108,13 @@ export class TxnPressMedia extends Model<TxnPressMedia> {
     field: 'created_ip',
     type: DataType.STRING(InputLengthEnum.IP),
   })
-  createdIp: string;
+  declare createdIp: string;
 
   @Column({
     allowNull: false,
     field: 'modified_ip',
     type: DataType.STRING(InputLengthEnum.IP),
   })
-  modifiedIp: string;
+  declare modifiedIp: string;
 }
 

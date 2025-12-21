@@ -22,5 +22,5 @@ CREATE TABLE IF NOT EXISTS txn_press_media
     CONSTRAINT fk_txn_press_media_mst_admin_modified_by FOREIGN KEY (modified_by) REFERENCES mst_admin_users (admin_id)
 );
 
-CREATE UNIQUE INDEX ix_txn_press_media_type
-    ON txn_press_media (type);
+CREATE INDEX ix_txn_press_media_type
+    ON public.txn_press_media (type);

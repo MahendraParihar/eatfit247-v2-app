@@ -41,7 +41,6 @@ export class UploadFormComponent implements OnInit, OnChanges {
   fileUploadForm!: FormArray;
   uploadedFiles: FileHandle[] = [];
   mediaTypeEnum = FileTypeEnum;
-  MEDIA_PATH = `http://localhost:3000` + '/';
 
   constructor(private fb: FormBuilder,
     private sanitizer: DomSanitizer,

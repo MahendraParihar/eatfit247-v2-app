@@ -15,7 +15,6 @@ import { MediaUploadDto } from '@server/common';
 
 export class CreatePressMediaDto implements IManagePressMedia {
   @IsOptional()
-  @MinLength(InputLengthEnum.CHAR_2)
   @MaxLength(InputLengthEnum.CHAR_200)
   @IsString()
   title?: string;
