@@ -163,3 +163,55 @@ create table public.txn_banner
     banner_for      banner_for                  not null default 'home'::banner_for
 );
 
+create table public.txn_program_plan_fees
+(
+    program_plan_fees_id SERIAL                      NOT NULL PRIMARY KEY,
+    program_plan_id      INT                         NOT NULL,
+    currency_code        varchar(100)                not null,
+    fees                 double precision            not null,
+    active               boolean                     not null default true,
+    created_at           timestamp without time zone not null default CURRENT_TIMESTAMP,
+    updated_at           timestamp without time zone not null default CURRENT_TIMESTAMP,
+    created_by           integer                     not null,
+    updated_by           integer                     not null,
+    created_ip           character varying(50),
+    modified_ip          character varying(50),
+    CONSTRAINT fk_txn_program_plan_fees_mst_program_plans_program_plan_id
+        FOREIGN KEY (program_plan_id) REFERENCES mst_program_plans (program_plan_id),
+    CONSTRAINT fk_txn_program_plan_fees_mst_admin_created_by FOREIGN KEY (created_by) REFERENCES mst_admin_users (admin_id),
+    CONSTRAINT fk_txn_program_plan_fees_mst_admin_updated_by FOREIGN KEY (updated_by) REFERENCES mst_admin_users (admin_id)
+);
+
+create unique index txn_program_plan_fees_currency_fees_uindex on public.txn_program_plan_fees using btree (program_plan_id, currency_code);
+
+insert into txn_program_plan_fees
+(program_plan_id, currency_code, fees, active, created_at,
+ updated_at, created_by, updated_by, created_ip, modified_ip)
+select program_plan_id,
+       'INR',
+       inr_amount,
+       true,
+       created_at,
+       updated_at,
+       created_by,
+       modified_by,
+       created_ip,
+       modified_ip
+from mst_program_plans;
+
+create table public.mst_currencies
+(
+    currency_id   SERIAL       NOT NULL PRIMARY KEY,
+    currency_code VARCHAR(10)  NOT NULL,
+    label         varchar(100) not null,
+    symbol        varchar(10)  not null
+);
+
+CREATE INDEX ix_mst_currencies_currency_code
+    ON mst_currencies (currency_code);
+
+alter table public.mst_program_plans
+    drop column inr_amount;
+
+alter table public.mst_program_plans
+    drop column tags;

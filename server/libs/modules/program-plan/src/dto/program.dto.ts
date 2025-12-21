@@ -3,7 +3,7 @@ import { Type } from 'class-transformer';
 import { InputLengthEnum, IManageProgram } from 'eatfit247-shared-lib';
 import { MediaUploadDto, SeoDto } from '@server/common';
 
-export class CreateProgramDto extends SeoDto implements IManageProgram {
+export class CreateProgramDto implements IManageProgram {
   @MinLength(InputLengthEnum.CHAR_2)
   @MaxLength(InputLengthEnum.CHAR_100)
   @IsNotEmpty()
@@ -35,9 +35,11 @@ export class CreateProgramDto extends SeoDto implements IManageProgram {
   @ValidateNested({ each: true })
   @Type(() => MediaUploadDto)
   imagePath?: MediaUploadDto[];
-
   @IsOptional()
   @IsNumber()
   programId?: number;
+  @ValidateNested()
+  @Type(() => SeoDto)
+  seo: SeoDto;
 }
 

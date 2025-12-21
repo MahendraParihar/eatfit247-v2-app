@@ -40,7 +40,7 @@ export class MediaPress implements OnInit {
       { key: 'pressMediaId', label: 'ID', dataKey: 'pressMediaId', sortable: true, width: '80px' },
       { key: 'title', label: 'Title', dataKey: 'title', sortable: true, searchable: true },
       { key: 'type', label: 'Type', dataKey: 'type', sortable: true, width: '100px', align: 'center', formatter: (value) => value ? value.charAt(0).toUpperCase() + value.slice(1) : '-' },
-      { key: 'imagePath', label: 'Image', dataKey: 'imagePath', sortable: false, width: '100px', align: 'center', formatter: (value) => { if (!value) return '-'; const images = Array.isArray(value) ? value : (typeof value === 'string' ? JSON.parse(value) : [value]); return images?.[0]?.webUrl || images?.[0]?.url || '-'; } },
+      { key: 'image', label: 'Image', dataKey: 'imagePath', sortable: false, width: '100px', align: 'center', isAvatar: true, type: 'image' },
       { key: 'active', label: 'Status', dataKey: 'active', sortable: true, width: '120px', align: 'center', formatter: (value) => (value ? 'Active' : 'Inactive') },
       { key: 'createdByUser', label: 'Created By', dataKey: 'createdByUser', sortable: false, formatter: createdByUserFormatter() },
       { key: 'updatedByUser', label: 'Updated By', dataKey: 'updatedByUser', sortable: false, formatter: updatedByUserFormatter() },

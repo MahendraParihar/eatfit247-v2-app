@@ -42,66 +42,66 @@ export class MstProgram extends Model<MstProgram> {
     field: 'program_id',
     autoIncrement: true,
   })
-  programId: number;
+  declare programId: number;
 
   @Column({
     allowNull: false,
     field: 'program',
     type: DataType.STRING(100),
   })
-  program: string;
+  declare program: string;
 
   @BelongsTo(() => MstProgramCategory, { as: 'programCategory', foreignKey: 'programCategoryId', targetKey: 'programCategoryId' })
-  programCategory: MstProgramCategory;
+  declare programCategory: MstProgramCategory;
 
   @Column({
     allowNull: false,
     field: 'program_category_id',
     type: DataType.INTEGER,
   })
-  programCategoryId: number;
+  declare programCategoryId: number;
 
   @Column({
     allowNull: false,
     field: 'url',
     type: DataType.STRING(250),
   })
-  url: string;
+  declare url: string;
 
   @Column({
     allowNull: false,
     field: 'punch_line',
     type: DataType.STRING(250),
   })
-  punchLine: string;
+  declare punchLine: string;
 
   @Column({
     allowNull: false,
     field: 'details',
     type: DataType.TEXT,
   })
-  details: string;
+  declare details: string;
 
   @Column({
     allowNull: false,
     field: 'image_path',
     type: DataType.JSONB,
   })
-  imagePath: IMediaUpload[];
+  declare imagePath: IMediaUpload[];
 
   @Column({
     allowNull: true,
     field: 'ideal_for',
     type: DataType.STRING(50),
   })
-  idealFor: string;
+  declare idealFor: string;
 
   @Column({
     allowNull: false,
     field: 'sequence_number',
     type: DataType.INTEGER,
   })
-  sequenceNumber: number;
+  declare sequenceNumber: number;
 
   @Column({
     allowNull: false,
@@ -109,35 +109,35 @@ export class MstProgram extends Model<MstProgram> {
     field: 'is_special_program',
     type: DataType.BOOLEAN,
   })
-  isSpecialProgram: boolean;
+  declare isSpecialProgram: boolean;
 
   @Column({
     allowNull: true,
     field: 'video_url',
     type: DataType.STRING(500),
   })
-  videoUrl: string;
+  declare videoUrl: string;
 
   @Column({
     field: 'tags',
     allowNull: true,
     type: DataType.ARRAY(DataType.STRING),
   })
-  tags: string[];
+  declare tags: string[];
 
   @Column({
     allowNull: true,
     field: 'meta_title',
     type: DataType.STRING(InputLengthEnum.CHAR_60),
   })
-  metaTitle: string;
+  declare metaTitle: string;
 
   @Column({
     allowNull: true,
     field: 'meta_description',
     type: DataType.STRING(InputLengthEnum.CHAR_160),
   })
-  metaDescription: string;
+  declare metaDescription: string;
 
   @Column({
     allowNull: false,
@@ -145,20 +145,20 @@ export class MstProgram extends Model<MstProgram> {
     field: 'active',
     type: DataType.BOOLEAN,
   })
-  active: boolean;
+  declare active: boolean;
 
   @BelongsTo(() => MstAdminUser, { as: 'createdByUser', foreignKey: 'createdBy', targetKey: 'adminId' })
-  createdByUser: MstAdminUser;
+  declare createdByUser: MstAdminUser;
 
   @BelongsTo(() => MstAdminUser, { as: 'updatedByUser', foreignKey: 'modifiedBy', targetKey: 'adminId' })
-  updatedByUser: MstAdminUser;
+  declare updatedByUser: MstAdminUser;
 
   @Column({
     allowNull: false,
     field: 'created_by',
     type: DataType.INTEGER,
   })
-  createdBy: number;
+  declare createdBy: number;
 
   @CreatedAt
   @Column({
@@ -172,7 +172,7 @@ export class MstProgram extends Model<MstProgram> {
     field: 'modified_by',
     type: DataType.INTEGER,
   })
-  modifiedBy: number;
+  declare modifiedBy: number;
 
   @UpdatedAt
   @Column({
@@ -186,13 +186,13 @@ export class MstProgram extends Model<MstProgram> {
     field: 'created_ip',
     type: DataType.STRING(InputLengthEnum.IP),
   })
-  createdIp: string;
+  declare createdIp: string;
 
   @Column({
     allowNull: false,
     field: 'modified_ip',
     type: DataType.STRING(InputLengthEnum.IP),
   })
-  modifiedIp: string;
+  declare modifiedIp: string;
 }
 

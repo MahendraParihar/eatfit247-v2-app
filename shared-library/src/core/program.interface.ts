@@ -1,17 +1,17 @@
 import { IBaseAdminUser, ICommonSEO } from "../base.interface";
 import { IMediaUpload } from "./media-upload.interface";
 
-export interface IBaseProgram extends ICommonSEO {
+export interface IBaseProgram {
   program: string;
   programCategoryId: number;
-  url?: string;
   punchLine: string;
   details: string;
   imagePath?: IMediaUpload[];
-  idealFor?: string; // Stored as string in DB, can be comma-separated
+  idealFor?: string; // Stored as a string in DB, can be comma-separated
   sequenceNumber: number;
   isSpecialProgram: boolean;
   videoUrl?: string;
+  seo: ICommonSEO;
 }
 
 export interface IManageProgram extends IBaseProgram {

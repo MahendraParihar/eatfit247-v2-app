@@ -1,17 +1,17 @@
 import { IBaseAdminUser, ICommonSEO } from "../base.interface";
 import { IMediaUpload } from "./media-upload.interface";
 
-export interface IBaseProgramPlan extends ICommonSEO {
+export interface IBaseProgramPlan {
   plan: string;
   details?: string;
   imagePath?: IMediaUpload[];
   sequenceNumber: number;
-  inrAmount: number;
   noOfCycle: number;
   noOfDaysInCycle: number;
   programPlanTypeId: number;
   isOnline: boolean;
   isVisibleOnWeb: boolean;
+  programPlanFees: { fees: number; currencyCode: string }[];
 }
 
 export interface IManageProgramPlan extends IBaseProgramPlan {

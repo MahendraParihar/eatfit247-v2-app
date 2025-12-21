@@ -1,13 +1,23 @@
 import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from '@nestjs/common';
-import { JwtAuthGuard, CurrentUser, RequestedIp, BasicSearchDto, UpdateActiveDto } from '@server/common';
+import {
+  JwtAuthGuard,
+  CurrentUser,
+  RequestedIp,
+  BasicSearchDto,
+  UpdateActiveDto,
+  CurrencyService,
+} from '@server/common';
 import { ProgramPlanService } from '../../services';
 import { CreateProgramPlanDto } from '../../dto';
-import { ITableList, IProgramPlan, IResponse } from 'eatfit247-shared-lib';
+import { ITableList, IProgramPlan, IDropdownItem, IResponse } from 'eatfit247-shared-lib';
 
 @Controller('program-plan')
 @UseGuards(JwtAuthGuard)
 export class ProgramPlanController {
-  constructor(private readonly service: ProgramPlanService) {}
+  constructor(
+    private readonly service: ProgramPlanService,
+    private readonly currencyService: CurrencyService,
+  ) {}
 
   @Get('list')
   async list(@Query() req: BasicSearchDto): Promise<ITableList<IProgramPlan>> {
@@ -46,7 +56,27 @@ export class ProgramPlanController {
     @CurrentUser() currentUser: any,
     @RequestedIp() requestedIp: string,
   ): Promise<void> {
-    await this.service.changeStatus(id, body.active, requestedIp, currentUser.userId || currentUser.adminId);
+    await this.service.changeStatus(
+      id,
+      body.active,
+      requestedIp,
+      currentUser.userId || currentUser.adminId,
+    );
+  }
+
+  @Get('program-plan-master')
+  async programPlanMasterData(): Promise<{
+    programPlanType: IDropdownItem[];
+    currencies: IDropdownItem[];
+  }> {
+    const [types, currencies] = await Promise.all([
+      this.service.getProgramPlanTypeList(),
+      await this.currencyService.getAllCurrencies(),
+    ]);
+    return {
+      programPlanType: types,
+      currencies: currencies.map((s) => {return { id: s.currencyCode, label: s.label };}),
+    };
   }
 }
 

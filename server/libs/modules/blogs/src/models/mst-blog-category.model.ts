@@ -18,14 +18,14 @@ export class MstBlogCategory extends Model<MstBlogCategory> {
     field: 'blog_category_id',
     autoIncrement: true,
   })
-  blogCategoryId: number;
+  declare blogCategoryId: number;
 
   @Column({
     allowNull: false,
     field: 'blog_category',
     type: DataType.STRING(100),
   })
-  blogCategory: string;
+  declare blogCategory: string;
 
   @Column({
     allowNull: true,
@@ -33,34 +33,34 @@ export class MstBlogCategory extends Model<MstBlogCategory> {
     type: DataType.JSONB,
     defaultValue: null,
   })
-  imagePath: IMediaUpload[];
+  declare imagePath: IMediaUpload[];
 
   @Column({
     allowNull: false,
     field: 'url',
     type: DataType.STRING(250),
   })
-  url: string;
+  declare url: string;
 
   @Column({
     allowNull: false,
     defaultValue: true,
     field: 'active',
   })
-  active: boolean;
+  declare active: boolean;
 
   @BelongsTo(() => MstAdminUser, { as: 'createdByUser', foreignKey: 'createdBy', targetKey: 'adminId' })
-  createdByUser: MstAdminUser;
+  declare createdByUser: MstAdminUser;
 
   @BelongsTo(() => MstAdminUser, { as: 'updatedByUser', foreignKey: 'modifiedBy', targetKey: 'adminId' })
-  updatedByUser: MstAdminUser;
+  declare updatedByUser: MstAdminUser;
 
   @Column({
     allowNull: false,
     field: 'created_by',
     type: DataType.INTEGER,
   })
-  createdBy: number;
+  declare createdBy: number;
 
   @CreatedAt
   @Column({
@@ -74,7 +74,7 @@ export class MstBlogCategory extends Model<MstBlogCategory> {
     field: 'modified_by',
     type: DataType.INTEGER,
   })
-  modifiedBy: number;
+  declare modifiedBy: number;
 
   @UpdatedAt
   @Column({
@@ -88,13 +88,13 @@ export class MstBlogCategory extends Model<MstBlogCategory> {
     field: 'created_ip',
     type: DataType.STRING(InputLengthEnum.IP),
   })
-  createdIp: string;
+  declare createdIp: string;
 
   @Column({
     allowNull: false,
     field: 'modified_ip',
     type: DataType.STRING(InputLengthEnum.IP),
   })
-  modifiedIp: string;
+  declare modifiedIp: string;
 }
 

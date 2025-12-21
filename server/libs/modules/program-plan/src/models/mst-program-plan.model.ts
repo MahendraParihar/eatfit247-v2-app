@@ -1,7 +1,8 @@
-import { BelongsTo, Column, CreatedAt, DataType, Model, Scopes, Table, UpdatedAt } from 'sequelize-typescript';
+import { BelongsTo, Column, CreatedAt, DataType, HasMany, Model, Scopes, Table, UpdatedAt } from 'sequelize-typescript';
 import { MstAdminUser, getCreatedByUserInclude, getUpdatedByUserInclude } from '@server/common';
 import { IMediaUpload, InputLengthEnum } from 'eatfit247-shared-lib';
 import { MstProgramPlanType } from './mst-program-plan-type.model';
+import { TxnProgramPlanFees } from './txn-program-plan-fees.model';
 
 @Table({
   freezeTableName: true,
@@ -31,6 +32,12 @@ import { MstProgramPlanType } from './mst-program-plan-type.model';
         as: 'programPlanType',
         required: false,
         attributes: ['programPlanTypeId', 'programPlanType'],
+      },
+      {
+        model: TxnProgramPlanFees,
+        as: 'programPlanFees',
+        required: false,
+        attributes: ['programPlanFeesId', 'programPlanId', 'currencyCode', 'fees'],
       },
     ],
   },
@@ -68,23 +75,11 @@ export class MstProgramPlan extends Model<MstProgramPlan> {
   })
   imagePath: IMediaUpload[];
   @Column({
-    allowNull: true,
-    field: 'tags',
-    type: DataType.STRING(1000),
-  })
-  tags: string[];
-  @Column({
     allowNull: false,
     field: 'sequence_number',
     type: DataType.INTEGER,
   })
   sequenceNumber: number;
-  @Column({
-    allowNull: false,
-    field: 'inr_amount',
-    type: DataType.DOUBLE,
-  })
-  inrAmount: number;
   @Column({
     allowNull: false,
     defaultValue: 1,
@@ -132,9 +127,17 @@ export class MstProgramPlan extends Model<MstProgramPlan> {
     type: DataType.BOOLEAN,
   })
   active: boolean;
-  @BelongsTo(() => MstAdminUser, { as: 'createdByUser', foreignKey: 'createdBy', targetKey: 'adminId' })
+  @BelongsTo(() => MstAdminUser, {
+    as: 'createdByUser',
+    foreignKey: 'createdBy',
+    targetKey: 'adminId',
+  })
   createdByUser: MstAdminUser;
-  @BelongsTo(() => MstAdminUser, { as: 'updatedByUser', foreignKey: 'modifiedBy', targetKey: 'adminId' })
+  @BelongsTo(() => MstAdminUser, {
+    as: 'updatedByUser',
+    foreignKey: 'modifiedBy',
+    targetKey: 'adminId',
+  })
   updatedByUser: MstAdminUser;
   @Column({
     allowNull: false,
@@ -172,5 +175,7 @@ export class MstProgramPlan extends Model<MstProgramPlan> {
     type: DataType.STRING(InputLengthEnum.IP),
   })
   modifiedIp: string;
+  @HasMany(() => TxnProgramPlanFees, { foreignKey: 'programPlanId' })
+  programPlanFees: TxnProgramPlanFees[];
 }
 

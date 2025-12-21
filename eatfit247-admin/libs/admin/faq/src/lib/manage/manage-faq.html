@@ -9,8 +9,8 @@
           <mat-label>FAQ Category</mat-label>
           <mat-select formControlName="faqCategoryId">
             <mat-option [value]="">Select FAQ Category</mat-option>
-            @for (category of faqCategoryOptions; track category.value) {
-              <mat-option [value]="category.value">{{ category.label }}</mat-option>
+            @for (category of faqCategoryOptions; track category.id) {
+              <mat-option [value]="category.id">{{ category.label }}</mat-option>
             }
           </mat-select>
           <app-input-error [control]="formGroup.get('faqCategoryId')" controlName="FAQ Category"></app-input-error>

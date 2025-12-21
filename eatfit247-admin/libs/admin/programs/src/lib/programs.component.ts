@@ -45,6 +45,14 @@ export class Programs implements OnInit {
   private initializeTable(): void {
     const columns: ITableColumn<IProgram>[] = [
       { key: 'programId', label: 'ID', dataKey: 'programId', sortable: true, width: '80px' },
+      {
+        key: 'image',
+        label: 'Image',
+        isAvatar: true,
+        dataKey: 'imagePath',
+        sortable: false,
+        type: 'image'
+      },
       { key: 'program', label: 'Program', dataKey: 'program', sortable: true, searchable: true },
       { key: 'programCategory', label: 'Category', dataKey: 'programCategory', sortable: false },
       {
@@ -96,7 +104,7 @@ export class Programs implements OnInit {
     ];
     const actions: ITableAction<IProgram>[] = [
       { label: 'Edit', icon: 'edit', color: 'primary', onClick: (row) => this.editItem(row) },
-      { label: 'View', icon: 'visibility', color: 'primary', onClick: (row) => this.viewItem(row) },
+      { label: 'View Plans', icon: 'visibility', color: 'primary', onClick: (row) => this.viewPlans(row) },
       {
         label: 'Active',
         icon: 'check_circle',
@@ -198,8 +206,8 @@ export class Programs implements OnInit {
     this.router.navigate(['/programs/new']);
   }
 
-  viewItem(item: IProgram): void {
-    console.log('View program:', item);
+  viewPlans(item: IProgram): void {
+    this.router.navigate(['/program-plans'], { queryParams: { programId: item.programId } });
   }
 
   async toggleStatus(item: IProgram): Promise<void> {

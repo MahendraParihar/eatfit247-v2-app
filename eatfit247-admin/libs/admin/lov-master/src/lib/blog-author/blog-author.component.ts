@@ -44,24 +44,64 @@ export class BlogAuthor implements OnInit {
 
   private initializeTable(): void {
     const columns: ITableColumn<any>[] = [
-      { key: 'blogAuthorId', label: 'ID', dataKey: 'blogAuthorId', sortable: true, width: '80px' },
-      { key: 'firstName', label: 'Blog Author', dataKey: 'firstName', sortable: true, searchable: true },
-      { key: 'active', label: 'Status', dataKey: 'active', sortable: true, width: '120px', align: 'center', formatter: (value) => (value ? 'Active' : 'Inactive') },
-      { key: 'createdByUser', label: 'Created By', dataKey: 'createdByUser', sortable: false, formatter: createdByUserFormatter() },
-      { key: 'updatedByUser', label: 'Updated By', dataKey: 'updatedByUser', sortable: false, formatter: updatedByUserFormatter() },
+      {
+        key: 'blogAuthorId',
+        label: 'ID',
+        dataKey: 'blogAuthorId',
+        sortable: true,
+        width: '80px',
+      },
+      {
+        key: 'image',
+        label: 'Image',
+        isAvatar: true,
+        dataKey: 'imagePath',
+        sortable: false,
+        type: 'image',
+      },
+      {
+        key: 'firstName',
+        label: 'Blog Author',
+        dataKey: 'firstName',
+        sortable: true,
+        searchable: true,
+      },
+      {
+        key: 'active',
+        label: 'Status',
+        dataKey: 'active',
+        sortable: true,
+        width: '120px',
+        align: 'center',
+        formatter: (value) => (value ? 'Active' : 'Inactive'),
+      },
+      {
+        key: 'createdByUser',
+        label: 'Created By',
+        dataKey: 'createdByUser',
+        sortable: false,
+        formatter: createdByUserFormatter(),
+      },
+      {
+        key: 'updatedByUser',
+        label: 'Updated By',
+        dataKey: 'updatedByUser',
+        sortable: false,
+        formatter: updatedByUserFormatter(),
+      },
       {
         key: 'createdAt',
         label: 'Created At',
         dataKey: 'createdAt',
         type: 'date',
-        sortable: true
+        sortable: true,
       },
       {
         key: 'updatedAt',
         label: 'Updated At',
         type: 'date',
         dataKey: 'updatedAt',
-        sortable: true
+        sortable: true,
       },
     ];
 

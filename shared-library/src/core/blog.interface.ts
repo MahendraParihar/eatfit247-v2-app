@@ -1,7 +1,7 @@
 import { IBaseAdminUser, ICommonSEO, ICommonTable } from "../base.interface";
 import { IMediaUpload } from "./media-upload.interface";
 
-export interface IBaseBlog extends ICommonSEO {
+export interface IBaseBlog {
   title: string;
   description: string;
   blogCategoryId: number;
@@ -11,6 +11,7 @@ export interface IBaseBlog extends ICommonSEO {
   isMailSentToSubscriber: boolean;
   writtenAt: Date;
   imagePath?: IMediaUpload[];
+  seo: ICommonSEO;
 }
 
 export interface IManageBlog extends IBaseBlog {
@@ -25,6 +26,8 @@ export interface IBlog extends IBaseBlog, ICommonTable {
   shareCount: number;
   url: string;
   active: boolean;
+  createdByUser?: IBaseAdminUser;
+  updatedByUser?: IBaseAdminUser;
 }
 
 // Blog Category Interfaces
@@ -72,7 +75,6 @@ export interface IManageBlogAuthor extends IBaseBlogAuthor {
 
 export interface IBlogAuthor extends IBaseBlogAuthor {
   blogAuthorId: number;
-  id?: number; // For compatibility with old interface
   active: boolean;
   createdBy: number;
   updatedBy: number;

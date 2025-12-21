@@ -28,7 +28,6 @@ export class BlogService {
       order: [['title', 'ASC']],
       offset: offset,
       limit: pageSize,
-      raw: true,
       nest: true,
     });
     const resList: IBlog[] = [];
@@ -62,7 +61,9 @@ export class BlogService {
       blogCategoryId: find.blogCategoryId,
       blogCategory: find.blogCategory?.blogCategory || null,
       blogAuthorId: find.blogAuthorId,
-      blogAuthor: find.blogAuthor ? `${find.blogAuthor.firstName} ${find.blogAuthor.lastName}` : null,
+      blogAuthor: find.blogAuthor
+        ? `${find.blogAuthor.firstName} ${find.blogAuthor.lastName}`
+        : null,
       description: find.description,
       isPublished: find.isPublished,
       isCommentAllow: find.isCommentAllow,
@@ -70,10 +71,12 @@ export class BlogService {
       visitedCount: find.visitedCount,
       shareCount: find.shareCount,
       writtenAt: find.writtenAt ? moment(find.writtenAt, DB_DATE_FORMAT).toDate() : null,
-      tags: find.tags ? find.tags : null,
-      url: find.url,
-      metaTitle: find.metaTitle,
-      metaDescription: find.metaDescription,
+      seo: {
+        metaTitle: find.metaTitle,
+        metaDescription: find.metaDescription,
+        tags: find.tags,
+        url: find.url,
+      },
       active: find.active,
       createdBy: find.createdBy,
       updatedBy: find.modifiedBy,
@@ -83,6 +86,12 @@ export class BlogService {
       ),
       createdAt: find.createdAt,
       updatedAt: find.updatedAt,
+      createdByUser: find.createdByUser
+        ? CommonFunctionsUtil.getAdminShortInfo(find.createdByUser, 'createdByUser')
+        : undefined,
+      updatedByUser: find.updatedByUser
+        ? CommonFunctionsUtil.getAdminShortInfo(find.updatedByUser, 'updatedByUser')
+        : undefined,
     };
   }
 
@@ -98,10 +107,12 @@ export class BlogService {
       visitedCount: 0,
       shareCount: 0,
       writtenAt: obj.writtenAt ? moment(obj.writtenAt) : null,
-      tags: obj.tags ? obj.tags.join(', ') : null,
-      url: obj.url || CommonFunctionsUtil.removeSpecialChar(obj.title.toString().toLowerCase(), '-'),
-      metaTitle: obj.metaTitle || null,
-      metaDescription: obj.metaDescription || null,
+      url: obj.seo
+        ? obj.seo.url
+        : CommonFunctionsUtil.removeSpecialChar(obj.title.toString().toLowerCase(), '-'),
+      tags: obj.seo ? obj.seo.tags : null,
+      metaTitle: obj.seo ? obj.seo.metaTitle : null,
+      metaDescription: obj.seo ? obj.seo.metaDescription : null,
       active: true,
       imagePath: obj.imagePath && obj.imagePath.length > 0 ? obj.imagePath : null,
       createdBy: adminId,
@@ -130,10 +141,12 @@ export class BlogService {
       isCommentAllow: obj.isCommentAllow,
       isMailSentToSubscriber: obj.isMailSentToSubscriber,
       writtenAt: obj.writtenAt ? moment(obj.writtenAt, DEFAULT_DATE_FORMAT) : null,
-      tags: obj.tags ? obj.tags.join(', ') : null,
-      url: obj.url,
-      metaTitle: obj.metaTitle || null,
-      metaDescription: obj.metaDescription || null,
+      url: obj.seo
+        ? obj.seo.url
+        : CommonFunctionsUtil.removeSpecialChar(obj.title.toString().toLowerCase(), '-'),
+      tags: obj.seo ? obj.seo.tags : null,
+      metaTitle: obj.seo ? obj.seo.metaTitle : null,
+      metaDescription: obj.seo ? obj.seo.metaDescription : null,
       imagePath: obj.imagePath && obj.imagePath.length > 0 ? obj.imagePath : null,
       modifiedBy: adminId,
       modifiedIp: cIp,

@@ -29,14 +29,14 @@ export class MstProgramCategory extends Model<MstProgramCategory> {
     field: 'program_category_id',
     autoIncrement: true,
   })
-  programCategoryId: number;
+  declare programCategoryId: number;
 
   @Column({
     allowNull: false,
     field: 'program_category',
     type: DataType.STRING(100),
   })
-  programCategory: string;
+  declare programCategory: string;
 
   @Column({
     allowNull: true,
@@ -44,7 +44,7 @@ export class MstProgramCategory extends Model<MstProgramCategory> {
     type: DataType.JSONB,
     defaultValue: null,
   })
-  imagePath: IMediaUpload[];
+  declare imagePath: IMediaUpload[];
 
   @Column({
     allowNull: true,
@@ -52,7 +52,7 @@ export class MstProgramCategory extends Model<MstProgramCategory> {
     type: DataType.STRING(250),
     defaultValue: null,
   })
-  url: string;
+  declare url: string;
 
   @Column({
     allowNull: false,
@@ -60,20 +60,20 @@ export class MstProgramCategory extends Model<MstProgramCategory> {
     field: 'active',
     type: DataType.BOOLEAN,
   })
-  active: boolean;
+  declare active: boolean;
 
   @BelongsTo(() => MstAdminUser, { as: 'createdByUser', foreignKey: 'createdBy', targetKey: 'adminId' })
-  createdByUser: MstAdminUser;
+  declare createdByUser: MstAdminUser;
 
   @BelongsTo(() => MstAdminUser, { as: 'updatedByUser', foreignKey: 'modifiedBy', targetKey: 'adminId' })
-  updatedByUser: MstAdminUser;
+  declare updatedByUser: MstAdminUser;
 
   @Column({
     allowNull: false,
     field: 'created_by',
     type: DataType.INTEGER,
   })
-  createdBy: number;
+  declare createdBy: number;
 
   @CreatedAt
   @Column({
@@ -87,7 +87,7 @@ export class MstProgramCategory extends Model<MstProgramCategory> {
     field: 'modified_by',
     type: DataType.INTEGER,
   })
-  modifiedBy: number;
+  declare modifiedBy: number;
 
   @UpdatedAt
   @Column({
@@ -101,13 +101,13 @@ export class MstProgramCategory extends Model<MstProgramCategory> {
     field: 'created_ip',
     type: DataType.STRING(InputLengthEnum.IP),
   })
-  createdIp: string;
+  declare createdIp: string;
 
   @Column({
     allowNull: false,
     field: 'modified_ip',
     type: DataType.STRING(InputLengthEnum.IP),
   })
-  modifiedIp: string;
+  declare modifiedIp: string;
 }
 

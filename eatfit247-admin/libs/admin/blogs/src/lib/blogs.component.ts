@@ -40,14 +40,39 @@ export class Blogs implements OnInit {
 
   private initializeTable(): void {
     const columns: ITableColumn<IBlog>[] = [
-      { key: 'blogId', label: 'ID', dataKey: 'blogId', sortable: true, width: '80px' },
-      { key: 'title', label: 'Title', dataKey: 'title', sortable: true, searchable: true },
-      { key: 'blogCategory', label: 'Category', dataKey: 'blogCategory', sortable: true },
+      {
+        key: 'blogId',
+        label: 'ID',
+        dataKey: 'blogId',
+        sortable: true,
+        width: '80px',
+      },
+      {
+        key: 'image',
+        label: 'Image',
+        isAvatar: true,
+        dataKey: 'imagePath',
+        sortable: false,
+        type: 'image',
+      },
+      {
+        key: 'title',
+        label: 'Title',
+        dataKey: 'title',
+        sortable: true,
+        searchable: true,
+      },
+      {
+        key: 'blogCategory',
+        label: 'Category',
+        dataKey: 'blogCategory',
+        sortable: true,
+      },
       {
         key: 'blogAuthor',
         label: 'Author',
         dataKey: 'blogAuthor',
-        formatter: (value, row) => `${row.blogAuthor || ''}`.trim()
+        formatter: (value, row) => `${row.blogAuthor || ''}`.trim(),
       },
       {
         key: 'active',
@@ -56,36 +81,36 @@ export class Blogs implements OnInit {
         sortable: true,
         width: '120px',
         align: 'center',
-        formatter: (value) => (value ? 'Active' : 'Inactive')
+        formatter: (value) => (value ? 'Active' : 'Inactive'),
       },
       {
         key: 'createdByUser',
         label: 'Created By',
         dataKey: 'createdByUser',
         sortable: false,
-        formatter: createdByUserFormatter()
+        formatter: createdByUserFormatter(),
       },
       {
         key: 'updatedByUser',
         label: 'Updated By',
         dataKey: 'updatedByUser',
         sortable: false,
-        formatter: updatedByUserFormatter()
+        formatter: updatedByUserFormatter(),
       },
       {
         key: 'createdAt',
         label: 'Created At',
         dataKey: 'createdAt',
         type: 'date',
-        sortable: true
+        sortable: true,
       },
       {
         key: 'updatedAt',
         label: 'Updated At',
         dataKey: 'updatedAt',
         type: 'date',
-        sortable: true
-      }
+        sortable: true,
+      },
     ];
     const actions: ITableAction<IBlog>[] = [
       { label: 'Edit', icon: 'edit', color: 'primary', onClick: (row) => this.editItem(row) },

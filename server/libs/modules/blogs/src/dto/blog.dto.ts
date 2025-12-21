@@ -13,7 +13,7 @@ import { InputLengthEnum } from 'eatfit247-shared-lib';
 import { MediaUploadDto, SeoDto } from '@server/common';
 import { IManageBlog } from 'eatfit247-shared-lib';
 
-export class CreateBlogDto extends SeoDto implements IManageBlog {
+export class CreateBlogDto implements IManageBlog {
   @MinLength(InputLengthEnum.CHAR_2)
   @MaxLength(InputLengthEnum.CHAR_100)
   @IsNotEmpty()
@@ -42,8 +42,10 @@ export class CreateBlogDto extends SeoDto implements IManageBlog {
   imagePath?: MediaUploadDto[];
   @IsNotEmpty()
   active: boolean;
-
   @IsOptional()
   @IsNumber()
   blogId?: number;
+  @ValidateNested()
+  @Type(() => SeoDto)
+  seo: SeoDto;
 }

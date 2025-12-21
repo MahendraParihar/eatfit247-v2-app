@@ -1,9 +1,28 @@
-import { IsBoolean, IsNotEmpty, IsNumber, IsOptional, MaxLength, MinLength, ValidateNested } from 'class-validator';
+import {
+  IsArray,
+  IsBoolean,
+  IsNotEmpty,
+  IsNumber, IsObject,
+  IsOptional,
+  IsString,
+  MaxLength,
+  MinLength,
+  ValidateNested,
+} from 'class-validator';
 import { Type } from 'class-transformer';
-import { InputLengthEnum, IManageProgramPlan } from 'eatfit247-shared-lib';
+import { InputLengthEnum, IManageProgramPlan, ICommonSEO } from 'eatfit247-shared-lib';
 import { MediaUploadDto, SeoDto } from '@server/common';
 
-export class CreateProgramPlanDto extends SeoDto implements IManageProgramPlan {
+export class ProgramPlanFeeDto {
+  @IsNotEmpty()
+  @IsString()
+  currencyCode: string;
+  @IsNotEmpty()
+  @IsNumber()
+  fees: number;
+}
+
+export class CreateProgramPlanDto implements IManageProgramPlan {
   @MinLength(InputLengthEnum.CHAR_2)
   @MaxLength(InputLengthEnum.CHAR_100)
   @IsNotEmpty()
@@ -13,9 +32,6 @@ export class CreateProgramPlanDto extends SeoDto implements IManageProgramPlan {
   @IsNotEmpty()
   @IsNumber()
   sequenceNumber: number;
-  @IsNotEmpty()
-  @IsNumber()
-  inrAmount: number;
   @IsNotEmpty()
   @IsNumber()
   noOfCycle: number;
@@ -38,9 +54,12 @@ export class CreateProgramPlanDto extends SeoDto implements IManageProgramPlan {
   @ValidateNested({ each: true })
   @Type(() => MediaUploadDto)
   imagePath?: MediaUploadDto[];
-
   @IsOptional()
   @IsNumber()
   programPlanId?: number;
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ProgramPlanFeeDto)
+  programPlanFees: ProgramPlanFeeDto[];
 }
 

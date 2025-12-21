@@ -1,0 +1,158 @@
+<mat-card class="form-card">
+  <mat-card-header>
+    <mat-card-title>{{ pageTitle }}</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <form [formGroup]="formGroup" (ngSubmit)="onSubmit()">
+      <div class="form-fields">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Program Category</mat-label>
+          <mat-select formControlName="programCategoryId">
+            <mat-option [value]="">Select Program Category</mat-option>
+            @for (category of programCategoryOptions; track category.id) {
+              <mat-option [value]="category.id">{{ category.label }}</mat-option>
+            }
+          </mat-select>
+          <app-input-error [control]="formGroup.get('programCategoryId')" controlName="Program Category"></app-input-error>
+        </mat-form-field>
+
+        <mat-form-field class="full-width">
+          <mat-label>Program Name</mat-label>
+          <input
+            matInput
+            formControlName="program"
+            placeholder="Enter program name"
+            [maxlength]="100"
+            [minlength]="2"
+          />
+          <mat-hint align="end">
+            {{ formGroup.get('program')?.value?.length || 0 }}/100
+          </mat-hint>
+          <app-input-error [control]="formGroup.get('program')" controlName="Program Name"></app-input-error>
+        </mat-form-field>
+
+        <mat-form-field class="full-width">
+          <mat-label>Punch Line</mat-label>
+          <textarea
+            matInput
+            formControlName="punchLine"
+            placeholder="Enter punch line"
+            [maxlength]="250"
+            rows="2"
+          ></textarea>
+          <mat-hint align="end">
+            {{ formGroup.get('punchLine')?.value?.length || 0 }}/250
+          </mat-hint>
+          <app-input-error [control]="formGroup.get('punchLine')" controlName="Punch Line"></app-input-error>
+        </mat-form-field>
+
+        <div class="full-width">
+          <label class="editor-label">Details</label>
+          @if (editor) {
+            <div class="NgxEditor__Wrapper">
+              <ngx-editor-menu [editor]="editor"></ngx-editor-menu>
+              <ngx-editor
+                [editor]="editor"
+                formControlName="details"
+                placeholder="Enter program details"
+              ></ngx-editor>
+            </div>
+          }
+          <app-input-error [control]="formGroup.get('details')" controlName="Details"></app-input-error>
+        </div>
+
+        <mat-form-field class="full-width">
+          <mat-label>Ideal For</mat-label>
+          <input
+            matInput
+            formControlName="idealFor"
+            placeholder="Enter ideal for (optional)"
+            [maxlength]="50"
+          />
+          <mat-hint align="end">
+            {{ formGroup.get('idealFor')?.value?.length || 0 }}/50
+          </mat-hint>
+          <app-input-error [control]="formGroup.get('idealFor')" controlName="Ideal For"></app-input-error>
+        </mat-form-field>
+
+        <div class="row">
+          <mat-form-field class="half-width">
+            <mat-label>Sequence Number</mat-label>
+            <input
+              matInput
+              type="number"
+              formControlName="sequenceNumber"
+              placeholder="Enter sequence number"
+              [min]="0"
+            />
+            <app-input-error [control]="formGroup.get('sequenceNumber')" controlName="Sequence Number"></app-input-error>
+          </mat-form-field>
+
+          <mat-form-field class="half-width">
+            <mat-label>Video URL</mat-label>
+            <input
+              matInput
+              formControlName="videoUrl"
+              placeholder="Enter video URL (optional)"
+              [maxlength]="500"
+            />
+            <mat-hint align="end">
+              {{ formGroup.get('videoUrl')?.value?.length || 0 }}/500
+            </mat-hint>
+            <app-input-error [control]="formGroup.get('videoUrl')" controlName="Video URL"></app-input-error>
+          </mat-form-field>
+        </div>
+
+        <div class="row">
+          <mat-checkbox formControlName="isSpecialProgram" class="half-width">
+            Special Program
+          </mat-checkbox>
+
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>Status</mat-label>
+            <mat-select formControlName="active">
+              <mat-option [value]="true">Active</mat-option>
+              <mat-option [value]="false">Inactive</mat-option>
+            </mat-select>
+            <app-input-error [control]="formGroup.get('active')" controlName="Status"></app-input-error>
+          </mat-form-field>
+        </div>
+
+        <app-upload-form
+          [formGroup]="formGroup"
+          [isMultiFile]="false"
+          [isRequired]="false"
+          [uploadedMediaList]="initialData && initialData.imagePath ? initialData.imagePath : []"
+          controlName="imagePath"
+          [mediaFor]="mediaFor"
+          [mediaType]="mediaType"
+        ></app-upload-form>
+
+        <app-seo-form
+          [formGroup]="formGroup"
+          [seo]="initialData.seo"
+        ></app-seo-form>
+
+      </div>
+
+      <div class="form-actions">
+        <button
+          type="button"
+          mat-stroked-button
+          (click)="onCancel()"
+        >
+          <mat-icon>close</mat-icon>
+          Cancel
+        </button>
+        <button
+          type="submit"
+          mat-raised-button
+          color="primary"
+        >
+          <mat-icon>{{ isEditMode ? 'save' : 'add' }}</mat-icon>
+          {{ isEditMode ? 'Update' : 'Create' }}
+        </button>
+      </div>
+    </form>
+  </mat-card-content>
+</mat-card>

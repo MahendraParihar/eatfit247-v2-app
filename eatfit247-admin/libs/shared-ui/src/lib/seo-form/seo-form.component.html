@@ -1,34 +1,36 @@
 <div class="seo-form" [formGroup]="seoFormGroup">
   <mat-form-field appearance="outline" class="full-width">
-    <mat-label>Tags</mat-label>
-    <mat-chip-grid #chipGrid aria-label="Tag selection">
-      <mat-chip-row *ngFor="let tag of tagsList" (removed)="remove(tag)">
-        {{ tag }}
-        <button matChipRemove [attr.aria-label]="'remove ' + tag">
-          <mat-icon>cancel</mat-icon>
-        </button>
-      </mat-chip-row>
-      <input
-        placeholder="Add tag"
-        [matChipInputFor]="chipGrid"
-        [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
-        [matChipInputAddOnBlur]="addOnBlur"
-        (matChipInputTokenEnd)="add($event)"
-      />
-    </mat-chip-grid>
-  </mat-form-field>
-
-  <mat-form-field appearance="outline" class="full-width">
     <mat-label>Meta Title</mat-label>
     <input matInput formControlName="metaTitle" [maxlength]="maxMetaTitle" />
     <mat-hint align="end">{{ seoFormGroup.get('metaTitle')?.value?.length || 0 }}/{{ maxMetaTitle }}</mat-hint>
   </mat-form-field>
 
-  <mat-form-field appearance="outline" class="full-width">
-    <mat-label>Meta Description</mat-label>
-    <textarea matInput formControlName="metaDescription" rows="3" [maxlength]="maxMetaDescription"></textarea>
-    <mat-hint align="end">{{ seoFormGroup.get('metaDescription')?.value?.length || 0 }}/{{ maxMetaDescription }}</mat-hint>
-  </mat-form-field>
+  <div class="row">
+    <mat-form-field appearance="outline" class="half-width">
+      <mat-label>Tags</mat-label>
+      <mat-chip-grid #chipGrid aria-label="Tag selection">
+        <mat-chip-row *ngFor="let tag of tagsList" (removed)="remove(tag)">
+          {{ tag }}
+          <button matChipRemove [attr.aria-label]="'remove ' + tag">
+            <mat-icon>cancel</mat-icon>
+          </button>
+        </mat-chip-row>
+        <input
+          placeholder="Add tag"
+          [matChipInputFor]="chipGrid"
+          [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+          [matChipInputAddOnBlur]="addOnBlur"
+          (matChipInputTokenEnd)="add($event)"
+        />
+      </mat-chip-grid>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="half-width">
+      <mat-label>Meta Description</mat-label>
+      <textarea matInput formControlName="metaDescription" rows="3" [maxlength]="maxMetaDescription"></textarea>
+      <mat-hint align="end">{{ seoFormGroup.get('metaDescription')?.value?.length || 0 }}/{{ maxMetaDescription }}</mat-hint>
+    </mat-form-field>
+  </div>
 
   <mat-form-field appearance="outline" class="full-width">
     <mat-label>URL</mat-label>

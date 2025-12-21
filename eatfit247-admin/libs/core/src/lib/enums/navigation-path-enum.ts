@@ -41,6 +41,7 @@ export enum NavigationPathEnum {
   FAQ = 'faq',
   RECIPES = 'recipes',
   PROGRAMS = 'programs',
+  PROGRAM_PLAN = 'program-plans',
   MEDIA_PRESS = 'media-press',
   REFERRER = 'referrer',
   FRANCHISE = 'franchise',

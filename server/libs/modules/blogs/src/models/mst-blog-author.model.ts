@@ -18,37 +18,37 @@ export class MstBlogAuthor extends Model<MstBlogAuthor> {
     field: 'blog_author_id',
     autoIncrement: true,
   })
-  blogAuthorId: number;
+  declare blogAuthorId: number;
   @Column({
     allowNull: false,
     field: 'first_name',
     type: DataType.STRING(50),
   })
-  firstName: string;
+  declare firstName: string;
   @Column({
     allowNull: false,
     field: 'last_name',
     type: DataType.STRING(50),
   })
-  lastName: string;
+  declare lastName: string;
   @Column({
     allowNull: true,
     field: 'profile_picture',
     type: DataType.JSONB,
   })
-  profilePicture: string;
+  declare profilePicture: string;
   @Column({
     allowNull: false,
     field: 'country_code',
     type: DataType.STRING(5),
   })
-  countryCode: string;
+  declare countryCode: string;
   @Column({
     allowNull: false,
     field: 'contact_number',
     type: DataType.STRING(16),
   })
-  contactNumber: string;
+  declare contactNumber: string;
   @Column({
     allowNull: false,
     field: 'email_id',
@@ -56,32 +56,32 @@ export class MstBlogAuthor extends Model<MstBlogAuthor> {
     validate: { isEmail: true },
     type: DataType.STRING(100),
   })
-  emailId: string;
+  declare emailId: string;
   @Column({
     allowNull: true,
     field: 'linked_url',
     type: DataType.STRING(100),
   })
-  linkedUrl: string;
+  declare linkedUrl: string;
   @Column({
     allowNull: false,
     defaultValue: true,
     field: 'active',
   })
-  active: boolean;
+  declare active: boolean;
 
   @BelongsTo(() => MstAdminUser, { as: 'createdByUser', foreignKey: 'createdBy', targetKey: 'adminId' })
-  createdByUser: MstAdminUser;
+  declare createdByUser: MstAdminUser;
 
   @BelongsTo(() => MstAdminUser, { as: 'updatedByUser', foreignKey: 'modifiedBy', targetKey: 'adminId' })
-  updatedByUser: MstAdminUser;
+  declare updatedByUser: MstAdminUser;
 
   @Column({
     allowNull: false,
     field: 'created_by',
     type: DataType.INTEGER,
   })
-  createdBy: number;
+  declare createdBy: number;
 
   @CreatedAt
   @Column({
@@ -95,7 +95,7 @@ export class MstBlogAuthor extends Model<MstBlogAuthor> {
     field: 'modified_by',
     type: DataType.INTEGER,
   })
-  modifiedBy: number;
+  declare modifiedBy: number;
 
   @UpdatedAt
   @Column({
@@ -109,13 +109,13 @@ export class MstBlogAuthor extends Model<MstBlogAuthor> {
     field: 'created_ip',
     type: DataType.STRING(InputLengthEnum.IP),
   })
-  createdIp: string;
+  declare createdIp: string;
 
   @Column({
     allowNull: false,
     field: 'modified_ip',
     type: DataType.STRING(InputLengthEnum.IP),
   })
-  modifiedIp: string;
+  declare modifiedIp: string;
 }
 

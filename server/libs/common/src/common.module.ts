@@ -32,7 +32,9 @@ import * as jwt from 'jsonwebtoken';
 import { MstEmailTemplate } from './models/mst-email-template.model';
 import { EmailNotificationService } from './common/email-notification.service';
 import { modelRegistry } from './models/model-registry';
-import { FileUploadController } from './file-upload/file-upload.controller';
+import { FileUploadController } from './file-upload';
+import { MstCurrencyModel } from './models/mst-currencies.model';
+import { CurrencyService } from './common/currency.service';
 
 export class CommonModule {
   static forRoot(configModules: string[] = []): DynamicModule {
@@ -50,6 +52,7 @@ export class CommonModule {
       TxnAdminLastLoginDetail,
       TxnAdminRefreshToken,
       TxnAdminPasswordResetToken,
+      MstCurrencyModel,
     ];
     // Get models registered by lib modules via modelRegistry
     // Each lib module registers its own models during module initialization
@@ -99,6 +102,7 @@ export class CommonModule {
         JwtStrategy,
         AdminUserService,
         EmailNotificationService,
+        CurrencyService,
       ],
       exports: [
         SequelizeModule,
@@ -110,6 +114,7 @@ export class CommonModule {
         GoogleService,
         AdminUserService,
         EmailNotificationService,
+        CurrencyService
       ],
     };
   }

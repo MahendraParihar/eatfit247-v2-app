@@ -1,0 +1,153 @@
+<mat-card class="form-card">
+  <mat-card-header>
+    <mat-card-title>{{ pageTitle }}</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <form [formGroup]="formGroup" (ngSubmit)="onSubmit()">
+      <div class="form-fields">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Program Plan Type</mat-label>
+          <mat-select formControlName="programPlanTypeId">
+            <mat-option [value]="">Select Program Plan Type</mat-option>
+            @for (type of programPlanTypeOptions; track type.id) {
+              <mat-option [value]="type.id">{{ type.label }}</mat-option>
+            }
+          </mat-select>
+          <app-input-error [control]="formGroup.get('programPlanTypeId')" controlName="Program Plan Type"></app-input-error>
+        </mat-form-field>
+
+        <mat-form-field class="full-width">
+          <mat-label>Plan Name</mat-label>
+          <input
+            matInput
+            formControlName="plan"
+            placeholder="Enter plan name"
+            [maxlength]="100"
+            [minlength]="2"
+          />
+          <mat-hint align="end">
+            {{ formGroup.get('plan')?.value?.length || 0 }}/100
+          </mat-hint>
+          <app-input-error [control]="formGroup.get('plan')" controlName="Plan Name"></app-input-error>
+        </mat-form-field>
+
+        @if (editor) {
+          <div class="full-width">
+            <label class="editor-label">Details</label>
+            <div class="NgxEditor__Wrapper">
+              <ngx-editor-menu [editor]="editor"></ngx-editor-menu>
+              <ngx-editor
+                [editor]="editor"
+                formControlName="details"
+                placeholder="Enter plan details (optional)"
+              ></ngx-editor>
+            </div>
+            <app-input-error [control]="formGroup.get('details')" controlName="Details"></app-input-error>
+          </div>
+        }
+
+        <div class="row">
+          <mat-form-field class="half-width">
+            <mat-label>Sequence Number</mat-label>
+            <input
+              matInput
+              type="number"
+              formControlName="sequenceNumber"
+              placeholder="Enter sequence number"
+              [min]="0"
+            />
+            <app-input-error [control]="formGroup.get('sequenceNumber')" controlName="Sequence Number"></app-input-error>
+          </mat-form-field>
+
+          <mat-form-field class="half-width">
+            <mat-label>INR Amount</mat-label>
+            <input
+              matInput
+              type="number"
+              formControlName="inrAmount"
+              placeholder="Enter amount in INR"
+              [min]="0"
+              step="0.01"
+            />
+            <app-input-error [control]="formGroup.get('inrAmount')" controlName="INR Amount"></app-input-error>
+          </mat-form-field>
+        </div>
+
+        <div class="row">
+          <mat-form-field class="half-width">
+            <mat-label>Number of Cycles</mat-label>
+            <input
+              matInput
+              type="number"
+              formControlName="noOfCycle"
+              placeholder="Enter number of cycles"
+              [min]="1"
+            />
+            <app-input-error [control]="formGroup.get('noOfCycle')" controlName="Number of Cycles"></app-input-error>
+          </mat-form-field>
+
+          <mat-form-field class="half-width">
+            <mat-label>Days in Cycle</mat-label>
+            <input
+              matInput
+              type="number"
+              formControlName="noOfDaysInCycle"
+              placeholder="Enter days in cycle"
+              [min]="1"
+            />
+            <app-input-error [control]="formGroup.get('noOfDaysInCycle')" controlName="Days in Cycle"></app-input-error>
+          </mat-form-field>
+        </div>
+
+        <div class="row">
+          <mat-checkbox formControlName="isOnline" class="half-width">
+            Is Online
+          </mat-checkbox>
+
+          <mat-checkbox formControlName="isVisibleOnWeb" class="half-width">
+            Visible on Web
+          </mat-checkbox>
+        </div>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Status</mat-label>
+          <mat-select formControlName="active">
+            <mat-option [value]="true">Active</mat-option>
+            <mat-option [value]="false">Inactive</mat-option>
+          </mat-select>
+          <app-input-error [control]="formGroup.get('active')" controlName="Status"></app-input-error>
+        </mat-form-field>
+
+        <app-upload-form
+          [formGroup]="formGroup"
+          [isMultiFile]="false"
+          [isRequired]="false"
+          [uploadedMediaList]="initialData && initialData.imagePath ? initialData.imagePath : []"
+          controlName="imagePath"
+          [mediaFor]="mediaFor"
+          [mediaType]="mediaType"
+        ></app-upload-form>
+
+      </div>
+
+      <div class="form-actions">
+        <button
+          type="button"
+          mat-stroked-button
+          (click)="onCancel()"
+        >
+          <mat-icon>close</mat-icon>
+          Cancel
+        </button>
+        <button
+          type="submit"
+          mat-raised-button
+          color="primary"
+        >
+          <mat-icon>{{ isEditMode ? 'save' : 'add' }}</mat-icon>
+          {{ isEditMode ? 'Update' : 'Create' }}
+        </button>
+      </div>
+    </form>
+  </mat-card-content>
+</mat-card>

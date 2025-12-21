@@ -41,10 +41,10 @@ interface MenuItem {
     MatListModule,
     MatMenuModule,
     MatTooltipModule,
-    MatDividerModule
+    MatDividerModule,
   ],
   templateUrl: './base-layout.component.html',
-  styleUrl: './base-layout.component.scss'
+  styleUrl: './base-layout.component.scss',
 })
 export class BaseLayoutComponent implements OnInit, OnDestroy {
   @ViewChild('drawer') drawer!: MatSidenav;
@@ -58,62 +58,67 @@ export class BaseLayoutComponent implements OnInit, OnDestroy {
     {
       label: 'Members',
       icon: 'people',
-      route: '/members'
+      route: '/members',
     },
     {
       label: 'Blogs',
       icon: 'article',
-      route: '/blogs'
+      route: '/blogs',
     },
     {
       label: 'FAQ',
       icon: 'help',
-      route: '/faq'
+      route: '/faq',
     },
     {
       label: 'Recipes',
       icon: 'restaurant',
-      route: '/recipes'
+      route: '/recipes',
     },
     {
       label: 'Programs',
       icon: 'fitness_center',
-      route: '/programs'
+      route: '/programs',
+    },
+    {
+      label: 'Program Plans',
+      icon: 'payment',
+      route: '/program-plans',
     },
     {
       label: 'Media & Press',
       icon: 'perm_media',
-      route: '/media-press'
+      route: '/media-press',
     },
     {
       label: 'Referrer',
       icon: 'person_add',
-      route: '/referrer'
+      route: '/referrer',
     },
     {
       label: 'Franchise',
       icon: 'business',
-      route: '/franchise'
+      route: '/franchise',
     },
     {
       label: 'Pocket Guide',
       icon: 'menu_book',
-      route: '/pocket-guide'
+      route: '/pocket-guide',
     },
     {
       label: 'Call Logs',
       icon: 'phone',
-      route: '/call-logs'
+      route: '/call-logs',
     },
     {
       label: 'Issues',
       icon: 'report_problem',
-      route: '/issues'
+      route: '/issues',
     },
     {
       label: 'Admin Users',
       icon: 'admin_panel_settings',
-      route: '/admin-user'
+      route: '/admin-user',
     },
     {
       label: 'LOV Master',
@@ -123,147 +128,147 @@ export class BaseLayoutComponent implements OnInit, OnDestroy {
         {
           label: 'Gender',
           icon: 'person',
-          route: '/lov-master/gender'
+          route: '/lov-master/gender',
         },
         {
           label: 'Blood Sugar',
           icon: 'bloodtype',
-          route: '/lov-master/blood-sugar'
+          route: '/lov-master/blood-sugar',
         },
         {
           label: 'Health Issue',
           icon: 'health_and_safety',
-          route: '/lov-master/health-issue'
+          route: '/lov-master/health-issue',
         },
         {
           label: 'Eating Habit',
           icon: 'restaurant_menu',
-          route: '/lov-master/eating-habit'
+          route: '/lov-master/eating-habit',
         },
         {
           label: 'Lifestyle',
           icon: 'self_improvement',
-          route: '/lov-master/lifestyle'
+          route: '/lov-master/lifestyle',
         },
         {
           label: 'Marital Status',
           icon: 'favorite',
-          route: '/lov-master/marital-status'
+          route: '/lov-master/marital-status',
         },
         {
           label: 'Religion',
           icon: 'church',
-          route: '/lov-master/religion'
+          route: '/lov-master/religion',
         },
         {
           label: 'Sleeping Pattern',
           icon: 'bedtime',
-          route: '/lov-master/sleeping-pattern'
+          route: '/lov-master/sleeping-pattern',
         },
         {
           label: 'Type of Exercise',
           icon: 'fitness_center',
-          route: '/lov-master/type-of-exercise'
+          route: '/lov-master/type-of-exercise',
         },
         {
           label: 'Urine Output',
           icon: 'water_drop',
-          route: '/lov-master/urine-output'
+          route: '/lov-master/urine-output',
         },
         {
           label: 'Health Parameter',
           icon: 'monitor_heart',
-          route: '/lov-master/health-parameter'
+          route: '/lov-master/health-parameter',
         },
         // Call Logs items
         {
           label: 'Call Purpose',
           icon: 'phone_callback',
-          route: '/lov-master/call-purpose'
+          route: '/lov-master/call-purpose',
         },
         {
           label: 'Call Log Status',
           icon: 'phone_in_talk',
-          route: '/lov-master/call-log-status'
+          route: '/lov-master/call-log-status',
         },
         {
           label: 'Call Type',
           icon: 'call',
-          route: '/lov-master/call-type'
+          route: '/lov-master/call-type',
         },
         // Blog items
         {
           label: 'Blog Author',
           icon: 'person',
-          route: '/lov-master/blog-author'
+          route: '/lov-master/blog-author',
         },
         {
           label: 'Blog Category',
           icon: 'category',
-          route: '/lov-master/blog-category'
+          route: '/lov-master/blog-category',
         },
         {
           label: 'Blog Comments',
           icon: 'comment',
-          route: '/lov-master/blog-comments'
+          route: '/lov-master/blog-comments',
         },
         // FAQ items
         {
           label: 'FAQ Category',
           icon: 'help_outline',
-          route: '/lov-master/faq-category'
+          route: '/lov-master/faq-category',
         },
         // Issue items
         {
           label: 'Issue Category',
           icon: 'category',
-          route: '/lov-master/issue-category'
+          route: '/lov-master/issue-category',
         },
         {
           label: 'Issue Status',
           icon: 'flag',
-          route: '/lov-master/issue-status'
+          route: '/lov-master/issue-status',
         },
         // Program items
         {
           label: 'Program Category',
           icon: 'category',
-          route: '/lov-master/program-category'
+          route: '/lov-master/program-category',
         },
         // Recipe items
         {
           label: 'Recipe Category',
           icon: 'category',
-          route: '/lov-master/recipe-category'
+          route: '/lov-master/recipe-category',
         },
         {
           label: 'Recipe Cuisine',
           icon: 'restaurant',
-          route: '/lov-master/recipe-cuisine'
+          route: '/lov-master/recipe-cuisine',
         },
         {
           label: 'Recipe Type',
           icon: 'restaurant_menu',
-          route: '/lov-master/recipe-type'
+          route: '/lov-master/recipe-type',
         },
         // Location items
         {
           label: 'Country',
           icon: 'public',
-          route: '/lov-master/country'
+          route: '/lov-master/country',
         },
         {
           label: 'State',
           icon: 'map',
-          route: '/lov-master/state'
-        }
-      ]
-    }
+          route: '/lov-master/state',
+        },
+      ],
+    },
   ];
 
   constructor(
     private authService: AuthService,
-    private router: Router
+    private router: Router,
   ) {}
 
   ngOnInit(): void {
@@ -328,7 +333,11 @@ export class BaseLayoutComponent implements OnInit, OnDestroy {
       return '';
     }
     if (this.currentUser.firstName || this.currentUser.lastName) {
-      return [this.currentUser.firstName, this.currentUser.lastName].filter(Boolean).join(' ') || this.currentUser.emailId;
+      return (
+        [this.currentUser.firstName, this.currentUser.lastName]
+          .filter(Boolean)
+          .join(' ') || this.currentUser.emailId
+      );
     }
     return this.currentUser.emailId;
   }

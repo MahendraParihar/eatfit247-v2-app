@@ -52,6 +52,10 @@ export const appRoutes: Route[] = [
         loadChildren: () => import('programs').then((m) => m.programsRoutes),
       },
       {
+        path: 'program-plans',
+        loadChildren: () => import('program-plan').then((m) => m.programPlanRoutes),
+      },
+      {
         path: 'media-press',
         loadChildren: () => import('media-press').then((m) => m.mediaPressRoutes),
       },

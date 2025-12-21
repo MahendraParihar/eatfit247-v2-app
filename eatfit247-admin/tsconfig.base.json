@@ -20,6 +20,7 @@
       "faq": ["libs/admin/faq/src/index.ts"],
       "recipes": ["libs/admin/recipes/src/index.ts"],
       "programs": ["libs/admin/programs/src/index.ts"],
+      "program-plan": ["libs/admin/program-plan/src/index.ts"],
       "media-press": ["libs/admin/media-press/src/index.ts"],
       "referrer": ["libs/admin/referrer/src/index.ts"],
       "franchise": ["libs/admin/franchise/src/index.ts"],

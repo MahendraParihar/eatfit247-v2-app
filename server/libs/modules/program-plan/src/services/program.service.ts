@@ -16,7 +16,6 @@ export class ProgramService {
     const pageNumber = searchDto.page || 0;
     const pageSize = searchDto.limit || 15;
     const offset = pageNumber === 0 ? 0 : pageNumber * pageSize;
-
     const { rows, count } = await this.programRepository.scope('list').findAndCountAll({
       where: whereCondition,
       order: [
@@ -25,15 +24,65 @@ export class ProgramService {
       ],
       offset: offset,
       limit: pageSize,
-      raw: true,
       nest: true,
     });
-
     const resList: IProgram[] = rows.map((item: any) => {return this.convertToModel(item);});
     return {
       tableData: resList,
       count: count,
     };
+  }
+
+  private parseTags(tags: any): string[] | null {
+    if (!tags) {
+      return null;
+    }
+    // If it's already an array, return it
+    if (Array.isArray(tags)) {
+      return tags;
+    }
+    // If it's a string, parse it
+    if (typeof tags === 'string') {
+      try {
+        let cleaned = tags.trim();
+        
+        // First, try to decode JSON if it's a JSON-encoded string (e.g., "{\"tag1\",\"tag2\"}")
+        if (cleaned.startsWith('"') && cleaned.endsWith('"')) {
+          try {
+            const decoded = JSON.parse(cleaned);
+            cleaned = typeof decoded === 'string' ? decoded : String(decoded);
+          } catch (e) {
+            // Not valid JSON, continue with original
+          }
+        }
+        
+        // Handle PostgreSQL array format: {tag1,tag2} or {"tag1","tag2"}
+        cleaned = cleaned.trim();
+        
+        // Remove outer braces if present
+        if (cleaned.startsWith('{') && cleaned.endsWith('}')) {
+          cleaned = cleaned.slice(1, -1).trim();
+        }
+        
+        // Extract quoted strings using regex to match "quoted" strings
+        const quotedMatches = cleaned.match(/"([^"]*)"/g);
+        if (quotedMatches && quotedMatches.length > 0) {
+          return quotedMatches.map((match) => {
+            // Remove quotes and handle escaped quotes
+            return match.slice(1, -1).replace(/\\"/g, '"');
+          });
+        }
+        
+        // If no quotes, split by comma (handles unquoted values)
+        if (cleaned) {
+          const result = cleaned.split(',').map((item) => item.trim()).filter((item) => item);
+          return result.length > 0 ? result : null;
+        }
+      } catch (error) {
+        console.error('Error parsing tags array:', error, tags);
+      }
+    }
+    return null;
   }
 
   private convertToModel(item: any): IProgram {
@@ -43,16 +92,18 @@ export class ProgramService {
       program: item.program,
       programCategoryId: item.programCategoryId,
       programCategory: item.programCategory?.programCategory || '',
-      url: item.url,
       punchLine: item.punchLine,
       details: item.details,
       idealFor: item.idealFor,
       sequenceNumber: item.sequenceNumber,
       isSpecialProgram: item.isSpecialProgram,
       videoUrl: item.videoUrl,
-      tags: item.tags ? item.tags.split(', ') : undefined,
-      metaTitle: item.metaTitle,
-      metaDescription: item.metaDescription,
+      seo: {
+        metaTitle: item.metaTitle,
+        metaDescription: item.metaDescription,
+        tags: this.parseTags(item.tags),
+        url: item.url,
+      },
       imagePath: CommonFunctionsUtil.buildImageUrl(
         item.imagePath,
         this.appConfigService.getString(ConfigParam.CLIENT_URL),
@@ -62,15 +113,18 @@ export class ProgramService {
       updatedBy: item.modifiedBy,
       createdAt: item.createdAt,
       updatedAt: item.updatedAt,
-      createdByUser: item.createdByUser ? CommonFunctionsUtil.getAdminShortInfo(item.createdByUser, 'createdByUser') : undefined,
-      updatedByUser: item.updatedByUser ? CommonFunctionsUtil.getAdminShortInfo(item.updatedByUser, 'updatedByUser') : undefined,
+      createdByUser: item.createdByUser
+        ? CommonFunctionsUtil.getAdminShortInfo(item.createdByUser, 'createdByUser')
+        : undefined,
+      updatedByUser: item.updatedByUser
+        ? CommonFunctionsUtil.getAdminShortInfo(item.updatedByUser, 'updatedByUser')
+        : undefined,
     };
   }
 
   public async fetchById(id: number): Promise<IProgram> {
     const find = await this.programRepository.scope('details').findOne({
       where: { programId: id },
-      raw: true,
       nest: true,
     });
     if (!find) {
@@ -83,17 +137,17 @@ export class ProgramService {
     const createObj = {
       program: obj.program,
       programCategoryId: obj.programCategoryId,
-      url: obj.url || CommonFunctionsUtil.removeSpecialChar(obj.program.toString().toLowerCase(), '-'),
       punchLine: obj.punchLine,
       details: obj.details,
       idealFor: obj.idealFor,
       sequenceNumber: obj.sequenceNumber,
       isSpecialProgram: obj.isSpecialProgram,
       videoUrl: obj.videoUrl,
-      tags: obj.tags || null,
-      metaTitle: obj.metaTitle || null,
-      metaDescription: obj.metaDescription || null,
-      imagePath: (obj.imagePath && obj.imagePath.length > 0) ? obj.imagePath : null,
+      url: obj.seo ? obj.seo.url : CommonFunctionsUtil.removeSpecialChar(obj.program.toString().toLowerCase(), '-'),
+      tags: obj.seo ? obj.seo.tags : null,
+      metaTitle: obj.seo ? obj.seo.metaTitle : null,
+      metaDescription: obj.seo ? obj.seo.metaDescription : null,
+      imagePath: obj.imagePath && obj.imagePath.length > 0 ? obj.imagePath : null,
       active: obj.active,
       createdBy: adminId,
       modifiedBy: adminId,
@@ -113,17 +167,19 @@ export class ProgramService {
     const updateObj = {
       program: obj.program,
       programCategoryId: obj.programCategoryId,
-      url: obj.url,
       punchLine: obj.punchLine,
       details: obj.details,
       idealFor: obj.idealFor,
       sequenceNumber: obj.sequenceNumber,
       isSpecialProgram: obj.isSpecialProgram,
       videoUrl: obj.videoUrl,
-      tags: obj.tags || null,
-      metaTitle: obj.metaTitle || null,
-      metaDescription: obj.metaDescription || null,
-      imagePath: (obj.imagePath && obj.imagePath.length > 0) ? obj.imagePath : null,
+      url: obj.seo
+        ? obj.seo.url
+        : CommonFunctionsUtil.removeSpecialChar(obj.program.toString().toLowerCase(), '-'),
+      tags: obj.seo ? obj.seo.tags : null,
+      metaTitle: obj.seo ? obj.seo.metaTitle : null,
+      metaDescription: obj.seo ? obj.seo.metaDescription : null,
+      imagePath: obj.imagePath && obj.imagePath.length > 0 ? obj.imagePath : null,
       active: obj.active,
       modifiedBy: adminId,
       modifiedIp: cIp,

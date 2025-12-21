@@ -8,6 +8,7 @@ export { generateRandomPassword } from './utils/config.utils';
 export * from './common/dto';
 export * from './common/log-error.service';
 export * from './common/email-notification.service';
+export * from './common/currency.service';
 export * from './auth/jwt-auth.guard';
 export * from './auth/jwt.strategy';
 export * from './auth/admin-user.service';

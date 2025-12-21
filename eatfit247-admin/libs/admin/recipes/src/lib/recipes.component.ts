@@ -37,27 +37,87 @@ export class Recipes implements OnInit {
 
   private initializeTable(): void {
     const columns: ITableColumn<IRecipe>[] = [
-      { key: 'recipeId', label: 'ID', dataKey: 'recipeId', sortable: true, width: '80px' },
-      { key: 'name', label: 'Recipe Name', dataKey: 'name', sortable: true, searchable: true },
-      { key: 'recipeType', label: 'Type', dataKey: 'recipeType', sortable: false, formatter: (value) => value || '-' },
-      { key: 'visitedCount', label: 'Views', dataKey: 'visitedCount', sortable: true, width: '100px', align: 'center' },
-      { key: 'shareCount', label: 'Shares', dataKey: 'shareCount', sortable: true, width: '100px', align: 'center' },
-      { key: 'active', label: 'Status', dataKey: 'active', sortable: true, width: '120px', align: 'center', formatter: (value) => (value ? 'Active' : 'Inactive') },
-      { key: 'createdByUser', label: 'Created By', dataKey: 'createdByUser', sortable: false, formatter: createdByUserFormatter() },
-      { key: 'updatedByUser', label: 'Updated By', dataKey: 'updatedByUser', sortable: false, formatter: updatedByUserFormatter() },
+      {
+        key: 'recipeId',
+        label: 'ID',
+        dataKey: 'recipeId',
+        sortable: true,
+        width: '80px',
+      },
+      {
+        key: 'image',
+        label: 'Image',
+        isAvatar: true,
+        dataKey: 'imagePath',
+        sortable: false,
+        type: 'image',
+      },
+      {
+        key: 'name',
+        label: 'Recipe Name',
+        dataKey: 'name',
+        sortable: true,
+        searchable: true,
+      },
+      {
+        key: 'recipeType',
+        label: 'Type',
+        dataKey: 'recipeType',
+        sortable: false,
+        formatter: (value) => value || '-',
+      },
+      {
+        key: 'visitedCount',
+        label: 'Views',
+        dataKey: 'visitedCount',
+        sortable: true,
+        width: '100px',
+        align: 'center',
+      },
+      {
+        key: 'shareCount',
+        label: 'Shares',
+        dataKey: 'shareCount',
+        sortable: true,
+        width: '100px',
+        align: 'center',
+      },
+      {
+        key: 'active',
+        label: 'Status',
+        dataKey: 'active',
+        sortable: true,
+        width: '120px',
+        align: 'center',
+        formatter: (value) => (value ? 'Active' : 'Inactive'),
+      },
+      {
+        key: 'createdByUser',
+        label: 'Created By',
+        dataKey: 'createdByUser',
+        sortable: false,
+        formatter: createdByUserFormatter(),
+      },
+      {
+        key: 'updatedByUser',
+        label: 'Updated By',
+        dataKey: 'updatedByUser',
+        sortable: false,
+        formatter: updatedByUserFormatter(),
+      },
       {
         key: 'createdAt',
         label: 'Created At',
         dataKey: 'createdAt',
         type: 'date',
-        sortable: true
+        sortable: true,
       },
       {
         key: 'updatedAt',
         label: 'Updated At',
         dataKey: 'updatedAt',
         type: 'date',
-        sortable: true
+        sortable: true,
       },
     ];
 
