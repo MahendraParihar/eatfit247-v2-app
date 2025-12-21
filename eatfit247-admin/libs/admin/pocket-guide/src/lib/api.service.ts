@@ -30,7 +30,7 @@ export class PocketGuideApiService extends ApiBaseService {
     return await this.httpService.put<void>(`${this.endpoint}/manage/${id}`, data);
   }
 
-  async updateStatus(id: number, isActive: boolean): Promise<void> {
-    return await this.httpService.patch<void>(`${this.endpoint}/update-status/${id}`, { isActive });
+  async updateStatus(id: number, active: boolean): Promise<void> {
+    return await this.httpService.patch<void>(`${this.endpoint}/update-status/${id}`, { active });
   }
 }
