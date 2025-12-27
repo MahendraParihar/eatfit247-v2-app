@@ -11,12 +11,12 @@
           <mat-label>Email</mat-label>
           <input matInput type="email" formControlName="emailId" placeholder="Enter your email" />
           <mat-icon matPrefix>email</mat-icon>
-          <mat-error *ngIf="loginForm.get('emailId')?.hasError('required')">
-            Email is required
-          </mat-error>
-          <mat-error *ngIf="loginForm.get('emailId')?.hasError('email')">
-            Please enter a valid email
-          </mat-error>
+          @if (loginForm.get('emailId')?.hasError('required')) {
+            <mat-error>Email is required</mat-error>
+          }
+          @if (loginForm.get('emailId')?.hasError('email')) {
+            <mat-error>Please enter a valid email</mat-error>
+          }
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="full-width">
@@ -38,18 +38,20 @@
           >
             <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
           </button>
-          <mat-error *ngIf="loginForm.get('password')?.hasError('required')">
-            Password is required
-          </mat-error>
-          <mat-error *ngIf="loginForm.get('password')?.hasError('minlength')">
-            Password must be at least 6 characters
-          </mat-error>
+          @if (loginForm.get('password')?.hasError('required')) {
+            <mat-error>Password is required</mat-error>
+          }
+          @if (loginForm.get('password')?.hasError('minlength')) {
+            <mat-error>Password must be at least 6 characters</mat-error>
+          }
         </mat-form-field>
 
-        <div class="error-message" *ngIf="errorMessage">
-          <mat-icon>error</mat-icon>
-          <span>{{ errorMessage }}</span>
-        </div>
+        @if (errorMessage) {
+          <div class="error-message">
+            <mat-icon>error</mat-icon>
+            <span>{{ errorMessage }}</span>
+          </div>
+        }
 
         <button
           mat-raised-button
@@ -58,9 +60,15 @@
           class="full-width login-button"
           [disabled]="loading || loginForm.invalid"
         >
-          <mat-spinner *ngIf="loading" diameter="20" class="button-spinner"></mat-spinner>
-          <span *ngIf="!loading">Sign In</span>
-          <span *ngIf="loading">Signing In...</span>
+          @if (loading) {
+            <mat-spinner diameter="20" class="button-spinner"></mat-spinner>
+          }
+          @if (!loading) {
+            <span>Sign In</span>
+          }
+          @if (loading) {
+            <span>Signing In...</span>
+          }
         </button>
 
         <div class="forgot-password-link">

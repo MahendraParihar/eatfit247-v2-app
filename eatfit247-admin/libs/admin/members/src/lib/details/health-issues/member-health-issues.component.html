@@ -1,0 +1,18 @@
+@if (loading) {
+  <lib-loader></lib-loader>
+}
+@if (!loading && healthIssues.length > 0) {
+  <mat-list>
+    @for (issue of healthIssues; track issue.healthIssueId || $index) {
+      <mat-list-item>
+        <mat-icon matListItemIcon>local_hospital</mat-icon>
+        <div matListItemTitle>{{ issue.healthIssue }}</div>
+      </mat-list-item>
+    }
+  </mat-list>
+}
+@if (!loading && healthIssues.length === 0) {
+  <lib-empty-state
+    [type]="EmptyStateType.MEMBER_HEALTH_ISSUES">
+  </lib-empty-state>
+}

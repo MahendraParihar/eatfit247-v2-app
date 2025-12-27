@@ -7,16 +7,8 @@ import { MatCardModule } from '@angular/material/card';
   selector: 'lib-member-assessment',
   standalone: true,
   imports: [CommonModule, MatCardModule],
-  template: `
-    <mat-card>
-      <mat-card-header>
-        <mat-card-title>Member Assessment</mat-card-title>
-      </mat-card-header>
-      <mat-card-content>
-        <p>Assessment content will be displayed here.</p>
-      </mat-card-content>
-    </mat-card>
-  `,
+  templateUrl: './member-assessment.component.html',
+  styleUrl: './member-assessment.component.scss'
 })
 export class MemberAssessmentComponent implements OnInit {
   memberId!: number;

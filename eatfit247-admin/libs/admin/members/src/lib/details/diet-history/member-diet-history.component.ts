@@ -7,16 +7,8 @@ import { MatCardModule } from '@angular/material/card';
   selector: 'lib-member-diet-history',
   standalone: true,
   imports: [CommonModule, MatCardModule],
-  template: `
-    <mat-card>
-      <mat-card-header>
-        <mat-card-title>Member Diet History</mat-card-title>
-      </mat-card-header>
-      <mat-card-content>
-        <p>Diet history content will be displayed here.</p>
-      </mat-card-content>
-    </mat-card>
-  `,
+  templateUrl: './member-diet-history.component.html',
+  styleUrl: './member-diet-history.component.scss'
 })
 export class MemberDietHistoryComponent implements OnInit {
   memberId!: number;

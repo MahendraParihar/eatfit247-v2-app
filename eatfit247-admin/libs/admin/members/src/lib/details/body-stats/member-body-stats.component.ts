@@ -7,16 +7,8 @@ import { MatCardModule } from '@angular/material/card';
   selector: 'lib-member-body-stats',
   standalone: true,
   imports: [CommonModule, MatCardModule],
-  template: `
-    <mat-card>
-      <mat-card-header>
-        <mat-card-title>Member Body Stats</mat-card-title>
-      </mat-card-header>
-      <mat-card-content>
-        <p>Body stats content will be displayed here.</p>
-      </mat-card-content>
-    </mat-card>
-  `,
+  templateUrl: './member-body-stats.component.html',
+  styleUrl: './member-body-stats.component.scss'
 })
 export class MemberBodyStatsComponent implements OnInit {
   memberId!: number;

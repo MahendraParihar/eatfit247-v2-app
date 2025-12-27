@@ -1,0 +1,14 @@
+@if (loading) {
+  <lib-loader></lib-loader>
+}
+@if (!loading && callLogs.length > 0) {
+  <app-data-table
+    [config]="tableConfig"
+    [data]="callLogs">
+  </app-data-table>
+}
+@if (!loading && callLogs.length === 0) {
+  <lib-empty-state
+    [type]="EmptyStateType.MEMBER_CALL_LOGS">
+  </lib-empty-state>
+}

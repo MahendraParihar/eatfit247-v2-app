@@ -2,8 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { DataTableComponent, ITableColumn, ITableConfig, EmptyStateComponent, EmptyStateType } from '@shared';
+import { DataTableComponent, ITableColumn, ITableConfig, EmptyStateComponent, EmptyStateType, LoaderComponent } from '@shared';
 import { IMemberCallLog } from '@eatfit247-shared-lib';
 import { MembersApiService } from '../../api.service';
 import { Subject, takeUntil } from 'rxjs';
@@ -11,37 +10,9 @@ import { Subject, takeUntil } from 'rxjs';
 @Component({
   selector: 'lib-member-call-logs',
   standalone: true,
-  imports: [CommonModule, MatCardModule, MatProgressSpinnerModule, DataTableComponent, EmptyStateComponent],
-  template: `
-    <mat-card>
-      <mat-card-header>
-        <mat-card-title>Member Call Logs</mat-card-title>
-      </mat-card-header>
-      <mat-card-content>
-        <div *ngIf="loading" class="loading-container">
-          <mat-spinner diameter="40"></mat-spinner>
-        </div>
-        <app-data-table
-          *ngIf="!loading"
-          [config]="tableConfig"
-          [data]="callLogs">
-        </app-data-table>
-        <lib-empty-state
-          *ngIf="!loading && callLogs.length === 0"
-          [type]="EmptyStateType.MEMBER_CALL_LOGS">
-        </lib-empty-state>
-      </mat-card-content>
-    </mat-card>
-  `,
-  styles: [`
-    .loading-container {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 40px;
-      min-height: 300px;
-    }
-  `]
+  imports: [CommonModule, MatCardModule, DataTableComponent, EmptyStateComponent, LoaderComponent],
+  templateUrl: './member-call-logs.component.html',
+  styleUrl: './member-call-logs.component.scss'
 })
 export class MemberCallLogsComponent implements OnInit, OnDestroy {
   memberId!: number;
