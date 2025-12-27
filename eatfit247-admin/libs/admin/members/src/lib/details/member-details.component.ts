@@ -87,14 +87,6 @@ export class MemberDetailsComponent implements OnInit, OnDestroy {
     }
   }
 
-  goBack(): void {
-    this.router.navigate(['/members']);
-  }
-
-  editMember(): void {
-    this.router.navigate(['/members/edit', this.memberId]);
-  }
-
   getMemberDisplayName(): string {
     if (!this.member) return '';
     return (

@@ -1,15 +1,4 @@
 <div class="member-details-container">
-  <!-- Back Button -->
-  <div class="header-actions">
-    <button mat-icon-button (click)="goBack()" aria-label="Go back">
-      <mat-icon>arrow_back</mat-icon>
-    </button>
-    <button mat-raised-button color="primary" (click)="editMember()">
-      <mat-icon>edit</mat-icon>
-      Edit Member
-    </button>
-  </div>
-
   <!-- Member Summary Card -->
   @if (member && !loading) {
     <mat-card class="summary-card">
