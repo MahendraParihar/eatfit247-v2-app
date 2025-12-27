@@ -16,9 +16,7 @@ import { FranchiseApiService } from '../api.service';
 import {
   IFranchise,
   InputLengthEnum,
-  IDropdownItem,
-  FileTypeEnum,
-  MediaForEnum
+  FileTypeEnum
 } from '@eatfit247-shared-lib';
 
 @Component({
@@ -106,12 +104,9 @@ export class ManageFranchise implements OnInit, OnDestroy {
   private patchFormValues(): void {
     if (this.initialData) {
       const startDate = this.initialData.startDate
-        ? (typeof this.initialData.startDate === 'string' ? new Date(this.initialData.startDate) : this.initialData.startDate)
+        ? new Date(this.initialData.startDate)
         : new Date();
-      const endDate = this.initialData.endDate
-        ? (typeof this.initialData.endDate === 'string' ? new Date(this.initialData.endDate) : this.initialData.endDate)
-        : null;
-
+      const endDate = this.initialData.endDate ? new Date(this.initialData.endDate) : null;
       this.formGroup.patchValue({
         firstName: this.initialData.firstName || '',
         lastName: this.initialData.lastName || '',
@@ -156,7 +151,7 @@ export class ManageFranchise implements OnInit, OnDestroy {
   }
 
   getMaxLength(controlName: string): number | null {
-      const maxLengthMap: { [key: string]: number } = {
+    const maxLengthMap: { [key: string]: number } = {
       firstName: InputLengthEnum.CHAR_50,
       lastName: InputLengthEnum.CHAR_50,
       companyName: InputLengthEnum.CHAR_100,
@@ -178,10 +173,8 @@ export class ManageFranchise implements OnInit, OnDestroy {
 
   async onSubmit(): Promise<void> {
     ValidationUtil.validateAllFormFields(this.formGroup);
-    
     if (this.formGroup.valid) {
       const formValue: any = { ...this.formGroup.value };
-      
       // Handle logo from upload form
       const logoControl = this.formGroup.get('logo');
       if (logoControl) {
@@ -194,8 +187,6 @@ export class ManageFranchise implements OnInit, OnDestroy {
       } else {
         formValue.logo = undefined;
       }
-
-
       if (this.isEditMode && this.initialData) {
         const franchiseId = (this.initialData as any).franchiseId;
         await this.apiService.update(franchiseId, formValue);

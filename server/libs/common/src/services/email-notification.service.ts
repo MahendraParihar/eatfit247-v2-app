@@ -95,7 +95,7 @@ export class EmailNotificationService {
         html: body,
         attachments: attachments.length > 0 ? attachments : undefined,
       };
-      const result = await this.transporter.sendMail(mailOptions);
+      await this.transporter.sendMail(mailOptions);
       // Log success (optional - you may want to remove this or make it configurable)
       // await this.logErrorService.logWarning(
       //   `Email sent successfully to ${recipients.join(', ')}. MessageId: ${result.messageId}`,
