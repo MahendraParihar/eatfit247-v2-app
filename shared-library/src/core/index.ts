@@ -33,4 +33,5 @@ export * from "./member-assessment.interface";
 export * from "./diet-template.interface";
 export * from "./member-payment.interface";
 export * from "./member-diet-plan.interface";
+export * from "./email-data.interface";
 

@@ -10,11 +10,11 @@ import {
   IMemberIssue,
   IMemberAssessment,
   IManageMemberAssessment,
-  IAssessmentMaster
+  IAssessmentMaster, IMemberPocketGuide
 } from '@eatfit247-shared-lib';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class MembersApiService extends ApiBaseService {
   private readonly endpoint = '/member';
@@ -26,14 +26,14 @@ export class MembersApiService extends ApiBaseService {
   async getList(params?: any): Promise<ITableList<IMember>> {
     const res = await this.httpService.get<IResponse<ITableList<IMember>>>(
       `${this.endpoint}/list`,
-      { params }
+      { params },
     );
     return res.data as ITableList<IMember>;
   }
 
   async getById(id: number): Promise<IMember> {
     const res = await this.httpService.get<IResponse<IMember>>(
-      `${this.endpoint}/manage/${id}`
+      `${this.endpoint}/manage/${id}`,
     );
     return res.data as IMember;
   }
@@ -45,13 +45,13 @@ export class MembersApiService extends ApiBaseService {
   async update(id: number, data: IManageMember): Promise<void> {
     return await this.httpService.put<void>(
       `${this.endpoint}/manage/${id}`,
-      data
+      data,
     );
   }
 
   async getFranchiseDropdown(): Promise<IDropdownItem[]> {
     const res = await this.httpService.get<IResponse<IDropdownItem[]>>(
-      '/franchise/dropdown'
+      '/franchise/dropdown',
     );
     return res.data as IDropdownItem[];
   }
@@ -59,14 +59,14 @@ export class MembersApiService extends ApiBaseService {
   async getReferrerDropdown(): Promise<IDropdownItem[]> {
     const res =
       await this.httpService.get<IResponse<IDropdownItem[]>>(
-        '/referrer/dropdown'
+        '/referrer/dropdown',
       );
     return res.data as IDropdownItem[];
   }
 
   async getNutritionistDropdown(): Promise<IDropdownItem[]> {
     const res = await this.httpService.get<IResponse<IDropdownItem[]>>(
-      '/nutritionist/dropdown'
+      '/nutritionist/dropdown',
     );
     return res.data as IDropdownItem[];
   }
@@ -74,92 +74,112 @@ export class MembersApiService extends ApiBaseService {
   async updateStatus(
     id: number,
     active: boolean,
-    deactivationReason?: string
+    deactivationReason?: string,
   ): Promise<void> {
     return await this.httpService.patch<void>(
       `${this.endpoint}/update-status/${id}`,
       {
         active,
-        deactivationReason
-      }
+        deactivationReason,
+      },
     );
   }
 
   async getCountryDropdown(): Promise<IDropdownItem[]> {
-    const res = await this.httpService.get<IResponse<IDropdownItem[]>>(
-      `country/dropdown`
-    );
+    const res =
+      await this.httpService.get<IResponse<IDropdownItem[]>>(
+        `country/dropdown`,
+      );
     return res.data as IDropdownItem[];
-  }
-
-  async getPocketGuides(memberId: number): Promise<any[]> {
-    const res = await this.httpService.get<IResponse<any[]>>(
-      `${this.endpoint}/${memberId}/pocket-guide`
-    );
-    return res.data as any[];
   }
 
   async getHealthIssues(memberId: number): Promise<any[]> {
     const res = await this.httpService.get<IResponse<any[]>>(
-      `${this.endpoint}/${memberId}/health-issues`
+      `${this.endpoint}/${memberId}/health-issues`,
     );
     return res.data as any[];
   }
 
   async getCallLogs(memberId: number): Promise<IMemberCallLog[]> {
     const res = await this.httpService.get<IResponse<IMemberCallLog[]>>(
-      `${this.endpoint}/${memberId}/call-logs`
+      `${this.endpoint}/${memberId}/call-logs`,
     );
     return res.data as IMemberCallLog[];
   }
 
   async getHealthParameterLogs(memberId: number): Promise<any[]> {
     const res = await this.httpService.get<IResponse<any[]>>(
-      `${this.endpoint}/${memberId}/health-parameter-logs`
+      `${this.endpoint}/${memberId}/health-parameter-logs`,
     );
     return res.data as any[];
   }
 
   async getIssues(memberId: number): Promise<IMemberIssue[]> {
     const res = await this.httpService.get<IResponse<IMemberIssue[]>>(
-      `${this.endpoint}/${memberId}/issues`
+      `${this.endpoint}/${memberId}/issues`,
     );
     return res.data as IMemberIssue[];
   }
 
   async getAssessment(memberId: number): Promise<IMemberAssessment | null> {
     const res = await this.httpService.get<IResponse<IMemberAssessment | null>>(
-      `${this.endpoint}/${memberId}/assessment`
+      `${this.endpoint}/${memberId}/assessment`,
     );
     return res.data as IMemberAssessment | null;
   }
 
   async getAssessmentMaster(): Promise<IAssessmentMaster> {
     const res = await this.httpService.get<IResponse<IAssessmentMaster>>(
-      `assessment/master-data`
+      `assessment/master-data`,
     );
     return res.data as IAssessmentMaster;
   }
 
-  async updateAssessment(memberId: number, data: IManageMemberAssessment): Promise<void> {
+  async updateAssessment(
+    memberId: number,
+    data: IManageMemberAssessment,
+  ): Promise<void> {
     return await this.httpService.put<void>(
       `${this.endpoint}/${memberId}/assessment`,
-      data
+      data,
     );
   }
 
-  async getPocketGuideList(memberId: number): Promise<Array<{ pocketGuideId: number; pocketGuide: string; selected: boolean }>> {
-    const res = await this.httpService.get<IResponse<Array<{ pocketGuideId: number; pocketGuide: string; selected: boolean }>>>(
-      `${this.endpoint}/${memberId}/pocket-guide/list`
+  // region Member Pocket Guides
+  async getPocketGuideDropdown(): Promise<IDropdownItem[]> {
+    const res = await this.httpService.get<IResponse<IDropdownItem[]>>(
+      '/pocket-guide/dropdown',
     );
-    return res.data as Array<{ pocketGuideId: number; pocketGuide: string; selected: boolean }>;
+    return res.data as IDropdownItem[];
+  }
+  async getPocketGuides(
+    memberId: number,
+  ): Promise<ITableList<IMemberPocketGuide>> {
+    const res = await this.httpService.get<
+      IResponse<ITableList<IMemberPocketGuide>>
+    >(`${this.endpoint}/${memberId}/pocket-guide`);
+    return res.data as ITableList<IMemberPocketGuide>;
   }
 
-  async managePocketGuides(memberId: number, pocketGuideIds: number[]): Promise<void> {
+  async getPocketGuideList(
+    memberId: number,
+  ): Promise<ITableList<IMemberPocketGuide>> {
+    const res = await this.httpService.get<
+      IResponse<ITableList<IMemberPocketGuide>>
+    >(`${this.endpoint}/${memberId}/pocket-guide/list`);
+    return res.data as ITableList<IMemberPocketGuide>;
+  }
+
+  async managePocketGuides(
+    memberId: number,
+    pocketGuideIds: number[],
+  ): Promise<void> {
     return await this.httpService.put<void>(
       `${this.endpoint}/${memberId}/pocket-guide/manage`,
-      { pocketGuideIds }
+      { pocketGuideIds },
     );
   }
+
+  // endregion
 }
 

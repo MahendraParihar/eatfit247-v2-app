@@ -70,17 +70,23 @@ export class MemberController {
     @CurrentUser() currentUser: any,
     @RequestedIp() requestedIp: string,
   ): Promise<void> {
-    await this.service.changeStatus(id, body.active, body.deactivationReason || null, requestedIp, currentUser.userId || currentUser.adminId);
+    await this.service.changeStatus(
+      id,
+      body.active,
+      body.deactivationReason || null,
+      requestedIp,
+      currentUser.userId || currentUser.adminId,
+    );
   }
 
   @Get(':id/pocket-guide')
-  async getPocketGuides(@Param('id') id: number): Promise<IMemberPocketGuide[]> {
-    return await this.memberPocketGuideService.findByMemberId(id);
+  async getPocketGuides(@Param('id') id: number): Promise<ITableList<IMemberPocketGuide>> {
+    return await this.memberPocketGuideService.getList(id, true);
   }
 
   @Get(':id/pocket-guide/list')
-  async getPocketGuideList(@Param('id') id: number): Promise<Array<{ pocketGuideId: number; pocketGuide: string; selected: boolean }>> {
-    return await this.memberPocketGuideService.getList(id);
+  async getPocketGuideList(@Param('id') id: number): Promise<ITableList<IMemberPocketGuide>> {
+    return await this.memberPocketGuideService.getList(id, false);
   }
 
   @Put(':id/pocket-guide/manage')
@@ -90,7 +96,12 @@ export class MemberController {
     @CurrentUser() currentUser: any,
     @RequestedIp() requestedIp: string,
   ): Promise<void> {
-    await this.memberPocketGuideService.manage(id, body.pocketGuideIds, requestedIp, currentUser.userId || currentUser.adminId);
+    await this.memberPocketGuideService.manage(
+      id,
+      body.pocketGuideIds,
+      requestedIp,
+      currentUser.userId || currentUser.adminId,
+    );
   }
 
   @Get(':id/health-issues')

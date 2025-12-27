@@ -86,3 +86,14 @@ $dark-theme: mat.define-theme((
     border-radius: var(--radius-input) !important; // 8px per design system
   }
 }
+
+// Dialog/Modal background color override
+.mat-mdc-dialog-container,
+.mat-mdc-dialog-surface {
+  background-color: #ffffff !important;
+}
+
+// Table background color override
+.mat-mdc-table {
+  background-color: #ffffff !important;
+}

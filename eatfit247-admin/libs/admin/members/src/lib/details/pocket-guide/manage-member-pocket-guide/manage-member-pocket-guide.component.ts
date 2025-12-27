@@ -3,15 +3,10 @@ import { CommonModule } from '@angular/common';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
-import { MatTableDataSource, MatTableModule } from "@angular/material/table";
+import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MembersApiService } from '../../../api.service';
-
-export interface PocketGuideItem {
-  pocketGuideId: number;
-  pocketGuide: string;
-  selected: boolean;
-}
+import { IMemberPocketGuide } from '@eatfit247-shared-lib';
 
 export interface ManageMemberPocketGuideData {
   memberId: number;
@@ -32,15 +27,15 @@ export interface ManageMemberPocketGuideData {
   styleUrl: './manage-member-pocket-guide.component.scss',
 })
 export class ManageMemberPocketGuideComponent implements OnInit {
-  pocketGuides: PocketGuideItem[] = [];
-  dataSource = new MatTableDataSource<PocketGuideItem>([]);
+  pocketGuides: IMemberPocketGuide[] = [];
+  dataSource = new MatTableDataSource<IMemberPocketGuide>([]);
   loading = false;
   displayedColumns: string[] = ['select', 'pocketGuide'];
 
   constructor(
     public dialogRef: MatDialogRef<ManageMemberPocketGuideComponent>,
     @Inject(MAT_DIALOG_DATA) public data: ManageMemberPocketGuideData,
-    private apiService: MembersApiService
+    private apiService: MembersApiService,
   ) {}
 
   ngOnInit(): void {
@@ -50,7 +45,8 @@ export class ManageMemberPocketGuideComponent implements OnInit {
   async loadPocketGuides(): Promise<void> {
     this.loading = true;
     try {
-      this.pocketGuides = await this.apiService.getPocketGuideList(this.data.memberId);
+      const res = await this.apiService.getPocketGuideList(this.data.memberId);
+      this.pocketGuides = res.tableData;
       this.dataSource.data = this.pocketGuides;
     } catch (error) {
       console.error('Error loading pocket guides:', error);
@@ -61,26 +57,33 @@ export class ManageMemberPocketGuideComponent implements OnInit {
     }
   }
 
-  toggleSelection(pocketGuide: PocketGuideItem): void {
-    pocketGuide.selected = !pocketGuide.selected;
+  toggleSelection(pocketGuide: IMemberPocketGuide): void {
+    pocketGuide.isSelected = !pocketGuide.isSelected;
   }
 
   isAllSelected(): boolean {
-    return this.pocketGuides.length > 0 && this.pocketGuides.every((pg) => pg.selected);
+    return (
+      this.pocketGuides.length > 0 &&
+      this.pocketGuides.every((pg) => pg.isSelected)
+    );
   }
 
   isIndeterminate(): boolean {
-    const selectedCount = this.pocketGuides.filter((pg) => pg.selected).length;
+    const selectedCount = this.pocketGuides.filter(
+      (pg) => pg.isSelected,
+    ).length;
     return selectedCount > 0 && selectedCount < this.pocketGuides.length;
   }
 
   toggleAllSelection(): void {
     const allSelected = this.isAllSelected();
-    this.pocketGuides.forEach((pg) => (pg.selected = !allSelected));
+    this.pocketGuides.forEach((pg) => (pg.isSelected = !allSelected));
   }
 
   async onUpdate(): Promise<void> {
-    const selectedIds = this.pocketGuides.filter((pg) => pg.selected).map((pg) => pg.pocketGuideId);
+    const selectedIds = this.pocketGuides
+      .filter((pg) => pg.isSelected)
+      .map((pg) => pg.pocketGuideId);
     this.loading = true;
     try {
       await this.apiService.managePocketGuides(this.data.memberId, selectedIds);

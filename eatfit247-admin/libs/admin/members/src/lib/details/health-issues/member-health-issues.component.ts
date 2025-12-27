@@ -70,7 +70,7 @@ export class MemberHealthIssuesComponent implements OnInit, OnDestroy {
       columns,
       pageSize: 10,
       pageSizeOptions: [10, 25, 50, 100],
-      showPagination: true,
+      showPagination: false,
     };
   }
 

@@ -5,4 +5,5 @@ export * from "./label-key.enum";
 export * from "./config.enum";
 export * from "./banner-for.enum";
 export * from "./table.enum";
+export * from "./email-template.enum";
 
