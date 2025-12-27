@@ -48,6 +48,7 @@ export enum NavigationPathEnum {
   REFERRER = 'referrer',
   FRANCHISE = 'franchise',
   POCKET_GUIDE = 'pocket-guide',
+  DIET_TEMPLATE = 'diet-template',
   CALL_LOGS = 'call-logs',
   ISSUES = 'issues',
   ADMIN_USER = 'admin-user',

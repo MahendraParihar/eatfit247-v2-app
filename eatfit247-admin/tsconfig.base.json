@@ -25,6 +25,7 @@
       "referrer": ["libs/admin/referrer/src/index.ts"],
       "franchise": ["libs/admin/franchise/src/index.ts"],
       "pocket-guide": ["libs/admin/pocket-guide/src/index.ts"],
+      "diet-template": ["libs/admin/diet-template/src/index.ts"],
       "call-logs": ["libs/admin/call-logs/src/index.ts"],
       "issues": ["libs/admin/issues/src/index.ts"],
       "admin-user": ["libs/admin/admin-user/src/index.ts"],

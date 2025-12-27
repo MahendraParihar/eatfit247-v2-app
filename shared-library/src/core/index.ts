@@ -29,4 +29,8 @@ export * from "./email-template.interface";
 export * from "./issue.interface";
 export * from "./banner.interface";
 export * from "./member-call-log.interface";
+export * from "./member-assessment.interface";
+export * from "./diet-template.interface";
+export * from "./member-payment.interface";
+export * from "./member-diet-plan.interface";
 

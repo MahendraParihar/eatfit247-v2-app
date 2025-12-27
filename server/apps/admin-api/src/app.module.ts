@@ -21,6 +21,7 @@ import { AdminUserModule } from '../../../libs/modules/admin-user';
 import { EmailModule } from '../../../libs/modules/email';
 import { IssuesModule } from '../../../libs/modules/issues';
 import { PocketGuideModule } from '../../../libs/modules/pocket-guide';
+import { DietTemplateModule } from '../../../libs/modules/diet-template';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { PocketGuideModule } from '../../../libs/modules/pocket-guide';
     ReferrerModule,
     FranchiseModule,
     PocketGuideModule,
+    DietTemplateModule,
     CallLogsModule,
     AssessmentMasterModule,
     LocationModule,

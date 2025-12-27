@@ -53,11 +53,13 @@ export const appRoutes: Route[] = [
       },
       {
         path: 'program-plans',
-        loadChildren: () => import('program-plan').then((m) => m.programPlanRoutes),
+        loadChildren: () =>
+          import('program-plan').then((m) => m.programPlanRoutes),
       },
       {
         path: 'media-press',
-        loadChildren: () => import('media-press').then((m) => m.mediaPressRoutes),
+        loadChildren: () =>
+          import('media-press').then((m) => m.mediaPressRoutes),
       },
       {
         path: 'referrer',
@@ -69,7 +71,13 @@ export const appRoutes: Route[] = [
       },
       {
         path: 'pocket-guide',
-        loadChildren: () => import('pocket-guide').then((m) => m.pocketGuideRoutes),
+        loadChildren: () =>
+          import('pocket-guide').then((m) => m.pocketGuideRoutes),
+      },
+      {
+        path: 'diet-template',
+        loadChildren: () =>
+          import('diet-template').then((m) => m.dietTemplateRoutes),
       },
       {
         path: 'call-logs',

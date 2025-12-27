@@ -106,6 +106,11 @@ export class BaseLayoutComponent implements OnInit, OnDestroy {
       route: '/pocket-guide',
     },
     {
+      label: 'Diet Template',
+      icon: 'restaurant_menu',
+      route: '/diet-template',
+    },
+    {
       label: 'Call Logs',
       icon: 'phone',
       route: '/call-logs',

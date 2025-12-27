@@ -1,6 +1,6 @@
 import { NgModule, provideBrowserGlobalErrorListeners } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { provideAnimations } from '@angular/platform-browser/animations';
 import { RouterModule, provideRouter, withComponentInputBinding, TitleStrategy } from '@angular/router';
 import { HTTP_INTERCEPTORS, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { MatSidenavModule } from '@angular/material/sidenav';
@@ -23,7 +23,6 @@ import { PageTitleStrategy } from './page-title.strategy';
   declarations: [App],
   imports: [
     BrowserModule,
-    BrowserAnimationsModule,
     RouterModule.forRoot(appRoutes, { bindToComponentInputs: true }),
     MatSidenavModule,
     MatToolbarModule,
@@ -37,6 +36,7 @@ import { PageTitleStrategy } from './page-title.strategy';
   ],
   providers: [
     provideBrowserGlobalErrorListeners(),
+    provideAnimations(),
     provideHttpClient(withInterceptorsFromDi()),
     provideRouter(appRoutes, withComponentInputBinding()),
     { provide: TitleStrategy, useClass: PageTitleStrategy },
