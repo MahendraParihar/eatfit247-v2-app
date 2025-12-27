@@ -10,7 +10,9 @@ import {
   IMemberIssue,
   IMemberAssessment,
   IManageMemberAssessment,
-  IAssessmentMaster, IMemberPocketGuide
+  IAssessmentMaster,
+  IMemberPocketGuide,
+  IMemberHealthIssue,
 } from '@eatfit247-shared-lib';
 
 @Injectable({
@@ -93,11 +95,25 @@ export class MembersApiService extends ApiBaseService {
     return res.data as IDropdownItem[];
   }
 
-  async getHealthIssues(memberId: number): Promise<any[]> {
-    const res = await this.httpService.get<IResponse<any[]>>(
+  async getHealthIssues(memberId: number): Promise<ITableList<IMemberHealthIssue>> {
+    const res = await this.httpService.get<IResponse<ITableList<IMemberHealthIssue>>>(
       `${this.endpoint}/${memberId}/health-issues`,
     );
-    return res.data as any[];
+    return res.data as ITableList<IMemberHealthIssue>;
+  }
+
+  async getHealthIssueList(memberId: number): Promise<ITableList<IMemberHealthIssue>> {
+    const res = await this.httpService.get<IResponse<ITableList<IMemberHealthIssue>>>(
+      `${this.endpoint}/${memberId}/health-issues/list`,
+    );
+    return res.data as ITableList<IMemberHealthIssue>;
+  }
+
+  async manageHealthIssues(memberId: number, healthIssueIds: number[]): Promise<void> {
+    return await this.httpService.put<void>(
+      `${this.endpoint}/${memberId}/health-issues/manage`,
+      { healthIssueIds },
+    );
   }
 
   async getCallLogs(memberId: number): Promise<IMemberCallLog[]> {

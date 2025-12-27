@@ -1,7 +1,7 @@
 <div class="data-table-container">
-  <!-- Search Bar -->
-  @if (config.showSearch !== false) {
+  <!-- Search Bar and Header Actions -->
   <div class="table-header">
+    @if (config.showSearch !== false) {
     <mat-form-field appearance="outline" class="search-field">
       <mat-label>{{ config.searchPlaceholder || 'Search...' }}</mat-label>
       <input
@@ -22,9 +22,9 @@
       </button>
       }
     </mat-form-field>
+    }
     <ng-content select="[headerActions]"></ng-content>
   </div>
-  }
 
   <!-- Loading Spinner -->
   @if (loading) {

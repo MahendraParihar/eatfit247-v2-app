@@ -106,10 +106,10 @@ export class ManageFranchise implements OnInit, OnDestroy {
   private patchFormValues(): void {
     if (this.initialData) {
       const startDate = this.initialData.startDate
-        ? (typeof this.initialData.startDate === 'string' ? new Date(this.initialData.startDate) : new Date())
+        ? (typeof this.initialData.startDate === 'string' ? new Date(this.initialData.startDate) : this.initialData.startDate)
         : new Date();
       const endDate = this.initialData.endDate
-        ? (typeof this.initialData.endDate === 'string' ? new Date(this.initialData.endDate) : null)
+        ? (typeof this.initialData.endDate === 'string' ? new Date(this.initialData.endDate) : this.initialData.endDate)
         : null;
 
       this.formGroup.patchValue({

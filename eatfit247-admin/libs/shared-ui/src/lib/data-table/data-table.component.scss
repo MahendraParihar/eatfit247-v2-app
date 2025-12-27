@@ -25,6 +25,12 @@
 
   [headerActions] {
     flex: 0 0 auto;
+    margin-left: auto;
+  }
+
+  // When search is hidden, ensure header actions are still visible
+  &:has([headerActions]):not(:has(.search-field)) {
+    justify-content: flex-end;
   }
 }
 

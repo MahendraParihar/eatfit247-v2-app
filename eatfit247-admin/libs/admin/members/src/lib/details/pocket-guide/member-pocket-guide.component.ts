@@ -98,6 +98,7 @@ export class MemberPocketGuideComponent implements OnInit, OnDestroy {
       pageSize: 10,
       pageSizeOptions: [10, 25, 50, 100],
       showPagination: false,
+      showSearch: false,
     };
   }
 

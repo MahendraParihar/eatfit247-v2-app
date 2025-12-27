@@ -4,7 +4,8 @@
 @if (!loading && healthIssues.length > 0) {
   <shared-ui-data-table
     [config]="tableConfig"
-    [data]="healthIssues">
+    [data]="healthIssues"
+    [totalCount]="totalCount">
     <div headerActions>
       <button mat-raised-button color="primary" (click)="addHealthIssue()">
         <mat-icon>add</mat-icon>

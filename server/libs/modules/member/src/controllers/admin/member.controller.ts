@@ -105,8 +105,28 @@ export class MemberController {
   }
 
   @Get(':id/health-issues')
-  async getHealthIssues(@Param('id') id: number): Promise<IMemberHealthIssue[]> {
-    return await this.memberHealthIssueService.findByMemberId(id);
+  async getHealthIssues(@Param('id') id: number): Promise<ITableList<IMemberHealthIssue>> {
+    return await this.memberHealthIssueService.getList(id, true);
+  }
+
+  @Get(':id/health-issues/list')
+  async getHealthIssueList(@Param('id') id: number): Promise<ITableList<IMemberHealthIssue>> {
+    return await this.memberHealthIssueService.getList(id, false);
+  }
+
+  @Put(':id/health-issues/manage')
+  async manageHealthIssues(
+    @Param('id') id: number,
+    @Body() body: { healthIssueIds: number[] },
+    @CurrentUser() currentUser: any,
+    @RequestedIp() requestedIp: string,
+  ): Promise<void> {
+    await this.memberHealthIssueService.manage(
+      id,
+      body.healthIssueIds,
+      requestedIp,
+      currentUser.userId || currentUser.adminId,
+    );
   }
 
   @Get(':id/call-logs')

@@ -2,8 +2,8 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op, Sequelize as SequelizeLib } from 'sequelize';
 import { TxnMemberHealthIssue, TxnMember } from '../models';
-import { IMemberHealthIssue } from 'eatfit247-shared-lib';
-import { CommonFunctionsUtil, MstHealthIssue } from '@server/common';
+import { IMemberHealthIssue, ITableList } from 'eatfit247-shared-lib';
+import { CommonFunctionsUtil, MstHealthIssue, MstAdminUser, ADMIN_USER_SHORT_INFO_ATTRIBUTE } from '@server/common';
 import { Sequelize } from 'sequelize-typescript';
 
 @Injectable()
@@ -19,11 +19,13 @@ export class MemberHealthIssueService {
   /**
    * Get list of all health issues with selection flag for a member
    * @param memberId - Member ID
-   * @returns Array of health issues with selected flag
+   * @param required - Whether to require existing associations
+   * @returns Table list of health issues with selected flag
    */
   public async getList(
     memberId: number,
-  ): Promise<Array<{ healthIssueId: number; healthIssue: string; selected: boolean }>> {
+    required: boolean = false,
+  ): Promise<ITableList<IMemberHealthIssue>> {
     // Verify member exists
     const member = await this.memberRepository.findOne({
       where: { memberId },
@@ -31,36 +33,46 @@ export class MemberHealthIssueService {
     if (!member) {
       throw new NotFoundException('Member not found');
     }
-    // Get all active health issues with a selection flag using a Sequelize query with subquery
-    const allHealthIssues = await this.healthIssueRepository.findAll({
-      where: { active: true },
-      attributes: [
-        'healthIssueId',
-        'healthIssue',
-        [
-          SequelizeLib.literal(`(
-            SELECT CASE 
-              WHEN EXISTS (
-                SELECT 1 
-                FROM txn_member_health_issues tmhi 
-                WHERE tmhi.health_issue_id = "MstHealthIssue"."health_issue_id" 
-                AND tmhi.member_id = ${memberId}
-              ) THEN true 
-              ELSE false 
-            END
-          )`),
-          'selected',
-        ],
+    MstHealthIssue.belongsTo(TxnMemberHealthIssue, {
+      targetKey: 'healthIssueId',
+      foreignKey: 'healthIssueId',
+    });
+    const { rows, count } = await this.healthIssueRepository.findAndCountAll({
+      include: [
+        {
+          attributes: ['memberHealthIssueId', 'createdAt', 'updatedAt'],
+          model: TxnMemberHealthIssue,
+          required: required,
+          where: {
+            memberId: memberId,
+          },
+          include: [
+            {
+              model: MstAdminUser,
+              required: false,
+              as: 'createdByUser',
+              attributes: ADMIN_USER_SHORT_INFO_ATTRIBUTE,
+            },
+            {
+              model: MstAdminUser,
+              required: false,
+              as: 'updatedByUser',
+              attributes: ADMIN_USER_SHORT_INFO_ATTRIBUTE,
+            },
+          ],
+        },
       ],
+      where: {
+        active: true,
+      },
       order: [['healthIssue', 'ASC']],
       raw: true,
       nest: true,
     });
-    return allHealthIssues.map((hi: any) => ({
-      healthIssueId: hi.healthIssueId,
-      healthIssue: hi.healthIssue,
-      selected: hi.selected === true || hi.selected === 1,
-    }));
+    return <ITableList<IMemberHealthIssue>>{
+      count: count,
+      tableData: rows.map((item: any) => this.convertToModel(item, memberId)),
+    };
   }
 
   /**
@@ -150,24 +162,44 @@ export class MemberHealthIssueService {
       raw: false,
       nest: true,
     });
-    return records.map((item) => this.convertToModel(item.toJSON()));
+    return records.map((item) => {
+      const json = item.toJSON();
+      return {
+        memberHealthIssueId: json.memberHealthIssueId,
+        memberId: json.memberId,
+        healthIssueId: json.healthIssueId,
+        healthIssue: json.healthIssue?.healthIssue || '',
+        createdBy: json.createdBy,
+        updatedBy: json.modifiedBy,
+        createdAt: json.createdAt,
+        updatedAt: json.updatedAt,
+        createdByUser: json.createdByUser
+          ? CommonFunctionsUtil.getAdminShortInfo(json.createdByUser, 'createdByUser')
+          : undefined,
+        updatedByUser: json.updatedByUser
+          ? CommonFunctionsUtil.getAdminShortInfo(json.updatedByUser, 'updatedByUser')
+          : undefined,
+      };
+    });
   }
 
-  private convertToModel(item: any): IMemberHealthIssue {
+  private convertToModel(item: any, memberId: number): IMemberHealthIssue {
+    const txnMemberHealthIssue = item['txn_member_health_issue'];
     return {
-      memberHealthIssueId: item.memberHealthIssueId,
-      memberId: item.memberId,
+      memberId: memberId,
+      memberHealthIssueId: txnMemberHealthIssue?.memberHealthIssueId,
       healthIssueId: item.healthIssueId,
-      healthIssue: item.healthIssue?.healthIssue || '',
-      createdBy: item.createdBy,
-      updatedBy: item.modifiedBy,
-      createdAt: item.createdAt,
-      updatedAt: item.updatedAt,
-      createdByUser: item.createdByUser
-        ? CommonFunctionsUtil.getAdminShortInfo(item.createdByUser, 'createdByUser')
+      healthIssue: item.healthIssue,
+      isSelected: !!txnMemberHealthIssue?.memberHealthIssueId,
+      createdBy: txnMemberHealthIssue?.createdBy,
+      updatedBy: txnMemberHealthIssue?.modifiedBy,
+      createdAt: txnMemberHealthIssue?.createdAt,
+      updatedAt: txnMemberHealthIssue?.updatedAt,
+      createdByUser: txnMemberHealthIssue?.createdByUser
+        ? CommonFunctionsUtil.getAdminShortInfo(txnMemberHealthIssue.createdByUser, 'createdByUser')
         : undefined,
-      updatedByUser: item.updatedByUser
-        ? CommonFunctionsUtil.getAdminShortInfo(item.updatedByUser, 'updatedByUser')
+      updatedByUser: txnMemberHealthIssue?.updatedByUser
+        ? CommonFunctionsUtil.getAdminShortInfo(txnMemberHealthIssue.updatedByUser, 'updatedByUser')
         : undefined,
     };
   }

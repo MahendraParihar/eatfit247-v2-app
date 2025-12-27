@@ -10,12 +10,13 @@ export interface IManageMemberHealthIssue extends IBaseMemberHealthIssue {
 }
 
 export interface IMemberHealthIssue extends IBaseMemberHealthIssue {
-  memberHealthIssueId: number;
+  memberHealthIssueId?: number;
   healthIssue: string; // Health issue name for display
-  createdBy: number;
-  updatedBy: number;
-  createdAt: Date;
-  updatedAt: Date;
+  isSelected?: boolean;
+  createdBy?: number;
+  updatedBy?: number;
+  createdAt?: Date;
+  updatedAt?: Date;
   createdByUser?: IBaseAdminUser;
   updatedByUser?: IBaseAdminUser;
 }
