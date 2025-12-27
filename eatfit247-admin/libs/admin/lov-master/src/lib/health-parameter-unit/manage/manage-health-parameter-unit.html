@@ -8,8 +8,8 @@
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Health Parameter Unit</mat-label>
           <input matInput formControlName="healthParameterUnit" placeholder="Enter health parameter unit" />
-          <app-input-error [control]="formGroup.get('healthParameterUnit')"
-                           controlName="healthParameterUnit"></app-input-error>
+          <shared-ui-input-error [control]="formGroup.get('healthParameterUnit')"
+                           controlName="healthParameterUnit"></shared-ui-input-error>
         </mat-form-field>
       </div>
 
@@ -20,7 +20,7 @@
             <mat-option [value]="true">Active</mat-option>
             <mat-option [value]="false">Inactive</mat-option>
           </mat-select>
-          <app-input-error [control]="formGroup.get('active')" controlName="Active"></app-input-error>
+          <shared-ui-input-error [control]="formGroup.get('active')" controlName="Active"></shared-ui-input-error>
         </mat-form-field>
       </div>
 

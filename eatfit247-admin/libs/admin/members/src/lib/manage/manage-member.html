@@ -18,7 +18,7 @@
                 {{ getCurrentLength('firstName') }}/{{ getMaxLength('firstName') }}
               </mat-hint>
             }
-            <app-input-error [control]="formGroup.get('firstName')" controlName="First Name"></app-input-error>
+            <shared-ui-input-error [control]="formGroup.get('firstName')" controlName="First Name"></shared-ui-input-error>
           </mat-form-field>
 
           <mat-form-field class="half-width">
@@ -33,7 +33,7 @@
                 {{ getCurrentLength('lastName') }}/{{ getMaxLength('lastName') }}
               </mat-hint>
             }
-            <app-input-error [control]="formGroup.get('lastName')" controlName="Last Name"></app-input-error>
+            <shared-ui-input-error [control]="formGroup.get('lastName')" controlName="Last Name"></shared-ui-input-error>
           </mat-form-field>
         </div>
 
@@ -51,7 +51,7 @@
                 {{ getCurrentLength('emailId') }}/{{ getMaxLength('emailId') }}
               </mat-hint>
             }
-            <app-input-error [control]="formGroup.get('emailId')" controlName="Email ID"></app-input-error>
+            <shared-ui-input-error [control]="formGroup.get('emailId')" controlName="Email ID"></shared-ui-input-error>
           </mat-form-field>
 
           <mat-form-field class="half-width">
@@ -66,7 +66,7 @@
                 {{ getCurrentLength('countryCode') }}/{{ getMaxLength('countryCode') }}
               </mat-hint>
             }
-            <app-input-error [control]="formGroup.get('countryCode')" controlName="Country Code"></app-input-error>
+            <shared-ui-input-error [control]="formGroup.get('countryCode')" controlName="Country Code"></shared-ui-input-error>
           </mat-form-field>
         </div>
 
@@ -82,7 +82,7 @@
               {{ getCurrentLength('contactNumber') }}/{{ getMaxLength('contactNumber') }}
             </mat-hint>
           }
-          <app-input-error [control]="formGroup.get('contactNumber')" controlName="Contact Number"></app-input-error>
+          <shared-ui-input-error [control]="formGroup.get('contactNumber')" controlName="Contact Number"></shared-ui-input-error>
         </mat-form-field>
 
         <div class="row">
@@ -94,7 +94,7 @@
                 <mat-option [value]="franchise.id">{{ franchise.label }}</mat-option>
               }
             </mat-select>
-            <app-input-error [control]="formGroup.get('franchiseId')" controlName="Franchise"></app-input-error>
+            <shared-ui-input-error [control]="formGroup.get('franchiseId')" controlName="Franchise"></shared-ui-input-error>
           </mat-form-field>
 
           <mat-form-field class="half-width">
@@ -105,7 +105,7 @@
                 <mat-option [value]="country.id">{{ country.label }}</mat-option>
               }
             </mat-select>
-            <app-input-error [control]="formGroup.get('countryId')" controlName="Country"></app-input-error>
+            <shared-ui-input-error [control]="formGroup.get('countryId')" controlName="Country"></shared-ui-input-error>
           </mat-form-field>
         </div>
 
@@ -118,7 +118,7 @@
                 <mat-option [value]="referrer.id">{{ referrer.label }}</mat-option>
               }
             </mat-select>
-            <app-input-error [control]="formGroup.get('referrerId')" controlName="Referrer"></app-input-error>
+            <shared-ui-input-error [control]="formGroup.get('referrerId')" controlName="Referrer"></shared-ui-input-error>
           </mat-form-field>
 
           <mat-form-field class="half-width">
@@ -129,7 +129,7 @@
                 <mat-option [value]="nutritionist.id">{{ nutritionist.label }}</mat-option>
               }
             </mat-select>
-            <app-input-error [control]="formGroup.get('nutritionistId')" controlName="Nutritionist"></app-input-error>
+            <shared-ui-input-error [control]="formGroup.get('nutritionistId')" controlName="Nutritionist"></shared-ui-input-error>
           </mat-form-field>
         </div>
 
@@ -139,7 +139,7 @@
             <mat-option [value]="true">Active</mat-option>
             <mat-option [value]="false">Inactive</mat-option>
           </mat-select>
-          <app-input-error [control]="formGroup.get('active')" controlName="Status"></app-input-error>
+          <shared-ui-input-error [control]="formGroup.get('active')" controlName="Status"></shared-ui-input-error>
         </mat-form-field>
 
         <mat-form-field class="full-width">
@@ -155,7 +155,7 @@
               {{ getCurrentLength('deactivationReason') }}/{{ getMaxLength('deactivationReason') }}
             </mat-hint>
           }
-          <app-input-error [control]="formGroup.get('deactivationReason')" controlName="Deactivation Reason"></app-input-error>
+          <shared-ui-input-error [control]="formGroup.get('deactivationReason')" controlName="Deactivation Reason"></shared-ui-input-error>
         </mat-form-field>
 
         <div class="full-width">
@@ -178,13 +178,13 @@
                 {{ getCurrentLength('password') }}/{{ getMaxLength('password') }}
               </mat-hint>
             }
-            <app-input-error [control]="formGroup.get('password')" controlName="Password"></app-input-error>
+            <shared-ui-input-error [control]="formGroup.get('password')" controlName="Password"></shared-ui-input-error>
           </mat-form-field>
         }
 
         <div class="full-width">
           <label class="upload-label">Profile Picture</label>
-          <app-upload-form
+          <shared-ui-upload-form
             [formGroup]="formGroup"
             [isMultiFile]="false"
             [isRequired]="false"
@@ -192,7 +192,7 @@
             controlName="profilePicture"
             [mediaFor]="mediaFor"
             [mediaType]="mediaType"
-          ></app-upload-form>
+          ></shared-ui-upload-form>
         </div>
 
       </div>

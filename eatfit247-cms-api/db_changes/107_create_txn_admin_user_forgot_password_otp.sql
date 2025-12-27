@@ -242,3 +242,6 @@ alter table public.txn_members
 
 alter table public.txn_program_plan_fees
     rename to mst_program_plan_fees;
+
+alter table public.txn_diet_templates
+    drop column is_weekly;

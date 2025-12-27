@@ -14,7 +14,7 @@ import { AlertDialogComponent } from '../alert-dialog/alert-dialog.component';
 import { ImageDragDirective } from './directive/image-drag.directive';
 
 @Component({
-  selector: 'app-upload-form',
+  selector: 'shared-ui-upload-form',
   standalone: true,
   imports: [
     CommonModule,

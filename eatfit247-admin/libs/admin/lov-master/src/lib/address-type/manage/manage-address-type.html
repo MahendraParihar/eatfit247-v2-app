@@ -18,7 +18,7 @@
           <mat-hint align="end">
             {{ formGroup.get('addressType')?.value?.length || 0 }}/50
           </mat-hint>
-          <app-input-error [control]="formGroup.get('addressType')" controlName="Address Type"></app-input-error>
+          <shared-ui-input-error [control]="formGroup.get('addressType')" controlName="Address Type"></shared-ui-input-error>
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="full-width">
@@ -27,7 +27,7 @@
             <mat-option [value]="true">Active</mat-option>
             <mat-option [value]="false">Inactive</mat-option>
           </mat-select>
-          <app-input-error [control]="formGroup.get('active')" controlName="Status"></app-input-error>
+          <shared-ui-input-error [control]="formGroup.get('active')" controlName="Status"></shared-ui-input-error>
         </mat-form-field>
 
       </div>

@@ -13,7 +13,7 @@
               <mat-option [value]="category.id">{{ category.label }}</mat-option>
             }
           </mat-select>
-          <app-input-error [control]="formGroup.get('programCategoryId')" controlName="Program Category"></app-input-error>
+          <shared-ui-input-error [control]="formGroup.get('programCategoryId')" controlName="Program Category"></shared-ui-input-error>
         </mat-form-field>
 
         <mat-form-field class="full-width">
@@ -28,7 +28,7 @@
           <mat-hint align="end">
             {{ formGroup.get('program')?.value?.length || 0 }}/100
           </mat-hint>
-          <app-input-error [control]="formGroup.get('program')" controlName="Program Name"></app-input-error>
+          <shared-ui-input-error [control]="formGroup.get('program')" controlName="Program Name"></shared-ui-input-error>
         </mat-form-field>
 
         <mat-form-field class="full-width">
@@ -43,7 +43,7 @@
           <mat-hint align="end">
             {{ formGroup.get('punchLine')?.value?.length || 0 }}/250
           </mat-hint>
-          <app-input-error [control]="formGroup.get('punchLine')" controlName="Punch Line"></app-input-error>
+          <shared-ui-input-error [control]="formGroup.get('punchLine')" controlName="Punch Line"></shared-ui-input-error>
         </mat-form-field>
 
         <div class="full-width">
@@ -58,7 +58,7 @@
               ></ngx-editor>
             </div>
           }
-          <app-input-error [control]="formGroup.get('details')" controlName="Details"></app-input-error>
+          <shared-ui-input-error [control]="formGroup.get('details')" controlName="Details"></shared-ui-input-error>
         </div>
 
         <mat-form-field class="full-width">
@@ -72,7 +72,7 @@
           <mat-hint align="end">
             {{ formGroup.get('idealFor')?.value?.length || 0 }}/50
           </mat-hint>
-          <app-input-error [control]="formGroup.get('idealFor')" controlName="Ideal For"></app-input-error>
+          <shared-ui-input-error [control]="formGroup.get('idealFor')" controlName="Ideal For"></shared-ui-input-error>
         </mat-form-field>
 
         <div class="row">
@@ -85,7 +85,7 @@
               placeholder="Enter sequence number"
               [min]="0"
             />
-            <app-input-error [control]="formGroup.get('sequenceNumber')" controlName="Sequence Number"></app-input-error>
+            <shared-ui-input-error [control]="formGroup.get('sequenceNumber')" controlName="Sequence Number"></shared-ui-input-error>
           </mat-form-field>
 
           <mat-form-field class="half-width">
@@ -99,7 +99,7 @@
             <mat-hint align="end">
               {{ formGroup.get('videoUrl')?.value?.length || 0 }}/500
             </mat-hint>
-            <app-input-error [control]="formGroup.get('videoUrl')" controlName="Video URL"></app-input-error>
+            <shared-ui-input-error [control]="formGroup.get('videoUrl')" controlName="Video URL"></shared-ui-input-error>
           </mat-form-field>
         </div>
 
@@ -114,11 +114,11 @@
               <mat-option [value]="true">Active</mat-option>
               <mat-option [value]="false">Inactive</mat-option>
             </mat-select>
-            <app-input-error [control]="formGroup.get('active')" controlName="Status"></app-input-error>
+            <shared-ui-input-error [control]="formGroup.get('active')" controlName="Status"></shared-ui-input-error>
           </mat-form-field>
         </div>
 
-        <app-upload-form
+        <shared-ui-upload-form
           [formGroup]="formGroup"
           [isMultiFile]="false"
           [isRequired]="false"
@@ -126,12 +126,12 @@
           controlName="imagePath"
           [mediaFor]="mediaFor"
           [mediaType]="mediaType"
-        ></app-upload-form>
+        ></shared-ui-upload-form>
 
-        <app-seo-form
+        <shared-ui-seo-form
           [formGroup]="formGroup"
           [seo]="initialData && initialData.seo ? initialData.seo : {}"
-        ></app-seo-form>
+        ></shared-ui-seo-form>
 
       </div>
 

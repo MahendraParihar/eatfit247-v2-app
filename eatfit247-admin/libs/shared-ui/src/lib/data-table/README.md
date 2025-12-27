@@ -34,11 +34,11 @@ import { IBlog, ITableList } from '@eatfit247-shared-lib';
 import { BlogsApiService } from 'blogs';
 
 @Component({
-  selector: 'app-blogs',
+  selector: 'shared-ui-blogs',
   standalone: true,
   imports: [DataTableComponent],
   template: `
-    <app-data-table
+    <shared-ui-data-table
       [config]="tableConfig"
       [data]="blogs"
       [totalCount]="totalCount"
@@ -46,7 +46,7 @@ import { BlogsApiService } from 'blogs';
       (pageChange)="onPageChange($event)"
       (sortChange)="onSortChange($event)"
       (searchChange)="onSearchChange($event)"
-    ></app-data-table>
+    ></shared-ui-data-table>
   `,
 })
 export class BlogsComponent {
@@ -140,7 +140,7 @@ export class BlogsComponent {
 
 ### Image Columns
 
-The data-table component has built-in support for image columns using the `app-img` component. Simply set `type: 'image'` on a column:
+The data-table component has built-in support for image columns using the `shared-ui-img` component. Simply set `type: 'image'` on a column:
 
 ```typescript
 const columns: ITableColumn[] = [
@@ -158,7 +158,7 @@ const columns: ITableColumn[] = [
 ];
 ```
 
-The `app-img` component automatically handles:
+The `shared-ui-img` component automatically handles:
 - `IMediaUpload[]` arrays (uses first item's `webUrl`)
 - String URLs (absolute or relative)
 - Placeholder images on error
@@ -171,7 +171,7 @@ For more complex custom rendering, you can still use custom templates:
 ```typescript
 @Component({
   template: `
-    <app-data-table [config]="tableConfig" [data]="data">
+    <shared-ui-data-table [config]="tableConfig" [data]="data">
       <!-- Custom status cell -->
       <ng-template #statusCell let-row let-value="value">
         <mat-chip [color]="value ? 'primary' : 'warn'">
@@ -183,7 +183,7 @@ For more complex custom rendering, you can still use custom templates:
       <ng-template #imageCell let-row let-value="value">
         <img [src]="value" alt="Image" class="table-image" />
       </ng-template>
-    </app-data-table>
+    </shared-ui-data-table>
   `,
 })
 export class MyComponent {
@@ -331,7 +331,7 @@ this.tableConfig = {
 | `sortable` | `boolean` | Enable sorting (default: `true`) |
 | `sortFn` | `(a: T, b: T) => number` | Custom sort function |
 | `searchable` | `boolean` | Include in search (default: `false`) |
-| `type` | `'image' \| 'text' \| 'number' \| 'date' \| 'boolean'` | Column type - 'image' uses app-img component |
+| `type` | `'image' \| 'text' \| 'number' \| 'date' \| 'boolean'` | Column type - 'image' uses shared-ui-img component |
 | `cellTemplate` | `TemplateRef` | Custom cell template |
 | `headerTemplate` | `TemplateRef` | Custom header template |
 | `width` | `string` | Column width (CSS value) |

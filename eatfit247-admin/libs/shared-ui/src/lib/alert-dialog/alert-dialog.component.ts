@@ -13,7 +13,7 @@ export interface AlertDialogData {
 }
 
 @Component({
-  selector: 'app-alert-dialog',
+  selector: 'shared-ui-alert-dialog',
   standalone: true,
   imports: [CommonModule, MatDialogModule, MatButtonModule, MatIconModule],
   templateUrl: './alert-dialog.component.html',

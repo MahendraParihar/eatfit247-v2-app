@@ -14,7 +14,7 @@
       <mat-label>URL</mat-label>
       <input matInput formControlName="link" type="url" placeholder="https://..." />
       <mat-icon matPrefix>link</mat-icon>
-      <app-input-error [control]="linkControl.get('link')" controlName="URL"></app-input-error>
+      <shared-ui-input-error [control]="linkControl.get('link')" controlName="URL"></shared-ui-input-error>
     </mat-form-field>
 
     <input type="hidden" formControlName="icon" />

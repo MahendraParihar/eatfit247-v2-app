@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @Component({
-  selector: 'lib-loader',
+  selector: 'shared-ui-loader',
   standalone: true,
   imports: [CommonModule, MatProgressSpinnerModule],
   templateUrl: './loader.component.html',

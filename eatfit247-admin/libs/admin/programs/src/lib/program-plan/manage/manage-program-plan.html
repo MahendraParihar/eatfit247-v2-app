@@ -13,7 +13,7 @@
               <mat-option [value]="type.id">{{ type.label }}</mat-option>
             }
           </mat-select>
-          <app-input-error [control]="formGroup.get('programPlanTypeId')" controlName="Program Plan Type"></app-input-error>
+          <shared-ui-input-error [control]="formGroup.get('programPlanTypeId')" controlName="Program Plan Type"></shared-ui-input-error>
         </mat-form-field>
 
         <mat-form-field class="full-width">
@@ -28,7 +28,7 @@
           <mat-hint align="end">
             {{ formGroup.get('plan')?.value?.length || 0 }}/100
           </mat-hint>
-          <app-input-error [control]="formGroup.get('plan')" controlName="Plan Name"></app-input-error>
+          <shared-ui-input-error [control]="formGroup.get('plan')" controlName="Plan Name"></shared-ui-input-error>
         </mat-form-field>
 
         @if (editor) {
@@ -42,7 +42,7 @@
                 placeholder="Enter plan details (optional)"
               ></ngx-editor>
             </div>
-            <app-input-error [control]="formGroup.get('details')" controlName="Details"></app-input-error>
+            <shared-ui-input-error [control]="formGroup.get('details')" controlName="Details"></shared-ui-input-error>
           </div>
         }
 
@@ -56,7 +56,7 @@
               placeholder="Enter sequence number"
               [min]="0"
             />
-            <app-input-error [control]="formGroup.get('sequenceNumber')" controlName="Sequence Number"></app-input-error>
+            <shared-ui-input-error [control]="formGroup.get('sequenceNumber')" controlName="Sequence Number"></shared-ui-input-error>
           </mat-form-field>
 
           <mat-form-field class="half-width">
@@ -69,7 +69,7 @@
               [min]="0"
               step="0.01"
             />
-            <app-input-error [control]="formGroup.get('inrAmount')" controlName="INR Amount"></app-input-error>
+            <shared-ui-input-error [control]="formGroup.get('inrAmount')" controlName="INR Amount"></shared-ui-input-error>
           </mat-form-field>
         </div>
 
@@ -83,7 +83,7 @@
               placeholder="Enter number of cycles"
               [min]="1"
             />
-            <app-input-error [control]="formGroup.get('noOfCycle')" controlName="Number of Cycles"></app-input-error>
+            <shared-ui-input-error [control]="formGroup.get('noOfCycle')" controlName="Number of Cycles"></shared-ui-input-error>
           </mat-form-field>
 
           <mat-form-field class="half-width">
@@ -95,7 +95,7 @@
               placeholder="Enter days in cycle"
               [min]="1"
             />
-            <app-input-error [control]="formGroup.get('noOfDaysInCycle')" controlName="Days in Cycle"></app-input-error>
+            <shared-ui-input-error [control]="formGroup.get('noOfDaysInCycle')" controlName="Days in Cycle"></shared-ui-input-error>
           </mat-form-field>
         </div>
 
@@ -115,10 +115,10 @@
             <mat-option [value]="true">Active</mat-option>
             <mat-option [value]="false">Inactive</mat-option>
           </mat-select>
-          <app-input-error [control]="formGroup.get('active')" controlName="Status"></app-input-error>
+          <shared-ui-input-error [control]="formGroup.get('active')" controlName="Status"></shared-ui-input-error>
         </mat-form-field>
 
-        <app-upload-form
+        <shared-ui-upload-form
           [formGroup]="formGroup"
           [isMultiFile]="false"
           [isRequired]="false"
@@ -126,7 +126,7 @@
           controlName="imagePath"
           [mediaFor]="mediaFor"
           [mediaType]="mediaType"
-        ></app-upload-form>
+        ></shared-ui-upload-form>
 
       </div>
 

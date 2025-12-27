@@ -23,7 +23,6 @@ import { IDietTemplate, IManageDietTemplate, InputLengthEnum } from '@eatfit247-
     MatButtonModule,
     MatIconModule,
     MatCardModule,
-    MatCheckboxModule,
     InputErrorComponent,
   ],
   templateUrl: './manage-diet-template.html',
@@ -65,7 +64,6 @@ export class ManageDietTemplateComponent implements OnInit, OnDestroy {
       dayNo: [null, [Validators.required, Validators.min(1)]],
       noOfCycle: [null, [Validators.min(1)]],
       noOfDaysInCycle: [null, [Validators.min(1)]],
-      isWeekly: [false, [Validators.required]],
     });
   }
 
@@ -79,7 +77,6 @@ export class ManageDietTemplateComponent implements OnInit, OnDestroy {
           dayNo: this.initialData.dayNo || null,
           noOfCycle: this.initialData.noOfCycle || null,
           noOfDaysInCycle: this.initialData.noOfDaysInCycle || null,
-          isWeekly: this.initialData.isWeekly !== undefined ? this.initialData.isWeekly : false,
         });
       }
     } catch (error) {

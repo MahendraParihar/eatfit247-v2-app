@@ -10,7 +10,7 @@ import { MatChipInputEvent } from '@angular/material/chips';
 import { ICommonSEO, InputLengthEnum } from '@eatfit247-shared-lib';
 
 @Component({
-  selector: 'app-seo-form',
+  selector: 'shared-ui-seo-form',
   standalone: true,
   imports: [
     CommonModule,

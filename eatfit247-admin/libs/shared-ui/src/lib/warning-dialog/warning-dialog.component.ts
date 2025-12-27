@@ -12,7 +12,7 @@ export interface WarningDialogData {
 }
 
 @Component({
-  selector: 'app-warning-dialog',
+  selector: 'shared-ui-warning-dialog',
   standalone: true,
   imports: [CommonModule, MatDialogModule, MatButtonModule, MatIconModule],
   templateUrl: './warning-dialog.component.html',

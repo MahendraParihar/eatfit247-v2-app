@@ -13,7 +13,7 @@
               <mat-option [value]="type.id">{{ type.label }}</mat-option>
             }
           </mat-select>
-          <app-input-error [control]="formGroup.get('recipeTypeId')" controlName="Recipe Type"></app-input-error>
+          <shared-ui-input-error [control]="formGroup.get('recipeTypeId')" controlName="Recipe Type"></shared-ui-input-error>
         </mat-form-field>
 
         <mat-form-field class="full-width">
@@ -28,7 +28,7 @@
               {{ getCurrentLength('name') }}/{{ getMaxLength('name') }}
             </mat-hint>
           }
-          <app-input-error [control]="formGroup.get('name')" controlName="Recipe Name"></app-input-error>
+          <shared-ui-input-error [control]="formGroup.get('name')" controlName="Recipe Name"></shared-ui-input-error>
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="full-width">
@@ -39,7 +39,7 @@
             }
           </mat-select>
           <mat-hint>Select one or more categories</mat-hint>
-          <app-input-error [control]="formGroup.get('recipeCategoryIds')" controlName="Recipe Categories"></app-input-error>
+          <shared-ui-input-error [control]="formGroup.get('recipeCategoryIds')" controlName="Recipe Categories"></shared-ui-input-error>
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="full-width">
@@ -50,7 +50,7 @@
             }
           </mat-select>
           <mat-hint>Select one or more cuisines</mat-hint>
-          <app-input-error [control]="formGroup.get('recipeCuisineIds')" controlName="Recipe Cuisines"></app-input-error>
+          <shared-ui-input-error [control]="formGroup.get('recipeCuisineIds')" controlName="Recipe Cuisines"></shared-ui-input-error>
         </mat-form-field>
 
         <div class="full-width">
@@ -65,7 +65,7 @@
               ></ngx-editor>
             </div>
           }
-          <app-input-error [control]="formGroup.get('details')" controlName="Details"></app-input-error>
+          <shared-ui-input-error [control]="formGroup.get('details')" controlName="Details"></shared-ui-input-error>
         </div>
 
         <div class="full-width">
@@ -80,7 +80,7 @@
               ></ngx-editor>
             </div>
           }
-          <app-input-error [control]="formGroup.get('preparationMethod')" controlName="Preparation Method"></app-input-error>
+          <shared-ui-input-error [control]="formGroup.get('preparationMethod')" controlName="Preparation Method"></shared-ui-input-error>
         </div>
 
         <div class="full-width">
@@ -95,7 +95,7 @@
               ></ngx-editor>
             </div>
           }
-          <app-input-error [control]="formGroup.get('ingredient')" controlName="Ingredients"></app-input-error>
+          <shared-ui-input-error [control]="formGroup.get('ingredient')" controlName="Ingredients"></shared-ui-input-error>
         </div>
 
         <div class="full-width">
@@ -110,7 +110,7 @@
               ></ngx-editor>
             </div>
           }
-          <app-input-error [control]="formGroup.get('howToMake')" controlName="How to Make"></app-input-error>
+          <shared-ui-input-error [control]="formGroup.get('howToMake')" controlName="How to Make"></shared-ui-input-error>
         </div>
 
         <div class="full-width">
@@ -125,7 +125,7 @@
               ></ngx-editor>
             </div>
           }
-          <app-input-error [control]="formGroup.get('benefits')" controlName="Benefits"></app-input-error>
+          <shared-ui-input-error [control]="formGroup.get('benefits')" controlName="Benefits"></shared-ui-input-error>
         </div>
 
         <div class="row">
@@ -138,7 +138,7 @@
               placeholder="Enter serving count"
               [min]="1"
             />
-            <app-input-error [control]="formGroup.get('servingCount')" controlName="Serving Count"></app-input-error>
+            <shared-ui-input-error [control]="formGroup.get('servingCount')" controlName="Serving Count"></shared-ui-input-error>
           </mat-form-field>
 
           <mat-form-field appearance="outline" class="half-width">
@@ -147,7 +147,7 @@
               <mat-option [value]="true">Active</mat-option>
               <mat-option [value]="false">Inactive</mat-option>
             </mat-select>
-            <app-input-error [control]="formGroup.get('active')" controlName="Status"></app-input-error>
+            <shared-ui-input-error [control]="formGroup.get('active')" controlName="Status"></shared-ui-input-error>
           </mat-form-field>
         </div>
 
@@ -159,7 +159,7 @@
 
         <div class="full-width">
           <label class="upload-label">Recipe Image</label>
-          <app-upload-form
+          <shared-ui-upload-form
             [formGroup]="formGroup"
             [isMultiFile]="false"
             [isRequired]="false"
@@ -167,13 +167,13 @@
             controlName="imagePath"
             [mediaFor]="mediaFor"
             [mediaType]="mediaType"
-          ></app-upload-form>
+          ></shared-ui-upload-form>
         </div>
 
-        <app-seo-form
+        <shared-ui-seo-form
           [formGroup]="formGroup"
           [seo]="initialData && initialData.seo ? initialData.seo : {}"
-        ></app-seo-form>
+        ></shared-ui-seo-form>
 
       </div>
 

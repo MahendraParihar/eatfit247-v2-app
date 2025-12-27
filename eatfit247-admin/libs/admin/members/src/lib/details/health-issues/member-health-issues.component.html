@@ -1,8 +1,8 @@
 @if (loading) {
-  <lib-loader></lib-loader>
+  <shared-ui-loader></shared-ui-loader>
 }
 @if (!loading && healthIssues.length > 0) {
-  <app-data-table
+  <shared-ui-data-table
     [config]="tableConfig"
     [data]="healthIssues">
     <div headerActions>
@@ -11,10 +11,10 @@
         Add Health Issue
       </button>
     </div>
-  </app-data-table>
+  </shared-ui-data-table>
 }
 @if (!loading && healthIssues.length === 0) {
-  <lib-empty-state
+  <shared-ui-empty-state
     [type]="EmptyStateType.MEMBER_HEALTH_ISSUES">
-  </lib-empty-state>
+  </shared-ui-empty-state>
 }

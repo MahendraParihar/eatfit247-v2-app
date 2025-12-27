@@ -8,34 +8,32 @@
         <mat-form-field>
           <mat-label>Diet Template</mat-label>
           <input matInput formControlName="dietTemplate" placeholder="Enter diet template name">
-          <app-input-error [control]="formGroup.get('dietTemplate')!" controlName="Diet Template"></app-input-error>
+          <shared-ui-input-error [control]="formGroup.get('dietTemplate')!" controlName="Diet Template"></shared-ui-input-error>
         </mat-form-field>
 
         <mat-form-field>
           <mat-label>Cycle No</mat-label>
           <input matInput type="number" formControlName="cycleNo" placeholder="Enter cycle number">
-          <app-input-error [control]="formGroup.get('cycleNo')!" controlName="Cycle No"></app-input-error>
+          <shared-ui-input-error [control]="formGroup.get('cycleNo')!" controlName="Cycle No"></shared-ui-input-error>
         </mat-form-field>
 
         <mat-form-field>
           <mat-label>Day No</mat-label>
           <input matInput type="number" formControlName="dayNo" placeholder="Enter day number">
-          <app-input-error [control]="formGroup.get('dayNo')!" controlName="Day No"></app-input-error>
+          <shared-ui-input-error [control]="formGroup.get('dayNo')!" controlName="Day No"></shared-ui-input-error>
         </mat-form-field>
 
         <mat-form-field>
           <mat-label>No of Cycles</mat-label>
           <input matInput type="number" formControlName="noOfCycle" placeholder="Enter number of cycles">
-          <app-input-error [control]="formGroup.get('noOfCycle')!" controlName="No of Cycles"></app-input-error>
+          <shared-ui-input-error [control]="formGroup.get('noOfCycle')!" controlName="No of Cycles"></shared-ui-input-error>
         </mat-form-field>
 
         <mat-form-field>
           <mat-label>Days in Cycle</mat-label>
           <input matInput type="number" formControlName="noOfDaysInCycle" placeholder="Enter days in cycle">
-          <app-input-error [control]="formGroup.get('noOfDaysInCycle')!" controlName="Days in Cycle"></app-input-error>
+          <shared-ui-input-error [control]="formGroup.get('noOfDaysInCycle')!" controlName="Days in Cycle"></shared-ui-input-error>
         </mat-form-field>
-
-        <mat-checkbox formControlName="isWeekly">Is Weekly</mat-checkbox>
       </div>
 
       <div class="form-actions">

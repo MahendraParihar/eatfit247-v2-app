@@ -124,11 +124,11 @@
             @switch (column.type) {
               @case ('image') {
                 @if (hasImageValue(row, column)) {
-                  <app-img
+                  <shared-ui-img
                     [webUrl]="getCellValue(row, column)"
                     [isAvatar]="column.isAvatar ?? false"
                     [alt]="column.imageAlt ? column.imageAlt : (column.label ? column.label : '')"
-                  ></app-img>
+                  ></shared-ui-img>
                 }
               }
               @case ('date') {

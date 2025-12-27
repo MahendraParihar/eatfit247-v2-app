@@ -18,7 +18,7 @@
           <mat-hint align="end">
             {{ formGroup.get('recipeCategory')?.value?.length || 0 }}/50
           </mat-hint>
-          <app-input-error [control]="formGroup.get('recipeCategory')" controlName="Recipe Category"></app-input-error>
+          <shared-ui-input-error [control]="formGroup.get('recipeCategory')" controlName="Recipe Category"></shared-ui-input-error>
         </mat-form-field>
 
         <mat-form-field class="full-width">
@@ -29,7 +29,7 @@
             formControlName="fromTime"
             placeholder="Enter from time"
           />
-          <app-input-error [control]="formGroup.get('fromTime')" controlName="From Time"></app-input-error>
+          <shared-ui-input-error [control]="formGroup.get('fromTime')" controlName="From Time"></shared-ui-input-error>
         </mat-form-field>
 
         <mat-form-field class="full-width">
@@ -40,7 +40,7 @@
             formControlName="toTime"
             placeholder="Enter to time"
           />
-          <app-input-error [control]="formGroup.get('toTime')" controlName="To Time"></app-input-error>
+          <shared-ui-input-error [control]="formGroup.get('toTime')" controlName="To Time"></shared-ui-input-error>
         </mat-form-field>
 
         <mat-form-field class="full-width">
@@ -52,7 +52,7 @@
             placeholder="Enter sequence"
             min="0"
           />
-          <app-input-error [control]="formGroup.get('sequence')" controlName="Sequence"></app-input-error>
+          <shared-ui-input-error [control]="formGroup.get('sequence')" controlName="Sequence"></shared-ui-input-error>
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="full-width">
@@ -61,10 +61,10 @@
             <mat-option [value]="true">Active</mat-option>
             <mat-option [value]="false">Inactive</mat-option>
           </mat-select>
-          <app-input-error [control]="formGroup.get('active')" controlName="Status"></app-input-error>
+          <shared-ui-input-error [control]="formGroup.get('active')" controlName="Status"></shared-ui-input-error>
         </mat-form-field>
 
-        <app-upload-form
+        <shared-ui-upload-form
           [formGroup]="formGroup"
           [isMultiFile]="false"
           [isRequired]="false"
@@ -72,7 +72,7 @@
           controlName="imagePath"
           [mediaFor]="mediaFor"
           [mediaType]="mediaType"
-        ></app-upload-form>
+        ></shared-ui-upload-form>
 
       </div>
 

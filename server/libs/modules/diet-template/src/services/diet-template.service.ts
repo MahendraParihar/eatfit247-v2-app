@@ -74,7 +74,6 @@ export class DietTemplateService {
         dayNo: obj.dayNo,
         noOfCycle: obj.noOfCycle || null,
         daysInCycle: obj.noOfDaysInCycle || null,
-        isWeekly: obj.isWeekly,
         active: true,
         createdBy: adminId,
         modifiedBy: adminId,
@@ -104,7 +103,6 @@ export class DietTemplateService {
         dayNo: obj.dayNo,
         noOfCycle: obj.noOfCycle || null,
         daysInCycle: obj.noOfDaysInCycle || null,
-        isWeekly: obj.isWeekly,
         modifiedBy: adminId,
         modifiedIp: cIp,
       };
@@ -145,7 +143,6 @@ export class DietTemplateService {
       dayNo: item.dayNo,
       noOfCycle: item.noOfCycle,
       noOfDaysInCycle: item.daysInCycle,
-      isWeekly: item.isWeekly,
       active: item.active,
       createdBy: item.createdBy,
       updatedBy: item.modifiedBy,

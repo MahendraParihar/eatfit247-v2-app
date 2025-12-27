@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { AbstractControl, AbstractControlDirective } from '@angular/forms';
 
 @Component({
-  selector: 'app-input-error',
+  selector: 'shared-ui-input-error',
   standalone: true,
   imports: [CommonModule],
   templateUrl: './input-error.component.html',

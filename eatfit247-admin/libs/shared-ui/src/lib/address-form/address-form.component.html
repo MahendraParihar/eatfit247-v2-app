@@ -10,7 +10,7 @@
           </mat-option>
         }
       </mat-select>
-      <app-input-error [control]="addressFormGroup.get('addressTypeId')" controlName="addressTypeId"></app-input-error>
+      <shared-ui-input-error [control]="addressFormGroup.get('addressTypeId')" controlName="addressTypeId"></shared-ui-input-error>
     </mat-form-field>
     <mat-form-field appearance="outline" class="half-width">
       <mat-label>Address Name</mat-label>
@@ -24,7 +24,7 @@
           {{ getCurrentLength('addressName') }}/{{ getMaxLength('addressName') }}
         </mat-hint>
       }
-      <app-input-error [control]="addressFormGroup.get('addressName')" controlName="Address Name"></app-input-error>
+      <shared-ui-input-error [control]="addressFormGroup.get('addressName')" controlName="Address Name"></shared-ui-input-error>
     </mat-form-field>
   </div>
 
@@ -39,7 +39,7 @@
           </mat-option>
         }
       </mat-select>
-      <app-input-error [control]="addressFormGroup.get('countryId')" controlName="countryId"></app-input-error>
+      <shared-ui-input-error [control]="addressFormGroup.get('countryId')" controlName="countryId"></shared-ui-input-error>
     </mat-form-field>
 
     <mat-form-field appearance="outline" class="half-width">
@@ -52,7 +52,7 @@
           </mat-option>
         }
       </mat-select>
-      <app-input-error [control]="addressFormGroup.get('stateId')" controlName="stateId"></app-input-error>
+      <shared-ui-input-error [control]="addressFormGroup.get('stateId')" controlName="stateId"></shared-ui-input-error>
     </mat-form-field>
   </div>
 
@@ -68,7 +68,7 @@
         {{ getCurrentLength('postalAddress') }}/{{ getMaxLength('postalAddress') }}
       </mat-hint>
     }
-    <app-input-error [control]="addressFormGroup.get('postalAddress')" controlName="Postal Address"></app-input-error>
+    <shared-ui-input-error [control]="addressFormGroup.get('postalAddress')" controlName="Postal Address"></shared-ui-input-error>
   </mat-form-field>
 
   <div class="row">
@@ -84,7 +84,7 @@
           {{ getCurrentLength('cityVillage') }}/{{ getMaxLength('cityVillage') }}
         </mat-hint>
       }
-      <app-input-error [control]="addressFormGroup.get('cityVillage')" controlName="City/Village"></app-input-error>
+      <shared-ui-input-error [control]="addressFormGroup.get('cityVillage')" controlName="City/Village"></shared-ui-input-error>
     </mat-form-field>
     <mat-form-field appearance="outline" class="half-width">
       <mat-label>Pin Code</mat-label>
@@ -99,7 +99,7 @@
           {{ getCurrentLength('pinCode') }}/{{ getMaxLength('pinCode') }}
         </mat-hint>
       }
-      <app-input-error [control]="addressFormGroup.get('pinCode')" controlName="Pin Code"></app-input-error>
+      <shared-ui-input-error [control]="addressFormGroup.get('pinCode')" controlName="Pin Code"></shared-ui-input-error>
     </mat-form-field>
   </div>
 
@@ -112,7 +112,7 @@
         type="number"
         placeholder="Enter latitude (optional)"
       />
-      <app-input-error [control]="addressFormGroup.get('latitude')" controlName="Latitude"></app-input-error>
+      <shared-ui-input-error [control]="addressFormGroup.get('latitude')" controlName="Latitude"></shared-ui-input-error>
     </mat-form-field>
 
     <mat-form-field appearance="outline" class="half-width">
@@ -123,7 +123,7 @@
         type="number"
         placeholder="Enter longitude (optional)"
       />
-      <app-input-error [control]="addressFormGroup.get('longitude')" controlName="Longitude"></app-input-error>
+      <shared-ui-input-error [control]="addressFormGroup.get('longitude')" controlName="Longitude"></shared-ui-input-error>
     </mat-form-field>
   </div>
 </div>

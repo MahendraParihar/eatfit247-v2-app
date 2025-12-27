@@ -10,7 +10,7 @@ import { IDropdownItem, InputLengthEnum, IAddressMaster, IManageAddress, IRespon
 import { HttpService } from '@core';
 
 @Component({
-  selector: 'app-address-form',
+  selector: 'shared-ui-address-form',
   standalone: true,
   imports: [
     CommonModule,

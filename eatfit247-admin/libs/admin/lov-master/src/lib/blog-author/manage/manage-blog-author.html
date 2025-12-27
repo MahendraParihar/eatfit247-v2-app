@@ -18,7 +18,7 @@
           <mat-hint align="end">
             {{ formGroup.get('firstName')?.value?.length || 0 }}/50
           </mat-hint>
-          <app-input-error [control]="formGroup.get('firstName')" controlName="First Name"></app-input-error>
+          <shared-ui-input-error [control]="formGroup.get('firstName')" controlName="First Name"></shared-ui-input-error>
         </mat-form-field>
 
         <mat-form-field class="full-width">
@@ -34,7 +34,7 @@
           <mat-hint align="end">
             {{ formGroup.get('lastName')?.value?.length || 0 }}/50
           </mat-hint>
-          <app-input-error [control]="formGroup.get('lastName')" controlName="Last Name"></app-input-error>
+          <shared-ui-input-error [control]="formGroup.get('lastName')" controlName="Last Name"></shared-ui-input-error>
         </mat-form-field>
 
         <mat-form-field class="full-width">
@@ -49,7 +49,7 @@
           <mat-hint align="end">
             {{ formGroup.get('emailId')?.value?.length || 0 }}/100
           </mat-hint>
-          <app-input-error [control]="formGroup.get('emailId')" controlName="Email"></app-input-error>
+          <shared-ui-input-error [control]="formGroup.get('emailId')" controlName="Email"></shared-ui-input-error>
         </mat-form-field>
 
         <mat-form-field class="full-width">
@@ -64,7 +64,7 @@
           <mat-hint align="end">
             {{ formGroup.get('countryCode')?.value?.length || 0 }}/4
           </mat-hint>
-          <app-input-error [control]="formGroup.get('countryCode')" controlName="Country Code"></app-input-error>
+          <shared-ui-input-error [control]="formGroup.get('countryCode')" controlName="Country Code"></shared-ui-input-error>
         </mat-form-field>
 
         <mat-form-field class="full-width">
@@ -80,7 +80,7 @@
           <mat-hint align="end">
             {{ formGroup.get('contactNumber')?.value?.length || 0 }}/15
           </mat-hint>
-          <app-input-error [control]="formGroup.get('contactNumber')" controlName="Contact Number"></app-input-error>
+          <shared-ui-input-error [control]="formGroup.get('contactNumber')" controlName="Contact Number"></shared-ui-input-error>
         </mat-form-field>
 
         <mat-form-field class="full-width">
@@ -95,7 +95,7 @@
           <mat-hint align="end">
             {{ formGroup.get('linkedUrl')?.value?.length || 0 }}/200
           </mat-hint>
-          <app-input-error [control]="formGroup.get('linkedUrl')" controlName="Linked URL"></app-input-error>
+          <shared-ui-input-error [control]="formGroup.get('linkedUrl')" controlName="Linked URL"></shared-ui-input-error>
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="full-width">
@@ -104,10 +104,10 @@
             <mat-option [value]="true">Active</mat-option>
             <mat-option [value]="false">Inactive</mat-option>
           </mat-select>
-          <app-input-error [control]="formGroup.get('active')" controlName="Status"></app-input-error>
+          <shared-ui-input-error [control]="formGroup.get('active')" controlName="Status"></shared-ui-input-error>
         </mat-form-field>
 
-        <app-upload-form
+        <shared-ui-upload-form
           [formGroup]="formGroup"
           [isMultiFile]="false"
           [isRequired]="false"
@@ -115,7 +115,7 @@
           controlName="profilePicture"
           [mediaFor]="mediaFor"
           [mediaType]="mediaType"
-        ></app-upload-form>
+        ></shared-ui-upload-form>
 
       </div>
 

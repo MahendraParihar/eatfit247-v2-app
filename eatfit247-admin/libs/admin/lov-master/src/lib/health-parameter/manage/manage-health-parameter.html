@@ -18,7 +18,7 @@
           <mat-hint align="end">
             {{ formGroup.get('healthParameter')?.value?.length || 0 }}/50
           </mat-hint>
-          <app-input-error [control]="formGroup.get('healthParameter')" controlName="Health Parameter"></app-input-error>
+          <shared-ui-input-error [control]="formGroup.get('healthParameter')" controlName="Health Parameter"></shared-ui-input-error>
         </mat-form-field>
 
         <mat-form-field class="full-width">
@@ -33,7 +33,7 @@
           <mat-hint align="end">
             {{ formGroup.get('hintText')?.value?.length || 0 }}/200
           </mat-hint>
-          <app-input-error [control]="formGroup.get('hintText')" controlName="Hint Text"></app-input-error>
+          <shared-ui-input-error [control]="formGroup.get('hintText')" controlName="Hint Text"></shared-ui-input-error>
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="full-width">
@@ -44,7 +44,7 @@
               <mat-option [value]="type">{{ type }}</mat-option>
             }
           </mat-select>
-          <app-input-error [control]="formGroup.get('fieldType')" controlName="Field Type"></app-input-error>
+          <shared-ui-input-error [control]="formGroup.get('fieldType')" controlName="Field Type"></shared-ui-input-error>
         </mat-form-field>
 
         <mat-form-field class="full-width">
@@ -56,21 +56,21 @@
             placeholder="Enter sequence"
             min="0"
           />
-          <app-input-error [control]="formGroup.get('sequence')" controlName="Sequence"></app-input-error>
+          <shared-ui-input-error [control]="formGroup.get('sequence')" controlName="Sequence"></shared-ui-input-error>
         </mat-form-field>
 
         <div class="checkbox-group">
           <mat-checkbox formControlName="isLength">
             Is Length
           </mat-checkbox>
-          <app-input-error [control]="formGroup.get('isLength')" controlName="Is Length"></app-input-error>
+          <shared-ui-input-error [control]="formGroup.get('isLength')" controlName="Is Length"></shared-ui-input-error>
         </div>
 
         <div class="checkbox-group">
           <mat-checkbox formControlName="requiredField">
             Required Field
           </mat-checkbox>
-          <app-input-error [control]="formGroup.get('requiredField')" controlName="Required Field"></app-input-error>
+          <shared-ui-input-error [control]="formGroup.get('requiredField')" controlName="Required Field"></shared-ui-input-error>
         </div>
 
         <mat-form-field appearance="outline" class="full-width">
@@ -79,10 +79,10 @@
             <mat-option [value]="true">Active</mat-option>
             <mat-option [value]="false">Inactive</mat-option>
           </mat-select>
-          <app-input-error [control]="formGroup.get('active')" controlName="Status"></app-input-error>
+          <shared-ui-input-error [control]="formGroup.get('active')" controlName="Status"></shared-ui-input-error>
         </mat-form-field>
 
-        <app-upload-form
+        <shared-ui-upload-form
           [formGroup]="formGroup"
           [isMultiFile]="false"
           [isRequired]="false"
@@ -90,7 +90,7 @@
           controlName="imagePath"
           [mediaFor]="mediaFor"
           [mediaType]="mediaType"
-        ></app-upload-form>
+        ></shared-ui-upload-form>
 
       </div>
 

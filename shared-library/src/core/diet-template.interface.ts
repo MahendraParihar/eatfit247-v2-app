@@ -7,7 +7,6 @@ export interface IBasicDietTemplate {
   dayNo: number;
   noOfCycle?: number;
   noOfDaysInCycle?: number;
-  isWeekly: boolean;
 }
 
 export interface IManageDietTemplate extends IBasicDietTemplate {

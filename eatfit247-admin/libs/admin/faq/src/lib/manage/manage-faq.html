@@ -13,7 +13,7 @@
               <mat-option [value]="category.id">{{ category.label }}</mat-option>
             }
           </mat-select>
-          <app-input-error [control]="formGroup.get('faqCategoryId')" controlName="FAQ Category"></app-input-error>
+          <shared-ui-input-error [control]="formGroup.get('faqCategoryId')" controlName="FAQ Category"></shared-ui-input-error>
         </mat-form-field>
 
         <mat-form-field class="full-width">
@@ -28,7 +28,7 @@
           <mat-hint align="end">
             {{ formGroup.get('faq')?.value?.length || 0 }}/500
           </mat-hint>
-          <app-input-error [control]="formGroup.get('faq')" controlName="Question"></app-input-error>
+          <shared-ui-input-error [control]="formGroup.get('faq')" controlName="Question"></shared-ui-input-error>
         </mat-form-field>
 
         <mat-form-field class="full-width">
@@ -39,7 +39,7 @@
             placeholder="Enter answer"
             rows="6"
           ></textarea>
-          <app-input-error [control]="formGroup.get('answer')" controlName="Answer"></app-input-error>
+          <shared-ui-input-error [control]="formGroup.get('answer')" controlName="Answer"></shared-ui-input-error>
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="full-width">
@@ -48,7 +48,7 @@
             <mat-option [value]="true">Active</mat-option>
             <mat-option [value]="false">Inactive</mat-option>
           </mat-select>
-          <app-input-error [control]="formGroup.get('active')" controlName="Status"></app-input-error>
+          <shared-ui-input-error [control]="formGroup.get('active')" controlName="Status"></shared-ui-input-error>
         </mat-form-field>
 
       </div>

@@ -12,7 +12,7 @@ interface EmptyStateConfig {
 }
 
 @Component({
-  selector: 'lib-empty-state',
+  selector: 'shared-ui-empty-state',
   standalone: true,
   imports: [CommonModule, MatIconModule],
   templateUrl: './empty-state.component.html',

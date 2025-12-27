@@ -18,7 +18,7 @@
           <mat-hint align="end">
             {{ formGroup.get('blogCategory')?.value?.length || 0 }}/50
           </mat-hint>
-          <app-input-error [control]="formGroup.get('blogCategory')" controlName="Blog Category"></app-input-error>
+          <shared-ui-input-error [control]="formGroup.get('blogCategory')" controlName="Blog Category"></shared-ui-input-error>
         </mat-form-field>
 
         <mat-form-field class="full-width">
@@ -33,7 +33,7 @@
           <mat-hint align="end">
             {{ formGroup.get('url')?.value?.length || 0 }}/200
           </mat-hint>
-          <app-input-error [control]="formGroup.get('url')" controlName="URL"></app-input-error>
+          <shared-ui-input-error [control]="formGroup.get('url')" controlName="URL"></shared-ui-input-error>
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="full-width">
@@ -42,10 +42,10 @@
             <mat-option [value]="true">Active</mat-option>
             <mat-option [value]="false">Inactive</mat-option>
           </mat-select>
-          <app-input-error [control]="formGroup.get('active')" controlName="Status"></app-input-error>
+          <shared-ui-input-error [control]="formGroup.get('active')" controlName="Status"></shared-ui-input-error>
         </mat-form-field>
 
-        <app-upload-form
+        <shared-ui-upload-form
           [formGroup]="formGroup"
           [isMultiFile]="false"
           [isRequired]="false"
@@ -53,7 +53,7 @@
           controlName="imagePath"
           [mediaFor]="mediaFor"
           [mediaType]="mediaType"
-        ></app-upload-form>
+        ></shared-ui-upload-form>
 
       </div>
 

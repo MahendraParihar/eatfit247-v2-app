@@ -18,7 +18,7 @@
                 {{ getCurrentLength('firstName') }}/{{ getMaxLength('firstName') }}
               </mat-hint>
             }
-            <app-input-error [control]="formGroup.get('firstName')" controlName="First Name"></app-input-error>
+            <shared-ui-input-error [control]="formGroup.get('firstName')" controlName="First Name"></shared-ui-input-error>
           </mat-form-field>
 
           <mat-form-field class="half-width">
@@ -33,7 +33,7 @@
                 {{ getCurrentLength('lastName') }}/{{ getMaxLength('lastName') }}
               </mat-hint>
             }
-            <app-input-error [control]="formGroup.get('lastName')" controlName="Last Name"></app-input-error>
+            <shared-ui-input-error [control]="formGroup.get('lastName')" controlName="Last Name"></shared-ui-input-error>
           </mat-form-field>
         </div>
 
@@ -49,7 +49,7 @@
               {{ getCurrentLength('companyName') }}/{{ getMaxLength('companyName') }}
             </mat-hint>
           }
-          <app-input-error [control]="formGroup.get('companyName')" controlName="Company Name"></app-input-error>
+          <shared-ui-input-error [control]="formGroup.get('companyName')" controlName="Company Name"></shared-ui-input-error>
         </mat-form-field>
 
         <div class="row">
@@ -66,7 +66,7 @@
                 {{ getCurrentLength('emailId') }}/{{ getMaxLength('emailId') }}
               </mat-hint>
             }
-            <app-input-error [control]="formGroup.get('emailId')" controlName="Email ID"></app-input-error>
+            <shared-ui-input-error [control]="formGroup.get('emailId')" controlName="Email ID"></shared-ui-input-error>
           </mat-form-field>
 
           <mat-form-field class="half-width">
@@ -82,7 +82,7 @@
                 {{ getCurrentLength('alternateEmailId') }}/{{ getMaxLength('alternateEmailId') }}
               </mat-hint>
             }
-            <app-input-error [control]="formGroup.get('alternateEmailId')" controlName="Alternate Email ID"></app-input-error>
+            <shared-ui-input-error [control]="formGroup.get('alternateEmailId')" controlName="Alternate Email ID"></shared-ui-input-error>
           </mat-form-field>
         </div>
 
@@ -99,7 +99,7 @@
                 {{ getCurrentLength('contactNumber') }}/{{ getMaxLength('contactNumber') }}
               </mat-hint>
             }
-            <app-input-error [control]="formGroup.get('contactNumber')" controlName="Contact Number"></app-input-error>
+            <shared-ui-input-error [control]="formGroup.get('contactNumber')" controlName="Contact Number"></shared-ui-input-error>
           </mat-form-field>
 
           <mat-form-field class="half-width">
@@ -114,7 +114,7 @@
                 {{ getCurrentLength('alternateContactNumber') }}/{{ getMaxLength('alternateContactNumber') }}
               </mat-hint>
             }
-            <app-input-error [control]="formGroup.get('alternateContactNumber')" controlName="Alternate Contact Number"></app-input-error>
+            <shared-ui-input-error [control]="formGroup.get('alternateContactNumber')" controlName="Alternate Contact Number"></shared-ui-input-error>
           </mat-form-field>
         </div>
 
@@ -131,7 +131,7 @@
                 {{ getCurrentLength('panNumber') }}/{{ getMaxLength('panNumber') }}
               </mat-hint>
             }
-            <app-input-error [control]="formGroup.get('panNumber')" controlName="PAN Number"></app-input-error>
+            <shared-ui-input-error [control]="formGroup.get('panNumber')" controlName="PAN Number"></shared-ui-input-error>
           </mat-form-field>
 
           <mat-form-field class="half-width">
@@ -146,7 +146,7 @@
                 {{ getCurrentLength('tanNumber') }}/{{ getMaxLength('tanNumber') }}
               </mat-hint>
             }
-            <app-input-error [control]="formGroup.get('tanNumber')" controlName="TAN Number"></app-input-error>
+            <shared-ui-input-error [control]="formGroup.get('tanNumber')" controlName="TAN Number"></shared-ui-input-error>
           </mat-form-field>
         </div>
 
@@ -162,7 +162,7 @@
               {{ getCurrentLength('gstNumber') }}/{{ getMaxLength('gstNumber') }}
             </mat-hint>
           }
-          <app-input-error [control]="formGroup.get('gstNumber')" controlName="GST Number"></app-input-error>
+          <shared-ui-input-error [control]="formGroup.get('gstNumber')" controlName="GST Number"></shared-ui-input-error>
         </mat-form-field>
 
         <div class="row">
@@ -171,7 +171,7 @@
             <input matInput [matDatepicker]="startPicker" formControlName="startDate">
             <mat-datepicker-toggle matIconSuffix [for]="startPicker"></mat-datepicker-toggle>
             <mat-datepicker #startPicker></mat-datepicker>
-            <app-input-error [control]="formGroup.get('startDate')" controlName="Start Date"></app-input-error>
+            <shared-ui-input-error [control]="formGroup.get('startDate')" controlName="Start Date"></shared-ui-input-error>
           </mat-form-field>
 
           <mat-form-field appearance="outline" class="half-width">
@@ -179,7 +179,7 @@
             <input matInput [matDatepicker]="endPicker" formControlName="endDate">
             <mat-datepicker-toggle matIconSuffix [for]="endPicker"></mat-datepicker-toggle>
             <mat-datepicker #endPicker></mat-datepicker>
-            <app-input-error [control]="formGroup.get('endDate')" controlName="End Date"></app-input-error>
+            <shared-ui-input-error [control]="formGroup.get('endDate')" controlName="End Date"></shared-ui-input-error>
           </mat-form-field>
         </div>
 
@@ -194,13 +194,13 @@
               <mat-option [value]="true">Active</mat-option>
               <mat-option [value]="false">Inactive</mat-option>
             </mat-select>
-            <app-input-error [control]="formGroup.get('active')" controlName="Status"></app-input-error>
+            <shared-ui-input-error [control]="formGroup.get('active')" controlName="Status"></shared-ui-input-error>
           </mat-form-field>
         </div>
 
         <div class="full-width">
           <label class="upload-label">Logo</label>
-          <app-upload-form
+          <shared-ui-upload-form
             [formGroup]="formGroup"
             [isMultiFile]="false"
             [isRequired]="false"
@@ -208,7 +208,7 @@
             controlName="logo"
             [mediaFor]="mediaFor"
             [mediaType]="mediaType"
-          ></app-upload-form>
+          ></shared-ui-upload-form>
         </div>
 
       </div>

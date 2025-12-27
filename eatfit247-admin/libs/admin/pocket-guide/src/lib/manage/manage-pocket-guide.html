@@ -18,7 +18,7 @@
           <mat-hint align="end">
             {{ formGroup.get('pocketGuide')?.value?.length || 0 }}/50
           </mat-hint>
-          <app-input-error [control]="formGroup.get('pocketGuide')" controlName="Pocket Guide Title"></app-input-error>
+          <shared-ui-input-error [control]="formGroup.get('pocketGuide')" controlName="Pocket Guide Title"></shared-ui-input-error>
         </mat-form-field>
 
         <div class="full-width">
@@ -33,12 +33,12 @@
               ></ngx-editor>
             </div>
           }
-          <app-input-error [control]="formGroup.get('description')" controlName="Description"></app-input-error>
+          <shared-ui-input-error [control]="formGroup.get('description')" controlName="Description"></shared-ui-input-error>
         </div>
 
         <div class="full-width">
           <label class="upload-label">File (PDF/Document)</label>
-          <app-upload-form
+          <shared-ui-upload-form
             [formGroup]="formGroup"
             [isMultiFile]="false"
             [isRequired]="false"
@@ -46,12 +46,12 @@
             controlName="filePath"
             [mediaFor]="mediaFor"
             [mediaType]="fileMediaType"
-          ></app-upload-form>
+          ></shared-ui-upload-form>
         </div>
 
         <div class="full-width">
           <label class="upload-label">Image</label>
-          <app-upload-form
+          <shared-ui-upload-form
             [formGroup]="formGroup"
             [isMultiFile]="false"
             [isRequired]="false"
@@ -59,7 +59,7 @@
             controlName="imagePath"
             [mediaFor]="mediaFor"
             [mediaType]="imageMediaType"
-          ></app-upload-form>
+          ></shared-ui-upload-form>
         </div>
 
         <mat-form-field appearance="outline" class="full-width">
@@ -68,7 +68,7 @@
             <mat-option [value]="true">Active</mat-option>
             <mat-option [value]="false">Inactive</mat-option>
           </mat-select>
-          <app-input-error [control]="formGroup.get('active')" controlName="Status"></app-input-error>
+          <shared-ui-input-error [control]="formGroup.get('active')" controlName="Status"></shared-ui-input-error>
         </mat-form-field>
       </div>
 

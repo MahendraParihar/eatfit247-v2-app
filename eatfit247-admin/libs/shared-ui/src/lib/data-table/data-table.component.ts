@@ -36,7 +36,7 @@ import {
 } from './data-table.interface';
 
 @Component({
-  selector: 'app-data-table',
+  selector: 'shared-ui-data-table',
   standalone: true,
   imports: [
     CommonModule,

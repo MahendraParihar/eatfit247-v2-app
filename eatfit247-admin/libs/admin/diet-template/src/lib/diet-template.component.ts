@@ -93,15 +93,6 @@ export class DietTemplateComponent implements OnInit {
         align: 'center',
       },
       {
-        key: 'isWeekly',
-        label: 'Is Weekly',
-        dataKey: 'isWeekly',
-        sortable: true,
-        width: '100px',
-        align: 'center',
-        formatter: (value) => (value ? 'Yes' : 'No'),
-      },
-      {
         key: 'active',
         label: 'Status',
         dataKey: 'active',

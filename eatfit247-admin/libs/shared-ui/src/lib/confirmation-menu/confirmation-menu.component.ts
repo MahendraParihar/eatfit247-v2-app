@@ -6,7 +6,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
-  selector: 'app-confirmation-menu',
+  selector: 'shared-ui-confirmation-menu',
   standalone: true,
   imports: [CommonModule, MatMenuModule, MatButtonModule, MatIconModule, MatTooltipModule],
   templateUrl: './confirmation-menu.component.html',

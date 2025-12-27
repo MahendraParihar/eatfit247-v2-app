@@ -18,7 +18,7 @@
           <mat-hint align="end">
             {{ formGroup.get('country')?.value?.length || 0 }}/50
           </mat-hint>
-          <app-input-error [control]="formGroup.get('country')" controlName="Country"></app-input-error>
+          <shared-ui-input-error [control]="formGroup.get('country')" controlName="Country"></shared-ui-input-error>
         </mat-form-field>
 
         <mat-form-field class="full-width">
@@ -33,7 +33,7 @@
           <mat-hint align="end">
             {{ formGroup.get('countryCode')?.value?.length || 0 }}/4
           </mat-hint>
-          <app-input-error [control]="formGroup.get('countryCode')" controlName="Country Code"></app-input-error>
+          <shared-ui-input-error [control]="formGroup.get('countryCode')" controlName="Country Code"></shared-ui-input-error>
         </mat-form-field>
 
         <mat-form-field class="full-width">
@@ -48,7 +48,7 @@
           <mat-hint align="end">
             {{ formGroup.get('phoneNumberCode')?.value?.length || 0 }}/4
           </mat-hint>
-          <app-input-error [control]="formGroup.get('phoneNumberCode')" controlName="Phone Number Code"></app-input-error>
+          <shared-ui-input-error [control]="formGroup.get('phoneNumberCode')" controlName="Phone Number Code"></shared-ui-input-error>
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="full-width">
@@ -57,7 +57,7 @@
             <mat-option [value]="true">Active</mat-option>
             <mat-option [value]="false">Inactive</mat-option>
           </mat-select>
-          <app-input-error [control]="formGroup.get('active')" controlName="Status"></app-input-error>
+          <shared-ui-input-error [control]="formGroup.get('active')" controlName="Status"></shared-ui-input-error>
         </mat-form-field>
 
       </div>

@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { IMediaUpload } from '@eatfit247-shared-lib';
 
 @Component({
-  selector: 'app-img',
+  selector: 'shared-ui-img',
   standalone: true,
   imports: [CommonModule],
   templateUrl: './img.component.html',

@@ -23,10 +23,6 @@ export class CreateDietTemplateDto implements IManageDietTemplate {
   @IsNumber()
   noOfDaysInCycle?: number;
 
-  @IsNotEmpty()
-  @IsBoolean()
-  isWeekly: boolean;
-
   @IsOptional()
   @IsNumber()
   dietTemplateId?: number;

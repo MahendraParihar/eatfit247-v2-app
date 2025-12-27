@@ -9,7 +9,7 @@ import { InputErrorComponent } from '../input-error/input-error.component';
 import { ISocialLink } from '@eatfit247-shared-lib';
 
 @Component({
-  selector: 'app-social-link-form',
+  selector: 'shared-ui-social-link-form',
   standalone: true,
   imports: [
     CommonModule,

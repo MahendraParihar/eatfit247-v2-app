@@ -13,7 +13,7 @@
               <mat-option [value]="category.id">{{ category.label }}</mat-option>
             }
           </mat-select>
-          <app-input-error [control]="formGroup.get('blogCategoryId')" controlName="Blog Category"></app-input-error>
+          <shared-ui-input-error [control]="formGroup.get('blogCategoryId')" controlName="Blog Category"></shared-ui-input-error>
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="full-width">
@@ -24,7 +24,7 @@
               <mat-option [value]="author.id">{{ author.label }}</mat-option>
             }
           </mat-select>
-          <app-input-error [control]="formGroup.get('blogAuthorId')" controlName="Blog Author"></app-input-error>
+          <shared-ui-input-error [control]="formGroup.get('blogAuthorId')" controlName="Blog Author"></shared-ui-input-error>
         </mat-form-field>
 
         <mat-form-field class="full-width">
@@ -39,7 +39,7 @@
               {{ getCurrentLength('title') }}/{{ getMaxLength('title') }}
             </mat-hint>
           }
-          <app-input-error [control]="formGroup.get('title')" controlName="Title"></app-input-error>
+          <shared-ui-input-error [control]="formGroup.get('title')" controlName="Title"></shared-ui-input-error>
         </mat-form-field>
 
         <div class="full-width">
@@ -54,7 +54,7 @@
               ></ngx-editor>
             </div>
           }
-          <app-input-error [control]="formGroup.get('description')" controlName="Description"></app-input-error>
+          <shared-ui-input-error [control]="formGroup.get('description')" controlName="Description"></shared-ui-input-error>
         </div>
 
         <mat-form-field appearance="outline" class="full-width">
@@ -62,7 +62,7 @@
           <input matInput [matDatepicker]="picker" formControlName="writtenAt">
           <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
           <mat-datepicker #picker></mat-datepicker>
-          <app-input-error [control]="formGroup.get('writtenAt')" controlName="Written At"></app-input-error>
+          <shared-ui-input-error [control]="formGroup.get('writtenAt')" controlName="Written At"></shared-ui-input-error>
         </mat-form-field>
 
         <div class="row">
@@ -86,13 +86,13 @@
               <mat-option [value]="true">Active</mat-option>
               <mat-option [value]="false">Inactive</mat-option>
             </mat-select>
-            <app-input-error [control]="formGroup.get('active')" controlName="Status"></app-input-error>
+            <shared-ui-input-error [control]="formGroup.get('active')" controlName="Status"></shared-ui-input-error>
           </mat-form-field>
         </div>
 
         <div class="full-width">
           <label class="upload-label">Blog Image</label>
-          <app-upload-form
+          <shared-ui-upload-form
             [formGroup]="formGroup"
             [isMultiFile]="false"
             [isRequired]="false"
@@ -100,13 +100,13 @@
             controlName="imagePath"
             [mediaFor]="mediaFor"
             [mediaType]="mediaType"
-          ></app-upload-form>
+          ></shared-ui-upload-form>
         </div>
 
-        <app-seo-form
+        <shared-ui-seo-form
           [formGroup]="formGroup"
           [seo]="initialData && initialData.seo ? initialData.seo : {}"
-        ></app-seo-form>
+        ></shared-ui-seo-form>
 
       </div>
 

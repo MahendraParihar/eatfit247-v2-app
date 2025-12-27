@@ -1,5 +1,5 @@
 @if (loading) {
-  <lib-loader></lib-loader>
+  <shared-ui-loader></shared-ui-loader>
 }
 
 @if (!loading) {
@@ -388,13 +388,13 @@
                   <input matInput [matDatepicker]="picker" formControlName="dateOfBirth" readonly>
                   <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
                   <mat-datepicker #picker></mat-datepicker>
-                  <app-input-error [control]="formGroup.get('dateOfBirth')!"></app-input-error>
+                  <shared-ui-input-error [control]="formGroup.get('dateOfBirth')!"></shared-ui-input-error>
                 </mat-form-field>
 
                 <mat-form-field>
                   <mat-label>Age</mat-label>
                   <input matInput type="number" formControlName="age">
-                  <app-input-error [control]="formGroup.get('age')!"></app-input-error>
+                  <shared-ui-input-error [control]="formGroup.get('age')!"></shared-ui-input-error>
                 </mat-form-field>
 
                 <mat-form-field>
@@ -405,7 +405,7 @@
                       <mat-option [value]="option.id">{{ option.label }}</mat-option>
                     }
                   </mat-select>
-                  <app-input-error [control]="formGroup.get('genderId')!"></app-input-error>
+                  <shared-ui-input-error [control]="formGroup.get('genderId')!"></shared-ui-input-error>
                 </mat-form-field>
 
                 <mat-form-field>
@@ -416,7 +416,7 @@
                       <mat-option [value]="option.id">{{ option.label }}</mat-option>
                     }
                   </mat-select>
-                  <app-input-error [control]="formGroup.get('maritalStatusId')!"></app-input-error>
+                  <shared-ui-input-error [control]="formGroup.get('maritalStatusId')!"></shared-ui-input-error>
                 </mat-form-field>
 
                 <mat-form-field>
@@ -427,7 +427,7 @@
                       <mat-option [value]="option.id">{{ option.label }}</mat-option>
                     }
                   </mat-select>
-                  <app-input-error [control]="formGroup.get('religionId')!"></app-input-error>
+                  <shared-ui-input-error [control]="formGroup.get('religionId')!"></shared-ui-input-error>
                 </mat-form-field>
               </div>
             </div>
@@ -446,7 +446,7 @@
                       <mat-option [value]="option.id">{{ option.label }}</mat-option>
                     }
                   </mat-select>
-                  <app-input-error [control]="formGroup.get('lifestyleId')!"></app-input-error>
+                  <shared-ui-input-error [control]="formGroup.get('lifestyleId')!"></shared-ui-input-error>
                 </mat-form-field>
 
                 <mat-form-field>
@@ -457,115 +457,115 @@
                       <mat-option [value]="option.id">{{ option.label }}</mat-option>
                     }
                   </mat-select>
-                  <app-input-error [control]="formGroup.get('eatingHabitId')!"></app-input-error>
+                  <shared-ui-input-error [control]="formGroup.get('eatingHabitId')!"></shared-ui-input-error>
                 </mat-form-field>
 
                 <mat-form-field>
                   <mat-label>Tobacco Amount</mat-label>
                   <input matInput formControlName="tobaccoAmount">
-                  <app-input-error [control]="formGroup.get('tobaccoAmount')!"></app-input-error>
+                  <shared-ui-input-error [control]="formGroup.get('tobaccoAmount')!"></shared-ui-input-error>
                 </mat-form-field>
 
                 <mat-form-field>
                   <mat-label>Tobacco Frequency</mat-label>
                   <input matInput formControlName="tobaccoFrequency">
-                  <app-input-error [control]="formGroup.get('tobaccoFrequency')!"></app-input-error>
+                  <shared-ui-input-error [control]="formGroup.get('tobaccoFrequency')!"></shared-ui-input-error>
                 </mat-form-field>
 
                 <mat-form-field>
                   <mat-label>Smoking Amount</mat-label>
                   <input matInput formControlName="smokingAmount">
-                  <app-input-error [control]="formGroup.get('smokingAmount')!"></app-input-error>
+                  <shared-ui-input-error [control]="formGroup.get('smokingAmount')!"></shared-ui-input-error>
                 </mat-form-field>
 
                 <mat-form-field>
                   <mat-label>Smoking Frequency</mat-label>
                   <input matInput formControlName="smokingFrequency">
-                  <app-input-error [control]="formGroup.get('smokingFrequency')!"></app-input-error>
+                  <shared-ui-input-error [control]="formGroup.get('smokingFrequency')!"></shared-ui-input-error>
                 </mat-form-field>
 
                 <mat-form-field>
                   <mat-label>Alcohol Drink</mat-label>
                   <input matInput formControlName="alcoholDrink">
-                  <app-input-error [control]="formGroup.get('alcoholDrink')!"></app-input-error>
+                  <shared-ui-input-error [control]="formGroup.get('alcoholDrink')!"></shared-ui-input-error>
                 </mat-form-field>
 
                 <mat-form-field>
                   <mat-label>Alcohol Frequency</mat-label>
                   <input matInput formControlName="alcoholFrequency">
-                  <app-input-error [control]="formGroup.get('alcoholFrequency')!"></app-input-error>
+                  <shared-ui-input-error [control]="formGroup.get('alcoholFrequency')!"></shared-ui-input-error>
                 </mat-form-field>
 
                 <mat-form-field>
                   <mat-label>Alcohol Amount</mat-label>
                   <input matInput formControlName="alcoholAmount">
-                  <app-input-error [control]="formGroup.get('alcoholAmount')!"></app-input-error>
+                  <shared-ui-input-error [control]="formGroup.get('alcoholAmount')!"></shared-ui-input-error>
                 </mat-form-field>
 
                 <mat-form-field>
                   <mat-label>Paan</mat-label>
                   <input matInput formControlName="paan">
-                  <app-input-error [control]="formGroup.get('paan')!"></app-input-error>
+                  <shared-ui-input-error [control]="formGroup.get('paan')!"></shared-ui-input-error>
                 </mat-form-field>
 
                 <mat-form-field>
                   <mat-label>Aerated Drinks</mat-label>
                   <input matInput formControlName="aeratedDrinks">
-                  <app-input-error [control]="formGroup.get('aeratedDrinks')!"></app-input-error>
+                  <shared-ui-input-error [control]="formGroup.get('aeratedDrinks')!"></shared-ui-input-error>
                 </mat-form-field>
 
                 <mat-form-field>
                   <mat-label>Water Intake</mat-label>
                   <input matInput formControlName="waterIntake">
-                  <app-input-error [control]="formGroup.get('waterIntake')!"></app-input-error>
+                  <shared-ui-input-error [control]="formGroup.get('waterIntake')!"></shared-ui-input-error>
                 </mat-form-field>
 
                 <mat-form-field>
                   <mat-label>Religious</mat-label>
                   <input matInput formControlName="religious">
-                  <app-input-error [control]="formGroup.get('religious')!"></app-input-error>
+                  <shared-ui-input-error [control]="formGroup.get('religious')!"></shared-ui-input-error>
                 </mat-form-field>
 
                 <mat-form-field>
                   <mat-label>Fasting</mat-label>
                   <input matInput formControlName="fasting">
-                  <app-input-error [control]="formGroup.get('fasting')!"></app-input-error>
+                  <shared-ui-input-error [control]="formGroup.get('fasting')!"></shared-ui-input-error>
                 </mat-form-field>
 
                 <mat-form-field>
                   <mat-label>Restaurant Visit</mat-label>
                   <input matInput formControlName="restaurantVisit">
-                  <app-input-error [control]="formGroup.get('restaurantVisit')!"></app-input-error>
+                  <shared-ui-input-error [control]="formGroup.get('restaurantVisit')!"></shared-ui-input-error>
                 </mat-form-field>
 
                 <mat-form-field>
                   <mat-label>Preferred Cuisine</mat-label>
                   <input matInput formControlName="preferredCuisine">
-                  <app-input-error [control]="formGroup.get('preferredCuisine')!"></app-input-error>
+                  <shared-ui-input-error [control]="formGroup.get('preferredCuisine')!"></shared-ui-input-error>
                 </mat-form-field>
 
                 <mat-form-field>
                   <mat-label>Who Cooks</mat-label>
                   <input matInput formControlName="whoCooks">
-                  <app-input-error [control]="formGroup.get('whoCooks')!"></app-input-error>
+                  <shared-ui-input-error [control]="formGroup.get('whoCooks')!"></shared-ui-input-error>
                 </mat-form-field>
 
                 <mat-form-field>
                   <mat-label>Hunger Peak</mat-label>
                   <input matInput formControlName="hungerPeak">
-                  <app-input-error [control]="formGroup.get('hungerPeak')!"></app-input-error>
+                  <shared-ui-input-error [control]="formGroup.get('hungerPeak')!"></shared-ui-input-error>
                 </mat-form-field>
 
                 <mat-form-field>
                   <mat-label>Food Dislikes</mat-label>
                   <input matInput formControlName="foodDislikes">
-                  <app-input-error [control]="formGroup.get('foodDislikes')!"></app-input-error>
+                  <shared-ui-input-error [control]="formGroup.get('foodDislikes')!"></shared-ui-input-error>
                 </mat-form-field>
 
                 <mat-form-field>
                   <mat-label>Other Food Preferences</mat-label>
                   <input matInput formControlName="otherFoodPreferences">
-                  <app-input-error [control]="formGroup.get('otherFoodPreferences')!"></app-input-error>
+                  <shared-ui-input-error [control]="formGroup.get('otherFoodPreferences')!"></shared-ui-input-error>
                 </mat-form-field>
               </div>
             </div>
@@ -579,7 +579,7 @@
                 <mat-form-field>
                   <mat-label>Do You Exercise</mat-label>
                   <input matInput formControlName="doYouExercise">
-                  <app-input-error [control]="formGroup.get('doYouExercise')!"></app-input-error>
+                  <shared-ui-input-error [control]="formGroup.get('doYouExercise')!"></shared-ui-input-error>
                 </mat-form-field>
 
                 <mat-form-field>
@@ -590,25 +590,25 @@
                       <mat-option [value]="option.id">{{ option.label }}</mat-option>
                     }
                   </mat-select>
-                  <app-input-error [control]="formGroup.get('typeOfExerciseId')!"></app-input-error>
+                  <shared-ui-input-error [control]="formGroup.get('typeOfExerciseId')!"></shared-ui-input-error>
                 </mat-form-field>
 
                 <mat-form-field>
                   <mat-label>Frequency</mat-label>
                   <input matInput formControlName="frequency">
-                  <app-input-error [control]="formGroup.get('frequency')!"></app-input-error>
+                  <shared-ui-input-error [control]="formGroup.get('frequency')!"></shared-ui-input-error>
                 </mat-form-field>
 
                 <mat-form-field>
                   <mat-label>Duration</mat-label>
                   <input matInput formControlName="duration">
-                  <app-input-error [control]="formGroup.get('duration')!"></app-input-error>
+                  <shared-ui-input-error [control]="formGroup.get('duration')!"></shared-ui-input-error>
                 </mat-form-field>
 
                 <mat-form-field>
                   <mat-label>Time</mat-label>
                   <input matInput formControlName="time">
-                  <app-input-error [control]="formGroup.get('time')!"></app-input-error>
+                  <shared-ui-input-error [control]="formGroup.get('time')!"></shared-ui-input-error>
                 </mat-form-field>
               </div>
             </div>
@@ -622,13 +622,13 @@
                 <mat-form-field>
                   <mat-label>Allergies</mat-label>
                   <input matInput formControlName="allergies">
-                  <app-input-error [control]="formGroup.get('allergies')!"></app-input-error>
+                  <shared-ui-input-error [control]="formGroup.get('allergies')!"></shared-ui-input-error>
                 </mat-form-field>
 
                 <mat-form-field>
                   <mat-label>Allergy Specify</mat-label>
                   <input matInput formControlName="allergySpecify">
-                  <app-input-error [control]="formGroup.get('allergySpecify')!"></app-input-error>
+                  <shared-ui-input-error [control]="formGroup.get('allergySpecify')!"></shared-ui-input-error>
                 </mat-form-field>
 
                 <mat-form-field>
@@ -639,67 +639,67 @@
                       <mat-option [value]="option.id">{{ option.label }}</mat-option>
                     }
                   </mat-select>
-                  <app-input-error [control]="formGroup.get('sleepingPatternId')!"></app-input-error>
+                  <shared-ui-input-error [control]="formGroup.get('sleepingPatternId')!"></shared-ui-input-error>
                 </mat-form-field>
 
                 <mat-form-field>
                   <mat-label>Sleep Duration</mat-label>
                   <input matInput formControlName="sleepDuration">
-                  <app-input-error [control]="formGroup.get('sleepDuration')!"></app-input-error>
+                  <shared-ui-input-error [control]="formGroup.get('sleepDuration')!"></shared-ui-input-error>
                 </mat-form-field>
 
                 <mat-form-field>
                   <mat-label>Gas</mat-label>
                   <input matInput formControlName="gas">
-                  <app-input-error [control]="formGroup.get('gas')!"></app-input-error>
+                  <shared-ui-input-error [control]="formGroup.get('gas')!"></shared-ui-input-error>
                 </mat-form-field>
 
                 <mat-form-field>
                   <mat-label>Hyper Acidity</mat-label>
                   <input matInput formControlName="hyperAcidity">
-                  <app-input-error [control]="formGroup.get('hyperAcidity')!"></app-input-error>
+                  <shared-ui-input-error [control]="formGroup.get('hyperAcidity')!"></shared-ui-input-error>
                 </mat-form-field>
 
                 <mat-form-field>
                   <mat-label>Constipation</mat-label>
                   <input matInput formControlName="constipation">
-                  <app-input-error [control]="formGroup.get('constipation')!"></app-input-error>
+                  <shared-ui-input-error [control]="formGroup.get('constipation')!"></shared-ui-input-error>
                 </mat-form-field>
 
                 <mat-form-field>
                   <mat-label>Periods</mat-label>
                   <input matInput formControlName="periods">
-                  <app-input-error [control]="formGroup.get('periods')!"></app-input-error>
+                  <shared-ui-input-error [control]="formGroup.get('periods')!"></shared-ui-input-error>
                 </mat-form-field>
 
                 <mat-form-field>
                   <mat-label>LMP</mat-label>
                   <input matInput formControlName="lmp">
-                  <app-input-error [control]="formGroup.get('lmp')!"></app-input-error>
+                  <shared-ui-input-error [control]="formGroup.get('lmp')!"></shared-ui-input-error>
                 </mat-form-field>
 
                 <mat-form-field>
                   <mat-label>Days Cycle</mat-label>
                   <input matInput formControlName="daysCycle">
-                  <app-input-error [control]="formGroup.get('daysCycle')!"></app-input-error>
+                  <shared-ui-input-error [control]="formGroup.get('daysCycle')!"></shared-ui-input-error>
                 </mat-form-field>
 
                 <mat-form-field>
                   <mat-label>Hair Fall</mat-label>
                   <input matInput formControlName="hairFall">
-                  <app-input-error [control]="formGroup.get('hairFall')!"></app-input-error>
+                  <shared-ui-input-error [control]="formGroup.get('hairFall')!"></shared-ui-input-error>
                 </mat-form-field>
 
                 <mat-form-field>
                   <mat-label>Knee Pain</mat-label>
                   <input matInput formControlName="kneePain">
-                  <app-input-error [control]="formGroup.get('kneePain')!"></app-input-error>
+                  <shared-ui-input-error [control]="formGroup.get('kneePain')!"></shared-ui-input-error>
                 </mat-form-field>
 
                 <mat-form-field>
                   <mat-label>Back Pain</mat-label>
                   <input matInput formControlName="backPain">
-                  <app-input-error [control]="formGroup.get('backPain')!"></app-input-error>
+                  <shared-ui-input-error [control]="formGroup.get('backPain')!"></shared-ui-input-error>
                 </mat-form-field>
 
                 <mat-form-field>
@@ -710,49 +710,49 @@
                       <mat-option [value]="option.id">{{ option.label }}</mat-option>
                     }
                   </mat-select>
-                  <app-input-error [control]="formGroup.get('bloodSugarId')!"></app-input-error>
+                  <shared-ui-input-error [control]="formGroup.get('bloodSugarId')!"></shared-ui-input-error>
                 </mat-form-field>
 
                 <mat-form-field>
                   <mat-label>Blood Sugar Value</mat-label>
                   <input matInput formControlName="bloodSugarValue">
-                  <app-input-error [control]="formGroup.get('bloodSugarValue')!"></app-input-error>
+                  <shared-ui-input-error [control]="formGroup.get('bloodSugarValue')!"></shared-ui-input-error>
                 </mat-form-field>
 
                 <mat-form-field>
                   <mat-label>Cholesterol</mat-label>
                   <input matInput formControlName="cholesterol">
-                  <app-input-error [control]="formGroup.get('cholesterol')!"></app-input-error>
+                  <shared-ui-input-error [control]="formGroup.get('cholesterol')!"></shared-ui-input-error>
                 </mat-form-field>
 
                 <mat-form-field>
                   <mat-label>Triglycerides</mat-label>
                   <input matInput formControlName="triglycerides">
-                  <app-input-error [control]="formGroup.get('triglycerides')!"></app-input-error>
+                  <shared-ui-input-error [control]="formGroup.get('triglycerides')!"></shared-ui-input-error>
                 </mat-form-field>
 
                 <mat-form-field>
                   <mat-label>HDL Cholesterol</mat-label>
                   <input matInput formControlName="hdlCholesterol">
-                  <app-input-error [control]="formGroup.get('hdlCholesterol')!"></app-input-error>
+                  <shared-ui-input-error [control]="formGroup.get('hdlCholesterol')!"></shared-ui-input-error>
                 </mat-form-field>
 
                 <mat-form-field>
                   <mat-label>LDL Cholesterol</mat-label>
                   <input matInput formControlName="ldlCholesterol">
-                  <app-input-error [control]="formGroup.get('ldlCholesterol')!"></app-input-error>
+                  <shared-ui-input-error [control]="formGroup.get('ldlCholesterol')!"></shared-ui-input-error>
                 </mat-form-field>
 
                 <mat-form-field>
                   <mat-label>VLDL Cholesterol</mat-label>
                   <input matInput formControlName="vldlCholesterol">
-                  <app-input-error [control]="formGroup.get('vldlCholesterol')!"></app-input-error>
+                  <shared-ui-input-error [control]="formGroup.get('vldlCholesterol')!"></shared-ui-input-error>
                 </mat-form-field>
 
                 <mat-form-field>
                   <mat-label>HG Level</mat-label>
                   <input matInput formControlName="hgLevel">
-                  <app-input-error [control]="formGroup.get('hgLevel')!"></app-input-error>
+                  <shared-ui-input-error [control]="formGroup.get('hgLevel')!"></shared-ui-input-error>
                 </mat-form-field>
 
                 <mat-form-field>
@@ -763,13 +763,13 @@
                       <mat-option [value]="option.id">{{ option.label }}</mat-option>
                     }
                   </mat-select>
-                  <app-input-error [control]="formGroup.get('urineOutputId')!"></app-input-error>
+                  <shared-ui-input-error [control]="formGroup.get('urineOutputId')!"></shared-ui-input-error>
                 </mat-form-field>
 
                 <mat-form-field>
                   <mat-label>Supplement Medicine</mat-label>
                   <input matInput formControlName="supplementMedicine">
-                  <app-input-error [control]="formGroup.get('supplementMedicine')!"></app-input-error>
+                  <shared-ui-input-error [control]="formGroup.get('supplementMedicine')!"></shared-ui-input-error>
                 </mat-form-field>
               </div>
             </div>
@@ -783,145 +783,145 @@
                 <mat-form-field>
                   <mat-label>Wakeup Timing</mat-label>
                   <input matInput formControlName="wakeupTiming">
-                  <app-input-error [control]="formGroup.get('wakeupTiming')!"></app-input-error>
+                  <shared-ui-input-error [control]="formGroup.get('wakeupTiming')!"></shared-ui-input-error>
                 </mat-form-field>
 
                 <mat-form-field>
                   <mat-label>Breakfast Menu</mat-label>
                   <input matInput formControlName="bfMenu">
-                  <app-input-error [control]="formGroup.get('bfMenu')!"></app-input-error>
+                  <shared-ui-input-error [control]="formGroup.get('bfMenu')!"></shared-ui-input-error>
                 </mat-form-field>
 
                 <mat-form-field>
                   <mat-label>Breakfast Time</mat-label>
                   <input matInput formControlName="bfTime">
-                  <app-input-error [control]="formGroup.get('bfTime')!"></app-input-error>
+                  <shared-ui-input-error [control]="formGroup.get('bfTime')!"></shared-ui-input-error>
                 </mat-form-field>
 
                 <mat-form-field>
                   <mat-label>Mid Morning Menu</mat-label>
                   <input matInput formControlName="mmMenu">
-                  <app-input-error [control]="formGroup.get('mmMenu')!"></app-input-error>
+                  <shared-ui-input-error [control]="formGroup.get('mmMenu')!"></shared-ui-input-error>
                 </mat-form-field>
 
                 <mat-form-field>
                   <mat-label>Mid Morning Time</mat-label>
                   <input matInput formControlName="mmTime">
-                  <app-input-error [control]="formGroup.get('mmTime')!"></app-input-error>
+                  <shared-ui-input-error [control]="formGroup.get('mmTime')!"></shared-ui-input-error>
                 </mat-form-field>
 
                 <mat-form-field>
                   <mat-label>Lunch Menu</mat-label>
                   <input matInput formControlName="lunchMenu">
-                  <app-input-error [control]="formGroup.get('lunchMenu')!"></app-input-error>
+                  <shared-ui-input-error [control]="formGroup.get('lunchMenu')!"></shared-ui-input-error>
                 </mat-form-field>
 
                 <mat-form-field>
                   <mat-label>Lunch Time</mat-label>
                   <input matInput formControlName="lunchTime">
-                  <app-input-error [control]="formGroup.get('lunchTime')!"></app-input-error>
+                  <shared-ui-input-error [control]="formGroup.get('lunchTime')!"></shared-ui-input-error>
                 </mat-form-field>
 
                 <mat-form-field>
                   <mat-label>Evening Menu</mat-label>
                   <input matInput formControlName="eveMenu">
-                  <app-input-error [control]="formGroup.get('eveMenu')!"></app-input-error>
+                  <shared-ui-input-error [control]="formGroup.get('eveMenu')!"></shared-ui-input-error>
                 </mat-form-field>
 
                 <mat-form-field>
                   <mat-label>Evening Time</mat-label>
                   <input matInput formControlName="eveTime">
-                  <app-input-error [control]="formGroup.get('eveTime')!"></app-input-error>
+                  <shared-ui-input-error [control]="formGroup.get('eveTime')!"></shared-ui-input-error>
                 </mat-form-field>
 
                 <mat-form-field>
                   <mat-label>Mid Evening Menu</mat-label>
                   <input matInput formControlName="midEveMenu">
-                  <app-input-error [control]="formGroup.get('midEveMenu')!"></app-input-error>
+                  <shared-ui-input-error [control]="formGroup.get('midEveMenu')!"></shared-ui-input-error>
                 </mat-form-field>
 
                 <mat-form-field>
                   <mat-label>Mid Evening Time</mat-label>
                   <input matInput formControlName="midEveTime">
-                  <app-input-error [control]="formGroup.get('midEveTime')!"></app-input-error>
+                  <shared-ui-input-error [control]="formGroup.get('midEveTime')!"></shared-ui-input-error>
                 </mat-form-field>
 
                 <mat-form-field>
                   <mat-label>Dinner Menu</mat-label>
                   <input matInput formControlName="dinnerMenu">
-                  <app-input-error [control]="formGroup.get('dinnerMenu')!"></app-input-error>
+                  <shared-ui-input-error [control]="formGroup.get('dinnerMenu')!"></shared-ui-input-error>
                 </mat-form-field>
 
                 <mat-form-field>
                   <mat-label>Dinner Time</mat-label>
                   <input matInput formControlName="dinnerTime">
-                  <app-input-error [control]="formGroup.get('dinnerTime')!"></app-input-error>
+                  <shared-ui-input-error [control]="formGroup.get('dinnerTime')!"></shared-ui-input-error>
                 </mat-form-field>
 
                 <mat-form-field>
                   <mat-label>Night Snacks</mat-label>
                   <input matInput formControlName="nightSnacks">
-                  <app-input-error [control]="formGroup.get('nightSnacks')!"></app-input-error>
+                  <shared-ui-input-error [control]="formGroup.get('nightSnacks')!"></shared-ui-input-error>
                 </mat-form-field>
 
                 <mat-form-field>
                   <mat-label>Bed Time</mat-label>
                   <input matInput formControlName="bedTime">
-                  <app-input-error [control]="formGroup.get('bedTime')!"></app-input-error>
+                  <shared-ui-input-error [control]="formGroup.get('bedTime')!"></shared-ui-input-error>
                 </mat-form-field>
 
                 <mat-form-field>
                   <mat-label>Fruits Frequency</mat-label>
                   <input matInput formControlName="fruitsFrequency">
-                  <app-input-error [control]="formGroup.get('fruitsFrequency')!"></app-input-error>
+                  <shared-ui-input-error [control]="formGroup.get('fruitsFrequency')!"></shared-ui-input-error>
                 </mat-form-field>
 
                 <mat-form-field>
                   <mat-label>Bread Amount</mat-label>
                   <input matInput formControlName="breadAmount">
-                  <app-input-error [control]="formGroup.get('breadAmount')!"></app-input-error>
+                  <shared-ui-input-error [control]="formGroup.get('breadAmount')!"></shared-ui-input-error>
                 </mat-form-field>
 
                 <mat-form-field>
                   <mat-label>Bread Frequency</mat-label>
                   <input matInput formControlName="breakFrequency">
-                  <app-input-error [control]="formGroup.get('breakFrequency')!"></app-input-error>
+                  <shared-ui-input-error [control]="formGroup.get('breakFrequency')!"></shared-ui-input-error>
                 </mat-form-field>
 
                 <mat-form-field>
                   <mat-label>Sweet Amount</mat-label>
                   <input matInput formControlName="sweetAmount">
-                  <app-input-error [control]="formGroup.get('sweetAmount')!"></app-input-error>
+                  <shared-ui-input-error [control]="formGroup.get('sweetAmount')!"></shared-ui-input-error>
                 </mat-form-field>
 
                 <mat-form-field>
                   <mat-label>Sweet Frequency</mat-label>
                   <input matInput formControlName="sweetFrequency">
-                  <app-input-error [control]="formGroup.get('sweetFrequency')!"></app-input-error>
+                  <shared-ui-input-error [control]="formGroup.get('sweetFrequency')!"></shared-ui-input-error>
                 </mat-form-field>
 
                 <mat-form-field>
                   <mat-label>Tea Amount</mat-label>
                   <input matInput formControlName="teaAmount">
-                  <app-input-error [control]="formGroup.get('teaAmount')!"></app-input-error>
+                  <shared-ui-input-error [control]="formGroup.get('teaAmount')!"></shared-ui-input-error>
                 </mat-form-field>
 
                 <mat-form-field>
                   <mat-label>Tea Frequency</mat-label>
                   <input matInput formControlName="teaFrequency">
-                  <app-input-error [control]="formGroup.get('teaFrequency')!"></app-input-error>
+                  <shared-ui-input-error [control]="formGroup.get('teaFrequency')!"></shared-ui-input-error>
                 </mat-form-field>
 
                 <mat-form-field class="full-width">
                   <mat-label>Remark</mat-label>
                   <textarea matInput formControlName="remark" rows="5"></textarea>
-                  <app-input-error [control]="formGroup.get('remark')!"></app-input-error>
+                  <shared-ui-input-error [control]="formGroup.get('remark')!"></shared-ui-input-error>
                 </mat-form-field>
 
                 <mat-form-field class="full-width">
                   <mat-label>Nutritionist Summary</mat-label>
                   <textarea matInput formControlName="nutritionistSummery" rows="5"></textarea>
-                  <app-input-error [control]="formGroup.get('nutritionistSummery')!"></app-input-error>
+                  <shared-ui-input-error [control]="formGroup.get('nutritionistSummery')!"></shared-ui-input-error>
                 </mat-form-field>
               </div>
             </div>

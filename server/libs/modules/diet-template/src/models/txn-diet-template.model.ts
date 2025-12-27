@@ -88,13 +88,6 @@ export class TxnDietTemplate extends Model<TxnDietTemplate> {
 
   @Column({
     allowNull: false,
-    field: 'is_weekly',
-    type: DataType.BOOLEAN,
-  })
-  declare isWeekly: boolean;
-
-  @Column({
-    allowNull: false,
     defaultValue: true,
     field: 'active',
     type: DataType.BOOLEAN,

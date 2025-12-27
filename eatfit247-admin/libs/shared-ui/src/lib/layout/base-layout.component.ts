@@ -29,7 +29,7 @@ interface MenuItem {
 }
 
 @Component({
-  selector: 'app-base-layout',
+  selector: 'shared-ui-base-layout',
   standalone: true,
   imports: [
     CommonModule,

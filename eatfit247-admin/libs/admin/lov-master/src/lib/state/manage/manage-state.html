@@ -18,7 +18,7 @@
           <mat-hint align="end">
             {{ formGroup.get('state')?.value?.length || 0 }}/50
           </mat-hint>
-          <app-input-error [control]="formGroup.get('state')" controlName="State"></app-input-error>
+          <shared-ui-input-error [control]="formGroup.get('state')" controlName="State"></shared-ui-input-error>
         </mat-form-field>
 
         <div class="row">
@@ -35,7 +35,7 @@
             <mat-hint align="end">
               {{ formGroup.get('code')?.value?.length || 0 }}/10
             </mat-hint>
-            <app-input-error [control]="formGroup.get('code')" controlName="Code"></app-input-error>
+            <shared-ui-input-error [control]="formGroup.get('code')" controlName="Code"></shared-ui-input-error>
           </mat-form-field>
 
           <mat-form-field appearance="outline" class="half-width">
@@ -46,7 +46,7 @@
                 <mat-option [value]="country.id">{{ country.label }}</mat-option>
               }
             </mat-select>
-            <app-input-error [control]="formGroup.get('countryId')" controlName="Country"></app-input-error>
+            <shared-ui-input-error [control]="formGroup.get('countryId')" controlName="Country"></shared-ui-input-error>
           </mat-form-field>
         </div>
 
@@ -56,7 +56,7 @@
             <mat-option [value]="true">Active</mat-option>
             <mat-option [value]="false">Inactive</mat-option>
           </mat-select>
-          <app-input-error [control]="formGroup.get('active')" controlName="Status"></app-input-error>
+          <shared-ui-input-error [control]="formGroup.get('active')" controlName="Status"></shared-ui-input-error>
         </mat-form-field>
 
       </div>
