@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { RecaptchaEnterpriseServiceClient } from '@google-cloud/recaptcha-enterprise';
 import { AppConfigService } from '../app-config';
-import { LogErrorService } from '../common/log-error.service';
+import { LogErrorService } from '../services/log-error.service';
 
 @Injectable()
 export class GoogleService {

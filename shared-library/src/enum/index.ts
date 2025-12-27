@@ -4,4 +4,5 @@ export * from "./media-for.enum";
 export * from "./label-key.enum";
 export * from "./config.enum";
 export * from "./banner-for.enum";
+export * from "./table.enum";
 

@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard, CurrentUser, RequestedIp, BasicSearchDto, UpdateActiveDto } from '@server/common';
-import { StateService } from '../../services';
+import { StateService } from '@server/common';
 import { CreateStateDto } from '../../dto';
 import { ITableList, IState, IDropdownItem, IResponse } from 'eatfit247-shared-lib';
 

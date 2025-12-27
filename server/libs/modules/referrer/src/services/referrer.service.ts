@@ -1,14 +1,23 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { MstReferrer } from '../models';
-import { ITableList, IBasicSearch, IReferrer, IManageReferrer, ConfigParam } from 'eatfit247-shared-lib';
-import { SearchUtil, CommonFunctionsUtil, AppConfigService } from '@server/common';
+import {
+  ITableList,
+  IBasicSearch,
+  IReferrer,
+  IManageReferrer,
+  ConfigParam,
+  TableEnum,
+  IManageAddress,
+} from 'eatfit247-shared-lib';
+import { SearchUtil, CommonFunctionsUtil, AppConfigService, AddressService } from '@server/common';
 
 @Injectable()
 export class ReferrerService {
   constructor(
     @InjectModel(MstReferrer) private readonly referrerRepository: typeof MstReferrer,
     private appConfigService: AppConfigService,
+    private addressService: AddressService,
   ) {}
 
   public async findAll(searchDto: IBasicSearch): Promise<ITableList<IReferrer>> {
@@ -48,12 +57,6 @@ export class ReferrerService {
       alternateEmailId: item.alternateEmailId,
       contactNumber: item.contactNumber,
       alternateContactNumber: item.alternateContactNumber,
-      postalAddress: item.postalAddress,
-      stateId: item.stateId,
-      state: item.state || '',
-      countryId: item.countryId,
-      country: item.country || '',
-      pinCode: item.pinCode,
       panNumber: item.panNumber,
       tanNumber: item.tanNumber,
       gstNumber: item.gstNumber,
@@ -82,7 +85,13 @@ export class ReferrerService {
     if (!find) {
       throw new NotFoundException('Referrer not found');
     }
-    return this.convertToModel(find);
+    const referrer = this.convertToModel(find);
+    // Fetch address data
+    const address = await this.addressService.findByTableIdAndPk(TableEnum.TXN_REFERRER, id);
+    if (address) {
+      referrer.address = address;
+    }
+    return referrer;
   }
 
   public async create(obj: IManageReferrer, cIp: string, adminId: number): Promise<void> {
@@ -90,16 +99,12 @@ export class ReferrerService {
       name: obj.name,
       companyName: obj.companyName || null,
       websiteLink: obj.websiteLink || null,
-      logo: (obj.logo && obj.logo.length > 0) ? JSON.stringify(obj.logo) : null,
+      logo: (obj.logo && obj.logo.length > 0) ? obj.logo : null,
       franchiseId: obj.franchiseId,
       emailId: obj.emailId,
       alternateEmailId: obj.alternateEmailId,
       contactNumber: obj.contactNumber,
       alternateContactNumber: obj.alternateContactNumber,
-      postalAddress: obj.postalAddress,
-      stateId: obj.stateId || null,
-      countryId: obj.countryId || null,
-      pinCode: obj.pinCode || null,
       panNumber: obj.panNumber || null,
       tanNumber: obj.tanNumber || null,
       gstNumber: obj.gstNumber || null,
@@ -111,7 +116,14 @@ export class ReferrerService {
       createdIp: cIp,
       modifiedIp: cIp,
     };
-    await this.referrerRepository.create(createObj);
+    const referrer = await this.referrerRepository.create(createObj);
+    // Create address if provided
+    if (obj.address) {
+      const addressData: IManageAddress = obj.address;
+      addressData.tableId = addressData.tableId || TableEnum.TXN_REFERRER;
+      addressData.pkOfTable = referrer.referrerId;
+      await this.addressService.createOrUpdate(addressData as IManageAddress, cIp, adminId);
+    }
   }
 
   public async update(id: number, obj: IManageReferrer, cIp: string, adminId: number): Promise<void> {
@@ -125,16 +137,12 @@ export class ReferrerService {
       name: obj.name,
       companyName: obj.companyName || null,
       websiteLink: obj.websiteLink || null,
-      logo: (obj.logo && obj.logo.length > 0) ? JSON.stringify(obj.logo) : null,
+      logo: obj.logo && obj.logo.length > 0 ? obj.logo : null,
       franchiseId: obj.franchiseId,
       emailId: obj.emailId,
       alternateEmailId: obj.alternateEmailId,
       contactNumber: obj.contactNumber,
       alternateContactNumber: obj.alternateContactNumber,
-      postalAddress: obj.postalAddress,
-      stateId: obj.stateId || null,
-      countryId: obj.countryId || null,
-      pinCode: obj.pinCode || null,
       panNumber: obj.panNumber || null,
       tanNumber: obj.tanNumber || null,
       gstNumber: obj.gstNumber || null,
@@ -145,6 +153,13 @@ export class ReferrerService {
       modifiedIp: cIp,
     };
     await this.referrerRepository.update(updateObj, { where: { referrerId: id } });
+    // Update address if provided
+    if (obj.address) {
+      const addressData: IManageAddress = { ...obj.address };
+      addressData.tableId = addressData.tableId || TableEnum.TXN_REFERRER;
+      addressData.pkOfTable = id;
+      await this.addressService.createOrUpdate(addressData as IManageAddress, cIp, adminId);
+    }
   }
 
   public async changeStatus(id: number, active: boolean, cIp: string, adminId: number): Promise<void> {

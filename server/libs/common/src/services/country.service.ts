@@ -1,8 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { MstCountry } from '../models';
 import { ITableList, IBasicSearch, ICountry, IManageCountry, IDropdownItem } from 'eatfit247-shared-lib';
 import { SearchUtil, CommonFunctionsUtil } from '@server/common';
+import { MstCountry } from '../models/mst-country.model';
 
 @Injectable()
 export class CountryService {
@@ -106,4 +106,3 @@ export class CountryService {
     });
   }
 }
-

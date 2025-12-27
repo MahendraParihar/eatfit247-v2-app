@@ -1,5 +1,5 @@
 import { Controller, Get, Query } from '@nestjs/common';
-import { StateService } from '../../services';
+import { StateService } from '@server/common';
 import { ITableList, IState } from 'eatfit247-shared-lib';
 import { BasicSearchDto } from '@server/common';
 

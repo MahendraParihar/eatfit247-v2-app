@@ -1,48 +1,218 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatSelectModule } from '@angular/material/select';
 import { MatCardModule } from '@angular/material/card';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
+import { InputErrorComponent, UploadFormComponent, ValidationUtil } from '@shared';
+import { FranchiseApiService } from '../api.service';
+import {
+  IFranchise,
+  InputLengthEnum,
+  IDropdownItem,
+  FileTypeEnum,
+  MediaForEnum
+} from '@eatfit247-shared-lib';
 
 @Component({
   selector: 'lib-manage-franchise',
   standalone: true,
-  imports: [CommonModule, MatButtonModule, MatIconModule, MatCardModule],
-  template: `
-    <mat-card class="form-card">
-      <mat-card-header>
-        <mat-card-title>{{ pageTitle }}</mat-card-title>
-      </mat-card-header>
-      <mat-card-content>
-        <p>Franchise manage component - Coming Soon</p>
-        <button mat-raised-button (click)="onCancel()">
-          <mat-icon>arrow_back</mat-icon>
-          Back
-        </button>
-      </mat-card-content>
-    </mat-card>
-  `,
-  styles: ['.form-card { margin: 20px; }']
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatButtonModule,
+    MatIconModule,
+    MatSelectModule,
+    MatCardModule,
+    MatCheckboxModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
+    InputErrorComponent,
+    UploadFormComponent
+  ],
+  templateUrl: './manage-franchise.html',
+  styleUrl: './manage-franchise.scss'
 })
-export class ManageFranchise implements OnInit {
-  pageTitle = 'Create Franchise';
+export class ManageFranchise implements OnInit, OnDestroy {
+  private fb: FormBuilder = inject(FormBuilder);
+  formGroup: FormGroup = this.fb.group({
+    firstName: [
+      '',
+      [
+        Validators.required,
+        Validators.minLength(InputLengthEnum.MIN_NAME),
+        Validators.maxLength(InputLengthEnum.CHAR_50)
+      ]
+    ],
+    lastName: [
+      '',
+      [
+        Validators.required,
+        Validators.minLength(InputLengthEnum.MIN_NAME),
+        Validators.maxLength(InputLengthEnum.CHAR_50)
+      ]
+    ],
+    companyName: [
+      '',
+      [
+        Validators.required,
+        Validators.minLength(InputLengthEnum.CHAR_2),
+        Validators.maxLength(InputLengthEnum.CHAR_100)
+      ]
+    ],
+    emailId: ['', [Validators.required, Validators.email, Validators.maxLength(InputLengthEnum.MAX_EMAIL)]],
+    alternateEmailId: ['', [Validators.required, Validators.email, Validators.maxLength(InputLengthEnum.MAX_EMAIL)]],
+    contactNumber: ['', [Validators.required, Validators.maxLength(InputLengthEnum.MAX_CONTACT_NUMBER)]],
+    alternateContactNumber: ['', [Validators.required, Validators.maxLength(InputLengthEnum.MAX_CONTACT_NUMBER)]],
+    panNumber: ['', [Validators.required, Validators.maxLength(InputLengthEnum.CHAR_20)]],
+    tanNumber: ['', [Validators.required, Validators.maxLength(InputLengthEnum.CHAR_20)]],
+    gstNumber: ['', [Validators.required, Validators.maxLength(InputLengthEnum.CHAR_50)]],
+    startDate: [new Date(), [Validators.required]],
+    endDate: [null],
+    isPrimary: [false, [Validators.required]],
+    active: [true, [Validators.required]]
+  });
+  initialData!: IFranchise;
   isEditMode = false;
+  pageTitle = 'Create Franchise';
+  mediaFor = 'franchise' as any; // Using string literal
+  mediaType = FileTypeEnum.IMAGE;
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private apiService = inject(FranchiseApiService);
 
-  constructor(
-    private router: Router,
-    private route: ActivatedRoute
-  ) {}
-
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
     const id = this.route.snapshot.paramMap.get('id');
+    await this.loadMasterData();
     if (id && id !== 'new') {
       this.isEditMode = true;
       this.pageTitle = 'Edit Franchise';
+      await this.loadData(+id);
+    } else {
+      this.pageTitle = 'Create Franchise';
+    }
+    this.patchFormValues();
+  }
+
+  private patchFormValues(): void {
+    if (this.initialData) {
+      const startDate = this.initialData.startDate
+        ? (typeof this.initialData.startDate === 'string' ? new Date(this.initialData.startDate) : new Date())
+        : new Date();
+      const endDate = this.initialData.endDate
+        ? (typeof this.initialData.endDate === 'string' ? new Date(this.initialData.endDate) : null)
+        : null;
+
+      this.formGroup.patchValue({
+        firstName: this.initialData.firstName || '',
+        lastName: this.initialData.lastName || '',
+        companyName: this.initialData.companyName || '',
+        emailId: this.initialData.emailId || '',
+        alternateEmailId: this.initialData.alternateEmailId || '',
+        contactNumber: this.initialData.contactNumber || '',
+        alternateContactNumber: this.initialData.alternateContactNumber || '',
+        panNumber: this.initialData.panNumber || '',
+        tanNumber: this.initialData.tanNumber || '',
+        gstNumber: this.initialData.gstNumber || '',
+        startDate: startDate,
+        endDate: endDate,
+        isPrimary: (this.initialData as any).isPrimary !== undefined ? (this.initialData as any).isPrimary : false,
+        active: this.initialData.active !== undefined ? this.initialData.active : true
+      });
+    }
+  }
+
+  async loadMasterData(): Promise<void> {
+    try {
+      // Master data loading if needed in future
+    } catch (error) {
+      console.error('Error loading master data:', error);
+    }
+  }
+
+  async loadData(id: number): Promise<void> {
+    try {
+      this.initialData = await this.apiService.getById(id);
+    } catch (error) {
+      console.error('Error loading franchise:', error);
+    }
+  }
+
+  getLogoPathList(): any[] {
+    if (!this.initialData || !(this.initialData as any).imagePath) {
+      return [];
+    }
+    const imagePath = (this.initialData as any).imagePath;
+    return Array.isArray(imagePath) ? imagePath : [];
+  }
+
+  getMaxLength(controlName: string): number | null {
+      const maxLengthMap: { [key: string]: number } = {
+      firstName: InputLengthEnum.CHAR_50,
+      lastName: InputLengthEnum.CHAR_50,
+      companyName: InputLengthEnum.CHAR_100,
+      emailId: InputLengthEnum.MAX_EMAIL,
+      alternateEmailId: InputLengthEnum.MAX_EMAIL,
+      contactNumber: InputLengthEnum.MAX_CONTACT_NUMBER,
+      alternateContactNumber: InputLengthEnum.MAX_CONTACT_NUMBER,
+      panNumber: InputLengthEnum.CHAR_20,
+      tanNumber: InputLengthEnum.CHAR_20,
+      gstNumber: InputLengthEnum.CHAR_50
+    };
+    return maxLengthMap[controlName] || null;
+  }
+
+  getCurrentLength(controlName: string): number {
+    const control = this.formGroup.get(controlName);
+    return control?.value?.length || 0;
+  }
+
+  async onSubmit(): Promise<void> {
+    ValidationUtil.validateAllFormFields(this.formGroup);
+    
+    if (this.formGroup.valid) {
+      const formValue: any = { ...this.formGroup.value };
+      
+      // Handle logo from upload form
+      const logoControl = this.formGroup.get('logo');
+      if (logoControl) {
+        const logoValue = logoControl.value;
+        if (Array.isArray(logoValue) && logoValue.length > 0) {
+          formValue.logo = logoValue;
+        } else {
+          formValue.logo = undefined;
+        }
+      } else {
+        formValue.logo = undefined;
+      }
+
+
+      if (this.isEditMode && this.initialData) {
+        const franchiseId = (this.initialData as any).franchiseId;
+        await this.apiService.update(franchiseId, formValue);
+      } else {
+        await this.apiService.create(formValue);
+      }
+      this.router.navigate(['/franchise']);
+    } else {
+      this.formGroup.markAllAsTouched();
     }
   }
 
   onCancel(): void {
     this.router.navigate(['/franchise']);
+  }
+
+  ngOnDestroy(): void {
+    // Component cleanup
   }
 }

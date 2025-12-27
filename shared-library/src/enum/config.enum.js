@@ -11,5 +11,6 @@ var ConfigParam;
     ConfigParam["IS_APP_AVAILABLE"] = "IS_APP_AVAILABLE";
     ConfigParam["TAX_PERCENTAGE"] = "TAX_PERCENTAGE";
     ConfigParam["DEFAULT_CURRENCY"] = "DEFAULT_CURRENCY";
+    ConfigParam["CLIENT_URL"] = "CLIENT_URL";
 })(ConfigParam || (exports.ConfigParam = ConfigParam = {}));
 //# sourceMappingURL=config.enum.js.map

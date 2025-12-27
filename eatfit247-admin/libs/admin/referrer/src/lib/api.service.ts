@@ -1,24 +1,30 @@
 import { Injectable } from '@angular/core';
 import { ApiBaseService, HttpService } from '@core';
-import { ITableList, IReferrer, IResponse } from '@eatfit247-shared-lib';
+import { ITableList, IReferrer, IResponse, IAddressMaster, IDropdownItem } from '@eatfit247-shared-lib';
 
 @Injectable({
-  providedIn: 'root',
+  providedIn: 'root'
 })
 export class ReferrerApiService extends ApiBaseService {
   private readonly endpoint = '/referrer';
+  private readonly franchiseEndpoint = '/franchise';
 
   constructor(httpService: HttpService) {
     super(httpService);
   }
 
   async getList(params?: any): Promise<ITableList<IReferrer>> {
-    const res = await this.httpService.get<IResponse<ITableList<IReferrer>>>(`${this.endpoint}/list`, { params });
+    const res = await this.httpService.get<IResponse<ITableList<IReferrer>>>(
+      `${this.endpoint}/list`,
+      { params }
+    );
     return res.data as ITableList<IReferrer>;
   }
 
   async getById(id: number): Promise<IReferrer> {
-    const res = await this.httpService.get<IResponse<IReferrer>>(`${this.endpoint}/manage/${id}`);
+    const res = await this.httpService.get<IResponse<IReferrer>>(
+      `${this.endpoint}/manage/${id}`
+    );
     return res.data as IReferrer;
   }
 
@@ -27,10 +33,21 @@ export class ReferrerApiService extends ApiBaseService {
   }
 
   async update(id: number, data: any): Promise<void> {
-    return await this.httpService.put<void>(`${this.endpoint}/manage/${id}`, data);
+    return await this.httpService.put<void>(
+      `${this.endpoint}/manage/${id}`,
+      data
+    );
   }
 
-  async updateStatus(id: number, isActive: boolean): Promise<void> {
-    return await this.httpService.patch<void>(`${this.endpoint}/update-status/${id}`, { isActive });
+  async updateStatus(id: number, active: boolean): Promise<void> {
+    return await this.httpService.patch<void>(
+      `${this.endpoint}/update-status/${id}`,
+      { active }
+    );
+  }
+
+  async getFranchiseDropdown(): Promise<IDropdownItem[]> {
+    const res = await this.httpService.get<IResponse<IDropdownItem[]>>(`${this.franchiseEndpoint}/dropdown`);
+    return res.data as IDropdownItem[];
   }
 }

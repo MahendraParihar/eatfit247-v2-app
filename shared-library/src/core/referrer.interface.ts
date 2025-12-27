@@ -1,5 +1,6 @@
 import { IBaseAdminUser } from "../base.interface";
 import { IMediaUpload } from "./media-upload.interface";
+import { IManageAddress } from "./location.interface";
 
 export interface IBaseReferrer {
   name: string;
@@ -11,15 +12,12 @@ export interface IBaseReferrer {
   alternateEmailId: string;
   contactNumber: string;
   alternateContactNumber: string;
-  postalAddress: string;
-  stateId?: number;
-  countryId?: number;
-  pinCode?: string;
   panNumber?: string;
   tanNumber?: string;
   gstNumber?: string;
   startDate?: Date;
   endDate?: Date;
+  address?: IManageAddress;
 }
 
 export interface IManageReferrer extends IBaseReferrer {
@@ -30,8 +28,6 @@ export interface IManageReferrer extends IBaseReferrer {
 export interface IReferrer extends IBaseReferrer {
   referrerId: number;
   franchise?: string;
-  state?: string;
-  country?: string;
   active: boolean;
   createdBy: number;
   updatedBy: number;

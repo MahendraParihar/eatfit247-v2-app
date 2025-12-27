@@ -18,12 +18,31 @@ export class AuthGuard implements CanActivate {
     private router: Router
   ) {}
 
-  canActivate(
+  async canActivate(
     route: ActivatedRouteSnapshot,
     state: RouterStateSnapshot
-  ): boolean {
+  ): Promise<boolean> {
+    // Check if already authenticated
     if (this.authService.isAuthenticated()) {
       return true;
+    }
+
+    // If not authenticated but user data exists (page refresh scenario),
+    // try to refresh token using refresh token cookie
+    const currentUser = this.authService.getCurrentUser();
+    if (currentUser) {
+      try {
+        // Attempt to refresh token - refresh token is in HttpOnly cookie
+        await this.authService.refreshToken();
+        // If refresh succeeds, user is authenticated
+        if (this.authService.isAuthenticated()) {
+          return true;
+        }
+      } catch (error) {
+        // Token refresh failed - user needs to login again
+        console.warn('Token refresh failed in AuthGuard:', error);
+        this.authService.logout();
+      }
     }
 
     // Redirect to login page with return URL

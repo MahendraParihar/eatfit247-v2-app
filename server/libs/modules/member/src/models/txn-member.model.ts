@@ -1,10 +1,12 @@
-import { BelongsTo, Column, CreatedAt, DataType, Index, Model, Scopes, Table, UpdatedAt } from 'sequelize-typescript';
-import { MstAdminUser, getCreatedByUserInclude, getUpdatedByUserInclude } from '@server/common';
+import { BelongsTo, Column, CreatedAt, DataType, Model, Scopes, Table, UpdatedAt } from 'sequelize-typescript';
+import {
+  MstAdminUser,
+  getCreatedByUserInclude,
+  getUpdatedByUserInclude,
+  MstFranchise,
+  MstCountry,
+} from '@server/common';
 import { InputLengthEnum } from 'eatfit247-shared-lib';
-// Using forward references to avoid circular dependencies
-import type { MstReferrer } from '../../../referrer/src/models/mst-referrer.model';
-import type { MstFranchise } from '../../../../common/src/models/mst-franchise.model';
-import type { MstCountry } from '../../../locations/src/models/mst-country.model';
 
 @Table({
   freezeTableName: true,
@@ -40,19 +42,13 @@ import type { MstCountry } from '../../../locations/src/models/mst-country.model
       getCreatedByUserInclude(false),
       getUpdatedByUserInclude(false),
       {
-        model: require('../../../referrer/src/models/mst-referrer.model').MstReferrer,
-        as: 'referrer',
-        required: false,
-        attributes: ['referrerId', 'name'],
-      },
-      {
-        model: require('../../../../common/src/models/mst-franchise.model').MstFranchise,
+        model: MstFranchise,
         as: 'franchise',
         required: false,
         attributes: ['franchiseId', 'companyName'],
       },
       {
-        model: require('../../../locations/src/models/mst-country.model').MstCountry,
+        model: MstCountry,
         as: 'country',
         required: false,
         attributes: ['countryId', 'country'],
@@ -70,19 +66,13 @@ import type { MstCountry } from '../../../locations/src/models/mst-country.model
       getCreatedByUserInclude(false),
       getUpdatedByUserInclude(false),
       {
-        model: require('../../../referrer/src/models/mst-referrer.model').MstReferrer,
-        as: 'referrer',
-        required: false,
-        attributes: ['referrerId', 'name'],
-      },
-      {
-        model: require('../../../../common/src/models/mst-franchise.model').MstFranchise,
+        model: MstFranchise,
         as: 'franchise',
         required: false,
         attributes: ['franchiseId', 'companyName'],
       },
       {
-        model: require('../../../locations/src/models/mst-country.model').MstCountry,
+        model: MstCountry,
         as: 'country',
         required: false,
         attributes: ['countryId', 'country'],
@@ -104,56 +94,48 @@ export class TxnMember extends Model<TxnMember> {
     autoIncrement: true,
   })
   declare memberId: number;
-
   @Column({
     allowNull: false,
     field: 'first_name',
     type: DataType.STRING(50),
   })
   declare firstName: string;
-
   @Column({
     allowNull: false,
     field: 'last_name',
     type: DataType.STRING(50),
   })
   declare lastName: string;
-
   @Column({
     allowNull: true,
     field: 'profile_picture',
     type: DataType.JSONB,
   })
   declare profilePicture: string;
-
   @Column({
     allowNull: false,
     field: 'password',
     type: DataType.TEXT,
   })
   declare password: string;
-
   @Column({
     allowNull: true,
     field: 'password_temp',
     type: DataType.TEXT,
   })
   declare passwordTemp: string;
-
   @Column({
     allowNull: false,
     field: 'country_code',
     type: DataType.STRING(5),
   })
   declare countryCode: string;
-
   @Column({
     allowNull: false,
     field: 'contact_number',
     type: DataType.STRING(16),
   })
   declare contactNumber: string;
-
   @Column({
     allowNull: false,
     field: 'email_id',
@@ -161,7 +143,6 @@ export class TxnMember extends Model<TxnMember> {
     type: DataType.STRING(100),
   })
   declare emailId: string;
-
   @Column({
     allowNull: false,
     defaultValue: false,
@@ -169,14 +150,6 @@ export class TxnMember extends Model<TxnMember> {
     type: DataType.BOOLEAN,
   })
   declare hasAnyPlan: boolean;
-
-  @BelongsTo(() => require('../../../referrer/src/models/mst-referrer.model').MstReferrer, {
-    foreignKey: 'referrerId',
-    targetKey: 'referrerId',
-    as: 'referrer',
-  })
-  declare referrer: any;
-
   @Column({
     allowNull: true,
     field: 'referrer_id',
@@ -184,48 +157,42 @@ export class TxnMember extends Model<TxnMember> {
   })
   declare referrerId: number;
 
-  @BelongsTo(() => require('../../../../common/src/models/mst-franchise.model').MstFranchise, {
+  @BelongsTo(() => MstFranchise, {
     foreignKey: 'franchiseId',
     targetKey: 'franchiseId',
     as: 'franchise',
   })
   declare franchise: any;
-
   @Column({
     allowNull: false,
     field: 'franchise_id',
     type: DataType.INTEGER,
   })
   declare franchiseId: number;
-
-  @BelongsTo(() => require('../../../locations/src/models/mst-country.model').MstCountry, {
+  @BelongsTo(() => MstCountry, {
     foreignKey: 'countryId',
     targetKey: 'countryId',
     as: 'country',
   })
   declare country: any;
-
   @Column({
     allowNull: false,
     field: 'country_id',
     type: DataType.INTEGER,
   })
   declare countryId: number;
-
   @BelongsTo(() => MstAdminUser, {
     foreignKey: 'nutritionistId',
     targetKey: 'adminId',
     as: 'nutritionist',
   })
   declare nutritionist: MstAdminUser;
-
   @Column({
     allowNull: true,
     field: 'nutritionist_id',
     type: DataType.INTEGER,
   })
   declare nutritionistId: number;
-
   @Column({
     allowNull: false,
     defaultValue: -1,
@@ -233,55 +200,54 @@ export class TxnMember extends Model<TxnMember> {
     type: DataType.INTEGER,
   })
   declare userStatusId: number;
-
   @Column({
     allowNull: true,
     field: 'deactivation_reason',
     type: DataType.STRING(1000),
   })
   declare deactivationReason: string;
-
-  @BelongsTo(() => MstAdminUser, { as: 'createdByUser', foreignKey: 'createdBy', targetKey: 'adminId' })
+  @BelongsTo(() => MstAdminUser, {
+    as: 'createdByUser',
+    foreignKey: 'createdBy',
+    targetKey: 'adminId',
+  })
   declare createdByUser: MstAdminUser;
-
-  @BelongsTo(() => MstAdminUser, { as: 'updatedByUser', foreignKey: 'modifiedBy', targetKey: 'adminId' })
+  @BelongsTo(() => MstAdminUser, {
+    as: 'updatedByUser',
+    foreignKey: 'modifiedBy',
+    targetKey: 'adminId',
+  })
   declare updatedByUser: MstAdminUser;
-
   @Column({
     allowNull: true,
     field: 'created_by',
     type: DataType.INTEGER,
   })
   declare createdBy: number;
-
   @CreatedAt
   @Column({
     allowNull: false,
     field: 'created_at',
   })
   declare createdAt: Date;
-
   @Column({
     allowNull: true,
     field: 'modified_by',
     type: DataType.INTEGER,
   })
   declare modifiedBy: number;
-
   @UpdatedAt
   @Column({
     allowNull: false,
     field: 'updated_at',
   })
   declare updatedAt: Date;
-
   @Column({
     allowNull: false,
     field: 'created_ip',
     type: DataType.STRING(InputLengthEnum.IP),
   })
   declare createdIp: string;
-
   @Column({
     allowNull: false,
     field: 'modified_ip',

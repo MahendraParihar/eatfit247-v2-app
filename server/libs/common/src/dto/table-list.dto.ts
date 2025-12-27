@@ -1,5 +1,5 @@
 import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
-import { ITableListFilter } from 'eatfit247-shared-lib';
+import { ITableListFilter } from '@eatfit247-shared-lib';
 
 export class TableListDto implements ITableListFilter {
   @IsNumber()

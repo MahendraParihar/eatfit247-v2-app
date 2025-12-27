@@ -1,6 +1,5 @@
 import { BelongsTo, Column, CreatedAt, DataType, Index, Model, Scopes, Table, UpdatedAt } from 'sequelize-typescript';
-import { UserStatusEnum } from '../../enum/user-status.enum';
-import { InputLengthEnum } from 'eatfit247-shared-lib';
+import { IMediaUpload, InputLengthEnum } from 'eatfit247-shared-lib';
 import { getCreatedByUserInclude, getUpdatedByUserInclude } from '../../utils/model-scopes.utils';
 import { MstFranchise } from '../mst-franchise.model';
 
@@ -78,7 +77,7 @@ export class MstAdminUser extends Model<MstAdminUser> {
     field: 'profile_picture',
     type: DataType.JSONB,
   })
-  declare profilePicture: string;
+  declare profilePicture: IMediaUpload[];
   @Column({
     allowNull: false,
     field: 'password',
@@ -144,11 +143,11 @@ export class MstAdminUser extends Model<MstAdminUser> {
   declare franchiseId: number;
   @Column({
     allowNull: false,
-    field: 'admin_user_status_id',
-    type: DataType.INTEGER,
-    defaultValue: UserStatusEnum.VERIFICATION_PENDING,
+    field: 'active',
+    type: DataType.BOOLEAN,
+    defaultValue: true,
   })
-  declare adminUserStatusId: number;
+  declare active: boolean;
   @Column({
     allowNull: true,
     field: 'deactivation_reason',

@@ -30,7 +30,9 @@ import {
   IRecipeType,
   ICountry,
   IIssueCategory,
-  IIssueStatus
+  IIssueStatus,
+  IAddressType,
+  IManageAddressType
 } from '@eatfit247-shared-lib';
 
 @Injectable({
@@ -1111,6 +1113,50 @@ export class LovMasterApiService extends ApiBaseService {
     const res = await this.httpService.get<IResponse<IDropdownItem[]>>(
       `${this.baseEndpoint}/state/dropdown`,
       { params }
+    );
+    return res.data as IDropdownItem[];
+  }
+
+  // Address Type
+  async getAddressTypeList(params?: any): Promise<ITableList<IAddressType>> {
+    const res = await this.httpService.get<IResponse<ITableList<IAddressType>>>(
+      `${this.baseEndpoint}/address-type/list`,
+      { params }
+    );
+    return res.data as ITableList<IAddressType>;
+  }
+
+  async getAddressTypeById(id: number): Promise<IAddressType> {
+    const res = await this.httpService.get<IResponse<IAddressType>>(
+      `${this.baseEndpoint}/address-type/manage/${id}`
+    );
+    return res.data as IAddressType;
+  }
+
+  async createAddressType(data: IManageAddressType): Promise<void> {
+    return await this.httpService.post<void>(
+      `${this.baseEndpoint}/address-type/manage`,
+      data
+    );
+  }
+
+  async updateAddressType(id: number, data: IManageAddressType): Promise<void> {
+    return await this.httpService.put<void>(
+      `${this.baseEndpoint}/address-type/manage/${id}`,
+      data
+    );
+  }
+
+  async updateAddressTypeStatus(id: number, active: boolean): Promise<void> {
+    return await this.httpService.patch<void>(
+      `${this.baseEndpoint}/address-type/update-status/${id}`,
+      { active }
+    );
+  }
+
+  async getAddressTypeDropdown(): Promise<IDropdownItem[]> {
+    const res = await this.httpService.get<IResponse<IDropdownItem[]>>(
+      `${this.baseEndpoint}/address-type/dropdown`
     );
     return res.data as IDropdownItem[];
   }

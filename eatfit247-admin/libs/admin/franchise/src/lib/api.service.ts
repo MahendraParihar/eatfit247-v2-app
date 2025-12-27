@@ -30,12 +30,7 @@ export class FranchiseApiService extends ApiBaseService {
     return await this.httpService.put<void>(`${this.endpoint}/manage/${id}`, data);
   }
 
-  async updateStatus(id: number, isActive: boolean): Promise<void> {
-    return await this.httpService.patch<void>(`${this.endpoint}/update-status/${id}`, { isActive });
-  }
-
-  async getDropdown(): Promise<{ franchise: IDropdownItem[] }> {
-    const res = await this.httpService.get<IResponse<{ franchise: IDropdownItem[] }>>(`${this.endpoint}/dropdown`);
-    return res.data as { franchise: IDropdownItem[] };
+  async updateStatus(id: number, active: boolean): Promise<void> {
+    return await this.httpService.patch<void>(`${this.endpoint}/update-status/${id}`, { active });
   }
 }

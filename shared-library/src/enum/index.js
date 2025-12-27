@@ -19,4 +19,5 @@ __exportStar(require("./file-type.enum"), exports);
 __exportStar(require("./media-for.enum"), exports);
 __exportStar(require("./label-key.enum"), exports);
 __exportStar(require("./config.enum"), exports);
+__exportStar(require("./banner-for.enum"), exports);
 //# sourceMappingURL=index.js.map

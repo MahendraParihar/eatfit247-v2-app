@@ -50,11 +50,8 @@ export class FranchiseController {
   }
 
   @Get('dropdown')
-  async getDropdown(): Promise<{ franchise: IDropdownItem[] }> {
-    const franchises = await this.service.getFranchiseList();
-    return {
-      franchise: franchises,
-    };
+  async getDropdown(): Promise<IDropdownItem[]> {
+    return await this.service.getFranchiseList();
   }
 }
 

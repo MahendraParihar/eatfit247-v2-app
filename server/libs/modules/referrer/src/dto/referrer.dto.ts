@@ -12,7 +12,7 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { InputLengthEnum, IManageReferrer } from 'eatfit247-shared-lib';
-import { MediaUploadDto } from '@server/common';
+import { CreateAddressDto, MediaUploadDto } from '@server/common';
 
 export class CreateReferrerDto implements IManageReferrer {
   @MinLength(InputLengthEnum.CHAR_2)
@@ -42,18 +42,6 @@ export class CreateReferrerDto implements IManageReferrer {
   @IsNotEmpty()
   @MaxLength(InputLengthEnum.MAX_CONTACT_NUMBER)
   alternateContactNumber: string;
-  @IsNotEmpty()
-  @MaxLength(InputLengthEnum.CHAR_100)
-  postalAddress: string;
-  @IsOptional()
-  @IsNumber()
-  stateId?: number;
-  @IsOptional()
-  @IsNumber()
-  countryId?: number;
-  @IsOptional()
-  @MaxLength(InputLengthEnum.PIN_CODE)
-  pinCode?: string;
   @IsOptional()
   @MaxLength(InputLengthEnum.CHAR_20)
   panNumber?: string;
@@ -78,9 +66,13 @@ export class CreateReferrerDto implements IManageReferrer {
   @ValidateNested({ each: true })
   @Type(() => MediaUploadDto)
   logo?: MediaUploadDto[];
-
   @IsOptional()
   @IsNumber()
   referrerId?: number;
+  
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => CreateAddressDto)
+  address?: CreateAddressDto;
 }
 

@@ -4,7 +4,6 @@ import { IAuthUser } from 'eatfit247-shared-lib';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { Env } from '../utils/env.values';
 import { AdminUserService } from './admin-user.service';
-import { UserStatusEnum } from '../enum/user-status.enum';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -21,7 +20,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     if (!adminUser) {
       throw new UnauthorizedException('You are not authorized to perform the operation');
     }
-    if (adminUser.adminUserStatusId !== UserStatusEnum.ACTIVE) {
+    if (!adminUser.active) {
       throw new UnauthorizedException('Account is not active');
     }
     return <IAuthUser>{

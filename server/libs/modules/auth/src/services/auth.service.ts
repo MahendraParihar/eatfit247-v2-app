@@ -11,7 +11,6 @@ import {
   ILogin, IToken, IChangePassword, IForgotPasswordRequest, IAuthUser,
 } from 'eatfit247-shared-lib';
 import { CryptoUtil, Env } from '@server/common';
-import { UserStatusEnum } from '@server/common';
 import { randomBytes } from 'node:crypto';
 import moment from 'moment';
 
@@ -30,7 +29,7 @@ export class AuthService {
 
   async findById(id: number): Promise<IAuthUser | null> {
     const user = await this.adminRepository.findOne({ where: [{ adminId: id }] });
-    if (!user || user.adminUserStatusId !== UserStatusEnum.ACTIVE) return null;
+    if (!user || !user.active) return null;
     return <IAuthUser>{
       adminUserId: user.adminId,
       adminId: user.adminId,
@@ -52,10 +51,7 @@ export class AuthService {
       throw new UnauthorizedException('Invalid email or password');
     }
     // Check account status
-    if (user.adminUserStatusId === UserStatusEnum.VERIFICATION_PENDING) {
-      throw new UnauthorizedException('Account not verified. Please verify your account first.');
-    }
-    if (user.adminUserStatusId === UserStatusEnum.IN_ACTIVE) {
+    if (!user.active) {
       throw new UnauthorizedException(user.deactivationReason || 'Account is inactive');
     }
     // Verify password
@@ -119,7 +115,7 @@ export class AuthService {
       const payload = this.jwtService.verify(refreshToken, { secret: Env.jwtRefreshSecret });
       // Verify the user still exists and is active
       const user = await this.findOneById(payload.adminUserId);
-      if (!user || user.adminUserStatusId !== UserStatusEnum.ACTIVE) {
+      if (!user || !user.active) {
         throw new UnauthorizedException('User account is not active');
       }
       // Token Rotation: Revoke old refresh token
@@ -189,10 +185,7 @@ export class AuthService {
     if (!user) {
       throw new NotFoundException('Account not found');
     }
-    if (user.adminUserStatusId === UserStatusEnum.VERIFICATION_PENDING) {
-      throw new BadRequestException('Account not verified. Please verify your account first.');
-    }
-    if (user.adminUserStatusId === UserStatusEnum.IN_ACTIVE) {
+    if (!user.active) {
       throw new BadRequestException(user.deactivationReason || 'Account is inactive');
     }
     // Generate new OTP

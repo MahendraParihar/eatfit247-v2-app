@@ -1,4 +1,4 @@
-import { IBaseAdminUser } from "../base.interface";
+import { IBaseAdminUser, IDropdownItem } from "../base.interface";
 
 export interface IBaseCountry {
   country: string;
@@ -45,3 +45,35 @@ export interface IState extends IBaseState {
   updatedByUser?: IBaseAdminUser;
 }
 
+export interface IAddressBasic {
+  addressName?: string;
+  postalAddress: string;
+  cityVillage?: string;
+  countryId: number;
+  stateId: number;
+  pinCode?: string;
+  addressTypeId: number;
+  latitude?: number;
+  longitude?: number;
+}
+
+export interface IManageAddress extends IAddressBasic {
+  addressId?: number;
+  tableId?: number;
+  pkOfTable?: number;
+}
+
+export interface IAddress extends IManageAddress {
+  addressId: number;
+  addressType: string;
+  state: string;
+  country: string;
+  createdByUser?: IBaseAdminUser;
+  updatedByUser?: IBaseAdminUser;
+}
+
+export interface IAddressMaster {
+  state: IDropdownItem[];
+  country: IDropdownItem[];
+  addressType: IDropdownItem[];
+}

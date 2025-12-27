@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { ApiBaseService, HttpService } from '@core';
-import { ITableList, IAdminUser, IDropdownItem, IResponse } from '@eatfit247-shared-lib';
+import { ITableList, IAdminUser, IDropdownItem, IResponse, IManageAdminUser } from '@eatfit247-shared-lib';
 
 @Injectable({
   providedIn: 'root',
@@ -22,20 +22,25 @@ export class AdminUserApiService extends ApiBaseService {
     return res.data as IAdminUser;
   }
 
-  async create(data: any): Promise<void> {
+  async create(data: IManageAdminUser): Promise<void> {
     return await this.httpService.post<void>(`${this.endpoint}/manage`, data);
   }
 
-  async update(id: number, data: any): Promise<void> {
+  async update(id: number, data: IManageAdminUser): Promise<void> {
     return await this.httpService.put<void>(`${this.endpoint}/manage/${id}`, data);
   }
 
-  async updateStatus(id: number, isActive: boolean): Promise<void> {
-    return await this.httpService.patch<void>(`${this.endpoint}/update-status/${id}`, { isActive });
+  async updateStatus(id: number, active: boolean): Promise<void> {
+    return await this.httpService.patch<void>(`${this.endpoint}/update-status/${id}`, { active });
   }
 
   async getDropdown(): Promise<IDropdownItem[]> {
     const res = await this.httpService.get<IResponse<IDropdownItem[]>>(`${this.endpoint}/dropdown`);
+    return res.data as IDropdownItem[];
+  }
+
+  async getFranchiseDropdown(): Promise<IDropdownItem[]> {
+    const res = await this.httpService.get<IResponse<IDropdownItem[]>>('/franchise/dropdown');
     return res.data as IDropdownItem[];
   }
 }

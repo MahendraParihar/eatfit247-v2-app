@@ -1,8 +1,8 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { MstAdminUser } from '../models';
-import { ITableList, IBasicSearch, IAdminUser, IManageAdminUser, ConfigParam } from 'eatfit247-shared-lib';
-import { SearchUtil, CommonFunctionsUtil, CryptoUtil, generateRandomPassword, AppConfigService } from '@server/common';
+import { ITableList, IBasicSearch, IAdminUser, IManageAdminUser, ConfigParam, TableEnum, IManageAddress } from 'eatfit247-shared-lib';
+import { SearchUtil, CommonFunctionsUtil, CryptoUtil, generateRandomPassword, AppConfigService, AddressService } from '@server/common';
 import { Op } from 'sequelize';
 import { MstAdminRolePermission } from '../models/mst-admin-role-permission.model';
 
@@ -12,6 +12,7 @@ export class AdminUserService {
     @InjectModel(MstAdminUser) private readonly adminUserRepository: typeof MstAdminUser,
     @InjectModel(MstAdminRolePermission) private readonly rolePermissionRepository: typeof MstAdminRolePermission,
     private appConfigService: AppConfigService,
+    private addressService: AddressService,
   ) {}
 
   public async findAll(searchDto: IBasicSearch): Promise<ITableList<IAdminUser>> {
@@ -47,7 +48,7 @@ export class AdminUserService {
       nest: true,
     });
 
-    const resList: IAdminUser[] = rows.map((item: any) => {return this.convertToModel(item);});
+    const resList: IAdminUser[] = rows.map((item: MstAdminUser) => {return this.convertToModel(item);});
     return { tableData: resList, count: count };
   }
 
@@ -66,7 +67,7 @@ export class AdminUserService {
       endDate: item.endDate,
       franchiseId: item.franchiseId,
       franchise: item.franchise?.companyName || '',
-      adminUserStatusId: item.adminUserStatusId,
+      active: item.active !== undefined ? item.active : true,
       deactivationReason: item.deactivationReason,
       verificationCode: item.verificationCode,
       createdBy: item.createdBy,
@@ -91,7 +92,13 @@ export class AdminUserService {
     if (!find) {
       throw new NotFoundException('Admin user not found');
     }
-    return this.convertToModel(find);
+    const adminUser = this.convertToModel(find);
+    // Fetch address data
+    const address = await this.addressService.findByTableIdAndPk(TableEnum.TXN_ADMIN, id);
+    if (address) {
+      adminUser.address = address;
+    }
+    return adminUser;
   }
 
   public async create(obj: IManageAdminUser, cIp: string, adminId: number): Promise<void> {
@@ -103,7 +110,7 @@ export class AdminUserService {
       throw new BadRequestException('Email already exists');
     }
 
-    // Check if contact number already exists
+    // Check if a contact number already exists
     const existingContact = await this.adminUserRepository.findOne({
       where: { contactNumber: obj.contactNumber },
     });
@@ -124,17 +131,16 @@ export class AdminUserService {
     const createObj = {
       firstName: obj.firstName,
       lastName: obj.lastName,
-      profilePicture: (obj.profilePicture && obj.profilePicture.length > 0) ? JSON.stringify(obj.profilePicture) : null,
+      profilePicture: (obj.profilePicture && obj.profilePicture.length > 0) ? obj.profilePicture : null,
       password: hashedPassword,
       passwordTemp: hashedPassword,
       countryCode: obj.countryCode,
       contactNumber: obj.contactNumber,
       emailId: obj.emailId,
-      addressId: obj.addressId || null,
       startDate: obj.startDate,
       endDate: obj.endDate || null,
       franchiseId: obj.franchiseId || null,
-      adminUserStatusId: obj.adminUserStatusId,
+      active: obj.active !== undefined ? obj.active : true,
       deactivationReason: obj.deactivationReason || null,
       verificationCode: obj.verificationCode || null,
       createdBy: adminId,
@@ -144,6 +150,14 @@ export class AdminUserService {
     };
     
     const newAdminUser = await this.adminUserRepository.create(createObj);
+
+    // Create address if provided
+    if (obj.address) {
+      const addressData: IManageAddress = obj.address;
+      addressData.tableId = addressData.tableId || TableEnum.TXN_ADMIN;
+      addressData.pkOfTable = newAdminUser.adminId;
+      await this.addressService.createOrUpdate(addressData, cIp, adminId);
+    }
 
     // Create role permissions if provided
     if (obj.roleIds && obj.roleIds.length > 0) {
@@ -192,11 +206,10 @@ export class AdminUserService {
       countryCode: obj.countryCode,
       contactNumber: obj.contactNumber,
       emailId: obj.emailId,
-      addressId: obj.addressId || null,
       startDate: obj.startDate,
       endDate: obj.endDate || null,
       franchiseId: obj.franchiseId || null,
-      adminUserStatusId: obj.adminUserStatusId,
+      active: obj.active !== undefined ? obj.active : true,
       deactivationReason: obj.deactivationReason || null,
       verificationCode: obj.verificationCode || null,
       modifiedBy: adminId,
@@ -212,10 +225,18 @@ export class AdminUserService {
 
     // Update profile picture if provided
     if (obj.profilePicture && obj.profilePicture.length > 0) {
-      updateObj.profilePicture = JSON.stringify(obj.profilePicture);
+      updateObj.profilePicture = obj.profilePicture;
     }
 
     await this.adminUserRepository.update(updateObj, { where: { adminId: id } });
+
+    // Update address if provided
+    if (obj.address) {
+      const addressData: IManageAddress = obj.address;
+      addressData.tableId = addressData.tableId || TableEnum.TXN_ADMIN;
+      addressData.pkOfTable = id;
+      await this.addressService.createOrUpdate(addressData, cIp, adminId);
+    }
 
     // Update role permissions if provided
     if (obj.roleIds !== undefined) {
@@ -238,13 +259,13 @@ export class AdminUserService {
     }
   }
 
-  public async changeStatus(id: number, adminUserStatusId: number, deactivationReason: string | null, cIp: string, adminId: number): Promise<void> {
+  public async changeStatus(id: number, active: boolean, deactivationReason: string | null, cIp: string, adminId: number): Promise<void> {
     const find = await this.adminUserRepository.findOne({ where: { adminId: id } });
     if (!find) {
       throw new NotFoundException('Admin user not found');
     }
-    const updateObj: any = {
-      adminUserStatusId: adminUserStatusId,
+    const updateObj: { active: boolean; modifiedBy: number; modifiedIp: string; deactivationReason?: string } = {
+      active: active,
       modifiedBy: adminId,
       modifiedIp: cIp,
     };

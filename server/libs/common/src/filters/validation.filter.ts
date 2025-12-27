@@ -1,6 +1,6 @@
 import { ArgumentsHost, Catch, ExceptionFilter, HttpException, HttpStatus } from '@nestjs/common';
 import { ValidationException } from './validation.exception';
-import { LogErrorService } from '../common/log-error.service';
+import { LogErrorService } from '../services/log-error.service';
 import { ModuleRef } from '@nestjs/core';
 
 @Catch(ValidationException)

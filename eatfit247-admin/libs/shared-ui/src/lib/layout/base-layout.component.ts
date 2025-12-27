@@ -262,6 +262,11 @@ export class BaseLayoutComponent implements OnInit, OnDestroy {
           icon: 'map',
           route: '/lov-master/state',
         },
+        {
+          label: 'Address Type',
+          icon: 'location_on',
+          route: '/lov-master/address-type',
+        },
       ],
     },
   ];

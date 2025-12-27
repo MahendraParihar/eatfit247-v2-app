@@ -1,38 +1,32 @@
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
-import { MstAdminUser, modelRegistry } from '@server/common';
-import { MstCountry, MstState } from './models';
+import { MstState } from '@server/common';
 import {
   CountryController,
   StateController,
+  AddressTypeController,
   PublicCountryController,
-  PublicStateController,
+  PublicStateController, AddressController,
 } from './controllers';
-import {
-  CountryService,
-  StateService,
-} from './services';
-
-// Register models with the model registry
-modelRegistry.register([MstCountry, MstState]);
 
 @Module({
   imports: [
-    SequelizeModule.forFeature([MstCountry, MstState]),
+    SequelizeModule.forFeature([]),
   ],
   controllers: [
     CountryController,
     StateController,
+    AddressController,
+    AddressTypeController,
     PublicCountryController,
     PublicStateController,
   ],
   providers: [
-    CountryService,
-    StateService,
+    // Services are now provided by CommonModule (global)
+    // No need to provide them here, they're imported via CommonModule
   ],
   exports: [
-    CountryService,
-    StateService,
+    // Services are exported by CommonModule, no need to re-export
     SequelizeModule,
   ],
 })

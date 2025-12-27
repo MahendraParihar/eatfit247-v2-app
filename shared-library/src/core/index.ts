@@ -18,6 +18,7 @@ export * from './pocket-guide.interface';
 export * from './call-log.interface';
 export * from './assessment-master.interface';
 export * from './location.interface';
+export * from './address-type.interface';
 export * from './member.interface';
 export * from './admin-user.interface';
 export * from './email-template.interface';

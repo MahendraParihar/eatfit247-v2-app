@@ -4,14 +4,14 @@ import {
   IsEmail,
   IsNotEmpty,
   IsNumber,
-  IsOptional,
+  IsOptional, IsString,
   MaxLength,
   MinLength,
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { InputLengthEnum, IManageAdminUser } from 'eatfit247-shared-lib';
-import { MediaUploadDto } from '@server/common';
+import { MediaUploadDto, CreateAddressDto } from '@server/common';
 
 export class CreateAdminUserDto implements IManageAdminUser {
   @MinLength(InputLengthEnum.MIN_NAME)
@@ -52,8 +52,8 @@ export class CreateAdminUserDto implements IManageAdminUser {
   @IsNumber()
   franchiseId?: number;
   @IsNotEmpty()
-  @IsNumber()
-  adminUserStatusId: number;
+  @IsBoolean()
+  active: boolean;
   @IsOptional()
   @MaxLength(InputLengthEnum.CHAR_1000)
   deactivationReason?: string;
@@ -62,7 +62,15 @@ export class CreateAdminUserDto implements IManageAdminUser {
   @IsOptional()
   @IsNumber({}, { each: true })
   roleIds?: number[];
+  @IsOptional()
+  @IsNumber()
   adminId?: number;
+  @IsOptional()
+  @IsString()
   verificationCode?: string;
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => CreateAddressDto)
+  address?: CreateAddressDto;
 }
 

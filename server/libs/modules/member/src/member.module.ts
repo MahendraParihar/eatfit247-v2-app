@@ -1,10 +1,9 @@
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
-import { MstAdminUser, modelRegistry } from '@server/common';
+import { MstAdminUser, modelRegistry, MstCountry } from '@server/common';
 import { TxnMember } from './models';
-import { MstReferrer } from '../../referrer/src/models/mst-referrer.model';
-import { MstFranchise } from '../../../common/src/models/mst-franchise.model';
-import { MstCountry } from '../../locations/src/models/mst-country.model';
+import { MstReferrer } from '../../referrer';
+import { MstFranchise } from '@server/common';
 import {
   MemberController,
   PublicMemberController,
@@ -12,7 +11,6 @@ import {
 import {
   MemberService,
 } from './services';
-
 // Register models with the model registry
 modelRegistry.register([TxnMember]);
 

@@ -39,6 +39,7 @@ export class AuthService extends ApiBaseService {
     if (user) {
       this.currentUserSubject.next(user);
     }
+    // Note: Token refresh on app init is handled by AuthGuard to avoid circular dependency
   }
 
   /**

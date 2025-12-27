@@ -215,3 +215,21 @@ alter table public.mst_program_plans
 
 alter table public.mst_program_plans
     drop column tags;
+
+alter table public.mst_referrers
+    drop column postal_address;
+
+alter table public.mst_referrers
+    drop column state_id;
+
+alter table public.mst_referrers
+    drop column country_id;
+
+alter table public.mst_referrers
+    drop column pin_code;
+
+alter table public.mst_admin_users
+    drop column admin_user_status_id;
+
+alter table public.mst_admin_users
+    add active boolean default true not null;

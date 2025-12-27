@@ -42,11 +42,11 @@ export class AdminUserController {
   @Patch('update-status/:id')
   async changeStatus(
     @Param('id') id: number,
-    @Body() body: { adminUserStatusId: number; deactivationReason?: string },
+    @Body() body: { active: boolean; deactivationReason?: string },
     @CurrentUser() currentUser: any,
     @RequestedIp() requestedIp: string,
   ): Promise<void> {
-    await this.service.changeStatus(id, body.adminUserStatusId, body.deactivationReason || null, requestedIp, currentUser.userId || currentUser.adminId);
+    await this.service.changeStatus(id, body.active, body.deactivationReason || null, requestedIp, currentUser.userId || currentUser.adminId);
   }
 }
 

@@ -15,26 +15,31 @@ import { HealthController } from './health/health.controller';
 import { AppConfigModule } from './app-config';
 import { AppConfigModel } from './models/app-config.model';
 import { LabelModule } from './label';
-import { LabelModel } from './models/label.model';
-import { LogErrorService } from './common/log-error.service';
-import { LogErrorModel } from './models/log-error.model';
+import { LabelModel } from './models';
+import { LogErrorService } from './services';
+import { LogErrorModel } from './models';
 import { GoogleService } from './third-party-services';
 import {
   MstAdminUser,
   TxnAdminLastLoginDetail,
   TxnAdminRefreshToken,
   TxnAdminPasswordResetToken,
-} from './models/admin';
-import { MstAdminRole } from './models/admin';
-import { MstFranchise } from './models/mst-franchise.model';
+} from './models';
+import { MstAdminRole } from './models';
+import { MstFranchise } from './models';
 import { AdminUserService } from './auth/admin-user.service';
 import * as jwt from 'jsonwebtoken';
-import { MstEmailTemplate } from './models/mst-email-template.model';
-import { EmailNotificationService } from './common/email-notification.service';
+import { MstEmailTemplate } from './models';
+import { EmailNotificationService } from './services';
 import { modelRegistry } from './models/model-registry';
 import { FileUploadController } from './file-upload';
-import { MstCurrencyModel } from './models/mst-currencies.model';
-import { CurrencyService } from './common/currency.service';
+import { MstCurrencyModel } from './models';
+import { CurrencyService } from './services';
+import { StateService } from './services';
+import { CountryService } from './services';
+import { AddressService } from './services';
+import { AddressTypeService } from './services';
+import { MstCountry, MstState, MstAddressType, TxnAddress } from './models';
 
 export class CommonModule {
   static forRoot(configModules: string[] = []): DynamicModule {
@@ -48,11 +53,15 @@ export class CommonModule {
       MstAdminRole, // Used in MstAdminRolePermission scopes
       MstFranchise,
       MstEmailTemplate,
+      MstCountry,
+      MstState,
+      MstAddressType,
       // Transactional models from @server/common used by AuthService and other common services
       TxnAdminLastLoginDetail,
       TxnAdminRefreshToken,
       TxnAdminPasswordResetToken,
       MstCurrencyModel,
+      TxnAddress,
     ];
     // Get models registered by lib modules via modelRegistry
     // Each lib module registers its own models during module initialization
@@ -103,6 +112,10 @@ export class CommonModule {
         AdminUserService,
         EmailNotificationService,
         CurrencyService,
+        StateService,
+        CountryService,
+        AddressService,
+        AddressTypeService,
       ],
       exports: [
         SequelizeModule,
@@ -114,7 +127,11 @@ export class CommonModule {
         GoogleService,
         AdminUserService,
         EmailNotificationService,
-        CurrencyService
+        CurrencyService,
+        StateService,
+        CountryService,
+        AddressService,
+        AddressTypeService,
       ],
     };
   }

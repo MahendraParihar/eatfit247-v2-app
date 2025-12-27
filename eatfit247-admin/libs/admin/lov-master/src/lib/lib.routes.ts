@@ -55,6 +55,8 @@ import { Country } from './country/country.component';
 import { ManageCountry } from './country/manage/manage-country.component';
 import { State } from './state/state.component';
 import { ManageState } from './state/manage/manage-state.component';
+import { AddressType } from './address-type/address-type.component';
+import { ManageAddressType } from './address-type/manage/manage-address-type.component';
 
 export const lovMasterRoutes: Route[] = [
   // Assessment Master items
@@ -136,5 +138,8 @@ export const lovMasterRoutes: Route[] = [
   { path: 'country/edit/:id', component: ManageCountry, title: 'Edit Country' },
   { path: 'state', component: State, title: 'State' },
   { path: 'state/new', component: ManageState, title: 'Create State' },
-  { path: 'state/edit/:id', component: ManageState, title: 'Edit State' }
+  { path: 'state/edit/:id', component: ManageState, title: 'Edit State' },
+  { path: 'address-type', component: AddressType, title: 'Address Type' },
+  { path: 'address-type/new', component: ManageAddressType, title: 'Create Address Type' },
+  { path: 'address-type/edit/:id', component: ManageAddressType, title: 'Edit Address Type' }
 ];

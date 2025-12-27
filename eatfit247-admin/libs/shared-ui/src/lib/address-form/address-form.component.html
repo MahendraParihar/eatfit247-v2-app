@@ -1,47 +1,129 @@
 <div class="address-form" [formGroup]="addressFormGroup">
-  <mat-form-field appearance="outline" class="full-width">
-    <mat-label>Country</mat-label>
-    <mat-select formControlName="countryId">
-      <mat-option *ngFor="let country of getCountries()" [value]="country.id">
-        {{ country.label }}
-      </mat-option>
-    </mat-select>
-    <app-input-error [control]="addressFormGroup.get('countryId')" controlName="Country"></app-input-error>
-  </mat-form-field>
-
-  <mat-form-field appearance="outline" class="full-width">
-    <mat-label>State</mat-label>
-    <mat-select formControlName="stateId" [disabled]="!addressFormGroup.get('countryId')?.value">
-      <mat-option *ngFor="let state of getStates()" [value]="state.id">
-        {{ state.label }}
-      </mat-option>
-    </mat-select>
-    <app-input-error [control]="addressFormGroup.get('stateId')" controlName="State"></app-input-error>
-  </mat-form-field>
-
-  <mat-form-field appearance="outline" class="full-width">
-    <mat-label>Address</mat-label>
-    <textarea matInput formControlName="address" rows="3"></textarea>
-    <app-input-error [control]="addressFormGroup.get('address')" controlName="Address"></app-input-error>
-  </mat-form-field>
+  <div class="row">
+    <mat-form-field appearance="outline" class="half-width">
+      <mat-label>Address Type</mat-label>
+      <mat-select formControlName="addressTypeId">
+        <mat-option [value]="">Select Address Type</mat-option>
+        @for (addressType of getAddressType(); track addressType.id) {
+          <mat-option [value]="addressType.id">
+            {{ addressType.label }}
+          </mat-option>
+        }
+      </mat-select>
+      <app-input-error [control]="addressFormGroup.get('addressTypeId')" controlName="addressTypeId"></app-input-error>
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="half-width">
+      <mat-label>Address Name</mat-label>
+      <input
+        matInput
+        formControlName="addressName"
+        placeholder="Enter address name (optional)"
+      />
+      @if (getMaxLength('addressName')) {
+        <mat-hint align="end">
+          {{ getCurrentLength('addressName') }}/{{ getMaxLength('addressName') }}
+        </mat-hint>
+      }
+      <app-input-error [control]="addressFormGroup.get('addressName')" controlName="Address Name"></app-input-error>
+    </mat-form-field>
+  </div>
 
   <div class="row">
     <mat-form-field appearance="outline" class="half-width">
-      <mat-label>Pin Code</mat-label>
-      <input matInput formControlName="pinCode" type="text" />
-      <app-input-error [control]="addressFormGroup.get('pinCode')" controlName="Pin Code"></app-input-error>
+      <mat-label>Country</mat-label>
+      <mat-select formControlName="countryId">
+        <mat-option [value]="">Select Country</mat-option>
+        @for (country of getCountries(); track country.id) {
+          <mat-option [value]="country.id">
+            {{ country.label }}
+          </mat-option>
+        }
+      </mat-select>
+      <app-input-error [control]="addressFormGroup.get('countryId')" controlName="countryId"></app-input-error>
     </mat-form-field>
 
     <mat-form-field appearance="outline" class="half-width">
-      <mat-label>Latitude</mat-label>
-      <input matInput formControlName="latitude" type="text" />
-      <app-input-error [control]="addressFormGroup.get('latitude')" controlName="Latitude"></app-input-error>
+      <mat-label>State</mat-label>
+      <mat-select formControlName="stateId" [disabled]="!addressFormGroup.get('countryId')?.value">
+        <mat-option [value]="">Select State</mat-option>
+        @for (state of getStates(); track state.id) {
+          <mat-option [value]="state.id">
+            {{ state.label }}
+          </mat-option>
+        }
+      </mat-select>
+      <app-input-error [control]="addressFormGroup.get('stateId')" controlName="stateId"></app-input-error>
     </mat-form-field>
   </div>
 
   <mat-form-field appearance="outline" class="full-width">
-    <mat-label>Longitude</mat-label>
-    <input matInput formControlName="longitude" type="text" />
-    <app-input-error [control]="addressFormGroup.get('longitude')" controlName="Longitude"></app-input-error>
+    <mat-label>Postal Address</mat-label>
+    <input
+      matInput
+      formControlName="postalAddress"
+      placeholder="Enter postal address"
+    />
+    @if (getMaxLength('postalAddress')) {
+      <mat-hint align="end">
+        {{ getCurrentLength('postalAddress') }}/{{ getMaxLength('postalAddress') }}
+      </mat-hint>
+    }
+    <app-input-error [control]="addressFormGroup.get('postalAddress')" controlName="Postal Address"></app-input-error>
   </mat-form-field>
+
+  <div class="row">
+    <mat-form-field appearance="outline" class="half-width">
+      <mat-label>City/Village</mat-label>
+      <input
+        matInput
+        formControlName="cityVillage"
+        placeholder="Enter city or village name"
+      />
+      @if (getMaxLength('cityVillage')) {
+        <mat-hint align="end">
+          {{ getCurrentLength('cityVillage') }}/{{ getMaxLength('cityVillage') }}
+        </mat-hint>
+      }
+      <app-input-error [control]="addressFormGroup.get('cityVillage')" controlName="City/Village"></app-input-error>
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="half-width">
+      <mat-label>Pin Code</mat-label>
+      <input
+        matInput
+        formControlName="pinCode"
+        type="text"
+        placeholder="Enter pin code"
+      />
+      @if (getMaxLength('pinCode')) {
+        <mat-hint align="end">
+          {{ getCurrentLength('pinCode') }}/{{ getMaxLength('pinCode') }}
+        </mat-hint>
+      }
+      <app-input-error [control]="addressFormGroup.get('pinCode')" controlName="Pin Code"></app-input-error>
+    </mat-form-field>
+  </div>
+
+  <div class="row">
+    <mat-form-field appearance="outline" class="half-width">
+      <mat-label>Latitude</mat-label>
+      <input
+        matInput
+        formControlName="latitude"
+        type="number"
+        placeholder="Enter latitude (optional)"
+      />
+      <app-input-error [control]="addressFormGroup.get('latitude')" controlName="Latitude"></app-input-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="half-width">
+      <mat-label>Longitude</mat-label>
+      <input
+        matInput
+        formControlName="longitude"
+        type="number"
+        placeholder="Enter longitude (optional)"
+      />
+      <app-input-error [control]="addressFormGroup.get('longitude')" controlName="Longitude"></app-input-error>
+    </mat-form-field>
+  </div>
 </div>

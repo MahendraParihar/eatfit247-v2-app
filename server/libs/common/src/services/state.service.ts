@@ -1,8 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { MstState } from '../models';
 import { ITableList, IBasicSearch, IState, IManageState, IDropdownItem } from 'eatfit247-shared-lib';
 import { SearchUtil, CommonFunctionsUtil } from '@server/common';
+import { MstState } from '../models/mst-state.model';
 
 @Injectable()
 export class StateService {
@@ -109,4 +109,3 @@ export class StateService {
     return tempList.map((t) => ({ id: t.stateId, label: t.state, selected: false }));
   }
 }
-
