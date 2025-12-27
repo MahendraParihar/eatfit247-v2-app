@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -11,7 +11,7 @@ import {
   ITableConfig,
   ITableAction,
   createdByUserFormatter,
-  updatedByUserFormatter,
+  updatedByUserFormatter
 } from '@shared';
 import { ITableList, IDietTemplate } from '@eatfit247-shared-lib';
 import { DietTemplateApiService } from './api.service';
@@ -22,7 +22,7 @@ import { Subject, debounceTime, distinctUntilChanged, switchMap } from 'rxjs';
   standalone: true,
   imports: [CommonModule, DataTableComponent, MatButtonModule, MatIconModule, MatProgressSpinnerModule, MatCardModule],
   templateUrl: './diet-template.html',
-  styleUrl: './diet-template.scss',
+  styleUrl: './diet-template.scss'
 })
 export class DietTemplateComponent implements OnInit {
   data: IDietTemplate[] = [];
@@ -33,8 +33,7 @@ export class DietTemplateComponent implements OnInit {
 
   constructor(
     private apiService: DietTemplateApiService,
-    private router: Router,
-    private route: ActivatedRoute
+    private router: Router
   ) {
     this.setupSearch();
   }
@@ -51,14 +50,14 @@ export class DietTemplateComponent implements OnInit {
         label: 'ID',
         dataKey: 'dietTemplateId',
         sortable: true,
-        width: '80px',
+        width: '80px'
       },
       {
         key: 'dietTemplate',
         label: 'Diet Template',
         dataKey: 'dietTemplate',
         sortable: true,
-        searchable: true,
+        searchable: true
       },
       {
         key: 'cycleNo',
@@ -66,7 +65,7 @@ export class DietTemplateComponent implements OnInit {
         dataKey: 'cycleNo',
         sortable: true,
         width: '100px',
-        align: 'center',
+        align: 'center'
       },
       {
         key: 'dayNo',
@@ -74,7 +73,7 @@ export class DietTemplateComponent implements OnInit {
         dataKey: 'dayNo',
         sortable: true,
         width: '100px',
-        align: 'center',
+        align: 'center'
       },
       {
         key: 'noOfCycle',
@@ -82,7 +81,7 @@ export class DietTemplateComponent implements OnInit {
         dataKey: 'noOfCycle',
         sortable: true,
         width: '120px',
-        align: 'center',
+        align: 'center'
       },
       {
         key: 'noOfDaysInCycle',
@@ -90,7 +89,7 @@ export class DietTemplateComponent implements OnInit {
         dataKey: 'noOfDaysInCycle',
         sortable: true,
         width: '120px',
-        align: 'center',
+        align: 'center'
       },
       {
         key: 'active',
@@ -99,38 +98,37 @@ export class DietTemplateComponent implements OnInit {
         sortable: true,
         width: '120px',
         align: 'center',
-        formatter: (value) => (value ? 'Active' : 'Inactive'),
+        formatter: (value) => (value ? 'Active' : 'Inactive')
       },
       {
         key: 'createdByUser',
         label: 'Created By',
         dataKey: 'createdByUser',
         sortable: false,
-        formatter: createdByUserFormatter(),
+        formatter: createdByUserFormatter()
       },
       {
         key: 'updatedByUser',
         label: 'Updated By',
         dataKey: 'updatedByUser',
         sortable: false,
-        formatter: updatedByUserFormatter(),
+        formatter: updatedByUserFormatter()
       },
       {
         key: 'createdAt',
         label: 'Created At',
         dataKey: 'createdAt',
         type: 'date',
-        sortable: true,
+        sortable: true
       },
       {
         key: 'updatedAt',
         label: 'Updated At',
         dataKey: 'updatedAt',
         type: 'date',
-        sortable: true,
-      },
+        sortable: true
+      }
     ];
-
     const actions: ITableAction<IDietTemplate>[] = [
       { label: 'Edit', icon: 'edit', color: 'primary', onClick: (row) => this.editItem(row) },
       {
@@ -138,17 +136,16 @@ export class DietTemplateComponent implements OnInit {
         icon: 'check_circle',
         color: 'primary',
         visible: (row) => !row.active,
-        onClick: (row) => this.toggleStatus(row),
+        onClick: (row) => this.toggleStatus(row)
       },
       {
         label: 'Inactive',
         icon: 'cancel',
         color: 'warn',
-        visible: (row) => row.active === true,
-        onClick: (row) => this.toggleStatus(row),
-      },
+        visible: (row) => row.active,
+        onClick: (row) => this.toggleStatus(row)
+      }
     ];
-
     this.tableConfig = {
       columns,
       actions,
@@ -158,7 +155,7 @@ export class DietTemplateComponent implements OnInit {
       pageSize: 10,
       pageSizeOptions: [5, 10, 25, 50],
       showHeader: true,
-      emptyMessage: 'No diet template records found',
+      emptyMessage: 'No diet template records found'
     };
   }
 
@@ -172,7 +169,7 @@ export class DietTemplateComponent implements OnInit {
           return this.apiService.getList({
             search,
             page: 0,
-            limit: this.tableConfig.pageSize || 10,
+            limit: this.tableConfig.pageSize || 10
           });
         })
       )
@@ -184,7 +181,7 @@ export class DietTemplateComponent implements OnInit {
         },
         error: () => {
           this.loading = false;
-        },
+        }
       });
   }
 
@@ -193,7 +190,7 @@ export class DietTemplateComponent implements OnInit {
     try {
       const response: ITableList<IDietTemplate> = await this.apiService.getList({
         page: 0,
-        limit: this.tableConfig.pageSize || 10,
+        limit: this.tableConfig.pageSize || 10
       });
       this.data = response.tableData;
       this.totalCount = response.count;
@@ -208,7 +205,7 @@ export class DietTemplateComponent implements OnInit {
     try {
       const response: ITableList<IDietTemplate> = await this.apiService.getList({
         page: pagination.pageIndex,
-        limit: pagination.pageSize,
+        limit: pagination.pageSize
       });
       this.data = response.tableData;
       this.totalCount = response.count;
@@ -225,7 +222,7 @@ export class DietTemplateComponent implements OnInit {
         page: 0,
         limit: this.tableConfig.pageSize || 10,
         sortBy: sort.active,
-        sortOrder: sort.direction,
+        sortOrder: sort.direction
       });
       this.data = response.tableData;
       this.totalCount = response.count;

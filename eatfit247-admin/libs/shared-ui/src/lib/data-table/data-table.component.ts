@@ -29,7 +29,6 @@ import {
   ITableConfig,
   ITableAction,
   ITableActionButton,
-  ITableHeader,
   ITableActionsConfig,
   ITablePagination,
   ITableSort

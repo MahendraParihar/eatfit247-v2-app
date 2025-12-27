@@ -80,7 +80,7 @@ export class DietTemplateService {
         createdIp: cIp,
         modifiedIp: cIp,
       };
-      const created = await this.dietTemplateRepository.create(createObj, { transaction: t });
+      await this.dietTemplateRepository.create(createObj, { transaction: t });
       await t.commit();
     } catch (e) {
       await t.rollback();

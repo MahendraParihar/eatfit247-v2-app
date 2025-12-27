@@ -7,7 +7,6 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
-import { MatCheckboxModule } from '@angular/material/checkbox';
 import { InputErrorComponent, ValidationUtil } from '@shared';
 import { DietTemplateApiService } from '../api.service';
 import { IDietTemplate, IManageDietTemplate, InputLengthEnum } from '@eatfit247-shared-lib';
