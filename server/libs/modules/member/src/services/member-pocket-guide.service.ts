@@ -2,8 +2,8 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op, Sequelize as SequelizeLib } from 'sequelize';
 import { TxnMemberPocketGuide, TxnMember } from '../models';
-import { IMemberPocketGuide } from 'eatfit247-shared-lib';
-import { CommonFunctionsUtil, MstPocketGuide } from '@server/common';
+import { IMemberPocketGuide, IEmailData, EmailTemplateEnum } from 'eatfit247-shared-lib';
+import { CommonFunctionsUtil, MstPocketGuide, EmailNotificationService } from '@server/common';
 import { Sequelize } from 'sequelize-typescript';
 
 @Injectable()
@@ -13,6 +13,7 @@ export class MemberPocketGuideService {
     @InjectModel(TxnMember) private readonly memberRepository: typeof TxnMember,
     @InjectModel(MstPocketGuide) private readonly pocketGuideRepository: typeof MstPocketGuide,
     private sequelize: Sequelize,
+    private readonly emailNotificationService: EmailNotificationService,
   ) {}
 
   public async getList(memberId: number): Promise<Array<{ pocketGuideId: number; pocketGuide: string; selected: boolean }>> {
@@ -36,7 +37,7 @@ export class MemberPocketGuideService {
               WHEN EXISTS (
                 SELECT 1 
                 FROM txn_member_pocket_guides tmpg 
-                WHERE tmpg.pocket_guide_id = "MstPocketGuide"."pocket_guide_id" 
+                WHERE tmpg.pocket_guide_id = "mst_pocket_guides"."pocket_guide_id" 
                 AND tmpg.member_id = ${memberId}
               ) THEN true 
               ELSE false 
@@ -61,10 +62,19 @@ export class MemberPocketGuideService {
     // Verify member exists
     const member = await this.memberRepository.findOne({
       where: { memberId },
+      attributes: ['memberId', 'emailId', 'firstName', 'lastName'],
     });
     if (!member) {
       throw new NotFoundException('Member not found');
     }
+
+    // Get existing pocket guide IDs before update
+    const existingPocketGuides = await this.memberPocketGuideRepository.findAll({
+      where: { memberId },
+      attributes: ['pocketGuideId'],
+      raw: true,
+    });
+    const existingIds = new Set(existingPocketGuides.map((pg: any) => pg.pocketGuideId));
 
     if (pocketGuideIds.length > 0) {
       const validPocketGuides = await this.pocketGuideRepository.findAll({
@@ -74,7 +84,7 @@ export class MemberPocketGuideService {
           },
           active: true,
         },
-        attributes: ['pocketGuideId'],
+        attributes: ['pocketGuideId', 'pocketGuide'],
         raw: true,
       });
 
@@ -84,20 +94,21 @@ export class MemberPocketGuideService {
       if (invalidIds.length > 0) {
         throw new NotFoundException(`Invalid or inactive pocket guide IDs: ${invalidIds.join(', ')}`);
       }
-    }
 
-    // Use transaction for atomic operation
-    const transaction = await this.sequelize.transaction();
+      // Find new pocket guides (ones that weren't previously assigned)
+      const newPocketGuideIds = pocketGuideIds.filter((id) => !existingIds.has(id));
+      
+      // Use transaction for atomic operation
+      const transaction = await this.sequelize.transaction();
 
-    try {
-      // Remove existing associations
-      await this.memberPocketGuideRepository.destroy({
-        where: { memberId },
-        transaction,
-      });
+      try {
+        // Remove existing associations
+        await this.memberPocketGuideRepository.destroy({
+          where: { memberId },
+          transaction,
+        });
 
-      // Create new associations
-      if (pocketGuideIds.length > 0) {
+        // Create new associations
         const createData = pocketGuideIds.map((pocketGuideId) => ({
           memberId,
           pocketGuideId,
@@ -108,12 +119,39 @@ export class MemberPocketGuideService {
         }));
 
         await this.memberPocketGuideRepository.bulkCreate(createData, { transaction });
-      }
 
-      await transaction.commit();
-    } catch (error) {
-      await transaction.rollback();
-      throw error;
+        await transaction.commit();
+
+        // Send email for new pocket guides
+        if (newPocketGuideIds.length > 0 && member.emailId) {
+          const newPocketGuides = validPocketGuides.filter((pg: any) => newPocketGuideIds.includes(pg.pocketGuideId));
+          const pocketGuideNames = newPocketGuides.map((pg: any) => pg.pocketGuide).join(', ');
+
+          try {
+            const emailData: IEmailData = {
+              to: member.emailId,
+              type: EmailTemplateEnum.POCKET_GUIDE_ASSIGNED,
+              data: {
+                memberName: `${member.firstName} ${member.lastName}`,
+                pocketGuideNames: pocketGuideNames,
+                pocketGuideCount: newPocketGuides.length,
+              },
+            };
+            await this.emailNotificationService.sendEmailByType(emailData);
+          } catch (emailError) {
+            // Log error but don't fail the operation
+            console.error('Failed to send pocket guide email:', emailError);
+          }
+        }
+      } catch (error) {
+        await transaction.rollback();
+        throw error;
+      }
+    } else {
+      // If no pocket guides selected, just remove existing ones
+      await this.memberPocketGuideRepository.destroy({
+        where: { memberId },
+      });
     }
   }
 

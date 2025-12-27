@@ -4,10 +4,12 @@ import { ActivatedRoute } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatDialog } from '@angular/material/dialog';
 import { DataTableComponent, ITableColumn, ITableConfig, EmptyStateComponent, EmptyStateType, LoaderComponent, createdByUserFormatter, updatedByUserFormatter } from '@shared';
 import { IMemberPocketGuide } from '@eatfit247-shared-lib';
 import { MembersApiService } from '../../api.service';
 import { Subject, takeUntil } from 'rxjs';
+import { ManageMemberPocketGuideComponent, ManageMemberPocketGuideData } from './manage-member-pocket-guide/manage-member-pocket-guide.component';
 
 @Component({
   selector: 'lib-member-pocket-guide',
@@ -26,7 +28,8 @@ export class MemberPocketGuideComponent implements OnInit, OnDestroy {
 
   constructor(
     private route: ActivatedRoute,
-    private apiService: MembersApiService
+    private apiService: MembersApiService,
+    private dialog: MatDialog
   ) {
     this.initializeTable();
   }
@@ -87,7 +90,20 @@ export class MemberPocketGuideComponent implements OnInit, OnDestroy {
   }
 
   addPocketGuide(): void {
-    // TODO: Open dialog/form to add new pocket guide
-    console.log('Add pocket guide for member:', this.memberId);
+    const dialogData: ManageMemberPocketGuideData = {
+      memberId: this.memberId,
+    };
+
+    const dialogRef = this.dialog.open(ManageMemberPocketGuideComponent, {
+      width: '600px',
+      data: dialogData,
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result === true) {
+        // Reload pocket guides after successful update
+        this.loadPocketGuides();
+      }
+    });
   }
 }

@@ -2,13 +2,12 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import * as nodemailer from 'nodemailer';
 import path from 'path';
 import fs from 'fs';
-import { IEmailData } from '../../../modules/email';
 import * as ejs from 'ejs';
 import { InjectModel } from '@nestjs/sequelize';
-import { ISendEmailParams } from 'eatfit247-shared-lib';
+import { IEmailData, ISendEmailParams } from 'eatfit247-shared-lib';
 import { AppConfigService } from '../app-config';
 import { LogErrorService } from './log-error.service';
-import { MstEmailTemplate } from '../models/mst-email-template.model';
+import { MstEmailTemplate } from '../models';
 
 @Injectable()
 export class EmailNotificationService {

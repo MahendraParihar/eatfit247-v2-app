@@ -1,15 +1,6 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import * as nodemailer from 'nodemailer';
-import path from 'path';
-import fs from 'fs';
-import { IEmailData } from '../../../modules/email';
-import * as ejs from 'ejs';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { ISendEmailParams } from 'eatfit247-shared-lib';
-import { AppConfigService } from '../app-config';
-import { LogErrorService } from './log-error.service';
-import { MstEmailTemplate } from '../models/mst-email-template.model';
-import { MstCurrencyModel } from '../models/mst-currencies.model';
+import { MstCurrencyModel } from '../models';
 
 @Injectable()
 export class CurrencyService {

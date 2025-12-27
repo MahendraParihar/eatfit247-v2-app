@@ -147,5 +147,19 @@ export class MembersApiService extends ApiBaseService {
       data
     );
   }
+
+  async getPocketGuideList(memberId: number): Promise<Array<{ pocketGuideId: number; pocketGuide: string; selected: boolean }>> {
+    const res = await this.httpService.get<IResponse<Array<{ pocketGuideId: number; pocketGuide: string; selected: boolean }>>>(
+      `${this.endpoint}/${memberId}/pocket-guide/list`
+    );
+    return res.data as Array<{ pocketGuideId: number; pocketGuide: string; selected: boolean }>;
+  }
+
+  async managePocketGuides(memberId: number, pocketGuideIds: number[]): Promise<void> {
+    return await this.httpService.put<void>(
+      `${this.endpoint}/${memberId}/pocket-guide/manage`,
+      { pocketGuideIds }
+    );
+  }
 }
 

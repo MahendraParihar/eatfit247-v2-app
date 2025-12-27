@@ -78,6 +78,21 @@ export class MemberController {
     return await this.memberPocketGuideService.findByMemberId(id);
   }
 
+  @Get(':id/pocket-guide/list')
+  async getPocketGuideList(@Param('id') id: number): Promise<Array<{ pocketGuideId: number; pocketGuide: string; selected: boolean }>> {
+    return await this.memberPocketGuideService.getList(id);
+  }
+
+  @Put(':id/pocket-guide/manage')
+  async managePocketGuides(
+    @Param('id') id: number,
+    @Body() body: { pocketGuideIds: number[] },
+    @CurrentUser() currentUser: any,
+    @RequestedIp() requestedIp: string,
+  ): Promise<void> {
+    await this.memberPocketGuideService.manage(id, body.pocketGuideIds, requestedIp, currentUser.userId || currentUser.adminId);
+  }
+
   @Get(':id/health-issues')
   async getHealthIssues(@Param('id') id: number): Promise<IMemberHealthIssue[]> {
     return await this.memberHealthIssueService.findByMemberId(id);
