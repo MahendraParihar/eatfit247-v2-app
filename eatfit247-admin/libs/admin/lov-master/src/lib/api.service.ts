@@ -13,6 +13,7 @@ import {
   ITypeOfExercise,
   IUrineOutput,
   IHealthParameter,
+  IHealthParameterUnit,
   IDropdownItem,
   ICallType,
   IResponse,
@@ -539,6 +540,50 @@ export class LovMasterApiService extends ApiBaseService {
   async getHealthParameterDropdown(): Promise<IDropdownItem[]> {
     const res = await this.httpService.get<IResponse<IDropdownItem[]>>(
       `${this.baseEndpoint}/health-parameter/dropdown`
+    );
+    return res.data as IDropdownItem[];
+  }
+
+  // Health Parameter Unit
+  async getHealthParameterUnitList(params?: any): Promise<ITableList<IHealthParameterUnit>> {
+    const res = await this.httpService.get<IResponse<ITableList<IHealthParameterUnit>>>(
+      `${this.baseEndpoint}/health-parameter-unit/list`,
+      { params }
+    );
+    return res.data as ITableList<IHealthParameterUnit>;
+  }
+
+  async getHealthParameterUnitById(id: number): Promise<IHealthParameterUnit> {
+    const res = await this.httpService.get<IResponse<IHealthParameterUnit>>(
+      `${this.baseEndpoint}/health-parameter-unit/manage/${id}`
+    );
+    return res.data as IHealthParameterUnit;
+  }
+
+  async createHealthParameterUnit(data: any): Promise<void> {
+    return await this.httpService.post<void>(
+      `${this.baseEndpoint}/health-parameter-unit/manage`,
+      data
+    );
+  }
+
+  async updateHealthParameterUnit(id: number, data: any): Promise<void> {
+    return await this.httpService.put<void>(
+      `${this.baseEndpoint}/health-parameter-unit/manage/${id}`,
+      data
+    );
+  }
+
+  async updateHealthParameterUnitStatus(id: number, active: boolean): Promise<void> {
+    return await this.httpService.patch<void>(
+      `${this.baseEndpoint}/health-parameter-unit/update-status/${id}`,
+      { active }
+    );
+  }
+
+  async getHealthParameterUnitDropdown(): Promise<IDropdownItem[]> {
+    const res = await this.httpService.get<IResponse<IDropdownItem[]>>(
+      `${this.baseEndpoint}/health-parameter-unit/dropdown`
     );
     return res.data as IDropdownItem[];
   }

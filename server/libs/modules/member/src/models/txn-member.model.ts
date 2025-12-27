@@ -4,9 +4,9 @@ import {
   getCreatedByUserInclude,
   getUpdatedByUserInclude,
   MstFranchise,
-  MstCountry,
+  MstCountry, MstReferrer,
 } from '@server/common';
-import { InputLengthEnum } from 'eatfit247-shared-lib';
+import { IMediaUpload, InputLengthEnum } from 'eatfit247-shared-lib';
 
 @Table({
   freezeTableName: true,
@@ -111,7 +111,7 @@ export class TxnMember extends Model<TxnMember> {
     field: 'profile_picture',
     type: DataType.JSONB,
   })
-  declare profilePicture: string;
+  declare profilePicture: IMediaUpload[];
   @Column({
     allowNull: false,
     field: 'password',
@@ -156,7 +156,6 @@ export class TxnMember extends Model<TxnMember> {
     type: DataType.INTEGER,
   })
   declare referrerId: number;
-
   @BelongsTo(() => MstFranchise, {
     foreignKey: 'franchiseId',
     targetKey: 'franchiseId',
@@ -254,5 +253,11 @@ export class TxnMember extends Model<TxnMember> {
     type: DataType.STRING(InputLengthEnum.IP),
   })
   declare modifiedIp: string;
+  @BelongsTo(() => MstReferrer, {
+    foreignKey: 'referrerId',
+    targetKey: 'referrerId',
+    as: 'referrer',
+  })
+  declare referrer: MstReferrer;
 }
 

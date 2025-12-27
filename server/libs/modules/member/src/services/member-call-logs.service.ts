@@ -18,7 +18,9 @@ export class MemberCallLogsService {
    * @param searchDto - Search parameters
    * @returns Paginated list of call logs
    */
-  public async findAll(searchDto: IBasicSearch & { search?: string }): Promise<ITableList<IMemberCallLog>> {
+  public async findAll(
+    searchDto: IBasicSearch & { search?: string },
+  ): Promise<ITableList<IMemberCallLog>> {
     const whereCondition: any = {};
 
     if (searchDto.search) {
@@ -38,14 +40,19 @@ export class MemberCallLogsService {
 
     const { rows, count } = await this.memberCallLogRepository.scope('list').findAndCountAll({
       where: whereCondition,
-      order: [['date', 'DESC'], ['startTime', 'DESC']],
+      order: [
+        ['date', 'DESC'],
+        ['startTime', 'DESC'],
+      ],
       offset: offset,
       limit: pageSize,
       raw: true,
       nest: true,
     });
 
-    const resList: IMemberCallLog[] = rows.map((item: any) => this.convertToModel(item));
+    const resList: IMemberCallLog[] = rows.map((item: TxnMemberCallLog) =>
+      this.convertToModel(item),
+    );
     return { tableData: resList, count: count };
   }
 
@@ -71,10 +78,10 @@ export class MemberCallLogsService {
       raw: true,
       nest: true,
     });
-    return records.map((item: any) => this.convertToModel(item));
+    return records.map((item: TxnMemberCallLog) => this.convertToModel(item));
   }
 
-  private convertToModel(item: any): IMemberCallLog {
+  private convertToModel(item: TxnMemberCallLog): IMemberCallLog {
     const memberFirstName = item.member?.firstName || '';
     const memberLastName = item.member?.lastName || '';
     const memberName = `${memberFirstName} ${memberLastName}`.trim() || '';

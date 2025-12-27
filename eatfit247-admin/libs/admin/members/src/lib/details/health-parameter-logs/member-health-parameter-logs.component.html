@@ -1,0 +1,14 @@
+@if (loading) {
+  <lib-loader></lib-loader>
+}
+@if (!loading && healthParameterLogs.length > 0) {
+  <app-data-table
+    [config]="tableConfig"
+    [data]="healthParameterLogs">
+  </app-data-table>
+}
+@if (!loading && healthParameterLogs.length === 0) {
+  <lib-empty-state
+    [type]="EmptyStateType.MEMBER_HEALTH_PARAMETER_LOGS">
+  </lib-empty-state>
+}

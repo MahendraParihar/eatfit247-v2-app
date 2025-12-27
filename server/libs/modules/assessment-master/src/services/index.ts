@@ -9,4 +9,5 @@ export * from './sleeping-pattern.service';
 export * from './type-of-exercise.service';
 export * from './urine-output.service';
 export * from './health-parameter.service';
+export * from './health-parameter-unit.service';
 

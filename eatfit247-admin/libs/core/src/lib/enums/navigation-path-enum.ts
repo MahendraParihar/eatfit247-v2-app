@@ -11,6 +11,7 @@ export enum NavigationPathEnum {
   EATING_HABIT = 'lov-master/eating-habit',
   GENDER = 'lov-master/gender',
   HEALTH_PARAMETER = 'lov-master/health-parameter',
+  HEALTH_PARAMETER_UNIT = 'lov-master/health-parameter-unit',
   LIFESTYLE = 'lov-master/lifestyle',
   MARITAL_STATUS = 'lov-master/marital-status',
   RELIGION = 'lov-master/religion',

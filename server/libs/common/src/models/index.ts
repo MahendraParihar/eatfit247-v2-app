@@ -23,6 +23,7 @@ export * from './assessment/mst-sleeping-pattern.model';
 export * from './assessment/mst-type-of-exercise.model';
 export * from './assessment/mst-urine-output.model';
 export * from './assessment/mst-health-parameter.model';
+export * from './assessment/mst-health-parameter-unit.model';
 // Recipe models
 export * from './recipes/mst-recipe.model';
 export * from './recipes/mst-recipe-category.model';

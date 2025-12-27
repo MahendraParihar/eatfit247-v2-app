@@ -136,13 +136,21 @@ export class MemberHealthIssueService {
    * @returns Array of member health issues
    */
   public async findByMemberId(memberId: number): Promise<IMemberHealthIssue[]> {
+    // Verify member exists
+    const member = await this.memberRepository.findOne({
+      where: { memberId },
+    });
+    if (!member) {
+      throw new NotFoundException('Member not found');
+    }
+    // Fetch health issues with nested relationships using Sequelize joins
     const records = await this.memberHealthIssueRepository.scope('details').findAll({
       where: { memberId },
       order: [['healthIssueId', 'ASC']],
-      raw: true,
+      raw: false,
       nest: true,
     });
-    return records.map((item: any) => this.convertToModel(item));
+    return records.map((item) => this.convertToModel(item.toJSON()));
   }
 
   private convertToModel(item: any): IMemberHealthIssue {
@@ -150,7 +158,7 @@ export class MemberHealthIssueService {
       memberHealthIssueId: item.memberHealthIssueId,
       memberId: item.memberId,
       healthIssueId: item.healthIssueId,
-      healthIssue: item.healthIssue.healthIssue,
+      healthIssue: item.healthIssue?.healthIssue || '',
       createdBy: item.createdBy,
       updatedBy: item.modifiedBy,
       createdAt: item.createdAt,

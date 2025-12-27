@@ -3,22 +3,22 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { DataTableComponent, ITableColumn, ITableConfig, EmptyStateComponent, EmptyStateType, LoaderComponent, createdByUserFormatter, updatedByUserFormatter } from '@shared';
-import { IMemberHealthIssue } from '@eatfit247-shared-lib';
+import { IMemberHealthParameterLog } from '@eatfit247-shared-lib';
 import { MembersApiService } from '../../api.service';
 import { Subject, takeUntil } from 'rxjs';
 
 @Component({
-  selector: 'lib-member-health-issues',
+  selector: 'lib-member-health-parameter-logs',
   standalone: true,
   imports: [CommonModule, MatCardModule, DataTableComponent, EmptyStateComponent, LoaderComponent],
-  templateUrl: './member-health-issues.component.html',
-  styleUrl: './member-health-issues.component.scss'
+  templateUrl: './member-health-parameter-logs.component.html',
+  styleUrl: './member-health-parameter-logs.component.scss'
 })
-export class MemberHealthIssuesComponent implements OnInit, OnDestroy {
+export class MemberHealthParameterLogsComponent implements OnInit, OnDestroy {
   memberId!: number;
-  healthIssues: IMemberHealthIssue[] = [];
+  healthParameterLogs: IMemberHealthParameterLog[] = [];
   loading = false;
-  tableConfig!: ITableConfig<IMemberHealthIssue>;
+  tableConfig!: ITableConfig<IMemberHealthParameterLog>;
   EmptyStateType = EmptyStateType;
   private destroy$ = new Subject<void>();
 
@@ -33,7 +33,7 @@ export class MemberHealthIssuesComponent implements OnInit, OnDestroy {
     this.route.parent?.params.pipe(takeUntil(this.destroy$)).subscribe((params) => {
       this.memberId = +params['id'];
       if (this.memberId) {
-        this.loadHealthIssues();
+        this.loadHealthParameterLogs();
       }
     });
   }
@@ -44,8 +44,22 @@ export class MemberHealthIssuesComponent implements OnInit, OnDestroy {
   }
 
   private initializeTable(): void {
-    const columns: ITableColumn<IMemberHealthIssue>[] = [
-      { key: 'healthIssue', label: 'Health Issue', dataKey: 'healthIssue', sortable: true },
+    const columns: ITableColumn<IMemberHealthParameterLog>[] = [
+      { 
+        key: 'logDate', 
+        label: 'Log Date', 
+        dataKey: 'logDate', 
+        sortable: true,
+        formatter: (value) => this.formatDate(value)
+      },
+      { 
+        key: 'healthParameters', 
+        label: 'Health Parameters', 
+        dataKey: 'healthParameters', 
+        sortable: false,
+        formatter: (value) => this.formatHealthParameters(value)
+      },
+      { key: 'active', label: 'Active', dataKey: 'active', sortable: true, width: '100px', align: 'center', formatter: (value) => value ? 'Yes' : 'No' },
       { key: 'createdBy', label: 'Created By', dataKey: 'createdBy', sortable: false, formatter: createdByUserFormatter() },
       { key: 'updatedBy', label: 'Updated By', dataKey: 'updatedBy', sortable: false, formatter: updatedByUserFormatter() },
       {
@@ -72,15 +86,27 @@ export class MemberHealthIssuesComponent implements OnInit, OnDestroy {
     };
   }
 
-  async loadHealthIssues(): Promise<void> {
+  async loadHealthParameterLogs(): Promise<void> {
     this.loading = true;
     try {
-      this.healthIssues = await this.apiService.getHealthIssues(this.memberId);
+      this.healthParameterLogs = await this.apiService.getHealthParameterLogs(this.memberId);
     } catch (error) {
-      console.error('Error loading health issues:', error);
-      this.healthIssues = [];
+      console.error('Error loading health parameter logs:', error);
+      this.healthParameterLogs = [];
     } finally {
       this.loading = false;
     }
+  }
+
+  formatDate(value: any): string {
+    if (!value) return '';
+    // Convert timestamp (number) to Date
+    const date = typeof value === 'number' ? new Date(value) : new Date(value);
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+  }
+
+  formatHealthParameters(value: any[]): string {
+    if (!value || !Array.isArray(value) || value.length === 0) return '-';
+    return value.map((param: any) => `${param.healthParameter || 'N/A'}: ${param.value || 'N/A'} ${param.healthParameterUnit || ''}`).join(', ');
   }
 }

@@ -180,6 +180,11 @@ export class BaseLayoutComponent implements OnInit, OnDestroy {
           icon: 'monitor_heart',
           route: '/lov-master/health-parameter',
         },
+        {
+          label: 'Health Parameter Unit',
+          icon: 'straighten',
+          route: '/lov-master/health-parameter-unit',
+        },
         // Call Logs items
         {
           label: 'Call Purpose',

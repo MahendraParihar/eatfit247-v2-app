@@ -9,7 +9,8 @@ import { MemberHealthIssuesComponent } from './details/health-issues/member-heal
 import { MemberCallLogsComponent } from './details/call-logs/member-call-logs.component';
 import { MemberPaymentHistoryComponent } from './details/payment-history/member-payment-history.component';
 import { MemberDietHistoryComponent } from './details/diet-history/member-diet-history.component';
-import { MemberBodyStatsComponent } from './details/body-stats/member-body-stats.component';
+import { MemberHealthParameterLogsComponent } from './details/health-parameter-logs/member-health-parameter-logs.component';
+import { MemberIssuesComponent } from './details/issues/member-issues.component';
 
 export const membersRoutes: Route[] = [
   { path: '', component: Members, title: 'Members' },
@@ -28,7 +29,8 @@ export const membersRoutes: Route[] = [
       { path: 'call-logs', component: MemberCallLogsComponent, title: 'Member Call Logs' },
       { path: 'payment-history', component: MemberPaymentHistoryComponent, title: 'Member Payment History' },
       { path: 'diet-history', component: MemberDietHistoryComponent, title: 'Member Diet History' },
-      { path: 'body-stats', component: MemberBodyStatsComponent, title: 'Member Body Stats' },
+      { path: 'health-parameter-logs', component: MemberHealthParameterLogsComponent, title: 'Member Health Parameter Logs' },
+      { path: 'issues', component: MemberIssuesComponent, title: 'Member Issues' },
     ],
   },
 ];

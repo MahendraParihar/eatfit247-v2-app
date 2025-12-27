@@ -2,17 +2,10 @@
   <lib-loader></lib-loader>
 }
 @if (!loading && pocketGuides.length > 0) {
-  <mat-list>
-    @for (guide of pocketGuides; track guide.pocketGuideId || $index) {
-      <mat-list-item>
-        <mat-icon matListItemIcon>menu_book</mat-icon>
-        <div matListItemTitle>{{ guide.pocketGuide }}</div>
-        @if (guide.description) {
-          <div matListItemLine>{{ guide.description }}</div>
-        }
-      </mat-list-item>
-    }
-  </mat-list>
+  <app-data-table
+    [config]="tableConfig"
+    [data]="pocketGuides">
+  </app-data-table>
 }
 @if (!loading && pocketGuides.length === 0) {
   <lib-empty-state

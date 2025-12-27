@@ -1,5 +1,4 @@
 import { IBaseAdminUser } from '../base.interface';
-import { IHealthIssue } from './assessment-master.interface';
 
 export interface IBaseMemberHealthIssue {
   memberId: number;
@@ -12,7 +11,7 @@ export interface IManageMemberHealthIssue extends IBaseMemberHealthIssue {
 
 export interface IMemberHealthIssue extends IBaseMemberHealthIssue {
   memberHealthIssueId: number;
-  healthIssue?: IHealthIssue;
+  healthIssue: string; // Health issue name for display
   createdBy: number;
   updatedBy: number;
   createdAt: Date;

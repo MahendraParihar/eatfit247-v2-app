@@ -9,4 +9,5 @@ export * from './sleeping-pattern.dto';
 export * from './type-of-exercise.dto';
 export * from './urine-output.dto';
 export * from './health-parameter.dto';
+export * from './health-parameter-unit.dto';
 

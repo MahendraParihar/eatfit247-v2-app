@@ -58,6 +58,7 @@ import {
   MstTypeOfExercise,
   MstUrineOutput,
   MstHealthParameter,
+  MstHealthParameterUnit,
   MstRecipe,
   MstRecipeCategory,
   MstRecipeCuisine,
@@ -110,6 +111,7 @@ export class CommonModule {
       MstTypeOfExercise,
       MstUrineOutput,
       MstHealthParameter,
+      MstHealthParameterUnit,
       // Recipe models
       MstRecipe,
       MstRecipeCategory,

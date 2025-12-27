@@ -14,7 +14,6 @@ export class MemberService {
 
   public async findAll(searchDto: IBasicSearch): Promise<ITableList<IMember>> {
     const whereCondition: any = {};
-    
     if (searchDto.name) {
       whereCondition[Op.or] = [
         { firstName: { [Op.iLike]: `%${searchDto.name}%` } },
@@ -22,7 +21,6 @@ export class MemberService {
         { emailId: { [Op.iLike]: `%${searchDto.name}%` } },
       ];
     }
-    
     if (searchDto.search) {
       whereCondition[Op.or] = [
         { firstName: { [Op.iLike]: `%${searchDto.search}%` } },
@@ -31,34 +29,33 @@ export class MemberService {
         { contactNumber: { [Op.iLike]: `%${searchDto.search}%` } },
       ];
     }
-
     const pageNumber = searchDto.page || 0;
     const pageSize = searchDto.limit || 15;
     const offset = pageNumber === 0 ? 0 : pageNumber * pageSize;
-
     const { rows, count } = await this.memberRepository.scope('list').findAndCountAll({
       where: whereCondition,
-      order: [['firstName', 'ASC'], ['lastName', 'ASC']],
+      order: [
+        ['firstName', 'ASC'],
+        ['lastName', 'ASC'],
+      ],
       offset: offset,
       limit: pageSize,
       raw: true,
       nest: true,
     });
-
-    const resList: IMember[] = rows.map((item: any) => {return this.convertToModel(item);});
+    const resList: IMember[] = rows.map((item: TxnMember) => {
+      return this.convertToModel(item);
+    });
     return { tableData: resList, count: count };
   }
 
-  private convertToModel(item: any): IMember {
+  private convertToModel(item: TxnMember): IMember {
     return <IMember>{
       memberId: item.memberId,
       id: item.memberId,
       firstName: item.firstName,
       lastName: item.lastName,
-      profilePicture: CommonFunctionsUtil.buildImageUrl(
-        item.profilePicture,
-        this.appConfigService.getString(ConfigParam.CLIENT_URL),
-      ),
+      profilePicture: CommonFunctionsUtil.buildImageUrl(item.profilePicture, this.appConfigService.getString(ConfigParam.CLIENT_URL)),
       countryCode: item.countryCode,
       contactNumber: item.contactNumber,
       emailId: item.emailId,
@@ -108,23 +105,24 @@ export class MemberService {
     if (existingMember) {
       throw new BadRequestException('Email already exists');
     }
-
     // Hash password if provided
     let hashedPassword = '';
     if (obj.password) {
       hashedPassword = await CryptoUtil.generateHash(obj.password);
     } else {
-      // Generate temporary password if not provided
+      // Generate a temporary password if not provided
       const tempPassword = generateRandomPassword();
       hashedPassword = await CryptoUtil.generateHash(tempPassword);
     }
-
     const createObj = {
       firstName: obj.firstName,
       lastName: obj.lastName,
-      profilePicture: (obj.profilePicture && obj.profilePicture.length > 0) ? JSON.stringify(obj.profilePicture) : null,
+      profilePicture:
+        obj.profilePicture && obj.profilePicture.length > 0
+          ? obj.profilePicture
+          : null,
       password: hashedPassword,
-      passwordTemp: hashedPassword, // Set same as password initially
+      passwordTemp: hashedPassword, // Set the same as password initially
       countryCode: obj.countryCode,
       contactNumber: obj.contactNumber,
       emailId: obj.emailId,
@@ -148,7 +146,6 @@ export class MemberService {
     if (!find) {
       throw new NotFoundException('Member not found');
     }
-
     // Check if email already exists for another member
     if (obj.emailId && obj.emailId !== find.emailId) {
       const existingMember = await this.memberRepository.findOne({
@@ -158,7 +155,6 @@ export class MemberService {
         throw new BadRequestException('Email already exists');
       }
     }
-
     const updateObj: any = {
       firstName: obj.firstName,
       lastName: obj.lastName,
@@ -175,28 +171,36 @@ export class MemberService {
       modifiedBy: adminId,
       modifiedIp: cIp,
     };
-
     // Update password if provided
     if (obj.password) {
       const hashedPassword = await CryptoUtil.generateHash(obj.password);
       updateObj.password = hashedPassword;
       updateObj.passwordTemp = hashedPassword;
     }
-
     // Update profile picture if provided
     if (obj.profilePicture && obj.profilePicture.length > 0) {
-      updateObj.profilePicture = JSON.stringify(obj.profilePicture);
+      updateObj.profilePicture = obj.profilePicture;
     }
-
     await this.memberRepository.update(updateObj, { where: { memberId: id } });
   }
 
-  public async changeStatus(id: number, active: boolean, deactivationReason: string | null, cIp: string, adminId: number): Promise<void> {
+  public async changeStatus(
+    id: number,
+    active: boolean,
+    deactivationReason: string | null,
+    cIp: string,
+    adminId: number,
+  ): Promise<void> {
     const find = await this.memberRepository.findOne({ where: { memberId: id } });
     if (!find) {
       throw new NotFoundException('Member not found');
     }
-    const updateObj: { active: boolean; modifiedBy: number; modifiedIp: string; deactivationReason?: string } = {
+    const updateObj: {
+      active: boolean;
+      modifiedBy: number;
+      modifiedIp: string;
+      deactivationReason?: string;
+    } = {
       active: active,
       modifiedBy: adminId,
       modifiedIp: cIp,

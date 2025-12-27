@@ -1,5 +1,5 @@
-import { IBaseAdminUser } from '../base.interface';
-import { IIssueStatus, IIssueCategory } from './issue.interface';
+import { IBaseAdminUser } from "../base.interface";
+import { IIssueStatus, IIssueCategory } from "./issue.interface";
 
 export interface IBaseMemberIssue {
   memberId: number;
@@ -14,8 +14,8 @@ export interface IManageMemberIssue extends IBaseMemberIssue {
 
 export interface IMemberIssue extends IBaseMemberIssue {
   memberIssueId: number;
-  issueStatus?: IIssueStatus;
-  issueCategory?: IIssueCategory;
+  issueStatus: string;
+  issueCategory: string;
   createdBy: number;
   updatedBy: number;
   createdAt: Date;

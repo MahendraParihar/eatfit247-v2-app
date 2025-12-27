@@ -11,6 +11,8 @@ import { TypeOfExercise } from './type-of-exercise/type-of-exercise.component';
 import { UrineOutput } from './urine-output/urine-output.component';
 import { HealthParameter } from './health-parameter/health-parameter.component';
 import { ManageHealthParameter } from './health-parameter/manage/manage-health-parameter.component';
+import { HealthParameterUnit } from './health-parameter-unit/health-parameter-unit.component';
+import { ManageHealthParameterUnit } from './health-parameter-unit/manage/manage-health-parameter-unit.component';
 // Call Logs
 import { CallPurpose } from './call-purpose/call-purpose.component';
 import { CallLogStatus } from './call-log-status/call-log-status.component';
@@ -93,6 +95,9 @@ export const lovMasterRoutes: Route[] = [
   { path: 'health-parameter', component: HealthParameter, title: 'Health Parameter' },
   { path: 'health-parameter/new', component: ManageHealthParameter, title: 'Create Health Parameter' },
   { path: 'health-parameter/edit/:id', component: ManageHealthParameter, title: 'Edit Health Parameter' },
+  { path: 'health-parameter-unit', component: HealthParameterUnit, title: 'Health Parameter Unit' },
+  { path: 'health-parameter-unit/new', component: ManageHealthParameterUnit, title: 'Create Health Parameter Unit' },
+  { path: 'health-parameter-unit/edit/:id', component: ManageHealthParameterUnit, title: 'Edit Health Parameter Unit' },
   // Call Logs
   { path: 'call-purpose', component: CallPurpose, title: 'Call Purpose' },
   { path: 'call-purpose/new', component: ManageCallPurpose, title: 'Create Call Purpose' },

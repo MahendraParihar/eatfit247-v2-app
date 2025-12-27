@@ -1,8 +1,24 @@
 import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard, CurrentUser, RequestedIp, BasicSearchDto } from '@server/common';
-import { MemberService, MemberPocketGuideService, MemberHealthIssueService, MemberCallLogsService } from '../../services';
+import {
+  MemberService,
+  MemberPocketGuideService,
+  MemberHealthIssueService,
+  MemberCallLogsService,
+  MemberHealthParameterLogsService,
+  MemberIssueService,
+} from '../../services';
 import { CreateMemberDto } from '../../dto';
-import { ITableList, IMember, IResponse, IMemberPocketGuide, IMemberHealthIssue, IMemberCallLog } from 'eatfit247-shared-lib';
+import {
+  ITableList,
+  IMember,
+  IResponse,
+  IMemberPocketGuide,
+  IMemberHealthIssue,
+  IMemberCallLog,
+  IMemberHealthParameterLog,
+  IMemberIssue,
+} from 'eatfit247-shared-lib';
 
 @Controller('member')
 @UseGuards(JwtAuthGuard)
@@ -12,6 +28,8 @@ export class MemberController {
     private readonly memberPocketGuideService: MemberPocketGuideService,
     private readonly memberHealthIssueService: MemberHealthIssueService,
     private readonly memberCallLogsService: MemberCallLogsService,
+    private readonly memberHealthParameterLogsService: MemberHealthParameterLogsService,
+    private readonly memberIssueService: MemberIssueService,
   ) {}
 
   @Get('list')
@@ -20,9 +38,8 @@ export class MemberController {
   }
 
   @Get('manage/:id')
-  async getById(@Param('id') id: number): Promise<IResponse<IMember>> {
-    const data = await this.service.fetchById(id);
-    return { data };
+  async getById(@Param('id') id: number): Promise<IMember> {
+    return await this.service.fetchById(id);
   }
 
   @Post('manage')
@@ -55,20 +72,27 @@ export class MemberController {
   }
 
   @Get(':id/pocket-guide')
-  async getPocketGuides(@Param('id') id: number): Promise<IResponse<IMemberPocketGuide[]>> {
-    const data = await this.memberPocketGuideService.findByMemberId(id);
-    return { data };
+  async getPocketGuides(@Param('id') id: number): Promise<IMemberPocketGuide[]> {
+    return await this.memberPocketGuideService.findByMemberId(id);
   }
 
   @Get(':id/health-issues')
-  async getHealthIssues(@Param('id') id: number): Promise<IResponse<IMemberHealthIssue[]>> {
-    const data = await this.memberHealthIssueService.findByMemberId(id);
-    return { data };
+  async getHealthIssues(@Param('id') id: number): Promise<IMemberHealthIssue[]> {
+    return await this.memberHealthIssueService.findByMemberId(id);
   }
 
   @Get(':id/call-logs')
-  async getCallLogs(@Param('id') id: number): Promise<IResponse<IMemberCallLog[]>> {
-    const data = await this.memberCallLogsService.findByMemberId(id);
-    return { data };
+  async getCallLogs(@Param('id') id: number): Promise<IMemberCallLog[]> {
+    return await this.memberCallLogsService.findByMemberId(id);
+  }
+
+  @Get(':id/health-parameter-logs')
+  async getHealthParameterLogs(@Param('id') id: number): Promise<IMemberHealthParameterLog[]> {
+    return await this.memberHealthParameterLogsService.findByMemberId(id);
+  }
+
+  @Get(':id/issues')
+  async getIssues(@Param('id') id: number): Promise<IMemberIssue[]> {
+    return await this.memberIssueService.findByMemberId(id);
   }
 }

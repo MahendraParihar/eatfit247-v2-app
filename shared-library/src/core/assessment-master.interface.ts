@@ -221,7 +221,7 @@ export interface IUrineOutput extends IBaseUrineOutput {
   updatedByUser?: IBaseAdminUser;
 }
 
-// Health Parameter specific interfaces (more complex)
+// Health Parameter-specific interfaces (more complex)
 export interface IBaseHealthParameter {
   healthParameter: string;
   hintText: string;
@@ -239,6 +239,28 @@ export interface IManageHealthParameter extends IBaseHealthParameter {
 
 export interface IHealthParameter extends IBaseHealthParameter {
   healthParameterId: number;
+  active: boolean;
+  createdBy: number;
+  updatedBy: number;
+  createdAt: Date;
+  updatedAt: Date;
+  createdByUser?: IBaseAdminUser;
+  updatedByUser?: IBaseAdminUser;
+}
+
+// Health Parameter Unit specific interfaces
+export interface IBaseHealthParameterUnit {
+  healthParameterUnit: string;
+}
+
+export interface IManageHealthParameterUnit extends IBaseHealthParameterUnit {
+  healthParameterUnitId?: number;
+  active: boolean;
+}
+
+export interface IHealthParameterUnit extends IBaseHealthParameterUnit {
+  healthParameterUnitId: number;
+  id: number;
   active: boolean;
   createdBy: number;
   updatedBy: number;

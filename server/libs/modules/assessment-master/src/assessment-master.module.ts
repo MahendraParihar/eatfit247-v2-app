@@ -14,6 +14,7 @@ import {
   MstTypeOfExercise,
   MstUrineOutput,
   MstHealthParameter,
+  MstHealthParameterUnit,
 } from '@server/common';
 import {
   GenderController,
@@ -27,6 +28,7 @@ import {
   TypeOfExerciseController,
   UrineOutputController,
   HealthParameterController,
+  HealthParameterUnitController,
   PublicGenderController,
   PublicBloodSugarController,
   PublicHealthIssueController,
@@ -51,6 +53,7 @@ import {
   TypeOfExerciseService,
   UrineOutputService,
   HealthParameterService,
+  HealthParameterUnitService,
 } from './services';
 
 // Models are registered in @server/common module
@@ -69,6 +72,7 @@ import {
       MstTypeOfExercise,
       MstUrineOutput,
       MstHealthParameter,
+      MstHealthParameterUnit,
       MstAdminUser,
     ]),
   ],
@@ -84,6 +88,7 @@ import {
     TypeOfExerciseController,
     UrineOutputController,
     HealthParameterController,
+    HealthParameterUnitController,
     PublicGenderController,
     PublicBloodSugarController,
     PublicHealthIssueController,
@@ -108,6 +113,7 @@ import {
     TypeOfExerciseService,
     UrineOutputService,
     HealthParameterService,
+    HealthParameterUnitService,
   ],
   exports: [
     GenderService,
@@ -121,6 +127,7 @@ import {
     TypeOfExerciseService,
     UrineOutputService,
     HealthParameterService,
+    HealthParameterUnitService,
     SequelizeModule,
   ],
 })

@@ -58,6 +58,16 @@ export class EmptyStateComponent {
           backgroundColor: 'rgba(255, 152, 0, 0.1)',
         };
 
+      case EmptyStateType.MEMBER_HEALTH_PARAMETER_LOGS:
+        return {
+          title: 'No Health Parameter Logs',
+          description:
+            "This member doesn't have any health parameter logs recorded at the moment.",
+          icon: 'fitness_center',
+          iconColor: '#E91E63',
+          backgroundColor: 'rgba(233, 30, 99, 0.1)',
+        };
+
       case EmptyStateType.MEMBER_ASSESSMENT:
         return {
           title: 'No Assessment Available',
@@ -94,13 +104,13 @@ export class EmptyStateComponent {
           backgroundColor: 'rgba(255, 87, 34, 0.1)',
         };
 
-      case EmptyStateType.MEMBER_BODY_STATS:
+      case EmptyStateType.MEMBER_ISSUES:
         return {
-          title: 'No Body Stats Recorded',
-          description: 'This member doesn\'t have any body statistics recorded at the moment.',
-          icon: 'fitness_center',
-          iconColor: '#E91E63',
-          backgroundColor: 'rgba(233, 30, 99, 0.1)',
+          title: 'No Issues Recorded',
+          description: 'This member doesn\'t have any issues recorded at the moment.',
+          icon: 'report_problem',
+          iconColor: '#FF9800',
+          backgroundColor: 'rgba(255, 152, 0, 0.1)',
         };
 
       case EmptyStateType.MEMBER_DASHBOARD:

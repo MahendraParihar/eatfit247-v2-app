@@ -40,22 +40,26 @@ export class MemberDetailsComponent implements OnInit, OnDestroy {
   member: IMember | null = null;
   loading = false;
   private destroy$ = new Subject<void>();
-
   menuItems: MenuItem[] = [
     { label: 'Dashboard', icon: 'dashboard', route: 'dashboard' },
     { label: 'Assessment', icon: 'assignment', route: 'assessment' },
     { label: 'Pocket Guide', icon: 'menu_book', route: 'pocket-guide' },
     { label: 'Health Issues', icon: 'local_hospital', route: 'health-issues' },
+    {
+      label: 'Body Stats',
+      icon: 'fitness_center',
+      route: 'health-parameter-logs',
+    },
+    { label: 'Issues', icon: 'report_problem', route: 'issues' },
     { label: 'Call Logs', icon: 'phone', route: 'call-logs' },
     { label: 'Payment History', icon: 'payments', route: 'payment-history' },
     { label: 'Diet History', icon: 'restaurant_menu', route: 'diet-history' },
-    { label: 'Body Stats', icon: 'fitness_center', route: 'body-stats' },
   ];
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private apiService: MembersApiService
+    private apiService: MembersApiService,
   ) {}
 
   ngOnInit(): void {
@@ -93,6 +97,9 @@ export class MemberDetailsComponent implements OnInit, OnDestroy {
 
   getMemberDisplayName(): string {
     if (!this.member) return '';
-    return `${this.member.firstName || ''} ${this.member.lastName || ''}`.trim() || 'Member';
+    return (
+      `${this.member.firstName || ''} ${this.member.lastName || ''}`.trim() ||
+      'Member'
+    );
   }
 }
