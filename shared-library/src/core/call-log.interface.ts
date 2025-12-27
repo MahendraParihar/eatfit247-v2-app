@@ -12,7 +12,6 @@ export interface IManageCallLogStatus extends IBaseCallLogStatus {
 
 export interface ICallLogStatus extends IBaseCallLogStatus {
   callLogStatusId: number;
-  id?: number; // For compatibility with old interface
   active: boolean;
   createdBy: number;
   updatedBy: number;
@@ -34,7 +33,6 @@ export interface IManageCallPurpose extends IBaseCallPurpose {
 
 export interface ICallPurpose extends IBaseCallPurpose {
   callPurposeId: number;
-  id?: number; // For compatibility with old interface
   active: boolean;
   createdBy: number;
   updatedBy: number;
@@ -56,41 +54,7 @@ export interface IManageCallType extends IBaseCallType {
 
 export interface ICallType extends IBaseCallType {
   callTypeId: number;
-  id?: number; // For compatibility with old interface
   active: boolean;
-  createdBy: number;
-  updatedBy: number;
-  createdAt: Date;
-  updatedAt: Date;
-  createdByUser?: IBaseAdminUser;
-  updatedByUser?: IBaseAdminUser;
-}
-
-// Call Log Transaction Interface
-export interface IBaseCallLog {
-  callDate: Date;
-  nextFollowUpDate?: Date;
-  remarks?: string;
-  callPurposeId: number;
-  callTypeId: number;
-  callLogStatusId: number;
-  memberId: number;
-}
-
-export interface IManageCallLog extends IBaseCallLog {
-  callLogId?: number;
-}
-
-export interface ICallLog extends IBaseCallLog {
-  callLogId: number;
-  callPurpose?: ICallPurpose;
-  callType?: ICallType;
-  callLogStatus?: ICallLogStatus;
-  member?: {
-    memberId: number;
-    firstName?: string;
-    lastName?: string;
-  };
   createdBy: number;
   updatedBy: number;
   createdAt: Date;

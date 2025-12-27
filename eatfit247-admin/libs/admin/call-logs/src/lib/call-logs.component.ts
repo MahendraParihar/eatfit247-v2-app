@@ -4,7 +4,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { DataTableComponent, ITableColumn, ITableConfig, ITableAction, createdByUserFormatter, updatedByUserFormatter } from '@shared';
-import { ICallLog, ITableList } from '@eatfit247-shared-lib';
+import { IMemberCallLog, ITableList } from '@eatfit247-shared-lib';
 import { CallLogsApiService } from './api.service';
 import { Subject, debounceTime, distinctUntilChanged, switchMap } from 'rxjs';
 
@@ -16,10 +16,10 @@ import { Subject, debounceTime, distinctUntilChanged, switchMap } from 'rxjs';
   styleUrl: './call-logs.scss',
 })
 export class CallLogs implements OnInit {
-  data: any[] = [];
+  data: IMemberCallLog[] = [];
   totalCount = 0;
   loading = false;
-  tableConfig!: ITableConfig<any>;
+  tableConfig!: ITableConfig<IMemberCallLog>;
   private searchSubject = new Subject<string>();
 
   constructor(
@@ -36,33 +36,104 @@ export class CallLogs implements OnInit {
   }
 
   private initializeTable(): void {
-    const columns: ITableColumn<any>[] = [
-      { key: 'callLogId', label: 'ID', dataKey: 'callLogId', sortable: true, width: '80px' },
-      { key: 'member', label: 'Member', dataKey: 'member', sortable: false, formatter: (value) => value ? `${value.firstName || ''} ${value.lastName || ''}`.trim() || '-' : '-' },
-      { key: 'callPurpose', label: 'Purpose', dataKey: 'callPurpose', sortable: false, formatter: (value) => value?.callPurpose || '-' },
-      { key: 'callType', label: 'Type', dataKey: 'callType', sortable: false, formatter: (value) => value?.callType || '-' },
-      { key: 'callLogStatus', label: 'Status', dataKey: 'callLogStatus', sortable: false, formatter: (value) => value?.callLogStatus || '-' },
-      { key: 'callDate', label: 'Call Date', dataKey: 'callDate', sortable: true, formatter: (value) => (value ? new Date(value).toLocaleDateString() : '') },
-      { key: 'nextFollowUpDate', label: 'Next Follow Up', dataKey: 'nextFollowUpDate', sortable: true, formatter: (value) => (value ? new Date(value).toLocaleDateString() : '-') },
-      { key: 'createdByUser', label: 'Created By', dataKey: 'createdByUser', sortable: false, formatter: createdByUserFormatter() },
-      { key: 'updatedByUser', label: 'Updated By', dataKey: 'updatedByUser', sortable: false, formatter: updatedByUserFormatter() },
+    const columns: ITableColumn<IMemberCallLog>[] = [
+      {
+        key: 'memberCallLogId',
+        label: 'ID',
+        dataKey: 'memberCallLogId',
+        sortable: true,
+        width: '80px',
+      },
+      {
+        key: 'memberName',
+        label: 'Member',
+        dataKey: 'memberName',
+        sortable: false,
+        searchable: true,
+      },
+      {
+        key: 'date',
+        label: 'Date',
+        dataKey: 'date',
+        sortable: true,
+        width: '120px',
+        formatter: (value) => this.formatDate(value),
+      },
+      {
+        key: 'startTime',
+        label: 'Start Time',
+        dataKey: 'startTime',
+        sortable: true,
+        width: '120px',
+        formatter: (value) => this.formatTime(value),
+      },
+      {
+        key: 'endTime',
+        label: 'End Time',
+        dataKey: 'endTime',
+        sortable: true,
+        width: '120px',
+        formatter: (value) => this.formatTime(value),
+      },
+      {
+        key: 'callType',
+        label: 'Call Type',
+        dataKey: 'callType',
+        sortable: false,
+      },
+      {
+        key: 'callPurpose',
+        label: 'Call Purpose',
+        dataKey: 'callPurpose',
+        sortable: false,
+      },
+      {
+        key: 'callLogStatus',
+        label: 'Status',
+        dataKey: 'callLogStatus',
+        sortable: false,
+      },
+      { key: 'detail', label: 'Detail', dataKey: 'detail', sortable: false },
+      {
+        key: 'active',
+        label: 'Active',
+        dataKey: 'active',
+        sortable: true,
+        width: '100px',
+        align: 'center',
+        formatter: (value) => (value ? 'Yes' : 'No'),
+      },
+      {
+        key: 'createdBy',
+        label: 'Created By',
+        dataKey: 'createdBy',
+        sortable: false,
+        formatter: createdByUserFormatter(),
+      },
+      {
+        key: 'updatedBy',
+        label: 'Updated By',
+        dataKey: 'updatedBy',
+        sortable: false,
+        formatter: updatedByUserFormatter(),
+      },
       {
         key: 'createdAt',
         label: 'Created At',
         dataKey: 'createdAt',
         type: 'date',
-        sortable: true
+        sortable: true,
       },
       {
         key: 'updatedAt',
         label: 'Updated At',
         dataKey: 'updatedAt',
         type: 'date',
-        sortable: true
+        sortable: true,
       },
     ];
 
-    const actions: ITableAction<any>[] = [
+    const actions: ITableAction<IMemberCallLog>[] = [
       { label: 'Edit', icon: 'edit', color: 'primary', onClick: (row) => this.editItem(row) },
       { label: 'View', icon: 'visibility', color: 'primary', onClick: (row) => this.viewItem(row) },
     ];
@@ -80,6 +151,21 @@ export class CallLogs implements OnInit {
     };
   }
 
+  private formatDate(value: any): string {
+    if (!value) return '';
+    const date = new Date(value);
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+  }
+
+  private formatTime(value: any): string {
+    if (!value) return '';
+    // Handle both string time format (HH:mm:ss) and Date objects
+    if (typeof value === 'string') {
+      return value.substring(0, 5); // Return HH:mm format
+    }
+    return value;
+  }
+
   private setupSearch(): void {
     this.searchSubject.pipe(debounceTime(300), distinctUntilChanged(), switchMap((search) => {
       this.loading = true;
@@ -93,7 +179,7 @@ export class CallLogs implements OnInit {
   async loadData(): Promise<void> {
     this.loading = true;
     try {
-      const response: ITableList<ICallLog> = await this.apiService.getList({ page: 0, limit: this.tableConfig.pageSize || 10 });
+      const response: ITableList<IMemberCallLog> = await this.apiService.getList({ page: 0, limit: this.tableConfig.pageSize || 10 });
       this.data = response.tableData;
       this.totalCount = response.count;
       this.loading = false;
@@ -105,7 +191,7 @@ export class CallLogs implements OnInit {
   async onPageChange(pagination: any): Promise<void> {
     this.loading = true;
     try {
-      const response: ITableList<any> = await this.apiService.getList({ page: pagination.pageIndex, limit: pagination.pageSize });
+      const response: ITableList<IMemberCallLog> = await this.apiService.getList({ page: pagination.pageIndex, limit: pagination.pageSize });
       this.data = response.tableData;
       this.totalCount = response.count;
       this.loading = false;
@@ -117,7 +203,7 @@ export class CallLogs implements OnInit {
   async onSortChange(sort: any): Promise<void> {
     this.loading = true;
     try {
-      const response: ITableList<any> = await this.apiService.getList({ page: 0, limit: this.tableConfig.pageSize || 10, sortBy: sort.active, sortOrder: sort.direction });
+      const response: ITableList<IMemberCallLog> = await this.apiService.getList({ page: 0, limit: this.tableConfig.pageSize || 10, sortBy: sort.active, sortOrder: sort.direction });
       this.data = response.tableData;
       this.totalCount = response.count;
       this.loading = false;
@@ -130,15 +216,16 @@ export class CallLogs implements OnInit {
     this.searchSubject.next(search);
   }
 
-  editItem(item: any): void {
-    this.router.navigate(['/call-logs/edit', item.callLogId]);
+  editItem(item: IMemberCallLog): void {
+    this.router.navigate(['/call-logs/edit', item.memberCallLogId]);
   }
 
   createItem(): void {
     this.router.navigate(['/call-logs/new']);
   }
 
-  viewItem(item: any): void {
-    console.log('View call log:', item);
+  viewItem(item: IMemberCallLog): void {
+    // Navigate to member details page showing this call log, or just show member details
+    this.router.navigate(['/members/details', item.memberId, 'call-logs']);
   }
 }

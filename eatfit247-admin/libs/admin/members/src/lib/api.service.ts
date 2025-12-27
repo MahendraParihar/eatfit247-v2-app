@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { ApiBaseService, HttpService } from '@core';
-import { ITableList, IMember, IResponse, IManageMember, IDropdownItem } from '@eatfit247-shared-lib';
+import { ITableList, IMember, IResponse, IManageMember, IDropdownItem, IMemberCallLog } from '@eatfit247-shared-lib';
 
 @Injectable({
   providedIn: 'root'
@@ -93,6 +93,13 @@ export class MembersApiService extends ApiBaseService {
       `${this.endpoint}/${memberId}/health-issues`
     );
     return res.data as any[];
+  }
+
+  async getCallLogs(memberId: number): Promise<IMemberCallLog[]> {
+    const res = await this.httpService.get<IResponse<IMemberCallLog[]>>(
+      `${this.endpoint}/${memberId}/call-logs`
+    );
+    return res.data as IMemberCallLog[];
   }
 }
 

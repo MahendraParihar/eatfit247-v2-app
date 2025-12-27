@@ -1,8 +1,8 @@
 import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard, CurrentUser, RequestedIp, BasicSearchDto } from '@server/common';
-import { MemberService, MemberPocketGuideService, MemberHealthIssueService } from '../../services';
+import { MemberService, MemberPocketGuideService, MemberHealthIssueService, MemberCallLogsService } from '../../services';
 import { CreateMemberDto } from '../../dto';
-import { ITableList, IMember, IResponse, IMemberPocketGuide, IMemberHealthIssue } from 'eatfit247-shared-lib';
+import { ITableList, IMember, IResponse, IMemberPocketGuide, IMemberHealthIssue, IMemberCallLog } from 'eatfit247-shared-lib';
 
 @Controller('member')
 @UseGuards(JwtAuthGuard)
@@ -11,6 +11,7 @@ export class MemberController {
     private readonly service: MemberService,
     private readonly memberPocketGuideService: MemberPocketGuideService,
     private readonly memberHealthIssueService: MemberHealthIssueService,
+    private readonly memberCallLogsService: MemberCallLogsService,
   ) {}
 
   @Get('list')
@@ -62,6 +63,12 @@ export class MemberController {
   @Get(':id/health-issues')
   async getHealthIssues(@Param('id') id: number): Promise<IResponse<IMemberHealthIssue[]>> {
     const data = await this.memberHealthIssueService.findByMemberId(id);
+    return { data };
+  }
+
+  @Get(':id/call-logs')
+  async getCallLogs(@Param('id') id: number): Promise<IResponse<IMemberCallLog[]>> {
+    const data = await this.memberCallLogsService.findByMemberId(id);
     return { data };
   }
 }

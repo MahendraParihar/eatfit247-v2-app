@@ -3,6 +3,12 @@ import { ICreateUpdate, IDropdownItem } from "./common.interface";
 
 export interface IMemberCallLog extends ICreateUpdate {
   id: number;
+  memberCallLogId?: number;
+  memberId: number;
+  memberName?: string; // Full name for display
+  memberFirstName?: string;
+  memberLastName?: string;
+  memberEmail?: string;
   callPurposeId: number;
   callLogStatusId: number;
   callTypeId: number;
@@ -15,6 +21,7 @@ export interface IMemberCallLog extends ICreateUpdate {
   startTime: string;
   endTime: string;
   imagePath?: IMediaUpload[];
+  isMailSuccess?: boolean;
 }
 
 export interface IManageMemberCallLog {

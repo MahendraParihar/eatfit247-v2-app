@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { ApiBaseService, HttpService } from '@core';
-import { ITableList, IResponse, ICallLog } from '@eatfit247-shared-lib';
+import { ITableList, IResponse, IMemberCallLog } from '@eatfit247-shared-lib';
 
 @Injectable({
   providedIn: 'root',
@@ -12,14 +12,14 @@ export class CallLogsApiService extends ApiBaseService {
     super(httpService);
   }
 
-  async getList(params?: any): Promise<ITableList<ICallLog>> {
-    const res = await this.httpService.get<IResponse<ITableList<ICallLog>>>(`${this.endpoint}/list`, { params });
-    return res.data as ITableList<ICallLog>;
+  async getList(params?: any): Promise<ITableList<IMemberCallLog>> {
+    const res = await this.httpService.get<IResponse<ITableList<IMemberCallLog>>>(`${this.endpoint}/list`, { params });
+    return res.data as ITableList<IMemberCallLog>;
   }
 
-  async getById(id: number): Promise<ICallLog> {
-    const res = await this.httpService.get<IResponse<ICallLog>>(`${this.endpoint}/manage/${id}`);
-    return res.data as ICallLog;
+  async getById(id: number): Promise<IMemberCallLog> {
+    const res = await this.httpService.get<IResponse<IMemberCallLog>>(`${this.endpoint}/manage/${id}`);
+    return res.data as IMemberCallLog;
   }
 
   async create(data: any): Promise<void> {
