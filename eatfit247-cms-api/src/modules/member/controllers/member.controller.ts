@@ -1,7 +1,6 @@
 import { Body, Controller, Get, Param, Post, Put, Query, Req, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../../account/jwt-auth.guard';
 import { BasicSearchDto, UpdateUserStatusDto } from '../../../common-dto/basic-input.dto';
-import { StringResource } from 'shared-lib';
 import { CommonService } from '../../common/common.service';
 import { FranchiseService } from '../../franchise/franchise.service';
 import { MemberService } from '../services/member.service';
