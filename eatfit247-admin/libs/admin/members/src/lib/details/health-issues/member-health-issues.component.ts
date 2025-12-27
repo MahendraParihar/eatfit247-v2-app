@@ -2,6 +2,8 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 import { DataTableComponent, ITableColumn, ITableConfig, EmptyStateComponent, EmptyStateType, LoaderComponent, createdByUserFormatter, updatedByUserFormatter } from '@shared';
 import { IMemberHealthIssue } from '@eatfit247-shared-lib';
 import { MembersApiService } from '../../api.service';
@@ -10,7 +12,7 @@ import { Subject, takeUntil } from 'rxjs';
 @Component({
   selector: 'lib-member-health-issues',
   standalone: true,
-  imports: [CommonModule, MatCardModule, DataTableComponent, EmptyStateComponent, LoaderComponent],
+  imports: [CommonModule, MatCardModule, MatButtonModule, MatIconModule, DataTableComponent, EmptyStateComponent, LoaderComponent],
   templateUrl: './member-health-issues.component.html',
   styleUrl: './member-health-issues.component.scss'
 })
@@ -82,5 +84,10 @@ export class MemberHealthIssuesComponent implements OnInit, OnDestroy {
     } finally {
       this.loading = false;
     }
+  }
+
+  addHealthIssue(): void {
+    // TODO: Open dialog/form to add new health issue
+    console.log('Add health issue for member:', this.memberId);
   }
 }

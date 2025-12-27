@@ -4,4 +4,5 @@ export * from './member-health-issue.service';
 export * from './member-call-logs.service';
 export * from './member-health-parameter-logs.service';
 export * from './member-issue.service';
+export * from './member-assessment.service';
 

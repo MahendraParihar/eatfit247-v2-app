@@ -10,4 +10,5 @@ export * from './type-of-exercise.controller';
 export * from './urine-output.controller';
 export * from './health-parameter.controller';
 export * from './health-parameter-unit.controller';
+export * from './assessment.controller';
 

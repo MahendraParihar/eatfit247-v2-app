@@ -5,6 +5,12 @@
   <app-data-table
     [config]="tableConfig"
     [data]="pocketGuides">
+    <div headerActions>
+      <button mat-raised-button color="primary" (click)="addPocketGuide()">
+        <mat-icon>add</mat-icon>
+        Add Pocket Guide
+      </button>
+    </div>
   </app-data-table>
 }
 @if (!loading && pocketGuides.length === 0) {

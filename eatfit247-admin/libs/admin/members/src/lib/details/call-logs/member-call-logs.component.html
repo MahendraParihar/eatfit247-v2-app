@@ -5,6 +5,12 @@
   <app-data-table
     [config]="tableConfig"
     [data]="callLogs">
+    <div headerActions>
+      <button mat-raised-button color="primary" (click)="addCallLog()">
+        <mat-icon>add</mat-icon>
+        Add Call Log
+      </button>
+    </div>
   </app-data-table>
 }
 @if (!loading && callLogs.length === 0) {

@@ -6,4 +6,5 @@ export * from './txn-member-health-issue.model';
 export * from './txn-member-health-parameter-log.model';
 export * from './txn-member-health-parameter.model';
 export * from './txn-member-call-log.model';
+export * from './txn-assessment.model';
 

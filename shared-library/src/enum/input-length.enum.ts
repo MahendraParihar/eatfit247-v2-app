@@ -15,6 +15,7 @@ export enum InputLengthEnum {
   CHAR_250 = 250,
   CHAR_500 = 500,
   CHAR_1000 = 1000,
+  CHAR_2000 = 2000,
   OTP = 6,
   MIN_CONTACT_NUMBER = 6,
   MAX_COUNTRY_CODE = 4,

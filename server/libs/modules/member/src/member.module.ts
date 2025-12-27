@@ -13,8 +13,18 @@ import {
   MstCallLogStatus,
   MstHealthParameter,
   MstHealthParameterUnit,
+  MstGender,
+  MstMaritalStatus,
+  MstReligion,
+  MstLifestyle,
+  MstEatingHabit,
+  MstTypeOfExercise,
+  MstSleepingPattern,
+  MstBloodSugar,
+  MstUrineOutput,
+  TxnAddress,
 } from '@server/common';
-import { TxnMember, TxnMemberPocketGuide, TxnMemberHealthIssue, TxnMemberIssue, TxnMemberHealthParameterLog, TxnMemberHealthParameter } from './models';
+import { TxnMember, TxnMemberPocketGuide, TxnMemberHealthIssue, TxnMemberIssue, TxnMemberHealthParameterLog, TxnMemberHealthParameter, TxnAssessment } from './models';
 import { MstReferrer } from '@server/common';
 import { MstFranchise } from '@server/common';
 import {
@@ -29,6 +39,7 @@ import {
   MemberCallLogsService,
   MemberHealthParameterLogsService,
   MemberIssueService,
+  MemberAssessmentService,
 } from './services';
 import { TxnMemberCallLog } from './models';
 // Register models with the model registry
@@ -40,6 +51,7 @@ modelRegistry.register([
   TxnMemberCallLog,
   TxnMemberHealthParameterLog,
   TxnMemberHealthParameter,
+  TxnAssessment,
 ]);
 
 @Module({
@@ -52,6 +64,7 @@ modelRegistry.register([
       TxnMemberCallLog,
       TxnMemberHealthParameterLog,
       TxnMemberHealthParameter,
+      TxnAssessment,
       MstReferrer,
       MstFranchise,
       MstCountry,
@@ -65,6 +78,16 @@ modelRegistry.register([
       MstCallLogStatus,
       MstHealthParameter,
       MstHealthParameterUnit,
+      MstGender,
+      MstMaritalStatus,
+      MstReligion,
+      MstLifestyle,
+      MstEatingHabit,
+      MstTypeOfExercise,
+      MstSleepingPattern,
+      MstBloodSugar,
+      MstUrineOutput,
+      TxnAddress,
     ]),
   ],
   controllers: [
@@ -79,6 +102,7 @@ modelRegistry.register([
     MemberCallLogsService,
     MemberHealthParameterLogsService,
     MemberIssueService,
+    MemberAssessmentService,
   ],
   exports: [
     MemberService,

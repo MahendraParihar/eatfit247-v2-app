@@ -57,7 +57,7 @@ npm run start:prod
 This project uses `eatfit247-shared-lib` for common interfaces and utilities:
 
 ```typescript
-import { IResponse, IDropdownItem, CommonUtil } from '@eatfit247-shared-lib';
+import { IResponse, IDropdownItem, CommonUtil } from 'eatfit247-shared-lib';
 ```
 
 ## Environment Variables

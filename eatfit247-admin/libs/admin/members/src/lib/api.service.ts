@@ -1,6 +1,17 @@
 import { Injectable } from '@angular/core';
 import { ApiBaseService, HttpService } from '@core';
-import { ITableList, IMember, IResponse, IManageMember, IDropdownItem, IMemberCallLog, IMemberIssue } from '@eatfit247-shared-lib';
+import {
+  ITableList,
+  IMember,
+  IResponse,
+  IManageMember,
+  IDropdownItem,
+  IMemberCallLog,
+  IMemberIssue,
+  IMemberAssessment,
+  IManageMemberAssessment,
+  IAssessmentMaster
+} from '@eatfit247-shared-lib';
 
 @Injectable({
   providedIn: 'root'
@@ -114,6 +125,27 @@ export class MembersApiService extends ApiBaseService {
       `${this.endpoint}/${memberId}/issues`
     );
     return res.data as IMemberIssue[];
+  }
+
+  async getAssessment(memberId: number): Promise<IMemberAssessment | null> {
+    const res = await this.httpService.get<IResponse<IMemberAssessment | null>>(
+      `${this.endpoint}/${memberId}/assessment`
+    );
+    return res.data as IMemberAssessment | null;
+  }
+
+  async getAssessmentMaster(): Promise<IAssessmentMaster> {
+    const res = await this.httpService.get<IResponse<IAssessmentMaster>>(
+      `assessment/master-data`
+    );
+    return res.data as IAssessmentMaster;
+  }
+
+  async updateAssessment(memberId: number, data: IManageMemberAssessment): Promise<void> {
+    return await this.httpService.put<void>(
+      `${this.endpoint}/${memberId}/assessment`,
+      data
+    );
   }
 }
 

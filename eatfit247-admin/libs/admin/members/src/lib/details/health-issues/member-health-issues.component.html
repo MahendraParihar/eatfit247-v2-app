@@ -5,6 +5,12 @@
   <app-data-table
     [config]="tableConfig"
     [data]="healthIssues">
+    <div headerActions>
+      <button mat-raised-button color="primary" (click)="addHealthIssue()">
+        <mat-icon>add</mat-icon>
+        Add Health Issue
+      </button>
+    </div>
   </app-data-table>
 }
 @if (!loading && healthIssues.length === 0) {

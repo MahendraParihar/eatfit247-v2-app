@@ -1,5 +1,943 @@
-<mat-card>
-  <mat-card-content>
-    <p>Assessment content will be displayed here.</p>
-  </mat-card-content>
-</mat-card>
+@if (loading) {
+  <lib-loader></lib-loader>
+}
+
+@if (!loading) {
+  <mat-card>
+    <mat-card-header>
+      <div class="header-content">
+        <h2>Member Assessment</h2>
+        @if (!isEditMode) {
+          <button mat-raised-button color="primary" (click)="toggleEditMode()">
+            <mat-icon>edit</mat-icon>
+            Edit
+          </button>
+        }
+      </div>
+    </mat-card-header>
+
+    <mat-card-content>
+      @if (!isEditMode) {
+        <!-- Display Mode -->
+        @if (assessment) {
+          <!-- Section 1: Personal Details -->
+          <div class="section">
+            <h3 class="section-title">Personal Details</h3>
+            <div class="section-content">
+              <div class="field-group">
+                <div class="field">
+                  <label>Date of Birth</label>
+                  <span>{{ assessment?.dateOfBirth ? (assessment.dateOfBirth | date: 'yyyy-MM-dd') : '-' }}</span>
+                </div>
+                <div class="field">
+                  <label>Age</label>
+                  <span>{{ getFieldValue('age') }}</span>
+                </div>
+                <div class="field">
+                  <label>Gender</label>
+                  <span>{{ getFieldValue('gender') }}</span>
+                </div>
+                <div class="field">
+                  <label>Marital Status</label>
+                  <span>{{ getFieldValue('maritalStatus') }}</span>
+                </div>
+                <div class="field">
+                  <label>Religion</label>
+                  <span>{{ getFieldValue('religion') }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 2: Work Details -->
+          <div class="section">
+            <h3 class="section-title">Work Details</h3>
+            <div class="section-content">
+              <div class="field-group">
+                <div class="field">
+                  <label>Lifestyle</label>
+                  <span>{{ getFieldValue('lifestyle') }}</span>
+                </div>
+                <div class="field">
+                  <label>Eating Habit</label>
+                  <span>{{ getFieldValue('eatingHabit') }}</span>
+                </div>
+                <div class="field">
+                  <label>Tobacco Amount</label>
+                  <span>{{ getFieldValue('tobaccoAmount') }}</span>
+                </div>
+                <div class="field">
+                  <label>Tobacco Frequency</label>
+                  <span>{{ getFieldValue('tobaccoFrequency') }}</span>
+                </div>
+                <div class="field">
+                  <label>Smoking Amount</label>
+                  <span>{{ getFieldValue('smokingAmount') }}</span>
+                </div>
+                <div class="field">
+                  <label>Smoking Frequency</label>
+                  <span>{{ getFieldValue('smokingFrequency') }}</span>
+                </div>
+                <div class="field">
+                  <label>Alcohol Drink</label>
+                  <span>{{ getFieldValue('alcoholDrink') }}</span>
+                </div>
+                <div class="field">
+                  <label>Alcohol Frequency</label>
+                  <span>{{ getFieldValue('alcoholFrequency') }}</span>
+                </div>
+                <div class="field">
+                  <label>Alcohol Amount</label>
+                  <span>{{ getFieldValue('alcoholAmount') }}</span>
+                </div>
+                <div class="field">
+                  <label>Paan</label>
+                  <span>{{ getFieldValue('paan') }}</span>
+                </div>
+                <div class="field">
+                  <label>Aerated Drinks</label>
+                  <span>{{ getFieldValue('aeratedDrinks') }}</span>
+                </div>
+                <div class="field">
+                  <label>Water Intake</label>
+                  <span>{{ getFieldValue('waterIntake') }}</span>
+                </div>
+                <div class="field">
+                  <label>Religious</label>
+                  <span>{{ getFieldValue('religious') }}</span>
+                </div>
+                <div class="field">
+                  <label>Fasting</label>
+                  <span>{{ getFieldValue('fasting') }}</span>
+                </div>
+                <div class="field">
+                  <label>Restaurant Visit</label>
+                  <span>{{ getFieldValue('restaurantVisit') }}</span>
+                </div>
+                <div class="field">
+                  <label>Preferred Cuisine</label>
+                  <span>{{ getFieldValue('preferredCuisine') }}</span>
+                </div>
+                <div class="field">
+                  <label>Who Cooks</label>
+                  <span>{{ getFieldValue('whoCooks') }}</span>
+                </div>
+                <div class="field">
+                  <label>Hunger Peak</label>
+                  <span>{{ getFieldValue('hungerPeak') }}</span>
+                </div>
+                <div class="field">
+                  <label>Food Dislikes</label>
+                  <span>{{ getFieldValue('foodDislikes') }}</span>
+                </div>
+                <div class="field">
+                  <label>Other Food Preferences</label>
+                  <span>{{ getFieldValue('otherFoodPreferences') }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 3: Exercise Details -->
+          <div class="section">
+            <h3 class="section-title">Exercise Details</h3>
+            <div class="section-content">
+              <div class="field-group">
+                <div class="field">
+                  <label>Do You Exercise</label>
+                  <span>{{ getFieldValue('doYouExercise') }}</span>
+                </div>
+                <div class="field">
+                  <label>Type of Exercise</label>
+                  <span>{{ getFieldValue('typeOfExercise') }}</span>
+                </div>
+                <div class="field">
+                  <label>Frequency</label>
+                  <span>{{ getFieldValue('frequency') }}</span>
+                </div>
+                <div class="field">
+                  <label>Duration</label>
+                  <span>{{ getFieldValue('duration') }}</span>
+                </div>
+                <div class="field">
+                  <label>Time</label>
+                  <span>{{ getFieldValue('time') }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 4: Medical Details -->
+          <div class="section">
+            <h3 class="section-title">Medical Details</h3>
+            <div class="section-content">
+              <div class="field-group">
+                <div class="field">
+                  <label>Allergies</label>
+                  <span>{{ getFieldValue('allergies') }}</span>
+                </div>
+                <div class="field">
+                  <label>Allergy Specify</label>
+                  <span>{{ getFieldValue('allergySpecify') }}</span>
+                </div>
+                <div class="field">
+                  <label>Sleeping Pattern</label>
+                  <span>{{ getFieldValue('sleepingPattern') }}</span>
+                </div>
+                <div class="field">
+                  <label>Sleep Duration</label>
+                  <span>{{ getFieldValue('sleepDuration') }}</span>
+                </div>
+                <div class="field">
+                  <label>Gas</label>
+                  <span>{{ getFieldValue('gas') }}</span>
+                </div>
+                <div class="field">
+                  <label>Hyper Acidity</label>
+                  <span>{{ getFieldValue('hyperAcidity') }}</span>
+                </div>
+                <div class="field">
+                  <label>Constipation</label>
+                  <span>{{ getFieldValue('constipation') }}</span>
+                </div>
+                <div class="field">
+                  <label>Periods</label>
+                  <span>{{ getFieldValue('periods') }}</span>
+                </div>
+                <div class="field">
+                  <label>LMP</label>
+                  <span>{{ getFieldValue('lmp') }}</span>
+                </div>
+                <div class="field">
+                  <label>Days Cycle</label>
+                  <span>{{ getFieldValue('daysCycle') }}</span>
+                </div>
+                <div class="field">
+                  <label>Hair Fall</label>
+                  <span>{{ getFieldValue('hairFall') }}</span>
+                </div>
+                <div class="field">
+                  <label>Knee Pain</label>
+                  <span>{{ getFieldValue('kneePain') }}</span>
+                </div>
+                <div class="field">
+                  <label>Back Pain</label>
+                  <span>{{ getFieldValue('backPain') }}</span>
+                </div>
+                <div class="field">
+                  <label>Blood Sugar</label>
+                  <span>{{ getFieldValue('bloodSugar') }}</span>
+                </div>
+                <div class="field">
+                  <label>Blood Sugar Value</label>
+                  <span>{{ getFieldValue('bloodSugarValue') }}</span>
+                </div>
+                <div class="field">
+                  <label>Cholesterol</label>
+                  <span>{{ getFieldValue('cholesterol') }}</span>
+                </div>
+                <div class="field">
+                  <label>Triglycerides</label>
+                  <span>{{ getFieldValue('triglycerides') }}</span>
+                </div>
+                <div class="field">
+                  <label>HDL Cholesterol</label>
+                  <span>{{ getFieldValue('hdlCholesterol') }}</span>
+                </div>
+                <div class="field">
+                  <label>LDL Cholesterol</label>
+                  <span>{{ getFieldValue('ldlCholesterol') }}</span>
+                </div>
+                <div class="field">
+                  <label>VLDL Cholesterol</label>
+                  <span>{{ getFieldValue('vldlCholesterol') }}</span>
+                </div>
+                <div class="field">
+                  <label>HG Level</label>
+                  <span>{{ getFieldValue('hgLevel') }}</span>
+                </div>
+                <div class="field">
+                  <label>Urine Output</label>
+                  <span>{{ getFieldValue('urineOutput') }}</span>
+                </div>
+                <div class="field">
+                  <label>Supplement Medicine</label>
+                  <span>{{ getFieldValue('supplementMedicine') }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 5: Eating Pattern -->
+          <div class="section">
+            <h3 class="section-title">Eating Pattern</h3>
+            <div class="section-content">
+              <div class="field-group">
+                <div class="field">
+                  <label>Wakeup Timing</label>
+                  <span>{{ getFieldValue('wakeupTiming') }}</span>
+                </div>
+                <div class="field">
+                  <label>Breakfast Menu</label>
+                  <span>{{ getFieldValue('bfMenu') }}</span>
+                </div>
+                <div class="field">
+                  <label>Breakfast Time</label>
+                  <span>{{ getFieldValue('bfTime') }}</span>
+                </div>
+                <div class="field">
+                  <label>Mid Morning Menu</label>
+                  <span>{{ getFieldValue('mmMenu') }}</span>
+                </div>
+                <div class="field">
+                  <label>Mid Morning Time</label>
+                  <span>{{ getFieldValue('mmTime') }}</span>
+                </div>
+                <div class="field">
+                  <label>Lunch Menu</label>
+                  <span>{{ getFieldValue('lunchMenu') }}</span>
+                </div>
+                <div class="field">
+                  <label>Lunch Time</label>
+                  <span>{{ getFieldValue('lunchTime') }}</span>
+                </div>
+                <div class="field">
+                  <label>Evening Menu</label>
+                  <span>{{ getFieldValue('eveMenu') }}</span>
+                </div>
+                <div class="field">
+                  <label>Evening Time</label>
+                  <span>{{ getFieldValue('eveTime') }}</span>
+                </div>
+                <div class="field">
+                  <label>Mid Evening Menu</label>
+                  <span>{{ getFieldValue('midEveMenu') }}</span>
+                </div>
+                <div class="field">
+                  <label>Mid Evening Time</label>
+                  <span>{{ getFieldValue('midEveTime') }}</span>
+                </div>
+                <div class="field">
+                  <label>Dinner Menu</label>
+                  <span>{{ getFieldValue('dinnerMenu') }}</span>
+                </div>
+                <div class="field">
+                  <label>Dinner Time</label>
+                  <span>{{ getFieldValue('dinnerTime') }}</span>
+                </div>
+                <div class="field">
+                  <label>Night Snacks</label>
+                  <span>{{ getFieldValue('nightSnacks') }}</span>
+                </div>
+                <div class="field">
+                  <label>Bed Time</label>
+                  <span>{{ getFieldValue('bedTime') }}</span>
+                </div>
+                <div class="field">
+                  <label>Fruits Frequency</label>
+                  <span>{{ getFieldValue('fruitsFrequency') }}</span>
+                </div>
+                <div class="field">
+                  <label>Bread Amount</label>
+                  <span>{{ getFieldValue('breadAmount') }}</span>
+                </div>
+                <div class="field">
+                  <label>Bread Frequency</label>
+                  <span>{{ getFieldValue('breakFrequency') }}</span>
+                </div>
+                <div class="field">
+                  <label>Sweet Amount</label>
+                  <span>{{ getFieldValue('sweetAmount') }}</span>
+                </div>
+                <div class="field">
+                  <label>Sweet Frequency</label>
+                  <span>{{ getFieldValue('sweetFrequency') }}</span>
+                </div>
+                <div class="field">
+                  <label>Tea Amount</label>
+                  <span>{{ getFieldValue('teaAmount') }}</span>
+                </div>
+                <div class="field">
+                  <label>Tea Frequency</label>
+                  <span>{{ getFieldValue('teaFrequency') }}</span>
+                </div>
+                <div class="field">
+                  <label>Remark</label>
+                  <span>{{ getFieldValue('remark') }}</span>
+                </div>
+                <div class="field">
+                  <label>Nutritionist Summary</label>
+                  <span>{{ getFieldValue('nutritionistSummery') }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        } @else {
+          <p>No assessment data available.</p>
+        }
+      } @else {
+        <!-- Edit Mode -->
+        <form [formGroup]="formGroup" (ngSubmit)="onUpdate()">
+          <!-- Section 1: Personal Details -->
+          <div class="section">
+            <h3 class="section-title">Personal Details</h3>
+            <div class="section-content">
+              <div class="form-row">
+                <mat-form-field>
+                  <mat-label>Date of Birth</mat-label>
+                  <input matInput [matDatepicker]="picker" formControlName="dateOfBirth" readonly>
+                  <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+                  <mat-datepicker #picker></mat-datepicker>
+                  <app-input-error [control]="formGroup.get('dateOfBirth')!"></app-input-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>Age</mat-label>
+                  <input matInput type="number" formControlName="age">
+                  <app-input-error [control]="formGroup.get('age')!"></app-input-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>Gender</mat-label>
+                  <mat-select formControlName="genderId">
+                    <mat-option [value]="null">--- Select ---</mat-option>
+                    @for (option of genderOptions; track option.id) {
+                      <mat-option [value]="option.id">{{ option.label }}</mat-option>
+                    }
+                  </mat-select>
+                  <app-input-error [control]="formGroup.get('genderId')!"></app-input-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>Marital Status</mat-label>
+                  <mat-select formControlName="maritalStatusId">
+                    <mat-option [value]="null">--- Select ---</mat-option>
+                    @for (option of maritalStatusOptions; track option.id) {
+                      <mat-option [value]="option.id">{{ option.label }}</mat-option>
+                    }
+                  </mat-select>
+                  <app-input-error [control]="formGroup.get('maritalStatusId')!"></app-input-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>Religion</mat-label>
+                  <mat-select formControlName="religionId">
+                    <mat-option [value]="null">--- Select ---</mat-option>
+                    @for (option of religionOptions; track option.id) {
+                      <mat-option [value]="option.id">{{ option.label }}</mat-option>
+                    }
+                  </mat-select>
+                  <app-input-error [control]="formGroup.get('religionId')!"></app-input-error>
+                </mat-form-field>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 2: Work Details -->
+          <div class="section">
+            <h3 class="section-title">Work Details</h3>
+            <div class="section-content">
+              <div class="form-row">
+                <mat-form-field>
+                  <mat-label>Lifestyle</mat-label>
+                  <mat-select formControlName="lifestyleId">
+                    <mat-option [value]="null">--- Select ---</mat-option>
+                    @for (option of lifestyleOptions; track option.id) {
+                      <mat-option [value]="option.id">{{ option.label }}</mat-option>
+                    }
+                  </mat-select>
+                  <app-input-error [control]="formGroup.get('lifestyleId')!"></app-input-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>Eating Habit</mat-label>
+                  <mat-select formControlName="eatingHabitId">
+                    <mat-option [value]="null">--- Select ---</mat-option>
+                    @for (option of eatingHabitOptions; track option.id) {
+                      <mat-option [value]="option.id">{{ option.label }}</mat-option>
+                    }
+                  </mat-select>
+                  <app-input-error [control]="formGroup.get('eatingHabitId')!"></app-input-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>Tobacco Amount</mat-label>
+                  <input matInput formControlName="tobaccoAmount">
+                  <app-input-error [control]="formGroup.get('tobaccoAmount')!"></app-input-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>Tobacco Frequency</mat-label>
+                  <input matInput formControlName="tobaccoFrequency">
+                  <app-input-error [control]="formGroup.get('tobaccoFrequency')!"></app-input-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>Smoking Amount</mat-label>
+                  <input matInput formControlName="smokingAmount">
+                  <app-input-error [control]="formGroup.get('smokingAmount')!"></app-input-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>Smoking Frequency</mat-label>
+                  <input matInput formControlName="smokingFrequency">
+                  <app-input-error [control]="formGroup.get('smokingFrequency')!"></app-input-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>Alcohol Drink</mat-label>
+                  <input matInput formControlName="alcoholDrink">
+                  <app-input-error [control]="formGroup.get('alcoholDrink')!"></app-input-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>Alcohol Frequency</mat-label>
+                  <input matInput formControlName="alcoholFrequency">
+                  <app-input-error [control]="formGroup.get('alcoholFrequency')!"></app-input-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>Alcohol Amount</mat-label>
+                  <input matInput formControlName="alcoholAmount">
+                  <app-input-error [control]="formGroup.get('alcoholAmount')!"></app-input-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>Paan</mat-label>
+                  <input matInput formControlName="paan">
+                  <app-input-error [control]="formGroup.get('paan')!"></app-input-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>Aerated Drinks</mat-label>
+                  <input matInput formControlName="aeratedDrinks">
+                  <app-input-error [control]="formGroup.get('aeratedDrinks')!"></app-input-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>Water Intake</mat-label>
+                  <input matInput formControlName="waterIntake">
+                  <app-input-error [control]="formGroup.get('waterIntake')!"></app-input-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>Religious</mat-label>
+                  <input matInput formControlName="religious">
+                  <app-input-error [control]="formGroup.get('religious')!"></app-input-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>Fasting</mat-label>
+                  <input matInput formControlName="fasting">
+                  <app-input-error [control]="formGroup.get('fasting')!"></app-input-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>Restaurant Visit</mat-label>
+                  <input matInput formControlName="restaurantVisit">
+                  <app-input-error [control]="formGroup.get('restaurantVisit')!"></app-input-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>Preferred Cuisine</mat-label>
+                  <input matInput formControlName="preferredCuisine">
+                  <app-input-error [control]="formGroup.get('preferredCuisine')!"></app-input-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>Who Cooks</mat-label>
+                  <input matInput formControlName="whoCooks">
+                  <app-input-error [control]="formGroup.get('whoCooks')!"></app-input-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>Hunger Peak</mat-label>
+                  <input matInput formControlName="hungerPeak">
+                  <app-input-error [control]="formGroup.get('hungerPeak')!"></app-input-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>Food Dislikes</mat-label>
+                  <input matInput formControlName="foodDislikes">
+                  <app-input-error [control]="formGroup.get('foodDislikes')!"></app-input-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>Other Food Preferences</mat-label>
+                  <input matInput formControlName="otherFoodPreferences">
+                  <app-input-error [control]="formGroup.get('otherFoodPreferences')!"></app-input-error>
+                </mat-form-field>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 3: Exercise Details -->
+          <div class="section">
+            <h3 class="section-title">Exercise Details</h3>
+            <div class="section-content">
+              <div class="form-row">
+                <mat-form-field>
+                  <mat-label>Do You Exercise</mat-label>
+                  <input matInput formControlName="doYouExercise">
+                  <app-input-error [control]="formGroup.get('doYouExercise')!"></app-input-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>Type of Exercise</mat-label>
+                  <mat-select formControlName="typeOfExerciseId">
+                    <mat-option [value]="null">--- Select ---</mat-option>
+                    @for (option of typeOfExerciseOptions; track option.id) {
+                      <mat-option [value]="option.id">{{ option.label }}</mat-option>
+                    }
+                  </mat-select>
+                  <app-input-error [control]="formGroup.get('typeOfExerciseId')!"></app-input-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>Frequency</mat-label>
+                  <input matInput formControlName="frequency">
+                  <app-input-error [control]="formGroup.get('frequency')!"></app-input-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>Duration</mat-label>
+                  <input matInput formControlName="duration">
+                  <app-input-error [control]="formGroup.get('duration')!"></app-input-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>Time</mat-label>
+                  <input matInput formControlName="time">
+                  <app-input-error [control]="formGroup.get('time')!"></app-input-error>
+                </mat-form-field>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 4: Medical Details -->
+          <div class="section">
+            <h3 class="section-title">Medical Details</h3>
+            <div class="section-content">
+              <div class="form-row">
+                <mat-form-field>
+                  <mat-label>Allergies</mat-label>
+                  <input matInput formControlName="allergies">
+                  <app-input-error [control]="formGroup.get('allergies')!"></app-input-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>Allergy Specify</mat-label>
+                  <input matInput formControlName="allergySpecify">
+                  <app-input-error [control]="formGroup.get('allergySpecify')!"></app-input-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>Sleeping Pattern</mat-label>
+                  <mat-select formControlName="sleepingPatternId">
+                    <mat-option [value]="null">--- Select ---</mat-option>
+                    @for (option of sleepingPatternOptions; track option.id) {
+                      <mat-option [value]="option.id">{{ option.label }}</mat-option>
+                    }
+                  </mat-select>
+                  <app-input-error [control]="formGroup.get('sleepingPatternId')!"></app-input-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>Sleep Duration</mat-label>
+                  <input matInput formControlName="sleepDuration">
+                  <app-input-error [control]="formGroup.get('sleepDuration')!"></app-input-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>Gas</mat-label>
+                  <input matInput formControlName="gas">
+                  <app-input-error [control]="formGroup.get('gas')!"></app-input-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>Hyper Acidity</mat-label>
+                  <input matInput formControlName="hyperAcidity">
+                  <app-input-error [control]="formGroup.get('hyperAcidity')!"></app-input-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>Constipation</mat-label>
+                  <input matInput formControlName="constipation">
+                  <app-input-error [control]="formGroup.get('constipation')!"></app-input-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>Periods</mat-label>
+                  <input matInput formControlName="periods">
+                  <app-input-error [control]="formGroup.get('periods')!"></app-input-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>LMP</mat-label>
+                  <input matInput formControlName="lmp">
+                  <app-input-error [control]="formGroup.get('lmp')!"></app-input-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>Days Cycle</mat-label>
+                  <input matInput formControlName="daysCycle">
+                  <app-input-error [control]="formGroup.get('daysCycle')!"></app-input-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>Hair Fall</mat-label>
+                  <input matInput formControlName="hairFall">
+                  <app-input-error [control]="formGroup.get('hairFall')!"></app-input-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>Knee Pain</mat-label>
+                  <input matInput formControlName="kneePain">
+                  <app-input-error [control]="formGroup.get('kneePain')!"></app-input-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>Back Pain</mat-label>
+                  <input matInput formControlName="backPain">
+                  <app-input-error [control]="formGroup.get('backPain')!"></app-input-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>Blood Sugar</mat-label>
+                  <mat-select formControlName="bloodSugarId">
+                    <mat-option [value]="null">--- Select ---</mat-option>
+                    @for (option of bloodSugarOptions; track option.id) {
+                      <mat-option [value]="option.id">{{ option.label }}</mat-option>
+                    }
+                  </mat-select>
+                  <app-input-error [control]="formGroup.get('bloodSugarId')!"></app-input-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>Blood Sugar Value</mat-label>
+                  <input matInput formControlName="bloodSugarValue">
+                  <app-input-error [control]="formGroup.get('bloodSugarValue')!"></app-input-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>Cholesterol</mat-label>
+                  <input matInput formControlName="cholesterol">
+                  <app-input-error [control]="formGroup.get('cholesterol')!"></app-input-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>Triglycerides</mat-label>
+                  <input matInput formControlName="triglycerides">
+                  <app-input-error [control]="formGroup.get('triglycerides')!"></app-input-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>HDL Cholesterol</mat-label>
+                  <input matInput formControlName="hdlCholesterol">
+                  <app-input-error [control]="formGroup.get('hdlCholesterol')!"></app-input-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>LDL Cholesterol</mat-label>
+                  <input matInput formControlName="ldlCholesterol">
+                  <app-input-error [control]="formGroup.get('ldlCholesterol')!"></app-input-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>VLDL Cholesterol</mat-label>
+                  <input matInput formControlName="vldlCholesterol">
+                  <app-input-error [control]="formGroup.get('vldlCholesterol')!"></app-input-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>HG Level</mat-label>
+                  <input matInput formControlName="hgLevel">
+                  <app-input-error [control]="formGroup.get('hgLevel')!"></app-input-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>Urine Output</mat-label>
+                  <mat-select formControlName="urineOutputId">
+                    <mat-option [value]="null">--- Select ---</mat-option>
+                    @for (option of urineOutputOptions; track option.id) {
+                      <mat-option [value]="option.id">{{ option.label }}</mat-option>
+                    }
+                  </mat-select>
+                  <app-input-error [control]="formGroup.get('urineOutputId')!"></app-input-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>Supplement Medicine</mat-label>
+                  <input matInput formControlName="supplementMedicine">
+                  <app-input-error [control]="formGroup.get('supplementMedicine')!"></app-input-error>
+                </mat-form-field>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 5: Eating Pattern -->
+          <div class="section">
+            <h3 class="section-title">Eating Pattern</h3>
+            <div class="section-content">
+              <div class="form-row">
+                <mat-form-field>
+                  <mat-label>Wakeup Timing</mat-label>
+                  <input matInput formControlName="wakeupTiming">
+                  <app-input-error [control]="formGroup.get('wakeupTiming')!"></app-input-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>Breakfast Menu</mat-label>
+                  <input matInput formControlName="bfMenu">
+                  <app-input-error [control]="formGroup.get('bfMenu')!"></app-input-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>Breakfast Time</mat-label>
+                  <input matInput formControlName="bfTime">
+                  <app-input-error [control]="formGroup.get('bfTime')!"></app-input-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>Mid Morning Menu</mat-label>
+                  <input matInput formControlName="mmMenu">
+                  <app-input-error [control]="formGroup.get('mmMenu')!"></app-input-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>Mid Morning Time</mat-label>
+                  <input matInput formControlName="mmTime">
+                  <app-input-error [control]="formGroup.get('mmTime')!"></app-input-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>Lunch Menu</mat-label>
+                  <input matInput formControlName="lunchMenu">
+                  <app-input-error [control]="formGroup.get('lunchMenu')!"></app-input-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>Lunch Time</mat-label>
+                  <input matInput formControlName="lunchTime">
+                  <app-input-error [control]="formGroup.get('lunchTime')!"></app-input-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>Evening Menu</mat-label>
+                  <input matInput formControlName="eveMenu">
+                  <app-input-error [control]="formGroup.get('eveMenu')!"></app-input-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>Evening Time</mat-label>
+                  <input matInput formControlName="eveTime">
+                  <app-input-error [control]="formGroup.get('eveTime')!"></app-input-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>Mid Evening Menu</mat-label>
+                  <input matInput formControlName="midEveMenu">
+                  <app-input-error [control]="formGroup.get('midEveMenu')!"></app-input-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>Mid Evening Time</mat-label>
+                  <input matInput formControlName="midEveTime">
+                  <app-input-error [control]="formGroup.get('midEveTime')!"></app-input-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>Dinner Menu</mat-label>
+                  <input matInput formControlName="dinnerMenu">
+                  <app-input-error [control]="formGroup.get('dinnerMenu')!"></app-input-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>Dinner Time</mat-label>
+                  <input matInput formControlName="dinnerTime">
+                  <app-input-error [control]="formGroup.get('dinnerTime')!"></app-input-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>Night Snacks</mat-label>
+                  <input matInput formControlName="nightSnacks">
+                  <app-input-error [control]="formGroup.get('nightSnacks')!"></app-input-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>Bed Time</mat-label>
+                  <input matInput formControlName="bedTime">
+                  <app-input-error [control]="formGroup.get('bedTime')!"></app-input-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>Fruits Frequency</mat-label>
+                  <input matInput formControlName="fruitsFrequency">
+                  <app-input-error [control]="formGroup.get('fruitsFrequency')!"></app-input-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>Bread Amount</mat-label>
+                  <input matInput formControlName="breadAmount">
+                  <app-input-error [control]="formGroup.get('breadAmount')!"></app-input-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>Bread Frequency</mat-label>
+                  <input matInput formControlName="breakFrequency">
+                  <app-input-error [control]="formGroup.get('breakFrequency')!"></app-input-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>Sweet Amount</mat-label>
+                  <input matInput formControlName="sweetAmount">
+                  <app-input-error [control]="formGroup.get('sweetAmount')!"></app-input-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>Sweet Frequency</mat-label>
+                  <input matInput formControlName="sweetFrequency">
+                  <app-input-error [control]="formGroup.get('sweetFrequency')!"></app-input-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>Tea Amount</mat-label>
+                  <input matInput formControlName="teaAmount">
+                  <app-input-error [control]="formGroup.get('teaAmount')!"></app-input-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>Tea Frequency</mat-label>
+                  <input matInput formControlName="teaFrequency">
+                  <app-input-error [control]="formGroup.get('teaFrequency')!"></app-input-error>
+                </mat-form-field>
+
+                <mat-form-field class="full-width">
+                  <mat-label>Remark</mat-label>
+                  <textarea matInput formControlName="remark" rows="5"></textarea>
+                  <app-input-error [control]="formGroup.get('remark')!"></app-input-error>
+                </mat-form-field>
+
+                <mat-form-field class="full-width">
+                  <mat-label>Nutritionist Summary</mat-label>
+                  <textarea matInput formControlName="nutritionistSummery" rows="5"></textarea>
+                  <app-input-error [control]="formGroup.get('nutritionistSummery')!"></app-input-error>
+                </mat-form-field>
+              </div>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="action-buttons">
+            <button mat-raised-button type="button" (click)="onCancel()">
+              Cancel
+            </button>
+            <button mat-raised-button color="primary" type="submit">
+              Update
+            </button>
+          </div>
+        </form>
+      }
+    </mat-card-content>
+  </mat-card>
+}

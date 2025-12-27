@@ -2,6 +2,8 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 import { DataTableComponent, ITableColumn, ITableConfig, EmptyStateComponent, EmptyStateType, LoaderComponent, createdByUserFormatter, updatedByUserFormatter } from '@shared';
 import { IMemberHealthParameterLog } from '@eatfit247-shared-lib';
 import { MembersApiService } from '../../api.service';
@@ -10,7 +12,7 @@ import { Subject, takeUntil } from 'rxjs';
 @Component({
   selector: 'lib-member-health-parameter-logs',
   standalone: true,
-  imports: [CommonModule, MatCardModule, DataTableComponent, EmptyStateComponent, LoaderComponent],
+  imports: [CommonModule, MatCardModule, MatButtonModule, MatIconModule, DataTableComponent, EmptyStateComponent, LoaderComponent],
   templateUrl: './member-health-parameter-logs.component.html',
   styleUrl: './member-health-parameter-logs.component.scss'
 })
@@ -108,5 +110,10 @@ export class MemberHealthParameterLogsComponent implements OnInit, OnDestroy {
   formatHealthParameters(value: any[]): string {
     if (!value || !Array.isArray(value) || value.length === 0) return '-';
     return value.map((param: any) => `${param.healthParameter || 'N/A'}: ${param.value || 'N/A'} ${param.healthParameterUnit || ''}`).join(', ');
+  }
+
+  addBodyStatsLog(): void {
+    // TODO: Open dialog/form to add new body stats log
+    console.log('Add body stats log for member:', this.memberId);
   }
 }

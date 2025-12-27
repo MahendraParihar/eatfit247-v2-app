@@ -2,6 +2,8 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 import { DataTableComponent, ITableColumn, ITableConfig, EmptyStateComponent, EmptyStateType, LoaderComponent, createdByUserFormatter, updatedByUserFormatter } from '@shared';
 import { IMemberPocketGuide } from '@eatfit247-shared-lib';
 import { MembersApiService } from '../../api.service';
@@ -10,7 +12,7 @@ import { Subject, takeUntil } from 'rxjs';
 @Component({
   selector: 'lib-member-pocket-guide',
   standalone: true,
-  imports: [CommonModule, MatCardModule, DataTableComponent, EmptyStateComponent, LoaderComponent],
+  imports: [CommonModule, MatCardModule, MatButtonModule, MatIconModule, DataTableComponent, EmptyStateComponent, LoaderComponent],
   templateUrl: './member-pocket-guide.component.html',
   styleUrl: './member-pocket-guide.component.scss'
 })
@@ -82,5 +84,10 @@ export class MemberPocketGuideComponent implements OnInit, OnDestroy {
     } finally {
       this.loading = false;
     }
+  }
+
+  addPocketGuide(): void {
+    // TODO: Open dialog/form to add new pocket guide
+    console.log('Add pocket guide for member:', this.memberId);
   }
 }

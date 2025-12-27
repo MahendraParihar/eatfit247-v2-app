@@ -2,6 +2,8 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 import { DataTableComponent, ITableColumn, ITableConfig, EmptyStateComponent, EmptyStateType, LoaderComponent } from '@shared';
 import { IMemberCallLog } from '@eatfit247-shared-lib';
 import { MembersApiService } from '../../api.service';
@@ -10,7 +12,7 @@ import { Subject, takeUntil } from 'rxjs';
 @Component({
   selector: 'lib-member-call-logs',
   standalone: true,
-  imports: [CommonModule, MatCardModule, DataTableComponent, EmptyStateComponent, LoaderComponent],
+  imports: [CommonModule, MatCardModule, MatButtonModule, MatIconModule, DataTableComponent, EmptyStateComponent, LoaderComponent],
   templateUrl: './member-call-logs.component.html',
   styleUrl: './member-call-logs.component.scss'
 })
@@ -89,5 +91,10 @@ export class MemberCallLogsComponent implements OnInit, OnDestroy {
       return value.substring(0, 5); // Return HH:mm format
     }
     return value;
+  }
+
+  addCallLog(): void {
+    // TODO: Open dialog/form to add new call log
+    console.log('Add call log for member:', this.memberId);
   }
 }

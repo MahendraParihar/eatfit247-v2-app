@@ -39,7 +39,7 @@ import {
   PublicSleepingPatternController,
   PublicTypeOfExerciseController,
   PublicUrineOutputController,
-  PublicHealthParameterController,
+  PublicHealthParameterController, AssessmentController,
 } from './controllers';
 import {
   GenderService,
@@ -77,6 +77,7 @@ import {
     ]),
   ],
   controllers: [
+    AssessmentController,
     GenderController,
     BloodSugarController,
     HealthIssueController,

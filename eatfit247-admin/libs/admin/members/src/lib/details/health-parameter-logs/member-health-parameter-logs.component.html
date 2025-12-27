@@ -5,6 +5,12 @@
   <app-data-table
     [config]="tableConfig"
     [data]="healthParameterLogs">
+    <div headerActions>
+      <button mat-raised-button color="primary" (click)="addBodyStatsLog()">
+        <mat-icon>add</mat-icon>
+        Add Body Stats Log
+      </button>
+    </div>
   </app-data-table>
 }
 @if (!loading && healthParameterLogs.length === 0) {

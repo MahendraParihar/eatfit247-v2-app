@@ -7,17 +7,18 @@ import {
   MemberCallLogsService,
   MemberHealthParameterLogsService,
   MemberIssueService,
+  MemberAssessmentService,
 } from '../../services';
-import { CreateMemberDto } from '../../dto';
+import { CreateMemberDto, CreateMemberAssessmentDto } from '../../dto';
 import {
   ITableList,
   IMember,
-  IResponse,
   IMemberPocketGuide,
   IMemberHealthIssue,
   IMemberCallLog,
   IMemberHealthParameterLog,
   IMemberIssue,
+  IMemberAssessment,
 } from 'eatfit247-shared-lib';
 
 @Controller('member')
@@ -30,6 +31,7 @@ export class MemberController {
     private readonly memberCallLogsService: MemberCallLogsService,
     private readonly memberHealthParameterLogsService: MemberHealthParameterLogsService,
     private readonly memberIssueService: MemberIssueService,
+    private readonly memberAssessmentService: MemberAssessmentService,
   ) {}
 
   @Get('list')
@@ -94,5 +96,25 @@ export class MemberController {
   @Get(':id/issues')
   async getIssues(@Param('id') id: number): Promise<IMemberIssue[]> {
     return await this.memberIssueService.findByMemberId(id);
+  }
+
+  @Get(':id/assessment')
+  async getAssessment(@Param('id') id: number): Promise<IMemberAssessment | null> {
+    return await this.memberAssessmentService.findByMemberId(id);
+  }
+
+  @Put(':id/assessment')
+  async updateAssessment(
+    @Param('id') id: number,
+    @Body() body: CreateMemberAssessmentDto,
+    @CurrentUser() currentUser: any,
+    @RequestedIp() requestedIp: string,
+  ): Promise<void> {
+    await this.memberAssessmentService.createOrUpdate(
+      id,
+      body,
+      requestedIp,
+      currentUser.userId || currentUser.adminId,
+    );
   }
 }

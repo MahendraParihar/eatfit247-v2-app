@@ -2,6 +2,8 @@ import { Component, OnInit, OnDestroy } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { ActivatedRoute } from "@angular/router";
 import { MatCardModule } from "@angular/material/card";
+import { MatButtonModule } from "@angular/material/button";
+import { MatIconModule } from "@angular/material/icon";
 import {
   DataTableComponent,
   ITableColumn,
@@ -19,7 +21,7 @@ import { Subject, takeUntil } from "rxjs";
 @Component({
   selector: "lib-member-issues",
   standalone: true,
-  imports: [CommonModule, MatCardModule, DataTableComponent, EmptyStateComponent, LoaderComponent],
+  imports: [CommonModule, MatCardModule, MatButtonModule, MatIconModule, DataTableComponent, EmptyStateComponent, LoaderComponent],
   templateUrl: "./member-issues.component.html",
   styleUrl: "./member-issues.component.scss"
 })
@@ -119,5 +121,10 @@ export class MemberIssuesComponent implements OnInit, OnDestroy {
     } finally {
       this.loading = false;
     }
+  }
+
+  addIssue(): void {
+    // TODO: Open dialog/form to add new issue
+    console.log("Add issue for member:", this.memberId);
   }
 }
