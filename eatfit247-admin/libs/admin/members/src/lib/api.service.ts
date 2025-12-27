@@ -13,7 +13,9 @@ import {
   IManageMemberAssessment,
   IAssessmentMaster,
   IMemberPocketGuide,
-  IMemberHealthIssue, IIssueMasterData
+  IMemberHealthIssue,
+  IMemberIssueResponse,
+  IIssueMasterData,
 } from '@eatfit247-shared-lib';
 
 @Injectable({
@@ -183,6 +185,33 @@ export class MembersApiService extends ApiBaseService {
     return res.data as IMemberAssessment | null;
   }
 
+  // region Member Issue Responses
+  async getIssueResponses(memberId: number, issueId: number): Promise<IMemberIssueResponse[]> {
+    const res = await this.httpService.get<IResponse<IMemberIssueResponse[]>>(
+      `${this.endpoint}/${memberId}/issues/${issueId}/responses`,
+    );
+    return res.data as IMemberIssueResponse[];
+  }
+
+  async createIssueResponse(
+    memberId: number,
+    issueId: number,
+    data: { response: string },
+  ): Promise<IMemberIssueResponse> {
+    const res = await this.httpService.post<IResponse<IMemberIssueResponse>>(
+      `${this.endpoint}/${memberId}/issues/${issueId}/responses`,
+      data,
+    );
+    return res.data as IMemberIssueResponse;
+  }
+
+  async markIssueAsSolved(memberId: number, issueId: number, isSolved: boolean): Promise<IMemberIssue> {
+    const res = await this.httpService.post<IResponse<IMemberIssue>>(
+      `${this.endpoint}/${memberId}/issues/${issueId}/mark-solved`,
+      { isSolved },
+    );
+    return res.data as IMemberIssue;
+  }
   // endregion
 
   async getAssessmentMaster(): Promise<IAssessmentMaster> {

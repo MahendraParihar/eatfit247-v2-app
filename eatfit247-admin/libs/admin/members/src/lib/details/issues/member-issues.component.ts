@@ -23,6 +23,10 @@ import {
   ManageMemberIssueComponent,
   ManageMemberIssueData
 } from "./manage-member-issue/manage-member-issue.component";
+import {
+  IssueChatComponent,
+  IssueChatData
+} from "./issue-chat/issue-chat.component";
 
 @Component({
   selector: "lib-member-issues",
@@ -111,6 +115,7 @@ export class MemberIssuesComponent implements OnInit, OnDestroy {
       }
     ];
     const actions: ITableAction<IMemberIssue>[] = [
+      { label: 'View/Respond', icon: 'chat', color: 'primary', onClick: (row) => this.openChat(row) },
       { label: 'Edit', icon: 'edit', color: 'primary', onClick: (row) => this.editIssue(row) },
     ];
 
@@ -170,6 +175,23 @@ export class MemberIssuesComponent implements OnInit, OnDestroy {
     dialogRef.afterClosed().subscribe((result) => {
       if (result === true) {
         // Reload issues after successful update
+        this.loadIssues();
+      }
+    });
+  }
+
+  openChat(issue: IMemberIssue): void {
+    const dialogData: IssueChatData = {
+      memberId: this.memberId,
+      issue: issue,
+    };
+    const dialogRef = this.dialog.open(IssueChatComponent, {
+      width: '600px',
+      data: dialogData,
+    });
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result === true) {
+        // Reload issues after chat interaction (status might have changed)
         this.loadIssues();
       }
     });

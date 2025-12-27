@@ -24,7 +24,7 @@ import {
   MstUrineOutput,
   TxnAddress,
 } from '@server/common';
-import { TxnMember, TxnMemberPocketGuide, TxnMemberHealthIssue, TxnMemberIssue, TxnMemberHealthParameterLog, TxnMemberHealthParameter, TxnAssessment } from './models';
+import { TxnMember, TxnMemberPocketGuide, TxnMemberHealthIssue, TxnMemberIssue, TxnMemberIssueResponse, TxnMemberHealthParameterLog, TxnMemberHealthParameter, TxnAssessment } from './models';
 import { MstReferrer } from '@server/common';
 import { MstFranchise } from '@server/common';
 import {
@@ -39,6 +39,7 @@ import {
   MemberCallLogsService,
   MemberHealthParameterLogsService,
   MemberIssueService,
+  MemberIssueResponseService,
   MemberAssessmentService,
 } from './services';
 import { TxnMemberCallLog } from './models';
@@ -48,6 +49,7 @@ modelRegistry.register([
   TxnMemberPocketGuide,
   TxnMemberHealthIssue,
   TxnMemberIssue,
+  TxnMemberIssueResponse,
   TxnMemberCallLog,
   TxnMemberHealthParameterLog,
   TxnMemberHealthParameter,
@@ -61,6 +63,7 @@ modelRegistry.register([
       TxnMemberPocketGuide,
       TxnMemberHealthIssue,
       TxnMemberIssue,
+      TxnMemberIssueResponse,
       TxnMemberCallLog,
       TxnMemberHealthParameterLog,
       TxnMemberHealthParameter,
@@ -102,6 +105,7 @@ modelRegistry.register([
     MemberCallLogsService,
     MemberHealthParameterLogsService,
     MemberIssueService,
+    MemberIssueResponseService,
     MemberAssessmentService,
   ],
   exports: [

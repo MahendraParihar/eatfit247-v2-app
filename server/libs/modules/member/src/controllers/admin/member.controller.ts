@@ -6,9 +6,11 @@ import {
   MemberHealthIssueService,
   MemberCallLogsService,
   MemberHealthParameterLogsService,
-  MemberIssueService, MemberAssessmentService,
+  MemberIssueService,
+  MemberIssueResponseService,
+  MemberAssessmentService,
 } from '../../services';
-import { CreateMemberDto, CreateMemberAssessmentDto, CreateMemberIssueDto } from '../../dto';
+import { CreateMemberDto, CreateMemberAssessmentDto, CreateMemberIssueDto, CreateMemberIssueResponseDto } from '../../dto';
 import {
   ITableList,
   IMember,
@@ -17,7 +19,9 @@ import {
   IMemberCallLog,
   IMemberHealthParameterLog,
   IMemberIssue,
-  IMemberAssessment, IIssueMasterData,
+  IMemberIssueResponse,
+  IMemberAssessment,
+  IIssueMasterData,
 } from 'eatfit247-shared-lib';
 
 @Controller('member')
@@ -30,6 +34,7 @@ export class MemberController {
     private readonly memberCallLogsService: MemberCallLogsService,
     private readonly memberHealthParameterLogsService: MemberHealthParameterLogsService,
     private readonly memberIssueService: MemberIssueService,
+    private readonly memberIssueResponseService: MemberIssueResponseService,
     private readonly memberAssessmentService: MemberAssessmentService,
   ) {}
 
@@ -181,7 +186,44 @@ export class MemberController {
     );
   }
 
+  // region Member Issue Response APIs
+  @Get(':id/issues/:issueId/responses')
+  async getIssueResponses(
+    @Param('id') id: number,
+    @Param('issueId') issueId: number,
+  ): Promise<IMemberIssueResponse[]> {
+    return await this.memberIssueResponseService.findByMemberIssueId(issueId);
+  }
+
+  @Post(':id/issues/:issueId/responses')
+  async createIssueResponse(
+    @Param('id') id: number,
+    @Param('issueId') issueId: number,
+    @Body() body: CreateMemberIssueResponseDto,
+    @CurrentUser() currentUser: any,
+  ): Promise<IMemberIssueResponse> {
+    return await this.memberIssueResponseService.create(
+      issueId,
+      body.response,
+      currentUser.userId || currentUser.adminId,
+    );
+  }
+
+  @Post(':id/issues/:issueId/mark-solved')
+  async markIssueAsSolved(
+    @Param('id') id: number,
+    @Param('issueId') issueId: number,
+    @Body() body: { isSolved: boolean },
+    @CurrentUser() currentUser: any,
+  ): Promise<IMemberIssue> {
+    return await this.memberIssueResponseService.markAsSolved(
+      issueId,
+      body.isSolved,
+      currentUser.userId || currentUser.adminId,
+    );
+  }
   // endregion
+
   @Get(':id/assessment')
   async getAssessment(@Param('id') id: number): Promise<IMemberAssessment | null> {
     return await this.memberAssessmentService.findByMemberId(id);
