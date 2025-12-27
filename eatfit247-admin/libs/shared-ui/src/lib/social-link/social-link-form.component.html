@@ -1,10 +1,10 @@
 <div class="social-link-form" [formGroup]="formGroup">
   <div formArrayName="socialLinks">
-    <div
-      *ngFor="let linkControl of getSocialLinksControls(); let i = index"
-      [formGroupName]="i"
-      class="social-link-item"
-    >
+    @for (linkControl of getSocialLinksControls(); track $index) {
+      <div
+        [formGroupName]="$index"
+        class="social-link-item"
+      >
     <mat-form-field appearance="outline">
       <mat-label>Platform</mat-label>
       <input matInput formControlName="label" readonly />
@@ -18,6 +18,7 @@
     </mat-form-field>
 
     <input type="hidden" formControlName="icon" />
-    </div>
+      </div>
+    }
   </div>
 </div>

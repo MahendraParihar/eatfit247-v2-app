@@ -7,13 +7,14 @@
     <p>{{ data.message }}</p>
   </mat-dialog-content>
   <mat-dialog-actions align="end">
-    <button
-      *ngIf="data.negativeBtnTxt"
-      mat-button
-      (click)="onNegativeClick()"
-    >
-      {{ data.negativeBtnTxt }}
-    </button>
+    @if (data.negativeBtnTxt) {
+      <button
+        mat-button
+        (click)="onNegativeClick()"
+      >
+        {{ data.negativeBtnTxt }}
+      </button>
+    }
     <button
       mat-raised-button
       [color]="getColorClass()"

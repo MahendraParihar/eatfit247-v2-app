@@ -1,19 +1,26 @@
 <div class="file-upload-list">
   <div class="form-item">
-    <mat-label *ngIf="mediaType === mediaTypeEnum.PDF">CHOOSE_ATTACHMENT</mat-label>
-    <mat-label *ngIf="mediaType !== mediaTypeEnum.PDF">CHOOSE_FILE</mat-label>
+    @if (mediaType === mediaTypeEnum.PDF) {
+      <mat-label>CHOOSE_ATTACHMENT</mat-label>
+    } @else {
+      <mat-label>CHOOSE_FILE</mat-label>
+    }
   </div>
   <div class="form-item">
     <div
       (files)="filesDropped($event)"
       eatfit247ImageDrag
       class="file-upload-box">
-      <mat-icon *ngIf="mediaTypeEnum.PDF  !== mediaType">imagesmode</mat-icon>
-      <mat-icon *ngIf="mediaTypeEnum.PDF  === mediaType">picture_as_pdf</mat-icon>
-      <span *ngIf="mediaTypeEnum.PDF  === mediaType"
-            style="font-size: 25px;">DRAG_DROP_PDF_FILE</span>
-      <span *ngIf="mediaTypeEnum.PDF  !== mediaType"
-            style="font-size: 25px;">DRAG_DROP_IMAGE_FILE</span>
+      @if (mediaTypeEnum.PDF !== mediaType) {
+        <mat-icon>imagesmode</mat-icon>
+      } @else {
+        <mat-icon>picture_as_pdf</mat-icon>
+      }
+      @if (mediaTypeEnum.PDF === mediaType) {
+        <span style="font-size: 25px;">DRAG_DROP_PDF_FILE</span>
+      } @else {
+        <span style="font-size: 25px;">DRAG_DROP_IMAGE_FILE</span>
+      }
       <input #fileInput (change)="selectFile($event)" hidden type="file">
       <span style="font-size: 14px; font-weight: 500">OR</span>
       <button (click)="fileInput.click()" class="gradient-btn" mat-raised-button type="button">
@@ -21,29 +28,36 @@
       </button>
     </div>
     <div class="file-upload-list" style="margin-top: 20px;">
-      <div *ngFor="let file of uploadedFiles; let i = index;" class="file-upload-list-item">
-        <img [src]="file.url" alt="" />
-        <div class="file-upload-list-text">
-          <span *ngIf="file.file" class="title">{{ file.file.name }}</span>
-          <span *ngIf="file.file" class="size">{{ getFileSize(file.file.size) }}</span>
-          <span *ngIf="!file.file" class="title">{{ file.name }}</span>
-          <span *ngIf="!file.file" class="size">{{ getFileSize(file.size) }}</span>
-          <mat-progress-bar
-            [color]="'primary'"
-            [mode]="'determinate'"
-            [value]="file.progress"
-            class="example-margin">
-          </mat-progress-bar>
-          <span *ngIf="file.fileUpdateStatus === 1"
-                class="primary-text">SUCCESS_FILE_UPLOADED</span>
-          <span *ngIf="file.fileUpdateStatus === -1"
-                class="warn-text">SUCCESS_FILE_ERROR</span>
-          <span *ngIf="file.fileUpdateStatus === 0">SUCCESS_FILE_PROGRESS</span>
+      @for (file of uploadedFiles; track $index) {
+        <div class="file-upload-list-item">
+          <img [src]="file.url" alt="" />
+          <div class="file-upload-list-text">
+            @if (file.file) {
+              <span class="title">{{ file.file.name }}</span>
+              <span class="size">{{ getFileSize(file.file.size) }}</span>
+            } @else {
+              <span class="title">{{ file.name }}</span>
+              <span class="size">{{ getFileSize(file.size) }}</span>
+            }
+            <mat-progress-bar
+              [color]="'primary'"
+              [mode]="'determinate'"
+              [value]="file.progress"
+              class="example-margin">
+            </mat-progress-bar>
+            @if (file.fileUpdateStatus === 1) {
+              <span class="primary-text">SUCCESS_FILE_UPLOADED</span>
+            } @else if (file.fileUpdateStatus === -1) {
+              <span class="warn-text">SUCCESS_FILE_ERROR</span>
+            } @else if (file.fileUpdateStatus === 0) {
+              <span>SUCCESS_FILE_PROGRESS</span>
+            }
+          </div>
+          <button (click)="removeItem($index)" color="warn" mat-icon-button type="button">
+            <mat-icon>delete_forever</mat-icon>
+          </button>
         </div>
-        <button (click)="removeItem(i)" color="warn" mat-icon-button type="button">
-          <mat-icon>delete_forever</mat-icon>
-        </button>
-      </div>
+      }
     </div>
   </div>
 </div>

@@ -7,7 +7,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatChipsModule } from '@angular/material/chips';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { LoaderComponent } from '@shared';
 import { IMember } from '@eatfit247-shared-lib';
 import { MembersApiService } from '../api.service';
 import { Subject, takeUntil } from 'rxjs';
@@ -30,7 +30,7 @@ interface MenuItem {
     MatButtonModule,
     MatDividerModule,
     MatChipsModule,
-    MatProgressSpinnerModule,
+    LoaderComponent,
   ],
   templateUrl: './member-details.html',
   styleUrl: './member-details.scss',

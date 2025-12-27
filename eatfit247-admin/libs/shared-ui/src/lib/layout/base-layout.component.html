@@ -7,9 +7,11 @@
     <span class="toolbar-title">EatFit247</span>
     <span class="spacer"></span>
     <div class="user-info" [matMenuTriggerFor]="userMenu">
-      <span class="user-name" *ngIf="isAuthenticated && getUserDisplayName()">
-        {{ getUserDisplayName() }}
-      </span>
+      @if (isAuthenticated && getUserDisplayName()) {
+        <span class="user-name">
+          {{ getUserDisplayName() }}
+        </span>
+      }
       <button
         mat-icon-button
         [matTooltip]="getUserDisplayName() || 'User Menu'"
@@ -19,26 +21,28 @@
       </button>
     </div>
     <mat-menu #userMenu="matMenu">
-      <div *ngIf="isAuthenticated">
-        <div mat-menu-item disabled>
-          <mat-icon>person</mat-icon>
-          <span>{{ getUserDisplayName() || 'User' }}</span>
+      @if (isAuthenticated) {
+        <div>
+          <div mat-menu-item disabled>
+            <mat-icon>person</mat-icon>
+            <span>{{ getUserDisplayName() || 'User' }}</span>
+          </div>
+          <mat-divider></mat-divider>
+          <button mat-menu-item (click)="onUpdateProfile()">
+            <mat-icon>edit</mat-icon>
+            <span>Update Profile</span>
+          </button>
+          <button mat-menu-item (click)="onResetPassword()">
+            <mat-icon>lock_reset</mat-icon>
+            <span>Reset Password</span>
+          </button>
+          <mat-divider></mat-divider>
+          <button mat-menu-item (click)="onLogout()">
+            <mat-icon>logout</mat-icon>
+            <span>Logout</span>
+          </button>
         </div>
-        <mat-divider></mat-divider>
-        <button mat-menu-item (click)="onUpdateProfile()">
-          <mat-icon>edit</mat-icon>
-          <span>Update Profile</span>
-        </button>
-        <button mat-menu-item (click)="onResetPassword()">
-          <mat-icon>lock_reset</mat-icon>
-          <span>Reset Password</span>
-        </button>
-        <mat-divider></mat-divider>
-        <button mat-menu-item (click)="onLogout()">
-          <mat-icon>logout</mat-icon>
-          <span>Logout</span>
-        </button>
-      </div>
+      }
     </mat-menu>
   </mat-toolbar>
 
@@ -47,51 +51,55 @@
     <mat-sidenav-container class="sidenav-container">
       <mat-sidenav #drawer mode="side" opened class="sidenav">
         <mat-nav-list>
-          <ng-container *ngFor="let item of menuItems">
+          @for (item of menuItems; track item.route || item.label) {
             <!-- Simple menu item (no children) -->
-            <a
-              *ngIf="!item.children"
-              mat-list-item
-              [routerLink]="item.route"
-              routerLinkActive="active"
-            >
-              <mat-icon>{{ item.icon }}</mat-icon>
-              <span>{{ item.label }}</span>
-            </a>
-
-            <!-- Nested menu item (with children) -->
-            <div *ngIf="item.children" class="nested-menu-item">
+            @if (!item.children) {
               <a
                 mat-list-item
-                (click)="toggleMenu(item.label); $event.preventDefault()"
-                [class.expanded]="isMenuExpanded(item.label)"
-                class="parent-menu-item"
+                [routerLink]="item.route"
+                routerLinkActive="active"
               >
                 <mat-icon>{{ item.icon }}</mat-icon>
                 <span>{{ item.label }}</span>
-                <mat-icon class="expand-icon">
-                  {{ isMenuExpanded(item.label) ? 'expand_less' : 'expand_more' }}
-                </mat-icon>
               </a>
-              
-              <!-- Child menu items -->
-              <div
-                class="child-menu-items"
-                [class.expanded]="isMenuExpanded(item.label)"
-              >
+            }
+
+            <!-- Nested menu item (with children) -->
+            @if (item.children) {
+              <div class="nested-menu-item">
                 <a
-                  *ngFor="let child of item.children"
                   mat-list-item
-                  [routerLink]="child.route"
-                  routerLinkActive="active"
-                  class="child-menu-item"
+                  (click)="toggleMenu(item.label); $event.preventDefault()"
+                  [class.expanded]="isMenuExpanded(item.label)"
+                  class="parent-menu-item"
                 >
-                  <mat-icon>{{ child.icon }}</mat-icon>
-                  <span>{{ child.label }}</span>
+                  <mat-icon>{{ item.icon }}</mat-icon>
+                  <span>{{ item.label }}</span>
+                  <mat-icon class="expand-icon">
+                    {{ isMenuExpanded(item.label) ? 'expand_less' : 'expand_more' }}
+                  </mat-icon>
                 </a>
+                
+                <!-- Child menu items -->
+                <div
+                  class="child-menu-items"
+                  [class.expanded]="isMenuExpanded(item.label)"
+                >
+                  @for (child of item.children; track child.route || child.label) {
+                    <a
+                      mat-list-item
+                      [routerLink]="child.route"
+                      routerLinkActive="active"
+                      class="child-menu-item"
+                    >
+                      <mat-icon>{{ child.icon }}</mat-icon>
+                      <span>{{ child.label }}</span>
+                    </a>
+                  }
+                </div>
               </div>
-            </div>
-          </ng-container>
+            }
+          }
         </mat-nav-list>
       </mat-sidenav>
 
