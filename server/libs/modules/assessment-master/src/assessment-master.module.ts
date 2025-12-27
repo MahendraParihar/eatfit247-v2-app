@@ -1,10 +1,11 @@
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
-import { MstAdminUser, modelRegistry } from '@server/common';
 import {
+  MstAdminUser,
+  modelRegistry,
+  MstHealthIssue,
   MstGender,
   MstBloodSugar,
-  MstHealthIssue,
   MstEatingHabit,
   MstLifestyle,
   MstMaritalStatus,
@@ -13,7 +14,7 @@ import {
   MstTypeOfExercise,
   MstUrineOutput,
   MstHealthParameter,
-} from './models';
+} from '@server/common';
 import {
   GenderController,
   BloodSugarController,
@@ -52,20 +53,7 @@ import {
   HealthParameterService,
 } from './services';
 
-// Register models with the model registry
-modelRegistry.register([
-  MstGender,
-  MstBloodSugar,
-  MstHealthIssue,
-  MstEatingHabit,
-  MstLifestyle,
-  MstMaritalStatus,
-  MstReligion,
-  MstSleepingPattern,
-  MstTypeOfExercise,
-  MstUrineOutput,
-  MstHealthParameter,
-]);
+// Models are registered in @server/common module
 
 @Module({
   imports: [

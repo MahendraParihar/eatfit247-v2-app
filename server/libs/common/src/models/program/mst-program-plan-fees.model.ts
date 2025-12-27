@@ -1,13 +1,12 @@
 import { BelongsTo, Column, CreatedAt, DataType, Model, Scopes, Table, UpdatedAt } from 'sequelize-typescript';
-import { MstAdminUser, getCreatedByUserInclude, getUpdatedByUserInclude } from '@server/common';
+import { MstAdminUser, getCreatedByUserInclude, getUpdatedByUserInclude, MstProgramPlan } from '@server/common';
 import { InputLengthEnum } from 'eatfit247-shared-lib';
-import { MstProgramPlan } from './mst-program-plan.model';
 
 @Table({
   freezeTableName: true,
-  modelName: 'txn_program_plan_fees',
+  modelName: 'mst_program_plan_fees',
   schema: 'public',
-  tableName: 'txn_program_plan_fees',
+  tableName: 'mst_program_plan_fees',
 })
 @Scopes(() => ({
   list: {
@@ -35,7 +34,7 @@ import { MstProgramPlan } from './mst-program-plan.model';
     ],
   },
 }))
-export class TxnProgramPlanFees extends Model<TxnProgramPlanFees> {
+export class MstProgramPlanFees extends Model<MstProgramPlanFees> {
   @Column({
     type: DataType.INTEGER,
     primaryKey: true,

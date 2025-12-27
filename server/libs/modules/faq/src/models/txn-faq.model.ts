@@ -1,6 +1,6 @@
 import { BelongsTo, Column, CreatedAt, DataType, Model, Scopes, Table, UpdatedAt } from 'sequelize-typescript';
 import { MstAdminUser, CommonScopes, getCreatedByUserInclude, getUpdatedByUserInclude } from '@server/common';
-import { MstFaqCategory } from './mst-faq-category.model';
+import { MstFaqCategory } from '@server/common';
 import { InputLengthEnum } from 'eatfit247-shared-lib';
 
 @Table({

@@ -1,0 +1,220 @@
+<mat-card class="form-card">
+  <mat-card-header>
+    <mat-card-title>{{ pageTitle }}</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <form [formGroup]="formGroup" (ngSubmit)="onSubmit()">
+      <div class="form-fields">
+        <div class="row">
+          <mat-form-field class="half-width">
+            <mat-label>First Name</mat-label>
+            <input
+              matInput
+              formControlName="firstName"
+              placeholder="Enter first name"
+            />
+            @if (getMaxLength('firstName')) {
+              <mat-hint align="end">
+                {{ getCurrentLength('firstName') }}/{{ getMaxLength('firstName') }}
+              </mat-hint>
+            }
+            <app-input-error [control]="formGroup.get('firstName')" controlName="First Name"></app-input-error>
+          </mat-form-field>
+
+          <mat-form-field class="half-width">
+            <mat-label>Last Name</mat-label>
+            <input
+              matInput
+              formControlName="lastName"
+              placeholder="Enter last name"
+            />
+            @if (getMaxLength('lastName')) {
+              <mat-hint align="end">
+                {{ getCurrentLength('lastName') }}/{{ getMaxLength('lastName') }}
+              </mat-hint>
+            }
+            <app-input-error [control]="formGroup.get('lastName')" controlName="Last Name"></app-input-error>
+          </mat-form-field>
+        </div>
+
+        <div class="row">
+          <mat-form-field class="half-width">
+            <mat-label>Email ID</mat-label>
+            <input
+              matInput
+              type="email"
+              formControlName="emailId"
+              placeholder="Enter email ID"
+            />
+            @if (getMaxLength('emailId')) {
+              <mat-hint align="end">
+                {{ getCurrentLength('emailId') }}/{{ getMaxLength('emailId') }}
+              </mat-hint>
+            }
+            <app-input-error [control]="formGroup.get('emailId')" controlName="Email ID"></app-input-error>
+          </mat-form-field>
+
+          <mat-form-field class="half-width">
+            <mat-label>Country Code</mat-label>
+            <input
+              matInput
+              formControlName="countryCode"
+              placeholder="Enter country code"
+            />
+            @if (getMaxLength('countryCode')) {
+              <mat-hint align="end">
+                {{ getCurrentLength('countryCode') }}/{{ getMaxLength('countryCode') }}
+              </mat-hint>
+            }
+            <app-input-error [control]="formGroup.get('countryCode')" controlName="Country Code"></app-input-error>
+          </mat-form-field>
+        </div>
+
+        <mat-form-field class="full-width">
+          <mat-label>Contact Number</mat-label>
+          <input
+            matInput
+            formControlName="contactNumber"
+            placeholder="Enter contact number"
+          />
+          @if (getMaxLength('contactNumber')) {
+            <mat-hint align="end">
+              {{ getCurrentLength('contactNumber') }}/{{ getMaxLength('contactNumber') }}
+            </mat-hint>
+          }
+          <app-input-error [control]="formGroup.get('contactNumber')" controlName="Contact Number"></app-input-error>
+        </mat-form-field>
+
+        <div class="row">
+          <mat-form-field class="half-width">
+            <mat-label>Franchise</mat-label>
+            <mat-select formControlName="franchiseId">
+              <mat-option [value]="">Select Franchise</mat-option>
+              @for (franchise of franchiseOptions; track franchise.id) {
+                <mat-option [value]="franchise.id">{{ franchise.label }}</mat-option>
+              }
+            </mat-select>
+            <app-input-error [control]="formGroup.get('franchiseId')" controlName="Franchise"></app-input-error>
+          </mat-form-field>
+
+          <mat-form-field class="half-width">
+            <mat-label>Country</mat-label>
+            <mat-select formControlName="countryId">
+              <mat-option [value]="">Select Country</mat-option>
+              @for (country of countryOptions; track country.id) {
+                <mat-option [value]="country.id">{{ country.label }}</mat-option>
+              }
+            </mat-select>
+            <app-input-error [control]="formGroup.get('countryId')" controlName="Country"></app-input-error>
+          </mat-form-field>
+        </div>
+
+        <div class="row">
+          <mat-form-field class="half-width">
+            <mat-label>Referrer</mat-label>
+            <mat-select formControlName="referrerId">
+              <mat-option [value]="">Select Referrer (Optional)</mat-option>
+              @for (referrer of referrerOptions; track referrer.id) {
+                <mat-option [value]="referrer.id">{{ referrer.label }}</mat-option>
+              }
+            </mat-select>
+            <app-input-error [control]="formGroup.get('referrerId')" controlName="Referrer"></app-input-error>
+          </mat-form-field>
+
+          <mat-form-field class="half-width">
+            <mat-label>Nutritionist</mat-label>
+            <mat-select formControlName="nutritionistId">
+              <mat-option [value]="">Select Nutritionist (Optional)</mat-option>
+              @for (nutritionist of nutritionistOptions; track nutritionist.id) {
+                <mat-option [value]="nutritionist.id">{{ nutritionist.label }}</mat-option>
+              }
+            </mat-select>
+            <app-input-error [control]="formGroup.get('nutritionistId')" controlName="Nutritionist"></app-input-error>
+          </mat-form-field>
+        </div>
+
+        <mat-form-field class="full-width">
+          <mat-label>Status</mat-label>
+          <mat-select formControlName="active">
+            <mat-option [value]="true">Active</mat-option>
+            <mat-option [value]="false">Inactive</mat-option>
+          </mat-select>
+          <app-input-error [control]="formGroup.get('active')" controlName="Status"></app-input-error>
+        </mat-form-field>
+
+        <mat-form-field class="full-width">
+          <mat-label>Deactivation Reason</mat-label>
+          <textarea
+            matInput
+            formControlName="deactivationReason"
+            placeholder="Enter deactivation reason (optional)"
+            rows="3"
+          ></textarea>
+          @if (getMaxLength('deactivationReason')) {
+            <mat-hint align="end">
+              {{ getCurrentLength('deactivationReason') }}/{{ getMaxLength('deactivationReason') }}
+            </mat-hint>
+          }
+          <app-input-error [control]="formGroup.get('deactivationReason')" controlName="Deactivation Reason"></app-input-error>
+        </mat-form-field>
+
+        <div class="full-width">
+          <mat-checkbox formControlName="hasAnyPlan">
+            Has Any Plan
+          </mat-checkbox>
+        </div>
+
+        @if (!isEditMode) {
+          <mat-form-field class="full-width">
+            <mat-label>Password</mat-label>
+            <input
+              matInput
+              type="password"
+              formControlName="password"
+              placeholder="Enter password (optional, will generate if not provided)"
+            />
+            @if (getMaxLength('password')) {
+              <mat-hint align="end">
+                {{ getCurrentLength('password') }}/{{ getMaxLength('password') }}
+              </mat-hint>
+            }
+            <app-input-error [control]="formGroup.get('password')" controlName="Password"></app-input-error>
+          </mat-form-field>
+        }
+
+        <div class="full-width">
+          <label class="upload-label">Profile Picture</label>
+          <app-upload-form
+            [formGroup]="formGroup"
+            [isMultiFile]="false"
+            [isRequired]="false"
+            [uploadedMediaList]="getProfilePicturePathList()"
+            controlName="profilePicture"
+            [mediaFor]="mediaFor"
+            [mediaType]="mediaType"
+          ></app-upload-form>
+        </div>
+
+      </div>
+
+      <div class="form-actions">
+        <button
+          type="button"
+          mat-stroked-button
+          (click)="onCancel()"
+        >
+          <mat-icon>close</mat-icon>
+          Cancel
+        </button>
+        <button
+          type="submit"
+          mat-raised-button
+          color="primary"
+        >
+          <mat-icon>{{ isEditMode ? 'save' : 'add' }}</mat-icon>
+          {{ isEditMode ? 'Update' : 'Create' }}
+        </button>
+      </div>
+    </form>
+  </mat-card-content>
+</mat-card>

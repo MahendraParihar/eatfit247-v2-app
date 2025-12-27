@@ -195,11 +195,11 @@ export class TxnMember extends Model<TxnMember> {
   declare nutritionistId: number;
   @Column({
     allowNull: false,
-    defaultValue: -1,
-    field: 'user_status_id',
-    type: DataType.INTEGER,
+    defaultValue: true,
+    field: 'active',
+    type: DataType.BOOLEAN,
   })
-  declare userStatusId: number;
+  declare active: boolean;
   @Column({
     allowNull: true,
     field: 'deactivation_reason',

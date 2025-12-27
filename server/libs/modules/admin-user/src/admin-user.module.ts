@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
-import { MstAdminUser, MstAdminRole, modelRegistry } from '@server/common';
-import { MstAdminRolePermission } from './models/mst-admin-role-permission.model';
+import { MstAdminUser, MstAdminRole, MstAdminRolePermission } from '@server/common';
 import {
   AdminUserController,
 } from './controllers';
@@ -9,8 +8,7 @@ import {
   AdminUserService,
 } from './services';
 
-// Register models with the model registry
-modelRegistry.register([MstAdminRolePermission]);
+// Models are registered in @server/common module
 
 @Module({
   imports: [

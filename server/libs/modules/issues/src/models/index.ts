@@ -1,3 +1,2 @@
-export * from './mst-issue-category.model';
-export * from './mst-issue-status.model';
+// MstIssueStatus and MstIssueCategory moved to @server/common
 

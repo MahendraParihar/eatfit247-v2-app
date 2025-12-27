@@ -49,8 +49,8 @@ export class CreateMemberDto implements IManageMember {
   @IsNumber()
   nutritionistId?: number;
   @IsNotEmpty()
-  @IsNumber()
-  userStatusId: number;
+  @IsBoolean()
+  active: boolean;
   @IsOptional()
   @MaxLength(InputLengthEnum.CHAR_1000)
   deactivationReason?: string;

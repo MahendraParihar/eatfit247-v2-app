@@ -2,7 +2,6 @@ import { BelongsTo, Column, CreatedAt, DataType, HasMany, Model, Scopes, Table, 
 import { MstAdminUser, getCreatedByUserInclude, getUpdatedByUserInclude } from '@server/common';
 import { IMediaUpload, InputLengthEnum } from 'eatfit247-shared-lib';
 import { MstRecipeType } from './mst-recipe-type.model';
-import { TxnProgramPlanFees } from '../../../program-plan';
 import { MstRecipeCuisineMapping } from './mst-recipe-cuisine-mapping.model';
 import { MstRecipeCategoryMapping } from './mst-recipe-category-mapping.model';
 import { MstRecipeCategory } from './mst-recipe-category.model';

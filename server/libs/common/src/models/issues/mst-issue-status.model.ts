@@ -1,42 +1,32 @@
 import { BelongsTo, Column, CreatedAt, DataType, Model, Scopes, Table, UpdatedAt } from 'sequelize-typescript';
-import { MstAdminUser, getCreatedByUserInclude, getUpdatedByUserInclude } from '@server/common';
+import { MstAdminUser, CommonScopes } from '@server/common';
 import { InputLengthEnum } from 'eatfit247-shared-lib';
 
 @Table({
   freezeTableName: true,
-  modelName: 'mst_issue_categories',
+  modelName: 'mst_issue_statuses',
   schema: 'public',
-  tableName: 'mst_issue_categories',
+  tableName: 'mst_issue_statuses',
 })
 @Scopes(() => ({
-  list: {
-    include: [
-      getCreatedByUserInclude(false),
-      getUpdatedByUserInclude(false),
-    ],
-  },
-  details: {
-    include: [
-      getCreatedByUserInclude(false),
-      getUpdatedByUserInclude(false),
-    ],
-  },
+  list: CommonScopes.list(),
+  details: CommonScopes.details(),
 }))
-export class MstIssueCategory extends Model<MstIssueCategory> {
+export class MstIssueStatus extends Model<MstIssueStatus> {
   @Column({
     type: DataType.INTEGER,
     primaryKey: true,
-    field: 'issue_category_id',
+    field: 'issue_status_id',
     autoIncrement: true,
   })
-  declare issueCategoryId: number;
+  declare issueStatusId: number;
 
   @Column({
     allowNull: false,
-    field: 'issue_category',
+    field: 'issue_status',
     type: DataType.STRING(InputLengthEnum.CHAR_50),
   })
-  declare issueCategory: string;
+  declare issueStatus: string;
 
   @Column({
     allowNull: false,
@@ -46,10 +36,18 @@ export class MstIssueCategory extends Model<MstIssueCategory> {
   })
   declare active: boolean;
 
-  @BelongsTo(() => MstAdminUser, { as: 'createdByUser', foreignKey: 'createdBy', targetKey: 'adminId' })
+  @BelongsTo(() => MstAdminUser, {
+    as: 'createdByUser',
+    foreignKey: 'createdBy',
+    targetKey: 'adminId',
+  })
   declare createdByUser: MstAdminUser;
 
-  @BelongsTo(() => MstAdminUser, { as: 'updatedByUser', foreignKey: 'modifiedBy', targetKey: 'adminId' })
+  @BelongsTo(() => MstAdminUser, {
+    as: 'updatedByUser',
+    foreignKey: 'modifiedBy',
+    targetKey: 'adminId',
+  })
   declare updatedByUser: MstAdminUser;
 
   @Column({
@@ -80,4 +78,3 @@ export class MstIssueCategory extends Model<MstIssueCategory> {
   })
   declare updatedAt: Date;
 }
-

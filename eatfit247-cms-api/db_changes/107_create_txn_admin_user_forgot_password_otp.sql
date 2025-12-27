@@ -233,3 +233,12 @@ alter table public.mst_admin_users
 
 alter table public.mst_admin_users
     add active boolean default true not null;
+
+alter table public.txn_members
+    drop column user_status_id;
+
+alter table public.txn_members
+    add active boolean default true not null;
+
+alter table public.txn_program_plan_fees
+    rename to mst_program_plan_fees;

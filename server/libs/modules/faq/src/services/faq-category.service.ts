@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { MstFaqCategory } from '../models';
+import { MstFaqCategory } from '@server/common';
 import {
   ITableList,
   IStatusChange,

@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
-import { MstCallLogStatus, MstCallPurpose, MstCallType } from './models';
+import { MstCallLogStatus, MstCallPurpose, MstCallType } from '@server/common';
 import { modelRegistry } from '@server/common';
 import {
   CallLogStatusController,
@@ -16,8 +16,7 @@ import {
   CallTypeService,
 } from './services';
 
-// Register models with the model registry
-modelRegistry.register([MstCallLogStatus, MstCallPurpose, MstCallType]);
+// Models are registered in @server/common module
 
 @Module({
   imports: [

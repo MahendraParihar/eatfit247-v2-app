@@ -1,2 +1,2 @@
-export * from './mst-pocket-guide.model';
+// MstPocketGuide moved to @server/common
 

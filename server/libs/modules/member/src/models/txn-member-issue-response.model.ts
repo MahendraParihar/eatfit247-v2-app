@@ -1,12 +1,14 @@
 import { BelongsTo, Column, CreatedAt, DataType, Model, Scopes, Table, UpdatedAt } from 'sequelize-typescript';
 import { MstAdminUser, getCreatedByUserInclude, getUpdatedByUserInclude } from '@server/common';
-import { InputLengthEnum } from 'eatfit247-shared-lib';
+import { TxnMemberIssue } from './txn-member-issue.model';
+
+// Note: TxnMemberIssue will be imported via SequelizeModule.forFeature
 
 @Table({
   freezeTableName: true,
-  modelName: 'mst_issue_statuses',
+  modelName: 'txn_member_issue_responses',
   schema: 'public',
-  tableName: 'mst_issue_statuses',
+  tableName: 'txn_member_issue_responses',
 })
 @Scopes(() => ({
   list: {
@@ -22,34 +24,56 @@ import { InputLengthEnum } from 'eatfit247-shared-lib';
     ],
   },
 }))
-export class MstIssueStatus extends Model<MstIssueStatus> {
+export class TxnMemberIssueResponse extends Model<TxnMemberIssueResponse> {
   @Column({
     type: DataType.INTEGER,
     primaryKey: true,
-    field: 'issue_status_id',
+    field: 'member_issue_response_id',
     autoIncrement: true,
   })
-  declare issueStatusId: number;
+  declare memberIssueResponseId: number;
+
+  @BelongsTo(() => TxnMemberIssue, {
+    foreignKey: 'memberIssueId',
+    targetKey: 'memberIssueId',
+    as: 'memberIssue',
+  })
+  declare memberIssue: TxnMemberIssue;
 
   @Column({
     allowNull: false,
-    field: 'issue_status',
-    type: DataType.STRING(InputLengthEnum.CHAR_50),
+    field: 'member_issue_id',
+    type: DataType.INTEGER,
   })
-  declare issueStatus: string;
+  declare memberIssueId: number;
+
+  @Column({
+    allowNull: false,
+    field: 'response',
+    type: DataType.STRING(1000),
+  })
+  declare response: string;
 
   @Column({
     allowNull: false,
     defaultValue: true,
-    field: 'active',
+    field: 'is_latest',
     type: DataType.BOOLEAN,
   })
-  declare active: boolean;
+  declare isLatest: boolean;
 
-  @BelongsTo(() => MstAdminUser, { as: 'createdByUser', foreignKey: 'createdBy', targetKey: 'adminId' })
+  @BelongsTo(() => MstAdminUser, {
+    as: 'createdByUser',
+    foreignKey: 'createdBy',
+    targetKey: 'adminId',
+  })
   declare createdByUser: MstAdminUser;
 
-  @BelongsTo(() => MstAdminUser, { as: 'updatedByUser', foreignKey: 'modifiedBy', targetKey: 'adminId' })
+  @BelongsTo(() => MstAdminUser, {
+    as: 'updatedByUser',
+    foreignKey: 'modifiedBy',
+    targetKey: 'adminId',
+  })
   declare updatedByUser: MstAdminUser;
 
   @Column({
@@ -80,4 +104,3 @@ export class MstIssueStatus extends Model<MstIssueStatus> {
   })
   declare updatedAt: Date;
 }
-

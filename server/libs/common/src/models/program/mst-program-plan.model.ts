@@ -2,7 +2,7 @@ import { BelongsTo, Column, CreatedAt, DataType, HasMany, Model, Scopes, Table, 
 import { MstAdminUser, getCreatedByUserInclude, getUpdatedByUserInclude } from '@server/common';
 import { IMediaUpload, InputLengthEnum } from 'eatfit247-shared-lib';
 import { MstProgramPlanType } from './mst-program-plan-type.model';
-import { TxnProgramPlanFees } from './txn-program-plan-fees.model';
+import { MstProgramPlanFees } from './mst-program-plan-fees.model';
 
 @Table({
   freezeTableName: true,
@@ -34,7 +34,7 @@ import { TxnProgramPlanFees } from './txn-program-plan-fees.model';
         attributes: ['programPlanTypeId', 'programPlanType'],
       },
       {
-        model: TxnProgramPlanFees,
+        model: MstProgramPlanFees,
         as: 'programPlanFees',
         required: false,
         attributes: ['programPlanFeesId', 'programPlanId', 'currencyCode', 'fees'],
@@ -175,7 +175,7 @@ export class MstProgramPlan extends Model<MstProgramPlan> {
     type: DataType.STRING(InputLengthEnum.IP),
   })
   declare modifiedIp: string;
-  @HasMany(() => TxnProgramPlanFees, { foreignKey: 'programPlanId' })
-  declare programPlanFees: TxnProgramPlanFees[];
+  @HasMany(() => MstProgramPlanFees, { foreignKey: 'programPlanId' })
+  declare programPlanFees: MstProgramPlanFees[];
 }
 

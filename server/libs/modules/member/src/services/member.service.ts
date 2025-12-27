@@ -73,7 +73,7 @@ export class MemberService {
       nutritionist: item.nutritionist
         ? `${item.nutritionist.firstName} ${item.nutritionist.lastName}`
         : '',
-      userStatusId: item.userStatusId,
+      active: item.active !== undefined ? item.active : true,
       deactivationReason: item.deactivationReason,
       createdBy: item.createdBy,
       updatedBy: item.modifiedBy,
@@ -132,7 +132,7 @@ export class MemberService {
       countryId: obj.countryId,
       referrerId: obj.referrerId || null,
       nutritionistId: obj.nutritionistId || null,
-      userStatusId: obj.userStatusId,
+      active: obj.active !== undefined ? obj.active : true,
       deactivationReason: obj.deactivationReason || null,
       hasAnyPlan: obj.hasAnyPlan || false,
       createdBy: adminId,
@@ -169,7 +169,7 @@ export class MemberService {
       countryId: obj.countryId,
       referrerId: obj.referrerId || null,
       nutritionistId: obj.nutritionistId || null,
-      userStatusId: obj.userStatusId,
+      active: obj.active !== undefined ? obj.active : true,
       deactivationReason: obj.deactivationReason || null,
       hasAnyPlan: obj.hasAnyPlan !== undefined ? obj.hasAnyPlan : find.hasAnyPlan,
       modifiedBy: adminId,
@@ -191,13 +191,13 @@ export class MemberService {
     await this.memberRepository.update(updateObj, { where: { memberId: id } });
   }
 
-  public async changeStatus(id: number, userStatusId: number, deactivationReason: string | null, cIp: string, adminId: number): Promise<void> {
+  public async changeStatus(id: number, active: boolean, deactivationReason: string | null, cIp: string, adminId: number): Promise<void> {
     const find = await this.memberRepository.findOne({ where: { memberId: id } });
     if (!find) {
       throw new NotFoundException('Member not found');
     }
-    const updateObj: any = {
-      userStatusId: userStatusId,
+    const updateObj: { active: boolean; modifiedBy: number; modifiedIp: string; deactivationReason?: string } = {
+      active: active,
       modifiedBy: adminId,
       modifiedIp: cIp,
     };

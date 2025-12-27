@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { MstEatingHabit } from '../models';
+import { MstEatingHabit } from '@server/common';
 import { ITableList, IBasicSearch, IEatingHabit, IManageEatingHabit, IDropdownItem, ConfigParam } from 'eatfit247-shared-lib';
 import { SearchUtil, CommonFunctionsUtil, AppConfigService } from '@server/common';
 

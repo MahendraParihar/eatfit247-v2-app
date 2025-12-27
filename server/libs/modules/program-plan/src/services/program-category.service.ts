@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { MstProgramCategory } from '../models';
+import { MstProgramCategory } from '@server/common';
 import { ITableList, IBasicSearch, IProgramCategory, IManageProgramCategory, IDropdownItem, ConfigParam } from 'eatfit247-shared-lib';
 import { SearchUtil, CommonFunctionsUtil, AppConfigService } from '@server/common';
 

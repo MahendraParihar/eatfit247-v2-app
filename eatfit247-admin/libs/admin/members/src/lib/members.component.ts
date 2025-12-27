@@ -42,7 +42,7 @@ export class Members implements OnInit {
       { key: 'lastName', label: 'Last Name', dataKey: 'lastName', sortable: true, searchable: true },
       { key: 'emailId', label: 'Email', dataKey: 'emailId', sortable: true, searchable: true },
       { key: 'contactNumber', label: 'Contact', dataKey: 'contactNumber', sortable: true },
-      { key: 'userStatusId', label: 'Status', dataKey: 'userStatusId', sortable: true, width: '120px', align: 'center', formatter: (value) => (value === 1 ? 'Active' : 'Inactive') },
+      { key: 'active', label: 'Status', dataKey: 'active', sortable: true, width: '120px', align: 'center', formatter: (value) => (value ? 'Active' : 'Inactive') },
       { key: 'createdByUser', label: 'Created By', dataKey: 'createdByUser', sortable: false, formatter: createdByUserFormatter() },
       { key: 'updatedByUser', label: 'Updated By', dataKey: 'updatedByUser', sortable: false, formatter: updatedByUserFormatter() },
       {

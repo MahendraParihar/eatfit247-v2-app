@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { MstReferrer } from '../models';
+import { MstReferrer } from '@server/common';
 import {
   ITableList,
   IBasicSearch,

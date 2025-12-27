@@ -43,10 +43,18 @@ export class MstHealthIssue extends Model<MstHealthIssue> {
   })
   declare active: boolean;
 
-  @BelongsTo(() => MstAdminUser, { as: 'createdByUser', foreignKey: 'createdBy', targetKey: 'adminId' })
+  @BelongsTo(() => MstAdminUser, {
+    as: 'createdByUser',
+    foreignKey: 'createdBy',
+    targetKey: 'adminId',
+  })
   declare createdByUser: MstAdminUser;
 
-  @BelongsTo(() => MstAdminUser, { as: 'updatedByUser', foreignKey: 'modifiedBy', targetKey: 'adminId' })
+  @BelongsTo(() => MstAdminUser, {
+    as: 'updatedByUser',
+    foreignKey: 'modifiedBy',
+    targetKey: 'adminId',
+  })
   declare updatedByUser: MstAdminUser;
 
   @Column({
@@ -91,4 +99,3 @@ export class MstHealthIssue extends Model<MstHealthIssue> {
   })
   declare modifiedIp: string;
 }
-

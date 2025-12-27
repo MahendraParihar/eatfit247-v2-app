@@ -1,12 +1,10 @@
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
-import { MstReferrer } from './models';
-import { modelRegistry } from '@server/common';
+import { MstReferrer } from '@server/common';
 import { ReferrerController, PublicReferrerController } from './controllers';
 import { ReferrerService } from './services';
 
-// Register models with the model registry
-modelRegistry.register([MstReferrer]);
+// Models are registered in @server/common module
 
 @Module({
   imports: [

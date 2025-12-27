@@ -1,53 +1,32 @@
 import { BelongsTo, Column, CreatedAt, DataType, Model, Scopes, Table, UpdatedAt } from 'sequelize-typescript';
 import { MstAdminUser, CommonScopes } from '@server/common';
-import { IMediaUpload, InputLengthEnum } from 'eatfit247-shared-lib';
+import { InputLengthEnum } from 'eatfit247-shared-lib';
 
 @Table({
   freezeTableName: true,
-  modelName: 'mst_pocket_guides',
+  modelName: 'mst_issue_categories',
   schema: 'public',
-  tableName: 'mst_pocket_guides',
+  tableName: 'mst_issue_categories',
 })
 @Scopes(() => ({
   list: CommonScopes.list(),
   details: CommonScopes.details(),
 }))
-export class MstPocketGuide extends Model<MstPocketGuide> {
+export class MstIssueCategory extends Model<MstIssueCategory> {
   @Column({
     type: DataType.INTEGER,
     primaryKey: true,
-    field: 'pocket_guide_id',
+    field: 'issue_category_id',
     autoIncrement: true,
   })
-  declare pocketGuideId: number;
+  declare issueCategoryId: number;
 
   @Column({
     allowNull: false,
-    field: 'pocket_guide',
-    type: DataType.STRING(50),
+    field: 'issue_category',
+    type: DataType.STRING(InputLengthEnum.CHAR_50),
   })
-  declare pocketGuide: string;
-
-  @Column({
-    allowNull: false,
-    field: 'file_path',
-    type: DataType.JSONB,
-  })
-  declare filePath: IMediaUpload[];
-
-  @Column({
-    allowNull: true,
-    field: 'description',
-    type: DataType.TEXT,
-  })
-  declare description: string;
-
-  @Column({
-    allowNull: true,
-    field: 'image_path',
-    type: DataType.JSONB,
-  })
-  declare imagePath: IMediaUpload[];
+  declare issueCategory: string;
 
   @Column({
     allowNull: false,
@@ -98,19 +77,4 @@ export class MstPocketGuide extends Model<MstPocketGuide> {
     field: 'updated_at',
   })
   declare updatedAt: Date;
-
-  @Column({
-    allowNull: false,
-    field: 'created_ip',
-    type: DataType.STRING(InputLengthEnum.IP),
-  })
-  declare createdIp: string;
-
-  @Column({
-    allowNull: false,
-    field: 'modified_ip',
-    type: DataType.STRING(InputLengthEnum.IP),
-  })
-  declare modifiedIp: string;
 }
-

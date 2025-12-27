@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { MstProgramPlan, MstProgramPlanType, TxnProgramPlanFees } from '../models';
+import { MstProgramPlan, MstProgramPlanType, MstProgramPlanFees } from '@server/common';
 import {
   ITableList,
   IBasicSearch,
@@ -17,8 +17,8 @@ export class ProgramPlanService {
     @InjectModel(MstProgramPlan) private readonly programPlanRepository: typeof MstProgramPlan,
     @InjectModel(MstProgramPlanType)
     private readonly programPlanTypeRepository: typeof MstProgramPlanType,
-    @InjectModel(TxnProgramPlanFees)
-    private readonly programPlanFeesRepository: typeof TxnProgramPlanFees,
+    @InjectModel(MstProgramPlanFees)
+    private readonly programPlanFeesRepository: typeof MstProgramPlanFees,
     private appConfigService: AppConfigService,
   ) {}
 

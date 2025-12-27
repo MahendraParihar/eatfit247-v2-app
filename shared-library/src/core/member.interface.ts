@@ -12,7 +12,7 @@ export interface IBaseMember {
   countryId: number;
   referrerId?: number;
   nutritionistId?: number;
-  userStatusId: number;
+  active: boolean;
   deactivationReason?: string;
   hasAnyPlan?: boolean;
 }
@@ -24,7 +24,6 @@ export interface IManageMember extends IBaseMember {
 
 export interface IMember extends IBaseMember {
   memberId: number;
-  id?: number; // For compatibility with old interface
   referrer?: string; // Referrer name from relationship
   franchise?: string; // Franchise name from relationship
   country?: string; // Country name from relationship

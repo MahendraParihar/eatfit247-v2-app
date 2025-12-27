@@ -1,5 +1,5 @@
 import { IsNotEmpty, IsOptional } from 'class-validator';
-import { IMediaUpload } from '@eatfit247-shared-lib';
+import { IMediaUpload } from 'eatfit247-shared-lib';
 
 export class MediaUploadDto implements IMediaUpload {
   @IsNotEmpty()

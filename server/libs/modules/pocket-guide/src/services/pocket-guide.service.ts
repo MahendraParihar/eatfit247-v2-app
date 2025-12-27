@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { MstPocketGuide } from '../models';
+import { MstPocketGuide } from '@server/common';
 import { ITableList, IBasicSearch, IPocketGuide, IManagePocketGuide, ConfigParam } from 'eatfit247-shared-lib';
 import { SearchUtil, CommonFunctionsUtil, AppConfigService } from '@server/common';
 

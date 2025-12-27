@@ -1,7 +1,7 @@
 import { Controller, Get, UseGuards } from '@nestjs/common';
 import { AddressTypeService, JwtAuthGuard, StateService, MstState } from '@server/common';
 import { CountryService } from '@server/common';
-import { IAddressMaster, IDropdownItem } from '@eatfit247-shared-lib';
+import { IAddressMaster, IDropdownItem } from 'eatfit247-shared-lib';
 import { InjectModel } from '@nestjs/sequelize';
 
 @Controller('address')

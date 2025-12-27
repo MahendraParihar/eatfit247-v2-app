@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { MstBlogAuthor } from '../models';
+import { MstBlogAuthor } from '@server/common';
 import {
   ITableList,
   IStatusChange,

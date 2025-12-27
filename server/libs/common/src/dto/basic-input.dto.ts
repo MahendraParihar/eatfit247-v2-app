@@ -1,6 +1,6 @@
 import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { DEFAULT_PAGE_SIZE } from '@server/common';
-import { IBasicSearch, IStatusChange } from '@eatfit247-shared-lib';
+import { IBasicSearch, IStatusChange } from 'eatfit247-shared-lib';
 
 export class BasicSearchDto implements IBasicSearch {
   @IsNotEmpty()

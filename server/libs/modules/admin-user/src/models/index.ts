@@ -1,4 +1,5 @@
-export * from '../../../../common/src/models/admin/mst-admin-user.model';
-export * from './mst-admin-role-permission.model';
-export * from '../../../../common/src/models/admin/mst-admin-role.model';
+// MstAdminUser and MstAdminRole are exported from @server/common
+// All other Mst models moved to @server/common
+// Export empty to make this a valid module
+export {};
 
