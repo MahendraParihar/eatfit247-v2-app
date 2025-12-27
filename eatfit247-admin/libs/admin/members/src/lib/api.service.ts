@@ -8,11 +8,12 @@ import {
   IDropdownItem,
   IMemberCallLog,
   IMemberIssue,
+  IManageMemberIssue,
   IMemberAssessment,
   IManageMemberAssessment,
   IAssessmentMaster,
   IMemberPocketGuide,
-  IMemberHealthIssue,
+  IMemberHealthIssue, IIssueMasterData
 } from '@eatfit247-shared-lib';
 
 @Injectable({
@@ -95,21 +96,28 @@ export class MembersApiService extends ApiBaseService {
     return res.data as IDropdownItem[];
   }
 
-  async getHealthIssues(memberId: number): Promise<ITableList<IMemberHealthIssue>> {
-    const res = await this.httpService.get<IResponse<ITableList<IMemberHealthIssue>>>(
-      `${this.endpoint}/${memberId}/health-issues`,
-    );
+  async getHealthIssues(
+    memberId: number,
+  ): Promise<ITableList<IMemberHealthIssue>> {
+    const res = await this.httpService.get<
+      IResponse<ITableList<IMemberHealthIssue>>
+    >(`${this.endpoint}/${memberId}/health-issues`);
     return res.data as ITableList<IMemberHealthIssue>;
   }
 
-  async getHealthIssueList(memberId: number): Promise<ITableList<IMemberHealthIssue>> {
-    const res = await this.httpService.get<IResponse<ITableList<IMemberHealthIssue>>>(
-      `${this.endpoint}/${memberId}/health-issues/list`,
-    );
+  async getHealthIssueList(
+    memberId: number,
+  ): Promise<ITableList<IMemberHealthIssue>> {
+    const res = await this.httpService.get<
+      IResponse<ITableList<IMemberHealthIssue>>
+    >(`${this.endpoint}/${memberId}/health-issues/list`);
     return res.data as ITableList<IMemberHealthIssue>;
   }
 
-  async manageHealthIssues(memberId: number, healthIssueIds: number[]): Promise<void> {
+  async manageHealthIssues(
+    memberId: number,
+    healthIssueIds: number[],
+  ): Promise<void> {
     return await this.httpService.put<void>(
       `${this.endpoint}/${memberId}/health-issues/manage`,
       { healthIssueIds },
@@ -130,11 +138,42 @@ export class MembersApiService extends ApiBaseService {
     return res.data as any[];
   }
 
+  // region Member Issues
+  async getIssuesMasterData(): Promise<IIssueMasterData> {
+    const res = await this.httpService.get<IResponse<IIssueMasterData>>(
+      `${this.endpoint}/issues-master`,
+    );
+    return res.data as IIssueMasterData;
+  }
+
   async getIssues(memberId: number): Promise<IMemberIssue[]> {
     const res = await this.httpService.get<IResponse<IMemberIssue[]>>(
       `${this.endpoint}/${memberId}/issues`,
     );
     return res.data as IMemberIssue[];
+  }
+
+  async createIssue(
+    memberId: number,
+    data: IManageMemberIssue,
+  ): Promise<IMemberIssue> {
+    const res = await this.httpService.post<IResponse<IMemberIssue>>(
+      `${this.endpoint}/${memberId}/issues`,
+      data,
+    );
+    return res.data as IMemberIssue;
+  }
+
+  async updateIssue(
+    memberId: number,
+    issueId: number,
+    data: IManageMemberIssue,
+  ): Promise<IMemberIssue> {
+    const res = await this.httpService.put<IResponse<IMemberIssue>>(
+      `${this.endpoint}/${memberId}/issues/${issueId}`,
+      data,
+    );
+    return res.data as IMemberIssue;
   }
 
   async getAssessment(memberId: number): Promise<IMemberAssessment | null> {
@@ -143,6 +182,8 @@ export class MembersApiService extends ApiBaseService {
     );
     return res.data as IMemberAssessment | null;
   }
+
+  // endregion
 
   async getAssessmentMaster(): Promise<IAssessmentMaster> {
     const res = await this.httpService.get<IResponse<IAssessmentMaster>>(

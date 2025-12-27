@@ -884,6 +884,13 @@ export class LovMasterApiService extends ApiBaseService {
     );
   }
 
+  async getIssueCategoryDropdown(): Promise<IDropdownItem[]> {
+    const res = await this.httpService.get<IResponse<IDropdownItem[]>>(
+      `${this.baseEndpoint}/issue-category/dropdown`
+    );
+    return res.data as IDropdownItem[];
+  }
+
   // Issue Status
   async getIssueStatusList(params?: any): Promise<ITableList<IIssueStatus>> {
     const res = await this.httpService.get<IResponse<ITableList<IIssueStatus>>>(
@@ -919,6 +926,13 @@ export class LovMasterApiService extends ApiBaseService {
       `${this.baseEndpoint}/issue-status/update-status/${id}`,
       { active }
     );
+  }
+
+  async getIssueStatusDropdown(): Promise<IDropdownItem[]> {
+    const res = await this.httpService.get<IResponse<IDropdownItem[]>>(
+      `${this.baseEndpoint}/issue-status/dropdown`
+    );
+    return res.data as IDropdownItem[];
   }
 
   // Program Category

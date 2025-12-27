@@ -1,5 +1,10 @@
-import { IBaseAdminUser } from "../base.interface";
+import { IBaseAdminUser, IDropdownItem } from "../base.interface";
 import { IIssueStatus, IIssueCategory } from "./issue.interface";
+
+export interface IIssueMasterData {
+  categories: IDropdownItem[];
+  status: IDropdownItem[];
+}
 
 export interface IBaseMemberIssue {
   memberId: number;

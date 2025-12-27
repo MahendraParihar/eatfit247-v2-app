@@ -1,0 +1,55 @@
+<div class="dialog-container">
+  <h2 mat-dialog-title>{{ isEditMode ? 'Edit Issue' : 'Add Issue' }}</h2>
+  
+  <mat-dialog-content>
+    @if (loading && issueCategoryOptions.length === 0) {
+      <div class="loading-container">
+        <mat-spinner diameter="40"></mat-spinner>
+      </div>
+    } @else {
+      <form [formGroup]="formGroup" class="issue-form">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Issue</mat-label>
+          <textarea
+            matInput
+            formControlName="issue"
+            rows="4"
+            [maxlength]="InputLengthEnum.CHAR_1000"
+            placeholder="Enter issue description">
+          </textarea>
+          <mat-hint align="end">{{ formGroup.get('issue')?.value?.length || 0 }}/{{ InputLengthEnum.CHAR_1000 }}</mat-hint>
+          <shared-ui-input-error [control]="formGroup.get('issue')"></shared-ui-input-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Issue Category</mat-label>
+          <mat-select formControlName="issueCategoryId">
+            <mat-option [value]="null">Select Category</mat-option>
+            @for (category of issueCategoryOptions; track category.id) {
+              <mat-option [value]="category.id">{{ category.label }}</mat-option>
+            }
+          </mat-select>
+          <shared-ui-input-error [control]="formGroup.get('issueCategoryId')"></shared-ui-input-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Issue Status</mat-label>
+          <mat-select formControlName="issueStatusId">
+            <mat-option [value]="null">Select Status</mat-option>
+            @for (status of issueStatusOptions; track status.id) {
+              <mat-option [value]="status.id">{{ status.label }}</mat-option>
+            }
+          </mat-select>
+          <shared-ui-input-error [control]="formGroup.get('issueStatusId')"></shared-ui-input-error>
+        </mat-form-field>
+      </form>
+    }
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button (click)="onCancel()" [disabled]="loading">Cancel</button>
+    <button mat-raised-button color="primary" (click)="onSubmit()" [disabled]="loading || formGroup.invalid">
+      {{ isEditMode ? 'Update' : 'Create' }}
+    </button>
+  </mat-dialog-actions>
+</div>

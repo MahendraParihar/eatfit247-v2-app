@@ -4,10 +4,12 @@ import { ActivatedRoute } from "@angular/router";
 import { MatCardModule } from "@angular/material/card";
 import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
+import { MatDialog } from "@angular/material/dialog";
 import {
   DataTableComponent,
   ITableColumn,
   ITableConfig,
+  ITableAction,
   EmptyStateComponent,
   EmptyStateType,
   LoaderComponent,
@@ -17,6 +19,10 @@ import {
 import { IMemberIssue } from "@eatfit247-shared-lib";
 import { MembersApiService } from "../../api.service";
 import { Subject, takeUntil } from "rxjs";
+import {
+  ManageMemberIssueComponent,
+  ManageMemberIssueData
+} from "./manage-member-issue/manage-member-issue.component";
 
 @Component({
   selector: "lib-member-issues",
@@ -35,7 +41,8 @@ export class MemberIssuesComponent implements OnInit, OnDestroy {
 
   constructor(
     private route: ActivatedRoute,
-    private apiService: MembersApiService
+    private apiService: MembersApiService,
+    private dialog: MatDialog
   ) {
     this.initializeTable();
   }
@@ -75,16 +82,16 @@ export class MemberIssuesComponent implements OnInit, OnDestroy {
         sortable: false
       },
       {
-        key: "createdBy",
+        key: "createdByUser",
         label: "Created By",
-        dataKey: "createdBy",
+        dataKey: "createdByUser",
         sortable: false,
         formatter: createdByUserFormatter()
       },
       {
-        key: "updatedBy",
+        key: "updatedByUser",
         label: "Updated By",
-        dataKey: "updatedBy",
+        dataKey: "updatedByUser",
         sortable: false,
         formatter: updatedByUserFormatter()
       },
@@ -103,11 +110,17 @@ export class MemberIssuesComponent implements OnInit, OnDestroy {
         sortable: true
       }
     ];
+    const actions: ITableAction<IMemberIssue>[] = [
+      { label: 'Edit', icon: 'edit', color: 'primary', onClick: (row) => this.editIssue(row) },
+    ];
+
     this.tableConfig = {
       columns,
+      actions,
       pageSize: 10,
       pageSizeOptions: [10, 25, 50, 100],
-      showPagination: true
+      showPagination: true,
+      showSearch: false,
     };
   }
 
@@ -124,7 +137,41 @@ export class MemberIssuesComponent implements OnInit, OnDestroy {
   }
 
   addIssue(): void {
-    // TODO: Open dialog/form to add new issue
-    console.log("Add issue for member:", this.memberId);
+    const dialogData: ManageMemberIssueData = {
+      memberId: this.memberId,
+    };
+    const dialogRef = this.dialog.open(ManageMemberIssueComponent, {
+      width: '600px',
+      data: dialogData,
+    });
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result === true) {
+        // Reload issues after successful create/update
+        this.loadIssues();
+      }
+    });
+  }
+
+  editIssue(issue: IMemberIssue): void {
+    const dialogData: ManageMemberIssueData = {
+      memberId: this.memberId,
+      issue: {
+        memberIssueId: issue.memberIssueId,
+        memberId: issue.memberId,
+        issue: issue.issue,
+        issueStatusId: issue.issueStatusId,
+        issueCategoryId: issue.issueCategoryId,
+      },
+    };
+    const dialogRef = this.dialog.open(ManageMemberIssueComponent, {
+      width: '600px',
+      data: dialogData,
+    });
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result === true) {
+        // Reload issues after successful update
+        this.loadIssues();
+      }
+    });
   }
 }
