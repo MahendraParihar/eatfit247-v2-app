@@ -1,0 +1,13 @@
+<div class="empty-state">
+  <div class="empty-state-content">
+    <div class="empty-state-text">
+      <h3 class="empty-state-title">{{ config.title }}</h3>
+      <p class="empty-state-description">{{ config.description }}</p>
+    </div>
+    <div class="empty-state-image">
+      <div class="empty-icon-wrapper" [style.background]="'linear-gradient(135deg, ' + config.backgroundColor + ', ' + config.backgroundColor.replace('0.1', '0.2') + ')'">
+        <mat-icon class="empty-icon" [style.color]="config.iconColor">{{ config.icon }}</mat-icon>
+      </div>
+    </div>
+  </div>
+</div>

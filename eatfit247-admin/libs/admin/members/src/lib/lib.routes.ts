@@ -1,9 +1,34 @@
 import { Route } from '@angular/router';
 import { Members } from './members.component';
 import { ManageMember } from './manage/manage-member.component';
+import { MemberDetailsComponent } from './details/member-details.component';
+import { MemberDashboardComponent } from './details/dashboard/member-dashboard.component';
+import { MemberAssessmentComponent } from './details/assessment/member-assessment.component';
+import { MemberPocketGuideComponent } from './details/pocket-guide/member-pocket-guide.component';
+import { MemberHealthIssuesComponent } from './details/health-issues/member-health-issues.component';
+import { MemberCallLogsComponent } from './details/call-logs/member-call-logs.component';
+import { MemberPaymentHistoryComponent } from './details/payment-history/member-payment-history.component';
+import { MemberDietHistoryComponent } from './details/diet-history/member-diet-history.component';
+import { MemberBodyStatsComponent } from './details/body-stats/member-body-stats.component';
 
 export const membersRoutes: Route[] = [
   { path: '', component: Members, title: 'Members' },
   { path: 'new', component: ManageMember, title: 'Create Member' },
-  { path: 'edit/:id', component: ManageMember, title: 'Edit Member' }
+  { path: 'edit/:id', component: ManageMember, title: 'Edit Member' },
+  {
+    path: 'details/:id',
+    component: MemberDetailsComponent,
+    title: 'Member Details',
+    children: [
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+      { path: 'dashboard', component: MemberDashboardComponent, title: 'Member Dashboard' },
+      { path: 'assessment', component: MemberAssessmentComponent, title: 'Member Assessment' },
+      { path: 'pocket-guide', component: MemberPocketGuideComponent, title: 'Member Pocket Guide' },
+      { path: 'health-issues', component: MemberHealthIssuesComponent, title: 'Member Health Issues' },
+      { path: 'call-logs', component: MemberCallLogsComponent, title: 'Member Call Logs' },
+      { path: 'payment-history', component: MemberPaymentHistoryComponent, title: 'Member Payment History' },
+      { path: 'diet-history', component: MemberDietHistoryComponent, title: 'Member Diet History' },
+      { path: 'body-stats', component: MemberBodyStatsComponent, title: 'Member Body Stats' },
+    ],
+  },
 ];

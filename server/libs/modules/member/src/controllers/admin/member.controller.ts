@@ -1,13 +1,17 @@
 import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard, CurrentUser, RequestedIp, BasicSearchDto } from '@server/common';
-import { MemberService } from '../../services';
+import { MemberService, MemberPocketGuideService, MemberHealthIssueService } from '../../services';
 import { CreateMemberDto } from '../../dto';
-import { ITableList, IMember, IResponse } from 'eatfit247-shared-lib';
+import { ITableList, IMember, IResponse, IMemberPocketGuide, IMemberHealthIssue } from 'eatfit247-shared-lib';
 
 @Controller('member')
 @UseGuards(JwtAuthGuard)
 export class MemberController {
-  constructor(private readonly service: MemberService) {}
+  constructor(
+    private readonly service: MemberService,
+    private readonly memberPocketGuideService: MemberPocketGuideService,
+    private readonly memberHealthIssueService: MemberHealthIssueService,
+  ) {}
 
   @Get('list')
   async list(@Query() req: BasicSearchDto): Promise<ITableList<IMember>> {
@@ -48,5 +52,16 @@ export class MemberController {
   ): Promise<void> {
     await this.service.changeStatus(id, body.active, body.deactivationReason || null, requestedIp, currentUser.userId || currentUser.adminId);
   }
-}
 
+  @Get(':id/pocket-guide')
+  async getPocketGuides(@Param('id') id: number): Promise<IResponse<IMemberPocketGuide[]>> {
+    const data = await this.memberPocketGuideService.findByMemberId(id);
+    return { data };
+  }
+
+  @Get(':id/health-issues')
+  async getHealthIssues(@Param('id') id: number): Promise<IResponse<IMemberHealthIssue[]>> {
+    const data = await this.memberHealthIssueService.findByMemberId(id);
+    return { data };
+  }
+}

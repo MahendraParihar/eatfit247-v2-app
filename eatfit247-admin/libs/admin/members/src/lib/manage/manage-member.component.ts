@@ -19,7 +19,6 @@ import {
   FileTypeEnum,
   IMediaUpload
 } from '@eatfit247-shared-lib';
-import { LovMasterApiService } from '../../lov-master/src/lib/api.service';
 
 @Component({
   selector: 'lib-manage-member',
@@ -97,7 +96,6 @@ export class ManageMember implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private apiService = inject(MembersApiService);
-  private lovMasterApiService = inject(LovMasterApiService);
 
   async ngOnInit(): Promise<void> {
     const id = this.route.snapshot.paramMap.get('id');
@@ -133,9 +131,9 @@ export class ManageMember implements OnInit, OnDestroy {
 
   async loadMasterData(): Promise<void> {
     try {
-      this.countryOptions = await this.lovMasterApiService.getCountryDropdown();
+      this.countryOptions = await this.apiService.getCountryDropdown();
       this.franchiseOptions = await this.apiService.getFranchiseDropdown();
-      // Load referrer dropdown if endpoint exists
+      // Load referrer dropdown if the endpoint exists
       try {
         this.referrerOptions = await this.apiService.getReferrerDropdown();
       } catch (error) {

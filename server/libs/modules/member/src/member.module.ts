@@ -10,6 +10,8 @@ import {
 } from './controllers';
 import {
   MemberService,
+  MemberPocketGuideService,
+  MemberHealthIssueService,
 } from './services';
 // Register models with the model registry
 modelRegistry.register([TxnMember, TxnMemberPocketGuide, TxnMemberHealthIssue, TxnMemberIssue]);
@@ -37,6 +39,8 @@ modelRegistry.register([TxnMember, TxnMemberPocketGuide, TxnMemberHealthIssue, T
   ],
   providers: [
     MemberService,
+    MemberPocketGuideService,
+    MemberHealthIssueService,
   ],
   exports: [
     MemberService,

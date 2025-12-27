@@ -74,6 +74,7 @@ $dark-theme: mat.define-theme((
 .mat-mdc-card {
   border-radius: var(--radius-card) !important; // 16px per design system
   box-shadow: var(--elevation-level-1) !important;
+  background-color: white !important;
 }
 
 .mat-mdc-chip {

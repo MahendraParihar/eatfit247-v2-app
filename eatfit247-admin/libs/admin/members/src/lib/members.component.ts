@@ -138,6 +138,6 @@ export class Members implements OnInit {
   }
 
   viewItem(item: IMember): void {
-    console.log('View member:', item);
+    this.router.navigate(['/members/details', item.memberId, 'dashboard']);
   }
 }

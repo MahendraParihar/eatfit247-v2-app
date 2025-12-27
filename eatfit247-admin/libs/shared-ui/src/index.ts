@@ -9,6 +9,8 @@ export * from './lib/input-error/input-error.component';
 export * from './lib/img/img.component';
 export * from './lib/warning-dialog/warning-dialog.component';
 export * from './lib/seo-form/seo-form.component';
+export * from './lib/empty-state/empty-state.component';
+export * from './lib/empty-state/empty-state.enum';
 export * from './lib/social-link/social-link-form.component';
 export * from './lib/upload-form/upload-form.component';
 export * from './lib/address-form/address-form.component';

@@ -1,0 +1,94 @@
+<div class="member-details-container">
+  <!-- Back Button -->
+  <div class="header-actions">
+    <button mat-icon-button (click)="goBack()" aria-label="Go back">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <button mat-raised-button color="primary" (click)="editMember()">
+      <mat-icon>edit</mat-icon>
+      Edit Member
+    </button>
+  </div>
+
+  <!-- Member Summary Card -->
+  <mat-card class="summary-card" *ngIf="member && !loading">
+    <mat-card-header>
+      <div class="member-header">
+        <div class="member-avatar">
+          <mat-icon class="avatar-icon">person</mat-icon>
+        </div>
+        <div class="member-info">
+          <mat-card-title>{{ getMemberDisplayName() }}</mat-card-title>
+          <mat-card-subtitle>{{ member.emailId }}</mat-card-subtitle>
+        </div>
+        <div class="member-status">
+          <mat-chip [class.active]="member.active" [class.inactive]="!member.active">
+            {{ member.active ? 'Active' : 'Inactive' }}
+          </mat-chip>
+        </div>
+      </div>
+    </mat-card-header>
+    <mat-divider></mat-divider>
+    <mat-card-content>
+      <div class="summary-grid">
+        <div class="summary-item">
+          <mat-icon>phone</mat-icon>
+          <div class="summary-content">
+            <span class="summary-label">Contact</span>
+            <span class="summary-value">{{ member.contactNumber || 'N/A' }}</span>
+          </div>
+        </div>
+        <div class="summary-item" *ngIf="member.franchise">
+          <mat-icon>business</mat-icon>
+          <div class="summary-content">
+            <span class="summary-label">Franchise</span>
+            <span class="summary-value">{{ member.franchise || 'N/A' }}</span>
+          </div>
+        </div>
+        <div class="summary-item" *ngIf="member.referrer">
+          <mat-icon>person_search</mat-icon>
+          <div class="summary-content">
+            <span class="summary-label">Referrer</span>
+            <span class="summary-value">{{ member.referrer || 'N/A' }}</span>
+          </div>
+        </div>
+        <div class="summary-item" *ngIf="member.country">
+          <mat-icon>location_on</mat-icon>
+          <div class="summary-content">
+            <span class="summary-label">Country</span>
+            <span class="summary-value">{{ member.country || 'N/A' }}</span>
+          </div>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container">
+    <mat-spinner diameter="50"></mat-spinner>
+  </div>
+
+  <!-- Main Content with Sidebar -->
+  <div class="details-content" *ngIf="member && !loading">
+    <!-- Left Sidebar Navigation -->
+    <mat-card class="sidebar-card">
+      <mat-nav-list>
+        <a
+          *ngFor="let item of menuItems"
+          mat-list-item
+          [routerLink]="item.route"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: false }"
+        >
+          <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
+          <span matListItemTitle>{{ item.label }}</span>
+        </a>
+      </mat-nav-list>
+    </mat-card>
+
+    <!-- Right Content Area -->
+    <div class="content-area">
+      <router-outlet></router-outlet>
+    </div>
+  </div>
+</div>
