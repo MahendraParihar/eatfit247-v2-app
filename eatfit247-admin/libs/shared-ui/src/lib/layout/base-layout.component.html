@@ -28,13 +28,13 @@
             <span>{{ getUserDisplayName() || 'User' }}</span>
           </div>
           <mat-divider></mat-divider>
-          <button mat-menu-item (click)="onUpdateProfile()">
-            <mat-icon>edit</mat-icon>
-            <span>Update Profile</span>
+          <button mat-menu-item (click)="onSetting()">
+            <mat-icon>settings_applications</mat-icon>
+            <span>Settings</span>
           </button>
           <button mat-menu-item (click)="onResetPassword()">
             <mat-icon>lock_reset</mat-icon>
-            <span>Reset Password</span>
+            <span>Change Password</span>
           </button>
           <mat-divider></mat-divider>
           <button mat-menu-item (click)="onLogout()">

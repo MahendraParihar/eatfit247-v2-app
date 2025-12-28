@@ -188,7 +188,7 @@ export class ManageMember implements OnInit, OnDestroy {
     ValidationUtil.validateAllFormFields(this.formGroup);
     if (this.formGroup.valid) {
       const formValue: IManageMember = this.formGroup.value;
-      // Handle profile picture from the upload form
+      // Handle setting picture from the upload form
       const profilePictureControl = this.formGroup.get('profilePicture');
       if (profilePictureControl) {
         const profilePictureValue = profilePictureControl.value;

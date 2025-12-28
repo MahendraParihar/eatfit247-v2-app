@@ -14,15 +14,10 @@
   </shared-ui-data-table>
 }
 @if (!loading && healthParameterLogs.length === 0) {
-  <div class="empty-state-container">
-    <shared-ui-empty-state
-      [type]="EmptyStateType.MEMBER_HEALTH_PARAMETER_LOGS">
-    </shared-ui-empty-state>
-    <div class="empty-state-actions">
-      <button mat-raised-button color="primary" (click)="addBodyStatsLog()">
-        <mat-icon>add</mat-icon>
-        Add Body Stats Log
-      </button>
-    </div>
-  </div>
+  <shared-ui-empty-state
+    [type]="EmptyStateType.MEMBER_HEALTH_PARAMETER_LOGS"
+    buttonLabel="Add Body Stats Log"
+    buttonIcon="add"
+    (buttonClick)="addBodyStatsLog()">
+  </shared-ui-empty-state>
 }

@@ -8,13 +8,13 @@ export class ApiUrlEnum {
   static REFRESH_TOKEN = "account/refresh-token";
   static LOGOUT = "account/logout";
   static CHANGE_PASSWORD = "account/change-password";
-  static PROFILE = "account/profile";
+  static PROFILE = "account/setting";
   static SEND_ACTIVATION_LINK = "account/resend-verification-link";
   static SEND_FORGOT_PASSWORD_OTP = "account/send-forgot-password-otp";
   static RESET_PASSWORD = "account/reset-password";
   static ADMIN_LIST = "admin-user/list";
   static ADMIN_MANAGE = "admin-user/manage";
-  static ADMIN_PROFILE_MANAGE = "admin-user/admin-profile";
+  static ADMIN_PROFILE_MANAGE = "admin-user/admin-setting";
   static ADMIN_MASTER_DATA = "admin-user/master-data";
   static ADMIN_UPDATE_STATUS = "admin-user/update-status";
   static ADMIN_RESET_PASSWORD = "admin-user/reset-password";

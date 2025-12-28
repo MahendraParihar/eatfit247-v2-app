@@ -16,6 +16,9 @@
 }
 @if (!loading && pocketGuides.length === 0) {
   <shared-ui-empty-state
-    [type]="EmptyStateType.MEMBER_POCKET_GUIDE">
+    [type]="EmptyStateType.MEMBER_POCKET_GUIDE"
+    buttonLabel="Add Pocket Guide"
+    buttonIcon="add"
+    (buttonClick)="addPocketGuide()">
   </shared-ui-empty-state>
 }

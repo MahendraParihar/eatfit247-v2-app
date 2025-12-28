@@ -1,0 +1,249 @@
+import { Component, Inject, OnInit, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
+import { MatRadioModule } from '@angular/material/radio';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { FormsModule } from '@angular/forms';
+import { InputErrorComponent, LoaderComponent } from '@shared';
+import { IDropdownItem, IAvailableSlot, ICallLogSlot } from '@eatfit247-shared-lib';
+import { MembersApiService } from '../../../api.service';
+import moment from 'moment';
+
+export type Step = 'SELECT_CRITERIA' | 'SELECT_SLOT' | 'CONFIRM';
+
+@Component({
+  selector: 'lib-manage-member-call-log',
+  standalone: true,
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    FormsModule,
+    MatDialogModule,
+    MatButtonModule,
+    MatIconModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
+    MatRadioModule,
+    MatCheckboxModule,
+    InputErrorComponent,
+    LoaderComponent
+  ],
+  templateUrl: './manage-member-call-log.component.html',
+  styleUrl: './manage-member-call-log.component.scss'
+})
+export class ManageMemberCallLogComponent implements OnInit {
+  // State Machine
+  currentStep = signal<Step>('SELECT_CRITERIA');
+  // Steps array for template
+  readonly steps: Step[] = ['SELECT_CRITERIA', 'SELECT_SLOT', 'CONFIRM'];
+  // Form for Step 1
+  criteriaFormGroup!: FormGroup;
+  loading = signal(false);
+  checkingAvailability = signal(false);
+  submitting = signal(false);
+  // Master data
+  callTypeOptions: IDropdownItem[] = [];
+  callPurposeOptions: IDropdownItem[] = [];
+  callLogStatusOptions: IDropdownItem[] = [];
+  nutritionistOptions: IDropdownItem[] = [];
+  durationOptions: IDropdownItem[] = [];
+  // Step 2: Available time slots
+  slots: ICallLogSlot[] = [];
+  selectedSlot: ICallLogSlot | null = null;
+  // Step 3: Confirmation form data
+  form = {
+    callTypeId: null as number | null,
+    notifyUser: false
+  };
+
+  constructor(
+    public dialogRef: MatDialogRef<ManageMemberCallLogComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: number,
+    private apiService: MembersApiService,
+    private fb: FormBuilder
+  ) {
+    this.initializeCriteriaForm();
+  }
+
+  ngOnInit(): void {
+    this.loadMasterData();
+  }
+
+  private initializeCriteriaForm(): void {
+    this.criteriaFormGroup = this.fb.group({
+      nutritionistId: [null, [Validators.required]],
+      duration: [null, [Validators.required]],
+      dateFrom: [new Date(), [Validators.required]],
+      dateTo: [null, [Validators.required]]
+    });
+  }
+
+  async loadMasterData(): Promise<void> {
+    this.loading.set(true);
+    try {
+      const data = await this.apiService.getCallLogMasterData(this.data);
+      this.callLogStatusOptions = data.callLogStatuses;
+      this.callTypeOptions = data.callTypes;
+      this.callPurposeOptions = data.callPurposes;
+      this.nutritionistOptions = data.nutritionists;
+      this.durationOptions = data.durations;
+    } catch (error) {
+      console.error('Error loading master data:', error);
+    } finally {
+      this.loading.set(false);
+    }
+  }
+
+  async checkAvailability(): Promise<void> {
+    if (this.criteriaFormGroup.invalid) {
+      this.criteriaFormGroup.markAllAsTouched();
+      return;
+    }
+    this.checkingAvailability.set(true);
+    try {
+      const formValue = this.criteriaFormGroup.value;
+      // Format dates as date-only strings (YYYY-MM-DD) to avoid UTC timezone conversion
+      // When Date objects are serialized to JSON, they become UTC ISO strings which shifts the date
+      const formatDateForAPI = (date: Date | string | null): string => {
+        if (!date) {
+          return moment().format('YYYY-MM-DD');
+        }
+        // Convert to Date object if it's a string
+        const dateObj = date instanceof Date ? date : new Date(date);
+        // Check if the date is valid
+        if (isNaN(dateObj.getTime())) {
+          return moment().format('YYYY-MM-DD');
+        }
+        // Use moment to format the date, preserving the local date components
+        // This prevents timezone shift when serialized to JSON
+        return moment(dateObj).format('YYYY-MM-DD');
+      };
+      // Prepare request data
+      const availableSlotRequest: IAvailableSlot = {
+        nutritionistId: formValue.nutritionistId,
+        fromDate: formatDateForAPI(formValue.dateFrom),
+        toDate: formatDateForAPI(formValue.dateTo || formValue.dateFrom),
+        duration: formValue.duration
+      };
+      // Call API to get available time slots
+      this.slots = await this.apiService.getAvailableTimeslots(this.data, availableSlotRequest);
+      // After checking availability, proceed to next step
+      if (this.slots.length > 0) {
+        this.nextStep();
+      } else {
+        // Show a message that no slots are available
+        console.warn('No available slots found');
+      }
+    } catch (error) {
+      console.error('Error checking availability:', error);
+      this.slots = [];
+    } finally {
+      this.checkingAvailability.set(false);
+    }
+  }
+
+  // Step Navigation Methods
+  nextStep(): void {
+    const current = this.currentStep();
+    if (current === 'SELECT_CRITERIA') {
+      this.currentStep.set('SELECT_SLOT');
+    } else if (current === 'SELECT_SLOT') {
+      this.currentStep.set('CONFIRM');
+    }
+  }
+
+  previousStep(): void {
+    const current = this.currentStep();
+    if (current === 'SELECT_SLOT') {
+      this.currentStep.set('SELECT_CRITERIA');
+    } else if (current === 'CONFIRM') {
+      this.currentStep.set('SELECT_SLOT');
+    }
+  }
+
+  back(): void {
+    this.previousStep();
+  }
+
+  goToConfirm(): void {
+    if (this.selectedSlot) {
+      this.currentStep.set('CONFIRM');
+    }
+  }
+
+  async confirmBooking(): Promise<void> {
+    if (!this.selectedSlot || !this.form.callTypeId) {
+      return;
+    }
+    this.submitting.set(true);
+    try {
+      // Prepare call log data
+      const criteriaValue = this.criteriaFormGroup.value;
+      const callLogData = {
+        memberId: this.data,
+        date: this.selectedSlot.start.toISOString().split('T')[0],
+        startTime: this.formatTimeForAPI(this.selectedSlot.start),
+        endTime: this.formatTimeForAPI(this.selectedSlot.end),
+        callTypeId: this.form.callTypeId,
+        callPurposeId: criteriaValue.callPurposeId || null,
+        callLogStatusId: criteriaValue.callLogStatusId || null,
+        nutritionistId: criteriaValue.nutritionistId || null,
+        notifyUser: this.form.notifyUser,
+        active: true
+      };
+      // TODO: Call API to create call log
+      console.log('Confirming booking with:', callLogData);
+      // await this.apiService.createCallLog(this.data, callLogData as any);
+      this.dialogRef.close(true);
+    } catch (error) {
+      console.error('Error confirming booking:', error);
+    } finally {
+      this.submitting.set(false);
+    }
+  }
+
+  private formatTimeForAPI(date: Date): string {
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    return `${hours}:${minutes}:00`;
+  }
+
+  goToStep(step: Step): void {
+    this.currentStep.set(step);
+  }
+
+  // Get step number for display
+  getStepNumber(step: Step): number {
+    const stepMap: Record<Step, number> = {
+      'SELECT_CRITERIA': 1,
+      'SELECT_SLOT': 2,
+      'CONFIRM': 3
+    };
+    return stepMap[step];
+  }
+
+  // Get step label
+  getStepLabel(step: Step): string {
+    const labelMap: Record<Step, string> = {
+      'SELECT_CRITERIA': 'Select Criteria',
+      'SELECT_SLOT': 'Select Time Slot',
+      'CONFIRM': 'Confirm Details'
+    };
+    return labelMap[step];
+  }
+
+  onCancel(): void {
+    this.dialogRef.close(false);
+  }
+}

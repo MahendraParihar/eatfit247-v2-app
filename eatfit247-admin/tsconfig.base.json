@@ -33,7 +33,6 @@
       "@eatfit247-shared-lib": ["../shared-library/src/index.ts"],
       "@core": ["libs/core/src/index.ts"],
       "@shared": ["libs/shared-ui/src/index.ts"],
-      "@shared-ui": ["libs/shared-ui/src/index.ts"],
       "@ui": ["libs/ui/src/index.ts"]
     }
   },

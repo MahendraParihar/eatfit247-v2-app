@@ -247,18 +247,40 @@ alter table public.txn_diet_templates
     drop column is_weekly;
 
 ALTER TABLE public.txn_member_call_logs
-    ADD COLUMN nutrinist_id integer
-        REFERENCES public.mst_admin_users(admin_id),
+    ADD COLUMN nutrinist_id        integer
+        REFERENCES public.mst_admin_users (admin_id),
 
-    ADD COLUMN meeting_link text,
+    ADD COLUMN meeting_link        text,
 
-    ADD COLUMN calendar_event_id text,
+    ADD COLUMN calendar_event_id   text,
 
     ADD COLUMN is_system_generated boolean
         DEFAULT false;
 
 ALTER TABLE public.mst_admin_users
-    ADD COLUMN google_calendar_email varchar(255),
-    ADD COLUMN google_refresh_token text,
-    ADD COLUMN google_token_scope varchar(255),
+    ADD COLUMN google_calendar_email   varchar(255),
+    ADD COLUMN google_refresh_token    text,
+    ADD COLUMN google_token_scope      varchar(255),
     ADD COLUMN google_token_created_at timestamptz;
+
+ALTER TABLE public.mst_admin_users
+    ADD COLUMN google_calendar_timezone varchar(100);
+
+INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
+VALUES (DEFAULT, 'GOOGLE_CLIENT_ID', '',
+        'Google');
+INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
+VALUES (DEFAULT, 'GOOGLE_CLIENT_SECRET', '', 'Google');
+INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
+VALUES (DEFAULT, 'GOOGLE_REDIRECT_URI', 'http://localhost:3001/api/v2/admin/google-calendar/callback', 'Google');
+INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
+VALUES (DEFAULT, 'GOOGLE_CALENDAR_SCOPE', 'https://www.googleapis.com/auth/calendar', 'Google');
+
+INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
+VALUES (DEFAULT, 'CALENDAR_SLOT_STEP_MINUTES', 15, 'Calendar');
+INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
+VALUES (DEFAULT, 'CALENDAR_MAX_SLOT', 10, 'Calendar');
+INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
+VALUES (DEFAULT, 'CALENDAR_WORKING_HOURS', '09:00-18:00', 'Calendar');
+INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
+VALUES (DEFAULT, 'CALENDAR_TIMEZONE', 'Asia/Kolkata', 'Calendar');

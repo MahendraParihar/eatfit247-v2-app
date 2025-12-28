@@ -226,5 +226,11 @@ export class MstAdminUser extends Model<MstAdminUser> {
     type: DataType.DATE,
   })
   declare googleTokenCreatedAt: Date;
+  @Column({
+    allowNull: true,
+    field: 'google_calendar_timezone',
+    type: DataType.STRING(100),
+  })
+  declare googleCalendarTimezone: string;
 }
 

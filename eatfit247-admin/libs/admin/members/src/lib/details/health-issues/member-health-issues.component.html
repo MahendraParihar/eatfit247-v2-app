@@ -16,6 +16,9 @@
 }
 @if (!loading && healthIssues.length === 0) {
   <shared-ui-empty-state
-    [type]="EmptyStateType.MEMBER_HEALTH_ISSUES">
+    [type]="EmptyStateType.MEMBER_HEALTH_ISSUES"
+    buttonLabel="Add Health Issue"
+    buttonIcon="add"
+    (buttonClick)="addHealthIssue()">
   </shared-ui-empty-state>
 }

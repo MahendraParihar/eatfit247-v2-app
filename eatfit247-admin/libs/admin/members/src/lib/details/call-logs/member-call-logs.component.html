@@ -15,6 +15,9 @@
 }
 @if (!loading && callLogs.length === 0) {
   <shared-ui-empty-state
-    [type]="EmptyStateType.MEMBER_CALL_LOGS">
+    [type]="EmptyStateType.MEMBER_CALL_LOGS"
+    buttonLabel="Add Call Log"
+    buttonIcon="add"
+    (buttonClick)="addCallLog()">
   </shared-ui-empty-state>
 }

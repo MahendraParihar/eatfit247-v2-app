@@ -15,6 +15,9 @@
 }
 @if (!loading && issues.length === 0) {
   <shared-ui-empty-state
-    [type]="EmptyStateType.MEMBER_ISSUES">
+    [type]="EmptyStateType.MEMBER_ISSUES"
+    buttonLabel="Add Issue"
+    buttonIcon="add"
+    (buttonClick)="addIssue()">
   </shared-ui-empty-state>
 }

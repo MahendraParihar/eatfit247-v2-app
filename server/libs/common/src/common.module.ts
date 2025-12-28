@@ -83,7 +83,7 @@ import {
 
 export class CommonModule {
   static forRoot(configModules: string[] = []): DynamicModule {
-    const modulesNeededForCommon = ['Common', 'Email'];
+    const modulesNeededForCommon = ['Common', 'Email', 'Google', 'Calendar'];
     // Common models that belong to @server/common
     const commonModelsList = [
       AppConfigModel,

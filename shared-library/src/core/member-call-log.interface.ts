@@ -1,4 +1,25 @@
-import { IBaseAdminUser } from "../base.interface";
+import { IBaseAdminUser, IDropdownItem } from "../base.interface";
+
+export interface ICallLogMasterData {
+  callTypes: IDropdownItem[];
+  callPurposes: IDropdownItem[];
+  callLogStatuses: IDropdownItem[];
+  nutritionists: IDropdownItem[];
+  durations: IDropdownItem[];
+}
+
+export interface IAvailableSlot {
+  nutritionistId: number;
+  fromDate: string;
+  toDate: string;
+  duration: number;
+}
+
+export interface ICallLogSlot {
+  start: Date;
+  end: Date;
+  id: string;
+}
 
 export interface IBaseMemberCallLog {
   memberId: number;

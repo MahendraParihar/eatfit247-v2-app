@@ -58,13 +58,13 @@ export class AuthService extends ApiBaseService {
         this.storage.setToken(token.accessToken);
         // Refresh token is automatically stored as HttpOnly cookie by server
         // Client cannot access it (security best practice)
-        // Fetch user profile after successful login
+        // Fetch user setting after successful login
         try {
           const user = await this.getProfile();
           this.storage.setUser(user);
           this.currentUserSubject.next(user);
         } catch {
-          // If profile fetch fails, decode token as fallback
+          // If setting fetch fails, decode token as fallback
           const decoded = this.decodeToken(token.accessToken);
           if (decoded) {
             // Create minimal user object from token

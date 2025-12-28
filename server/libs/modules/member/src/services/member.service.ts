@@ -177,7 +177,7 @@ export class MemberService {
       updateObj.password = hashedPassword;
       updateObj.passwordTemp = hashedPassword;
     }
-    // Update profile picture if provided
+    // Update setting picture if provided
     if (obj.profilePicture && obj.profilePicture.length > 0) {
       updateObj.profilePicture = obj.profilePicture;
     }

@@ -33,7 +33,7 @@ const routes: Routes = [
         component: AdminUserEditProfileComponent,
       },
       {
-        path: 'edit-profile',
+        path: 'edit-setting',
         component: AdminUserEditProfileComponent,
       },
       {

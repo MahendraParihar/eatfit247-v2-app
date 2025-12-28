@@ -1,8 +1,20 @@
 <div class="empty-state">
   <div class="empty-state-content">
-    <div class="empty-state-text">
-      <h3 class="empty-state-title">{{ config.title }}</h3>
-      <p class="empty-state-description">{{ config.description }}</p>
+    <div class="empty-state-left">
+      <div class="empty-state-text">
+        <h3 class="empty-state-title">{{ config.title }}</h3>
+        <p class="empty-state-description">{{ config.description }}</p>
+      </div>
+      @if (buttonLabel) {
+        <div class="empty-state-actions">
+          <button mat-raised-button color="primary" (click)="buttonClick.emit()">
+            @if (buttonIcon) {
+              <mat-icon>{{ buttonIcon }}</mat-icon>
+            }
+            {{ buttonLabel }}
+          </button>
+        </div>
+      }
     </div>
     <div class="empty-state-image">
       <div class="empty-icon-wrapper" [style.background]="'linear-gradient(135deg, ' + config.backgroundColor + ', ' + config.backgroundColor.replace('0.1', '0.2') + ')'">

@@ -302,7 +302,7 @@ export class BaseLayoutComponent implements OnInit, OnDestroy {
     try {
       await this.authService.getProfile();
     } catch {
-      // If profile fetch fails, get from storage
+      // If setting fetch fails, get from storage
       this.currentUser = this.authService.getCurrentUser();
       this.isAuthenticated = !!this.currentUser;
     }
@@ -335,12 +335,12 @@ export class BaseLayoutComponent implements OnInit, OnDestroy {
     }
   }
 
-  onUpdateProfile(): void {
-    this.router.navigate(['/profile']);
+  onSetting(): void {
+    this.router.navigate(['/setting']);
   }
 
   onResetPassword(): void {
-    this.router.navigate(['/reset-password']);
+    this.router.navigate(['/change-password']);
   }
 
   getUserDisplayName(): string {

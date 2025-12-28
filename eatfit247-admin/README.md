@@ -182,7 +182,6 @@ The project uses TypeScript path aliases configured in `tsconfig.base.json`:
 
 - `@core` → `libs/core/src/index.ts` - Core services and guards
 - `@shared` → `libs/shared-ui/src/index.ts` - Shared UI components
-- `@shared-ui` → `libs/shared-ui/src/index.ts` - Alias for shared-ui
 - `@eatfit247-shared-lib` → `../shared-library/src/index.ts` - Shared interfaces
 - `@env` → `src/environments/environment.ts` - Environment config
 - Feature modules (e.g., `members`, `blogs`) → Direct imports from libs

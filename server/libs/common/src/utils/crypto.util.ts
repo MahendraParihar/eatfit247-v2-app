@@ -6,17 +6,33 @@ const secretIV = '589347fjljcm,ncvuf@iovxsd9082';
 const encryptionMethod = 'aes-256-cbc';
 
 export class CryptoUtil {
-  readonly apiSecretKey = 'kjadhk asklad alsd';
-  readonly apiSecretIV = 'kjadhk asklad alsd';
+  static readonly apiSecretKey = 'kjadhk asklad alsd';
+  static readonly apiSecretIV = 'kjadhk asklad alsd';
   // Generate secret hash with crypto to use for encryption
-  key = crypto.createHash('sha512').update(secretKey).digest('hex').substring(0, 32);
-  encryptionIV = crypto.createHash('sha512').update(secretIV).digest('hex').substring(0, 16);
+  static readonly key = crypto
+    .createHash('sha512')
+    .update(secretKey)
+    .digest('hex')
+    .substring(0, 32);
+  static readonly encryptionIV = crypto
+    .createHash('sha512')
+    .update(secretIV)
+    .digest('hex')
+    .substring(0, 16);
   // Generate secret hash with crypto to use for encryption
-  apiKey = crypto.createHash('sha512').update(this.apiSecretKey).digest('hex').substring(0, 32);
-  apiEncryptionIV = crypto.createHash('sha512').update(this.apiSecretIV).digest('hex').substring(0, 16);
+  static readonly apiKey = crypto
+    .createHash('sha512')
+    .update(this.apiSecretKey)
+    .digest('hex')
+    .substring(0, 32);
+  static readonly apiEncryptionIV = crypto
+    .createHash('sha512')
+    .update(this.apiSecretIV)
+    .digest('hex')
+    .substring(0, 16);
 
   // Encrypt data
-  encryptData(data: string) {
+  static encryptData(data: string) {
     if (!secretKey || !secretIV || !encryptionMethod) {
       throw new Error('secretKey, secretIV, and ecnryptionMethod are required');
     }
@@ -25,7 +41,7 @@ export class CryptoUtil {
   }
 
   // Encrypt Decrypt API DATA
-  decryptApiData(data: string) {
+  static decryptApiData(data: string) {
     if (!secretKey || !secretIV || !encryptionMethod) {
       throw new Error('secretKey, secretIV, and ecnryptionMethod are required');
     }
@@ -34,7 +50,7 @@ export class CryptoUtil {
   }
 
   // Decrypt data
-  decryptData(encryptedData) {
+  static decryptData(encryptedData) {
     const buff = Buffer.from(encryptedData, 'base64');
     const decipher = crypto.createDecipheriv(encryptionMethod, this.key, this.encryptionIV);
     return decipher.update(buff.toString('utf8'), 'hex', 'utf8') + decipher.final('utf8'); // Decrypts data and converts to utf8

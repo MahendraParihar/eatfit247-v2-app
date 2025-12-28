@@ -1,6 +1,7 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
 import { EmptyStateType } from './empty-state.enum';
 
 interface EmptyStateConfig {
@@ -14,7 +15,7 @@ interface EmptyStateConfig {
 @Component({
   selector: 'shared-ui-empty-state',
   standalone: true,
-  imports: [CommonModule, MatIconModule],
+  imports: [CommonModule, MatIconModule, MatButtonModule],
   templateUrl: './empty-state.component.html',
   styleUrl: './empty-state.component.scss',
 })
@@ -25,6 +26,9 @@ export class EmptyStateComponent {
   @Input() icon?: string;
   @Input() iconColor?: string;
   @Input() backgroundColor?: string;
+  @Input() buttonLabel?: string;
+  @Input() buttonIcon?: string;
+  @Output() buttonClick = new EventEmitter<void>();
 
   get config(): EmptyStateConfig {
     // If custom title and description are provided, use them

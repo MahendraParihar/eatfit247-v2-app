@@ -13,7 +13,7 @@ import moment from 'moment';
 
 @Component({
   standalone: false,
-  selector: 'app-admin-user-edit-profile',
+  selector: 'app-admin-user-edit-setting',
   templateUrl: './admin-user-edit-profile.component.html',
   styleUrls: ['./admin-user-edit-profile.component.scss']
 })

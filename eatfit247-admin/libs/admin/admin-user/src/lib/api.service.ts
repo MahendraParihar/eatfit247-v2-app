@@ -44,4 +44,3 @@ export class AdminUserApiService extends ApiBaseService {
     return res.data as IDropdownItem[];
   }
 }
-

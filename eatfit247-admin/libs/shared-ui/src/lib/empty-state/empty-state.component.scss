@@ -17,8 +17,15 @@
   max-width: 900px;
 }
 
-.empty-state-text {
+.empty-state-left {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 0;
+}
+
+.empty-state-text {
   text-align: left;
   min-width: 0;
 }
@@ -61,16 +68,36 @@
   line-height: 1.5;
 }
 
+.empty-state-actions {
+  display: flex;
+  justify-content: flex-start;
+  gap: 12px;
+
+  button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+}
+
 // Responsive design
 @media (max-width: 768px) {
   .empty-state-content {
     flex-direction: column;
     gap: 24px;
+  }
+
+  .empty-state-left {
+    align-items: center;
     text-align: center;
   }
 
   .empty-state-text {
     text-align: center;
+  }
+
+  .empty-state-actions {
+    justify-content: center;
   }
 
   .empty-icon-wrapper {

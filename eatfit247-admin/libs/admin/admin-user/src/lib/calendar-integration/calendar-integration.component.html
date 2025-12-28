@@ -1,0 +1,58 @@
+<mat-card class="calendar-card">
+  <mat-card-header>
+    <mat-card-title>
+      <mat-icon>event</mat-icon>
+      Google Calendar Integration
+    </mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <div class="calendar-content">
+      @if (isConnected()) {
+        <div class="connected-state">
+          <div class="status-info">
+            <mat-icon class="success-icon">check_circle</mat-icon>
+            <div class="status-text">
+              <p class="status-title">Connected</p>
+              @if (googleCalendarEmail()) {
+                <p class="status-detail">{{ googleCalendarEmail() }}</p>
+              }
+            </div>
+          </div>
+          <button
+            mat-stroked-button
+            color="warn"
+            (click)="disconnectGoogleCalendar()"
+            [disabled]="connecting()">
+            <mat-icon>link_off</mat-icon>
+            Disconnect
+          </button>
+        </div>
+      } @else {
+        <div class="disconnected-state">
+          <div class="status-info">
+            <mat-icon class="info-icon">info</mat-icon>
+            <div class="status-text">
+              <p class="status-title">Not Connected</p>
+              <p class="status-detail">
+                Connect your Google Calendar to automatically create calendar events for call logs and meetings.
+              </p>
+            </div>
+          </div>
+          <button
+            mat-raised-button
+            color="primary"
+            (click)="connectGoogleCalendar()"
+            [disabled]="connecting()">
+            @if (connecting()) {
+              <mat-icon class="spinning">refresh</mat-icon>
+              Connecting...
+            } @else {
+              <mat-icon>link</mat-icon>
+              Connect Google Calendar
+            }
+          </button>
+        </div>
+      }
+    </div>
+  </mat-card-content>
+</mat-card>

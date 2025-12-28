@@ -1,0 +1,95 @@
+.calendar-card {
+  width: 100%;
+  background-color: var(--md-sys-color-surface);
+  margin-bottom: 24px;
+}
+
+mat-card-header {
+  margin-bottom: 24px;
+
+  mat-card-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 24px;
+    font-weight: 500;
+
+    mat-icon {
+      color: var(--md-sys-color-primary);
+    }
+  }
+}
+
+.calendar-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.connected-state,
+.disconnected-state {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  border-radius: var(--radius-button);
+  background-color: var(--md-sys-color-surface-container);
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+.status-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  flex: 1;
+
+  mat-icon {
+    margin-top: 4px;
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+
+    &.success-icon {
+      color: var(--md-sys-color-success);
+    }
+
+    &.info-icon {
+      color: var(--md-sys-color-primary);
+    }
+  }
+
+  .status-text {
+    flex: 1;
+
+    .status-title {
+      margin: 0 0 4px 0;
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--md-sys-color-on-surface);
+    }
+
+    .status-detail {
+      margin: 0;
+      font-size: 14px;
+      color: var(--md-sys-color-on-surface-variant);
+    }
+  }
+}
+
+.spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
