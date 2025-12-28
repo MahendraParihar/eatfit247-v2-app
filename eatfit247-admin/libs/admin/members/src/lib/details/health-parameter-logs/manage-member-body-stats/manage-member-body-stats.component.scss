@@ -1,0 +1,94 @@
+.dialog-container {
+  width: 100%
+}
+
+h2[mat-dialog-title] {
+  margin: 0;
+  padding: 16px 16px;
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
+}
+
+mat-dialog-content {
+  padding: 16px;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+}
+
+.body-stats-form {
+  display: flex;
+  flex-direction: column;
+  margin-top: 16px;
+  gap: 16px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.health-parameters-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 500;
+  }
+}
+
+.health-parameters-table {
+  width: 100%;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: 4px;
+  overflow: hidden;
+
+  th,
+  td {
+    padding: 12px;
+  }
+
+  th {
+    background-color: var(--md-sys-color-surface-container-high);
+    font-weight: 500;
+  }
+
+  td {
+    border-top: 1px solid var(--md-sys-color-outline-variant);
+  }
+
+  mat-form-field {
+    margin: 0;
+  }
+}
+
+.no-parameters {
+  text-align: center;
+  color: var(--md-sys-color-error);
+  padding: 16px;
+  margin: 0;
+}
+
+mat-dialog-actions {
+  padding: 16px 16px;
+  border-top: 1px solid var(--md-sys-color-outline-variant);
+  margin: 0;
+
+  .inline-spinner {
+    display: inline-block;
+    margin-right: 8px;
+  }
+}

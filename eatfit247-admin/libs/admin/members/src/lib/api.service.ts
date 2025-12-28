@@ -16,6 +16,9 @@ import {
   IMemberHealthIssue,
   IMemberIssueResponse,
   IIssueMasterData,
+  IMemberHealthParameterLog,
+  IManageMemberHealthParameterLog,
+  IHealthParameterMaster,
 } from '@eatfit247-shared-lib';
 
 @Injectable({
@@ -133,11 +136,41 @@ export class MembersApiService extends ApiBaseService {
     return res.data as IMemberCallLog[];
   }
 
-  async getHealthParameterLogs(memberId: number): Promise<any[]> {
-    const res = await this.httpService.get<IResponse<any[]>>(
+  async getHealthParameterLogs(memberId: number): Promise<IMemberHealthParameterLog[]> {
+    const res = await this.httpService.get<IResponse<IMemberHealthParameterLog[]>>(
       `${this.endpoint}/${memberId}/health-parameter-logs`,
     );
-    return res.data as any[];
+    return res.data as IMemberHealthParameterLog[];
+  }
+
+  async getHealthParameterMasterData(memberId: number): Promise<IHealthParameterMaster> {
+    const res = await this.httpService.get<IResponse<IHealthParameterMaster>>(
+      `${this.endpoint}/${memberId}/health-parameter-logs/master-data`,
+    );
+    return res.data as IHealthParameterMaster;
+  }
+
+  async createHealthParameterLog(
+    memberId: number,
+    data: IManageMemberHealthParameterLog,
+  ): Promise<IMemberHealthParameterLog> {
+    const res = await this.httpService.post<IResponse<IMemberHealthParameterLog>>(
+      `${this.endpoint}/${memberId}/health-parameter-logs`,
+      data,
+    );
+    return res.data as IMemberHealthParameterLog;
+  }
+
+  async updateHealthParameterLog(
+    memberId: number,
+    logId: number,
+    data: IManageMemberHealthParameterLog,
+  ): Promise<IMemberHealthParameterLog> {
+    const res = await this.httpService.put<IResponse<IMemberHealthParameterLog>>(
+      `${this.endpoint}/${memberId}/health-parameter-logs/${logId}`,
+      data,
+    );
+    return res.data as IMemberHealthParameterLog;
   }
 
   // region Member Issues

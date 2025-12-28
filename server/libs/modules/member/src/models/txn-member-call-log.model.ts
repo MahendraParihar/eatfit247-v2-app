@@ -57,6 +57,12 @@ import { InputLengthEnum } from 'eatfit247-shared-lib';
         required: false,
         attributes: ['callLogStatusId', 'callLogStatus'],
       },
+      {
+        model: MstAdminUser,
+        as: 'nutritionist',
+        required: false,
+        attributes: ['adminId', 'firstName', 'lastName', 'emailId'],
+      },
     ],
   },
   details: {
@@ -80,6 +86,12 @@ import { InputLengthEnum } from 'eatfit247-shared-lib';
         as: 'callLogStatus',
         required: false,
         attributes: ['callLogStatusId', 'callLogStatus'],
+      },
+      {
+        model: MstAdminUser,
+        as: 'nutritionist',
+        required: false,
+        attributes: ['adminId', 'firstName', 'lastName', 'emailId'],
       },
     ],
   },
@@ -153,6 +165,31 @@ export class TxnMemberCallLog extends Model<TxnMemberCallLog> {
     type: DataType.BOOLEAN,
   })
   declare isMailSuccess: boolean;
+  @Column({
+    allowNull: true,
+    field: 'nutrinist_id',
+    type: DataType.INTEGER,
+  })
+  declare nutritionistId: number;
+  @Column({
+    allowNull: true,
+    field: 'meeting_link',
+    type: DataType.TEXT,
+  })
+  declare meetingLink: string;
+  @Column({
+    allowNull: true,
+    field: 'calendar_event_id',
+    type: DataType.TEXT,
+  })
+  declare calendarEventId: string;
+  @Column({
+    allowNull: false,
+    defaultValue: false,
+    field: 'is_system_generated',
+    type: DataType.BOOLEAN,
+  })
+  declare isSystemGenerated: boolean;
   @Column({
     allowNull: false,
     defaultValue: true,
@@ -232,4 +269,10 @@ export class TxnMemberCallLog extends Model<TxnMemberCallLog> {
     targetKey: 'adminId',
   })
   declare updatedByUser: MstAdminUser;
+  @BelongsTo(() => MstAdminUser, {
+    as: 'nutritionist',
+    foreignKey: 'nutritionistId',
+    targetKey: 'adminId',
+  })
+  declare nutritionist: MstAdminUser;
 }

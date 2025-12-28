@@ -1,17 +1,30 @@
-import { IBaseAdminUser } from "../base.interface";
-import { IHealthParameter } from "./assessment-master.interface";
+import { IBaseAdminUser, IDropdownItem } from "../base.interface";
+
+export interface IBasicMemberHealthParameter {
+  healthParameterId: number;
+  value: string;
+  healthParameterUnitId: number;
+}
+
+export interface IMemberHealthParameter extends IBasicMemberHealthParameter {
+  memberHealthParameterLogId: number;
+  healthParameter: string;
+  healthParameterUnit: string;
+}
 
 export interface IBaseMemberHealthParameterLog {
   memberId: number;
-  logDate: number;
-  healthParameters: IMemberHealthParameter[];
+  logDate: Date;
 }
 
 export interface IManageMemberHealthParameterLog extends IBaseMemberHealthParameterLog {
   memberHealthParameterLogId?: number;
+  healthParameters: IBasicMemberHealthParameter[];
 }
 
-export interface IMemberHealthParameterLog extends IBaseMemberHealthParameterLog {
+export interface IMemberHealthParameterLog
+  extends IBaseMemberHealthParameterLog {
+  healthParameters: IMemberHealthParameter[];
   memberHealthParameterLogId: number;
   active: boolean;
   createdBy: number;
@@ -22,11 +35,7 @@ export interface IMemberHealthParameterLog extends IBaseMemberHealthParameterLog
   updatedByUser?: IBaseAdminUser;
 }
 
-export interface IMemberHealthParameter {
-  memberHealthParameterLogId?: number;
-  healthParameterId: number;
-  healthParameter: string;
-  value: string;
-  healthParameterUnitId: number;
-  healthParameterUnit: string;
+export interface IHealthParameterMaster {
+  healthParameters: IDropdownItem[];
+  healthParameterUnits: IDropdownItem[];
 }

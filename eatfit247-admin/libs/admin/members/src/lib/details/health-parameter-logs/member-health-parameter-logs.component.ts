@@ -4,15 +4,17 @@ import { ActivatedRoute } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { DataTableComponent, ITableColumn, ITableConfig, EmptyStateComponent, EmptyStateType, LoaderComponent, createdByUserFormatter, updatedByUserFormatter } from '@shared';
 import { IMemberHealthParameterLog } from '@eatfit247-shared-lib';
 import { MembersApiService } from '../../api.service';
+import { ManageMemberBodyStatsComponent, ManageMemberBodyStatsData } from './manage-member-body-stats/manage-member-body-stats.component';
 import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'lib-member-health-parameter-logs',
   standalone: true,
-  imports: [CommonModule, MatCardModule, MatButtonModule, MatIconModule, DataTableComponent, EmptyStateComponent, LoaderComponent],
+  imports: [CommonModule, MatCardModule, MatButtonModule, MatIconModule, MatDialogModule, DataTableComponent, EmptyStateComponent, LoaderComponent],
   templateUrl: './member-health-parameter-logs.component.html',
   styleUrl: './member-health-parameter-logs.component.scss'
 })
@@ -26,7 +28,8 @@ export class MemberHealthParameterLogsComponent implements OnInit, OnDestroy {
 
   constructor(
     private route: ActivatedRoute,
-    private apiService: MembersApiService
+    private apiService: MembersApiService,
+    private dialog: MatDialog,
   ) {
     this.initializeTable();
   }
@@ -102,8 +105,8 @@ export class MemberHealthParameterLogsComponent implements OnInit, OnDestroy {
 
   formatDate(value: any): string {
     if (!value) return '';
-    // Convert timestamp (number) to Date
-    const date = typeof value === 'number' ? new Date(value) : new Date(value);
+    // logDate is now a Date object
+    const date = value instanceof Date ? value : new Date(value);
     return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
   }
 
@@ -113,7 +116,29 @@ export class MemberHealthParameterLogsComponent implements OnInit, OnDestroy {
   }
 
   addBodyStatsLog(): void {
-    // TODO: Open dialog/form to add new body stats log
-    console.log('Add body stats log for member:', this.memberId);
+    if (!this.memberId) {
+      console.error('Member ID is not available');
+      return;
+    }
+
+    const dialogData: ManageMemberBodyStatsData = {
+      memberId: this.memberId,
+    };
+
+    try {
+      const dialogRef = this.dialog.open(ManageMemberBodyStatsComponent, {
+        width: '800px',
+        maxWidth: '80vw',
+        data: dialogData,
+      });
+
+      dialogRef.afterClosed().subscribe((result) => {
+        if (result) {
+          this.loadHealthParameterLogs();
+        }
+      });
+    } catch (error) {
+      console.error('Error opening dialog:', error);
+    }
   }
 }

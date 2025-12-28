@@ -1,0 +1,115 @@
+<div class="dialog-container">
+  <h2 mat-dialog-title>Add Body Stats Log</h2>
+  <mat-dialog-content>
+    @if (loading()) {
+      <div class="loading-container">
+        <mat-spinner diameter="40"></mat-spinner>
+      </div>
+    } @else {
+      <form [formGroup]="formGroup" class="body-stats-form">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Log Date</mat-label>
+          <input matInput [matDatepicker]="picker" formControlName="logDate" />
+          <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+          <mat-datepicker #picker></mat-datepicker>
+          <shared-ui-input-error [control]="formGroup.get('logDate')"></shared-ui-input-error>
+        </mat-form-field>
+
+        <div class="health-parameters-section">
+          <div class="section-header">
+            <h3>Health Parameters</h3>
+            <button mat-icon-button type="button" (click)="addHealthParameterRow()" color="primary">
+              <mat-icon>add</mat-icon>
+            </button>
+          </div>
+
+          <table mat-table [dataSource]="healthParametersControls()" class="health-parameters-table" [trackBy]="trackByIndex">
+            <ng-container matColumnDef="healthParameter">
+              <th mat-header-cell *matHeaderCellDef>Health Parameter</th>
+              <td mat-cell *matCellDef="let control; let i = index">
+                <div [formGroup]="control">
+                  <mat-form-field appearance="outline" class="full-width">
+                    <mat-select formControlName="healthParameterId">
+                      <mat-option [value]="null">Select Parameter</mat-option>
+                      @for (param of masterData()?.healthParameters; track param.id) {
+                        <mat-option [value]="param.id">{{ param.label }}</mat-option>
+                      }
+                    </mat-select>
+                    <shared-ui-input-error [control]="control.get('healthParameterId')"></shared-ui-input-error>
+                  </mat-form-field>
+                </div>
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="value">
+              <th mat-header-cell *matHeaderCellDef>Value</th>
+              <td mat-cell *matCellDef="let control; let i = index">
+                <div [formGroup]="control">
+                  <mat-form-field appearance="outline" class="full-width">
+                    <input matInput formControlName="value" [maxlength]="InputLengthEnum.CHAR_20" />
+                    <mat-hint align="end">
+                      {{ control.get('value')?.value?.length || 0 }}/{{ InputLengthEnum.CHAR_20 }}
+                    </mat-hint>
+                    <shared-ui-input-error [control]="control.get('value')"></shared-ui-input-error>
+                  </mat-form-field>
+                </div>
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="unit">
+              <th mat-header-cell *matHeaderCellDef>Unit</th>
+              <td mat-cell *matCellDef="let control; let i = index">
+                <div [formGroup]="control">
+                  <mat-form-field appearance="outline" class="full-width">
+                    <mat-select formControlName="healthParameterUnitId">
+                      <mat-option [value]="null">Select Unit</mat-option>
+                      @for (unit of getFilteredUnits(control.get('healthParameterId')?.value); track unit.id) {
+                        <mat-option [value]="unit.id">{{ unit.label }}</mat-option>
+                      }
+                    </mat-select>
+                    <shared-ui-input-error [control]="control.get('healthParameterUnitId')"></shared-ui-input-error>
+                  </mat-form-field>
+                </div>
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef></th>
+              <td mat-cell *matCellDef="let control; let i = index">
+                <button
+                  mat-icon-button
+                  type="button"
+                  (click)="removeHealthParameterRow(i)"
+                  color="warn"
+                  [disabled]="healthParametersFormArray.length === 1">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+          </table>
+
+          @if (healthParametersFormArray.length === 0) {
+            <p class="no-parameters">Add at least one health parameter</p>
+          }
+        </div>
+      </form>
+    }
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button mat-button (click)="onCancel()" [disabled]="submitting()">Cancel</button>
+    <button
+      mat-raised-button
+      color="primary"
+      (click)="onSubmit()"
+      [disabled]="formGroup.invalid || submitting() || healthParametersFormArray.length === 0">
+      @if (submitting()) {
+        <mat-spinner diameter="20" class="inline-spinner"></mat-spinner>
+      } @else {
+        Submit
+      }
+    </button>
+  </mat-dialog-actions>
+</div>

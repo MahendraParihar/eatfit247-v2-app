@@ -202,5 +202,29 @@ export class MstAdminUser extends Model<MstAdminUser> {
     type: DataType.STRING(InputLengthEnum.IP),
   })
   declare modifiedIp: string;
+  @Column({
+    allowNull: true,
+    field: 'google_calendar_email',
+    type: DataType.STRING(255),
+  })
+  declare googleCalendarEmail: string;
+  @Column({
+    allowNull: true,
+    field: 'google_refresh_token',
+    type: DataType.TEXT,
+  })
+  declare googleRefreshToken: string;
+  @Column({
+    allowNull: true,
+    field: 'google_token_scope',
+    type: DataType.STRING(255),
+  })
+  declare googleTokenScope: string;
+  @Column({
+    allowNull: true,
+    field: 'google_token_created_at',
+    type: DataType.DATE,
+  })
+  declare googleTokenCreatedAt: Date;
 }
 

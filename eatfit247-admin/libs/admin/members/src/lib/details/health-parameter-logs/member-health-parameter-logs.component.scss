@@ -3,3 +3,16 @@
   justify-content: flex-end;
   margin-bottom: 16px;
 }
+
+.empty-state-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  padding: 24px;
+}
+
+.empty-state-actions {
+  display: flex;
+  justify-content: center;
+}

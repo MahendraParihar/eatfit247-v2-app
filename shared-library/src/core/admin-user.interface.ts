@@ -16,6 +16,10 @@ export interface IBaseAdminUserFull {
   active: boolean;
   deactivationReason?: string;
   verificationCode?: string;
+  googleCalendarEmail?: string;
+  googleRefreshToken?: string;
+  googleTokenScope?: string;
+  googleTokenCreatedAt?: Date;
 }
 
 export interface IManageAdminUser extends IBaseAdminUserFull {

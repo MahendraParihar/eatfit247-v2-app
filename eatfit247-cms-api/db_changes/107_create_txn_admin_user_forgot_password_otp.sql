@@ -245,3 +245,20 @@ alter table public.txn_program_plan_fees
 
 alter table public.txn_diet_templates
     drop column is_weekly;
+
+ALTER TABLE public.txn_member_call_logs
+    ADD COLUMN nutrinist_id integer
+        REFERENCES public.mst_admin_users(admin_id),
+
+    ADD COLUMN meeting_link text,
+
+    ADD COLUMN calendar_event_id text,
+
+    ADD COLUMN is_system_generated boolean
+        DEFAULT false;
+
+ALTER TABLE public.mst_admin_users
+    ADD COLUMN google_calendar_email varchar(255),
+    ADD COLUMN google_refresh_token text,
+    ADD COLUMN google_token_scope varchar(255),
+    ADD COLUMN google_token_created_at timestamptz;

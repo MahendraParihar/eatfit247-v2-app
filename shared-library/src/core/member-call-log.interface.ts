@@ -11,6 +11,10 @@ export interface IBaseMemberCallLog {
   detail: string;
   conversionHistory: string;
   isMailSuccess: boolean;
+  nutritionistId?: number;
+  meetingLink?: string;
+  calendarEventId?: string;
+  isSystemGenerated: boolean;
   active: boolean;
 }
 
@@ -33,4 +37,5 @@ export interface IMemberCallLog extends IBaseMemberCallLog {
   updatedAt: Date;
   createdByUser?: IBaseAdminUser;
   updatedByUser?: IBaseAdminUser;
+  nutritionist?: IBaseAdminUser;
 }
