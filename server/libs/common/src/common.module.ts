@@ -177,6 +177,7 @@ export class CommonModule {
       providers: [
         LogErrorService,
         GoogleService,
+        ZoomService,
         {
           provide: APP_GUARD,
           useClass: JwtAuthGuard,

@@ -183,21 +183,17 @@ export class MemberCallLogsService {
       throw new BadRequestException('Nutritionist calendar not connected');
     }
     // checking slots still present or not
-    await this.googleService.checkSlots(nutritionist, {
+    const dateRange = {
       start: moment(obj.startTime).toISOString(),
       end: moment(obj.endTime).toISOString(),
-    });
+    };
+    await this.googleService.checkSlots(nutritionist, dateRange);
     const resObj: { google: IGoogleCalendarEvent; zoom: IZoomEvent; } = { google: null, zoom: null };
     let meetingLink: string | null = null;
     let zoomMeetingId: string | null = null;
     if (obj.callTypeId === CallTypeEnum.ZOOM_CALL) {
-      const zoom = await this.zoomService.bookMeeting({
-        topic: 'Nutrition Consultation',
-        start: obj.start,
-        duration: moment(obj.end).diff(obj.start, 'minutes'),
-      });
+      const zoom = await this.zoomService.bookMeeting('Nutrition Consultation', dateRange);
       meetingLink = zoom.join_url;
-      zoomMeetingId = zoom.id;
       resObj.zoom = zoom;
     }
     if (obj.callTypeId === CallTypeEnum.GOOGLE_MEET) {
@@ -207,10 +203,7 @@ export class MemberCallLogsService {
         meetingLink,
         'mahendra.parihar10@gmail.com',
         obj.notifyUser,
-        {
-          start: obj.startTime,
-          end: obj.endTime,
-        },
+        dateRange,
       );
     }
     let callLog: TxnMemberCallLog;

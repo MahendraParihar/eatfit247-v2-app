@@ -1,43 +1,69 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
-import { RecaptchaEnterpriseServiceClient } from '@google-cloud/recaptcha-enterprise';
-import { AppConfigService } from '../app-config';
-import { LogErrorService } from '../services';
-import { google } from 'googleapis';
-import { CryptoUtil } from '../utils/crypto.util';
-import {
-  ConfigParam,
-  IAvailableSlot,
-  ICallLogSlot,
-  IGoogleCalendarEvent,
-  IGoogleCalendarStatus, IZoomEvent,
-} from 'eatfit247-shared-lib';
-import { InjectModel } from '@nestjs/sequelize';
-import { MstAdminUser } from '../models';
+import { Injectable } from '@nestjs/common';
+import { ConfigParam, IZoomEvent } from 'eatfit247-shared-lib';
 import moment from 'moment-timezone';
+import axios from 'axios';
+import { AppConfigService } from '../app-config';
 
 @Injectable()
 export class ZoomService {
-  constructor() {}
+  constructor(private readonly appConfigService: AppConfigService) {}
+
+  async getZoomAccessToken() {
+    const res = await axios.post('https://zoom.us/oauth/token', null, {
+      params: {
+        grant_type: 'account_credentials',
+        account_id: this.appConfigService.get(ConfigParam.ZOOM_ACCOUNT_ID),
+      },
+      auth: {
+        username: this.appConfigService.get(ConfigParam.ZOOM_CLIENT_ID),
+        password: this.appConfigService.get(ConfigParam.ZOOM_CLIENT_SECRET),
+      },
+    });
+    return res.data.access_token;
+  }
 
   // region Calendar
-  async bookMeeting(dateRange: { start: string; end: string }): Promise<IZoomEvent> {
-    const zoom = await this.zoomService.createMeeting({
-      topic: 'Nutrition Consultation',
-      start: dateRange.start,
-      duration: moment(dateRange.end).diff(dateRange.start, 'minutes'),
-    });
-    return zoom as IZoomEvent;
+  async bookMeeting(topic: string, dateRange: { start: string; end: string }, type: number = 2): Promise<IZoomEvent> {
+    const token = await this.getZoomAccessToken();
+    const res = await axios.post(
+      'https://api.zoom.us/v2/users/me/meetings',
+      {
+        topic: topic,
+        type: type, // scheduled
+        start_time: dateRange.start,
+        duration: moment(dateRange.end).diff(dateRange.start, 'minutes'),
+        timezone: 'UTC',
+        settings: {
+          join_before_host: false,
+          waiting_room: true,
+        },
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+    return res.data as IZoomEvent;
   }
 
   async deleteMeeting(event: IZoomEvent): Promise<void> {
-    await zoomApi.deleteMeeting(event.id);
+    const token = await this.getZoomAccessToken();
+    await axios.delete(`https://api.zoom.us/v2/meetings/${event.id}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
   }
 
-  async updateMeeting(event: IZoomEvent, duration: number): Promise<void> {
-    await zoomApi.updateMeeting(event.id, {
-      start_time: event.start_time,
-      duration,
-    });
+  async updateMeeting(event: IZoomEvent, dateRange: { start: string; end: string }): Promise<void> {
+    const token = await this.getZoomAccessToken();
+    await axios.patch(
+      `https://api.zoom.us/v2/meetings/${event.id}`,
+      {
+        start_time: dateRange.start,
+        duration: moment(dateRange.end).diff(dateRange.start, 'minutes'),
+      },
+      { headers: { Authorization: `Bearer ${token}` } },
+    );
   }
 
   // endregion
