@@ -12,6 +12,7 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatStepperModule } from '@angular/material/stepper';
+import { StepperSelectionEvent } from '@angular/cdk/stepper';
 import { FormsModule } from '@angular/forms';
 import { InputErrorComponent, LoaderComponent } from '@shared';
 import { IDropdownItem, IAvailableSlot, ICallLogSlot } from '@eatfit247-shared-lib';
