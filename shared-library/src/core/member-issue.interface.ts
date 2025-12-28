@@ -32,15 +32,14 @@ export interface IMemberIssue extends IBaseMemberIssue {
 export interface IBaseMemberIssueResponse {
   memberIssueId: number;
   response: string;
-  isLatest: boolean;
 }
 
 export interface IManageMemberIssueResponse extends IBaseMemberIssueResponse {
-  memberIssueResponseId?: number;
 }
 
 export interface IMemberIssueResponse extends IBaseMemberIssueResponse {
   memberIssueResponseId: number;
+  isLatest: boolean;
   createdBy: number;
   updatedBy: number;
   createdAt: Date;

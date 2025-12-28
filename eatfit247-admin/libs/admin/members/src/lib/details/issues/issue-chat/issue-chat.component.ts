@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit, OnDestroy } from '@angular/core';
+import { Component, Inject, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewChecked } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -9,7 +9,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
 import { InputErrorComponent } from '@shared';
-import { IMemberIssue, IMemberIssueResponse, InputLengthEnum } from '@eatfit247-shared-lib';
+import { IManageMemberIssueResponse, IMemberIssue, IMemberIssueResponse, InputLengthEnum } from '@eatfit247-shared-lib';
 import { MembersApiService } from '../../../api.service';
 import { Subject, takeUntil } from 'rxjs';
 
@@ -31,12 +31,14 @@ export interface IssueChatData {
     MatProgressSpinnerModule,
     MatIconModule,
     MatChipsModule,
-    InputErrorComponent,
+    InputErrorComponent
   ],
   templateUrl: './issue-chat.component.html',
-  styleUrl: './issue-chat.component.scss',
+  styleUrl: './issue-chat.component.scss'
 })
-export class IssueChatComponent implements OnInit, OnDestroy {
+export class IssueChatComponent implements OnInit, OnDestroy, AfterViewChecked {
+  @ViewChild('chatMessages', { static: false }) chatMessagesElement!: ElementRef<HTMLDivElement>;
+  
   issue!: IMemberIssue;
   responses: IMemberIssueResponse[] = [];
   loading = false;
@@ -44,12 +46,13 @@ export class IssueChatComponent implements OnInit, OnDestroy {
   formGroup!: FormGroup;
   InputLengthEnum = InputLengthEnum;
   private destroy$ = new Subject<void>();
+  private shouldScrollToBottom = false;
 
   constructor(
     public dialogRef: MatDialogRef<IssueChatComponent>,
     @Inject(MAT_DIALOG_DATA) public data: IssueChatData,
     private apiService: MembersApiService,
-    private fb: FormBuilder,
+    private fb: FormBuilder
   ) {
     this.issue = data.issue;
     this.initializeForm();
@@ -66,7 +69,7 @@ export class IssueChatComponent implements OnInit, OnDestroy {
 
   private initializeForm(): void {
     this.formGroup = this.fb.group({
-      response: ['', [Validators.required, Validators.maxLength(InputLengthEnum.CHAR_1000)]],
+      response: ['', [Validators.required, Validators.maxLength(InputLengthEnum.CHAR_1000)]]
     });
   }
 
@@ -74,6 +77,7 @@ export class IssueChatComponent implements OnInit, OnDestroy {
     this.loading = true;
     try {
       this.responses = await this.apiService.getIssueResponses(this.data.memberId, this.issue.memberIssueId);
+      this.shouldScrollToBottom = true;
     } catch (error) {
       console.error('Error loading responses:', error);
       this.responses = [];
@@ -82,15 +86,36 @@ export class IssueChatComponent implements OnInit, OnDestroy {
     }
   }
 
+  ngAfterViewChecked(): void {
+    if (this.shouldScrollToBottom && this.chatMessagesElement) {
+      this.scrollToBottom();
+      this.shouldScrollToBottom = false;
+    }
+  }
+
+  private scrollToBottom(): void {
+    try {
+      const element = this.chatMessagesElement.nativeElement;
+      element.scrollTop = element.scrollHeight;
+    } catch (err) {
+      // Ignore scroll errors
+    }
+  }
+
   async sendResponse(): Promise<void> {
     if (this.formGroup.valid) {
       this.sendingResponse = true;
       try {
-        await this.apiService.createIssueResponse(this.data.memberId, this.issue.memberIssueId, {
-          response: this.formGroup.value.response,
-        });
+        await this.apiService.createIssueResponse(
+          this.data.memberId,
+          this.issue.memberIssueId,
+          <IManageMemberIssueResponse>{
+            response: this.formGroup.value.response,
+            memberIssueId: this.issue.memberIssueId,
+          },
+        );
         this.formGroup.reset();
-        await this.loadResponses(); // Reload responses
+        await this.loadResponses(); // Reload responses - will trigger scroll
       } catch (error) {
         console.error('Error sending response:', error);
       } finally {
@@ -105,7 +130,7 @@ export class IssueChatComponent implements OnInit, OnDestroy {
       const updatedIssue = await this.apiService.markIssueAsSolved(
         this.data.memberId,
         this.issue.memberIssueId,
-        isSolved,
+        isSolved
       );
       this.issue = updatedIssue;
       if (isSolved) {
@@ -122,7 +147,7 @@ export class IssueChatComponent implements OnInit, OnDestroy {
   isIssueClosed(): boolean {
     const closedStatuses = ['closed', 'resolved', 'solved'];
     return closedStatuses.some((status) =>
-      this.issue.issueStatus?.toLowerCase().includes(status),
+      this.issue.issueStatus?.toLowerCase().includes(status)
     );
   }
 

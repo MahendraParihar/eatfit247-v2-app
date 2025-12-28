@@ -1,12 +1,11 @@
 <div class="chat-dialog-container">
   <div class="chat-header">
-    <h2 mat-dialog-title>Issue Details</h2>
-    <button mat-icon-button (click)="onClose()" class="close-button">
-      <mat-icon>close</mat-icon>
-    </button>
-  </div>
-
-  <mat-dialog-content class="chat-content">
+    <div class="header-content">
+      <h2 mat-dialog-title>Issue Details</h2>
+      <button mat-icon-button (click)="onClose()" class="close-button">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
     <!-- Issue Info -->
     <div class="issue-info">
       <div class="info-row">
@@ -22,7 +21,9 @@
         <mat-chip [class.closed]="isIssueClosed()">{{ issue.issueStatus }}</mat-chip>
       </div>
     </div>
+  </div>
 
+  <mat-dialog-content class="chat-content">
     <!-- Chat Messages -->
     <div class="chat-messages" #chatMessages>
       @if (loading && responses.length === 0) {

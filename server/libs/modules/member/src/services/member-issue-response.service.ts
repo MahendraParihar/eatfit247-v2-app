@@ -4,7 +4,6 @@ import { Sequelize } from 'sequelize-typescript';
 import { TxnMemberIssueResponse, TxnMemberIssue } from '../models';
 import { IMemberIssueResponse, IMemberIssue } from 'eatfit247-shared-lib';
 import { CommonFunctionsUtil, MstIssueStatus } from '@server/common';
-import { CreateMemberIssueResponseDto } from '../dto';
 import { Op } from 'sequelize';
 
 @Injectable()
@@ -29,7 +28,6 @@ export class MemberIssueResponseService {
     if (!issue) {
       throw new NotFoundException('Member issue not found');
     }
-
     // Fetch responses with nested relationships
     const records = await this.memberIssueResponseRepository.scope('details').findAll({
       where: { memberIssueId },
@@ -37,7 +35,6 @@ export class MemberIssueResponseService {
       raw: false,
       nest: true,
     });
-
     return records.map((item: TxnMemberIssueResponse) => this.convertToModel(item.toJSON()));
   }
 
@@ -58,34 +55,28 @@ export class MemberIssueResponseService {
     if (!issue) {
       throw new NotFoundException('Member issue not found');
     }
-
     const transaction = await this.sequelize.transaction();
     try {
       // If this is marked as latest, unmark all previous responses as not latest
-      if (dto.isLatest) {
-        await this.memberIssueResponseRepository.update(
-          { isLatest: false },
-          {
-            where: { memberIssueId: dto.memberIssueId },
-            transaction,
-          },
-        );
-      }
-
-      // Create the response
-      const response = await this.memberIssueResponseRepository.create(
+      await this.memberIssueResponseRepository.update(
+        { isLatest: false },
         {
-          memberIssueId: dto.memberIssueId,
-          response: dto.response,
-          isLatest: dto.isLatest,
+          where: { memberIssueId: memberIssueId },
+          transaction,
+        },
+      );
+      // Create the response
+      const newResponse = await this.memberIssueResponseRepository.create(
+        {
+          memberIssueId: memberIssueId,
+          response: response,
+          isLatest: true,
           createdBy: adminId,
           modifiedBy: adminId,
         },
         { transaction },
       );
-
       await transaction.commit();
-
       // Fetch with relationships
       const createdResponse = await this.memberIssueResponseRepository
         .scope('details')
@@ -93,7 +84,6 @@ export class MemberIssueResponseService {
       if (!createdResponse) {
         throw new NotFoundException('Failed to retrieve created response');
       }
-
       return this.convertToModel(createdResponse.toJSON());
     } catch (error) {
       await transaction.rollback();
@@ -118,11 +108,9 @@ export class MemberIssueResponseService {
     if (!issue) {
       throw new NotFoundException('Member issue not found');
     }
-
     // Find the appropriate status
     // Assuming status names like "Closed", "Resolved", "In Progress", "Open"
     let targetStatus: MstIssueStatus | null = null;
-
     if (isSolved) {
       // Try to find "Closed" or "Resolved" status
       targetStatus = await this.issueStatusRepository.findOne({
@@ -133,7 +121,6 @@ export class MemberIssueResponseService {
           },
         },
       });
-
       if (!targetStatus) {
         targetStatus = await this.issueStatusRepository.findOne({
           where: {
@@ -155,25 +142,21 @@ export class MemberIssueResponseService {
         },
       });
     }
-
     if (!targetStatus) {
       throw new NotFoundException(
         `Could not find appropriate issue status for ${isSolved ? 'closed' : 'in progress'}`,
       );
     }
-
     // Update issue status
     await issue.update({
       issueStatusId: targetStatus.issueStatusId,
       modifiedBy: adminId,
     });
-
     // Fetch with relationships
     const updatedIssue = await this.memberIssueRepository.scope('details').findByPk(memberIssueId);
     if (!updatedIssue) {
       throw new NotFoundException('Failed to retrieve updated issue');
     }
-
     return {
       memberIssueId: updatedIssue.memberIssueId,
       memberId: updatedIssue.memberId,

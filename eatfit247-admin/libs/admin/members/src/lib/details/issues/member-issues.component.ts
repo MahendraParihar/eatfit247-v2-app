@@ -186,7 +186,10 @@ export class MemberIssuesComponent implements OnInit, OnDestroy {
       issue: issue,
     };
     const dialogRef = this.dialog.open(IssueChatComponent, {
-      width: '600px',
+      width: '800px',
+      maxWidth: '90vw',
+      height: '85vh',
+      maxHeight: '85vh',
       data: dialogData,
     });
     dialogRef.afterClosed().subscribe((result) => {
