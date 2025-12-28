@@ -1,4 +1,6 @@
 import { IBaseAdminUser, IDropdownItem } from "../base.interface";
+import { IGoogleCalendarEvent } from "./google.interface";
+import { IZoomEvent } from "./zoom.interface";
 
 export interface ICallLogMasterData {
   callTypes: IDropdownItem[];
@@ -23,13 +25,12 @@ export interface ICallLogSlot {
 
 export interface IBaseMemberCallLog {
   memberId: number;
-  date: Date;
   startTime: Date;
   endTime: Date;
   callTypeId: number;
   callPurposeId: number;
   callLogStatusId: number;
-  detail: string;
+  detail?: { google: IGoogleCalendarEvent; zoom: IZoomEvent };
   conversionHistory: string;
   isMailSuccess: boolean;
   nutritionistId?: number;
@@ -37,6 +38,16 @@ export interface IBaseMemberCallLog {
   calendarEventId?: string;
   isSystemGenerated: boolean;
   active: boolean;
+}
+
+export interface ISetupMemberCallLog {
+  memberId: number;
+  startTime: Date;
+  endTime: Date;
+  callTypeId: number;
+  callPurposeId: number;
+  nutritionistId: number;
+  notifyUser: boolean;
 }
 
 export interface IManageMemberCallLog extends IBaseMemberCallLog {
@@ -59,4 +70,9 @@ export interface IMemberCallLog extends IBaseMemberCallLog {
   createdByUser?: IBaseAdminUser;
   updatedByUser?: IBaseAdminUser;
   nutritionist?: IBaseAdminUser;
+}
+
+export class ICancelCallLog {
+  memberCallLogId: number;
+  reason: string;
 }

@@ -1,8 +1,8 @@
-import { Body, Controller, Get, Param, Post, Put, Req, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post, Put, Req, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard, CurrentUser, RequestedIp } from '@server/common';
 import { MemberCallLogsService } from '../../services';
 import { ICallLogMasterData, IMemberCallLog, ICallLogSlot } from 'eatfit247-shared-lib';
-import { AvailableSlotDto, CreateMemberCallLogDto } from "../../dto";
+import { AvailableSlotDto, CancelCallLogDto, CreateMemberCallLogDto } from '../../dto';
 
 @Controller('member/:id/call-logs')
 @UseGuards(JwtAuthGuard)
@@ -32,7 +32,7 @@ export class MemberCallLogsController {
     @RequestedIp() requestedIp: string,
   ): Promise<IMemberCallLog> {
     body.memberId = id;
-    return await this.memberCallLogsService.createOrUpdate(
+    return await this.memberCallLogsService.create(
       id,
       body,
       requestedIp,
@@ -40,18 +40,13 @@ export class MemberCallLogsController {
     );
   }
 
-  @Put(':logId')
-  async update(
-    @Param('id') id: number,
-    @Param('logId') logId: number,
-    @Body() body: CreateMemberCallLogDto,
+  @Post('cancel')
+  async cancel(
+    @Body() body: CancelCallLogDto,
     @CurrentUser() currentUser: any,
     @RequestedIp() requestedIp: string,
-  ): Promise<IMemberCallLog> {
-    body.memberId = id;
-    body.memberCallLogId = logId;
-    return await this.memberCallLogsService.createOrUpdate(
-      id,
+  ): Promise<void> {
+    await this.memberCallLogsService.cancel(
       body,
       requestedIp,
       currentUser.userId || currentUser.adminId,

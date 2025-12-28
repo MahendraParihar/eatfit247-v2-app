@@ -284,3 +284,24 @@ INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
 VALUES (DEFAULT, 'CALENDAR_WORKING_HOURS', '09:00-18:00', 'Calendar');
 INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
 VALUES (DEFAULT, 'CALENDAR_TIMEZONE', 'Asia/Kolkata', 'Calendar');
+
+alter table public.txn_member_call_logs drop column  start_time;
+alter table public.txn_member_call_logs drop column  end_time;
+alter table public.txn_member_call_logs
+    add column start_time timestamp with time zone;
+
+alter table public.txn_member_call_logs
+    add  column end_time timestamp with time zone;
+
+alter table public.txn_member_call_logs
+    alter column detail type jsonb using detail::jsonb;
+
+alter table public.txn_member_call_logs
+    alter column is_system_generated set default true;
+
+alter table public.txn_member_call_logs
+    drop constraint fk_txn_member_call_logs_mst_call_log_statuses_id;
+
+alter table public.txn_member_call_logs
+    add constraint fk_txn_member_call_logs_mst_call_log_statuses_id
+        foreign key (call_log_status_id) references public.mst_call_log_status;

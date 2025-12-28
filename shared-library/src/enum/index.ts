@@ -6,4 +6,6 @@ export * from "./config.enum";
 export * from "./banner-for.enum";
 export * from "./table.enum";
 export * from "./email-template.enum";
+export * from "./call-log-status.enum";
+export * from "./call-type.enum";
 

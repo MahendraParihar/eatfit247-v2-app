@@ -4,7 +4,7 @@ import { InputLengthEnum } from 'eatfit247-shared-lib';
 
 @Table({
   freezeTableName: true,
-  modelName: 'mst_call_log_statuses',
+  modelName: 'mst_call_log_status',
   schema: 'public',
   tableName: 'mst_call_log_status',
 })
@@ -36,10 +36,18 @@ export class MstCallLogStatus extends Model<MstCallLogStatus> {
   })
   declare active: boolean;
 
-  @BelongsTo(() => MstAdminUser, { as: 'createdByUser', foreignKey: 'createdBy', targetKey: 'adminId' })
+  @BelongsTo(() => MstAdminUser, {
+    as: 'createdByUser',
+    foreignKey: 'createdBy',
+    targetKey: 'adminId',
+  })
   declare createdByUser: MstAdminUser;
 
-  @BelongsTo(() => MstAdminUser, { as: 'updatedByUser', foreignKey: 'modifiedBy', targetKey: 'adminId' })
+  @BelongsTo(() => MstAdminUser, {
+    as: 'updatedByUser',
+    foreignKey: 'modifiedBy',
+    targetKey: 'adminId',
+  })
   declare updatedByUser: MstAdminUser;
 
   @Column({

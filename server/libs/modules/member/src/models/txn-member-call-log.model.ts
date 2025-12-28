@@ -8,7 +8,7 @@ import {
   MstCallLogStatus,
 } from '@server/common';
 import { TxnMember } from './txn-member.model';
-import { InputLengthEnum } from 'eatfit247-shared-lib';
+import { IGoogleCalendarEvent, InputLengthEnum, IZoomEvent } from 'eatfit247-shared-lib';
 
 @Table({
   freezeTableName: true,
@@ -112,20 +112,14 @@ export class TxnMemberCallLog extends Model<TxnMemberCallLog> {
   declare memberId: number;
   @Column({
     allowNull: false,
-    field: 'date',
-    type: DataType.DATEONLY,
-  })
-  declare date: Date;
-  @Column({
-    allowNull: false,
     field: 'start_time',
-    type: DataType.TIME,
+    type: DataType.DATE,
   })
   declare startTime: Date;
   @Column({
     allowNull: false,
     field: 'end_time',
-    type: DataType.TIME,
+    type: DataType.DATE,
   })
   declare endTime: Date;
   @Column({
@@ -149,9 +143,9 @@ export class TxnMemberCallLog extends Model<TxnMemberCallLog> {
   @Column({
     allowNull: true,
     field: 'detail',
-    type: DataType.STRING(InputLengthEnum.CHAR_250),
+    type: DataType.JSONB,
   })
-  declare detail: string;
+  declare detail: { google: IGoogleCalendarEvent; zoom: IZoomEvent };
   @Column({
     allowNull: true,
     field: 'conversion_history',
@@ -185,7 +179,7 @@ export class TxnMemberCallLog extends Model<TxnMemberCallLog> {
   declare calendarEventId: string;
   @Column({
     allowNull: false,
-    defaultValue: false,
+    defaultValue: true,
     field: 'is_system_generated',
     type: DataType.BOOLEAN,
   })

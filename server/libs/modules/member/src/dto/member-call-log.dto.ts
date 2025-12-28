@@ -5,12 +5,10 @@ import {
   IsNumber,
   IsOptional,
   IsString,
-  MaxLength,
 } from 'class-validator';
 import {
-  IAvailableSlot,
-  IManageMemberCallLog,
-  InputLengthEnum,
+  IAvailableSlot, ICancelCallLog,
+  ISetupMemberCallLog,
 } from 'eatfit247-shared-lib';
 
 export class AvailableSlotDto implements IAvailableSlot {
@@ -28,16 +26,10 @@ export class AvailableSlotDto implements IAvailableSlot {
   duration: number;
 }
 
-export class CreateMemberCallLogDto implements IManageMemberCallLog {
-  @IsOptional()
-  @IsNumber()
-  memberCallLogId?: number;
+export class CreateMemberCallLogDto implements ISetupMemberCallLog {
   @IsNotEmpty()
   @IsNumber()
   memberId: number;
-  @IsNotEmpty()
-  @IsDateString()
-  date: Date;
   @IsNotEmpty()
   @IsString()
   startTime: Date;
@@ -50,33 +42,19 @@ export class CreateMemberCallLogDto implements IManageMemberCallLog {
   @IsNotEmpty()
   @IsNumber()
   callPurposeId: number;
-  @IsNotEmpty()
-  @IsNumber()
-  callLogStatusId: number;
-  @IsOptional()
-  @IsString()
-  @MaxLength(InputLengthEnum.CHAR_250)
-  detail: string;
-  @IsOptional()
-  @IsString()
-  @MaxLength(InputLengthEnum.CHAR_250)
-  conversionHistory: string;
-  @IsOptional()
-  @IsBoolean()
-  isMailSuccess: boolean;
   @IsOptional()
   @IsNumber()
   nutritionistId: number;
   @IsOptional()
-  @IsString()
-  meetingLink: string;
-  @IsOptional()
-  @IsString()
-  calendarEventId: string;
-  @IsOptional()
   @IsBoolean()
-  isSystemGenerated: boolean;
-  @IsOptional()
-  @IsBoolean()
-  active: boolean;
+  notifyUser: boolean;
+}
+
+export class CancelCallLogDto implements ICancelCallLog  {
+  @IsNotEmpty()
+  @IsNumber()
+  memberCallLogId: number;
+  @IsNotEmpty()
+  @IsString()
+  reason: string;
 }

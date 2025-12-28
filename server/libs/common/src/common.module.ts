@@ -18,7 +18,7 @@ import { LabelModule } from './label';
 import { LabelModel } from './models';
 import { LogErrorService } from './services';
 import { LogErrorModel } from './models';
-import { GoogleService } from './third-party-services';
+import { GoogleService, ZoomService } from './third-party-services';
 import {
   MstAdminUser,
   TxnAdminLastLoginDetail,
@@ -206,6 +206,7 @@ export class CommonModule {
         LabelModule,
         LogErrorService,
         GoogleService,
+        ZoomService,
         AdminUserService,
         EmailNotificationService,
         CurrencyService,

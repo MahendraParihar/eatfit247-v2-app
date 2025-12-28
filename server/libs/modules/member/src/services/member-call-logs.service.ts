@@ -7,16 +7,18 @@ import {
   MstCallPurpose,
   MstCallLogStatus,
   MstAdminUser,
-  GoogleService,
+  GoogleService, ZoomService,
 } from '@server/common';
 import {
   IMemberCallLog,
   ITableList,
   IBasicSearch,
   IManageMemberCallLog,
-  ICallLogMasterData, IAvailableSlot, ICallLogSlot,
+  ICallLogMasterData, IAvailableSlot, ICallLogSlot, ISetupMemberCallLog, ICancelCallLog, CallLogStatusEnum,
+  IGoogleCalendarEvent, IZoomEvent, CallTypeEnum,
 } from 'eatfit247-shared-lib';
 import { Op } from 'sequelize';
+import moment from 'moment';
 
 @Injectable()
 export class MemberCallLogsService {
@@ -30,6 +32,7 @@ export class MemberCallLogsService {
     private readonly callLogStatusRepository: typeof MstCallLogStatus,
     @InjectModel(MstAdminUser) private readonly adminUserRepository: typeof MstAdminUser,
     private readonly googleService: GoogleService,
+    private readonly zoomService: ZoomService,
   ) {}
 
   /**
@@ -124,12 +127,14 @@ export class MemberCallLogsService {
         attributes: ['adminId', 'firstName', 'lastName'],
       }),
     ]);
-    const durations = [{ id: 15, label: '15 minutes', selected: false },
+    const durations = [
+      { id: 15, label: '15 minutes', selected: false },
       { id: 30, label: '30 minutes', selected: false },
       { id: 45, label: '45 minutes', selected: false },
       { id: 60, label: '1 hour', selected: false },
       { id: 90, label: '1.5 hours', selected: false },
-      { id: 120, label: '2 hours', selected: false }];
+      { id: 120, label: '2 hours', selected: false },
+    ];
     return <ICallLogMasterData>{
       callTypes: callTypes.map((t) => ({
         id: t.callTypeId,
@@ -158,9 +163,9 @@ export class MemberCallLogsService {
   /**
    * Create or update a member call log
    */
-  public async createOrUpdate(
+  public async create(
     memberId: number,
-    obj: IManageMemberCallLog,
+    obj: ISetupMemberCallLog,
     requestedIp: string,
     adminId: number,
   ): Promise<IMemberCallLog> {
@@ -171,57 +176,65 @@ export class MemberCallLogsService {
     if (!member) {
       throw new NotFoundException('Member not found');
     }
-    let callLog: TxnMemberCallLog;
-    if (obj.memberCallLogId) {
-      // Update existing call log
-      callLog = await this.memberCallLogRepository.findOne({
-        where: { memberCallLogId: obj.memberCallLogId, memberId },
-      });
-      if (!callLog) {
-        throw new NotFoundException('Call log not found');
-      }
-      callLog.date = obj.date as any;
-      callLog.startTime = obj.startTime as any;
-      callLog.endTime = obj.endTime as any;
-      callLog.callTypeId = obj.callTypeId;
-      callLog.callPurposeId = obj.callPurposeId;
-      callLog.callLogStatusId = obj.callLogStatusId;
-      callLog.detail = obj.detail || null;
-      callLog.conversionHistory = obj.conversionHistory || null;
-      callLog.isMailSuccess = obj.isMailSuccess !== undefined ? obj.isMailSuccess : false;
-      callLog.nutritionistId = obj.nutritionistId || null;
-      callLog.meetingLink = obj.meetingLink || null;
-      callLog.calendarEventId = obj.calendarEventId || null;
-      callLog.isSystemGenerated =
-        obj.isSystemGenerated !== undefined ? obj.isSystemGenerated : false;
-      callLog.active = obj.active !== undefined ? obj.active : true;
-      callLog.modifiedBy = adminId;
-      callLog.modifiedIp = requestedIp;
-      await callLog.save();
-    } else {
-      // Create new call log
-      callLog = await this.memberCallLogRepository.create({
-        memberId,
-        date: obj.date as any,
-        startTime: obj.startTime as any,
-        endTime: obj.endTime as any,
-        callTypeId: obj.callTypeId,
-        callPurposeId: obj.callPurposeId,
-        callLogStatusId: obj.callLogStatusId,
-        detail: obj.detail || null,
-        conversionHistory: obj.conversionHistory || null,
-        isMailSuccess: obj.isMailSuccess !== undefined ? obj.isMailSuccess : false,
-        nutritionistId: obj.nutritionistId || null,
-        meetingLink: obj.meetingLink || null,
-        calendarEventId: obj.calendarEventId || null,
-        isSystemGenerated: obj.isSystemGenerated !== undefined ? obj.isSystemGenerated : false,
-        active: obj.active !== undefined ? obj.active : true,
-        createdBy: adminId,
-        modifiedBy: adminId,
-        createdIp: requestedIp,
-        modifiedIp: requestedIp,
-      });
+    const nutritionist = await this.adminUserRepository.findOne({
+      where: { adminId: obj.nutritionistId },
+    });
+    if (!nutritionist?.googleRefreshToken) {
+      throw new BadRequestException('Nutritionist calendar not connected');
     }
+    // checking slots still present or not
+    await this.googleService.checkSlots(nutritionist, {
+      start: moment(obj.startTime).toISOString(),
+      end: moment(obj.endTime).toISOString(),
+    });
+    const resObj: { google: IGoogleCalendarEvent; zoom: IZoomEvent; } = { google: null, zoom: null };
+    let meetingLink: string | null = null;
+    let zoomMeetingId: string | null = null;
+    if (obj.callTypeId === CallTypeEnum.ZOOM_CALL) {
+      const zoom = await this.zoomService.bookMeeting({
+        topic: 'Nutrition Consultation',
+        start: obj.start,
+        duration: moment(obj.end).diff(obj.start, 'minutes'),
+      });
+      meetingLink = zoom.join_url;
+      zoomMeetingId = zoom.id;
+      resObj.zoom = zoom;
+    }
+    if (obj.callTypeId === CallTypeEnum.GOOGLE_MEET) {
+      resObj.google = await this.googleService.bookSlot(
+        nutritionist,
+        true,
+        meetingLink,
+        'mahendra.parihar10@gmail.com',
+        obj.notifyUser,
+        {
+          start: obj.startTime,
+          end: obj.endTime,
+        },
+      );
+    }
+    let callLog: TxnMemberCallLog;
+    // Create a new call log
+    callLog = await this.memberCallLogRepository.create({
+      memberId,
+      startTime: obj.startTime,
+      endTime: obj.endTime,
+      callTypeId: obj.callTypeId,
+      callPurposeId: obj.callPurposeId,
+      callLogStatusId: CallLogStatusEnum.PENDING,
+      detail: resObj,
+      conversionHistory: null,
+      isMailSuccess: false,
+      nutritionistId: obj.nutritionistId,
+      meetingLink: meetingLink,
+      calendarEventId: resObj.google?.id,
+      isSystemGenerated: true,
+      active: true,
+      createdBy: adminId,
+      modifiedBy: adminId,
+      createdIp: requestedIp,
+      modifiedIp: requestedIp,
+    });
     // Fetch the created/updated call log with relations
     const updatedCallLog = await this.memberCallLogRepository.scope('list').findOne({
       where: { memberCallLogId: callLog.memberCallLogId },
@@ -229,6 +242,55 @@ export class MemberCallLogsService {
       nest: true,
     });
     return this.convertToModel(updatedCallLog!);
+  }
+
+  public async cancel(payload: ICancelCallLog, requestedIp: string, adminId: number) {
+    const meeting = await this.memberCallLogRepository.findOne({
+      where: {
+        memberCallLogId: payload.memberCallLogId,
+        active: true,
+      },
+    });
+    if (!meeting) {
+      throw new NotFoundException('Meeting not found');
+    }
+    if (meeting.callLogStatusId === CallLogStatusEnum.CANCELLED) {
+      return { success: true };
+    }
+    if (meeting.callTypeId === CallTypeEnum.GOOGLE_MEET && meeting.detail.google?.id) {
+      const nutritionist = await this.adminUserRepository.findOne({
+        where: { adminId: meeting.nutritionistId },
+      });
+      try {
+        await this.googleService.cancelSlot(nutritionist, meeting.detail.google);
+      } catch (e) {
+        // Google returns 410 if already deleted — safe to ignore
+        if (e.code !== 410) {
+          throw e;
+        }
+      }
+    }
+    if (
+      meeting.callTypeId === CallTypeEnum.ZOOM_CALL &&
+      (meeting.detail['zoom'] as IZoomEvent).id
+    ) {
+      try {
+        await this.zoomService.deleteMeeting(meeting.detail['zoom'] as IZoomEvent);
+      } catch (e) {
+        // Zoom 404 = already deleted → safe
+      }
+    }
+    await this.memberCallLogRepository.update(
+      {
+        callLogStatusId: CallLogStatusEnum.CANCELLED,
+        conversionHistory: payload.reason ?? null,
+        modifiedBy: adminId,
+        modifiedIp: requestedIp,
+      },
+      {
+        where: { memberCallLogId: payload.memberCallLogId },
+      },
+    );
   }
 
   private convertToModel(item: TxnMemberCallLog): IMemberCallLog {
@@ -248,7 +310,6 @@ export class MemberCallLogsService {
       callType: item.callType?.callType,
       callPurpose: item.callPurpose?.callPurpose,
       callLogStatus: item.callLogStatus?.callLogStatus,
-      date: item.date,
       startTime: item.startTime,
       endTime: item.endTime,
       detail: item.detail,

@@ -1,0 +1,9 @@
+export enum CallTypeEnum {
+  PERSONAL_VISIT = 1,
+  VIDEO_CALL = 2,
+  PERSONAL_CALL = 3,
+  WHATSAPP_MESSAGE = 4,
+  GOOGLE_MEET = 5,
+  ZOOM_CALL = 6
+}
+
