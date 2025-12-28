@@ -20,87 +20,9 @@
     min-height: 200px;
   }
 
-  // Step Indicator
-  .step-indicator {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 32px;
-    position: relative;
-
-    &::before {
-      content: '';
-      position: absolute;
-      top: 20px;
-      left: 10%;
-      right: 10%;
-      height: 2px;
-      background: var(--md-sys-color-outline-variant);
-      z-index: 0;
-    }
-
-    .step-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 8px;
-      cursor: pointer;
-      position: relative;
-      z-index: 1;
-      flex: 1;
-
-      .step-number {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        background: var(--md-sys-color-surface-variant);
-        color: var(--md-sys-color-on-surface-variant);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 500;
-        transition: all 0.3s ease;
-        border: 2px solid var(--md-sys-color-outline-variant);
-      }
-
-      .step-label {
-        font-size: 12px;
-        color: var(--md-sys-color-on-surface-variant);
-        text-align: center;
-        font-weight: 500;
-      }
-
-      &.active {
-        .step-number {
-          background: var(--md-sys-color-primary);
-          color: var(--md-sys-color-on-primary);
-          border-color: var(--md-sys-color-primary);
-          transform: scale(1.1);
-        }
-
-        .step-label {
-          color: var(--md-sys-color-primary);
-          font-weight: 600;
-        }
-      }
-
-      &.completed {
-        .step-number {
-          background: var(--md-sys-color-primary-container);
-          color: var(--md-sys-color-on-primary-container);
-          border-color: var(--md-sys-color-primary-container);
-        }
-
-        .step-label {
-          color: var(--md-sys-color-on-surface);
-        }
-      }
-
-      &:hover:not(.active) {
-        .step-number {
-          transform: scale(1.05);
-        }
-      }
-    }
+  // Material Stepper styles
+  mat-stepper {
+    margin-bottom: 24px;
   }
 
   // Step Content

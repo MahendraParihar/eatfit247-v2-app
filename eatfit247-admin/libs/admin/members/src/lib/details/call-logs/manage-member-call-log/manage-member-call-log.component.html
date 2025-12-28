@@ -7,152 +7,143 @@
         <shared-ui-loader></shared-ui-loader>
       </div>
     } @else {
-      <!-- Step Indicator -->
-      <div class="step-indicator">
-        @for (step of steps; track step) {
-          <div 
-            class="step-item" 
-            [class.active]="currentStep() === step"
-            [class.completed]="getStepNumber(currentStep()) > getStepNumber(step)"
-            (click)="goToStep(step)">
-            <div class="step-number">{{ getStepNumber(step) }}</div>
-            <div class="step-label">{{ getStepLabel(step) }}</div>
-          </div>
-        }
-      </div>
+      <mat-stepper [selectedIndex]="selectedIndex()" (selectionChange)="onStepperSelectionChange($event)" [linear]="true">
+        <!-- Step 1: Select Criteria -->
+        <mat-step [stepControl]="criteriaFormGroup">
+          <ng-template matStepLabel>Select Criteria</ng-template>
+          <form [formGroup]="criteriaFormGroup" class="step-content">
+            <div class="criteria-form">
+              <div class="form-row">
+                <mat-form-field appearance="outline" class="half-width">
+                  <mat-label>Nutritionist</mat-label>
+                  <mat-select formControlName="nutritionistId">
+                    <mat-option [value]="null">Select Nutritionist</mat-option>
+                    @for (nutritionist of nutritionistOptions; track nutritionist.id) {
+                      <mat-option [value]="nutritionist.id">{{ nutritionist.label }}</mat-option>
+                    }
+                  </mat-select>
+                  <shared-ui-input-error [control]="criteriaFormGroup.get('nutritionistId')"></shared-ui-input-error>
+                </mat-form-field>
 
-      <!-- Step 1: SELECT_CRITERIA -->
-      @if (currentStep() === 'SELECT_CRITERIA') {
-        <form [formGroup]="criteriaFormGroup" class="step-content">
-          <div class="criteria-form">
-            <div class="form-row">
-              <mat-form-field appearance="outline" class="half-width">
-                <mat-label>Nutritionist</mat-label>
-                <mat-select formControlName="nutritionistId">
-                  <mat-option [value]="null">Select Nutritionist</mat-option>
-                  @for (nutritionist of nutritionistOptions; track nutritionist.id) {
-                    <mat-option [value]="nutritionist.id">{{ nutritionist.label }}</mat-option>
+                <mat-form-field appearance="outline" class="half-width">
+                  <mat-label>Duration</mat-label>
+                  <mat-select formControlName="duration">
+                    <mat-option [value]="null">Select Duration</mat-option>
+                    @for (duration of durationOptions; track duration.id) {
+                      <mat-option [value]="duration.id">{{ duration.label }}</mat-option>
+                    }
+                  </mat-select>
+                  <shared-ui-input-error [control]="criteriaFormGroup.get('duration')"></shared-ui-input-error>
+                </mat-form-field>
+              </div>
+
+              <div class="form-row">
+                <mat-form-field appearance="outline" class="half-width">
+                  <mat-label>Date From</mat-label>
+                  <input matInput [matDatepicker]="dateFromPicker" formControlName="dateFrom" />
+                  <mat-datepicker-toggle matIconSuffix [for]="dateFromPicker"></mat-datepicker-toggle>
+                  <mat-datepicker #dateFromPicker></mat-datepicker>
+                  <shared-ui-input-error [control]="criteriaFormGroup.get('dateFrom')"></shared-ui-input-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="half-width">
+                  <mat-label>Date To</mat-label>
+                  <input matInput [matDatepicker]="dateToPicker" formControlName="dateTo" />
+                  <mat-datepicker-toggle matIconSuffix [for]="dateToPicker"></mat-datepicker-toggle>
+                  <mat-datepicker #dateToPicker></mat-datepicker>
+                  <shared-ui-input-error [control]="criteriaFormGroup.get('dateTo')"></shared-ui-input-error>
+                </mat-form-field>
+              </div>
+
+              <div class="form-actions">
+                <button 
+                  mat-raised-button 
+                  color="primary" 
+                  (click)="checkAvailability()" 
+                  [disabled]="checkingAvailability() || criteriaFormGroup.invalid">
+                  @if (checkingAvailability()) {
+                    <mat-icon class="spinning">refresh</mat-icon>
+                    Checking...
+                  } @else {
+                    Check Availability
+                  }
+                </button>
+              </div>
+            </div>
+          </form>
+        </mat-step>
+
+        <!-- Step 2: Select Time Slot -->
+        <mat-step>
+          <ng-template matStepLabel>Select Time Slot</ng-template>
+          <div class="step-content">
+            <div class="slot-selection">
+              <h3>Select Available Time Slot</h3>
+              @if (slots.length === 0) {
+                <p class="no-slots">No available slots found. Please try different criteria.</p>
+              } @else {
+                <mat-radio-group [(ngModel)]="selectedSlot" class="slot-radio-group">
+                  @for (slot of slots; track slot.id) {
+                    <mat-radio-button [value]="slot" class="slot-option">
+                      {{ slot.start | date:'MMM d, h:mm a' }}
+                      –
+                      {{ slot.end | date:'h:mm a' }}
+                    </mat-radio-button>
+                  }
+                </mat-radio-group>
+              }
+            </div>
+          </div>
+        </mat-step>
+
+        <!-- Step 3: Confirm Details -->
+        <mat-step>
+          <ng-template matStepLabel>Confirm Details</ng-template>
+          <div class="step-content">
+            <div class="confirm-form">
+              <h3>Confirm Booking Details</h3>
+              
+              <!-- Summary of selected criteria -->
+              <div class="summary-section">
+                <h4>Selected Time Slot</h4>
+                <p class="summary-text">
+                  @if (selectedSlot) {
+                    {{ selectedSlot.start | date:'MMM d, yyyy' }} at 
+                    {{ selectedSlot.start | date:'h:mm a' }} - 
+                    {{ selectedSlot.end | date:'h:mm a' }}
+                  }
+                </p>
+              </div>
+
+              <!-- Meeting Type Selection -->
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Meeting Type</mat-label>
+                <mat-select [(ngModel)]="form.callTypeId">
+                  <mat-option [value]="null">Select Meeting Type</mat-option>
+                  @for (callType of callTypeOptions; track callType.id) {
+                    <mat-option [value]="callType.id">{{ callType.label }}</mat-option>
                   }
                 </mat-select>
-                <shared-ui-input-error [control]="criteriaFormGroup.get('nutritionistId')"></shared-ui-input-error>
               </mat-form-field>
 
-              <mat-form-field appearance="outline" class="half-width">
-                <mat-label>Duration</mat-label>
-                <mat-select formControlName="duration">
-                  <mat-option [value]="null">Select Duration</mat-option>
-                  @for (duration of durationOptions; track duration.id) {
-                    <mat-option [value]="duration.id">{{ duration.label }}</mat-option>
-                  }
-                </mat-select>
-                <shared-ui-input-error [control]="criteriaFormGroup.get('duration')"></shared-ui-input-error>
-              </mat-form-field>
-            </div>
-
-            <div class="form-row">
-              <mat-form-field appearance="outline" class="half-width">
-                <mat-label>Date From</mat-label>
-                <input matInput [matDatepicker]="dateFromPicker" formControlName="dateFrom" />
-                <mat-datepicker-toggle matIconSuffix [for]="dateFromPicker"></mat-datepicker-toggle>
-                <mat-datepicker #dateFromPicker></mat-datepicker>
-                <shared-ui-input-error [control]="criteriaFormGroup.get('dateFrom')"></shared-ui-input-error>
-              </mat-form-field>
-
-              <mat-form-field appearance="outline" class="half-width">
-                <mat-label>Date To</mat-label>
-                <input matInput [matDatepicker]="dateToPicker" formControlName="dateTo" />
-                <mat-datepicker-toggle matIconSuffix [for]="dateToPicker"></mat-datepicker-toggle>
-                <mat-datepicker #dateToPicker></mat-datepicker>
-                <shared-ui-input-error [control]="criteriaFormGroup.get('dateTo')"></shared-ui-input-error>
-              </mat-form-field>
-            </div>
-
-            <div class="form-actions">
-              <button 
-                mat-raised-button 
-                color="primary" 
-                (click)="checkAvailability()" 
-                [disabled]="checkingAvailability() || criteriaFormGroup.invalid">
-                @if (checkingAvailability()) {
-                  <mat-icon class="spinning">refresh</mat-icon>
-                  Checking...
-                } @else {
-                  Check Availability
-                }
-              </button>
+              <!-- Notify User Checkbox -->
+              <div class="checkbox-section">
+                <mat-checkbox [(ngModel)]="form.notifyUser">
+                  Send calendar invite to user
+                </mat-checkbox>
+              </div>
             </div>
           </div>
-        </form>
-      }
-
-      <!-- Step 2: SELECT_SLOT -->
-      @if (currentStep() === 'SELECT_SLOT') {
-        <div class="step-content">
-          <div class="slot-selection">
-            <h3>Select Available Time Slot</h3>
-            @if (slots.length === 0) {
-              <p class="no-slots">No available slots found. Please try different criteria.</p>
-            } @else {
-              <mat-radio-group [(ngModel)]="selectedSlot" class="slot-radio-group">
-                @for (slot of slots; track slot.id) {
-                  <mat-radio-button [value]="slot" class="slot-option">
-                    {{ slot.start | date:'MMM d, h:mm a' }}
-                    –
-                    {{ slot.end | date:'h:mm a' }}
-                  </mat-radio-button>
-                }
-              </mat-radio-group>
-            }
-          </div>
-        </div>
-      }
-
-      <!-- Step 3: CONFIRM -->
-      @if (currentStep() === 'CONFIRM') {
-        <div class="step-content">
-          <div class="confirm-form">
-            <h3>Confirm Booking Details</h3>
-            
-            <!-- Summary of selected criteria -->
-            <div class="summary-section">
-              <h4>Selected Time Slot</h4>
-              <p class="summary-text">
-                @if (selectedSlot) {
-                  {{ selectedSlot.start | date:'MMM d, yyyy' }} at 
-                  {{ selectedSlot.start | date:'h:mm a' }} - 
-                  {{ selectedSlot.end | date:'h:mm a' }}
-                }
-              </p>
-            </div>
-
-            <!-- Meeting Type Selection -->
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Meeting Type</mat-label>
-              <mat-select [(ngModel)]="form.callTypeId">
-                <mat-option [value]="null">Select Meeting Type</mat-option>
-                @for (callType of callTypeOptions; track callType.id) {
-                  <mat-option [value]="callType.id">{{ callType.label }}</mat-option>
-                }
-              </mat-select>
-            </mat-form-field>
-
-            <!-- Notify User Checkbox -->
-            <div class="checkbox-section">
-              <mat-checkbox [(ngModel)]="form.notifyUser">
-                Send calendar invite to user
-              </mat-checkbox>
-            </div>
-          </div>
-        </div>
-      }
+        </mat-step>
+      </mat-stepper>
     }
   </mat-dialog-content>
 
   <mat-dialog-actions align="end">
     <button mat-button (click)="onCancel()">Cancel</button>
     
-    @if (currentStep() === 'SELECT_SLOT') {
-      <button mat-button (click)="back()">
+    @if (selectedIndex() === 1) {
+      <button mat-button (click)="previousStep()">
         <mat-icon>arrow_back</mat-icon>
         Back
       </button>
@@ -163,7 +154,7 @@
         [disabled]="!selectedSlot">
         Continue
       </button>
-    } @else if (currentStep() === 'CONFIRM') {
+    } @else if (selectedIndex() === 2) {
       <button mat-button (click)="previousStep()" [disabled]="submitting()">
         <mat-icon>arrow_back</mat-icon>
         Previous
@@ -180,8 +171,6 @@
           Confirm & Book
         }
       </button>
-    } @else {
-      <!-- Step 1 buttons are handled within the form -->
     }
   </mat-dialog-actions>
 </div>

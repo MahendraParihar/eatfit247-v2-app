@@ -11,13 +11,12 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatStepperModule } from '@angular/material/stepper';
 import { FormsModule } from '@angular/forms';
 import { InputErrorComponent, LoaderComponent } from '@shared';
 import { IDropdownItem, IAvailableSlot, ICallLogSlot } from '@eatfit247-shared-lib';
 import { MembersApiService } from '../../../api.service';
 import moment from 'moment';
-
-export type Step = 'SELECT_CRITERIA' | 'SELECT_SLOT' | 'CONFIRM';
 
 @Component({
   selector: 'lib-manage-member-call-log',
@@ -36,6 +35,7 @@ export type Step = 'SELECT_CRITERIA' | 'SELECT_SLOT' | 'CONFIRM';
     MatNativeDateModule,
     MatRadioModule,
     MatCheckboxModule,
+    MatStepperModule,
     InputErrorComponent,
     LoaderComponent
   ],
@@ -43,10 +43,8 @@ export type Step = 'SELECT_CRITERIA' | 'SELECT_SLOT' | 'CONFIRM';
   styleUrl: './manage-member-call-log.component.scss'
 })
 export class ManageMemberCallLogComponent implements OnInit {
-  // State Machine
-  currentStep = signal<Step>('SELECT_CRITERIA');
-  // Steps array for template
-  readonly steps: Step[] = ['SELECT_CRITERIA', 'SELECT_SLOT', 'CONFIRM'];
+  // Stepper control
+  selectedIndex = signal(0);
   // Form for Step 1
   criteriaFormGroup!: FormGroup;
   loading = signal(false);
@@ -140,7 +138,7 @@ export class ManageMemberCallLogComponent implements OnInit {
       this.slots = await this.apiService.getAvailableTimeslots(this.data, availableSlotRequest);
       // After checking availability, proceed to next step
       if (this.slots.length > 0) {
-        this.nextStep();
+        this.selectedIndex.set(1);
       } else {
         // Show a message that no slots are available
         console.warn('No available slots found');
@@ -155,30 +153,22 @@ export class ManageMemberCallLogComponent implements OnInit {
 
   // Step Navigation Methods
   nextStep(): void {
-    const current = this.currentStep();
-    if (current === 'SELECT_CRITERIA') {
-      this.currentStep.set('SELECT_SLOT');
-    } else if (current === 'SELECT_SLOT') {
-      this.currentStep.set('CONFIRM');
+    const current = this.selectedIndex();
+    if (current < 2) {
+      this.selectedIndex.set(current + 1);
     }
   }
 
   previousStep(): void {
-    const current = this.currentStep();
-    if (current === 'SELECT_SLOT') {
-      this.currentStep.set('SELECT_CRITERIA');
-    } else if (current === 'CONFIRM') {
-      this.currentStep.set('SELECT_SLOT');
+    const current = this.selectedIndex();
+    if (current > 0) {
+      this.selectedIndex.set(current - 1);
     }
-  }
-
-  back(): void {
-    this.previousStep();
   }
 
   goToConfirm(): void {
     if (this.selectedSlot) {
-      this.currentStep.set('CONFIRM');
+      this.selectedIndex.set(2);
     }
   }
 
@@ -219,28 +209,9 @@ export class ManageMemberCallLogComponent implements OnInit {
     return `${hours}:${minutes}:00`;
   }
 
-  goToStep(step: Step): void {
-    this.currentStep.set(step);
-  }
 
-  // Get step number for display
-  getStepNumber(step: Step): number {
-    const stepMap: Record<Step, number> = {
-      'SELECT_CRITERIA': 1,
-      'SELECT_SLOT': 2,
-      'CONFIRM': 3
-    };
-    return stepMap[step];
-  }
-
-  // Get step label
-  getStepLabel(step: Step): string {
-    const labelMap: Record<Step, string> = {
-      'SELECT_CRITERIA': 'Select Criteria',
-      'SELECT_SLOT': 'Select Time Slot',
-      'CONFIRM': 'Confirm Details'
-    };
-    return labelMap[step];
+  onStepperSelectionChange(event: StepperSelectionEvent): void {
+    this.selectedIndex.set(event.selectedIndex);
   }
 
   onCancel(): void {
