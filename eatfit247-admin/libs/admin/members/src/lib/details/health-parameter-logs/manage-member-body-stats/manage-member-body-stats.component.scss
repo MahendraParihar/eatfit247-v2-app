@@ -47,31 +47,66 @@ mat-dialog-content {
     margin: 0;
     font-size: 1.1rem;
     font-weight: 500;
+    color: var(--md-sys-color-on-surface, #1c1b1f);
+  }
+
+  button {
+    display: flex;
+    align-items: center;
+    gap: 4px;
   }
 }
 
-.health-parameters-table {
-  width: 100%;
-  border: 1px solid var(--md-sys-color-outline-variant);
-  border-radius: 4px;
-  overflow: hidden;
+.health-parameters-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
 
-  th,
-  td {
-    padding: 12px;
+.parameter-row {
+  border: 1px solid var(--md-sys-color-outline-variant, #d6d6d6);
+  border-radius: 8px;
+  padding: 16px;
+  background-color: var(--md-sys-color-surface-container-low, #fafafa);
+  transition: box-shadow 0.2s;
+
+  &:hover {
+    box-shadow: var(--elevation-level-1, 0px 1px 2px 0px rgba(0, 0, 0, 0.3));
+  }
+}
+
+.row-content {
+  display: grid;
+  grid-template-columns: 2fr 1.5fr 1.5fr auto;
+  gap: 16px;
+  align-items: start;
+
+  .parameter-field {
+    flex: 1;
   }
 
-  th {
-    background-color: var(--md-sys-color-surface-container-high);
-    font-weight: 500;
+  .value-field {
+    flex: 1;
   }
 
-  td {
-    border-top: 1px solid var(--md-sys-color-outline-variant);
+  .unit-field {
+    flex: 1;
   }
 
-  mat-form-field {
-    margin: 0;
+  .delete-button {
+    margin-top: 8px;
+  }
+}
+
+@media (max-width: 768px) {
+  .row-content {
+    grid-template-columns: 1fr;
+    gap: 12px;
+
+    .delete-button {
+      margin-top: 0;
+      justify-self: end;
+    }
   }
 }
 

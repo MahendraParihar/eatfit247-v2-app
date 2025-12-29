@@ -72,7 +72,7 @@ export interface IMemberCallLog extends IBaseMemberCallLog {
   nutritionist?: IBaseAdminUser;
 }
 
-export interface ICancelCallLog {
+export interface IStatusChangeCallLog {
   memberCallLogId: number;
   reason: string;
 }

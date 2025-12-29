@@ -1,5 +1,5 @@
 <div class="dialog-container">
-  <h2 mat-dialog-title>Add Body Stats Log</h2>
+  <h2 mat-dialog-title>{{ data.log ? 'Edit Body Stats Log' : 'Add Body Stats Log' }}</h2>
   <mat-dialog-content>
     @if (loading()) {
       <div class="loading-container">
@@ -18,81 +18,64 @@
         <div class="health-parameters-section">
           <div class="section-header">
             <h3>Health Parameters</h3>
-            <button mat-icon-button type="button" (click)="addHealthParameterRow()" color="primary">
+            <button mat-raised-button type="button" (click)="addHealthParameterRow()" color="primary">
               <mat-icon>add</mat-icon>
+              Add Row
             </button>
           </div>
 
-          <table mat-table [dataSource]="healthParametersControls()" class="health-parameters-table" [trackBy]="trackByIndex">
-            <ng-container matColumnDef="healthParameter">
-              <th mat-header-cell *matHeaderCellDef>Health Parameter</th>
-              <td mat-cell *matCellDef="let control; let i = index">
-                <div [formGroup]="control">
-                  <mat-form-field appearance="outline" class="full-width">
-                    <mat-select formControlName="healthParameterId">
-                      <mat-option [value]="null">Select Parameter</mat-option>
-                      @for (param of masterData()?.healthParameters; track param.id) {
-                        <mat-option [value]="param.id">{{ param.label }}</mat-option>
-                      }
-                    </mat-select>
-                    <shared-ui-input-error [control]="control.get('healthParameterId')"></shared-ui-input-error>
-                  </mat-form-field>
-                </div>
-              </td>
-            </ng-container>
-
-            <ng-container matColumnDef="value">
-              <th mat-header-cell *matHeaderCellDef>Value</th>
-              <td mat-cell *matCellDef="let control; let i = index">
-                <div [formGroup]="control">
-                  <mat-form-field appearance="outline" class="full-width">
-                    <input matInput formControlName="value" [maxlength]="InputLengthEnum.CHAR_20" />
-                    <mat-hint align="end">
-                      {{ control.get('value')?.value?.length || 0 }}/{{ InputLengthEnum.CHAR_20 }}
-                    </mat-hint>
-                    <shared-ui-input-error [control]="control.get('value')"></shared-ui-input-error>
-                  </mat-form-field>
-                </div>
-              </td>
-            </ng-container>
-
-            <ng-container matColumnDef="unit">
-              <th mat-header-cell *matHeaderCellDef>Unit</th>
-              <td mat-cell *matCellDef="let control; let i = index">
-                <div [formGroup]="control">
-                  <mat-form-field appearance="outline" class="full-width">
-                    <mat-select formControlName="healthParameterUnitId">
-                      <mat-option [value]="null">Select Unit</mat-option>
-                      @for (unit of getFilteredUnits(control.get('healthParameterId')?.value); track unit.id) {
-                        <mat-option [value]="unit.id">{{ unit.label }}</mat-option>
-                      }
-                    </mat-select>
-                    <shared-ui-input-error [control]="control.get('healthParameterUnitId')"></shared-ui-input-error>
-                  </mat-form-field>
-                </div>
-              </td>
-            </ng-container>
-
-            <ng-container matColumnDef="actions">
-              <th mat-header-cell *matHeaderCellDef></th>
-              <td mat-cell *matCellDef="let control; let i = index">
-                <button
-                  mat-icon-button
-                  type="button"
-                  (click)="removeHealthParameterRow(i)"
-                  color="warn"
-                  [disabled]="healthParametersFormArray.length === 1">
-                  <mat-icon>delete</mat-icon>
-                </button>
-              </td>
-            </ng-container>
-
-            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-            <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
-          </table>
-
           @if (healthParametersFormArray.length === 0) {
-            <p class="no-parameters">Add at least one health parameter</p>
+            <p class="no-parameters">Click "Add Row" to add health parameters</p>
+          } @else {
+            <div class="health-parameters-list">
+              @for (control of healthParametersControls(); track trackByIndex($index); let i = $index) {
+                <div class="parameter-row" [formGroup]="control">
+                  <div class="row-content">
+                    <mat-form-field appearance="outline" class="parameter-field">
+                      <mat-label>Health Parameter</mat-label>
+                      <mat-select formControlName="healthParameterId">
+                        <mat-option [value]="null">Select Parameter</mat-option>
+                        @for (param of masterData()?.healthParameters; track param.id) {
+                          <mat-option [value]="param.id">{{ param.label }}</mat-option>
+                        }
+                      </mat-select>
+                      <shared-ui-input-error [control]="control.get('healthParameterId')"></shared-ui-input-error>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline" class="value-field">
+                      <mat-label>Value</mat-label>
+                      <input matInput formControlName="value" [maxlength]="InputLengthEnum.CHAR_20" />
+                      <mat-hint align="end">
+                        {{ control.get('value')?.value?.length || 0 }}/{{ InputLengthEnum.CHAR_20 }}
+                      </mat-hint>
+                      <shared-ui-input-error [control]="control.get('value')"></shared-ui-input-error>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline" class="unit-field">
+                      <mat-label>Unit</mat-label>
+                      <mat-select formControlName="healthParameterUnitId">
+                        <mat-option [value]="null">Select Unit</mat-option>
+                        @for (unit of getFilteredUnits(control.get('healthParameterId')?.value); track unit.id) {
+                          <mat-option [value]="unit.id">{{ unit.label }}</mat-option>
+                        }
+                      </mat-select>
+                      <shared-ui-input-error [control]="control.get('healthParameterUnitId')"></shared-ui-input-error>
+                    </mat-form-field>
+
+                    <button
+                      mat-icon-button
+                      type="button"
+                      (click)="removeHealthParameterRow(i)"
+                      color="warn"
+                      class="delete-button"
+                      [disabled]="healthParametersFormArray.length === 1"
+                      [matTooltip]="healthParametersFormArray.length === 1 ? 'At least one row is required' : 'Delete row'">
+                      <mat-icon>delete</mat-icon>
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
           }
         </div>
       </form>

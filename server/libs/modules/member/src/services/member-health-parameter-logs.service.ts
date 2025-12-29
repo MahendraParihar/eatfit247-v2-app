@@ -46,6 +46,35 @@ export class MemberHealthParameterLogsService {
   }
 
   /**
+   * Get a single health parameter log by ID
+   * @param memberId - Member ID
+   * @param logId - Health parameter log ID
+   * @returns Health parameter log with nested health parameters
+   */
+  public async findById(memberId: number, logId: number): Promise<IMemberHealthParameterLog> {
+    // Verify member exists
+    const member = await this.memberRepository.findOne({
+      where: { memberId },
+    });
+    if (!member) {
+      throw new NotFoundException('Member not found');
+    }
+
+    // Fetch health parameter log with nested health parameters
+    const record = await this.memberHealthParameterLogRepository.scope('details').findOne({
+      where: { memberHealthParameterLogId: logId, memberId },
+      raw: false,
+      nest: true,
+    });
+
+    if (!record) {
+      throw new NotFoundException('Health parameter log not found');
+    }
+
+    return this.convertToModel(record);
+  }
+
+  /**
    * Get all health parameter logs for a member
    * @param memberId - Member ID
    * @returns Array of member health parameter logs with nested health parameters
@@ -177,6 +206,48 @@ export class MemberHealthParameterLogsService {
         nest: true,
       });
       return this.convertToModel(updatedRecord!);
+    } catch (error) {
+      await t.rollback();
+      throw error;
+    }
+  }
+
+  /**
+   * Delete health parameter log for a member
+   * @param memberId - Member ID
+   * @param logId - Health parameter log ID
+   * @param requestedIp - Request IP
+   * @param adminId - Admin user ID
+   */
+  public async delete(memberId: number, logId: number, requestedIp: string, adminId: number): Promise<void> {
+    // Verify member exists
+    const member = await this.memberRepository.findOne({
+      where: { memberId },
+    });
+    if (!member) {
+      throw new NotFoundException('Member not found');
+    }
+
+    // Verify log exists
+    const logRecord = await this.memberHealthParameterLogRepository.findOne({
+      where: { memberHealthParameterLogId: logId, memberId },
+    });
+    if (!logRecord) {
+      throw new NotFoundException('Health parameter log not found');
+    }
+
+    const t = await this.sequelize.transaction();
+    try {
+      // Delete health parameters first (foreign key constraint)
+      await this.memberHealthParameterRepository.destroy({
+        where: { memberHealthParameterLogId: logId },
+        transaction: t,
+      });
+
+      // Delete the log record
+      await logRecord.destroy({ transaction: t });
+
+      await t.commit();
     } catch (error) {
       await t.rollback();
       throw error;

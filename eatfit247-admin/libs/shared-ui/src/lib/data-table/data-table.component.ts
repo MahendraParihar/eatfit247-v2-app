@@ -23,6 +23,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatMenuModule } from '@angular/material/menu';
 import { ImgComponent } from '../img/img.component';
 import {
   ITableColumn,
@@ -51,6 +52,7 @@ import {
     MatCheckboxModule,
     MatTooltipModule,
     MatChipsModule,
+    MatMenuModule,
     ImgComponent
   ],
   templateUrl: './data-table.component.html',

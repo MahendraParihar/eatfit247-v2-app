@@ -22,7 +22,7 @@ import {
   IHealthParameterMaster,
   ICallLogMasterData,
   IAvailableSlot,
-  ICallLogSlot
+  ICallLogSlot, IStatusChangeCallLog
 } from '@eatfit247-shared-lib';
 
 @Injectable({
@@ -161,6 +161,16 @@ export class MembersApiService extends ApiBaseService {
     return res.data as IMemberHealthParameterLog;
   }
 
+  async getHealthParameterLog(
+    memberId: number,
+    logId: number
+  ): Promise<IMemberHealthParameterLog> {
+    const res = await this.httpService.get<
+      IResponse<IMemberHealthParameterLog>
+    >(`${this.endpoint}/${memberId}/health-parameter-logs/${logId}`);
+    return res.data as IMemberHealthParameterLog;
+  }
+
   async updateHealthParameterLog(
     memberId: number,
     logId: number,
@@ -170,6 +180,15 @@ export class MembersApiService extends ApiBaseService {
       IResponse<IMemberHealthParameterLog>
     >(`${this.endpoint}/${memberId}/health-parameter-logs/${logId}`, data);
     return res.data as IMemberHealthParameterLog;
+  }
+
+  async deleteHealthParameterLog(
+    memberId: number,
+    logId: number
+  ): Promise<void> {
+    await this.httpService.delete<void>(
+      `${this.endpoint}/${memberId}/health-parameter-logs/${logId}`
+    );
   }
 
   // region Member Issues
@@ -310,7 +329,7 @@ export class MembersApiService extends ApiBaseService {
   // region Member Call Logs
   async getCallLogMasterData(memberId: number): Promise<ICallLogMasterData> {
     const res = await this.httpService.get<IResponse<ICallLogMasterData>>(
-      `${this.endpoint}/${memberId}/call-logs/master-data`,
+      `${this.endpoint}/${memberId}/call-logs/master-data`
     );
     return res.data as ICallLogMasterData;
   }
@@ -337,6 +356,20 @@ export class MembersApiService extends ApiBaseService {
       data
     );
     return res.data as IMemberCallLog;
+  }
+
+  async cancelCallLog(memberId: number, memberCallLogId: number, reason: string): Promise<void> {
+    return await this.httpService.post<void>(
+      `${this.endpoint}/${memberId}/call-logs/cancel`,
+      <IStatusChangeCallLog>{ memberCallLogId, reason }
+    );
+  }
+
+  async completeCallLog(memberId: number, memberCallLogId: number, reason: string): Promise<void> {
+    return await this.httpService.post<void>(
+      `${this.endpoint}/${memberId}/call-logs/complete`,
+      <IStatusChangeCallLog>{ memberCallLogId, reason }
+    );
   }
 
   // endregion

@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
-import { MatTableModule } from '@angular/material/table';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -15,7 +15,7 @@ import { InputErrorComponent } from '@shared';
 import {
   IHealthParameterMaster,
   IManageMemberHealthParameterLog,
-  IBasicMemberHealthParameter,
+  IMemberHealthParameterLog,
   IDropdownItem,
   InputLengthEnum,
 } from '@eatfit247-shared-lib';
@@ -23,6 +23,7 @@ import { MembersApiService } from '../../../api.service';
 
 export interface ManageMemberBodyStatsData {
   memberId: number;
+  log?: IMemberHealthParameterLog;
 }
 
 @Component({
@@ -33,8 +34,8 @@ export interface ManageMemberBodyStatsData {
     ReactiveFormsModule,
     MatDialogModule,
     MatButtonModule,
-    MatTableModule,
     MatProgressSpinnerModule,
+    MatTooltipModule,
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
@@ -51,17 +52,16 @@ export class ManageMemberBodyStatsComponent implements OnInit {
   masterData = signal<IHealthParameterMaster | null>(null);
   loading = signal(false);
   submitting = signal(false);
-  displayedColumns: string[] = ['healthParameter', 'value', 'unit', 'actions'];
   InputLengthEnum = InputLengthEnum;
   
   // Signal to track FormArray changes
   private formArrayUpdateTrigger = signal(0);
 
   // Computed signal for form array controls
-  healthParametersControls = computed(() => {
+  healthParametersControls = computed<FormGroup[]>(() => {
     // Access the trigger to make this reactive
     this.formArrayUpdateTrigger();
-    return this.healthParametersFormArray.controls;
+    return this.healthParametersFormArray.controls as FormGroup[];
   });
 
   constructor(
@@ -78,10 +78,48 @@ export class ManageMemberBodyStatsComponent implements OnInit {
   }
 
   private initializeForm(): void {
+    const logDate = this.data.log?.logDate 
+      ? (this.data.log.logDate instanceof Date ? this.data.log.logDate : new Date(this.data.log.logDate))
+      : new Date();
+
     this.formGroup = this.fb.group({
-      logDate: [new Date(), [Validators.required]],
+      logDate: [logDate, [Validators.required]],
       healthParameters: this.fb.array([]),
     });
+
+    // If editing, populate form with existing data
+    if (this.data.log) {
+      this.populateFormForEdit();
+    }
+  }
+
+  private populateFormForEdit(): void {
+    if (!this.data.log || !this.data.log.healthParameters) {
+      return;
+    }
+
+    // Clear existing form array
+    while (this.healthParametersFormArray.length !== 0) {
+      this.healthParametersFormArray.removeAt(0);
+    }
+
+    // Add form controls for each health parameter
+    this.data.log.healthParameters.forEach((param) => {
+      const healthParameterForm = this.fb.group({
+        healthParameterId: [param.healthParameterId, [Validators.required]],
+        value: [param.value, [Validators.required, Validators.maxLength(InputLengthEnum.CHAR_20)]],
+        healthParameterUnitId: [param.healthParameterUnitId, [Validators.required]],
+      });
+      
+      // Subscribe to health parameter changes to reset unit when parameter changes
+      healthParameterForm.get('healthParameterId')?.valueChanges.subscribe(() => {
+        healthParameterForm.patchValue({ healthParameterUnitId: null }, { emitEvent: false });
+      });
+      
+      this.healthParametersFormArray.push(healthParameterForm);
+    });
+
+    this.formArrayUpdateTrigger.update(v => v + 1);
   }
 
   get healthParametersFormArray(): FormArray {
@@ -93,8 +131,10 @@ export class ManageMemberBodyStatsComponent implements OnInit {
     try {
       const data = await this.apiService.getHealthParameterMasterData(this.data.memberId);
       this.masterData.set(data);
-      // Add one empty row by default
-      this.addHealthParameterRow();
+      // Only add empty row if not editing
+      if (!this.data.log && this.healthParametersFormArray.length === 0) {
+        this.addHealthParameterRow();
+      }
     } catch (error) {
       console.error('Error loading master data:', error);
     } finally {
@@ -108,6 +148,12 @@ export class ManageMemberBodyStatsComponent implements OnInit {
       value: ['', [Validators.required, Validators.maxLength(InputLengthEnum.CHAR_20)]],
       healthParameterUnitId: [null, [Validators.required]],
     });
+    
+    // Subscribe to health parameter changes to reset unit when parameter changes
+    healthParameterForm.get('healthParameterId')?.valueChanges.subscribe(() => {
+      healthParameterForm.patchValue({ healthParameterUnitId: null }, { emitEvent: false });
+    });
+    
     this.healthParametersFormArray.push(healthParameterForm);
     // Trigger signal update to refresh computed
     this.formArrayUpdateTrigger.update(v => v + 1);
@@ -118,6 +164,14 @@ export class ManageMemberBodyStatsComponent implements OnInit {
       this.healthParametersFormArray.removeAt(index);
       // Trigger signal update to refresh computed
       this.formArrayUpdateTrigger.update(v => v + 1);
+    } else {
+      // If only one row, clear its values instead of removing
+      const control = this.healthParametersFormArray.at(index);
+      control.patchValue({
+        healthParameterId: null,
+        value: '',
+        healthParameterUnitId: null,
+      });
     }
   }
 
@@ -151,14 +205,25 @@ export class ManageMemberBodyStatsComponent implements OnInit {
         const data: IManageMemberHealthParameterLog = {
           memberId: this.data.memberId,
           logDate: logDate,
-          healthParameters: formValue.healthParameters.map((param: any) => ({
+          healthParameters: formValue.healthParameters.map((param: { healthParameterId: number; value: string; healthParameterUnitId: number }) => ({
             healthParameterId: param.healthParameterId,
             value: param.value,
             healthParameterUnitId: param.healthParameterUnitId,
           })),
         };
 
-        await this.apiService.createHealthParameterLog(this.data.memberId, data);
+        if (this.data.log) {
+          // Update existing log
+          data.memberHealthParameterLogId = this.data.log.memberHealthParameterLogId;
+          await this.apiService.updateHealthParameterLog(
+            this.data.memberId,
+            this.data.log.memberHealthParameterLogId,
+            data
+          );
+        } else {
+          // Create new log
+          await this.apiService.createHealthParameterLog(this.data.memberId, data);
+        }
         this.dialogRef.close(true);
       } catch (error) {
         console.error('Error saving health parameter log:', error);

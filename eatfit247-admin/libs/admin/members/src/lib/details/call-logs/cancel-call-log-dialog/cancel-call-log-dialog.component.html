@@ -1,0 +1,39 @@
+<div class="cancel-call-log-dialog">
+  <div class="dialog-header">
+    <div class="icon-wrapper">
+      <mat-icon class="warning-icon">warning</mat-icon>
+    </div>
+    <h2 mat-dialog-title>Cancel Call Log</h2>
+  </div>
+
+  <mat-dialog-content>
+    <p class="dialog-message">Are you sure you want to cancel this call log? Please provide a reason for cancellation.</p>
+    
+    <form [formGroup]="formGroup">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Cancellation Reason</mat-label>
+        <textarea
+          matInput
+          formControlName="reason"
+          rows="4"
+          placeholder="Enter the reason for cancellation"
+          [maxlength]="250"
+        ></textarea>
+        <mat-hint align="end">
+          {{ formGroup.get('reason')?.value?.length || 0 }}/250
+        </mat-hint>
+        <shared-ui-input-error [control]="formGroup.get('reason')"></shared-ui-input-error>
+      </mat-form-field>
+    </form>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button (click)="onCancel()" class="cancel-button">
+      Keep Call
+    </button>
+    <button mat-raised-button color="warn" (click)="onConfirm()" class="confirm-button" [disabled]="formGroup.invalid">
+      Cancel Call
+    </button>
+  </mat-dialog-actions>
+</div>
+

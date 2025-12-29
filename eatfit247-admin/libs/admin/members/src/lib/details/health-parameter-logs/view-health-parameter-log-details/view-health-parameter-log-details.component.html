@@ -1,0 +1,88 @@
+<div class="health-parameter-log-details-dialog">
+  <div class="dialog-header">
+    <h2 mat-dialog-title>Health Parameter Log Details</h2>
+    <button mat-icon-button (click)="onClose()" class="close-button">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <mat-dialog-content>
+    <div class="details-container">
+      <!-- Log Information -->
+      <div class="detail-section">
+        <h3 class="section-title">Log Information</h3>
+        <div class="detail-grid">
+          <div class="detail-item">
+            <span class="label">Log Date:</span>
+            <span class="value">{{ data.logDate | date: 'dd MMM yyyy' }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="label">Active:</span>
+            <mat-chip [class.status-active]="data.active" [class.status-inactive]="!data.active">
+              {{ data.active ? 'Yes' : 'No' }}
+            </mat-chip>
+          </div>
+        </div>
+      </div>
+
+      <!-- Health Parameters -->
+      <div class="detail-section">
+        <h3 class="section-title">Health Parameters</h3>
+        @if (data.healthParameters && data.healthParameters.length > 0) {
+          <div class="health-parameters-list">
+            @for (param of data.healthParameters; track param.healthParameterId) {
+              <div class="health-parameter-item">
+                <div class="parameter-name">{{ param.healthParameter || 'N/A' }}</div>
+                <div class="parameter-value">
+                  {{ param.value || 'N/A' }} {{ param.healthParameterUnit || '' }}
+                </div>
+              </div>
+            }
+          </div>
+        } @else {
+          <p class="no-data">No health parameters recorded</p>
+        }
+      </div>
+
+      <!-- Audit Information -->
+      <div class="detail-section">
+        <h3 class="section-title">Audit Information</h3>
+        <div class="detail-grid">
+          <div class="detail-item">
+            <span class="label">Created By:</span>
+            <span class="value">
+              @if (data.createdByUser) {
+                {{ data.createdByUser.firstName }} {{ data.createdByUser.lastName }}
+              } @else {
+                N/A
+              }
+            </span>
+          </div>
+          <div class="detail-item">
+            <span class="label">Created At:</span>
+            <span class="value">{{ data.createdAt | date: 'dd MMM yyyy hh:mm a' }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="label">Updated By:</span>
+            <span class="value">
+              @if (data.updatedByUser) {
+                {{ data.updatedByUser.firstName }} {{ data.updatedByUser.lastName }}
+              } @else {
+                N/A
+              }
+            </span>
+          </div>
+          <div class="detail-item">
+            <span class="label">Updated At:</span>
+            <span class="value">{{ data.updatedAt | date: 'dd MMM yyyy hh:mm a' }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button (click)="onClose()">Close</button>
+  </mat-dialog-actions>
+</div>
+

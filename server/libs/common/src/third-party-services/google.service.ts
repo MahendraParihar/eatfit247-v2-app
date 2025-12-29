@@ -364,7 +364,7 @@ export class GoogleService {
           : undefined,
       },
     });
-    return event as unknown as IGoogleCalendarEvent;
+    return event.data as unknown as IGoogleCalendarEvent;
   }
 
   async cancelSlot(nutritionist: MstAdminUser, event: IGoogleCalendarEvent): Promise<void> {

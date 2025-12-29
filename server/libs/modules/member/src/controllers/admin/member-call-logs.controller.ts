@@ -2,7 +2,11 @@ import { Body, Controller, Get, Param, Post, Put, Req, UseGuards } from '@nestjs
 import { JwtAuthGuard, CurrentUser, RequestedIp } from '@server/common';
 import { MemberCallLogsService } from '../../services';
 import { ICallLogMasterData, IMemberCallLog, ICallLogSlot } from 'eatfit247-shared-lib';
-import { AvailableSlotDto, CancelCallLogDto, CreateMemberCallLogDto } from '../../dto';
+import {
+  AvailableSlotDto,
+  StatusChangeCallLogDto,
+  CreateMemberCallLogDto,
+} from '../../dto';
 
 @Controller('member/:id/call-logs')
 @UseGuards(JwtAuthGuard)
@@ -42,11 +46,24 @@ export class MemberCallLogsController {
 
   @Post('cancel')
   async cancel(
-    @Body() body: CancelCallLogDto,
+    @Body() body: StatusChangeCallLogDto,
     @CurrentUser() currentUser: any,
     @RequestedIp() requestedIp: string,
   ): Promise<void> {
     await this.memberCallLogsService.cancel(
+      body,
+      requestedIp,
+      currentUser.userId || currentUser.adminId,
+    );
+  }
+
+  @Post('complete')
+  async complete(
+    @Body() body: StatusChangeCallLogDto,
+    @CurrentUser() currentUser: any,
+    @RequestedIp() requestedIp: string,
+  ): Promise<void> {
+    await this.memberCallLogsService.complete(
       body,
       requestedIp,
       currentUser.userId || currentUser.adminId,

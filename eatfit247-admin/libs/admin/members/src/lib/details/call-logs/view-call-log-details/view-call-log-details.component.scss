@@ -1,0 +1,148 @@
+.call-log-details-dialog {
+  min-width: 600px;
+  max-width: 800px;
+  padding: 0;
+}
+
+.dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0px 16px 0px 0px;
+  border-bottom: 1px solid var(--md-sys-color-outline, #e0e0e0);
+
+  h2 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--md-sys-color-on-surface, #1c1b1f);
+  }
+
+  .close-button {
+    color: var(--md-sys-color-on-surface, rgba(0, 0, 0, 0.54));
+  }
+}
+
+mat-dialog-content {
+  padding: 24px;
+  margin: 0;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.details-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.detail-section {
+  .section-title {
+    margin: 0 0 16px 0;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--md-sys-color-primary, #fc2305);
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--md-sys-color-outline-variant, #d6d6d6);
+  }
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+
+  .detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    &.full-width {
+      grid-column: 1 / -1;
+    }
+
+    .label {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--md-sys-color-on-surface, rgba(0, 0, 0, 0.6));
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .value {
+      font-size: 14px;
+      color: var(--md-sys-color-on-surface, #1c1b1f);
+      line-height: 1.5;
+      word-break: break-word;
+    }
+
+    .meeting-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      color: var(--md-sys-color-primary, #fc2305);
+      text-decoration: none;
+      font-size: 14px;
+      word-break: break-all;
+
+      &:hover {
+        text-decoration: underline;
+      }
+
+      mat-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+      }
+    }
+
+    mat-chip {
+      display: inline-block;
+      font-size: 12px;
+      height: 24px;
+      padding: 0 8px;
+
+      &.status-active {
+        background-color: var(--status-success-bg, #e6f4ec);
+        color: var(--status-success, #1b8f5a);
+      }
+
+      &.status-inactive {
+        background-color: var(--status-error-bg, #fdecea);
+        color: var(--status-error, #d32f2f);
+      }
+
+      &.status-cancelled {
+        background-color: var(--status-error-bg, #fdecea);
+        color: var(--status-error, #d32f2f);
+      }
+    }
+  }
+}
+
+mat-dialog-actions {
+  padding: 16px 24px;
+  margin: 0;
+  border-top: 1px solid var(--md-sys-color-outline, #e0e0e0);
+
+  button {
+    text-transform: none;
+    font-weight: 500;
+  }
+}
+
+// Dark theme support
+.dark-theme {
+  .dialog-header {
+    border-bottom-color: var(--md-sys-color-outline, #3a3a3a);
+  }
+
+  .detail-section .section-title {
+    border-bottom-color: var(--md-sys-color-outline-variant, #444444);
+  }
+
+  mat-dialog-actions {
+    border-top-color: var(--md-sys-color-outline, #3a3a3a);
+  }
+}
+

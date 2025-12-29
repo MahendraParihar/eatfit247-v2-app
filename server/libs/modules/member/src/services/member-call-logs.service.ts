@@ -7,15 +7,23 @@ import {
   MstCallPurpose,
   MstCallLogStatus,
   MstAdminUser,
-  GoogleService, ZoomService,
+  GoogleService, ZoomService, AppConfigService,
 } from '@server/common';
 import {
   IMemberCallLog,
   ITableList,
   IBasicSearch,
-  IManageMemberCallLog,
-  ICallLogMasterData, IAvailableSlot, ICallLogSlot, ISetupMemberCallLog, ICancelCallLog, CallLogStatusEnum,
-  IGoogleCalendarEvent, IZoomEvent, CallTypeEnum,
+  ICallLogMasterData,
+  IAvailableSlot,
+  ICallLogSlot,
+  ISetupMemberCallLog,
+  CallLogStatusEnum,
+  IGoogleCalendarEvent,
+  IZoomEvent,
+  CallTypeEnum,
+  ConfigParam,
+  IDropdownItem,
+  IStatusChangeCallLog,
 } from 'eatfit247-shared-lib';
 import { Op } from 'sequelize';
 import moment from 'moment';
@@ -33,6 +41,7 @@ export class MemberCallLogsService {
     @InjectModel(MstAdminUser) private readonly adminUserRepository: typeof MstAdminUser,
     private readonly googleService: GoogleService,
     private readonly zoomService: ZoomService,
+    private readonly appConfigService: AppConfigService,
   ) {}
 
   /**
@@ -88,10 +97,7 @@ export class MemberCallLogsService {
     }
     const records = await this.memberCallLogRepository.scope('list').findAll({
       where: { memberId },
-      order: [
-        ['date', 'DESC'],
-        ['startTime', 'DESC'],
-      ],
+      order: [['startTime', 'DESC']],
       raw: true,
       nest: true,
     });
@@ -101,6 +107,42 @@ export class MemberCallLogsService {
   /**
    * Get master data for call log form (call types, purposes, statuses, nutritionists)
    */
+  /**
+   * Generate duration options dynamically based on slot step minutes
+   * @param slotStepMinutes - The step size in minutes (e.g., 15)
+   * @param count - Number of durations to generate (default: 10)
+   * @returns Array of duration dropdown items
+   */
+  private generateDurations(slotStepMinutes: number, count: number = 10): IDropdownItem[] {
+    const durations: IDropdownItem[] = [];
+    for (let i = 1; i <= count; i++) {
+      const minutes = slotStepMinutes * i;
+      let label: string;
+      if (minutes < 60) {
+        label = `${minutes} minutes`;
+      } else if (minutes === 60) {
+        label = '1 hour';
+      } else {
+        const hours = Math.floor(minutes / 60);
+        const remainingMinutes = minutes % 60;
+        if (remainingMinutes === 0) {
+          label = `${hours} ${hours === 1 ? 'hour' : 'hours'}`;
+        } else {
+          // Format as hours and minutes (e.g., "1 hour 30 minutes" or "2 hours 15 minutes")
+          const hoursLabel = hours === 1 ? 'hour' : 'hours';
+          const minutesLabel = remainingMinutes === 1 ? 'minute' : 'minutes';
+          label = `${hours} ${hoursLabel} ${remainingMinutes} ${minutesLabel}`;
+        }
+      }
+      durations.push({
+        id: minutes,
+        label: label,
+        selected: false,
+      });
+    }
+    return durations;
+  }
+
   public async getMasterData(): Promise<ICallLogMasterData> {
     const [callTypes, callPurposes, callLogStatuses, nutritionists] = await Promise.all([
       this.callTypeRepository.findAll({
@@ -127,14 +169,12 @@ export class MemberCallLogsService {
         attributes: ['adminId', 'firstName', 'lastName'],
       }),
     ]);
-    const durations = [
-      { id: 15, label: '15 minutes', selected: false },
-      { id: 30, label: '30 minutes', selected: false },
-      { id: 45, label: '45 minutes', selected: false },
-      { id: 60, label: '1 hour', selected: false },
-      { id: 90, label: '1.5 hours', selected: false },
-      { id: 120, label: '2 hours', selected: false },
-    ];
+    const slotStepMinutes = this.appConfigService.getNumber(
+      ConfigParam.CALENDAR_SLOT_STEP_MINUTES,
+      true,
+      15,
+    );
+    const durations = this.generateDurations(slotStepMinutes, 10);
     return <ICallLogMasterData>{
       callTypes: callTypes.map((t) => ({
         id: t.callTypeId,
@@ -188,9 +228,8 @@ export class MemberCallLogsService {
       end: moment(obj.endTime).toISOString(),
     };
     await this.googleService.checkSlots(nutritionist, dateRange);
-    const resObj: { google: IGoogleCalendarEvent; zoom: IZoomEvent; } = { google: null, zoom: null };
+    const resObj: { google: IGoogleCalendarEvent; zoom: IZoomEvent } = { google: null, zoom: null };
     let meetingLink: string | null = null;
-    let zoomMeetingId: string | null = null;
     if (obj.callTypeId === CallTypeEnum.ZOOM_CALL) {
       const zoom = await this.zoomService.bookMeeting('Nutrition Consultation', dateRange);
       meetingLink = zoom.join_url;
@@ -237,7 +276,7 @@ export class MemberCallLogsService {
     return this.convertToModel(updatedCallLog!);
   }
 
-  public async cancel(payload: ICancelCallLog, requestedIp: string, adminId: number) {
+  public async cancel(payload: IStatusChangeCallLog, requestedIp: string, adminId: number) {
     const meeting = await this.memberCallLogRepository.findOne({
       where: {
         memberCallLogId: payload.memberCallLogId,
@@ -286,6 +325,35 @@ export class MemberCallLogsService {
     );
   }
 
+  public async complete(payload: IStatusChangeCallLog, requestedIp: string, adminId: number) {
+    const meeting = await this.memberCallLogRepository.findOne({
+      where: {
+        memberCallLogId: payload.memberCallLogId,
+        active: true,
+      },
+    });
+    if (!meeting) {
+      throw new NotFoundException('Meeting not found');
+    }
+    if (meeting.callLogStatusId === CallLogStatusEnum.COMPLETED) {
+      return { success: true };
+    }
+    if (meeting.callLogStatusId === CallLogStatusEnum.CANCELLED) {
+      throw new BadRequestException('Cannot complete a cancelled call log');
+    }
+    await this.memberCallLogRepository.update(
+      {
+        callLogStatusId: CallLogStatusEnum.COMPLETED,
+        conversionHistory: payload.reason ?? null,
+        modifiedBy: adminId,
+        modifiedIp: requestedIp,
+      },
+      {
+        where: { memberCallLogId: payload.memberCallLogId },
+      },
+    );
+  }
+
   private convertToModel(item: TxnMemberCallLog): IMemberCallLog {
     const memberFirstName = item.member?.firstName || '';
     const memberLastName = item.member?.lastName || '';
@@ -293,10 +361,10 @@ export class MemberCallLogsService {
     return {
       memberCallLogId: item.memberCallLogId,
       memberId: item.memberId,
-      memberName: memberName || undefined,
-      memberFirstName: memberFirstName || undefined,
-      memberLastName: memberLastName || undefined,
-      memberEmail: item.member?.emailId || undefined,
+      memberName: memberName,
+      memberFirstName: memberFirstName,
+      memberLastName: memberLastName,
+      memberEmail: item.member?.emailId,
       callTypeId: item.callTypeId,
       callPurposeId: item.callPurposeId,
       callLogStatusId: item.callLogStatusId,

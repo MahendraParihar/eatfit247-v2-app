@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Put, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard, CurrentUser, RequestedIp } from '@server/common';
 import { MemberHealthParameterLogsService } from '../../services';
 import {
@@ -53,6 +53,29 @@ export class MemberBodyStatsController {
     return await this.memberHealthParameterLogsService.createOrUpdate(
       id,
       body,
+      requestedIp,
+      currentUser.userId || currentUser.adminId,
+    );
+  }
+
+  @Get(':logId')
+  async getById(
+    @Param('id') id: number,
+    @Param('logId') logId: number,
+  ): Promise<IMemberHealthParameterLog> {
+    return await this.memberHealthParameterLogsService.findById(id, logId);
+  }
+
+  @Delete(':logId')
+  async delete(
+    @Param('id') id: number,
+    @Param('logId') logId: number,
+    @CurrentUser() currentUser: any,
+    @RequestedIp() requestedIp: string,
+  ): Promise<void> {
+    await this.memberHealthParameterLogsService.delete(
+      id,
+      logId,
       requestedIp,
       currentUser.userId || currentUser.adminId,
     );

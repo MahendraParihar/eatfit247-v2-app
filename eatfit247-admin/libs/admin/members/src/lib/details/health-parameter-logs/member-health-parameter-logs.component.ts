@@ -5,10 +5,26 @@ import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { DataTableComponent, ITableColumn, ITableConfig, EmptyStateComponent, EmptyStateType, LoaderComponent, createdByUserFormatter, updatedByUserFormatter } from '@shared';
+import {
+  DataTableComponent,
+  ITableColumn,
+  ITableConfig,
+  ITableActionButton,
+  EmptyStateComponent,
+  EmptyStateType,
+  LoaderComponent,
+  createdByUserFormatter,
+  updatedByUserFormatter,
+  WarningDialogComponent,
+  WarningDialogData
+} from '@shared';
 import { IMemberHealthParameterLog } from '@eatfit247-shared-lib';
 import { MembersApiService } from '../../api.service';
-import { ManageMemberBodyStatsComponent, ManageMemberBodyStatsData } from './manage-member-body-stats/manage-member-body-stats.component';
+import {
+  ManageMemberBodyStatsComponent,
+  ManageMemberBodyStatsData
+} from './manage-member-body-stats/manage-member-body-stats.component';
+import { ViewHealthParameterLogDetailsComponent } from './view-health-parameter-log-details/view-health-parameter-log-details.component';
 import { Subject, takeUntil } from 'rxjs';
 
 @Component({
@@ -29,7 +45,7 @@ export class MemberHealthParameterLogsComponent implements OnInit, OnDestroy {
   constructor(
     private route: ActivatedRoute,
     private apiService: MembersApiService,
-    private dialog: MatDialog,
+    private dialog: MatDialog
   ) {
     this.initializeTable();
   }
@@ -50,23 +66,36 @@ export class MemberHealthParameterLogsComponent implements OnInit, OnDestroy {
 
   private initializeTable(): void {
     const columns: ITableColumn<IMemberHealthParameterLog>[] = [
-      { 
-        key: 'logDate', 
-        label: 'Log Date', 
-        dataKey: 'logDate', 
+      {
+        key: 'logDate',
+        type: 'date',
+        label: 'Log Date',
+        dataKey: 'logDate',
+        sortable: true
+      },
+      {
+        key: 'active',
+        label: 'Active',
+        dataKey: 'active',
         sortable: true,
-        formatter: (value) => this.formatDate(value)
+        width: '100px',
+        align: 'center',
+        formatter: (value) => value ? 'Yes' : 'No'
       },
-      { 
-        key: 'healthParameters', 
-        label: 'Health Parameters', 
-        dataKey: 'healthParameters', 
+      {
+        key: 'createdBy',
+        label: 'Created By',
+        dataKey: 'createdBy',
         sortable: false,
-        formatter: (value) => this.formatHealthParameters(value)
+        formatter: createdByUserFormatter()
       },
-      { key: 'active', label: 'Active', dataKey: 'active', sortable: true, width: '100px', align: 'center', formatter: (value) => value ? 'Yes' : 'No' },
-      { key: 'createdBy', label: 'Created By', dataKey: 'createdBy', sortable: false, formatter: createdByUserFormatter() },
-      { key: 'updatedBy', label: 'Updated By', dataKey: 'updatedBy', sortable: false, formatter: updatedByUserFormatter() },
+      {
+        key: 'updatedBy',
+        label: 'Updated By',
+        dataKey: 'updatedBy',
+        sortable: false,
+        formatter: updatedByUserFormatter()
+      },
       {
         key: 'createdAt',
         label: 'Created At',
@@ -80,6 +109,27 @@ export class MemberHealthParameterLogsComponent implements OnInit, OnDestroy {
         dataKey: 'updatedAt',
         type: 'date',
         sortable: true
+      }
+    ];
+
+    const actions: ITableActionButton<IMemberHealthParameterLog>[] = [
+      {
+        label: 'View Details',
+        icon: 'visibility',
+        onClick: (row) => this.viewHealthParameterLogDetails(row),
+      },
+      {
+        label: 'Edit',
+        icon: 'edit',
+        onClick: (row) => this.editHealthParameterLog(row),
+        visible: (row) => row.active !== false,
+      },
+      {
+        label: 'Delete',
+        icon: 'delete',
+        color: 'warn',
+        onClick: (row) => this.deleteHealthParameterLog(row),
+        visible: (row) => row.active !== false,
       },
     ];
 
@@ -88,6 +138,16 @@ export class MemberHealthParameterLogsComponent implements OnInit, OnDestroy {
       pageSize: 10,
       pageSizeOptions: [10, 25, 50, 100],
       showPagination: true,
+      actionsConfig: {
+        buttons: actions,
+        column: {
+          asMenu: true,
+          menuTriggerIcon: 'more_vert',
+          headerLabel: 'Actions',
+          width: '80px',
+          align: 'center',
+        },
+      },
     };
   }
 
@@ -120,18 +180,15 @@ export class MemberHealthParameterLogsComponent implements OnInit, OnDestroy {
       console.error('Member ID is not available');
       return;
     }
-
     const dialogData: ManageMemberBodyStatsData = {
-      memberId: this.memberId,
+      memberId: this.memberId
     };
-
     try {
       const dialogRef = this.dialog.open(ManageMemberBodyStatsComponent, {
         width: '800px',
         maxWidth: '80vw',
-        data: dialogData,
+        data: dialogData
       });
-
       dialogRef.afterClosed().subscribe((result) => {
         if (result) {
           this.loadHealthParameterLogs();
@@ -140,5 +197,69 @@ export class MemberHealthParameterLogsComponent implements OnInit, OnDestroy {
     } catch (error) {
       console.error('Error opening dialog:', error);
     }
+  }
+
+  async viewHealthParameterLogDetails(log: IMemberHealthParameterLog): Promise<void> {
+    try {
+      // Fetch full details
+      const fullLog = await this.apiService.getHealthParameterLog(this.memberId, log.memberHealthParameterLogId);
+      const dialogRef = this.dialog.open(ViewHealthParameterLogDetailsComponent, {
+        width: '800px',
+        maxWidth: '90vw',
+        data: fullLog
+      });
+    } catch (error) {
+      console.error('Error loading health parameter log details:', error);
+    }
+  }
+
+  editHealthParameterLog(log: IMemberHealthParameterLog): void {
+    if (!this.memberId) {
+      console.error('Member ID is not available');
+      return;
+    }
+    const dialogData: ManageMemberBodyStatsData = {
+      memberId: this.memberId,
+      log: log
+    };
+    try {
+      const dialogRef = this.dialog.open(ManageMemberBodyStatsComponent, {
+        width: '800px',
+        maxWidth: '80vw',
+        data: dialogData
+      });
+      dialogRef.afterClosed().subscribe((result) => {
+        if (result) {
+          this.loadHealthParameterLogs();
+        }
+      });
+    } catch (error) {
+      console.error('Error opening edit dialog:', error);
+    }
+  }
+
+  async deleteHealthParameterLog(log: IMemberHealthParameterLog): Promise<void> {
+    const dialogData: WarningDialogData = {
+      title: 'Delete Health Parameter Log',
+      message: `Are you sure you want to delete the health parameter log for ${this.formatDate(log.logDate)}? This action cannot be undone.`,
+      confirmText: 'Delete',
+      cancelText: 'Cancel'
+    };
+
+    const dialogRef = this.dialog.open(WarningDialogComponent, {
+      width: '500px',
+      data: dialogData
+    });
+
+    dialogRef.afterClosed().subscribe(async (confirmed) => {
+      if (confirmed) {
+        try {
+          await this.apiService.deleteHealthParameterLog(this.memberId, log.memberHealthParameterLogId);
+          this.loadHealthParameterLogs();
+        } catch (error) {
+          console.error('Error deleting health parameter log:', error);
+        }
+      }
+    });
   }
 }

@@ -126,6 +126,16 @@
                 </mat-select>
               </mat-form-field>
 
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Meeting Purpose</mat-label>
+                <mat-select [(ngModel)]="form.callPurposeId">
+                  <mat-option [value]="null">Select Meeting Purpose</mat-option>
+                  @for (callPurpose of callPurposeOptions; track callPurpose.id) {
+                    <mat-option [value]="callPurpose.id">{{ callPurpose.label }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+
               <!-- Notify User Checkbox -->
               <div class="checkbox-section">
                 <mat-checkbox [(ngModel)]="form.notifyUser">

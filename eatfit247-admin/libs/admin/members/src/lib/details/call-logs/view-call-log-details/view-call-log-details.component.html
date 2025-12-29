@@ -1,0 +1,183 @@
+<div class="call-log-details-dialog">
+  <div class="dialog-header">
+    <h2 mat-dialog-title>Call Log Details</h2>
+    <button mat-icon-button (click)="onClose()" class="close-button">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <mat-dialog-content>
+    <div class="details-container">
+      <!-- Member Information -->
+      <div class="detail-section">
+        <h3 class="section-title">Member Information</h3>
+        <div class="detail-grid">
+          <div class="detail-item">
+            <span class="label">Member Name:</span>
+            <span class="value">{{ data.memberName || 'N/A' }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="label">Email:</span>
+            <span class="value">{{ data.memberEmail || 'N/A' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Call Information -->
+      <div class="detail-section">
+        <h3 class="section-title">Call Information</h3>
+        <div class="detail-grid">
+          <div class="detail-item">
+            <span class="label">Call Type:</span>
+            <span class="value">{{ data.callType || 'N/A' }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="label">Call Purpose:</span>
+            <span class="value">{{ data.callPurpose || 'N/A' }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="label">Status:</span>
+            <mat-chip [class.status-cancelled]="data.callLogStatus === 'Cancelled'">
+              {{ data.callLogStatus || 'N/A' }}
+            </mat-chip>
+          </div>
+          <div class="detail-item">
+            <span class="label">Active:</span>
+            <mat-chip [class.status-active]="data.active" [class.status-inactive]="!data.active">
+              {{ data.active ? 'Yes' : 'No' }}
+            </mat-chip>
+          </div>
+        </div>
+      </div>
+
+      <!-- Schedule Information -->
+      <div class="detail-section">
+        <h3 class="section-title">Schedule Information</h3>
+        <div class="detail-grid">
+          <div class="detail-item">
+            <span class="label">Start Time:</span>
+            <span class="value">{{ data.startTime | date: 'dd MMM yyyy hh:mm a' }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="label">End Time:</span>
+            <span class="value">{{ data.endTime | date: 'dd MMM yyyy hh:mm a' }}</span>
+          </div>
+          @if (hasGoogleMeetLink()) {
+            <div class="detail-item full-width">
+              <span class="label">Google Meet Link:</span>
+              <a [href]="getGoogleMeetLink()!" target="_blank" class="meeting-link">
+                {{ getGoogleMeetLink() }}
+                <mat-icon>open_in_new</mat-icon>
+              </a>
+            </div>
+          }
+          @if (hasGoogleCalendarLink()) {
+            <div class="detail-item full-width">
+              <span class="label">Google Calendar Link:</span>
+              <a [href]="getGoogleCalendarLink()!" target="_blank" class="meeting-link">
+                {{ getGoogleCalendarLink() }}
+                <mat-icon>open_in_new</mat-icon>
+              </a>
+            </div>
+          }
+          @if (hasZoomLink()) {
+            <div class="detail-item full-width">
+              <span class="label">Zoom Meeting Link:</span>
+              <a [href]="getZoomLink()!" target="_blank" class="meeting-link">
+                {{ getZoomLink() }}
+                <mat-icon>open_in_new</mat-icon>
+              </a>
+            </div>
+          }
+          @if (hasMeetingLink() && !hasGoogleMeetLink() && !hasZoomLink()) {
+            <div class="detail-item full-width">
+              <span class="label">Meeting Link:</span>
+              <a [href]="getMeetingLink()" target="_blank" class="meeting-link">
+                {{ getMeetingLink() }}
+                <mat-icon>open_in_new</mat-icon>
+              </a>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Nutritionist Information -->
+      <div class="detail-section">
+        <h3 class="section-title">Nutritionist</h3>
+        <div class="detail-grid">
+          <div class="detail-item">
+            <span class="label">Assigned To:</span>
+            <span class="value">{{ getNutritionistName() }}</span>
+          </div>
+          @if (hasNutritionistEmail()) {
+            <div class="detail-item">
+              <span class="label">Email:</span>
+              <span class="value">{{ getNutritionistEmail() }}</span>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Additional Information -->
+      <div class="detail-section">
+        <h3 class="section-title">Additional Information</h3>
+        <div class="detail-grid">
+          <div class="detail-item">
+            <span class="label">System Generated:</span>
+            <mat-chip [class.status-active]="data.isSystemGenerated" [class.status-inactive]="!data.isSystemGenerated">
+              {{ data.isSystemGenerated ? 'Yes' : 'No' }}
+            </mat-chip>
+          </div>
+          <div class="detail-item">
+            <span class="label">Email Sent:</span>
+            <mat-chip [class.status-active]="data.isMailSuccess" [class.status-inactive]="!data.isMailSuccess">
+              {{ data.isMailSuccess ? 'Yes' : 'No' }}
+            </mat-chip>
+          </div>
+          @if (data.conversionHistory) {
+            <div class="detail-item full-width">
+              <span class="label">Conversion History:</span>
+              <span class="value">{{ data.conversionHistory }}</span>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Audit Information -->
+      <div class="detail-section">
+        <h3 class="section-title">Audit Information</h3>
+        <div class="detail-grid">
+          <div class="detail-item">
+            <span class="label">Created At:</span>
+            <span class="value">{{ data.createdAt | date: 'dd MMM yyyy hh:mm a' }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="label">Updated At:</span>
+            <span class="value">{{ data.updatedAt | date: 'dd MMM yyyy hh:mm a' }}</span>
+          </div>
+          @if (data.createdByUser) {
+            <div class="detail-item">
+              <span class="label">Created By:</span>
+              <span class="value">
+                {{ data.createdByUser.firstName || '' }} {{ data.createdByUser.lastName || '' }}
+              </span>
+            </div>
+          }
+          @if (data.updatedByUser) {
+            <div class="detail-item">
+              <span class="label">Updated By:</span>
+              <span class="value">
+                {{ data.updatedByUser.firstName || '' }} {{ data.updatedByUser.lastName || '' }}
+              </span>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button (click)="onClose()">Close</button>
+  </mat-dialog-actions>
+</div>
+

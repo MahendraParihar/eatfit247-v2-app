@@ -15,7 +15,7 @@ import { MatStepperModule } from '@angular/material/stepper';
 import { StepperSelectionEvent } from '@angular/cdk/stepper';
 import { FormsModule } from '@angular/forms';
 import { InputErrorComponent, LoaderComponent } from '@shared';
-import { IDropdownItem, IAvailableSlot, ICallLogSlot } from '@eatfit247-shared-lib';
+import { IDropdownItem, IAvailableSlot, ICallLogSlot, ISetupMemberCallLog } from '@eatfit247-shared-lib';
 import { MembersApiService } from '../../../api.service';
 import moment from 'moment';
 
@@ -38,10 +38,10 @@ import moment from 'moment';
     MatCheckboxModule,
     MatStepperModule,
     InputErrorComponent,
-    LoaderComponent
+    LoaderComponent,
   ],
   templateUrl: './manage-member-call-log.component.html',
-  styleUrl: './manage-member-call-log.component.scss'
+  styleUrl: './manage-member-call-log.component.scss',
 })
 export class ManageMemberCallLogComponent implements OnInit {
   // Stepper control
@@ -63,14 +63,15 @@ export class ManageMemberCallLogComponent implements OnInit {
   // Step 3: Confirmation form data
   form = {
     callTypeId: null as number | null,
-    notifyUser: false
+    callPurposeId: null as number | null,
+    notifyUser: false,
   };
 
   constructor(
     public dialogRef: MatDialogRef<ManageMemberCallLogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: number,
     private apiService: MembersApiService,
-    private fb: FormBuilder
+    private fb: FormBuilder,
   ) {
     this.initializeCriteriaForm();
   }
@@ -84,7 +85,7 @@ export class ManageMemberCallLogComponent implements OnInit {
       nutritionistId: [null, [Validators.required]],
       duration: [null, [Validators.required]],
       dateFrom: [new Date(), [Validators.required]],
-      dateTo: [null, [Validators.required]]
+      dateTo: [null, [Validators.required]],
     });
   }
 
@@ -133,10 +134,13 @@ export class ManageMemberCallLogComponent implements OnInit {
         nutritionistId: formValue.nutritionistId,
         fromDate: formatDateForAPI(formValue.dateFrom),
         toDate: formatDateForAPI(formValue.dateTo || formValue.dateFrom),
-        duration: formValue.duration
+        duration: formValue.duration,
       };
       // Call API to get available time slots
-      this.slots = await this.apiService.getAvailableTimeslots(this.data, availableSlotRequest);
+      this.slots = await this.apiService.getAvailableTimeslots(
+        this.data,
+        availableSlotRequest,
+      );
       // After checking availability, proceed to next step
       if (this.slots.length > 0) {
         this.selectedIndex.set(1);
@@ -181,21 +185,16 @@ export class ManageMemberCallLogComponent implements OnInit {
     try {
       // Prepare call log data
       const criteriaValue = this.criteriaFormGroup.value;
-      const callLogData = {
+      const callLogData = <ISetupMemberCallLog>{
         memberId: this.data,
-        date: this.selectedSlot.start.toISOString().split('T')[0],
-        startTime: this.formatTimeForAPI(this.selectedSlot.start),
-        endTime: this.formatTimeForAPI(this.selectedSlot.end),
+        startTime: this.selectedSlot.start,
+        endTime: this.selectedSlot.end,
         callTypeId: this.form.callTypeId,
-        callPurposeId: criteriaValue.callPurposeId || null,
-        callLogStatusId: criteriaValue.callLogStatusId || null,
-        nutritionistId: criteriaValue.nutritionistId || null,
+        callPurposeId: this.form.callPurposeId,
+        nutritionistId: criteriaValue.nutritionistId,
         notifyUser: this.form.notifyUser,
-        active: true
       };
-      // TODO: Call API to create call log
-      console.log('Confirming booking with:', callLogData);
-      // await this.apiService.createCallLog(this.data, callLogData as any);
+      await this.apiService.createCallLog(this.data, callLogData as any);
       this.dialogRef.close(true);
     } catch (error) {
       console.error('Error confirming booking:', error);
@@ -203,13 +202,6 @@ export class ManageMemberCallLogComponent implements OnInit {
       this.submitting.set(false);
     }
   }
-
-  private formatTimeForAPI(date: Date): string {
-    const hours = date.getHours().toString().padStart(2, '0');
-    const minutes = date.getMinutes().toString().padStart(2, '0');
-    return `${hours}:${minutes}:00`;
-  }
-
 
   onStepperSelectionChange(event: StepperSelectionEvent): void {
     this.selectedIndex.set(event.selectedIndex);

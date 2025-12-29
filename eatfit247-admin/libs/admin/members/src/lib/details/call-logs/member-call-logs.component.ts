@@ -9,6 +9,7 @@ import {
   DataTableComponent,
   ITableColumn,
   ITableConfig,
+  ITableActionButton,
   EmptyStateComponent,
   EmptyStateType,
   LoaderComponent
@@ -19,6 +20,15 @@ import { Subject, takeUntil } from 'rxjs';
 import {
   ManageMemberCallLogComponent
 } from './manage-member-call-log/manage-member-call-log.component';
+import {
+  ViewCallLogDetailsComponent
+} from './view-call-log-details/view-call-log-details.component';
+import {
+  CancelCallLogDialogComponent
+} from './cancel-call-log-dialog/cancel-call-log-dialog.component';
+import {
+  CompleteCallLogDialogComponent
+} from './complete-call-log-dialog/complete-call-log-dialog.component';
 
 @Component({
   selector: 'lib-member-call-logs',
@@ -60,34 +70,37 @@ export class MemberCallLogsComponent implements OnInit, OnDestroy {
   private initializeTable(): void {
     const columns: ITableColumn<IMemberCallLog>[] = [
       {
-        key: 'date',
-        label: 'Date',
-        dataKey: 'date',
-        sortable: true,
-        width: '120px',
-        formatter: (value) => this.formatDate(value)
-      },
-      {
         key: 'startTime',
+        type: 'date',
         label: 'Start Time',
         dataKey: 'startTime',
         sortable: true,
-        width: '120px',
-        formatter: (value) => this.formatTime(value)
       },
       {
         key: 'endTime',
+        type: 'date',
         label: 'End Time',
         dataKey: 'endTime',
         sortable: true,
-        width: '120px',
-        formatter: (value) => this.formatTime(value)
       },
-      { key: 'callType', label: 'Call Type', dataKey: 'callType', sortable: false },
-      { key: 'callPurpose', label: 'Call Purpose', dataKey: 'callPurpose', sortable: false },
-      { key: 'callLogStatus', label: 'Status', dataKey: 'callLogStatus', sortable: false },
-      { key: 'detail', label: 'Detail', dataKey: 'detail', sortable: false },
-      { key: 'conversionHistory', label: 'Conversion History', dataKey: 'conversionHistory', sortable: false },
+      {
+        key: 'callType',
+        label: 'Call Type',
+        dataKey: 'callType',
+        sortable: false,
+      },
+      {
+        key: 'callPurpose',
+        label: 'Call Purpose',
+        dataKey: 'callPurpose',
+        sortable: false,
+      },
+      {
+        key: 'callLogStatus',
+        label: 'Status',
+        dataKey: 'callLogStatus',
+        sortable: false,
+      },
       {
         key: 'active',
         label: 'Active',
@@ -95,14 +108,53 @@ export class MemberCallLogsComponent implements OnInit, OnDestroy {
         sortable: true,
         width: '100px',
         align: 'center',
-        formatter: (value) => value ? 'Yes' : 'No'
-      }
+        formatter: (value) => (value ? 'Yes' : 'No'),
+      },
     ];
+
+    const actions: ITableActionButton<IMemberCallLog>[] = [
+      {
+        label: 'View Details',
+        icon: 'visibility',
+        onClick: (row) => this.viewCallLogDetails(row),
+      },
+      {
+        label: 'Edit',
+        icon: 'edit',
+        onClick: (row) => this.editCallLog(row),
+        visible: (row) => row.active !== false && row.callLogStatus !== 'Cancelled' && row.callLogStatus !== 'Completed',
+      },
+      {
+        label: 'Mark as Completed',
+        icon: 'check_circle',
+        color: 'primary',
+        onClick: (row) => this.completeCallLog(row),
+        visible: (row) => row.active !== false && row.callLogStatus !== 'Cancelled' && row.callLogStatus !== 'Completed',
+      },
+      {
+        label: 'Cancel',
+        icon: 'cancel',
+        color: 'warn',
+        onClick: (row) => this.cancelCallLog(row),
+        visible: (row) => row.active !== false && row.callLogStatus !== 'Cancelled' && row.callLogStatus !== 'Completed',
+      },
+    ];
+
     this.tableConfig = {
       columns,
       pageSize: 10,
       pageSizeOptions: [10, 25, 50, 100],
-      showPagination: true
+      showPagination: true,
+      actionsConfig: {
+        buttons: actions,
+        column: {
+          asMenu: true,
+          menuTriggerIcon: 'more_vert',
+          headerLabel: 'Actions',
+          width: '80px',
+          align: 'center',
+        },
+      },
     };
   }
 
@@ -145,6 +197,76 @@ export class MemberCallLogsComponent implements OnInit, OnDestroy {
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         this.loadCallLogs();
+      }
+    });
+  }
+
+  viewCallLogDetails(callLog: IMemberCallLog): void {
+    this.dialog.open(ViewCallLogDetailsComponent, {
+      width: '700px',
+      maxWidth: '90vw',
+      data: callLog,
+    });
+  }
+
+  editCallLog(callLog: IMemberCallLog): void {
+    if (!this.memberId) {
+      return;
+    }
+    // TODO: Update ManageMemberCallLogComponent to support edit mode with call log data
+    // Currently using memberId, but should pass callLog data for edit mode
+    const dialogRef = this.dialog.open(ManageMemberCallLogComponent, {
+      width: '800px',
+      maxWidth: '90vw',
+      data: this.memberId
+    });
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        this.loadCallLogs();
+      }
+    });
+  }
+
+  async cancelCallLog(callLog: IMemberCallLog): Promise<void> {
+    const dialogRef = this.dialog.open(CancelCallLogDialogComponent, {
+      width: '600px',
+      maxWidth: '90vw',
+    });
+
+    dialogRef.afterClosed().subscribe(async (reason: string | null) => {
+      if (reason && this.memberId) {
+        try {
+          await this.apiService.cancelCallLog(
+            this.memberId,
+            callLog.memberCallLogId,
+            reason
+          );
+          this.loadCallLogs();
+        } catch (error) {
+          console.error('Error cancelling call log:', error);
+        }
+      }
+    });
+  }
+
+  async completeCallLog(callLog: IMemberCallLog): Promise<void> {
+    const dialogRef = this.dialog.open(CompleteCallLogDialogComponent, {
+      width: '600px',
+      maxWidth: '90vw',
+    });
+
+    dialogRef.afterClosed().subscribe(async (reason: string | null) => {
+      if (reason && this.memberId) {
+        try {
+          await this.apiService.completeCallLog(
+            this.memberId,
+            callLog.memberCallLogId,
+            reason
+          );
+          this.loadCallLogs();
+        } catch (error) {
+          console.error('Error completing call log:', error);
+        }
       }
     });
   }

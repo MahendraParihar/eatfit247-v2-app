@@ -1,6 +1,6 @@
-.warning-dialog {
-  min-width: 400px;
-  max-width: 500px;
+.complete-call-log-dialog {
+  min-width: 500px;
+  max-width: 600px;
   padding: 0;
 }
 
@@ -29,11 +29,11 @@
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background-color: var(--status-warning-bg, #fff4e0);
+  background-color: var(--status-success-bg, #e6f4ec);
 }
 
-.warning-icon {
-  color: var(--status-warning, #f29900);
+.success-icon {
+  color: var(--status-success, #1b8f5a);
   font-size: 28px;
   width: 28px;
   height: 28px;
@@ -44,17 +44,21 @@ mat-dialog-content {
   padding: 0;
   color: var(--md-sys-color-on-surface, #1c1b1f);
   
-  p {
-    margin: 0;
+  .dialog-message {
+    margin: 0 0 16px 0;
     line-height: 1.6;
     font-size: 14px;
     color: rgba(0, 0, 0, 0.87);
+  }
+
+  .full-width {
+    width: 100%;
   }
 }
 
 mat-dialog-actions {
   margin: 0;
-  padding: 8px 0 0 0;
+  padding: 16px 0 0 0;
   min-height: auto;
   gap: 8px;
 
@@ -69,13 +73,13 @@ mat-dialog-actions {
     text-transform: none;
     font-weight: 500;
     padding: 0 24px;
-    min-width: 100px;
+    min-width: 120px;
   }
 }
 
 // Dark theme support
 .dark-theme {
-  mat-dialog-content p {
+  mat-dialog-content .dialog-message {
     color: var(--md-sys-color-on-surface, #e6e6e6);
   }
 
@@ -83,3 +87,4 @@ mat-dialog-actions {
     color: var(--md-sys-color-on-surface, #e6e6e6);
   }
 }
+

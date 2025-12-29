@@ -167,34 +167,64 @@
           [ngClass]="getActionsConfig()?.className"
           [style.text-align]="getActionsConfig()?.align || 'center'"
         >
-          <div class="action-buttons">
-            @for (action of getActions(); track action) {
-              @if (isActionVisible(action, row)) {
+          @if (getActionsConfig()?.asMenu) {
+            <ng-container>
               <button
                 mat-icon-button
-                [color]="action.color || ''"
-                [matTooltip]="getActionTooltip(action, row)"
-                [disabled]="isActionDisabled(action, row)"
-                [ngClass]="'className' in action ? action.className : ''"
-                (click)="onActionClick(action, row, $event)"
+                [matMenuTriggerFor]="rowMenu"
+                #menuTrigger="matMenuTrigger"
+                [matTooltip]="getActionsConfig()?.headerLabel || 'Actions'"
+                (click)="$event.stopPropagation()"
               >
-                @if (action.icon) {
-                <mat-icon>{{ action.icon }}</mat-icon>
-                }
-                @if (!action.icon) {
-                <span>{{ action.label }}</span>
-                }
-                @if ('badge' in action && getActionBadge(action, row)) {
-                <span
-                  class="action-badge"
-                >
-                  {{ getActionBadge(action, row) }}
-                </span>
-                }
+                <mat-icon>{{ getActionsConfig()?.menuTriggerIcon || 'more_vert' }}</mat-icon>
               </button>
+              <mat-menu #rowMenu="matMenu">
+                @for (action of getActions(); track action) {
+                  @if (isActionVisible(action, row)) {
+                    <button
+                      mat-menu-item
+                      [disabled]="isActionDisabled(action, row)"
+                      (click)="onActionClick(action, row, $event); menuTrigger.closeMenu()"
+                    >
+                      @if (action.icon) {
+                        <mat-icon>{{ action.icon }}</mat-icon>
+                      }
+                      <span>{{ action.label }}</span>
+                    </button>
+                  }
+                }
+              </mat-menu>
+            </ng-container>
+          } @else {
+            <div class="action-buttons">
+              @for (action of getActions(); track action) {
+                @if (isActionVisible(action, row)) {
+                <button
+                  mat-icon-button
+                  [color]="action.color || ''"
+                  [matTooltip]="getActionTooltip(action, row)"
+                  [disabled]="isActionDisabled(action, row)"
+                  [ngClass]="'className' in action ? action.className : ''"
+                  (click)="onActionClick(action, row, $event)"
+                >
+                  @if (action.icon) {
+                  <mat-icon>{{ action.icon }}</mat-icon>
+                  }
+                  @if (!action.icon) {
+                  <span>{{ action.label }}</span>
+                  }
+                  @if ('badge' in action && getActionBadge(action, row)) {
+                  <span
+                    class="action-badge"
+                  >
+                    {{ getActionBadge(action, row) }}
+                  </span>
+                  }
+                </button>
+                }
               }
-            }
-          </div>
+            </div>
+          }
         </td>
       </ng-container>
       }

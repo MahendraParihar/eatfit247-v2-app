@@ -7,8 +7,8 @@ import {
   IsString,
 } from 'class-validator';
 import {
-  IAvailableSlot, ICancelCallLog,
-  ISetupMemberCallLog,
+  IAvailableSlot,
+  ISetupMemberCallLog, IStatusChangeCallLog,
 } from 'eatfit247-shared-lib';
 
 export class AvailableSlotDto implements IAvailableSlot {
@@ -50,7 +50,7 @@ export class CreateMemberCallLogDto implements ISetupMemberCallLog {
   notifyUser: boolean;
 }
 
-export class CancelCallLogDto implements ICancelCallLog  {
+export class StatusChangeCallLogDto implements IStatusChangeCallLog {
   @IsNotEmpty()
   @IsNumber()
   memberCallLogId: number;
