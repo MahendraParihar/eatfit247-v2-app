@@ -35,6 +35,7 @@ export class ManageState implements OnInit {
     state: ['', [Validators.required, Validators.minLength(InputLengthEnum.CHAR_2), Validators.maxLength(InputLengthEnum.CHAR_100)]],
     code: ['', [Validators.required, Validators.minLength(InputLengthEnum.CHAR_2), Validators.maxLength(InputLengthEnum.CHAR_10)]],
     countryId: [null, [Validators.required]],
+    taxPercentage: [0, [Validators.required, Validators.min(0), Validators.max(100)]],
     active: [true, [Validators.required]]
   });
   initialData!: IState;
@@ -84,6 +85,7 @@ export class ManageState implements OnInit {
         ]
       ],
       countryId: [this.initialData?.countryId || null, [Validators.required]],
+      taxPercentage: [this.initialData?.taxPercentage || 0, [Validators.required, Validators.min(0), Validators.max(100)]],
       active: [this.initialData?.active !== undefined ? this.initialData.active : true]
     });
   }

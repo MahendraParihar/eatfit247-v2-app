@@ -312,3 +312,32 @@ INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
 VALUES (DEFAULT, 'ZOOM_ACCOUNT_ID', '', 'Zoom'),
        (DEFAULT, 'ZOOM_CLIENT_ID', '', 'Zoom'),
        (DEFAULT, 'ZOOM_CLIENT_SECRET', '', 'Zoom');
+
+alter table public.mst_payment_statuses
+    rename to mst_payment_status;
+
+ALTER TABLE txn_member_payments
+    ADD COLUMN payment_source     varchar(30) DEFAULT 'MANUAL',
+    ADD COLUMN gateway_provider   varchar(50),
+    ADD COLUMN gateway_order_id   varchar(100),
+    ADD COLUMN gateway_payment_id varchar(100),
+    ADD COLUMN payment_link       varchar(500);
+
+INSERT INTO public.mst_payment_status (payment_status_id, payment_status, active, created_at, created_by, updated_at,
+                                       modified_by, created_ip, modified_ip)
+VALUES (4, 'FAILED', true, '2017-03-24 00:00:00.000000', 1, '2017-03-24 00:00:00.000000', 1, '0:', '0:')
+
+INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
+VALUES (DEFAULT, 'RAZORPAY_KEY_ID', 'rzp_test_xxxxx', 'RazorPay'),
+       (DEFAULT, 'RAZORPAY_KEY_SECRET', 'xxxxxxxx', 'RazorPay'),
+       (DEFAULT, 'RAZORPAY_WEBHOOK_SECRET', 'xxxxxxxx', 'RazorPay');
+
+UPDATE public.mst_configs SET config_value = 'true' WHERE config_name = 'GST_ENABLED';
+
+alter table public.mst_countries
+    add tax_type VARCHAR(20) default 'NONE' not null;
+alter table public.mst_countries
+    add default_tax_percentage NUMERIC(5, 2) default 0 not null;
+
+alter table public.mst_states
+    add tax_percentage NUMERIC(5, 2) default 0 not null;

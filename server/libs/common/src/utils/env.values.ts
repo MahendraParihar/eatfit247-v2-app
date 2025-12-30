@@ -25,5 +25,9 @@ export class Env {
   public static passwordResetExpirationMin = envToNumber('PASSWORD_RESET_EXPIRATION_MIN');
   public static readonly staticAssetPath = envToString('ASSET_PATH');
   public static readonly persistentStorageAssetPath = `${Env.staticAssetPath}`;
+
+  public static get(key: string): string {
+    return process.env[key] || '';
+  }
 }
 

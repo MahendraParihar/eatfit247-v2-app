@@ -49,5 +49,8 @@ export * from './blog/mst-blog-author.model';
 export * from './mst-faq-category.model';
 // Referrer models
 export * from './mst-referrer.model';
+// Payment models
+export * from './mst-payment-mode.model';
+export * from './mst-payment-status.model';
 // Admin-user models
 export * from './mst-admin-role-permission.model';

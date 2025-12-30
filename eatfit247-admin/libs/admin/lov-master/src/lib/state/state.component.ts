@@ -66,6 +66,14 @@ export class State implements OnInit {
         type: 'text'
       },
       {
+        key: 'taxPercentage',
+        label: 'Tax %',
+        dataKey: 'taxPercentage',
+        sortable: true,
+        width: '100px',
+        formatter: (value) => value ? `${value}%` : '0%'
+      },
+      {
         key: 'active',
         label: 'Status',
         dataKey: 'active',

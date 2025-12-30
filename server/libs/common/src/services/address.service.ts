@@ -69,6 +69,19 @@ export class AddressService {
     return this.convertToModel(address);
   }
 
+  async filterByTableIdAndPk(tableId: number, pkOfTable: number): Promise<IAddress[]> {
+    const address = await this.addressRepository.scope('details').findAll({
+      where: {
+        tableId,
+        pkOfTable,
+        active: true,
+      },
+      raw: true,
+      nest: true,
+    });
+    return address.map((addr: any) => this.convertToModel(addr));
+  }
+
   /**
    * Get all addresses for an entity
    * @param tableId Table ID

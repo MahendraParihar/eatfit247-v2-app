@@ -10,7 +10,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatCardModule } from '@angular/material/card';
 import { InputErrorComponent, ValidationUtil } from '@shared';
 import { LovMasterApiService } from '../../api.service';
-import { ICountry, IManageCountry, InputLengthEnum } from '@eatfit247-shared-lib';
+import { ICountry, IManageCountry, InputLengthEnum, TaxTypeEnum } from '@eatfit247-shared-lib';
 
 @Component({
   selector: 'lib-manage-country',
@@ -35,6 +35,8 @@ export class ManageCountry implements OnInit {
     country: ['', [Validators.required, Validators.minLength(InputLengthEnum.CHAR_2), Validators.maxLength(InputLengthEnum.CHAR_50)]],
     countryCode: ['', [Validators.maxLength(InputLengthEnum.MAX_COUNTRY_CODE)]],
     phoneNumberCode: ['', [Validators.maxLength(InputLengthEnum.MAX_COUNTRY_CODE)]],
+    taxType: [TaxTypeEnum.NONE, [Validators.required]],
+    defaultTaxPercentage: [0, [Validators.required, Validators.min(0), Validators.max(100)]],
     active: [true, [Validators.required]]
   });
   initialData!: ICountry;
@@ -71,6 +73,8 @@ export class ManageCountry implements OnInit {
       ],
       countryCode: [this.initialData?.countryCode || '', [Validators.maxLength(InputLengthEnum.MAX_COUNTRY_CODE)]],
       phoneNumberCode: [this.initialData?.phoneNumberCode || '', [Validators.maxLength(InputLengthEnum.MAX_COUNTRY_CODE)]],
+      taxType: [this.initialData?.taxType || TaxTypeEnum.NONE, [Validators.required]],
+      defaultTaxPercentage: [this.initialData?.defaultTaxPercentage || 0, [Validators.required, Validators.min(0), Validators.max(100)]],
       active: [this.initialData?.active !== undefined ? this.initialData.active : true]
     });
   }

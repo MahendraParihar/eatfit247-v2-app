@@ -25,13 +25,9 @@
     "moduleResolution": "node",
     "paths": {
       "@eatfit247-shared-lib": ["../shared-library/dist/index"],
-      "@server/common": ["libs/common/src"]
-    },
-    "references": [
-      {
-        "path": "../shared-library"
-      }
-    ]
+      "@server/common": ["libs/common/src"],
+      "@server/modules/*": ["libs/modules/*"]
+    }
   }
 }
 

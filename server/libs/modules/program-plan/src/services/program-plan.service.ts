@@ -224,5 +224,19 @@ export class ProgramPlanService {
       isActive: t.active,
     }));
   }
+
+  public async getProgramPlanList(): Promise<IDropdownItem[]> {
+    const tempList = await this.programPlanRepository.scope('list').findAll({
+      where: { active: true },
+      order: [['plan', 'ASC']],
+      raw: true,
+      nest: true,
+    });
+    return tempList.map((t: any) => ({
+      id: t.programPlanId,
+      label: `${t.plan} (${t.noOfCycle} Cycle, ${t.noOfDaysInCycle} Days in a cycle, - ${t.isOnline ? 'Online' : 'Offline'})`,
+      isActive: t.active,
+    }));
+  }
 }
 

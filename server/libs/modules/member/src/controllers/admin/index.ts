@@ -6,7 +6,7 @@ export * from './member-body-stats.controller';
 export * from './member-issue.controller';
 export * from './member-assessment.controller';
 export * from './member-call-logs.controller';
-export * from './member-payment-history.controller';
+export * from './member-payment.controller';
 export * from './member-diet-plan.controller';
 export * from './member-dashboard.controller';
 

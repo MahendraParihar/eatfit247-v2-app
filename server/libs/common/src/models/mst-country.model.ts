@@ -1,6 +1,6 @@
 import { BelongsTo, Column, CreatedAt, DataType, Model, Scopes, Table, UpdatedAt } from 'sequelize-typescript';
 import { MstAdminUser, CommonScopes } from '@server/common';
-import { InputLengthEnum } from 'eatfit247-shared-lib';
+import { InputLengthEnum, TaxTypeEnum } from 'eatfit247-shared-lib';
 
 @Table({
   freezeTableName: true,
@@ -41,6 +41,22 @@ export class MstCountry extends Model<MstCountry> {
     type: DataType.STRING(5),
   })
   declare phoneNumberCode: string;
+
+  @Column({
+    allowNull: false,
+    defaultValue: TaxTypeEnum.NONE,
+    field: 'tax_type',
+    type: DataType.STRING(20),
+  })
+  declare taxType: TaxTypeEnum;
+
+  @Column({
+    allowNull: false,
+    defaultValue: 0,
+    field: 'default_tax_percentage',
+    type: DataType.DECIMAL(5, 2),
+  })
+  declare defaultTaxPercentage: number;
 
   @Column({
     allowNull: false,

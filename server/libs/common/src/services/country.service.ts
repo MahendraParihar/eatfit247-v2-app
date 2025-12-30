@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { ITableList, IBasicSearch, ICountry, IManageCountry, IDropdownItem } from 'eatfit247-shared-lib';
+import { ITableList, IBasicSearch, ICountry, IManageCountry, IDropdownItem, TaxTypeEnum } from 'eatfit247-shared-lib';
 import { SearchUtil, CommonFunctionsUtil } from '@server/common';
 import { MstCountry } from '../models/mst-country.model';
 
@@ -34,6 +34,8 @@ export class CountryService {
       country: item.country,
       countryCode: item.countryCode,
       phoneNumberCode: item.phoneNumberCode,
+      taxType: item.taxType,
+      defaultTaxPercentage: item.defaultTaxPercentage ? parseFloat(item.defaultTaxPercentage) : 0,
       active: item.active,
       createdBy: item.createdBy,
       updatedBy: item.modifiedBy,
@@ -57,10 +59,12 @@ export class CountryService {
   }
 
   public async create(obj: IManageCountry, cIp: string, adminId: number): Promise<void> {
-    const createObj = {
+    const createObj: any = {
       country: obj.country,
       countryCode: obj.countryCode || null,
       phoneNumberCode: obj.phoneNumberCode || null,
+      taxType: (obj.taxType as TaxTypeEnum) || TaxTypeEnum.NONE,
+      defaultTaxPercentage: obj.defaultTaxPercentage || 0,
       active: obj.active,
       createdBy: adminId,
       modifiedBy: adminId,
@@ -75,10 +79,12 @@ export class CountryService {
     if (!find) {
       throw new NotFoundException('Country not found');
     }
-    const updateObj = {
+    const updateObj: any = {
       country: obj.country,
       countryCode: obj.countryCode || null,
       phoneNumberCode: obj.phoneNumberCode || null,
+      taxType: (obj.taxType as TaxTypeEnum) || TaxTypeEnum.NONE,
+      defaultTaxPercentage: obj.defaultTaxPercentage || 0,
       active: obj.active,
       modifiedBy: adminId,
       modifiedIp: cIp,

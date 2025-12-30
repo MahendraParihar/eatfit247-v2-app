@@ -1,5 +1,23 @@
-<mat-card>
-  <mat-card-content>
-    <p>Payment history content will be displayed here.</p>
-  </mat-card-content>
-</mat-card>
+@if (loading) {
+  <shared-ui-loader></shared-ui-loader>
+}
+@if (!loading && payments.length > 0) {
+  <shared-ui-data-table
+    [config]="tableConfig"
+    [data]="payments">
+    <div headerActions>
+      <button mat-raised-button color="primary" (click)="addPayment()">
+        <mat-icon>payment</mat-icon>
+        Add Payment
+      </button>
+    </div>
+  </shared-ui-data-table>
+}
+@if (!loading && payments.length === 0) {
+  <shared-ui-empty-state
+    [type]="EmptyStateType.MEMBER_PAYMENT_HISTORY"
+    buttonLabel="Add Payment"
+    buttonIcon="payment"
+    (buttonClick)="addPayment()">
+  </shared-ui-empty-state>
+}

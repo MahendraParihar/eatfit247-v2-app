@@ -22,7 +22,12 @@ import {
   IHealthParameterMaster,
   ICallLogMasterData,
   IAvailableSlot,
-  ICallLogSlot, IStatusChangeCallLog
+  ICallLogSlot,
+  IStatusChangeCallLog,
+  IMemberPayment,
+  IManageMemberPayment,
+  IMemberPaymentMasterData,
+  IProgramPlan,
 } from '@eatfit247-shared-lib';
 
 @Injectable({
@@ -372,6 +377,60 @@ export class MembersApiService extends ApiBaseService {
     );
   }
 
+  // region Member Payments
+  async getPaymentMasterData(memberId: number): Promise<IMemberPaymentMasterData> {
+    const res = await this.httpService.get<IResponse<IMemberPaymentMasterData>>(
+      `${this.endpoint}/${memberId}/payment-history/master-data`
+    );
+    return res.data as IMemberPaymentMasterData;
+  }
+
+  async getPayments(memberId: number): Promise<ITableList<IMemberPayment>> {
+    const res = await this.httpService.get<IResponse<ITableList<IMemberPayment>>>(
+      `${this.endpoint}/${memberId}/payment-history`
+    );
+    return res.data as ITableList<IMemberPayment>;
+  }
+
+  async getPayment(memberId: number, paymentId: number): Promise<IMemberPayment> {
+    const res = await this.httpService.get<IResponse<IMemberPayment>>(
+      `${this.endpoint}/${memberId}/payment-history/${paymentId}`
+    );
+    return res.data as IMemberPayment;
+  }
+
+  async createPayment(memberId: number, data: IManageMemberPayment): Promise<IMemberPayment> {
+    const res = await this.httpService.post<IResponse<IMemberPayment>>(
+      `${this.endpoint}/${memberId}/payment-history`,
+      data
+    );
+    return res.data as IMemberPayment;
+  }
+
+  async updatePayment(
+    memberId: number,
+    paymentId: number,
+    data: IManageMemberPayment
+  ): Promise<IMemberPayment> {
+    const res = await this.httpService.put<IResponse<IMemberPayment>>(
+      `${this.endpoint}/${memberId}/payment-history/${paymentId}`,
+      data
+    );
+    return res.data as IMemberPayment;
+  }
+
+  async deletePayment(memberId: number, paymentId: number): Promise<void> {
+    return await this.httpService.delete<void>(
+      `${this.endpoint}/${memberId}/payment-history/${paymentId}`
+    );
+  }
+
+  async getProgramPlanDetails(memberId: number, programPlanId: number): Promise<IProgramPlan> {
+    const res = await this.httpService.get<IResponse<IProgramPlan>>(
+      `${this.endpoint}/${memberId}/payment-history/program-plan/${programPlanId}`
+    );
+    return res.data as IProgramPlan;
+  }
   // endregion
 }
 

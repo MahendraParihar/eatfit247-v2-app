@@ -1,0 +1,84 @@
+.dialog-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-height: 90vh;
+}
+
+h2[mat-dialog-title] {
+  margin: 0;
+  padding: 16px 24px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+mat-dialog-content {
+  padding: 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+}
+
+.payment-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  .full-width {
+    width: 100%;
+  }
+
+  .half-width {
+    width: calc(50% - 8px);
+  }
+
+  .form-row {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+
+    &.full-width {
+      width: 100%;
+    }
+  }
+
+  .gateway-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 16px;
+    background-color: rgba(0, 0, 0, 0.02);
+    border-radius: 4px;
+    margin-top: 8px;
+  }
+
+  mat-form-field {
+    width: 100%;
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 100px;
+    font-family: monospace;
+  }
+
+  mat-checkbox {
+    margin-top: 8px;
+  }
+}
+
+mat-dialog-actions {
+  padding: 8px 24px;
+  border-top: 1px solid rgba(0, 0, 0, 0.12);
+  margin: 0;
+
+  button {
+    margin-left: 8px;
+  }
+}
+

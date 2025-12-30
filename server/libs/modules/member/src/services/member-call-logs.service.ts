@@ -3,9 +3,6 @@ import { InjectModel } from '@nestjs/sequelize';
 import { TxnMemberCallLog, TxnMember } from '../models';
 import {
   CommonFunctionsUtil,
-  MstCallType,
-  MstCallPurpose,
-  MstCallLogStatus,
   MstAdminUser,
   GoogleService, ZoomService, AppConfigService,
 } from '@server/common';
@@ -27,6 +24,7 @@ import {
 } from 'eatfit247-shared-lib';
 import { Op } from 'sequelize';
 import moment from 'moment';
+import { CallLogStatusService, CallPurposeService, CallTypeService } from '@server/modules/call-logs';
 
 @Injectable()
 export class MemberCallLogsService {
@@ -34,14 +32,13 @@ export class MemberCallLogsService {
     @InjectModel(TxnMemberCallLog)
     private readonly memberCallLogRepository: typeof TxnMemberCallLog,
     @InjectModel(TxnMember) private readonly memberRepository: typeof TxnMember,
-    @InjectModel(MstCallType) private readonly callTypeRepository: typeof MstCallType,
-    @InjectModel(MstCallPurpose) private readonly callPurposeRepository: typeof MstCallPurpose,
-    @InjectModel(MstCallLogStatus)
-    private readonly callLogStatusRepository: typeof MstCallLogStatus,
     @InjectModel(MstAdminUser) private readonly adminUserRepository: typeof MstAdminUser,
     private readonly googleService: GoogleService,
     private readonly zoomService: ZoomService,
     private readonly appConfigService: AppConfigService,
+    private readonly callLogStatusService: CallLogStatusService,
+    private readonly callPurposeService: CallPurposeService,
+    private readonly callTypeService: CallTypeService,
   ) {}
 
   /**
@@ -144,22 +141,7 @@ export class MemberCallLogsService {
   }
 
   public async getMasterData(): Promise<ICallLogMasterData> {
-    const [callTypes, callPurposes, callLogStatuses, nutritionists] = await Promise.all([
-      this.callTypeRepository.findAll({
-        where: { active: true },
-        order: [['callType', 'ASC']],
-        attributes: ['callTypeId', 'callType'],
-      }),
-      this.callPurposeRepository.findAll({
-        where: { active: true },
-        order: [['callPurpose', 'ASC']],
-        attributes: ['callPurposeId', 'callPurpose'],
-      }),
-      this.callLogStatusRepository.findAll({
-        where: { active: true },
-        order: [['callLogStatus', 'ASC']],
-        attributes: ['callLogStatusId', 'callLogStatus'],
-      }),
+    const [nutritionists] = await Promise.all([
       this.adminUserRepository.findAll({
         where: { active: true },
         order: [
@@ -176,21 +158,9 @@ export class MemberCallLogsService {
     );
     const durations = this.generateDurations(slotStepMinutes, 10);
     return <ICallLogMasterData>{
-      callTypes: callTypes.map((t) => ({
-        id: t.callTypeId,
-        label: t.callType,
-        selected: false,
-      })),
-      callPurposes: callPurposes.map((p) => ({
-        id: p.callPurposeId,
-        label: p.callPurpose,
-        selected: false,
-      })),
-      callLogStatuses: callLogStatuses.map((s) => ({
-        id: s.callLogStatusId,
-        label: s.callLogStatus,
-        selected: false,
-      })),
+      callTypes: await this.callTypeService.getCallTypeList(),
+      callPurposes: await this.callPurposeService.getCallPurposeList(),
+      callLogStatuses: await this.callLogStatusService.getCallLogStatusList(),
       nutritionists: nutritionists.map((n) => ({
         id: n.adminId,
         label: `${n.firstName} ${n.lastName}`.trim(),

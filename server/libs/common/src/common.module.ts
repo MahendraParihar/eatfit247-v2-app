@@ -18,7 +18,7 @@ import { LabelModule } from './label';
 import { LabelModel } from './models';
 import { LogErrorService } from './services';
 import { LogErrorModel } from './models';
-import { GoogleService, ZoomService } from './third-party-services';
+import { GoogleService, ZoomService, RazorpayService } from './third-party-services';
 import {
   MstAdminUser,
   TxnAdminLastLoginDetail,
@@ -39,6 +39,8 @@ import { StateService } from './services';
 import { CountryService } from './services';
 import { AddressService } from './services';
 import { AddressTypeService } from './services';
+import { PaymentModeService } from './services';
+import { PaymentStatusService } from './services';
 import {
   MstCountry,
   MstState,
@@ -78,12 +80,14 @@ import {
   MstBlogAuthor,
   MstFaqCategory,
   MstReferrer,
+  MstPaymentMode,
+  MstPaymentStatus,
   MstAdminRolePermission,
 } from './models';
 
 export class CommonModule {
   static forRoot(configModules: string[] = []): DynamicModule {
-    const modulesNeededForCommon = ['Common', 'Email', 'Google', 'Calendar'];
+    const modulesNeededForCommon = ['Common', 'Email', 'Google', 'Calendar', 'RazorPay'];
     // Common models that belong to @server/common
     const commonModelsList = [
       AppConfigModel,
@@ -136,6 +140,9 @@ export class CommonModule {
       // FAQ models
       MstFaqCategory,
       MstReferrer,
+      // Payment models
+      MstPaymentMode,
+      MstPaymentStatus,
       MstAdminRolePermission,
       // Transactional models from @server/common used by AuthService and other common services
       TxnAdminLastLoginDetail,
@@ -178,6 +185,7 @@ export class CommonModule {
         LogErrorService,
         GoogleService,
         ZoomService,
+        RazorpayService,
         {
           provide: APP_GUARD,
           useClass: JwtAuthGuard,
@@ -198,6 +206,8 @@ export class CommonModule {
         CountryService,
         AddressService,
         AddressTypeService,
+        PaymentModeService,
+        PaymentStatusService,
       ],
       exports: [
         SequelizeModule,
@@ -208,6 +218,7 @@ export class CommonModule {
         LogErrorService,
         GoogleService,
         ZoomService,
+        RazorpayService,
         AdminUserService,
         EmailNotificationService,
         CurrencyService,
@@ -215,6 +226,8 @@ export class CommonModule {
         CountryService,
         AddressService,
         AddressTypeService,
+        PaymentModeService,
+        PaymentStatusService,
       ],
     };
   }

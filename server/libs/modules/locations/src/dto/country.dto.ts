@@ -1,5 +1,5 @@
 import { IsBoolean, IsNotEmpty, IsNumber, IsOptional, MaxLength, MinLength } from 'class-validator';
-import { InputLengthEnum, IManageCountry } from 'eatfit247-shared-lib';
+import { InputLengthEnum, IManageCountry, TaxTypeEnum } from 'eatfit247-shared-lib';
 
 export class CreateCountryDto implements IManageCountry {
   @MinLength(InputLengthEnum.CHAR_2)
@@ -14,6 +14,13 @@ export class CreateCountryDto implements IManageCountry {
   @IsOptional()
   @MaxLength(InputLengthEnum.CHAR_5)
   phoneNumberCode?: string;
+
+  @IsOptional()
+  taxType?: string;
+
+  @IsOptional()
+  @IsNumber()
+  defaultTaxPercentage?: number;
 
   @IsNotEmpty()
   @IsBoolean()

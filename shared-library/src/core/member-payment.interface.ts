@@ -6,18 +6,18 @@ export interface IBasicMemberPayment {
   paymentModeId: number;
   programPlanId: number;
   programId: number;
-  addressId: number;
-  transactionId: string;
+  addressId?: number | null;
+  transactionId?: string;
   paymentDate: Date;
-  invoiceId: string;
+  invoiceId?: string;
   paymentStatusId: number;
-  promoCode: string;
+  promoCode?: string;
   isTaxApplicable: boolean;
   paymentObj: object;
-  refundObj: object;
-  paymentGatewayResponse: object;
+  refundObj?: object | null;
+  paymentGatewayResponse?: object | null;
   gstNumber?: string;
-  billingAddressId?: number;
+  billingAddressId?: number | null;
 }
 
 export interface IMemberPayment extends IBasicMemberPayment {
@@ -62,10 +62,9 @@ export interface IPaymentReport {
 export interface IMemberPaymentMasterData {
   paymentMode: IDropdownItem[];
   program: IDropdownItem[];
-  // plan: IPlanFees[];
-  // currencyConfig: ICurrencyConfigList[];
+  programPlan: IDropdownItem[];
   paymentStatus: IDropdownItem[];
   addresses: IAddress[];
-  taxPercentage: number;
   taxApplicable: boolean;
+  paymentSource: IDropdownItem[];
 }

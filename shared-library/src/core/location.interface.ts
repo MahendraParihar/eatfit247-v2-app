@@ -1,9 +1,12 @@
 import { IBaseAdminUser, IDropdownItem } from "../base.interface";
+import { TaxTypeEnum } from "../enum/tax-type.enum";
 
 export interface IBaseCountry {
   country: string;
   countryCode?: string;
   phoneNumberCode?: string;
+  taxType?: TaxTypeEnum | string;
+  defaultTaxPercentage?: number;
 }
 
 export interface IManageCountry extends IBaseCountry {
@@ -26,6 +29,7 @@ export interface IBaseState {
   state: string;
   code: string;
   countryId: number;
+  taxPercentage?: number;
 }
 
 export interface IManageState extends IBaseState {

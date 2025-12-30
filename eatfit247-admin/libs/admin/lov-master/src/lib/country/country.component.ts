@@ -47,6 +47,8 @@ export class Country implements OnInit {
       { key: 'countryId', label: 'ID', dataKey: 'countryId', sortable: true, width: '80px' },
       { key: 'country', label: 'Country', dataKey: 'country', sortable: true, searchable: true },
       { key: 'countryCode', label: 'Country Code', dataKey: 'countryCode', sortable: true, width: '120px' },
+      { key: 'taxType', label: 'Tax Type', dataKey: 'taxType', sortable: true, width: '120px' },
+      { key: 'defaultTaxPercentage', label: 'Default Tax %', dataKey: 'defaultTaxPercentage', sortable: true, width: '130px', formatter: (value) => value ? `${value}%` : '0%' },
       { key: 'active', label: 'Status', dataKey: 'active', sortable: true, width: '120px', align: 'center', formatter: (value) => (value ? 'Active' : 'Inactive') },
       { key: 'createdByUser', label: 'Created By', dataKey: 'createdByUser', sortable: false, formatter: createdByUserFormatter() },
       { key: 'updatedByUser', label: 'Updated By', dataKey: 'updatedByUser', sortable: false, formatter: updatedByUserFormatter() },

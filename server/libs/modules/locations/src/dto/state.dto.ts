@@ -16,6 +16,10 @@ export class CreateStateDto implements IManageState {
   @IsNumber()
   countryId: number;
 
+  @IsOptional()
+  @IsNumber()
+  taxPercentage?: number;
+
   @IsNotEmpty()
   @IsBoolean()
   active: boolean;

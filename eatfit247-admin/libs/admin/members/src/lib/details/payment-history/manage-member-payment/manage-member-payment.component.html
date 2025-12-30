@@ -1,0 +1,334 @@
+<div class="dialog-container">
+  <h2 mat-dialog-title>{{ isEditMode ? 'Edit Payment' : 'Add Payment' }}</h2>
+
+  <mat-dialog-content>
+    @if (loading() && !masterData()) {
+      <div class="loading-container">
+        <mat-spinner diameter="40"></mat-spinner>
+      </div>
+    } @else {
+      <form [formGroup]="formGroup" class="payment-form">
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>Program</mat-label>
+            <mat-select formControlName="programId">
+              <mat-option [value]="null">Select Program</mat-option>
+              @for (program of programOptions; track program.id) {
+                <mat-option [value]="program.id">{{ program.label }}</mat-option>
+              }
+            </mat-select>
+            <shared-ui-input-error [control]="formGroup.get('programId')"></shared-ui-input-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>Program Plan</mat-label>
+            <mat-select formControlName="programPlanId" [disabled]="!formGroup.get('programId')?.value">
+              <mat-option [value]="null">Select Plan</mat-option>
+              @for (plan of programPlanOptions; track plan.id) {
+                <mat-option [value]="plan.id">{{ plan.label }}</mat-option>
+              }
+            </mat-select>
+            <mat-hint>Select program first</mat-hint>
+            <shared-ui-input-error [control]="formGroup.get('programPlanId')"></shared-ui-input-error>
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>No Of Cycle*</mat-label>
+            <input
+              matInput
+              type="number"
+              formControlName="noOfCycle"
+              [min]="1"
+              placeholder="0"
+            />
+            <shared-ui-input-error [control]="formGroup.get('noOfCycle')"></shared-ui-input-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>No of Days in cycle*</mat-label>
+            <input
+              matInput
+              type="number"
+              formControlName="noOfDaysInCycle"
+              [min]="1"
+              placeholder="0"
+            />
+            <shared-ui-input-error [control]="formGroup.get('noOfDaysInCycle')"></shared-ui-input-error>
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>Tax Applicable*</mat-label>
+            <mat-select formControlName="isTaxApplicable">
+              <mat-option [value]="false">No</mat-option>
+              <mat-option [value]="true">Yes</mat-option>
+            </mat-select>
+            <shared-ui-input-error [control]="formGroup.get('isTaxApplicable')"></shared-ui-input-error>
+          </mat-form-field>
+
+          @if (formGroup.get('isTaxApplicable')?.value === true) {
+            <mat-form-field appearance="outline" class="half-width">
+              <mat-label>Tax Percentage</mat-label>
+              <input
+                matInput
+                type="number"
+                [value]="taxPercentage"
+                readonly
+              />
+              <span matTextSuffix>%</span>
+              <mat-hint>From master data</mat-hint>
+            </mat-form-field>
+          }
+        </div>
+
+        @if (formGroup.get('isTaxApplicable')?.value === true) {
+          <div class="form-row">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Is Plan Fees Included Tax?*</mat-label>
+              <mat-select formControlName="isPlanFeesIncludedTax">
+                <mat-option [value]="false">No - Tax will be added on top</mat-option>
+                <mat-option [value]="true">Yes - Tax is already included</mat-option>
+              </mat-select>
+              <mat-hint>Select whether the plan fees already includes tax or tax should be added</mat-hint>
+              <shared-ui-input-error [control]="formGroup.get('isPlanFeesIncludedTax')"></shared-ui-input-error>
+            </mat-form-field>
+          </div>
+        }
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>Currency*</mat-label>
+            <mat-select formControlName="currencyCode">
+              @for (currency of currencyOptions; track currency.id) {
+                <mat-option [value]="currency.id">{{ currency.label }}</mat-option>
+              }
+            </mat-select>
+            <shared-ui-input-error [control]="formGroup.get('currencyCode')"></shared-ui-input-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>Plan Fees*</mat-label>
+            <input
+              matInput
+              type="number"
+              formControlName="orderAmount"
+              [min]="0"
+              placeholder="0"
+            />
+            <shared-ui-input-error [control]="formGroup.get('orderAmount')"></shared-ui-input-error>
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>Discount Amount*</mat-label>
+            <input
+              matInput
+              type="number"
+              formControlName="discountAmount"
+              [min]="0"
+              placeholder="0"
+            />
+            <shared-ui-input-error [control]="formGroup.get('discountAmount')"></shared-ui-input-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>TAX Amount ({{ taxPercentage }}%)*</mat-label>
+            <input
+              matInput
+              type="number"
+              [value]="taxAmount"
+              readonly
+              placeholder="0"
+            />
+            <mat-hint>Calculated automatically</mat-hint>
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>Total Amount*</mat-label>
+            <input
+              matInput
+              type="number"
+              [value]="totalAmount"
+              readonly
+              placeholder="0"
+            />
+            <mat-hint>Calculated automatically</mat-hint>
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Payment Source</mat-label>
+            <mat-select formControlName="paymentSource">
+              @for (source of paymentSourceOptions; track source.id) {
+                <mat-option [value]="source.id">{{ source.label }}</mat-option>
+              }
+            </mat-select>
+            <shared-ui-input-error [control]="formGroup.get('paymentSource')"></shared-ui-input-error>
+          </mat-form-field>
+        </div>
+
+        @if (isGatewayPayment) {
+          <div class="gateway-fields">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Gateway Provider</mat-label>
+              <input
+                matInput
+                formControlName="gatewayProvider"
+                [maxlength]="InputLengthEnum.CHAR_50"
+                placeholder="e.g., razorpay"
+              />
+              <shared-ui-input-error [control]="formGroup.get('gatewayProvider')"></shared-ui-input-error>
+            </mat-form-field>
+
+            <div class="form-row">
+              <mat-form-field appearance="outline" class="half-width">
+                <mat-label>Gateway Order ID</mat-label>
+                <input
+                  matInput
+                  formControlName="gatewayOrderId"
+                  [maxlength]="InputLengthEnum.CHAR_100"
+                  placeholder="Optional"
+                />
+                <shared-ui-input-error [control]="formGroup.get('gatewayOrderId')"></shared-ui-input-error>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="half-width">
+                <mat-label>Gateway Payment ID</mat-label>
+                <input
+                  matInput
+                  formControlName="gatewayPaymentId"
+                  [maxlength]="InputLengthEnum.CHAR_100"
+                  placeholder="Optional"
+                />
+                <shared-ui-input-error [control]="formGroup.get('gatewayPaymentId')"></shared-ui-input-error>
+              </mat-form-field>
+            </div>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Payment Link</mat-label>
+              <input
+                matInput
+                formControlName="paymentLink"
+                [maxlength]="InputLengthEnum.CHAR_500"
+                placeholder="Optional"
+              />
+              <shared-ui-input-error [control]="formGroup.get('paymentLink')"></shared-ui-input-error>
+            </mat-form-field>
+          </div>
+        }
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>Payment Mode</mat-label>
+            <mat-select formControlName="paymentModeId">
+              <mat-option [value]="null">Select Payment Mode</mat-option>
+              @for (mode of paymentModeOptions; track mode.id) {
+                <mat-option [value]="mode.id">{{ mode.label }}</mat-option>
+              }
+            </mat-select>
+            <shared-ui-input-error [control]="formGroup.get('paymentModeId')"></shared-ui-input-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>Transaction ID</mat-label>
+            <input
+              matInput
+              formControlName="transactionId"
+              [maxlength]="InputLengthEnum.CHAR_250"
+              placeholder="Optional"
+            />
+            <mat-hint align="end"
+              >{{ formGroup.get('transactionId')?.value?.length || 0 }}/{{ InputLengthEnum.CHAR_250 }}</mat-hint
+            >
+            <shared-ui-input-error [control]="formGroup.get('transactionId')"></shared-ui-input-error>
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>Payment Date</mat-label>
+            <input matInput [matDatepicker]="picker" formControlName="paymentDate" />
+            <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-datepicker #picker></mat-datepicker>
+            <shared-ui-input-error [control]="formGroup.get('paymentDate')"></shared-ui-input-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>Payment Status</mat-label>
+            <mat-select formControlName="paymentStatusId">
+              <mat-option [value]="null">Select Status</mat-option>
+              @for (status of paymentStatusOptions; track status.id) {
+                <mat-option [value]="status.id">{{ status.label }}</mat-option>
+              }
+            </mat-select>
+            <shared-ui-input-error [control]="formGroup.get('paymentStatusId')"></shared-ui-input-error>
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>Address</mat-label>
+            <mat-select formControlName="addressId">
+              <mat-option [value]="null">Select Address</mat-option>
+              @for (address of addressOptions; track address.id) {
+                <mat-option [value]="address.id">{{ address.label }}</mat-option>
+              }
+            </mat-select>
+            <shared-ui-input-error [control]="formGroup.get('addressId')"></shared-ui-input-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>Billing Address</mat-label>
+            <mat-select formControlName="billingAddressId">
+              <mat-option [value]="null">Select Billing Address</mat-option>
+              @for (address of addressOptions; track address.id) {
+                <mat-option [value]="address.id">{{ address.label }}</mat-option>
+              }
+            </mat-select>
+            <shared-ui-input-error [control]="formGroup.get('billingAddressId')"></shared-ui-input-error>
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>GST Number</mat-label>
+            <input
+              matInput
+              formControlName="gstNumber"
+              [maxlength]="InputLengthEnum.CHAR_50"
+              placeholder="Optional"
+            />
+            <mat-hint align="end"
+              >{{ formGroup.get('gstNumber')?.value?.length || 0 }}/{{ InputLengthEnum.CHAR_50 }}</mat-hint
+            >
+            <shared-ui-input-error [control]="formGroup.get('gstNumber')"></shared-ui-input-error>
+          </mat-form-field>
+        </div>
+
+      </form>
+    }
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button (click)="onCancel()" [disabled]="submitting()">Cancel</button>
+    <button
+      mat-raised-button
+      color="primary"
+      (click)="onSubmit()"
+      [disabled]="submitting() || formGroup.invalid"
+    >
+      @if (submitting()) {
+        <mat-spinner diameter="20" style="display: inline-block; margin-right: 8px"></mat-spinner>
+      }
+      {{ isEditMode ? 'Update' : 'Create' }}
+    </button>
+  </mat-dialog-actions>
+</div>
+

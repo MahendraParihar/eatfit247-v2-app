@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
+import { ProgramPlanModule } from '@server/modules/program-plan';
+import { TaxEngineModule } from '@server/modules/tax-engine';
 import {
   MstAdminUser,
   modelRegistry,
@@ -23,8 +25,12 @@ import {
   MstBloodSugar,
   MstUrineOutput,
   TxnAddress,
+  MstPaymentMode,
+  MstPaymentStatus,
+  MstProgramPlan,
+  MstProgram,
 } from '@server/common';
-import { TxnMember, TxnMemberPocketGuide, TxnMemberHealthIssue, TxnMemberIssue, TxnMemberIssueResponse, TxnMemberHealthParameterLog, TxnMemberHealthParameter, TxnAssessment } from './models';
+import { TxnMember, TxnMemberPocketGuide, TxnMemberHealthIssue, TxnMemberIssue, TxnMemberIssueResponse, TxnMemberHealthParameterLog, TxnMemberHealthParameter, TxnAssessment, TxnMemberPayment, TxnMemberDietPlan, TxnMemberDietDetail } from './models';
 import { MstReferrer } from '@server/common';
 import { MstFranchise } from '@server/common';
 import {
@@ -37,7 +43,7 @@ import {
   MemberIssueController,
   MemberAssessmentController,
   MemberCallLogsController,
-  MemberPaymentHistoryController,
+  MemberPaymentController,
   MemberDietPlanController,
   MemberDashboardController,
 } from './controllers';
@@ -49,9 +55,10 @@ import {
   MemberHealthParameterLogsService,
   MemberIssueService,
   MemberIssueResponseService,
-  MemberAssessmentService,
+  MemberAssessmentService, MemberPaymentService,
 } from './services';
 import { TxnMemberCallLog } from './models';
+import { CallLogsModule } from '@server/modules/call-logs';
 // Register models with the model registry
 modelRegistry.register([
   TxnMember,
@@ -63,10 +70,17 @@ modelRegistry.register([
   TxnMemberHealthParameterLog,
   TxnMemberHealthParameter,
   TxnAssessment,
+  TxnMemberPayment,
+  TxnMemberDietPlan,
+  TxnMemberDietDetail,
 ]);
 
 @Module({
   imports: [
+    // Import ProgramPlanModule to use ProgramService and ProgramPlanService
+    ProgramPlanModule,
+    CallLogsModule,
+    TaxEngineModule,
     SequelizeModule.forFeature([
       TxnMember,
       TxnMemberPocketGuide,
@@ -77,6 +91,9 @@ modelRegistry.register([
       TxnMemberHealthParameterLog,
       TxnMemberHealthParameter,
       TxnAssessment,
+      TxnMemberPayment,
+      TxnMemberDietPlan,
+      TxnMemberDietDetail,
       MstReferrer,
       MstFranchise,
       MstCountry,
@@ -100,6 +117,10 @@ modelRegistry.register([
       MstBloodSugar,
       MstUrineOutput,
       TxnAddress,
+      MstPaymentMode,
+      MstPaymentStatus,
+      MstProgramPlan,
+      MstProgram,
     ]),
   ],
   controllers: [
@@ -112,7 +133,7 @@ modelRegistry.register([
     MemberIssueController,
     MemberAssessmentController,
     MemberCallLogsController,
-    MemberPaymentHistoryController,
+    MemberPaymentController,
     MemberDietPlanController,
     MemberDashboardController,
   ],
@@ -125,6 +146,7 @@ modelRegistry.register([
     MemberIssueService,
     MemberIssueResponseService,
     MemberAssessmentService,
+    MemberPaymentService
   ],
   exports: [
     MemberService,

@@ -74,6 +74,14 @@ export class MstState extends Model<MstState> {
 
   @Column({
     allowNull: false,
+    defaultValue: 0,
+    field: 'tax_percentage',
+    type: DataType.DECIMAL(5, 2),
+  })
+  declare taxPercentage: number;
+
+  @Column({
+    allowNull: false,
     defaultValue: true,
     field: 'active',
     type: DataType.BOOLEAN,
