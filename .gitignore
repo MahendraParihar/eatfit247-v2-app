@@ -32,6 +32,12 @@
 .nx/cache
 .nx/workspace-data
 
+# Compiled TypeScript artifacts in server_1/libs (should only exist in dist/)
+server_1/libs/**/*.js
+server_1/libs/**/*.js.map
+server_1/libs/**/index.js
+server_1/libs/**/email.module.js
+
 
 .cursor/rules/nx-rules.mdc
 .github/instructions/nx.instructions.md

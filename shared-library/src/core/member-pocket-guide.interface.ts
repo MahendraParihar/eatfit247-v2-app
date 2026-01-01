@@ -13,10 +13,10 @@ export interface IMemberPocketGuide extends IManageMemberPocketGuide {
   pocketGuideId: number;
   pocketGuide: string;
   isSelected: boolean;
-  createdBy?: number;
-  updatedBy?: number;
-  createdAt?: Date;
-  updatedAt?: Date;
-  createdByUser?: IBaseAdminUser;
-  updatedByUser?: IBaseAdminUser;
+  createdBy: number;
+  updatedBy: number;
+  createdAt: Date;
+  updatedAt: Date;
+  createdByUser: IBaseAdminUser;
+  updatedByUser: IBaseAdminUser;
 }

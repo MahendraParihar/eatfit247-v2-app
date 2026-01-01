@@ -12,8 +12,8 @@
     [data]="data"
     [loading]="loading"
     [totalCount]="totalCount"
-    (search)="onSearch($event)"
-    (pageChange)="onPageChange($event.page, $event.limit)"
+    (searchChange)="onSearch($event)"
+    (pageChange)="onPageChange($event.pageIndex, $event.pageSize)"
   ></shared-ui-data-table>
 </div>
 
