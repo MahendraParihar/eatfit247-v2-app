@@ -1,0 +1,8 @@
+{
+  "name": "pocket-guide",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/modules/pocket-guide/src",
+  "projectType": "library",
+  "tags": ["type:domain", "scope:pocket-guide"]
+}
+

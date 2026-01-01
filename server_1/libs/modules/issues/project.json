@@ -1,0 +1,8 @@
+{
+  "name": "issues",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/modules/issues/src",
+  "projectType": "library",
+  "tags": ["type:domain", "scope:issues"]
+}
+

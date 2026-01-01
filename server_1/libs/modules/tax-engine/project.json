@@ -1,0 +1,8 @@
+{
+  "name": "tax-engine",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/modules/tax-engine/src",
+  "projectType": "library",
+  "tags": ["type:platform", "scope:tax-engine"]
+}
+

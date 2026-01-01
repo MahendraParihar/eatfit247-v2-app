@@ -1,0 +1,147 @@
+{
+  "$schema": "./node_modules/nx/schemas/nx-schema.json",
+  "namedInputs": {
+    "default": ["{projectRoot}/**/*", "sharedGlobals"],
+    "production": [
+      "default",
+      "!{projectRoot}/.eslintrc.json",
+      "!{projectRoot}/eslint.config.js",
+      "!{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)",
+      "!{projectRoot}/tsconfig.spec.json",
+      "!{projectRoot}/jest.config.[jt]s",
+      "!{projectRoot}/src/test-setup.[jt]s",
+      "!{projectRoot}/test-setup.[jt]s"
+    ],
+    "sharedGlobals": []
+  },
+  "plugins": [
+    {
+      "plugin": "@nx/webpack/plugin",
+      "options": {
+        "buildTargetName": "build",
+        "serveTargetName": "serve",
+        "previewTargetName": "preview"
+      }
+    },
+    {
+      "plugin": "@nx/eslint/plugin",
+      "options": {
+        "targetName": "lint"
+      }
+    },
+    {
+      "plugin": "@nx/jest/plugin",
+      "options": {
+        "targetName": "test"
+      }
+    }
+  ],
+  "targetDefaults": {
+    "build": {
+      "dependsOn": ["^build"],
+      "inputs": ["production", "^production"],
+      "cache": true
+    },
+    "lint": {
+      "inputs": ["default", "{workspaceRoot}/.eslintrc.json"],
+      "cache": true
+    },
+    "test": {
+      "inputs": ["default", "^production", "{workspaceRoot}/jest.preset.js"],
+      "cache": true
+    },
+    "serve": {
+      "cache": false
+    },
+    "@nx/esbuild:esbuild": {
+      "cache": true,
+      "dependsOn": ["^build"],
+      "inputs": ["production", "^production"]
+    }
+  },
+  "tasksRunnerOptions": {
+    "default": {
+      "runner": "nx/tasks-runners/default",
+      "options": {
+        "cacheableOperations": ["build", "lint", "test"]
+      }
+    }
+  },
+  "workspaceLayout": {
+    "appsDir": "apps",
+    "libsDir": "libs"
+  },
+  "affected": {
+    "defaultBase": "main"
+  },
+  "generators": {
+    "@nx/js:library": {
+      "tags": ["type:domain"]
+    }
+  },
+  "enforce-module-boundaries": {
+    "dependsOn": {
+      "enforceBuildableLibDependency": true
+    },
+    "rules": [
+      {
+        "sourceTag": "type:core",
+        "onlyDependOnLibsWithTags": []
+      },
+      {
+        "sourceTag": "type:shared",
+        "onlyDependOnLibsWithTags": []
+      },
+      {
+        "sourceTag": "type:platform",
+        "onlyDependOnLibsWithTags": ["type:core", "type:shared"]
+      },
+      {
+        "sourceTag": "type:domain",
+        "onlyDependOnLibsWithTags": ["type:core", "type:platform", "type:shared", "type:domain"]
+      },
+      {
+        "sourceTag": "type:admin-only",
+        "onlyDependOnLibsWithTags": ["type:core", "type:platform", "type:shared", "type:domain"]
+      },
+      {
+        "sourceTag": "type:app",
+        "onlyDependOnLibsWithTags": [
+          "type:core",
+          "type:platform",
+          "type:shared",
+          "type:domain",
+          "type:admin-only"
+        ]
+      }
+    ]
+  },
+  "dependencyConstraints": [
+    {
+      "sourceTag": "type:core",
+      "onlyDependOnLibsWithTags": ["type:shared"]
+    },
+    {
+      "sourceTag": "type:platform",
+      "onlyDependOnLibsWithTags": ["type:core", "type:shared"]
+    },
+    {
+      "sourceTag": "type:feature",
+      "onlyDependOnLibsWithTags": ["type:platform", "type:core", "type:shared"]
+    },
+    {
+      "sourceTag": "type:admin-only",
+      "onlyDependOnLibsWithTags": ["type:feature", "type:platform", "type:core", "type:shared"]
+    },
+    {
+      "sourceTag": "type:app",
+      "onlyDependOnLibsWithTags": [
+        "type:admin-only",
+        "type:feature",
+        "type:platform",
+        "type:core",
+        "type:shared"
+      ]
+    }
+  ]
+}

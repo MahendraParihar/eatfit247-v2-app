@@ -1,0 +1,8 @@
+{
+  "name": "assessment",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/modules/assessment/src",
+  "projectType": "library",
+  "tags": ["type:domain", "scope:assessment"]
+}
+

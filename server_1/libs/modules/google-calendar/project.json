@@ -1,0 +1,8 @@
+{
+  "name": "google-calendar",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/modules/google-calendar/src",
+  "projectType": "library",
+  "tags": ["type:platform", "scope:google-calendar"]
+}
+

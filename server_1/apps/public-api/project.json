@@ -1,0 +1,29 @@
+{
+  "name": "public-api",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/public-api/src",
+  "projectType": "application",
+  "tags": ["type:app", "scope:public"],
+  "targets": {
+    "serve": {
+      "executor": "@nx/js:node",
+      "defaultConfiguration": "development",
+      "options": {
+        "buildTarget": "public-api:build"
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "public-api:build:development"
+        },
+        "production": {
+          "buildTarget": "public-api:build:production"
+        }
+      }
+    },
+    "docker-build": {
+      "dependsOn": ["build"],
+      "command": "docker build -f apps/public-api/Dockerfile . -t public-api"
+    }
+  }
+}
+

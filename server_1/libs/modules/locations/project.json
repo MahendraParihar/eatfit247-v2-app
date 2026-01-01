@@ -1,0 +1,8 @@
+{
+  "name": "locations",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/modules/locations/src",
+  "projectType": "library",
+  "tags": ["type:domain", "scope:locations"]
+}
+

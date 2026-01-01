@@ -1,0 +1,30 @@
+# Dependencies
+node_modules
+
+# Build outputs
+dist
+tmp
+
+# Test coverage
+coverage
+.nyc_output
+
+# Logs
+*.log
+logs
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# IDE files
+.vscode
+.idea
+
+# OS files
+.DS_Store
+
+# Nx cache (already in .gitignore but good to be explicit)
+.nx/cache
+

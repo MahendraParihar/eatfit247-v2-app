@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Required for nx affected to work
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+          cache-dependency-path: server_1/package-lock.json
+
+      - name: Install dependencies
+        working-directory: server_1
+        run: npm ci
+
+      - name: Build shared library
+        working-directory: server_1
+        run: npm run build_shared_lib
+
+      - name: Generate dependency graph
+        working-directory: server_1
+        run: npx nx graph --file=graph.html
+
+      - name: Upload dependency graph
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dependency-graph
+          path: server_1/graph.html
+          retention-days: 30
+
+      - name: Run lint on affected projects
+        working-directory: server_1
+        run: npx nx affected --target=lint
+
+      - name: Run build on affected projects
+        working-directory: server_1
+        run: npx nx affected --target=build
+

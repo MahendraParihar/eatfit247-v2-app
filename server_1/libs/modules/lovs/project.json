@@ -1,0 +1,8 @@
+{
+  "name": "lovs",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/modules/lovs/src",
+  "projectType": "library",
+  "tags": ["type:shared", "scope:lovs"]
+}
+

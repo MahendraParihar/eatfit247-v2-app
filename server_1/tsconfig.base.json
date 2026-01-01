@@ -1,0 +1,33 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "allowSyntheticDefaultImports": true,
+    "sourceMap": true,
+    "declaration": false,
+    "moduleResolution": "node",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "importHelpers": true,
+    "target": "es2015",
+    "module": "esnext",
+    "lib": ["es2020", "dom"],
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "@eatfit247-shared-lib": ["../shared-library/dist"],
+      "@server_1/core": ["libs/core/src/index.ts"],
+      "@server_1/platform": ["libs/platform/src/index.ts"],
+      "@server_1/shared-dto": ["libs/shared-dto/src/index.ts"],
+      "@server_1/modules/*": ["libs/modules/*/index.ts"],
+      "@server_1/admin-only/*": ["libs/admin-only/*/index.ts"]
+    }
+  },
+  "exclude": ["node_modules", "tmp"],
+  "references": [
+    {
+      "path": "../shared-library"
+    }
+  ]
+}
+

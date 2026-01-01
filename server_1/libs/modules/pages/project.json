@@ -1,0 +1,8 @@
+{
+  "name": "pages",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/modules/pages/src",
+  "projectType": "library",
+  "tags": ["type:domain", "scope:pages"]
+}
+

@@ -1,0 +1,29 @@
+{
+  "name": "admin-api",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/admin-api/src",
+  "projectType": "application",
+  "tags": ["type:app", "scope:admin"],
+  "targets": {
+    "serve": {
+      "executor": "@nx/js:node",
+      "defaultConfiguration": "development",
+      "options": {
+        "buildTarget": "admin-api:build"
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "admin-api:build:development"
+        },
+        "production": {
+          "buildTarget": "admin-api:build:production"
+        }
+      }
+    },
+    "docker-build": {
+      "dependsOn": ["build"],
+      "command": "docker build -f apps/admin-api/Dockerfile . -t admin-api"
+    }
+  }
+}
+

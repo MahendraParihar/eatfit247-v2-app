@@ -1,0 +1,21 @@
+{
+  "name": "platform",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/platform/src",
+  "projectType": "library",
+  "tags": ["type:platform"],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/platform",
+        "tsConfig": "libs/platform/tsconfig.lib.json",
+        "packageJson": "libs/platform/package.json",
+        "main": "libs/platform/src/index.ts",
+        "assets": ["libs/platform/*.md"]
+      }
+    }
+  }
+}
+

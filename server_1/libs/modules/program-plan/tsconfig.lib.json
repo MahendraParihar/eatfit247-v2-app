@@ -1,0 +1,23 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "../../../dist/out-tsc",
+    "declaration": true,
+    "composite": true,
+    "types": [],
+    "target": "es2021",
+    "baseUrl": "../../../",
+    "paths": {
+      "@eatfit247-shared-lib": ["../shared-library/dist"],
+      "@server_1/core": ["libs/core/src/index.ts"],
+      "@server_1/platform": ["libs/platform/src/index.ts"],
+      "@server_1/shared-dto": ["libs/shared-dto/src/index.ts"],
+      "@server_1/modules/*": ["libs/modules/*/index.ts"],
+      "@server_1/admin-only/*": ["libs/admin-only/*/index.ts"]
+    },
+    "skipLibCheck": true
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["jest.config.ts", "src/**/*.spec.ts", "src/**/*.test.ts"]
+}
+

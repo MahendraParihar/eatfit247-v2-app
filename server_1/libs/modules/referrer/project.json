@@ -1,0 +1,8 @@
+{
+  "name": "referrer",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/modules/referrer/src",
+  "projectType": "library",
+  "tags": ["type:domain", "scope:referrer"]
+}
+

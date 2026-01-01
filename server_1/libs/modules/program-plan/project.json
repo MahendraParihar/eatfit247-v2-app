@@ -1,0 +1,8 @@
+{
+  "name": "program-plan",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/modules/program-plan/src",
+  "projectType": "library",
+  "tags": ["type:domain", "scope:program-plan"]
+}
+
