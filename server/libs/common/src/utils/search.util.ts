@@ -1,5 +1,5 @@
 import { Op } from 'sequelize';
-import { IBasicSearch } from 'eatfit247-shared-lib';
+import { IBasicSearch } from '@eatfit247-shared-lib';
 
 export class SearchUtil {
   public static filterDateRange(fromDate: Date | null, toDate: Date | null) {

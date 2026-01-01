@@ -8,7 +8,7 @@ import {
   MstCallLogStatus,
 } from '@server/common';
 import { TxnMember } from './txn-member.model';
-import { IGoogleCalendarEvent, InputLengthEnum, IZoomEvent } from 'eatfit247-shared-lib';
+import { IGoogleCalendarEvent, InputLengthEnum, IZoomEvent } from '@eatfit247-shared-lib';
 
 @Table({
   freezeTableName: true,

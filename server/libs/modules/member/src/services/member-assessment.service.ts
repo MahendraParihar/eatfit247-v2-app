@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize-typescript';
 import { TxnAssessment, TxnMember } from '../models';
 import { CommonFunctionsUtil } from '@server/common';
-import { IManageMemberAssessment, IMemberAssessment } from 'eatfit247-shared-lib';
+import { IManageMemberAssessment, IMemberAssessment } from '@eatfit247-shared-lib';
 
 @Injectable()
 export class MemberAssessmentService {

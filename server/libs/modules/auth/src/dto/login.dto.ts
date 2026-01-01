@@ -1,5 +1,5 @@
 import { IsEmail, IsNotEmpty, MaxLength } from 'class-validator';
-import { InputLengthEnum, ILogin } from 'eatfit247-shared-lib';
+import { InputLengthEnum, ILogin } from '@eatfit247-shared-lib';
 
 export class LoginDto implements ILogin {
   @IsNotEmpty()

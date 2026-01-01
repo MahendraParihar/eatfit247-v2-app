@@ -8,7 +8,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { InputLengthEnum, IManageRecipe } from 'eatfit247-shared-lib';
+import { InputLengthEnum, IManageRecipe } from '@eatfit247-shared-lib';
 import { MediaUploadDto, SeoDto } from '@server/common';
 
 export class CreateRecipeDto implements IManageRecipe {

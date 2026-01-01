@@ -1,6 +1,6 @@
 import { BelongsTo, Column, CreatedAt, DataType, Model, Table, UpdatedAt } from 'sequelize-typescript';
 import { MstAdminUser } from '@server/common';
-import { InputLengthEnum } from 'eatfit247-shared-lib';
+import { InputLengthEnum } from '@eatfit247-shared-lib';
 import { MstRecipe } from './mst-recipe.model';
 
 @Table({

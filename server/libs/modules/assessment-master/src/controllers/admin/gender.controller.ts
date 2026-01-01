@@ -2,7 +2,7 @@ import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from
 import { JwtAuthGuard, CurrentUser, RequestedIp, BasicSearchDto, UpdateActiveDto } from '@server/common';
 import { GenderService } from '../../services';
 import { CreateGenderDto } from '../../dto';
-import { ITableList, IGender, IDropdownItem, IResponse } from 'eatfit247-shared-lib';
+import { ITableList, IGender, IDropdownItem, IResponse } from '@eatfit247-shared-lib';
 
 @Controller('gender')
 @UseGuards(JwtAuthGuard)

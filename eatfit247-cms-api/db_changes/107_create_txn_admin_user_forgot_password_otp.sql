@@ -332,7 +332,9 @@ VALUES (DEFAULT, 'RAZORPAY_KEY_ID', 'rzp_test_xxxxx', 'RazorPay'),
        (DEFAULT, 'RAZORPAY_KEY_SECRET', 'xxxxxxxx', 'RazorPay'),
        (DEFAULT, 'RAZORPAY_WEBHOOK_SECRET', 'xxxxxxxx', 'RazorPay');
 
-UPDATE public.mst_configs SET config_value = 'true' WHERE config_name = 'GST_ENABLED';
+UPDATE public.mst_configs
+SET config_value = 'true'
+WHERE config_name = 'GST_ENABLED';
 
 alter table public.mst_countries
     add tax_type VARCHAR(20) default 'NONE' not null;
@@ -341,3 +343,27 @@ alter table public.mst_countries
 
 alter table public.mst_states
     add tax_percentage NUMERIC(5, 2) default 0 not null;
+
+CREATE TABLE txn_promo_codes
+(
+    promo_code_id    SERIAL PRIMARY KEY,
+    code             VARCHAR(50) UNIQUE       NOT NULL,
+    discount_type    VARCHAR(10)              NOT NULL CHECK (discount_type IN ('FLAT', 'PERCENT')),
+    discount_value   NUMERIC(10, 2)           NOT NULL,
+    max_discount     NUMERIC(10, 2),
+    min_order_amount NUMERIC(10, 2),
+    usage_limit      INT,
+    used_count       INT                               DEFAULT 0,
+    active           BOOLEAN                           DEFAULT TRUE,
+    expires_at       TIMESTAMP WITH TIME ZONE,
+    created_at       TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at       TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_by       integer                  NOT NULL,
+    modified_by      integer                  NOT NULL,
+    created_ip       VARCHAR(50)              NULL,
+    modified_ip      VARCHAR(50)              NULL,
+    CONSTRAINT fk_txn_promo_codes_created_by_mst_admin_admin_id
+        FOREIGN KEY (created_by) REFERENCES mst_admin_users (admin_id),
+    CONSTRAINT fk_txn_promo_codes_modified_by_mst_admin_admin_id
+        FOREIGN KEY (modified_by) REFERENCES mst_admin_users (admin_id)
+);

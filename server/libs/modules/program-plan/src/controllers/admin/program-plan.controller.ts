@@ -9,7 +9,7 @@ import {
 } from '@server/common';
 import { ProgramPlanService } from '../../services';
 import { CreateProgramPlanDto } from '../../dto';
-import { ITableList, IProgramPlan, IDropdownItem, IResponse } from 'eatfit247-shared-lib';
+import { ITableList, IProgramPlan, IDropdownItem, IResponse } from '@eatfit247-shared-lib';
 
 @Controller('program-plan')
 @UseGuards(JwtAuthGuard)

@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { MstHealthParameterUnit } from '@server/common';
-import { ITableList, IBasicSearch, IHealthParameterUnit, IManageHealthParameterUnit, IDropdownItem } from 'eatfit247-shared-lib';
+import { ITableList, IBasicSearch, IHealthParameterUnit, IManageHealthParameterUnit, IDropdownItem } from '@eatfit247-shared-lib';
 import { SearchUtil, CommonFunctionsUtil } from '@server/common';
 
 @Injectable()

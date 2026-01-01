@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { MstPaymentStatus } from '../models/mst-payment-status.model';
-import { IDropdownItem } from 'eatfit247-shared-lib';
+import { IDropdownItem } from '@eatfit247-shared-lib';
 
 @Injectable()
 export class PaymentStatusService {

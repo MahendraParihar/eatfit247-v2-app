@@ -12,7 +12,7 @@
  */
 import { Body, Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { Response } from 'express';
-import { IToken, IAuthUser } from 'eatfit247-shared-lib';
+import { IToken, IAuthUser } from '@eatfit247-shared-lib';
 import {
   JwtAuthGuard,
   CurrentUser,

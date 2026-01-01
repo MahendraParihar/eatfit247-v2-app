@@ -37,4 +37,5 @@ export * from "./email-data.interface";
 export * from "./google.interface";
 export * from "./zoom.interface";
 export * from "./tax-engine.interface";
+export * from "./promo-code.interface";
 

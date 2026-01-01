@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { TxnMemberPocketGuide, TxnMember } from '../models';
-import { IMemberPocketGuide, IEmailData, EmailTemplateEnum, ITableList } from 'eatfit247-shared-lib';
+import { IMemberPocketGuide, IEmailData, EmailTemplateEnum, ITableList } from '@eatfit247-shared-lib';
 import {
   CommonFunctionsUtil,
   MstPocketGuide,

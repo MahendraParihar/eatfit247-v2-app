@@ -6,7 +6,7 @@ import {
   MstFranchise,
   MstCountry, MstReferrer,
 } from '@server/common';
-import { IMediaUpload, InputLengthEnum } from 'eatfit247-shared-lib';
+import { IMediaUpload, InputLengthEnum } from '@eatfit247-shared-lib';
 
 @Table({
   freezeTableName: true,

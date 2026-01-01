@@ -1,0 +1,19 @@
+<div class="promo-code-container">
+  <div class="header">
+    <h1>Promo Codes</h1>
+    <button mat-raised-button color="primary" (click)="navigateToCreate()">
+      <mat-icon>add</mat-icon>
+      Create Promo Code
+    </button>
+  </div>
+
+  <shared-ui-data-table
+    [config]="tableConfig"
+    [data]="data"
+    [loading]="loading"
+    [totalCount]="totalCount"
+    (search)="onSearch($event)"
+    (pageChange)="onPageChange($event.page, $event.limit)"
+  ></shared-ui-data-table>
+</div>
+

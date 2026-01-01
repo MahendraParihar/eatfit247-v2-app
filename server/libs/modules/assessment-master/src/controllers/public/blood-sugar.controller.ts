@@ -1,6 +1,6 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { BloodSugarService } from '../../services';
-import { ITableList, IBloodSugar } from 'eatfit247-shared-lib';
+import { ITableList, IBloodSugar } from '@eatfit247-shared-lib';
 import { BasicSearchDto } from '@server/common';
 
 @Controller('public/blood-sugar')

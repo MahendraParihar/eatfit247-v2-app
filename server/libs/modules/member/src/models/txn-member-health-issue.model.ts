@@ -1,7 +1,7 @@
 import { BelongsTo, Column, CreatedAt, DataType, Index, Model, Scopes, Table, UpdatedAt } from 'sequelize-typescript';
 import { MstAdminUser, getCreatedByUserInclude, getUpdatedByUserInclude, MstHealthIssue } from '@server/common';
 import { TxnMember } from './txn-member.model';
-import { InputLengthEnum } from 'eatfit247-shared-lib';
+import { InputLengthEnum } from '@eatfit247-shared-lib';
 
 @Table({
   freezeTableName: true,

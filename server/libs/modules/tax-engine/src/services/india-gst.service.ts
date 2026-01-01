@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { TaxInput, TaxResult } from '../interfaces/tax.interface';
-import { TaxTypeEnum } from 'eatfit247-shared-lib';
+import { TaxTypeEnum } from '@eatfit247-shared-lib';
 
 @Injectable()
 export class IndiaGstService {

@@ -1,5 +1,5 @@
 import { IsBoolean, IsNotEmpty, IsNumber, IsOptional, MaxLength, MinLength } from 'class-validator';
-import { InputLengthEnum, IManageState } from 'eatfit247-shared-lib';
+import { InputLengthEnum, IManageState } from '@eatfit247-shared-lib';
 
 export class CreateStateDto implements IManageState {
   @MinLength(InputLengthEnum.CHAR_2)

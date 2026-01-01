@@ -1,5 +1,5 @@
 import { IsNotEmpty, IsNumber, IsOptional, IsString, MaxLength, IsBoolean } from 'class-validator';
-import { InputLengthEnum, IManageAddress } from 'eatfit247-shared-lib';
+import { InputLengthEnum, IManageAddress } from '@eatfit247-shared-lib';
 
 export class CreateAddressDto implements Partial<IManageAddress> {
   @IsOptional()

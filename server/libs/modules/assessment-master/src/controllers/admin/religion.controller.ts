@@ -2,7 +2,7 @@ import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from
 import { JwtAuthGuard, CurrentUser, RequestedIp, BasicSearchDto, UpdateActiveDto } from '@server/common';
 import { ReligionService } from '../../services';
 import { CreateReligionDto } from '../../dto';
-import { ITableList, IReligion, IDropdownItem, IResponse } from 'eatfit247-shared-lib';
+import { ITableList, IReligion, IDropdownItem, IResponse } from '@eatfit247-shared-lib';
 
 @Controller('religion')
 @UseGuards(JwtAuthGuard)

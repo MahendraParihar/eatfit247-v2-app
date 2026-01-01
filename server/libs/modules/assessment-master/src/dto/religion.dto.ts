@@ -1,6 +1,6 @@
 import { IsBoolean, IsNotEmpty, IsNumber, IsOptional, MaxLength, MinLength, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
-import { InputLengthEnum, IManageReligion } from 'eatfit247-shared-lib';
+import { InputLengthEnum, IManageReligion } from '@eatfit247-shared-lib';
 import { MediaUploadDto } from '@server/common';
 
 export class CreateReligionDto implements IManageReligion {

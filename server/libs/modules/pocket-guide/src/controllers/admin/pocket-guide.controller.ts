@@ -2,7 +2,7 @@ import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from
 import { JwtAuthGuard, CurrentUser, RequestedIp, BasicSearchDto, UpdateActiveDto } from '@server/common';
 import { PocketGuideService } from '../../services';
 import { CreatePocketGuideDto } from '../../dto';
-import { ITableList, IPocketGuide, IResponse } from 'eatfit247-shared-lib';
+import { ITableList, IPocketGuide, IResponse } from '@eatfit247-shared-lib';
 
 @Controller('pocket-guide')
 @UseGuards(JwtAuthGuard)

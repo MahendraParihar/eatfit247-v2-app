@@ -1,5 +1,5 @@
 import { IsBoolean, IsNotEmpty, IsNumber, IsOptional, MaxLength } from 'class-validator';
-import { InputLengthEnum, IManageFaq } from 'eatfit247-shared-lib';
+import { InputLengthEnum, IManageFaq } from '@eatfit247-shared-lib';
 
 export class CreateFaqDto implements IManageFaq {
   @MaxLength(InputLengthEnum.CHAR_500)

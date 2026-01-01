@@ -1,5 +1,6 @@
 import { IBaseAdminUser, IDropdownItem } from "../base.interface";
 import { IAddress, IManageAddress } from "./location.interface";
+import { PaymentSourceEnum } from "../enum";
 
 export interface IBasicMemberPayment {
   memberId: number;
@@ -47,10 +48,32 @@ export interface IMemberPayment extends IBasicMemberPayment {
   updatedByUser?: IBaseAdminUser;
 }
 
-export interface IManageMemberPayment extends IBasicMemberPayment {
+export interface IManageMemberPayment {
   memberPaymentId?: number;
-  address?: IManageAddress;
-  billingAddress?: IManageAddress;
+  memberId: number;
+  paymentModeId: number;
+  programId: number;
+  programPlanId: number;
+  noOfCycle: number;
+  noOfDaysInCycle: number;
+  billingAddressId?: number;
+  addressId?: number;
+  address: IManageAddress;
+  billingAddress: IManageAddress;
+  transactionId?: string;
+  paymentDate: Date;
+  paymentStatusId: number;
+  isTaxApplicable: boolean;
+  taxPercentage: number;
+  isPlanFeesIncludedTax: boolean;
+  currencyCode: string;
+  promoCode?: string;
+  gstNumber?: string;
+  paymentSource: PaymentSourceEnum;
+  orderAmount: number;
+  taxAmount: number;
+  discountAmount: number;
+  totalAmount: number;
 }
 
 export interface IPaymentReport {

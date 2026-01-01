@@ -1,6 +1,6 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { ReligionService } from '../../services';
-import { ITableList, IReligion } from 'eatfit247-shared-lib';
+import { ITableList, IReligion } from '@eatfit247-shared-lib';
 import { BasicSearchDto } from '@server/common';
 
 @Controller('public/religion')

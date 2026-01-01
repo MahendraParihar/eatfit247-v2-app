@@ -1,4 +1,4 @@
-import { TaxTypeEnum } from 'eatfit247-shared-lib';
+import { TaxTypeEnum } from '@eatfit247-shared-lib';
 
 export interface TaxInput {
   baseAmount: number;

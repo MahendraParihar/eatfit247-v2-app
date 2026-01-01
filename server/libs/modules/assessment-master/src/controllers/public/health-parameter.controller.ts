@@ -1,6 +1,6 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { HealthParameterService } from '../../services';
-import { ITableList, IHealthParameter } from 'eatfit247-shared-lib';
+import { ITableList, IHealthParameter } from '@eatfit247-shared-lib';
 import { BasicSearchDto } from '@server/common';
 
 @Controller('public/health-parameter')

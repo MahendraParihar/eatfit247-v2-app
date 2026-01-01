@@ -1,6 +1,6 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { ProgramPlanService } from '../../services';
-import { ITableList, IProgramPlan } from 'eatfit247-shared-lib';
+import { ITableList, IProgramPlan } from '@eatfit247-shared-lib';
 import { BasicSearchDto } from '@server/common';
 
 @Controller('public/program-plan')

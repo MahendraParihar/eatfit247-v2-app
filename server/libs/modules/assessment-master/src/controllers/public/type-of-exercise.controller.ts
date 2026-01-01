@@ -1,6 +1,6 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { TypeOfExerciseService } from '../../services';
-import { ITableList, ITypeOfExercise } from 'eatfit247-shared-lib';
+import { ITableList, ITypeOfExercise } from '@eatfit247-shared-lib';
 import { BasicSearchDto } from '@server/common';
 
 @Controller('public/type-of-exercise')

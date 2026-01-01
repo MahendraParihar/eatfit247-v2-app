@@ -8,7 +8,7 @@ import {
   IManageProgramPlan,
   IDropdownItem,
   ConfigParam,
-} from 'eatfit247-shared-lib';
+} from '@eatfit247-shared-lib';
 import { SearchUtil, CommonFunctionsUtil, AppConfigService } from '@server/common';
 
 @Injectable()

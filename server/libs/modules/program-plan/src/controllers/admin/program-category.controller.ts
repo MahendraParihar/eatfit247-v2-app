@@ -2,7 +2,7 @@ import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from
 import { JwtAuthGuard, CurrentUser, RequestedIp, BasicSearchDto, UpdateActiveDto } from '@server/common';
 import { ProgramCategoryService } from '../../services';
 import { CreateProgramCategoryDto } from '../../dto';
-import { ITableList, IProgramCategory, IDropdownItem, IResponse } from 'eatfit247-shared-lib';
+import { ITableList, IProgramCategory, IDropdownItem, IResponse } from '@eatfit247-shared-lib';
 
 @Controller('program-category')
 @UseGuards(JwtAuthGuard)

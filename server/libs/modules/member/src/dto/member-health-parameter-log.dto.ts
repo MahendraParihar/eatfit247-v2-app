@@ -9,7 +9,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { IManageMemberHealthParameterLog, InputLengthEnum } from 'eatfit247-shared-lib';
+import { IManageMemberHealthParameterLog, InputLengthEnum } from '@eatfit247-shared-lib';
 
 export class CreateMemberHealthParameterDto {
   @IsNotEmpty()

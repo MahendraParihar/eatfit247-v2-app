@@ -6,7 +6,7 @@ import {
 } from '@server/common';
 import { TxnMember } from './txn-member.model';
 import { TxnMemberPayment } from './txn-member-payment.model';
-import { InputLengthEnum } from 'eatfit247-shared-lib';
+import { InputLengthEnum } from '@eatfit247-shared-lib';
 
 @Table({
   freezeTableName: true,

@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { MstAdminUser } from '@server/common';
-import { ITableList, IBasicSearch, IAdminUser, IManageAdminUser, ConfigParam, TableEnum, IManageAddress } from 'eatfit247-shared-lib';
+import { ITableList, IBasicSearch, IAdminUser, IManageAdminUser, ConfigParam, TableEnum, IManageAddress } from '@eatfit247-shared-lib';
 import { SearchUtil, CommonFunctionsUtil, CryptoUtil, generateRandomPassword, AppConfigService, AddressService } from '@server/common';
 import { Op } from 'sequelize';
 import { MstAdminRolePermission } from '@server/common';

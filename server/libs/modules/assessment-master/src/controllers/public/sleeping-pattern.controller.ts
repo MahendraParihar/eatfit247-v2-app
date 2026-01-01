@@ -1,6 +1,6 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { SleepingPatternService } from '../../services';
-import { ITableList, ISleepingPattern } from 'eatfit247-shared-lib';
+import { ITableList, ISleepingPattern } from '@eatfit247-shared-lib';
 import { BasicSearchDto } from '@server/common';
 
 @Controller('public/sleeping-pattern')

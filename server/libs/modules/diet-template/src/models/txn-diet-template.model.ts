@@ -14,7 +14,7 @@ import {
   getCreatedByUserInclude,
   getUpdatedByUserInclude,
 } from '@server/common';
-import { InputLengthEnum } from 'eatfit247-shared-lib';
+import { InputLengthEnum } from '@eatfit247-shared-lib';
 import { TxnDietTemplateDietDetail } from './txn-diet-template-diet-detail.model';
 
 @Table({

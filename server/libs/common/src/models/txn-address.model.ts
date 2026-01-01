@@ -1,6 +1,6 @@
 import { BelongsTo, Column, CreatedAt, DataType, Model, Scopes, Table, UpdatedAt } from 'sequelize-typescript';
 import { MstAdminUser, getCreatedByUserInclude, getUpdatedByUserInclude, CommonScopes } from '@server/common';
-import { InputLengthEnum } from 'eatfit247-shared-lib';
+import { InputLengthEnum } from '@eatfit247-shared-lib';
 import { MstState } from './mst-state.model';
 import { MstCountry } from './mst-country.model';
 import { MstAddressType } from './mst-address-type.model';

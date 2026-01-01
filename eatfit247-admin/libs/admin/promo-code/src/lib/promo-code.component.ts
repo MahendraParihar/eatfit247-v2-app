@@ -1,0 +1,227 @@
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Router, ActivatedRoute } from '@angular/router';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import {
+  DataTableComponent,
+  ITableColumn,
+  ITableConfig,
+  ITableAction,
+  createdByUserFormatter,
+  updatedByUserFormatter
+} from '@shared';
+import { ITableList } from '@eatfit247-shared-lib';
+import { PromoCodeApiService } from './api.service';
+import { IPromoCode } from '@eatfit247-shared-lib';
+import { Subject, debounceTime, distinctUntilChanged, switchMap } from 'rxjs';
+import { DiscountTypeEnum } from '@eatfit247-shared-lib';
+
+@Component({
+  selector: 'lib-promo-code',
+  standalone: true,
+  imports: [CommonModule, DataTableComponent, MatButtonModule, MatIconModule],
+  templateUrl: './promo-code.html',
+  styleUrl: './promo-code.scss'
+})
+export class PromoCode implements OnInit {
+  data: IPromoCode[] = [];
+  totalCount = 0;
+  loading = false;
+  tableConfig!: ITableConfig<IPromoCode>;
+  private searchSubject = new Subject<string>();
+
+  constructor(
+    private apiService: PromoCodeApiService,
+    private router: Router,
+    private route: ActivatedRoute
+  ) {
+    this.setupSearch();
+  }
+
+  ngOnInit(): void {
+    this.initializeTable();
+    this.loadData();
+  }
+
+  private initializeTable(): void {
+    const columns: ITableColumn<IPromoCode>[] = [
+      { key: 'promoCodeId', label: 'ID', dataKey: 'promoCodeId', sortable: true, width: '80px' },
+      { key: 'code', label: 'Code', dataKey: 'code', sortable: true, searchable: true },
+      {
+        key: 'discountType',
+        label: 'Discount Type',
+        dataKey: 'discountType',
+        sortable: true,
+        formatter: (value) => value === DiscountTypeEnum.FLAT ? 'Flat' : 'Percent'
+      },
+      {
+        key: 'discountValue',
+        label: 'Discount Value',
+        dataKey: 'discountValue',
+        sortable: true,
+        formatter: (value, row) => {
+          return row.discountType === DiscountTypeEnum.FLAT
+            ? `₹${value}`
+            : `${value}%`;
+        }
+      },
+      {
+        key: 'maxDiscount',
+        label: 'Max Discount',
+        dataKey: 'maxDiscount',
+        sortable: false,
+        formatter: (value) => value ? `₹${value}` : '-'
+      },
+      {
+        key: 'minOrderAmount',
+        label: 'Min Order',
+        dataKey: 'minOrderAmount',
+        sortable: false,
+        formatter: (value) => value ? `₹${value}` : '-'
+      },
+      {
+        key: 'usageLimit',
+        label: 'Usage Limit',
+        dataKey: 'usageLimit',
+        sortable: false,
+        formatter: (value) => value ? value.toString() : 'Unlimited'
+      },
+      {
+        key: 'usedCount',
+        label: 'Used',
+        dataKey: 'usedCount',
+        sortable: true,
+        width: '80px'
+      },
+      {
+        key: 'expiresAt',
+        label: 'Expires At',
+        dataKey: 'expiresAt',
+        type: 'date',
+        sortable: true,
+        formatter: (value) => value ? new Date(value).toLocaleDateString() : 'Never'
+      },
+      {
+        key: 'active',
+        label: 'Status',
+        dataKey: 'active',
+        sortable: true,
+        width: '120px',
+        align: 'center',
+        formatter: (value) => (value ? 'Active' : 'Inactive')
+      },
+      {
+        key: 'createdByUser',
+        label: 'Created By',
+        dataKey: 'createdByUser',
+        sortable: false,
+        formatter: createdByUserFormatter()
+      },
+      {
+        key: 'updatedByUser',
+        label: 'Updated By',
+        dataKey: 'updatedByUser',
+        sortable: false,
+        formatter: updatedByUserFormatter()
+      },
+      {
+        key: 'createdAt',
+        label: 'Created At',
+        dataKey: 'createdAt',
+        type: 'date',
+        sortable: true
+      },
+      {
+        key: 'updatedAt',
+        label: 'Updated At',
+        dataKey: 'updatedAt',
+        type: 'date',
+        sortable: true
+      },
+    ];
+    const actions: ITableAction<IPromoCode>[] = [
+      { label: 'Edit', icon: 'edit', color: 'primary', onClick: (row) => this.editItem(row) },
+      {
+        label: 'Active',
+        icon: 'check_circle',
+        color: 'primary',
+        visible: (row) => row.active,
+        onClick: (row) => this.toggleStatus(row)
+      },
+      {
+        label: 'Inactive',
+        icon: 'cancel',
+        color: 'warn',
+        visible: (row) => !row.active,
+        onClick: (row) => this.toggleStatus(row)
+      }
+    ];
+    this.tableConfig = {
+      columns,
+      actions,
+      showSearch: true,
+      searchPlaceholder: 'Search promo codes...',
+      showPagination: true,
+      pageSize: 10,
+      pageSizeOptions: [5, 10, 25, 50],
+      showHeader: true,
+      emptyMessage: 'No promo codes found'
+    };
+  }
+
+  private setupSearch(): void {
+    this.searchSubject.pipe(debounceTime(300), distinctUntilChanged(), switchMap((search) => {
+      this.loading = true;
+      return this.apiService.getList({ search, page: 0, limit: this.tableConfig.pageSize || 10 });
+    })).subscribe({
+      next: (result) => {
+        this.data = result.tableData;
+        this.totalCount = result.count;
+        this.loading = false;
+      },
+      error: () => {
+        this.loading = false;
+      }
+    });
+  }
+
+  async loadData(page: number = 0, limit: number = 10, search: string = ''): Promise<void> {
+    try {
+      this.loading = true;
+      const result = await this.apiService.getList({ page, limit, search });
+      this.data = result.tableData;
+      this.totalCount = result.count;
+    } catch (error) {
+      console.error('Error loading promo codes:', error);
+    } finally {
+      this.loading = false;
+    }
+  }
+
+  onSearch(search: string): void {
+    this.searchSubject.next(search);
+  }
+
+  onPageChange(page: number, limit: number): void {
+    this.loadData(page, limit);
+  }
+
+  editItem(row: IPromoCode): void {
+    this.router.navigate(['edit', row.promoCodeId], { relativeTo: this.route });
+  }
+
+  async toggleStatus(row: IPromoCode): Promise<void> {
+    try {
+      await this.apiService.updateStatus(row.promoCodeId, !row.active);
+      await this.loadData();
+    } catch (error) {
+      console.error('Error updating status:', error);
+    }
+  }
+
+  navigateToCreate(): void {
+    this.router.navigate(['new'], { relativeTo: this.route });
+  }
+}
+

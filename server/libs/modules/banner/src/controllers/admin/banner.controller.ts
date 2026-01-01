@@ -2,7 +2,7 @@ import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from
 import { JwtAuthGuard, CurrentUser, RequestedIp, BasicSearchDto, UpdateActiveDto } from '@server/common';
 import { BannerService } from '../../services';
 import { CreateBannerDto } from '../../dto';
-import { ITableList, IBanner, IResponse } from 'eatfit247-shared-lib';
+import { ITableList, IBanner, IResponse } from '@eatfit247-shared-lib';
 
 @Controller('banner')
 @UseGuards(JwtAuthGuard)

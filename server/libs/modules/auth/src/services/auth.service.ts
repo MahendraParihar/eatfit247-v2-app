@@ -9,7 +9,7 @@ import {
 } from '@server/common';
 import {
   ILogin, IToken, IChangePassword, IForgotPasswordRequest, IAuthUser,
-} from 'eatfit247-shared-lib';
+} from '@eatfit247-shared-lib';
 import { CryptoUtil, Env } from '@server/common';
 import { randomBytes } from 'node:crypto';
 import moment from 'moment';

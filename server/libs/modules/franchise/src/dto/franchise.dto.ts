@@ -10,7 +10,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { InputLengthEnum, IManageFranchise } from 'eatfit247-shared-lib';
+import { InputLengthEnum, IManageFranchise } from '@eatfit247-shared-lib';
 import { MediaUploadDto } from '@server/common';
 
 export class CreateFranchiseDto implements IManageFranchise {

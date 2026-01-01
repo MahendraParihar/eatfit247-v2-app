@@ -10,7 +10,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { InputLengthEnum, IManageAdminUser } from 'eatfit247-shared-lib';
+import { InputLengthEnum, IManageAdminUser } from '@eatfit247-shared-lib';
 import { MediaUploadDto, CreateAddressDto } from '@server/common';
 
 export class CreateAdminUserDto implements IManageAdminUser {

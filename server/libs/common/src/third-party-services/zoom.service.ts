@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { ConfigParam, IZoomEvent } from 'eatfit247-shared-lib';
+import { ConfigParam, IZoomEvent } from '@eatfit247-shared-lib';
 import moment from 'moment-timezone';
 import axios from 'axios';
 import { AppConfigService } from '../app-config';

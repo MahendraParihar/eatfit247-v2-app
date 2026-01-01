@@ -1,6 +1,6 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { CallPurposeService } from '../../services';
-import { ITableList, ICallPurpose } from 'eatfit247-shared-lib';
+import { ITableList, ICallPurpose } from '@eatfit247-shared-lib';
 import { BasicSearchDto } from '@server/common';
 
 @Controller('public/call-purpose')

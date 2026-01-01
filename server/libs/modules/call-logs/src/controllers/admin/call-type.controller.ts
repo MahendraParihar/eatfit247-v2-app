@@ -2,7 +2,7 @@ import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from
 import { JwtAuthGuard, CurrentUser, RequestedIp, BasicSearchDto, UpdateActiveDto } from '@server/common';
 import { CallTypeService } from '../../services';
 import { CreateCallTypeDto } from '../../dto';
-import { ITableList, ICallType, IDropdownItem, IResponse } from 'eatfit247-shared-lib';
+import { ITableList, ICallType, IDropdownItem, IResponse } from '@eatfit247-shared-lib';
 
 @Controller('call-type')
 @UseGuards(JwtAuthGuard)

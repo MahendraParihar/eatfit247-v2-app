@@ -10,7 +10,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { InputLengthEnum, IManagePressMedia, PressMediaType } from 'eatfit247-shared-lib';
+import { InputLengthEnum, IManagePressMedia, PressMediaType } from '@eatfit247-shared-lib';
 import { MediaUploadDto } from '@server/common';
 
 export class CreatePressMediaDto implements IManagePressMedia {

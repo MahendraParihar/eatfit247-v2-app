@@ -2,7 +2,7 @@ import { Body, Controller, Get, Param, Patch, Post, Put, Query, Req, UseGuards }
 import { JwtAuthGuard, CurrentUser, RequestedIp, BasicSearchDto, UpdateActiveDto } from '@server/common';
 import { BlogService } from '../../services';
 import { CreateBlogDto } from '../../dto';
-import { ITableList, IBlog, IDropdownItem, IResponse } from 'eatfit247-shared-lib';
+import { ITableList, IBlog, IDropdownItem, IResponse } from '@eatfit247-shared-lib';
 import { BlogAuthorService, BlogCategoryService } from '../../services';
 
 @Controller('blog')

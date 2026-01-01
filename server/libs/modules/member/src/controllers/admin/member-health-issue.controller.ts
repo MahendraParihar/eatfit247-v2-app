@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Param, Put, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard, CurrentUser, RequestedIp } from '@server/common';
 import { MemberHealthIssueService } from '../../services';
-import { ITableList, IMemberHealthIssue } from 'eatfit247-shared-lib';
+import { ITableList, IMemberHealthIssue } from '@eatfit247-shared-lib';
 
 @Controller('member/:id/health-issues')
 @UseGuards(JwtAuthGuard)

@@ -1,5 +1,5 @@
 import { IsNotEmpty, IsNumber, IsOptional, MaxLength } from 'class-validator';
-import { IManageMemberAssessment, InputLengthEnum } from 'eatfit247-shared-lib';
+import { IManageMemberAssessment, InputLengthEnum } from '@eatfit247-shared-lib';
 
 export class CreateMemberAssessmentDto implements IManageMemberAssessment {
   @IsNotEmpty()

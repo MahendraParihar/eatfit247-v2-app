@@ -238,7 +238,7 @@ Authorization: Bearer <token>
 
 ## Shared Library
 
-This project uses `eatfit247-shared-lib` for common interfaces and utilities:
+This project uses `@eatfit247-shared-lib` for common interfaces and utilities:
 
 ```typescript
 import { 
@@ -248,7 +248,7 @@ import {
   IMember,
   IManageMember,
   // ... other interfaces
-} from 'eatfit247-shared-lib';
+} from '@eatfit247-shared-lib';
 ```
 
 ## Common Library (`@server/common`)

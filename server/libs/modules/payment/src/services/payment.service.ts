@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { TxnMemberPayment } from '@server/modules/member';
-import { PaymentStatusEnum } from 'eatfit247-shared-lib';
+import { PaymentStatusEnum } from '@eatfit247-shared-lib';
 
 @Injectable()
 export class PaymentService {

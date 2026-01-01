@@ -8,7 +8,7 @@ import {
   IDietTemplate,
   IManageDietTemplate,
   IDietTemplateDetail,
-} from 'eatfit247-shared-lib';
+} from '@eatfit247-shared-lib';
 import { SearchUtil, CommonFunctionsUtil } from '@server/common';
 
 @Injectable()

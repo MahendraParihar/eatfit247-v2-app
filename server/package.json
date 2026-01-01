@@ -12,9 +12,9 @@
   "scripts": {
     "build_shared_lib": "npm --prefix ../shared-library run build",
     "dev_shared_lib": "npm --prefix ../shared-library run dev",
-    "build": "npm run build_shared_lib && npm run build:admin && npm run build:public",
+    "build": "npm run build_shared_lib && npm run build:admin && npm run build:public --skip-nx-cache",
     "postinstall": "npm run build_shared_lib",
-    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
+    "lint": "nx run-many --target=lint --all",
     "prebuild": "rimraf dist",
     "build:admin": "nest build admin-api",
     "postbuild:admin": "npm run copy:email-templates",
@@ -125,9 +125,6 @@
       "**/*.(t|j)s"
     ],
     "coverageDirectory": "../coverage",
-    "testEnvironment": "node",
-    "moduleNameMapper": {
-      "^eatfit247-shared-lib$": "<rootDir>/../shared-library/dist/index.js"
-    }
+    "testEnvironment": "node"
   }
 }

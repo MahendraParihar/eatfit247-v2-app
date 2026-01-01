@@ -1,6 +1,6 @@
 import { IsNotEmpty, IsNumber, IsOptional, MaxLength, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
-import { InputLengthEnum, IManageDietTemplate, IDietTemplateDetail } from 'eatfit247-shared-lib';
+import { InputLengthEnum, IManageDietTemplate, IDietTemplateDetail } from '@eatfit247-shared-lib';
 
 export class CreateDietTemplateDto implements IManageDietTemplate {
   @IsNotEmpty()

@@ -10,7 +10,7 @@ import {
   TxnAddress,
 } from '@server/common';
 import { TxnMember } from './txn-member.model';
-import { InputLengthEnum, PaymentSourceEnum } from 'eatfit247-shared-lib';
+import { InputLengthEnum, PaymentSourceEnum } from '@eatfit247-shared-lib';
 
 @Table({
   freezeTableName: true,

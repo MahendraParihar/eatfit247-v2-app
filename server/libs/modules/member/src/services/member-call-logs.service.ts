@@ -21,7 +21,7 @@ import {
   ConfigParam,
   IDropdownItem,
   IStatusChangeCallLog,
-} from 'eatfit247-shared-lib';
+} from '@eatfit247-shared-lib';
 import { Op } from 'sequelize';
 import moment from 'moment';
 import { CallLogStatusService, CallPurposeService, CallTypeService } from '@server/modules/call-logs';

@@ -1,6 +1,6 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { IssueStatusService } from '../../services';
-import { ITableList, IIssueStatus } from 'eatfit247-shared-lib';
+import { ITableList, IIssueStatus } from '@eatfit247-shared-lib';
 import { BasicSearchDto } from '@server/common';
 
 @Controller('public/issue-status')

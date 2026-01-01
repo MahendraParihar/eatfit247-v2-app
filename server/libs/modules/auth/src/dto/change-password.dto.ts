@@ -1,5 +1,5 @@
 import { IsNotEmpty, MaxLength, MinLength } from 'class-validator';
-import { InputLengthEnum, IChangePassword } from 'eatfit247-shared-lib';
+import { InputLengthEnum, IChangePassword } from '@eatfit247-shared-lib';
 
 export class ChangePasswordDto implements IChangePassword {
   @IsNotEmpty()

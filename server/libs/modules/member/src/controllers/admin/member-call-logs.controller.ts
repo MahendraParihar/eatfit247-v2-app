@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Param, Post, Put, Req, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard, CurrentUser, RequestedIp } from '@server/common';
 import { MemberCallLogsService } from '../../services';
-import { ICallLogMasterData, IMemberCallLog, ICallLogSlot } from 'eatfit247-shared-lib';
+import { ICallLogMasterData, IMemberCallLog, ICallLogSlot } from '@eatfit247-shared-lib';
 import {
   AvailableSlotDto,
   StatusChangeCallLogDto,

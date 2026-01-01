@@ -2,7 +2,7 @@ import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from
 import { JwtAuthGuard, CurrentUser, RequestedIp, BasicSearchDto, UpdateActiveDto } from '@server/common';
 import { CallLogStatusService } from '../../services';
 import { CreateCallLogStatusDto } from '../../dto';
-import { ITableList, ICallLogStatus, IDropdownItem, IResponse } from 'eatfit247-shared-lib';
+import { ITableList, ICallLogStatus, IDropdownItem, IResponse } from '@eatfit247-shared-lib';
 
 @Controller('call-log-status')
 @UseGuards(JwtAuthGuard)

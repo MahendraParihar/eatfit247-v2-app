@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { IAddress, IManageAddress } from 'eatfit247-shared-lib';
+import { IAddress, IManageAddress } from '@eatfit247-shared-lib';
 import { CommonFunctionsUtil } from '@server/common';
 import { TxnAddress } from '../models';
 

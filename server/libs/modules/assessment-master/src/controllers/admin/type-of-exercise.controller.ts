@@ -2,7 +2,7 @@ import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from
 import { JwtAuthGuard, CurrentUser, RequestedIp, BasicSearchDto, UpdateActiveDto } from '@server/common';
 import { TypeOfExerciseService } from '../../services';
 import { CreateTypeOfExerciseDto } from '../../dto';
-import { ITableList, ITypeOfExercise, IDropdownItem, IResponse } from 'eatfit247-shared-lib';
+import { ITableList, ITypeOfExercise, IDropdownItem, IResponse } from '@eatfit247-shared-lib';
 
 @Controller('type-of-exercise')
 @UseGuards(JwtAuthGuard)

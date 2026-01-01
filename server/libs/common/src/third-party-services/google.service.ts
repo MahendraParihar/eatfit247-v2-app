@@ -10,7 +10,7 @@ import {
   ICallLogSlot,
   IGoogleCalendarEvent,
   IGoogleCalendarStatus,
-} from 'eatfit247-shared-lib';
+} from '@eatfit247-shared-lib';
 import { InjectModel } from '@nestjs/sequelize';
 import { MstAdminUser } from '../models';
 import moment from 'moment-timezone';

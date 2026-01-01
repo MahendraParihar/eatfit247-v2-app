@@ -2,7 +2,7 @@ import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from
 import { JwtAuthGuard, CurrentUser, RequestedIp, BasicSearchDto, UpdateActiveDto } from '@server/common';
 import { LegalPagesService } from '../../services';
 import { CreateLegalPageDto } from '../../dto';
-import { ITableList, ILegalPageList, IResponse } from 'eatfit247-shared-lib';
+import { ITableList, ILegalPageList, IResponse } from '@eatfit247-shared-lib';
 
 @Controller('legal-page')
 @UseGuards(JwtAuthGuard)

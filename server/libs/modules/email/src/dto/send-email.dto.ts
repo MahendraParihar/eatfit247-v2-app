@@ -1,6 +1,6 @@
 import { IsArray, IsEmail, IsNotEmpty, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
-import { ISendEmailParams, IEmailAttachment } from 'eatfit247-shared-lib';
+import { ISendEmailParams, IEmailAttachment } from '@eatfit247-shared-lib';
 
 export class EmailAttachmentDto implements IEmailAttachment {
   @IsNotEmpty()

@@ -11,4 +11,5 @@ export * from "./call-type.enum";
 export * from "./payment-source.enum";
 export * from "./payment-status.enum";
 export * from "./tax-type.enum";
+export * from "./discount-type.enum";
 

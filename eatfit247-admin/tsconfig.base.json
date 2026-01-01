@@ -29,6 +29,7 @@
       "call-logs": ["libs/admin/call-logs/src/index.ts"],
       "issues": ["libs/admin/issues/src/index.ts"],
       "admin-user": ["libs/admin/admin-user/src/index.ts"],
+      "promo-code": ["libs/admin/promo-code/src/index.ts"],
       "@env": ["src/environments/environment.ts"],
       "@eatfit247-shared-lib": ["../shared-library/src/index.ts"],
       "@core": ["libs/core/src/index.ts"],

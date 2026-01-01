@@ -1,18 +1,28 @@
 import {
   IsBoolean,
   IsDateString,
+  IsEnum,
   IsNotEmpty,
   IsNumber,
-  IsObject,
   IsOptional,
   IsString,
   MaxLength,
+  Min,
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { IManageMemberPayment, InputLengthEnum, IManageAddress } from 'eatfit247-shared-lib';
+import {
+  IManageMemberPayment,
+  InputLengthEnum,
+  PaymentSourceEnum,
+} from '@eatfit247-shared-lib';
+import { CreateAddressDto } from '@server/common';
 
 export class CreateMemberPaymentDto implements IManageMemberPayment {
+  @IsOptional()
+  @IsNumber()
+  memberPaymentId?: number;
+
   @IsNotEmpty()
   @IsNumber()
   memberId: number;
@@ -23,19 +33,39 @@ export class CreateMemberPaymentDto implements IManageMemberPayment {
 
   @IsNotEmpty()
   @IsNumber()
+  programId: number;
+
+  @IsNotEmpty()
+  @IsNumber()
   programPlanId: number;
 
   @IsNotEmpty()
   @IsNumber()
-  programId: number;
+  @Min(1)
+  noOfCycle: number;
+
+  @IsNotEmpty()
+  @IsNumber()
+  @Min(1)
+  noOfDaysInCycle: number;
+
+  @IsOptional()
+  @IsNumber()
+  billingAddressId?: number;
 
   @IsOptional()
   @IsNumber()
   addressId?: number;
 
-  @IsOptional()
-  @IsNumber()
-  billingAddressId?: number;
+  @IsNotEmpty()
+  @ValidateNested()
+  @Type(() => CreateAddressDto)
+  address: CreateAddressDto;
+
+  @IsNotEmpty()
+  @ValidateNested()
+  @Type(() => CreateAddressDto)
+  billingAddress: CreateAddressDto;
 
   @IsOptional()
   @IsString()
@@ -46,53 +76,60 @@ export class CreateMemberPaymentDto implements IManageMemberPayment {
   @IsDateString()
   paymentDate: Date;
 
-  @IsOptional()
-  @IsString()
-  @MaxLength(InputLengthEnum.CHAR_100)
-  invoiceId?: string;
-
   @IsNotEmpty()
   @IsNumber()
   paymentStatusId: number;
-
-  @IsOptional()
-  @IsString()
-  @MaxLength(InputLengthEnum.CHAR_100)
-  promoCode?: string;
 
   @IsNotEmpty()
   @IsBoolean()
   isTaxApplicable: boolean;
 
   @IsNotEmpty()
-  @IsObject()
-  paymentObj: object;
+  @IsNumber()
+  @Min(0)
+  taxPercentage: number;
+
+  @IsNotEmpty()
+  @IsBoolean()
+  isPlanFeesIncludedTax: boolean;
+
+  @IsNotEmpty()
+  @IsString()
+  @MaxLength(InputLengthEnum.CHAR_10)
+  currencyCode: string;
 
   @IsOptional()
-  @IsObject()
-  refundObj?: object;
-
-  @IsOptional()
-  @IsObject()
-  paymentGatewayResponse?: object;
+  @IsString()
+  @MaxLength(InputLengthEnum.CHAR_100)
+  promoCode?: string;
 
   @IsOptional()
   @IsString()
   @MaxLength(InputLengthEnum.CHAR_50)
   gstNumber?: string;
 
-  @IsOptional()
+  @IsNotEmpty()
+  @IsEnum(PaymentSourceEnum)
+  paymentSource: PaymentSourceEnum;
+
+  @IsNotEmpty()
   @IsNumber()
-  memberPaymentId?: number;
+  @Min(0)
+  orderAmount: number;
 
-  @IsOptional()
-  @ValidateNested()
-  @Type(() => Object)
-  address?: IManageAddress;
+  @IsNotEmpty()
+  @IsNumber()
+  @Min(0)
+  taxAmount: number;
 
-  @IsOptional()
-  @ValidateNested()
-  @Type(() => Object)
-  billingAddress?: IManageAddress;
+  @IsNotEmpty()
+  @IsNumber()
+  @Min(0)
+  discountAmount: number;
+
+  @IsNotEmpty()
+  @IsNumber()
+  @Min(0)
+  totalAmount: number;
 }
 

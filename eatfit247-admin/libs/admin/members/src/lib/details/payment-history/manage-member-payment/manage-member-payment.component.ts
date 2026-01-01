@@ -17,7 +17,7 @@ import {
   IMemberPaymentMasterData,
   IDropdownItem,
   InputLengthEnum,
-  PaymentSourceEnum
+  PaymentSourceEnum, IManageAddress
 } from '@eatfit247-shared-lib';
 import { MembersApiService } from '../../../api.service';
 
@@ -182,18 +182,6 @@ export class ManageMemberPaymentComponent implements OnInit {
     if (this.formGroup.valid) {
       this.submitting.set(true);
       try {
-        // Build paymentObj from individual fields
-        const paymentObj = {
-          orderAmount: Number(this.formGroup.value.orderAmount) || 0,
-          discountAmount: Number(this.formGroup.value.discountAmount) || 0,
-          noOfCycle: Number(this.formGroup.value.noOfCycle) || 0,
-          noOfDaysInCycle: Number(this.formGroup.value.noOfDaysInCycle) || 0,
-          currencyCode: this.formGroup.value.currencyCode || 'INR',
-          taxAmount: this.taxAmount,
-          totalAmount: this.totalAmount,
-          taxPercentage: 18,
-          isPlanFeesIncludedTax: this.formGroup.value.isPlanFeesIncludedTax || false
-        };
         const formValue: IManageMemberPayment = {
           memberId: this.data.memberId,
           paymentModeId: this.formGroup.value.paymentModeId,
@@ -201,22 +189,27 @@ export class ManageMemberPaymentComponent implements OnInit {
           programId: this.formGroup.value.programId,
           addressId: this.formGroup.value.addressId || null,
           billingAddressId: this.formGroup.value.billingAddressId || null,
-          transactionId: this.formGroup.value.transactionId?.trim() || undefined,
+          transactionId:
+            this.formGroup.value.transactionId?.trim() || undefined,
           paymentDate: this.formGroup.value.paymentDate,
           paymentStatusId: this.formGroup.value.paymentStatusId,
           isTaxApplicable: this.formGroup.value.isTaxApplicable,
-          paymentObj: paymentObj,
-          gstNumber: this.formGroup.value.gstNumber?.trim() || undefined
+          gstNumber: this.formGroup.value.gstNumber?.trim() || undefined,
+          noOfCycle: Number(this.formGroup.value.noOfCycle),
+          noOfDaysInCycle: Number(this.formGroup.value.noOfDaysInCycle),
+          taxPercentage: Number(this.formGroup.value.taxPercentage),
+          isPlanFeesIncludedTax:
+            this.formGroup.value.isPlanFeesIncludedTax || false,
+          paymentSource: this.formGroup.value.paymentSource,
+          currencyCode: this.formGroup.value.currencyCode,
+          orderAmount: Number(this.formGroup.value.orderAmount) || 0,
+          taxAmount: this.taxAmount,
+          discountAmount: 0,
+          totalAmount: this.totalAmount,
+          promoCode: '',
+          address: {} as IManageAddress,
+          billingAddress: {} as IManageAddress
         };
-        // Add gateway fields if payment source is not MANUAL
-        const manualSource = PaymentSourceEnum?.MANUAL || 'MANUAL';
-        if (this.formGroup.value.paymentSource !== manualSource) {
-          (formValue as any).paymentSource = this.formGroup.value.paymentSource;
-          (formValue as any).gatewayProvider = this.formGroup.value.gatewayProvider || null;
-          (formValue as any).gatewayOrderId = this.formGroup.value.gatewayOrderId || null;
-          (formValue as any).gatewayPaymentId = this.formGroup.value.gatewayPaymentId || null;
-          (formValue as any).paymentLink = this.formGroup.value.paymentLink || null;
-        }
         if (this.isEditMode && this.data.payment?.memberPaymentId) {
           await this.apiService.updatePayment(
             this.data.memberId,
@@ -365,7 +358,7 @@ export class ManageMemberPaymentComponent implements OnInit {
   }
 
   get currencyOptions(): IDropdownItem[] {
-    // Return currencies from selected program plan, or default currencies
+    // Return currencies from the selected program plan, or default currencies
     const currencies = this.availableCurrencies();
     if (currencies.length > 0) {
       return currencies;

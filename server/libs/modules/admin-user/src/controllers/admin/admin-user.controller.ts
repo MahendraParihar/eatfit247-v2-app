@@ -2,7 +2,7 @@ import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from
 import { JwtAuthGuard, CurrentUser, RequestedIp, BasicSearchDto } from '@server/common';
 import { AdminUserService } from '../../services';
 import { CreateAdminUserDto } from '../../dto';
-import { ITableList, IAdminUser, IResponse } from 'eatfit247-shared-lib';
+import { ITableList, IAdminUser, IResponse } from '@eatfit247-shared-lib';
 
 @Controller('admin-user')
 @UseGuards(JwtAuthGuard)

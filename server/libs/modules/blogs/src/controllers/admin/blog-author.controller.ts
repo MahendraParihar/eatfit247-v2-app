@@ -2,7 +2,7 @@ import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from
 import { JwtAuthGuard, CurrentUser, RequestedIp, BasicSearchDto, UpdateActiveDto } from '@server/common';
 import { BlogAuthorService } from '../../services/blog-author.service';
 import { CreateBlogAuthorDto } from '../../dto/blog-author.dto';
-import { ITableList, IBlogAuthor, IResponse } from 'eatfit247-shared-lib';
+import { ITableList, IBlogAuthor, IResponse } from '@eatfit247-shared-lib';
 
 @Controller('blog-author')
 @UseGuards(JwtAuthGuard)

@@ -5,7 +5,7 @@ import {
   getUpdatedByUserInclude,
 } from '@server/common';
 import { TxnMemberDietPlan } from './txn-member-diet-plan.model';
-import { InputLengthEnum } from 'eatfit247-shared-lib';
+import { InputLengthEnum } from '@eatfit247-shared-lib';
 
 @Table({
   freezeTableName: true,

@@ -1,6 +1,6 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { MemberService } from '../../services';
-import { ITableList, IMember } from 'eatfit247-shared-lib';
+import { ITableList, IMember } from '@eatfit247-shared-lib';
 import { BasicSearchDto } from '@server/common';
 
 @Controller('public/member')

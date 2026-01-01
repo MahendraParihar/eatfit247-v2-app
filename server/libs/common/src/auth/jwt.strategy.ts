@@ -1,6 +1,6 @@
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { IAuthUser } from 'eatfit247-shared-lib';
+import { IAuthUser } from '@eatfit247-shared-lib';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { Env } from '../utils/env.values';
 import { AdminUserService } from './admin-user.service';

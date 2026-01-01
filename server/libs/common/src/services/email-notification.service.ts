@@ -4,7 +4,7 @@ import path from 'path';
 import fs from 'fs';
 import * as ejs from 'ejs';
 import { InjectModel } from '@nestjs/sequelize';
-import { IEmailData, ISendEmailParams } from 'eatfit247-shared-lib';
+import { IEmailData, ISendEmailParams } from '@eatfit247-shared-lib';
 import { AppConfigService } from '../app-config';
 import { LogErrorService } from './log-error.service';
 import { MstEmailTemplate } from '../models';

@@ -1,5 +1,5 @@
 import { IsString, MinLength } from 'class-validator';
-import { IResetPasswordRequest } from 'eatfit247-shared-lib';
+import { IResetPasswordRequest } from '@eatfit247-shared-lib';
 
 export class ResetPasswordDto implements IResetPasswordRequest {
   @IsString()

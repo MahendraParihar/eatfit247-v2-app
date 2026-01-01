@@ -1,4 +1,4 @@
-import { IMediaUpload, IBaseAdminUser } from 'eatfit247-shared-lib';
+import { IMediaUpload, IBaseAdminUser } from '@eatfit247-shared-lib';
 import moment from 'moment';
 
 export class CommonFunctionsUtil {

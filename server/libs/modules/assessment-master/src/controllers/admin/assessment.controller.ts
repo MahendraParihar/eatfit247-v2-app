@@ -7,7 +7,7 @@ import {
   MaritalStatusService,
   ReligionService, SleepingPatternService, TypeOfExerciseService, UrineOutputService,
 } from '../../services';
-import { IAssessmentMaster } from 'eatfit247-shared-lib';
+import { IAssessmentMaster } from '@eatfit247-shared-lib';
 
 @Controller('assessment')
 @UseGuards(JwtAuthGuard)

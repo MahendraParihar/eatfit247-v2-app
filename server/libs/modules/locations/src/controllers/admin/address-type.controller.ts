@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard, CurrentUser, RequestedIp, BasicSearchDto, UpdateActiveDto, AddressTypeService } from '@server/common';
 import { CreateAddressTypeDto } from '../../dto';
-import { ITableList, IAddressType, IDropdownItem, IResponse } from 'eatfit247-shared-lib';
+import { ITableList, IAddressType, IDropdownItem, IResponse } from '@eatfit247-shared-lib';
 
 @Controller('address-type')
 @UseGuards(JwtAuthGuard)

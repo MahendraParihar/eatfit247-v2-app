@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { MstPaymentMode } from '../models/mst-payment-mode.model';
-import { IDropdownItem } from 'eatfit247-shared-lib';
+import { IDropdownItem } from '@eatfit247-shared-lib';
 
 @Injectable()
 export class PaymentModeService {

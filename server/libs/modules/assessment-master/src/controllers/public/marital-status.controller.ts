@@ -1,6 +1,6 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { MaritalStatusService } from '../../services';
-import { ITableList, IMaritalStatus } from 'eatfit247-shared-lib';
+import { ITableList, IMaritalStatus } from '@eatfit247-shared-lib';
 import { BasicSearchDto } from '@server/common';
 
 @Controller('public/marital-status')

@@ -23,6 +23,7 @@ import { IssuesModule } from '../../../libs/modules/issues';
 import { PocketGuideModule } from '../../../libs/modules/pocket-guide';
 import { DietTemplateModule } from '../../../libs/modules/diet-template';
 import { GoogleCalendarModule } from '../../../libs/modules/google-calendar/src';
+import { PromoCodeModule } from '../../../libs/modules/promo-code';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { GoogleCalendarModule } from '../../../libs/modules/google-calendar/src'
     EmailModule,
     IssuesModule,
     GoogleCalendarModule,
+    PromoCodeModule,
   ],
   controllers: [AppController],
   providers: [AppService],

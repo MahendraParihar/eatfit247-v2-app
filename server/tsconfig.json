@@ -24,10 +24,15 @@
     "resolveJsonModule": true,
     "moduleResolution": "node",
     "paths": {
-      "@eatfit247-shared-lib": ["../shared-library/dist/index"],
+      "@eatfit247-shared-lib": ["../shared-library/dist"],
       "@server/common": ["libs/common/src"],
       "@server/modules/*": ["libs/modules/*"]
     }
-  }
+  },
+  "references": [
+    {
+      "path": "../shared-library"
+    }
+  ]
 }
 

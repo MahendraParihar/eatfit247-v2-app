@@ -1,6 +1,6 @@
 import { IsBoolean, IsNotEmpty, IsNumber, IsOptional, MaxLength, MinLength, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
-import { InputLengthEnum, IManageProgramCategory } from 'eatfit247-shared-lib';
+import { InputLengthEnum, IManageProgramCategory } from '@eatfit247-shared-lib';
 import { MediaUploadDto } from '@server/common';
 
 export class CreateProgramCategoryDto implements IManageProgramCategory {

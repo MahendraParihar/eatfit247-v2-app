@@ -2,7 +2,7 @@ import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from
 import { JwtAuthGuard, CurrentUser, RequestedIp, BasicSearchDto, UpdateActiveDto } from '@server/common';
 import { HealthIssueService } from '../../services';
 import { CreateHealthIssueDto } from '../../dto';
-import { ITableList, IHealthIssue, IDropdownItem, IResponse } from 'eatfit247-shared-lib';
+import { ITableList, IHealthIssue, IDropdownItem, IResponse } from '@eatfit247-shared-lib';
 
 @Controller('health-issue')
 @UseGuards(JwtAuthGuard)

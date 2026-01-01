@@ -11,7 +11,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { InputLengthEnum, IManageReferrer } from 'eatfit247-shared-lib';
+import { InputLengthEnum, IManageReferrer } from '@eatfit247-shared-lib';
 import { CreateAddressDto, MediaUploadDto } from '@server/common';
 
 export class CreateReferrerDto implements IManageReferrer {

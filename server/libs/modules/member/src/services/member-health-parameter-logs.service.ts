@@ -8,7 +8,7 @@ import {
   IMemberHealthParameter,
   IHealthParameterMaster,
   IManageMemberHealthParameterLog,
-} from 'eatfit247-shared-lib';
+} from '@eatfit247-shared-lib';
 
 @Injectable()
 export class MemberHealthParameterLogsService {

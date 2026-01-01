@@ -1,5 +1,5 @@
 import { IsBoolean, IsNotEmpty, MaxLength, MinLength } from 'class-validator';
-import { InputLengthEnum, IManageEmailTemplate } from 'eatfit247-shared-lib';
+import { InputLengthEnum, IManageEmailTemplate } from '@eatfit247-shared-lib';
 
 export class CreateEmailTemplateDto implements IManageEmailTemplate {
   @MinLength(InputLengthEnum.CHAR_2)

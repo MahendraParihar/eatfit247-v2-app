@@ -4,7 +4,7 @@ import { IndiaGstService } from './india-gst.service';
 import { VatService } from './vat.service';
 import { UsSalesTaxService } from './us-sales-tax.service';
 import { CountryService } from '@server/common';
-import { TaxTypeEnum } from 'eatfit247-shared-lib';
+import { TaxTypeEnum } from '@eatfit247-shared-lib';
 
 @Injectable()
 export class TaxEngineService {

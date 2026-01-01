@@ -8,7 +8,7 @@ import {
   MinLength,
   ValidateNested,
 } from 'class-validator';
-import { InputLengthEnum, IManageBlogAuthor } from 'eatfit247-shared-lib';
+import { InputLengthEnum, IManageBlogAuthor } from '@eatfit247-shared-lib';
 import { MediaUploadDto } from '@server/common';
 import { Type } from 'class-transformer';
 

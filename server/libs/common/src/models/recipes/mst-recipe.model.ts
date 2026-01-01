@@ -1,6 +1,6 @@
 import { BelongsTo, Column, CreatedAt, DataType, HasMany, Model, Scopes, Table, UpdatedAt } from 'sequelize-typescript';
 import { MstAdminUser, getCreatedByUserInclude, getUpdatedByUserInclude } from '@server/common';
-import { IMediaUpload, InputLengthEnum } from 'eatfit247-shared-lib';
+import { IMediaUpload, InputLengthEnum } from '@eatfit247-shared-lib';
 import { MstRecipeType } from './mst-recipe-type.model';
 import { MstRecipeCuisineMapping } from './mst-recipe-cuisine-mapping.model';
 import { MstRecipeCategoryMapping } from './mst-recipe-category-mapping.model';

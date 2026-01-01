@@ -8,7 +8,7 @@ import {
   IDropdownItem,
   IFaqCategory,
   IManageFaqCategory,
-} from 'eatfit247-shared-lib';
+} from '@eatfit247-shared-lib';
 import { SearchUtil, CommonFunctionsUtil, DEFAULT_DATE_TIME_FORMAT } from '@server/common';
 import moment from 'moment';
 import { CreateFaqCategoryDto } from '../dto/faq-category.dto';

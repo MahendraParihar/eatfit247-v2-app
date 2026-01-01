@@ -1,6 +1,6 @@
 import { BelongsTo, Column, CreatedAt, DataType, Model, Table } from 'sequelize-typescript';
 import { MstAdminUser } from './mst-admin-user.model';
-import { InputLengthEnum } from 'eatfit247-shared-lib';
+import { InputLengthEnum } from '@eatfit247-shared-lib';
 
 @Table({
   freezeTableName: true,

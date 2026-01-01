@@ -1,6 +1,6 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { FaqService } from '../../services/faq.service';
-import { ITableList, IFaq } from 'eatfit247-shared-lib';
+import { ITableList, IFaq } from '@eatfit247-shared-lib';
 import { BasicSearchDto } from '@server/common';
 
 @Controller('faq')

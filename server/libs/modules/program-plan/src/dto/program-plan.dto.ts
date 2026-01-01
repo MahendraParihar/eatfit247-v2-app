@@ -10,7 +10,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { InputLengthEnum, IManageProgramPlan, ICommonSEO } from 'eatfit247-shared-lib';
+import { InputLengthEnum, IManageProgramPlan, ICommonSEO } from '@eatfit247-shared-lib';
 import { MediaUploadDto, SeoDto } from '@server/common';
 
 export class ProgramPlanFeeDto {

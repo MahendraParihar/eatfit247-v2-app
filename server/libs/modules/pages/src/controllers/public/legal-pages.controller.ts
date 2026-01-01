@@ -1,6 +1,6 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
 import { LegalPagesService } from '../../services/legal-pages.service';
-import { ITableList, ILegalPageList } from 'eatfit247-shared-lib';
+import { ITableList, ILegalPageList } from '@eatfit247-shared-lib';
 import { BasicSearchDto } from '@server/common';
 
 @Controller('public/legal-page')

@@ -2,7 +2,7 @@ import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from
 import { JwtAuthGuard, CurrentUser, RequestedIp, BasicSearchDto, UpdateActiveDto } from '@server/common';
 import { UrineOutputService } from '../../services';
 import { CreateUrineOutputDto } from '../../dto';
-import { ITableList, IUrineOutput, IDropdownItem, IResponse } from 'eatfit247-shared-lib';
+import { ITableList, IUrineOutput, IDropdownItem, IResponse } from '@eatfit247-shared-lib';
 
 @Controller('urine-output')
 @UseGuards(JwtAuthGuard)

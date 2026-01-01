@@ -6,7 +6,7 @@ import {
   Table,
 } from 'sequelize-typescript';
 import { TxnDietTemplate } from './txn-diet-template.model';
-import { IDietPlanDetail } from 'eatfit247-shared-lib';
+import { IDietPlanDetail } from '@eatfit247-shared-lib';
 
 @Table({
   freezeTableName: true,

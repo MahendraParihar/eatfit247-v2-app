@@ -2,7 +2,7 @@ import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from
 import { JwtAuthGuard, CurrentUser, RequestedIp, BasicSearchDto, UpdateActiveDto } from '@server/common';
 import { RecipeCuisineService } from '../../services';
 import { CreateRecipeCuisineDto } from '../../dto';
-import { ITableList, IRecipeCuisine, IDropdownItem, IResponse } from 'eatfit247-shared-lib';
+import { ITableList, IRecipeCuisine, IDropdownItem, IResponse } from '@eatfit247-shared-lib';
 
 @Controller('recipe-cuisine')
 @UseGuards(JwtAuthGuard)

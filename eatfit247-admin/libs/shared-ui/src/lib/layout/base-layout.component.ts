@@ -126,6 +126,11 @@ export class BaseLayoutComponent implements OnInit, OnDestroy {
       route: '/admin-user',
     },
     {
+      label: 'Promo Codes',
+      icon: 'local_offer',
+      route: '/promo-code',
+    },
+    {
       label: 'LOV Master',
       icon: 'list',
       children: [

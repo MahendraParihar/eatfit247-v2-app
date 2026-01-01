@@ -2,7 +2,7 @@ import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from
 import { JwtAuthGuard, CurrentUser, RequestedIp, BasicSearchDto } from '@server/common';
 import { MemberService } from '../../services';
 import { CreateMemberDto } from '../../dto';
-import { ITableList, IMember } from 'eatfit247-shared-lib';
+import { ITableList, IMember } from '@eatfit247-shared-lib';
 
 @Controller('member')
 @UseGuards(JwtAuthGuard)

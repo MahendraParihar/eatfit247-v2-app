@@ -2,7 +2,7 @@ import Razorpay from 'razorpay';
 import * as crypto from 'crypto';
 import { Injectable } from '@nestjs/common';
 import { AppConfigService } from '../app-config';
-import { ConfigParam } from 'eatfit247-shared-lib';
+import { ConfigParam } from '@eatfit247-shared-lib';
 
 @Injectable()
 export class RazorpayService {

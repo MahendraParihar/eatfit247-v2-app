@@ -1,5 +1,5 @@
 import { ArgumentsHost, Catch, ExceptionFilter, HttpStatus, Injectable, Logger } from '@nestjs/common';
-import { IError } from 'eatfit247-shared-lib';
+import { IError } from '@eatfit247-shared-lib';
 
 @Injectable()
 @Catch()

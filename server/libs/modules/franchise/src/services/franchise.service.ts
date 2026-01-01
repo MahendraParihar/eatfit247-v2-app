@@ -7,7 +7,7 @@ import {
   IManageFranchise,
   IDropdownItem,
   ConfigParam,
-} from 'eatfit247-shared-lib';
+} from '@eatfit247-shared-lib';
 import { SearchUtil, CommonFunctionsUtil, MstFranchise, AppConfigService } from '@server/common';
 
 @Injectable()

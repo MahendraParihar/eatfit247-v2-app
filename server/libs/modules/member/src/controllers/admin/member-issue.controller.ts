@@ -5,7 +5,7 @@ import {
   IMemberIssue,
   IMemberIssueResponse,
   IIssueMasterData,
-} from 'eatfit247-shared-lib';
+} from '@eatfit247-shared-lib';
 import { CreateMemberIssueDto, CreateMemberIssueResponseDto } from '../../dto';
 
 @Controller('member')

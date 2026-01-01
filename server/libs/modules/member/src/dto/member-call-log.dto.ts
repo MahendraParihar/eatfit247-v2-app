@@ -9,7 +9,7 @@ import {
 import {
   IAvailableSlot,
   ISetupMemberCallLog, IStatusChangeCallLog,
-} from 'eatfit247-shared-lib';
+} from '@eatfit247-shared-lib';
 
 export class AvailableSlotDto implements IAvailableSlot {
   @IsNotEmpty()

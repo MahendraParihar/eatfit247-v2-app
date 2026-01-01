@@ -4,7 +4,7 @@ import { MemberHealthParameterLogsService } from '../../services';
 import {
   IHealthParameterMaster,
   IMemberHealthParameterLog,
-} from 'eatfit247-shared-lib';
+} from '@eatfit247-shared-lib';
 import { CreateMemberHealthParameterLogDto } from '../../dto';
 
 @Controller('member/:id/health-parameter-logs')

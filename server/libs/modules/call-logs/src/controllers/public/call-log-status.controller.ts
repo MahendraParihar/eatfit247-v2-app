@@ -1,6 +1,6 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { CallLogStatusService } from '../../services';
-import { ITableList, ICallLogStatus } from 'eatfit247-shared-lib';
+import { ITableList, ICallLogStatus } from '@eatfit247-shared-lib';
 import { BasicSearchDto } from '@server/common';
 
 @Controller('public/call-log-status')

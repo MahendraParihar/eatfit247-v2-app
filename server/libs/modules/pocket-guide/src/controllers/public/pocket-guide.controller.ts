@@ -1,6 +1,6 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { PocketGuideService } from '../../services';
-import { ITableList, IPocketGuide } from 'eatfit247-shared-lib';
+import { ITableList, IPocketGuide } from '@eatfit247-shared-lib';
 import { BasicSearchDto } from '@server/common';
 
 @Controller('public/pocket-guide')

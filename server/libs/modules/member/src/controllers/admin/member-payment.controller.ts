@@ -7,7 +7,7 @@ import {
   IMemberPayment,
   IResponse,
   IProgramPlan,
-} from 'eatfit247-shared-lib';
+} from '@eatfit247-shared-lib';
 import { CreateMemberPaymentDto } from '../../dto/member-payment.dto';
 import { ProgramPlanService } from '@server/modules/program-plan';
 

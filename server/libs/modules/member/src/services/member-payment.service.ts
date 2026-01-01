@@ -11,7 +11,7 @@ import {
   TableEnum,
   ConfigParam,
   IAddress,
-} from 'eatfit247-shared-lib';
+} from '@eatfit247-shared-lib';
 import {
   EmailNotificationService,
   PaymentModeService,
@@ -19,7 +19,6 @@ import {
   AddressService,
   AppConfigService,
   CommonFunctionsUtil,
-  IN_COUNTRY_ID,
   CountryService,
   StateService,
 } from '@server/common';
@@ -27,7 +26,6 @@ import { MstFranchise } from '@server/common';
 import { ProgramService, ProgramPlanService } from '@server/modules/program-plan';
 import { TaxEngineService, TaxInput } from '@server/modules/tax-engine';
 import { Sequelize } from 'sequelize-typescript';
-import { Op } from 'sequelize';
 
 @Injectable()
 export class MemberPaymentService {
@@ -38,7 +36,6 @@ export class MemberPaymentService {
     private sequelize: Sequelize,
     private readonly emailNotificationService: EmailNotificationService,
     private readonly appConfigService: AppConfigService,
-    // Use services instead of direct model injection
     private readonly paymentModeService: PaymentModeService,
     private readonly paymentStatusService: PaymentStatusService,
     private readonly programService: ProgramService,
@@ -164,19 +161,11 @@ export class MemberPaymentService {
     if (!member) {
       throw new NotFoundException('Member not found');
     }
-
-    // TODO
-    if (obj.paymentModeId !== CASH && !obj.transactionId) {
-      throw new BadRequestException('Transaction ID required');
-    }
-
-    // TODO
-    if (obj.amount <= 0) {
+    if (obj.orderAmount <= 0) {
       throw new BadRequestException('Invalid amount');
     }
-
     // Generate invoice ID if not provided
-    const invoiceId = obj.invoiceId || this.generateInvoiceId();
+    const invoiceId = this.generateInvoiceId();
     // Check if invoice ID already exists
     const existingInvoice = await this.memberPaymentRepository.findOne({
       where: { invoiceId },
@@ -208,7 +197,7 @@ export class MemberPaymentService {
       // Handle billing address if provided
       let billingAddressId = obj.billingAddressId;
       let billingAddress: IAddress | null = null;
-      if (obj.billingAddress && !billingAddressId) {
+      if (obj.billingAddressId && !billingAddressId) {
         await this.addressService.createOrUpdate(
           {
             ...obj.billingAddress,
@@ -231,11 +220,9 @@ export class MemberPaymentService {
           memberId,
         );
       }
-
       if (!billingAddress.country) {
         throw new BadRequestException('Billing address country missing');
       }
-
       // Get franchise address for tax calculation
       let franchiseAddress: IAddress | null = null;
       if (member.franchiseId) {
@@ -248,7 +235,7 @@ export class MemberPaymentService {
       }
       // Calculate payment object using tax engine
       const paymentObj = await this.calculatePaymentObject(
-        obj.paymentObj as any,
+        {},
         obj.isTaxApplicable,
         billingAddress,
         franchiseAddress,
@@ -260,8 +247,8 @@ export class MemberPaymentService {
           paymentModeId: obj.paymentModeId,
           programPlanId: obj.programPlanId,
           programId: obj.programId,
-          addressId: addressId || null,
-          billingAddressId: billingAddressId || null,
+          addressId: addressId,
+          billingAddressId: billingAddressId,
           transactionId: obj.transactionId || null,
           paymentDate: obj.paymentDate,
           invoiceId: invoiceId || null,
@@ -269,14 +256,10 @@ export class MemberPaymentService {
           promoCode: obj.promoCode || null,
           isTaxApplicable: obj.isTaxApplicable,
           paymentObj: paymentObj,
-          refundObj: obj.refundObj || null,
-          paymentGatewayResponse: obj.paymentGatewayResponse || null,
+          refundObj: null,
+          paymentGatewayResponse: null,
           gstNumber: obj.gstNumber || null,
-          paymentSource: (obj as any).paymentSource || PaymentSourceEnum.MANUAL,
-          gatewayProvider: (obj as any).gatewayProvider || null,
-          gatewayOrderId: (obj as any).gatewayOrderId || null,
-          gatewayPaymentId: (obj as any).gatewayPaymentId || null,
-          paymentLink: (obj as any).paymentLink || null,
+          paymentSource: obj.paymentSource,
           active: true,
           createdBy: adminId,
           modifiedBy: adminId,
@@ -333,18 +316,6 @@ export class MemberPaymentService {
     if (!payment) {
       throw new NotFoundException('Payment not found');
     }
-    // Check if invoice ID is being changed and if it already exists
-    if (obj.invoiceId && obj.invoiceId !== payment.invoiceId) {
-      const existingInvoice = await this.memberPaymentRepository.findOne({
-        where: {
-          invoiceId: obj.invoiceId,
-          memberPaymentId: { [Op.ne]: paymentId },
-        },
-      });
-      if (existingInvoice) {
-        throw new BadRequestException('Invoice ID already exists');
-      }
-    }
     const t = await this.sequelize.transaction();
     try {
       // Handle address updates if provided
@@ -386,7 +357,7 @@ export class MemberPaymentService {
         billingAddressId = updatedBillingAddress?.addressId || billingAddressId;
         billingAddress = updatedBillingAddress;
       } else if (billingAddressId) {
-        // Get existing billing address
+        // Get an existing billing address
         billingAddress = await this.addressService.findByTableIdAndPk(
           TableEnum.TXN_MEMBER,
           memberId,
@@ -412,16 +383,6 @@ export class MemberPaymentService {
         franchiseAddress =
           franchiseAddresses && franchiseAddresses.length > 0 ? franchiseAddresses[0] : null;
       }
-      // Recalculate payment object with GST if payment details changed
-      let paymentObj = obj.paymentObj !== undefined ? obj.paymentObj : payment.paymentObj;
-      if (obj.paymentObj !== undefined || obj.isTaxApplicable !== undefined || obj.billingAddress) {
-        paymentObj = await this.calculatePaymentObject(
-          (obj.paymentObj as any) || (payment.paymentObj as any),
-          obj.isTaxApplicable !== undefined ? obj.isTaxApplicable : payment.isTaxApplicable,
-          billingAddress,
-          franchiseAddress,
-        );
-      }
       // Update payment record
       await payment.update(
         {
@@ -435,37 +396,12 @@ export class MemberPaymentService {
           transactionId:
             obj.transactionId !== undefined ? obj.transactionId || null : payment.transactionId,
           paymentDate: obj.paymentDate !== undefined ? obj.paymentDate : payment.paymentDate,
-          invoiceId: obj.invoiceId !== undefined ? obj.invoiceId || null : payment.invoiceId,
           paymentStatusId:
             obj.paymentStatusId !== undefined ? obj.paymentStatusId : payment.paymentStatusId,
           promoCode: obj.promoCode !== undefined ? obj.promoCode || null : payment.promoCode,
           isTaxApplicable:
             obj.isTaxApplicable !== undefined ? obj.isTaxApplicable : payment.isTaxApplicable,
-          paymentObj: paymentObj,
-          refundObj: obj.refundObj !== undefined ? obj.refundObj : payment.refundObj,
-          paymentGatewayResponse:
-            obj.paymentGatewayResponse !== undefined
-              ? obj.paymentGatewayResponse
-              : payment.paymentGatewayResponse,
           gstNumber: obj.gstNumber !== undefined ? obj.gstNumber : payment.gstNumber,
-          paymentSource:
-            (obj as any).paymentSource !== undefined
-              ? (obj as any).paymentSource
-              : payment.paymentSource,
-          gatewayProvider:
-            (obj as any).gatewayProvider !== undefined
-              ? (obj as any).gatewayProvider
-              : payment.gatewayProvider,
-          gatewayOrderId:
-            (obj as any).gatewayOrderId !== undefined
-              ? (obj as any).gatewayOrderId
-              : payment.gatewayOrderId,
-          gatewayPaymentId:
-            (obj as any).gatewayPaymentId !== undefined
-              ? (obj as any).gatewayPaymentId
-              : payment.gatewayPaymentId,
-          paymentLink:
-            (obj as any).paymentLink !== undefined ? (obj as any).paymentLink : payment.paymentLink,
           modifiedBy: adminId,
           modifiedIp: requestedIp,
         },
@@ -612,13 +548,11 @@ export class MemberPaymentService {
     // Read from user section if available (new structure), otherwise fallback to old structure
     const userSection = paymentObj?.user;
     const systemSection = paymentObj?.system;
-    
     const orderAmount = userSection?.orderAmount || paymentObj?.orderAmount || 0;
     const discountAmount = userSection?.discountAmount || paymentObj?.discountAmount || 0;
     const taxAmount = userSection?.taxAmount || paymentObj?.taxAmount || 0;
     const totalAmount = userSection?.totalAmount || paymentObj?.totalAmount || 0;
     const taxObject = userSection?.taxObj || systemSection?.taxObj || paymentObj?.taxObj || undefined;
-    
     // If using old structure, calculate tax
     if (!userSection && !systemSection && isTaxApplicable && !taxObject) {
       const subtotal = orderAmount - discountAmount;
@@ -635,7 +569,6 @@ export class MemberPaymentService {
         },
       };
     }
-    
     return {
       orderAmount,
       discountAmount,
@@ -669,13 +602,11 @@ export class MemberPaymentService {
     const noOfCycle = paymentObjInput?.noOfCycle || 0;
     const noOfDaysInCycle = paymentObjInput?.noOfDaysInCycle || 0;
     const isPlanFeesIncludedTax = paymentObjInput?.isPlanFeesIncludedTax || false;
-
     // Get country and state codes from addresses
     let supplierCountryCode = 'IN'; // Default to India
     let supplierStateCode: string | null = null;
     let customerCountryCode = 'IN'; // Default to India
     let customerStateCode: string | null = null;
-
     if (franchiseAddress) {
       // Get franchise country code
       if (franchiseAddress.countryId) {
@@ -688,7 +619,6 @@ export class MemberPaymentService {
         supplierStateCode = franchiseState.code || null;
       }
     }
-
     if (billingAddress) {
       // Get customer country code
       if (billingAddress.countryId) {
@@ -701,13 +631,11 @@ export class MemberPaymentService {
         customerStateCode = customerState.code || null;
       }
     }
-
     // Calculate base amounts
     let systemOrderAmount = orderAmount;
     let systemDiscountAmount = discountAmount;
     let systemSubtotal = systemOrderAmount - systemDiscountAmount;
     let baseAmountForTax = systemSubtotal;
-
     // Handle isPlanFeesIncludedTax - extract base amount if tax is included
     if (isTaxApplicable && isPlanFeesIncludedTax) {
       // We need to know the tax percentage first to extract base amount
@@ -728,7 +656,6 @@ export class MemberPaymentService {
         systemSubtotal = baseAmountForTax - systemDiscountAmount;
       }
     }
-
     // Use tax engine to calculate tax
     const taxInput: TaxInput = {
       baseAmount: isPlanFeesIncludedTax ? baseAmountForTax : systemOrderAmount,
@@ -739,13 +666,10 @@ export class MemberPaymentService {
       customerCountryCode,
       customerStateCode,
     };
-
     const taxResult = await this.taxEngineService.calculate(taxInput);
-
     // Calculate system amounts
     let systemTaxAmount = taxResult.taxAmount;
     let systemTotalAmount = taxResult.totalAmount;
-
     // If tax is included in plan fees, adjust calculations
     if (isTaxApplicable && isPlanFeesIncludedTax && taxResult.taxPercentage > 0) {
       const extractedTax = systemOrderAmount - baseAmountForTax;
@@ -753,13 +677,11 @@ export class MemberPaymentService {
       systemTaxAmount = extractedTax;
       systemTotalAmount = discountedBase + extractedTax;
     }
-
     // Calculate user amounts (same as system for now, can be converted later)
     const userOrderAmount = systemOrderAmount;
     const userDiscountAmount = systemDiscountAmount;
     const userTaxAmount = systemTaxAmount;
     const userTotalAmount = systemTotalAmount;
-
     return {
       user: {
         orderAmount: userOrderAmount,

@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { TxnMemberHealthIssue, TxnMember } from '../models';
-import { IMemberHealthIssue, ITableList } from 'eatfit247-shared-lib';
+import { IMemberHealthIssue, ITableList } from '@eatfit247-shared-lib';
 import { CommonFunctionsUtil, MstHealthIssue, MstAdminUser, ADMIN_USER_SHORT_INFO_ATTRIBUTE } from '@server/common';
 import { Sequelize } from 'sequelize-typescript';
 

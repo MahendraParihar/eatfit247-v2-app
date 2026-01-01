@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { ITableList, IBasicSearch, IEmailTemplate, IManageEmailTemplate } from 'eatfit247-shared-lib';
+import { ITableList, IBasicSearch, IEmailTemplate, IManageEmailTemplate } from '@eatfit247-shared-lib';
 import { SearchUtil, CommonFunctionsUtil, MstEmailTemplate } from '@server/common';
 
 @Injectable()

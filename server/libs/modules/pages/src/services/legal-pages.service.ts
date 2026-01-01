@@ -7,7 +7,7 @@ import {
   ITableList,
   IBasicSearch,
   ConfigParam,
-} from 'eatfit247-shared-lib';
+} from '@eatfit247-shared-lib';
 import { SearchUtil, CommonFunctionsUtil, AppConfigService } from '@server/common';
 import { LegalPagesModel } from '../models/legal-pages.model';
 

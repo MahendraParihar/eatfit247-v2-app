@@ -8,7 +8,7 @@ import {
   IBlogAuthor,
   IManageBlogAuthor,
   ConfigParam,
-} from 'eatfit247-shared-lib';
+} from '@eatfit247-shared-lib';
 import {
   SearchUtil,
   CommonFunctionsUtil, AppConfigService,

@@ -1,5 +1,5 @@
 import { IsBoolean, IsNotEmpty, IsNumber, IsOptional, MaxLength, MinLength } from 'class-validator';
-import { InputLengthEnum, IManageHealthParameterUnit } from 'eatfit247-shared-lib';
+import { InputLengthEnum, IManageHealthParameterUnit } from '@eatfit247-shared-lib';
 
 export class CreateHealthParameterUnitDto implements IManageHealthParameterUnit {
   @MinLength(InputLengthEnum.CHAR_2)

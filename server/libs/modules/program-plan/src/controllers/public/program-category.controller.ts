@@ -1,6 +1,6 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { ProgramCategoryService } from '../../services';
-import { ITableList, IProgramCategory } from 'eatfit247-shared-lib';
+import { ITableList, IProgramCategory } from '@eatfit247-shared-lib';
 import { BasicSearchDto } from '@server/common';
 
 @Controller('public/program-category')

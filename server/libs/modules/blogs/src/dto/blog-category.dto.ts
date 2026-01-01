@@ -1,5 +1,5 @@
 import { IsBoolean, IsNotEmpty, IsNumber, IsOptional, MaxLength, MinLength, ValidateNested } from 'class-validator';
-import { InputLengthEnum, IManageBlogCategory } from 'eatfit247-shared-lib';
+import { InputLengthEnum, IManageBlogCategory } from '@eatfit247-shared-lib';
 import { MediaUploadDto } from '@server/common';
 import { Type } from 'class-transformer';
 

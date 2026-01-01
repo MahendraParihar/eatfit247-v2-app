@@ -1,7 +1,7 @@
 import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard, BasicSearchDto } from '@server/common';
 import { MemberCallLogsService } from '../../services';
-import { ITableList, IMemberCallLog } from 'eatfit247-shared-lib';
+import { ITableList, IMemberCallLog } from '@eatfit247-shared-lib';
 
 @Controller('call-log')
 @UseGuards(JwtAuthGuard)

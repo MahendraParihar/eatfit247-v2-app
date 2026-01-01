@@ -2,7 +2,7 @@ import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from
 import { JwtAuthGuard, CurrentUser, RequestedIp, BasicSearchDto, UpdateActiveDto } from '@server/common';
 import { EatingHabitService } from '../../services';
 import { CreateEatingHabitDto } from '../../dto';
-import { ITableList, IEatingHabit, IDropdownItem, IResponse } from 'eatfit247-shared-lib';
+import { ITableList, IEatingHabit, IDropdownItem, IResponse } from '@eatfit247-shared-lib';
 
 @Controller('eating-habit')
 @UseGuards(JwtAuthGuard)

@@ -2,7 +2,7 @@ import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from
 import { JwtAuthGuard, CurrentUser, RequestedIp, BasicSearchDto, UpdateActiveDto } from '@server/common';
 import { FranchiseService } from '../../services';
 import { CreateFranchiseDto } from '../../dto';
-import { ITableList, IFranchise, IDropdownItem, IResponse } from 'eatfit247-shared-lib';
+import { ITableList, IFranchise, IDropdownItem, IResponse } from '@eatfit247-shared-lib';
 
 @Controller('franchise')
 @UseGuards(JwtAuthGuard)

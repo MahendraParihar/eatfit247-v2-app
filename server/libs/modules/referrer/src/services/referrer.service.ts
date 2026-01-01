@@ -9,7 +9,7 @@ import {
   ConfigParam,
   TableEnum,
   IManageAddress,
-} from 'eatfit247-shared-lib';
+} from '@eatfit247-shared-lib';
 import { SearchUtil, CommonFunctionsUtil, AppConfigService, AddressService } from '@server/common';
 
 @Injectable()

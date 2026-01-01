@@ -2,7 +2,7 @@ import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from
 import { JwtAuthGuard, CurrentUser, RequestedIp, BasicSearchDto, UpdateActiveDto } from '@server/common';
 import { SleepingPatternService } from '../../services';
 import { CreateSleepingPatternDto } from '../../dto';
-import { ITableList, ISleepingPattern, IDropdownItem, IResponse } from 'eatfit247-shared-lib';
+import { ITableList, ISleepingPattern, IDropdownItem, IResponse } from '@eatfit247-shared-lib';
 
 @Controller('sleeping-pattern')
 @UseGuards(JwtAuthGuard)
