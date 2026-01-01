@@ -1,7 +1,7 @@
 {
-  "name": "eatfit247-shared-lib",
+  "name": "eatfit247-shared-library",
   "version": "1.0.0",
-  "description": "Shared library for EatFit247 projects",
+  "description": "A share lib used across frontend and backend",
   "main": "dist/index.js",
   "license": "private",
   "scripts": {
@@ -16,4 +16,3 @@
     "typescript": "^5.5.0"
   }
 }
-
