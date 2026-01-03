@@ -328,9 +328,7 @@ INSERT INTO public.mst_payment_status (payment_status_id, payment_status, active
 VALUES (4, 'FAILED', true, '2017-03-24 00:00:00.000000', 1, '2017-03-24 00:00:00.000000', 1, '0:', '0:')
 
 INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
-VALUES (DEFAULT, 'RAZORPAY_KEY_ID', 'rzp_test_xxxxx', 'RazorPay'),
-       (DEFAULT, 'RAZORPAY_KEY_SECRET', 'xxxxxxxx', 'RazorPay'),
-       (DEFAULT, 'RAZORPAY_WEBHOOK_SECRET', 'xxxxxxxx', 'RazorPay');
+VALUES (DEFAULT, 'PAYMENT_MODE', 'LIVE', 'Payment');
 
 UPDATE public.mst_configs
 SET config_value = 'true'
@@ -389,3 +387,68 @@ CREATE TYPE public.international_tax_mode AS ENUM ('EXPORT_OF_SERVICE', 'LOCAL_F
 
 alter table public.mst_franchises
     add international_tax_mode public.international_tax_mode;
+
+create table if not exists public.mst_payment_gateway
+(
+    payment_gateway_id     SERIAL PRIMARY KEY,
+    code                   varchar(50) not null,
+    name                   varchar(50) not null,
+    provider_country_code  varchar(3)  not null,
+    supports_international BOOLEAN default false,
+    supports_recurring     BOOLEAN default false,
+    supports_refund        BOOLEAN default false,
+    active                 boolean default false
+);
+
+comment on column public.mst_payment_gateway.code is 'RAZORPAY, STRIPE, CASHFREE, PAYPAL';
+comment on column public.mst_payment_gateway.name is 'Razorpay, Stripe, etc.';
+comment on column public.mst_payment_gateway.provider_country_code is 'IN, US, AE';
+
+create table if not exists public.mst_franchise_payment_gateway
+(
+    franchise_payment_gateway_id SERIAL PRIMARY KEY,
+    franchise_id                 integer                  not null,
+    payment_gateway_id           integer                  not null,
+    country_code                 VARCHAR(3)               NOT NULL,
+    currency_code                VARCHAR(3)               NOT NULL,
+    is_primary                   boolean                           default false,
+    supports_domestic            BOOLEAN                           default true,
+    supports_international       BOOLEAN                           default false,
+    supports_emi                 BOOLEAN                           default false,
+    supports_upi                 BOOLEAN                           default false,
+    settlement_delay_days        integer                           default null,
+    gateway_fee_percentage       double precision                  default null,
+    active                       boolean                           default false,
+    created_at                   TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at                   TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_by                   integer                  NOT NULL,
+    modified_by                  integer                  NOT NULL,
+    created_ip                   VARCHAR(50)              NULL,
+    modified_ip                  VARCHAR(50)              NULL,
+    CONSTRAINT fk_mst_franchise_payment_gateway_created_by_mst_admin_admin_id
+        FOREIGN KEY (created_by) REFERENCES mst_admin_users (admin_id),
+    CONSTRAINT fk_mst_franchise_payment_gateway_modified_by_mst_admin_admin_id
+        FOREIGN KEY (modified_by) REFERENCES mst_admin_users (admin_id)
+);
+
+create table if not exists public.mst_payment_gateway_credentials
+(
+    payment_gateway_credential_id SERIAL PRIMARY KEY,
+    franchise_payment_gateway_id  integer                  not null,
+    api_key_encrypted             text                     not null,
+    api_secret_encrypted          text                     not null,
+    webhook_secret_encrypted      text                     not null,
+    mode                          text                     not null,
+    created_at                    TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at                    TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_by                    integer                  NOT NULL,
+    modified_by                   integer                  NOT NULL,
+    created_ip                    VARCHAR(50)              NULL,
+    modified_ip                   VARCHAR(50)              NULL,
+    CONSTRAINT fk_mst_payment_gateway_cred_created_by_mst_admin_admin_id
+        FOREIGN KEY (created_by) REFERENCES mst_admin_users (admin_id),
+    CONSTRAINT fk_mst_payment_gateway_cred_modified_by_mst_admin_admin_id
+        FOREIGN KEY (modified_by) REFERENCES mst_admin_users (admin_id),
+    CONSTRAINT fk_mst_payment_gateway_cred_fpg_id_mst_fpg
+        FOREIGN KEY (franchise_payment_gateway_id) REFERENCES mst_franchise_payment_gateway (franchise_payment_gateway_id)
+);

@@ -28,6 +28,8 @@ import {
   IManageMemberPayment,
   IMemberPaymentMasterData,
   IProgramPlan,
+  ICalculateTaxRequest,
+  ICalculateTaxResponse,
 } from '@eatfit247-shared-lib';
 
 @Injectable({
@@ -430,6 +432,77 @@ export class MembersApiService extends ApiBaseService {
       `${this.endpoint}/${memberId}/payment-history/program-plan/${programPlanId}`
     );
     return res.data as IProgramPlan;
+  }
+
+  async calculateTax(
+    memberId: number,
+    data: ICalculateTaxRequest
+  ): Promise<ICalculateTaxResponse> {
+    const res = await this.httpService.post<IResponse<ICalculateTaxResponse>>(
+      `${this.endpoint}/${memberId}/payment-history/calculate-tax`,
+      data
+    );
+    return res.data as ICalculateTaxResponse;
+  }
+
+  async getSupportedPaymentGateways(
+    memberId: number,
+    currency: string
+  ): Promise<Array<{
+    franchisePaymentGatewayId: number;
+    gatewayCode: string;
+    gatewayName: string;
+    providerCountryCode: string;
+    currencyCode: string;
+    isPrimary: boolean;
+    supportsDomestic: boolean;
+    supportsInternational: boolean;
+  }>> {
+    const res = await this.httpService.get<IResponse<Array<{
+      franchisePaymentGatewayId: number;
+      gatewayCode: string;
+      gatewayName: string;
+      providerCountryCode: string;
+      currencyCode: string;
+      isPrimary: boolean;
+      supportsDomestic: boolean;
+      supportsInternational: boolean;
+    }>>>(
+      `${this.endpoint}/${memberId}/payment-history/supported-gateways`,
+      { params: { currency } }
+    );
+    return res.data as Array<{
+      franchisePaymentGatewayId: number;
+      gatewayCode: string;
+      gatewayName: string;
+      providerCountryCode: string;
+      currencyCode: string;
+      isPrimary: boolean;
+      supportsDomestic: boolean;
+      supportsInternational: boolean;
+    }>;
+  }
+
+  async createPaymentLink(
+    memberId: number,
+    data: {
+      amount: number;
+      currency?: string;
+      franchisePaymentGatewayId: number;
+      description?: string;
+      customer?: {
+        name?: string;
+        email?: string;
+        contact?: string;
+      };
+      notes?: Record<string, any>;
+    }
+  ): Promise<{ short_url: string; id: string; gatewayCode: string }> {
+    const res = await this.httpService.post<IResponse<{ short_url: string; id: string; gatewayCode: string }>>(
+      `${this.endpoint}/${memberId}/payment-history/create-payment-link`,
+      data
+    );
+    return res.data as { short_url: string; id: string; gatewayCode: string };
   }
   // endregion
 }

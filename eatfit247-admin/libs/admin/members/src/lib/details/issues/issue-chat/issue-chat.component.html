@@ -83,8 +83,8 @@
             }
             @if (!sendingResponse) {
               <mat-icon>send</mat-icon>
-              Send
             }
+            <span [style.visibility]="sendingResponse ? 'hidden' : 'visible'">Send</span>
           </button>
         </div>
       </form>

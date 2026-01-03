@@ -27,7 +27,26 @@ mat-dialog-content {
 .payment-form {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 24px;
+
+  .form-section {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 20px;
+    background-color: rgba(0, 0, 0, 0.01);
+    border-radius: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+
+    .section-title {
+      margin: 0 0 8px 0;
+      font-size: 16px;
+      font-weight: 600;
+      color: rgba(0, 0, 0, 0.87);
+      padding-bottom: 8px;
+      border-bottom: 2px solid rgba(0, 0, 0, 0.12);
+    }
+  }
 
   .full-width {
     width: 100%;
@@ -79,6 +98,197 @@ mat-dialog-actions {
 
   button {
     margin-left: 8px;
+  }
+}
+
+// Stepper styles
+mat-stepper {
+  background: transparent;
+}
+
+.step-content {
+  padding: 24px 0;
+  min-height: 400px;
+}
+
+.step-title {
+  margin: 0 0 24px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.87);
+}
+
+.step-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+// Tax Summary Card
+.tax-summary-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 24px;
+  border-radius: 12px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+  h4 {
+    margin: 0 0 20px 0;
+    font-size: 20px;
+    font-weight: 600;
+  }
+
+  .summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    &.total {
+      margin-top: 8px;
+      padding-top: 16px;
+      border-top: 2px solid rgba(255, 255, 255, 0.4);
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    &.sub-item {
+      padding-left: 24px;
+      font-size: 14px;
+      opacity: 0.9;
+    }
+
+    .label {
+      font-weight: 500;
+    }
+
+    .value {
+      font-weight: 600;
+    }
+  }
+
+  .tax-breakdown {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .invoice-note {
+    margin-top: 16px;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+}
+
+// Payment Link Card
+.payment-link-card {
+  background: #f5f5f5;
+  padding: 32px;
+  border-radius: 12px;
+  text-align: center;
+  margin-bottom: 24px;
+  border: 2px solid #e0e0e0;
+
+  .success-icon {
+    margin-bottom: 16px;
+    
+    mat-icon {
+      font-size: 64px;
+      width: 64px;
+      height: 64px;
+      color: #4caf50;
+    }
+  }
+
+  h4 {
+    margin: 0 0 24px 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: rgba(0, 0, 0, 0.87);
+  }
+
+  .link-label {
+    margin: 16px 0 8px 0;
+    font-weight: 500;
+    color: rgba(0, 0, 0, 0.6);
+    text-align: left;
+  }
+
+  .link-container {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    background: white;
+    padding: 8px;
+    border-radius: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+
+    .link-input {
+      flex: 1;
+      border: none;
+      outline: none;
+      font-family: monospace;
+      font-size: 14px;
+      padding: 8px;
+    }
+  }
+
+  .share-actions {
+    margin: 16px 0;
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+
+    button {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      
+      mat-icon {
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+      }
+    }
+  }
+
+  .link-hint {
+    margin-top: 8px;
+    font-size: 12px;
+    color: rgba(0, 0, 0, 0.6);
+    text-align: left;
+  }
+
+  .payment-info {
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(0, 0, 0, 0.12);
+    text-align: left;
+
+    p {
+      margin: 8px 0;
+      font-size: 14px;
+      color: rgba(0, 0, 0, 0.7);
+    }
+  }
+}
+
+.loading-container {
+  p {
+    margin-top: 16px;
+    color: rgba(0, 0, 0, 0.6);
   }
 }
 

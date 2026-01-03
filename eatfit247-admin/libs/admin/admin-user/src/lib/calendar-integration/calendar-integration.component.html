@@ -21,6 +21,7 @@
           <button
             mat-stroked-button
             color="warn"
+            type="button"
             (click)="disconnectGoogleCalendar()"
             [disabled]="connecting()">
             <mat-icon>link_off</mat-icon>
@@ -41,13 +42,17 @@
           <button
             mat-raised-button
             color="primary"
+            type="button"
             (click)="connectGoogleCalendar()"
             [disabled]="connecting()">
             @if (connecting()) {
               <mat-icon class="spinning">refresh</mat-icon>
-              Connecting...
             } @else {
               <mat-icon>link</mat-icon>
+            }
+            @if (connecting()) {
+              Connecting...
+            } @else {
               Connect Google Calendar
             }
           </button>

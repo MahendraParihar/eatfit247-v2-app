@@ -91,3 +91,23 @@ export interface IMemberPaymentMasterData {
   taxApplicable: boolean;
   paymentSource: IDropdownItem[];
 }
+
+export interface ICalculateTaxRequest {
+  orderAmount: number;
+  discountAmount: number;
+  isTaxApplicable: boolean;
+  isPlanFeesIncludedTax: boolean;
+  currencyCode: string;
+  billingAddressId?: number;
+  addressId?: number;
+}
+
+export interface ICalculateTaxResponse {
+  taxPercentage: number;
+  taxAmount: number;
+  totalAmount: number;
+  taxObj: Record<string, { amount: number; taxPercentage: number }>;
+  taxType?: string;
+  taxMode?: string;
+  invoiceNote?: string;
+}

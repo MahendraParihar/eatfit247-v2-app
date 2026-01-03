@@ -1,5 +1,5 @@
 export enum PaymentSourceEnum {
   MANUAL = 'MANUAL',
-  RAZORPAY = 'RAZORPAY'
+  PAYMENT_GATEWAY = 'PAYMENT_GATEWAY',
 }
 
