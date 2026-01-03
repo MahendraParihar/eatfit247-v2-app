@@ -16,9 +16,8 @@ export class TypeOfExerciseController {
   }
 
   @Get('manage/:id')
-  async getById(@Param('id') id: number): Promise<IResponse<ITypeOfExercise>> {
-    const data = await this.service.fetchById(id);
-    return { data };
+  async getById(@Param('id') id: number): Promise<ITypeOfExercise> {
+    return await this.service.fetchById(id);
   }
 
   @Post('manage')

@@ -16,9 +16,8 @@ export class PressMediaController {
   }
 
   @Get('manage/:id')
-  async getById(@Param('id') id: number): Promise<IResponse<IPressMedia>> {
-    const data = await this.service.fetchById(id);
-    return { data };
+  async getById(@Param('id') id: number): Promise<IPressMedia> {
+    return await this.service.fetchById(id);
   }
 
   @Post('manage')

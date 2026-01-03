@@ -16,9 +16,8 @@ export class EatingHabitController {
   }
 
   @Get('manage/:id')
-  async getById(@Param('id') id: number): Promise<IResponse<IEatingHabit>> {
-    const data = await this.service.fetchById(id);
-    return { data };
+  async getById(@Param('id') id: number): Promise<IEatingHabit> {
+    return await this.service.fetchById(id);
   }
 
   @Post('manage')

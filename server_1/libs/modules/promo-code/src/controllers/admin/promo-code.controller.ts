@@ -16,9 +16,8 @@ export class PromoCodeController {
   }
 
   @Get('manage/:id')
-  async getById(@Param('id') id: number): Promise<IResponse<any>> {
-    const data = await this.service.fetchById(id);
-    return { data };
+  async getById(@Param('id') id: number): Promise<any> {
+    return await this.service.fetchById(id);
   }
 
   @Post('manage')
@@ -51,9 +50,8 @@ export class PromoCodeController {
   }
 
   @Post('apply')
-  async applyPromoCode(@Body() body: ApplyPromoCodeDto): Promise<IResponse<any>> {
-    const result = await this.service.applyPromoCode(body);
-    return { data: result };
+  async applyPromoCode(@Body() body: ApplyPromoCodeDto): Promise<any> {
+    return await this.service.applyPromoCode(body);
   }
 }
 

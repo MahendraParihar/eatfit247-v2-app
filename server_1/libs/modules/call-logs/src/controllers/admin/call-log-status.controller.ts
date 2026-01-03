@@ -16,9 +16,8 @@ export class CallLogStatusController {
   }
 
   @Get('manage/:id')
-  async getById(@Param('id') id: number): Promise<IResponse<ICallLogStatus>> {
-    const data = await this.service.fetchById(id);
-    return { data };
+  async getById(@Param('id') id: number): Promise<ICallLogStatus> {
+    return await this.service.fetchById(id);
   }
 
   @Post('manage')

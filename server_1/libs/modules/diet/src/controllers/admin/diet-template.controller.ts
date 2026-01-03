@@ -16,9 +16,8 @@ export class DietTemplateController {
   }
 
   @Get('manage/:id')
-  async getById(@Param('id') id: number): Promise<IResponse<IDietTemplate>> {
-    const data = await this.service.fetchById(id);
-    return { data };
+  async getById(@Param('id') id: number): Promise<IDietTemplate> {
+    return await this.service.fetchById(id);
   }
 
   @Post('manage')

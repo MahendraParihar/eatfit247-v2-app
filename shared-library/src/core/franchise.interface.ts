@@ -13,6 +13,12 @@ export interface IBaseFranchise {
   panNumber: string;
   tanNumber: string;
   gstNumber: string;
+  vatNumber?: string;
+  bankAccountId?: string;
+  paymentGatewayConfigId?: number;
+  brandName?: string;
+  lutNumber?: string;
+  internationalTaxMode?: string;
   startDate: Date;
   endDate?: Date;
   isPrimary: boolean;

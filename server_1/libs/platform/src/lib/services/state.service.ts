@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { ITableList, IBasicSearch, IState, IManageState, IDropdownItem } from '@eatfit247-shared-lib';
 import { SearchUtil, CommonFunctionsUtil } from '@server_1/core';
-import { MstState } from '../database/models/mst-state.model';
+import { MstState } from '../database/models';
 
 @Injectable()
 export class StateService {
@@ -46,6 +46,18 @@ export class StateService {
       createdByUser: item.createdByUser ? CommonFunctionsUtil.getAdminShortInfo(item.createdByUser, 'createdByUser') : undefined,
       updatedByUser: item.updatedByUser ? CommonFunctionsUtil.getAdminShortInfo(item.updatedByUser, 'updatedByUser') : undefined,
     };
+  }
+
+  public async findByCode(code: string): Promise<IState> {
+    const find = await this.stateRepository.scope('details').findOne({
+      where: { code: code },
+      raw: true,
+      nest: true,
+    });
+    if (!find) {
+      throw new NotFoundException('State not found');
+    }
+    return this.convertToModel(find);
   }
 
   public async fetchById(id: number): Promise<IState> {

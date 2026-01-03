@@ -16,9 +16,8 @@ export class FaqCategoryController {
   }
 
   @Get('manage/:id')
-  async getById(@Param('id') id: number): Promise<IResponse<IFaqCategory>> {
-    const data = await this.service.fetchById(id);
-    return { data };
+  async getById(@Param('id') id: number): Promise<IFaqCategory> {
+    return await this.service.fetchById(id);
   }
 
   @Post('manage')

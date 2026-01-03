@@ -6,6 +6,7 @@ import { DiscountTypeEnum, InputLengthEnum } from '@eatfit247-shared-lib';
   freezeTableName: true,
   modelName: 'txn_promo_codes',
   schema: 'public',
+  tableName: 'txn_promo_codes',
 })
 @Scopes(() => ({
   list: {

@@ -8,6 +8,7 @@ import { IMediaUpload, InputLengthEnum } from '@eatfit247-shared-lib';
   freezeTableName: true,
   modelName: 'txn_blogs',
   schema: 'public',
+  tableName: 'txn_blogs',
 })
 @Scopes(() => ({
   list: {

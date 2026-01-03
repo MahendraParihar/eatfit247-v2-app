@@ -16,9 +16,8 @@ export class BloodSugarController {
   }
 
   @Get('manage/:id')
-  async getById(@Param('id') id: number): Promise<IResponse<IBloodSugar>> {
-    const data = await this.service.fetchById(id);
-    return { data };
+  async getById(@Param('id') id: number): Promise<IBloodSugar> {
+    return await this.service.fetchById(id);
   }
 
   @Post('manage')

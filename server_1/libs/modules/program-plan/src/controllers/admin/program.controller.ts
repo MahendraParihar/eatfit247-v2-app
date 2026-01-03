@@ -19,9 +19,8 @@ export class ProgramController {
   }
 
   @Get('manage/:id')
-  async getById(@Param('id') id: number): Promise<IResponse<IProgram>> {
-    const data = await this.service.fetchById(id);
-    return { data };
+  async getById(@Param('id') id: number): Promise<IProgram> {
+    return await this.service.fetchById(id);
   }
 
   @Post('manage')

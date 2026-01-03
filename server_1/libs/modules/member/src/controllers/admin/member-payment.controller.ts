@@ -89,8 +89,7 @@ export class MemberPaymentController {
   @Get('program-plan/:programPlanId')
   async getProgramPlanDetails(
     @Param('programPlanId') programPlanId: number,
-  ): Promise<IResponse<IProgramPlan>> {
-    const data = await this.programPlanService.fetchById(programPlanId);
-    return { data };
+  ): Promise<IProgramPlan> {
+    return await this.programPlanService.fetchById(programPlanId);
   }
 }

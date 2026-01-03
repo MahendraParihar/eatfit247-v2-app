@@ -16,9 +16,8 @@ export class MaritalStatusController {
   }
 
   @Get('manage/:id')
-  async getById(@Param('id') id: number): Promise<IResponse<IMaritalStatus>> {
-    const data = await this.service.fetchById(id);
-    return { data };
+  async getById(@Param('id') id: number): Promise<IMaritalStatus> {
+    return await this.service.fetchById(id);
   }
 
   @Post('manage')

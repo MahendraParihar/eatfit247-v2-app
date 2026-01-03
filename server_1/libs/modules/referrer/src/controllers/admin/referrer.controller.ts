@@ -16,9 +16,8 @@ export class ReferrerController {
   }
 
   @Get('manage/:id')
-  async getById(@Param('id') id: number): Promise<IResponse<IReferrer>> {
-    const data = await this.service.fetchById(id);
-    return { data };
+  async getById(@Param('id') id: number): Promise<IReferrer> {
+    return await this.service.fetchById(id);
   }
 
   @Post('manage')

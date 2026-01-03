@@ -16,9 +16,8 @@ export class RecipeTypeController {
   }
 
   @Get('manage/:id')
-  async getById(@Param('id') id: number): Promise<IResponse<IRecipeType>> {
-    const data = await this.service.fetchById(id);
-    return { data };
+  async getById(@Param('id') id: number): Promise<IRecipeType> {
+    return await this.service.fetchById(id);
   }
 
   @Post('manage')

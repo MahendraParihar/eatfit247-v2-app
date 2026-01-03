@@ -6,6 +6,7 @@ import { InputLengthEnum } from '@eatfit247-shared-lib';
   freezeTableName: true,
   modelName: 'mst_blog_authors',
   schema: 'public',
+  tableName: 'mst_blog_authors',
 })
 @Scopes(() => ({
   list: CommonScopes.list(),

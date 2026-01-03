@@ -16,9 +16,8 @@ export class GenderController {
   }
 
   @Get('manage/:id')
-  async getById(@Param('id') id: number): Promise<IResponse<IGender>> {
-    const data = await this.service.fetchById(id);
-    return { data };
+  async getById(@Param('id') id: number): Promise<IGender> {
+    return await this.service.fetchById(id);
   }
 
   @Post('manage')

@@ -33,7 +33,11 @@ import {
   MstAdminRolePermission,
 } from './database/models';
 
-// Feature models are registered via SequelizeModule.forFeature() in their respective modules
+// Model registry for feature modules
+import { modelRegistry } from './database/model-registry';
+
+// Feature models are registered via modelRegistry.register() in their respective modules
+// Models with @Scopes decorator MUST be registered in SequelizeModule.forRoot() during initialization
 // Core must NEVER import or know about feature models to avoid circular dependencies
 
 export class CommonModule {
@@ -47,7 +51,7 @@ export class CommonModule {
     platformModels: ModelCtor[] = [],
   ): DynamicModule {
     const modulesNeededForCommon = ['Common'];
-    // Core models only - feature models are registered via SequelizeModule.forFeature() in their respective modules
+    // Core models only - feature models are registered via modelRegistry in their respective modules
     // Core must NEVER know about feature models to avoid circular dependencies
     const coreModelsList = [
       AppConfigModel,
@@ -60,9 +64,12 @@ export class CommonModule {
       TxnAdminRefreshToken,
       TxnAdminPasswordResetToken,
     ];
-    // Combine core models and platform models only
-    // Feature modules register their models using SequelizeModule.forFeature() which adds them to the connection
-    const allModelsList = [...coreModelsList, ...platformModels];
+    // Get models registered by feature modules via modelRegistry
+    // Each feature module registers its own models during module initialization
+    const libModelsList = modelRegistry.getAllModels();
+    // Combine core models, platform models, and feature module models
+    // Models with @Scopes decorator MUST be registered in SequelizeModule.forRoot() during initialization
+    const allModelsList = [...coreModelsList, ...platformModels, ...libModelsList];
     const modulesList = [...configModules, ...modulesNeededForCommon]; // add modules needed for common
     return {
       module: CommonModule,
@@ -71,8 +78,9 @@ export class CommonModule {
         HealthController,
       ],
       imports: [
-        // Initialize database connection with core and platform models only
-        // Feature modules register their models using SequelizeModule.forFeature() in their own modules
+        // Initialize database connection with all models (core + platform + feature modules)
+        // Models with @Scopes decorator MUST be registered here for scopes to work
+        // Feature modules also use SequelizeModule.forFeature() for dependency injection
         SequelizeModule.forRoot({ ...databaseConfig, models: allModelsList }),
         ConfigModule.forRoot({ isGlobal: true }),
         AppConfigModule.asyncRegister(modulesList),

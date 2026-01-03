@@ -16,9 +16,8 @@ export class LegalPagesController {
   }
 
   @Get('manage/:id')
-  async getById(@Param('id') id: number): Promise<IResponse<ILegalPageList>> {
-    const data = await this.service.fetchById(id);
-    return { data };
+  async getById(@Param('id') id: number): Promise<ILegalPageList> {
+    return await this.service.fetchById(id);
   }
 
   @Post('manage')

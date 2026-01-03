@@ -2,6 +2,7 @@ import {
   IsBoolean,
   IsDate,
   IsEmail,
+  IsEnum,
   IsNotEmpty,
   IsNumber,
   IsOptional,
@@ -10,7 +11,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { InputLengthEnum, IManageFranchise } from '@eatfit247-shared-lib';
+import { InputLengthEnum, IManageFranchise, InternationalTaxModeEnum } from '@eatfit247-shared-lib';
 import { MediaUploadDto } from '@server_1/core';
 
 export class CreateFranchiseDto implements IManageFranchise {
@@ -58,6 +59,30 @@ export class CreateFranchiseDto implements IManageFranchise {
   @IsNotEmpty()
   @MaxLength(InputLengthEnum.CHAR_50)
   gstNumber!: string;
+
+  @IsOptional()
+  @MaxLength(InputLengthEnum.CHAR_100)
+  vatNumber?: string;
+
+  @IsOptional()
+  @MaxLength(InputLengthEnum.CHAR_100)
+  bankAccountId?: string;
+
+  @IsOptional()
+  @IsNumber()
+  paymentGatewayConfigId?: number;
+
+  @IsOptional()
+  @MaxLength(InputLengthEnum.CHAR_100)
+  brandName?: string;
+
+  @IsOptional()
+  @MaxLength(InputLengthEnum.CHAR_100)
+  lutNumber?: string;
+
+  @IsOptional()
+  @IsEnum(InternationalTaxModeEnum)
+  internationalTaxMode?: InternationalTaxModeEnum;
 
   @IsNotEmpty()
   @IsDate()

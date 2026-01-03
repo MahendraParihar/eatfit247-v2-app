@@ -3,7 +3,10 @@ import { SequelizeOptions } from 'sequelize-typescript';
 import { Env } from '../config/env.values';
 
 const logger = new Logger('Sequelize SQL');
-export const databaseConfig: SequelizeOptions = {
+export const databaseConfig: SequelizeOptions & {
+  retryAttempts?: number;
+  retryDelay?: number;
+} = {
   username: Env.databaseUsername,
   password: Env.databasePassword,
   database: Env.databaseName,
@@ -23,5 +26,7 @@ export const databaseConfig: SequelizeOptions = {
     max: 100,
     min: 10,
   },
+  retryAttempts: 10,
+  retryDelay: 3000,
 };
 

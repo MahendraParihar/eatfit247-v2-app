@@ -37,20 +37,37 @@
           </mat-form-field>
         </div>
 
-        <mat-form-field class="full-width">
-          <mat-label>Company Name</mat-label>
-          <input
-            matInput
-            formControlName="companyName"
-            placeholder="Enter company name"
-          />
-          @if (getMaxLength('companyName')) {
-            <mat-hint align="end">
-              {{ getCurrentLength('companyName') }}/{{ getMaxLength('companyName') }}
-            </mat-hint>
-          }
-          <shared-ui-input-error [control]="formGroup.get('companyName')" controlName="Company Name"></shared-ui-input-error>
-        </mat-form-field>
+        <div class="row">
+          <mat-form-field class="half-width">
+            <mat-label>Company Name</mat-label>
+            <input
+              matInput
+              formControlName="companyName"
+              placeholder="Enter company name"
+            />
+            @if (getMaxLength('companyName')) {
+              <mat-hint align="end">
+                {{ getCurrentLength('companyName') }}/{{ getMaxLength('companyName') }}
+              </mat-hint>
+            }
+            <shared-ui-input-error [control]="formGroup.get('companyName')" controlName="Company Name"></shared-ui-input-error>
+          </mat-form-field>
+
+          <mat-form-field class="half-width">
+            <mat-label>Brand Name</mat-label>
+            <input
+              matInput
+              formControlName="brandName"
+              placeholder="Enter brand name"
+            />
+            @if (getMaxLength('brandName')) {
+              <mat-hint align="end">
+                {{ getCurrentLength('brandName') }}/{{ getMaxLength('brandName') }}
+              </mat-hint>
+            }
+            <shared-ui-input-error [control]="formGroup.get('brandName')" controlName="Brand Name"></shared-ui-input-error>
+          </mat-form-field>
+        </div>
 
         <div class="row">
           <mat-form-field class="half-width">
@@ -150,20 +167,90 @@
           </mat-form-field>
         </div>
 
+        <div class="row">
+          <mat-form-field class="half-width">
+            <mat-label>GST Number</mat-label>
+            <input
+              matInput
+              formControlName="gstNumber"
+              placeholder="Enter GST number"
+            />
+            @if (getMaxLength('gstNumber')) {
+              <mat-hint align="end">
+                {{ getCurrentLength('gstNumber') }}/{{ getMaxLength('gstNumber') }}
+              </mat-hint>
+            }
+            <shared-ui-input-error [control]="formGroup.get('gstNumber')" controlName="GST Number"></shared-ui-input-error>
+          </mat-form-field>
+
+          <mat-form-field class="half-width">
+            <mat-label>VAT Number</mat-label>
+            <input
+              matInput
+              formControlName="vatNumber"
+              placeholder="Enter VAT number"
+            />
+            @if (getMaxLength('vatNumber')) {
+              <mat-hint align="end">
+                {{ getCurrentLength('vatNumber') }}/{{ getMaxLength('vatNumber') }}
+              </mat-hint>
+            }
+            <shared-ui-input-error [control]="formGroup.get('vatNumber')" controlName="VAT Number"></shared-ui-input-error>
+          </mat-form-field>
+        </div>
+
         <mat-form-field class="full-width">
-          <mat-label>GST Number</mat-label>
+          <mat-label>Bank Account ID</mat-label>
           <input
             matInput
-            formControlName="gstNumber"
-            placeholder="Enter GST number"
+            formControlName="bankAccountId"
+            placeholder="Enter bank account ID"
           />
-          @if (getMaxLength('gstNumber')) {
+          @if (getMaxLength('bankAccountId')) {
             <mat-hint align="end">
-              {{ getCurrentLength('gstNumber') }}/{{ getMaxLength('gstNumber') }}
+              {{ getCurrentLength('bankAccountId') }}/{{ getMaxLength('bankAccountId') }}
             </mat-hint>
           }
-          <shared-ui-input-error [control]="formGroup.get('gstNumber')" controlName="GST Number"></shared-ui-input-error>
+          <shared-ui-input-error [control]="formGroup.get('bankAccountId')" controlName="Bank Account ID"></shared-ui-input-error>
         </mat-form-field>
+
+        <mat-form-field class="full-width">
+          <mat-label>Payment Gateway Config ID</mat-label>
+          <input
+            matInput
+            type="number"
+            formControlName="paymentGatewayConfigId"
+            placeholder="Enter payment gateway config ID"
+          />
+          <shared-ui-input-error [control]="formGroup.get('paymentGatewayConfigId')" controlName="Payment Gateway Config ID"></shared-ui-input-error>
+        </mat-form-field>
+
+        <div class="row">
+          <mat-form-field class="half-width">
+            <mat-label>LUT Number</mat-label>
+            <input
+              matInput
+              formControlName="lutNumber"
+              placeholder="Enter LUT number"
+            />
+            @if (getMaxLength('lutNumber')) {
+              <mat-hint align="end">
+                {{ getCurrentLength('lutNumber') }}/{{ getMaxLength('lutNumber') }}
+              </mat-hint>
+            }
+            <shared-ui-input-error [control]="formGroup.get('lutNumber')" controlName="LUT Number"></shared-ui-input-error>
+          </mat-form-field>
+
+          <mat-form-field class="half-width">
+            <mat-label>International Tax Mode</mat-label>
+            <mat-select formControlName="internationalTaxMode">
+              <mat-option [value]="null">Select Tax Mode</mat-option>
+              <mat-option [value]="internationalTaxModeOptions.EXPORT_OF_SERVICE">Export of Service</mat-option>
+              <mat-option [value]="internationalTaxModeOptions.LOCAL_FOREIGN_TAX">Local Foreign Tax</mat-option>
+            </mat-select>
+            <shared-ui-input-error [control]="formGroup.get('internationalTaxMode')" controlName="International Tax Mode"></shared-ui-input-error>
+          </mat-form-field>
+        </div>
 
         <div class="row">
           <mat-form-field appearance="outline" class="half-width">

@@ -16,7 +16,8 @@ import { FranchiseApiService } from '../api.service';
 import {
   IFranchise,
   InputLengthEnum,
-  FileTypeEnum
+  FileTypeEnum,
+  InternationalTaxModeEnum
 } from '@eatfit247-shared-lib';
 
 @Component({
@@ -74,6 +75,12 @@ export class ManageFranchise implements OnInit, OnDestroy {
     panNumber: ['', [Validators.required, Validators.maxLength(InputLengthEnum.CHAR_20)]],
     tanNumber: ['', [Validators.required, Validators.maxLength(InputLengthEnum.CHAR_20)]],
     gstNumber: ['', [Validators.required, Validators.maxLength(InputLengthEnum.CHAR_50)]],
+    vatNumber: ['', [Validators.maxLength(InputLengthEnum.CHAR_100)]],
+    bankAccountId: ['', [Validators.maxLength(InputLengthEnum.CHAR_100)]],
+    paymentGatewayConfigId: [null],
+    brandName: ['', [Validators.maxLength(InputLengthEnum.CHAR_100)]],
+    lutNumber: ['', [Validators.maxLength(InputLengthEnum.CHAR_100)]],
+    internationalTaxMode: [null],
     startDate: [new Date(), [Validators.required]],
     endDate: [null],
     isPrimary: [false, [Validators.required]],
@@ -84,6 +91,7 @@ export class ManageFranchise implements OnInit, OnDestroy {
   pageTitle = 'Create Franchise';
   mediaFor = 'franchise' as any; // Using string literal
   mediaType = FileTypeEnum.IMAGE;
+  internationalTaxModeOptions = InternationalTaxModeEnum;
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private apiService = inject(FranchiseApiService);
@@ -118,6 +126,12 @@ export class ManageFranchise implements OnInit, OnDestroy {
         panNumber: this.initialData.panNumber || '',
         tanNumber: this.initialData.tanNumber || '',
         gstNumber: this.initialData.gstNumber || '',
+        vatNumber: (this.initialData as any).vatNumber || '',
+        bankAccountId: (this.initialData as any).bankAccountId || '',
+        paymentGatewayConfigId: (this.initialData as any).paymentGatewayConfigId || null,
+        brandName: (this.initialData as any).brandName || '',
+        lutNumber: (this.initialData as any).lutNumber || '',
+        internationalTaxMode: (this.initialData as any).internationalTaxMode || null,
         startDate: startDate,
         endDate: endDate,
         isPrimary: (this.initialData as any).isPrimary !== undefined ? (this.initialData as any).isPrimary : false,
@@ -161,7 +175,11 @@ export class ManageFranchise implements OnInit, OnDestroy {
       alternateContactNumber: InputLengthEnum.MAX_CONTACT_NUMBER,
       panNumber: InputLengthEnum.CHAR_20,
       tanNumber: InputLengthEnum.CHAR_20,
-      gstNumber: InputLengthEnum.CHAR_50
+      gstNumber: InputLengthEnum.CHAR_50,
+      vatNumber: InputLengthEnum.CHAR_100,
+      bankAccountId: InputLengthEnum.CHAR_100,
+      brandName: InputLengthEnum.CHAR_100,
+      lutNumber: InputLengthEnum.CHAR_100
     };
     return maxLengthMap[controlName] || null;
   }

@@ -3,16 +3,19 @@ import { TaxResult } from '../interfaces/tax.interface';
 import { TaxTypeEnum } from '@eatfit247-shared-lib';
 
 @Injectable()
+@Injectable()
 export class VatService {
   calculate(vatPercentage: number, amount: number): TaxResult {
-    const taxAmount = (amount * vatPercentage) / 100;
-
+    const taxAmount = Number(((amount * vatPercentage) / 100).toFixed(2));
     return {
       taxType: TaxTypeEnum.VAT,
       taxPercentage: vatPercentage,
       taxAmount,
       taxObj: {
-        VAT: { amount: taxAmount, taxPercentage: vatPercentage },
+        VAT: {
+          amount: taxAmount,
+          taxPercentage: vatPercentage,
+        },
       },
       totalAmount: amount + taxAmount,
     };

@@ -1,13 +1,15 @@
-import { TaxTypeEnum } from '@eatfit247-shared-lib';
+import { TaxMode, TaxTypeEnum, TransactionType } from '@eatfit247-shared-lib';
 
 export interface TaxInput {
-  baseAmount: number;
-  discountAmount: number;
-  isTaxApplicable: boolean;
-  supplierCountryCode: string;
-  supplierStateCode?: string | null;
-  customerCountryCode: string;
-  customerStateCode?: string | null;
+  baseAmount: number; // price before discount
+  discountAmount: number; // absolute discount (not %)
+  supplierCountryCode: string; // from entity address (ISO code)
+  supplierStateCode?: string; // required for GST / US sales tax
+  customerCountryCode: string; // from the customer address (ISO code)
+  customerStateCode?: string; // required for GST / US sales tax
+  currency: string; // INR, USD, AED, etc.
+  transactionType: TransactionType;
+  isTaxApplicable?: boolean; // default = true (used only for exemptions)
 }
 
 export interface TaxResult {
@@ -16,6 +18,8 @@ export interface TaxResult {
   taxAmount: number;
   taxObj: Record<string, { amount: number; taxPercentage: number }>;
   totalAmount: number;
+  taxMode?: TaxMode;
+  invoiceNote?: string;
 }
 
 export interface CountryTaxInfo {

@@ -96,6 +96,42 @@ export class MstFranchise extends Model<MstFranchise> {
   })
   declare gstNumber: string;
   @Column({
+    allowNull: true,
+    field: 'vat_number',
+    type: DataType.STRING(100),
+  })
+  declare vatNumber: string;
+  @Column({
+    allowNull: true,
+    field: 'lut_number',
+    type: DataType.STRING(100),
+  })
+  declare lutNumber: string;
+  @Column({
+    allowNull: true,
+    field: 'international_tax_mode',
+    type: DataType.ENUM('EXPORT_OF_SERVICE', 'LOCAL_FOREIGN_TAX'),
+  })
+  declare internationalTaxMode: 'EXPORT_OF_SERVICE' | 'LOCAL_FOREIGN_TAX';
+  @Column({
+    allowNull: true,
+    field: 'bank_account_id',
+    type: DataType.STRING(100),
+  })
+  declare bankAccountId: string;
+  @Column({
+    allowNull: true,
+    field: 'payment_gateway_config_id',
+    type: DataType.INTEGER,
+  })
+  declare paymentGatewayConfigId: number;
+  @Column({
+    allowNull: true,
+    field: 'brand_name',
+    type: DataType.STRING(100),
+  })
+  declare brandName: string;
+  @Column({
     allowNull: false,
     field: 'start_date',
     type: DataType.DATEONLY,

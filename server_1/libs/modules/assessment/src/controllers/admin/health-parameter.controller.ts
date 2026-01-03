@@ -16,9 +16,8 @@ export class HealthParameterController {
   }
 
   @Get('manage/:id')
-  async getById(@Param('id') id: number): Promise<IResponse<IHealthParameter>> {
-    const data = await this.service.fetchById(id);
-    return { data };
+  async getById(@Param('id') id: number): Promise<IHealthParameter> {
+    return await this.service.fetchById(id);
   }
 
   @Post('manage')

@@ -16,9 +16,8 @@ export class EmailController {
   }
 
   @Get('manage/:id')
-  async getById(@Param('id') id: number): Promise<IResponse<IEmailTemplate>> {
-    const data = await this.service.fetchById(id);
-    return { data };
+  async getById(@Param('id') id: number): Promise<IEmailTemplate> {
+    return await this.service.fetchById(id);
   }
 
   @Post('manage')

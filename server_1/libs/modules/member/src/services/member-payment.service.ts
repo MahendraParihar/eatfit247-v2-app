@@ -11,6 +11,7 @@ import {
   TableEnum,
   ConfigParam,
   IAddress,
+  TransactionType,
 } from '@eatfit247-shared-lib';
 import {
   AppConfigService,
@@ -650,6 +651,8 @@ export class MemberPaymentService {
         supplierStateCode,
         customerCountryCode,
         customerStateCode,
+        currency: currencyCode,
+        transactionType: TransactionType.SERVICE,
       };
       const tempTaxResult = await this.taxEngineService.calculate(tempTaxInput);
       if (tempTaxResult.taxPercentage > 0) {
@@ -667,6 +670,8 @@ export class MemberPaymentService {
       supplierStateCode,
       customerCountryCode,
       customerStateCode,
+      currency: currencyCode,
+      transactionType: TransactionType.SERVICE,
     };
     const taxResult = await this.taxEngineService.calculate(taxInput);
     // Calculate system amounts

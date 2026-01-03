@@ -20,9 +20,8 @@ export class FaqController {
   }
 
   @Get('manage/:id')
-  async getById(@Param('id') id: number): Promise<IResponse<IFaq>> {
-    const data = await this.service.fetchById(id);
-    return { data };
+  async getById(@Param('id') id: number): Promise<IFaq> {
+    return await this.service.fetchById(id);
   }
 
   @Post('manage')

@@ -16,9 +16,8 @@ export class FranchiseController {
   }
 
   @Get('manage/:id')
-  async getById(@Param('id') id: number): Promise<IResponse<IFranchise>> {
-    const data = await this.service.fetchById(id);
-    return { data };
+  async getById(@Param('id') id: number): Promise<IFranchise> {
+    return await this.service.fetchById(id);
   }
 
   @Post('manage')

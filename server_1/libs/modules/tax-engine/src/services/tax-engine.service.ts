@@ -3,7 +3,7 @@ import { TaxInput, TaxResult } from '../interfaces/tax.interface';
 import { IndiaGstService } from './india-gst.service';
 import { VatService } from './vat.service';
 import { UsSalesTaxService } from './us-sales-tax.service';
-import { TaxTypeEnum } from '@eatfit247-shared-lib';
+import { TaxMode, TaxTypeEnum } from '@eatfit247-shared-lib';
 import { CountryService } from '@server_1/platform';
 
 @Injectable()
@@ -17,30 +17,55 @@ export class TaxEngineService {
 
   async calculate(input: TaxInput): Promise<TaxResult> {
     const taxableAmount = input.baseAmount - input.discountAmount;
-
-    if (!input.isTaxApplicable) {
+    if (input.isTaxApplicable === false) {
       return this.noTax(taxableAmount);
     }
-
-    // Get country tax information
     const countries = await this.countryService.findAll({ page: 0, limit: 1000 });
-    const countryTax = countries.tableData.find((c) => c.countryCode === input.supplierCountryCode);
-
-    if (!countryTax || !countryTax.taxType || countryTax.taxType === TaxTypeEnum.NONE) {
+    const supplierCountry = countries.tableData.find(
+      (c) => c.countryCode === input.supplierCountryCode,
+    );
+    const customerCountry = countries.tableData.find(
+      (c) => c.countryCode === input.customerCountryCode,
+    );
+    if (!supplierCountry || supplierCountry.taxType === TaxTypeEnum.NONE) {
       return this.noTax(taxableAmount);
     }
-
-    switch (countryTax.taxType) {
+    const isDomestic = supplierCountry.countryCode === customerCountry?.countryCode;
+    // 🔴 EXPORT OF SERVICE (INDIA → INTERNATIONAL)
+    if (supplierCountry.countryCode === 'IN' && !isDomestic) {
+      if (input.currency === 'INR') {
+        throw new Error('Export of service requires foreign currency payment');
+      }
+      return {
+        taxType: TaxTypeEnum.GST,
+        taxPercentage: 0,
+        taxAmount: 0,
+        taxObj: {},
+        totalAmount: taxableAmount,
+        taxMode: TaxMode.EXPORT_OF_SERVICE,
+        invoiceNote: 'Supply meant for export under LUT without payment of IGST',
+      };
+    }
+    switch (supplierCountry.taxType) {
       case TaxTypeEnum.GST:
-        return this.indiaGst.calculate(input, taxableAmount);
-
+        return {
+          ...this.indiaGst.calculate(input, taxableAmount, supplierCountry.defaultTaxPercentage),
+          taxMode: TaxMode.DOMESTIC,
+        };
       case TaxTypeEnum.VAT:
-        const vatPercentage = countryTax.defaultTaxPercentage || 0;
-        return this.vatService.calculate(vatPercentage, taxableAmount);
-
+        return {
+          ...this.vatService.calculate(supplierCountry.defaultTaxPercentage || 0, taxableAmount),
+          taxMode: isDomestic ? TaxMode.DOMESTIC : TaxMode.FOREIGN_LOCAL,
+        };
       case TaxTypeEnum.SALES_TAX:
-        return this.usSalesTax.calculate(input.supplierStateCode || null, taxableAmount);
-
+        const result = await this.usSalesTax.calculate(
+          input.supplierStateCode || null,
+          taxableAmount,
+        );
+        return {
+          ...result,
+          taxMode: isDomestic ? TaxMode.DOMESTIC : TaxMode.FOREIGN_LOCAL,
+        };
       default:
         return this.noTax(taxableAmount);
     }
@@ -53,6 +78,7 @@ export class TaxEngineService {
       taxAmount: 0,
       taxObj: {},
       totalAmount: amount,
+      taxMode: TaxMode.NO_TAX,
     };
   }
 }

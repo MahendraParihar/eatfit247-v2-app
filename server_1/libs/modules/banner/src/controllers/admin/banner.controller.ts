@@ -16,9 +16,8 @@ export class BannerController {
   }
 
   @Get('manage/:id')
-  async getById(@Param('id') id: number): Promise<IResponse<IBanner>> {
-    const data = await this.service.fetchById(id);
-    return { data };
+  async getById(@Param('id') id: number): Promise<IBanner> {
+    return await this.service.fetchById(id);
   }
 
   @Post('manage')

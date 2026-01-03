@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
+import { modelRegistry } from '@server_1/core';
 import { MstCallLogStatus, MstCallPurpose, MstCallType } from './models';
 import {
   CallLogStatusController,
@@ -14,6 +15,10 @@ import {
   CallPurposeService,
   CallTypeService,
 } from './services';
+
+// Register models with the model registry
+// These models have @Scopes decorator, so they MUST be registered for scopes to work
+modelRegistry.register([MstCallLogStatus, MstCallPurpose, MstCallType]);
 
 @Module({
   imports: [

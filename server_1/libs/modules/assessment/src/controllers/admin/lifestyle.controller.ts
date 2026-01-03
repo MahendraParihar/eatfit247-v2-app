@@ -16,9 +16,8 @@ export class LifestyleController {
   }
 
   @Get('manage/:id')
-  async getById(@Param('id') id: number): Promise<IResponse<ILifestyle>> {
-    const data = await this.service.fetchById(id);
-    return { data };
+  async getById(@Param('id') id: number): Promise<ILifestyle> {
+    return await this.service.fetchById(id);
   }
 
   @Post('manage')

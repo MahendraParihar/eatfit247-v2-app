@@ -367,3 +367,25 @@ CREATE TABLE txn_promo_codes
     CONSTRAINT fk_txn_promo_codes_modified_by_mst_admin_admin_id
         FOREIGN KEY (modified_by) REFERENCES mst_admin_users (admin_id)
 );
+
+alter table public.mst_franchises
+    add vat_number varchar(100);
+
+alter table public.mst_franchises
+    add bank_account_id varchar(100);
+
+alter table public.mst_franchises
+    add payment_gateway_config_id integer;
+
+alter table public.mst_franchises
+    add brand_name varchar(100);
+
+alter table public.mst_franchises
+    add lut_number varchar(100);
+
+comment on column public.mst_franchises.lut_number is 'Indian export';
+
+CREATE TYPE public.international_tax_mode AS ENUM ('EXPORT_OF_SERVICE', 'LOCAL_FOREIGN_TAX');
+
+alter table public.mst_franchises
+    add international_tax_mode public.international_tax_mode;

@@ -16,9 +16,8 @@ export class CallTypeController {
   }
 
   @Get('manage/:id')
-  async getById(@Param('id') id: number): Promise<IResponse<ICallType>> {
-    const data = await this.service.fetchById(id);
-    return { data };
+  async getById(@Param('id') id: number): Promise<ICallType> {
+    return await this.service.fetchById(id);
   }
 
   @Post('manage')
