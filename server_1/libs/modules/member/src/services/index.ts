@@ -7,4 +7,5 @@ export * from './member-issue.service';
 export * from './member-issue-response.service';
 export * from './member-assessment.service';
 export * from './member-payment.service';
+export * from './member-diet-plan.service';
 

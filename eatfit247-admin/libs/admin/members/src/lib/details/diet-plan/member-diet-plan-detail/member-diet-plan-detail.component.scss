@@ -1,0 +1,66 @@
+.diet-table {
+  height: calc(100vh - 212px);
+  overflow-y: scroll;
+}
+
+.form-card {
+  margin: 16px;
+}
+
+.form-body {
+  padding: 16px;
+}
+
+.form-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 16px;
+  
+  .form-item {
+    flex: 1;
+    min-width: 200px;
+    
+    &.category-item {
+      flex: 0 0 10%;
+      min-width: 100px;
+    }
+    
+    &.detail-item {
+      flex: 0 0 64%;
+      min-width: 300px;
+    }
+    
+    &.recipe-item {
+      flex: 0 0 25%;
+      min-width: 200px;
+    }
+  }
+}
+
+.round-btn {
+  border-radius: 20px;
+  margin-left: 8px;
+}
+
+.gradient-btn {
+  background: linear-gradient(45deg, #2196F3, #21CBF3);
+  color: white;
+}
+
+@media (max-width: 768px) {
+  .form-row {
+    flex-direction: column;
+    
+    .form-item {
+      width: 100%;
+      
+      &.category-item,
+      &.detail-item,
+      &.recipe-item {
+        flex: 1 1 100%;
+      }
+    }
+  }
+}
+

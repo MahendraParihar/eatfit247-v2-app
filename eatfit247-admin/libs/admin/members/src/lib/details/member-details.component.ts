@@ -54,6 +54,7 @@ export class MemberDetailsComponent implements OnInit, OnDestroy {
     { label: 'Call Logs', icon: 'phone', route: 'call-logs' },
     { label: 'Payment History', icon: 'payments', route: 'payment-history' },
     { label: 'Diet History', icon: 'restaurant_menu', route: 'diet-history' },
+    { label: 'Diet Plan', icon: 'restaurant', route: 'diet-plan' },
   ];
 
   constructor(

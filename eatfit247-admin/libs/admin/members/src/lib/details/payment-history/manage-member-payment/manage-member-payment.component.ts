@@ -24,7 +24,6 @@ import {
   IDropdownItem,
   InputLengthEnum,
   PaymentSourceEnum,
-  IManageAddress,
   ICalculateTaxResponse
 } from '@eatfit247-shared-lib';
 import { MembersApiService } from '../../../api.service';
@@ -124,7 +123,7 @@ export class ManageMemberPaymentComponent implements OnInit {
       addressId: [null],
       billingAddressId: [null],
       gstNumber: ['', [Validators.maxLength(InputLengthEnum.CHAR_50)]],
-      isTaxApplicable: [false, [Validators.required]],
+      isTaxApplicable: [true, [Validators.required]],
       isPlanFeesIncludedTax: [false, [Validators.required]],
       currencyCode: ['INR', [Validators.required]],
       orderAmount: [0, [Validators.required, Validators.min(0)]],
@@ -142,7 +141,7 @@ export class ManageMemberPaymentComponent implements OnInit {
       billingAddressId: [null],
       gstNumber: ['', [Validators.maxLength(InputLengthEnum.CHAR_50)]],
       // Tax Configuration
-      isTaxApplicable: [false, [Validators.required]],
+      isTaxApplicable: [true, [Validators.required]],
       taxPercentageDisplay: [0], // For display only
       isPlanFeesIncludedTax: [false, [Validators.required]],
       // Pricing & Amounts
@@ -160,7 +159,7 @@ export class ManageMemberPaymentComponent implements OnInit {
       gatewayOrderId: ['', [Validators.maxLength(InputLengthEnum.CHAR_100)]],
       gatewayPaymentId: ['', [Validators.maxLength(InputLengthEnum.CHAR_100)]],
       paymentLink: ['', [Validators.maxLength(InputLengthEnum.CHAR_500)]],
-      franchisePaymentGatewayId: [null]
+      franchisePaymentGatewayId: [null],
     });
     // Subscribe to changes to calculate tax and total from backend with debouncing
     this.formGroup.get('orderAmount')?.valueChanges.pipe(
@@ -594,14 +593,6 @@ export class ManageMemberPaymentComponent implements OnInit {
           discountAmount: Number(getValue('discountAmount') || this.formGroup.value.discountAmount || 0),
           totalAmount: this.totalAmount || 0,
           promoCode: '',
-          address: {} as IManageAddress,
-          billingAddress: {} as IManageAddress,
-          // Add payment link fields for gateway payment
-          paymentLink: this.formGroup.value.paymentLink || undefined,
-          gatewayProvider: this.formGroup.value.gatewayProvider || undefined,
-          gatewayOrderId: this.formGroup.value.gatewayOrderId || undefined,
-          gatewayPaymentId: this.formGroup.value.gatewayPaymentId || undefined,
-          franchisePaymentGatewayId: this.formGroup.value.franchisePaymentGatewayId || undefined
         };
         if (this.isEditMode && this.data.payment?.memberPaymentId) {
           await this.apiService.updatePayment(

@@ -1,19 +1,32 @@
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
-import { TxnMemberPayment } from '@server_1/modules/member';
-import { RazorpayService } from '@server_1/platform';
-import { PaymentService } from './services';
+import { FranchiseModule } from '@server_1/modules/franchise';
+import {
+  PaymentService,
+  PaymentGatewayResolverService,
+  PaymentGatewayCredentialService,
+  PaymentGatewayFactory,
+} from './services';
+import { MstPaymentGatewayCredentials } from './models';
 import { RazorpayWebhookController } from './controllers/public';
 
 @Module({
   imports: [
-    SequelizeModule.forFeature([TxnMemberPayment]),
+    SequelizeModule.forFeature([MstPaymentGatewayCredentials]),
+    FranchiseModule,
   ],
   controllers: [RazorpayWebhookController],
-  providers: [PaymentService, RazorpayService],
+  providers: [
+    PaymentGatewayCredentialService,
+    PaymentGatewayResolverService,
+    PaymentService,
+    PaymentGatewayFactory,
+  ],
   exports: [
     SequelizeModule,
     PaymentService,
+    PaymentGatewayResolverService,
+    PaymentGatewayFactory,
   ],
 })
 export class PaymentModule {

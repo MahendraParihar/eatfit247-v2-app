@@ -1,0 +1,90 @@
+<form [formGroup]="formGroup" class="form-group diet-table" *ngIf="dietPlanDetail()">
+  <mat-card class="form-card">
+    <mat-card-header>
+      <mat-card-title *ngIf="dayNo && dayNo > 0">
+        Diet Plan For Cycle {{cycleNo}} Day {{dayNo}}
+      </mat-card-title>
+      <mat-card-title *ngIf="!dayNo || dayNo === 0">
+        Diet Plan For Cycle {{cycleNo}}
+      </mat-card-title>
+    </mat-card-header>
+    <mat-card-content class="form-body">
+      <div class="form-row">
+        <div class="form-item">
+          <mat-form-field>
+            <mat-label>Start Date</mat-label>
+            <input (click)="startDatePicker.open()" (dateChange)="onStartDateChange('change', $event)"
+                   [matDatepicker]="startDatePicker"
+                   formControlName="startDate"
+                   matInput
+                   placeholder="select start date"
+                   readonly
+                   required>
+            <mat-datepicker-toggle [for]="startDatePicker" matSuffix></mat-datepicker-toggle>
+            <mat-datepicker #startDatePicker></mat-datepicker>
+            <mat-error>
+              <shared-ui-input-error controlName="Start Date" [control]="formControl['startDate']"></shared-ui-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-item">
+          <mat-form-field>
+            <mat-label>End Date</mat-label>
+            <input (click)="endDatePicker.open()" [matDatepicker]="endDatePicker" formControlName="endDate"
+                   matInput
+                   placeholder="Enter end date"
+                   readonly
+                   type="text">
+            <mat-datepicker-toggle [for]="endDatePicker" matSuffix></mat-datepicker-toggle>
+            <mat-datepicker #endDatePicker></mat-datepicker>
+            <mat-error>
+              <shared-ui-input-error controlName="End Date" [control]="formControl['endDate']"></shared-ui-input-error>
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+      
+      <ng-container formArrayName="dietPlan" *ngIf="dietPlanDetail()?.dietPlan">
+        <ng-container *ngFor="let agd of detailArray().controls; let i=index" [formGroupName]="i">
+          <div class="form-row">
+            <div class="form-item category-item">
+              <h6>{{dietPlanDetail()!.dietPlan[i].recipeCategory}}</h6>
+            </div>
+            <div class="form-item detail-item">
+              <mat-form-field>
+                <mat-label>Diet Detail</mat-label>
+                <textarea formControlName="dietDetail" matInput rows="4"></textarea>
+                <mat-error>
+                  <shared-ui-input-error controlName="Diet Plan" [control]="getArrayFormGroup(i).get('dietDetail')"></shared-ui-input-error>
+                </mat-error>
+              </mat-form-field>
+            </div>
+            <div class="form-item recipe-item">
+              <input type="hidden" formControlName="recipeIds">
+              <mat-form-field>
+                <mat-label>Recipes</mat-label>
+                <mat-select formControlName="recipeIds" multiple>
+                  <mat-option *ngFor="let recipe of recipeList()" [value]="recipe.id">
+                    {{recipe.label}}
+                  </mat-option>
+                </mat-select>
+                <mat-error>
+                  <shared-ui-input-error controlName="Recipes" [control]="getArrayFormGroup(i).get('recipeIds')"></shared-ui-input-error>
+                </mat-error>
+              </mat-form-field>
+            </div>
+          </div>
+        </ng-container>
+      </ng-container>
+    </mat-card-content>
+    <mat-card-actions align="end">
+      <button (click)="onCancel()" class="round-btn" mat-raised-button>
+        Cancel
+      </button>
+      <button (click)="onSubmit()" class="round-btn gradient-btn" color="primary" mat-raised-button>
+        {{dietPlanId > 0 ? 'Update' : 'Save'}}
+      </button>
+    </mat-card-actions>
+  </mat-card>
+</form>
+

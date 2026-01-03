@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Param, Put, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard, CurrentUser, RequestedIp } from '@server_1/core';
-import { MemberPocketGuideService } from '../../services';
-import { ITableList, IMemberPocketGuide } from '@eatfit247-shared-lib';
+import { MemberPocketGuideService, MemberDietPlanService } from '../../services';
+import { ITableList, IMemberPocketGuide, IMemberDietPlan, IDropdownItem } from '@eatfit247-shared-lib';
 
 /**
  * Consolidated controller for member content/resources:
@@ -11,7 +11,10 @@ import { ITableList, IMemberPocketGuide } from '@eatfit247-shared-lib';
 @Controller('member/:id')
 @UseGuards(JwtAuthGuard)
 export class MemberContentController {
-  constructor(private readonly memberPocketGuideService: MemberPocketGuideService) {}
+  constructor(
+    private readonly memberPocketGuideService: MemberPocketGuideService,
+    private readonly memberDietPlanService: MemberDietPlanService,
+  ) {}
 
   // ==================== POCKET GUIDE ENDPOINTS ====================
   // Route: member/:id/pocket-guide
@@ -43,7 +46,15 @@ export class MemberContentController {
 
   // ==================== DIET PLAN ENDPOINTS ====================
   // Route: member/:id/diet-plan
-  // TODO: Implement diet plan service and endpoints
+
+  @Get('diet-plan/list')
+  async getDietPlanList(@Param('id') id: number): Promise<{
+    list: IMemberDietPlan[];
+    count: number;
+    dietTemplateList: IDropdownItem[];
+  }> {
+    return await this.memberDietPlanService.getList(id);
+  }
 
   @Get('diet-plan')
   async getDietPlan(@Param('id') id: number): Promise<any> {

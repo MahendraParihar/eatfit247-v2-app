@@ -92,6 +92,7 @@ export class ManageFranchise implements OnInit, OnDestroy {
   mediaFor = 'franchise' as any; // Using string literal
   mediaType = FileTypeEnum.IMAGE;
   internationalTaxModeOptions = InternationalTaxModeEnum;
+  masterData: { taxApplicable: boolean } | null = null;
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private apiService = inject(FranchiseApiService);
@@ -107,6 +108,8 @@ export class ManageFranchise implements OnInit, OnDestroy {
       this.pageTitle = 'Create Franchise';
     }
     this.patchFormValues();
+    // Set dropdown based on master data after patching form values
+    this.setInternationalTaxModeFromMasterData();
   }
 
   private patchFormValues(): void {
@@ -142,9 +145,22 @@ export class ManageFranchise implements OnInit, OnDestroy {
 
   async loadMasterData(): Promise<void> {
     try {
-      // Master data loading if needed in future
+      this.masterData = await this.apiService.getMasterData();
     } catch (error) {
       console.error('Error loading master data:', error);
+    }
+  }
+
+  private setInternationalTaxModeFromMasterData(): void {
+    // Set internationalTaxMode dropdown based on taxApplicable from master data
+    if (this.masterData?.taxApplicable === true) {
+      // Set default value when tax is applicable, only if field is empty
+      const currentValue = this.formGroup.get('internationalTaxMode')?.value;
+      if (!currentValue) {
+        this.formGroup.patchValue({
+          internationalTaxMode: InternationalTaxModeEnum.EXPORT_OF_SERVICE
+        });
+      }
     }
   }
 

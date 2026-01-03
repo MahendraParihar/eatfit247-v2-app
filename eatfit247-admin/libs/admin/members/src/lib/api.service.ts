@@ -30,6 +30,8 @@ import {
   IProgramPlan,
   ICalculateTaxRequest,
   ICalculateTaxResponse,
+  IMemberDietPlan,
+  IMemberDietDetail,
 } from '@eatfit247-shared-lib';
 
 @Injectable({
@@ -503,6 +505,116 @@ export class MembersApiService extends ApiBaseService {
       data
     );
     return res.data as { short_url: string; id: string; gatewayCode: string };
+  }
+  // endregion
+
+  // region Member Diet Plans
+  async getDietPlans(memberId: number): Promise<{
+    list: IMemberDietPlan[];
+    count: number;
+    dietTemplateList: IDropdownItem[];
+  }> {
+    const res = await this.httpService.get<IResponse<{
+      list: IMemberDietPlan[];
+      count: number;
+      dietTemplateList: IDropdownItem[];
+    }>>(`${this.endpoint}/${memberId}/diet-plan/list`);
+    return res.data as {
+      list: IMemberDietPlan[];
+      count: number;
+      dietTemplateList: IDropdownItem[];
+    };
+  }
+
+  async getDietHistory(memberId: number): Promise<{
+    list: IMemberDietPlan[];
+    count: number;
+  }> {
+    const res = await this.httpService.get<IResponse<{
+      list: IMemberDietPlan[];
+      count: number;
+    }>>(`${this.endpoint}/${memberId}/diet-plan/history`);
+    return res.data as {
+      list: IMemberDietPlan[];
+      count: number;
+    };
+  }
+
+  async getDietPlanDetail(url: string, params?: any): Promise<{
+    recipes: IDropdownItem[];
+    diet: IMemberDietDetail;
+    memberName: string;
+  }> {
+    const res = await this.httpService.get<IResponse<{
+      recipes: IDropdownItem[];
+      diet: IMemberDietDetail;
+      memberName: string;
+    }>>(`${this.endpoint}/${url}`, { params });
+    return res.data as {
+      recipes: IDropdownItem[];
+      diet: IMemberDietDetail;
+      memberName: string;
+    };
+  }
+
+  async createDietPlanDetail(memberId: number, data: any): Promise<void> {
+    return await this.httpService.post<void>(
+      `${this.endpoint}/${memberId}/diet-plan/manage`,
+      data
+    );
+  }
+
+  async updateDietPlanStatus(memberId: number, dietPlanId: number): Promise<void> {
+    return await this.httpService.put<void>(
+      `${this.endpoint}/${memberId}/diet-plan/update-status/${dietPlanId}`,
+      null
+    );
+  }
+
+  async deleteDietPlanCycle(memberId: number, dietPlanId: number, cycleNo: number): Promise<void> {
+    return await this.httpService.delete<void>(
+      `${this.endpoint}/${memberId}/diet-plan/delete-cycle/${dietPlanId}/${cycleNo}`
+    );
+  }
+
+  async deleteDietPlanDay(memberId: number, dietPlanId: number, cycleNo: number, dayNo: number): Promise<void> {
+    return await this.httpService.delete<void>(
+      `${this.endpoint}/${memberId}/diet-plan/delete-day/${dietPlanId}/${cycleNo}/${dayNo}`
+    );
+  }
+
+  async downloadDietPlanCycle(memberId: number, dietPlanId: number, cycleNo: number): Promise<{
+    buffer: string;
+    fileName: string;
+  }> {
+    const res = await this.httpService.get<IResponse<{
+      buffer: string;
+      fileName: string;
+    }>>(`${this.endpoint}/${memberId}/diet-plan/download-cycle/${dietPlanId}/${cycleNo}`);
+    return res.data as { buffer: string; fileName: string };
+  }
+
+  async downloadDietPlanDay(memberId: number, dietPlanId: number, cycleNo: number, dayNo: number): Promise<{
+    buffer: string;
+    fileName: string;
+  }> {
+    const res = await this.httpService.get<IResponse<{
+      buffer: string;
+      fileName: string;
+    }>>(`${this.endpoint}/${memberId}/diet-plan/download-day/${dietPlanId}/${cycleNo}/${dayNo}`);
+    return res.data as { buffer: string; fileName: string };
+  }
+
+  async sendDietPlanEmailCycle(memberId: number, dietPlanId: number, cycleNo: number): Promise<void> {
+    return await this.httpService.get<void>(
+      `${this.endpoint}/${memberId}/diet-plan/send-email-cycle/${dietPlanId}/${cycleNo}`
+    );
+  }
+
+  async sendDietPlanEmailDay(memberId: number, dietPlanId: number, cycleNo: number, dayNo: number): Promise<void> {
+    return await this.httpService.get<void>(
+      `${this.endpoint}/${memberId}/diet-plan/send-email-day/${dietPlanId}/${cycleNo}/${dayNo}`
+    );
   }
   // endregion
 }

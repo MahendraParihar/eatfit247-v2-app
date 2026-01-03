@@ -37,6 +37,7 @@ import { ReportsModule } from '@server_1/admin-only/reports';
       rootPath: Env.persistentStorageAssetPath,
       serveRoot: '/media-files',
     }),
+    PlatformModule.forRoot(),
     // Import feature modules before CommonModule so modelRegistry.register() executes
     AuthModule,
     MemberModule,
@@ -63,7 +64,6 @@ import { ReportsModule } from '@server_1/admin-only/reports';
     LovsModule,
     AdminUserModule,
     ReportsModule,
-    PlatformModule.forRoot(),
     CommonModule.forRoot(
       ['Common', 'Email', 'Google', 'Calendar', 'RazorPay'],
       PlatformModule.getModels(),
@@ -72,5 +72,6 @@ import { ReportsModule } from '@server_1/admin-only/reports';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule {
+}
 

@@ -8,6 +8,7 @@ import {
   ITableList,
   IDropdownItem,
   PaymentSourceEnum,
+  PaymentStatusEnum,
   TableEnum,
   ConfigParam,
   IAddress,
@@ -25,10 +26,14 @@ import {
   AddressService,
   CountryService,
   StateService,
+  RazorpayService,
 } from '@server_1/platform';
 import { ProgramService, ProgramPlanService } from '@server_1/modules/program-plan';
 import { TaxEngineService, TaxInput } from '@server_1/modules/tax-engine';
+import { FranchisePaymentGatewayService } from '@server_1/modules/franchise';
+import { PaymentGatewayResolverService } from '@server_1/modules/payment';
 import { Sequelize } from 'sequelize-typescript';
+import { MemberDietPlanService } from './member-diet-plan.service';
 
 @Injectable()
 export class MemberPaymentService {
@@ -47,6 +52,10 @@ export class MemberPaymentService {
     private readonly taxEngineService: TaxEngineService,
     private readonly countryService: CountryService,
     private readonly stateService: StateService,
+    private readonly razorpayService: RazorpayService,
+    private readonly franchisePaymentGatewayService: FranchisePaymentGatewayService,
+    private readonly paymentGatewayResolverService: PaymentGatewayResolverService,
+    private readonly memberDietPlanService: MemberDietPlanService,
   ) {}
 
   /**
@@ -76,6 +85,150 @@ export class MemberPaymentService {
       addresses: addresses as any as IAddress[],
       taxApplicable,
       paymentSource,
+    };
+  }
+
+  /**
+   * Calculate tax for payment form
+   * Used by frontend to get real-time tax calculations
+   */
+  public async calculateTax(
+    memberId: number,
+    orderAmount: number,
+    discountAmount: number,
+    isTaxApplicable: boolean,
+    isPlanFeesIncludedTax: boolean,
+    currencyCode: string,
+    billingAddressId?: number,
+    addressId?: number,
+  ): Promise<{
+    taxPercentage: number;
+    taxAmount: number;
+    totalAmount: number;
+    taxObj: Record<string, { amount: number; taxPercentage: number }>;
+    taxType?: string;
+    taxMode?: string;
+    invoiceNote?: string;
+  }> {
+    // Get member to find franchise
+    const member = await this.memberRepository.findOne({
+      where: { memberId },
+    });
+    if (!member) {
+      throw new NotFoundException('Member not found');
+    }
+    // Get billing address (customer address)
+    // Billing address is required for accurate tax calculation
+    let billingAddress: IAddress | null = null;
+    if (billingAddressId) {
+      const addresses = await this.addressService.filterByTableIdAndPk(
+        TableEnum.TXN_MEMBER,
+        memberId,
+      );
+      billingAddress = addresses.find((a) => a.addressId === billingAddressId) || null;
+    } else if (addressId) {
+      const addresses = await this.addressService.filterByTableIdAndPk(
+        TableEnum.TXN_MEMBER,
+        memberId,
+      );
+      billingAddress = addresses.find((a) => a.addressId === addressId) || null;
+    }
+    // Validate billing address is provided when tax is applicable
+    if (isTaxApplicable && !billingAddress) {
+      throw new BadRequestException(
+        'Billing address is required for tax calculation. Please provide billingAddressId or addressId.',
+      );
+    }
+    // Get franchise address (supplier address)
+    let franchiseAddress: IAddress | null = null;
+    if (member.franchiseId) {
+      const franchiseAddresses = await this.addressService.filterByTableIdAndPk(
+        TableEnum.MST_FRANCHISES,
+        member.franchiseId,
+      );
+      franchiseAddress =
+        franchiseAddresses && franchiseAddresses.length > 0 ? franchiseAddresses[0] : null;
+    }
+    // Get country and state codes from addresses
+    let supplierCountryCode = 'IN'; // Default to India
+    let supplierStateCode: string | null = null;
+    let customerCountryCode = 'IN'; // Default to India
+    let customerStateCode: string | null = null;
+    if (franchiseAddress) {
+      if (franchiseAddress.countryId) {
+        const franchiseCountry = await this.countryService.fetchById(franchiseAddress.countryId);
+        supplierCountryCode = franchiseCountry.countryCode || 'IN';
+      }
+      if (franchiseAddress.stateId) {
+        const franchiseState = await this.stateService.fetchById(franchiseAddress.stateId);
+        supplierStateCode = franchiseState.code || null;
+      }
+    }
+    if (billingAddress) {
+      if (billingAddress.countryId) {
+        const customerCountry = await this.countryService.fetchById(billingAddress.countryId);
+        customerCountryCode = customerCountry.countryCode || 'IN';
+      }
+      if (billingAddress.stateId) {
+        const customerState = await this.stateService.fetchById(billingAddress.stateId);
+        customerStateCode = customerState.code || null;
+      }
+    }
+    // Calculate base amounts
+    let systemOrderAmount = orderAmount;
+    let systemDiscountAmount = discountAmount;
+    let baseAmountForTax = systemOrderAmount;
+    // Handle isPlanFeesIncludedTax - extract base amount if tax is included
+    if (isTaxApplicable && isPlanFeesIncludedTax) {
+      // First get tax percentage to extract base amount
+      const tempTaxInput: TaxInput = {
+        baseAmount: systemOrderAmount,
+        discountAmount: 0,
+        isTaxApplicable: true,
+        supplierCountryCode,
+        supplierStateCode: supplierStateCode || undefined,
+        customerCountryCode,
+        customerStateCode: customerStateCode || undefined,
+        currency: currencyCode,
+        transactionType: TransactionType.SERVICE,
+      };
+      const tempTaxResult = await this.taxEngineService.calculate(tempTaxInput);
+      if (tempTaxResult.taxPercentage > 0) {
+        // Extract base amount from order amount that includes tax
+        baseAmountForTax = systemOrderAmount / (1 + tempTaxResult.taxPercentage / 100);
+      }
+    }
+    // Use tax engine to calculate tax
+    const taxInput: TaxInput = {
+      baseAmount: isPlanFeesIncludedTax ? baseAmountForTax : systemOrderAmount,
+      discountAmount: systemDiscountAmount,
+      isTaxApplicable,
+      supplierCountryCode,
+      supplierStateCode: supplierStateCode || undefined,
+      customerCountryCode,
+      customerStateCode: customerStateCode || undefined,
+      currency: currencyCode,
+      transactionType: TransactionType.SERVICE,
+    };
+    const taxResult = await this.taxEngineService.calculate(taxInput);
+    // Calculate final amounts
+    let taxAmount = taxResult.taxAmount;
+    let totalAmount = taxResult.totalAmount;
+    // If tax is included in plan fees, adjust calculations
+    if (isTaxApplicable && isPlanFeesIncludedTax && taxResult.taxPercentage > 0) {
+      const extractedTax = systemOrderAmount - baseAmountForTax;
+      const discountedBase = baseAmountForTax - systemDiscountAmount;
+      taxAmount = extractedTax;
+      totalAmount = discountedBase + extractedTax;
+    }
+    return {
+      taxPercentage: taxResult.taxPercentage,
+      taxAmount,
+      totalAmount,
+      taxObj: taxResult.taxObj,
+      taxType: taxResult.taxType,
+      taxMode: taxResult.taxMode,
+      invoiceNote: taxResult.invoiceNote,
     };
   }
 
@@ -167,64 +320,35 @@ export class MemberPaymentService {
     if (obj.orderAmount <= 0) {
       throw new BadRequestException('Invalid amount');
     }
-    // Generate invoice ID if not provided
-    const invoiceId = this.generateInvoiceId();
-    // Check if invoice ID already exists
-    const existingInvoice = await this.memberPaymentRepository.findOne({
-      where: { invoiceId },
-    });
-    if (existingInvoice) {
-      throw new BadRequestException('Invoice ID already exists');
+    // Validate mandatory fields for MANUAL payment source
+    if (obj.paymentSource === PaymentSourceEnum.MANUAL) {
+      if (!obj.paymentModeId) {
+        throw new BadRequestException('Payment Mode is required for MANUAL payment source');
+      }
+      if (!obj.paymentDate) {
+        throw new BadRequestException('Payment Date is required for MANUAL payment source');
+      }
+      if (!obj.paymentStatusId) {
+        throw new BadRequestException('Payment Status is required for MANUAL payment source');
+      }
+      if (!obj.transactionId || obj.transactionId.trim() === '') {
+        throw new BadRequestException('Transaction ID is required for MANUAL payment source');
+      }
     }
     const t = await this.sequelize.transaction();
     try {
       // Handle address if provided
-      let addressId = obj.addressId;
-      if (obj.address && !addressId) {
-        await this.addressService.createOrUpdate(
-          {
-            ...obj.address,
-            tableId: TableEnum.TXN_MEMBER,
-            pkOfTable: memberId,
-          },
-          requestedIp,
-          adminId,
-        );
-        // Get the created address
-        const createdAddress = await this.addressService.findByTableIdAndPk(
-          TableEnum.TXN_MEMBER,
-          memberId,
-        );
-        addressId = createdAddress?.addressId;
-      }
+      const addressId = obj.addressId;
       // Handle billing address if provided
       let billingAddressId = obj.billingAddressId;
-      let billingAddress: IAddress | null = null;
-      if (obj.billingAddressId && !billingAddressId) {
-        await this.addressService.createOrUpdate(
-          {
-            ...obj.billingAddress,
-            tableId: TableEnum.TXN_MEMBER,
-            pkOfTable: memberId,
-          },
-          requestedIp,
-          adminId,
-        );
-        // Get the created billing address
-        const createdBillingAddress = await this.addressService.findByTableIdAndPk(
-          TableEnum.TXN_MEMBER,
-          memberId,
-        );
-        billingAddressId = createdBillingAddress?.addressId;
-        billingAddress = createdBillingAddress;
-      } else if (billingAddressId) {
-        billingAddress = await this.addressService.findByTableIdAndPk(
-          TableEnum.TXN_MEMBER,
-          memberId,
-        );
-      }
-      if (!billingAddress.country) {
-        throw new BadRequestException('Billing address country missing');
+      const addresses = await this.addressService.filterByTableIdAndPk(
+        TableEnum.TXN_MEMBER,
+        memberId,
+      );
+      let billingAddress: IAddress = addresses.find((a) => a.addressId === billingAddressId) || null;
+      // Validate billing address country if the billing address exists and tax is applicable
+      if (billingAddress && obj.isTaxApplicable && !billingAddress.countryId) {
+        throw new BadRequestException('Billing address country is required when tax is applicable');
       }
       // Get franchise address for tax calculation
       let franchiseAddress: IAddress | null = null;
@@ -244,33 +368,58 @@ export class MemberPaymentService {
         franchiseAddress,
       );
       // Create a payment record
-      const payment = await this.memberPaymentRepository.create(
-        {
+      const paymentData: any = {
+        memberId,
+        paymentModeId: obj.paymentModeId,
+        programPlanId: obj.programPlanId,
+        programId: obj.programId,
+        addressId: addressId,
+        billingAddressId: billingAddressId,
+        transactionId: obj.transactionId || null,
+        paymentDate: obj.paymentDate,
+        paymentStatusId: obj.paymentStatusId,
+        promoCode: obj.promoCode || null,
+        isTaxApplicable: obj.isTaxApplicable,
+        paymentObj: paymentObj,
+        refundObj: null,
+        paymentGatewayResponse: null,
+        gstNumber: obj.gstNumber || null,
+        paymentSource: obj.paymentSource,
+        active: true,
+        createdBy: adminId,
+        modifiedBy: adminId,
+        createdIp: requestedIp,
+        modifiedIp: requestedIp,
+      };
+      const payment = await this.memberPaymentRepository.create(paymentData, { transaction: t });
+      // If payment is successfully created with PAID status, create TxnMemberDietPlan entry
+      if (obj.paymentStatusId === PaymentStatusEnum.PAID && obj.programPlanId) {
+        // Get program plan details to get noOfCycle and noOfDaysInCycle
+        let noOfCycle = paymentObj?.noOfCycle || 0;
+        let noOfDaysInCycle = paymentObj?.noOfDaysInCycle || 0;
+        // If not available in paymentObj, fetch from program plan
+        if (!noOfCycle || !noOfDaysInCycle) {
+          try {
+            const programPlan = await this.programPlanService.fetchById(obj.programPlanId);
+            noOfCycle = programPlan.noOfCycle || 1;
+            noOfDaysInCycle = programPlan.noOfDaysInCycle || 1;
+          } catch (error) {
+            // If program plan not found, use defaults
+            noOfCycle = noOfCycle || 1;
+            noOfDaysInCycle = noOfDaysInCycle || 1;
+          }
+        }
+        // Create TxnMemberDietPlan entry using service
+        await this.memberDietPlanService.createIfNotExists(
           memberId,
-          paymentModeId: obj.paymentModeId,
-          programPlanId: obj.programPlanId,
-          programId: obj.programId,
-          addressId: addressId,
-          billingAddressId: billingAddressId,
-          transactionId: obj.transactionId || null,
-          paymentDate: obj.paymentDate,
-          invoiceId: invoiceId || null,
-          paymentStatusId: obj.paymentStatusId,
-          promoCode: obj.promoCode || null,
-          isTaxApplicable: obj.isTaxApplicable,
-          paymentObj: paymentObj,
-          refundObj: null,
-          paymentGatewayResponse: null,
-          gstNumber: obj.gstNumber || null,
-          paymentSource: obj.paymentSource,
-          active: true,
-          createdBy: adminId,
-          modifiedBy: adminId,
-          createdIp: requestedIp,
-          modifiedIp: requestedIp,
-        },
-        { transaction: t },
-      );
+          payment.memberPaymentId,
+          noOfCycle,
+          noOfDaysInCycle,
+          requestedIp,
+          adminId,
+          t,
+        );
+      }
       await t.commit();
       // Fetch the created payment with relationships
       const createdPayment = await this.memberPaymentRepository.scope('details').findOne({
@@ -319,52 +468,40 @@ export class MemberPaymentService {
     if (!payment) {
       throw new NotFoundException('Payment not found');
     }
+    // Validate mandatory fields for MANUAL payment source
+    const paymentSource = obj.paymentSource !== undefined ? obj.paymentSource : (payment as any).paymentSource;
+    if (paymentSource === PaymentSourceEnum.MANUAL) {
+      const paymentModeId = obj.paymentModeId !== undefined ? obj.paymentModeId : payment.paymentModeId;
+      const paymentDate = obj.paymentDate !== undefined ? obj.paymentDate : payment.paymentDate;
+      const paymentStatusId = obj.paymentStatusId !== undefined ? obj.paymentStatusId : payment.paymentStatusId;
+      const transactionId = obj.transactionId !== undefined ? obj.transactionId : payment.transactionId;
+      if (!paymentModeId) {
+        throw new BadRequestException('Payment Mode is required for MANUAL payment source');
+      }
+      if (!paymentDate) {
+        throw new BadRequestException('Payment Date is required for MANUAL payment source');
+      }
+      if (!paymentStatusId) {
+        throw new BadRequestException('Payment Status is required for MANUAL payment source');
+      }
+      if (!transactionId || (typeof transactionId === 'string' && transactionId.trim() === '')) {
+        throw new BadRequestException('Transaction ID is required for MANUAL payment source');
+      }
+    }
     const t = await this.sequelize.transaction();
     try {
       // Handle address updates if provided
       let addressId = obj.addressId !== undefined ? obj.addressId : payment.addressId;
-      if (obj.address) {
-        await this.addressService.createOrUpdate(
-          {
-            ...obj.address,
-            tableId: TableEnum.TXN_MEMBER,
-            pkOfTable: memberId,
-          },
-          requestedIp,
-          adminId,
-        );
-        const updatedAddress = await this.addressService.findByTableIdAndPk(
-          TableEnum.TXN_MEMBER,
-          memberId,
-        );
-        addressId = updatedAddress?.addressId || addressId;
-      }
       // Handle billing address updates if provided
-      let billingAddressId =
-        obj.billingAddressId !== undefined ? obj.billingAddressId : payment.billingAddressId;
-      let billingAddress: IAddress | null = null;
-      if (obj.billingAddress) {
-        await this.addressService.createOrUpdate(
-          {
-            ...obj.billingAddress,
-            tableId: TableEnum.TXN_MEMBER,
-            pkOfTable: memberId,
-          },
-          requestedIp,
-          adminId,
-        );
-        const updatedBillingAddress = await this.addressService.findByTableIdAndPk(
-          TableEnum.TXN_MEMBER,
-          memberId,
-        );
-        billingAddressId = updatedBillingAddress?.addressId || billingAddressId;
-        billingAddress = updatedBillingAddress;
-      } else if (billingAddressId) {
-        // Get an existing billing address
-        billingAddress = await this.addressService.findByTableIdAndPk(
-          TableEnum.TXN_MEMBER,
-          memberId,
-        );
+      const addresses = await this.addressService.filterByTableIdAndPk(
+        TableEnum.TXN_MEMBER,
+        memberId,
+      );
+      let billingAddress: IAddress =
+        addresses.find((a) => a.addressId === obj.billingAddressId) || null;
+      // Validate billing address country if the billing address exists and tax is applicable
+      if (billingAddress && obj.isTaxApplicable && !billingAddress.countryId) {
+        throw new BadRequestException('Billing address country is required when tax is applicable');
       }
       // Get franchise address for GST calculation
       const memberWithFranchise = await this.memberRepository.scope('details').findOne({
@@ -387,29 +524,60 @@ export class MemberPaymentService {
           franchiseAddresses && franchiseAddresses.length > 0 ? franchiseAddresses[0] : null;
       }
       // Update payment record
-      await payment.update(
-        {
-          paymentModeId:
-            obj.paymentModeId !== undefined ? obj.paymentModeId : payment.paymentModeId,
-          programPlanId:
-            obj.programPlanId !== undefined ? obj.programPlanId : payment.programPlanId,
-          programId: obj.programId !== undefined ? obj.programId : payment.programId,
-          addressId: addressId || null,
-          billingAddressId: billingAddressId || null,
-          transactionId:
-            obj.transactionId !== undefined ? obj.transactionId || null : payment.transactionId,
-          paymentDate: obj.paymentDate !== undefined ? obj.paymentDate : payment.paymentDate,
-          paymentStatusId:
-            obj.paymentStatusId !== undefined ? obj.paymentStatusId : payment.paymentStatusId,
-          promoCode: obj.promoCode !== undefined ? obj.promoCode || null : payment.promoCode,
-          isTaxApplicable:
-            obj.isTaxApplicable !== undefined ? obj.isTaxApplicable : payment.isTaxApplicable,
-          gstNumber: obj.gstNumber !== undefined ? obj.gstNumber : payment.gstNumber,
-          modifiedBy: adminId,
-          modifiedIp: requestedIp,
-        },
-        { transaction: t },
-      );
+      const updateData: any = {
+        paymentModeId:
+          obj.paymentModeId !== undefined ? obj.paymentModeId : payment.paymentModeId,
+        programPlanId:
+          obj.programPlanId !== undefined ? obj.programPlanId : payment.programPlanId,
+        programId: obj.programId !== undefined ? obj.programId : payment.programId,
+        addressId: addressId || null,
+        billingAddressId: obj.billingAddressId,
+        transactionId:
+          obj.transactionId !== undefined ? obj.transactionId || null : payment.transactionId,
+        paymentDate: obj.paymentDate !== undefined ? obj.paymentDate : payment.paymentDate,
+        paymentStatusId:
+          obj.paymentStatusId !== undefined ? obj.paymentStatusId : payment.paymentStatusId,
+        promoCode: obj.promoCode !== undefined ? obj.promoCode || null : payment.promoCode,
+        isTaxApplicable:
+          obj.isTaxApplicable !== undefined ? obj.isTaxApplicable : payment.isTaxApplicable,
+        gstNumber: obj.gstNumber !== undefined ? obj.gstNumber : payment.gstNumber,
+        modifiedBy: adminId,
+        modifiedIp: requestedIp,
+      };
+      // Update payment source if provided
+      if ((obj as any).paymentSource !== undefined) {
+        updateData.paymentSource = (obj as any).paymentSource;
+      }
+      await payment.update(updateData, { transaction: t });
+      // Check if payment status is being updated to PAID
+      const newPaymentStatusId = obj.paymentStatusId !== undefined ? obj.paymentStatusId : payment.paymentStatusId;
+      const oldPaymentStatusId = payment.paymentStatusId;
+      const programPlanId = obj.programPlanId !== undefined ? obj.programPlanId : payment.programPlanId;
+      // If payment status changed to PAID, create TxnMemberDietPlan entry if it doesn't exist
+      if (newPaymentStatusId === PaymentStatusEnum.PAID && oldPaymentStatusId !== PaymentStatusEnum.PAID && programPlanId) {
+        // Get program plan details to get noOfCycle and noOfDaysInCycle
+        let noOfCycle = 1;
+        let noOfDaysInCycle = 1;
+        try {
+          const programPlan = await this.programPlanService.fetchById(programPlanId);
+          noOfCycle = programPlan.noOfCycle || 1;
+          noOfDaysInCycle = programPlan.noOfDaysInCycle || 1;
+        } catch (error) {
+          // If program plan not found, use defaults
+          noOfCycle = 1;
+          noOfDaysInCycle = 1;
+        }
+        // Create TxnMemberDietPlan entry using service
+        await this.memberDietPlanService.createIfNotExists(
+          memberId,
+          paymentId,
+          noOfCycle,
+          noOfDaysInCycle,
+          requestedIp,
+          adminId,
+          t,
+        );
+      }
       await t.commit();
       // Fetch the updated payment with relationships
       const updatedPayment = await this.memberPaymentRepository.scope('details').findOne({
@@ -606,9 +774,9 @@ export class MemberPaymentService {
     const noOfDaysInCycle = paymentObjInput?.noOfDaysInCycle || 0;
     const isPlanFeesIncludedTax = paymentObjInput?.isPlanFeesIncludedTax || false;
     // Get country and state codes from addresses
-    let supplierCountryCode = 'IN'; // Default to India
+    let supplierCountryCode = '';
     let supplierStateCode: string | null = null;
-    let customerCountryCode = 'IN'; // Default to India
+    let customerCountryCode = '';
     let customerStateCode: string | null = null;
     if (franchiseAddress) {
       // Get franchise country code
@@ -711,5 +879,225 @@ export class MemberPaymentService {
       noOfDaysInCycle: noOfDaysInCycle,
       isPlanFeesIncludedTax: isPlanFeesIncludedTax,
     };
+  }
+
+  /**
+   * Create Razorpay payment link
+   * @param memberId - Member ID
+   * @param amount - Payment amount
+   * @param currency - Currency code (default: INR)
+   * @param description - Payment description
+   * @param customer - Customer details (optional)
+   * @param notes - Additional notes (optional)
+   * @returns Payment link details
+   */
+  public async createRazorpayPaymentLink(
+    memberId: number,
+    amount: number,
+    currency: string = 'INR',
+    description?: string,
+    customer?: {
+      name?: string;
+      email?: string;
+      contact?: string;
+    },
+    notes?: Record<string, any>,
+  ): Promise<{ short_url: string; id: string }> {
+    // Verify member exists
+    const member = await this.memberRepository.findOne({
+      where: { memberId },
+    });
+    if (!member) {
+      throw new NotFoundException('Member not found');
+    }
+    if (amount <= 0) {
+      throw new BadRequestException('Invalid amount');
+    }
+    // Prepare customer details from member if not provided
+    const customerDetails = customer || {
+      name: member.firstName ? `${member.firstName} ${member.lastName || ''}`.trim() : undefined,
+      email: member.emailId || undefined,
+      contact: member.contactNumber || undefined,
+    };
+    // Prepare description
+    const paymentDescription = description || `Payment for Member ID: ${memberId}`;
+    // Prepare notes with member ID
+    const paymentNotes = {
+      memberId: memberId.toString(),
+      ...notes,
+    };
+    // Create payment link
+    const paymentLink = await this.razorpayService.createPaymentLink(
+      amount,
+      currency,
+      paymentDescription,
+      customerDetails,
+      paymentNotes,
+    );
+    return {
+      short_url: paymentLink.short_url,
+      id: paymentLink.id,
+    };
+  }
+
+  /**
+   * Get supported payment gateways for a member based on franchise and currency
+   * Uses PaymentGatewayResolverService.resolve to find supported gateways
+   * @param memberId - Member ID
+   * @param currencyCode - Currency code
+   * @returns List of supported payment gateways
+   */
+  public async getSupportedPaymentGateways(
+    memberId: number,
+    currencyCode: string,
+  ): Promise<Array<{
+    franchisePaymentGatewayId: number;
+    gatewayCode: string;
+    gatewayName: string;
+    providerCountryCode: string;
+    currencyCode: string;
+    isPrimary: boolean;
+    supportsDomestic: boolean;
+    supportsInternational: boolean;
+  }>> {
+    // Verify member exists and get franchise
+    const member = await this.memberRepository.findOne({
+      where: { memberId },
+      include: [
+        {
+          model: MstFranchise,
+          as: 'franchise',
+          required: false,
+        },
+      ],
+    });
+    if (!member) {
+      throw new NotFoundException('Member not found');
+    }
+    if (!member.franchiseId) {
+      return [];
+    }
+    // Get all active gateways for franchise and currency
+    // Similar to PaymentGatewayResolverService.resolve() but returns all gateways instead of just one
+    const gateways = await this.franchisePaymentGatewayService.findActiveByFranchiseAndCurrency({
+      franchiseId: member.franchiseId,
+      currency: currencyCode,
+    });
+    // Transform to response format
+    return gateways.map((gateway: any) => {
+      // Access paymentGateway from a Sequelize model
+      const paymentGateway = (gateway as any).paymentGateway || (gateway as any).PaymentGateway;
+      return {
+        franchisePaymentGatewayId: gateway.franchisePaymentGatewayId,
+        gatewayCode: paymentGateway?.code || '',
+        gatewayName: paymentGateway?.name || '',
+        providerCountryCode: paymentGateway?.providerCountryCode || '',
+        currencyCode: gateway.currencyCode,
+        isPrimary: gateway.isPrimary,
+        supportsDomestic: gateway.supportsDomestic,
+        supportsInternational: gateway.supportsInternational,
+      };
+    });
+  }
+
+  /**
+   * Create payment link with gateway selection
+   * @param memberId - Member ID
+   * @param amount - Payment amount
+   * @param currency - Currency code
+   * @param franchisePaymentGatewayId - Selected gateway ID (optional, if not provided, resolver will select)
+   * @param isInternational - Whether payment is international (default: false)
+   * @param description - Payment description
+   * @param customer - Customer details
+   * @param notes - Additional notes
+   * @returns Payment link details
+   */
+  public async createPaymentLink(
+    memberId: number,
+    amount: number,
+    currency: string = 'INR',
+    franchisePaymentGatewayId?: number,
+    isInternational: boolean = false,
+    description?: string,
+    customer?: {
+      name?: string;
+      email?: string;
+      contact?: string;
+    },
+    notes?: Record<string, any>,
+  ): Promise<{ short_url: string; id: string; gatewayCode: string }> {
+    // Verify member exists and get franchise
+    const member = await this.memberRepository.findOne({
+      where: { memberId },
+      include: [
+        {
+          model: MstFranchise,
+          as: 'franchise',
+          required: false,
+        },
+      ],
+    });
+    if (!member) {
+      throw new NotFoundException('Member not found');
+    }
+    if (!member.franchiseId) {
+      throw new BadRequestException('Member does not have an associated franchise');
+    }
+    if (amount <= 0) {
+      throw new BadRequestException('Invalid amount');
+    }
+    // Use PaymentGatewayResolverService to find the gateway
+    let resolvedGateway;
+    try {
+      resolvedGateway = await this.paymentGatewayResolverService.resolve({
+        franchiseId: member.franchiseId,
+        currency: currency,
+        isInternational: isInternational,
+        amount: amount,
+      });
+    } catch (error) {
+      throw new BadRequestException(
+        error instanceof Error ? error.message : 'Failed to resolve payment gateway',
+      );
+    }
+    // If a specific gateway ID was provided, validate it matches the resolved gateway
+    if (franchisePaymentGatewayId && resolvedGateway.franchisePaymentGatewayId !== franchisePaymentGatewayId) {
+      throw new BadRequestException(
+        'Selected payment gateway is not available for the given criteria',
+      );
+    }
+    const gatewayCode = resolvedGateway.gatewayCode;
+    // Prepare customer details from member if not provided
+    const customerDetails = customer || {
+      name: member.firstName ? `${member.firstName} ${member.lastName || ''}`.trim() : undefined,
+      email: member.emailId || undefined,
+      contact: member.contactNumber || undefined,
+    };
+    // Prepare description
+    const paymentDescription = description || `Payment for Member ID: ${memberId}`;
+    // Prepare notes with member ID
+    const paymentNotes = {
+      memberId: memberId.toString(),
+      franchisePaymentGatewayId: resolvedGateway.franchisePaymentGatewayId.toString(),
+      ...notes,
+    };
+    // Create payment link based on gateway code
+    // For now, we support Razorpay. Other gateways can be added later
+    if (gatewayCode === 'RAZORPAY') {
+      const paymentLink = await this.razorpayService.createPaymentLink(
+        amount,
+        currency,
+        paymentDescription,
+        customerDetails,
+        paymentNotes,
+      );
+      return {
+        short_url: paymentLink.short_url,
+        id: paymentLink.id,
+        gatewayCode: gatewayCode,
+      };
+    } else {
+      throw new BadRequestException(`Payment gateway ${gatewayCode} is not yet supported for payment links`);
+    }
   }
 }

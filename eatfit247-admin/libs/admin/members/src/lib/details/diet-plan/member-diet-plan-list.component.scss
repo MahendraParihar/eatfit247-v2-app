@@ -1,0 +1,78 @@
+.diet-table {
+  height: calc(100vh - 212px);
+  overflow-y: scroll;
+}
+
+table {
+  width: 100%;
+}
+
+tr.example-detail-row {
+  height: 0;
+}
+
+.cycle-item {
+  height: 40px;
+  border-bottom: 1px rgba(0, 0, 0, .12) solid;
+}
+
+tr.example-element-row:not(.example-expanded-row):hover {
+  background: whitesmoke;
+}
+
+tr.example-element-row:not(.example-expanded-row):active {
+  background: #efefef;
+}
+
+.example-element-row td {
+  border-bottom-width: 0;
+}
+
+.example-element-detail {
+  overflow: hidden;
+  display: flex;
+}
+
+.mat-column-updatedBy {
+  min-width: 180px;
+  max-width: 180px;
+}
+
+.diet-link {
+  color: #3949ab;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.chip {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  
+  &.red-bg {
+    background-color: #ffebee;
+    color: #c62828;
+  }
+  
+  &.green-bg {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+  }
+}
+
+.status-not-started {
+  background-color: #ffebee;
+  color: #c62828;
+}
+
+.status-in-progress {
+  background-color: #fff3e0;
+  color: #e65100;
+}
+
+.status-completed {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+}
+

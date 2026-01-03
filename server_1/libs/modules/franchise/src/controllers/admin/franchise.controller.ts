@@ -53,5 +53,10 @@ export class FranchiseController {
   async getDropdown(): Promise<IDropdownItem[]> {
     return await this.service.getFranchiseList();
   }
+
+  @Get('master-data')
+  async getMasterData(): Promise<{ taxApplicable: boolean }> {
+    return await this.service.getMasterData();
+  }
 }
 

@@ -33,4 +33,9 @@ export class FranchiseApiService extends ApiBaseService {
   async updateStatus(id: number, active: boolean): Promise<void> {
     return await this.httpService.patch<void>(`${this.endpoint}/update-status/${id}`, { active });
   }
+
+  async getMasterData(): Promise<{ taxApplicable: boolean }> {
+    const res = await this.httpService.get<IResponse<{ taxApplicable: boolean }>>(`${this.endpoint}/master-data`);
+    return res.data as { taxApplicable: boolean };
+  }
 }

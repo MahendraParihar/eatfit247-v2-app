@@ -28,6 +28,7 @@ import { LovsModule } from '@server_1/modules/lovs';
 
 @Module({
   imports: [
+    PlatformModule.forRoot(),
     // Import feature modules before CommonModule so modelRegistry.register() executes
     AuthModule,
     MemberModule,
@@ -49,7 +50,6 @@ import { LovsModule } from '@server_1/modules/lovs';
     BannerModule,
     MemberTestimonialModule,
     LovsModule,
-    PlatformModule.forRoot(),
     CommonModule.forRoot([], PlatformModule.getModels()),
   ],
   controllers: [AppController],

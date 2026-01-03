@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard, CurrentUser, RequestedIp } from '@server_1/core';
 import { MemberPaymentService } from '../../services';
 import {
@@ -7,8 +7,10 @@ import {
   IMemberPayment,
   IResponse,
   IProgramPlan,
+  ICalculateTaxResponse,
 } from '@eatfit247-shared-lib';
-import { CreateMemberPaymentDto } from '../../dto/member-payment.dto';
+import { CreateMemberPaymentDto } from '../../dto';
+import { CalculateTaxDto } from '../../dto/calculate-tax.dto';
 import { ProgramPlanService } from '@server_1/modules/program-plan';
 
 @Controller('member/:id/payment-history')
@@ -18,6 +20,23 @@ export class MemberPaymentController {
     private readonly memberPaymentService: MemberPaymentService,
     private readonly programPlanService: ProgramPlanService,
   ) {}
+
+  @Get('supported-gateways')
+  async getSupportedGateways(
+    @Param('id') id: number,
+    @Query('currency') currency: string,
+  ): Promise<Array<{
+    franchisePaymentGatewayId: number;
+    gatewayCode: string;
+    gatewayName: string;
+    providerCountryCode: string;
+    currencyCode: string;
+    isPrimary: boolean;
+    supportsDomestic: boolean;
+    supportsInternational: boolean;
+  }>> {
+    return await this.memberPaymentService.getSupportedPaymentGateways(id, currency);
+  }
 
   @Get('master-data')
   async getMasterData(@Param('id') id: number): Promise<IMemberPaymentMasterData> {
@@ -91,5 +110,22 @@ export class MemberPaymentController {
     @Param('programPlanId') programPlanId: number,
   ): Promise<IProgramPlan> {
     return await this.programPlanService.fetchById(programPlanId);
+  }
+
+  @Post('calculate-tax')
+  async calculateTax(
+    @Param('id') id: number,
+    @Body() body: CalculateTaxDto,
+  ): Promise<ICalculateTaxResponse> {
+    return await this.memberPaymentService.calculateTax(
+      id,
+      body.orderAmount,
+      body.discountAmount,
+      body.isTaxApplicable,
+      body.isPlanFeesIncludedTax,
+      body.currencyCode,
+      body.billingAddressId,
+      body.addressId,
+    );
   }
 }

@@ -8,4 +8,5 @@ export * from './mst-currencies.model';
 export * from './txn-address.model';
 export * from './mst-payment-mode.model';
 export * from './mst-payment-status.model';
+export * from './mst-payment-gateway.model';
 

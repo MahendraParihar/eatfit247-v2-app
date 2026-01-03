@@ -3,6 +3,8 @@ import { SequelizeModule } from '@nestjs/sequelize';
 import { ProgramPlanModule } from '@server_1/modules/program-plan';
 import { TaxEngineModule } from '@server_1/modules/tax-engine';
 import { AssessmentModule } from '@server_1/modules/assessment';
+import { RecipeModule } from '@server_1/modules/recipe';
+import { DietModule } from '@server_1/modules/diet';
 import {
   MstAdminUser,
   modelRegistry,
@@ -66,12 +68,16 @@ import {
   MemberHealthParameterLogsService,
   MemberIssueService,
   MemberIssueResponseService,
-  MemberAssessmentService, MemberPaymentService,
+  MemberAssessmentService,
+  MemberPaymentService,
+  MemberDietPlanService,
 } from './services';
 import { TxnMemberCallLog } from './models';
 import { CallLogsModule } from '@server_1/modules/call-logs';
 import { PocketGuideModule } from '@server_1/modules/pocket-guide';
 import { IssuesModule } from '@server_1/modules/issues';
+import { FranchiseModule } from '@server_1/modules/franchise';
+import { PaymentModule } from '@server_1/modules/payment';
 // Register models with the model registry
 modelRegistry.register([
   TxnMember,
@@ -97,6 +103,10 @@ modelRegistry.register([
     AssessmentModule,
     PocketGuideModule,
     IssuesModule,
+    FranchiseModule,
+    PaymentModule,
+    RecipeModule,
+    DietModule,
     SequelizeModule.forFeature([
       // Member transaction models (local)
       TxnMember,
@@ -141,7 +151,8 @@ modelRegistry.register([
     MemberIssueService,
     MemberIssueResponseService,
     MemberAssessmentService,
-    MemberPaymentService
+    MemberPaymentService,
+    MemberDietPlanService,
   ],
   exports: [
     MemberService,

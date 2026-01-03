@@ -58,8 +58,9 @@ export class TaxEngineService {
           taxMode: isDomestic ? TaxMode.DOMESTIC : TaxMode.FOREIGN_LOCAL,
         };
       case TaxTypeEnum.SALES_TAX:
+        // US Sales Tax is calculated based on customer's billing address state
         const result = await this.usSalesTax.calculate(
-          input.supplierStateCode || null,
+          input.customerStateCode || null,
           taxableAmount,
         );
         return {

@@ -184,5 +184,10 @@ export class FranchiseService {
       isActive: t.active,
     }));
   }
+
+  public async getMasterData(): Promise<{ taxApplicable: boolean }> {
+    const taxApplicable = this.appConfigService.getBoolean(ConfigParam.GST_ENABLED, true, false);
+    return { taxApplicable };
+  }
 }
 

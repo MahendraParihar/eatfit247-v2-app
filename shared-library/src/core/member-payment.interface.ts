@@ -58,8 +58,6 @@ export interface IManageMemberPayment {
   noOfDaysInCycle: number;
   billingAddressId?: number;
   addressId?: number;
-  address: IManageAddress;
-  billingAddress: IManageAddress;
   transactionId?: string;
   paymentDate: Date;
   paymentStatusId: number;

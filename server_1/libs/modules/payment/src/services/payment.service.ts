@@ -1,37 +1,27 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectModel } from '@nestjs/sequelize';
-import { TxnMemberPayment } from '@server_1/modules/member';
-import { PaymentStatusEnum } from '@eatfit247-shared-lib';
+import { Injectable } from '@nestjs/common';
+import { AppConfigService } from '@server_1/core';
+import { PaymentGatewayResolverService } from './payment-gateway-resolver.service';
+import { ConfigParam } from '@eatfit247-shared-lib';
+import { PaymentGatewayCredentialService } from './payment-gateway-credential.service';
 
 @Injectable()
 export class PaymentService {
   constructor(
-    @InjectModel(TxnMemberPayment)
-    private readonly paymentRepository: typeof TxnMemberPayment,
+    private appConfig: AppConfigService,
+    private readonly gatewayResolver: PaymentGatewayResolverService,
+    private readonly gatewayCredentialService: PaymentGatewayCredentialService,
   ) {}
 
-  async markPaidByGateway(
-    orderId: string,
-    paymentId: string,
-    webhookPayload: any,
-  ): Promise<void> {
-    // Find payment by gateway_order_id
-    const payment = await this.paymentRepository.findOne({
-      where: {
-        gatewayOrderId: orderId,
-        active: true,
-      },
+  async resolve(franchiseId: number, currency: string, isInternational: boolean, amount: number) {
+    const gateway = await this.gatewayResolver.resolve({
+      franchiseId,
+      currency,
+      isInternational,
+      amount,
     });
-    if (!payment) {
-      throw new NotFoundException(`Payment not found for order ID: ${orderId}`);
-    }
-    // Update payment with gateway information and mark as paid
-    await payment.update({
-      gatewayPaymentId: paymentId,
-      paymentStatusId: PaymentStatusEnum.PAID,
-      paymentGatewayResponse: webhookPayload,
-      updatedAt: new Date(),
-    });
+    // environment decides mode
+    const credentialMode = this.appConfig.getString(ConfigParam.PAYMENT_MODE);
+    const credentials = await this.gatewayCredentialService.getActiveCredentials(gateway.franchisePaymentGatewayId, credentialMode);
   }
 }
 
