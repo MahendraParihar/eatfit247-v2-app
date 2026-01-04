@@ -14,7 +14,7 @@ import {
   MstState,
   TxnAddress,
 } from './database/models';
-import { MstPaymentGateway } from './database/models/mst-payment-gateway.model';
+import { MstPaymentGateway } from './database/models';
 // Platform services
 import {
   AddressService,
@@ -32,10 +32,10 @@ import {
   TelrService,
   ZoomService,
 } from './services';
-import { PaymentGatewayService } from './services/payment-gateway.service';
+import { PaymentGatewayService } from './services';
 // Platform modules and controllers
-import { LabelModule } from './label/label.module';
-import { FileUploadController } from './file-upload/file-upload.controller';
+import { LabelModule } from './label';
+import { FileUploadController } from './file-upload';
 
 @Module({})
 export class PlatformModule {

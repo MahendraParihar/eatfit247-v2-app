@@ -1,8 +1,8 @@
 import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { CurrentUser, JwtAuthGuard, RequestedIp } from '@server_1/core';
 import { BasicSearchDto, UpdateActiveDto } from '@server_1/shared-dto';
-import { BlogAuthorService } from '../../services/blog-author.service';
-import { CreateBlogAuthorDto } from '../../dto/blog-author.dto';
+import { BlogAuthorService } from '../../services';
+import { CreateBlogAuthorDto } from '../../dto';
 import { IBlogAuthor, ITableList } from '@eatfit247-shared-lib';
 
 @Controller('blog-author')

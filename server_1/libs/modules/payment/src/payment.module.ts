@@ -8,7 +8,7 @@ import {
   PaymentService,
 } from './services';
 import { MstPaymentGatewayCredentials } from './models';
-import { RazorpayWebhookController } from './controllers/public';
+import { RazorpayWebhookController } from './controllers';
 
 @Module({
   imports: [

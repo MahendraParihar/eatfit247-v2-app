@@ -16,8 +16,7 @@ import moment from 'moment';
 import { NgxEditorComponent, NgxEditorMenuComponent, Editor, Toolbar } from 'ngx-editor';
 import {
   IDropdownItem,
-  IMemberDietDetail,
-  IDietPlanDetail, IMemberDietPlanDetail
+  IMemberDietDetail, IMemberDietPlanDetail
 } from '@eatfit247-shared-lib';
 import { MembersApiService } from '../../../api.service';
 import { InputErrorComponent } from '@shared';

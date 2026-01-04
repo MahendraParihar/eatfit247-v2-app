@@ -1,10 +1,9 @@
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
-import { LegalPagesModel } from './models/legal-pages.model';
+import { LegalPagesModel } from './models';
 import { modelRegistry } from '@server_1/core';
-import { LegalPagesService } from './services/legal-pages.service';
+import { LegalPagesService } from './services';
 import { LegalPagesController, PublicLegalPagesController } from './controllers';
-// Register models with the model registry
 modelRegistry.register([LegalPagesModel]);
 
 @Module({
