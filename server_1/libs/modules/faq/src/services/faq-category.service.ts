@@ -2,16 +2,14 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { MstFaqCategory } from '../models';
 import {
-  ITableList,
-  IStatusChange,
   IBasicSearch,
   IDropdownItem,
   IFaqCategory,
   IManageFaqCategory,
+  IStatusChange,
+  ITableList,
 } from '@eatfit247-shared-lib';
-import { SearchUtil, CommonFunctionsUtil, DEFAULT_DATE_TIME_FORMAT } from '@server_1/core';
-import moment from 'moment';
-import { CreateFaqCategoryDto } from '../dto/faq-category.dto';
+import { CommonFunctionsUtil, SearchUtil } from '@server_1/core';
 
 @Injectable()
 export class FaqCategoryService {

@@ -1,9 +1,9 @@
 import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from '@nestjs/common';
-import { JwtAuthGuard, CurrentUser, RequestedIp } from '@server_1/core';
+import { CurrentUser, JwtAuthGuard, RequestedIp } from '@server_1/core';
 import { BasicSearchDto } from '@server_1/shared-dto';
 import { PromoCodeService } from '../../services';
-import { CreatePromoCodeDto, ApplyPromoCodeDto } from '../../dto';
-import { ITableList, IResponse } from '@eatfit247-shared-lib';
+import { ApplyPromoCodeDto, CreatePromoCodeDto } from '../../dto';
+import { ITableList } from '@eatfit247-shared-lib';
 
 @Controller('promo-code')
 @UseGuards(JwtAuthGuard)

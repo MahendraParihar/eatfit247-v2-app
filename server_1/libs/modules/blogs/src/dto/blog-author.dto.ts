@@ -3,12 +3,13 @@ import {
   IsEmail,
   IsNotEmpty,
   IsNumber,
-  IsOptional, IsString,
+  IsOptional,
+  IsString,
   MaxLength,
   MinLength,
   ValidateNested,
 } from 'class-validator';
-import { InputLengthEnum, IManageBlogAuthor } from '@eatfit247-shared-lib';
+import { IManageBlogAuthor, InputLengthEnum } from '@eatfit247-shared-lib';
 import { MediaUploadDto } from '@server_1/core';
 import { Type } from 'class-transformer';
 

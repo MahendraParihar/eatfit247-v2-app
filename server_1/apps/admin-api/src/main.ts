@@ -1,15 +1,13 @@
 import 'tsconfig-paths/register';
 import * as dotenv from 'dotenv';
-dotenv.config();
-
-import { NestFactory } from '@nestjs/core';
+import { ModuleRef, NestFactory } from '@nestjs/core';
 import { AppModule } from './app/app.module';
-import { ValidationPipe, Logger } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import { json, urlencoded } from 'express';
-import { ValidationFilter, ValidationException, Env } from '@server_1/core';
+import { ValidationException, ValidationFilter } from '@server_1/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import { ModuleRef } from '@nestjs/core';
 
+dotenv.config();
 const cookieParser = require('cookie-parser');
 const logger = new Logger('Bootstrap');
 

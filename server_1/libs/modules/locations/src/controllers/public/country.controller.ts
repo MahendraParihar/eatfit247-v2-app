@@ -1,6 +1,6 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { CountryService } from '@server_1/platform';
-import { ITableList, ICountry } from '@eatfit247-shared-lib';
+import { ICountry, ITableList } from '@eatfit247-shared-lib';
 import { BasicSearchDto } from '@server_1/shared-dto';
 
 @Controller('public/country')

@@ -8,15 +8,8 @@ import {
   IsString,
   MaxLength,
   Min,
-  ValidateNested,
 } from 'class-validator';
-import { Type } from 'class-transformer';
-import {
-  IManageMemberPayment,
-  InputLengthEnum,
-  PaymentSourceEnum,
-} from '@eatfit247-shared-lib';
-import { CreateAddressDto } from '@server_1/core';
+import { IManageMemberPayment, InputLengthEnum, PaymentSourceEnum } from '@eatfit247-shared-lib';
 
 export class CreateMemberPaymentDto implements IManageMemberPayment {
   @IsOptional()

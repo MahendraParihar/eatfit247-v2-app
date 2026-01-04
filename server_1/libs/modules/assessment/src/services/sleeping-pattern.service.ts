@@ -1,8 +1,15 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { MstSleepingPattern } from '../models';
-import { ITableList, IBasicSearch, ISleepingPattern, IManageSleepingPattern, IDropdownItem, ConfigParam } from '@eatfit247-shared-lib';
-import { SearchUtil, CommonFunctionsUtil, AppConfigService } from '@server_1/core';
+import {
+  ConfigParam,
+  IBasicSearch,
+  IDropdownItem,
+  IManageSleepingPattern,
+  ISleepingPattern,
+  ITableList,
+} from '@eatfit247-shared-lib';
+import { AppConfigService, CommonFunctionsUtil, SearchUtil } from '@server_1/core';
 
 @Injectable()
 export class SleepingPatternService {

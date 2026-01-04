@@ -1,10 +1,7 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
-import {
-  Env, AdminUserService,
-} from '@server_1/core';
-import { JwtStrategy } from '@server_1/core';
+import { AdminUserService, Env, JwtStrategy } from '@server_1/core';
 import { NotificationsModule } from '../../notifications';
 import { AuthService } from './services/auth.service';
 import { AuthController } from './controllers/auth.controller';

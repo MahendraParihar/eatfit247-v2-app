@@ -1,11 +1,15 @@
 import { Controller, Get, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '@server_1/core';
 import {
-  BloodSugarService, EatingHabitService,
+  BloodSugarService,
+  EatingHabitService,
   GenderService,
   LifestyleService,
   MaritalStatusService,
-  ReligionService, SleepingPatternService, TypeOfExerciseService, UrineOutputService,
+  ReligionService,
+  SleepingPatternService,
+  TypeOfExerciseService,
+  UrineOutputService,
 } from '../../services';
 import { IAssessmentMaster } from '@eatfit247-shared-lib';
 

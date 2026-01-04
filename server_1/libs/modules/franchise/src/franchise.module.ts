@@ -1,10 +1,9 @@
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
-import { MstFranchise, modelRegistry } from '@server_1/core';
+import { modelRegistry, MstFranchise } from '@server_1/core';
 import { FranchiseController, PublicFranchiseController } from './controllers';
-import { FranchiseService, FranchisePaymentGatewayService } from './services';
+import { FranchisePaymentGatewayService, FranchiseService } from './services';
 import { MstFranchisePaymentGateway } from './models';
-
 // Register models with the model registry
 // Models with @Scopes decorator MUST be registered for scopes to work
 modelRegistry.register([MstFranchisePaymentGateway]);

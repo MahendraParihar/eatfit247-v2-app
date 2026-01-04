@@ -1,6 +1,6 @@
 import { BelongsTo, Column, CreatedAt, DataType, Model, Scopes, Table, UpdatedAt } from 'sequelize-typescript';
 import { IMediaUpload, InputLengthEnum } from '@eatfit247-shared-lib';
-import { MstAdminUser, getCreatedByUserInclude, getUpdatedByUserInclude } from '@server_1/core';
+import { getCreatedByUserInclude, getUpdatedByUserInclude, MstAdminUser } from '@server_1/core';
 
 @Table({
   tableName: 'mst_legal_page',

@@ -1,6 +1,6 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { LifestyleService } from '../../services';
-import { ITableList, ILifestyle } from '@eatfit247-shared-lib';
+import { ILifestyle, ITableList } from '@eatfit247-shared-lib';
 import { BasicSearchDto } from '@server_1/shared-dto';
 
 @Controller('public/lifestyle')

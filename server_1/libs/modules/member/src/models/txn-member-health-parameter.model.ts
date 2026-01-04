@@ -1,4 +1,4 @@
-import { BelongsTo, Column, CreatedAt, DataType, Index, Model, Scopes, Table, UpdatedAt } from 'sequelize-typescript';
+import { BelongsTo, Column, DataType, Model, Scopes, Table } from 'sequelize-typescript';
 import { TxnMemberHealthParameterLog } from './txn-member-health-parameter-log.model';
 import { MstHealthParameter, MstHealthParameterUnit } from '@server_1/modules/assessment';
 

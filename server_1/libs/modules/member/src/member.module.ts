@@ -5,79 +5,49 @@ import { TaxEngineModule } from '@server_1/modules/tax-engine';
 import { AssessmentModule } from '@server_1/modules/assessment';
 import { RecipeModule } from '@server_1/modules/recipe';
 import { DietModule, TxnDietTemplateDietDetail } from '@server_1/modules/diet';
-import {
-  MstAdminUser,
-  modelRegistry,
-  MstFranchise,
-} from '@server_1/core';
-import {
-  MstCountry,
-  TxnAddress,
-  MstPaymentMode,
-  MstPaymentStatus,
-} from '@server_1/platform';
-import {
-  MstPocketGuide,
-} from '@server_1/modules/pocket-guide';
-import {
-  MstIssueStatus,
-  MstIssueCategory,
-} from '@server_1/modules/issues';
-import {
-  MstCallType,
-  MstCallPurpose,
-  MstCallLogStatus,
-} from '@server_1/modules/call-logs';
-import {
-  MstProgramPlan,
-  MstProgram,
-} from '@server_1/modules/program-plan';
-import {
-  MstReferrer,
-} from '@server_1/modules/referrer';
-import {
-  MstGender,
-  MstMaritalStatus,
-  MstReligion,
-  MstLifestyle,
-  MstEatingHabit,
-  MstTypeOfExercise,
-  MstSleepingPattern,
-  MstBloodSugar,
-  MstUrineOutput,
-  MstHealthIssue,
-  MstHealthParameter,
-  MstHealthParameterUnit,
-} from '@server_1/modules/assessment';
-import { TxnMember, TxnMemberPocketGuide, TxnMemberHealthIssue, TxnMemberIssue, TxnMemberIssueResponse, TxnMemberHealthParameterLog, TxnMemberHealthParameter, TxnAssessment, TxnMemberPayment, TxnMemberDietPlan, TxnMemberDietDetail } from './models';
-import {
-  MemberController,
-  PublicMemberController,
-  MemberHealthController,
-  MemberCallLogController,
-  MemberContentController,
-  MemberIssueController,
-  MemberPaymentController,
-  MemberDashboardController,
-  MemberDietPlanController,
-} from './controllers';
-import {
-  MemberService,
-  MemberPocketGuideService,
-  MemberHealthIssueService,
-  MemberCallLogsService,
-  MemberHealthParameterLogsService,
-  MemberIssueService,
-  MemberIssueResponseService,
-  MemberAssessmentService,
-  MemberPaymentService,
-  MemberDietPlanService,
-  MemberDashboardService,
-} from './services';
-import { TxnMemberCallLog } from './models';
-import { CallLogsModule } from '@server_1/modules/call-logs';
+import { modelRegistry, MstAdminUser, MstFranchise } from '@server_1/core';
+import { MstCountry, MstPaymentMode, MstPaymentStatus, TxnAddress } from '@server_1/platform';
 import { PocketGuideModule } from '@server_1/modules/pocket-guide';
 import { IssuesModule } from '@server_1/modules/issues';
+import { CallLogsModule } from '@server_1/modules/call-logs';
+import {
+  TxnAssessment,
+  TxnMember,
+  TxnMemberCallLog,
+  TxnMemberDietDetail,
+  TxnMemberDietPlan,
+  TxnMemberHealthIssue,
+  TxnMemberHealthParameter,
+  TxnMemberHealthParameterLog,
+  TxnMemberIssue,
+  TxnMemberIssueResponse,
+  TxnMemberPayment,
+  TxnMemberPocketGuide,
+} from './models';
+import {
+  MemberCallLogController,
+  MemberContentController,
+  MemberController,
+  MemberDashboardController,
+  MemberDietPlanController,
+  MemberHealthController,
+  MemberIssueController,
+  MemberPaymentController,
+  PublicMemberController,
+} from './controllers';
+import {
+  MemberAssessmentService,
+  MemberCallLogsService,
+  MemberDashboardService,
+  MemberDietPlanService,
+  MemberHealthIssueService,
+  MemberHealthParameterLogsService,
+  MemberIssueResponseService,
+  MemberIssueService,
+  MemberPaymentService,
+  MemberPocketGuideService,
+  MemberService,
+} from './services';
 import { FranchiseModule } from '@server_1/modules/franchise';
 import { PaymentModule } from '@server_1/modules/payment';
 // Register models with the model registry

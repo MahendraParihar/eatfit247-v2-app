@@ -1,12 +1,8 @@
-import { Body, Controller, Get, Param, Post, Put, Req, UseGuards } from '@nestjs/common';
-import { JwtAuthGuard, CurrentUser, RequestedIp } from '@server_1/core';
+import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import { CurrentUser, JwtAuthGuard, RequestedIp } from '@server_1/core';
 import { MemberCallLogsService } from '../../services';
-import { ICallLogMasterData, IMemberCallLog, ICallLogSlot } from '@eatfit247-shared-lib';
-import {
-  AvailableSlotDto,
-  StatusChangeCallLogDto,
-  CreateMemberCallLogDto,
-} from '../../dto';
+import { ICallLogMasterData, ICallLogSlot, IMemberCallLog } from '@eatfit247-shared-lib';
+import { AvailableSlotDto, CreateMemberCallLogDto, StatusChangeCallLogDto } from '../../dto';
 
 @Controller('member/:id/call-logs')
 @UseGuards(JwtAuthGuard)

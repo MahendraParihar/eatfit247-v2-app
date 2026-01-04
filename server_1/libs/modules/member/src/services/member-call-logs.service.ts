@@ -1,27 +1,23 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { TxnMemberCallLog, TxnMember } from '../models';
-import {
-  CommonFunctionsUtil,
-  MstAdminUser,
-  AppConfigService,
-} from '@server_1/core';
+import { TxnMember, TxnMemberCallLog } from '../models';
+import { AppConfigService, CommonFunctionsUtil, MstAdminUser } from '@server_1/core';
 import { GoogleService, ZoomService } from '@server_1/platform';
 import {
-  IMemberCallLog,
-  ITableList,
-  IBasicSearch,
-  ICallLogMasterData,
-  IAvailableSlot,
-  ICallLogSlot,
-  ISetupMemberCallLog,
   CallLogStatusEnum,
-  IGoogleCalendarEvent,
-  IZoomEvent,
   CallTypeEnum,
   ConfigParam,
+  IAvailableSlot,
+  IBasicSearch,
+  ICallLogMasterData,
+  ICallLogSlot,
   IDropdownItem,
+  IGoogleCalendarEvent,
+  IMemberCallLog,
+  ISetupMemberCallLog,
   IStatusChangeCallLog,
+  ITableList,
+  IZoomEvent,
 } from '@eatfit247-shared-lib';
 import { Op } from 'sequelize';
 import moment from 'moment';

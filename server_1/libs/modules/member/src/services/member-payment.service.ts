@@ -1,34 +1,30 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { TxnMember, TxnMemberPayment } from '../models';
 import {
-  IMemberPaymentMasterData,
-  IMemberPayment,
-  IManageMemberPayment,
-  ITableList,
+  ConfigParam,
+  IAddress,
   IDropdownItem,
+  IManageMemberPayment,
+  IMemberPayment,
+  IMemberPaymentMasterData,
+  ITableList,
   PaymentSourceEnum,
   PaymentStatusEnum,
   TableEnum,
-  ConfigParam,
-  IAddress,
   TransactionType,
 } from '@eatfit247-shared-lib';
+import { AppConfigService, CommonFunctionsUtil, MstFranchise } from '@server_1/core';
 import {
-  AppConfigService,
-  CommonFunctionsUtil,
-  MstFranchise,
-} from '@server_1/core';
-import {
+  AddressService,
+  CountryService,
   EmailNotificationService,
   PaymentModeService,
   PaymentStatusService,
-  AddressService,
-  CountryService,
-  StateService,
   RazorpayService,
+  StateService,
 } from '@server_1/platform';
-import { ProgramService, ProgramPlanService } from '@server_1/modules/program-plan';
+import { ProgramPlanService, ProgramService } from '@server_1/modules/program-plan';
 import { TaxEngineService, TaxInput } from '@server_1/modules/tax-engine';
 import { FranchisePaymentGatewayService } from '@server_1/modules/franchise';
 import { PaymentGatewayResolverService } from '@server_1/modules/payment';

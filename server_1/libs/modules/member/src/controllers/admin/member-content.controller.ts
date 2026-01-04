@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Param, Put, UseGuards } from '@nestjs/common';
-import { JwtAuthGuard, CurrentUser, RequestedIp } from '@server_1/core';
-import { MemberPocketGuideService, MemberDietPlanService } from '../../services';
-import { ITableList, IMemberPocketGuide, IMemberDietPlan, IDropdownItem } from '@eatfit247-shared-lib';
+import { CurrentUser, JwtAuthGuard, RequestedIp } from '@server_1/core';
+import { MemberDietPlanService, MemberPocketGuideService } from '../../services';
+import { IDropdownItem, IMemberDietPlan, IMemberPocketGuide, ITableList } from '@eatfit247-shared-lib';
 
 /**
  * Consolidated controller for member content/resources:

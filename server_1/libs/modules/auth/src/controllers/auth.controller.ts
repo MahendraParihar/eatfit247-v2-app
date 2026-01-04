@@ -10,16 +10,10 @@
  *
  * Refresh token is stored in HttpOnly, Secure cookie (not in response body)
  */
-import { Body, Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Req, Res, SetMetadata, UseGuards } from '@nestjs/common';
 import { Response } from 'express';
-import { IToken, IAuthUser } from '@eatfit247-shared-lib';
-import {
-  JwtAuthGuard,
-  CurrentUser,
-  RequestedIp,
-  PUBLIC_API, Env,
-} from '@server_1/core';
-import { SetMetadata } from '@nestjs/common';
+import { IAuthUser, IToken } from '@eatfit247-shared-lib';
+import { CurrentUser, Env, JwtAuthGuard, PUBLIC_API, RequestedIp } from '@server_1/core';
 import { AuthService } from '../services/auth.service';
 import { ChangePasswordDto, ForgotPasswordDto, LoginDto, ResetPasswordDto } from '../dto';
 

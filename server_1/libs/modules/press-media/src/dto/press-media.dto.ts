@@ -6,11 +6,10 @@ import {
   IsOptional,
   IsString,
   MaxLength,
-  MinLength,
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { InputLengthEnum, IManagePressMedia, PressMediaType } from '@eatfit247-shared-lib';
+import { IManagePressMedia, InputLengthEnum, PressMediaType } from '@eatfit247-shared-lib';
 import { MediaUploadDto } from '@server_1/core';
 
 export class CreatePressMediaDto implements IManagePressMedia {

@@ -1,9 +1,9 @@
 import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from '@nestjs/common';
-import { JwtAuthGuard, CurrentUser, RequestedIp } from '@server_1/core';
+import { CurrentUser, JwtAuthGuard, RequestedIp } from '@server_1/core';
 import { StateService } from '@server_1/platform';
 import { BasicSearchDto, UpdateActiveDto } from '@server_1/shared-dto';
 import { CreateStateDto } from '../../dto';
-import { ITableList, IState, IDropdownItem, IResponse } from '@eatfit247-shared-lib';
+import { IDropdownItem, IState, ITableList } from '@eatfit247-shared-lib';
 
 @Controller('state')
 @UseGuards(JwtAuthGuard)

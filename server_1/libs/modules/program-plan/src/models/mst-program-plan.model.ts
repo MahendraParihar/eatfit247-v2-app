@@ -1,5 +1,5 @@
 import { BelongsTo, Column, CreatedAt, DataType, HasMany, Model, Scopes, Table, UpdatedAt } from 'sequelize-typescript';
-import { MstAdminUser, getCreatedByUserInclude, getUpdatedByUserInclude } from '@server_1/core';
+import { getCreatedByUserInclude, getUpdatedByUserInclude, MstAdminUser } from '@server_1/core';
 import { IMediaUpload, InputLengthEnum } from '@eatfit247-shared-lib';
 import { MstProgramPlanType } from './mst-program-plan-type.model';
 import { MstProgramPlanFees } from './mst-program-plan-fees.model';

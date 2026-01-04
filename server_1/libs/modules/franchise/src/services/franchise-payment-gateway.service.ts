@@ -2,14 +2,9 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { IBasicSearch, ITableList } from '@eatfit247-shared-lib';
-import { SearchUtil, CommonFunctionsUtil } from '@server_1/core';
-import {
-  MstFranchisePaymentGateway,
-} from '../models';
-import {
-  CreateFranchisePaymentGatewayDto,
-  UpdateFranchisePaymentGatewayDto,
-} from '../dto';
+import { CommonFunctionsUtil, SearchUtil } from '@server_1/core';
+import { MstFranchisePaymentGateway } from '../models';
+import { CreateFranchisePaymentGatewayDto, UpdateFranchisePaymentGatewayDto } from '../dto';
 import { MstPaymentGateway } from '@server_1/platform';
 
 @Injectable()

@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { ITableList, IBasicSearch, IDropdownItem, IAddressType, IManageAddressType } from '@eatfit247-shared-lib';
-import { SearchUtil, CommonFunctionsUtil } from '@server_1/core';
+import { IAddressType, IBasicSearch, IDropdownItem, IManageAddressType, ITableList } from '@eatfit247-shared-lib';
+import { CommonFunctionsUtil, SearchUtil } from '@server_1/core';
 import { MstAddressType } from '../database/models/mst-address-type.model';
 
 @Injectable()

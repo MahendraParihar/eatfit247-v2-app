@@ -1,9 +1,9 @@
 import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from '@nestjs/common';
-import { JwtAuthGuard, CurrentUser, RequestedIp } from '@server_1/core';
+import { CurrentUser, JwtAuthGuard, RequestedIp } from '@server_1/core';
 import { BasicSearchDto, UpdateActiveDto } from '@server_1/shared-dto';
 import { CallLogStatusService } from '../../services';
 import { CreateCallLogStatusDto } from '../../dto';
-import { ITableList, ICallLogStatus, IDropdownItem, IResponse } from '@eatfit247-shared-lib';
+import { ICallLogStatus, IDropdownItem, ITableList } from '@eatfit247-shared-lib';
 
 @Controller('call-log-status')
 @UseGuards(JwtAuthGuard)

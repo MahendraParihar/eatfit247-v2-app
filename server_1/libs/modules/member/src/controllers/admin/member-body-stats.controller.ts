@@ -1,10 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards } from '@nestjs/common';
-import { JwtAuthGuard, CurrentUser, RequestedIp } from '@server_1/core';
+import { CurrentUser, JwtAuthGuard, RequestedIp } from '@server_1/core';
 import { MemberHealthParameterLogsService } from '../../services';
-import {
-  IHealthParameterMaster,
-  IMemberHealthParameterLog,
-} from '@eatfit247-shared-lib';
+import { IHealthParameterMaster, IMemberHealthParameterLog } from '@eatfit247-shared-lib';
 import { CreateMemberHealthParameterLogDto } from '../../dto';
 
 @Controller('member/:id/health-parameter-logs')

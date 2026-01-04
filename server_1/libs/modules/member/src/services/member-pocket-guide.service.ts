@@ -1,14 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
-import { TxnMemberPocketGuide, TxnMember } from '../models';
-import { IMemberPocketGuide, IEmailData, EmailTemplateEnum, ITableList } from '@eatfit247-shared-lib';
-import {
-  CommonFunctionsUtil,
-  MstAdminUser,
-} from '@server_1/core';
+import { TxnMember, TxnMemberPocketGuide } from '../models';
+import { EmailTemplateEnum, IEmailData, IMemberPocketGuide, ITableList } from '@eatfit247-shared-lib';
+import { ADMIN_USER_SHORT_INFO_ATTRIBUTE, CommonFunctionsUtil, MstAdminUser } from '@server_1/core';
 import { MstPocketGuide } from '@server_1/modules/pocket-guide';
-import { ADMIN_USER_SHORT_INFO_ATTRIBUTE } from '@server_1/core';
 import { Sequelize } from 'sequelize-typescript';
 import { EmailNotificationService } from '@server_1/platform';
 

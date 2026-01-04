@@ -4,17 +4,12 @@ import {
   CreatedAt,
   DataType,
   HasMany,
-  Index,
   Model,
   Scopes,
   Table,
   UpdatedAt,
 } from 'sequelize-typescript';
-import {
-  MstAdminUser,
-  getCreatedByUserInclude,
-  getUpdatedByUserInclude,
-} from '@server_1/core';
+import { getCreatedByUserInclude, getUpdatedByUserInclude, MstAdminUser } from '@server_1/core';
 import { MstHealthParameter, MstHealthParameterUnit } from '@server_1/modules/assessment';
 import { TxnMember } from './txn-member.model';
 import { TxnMemberHealthParameter } from './txn-member-health-parameter.model';

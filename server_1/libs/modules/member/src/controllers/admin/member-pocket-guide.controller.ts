@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Param, Put, UseGuards } from '@nestjs/common';
-import { JwtAuthGuard, CurrentUser, RequestedIp } from '@server_1/core';
+import { CurrentUser, JwtAuthGuard, RequestedIp } from '@server_1/core';
 import { MemberPocketGuideService } from '../../services';
-import { ITableList, IMemberPocketGuide } from '@eatfit247-shared-lib';
+import { IMemberPocketGuide, ITableList } from '@eatfit247-shared-lib';
 
 @Controller('member/:id/pocket-guide')
 @UseGuards(JwtAuthGuard)

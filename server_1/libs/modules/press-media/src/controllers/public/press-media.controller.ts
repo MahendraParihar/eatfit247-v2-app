@@ -1,6 +1,6 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { PressMediaService } from '../../services';
-import { ITableList, IPressMedia } from '@eatfit247-shared-lib';
+import { IPressMedia, ITableList } from '@eatfit247-shared-lib';
 import { BasicSearchDto } from '@server_1/shared-dto';
 
 @Controller('public/press-media')

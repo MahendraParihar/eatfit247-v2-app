@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { MstPaymentGateway } from '../database/models';
-import { IDropdownItem } from "@eatfit247-shared-lib";
+import { IDropdownItem } from '@eatfit247-shared-lib';
 
 @Injectable()
 export class PaymentGatewayService {

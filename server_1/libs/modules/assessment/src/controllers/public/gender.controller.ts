@@ -1,6 +1,6 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { GenderService } from '../../services';
-import { ITableList, IGender } from '@eatfit247-shared-lib';
+import { IGender, ITableList } from '@eatfit247-shared-lib';
 import { BasicSearchDto } from '@server_1/shared-dto';
 
 @Controller('public/gender')

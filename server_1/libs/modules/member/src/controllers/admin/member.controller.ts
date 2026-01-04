@@ -1,9 +1,9 @@
 import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from '@nestjs/common';
-import { JwtAuthGuard, CurrentUser, RequestedIp } from '@server_1/core';
+import { CurrentUser, JwtAuthGuard, RequestedIp } from '@server_1/core';
 import { BasicSearchDto } from '@server_1/shared-dto';
 import { MemberService } from '../../services';
 import { CreateMemberDto } from '../../dto';
-import { ITableList, IMember } from '@eatfit247-shared-lib';
+import { IMember, ITableList } from '@eatfit247-shared-lib';
 
 @Controller('member')
 @UseGuards(JwtAuthGuard)

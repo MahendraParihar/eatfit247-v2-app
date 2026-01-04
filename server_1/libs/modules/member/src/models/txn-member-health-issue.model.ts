@@ -1,5 +1,5 @@
-import { BelongsTo, Column, CreatedAt, DataType, Index, Model, Scopes, Table, UpdatedAt } from 'sequelize-typescript';
-import { MstAdminUser, getCreatedByUserInclude, getUpdatedByUserInclude } from '@server_1/core';
+import { BelongsTo, Column, CreatedAt, DataType, Model, Scopes, Table, UpdatedAt } from 'sequelize-typescript';
+import { getCreatedByUserInclude, getUpdatedByUserInclude, MstAdminUser } from '@server_1/core';
 import { MstHealthIssue } from '@server_1/modules/assessment';
 import { TxnMember } from './txn-member.model';
 import { InputLengthEnum } from '@eatfit247-shared-lib';

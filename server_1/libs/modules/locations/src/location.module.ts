@@ -1,12 +1,12 @@
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
-import { MstState } from '@server_1/platform';
 import {
-  CountryController,
-  StateController,
+  AddressController,
   AddressTypeController,
+  CountryController,
   PublicCountryController,
-  PublicStateController, AddressController,
+  PublicStateController,
+  StateController,
 } from './controllers';
 
 @Module({

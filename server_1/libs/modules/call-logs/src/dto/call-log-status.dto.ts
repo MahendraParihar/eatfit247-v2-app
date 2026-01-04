@@ -1,5 +1,5 @@
 import { IsBoolean, IsNotEmpty, IsNumber, IsOptional, MaxLength, MinLength } from 'class-validator';
-import { InputLengthEnum, IManageCallLogStatus } from '@eatfit247-shared-lib';
+import { IManageCallLogStatus, InputLengthEnum } from '@eatfit247-shared-lib';
 
 export class CreateCallLogStatusDto implements IManageCallLogStatus {
   @MinLength(InputLengthEnum.CHAR_2)

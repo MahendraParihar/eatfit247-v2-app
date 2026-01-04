@@ -1,6 +1,6 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { IssueCategoryService } from '../../services';
-import { ITableList, IIssueCategory } from '@eatfit247-shared-lib';
+import { IIssueCategory, ITableList } from '@eatfit247-shared-lib';
 import { BasicSearchDto } from '@server_1/shared-dto';
 
 @Controller('public/issue-category')

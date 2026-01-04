@@ -1,6 +1,6 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { CallTypeService } from '../../services';
-import { ITableList, ICallType } from '@eatfit247-shared-lib';
+import { ICallType, ITableList } from '@eatfit247-shared-lib';
 import { BasicSearchDto } from '@server_1/shared-dto';
 
 @Controller('public/call-type')

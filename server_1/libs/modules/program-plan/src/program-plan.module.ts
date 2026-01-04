@@ -1,10 +1,16 @@
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { modelRegistry } from '@server_1/core';
-import { MstProgramCategory, MstProgram, MstProgramPlanType, MstProgramPlan, MstProgramPlanFees } from './models';
-import { ProgramCategoryController, PublicProgramCategoryController, ProgramController, PublicProgramController, ProgramPlanController, PublicProgramPlanController } from './controllers';
-import { ProgramCategoryService, ProgramService, ProgramPlanService } from './services';
-
+import { MstProgram, MstProgramCategory, MstProgramPlan, MstProgramPlanFees, MstProgramPlanType } from './models';
+import {
+  ProgramCategoryController,
+  ProgramController,
+  ProgramPlanController,
+  PublicProgramCategoryController,
+  PublicProgramController,
+  PublicProgramPlanController,
+} from './controllers';
+import { ProgramCategoryService, ProgramPlanService, ProgramService } from './services';
 // Register models with the model registry
 // These models have @Scopes decorator, so they MUST be registered for scopes to work
 modelRegistry.register([

@@ -1,9 +1,9 @@
 import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from '@nestjs/common';
-import { JwtAuthGuard, CurrentUser, RequestedIp } from '@server_1/core';
+import { CurrentUser, JwtAuthGuard, RequestedIp } from '@server_1/core';
 import { BasicSearchDto, UpdateActiveDto } from '@server_1/shared-dto';
 import { FaqCategoryService } from '../../services/faq-category.service';
 import { CreateFaqCategoryDto } from '../../dto/faq-category.dto';
-import { ITableList, IFaqCategory, IResponse } from '@eatfit247-shared-lib';
+import { IFaqCategory, ITableList } from '@eatfit247-shared-lib';
 
 @Controller('faq-category')
 @UseGuards(JwtAuthGuard)

@@ -2,7 +2,6 @@ import { BadRequestException, Controller, Get, Query, Res, UseGuards } from '@ne
 import { Response } from 'express';
 import { CurrentUser, JwtAuthGuard, Public } from '@server_1/core';
 import { GoogleService } from '@server_1/platform';
-import { GoogleCalendarService } from '../services';
 import { IGoogleCalendarStatus } from '@eatfit247-shared-lib';
 
 @Controller('google-calendar')

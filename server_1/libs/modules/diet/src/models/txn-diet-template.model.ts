@@ -9,11 +9,7 @@ import {
   Table,
   UpdatedAt,
 } from 'sequelize-typescript';
-import {
-  MstAdminUser,
-  getCreatedByUserInclude,
-  getUpdatedByUserInclude,
-} from '@server_1/core';
+import { getCreatedByUserInclude, getUpdatedByUserInclude, MstAdminUser } from '@server_1/core';
 import { InputLengthEnum } from '@eatfit247-shared-lib';
 import { TxnDietTemplateDietDetail } from './txn-diet-template-diet-detail.model';
 

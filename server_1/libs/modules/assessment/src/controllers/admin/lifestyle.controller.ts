@@ -1,9 +1,9 @@
 import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from '@nestjs/common';
-import { JwtAuthGuard, CurrentUser, RequestedIp } from '@server_1/core';
+import { CurrentUser, JwtAuthGuard, RequestedIp } from '@server_1/core';
 import { BasicSearchDto, UpdateActiveDto } from '@server_1/shared-dto';
 import { LifestyleService } from '../../services';
 import { CreateLifestyleDto } from '../../dto';
-import { ITableList, ILifestyle, IDropdownItem, IResponse } from '@eatfit247-shared-lib';
+import { IDropdownItem, ILifestyle, ITableList } from '@eatfit247-shared-lib';
 
 @Controller('lifestyle')
 @UseGuards(JwtAuthGuard)

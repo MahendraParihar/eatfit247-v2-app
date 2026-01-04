@@ -9,9 +9,8 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { InputLengthEnum } from '@eatfit247-shared-lib';
+import { IManageBlog, InputLengthEnum } from '@eatfit247-shared-lib';
 import { MediaUploadDto, SeoDto } from '@server_1/core';
-import { IManageBlog } from '@eatfit247-shared-lib';
 
 export class CreateBlogDto implements IManageBlog {
   @MinLength(InputLengthEnum.CHAR_2)

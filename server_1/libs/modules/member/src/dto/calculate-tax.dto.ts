@@ -1,11 +1,4 @@
-import {
-  IsBoolean,
-  IsNotEmpty,
-  IsNumber,
-  IsOptional,
-  IsString,
-  Min,
-} from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsString, Min } from 'class-validator';
 import { ICalculateTaxRequest } from '@eatfit247-shared-lib';
 
 export class CalculateTaxDto implements ICalculateTaxRequest {

@@ -1,14 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize-typescript';
-import { TxnMemberHealthParameterLog, TxnMember, TxnMemberHealthParameter } from '../models';
+import { TxnMember, TxnMemberHealthParameter, TxnMemberHealthParameterLog } from '../models';
 import { CommonFunctionsUtil } from '@server_1/core';
 import { MstHealthParameter, MstHealthParameterUnit } from '@server_1/modules/assessment';
 import {
-  IMemberHealthParameterLog,
-  IMemberHealthParameter,
   IHealthParameterMaster,
   IManageMemberHealthParameterLog,
+  IMemberHealthParameter,
+  IMemberHealthParameterLog,
 } from '@eatfit247-shared-lib';
 
 @Injectable()

@@ -1,14 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import {
-  ITableList,
+  ConfigParam,
   IBasicSearch,
+  IDropdownItem,
   IFranchise,
   IManageFranchise,
-  IDropdownItem,
-  ConfigParam,
+  ITableList,
 } from '@eatfit247-shared-lib';
-import { SearchUtil, CommonFunctionsUtil, MstFranchise, AppConfigService } from '@server_1/core';
+import { AppConfigService, CommonFunctionsUtil, MstFranchise, SearchUtil } from '@server_1/core';
 
 @Injectable()
 export class FranchiseService {

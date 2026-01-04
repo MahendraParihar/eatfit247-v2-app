@@ -1,10 +1,6 @@
 import { BelongsTo, Column, CreatedAt, DataType, Model, Scopes, Table, UpdatedAt } from 'sequelize-typescript';
-import {
-  MstAdminUser,
-  getCreatedByUserInclude,
-  getUpdatedByUserInclude,
-} from '@server_1/core';
-import { MstCallType, MstCallPurpose, MstCallLogStatus } from '@server_1/modules/call-logs';
+import { getCreatedByUserInclude, getUpdatedByUserInclude, MstAdminUser } from '@server_1/core';
+import { MstCallLogStatus, MstCallPurpose, MstCallType } from '@server_1/modules/call-logs';
 import { TxnMember } from './txn-member.model';
 import { IGoogleCalendarEvent, InputLengthEnum, IZoomEvent } from '@eatfit247-shared-lib';
 

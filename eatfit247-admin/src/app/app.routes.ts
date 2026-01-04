@@ -4,7 +4,6 @@ import { LoginComponent } from './auth/login/login.component';
 import { ForgotPasswordComponent } from './auth/forgot-password/forgot-password.component';
 import { ResetPasswordComponent } from './auth/reset-password/reset-password.component';
 import { BaseLayoutComponent } from '@shared';
-import { settingRoutes } from 'admin-user';
 
 export const appRoutes: Route[] = [
   {

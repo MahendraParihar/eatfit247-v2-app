@@ -1,9 +1,9 @@
 import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from '@nestjs/common';
-import { JwtAuthGuard, CurrentUser, RequestedIp } from '@server_1/core';
+import { CurrentUser, JwtAuthGuard, RequestedIp } from '@server_1/core';
 import { BasicSearchDto, UpdateActiveDto } from '@server_1/shared-dto';
 import { BlogCategoryService } from '../../services/blog-category.service';
 import { CreateBlogCategoryDto } from '../../dto/blog-category.dto';
-import { ITableList, IBlogCategory, IResponse } from '@eatfit247-shared-lib';
+import { IBlogCategory, ITableList } from '@eatfit247-shared-lib';
 
 @Controller('blog-category')
 @UseGuards(JwtAuthGuard)

@@ -1,9 +1,9 @@
 import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from '@nestjs/common';
-import { JwtAuthGuard, CurrentUser, RequestedIp } from '@server_1/core';
+import { CurrentUser, JwtAuthGuard, RequestedIp } from '@server_1/core';
 import { BasicSearchDto, UpdateActiveDto } from '@server_1/shared-dto';
 import { TypeOfExerciseService } from '../../services';
 import { CreateTypeOfExerciseDto } from '../../dto';
-import { ITableList, ITypeOfExercise, IDropdownItem, IResponse } from '@eatfit247-shared-lib';
+import { IDropdownItem, ITableList, ITypeOfExercise } from '@eatfit247-shared-lib';
 
 @Controller('type-of-exercise')
 @UseGuards(JwtAuthGuard)

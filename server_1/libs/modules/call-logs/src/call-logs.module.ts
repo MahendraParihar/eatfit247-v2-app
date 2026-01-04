@@ -10,12 +10,7 @@ import {
   PublicCallPurposeController,
   PublicCallTypeController,
 } from './controllers';
-import {
-  CallLogStatusService,
-  CallPurposeService,
-  CallTypeService,
-} from './services';
-
+import { CallLogStatusService, CallPurposeService, CallTypeService } from './services';
 // Register models with the model registry
 // These models have @Scopes decorator, so they MUST be registered for scopes to work
 modelRegistry.register([MstCallLogStatus, MstCallPurpose, MstCallType]);

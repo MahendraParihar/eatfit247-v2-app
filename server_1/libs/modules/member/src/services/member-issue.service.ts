@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { TxnMemberIssue, TxnMember } from '../models';
+import { TxnMember, TxnMemberIssue } from '../models';
 import { IDropdownItem, IIssueMasterData, IMemberIssue } from '@eatfit247-shared-lib';
 import { CommonFunctionsUtil } from '@server_1/core';
 import { MstIssueCategory, MstIssueStatus } from '@server_1/modules/issues';

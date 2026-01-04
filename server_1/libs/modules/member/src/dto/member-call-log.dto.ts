@@ -1,15 +1,5 @@
-import {
-  IsBoolean,
-  IsDateString,
-  IsNotEmpty,
-  IsNumber,
-  IsOptional,
-  IsString,
-} from 'class-validator';
-import {
-  IAvailableSlot,
-  ISetupMemberCallLog, IStatusChangeCallLog,
-} from '@eatfit247-shared-lib';
+import { IsBoolean, IsDateString, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IAvailableSlot, ISetupMemberCallLog, IStatusChangeCallLog } from '@eatfit247-shared-lib';
 
 export class AvailableSlotDto implements IAvailableSlot {
   @IsNotEmpty()

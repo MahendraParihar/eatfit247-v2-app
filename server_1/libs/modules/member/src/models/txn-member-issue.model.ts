@@ -1,6 +1,6 @@
 import { BelongsTo, Column, CreatedAt, DataType, Model, Scopes, Table, UpdatedAt } from 'sequelize-typescript';
-import { MstAdminUser, getCreatedByUserInclude, getUpdatedByUserInclude } from '@server_1/core';
-import { MstIssueStatus, MstIssueCategory } from '@server_1/modules/issues';
+import { getCreatedByUserInclude, getUpdatedByUserInclude, MstAdminUser } from '@server_1/core';
+import { MstIssueCategory, MstIssueStatus } from '@server_1/modules/issues';
 import { TxnMember } from './txn-member.model';
 
 @Table({

@@ -1,15 +1,7 @@
 import { BelongsTo, Column, CreatedAt, DataType, Model, Scopes, Table, UpdatedAt } from 'sequelize-typescript';
-import {
-  MstAdminUser,
-  getCreatedByUserInclude,
-  getUpdatedByUserInclude,
-} from '@server_1/core';
-import {
-  MstPaymentMode,
-  MstPaymentStatus,
-  TxnAddress,
-} from '@server_1/platform';
-import { MstProgramPlan, MstProgram } from '@server_1/modules/program-plan';
+import { getCreatedByUserInclude, getUpdatedByUserInclude, MstAdminUser } from '@server_1/core';
+import { MstPaymentMode, MstPaymentStatus, TxnAddress } from '@server_1/platform';
+import { MstProgram, MstProgramPlan } from '@server_1/modules/program-plan';
 import { TxnMember } from './txn-member.model';
 import { InputLengthEnum, PaymentSourceEnum } from '@eatfit247-shared-lib';
 

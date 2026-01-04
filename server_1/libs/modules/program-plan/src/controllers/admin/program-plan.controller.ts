@@ -1,10 +1,10 @@
 import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from '@nestjs/common';
-import { JwtAuthGuard, CurrentUser, RequestedIp } from '@server_1/core';
+import { CurrentUser, JwtAuthGuard, RequestedIp } from '@server_1/core';
 import { BasicSearchDto, UpdateActiveDto } from '@server_1/shared-dto';
 import { CurrencyService } from '@server_1/platform';
 import { ProgramPlanService } from '../../services';
 import { CreateProgramPlanDto } from '../../dto';
-import { ITableList, IProgramPlan, IDropdownItem, IResponse } from '@eatfit247-shared-lib';
+import { IDropdownItem, IProgramPlan, ITableList } from '@eatfit247-shared-lib';
 
 @Controller('program-plan')
 @UseGuards(JwtAuthGuard)

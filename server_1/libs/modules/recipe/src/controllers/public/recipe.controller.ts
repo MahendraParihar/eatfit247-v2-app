@@ -1,6 +1,6 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { RecipeService } from '../../services';
-import { ITableList, IRecipe } from '@eatfit247-shared-lib';
+import { IRecipe, ITableList } from '@eatfit247-shared-lib';
 import { BasicSearchDto } from '@server_1/shared-dto';
 
 @Controller('public/recipe')

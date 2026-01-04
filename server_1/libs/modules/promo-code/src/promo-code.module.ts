@@ -4,7 +4,6 @@ import { modelRegistry } from '@server_1/core';
 import { TxnPromoCode } from './models';
 import { PromoCodeService } from './services';
 import { PromoCodeController } from './controllers';
-
 // Register TxnPromoCode with model registry
 modelRegistry.register([TxnPromoCode]);
 

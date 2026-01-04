@@ -1,41 +1,38 @@
 import { DynamicModule, Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { HttpModule } from '@nestjs/axios';
-
 // Platform models
 import {
   LabelModel,
   LogErrorModel,
-  MstEmailTemplate,
-  MstCountry,
-  MstState,
   MstAddressType,
-  TxnAddress,
+  MstCountry,
   MstCurrencyModel,
+  MstEmailTemplate,
   MstPaymentMode,
   MstPaymentStatus,
+  MstState,
+  TxnAddress,
 } from './database/models';
 import { MstPaymentGateway } from './database/models/mst-payment-gateway.model';
-
 // Platform services
 import {
-  LogErrorService,
-  GoogleService,
-  ZoomService,
-  RazorpayService,
-  StripeService,
-  TelrService,
-  EmailNotificationService,
-  CurrencyService,
-  StateService,
-  CountryService,
   AddressService,
   AddressTypeService,
+  CountryService,
+  CurrencyService,
+  EmailNotificationService,
+  GoogleService,
+  LogErrorService,
   PaymentModeService,
   PaymentStatusService,
+  RazorpayService,
+  StateService,
+  StripeService,
+  TelrService,
+  ZoomService,
 } from './services';
 import { PaymentGatewayService } from './services/payment-gateway.service';
-
 // Platform modules and controllers
 import { LabelModule } from './label/label.module';
 import { FileUploadController } from './file-upload/file-upload.controller';

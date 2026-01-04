@@ -5,13 +5,12 @@ import {
   IsNotEmpty,
   IsNumber,
   IsOptional,
-  IsString,
   MaxLength,
   MinLength,
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { InputLengthEnum, IManageReferrer } from '@eatfit247-shared-lib';
+import { IManageReferrer, InputLengthEnum } from '@eatfit247-shared-lib';
 import { CreateAddressDto, MediaUploadDto } from '@server_1/core';
 
 export class CreateReferrerDto implements IManageReferrer {

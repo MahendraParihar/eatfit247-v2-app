@@ -7,7 +7,6 @@ import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { TerminusModule } from '@nestjs/terminus';
 import * as jwt from 'jsonwebtoken';
 import { ModelCtor } from 'sequelize-typescript';
-
 // Core imports - use relative imports to avoid circular dependency
 import { databaseConfig } from './database/db-config';
 import { JwtStrategy } from './guards/jwt.strategy';
@@ -18,24 +17,20 @@ import { Env } from './config/env.values';
 import { HealthController } from './health/health.controller';
 import { AppConfigModule } from './config/app-config';
 import { AdminUserService } from './auth/admin-user.service';
-
 // Models moved to core - import from there
-import { AppConfigModel } from './database/models';
-
 // Admin models from core
 import {
-  MstAdminUser,
-  TxnAdminLastLoginDetail,
-  TxnAdminRefreshToken,
-  TxnAdminPasswordResetToken,
+  AppConfigModel,
   MstAdminRole,
-  MstFranchise,
   MstAdminRolePermission,
+  MstAdminUser,
+  MstFranchise,
+  TxnAdminLastLoginDetail,
+  TxnAdminPasswordResetToken,
+  TxnAdminRefreshToken,
 } from './database/models';
-
 // Model registry for feature modules
 import { modelRegistry } from './database/model-registry';
-
 // Feature models are registered via modelRegistry.register() in their respective modules
 // Models with @Scopes decorator MUST be registered in SequelizeModule.forRoot() during initialization
 // Core must NEVER import or know about feature models to avoid circular dependencies

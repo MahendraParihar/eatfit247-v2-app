@@ -1,6 +1,6 @@
 import { IsBoolean, IsNotEmpty, IsNumber, IsOptional, MaxLength, MinLength, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
-import { InputLengthEnum, IManageHealthIssue } from '@eatfit247-shared-lib';
+import { IManageHealthIssue, InputLengthEnum } from '@eatfit247-shared-lib';
 import { MediaUploadDto } from '@server_1/core';
 
 export class CreateHealthIssueDto implements IManageHealthIssue {

@@ -1,21 +1,22 @@
 import {
+  IsArray,
   IsNotEmpty,
   IsNumber,
   IsOptional,
-  MaxLength,
-  ValidateNested,
-  Max,
-  Min,
   IsString,
-  IsArray,
+  Max,
+  MaxLength,
+  Min,
+  ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import {
-  InputLengthEnum,
-  IManageDietTemplate,
-  IDietTemplateDetail,
   IDietPlanDetail,
-  IDropdownItem, IDietPlanRecipes,
+  IDietPlanRecipes,
+  IDietTemplateDetail,
+  IDropdownItem,
+  IManageDietTemplate,
+  InputLengthEnum,
 } from '@eatfit247-shared-lib';
 
 export class CreateDietTemplateDto implements IManageDietTemplate {

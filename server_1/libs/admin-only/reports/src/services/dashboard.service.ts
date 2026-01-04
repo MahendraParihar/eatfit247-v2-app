@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op, Sequelize } from 'sequelize';
-import { TxnMember, TxnMemberPayment, TxnMemberDietPlan, TxnMemberIssue } from '@server_1/modules/member';
+import { TxnMember, TxnMemberDietPlan, TxnMemberIssue, TxnMemberPayment } from '@server_1/modules/member';
 import { PaymentStatusEnum } from '@eatfit247-shared-lib';
 import moment from 'moment';
 

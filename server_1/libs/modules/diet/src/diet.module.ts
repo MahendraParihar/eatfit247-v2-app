@@ -5,7 +5,6 @@ import { TxnDietTemplate, TxnDietTemplateDietDetail } from './models';
 import { DietTemplateController } from './controllers';
 import { DietTemplateService } from './services';
 import { RecipeModule } from '@server_1/modules/recipe';
-
 // Register models with the model registry
 modelRegistry.register([
   TxnDietTemplate,

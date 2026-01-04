@@ -2,28 +2,22 @@ import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { modelRegistry } from '@server_1/core';
 import {
-  MstRecipeCategory,
-  MstRecipeCuisine,
-  MstRecipeType,
   MstRecipe,
+  MstRecipeCategory,
   MstRecipeCategoryMapping,
+  MstRecipeCuisine,
   MstRecipeCuisineMapping,
   MstRecipeNutritive,
+  MstRecipeType,
 } from './models';
 import {
+  PublicRecipeController,
   RecipeCategoryController,
+  RecipeController,
   RecipeCuisineController,
   RecipeTypeController,
-  RecipeController,
-  PublicRecipeController,
 } from './controllers';
-import {
-  RecipeCategoryService,
-  RecipeCuisineService,
-  RecipeTypeService,
-  RecipeService,
-} from './services';
-
+import { RecipeCategoryService, RecipeCuisineService, RecipeService, RecipeTypeService } from './services';
 // Register models with the model registry
 // Models with @Scopes decorator MUST be registered for scopes to work
 // Models used in scopes (like MstRecipeCategoryMapping and MstRecipeCuisineMapping) also need to be registered

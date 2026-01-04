@@ -1,6 +1,6 @@
 import { BelongsTo, Column, CreatedAt, DataType, Model, Scopes, Table, UpdatedAt } from 'sequelize-typescript';
-import { MstAdminUser, getCreatedByUserInclude, getUpdatedByUserInclude } from '@server_1/core';
-import { IMediaUpload, InputLengthEnum, BannerForEnum } from '@eatfit247-shared-lib';
+import { getCreatedByUserInclude, getUpdatedByUserInclude, MstAdminUser } from '@server_1/core';
+import { BannerForEnum, IMediaUpload, InputLengthEnum } from '@eatfit247-shared-lib';
 
 @Table({
   freezeTableName: true,

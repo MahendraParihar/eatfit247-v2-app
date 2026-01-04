@@ -1,13 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectModel, InjectConnection } from '@nestjs/sequelize';
-import { Sequelize, Op } from 'sequelize';
+import { InjectConnection, InjectModel } from '@nestjs/sequelize';
+import { Sequelize } from 'sequelize';
 import {
-  TxnMember,
-  TxnMemberPayment,
-  TxnMemberIssue,
-  TxnMemberHealthParameterLog,
-  TxnMemberDietPlan,
   TxnAssessment,
+  TxnMember,
+  TxnMemberDietPlan,
+  TxnMemberHealthParameterLog,
+  TxnMemberIssue,
+  TxnMemberPayment,
 } from '../models';
 import { PaymentStatusEnum } from '@eatfit247-shared-lib';
 import { MemberService } from './member.service';

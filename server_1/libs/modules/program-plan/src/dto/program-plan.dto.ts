@@ -2,7 +2,7 @@ import {
   IsArray,
   IsBoolean,
   IsNotEmpty,
-  IsNumber, IsObject,
+  IsNumber,
   IsOptional,
   IsString,
   MaxLength,
@@ -10,8 +10,8 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { InputLengthEnum, IManageProgramPlan, ICommonSEO } from '@eatfit247-shared-lib';
-import { MediaUploadDto, SeoDto } from '@server_1/core';
+import { IManageProgramPlan, InputLengthEnum } from '@eatfit247-shared-lib';
+import { MediaUploadDto } from '@server_1/core';
 
 export class ProgramPlanFeeDto {
   @IsNotEmpty()

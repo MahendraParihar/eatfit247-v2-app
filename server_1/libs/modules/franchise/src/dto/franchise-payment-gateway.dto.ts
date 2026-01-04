@@ -1,13 +1,4 @@
-import {
-  IsBoolean,
-  IsNotEmpty,
-  IsNumber,
-  IsOptional,
-  IsArray,
-  IsString,
-  Min,
-  Max,
-} from 'class-validator';
+import { IsArray, IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsString, Max, Min } from 'class-validator';
 
 export class CreateFranchisePaymentGatewayDto {
   @IsNotEmpty()

@@ -1,6 +1,6 @@
 import { IsBoolean, IsNotEmpty, IsNumber, IsOptional, MaxLength, MinLength, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
-import { InputLengthEnum, IManageSleepingPattern } from '@eatfit247-shared-lib';
+import { IManageSleepingPattern, InputLengthEnum } from '@eatfit247-shared-lib';
 import { MediaUploadDto } from '@server_1/core';
 
 export class CreateSleepingPatternDto implements IManageSleepingPattern {

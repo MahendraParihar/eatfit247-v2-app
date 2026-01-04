@@ -1,5 +1,5 @@
 import { BelongsTo, Column, CreatedAt, DataType, Model, Scopes, Table, UpdatedAt } from 'sequelize-typescript';
-import { MstAdminUser, getCreatedByUserInclude, getUpdatedByUserInclude } from '@server_1/core';
+import { getCreatedByUserInclude, getUpdatedByUserInclude, MstAdminUser } from '@server_1/core';
 import { TxnMemberIssue } from './txn-member-issue.model';
 
 // Note: TxnMemberIssue will be imported via SequelizeModule.forFeature

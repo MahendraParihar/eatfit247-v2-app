@@ -1,10 +1,4 @@
-import {
-  BelongsTo,
-  Column,
-  DataType,
-  Model,
-  Table,
-} from 'sequelize-typescript';
+import { BelongsTo, Column, DataType, Model, Table } from 'sequelize-typescript';
 import { TxnDietTemplate } from './txn-diet-template.model';
 import { IDietPlanDetail } from '@eatfit247-shared-lib';
 

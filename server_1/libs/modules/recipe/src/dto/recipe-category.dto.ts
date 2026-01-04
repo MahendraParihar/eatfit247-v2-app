@@ -1,6 +1,6 @@
 import { IsBoolean, IsNotEmpty, IsNumber, IsOptional, MaxLength, MinLength, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
-import { InputLengthEnum, IManageRecipeCategory } from '@eatfit247-shared-lib';
+import { IManageRecipeCategory, InputLengthEnum } from '@eatfit247-shared-lib';
 import { MediaUploadDto } from '@server_1/core';
 
 export class CreateRecipeCategoryDto implements IManageRecipeCategory {

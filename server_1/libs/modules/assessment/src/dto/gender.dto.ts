@@ -1,6 +1,6 @@
 import { IsBoolean, IsNotEmpty, IsNumber, IsOptional, MaxLength, MinLength, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
-import { InputLengthEnum, IManageGender } from '@eatfit247-shared-lib';
+import { IManageGender, InputLengthEnum } from '@eatfit247-shared-lib';
 import { MediaUploadDto } from '@server_1/core';
 
 export class CreateGenderDto implements IManageGender {

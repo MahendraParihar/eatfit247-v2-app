@@ -1,6 +1,6 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { HealthIssueService } from '../../services';
-import { ITableList, IHealthIssue } from '@eatfit247-shared-lib';
+import { IHealthIssue, ITableList } from '@eatfit247-shared-lib';
 import { BasicSearchDto } from '@server_1/shared-dto';
 
 @Controller('public/health-issue')

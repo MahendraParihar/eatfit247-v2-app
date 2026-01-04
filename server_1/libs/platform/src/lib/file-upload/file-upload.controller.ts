@@ -1,21 +1,13 @@
 import {
   Body,
   Controller,
-  Get,
   HttpStatus,
   ParseFilePipeBuilder,
   Post,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
-import {
-  DiskHealthIndicator,
-  HealthCheck,
-  HealthCheckService,
-  MemoryHealthIndicator,
-  SequelizeHealthIndicator
-} from "@nestjs/terminus";
-import fs from "fs";
+import fs from 'fs';
 import { Env } from '@server_1/core';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { MediaDto } from './dto/media-for.dto';

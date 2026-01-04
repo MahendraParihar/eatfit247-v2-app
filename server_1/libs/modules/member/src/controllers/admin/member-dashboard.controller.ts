@@ -1,6 +1,6 @@
 import { Controller, Get, Param, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '@server_1/core';
-import { MemberDashboardService } from '../../services/member-dashboard.service';
+import { MemberDashboardService } from '../../services';
 
 @Controller('member/:id')
 @UseGuards(JwtAuthGuard)

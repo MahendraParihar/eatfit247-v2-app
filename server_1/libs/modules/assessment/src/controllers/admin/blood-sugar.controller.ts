@@ -2,7 +2,7 @@ import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from
 import { BasicSearchDto, UpdateActiveDto } from '@server_1/shared-dto';
 import { BloodSugarService } from '../../services';
 import { CreateBloodSugarDto } from '../../dto';
-import { ITableList, IBloodSugar, IDropdownItem, IResponse } from '@eatfit247-shared-lib';
+import { IBloodSugar, IDropdownItem, ITableList } from '@eatfit247-shared-lib';
 import { CurrentUser, JwtAuthGuard, RequestedIp } from '@server_1/core';
 
 @Controller('blood-sugar')

@@ -10,7 +10,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { InputLengthEnum, IManageBanner, BannerForEnum } from '@eatfit247-shared-lib';
+import { BannerForEnum, IManageBanner, InputLengthEnum } from '@eatfit247-shared-lib';
 import { MediaUploadDto } from '@server_1/core';
 
 export class CreateBannerDto implements IManageBanner {

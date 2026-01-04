@@ -1,8 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize-typescript';
-import { TxnMemberIssueResponse, TxnMemberIssue } from '../models';
-import { IMemberIssueResponse, IMemberIssue } from '@eatfit247-shared-lib';
+import { TxnMemberIssue, TxnMemberIssueResponse } from '../models';
+import { IMemberIssue, IMemberIssueResponse } from '@eatfit247-shared-lib';
 import { CommonFunctionsUtil } from '@server_1/core';
 import { MstIssueStatus } from '@server_1/modules/issues';
 import { Op } from 'sequelize';

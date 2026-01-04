@@ -2,10 +2,10 @@ import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { FranchiseModule } from '@server_1/modules/franchise';
 import {
-  PaymentService,
-  PaymentGatewayResolverService,
   PaymentGatewayCredentialService,
   PaymentGatewayFactory,
+  PaymentGatewayResolverService,
+  PaymentService,
 } from './services';
 import { MstPaymentGatewayCredentials } from './models';
 import { RazorpayWebhookController } from './controllers/public';

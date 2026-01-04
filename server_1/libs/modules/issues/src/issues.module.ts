@@ -8,11 +8,7 @@ import {
   PublicIssueCategoryController,
   PublicIssueStatusController,
 } from './controllers';
-import {
-  IssueCategoryService,
-  IssueStatusService,
-} from './services';
-
+import { IssueCategoryService, IssueStatusService } from './services';
 // Register models with the model registry
 // These models have @Scopes decorator, so they MUST be registered for scopes to work
 modelRegistry.register([MstIssueCategory, MstIssueStatus]);

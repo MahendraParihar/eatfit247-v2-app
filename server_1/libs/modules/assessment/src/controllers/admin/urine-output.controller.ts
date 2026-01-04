@@ -1,9 +1,9 @@
 import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from '@nestjs/common';
-import { JwtAuthGuard, CurrentUser, RequestedIp } from '@server_1/core';
+import { CurrentUser, JwtAuthGuard, RequestedIp } from '@server_1/core';
 import { BasicSearchDto, UpdateActiveDto } from '@server_1/shared-dto';
 import { UrineOutputService } from '../../services';
 import { CreateUrineOutputDto } from '../../dto';
-import { ITableList, IUrineOutput, IDropdownItem, IResponse } from '@eatfit247-shared-lib';
+import { IDropdownItem, ITableList, IUrineOutput } from '@eatfit247-shared-lib';
 
 @Controller('urine-output')
 @UseGuards(JwtAuthGuard)

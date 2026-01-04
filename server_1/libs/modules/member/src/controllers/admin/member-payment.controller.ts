@@ -1,13 +1,12 @@
 import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
-import { JwtAuthGuard, CurrentUser, RequestedIp } from '@server_1/core';
+import { CurrentUser, JwtAuthGuard, RequestedIp } from '@server_1/core';
 import { MemberPaymentService } from '../../services';
 import {
-  IMemberPaymentMasterData,
-  ITableList,
-  IMemberPayment,
-  IResponse,
-  IProgramPlan,
   ICalculateTaxResponse,
+  IMemberPayment,
+  IMemberPaymentMasterData,
+  IProgramPlan,
+  ITableList,
 } from '@eatfit247-shared-lib';
 import { CreateMemberPaymentDto } from '../../dto';
 import { CalculateTaxDto } from '../../dto/calculate-tax.dto';

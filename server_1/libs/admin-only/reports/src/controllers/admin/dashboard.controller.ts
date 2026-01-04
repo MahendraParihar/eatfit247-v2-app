@@ -1,14 +1,14 @@
 import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '@server_1/core';
-import { DashboardService } from '../../services/dashboard.service';
 import {
   DashboardKpis,
-  RevenueData,
-  MemberGrowthData,
-  ProgramPerformanceData,
-  OperationsSnapshot,
+  DashboardService,
   EngagementData,
-} from '../../services/dashboard.service';
+  MemberGrowthData,
+  OperationsSnapshot,
+  ProgramPerformanceData,
+  RevenueData,
+} from '../../services';
 
 @Controller('reports/dashboard')
 @UseGuards(JwtAuthGuard)

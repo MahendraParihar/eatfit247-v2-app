@@ -4,14 +4,15 @@ import {
   IsEmail,
   IsNotEmpty,
   IsNumber,
-  IsOptional, IsString,
+  IsOptional,
+  IsString,
   MaxLength,
   MinLength,
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { InputLengthEnum, IManageAdminUser } from '@eatfit247-shared-lib';
-import { MediaUploadDto, CreateAddressDto } from '@server_1/core';
+import { IManageAdminUser, InputLengthEnum } from '@eatfit247-shared-lib';
+import { CreateAddressDto, MediaUploadDto } from '@server_1/core';
 
 export class CreateAdminUserDto implements IManageAdminUser {
   @MinLength(InputLengthEnum.MIN_NAME)

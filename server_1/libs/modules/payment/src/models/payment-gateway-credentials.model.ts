@@ -1,9 +1,5 @@
 import { BelongsTo, Column, CreatedAt, DataType, Model, Scopes, Table, UpdatedAt } from 'sequelize-typescript';
-import {
-  MstAdminUser,
-  getCreatedByUserInclude,
-  getUpdatedByUserInclude,
-} from '@server_1/core';
+import { getCreatedByUserInclude, getUpdatedByUserInclude, MstAdminUser } from '@server_1/core';
 import { InputLengthEnum } from '@eatfit247-shared-lib';
 import { MstFranchisePaymentGateway } from '@server_1/modules/franchise';
 

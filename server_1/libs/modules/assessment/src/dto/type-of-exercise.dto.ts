@@ -9,7 +9,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { InputLengthEnum, IManageTypeOfExercise } from '@eatfit247-shared-lib';
+import { IManageTypeOfExercise, InputLengthEnum } from '@eatfit247-shared-lib';
 import { MediaUploadDto } from '@server_1/core';
 
 export class CreateTypeOfExerciseDto implements IManageTypeOfExercise {

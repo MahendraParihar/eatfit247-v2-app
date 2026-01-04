@@ -2,14 +2,12 @@
  * Public API Server
  * This is the public-facing API endpoint
  */
-
-import { NestFactory } from '@nestjs/core';
+import { ModuleRef, NestFactory } from '@nestjs/core';
 import { AppModule } from './app/app.module';
-import { ValidationPipe, Logger } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import { json, urlencoded } from 'express';
-import { ValidationFilter, Env } from '@server_1/core';
+import { ValidationFilter } from '@server_1/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import { ModuleRef } from '@nestjs/core';
 
 const logger = new Logger('Bootstrap');
 

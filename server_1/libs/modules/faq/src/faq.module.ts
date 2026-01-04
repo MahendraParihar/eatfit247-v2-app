@@ -1,14 +1,10 @@
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { modelRegistry } from '@server_1/core';
-import { TxnFaq, MstFaqCategory } from './models';
-import { FaqService, FaqCategoryService } from './services';
-import {
-  FaqController,
-  FaqCategoryController,
-} from './controllers/admin';
+import { MstFaqCategory, TxnFaq } from './models';
+import { FaqCategoryService, FaqService } from './services';
+import { FaqCategoryController, FaqController } from './controllers/admin';
 import { PublicFaqController } from './controllers/public';
-
 // Register models with the model registry
 // These models have @Scopes decorator, so they MUST be registered for scopes to work
 modelRegistry.register([TxnFaq, MstFaqCategory]);

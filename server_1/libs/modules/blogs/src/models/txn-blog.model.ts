@@ -1,5 +1,5 @@
 import { BelongsTo, Column, CreatedAt, DataType, Model, Scopes, Table, UpdatedAt } from 'sequelize-typescript';
-import { MstAdminUser, getCreatedByUserInclude, getUpdatedByUserInclude } from '@server_1/core';
+import { getCreatedByUserInclude, getUpdatedByUserInclude, MstAdminUser } from '@server_1/core';
 import { MstBlogCategory } from './mst-blog-category.model';
 import { MstBlogAuthor } from './mst-blog-author.model';
 import { IMediaUpload, InputLengthEnum } from '@eatfit247-shared-lib';

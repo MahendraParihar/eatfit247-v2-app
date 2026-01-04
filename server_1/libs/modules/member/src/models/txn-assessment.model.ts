@@ -1,28 +1,15 @@
-import {
-  BelongsTo,
-  Column,
-  CreatedAt,
-  DataType,
-  Model,
-  Scopes,
-  Table,
-  UpdatedAt,
-} from 'sequelize-typescript';
-import {
-  MstAdminUser,
-  getCreatedByUserInclude,
-  getUpdatedByUserInclude,
-} from '@server_1/core';
+import { BelongsTo, Column, CreatedAt, DataType, Model, Scopes, Table, UpdatedAt } from 'sequelize-typescript';
+import { getCreatedByUserInclude, getUpdatedByUserInclude, MstAdminUser } from '@server_1/core';
 import { TxnAddress } from '@server_1/platform';
 import {
+  MstBloodSugar,
+  MstEatingHabit,
   MstGender,
+  MstLifestyle,
   MstMaritalStatus,
   MstReligion,
-  MstLifestyle,
-  MstEatingHabit,
-  MstTypeOfExercise,
   MstSleepingPattern,
-  MstBloodSugar,
+  MstTypeOfExercise,
   MstUrineOutput,
 } from '@server_1/modules/assessment';
 import { TxnMember } from './txn-member.model';
