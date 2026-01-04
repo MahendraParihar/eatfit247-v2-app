@@ -43,12 +43,12 @@ export class ManageDietTemplateComponent implements OnInit, OnDestroy {
     this.initializeForm();
   }
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
     const id = this.route.snapshot.paramMap.get('id');
     if (id && id !== 'new') {
       this.isEditMode = true;
       this.pageTitle = 'Edit Diet Template';
-      this.loadData(+id);
+      await this.loadData(+id);
     } else {
       this.pageTitle = 'Create Diet Template';
     }

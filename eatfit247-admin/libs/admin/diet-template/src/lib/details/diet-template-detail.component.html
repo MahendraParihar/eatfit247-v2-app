@@ -1,0 +1,91 @@
+@if (dietPlanDetail()) {
+<form [formGroup]="formGroup" class="diet-plan-form">
+  <mat-card class="form-card">
+    <!-- Header Row -->
+    <mat-card-header>
+      <mat-card-title>
+        @if (dayNo && dayNo > 0) {
+          <span>Diet Template For Cycle {{ cycleNo }} Day {{ dayNo }}</span>
+        }
+        @if (!dayNo || dayNo === 0) {
+          <span>Diet Template For Cycle {{ cycleNo }}</span>
+        }
+      </mat-card-title>
+    </mat-card-header>
+
+    <mat-card-content class="form-body">
+      <div class="diet-plan-table-container">
+        <table class="diet-plan-table">
+          <thead>
+          <tr>
+            <th>Recipe Category</th>
+            <th>Diet Detail</th>
+            <th>Recipes</th>
+          </tr>
+          </thead>
+          <tbody>
+          @if (dietPlanDetail()?.dietPlan) {
+            <ng-container formArrayName="dietPlan">
+              @for (agd of detailArray().controls; track $index; let i = $index) {
+              <tr [formGroupName]="i">
+              <td class="category-cell">
+                <h6>{{ dietPlanDetail()!.dietPlan[i].recipeCategory }}</h6>
+              </td>
+              <td class="detail-cell">
+                <div class="detail-wrapper">
+                  @if (getEditor(i)) {
+                    <div class="NgxEditor__Wrapper">
+                      <ngx-editor-menu [editor]="getEditor(i)!" [toolbar]="toolbar"></ngx-editor-menu>
+                      <ngx-editor
+                        [outputFormat]="'html'"
+                        [editor]="getEditor(i)!"
+                        formControlName="dietDetail"
+                        placeholder="Enter diet details"
+                      ></ngx-editor>
+                    </div>
+                  }
+                  <shared-ui-input-error controlName="Diet Plan"
+                                         [control]="getArrayFormGroup(i).get('dietDetail')"></shared-ui-input-error>
+                </div>
+              </td>
+              <td class="recipe-cell">
+                <input type="hidden" formControlName="recipeIds">
+                <mat-form-field>
+                  <mat-label>Recipes</mat-label>
+                  <mat-select formControlName="recipeIds" multiple>
+                    @for (recipe of recipeList(); track recipe.id) {
+                      <mat-option [value]="recipe.id">
+                        {{ recipe.label }}
+                      </mat-option>
+                    }
+                  </mat-select>
+                  <mat-error>
+                    <shared-ui-input-error controlName="Recipes"
+                                           [control]="getArrayFormGroup(i).get('recipeIds')"></shared-ui-input-error>
+                  </mat-error>
+                </mat-form-field>
+              </td>
+            </tr>
+              }
+            </ng-container>
+          }
+          </tbody>
+        </table>
+      </div>
+    </mat-card-content>
+
+    <!-- Actions -->
+    <mat-card-actions align="end">
+      <button mat-button (click)="onCancel()">Cancel</button>
+      <button
+        mat-raised-button
+        color="primary"
+        [disabled]="!formHasValue()"
+        (click)="onSubmit()">
+        Save
+      </button>
+    </mat-card-actions>
+  </mat-card>
+</form>
+}
+

@@ -8,8 +8,13 @@ import {
   IDietTemplate,
   IManageDietTemplate,
   IDietTemplateDetail,
+  IDietPlanDetail,
+  IDropdownItem,
 } from '@eatfit247-shared-lib';
 import { SearchUtil, CommonFunctionsUtil } from '@server_1/core';
+import { RecipeCategoryService, RecipeService } from '@server_1/modules/recipe';
+import { DietTemplateDetailDto } from '../dto';
+import * as _ from 'lodash';
 
 @Injectable()
 export class DietTemplateService {
@@ -18,6 +23,8 @@ export class DietTemplateService {
     private readonly dietTemplateRepository: typeof TxnDietTemplate,
     @InjectModel(TxnDietTemplateDietDetail)
     private readonly dietTemplateDetailRepository: typeof TxnDietTemplateDietDetail,
+    private readonly recipeCategoryService: RecipeCategoryService,
+    private readonly recipeService: RecipeService,
     private readonly sequelize: Sequelize,
   ) {}
 
@@ -166,5 +173,201 @@ export class DietTemplateService {
       dayNo: item.dayNo,
       dietDetail: item.dietDetail,
     };
+  }
+
+  /**
+   * Fetch diet template detail for a specific cycle/day
+   * @param dietTemplateId - Diet template ID
+   * @param cycleNo - Cycle number
+   * @param dayNo - Day number (optional)
+   * @param copyFromCycleNo - Copy from cycle number (optional)
+   * @param copyFromDayNo - Copy from day number (optional)
+   * @returns Diet detail with recipes
+   */
+  public async fetchDietTemplateDetail(
+    dietTemplateId: number,
+    cycleNo: number,
+    dayNo: number = null,
+    copyFromCycleNo: number = null,
+    copyFromDayNo: number = null,
+  ): Promise<{
+    recipes: IDropdownItem[];
+    diet: {
+      dietTemplateId: number;
+      cycleNo: number;
+      dayNo?: number;
+      noOfCycle: number;
+      noOfDaysInCycle: number;
+      dietPlan: IDietPlanDetail[];
+    };
+  }> {
+    cycleNo = cycleNo ? Number(cycleNo) : cycleNo;
+    dayNo = dayNo ? Number(dayNo) : dayNo;
+    dietTemplateId = dietTemplateId ? Number(dietTemplateId) : dietTemplateId;
+
+    const where: any = {
+      dietTemplateId: dietTemplateId,
+      cycleNo: cycleNo,
+    };
+    if (dayNo) {
+      where.dayNo = dayNo;
+    }
+    if (copyFromCycleNo) {
+      where.cycleNo = copyFromCycleNo;
+    }
+    if (copyFromDayNo) {
+      where.dayNo = copyFromDayNo;
+    }
+
+    let dietCategory: IDietPlanDetail[] = [];
+    const [categoryList, templateDetail, dietDetail, recipeList] = await Promise.all([
+      this.recipeCategoryService.getRecipeCategoryList(),
+      this.dietTemplateRepository.findOne({
+        where: {
+          dietTemplateId: dietTemplateId,
+          active: true,
+        },
+        raw: true,
+        nest: true,
+      }),
+      this.dietTemplateDetailRepository.findOne({
+        where: where,
+        nest: true,
+        raw: true,
+      }),
+      this.getRecipeDropdownList(),
+    ]);
+
+    if (!templateDetail) {
+      throw new NotFoundException('Diet template not found');
+    }
+
+    dietCategory = this.convertDietDetail(categoryList, recipeList, dietDetail);
+
+    return {
+      recipes: recipeList as IDropdownItem[],
+      diet: {
+        dietTemplateId: templateDetail.dietTemplateId,
+        dayNo: dayNo,
+        cycleNo: cycleNo,
+        noOfCycle: templateDetail.noOfCycle,
+        noOfDaysInCycle: templateDetail.daysInCycle,
+        dietPlan: dietCategory,
+      },
+    };
+  }
+
+  /**
+   * Create or update diet template detail
+   * @param dietTemplateId - Diet template ID
+   * @param body - Diet template detail DTO
+   * @param cIp - Client IP
+   * @param adminId - Admin ID
+   */
+  public async createDietTemplateDetail(
+    dietTemplateId: number,
+    body: DietTemplateDetailDto,
+    cIp: string,
+    adminId: number,
+  ): Promise<void> {
+    const t = await this.sequelize.transaction();
+    try {
+      const template = await this.dietTemplateRepository.findOne({
+        where: {
+          dietTemplateId: dietTemplateId,
+        },
+      });
+      if (!template) {
+        await t.rollback();
+        throw new NotFoundException('Diet template not found');
+      }
+
+      const condition: any = {
+        cycleNo: body.cycleNo,
+        dietTemplateId: body.dietTemplateId,
+      };
+      if (body.dayNo && body.dayNo > 0) {
+        condition.dayNo = body.dayNo;
+      }
+
+      const planArray: any[] = [];
+      for (const s of body.dietPlan) {
+        if (s.dietDetail || s.recipeIds) {
+          planArray.push({
+            recipeCategoryId: s.recipeCategoryId,
+            recipeCategory: s.recipeCategory,
+            dietDetail: s.dietDetail || '',
+            sequence: s.sequence || 0,
+            recipeIds: s.recipeIds || [],
+          });
+        }
+      }
+
+      const findD = await this.dietTemplateDetailRepository.findOne({
+        where: condition,
+        transaction: t,
+      });
+
+      const dietDObj: any = {
+        cycleNo: body.cycleNo,
+        dietTemplateId: body.dietTemplateId,
+        dayNo: body.dayNo && body.dayNo > 0 ? body.dayNo : null,
+        dietDetail: planArray,
+      };
+
+      if (findD) {
+        await this.dietTemplateDetailRepository.update(dietDObj, {
+          where: condition,
+          transaction: t,
+        });
+      } else {
+        await this.dietTemplateDetailRepository.create(dietDObj, { transaction: t });
+      }
+
+      await t.commit();
+    } catch (e) {
+      await t.rollback();
+      throw e;
+    }
+  }
+
+  private convertDietDetail(
+    categoryList: IDropdownItem[],
+    recipeList: IDropdownItem[],
+    dietDetail: TxnDietTemplateDietDetail,
+  ): IDietPlanDetail[] {
+    const dietCategory: IDietPlanDetail[] = [];
+    const existingDietPlan = dietDetail && dietDetail.dietDetail ? (dietDetail.dietDetail as any) : [];
+
+    for (const c of categoryList) {
+      const f = existingDietPlan.find((x: any) => x.recipeCategoryId === c.id);
+      const dietRecipeList = [];
+      if (f) {
+        for (const r of f.recipeIds || []) {
+          const tR = _.find(recipeList, { id: r });
+          if (tR) {
+            dietRecipeList.push(tR);
+          }
+        }
+      }
+      dietCategory.push({
+        dietDetail: f ? f.dietDetail : null,
+        recipeIds: f ? f.recipeIds : [],
+        recipeList: dietRecipeList,
+        recipeCategory: c.label,
+        recipeCategoryId: c.id,
+        sequence: f ? f.sequence : 0,
+      });
+    }
+    return dietCategory;
+  }
+
+  private async getRecipeDropdownList(): Promise<IDropdownItem[]> {
+    const result = await this.recipeService.findAll({ page: 0, limit: 1000 });
+    return result.tableData.map((recipe: any) => ({
+      id: recipe.recipeId,
+      label: recipe.name,
+      isActive: recipe.active,
+    }));
   }
 }

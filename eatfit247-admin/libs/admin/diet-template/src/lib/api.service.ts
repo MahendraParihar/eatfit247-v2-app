@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { ApiBaseService, HttpService } from '@core';
-import { ITableList, IDietTemplate, IResponse, IManageDietTemplate } from '@eatfit247-shared-lib';
+import { ITableList, IDietTemplate, IResponse, IManageDietTemplate, IDietPlanDetail, IDropdownItem } from '@eatfit247-shared-lib';
 
 @Injectable({
   providedIn: 'root',
@@ -27,6 +27,50 @@ export class DietTemplateApiService extends ApiBaseService {
     return res.data as IDietTemplate;
   }
 
+  async getDietTemplateDetail(
+    dietTemplateId: number,
+    cycleNo: number,
+    dayNo?: number,
+    params?: any
+  ): Promise<{
+    recipes: IDropdownItem[];
+    diet: {
+      dietTemplateId: number;
+      cycleNo: number;
+      dayNo?: number;
+      noOfCycle: number;
+      noOfDaysInCycle: number;
+      dietPlan: IDietPlanDetail[];
+    };
+  }> {
+    let url = `${this.endpoint}/manage/${dietTemplateId}/${cycleNo}`;
+    if (dayNo) {
+      url = `${url}/${dayNo}`;
+    }
+    const res = await this.httpService.get<IResponse<{
+      recipes: IDropdownItem[];
+      diet: {
+        dietTemplateId: number;
+        cycleNo: number;
+        dayNo?: number;
+        noOfCycle: number;
+        noOfDaysInCycle: number;
+        dietPlan: IDietPlanDetail[];
+      };
+    }>>(url, { params });
+    return res.data as {
+      recipes: IDropdownItem[];
+      diet: {
+        dietTemplateId: number;
+        cycleNo: number;
+        dayNo?: number;
+        noOfCycle: number;
+        noOfDaysInCycle: number;
+        dietPlan: IDietPlanDetail[];
+      };
+    };
+  }
+
   async create(data: IManageDietTemplate): Promise<void> {
     return await this.httpService.post<void>(`${this.endpoint}/manage`, data);
   }
@@ -34,6 +78,21 @@ export class DietTemplateApiService extends ApiBaseService {
   async update(id: number, data: IManageDietTemplate): Promise<void> {
     return await this.httpService.put<void>(
       `${this.endpoint}/manage/${id}`,
+      data
+    );
+  }
+
+  async createDietTemplateDetail(
+    dietTemplateId: number,
+    data: {
+      cycleNo: number;
+      dayNo?: number;
+      dietTemplateId: number;
+      dietPlan: IDietPlanDetail[];
+    }
+  ): Promise<void> {
+    return await this.httpService.post<void>(
+      `${this.endpoint}/manage-detail/${dietTemplateId}`,
       data
     );
   }

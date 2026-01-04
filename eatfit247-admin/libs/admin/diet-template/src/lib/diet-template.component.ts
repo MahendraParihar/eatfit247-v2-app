@@ -131,6 +131,7 @@ export class DietTemplateComponent implements OnInit {
     ];
     const actions: ITableAction<IDietTemplate>[] = [
       { label: 'Edit', icon: 'edit', color: 'primary', onClick: (row) => this.editItem(row) },
+      { label: 'Manage Details', icon: 'settings', color: 'primary', onClick: (row) => this.manageDetails(row) },
       {
         label: 'Active',
         icon: 'check_circle',
@@ -238,6 +239,11 @@ export class DietTemplateComponent implements OnInit {
 
   editItem(item: IDietTemplate): void {
     this.router.navigate(['/diet-template/edit', item.dietTemplateId]);
+  }
+
+  manageDetails(item: IDietTemplate): void {
+    // Navigate to cycle 1 by default, admin can navigate to other cycles from there
+    this.router.navigate(['/diet-template/details', item.dietTemplateId, 'cycle', 1]);
   }
 
   createItem(): void {
