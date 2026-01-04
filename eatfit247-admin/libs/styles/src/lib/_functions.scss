@@ -1,0 +1,28 @@
+/**
+ * EatFit247 Admin - SCSS Functions
+ * 
+ * Utility functions for calculations and unit conversions
+ */
+
+// Base HTML font size (16px default)
+$html-font-size: 16px !default;
+
+/**
+ * Strip unit from a value
+ * @param {Number} $value - Value with unit
+ * @return {Number} - Value without unit
+ */
+@function stripUnit($value) {
+  @return calc($value / ($value * 0 + 1px));
+}
+
+/**
+ * Convert px to rem
+ * @param {Number} $pxValue - Pixel value to convert
+ * @param {Number} $html-font-size - Base font size (default: 16px)
+ * @return {String} - Rem value
+ */
+@function rem($pxValue, $html-font-size: 16px) {
+  @return #{calc(stripUnit($pxValue) / stripUnit($html-font-size))}rem;
+}
+

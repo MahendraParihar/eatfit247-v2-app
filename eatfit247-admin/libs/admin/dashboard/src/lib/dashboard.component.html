@@ -1,0 +1,114 @@
+<div class="dashboard-container">
+  <!-- KPI Cards -->
+  <section class="kpi-section">
+    <lib-kpi-card
+      icon="people"
+      label="Total Members"
+      [value]="kpis?.totalMembers || 0"
+      [trend]="kpis?.trends?.totalMembers"
+      trendLabel="vs last month"
+    ></lib-kpi-card>
+    <lib-kpi-card
+      icon="person_add"
+      label="New Members (30 days)"
+      [value]="kpis?.newMembers || 0"
+      [trend]="kpis?.trends?.newMembers"
+      trendLabel="vs last month"
+    ></lib-kpi-card>
+    <lib-kpi-card
+      icon="payments"
+      label="Monthly Revenue"
+      [value]="formatCurrency(kpis?.monthlyRevenue || 0)"
+      [trend]="kpis?.trends?.monthlyRevenue"
+      trendLabel="vs last month"
+    ></lib-kpi-card>
+    <lib-kpi-card
+      icon="pending"
+      label="Pending Payments"
+      [value]="kpis?.pendingPayments || 0"
+      [trend]="kpis?.trends?.pendingPayments"
+      trendLabel="vs last month"
+    ></lib-kpi-card>
+    <lib-kpi-card
+      icon="restaurant_menu"
+      label="Diet Plans Sent (This Month)"
+      [value]="kpis?.dietPlansSent || 0"
+      [trend]="kpis?.trends?.dietPlansSent"
+      trendLabel="vs last month"
+    ></lib-kpi-card>
+    <lib-kpi-card
+      icon="report_problem"
+      label="Open Issues"
+      [value]="kpis?.openIssues || 0"
+      [trend]="kpis?.trends?.openIssues"
+      trendLabel="vs last month"
+    ></lib-kpi-card>
+  </section>
+
+  <!-- Business Insights -->
+  <section class="insights-section">
+    <div class="insight-item revenue">
+      <lib-revenue-chart [data]="revenueData" [loading]="loading.revenue"></lib-revenue-chart>
+    </div>
+    <div class="insight-item member-growth">
+      <lib-member-growth-chart
+        [data]="memberGrowthData"
+        [loading]="loading.members"
+        (periodChange)="onMemberPeriodChange($event)"
+      ></lib-member-growth-chart>
+    </div>
+    <div class="insight-item program-performance">
+      <lib-program-performance-chart
+        [data]="programPerformanceData"
+        [loading]="loading.programs"
+      ></lib-program-performance-chart>
+    </div>
+  </section>
+
+  <!-- Operations & Engagement -->
+  <section class="operations-section">
+    <div class="operations-item">
+      <lib-operations-summary
+        [data]="operationsSnapshot"
+        [loading]="loading.operations"
+      ></lib-operations-summary>
+    </div>
+    <div class="engagement-item">
+      <mat-card class="engagement-card">
+        <mat-card-header>
+          <mat-card-title>Engagement & Health</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          @if (loading.engagement) {
+            <mat-spinner diameter="40"></mat-spinner>
+          } @else if (engagementData) {
+            <div class="engagement-grid">
+              <div class="engagement-stat">
+                <div class="stat-value">{{ engagementData.dietPlansSent }}</div>
+                <div class="stat-label">Diet Plans Sent</div>
+              </div>
+              <div class="engagement-stat">
+                <div class="stat-value">{{ engagementData.dietPlansPending }}</div>
+                <div class="stat-label">Diet Plans Pending</div>
+              </div>
+              <div class="engagement-stat">
+                <div class="stat-value">{{ engagementData.assessmentCompletionPercent | number: '1.0-0' }}%</div>
+                <div class="stat-label">Assessment Completion</div>
+              </div>
+              <div class="engagement-stat">
+                <div class="stat-value">{{ engagementData.avgHealthLogsPerMember | number: '1.1-1' }}</div>
+                <div class="stat-label">Avg Health Logs/Member</div>
+              </div>
+            </div>
+          }
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </section>
+
+  <!-- Quick Actions -->
+  <section class="quick-actions-section">
+    <lib-quick-actions></lib-quick-actions>
+  </section>
+</div>
+

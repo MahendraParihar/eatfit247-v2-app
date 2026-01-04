@@ -36,7 +36,7 @@ export class MemberBodyStatsController {
       id,
       body,
       requestedIp,
-      currentUser.userId || currentUser.adminId,
+      currentUser.adminId,
     );
   }
 
@@ -54,7 +54,7 @@ export class MemberBodyStatsController {
       id,
       body,
       requestedIp,
-      currentUser.userId || currentUser.adminId,
+      currentUser.adminId,
     );
   }
 
@@ -77,7 +77,7 @@ export class MemberBodyStatsController {
       id,
       logId,
       requestedIp,
-      currentUser.userId || currentUser.adminId,
+      currentUser.adminId,
     );
   }
 }

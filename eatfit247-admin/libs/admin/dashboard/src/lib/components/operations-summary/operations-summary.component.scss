@@ -1,0 +1,106 @@
+@use 'styles' as *;
+
+.operations-summary-card {
+  border-radius: var(--radius-card);
+  background: var(--md-sys-color-surface);
+  box-shadow: var(--elevation-level-1);
+  height: 100%;
+
+  mat-card-header {
+    margin-bottom: 16px;
+  }
+
+  mat-card-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--md-sys-color-on-surface);
+  }
+
+  .operations-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+  }
+
+  .operation-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    border-radius: var(--radius-card);
+    background: var(--md-sys-color-surface-container);
+    border: 1px solid var(--md-sys-color-outline);
+
+    &.status-info {
+      border-left: 4px solid var(--status-info);
+    }
+
+    &.status-warning {
+      border-left: 4px solid var(--status-warning);
+    }
+
+    &.status-error {
+      border-left: 4px solid var(--status-error);
+    }
+
+    .operation-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      flex-shrink: 0;
+
+      mat-icon {
+        font-size: 24px;
+        width: 24px;
+        height: 24px;
+      }
+    }
+
+    &.status-info .operation-icon {
+      background: var(--status-info-bg);
+
+      mat-icon {
+        color: var(--status-info);
+      }
+    }
+
+    &.status-warning .operation-icon {
+      background: var(--status-warning-bg);
+
+      mat-icon {
+        color: var(--status-warning);
+      }
+    }
+
+    &.status-error .operation-icon {
+      background: var(--status-error-bg);
+
+      mat-icon {
+        color: var(--status-error);
+      }
+    }
+
+    .operation-details {
+      flex: 1;
+      min-width: 0;
+
+      .operation-value {
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--md-sys-color-on-surface);
+        line-height: 1.2;
+        margin-bottom: 4px;
+      }
+
+      .operation-label {
+        font-size: 12px;
+        color: var(--md-sys-color-on-surface);
+        opacity: 0.7;
+      }
+    }
+  }
+}
+

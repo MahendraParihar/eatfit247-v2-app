@@ -1,0 +1,19 @@
+<mat-card class="program-performance-chart-card">
+  <mat-card-header>
+    <mat-card-title>Program Performance</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    @if (loading) {
+      <shared-ui-loader></shared-ui-loader>
+    } @else if (!data || data.length === 0) {
+      <shared-ui-empty-state
+        title="No Program Data"
+        description="Program performance data is not available at the moment."
+        icon="fitness_center"
+      ></shared-ui-empty-state>
+    } @else {
+      <div #chart class="chart-container"></div>
+    }
+  </mat-card-content>
+</mat-card>
+

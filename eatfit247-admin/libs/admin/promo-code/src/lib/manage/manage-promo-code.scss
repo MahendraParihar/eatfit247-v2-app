@@ -1,22 +1,32 @@
 .form-card {
-  max-width: 800px;
-  margin: 24px auto;
+  width: 100%;
+  background-color: var(--md-sys-color-surface);
+}
 
-  .form-fields {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
+.form-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 24px;
+}
 
-    .full-width {
-      width: 100%;
-    }
-  }
+.full-width {
+  width: 100%;
+}
 
-  .form-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 16px;
-    margin-top: 24px;
-  }
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+mat-card-header {
+  margin-bottom: 24px;
+}
+
+mat-card-title {
+  font-size: 24px;
+  font-weight: 500;
 }
 

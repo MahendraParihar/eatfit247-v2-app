@@ -703,6 +703,43 @@ export class MembersApiService extends ApiBaseService {
     );
   }
 
+  // region Dashboard APIs
+
+  async getDashboardSummary(memberId: number): Promise<any> {
+    const res = await this.httpService.get<IResponse<any>>(
+      `${this.endpoint}/${memberId}/dashboard/summary`
+    );
+    return res.data;
+  }
+
+  async getHealthProgress(memberId: number): Promise<any> {
+    const res = await this.httpService.get<IResponse<any>>(
+      `${this.endpoint}/${memberId}/health-progress`
+    );
+    return res.data;
+  }
+
+  async getEngagement(memberId: number): Promise<any> {
+    const res = await this.httpService.get<IResponse<any>>(
+      `${this.endpoint}/${memberId}/engagement`
+    );
+    return res.data;
+  }
+
+  async getPaymentsSummary(memberId: number): Promise<any> {
+    const res = await this.httpService.get<IResponse<any>>(
+      `${this.endpoint}/${memberId}/payments/summary`
+    );
+    return res.data;
+  }
+
+  async getIssuesSummary(memberId: number): Promise<any> {
+    const res = await this.httpService.get<IResponse<any>>(
+      `${this.endpoint}/${memberId}/issues/summary`
+    );
+    return res.data;
+  }
+
   // endregion
 }
 

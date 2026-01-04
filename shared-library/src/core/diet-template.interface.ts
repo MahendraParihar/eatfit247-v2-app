@@ -3,10 +3,8 @@ import { IMediaUpload } from "./media-upload.interface";
 
 export interface IBasicDietTemplate {
   dietTemplate: string;
-  cycleNo: number;
-  dayNo: number;
-  noOfCycle?: number;
-  noOfDaysInCycle?: number;
+  noOfCycle: number;
+  noOfDaysInCycle: number;
 }
 
 export interface IManageDietTemplate extends IBasicDietTemplate {

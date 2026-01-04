@@ -1,0 +1,85 @@
+<mat-card class="health-progress-card">
+  <mat-card-header>
+    <mat-card-title>Health Progress</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    @if (loading) {
+      <shared-ui-loader [fullScreen]="false"></shared-ui-loader>
+    } @else if (!data) {
+      <shared-ui-empty-state
+        [type]="EmptyStateType.GENERAL"
+        title="No Health Data"
+        description="Health progress data is not available for this member."
+      ></shared-ui-empty-state>
+    } @else {
+      <div class="health-progress-content">
+        <!-- Metric Cards -->
+        <div class="metric-cards">
+          <div class="metric-card">
+            <div class="metric-icon">
+              <mat-icon>monitor_weight</mat-icon>
+            </div>
+            <div class="metric-details">
+              <div class="metric-label">Weight</div>
+              <div class="metric-value">{{ data.weight?.current || 'N/A' }} kg</div>
+              @if (data.weight?.trend !== undefined) {
+                <div class="metric-trend" [class.positive]="data.weight.trend >= 0" [class.negative]="data.weight.trend < 0">
+                  <mat-icon>{{ data.weight.trend >= 0 ? 'trending_up' : 'trending_down' }}</mat-icon>
+                  <span>{{ Math.abs(data.weight.trend) }}%</span>
+                </div>
+              }
+            </div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-icon">
+              <mat-icon>straighten</mat-icon>
+            </div>
+            <div class="metric-details">
+              <div class="metric-label">BMI</div>
+              <div class="metric-value">{{ data.bmi?.current || 'N/A' }}</div>
+              @if (data.bmi?.trend !== undefined) {
+                <div class="metric-trend" [class.positive]="data.bmi.trend >= 0" [class.negative]="data.bmi.trend < 0">
+                  <mat-icon>{{ data.bmi.trend >= 0 ? 'trending_up' : 'trending_down' }}</mat-icon>
+                  <span>{{ Math.abs(data.bmi.trend) }}%</span>
+                </div>
+              }
+            </div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-icon">
+              <mat-icon>percent</mat-icon>
+            </div>
+            <div class="metric-details">
+              <div class="metric-label">Fat %</div>
+              <div class="metric-value">{{ data.fat?.current || 'N/A' }}%</div>
+              @if (data.fat?.trend !== undefined) {
+                <div class="metric-trend" [class.positive]="data.fat.trend >= 0" [class.negative]="data.fat.trend < 0">
+                  <mat-icon>{{ data.fat.trend >= 0 ? 'trending_up' : 'trending_down' }}</mat-icon>
+                  <span>{{ Math.abs(data.fat.trend) }}%</span>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Chart Section -->
+        <div class="chart-section">
+          <div class="chart-header">
+            <h3 class="chart-title">Progress Over Time</h3>
+            <mat-button-toggle-group [(ngModel)]="selectedMetric" (change)="onMetricChange(selectedMetric)">
+              <mat-button-toggle value="weight">Weight</mat-button-toggle>
+              <mat-button-toggle value="bmi">BMI</mat-button-toggle>
+              <mat-button-toggle value="fat">Fat %</mat-button-toggle>
+            </mat-button-toggle-group>
+          </div>
+          <div class="chart-container">
+            <div #chart class="chart"></div>
+          </div>
+        </div>
+      </div>
+    }
+  </mat-card-content>
+</mat-card>
+

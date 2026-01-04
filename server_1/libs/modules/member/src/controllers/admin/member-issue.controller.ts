@@ -37,7 +37,7 @@ export class MemberIssueController {
     return await this.memberIssueService.create(
       body,
       requestedIp,
-      currentUser.userId || currentUser.adminId,
+      currentUser.adminId,
     );
   }
 
@@ -54,7 +54,7 @@ export class MemberIssueController {
       issueId,
       body,
       requestedIp,
-      currentUser.userId || currentUser.adminId,
+      currentUser.adminId,
     );
   }
 
@@ -76,7 +76,7 @@ export class MemberIssueController {
     return await this.memberIssueResponseService.create(
       issueId,
       body.response,
-      currentUser.userId || currentUser.adminId,
+      currentUser.adminId,
     );
   }
 
@@ -90,7 +90,7 @@ export class MemberIssueController {
     return await this.memberIssueResponseService.markAsSolved(
       issueId,
       body.isSolved,
-      currentUser.userId || currentUser.adminId,
+      currentUser.adminId,
     );
   }
 }

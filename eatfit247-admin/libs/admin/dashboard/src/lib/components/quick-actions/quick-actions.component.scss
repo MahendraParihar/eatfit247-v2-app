@@ -1,0 +1,41 @@
+@use 'styles' as *;
+
+.quick-actions-card {
+  border-radius: var(--radius-card);
+  background: var(--md-sys-color-surface);
+  box-shadow: var(--elevation-level-1);
+  height: 100%;
+
+  mat-card-header {
+    margin-bottom: 16px;
+  }
+
+  mat-card-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--md-sys-color-on-surface);
+  }
+
+  .actions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+  }
+
+  .action-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 16px;
+    min-height: 48px;
+    border-radius: var(--radius-button);
+
+    mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+  }
+}
+

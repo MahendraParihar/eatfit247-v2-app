@@ -12,7 +12,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { NgxEditorComponent, NgxEditorMenuComponent, Editor, Toolbar } from 'ngx-editor';
 import {
   IDropdownItem,
-  IDietPlanDetail,
+  IDietPlanDetail
 } from '@eatfit247-shared-lib';
 import { DietTemplateApiService } from '../api.service';
 import { InputErrorComponent } from '@shared';
@@ -128,10 +128,9 @@ export class DietTemplateDetailComponent implements OnInit, OnDestroy {
     const editor = new Editor({
       history: true,
       keyboardShortcuts: true,
-      inputRules: true,
+      inputRules: true
     });
     this.editors.push(editor);
-
     const detailFormGroup = this.fb.group({
       recipeCategoryId: [obj?.recipeCategoryId || null, [Validators.required]],
       recipeCategory: [obj?.recipeCategory || '', []],
@@ -139,7 +138,6 @@ export class DietTemplateDetailComponent implements OnInit, OnDestroy {
       recipeIds: [obj?.recipeIds || [], []],
       sequence: [obj?.sequence || 0, []]
     });
-
     this.detailArray().push(detailFormGroup);
     this.checkFormHasValue();
   }
@@ -244,7 +242,8 @@ export class DietTemplateDetailComponent implements OnInit, OnDestroy {
         endDate: null,
         cycleNo: this.formGroup.value.cycleNo,
         dietTemplateId: this.formGroup.value.dietTemplateId,
-        dietPlan: this.formGroup.value.dietPlan
+        dietPlan: this.formGroup.value.dietPlan,
+        dayNo: 0
       };
       if (this.dayNo && this.dayNo > 0) {
         payload.dayNo = this.formGroup.value.dayNo;

@@ -29,7 +29,7 @@ export class MemberHealthIssueController {
       id,
       body.healthIssueIds,
       requestedIp,
-      currentUser.userId || currentUser.adminId,
+      currentUser.adminId,
     );
   }
 }

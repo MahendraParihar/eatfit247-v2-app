@@ -106,8 +106,12 @@ export const appRoutes: Route[] = [
           import('admin-user').then((m) => m.changePasswordRoutes),
       },
       {
+        path: 'dashboard',
+        loadChildren: () => import('dashboard').then((m) => m.dashboardRoutes),
+      },
+      {
         path: '',
-        redirectTo: 'members',
+        redirectTo: 'dashboard',
         pathMatch: 'full',
       },
     ],

@@ -1,0 +1,21 @@
+<mat-card class="quick-actions-card">
+  <mat-card-header>
+    <mat-card-title>Quick Actions</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <div class="actions-grid">
+      @for (action of actions; track action.label) {
+        <button
+          mat-raised-button
+          [color]="action.color"
+          class="action-button"
+          (click)="onActionClick(action)"
+        >
+          <mat-icon>{{ action.icon }}</mat-icon>
+          <span>{{ action.label }}</span>
+        </button>
+      }
+    </div>
+  </mat-card-content>
+</mat-card>
+

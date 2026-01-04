@@ -72,6 +72,7 @@ import {
   MemberAssessmentService,
   MemberPaymentService,
   MemberDietPlanService,
+  MemberDashboardService,
 } from './services';
 import { TxnMemberCallLog } from './models';
 import { CallLogsModule } from '@server_1/modules/call-logs';
@@ -157,6 +158,7 @@ modelRegistry.register([
     MemberAssessmentService,
     MemberPaymentService,
     MemberDietPlanService,
+    MemberDashboardService,
   ],
   exports: [
     MemberService,

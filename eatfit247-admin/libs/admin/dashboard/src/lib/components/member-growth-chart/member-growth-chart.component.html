@@ -1,0 +1,25 @@
+<mat-card class="member-growth-chart-card">
+  <mat-card-header>
+    <mat-card-title>Member Growth</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    @if (loading) {
+      <shared-ui-loader></shared-ui-loader>
+    } @else if (!data || !data.data?.length) {
+      <shared-ui-empty-state
+        title="No Member Growth Data"
+        description="Member growth data is not available at the moment."
+        icon="people"
+      ></shared-ui-empty-state>
+    } @else {
+      <div class="chart-controls">
+        <mat-button-toggle-group [value]="selectedPeriod" (change)="onPeriodToggle($event.value)">
+          <mat-button-toggle value="weekly">Weekly</mat-button-toggle>
+          <mat-button-toggle value="monthly">Monthly</mat-button-toggle>
+        </mat-button-toggle-group>
+      </div>
+      <div #chart class="chart-container"></div>
+    }
+  </mat-card-content>
+</mat-card>
+

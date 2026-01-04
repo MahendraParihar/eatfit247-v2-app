@@ -1,0 +1,77 @@
+/**
+ * EatFit247 Admin - SCSS Variables
+ * 
+ * Centralized SCSS variables for use across all libraries
+ * Import this file in component SCSS files to access variables
+ * 
+ * All spacing and typography values use rem() function for better scalability
+ */
+
+@use 'sass:color';
+@use './functions' as *;
+
+// Base HTML font size (used for rem calculations)
+// This matches the default in _functions.scss
+$html-font-size: 16px;
+
+// Brand Colors
+$brand-primary: #fc2305;
+
+// Spacing Scale (8px base, converted to rem)
+$spacing-0: 0;
+$spacing-4: rem(4px);
+$spacing-8: rem(8px);
+$spacing-12: rem(12px);
+$spacing-16: rem(16px);
+$spacing-20: rem(20px);
+$spacing-24: rem(24px);
+$spacing-32: rem(32px);
+$spacing-40: rem(40px);
+$spacing-48: rem(48px);
+
+// Typography (converted to rem)
+$font-family-primary: 'Inter', 'Roboto', 'Helvetica Neue', sans-serif;
+$font-size-xs: rem(12px);
+$font-size-sm: rem(14px);
+$font-size-base: rem(16px);
+$font-size-lg: rem(18px);
+$font-size-xl: rem(20px);
+$font-size-2xl: rem(24px);
+$font-size-3xl: rem(30px);
+
+$font-weight-regular: 400;
+$font-weight-medium: 500;
+$font-weight-semibold: 600;
+$font-weight-bold: 700;
+
+$line-height-tight: 1.2;
+$line-height-normal: 1.5;
+$line-height-relaxed: 1.75;
+
+// Breakpoints (kept in px for media queries)
+$breakpoint-xs: 0;
+$breakpoint-sm: 600px;
+$breakpoint-md: 960px;
+$breakpoint-lg: 1280px;
+$breakpoint-xl: 1920px;
+
+// Z-index Scale
+$z-index-base: 0;
+$z-index-dropdown: 1000;
+$z-index-sticky: 1020;
+$z-index-fixed: 1030;
+$z-index-modal-backdrop: 1040;
+$z-index-modal: 1050;
+$z-index-popover: 1060;
+$z-index-tooltip: 1070;
+
+// Transitions
+$transition-fast: 150ms;
+$transition-base: 200ms;
+$transition-slow: 300ms;
+$transition-slower: 500ms;
+
+$easing-ease-in: cubic-bezier(0.4, 0, 1, 1);
+$easing-ease-out: cubic-bezier(0, 0, 0.2, 1);
+$easing-ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+

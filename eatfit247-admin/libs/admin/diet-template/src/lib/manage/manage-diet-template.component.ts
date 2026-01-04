@@ -1,18 +1,18 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router } from '@angular/router';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatCardModule } from '@angular/material/card';
-import { InputErrorComponent, ValidationUtil } from '@shared';
-import { DietTemplateApiService } from '../api.service';
-import { IDietTemplate, IManageDietTemplate, InputLengthEnum } from '@eatfit247-shared-lib';
+import { Component, OnInit, OnDestroy } from "@angular/core";
+import { CommonModule } from "@angular/common";
+import { ActivatedRoute, Router } from "@angular/router";
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from "@angular/forms";
+import { MatFormFieldModule } from "@angular/material/form-field";
+import { MatInputModule } from "@angular/material/input";
+import { MatButtonModule } from "@angular/material/button";
+import { MatIconModule } from "@angular/material/icon";
+import { MatCardModule } from "@angular/material/card";
+import { InputErrorComponent, ValidationUtil } from "@shared";
+import { DietTemplateApiService } from "../api.service";
+import { IDietTemplate, IManageDietTemplate, InputLengthEnum } from "@eatfit247-shared-lib";
 
 @Component({
-  selector: 'lib-manage-diet-template',
+  selector: "lib-manage-diet-template",
   standalone: true,
   imports: [
     CommonModule,
@@ -22,16 +22,16 @@ import { IDietTemplate, IManageDietTemplate, InputLengthEnum } from '@eatfit247-
     MatButtonModule,
     MatIconModule,
     MatCardModule,
-    InputErrorComponent,
+    InputErrorComponent
   ],
-  templateUrl: './manage-diet-template.html',
-  styleUrl: './manage-diet-template.scss',
+  templateUrl: "./manage-diet-template.html",
+  styleUrl: "./manage-diet-template.scss"
 })
 export class ManageDietTemplateComponent implements OnInit, OnDestroy {
   formGroup!: FormGroup;
   initialData: IDietTemplate | null = null;
   isEditMode = false;
-  pageTitle = 'Create Diet Template';
+  pageTitle = "Create Diet Template";
   InputLengthEnum = InputLengthEnum;
 
   constructor(
@@ -44,13 +44,13 @@ export class ManageDietTemplateComponent implements OnInit, OnDestroy {
   }
 
   async ngOnInit(): Promise<void> {
-    const id = this.route.snapshot.paramMap.get('id');
-    if (id && id !== 'new') {
+    const id = this.route.snapshot.paramMap.get("id");
+    if (id && id !== "new") {
       this.isEditMode = true;
-      this.pageTitle = 'Edit Diet Template';
+      this.pageTitle = "Edit Diet Template";
       await this.loadData(+id);
     } else {
-      this.pageTitle = 'Create Diet Template';
+      this.pageTitle = "Create Diet Template";
     }
   }
 
@@ -58,11 +58,9 @@ export class ManageDietTemplateComponent implements OnInit, OnDestroy {
 
   private initializeForm(): void {
     this.formGroup = this.fb.group({
-      dietTemplate: ['', [Validators.required, Validators.maxLength(InputLengthEnum.CHAR_100)]],
-      cycleNo: [null, [Validators.required, Validators.min(1)]],
-      dayNo: [null, [Validators.required, Validators.min(1)]],
+      dietTemplate: ["", [Validators.required, Validators.maxLength(InputLengthEnum.CHAR_100)]],
       noOfCycle: [null, [Validators.min(1)]],
-      noOfDaysInCycle: [null, [Validators.min(1)]],
+      noOfDaysInCycle: [null, [Validators.min(1), Validators.max(365)]]
     });
   }
 
@@ -71,15 +69,13 @@ export class ManageDietTemplateComponent implements OnInit, OnDestroy {
       this.initialData = await this.apiService.getById(id);
       if (this.initialData) {
         this.formGroup.patchValue({
-          dietTemplate: this.initialData.dietTemplate || '',
-          cycleNo: this.initialData.cycleNo || null,
-          dayNo: this.initialData.dayNo || null,
-          noOfCycle: this.initialData.noOfCycle || null,
-          noOfDaysInCycle: this.initialData.noOfDaysInCycle || null,
+          dietTemplate: this.initialData.dietTemplate,
+          noOfCycle: this.initialData.noOfCycle,
+          noOfDaysInCycle: this.initialData.noOfDaysInCycle || null
         });
       }
     } catch (error) {
-      console.error('Error loading diet template:', error);
+      console.error("Error loading diet template:", error);
     }
   }
 
@@ -87,22 +83,21 @@ export class ManageDietTemplateComponent implements OnInit, OnDestroy {
     ValidationUtil.validateAllFormFields(this.formGroup);
     if (this.formGroup.valid) {
       const formValue: IManageDietTemplate = {
-        ...this.formGroup.value,
+        ...this.formGroup.value
       };
-
       if (this.isEditMode && this.initialData) {
         formValue.dietTemplateId = this.initialData.dietTemplateId;
         await this.apiService.update(this.initialData.dietTemplateId, formValue);
       } else {
         await this.apiService.create(formValue);
       }
-      this.router.navigate(['/diet-template']);
+      this.router.navigate(["/diet-template"]);
     } else {
       this.formGroup.markAllAsTouched();
     }
   }
 
   onCancel(): void {
-    this.router.navigate(['/diet-template']);
+    this.router.navigate(["/diet-template"]);
   }
 }

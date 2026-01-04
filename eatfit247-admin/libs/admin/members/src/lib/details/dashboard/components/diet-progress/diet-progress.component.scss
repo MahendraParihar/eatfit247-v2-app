@@ -1,0 +1,78 @@
+@use 'styles' as *;
+
+.diet-progress-card {
+  border-radius: var(--radius-card);
+  background: var(--md-sys-color-surface);
+  box-shadow: var(--elevation-level-1);
+  height: 100%;
+
+  mat-card-header {
+    margin-bottom: var(--spacing-16);
+  }
+
+  mat-card-title {
+    font-family: 'Roboto', sans-serif;
+    font-size: 18px;
+    font-weight: 400;
+    line-height: 22px;
+    color: var(--md-sys-color-on-surface);
+  }
+}
+
+.diet-progress-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-16);
+}
+
+.diet-stat-card {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-16);
+  padding: var(--spacing-20);
+  border-radius: var(--radius-card);
+  background: var(--md-sys-color-surface-container);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  min-height: 120px;
+}
+
+.stat-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: var(--md-sys-color-primary-container);
+  flex-shrink: 0;
+
+  mat-icon {
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+    color: var(--md-sys-color-on-primary-container);
+  }
+}
+
+.stat-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.stat-label {
+  font-family: 'Roboto', sans-serif;
+  font-size: 14px;
+  font-weight: 300;
+  line-height: 16px;
+  color: var(--md-sys-color-on-surface-variant);
+  margin-bottom: var(--spacing-8);
+}
+
+.stat-value {
+  font-family: 'Roboto', sans-serif;
+  font-size: 26px;
+  font-weight: 500;
+  line-height: 30px;
+  color: var(--md-sys-color-on-surface);
+}
+

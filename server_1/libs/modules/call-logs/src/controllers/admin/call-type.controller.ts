@@ -26,7 +26,7 @@ export class CallTypeController {
     @CurrentUser() currentUser: any,
     @RequestedIp() requestedIp: string,
   ): Promise<void> {
-    await this.service.create(body, requestedIp, currentUser.userId || currentUser.adminId);
+    await this.service.create(body, requestedIp, currentUser.adminId);
   }
 
   @Put('manage/:id')
@@ -36,7 +36,7 @@ export class CallTypeController {
     @CurrentUser() currentUser: any,
     @RequestedIp() requestedIp: string,
   ): Promise<void> {
-    await this.service.update(id, body, requestedIp, currentUser.userId || currentUser.adminId);
+    await this.service.update(id, body, requestedIp, currentUser.adminId);
   }
 
   @Patch('update-status/:id')
@@ -46,7 +46,7 @@ export class CallTypeController {
     @CurrentUser() currentUser: any,
     @RequestedIp() requestedIp: string,
   ): Promise<void> {
-    await this.service.changeStatus(id, body.active, requestedIp, currentUser.userId || currentUser.adminId);
+    await this.service.changeStatus(id, body.active, requestedIp, currentUser.adminId);
   }
 
   @Get('dropdown')

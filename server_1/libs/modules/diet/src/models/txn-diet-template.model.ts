@@ -59,20 +59,6 @@ export class TxnDietTemplate extends Model<TxnDietTemplate> {
   declare dietTemplate: string;
 
   @Column({
-    allowNull: false,
-    field: 'cycle_no',
-    type: DataType.INTEGER,
-  })
-  declare cycleNo: number;
-
-  @Column({
-    allowNull: false,
-    field: 'day_no',
-    type: DataType.INTEGER,
-  })
-  declare dayNo: number;
-
-  @Column({
     allowNull: true,
     field: 'no_of_cycle',
     type: DataType.INTEGER,

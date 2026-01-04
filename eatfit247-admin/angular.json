@@ -18,6 +18,11 @@
             "polyfills": ["zone.js"],
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
+            "stylePreprocessorOptions": {
+              "includePaths": [
+                "libs/styles/src/lib"
+              ]
+            },
             "assets": [
               {
                 "glob": "**/*",

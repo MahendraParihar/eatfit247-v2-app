@@ -35,7 +35,7 @@ export class DietTemplateService {
     const offset = pageNumber === 0 ? 0 : pageNumber * pageSize;
     const { rows, count } = await this.dietTemplateRepository.scope('list').findAndCountAll({
       where: whereCondition,
-      order: [['dietTemplate', 'ASC'], ['cycleNo', 'ASC'], ['dayNo', 'ASC']],
+      order: [['dietTemplate', 'ASC']],
       offset: offset,
       limit: pageSize,
       raw: false,
@@ -77,8 +77,6 @@ export class DietTemplateService {
     try {
       const createObj: any = {
         dietTemplate: obj.dietTemplate,
-        cycleNo: obj.cycleNo,
-        dayNo: obj.dayNo,
         noOfCycle: obj.noOfCycle || null,
         daysInCycle: obj.noOfDaysInCycle || null,
         active: true,
@@ -106,10 +104,8 @@ export class DietTemplateService {
     try {
       const updateObj: any = {
         dietTemplate: obj.dietTemplate,
-        cycleNo: obj.cycleNo,
-        dayNo: obj.dayNo,
-        noOfCycle: obj.noOfCycle || null,
-        daysInCycle: obj.noOfDaysInCycle || null,
+        noOfCycle: obj.noOfCycle,
+        daysInCycle: obj.noOfDaysInCycle,
         modifiedBy: adminId,
         modifiedIp: cIp,
       };
@@ -146,8 +142,6 @@ export class DietTemplateService {
     return {
       dietTemplateId: item.dietTemplateId,
       dietTemplate: item.dietTemplate,
-      cycleNo: item.cycleNo,
-      dayNo: item.dayNo,
       noOfCycle: item.noOfCycle,
       noOfDaysInCycle: item.daysInCycle,
       active: item.active,
@@ -355,7 +349,7 @@ export class DietTemplateService {
         recipeIds: f ? f.recipeIds : [],
         recipeList: dietRecipeList,
         recipeCategory: c.label,
-        recipeCategoryId: c.id,
+        recipeCategoryId: c.id as number,
         sequence: f ? f.sequence : 0,
       });
     }

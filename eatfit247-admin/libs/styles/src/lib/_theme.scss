@@ -1,0 +1,104 @@
+/**
+ * EatFit247 Admin - Material 3 Theme Configuration
+ * 
+ * ⚠️ AUTHORITATIVE REFERENCE: See DESIGN_SYSTEM.md in project root
+ * This file implements the theme configuration defined in the design system.
+ * DO NOT modify without updating DESIGN_SYSTEM.md
+ */
+
+@use '@angular/material' as mat;
+@use 'sass:map';
+
+// Brand color (matches design-tokens.scss)
+$brand-primary: #fc2305;
+
+// Inter and Roboto fonts are loaded via index.html link tags
+// No need to import here as they're available globally
+
+// Define Material 3 light theme with brand color
+// Material 3 uses a simplified palette system
+$light-theme: mat.define-theme((
+  color: (
+    theme-type: light,
+    primary: mat.$red-palette, // Using red palette as base (closest to #fc2305)
+    tertiary: mat.$blue-palette,
+  ),
+  typography: (
+    brand-family: 'Inter, Roboto, sans-serif',
+    plain-family: 'Inter, Roboto, sans-serif',
+    bold-weight: 700,
+    regular-weight: 400,
+    medium-weight: 500,
+  ),
+  density: (
+    scale: 0, // Standard density for admin (can be -1 for compact)
+  ),
+));
+
+// Define Material 3 dark theme
+$dark-theme: mat.define-theme((
+  color: (
+    theme-type: dark,
+    primary: mat.$red-palette, // Using red palette as base
+    tertiary: mat.$blue-palette,
+  ),
+  typography: (
+    brand-family: 'Inter, Roboto, sans-serif',
+    plain-family: 'Inter, Roboto, sans-serif',
+    bold-weight: 700,
+    regular-weight: 400,
+    medium-weight: 500,
+  ),
+  density: (
+    scale: 0,
+  ),
+));
+
+// Apply light theme by default
+@include mat.all-component-themes($light-theme);
+
+// Apply dark theme when .dark-theme class is present
+// Per design system: Themes are applied ONLY via class (.light-theme or .dark-theme)
+.dark-theme {
+  @include mat.all-component-colors($dark-theme);
+}
+
+// Global Material 3 overrides per design system
+// Buttons keep their border radius (12px)
+.mat-mdc-button,
+.mat-mdc-raised-button,
+.mat-mdc-outlined-button,
+.mat-mdc-text-button {
+  border-radius: var(--radius-button) !important; // 12px per design system
+}
+
+// All other components have border-radius: 0
+.mat-mdc-card {
+  border-radius: 0 !important;
+  box-shadow: var(--elevation-level-1) !important;
+  background-color: white !important;
+}
+
+// Dialog/Modal background color override
+.mat-mdc-dialog-container,
+.mat-mdc-dialog-surface {
+  background-color: #ffffff !important;
+  border-radius: 0 !important;
+}
+
+// Table background color override
+.mat-mdc-table {
+  background-color: #ffffff !important;
+  border-radius: 0 !important;
+}
+
+// Menu components
+.mat-mdc-menu-panel {
+  border-radius: 0 !important;
+}
+
+// List items
+.mat-mdc-list-item {
+  border-radius: 0 !important;
+}
+

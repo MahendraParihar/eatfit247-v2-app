@@ -1,0 +1,21 @@
+<mat-card class="kpi-card">
+  <div class="kpi-content">
+    <div class="kpi-icon-wrapper">
+      <mat-icon class="kpi-icon">{{ icon }}</mat-icon>
+    </div>
+    <div class="kpi-details">
+      <div class="kpi-value">{{ value }}</div>
+      <div class="kpi-label">{{ label }}</div>
+      @if (trend !== undefined) {
+        <div class="kpi-trend" [class.positive]="trend! >= 0" [class.negative]="trend! < 0">
+          <mat-icon class="trend-icon">{{ trend! >= 0 ? 'trending_up' : 'trending_down' }}</mat-icon>
+          <span>{{ getTrendValue() }}%</span>
+          @if (trendLabel) {
+            <span class="trend-label">{{ trendLabel }}</span>
+          }
+        </div>
+      }
+    </div>
+  </div>
+</mat-card>
+

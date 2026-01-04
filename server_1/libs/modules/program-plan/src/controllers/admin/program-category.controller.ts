@@ -26,7 +26,7 @@ export class ProgramCategoryController {
     @CurrentUser() currentUser: any,
     @RequestedIp() requestedIp: string,
   ): Promise<void> {
-    await this.service.create(body, requestedIp, currentUser.userId || currentUser.adminId);
+    await this.service.create(body, requestedIp, currentUser.adminId);
   }
 
   @Put('manage/:id')
@@ -36,7 +36,7 @@ export class ProgramCategoryController {
     @CurrentUser() currentUser: any,
     @RequestedIp() requestedIp: string,
   ): Promise<void> {
-    await this.service.update(id, body, requestedIp, currentUser.userId || currentUser.adminId);
+    await this.service.update(id, body, requestedIp, currentUser.adminId);
   }
 
   @Patch('update-status/:id')

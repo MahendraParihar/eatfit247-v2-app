@@ -68,7 +68,7 @@ export class MemberPaymentController {
       id,
       body,
       requestedIp,
-      currentUser.userId || currentUser.adminId,
+      currentUser.adminId,
     );
   }
 
@@ -86,7 +86,7 @@ export class MemberPaymentController {
       paymentId,
       body,
       requestedIp,
-      currentUser.userId || currentUser.adminId,
+      currentUser.adminId,
     );
   }
 
@@ -101,7 +101,7 @@ export class MemberPaymentController {
       id,
       paymentId,
       requestedIp,
-      currentUser.userId || currentUser.adminId,
+      currentUser.adminId,
     );
   }
 

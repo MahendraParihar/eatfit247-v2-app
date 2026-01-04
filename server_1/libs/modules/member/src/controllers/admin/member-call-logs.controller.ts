@@ -40,7 +40,7 @@ export class MemberCallLogsController {
       id,
       body,
       requestedIp,
-      currentUser.userId || currentUser.adminId,
+      currentUser.adminId,
     );
   }
 
@@ -53,7 +53,7 @@ export class MemberCallLogsController {
     await this.memberCallLogsService.cancel(
       body,
       requestedIp,
-      currentUser.userId || currentUser.adminId,
+      currentUser.adminId,
     );
   }
 
@@ -66,7 +66,7 @@ export class MemberCallLogsController {
     await this.memberCallLogsService.complete(
       body,
       requestedIp,
-      currentUser.userId || currentUser.adminId,
+      currentUser.adminId,
     );
   }
 }

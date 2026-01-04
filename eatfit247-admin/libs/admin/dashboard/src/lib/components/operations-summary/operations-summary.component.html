@@ -1,0 +1,59 @@
+<mat-card class="operations-summary-card">
+  <mat-card-header>
+    <mat-card-title>Operations Snapshot</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    @if (loading) {
+      <shared-ui-loader></shared-ui-loader>
+    } @else if (!data) {
+      <shared-ui-empty-state
+        title="No Operations Data"
+        description="Operations data is not available at the moment."
+        icon="dashboard"
+      ></shared-ui-empty-state>
+    } @else {
+      <div class="operations-grid">
+        <div class="operation-item" [class]="'status-' + getStatusClass(data.todaysCalls)">
+          <div class="operation-icon">
+            <mat-icon>{{ getStatusIcon(data.todaysCalls) }}</mat-icon>
+          </div>
+          <div class="operation-details">
+            <div class="operation-value">{{ data.todaysCalls }}</div>
+            <div class="operation-label">Today's Calls</div>
+          </div>
+        </div>
+
+        <div class="operation-item" [class]="'status-' + getStatusClass(data.pendingAssessments)">
+          <div class="operation-icon">
+            <mat-icon>{{ getStatusIcon(data.pendingAssessments) }}</mat-icon>
+          </div>
+          <div class="operation-details">
+            <div class="operation-value">{{ data.pendingAssessments }}</div>
+            <div class="operation-label">Pending Assessments</div>
+          </div>
+        </div>
+
+        <div class="operation-item" [class]="'status-' + getStatusClass(data.openMemberIssues)">
+          <div class="operation-icon">
+            <mat-icon>{{ getStatusIcon(data.openMemberIssues) }}</mat-icon>
+          </div>
+          <div class="operation-details">
+            <div class="operation-value">{{ data.openMemberIssues }}</div>
+            <div class="operation-label">Open Member Issues</div>
+          </div>
+        </div>
+
+        <div class="operation-item" [class]="'status-' + getStatusClass(data.unreadIssueResponses)">
+          <div class="operation-icon">
+            <mat-icon>{{ getStatusIcon(data.unreadIssueResponses) }}</mat-icon>
+          </div>
+          <div class="operation-details">
+            <div class="operation-value">{{ data.unreadIssueResponses }}</div>
+            <div class="operation-label">Unread Issue Responses</div>
+          </div>
+        </div>
+      </div>
+    }
+  </mat-card-content>
+</mat-card>
+

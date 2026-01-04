@@ -29,7 +29,7 @@ export class MemberPocketGuideController {
       id,
       body.pocketGuideIds,
       requestedIp,
-      currentUser.userId || currentUser.adminId,
+      currentUser.adminId,
     );
   }
 }

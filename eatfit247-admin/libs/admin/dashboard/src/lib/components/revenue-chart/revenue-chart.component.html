@@ -1,0 +1,26 @@
+<mat-card class="revenue-chart-card">
+  <mat-card-header>
+    <mat-card-title>Revenue & Payments</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    @if (loading) {
+      <shared-ui-loader></shared-ui-loader>
+    } @else if (!data || (!data.lineChart?.length && !data.barChart?.length)) {
+      <shared-ui-empty-state
+        title="No Revenue Data"
+        description="Revenue data is not available at the moment."
+        icon="trending_up"
+      ></shared-ui-empty-state>
+    } @else {
+      <mat-tab-group (selectedTabChange)="onTabChange($event.index)" animationDuration="200ms">
+        <mat-tab label="Revenue Trend">
+          <div #lineChart class="chart-container"></div>
+        </mat-tab>
+        <mat-tab label="Paid vs Pending">
+          <div #barChart class="chart-container"></div>
+        </mat-tab>
+      </mat-tab-group>
+    }
+  </mat-card-content>
+</mat-card>
+

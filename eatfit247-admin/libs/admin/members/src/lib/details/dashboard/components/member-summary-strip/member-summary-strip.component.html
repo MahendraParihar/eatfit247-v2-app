@@ -1,0 +1,41 @@
+<div class="summary-strip">
+  <div class="summary-content">
+    <div class="summary-left">
+      <h1 class="member-name">{{ data?.name || 'N/A' }}</h1>
+      <div class="member-meta">
+        @if (data?.programName) {
+          <span class="meta-item">
+            <mat-icon>fitness_center</mat-icon>
+            <span>{{ data.programName }}</span>
+          </span>
+        }
+        @if (data?.status) {
+          <mat-chip [color]="getStatusColor(data.status)" class="status-chip">
+            {{ data.status }}
+          </mat-chip>
+        }
+      </div>
+    </div>
+    <div class="summary-right">
+      @if (data?.nutritionistName) {
+        <div class="info-item">
+          <span class="info-label">Nutritionist</span>
+          <span class="info-value">{{ data.nutritionistName }}</span>
+        </div>
+      }
+      @if (data?.startDate) {
+        <div class="info-item">
+          <span class="info-label">Start Date</span>
+          <span class="info-value">{{ formatDate(data.startDate) }}</span>
+        </div>
+      }
+      @if (data?.nextFollowUp) {
+        <div class="info-item">
+          <span class="info-label">Next Follow-up</span>
+          <span class="info-value">{{ formatDate(data.nextFollowUp) }}</span>
+        </div>
+      }
+    </div>
+  </div>
+</div>
+

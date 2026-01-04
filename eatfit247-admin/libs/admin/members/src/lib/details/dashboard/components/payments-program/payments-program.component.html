@@ -1,0 +1,124 @@
+<mat-card class="payments-program-card">
+  <mat-card-header>
+    <mat-card-title>Payments & Program</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    @if (loading) {
+      <shared-ui-loader [fullScreen]="false"></shared-ui-loader>
+    } @else if (!data) {
+      <shared-ui-empty-state
+        [type]="EmptyStateType.GENERAL"
+        title="No Payment Data"
+        description="Payment and program information is not available for this member."
+      ></shared-ui-empty-state>
+    } @else {
+      <div class="payments-program-content">
+        <!-- Payment Summary -->
+        <div class="payment-section">
+          <h3 class="section-title">
+            <mat-icon>payments</mat-icon>
+            Payment Summary
+          </h3>
+          <div class="payment-stats">
+            <div class="payment-stat-item">
+              <div class="stat-icon total">
+                <mat-icon>account_balance_wallet</mat-icon>
+              </div>
+              <div class="stat-details">
+                <div class="stat-label">Total Fee</div>
+                <div class="stat-value">{{ formatCurrency(data.totalFee || 0) }}</div>
+              </div>
+            </div>
+            <div class="payment-stat-item">
+              <div class="stat-icon paid">
+                <mat-icon>check_circle</mat-icon>
+              </div>
+              <div class="stat-details">
+                <div class="stat-label">Paid</div>
+                <div class="stat-value">{{ formatCurrency(data.paid || 0) }}</div>
+              </div>
+            </div>
+            <div class="payment-stat-item pending-highlight">
+              <div class="stat-icon pending">
+                <mat-icon>pending</mat-icon>
+              </div>
+              <div class="stat-details">
+                <div class="stat-label">Pending</div>
+                <div class="stat-value">{{ formatCurrency(data.pending || 0) }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Last Payment Info -->
+        @if (data.lastPayment) {
+          <div class="payment-section">
+            <h3 class="section-title">
+              <mat-icon>history</mat-icon>
+              Last Payment
+            </h3>
+            <div class="last-payment-info">
+              <div class="info-row">
+                <span class="info-label">Amount:</span>
+                <span class="info-value">{{ formatCurrency(data.lastPayment.amount) }}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Date:</span>
+                <span class="info-value">{{ formatDate(data.lastPayment.date) }}</span>
+              </div>
+              @if (data.lastPayment.method) {
+                <div class="info-row">
+                  <span class="info-label">Method:</span>
+                  <span class="info-value">{{ data.lastPayment.method }}</span>
+                </div>
+              }
+              @if (data.lastPayment.status) {
+                <div class="info-row">
+                  <span class="info-label">Status:</span>
+                  <mat-chip [color]="getPaymentStatusColor(data.lastPayment.status)">
+                    {{ data.lastPayment.status }}
+                  </mat-chip>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Program Info -->
+        @if (data.program) {
+          <div class="payment-section">
+            <h3 class="section-title">
+              <mat-icon>fitness_center</mat-icon>
+              Program Details
+            </h3>
+            <div class="program-info">
+              <div class="info-row">
+                <span class="info-label">Program:</span>
+                <span class="info-value">{{ data.program.name || 'N/A' }}</span>
+              </div>
+              @if (data.program.startDate) {
+                <div class="info-row">
+                  <span class="info-label">Start Date:</span>
+                  <span class="info-value">{{ formatDate(data.program.startDate) }}</span>
+                </div>
+              }
+              @if (data.program.endDate) {
+                <div class="info-row">
+                  <span class="info-label">End Date:</span>
+                  <span class="info-value">{{ formatDate(data.program.endDate) }}</span>
+                </div>
+              }
+              @if (data.program.duration) {
+                <div class="info-row">
+                  <span class="info-label">Duration:</span>
+                  <span class="info-value">{{ data.program.duration }}</span>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </mat-card-content>
+</mat-card>
+

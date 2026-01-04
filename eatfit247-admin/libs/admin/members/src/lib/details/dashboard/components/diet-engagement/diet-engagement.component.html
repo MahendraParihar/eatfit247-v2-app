@@ -1,0 +1,55 @@
+<mat-card class="engagement-card">
+  <mat-card-header>
+    <mat-card-title>Engagement</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    @if (loading) {
+      <shared-ui-loader [fullScreen]="false"></shared-ui-loader>
+    } @else if (!data) {
+      <shared-ui-empty-state
+        [type]="EmptyStateType.GENERAL"
+        title="No Engagement Data"
+        description="Engagement data is not available for this member."
+      ></shared-ui-empty-state>
+    } @else {
+      <div class="engagement-content">
+        <div class="engagement-section">
+          <div class="progress-header">
+            <span class="progress-label">Assessment Completion</span>
+            <span class="progress-value">{{ data.assessment?.completionRate || data.assessmentCompletion || 0 }}%</span>
+          </div>
+          <mat-progress-bar
+            mode="determinate"
+            [value]="data.assessment?.completionRate || data.assessmentCompletion || 0"
+            [color]="getProgressColor(data.assessment?.completionRate || data.assessmentCompletion || 0)"
+          ></mat-progress-bar>
+        </div>
+
+        <div class="engagement-section">
+          <div class="progress-header">
+            <span class="progress-label">Health Log Frequency</span>
+            <span class="progress-value">{{ data.healthLogFrequency || data.healthLogs?.frequency || 0 }}%</span>
+          </div>
+          <mat-progress-bar
+            mode="determinate"
+            [value]="data.healthLogFrequency || data.healthLogs?.frequency || 0"
+            [color]="getProgressColor(data.healthLogFrequency || data.healthLogs?.frequency || 0)"
+          ></mat-progress-bar>
+        </div>
+
+        <div class="engagement-section">
+          <div class="progress-header">
+            <span class="progress-label">Call Adherence</span>
+            <span class="progress-value">{{ data.callAdherence || data.calls?.adherence || 0 }}%</span>
+          </div>
+          <mat-progress-bar
+            mode="determinate"
+            [value]="data.callAdherence || data.calls?.adherence || 0"
+            [color]="getProgressColor(data.callAdherence || data.calls?.adherence || 0)"
+          ></mat-progress-bar>
+        </div>
+      </div>
+    }
+  </mat-card-content>
+</mat-card>
+

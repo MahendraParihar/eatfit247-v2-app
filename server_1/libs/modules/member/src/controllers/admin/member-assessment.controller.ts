@@ -25,7 +25,7 @@ export class MemberAssessmentController {
       id,
       body,
       requestedIp,
-      currentUser.userId || currentUser.adminId,
+      currentUser.adminId,
     );
   }
 }

@@ -1,0 +1,51 @@
+<mat-card class="diet-progress-card">
+  <mat-card-header>
+    <mat-card-title>Diet Progress</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    @if (loading) {
+      <shared-ui-loader [fullScreen]="false"></shared-ui-loader>
+    } @else if (!data) {
+      <shared-ui-empty-state
+        [type]="EmptyStateType.GENERAL"
+        title="No Diet Data"
+        description="Diet progress information is not available for this member."
+      ></shared-ui-empty-state>
+    } @else {
+      <div class="diet-progress-content">
+        <div class="diet-stat-card">
+          <div class="stat-icon">
+            <mat-icon>restaurant_menu</mat-icon>
+          </div>
+          <div class="stat-details">
+            <div class="stat-label">Diet Plans Sent</div>
+            <div class="stat-value">{{ data.dietPlans?.total || data.totalPlans || 0 }}</div>
+          </div>
+        </div>
+
+        <div class="diet-stat-card">
+          <div class="stat-icon">
+            <mat-icon>calendar_today</mat-icon>
+          </div>
+          <div class="stat-details">
+            <div class="stat-label">Last Diet Date</div>
+            <div class="stat-value">{{ formatDate(data.lastDietDate || data.lastDietPlanDate) }}</div>
+          </div>
+        </div>
+
+        @if (data.missedDays !== undefined) {
+          <div class="diet-stat-card">
+            <div class="stat-icon">
+              <mat-icon>event_busy</mat-icon>
+            </div>
+            <div class="stat-details">
+              <div class="stat-label">Missed Days</div>
+              <div class="stat-value">{{ data.missedDays }}</div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </mat-card-content>
+</mat-card>
+

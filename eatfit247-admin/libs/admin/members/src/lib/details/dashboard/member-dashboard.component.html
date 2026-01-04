@@ -1,5 +1,58 @@
-<mat-card>
-  <mat-card-content>
-    <p>Dashboard content will be displayed here.</p>
-  </mat-card-content>
-</mat-card>
+@if (loading) {
+  <shared-ui-loader [fullScreen]="false" [message]="'Loading dashboard...'"></shared-ui-loader>
+} @else if (error) {
+  <shared-ui-empty-state
+    [title]="'Failed to Load Dashboard'"
+    [description]="error"
+    buttonLabel="Retry"
+    buttonIcon="refresh"
+    (buttonClick)="onRefresh()"
+  ></shared-ui-empty-state>
+} @else {
+  <div class="dashboard-container">
+    <div class="summary-strip-wrapper">
+      <lib-member-summary-strip [data]="dashboardData.summary" [memberId]="memberId"></lib-member-summary-strip>
+    </div>
+
+    <div class="dashboard-grid">
+      <div class="health-progress-wrapper">
+        <lib-health-progress
+          [data]="dashboardData.healthProgress"
+          [memberId]="memberId"
+        ></lib-health-progress>
+      </div>
+
+      <div class="engagement-wrapper">
+        <lib-diet-engagement
+          [data]="dashboardData.engagement"
+          [memberId]="memberId"
+        ></lib-diet-engagement>
+      </div>
+
+      <div class="diet-progress-wrapper">
+        <lib-diet-progress
+          [data]="dashboardData.engagement"
+          [memberId]="memberId"
+        ></lib-diet-progress>
+      </div>
+
+      <div class="payments-wrapper">
+        <lib-payments-program
+          [data]="dashboardData.payments"
+          [memberId]="memberId"
+        ></lib-payments-program>
+      </div>
+
+      <div class="issues-wrapper">
+        <lib-issues-communication
+          [data]="dashboardData.issues"
+          [memberId]="memberId"
+        ></lib-issues-communication>
+      </div>
+
+      <div class="quick-actions-wrapper">
+        <lib-quick-actions [memberId]="memberId"></lib-quick-actions>
+      </div>
+    </div>
+  </div>
+}

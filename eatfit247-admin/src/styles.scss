@@ -9,9 +9,8 @@
 
 // Use design tokens and theme (modern Sass module system)
 // @use must come before any other rules
-@use './styles/design-tokens';
-@use './styles/status-tokens';
-@use './styles/theme';
+// Import from shared styles library (using relative path to avoid module loop)
+@use '../libs/styles/src/lib/styles' as *;
 @use '@angular/material' as mat;
 
 // Include Material core

@@ -1,0 +1,350 @@
+import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/sequelize';
+import { Op, Sequelize } from 'sequelize';
+import { TxnMember, TxnMemberPayment, TxnMemberDietPlan, TxnMemberIssue } from '@server_1/modules/member';
+import { PaymentStatusEnum } from '@eatfit247-shared-lib';
+import moment from 'moment';
+
+export interface DashboardKpis {
+  totalMembers: number;
+  newMembers: number;
+  monthlyRevenue: number;
+  pendingPayments: number;
+  dietPlansSent: number;
+  openIssues: number;
+  trends?: {
+    totalMembers?: number;
+    newMembers?: number;
+    monthlyRevenue?: number;
+    pendingPayments?: number;
+    dietPlansSent?: number;
+    openIssues?: number;
+  };
+}
+
+export interface RevenueDataPoint {
+  month: string;
+  revenue: number;
+  paid: number;
+  pending: number;
+}
+
+export interface RevenueData {
+  lineChart: RevenueDataPoint[];
+  barChart: RevenueDataPoint[];
+}
+
+export interface MemberGrowthDataPoint {
+  period: string;
+  newMembers: number;
+  activeMembers: number;
+}
+
+export interface MemberGrowthData {
+  data: MemberGrowthDataPoint[];
+  period: 'weekly' | 'monthly';
+}
+
+export interface ProgramPerformanceData {
+  programName: string;
+  enrollment: number;
+  percentage: number;
+}
+
+export interface OperationsSnapshot {
+  todaysCalls: number;
+  pendingAssessments: number;
+  openMemberIssues: number;
+  unreadIssueResponses: number;
+}
+
+export interface EngagementData {
+  dietPlansSent: number;
+  dietPlansPending: number;
+  assessmentCompletionPercent: number;
+  avgHealthLogsPerMember: number;
+}
+
+@Injectable()
+export class DashboardService {
+  constructor(
+    @InjectModel(TxnMember)
+    private readonly memberRepository: typeof TxnMember,
+    @InjectModel(TxnMemberPayment)
+    private readonly memberPaymentRepository: typeof TxnMemberPayment,
+    @InjectModel(TxnMemberDietPlan)
+    private readonly memberDietPlanRepository: typeof TxnMemberDietPlan,
+    @InjectModel(TxnMemberIssue)
+    private readonly memberIssueRepository: typeof TxnMemberIssue,
+  ) {}
+
+  /**
+   * Get dashboard KPIs
+   */
+  async getKpis(): Promise<DashboardKpis> {
+    const now = moment();
+    const startOfMonth = now.clone().startOf('month').toDate();
+    const startOfLastMonth = now.clone().subtract(1, 'month').startOf('month').toDate();
+    const endOfLastMonth = now.clone().subtract(1, 'month').endOf('month').toDate();
+
+    // Get current month data
+    const [
+      totalMembers,
+      newMembers,
+      monthlyRevenue,
+      pendingPayments,
+      dietPlansSent,
+      openIssues,
+    ] = await Promise.all([
+      // Total active members
+      this.memberRepository.count({
+        where: { active: true },
+      }),
+      // New members this month
+      this.memberRepository.count({
+        where: {
+          active: true,
+          createdAt: {
+            [Op.gte]: startOfMonth,
+          },
+        },
+      }),
+      // Monthly revenue (sum of paid payments this month)
+      // Extract totalAmount from JSONB paymentObj (checks user.totalAmount first, then totalAmount)
+      (async () => {
+        const result = await this.memberPaymentRepository.findOne({
+          attributes: [
+            [
+              Sequelize.fn(
+                'SUM',
+                Sequelize.literal(
+                  `COALESCE((payment_obj->'user'->>'totalAmount')::numeric, (payment_obj->>'totalAmount')::numeric, 0)`
+                )
+              ),
+              'total',
+            ],
+          ],
+          where: {
+            paymentStatusId: PaymentStatusEnum.PAID,
+            paymentDate: {
+              [Op.gte]: startOfMonth,
+            },
+            active: true,
+          },
+          raw: true,
+        });
+        return (result as any)?.total || 0;
+      })(),
+      // Pending payments (sum of pending payment amounts)
+      // Extract totalAmount from JSONB paymentObj (checks user.totalAmount first, then totalAmount)
+      (async () => {
+        const result = await this.memberPaymentRepository.findOne({
+          attributes: [
+            [
+              Sequelize.fn(
+                'SUM',
+                Sequelize.literal(
+                  `COALESCE((payment_obj->'user'->>'totalAmount')::numeric, (payment_obj->>'totalAmount')::numeric, 0)`
+                )
+              ),
+              'total',
+            ],
+          ],
+          where: {
+            paymentStatusId: PaymentStatusEnum.PENDING,
+            active: true,
+          },
+          raw: true,
+        });
+        return (result as any)?.total || 0;
+      })(),
+      // Diet plans sent (count of diet plans)
+      this.memberDietPlanRepository.count({
+        where: { active: true },
+      }),
+      // Open issues (count of issues)
+      // Note: TxnMemberIssue doesn't have an active field, so we count all issues
+      this.memberIssueRepository.count({
+        where: {
+          // Assuming open issues are those that are not in a closed/resolved status
+          // You may need to adjust this based on your issue status enum
+        },
+      }),
+    ]);
+
+    // Get last month data for trends
+    const [
+      lastMonthTotalMembers,
+      lastMonthNewMembers,
+      lastMonthRevenue,
+      lastMonthPendingPayments,
+      lastMonthDietPlansSent,
+      lastMonthOpenIssues,
+    ] = await Promise.all([
+      this.memberRepository.count({
+        where: {
+          active: true,
+          createdAt: {
+            [Op.lte]: endOfLastMonth,
+          },
+        },
+      }),
+      this.memberRepository.count({
+        where: {
+          active: true,
+          createdAt: {
+            [Op.gte]: startOfLastMonth,
+            [Op.lte]: endOfLastMonth,
+          },
+        },
+      }),
+      // Extract totalAmount from JSONB paymentObj (checks user.totalAmount first, then totalAmount)
+      (async () => {
+        const result = await this.memberPaymentRepository.findOne({
+          attributes: [
+            [
+              Sequelize.fn(
+                'SUM',
+                Sequelize.literal(
+                  `COALESCE((payment_obj->'user'->>'totalAmount')::numeric, (payment_obj->>'totalAmount')::numeric, 0)`
+                )
+              ),
+              'total',
+            ],
+          ],
+          where: {
+            paymentStatusId: PaymentStatusEnum.PAID,
+            paymentDate: {
+              [Op.gte]: startOfLastMonth,
+              [Op.lte]: endOfLastMonth,
+            },
+            active: true,
+          },
+          raw: true,
+        });
+        return (result as any)?.total || 0;
+      })(),
+      // Extract totalAmount from JSONB paymentObj (checks user.totalAmount first, then totalAmount)
+      (async () => {
+        const result = await this.memberPaymentRepository.findOne({
+          attributes: [
+            [
+              Sequelize.fn(
+                'SUM',
+                Sequelize.literal(
+                  `COALESCE((payment_obj->'user'->>'totalAmount')::numeric, (payment_obj->>'totalAmount')::numeric, 0)`
+                )
+              ),
+              'total',
+            ],
+          ],
+          where: {
+            paymentStatusId: PaymentStatusEnum.PENDING,
+            active: true,
+            createdAt: {
+              [Op.lte]: endOfLastMonth,
+            },
+          },
+          raw: true,
+        });
+        return (result as any)?.total || 0;
+      })(),
+      this.memberDietPlanRepository.count({
+        where: {
+          active: true,
+          createdAt: {
+            [Op.lte]: endOfLastMonth,
+          },
+        },
+      }),
+      // Note: TxnMemberIssue doesn't have an active field
+      this.memberIssueRepository.count({
+        where: {
+          createdAt: {
+            [Op.lte]: endOfLastMonth,
+          },
+        },
+      }),
+    ]);
+
+    // Calculate trends (difference from last month)
+    const trends = {
+      totalMembers: totalMembers - lastMonthTotalMembers,
+      newMembers: newMembers - lastMonthNewMembers,
+      monthlyRevenue: monthlyRevenue - lastMonthRevenue,
+      pendingPayments: pendingPayments - lastMonthPendingPayments,
+      dietPlansSent: dietPlansSent - lastMonthDietPlansSent,
+      openIssues: openIssues - lastMonthOpenIssues,
+    };
+
+    return {
+      totalMembers,
+      newMembers,
+      monthlyRevenue: monthlyRevenue || 0,
+      pendingPayments: pendingPayments || 0,
+      dietPlansSent,
+      openIssues,
+      trends,
+    };
+  }
+
+  /**
+   * Get revenue data for charts
+   */
+  async getRevenueData(): Promise<RevenueData> {
+    // TODO: Implement actual database queries for revenue data
+    const data: RevenueData = {
+      lineChart: [],
+      barChart: [],
+    };
+    return data;
+  }
+
+  /**
+   * Get member growth data
+   */
+  async getMemberGrowthData(period: 'weekly' | 'monthly' = 'monthly'): Promise<MemberGrowthData> {
+    // TODO: Implement actual database queries for member growth
+    const data: MemberGrowthData = {
+      data: [],
+      period,
+    };
+    return data;
+  }
+
+  /**
+   * Get program performance data
+   */
+  async getProgramPerformanceData(): Promise<ProgramPerformanceData[]> {
+    // TODO: Implement actual database queries for program performance
+    return [];
+  }
+
+  /**
+   * Get operations snapshot
+   */
+  async getOperationsSnapshot(): Promise<OperationsSnapshot> {
+    // TODO: Implement actual database queries for operations snapshot
+    const data: OperationsSnapshot = {
+      todaysCalls: 0,
+      pendingAssessments: 0,
+      openMemberIssues: 0,
+      unreadIssueResponses: 0,
+    };
+    return data;
+  }
+
+  /**
+   * Get engagement data
+   */
+  async getEngagementData(): Promise<EngagementData> {
+    // TODO: Implement actual database queries for engagement data
+    const data: EngagementData = {
+      dietPlansSent: 0,
+      dietPlansPending: 0,
+      assessmentCompletionPercent: 0,
+      avgHealthLogsPerMember: 0,
+    };
+    return data;
+  }
+}

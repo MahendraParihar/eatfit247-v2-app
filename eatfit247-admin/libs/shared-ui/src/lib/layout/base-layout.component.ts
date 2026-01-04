@@ -56,6 +56,11 @@ export class BaseLayoutComponent implements OnInit, OnDestroy {
   // Menu items configuration
   menuItems: MenuItem[] = [
     {
+      label: 'Dashboard',
+      icon: 'dashboard',
+      route: '/dashboard',
+    },
+    {
       label: 'Members',
       icon: 'people',
       route: '/members',

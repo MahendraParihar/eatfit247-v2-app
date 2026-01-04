@@ -1,0 +1,30 @@
+/**
+ * EatFit247 Admin - Shared Styles Library
+ * 
+ * Main entry point for all shared styles
+ * Import this file in your component SCSS files or global styles
+ * 
+ * Usage:
+ * @use 'styles' as *;
+ * 
+ * Note: This requires 'libs/styles/src/lib' to be in stylePreprocessorOptions.includePaths
+ */
+
+// Import functions first (needed by variables)
+@use './_functions' as *;
+
+// Import design tokens (CSS custom properties)
+@use './_design-tokens' as *;
+
+// Import status tokens (utility classes)
+@use './_status-tokens' as *;
+
+// Import theme configuration (Material 3 theme)
+@use './_theme' as *;
+
+// Import variables (SCSS variables - uses functions)
+@use './_variables' as *;
+
+// Import mixins (reusable layout patterns)
+@use './_mixins' as *;
+

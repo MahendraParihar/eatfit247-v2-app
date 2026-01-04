@@ -30,11 +30,13 @@
       "issues": ["libs/admin/issues/src/index.ts"],
       "admin-user": ["libs/admin/admin-user/src/index.ts"],
       "promo-code": ["libs/admin/promo-code/src/index.ts"],
+      "dashboard": ["libs/admin/dashboard/src/index.ts"],
       "@env": ["src/environments/environment.ts"],
       "@eatfit247-shared-lib": ["../shared-library/src/index.ts"],
       "@core": ["libs/core/src/index.ts"],
       "@shared": ["libs/shared-ui/src/index.ts"],
-      "@ui": ["libs/ui/src/index.ts"]
+      "@ui": ["libs/ui/src/index.ts"],
+      "@styles": ["libs/styles/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]
