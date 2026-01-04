@@ -294,6 +294,7 @@ export class MemberCallLogsService {
         where: { memberCallLogId: payload.memberCallLogId },
       },
     );
+    return true;
   }
 
   public async complete(payload: IStatusChangeCallLog, requestedIp: string, adminId: number) {
@@ -323,6 +324,7 @@ export class MemberCallLogsService {
         where: { memberCallLogId: payload.memberCallLogId },
       },
     );
+    return true;
   }
 
   private convertToModel(item: TxnMemberCallLog): IMemberCallLog {

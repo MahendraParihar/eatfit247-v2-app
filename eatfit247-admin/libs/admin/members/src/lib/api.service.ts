@@ -31,7 +31,7 @@ import {
   ICalculateTaxRequest,
   ICalculateTaxResponse,
   IMemberDietPlan,
-  IMemberDietDetail,
+  IMemberDietDetail, IMemberDietPlanDetail
 } from '@eatfit247-shared-lib';
 
 @Injectable({
@@ -350,7 +350,10 @@ export class MembersApiService extends ApiBaseService {
     return res.data as IMemberCallLog[];
   }
 
-  async getAvailableTimeslots(memberId: number, data: IAvailableSlot): Promise<ICallLogSlot[]> {
+  async getAvailableTimeslots(
+    memberId: number,
+    data: IAvailableSlot
+  ): Promise<ICallLogSlot[]> {
     // Note: Using POST since GET with body is not standard HTTP
     const res = await this.httpService.post<IResponse<ICallLogSlot[]>>(
       `${this.endpoint}/${memberId}/call-logs/available-timeslot`,
@@ -359,7 +362,10 @@ export class MembersApiService extends ApiBaseService {
     return res.data as ICallLogSlot[];
   }
 
-  async createCallLog(memberId: number, data: IManageMemberCallLog): Promise<IMemberCallLog> {
+  async createCallLog(
+    memberId: number,
+    data: IManageMemberCallLog
+  ): Promise<IMemberCallLog> {
     const res = await this.httpService.post<IResponse<IMemberCallLog>>(
       `${this.endpoint}/${memberId}/call-logs`,
       data
@@ -367,14 +373,22 @@ export class MembersApiService extends ApiBaseService {
     return res.data as IMemberCallLog;
   }
 
-  async cancelCallLog(memberId: number, memberCallLogId: number, reason: string): Promise<void> {
+  async cancelCallLog(
+    memberId: number,
+    memberCallLogId: number,
+    reason: string
+  ): Promise<void> {
     return await this.httpService.post<void>(
       `${this.endpoint}/${memberId}/call-logs/cancel`,
       <IStatusChangeCallLog>{ memberCallLogId, reason }
     );
   }
 
-  async completeCallLog(memberId: number, memberCallLogId: number, reason: string): Promise<void> {
+  async completeCallLog(
+    memberId: number,
+    memberCallLogId: number,
+    reason: string
+  ): Promise<void> {
     return await this.httpService.post<void>(
       `${this.endpoint}/${memberId}/call-logs/complete`,
       <IStatusChangeCallLog>{ memberCallLogId, reason }
@@ -382,7 +396,9 @@ export class MembersApiService extends ApiBaseService {
   }
 
   // region Member Payments
-  async getPaymentMasterData(memberId: number): Promise<IMemberPaymentMasterData> {
+  async getPaymentMasterData(
+    memberId: number
+  ): Promise<IMemberPaymentMasterData> {
     const res = await this.httpService.get<IResponse<IMemberPaymentMasterData>>(
       `${this.endpoint}/${memberId}/payment-history/master-data`
     );
@@ -390,20 +406,26 @@ export class MembersApiService extends ApiBaseService {
   }
 
   async getPayments(memberId: number): Promise<ITableList<IMemberPayment>> {
-    const res = await this.httpService.get<IResponse<ITableList<IMemberPayment>>>(
-      `${this.endpoint}/${memberId}/payment-history`
-    );
+    const res = await this.httpService.get<
+      IResponse<ITableList<IMemberPayment>>
+    >(`${this.endpoint}/${memberId}/payment-history`);
     return res.data as ITableList<IMemberPayment>;
   }
 
-  async getPayment(memberId: number, paymentId: number): Promise<IMemberPayment> {
+  async getPayment(
+    memberId: number,
+    paymentId: number
+  ): Promise<IMemberPayment> {
     const res = await this.httpService.get<IResponse<IMemberPayment>>(
       `${this.endpoint}/${memberId}/payment-history/${paymentId}`
     );
     return res.data as IMemberPayment;
   }
 
-  async createPayment(memberId: number, data: IManageMemberPayment): Promise<IMemberPayment> {
+  async createPayment(
+    memberId: number,
+    data: IManageMemberPayment
+  ): Promise<IMemberPayment> {
     const res = await this.httpService.post<IResponse<IMemberPayment>>(
       `${this.endpoint}/${memberId}/payment-history`,
       data
@@ -429,7 +451,10 @@ export class MembersApiService extends ApiBaseService {
     );
   }
 
-  async getProgramPlanDetails(memberId: number, programPlanId: number): Promise<IProgramPlan> {
+  async getProgramPlanDetails(
+    memberId: number,
+    programPlanId: number
+  ): Promise<IProgramPlan> {
     const res = await this.httpService.get<IResponse<IProgramPlan>>(
       `${this.endpoint}/${memberId}/payment-history/program-plan/${programPlanId}`
     );
@@ -450,17 +475,8 @@ export class MembersApiService extends ApiBaseService {
   async getSupportedPaymentGateways(
     memberId: number,
     currency: string
-  ): Promise<Array<{
-    franchisePaymentGatewayId: number;
-    gatewayCode: string;
-    gatewayName: string;
-    providerCountryCode: string;
-    currencyCode: string;
-    isPrimary: boolean;
-    supportsDomestic: boolean;
-    supportsInternational: boolean;
-  }>> {
-    const res = await this.httpService.get<IResponse<Array<{
+  ): Promise<
+    Array<{
       franchisePaymentGatewayId: number;
       gatewayCode: string;
       gatewayName: string;
@@ -469,10 +485,24 @@ export class MembersApiService extends ApiBaseService {
       isPrimary: boolean;
       supportsDomestic: boolean;
       supportsInternational: boolean;
-    }>>>(
-      `${this.endpoint}/${memberId}/payment-history/supported-gateways`,
-      { params: { currency } }
-    );
+    }>
+  > {
+    const res = await this.httpService.get<
+      IResponse<
+        Array<{
+          franchisePaymentGatewayId: number;
+          gatewayCode: string;
+          gatewayName: string;
+          providerCountryCode: string;
+          currencyCode: string;
+          isPrimary: boolean;
+          supportsDomestic: boolean;
+          supportsInternational: boolean;
+        }>
+      >
+    >(`${this.endpoint}/${memberId}/payment-history/supported-gateways`, {
+      params: { currency }
+    });
     return res.data as Array<{
       franchisePaymentGatewayId: number;
       gatewayCode: string;
@@ -500,25 +530,26 @@ export class MembersApiService extends ApiBaseService {
       notes?: Record<string, any>;
     }
   ): Promise<{ short_url: string; id: string; gatewayCode: string }> {
-    const res = await this.httpService.post<IResponse<{ short_url: string; id: string; gatewayCode: string }>>(
-      `${this.endpoint}/${memberId}/payment-history/create-payment-link`,
-      data
-    );
+    const res = await this.httpService.post<
+      IResponse<{ short_url: string; id: string; gatewayCode: string }>
+    >(`${this.endpoint}/${memberId}/payment-history/create-payment-link`, data);
     return res.data as { short_url: string; id: string; gatewayCode: string };
   }
-  // endregion
 
+  // endregion
   // region Member Diet Plans
   async getDietPlans(memberId: number): Promise<{
     list: IMemberDietPlan[];
     count: number;
     dietTemplateList: IDropdownItem[];
   }> {
-    const res = await this.httpService.get<IResponse<{
-      list: IMemberDietPlan[];
-      count: number;
-      dietTemplateList: IDropdownItem[];
-    }>>(`${this.endpoint}/${memberId}/diet-plan/list`);
+    const res = await this.httpService.get<
+      IResponse<{
+        list: IMemberDietPlan[];
+        count: number;
+        dietTemplateList: IDropdownItem[];
+      }>
+    >(`${this.endpoint}/${memberId}/diet-plan/list`);
     return res.data as {
       list: IMemberDietPlan[];
       count: number;
@@ -530,26 +561,40 @@ export class MembersApiService extends ApiBaseService {
     list: IMemberDietPlan[];
     count: number;
   }> {
-    const res = await this.httpService.get<IResponse<{
-      list: IMemberDietPlan[];
-      count: number;
-    }>>(`${this.endpoint}/${memberId}/diet-plan/history`);
+    const res = await this.httpService.get<
+      IResponse<{
+        list: IMemberDietPlan[];
+        count: number;
+      }>
+    >(`${this.endpoint}/${memberId}/diet-plan/history`);
     return res.data as {
       list: IMemberDietPlan[];
       count: number;
     };
   }
 
-  async getDietPlanDetail(url: string, params?: any): Promise<{
+  async getDietPlanDetail(
+    memberId: number,
+    dietPlanId: number,
+    cycleNo: number,
+    dayNo?: number,
+    params?: { [key: string]: number }
+  ): Promise<{
     recipes: IDropdownItem[];
     diet: IMemberDietDetail;
     memberName: string;
   }> {
-    const res = await this.httpService.get<IResponse<{
-      recipes: IDropdownItem[];
-      diet: IMemberDietDetail;
-      memberName: string;
-    }>>(`${this.endpoint}/${url}`, { params });
+    let url = `${this.endpoint}/${memberId}/diet-plan/manage/${dietPlanId}/${cycleNo}`;
+    if (dayNo) {
+      url = url + `/${dayNo}`;
+    }
+    const res = await this.httpService.get<
+      IResponse<{
+        recipes: IDropdownItem[];
+        diet: IMemberDietDetail;
+        memberName: string;
+      }>
+    >(url, { params });
     return res.data as {
       recipes: IDropdownItem[];
       diet: IMemberDietDetail;
@@ -557,65 +602,107 @@ export class MembersApiService extends ApiBaseService {
     };
   }
 
-  async createDietPlanDetail(memberId: number, data: any): Promise<void> {
+  async createDietPlanDetail(
+    memberId: number,
+    data: IMemberDietPlanDetail
+  ): Promise<void> {
     return await this.httpService.post<void>(
       `${this.endpoint}/${memberId}/diet-plan/manage`,
       data
     );
   }
 
-  async updateDietPlanStatus(memberId: number, dietPlanId: number): Promise<void> {
+  async updateDietPlanStatus(
+    memberId: number,
+    dietPlanId: number
+  ): Promise<void> {
     return await this.httpService.put<void>(
       `${this.endpoint}/${memberId}/diet-plan/update-status/${dietPlanId}`,
       null
     );
   }
 
-  async deleteDietPlanCycle(memberId: number, dietPlanId: number, cycleNo: number): Promise<void> {
+  async deleteDietPlanCycle(
+    memberId: number,
+    dietPlanId: number,
+    cycleNo: number
+  ): Promise<void> {
     return await this.httpService.delete<void>(
       `${this.endpoint}/${memberId}/diet-plan/delete-cycle/${dietPlanId}/${cycleNo}`
     );
   }
 
-  async deleteDietPlanDay(memberId: number, dietPlanId: number, cycleNo: number, dayNo: number): Promise<void> {
+  async deleteDietPlanDay(
+    memberId: number,
+    dietPlanId: number,
+    cycleNo: number,
+    dayNo: number
+  ): Promise<void> {
     return await this.httpService.delete<void>(
       `${this.endpoint}/${memberId}/diet-plan/delete-day/${dietPlanId}/${cycleNo}/${dayNo}`
     );
   }
 
-  async downloadDietPlanCycle(memberId: number, dietPlanId: number, cycleNo: number): Promise<{
+  async downloadDietPlanCycle(
+    memberId: number,
+    dietPlanId: number,
+    cycleNo: number
+  ): Promise<{
     buffer: string;
     fileName: string;
   }> {
-    const res = await this.httpService.get<IResponse<{
-      buffer: string;
-      fileName: string;
-    }>>(`${this.endpoint}/${memberId}/diet-plan/download-cycle/${dietPlanId}/${cycleNo}`);
+    const res = await this.httpService.get<
+      IResponse<{
+        buffer: string;
+        fileName: string;
+      }>
+    >(
+      `${this.endpoint}/${memberId}/diet-plan/download-cycle/${dietPlanId}/${cycleNo}`
+    );
     return res.data as { buffer: string; fileName: string };
   }
 
-  async downloadDietPlanDay(memberId: number, dietPlanId: number, cycleNo: number, dayNo: number): Promise<{
+  async downloadDietPlanDay(
+    memberId: number,
+    dietPlanId: number,
+    cycleNo: number,
+    dayNo: number
+  ): Promise<{
     buffer: string;
     fileName: string;
   }> {
-    const res = await this.httpService.get<IResponse<{
-      buffer: string;
-      fileName: string;
-    }>>(`${this.endpoint}/${memberId}/diet-plan/download-day/${dietPlanId}/${cycleNo}/${dayNo}`);
+    const res = await this.httpService.get<
+      IResponse<{
+        buffer: string;
+        fileName: string;
+      }>
+    >(
+      `${this.endpoint}/${memberId}/diet-plan/download-day/${dietPlanId}/${cycleNo}/${dayNo}`
+    );
     return res.data as { buffer: string; fileName: string };
   }
 
-  async sendDietPlanEmailCycle(memberId: number, dietPlanId: number, cycleNo: number): Promise<void> {
+  async sendDietPlanEmailCycle(
+    memberId: number,
+    dietPlanId: number,
+    cycleNo: number
+  ): Promise<void> {
     return await this.httpService.get<void>(
       `${this.endpoint}/${memberId}/diet-plan/send-email-cycle/${dietPlanId}/${cycleNo}`
     );
   }
 
-  async sendDietPlanEmailDay(memberId: number, dietPlanId: number, cycleNo: number, dayNo: number): Promise<void> {
+  async sendDietPlanEmailDay(
+    memberId: number,
+    dietPlanId: number,
+    cycleNo: number,
+    dayNo: number
+  ): Promise<void> {
     return await this.httpService.get<void>(
       `${this.endpoint}/${memberId}/diet-plan/send-email-day/${dietPlanId}/${cycleNo}/${dayNo}`
     );
   }
+
   // endregion
 }
 

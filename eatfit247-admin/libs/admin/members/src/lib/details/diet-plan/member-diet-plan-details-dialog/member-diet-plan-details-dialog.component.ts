@@ -4,6 +4,7 @@ import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/materia
 import { MatButtonModule } from '@angular/material/button';
 import { MatTableModule } from '@angular/material/table';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatIconModule } from '@angular/material/icon';
 import { IMemberDietDetail } from '@eatfit247-shared-lib';
 import { MembersApiService } from '../../../api.service';
 
@@ -21,6 +22,7 @@ export interface MemberDietPlanDetailsDialogData {
     MatButtonModule,
     MatTableModule,
     MatSnackBarModule,
+    MatIconModule,
   ],
   templateUrl: './member-diet-plan-details-dialog.component.html',
   styleUrl: './member-diet-plan-details-dialog.component.scss',
@@ -116,6 +118,23 @@ export class MemberDietPlanDetailsDialogComponent implements OnInit {
       console.error('Error sending email:', error);
       this.snackBar.open('Failed to send email', 'Close', { duration: 3000 });
     }
+  }
+
+  formatDate(date: string | Date | null | undefined): string {
+    if (!date) return '';
+    const dateObj = date instanceof Date ? date : new Date(date);
+    return dateObj.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric' 
+    });
+  }
+
+  getDietPlanTitle(): string {
+    if (this.dietPlanDetail.dayNo) {
+      return `Diet Plan - Cycle ${this.dietPlanDetail.cycleNo}, Day ${this.dietPlanDetail.dayNo}`;
+    }
+    return `Diet Plan - Cycle ${this.dietPlanDetail.cycleNo}`;
   }
 }
 

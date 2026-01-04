@@ -8,7 +8,6 @@ import { MemberPocketGuideComponent } from './details/pocket-guide/member-pocket
 import { MemberHealthIssuesComponent } from './details/health-issues/member-health-issues.component';
 import { MemberCallLogsComponent } from './details/call-logs/member-call-logs.component';
 import { MemberPaymentHistoryComponent } from './details/payment-history/member-payment-history.component';
-import { MemberDietHistoryComponent } from './details/diet-history/member-diet-history.component';
 import { MemberHealthParameterLogsComponent } from './details/health-parameter-logs/member-health-parameter-logs.component';
 import { MemberIssuesComponent } from './details/issues/member-issues.component';
 import { MemberDietPlanListComponent } from './details/diet-plan/member-diet-plan-list.component';
@@ -30,7 +29,6 @@ export const membersRoutes: Route[] = [
       { path: 'health-issues', component: MemberHealthIssuesComponent, title: 'Member Health Issues' },
       { path: 'call-logs', component: MemberCallLogsComponent, title: 'Member Call Logs' },
       { path: 'payment-history', component: MemberPaymentHistoryComponent, title: 'Member Payment History' },
-      { path: 'diet-history', component: MemberDietHistoryComponent, title: 'Member Diet History' },
       { path: 'diet-plan', component: MemberDietPlanListComponent, title: 'Member Diet Plan' },
       { path: 'diet-plan/:dietId/cycle/:cycleId', component: MemberDietPlanDetailComponent, title: 'Member Diet Plan Detail' },
       { path: 'diet-plan/:dietId/cycle/:cycleId/day/:dayNo', component: MemberDietPlanDetailComponent, title: 'Member Diet Plan Detail' },

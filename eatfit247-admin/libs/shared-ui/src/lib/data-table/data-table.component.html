@@ -1,5 +1,6 @@
 <div class="data-table-container">
   <!-- Search Bar and Header Actions -->
+  @if (hasHeaderContent()) {
   <div class="table-header">
     @if (config.showSearch !== false) {
     <mat-form-field appearance="outline" class="search-field">
@@ -25,6 +26,7 @@
     }
     <ng-content select="[headerActions]"></ng-content>
   </div>
+  }
 
   <!-- Loading Spinner -->
   @if (loading) {
@@ -168,33 +170,35 @@
           [style.text-align]="getActionsConfig()?.align || 'center'"
         >
           @if (getActionsConfig()?.asMenu) {
-            <ng-container>
-              <button
-                mat-icon-button
-                [matMenuTriggerFor]="rowMenu"
-                #menuTrigger="matMenuTrigger"
-                [matTooltip]="getActionsConfig()?.headerLabel || 'Actions'"
-                (click)="$event.stopPropagation()"
-              >
-                <mat-icon>{{ getActionsConfig()?.menuTriggerIcon || 'more_vert' }}</mat-icon>
-              </button>
-              <mat-menu #rowMenu="matMenu">
-                @for (action of getActions(); track action) {
-                  @if (isActionVisible(action, row)) {
-                    <button
-                      mat-menu-item
-                      [disabled]="isActionDisabled(action, row)"
-                      (click)="onActionClick(action, row, $event); menuTrigger.closeMenu()"
-                    >
-                      @if (action.icon) {
-                        <mat-icon>{{ action.icon }}</mat-icon>
-                      }
-                      <span>{{ action.label }}</span>
-                    </button>
+            @if (hasVisibleActions(row)) {
+              <ng-container>
+                <button
+                  mat-icon-button
+                  [matMenuTriggerFor]="rowMenu"
+                  #menuTrigger="matMenuTrigger"
+                  [matTooltip]="getActionsConfig()?.headerLabel || 'Actions'"
+                  (click)="$event.stopPropagation()"
+                >
+                  <mat-icon>{{ getActionsConfig()?.menuTriggerIcon || 'more_vert' }}</mat-icon>
+                </button>
+                <mat-menu #rowMenu="matMenu">
+                  @for (action of getActions(); track action) {
+                    @if (isActionVisible(action, row)) {
+                      <button
+                        mat-menu-item
+                        [disabled]="isActionDisabled(action, row)"
+                        (click)="onActionClick(action, row, $event); menuTrigger.closeMenu()"
+                      >
+                        @if (action.icon) {
+                          <mat-icon>{{ action.icon }}</mat-icon>
+                        }
+                        <span>{{ action.label }}</span>
+                      </button>
+                    }
                   }
-                }
-              </mat-menu>
-            </ng-container>
+                </mat-menu>
+              </ng-container>
+            }
           } @else {
             <div class="action-buttons">
               @for (action of getActions(); track action) {

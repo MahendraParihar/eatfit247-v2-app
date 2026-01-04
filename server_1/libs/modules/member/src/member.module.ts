@@ -4,7 +4,7 @@ import { ProgramPlanModule } from '@server_1/modules/program-plan';
 import { TaxEngineModule } from '@server_1/modules/tax-engine';
 import { AssessmentModule } from '@server_1/modules/assessment';
 import { RecipeModule } from '@server_1/modules/recipe';
-import { DietModule } from '@server_1/modules/diet';
+import { DietModule, TxnDietTemplateDietDetail } from '@server_1/modules/diet';
 import {
   MstAdminUser,
   modelRegistry,
@@ -59,6 +59,7 @@ import {
   MemberIssueController,
   MemberPaymentController,
   MemberDashboardController,
+  MemberDietPlanController,
 } from './controllers';
 import {
   MemberService,
@@ -121,6 +122,8 @@ modelRegistry.register([
       TxnMemberPayment,
       TxnMemberDietPlan,
       TxnMemberDietDetail,
+      // Diet template models
+      TxnDietTemplateDietDetail,
       // Core/platform models (allowed)
       MstFranchise,
       MstCountry,
@@ -141,6 +144,7 @@ modelRegistry.register([
     MemberIssueController,
     MemberPaymentController,
     MemberDashboardController,
+    MemberDietPlanController,
   ],
   providers: [
     MemberService,

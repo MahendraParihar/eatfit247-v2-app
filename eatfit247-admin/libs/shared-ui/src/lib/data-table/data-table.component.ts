@@ -170,6 +170,11 @@ export class DataTableComponent<T = any> implements OnInit, OnChanges {
     return [];
   }
 
+  hasVisibleActions(row: T): boolean {
+    const actions = this.getActions();
+    return actions.some(action => this.isActionVisible(action, row));
+  }
+
   getActionsConfig(): ITableActionsConfig | null {
     return this.config.actionsConfig?.column || null;
   }
@@ -331,6 +336,13 @@ export class DataTableComponent<T = any> implements OnInit, OnChanges {
 
   getPageIndex(): number {
     return this.paginator?.pageIndex ?? 0;
+  }
+
+  hasHeaderContent(): boolean {
+    // Show header if search is enabled
+    // Note: If headerActions are used without search, set showSearch to true
+    // and hide the search field with CSS, or add showTableHeader config option
+    return this.config.showSearch !== false;
   }
 }
 

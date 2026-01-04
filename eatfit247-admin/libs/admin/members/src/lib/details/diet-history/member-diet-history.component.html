@@ -4,13 +4,18 @@
     <mat-card-subtitle>Completed diet plans for this member</mat-card-subtitle>
   </mat-card-header>
   <mat-card-content>
-    <div *ngIf="loading()" class="loading-container">
-      <p>Loading diet history...</p>
-    </div>
-    <div *ngIf="!loading() && list().length === 0" class="empty-container">
-      <p>No completed diet plans found.</p>
-    </div>
-    <div *ngIf="!loading() && list().length > 0" class="diet-table">
+    @if (loading()) {
+      <div class="loading-container">
+        <p>Loading diet history...</p>
+      </div>
+    }
+    @if (!loading() && list().length === 0) {
+      <div class="empty-container">
+        <p>No completed diet plans found.</p>
+      </div>
+    }
+    @if (!loading() && list().length > 0) {
+      <div class="diet-table">
       <table mat-table [dataSource]="list()" class="mat-elevation-z8">
         <ng-container matColumnDef="program">
           <th mat-header-cell *matHeaderCellDef>Plan</th>
@@ -53,6 +58,7 @@
         <tr mat-header-row *matHeaderRowDef="columnsToDisplay;sticky: true"></tr>
         <tr mat-row *matRowDef="let d; columns: columnsToDisplay;"></tr>
       </table>
-    </div>
+      </div>
+    }
   </mat-card-content>
 </mat-card>

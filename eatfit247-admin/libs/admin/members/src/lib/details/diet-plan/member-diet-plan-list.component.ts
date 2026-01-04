@@ -1,101 +1,264 @@
-import { AfterViewInit, Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router } from '@angular/router';
-import { MatTableModule } from '@angular/material/table';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatMenuModule } from '@angular/material/menu';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatChipsModule } from '@angular/material/chips';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { animate, state, style, transition, trigger } from '@angular/animations';
-import { Subject, takeUntil } from 'rxjs';
+import { Component, inject, OnDestroy, OnInit, signal } from "@angular/core";
+import { CommonModule } from "@angular/common";
+import { ActivatedRoute, Router } from "@angular/router";
+import { MatDialog, MatDialogModule } from "@angular/material/dialog";
+import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
+import { MatTableModule } from "@angular/material/table";
+import { MatIconModule } from "@angular/material/icon";
+import { MatButtonModule } from "@angular/material/button";
+import { MatMenuModule } from "@angular/material/menu";
+import { MatTooltipModule } from "@angular/material/tooltip";
+import { Subject, takeUntil } from "rxjs";
+import { animate, state, style, transition, trigger } from "@angular/animations";
 import {
-  IMemberDietPlan,
-  IMemberDietDetail,
+  LoaderComponent,
+  EmptyStateComponent,
+  EmptyStateType,
+  ITableConfig,
+  ITableColumn,
+  ITableActionButton,
+  createdByUserFormatter,
+  updatedByUserFormatter
+} from "@shared";
+import { MembersApiService } from "../../api.service";
+import { MemberDietPlanDatasource } from "./member-diet-plan.datasource";
+import {
+  MemberDietPlanDetailsDialogComponent
+} from "./member-diet-plan-details-dialog/member-diet-plan-details-dialog.component";
+import {
+  DietPlanStatusEnum,
+  DietTypeEnum,
   ICyclePlan,
-  IDropdownItem,
-} from '@eatfit247-shared-lib';
-import { MembersApiService } from '../../api.service';
-import { MemberDietPlanDatasource } from './member-diet-plan.datasource';
-import { MemberDietPlanDetailsDialogComponent } from './member-diet-plan-details-dialog/member-diet-plan-details-dialog.component';
-
-// Diet plan status enum (matching shared-lib)
-enum DietPlanStatusEnum {
-  NOT_STARTED = 1,
-  IN_PROGRESS = 2,
-  COMPLETED = 3,
-}
-
-// Diet type enum (matching shared-lib)
-enum DietTypeEnum {
-  DAY = 'DAY',
-  CYCLE = 'CYCLE',
-}
+  IMemberDietDetail,
+  IMemberDietPlan
+} from "@eatfit247-shared-lib";
 
 @Component({
-  selector: 'lib-member-diet-plan-list',
+  selector: "lib-member-diet-plan-list",
   standalone: true,
   imports: [
     CommonModule,
-    MatTableModule,
-    MatButtonModule,
-    MatIconModule,
-    MatMenuModule,
-    MatTooltipModule,
-    MatChipsModule,
     MatDialogModule,
     MatSnackBarModule,
+    MatTableModule,
+    MatIconModule,
+    MatButtonModule,
+    MatMenuModule,
+    MatTooltipModule,
+    LoaderComponent,
+    EmptyStateComponent
   ],
-  templateUrl: './member-diet-plan-list.component.html',
-  styleUrl: './member-diet-plan-list.component.scss',
+  templateUrl: "./member-diet-plan-list.component.html",
+  styleUrl: "./member-diet-plan-list.component.scss",
   animations: [
-    trigger('detailExpand', [
-      state('collapsed', style({ height: '0px', minHeight: '0' })),
-      state('expanded', style({ height: '*' })),
-      transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)'))
+    trigger("detailExpand", [
+      state("collapsed", style({ height: "0px", minHeight: "0" })),
+      state("expanded", style({ height: "*" })),
+      transition(
+        "expanded <=> collapsed",
+        animate("225ms cubic-bezier(0.4, 0.0, 0.2, 1)")
+      )
     ])
   ]
 })
-export class MemberDietPlanListComponent implements OnInit, AfterViewInit, OnDestroy {
+export class MemberDietPlanListComponent implements OnInit, OnDestroy {
   memberId!: number;
-  totalCount = signal(0);
   list = signal<IMemberDietPlan[]>([]);
-  columnsToDisplay: string[] = ['program', 'programCategory', 'noOfCycle', 'dietPlanStatus', 'updatedBy'];
-  columnsToDisplayWithExpand = [...this.columnsToDisplay, 'expand'];
-  dietPlanStatusEnum = DietPlanStatusEnum;
-  dietTypeEnum = DietTypeEnum;
-  dietTemplateList = signal<IDropdownItem[]>([]);
-  expandArray = signal<boolean[]>([]);
+  loading = signal(false);
   dataSource!: MemberDietPlanDatasource;
+  EmptyStateType = EmptyStateType;
+  tableConfig!: ITableConfig<IMemberDietPlan>;
+  displayedColumns = [
+    "program",
+    "programCategory",
+    "noOfCycle",
+    "dietPlanStatus",
+    "updatedBy",
+    "actions"
+  ];
+  columnsToDisplayWithExpand = [...this.displayedColumns];
   private destroy$ = new Subject<void>();
-
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private apiService = inject(MembersApiService);
   private dialog = inject(MatDialog);
   private snackBar = inject(MatSnackBar);
+  completedPlanStatus = DietPlanStatusEnum.COMPLETED;
+  dietTypeEnum = DietTypeEnum;
+  dietPlanStatusEnum = DietPlanStatusEnum;
 
   constructor() {
     this.dataSource = new MemberDietPlanDatasource(this.apiService);
-    this.dataSource.totalCount.pipe(takeUntil(this.destroy$)).subscribe((count: number) => this.totalCount.set(count));
-    this.dataSource.dietTemplate.pipe(takeUntil(this.destroy$)).subscribe((list: IDropdownItem[]) => this.dietTemplateList.set(list));
-    this.dataSource.expanded.pipe(takeUntil(this.destroy$)).subscribe((list: boolean[]) => this.expandArray.set(list));
-    this.dataSource.data.pipe(takeUntil(this.destroy$)).subscribe((list: IMemberDietPlan[]) => this.list.set(list));
+    this.dataSource.data
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((list: IMemberDietPlan[]) => {
+        // Add isExpanded property to each row
+        const listWithExpand = list.map((item) => {
+          const isSmall = this.isChildListSmall(item);
+          return {
+            ...item,
+            isExpanded: isSmall // Auto-expand if child list is small
+          } as IMemberDietPlan & {
+            isExpanded: boolean;
+          };
+        });
+        this.list.set(listWithExpand);
+      });
+  }
+
+  private initializeTable(): void {
+    const columns: ITableColumn<IMemberDietPlan>[] = [
+      {
+        key: "expand",
+        label: "",
+        dataKey: "",
+        sortable: false,
+        width: "50px"
+      },
+      {
+        key: "programCategory",
+        label: "Program Category",
+        dataKey: "programCategory",
+        sortable: false
+      },
+      {
+        key: "program",
+        label: "Program",
+        dataKey: "program",
+        sortable: false
+      },
+      {
+        key: "noOfCycle",
+        label: "No. of Cycles",
+        dataKey: "noOfCycle",
+        type: "number",
+        sortable: false
+      },
+      {
+        key: "currentCycleNo",
+        label: "Current Cycle",
+        dataKey: "currentCycleNo",
+        type: "number",
+        sortable: false
+      },
+      {
+        key: "currentDayNo",
+        label: "Current Day",
+        dataKey: "currentDayNo",
+        type: "number",
+        sortable: false
+      },
+      {
+        key: "dietPlanStatus",
+        label: "Status",
+        dataKey: "dietPlanStatus",
+        sortable: false
+      },
+      {
+        key: "createdByUser",
+        label: "Created By",
+        dataKey: "createdByUser",
+        sortable: false,
+        formatter: createdByUserFormatter()
+      },
+      {
+        key: "updatedByUser",
+        label: "Updated By",
+        dataKey: "updatedByUser",
+        sortable: false,
+        formatter: updatedByUserFormatter()
+      },
+      {
+        key: "createdAt",
+        label: "Created At",
+        dataKey: "createdAt",
+        type: "date",
+        sortable: false
+      },
+      {
+        key: "updatedAt",
+        label: "Updated At",
+        dataKey: "updatedAt",
+        type: "date",
+        sortable: false
+      }
+    ];
+    const actions: ITableActionButton<IMemberDietPlan>[] = [
+      {
+        label: "Add Day Plan",
+        icon: "add",
+        color: "primary",
+        tooltip: "Add Day Plan",
+        visible: (row) => row.showDaily,
+        onClick: (row) => this.onAddClick(true, row),
+        asMenuItem: true
+      },
+      {
+        label: "Add Cycle Plan",
+        icon: "add",
+        color: "primary",
+        tooltip: "Add Cycle Plan",
+        visible: (row) => row.showWeekly,
+        onClick: (row) => this.onAddClick(false, row),
+        asMenuItem: true
+      },
+      {
+        label: "Mark as Completed",
+        icon: "check_circle",
+        color: "primary",
+        tooltip: "Mark as Completed",
+        visible: (row) => row.dietPlanStatusId !== this.completedPlanStatus,
+        onClick: (row) => this.onStatusChangeDialog(row),
+        confirm: {
+          message: "Are you sure you want to change the status?",
+          confirmText: "Yes",
+          cancelText: "No"
+        },
+        asMenuItem: true
+      },
+      {
+        label: "Edit",
+        icon: "edit",
+        color: "primary",
+        tooltip: "Edit Diet Plan",
+        visible: (row) => {
+          return !!(
+            row.cyclePlans &&
+            row.cyclePlans.length > 0 &&
+            row.upcomingCycle
+          );
+        },
+        onClick: (row) => this.onEditDietPlanFromRow(row)
+      }
+    ];
+    this.tableConfig = {
+      columns,
+      pageSize: 10,
+      pageSizeOptions: [10, 25, 50, 100],
+      showPagination: true,
+      showSearch: false,
+      actionsConfig: {
+        buttons: actions,
+        column: {
+          headerLabel: "Actions",
+          align: "right",
+          asMenu: true,
+          menuTriggerIcon: "more_vert"
+        }
+      }
+    };
   }
 
   async ngOnInit(): Promise<void> {
-    this.route.parent?.params.pipe(takeUntil(this.destroy$)).subscribe((params) => {
-      this.memberId = +params['id'];
-      if (this.memberId) {
-        this.loadData();
-      }
-    });
-  }
-
-  ngAfterViewInit(): void {
-    // Material table initialization handled by dataSource
+    this.initializeTable();
+    this.route.parent?.params
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((params) => {
+        this.memberId = +params["id"];
+        if (this.memberId) {
+          this.loadData();
+        }
+      });
   }
 
   ngOnDestroy(): void {
@@ -104,92 +267,155 @@ export class MemberDietPlanListComponent implements OnInit, AfterViewInit, OnDes
   }
 
   onAddClick(isDaily: boolean, dietPlan: IMemberDietPlan) {
-    const planId = (dietPlan as any).memberDietPlanId || (dietPlan as any).id;
+    const planId = dietPlan.memberDietPlanId;
     if (isDaily) {
-      this.router.navigate(['../diet-plan', planId, 'cycle', dietPlan.upcomingCycle, 'day', dietPlan.upcomingDay], {
-        relativeTo: this.route.parent
-      });
+      this.router.navigate(
+        [
+          "diet-plan",
+          planId,
+          "cycle",
+          dietPlan.upcomingCycle,
+          "day",
+          dietPlan.upcomingDay
+        ],
+        {
+          relativeTo: this.route.parent
+        }
+      );
     } else {
-      this.router.navigate(['../diet-plan', planId, 'cycle', dietPlan.upcomingCycle], {
-        relativeTo: this.route.parent
-      });
+      this.router.navigate(
+        ["diet-plan", planId, "cycle", dietPlan.upcomingCycle],
+        {
+          relativeTo: this.route.parent
+        }
+      );
     }
   }
 
   onEditDailyDietPlan(dietPlan: IMemberDietDetail) {
-    const planId = (dietPlan as any).dietPlanId;
+    const planId = dietPlan.memberDietPlanId;
     if (planId && dietPlan.dayNo) {
-      this.router.navigate(['../diet-plan', planId, 'cycle', dietPlan.cycleNo, 'day', dietPlan.dayNo], {
-        relativeTo: this.route.parent
-      });
+      this.router.navigate(
+        ["diet-plan", planId, "cycle", dietPlan.cycleNo, "day", dietPlan.dayNo],
+        {
+          relativeTo: this.route.parent
+        }
+      );
     }
   }
 
   onEditCycleDietPlan(dietPlanId: number, dietPlan: ICyclePlan) {
-    this.router.navigate(['../diet-plan', dietPlanId, 'cycle', dietPlan.cycleNo], {
+    this.router.navigate(["diet-plan", dietPlanId, "cycle", dietPlan.cycleNo], {
       relativeTo: this.route.parent
     });
   }
 
-  copyCycleDietPlan(dietPlanId: number, cyclePlan: ICyclePlan, dietPlan: IMemberDietPlan) {
+  copyCycleDietPlan(cyclePlan: ICyclePlan, dietPlan: IMemberDietPlan) {
+    console.log(cyclePlan, dietPlan);
     if (dietPlan.upcomingCycle) {
-      this.router.navigate(['../diet-plan', dietPlanId, 'cycle', dietPlan.upcomingCycle, 'copy', cyclePlan.cycleNo], {
-        relativeTo: this.route.parent
-      });
+      this.router.navigate(
+        [
+          "diet-plan",
+          dietPlan.memberDietPlanId,
+          "cycle",
+          dietPlan.upcomingCycle,
+          "copy",
+          cyclePlan.cycleNo
+        ],
+        {
+          relativeTo: this.route.parent
+        }
+      );
     }
   }
 
-  copyDayDietPlan(dayPlan: IMemberDietDetail, dietPlan: IMemberDietPlan) {
-    const planId = (dayPlan as any).dietPlanId;
-    if (planId && dietPlan.upcomingCycle && dietPlan.upcomingDay && dayPlan.cycleNo && dayPlan.dayNo) {
-      this.router.navigate(['../diet-plan', planId, 'cycle', dietPlan.upcomingCycle, 'day', dietPlan.upcomingDay, 'copy', dayPlan.cycleNo, dayPlan.dayNo], {
-        relativeTo: this.route.parent
-      });
+  copyDayDietPlan(cyclePlan: IMemberDietDetail, dietPlan: IMemberDietPlan) {
+    if (
+      dietPlan.memberDietPlanId &&
+      dietPlan.upcomingCycle &&
+      dietPlan.upcomingDay &&
+      cyclePlan.cycleNo &&
+      cyclePlan.dayNo
+    ) {
+      this.router.navigate(
+        [
+          "diet-plan",
+          dietPlan.memberDietPlanId,
+          "cycle",
+          dietPlan.upcomingCycle,
+          "day",
+          dietPlan.upcomingDay,
+          "copy",
+          cyclePlan.cycleNo,
+          cyclePlan.dayNo
+        ],
+        {
+          relativeTo: this.route.parent
+        }
+      );
     }
   }
 
   onStatusChangeDialog(item: IMemberDietPlan) {
-    if (confirm('Are you sure you want to change the status?')) {
-      this.updateStatus((item as any).id || item.memberId);
+    if (confirm("Are you sure you want to change the status?")) {
+      this.updateStatus(item.memberDietPlanId);
     }
   }
 
   async onDeleteDietPlan(dietPlan: IMemberDietDetail) {
-    if (confirm('Are you sure you want to delete this diet plan?')) {
+    if (confirm("Are you sure you want to delete this diet plan?")) {
       await this.deleteDietPlanTask(dietPlan);
     }
   }
 
   async deleteDietPlanTask(dietPlan: IMemberDietDetail) {
     try {
-      const planId = (dietPlan as any).dietPlanId;
+      const planId = dietPlan.memberDietPlanId;
       if (!planId) return;
-      
       if (dietPlan.dayNo) {
-        await this.apiService.deleteDietPlanDay(this.memberId, planId, dietPlan.cycleNo, dietPlan.dayNo);
+        await this.apiService.deleteDietPlanDay(
+          this.memberId,
+          planId,
+          dietPlan.cycleNo,
+          dietPlan.dayNo
+        );
       } else {
-        await this.apiService.deleteDietPlanCycle(this.memberId, planId, dietPlan.cycleNo);
+        await this.apiService.deleteDietPlanCycle(
+          this.memberId,
+          planId,
+          dietPlan.cycleNo
+        );
       }
-      this.snackBar.open('Diet plan deleted successfully', 'Close', { duration: 3000 });
+      this.snackBar.open("Diet plan deleted successfully", "Close", {
+        duration: 3000
+      });
       this.loadData();
     } catch (error) {
-      console.error('Error deleting diet plan:', error);
-      this.snackBar.open('Failed to delete diet plan', 'Close', { duration: 3000 });
+      console.error("Error deleting diet plan:", error);
+      this.snackBar.open("Failed to delete diet plan", "Close", {
+        duration: 3000
+      });
     }
   }
 
   async loadData(): Promise<void> {
-    await this.dataSource.loadData(this.memberId);
+    this.loading.set(true);
+    try {
+      await this.dataSource.loadData(this.memberId);
+    } finally {
+      this.loading.set(false);
+    }
   }
 
   onViewDietPlanClick(dietPlanDetails: IMemberDietDetail) {
     const dialogRef = this.dialog.open(MemberDietPlanDetailsDialogComponent, {
-      width: '550px',
+      width: "800px",
+      maxWidth: "90vw",
       data: { memberId: this.memberId, dietPlanDetails: dietPlanDetails },
       closeOnNavigation: false,
-      disableClose: true
+      disableClose: false
     });
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         this.loadData();
       }
@@ -197,7 +423,7 @@ export class MemberDietPlanListComponent implements OnInit, AfterViewInit, OnDes
   }
 
   viewCycleDietPlan(cyclePlanItem: ICyclePlan) {
-    if (cyclePlanItem.type === 'CYCLE') {
+    if (cyclePlanItem.type === "CYCLE") {
       if (cyclePlanItem.dietPlans && cyclePlanItem.dietPlans.length > 0) {
         this.onViewDietPlanClick(cyclePlanItem.dietPlans[0]);
       }
@@ -208,22 +434,27 @@ export class MemberDietPlanListComponent implements OnInit, AfterViewInit, OnDes
     if (!dietPlanId) return;
     try {
       await this.apiService.updateDietPlanStatus(this.memberId, dietPlanId);
-      this.snackBar.open('Status updated successfully', 'Close', { duration: 3000 });
+      this.snackBar.open("Status updated successfully", "Close", {
+        duration: 3000
+      });
       this.loadData();
     } catch (error) {
-      console.error('Error updating status:', error);
-      this.snackBar.open('Failed to update status', 'Close', { duration: 3000 });
+      console.error("Error updating status:", error);
+      this.snackBar.open("Failed to update status", "Close", {
+        duration: 3000
+      });
     }
   }
 
-  async downloadDietPlan(dietPlanDetail: ICyclePlan, index: number): Promise<void> {
+  async downloadDietPlan(
+    dietPlanDetail: ICyclePlan,
+    index: number
+  ): Promise<void> {
     try {
       const plan = dietPlanDetail.dietPlans[index];
       if (!plan) return;
-      
-      const planId = (plan as any).dietPlanId;
+      const planId = plan.memberDietPlanId;
       if (!planId) return;
-      
       let fileData;
       if (dietPlanDetail.type === DietTypeEnum.CYCLE) {
         fileData = await this.apiService.downloadDietPlanCycle(
@@ -245,21 +476,155 @@ export class MemberDietPlanListComponent implements OnInit, AfterViewInit, OnDes
         this.downloadTemplate(fileData.buffer, fileData.fileName);
       }
     } catch (error) {
-      console.error('Error downloading diet plan:', error);
-      this.snackBar.open('Failed to download diet plan', 'Close', { duration: 3000 });
+      console.error("Error downloading diet plan:", error);
+      this.snackBar.open("Failed to download diet plan", "Close", {
+        duration: 3000
+      });
     }
   }
 
   downloadTemplate(base64String: string, fileName: string) {
     if (base64String) {
-      const mediaType = 'data:application/pdf;base64,';
-      const link = document.createElement('a');
-      link.setAttribute('target', '_blank');
-      link.setAttribute('href', mediaType + base64String);
-      link.setAttribute('download', `${fileName}`);
+      const mediaType = "data:application/pdf;base64,";
+      const link = document.createElement("a");
+      link.setAttribute("target", "_blank");
+      link.setAttribute("href", mediaType + base64String);
+      link.setAttribute("download", `${fileName}`);
       link.click();
       link.remove();
     }
+  }
+
+  async onDownloadDietPlanFromRow(row: IMemberDietPlan): Promise<void> {
+    try {
+      if (!row.cyclePlans || row.cyclePlans.length === 0) {
+        this.snackBar.open("No diet plan details available", "Close", {
+          duration: 3000
+        });
+        return;
+      }
+      // Get the first cycle plan
+      const firstCycle = row.cyclePlans[0] as ICyclePlan;
+      if (
+        !firstCycle ||
+        !firstCycle.dietPlans ||
+        firstCycle.dietPlans.length === 0
+      ) {
+        this.snackBar.open("No diet plan details available", "Close", {
+          duration: 3000
+        });
+        return;
+      }
+      // Download the first diet plan in the first cycle
+      await this.downloadDietPlan(firstCycle, 0);
+    } catch (error) {
+      console.error("Error downloading diet plan:", error);
+      this.snackBar.open("Failed to download diet plan", "Close", {
+        duration: 3000
+      });
+    }
+  }
+
+  onEditDietPlanFromRow(row: IMemberDietPlan): void {
+    const planId = row.memberDietPlanId;
+    if (!planId) {
+      this.snackBar.open("Invalid diet plan", "Close", { duration: 3000 });
+      return;
+    }
+    if (row.upcomingCycle && row.upcomingDay) {
+      // Navigate to day plan edit
+      this.router.navigate(
+        [
+          "diet-plan",
+          planId,
+          "cycle",
+          row.upcomingCycle,
+          "day",
+          row.upcomingDay
+        ],
+        {
+          relativeTo: this.route.parent
+        }
+      );
+    } else if (row.upcomingCycle) {
+      // Navigate to cycle plan edit
+      this.router.navigate(["diet-plan", planId, "cycle", row.upcomingCycle], {
+        relativeTo: this.route.parent
+      });
+    } else if (row.cyclePlans && row.cyclePlans.length > 0) {
+      // Use the first cycle
+      const firstCycle = row.cyclePlans[0] as ICyclePlan;
+      if (firstCycle.dietPlans && firstCycle.dietPlans.length > 0) {
+        const firstDietPlan = firstCycle.dietPlans[0] as IMemberDietDetail;
+        if (firstDietPlan.dayNo) {
+          this.onEditDailyDietPlan(firstDietPlan);
+        } else {
+          this.onEditCycleDietPlan(planId, firstCycle);
+        }
+      }
+    }
+  }
+
+  hasCyclePlans(row: IMemberDietPlan): boolean {
+    return row.cyclePlans && row.cyclePlans.length > 0;
+  }
+
+  async onDownloadCyclePlan(
+    cyclePlan: ICyclePlan,
+    _row: IMemberDietPlan
+  ): Promise<void> {
+    await this.downloadDietPlan(cyclePlan, 0);
+  }
+
+  onEditCyclePlan(cyclePlan: ICyclePlan, row: IMemberDietPlan): void {
+    const planId = row.memberDietPlanId;
+    if (!planId) return;
+    this.onEditCycleDietPlan(planId, cyclePlan);
+  }
+
+  async onDeleteCyclePlan(
+    cyclePlan: ICyclePlan,
+    _row: IMemberDietPlan
+  ): Promise<void> {
+    if (!cyclePlan.dietPlans || cyclePlan.dietPlans.length === 0) return;
+    const dietPlan = cyclePlan.dietPlans[0] as IMemberDietDetail;
+    if (confirm("Are you sure you want to delete this diet plan?")) {
+      await this.deleteDietPlanTask(dietPlan);
+    }
+  }
+
+  formatDateRange(startDate: string | Date, endDate: string | Date): string {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const formatDate = (date: Date) => {
+      const day = date.getDate().toString().padStart(2, "0");
+      const month = date.toLocaleString("default", { month: "short" });
+      const year = date.getFullYear();
+      return `${day}-${month}-${year}`;
+    };
+    return `${formatDate(start)} - ${formatDate(end)}`;
+  }
+
+  /**
+   * Counts the total number of child items (dietPlans) across all cyclePlans
+   */
+  getChildItemCount(dietPlan: IMemberDietPlan): number {
+    if (!dietPlan.cyclePlans || dietPlan.cyclePlans.length === 0) {
+      return 0;
+    }
+    return dietPlan.cyclePlans.reduce((total, cyclePlan: ICyclePlan) => {
+      const dietPlansCount = cyclePlan.dietPlans?.length || 0;
+      return total + dietPlansCount;
+    }, 0);
+  }
+
+  /**
+   * Checks if the child list is small (3 or fewer items)
+   * Returns true if the list should be auto-expanded without showing expand button
+   */
+  isChildListSmall(dietPlan: IMemberDietPlan): boolean {
+    const childCount = this.getChildItemCount(dietPlan);
+    return childCount > 0 && childCount <= 3;
   }
 }
 

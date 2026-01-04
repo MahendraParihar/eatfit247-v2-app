@@ -1,38 +1,70 @@
-<h4>Diet Plan - Cycle {{dietPlanDetail.cycleNo}}
-  ({{dietPlanDetail.startDate | date:'shortDate'}})</h4>
-<mat-dialog-content class="diet-plan-dialog">
-  <table mat-table *ngIf="dietPlanDetail && dietPlanDetail.dietPlan" [dataSource]="dietPlanDetail.dietPlan" class="dp-table">
-    <ng-container matColumnDef="category">
-      <th *matHeaderCellDef mat-header-cell> Recipe Category</th>
-      <td *matCellDef="let item" mat-cell><strong>{{item.recipeCategory}}</strong></td>
-    </ng-container>
-    <ng-container matColumnDef="detail">
-      <th *matHeaderCellDef mat-header-cell>Details</th>
-      <td *matCellDef="let item" mat-cell>
-        <div [innerHTML]="item.dietDetail"></div>
-      </td>
-    </ng-container>
-    <ng-container matColumnDef="recipes">
-      <th *matHeaderCellDef mat-header-cell> Recipes</th>
-      <td *matCellDef="let item" mat-cell>
-        <ul *ngIf="item.recipeList">
-          <li *ngFor="let r of item.recipeList">{{r.label || r.name}}</li>
-        </ul>
-      </td>
-    </ng-container>
-    <tr *matHeaderRowDef="displayColumns;sticky: true" mat-header-row></tr>
-    <tr *matRowDef="let myRowData; columns: displayColumns" mat-row></tr>
-  </table>
-</mat-dialog-content>
-<mat-dialog-actions align="end">
-  <button (click)="onClose()" class="round-btn" mat-raised-button>
-    Close
-  </button>
-  <button (click)="sendEmail()" class="round-btn gradient-btn" color="primary" mat-raised-button>
-    Send Mail
-  </button>
-  <button (click)="downloadDietPlan()" class="round-btn gradient-btn" color="primary" mat-raised-button>
-    Download
-  </button>
-</mat-dialog-actions>
+<div class="diet-plan-dialog-container">
+  <!-- Dialog Header -->
+  <div class="dialog-header">
+    <div class="header-content">
+      <div class="header-info">
+        <h2 mat-dialog-title class="diet-plan-title">{{ getDietPlanTitle() }}</h2>
+        <div class="date-range">
+          <span class="date-label">Start Date:</span>
+          <span class="date-value">{{ formatDate(dietPlanDetail.startDate) }}</span>
+          <span class="date-separator">•</span>
+          <span class="date-label">End Date:</span>
+          <span class="date-value">{{ formatDate(dietPlanDetail.endDate) }}</span>
+        </div>
+      </div>
+      <button type="button" mat-icon-button (click)="onClose()" class="close-button" aria-label="Close dialog">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <!-- Dialog Content -->
+  <mat-dialog-content class="diet-plan-content">
+    @if (dietPlanDetail && dietPlanDetail.dietPlan) {
+      <table mat-table [dataSource]="dietPlanDetail.dietPlan" class="dp-table">
+        <ng-container matColumnDef="category">
+          <th *matHeaderCellDef mat-header-cell>Recipe Category</th>
+          <td *matCellDef="let item" mat-cell>
+            <strong>{{ item.recipeCategory }}</strong>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="detail">
+          <th *matHeaderCellDef mat-header-cell>Details</th>
+          <td *matCellDef="let item" mat-cell>
+            <div [innerHTML]="item.dietDetail"></div>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="recipes">
+          <th *matHeaderCellDef mat-header-cell>Recipes</th>
+          <td *matCellDef="let item" mat-cell>
+            @if (item.recipeList) {
+              <ul class="recipe-list">
+                @for (r of item.recipeList; track $index) {
+                  <li>{{ r.label || r.name }}</li>
+                }
+              </ul>
+            }
+          </td>
+        </ng-container>
+        <tr *matHeaderRowDef="displayColumns;sticky: true" mat-header-row></tr>
+        <tr *matRowDef="let myRowData; columns: displayColumns" mat-row></tr>
+      </table>
+    }
+  </mat-dialog-content>
+
+  <!-- Dialog Footer -->
+  <mat-dialog-actions align="end" class="dialog-footer">
+    <button type="button" (click)="onClose()" mat-button class="action-button">
+      Close
+    </button>
+    <button type="button" (click)="sendEmail()" mat-raised-button color="primary" class="action-button">
+      <mat-icon>email</mat-icon>
+      Send Mail
+    </button>
+    <button type="button" (click)="downloadDietPlan()" mat-raised-button color="primary" class="action-button">
+      <mat-icon>download</mat-icon>
+      Download
+    </button>
+  </mat-dialog-actions>
+</div>
 

@@ -30,7 +30,6 @@ export interface IMemberDietPlan extends IBasicMemberDietPlan {
   showDaily: boolean;
   showWeekly: boolean;
   memberDietPlanId: number;
-  memberName: string;
   createdBy: number;
   updatedBy: number;
   createdAt: Date;
@@ -48,7 +47,7 @@ export interface ICyclePlan {
 }
 
 export interface IMemberDietDetail {
-  memberDietDetailId: number;
+  memberDietDetailId?: number;
   memberDietPlanId: number;
   startDate?: string | Date;
   endDate?: string | Date;
@@ -74,7 +73,7 @@ export interface IMemberDietPlanDetail {
   startDate: Date;
   endDate: Date;
   cycleNo: number;
-  dayNo: number;
+  dayNo?: number;
   dietPlanId: number;
   dietPlan: IDietPlanDetail[];
 }

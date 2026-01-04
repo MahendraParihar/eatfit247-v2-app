@@ -9,15 +9,8 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Subject, takeUntil } from 'rxjs';
-import { IMemberDietPlan } from '@eatfit247-shared-lib';
+import { DietPlanStatusEnum, IMemberDietPlan } from '@eatfit247-shared-lib';
 import { MembersApiService } from '../../api.service';
-
-// Diet plan status enum (matching shared-lib)
-enum DietPlanStatusEnum {
-  NOT_STARTED = 1,
-  IN_PROGRESS = 2,
-  COMPLETED = 3,
-}
 
 @Component({
   selector: 'lib-member-diet-history',

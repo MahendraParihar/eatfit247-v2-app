@@ -1,41 +1,230 @@
-.diet-plan-dialog {
-  .dp-table {
-    min-width: auto;
-    width: 100%;
+.diet-plan-dialog-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 800px;
+  max-height: 90vh;
+  background: var(--md-sys-color-surface, #fff);
+  overflow: hidden;
+}
 
-    .mat-header-row {
-      width: 100%;
-      height: 40px;
+// Dialog Header
+.dialog-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--md-sys-color-outline-variant, rgba(0, 0, 0, 0.12));
+  background: var(--md-sys-color-surface-container-high, #f5f5f5);
+  flex-shrink: 0;
+
+  .header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+
+    .header-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+
+      .diet-plan-title {
+        margin: 0;
+        font-size: 1.25rem;
+        font-weight: 500;
+        line-height: 1.4;
+        color: var(--md-sys-color-on-surface, #1c1b1f);
+      }
+
+      .date-range {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.875rem;
+        color: var(--md-sys-color-on-surface-variant, rgba(0, 0, 0, 0.6));
+
+        .date-label {
+          font-weight: 500;
+        }
+
+        .date-value {
+          color: var(--md-sys-color-on-surface, rgba(0, 0, 0, 0.87));
+        }
+
+        .date-separator {
+          margin: 0 4px;
+          opacity: 0.5;
+        }
+      }
     }
 
-    .mat-row {
-      width: 100%;
-    }
+    .close-button {
+      flex-shrink: 0;
+      color: var(--md-sys-color-on-surface-variant, rgba(0, 0, 0, 0.6));
 
-    .mat-column-category {
-      min-width: 130px;
-      flex: 0 0 25%;
-      cursor: pointer;
-    }
-
-    .mat-column-detail {
-      flex: 0 0 25%;
-    }
-
-    .mat-column-recipes {
-      min-width: 150px;
-      flex: 0 0 50%;
+      &:hover {
+        background-color: var(--md-sys-color-surface-container-highest, rgba(0, 0, 0, 0.05));
+      }
     }
   }
 }
 
-.round-btn {
-  border-radius: 20px;
-  margin-left: 8px;
+// Dialog Content
+.diet-plan-content {
+  padding: 24px;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+  margin: 0;
+
+  .dp-table {
+    width: 100%;
+    background: var(--md-sys-color-surface, #fff);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+    .mat-header-row {
+      background: var(--md-sys-color-surface-container-high, #f5f5f5);
+      height: 48px;
+
+      .mat-header-cell {
+        font-weight: 600;
+        font-size: 0.875rem;
+        color: var(--md-sys-color-on-surface, rgba(0, 0, 0, 0.87));
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 0 16px;
+        border-bottom: 2px solid var(--md-sys-color-outline-variant, rgba(0, 0, 0, 0.12));
+      }
+    }
+
+    .mat-row {
+      transition: background-color 0.2s ease;
+
+      &:hover {
+        background-color: var(--md-sys-color-surface-container-low, rgba(0, 0, 0, 0.02));
+      }
+
+      &:not(:last-child) {
+        border-bottom: 1px solid var(--md-sys-color-outline-variant, rgba(0, 0, 0, 0.12));
+      }
+
+      .mat-cell {
+        padding: 16px;
+        font-size: 0.875rem;
+        color: var(--md-sys-color-on-surface, rgba(0, 0, 0, 0.87));
+        line-height: 1.5;
+        vertical-align: top;
+
+        strong {
+          font-weight: 600;
+          color: var(--md-sys-color-on-surface, rgba(0, 0, 0, 0.87));
+        }
+
+        div[innerHTML] {
+          word-wrap: break-word;
+          white-space: pre-wrap;
+        }
+      }
+    }
+
+    .mat-column-category {
+      min-width: 150px;
+      flex: 0 0 25%;
+      width: 25%;
+    }
+
+    .mat-column-detail {
+      flex: 0 0 40%;
+      width: 40%;
+    }
+
+    .mat-column-recipes {
+      min-width: 200px;
+      flex: 0 0 35%;
+      width: 35%;
+
+      .recipe-list {
+        margin: 0;
+        padding-left: 20px;
+        list-style-type: disc;
+
+        li {
+          margin-bottom: 4px;
+          line-height: 1.5;
+        }
+      }
+    }
+  }
 }
 
-.gradient-btn {
-  background: linear-gradient(45deg, #2196F3, #21CBF3);
-  color: white;
+// Dialog Footer
+.dialog-footer {
+  padding: 16px 24px;
+  border-top: 1px solid var(--md-sys-color-outline-variant, rgba(0, 0, 0, 0.12));
+  background: var(--md-sys-color-surface-container-high, #f5f5f5);
+  margin: 0;
+  min-height: auto;
+  flex-shrink: 0;
+  gap: 8px;
+
+  .action-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-transform: none;
+    font-weight: 500;
+    padding: 0 16px;
+    min-width: auto;
+
+    mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+      line-height: 18px;
+    }
+
+    &[mat-button] {
+      color: var(--md-sys-color-on-surface, rgba(0, 0, 0, 0.87));
+    }
+
+    &[mat-raised-button] {
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+  }
 }
 
+// Dark theme support
+.dark-theme {
+  .dialog-header {
+    .header-content {
+      .header-info {
+        .diet-plan-title {
+          color: var(--md-sys-color-on-surface, #e6e6e6);
+        }
+
+        .date-range {
+          .date-value {
+            color: var(--md-sys-color-on-surface, #e6e6e6);
+          }
+        }
+      }
+    }
+  }
+
+  .diet-plan-content {
+    .dp-table {
+      .mat-row {
+        .mat-cell {
+          color: var(--md-sys-color-on-surface, #e6e6e6);
+        }
+      }
+    }
+  }
+
+  .dialog-footer {
+    .action-button[mat-button] {
+      color: var(--md-sys-color-on-surface, #e6e6e6);
+    }
+  }
+}
