@@ -8,6 +8,7 @@ import {
   ConfigParam,
   TableEnum,
   IManageAddress,
+  IDropdownItem,
 } from '@eatfit247-shared-lib';
 import {
   CommonFunctionsUtil,
@@ -267,6 +268,24 @@ export class AdminUserService {
       updateObj.deactivationReason = deactivationReason;
     }
     await this.adminUserRepository.update(updateObj, { where: { adminId: id } });
+  }
+
+  public async getNutritionistDropdown(): Promise<IDropdownItem[]> {
+    const nutritionists = await this.adminUserRepository.findAll({
+      where: { active: true },
+      order: [
+        ['firstName', 'ASC'],
+        ['lastName', 'ASC'],
+      ],
+      attributes: ['adminId', 'firstName', 'lastName'],
+      raw: true,
+      nest: true,
+    });
+    return nutritionists.map((n: any) => ({
+      id: n.adminId,
+      label: `${n.firstName} ${n.lastName}`.trim(),
+      selected: false,
+    }));
   }
 }
 

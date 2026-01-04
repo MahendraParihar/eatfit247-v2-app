@@ -3,7 +3,7 @@ import { JwtAuthGuard, CurrentUser, RequestedIp } from '@server_1/core';
 import { BasicSearchDto } from '@server_1/shared-dto';
 import { AdminUserService } from '../../services';
 import { CreateAdminUserDto } from '../../dto';
-import { ITableList, IAdminUser, IResponse } from '@eatfit247-shared-lib';
+import { ITableList, IAdminUser, IResponse, IDropdownItem } from '@eatfit247-shared-lib';
 
 @Controller('admin-user')
 @UseGuards(JwtAuthGuard)
@@ -48,6 +48,11 @@ export class AdminUserController {
     @RequestedIp() requestedIp: string,
   ): Promise<void> {
     await this.service.changeStatus(id, body.active, body.deactivationReason || null, requestedIp, currentUser.userId || currentUser.adminId);
+  }
+
+  @Get('nutritionist/dropdown')
+  async getNutritionistDropdown(): Promise<IDropdownItem[]> {
+    return await this.service.getNutritionistDropdown();
   }
 }
 

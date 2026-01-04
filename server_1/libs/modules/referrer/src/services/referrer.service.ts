@@ -9,6 +9,7 @@ import {
   ConfigParam,
   TableEnum,
   IManageAddress,
+  IDropdownItem,
 } from '@eatfit247-shared-lib';
 import { SearchUtil, CommonFunctionsUtil, AppConfigService } from '@server_1/core';
 import { AddressService } from '@server_1/platform';
@@ -176,6 +177,20 @@ export class ReferrerService {
       modifiedIp: cIp,
     };
     await this.referrerRepository.update(updateObj, { where: { referrerId: id } });
+  }
+
+  public async getReferrerList(): Promise<IDropdownItem[]> {
+    const tempList = await this.referrerRepository.scope('list').findAll({
+      where: { active: true },
+      order: [['name', 'ASC']],
+      raw: true,
+      nest: true,
+    });
+    return tempList.map((t: any) => ({
+      id: t.referrerId,
+      label: t.name,
+      isActive: t.active,
+    }));
   }
 }
 

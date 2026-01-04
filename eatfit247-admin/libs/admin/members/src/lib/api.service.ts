@@ -87,7 +87,7 @@ export class MembersApiService extends ApiBaseService {
 
   async getNutritionistDropdown(): Promise<IDropdownItem[]> {
     const res = await this.httpService.get<IResponse<IDropdownItem[]>>(
-      '/nutritionist/dropdown'
+      '/admin-user/nutritionist/dropdown'
     );
     return res.data as IDropdownItem[];
   }

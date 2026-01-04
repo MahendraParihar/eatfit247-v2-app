@@ -3,7 +3,7 @@ import { JwtAuthGuard, CurrentUser, RequestedIp } from '@server_1/core';
 import { BasicSearchDto, UpdateActiveDto } from '@server_1/shared-dto';
 import { ReferrerService } from '../../services';
 import { CreateReferrerDto } from '../../dto';
-import { ITableList, IReferrer, IResponse } from '@eatfit247-shared-lib';
+import { ITableList, IReferrer, IResponse, IDropdownItem } from '@eatfit247-shared-lib';
 
 @Controller('referrer')
 @UseGuards(JwtAuthGuard)
@@ -47,6 +47,11 @@ export class ReferrerController {
     @RequestedIp() requestedIp: string,
   ): Promise<void> {
     await this.service.changeStatus(id, body.active, requestedIp, currentUser.userId || currentUser.adminId);
+  }
+
+  @Get('dropdown')
+  async getDropdown(): Promise<IDropdownItem[]> {
+    return await this.service.getReferrerList();
   }
 }
 
