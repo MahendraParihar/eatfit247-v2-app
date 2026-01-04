@@ -238,8 +238,6 @@ export class DietTemplateDetailComponent implements OnInit, OnDestroy {
     }
     try {
       const payload = {
-        startDate: null,
-        endDate: null,
         cycleNo: this.formGroup.value.cycleNo,
         dietTemplateId: this.formGroup.value.dietTemplateId,
         dietPlan: this.formGroup.value.dietPlan,

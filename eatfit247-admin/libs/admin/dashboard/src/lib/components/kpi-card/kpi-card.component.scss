@@ -21,7 +21,7 @@
     width: 56px;
     height: 56px;
     border-radius: 12px;
-    background: linear-gradient(135deg, #ff9771, #ff81a3);
+    background: linear-gradient(135deg, var(--md-sys-color-primary), var(--md-sys-color-tertiary));
     flex-shrink: 0;
 
     .kpi-icon {

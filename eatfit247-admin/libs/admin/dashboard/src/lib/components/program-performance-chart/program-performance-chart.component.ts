@@ -60,20 +60,35 @@ export class ProgramPerformanceChartComponent implements OnInit, OnChanges, OnDe
     }
   }
 
+  private getCssVariable(name: string): string {
+    return getComputedStyle(document.documentElement)
+      .getPropertyValue(name)
+      .trim();
+  }
+
   private updateChart(): void {
     if (!this.data || this.data.length === 0 || !this.chartInstance) return;
 
     const top5 = this.data.slice(0, 5);
-    const isDark = document.body.classList.contains('dark-theme');
-    const colors = ['#fc2305', '#1976d2', '#1b8f5a', '#f29900', '#9c27b0'];
+    const colors = [
+      this.getCssVariable('--md-sys-color-primary'),
+      this.getCssVariable('--status-info'),
+      this.getCssVariable('--status-success'),
+      this.getCssVariable('--status-warning'),
+      this.getCssVariable('--md-sys-color-tertiary'),
+    ];
+
+    const surfaceColor = this.getCssVariable('--md-sys-color-surface');
+    const outlineColor = this.getCssVariable('--md-sys-color-outline');
+    const onSurfaceColor = this.getCssVariable('--md-sys-color-on-surface');
 
     const option = {
       tooltip: {
         trigger: 'item',
-        backgroundColor: isDark ? '#1e1e1e' : '#ffffff',
-        borderColor: isDark ? '#3a3a3a' : '#e0e0e0',
+        backgroundColor: surfaceColor,
+        borderColor: outlineColor,
         textStyle: {
-          color: isDark ? '#e6e6e6' : '#1c1b1f',
+          color: onSurfaceColor,
         },
         formatter: (params: any) => {
           return `${params.name}<br/>${params.seriesName}: ${params.value} (${params.percent}%)`;
@@ -84,7 +99,7 @@ export class ProgramPerformanceChartComponent implements OnInit, OnChanges, OnDe
         left: 'left',
         data: top5.map((d) => d.programName),
         textStyle: {
-          color: isDark ? '#e6e6e6' : '#1c1b1f',
+          color: onSurfaceColor,
         },
       },
       series: [
@@ -95,7 +110,7 @@ export class ProgramPerformanceChartComponent implements OnInit, OnChanges, OnDe
           avoidLabelOverlap: false,
           itemStyle: {
             borderRadius: 0,
-            borderColor: isDark ? '#121212' : '#ffffff',
+            borderColor: surfaceColor,
             borderWidth: 2,
           },
           label: {
@@ -107,7 +122,7 @@ export class ProgramPerformanceChartComponent implements OnInit, OnChanges, OnDe
               show: true,
               fontSize: 16,
               fontWeight: 'bold',
-              color: isDark ? '#e6e6e6' : '#1c1b1f',
+              color: onSurfaceColor,
             },
           },
           labelLine: {

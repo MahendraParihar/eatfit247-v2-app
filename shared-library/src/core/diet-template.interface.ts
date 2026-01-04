@@ -13,6 +13,8 @@ export interface IManageDietTemplate extends IBasicDietTemplate {
 
 export interface IDietTemplate extends IBasicDietTemplate {
   dietTemplateId: number;
+  showDaily: boolean;
+  showWeekly: boolean;
   dietDetail: IDietTemplateDetail;
   active: boolean;
   createdBy: number;

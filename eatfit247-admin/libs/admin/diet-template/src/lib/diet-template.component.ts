@@ -5,6 +5,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatCardModule } from '@angular/material/card';
+import { MatDialog } from '@angular/material/dialog';
 import {
   DataTableComponent,
   ITableColumn,
@@ -16,6 +17,10 @@ import {
 import { ITableList, IDietTemplate } from '@eatfit247-shared-lib';
 import { DietTemplateApiService } from './api.service';
 import { Subject, debounceTime, distinctUntilChanged, switchMap } from 'rxjs';
+import {
+  ManageDietTemplateDialogComponent,
+  ManageDietTemplateDialogData
+} from './dialog/manage-diet-template-dialog.component';
 
 @Component({
   selector: 'lib-diet-template',
@@ -33,7 +38,8 @@ export class DietTemplateComponent implements OnInit {
 
   constructor(
     private apiService: DietTemplateApiService,
-    private router: Router
+    private router: Router,
+    private dialog: MatDialog
   ) {
     this.setupSearch();
   }
@@ -58,22 +64,6 @@ export class DietTemplateComponent implements OnInit {
         dataKey: 'dietTemplate',
         sortable: true,
         searchable: true
-      },
-      {
-        key: 'cycleNo',
-        label: 'Cycle No',
-        dataKey: 'cycleNo',
-        sortable: true,
-        width: '100px',
-        align: 'center'
-      },
-      {
-        key: 'dayNo',
-        label: 'Day No',
-        dataKey: 'dayNo',
-        sortable: true,
-        width: '100px',
-        align: 'center'
       },
       {
         key: 'noOfCycle',
@@ -131,7 +121,20 @@ export class DietTemplateComponent implements OnInit {
     ];
     const actions: ITableAction<IDietTemplate>[] = [
       { label: 'Edit', icon: 'edit', color: 'primary', onClick: (row) => this.editItem(row) },
-      { label: 'Manage Details', icon: 'settings', color: 'primary', onClick: (row) => this.manageDetails(row) },
+      {
+        label: 'Add Day Plan',
+        icon: 'add',
+        color: 'primary',
+        visible: (row) => !(row as any).isWeekly,
+        onClick: (row) => this.addDayPlan(row)
+      },
+      {
+        label: 'Add Cycle Plan',
+        icon: 'add',
+        color: 'primary',
+        visible: (row) => !!(row as any).isWeekly,
+        onClick: (row) => this.addCyclePlan(row)
+      },
       {
         label: 'Active',
         icon: 'check_circle',
@@ -238,7 +241,19 @@ export class DietTemplateComponent implements OnInit {
   }
 
   editItem(item: IDietTemplate): void {
-    this.router.navigate(['/diet-template/edit', item.dietTemplateId]);
+    const dialogData: ManageDietTemplateDialogData = {
+      dietTemplate: item
+    };
+    const dialogRef = this.dialog.open(ManageDietTemplateDialogComponent, {
+      width: '600px',
+      data: dialogData,
+    });
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result === true) {
+        // Reload data after successful update
+        this.loadData();
+      }
+    });
   }
 
   manageDetails(item: IDietTemplate): void {
@@ -246,8 +261,28 @@ export class DietTemplateComponent implements OnInit {
     this.router.navigate(['/diet-template/details', item.dietTemplateId, 'cycle', 1]);
   }
 
+  addDayPlan(item: IDietTemplate): void {
+    // Navigate to add day-wise diet details - start with cycle 1, day 1
+    this.router.navigate(['/diet-template/details', item.dietTemplateId, 'cycle', 1, 'day', 1]);
+  }
+
+  addCyclePlan(item: IDietTemplate): void {
+    // Navigate to add weekly diet details - start with cycle 1 (no day number)
+    this.router.navigate(['/diet-template/details', item.dietTemplateId, 'cycle', 1]);
+  }
+
   createItem(): void {
-    this.router.navigate(['/diet-template/new']);
+    const dialogData: ManageDietTemplateDialogData = {};
+    const dialogRef = this.dialog.open(ManageDietTemplateDialogComponent, {
+      width: '600px',
+      data: dialogData,
+    });
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result === true) {
+        // Reload data after successful create
+        this.loadData();
+      }
+    });
   }
 
   async toggleStatus(item: IDietTemplate): Promise<void> {

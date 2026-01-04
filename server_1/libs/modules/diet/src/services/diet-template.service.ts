@@ -149,6 +149,8 @@ export class DietTemplateService {
       updatedBy: item.modifiedBy,
       createdAt: item.createdAt,
       updatedAt: item.updatedAt,
+      showDaily: false,
+      showWeekly: false,
       createdByUser: item.createdByUser
         ? CommonFunctionsUtil.getAdminShortInfo(item.createdByUser, 'createdByUser')
         : undefined,

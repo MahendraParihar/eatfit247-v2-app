@@ -452,3 +452,9 @@ create table if not exists public.mst_payment_gateway_credentials
     CONSTRAINT fk_mst_payment_gateway_cred_fpg_id_mst_fpg
         FOREIGN KEY (franchise_payment_gateway_id) REFERENCES mst_franchise_payment_gateway (franchise_payment_gateway_id)
 );
+
+alter table public.txn_diet_templates
+    drop column cycle_no;
+
+alter table public.txn_diet_templates
+    drop column day_no;

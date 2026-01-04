@@ -68,5 +68,6 @@ export class DietPlanDetailDto implements IDietPlanDetail {
   @IsArray()
   recipeIds: number[];
   @IsArray()
+  @IsOptional()
   recipeList: IDropdownItem[] | IDietPlanRecipes[];
 }

@@ -18,7 +18,7 @@ export class QuickActionsComponent {
 
   actions = [
     { label: 'Add Member', icon: 'person_add', route: '/members/new', color: 'primary' },
-    { label: 'Create Diet Plan', icon: 'restaurant_menu', route: '/diet-template/new', color: 'primary' },
+    { label: 'Create Diet Plan', icon: 'restaurant_menu', route: '/diet-template', color: 'primary' },
     { label: 'Record Payment', icon: 'payments', route: '/payments/new', color: 'primary' },
     { label: 'Generate Payment Link', icon: 'link', route: '/payments/generate', color: 'primary' },
     { label: 'Send WhatsApp', icon: 'chat', action: 'whatsapp', color: 'primary' },

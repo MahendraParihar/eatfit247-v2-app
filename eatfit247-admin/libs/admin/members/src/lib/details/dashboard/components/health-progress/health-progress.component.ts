@@ -39,7 +39,60 @@ type MetricType = 'weight' | 'bmi' | 'fat';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HealthProgressComponent implements OnInit, OnChanges, OnDestroy {
-  @Input() data: any;
+  private _data: any;
+  
+  @Input() 
+  set data(value: any) {
+    if (!value) {
+      // If value is null/undefined, create empty structure
+      this._data = {
+        weight: [],
+        bmi: [],
+        fat: [],
+      };
+      ['weight', 'bmi', 'fat'].forEach((metric) => {
+        ((this._data as any)[metric] as any).current = null;
+        ((this._data as any)[metric] as any).trend = undefined;
+      });
+      return;
+    }
+    
+    this._data = value;
+    // Always transform data when it's set - do it synchronously
+    // Check if it needs transformation (has backend structure)
+    if (this._data.assessment || this._data.recentLogs || this._data.latestHealthLogs) {
+      if (!this._data.weight || (this._data.weight as any).current === undefined) {
+        this.transformData();
+      }
+    } else if (!this._data.weight) {
+      // If no backend structure and no weight, create empty structure
+      this._data = {
+        weight: [],
+        bmi: [],
+        fat: [],
+      };
+      ['weight', 'bmi', 'fat'].forEach((metric) => {
+        ((this._data as any)[metric] as any).current = null;
+        ((this._data as any)[metric] as any).trend = undefined;
+      });
+    }
+  }
+  get data(): any {
+    // Always return a valid structure - create empty one if needed
+    if (!this._data) {
+      this._data = {
+        weight: [],
+        bmi: [],
+        fat: [],
+      };
+      ['weight', 'bmi', 'fat'].forEach((metric) => {
+        ((this._data as any)[metric] as any).current = null;
+        ((this._data as any)[metric] as any).trend = undefined;
+      });
+    }
+    return this._data;
+  }
+  
   @Input() memberId!: number;
   @ViewChild('chart', { static: false }) chartRef!: ElementRef;
 
@@ -51,6 +104,16 @@ export class HealthProgressComponent implements OnInit, OnChanges, OnDestroy {
   EmptyStateType = EmptyStateType;
 
   ngOnInit(): void {
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/07dbdf51-4ad9-4b43-98c1-f0c556815f0b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'health-progress.component.ts:53',message:'ngOnInit called',data:{hasData:!!this.data,dataKeys:this.data?Object.keys(this.data):[]},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix-4',hypothesisId:'A,B,C'})}).catch(()=>{});
+    // #endregion
+    // Ensure data is transformed if it exists on init
+    if (this.data) {
+      this.transformData();
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/07dbdf51-4ad9-4b43-98c1-f0c556815f0b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'health-progress.component.ts:56',message:'after transformData in ngOnInit',data:{hasWeight:!!this.data?.weight,weightType:typeof this.data?.weight,isArray:Array.isArray(this.data?.weight),weightCurrent:(this.data?.weight as any)?.current},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix-4',hypothesisId:'A,B,C'})}).catch(()=>{});
+      // #endregion
+    }
     if (typeof window !== 'undefined' && (window as any).echarts) {
       this.initChart();
     }
@@ -66,11 +129,18 @@ export class HealthProgressComponent implements OnInit, OnChanges, OnDestroy {
 
   ngOnChanges(changes: SimpleChanges): void {
     // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/07dbdf51-4ad9-4b43-98c1-f0c556815f0b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'health-progress.component.ts:67',message:'ngOnChanges called',data:{hasData:!!this.data,dataType:typeof this.data,dataKeys:this.data?Object.keys(this.data):[],hasWeight:!!this.data?.weight,hasBmi:!!this.data?.bmi,hasFat:!!this.data?.fat,weightType:typeof this.data?.weight,bmiType:typeof this.data?.bmi,fatType:typeof this.data?.fat,hasRecentLogs:!!this.data?.recentLogs,recentLogsLength:this.data?.recentLogs?.length,firstLog:this.data?.recentLogs?.[0],latestHealthLogsLength:this.data?.latestHealthLogs?.length,firstLatestLog:this.data?.latestHealthLogs?.[0]},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A,B,C'})}).catch(()=>{});
+    fetch('http://127.0.0.1:7242/ingest/07dbdf51-4ad9-4b43-98c1-f0c556815f0b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'health-progress.component.ts:71',message:'ngOnChanges called',data:{hasData:!!this.data,dataType:typeof this.data,dataKeys:this.data?Object.keys(this.data):[],hasWeight:!!this.data?.weight,hasBmi:!!this.data?.bmi,hasFat:!!this.data?.fat,weightType:typeof this.data?.weight,bmiType:typeof this.data?.bmi,fatType:typeof this.data?.fat,hasRecentLogs:!!this.data?.recentLogs,recentLogsLength:this.data?.recentLogs?.length,firstLog:this.data?.recentLogs?.[0],latestHealthLogsLength:this.data?.latestHealthLogs?.length,firstLatestLog:this.data?.latestHealthLogs?.[0],hasChangesData:!!changes['data'],loading:this.loading},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix-4',hypothesisId:'A,B,C'})}).catch(()=>{});
     // #endregion
-    if (changes['data'] && this.data && !this.loading) {
-      // Transform backend data structure to expected format
+    
+    // ALWAYS transform data if it exists, regardless of changes or loading state
+    if (this.data) {
       this.transformData();
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/07dbdf51-4ad9-4b43-98c1-f0c556815f0b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'health-progress.component.ts:75',message:'after transformData in ngOnChanges',data:{hasWeight:!!this.data?.weight,weightType:typeof this.data?.weight,isArray:Array.isArray(this.data?.weight),weightCurrent:(this.data?.weight as any)?.current,weightTrend:(this.data?.weight as any)?.trend},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix-4',hypothesisId:'A,B,C'})}).catch(()=>{});
+      // #endregion
+    }
+    
+    if (changes['data'] && this.data && !this.loading) {
       setTimeout(() => {
         if (this.chartInstance) {
           this.updateChart();
@@ -82,12 +152,32 @@ export class HealthProgressComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   private transformData(): void {
-    if (!this.data) return;
+    if (!this._data) {
+      // Even if no data, create empty structure to prevent template errors
+      this._data = {
+        weight: [],
+        bmi: [],
+        fat: [],
+      };
+      ['weight', 'bmi', 'fat'].forEach((metric) => {
+        ((this._data as any)[metric] as any).current = null;
+        ((this._data as any)[metric] as any).trend = undefined;
+      });
+      this.cdr.markForCheck();
+      return;
+    }
 
-    // Check if data is already in expected format
-    if (this.data.weight && Array.isArray(this.data.weight)) {
+    // Check if data is already in expected format (has weight.current property)
+    if (this._data.weight && (this._data.weight as any).current !== undefined) {
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/07dbdf51-4ad9-4b43-98c1-f0c556815f0b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'health-progress.component.ts:120',message:'transformData skipped - already transformed',data:{hasWeight:!!this._data.weight,weightCurrent:(this._data.weight as any)?.current},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix-5',hypothesisId:'A,B,C'})}).catch(()=>{});
+      // #endregion
       return; // Already transformed
     }
+
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/07dbdf51-4ad9-4b43-98c1-f0c556815f0b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'health-progress.component.ts:131',message:'transformData starting',data:{hasRecentLogs:!!this._data.recentLogs,recentLogsLength:this._data.recentLogs?.length,hasLatestHealthLogs:!!this._data.latestHealthLogs,latestHealthLogsLength:this._data.latestHealthLogs?.length},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix-5',hypothesisId:'A,B,C'})}).catch(()=>{});
+    // #endregion
 
     // Transform from backend format {assessment, latestHealthLogs, totalLogs, recentLogs}
     // to expected format {weight: [{date, value}], bmi: [{date, value}], fat: [{date, value}], weight: {current, trend}, ...}
@@ -97,31 +187,34 @@ export class HealthProgressComponent implements OnInit, OnChanges, OnDestroy {
       fat: [],
     };
 
-    // Process recentLogs to extract weight, BMI, and fat data
-    if (this.data.recentLogs && Array.isArray(this.data.recentLogs)) {
-      this.data.recentLogs.forEach((log: any) => {
-        if (log.healthParameters && Array.isArray(log.healthParameters)) {
-          log.healthParameters.forEach((param: any) => {
-            const paramName = param.healthParameter?.healthParameter || param.healthParameter || '';
-            const value = parseFloat(param.value);
-            if (isNaN(value)) return;
+    // Process both recentLogs and latestHealthLogs to extract weight, BMI, and fat data
+    const logsToProcess = [
+      ...(this._data.recentLogs && Array.isArray(this._data.recentLogs) ? this._data.recentLogs : []),
+      ...(this._data.latestHealthLogs && Array.isArray(this._data.latestHealthLogs) ? this._data.latestHealthLogs : []),
+    ];
 
-            const date = log.logDate || log.date;
-            const dataPoint = { date, value, period: date };
+    logsToProcess.forEach((log: any) => {
+      if (log.healthParameters && Array.isArray(log.healthParameters)) {
+        log.healthParameters.forEach((param: any) => {
+          const paramName = param.healthParameter?.healthParameter || param.healthParameter || '';
+          const value = parseFloat(param.value);
+          if (isNaN(value)) return;
 
-            // Match by parameter name (case-insensitive)
-            const lowerName = paramName.toLowerCase();
-            if (lowerName.includes('weight')) {
-              transformed.weight.push(dataPoint);
-            } else if (lowerName.includes('bmi')) {
-              transformed.bmi.push(dataPoint);
-            } else if (lowerName.includes('fat') || lowerName.includes('body fat')) {
-              transformed.fat.push(dataPoint);
-            }
-          });
-        }
-      });
-    }
+          const date = log.logDate || log.date;
+          const dataPoint = { date, value, period: date };
+
+          // Match by parameter name (case-insensitive)
+          const lowerName = paramName.toLowerCase();
+          if (lowerName.includes('weight')) {
+            transformed.weight.push(dataPoint);
+          } else if (lowerName.includes('bmi')) {
+            transformed.bmi.push(dataPoint);
+          } else if (lowerName.includes('fat') || lowerName.includes('body fat')) {
+            transformed.fat.push(dataPoint);
+          }
+        });
+      }
+    });
 
     // Sort by date
     transformed.weight.sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime());
@@ -129,6 +222,7 @@ export class HealthProgressComponent implements OnInit, OnChanges, OnDestroy {
     transformed.fat.sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
     // Calculate current values and trends
+    // Add current and trend as properties on the array (arrays are objects in JS)
     ['weight', 'bmi', 'fat'].forEach((metric) => {
       const values = transformed[metric];
       if (values.length > 0) {
@@ -138,21 +232,21 @@ export class HealthProgressComponent implements OnInit, OnChanges, OnDestroy {
           ? ((current - previous) / previous) * 100 
           : 0;
         
-        transformed[metric] = {
-          ...transformed[metric],
-          current,
-          trend: Math.round(trend * 100) / 100, // Round to 2 decimal places
-        };
+        // Add properties to the array (arrays are objects, so we can add properties)
+        (values as any).current = current;
+        (values as any).trend = Math.round(trend * 100) / 100; // Round to 2 decimal places
       } else {
-        transformed[metric] = {
-          current: null,
-          trend: undefined,
-        };
+        // For empty arrays, still add the properties
+        (values as any).current = null;
+        (values as any).trend = undefined;
       }
     });
 
     // Replace data with transformed structure
-    this.data = transformed;
+    this._data = transformed;
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/07dbdf51-4ad9-4b43-98c1-f0c556815f0b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'health-progress.component.ts:196',message:'transformData completed',data:{weightLength:transformed.weight.length,weightCurrent:(transformed.weight as any).current,weightTrend:(transformed.weight as any).trend,bmiLength:transformed.bmi.length,bmiCurrent:(transformed.bmi as any).current,fatLength:transformed.fat.length,fatCurrent:(transformed.fat as any).current,hasWeight:!!this._data.weight,isWeightArray:Array.isArray(this._data.weight)},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix-5',hypothesisId:'A,B,C'})}).catch(()=>{});
+    // #endregion
     this.cdr.markForCheck();
   }
 
@@ -184,9 +278,10 @@ export class HealthProgressComponent implements OnInit, OnChanges, OnDestroy {
   private updateChart(): void {
     if (!this.data || !this.chartInstance) return;
 
-    const chartData = this.data[this.selectedMetric] || [];
+    const metricData = this.data[this.selectedMetric];
+    const chartData = Array.isArray(metricData) ? metricData : [];
     // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/07dbdf51-4ad9-4b43-98c1-f0c556815f0b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'health-progress.component.ts:101',message:'updateChart called',data:{selectedMetric:this.selectedMetric,hasData:!!this.data,chartDataLength:chartData.length,chartDataType:typeof chartData,isArray:Array.isArray(chartData),firstItem:chartData[0]},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A,B,C'})}).catch(()=>{});
+    fetch('http://127.0.0.1:7242/ingest/07dbdf51-4ad9-4b43-98c1-f0c556815f0b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'health-progress.component.ts:182',message:'updateChart called',data:{selectedMetric:this.selectedMetric,hasData:!!this.data,metricDataType:typeof metricData,isArray:Array.isArray(metricData),chartDataLength:chartData.length,firstItem:chartData[0]},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'A,B,C'})}).catch(()=>{});
     // #endregion
     const isDark = document.body.classList.contains('dark-theme');
 

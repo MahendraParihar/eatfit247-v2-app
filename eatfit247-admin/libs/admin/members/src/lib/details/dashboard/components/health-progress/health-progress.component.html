@@ -22,10 +22,10 @@
             <div class="metric-details">
               <div class="metric-label">Weight</div>
               <div class="metric-value">{{ data.weight?.current || 'N/A' }} kg</div>
-              @if (data.weight?.trend !== undefined) {
-                <div class="metric-trend" [class.positive]="data.weight.trend >= 0" [class.negative]="data.weight.trend < 0">
-                  <mat-icon>{{ data.weight.trend >= 0 ? 'trending_up' : 'trending_down' }}</mat-icon>
-                  <span>{{ Math.abs(data.weight.trend) }}%</span>
+              @if (data.weight?.trend !== undefined && data.weight?.trend !== null) {
+                <div class="metric-trend" [class.positive]="(data.weight?.trend ?? 0) >= 0" [class.negative]="(data.weight?.trend ?? 0) < 0">
+                  <mat-icon>{{ (data.weight?.trend ?? 0) >= 0 ? 'trending_up' : 'trending_down' }}</mat-icon>
+                  <span>{{ Math.abs(data.weight?.trend ?? 0) }}%</span>
                 </div>
               }
             </div>
@@ -38,10 +38,10 @@
             <div class="metric-details">
               <div class="metric-label">BMI</div>
               <div class="metric-value">{{ data.bmi?.current || 'N/A' }}</div>
-              @if (data.bmi?.trend !== undefined) {
-                <div class="metric-trend" [class.positive]="data.bmi.trend >= 0" [class.negative]="data.bmi.trend < 0">
-                  <mat-icon>{{ data.bmi.trend >= 0 ? 'trending_up' : 'trending_down' }}</mat-icon>
-                  <span>{{ Math.abs(data.bmi.trend) }}%</span>
+              @if (data.bmi?.trend !== undefined && data.bmi?.trend !== null) {
+                <div class="metric-trend" [class.positive]="(data.bmi?.trend ?? 0) >= 0" [class.negative]="(data.bmi?.trend ?? 0) < 0">
+                  <mat-icon>{{ (data.bmi?.trend ?? 0) >= 0 ? 'trending_up' : 'trending_down' }}</mat-icon>
+                  <span>{{ Math.abs(data.bmi?.trend ?? 0) }}%</span>
                 </div>
               }
             </div>
@@ -54,10 +54,10 @@
             <div class="metric-details">
               <div class="metric-label">Fat %</div>
               <div class="metric-value">{{ data.fat?.current || 'N/A' }}%</div>
-              @if (data.fat?.trend !== undefined) {
-                <div class="metric-trend" [class.positive]="data.fat.trend >= 0" [class.negative]="data.fat.trend < 0">
-                  <mat-icon>{{ data.fat.trend >= 0 ? 'trending_up' : 'trending_down' }}</mat-icon>
-                  <span>{{ Math.abs(data.fat.trend) }}%</span>
+              @if (data.fat?.trend !== undefined && data.fat?.trend !== null) {
+                <div class="metric-trend" [class.positive]="(data.fat?.trend ?? 0) >= 0" [class.negative]="(data.fat?.trend ?? 0) < 0">
+                  <mat-icon>{{ (data.fat?.trend ?? 0) >= 0 ? 'trending_up' : 'trending_down' }}</mat-icon>
+                  <span>{{ Math.abs(data.fat?.trend ?? 0) }}%</span>
                 </div>
               }
             </div>
