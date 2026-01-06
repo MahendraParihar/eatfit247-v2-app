@@ -33,5 +33,6 @@ export enum MediaForEnum {
   TYPE_OF_EXERCISE = "type-of-exercise",
   URINE_OUTPUT = "urine-output",
   PROMOTIONAL_MAIL = "promotional-mail",
+  LEGAL_PAGE = "legal-page",
 }
 

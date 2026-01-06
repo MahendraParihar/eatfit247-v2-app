@@ -1,0 +1,189 @@
+<mat-card class="form-card">
+  <mat-card-header>
+    <mat-card-title>{{ pageTitle }}</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <form [formGroup]="formGroup" (ngSubmit)="onSubmit()">
+      <div class="form-fields">
+        <mat-form-field class="full-width">
+          <mat-label>Title</mat-label>
+          <input
+            matInput
+            formControlName="title"
+            placeholder="Enter banner title"
+          />
+          @if (getMaxLength('title')) {
+            <mat-hint align="end">
+              {{ getCurrentLength('title') }}/{{ getMaxLength('title') }}
+            </mat-hint>
+          }
+          <shared-ui-input-error [control]="formGroup.get('title')" controlName="Title"></shared-ui-input-error>
+        </mat-form-field>
+
+        <mat-form-field class="full-width">
+          <mat-label>Sub Title</mat-label>
+          <input
+            matInput
+            formControlName="subTitle"
+            placeholder="Enter banner sub title"
+          />
+          @if (getMaxLength('subTitle')) {
+            <mat-hint align="end">
+              {{ getCurrentLength('subTitle') }}/{{ getMaxLength('subTitle') }}
+            </mat-hint>
+          }
+          <shared-ui-input-error [control]="formGroup.get('subTitle')" controlName="Sub Title"></shared-ui-input-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Banner For</mat-label>
+          <mat-select formControlName="bannerFor">
+            @for (option of bannerForOptions; track option.value) {
+              <mat-option [value]="option.value">{{ option.label }}</mat-option>
+            }
+          </mat-select>
+          <shared-ui-input-error [control]="formGroup.get('bannerFor')" controlName="Banner For"></shared-ui-input-error>
+        </mat-form-field>
+
+        <div class="full-width">
+          <label class="upload-label">Banner Image</label>
+          <shared-ui-upload-form
+            [formGroup]="formGroup"
+            [isMultiFile]="false"
+            [isRequired]="true"
+            [uploadedMediaList]="getImagePathList()"
+            controlName="imagePath"
+            [mediaFor]="mediaFor"
+            [mediaType]="mediaType"
+          ></shared-ui-upload-form>
+        </div>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Image Position</mat-label>
+          <mat-select formControlName="imagePosition">
+            @for (option of imagePositionOptions; track option.value) {
+              <mat-option [value]="option.value">{{ option.label }}</mat-option>
+            }
+          </mat-select>
+          <shared-ui-input-error [control]="formGroup.get('imagePosition')" controlName="Image Position"></shared-ui-input-error>
+        </mat-form-field>
+
+        <mat-form-field class="full-width">
+          <mat-label>Title Icon</mat-label>
+          <input
+            matInput
+            formControlName="titleIcon"
+            placeholder="Enter icon name (e.g., favorite, local_dining)"
+          />
+          @if (getMaxLength('titleIcon')) {
+            <mat-hint align="end">
+              {{ getCurrentLength('titleIcon') }}/{{ getMaxLength('titleIcon') }}
+            </mat-hint>
+          }
+          <shared-ui-input-error [control]="formGroup.get('titleIcon')" controlName="Title Icon"></shared-ui-input-error>
+        </mat-form-field>
+
+        <mat-form-field class="full-width">
+          <mat-label>Description</mat-label>
+          <textarea
+            matInput
+            formControlName="description"
+            placeholder="Enter banner description"
+            rows="4"
+          ></textarea>
+          <shared-ui-input-error [control]="formGroup.get('description')" controlName="Description"></shared-ui-input-error>
+        </mat-form-field>
+
+        <mat-form-field class="full-width">
+          <mat-label>Primary Action Text</mat-label>
+          <input
+            matInput
+            formControlName="primaryActionText"
+            placeholder="Enter primary action button text"
+          />
+          @if (getMaxLength('primaryActionText')) {
+            <mat-hint align="end">
+              {{ getCurrentLength('primaryActionText') }}/{{ getMaxLength('primaryActionText') }}
+            </mat-hint>
+          }
+          <shared-ui-input-error [control]="formGroup.get('primaryActionText')" controlName="Primary Action Text"></shared-ui-input-error>
+        </mat-form-field>
+
+        <mat-form-field class="full-width">
+          <mat-label>Primary Action URL</mat-label>
+          <input
+            matInput
+            formControlName="primaryActionUrl"
+            placeholder="Enter primary action URL"
+          />
+          @if (getMaxLength('primaryActionUrl')) {
+            <mat-hint align="end">
+              {{ getCurrentLength('primaryActionUrl') }}/{{ getMaxLength('primaryActionUrl') }}
+            </mat-hint>
+          }
+          <shared-ui-input-error [control]="formGroup.get('primaryActionUrl')" controlName="Primary Action URL"></shared-ui-input-error>
+        </mat-form-field>
+
+        <mat-form-field class="full-width">
+          <mat-label>Secondary Action Text</mat-label>
+          <input
+            matInput
+            formControlName="secondaryActionText"
+            placeholder="Enter secondary action button text"
+          />
+          @if (getMaxLength('secondaryActionText')) {
+            <mat-hint align="end">
+              {{ getCurrentLength('secondaryActionText') }}/{{ getMaxLength('secondaryActionText') }}
+            </mat-hint>
+          }
+          <shared-ui-input-error [control]="formGroup.get('secondaryActionText')" controlName="Secondary Action Text"></shared-ui-input-error>
+        </mat-form-field>
+
+        <mat-form-field class="full-width">
+          <mat-label>Secondary Action URL</mat-label>
+          <input
+            matInput
+            formControlName="secondaryActionUrl"
+            placeholder="Enter secondary action URL"
+          />
+          @if (getMaxLength('secondaryActionUrl')) {
+            <mat-hint align="end">
+              {{ getCurrentLength('secondaryActionUrl') }}/{{ getMaxLength('secondaryActionUrl') }}
+            </mat-hint>
+          }
+          <shared-ui-input-error [control]="formGroup.get('secondaryActionUrl')" controlName="Secondary Action URL"></shared-ui-input-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Status</mat-label>
+          <mat-select formControlName="active">
+            <mat-option [value]="true">Active</mat-option>
+            <mat-option [value]="false">Inactive</mat-option>
+          </mat-select>
+          <shared-ui-input-error [control]="formGroup.get('active')" controlName="Status"></shared-ui-input-error>
+        </mat-form-field>
+
+      </div>
+
+      <div class="form-actions">
+        <button
+          type="button"
+          mat-stroked-button
+          (click)="onCancel()"
+        >
+          <mat-icon>close</mat-icon>
+          Cancel
+        </button>
+        <button
+          type="submit"
+          mat-raised-button
+          color="primary"
+        >
+          <mat-icon>{{ isEditMode ? 'save' : 'add' }}</mat-icon>
+          {{ isEditMode ? 'Update' : 'Create' }}
+        </button>
+      </div>
+    </form>
+  </mat-card-content>
+</mat-card>
+

@@ -48,7 +48,7 @@ export class LegalPagesService {
       ),
       active: item.active,
       createdBy: item.createdBy,
-      updatedBy: item.updatedBy,
+      updatedBy: item.modifiedBy,
       createdAt: item.createdAt,
       updatedAt: item.updatedAt,
       createdByUser: item.createdByUser ? CommonFunctionsUtil.getAdminShortInfo(item.createdByUser, 'createdByUser') : undefined,
@@ -84,14 +84,16 @@ export class LegalPagesService {
     const createObj = {
       title: obj.title,
       details: obj.details,
-      url: obj.url,
-      metaTitle: obj.metaTitle,
-      metaDescription: obj.metaDescription,
-      tags: obj.tags,
-      imagePath: (obj.imagePath && obj.imagePath.length > 0) ? obj.imagePath : null,
+      url: obj.seo
+        ? obj.seo.url
+        : CommonFunctionsUtil.removeSpecialChar(obj.title.toString().toLowerCase(), '-'),
+      metaTitle: obj.seo.metaTitle,
+      metaDescription: obj.seo.metaDescription,
+      tags: obj.seo.tags,
+      imagePath: obj.imagePath && obj.imagePath.length > 0 ? obj.imagePath : null,
       active: obj.active,
       createdBy: adminId,
-      updatedBy: adminId,
+      modifiedBy: adminId,
       createdIp: cIp,
       modifiedIp: cIp,
     };
@@ -108,13 +110,13 @@ export class LegalPagesService {
     const updateObj = {
       title: obj.title,
       details: obj.details,
-      url: obj.url,
-      metaTitle: obj.metaTitle,
-      metaDescription: obj.metaDescription,
-      tags: obj.tags,
-      imagePath: (obj.imagePath && obj.imagePath.length > 0) ? obj.imagePath : null,
+      url: obj.seo.url,
+      metaTitle: obj.seo.metaTitle,
+      metaDescription: obj.seo.metaDescription,
+      tags: obj.seo.tags,
+      imagePath: obj.imagePath && obj.imagePath.length > 0 ? obj.imagePath : null,
       active: obj.active,
-      updatedBy: adminId,
+      modifiedBy: adminId,
       modifiedIp: cIp,
     };
     await this.legalPagesRepository.update(updateObj, { where: { legalPageId: id } });
@@ -129,7 +131,7 @@ export class LegalPagesService {
     }
     const updateObj = {
       active: active,
-      updatedBy: adminId,
+      modifiedBy: adminId,
       modifiedIp: cIp,
     };
     await this.legalPagesRepository.update(updateObj, { where: { legalPageId: id } });

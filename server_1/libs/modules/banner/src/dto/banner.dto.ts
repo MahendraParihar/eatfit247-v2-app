@@ -35,17 +35,46 @@ export class CreateBannerDto implements IManageBanner {
   active!: boolean;
 
   @IsNotEmpty()
-  @IsBoolean()
-  isInternalUrl!: boolean;
-
-  @IsOptional()
-  @MaxLength(InputLengthEnum.CHAR_200)
-  @IsString()
-  url?: string;
-
-  @IsNotEmpty()
   @IsEnum(BannerForEnum)
   bannerFor!: BannerForEnum;
+
+  @IsOptional()
+  @MaxLength(10)
+  @IsString()
+  imagePosition?: string;
+
+  @IsOptional()
+  @MaxLength(20)
+  @IsString()
+  titleIcon?: string;
+
+  @IsOptional()
+  @IsString()
+  description?: string;
+
+  @IsOptional()
+  @MaxLength(50)
+  @IsString()
+  primaryActionText?: string;
+
+  @IsOptional()
+  @MaxLength(100)
+  @IsString()
+  primaryActionUrl?: string;
+
+  @IsOptional()
+  @MaxLength(50)
+  @IsString()
+  secondaryActionText?: string;
+
+  @IsOptional()
+  @MaxLength(100)
+  @IsString()
+  secondaryActionUrl?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  isInternalUrl?: boolean;
 
   @IsOptional()
   @IsNumber()

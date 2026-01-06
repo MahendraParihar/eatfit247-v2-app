@@ -458,3 +458,35 @@ alter table public.txn_diet_templates
 
 alter table public.txn_diet_templates
     drop column day_no;
+
+-- Add missing columns to mst_legal_pages table
+-- These columns are required for SEO, media uploads, and URL management
+
+ALTER TABLE mst_legal_pages
+    ADD COLUMN IF NOT EXISTS image_path JSONB NULL;
+
+ALTER TABLE mst_legal_pages
+    ADD COLUMN IF NOT EXISTS tags TEXT[] NULL;
+
+ALTER TABLE mst_legal_pages
+    ADD COLUMN IF NOT EXISTS url TEXT NULL;
+
+ALTER TABLE mst_legal_pages
+    ADD COLUMN IF NOT EXISTS meta_title VARCHAR(60) NULL;
+
+ALTER TABLE mst_legal_pages
+    ADD COLUMN IF NOT EXISTS meta_description VARCHAR(160) NULL;
+
+ALTER TABLE txn_banner ADD COLUMN IF NOT EXISTS image_position varchar(10) DEFAULT 'center';
+ALTER TABLE txn_banner ADD COLUMN IF NOT EXISTS title_icon varchar(20) DEFAULT null;
+ALTER TABLE txn_banner ADD COLUMN IF NOT EXISTS description text DEFAULT null;
+ALTER TABLE txn_banner ADD COLUMN IF NOT EXISTS primary_action_text varchar(50) DEFAULT null;
+ALTER TABLE txn_banner ADD COLUMN IF NOT EXISTS primary_action_url varchar(100) DEFAULT null;
+ALTER TABLE txn_banner ADD COLUMN IF NOT EXISTS secondary_action_text varchar(50) DEFAULT null;
+ALTER TABLE txn_banner ADD COLUMN IF NOT EXISTS secondary_action_url varchar(100) DEFAULT null;
+
+alter table public.txn_banner
+    drop column is_internal_url;
+
+alter table public.txn_banner
+    drop column url;

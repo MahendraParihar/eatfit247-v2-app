@@ -96,6 +96,14 @@ export const appRoutes: Route[] = [
         loadChildren: () => import('promo-code').then((m) => m.promoCodeRoutes),
       },
       {
+        path: 'legal-pages',
+        loadChildren: () => import('legal-pages').then((m) => m.legalPagesRoutes),
+      },
+      {
+        path: 'banners',
+        loadChildren: () => import('banners').then((m) => m.bannersRoutes),
+      },
+      {
         path: 'setting',
         loadChildren: () => import('admin-user').then((m) => m.settingRoutes),
       },

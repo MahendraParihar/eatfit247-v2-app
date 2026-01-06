@@ -5,7 +5,7 @@
   <mat-card-content>
     @if (loading) {
       <shared-ui-loader></shared-ui-loader>
-    } @else if (!data || !data.data?.length) {
+    } @else if (!data || !data.data.length) {
       <shared-ui-empty-state
         title="No Member Growth Data"
         description="Member growth data is not available at the moment."

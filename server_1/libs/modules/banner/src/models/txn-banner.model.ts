@@ -62,26 +62,61 @@ export class TxnBanner extends Model<TxnBanner> {
 
   @Column({
     allowNull: false,
-    defaultValue: false,
-    field: 'is_internal_url',
-    type: DataType.BOOLEAN,
-  })
-  declare isInternalUrl: boolean;
-
-  @Column({
-    allowNull: true,
-    field: 'url',
-    type: DataType.STRING(200),
-  })
-  declare url: string;
-
-  @Column({
-    allowNull: false,
     defaultValue: BannerForEnum.HOME,
     field: 'banner_for',
     type: DataType.ENUM(...Object.values(BannerForEnum)),
   })
   declare bannerFor: BannerForEnum;
+
+  @Column({
+    allowNull: true,
+    defaultValue: 'center',
+    field: 'image_position',
+    type: DataType.STRING(10),
+  })
+  declare imagePosition: string;
+
+  @Column({
+    allowNull: true,
+    field: 'title_icon',
+    type: DataType.STRING(20),
+  })
+  declare titleIcon: string;
+
+  @Column({
+    allowNull: true,
+    field: 'description',
+    type: DataType.TEXT,
+  })
+  declare description: string;
+
+  @Column({
+    allowNull: true,
+    field: 'primary_action_text',
+    type: DataType.STRING(50),
+  })
+  declare primaryActionText: string;
+
+  @Column({
+    allowNull: true,
+    field: 'primary_action_url',
+    type: DataType.STRING(100),
+  })
+  declare primaryActionUrl: string;
+
+  @Column({
+    allowNull: true,
+    field: 'secondary_action_text',
+    type: DataType.STRING(50),
+  })
+  declare secondaryActionText: string;
+
+  @Column({
+    allowNull: true,
+    field: 'secondary_action_url',
+    type: DataType.STRING(100),
+  })
+  declare secondaryActionUrl: string;
 
   @BelongsTo(() => MstAdminUser, { as: 'createdByUser', foreignKey: 'createdBy', targetKey: 'adminId' })
   declare createdByUser: MstAdminUser;

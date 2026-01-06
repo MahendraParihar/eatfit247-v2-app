@@ -136,6 +136,16 @@ export class BaseLayoutComponent implements OnInit, OnDestroy {
       route: '/promo-code',
     },
     {
+      label: 'Legal Pages',
+      icon: 'gavel',
+      route: '/legal-pages',
+    },
+    {
+      label: 'Banners',
+      icon: 'image',
+      route: '/banners',
+    },
+    {
       label: 'LOV Master',
       icon: 'list',
       children: [

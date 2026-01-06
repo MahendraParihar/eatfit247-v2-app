@@ -6,9 +6,15 @@ export interface IBaseBanner {
   title: string;
   subTitle?: string;
   imagePath: IMediaUpload[];
-  isInternalUrl: boolean;
-  url?: string;
   bannerFor: BannerForEnum;
+  imagePosition?: string;
+  titleIcon?: string;
+  description?: string;
+  primaryActionText?: string;
+  primaryActionUrl?: string;
+  secondaryActionText?: string;
+  secondaryActionUrl?: string;
+  isInternalUrl?: boolean;
 }
 
 export interface IManageBanner extends IBaseBanner {

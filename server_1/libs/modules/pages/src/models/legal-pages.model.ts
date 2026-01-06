@@ -3,7 +3,7 @@ import { IMediaUpload, InputLengthEnum } from '@eatfit247-shared-lib';
 import { getCreatedByUserInclude, getUpdatedByUserInclude, MstAdminUser } from '@server_1/core';
 
 @Table({
-  tableName: 'mst_legal_page',
+  tableName: 'mst_legal_pages',
   schema: 'public',
   freezeTableName: true,
   modelName: 'mst_legal_page',
@@ -92,7 +92,7 @@ export class LegalPagesModel extends Model<LegalPagesModel> {
   @BelongsTo(() => MstAdminUser, { as: 'createdByUser', foreignKey: 'createdBy', targetKey: 'adminId' })
   declare createdByUser: MstAdminUser;
 
-  @BelongsTo(() => MstAdminUser, { as: 'updatedByUser', foreignKey: 'updatedBy', targetKey: 'adminId' })
+  @BelongsTo(() => MstAdminUser, { as: 'updatedByUser', foreignKey: 'modifiedBy', targetKey: 'adminId' })
   declare updatedByUser: MstAdminUser;
 
   @Column({
@@ -111,10 +111,10 @@ export class LegalPagesModel extends Model<LegalPagesModel> {
 
   @Column({
     allowNull: false,
-    field: 'updated_by',
+    field: 'modified_by',
     type: DataType.INTEGER,
   })
-  declare updatedBy: number;
+  declare modifiedBy: number;
 
   @UpdatedAt
   @Column({

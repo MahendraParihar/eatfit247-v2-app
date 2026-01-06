@@ -7,10 +7,11 @@ export interface IBaseLegalPage {
   imagePath?: IMediaUpload[];
 }
 
-export interface IManageLegalPage extends IBaseLegalPage, ICommonSEO {
+export interface IManageLegalPage extends IBaseLegalPage {
   legalPageId?: number;
   active: boolean;
   uploadFiles?: IMediaUpload[];
+  seo: ICommonSEO;
 }
 
 export interface ILegalPage extends IBaseLegalPage, ICommonTable, ICommonSEO {

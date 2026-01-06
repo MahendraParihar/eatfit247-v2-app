@@ -5,7 +5,7 @@
   <mat-card-content>
     @if (loading) {
       <shared-ui-loader></shared-ui-loader>
-    } @else if (!data || (!data.lineChart?.length && !data.barChart?.length)) {
+    } @else if (!data || (!data.lineChart.length && !data.barChart.length)) {
       <shared-ui-empty-state
         title="No Revenue Data"
         description="Revenue data is not available at the moment."
