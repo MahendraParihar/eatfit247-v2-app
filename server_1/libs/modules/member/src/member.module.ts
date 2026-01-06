@@ -33,7 +33,6 @@ import {
   MemberHealthController,
   MemberIssueController,
   MemberPaymentController,
-  PublicMemberController,
 } from './controllers';
 import {
   MemberAssessmentService,
@@ -108,7 +107,6 @@ modelRegistry.register([
   ],
   controllers: [
     MemberController,
-    PublicMemberController,
     MemberHealthController,
     MemberCallLogController,
     MemberContentController,

@@ -11,7 +11,6 @@ import {
   MstRecipeType,
 } from './models';
 import {
-  PublicRecipeController,
   RecipeCategoryController,
   RecipeController,
   RecipeCuisineController,
@@ -47,7 +46,6 @@ modelRegistry.register([
     RecipeCuisineController,
     RecipeTypeController,
     RecipeController,
-    PublicRecipeController,
   ],
   providers: [
     RecipeCategoryService,

@@ -6,9 +6,6 @@ import {
   ProgramCategoryController,
   ProgramController,
   ProgramPlanController,
-  PublicProgramCategoryController,
-  PublicProgramController,
-  PublicProgramPlanController,
 } from './controllers';
 import { ProgramCategoryService, ProgramPlanService, ProgramService } from './services';
 // Register models with the model registry
@@ -27,11 +24,8 @@ modelRegistry.register([
   ],
   controllers: [
     ProgramCategoryController,
-    PublicProgramCategoryController,
     ProgramController,
-    PublicProgramController,
     ProgramPlanController,
-    PublicProgramPlanController,
   ],
   providers: [
     ProgramCategoryService,

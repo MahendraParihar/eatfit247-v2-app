@@ -1,9 +1,13 @@
 export enum BannerForEnum {
   HOME = 'home',
   ABOUT_US = 'about_us',
+  ABOUT_SHWETA = 'about_shweta',
   PROGRAM = 'program',
+  OUR_PROGRAM = 'our_program',
   PRODUCT = 'product',
   QUIZ = 'quiz',
+  QUIZ_DOSHA = 'quiz_dosha',
+  QUIZ_IMMUNITY = 'quiz_immunity',
   MEDIA_PRESS = 'media_press',
   SUCCESS_STORIES = 'success_stories',
   BLOGS = 'blogs',

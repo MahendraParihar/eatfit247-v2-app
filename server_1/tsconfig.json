@@ -1,0 +1,17 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "esModuleInterop": true
+  },
+  "files": [],
+  "include": [],
+  "references": [
+    {
+      "path": "./apps/admin-api"
+    },
+    {
+      "path": "./apps/public-api"
+    }
+  ]
+}
+

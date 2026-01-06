@@ -143,7 +143,7 @@ alter table public.log_errors
 alter table public.txn_admin_password_reset_tokens
     alter column expires_at type timestamptz using expires_at::timestamptz;
 
-create type public.banner_for as enum ('home', 'about_us', 'program', 'product', 'quiz', 'media_press', 'success_stories', 'blogs', 'contact_us');
+create type public.banner_for as enum ('home', 'about_us', 'program', 'product', 'quiz', 'media_press', 'success_stories', 'blogs', 'contact_us', 'about_shweta','our_program','product','quiz_dosha','quiz_immunity');
 
 create table public.txn_banner
 (

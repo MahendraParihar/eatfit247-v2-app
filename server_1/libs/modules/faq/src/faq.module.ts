@@ -4,7 +4,6 @@ import { modelRegistry } from '@server_1/core';
 import { MstFaqCategory, TxnFaq } from './models';
 import { FaqCategoryService, FaqService } from './services';
 import { FaqCategoryController, FaqController } from './controllers';
-import { PublicFaqController } from './controllers';
 // Register models with the model registry
 // These models have @Scopes decorator, so they MUST be registered for scopes to work
 modelRegistry.register([TxnFaq, MstFaqCategory]);
@@ -16,7 +15,6 @@ modelRegistry.register([TxnFaq, MstFaqCategory]);
   controllers: [
     FaqController,
     FaqCategoryController,
-    PublicFaqController,
   ],
   providers: [
     FaqService,

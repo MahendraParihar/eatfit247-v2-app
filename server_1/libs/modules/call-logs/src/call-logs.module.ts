@@ -6,9 +6,6 @@ import {
   CallLogStatusController,
   CallPurposeController,
   CallTypeController,
-  PublicCallLogStatusController,
-  PublicCallPurposeController,
-  PublicCallTypeController,
 } from './controllers';
 import { CallLogStatusService, CallPurposeService, CallTypeService } from './services';
 // Register models with the model registry
@@ -23,9 +20,6 @@ modelRegistry.register([MstCallLogStatus, MstCallPurpose, MstCallType]);
     CallLogStatusController,
     CallPurposeController,
     CallTypeController,
-    PublicCallLogStatusController,
-    PublicCallPurposeController,
-    PublicCallTypeController,
   ],
   providers: [
     CallLogStatusService,

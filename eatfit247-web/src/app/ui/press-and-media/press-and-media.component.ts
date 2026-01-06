@@ -32,7 +32,22 @@ export class PressAndMediaComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadArticles();
-    this.categories = this.pressMediaService.getAllCategories();
+    this.loadCategories();
+  }
+
+  /**
+   * Load categories
+   */
+  private loadCategories(): void {
+    this.pressMediaService.getAllCategories().subscribe({
+      next: (cats) => {
+        this.categories = cats;
+      },
+      error: (error) => {
+        console.error('Error loading categories:', error);
+        this.categories = [];
+      },
+    });
   }
 
   /**
@@ -40,11 +55,25 @@ export class PressAndMediaComponent implements OnInit {
    */
   loadArticles(): void {
     if (this.selectedCategory) {
-      this.articles = this.pressMediaService.getArticlesByCategory(
-        this.selectedCategory
-      );
+      this.pressMediaService.getArticlesByCategory(this.selectedCategory).subscribe({
+        next: (articles) => {
+          this.articles = articles;
+        },
+        error: (error) => {
+          console.error('Error loading articles by category:', error);
+          this.articles = [];
+        },
+      });
     } else {
-      this.articles = this.pressMediaService.getAllArticles();
+      this.pressMediaService.getAllArticles().subscribe({
+        next: (articles) => {
+          this.articles = articles;
+        },
+        error: (error) => {
+          console.error('Error loading all articles:', error);
+          this.articles = [];
+        },
+      });
     }
   }
 

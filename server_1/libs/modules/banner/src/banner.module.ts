@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { TxnBanner } from './models';
 import { modelRegistry } from '@server_1/core';
-import { BannerController } from './controllers';
+import { BannerController, PublicBannerController } from './controllers';
 import { BannerService } from './services';
 // Register models with the model registry
 modelRegistry.register([TxnBanner]);
@@ -13,6 +13,7 @@ modelRegistry.register([TxnBanner]);
   ],
   controllers: [
     BannerController,
+    PublicBannerController,
   ],
   providers: [
     BannerService,

@@ -8,14 +8,13 @@ import {
   PaymentService,
 } from './services';
 import { MstPaymentGatewayCredentials } from './models';
-import { RazorpayWebhookController } from './controllers';
 
 @Module({
   imports: [
     SequelizeModule.forFeature([MstPaymentGatewayCredentials]),
     FranchiseModule,
   ],
-  controllers: [RazorpayWebhookController],
+  controllers: [],
   providers: [
     PaymentGatewayCredentialService,
     PaymentGatewayResolverService,

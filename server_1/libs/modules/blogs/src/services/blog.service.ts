@@ -54,6 +54,73 @@ export class BlogService {
     return this.convertToModel(find);
   }
 
+  /**
+   * Public method to fetch all published and active blogs
+   */
+  public async findAllPublic(searchDto: IBasicSearch): Promise<ITableList<IBlog>> {
+    const whereCondition: any = SearchUtil.filterBasicSearch(searchDto, 'title');
+    // Only show published and active blogs for public
+    whereCondition.isPublished = true;
+    whereCondition.active = true;
+    
+    const pageNumber = searchDto.page || 0;
+    const pageSize = searchDto.limit || 15;
+    const offset = pageNumber === 0 ? 0 : pageNumber * pageSize;
+    const { rows, count } = await this.blogRepository.scope('list').findAndCountAll<TxnBlog>({
+      where: whereCondition,
+      order: [['writtenAt', 'DESC'], ['createdAt', 'DESC']], // Order by written date, then created date
+      offset: offset,
+      limit: pageSize,
+      nest: true,
+    });
+    const resList: IBlog[] = [];
+    for (const s of rows) {
+      resList.push(this.convertToModel(s));
+    }
+    return <ITableList<IBlog>>{
+      tableData: resList,
+      count: count,
+    };
+  }
+
+  /**
+   * Public method to fetch a published and active blog by ID
+   */
+  public async fetchByIdPublic(id: number): Promise<IBlog> {
+    const find = await this.blogRepository.scope('details').findOne({
+      where: {
+        blogId: id,
+        isPublished: true,
+        active: true,
+      },
+      raw: true,
+      nest: true,
+    });
+    if (!find) {
+      throw new NotFoundException('Blog not found');
+    }
+    return this.convertToModel(find);
+  }
+
+  /**
+   * Public method to fetch a published and active blog by URL (slug)
+   */
+  public async fetchByUrlPublic(url: string): Promise<IBlog> {
+    const find = await this.blogRepository.scope('details').findOne({
+      where: {
+        url: url,
+        isPublished: true,
+        active: true,
+      },
+      raw: true,
+      nest: true,
+    });
+    if (!find) {
+      throw new NotFoundException('Blog not found');
+    }
+    return this.convertToModel(find);
+  }
+
   private convertToModel(find: TxnBlog) {
     return <IBlog>{
       blogId: find.blogId,

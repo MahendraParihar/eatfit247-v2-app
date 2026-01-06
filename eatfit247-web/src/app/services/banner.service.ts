@@ -1,67 +1,91 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable, map, catchError, of } from 'rxjs';
+import { environment } from '../../environments/environment';
 import { SliderItem } from '../ui/shared/image-slider/image-slider.component';
+
+interface IBanner {
+  bannerId: number;
+  id: number;
+  title: string;
+  subTitle?: string;
+  imagePath: Array<{ url?: string; path?: string; [key: string]: any }>;
+  active: boolean;
+  bannerFor: string;
+  imagePosition?: string;
+  titleIcon?: string;
+  description?: string;
+  primaryActionText?: string;
+  primaryActionUrl?: string;
+  secondaryActionText?: string;
+  secondaryActionUrl?: string;
+  isInternalUrl?: boolean;
+}
+
+interface ITableList<T> {
+  tableData: T[];
+  count: number;
+}
 
 /**
  * Service to manage banner/slider data
- * Generic service for homepage banner content
+ * Fetches banner data from the public API
  */
 @Injectable({
   providedIn: 'root',
 })
 export class BannerService {
-  private readonly baseImageUrl = 'https://eatfit24by7.com/wp-content/uploads';
+  private readonly http = inject(HttpClient);
+  private readonly apiUrl = environment.apiUrl;
 
   /**
    * Get banner slides for homepage
+   * Fetches active banners from the API
    */
-  getBannerSlides(): SliderItem[] {
-    return [
-      {
-        id: 'banner-1',
-        backgroundImageUrl: `${this.baseImageUrl}/2022/04/organic-sld-1.jpg`,
-        imageUrl: ``,
-        imageAlt: 'EatFit24By7 - Your Health & Wellness Partner',
-        imagePosition: 'left',
-        shortDescription: 'Are you ready to take charge? Every day can be the first day of the rest of your life.',
-        title: 'EatFit24By7',
-        titleIcon: 'favorite',
-        description: 'A well-balanced diet that leads to a well-balanced life. Transform your health journey with personalized nutrition plans.',
-        primaryActionText: 'Get Started',
-        primaryActionUrl: '/our-programs',
-        secondaryActionText: 'Learn More',
-        secondaryActionUrl: '/about-us',
+  getBannerSlides(): Observable<SliderItem[]> {
+    const url = `${this.apiUrl}/public/banners/list`;
+    return this.http.get<ITableList<IBanner>>(url, {
+      params: {
+        bannerFor: 'HOME', // Filter for home page banners
+        limit: '50', // Get all banners
       },
-      {
-        id: 'banner-2',
-        backgroundImageUrl: `${this.baseImageUrl}/revslider/dummy-corp-slide-1.jpg`,
-        imageUrl: ``,
-        imageAlt: 'Shweta Shah - Celebrity Nutritionist',
-        imagePosition: 'right',
-        shortDescription: 'Confused about taking that leap into healthy eating? You have come to the right place.',
-        title: 'Hop on to the health wagon!',
-        titleIcon: 'local_dining',
-        description: 'Shweta Shah has helped 2000+ Clients In 18 Years. Get expert guidance from a celebrity nutritionist.',
-        primaryActionText: 'Book Appointment',
-        primaryActionUrl: '/contact-us',
-        secondaryActionText: 'Success Stories',
-        secondaryActionUrl: '/success-stories',
-      },
-      {
-        id: 'banner-3',
-        backgroundImageUrl: `${this.baseImageUrl}/2022/04/health-adviser.jpg`,
-        imageUrl: ``,
-        imageAlt: 'Personalized Nutrition Plans',
-        imagePosition: 'left',
-        shortDescription: 'Are you ready to meet the best version of yourself?',
-        title: 'With EatFit Plan Your Health Fitness',
-        titleIcon: 'fitness_center',
-        description: 'Get Guidance for Weight Loss / Weight Gain Diets, Sports & Workout Nutrition Diets for PCOD, Diabetes, Hypertension, Pre / Post Pregnancy & Kids',
-        primaryActionText: 'View Programs',
-        primaryActionUrl: '/our-programs',
-        secondaryActionText: 'Take Quiz',
-        secondaryActionUrl: '/know-your-body-dosha',
-      },
-    ];
+    }).pipe(
+      map((response) => {
+        return response.tableData.map((banner) => this.mapBannerToSliderItem(banner));
+      }),
+      catchError((error) => {
+        console.error('Error fetching banners:', error);
+        // Return empty array on error
+        return of([]);
+      }),
+    );
+  }
+
+  /**
+   * Map IBanner to SliderItem
+   */
+  private mapBannerToSliderItem(banner: IBanner): SliderItem {
+    // Get the first image from imagePath array
+    const firstImage = banner.imagePath && banner.imagePath.length > 0
+      ? banner.imagePath[0]
+      : null;
+    const imageUrl = firstImage?.url || firstImage?.path || '';
+
+    return {
+      id: `banner-${banner.bannerId}`,
+      imageUrl: imageUrl,
+      backgroundImageUrl: imageUrl, // Use same image as background
+      imageAlt: banner.title,
+      imagePosition: (banner.imagePosition as 'left' | 'right') || 'left',
+      shortDescription: banner.subTitle || '',
+      title: banner.title,
+      titleIcon: banner.titleIcon || '',
+      description: banner.description || '',
+      primaryActionText: banner.primaryActionText,
+      primaryActionUrl: banner.primaryActionUrl,
+      secondaryActionText: banner.secondaryActionText,
+      secondaryActionUrl: banner.secondaryActionUrl,
+    };
   }
 }
 

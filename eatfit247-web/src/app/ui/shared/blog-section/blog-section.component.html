@@ -1,0 +1,108 @@
+<section class="blog-section">
+  <!-- Section Header -->
+  <div class="section-header">
+    <h2 class="section-title">{{ sectionTitle }}</h2>
+    @if (sectionDescription) {
+      <p class="section-description">{{ sectionDescription }}</p>
+    }
+  </div>
+
+  <!-- Loading State -->
+  @if (loading) {
+    <div class="blog-section-loading">
+      <mat-icon class="loading-icon">hourglass_empty</mat-icon>
+      <p>Loading blogs...</p>
+    </div>
+  }
+
+  <!-- Blogs Grid -->
+  @if (!loading && displayedBlogs.length > 0) {
+    <div class="blogs-grid">
+      @for (post of displayedBlogs; track post.id) {
+        <mat-card class="blog-card">
+          <!-- Blog Image -->
+          <div class="blog-image-container">
+            @if (post.imageUrl) {
+              <img
+                [src]="post.imageUrl"
+                [alt]="post.imageAlt || post.title"
+                class="blog-image"
+                loading="lazy"
+                (error)="onImageError($event)"
+              />
+            } @else {
+              <div class="blog-image-placeholder">
+                <mat-icon class="image-icon">article</mat-icon>
+              </div>
+            }
+            @if (post.category) {
+              <mat-chip class="category-chip">{{ post.category }}</mat-chip>
+            }
+          </div>
+
+          <mat-card-content class="blog-card-content">
+            <!-- Date and Read Time -->
+            <div class="blog-meta">
+              <span class="blog-date">
+                <mat-icon class="meta-icon">calendar_today</mat-icon>
+                {{ formatDate(post.publishDate) }}
+              </span>
+              @if (post.readTime) {
+                <span class="blog-read-time">
+                  <mat-icon class="meta-icon">schedule</mat-icon>
+                  {{ post.readTime }} min read
+                </span>
+              }
+            </div>
+
+            <!-- Blog Title -->
+            <h3 class="blog-title">
+              <a [routerLink]="getPostUrl(post)" class="blog-title-link">
+                {{ post.title }}
+              </a>
+            </h3>
+
+            <!-- Blog Excerpt -->
+            <p class="blog-excerpt">{{ post.excerpt }}</p>
+
+            <!-- Blog Footer -->
+            <div class="blog-footer">
+              <div class="blog-author">
+                <mat-icon class="author-icon">person</mat-icon>
+                <span>{{ post.author }}</span>
+              </div>
+              <a
+                mat-button
+                color="primary"
+                [routerLink]="getPostUrl(post)"
+                class="read-more-btn"
+              >
+                Read More
+                <mat-icon>arrow_forward</mat-icon>
+              </a>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      }
+    </div>
+  }
+
+  <!-- Empty State -->
+  @if (!loading && displayedBlogs.length === 0) {
+    <div class="blog-section-empty">
+      <mat-icon class="empty-icon">article</mat-icon>
+      <p>No blogs available at the moment.</p>
+    </div>
+  }
+
+  <!-- View All Button -->
+  @if (showViewAll && !loading && displayedBlogs.length > 0) {
+    <div class="section-footer">
+      <a mat-stroked-button [routerLink]="viewAllUrl" class="view-all-btn">
+        View All Blogs
+        <mat-icon>arrow_forward</mat-icon>
+      </a>
+    </div>
+  }
+</section>
+

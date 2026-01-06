@@ -52,27 +52,49 @@ export class BlogComponent implements OnInit {
    * Load blog posts with pagination
    */
   private loadBlogPosts(): void {
-    const result = this.blogService.getPaginatedPosts(
-      this.currentPage,
-      this.pageSize
-    );
-    this.blogPosts = result.posts;
-    this.totalPosts = result.total;
-    this.totalPages = result.totalPages;
+    this.blogService.getPaginatedPosts(this.currentPage - 1, this.pageSize).subscribe({
+      next: (result) => {
+        this.blogPosts = result.posts;
+        this.totalPosts = result.total;
+        this.totalPages = result.totalPages;
+      },
+      error: (error) => {
+        console.error('Error loading blog posts:', error);
+        this.blogPosts = [];
+        this.totalPosts = 0;
+        this.totalPages = 0;
+      },
+    });
   }
 
   /**
    * Load recent posts for sidebar
    */
   private loadRecentPosts(): void {
-    this.recentPosts = this.blogService.getRecentPosts(undefined, 5);
+    this.blogService.getRecentPosts(undefined, 5).subscribe({
+      next: (posts) => {
+        this.recentPosts = posts;
+      },
+      error: (error) => {
+        console.error('Error loading recent posts:', error);
+        this.recentPosts = [];
+      },
+    });
   }
 
   /**
    * Load all categories
    */
   private loadCategories(): void {
-    this.categories = this.blogService.getAllCategories();
+    this.blogService.getAllCategories().subscribe({
+      next: (cats) => {
+        this.categories = cats;
+      },
+      error: (error) => {
+        console.error('Error loading categories:', error);
+        this.categories = [];
+      },
+    });
   }
 
   /**
@@ -94,12 +116,21 @@ export class BlogComponent implements OnInit {
     this.currentPage = 1;
 
     if (category) {
-      const categoryPosts = this.blogService.getPostsByCategory(category);
-      this.totalPosts = categoryPosts.length;
-      this.totalPages = Math.ceil(this.totalPosts / this.pageSize);
-      const startIndex = 0;
-      const endIndex = this.pageSize;
-      this.blogPosts = categoryPosts.slice(startIndex, endIndex);
+      this.blogService.getPostsByCategory(category).subscribe({
+        next: (categoryPosts) => {
+          this.totalPosts = categoryPosts.length;
+          this.totalPages = Math.ceil(this.totalPosts / this.pageSize);
+          const startIndex = 0;
+          const endIndex = this.pageSize;
+          this.blogPosts = categoryPosts.slice(startIndex, endIndex);
+        },
+        error: (error) => {
+          console.error('Error loading category posts:', error);
+          this.blogPosts = [];
+          this.totalPosts = 0;
+          this.totalPages = 0;
+        },
+      });
     } else {
       this.loadBlogPosts();
     }

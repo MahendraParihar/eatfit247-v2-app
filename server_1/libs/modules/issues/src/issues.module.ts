@@ -5,8 +5,6 @@ import { MstIssueCategory, MstIssueStatus } from './models';
 import {
   IssueCategoryController,
   IssueStatusController,
-  PublicIssueCategoryController,
-  PublicIssueStatusController,
 } from './controllers';
 import { IssueCategoryService, IssueStatusService } from './services';
 // Register models with the model registry
@@ -23,8 +21,6 @@ modelRegistry.register([MstIssueCategory, MstIssueStatus]);
   controllers: [
     IssueCategoryController,
     IssueStatusController,
-    PublicIssueCategoryController,
-    PublicIssueStatusController,
   ],
   providers: [
     IssueCategoryService,

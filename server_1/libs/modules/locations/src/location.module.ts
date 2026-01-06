@@ -4,8 +4,6 @@ import {
   AddressController,
   AddressTypeController,
   CountryController,
-  PublicCountryController,
-  PublicStateController,
   StateController,
 } from './controllers';
 
@@ -18,8 +16,6 @@ import {
     StateController,
     AddressController,
     AddressTypeController,
-    PublicCountryController,
-    PublicStateController,
   ],
   providers: [
     // Services are now provided by CommonModule (global)

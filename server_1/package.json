@@ -5,7 +5,7 @@
   "scripts": {
     "build_shared_lib": "npm --prefix ../shared-library run build",
     "dev_shared_lib": "npm --prefix ../shared-library run dev",
-    "start": "concurrently \"npm run dev_shared_lib\" \"nx run-many --target=serve --maxParallel=10 --projects=admin-api\"",
+    "start": "concurrently \"npm run dev_shared_lib\" \"nx run-many --target=serve --maxParallel=10 --projects=admin-api,public-api\"",
     "build": "npm run build_shared_lib && nx clear-cache && nx run-many --target=build --projects=admin-api,public-api --skip-nx-cache",
     "start:admin": "nx serve admin-api",
     "start:public": "nx serve public-api",

@@ -11,8 +11,12 @@ export class BannerService {
     private appConfigService: AppConfigService,
   ) {}
 
-  public async findAll(searchDto: IBasicSearch): Promise<ITableList<IBanner>> {
+  public async findAll(searchDto: IBasicSearch & { bannerFor?: string }): Promise<ITableList<IBanner>> {
     const whereCondition: any = SearchUtil.filterBasicSearch(searchDto, 'title');
+    // Add bannerFor filter if provided
+    if (searchDto.bannerFor) {
+      whereCondition.bannerFor = searchDto.bannerFor;
+    }
     const pageNumber = searchDto.page || 0;
     const pageSize = searchDto.limit || 15;
     const offset = pageNumber === 0 ? 0 : pageNumber * pageSize;

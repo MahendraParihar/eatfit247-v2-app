@@ -13,7 +13,14 @@ const logger = new Logger('Bootstrap');
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {});
-  app.setGlobalPrefix('api/v2');
+
+  app.enableCors({
+    origin: true, // Allow all origins in development (configure specific origins in production)
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+  });
+
+  app.setGlobalPrefix('api/v2/public');
   const moduleRef = app.get(ModuleRef);
   app.useGlobalFilters(new ValidationFilter());
   app.useGlobalPipes(

@@ -1,10 +1,16 @@
-import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import { Type } from 'class-transformer';
 import { DEFAULT_PAGE_SIZE } from '../../constants';
 import { IBasicSearch, IStatusChange } from '@eatfit247-shared-lib';
 
 export class BasicSearchDto implements IBasicSearch {
+  @Type(() => Number)
+  @IsNumber()
   @IsNotEmpty()
   page: number = 0;
+  
+  @Type(() => Number)
+  @IsNumber()
   @IsNotEmpty()
   limit: number = DEFAULT_PAGE_SIZE;
   @IsOptional()
