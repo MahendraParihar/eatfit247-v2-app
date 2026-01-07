@@ -31,12 +31,12 @@
 
       <!-- Articles Grid -->
       <div class="articles-grid">
-        @for (article of pressArticles; track article.id) {
+        @for (article of pressArticles; track article.pressMediaId) {
           <mat-card class="article-card">
             <!-- Article Image -->
             <div class="article-image-container">
-              @if (article.imageUrl) {
-                <img [src]="article.imageUrl" [alt]="article.title" class="article-image" />
+              @if (getImageUrl(article)) {
+                <img [src]="getImageUrl(article)!" [alt]="article.title || 'Press article'" class="article-image" />
               } @else {
                 <div class="article-image-placeholder">
                   <mat-icon class="image-icon">article</mat-icon>
@@ -45,29 +45,18 @@
             </div>
 
             <mat-card-content class="card-content">
-              <!-- Source Badge -->
+              <!-- Type Badge -->
               <div class="source-badge">
                 <mat-icon class="source-icon">public</mat-icon>
-                <span class="source-text">{{ article.source }}</span>
+                <span class="source-text">{{ article.type | titlecase }}</span>
               </div>
 
               <!-- Article Title -->
-              <h3 class="article-title">{{ article.title }}</h3>
-
-              <!-- Article Excerpt -->
-              <p class="article-excerpt">{{ article.excerpt }}</p>
-
-              <!-- Article Meta -->
-              <div class="article-meta">
-                <div class="meta-item">
-                  <mat-icon class="meta-icon">calendar_today</mat-icon>
-                  <span class="meta-text">{{ article.publishDate | date:'longDate' }}</span>
-                </div>
-              </div>
+              <h3 class="article-title">{{ article.title || 'Untitled Article' }}</h3>
             </mat-card-content>
 
             <mat-card-actions class="card-actions">
-              @if (article.articleUrl) {
+              @if (article.link) {
                 <button
                   mat-raised-button
                   color="primary"
@@ -117,12 +106,12 @@
 
       <!-- YouTube Videos Grid -->
       <div class="articles-grid">
-        @for (article of youtubeArticles; track article.id) {
+        @for (article of youtubeArticles; track article.pressMediaId) {
           <mat-card class="article-card youtube-card">
             <!-- YouTube Video Thumbnail -->
             <div class="article-image-container">
-              @if (article.imageUrl) {
-                <img [src]="article.imageUrl" [alt]="article.title" class="article-image" />
+              @if (getImageUrl(article)) {
+                <img [src]="getImageUrl(article)!" [alt]="article.title || 'YouTube video'" class="article-image" />
               } @else {
                 <div class="article-image-placeholder">
                   <mat-icon class="image-icon">play_circle</mat-icon>
@@ -134,21 +123,18 @@
             </div>
 
             <mat-card-content class="card-content">
-              <!-- Source Badge -->
+              <!-- Type Badge -->
               <div class="source-badge youtube-badge">
                 <mat-icon class="source-icon">play_circle</mat-icon>
-                <span class="source-text">{{ article.source }}</span>
+                <span class="source-text">{{ article.type | titlecase }}</span>
               </div>
 
               <!-- Article Title -->
-              <h3 class="article-title">{{ article.title }}</h3>
-
-              <!-- Article Excerpt -->
-              <p class="article-excerpt">{{ article.excerpt }}</p>
+              <h3 class="article-title">{{ article.title || 'Untitled Video' }}</h3>
             </mat-card-content>
 
             <mat-card-actions class="card-actions">
-              @if (article.articleUrl) {
+              @if (article.link) {
                 <button
                   mat-raised-button
                   color="primary"
