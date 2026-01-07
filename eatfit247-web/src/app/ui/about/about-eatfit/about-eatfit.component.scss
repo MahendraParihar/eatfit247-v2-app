@@ -241,6 +241,10 @@
 .partners-section {
   padding: $spacing-3xl $spacing-lg;
   background-color: var(--mat-sys-surface);
+
+  @media (max-width: 768px) {
+    padding: $spacing-2xl $spacing-md;
+  }
 }
 
 .partners-container {
@@ -389,6 +393,10 @@
   padding: $spacing-3xl $spacing-lg;
   background-color: #ff6600;
   color: #ffffff;
+
+  @media (max-width: 768px) {
+    padding: $spacing-2xl $spacing-md;
+  }
 }
 
 .join-shweta-container {
@@ -444,13 +452,8 @@
 .blog-section-wrapper {
   padding: $spacing-3xl $spacing-lg;
   background-color: var(--mat-sys-surface);
-}
 
-// Responsive adjustments
-@media (max-width: 768px) {
-  .partners-section,
-  .join-shweta-section,
-  .blog-section-wrapper {
+  @media (max-width: 768px) {
     padding: $spacing-2xl $spacing-md;
   }
 }

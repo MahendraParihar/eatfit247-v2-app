@@ -14,8 +14,8 @@ modelRegistry.register([TxnPressMedia]);
     ScheduleModule.forRoot(),
   ],
   controllers: [
+    PublicPressMediaController, // Register public controller first to avoid route conflicts
     PressMediaController,
-    PublicPressMediaController,
   ],
   providers: [
     PressMediaService,

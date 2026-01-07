@@ -25,7 +25,7 @@
           <div class="blog-image-container">
             @if (post.imageUrl) {
               <img
-                [src]="post.imageUrl"
+                [src]="'http://localhost:3001/'+post.imageUrl"
                 [alt]="post.imageAlt || post.title"
                 class="blog-image"
                 loading="lazy"

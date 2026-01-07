@@ -70,6 +70,10 @@
   max-width: 1400px;
   margin: 0 auto;
   padding: $spacing-3xl $spacing-lg;
+
+  @media (max-width: 768px) {
+    padding: $spacing-2xl $spacing-md;
+  }
 }
 
 // Contact Sections Wrapper (Side by Side Layout)
@@ -375,6 +379,10 @@
   padding: $spacing-3xl $spacing-lg;
   background-color: var(--mat-sys-surface-container-lowest);
 
+  @media (max-width: 768px) {
+    padding: $spacing-2xl $spacing-md;
+  }
+
   .location-container {
     max-width: 1200px;
     margin: 0 auto;
@@ -469,6 +477,10 @@
 .testimonials-section {
   padding: $spacing-3xl $spacing-lg;
   background-color: var(--mat-sys-surface);
+
+  @media (max-width: 768px) {
+    padding: $spacing-2xl $spacing-md;
+  }
 
   .testimonials-container {
     max-width: 1200px;
@@ -618,20 +630,11 @@
   }
 
   .contact-sections-wrapper {
-    padding: $spacing-xl $spacing-md;
     gap: $spacing-lg;
   }
 
   .quick-contact-section,
   .contact-form-section {
     padding: $spacing-lg;
-  }
-
-  .map-location-section {
-    padding: $spacing-2xl $spacing-md;
-  }
-
-  .testimonials-section {
-    padding: $spacing-2xl $spacing-md;
   }
 }

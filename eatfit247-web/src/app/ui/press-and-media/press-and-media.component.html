@@ -11,10 +11,9 @@
     </section>
   }
 
-  <!-- Main Content -->
-  <div class="press-media-container">
-    <!-- First Section: EatFit24/7 on Blogs -->
-    <section class="articles-section">
+  <!-- First Section: EatFit24/7 on Blogs -->
+  <section class="articles-section">
+    <div class="articles-container">
       <h2 class="section-title">EatFit24/7 on Blogs</h2>
       <div class="title-underline"></div>
       <p class="section-subtitle">
@@ -45,12 +44,6 @@
             </div>
 
             <mat-card-content class="card-content">
-              <!-- Type Badge -->
-              <div class="source-badge">
-                <mat-icon class="source-icon">public</mat-icon>
-                <span class="source-text">{{ article.type | titlecase }}</span>
-              </div>
-
               <!-- Article Title -->
               <h3 class="article-title">{{ article.title || 'Untitled Article' }}</h3>
             </mat-card-content>
@@ -86,10 +79,12 @@
           </div>
         }
       </div>
-    </section>
+    </div>
+  </section>
 
-    <!-- Second Section: Shweta Shah's Secret Tips & Tricks -->
-    <section class="articles-section youtube-section">
+  <!-- Second Section: Shweta Shah's Secret Tips & Tricks -->
+  <section class="articles-section youtube-section">
+    <div class="articles-container">
       <h2 class="section-title">Shweta Shah's Secret Tips & Tricks</h2>
       <div class="title-underline"></div>
       <p class="section-subtitle">
@@ -104,58 +99,35 @@
         </div>
       }
 
-      <!-- YouTube Videos Grid -->
-      <div class="articles-grid">
-        @for (article of youtubeArticles; track article.pressMediaId) {
-          <mat-card class="article-card youtube-card">
-            <!-- YouTube Video Thumbnail -->
+      <!-- YouTube Videos Grid - Masonry Gallery -->
+      <div class="youtube-gallery-grid">
+        @for (article of youtubeArticles; track article.pressMediaId; let i = $index) {
+          <mat-card 
+            class="article-card youtube-card"
+            [class.gallery-item-small]="getGalleryItemSize(i) === 'small'"
+            [class.gallery-item-medium]="getGalleryItemSize(i) === 'medium'"
+            [class.gallery-item-large]="getGalleryItemSize(i) === 'large'"
+            [class.gallery-item-wide]="getGalleryItemSize(i) === 'wide'"
+          >
+            <!-- YouTube Video -->
             <div class="article-image-container">
-              @if (getImageUrl(article)) {
-                <img [src]="getImageUrl(article)!" [alt]="article.title || 'YouTube video'" class="article-image" />
+              @if (getSafeYoutubeUrl(article)) {
+                <div class="video-wrapper">
+                  <iframe
+                    [src]="getSafeYoutubeUrl(article)!"
+                    frameborder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowfullscreen
+                    class="youtube-iframe"
+                    [title]="article.title || 'YouTube video'"
+                  ></iframe>
+                </div>
               } @else {
                 <div class="article-image-placeholder">
                   <mat-icon class="image-icon">play_circle</mat-icon>
                 </div>
               }
-              <div class="play-overlay">
-                <mat-icon class="play-icon">play_circle_filled</mat-icon>
-              </div>
             </div>
-
-            <mat-card-content class="card-content">
-              <!-- Type Badge -->
-              <div class="source-badge youtube-badge">
-                <mat-icon class="source-icon">play_circle</mat-icon>
-                <span class="source-text">{{ article.type | titlecase }}</span>
-              </div>
-
-              <!-- Article Title -->
-              <h3 class="article-title">{{ article.title || 'Untitled Video' }}</h3>
-            </mat-card-content>
-
-            <mat-card-actions class="card-actions">
-              @if (article.link) {
-                <button
-                  mat-raised-button
-                  color="primary"
-                  (click)="openArticle(article)"
-                  class="read-more-btn"
-                >
-                  <mat-icon>play_arrow</mat-icon>
-                  Watch Video
-                </button>
-              } @else {
-                <button
-                  mat-stroked-button
-                  color="primary"
-                  disabled
-                  class="read-more-btn"
-                >
-                  <mat-icon>lock</mat-icon>
-                  Coming Soon
-                </button>
-              }
-            </mat-card-actions>
           </mat-card>
         } @empty {
           <div class="no-articles">
@@ -164,6 +136,6 @@
           </div>
         }
       </div>
-    </section>
-  </div>
+    </div>
+  </section>
 </div>

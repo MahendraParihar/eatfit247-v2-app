@@ -13,8 +13,8 @@ modelRegistry.register([MstReferrer]);
     SequelizeModule.forFeature([MstReferrer]),
   ],
   controllers: [
-    ReferrerController,
     PublicReferrerController,
+    ReferrerController,
   ],
   providers: [
     ReferrerService,

@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpService } from './http.service';
-import { IPublicBlog, IPublicTableList } from 'eatfit247-shared-library';
+import { IPublicBlog, IPublicTableList, IBlogCategory } from 'eatfit247-shared-library';
 
 export interface BlogPost {
   id: string;
@@ -10,6 +10,7 @@ export interface BlogPost {
   author: string;
   publishDate: Date;
   category: string;
+  categoryId?: number;
   imageUrl?: string;
   imageAlt?: string;
   slug: string;
@@ -38,18 +39,24 @@ export class BlogService {
   /**
    * Get paginated blog posts
    */
-  async getPaginatedPosts(page: number, pageSize: number): Promise<{
+  async getPaginatedPosts(page: number, pageSize: number, categoryId?: number): Promise<{
     posts: BlogPost[];
     total: number;
     totalPages: number;
   }> {
     try {
+      const params: any = {
+        page: page.toString(),
+        limit: pageSize.toString(),
+      };
+
+      if (categoryId) {
+        params.blogCategoryId = categoryId.toString();
+      }
+
       const data = await this.httpService.get<IPublicTableList<IPublicBlog>>(
         'public/blog/list',
-        {
-          page: page.toString(),
-          limit: pageSize.toString(),
-        }
+        params
       );
 
       if (data) {
@@ -84,7 +91,9 @@ export class BlogService {
    */
   async getPostBySlug(slug: string): Promise<BlogPost | null> {
     try {
-      const blog = await this.httpService.get<IPublicBlog>(`public/blog/by-url/${slug}`);
+      // Encode the slug for the URL path to handle special characters
+      const encodedSlug = encodeURIComponent(slug);
+      const blog = await this.httpService.get<IPublicBlog>(`public/blog/by-url/${encodedSlug}`);
       return blog ? this.mapBlogToPost(blog) : null;
     } catch (error) {
       console.error('Error fetching blog post by slug:', error);
@@ -105,22 +114,20 @@ export class BlogService {
   }
 
   /**
-   * Get posts by category
+   * Get posts by category ID
    */
-  async getPostsByCategory(category: string): Promise<BlogPost[]> {
+  async getPostsByCategory(categoryId: number): Promise<BlogPost[]> {
     try {
       const data = await this.httpService.get<IPublicTableList<IPublicBlog>>(
         'public/blog/list',
         {
-          search: category,
+          blogCategoryId: categoryId.toString(),
           limit: '1000',
         }
       );
 
       if (data) {
-        return data.tableData
-          .filter((blog: IPublicBlog) => blog.blogCategory?.toLowerCase() === category.toLowerCase())
-          .map((blog: IPublicBlog) => this.mapBlogToPost(blog));
+        return data.tableData.map((blog: IPublicBlog) => this.mapBlogToPost(blog));
       }
       return [];
     } catch (error) {
@@ -130,12 +137,19 @@ export class BlogService {
   }
 
   /**
-   * Get all categories
+   * Get all categories from API
    */
-  async getAllCategories(): Promise<string[]> {
-    const posts = await this.getAllPosts();
-    const categories = new Set(posts.map((post) => post.category));
-    return Array.from(categories).sort();
+  async getAllCategories(): Promise<IBlogCategory[]> {
+    try {
+      const categories = await this.httpService.get<IBlogCategory[]>('public/blog-category/list');
+      if (categories && Array.isArray(categories)) {
+        return categories.sort((a, b) => (a.blogCategory || '').localeCompare(b.blogCategory || ''));
+      }
+      return [];
+    } catch (error) {
+      console.error('Error fetching blog categories:', error);
+      return [];
+    }
   }
 
   /**
@@ -162,6 +176,7 @@ export class BlogService {
       author: blog.blogAuthor || 'eatfit247',
       publishDate: blog.writtenAt ? new Date(blog.writtenAt) : new Date(),
       category: blog.blogCategory || 'Uncategorized',
+      categoryId: blog.blogCategoryId,
       imageUrl: imageUrl,
       imageAlt: blog.title,
       slug: blog.seo?.url || blog.title.toLowerCase().replace(/\s+/g, '-'),

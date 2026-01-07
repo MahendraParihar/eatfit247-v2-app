@@ -9,7 +9,7 @@ import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { BlogService, BlogPost } from '../../services/blog.service';
 import { BannerService } from '../../services/banner.service';
 import { ImageSliderComponent, SliderItem } from '../shared/image-slider/image-slider.component';
-import { BannerForEnum } from 'eatfit247-shared-library';
+import { BannerForEnum, IBlogCategory } from 'eatfit247-shared-library';
 
 /**
  * Blog Listing Component
@@ -40,15 +40,15 @@ export class BlogComponent implements OnInit {
 
   // Pagination
   currentPage = 1;
-  pageSize = 6;
+  pageSize = 9;
   totalPosts = 0;
   totalPages = 0;
 
   // Blog data
   blogPosts: BlogPost[] = [];
   recentPosts: BlogPost[] = [];
-  categories: string[] = [];
-  selectedCategory: string | null = null;
+  categories: IBlogCategory[] = [];
+  selectedCategoryId: number | null = null; // null means "All Posts" is selected
   
   // Loading states
   loading = false;
@@ -80,7 +80,11 @@ export class BlogComponent implements OnInit {
   private async loadBlogPosts(): Promise<void> {
     this.loading = true;
     try {
-      const result = await this.blogService.getPaginatedPosts(this.currentPage - 1, this.pageSize);
+      const result = await this.blogService.getPaginatedPosts(
+        this.currentPage - 1,
+        this.pageSize,
+        this.selectedCategoryId || undefined
+      );
       console.log('Blog posts loaded:', result);
       this.blogPosts = result.posts;
       this.totalPosts = result.total;
@@ -131,38 +135,28 @@ export class BlogComponent implements OnInit {
   onPageChange(event: PageEvent): void {
     this.currentPage = event.pageIndex + 1;
     this.pageSize = event.pageSize;
-    this.loadBlogPosts();
+    
+    // Reload posts with current category filter
+    this.loadPostsForCurrentFilter();
+    
     // Scroll to top of blog section
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   /**
+   * Load posts based on current filter and pagination
+   */
+  private async loadPostsForCurrentFilter(): Promise<void> {
+    await this.loadBlogPosts();
+  }
+
+  /**
    * Filter posts by category
    */
-  async filterByCategory(category: string | null): Promise<void> {
-    this.selectedCategory = category;
+  async filterByCategory(categoryId: number | null): Promise<void> {
+    this.selectedCategoryId = categoryId;
     this.currentPage = 1;
-
-    if (category) {
-      this.loading = true;
-      try {
-        const categoryPosts = await this.blogService.getPostsByCategory(category);
-        this.totalPosts = categoryPosts.length;
-        this.totalPages = Math.ceil(this.totalPosts / this.pageSize);
-        const startIndex = 0;
-        const endIndex = this.pageSize;
-        this.blogPosts = categoryPosts.slice(startIndex, endIndex);
-      } catch (error) {
-        console.error('Error loading category posts:', error);
-        this.blogPosts = [];
-        this.totalPosts = 0;
-        this.totalPages = 0;
-      } finally {
-        this.loading = false;
-      }
-    } else {
-      this.loadBlogPosts();
-    }
+    await this.loadPostsForCurrentFilter();
   }
 
   /**

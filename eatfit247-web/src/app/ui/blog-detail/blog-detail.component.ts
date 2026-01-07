@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
@@ -7,6 +7,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatDividerModule } from '@angular/material/divider';
+import { Subscription } from 'rxjs';
 import { BlogService, BlogPost } from '../../services/blog.service';
 import { SEOService } from '../../services/seo.service';
 
@@ -29,7 +30,7 @@ import { SEOService } from '../../services/seo.service';
   templateUrl: './blog-detail.component.html',
   styleUrl: './blog-detail.component.scss',
 })
-export class BlogDetailComponent implements OnInit {
+export class BlogDetailComponent implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly blogService = inject(BlogService);
@@ -43,26 +44,53 @@ export class BlogDetailComponent implements OnInit {
   loading = true;
   notFound = false;
   sanitizedContent: SafeHtml | null = null;
+  private routeSubscription?: Subscription;
 
   ngOnInit(): void {
-    // Get slug from route parameter
-    this.slug = this.route.snapshot.paramMap.get('slug');
+    // Subscribe to route parameter changes to handle navigation between blog posts
+    this.routeSubscription = this.route.paramMap.subscribe((params) => {
+      const slug = params.get('slug');
 
-    if (this.slug) {
-      this.loadBlogPost(this.slug);
-    } else {
-      this.loading = false;
-      this.notFound = true;
+      if (slug) {
+        // Decode URL-encoded slug if needed (Angular router may already decode, but handle edge cases)
+        try {
+          this.slug = decodeURIComponent(slug);
+        } catch (error) {
+          // If decoding fails, use the slug as-is (it might already be decoded)
+          this.slug = slug;
+        }
+        this.loadBlogPost(this.slug);
+      } else {
+        this.loading = false;
+        this.notFound = true;
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    // Clean up subscription
+    if (this.routeSubscription) {
+      this.routeSubscription.unsubscribe();
     }
   }
 
   /**
-   * Load blog post by slug
+   * Load blog post by slug (URL)
    */
   private async loadBlogPost(slug: string): Promise<void> {
+    // Reset state when loading a new blog post
+    this.loading = true;
+    this.notFound = false;
+    this.blogPost = undefined;
+    this.recentPosts = [];
+    this.relatedPosts = [];
+    this.sanitizedContent = null;
+
     try {
+      // Slug is already decoded in ngOnInit, pass it directly to the service
       const post = await this.blogService.getPostBySlug(slug);
-      
+      console.log(post)
+
       if (!post) {
         this.notFound = true;
         this.loading = false;
@@ -95,10 +123,14 @@ export class BlogDetailComponent implements OnInit {
 
       // Load related posts (same category, excluding current)
       try {
-        const categoryPosts = await this.blogService.getPostsByCategory(this.blogPost.category);
-        this.relatedPosts = categoryPosts
-          .filter((p) => p.id !== this.blogPost!.id)
-          .slice(0, 3);
+        if (this.blogPost.categoryId) {
+          const categoryPosts = await this.blogService.getPostsByCategory(this.blogPost.categoryId);
+          this.relatedPosts = categoryPosts
+            .filter((p) => p.id !== this.blogPost!.id)
+            .slice(0, 3);
+        } else {
+          this.relatedPosts = [];
+        }
       } catch (error) {
         console.error('Error loading related posts:', error);
         this.relatedPosts = [];
@@ -124,7 +156,10 @@ export class BlogDetailComponent implements OnInit {
     this.seoService.updateSEO({
       title: `${this.blogPost.title} | EatFit24By7 Blog`,
       description: this.blogPost.excerpt,
-      keywords: this.blogPost.tags?.join(', ') || this.blogPost.category,
+      keywords:
+        this.blogPost.tags && Array.isArray(this.blogPost.tags)
+          ? this.blogPost.tags?.join(', ')
+          : this.blogPost.title,
     });
 
     // Add article structured data

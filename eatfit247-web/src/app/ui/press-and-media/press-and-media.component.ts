@@ -1,5 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -30,6 +31,7 @@ import { BannerForEnum, IPublicPressMedia } from 'eatfit247-shared-library';
 export class PressAndMediaComponent implements OnInit {
   private readonly pressMediaService = inject(PressMediaService);
   private readonly bannerService = inject(BannerService);
+  private readonly sanitizer = inject(DomSanitizer);
   bannerItems: SliderItem[] = [];
   pressArticles: IPublicPressMedia[] = [];
   youtubeArticles: IPublicPressMedia[] = [];
@@ -89,7 +91,7 @@ export class PressAndMediaComponent implements OnInit {
    */
   getImageUrl(article: IPublicPressMedia): string | null {
     if (article.imagePath && article.imagePath.length > 0) {
-      return article.imagePath[0].webUrl;
+      return 'http://localhost:3001/'+article.imagePath[0].webUrl;
     }
     return null;
   }
@@ -101,5 +103,47 @@ export class PressAndMediaComponent implements OnInit {
     if (article.link) {
       window.open(article.link, '_blank', 'noopener,noreferrer');
     }
+  }
+
+  /**
+   * Get gallery item size based on index for grid layout
+   * Creates a pattern: 1 big + 2 small in each row
+   * Pattern: [big, small, small, big, small, small, ...]
+   */
+  getGalleryItemSize(index: number): 'small' | 'medium' | 'large' | 'wide' {
+    // Pattern repeats every 3 items: big, small, small
+    const positionInGroup = index % 3;
+    
+    if (positionInGroup === 0) {
+      return 'large'; // Big item (spans 2 columns, 2 rows)
+    } else {
+      return 'small'; // Small items (span 1 column, 1 row each)
+    }
+  }
+
+  /**
+   * Get safe YouTube embed URL for iframe
+   */
+  getSafeYoutubeUrl(article: IPublicPressMedia): SafeResourceUrl | null {
+    if (!article.link) {
+      return null;
+    }
+    const embedUrl = this.getEmbedUrl(article.link);
+    return this.sanitizer.bypassSecurityTrustResourceUrl(embedUrl);
+  }
+
+  /**
+   * Convert YouTube URL to embed format
+   */
+  private getEmbedUrl(url: string): string {
+    // Handle different YouTube URL formats
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+    const videoId = match && match[2].length === 11 ? match[2] : null;
+
+    if (videoId) {
+      return `https://www.youtube.com/embed/${videoId}`;
+    }
+    return url;
   }
 }

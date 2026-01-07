@@ -25,7 +25,7 @@
             @if (item.backgroundImageUrl) {
               <div
                 class="slide-background"
-                [style.background-image]="'url(' + item.backgroundImageUrl + ')'"
+                [style.background-image]="'url(' + 'http://localhost:3001/'+item.backgroundImageUrl + ')'"
                 [style.background-position]="'center center'"
                 [style.background-size]="'cover'"
               ></div>
@@ -38,7 +38,7 @@
                 class="section image-section"
                 [class.left-section]="isImageLeft(item)"
                 [class.right-section]="isImageRight(item)"
-                [style.background-image]="'url(' + item.imageUrl + ')'"
+                [style.background-image]="'url(' + 'http://localhost:3001/'+item.imageUrl + ')'"
                 [style.background-position]="isImageLeft(item) ? 'left center' : 'right center'"
                 [style.background-size]="'cover'"
                 [style.background-repeat]="'no-repeat'"
@@ -54,8 +54,8 @@
                 [class.left-section]="isImageRight(item)"
                 [class.right-section]="isImageLeft(item)"
               >
-                <div 
-                  class="text-section-content" 
+                <div
+                  class="text-section-content"
                   [class.animate]="currentIndex() === $index"
                   [class.slide-animate]="currentIndex() === $index"
                   [attr.data-slide-key]="slideKey()"

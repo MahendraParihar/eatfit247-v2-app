@@ -27,6 +27,10 @@ export class BasicSearchDto implements IBasicSearch {
   active?: boolean | null;
   @IsOptional()
   ids?: number[];
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  blogCategoryId?: number;
 }
 
 export class UpdateActiveDto implements IStatusChange {

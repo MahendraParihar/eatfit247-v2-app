@@ -11,45 +11,19 @@
     </section>
   }
 
-  <!-- Hero Section -->
-  <section class="blog-hero">
-    <div class="hero-content">
-      <h1 class="hero-title">Blog</h1>
-      <p class="hero-subtitle">
-        Discover expert insights, success stories, and wellness tips from our
-        nutrition experts
-      </p>
-    </div>
-  </section>
-
   <!-- Main Content -->
   <div class="blog-container">
     <!-- Blog Posts Section -->
     <main class="blog-main">
-      <!-- Category Filter -->
-      @if (categories.length > 0) {
-        <div class="category-filter">
-          <button
-            mat-stroked-button
-            [class.active]="selectedCategory === null"
-            (click)="filterByCategory(null)"
-            class="category-btn"
-          >
-            All Posts
-          </button>
-          @for (category of categories; track category) {
-            <button
-              mat-stroked-button
-              [class.active]="selectedCategory === category"
-              (click)="filterByCategory(category)"
-              class="category-btn"
-            >
-              {{ category }}
-            </button>
-          }
-        </div>
-      }
-
+      <!-- Section Header -->
+      <section class="blog-section-header">
+        <h2 class="section-title">Blog</h2>
+        <div class="title-underline"></div>
+        <p class="section-subtitle">
+          Discover expert insights, success stories, and wellness tips from our
+          nutrition experts
+        </p>
+      </section>
       <!-- Loading State -->
       @if (loading) {
         <div class="blog-loading">
@@ -67,7 +41,7 @@
               <div class="blog-image-container">
                 @if (post.imageUrl) {
                   <img
-                    [src]="post.imageUrl"
+                    [src]="'http://localhost:3001/'+post.imageUrl"
                     [alt]="post.imageAlt || post.title"
                     class="blog-image"
                     loading="lazy"
@@ -145,7 +119,7 @@
           [length]="totalPosts"
           [pageSize]="pageSize"
           [pageIndex]="currentPage - 1"
-          [pageSizeOptions]="[6, 9, 12, 18]"
+          [pageSizeOptions]="[9, 18, 27, 36]"
           (page)="onPageChange($event)"
           class="blog-paginator"
         >
@@ -201,14 +175,22 @@
               </div>
             } @else if (categories.length > 0) {
               <div class="categories-list">
-                @for (category of categories; track category) {
+                <button
+                  mat-stroked-button
+                  [class.active]="selectedCategoryId === null"
+                  (click)="filterByCategory(null)"
+                  class="sidebar-category-btn"
+                >
+                  All Posts
+                </button>
+                @for (category of categories; track category.blogCategoryId) {
                   <button
                     mat-stroked-button
-                    [class.active]="selectedCategory === category"
-                    (click)="filterByCategory(category)"
+                    [class.active]="selectedCategoryId === category.blogCategoryId"
+                    (click)="filterByCategory(category.blogCategoryId)"
                     class="sidebar-category-btn"
                   >
-                    {{ category }}
+                    {{ category.blogCategory }}
                   </button>
                 }
               </div>

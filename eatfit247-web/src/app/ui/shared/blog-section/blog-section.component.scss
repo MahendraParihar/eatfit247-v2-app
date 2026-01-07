@@ -4,10 +4,6 @@
   padding: $spacing-3xl $spacing-lg;
   max-width: 1400px;
   margin: 0 auto;
-
-  @media (max-width: 768px) {
-    padding: $spacing-2xl $spacing-md;
-  }
 }
 
 // Section Header

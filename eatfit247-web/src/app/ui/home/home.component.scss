@@ -20,6 +20,11 @@
   border-radius: $border-radius-xl;
   margin: 0 $spacing-lg $spacing-2xl;
 
+  @media (max-width: 768px) {
+    padding: $spacing-2xl $spacing-md;
+    margin: 0 $spacing-md $spacing-xl;
+  }
+
   .welcome-content {
     max-width: 800px;
     margin: 0 auto;

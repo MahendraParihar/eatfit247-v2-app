@@ -19,6 +19,10 @@
   border-bottom-right-radius: $border-radius-3xl;
   margin-bottom: $spacing-2xl;
 
+  @media (max-width: 768px) {
+    padding: $spacing-2xl $spacing-md;
+  }
+
   .hero-content {
     max-width: 900px;
     margin: 0 auto;
@@ -99,6 +103,10 @@
 .timeline-section {
   padding: $spacing-2xl $spacing-lg;
   background-color: var(--mat-sys-surface-container-lowest);
+
+  @media (max-width: 768px) {
+    padding: $spacing-xl $spacing-md;
+  }
 }
 
 .timeline-container {
@@ -478,11 +486,15 @@
     var(--mat-sys-tertiary-container) 100%
   );
   color: var(--mat-sys-on-primary-container);
-  padding: 4rem 1.5rem;
+  padding: $spacing-3xl $spacing-lg;
   text-align: center;
   border-top-left-radius: 32px;
   border-top-right-radius: 32px;
   margin-top: 3rem;
+
+  @media (max-width: 768px) {
+    padding: $spacing-2xl $spacing-md;
+  }
 
   .cta-content {
     max-width: 800px;
@@ -569,13 +581,6 @@
 }
 
 @media (max-width: 768px) {
-  .hero-section {
-    padding: 3rem 1rem;
-  }
-
-  .timeline-section {
-    padding: 2rem 1rem;
-  }
 
   .timeline-item {
     margin-bottom: $spacing-xl;
@@ -600,8 +605,6 @@
   }
 
   .cta-section {
-    padding: 3rem 1rem;
-
     .cta-buttons {
       flex-direction: column;
 

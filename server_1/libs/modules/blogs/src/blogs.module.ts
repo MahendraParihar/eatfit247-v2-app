@@ -9,6 +9,7 @@ import {
   BlogCommentsController,
   BlogController,
   PublicBlogController,
+  PublicBlogCategoryController,
 } from './controllers';
 // Register models with the model registry
 // These models have @Scopes decorator, so they MUST be registered for scopes to work
@@ -20,6 +21,7 @@ modelRegistry.register([TxnBlog, MstBlogAuthor, MstBlogCategory]);
   ],
   controllers: [
     PublicBlogController, // Register a public controller first to avoid route conflicts
+    PublicBlogCategoryController, // Register public blog category controller
     BlogController,
     BlogCategoryController,
     BlogAuthorController,

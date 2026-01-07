@@ -77,6 +77,10 @@
   max-width: 1400px;
   margin: 0 auto;
 
+  @media (max-width: 768px) {
+    padding: $spacing-md $spacing-md;
+  }
+
   button {
     color: var(--mat-sys-on-surface);
     
@@ -104,7 +108,10 @@
   @media (max-width: 960px) {
     grid-template-columns: 1fr;
     gap: $spacing-xl;
-    padding: $spacing-lg $spacing-md;
+  }
+
+  @media (max-width: 768px) {
+    padding: $spacing-xl $spacing-md;
   }
 }
 
@@ -203,6 +210,10 @@
 // Content Section
 .content-section {
   padding: 0 $spacing-lg $spacing-2xl;
+
+  @media (max-width: 768px) {
+    padding: 0 $spacing-md $spacing-xl;
+  }
 }
 
 .content-grid {
@@ -395,7 +406,6 @@
 // Mobile Responsive
 @media (max-width: 600px) {
   .hero-section {
-    padding: $spacing-md;
     margin-bottom: $spacing-xl;
   }
 
@@ -404,10 +414,6 @@
     .hero-icon-fallback {
       min-height: 300px;
     }
-  }
-
-  .content-section {
-    padding: 0 $spacing-md $spacing-xl;
   }
 
   .content-grid {

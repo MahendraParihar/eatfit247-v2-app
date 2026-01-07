@@ -9,6 +9,7 @@ import {
   DEFAULT_DATE_FORMAT,
   SearchUtil,
 } from '@server_1/core';
+import { BasicSearchDto } from '@server_1/shared-dto';
 import moment from 'moment';
 
 @Injectable()
@@ -57,11 +58,16 @@ export class BlogService {
   /**
    * Public method to fetch all published and active blogs
    */
-  public async findAllPublic(searchDto: IBasicSearch): Promise<IPublicTableList<IPublicBlog>> {
+  public async findAllPublic(searchDto: BasicSearchDto): Promise<IPublicTableList<IPublicBlog>> {
     const whereCondition: any = SearchUtil.filterBasicSearch(searchDto, 'title');
     // Only show published and active blogs for public
     whereCondition.isPublished = true;
     whereCondition.active = true;
+    
+    // Filter by blogCategoryId if provided (from query parameters)
+    if (searchDto.blogCategoryId) {
+      whereCondition.blogCategoryId = searchDto.blogCategoryId;
+    }
     
     const pageNumber = searchDto.page || 0;
     const pageSize = searchDto.limit || 15;

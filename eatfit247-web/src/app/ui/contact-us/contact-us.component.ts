@@ -54,7 +54,7 @@ export class ContactUsComponent implements OnInit {
   formError = false;
   errorMessage = '';
   reviewsLoading = true;
-  googleReviews = [];
+  googleReviews: any[] = [];
   heroSliderItems: SliderItem[] = [];
   pageData: ContactPageData = {
     page: 'Contact Us',
