@@ -42,10 +42,7 @@ export class LifestyleService {
       lifestyleId: item.lifestyleId,
       id: item.lifestyleId,
       lifestyle: item.lifestyle,
-      imagePath: CommonFunctionsUtil.buildImageUrl(
-        item.imagePath,
-        this.appConfigService.getString(ConfigParam.CLIENT_URL),
-      ),
+      imagePath: CommonFunctionsUtil.buildImageUrl(item.imagePath),
       active: item.active,
       createdBy: item.createdBy,
       updatedBy: item.modifiedBy,

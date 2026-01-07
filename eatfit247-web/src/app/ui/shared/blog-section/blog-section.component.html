@@ -46,7 +46,7 @@
             <div class="blog-meta">
               <span class="blog-date">
                 <mat-icon class="meta-icon">calendar_today</mat-icon>
-                {{ formatDate(post.publishDate) }}
+                {{ post.publishDate | date:'mediumDate' }}
               </span>
               @if (post.readTime) {
                 <span class="blog-read-time">

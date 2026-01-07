@@ -89,35 +89,29 @@ export class AboutEatfitComponent implements OnInit {
   /**
    * Load banner slider data
    */
-  private loadBannerData(): void {
-    this.bannerService.getBannerSlidesForPage(BannerForEnum.ABOUT_US).subscribe({
-      next: (items) => {
-        this.bannerItems = items;
-      },
-      error: (error) => {
-        console.error('Failed to load banner data:', error);
-        this.bannerItems = [];
-      },
-    });
+  private async loadBannerData(): Promise<void> {
+    try {
+      this.bannerItems = await this.bannerService.getBannerSlidesForPage(BannerForEnum.ABOUT_US);
+    } catch (error) {
+      console.error('Failed to load banner data:', error);
+      this.bannerItems = [];
+    }
   }
 
   /**
    * Load partners from the referrer API
    */
-  private loadPartners(): void {
+  private async loadPartners(): Promise<void> {
     this.isLoadingPartners = true;
-    this.referrerService.getPartners().subscribe({
-      next: (partners) => {
-        this.partners = partners;
-        this.isLoadingPartners = false;
-      },
-      error: (error) => {
-        console.error('Error loading partners:', error);
-        this.isLoadingPartners = false;
-        // Keep empty array on error
-        this.partners = [];
-      },
-    });
+    try {
+      this.partners = await this.referrerService.getPartners();
+      this.isLoadingPartners = false;
+    } catch (error) {
+      console.error('Error loading partners:', error);
+      this.isLoadingPartners = false;
+      // Keep empty array on error
+      this.partners = [];
+    }
   }
 
   /**

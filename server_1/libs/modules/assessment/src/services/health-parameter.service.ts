@@ -43,10 +43,7 @@ export class HealthParameterService {
       id: item.healthParameterId,
       healthParameter: item.healthParameter,
       hintText: item.hintText,
-      imagePath: CommonFunctionsUtil.buildImageUrl(
-        item.imagePath,
-        this.appConfigService.getString(ConfigParam.CLIENT_URL),
-      ),
+      imagePath: CommonFunctionsUtil.buildImageUrl(item.imagePath),
       isLength: item.isLength,
       sequence: item.sequence,
       fieldType: item.fieldType,

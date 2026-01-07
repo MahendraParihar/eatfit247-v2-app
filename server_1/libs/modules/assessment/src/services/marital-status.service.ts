@@ -42,10 +42,7 @@ export class MaritalStatusService {
       maritalStatusId: item.maritalStatusId,
       id: item.maritalStatusId,
       maritalStatus: item.maritalStatus,
-      imagePath: CommonFunctionsUtil.buildImageUrl(
-        item.imagePath,
-        this.appConfigService.getString(ConfigParam.CLIENT_URL),
-      ),
+      imagePath: CommonFunctionsUtil.buildImageUrl(item.imagePath),
       active: item.active,
       createdBy: item.createdBy,
       updatedBy: item.modifiedBy,

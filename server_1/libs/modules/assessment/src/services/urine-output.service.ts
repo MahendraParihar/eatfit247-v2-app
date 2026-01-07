@@ -42,10 +42,7 @@ export class UrineOutputService {
       urineOutputId: item.urineOutputId,
       id: item.urineOutputId,
       urineOutput: item.urineOutput,
-      imagePath: CommonFunctionsUtil.buildImageUrl(
-        item.imagePath,
-        this.appConfigService.getString(ConfigParam.CLIENT_URL),
-      ),
+      imagePath: CommonFunctionsUtil.buildImageUrl(item.imagePath),
       active: item.active,
       createdBy: item.createdBy,
       updatedBy: item.modifiedBy,

@@ -87,6 +87,69 @@
   }
 }
 
+// Loading State
+.blog-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-3xl;
+  gap: $spacing-lg;
+  color: var(--mat-sys-on-surface-variant);
+
+  .loading-icon {
+    font-size: 64px;
+    width: 64px;
+    height: 64px;
+    animation: spin 1s linear infinite;
+  }
+
+  p {
+    font-size: 1.125rem;
+    margin: 0;
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// Empty State
+.blog-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-3xl;
+  gap: $spacing-lg;
+  text-align: center;
+  color: var(--mat-sys-on-surface-variant);
+
+  .empty-icon {
+    font-size: 80px;
+    width: 80px;
+    height: 80px;
+    opacity: 0.5;
+  }
+
+  h3 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0;
+    color: var(--mat-sys-on-surface);
+  }
+
+  p {
+    font-size: 1rem;
+    margin: 0;
+  }
+}
+
 // Blog Posts Grid
 .blog-posts-grid {
   display: grid;
@@ -129,6 +192,13 @@
     var(--mat-sys-tertiary-container) 100%
   );
 
+  .blog-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform $transition-slow;
+  }
+
   .blog-image-placeholder {
     width: 100%;
     height: 100%;
@@ -160,6 +230,10 @@
     font-size: 0.75rem;
     backdrop-filter: blur(10px);
   }
+}
+
+.blog-card:hover .blog-image-container .blog-image {
+  transform: scale(1.05);
 }
 
 .blog-card-content {
@@ -290,6 +364,38 @@
 
   mat-card-content {
     padding-top: $spacing-md;
+  }
+}
+
+// Sidebar Loading and Empty States
+.sidebar-loading,
+.sidebar-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-xl;
+  gap: $spacing-sm;
+  text-align: center;
+  color: var(--mat-sys-on-surface-variant);
+
+  .loading-icon {
+    font-size: 32px;
+    width: 32px;
+    height: 32px;
+    animation: spin 1s linear infinite;
+  }
+
+  p {
+    font-size: 0.875rem;
+    margin: 0;
+  }
+}
+
+.sidebar-empty {
+  p {
+    font-size: 0.875rem;
+    margin: 0;
   }
 }
 

@@ -4,10 +4,10 @@ import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
-import { PressMediaService, PressMediaArticle } from '../../services/press-media.service';
+import { PressMediaService } from '../../services/press-media.service';
 import { BannerService } from '../../services/banner.service';
 import { ImageSliderComponent, SliderItem } from '../shared/image-slider/image-slider.component';
-import { BannerForEnum } from 'eatfit247-shared-library';
+import { BannerForEnum, IPublicPressMedia } from 'eatfit247-shared-library';
 
 /**
  * Press & Media Component
@@ -22,18 +22,17 @@ import { BannerForEnum } from 'eatfit247-shared-library';
     MatButtonModule,
     MatIconModule,
     MatChipsModule,
-    ImageSliderComponent,
+    ImageSliderComponent
   ],
   templateUrl: './press-and-media.component.html',
-  styleUrl: './press-and-media.component.scss',
+  styleUrl: './press-and-media.component.scss'
 })
 export class PressAndMediaComponent implements OnInit {
   private readonly pressMediaService = inject(PressMediaService);
   private readonly bannerService = inject(BannerService);
-
   bannerItems: SliderItem[] = [];
-  pressArticles: PressMediaArticle[] = [];
-  youtubeArticles: PressMediaArticle[] = [];
+  pressArticles: IPublicPressMedia[] = [];
+  youtubeArticles: IPublicPressMedia[] = [];
   loadingPress = false;
   loadingYouTube = false;
 
@@ -46,72 +45,61 @@ export class PressAndMediaComponent implements OnInit {
   /**
    * Load banner slider data
    */
-  private loadBannerData(): void {
-    this.bannerService.getBannerSlidesForPage(BannerForEnum.MEDIA_PRESS).subscribe({
-      next: (items) => {
-        this.bannerItems = items;
-      },
-      error: (error) => {
-        console.error('Failed to load banner data:', error);
-        this.bannerItems = [];
-      },
-    });
+  private async loadBannerData(): Promise<void> {
+    try {
+      this.bannerItems = await this.bannerService.getBannerSlidesForPage(BannerForEnum.MEDIA_PRESS);
+    } catch (error) {
+      console.error('Failed to load banner data:', error);
+      this.bannerItems = [];
+    }
   }
 
   /**
    * Load press articles (type='press')
    */
-  loadPressArticles(): void {
+  async loadPressArticles(): Promise<void> {
     this.loadingPress = true;
-    this.pressMediaService.getPressArticles().subscribe({
-      next: (articles) => {
-        this.pressArticles = articles;
-        this.loadingPress = false;
-      },
-      error: (error) => {
-        console.error('Error loading press articles:', error);
-        this.pressArticles = [];
-        this.loadingPress = false;
-      },
-    });
+    try {
+      this.pressArticles = await this.pressMediaService.getAllArticles('press');
+    } catch (error) {
+      console.error('Error loading press articles:', error);
+      this.pressArticles = [];
+    } finally {
+      this.loadingPress = false;
+    }
   }
 
   /**
    * Load YouTube articles (type='youtube')
    */
-  loadYouTubeArticles(): void {
+  async loadYouTubeArticles(): Promise<void> {
     this.loadingYouTube = true;
-    this.pressMediaService.getYouTubeArticles().subscribe({
-      next: (articles) => {
-        this.youtubeArticles = articles;
-        this.loadingYouTube = false;
-      },
-      error: (error) => {
-        console.error('Error loading YouTube articles:', error);
-        this.youtubeArticles = [];
-        this.loadingYouTube = false;
-      },
-    });
+    try {
+      this.youtubeArticles = await this.pressMediaService.getAllArticles('youtube');
+    } catch (error) {
+      console.error('Error loading YouTube articles:', error);
+      this.youtubeArticles = [];
+    } finally {
+      this.loadingYouTube = false;
+    }
   }
 
   /**
-   * Format date for display
+   * Get image URL from imagePath array
    */
-  formatDate(date: Date): string {
-    const options: Intl.DateTimeFormatOptions = {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    };
-    return new Intl.DateTimeFormat('en-US', options).format(date);
+  getImageUrl(article: IPublicPressMedia): string | null {
+    if (article.imagePath && article.imagePath.length > 0) {
+      return article.imagePath[0].webUrl;
+    }
+    return null;
   }
 
   /**
    * Open article URL in new tab
    */
-  openArticle(article: PressMediaArticle): void {
-    if (article.articleUrl) {
-      window.open(article.articleUrl, '_blank', 'noopener,noreferrer');
+  openArticle(article: IPublicPressMedia): void {
+    if (article.link) {
+      window.open(article.link, '_blank', 'noopener,noreferrer');
     }
   }
 }

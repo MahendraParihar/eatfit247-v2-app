@@ -43,8 +43,7 @@ export class EatingHabitService {
       id: item.eatingHabitId,
       eatingHabit: item.eatingHabit,
       imagePath: CommonFunctionsUtil.buildImageUrl(
-        item.imagePath,
-        this.appConfigService.getString(ConfigParam.CLIENT_URL),
+        item.imagePath
       ),
       active: item.active,
       createdBy: item.createdBy,

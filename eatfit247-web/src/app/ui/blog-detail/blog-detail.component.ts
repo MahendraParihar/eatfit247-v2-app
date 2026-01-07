@@ -59,66 +59,60 @@ export class BlogDetailComponent implements OnInit {
   /**
    * Load blog post by slug
    */
-  private loadBlogPost(slug: string): void {
-    this.blogService.getPostBySlug(slug).subscribe({
-      next: (post) => {
-        if (!post) {
-          this.notFound = true;
-          this.loading = false;
-          return;
-        }
-
-        this.blogPost = post;
-
-        // Sanitize HTML content
-        if (this.blogPost.content) {
-          this.sanitizedContent = this.sanitizer.sanitize(
-            1,
-            this.blogPost.content
-          ) as SafeHtml;
-        } else {
-          // Use excerpt as content if no full content available
-          this.sanitizedContent = this.sanitizer.sanitize(
-            1,
-            `<p>${this.blogPost.excerpt}</p>`
-          ) as SafeHtml;
-        }
-
-        // Load recent posts (excluding current)
-        this.blogService.getRecentPosts(this.blogPost.id, 5).subscribe({
-          next: (posts) => {
-            this.recentPosts = posts;
-          },
-          error: (error) => {
-            console.error('Error loading recent posts:', error);
-            this.recentPosts = [];
-          },
-        });
-
-        // Load related posts (same category, excluding current)
-        this.blogService.getPostsByCategory(this.blogPost.category).subscribe({
-          next: (posts) => {
-            this.relatedPosts = posts
-              .filter((p) => p.id !== this.blogPost!.id)
-              .slice(0, 3);
-          },
-          error: (error) => {
-            console.error('Error loading related posts:', error);
-            this.relatedPosts = [];
-          },
-        });
-
-        // Update SEO
-        this.updateSEO();
-
-        this.loading = false;
-      },
-      error: (error) => {
-        console.error('Error loading blog post:', error);
+  private async loadBlogPost(slug: string): Promise<void> {
+    try {
+      const post = await this.blogService.getPostBySlug(slug);
+      
+      if (!post) {
         this.notFound = true;
         this.loading = false;
-      },
-    });
+        return;
+      }
+
+      this.blogPost = post;
+
+      // Sanitize HTML content
+      if (this.blogPost.content) {
+        this.sanitizedContent = this.sanitizer.sanitize(
+          1,
+          this.blogPost.content
+        ) as SafeHtml;
+      } else {
+        // Use excerpt as content if no full content available
+        this.sanitizedContent = this.sanitizer.sanitize(
+          1,
+          `<p>${this.blogPost.excerpt}</p>`
+        ) as SafeHtml;
+      }
+
+      // Load recent posts (excluding current)
+      try {
+        this.recentPosts = await this.blogService.getRecentPosts(this.blogPost.id, 5);
+      } catch (error) {
+        console.error('Error loading recent posts:', error);
+        this.recentPosts = [];
+      }
+
+      // Load related posts (same category, excluding current)
+      try {
+        const categoryPosts = await this.blogService.getPostsByCategory(this.blogPost.category);
+        this.relatedPosts = categoryPosts
+          .filter((p) => p.id !== this.blogPost!.id)
+          .slice(0, 3);
+      } catch (error) {
+        console.error('Error loading related posts:', error);
+        this.relatedPosts = [];
+      }
+
+      // Update SEO
+      this.updateSEO();
+
+      this.loading = false;
+    } catch (error) {
+      console.error('Error loading blog post:', error);
+      this.notFound = true;
+      this.loading = false;
+    }
   }
 
   /**
@@ -163,18 +157,6 @@ export class BlogDetailComponent implements OnInit {
    */
   goBack(): void {
     this.router.navigate(['/blog']);
-  }
-
-  /**
-   * Format date for display
-   */
-  formatDate(date: Date): string {
-    const options: Intl.DateTimeFormatOptions = {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    };
-    return new Intl.DateTimeFormat('en-US', options).format(date);
   }
 
   /**

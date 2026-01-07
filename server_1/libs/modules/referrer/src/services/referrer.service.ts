@@ -49,10 +49,7 @@ export class ReferrerService {
       name: item.name,
       companyName: item.companyName,
       websiteLink: item.websiteLink,
-      logo: CommonFunctionsUtil.buildImageUrl(
-        item.logo,
-        this.appConfigService.getString(ConfigParam.CLIENT_URL),
-      ),
+      logo: CommonFunctionsUtil.buildImageUrl(item.logo),
       franchiseId: item.franchiseId,
       franchise: item.franchise || '',
       emailId: item.emailId,
@@ -218,10 +215,7 @@ export class ReferrerService {
 
     const resList = rows.map((item: any) => ({
       companyName: item.companyName || item.company_name || '',
-      logo: CommonFunctionsUtil.buildImageUrl(
-        item.logo,
-        this.appConfigService.getString(ConfigParam.CLIENT_URL),
-      ),
+      logo: CommonFunctionsUtil.buildImageUrl(item.logo),
     }));
 
     return {

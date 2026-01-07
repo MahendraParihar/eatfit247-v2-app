@@ -43,10 +43,7 @@ export class CallTypeService {
       callTypeId: item.callTypeId,
       id: item.callTypeId,
       callType: item.callType,
-      imagePath: CommonFunctionsUtil.buildImageUrl(
-        item.imagePath,
-        this.appConfigService.getString(ConfigParam.CLIENT_URL),
-      ),
+      imagePath: CommonFunctionsUtil.buildImageUrl(item.imagePath),
       active: item.active,
       createdBy: item.createdBy,
       updatedBy: item.modifiedBy,

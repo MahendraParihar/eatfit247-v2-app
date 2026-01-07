@@ -62,10 +62,7 @@ export class RecipeService {
       ingredient: item.ingredient,
       howToMake: item.howToMake,
       benefits: item.benefits,
-      imagePath: CommonFunctionsUtil.buildImageUrl(
-        item.imagePath,
-        this.appConfigService.getString(ConfigParam.CLIENT_URL),
-      ),
+      imagePath: CommonFunctionsUtil.buildImageUrl(item.imagePath),
       servingCount: item.servingCount,
       downloadPath: item.downloadPath,
       seo: {

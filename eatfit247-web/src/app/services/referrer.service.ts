@@ -1,7 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, map, catchError, of } from 'rxjs';
-import { environment } from '../../environments/environment';
+import { HttpService } from './http.service';
 import { IPublicTableList } from 'eatfit247-shared-library';
 
 export interface IPublicReferrer {
@@ -23,24 +21,26 @@ export interface Partner {
   providedIn: 'root',
 })
 export class ReferrerService {
-  private readonly http = inject(HttpClient);
-  private readonly apiUrl = environment.apiUrl;
+  private readonly httpService = inject(HttpService);
 
   /**
    * Get all active referrers (partners)
    */
-  getPartners(): Observable<Partner[]> {
-    const params = new HttpParams().set('limit', '1000');
-    const url = `${this.apiUrl}/public/referrer/list`;
-    return this.http.get<IPublicTableList<IPublicReferrer>>(url, { params }).pipe(
-      map((response) => {
-        return response.tableData.map((item: IPublicReferrer) => this.mapReferrerToPartner(item));
-      }),
-      catchError((error) => {
-        console.error('Error fetching referrers/partners:', error);
-        return of([]);
-      }),
-    );
+  async getPartners(): Promise<Partner[]> {
+    try {
+      const data = await this.httpService.get<IPublicTableList<IPublicReferrer>>(
+        'public/referrer/list',
+        { limit: '1000' }
+      );
+
+      if (data) {
+        return data.tableData.map((item: IPublicReferrer) => this.mapReferrerToPartner(item));
+      }
+      return [];
+    } catch (error) {
+      console.error('Error fetching referrers/partners:', error);
+      return [];
+    }
   }
 
   /**

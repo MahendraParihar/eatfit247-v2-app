@@ -43,8 +43,7 @@ export class FranchiseService {
       id: item.franchiseId,
       companyName: item.companyName,
       logo: CommonFunctionsUtil.buildImageUrl(
-        item.logo,
-        this.appConfigService.getString(ConfigParam.CLIENT_URL),
+        item.logo
       ),
       firstName: item.firstName,
       lastName: item.lastName,

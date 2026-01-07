@@ -41,7 +41,7 @@
             </div>
             <div class="meta-item">
               <mat-icon class="meta-icon">calendar_today</mat-icon>
-              <span class="meta-text">{{ formatDate(blogPost.publishDate) }}</span>
+              <span class="meta-text">{{ blogPost.publishDate | date:'longDate' }}</span>
             </div>
             @if (blogPost.readTime) {
               <div class="meta-item">
@@ -135,7 +135,7 @@
                         {{ post.title }}
                       </a>
                     </h3>
-                    <p class="related-post-date">{{ formatDate(post.publishDate) }}</p>
+                    <p class="related-post-date">{{ post.publishDate | date:'longDate' }}</p>
                   </mat-card-content>
                 </mat-card>
               }
@@ -159,7 +159,7 @@
                     <div class="recent-post-content">
                       <h3 class="recent-post-title">{{ post.title }}</h3>
                       <span class="recent-post-date">
-                        {{ formatDate(post.publishDate) }}
+                        {{ post.publishDate | date:'longDate' }}
                       </span>
                     </div>
                   </a>

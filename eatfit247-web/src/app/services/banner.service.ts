@@ -1,7 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable, map, catchError, of } from 'rxjs';
-import { environment } from '../../environments/environment';
+import { HttpService } from './http.service';
 import { SliderItem } from '../ui/shared/image-slider/image-slider.component';
 import { IPublicBanner, IPublicTableList, BannerForEnum } from 'eatfit247-shared-library';
 
@@ -13,39 +11,39 @@ import { IPublicBanner, IPublicTableList, BannerForEnum } from 'eatfit247-shared
   providedIn: 'root',
 })
 export class BannerService {
-  private readonly http = inject(HttpClient);
-  private readonly apiUrl = environment.apiUrl;
+  private readonly httpService = inject(HttpService);
 
   /**
    * Get banner slides for homepage
    * Fetches active banners from the API
    */
-  getBannerSlides(): Observable<SliderItem[]> {
+  async getBannerSlides(): Promise<SliderItem[]> {
     return this.getBannerSlidesForPage(BannerForEnum.HOME);
   }
 
   /**
    * Get banner slides for a specific page
    * @param bannerFor - The page type to fetch banners for
-   * @returns Observable of SliderItem array
+   * @returns Promise of SliderItem array
    */
-  getBannerSlidesForPage(bannerFor: BannerForEnum): Observable<SliderItem[]> {
-    const url = `${this.apiUrl}/public/banners/list`;
-    return this.http.get<IPublicTableList<IPublicBanner>>(url, {
-      params: {
-        bannerFor: bannerFor,
-        limit: '50', // Get all banners
-      },
-    }).pipe(
-      map((response) => {
-        return response.tableData.map((banner: IPublicBanner) => this.mapBannerToSliderItem(banner));
-      }),
-      catchError((error) => {
-        console.error(`Error fetching banners for ${bannerFor}:`, error);
-        // Return empty array on error
-        return of([]);
-      }),
-    );
+  async getBannerSlidesForPage(bannerFor: BannerForEnum): Promise<SliderItem[]> {
+    try {
+      const data = await this.httpService.get<IPublicTableList<IPublicBanner>>(
+        'public/banners/list',
+        {
+          bannerFor: bannerFor.toString(),
+          limit: '50', // Get all banners
+        }
+      );
+
+      if (data) {
+        return data.tableData.map((banner: IPublicBanner) => this.mapBannerToSliderItem(banner));
+      }
+      return [];
+    } catch (error) {
+      console.error(`Error fetching banners for ${bannerFor}:`, error);
+      return [];
+    }
   }
 
   /**

@@ -45,10 +45,7 @@ export class RecipeCategoryService {
       recipeCategoryId: item.recipeCategoryId,
       id: item.recipeCategoryId,
       recipeCategory: item.recipeCategory,
-      imagePath: CommonFunctionsUtil.buildImageUrl(
-        item.imagePath,
-        this.appConfigService.getString(ConfigParam.CLIENT_URL),
-      ),
+      imagePath: CommonFunctionsUtil.buildImageUrl(item.imagePath),
       fromTime: item.fromTime,
       toTime: item.toTime,
       sequence: item.sequence,

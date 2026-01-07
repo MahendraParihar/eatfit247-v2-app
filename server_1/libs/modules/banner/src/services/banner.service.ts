@@ -81,10 +81,7 @@ export class BannerService {
       primaryActionUrl: item.primaryActionUrl,
       secondaryActionText: item.secondaryActionText,
       secondaryActionUrl: item.secondaryActionUrl,
-      imagePath: CommonFunctionsUtil.buildImageUrl(
-        item.imagePath,
-        this.appConfigService.getString(ConfigParam.CLIENT_URL),
-      ),
+      imagePath: CommonFunctionsUtil.buildImageUrl(item.imagePath),
       createdBy: item.createdBy,
       updatedBy: item.updatedBy,
       createdAt: item.createdAt,

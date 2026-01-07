@@ -47,10 +47,7 @@ export class ProgramCategoryService {
       programCategory: item.programCategory,
       url: item.url,
       active: item.active,
-      imagePath: CommonFunctionsUtil.buildImageUrl(
-        item.imagePath,
-        this.appConfigService.getString(ConfigParam.CLIENT_URL),
-      ),
+      imagePath: CommonFunctionsUtil.buildImageUrl(item.imagePath),
       createdBy: item.createdBy,
       updatedBy: item.modifiedBy,
       createdAt: item.createdAt,

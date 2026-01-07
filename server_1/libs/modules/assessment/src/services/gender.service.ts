@@ -39,8 +39,7 @@ export class GenderService {
       id: item.genderId,
       gender: item.gender,
       imagePath: CommonFunctionsUtil.buildImageUrl(
-        item.imagePath,
-        this.appConfigService.getString(ConfigParam.CLIENT_URL),
+        item.imagePath
       ),
       active: item.active,
       createdBy: item.createdBy,

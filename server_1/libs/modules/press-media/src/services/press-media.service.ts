@@ -75,10 +75,7 @@ export class PressMediaService {
       type: item.type as 'youtube' | 'press',
       link: item.link,
       active: item.active,
-      imagePath: CommonFunctionsUtil.buildImageUrl(
-        item.imagePath,
-        this.appConfigService.getString(ConfigParam.CLIENT_URL),
-      ),
+      imagePath: CommonFunctionsUtil.buildImageUrl(item.imagePath),
       createdBy: item.createdBy,
       updatedBy: item.modifiedBy,
       createdAt: item.createdAt,

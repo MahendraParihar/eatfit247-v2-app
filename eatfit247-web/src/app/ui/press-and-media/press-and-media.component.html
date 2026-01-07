@@ -61,7 +61,7 @@
               <div class="article-meta">
                 <div class="meta-item">
                   <mat-icon class="meta-icon">calendar_today</mat-icon>
-                  <span class="meta-text">{{ formatDate(article.publishDate) }}</span>
+                  <span class="meta-text">{{ article.publishDate | date:'longDate' }}</span>
                 </div>
               </div>
             </mat-card-content>

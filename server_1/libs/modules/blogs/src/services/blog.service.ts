@@ -147,10 +147,7 @@ export class BlogService {
       active: find.active,
       createdBy: find.createdBy,
       updatedBy: find.modifiedBy,
-      imagePath: CommonFunctionsUtil.buildImageUrl(
-        find.imagePath,
-        this.appConfigService.getString(ConfigParam.CLIENT_URL),
-      ),
+      imagePath: CommonFunctionsUtil.buildImageUrl(find.imagePath),
       createdAt: find.createdAt,
       updatedAt: find.updatedAt,
       createdByUser: find.createdByUser

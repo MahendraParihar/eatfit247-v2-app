@@ -55,7 +55,7 @@ export class MemberService {
       id: item.memberId,
       firstName: item.firstName,
       lastName: item.lastName,
-      profilePicture: CommonFunctionsUtil.buildImageUrl(item.profilePicture, this.appConfigService.getString(ConfigParam.CLIENT_URL)),
+      profilePicture: CommonFunctionsUtil.buildImageUrl(item.profilePicture),
       countryCode: item.countryCode,
       contactNumber: item.contactNumber,
       emailId: item.emailId,

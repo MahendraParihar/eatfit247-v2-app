@@ -42,10 +42,7 @@ export class LegalPagesService {
       metaTitle: item.metaTitle,
       metaDescription: item.metaDescription,
       tags: item.tags,
-      imagePath: CommonFunctionsUtil.buildImageUrl(
-        item.imagePath,
-        this.appConfigService.getString(ConfigParam.CLIENT_URL),
-      ),
+      imagePath: CommonFunctionsUtil.buildImageUrl(item.imagePath),
       active: item.active,
       createdBy: item.createdBy,
       updatedBy: item.modifiedBy,

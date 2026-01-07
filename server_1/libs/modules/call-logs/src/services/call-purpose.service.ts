@@ -45,10 +45,7 @@ export class CallPurposeService {
       callPurposeId: item.callPurposeId,
       id: item.callPurposeId,
       callPurpose: item.callPurpose,
-      imagePath: CommonFunctionsUtil.buildImageUrl(
-        item.imagePath,
-        this.appConfigService.getString(ConfigParam.CLIENT_URL),
-      ),
+      imagePath: CommonFunctionsUtil.buildImageUrl(item.imagePath),
       active: item.active,
       createdBy: item.createdBy,
       updatedBy: item.modifiedBy,

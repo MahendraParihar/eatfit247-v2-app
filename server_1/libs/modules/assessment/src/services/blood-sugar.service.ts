@@ -42,10 +42,7 @@ export class BloodSugarService {
       bloodSugarId: item.bloodSugarId,
       id: item.bloodSugarId,
       bloodSugar: item.bloodSugar,
-      imagePath: CommonFunctionsUtil.buildImageUrl(
-        item.imagePath,
-        this.appConfigService.getString(ConfigParam.CLIENT_URL),
-      ),
+      imagePath: CommonFunctionsUtil.buildImageUrl(item.imagePath),
       active: item.active,
       createdBy: item.createdBy,
       updatedBy: item.modifiedBy,

@@ -24,15 +24,12 @@ export class HomeComponent implements OnInit {
   /**
    * Load banner slider data
    */
-  private loadBannerData(): void {
-    this.bannerService.getBannerSlides().subscribe({
-      next: (items) => {
-        this.sliderItems = items;
-      },
-      error: (error) => {
-        console.error('Failed to load banner data:', error);
-        this.sliderItems = []; // Set empty array on error
-      },
-    });
+  private async loadBannerData(): Promise<void> {
+    try {
+      this.sliderItems = await this.bannerService.getBannerSlides();
+    } catch (error) {
+      console.error('Failed to load banner data:', error);
+      this.sliderItems = []; // Set empty array on error
+    }
   }
 }

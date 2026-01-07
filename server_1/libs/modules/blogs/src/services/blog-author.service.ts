@@ -49,7 +49,7 @@ export class BlogAuthorService {
       contactNumber: item.contactNumber,
       linkedUrl: item.linkedUrl,
       active: item.active,
-      profilePicture: CommonFunctionsUtil.buildImageUrl(item.profilePicture, this.appConfigService.getString(ConfigParam.CLIENT_URL)),
+      profilePicture: CommonFunctionsUtil.buildImageUrl(item.profilePicture),
       createdBy: item.createdBy,
       updatedBy: item.modifiedBy,
       createdAt: item.createdAt,

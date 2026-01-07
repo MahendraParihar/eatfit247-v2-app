@@ -40,15 +40,10 @@ export class CommonFunctionsUtil {
     return `EF24B7${paymentId}${moment().format('YYYYMMDD')}`;
   }
 
-  public static buildImageUrl(images: IMediaUpload[], baseUrl: string | undefined): IMediaUpload[] {
+  public static buildImageUrl(images: IMediaUpload[]): IMediaUpload[] {
     if (!images || images.length === 0) {
       return images;
     }
-    if (!baseUrl) {
-      return images;
-    }
-    // Normalize baseUrl - remove trailing slash if present
-    const normalizedBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
     return images.map((image) => {
       // Create a new object to avoid mutating the original
       const normalizedWebUrl = image.webUrl?.startsWith('/')
@@ -56,7 +51,7 @@ export class CommonFunctionsUtil {
         : image.webUrl;
       return {
         ...image,
-        webUrl: `${normalizedBaseUrl}/${normalizedWebUrl}`,
+        webUrl: `${normalizedWebUrl}`,
       };
     });
   }

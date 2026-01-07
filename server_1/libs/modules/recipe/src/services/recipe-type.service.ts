@@ -45,10 +45,7 @@ export class RecipeTypeService {
       recipeTypeId: item.recipeTypeId,
       id: item.recipeTypeId,
       recipeType: item.recipeType,
-      imagePath: CommonFunctionsUtil.buildImageUrl(
-        item.imagePath,
-        this.appConfigService.getString(ConfigParam.CLIENT_URL),
-      ),
+      imagePath: CommonFunctionsUtil.buildImageUrl(item.imagePath),
       active: item.active,
       createdBy: item.createdBy,
       updatedBy: item.modifiedBy,

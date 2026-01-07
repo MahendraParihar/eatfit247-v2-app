@@ -49,6 +49,11 @@ export class BlogComponent implements OnInit {
   recentPosts: BlogPost[] = [];
   categories: string[] = [];
   selectedCategory: string | null = null;
+  
+  // Loading states
+  loading = false;
+  loadingRecent = false;
+  loadingCategories = false;
 
   ngOnInit(): void {
     this.loadBannerData();
@@ -60,65 +65,64 @@ export class BlogComponent implements OnInit {
   /**
    * Load banner slider data
    */
-  private loadBannerData(): void {
-    this.bannerService.getBannerSlidesForPage(BannerForEnum.BLOGS).subscribe({
-      next: (items) => {
-        this.bannerItems = items;
-      },
-      error: (error) => {
-        console.error('Failed to load banner data:', error);
-        this.bannerItems = [];
-      },
-    });
+  private async loadBannerData(): Promise<void> {
+    try {
+      this.bannerItems = await this.bannerService.getBannerSlidesForPage(BannerForEnum.BLOGS);
+    } catch (error) {
+      console.error('Failed to load banner data:', error);
+      this.bannerItems = [];
+    }
   }
 
   /**
    * Load blog posts with pagination
    */
-  private loadBlogPosts(): void {
-    this.blogService.getPaginatedPosts(this.currentPage - 1, this.pageSize).subscribe({
-      next: (result) => {
-        this.blogPosts = result.posts;
-        this.totalPosts = result.total;
-        this.totalPages = result.totalPages;
-      },
-      error: (error) => {
-        console.error('Error loading blog posts:', error);
-        this.blogPosts = [];
-        this.totalPosts = 0;
-        this.totalPages = 0;
-      },
-    });
+  private async loadBlogPosts(): Promise<void> {
+    this.loading = true;
+    try {
+      const result = await this.blogService.getPaginatedPosts(this.currentPage - 1, this.pageSize);
+      console.log('Blog posts loaded:', result);
+      this.blogPosts = result.posts;
+      this.totalPosts = result.total;
+      this.totalPages = result.totalPages;
+    } catch (error) {
+      console.error('Error loading blog posts:', error);
+      this.blogPosts = [];
+      this.totalPosts = 0;
+      this.totalPages = 0;
+    } finally {
+      this.loading = false;
+    }
   }
 
   /**
    * Load recent posts for sidebar
    */
-  private loadRecentPosts(): void {
-    this.blogService.getRecentPosts(undefined, 5).subscribe({
-      next: (posts) => {
-        this.recentPosts = posts;
-      },
-      error: (error) => {
-        console.error('Error loading recent posts:', error);
-        this.recentPosts = [];
-      },
-    });
+  private async loadRecentPosts(): Promise<void> {
+    this.loadingRecent = true;
+    try {
+      this.recentPosts = await this.blogService.getRecentPosts(undefined, 5);
+    } catch (error) {
+      console.error('Error loading recent posts:', error);
+      this.recentPosts = [];
+    } finally {
+      this.loadingRecent = false;
+    }
   }
 
   /**
    * Load all categories
    */
-  private loadCategories(): void {
-    this.blogService.getAllCategories().subscribe({
-      next: (cats) => {
-        this.categories = cats;
-      },
-      error: (error) => {
-        console.error('Error loading categories:', error);
-        this.categories = [];
-      },
-    });
+  private async loadCategories(): Promise<void> {
+    this.loadingCategories = true;
+    try {
+      this.categories = await this.blogService.getAllCategories();
+    } catch (error) {
+      console.error('Error loading categories:', error);
+      this.categories = [];
+    } finally {
+      this.loadingCategories = false;
+    }
   }
 
   /**
@@ -135,41 +139,30 @@ export class BlogComponent implements OnInit {
   /**
    * Filter posts by category
    */
-  filterByCategory(category: string | null): void {
+  async filterByCategory(category: string | null): Promise<void> {
     this.selectedCategory = category;
     this.currentPage = 1;
 
     if (category) {
-      this.blogService.getPostsByCategory(category).subscribe({
-        next: (categoryPosts) => {
-          this.totalPosts = categoryPosts.length;
-          this.totalPages = Math.ceil(this.totalPosts / this.pageSize);
-          const startIndex = 0;
-          const endIndex = this.pageSize;
-          this.blogPosts = categoryPosts.slice(startIndex, endIndex);
-        },
-        error: (error) => {
-          console.error('Error loading category posts:', error);
-          this.blogPosts = [];
-          this.totalPosts = 0;
-          this.totalPages = 0;
-        },
-      });
+      this.loading = true;
+      try {
+        const categoryPosts = await this.blogService.getPostsByCategory(category);
+        this.totalPosts = categoryPosts.length;
+        this.totalPages = Math.ceil(this.totalPosts / this.pageSize);
+        const startIndex = 0;
+        const endIndex = this.pageSize;
+        this.blogPosts = categoryPosts.slice(startIndex, endIndex);
+      } catch (error) {
+        console.error('Error loading category posts:', error);
+        this.blogPosts = [];
+        this.totalPosts = 0;
+        this.totalPages = 0;
+      } finally {
+        this.loading = false;
+      }
     } else {
       this.loadBlogPosts();
     }
-  }
-
-  /**
-   * Format date for display
-   */
-  formatDate(date: Date): string {
-    const options: Intl.DateTimeFormatOptions = {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    };
-    return new Intl.DateTimeFormat('en-US', options).format(date);
   }
 
   /**
@@ -177,5 +170,15 @@ export class BlogComponent implements OnInit {
    */
   getPostUrl(post: BlogPost): string {
     return `/blog/${post.slug}`;
+  }
+
+  /**
+   * Handle image loading errors
+   */
+  onImageError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    // Use a placeholder SVG if image fails to load
+    img.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjYwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiM2MzY2RjEiLz48c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiM5QzI3QjAiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2cpIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMjQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIiBmaWxsPSIjZmZmIiBmb250LWZhbWlseT0iQXJpYWwiPkltYWdlIG5vdCBhdmFpbGFibGU8L3RleHQ+PC9zdmc+';
+    img.onerror = null; // Prevent infinite loop
   }
 }

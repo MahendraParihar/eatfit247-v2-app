@@ -39,16 +39,13 @@ export class OurProgramsComponent implements OnInit {
   /**
    * Load banner slider data
    */
-  private loadBannerData(): void {
-    this.bannerService.getBannerSlidesForPage(BannerForEnum.OUR_PROGRAM).subscribe({
-      next: (items) => {
-        this.bannerItems = items;
-      },
-      error: (error) => {
-        console.error('Failed to load banner data:', error);
-        this.bannerItems = [];
-      },
-    });
+  private async loadBannerData(): Promise<void> {
+    try {
+      this.bannerItems = await this.bannerService.getBannerSlidesForPage(BannerForEnum.OUR_PROGRAM);
+    } catch (error) {
+      console.error('Failed to load banner data:', error);
+      this.bannerItems = [];
+    }
   }
 
   onQuickView(program: Program): void {

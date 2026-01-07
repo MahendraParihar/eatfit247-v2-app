@@ -53,32 +53,17 @@ export class BlogSectionComponent implements OnInit {
   /**
    * Load blogs from service
    */
-  private loadBlogs(): void {
+  private async loadBlogs(): Promise<void> {
     this.loading = true;
-    this.blogService.getPaginatedPosts(0, this.blogsToShow).subscribe({
-      next: (result) => {
-        this.displayedBlogs = result.posts;
-        this.loading = false;
-      },
-      error: (error) => {
-        console.error('Error loading blogs:', error);
-        this.displayedBlogs = [];
-        this.loading = false;
-      },
-    });
-  }
-
-  /**
-   * Format date for display
-   */
-  formatDate(date: Date): string {
-    if (!date) return '';
-    const d = new Date(date);
-    return d.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
+    try {
+      const result = await this.blogService.getPaginatedPosts(0, this.blogsToShow);
+      this.displayedBlogs = result.posts;
+    } catch (error) {
+      console.error('Error loading blogs:', error);
+      this.displayedBlogs = [];
+    } finally {
+      this.loading = false;
+    }
   }
 
   /**
