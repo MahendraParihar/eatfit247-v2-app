@@ -192,5 +192,42 @@ export class ReferrerService {
       isActive: t.active,
     }));
   }
+
+  /**
+   * Public method to fetch active referrers with only company name and logo
+   */
+  public async findAllPublic(searchDto: IBasicSearch): Promise<ITableList<{ companyName: string; logo: string | any[] }>> {
+    const whereCondition: any = SearchUtil.filterBasicSearch(searchDto, 'companyName');
+    // Only return active referrers
+    whereCondition.active = true;
+    
+    const pageNumber = searchDto.page || 0;
+    const pageSize = searchDto.limit || 15;
+    const offset = pageNumber === 0 ? 0 : pageNumber * pageSize;
+    
+    // For public endpoints, don't use scope with includes to avoid issues with raw: true
+    const { rows, count } = await this.referrerRepository.findAndCountAll({
+      where: whereCondition,
+      order: [['companyName', 'ASC']],
+      offset: offset,
+      limit: pageSize,
+      raw: true,
+      nest: true,
+      attributes: ['companyName', 'logo'], // Only select companyName and logo using model property names
+    });
+
+    const resList = rows.map((item: any) => ({
+      companyName: item.companyName || item.company_name || '',
+      logo: CommonFunctionsUtil.buildImageUrl(
+        item.logo,
+        this.appConfigService.getString(ConfigParam.CLIENT_URL),
+      ),
+    }));
+
+    return {
+      tableData: resList,
+      count: count,
+    };
+  }
 }
 

@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, map, catchError, of } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { IPublicPressMedia, IPublicTableList } from 'eatfit247-shared-library';
 
 export interface PressMediaArticle {
   id: string;
@@ -12,22 +13,6 @@ export interface PressMediaArticle {
   imageUrl?: string;
   articleUrl?: string;
   category: 'Blog' | 'News' | 'Interview' | 'Feature';
-}
-
-interface IPressMedia {
-  pressMediaId: number;
-  title?: string;
-  type: 'youtube' | 'press';
-  link: string;
-  imagePath?: Array<{ url?: string; path?: string; [key: string]: any }>;
-  active: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-interface ITableList<T> {
-  tableData: T[];
-  count: number;
 }
 
 /**
@@ -44,20 +29,37 @@ export class PressMediaService {
   /**
    * Get all press/media articles
    */
-  getAllArticles(): Observable<PressMediaArticle[]> {
-    const params = new HttpParams().set('limit', '1000');
+  getAllArticles(type?: 'press' | 'youtube'): Observable<PressMediaArticle[]> {
+    let params = new HttpParams().set('limit', '1000');
+    if (type) {
+      params = params.set('type', type);
+    }
     const url = `${this.apiUrl}/public/press-media/list`;
-    return this.http.get<ITableList<IPressMedia>>(url, { params }).pipe(
+    return this.http.get<IPublicTableList<IPublicPressMedia>>(url, { params }).pipe(
       map((response) => {
         return response.tableData
-          .map((item) => this.mapPressMediaToArticle(item))
-          .sort((a, b) => b.publishDate.getTime() - a.publishDate.getTime());
+          .map((item: IPublicPressMedia) => this.mapPressMediaToArticle(item))
+          .sort((a: PressMediaArticle, b: PressMediaArticle) => b.publishDate.getTime() - a.publishDate.getTime());
       }),
       catchError((error) => {
         console.error('Error fetching press/media articles:', error);
         return of([]);
       }),
     );
+  }
+
+  /**
+   * Get press articles only
+   */
+  getPressArticles(): Observable<PressMediaArticle[]> {
+    return this.getAllArticles('press');
+  }
+
+  /**
+   * Get YouTube articles only
+   */
+  getYouTubeArticles(): Observable<PressMediaArticle[]> {
+    return this.getAllArticles('youtube');
   }
 
   /**
@@ -100,14 +102,14 @@ export class PressMediaService {
   }
 
   /**
-   * Map IPressMedia from API to PressMediaArticle
+   * Map IPublicPressMedia from API to PressMediaArticle
    */
-  private mapPressMediaToArticle(item: IPressMedia): PressMediaArticle {
+  private mapPressMediaToArticle(item: IPublicPressMedia): PressMediaArticle {
     // Get the first image from imagePath array
     const firstImage = item.imagePath && item.imagePath.length > 0
       ? item.imagePath[0]
       : null;
-    const imageUrl = firstImage?.url || firstImage?.path || '';
+    const imageUrl = firstImage?.webUrl || '';
 
     // Map type to category
     const category: PressMediaArticle['category'] = item.type === 'press' ? 'News' : 'Feature';
@@ -123,7 +125,7 @@ export class PressMediaService {
       title: title,
       excerpt: excerpt,
       source: item.type === 'press' ? 'Press' : 'YouTube',
-      publishDate: item.createdAt ? new Date(item.createdAt) : new Date(),
+      publishDate: new Date(), // Public API doesn't expose createdAt
       imageUrl: imageUrl,
       articleUrl: item.link,
       category: category,

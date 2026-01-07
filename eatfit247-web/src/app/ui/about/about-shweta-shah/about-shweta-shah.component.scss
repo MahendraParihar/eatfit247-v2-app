@@ -77,11 +77,25 @@
   font-size: 2.5rem;
   font-weight: 700;
   color: var(--mat-sys-on-surface);
-  margin: 0;
+  margin: 0 0 $spacing-md 0;
   line-height: 1.2;
 
   @media (max-width: 768px) {
     font-size: 2rem;
+  }
+}
+
+.title-underline {
+  width: 80px;
+  height: 3px;
+  background-color: var(--mat-sys-primary);
+  margin: 0 auto $spacing-xl;
+  border-radius: 2px;
+
+  @media (max-width: 768px) {
+    width: 60px;
+    height: 2px;
+    margin-bottom: $spacing-lg;
   }
 }
 

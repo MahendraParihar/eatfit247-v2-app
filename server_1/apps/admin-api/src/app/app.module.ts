@@ -12,7 +12,7 @@ import { ProgramPlanModule } from '@server_1/modules/program-plan';
 import { CallLogsModule } from '@server_1/modules/call-logs';
 import { TaxEngineModule } from '@server_1/modules/tax-engine';
 import { PaymentModule } from '@server_1/modules/payment';
-import { BlogsModule } from '@server_1/modules/blogs';
+import { BlogModule } from '@server_1/modules/blogs';
 import { FaqModule } from '@server_1/modules/faq';
 import { PressMediaModule } from '@server_1/modules/press-media';
 import { LegalPagesModule } from '@server_1/modules/pages';
@@ -46,7 +46,7 @@ import { ReportsModule } from '@server_1/admin-only/reports';
     CallLogsModule,
     TaxEngineModule,
     PaymentModule,
-    BlogsModule,
+    BlogModule,
     FaqModule,
     PressMediaModule,
     LegalPagesModule,

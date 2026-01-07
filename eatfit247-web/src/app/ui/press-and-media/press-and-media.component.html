@@ -1,77 +1,46 @@
 <div class="press-and-media">
-  <!-- Hero Section -->
-  <section class="hero-section">
-    <div class="hero-content">
-      <h1 class="hero-title">Press & Media</h1>
-      <p class="hero-subtitle">
-        A well-balanced diet that leads to a well-balanced life.
-      </p>
-      <p class="hero-description">
-        Discover press coverage, media features, and articles about EatFit24By7
-        and our celebrity nutritionist Shweta Shah.
-      </p>
-    </div>
-  </section>
+  <!-- Banner Section -->
+  @if (bannerItems.length > 0) {
+    <section class="banner-section">
+      <app-image-slider
+        [items]="bannerItems"
+        [autoPlay]="false"
+        [showArrows]="false"
+        [showDots]="false"
+      ></app-image-slider>
+    </section>
+  }
 
   <!-- Main Content -->
   <div class="press-media-container">
-    <!-- Category Filter -->
-    <div class="category-filter">
-      <button
-        mat-flat-button
-        [class.active]="selectedCategory === null"
-        (click)="filterByCategory(null)"
-        class="filter-btn"
-      >
-        <mat-icon>article</mat-icon>
-        All Articles
-      </button>
-      @for (category of categories; track category) {
-        <button
-          mat-flat-button
-          [class.active]="selectedCategory === category"
-          (click)="filterByCategory(category)"
-          class="filter-btn"
-        >
-          <mat-icon>
-            @switch (category) {
-              @case ('Blog') {
-                article
-              }
-              @case ('News') {
-                new_releases
-              }
-              @case ('Interview') {
-                mic
-              }
-              @case ('Feature') {
-                star
-              }
-            }
-          </mat-icon>
-          {{ category }}
-        </button>
-      }
-    </div>
-
-    <!-- Articles Section -->
+    <!-- First Section: EatFit24/7 on Blogs -->
     <section class="articles-section">
-      <h2 class="section-title">
-        <mat-icon>newspaper</mat-icon>
-        EatFit24/7 on Blogs
-      </h2>
+      <h2 class="section-title">EatFit24/7 on Blogs</h2>
+      <div class="title-underline"></div>
+      <p class="section-subtitle">
+        A well-balanced diet that leads to a well-balanced life.
+      </p>
+
+      <!-- Loading State -->
+      @if (loadingPress) {
+        <div class="loading-state">
+          <mat-icon class="loading-icon">hourglass_empty</mat-icon>
+          <p>Loading press articles...</p>
+        </div>
+      }
 
       <!-- Articles Grid -->
       <div class="articles-grid">
-        @for (article of articles; track article.id) {
+        @for (article of pressArticles; track article.id) {
           <mat-card class="article-card">
-            <!-- Article Image Placeholder -->
+            <!-- Article Image -->
             <div class="article-image-container">
-              <div class="article-image-placeholder">
-                <mat-icon class="image-icon">article</mat-icon>
-              </div>
-              @if (article.category) {
-                <mat-chip class="category-chip-overlay">{{ article.category }}</mat-chip>
+              @if (article.imageUrl) {
+                <img [src]="article.imageUrl" [alt]="article.title" class="article-image" />
+              } @else {
+                <div class="article-image-placeholder">
+                  <mat-icon class="image-icon">article</mat-icon>
+                </div>
               }
             </div>
 
@@ -124,7 +93,88 @@
         } @empty {
           <div class="no-articles">
             <mat-icon class="empty-icon">search_off</mat-icon>
-            <p class="empty-message">No articles found in this category.</p>
+            <p class="empty-message">No press articles found.</p>
+          </div>
+        }
+      </div>
+    </section>
+
+    <!-- Second Section: Shweta Shah's Secret Tips & Tricks -->
+    <section class="articles-section youtube-section">
+      <h2 class="section-title">Shweta Shah's Secret Tips & Tricks</h2>
+      <div class="title-underline"></div>
+      <p class="section-subtitle">
+        Protecting you from yourself
+      </p>
+
+      <!-- Loading State -->
+      @if (loadingYouTube) {
+        <div class="loading-state">
+          <mat-icon class="loading-icon">hourglass_empty</mat-icon>
+          <p>Loading YouTube videos...</p>
+        </div>
+      }
+
+      <!-- YouTube Videos Grid -->
+      <div class="articles-grid">
+        @for (article of youtubeArticles; track article.id) {
+          <mat-card class="article-card youtube-card">
+            <!-- YouTube Video Thumbnail -->
+            <div class="article-image-container">
+              @if (article.imageUrl) {
+                <img [src]="article.imageUrl" [alt]="article.title" class="article-image" />
+              } @else {
+                <div class="article-image-placeholder">
+                  <mat-icon class="image-icon">play_circle</mat-icon>
+                </div>
+              }
+              <div class="play-overlay">
+                <mat-icon class="play-icon">play_circle_filled</mat-icon>
+              </div>
+            </div>
+
+            <mat-card-content class="card-content">
+              <!-- Source Badge -->
+              <div class="source-badge youtube-badge">
+                <mat-icon class="source-icon">play_circle</mat-icon>
+                <span class="source-text">{{ article.source }}</span>
+              </div>
+
+              <!-- Article Title -->
+              <h3 class="article-title">{{ article.title }}</h3>
+
+              <!-- Article Excerpt -->
+              <p class="article-excerpt">{{ article.excerpt }}</p>
+            </mat-card-content>
+
+            <mat-card-actions class="card-actions">
+              @if (article.articleUrl) {
+                <button
+                  mat-raised-button
+                  color="primary"
+                  (click)="openArticle(article)"
+                  class="read-more-btn"
+                >
+                  <mat-icon>play_arrow</mat-icon>
+                  Watch Video
+                </button>
+              } @else {
+                <button
+                  mat-stroked-button
+                  color="primary"
+                  disabled
+                  class="read-more-btn"
+                >
+                  <mat-icon>lock</mat-icon>
+                  Coming Soon
+                </button>
+              }
+            </mat-card-actions>
+          </mat-card>
+        } @empty {
+          <div class="no-articles">
+            <mat-icon class="empty-icon">video_library</mat-icon>
+            <p class="empty-message">No YouTube videos found.</p>
           </div>
         }
       </div>

@@ -3,29 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, map, catchError, of } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { SliderItem } from '../ui/shared/image-slider/image-slider.component';
-
-interface IBanner {
-  bannerId: number;
-  id: number;
-  title: string;
-  subTitle?: string;
-  imagePath: Array<{ url?: string; path?: string; [key: string]: any }>;
-  active: boolean;
-  bannerFor: string;
-  imagePosition?: string;
-  titleIcon?: string;
-  description?: string;
-  primaryActionText?: string;
-  primaryActionUrl?: string;
-  secondaryActionText?: string;
-  secondaryActionUrl?: string;
-  isInternalUrl?: boolean;
-}
-
-interface ITableList<T> {
-  tableData: T[];
-  count: number;
-}
+import { IPublicBanner, IPublicTableList, BannerForEnum } from 'eatfit247-shared-library';
 
 /**
  * Service to manage banner/slider data
@@ -43,18 +21,27 @@ export class BannerService {
    * Fetches active banners from the API
    */
   getBannerSlides(): Observable<SliderItem[]> {
+    return this.getBannerSlidesForPage(BannerForEnum.HOME);
+  }
+
+  /**
+   * Get banner slides for a specific page
+   * @param bannerFor - The page type to fetch banners for
+   * @returns Observable of SliderItem array
+   */
+  getBannerSlidesForPage(bannerFor: BannerForEnum): Observable<SliderItem[]> {
     const url = `${this.apiUrl}/public/banners/list`;
-    return this.http.get<ITableList<IBanner>>(url, {
+    return this.http.get<IPublicTableList<IPublicBanner>>(url, {
       params: {
-        bannerFor: 'HOME', // Filter for home page banners
+        bannerFor: bannerFor,
         limit: '50', // Get all banners
       },
     }).pipe(
       map((response) => {
-        return response.tableData.map((banner) => this.mapBannerToSliderItem(banner));
+        return response.tableData.map((banner: IPublicBanner) => this.mapBannerToSliderItem(banner));
       }),
       catchError((error) => {
-        console.error('Error fetching banners:', error);
+        console.error(`Error fetching banners for ${bannerFor}:`, error);
         // Return empty array on error
         return of([]);
       }),
@@ -62,14 +49,14 @@ export class BannerService {
   }
 
   /**
-   * Map IBanner to SliderItem
+   * Map IPublicBanner to SliderItem
    */
-  private mapBannerToSliderItem(banner: IBanner): SliderItem {
+  private mapBannerToSliderItem(banner: IPublicBanner): SliderItem {
     // Get the first image from imagePath array
     const firstImage = banner.imagePath && banner.imagePath.length > 0
       ? banner.imagePath[0]
       : null;
-    const imageUrl = firstImage?.url || firstImage?.path || '';
+    const imageUrl = firstImage?.webUrl || '';
 
     return {
       id: `banner-${banner.bannerId}`,

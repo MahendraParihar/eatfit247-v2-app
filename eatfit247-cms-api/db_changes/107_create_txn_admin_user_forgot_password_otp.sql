@@ -477,16 +477,30 @@ ALTER TABLE mst_legal_pages
 ALTER TABLE mst_legal_pages
     ADD COLUMN IF NOT EXISTS meta_description VARCHAR(160) NULL;
 
-ALTER TABLE txn_banner ADD COLUMN IF NOT EXISTS image_position varchar(10) DEFAULT 'center';
-ALTER TABLE txn_banner ADD COLUMN IF NOT EXISTS title_icon varchar(20) DEFAULT null;
-ALTER TABLE txn_banner ADD COLUMN IF NOT EXISTS description text DEFAULT null;
-ALTER TABLE txn_banner ADD COLUMN IF NOT EXISTS primary_action_text varchar(50) DEFAULT null;
-ALTER TABLE txn_banner ADD COLUMN IF NOT EXISTS primary_action_url varchar(100) DEFAULT null;
-ALTER TABLE txn_banner ADD COLUMN IF NOT EXISTS secondary_action_text varchar(50) DEFAULT null;
-ALTER TABLE txn_banner ADD COLUMN IF NOT EXISTS secondary_action_url varchar(100) DEFAULT null;
+ALTER TABLE txn_banner
+    ADD COLUMN IF NOT EXISTS image_position varchar(10) DEFAULT 'center';
+ALTER TABLE txn_banner
+    ADD COLUMN IF NOT EXISTS title_icon varchar(20) DEFAULT null;
+ALTER TABLE txn_banner
+    ADD COLUMN IF NOT EXISTS description text DEFAULT null;
+ALTER TABLE txn_banner
+    ADD COLUMN IF NOT EXISTS primary_action_text varchar(50) DEFAULT null;
+ALTER TABLE txn_banner
+    ADD COLUMN IF NOT EXISTS primary_action_url varchar(100) DEFAULT null;
+ALTER TABLE txn_banner
+    ADD COLUMN IF NOT EXISTS secondary_action_text varchar(50) DEFAULT null;
+ALTER TABLE txn_banner
+    ADD COLUMN IF NOT EXISTS secondary_action_url varchar(100) DEFAULT null;
 
 alter table public.txn_banner
     drop column is_internal_url;
 
 alter table public.txn_banner
     drop column url;
+
+INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
+VALUES (DEFAULT, 'GOOGLE_PROJECT_ID', 'eatfit247-172005', 'Google');
+INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
+VALUES (DEFAULT, 'GOOGLE_KEY', '6LdjiR0rAAAAAMtMlbbCfzxVdf-12wA_y3yXFzZW', 'Google');
+INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
+VALUES (DEFAULT, 'YOUTUBE_CHANNEL_ID', 'UCif2j57srYKBbxlRdv9kEMQ', 'Google');

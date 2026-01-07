@@ -26,6 +26,7 @@ export class Env {
   public static readonly staticAssetPath = envToString('ASSET_PATH');
   public static readonly nodeEnv = envToString('NODE_ENV');
   public static readonly persistentStorageAssetPath = `${Env.staticAssetPath}`;
+  public static readonly recaptchaSecretKey = envToString('RECAPTCHA_SECRET_KEY', false);
 
   public static get(key: string): string {
     return process.env[key] || '';

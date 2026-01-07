@@ -90,6 +90,13 @@
               }
             }
 
+            @if (formError && errorMessage) {
+              <div class="form-error-message">
+                <mat-icon>error</mat-icon>
+                <p>{{ errorMessage }}</p>
+              </div>
+            }
+
             <button
               mat-flat-button
               type="submit"
@@ -154,7 +161,8 @@
   @if (getSection('social_proof'); as testimonialsSection) {
     <section class="testimonials-section">
       <div class="testimonials-container">
-        <h2 class="testimonials-title">{{ testimonialsSection['title'] }}</h2>
+        <h2 class="section-title">{{ testimonialsSection['title'] }}</h2>
+        <div class="title-underline"></div>
         
         @if (reviewsLoading) {
           <div class="reviews-loading">

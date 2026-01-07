@@ -7,6 +7,9 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { BlogService, BlogPost } from '../../services/blog.service';
+import { BannerService } from '../../services/banner.service';
+import { ImageSliderComponent, SliderItem } from '../shared/image-slider/image-slider.component';
+import { BannerForEnum } from 'eatfit247-shared-library';
 
 /**
  * Blog Listing Component
@@ -23,12 +26,17 @@ import { BlogService, BlogPost } from '../../services/blog.service';
     MatIconModule,
     MatChipsModule,
     MatPaginatorModule,
+    ImageSliderComponent,
   ],
   templateUrl: './blog.component.html',
   styleUrl: './blog.component.scss',
 })
 export class BlogComponent implements OnInit {
   private readonly blogService = inject(BlogService);
+  private readonly bannerService = inject(BannerService);
+
+  // Banner items
+  bannerItems: SliderItem[] = [];
 
   // Pagination
   currentPage = 1;
@@ -43,9 +51,25 @@ export class BlogComponent implements OnInit {
   selectedCategory: string | null = null;
 
   ngOnInit(): void {
+    this.loadBannerData();
     this.loadBlogPosts();
     this.loadRecentPosts();
     this.loadCategories();
+  }
+
+  /**
+   * Load banner slider data
+   */
+  private loadBannerData(): void {
+    this.bannerService.getBannerSlidesForPage(BannerForEnum.BLOGS).subscribe({
+      next: (items) => {
+        this.bannerItems = items;
+      },
+      error: (error) => {
+        console.error('Failed to load banner data:', error);
+        this.bannerItems = [];
+      },
+    });
   }
 
   /**

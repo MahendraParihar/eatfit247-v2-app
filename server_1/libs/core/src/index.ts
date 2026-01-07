@@ -21,6 +21,7 @@ export { RequestedIp } from './lib/decorators/requested-ip.decorator';
 // Guards
 export * from './lib/guards/jwt-auth.guard';
 export * from './lib/guards/jwt.strategy';
+export * from './lib/guards/recaptcha.guard';
 
 // Auth
 export * from './lib/auth/admin-user.service';

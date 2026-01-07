@@ -1,4 +1,16 @@
 <div class="success-stories">
+  <!-- Banner Section -->
+  @if (bannerItems.length > 0) {
+    <section class="banner-section">
+      <app-image-slider
+        [items]="bannerItems"
+        [autoPlay]="false"
+        [showArrows]="false"
+        [showDots]="false"
+      ></app-image-slider>
+    </section>
+  }
+
   <!-- Hero Section -->
   <section class="hero-section">
     <div class="hero-content">
@@ -24,10 +36,8 @@
   <!-- Timeline Section -->
   <section class="timeline-section">
     <div class="timeline-container">
-      <h2 class="section-title">
-        <mat-icon>emoji_events</mat-icon>
-        HALL OF FAME
-      </h2>
+      <h2 class="section-title">HALL OF FAME</h2>
+      <div class="title-underline"></div>
 
       <!-- Timeline -->
       <div class="timeline">

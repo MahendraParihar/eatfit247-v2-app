@@ -4,6 +4,9 @@ import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { SuccessStoriesService, SuccessStory } from '../../services/success-stories.service';
+import { BannerService } from '../../services/banner.service';
+import { ImageSliderComponent, SliderItem } from '../shared/image-slider/image-slider.component';
+import { BannerForEnum } from 'eatfit247-shared-library';
 
 /**
  * Success Stories Component
@@ -17,19 +20,38 @@ import { SuccessStoriesService, SuccessStory } from '../../services/success-stor
     MatCardModule,
     MatButtonModule,
     MatIconModule,
+    ImageSliderComponent,
   ],
   templateUrl: './success-stories.component.html',
   styleUrl: './success-stories.component.scss',
 })
 export class SuccessStoriesComponent implements OnInit {
   private readonly successStoriesService = inject(SuccessStoriesService);
+  private readonly bannerService = inject(BannerService);
 
+  bannerItems: SliderItem[] = [];
   stories: SuccessStory[] = [];
   years: number[] = [];
   totalStories = 0;
 
   ngOnInit(): void {
+    this.loadBannerData();
     this.loadStories();
+  }
+
+  /**
+   * Load banner slider data
+   */
+  private loadBannerData(): void {
+    this.bannerService.getBannerSlidesForPage(BannerForEnum.SUCCESS_STORIES).subscribe({
+      next: (items) => {
+        this.bannerItems = items;
+      },
+      error: (error) => {
+        console.error('Failed to load banner data:', error);
+        this.bannerItems = [];
+      },
+    });
   }
 
   /**

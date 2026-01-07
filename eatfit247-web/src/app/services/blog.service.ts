@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, map, catchError, of } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { IPublicBlog, IPublicTableList } from 'eatfit247-shared-library';
 
 export interface BlogPost {
   id: string;
@@ -16,26 +17,6 @@ export interface BlogPost {
   slug: string;
   readTime?: number; // in minutes
   tags?: string[];
-}
-
-interface IBlog {
-  blogId: number;
-  title: string;
-  blogCategory?: string;
-  blogAuthor?: string;
-  description: string;
-  imagePath: Array<{ url?: string; path?: string; [key: string]: any }>;
-  writtenAt?: Date;
-  seo?: {
-    tags?: string[];
-    url?: string;
-  };
-  visitedCount?: number;
-}
-
-interface ITableList<T> {
-  tableData: T[];
-  count: number;
 }
 
 /**
@@ -71,9 +52,9 @@ export class BlogService {
       .set('limit', pageSize.toString());
 
     const url = `${this.apiUrl}/public/blog/list`;
-    return this.http.get<ITableList<IBlog>>(url, { params }).pipe(
+    return this.http.get<IPublicTableList<IPublicBlog>>(url, { params }).pipe(
       map((response) => {
-        const posts = response.tableData.map((blog) => this.mapBlogToPost(blog));
+        const posts = response.tableData.map((blog: IPublicBlog) => this.mapBlogToPost(blog));
         const total = response.count;
         const totalPages = Math.ceil(total / pageSize);
         return { posts, total, totalPages };
@@ -90,7 +71,7 @@ export class BlogService {
    */
   getPostById(id: string): Observable<BlogPost | null> {
     const url = `${this.apiUrl}/public/blog/${id}`;
-    return this.http.get<IBlog>(url).pipe(
+    return this.http.get<IPublicBlog>(url).pipe(
       map((blog) => this.mapBlogToPost(blog)),
       catchError((error) => {
         console.error('Error fetching blog post:', error);
@@ -104,7 +85,7 @@ export class BlogService {
    */
   getPostBySlug(slug: string): Observable<BlogPost | null> {
     const url = `${this.apiUrl}/public/blog/by-url/${slug}`;
-    return this.http.get<IBlog>(url).pipe(
+    return this.http.get<IPublicBlog>(url).pipe(
       map((blog) => this.mapBlogToPost(blog)),
       catchError((error) => {
         console.error('Error fetching blog post by slug:', error);
@@ -137,11 +118,11 @@ export class BlogService {
       .set('limit', '1000');
 
     const url = `${this.apiUrl}/public/blog/list`;
-    return this.http.get<ITableList<IBlog>>(url, { params }).pipe(
+    return this.http.get<IPublicTableList<IPublicBlog>>(url, { params }).pipe(
       map((response) => {
         return response.tableData
-          .filter((blog) => blog.blogCategory?.toLowerCase() === category.toLowerCase())
-          .map((blog) => this.mapBlogToPost(blog));
+          .filter((blog: IPublicBlog) => blog.blogCategory?.toLowerCase() === category.toLowerCase())
+          .map((blog: IPublicBlog) => this.mapBlogToPost(blog));
       }),
       catchError((error) => {
         console.error('Error fetching posts by category:', error);
@@ -163,14 +144,14 @@ export class BlogService {
   }
 
   /**
-   * Map IBlog from API to BlogPost
+   * Map IPublicBlog from API to BlogPost
    */
-  private mapBlogToPost(blog: IBlog): BlogPost {
+  private mapBlogToPost(blog: IPublicBlog): BlogPost {
     // Get the first image from imagePath array
     const firstImage = blog.imagePath && blog.imagePath.length > 0
       ? blog.imagePath[0]
       : null;
-    const imageUrl = firstImage?.url || firstImage?.path || '';
+    const imageUrl = firstImage?.webUrl || '';
 
     // Extract excerpt from description (first 200 characters)
     const excerpt = blog.description

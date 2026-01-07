@@ -39,4 +39,5 @@ export * from './zoom.interface';
 export * from './tax-engine.interface';
 export * from './promo-code.interface';
 export * from './payment-gateway.interface';
+export * from './public.types';
 

@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { TxnBlog } from '../models';
-import { ConfigParam, IBasicSearch, IBlog, IManageBlog, ITableList } from '@eatfit247-shared-lib';
+import { ConfigParam, IBasicSearch, IBlog, IManageBlog, ITableList, IPublicBlog, IPublicTableList } from '@eatfit247-shared-lib';
 import {
   AppConfigService,
   CommonFunctionsUtil,
@@ -57,7 +57,7 @@ export class BlogService {
   /**
    * Public method to fetch all published and active blogs
    */
-  public async findAllPublic(searchDto: IBasicSearch): Promise<ITableList<IBlog>> {
+  public async findAllPublic(searchDto: IBasicSearch): Promise<IPublicTableList<IPublicBlog>> {
     const whereCondition: any = SearchUtil.filterBasicSearch(searchDto, 'title');
     // Only show published and active blogs for public
     whereCondition.isPublished = true;
@@ -73,11 +73,11 @@ export class BlogService {
       limit: pageSize,
       nest: true,
     });
-    const resList: IBlog[] = [];
+    const resList: IPublicBlog[] = [];
     for (const s of rows) {
-      resList.push(this.convertToModel(s));
+      resList.push(this.convertToPublic(this.convertToModel(s)));
     }
-    return <ITableList<IBlog>>{
+    return <IPublicTableList<IPublicBlog>>{
       tableData: resList,
       count: count,
     };
@@ -86,7 +86,7 @@ export class BlogService {
   /**
    * Public method to fetch a published and active blog by ID
    */
-  public async fetchByIdPublic(id: number): Promise<IBlog> {
+  public async fetchByIdPublic(id: number): Promise<IPublicBlog> {
     const find = await this.blogRepository.scope('details').findOne({
       where: {
         blogId: id,
@@ -99,13 +99,13 @@ export class BlogService {
     if (!find) {
       throw new NotFoundException('Blog not found');
     }
-    return this.convertToModel(find);
+    return this.convertToPublic(this.convertToModel(find));
   }
 
   /**
    * Public method to fetch a published and active blog by URL (slug)
    */
-  public async fetchByUrlPublic(url: string): Promise<IBlog> {
+  public async fetchByUrlPublic(url: string): Promise<IPublicBlog> {
     const find = await this.blogRepository.scope('details').findOne({
       where: {
         url: url,
@@ -118,7 +118,7 @@ export class BlogService {
     if (!find) {
       throw new NotFoundException('Blog not found');
     }
-    return this.convertToModel(find);
+    return this.convertToPublic(this.convertToModel(find));
   }
 
   private convertToModel(find: TxnBlog) {
@@ -160,6 +160,15 @@ export class BlogService {
         ? CommonFunctionsUtil.getAdminShortInfo(find.updatedByUser, 'updatedByUser')
         : undefined,
     };
+  }
+
+  /**
+   * Convert IBlog to IPublicBlog by omitting internal/admin fields
+   * Omits: createdBy, updatedBy, modifiedBy, createdAt, updatedAt, createdIp, updatedIp, modifiedIp, active, createdByUser, updatedByUser
+   */
+  private convertToPublic(blog: IBlog): IPublicBlog {
+    const { createdBy, updatedBy, createdAt, updatedAt, active, createdByUser, updatedByUser, ...publicBlog } = blog;
+    return publicBlog as IPublicBlog;
   }
 
   public async create(obj: IManageBlog, cIp: string, adminId: number): Promise<void> {

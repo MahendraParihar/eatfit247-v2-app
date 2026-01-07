@@ -5,6 +5,9 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
 import { PressMediaService, PressMediaArticle } from '../../services/press-media.service';
+import { BannerService } from '../../services/banner.service';
+import { ImageSliderComponent, SliderItem } from '../shared/image-slider/image-slider.component';
+import { BannerForEnum } from 'eatfit247-shared-library';
 
 /**
  * Press & Media Component
@@ -19,70 +22,76 @@ import { PressMediaService, PressMediaArticle } from '../../services/press-media
     MatButtonModule,
     MatIconModule,
     MatChipsModule,
+    ImageSliderComponent,
   ],
   templateUrl: './press-and-media.component.html',
   styleUrl: './press-and-media.component.scss',
 })
 export class PressAndMediaComponent implements OnInit {
   private readonly pressMediaService = inject(PressMediaService);
+  private readonly bannerService = inject(BannerService);
 
-  articles: PressMediaArticle[] = [];
-  categories: PressMediaArticle['category'][] = [];
-  selectedCategory: PressMediaArticle['category'] | null = null;
+  bannerItems: SliderItem[] = [];
+  pressArticles: PressMediaArticle[] = [];
+  youtubeArticles: PressMediaArticle[] = [];
+  loadingPress = false;
+  loadingYouTube = false;
 
   ngOnInit(): void {
-    this.loadArticles();
-    this.loadCategories();
+    this.loadBannerData();
+    this.loadPressArticles();
+    this.loadYouTubeArticles();
   }
 
   /**
-   * Load categories
+   * Load banner slider data
    */
-  private loadCategories(): void {
-    this.pressMediaService.getAllCategories().subscribe({
-      next: (cats) => {
-        this.categories = cats;
+  private loadBannerData(): void {
+    this.bannerService.getBannerSlidesForPage(BannerForEnum.MEDIA_PRESS).subscribe({
+      next: (items) => {
+        this.bannerItems = items;
       },
       error: (error) => {
-        console.error('Error loading categories:', error);
-        this.categories = [];
+        console.error('Failed to load banner data:', error);
+        this.bannerItems = [];
       },
     });
   }
 
   /**
-   * Load articles based on selected category
+   * Load press articles (type='press')
    */
-  loadArticles(): void {
-    if (this.selectedCategory) {
-      this.pressMediaService.getArticlesByCategory(this.selectedCategory).subscribe({
-        next: (articles) => {
-          this.articles = articles;
-        },
-        error: (error) => {
-          console.error('Error loading articles by category:', error);
-          this.articles = [];
-        },
-      });
-    } else {
-      this.pressMediaService.getAllArticles().subscribe({
-        next: (articles) => {
-          this.articles = articles;
-        },
-        error: (error) => {
-          console.error('Error loading all articles:', error);
-          this.articles = [];
-        },
-      });
-    }
+  loadPressArticles(): void {
+    this.loadingPress = true;
+    this.pressMediaService.getPressArticles().subscribe({
+      next: (articles) => {
+        this.pressArticles = articles;
+        this.loadingPress = false;
+      },
+      error: (error) => {
+        console.error('Error loading press articles:', error);
+        this.pressArticles = [];
+        this.loadingPress = false;
+      },
+    });
   }
 
   /**
-   * Filter articles by category
+   * Load YouTube articles (type='youtube')
    */
-  filterByCategory(category: PressMediaArticle['category'] | null): void {
-    this.selectedCategory = category;
-    this.loadArticles();
+  loadYouTubeArticles(): void {
+    this.loadingYouTube = true;
+    this.pressMediaService.getYouTubeArticles().subscribe({
+      next: (articles) => {
+        this.youtubeArticles = articles;
+        this.loadingYouTube = false;
+      },
+      error: (error) => {
+        console.error('Error loading YouTube articles:', error);
+        this.youtubeArticles = [];
+        this.loadingYouTube = false;
+      },
+    });
   }
 
   /**

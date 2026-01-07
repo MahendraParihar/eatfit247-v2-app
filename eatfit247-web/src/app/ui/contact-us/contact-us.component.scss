@@ -475,15 +475,29 @@
     margin: 0 auto;
   }
 
-  .testimonials-title {
+  .section-title {
     font-size: 2.5rem;
     font-weight: 700;
     text-align: center;
-    margin-bottom: $spacing-2xl;
+    margin-bottom: $spacing-md;
     color: var(--mat-sys-on-surface);
 
     @media (max-width: 768px) {
       font-size: 2rem;
+    }
+  }
+
+  .title-underline {
+    width: 80px;
+    height: 3px;
+    background-color: var(--mat-sys-primary);
+    margin: 0 auto $spacing-xl;
+    border-radius: 2px;
+
+    @media (max-width: 768px) {
+      width: 60px;
+      height: 2px;
+      margin-bottom: $spacing-lg;
     }
   }
 

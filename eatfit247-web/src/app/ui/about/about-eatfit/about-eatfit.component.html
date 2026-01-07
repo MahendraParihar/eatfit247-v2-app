@@ -1,5 +1,168 @@
 <div class="about-eatfit">
-  <h1>About EatFit</h1>
-  <p>Content coming soon...</p>
-</div>
+  <!-- Banner Section -->
+  @if (bannerItems.length > 0) {
+    <section class="banner-section">
+      <app-image-slider
+        [items]="bannerItems"
+        [autoPlay]="false"
+        [showArrows]="false"
+        [showDots]="false"
+      ></app-image-slider>
+    </section>
+  }
 
+  <!-- First Section: Hero with Video and Vision/Mission -->
+  <section class="first-section">
+    <div class="first-section-container">
+      <!-- Top Header Section -->
+      <div class="header-content">
+        <h1 class="section-subtitle">Protecting you from yourself</h1>
+        <h2 class="section-title">About Us</h2>
+        <div class="title-underline"></div>
+        <p class="section-description">
+          15 years-2000+ clients-one mission.<br>
+          A dream venture to lead you to your best self in the most natural way possible.<br>
+          Lead a healthy life without tweaking your lifestyle. A decade long journey that 
+          encompasses fruitful encounters with the who's who of industry, corporate, media 
+          and fitness industry
+        </p>
+      </div>
+
+      <!-- Two Column Layout: Video and Vision/Mission -->
+      <div class="content-grid">
+        <!-- Left: Video Section -->
+        <div class="video-column">
+          @if (safeYoutubeUrl) {
+            <div class="video-wrapper">
+              <iframe
+                [src]="safeYoutubeUrl"
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen
+                class="youtube-iframe"
+                title="About EatFit247"
+              ></iframe>
+            </div>
+          } @else {
+            <div class="video-placeholder">
+              <mat-icon class="placeholder-icon">play_circle</mat-icon>
+              <p>Video coming soon</p>
+            </div>
+          }
+        </div>
+
+        <!-- Right: Vision and Mission Section -->
+        <div class="vision-mission-column">
+          <!-- Vision Section -->
+          <div class="vision-mission-item">
+            <div class="item-icon-wrapper">
+              <mat-icon class="item-icon vision-icon">eco</mat-icon>
+            </div>
+            <div class="item-content">
+              <h3 class="item-title">Vision:</h3>
+              <ul class="item-list">
+                <li>Pill-free lifestyle</li>
+                <li>Amalgamating ancient intelligence and wisdom with modern lifestyle</li>
+                <li>A switch from the conventional path of resorting to pills towards using natural food, spices and herbs with just an iota of lifestyle change to combat all kinds of medical challenges</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Mission Section -->
+          <div class="vision-mission-item">
+            <div class="item-icon-wrapper">
+              <mat-icon class="item-icon mission-icon">spa</mat-icon>
+            </div>
+            <div class="item-content">
+              <h3 class="item-title">Mission:</h3>
+              <ul class="item-list">
+                <li>Protecting you from yourself</li>
+                <li>Healthy Pill free life</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Partners Section -->
+  <section class="partners-section">
+    <div class="partners-container">
+      <h2 class="section-title">We are associated with</h2>
+      <div class="title-underline"></div>
+      <p class="section-subtitle">We believe the journey is better with like-minded people and we are in esteemed company when it comes to having collaborators</p>
+      @if (isLoadingPartners) {
+        <div class="partners-loading">
+          <p>Loading partners...</p>
+        </div>
+      } @else if (partners.length === 0) {
+        <div class="partners-empty">
+          <p>No partners available at the moment.</p>
+        </div>
+      } @else {
+        <div class="partners-grid">
+          @for (partner of partners; track partner.name) {
+            <mat-card class="partner-card">
+              <mat-card-content>
+                @if (partner.logo) {
+                  <div class="partner-logo-wrapper">
+                    <img
+                      [src]="partner.logo"
+                      [alt]="partner.name + ' logo'"
+                      class="partner-logo"
+                      loading="lazy"
+                    />
+                  </div>
+                } @else {
+                  <div class="partner-logo-placeholder">
+                    <mat-icon class="partner-icon">business</mat-icon>
+                  </div>
+                }
+                <h3 class="partner-name">{{ partner.name }}</h3>
+                @if (partner.description) {
+                  <p class="partner-description">{{ partner.description }}</p>
+                }
+              </mat-card-content>
+            </mat-card>
+          }
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- Join with Shweta Shah Section -->
+  <section class="join-shweta-section">
+    <div class="join-shweta-container">
+      <div class="join-shweta-content">
+        <h2 class="section-title">Join with Shweta Shah</h2>
+        <div class="title-underline"></div>
+        <p class="join-description">
+          EatFit247 is a dream venture and your answer to weight loss reality and 
+          natural health care options without compromising your lifestyle. We pride 
+          ourselves in creating a plan that not only meets your health goals but allows 
+          you to retain your foodie cravings.
+        </p>
+        <div class="social-links-wrapper">
+          <app-social-icons
+            [links]="socialLinks"
+            size="medium"
+            [showLabels]="false"
+            orientation="horizontal"
+          ></app-social-icons>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Blog Section -->
+  <section class="blog-section-wrapper">
+    <app-blog-section
+      sectionTitle="Our Blogs"
+      sectionDescription="Discover expert insights, success stories, and wellness tips"
+      [blogsToShow]="3"
+      [showViewAll]="true"
+      viewAllUrl="/blog"
+    ></app-blog-section>
+  </section>
+</div>

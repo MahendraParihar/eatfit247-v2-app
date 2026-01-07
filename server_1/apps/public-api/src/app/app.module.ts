@@ -5,22 +5,25 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 // Import modules first so their modelRegistry.register() calls execute before CommonModule.forRoot()
 // Only import modules that have public controllers
-import { BlogsModule } from '@server_1/modules/blogs';
+import { BlogModule } from '@server_1/modules/blogs';
 import { BannerModule } from '@server_1/modules/banner';
 import { LegalPagesModule } from '@server_1/modules/pages';
+import { ReferrerModule } from '@server_1/modules/referrer';
+import { PressMediaModule } from '@server_1/modules/press-media';
 
 @Module({
   imports: [
     PlatformModule.forRoot(),
     // Import feature modules before CommonModule so modelRegistry.register() executes
-    BlogsModule,
+    BlogModule,
     BannerModule,
     LegalPagesModule,
-    CommonModule.forRoot([], PlatformModule.getModels()),
+    ReferrerModule,
+    PressMediaModule,
+    CommonModule.forRoot(['Common', 'Email'], PlatformModule.getModels()),
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {
-}
+export class AppModule {}
 

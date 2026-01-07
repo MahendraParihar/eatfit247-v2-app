@@ -1,8 +1,9 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { RecaptchaEnterpriseServiceClient } from '@google-cloud/recaptcha-enterprise';
-import { AppConfigService, CryptoUtil, MstAdminUser } from '@server_1/core';
+import { AppConfigService, CryptoUtil, MstAdminUser, Env } from '@server_1/core';
 import { LogErrorService } from '../logging/log-error.service';
 import { google } from 'googleapis';
+import axios from 'axios';
 import {
   ConfigParam,
   IAvailableSlot,
@@ -24,14 +25,13 @@ export class GoogleService {
   // region Google Captcha
   async validateCaptcha({
     // TO-DO: Replace the token and reCAPTCHA action variables before running the sample.
-    projectID = 'vansh-suthar-barwa',
-    recaptchaKey = '6LdjiR0rAAAAAMtMlbbCfzxVdf-12wA_y3yXFzZW',
+    projectID = this.appConfig.getString(ConfigParam.GOOGLE_PROJECT_ID),
+    recaptchaKey = this.appConfig.getString(ConfigParam.GOOGLE_KEY),
     token = 'action-token',
     recaptchaAction = 'action-name',
   }) {
-    const configValues = await this.appConfig.getString('project_id');
+    const configValues = this.appConfig.getString(ConfigParam.GOOGLE_PROJECT_ID);
     // Create the reCAPTCHA client.
-    // TODO: Cache the client generation code (recommended) or call client.close() before exiting the method.
     const client = new RecaptchaEnterpriseServiceClient();
     const projectPath = client.projectPath(projectID);
     // Build the assessment request.
@@ -91,6 +91,104 @@ export class GoogleService {
       );
       return null;
     }
+  }
+
+  // endregion
+  // region reCAPTCHA v3 (Standard API)
+  /**
+   * Verify reCAPTCHA v3 token using standard Google API
+   * This is simpler than Enterprise and doesn't require Google Cloud Project setup
+   *
+   * @param token - The reCAPTCHA token from the frontend
+   * @param remoteIp - Optional: The user's IP address for additional verification
+   * @param scoreThreshold - Optional: Minimum score to accept (default: 0.5)
+   * @returns Promise with verification result
+   */
+  async verifyRecaptchaV3(
+    token: string,
+    remoteIp?: string,
+    scoreThreshold: number = 0.5,
+  ): Promise<{ success: boolean; score?: number; action?: string; errorCodes?: string[] }> {
+    const secretKey = this.appConfig.getString(ConfigParam.GOOGLE_KEY);
+    if (!secretKey) {
+      throw new BadRequestException('reCAPTCHA secret key not configured');
+    }
+    if (!token) {
+      throw new BadRequestException('reCAPTCHA token is required');
+    }
+    try {
+      const params = new URLSearchParams({
+        secret: secretKey,
+        response: token,
+      });
+      if (remoteIp) {
+        params.append('remoteip', remoteIp);
+      }
+      const response = await axios.post<{
+        success: boolean;
+        score?: number;
+        action?: string;
+        challenge_ts?: string;
+        hostname?: string;
+        'error-codes'?: string[];
+      }>(
+        'https://www.google.com/recaptcha/api/siteverify',
+        params.toString(),
+        {
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+        },
+      );
+      const result = response.data;
+      if (!result.success) {
+        const errorCodes = result['error-codes'] || [];
+        throw new BadRequestException(
+          `reCAPTCHA verification failed: ${errorCodes.join(', ')}`,
+        );
+      }
+      // Check score threshold for v3
+      if (result.score !== undefined && result.score < scoreThreshold) {
+        throw new BadRequestException(
+          `reCAPTCHA score ${result.score} is below threshold ${scoreThreshold}`,
+        );
+      }
+      return {
+        success: result.success,
+        score: result.score,
+        action: result.action,
+      };
+    } catch (error: any) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      throw new BadRequestException(
+        `Failed to verify reCAPTCHA token: ${error.message}`,
+      );
+    }
+  }
+
+  /**
+   * Verify reCAPTCHA v3 token with a specific action
+   * @param token - The reCAPTCHA token from the frontend
+   * @param expectedAction - The expected action name
+   * @param remoteIp - Optional: The user's IP address
+   * @param scoreThreshold - Optional: Minimum score to accept (default: 0.5)
+   * @returns Promise with verification result
+   */
+  async verifyRecaptchaV3WithAction(
+    token: string,
+    expectedAction: string,
+    remoteIp?: string,
+    scoreThreshold: number = 0.5,
+  ): Promise<{ success: boolean; score?: number; action?: string }> {
+    const result = await this.verifyRecaptchaV3(token, remoteIp, scoreThreshold);
+    if (result.action !== expectedAction) {
+      throw new BadRequestException(
+        `reCAPTCHA action mismatch. Expected: ${expectedAction}, Got: ${result.action}`,
+      );
+    }
+    return result;
   }
 
   // endregion
@@ -176,7 +274,9 @@ export class GoogleService {
       });
       await this.mstAdminUser.update(
         {
-          googleRefreshToken: tokens.refresh_token ? CryptoUtil.encryptData(tokens.refresh_token) : undefined,
+          googleRefreshToken: tokens.refresh_token
+            ? CryptoUtil.encryptData(tokens.refresh_token)
+            : undefined,
           googleCalendarEmail: calendarInfo.data.id || undefined,
           googleTokenCreatedAt: new Date(),
           googleCalendarTimezone: calendarInfo.data.timeZone || undefined,
@@ -297,15 +397,15 @@ export class GoogleService {
       start: string;
       end: string;
     }[];
-    const workingHoursConfig = (this.appConfig
-      .getString(ConfigParam.CALENDAR_WORKING_HOURS) || '09:00-18:00')
-      .split('-');
-    const workingHours = { start: workingHoursConfig[0] || '09:00', end: workingHoursConfig[1] || '18:00' };
-    const slotStepMinutes = this.appConfig.getNumber(
-      ConfigParam.CALENDAR_SLOT_STEP_MINUTES,
-      true,
-      15,
-    ) || 15;
+    const workingHoursConfig = (
+      this.appConfig.getString(ConfigParam.CALENDAR_WORKING_HOURS) || '09:00-18:00'
+    ).split('-');
+    const workingHours = {
+      start: workingHoursConfig[0] || '09:00',
+      end: workingHoursConfig[1] || '18:00',
+    };
+    const slotStepMinutes =
+      this.appConfig.getNumber(ConfigParam.CALENDAR_SLOT_STEP_MINUTES, true, 15) || 15;
     const maxSlots = this.appConfig.getNumber(ConfigParam.CALENDAR_MAX_SLOT, true, 10) || 10;
     return this.generateSlots(busy, payload, slotStepMinutes, maxSlots, workingHours, timezone);
   }
@@ -379,10 +479,14 @@ export class GoogleService {
     });
   }
 
-  async updateSlot(nutritionist: MstAdminUser, event: IGoogleCalendarEvent, dateRange: {
-    start: string;
-    end: string
-  }): Promise<void> {
+  async updateSlot(
+    nutritionist: MstAdminUser,
+    event: IGoogleCalendarEvent,
+    dateRange: {
+      start: string;
+      end: string;
+    },
+  ): Promise<void> {
     const calendar = this.getGoogleCalendarClient(nutritionist.googleRefreshToken);
     await calendar.events.update({
       calendarId: 'primary',
@@ -396,6 +500,47 @@ export class GoogleService {
         },
       },
     });
+  }
+
+  // endregion
+  // region YouTube
+  async fetchAndSaveLatestYouTubeVideo(
+    channelId?: string,
+  ): Promise<{ link: string; title: string }[]> {
+    try {
+      const youtubeApiKey = this.appConfig.getString(ConfigParam.GOOGLE_KEY);
+      const defaultChannelId = this.appConfig.getString(ConfigParam.YOUTUBE_CHANNEL_ID);
+      if (!youtubeApiKey) {
+        throw new BadRequestException('YouTube API key is not configured');
+      }
+      const targetChannelId = channelId || defaultChannelId;
+      if (!targetChannelId) {
+        throw new BadRequestException('YouTube channel ID is required');
+      }
+      // Initialize YouTube Data API v3
+      const youtube = google.youtube({
+        version: 'v3',
+        auth: youtubeApiKey,
+      });
+      // Fetch the latest video from the channel
+      const response = await youtube.search.list({
+        part: ['snippet'],
+        channelId: targetChannelId,
+        order: 'date',
+        maxResults: 1,
+        type: ['video'],
+      });
+      if (!response.data.items || response.data.items.length === 0) {
+        throw new BadRequestException('No videos found in the channel');
+      }
+      return response.data.items.map((item) => ({
+        link: `https://www.youtube.com/watch?v=${item.id.videoId}`,
+        title: item.snippet.title,
+      }));
+    } catch (error: any) {
+      await this.logErrorService.logError(`Failed to fetch and save YouTube video: ${error.message}`);
+      throw new BadRequestException(`Failed to fetch and save YouTube video: ${error.message}`);
+    }
   }
 
   // endregion

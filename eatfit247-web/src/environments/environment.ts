@@ -7,5 +7,8 @@ export const environment = {
   mediaUrlDocker: 'http://localhost:8001/media-files',
   appName: 'EatFit247',
   appVersion: '2.0.0',
+  recaptcha: {
+    siteKey: '6LcqLEMsAAAAANHknFfFRhE1kRVcLk2ZpBy6WAQ2', // Replace with your reCAPTCHA v3 site key
+  },
 };
 

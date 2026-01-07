@@ -10,8 +10,10 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { GoogleReviewsService, GoogleReview } from '../../services/google-reviews.service';
+import { GoogleService, GoogleReview } from '../../services/google.service';
 import { ImageSliderComponent, SliderItem } from '../shared/image-slider/image-slider.component';
+import { BannerService } from '../../services/banner.service';
+import { BannerForEnum } from 'eatfit247-shared-library';
 
 interface ContactPageData {
   page: string;
@@ -45,36 +47,17 @@ interface Section {
   styleUrl: './contact-us.component.scss',
 })
 export class ContactUsComponent implements OnInit {
-  private readonly googleReviewsService = inject(GoogleReviewsService);
+  private readonly googleService = inject(GoogleService);
+  private readonly bannerService = inject(BannerService);
   
   contactForm!: FormGroup;
   formSubmitted = false;
   formSuccess = false;
+  formError = false;
+  errorMessage = '';
   googleReviews: GoogleReview[] = [];
   reviewsLoading = true;
   heroSliderItems: SliderItem[] = [];
-
-  // Trust icons for banner description
-  readonly trustIcons: string[] = [
-    '2000+ clients served',
-    'Certified Nutritionists',
-    'Fast Response Time',
-  ];
-
-  // Banner data object
-  readonly bannerData: SliderItem = {
-    id: 'contact-hero',
-    imageUrl: '/assets/images/shweta-shah.jpg',
-    imageAlt: 'Shweta Shah - Celebrity Nutritionist',
-    imagePosition: 'left',
-    shortDescription: "We're Here to Guide You Toward Your Best Health",
-    title: "We're Here to Guide You Toward Your Best Health",
-    description: this.trustIcons.join(' • '), // Trust icons in one line separated by bullet
-    primaryActionText: 'Chat on WhatsApp',
-    primaryActionUrl: 'https://wa.me/91XXXXXXXXXX',
-    secondaryActionText: 'Call Us',
-    secondaryActionUrl: 'tel:+91XXXXXXXXXX',
-  };
 
   pageData: ContactPageData = {
     page: 'Contact Us',
@@ -182,12 +165,22 @@ export class ContactUsComponent implements OnInit {
   ngOnInit(): void {
     this.initForm();
     this.loadGoogleReviews();
-    // Initialize banner items from direct object with trust icons in description
-    const bannerWithTrustIcons = {
-      ...this.bannerData,
-      description: this.trustIcons.join(' • '), // Trust icons in one line separated by bullet
-    };
-    this.heroSliderItems = [bannerWithTrustIcons];
+    this.loadBannerData();
+  }
+
+  /**
+   * Load banner slider data
+   */
+  private loadBannerData(): void {
+    this.bannerService.getBannerSlidesForPage(BannerForEnum.CONTACT_US).subscribe({
+      next: (items) => {
+        this.heroSliderItems = items;
+      },
+      error: (error) => {
+        console.error('Failed to load banner data:', error);
+        this.heroSliderItems = [];
+      },
+    });
   }
 
   /**
@@ -195,7 +188,7 @@ export class ContactUsComponent implements OnInit {
    */
   loadGoogleReviews(): void {
     this.reviewsLoading = true;
-    this.googleReviewsService.getReviewsLimited(6).subscribe({
+    this.googleService.getReviewsLimited(6).subscribe({
       next: (reviews) => {
         this.googleReviews = reviews;
         this.reviewsLoading = false;
@@ -234,19 +227,57 @@ export class ContactUsComponent implements OnInit {
     this.contactForm = this.fb.group(formControls);
   }
 
-  onSubmit(): void {
+  async onSubmit(): Promise<void> {
     if (this.contactForm.valid) {
       this.formSubmitted = true;
-      this.formSuccess = true;
-      // TODO: Implement form submission logic
-      console.log('Form submitted:', this.contactForm.value);
-      
-      // Reset form after 3 seconds
-      setTimeout(() => {
-        this.contactForm.reset();
+      this.formSuccess = false;
+      this.formError = false;
+      this.errorMessage = '';
+
+      try {
+        // Execute reCAPTCHA v3
+        const recaptchaToken = await this.googleService.executeRecaptcha('contact_form_submit');
+
+        // Prepare form data with reCAPTCHA token
+        const formData = {
+          ...this.contactForm.value,
+          recaptchaToken,
+        };
+
+        // TODO: Send form data to backend API
+        // Example:
+        // this.http.post('/api/v2/contact', formData).subscribe({
+        //   next: (response) => {
+        //     this.formSuccess = true;
+        //     this.contactForm.reset();
+        //     setTimeout(() => {
+        //       this.formSubmitted = false;
+        //       this.formSuccess = false;
+        //     }, 3000);
+        //   },
+        //   error: (error) => {
+        //     this.formError = true;
+        //     this.errorMessage = 'Failed to submit form. Please try again.';
+        //     this.formSubmitted = false;
+        //   }
+        // });
+
+        // For now, simulate successful submission
+        console.log('Form submitted with reCAPTCHA token:', formData);
+        this.formSuccess = true;
+        
+        // Reset form after 3 seconds
+        setTimeout(() => {
+          this.contactForm.reset();
+          this.formSubmitted = false;
+          this.formSuccess = false;
+        }, 3000);
+      } catch (error) {
+        console.error('reCAPTCHA error:', error);
+        this.formError = true;
+        this.errorMessage = 'reCAPTCHA verification failed. Please try again.';
         this.formSubmitted = false;
-        this.formSuccess = false;
-      }, 3000);
+      }
     } else {
       this.contactForm.markAllAsTouched();
     }

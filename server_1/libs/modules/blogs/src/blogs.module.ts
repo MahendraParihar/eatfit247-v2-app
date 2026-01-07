@@ -19,11 +19,11 @@ modelRegistry.register([TxnBlog, MstBlogAuthor, MstBlogCategory]);
     SequelizeModule.forFeature([TxnBlog, MstBlogAuthor, MstBlogCategory]),
   ],
   controllers: [
+    PublicBlogController, // Register a public controller first to avoid route conflicts
     BlogController,
     BlogCategoryController,
     BlogAuthorController,
     BlogCommentsController,
-    PublicBlogController,
   ],
   providers: [
     BlogService,
@@ -37,6 +37,6 @@ modelRegistry.register([TxnBlog, MstBlogAuthor, MstBlogCategory]);
     SequelizeModule,
   ],
 })
-export class BlogsModule {
+export class BlogModule {
 }
 

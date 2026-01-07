@@ -1,9 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { ImageSliderComponent, SliderItem } from '../../shared/image-slider/image-slider.component';
 import { SocialIconsComponent, SocialLink } from '../../shared/social-icons/social-icons.component';
+import { BannerService } from '../../../services/banner.service';
+import { BannerForEnum } from 'eatfit247-shared-library';
 
 @Component({
   selector: 'app-about-shweta-shah',
@@ -19,6 +21,8 @@ import { SocialIconsComponent, SocialLink } from '../../shared/social-icons/soci
   styleUrl: './about-shweta-shah.component.scss',
 })
 export class AboutShwetaShahComponent implements OnInit {
+  private readonly bannerService = inject(BannerService);
+
   bannerItems: SliderItem[] = [];
   
   // Social media links
@@ -56,20 +60,22 @@ export class AboutShwetaShahComponent implements OnInit {
   ];
 
   ngOnInit(): void {
-    // Initialize banner
-    this.bannerItems = [
-      {
-        id: 'shweta-shah-banner',
-        imageUrl: '/assets/images/shweta-shah.jpg',
-        imagePosition: 'left',
-        backgroundImageUrl: '/assets/images/shweta-shah.jpg',
-        shortDescription: 'Celebrity Nutritionist & Wellness Expert',
-        title: 'Shweta Shah',
-        description: 'Transforming lives through personalized nutrition and holistic wellness',
-        primaryActionText: 'Book Consultation',
-        primaryActionUrl: '/contact-us',
+    this.loadBannerData();
+  }
+
+  /**
+   * Load banner slider data
+   */
+  private loadBannerData(): void {
+    this.bannerService.getBannerSlidesForPage(BannerForEnum.ABOUT_SHWETA).subscribe({
+      next: (items) => {
+        this.bannerItems = items;
       },
-    ];
+      error: (error) => {
+        console.error('Failed to load banner data:', error);
+        this.bannerItems = [];
+      },
+    });
   }
 }
 
