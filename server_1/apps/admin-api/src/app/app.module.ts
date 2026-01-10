@@ -28,6 +28,7 @@ import { PromoCodeModule } from '@server_1/modules/promo-code';
 import { BannerModule } from '@server_1/modules/banner';
 import { MemberTestimonialModule } from '@server_1/modules/member-testimonial';
 import { LovsModule } from '@server_1/modules/lovs';
+import { SuccessStoriesModule } from '@server_1/modules/success-stories';
 import { AdminUserModule } from '@server_1/admin-only/admin-user';
 import { ReportsModule } from '@server_1/admin-only/reports';
 
@@ -62,6 +63,7 @@ import { ReportsModule } from '@server_1/admin-only/reports';
     BannerModule,
     MemberTestimonialModule,
     LovsModule,
+    SuccessStoriesModule,
     AdminUserModule,
     ReportsModule,
     CommonModule.forRoot(

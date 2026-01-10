@@ -1,10 +1,10 @@
-import { IBaseAdminUser } from "../base.interface";
-import { IMediaUpload } from "./media-upload.interface";
+import { IBaseAdminUser } from '../base.interface';
+import { IMediaUpload } from './media-upload.interface';
 
 export interface IBaseSuccessStory {
   name: string;
-  title: string;
-  date: Date | string;
+  title?: string;
+  date: Date;
   description: string;
   imagePath?: IMediaUpload[];
 }

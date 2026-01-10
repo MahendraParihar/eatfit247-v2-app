@@ -15,31 +15,25 @@ import { MediaUploadDto } from '@server_1/core';
 export class CreateSuccessStoryDto implements IManageSuccessStory {
   @IsNotEmpty()
   @IsString()
-  @MaxLength(InputLengthEnum.CHAR_255)
+  @MaxLength(InputLengthEnum.CHAR_250)
   name!: string;
-
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
-  @MaxLength(InputLengthEnum.CHAR_255)
-  title!: string;
-
+  @MaxLength(InputLengthEnum.CHAR_250)
+  title?: string;
   @IsNotEmpty()
   @IsDateString()
-  date!: string;
-
+  date!: Date;
   @IsNotEmpty()
   @IsString()
   description!: string;
-
   @IsNotEmpty()
   @ValidateNested({ each: true })
   @Type(() => MediaUploadDto)
   imagePath!: MediaUploadDto[];
-
   @IsNotEmpty()
   @IsBoolean()
   active!: boolean;
-
   @IsOptional()
   @IsNumber()
   successStoryId?: number;

@@ -219,6 +219,7 @@ export class Banners implements OnInit {
       try {
         await this.apiService.updateStatus(item.bannerId, !item.active);
         await this.loadData();
+        this.loading = false;
       } catch {
         this.loading = false;
       }

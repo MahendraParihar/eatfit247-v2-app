@@ -33,6 +33,8 @@ export class SuccessStoriesComponent implements OnInit {
   storiesByYear: Map<number, SuccessStory[]> = new Map();
   years: number[] = [];
   totalStories = 0;
+  isLoading = false;
+  hasError = false;
 
   ngOnInit(): void {
     this.loadBannerData();
@@ -52,21 +54,38 @@ export class SuccessStoriesComponent implements OnInit {
   }
 
   /**
-   * Load all success stories grouped by year
+   * Load all success stories grouped by year from API
    */
-  loadStories(): void {
-    const allStories = this.successStoriesService.getAllStories();
-    this.years = this.successStoriesService.getAllYears();
-    this.totalStories = this.successStoriesService.getTotalStories();
+  async loadStories(): Promise<void> {
+    this.isLoading = true;
+    this.hasError = false;
 
-    // Group stories by year
-    this.storiesByYear.clear();
-    allStories.forEach((story) => {
-      if (!this.storiesByYear.has(story.year)) {
-        this.storiesByYear.set(story.year, []);
-      }
-      this.storiesByYear.get(story.year)!.push(story);
-    });
+    try {
+      // Load stories from API
+      await this.successStoriesService.loadStories();
+
+      // Get all stories, years, and total count
+      const allStories = this.successStoriesService.getAllStories();
+      this.years = this.successStoriesService.getAllYears();
+      this.totalStories = this.successStoriesService.getTotalStories();
+
+      // Group stories by year
+      this.storiesByYear.clear();
+      allStories.forEach((story) => {
+        if (!this.storiesByYear.has(story.year)) {
+          this.storiesByYear.set(story.year, []);
+        }
+        this.storiesByYear.get(story.year)!.push(story);
+      });
+    } catch (error) {
+      console.error('Failed to load success stories:', error);
+      this.hasError = true;
+      this.storiesByYear.clear();
+      this.years = [];
+      this.totalStories = 0;
+    } finally {
+      this.isLoading = false;
+    }
   }
 
   /**

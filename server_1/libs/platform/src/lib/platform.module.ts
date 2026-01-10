@@ -65,7 +65,11 @@ export class PlatformModule {
       ],
       providers: [
         LogErrorService,
-        GoogleService,
+        {
+          provide: 'GoogleService',
+          useClass: GoogleService,
+        },
+        GoogleService, // Keep original for backward compatibility
         ZoomService,
         RazorpayService,
         StripeService,

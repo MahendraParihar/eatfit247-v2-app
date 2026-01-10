@@ -1,18 +1,17 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { TxnSuccessStories } from '../models';
-import { ConfigParam, IBasicSearch, IManageSuccessStory, ISuccessStory, ITableList } from '@eatfit247-shared-lib';
-import { AppConfigService, CommonFunctionsUtil, SearchUtil } from '@server_1/core';
+import { IBasicSearch, IManageSuccessStory, ISuccessStory, ITableList } from '@eatfit247-shared-lib';
+import { CommonFunctionsUtil, SearchUtil } from '@server_1/core';
 
 @Injectable()
 export class SuccessStoryService {
   constructor(
     @InjectModel(TxnSuccessStories) private readonly successStoryRepository: typeof TxnSuccessStories,
-    private appConfigService: AppConfigService,
   ) {}
 
-  public async findAll(searchDto: IBasicSearch & { active?: boolean }): Promise<ITableList<ISuccessStory>> {
-    const whereCondition: any = SearchUtil.filterBasicSearch(searchDto, ['name', 'title']);
+  public async findAll(searchDto: IBasicSearch): Promise<ITableList<ISuccessStory>> {
+    const whereCondition: any = SearchUtil.filterBasicSearch(searchDto, 'name');
     // Filter by active status if provided
     if (searchDto.active !== undefined) {
       whereCondition.active = searchDto.active;
@@ -20,7 +19,6 @@ export class SuccessStoryService {
     const pageNumber = searchDto.page || 0;
     const pageSize = searchDto.limit || 15;
     const offset = pageNumber === 0 ? 0 : pageNumber * pageSize;
-
     const { rows, count } = await this.successStoryRepository.scope('list').findAndCountAll({
       where: whereCondition,
       order: [['date', 'DESC'], ['createdAt', 'DESC']],
@@ -29,7 +27,6 @@ export class SuccessStoryService {
       raw: true,
       nest: true,
     });
-
     const resList: ISuccessStory[] = rows.map((item: any) => {
       return this.convertToModel(item);
     });
@@ -77,7 +74,7 @@ export class SuccessStoryService {
   public async create(obj: IManageSuccessStory, cIp: string, adminId: number): Promise<void> {
     const createObj = {
       name: obj.name,
-      title: obj.title,
+      title: obj.title ? obj.title : null,
       date: obj.date,
       description: obj.description,
       imagePath: obj.imagePath && obj.imagePath.length > 0 ? obj.imagePath : [],

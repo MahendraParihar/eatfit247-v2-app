@@ -12,7 +12,14 @@ import {
   RECAPTCHA_ACTION,
   RECAPTCHA_SCORE_THRESHOLD,
 } from '../decorators/auth.decorator';
-import { GoogleService } from '@server_1/platform';
+// Using string token to avoid circular dependency with platform
+const GOOGLE_SERVICE_TOKEN = 'GoogleService';
+
+// Type definition to avoid importing from platform
+interface IGoogleService {
+  verifyRecaptchaV3(token: string, remoteIp?: string, scoreThreshold?: number): Promise<{ success: boolean; score?: number; action?: string; errorCodes?: string[] }>;
+  verifyRecaptchaV3WithAction(token: string, expectedAction: string, remoteIp?: string, scoreThreshold?: number): Promise<{ success: boolean; score?: number; action?: string }>;
+}
 
 /**
  * reCAPTCHA Guard
@@ -30,7 +37,7 @@ import { GoogleService } from '@server_1/platform';
 export class RecaptchaGuard implements CanActivate {
   constructor(
     private reflector: Reflector,
-    @Optional() @Inject(GoogleService) private googleService?: GoogleService,
+    @Optional() @Inject(GOOGLE_SERVICE_TOKEN) private googleService?: IGoogleService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {

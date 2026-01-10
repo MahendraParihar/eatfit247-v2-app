@@ -219,6 +219,7 @@ export class AdminUser implements OnInit {
       try {
         await this.apiService.updateStatus(item.adminId, !item.active);
         await this.loadData();
+        this.loading = false;
       } catch {
         this.loading = false;
       }

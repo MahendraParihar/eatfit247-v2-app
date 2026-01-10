@@ -518,7 +518,7 @@ create table public.txn_success_stories
 (
     success_story_id SERIAL PRIMARY KEY,
     name             varchar(255)                not null,
-    title            varchar(255)                not null,
+    title            varchar(255)                null,
     date             date                        not null,
     description      text                        not null,
     image_path       jsonb                       not null,

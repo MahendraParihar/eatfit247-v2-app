@@ -7,6 +7,7 @@ export class AppConfigModule {
   static asyncRegister(modules: string[]): DynamicModule {
     return {
       module: AppConfigModule,
+      global: true,
       providers: [
         {
           provide: APP_CONFIG_VALUES,

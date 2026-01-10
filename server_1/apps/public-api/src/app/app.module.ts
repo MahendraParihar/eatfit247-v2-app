@@ -12,6 +12,7 @@ import { ProgramPlanModule } from '@server_1/modules/program-plan';
 import { FaqModule } from '@server_1/modules/faq';
 import { MemberModule } from '@server_1/modules/member';
 import { LocationModule } from '@server_1/modules/locations';
+import { SuccessStoriesModule } from '@server_1/modules/success-stories';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { LocationModule } from '@server_1/modules/locations';
     FaqModule,
     MemberModule,
     LocationModule,
+    SuccessStoriesModule,
     CommonModule.forRoot(['Common', 'Email'], PlatformModule.getModels()),
   ],
   controllers: [AppController],

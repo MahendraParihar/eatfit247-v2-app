@@ -1,5 +1,4 @@
 @use '../../../theme/variables' as *;
-@use '../../../theme/section-header' as *;
 
 .success-stories {
   padding: 0;
@@ -348,9 +347,9 @@
 // Call to Action Section
 .cta-section {
   background: linear-gradient(
-    135deg,
-    var(--mat-sys-primary-container) 0%,
-    var(--mat-sys-tertiary-container) 100%
+      135deg,
+      var(--mat-sys-primary-container) 0%,
+      var(--mat-sys-tertiary-container) 100%
   );
   color: var(--mat-sys-on-primary-container);
   padding: $spacing-3xl $spacing-lg;

@@ -228,6 +228,7 @@ export class Blogs implements OnInit {
       try {
         await this.apiService.updateStatus(item.blogId, !item.active);
         await this.loadData();
+        this.loading = false;
       } catch {
         this.loading = false;
       }
