@@ -11,6 +11,7 @@ import { SuccessStoriesComponent } from './ui/success-stories/success-stories.co
 import { BlogComponent } from './ui/blog/blog.component';
 import { BlogDetailComponent } from './ui/blog-detail/blog-detail.component';
 import { ContactUsComponent } from './ui/contact-us/contact-us.component';
+import { CheckoutComponent } from './ui/checkout/checkout.component';
 
 export const routes: Routes = [
   {
@@ -60,6 +61,10 @@ export const routes: Routes = [
   {
     path: 'contact-us',
     component: ContactUsComponent,
+  },
+  {
+    path: 'checkout',
+    component: CheckoutComponent,
   },
   {
     path: '**',

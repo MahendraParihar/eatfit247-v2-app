@@ -22,6 +22,7 @@ export interface IBaseFranchise {
   startDate: Date;
   endDate?: Date;
   isPrimary: boolean;
+  isDefault: boolean;
 }
 
 export interface IManageFranchise extends IBaseFranchise {

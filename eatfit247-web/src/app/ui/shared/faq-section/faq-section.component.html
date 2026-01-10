@@ -1,0 +1,60 @@
+<section class="faq-section">
+  <!-- Section Header -->
+  <div class="section-header">
+    <h2 class="section-title">{{ sectionTitle }}</h2>
+    <div class="title-underline"></div>
+    @if (sectionDescription) {
+      <p class="section-description">{{ sectionDescription }}</p>
+    }
+  </div>
+
+  <!-- Loading State -->
+  @if (loading) {
+    <div class="faq-section-loading">
+      <mat-icon class="loading-icon">hourglass_empty</mat-icon>
+      <p>Loading FAQs...</p>
+    </div>
+  }
+
+  <!-- FAQs Accordion -->
+  @if (!loading && displayedFaqs.length > 0) {
+    <div class="faqs-container">
+      <mat-accordion class="faqs-accordion">
+        @for (faq of displayedFaqs; track faq.id) {
+          <mat-expansion-panel class="faq-panel">
+            <mat-expansion-panel-header>
+              <mat-panel-title class="faq-question">
+                {{ faq.question }}
+              </mat-panel-title>
+              @if (faq.category) {
+                <mat-panel-description>
+                  <mat-chip class="category-chip">{{ faq.category }}</mat-chip>
+                </mat-panel-description>
+              }
+            </mat-expansion-panel-header>
+            <div class="faq-answer" [innerHTML]="faq.answer"></div>
+          </mat-expansion-panel>
+        }
+      </mat-accordion>
+    </div>
+  }
+
+  <!-- Empty State -->
+  @if (!loading && displayedFaqs.length === 0) {
+    <div class="faq-section-empty">
+      <mat-icon class="empty-icon">help_outline</mat-icon>
+      <p>No FAQs available at the moment.</p>
+    </div>
+  }
+
+  <!-- View All Button -->
+  @if (showViewAll && !loading && displayedFaqs.length > 0) {
+    <div class="section-footer">
+      <a mat-stroked-button [routerLink]="viewAllUrl" class="view-all-btn">
+        View All FAQs
+        <mat-icon>arrow_forward</mat-icon>
+      </a>
+    </div>
+  }
+</section>
+

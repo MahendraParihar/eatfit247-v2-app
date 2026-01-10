@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
+import { Op } from 'sequelize';
 import { IBasicSearch, ICountry, IDropdownItem, IManageCountry, ITableList, TaxTypeEnum } from '@eatfit247-shared-lib';
 import { CommonFunctionsUtil, SearchUtil } from '@server_1/core';
 import { MstCountry } from '../database/models';
@@ -110,5 +111,25 @@ export class CountryService {
     return tempList.map((t) => {
       return <IDropdownItem>{ id: t.countryId, label: t.country, selected: false };
     });
+  }
+
+  public async getCountryPhoneCodeList(): Promise<Array<{ id: string; label: string }>> {
+    const tempList = await this.countryRepository.findAll<MstCountry>({
+      where: { active: true, phoneNumberCode: { [Op.ne]: null } },
+      order: [['country', 'ASC']],
+      raw: true,
+      nest: true,
+    });
+    // Get unique phone codes
+    const uniqueCodes = new Map<string, string>();
+    tempList.forEach((t) => {
+      if (t.phoneNumberCode && !uniqueCodes.has(t.phoneNumberCode)) {
+        uniqueCodes.set(t.phoneNumberCode, t.country);
+      }
+    });
+    return Array.from(uniqueCodes.entries()).map(([code, country]) => ({
+      id: code,
+      label: `${code} (${country})`,
+    }));
   }
 }

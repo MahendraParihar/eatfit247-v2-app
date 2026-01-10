@@ -14,7 +14,8 @@
         "packageJson": "libs/platform/package.json",
         "main": "libs/platform/src/index.ts",
         "assets": ["libs/platform/*.md"]
-      }
+      },
+      "dependsOn": []
     }
   }
 }

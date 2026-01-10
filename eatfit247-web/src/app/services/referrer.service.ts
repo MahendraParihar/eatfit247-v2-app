@@ -10,6 +10,7 @@ export interface IPublicReferrer {
 export interface Partner {
   name: string;
   logo?: string;
+  subtext?: string;
   description?: string;
 }
 

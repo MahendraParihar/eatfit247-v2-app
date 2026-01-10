@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { MstProgram } from '../models';
-import { ConfigParam, IBasicSearch, IDropdownItem, IManageProgram, IProgram, ITableList } from '@eatfit247-shared-lib';
+import { ConfigParam, IBasicSearch, IDropdownItem, IManageProgram, IProgram, ITableList, IPublicProgram, IPublicTableList } from '@eatfit247-shared-lib';
 import { AppConfigService, CommonFunctionsUtil, SearchUtil } from '@server_1/core';
 
 @Injectable()
@@ -159,6 +159,76 @@ export class ProgramService {
       label: t.program,
       isActive: t.active,
     }));
+  }
+
+  /**
+   * Public method to fetch all active programs
+   */
+  public async findAllPublic(searchDto: IBasicSearch): Promise<IPublicTableList<IPublicProgram>> {
+    const whereCondition: any = SearchUtil.filterBasicSearch(searchDto, 'program');
+    // Only show active programs for public
+    whereCondition.active = true;
+    
+    const pageNumber = searchDto.page || 0;
+    const pageSize = searchDto.limit || 15;
+    const offset = pageNumber === 0 ? 0 : pageNumber * pageSize;
+    const { rows, count } = await this.programRepository.scope('list').findAndCountAll({
+      where: whereCondition,
+      order: [
+        ['programCategoryId', 'ASC'],
+        ['sequenceNumber', 'ASC'],
+      ],
+      offset: offset,
+      limit: pageSize,
+      nest: true,
+    });
+    const resList: IPublicProgram[] = rows.map((item: any) => this.convertToPublic(this.convertToModel(item)));
+    return {
+      tableData: resList,
+      count: count,
+    };
+  }
+
+  /**
+   * Public method to fetch an active program by ID
+   */
+  public async fetchByIdPublic(id: number): Promise<IPublicProgram> {
+    const find = await this.programRepository.scope('details').findOne({
+      where: {
+        programId: id,
+        active: true,
+      },
+      nest: true,
+    });
+    if (!find) {
+      throw new NotFoundException('Program not found');
+    }
+    return this.convertToPublic(this.convertToModel(find));
+  }
+
+  /**
+   * Public method to fetch an active program by URL (slug)
+   */
+  public async fetchByUrlPublic(url: string): Promise<IPublicProgram> {
+    const find = await this.programRepository.scope('details').findOne({
+      where: {
+        url: url,
+        active: true,
+      },
+      nest: true,
+    });
+    if (!find) {
+      throw new NotFoundException('Program not found');
+    }
+    return this.convertToPublic(this.convertToModel(find));
+  }
+
+  /**
+   * Convert IProgram to IPublicProgram (exclude admin/internal fields)
+   */
+  private convertToPublic(program: IProgram): IPublicProgram {
+    const { createdBy, updatedBy, createdAt, updatedAt, createdByUser, updatedByUser, active, ...publicProgram } = program;
+    return publicProgram as IPublicProgram;
   }
 }
 

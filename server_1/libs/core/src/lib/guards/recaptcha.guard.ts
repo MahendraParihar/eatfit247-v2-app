@@ -4,6 +4,7 @@ import {
   Injectable,
   BadRequestException,
   Optional,
+  Inject,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import {
@@ -11,13 +12,7 @@ import {
   RECAPTCHA_ACTION,
   RECAPTCHA_SCORE_THRESHOLD,
 } from '../decorators/auth.decorator';
-
-// Use forwardRef to avoid circular dependency
-// GoogleService will be injected at runtime when PlatformModule is available
-type GoogleServiceType = {
-  verifyRecaptchaV3: (token: string, remoteIp?: string, scoreThreshold?: number) => Promise<any>;
-  verifyRecaptchaV3WithAction: (token: string, expectedAction: string, remoteIp?: string, scoreThreshold?: number) => Promise<any>;
-};
+import { GoogleService } from '@server_1/platform';
 
 /**
  * reCAPTCHA Guard
@@ -35,7 +30,7 @@ type GoogleServiceType = {
 export class RecaptchaGuard implements CanActivate {
   constructor(
     private reflector: Reflector,
-    @Optional() private googleService?: GoogleServiceType,
+    @Optional() @Inject(GoogleService) private googleService?: GoogleService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {

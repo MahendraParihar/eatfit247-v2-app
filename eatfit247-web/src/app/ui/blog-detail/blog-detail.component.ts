@@ -224,7 +224,15 @@ export class BlogDetailComponent implements OnInit, OnDestroy {
         shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${url}`;
         break;
       case 'pinterest':
-        shareUrl = `https://pinterest.com/pin/create/button/?url=${url}&description=${title}`;
+        let media = '';
+        if (this.blogPost.imageUrl) {
+          // Construct full image URL using the same pattern as the template
+          const imageUrl = this.blogPost.imageUrl.startsWith('http') 
+            ? this.blogPost.imageUrl 
+            : `http://localhost:3001/${this.blogPost.imageUrl}`;
+          media = `&media=${encodeURIComponent(imageUrl)}`;
+        }
+        shareUrl = `https://pinterest.com/pin/create/button/?url=${url}&description=${title}${media}`;
         break;
       default:
         return;

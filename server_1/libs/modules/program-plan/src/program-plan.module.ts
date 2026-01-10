@@ -6,6 +6,8 @@ import {
   ProgramCategoryController,
   ProgramController,
   ProgramPlanController,
+  PublicProgramController,
+  PublicProgramPlanController,
 } from './controllers';
 import { ProgramCategoryService, ProgramPlanService, ProgramService } from './services';
 // Register models with the model registry
@@ -23,6 +25,9 @@ modelRegistry.register([
     SequelizeModule.forFeature([MstProgramCategory, MstProgram, MstProgramPlanType, MstProgramPlan, MstProgramPlanFees]),
   ],
   controllers: [
+    // Register public controllers first to avoid route conflicts
+    PublicProgramController,
+    PublicProgramPlanController,
     ProgramCategoryController,
     ProgramController,
     ProgramPlanController,

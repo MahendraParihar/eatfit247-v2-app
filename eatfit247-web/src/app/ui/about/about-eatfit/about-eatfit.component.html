@@ -89,9 +89,6 @@
   <!-- Partners Section -->
   <section class="partners-section">
     <div class="partners-container">
-      <h2 class="section-title">We are associated with</h2>
-      <div class="title-underline"></div>
-      <p class="section-subtitle">We believe the journey is better with like-minded people and we are in esteemed company when it comes to having collaborators</p>
       @if (isLoadingPartners) {
         <div class="partners-loading">
           <p>Loading partners...</p>
@@ -101,59 +98,168 @@
           <p>No partners available at the moment.</p>
         </div>
       } @else {
-        <div class="partners-grid">
-          @for (partner of partners; track partner.name) {
-            <mat-card class="partner-card">
-              <mat-card-content>
-                @if (partner.logo) {
-                  <div class="partner-logo-wrapper">
-                    <img
-                      [src]="'http://localhost:3001/'+partner.logo"
-                      [alt]="partner.name + ' logo'"
-                      class="partner-logo"
-                      loading="lazy"
-                    />
-                  </div>
-                } @else {
-                  <div class="partner-logo-placeholder">
-                    <mat-icon class="partner-icon">business</mat-icon>
-                  </div>
-                }
-                <h3 class="partner-name">{{ partner.name }}</h3>
-                @if (partner.description) {
-                  <p class="partner-description">{{ partner.description }}</p>
-                }
-              </mat-card-content>
-            </mat-card>
-          }
+        <div class="partners-layout">
+          <!-- Left Column: 2 Partners with name on left, image on right -->
+          <div class="partner-column partner-column-left">
+            @if (partners[0]) {
+              <div class="partner-item-left">
+                <div class="partner-name-left">
+                  <h3 class="partner-name">{{ partners[0].name }}</h3>
+                  @if (partners[0].subtext) {
+                    <p class="partner-subtext">{{ partners[0].subtext }}</p>
+                  }
+                  @if (partners[0].description) {
+                    <p class="partner-description">{{ partners[0].description }}</p>
+                  }
+                </div>
+                <div class="partner-image-right">
+                  @if (partners[0].logo) {
+                    <div class="partner-logo-wrapper">
+                      <img
+                        [src]="'http://localhost:3001/'+partners[0].logo"
+                        [alt]="partners[0].name + ' logo'"
+                        class="partner-logo"
+                        loading="lazy"
+                      />
+                    </div>
+                  } @else {
+                    <div class="partner-logo-placeholder">
+                      <mat-icon class="partner-icon">business</mat-icon>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+            @if (partners[1]) {
+              <div class="partner-item-left">
+                <div class="partner-name-left">
+                  <h3 class="partner-name">{{ partners[1].name }}</h3>
+                  @if (partners[1].subtext) {
+                    <p class="partner-subtext">{{ partners[1].subtext }}</p>
+                  }
+                  @if (partners[1].description) {
+                    <p class="partner-description">{{ partners[1].description }}</p>
+                  }
+                </div>
+                <div class="partner-image-right">
+                  @if (partners[1].logo) {
+                    <div class="partner-logo-wrapper">
+                      <img
+                        [src]="'http://localhost:3001/'+partners[1].logo"
+                        [alt]="partners[1].name + ' logo'"
+                        class="partner-logo"
+                        loading="lazy"
+                      />
+                    </div>
+                  } @else {
+                    <div class="partner-logo-placeholder">
+                      <mat-icon class="partner-icon">business</mat-icon>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+
+          <!-- Center Column: Text content -->
+          <div class="partner-column partner-column-center">
+            <h2 class="partners-in-health-title">Partners-in-health</h2>
+            <h3 class="section-title">We are associated with</h3>
+            <p class="section-subtitle">We believe the journey is better with like-minded people and we are in esteemed company when it comes to having collaborators</p>
+          </div>
+
+          <!-- Right Column: 2 Partners with image on left, name on right -->
+          <div class="partner-column partner-column-right">
+            @if (partners[2]) {
+              <div class="partner-item-right">
+                <div class="partner-image-left">
+                  @if (partners[2].logo) {
+                    <div class="partner-logo-wrapper">
+                      <img
+                        [src]="'http://localhost:3001/'+partners[2].logo"
+                        [alt]="partners[2].name + ' logo'"
+                        class="partner-logo"
+                        loading="lazy"
+                      />
+                    </div>
+                  } @else {
+                    <div class="partner-logo-placeholder">
+                      <mat-icon class="partner-icon">business</mat-icon>
+                    </div>
+                  }
+                </div>
+                <div class="partner-name-right">
+                  <h3 class="partner-name">{{ partners[2].name }}</h3>
+                  @if (partners[2].subtext) {
+                    <p class="partner-subtext">{{ partners[2].subtext }}</p>
+                  }
+                  @if (partners[2].description) {
+                    <p class="partner-description">{{ partners[2].description }}</p>
+                  }
+                </div>
+              </div>
+            }
+            @if (partners[3]) {
+              <div class="partner-item-right">
+                <div class="partner-image-left">
+                  @if (partners[3].logo) {
+                    <div class="partner-logo-wrapper">
+                      <img
+                        [src]="'http://localhost:3001/'+partners[3].logo"
+                        [alt]="partners[3].name + ' logo'"
+                        class="partner-logo"
+                        loading="lazy"
+                      />
+                    </div>
+                  } @else {
+                    <div class="partner-logo-placeholder">
+                      <mat-icon class="partner-icon">business</mat-icon>
+                    </div>
+                  }
+                </div>
+                <div class="partner-name-right">
+                  <h3 class="partner-name">{{ partners[3].name }}</h3>
+                  @if (partners[3].subtext) {
+                    <p class="partner-subtext">{{ partners[3].subtext }}</p>
+                  }
+                  @if (partners[3].description) {
+                    <p class="partner-description">{{ partners[3].description }}</p>
+                  }
+                </div>
+              </div>
+            }
+          </div>
         </div>
       }
     </div>
   </section>
 
-  <!-- Join with Shweta Shah Section -->
-  <section class="join-shweta-section">
-    <div class="join-shweta-container">
-      <div class="join-shweta-content">
-        <h2 class="section-title">Join with Shweta Shah</h2>
-        <div class="title-underline"></div>
-        <p class="join-description">
-          EatFit247 is a dream venture and your answer to weight loss reality and
-          natural health care options without compromising your lifestyle. We pride
-          ourselves in creating a plan that not only meets your health goals but allows
-          you to retain your foodie cravings.
-        </p>
-        <div class="social-links-wrapper">
-          <app-social-icons
-            [links]="socialLinks"
-            size="medium"
-            [showLabels]="false"
-            orientation="horizontal"
-          ></app-social-icons>
-        </div>
+  <!-- Knowledge & Experience Section -->
+  <section class="knowledge-experience-section">
+    <div class="knowledge-experience-container">
+      <h2 class="section-title">Knowledge & experience to support you</h2>
+      <p class="section-description">
+        With over 15 years of expertise in nutrition and wellness, we combine ancient wisdom with modern science to help you achieve your health goals naturally. Our proven approach has transformed thousands of lives through personalized nutrition plans and lifestyle guidance.
+      </p>
+      <div class="stats-grid">
+        @for (stat of statistics; track stat.label) {
+          <div class="stat-card">
+            <div class="stat-number">{{ stat.number }}</div>
+            <div class="stat-label">{{ stat.label }}</div>
+          </div>
+        }
       </div>
     </div>
   </section>
+
+  <!-- Join with Shweta Shah Section -->
+  <app-join-shweta-shah
+    [title]="'Join with Shweta Shah'"
+    [description]="'EatFit247 is a dream venture and your answer to weight loss reality and natural health care options without compromising your lifestyle. We pride ourselves in creating a plan that not only meets your health goals but allows you to retain your foodie cravings.'"
+    [socialLinks]="socialLinks"
+    [showLabels]="false"
+    [iconSize]="'medium'"
+  ></app-join-shweta-shah>
 
   <!-- Blog Section -->
   <section class="blog-section-wrapper">

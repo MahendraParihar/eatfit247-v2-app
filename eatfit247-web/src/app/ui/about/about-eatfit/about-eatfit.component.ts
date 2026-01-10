@@ -5,7 +5,8 @@ import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { BlogSectionComponent } from '../../shared/blog-section/blog-section.component';
-import { SocialIconsComponent, SocialLink } from '../../shared/social-icons/social-icons.component';
+import { SocialLink } from '../../shared/social-icons/social-icons.component';
+import { JoinShwetaShahComponent } from '../../shared/join-shweta-shah/join-shweta-shah.component';
 import { ReferrerService, Partner } from '../../../services/referrer.service';
 import { BannerService } from '../../../services/banner.service';
 import { ImageSliderComponent, SliderItem } from '../../shared/image-slider/image-slider.component';
@@ -20,8 +21,8 @@ import { BannerForEnum } from 'eatfit247-shared-library';
     MatIconModule,
     MatButtonModule,
     BlogSectionComponent,
-    SocialIconsComponent,
     ImageSliderComponent,
+    JoinShwetaShahComponent,
   ],
   templateUrl: './about-eatfit.component.html',
   styleUrl: './about-eatfit.component.scss',
@@ -41,6 +42,14 @@ export class AboutEatfitComponent implements OnInit {
   // Partners data - loaded from API
   partners: Partner[] = [];
   isLoadingPartners = false;
+
+  // Statistics for Knowledge & Experience section
+  statistics = [
+    { number: '15+', label: 'Years of experience' },
+    { number: '2,000+', label: 'Happy clients' },
+    { number: '100%', label: 'Satisfaction' },
+    { number: '400+', label: 'Healthy recipes' },
+  ];
 
   // Social media links for Shweta Shah section
   socialLinks: SocialLink[] = [

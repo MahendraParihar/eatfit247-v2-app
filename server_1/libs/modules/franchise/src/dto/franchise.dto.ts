@@ -100,6 +100,10 @@ export class CreateFranchiseDto implements IManageFranchise {
 
   @IsNotEmpty()
   @IsBoolean()
+  isDefault!: boolean;
+
+  @IsNotEmpty()
+  @IsBoolean()
   active!: boolean;
 
   @IsOptional()

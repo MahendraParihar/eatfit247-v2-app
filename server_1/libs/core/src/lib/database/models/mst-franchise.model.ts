@@ -152,6 +152,13 @@ export class MstFranchise extends Model<MstFranchise> {
   declare isPrimary: boolean;
   @Column({
     allowNull: false,
+    defaultValue: false,
+    field: 'is_default',
+    type: DataType.BOOLEAN,
+  })
+  declare isDefault: boolean;
+  @Column({
+    allowNull: false,
     defaultValue: true,
     field: 'active',
     type: DataType.BOOLEAN,

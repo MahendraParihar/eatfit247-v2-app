@@ -9,6 +9,7 @@ import { IBlog } from './blog.interface';
 import { IBanner } from './banner.interface';
 import { IPressMedia } from './press-media.interface';
 import { IProgram } from './program.interface';
+import { IFaq, IFaqCategory } from './faq.interface';
 import { ITableList } from './table-list.interface';
 
 /**
@@ -53,6 +54,18 @@ export type IPublicPressMedia = PublicData<IPressMedia>;
  * Excludes: createdBy, updatedBy, modifiedBy, createdAt, updatedAt, createdIp, updatedIp, modifiedIp, active, createdByUser, updatedByUser
  */
 export type IPublicProgram = PublicData<IProgram>;
+
+/**
+ * Public FAQ Interface
+ * Excludes: createdBy, updatedBy, modifiedBy, createdAt, updatedAt, createdIp, updatedIp, modifiedIp, active, createdByUser, updatedByUser
+ */
+export type IPublicFaq = PublicData<IFaq>;
+
+/**
+ * Public FAQ Category Interface
+ * Excludes: createdBy, updatedBy, modifiedBy, createdAt, updatedAt, createdIp, updatedIp, modifiedIp, active, createdByUser, updatedByUser
+ */
+export type IPublicFaqCategory = PublicData<IFaqCategory>;
 
 /**
  * Generic table list response for public APIs

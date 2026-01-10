@@ -5,6 +5,7 @@ import {
   AddressTypeController,
   CountryController,
   StateController,
+  PublicAddressController,
 } from './controllers';
 
 @Module({
@@ -12,6 +13,7 @@ import {
     SequelizeModule.forFeature([]),
   ],
   controllers: [
+    PublicAddressController, // Register public controller first to avoid route conflicts
     CountryController,
     StateController,
     AddressController,

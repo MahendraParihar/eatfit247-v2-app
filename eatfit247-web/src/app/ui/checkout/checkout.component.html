@@ -1,0 +1,270 @@
+<div class="checkout-container">
+  <div class="checkout-content">
+    <!-- Header -->
+    <div class="checkout-header">
+      <h1>Checkout</h1>
+      @if (programPlan) {
+        <p class="plan-name">{{ programPlan.plan }}</p>
+      }
+    </div>
+
+    <!-- Error Message -->
+    @if (error) {
+      <div class="error-message">
+        <mat-icon>error</mat-icon>
+        <span>{{ error }}</span>
+      </div>
+    }
+
+    <!-- Loading Spinner -->
+    @if (loading) {
+      <div class="loading-overlay">
+        <mat-spinner></mat-spinner>
+        <p>Processing...</p>
+      </div>
+    }
+
+    <!-- Checkout Stepper -->
+    @if (programPlan && !error) {
+      <mat-stepper #stepper [linear]="true" (selectionChange)="onStepperSelectionChange($event)">
+        <!-- Step 1: Basic Details -->
+        <mat-step [stepControl]="basicDetailsForm">
+          <ng-template matStepLabel>Basic Details</ng-template>
+          <div class="step-content">
+            <h2>Personal Information</h2>
+            <p class="step-description">Please provide your basic details to create your account.</p>
+
+            <form [formGroup]="basicDetailsForm">
+              <div class="form-row">
+                <mat-form-field appearance="outline">
+                  <mat-label>First Name</mat-label>
+                  <input matInput formControlName="firstName" placeholder="Enter first name">
+                  @if (basicDetailsForm.get('firstName')?.hasError('required') && basicDetailsForm.get('firstName')?.touched) {
+                    <mat-error>First name is required</mat-error>
+                  }
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Last Name</mat-label>
+                  <input matInput formControlName="lastName" placeholder="Enter last name">
+                  @if (basicDetailsForm.get('lastName')?.hasError('required') && basicDetailsForm.get('lastName')?.touched) {
+                    <mat-error>Last name is required</mat-error>
+                  }
+                </mat-form-field>
+              </div>
+
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Email</mat-label>
+                <input matInput type="email" formControlName="emailId" placeholder="Enter email address">
+                @if (basicDetailsForm.get('emailId')?.hasError('required') && basicDetailsForm.get('emailId')?.touched) {
+                  <mat-error>Email is required</mat-error>
+                }
+                @if (basicDetailsForm.get('emailId')?.hasError('email') && basicDetailsForm.get('emailId')?.touched) {
+                  <mat-error>Please enter a valid email</mat-error>
+                }
+              </mat-form-field>
+
+              <div class="form-row">
+                <mat-form-field appearance="outline">
+                  <mat-label>Country Code</mat-label>
+                  <mat-select formControlName="countryCode">
+                    <mat-option value="">Select</mat-option>
+                    @for (code of countryCodeOptions; track code.id) {
+                      <mat-option [value]="code.id">{{ code.label }}</mat-option>
+                    }
+                  </mat-select>
+                  @if (basicDetailsForm.get('countryCode')?.hasError('required') && basicDetailsForm.get('countryCode')?.touched) {
+                    <mat-error>Country code is required</mat-error>
+                  }
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Contact Number</mat-label>
+                  <input matInput formControlName="contactNumber" placeholder="Enter contact number">
+                  @if (basicDetailsForm.get('contactNumber')?.hasError('required') && basicDetailsForm.get('contactNumber')?.touched) {
+                    <mat-error>Contact number is required</mat-error>
+                  }
+                </mat-form-field>
+              </div>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Country</mat-label>
+                <mat-select formControlName="countryId">
+                  <mat-option value="">Select Country</mat-option>
+                  @for (country of countryOptions; track country.id) {
+                    <mat-option [value]="country.id">{{ country.label }}</mat-option>
+                  }
+                </mat-select>
+                @if (basicDetailsForm.get('countryId')?.hasError('required') && basicDetailsForm.get('countryId')?.touched) {
+                  <mat-error>Country is required</mat-error>
+                }
+              </mat-form-field>
+            </form>
+
+            <div class="step-actions">
+              <button
+                mat-raised-button
+                color="primary"
+                (click)="stepper.next()"
+                [disabled]="!basicDetailsForm.valid"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        </mat-step>
+
+        <!-- Step 2: Address Details -->
+        <mat-step [stepControl]="addressForm">
+          <ng-template matStepLabel>Address Details</ng-template>
+          <div class="step-content">
+            <h2>Billing Address</h2>
+            <p class="step-description">Please provide your address for tax calculation and billing.</p>
+
+            <form [formGroup]="addressForm">
+              <div class="form-row">
+                <mat-form-field appearance="outline">
+                  <mat-label>Postal Address</mat-label>
+                  <textarea matInput formControlName="postalAddress" rows="3"
+                            placeholder="Enter your complete address"></textarea>
+                  @if (addressForm.get('postalAddress')?.hasError('required') && addressForm.get('postalAddress')?.touched) {
+                    <mat-error>Postal address is required</mat-error>
+                  }
+                </mat-form-field>
+              </div>
+
+              <div class="form-row">
+                <mat-form-field appearance="outline">
+                  <mat-label>City/Village</mat-label>
+                  <input matInput formControlName="cityVillage" placeholder="Enter city or village">
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Pin Code</mat-label>
+                  <input matInput formControlName="pinCode" placeholder="Enter pin code">
+                </mat-form-field>
+              </div>
+
+              <div class="form-row">
+                <mat-form-field appearance="outline">
+                  <mat-label>Country</mat-label>
+                  <mat-select formControlName="countryId">
+                    <mat-option value="">Select Country</mat-option>
+                    @for (country of countryOptions; track country.id) {
+                      <mat-option [value]="country.id">{{ country.label }}</mat-option>
+                    }
+                  </mat-select>
+                  @if (addressForm.get('countryId')?.hasError('required') && addressForm.get('countryId')?.touched) {
+                    <mat-error>Country is required</mat-error>
+                  }
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>State</mat-label>
+                  <mat-select formControlName="stateId">
+                    <mat-option value="">Select State</mat-option>
+                    @for (state of filteredStateOptions; track state.id) {
+                      <mat-option [value]="state.id">{{ state.label }}</mat-option>
+                    }
+                  </mat-select>
+                  @if (addressForm.get('stateId')?.hasError('required') && addressForm.get('stateId')?.touched) {
+                    <mat-error>State is required</mat-error>
+                  }
+                </mat-form-field>
+              </div>
+            </form>
+
+            <div class="step-actions">
+              <button mat-button (click)="stepper.previous()">Previous</button>
+              <button
+                mat-raised-button
+                color="primary"
+                (click)="stepper.next()"
+                [disabled]="!addressForm.valid"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        </mat-step>
+
+        <!-- Step 3: Payment -->
+        <mat-step [stepControl]="paymentForm">
+          <ng-template matStepLabel>Payment</ng-template>
+          <div class="step-content">
+            <h2>Payment Details</h2>
+            <p class="step-description">Review your order and proceed to payment.</p>
+
+            <!-- Order Summary -->
+            <mat-card class="order-summary">
+              <mat-card-header>
+                <mat-card-title>Order Summary</mat-card-title>
+              </mat-card-header>
+              <mat-card-content>
+                <div class="summary-row">
+                  <span>Plan:</span>
+                  <span class="plan-name">{{ programPlan.plan }}</span>
+                </div>
+                <div class="summary-row">
+                  <span>Order Amount:</span>
+                  <span>{{ orderAmount | number:'1.2-2' }} {{ currencyCode }}</span>
+                </div>
+                @if (discountAmount > 0) {
+                  <div class="summary-row discount">
+                    <span>Discount:</span>
+                    <span>-{{ discountAmount | number:'1.2-2' }} {{ currencyCode }}</span>
+                  </div>
+                }
+                @if (isTaxApplicable && taxCalculation) {
+                  <div class="summary-row">
+                    <span>Tax ({{ taxCalculation.taxPercentage }}%):</span>
+                    <span>{{ taxCalculation.taxAmount | number:'1.2-2' }} {{ currencyCode }}</span>
+                  </div>
+                }
+                <div class="summary-row total">
+                  <span>Total Amount:</span>
+                  <span>{{ totalAmount | number:'1.2-2' }} {{ currencyCode }}</span>
+                </div>
+              </mat-card-content>
+            </mat-card>
+
+            <form [formGroup]="paymentForm">
+              <mat-checkbox formControlName="isTaxApplicable" (change)="onTaxApplicableChange()">
+                Tax applicable
+              </mat-checkbox>
+
+              <mat-checkbox formControlName="isPlanFeesIncludedTax">
+                Plan fees include tax
+              </mat-checkbox>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Promo Code (Optional)</mat-label>
+                <input matInput formControlName="promoCode" placeholder="Enter promo code">
+              </mat-form-field>
+
+              @if (calculatingTax) {
+                <div class="calculating-tax">
+                  <mat-spinner diameter="30"></mat-spinner>
+                  <span>Calculating tax...</span>
+                </div>
+              }
+            </form>
+
+            <div class="step-actions">
+              <button mat-button (click)="stepper.previous()">Previous</button>
+              <button
+                mat-raised-button
+                color="primary"
+                (click)="proceedToPayment()"
+                [disabled]="!paymentForm.valid || loading || calculatingTax"
+              >
+                Proceed to Payment
+              </button>
+            </div>
+          </div>
+        </mat-step>
+      </mat-stepper>
+    }
+  </div>
+</div>
+

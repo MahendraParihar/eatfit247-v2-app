@@ -13,7 +13,8 @@
     "build:public": "nx build public-api",
     "postinstall": "npm run build_shared_lib",
     "lint": "nx run-many --target=lint --all",
-    "analyze:dependencies": "node scripts/generate-dependency-graph.js"
+    "analyze:dependencies": "node scripts/generate-dependency-graph.js",
+    "clean": "npx rimraf dist"
   },
   "private": true,
   "overrides": {

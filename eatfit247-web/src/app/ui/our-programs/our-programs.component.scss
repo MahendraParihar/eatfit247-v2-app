@@ -5,70 +5,55 @@
   min-height: 100vh;
 }
 
-// Hero Section
-.hero-section {
-  background: linear-gradient(135deg, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.7) 100%),
-    url('/assets/images/programs-hero.jpg') center/cover no-repeat;
+// Banner Section
+.banner-section {
+  width: 100%;
+}
+
+// Plans Section
+.plans-section {
   padding: $spacing-3xl $spacing-lg;
+  background-color: var(--mat-sys-surface);
+
+  @media (max-width: 768px) {
+    padding: $spacing-2xl $spacing-md;
+  }
+}
+
+.plans-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+// Plans Header
+.plans-header {
   text-align: center;
-  color: #ffffff;
-  position: relative;
-  overflow: hidden;
+  margin-bottom: $spacing-3xl;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
 
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(
-      135deg,
-      rgba(0, 0, 0, 0.6) 0%,
-      rgba(0, 0, 0, 0.4) 100%
-    );
-    z-index: 0;
+  @media (max-width: 768px) {
+    margin-bottom: $spacing-2xl;
   }
 
-  .hero-content {
-    position: relative;
-    z-index: 1;
-    max-width: 800px;
-    margin: 0 auto;
-  }
-
-  .hero-title {
-    font-size: 3rem;
+  .section-title {
+    font-size: 2.5rem;
     font-weight: 700;
     margin: 0 0 $spacing-md 0;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
+    color: var(--mat-sys-on-surface);
+    line-height: 1.2;
 
     @media (max-width: 768px) {
       font-size: 2rem;
     }
   }
 
-  .hero-subtitle {
-    font-size: 1.5rem;
-    font-weight: 600;
-    margin: 0 0 $spacing-md 0;
-    line-height: 1.4;
-    color: rgba(255, 255, 255, 0.95);
-
-    @media (max-width: 768px) {
-      font-size: 1.25rem;
-    }
-  }
-
-  .hero-description {
+  .section-description {
     font-size: 1.125rem;
     line-height: 1.6;
-    margin: $spacing-lg 0 0 0;
-    color: rgba(255, 255, 255, 0.9);
-    max-width: 700px;
-    margin-left: auto;
-    margin-right: auto;
+    color: var(--mat-sys-on-surface-variant);
+    margin: 0;
 
     @media (max-width: 768px) {
       font-size: 1rem;
@@ -76,141 +61,164 @@
   }
 }
 
-// Programs Section
-.programs-section {
+// Loading Container
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   padding: $spacing-3xl $spacing-lg;
-  background-color: var(--mat-sys-surface);
+  gap: $spacing-lg;
+
+  p {
+    color: var(--mat-sys-on-surface-variant);
+    font-size: 1rem;
+  }
 }
 
-.programs-container {
-  max-width: 1200px;
-  margin: 0 auto;
+// Empty State
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-3xl $spacing-lg;
+  text-align: center;
+
+  .empty-icon {
+    font-size: 64px;
+    width: 64px;
+    height: 64px;
+    color: var(--mat-sys-on-surface-variant);
+    margin-bottom: $spacing-lg;
+    opacity: 0.5;
+  }
+
+  p {
+    color: var(--mat-sys-on-surface-variant);
+    font-size: 1.125rem;
+  }
+}
+
+// Plans Grid
+.plans-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: $spacing-xl;
+  margin-top: $spacing-2xl;
+
+  @media (max-width: 1024px) {
+    grid-template-columns: repeat(2, 1fr);
+    gap: $spacing-lg;
+  }
 
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
     gap: $spacing-lg;
-    padding: 0;
-  }
-
-  @media (min-width: 769px) and (max-width: 1024px) {
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: $spacing-lg;
+    margin-top: $spacing-xl;
   }
 }
 
-// Program Card
-.program-card {
+// Plan Card
+.plan-card {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  background-color: var(--mat-sys-surface-container);
   border-radius: $border-radius-xl;
   overflow: hidden;
-  transition: all $transition-slow cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  background-color: var(--mat-sys-surface-container);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   border: 1px solid var(--mat-sys-outline-variant);
+  transition: all $transition-base;
+  height: 100%;
 
   &:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
     border-color: var(--mat-sys-primary);
-
-    .program-image {
-      transform: scale(1.05);
-    }
   }
 
-  // Program Image Container
-  .program-image-container {
-    position: relative;
-    width: 100%;
-    height: 200px;
-    overflow: hidden;
-    background: linear-gradient(135deg, var(--mat-sys-primary-container) 0%, var(--mat-sys-tertiary-container) 100%);
-
-    .program-image {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      transition: transform $transition-slow;
-    }
-
-    .category-chip-overlay {
-      position: absolute;
-      top: 1rem;
-      right: 1rem;
-      background-color: rgba(255, 255, 255, 0.95);
-      color: var(--mat-sys-on-surface);
-      font-size: 0.75rem;
-      font-weight: 500;
-      padding: $spacing-xs $spacing-lg;
-      height: auto;
-      border-radius: $border-radius-lg;
-      backdrop-filter: blur(10px);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    }
-  }
-
-  .card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    padding: $spacing-lg $spacing-lg $spacing-sm;
-    position: relative;
-    background: linear-gradient(135deg, var(--mat-sys-primary-container) 0%, var(--mat-sys-tertiary-container) 100%);
-  }
-
-  .program-icon {
-    width: 56px;
-    height: 56px;
-    border-radius: $border-radius-lg;
-    background: linear-gradient(135deg, var(--mat-sys-primary) 0%, var(--mat-sys-tertiary) 100%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #ffffff;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-
-    mat-icon {
-      font-size: 28px;
-      width: 28px;
-      height: 28px;
-    }
-  }
-
-  .category-chip {
-    background-color: var(--mat-sys-secondary-container);
-    color: var(--mat-sys-on-secondary-container);
-    font-size: 0.75rem;
-    font-weight: 500;
-    padding: 0.25rem 0.75rem;
-    height: auto;
-    border-radius: $border-radius-lg;
-  }
-
-  .card-content {
+  // Plan Content
+  .plan-content {
     flex: 1;
-    padding: $spacing-md $spacing-lg;
     display: flex;
     flex-direction: column;
-    gap: $spacing-lg;
+    padding: $spacing-xl;
+    gap: $spacing-md;
+
+    @media (max-width: 768px) {
+      padding: $spacing-lg;
+    }
   }
 
-  .program-title {
-    font-size: 1.25rem;
+  .plan-title {
+    font-size: 1.5rem;
     font-weight: 600;
     margin: 0;
     color: var(--mat-sys-on-surface);
-    line-height: 1.4;
-    min-height: 3.5rem;
-    display: flex;
-    align-items: center;
+    line-height: 1.3;
+
+    @media (max-width: 768px) {
+      font-size: 1.25rem;
+    }
   }
 
-  .program-description {
+  .plan-price {
+    display: flex;
+    align-items: baseline;
+    gap: 2px;
+    margin: $spacing-sm 0;
+
+    .price-currency {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--mat-sys-on-surface);
+    }
+
+    .price-amount {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--mat-sys-on-surface);
+      line-height: 1;
+    }
+
+    .price-period {
+      font-size: 1rem;
+      font-weight: 500;
+      color: var(--mat-sys-on-surface-variant);
+    }
+  }
+
+  .plan-fees {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-sm;
+    margin: $spacing-sm 0;
+
+    .plan-fee-item {
+      display: flex;
+      align-items: baseline;
+      gap: $spacing-xs;
+      padding: $spacing-xs $spacing-sm;
+      background-color: var(--mat-sys-surface-variant);
+      border-radius: $border-radius-md;
+
+      .fee-currency {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--mat-sys-on-surface-variant);
+        text-transform: uppercase;
+      }
+
+      .fee-amount {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--mat-sys-on-surface);
+        line-height: 1;
+      }
+    }
+  }
+
+  .plan-description {
     font-size: 0.9375rem;
     line-height: 1.6;
     color: var(--mat-sys-on-surface-variant);
@@ -218,101 +226,103 @@
     flex: 1;
   }
 
-  .price-range {
+  // Plan Features List
+  .plan-features {
+    list-style: none;
+    padding: 0;
+    margin: $spacing-md 0 0 0;
     display: flex;
     flex-direction: column;
-    gap: $spacing-xs;
-    padding: $spacing-lg;
-    background-color: var(--mat-sys-surface-variant);
-    border-radius: $border-radius-md;
-    margin-top: $spacing-sm;
+    gap: $spacing-sm;
 
-    .price-label {
-      font-size: 0.75rem;
+    .feature-item {
+      display: flex;
+      align-items: flex-start;
+      gap: $spacing-sm;
+      font-size: 0.9375rem;
+      line-height: 1.5;
       color: var(--mat-sys-on-surface-variant);
+
+      .check-icon {
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+        color: var(--mat-sys-primary);
+        flex-shrink: 0;
+        margin-top: 2px;
+      }
+
+      span {
+        flex: 1;
+      }
+    }
+  }
+
+  // Plan Actions
+  .plan-actions {
+    margin-top: $spacing-lg;
+    padding-top: $spacing-lg;
+    border-top: 1px solid var(--mat-sys-outline-variant);
+
+    .view-plan-btn {
+      width: 100%;
+      font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      font-weight: 500;
-    }
-
-    .price-value {
-      font-size: 1rem;
-      font-weight: 600;
-      color: var(--mat-sys-primary);
-    }
-  }
-
-  .card-actions {
-    display: flex;
-    gap: $spacing-lg;
-    padding: $spacing-md $spacing-lg $spacing-lg;
-    margin: 0;
-
-    @media (max-width: 480px) {
-      flex-direction: column;
-    }
-  }
-
-  .quick-view-btn {
-    flex: 1;
-    border-color: var(--mat-sys-outline);
-    color: var(--mat-sys-on-surface);
-
-    mat-icon {
-      font-size: 18px;
-      width: 18px;
-      height: 18px;
-      margin-right: $spacing-sm;
-    }
-
-    &:hover {
-      background-color: var(--mat-sys-surface-variant);
-      border-color: var(--mat-sys-primary);
-    }
-  }
-
-  .buy-now-btn {
-    flex: 1;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-
-    mat-icon {
-      font-size: 18px;
-      width: 18px;
-      height: 18px;
-      margin-right: $spacing-sm;
-    }
-
-    &:hover {
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-      transform: translateY(-1px);
+      padding: $spacing-md $spacing-lg;
+      font-size: 0.875rem;
     }
   }
 }
 
-// Responsive adjustments
-@media (max-width: 768px) {
-  .hero-section {
+// Call to Action Section
+.cta-section {
+  padding: $spacing-3xl $spacing-lg;
+  background-color: var(--mat-sys-surface-variant);
+  text-align: center;
+
+  @media (max-width: 768px) {
     padding: $spacing-2xl $spacing-md;
   }
+}
 
-  .programs-section {
-    padding: $spacing-xl $spacing-md;
+.cta-container {
+  max-width: 800px;
+  margin: 0 auto;
+
+  .cta-title {
+    font-size: 2rem;
+    font-weight: 600;
+    margin: 0 0 $spacing-xl 0;
+    color: var(--mat-sys-on-surface);
+
+    @media (max-width: 768px) {
+      font-size: 1.5rem;
+    }
   }
 
-  .program-card {
-    .card-header {
-      padding: $spacing-md $spacing-md $spacing-sm;
+  .cta-buttons {
+    display: flex;
+    gap: $spacing-lg;
+    justify-content: center;
+    flex-wrap: wrap;
+
+    @media (max-width: 768px) {
+      flex-direction: column;
+      gap: $spacing-md;
     }
 
-    .card-content {
-      padding: $spacing-lg $spacing-md;
-    }
+    .cta-btn {
+      min-width: 180px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: $spacing-md $spacing-xl;
 
-    .card-actions {
-      padding: $spacing-lg $spacing-md $spacing-md;
+      @media (max-width: 768px) {
+        width: 100%;
+        min-width: unset;
+      }
     }
   }
 }
@@ -329,21 +339,21 @@
   }
 }
 
-.program-card {
+.plan-card {
   animation: fadeInUp 0.5s ease-out backwards;
 }
 
 // Stagger animation delays for each card
-.program-card:nth-child(1) { animation-delay: 0.05s; }
-.program-card:nth-child(2) { animation-delay: 0.1s; }
-.program-card:nth-child(3) { animation-delay: 0.15s; }
-.program-card:nth-child(4) { animation-delay: 0.2s; }
-.program-card:nth-child(5) { animation-delay: 0.25s; }
-.program-card:nth-child(6) { animation-delay: 0.3s; }
-.program-card:nth-child(7) { animation-delay: 0.35s; }
-.program-card:nth-child(8) { animation-delay: 0.4s; }
-.program-card:nth-child(9) { animation-delay: 0.45s; }
-.program-card:nth-child(10) { animation-delay: 0.5s; }
-.program-card:nth-child(11) { animation-delay: 0.55s; }
-.program-card:nth-child(12) { animation-delay: 0.6s; }
-.program-card:nth-child(13) { animation-delay: 0.65s; }
+.plan-card:nth-child(1) { animation-delay: 0.05s; }
+.plan-card:nth-child(2) { animation-delay: 0.1s; }
+.plan-card:nth-child(3) { animation-delay: 0.15s; }
+
+// FAQ Section Wrapper
+.faq-section-wrapper {
+  padding: $spacing-3xl $spacing-lg;
+  background-color: var(--mat-sys-surface-variant);
+
+  @media (max-width: 768px) {
+    padding: $spacing-2xl $spacing-md;
+  }
+}

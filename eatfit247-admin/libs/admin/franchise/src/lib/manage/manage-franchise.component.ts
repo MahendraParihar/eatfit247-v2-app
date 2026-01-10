@@ -84,6 +84,7 @@ export class ManageFranchise implements OnInit, OnDestroy {
     startDate: [new Date(), [Validators.required]],
     endDate: [null],
     isPrimary: [false, [Validators.required]],
+    isDefault: [false, [Validators.required]],
     active: [true, [Validators.required]]
   });
   initialData!: IFranchise;
@@ -138,6 +139,7 @@ export class ManageFranchise implements OnInit, OnDestroy {
         startDate: startDate,
         endDate: endDate,
         isPrimary: (this.initialData as any).isPrimary !== undefined ? (this.initialData as any).isPrimary : false,
+        isDefault: (this.initialData as any).isDefault !== undefined ? (this.initialData as any).isDefault : false,
         active: this.initialData.active !== undefined ? this.initialData.active : true
       });
     }

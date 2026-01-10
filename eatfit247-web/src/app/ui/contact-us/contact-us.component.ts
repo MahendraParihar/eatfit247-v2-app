@@ -10,7 +10,10 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatExpansionModule } from '@angular/material/expansion';
 import { ImageSliderComponent, SliderItem } from '../shared/image-slider/image-slider.component';
+import { SocialLink } from '../shared/social-icons/social-icons.component';
+import { JoinShwetaShahComponent } from '../shared/join-shweta-shah/join-shweta-shah.component';
 import { BannerService } from '../../services/banner.service';
 import { BannerForEnum } from 'eatfit247-shared-library';
 
@@ -41,7 +44,9 @@ interface Section {
     MatSelectModule,
     MatChipsModule,
     MatProgressSpinnerModule,
-    ImageSliderComponent
+    MatExpansionModule,
+    ImageSliderComponent,
+    JoinShwetaShahComponent
   ],
   templateUrl: './contact-us.component.html',
   styleUrl: './contact-us.component.scss'
@@ -56,6 +61,68 @@ export class ContactUsComponent implements OnInit {
   reviewsLoading = true;
   googleReviews: any[] = [];
   heroSliderItems: SliderItem[] = [];
+  expandedFaqIndex: number | null = null;
+  
+  readonly contactInfo = {
+    address: '943-951 N. Broadway, Los Angeles, CA 90012, United States',
+    phone: '+91-859-185-4209',
+    email: 'eatfit24by7@gmail.com'
+  };
+
+  readonly contactImage = '/assets/images/shweta-shah.jpg';
+
+  readonly socialLinks: SocialLink[] = [
+    {
+      name: 'Facebook',
+      icon: '/assets/images/social/facebook.svg',
+      url: 'https://www.facebook.com/eatfit24by7',
+    },
+    {
+      name: 'Twitter',
+      icon: '/assets/images/social/twitter.svg',
+      url: 'https://twitter.com/eatfit24by7',
+    },
+    {
+      name: 'Instagram',
+      icon: '/assets/images/social/instagram.svg',
+      url: 'https://www.instagram.com/eatfit24by7',
+    },
+    {
+      name: 'YouTube',
+      icon: '/assets/images/social/youtube.svg',
+      url: 'https://www.youtube.com/eatfit24by7',
+    },
+    {
+      name: 'Pinterest',
+      icon: '/assets/images/social/pinterest.svg',
+      url: 'https://www.pinterest.com/eatfit24by7',
+    },
+    {
+      name: 'LinkedIn',
+      icon: '/assets/images/social/linkedin.svg',
+      url: 'https://www.linkedin.com/company/eatfit24by7',
+    },
+  ];
+
+  readonly faqItems = [
+    {
+      question: 'How can I make an appointment?',
+      answer: 'You can make an appointment by filling out the contact form on this page, calling us directly, or sending us an email. Our team will get back to you within 24-48 hours to schedule a consultation.'
+    },
+    {
+      question: 'What is the assessment cost?',
+      answer: 'The assessment cost varies depending on the type of consultation you need. Please contact us through the form or phone to get detailed pricing information tailored to your specific health goals.'
+    },
+    {
+      question: 'Do you offer online appointments?',
+      answer: 'Yes, we offer both in-person and online consultations. You can choose the option that works best for you when scheduling your appointment.'
+    },
+    {
+      question: 'Do you work with people with diabetes?',
+      answer: 'Absolutely! We have specialized programs and expertise in managing diabetes through nutrition and lifestyle modifications. Our team works closely with clients who have diabetes to create personalized meal plans and health strategies.'
+    }
+  ];
+
   pageData: ContactPageData = {
     page: 'Contact Us',
     url: '/contact-us',
@@ -94,23 +161,29 @@ export class ContactUsComponent implements OnInit {
         title: 'Get Personal Health Guidance',
         subtitle: 'Fill out this form and our nutrition experts will get back to you shortly.',
         fields: [
-          { name: 'name', type: 'text', label: 'Full Name', required: true },
-          {
-            name: 'phone',
-            type: 'phone',
-            label: 'Phone Number',
-            required: true
-          },
+          { name: 'name', type: 'text', label: 'Name', required: true },
           {
             name: 'email',
             type: 'email',
-            label: 'Email Address',
+            label: 'Email',
+            required: true
+          },
+          {
+            name: 'phone',
+            type: 'phone',
+            label: 'Phone',
+            required: false
+          },
+          {
+            name: 'subject',
+            type: 'text',
+            label: 'Subject',
             required: false
           },
           {
             name: 'message',
             type: 'textarea',
-            label: 'Your Message',
+            label: 'Leave us a message',
             required: false
           }
         ],
@@ -199,6 +272,10 @@ export class ContactUsComponent implements OnInit {
       formControls[field.name] = ['', validators];
     });
     this.contactForm = this.fb.group(formControls);
+  }
+
+  toggleFaq(index: number): void {
+    this.expandedFaqIndex = this.expandedFaqIndex === index ? null : index;
   }
 
   async onSubmit(): Promise<void> {

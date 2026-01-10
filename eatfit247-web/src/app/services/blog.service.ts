@@ -47,18 +47,15 @@ export class BlogService {
     try {
       const params: any = {
         page: page.toString(),
-        limit: pageSize.toString(),
+        limit: pageSize.toString()
       };
-
       if (categoryId) {
         params.blogCategoryId = categoryId.toString();
       }
-
       const data = await this.httpService.get<IPublicTableList<IPublicBlog>>(
         'public/blog/list',
         params
       );
-
       if (data) {
         const posts = data.tableData.map((blog: IPublicBlog) => this.mapBlogToPost(blog));
         const total = data.count;
@@ -122,10 +119,9 @@ export class BlogService {
         'public/blog/list',
         {
           blogCategoryId: categoryId.toString(),
-          limit: '1000',
+          limit: '1000'
         }
       );
-
       if (data) {
         return data.tableData.map((blog: IPublicBlog) => this.mapBlogToPost(blog));
       }
@@ -168,6 +164,11 @@ export class BlogService {
     // Calculate read time (rough estimate: 200 words per minute)
     const wordCount = blog.description ? blog.description.replace(/<[^>]*>/g, '').split(/\s+/).length : 0;
     const readTime = Math.ceil(wordCount / 200);
+    // Convert tags from CSV string to array
+    let tags: string[] = [];
+    if (blog.seo?.tags) {
+      tags = blog.seo.tags;
+    }
     return {
       id: blog.blogId.toString(),
       title: blog.title,
@@ -181,7 +182,7 @@ export class BlogService {
       imageAlt: blog.title,
       slug: blog.seo?.url || blog.title.toLowerCase().replace(/\s+/g, '-'),
       readTime: readTime,
-      tags: blog.seo?.tags || []
+      tags: tags
     };
   }
 }

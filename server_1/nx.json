@@ -12,7 +12,9 @@
       "!{projectRoot}/src/test-setup.[jt]s",
       "!{projectRoot}/test-setup.[jt]s"
     ],
-    "sharedGlobals": []
+    "sharedGlobals": [
+      "{workspaceRoot}/../shared-library/dist/**/*"
+    ]
   },
   "plugins": [
     {
@@ -86,7 +88,7 @@
     "rules": [
       {
         "sourceTag": "type:core",
-        "onlyDependOnLibsWithTags": []
+        "onlyDependOnLibsWithTags": ["type:shared"]
       },
       {
         "sourceTag": "type:shared",
@@ -98,50 +100,22 @@
       },
       {
         "sourceTag": "type:domain",
-        "onlyDependOnLibsWithTags": ["type:core", "type:platform", "type:shared", "type:domain"]
+        "onlyDependOnLibsWithTags": ["type:platform", "type:core", "type:shared", "type:domain"]
       },
       {
         "sourceTag": "type:admin-only",
-        "onlyDependOnLibsWithTags": ["type:core", "type:platform", "type:shared", "type:domain"]
+        "onlyDependOnLibsWithTags": ["type:domain", "type:platform", "type:core", "type:shared"]
       },
       {
         "sourceTag": "type:app",
         "onlyDependOnLibsWithTags": [
-          "type:core",
-          "type:platform",
-          "type:shared",
+          "type:admin-only",
           "type:domain",
-          "type:admin-only"
+          "type:platform",
+          "type:core",
+          "type:shared"
         ]
       }
     ]
-  },
-  "dependencyConstraints": [
-    {
-      "sourceTag": "type:core",
-      "onlyDependOnLibsWithTags": ["type:shared"]
-    },
-    {
-      "sourceTag": "type:platform",
-      "onlyDependOnLibsWithTags": ["type:core", "type:shared"]
-    },
-    {
-      "sourceTag": "type:feature",
-      "onlyDependOnLibsWithTags": ["type:platform", "type:core", "type:shared"]
-    },
-    {
-      "sourceTag": "type:admin-only",
-      "onlyDependOnLibsWithTags": ["type:feature", "type:platform", "type:core", "type:shared"]
-    },
-    {
-      "sourceTag": "type:app",
-      "onlyDependOnLibsWithTags": [
-        "type:admin-only",
-        "type:feature",
-        "type:platform",
-        "type:core",
-        "type:shared"
-      ]
-    }
-  ]
+  }
 }

@@ -9,7 +9,7 @@
 .blog-container {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 0 $spacing-lg $spacing-2xl;
+  padding: $spacing-3xl $spacing-lg $spacing-2xl;
   display: grid;
   grid-template-columns: 1fr 320px;
   gap: $spacing-2xl;
@@ -503,7 +503,7 @@
 // Mobile Responsive
 @media (max-width: 768px) {
   .blog-container {
-    padding: 0 $spacing-md $spacing-xl;
+    padding: $spacing-2xl $spacing-md $spacing-xl;
     gap: $spacing-lg;
   }
 

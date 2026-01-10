@@ -7,14 +7,17 @@ import {
   IFranchise,
   IManageFranchise,
   ITableList,
+  TableEnum,
 } from '@eatfit247-shared-lib';
 import { AppConfigService, CommonFunctionsUtil, MstFranchise, SearchUtil } from '@server_1/core';
+import { AddressService } from '@server_1/platform';
 
 @Injectable()
 export class FranchiseService {
   constructor(
     @InjectModel(MstFranchise) private readonly franchiseRepository: typeof MstFranchise,
     private appConfigService: AppConfigService,
+    private addressService: AddressService,
   ) {}
 
   public async findAll(searchDto: IBasicSearch): Promise<ITableList<IFranchise>> {
@@ -63,6 +66,7 @@ export class FranchiseService {
       startDate: item.startDate,
       endDate: item.endDate,
       isPrimary: item.isPrimary,
+      isDefault: item.isDefault,
       active: item.active,
       createdBy: item.createdBy,
       updatedBy: item.modifiedBy,
@@ -148,6 +152,7 @@ export class FranchiseService {
       startDate: obj.startDate,
       endDate: obj.endDate || null,
       isPrimary: obj.isPrimary,
+      isDefault: obj.isDefault,
       active: obj.active,
       modifiedBy: adminId,
       modifiedIp: cIp,
@@ -182,6 +187,41 @@ export class FranchiseService {
       label: t.companyName,
       isActive: t.active,
     }));
+  }
+
+  /**
+   * Get franchise list with country information for checkout
+   * Returns franchises with their countryId from address and isDefault flag
+   */
+  public async getFranchiseListWithCountry(): Promise<
+    Array<{ id: number; label: string; countryId: number | null; isDefault: boolean }>
+  > {
+    const tempList = await this.franchiseRepository.scope('list').findAll({
+      where: { active: true },
+      order: [['companyName', 'ASC']],
+      raw: true,
+      nest: true,
+    });
+
+    const franchisesWithCountry = await Promise.all(
+      tempList.map(async (t: any) => {
+        // Get franchise address to find country
+        const addresses = await this.addressService.filterByTableIdAndPk(
+          TableEnum.MST_FRANCHISES,
+          t.franchiseId,
+        );
+        const countryId = addresses && addresses.length > 0 ? addresses[0].countryId : null;
+
+        return {
+          id: t.franchiseId,
+          label: t.companyName,
+          countryId: countryId,
+          isDefault: t.isDefault,
+        };
+      }),
+    );
+
+    return franchisesWithCountry;
   }
 
   public async getMasterData(): Promise<{ taxApplicable: boolean }> {

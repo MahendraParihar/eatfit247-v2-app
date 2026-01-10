@@ -8,7 +8,7 @@ export interface IBaseMember {
   countryCode: string;
   contactNumber: string;
   emailId: string;
-  franchiseId: number;
+  franchiseId?: number; // Optional - can be auto-determined based on countryId
   countryId: number;
   referrerId?: number;
   nutritionistId?: number;

@@ -11,88 +11,98 @@
     </section>
   }
 
-  <!-- Hero Section -->
-  <section class="hero-section">
-    <div class="hero-content">
-      <h1 class="hero-title">Our Programs</h1>
-      <p class="hero-subtitle">
-        It's time to take matter into your own hands, if you don't work for
-        your health, no one will!
-      </p>
-      <p class="hero-description">
-        A dream venture to lead you to your best self in the most natural way
-        possible. Lead a healthy life without tweaking your lifestyle.
-      </p>
+  <!-- Plans Section -->
+  <section class="plans-section">
+    <div class="plans-container">
+      <!-- Header Section -->
+      <div class="plans-header">
+        <h1 class="section-title">Nutrition plans</h1>
+        <p class="section-description">
+          Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat
+          aute irure dolor in reprehenderit.
+        </p>
+      </div>
+
+      <!-- Loading State -->
+      @if (loading) {
+        <div class="loading-container">
+          <mat-spinner diameter="50"></mat-spinner>
+          <p>Loading plans...</p>
+        </div>
+      }
+
+      <!-- Plans Grid -->
+      @if (!loading) {
+        @if (plans.length > 0) {
+          <div class="plans-grid">
+            @for (plan of plans; track plan.id) {
+              <div class="plan-card">
+                <!-- Plan Content -->
+                <div class="plan-content">
+                  <!-- Plan Title -->
+                  <h3 class="plan-title">{{ plan.title }}</h3>
+
+                  <!-- Plan Fees (INR) -->
+                  @if (plan.fees && plan.fees.length > 0) {
+                    <div class="plan-price">
+                      <span class="price-period"> {{ plan.fees[0].currencyCode }}</span>
+                      <span class="price-amount">{{ plan.fees[0].fees.toFixed(0) }}</span>
+                    </div>
+                  } @else if (plan.price > 0) {
+                    <!-- Fallback to price if no fees array -->
+                    <div class="plan-price">
+                      <span class="price-period"> {{ plan.fees[0].currencyCode }}</span>
+                      <span class="price-amount">{{ plan.price.toFixed(0) }}</span>
+                    </div>
+                  }
+                  @if (plan.description) {
+                    <!-- Plan Description -->
+                    <p class="plan-description">
+                      {{ plan.description }}
+                    </p>
+                  }
+                  <!-- Features List -->
+                  <ul class="plan-features">
+                    @for (feature of plan.features; track feature) {
+                      <li class="feature-item">
+                        <mat-icon class="check-icon">check</mat-icon>
+                        <span>{{ feature }}</span>
+                      </li>
+                    }
+                  </ul>
+
+                  <!-- Action Button -->
+                  <div class="plan-actions">
+                    <button
+                      mat-raised-button
+                      color="primary"
+                      class="view-plan-btn"
+                      (click)="viewPlan(plan)"
+                    >
+                      Buy plan
+                    </button>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="no-plans-message">
+            <p>No program plans available at the moment. Please check back later.</p>
+          </div>
+        }
+      }
     </div>
   </section>
 
-  <!-- Programs Grid -->
-  <section class="programs-section">
-    <div class="programs-container">
-      @for (program of programs; track program.id) {
-        <mat-card class="program-card" [attr.data-category]="program.category">
-          <!-- Program Image -->
-          @if (program.image) {
-            <div class="program-image-container">
-              <img
-                [src]="program.image"
-                [alt]="program.imageAlt || program.title"
-                class="program-image"
-                loading="lazy"
-                (error)="$event.target.src = '/assets/images/programs/placeholder.jpg'"
-              />
-              @if (program.category) {
-                <mat-chip class="category-chip-overlay">{{ program.category }}</mat-chip>
-              }
-            </div>
-          } @else {
-            <!-- Fallback: Icon if no image -->
-            <div class="card-header">
-              @if (program.icon) {
-                <div class="program-icon">
-                  <mat-icon>{{ program.icon }}</mat-icon>
-                </div>
-              }
-              @if (program.category) {
-                <mat-chip class="category-chip">{{ program.category }}</mat-chip>
-              }
-            </div>
-          }
-
-          <mat-card-content class="card-content">
-            <h3 class="program-title">{{ program.title }}</h3>
-            @if (program.description) {
-              <p class="program-description">{{ program.description }}</p>
-            }
-            @if (program.priceRange) {
-              <div class="price-range">
-                <span class="price-label">Price Range:</span>
-                <span class="price-value">{{ program.priceRange }}</span>
-              </div>
-            }
-          </mat-card-content>
-
-          <mat-card-actions class="card-actions">
-            <button
-              mat-stroked-button
-              class="quick-view-btn"
-              (click)="onQuickView(program)"
-            >
-              <mat-icon>visibility</mat-icon>
-              Quick View
-            </button>
-            <button
-              mat-raised-button
-              color="primary"
-              class="buy-now-btn"
-              (click)="onBuyNow(program)"
-            >
-              <mat-icon>shopping_cart</mat-icon>
-              Buy Now
-            </button>
-          </mat-card-actions>
-        </mat-card>
-      }
-    </div>
+  <!-- FAQ Section -->
+  <section class="faq-section-wrapper">
+    <app-faq-section
+      sectionTitle="Frequently Asked Questions"
+      sectionDescription="Find answers to common questions about our nutrition plans and programs"
+      [faqsToShow]="5"
+      [showViewAll]="true"
+      viewAllUrl="/faq"
+    ></app-faq-section>
   </section>
 </div>

@@ -119,6 +119,14 @@ export class MstFranchise extends Model<MstFranchise> {
 
   @Column({
     allowNull: false,
+    field: 'is_default',
+    defaultValue: false,
+    type: DataType.BOOLEAN,
+  })
+  isDefault: boolean;
+
+  @Column({
+    allowNull: false,
     defaultValue: true,
     field: 'active',
   })

@@ -109,7 +109,7 @@ export class GoogleService {
     remoteIp?: string,
     scoreThreshold: number = 0.5,
   ): Promise<{ success: boolean; score?: number; action?: string; errorCodes?: string[] }> {
-    const secretKey = this.appConfig.getString(ConfigParam.GOOGLE_KEY);
+    const secretKey = this.appConfig.getString(ConfigParam.GOOGLE_RECAPTCHA_SECRET_KEY);
     if (!secretKey) {
       throw new BadRequestException('reCAPTCHA secret key not configured');
     }
@@ -147,7 +147,7 @@ export class GoogleService {
           `reCAPTCHA verification failed: ${errorCodes.join(', ')}`,
         );
       }
-      // Check score threshold for v3
+      // Check the score threshold for v3
       if (result.score !== undefined && result.score < scoreThreshold) {
         throw new BadRequestException(
           `reCAPTCHA score ${result.score} is below threshold ${scoreThreshold}`,

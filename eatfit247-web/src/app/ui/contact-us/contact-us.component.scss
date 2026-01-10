@@ -7,200 +7,58 @@
   width: 100%;
 }
 
-// Hero Section using Banner Component
+// Hero Section
 .hero-banner-section {
   position: relative;
   margin-bottom: $spacing-2xl;
-
-  // Trust Icons Overlay
-  .trust-icons-overlay {
-    position: absolute;
-    bottom: $spacing-xl;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    flex-wrap: wrap;
-    gap: $spacing-lg;
-    justify-content: center;
-    z-index: 10;
-    padding: 0 $spacing-lg;
-
-    @media (max-width: 768px) {
-      bottom: $spacing-md;
-      gap: $spacing-md;
-    }
-
-    .trust-icon-item {
-      display: flex;
-      align-items: center;
-      gap: $spacing-sm;
-      padding: $spacing-sm $spacing-md;
-      background-color: rgba(255, 255, 255, 0.95);
-      border-radius: $border-radius-2xl;
-      font-size: 0.9375rem;
-      font-weight: 500;
-      color: var(--mat-sys-on-surface);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-      backdrop-filter: blur(10px);
-
-      @media (max-width: 768px) {
-        font-size: 0.8125rem;
-        padding: $spacing-xs $spacing-sm;
-      }
-
-      mat-icon {
-        font-size: 20px;
-        width: 20px;
-        height: 20px;
-        color: #4caf50;
-        flex-shrink: 0;
-
-        @media (max-width: 768px) {
-          font-size: 18px;
-          width: 18px;
-          height: 18px;
-        }
-      }
-    }
-  }
 }
 
-// Contact Us Section
-.contact-us-section {
-  max-width: 1400px;
-  margin: 0 auto;
+// Main Contact Section
+.main-contact-section {
   padding: $spacing-3xl $spacing-lg;
+  background-color: var(--mat-sys-surface);
 
   @media (max-width: 768px) {
     padding: $spacing-2xl $spacing-md;
   }
 }
 
-// Contact Sections Wrapper (Side by Side Layout)
-.contact-sections-wrapper {
+.contact-container {
+  max-width: 1200px;
+  margin: 0 auto;
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: $spacing-2xl;
+  grid-template-columns: 1.2fr 1fr;
+  gap: $spacing-3xl;
 
   @media (max-width: 1024px) {
     grid-template-columns: 1fr;
-    gap: $spacing-xl;
+    gap: $spacing-2xl;
   }
 }
 
-// Left Side: Contact Options (Stacked)
-.contact-options-side {
-  display: flex;
-  flex-direction: column;
-  gap: $spacing-lg;
-}
-
-.contact-option-card {
-  background-color: var(--mat-sys-surface-container-lowest);
-  border-radius: $border-radius-xl;
-  transition: all $transition-slow;
-  border: $border-width-thin $border-style-solid var(--mat-sys-outline-variant);
-  height: 100%;
-
-  &:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-    border-color: $color-primary;
-  }
-
-  mat-card-content {
-    padding: $spacing-xl;
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: $spacing-md;
-  }
-
-  .contact-icon-wrapper {
-    width: 64px;
-    height: 64px;
-    border-radius: $border-radius-full;
-    background-color: var(--mat-sys-primary-container);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: $spacing-sm;
-
-    .contact-icon {
-      font-size: 32px;
-      width: 32px;
-      height: 32px;
-      color: $color-primary;
-    }
-  }
-
-  .contact-card-title {
-    font-size: 1.25rem;
-    font-weight: 600;
-    margin: 0;
-    color: var(--mat-sys-on-surface);
-  }
-
-  .contact-card-description {
-    font-size: 0.9375rem;
-    color: var(--mat-sys-on-surface-variant);
-    margin: 0;
-  }
-
-  .contact-card-cta {
-    display: inline-flex;
-    align-items: center;
-    gap: $spacing-xs;
-    color: $color-primary;
-    text-decoration: none;
-    font-weight: 500;
-    margin-top: $spacing-sm;
-    transition: color $transition-slow;
-
-    mat-icon {
-      font-size: 18px;
-      width: 18px;
-      height: 18px;
-    }
-
-    &:hover {
-      color: color.adjust($color-primary, $lightness: -10%);
-      text-decoration: underline;
-    }
-  }
-}
-
-// Left Side: Contact Form
-.contact-form-side {
-  background-color: var(--mat-sys-surface);
-  border-radius: $border-radius-xl;
-  padding: 0 $spacing-2xl;
-
+// Contact Form Wrapper
+.contact-form-wrapper {
   .form-header {
     margin-bottom: $spacing-2xl;
 
     .form-title {
-      font-size: 2.5rem;
+      font-size: 3rem;
       font-weight: 700;
       margin-bottom: $spacing-md;
       color: var(--mat-sys-on-surface);
+      line-height: 1.2;
 
       @media (max-width: 768px) {
-        font-size: 2rem;
+        font-size: 2.25rem;
       }
     }
 
     .form-description {
-      font-size: 1rem;
+      font-size: 1.125rem;
       color: var(--mat-sys-on-surface-variant);
       line-height: 1.6;
       margin: 0;
     }
-  }
-
-  .form-container {
-    width: 100%;
   }
 
   .contact-form {
@@ -208,433 +66,268 @@
     flex-direction: column;
     gap: $spacing-lg;
 
-    .form-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: $spacing-md;
-
-      @media (max-width: 768px) {
-        grid-template-columns: 1fr;
-      }
-    }
-
     .form-field {
       width: 100%;
-    }
 
-    .required-asterisk {
-      color: $color-primary;
+      &.textarea-field {
+        ::ng-deep .mat-mdc-form-field-infix {
+          min-height: 150px;
+        }
+      }
     }
 
     .submit-button {
       width: 100%;
-      height: 48px;
-      font-size: 1rem;
+      height: 56px;
+      font-size: 1.125rem;
       font-weight: 600;
       margin-top: $spacing-md;
+      border-radius: $border-radius-md;
+    }
+
+    .form-error-message {
+      display: flex;
+      align-items: center;
+      gap: $spacing-sm;
+      padding: $spacing-md;
+      background-color: var(--mat-sys-error-container);
+      color: var(--mat-sys-on-error-container);
+      border-radius: $border-radius-md;
+      margin-top: $spacing-sm;
+
+      mat-icon {
+        color: var(--mat-sys-error);
+      }
+
+      p {
+        margin: 0;
+        font-weight: 500;
+      }
     }
   }
-}
 
-// Right Side: Contact Information Cards
-.contact-info-side {
-  display: flex;
-  flex-direction: column;
-  gap: $spacing-lg;
-}
-
-.contact-info-card {
-  border-radius: $border-radius-xl;
-  transition: all $transition-slow;
-  border: $border-width-thin $border-style-solid var(--mat-sys-outline-variant);
-  padding: 0 !important;
-  background-color: var(--mat-sys-surface-container-lowest);
-
-  mat-card-content {
-    padding: $spacing-md;
-  }
-
-  .card-content-wrapper {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: $spacing-md;
-    align-items: flex-start;
-  }
-
-  .info-icon {
-    font-size: 32px;
-    width: 32px;
-    height: 32px;
-    color: $color-primary;
-    flex-shrink: 0;
-  }
-
-  .info-content {
-    display: flex;
-    flex-direction: column;
-    gap: $spacing-xs;
-  }
-
-  .info-title {
-    font-size: 1.25rem;
-    font-weight: 600;
-    margin: 0;
-    color: var(--mat-sys-on-surface);
-  }
-
-  .info-details {
-    font-size: 0.9375rem;
-    color: var(--mat-sys-on-surface-variant);
-    margin: 0;
-    line-height: 1.6;
-  }
-}
-
-.contact-form-side {
   .form-success-message {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: $spacing-md;
-    padding: $spacing-2xl;
+    padding: $spacing-3xl;
     background-color: var(--mat-sys-primary-container);
     border-radius: $border-radius-xl;
     text-align: center;
 
-    mat-icon {
-      font-size: 64px;
-      width: 64px;
-      height: 64px;
-      color: $color-primary;
+    h2 {
+      font-size: 2rem;
+      font-weight: 700;
+      margin: 0 0 $spacing-md 0;
+      color: var(--mat-sys-on-primary-container);
     }
 
     p {
       font-size: 1.125rem;
       color: var(--mat-sys-on-primary-container);
-      margin: 0;
-    }
-  }
-
-  .contact-form {
-    .form-field {
-      &.textarea-field {
-        ::ng-deep .mat-mdc-form-field-infix {
-          min-height: 120px;
-        }
-      }
-    }
-
-    .file-upload-field {
-      margin-bottom: $spacing-md;
-
-      .file-input {
-        display: none;
-      }
-
-      .file-upload-label {
-        display: block;
-        cursor: pointer;
-      }
-
-      .file-upload-content {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: $spacing-sm;
-        padding: $spacing-xl;
-        border: 2px dashed var(--mat-sys-outline-variant);
-        border-radius: $border-radius-lg;
-        background-color: var(--mat-sys-surface-variant);
-        transition: all $transition-slow;
-
-        &:hover {
-          border-color: $color-primary;
-          background-color: var(--mat-sys-primary-container);
-        }
-
-        mat-icon {
-          font-size: 48px;
-          width: 48px;
-          height: 48px;
-          color: var(--mat-sys-on-surface-variant);
-        }
-
-        span {
-          color: var(--mat-sys-on-surface-variant);
-          font-size: 0.9375rem;
-        }
-      }
-    }
-
-    .submit-button {
-      mat-icon {
-        margin-right: $spacing-sm;
-      }
+      margin: $spacing-sm 0;
+      line-height: 1.6;
     }
   }
 }
 
-// Map Location Section
-.map-location-section {
-  padding: $spacing-3xl $spacing-lg;
+// Contact Info Wrapper
+.contact-info-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-xl;
+
+  @media (max-width: 1024px) {
+    padding-top: 0;
+  }
+}
+
+.contact-image-container {
+  width: 100%;
+  border-radius: $border-radius-xl;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+
+  .contact-image {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: cover;
+  }
+}
+
+.contact-details-card {
+  border-radius: $border-radius-xl;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   background-color: var(--mat-sys-surface-container-lowest);
+  border: $border-width-thin $border-style-solid var(--mat-sys-outline-variant);
+  transition: all $transition-base;
 
-  @media (max-width: 768px) {
-    padding: $spacing-2xl $spacing-md;
+  &:hover {
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
   }
 
-  .location-container {
-    max-width: 1200px;
-    margin: 0 auto;
+  mat-card-content {
+    padding: $spacing-lg;
+  }
+}
+
+.contact-details {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+}
+
+.contact-detail-item {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  transition: all $transition-base;
+
+  &:hover {
+    background-color: var(--mat-sys-surface-container);
+    border-radius: $border-radius-md;
+    transform: translateX(4px);
   }
 
-  .location-title {
-    font-size: 2.5rem;
-    font-weight: 700;
-    text-align: center;
-    margin-bottom: $spacing-2xl;
+  .detail-icon {
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+    color: $color-primary;
+    flex-shrink: 0;
+  }
+
+  .detail-link {
+    font-size: 1rem;
     color: var(--mat-sys-on-surface);
+    text-decoration: none;
+    transition: color $transition-base;
+    font-weight: 500;
 
-    @media (max-width: 768px) {
-      font-size: 2rem;
-    }
-  }
-
-  .location-content {
-    display: grid;
-    grid-template-columns: 1fr 2fr;
-    gap: $spacing-2xl;
-
-    @media (max-width: 968px) {
-      grid-template-columns: 1fr;
-    }
-  }
-
-  .location-info {
-    display: flex;
-    flex-direction: column;
-    gap: $spacing-xl;
-
-    .address-info {
-      display: flex;
-      align-items: flex-start;
-      gap: $spacing-md;
-
-      mat-icon {
-        font-size: 32px;
-        width: 32px;
-        height: 32px;
-        color: $color-primary;
-        flex-shrink: 0;
-        margin-top: $spacing-xs;
-      }
-
-      .address-text {
-        font-size: 1.125rem;
-        line-height: 1.6;
-        color: var(--mat-sys-on-surface);
-        margin: 0;
-      }
-    }
-
-    .working-hours {
-      padding: $spacing-lg;
-      background-color: var(--mat-sys-surface-container);
-      border-radius: $border-radius-lg;
-
-      h3 {
-        font-size: 1.25rem;
-        font-weight: 600;
-        margin: 0 0 $spacing-md 0;
-        color: var(--mat-sys-on-surface);
-      }
-
-      p {
-        font-size: 0.9375rem;
-        color: var(--mat-sys-on-surface-variant);
-        margin: $spacing-sm 0;
-
-        strong {
-          color: var(--mat-sys-on-surface);
-        }
-      }
-    }
-  }
-
-  .map-embed {
-    border-radius: $border-radius-xl;
-    overflow: hidden;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-
-    iframe {
-      display: block;
-      width: 100%;
+    &:hover {
+      color: $color-primary;
+      text-decoration: underline;
     }
   }
 }
 
-// Testimonials Section
-.testimonials-section {
+
+// FAQ Section
+.faq-section {
   padding: $spacing-3xl $spacing-lg;
   background-color: var(--mat-sys-surface);
 
   @media (max-width: 768px) {
     padding: $spacing-2xl $spacing-md;
   }
+}
 
-  .testimonials-container {
-    max-width: 1200px;
-    margin: 0 auto;
+.faq-container {
+  max-width: 900px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.faq-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: $spacing-md;
+  color: var(--mat-sys-on-surface);
+
+  @media (max-width: 768px) {
+    font-size: 2rem;
   }
+}
 
-  .section-title {
-    font-size: 2.5rem;
-    font-weight: 700;
-    text-align: center;
-    margin-bottom: $spacing-md;
-    color: var(--mat-sys-on-surface);
+.faq-description {
+  font-size: 1.125rem;
+  color: var(--mat-sys-on-surface-variant);
+  line-height: 1.6;
+  margin: 0 0 $spacing-2xl 0;
+}
 
-    @media (max-width: 768px) {
-      font-size: 2rem;
-    }
-  }
+.faq-list {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+  text-align: left;
+}
 
-  .title-underline {
-    width: 80px;
-    height: 3px;
-    background-color: var(--mat-sys-primary);
-    margin: 0 auto $spacing-xl;
-    border-radius: 2px;
+.faq-item {
+  background-color: var(--mat-sys-surface-container-lowest);
+  border-radius: $border-radius-lg;
+  box-shadow: none;
+  border: $border-width-thin $border-style-solid var(--mat-sys-outline-variant);
 
-    @media (max-width: 768px) {
-      width: 60px;
-      height: 2px;
-      margin-bottom: $spacing-lg;
-    }
-  }
-
-  .testimonials-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: $spacing-xl;
-  }
-
-  .reviews-loading {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: $spacing-3xl;
-    gap: $spacing-md;
-
-    p {
-      color: var(--mat-sys-on-surface-variant);
-      margin: 0;
-    }
-  }
-
-  .testimonial-card {
-    border-radius: $border-radius-xl;
-    transition: all $transition-slow;
-    border: $border-width-thin $border-style-solid var(--mat-sys-outline-variant);
-    height: 100%;
-    display: flex;
-    flex-direction: column;
+  ::ng-deep .mat-expansion-panel-header {
+    padding: 0 $spacing-lg;
+    min-height: 72px;
 
     &:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-      border-color: $color-primary;
+      background-color: transparent;
     }
+  }
 
-    mat-card-content {
-      padding: $spacing-xl;
-      display: flex;
-      flex-direction: column;
-      flex: 1;
-    }
+  ::ng-deep .mat-expansion-panel-body {
+    padding: 0 $spacing-lg $spacing-lg $spacing-lg;
+  }
 
-    .reviewer-avatar {
-      width: 48px;
-      height: 48px;
-      border-radius: $border-radius-full;
-      overflow: hidden;
-      margin-bottom: $spacing-md;
-      border: 2px solid var(--mat-sys-outline-variant);
+  .faq-question {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0;
+    color: var(--mat-sys-on-surface);
+  }
 
-      img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-      }
-    }
-
-    .testimonial-rating {
-      display: flex;
-      gap: $spacing-xs;
-      margin-bottom: $spacing-md;
-
-      mat-icon {
-        font-size: 20px;
-        width: 20px;
-        height: 20px;
-        color: var(--mat-sys-outline-variant);
-
-        &.filled {
-          color: #ffc107;
-        }
-      }
-    }
-
-    .testimonial-text {
+  .faq-answer {
+    p {
       font-size: 1rem;
       line-height: 1.6;
-      color: var(--mat-sys-on-surface);
-      font-style: italic;
-      margin: 0 0 $spacing-md 0;
-      flex: 1;
-      display: -webkit-box;
-      -webkit-line-clamp: 4;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .testimonial-footer {
-      margin-top: auto;
-      padding-top: $spacing-md;
-      border-top: $border-width-thin $border-style-solid var(--mat-sys-outline-variant);
-    }
-
-    .testimonial-author {
-      font-size: 0.9375rem;
-      font-weight: 600;
-      color: var(--mat-sys-on-surface);
-      margin: 0 0 $spacing-xs 0;
-    }
-
-    .testimonial-date {
-      font-size: 0.8125rem;
       color: var(--mat-sys-on-surface-variant);
       margin: 0;
     }
   }
 }
 
-// Responsive adjustments
-@media (max-width: 768px) {
-  .hero-banner-section {
-    .trust-icons-overlay {
-      bottom: $spacing-sm;
-    }
-  }
+// CTA Section
+.cta-section {
+  padding: $spacing-3xl $spacing-lg;
+  background-color: var(--mat-sys-surface);
 
-  .contact-sections-wrapper {
-    gap: $spacing-lg;
-  }
-
-  .quick-contact-section,
-  .contact-form-section {
-    padding: $spacing-lg;
+  @media (max-width: 768px) {
+    padding: $spacing-2xl $spacing-md;
   }
 }
+
+.cta-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.cta-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: $spacing-2xl;
+  color: var(--mat-sys-on-surface);
+
+  @media (max-width: 768px) {
+    font-size: 2rem;
+  }
+}
+
+.cta-buttons {
+  display: flex;
+  gap: $spacing-lg;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.cta-button {
+  min-width: 180px;
+  height: 56px;
+  font-size: 1.125rem;
+  font-weight: 600;
+  border-radius: $border-radius-md;
+}
+
+

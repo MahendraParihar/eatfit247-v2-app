@@ -20,7 +20,13 @@
           "target": "build",
           "projects": "dependencies"
         }
-      ]
+      ],
+      "inputs": [
+        "production",
+        "^production",
+        "{workspaceRoot}/../shared-library/dist/**/*"
+      ],
+      "cache": true
     }
   }
 }

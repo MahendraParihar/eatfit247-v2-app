@@ -8,6 +8,7 @@ import {
   IManageFaqCategory,
   IStatusChange,
   ITableList,
+  IPublicFaqCategory,
 } from '@eatfit247-shared-lib';
 import { CommonFunctionsUtil, SearchUtil } from '@server_1/core';
 
@@ -131,6 +132,29 @@ export class FaqCategoryService {
       isActive: t.active,
     }));
     return list;
+  }
+
+  /**
+   * Public method to fetch all active FAQ categories
+   */
+  public async findAllPublic(): Promise<IPublicFaqCategory[]> {
+    const categories = await this.faqCategoryRepository.scope('list').findAll({
+      where: {
+        active: true,
+      },
+      order: [['faqCategory', 'ASC']],
+      raw: true,
+      nest: true,
+    });
+    return categories.map((item: any) => this.convertToPublic(this.convertToModel(item)));
+  }
+
+  /**
+   * Convert IFaqCategory to IPublicFaqCategory (removes admin fields)
+   */
+  private convertToPublic(category: IFaqCategory): IPublicFaqCategory {
+    const { createdBy, updatedBy, createdAt, updatedAt, active, createdByUser, updatedByUser, ...publicCategory } = category;
+    return publicCategory as IPublicFaqCategory;
   }
 }
 

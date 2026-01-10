@@ -1,0 +1,18 @@
+<section class="join-shweta-section">
+  <div class="join-shweta-container">
+    <div class="join-shweta-content">
+      <h2 class="section-title">{{ title }}</h2>
+      <div class="title-underline"></div>
+      <p class="join-description">{{ description }}</p>
+      <div class="social-links-wrapper">
+        <app-social-icons
+          [links]="socialLinks"
+          [size]="iconSize"
+          [showLabels]="showLabels"
+          orientation="horizontal"
+        ></app-social-icons>
+      </div>
+    </div>
+  </div>
+</section>
+
