@@ -512,3 +512,23 @@ VALUES (DEFAULT, 'GOOGLE_RECAPTCHA_SECRET_KEY', 'XYZ', 'Google');
 
 alter table public.mst_franchises
     add is_default boolean default false not null;
+
+
+create table public.txn_success_stories
+(
+    success_story_id SERIAL PRIMARY KEY,
+    name             varchar(255)                not null,
+    title            varchar(255)                not null,
+    date             date                        not null,
+    description      text                        not null,
+    image_path       jsonb                       not null,
+    active           boolean                     not null default true,
+    created_at       timestamp without time zone not null default CURRENT_TIMESTAMP,
+    updated_at       timestamp without time zone not null default CURRENT_TIMESTAMP,
+    created_by       integer                     not null,
+    updated_by       integer                     not null,
+    created_ip       character varying(50),
+    modified_ip      character varying(50),
+    CONSTRAINT fk_txn_success_stories_mst_admin_created_by FOREIGN KEY (created_by) REFERENCES mst_admin_users (admin_id),
+    CONSTRAINT fk_txn_success_stories_mst_admin_updated_by FOREIGN KEY (updated_by) REFERENCES mst_admin_users (admin_id)
+);

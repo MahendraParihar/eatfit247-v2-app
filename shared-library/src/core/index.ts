@@ -41,4 +41,5 @@ export * from './promo-code.interface';
 export * from './payment-gateway.interface';
 export * from './public.types';
 export * from './checkout.interface';
+export * from './success-story.interface';
 

@@ -1,0 +1,1790 @@
+{
+  "graph": {
+    "nodes": {
+      "member-testimonial": {
+        "name": "member-testimonial",
+        "type": "lib",
+        "data": {
+          "root": "libs/modules/member-testimonial",
+          "name": "member-testimonial",
+          "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+          "sourceRoot": "libs/modules/member-testimonial/src",
+          "projectType": "library",
+          "tags": [
+            "type:domain",
+            "scope:member-testimonial"
+          ],
+          "implicitDependencies": [],
+          "targets": {}
+        }
+      },
+      "google-calendar": {
+        "name": "google-calendar",
+        "type": "lib",
+        "data": {
+          "root": "libs/modules/google-calendar",
+          "name": "google-calendar",
+          "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+          "sourceRoot": "libs/modules/google-calendar/src",
+          "projectType": "library",
+          "tags": [
+            "type:platform",
+            "scope:google-calendar"
+          ],
+          "implicitDependencies": [],
+          "targets": {}
+        }
+      },
+      "admin-user": {
+        "name": "admin-user",
+        "type": "lib",
+        "data": {
+          "root": "libs/admin-only/admin-user",
+          "name": "admin-user",
+          "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+          "sourceRoot": "libs/admin-only/admin-user/src",
+          "projectType": "library",
+          "tags": [
+            "type:admin-only",
+            "scope:admin-user"
+          ],
+          "implicitDependencies": [],
+          "targets": {}
+        }
+      },
+      "notifications": {
+        "name": "notifications",
+        "type": "lib",
+        "data": {
+          "root": "libs/modules/notifications",
+          "name": "notifications",
+          "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+          "sourceRoot": "libs/modules/notifications/src",
+          "projectType": "library",
+          "tags": [
+            "type:platform",
+            "scope:notifications"
+          ],
+          "implicitDependencies": [],
+          "targets": {}
+        }
+      },
+      "pocket-guide": {
+        "name": "pocket-guide",
+        "type": "lib",
+        "data": {
+          "root": "libs/modules/pocket-guide",
+          "name": "pocket-guide",
+          "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+          "sourceRoot": "libs/modules/pocket-guide/src",
+          "projectType": "library",
+          "tags": [
+            "type:domain",
+            "scope:pocket-guide"
+          ],
+          "implicitDependencies": [],
+          "targets": {}
+        }
+      },
+      "program-plan": {
+        "name": "program-plan",
+        "type": "lib",
+        "data": {
+          "root": "libs/modules/program-plan",
+          "name": "program-plan",
+          "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+          "sourceRoot": "libs/modules/program-plan/src",
+          "projectType": "library",
+          "tags": [
+            "type:domain",
+            "scope:program-plan"
+          ],
+          "implicitDependencies": [],
+          "targets": {}
+        }
+      },
+      "press-media": {
+        "name": "press-media",
+        "type": "lib",
+        "data": {
+          "root": "libs/modules/press-media",
+          "name": "press-media",
+          "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+          "sourceRoot": "libs/modules/press-media/src",
+          "projectType": "library",
+          "tags": [
+            "type:domain",
+            "scope:press-media"
+          ],
+          "implicitDependencies": [],
+          "targets": {}
+        }
+      },
+      "assessment": {
+        "name": "assessment",
+        "type": "lib",
+        "data": {
+          "root": "libs/modules/assessment",
+          "name": "assessment",
+          "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+          "sourceRoot": "libs/modules/assessment/src",
+          "projectType": "library",
+          "tags": [
+            "type:domain",
+            "scope:assessment"
+          ],
+          "implicitDependencies": [],
+          "targets": {}
+        }
+      },
+      "promo-code": {
+        "name": "promo-code",
+        "type": "lib",
+        "data": {
+          "root": "libs/modules/promo-code",
+          "name": "promo-code",
+          "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+          "sourceRoot": "libs/modules/promo-code/src",
+          "projectType": "library",
+          "tags": [
+            "type:domain",
+            "scope:promo-code"
+          ],
+          "implicitDependencies": [],
+          "targets": {}
+        }
+      },
+      "reports": {
+        "name": "reports",
+        "type": "lib",
+        "data": {
+          "root": "libs/admin-only/reports",
+          "name": "reports",
+          "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+          "sourceRoot": "libs/admin-only/reports/src",
+          "projectType": "library",
+          "tags": [
+            "type:admin-only",
+            "scope:reports"
+          ],
+          "implicitDependencies": [],
+          "targets": {}
+        }
+      },
+      "tax-engine": {
+        "name": "tax-engine",
+        "type": "lib",
+        "data": {
+          "root": "libs/modules/tax-engine",
+          "name": "tax-engine",
+          "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+          "sourceRoot": "libs/modules/tax-engine/src",
+          "projectType": "library",
+          "tags": [
+            "type:platform",
+            "scope:tax-engine"
+          ],
+          "implicitDependencies": [],
+          "targets": {}
+        }
+      },
+      "call-logs": {
+        "name": "call-logs",
+        "type": "lib",
+        "data": {
+          "root": "libs/modules/call-logs",
+          "name": "call-logs",
+          "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+          "sourceRoot": "libs/modules/call-logs/src",
+          "projectType": "library",
+          "tags": [
+            "type:domain",
+            "scope:call-logs"
+          ],
+          "implicitDependencies": [],
+          "targets": {}
+        }
+      },
+      "franchise": {
+        "name": "franchise",
+        "type": "lib",
+        "data": {
+          "root": "libs/modules/franchise",
+          "name": "franchise",
+          "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+          "sourceRoot": "libs/modules/franchise/src",
+          "projectType": "library",
+          "tags": [
+            "type:domain",
+            "scope:franchise"
+          ],
+          "implicitDependencies": [],
+          "targets": {}
+        }
+      },
+      "locations": {
+        "name": "locations",
+        "type": "lib",
+        "data": {
+          "root": "libs/modules/locations",
+          "name": "locations",
+          "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+          "sourceRoot": "libs/modules/locations/src",
+          "projectType": "library",
+          "tags": [
+            "type:domain",
+            "scope:locations"
+          ],
+          "implicitDependencies": [],
+          "targets": {}
+        }
+      },
+      "referrer": {
+        "name": "referrer",
+        "type": "lib",
+        "data": {
+          "root": "libs/modules/referrer",
+          "name": "referrer",
+          "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+          "sourceRoot": "libs/modules/referrer/src",
+          "projectType": "library",
+          "tags": [
+            "type:domain",
+            "scope:referrer"
+          ],
+          "implicitDependencies": [],
+          "targets": {}
+        }
+      },
+      "payment": {
+        "name": "payment",
+        "type": "lib",
+        "data": {
+          "root": "libs/modules/payment",
+          "name": "payment",
+          "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+          "sourceRoot": "libs/modules/payment/src",
+          "projectType": "library",
+          "tags": [
+            "type:domain",
+            "scope:payment"
+          ],
+          "implicitDependencies": [],
+          "targets": {}
+        }
+      },
+      "banner": {
+        "name": "banner",
+        "type": "lib",
+        "data": {
+          "root": "libs/modules/banner",
+          "name": "banner",
+          "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+          "sourceRoot": "libs/modules/banner/src",
+          "projectType": "library",
+          "tags": [
+            "type:domain",
+            "scope:banner"
+          ],
+          "implicitDependencies": [],
+          "targets": {}
+        }
+      },
+      "issues": {
+        "name": "issues",
+        "type": "lib",
+        "data": {
+          "root": "libs/modules/issues",
+          "name": "issues",
+          "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+          "sourceRoot": "libs/modules/issues/src",
+          "projectType": "library",
+          "tags": [
+            "type:domain",
+            "scope:issues"
+          ],
+          "implicitDependencies": [],
+          "targets": {}
+        }
+      },
+      "member": {
+        "name": "member",
+        "type": "lib",
+        "data": {
+          "root": "libs/modules/member",
+          "name": "member",
+          "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+          "sourceRoot": "libs/modules/member/src",
+          "projectType": "library",
+          "tags": [
+            "type:domain",
+            "scope:member"
+          ],
+          "implicitDependencies": [],
+          "targets": {}
+        }
+      },
+      "recipe": {
+        "name": "recipe",
+        "type": "lib",
+        "data": {
+          "root": "libs/modules/recipe",
+          "name": "recipe",
+          "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+          "sourceRoot": "libs/modules/recipe/src",
+          "projectType": "library",
+          "tags": [
+            "type:domain",
+            "scope:recipe"
+          ],
+          "implicitDependencies": [],
+          "targets": {}
+        }
+      },
+      "blogs": {
+        "name": "blogs",
+        "type": "lib",
+        "data": {
+          "root": "libs/modules/blogs",
+          "name": "blogs",
+          "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+          "sourceRoot": "libs/modules/blogs/src",
+          "projectType": "library",
+          "tags": [
+            "type:domain",
+            "scope:blogs"
+          ],
+          "implicitDependencies": [],
+          "targets": {}
+        }
+      },
+      "email": {
+        "name": "email",
+        "type": "lib",
+        "data": {
+          "root": "libs/modules/email",
+          "name": "email",
+          "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+          "sourceRoot": "libs/modules/email/src",
+          "projectType": "library",
+          "tags": [
+            "type:platform",
+            "scope:email"
+          ],
+          "implicitDependencies": [],
+          "targets": {}
+        }
+      },
+      "pages": {
+        "name": "pages",
+        "type": "lib",
+        "data": {
+          "root": "libs/modules/pages",
+          "name": "pages",
+          "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+          "sourceRoot": "libs/modules/pages/src",
+          "projectType": "library",
+          "tags": [
+            "type:domain",
+            "scope:pages"
+          ],
+          "implicitDependencies": [],
+          "targets": {}
+        }
+      },
+      "auth": {
+        "name": "auth",
+        "type": "lib",
+        "data": {
+          "root": "libs/modules/auth",
+          "name": "auth",
+          "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+          "sourceRoot": "libs/modules/auth/src",
+          "projectType": "library",
+          "tags": [
+            "type:domain",
+            "scope:auth"
+          ],
+          "implicitDependencies": [],
+          "targets": {}
+        }
+      },
+      "diet": {
+        "name": "diet",
+        "type": "lib",
+        "data": {
+          "root": "libs/modules/diet",
+          "name": "diet",
+          "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+          "sourceRoot": "libs/modules/diet/src",
+          "projectType": "library",
+          "tags": [
+            "type:domain",
+            "scope:diet"
+          ],
+          "implicitDependencies": [],
+          "targets": {}
+        }
+      },
+      "lovs": {
+        "name": "lovs",
+        "type": "lib",
+        "data": {
+          "root": "libs/modules/lovs",
+          "name": "lovs",
+          "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+          "sourceRoot": "libs/modules/lovs/src",
+          "projectType": "library",
+          "tags": [
+            "type:shared",
+            "scope:lovs"
+          ],
+          "implicitDependencies": [],
+          "targets": {}
+        }
+      },
+      "faq": {
+        "name": "faq",
+        "type": "lib",
+        "data": {
+          "root": "libs/modules/faq",
+          "name": "faq",
+          "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+          "sourceRoot": "libs/modules/faq/src",
+          "projectType": "library",
+          "tags": [
+            "type:domain",
+            "scope:faq"
+          ],
+          "implicitDependencies": [],
+          "targets": {}
+        }
+      },
+      "public-api": {
+        "name": "public-api",
+        "type": "app",
+        "data": {
+          "root": "apps/public-api",
+          "projectType": "application",
+          "metadata": {},
+          "targets": {
+            "build": {
+              "options": {
+                "cwd": "apps/public-api",
+                "args": [
+                  "--node-env=production"
+                ],
+                "command": "webpack-cli build"
+              },
+              "cache": true,
+              "dependsOn": [
+                "^build"
+              ],
+              "inputs": [
+                "production",
+                "^production"
+              ],
+              "outputs": [
+                "{workspaceRoot}/dist/apps/public-api"
+              ],
+              "metadata": {
+                "technologies": [
+                  "webpack"
+                ],
+                "description": "Runs Webpack build",
+                "help": {
+                  "command": "npx webpack-cli build --help",
+                  "example": {
+                    "options": {
+                      "json": "stats.json"
+                    },
+                    "args": [
+                      "--profile"
+                    ]
+                  }
+                }
+              },
+              "executor": "nx:run-commands",
+              "configurations": {},
+              "parallelism": true
+            },
+            "serve": {
+              "executor": "@nx/js:node",
+              "defaultConfiguration": "development",
+              "options": {
+                "buildTarget": "public-api:build"
+              },
+              "configurations": {
+                "development": {
+                  "buildTarget": "public-api:build:development"
+                },
+                "production": {
+                  "buildTarget": "public-api:build:production"
+                }
+              },
+              "parallelism": true,
+              "cache": false
+            },
+            "preview": {
+              "continuous": true,
+              "options": {
+                "cwd": "apps/public-api",
+                "args": [
+                  "--node-env=production"
+                ],
+                "command": "webpack-cli serve"
+              },
+              "metadata": {
+                "technologies": [
+                  "webpack"
+                ],
+                "description": "Starts Webpack dev server in production mode",
+                "help": {
+                  "command": "npx webpack-cli serve --help",
+                  "example": {
+                    "options": {
+                      "args": [
+                        "--client-progress",
+                        "--history-api-fallback "
+                      ]
+                    }
+                  }
+                }
+              },
+              "executor": "nx:run-commands",
+              "configurations": {},
+              "parallelism": true
+            },
+            "serve-static": {
+              "continuous": true,
+              "dependsOn": [
+                "build"
+              ],
+              "executor": "@nx/web:file-server",
+              "options": {
+                "buildTarget": "build",
+                "spa": true
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "build-deps": {
+              "dependsOn": [
+                "^build"
+              ],
+              "configurations": {},
+              "options": {},
+              "parallelism": true,
+              "executor": "nx:noop"
+            },
+            "watch-deps": {
+              "continuous": true,
+              "dependsOn": [
+                "build-deps"
+              ],
+              "executor": "nx:run-commands",
+              "options": {
+                "command": "npx nx watch --projects public-api --includeDependentProjects -- npx nx build-deps public-api"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "lint": {
+              "cache": true,
+              "options": {
+                "cwd": "apps/public-api",
+                "env": {
+                  "ESLINT_USE_FLAT_CONFIG": "false"
+                },
+                "command": "eslint ."
+              },
+              "inputs": [
+                "default",
+                "{workspaceRoot}/.eslintrc.json"
+              ],
+              "outputs": [
+                "{options.outputFile}"
+              ],
+              "metadata": {
+                "technologies": [
+                  "eslint"
+                ],
+                "description": "Runs ESLint on project",
+                "help": {
+                  "command": "npx eslint --help",
+                  "example": {
+                    "options": {
+                      "max-warnings": 0
+                    }
+                  }
+                }
+              },
+              "executor": "nx:run-commands",
+              "configurations": {},
+              "parallelism": true
+            },
+            "test": {
+              "options": {
+                "cwd": "apps/public-api",
+                "env": {
+                  "TS_NODE_COMPILER_OPTIONS": "{\"moduleResolution\":\"node10\",\"module\":\"commonjs\",\"customConditions\":null}"
+                },
+                "command": "jest"
+              },
+              "metadata": {
+                "technologies": [
+                  "jest"
+                ],
+                "description": "Run Jest Tests",
+                "help": {
+                  "command": "npx jest --help",
+                  "example": {
+                    "options": {
+                      "coverage": true
+                    }
+                  }
+                }
+              },
+              "cache": true,
+              "inputs": [
+                "default",
+                "^production",
+                "{workspaceRoot}/jest.preset.js"
+              ],
+              "outputs": [
+                "{workspaceRoot}/coverage/apps/public-api"
+              ],
+              "executor": "nx:run-commands",
+              "configurations": {},
+              "parallelism": true
+            },
+            "docker-build": {
+              "dependsOn": [
+                "build"
+              ],
+              "executor": "nx:run-commands",
+              "options": {
+                "command": "docker build -f apps/public-api/Dockerfile . -t public-api"
+              },
+              "configurations": {},
+              "parallelism": true
+            }
+          },
+          "name": "public-api",
+          "$schema": "../../node_modules/nx/schemas/project-schema.json",
+          "sourceRoot": "apps/public-api/src",
+          "tags": [
+            "type:app",
+            "scope:public"
+          ],
+          "implicitDependencies": []
+        }
+      },
+      "shared-dto": {
+        "name": "shared-dto",
+        "type": "lib",
+        "data": {
+          "root": "libs/shared-dto",
+          "targets": {
+            "test": {
+              "options": {
+                "cwd": "libs/shared-dto",
+                "env": {
+                  "TS_NODE_COMPILER_OPTIONS": "{\"moduleResolution\":\"node10\",\"module\":\"commonjs\",\"customConditions\":null}"
+                },
+                "command": "jest"
+              },
+              "metadata": {
+                "technologies": [
+                  "jest"
+                ],
+                "description": "Run Jest Tests",
+                "help": {
+                  "command": "npx jest --help",
+                  "example": {
+                    "options": {
+                      "coverage": true
+                    }
+                  }
+                }
+              },
+              "cache": true,
+              "inputs": [
+                "default",
+                "^production",
+                "{workspaceRoot}/jest.preset.js"
+              ],
+              "outputs": [
+                "{workspaceRoot}/coverage/libs/shared-dto"
+              ],
+              "executor": "nx:run-commands",
+              "configurations": {},
+              "parallelism": true
+            },
+            "build": {
+              "executor": "@nx/js:tsc",
+              "outputs": [
+                "{options.outputPath}"
+              ],
+              "options": {
+                "outputPath": "dist/libs/shared-dto",
+                "tsConfig": "libs/shared-dto/tsconfig.lib.json",
+                "packageJson": "libs/shared-dto/package.json",
+                "main": "libs/shared-dto/src/index.ts",
+                "assets": [
+                  "libs/shared-dto/*.md"
+                ]
+              },
+              "configurations": {},
+              "parallelism": true,
+              "dependsOn": [
+                "^build"
+              ],
+              "inputs": [
+                "production",
+                "^production"
+              ],
+              "cache": true
+            }
+          },
+          "name": "shared-dto",
+          "projectType": "library",
+          "tags": [
+            "npm:private",
+            "type:shared"
+          ],
+          "metadata": {
+            "targetGroups": {},
+            "js": {
+              "packageName": "@server_1/shared-dto",
+              "packageVersion": "0.0.1",
+              "packageMain": "./src/index.js",
+              "isInPackageManagerWorkspaces": false
+            }
+          },
+          "$schema": "../../node_modules/nx/schemas/project-schema.json",
+          "sourceRoot": "libs/shared-dto/src",
+          "implicitDependencies": []
+        }
+      },
+      "admin-api": {
+        "name": "admin-api",
+        "type": "app",
+        "data": {
+          "root": "apps/admin-api",
+          "projectType": "application",
+          "metadata": {},
+          "targets": {
+            "build": {
+              "options": {
+                "cwd": "apps/admin-api",
+                "args": [
+                  "--node-env=production"
+                ],
+                "command": "webpack-cli build"
+              },
+              "cache": true,
+              "dependsOn": [
+                "^build"
+              ],
+              "inputs": [
+                "production",
+                "^production"
+              ],
+              "outputs": [
+                "{workspaceRoot}/dist/apps/admin-api"
+              ],
+              "metadata": {
+                "technologies": [
+                  "webpack"
+                ],
+                "description": "Runs Webpack build",
+                "help": {
+                  "command": "npx webpack-cli build --help",
+                  "example": {
+                    "options": {
+                      "json": "stats.json"
+                    },
+                    "args": [
+                      "--profile"
+                    ]
+                  }
+                }
+              },
+              "executor": "nx:run-commands",
+              "configurations": {},
+              "parallelism": true
+            },
+            "serve": {
+              "executor": "@nx/js:node",
+              "defaultConfiguration": "development",
+              "options": {
+                "buildTarget": "admin-api:build"
+              },
+              "configurations": {
+                "development": {
+                  "buildTarget": "admin-api:build:development"
+                },
+                "production": {
+                  "buildTarget": "admin-api:build:production"
+                }
+              },
+              "parallelism": true,
+              "cache": false
+            },
+            "preview": {
+              "continuous": true,
+              "options": {
+                "cwd": "apps/admin-api",
+                "args": [
+                  "--node-env=production"
+                ],
+                "command": "webpack-cli serve"
+              },
+              "metadata": {
+                "technologies": [
+                  "webpack"
+                ],
+                "description": "Starts Webpack dev server in production mode",
+                "help": {
+                  "command": "npx webpack-cli serve --help",
+                  "example": {
+                    "options": {
+                      "args": [
+                        "--client-progress",
+                        "--history-api-fallback "
+                      ]
+                    }
+                  }
+                }
+              },
+              "executor": "nx:run-commands",
+              "configurations": {},
+              "parallelism": true
+            },
+            "serve-static": {
+              "continuous": true,
+              "dependsOn": [
+                "build"
+              ],
+              "executor": "@nx/web:file-server",
+              "options": {
+                "buildTarget": "build",
+                "spa": true
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "build-deps": {
+              "dependsOn": [
+                "^build"
+              ],
+              "configurations": {},
+              "options": {},
+              "parallelism": true,
+              "executor": "nx:noop"
+            },
+            "watch-deps": {
+              "continuous": true,
+              "dependsOn": [
+                "build-deps"
+              ],
+              "executor": "nx:run-commands",
+              "options": {
+                "command": "npx nx watch --projects admin-api --includeDependentProjects -- npx nx build-deps admin-api"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "lint": {
+              "cache": true,
+              "options": {
+                "cwd": "apps/admin-api",
+                "env": {
+                  "ESLINT_USE_FLAT_CONFIG": "false"
+                },
+                "command": "eslint ."
+              },
+              "inputs": [
+                "default",
+                "{workspaceRoot}/.eslintrc.json"
+              ],
+              "outputs": [
+                "{options.outputFile}"
+              ],
+              "metadata": {
+                "technologies": [
+                  "eslint"
+                ],
+                "description": "Runs ESLint on project",
+                "help": {
+                  "command": "npx eslint --help",
+                  "example": {
+                    "options": {
+                      "max-warnings": 0
+                    }
+                  }
+                }
+              },
+              "executor": "nx:run-commands",
+              "configurations": {},
+              "parallelism": true
+            },
+            "test": {
+              "options": {
+                "cwd": "apps/admin-api",
+                "env": {
+                  "TS_NODE_COMPILER_OPTIONS": "{\"moduleResolution\":\"node10\",\"module\":\"commonjs\",\"customConditions\":null}"
+                },
+                "command": "jest"
+              },
+              "metadata": {
+                "technologies": [
+                  "jest"
+                ],
+                "description": "Run Jest Tests",
+                "help": {
+                  "command": "npx jest --help",
+                  "example": {
+                    "options": {
+                      "coverage": true
+                    }
+                  }
+                }
+              },
+              "cache": true,
+              "inputs": [
+                "default",
+                "^production",
+                "{workspaceRoot}/jest.preset.js"
+              ],
+              "outputs": [
+                "{workspaceRoot}/coverage/apps/admin-api"
+              ],
+              "executor": "nx:run-commands",
+              "configurations": {},
+              "parallelism": true
+            },
+            "docker-build": {
+              "dependsOn": [
+                "build"
+              ],
+              "executor": "nx:run-commands",
+              "options": {
+                "command": "docker build -f apps/admin-api/Dockerfile . -t admin-api"
+              },
+              "configurations": {},
+              "parallelism": true
+            }
+          },
+          "name": "admin-api",
+          "$schema": "../../node_modules/nx/schemas/project-schema.json",
+          "sourceRoot": "apps/admin-api/src",
+          "tags": [
+            "type:app",
+            "scope:admin"
+          ],
+          "implicitDependencies": []
+        }
+      },
+      "platform": {
+        "name": "platform",
+        "type": "lib",
+        "data": {
+          "root": "libs/platform",
+          "targets": {
+            "test": {
+              "options": {
+                "cwd": "libs/platform",
+                "env": {
+                  "TS_NODE_COMPILER_OPTIONS": "{\"moduleResolution\":\"node10\",\"module\":\"commonjs\",\"customConditions\":null}"
+                },
+                "command": "jest"
+              },
+              "metadata": {
+                "technologies": [
+                  "jest"
+                ],
+                "description": "Run Jest Tests",
+                "help": {
+                  "command": "npx jest --help",
+                  "example": {
+                    "options": {
+                      "coverage": true
+                    }
+                  }
+                }
+              },
+              "cache": true,
+              "inputs": [
+                "default",
+                "^production",
+                "{workspaceRoot}/jest.preset.js"
+              ],
+              "outputs": [
+                "{workspaceRoot}/coverage/libs/platform"
+              ],
+              "executor": "nx:run-commands",
+              "configurations": {},
+              "parallelism": true
+            },
+            "build": {
+              "executor": "@nx/js:tsc",
+              "outputs": [
+                "{options.outputPath}"
+              ],
+              "options": {
+                "outputPath": "dist/libs/platform",
+                "tsConfig": "libs/platform/tsconfig.lib.json",
+                "packageJson": "libs/platform/package.json",
+                "main": "libs/platform/src/index.ts",
+                "assets": [
+                  "libs/platform/*.md"
+                ]
+              },
+              "dependsOn": [
+                {
+                  "target": "build",
+                  "projects": "dependencies"
+                }
+              ],
+              "configurations": {},
+              "parallelism": true,
+              "inputs": [
+                "production",
+                "^production"
+              ],
+              "cache": true
+            }
+          },
+          "name": "platform",
+          "projectType": "library",
+          "tags": [
+            "npm:private",
+            "type:platform"
+          ],
+          "metadata": {
+            "targetGroups": {},
+            "js": {
+              "packageName": "@server_1/platform",
+              "packageVersion": "0.0.1",
+              "packageMain": "./src/index.js",
+              "isInPackageManagerWorkspaces": false
+            }
+          },
+          "$schema": "../../node_modules/nx/schemas/project-schema.json",
+          "sourceRoot": "libs/platform/src",
+          "implicitDependencies": []
+        }
+      },
+      "core": {
+        "name": "core",
+        "type": "lib",
+        "data": {
+          "root": "libs/core",
+          "targets": {
+            "test": {
+              "options": {
+                "cwd": "libs/core",
+                "env": {
+                  "TS_NODE_COMPILER_OPTIONS": "{\"moduleResolution\":\"node10\",\"module\":\"commonjs\",\"customConditions\":null}"
+                },
+                "command": "jest"
+              },
+              "metadata": {
+                "technologies": [
+                  "jest"
+                ],
+                "description": "Run Jest Tests",
+                "help": {
+                  "command": "npx jest --help",
+                  "example": {
+                    "options": {
+                      "coverage": true
+                    }
+                  }
+                }
+              },
+              "cache": true,
+              "inputs": [
+                "default",
+                "^production",
+                "{workspaceRoot}/jest.preset.js"
+              ],
+              "outputs": [
+                "{workspaceRoot}/coverage/libs/core"
+              ],
+              "executor": "nx:run-commands",
+              "configurations": {},
+              "parallelism": true
+            },
+            "build": {
+              "executor": "@nx/js:tsc",
+              "outputs": [
+                "{options.outputPath}"
+              ],
+              "options": {
+                "outputPath": "dist/libs/core",
+                "tsConfig": "libs/core/tsconfig.lib.json",
+                "packageJson": "libs/core/package.json",
+                "main": "libs/core/src/index.ts",
+                "assets": [
+                  "libs/core/*.md"
+                ]
+              },
+              "dependsOn": [
+                {
+                  "target": "build",
+                  "projects": "dependencies"
+                }
+              ],
+              "inputs": [
+                "production",
+                "^production",
+                "{workspaceRoot}/../shared-library/dist/**/*"
+              ],
+              "cache": true,
+              "configurations": {},
+              "parallelism": true
+            }
+          },
+          "name": "core",
+          "projectType": "library",
+          "tags": [
+            "npm:private",
+            "type:core"
+          ],
+          "metadata": {
+            "targetGroups": {},
+            "js": {
+              "packageName": "@server_1/core",
+              "packageVersion": "0.0.1",
+              "packageMain": "./src/index.js",
+              "isInPackageManagerWorkspaces": false
+            }
+          },
+          "$schema": "../../node_modules/nx/schemas/project-schema.json",
+          "sourceRoot": "libs/core/src",
+          "implicitDependencies": []
+        }
+      }
+    },
+    "dependencies": {
+      "member-testimonial": [],
+      "google-calendar": [
+        {
+          "source": "google-calendar",
+          "target": "core",
+          "type": "static"
+        },
+        {
+          "source": "google-calendar",
+          "target": "platform",
+          "type": "static"
+        }
+      ],
+      "admin-user": [
+        {
+          "source": "admin-user",
+          "target": "core",
+          "type": "static"
+        },
+        {
+          "source": "admin-user",
+          "target": "shared-dto",
+          "type": "static"
+        },
+        {
+          "source": "admin-user",
+          "target": "platform",
+          "type": "static"
+        }
+      ],
+      "notifications": [
+        {
+          "source": "notifications",
+          "target": "core",
+          "type": "static"
+        },
+        {
+          "source": "notifications",
+          "target": "platform",
+          "type": "static"
+        },
+        {
+          "source": "notifications",
+          "target": "shared-dto",
+          "type": "static"
+        }
+      ],
+      "pocket-guide": [
+        {
+          "source": "pocket-guide",
+          "target": "core",
+          "type": "static"
+        },
+        {
+          "source": "pocket-guide",
+          "target": "shared-dto",
+          "type": "static"
+        }
+      ],
+      "program-plan": [
+        {
+          "source": "program-plan",
+          "target": "core",
+          "type": "static"
+        },
+        {
+          "source": "program-plan",
+          "target": "shared-dto",
+          "type": "static"
+        },
+        {
+          "source": "program-plan",
+          "target": "platform",
+          "type": "static"
+        }
+      ],
+      "press-media": [
+        {
+          "source": "press-media",
+          "target": "core",
+          "type": "static"
+        },
+        {
+          "source": "press-media",
+          "target": "platform",
+          "type": "static"
+        },
+        {
+          "source": "press-media",
+          "target": "shared-dto",
+          "type": "static"
+        }
+      ],
+      "assessment": [
+        {
+          "source": "assessment",
+          "target": "core",
+          "type": "static"
+        },
+        {
+          "source": "assessment",
+          "target": "shared-dto",
+          "type": "static"
+        }
+      ],
+      "promo-code": [
+        {
+          "source": "promo-code",
+          "target": "core",
+          "type": "static"
+        },
+        {
+          "source": "promo-code",
+          "target": "shared-dto",
+          "type": "static"
+        }
+      ],
+      "reports": [
+        {
+          "source": "reports",
+          "target": "core",
+          "type": "static"
+        },
+        {
+          "source": "reports",
+          "target": "member",
+          "type": "static"
+        }
+      ],
+      "tax-engine": [
+        {
+          "source": "tax-engine",
+          "target": "platform",
+          "type": "static"
+        },
+        {
+          "source": "tax-engine",
+          "target": "core",
+          "type": "static"
+        }
+      ],
+      "call-logs": [
+        {
+          "source": "call-logs",
+          "target": "core",
+          "type": "static"
+        },
+        {
+          "source": "call-logs",
+          "target": "shared-dto",
+          "type": "static"
+        }
+      ],
+      "franchise": [
+        {
+          "source": "franchise",
+          "target": "core",
+          "type": "static"
+        },
+        {
+          "source": "franchise",
+          "target": "shared-dto",
+          "type": "static"
+        },
+        {
+          "source": "franchise",
+          "target": "platform",
+          "type": "static"
+        }
+      ],
+      "locations": [
+        {
+          "source": "locations",
+          "target": "core",
+          "type": "static"
+        },
+        {
+          "source": "locations",
+          "target": "platform",
+          "type": "static"
+        },
+        {
+          "source": "locations",
+          "target": "shared-dto",
+          "type": "static"
+        }
+      ],
+      "referrer": [
+        {
+          "source": "referrer",
+          "target": "core",
+          "type": "static"
+        },
+        {
+          "source": "referrer",
+          "target": "shared-dto",
+          "type": "static"
+        },
+        {
+          "source": "referrer",
+          "target": "platform",
+          "type": "static"
+        }
+      ],
+      "payment": [
+        {
+          "source": "payment",
+          "target": "core",
+          "type": "static"
+        },
+        {
+          "source": "payment",
+          "target": "franchise",
+          "type": "static"
+        },
+        {
+          "source": "payment",
+          "target": "platform",
+          "type": "static"
+        }
+      ],
+      "banner": [
+        {
+          "source": "banner",
+          "target": "core",
+          "type": "static"
+        },
+        {
+          "source": "banner",
+          "target": "shared-dto",
+          "type": "static"
+        }
+      ],
+      "issues": [
+        {
+          "source": "issues",
+          "target": "core",
+          "type": "static"
+        },
+        {
+          "source": "issues",
+          "target": "shared-dto",
+          "type": "static"
+        }
+      ],
+      "member": [
+        {
+          "source": "member",
+          "target": "core",
+          "type": "static"
+        },
+        {
+          "source": "member",
+          "target": "shared-dto",
+          "type": "static"
+        },
+        {
+          "source": "member",
+          "target": "program-plan",
+          "type": "static"
+        },
+        {
+          "source": "member",
+          "target": "platform",
+          "type": "static"
+        },
+        {
+          "source": "member",
+          "target": "tax-engine",
+          "type": "static"
+        },
+        {
+          "source": "member",
+          "target": "assessment",
+          "type": "static"
+        },
+        {
+          "source": "member",
+          "target": "recipe",
+          "type": "static"
+        },
+        {
+          "source": "member",
+          "target": "diet",
+          "type": "static"
+        },
+        {
+          "source": "member",
+          "target": "pocket-guide",
+          "type": "static"
+        },
+        {
+          "source": "member",
+          "target": "issues",
+          "type": "static"
+        },
+        {
+          "source": "member",
+          "target": "call-logs",
+          "type": "static"
+        },
+        {
+          "source": "member",
+          "target": "franchise",
+          "type": "static"
+        },
+        {
+          "source": "member",
+          "target": "payment",
+          "type": "static"
+        },
+        {
+          "source": "member",
+          "target": "referrer",
+          "type": "static"
+        }
+      ],
+      "recipe": [
+        {
+          "source": "recipe",
+          "target": "core",
+          "type": "static"
+        },
+        {
+          "source": "recipe",
+          "target": "shared-dto",
+          "type": "static"
+        }
+      ],
+      "blogs": [
+        {
+          "source": "blogs",
+          "target": "core",
+          "type": "static"
+        },
+        {
+          "source": "blogs",
+          "target": "shared-dto",
+          "type": "static"
+        }
+      ],
+      "email": [],
+      "pages": [
+        {
+          "source": "pages",
+          "target": "core",
+          "type": "static"
+        },
+        {
+          "source": "pages",
+          "target": "shared-dto",
+          "type": "static"
+        }
+      ],
+      "auth": [
+        {
+          "source": "auth",
+          "target": "core",
+          "type": "static"
+        },
+        {
+          "source": "auth",
+          "target": "notifications",
+          "type": "static"
+        },
+        {
+          "source": "auth",
+          "target": "platform",
+          "type": "static"
+        }
+      ],
+      "diet": [
+        {
+          "source": "diet",
+          "target": "core",
+          "type": "static"
+        },
+        {
+          "source": "diet",
+          "target": "shared-dto",
+          "type": "static"
+        },
+        {
+          "source": "diet",
+          "target": "recipe",
+          "type": "static"
+        }
+      ],
+      "lovs": [],
+      "faq": [
+        {
+          "source": "faq",
+          "target": "core",
+          "type": "static"
+        },
+        {
+          "source": "faq",
+          "target": "shared-dto",
+          "type": "static"
+        }
+      ],
+      "public-api": [
+        {
+          "source": "public-api",
+          "target": "core",
+          "type": "static"
+        },
+        {
+          "source": "public-api",
+          "target": "platform",
+          "type": "static"
+        },
+        {
+          "source": "public-api",
+          "target": "blogs",
+          "type": "static"
+        },
+        {
+          "source": "public-api",
+          "target": "banner",
+          "type": "static"
+        },
+        {
+          "source": "public-api",
+          "target": "pages",
+          "type": "static"
+        },
+        {
+          "source": "public-api",
+          "target": "referrer",
+          "type": "static"
+        },
+        {
+          "source": "public-api",
+          "target": "press-media",
+          "type": "static"
+        },
+        {
+          "source": "public-api",
+          "target": "program-plan",
+          "type": "static"
+        },
+        {
+          "source": "public-api",
+          "target": "faq",
+          "type": "static"
+        },
+        {
+          "source": "public-api",
+          "target": "member",
+          "type": "static"
+        },
+        {
+          "source": "public-api",
+          "target": "locations",
+          "type": "static"
+        }
+      ],
+      "shared-dto": [],
+      "admin-api": [
+        {
+          "source": "admin-api",
+          "target": "core",
+          "type": "static"
+        },
+        {
+          "source": "admin-api",
+          "target": "platform",
+          "type": "static"
+        },
+        {
+          "source": "admin-api",
+          "target": "auth",
+          "type": "static"
+        },
+        {
+          "source": "admin-api",
+          "target": "member",
+          "type": "static"
+        },
+        {
+          "source": "admin-api",
+          "target": "assessment",
+          "type": "static"
+        },
+        {
+          "source": "admin-api",
+          "target": "program-plan",
+          "type": "static"
+        },
+        {
+          "source": "admin-api",
+          "target": "call-logs",
+          "type": "static"
+        },
+        {
+          "source": "admin-api",
+          "target": "tax-engine",
+          "type": "static"
+        },
+        {
+          "source": "admin-api",
+          "target": "payment",
+          "type": "static"
+        },
+        {
+          "source": "admin-api",
+          "target": "blogs",
+          "type": "static"
+        },
+        {
+          "source": "admin-api",
+          "target": "faq",
+          "type": "static"
+        },
+        {
+          "source": "admin-api",
+          "target": "press-media",
+          "type": "static"
+        },
+        {
+          "source": "admin-api",
+          "target": "pages",
+          "type": "static"
+        },
+        {
+          "source": "admin-api",
+          "target": "recipe",
+          "type": "static"
+        },
+        {
+          "source": "admin-api",
+          "target": "referrer",
+          "type": "static"
+        },
+        {
+          "source": "admin-api",
+          "target": "franchise",
+          "type": "static"
+        },
+        {
+          "source": "admin-api",
+          "target": "locations",
+          "type": "static"
+        },
+        {
+          "source": "admin-api",
+          "target": "issues",
+          "type": "static"
+        },
+        {
+          "source": "admin-api",
+          "target": "pocket-guide",
+          "type": "static"
+        },
+        {
+          "source": "admin-api",
+          "target": "diet",
+          "type": "static"
+        },
+        {
+          "source": "admin-api",
+          "target": "google-calendar",
+          "type": "static"
+        },
+        {
+          "source": "admin-api",
+          "target": "promo-code",
+          "type": "static"
+        },
+        {
+          "source": "admin-api",
+          "target": "banner",
+          "type": "static"
+        },
+        {
+          "source": "admin-api",
+          "target": "member-testimonial",
+          "type": "static"
+        },
+        {
+          "source": "admin-api",
+          "target": "lovs",
+          "type": "static"
+        },
+        {
+          "source": "admin-api",
+          "target": "admin-user",
+          "type": "static"
+        },
+        {
+          "source": "admin-api",
+          "target": "reports",
+          "type": "static"
+        }
+      ],
+      "platform": [
+        {
+          "source": "platform",
+          "target": "core",
+          "type": "static"
+        }
+      ],
+      "core": [
+        {
+          "source": "core",
+          "target": "shared-dto",
+          "type": "static"
+        },
+        {
+          "source": "core",
+          "target": "platform",
+          "type": "static"
+        }
+      ]
+    }
+  }
+}

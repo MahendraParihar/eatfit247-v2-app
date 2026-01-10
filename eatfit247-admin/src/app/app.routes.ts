@@ -104,6 +104,10 @@ export const appRoutes: Route[] = [
         loadChildren: () => import('banners').then((m) => m.bannersRoutes),
       },
       {
+        path: 'success-stories',
+        loadChildren: () => import('success-stories').then((m) => m.successStoriesRoutes),
+      },
+      {
         path: 'setting',
         loadChildren: () => import('admin-user').then((m) => m.settingRoutes),
       },

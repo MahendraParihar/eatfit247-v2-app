@@ -30,7 +30,7 @@ export class SuccessStoriesComponent implements OnInit {
   private readonly bannerService = inject(BannerService);
 
   bannerItems: SliderItem[] = [];
-  stories: SuccessStory[] = [];
+  storiesByYear: Map<number, SuccessStory[]> = new Map();
   years: number[] = [];
   totalStories = 0;
 
@@ -52,35 +52,35 @@ export class SuccessStoriesComponent implements OnInit {
   }
 
   /**
-   * Load all success stories
+   * Load all success stories grouped by year
    */
   loadStories(): void {
-    this.stories = this.successStoriesService.getAllStories();
+    const allStories = this.successStoriesService.getAllStories();
     this.years = this.successStoriesService.getAllYears();
     this.totalStories = this.successStoriesService.getTotalStories();
+
+    // Group stories by year
+    this.storiesByYear.clear();
+    allStories.forEach((story) => {
+      if (!this.storiesByYear.has(story.year)) {
+        this.storiesByYear.set(story.year, []);
+      }
+      this.storiesByYear.get(story.year)!.push(story);
+    });
   }
 
   /**
-   * Check if story is on left side (even index)
+   * Get stories for a specific year
    */
-  isLeftSide(index: number): boolean {
-    return index % 2 === 0;
+  getStoriesForYear(year: number): SuccessStory[] {
+    return this.storiesByYear.get(year) || [];
   }
 
   /**
-   * Check if story is on right side (odd index)
+   * Check if story should have image on left (alternating pattern)
    */
-  isRightSide(index: number): boolean {
-    return index % 2 === 1;
-  }
-
-  /**
-   * Get unique years for a story (for grouping)
-   */
-  getYearGroup(story: SuccessStory, index: number): number | null {
-    // Show year only if it's the first story of that year
-    const previousStory = index > 0 ? this.stories[index - 1] : null;
-    return previousStory?.year === story.year ? null : story.year;
+  isImageLeft(storyIndex: number): boolean {
+    return storyIndex % 2 === 0;
   }
 
   /**

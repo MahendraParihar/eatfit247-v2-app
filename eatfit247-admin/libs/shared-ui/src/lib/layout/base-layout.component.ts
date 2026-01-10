@@ -146,6 +146,11 @@ export class BaseLayoutComponent implements OnInit, OnDestroy {
       route: '/banners',
     },
     {
+      label: 'Success Stories',
+      icon: 'emoji_events',
+      route: '/success-stories',
+    },
+    {
       label: 'LOV Master',
       icon: 'list',
       children: [

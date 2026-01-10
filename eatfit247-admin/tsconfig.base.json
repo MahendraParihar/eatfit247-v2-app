@@ -32,6 +32,7 @@
       "promo-code": ["libs/admin/promo-code/src/index.ts"],
       "legal-pages": ["libs/admin/legal-pages/src/index.ts"],
       "banners": ["libs/admin/banners/src/index.ts"],
+      "success-stories": ["libs/admin/success-stories/src/index.ts"],
       "dashboard": ["libs/admin/dashboard/src/index.ts"],
       "@env": ["src/environments/environment.ts"],
       "@eatfit247-shared-lib": ["../shared-library/src/index.ts"],

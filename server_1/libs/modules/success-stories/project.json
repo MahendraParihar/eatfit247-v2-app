@@ -1,0 +1,8 @@
+{
+  "name": "success-stories",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/modules/success-stories/src",
+  "projectType": "library",
+  "tags": ["type:domain", "scope:success-stories"]
+}
+
