@@ -501,14 +501,14 @@ alter table public.txn_banner
 INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
 VALUES (DEFAULT, 'GOOGLE_PROJECT_ID', 'eatfit247-172005', 'Google');
 INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
-VALUES (DEFAULT, 'GOOGLE_KEY', '6LdjiR0rAAAAAMtMlbbCfzxVdf-12wA_y3yXFzZW', 'Google');
+VALUES (DEFAULT, 'GOOGLE_KEY', 'XYZ', 'Google');
 INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
 VALUES (DEFAULT, 'YOUTUBE_CHANNEL_ID', 'UCif2j57srYKBbxlRdv9kEMQ', 'Google');
 
 INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
-VALUES (DEFAULT, 'GOOGLE_RECAPTCHA_SITE_KEY', '6LcqLEMsAAAAANHknFfFRhE1kRVcLk2ZpBy6WAQ2', 'Google');
+VALUES (DEFAULT, 'GOOGLE_RECAPTCHA_SITE_KEY', 'XYZ', 'Google');
 INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
-VALUES (DEFAULT, 'GOOGLE_RECAPTCHA_SECRET_KEY', '6LcqLEMsAAAAAI89B1mLalNGdvjDnzKSmcxBg1bS', 'Google');
+VALUES (DEFAULT, 'GOOGLE_RECAPTCHA_SECRET_KEY', 'XYZ', 'Google');
 
 alter table public.mst_franchises
     add is_default boolean default false not null;
