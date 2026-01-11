@@ -8,6 +8,9 @@
 @use './padding';
 @use './margin';
 
+// Import section styles
+@use './sections';
+
 /* You can add global styles to this file, and also import other style files */
 
 html, body { 

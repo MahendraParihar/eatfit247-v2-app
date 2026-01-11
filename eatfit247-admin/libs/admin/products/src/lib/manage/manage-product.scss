@@ -1,0 +1,121 @@
+.form-card {
+  width: 100%;
+  background-color: var(--md-sys-color-surface);
+}
+
+.form-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.full-width-minus-button {
+  flex: 1;
+  margin-right: 8px;
+}
+
+.row {
+  display: flex;
+  gap: 16px;
+  width: 100%;
+}
+
+.half-width {
+  flex: 1;
+}
+
+.third-width {
+  flex: 1;
+  margin-right: 8px;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+mat-card-header {
+  margin-bottom: 24px;
+}
+
+mat-card-title {
+  font-size: 24px;
+  font-weight: 500;
+}
+
+textarea {
+  resize: vertical;
+}
+
+.editor-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.6);
+  font-weight: 400;
+}
+
+.NgxEditor__Wrapper {
+  margin-bottom: 8px;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 18px;
+  font-weight: 500;
+  margin-top: 24px;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+}
+
+.section-subheader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 14px;
+  font-weight: 500;
+  margin-top: 16px;
+  margin-bottom: 8px;
+}
+
+.array-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.array-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 12px;
+  background-color: rgba(0, 0, 0, 0.02);
+  border-radius: 4px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.array-item.faq-item {
+  flex-direction: column;
+  gap: 12px;
+}
+
+::ng-deep {
+  .NgxEditor {
+    min-height: 200px;
+  }
+  
+  .NgxEditor__Content {
+    min-height: 200px;
+  }
+}
+

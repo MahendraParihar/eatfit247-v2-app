@@ -509,6 +509,8 @@ INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
 VALUES (DEFAULT, 'GOOGLE_RECAPTCHA_SITE_KEY', 'XYZ', 'Google');
 INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
 VALUES (DEFAULT, 'GOOGLE_RECAPTCHA_SECRET_KEY', 'XYZ', 'Google');
+INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
+VALUES (DEFAULT, 'GOOGLE_PLACE_ID', 'XYZ', 'Google');
 
 alter table public.mst_franchises
     add is_default boolean default false not null;

@@ -10,6 +10,7 @@ import {
   ICallLogSlot,
   IGoogleCalendarEvent,
   IGoogleCalendarStatus,
+  IGoogleReviewsResponse,
 } from '@eatfit247-shared-lib';
 import { InjectModel } from '@nestjs/sequelize';
 import moment from 'moment-timezone';
@@ -131,21 +132,15 @@ export class GoogleService {
         challenge_ts?: string;
         hostname?: string;
         'error-codes'?: string[];
-      }>(
-        'https://www.google.com/recaptcha/api/siteverify',
-        params.toString(),
-        {
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-          },
+      }>('https://www.google.com/recaptcha/api/siteverify', params.toString(), {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
         },
-      );
+      });
       const result = response.data;
       if (!result.success) {
         const errorCodes = result['error-codes'] || [];
-        throw new BadRequestException(
-          `reCAPTCHA verification failed: ${errorCodes.join(', ')}`,
-        );
+        throw new BadRequestException(`reCAPTCHA verification failed: ${errorCodes.join(', ')}`);
       }
       // Check the score threshold for v3
       if (result.score !== undefined && result.score < scoreThreshold) {
@@ -162,9 +157,7 @@ export class GoogleService {
       if (error instanceof BadRequestException) {
         throw error;
       }
-      throw new BadRequestException(
-        `Failed to verify reCAPTCHA token: ${error.message}`,
-      );
+      throw new BadRequestException(`Failed to verify reCAPTCHA token: ${error.message}`);
     }
   }
 
@@ -538,8 +531,157 @@ export class GoogleService {
         title: item.snippet.title,
       }));
     } catch (error: any) {
-      await this.logErrorService.logError(`Failed to fetch and save YouTube video: ${error.message}`);
+      await this.logErrorService.logError(
+        `Failed to fetch and save YouTube video: ${error.message}`,
+      );
       throw new BadRequestException(`Failed to fetch and save YouTube video: ${error.message}`);
+    }
+  }
+
+  // endregion
+  // region Google Business Profile Reviews
+  /**
+   * Fetch place ID from Google Places API using text search
+   * @param input - The text query to search for (e.g., 'EatFit24by7')
+   * @returns Promise with the place_id string or null if not found
+   */
+  async getPlaceId(input: string): Promise<string | null> {
+    try {
+      const apiKey = this.appConfig.getString(ConfigParam.GOOGLE_KEY);
+      if (!apiKey) {
+        throw new BadRequestException('Google API key is not configured');
+      }
+
+      if (!input) {
+        throw new BadRequestException('Input text is required');
+      }
+
+      const response = await axios.get(
+        'https://maps.googleapis.com/maps/api/place/findplacefromtext/json',
+        {
+          params: {
+            input: input,
+            inputtype: 'textquery',
+            fields: 'place_id,name',
+            key: apiKey,
+          },
+        },
+      );
+
+      if (response.data.status !== 'OK' && response.data.status !== 'ZERO_RESULTS') {
+        throw new BadRequestException(
+          `Google Places API error: ${response.data.status} - ${response.data.error_message || 'Unknown error'}`,
+        );
+      }
+
+      return response.data.candidates?.[0]?.place_id || null;
+    } catch (error: any) {
+      await this.logErrorService.logError(`Failed to fetch place ID: ${error.message}`, {
+        controller: 'GoogleService',
+        methodName: 'getPlaceId',
+      });
+
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+
+      throw new BadRequestException(`Failed to fetch place ID: ${error.message || 'Unknown error'}`);
+    }
+  }
+
+  /**
+   * Fetch user reviews from Google Business Profile using Places API
+   * @param placeId - Optional Google Place ID. If not provided, will try to get from config
+   * @returns Promise with reviews, average rating, and total review count
+   */
+  async getGoogleBusinessReviews(placeId?: string): Promise<IGoogleReviewsResponse> {
+    try {
+      const apiKey = this.appConfig.getString(ConfigParam.GOOGLE_KEY);
+      if (!apiKey) {
+        throw new BadRequestException('Google API key is not configured');
+      }
+
+      const res = await this.getPlaceId('EatFit247');
+      console.log(res)
+
+      // Get place ID from parameter or config (you may want to add GOOGLE_PLACE_ID to ConfigParam)
+      const targetPlaceId = placeId || this.appConfig.getString(ConfigParam.GOOGLE_PLACE_ID);
+      if (!targetPlaceId) {
+        throw new BadRequestException('Google Place ID is required');
+      }
+
+      // Use Google Places API to fetch place details including reviews
+      const placesApiUrl = 'https://maps.googleapis.com/maps/api/place/details/json';
+
+      const response = await axios.get(placesApiUrl, {
+        params: {
+          place_id: targetPlaceId,
+          fields: 'place_id,name,rating,user_ratings_total,reviews',
+          key: apiKey,
+        },
+      });
+
+      if (response.data.status !== 'OK') {
+        throw new BadRequestException(
+          `Google Places API error: ${response.data.status} - ${response.data.error_message || 'Unknown error'}`,
+        );
+      }
+
+      const placeData = response.data.result;
+
+      // Transform reviews to match the expected format
+      const reviews = (placeData.reviews || []).map((review: any, index: number) => {
+        // Map star rating from number to enum
+        const ratingMap: { [key: number]: 'ONE' | 'TWO' | 'THREE' | 'FOUR' | 'FIVE' } = {
+          1: 'ONE',
+          2: 'TWO',
+          3: 'THREE',
+          4: 'FOUR',
+          5: 'FIVE',
+        };
+
+        return {
+          reviewId:
+            review.author_url || `review-${targetPlaceId}-${index}-${review.time || Date.now()}`,
+          reviewer: {
+            displayName: review.author_name || 'Anonymous',
+            profilePhotoUrl: review.profile_photo_url,
+          },
+          starRating: ratingMap[review.rating] || 'FIVE',
+          comment: review.text,
+          createTime: review.time
+            ? new Date(review.time * 1000).toISOString()
+            : new Date().toISOString(),
+          updateTime: review.time
+            ? new Date(review.time * 1000).toISOString()
+            : new Date().toISOString(),
+          reviewReply: undefined, // Google Places API doesn't return reply information in standard format
+        };
+      });
+
+      return {
+        reviews,
+        averageRating: placeData.rating,
+        totalReviewCount: placeData.user_ratings_total,
+      };
+    } catch (error: any) {
+      await this.logErrorService.logError(
+        `Failed to fetch Google Business reviews: ${error.message}`,
+        {
+          controller: 'GoogleService',
+          methodName: 'getGoogleBusinessReviews',
+        },
+      );
+
+      // If it's a BadRequestException, rethrow it
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+
+      // Otherwise, throw a generic error
+      throw new BadRequestException(
+        `Failed to fetch Google Business reviews: ${error.message || 'Unknown error'}`,
+      );
     }
   }
 

@@ -134,7 +134,11 @@
                 }
               }
               @case ('date') {
-                {{ getFormattedValue(row, column) | date: 'dd MMM yyyy hh:mm a' }}
+                @if (getFormattedValue(row, column); as dateValue) {
+                  {{ dateValue | date: 'dd MMM yyyy hh:mm a' }}
+                } @else {
+                  -
+                }
               }
               @default {
                 {{ getFormattedValue(row, column) }}

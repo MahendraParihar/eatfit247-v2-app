@@ -35,5 +35,6 @@ export enum MediaForEnum {
   PROMOTIONAL_MAIL = "promotional-mail",
   LEGAL_PAGE = "legal-page",
   SUCCESS_STORY = "success-story",
+  PRODUCT = "product",
 }
 

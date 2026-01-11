@@ -1,0 +1,49 @@
+<section class="journey-steps-section">
+  <div class="journey-container">
+    <!-- Left Side: Text Content -->
+    <div class="journey-content">
+      <div class="journey-header">
+        <p class="journey-label">STEPS</p>
+        <h2 class="journey-title">Journey to a Healthier You: Steps to Success</h2>
+        
+        <!-- Decorative Emblem -->
+        <div class="decorative-emblem">
+          <svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Stylized leaf/wheel emblem -->
+            <ellipse cx="30" cy="30" rx="25" ry="20" fill="#FF8C42" opacity="0.2" transform="rotate(-20 30 30)"/>
+            <path d="M30 8 Q40 20, 45 30 Q40 40, 30 52 Q20 40, 15 30 Q20 20, 30 8 Z" fill="#FF6B35"/>
+            <ellipse cx="30" cy="30" rx="8" ry="12" fill="#FF8C42" opacity="0.6"/>
+          </svg>
+        </div>
+        
+        <p class="journey-intro">
+          Embarking on a path towards better health and well-being is a transformative journey that begins with small steps.
+        </p>
+      </div>
+
+      <!-- Steps List -->
+      <div class="steps-list">
+        @for (step of steps; track step.number) {
+          <div class="step-item">
+            <div class="step-number">{{ step.number }}</div>
+            <div class="step-content">
+              <h3 class="step-title">{{ step.title }}</h3>
+              <p class="step-description">{{ step.description }}</p>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Right Side: Image -->
+    <div class="journey-image-wrapper">
+      <img
+        [src]="imageUrl"
+        [alt]="imageAlt"
+        class="journey-image"
+        (error)="onImageError($event)"
+      />
+    </div>
+  </div>
+</section>
+

@@ -7,88 +7,17 @@
 }
 
 // First Section: Hero with Video and Vision/Mission
-.first-section {
-  padding: $spacing-3xl $spacing-lg;
-  background-color: #f5f5f0; // Light beige/off-white background
+.page-section:first-of-type {
   min-height: 100vh;
   display: flex;
   align-items: center;
 
   @media (max-width: 768px) {
-    padding: $spacing-2xl $spacing-md;
     min-height: auto;
   }
-}
 
-.first-section-container {
-  max-width: 1400px;
-  margin: 0 auto;
-  width: 100%;
-}
-
-// Header Content (Top Center)
-.header-content {
-  text-align: center;
-  margin-bottom: $spacing-3xl;
-  max-width: 900px;
-  margin-left: auto;
-  margin-right: auto;
-
-  @media (max-width: 768px) {
-    margin-bottom: $spacing-2xl;
-  }
-}
-
-.section-subtitle {
-  font-size: 1.25rem;
-  font-weight: 600;
-  margin: 0 0 $spacing-md 0;
-  color: $color-primary; // Red color
-  text-transform: none;
-  letter-spacing: 0.5px;
-
-  @media (max-width: 768px) {
-    font-size: 1.125rem;
-  }
-}
-
-.section-title {
-  font-size: 3rem;
-  font-weight: 700;
-  margin: 0 0 $spacing-md 0;
-  color: #333; // Dark grey/black
-  text-transform: none;
-  letter-spacing: 0;
-
-  @media (max-width: 768px) {
-    font-size: 2.25rem;
-  }
-}
-
-.title-underline {
-  width: 80px;
-  height: 3px;
-  background-color: $color-primary; // Red line
-  margin: 0 auto $spacing-xl;
-  border-radius: 2px;
-
-  @media (max-width: 768px) {
-    width: 60px;
-    height: 2px;
-    margin-bottom: $spacing-lg;
-  }
-}
-
-.section-description {
-  font-size: 1rem;
-  line-height: 1.8;
-  margin: 0;
-  color: #555; // Dark grey text
-  text-align: center;
-
-  @media (max-width: 768px) {
-    font-size: 0.9375rem;
-    line-height: 1.6;
+  .section-container {
+    max-width: 1400px;
   }
 }
 
@@ -237,63 +166,7 @@
   }
 }
 
-// Partners Section
-.partners-section {
-  padding: $spacing-3xl $spacing-lg;
-  background-color: var(--mat-sys-surface);
-
-  @media (max-width: 768px) {
-    padding: $spacing-2xl $spacing-md;
-  }
-}
-
-.partners-container {
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.section-title {
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: var(--mat-sys-on-surface);
-  margin: 0 0 $spacing-md 0;
-  text-align: center;
-  line-height: 1.2;
-
-  @media (max-width: 768px) {
-    font-size: 2rem;
-  }
-}
-
-.title-underline {
-  width: 80px;
-  height: 3px;
-  background-color: $color-primary;
-  margin: 0 auto $spacing-xl;
-  border-radius: 2px;
-
-  @media (max-width: 768px) {
-    width: 60px;
-    height: 2px;
-    margin-bottom: $spacing-lg;
-  }
-}
-
-.section-subtitle {
-  font-size: 1.125rem;
-  line-height: 1.7;
-  color: var(--mat-sys-on-surface-variant);
-  margin: 0 0 $spacing-2xl 0;
-  text-align: center;
-  max-width: 800px;
-  margin-left: auto;
-  margin-right: auto;
-
-  @media (max-width: 768px) {
-    font-size: 1rem;
-    line-height: 1.6;
-  }
-}
+// Partners Section - no additional styles needed, using shared classes
 
 // Partners Layout: 3 columns
 .partners-layout {
@@ -499,49 +372,7 @@
 }
 
 
-// Knowledge & Experience Section
-.knowledge-experience-section {
-  padding: $spacing-3xl $spacing-lg;
-  background-color: #f5f5f0; // Light beige/off-white background to match first section
-
-  @media (max-width: 768px) {
-    padding: $spacing-2xl $spacing-md;
-  }
-}
-
-.knowledge-experience-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  text-align: center;
-}
-
-.knowledge-experience-section .section-title {
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: #333;
-  margin: 0 0 $spacing-md 0;
-  text-align: center;
-  line-height: 1.2;
-
-  @media (max-width: 768px) {
-    font-size: 2rem;
-  }
-}
-
-.knowledge-experience-section .section-description {
-  font-size: 1.125rem;
-  line-height: 1.7;
-  color: #555;
-  margin: 0 auto $spacing-3xl;
-  text-align: center;
-  max-width: 800px;
-
-  @media (max-width: 768px) {
-    font-size: 1rem;
-    line-height: 1.6;
-    margin-bottom: $spacing-2xl;
-  }
-}
+// Knowledge & Experience Section - no additional styles needed, using shared classes
 
 .stats-grid {
   display: grid;
@@ -611,15 +442,7 @@
   }
 }
 
-// Blog Section Wrapper
-.blog-section-wrapper {
-  padding: $spacing-3xl $spacing-lg;
-  background-color: var(--mat-sys-surface);
-
-  @media (max-width: 768px) {
-    padding: $spacing-2xl $spacing-md;
-  }
-}
+// Blog Section - no additional styles needed, using shared classes
 
 // Animation for cards on load
 @keyframes fadeInUp {

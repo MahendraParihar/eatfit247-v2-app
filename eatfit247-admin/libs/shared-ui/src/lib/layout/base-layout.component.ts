@@ -91,6 +91,11 @@ export class BaseLayoutComponent implements OnInit, OnDestroy {
       route: '/program-plans',
     },
     {
+      label: 'Products',
+      icon: 'inventory',
+      route: '/products',
+    },
+    {
       label: 'Media & Press',
       icon: 'perm_media',
       route: '/media-press',

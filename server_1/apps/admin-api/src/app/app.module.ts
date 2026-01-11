@@ -17,7 +17,7 @@ import { FaqModule } from '@server_1/modules/faq';
 import { PressMediaModule } from '@server_1/modules/press-media';
 import { LegalPagesModule } from '@server_1/modules/pages';
 import { RecipeModule } from '@server_1/modules/recipe';
-import { ReferrerModule } from '@server_1/modules/referrer';
+import { ReferrerAdminModule } from '@server_1/modules/referrer';
 import { FranchiseModule } from '@server_1/modules/franchise';
 import { LocationModule } from '@server_1/modules/locations';
 import { IssuesModule } from '@server_1/modules/issues';
@@ -52,7 +52,7 @@ import { ReportsModule } from '@server_1/admin-only/reports';
     PressMediaModule,
     LegalPagesModule,
     RecipeModule,
-    ReferrerModule,
+    ReferrerAdminModule,
     FranchiseModule,
     LocationModule,
     IssuesModule,

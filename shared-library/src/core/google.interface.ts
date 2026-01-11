@@ -27,3 +27,25 @@ export interface IGoogleCalendarEvent {
     timeZone?: string | null;
   };
 }
+
+export interface IGoogleReview {
+  reviewId: string;
+  reviewer: {
+    displayName: string;
+    profilePhotoUrl?: string;
+  };
+  starRating: 'ONE' | 'TWO' | 'THREE' | 'FOUR' | 'FIVE';
+  comment?: string;
+  createTime: string;
+  updateTime: string;
+  reviewReply?: {
+    comment: string;
+    updateTime: string;
+  };
+}
+
+export interface IGoogleReviewsResponse {
+  reviews: Array<IGoogleReview>;
+  averageRating?: number;
+  totalReviewCount?: number;
+}

@@ -1,4 +1,5 @@
-export * from './src/referrer.module';
+export * from './src/referrer-admin.module';
+export * from './src/referrer-public.module';
 export * from './src/models';
 export * from './src/services';
 export * from './src/dto';

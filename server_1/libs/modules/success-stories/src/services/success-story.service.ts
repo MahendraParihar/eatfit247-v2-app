@@ -21,7 +21,7 @@ export class SuccessStoryService {
     const offset = pageNumber === 0 ? 0 : pageNumber * pageSize;
     const { rows, count } = await this.successStoryRepository.scope('list').findAndCountAll({
       where: whereCondition,
-      order: [['date', 'DESC'], ['createdAt', 'DESC']],
+      order: [['date', 'ASC'], ['name', 'ASC']],
       offset: offset,
       limit: pageSize,
       raw: true,
@@ -74,7 +74,7 @@ export class SuccessStoryService {
   public async create(obj: IManageSuccessStory, cIp: string, adminId: number): Promise<void> {
     const createObj = {
       name: obj.name,
-      title: obj.title ? obj.title : null,
+      title: obj.title || null,
       date: obj.date,
       description: obj.description,
       imagePath: obj.imagePath && obj.imagePath.length > 0 ? obj.imagePath : [],

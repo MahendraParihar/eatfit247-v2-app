@@ -123,10 +123,19 @@ export class DataTableComponent<T = any> implements OnInit, OnChanges {
     return (row as any)[column.key];
   }
 
-  getFormattedValue(row: T, column: ITableColumn<T>): string | Date {
+  getFormattedValue(row: T, column: ITableColumn<T>): string | Date | null {
     const value = this.getCellValue(row, column);
     if (column.type === 'date') {
-      return new Date(value);
+      // Validate that value exists and is not null/undefined
+      if (value == null || value === '') {
+        return null;
+      }
+      // Create date and check if it's valid
+      const date = new Date(value);
+      if (isNaN(date.getTime())) {
+        return null;
+      }
+      return date;
     }
     if (column.formatter) {
       return column.formatter(value, row);

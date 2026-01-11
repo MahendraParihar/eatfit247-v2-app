@@ -3,18 +3,18 @@ import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { ImageSliderComponent, SliderItem } from '../shared/image-slider/image-slider.component';
 import { BlogSectionComponent } from '../shared/blog-section/blog-section.component';
+import { JourneyStepsComponent } from '../shared/journey-steps/journey-steps.component';
 import { BannerService } from '../../services/banner.service';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, MatButtonModule, ImageSliderComponent, BlogSectionComponent],
+  imports: [CommonModule, MatButtonModule, ImageSliderComponent, BlogSectionComponent, JourneyStepsComponent],
   templateUrl: './home.component.html',
-  styleUrl: './home.component.scss',
+  styleUrl: './home.component.scss'
 })
 export class HomeComponent implements OnInit {
   private readonly bannerService = inject(BannerService);
-
   sliderItems: SliderItem[] = [];
 
   ngOnInit(): void {

@@ -48,7 +48,7 @@ export class AboutEatfitComponent implements OnInit {
     { number: '15+', label: 'Years of experience' },
     { number: '2,000+', label: 'Happy clients' },
     { number: '100%', label: 'Satisfaction' },
-    { number: '400+', label: 'Healthy recipes' },
+    { number: '800+', label: 'Healthy recipes' },
   ];
 
   // Social media links for Shweta Shah section

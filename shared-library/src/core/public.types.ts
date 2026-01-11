@@ -10,6 +10,7 @@ import { IBanner } from './banner.interface';
 import { IPressMedia } from './press-media.interface';
 import { IProgram } from './program.interface';
 import { IFaq, IFaqCategory } from './faq.interface';
+import { IProduct } from './product.interface';
 import { ITableList } from './table-list.interface';
 
 /**
@@ -66,6 +67,12 @@ export type IPublicFaq = PublicData<IFaq>;
  * Excludes: createdBy, updatedBy, modifiedBy, createdAt, updatedAt, createdIp, updatedIp, modifiedIp, active, createdByUser, updatedByUser
  */
 export type IPublicFaqCategory = PublicData<IFaqCategory>;
+
+/**
+ * Public Product Interface
+ * Excludes: createdBy, updatedBy, modifiedBy, createdAt, updatedAt, createdIp, updatedIp, modifiedIp, active, createdByUser, updatedByUser
+ */
+export type IPublicProduct = PublicData<IProduct>;
 
 /**
  * Generic table list response for public APIs

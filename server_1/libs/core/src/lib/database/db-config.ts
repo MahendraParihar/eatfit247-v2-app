@@ -26,7 +26,7 @@ export const databaseConfig: SequelizeOptions & {
     max: 100,
     min: 10,
   },
-  retryAttempts: 10,
-  retryDelay: 3000,
+  retryAttempts: 3, // Reduced from 10 to 3 for faster failure detection
+  retryDelay: 1000, // Reduced from 3000ms to 1000ms for faster retries
 };
 

@@ -12,6 +12,7 @@ import { BlogComponent } from './ui/blog/blog.component';
 import { BlogDetailComponent } from './ui/blog-detail/blog-detail.component';
 import { ContactUsComponent } from './ui/contact-us/contact-us.component';
 import { CheckoutComponent } from './ui/checkout/checkout.component';
+import { ProductComponent } from './ui/product/product.component';
 
 export const routes: Routes = [
   {
@@ -33,6 +34,14 @@ export const routes: Routes = [
   {
     path: 'our-programs/:id',
     component: ProgramDetailsComponent,
+  },
+  {
+    path: 'product',
+    component: ProductComponent,
+  },
+  {
+    path: 'product/:slug',
+    component: ProductComponent,
   },
   {
     path: 'know-your-body-dosha',

@@ -75,6 +75,10 @@ export class BaseLayoutComponent {
       url: '/our-programs',
     },
     {
+      label: 'Products',
+      url: '/product',
+    },
+    {
       label: 'Quiz',
       url: '/',
       children: [

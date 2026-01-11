@@ -2,19 +2,12 @@ import { Controller, Get, Query } from '@nestjs/common';
 import { ReferrerService } from '../../services';
 import { BasicSearchDto } from '@server_1/shared-dto';
 import { Public } from '@server_1/core';
-import { ITableList } from '@eatfit247-shared-lib';
-
-export interface IPublicReferrer {
-  companyName: string;
-  logo: string | any[];
-}
+import { IPublicReferrer, ITableList } from '@eatfit247-shared-lib';
 
 @Public()
 @Controller('referrer')
 export class PublicReferrerController {
-  constructor(
-    private readonly service: ReferrerService,
-  ) {}
+  constructor(private readonly service: ReferrerService) {}
 
   @Get('list')
   async list(@Query() req: BasicSearchDto): Promise<ITableList<IPublicReferrer>> {

@@ -108,6 +108,10 @@ export const appRoutes: Route[] = [
         loadChildren: () => import('success-stories').then((m) => m.successStoriesRoutes),
       },
       {
+        path: 'products',
+        loadChildren: () => import('products').then((m) => m.productsRoutes),
+      },
+      {
         path: 'setting',
         loadChildren: () => import('admin-user').then((m) => m.settingRoutes),
       },

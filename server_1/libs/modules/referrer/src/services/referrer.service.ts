@@ -6,7 +6,7 @@ import {
   IBasicSearch,
   IDropdownItem,
   IManageAddress,
-  IManageReferrer,
+  IManageReferrer, IPublicReferrer,
   IReferrer,
   ITableList,
   TableEnum,
@@ -18,7 +18,6 @@ import { AddressService } from '@server_1/platform';
 export class ReferrerService {
   constructor(
     @InjectModel(MstReferrer) private readonly referrerRepository: typeof MstReferrer,
-    private appConfigService: AppConfigService,
     private addressService: AddressService,
   ) {}
 
@@ -32,17 +31,19 @@ export class ReferrerService {
       order: [['name', 'ASC']],
       offset: offset,
       limit: pageSize,
-      raw: true,
       nest: true,
     });
-    const resList: IReferrer[] = rows.map((item: any) => {return this.convertToModel(item);});
+    const resList: IReferrer[] = rows.map((item: MstReferrer) => {
+      return this.convertToModel(item);
+    });
     return {
       tableData: resList,
       count: count,
     };
   }
 
-  private convertToModel(item: any): IReferrer {
+  private convertToModel(item: MstReferrer): IReferrer {
+    console.log(item);
     return <IReferrer>{
       referrerId: item.referrerId,
       id: item.referrerId,
@@ -51,7 +52,6 @@ export class ReferrerService {
       websiteLink: item.websiteLink,
       logo: CommonFunctionsUtil.buildImageUrl(item.logo),
       franchiseId: item.franchiseId,
-      franchise: item.franchise || '',
       emailId: item.emailId,
       alternateEmailId: item.alternateEmailId,
       contactNumber: item.contactNumber,
@@ -98,7 +98,7 @@ export class ReferrerService {
       name: obj.name,
       companyName: obj.companyName || null,
       websiteLink: obj.websiteLink || null,
-      logo: (obj.logo && obj.logo.length > 0) ? obj.logo : null,
+      logo: obj.logo && obj.logo.length > 0 ? obj.logo : null,
       franchiseId: obj.franchiseId,
       emailId: obj.emailId,
       alternateEmailId: obj.alternateEmailId,
@@ -116,7 +116,7 @@ export class ReferrerService {
       modifiedIp: cIp,
     };
     const referrer = await this.referrerRepository.create(createObj);
-    // Create address if provided
+    // Create an address if provided
     if (obj.address) {
       const addressData: IManageAddress = obj.address;
       addressData.tableId = addressData.tableId || TableEnum.TXN_REFERRER;
@@ -125,7 +125,12 @@ export class ReferrerService {
     }
   }
 
-  public async update(id: number, obj: IManageReferrer, cIp: string, adminId: number): Promise<void> {
+  public async update(
+    id: number,
+    obj: IManageReferrer,
+    cIp: string,
+    adminId: number,
+  ): Promise<void> {
     const find = await this.referrerRepository.findOne({
       where: { referrerId: id },
     });
@@ -161,7 +166,12 @@ export class ReferrerService {
     }
   }
 
-  public async changeStatus(id: number, active: boolean, cIp: string, adminId: number): Promise<void> {
+  public async changeStatus(
+    id: number,
+    active: boolean,
+    cIp: string,
+    adminId: number,
+  ): Promise<void> {
     const find = await this.referrerRepository.findOne({
       where: { referrerId: id },
     });
@@ -193,15 +203,15 @@ export class ReferrerService {
   /**
    * Public method to fetch active referrers with only company name and logo
    */
-  public async findAllPublic(searchDto: IBasicSearch): Promise<ITableList<{ companyName: string; logo: string | any[] }>> {
+  public async findAllPublic(searchDto: IBasicSearch): Promise<ITableList<IPublicReferrer>> {
     const whereCondition: any = SearchUtil.filterBasicSearch(searchDto, 'companyName');
     // Only return active referrers
     whereCondition.active = true;
-    
+
     const pageNumber = searchDto.page || 0;
     const pageSize = searchDto.limit || 15;
     const offset = pageNumber === 0 ? 0 : pageNumber * pageSize;
-    
+
     // For public endpoints, don't use scope with includes to avoid issues with raw: true
     const { rows, count } = await this.referrerRepository.findAndCountAll({
       where: whereCondition,

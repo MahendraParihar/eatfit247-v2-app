@@ -1,6 +1,8 @@
 import { DynamicModule, Module } from '@nestjs/common';
+import { SequelizeModule } from '@nestjs/sequelize';
 import { AppConfigService } from './app-config.service';
 import { APP_CONFIG_VALUES, AppConfigFactory } from './app-config.factory';
+import { AppConfigModel } from '../../database/models';
 
 @Module({})
 export class AppConfigModule {
@@ -8,12 +10,18 @@ export class AppConfigModule {
     return {
       module: AppConfigModule,
       global: true,
+      imports: [
+        // Import SequelizeModule to make connection available for injection
+        SequelizeModule.forFeature([AppConfigModel]),
+      ],
       providers: [
+        AppConfigFactory,
         {
           provide: APP_CONFIG_VALUES,
-          useFactory: async () => {
-            return await AppConfigFactory(modules);
+          useFactory: async (factory: AppConfigFactory) => {
+            return await factory.create(modules);
           },
+          inject: [AppConfigFactory],
         },
         AppConfigService,
       ],

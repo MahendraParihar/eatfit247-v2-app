@@ -12,14 +12,14 @@
   }
 
   <!-- First Section: Hero with Video and Vision/Mission -->
-  <section class="first-section">
-    <div class="first-section-container">
+  <section class="page-section">
+    <div class="section-container">
       <!-- Top Header Section -->
-      <div class="header-content">
-        <h1 class="section-subtitle">Protecting you from yourself</h1>
-        <h2 class="section-title">About Us</h2>
-        <div class="title-underline"></div>
-        <p class="section-description">
+      <div class="section-header">
+        <h1 class="section-subtitle section-subtitle-large">Protecting you from yourself</h1>
+        <h2 class="section-title section-title-xl">About Us</h2>
+        <div class="title-divider"></div>
+        <p class="section-description section-description-regular">
           15 years-2000+ clients-one mission.<br>
           A dream venture to lead you to your best self in the most natural way possible.<br>
           Lead a healthy life without tweaking your lifestyle. A decade long journey that
@@ -87,8 +87,8 @@
   </section>
 
   <!-- Partners Section -->
-  <section class="partners-section">
-    <div class="partners-container">
+  <section class="page-section page-section-alt">
+    <div class="section-container">
       @if (isLoadingPartners) {
         <div class="partners-loading">
           <p>Loading partners...</p>
@@ -165,7 +165,8 @@
           <div class="partner-column partner-column-center">
             <h2 class="partners-in-health-title">Partners-in-health</h2>
             <h3 class="section-title">We are associated with</h3>
-            <p class="section-subtitle">We believe the journey is better with like-minded people and we are in esteemed company when it comes to having collaborators</p>
+            <div class="title-divider"></div>
+            <p class="section-description">We believe the journey is better with like-minded people and we are in esteemed company when it comes to having collaborators</p>
           </div>
 
           <!-- Right Column: 2 Partners with image on left, name on right -->
@@ -235,9 +236,10 @@
   </section>
 
   <!-- Knowledge & Experience Section -->
-  <section class="knowledge-experience-section">
-    <div class="knowledge-experience-container">
+  <section class="page-section">
+    <div class="section-container">
       <h2 class="section-title">Knowledge & experience to support you</h2>
+      <div class="title-divider"></div>
       <p class="section-description">
         With over 15 years of expertise in nutrition and wellness, we combine ancient wisdom with modern science to help you achieve your health goals naturally. Our proven approach has transformed thousands of lives through personalized nutrition plans and lifestyle guidance.
       </p>
@@ -262,13 +264,15 @@
   ></app-join-shweta-shah>
 
   <!-- Blog Section -->
-  <section class="blog-section-wrapper">
-    <app-blog-section
-      sectionTitle="Our Blogs"
-      sectionDescription="Discover expert insights, success stories, and wellness tips"
-      [blogsToShow]="3"
-      [showViewAll]="true"
-      viewAllUrl="/blog"
-    ></app-blog-section>
+  <section class="page-section page-section-alt">
+    <div class="section-container">
+      <app-blog-section
+        sectionTitle="Our Blogs"
+        sectionDescription="Discover expert insights, success stories, and wellness tips"
+        [blogsToShow]="3"
+        [showViewAll]="true"
+        viewAllUrl="/blog"
+      ></app-blog-section>
+    </div>
   </section>
 </div>
