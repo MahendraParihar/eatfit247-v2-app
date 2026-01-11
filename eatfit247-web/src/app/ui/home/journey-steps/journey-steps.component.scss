@@ -29,7 +29,6 @@
 .journey-content {
   display: flex;
   flex-direction: column;
-  gap: $spacing-2xl;
 }
 
 // Override section-header styles for left-aligned content in split layout
@@ -141,6 +140,47 @@
       line-height: 1.6;
       margin: 0;
     }
+  }
+}
+
+// CTA Button
+.journey-cta {
+  margin-top: $spacing-xl;
+
+  @media (max-width: 768px) {
+    text-align: center;
+    margin-top: $spacing-lg;
+  }
+}
+
+.cta-button {
+  display: inline-block;
+  padding: $spacing-md $spacing-2xl;
+  font-size: 1.125rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #ffffff;
+  background-color: #FF6B35;
+  border-radius: $border-radius-2xl;
+  text-decoration: none;
+  transition: all $transition-base;
+  box-shadow: 0 4px 6px rgba(255, 107, 53, 0.2);
+
+  &:hover {
+    background-color: #e55a2b;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(255, 107, 53, 0.3);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  @media (max-width: 768px) {
+    width: 100%;
+    padding: $spacing-md $spacing-xl;
+    font-size: 1rem;
   }
 }
 

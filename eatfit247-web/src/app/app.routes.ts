@@ -13,6 +13,7 @@ import { BlogDetailComponent } from './ui/blog-detail/blog-detail.component';
 import { ContactUsComponent } from './ui/contact-us/contact-us.component';
 import { CheckoutComponent } from './ui/checkout/checkout.component';
 import { ProductComponent } from './ui/product/product.component';
+import { FaqComponent } from './ui/faq/faq.component';
 
 export const routes: Routes = [
   {
@@ -70,6 +71,10 @@ export const routes: Routes = [
   {
     path: 'contact-us',
     component: ContactUsComponent,
+  },
+  {
+    path: 'faq',
+    component: FaqComponent,
   },
   {
     path: 'checkout',

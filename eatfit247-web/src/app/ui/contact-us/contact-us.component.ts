@@ -14,6 +14,7 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { ImageSliderComponent, SliderItem } from '../shared/image-slider/image-slider.component';
 import { SocialLink } from '../shared/social-icons/social-icons.component';
 import { JoinShwetaShahComponent } from '../shared/join-shweta-shah/join-shweta-shah.component';
+import { SectionFaqComponent } from '../shared/section-faq/section-faq.component';
 import { BannerService } from '../../services/banner.service';
 import { BannerForEnum } from 'eatfit247-shared-library';
 
@@ -46,7 +47,8 @@ interface Section {
     MatProgressSpinnerModule,
     MatExpansionModule,
     ImageSliderComponent,
-    JoinShwetaShahComponent
+    JoinShwetaShahComponent,
+    SectionFaqComponent
   ],
   templateUrl: './contact-us.component.html',
   styleUrl: './contact-us.component.scss'
@@ -61,7 +63,6 @@ export class ContactUsComponent implements OnInit {
   reviewsLoading = true;
   googleReviews: any[] = [];
   heroSliderItems: SliderItem[] = [];
-  expandedFaqIndex: number | null = null;
   
   readonly contactInfo = {
     address: '943-951 N. Broadway, Los Angeles, CA 90012, United States',
@@ -104,24 +105,6 @@ export class ContactUsComponent implements OnInit {
     },
   ];
 
-  readonly faqItems = [
-    {
-      question: 'How can I make an appointment?',
-      answer: 'You can make an appointment by filling out the contact form on this page, calling us directly, or sending us an email. Our team will get back to you within 24-48 hours to schedule a consultation.'
-    },
-    {
-      question: 'What is the assessment cost?',
-      answer: 'The assessment cost varies depending on the type of consultation you need. Please contact us through the form or phone to get detailed pricing information tailored to your specific health goals.'
-    },
-    {
-      question: 'Do you offer online appointments?',
-      answer: 'Yes, we offer both in-person and online consultations. You can choose the option that works best for you when scheduling your appointment.'
-    },
-    {
-      question: 'Do you work with people with diabetes?',
-      answer: 'Absolutely! We have specialized programs and expertise in managing diabetes through nutrition and lifestyle modifications. Our team works closely with clients who have diabetes to create personalized meal plans and health strategies.'
-    }
-  ];
 
   pageData: ContactPageData = {
     page: 'Contact Us',
@@ -272,10 +255,6 @@ export class ContactUsComponent implements OnInit {
       formControls[field.name] = ['', validators];
     });
     this.contactForm = this.fb.group(formControls);
-  }
-
-  toggleFaq(index: number): void {
-    this.expandedFaqIndex = this.expandedFaqIndex === index ? null : index;
   }
 
   async onSubmit(): Promise<void> {

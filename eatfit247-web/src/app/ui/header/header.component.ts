@@ -29,41 +29,33 @@ import { map } from 'rxjs/operators';
     MatMenuModule,
     MatFormFieldModule,
     MatInputModule,
-    FormsModule,
+    FormsModule
   ],
   templateUrl: './header.component.html',
-  styleUrl: './header.component.scss',
+  styleUrl: './header.component.scss'
 })
 export class HeaderComponent {
   @Output() menuToggle = new EventEmitter<void>();
-
   private readonly breakpointObserver = new BreakpointObserver([
     Breakpoints.Handset,
-    Breakpoints.Tablet,
+    Breakpoints.Tablet
   ]);
-
   // Responsive breakpoint
   readonly isMobile = toSignal(
     this.breakpointObserver.observe([Breakpoints.Handset]).pipe(map((result) => result.matches)),
-    { initialValue: false },
+    { initialValue: false }
   );
-
   // Desktop breakpoint (for showing menu items in toolbar)
   readonly isDesktop = toSignal(
     this.breakpointObserver.observe([Breakpoints.Handset]).pipe(map((result) => !result.matches)),
-    { initialValue: true },
+    { initialValue: true }
   );
-
-  // Search state
-  readonly searchExpanded = signal(false);
-  searchQuery = '';
-
   // Navigation items with nested support
   readonly navItems = signal([
     {
       label: 'Home',
       url: '/',
-      exact: true,
+      exact: true
     },
     {
       label: 'About Us',
@@ -71,21 +63,21 @@ export class HeaderComponent {
       children: [
         {
           label: 'About EatFit',
-          url: '/about-us',
+          url: '/about-us'
         },
         {
           label: 'About Shweta Shah',
-          url: '/about-shweta-shah',
-        },
-      ],
+          url: '/about-shweta-shah'
+        }
+      ]
     },
     {
       label: 'Our Programs',
-      url: '/our-programs',
+      url: '/our-programs'
     },
     {
       label: 'Products',
-      url: '/product',
+      url: '/product'
     },
     {
       label: 'Quiz',
@@ -93,84 +85,41 @@ export class HeaderComponent {
       children: [
         {
           label: 'Do you know your body dosha?',
-          url: '/know-your-body-dosha',
+          url: '/know-your-body-dosha'
         },
         {
           label: 'Know your current immunity score',
-          url: '/know-your-current-immunity-score',
-        },
-      ],
+          url: '/know-your-current-immunity-score'
+        }
+      ]
     },
     {
       label: 'Press & Media',
-      url: '/press-and-media',
+      url: '/press-and-media'
     },
     {
       label: 'Success Stories',
-      url: '/success-stories',
+      url: '/success-stories'
     },
     {
       label: 'Blog',
-      url: '/blog',
+      url: '/blog'
     },
     {
       label: 'Contact Us',
-      url: '/contact-us',
-    },
+      url: '/contact-us'
+    }
   ]);
-
   // Region selection
   readonly selectedRegion = signal<string>('IN');
   readonly regions = [
     { code: 'IN', label: 'IN' },
     { code: 'UAE', label: 'UAE' },
-    { code: 'USA', label: 'USA' },
+    { code: 'USA', label: 'USA' }
   ];
-
   // Timeout references for hover delays
   private aboutMenuTimeout: any = null;
   private quizMenuTimeout: any = null;
-
-  /**
-   * Toggle search field expansion
-   */
-  toggleSearch(): void {
-    this.searchExpanded.update((expanded) => !expanded);
-    if (this.searchExpanded()) {
-      setTimeout(() => {
-        const input = document.querySelector('.search-input') as HTMLInputElement;
-        if (input) {
-          input.focus();
-        }
-      }, 100);
-    }
-  }
-
-  /**
-   * Close search field
-   */
-  closeSearch(): void {
-    this.searchExpanded.set(false);
-    this.searchQuery = '';
-  }
-
-  /**
-   * Handle search input blur - close if empty
-   */
-  onSearchBlur(): void {
-    if (!this.searchQuery.trim()) {
-      this.closeSearch();
-    }
-  }
-
-  /**
-   * Handle global search
-   */
-  onSearch(query: string): void {
-    this.searchQuery = query;
-    // TODO: Implement global search functionality
-    console.log('Search query:', query);
-  }
 
   /**
    * Check if item has children
@@ -205,7 +154,6 @@ export class HeaderComponent {
             this.cancelCloseAboutMenu();
           };
           panel.addEventListener('mouseenter', panelMouseEnter);
-
           const menuItems = panel.querySelectorAll('a[mat-menu-item]');
           menuItems.forEach((item: Element) => {
             const itemElement = item as HTMLElement;
@@ -272,7 +220,6 @@ export class HeaderComponent {
             this.cancelCloseQuizMenu();
           };
           panel.addEventListener('mouseenter', panelMouseEnter);
-
           const menuItems = panel.querySelectorAll('a[mat-menu-item]');
           menuItems.forEach((item: Element) => {
             const itemElement = item as HTMLElement;

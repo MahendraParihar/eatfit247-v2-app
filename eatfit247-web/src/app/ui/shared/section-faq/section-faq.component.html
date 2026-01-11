@@ -1,0 +1,53 @@
+<section class="section-faq">
+  <!-- Section Header -->
+  @if (sectionTitle) {
+    <div class="section-header">
+      <h2 class="section-title">{{ sectionTitle }}</h2>
+      <div class="title-underline"></div>
+      @if (sectionDescription) {
+        <p class="section-description">{{ sectionDescription }}</p>
+      }
+    </div>
+  }
+
+  <!-- Loading State -->
+  @if (loading) {
+    <div class="faq-loading">
+      <mat-icon class="loading-icon">hourglass_empty</mat-icon>
+      <p>Loading FAQs...</p>
+    </div>
+  }
+
+  <!-- FAQs Display -->
+  @if (!loading) {
+    <!-- Flat List (All FAQs Together) -->
+    @if (allFaqs.length > 0) {
+      <div class="faqs-container">
+        <div class="faqs-list">
+          @for (faq of allFaqs; track faq.faqId) {
+            <app-faq-item [faq]="faq" [showCategory]="showCategory"></app-faq-item>
+          }
+        </div>
+      </div>
+      
+      <!-- CTA Button -->
+      <div class="faq-cta-container">
+        <button
+          mat-raised-button
+          color="primary"
+          class="faq-cta-button"
+          (click)="navigateToFaqs()"
+        >
+          <mat-icon>help_outline</mat-icon>
+          View All FAQs
+        </button>
+      </div>
+    } @else {
+      <div class="faq-empty">
+        <mat-icon class="empty-icon">help_outline</mat-icon>
+        <p>No FAQs available.</p>
+      </div>
+    }
+  }
+</section>
+

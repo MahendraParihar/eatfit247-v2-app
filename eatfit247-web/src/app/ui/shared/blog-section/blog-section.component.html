@@ -99,7 +99,7 @@
   <!-- View All Button -->
   @if (showViewAll && !loading && displayedBlogs.length > 0) {
     <div class="section-footer">
-      <a mat-stroked-button [routerLink]="viewAllUrl" class="view-all-btn">
+      <a mat-stroked-button href="#" (click)="navigateToViewAll($event)" class="view-all-btn">
         View All Blogs
         <mat-icon>arrow_forward</mat-icon>
       </a>

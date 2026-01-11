@@ -9,8 +9,10 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { BannerService } from '../../services/banner.service';
 import { ProgramPlanService, ProgramPlan } from '../../services/program-plan.service';
 import { ImageSliderComponent, SliderItem } from '../shared/image-slider/image-slider.component';
-import { FaqSectionComponent } from '../shared/faq-section/faq-section.component';
-import { BannerForEnum } from 'eatfit247-shared-library';
+import { BannerForEnum, IFaq } from 'eatfit247-shared-library';
+import { FaqService } from '../../services/faq.service';
+import { FaqItemComponent } from '../shared/faq-item/faq-item.component';
+import { SectionFaqComponent } from '../shared/section-faq/section-faq.component';
 
 interface Plan {
   id: string;
@@ -33,7 +35,7 @@ interface Plan {
     MatChipsModule,
     MatProgressSpinnerModule,
     ImageSliderComponent,
-    FaqSectionComponent
+    SectionFaqComponent
   ],
   templateUrl: './our-programs.component.html',
   styleUrl: './our-programs.component.scss'
@@ -45,12 +47,10 @@ export class OurProgramsComponent implements OnInit {
   bannerItems: SliderItem[] = [];
   plans: Plan[] = [];
   loading = true;
+  faqs: IFaq[] = [];
 
   async ngOnInit(): Promise<void> {
-    await Promise.all([
-      this.loadBannerData(),
-      this.loadProgramPlans()
-    ]);
+    await Promise.all([this.loadBannerData(), this.loadProgramPlans()]);
     this.loading = false;
   }
 
@@ -84,17 +84,15 @@ export class OurProgramsComponent implements OnInit {
    */
   private mapProgramPlanToPlan(programPlan: ProgramPlan): Plan {
     // Filter fees for INR currency code (default currency)
-    const inrFees = programPlan.programPlanFees?.filter(fee => fee.currencyCode === 'INR') || [];
-    
+    const inrFees = programPlan.programPlanFees?.filter((fee) => fee.currencyCode === 'INR') || [];
     // Get INR price from programPlanFees, fallback to first fee or 0
     let price = 0;
-    const inrFee = programPlan.programPlanFees?.find(fee => fee.currencyCode === 'INR');
+    const inrFee = programPlan.programPlanFees?.find((fee) => fee.currencyCode === 'INR');
     if (inrFee) {
       price = inrFee.fees;
     } else if (programPlan.programPlanFees && programPlan.programPlanFees.length > 0) {
       price = programPlan.programPlanFees[0].fees;
     }
-
     // Strip HTML tags from description
     let description = programPlan.details || '';
     if (description) {
@@ -104,7 +102,6 @@ export class OurProgramsComponent implements OnInit {
         description = description.substring(0, 150) + '...';
       }
     }
-
     // Create features array from plan details
     const features: string[] = [];
     if (programPlan.noOfCycle) {
@@ -119,13 +116,15 @@ export class OurProgramsComponent implements OnInit {
     if (programPlan.programPlanType) {
       features.push(programPlan.programPlanType);
     }
-
     return {
       id: programPlan.programPlanId.toString(),
       title: programPlan.plan,
       price: price,
       description: description || 'Nutrition plan tailored to your needs.',
-      features: features.length > 0 ? features : ['Personalized nutrition plan', 'Expert guidance', 'Regular follow-ups'],
+      features:
+        features.length > 0
+          ? features
+          : ['Personalized nutrition plan', 'Expert guidance', 'Regular follow-ups'],
       fees: inrFees
     };
   }

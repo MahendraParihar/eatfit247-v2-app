@@ -13,6 +13,7 @@ import { FaqService } from '../../services/faq.service';
 import { BannerForEnum, IFaq } from 'eatfit247-shared-library';
 import { ImageSliderComponent, SliderItem } from '../shared/image-slider/image-slider.component';
 import { FaqItemComponent } from '../shared/faq-item/faq-item.component';
+import { SectionFaqComponent } from '../shared/section-faq/section-faq.component';
 
 interface ProductSize {
   value: string;
@@ -53,7 +54,6 @@ interface ProductData {
     };
   };
   outcomes: Benefit[];
-  faqs: IFaq[];
 }
 
 /**
@@ -73,16 +73,14 @@ interface ProductData {
     MatInputModule,
     FormsModule,
     ImageSliderComponent,
-    FaqItemComponent,
+    SectionFaqComponent
   ],
   templateUrl: './product.component.html',
-  styleUrl: './product.component.scss',
+  styleUrl: './product.component.scss'
 })
 export class ProductComponent implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
-  private readonly router = inject(Router);
   private readonly bannerService = inject(BannerService);
-  private readonly faqService = inject(FaqService);
   // Banner items
   bannerItems: SliderItem[] = [];
   // Product data
@@ -93,25 +91,25 @@ export class ProductComponent implements OnInit, OnDestroy {
   // Product images
   productImages: string[] = [
     '/assets/images/products/debloat-main-1200x1200.jpg',
-    '/assets/images/products/debloat-alt-1200x1205.jpg',
+    '/assets/images/products/debloat-alt-1200x1205.jpg'
   ];
   productImages1: string[] = [
     '/assets/images/products/debloat-alt-1200x1205.jpg',
-    '/assets/images/products/debloat-3.jpg',
+    '/assets/images/products/debloat-3.jpg'
   ];
   selectedImageIndex: number = 0;
   // Star powder image
   starPowderImage: string = '/assets/images/products/start-powder.png';
-  // Custom slider for 3rd section
+  // Custom slider for the 3rd section
   featureSliderCurrentIndex: number = 0;
   private featureSliderTimer: any = null;
-  private readonly featureSliderInterval: number = 5000; // 5 seconds
-  // Product feature bullet points for 3rd section
+  private readonly featureSliderInterval: number = 5000; // 5-second
+  // Product feature bullet points for the 3rd section
   productFeatureBullets: string[] = [
     'Say Goodbye to bloating',
     'Reverse your gut issues and calms an upset stomach',
     'Bid farewell to IBS symptoms, including pain, gas acidity and constipation',
-    'Discover the power of nature with our organic herbal ingredients',
+    'Discover the power of nature with our organic herbal ingredients'
   ];
   // Product tag line for 3rd section
   productTagLine = 'Promotes gut health and digestive comfort – try it today!';
@@ -145,38 +143,38 @@ export class ProductComponent implements OnInit, OnDestroy {
   benefits: Benefit[] = [
     {
       title: 'Say Goodbye to bloating',
-      description: 'Helps achieve long–term bloat reduction',
+      description: 'Helps achieve long–term bloat reduction'
     },
     {
       title: 'Reverse your gut issues',
-      description: 'Calms an upset stomach and restores lost energy',
+      description: 'Calms an upset stomach and restores lost energy'
     },
     {
       title: 'Bid farewell to IBS symptoms',
-      description: 'Relieves pain, gas, acidity and constipation',
+      description: 'Relieves pain, gas, acidity and constipation'
     },
     {
       title: '100% Natural',
-      description: 'Discover the power of nature with our organic herbal ingredients',
-    },
+      description: 'Discover the power of nature with our organic herbal ingredients'
+    }
   ];
   // Product data structure matching showcase component
   product: ProductData = {
     name: 'De-bloat',
     priceRange: {
       min: 700,
-      max: 1200,
+      max: 1200
     },
     sizes: [
       { value: '100gm', label: '100gm', price: 700 },
-      { value: '200gm', label: '200gm', price: 1200 },
+      { value: '200gm', label: '200gm', price: 1200 }
     ],
     benefits: [
       'Helps achieve long–term bloat reduction',
       'Relives Hyperacidity',
       'Calms an upset stomach',
       'Restores lost energy',
-      'Weight Loss',
+      'Weight Loss'
     ],
     dose: '10 GMs of powder each day',
     howToTake:
@@ -186,7 +184,7 @@ export class ProductComponent implements OnInit, OnDestroy {
       'Keep out of reach of children',
       'Do not refrigerate',
       'Should be avoided by People with serious medical conditions',
-      'Protect from moisture',
+      'Protect from moisture'
     ],
     ingredients: [
       { name: 'Curry Leaves', icon: '/assets/images/products/ingredients/curry-leaves.png' },
@@ -194,34 +192,33 @@ export class ProductComponent implements OnInit, OnDestroy {
       { name: 'Jeera', icon: '/assets/images/products/ingredients/jira.png' },
       { name: 'Seasame Seeds', icon: '/assets/images/products/ingredients/seasame-seeds.png' },
       { name: 'Haritaki', icon: '/assets/images/products/ingredients/haritaki.webp' },
-      { name: 'Saunf', icon: '/assets/images/products/ingredients/saunf.png' },
+      { name: 'Saunf', icon: '/assets/images/products/ingredients/saunf.png' }
     ],
     consumptionInstructions: {
       amount: '10 grams (2tsp) powder daily',
       methods: ['water', 'juices', 'coconut water', 'buttermilk'],
       timing: {
         morning: '1 tsp in AM (morning)',
-        evening: '1 tsp in PM (evening)',
-      },
+        evening: '1 tsp in PM (evening)'
+      }
     },
     outcomes: [
       {
         icon: '/assets/images/speed-food-breakdown.png',
         title: 'SPEEDS FOOD BREAKDOWN',
-        description: 'Enjoy your favorite foods without any discomfort',
+        description: 'Enjoy your favorite foods without any discomfort'
       },
       {
         icon: '/assets/images/relieves-heartburn.jpg',
         title: 'RELIEVES HEARTBURN',
-        description: 'So food can digest smoothly',
+        description: 'So food can digest smoothly'
       },
       {
         icon: '/assets/images/prevent-gas.png',
         title: 'PREVENTS GAS',
-        description: 'Have fun spend quality time with loved ones worry-free',
-      },
-    ],
-    faqs: [] as IFaq[], // Will be loaded dynamically from API
+        description: 'Have fun spend quality time with loved ones worry-free'
+      }
+    ]
   };
   // Keep existing properties for backward compatibility
   ingredients: Ingredient[] = this.product.ingredients;
@@ -231,8 +228,6 @@ export class ProductComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     // Load banner data
     this.loadBannerData();
-    // Load FAQs for debloat-powder category
-    this.loadFaqs();
     // Start auto-switch for feature slider
     this.startFeatureSliderAutoSwitch();
     // Get product slug from route if available
@@ -256,24 +251,6 @@ export class ProductComponent implements OnInit, OnDestroy {
     } catch (error) {
       console.error('Failed to load banner data:', error);
       this.bannerItems = [];
-    }
-  }
-
-  /**
-   * Load FAQs for the product category
-   */
-  private async loadFaqs(): Promise<void> {
-    try {
-      console.log('Loading FAQs for category: debloat-powder');
-      const faqItems = await this.faqService.getFaqsByCategoryUrl('debloat-powder');
-      console.log('Loaded FAQs:', faqItems);
-      // Store FAQ items directly
-      this.product.faqs = faqItems;
-      console.log('Stored FAQs:', this.product.faqs);
-    } catch (error) {
-      console.error('Failed to load FAQs:', error);
-      // Keep empty array if loading fails
-      this.product.faqs = [];
     }
   }
 
@@ -381,7 +358,7 @@ export class ProductComponent implements OnInit, OnDestroy {
     const productData = {
       name: this.productName,
       size: this.selectedSize,
-      price: this.currentPrice,
+      price: this.currentPrice
     };
     // TODO: Implement navigation to checkout with product data
     console.log('Buy Now:', productData);

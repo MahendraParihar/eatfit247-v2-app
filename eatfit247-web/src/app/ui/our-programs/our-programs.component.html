@@ -96,13 +96,5 @@
   </section>
 
   <!-- FAQ Section -->
-  <section class="faq-section-wrapper">
-    <app-faq-section
-      sectionTitle="Frequently Asked Questions"
-      sectionDescription="Find answers to common questions about our nutrition plans and programs"
-      [faqsToShow]="5"
-      [showViewAll]="true"
-      viewAllUrl="/faq"
-    ></app-faq-section>
-  </section>
+  <app-section-faq [categories]="['program']" [showCategory]="false" />
 </div>

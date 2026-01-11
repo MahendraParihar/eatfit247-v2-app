@@ -18,9 +18,7 @@
       <div class="contact-form-wrapper">
         <div class="form-header">
           <h1 class="form-title">Get in touch!</h1>
-          <p class="form-description">
-            Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat aute irure dolor in reprehenderit.
-          </p>
+      
         </div>
 
         @if (formSuccess) {
@@ -121,26 +119,10 @@
   ></app-join-shweta-shah>
 
   <!-- FAQ Section -->
-  <section class="faq-section">
-    <div class="faq-container">
-      <h2 class="faq-title">Frequently asked questions</h2>
-      <p class="faq-description">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua ut enim ad minim veniam quis.
-      </p>
-      <div class="faq-list">
-        @for (faq of faqItems; track faq.question; let i = $index) {
-          <mat-expansion-panel class="faq-item" (opened)="expandedFaqIndex = i" (closed)="expandedFaqIndex = null">
-            <mat-expansion-panel-header>
-              <mat-panel-title>
-                <h3 class="faq-question">{{ faq.question }}</h3>
-              </mat-panel-title>
-            </mat-expansion-panel-header>
-            <div class="faq-answer">
-              <p>{{ faq.answer }}</p>
-            </div>
-          </mat-expansion-panel>
-        }
-      </div>
-    </div>
-  </section>
+  <app-section-faq
+    [categories]="['how-do-i-enroll']"
+    [sectionTitle]="'Frequently asked questions'"
+    [sectionDescription]="'Find answers to common questions about enrollment and our programs'"
+    [showCategory]="false"
+  ></app-section-faq>
 </div>

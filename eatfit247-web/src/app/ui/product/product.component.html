@@ -288,7 +288,10 @@
           <div class="star-endorsed-text-content">
             <h2 class="star-endorsed-title">Star-Endorsed Excellence!</h2>
             <p class="star-endorsed-description">
-              Crafted by a dedicated (Your Designation), Mrs. Shweta Shah, our Debloat Powder Supplement has garnered the admiration of numerous celebrities who rely on its effectiveness. With a formula that combines science and nature, our product stands as a trusted choice in the wellness routines of those in the limelight. Join the ranks of the satisfied and experience the debloating power that celebrities trust.
+              Crafted by a dedicated (Your Designation), Mrs. Shweta Shah, our Debloat Powder Supplement has garnered
+              the admiration of numerous celebrities who rely on its effectiveness. With a formula that combines science
+              and nature, our product stands as a trusted choice in the wellness routines of those in the limelight.
+              Join the ranks of the satisfied and experience the debloating power that celebrities trust.
             </p>
             <button
               mat-raised-button
@@ -398,19 +401,6 @@
     </div>
 
     <!-- FAQs Section -->
-    @if (product.faqs && product.faqs.length > 0) {
-      <div class="faqs-section">
-        <div class="faqs-header">
-          <h2 class="faqs-title">Frequently Asked Questions</h2>
-        </div>
-        <div class="faqs-container">
-          <div class="faqs-list">
-            @for (faq of product.faqs; track faq.faqId) {
-              <app-faq-item [faq]="faq" [showCategory]="false"></app-faq-item>
-            }
-          </div>
-        </div>
-      </div>
-    }
+    <app-section-faq [categories]="['debloat-powder']" [showCategory]="false" />
   </div>
 </section>

@@ -25,8 +25,8 @@ export class FooterComponent {
   ];
 
   readonly programs = [
-    { label: 'Weight Loss PRO', url: '/our-programs' },
-    { label: 'Weight Loss MAX', url: '/our-programs' },
+    { label: 'Program', url: '/our-programs' },
+    { label: 'Product', url: '/product' },
   ];
 
   readonly socialLinks: SocialLink[] = [

@@ -8,6 +8,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatListModule } from '@angular/material/list';
 import { ProgramService } from '../../services/program.service';
+import { SectionFaqComponent } from '../shared/section-faq/section-faq.component';
 
 /**
  * Program Details Component
@@ -24,7 +25,8 @@ import { ProgramService } from '../../services/program.service';
     MatIconModule,
     MatChipsModule,
     MatDividerModule,
-    MatListModule
+    MatListModule,
+    SectionFaqComponent
   ],
   templateUrl: './program-details.component.html',
   styleUrl: './program-details.component.scss'
