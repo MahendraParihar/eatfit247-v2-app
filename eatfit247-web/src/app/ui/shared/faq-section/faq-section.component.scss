@@ -103,78 +103,10 @@
   margin: 0 auto;
 }
 
-.faqs-accordion {
+.faqs-list {
   display: flex;
   flex-direction: column;
   gap: $spacing-md;
-}
-
-.faq-panel {
-  border-radius: $border-radius-lg !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  border: 1px solid var(--mat-sys-outline-variant);
-  background-color: var(--mat-sys-surface-container);
-  transition: all $transition-slow cubic-bezier(0.4, 0, 0.2, 1);
-
-  &:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    border-color: var(--mat-sys-primary);
-  }
-
-  ::ng-deep .mat-expansion-panel-header {
-    padding: $spacing-lg;
-    min-height: 64px;
-
-    &:hover {
-      background-color: var(--mat-sys-surface-container-high);
-    }
-  }
-
-  .faq-question {
-    font-size: 1.125rem;
-    font-weight: 600;
-    line-height: 1.5;
-    color: var(--mat-sys-on-surface);
-    flex: 1;
-  }
-
-  .category-chip {
-    font-size: 0.75rem;
-    font-weight: 500;
-    background-color: var(--mat-sys-primary-container);
-    color: var(--mat-sys-on-primary-container);
-  }
-
-  .faq-answer {
-    padding: $spacing-lg;
-    font-size: 1rem;
-    line-height: 1.7;
-    color: var(--mat-sys-on-surface-variant);
-
-    ::ng-deep {
-      p {
-        margin: 0 0 $spacing-md 0;
-
-        &:last-child {
-          margin-bottom: 0;
-        }
-      }
-
-      ul, ol {
-        margin: $spacing-md 0;
-        padding-left: $spacing-xl;
-      }
-
-      li {
-        margin-bottom: $spacing-sm;
-      }
-
-      strong {
-        font-weight: 600;
-        color: var(--mat-sys-on-surface);
-      }
-    }
-  }
 }
 
 // Section Footer
@@ -201,36 +133,4 @@
   }
 }
 
-// Animation
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.faq-panel {
-  animation: fadeInUp 0.5s ease-out backwards;
-}
-
-// Stagger animation delays
-.faq-panel:nth-child(1) {
-  animation-delay: 0.05s;
-}
-.faq-panel:nth-child(2) {
-  animation-delay: 0.1s;
-}
-.faq-panel:nth-child(3) {
-  animation-delay: 0.15s;
-}
-.faq-panel:nth-child(4) {
-  animation-delay: 0.2s;
-}
-.faq-panel:nth-child(5) {
-  animation-delay: 0.25s;
-}
 

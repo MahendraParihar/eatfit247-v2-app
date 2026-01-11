@@ -1,212 +1,416 @@
 <section class="product-showcase">
-  <!-- Product Header Section -->
-  <div class="product-header">
-    <div class="product-header-content">
-      <div class="breadcrumb">
-        <span>Home</span>
-        <mat-icon>chevron_right</mat-icon>
-        <span>{{ product.name }}</span>
-      </div>
+  <!-- Banner Section -->
+  @if (bannerItems.length > 0) {
+    <section class="banner-section">
+      <app-image-slider
+        [items]="bannerItems"
+        [autoPlay]="true"
+        [autoPlayInterval]="5000"
+        [showArrows]="true"
+        [showDots]="true"
+      ></app-image-slider>
+    </section>
+  }
 
-      <h1 class="product-title">{{ product.name }}</h1>
-
-      <div class="product-price">
-        <span class="price-label">Price range:</span>
-        <span class="price-value">
-          ₹ {{ product.priceRange.min }}.00 – ₹ {{ product.priceRange.max }}.00
-        </span>
-      </div>
-
-      <p class="tax-info">Inclusive of all taxes.</p>
-
-      <!-- Size Selection -->
-      <div class="size-selection">
-        <mat-form-field appearance="outline">
-          <mat-label>Size</mat-label>
-          <mat-select [(value)]="selectedSize" (selectionChange)="onSizeChange($event.value)">
-            @for (size of product.sizes; track size.value) {
-              <mat-option [value]="size.value">
-                {{ size.label }} - ₹ {{ size.price }}.00
-              </mat-option>
+  <!-- Product Details Section - 2 Column Layout -->
+  <div class="container">
+    <div class="product-details-section">
+      <!-- Column 1: Image Section -->
+      <div class="product-image-column">
+        <div class="product-image-container">
+          <img
+            [src]="selectedImage"
+            [alt]="productName"
+            class="main-product-image"
+          />
+        </div>
+        @if (productImages.length > 1) {
+          <div class="product-image-thumbnails">
+            @for (image of productImages; track $index) {
+              <div
+                class="thumbnail-item"
+                [class.active]="selectedImageIndex === $index"
+                (click)="selectImage($index)"
+              >
+                <img [src]="image" [alt]="productName + ' thumbnail ' + ($index + 1)" />
+              </div>
             }
-          </mat-select>
-        </mat-form-field>
+          </div>
+        }
       </div>
 
-      <!-- Current Price Display -->
-      <div class="current-price">
-        <span class="price-label">Selected Price:</span>
-        <span class="price-value">₹ {{ getCurrentPrice() }}.00</span>
-      </div>
+      <!-- Column 2: Product Information -->
+      <div class="product-info-column">
+        <div class="product-info-content">
+          <!-- Product Name -->
+          <h1 class="product-name">{{ productName }}</h1>
 
-      <!-- Buy Now Button -->
-      <button mat-raised-button color="primary" class="buy-now-btn" (click)="onBuyNow()">
-        Buy Now
-      </button>
+          <!-- Price Range -->
+          <div class="price-range">
+            <span class="price-range-text">{{ priceRange }}</span>
+          </div>
+
+          <!-- Tax Information -->
+          <p class="tax-info">Inclusive of all taxes.</p>
+
+          <!-- Size Selection -->
+          <div class="size-selection">
+            <label class="size-label">Size</label>
+            <div class="size-options">
+              @for (size of sizes; track size.value) {
+                <button
+                  type="button"
+                  class="size-option"
+                  [class.selected]="selectedSize === size.value"
+                  (click)="onSizeChange(size.value)"
+                >
+                  <span class="size-value">{{ size.label }}</span>
+                  <span class="size-price">₹ {{ size.price }}.00</span>
+                </button>
+              }
+            </div>
+          </div>
+
+          <!-- Quantity Selection -->
+          <div class="quantity-selection">
+            <label class="quantity-label">Quantity</label>
+            <div class="quantity-and-buy-row">
+              <div class="quantity-controls">
+                <button
+                  type="button"
+                  class="quantity-btn"
+                  (click)="decrementQuantity()"
+                  [disabled]="quantity <= 1"
+                  aria-label="Decrease quantity"
+                >
+                  <mat-icon>remove</mat-icon>
+                </button>
+                <input
+                  type="number"
+                  class="quantity-input"
+                  [value]="quantity"
+                  (input)="updateQuantity($any($event.target).value)"
+                  min="1"
+                  max="5"
+                  aria-label="Quantity"
+                />
+                <button
+                  type="button"
+                  class="quantity-btn"
+                  (click)="incrementQuantity()"
+                  [disabled]="quantity >= 5"
+                  aria-label="Increase quantity"
+                >
+                  <mat-icon>add</mat-icon>
+                </button>
+              </div>
+              <!-- Buy Now Button -->
+              <button
+                mat-raised-button
+                color="primary"
+                class="buy-now-btn"
+                (click)="onBuyNow()"
+              >
+                Buy Now
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-  </div>
 
-  <!-- Product Description Section -->
-  <div class="product-description-section">
-    <div class="container">
-      <h2 class="section-title">Description</h2>
+    <!-- Product Information Section - 2 Column Layout -->
+    <div class="product-info-section">
+      <!-- Column 1: Benefits, Dose, How to take -->
+      <div class="info-column-left">
+        <!-- Benefits -->
+        <div class="info-block">
+          <h2 class="info-block-title">Benefits</h2>
+          <ul class="benefits-list">
+            @for (benefit of product.benefits; track $index) {
+              <li>{{ benefit }}</li>
+            }
+          </ul>
+        </div>
 
-      <div class="benefits-section">
-        <h3 class="subsection-title">Benefits</h3>
-        <ul class="benefits-list">
-          @for (benefit of product.benefits; track benefit) {
-            <li>{{ benefit }}</li>
-          }
-        </ul>
+        <!-- Dose -->
+        <div class="info-block">
+          <h2 class="info-block-title">Dose</h2>
+          <p class="info-block-content">{{ product.dose }}</p>
+        </div>
+
+        <!-- How to take -->
+        <div class="info-block">
+          <h2 class="info-block-title">How to take</h2>
+          <p class="info-block-content">{{ product.howToTake }}</p>
+        </div>
       </div>
 
-      <div class="dose-section">
-        <p><strong>Dose:</strong> {{ product.dose }}</p>
-        <p><strong>How to take:</strong> {{ product.howToTake }}</p>
-      </div>
-
-      <div class="precautions-section">
-        <h3 class="subsection-title">Any Precautions</h3>
-        <ul class="precautions-list">
-          @for (precaution of product.precautions; track precaution) {
-            <li>{{ precaution }}</li>
-          }
-        </ul>
+      <!-- Column 2: Precautions -->
+      <div class="info-column-right">
+        <div class="info-block">
+          <h2 class="info-block-title">Any Precautions</h2>
+          <ul class="precautions-list">
+            @for (precaution of product.precautions; track $index) {
+              <li>{{ precaution }}</li>
+            }
+          </ul>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- Hero Banner Section -->
-  <div class="hero-banner">
-    <div class="container">
-      <h2 class="hero-title">DE-BLOAT</h2>
-      <h3 class="hero-subtitle">Debloat yourself within 3 months</h3>
-      <ul class="hero-features">
-        <li>Say Goodbye to bloating</li>
-        <li>Reverse your gut issues and calms an upset stomach</li>
-        <li>Bid farewell to IBS symptoms, including pain, gas acidity and constipation</li>
-        <li>Discover the power of nature with our organic herbal ingredients</li>
-      </ul>
-      <p class="hero-tagline">"Promotes gut health and digestive comfort – try it today!"</p>
-      <button mat-raised-button color="primary" class="buy-now-btn" (click)="onBuyNow()">
-        Buy Now
-      </button>
+    <!-- Product Feature Section - 3rd Section with 2 Column Layout -->
+    <div class="product-feature-section">
+      <!-- Column 1: Custom Image Slider -->
+      <div class="feature-image-column">
+        <div
+          class="feature-image-slider"
+          (mouseenter)="onFeatureSliderHover()"
+          (mouseleave)="onFeatureSliderLeave()"
+        >
+          <div class="feature-slider-container">
+            <img
+              [src]="currentFeatureImage"
+              [alt]="productName + ' - Image ' + (featureSliderCurrentIndex + 1)"
+              class="feature-slider-image"
+            />
+
+            <!-- Navigation Arrows -->
+            @if (hasMultipleFeatureImages) {
+              <button
+                type="button"
+                class="feature-slider-arrow feature-slider-arrow-left"
+                (click)="featureSliderPrevious()"
+                aria-label="Previous image"
+              >
+                <mat-icon>chevron_left</mat-icon>
+              </button>
+              <button
+                type="button"
+                class="feature-slider-arrow feature-slider-arrow-right"
+                (click)="featureSliderNext()"
+                aria-label="Next image"
+              >
+                <mat-icon>chevron_right</mat-icon>
+              </button>
+            }
+
+            <!-- Dots Indicator -->
+            @if (hasMultipleFeatureImages) {
+              <div class="feature-slider-dots">
+                @for (image of productImages1; track $index) {
+                  <button
+                    type="button"
+                    class="feature-slider-dot"
+                    [class.active]="featureSliderCurrentIndex === $index"
+                    (click)="featureSliderGoTo($index)"
+                    [attr.aria-label]="'Go to image ' + ($index + 1)"
+                  ></button>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Column 2: Product Information -->
+      <div class="feature-info-column">
+        <div class="feature-info-content">
+          <!-- Product Title -->
+          <h1 class="feature-title">DE-BLOAT</h1>
+
+          <!-- Product Subtitle -->
+          <h2 class="feature-subtitle">{{ productDescription }}</h2>
+
+          <!-- Bullet Points -->
+          <ul class="feature-bullets">
+            @for (bullet of productFeatureBullets; track $index) {
+              <li class="feature-bullet-item">
+                <span class="bullet-number">{{ $index + 1 }}</span>
+                <span class="bullet-text">{{ bullet }}</span>
+              </li>
+            }
+          </ul>
+
+          <!-- Tag Line -->
+          <p class="feature-tagline">{{ productTagLine }}</p>
+
+          <!-- Buy Now Button -->
+          <button
+            mat-raised-button
+            color="primary"
+            class="feature-buy-now-btn"
+            (click)="onBuyNow()"
+          >
+            Buy Now
+          </button>
+        </div>
+      </div>
     </div>
-  </div>
 
-  <!-- Wellness Section -->
-  <div class="wellness-section">
-    <div class="container">
-      <h2 class="wellness-title">UNCOMPLETED WELLNESS</h2>
-      <p class="wellness-description">
-        Effective, All-Natural Supplements. Debloat Powder: 100% natural, additives free, and delivers instant relief.
-      </p>
-      <p class="wellness-subdescription">
-        Experience post-meal discomfort, excessive burping or gas, acidity or indigestion? Debloat is your ideal solution.
-      </p>
-      <button mat-raised-button color="primary" class="buy-now-btn" (click)="onBuyNow()">
-        Buy Now
-      </button>
-    </div>
-  </div>
-
-  <!-- Ingredients Section -->
-  <div class="ingredients-section">
-    <div class="container">
-      <h2 class="section-title">PURE INGREDIENTS, 100% EFFECTIVE</h2>
-      <h3 class="section-subtitle">POTENT INGREDIENTS, WITHOUT ANY ADDITIVES</h3>
-
+    <!-- Ingredients Section - 4th Section -->
+    <div class="ingredients-section">
+      <div class="ingredients-header">
+        <h2 class="ingredients-title">PURE INGREDIENTS, 100% EFFECTIVE</h2>
+        <h3 class="ingredients-subtitle">POTENT INGREDIENTS, WITHOUT ANY ADDITIVES</h3>
+      </div>
       <div class="ingredients-grid">
         @for (ingredient of product.ingredients; track ingredient.name) {
-          <div class="ingredient-card">
-            <div class="ingredient-icon">{{ ingredient.icon }}</div>
+          <div class="ingredient-item">
+            <div class="ingredient-image-container">
+              <img
+                [src]="ingredient.icon"
+                [alt]="ingredient.name"
+                class="ingredient-image"
+              />
+            </div>
             <h4 class="ingredient-name">{{ ingredient.name }}</h4>
           </div>
         }
       </div>
     </div>
-  </div>
 
-  <!-- Star Endorsements Section -->
-  <div class="star-endorsements-section">
-    <div class="container">
-      <h2 class="section-title">Star-Endorsed Excellence!</h2>
-      <p class="endorsement-text">
-        Crafted by a dedicated nutritionist, Mrs. Shweta Shah, our Debloat Powder Supplement has garnered the admiration of numerous celebrities who rely on its effectiveness. With a formula that combines science and nature, our product stands as a trusted choice in the wellness routines of those in the limelight. Join the ranks of the satisfied and experience the debloating power that celebrities trust.
-      </p>
-      <button mat-raised-button color="primary" class="buy-now-btn" (click)="onBuyNow()">
-        Buy Now
-      </button>
+    <!-- Star-Endorsed Excellence Section - 5th Section -->
+    <div class="star-endorsed-section">
+      <div class="star-endorsed-content">
+        <!-- Column 1: Image (40%) -->
+        <div class="star-endorsed-image-column">
+          <div class="star-endorsed-image-container">
+            <img
+              [src]="starPowderImage"
+              alt="Star Powder"
+              class="star-endorsed-image"
+            />
+          </div>
+        </div>
+        <!-- Column 2: Text Content (60%) -->
+        <div class="star-endorsed-text-column">
+          <div class="star-endorsed-text-content">
+            <h2 class="star-endorsed-title">Star-Endorsed Excellence!</h2>
+            <p class="star-endorsed-description">
+              Crafted by a dedicated (Your Designation), Mrs. Shweta Shah, our Debloat Powder Supplement has garnered the admiration of numerous celebrities who rely on its effectiveness. With a formula that combines science and nature, our product stands as a trusted choice in the wellness routines of those in the limelight. Join the ranks of the satisfied and experience the debloating power that celebrities trust.
+            </p>
+            <button
+              mat-raised-button
+              color="primary"
+              class="star-endorsed-buy-btn"
+              (click)="onBuyNow()"
+            >
+              Buy Now
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
-  </div>
 
-  <!-- How to Consume Section -->
-  <div class="consume-section">
-    <div class="container">
-      <h2 class="section-title">How to Consume</h2>
-      <ul class="consume-list">
-        <li>{{ product.consumptionInstructions.amount }}</li>
-        <li>Can mix it with water, juices, coconut water, buttermilk</li>
-      </ul>
+    <!-- How to Consume Section - 2 Column Layout -->
+    <div class="consume-section">
+      <!-- Column 1: Text Content (30%) -->
+      <div class="consume-text-column">
+        <div class="consume-text-content">
+          <!-- How to Consume -->
+          <div class="consume-block">
+            <h2 class="consume-title">How to Consume:</h2>
+            <ul class="consume-list">
+              <li>{{ product.consumptionInstructions.amount }}</li>
+              <li>Can mix it with {{ product.consumptionInstructions.methods.join(', ') }}</li>
+            </ul>
+          </div>
 
-      <div class="timing-section">
-        <h3 class="timing-title">When to Consume</h3>
-        <h4 class="timing-subtitle">Take 2 tsp a day</h4>
-        <ul class="timing-list">
-          <li>{{ product.consumptionInstructions.timing.morning }}</li>
-          <li>{{ product.consumptionInstructions.timing.evening }}</li>
-        </ul>
+          <!-- When to Consume -->
+          <div class="consume-block">
+            <h2 class="consume-title">When to Consume</h2>
+            <p class="consume-subtext">Take 2 tsp a day</p>
+            <ul class="consume-list">
+              <li>{{ product.consumptionInstructions.timing.morning }}</li>
+              <li>{{ product.consumptionInstructions.timing.evening }}</li>
+            </ul>
+          </div>
+
+          <!-- Buy Now Button -->
+          <button
+            mat-raised-button
+            color="primary"
+            class="consume-buy-now-btn"
+            (click)="onBuyNow()"
+          >
+            Buy Now
+          </button>
+        </div>
       </div>
 
-      <button mat-raised-button color="primary" class="buy-now-btn" (click)="onBuyNow()">
-        Buy Now
-      </button>
+      <!-- Column 2: Video (70%) -->
+      <div class="consume-video-column">
+        <div class="consume-video-container">
+          <video
+            src="/assets/videos/video-2.mp4"
+            controls
+            loop
+            autoplay
+            muted
+            playsinline
+            preload="auto"
+            class="consume-video"
+            [poster]="productImages[0]"
+            (error)="onVideoError($event)"
+            (loadeddata)="onVideoLoaded()"
+          >
+            Your browser does not support the video tag.
+          </video>
+        </div>
+      </div>
     </div>
-  </div>
 
-  <!-- Efficient Outcomes Section -->
-  <div class="outcomes-section">
-    <div class="container">
-      <h2 class="section-title">Efficient Outcomes</h2>
-      <p class="outcomes-subtitle">Instant Comfort, Powered by 100% Natural Ingredients</p>
-
-      <div class="outcomes-grid">
+    <!-- Efficient Outcomes Section -->
+    <div class="efficient-outcomes-section">
+      <div class="efficient-outcomes-header">
+        <h2 class="efficient-outcomes-title">Efficient Outcomes</h2>
+        <h3 class="efficient-outcomes-subtitle">Instant Comfort, Powered by 100% Natural Ingredients</h3>
+      </div>
+      <div class="efficient-outcomes-grid">
         @for (outcome of product.outcomes; track outcome.title) {
-          <div class="outcome-card">
-            <h3 class="outcome-title">{{ outcome.title }}</h3>
+          <div class="outcome-item">
+            @if (outcome.icon) {
+              <div class="outcome-icon-container">
+                <img [src]="outcome.icon" [alt]="outcome.title" class="outcome-icon" />
+              </div>
+            }
+            <h4 class="outcome-title">{{ outcome.title }}</h4>
             <p class="outcome-description">{{ outcome.description }}</p>
           </div>
         }
       </div>
     </div>
-  </div>
 
-  <!-- Testimonial Quote Section -->
-  <div class="testimonial-quote-section">
-    <div class="container">
-      <h2 class="section-title">TRIED AND TESTED</h2>
-      <p class="testimonial-text">
-        After 6 days of taking debloat twice a day, consumer said
-      </p>
+    <!-- Tried and Tested Section -->
+    <div class="tried-and-tested-section">
+      <div class="tried-and-tested-header">
+        <h2 class="tried-and-tested-title">TRIED AND TESTED</h2>
+        <h3 class="tried-and-tested-subtitle">After 6 days of taking debloat twice a day, consumer said</h3>
+      </div>
+      <div class="tried-and-tested-image-container">
+        <img
+          [src]="triedAndTestedImage"
+          alt="Tried and Tested Statistics"
+          class="tried-and-tested-image"
+        />
+      </div>
     </div>
-  </div>
 
-  <!-- FAQs Section -->
-  <div class="faqs-section">
-    <div class="container">
-      <h2 class="section-title">FAQs</h2>
-      <mat-accordion class="faqs-accordion">
-        @for (faq of product.faqs; track faq.question; let i = $index) {
-          <mat-expansion-panel>
-            <mat-expansion-panel-header>
-              <mat-panel-title>
-                {{ faq.question }}
-              </mat-panel-title>
-            </mat-expansion-panel-header>
-            <p>{{ faq.answer }}</p>
-          </mat-expansion-panel>
-        }
-      </mat-accordion>
-    </div>
+    <!-- FAQs Section -->
+    @if (product.faqs && product.faqs.length > 0) {
+      <div class="faqs-section">
+        <div class="faqs-header">
+          <h2 class="faqs-title">Frequently Asked Questions</h2>
+        </div>
+        <div class="faqs-container">
+          <div class="faqs-list">
+            @for (faq of product.faqs; track faq.faqId) {
+              <app-faq-item [faq]="faq" [showCategory]="false"></app-faq-item>
+            }
+          </div>
+        </div>
+      </div>
+    }
   </div>
 </section>

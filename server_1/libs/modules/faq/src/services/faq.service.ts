@@ -4,11 +4,13 @@ import { TxnFaq } from "../models";
 import { IBasicSearch, IFaq, IManageFaq, ITableList, IPublicTableList, IPublicFaq } from '@eatfit247-shared-lib';
 import { SearchUtil } from "@server_1/core";
 import { BasicSearchDto } from "@server_1/shared-dto";
+import { FaqCategoryService } from "./faq-category.service";
 
 @Injectable()
 export class FaqService {
   constructor(
-    @InjectModel(TxnFaq) private readonly faqRepository: typeof TxnFaq
+    @InjectModel(TxnFaq) private readonly faqRepository: typeof TxnFaq,
+    private readonly faqCategoryService: FaqCategoryService
   ) {}
 
   public async findAll(searchDto: IBasicSearch): Promise<ITableList<IFaq>> {
@@ -155,6 +157,32 @@ export class FaqService {
       tableData: resList,
       count: count
     };
+  }
+
+  /**
+   * Public method to fetch FAQs by category URL
+   * @param categoryUrl - The URL slug of the FAQ category
+   * @param searchDto - Optional search parameters
+   * @returns List of FAQs for the category
+   */
+  public async findByCategoryUrl(categoryUrl: string, searchDto?: BasicSearchDto): Promise<IPublicTableList<IPublicFaq>> {
+    // First, find the category by URL
+    const category = await this.faqCategoryService.findByUrl(categoryUrl);
+    if (!category) {
+      // Return empty list if category not found
+      return {
+        tableData: [],
+        count: 0
+      };
+    }
+
+    // Now fetch FAQs for this category
+    const searchParams: BasicSearchDto = {
+      ...searchDto,
+      faqCategoryId: category.faqCategoryId,
+      active: true,
+    };
+    return await this.findAllPublic(searchParams);
   }
 
   /**

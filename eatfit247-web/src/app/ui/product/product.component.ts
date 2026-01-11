@@ -1,15 +1,18 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatExpansionModule } from '@angular/material/expansion';
+import { MatInputModule } from '@angular/material/input';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BannerService } from '../../services/banner.service';
-import { BannerForEnum } from 'eatfit247-shared-library';
+import { FaqService } from '../../services/faq.service';
+import { BannerForEnum, IFaq } from 'eatfit247-shared-library';
+import { ImageSliderComponent, SliderItem } from '../shared/image-slider/image-slider.component';
+import { FaqItemComponent } from '../shared/faq-item/faq-item.component';
 
 interface ProductSize {
   value: string;
@@ -50,10 +53,7 @@ interface ProductData {
     };
   };
   outcomes: Benefit[];
-  faqs: Array<{
-    question: string;
-    answer: string;
-  }>;
+  faqs: IFaq[];
 }
 
 /**
@@ -70,37 +70,56 @@ interface ProductData {
     MatIconModule,
     MatSelectModule,
     MatFormFieldModule,
-    MatExpansionModule,
+    MatInputModule,
     FormsModule,
+    ImageSliderComponent,
+    FaqItemComponent,
   ],
   templateUrl: './product.component.html',
   styleUrl: './product.component.scss',
 })
-export class ProductComponent implements OnInit {
+export class ProductComponent implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
-  
+  private readonly bannerService = inject(BannerService);
+  private readonly faqService = inject(FaqService);
+  // Banner items
+  bannerItems: SliderItem[] = [];
   // Product data
   productName = 'De-bloat';
   productDescription = 'Debloat yourself within 3 months';
-  selectedSize: string = '100gms';
+  selectedSize: string = '100gm';
   quantity: number = 1;
-  
   // Product images
   productImages: string[] = [
     '/assets/images/products/debloat-main-1200x1200.jpg',
     '/assets/images/products/debloat-alt-1200x1205.jpg',
+  ];
+  productImages1: string[] = [
+    '/assets/images/products/debloat-alt-1200x1205.jpg',
     '/assets/images/products/debloat-3.jpg',
-    '/assets/images/products/debloat-img-750x250.jpg',
   ];
   selectedImageIndex: number = 0;
-  
-  // Video links (MP4 files from the website)
-  productVideos: string[] = [
-    'https://eatfit24by7.com/wp-content/uploads/2023/11/InShot_20231101_151909624-2.mp4',
-    'https://eatfit24by7.com/wp-content/uploads/2023/11/video-2.mp4',
+  // Star powder image
+  starPowderImage: string = '/assets/images/products/start-powder.png';
+  // Custom slider for 3rd section
+  featureSliderCurrentIndex: number = 0;
+  private featureSliderTimer: any = null;
+  private readonly featureSliderInterval: number = 5000; // 5 seconds
+  // Product feature bullet points for 3rd section
+  productFeatureBullets: string[] = [
+    'Say Goodbye to bloating',
+    'Reverse your gut issues and calms an upset stomach',
+    'Bid farewell to IBS symptoms, including pain, gas acidity and constipation',
+    'Discover the power of nature with our organic herbal ingredients',
   ];
-  
+  // Product tag line for 3rd section
+  productTagLine = 'Promotes gut health and digestive comfort – try it today!';
+  // Video links (MP4 files from the website)
+  productVideos: string[] = ['/assets/videos/video-2.mp4'];
+  // Tried and Tested Section
+  triedAndTestedImage: string = '/assets/images/products/tried-and-tested.jpg';
+
   // Use product.sizes for sizes
   get sizes(): ProductSize[] {
     return this.product.sizes;
@@ -114,10 +133,12 @@ export class ProductComponent implements OnInit {
     return `₹ ${this.product.priceRange.min}.00 – ₹ ${this.product.priceRange.max}.00`;
   }
 
+  get consumeVideoUrl(): string {
+    return this.productVideos[0] || '/assets/videos/video-2.mp4';
+  }
+
   getCurrentPrice(): number {
-    const selectedSizeObj = this.product.sizes.find(
-      (s) => s.value === this.selectedSize
-    );
+    const selectedSizeObj = this.product.sizes.find((s) => s.value === this.selectedSize);
     return selectedSizeObj?.price || this.product.priceRange.min;
   }
 
@@ -139,7 +160,6 @@ export class ProductComponent implements OnInit {
       description: 'Discover the power of nature with our organic herbal ingredients',
     },
   ];
-
   // Product data structure matching showcase component
   product: ProductData = {
     name: 'De-bloat',
@@ -148,8 +168,8 @@ export class ProductComponent implements OnInit {
       max: 1200,
     },
     sizes: [
-      { value: '100gms', label: '100gms', price: 700 },
-      { value: '200gms', label: '200gms', price: 1200 },
+      { value: '100gm', label: '100gm', price: 700 },
+      { value: '200gm', label: '200gm', price: 1200 },
     ],
     benefits: [
       'Helps achieve long–term bloat reduction',
@@ -159,7 +179,8 @@ export class ProductComponent implements OnInit {
       'Weight Loss',
     ],
     dose: '10 GMs of powder each day',
-    howToTake: 'With a glass of normal water, you can add it in smoothies, fruit juices, vegetable juices, coconut water, buttermilk, Mountain Dew.',
+    howToTake:
+      'With a glass of normal water, you can add it in smoothies, fruit juices, vegetable juices, coconut water, buttermilk, Mountain Dew.',
     precautions: [
       'Store in cool and dry place away from direct sunlight',
       'Keep out of reach of children',
@@ -168,12 +189,12 @@ export class ProductComponent implements OnInit {
       'Protect from moisture',
     ],
     ingredients: [
-      { name: 'Curry Leaves', icon: '🌿' },
-      { name: 'Haldi', icon: '🟡' },
-      { name: 'Jeera', icon: '🌾' },
-      { name: 'Seasame Seeds', icon: '⚪' },
-      { name: 'Haritaki', icon: '🍃' },
-      { name: 'Saunf', icon: '🌱' },
+      { name: 'Curry Leaves', icon: '/assets/images/products/ingredients/curry-leaves.png' },
+      { name: 'Haldi', icon: '/assets/images/products/ingredients/haldi.png' },
+      { name: 'Jeera', icon: '/assets/images/products/ingredients/jira.png' },
+      { name: 'Seasame Seeds', icon: '/assets/images/products/ingredients/seasame-seeds.png' },
+      { name: 'Haritaki', icon: '/assets/images/products/ingredients/haritaki.webp' },
+      { name: 'Saunf', icon: '/assets/images/products/ingredients/saunf.png' },
     ],
     consumptionInstructions: {
       amount: '10 grams (2tsp) powder daily',
@@ -185,79 +206,170 @@ export class ProductComponent implements OnInit {
     },
     outcomes: [
       {
+        icon: '/assets/images/speed-food-breakdown.png',
         title: 'SPEEDS FOOD BREAKDOWN',
         description: 'Enjoy your favorite foods without any discomfort',
       },
       {
+        icon: '/assets/images/relieves-heartburn.jpg',
         title: 'RELIEVES HEARTBURN',
         description: 'So food can digest smoothly',
       },
       {
+        icon: '/assets/images/prevent-gas.png',
         title: 'PREVENTS GAS',
         description: 'Have fun spend quality time with loved ones worry-free',
       },
     ],
-    faqs: [
-      {
-        question: 'How does Debloat Powder work?',
-        answer:
-          'Debloat Powder stimulates the digestive fire (Agni) and promotes the release of digestive enzymes for better food absorption. It also aids in maintaining a balanced pH level in the blood.',
-      },
-      {
-        question: 'How soon can I expect to see results with Debloat Powder?',
-        answer:
-          'Many users report experiencing positive results within a few days of use. However, individual results may vary.',
-      },
-      {
-        question: 'How do I take Debloat Powder?',
-        answer:
-          'The recommended dose is 5 grams (1 tsp) of powder daily. You can mix it with water, smoothies, fruit juices, vegetable juices, coconut water, buttermilk',
-      },
-      {
-        question: 'Who can use Debloat Powder?',
-        answer:
-          'Debloat Powder is suitable for anyone looking to improve their digestion naturally. It is especially beneficial for those with digestive issues, PCOS, thyroid problems, high blood pressure, diabetes, hormonal imbalances, and those seeking weight loss.',
-      },
-      {
-        question: 'Is Debloat Powder safe to use?',
-        answer:
-          'Yes, it is made from natural herbs and spices adhering to ayurvedic principles. However, it should be avoided by pregnant or lactating women and people with serious medical condition',
-      },
-      {
-        question: 'When can I consume it?',
-        answer:
-          'Take 2 tsp a day. 1 tsp in the AM (morning) and 1tsp in the PM (evening)',
-      },
-      {
-        question: 'Can Debloat Powder help with weight loss?',
-        answer:
-          'Yes, regular use of Debloat Powder can promote fat metabolism and may help with weight loss, along with inch loss.',
-      },
-      {
-        question: 'How should I store Debloat Powder?',
-        answer:
-          'Store it in a cool, dry place away from direct sunlight. Do not refrigerate.',
-      },
-      {
-        question: 'Is it the same as other pre-probiotic?',
-        answer:
-          "No, it's not a pre-pro biotic. Instead it's a magical formula to activate the bile juice, pancreatic juice and digestive fire which in turn sets the tone of digestion and enhance nutrient digestion",
-      },
-    ],
+    faqs: [] as IFaq[], // Will be loaded dynamically from API
   };
-
   // Keep existing properties for backward compatibility
   ingredients: Ingredient[] = this.product.ingredients;
-
   // Keep outcomes for backward compatibility
   outcomes: Benefit[] = this.product.outcomes;
 
   ngOnInit(): void {
+    // Load banner data
+    this.loadBannerData();
+    // Load FAQs for debloat-powder category
+    this.loadFaqs();
+    // Start auto-switch for feature slider
+    this.startFeatureSliderAutoSwitch();
     // Get product slug from route if available
     const slug = this.route.snapshot.paramMap.get('slug');
     if (slug) {
       // TODO: Load product data based on slug
       // For now, we'll use the default product data
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.stopFeatureSliderAutoSwitch();
+  }
+
+  /**
+   * Load banner slider data
+   */
+  private async loadBannerData(): Promise<void> {
+    try {
+      this.bannerItems = await this.bannerService.getBannerSlidesForPage(BannerForEnum.PRODUCT);
+    } catch (error) {
+      console.error('Failed to load banner data:', error);
+      this.bannerItems = [];
+    }
+  }
+
+  /**
+   * Load FAQs for the product category
+   */
+  private async loadFaqs(): Promise<void> {
+    try {
+      console.log('Loading FAQs for category: debloat-powder');
+      const faqItems = await this.faqService.getFaqsByCategoryUrl('debloat-powder');
+      console.log('Loaded FAQs:', faqItems);
+      // Store FAQ items directly
+      this.product.faqs = faqItems;
+      console.log('Stored FAQs:', this.product.faqs);
+    } catch (error) {
+      console.error('Failed to load FAQs:', error);
+      // Keep empty array if loading fails
+      this.product.faqs = [];
+    }
+  }
+
+  /**
+   * Get current feature slider image
+   */
+  get currentFeatureImage(): string {
+    return this.productImages1[this.featureSliderCurrentIndex] || this.productImages1[0];
+  }
+
+  /**
+   * Check if feature slider has multiple images
+   */
+  get hasMultipleFeatureImages(): boolean {
+    return this.productImages1.length > 1;
+  }
+
+  /**
+   * Navigate to next image in feature slider
+   */
+  featureSliderNext(): void {
+    if (this.productImages.length > 0) {
+      this.featureSliderCurrentIndex =
+        (this.featureSliderCurrentIndex + 1) % this.productImages1.length;
+      this.resetFeatureSliderAutoSwitch();
+    }
+  }
+
+  /**
+   * Navigate to previous image in feature slider
+   */
+  featureSliderPrevious(): void {
+    if (this.productImages.length > 0) {
+      this.featureSliderCurrentIndex =
+        this.featureSliderCurrentIndex === 0
+          ? this.productImages.length - 1
+          : this.featureSliderCurrentIndex - 1;
+      this.resetFeatureSliderAutoSwitch();
+    }
+  }
+
+  /**
+   * Go to specific image in feature slider
+   */
+  featureSliderGoTo(index: number): void {
+    if (index >= 0 && index < this.productImages.length) {
+      this.featureSliderCurrentIndex = index;
+      this.resetFeatureSliderAutoSwitch();
+    }
+  }
+
+  /**
+   * Start auto-switch for feature slider
+   */
+  private startFeatureSliderAutoSwitch(): void {
+    if (this.productImages.length > 1) {
+      this.stopFeatureSliderAutoSwitch();
+      this.featureSliderTimer = setInterval(() => {
+        this.featureSliderNext();
+      }, this.featureSliderInterval);
+    }
+  }
+
+  /**
+   * Stop auto-switch for feature slider
+   */
+  private stopFeatureSliderAutoSwitch(): void {
+    if (this.featureSliderTimer) {
+      clearInterval(this.featureSliderTimer);
+      this.featureSliderTimer = null;
+    }
+  }
+
+  /**
+   * Reset auto-switch timer for feature slider
+   */
+  private resetFeatureSliderAutoSwitch(): void {
+    if (this.productImages1.length > 1) {
+      this.stopFeatureSliderAutoSwitch();
+      this.startFeatureSliderAutoSwitch();
+    }
+  }
+
+  /**
+   * Pause auto-switch on hover
+   */
+  onFeatureSliderHover(): void {
+    this.stopFeatureSliderAutoSwitch();
+  }
+
+  /**
+   * Resume auto-switch on mouse leave
+   */
+  onFeatureSliderLeave(): void {
+    if (this.productImages.length > 1) {
+      this.startFeatureSliderAutoSwitch();
     }
   }
 
@@ -296,6 +408,51 @@ export class ProductComponent implements OnInit {
    */
   get selectedImage(): string {
     return this.productImages[this.selectedImageIndex] || this.productImages[0];
+  }
+
+  /**
+   * Increment quantity
+   */
+  incrementQuantity(): void {
+    if (this.quantity < 5) {
+      this.quantity++;
+    }
+  }
+
+  /**
+   * Decrement quantity
+   */
+  decrementQuantity(): void {
+    if (this.quantity > 1) {
+      this.quantity--;
+    }
+  }
+
+  /**
+   * Update quantity from input
+   */
+  updateQuantity(value: string): void {
+    const numValue = parseInt(value, 10);
+    if (!isNaN(numValue) && numValue > 0) {
+      this.quantity = Math.min(numValue, 5);
+    }
+  }
+
+  /**
+   * Handle video error
+   */
+  onVideoError(event: Event): void {
+    console.error('Video error:', event);
+    const video = event.target as HTMLVideoElement;
+    console.error('Video src:', video?.src);
+    console.error('Video error code:', video?.error?.code);
+  }
+
+  /**
+   * Handle video loaded
+   */
+  onVideoLoaded(): void {
+    console.log('Video loaded successfully');
   }
 }
 

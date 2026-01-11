@@ -12,10 +12,10 @@ import { ProgramPlanModule } from '@server_1/modules/program-plan';
 import { CallLogsModule } from '@server_1/modules/call-logs';
 import { TaxEngineModule } from '@server_1/modules/tax-engine';
 import { PaymentModule } from '@server_1/modules/payment';
-import { BlogModule } from '@server_1/modules/blogs';
+import { BlogAdminModule } from '@server_1/modules/blogs';
 import { FaqModule } from '@server_1/modules/faq';
 import { PressMediaModule } from '@server_1/modules/press-media';
-import { LegalPagesModule } from '@server_1/modules/pages';
+import { PagesAdminModule } from '@server_1/modules/pages';
 import { RecipeModule } from '@server_1/modules/recipe';
 import { ReferrerAdminModule } from '@server_1/modules/referrer';
 import { FranchiseModule } from '@server_1/modules/franchise';
@@ -25,7 +25,7 @@ import { PocketGuideModule } from '@server_1/modules/pocket-guide';
 import { DietModule } from '@server_1/modules/diet';
 import { GoogleCalendarModule } from '@server_1/modules/google-calendar/src';
 import { PromoCodeModule } from '@server_1/modules/promo-code';
-import { BannerModule } from '@server_1/modules/banner';
+import { BannerAdminModule } from '@server_1/modules/banner';
 import { MemberTestimonialModule } from '@server_1/modules/member-testimonial';
 import { LovsModule } from '@server_1/modules/lovs';
 import { SuccessStoriesModule } from '@server_1/modules/success-stories';
@@ -47,10 +47,10 @@ import { ReportsModule } from '@server_1/admin-only/reports';
     CallLogsModule,
     TaxEngineModule,
     PaymentModule,
-    BlogModule,
+    BlogAdminModule,
     FaqModule,
     PressMediaModule,
-    LegalPagesModule,
+    PagesAdminModule,
     RecipeModule,
     ReferrerAdminModule,
     FranchiseModule,
@@ -60,7 +60,7 @@ import { ReportsModule } from '@server_1/admin-only/reports';
     DietModule,
     GoogleCalendarModule,
     PromoCodeModule,
-    BannerModule,
+    BannerAdminModule,
     MemberTestimonialModule,
     LovsModule,
     SuccessStoriesModule,

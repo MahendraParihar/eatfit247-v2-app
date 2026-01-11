@@ -4,9 +4,9 @@ import { RouterLink } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatChipsModule } from '@angular/material/chips';
-import { MatExpansionModule } from '@angular/material/expansion';
-import { FaqService, FaqItem } from '../../../services/faq.service';
+import { FaqService } from '../../../services/faq.service';
+import { IFaq } from 'eatfit247-shared-library';
+import { FaqItemComponent } from '../faq-item/faq-item.component';
 
 /**
  * FAQ Section Component
@@ -22,25 +22,22 @@ import { FaqService, FaqItem } from '../../../services/faq.service';
     MatCardModule,
     MatButtonModule,
     MatIconModule,
-    MatChipsModule,
-    MatExpansionModule,
+    FaqItemComponent,
   ],
   templateUrl: './faq-section.component.html',
   styleUrl: './faq-section.component.scss',
 })
 export class FaqSectionComponent implements OnInit {
   private readonly faqService = inject(FaqService);
-
   // Section configuration
   @Input() sectionTitle: string = 'Frequently Asked Questions';
   @Input() sectionDescription: string = 'Find answers to common questions about our services';
   @Input() faqsToShow: number = 5; // Number of FAQs to display
-  @Input() faqs: FaqItem[] | null = null; // Optional: provide FAQs directly
+  @Input() faqs: IFaq[] | null = null; // Optional: provide FAQs directly
   @Input() categoryId: number | null = null; // Optional: filter by category
   @Input() showViewAll: boolean = false; // Show "View All" button
   @Input() viewAllUrl: string = '/faq'; // URL for "View All" button
-
-  displayedFaqs: FaqItem[] = [];
+  displayedFaqs: IFaq[] = [];
   loading = false;
 
   ngOnInit(): void {

@@ -2,14 +2,6 @@ import { Injectable, inject } from '@angular/core';
 import { HttpService } from './http.service';
 import { IFaq, IFaqCategory, IPublicTableList } from 'eatfit247-shared-library';
 
-export interface FaqItem {
-  id: number;
-  question: string;
-  answer: string;
-  categoryId: number;
-  category: string;
-}
-
 /**
  * Service to manage FAQ data
  * Fetches FAQs from the public API
@@ -23,7 +15,7 @@ export class FaqService {
   /**
    * Get all FAQs
    */
-  async getAllFaqs(): Promise<FaqItem[]> {
+  async getAllFaqs(): Promise<IFaq[]> {
     const result = await this.getPaginatedFaqs(0, 1000);
     return result.faqs;
   }
@@ -31,8 +23,12 @@ export class FaqService {
   /**
    * Get paginated FAQs
    */
-  async getPaginatedFaqs(page: number, pageSize: number, categoryId?: number): Promise<{
-    faqs: FaqItem[];
+  async getPaginatedFaqs(
+    page: number,
+    pageSize: number,
+    categoryId?: number
+  ): Promise<{
+    faqs: IFaq[];
     total: number;
     totalPages: number;
   }> {
@@ -44,12 +40,9 @@ export class FaqService {
       if (categoryId) {
         params.faqCategoryId = categoryId.toString();
       }
-      const data = await this.httpService.get<IPublicTableList<IFaq>>(
-        'public/faq/list',
-        params
-      );
+      const data = await this.httpService.get<IPublicTableList<IFaq>>('public/faq/list', params);
       if (data) {
-        const faqs = data.tableData.map((faq: IFaq) => this.mapFaqToItem(faq));
+        const faqs = data.tableData as IFaq[];
         const total = data.count;
         const totalPages = Math.ceil(total / pageSize);
         return { faqs, total, totalPages };
@@ -57,7 +50,6 @@ export class FaqService {
         return { faqs: [], total: 0, totalPages: 0 };
       }
     } catch (error) {
-      console.error('Error fetching FAQs:', error);
       return { faqs: [], total: 0, totalPages: 0 };
     }
   }
@@ -65,21 +57,41 @@ export class FaqService {
   /**
    * Get FAQs by category ID
    */
-  async getFaqsByCategory(categoryId: number): Promise<FaqItem[]> {
+  async getFaqsByCategory(categoryId: number): Promise<IFaq[]> {
     try {
-      const data = await this.httpService.get<IPublicTableList<IFaq>>(
-        'public/faq/list',
-        {
-          faqCategoryId: categoryId.toString(),
-          limit: '1000'
-        }
-      );
+      const data = await this.httpService.get<IPublicTableList<IFaq>>('public/faq/list', {
+        faqCategoryId: categoryId.toString(),
+        limit: '1000'
+      });
       if (data) {
-        return data.tableData.map((faq: IFaq) => this.mapFaqToItem(faq));
+        return data.tableData as IFaq[];
       }
       return [];
     } catch (error) {
       console.error('Error fetching FAQs by category:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Get FAQs by category URL
+   * @param categoryUrl - The URL slug of the FAQ category (e.g., 'debloat-powder')
+   * @returns Promise of FaqItem array
+   */
+  async getFaqsByCategoryUrl(categoryUrl: string): Promise<IFaq[]> {
+    try {
+      const data = await this.httpService.get<IPublicTableList<IFaq>>(
+        `public/faq/by-category-url/${categoryUrl}`,
+        {
+          limit: '1000'
+        }
+      );
+      if (data) {
+        return data.tableData as IFaq[];
+      }
+      return [];
+    } catch (error) {
+      console.error(`Error fetching FAQs by category URL (${categoryUrl}):`, error);
       return [];
     }
   }
@@ -98,19 +110,6 @@ export class FaqService {
       console.error('Error fetching FAQ categories:', error);
       return [];
     }
-  }
-
-  /**
-   * Map IFaq from API to FaqItem
-   */
-  private mapFaqToItem(faq: IFaq): FaqItem {
-    return {
-      id: faq.faqId,
-      question: faq.faq,
-      answer: faq.answer,
-      categoryId: faq.faqCategoryId,
-      category: faq.faqCategory || 'Uncategorized'
-    };
   }
 }
 

@@ -150,6 +150,26 @@ export class FaqCategoryService {
   }
 
   /**
+   * Find FAQ category by URL
+   * @param url - The URL slug of the category
+   * @returns FAQ category or null if not found
+   */
+  public async findByUrl(url: string): Promise<IFaqCategory | null> {
+    const find = await this.faqCategoryRepository.scope('list').findOne({
+      where: {
+        url: url,
+        active: true,
+      },
+      raw: true,
+      nest: true,
+    });
+    if (!find) {
+      return null;
+    }
+    return this.convertToModel(find);
+  }
+
+  /**
    * Convert IFaqCategory to IPublicFaqCategory (removes admin fields)
    */
   private convertToPublic(category: IFaqCategory): IPublicFaqCategory {

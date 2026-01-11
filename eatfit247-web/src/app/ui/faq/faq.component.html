@@ -20,26 +20,14 @@
         </div>
       }
 
-      <!-- FAQs Accordion -->
+      <!-- FAQs List -->
       @if (!loading && faqs.length > 0) {
         <div class="faqs-container">
-          <mat-accordion class="faqs-accordion">
-            @for (faq of faqs; track faq.id) {
-              <mat-expansion-panel class="faq-panel">
-                <mat-expansion-panel-header>
-                  <mat-panel-title class="faq-question">
-                    {{ faq.question }}
-                  </mat-panel-title>
-                  @if (faq.category) {
-                    <mat-panel-description>
-                      <mat-chip class="category-chip">{{ faq.category }}</mat-chip>
-                    </mat-panel-description>
-                  }
-                </mat-expansion-panel-header>
-                <div class="faq-answer" [innerHTML]="faq.answer"></div>
-              </mat-expansion-panel>
+          <div class="faqs-list">
+            @for (faq of faqs; track faq.faqId) {
+              <app-faq-item [faq]="faq" [showCategory]="true"></app-faq-item>
             }
-          </mat-accordion>
+          </div>
         </div>
       }
 

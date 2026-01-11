@@ -1,0 +1,139 @@
+@use '../../../../theme/variables' as *;
+@use '../../../../theme/color' as *;
+
+.faq-item {
+  border-radius: $border-radius-lg;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--mat-sys-outline-variant);
+  background-color: var(--mat-sys-surface-container);
+  transition: all $transition-slow cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+
+.faq-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $spacing-lg;
+  min-height: 64px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color $transition-slow;
+
+  @media (max-width: 768px) {
+    padding: $spacing-md;
+    min-height: 56px;
+  }
+}
+
+.faq-question-wrapper {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  flex: 1;
+  flex-wrap: wrap;
+
+  @media (max-width: 768px) {
+    gap: $spacing-sm;
+  }
+}
+
+.faq-question {
+  font-size: 1.125rem;
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--mat-sys-on-surface);
+  margin: 0;
+  flex: 1;
+  min-width: 0;
+
+  @media (max-width: 768px) {
+    font-size: 1rem;
+  }
+}
+
+.category-chip {
+  font-size: 0.75rem;
+  font-weight: 500;
+  background-color: var(--mat-sys-primary-container);
+  color: var(--mat-sys-on-primary-container);
+  flex-shrink: 0;
+}
+
+.expand-icon {
+  font-size: 24px;
+  width: 24px;
+  height: 24px;
+  color: var(--mat-sys-on-surface-variant);
+  transition: transform $transition-slow;
+  flex-shrink: 0;
+  margin-left: $spacing-md;
+
+  &.expanded {
+    transform: rotate(180deg);
+  }
+}
+
+.faq-answer {
+  padding: 0 $spacing-lg $spacing-lg;
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--mat-sys-on-surface-variant);
+  animation: slideDown 0.3s ease-out;
+
+  @media (max-width: 768px) {
+    padding: 0 $spacing-md $spacing-md;
+    font-size: 0.9375rem;
+  }
+
+  ::ng-deep {
+    p {
+      margin: 0 0 $spacing-md 0;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+
+    ul,
+    ol {
+      margin: $spacing-md 0;
+      padding-left: $spacing-xl;
+    }
+
+    li {
+      margin-bottom: $spacing-sm;
+    }
+
+    strong {
+      font-weight: 600;
+      color: var(--mat-sys-on-surface);
+    }
+
+    a {
+      color: var(--mat-sys-primary);
+      text-decoration: none;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    max-height: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    max-height: 1000px;
+    transform: translateY(0);
+  }
+}
+

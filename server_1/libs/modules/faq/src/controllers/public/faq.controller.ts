@@ -1,4 +1,4 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Query, Param } from '@nestjs/common';
 import { FaqService } from '../../services';
 import { IPublicFaq, IPublicTableList } from '@eatfit247-shared-lib';
 import { BasicSearchDto } from '@server_1/shared-dto';
@@ -17,6 +17,14 @@ export class PublicFaqController {
       active: true,
     };
     return await this.service.findAllPublic(searchDto);
+  }
+
+  @Get('by-category-url/:url')
+  async getByCategoryUrl(
+    @Param('url') url: string,
+    @Query() req?: BasicSearchDto
+  ): Promise<IPublicTableList<IPublicFaq>> {
+    return await this.service.findByCategoryUrl(url, req);
   }
 }
 

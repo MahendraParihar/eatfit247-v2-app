@@ -3,9 +3,9 @@ import { CommonModule } from '@server_1/core';
 import { PlatformModule } from '@server_1/platform';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { BlogModule } from '@server_1/modules/blogs';
-import { BannerModule } from '@server_1/modules/banner';
-import { LegalPagesModule } from '@server_1/modules/pages';
+import { BlogPublicModule } from '@server_1/modules/blogs';
+import { BannerPublicModule } from '@server_1/modules/banner';
+import { PagesPublicModule } from '@server_1/modules/pages';
 import { ReferrerPublicModule } from '@server_1/modules/referrer';
 import { PressMediaModule } from '@server_1/modules/press-media';
 import { ProgramPlanModule } from '@server_1/modules/program-plan';
@@ -13,15 +13,15 @@ import { FaqModule } from '@server_1/modules/faq';
 import { MemberModule } from '@server_1/modules/member';
 import { LocationModule } from '@server_1/modules/locations';
 import { SuccessStoriesModule } from '@server_1/modules/success-stories';
-import { ProductModule } from '@server_1/modules/product';
+import { ProductPublicModule } from '@server_1/modules/product';
 
 @Module({
   imports: [
     PlatformModule.forRoot(),
     // Import feature modules before CommonModule so modelRegistry.register() executes
-    BlogModule,
-    BannerModule,
-    LegalPagesModule,
+    BlogPublicModule,
+    BannerPublicModule,
+    PagesPublicModule,
     ReferrerPublicModule,
     PressMediaModule,
     ProgramPlanModule,
@@ -29,7 +29,7 @@ import { ProductModule } from '@server_1/modules/product';
     MemberModule,
     LocationModule,
     SuccessStoriesModule,
-    ProductModule,
+    ProductPublicModule,
     CommonModule.forRoot(['Common', 'Email', 'Google'], PlatformModule.getModels()),
   ],
   controllers: [AppController],

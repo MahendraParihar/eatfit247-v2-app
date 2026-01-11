@@ -1,4 +1,5 @@
-export * from './src/blogs.module';
+export * from './src/blogs-admin.module';
+export * from './src/blogs-public.module';
 export * from './src/models';
 export * from './src/services';
 export * from './src/dto';

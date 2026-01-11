@@ -4,10 +4,10 @@ import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
-import { MatExpansionModule } from '@angular/material/expansion';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
-import { FaqService, FaqItem } from '../../services/faq.service';
-import { IFaqCategory } from 'eatfit247-shared-library';
+import { FaqService  } from '../../services/faq.service';
+import { IFaqCategory, IFaq } from 'eatfit247-shared-library';
+import { FaqItemComponent } from '../shared/faq-item/faq-item.component';
 
 /**
  * FAQ Listing Component
@@ -22,8 +22,8 @@ import { IFaqCategory } from 'eatfit247-shared-library';
     MatButtonModule,
     MatIconModule,
     MatChipsModule,
-    MatExpansionModule,
     MatPaginatorModule,
+    FaqItemComponent,
   ],
   templateUrl: './faq.component.html',
   styleUrl: './faq.component.scss',
@@ -38,10 +38,10 @@ export class FaqComponent implements OnInit {
   totalPages = 0;
 
   // FAQ data
-  faqs: FaqItem[] = [];
+  faqs: IFaq[] = [];
   categories: IFaqCategory[] = [];
   selectedCategoryId: number | null = null; // null means "All FAQs" is selected
-  
+
   // Loading states
   loading = false;
   loadingCategories = false;
@@ -96,10 +96,10 @@ export class FaqComponent implements OnInit {
   onPageChange(event: PageEvent): void {
     this.currentPage = event.pageIndex + 1;
     this.pageSize = event.pageSize;
-    
+
     // Reload FAQs with current category filter
     this.loadFaqs();
-    
+
     // Scroll to top of FAQ section
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }

@@ -44,18 +44,14 @@ export class HeaderComponent {
 
   // Responsive breakpoint
   readonly isMobile = toSignal(
-    this.breakpointObserver.observe([Breakpoints.Handset]).pipe(
-      map((result) => result.matches)
-    ),
-    { initialValue: false }
+    this.breakpointObserver.observe([Breakpoints.Handset]).pipe(map((result) => result.matches)),
+    { initialValue: false },
   );
 
   // Desktop breakpoint (for showing menu items in toolbar)
   readonly isDesktop = toSignal(
-    this.breakpointObserver.observe([Breakpoints.Handset]).pipe(
-      map((result) => !result.matches)
-    ),
-    { initialValue: true }
+    this.breakpointObserver.observe([Breakpoints.Handset]).pipe(map((result) => !result.matches)),
+    { initialValue: true },
   );
 
   // Search state
@@ -86,6 +82,10 @@ export class HeaderComponent {
     {
       label: 'Our Programs',
       url: '/our-programs',
+    },
+    {
+      label: 'Products',
+      url: '/product',
     },
     {
       label: 'Quiz',
@@ -205,7 +205,7 @@ export class HeaderComponent {
             this.cancelCloseAboutMenu();
           };
           panel.addEventListener('mouseenter', panelMouseEnter);
-          
+
           const menuItems = panel.querySelectorAll('a[mat-menu-item]');
           menuItems.forEach((item: Element) => {
             const itemElement = item as HTMLElement;
@@ -272,7 +272,7 @@ export class HeaderComponent {
             this.cancelCloseQuizMenu();
           };
           panel.addEventListener('mouseenter', panelMouseEnter);
-          
+
           const menuItems = panel.querySelectorAll('a[mat-menu-item]');
           menuItems.forEach((item: Element) => {
             const itemElement = item as HTMLElement;
