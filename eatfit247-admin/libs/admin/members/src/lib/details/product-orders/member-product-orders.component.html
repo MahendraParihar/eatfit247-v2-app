@@ -1,0 +1,16 @@
+@if (loading) {
+  <shared-ui-loader></shared-ui-loader>
+}
+@if (!loading && productOrders.length > 0) {
+  <shared-ui-data-table
+    [config]="tableConfig"
+    [data]="productOrders">
+  </shared-ui-data-table>
+}
+@if (!loading && productOrders.length === 0) {
+  <shared-ui-empty-state
+    [type]="EmptyStateType.GENERAL"
+    message="No product orders found for this member">
+  </shared-ui-empty-state>
+}
+

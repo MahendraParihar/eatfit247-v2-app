@@ -7,6 +7,7 @@ export * from './txn-member-health-parameter-log.model';
 export * from './txn-member-health-parameter.model';
 export * from './txn-member-call-log.model';
 export * from './txn-member-payment.model';
+export * from './txn-member-product.model';
 export * from './txn-member-diet-plan.model';
 export * from './txn-member-diet-detail.model';
 export * from './txn-assessment.model';

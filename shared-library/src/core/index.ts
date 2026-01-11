@@ -32,6 +32,7 @@ export * from './member-call-log.interface';
 export * from './member-assessment.interface';
 export * from './diet-template.interface';
 export * from './member-payment.interface';
+export * from './member-product.interface';
 export * from './member-diet-plan.interface';
 export * from './email-data.interface';
 export * from './google.interface';
@@ -43,4 +44,5 @@ export * from './public.types';
 export * from './checkout.interface';
 export * from './success-story.interface';
 export * from './product.interface';
+export * from './woocommerce.interface';
 

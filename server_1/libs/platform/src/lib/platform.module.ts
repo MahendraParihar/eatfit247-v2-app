@@ -30,6 +30,7 @@ import {
   StateService,
   StripeService,
   TelrService,
+  WooCommerceService,
   ZoomService,
 } from './services';
 import { PaymentGatewayService } from './services';
@@ -74,6 +75,7 @@ export class PlatformModule {
         RazorpayService,
         StripeService,
         TelrService,
+        WooCommerceService,
         EmailNotificationService,
         CurrencyService,
         StateService,
@@ -93,6 +95,7 @@ export class PlatformModule {
         RazorpayService,
         StripeService,
         TelrService,
+        WooCommerceService,
         EmailNotificationService,
         CurrencyService,
         StateService,

@@ -31,7 +31,8 @@ import {
   ICalculateTaxRequest,
   ICalculateTaxResponse,
   IMemberDietPlan,
-  IMemberDietDetail, IMemberDietPlanDetail
+  IMemberDietDetail, IMemberDietPlanDetail,
+  IMemberProduct
 } from '@eatfit247-shared-lib';
 
 @Injectable({
@@ -738,6 +739,26 @@ export class MembersApiService extends ApiBaseService {
       `${this.endpoint}/${memberId}/issues/summary`
     );
     return res.data;
+  }
+
+  // endregion
+
+  // region Member Product Orders
+  async getProductOrders(memberId: number): Promise<ITableList<IMemberProduct>> {
+    const res = await this.httpService.get<
+      IResponse<ITableList<IMemberProduct>>
+    >(`${this.endpoint}/${memberId}/product/list`);
+    return res.data as ITableList<IMemberProduct>;
+  }
+
+  async getProductOrder(
+    memberId: number,
+    productId: number
+  ): Promise<IMemberProduct> {
+    const res = await this.httpService.get<IResponse<IMemberProduct>>(
+      `${this.endpoint}/${memberId}/product/${productId}`
+    );
+    return res.data as IMemberProduct;
   }
 
   // endregion

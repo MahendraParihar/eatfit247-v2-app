@@ -1,0 +1,35 @@
+mat-card {
+  margin: 16px;
+}
+
+mat-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+
+  .header-actions {
+    display: flex;
+    gap: 8px;
+  }
+}
+
+mat-card-content {
+  padding-top: 16px;
+}
+
+.status-success {
+  color: #4caf50;
+  font-weight: 500;
+}
+
+.status-pending {
+  color: #ff9800;
+  font-weight: 500;
+}
+
+.status-failed {
+  color: #f44336;
+  font-weight: 500;
+}
+

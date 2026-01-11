@@ -22,6 +22,7 @@ import {
   TxnMemberIssue,
   TxnMemberIssueResponse,
   TxnMemberPayment,
+  TxnMemberProduct,
   TxnMemberPocketGuide,
 } from './models';
 import {
@@ -33,6 +34,7 @@ import {
   MemberHealthController,
   MemberIssueController,
   MemberPaymentController,
+  MemberProductController,
 } from './controllers';
 import { PublicMemberController, PublicMemberPaymentController } from './controllers/public';
 import {
@@ -45,6 +47,7 @@ import {
   MemberIssueResponseService,
   MemberIssueService,
   MemberPaymentService,
+  MemberProductService,
   MemberPocketGuideService,
   MemberService,
 } from './services';
@@ -62,6 +65,7 @@ modelRegistry.register([
   TxnMemberHealthParameter,
   TxnAssessment,
   TxnMemberPayment,
+  TxnMemberProduct,
   TxnMemberDietPlan,
   TxnMemberDietDetail,
 ]);
@@ -91,6 +95,7 @@ modelRegistry.register([
       TxnMemberHealthParameter,
       TxnAssessment,
       TxnMemberPayment,
+      TxnMemberProduct,
       TxnMemberDietPlan,
       TxnMemberDietDetail,
       // Diet template models
@@ -113,6 +118,7 @@ modelRegistry.register([
     MemberContentController,
     MemberIssueController,
     MemberPaymentController,
+    MemberProductController,
     MemberDashboardController,
     MemberDietPlanController,
     PublicMemberPaymentController,
@@ -128,6 +134,7 @@ modelRegistry.register([
     MemberIssueResponseService,
     MemberAssessmentService,
     MemberPaymentService,
+    MemberProductService,
     MemberDietPlanService,
     MemberDashboardService,
   ],
