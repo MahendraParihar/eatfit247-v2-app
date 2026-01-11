@@ -1,0 +1,91 @@
+@if (shouldShowSection()) {
+  <section class="page-section testimonials-section">
+    <div class="section-container testimonials-container">
+      <!-- Section Header -->
+      <div class="section-header">
+        <h2 class="section-title">What My Clients Are Saying</h2>
+        <div class="title-divider"></div>
+        <p class="section-subtitle">
+          Here's what some of my clients have shared about their experience:
+        </p>
+      </div>
+
+      <!-- Testimonials Slider -->
+      <div
+        class="testimonials-slider"
+        (mouseenter)="onMouseEnter()"
+        (mouseleave)="onMouseLeave()"
+      >
+        <!-- Slider Container -->
+        <div class="slider-container">
+          <!-- Slides Wrapper -->
+          <div
+            class="slides-wrapper"
+            [style.transform]="'translateX(-' + (currentIndex() * 100) + '%)'"
+            [style.transition-duration]="'500ms'"
+          >
+            @for (testimonial of testimonials(); track testimonial.id) {
+              <div class="testimonial-slide" [class.active]="currentIndex() === $index">
+                <div class="testimonial-content">
+                  <!-- Round Image -->
+                  <div class="testimonial-image-wrapper">
+                    <img
+                      [src]="testimonial.imageUrl || '/assets/images/testimonials/placeholder.jpg'"
+                      [alt]="testimonial.imageAlt || testimonial.name"
+                      class="testimonial-image"
+                      (error)="onImageError($event)"
+                    />
+                  </div>
+
+                  <!-- Review Text -->
+                  <div class="testimonial-review">
+                    <p class="review-text">{{ testimonial.review }}</p>
+                  </div>
+
+                  <!-- Name and Date -->
+                  <div class="testimonial-footer">
+                    <h3 class="testimonial-name">{{ testimonial.name }}</h3>
+                    <p class="testimonial-date">{{ testimonial.date }}</p>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+
+          <!-- Navigation Arrows -->
+          @if (hasMultipleTestimonials()) {
+            <button
+              class="slider-nav-btn prev-btn"
+              (click)="previous()"
+              aria-label="Previous testimonial"
+            >
+              <mat-icon>chevron_left</mat-icon>
+            </button>
+            <button
+              class="slider-nav-btn next-btn"
+              (click)="next()"
+              aria-label="Next testimonial"
+            >
+              <mat-icon>chevron_right</mat-icon>
+            </button>
+          }
+
+          <!-- Dots Indicator -->
+          @if (hasMultipleTestimonials()) {
+            <div class="slider-dots">
+              @for (testimonial of testimonials(); track testimonial.id; let i = $index) {
+                <button
+                  class="dot"
+                  [class.active]="currentIndex() === i"
+                  (click)="goToTestimonial(i)"
+                  [attr.aria-label]="'Go to testimonial ' + (i + 1)"
+                ></button>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </section>
+}
+

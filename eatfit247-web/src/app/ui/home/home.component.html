@@ -11,14 +11,28 @@
   </section>
 
   <!-- Journey Steps Section -->
-  <app-journey-steps />
+  <section class="home-section home-section-alt">
+    <app-journey-steps />
+  </section>
+
+  <!-- Product Showcase Section -->
+  <section class="home-section">
+    <app-product-showcase />
+  </section>
+
+  <!-- Testimonials Section -->
+  <section class="home-section home-section-alt">
+    <app-testimonials />
+  </section>
 
   <!-- Blog Section Example -->
-  <app-blog-section
-    sectionTitle="Latest from Our Blog"
-    sectionDescription="Discover expert insights, success stories, and wellness tips from our nutrition experts"
-    [blogsToShow]="3"
-    [showViewAll]="true"
-    viewAllUrl="/blog"
-  />
+  <section class="home-section">
+    <app-blog-section
+      sectionTitle="Latest from Our Blog"
+      sectionDescription="Discover expert insights, success stories, and wellness tips from our nutrition experts"
+      [blogsToShow]="3"
+      [showViewAll]="true"
+      viewAllUrl="/blog"
+    />
+  </section>
 </div>

@@ -5,7 +5,20 @@
 }
 
 .hero-slider-section {
-  margin-bottom: $spacing-2xl;
+}
+
+// Home section wrappers for alternating backgrounds
+// Matching the about page color scheme for consistency
+.home-section {
+  background-color: #f5f5f0; // Light beige - matches .page-section
+
+  @media (max-width: 768px) {
+    padding: $spacing-2xl 0;
+  }
+
+  &.home-section-alt {
+    background-color: var(--mat-sys-surface); // White/surface - matches .page-section-alt
+  }
 }
 
 .welcome-section {

@@ -1,12 +1,7 @@
 @use '../../../../theme/variables' as *;
 
-.journey-steps-section {
-  padding: $spacing-3xl $spacing-lg;
-  background-color: #ffffff;
-
-  @media (max-width: 768px) {
-    padding: $spacing-2xl $spacing-md;
-  }
+// Override page-section background for this component
+.page-section {
 }
 
 .journey-container {
@@ -14,17 +9,16 @@
   grid-template-columns: 1fr 1fr;
   gap: $spacing-3xl;
   max-width: 1400px;
-  margin: 0 auto;
   align-items: center;
 
   @media (max-width: 1024px) {
     grid-template-columns: 1fr;
     gap: $spacing-2xl;
-    
+
     .journey-image-wrapper {
       order: 2; // Show image after content on mobile
     }
-    
+
     .journey-content {
       order: 1; // Show content first on mobile
     }
@@ -38,44 +32,67 @@
   gap: $spacing-2xl;
 }
 
-.journey-header {
-  .journey-label {
-    font-size: 0.875rem;
-    font-weight: 500;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: #999;
-    margin: 0 0 $spacing-md 0;
+// Override section-header styles for left-aligned content in split layout
+.journey-content .section-header {
+  text-align: left;
+  margin-left: 0;
+  margin-right: 0;
+  max-width: 100%;
+  margin-bottom: 0;
+
+  @media (max-width: 768px) {
+    text-align: center;
   }
+}
 
-  .journey-title {
-    font-size: 2.5rem;
-    font-weight: 700;
-    color: #FF6B35;
-    margin: 0 0 $spacing-lg 0;
-    line-height: 1.2;
+// Override section-subtitle for uppercase label style
+.journey-content .section-subtitle {
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #999;
+  margin: 0 0 $spacing-md 0;
+  text-align: left;
 
-    @media (max-width: 768px) {
-      font-size: 2rem;
-    }
+  @media (max-width: 768px) {
+    text-align: center;
   }
+}
 
-  .decorative-emblem {
-    display: flex;
-    align-items: center;
-    margin: $spacing-lg 0;
-    
-    svg {
-      width: 60px;
-      height: 60px;
-    }
+// Override section-title for left alignment
+.journey-content .section-title {
+  text-align: left;
+  margin-left: 0;
+  margin-right: 0;
+
+  @media (max-width: 768px) {
+    text-align: center;
   }
+}
 
-  .journey-intro {
-    font-size: 1rem;
-    color: #333;
-    line-height: 1.6;
-    margin: $spacing-lg 0 0 0;
+// Override title-divider for left alignment
+.journey-content .title-divider {
+  margin-left: 0;
+  margin-right: 0;
+
+  @media (max-width: 768px) {
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+// Override section-description for left alignment
+.journey-content .section-description {
+  text-align: left;
+  margin-left: 0;
+  margin-right: 0;
+  max-width: 100%;
+
+  @media (max-width: 768px) {
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
   }
 }
 
