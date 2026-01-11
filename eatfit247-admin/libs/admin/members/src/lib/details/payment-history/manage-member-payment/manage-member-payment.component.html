@@ -404,7 +404,7 @@
                   mat-raised-button
                   color="primary"
                   (click)="onSubmit()"
-                  [disabled]="submitting() || formGroup.invalid || (isManualPaymentSource() && !canProceedToStep3())"
+                  [disabled]="submitting() || formGroup.invalid || (isManualPaymentSource() && !canProceedToStep3()) || !isPaymentLinkRequiredAndGenerated()"
                 >
                   @if (submitting()) {
                     <mat-spinner diameter="20" style="display: inline-block; margin-right: 8px"></mat-spinner>

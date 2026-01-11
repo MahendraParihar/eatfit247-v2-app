@@ -12,3 +12,23 @@ export interface IResolvedGateway {
   currency: string;
 }
 
+export interface IPaymentLinkCustomer {
+  name?: string;
+  email?: string;
+  contact?: string;
+}
+
+export interface ICreatePaymentLinkRequest {
+  amount: number;
+  currency?: string;
+  franchisePaymentGatewayId: number;
+  description?: string;
+  customer?: IPaymentLinkCustomer;
+  notes?: Record<string, any>;
+}
+
+export interface IPaymentLinkResponse {
+  shortUrl: string;
+  id: string;
+  gatewayCode: string;
+}

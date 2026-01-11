@@ -19,6 +19,10 @@ export interface IBasicMemberPayment {
   paymentGatewayResponse?: object | null;
   gstNumber?: string;
   billingAddressId?: number | null;
+  gatewayProvider?: string;
+  gatewayOrderId?: string;
+  gatewayPaymentId?: string;
+  paymentLink?: string;
 }
 
 export interface IMemberPayment extends IBasicMemberPayment {
@@ -72,6 +76,9 @@ export interface IManageMemberPayment {
   taxAmount: number;
   discountAmount: number;
   totalAmount: number;
+  paymentLink?: string;
+  gatewayProvider?: string;
+  gatewayOrderId?: string;
 }
 
 export interface IPaymentReport {

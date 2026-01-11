@@ -32,7 +32,7 @@ import {
   ICalculateTaxResponse,
   IMemberDietPlan,
   IMemberDietDetail, IMemberDietPlanDetail,
-  IMemberProduct
+  IMemberProduct, ICreatePaymentLinkRequest, IPaymentLinkResponse
 } from '@eatfit247-shared-lib';
 
 @Injectable({
@@ -518,23 +518,13 @@ export class MembersApiService extends ApiBaseService {
 
   async createPaymentLink(
     memberId: number,
-    data: {
-      amount: number;
-      currency?: string;
-      franchisePaymentGatewayId: number;
-      description?: string;
-      customer?: {
-        name?: string;
-        email?: string;
-        contact?: string;
-      };
-      notes?: Record<string, any>;
-    }
-  ): Promise<{ short_url: string; id: string; gatewayCode: string }> {
-    const res = await this.httpService.post<
-      IResponse<{ short_url: string; id: string; gatewayCode: string }>
-    >(`${this.endpoint}/${memberId}/payment-history/create-payment-link`, data);
-    return res.data as { short_url: string; id: string; gatewayCode: string };
+    data: ICreatePaymentLinkRequest
+  ): Promise<IPaymentLinkResponse> {
+    const res = await this.httpService.post<IResponse<IPaymentLinkResponse>>(
+      `${this.endpoint}/${memberId}/payment-history/create-payment-link`,
+      data
+    );
+    return res.data as IPaymentLinkResponse;
   }
 
   // endregion
@@ -705,7 +695,6 @@ export class MembersApiService extends ApiBaseService {
   }
 
   // region Dashboard APIs
-
   async getDashboardSummary(memberId: number): Promise<any> {
     const res = await this.httpService.get<IResponse<any>>(
       `${this.endpoint}/${memberId}/dashboard/summary`
@@ -742,9 +731,10 @@ export class MembersApiService extends ApiBaseService {
   }
 
   // endregion
-
   // region Member Product Orders
-  async getProductOrders(memberId: number): Promise<ITableList<IMemberProduct>> {
+  async getProductOrders(
+    memberId: number
+  ): Promise<ITableList<IMemberProduct>> {
     const res = await this.httpService.get<
       IResponse<ITableList<IMemberProduct>>
     >(`${this.endpoint}/${memberId}/product/list`);

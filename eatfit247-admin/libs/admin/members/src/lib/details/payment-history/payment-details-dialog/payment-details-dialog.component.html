@@ -1,0 +1,252 @@
+<div class="payment-details-dialog">
+  <div mat-dialog-title class="dialog-header">
+    <h2>Payment Details</h2>
+    <button mat-icon-button (click)="close()" class="close-button">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <mat-dialog-content class="dialog-content">
+    <div class="payment-details-container">
+      <!-- Payment Link Section (if pending) -->
+      @if (isPending && hasPaymentLink) {
+        <mat-card class="payment-link-card">
+          <mat-card-content>
+            <div class="payment-link-section">
+              <div class="payment-link-header">
+                <mat-icon>link</mat-icon>
+                <h3>Payment Link</h3>
+              </div>
+              <div class="payment-link-content">
+                <p class="payment-link-text">{{ payment.paymentLink }}</p>
+                <button
+                  mat-raised-button
+                  color="primary"
+                  (click)="copyPaymentLink()"
+                  class="copy-button">
+                  <mat-icon>content_copy</mat-icon>
+                  Copy Payment Link
+                </button>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      }
+
+      <!-- Basic Information -->
+      <mat-card class="info-card">
+        <mat-card-header>
+          <mat-card-title>Basic Information</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-label">Invoice ID:</span>
+              <span class="info-value">{{ payment.invoiceId || 'N/A' }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Transaction ID:</span>
+              <span class="info-value">{{ payment.transactionId || 'N/A' }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Payment Date:</span>
+              <span class="info-value">{{ formatDate(payment.paymentDate) }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Payment Status:</span>
+              <span class="info-value status-badge" [class.pending]="isPending">
+                {{ payment.paymentStatus || 'N/A' }}
+              </span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Payment Mode:</span>
+              <span class="info-value">{{ payment.paymentMode || 'N/A' }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Member Name:</span>
+              <span class="info-value">{{ payment.memberName || 'N/A' }}</span>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Program Information -->
+      <mat-card class="info-card">
+        <mat-card-header>
+          <mat-card-title>Program Information</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-label">Program:</span>
+              <span class="info-value">{{ payment.program || 'N/A' }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Plan:</span>
+              <span class="info-value">{{ payment.programPlan || 'N/A' }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Number of Cycles:</span>
+              <span class="info-value">{{ payment.noOfCycle || 'N/A' }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Days in Cycle:</span>
+              <span class="info-value">{{ payment.noOfDaysInCycle || 'N/A' }}</span>
+            </div>
+            @if (payment.currentCycleNo) {
+              <div class="info-item">
+                <span class="info-label">Current Cycle:</span>
+                <span class="info-value">{{ payment.currentCycleNo }}</span>
+              </div>
+            }
+            @if (payment.currentDayNo) {
+              <div class="info-item">
+                <span class="info-label">Current Day:</span>
+                <span class="info-value">{{ payment.currentDayNo }}</span>
+              </div>
+            }
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Financial Information -->
+      <mat-card class="info-card">
+        <mat-card-header>
+          <mat-card-title>Financial Information</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-label">Order Amount:</span>
+              <span class="info-value">{{ formatCurrency(payment.orderAmount) }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Discount Amount:</span>
+              <span class="info-value">{{ formatCurrency(payment.discountAmount) }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Tax Amount:</span>
+              <span class="info-value">{{ formatCurrency(payment.taxAmount) }}</span>
+            </div>
+            <div class="info-item total-amount">
+              <span class="info-label">Total Amount:</span>
+              <span class="info-value">{{ formatCurrency(payment.totalAmount) }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Tax Applicable:</span>
+              <span class="info-value">{{ payment.isTaxApplicable ? 'Yes' : 'No' }}</span>
+            </div>
+            @if (payment.promoCode) {
+              <div class="info-item">
+                <span class="info-label">Promo Code:</span>
+                <span class="info-value">{{ payment.promoCode }}</span>
+              </div>
+            }
+            @if (payment.gstNumber) {
+              <div class="info-item">
+                <span class="info-label">GST Number:</span>
+                <span class="info-value">{{ payment.gstNumber }}</span>
+              </div>
+            }
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Gateway Information -->
+      @if (payment.gatewayProvider || payment.gatewayOrderId || payment.gatewayPaymentId) {
+        <mat-card class="info-card">
+          <mat-card-header>
+            <mat-card-title>Gateway Information</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="info-grid">
+              @if (payment.gatewayProvider) {
+                <div class="info-item">
+                  <span class="info-label">Gateway Provider:</span>
+                  <span class="info-value">{{ payment.gatewayProvider }}</span>
+                </div>
+              }
+              @if (payment.gatewayOrderId) {
+                <div class="info-item">
+                  <span class="info-label">Gateway Order ID:</span>
+                  <span class="info-value">{{ payment.gatewayOrderId }}</span>
+                </div>
+              }
+              @if (payment.gatewayPaymentId) {
+                <div class="info-item">
+                  <span class="info-label">Gateway Payment ID:</span>
+                  <span class="info-value">{{ payment.gatewayPaymentId }}</span>
+                </div>
+              }
+            </div>
+          </mat-card-content>
+        </mat-card>
+      }
+
+      <!-- Address Information -->
+      @if (payment.address || payment.billingAddress) {
+        <mat-card class="info-card">
+          <mat-card-header>
+            <mat-card-title>Address Information</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="info-grid">
+              @if (payment.address) {
+                <div class="info-item full-width">
+                  <span class="info-label">Delivery Address:</span>
+                  <span class="info-value">{{ formatAddress(payment.address) }}</span>
+                </div>
+              }
+              @if (payment.billingAddress) {
+                <div class="info-item full-width">
+                  <span class="info-label">Billing Address:</span>
+                  <span class="info-value">{{ formatAddress(payment.billingAddress) }}</span>
+                </div>
+              }
+            </div>
+          </mat-card-content>
+        </mat-card>
+      }
+
+      <!-- Timestamps -->
+      <mat-card class="info-card">
+        <mat-card-header>
+          <mat-card-title>Timestamps</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-label">Created At:</span>
+              <span class="info-value">{{ formatDate(payment.createdAt) }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Updated At:</span>
+              <span class="info-value">{{ formatDate(payment.updatedAt) }}</span>
+            </div>
+            @if (payment.createdByUser) {
+              <div class="info-item">
+                <span class="info-label">Created By:</span>
+                <span class="info-value">
+                  {{ payment.createdByUser.firstName }} {{ payment.createdByUser.lastName }}
+                </span>
+              </div>
+            }
+            @if (payment.updatedByUser) {
+              <div class="info-item">
+                <span class="info-label">Updated By:</span>
+                <span class="info-value">
+                  {{ payment.updatedByUser.firstName }} {{ payment.updatedByUser.lastName }}
+                </span>
+              </div>
+            }
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </mat-dialog-content>
+
+  <mat-dialog-actions class="dialog-actions">
+    <button mat-button (click)="close()">Close</button>
+  </mat-dialog-actions>
+</div>
+

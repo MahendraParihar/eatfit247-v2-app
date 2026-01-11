@@ -24,7 +24,7 @@ import {
   IDropdownItem,
   InputLengthEnum,
   PaymentSourceEnum,
-  ICalculateTaxResponse
+  ICalculateTaxResponse, PaymentStatusEnum
 } from '@eatfit247-shared-lib';
 import { MembersApiService } from '../../../api.service';
 
@@ -159,7 +159,7 @@ export class ManageMemberPaymentComponent implements OnInit {
       gatewayOrderId: ['', [Validators.maxLength(InputLengthEnum.CHAR_100)]],
       gatewayPaymentId: ['', [Validators.maxLength(InputLengthEnum.CHAR_100)]],
       paymentLink: ['', [Validators.maxLength(InputLengthEnum.CHAR_500)]],
-      franchisePaymentGatewayId: [null],
+      franchisePaymentGatewayId: [null]
     });
     // Subscribe to changes to calculate tax and total from backend with debouncing
     this.formGroup.get('orderAmount')?.valueChanges.pipe(
@@ -233,6 +233,13 @@ export class ManageMemberPaymentComponent implements OnInit {
     // Subscribe to payment source changes to update field validators
     this.formGroup.get('paymentSource')?.valueChanges.subscribe((paymentSource) => {
       this.updatePaymentFieldValidators(paymentSource);
+      // Clear payment link when payment source changes
+      this.paymentLink.set(null);
+      this.paymentLinkId.set(null);
+      this.formGroup.patchValue({
+        paymentLink: '',
+        gatewayOrderId: ''
+      }, { emitEvent: false });
       // Load gateways when switching to gateway payment
       if (paymentSource === PaymentSourceEnum?.PAYMENT_GATEWAY || paymentSource === 'PAYMENT_GATEWAY') {
         this.loadSupportedGateways();
@@ -240,8 +247,8 @@ export class ManageMemberPaymentComponent implements OnInit {
     });
     // Subscribe to currency changes to reload gateways
     this.step1FormGroup.get('currencyCode')?.valueChanges.subscribe(() => {
-      if (this.formGroup.get('paymentSource')?.value === PaymentSourceEnum?.PAYMENT_GATEWAY || 
-          this.formGroup.get('paymentSource')?.value === 'PAYMENT_GATEWAY') {
+      if (this.formGroup.get('paymentSource')?.value === PaymentSourceEnum?.PAYMENT_GATEWAY ||
+        this.formGroup.get('paymentSource')?.value === 'PAYMENT_GATEWAY') {
         this.loadSupportedGateways();
       }
     });
@@ -368,7 +375,20 @@ export class ManageMemberPaymentComponent implements OnInit {
 
   isManualPaymentSource(): boolean {
     const paymentSource = this.formGroup.get('paymentSource')?.value;
-    return paymentSource === PaymentSourceEnum?.MANUAL || paymentSource === 'MANUAL';
+    return paymentSource === PaymentSourceEnum?.MANUAL;
+  }
+
+  isPaymentLinkRequiredAndGenerated(): boolean {
+    const paymentSource = this.formGroup.get('paymentSource')?.value;
+    const isPaymentGateway = paymentSource === PaymentSourceEnum?.PAYMENT_GATEWAY || paymentSource === 'PAYMENT_GATEWAY';
+    
+    // If payment source is PAYMENT_GATEWAY, payment link must be generated
+    if (isPaymentGateway) {
+      return !!this.paymentLink() && this.paymentLink()!.trim().length > 0;
+    }
+    
+    // For other payment sources, payment link is not required
+    return true;
   }
 
   async loadSupportedGateways(): Promise<void> {
@@ -429,13 +449,13 @@ export class ManageMemberPaymentComponent implements OnInit {
           programPlanId: programPlanId?.toString()
         }
       });
-      this.paymentLink.set(result.short_url);
+      this.paymentLink.set(result.shortUrl);
       this.paymentLinkId.set(result.id);
-      const selectedGateway = this.supportedGateways().find(g => g.franchisePaymentGatewayId === selectedGatewayId);
       this.formGroup.patchValue({
-        paymentLink: result.short_url,
-        gatewayProvider: selectedGateway?.gatewayCode.toLowerCase() || 'razorpay',
-        gatewayOrderId: result.id
+        paymentLink: result.shortUrl,
+        gatewayProvider: result.gatewayCode,
+        gatewayOrderId: result.id,
+        paymentStatusId: PaymentStatusEnum.PENDING
       });
     } catch (error) {
       console.error('Error creating payment link:', error);
@@ -450,7 +470,7 @@ export class ManageMemberPaymentComponent implements OnInit {
     this.formGroup.patchValue({
       franchisePaymentGatewayId: gatewayId
     });
-    // Clear existing payment link when gateway changes
+    // Clear the existing payment link when gateway changes
     this.paymentLink.set(null);
     this.paymentLinkId.set(null);
     this.formGroup.patchValue({
@@ -505,23 +525,23 @@ export class ManageMemberPaymentComponent implements OnInit {
     if (this.data.payment) {
       const paymentObj = this.data.payment.paymentObj as any;
       const formValues = {
-        paymentModeId: this.data.payment.paymentModeId || null,
-        programId: this.data.payment.programId || null,
-        programPlanId: this.data.payment.programPlanId || null,
-        addressId: this.data.payment.addressId || null,
-        billingAddressId: this.data.payment.billingAddressId || null,
+        paymentModeId: this.data.payment.paymentModeId,
+        programId: this.data.payment.programId,
+        programPlanId: this.data.payment.programPlanId,
+        addressId: this.data.payment.addressId,
+        billingAddressId: this.data.payment.billingAddressId,
         transactionId: this.data.payment.transactionId || '',
         paymentDate: this.data.payment.paymentDate,
-        paymentStatusId: this.data.payment.paymentStatusId || null,
-        isTaxApplicable: this.data.payment.isTaxApplicable || false,
-        isPlanFeesIncludedTax: paymentObj?.isPlanFeesIncludedTax ?? this.data.payment.isTaxApplicable ? false : false,
-        noOfCycle: paymentObj?.noOfCycle || this.data.payment.noOfCycle || 0,
-        noOfDaysInCycle: paymentObj?.noOfDaysInCycle || this.data.payment.noOfDaysInCycle || 0,
-        currencyCode: paymentObj?.currencyCode || 'INR',
-        orderAmount: paymentObj?.orderAmount || this.data.payment.orderAmount || 0,
-        discountAmount: paymentObj?.discountAmount || this.data.payment.discountAmount || 0,
+        paymentStatusId: this.data.payment.paymentStatusId,
+        isTaxApplicable: this.data.payment.isTaxApplicable,
+        isPlanFeesIncludedTax: paymentObj.isPlanFeesIncludedTax ?? this.data.payment.isTaxApplicable ? false : false,
+        noOfCycle: paymentObj.noOfCycle || this.data.payment.noOfCycle,
+        noOfDaysInCycle: paymentObj.noOfDaysInCycle || this.data.payment.noOfDaysInCycle,
+        currencyCode: paymentObj.currencyCode,
+        orderAmount: paymentObj.orderAmount || this.data.payment.orderAmount,
+        discountAmount: paymentObj.discountAmount || this.data.payment.discountAmount,
         gstNumber: this.data.payment.gstNumber || '',
-        paymentSource: (this.data.payment as any).paymentSource || PaymentSourceEnum?.MANUAL || 'MANUAL',
+        paymentSource: (this.data.payment as any).paymentSource || PaymentSourceEnum?.MANUAL,
         gatewayProvider: (this.data.payment as any).gatewayProvider || '',
         gatewayOrderId: (this.data.payment as any).gatewayOrderId || '',
         gatewayPaymentId: (this.data.payment as any).gatewayPaymentId || '',
@@ -532,7 +552,7 @@ export class ManageMemberPaymentComponent implements OnInit {
       this.updatePaymentFieldValidators(formValues.paymentSource);
       // Update tax percentage display after loading data
       this.updateTaxPercentageDisplay(this.data.payment.isTaxApplicable || false);
-      // Calculate tax from backend after loading data
+      // Calculate tax from the backend after loading data
       setTimeout(() => this.calculateTaxFromBackend(), 100);
       // Sync step1FormGroup
       this.step1FormGroup.patchValue({
@@ -568,16 +588,14 @@ export class ManageMemberPaymentComponent implements OnInit {
         const getValue = (key: string) => {
           return this.step1FormGroup?.get(key)?.value ?? this.formGroup.get(key)?.value;
         };
-        const formValue: any = {
+        const formValue: IManageMemberPayment = {
           memberId: this.data.memberId,
           paymentModeId: this.formGroup.value.paymentModeId,
           programPlanId: getValue('programPlanId') || this.formGroup.value.programPlanId,
           programId: getValue('programId') || this.formGroup.value.programId,
           addressId: getValue('addressId') || this.formGroup.value.addressId || null,
-          billingAddressId: getValue('billingAddressId') || this.formGroup.value.billingAddressId || null,
-          transactionId:
-            this.formGroup.value.transactionId?.trim() || undefined,
-          paymentDate: this.formGroup.value.paymentDate,
+          billingAddressId: getValue('billingAddressId') || this.formGroup.value.billingAddressId,
+          transactionId: this.formGroup.value.transactionId?.trim() || undefined,
           paymentStatusId: this.formGroup.value.paymentStatusId,
           isTaxApplicable: getValue('isTaxApplicable') ?? this.formGroup.value.isTaxApplicable ?? false,
           gstNumber: getValue('gstNumber')?.trim() || this.formGroup.value.gstNumber?.trim() || undefined,
@@ -593,7 +611,19 @@ export class ManageMemberPaymentComponent implements OnInit {
           discountAmount: Number(getValue('discountAmount') || this.formGroup.value.discountAmount || 0),
           totalAmount: this.totalAmount || 0,
           promoCode: '',
+          paymentDate: this.formGroup.value.paymentDate || new Date()
         };
+        if (!this.isManualPaymentSource()) {
+          if (!this.formGroup.value.paymentLink || this.formGroup.value.paymentLink.length === 0) {
+            this.snackBar.open('Payment link not generated, order can not be placed', 'Close', {
+              duration: 3000
+            });
+            return;
+          }
+          formValue.paymentLink = this.formGroup.value.paymentLink;
+          formValue.gatewayProvider = this.formGroup.value.gatewayProvider;
+          formValue.gatewayOrderId = this.formGroup.value.gatewayOrderId;
+        }
         if (this.isEditMode && this.data.payment?.memberPaymentId) {
           await this.apiService.updatePayment(
             this.data.memberId,
@@ -646,11 +676,6 @@ export class ManageMemberPaymentComponent implements OnInit {
     return this.masterData()?.paymentSource || [];
   }
 
-  get isGatewayPayment(): boolean {
-    const manualSource = PaymentSourceEnum?.MANUAL || 'MANUAL';
-    return this.formGroup.get('paymentSource')?.value !== manualSource;
-  }
-
   async loadProgramPlanFees(programPlanId: number): Promise<void> {
     try {
       const programPlan = await this.apiService.getProgramPlanDetails(this.data.memberId, programPlanId);
@@ -692,11 +717,6 @@ export class ManageMemberPaymentComponent implements OnInit {
     } catch (error) {
       console.error('Error loading program plan fees:', error);
     }
-  }
-
-  calculateAmounts(): void {
-    // Trigger backend tax calculation
-    this.calculateTaxFromBackend();
   }
 
   get taxAmount(): number {
