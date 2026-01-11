@@ -9,10 +9,10 @@
 .container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: $spacing-sm $spacing-lg;
+  padding: $spacing-3xl $spacing-lg;
 
   @media (max-width: 768px) {
-    padding: $spacing-sm $spacing-md;
+    padding: $spacing-2xl $spacing-md;
   }
 }
 
