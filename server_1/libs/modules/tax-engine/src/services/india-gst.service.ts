@@ -36,7 +36,11 @@ export class IndiaGstService {
       taxAmount,
       taxObj,
       totalAmount: amount + taxAmount,
-      taxMode: TaxMode.DOMESTIC,
+      taxMode: TaxMode.DOMESTIC_GST,
+      isLutApplied: false,
+      entityCountry: '',
+      placeOfSupply: '',
+      customerCountry: '',
     };
   }
 }

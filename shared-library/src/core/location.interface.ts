@@ -72,6 +72,7 @@ export interface IAddress extends IManageAddress {
   addressType: string;
   state: string;
   country: string;
+  countryCode?: string;
   createdByUser?: IBaseAdminUser;
   updatedByUser?: IBaseAdminUser;
 }

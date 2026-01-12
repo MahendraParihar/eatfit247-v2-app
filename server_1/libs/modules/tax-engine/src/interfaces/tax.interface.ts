@@ -20,6 +20,10 @@ export interface TaxResult {
   totalAmount: number;
   taxMode?: TaxMode;
   invoiceNote?: string;
+  entityCountry: string;
+  customerCountry: string;
+  placeOfSupply: string;
+  isLutApplied: boolean;
 }
 
 export interface CountryTaxInfo {

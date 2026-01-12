@@ -477,6 +477,22 @@ export class MembersApiService extends ApiBaseService {
     );
   }
 
+  async downloadInvoice(
+    memberId: number,
+    paymentId: number
+  ): Promise<{
+    buffer: string;
+    fileName: string;
+  }> {
+    const res = await this.httpService.get<
+      IResponse<{
+        buffer: string;
+        fileName: string;
+      }>
+    >(`${this.endpoint}/${memberId}/payment-history/${paymentId}/invoice`);
+    return res.data as { buffer: string; fileName: string };
+  }
+
   async getProgramPlanDetails(
     memberId: number,
     programPlanId: number

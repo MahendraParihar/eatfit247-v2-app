@@ -5,6 +5,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { DataTableComponent, ITableColumn, ITableConfig, ITableAction, EmptyStateType } from '@shared';
 import { EmptyStateComponent } from '@shared';
 import { LoaderComponent } from '@shared';
@@ -20,10 +21,6 @@ import {
   PaymentDetailsDialogComponent,
   PaymentDetailsDialogData
 } from './payment-details-dialog/payment-details-dialog.component';
-import {
-  InvoicePreviewComponent,
-  InvoicePreviewDialogData
-} from './invoice-preview/invoice-preview.component';
 
 @Component({
   selector: 'lib-member-payment-history',
@@ -51,7 +48,8 @@ export class MemberPaymentHistoryComponent implements OnInit, OnDestroy {
   constructor(
     private route: ActivatedRoute,
     private apiService: MembersApiService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private snackBar: MatSnackBar
   ) {
     this.initializeTable();
   }
@@ -133,10 +131,10 @@ export class MemberPaymentHistoryComponent implements OnInit, OnDestroy {
         onClick: (row) => this.viewPaymentDetails(row)
       },
       {
-        label: 'View Invoice',
-        icon: 'receipt_long',
+        label: 'Download Invoice',
+        icon: 'download',
         color: 'accent',
-        onClick: (row) => this.viewInvoice(row)
+        onClick: (row) => this.downloadInvoice(row)
       }
     ];
     this.tableConfig = {
@@ -212,19 +210,39 @@ export class MemberPaymentHistoryComponent implements OnInit, OnDestroy {
     });
   }
 
-  viewInvoice(payment: IMemberPayment): void {
-    const dialogData: InvoicePreviewDialogData = {
-      payment: payment
-    };
-    this.dialog.open(InvoicePreviewComponent, {
-      width: '900px',
-      maxWidth: '95vw',
-      height: '95vh',
-      maxHeight: '95vh',
-      panelClass: 'invoice-preview-dialog',
-      data: dialogData,
-      autoFocus: false,
-      disableClose: false
-    });
+  async downloadInvoice(payment: IMemberPayment): Promise<void> {
+    if (!payment.memberPaymentId) {
+      this.snackBar.open('Payment ID not found', 'Close', {
+        duration: 3000
+      });
+      return;
+    }
+
+    try {
+      const fileData = await this.apiService.downloadInvoice(
+        this.memberId,
+        payment.memberPaymentId
+      );
+      if (fileData) {
+        this.downloadTemplate(fileData.buffer, fileData.fileName);
+      }
+    } catch (error) {
+      console.error('Error downloading invoice:', error);
+      this.snackBar.open('Failed to download invoice', 'Close', {
+        duration: 3000
+      });
+    }
+  }
+
+  downloadTemplate(base64String: string, fileName: string): void {
+    if (base64String) {
+      const mediaType = 'data:application/pdf;base64,';
+      const link = document.createElement('a');
+      link.setAttribute('target', '_blank');
+      link.setAttribute('href', mediaType + base64String);
+      link.setAttribute('download', `${fileName}`);
+      link.click();
+      link.remove();
+    }
   }
 }

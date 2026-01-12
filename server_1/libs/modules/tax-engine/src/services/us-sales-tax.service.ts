@@ -27,6 +27,10 @@ export class UsSalesTaxService {
         },
       },
       totalAmount: amount + taxAmount,
+      isLutApplied: false,
+      entityCountry: '',
+      placeOfSupply: '',
+      customerCountry: '',
     };
   }
 
@@ -37,6 +41,10 @@ export class UsSalesTaxService {
       taxAmount: 0,
       taxObj: {},
       totalAmount: amount,
+      isLutApplied: false,
+      entityCountry: '',
+      placeOfSupply: '',
+      customerCountry: '',
     };
   }
 }

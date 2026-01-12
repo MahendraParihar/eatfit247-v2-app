@@ -29,10 +29,12 @@ export class TaxEngineService {
     const customerCountry = countries.tableData.find(
       (c) => c.countryCode === input.customerCountryCode,
     );
+    console.log('--------------------------------------');
+    console.log(supplierCountry, customerCountry);
     if (!supplierCountry || supplierCountry.taxType === TaxTypeEnum.NONE) {
       return this.noTax(taxableAmount);
     }
-    const isDomestic = supplierCountry.countryCode === customerCountry?.countryCode;
+    const isDomestic = supplierCountry.countryCode === customerCountry.countryCode;
     // 🔴 EXPORT OF SERVICE (INDIA → INTERNATIONAL)
     if (supplierCountry.countryCode === 'IN' && !isDomestic) {
       if (input.currency === 'INR') {
@@ -46,32 +48,50 @@ export class TaxEngineService {
         totalAmount: taxableAmount,
         taxMode: TaxMode.EXPORT_OF_SERVICE,
         invoiceNote: 'Supply meant for export under LUT without payment of IGST',
+        isLutApplied: true,
+        entityCountry: supplierCountry.country,
+        placeOfSupply: customerCountry.country,
+        customerCountry: customerCountry.country,
       };
     }
+    let taxObject: TaxResult;
     switch (supplierCountry.taxType) {
       case TaxTypeEnum.GST:
-        return {
+        taxObject = {
           ...this.indiaGst.calculate(input, taxableAmount, supplierCountry.defaultTaxPercentage),
-          taxMode: TaxMode.DOMESTIC,
+          taxMode: TaxMode.DOMESTIC_GST,
+          isLutApplied: false,
         };
+        break;
       case TaxTypeEnum.VAT:
-        return {
+        taxObject = {
           ...this.vatService.calculate(supplierCountry.defaultTaxPercentage || 0, taxableAmount),
-          taxMode: isDomestic ? TaxMode.DOMESTIC : TaxMode.FOREIGN_LOCAL,
+          taxMode: isDomestic ? TaxMode.DOMESTIC_GST : TaxMode.VAT,
+          isLutApplied: false,
         };
+        break;
       case TaxTypeEnum.SALES_TAX:
         // US Sales Tax is calculated based on customer's billing address state
         const result = await this.usSalesTax.calculate(
           input.customerStateCode || null,
           taxableAmount,
         );
-        return {
+        taxObject = {
           ...result,
-          taxMode: isDomestic ? TaxMode.DOMESTIC : TaxMode.FOREIGN_LOCAL,
+          taxMode: isDomestic ? TaxMode.DOMESTIC_GST : TaxMode.VAT,
+          isLutApplied: false,
         };
+        break;
       default:
-        return this.noTax(taxableAmount);
+        taxObject = this.noTax(taxableAmount);
+        break;
     }
+    return {
+      ...taxObject,
+      entityCountry: supplierCountry.country,
+      placeOfSupply: customerCountry.country,
+      customerCountry: customerCountry.country,
+    };
   }
 
   private noTax(amount: number): TaxResult {
@@ -82,6 +102,10 @@ export class TaxEngineService {
       taxObj: {},
       totalAmount: amount,
       taxMode: TaxMode.NO_TAX,
+      isLutApplied: false,
+      entityCountry: '',
+      placeOfSupply: '',
+      customerCountry: '',
     };
   }
 }

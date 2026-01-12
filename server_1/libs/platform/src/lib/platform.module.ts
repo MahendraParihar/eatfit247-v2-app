@@ -34,6 +34,7 @@ import {
   ZoomService,
 } from './services';
 import { PaymentGatewayService } from './services';
+import { InvoicePdfService, PdfService } from './pdf';
 // Platform modules and controllers
 import { LabelModule } from './label';
 import { FileUploadController } from './file-upload';
@@ -85,6 +86,8 @@ export class PlatformModule {
         PaymentModeService,
         PaymentStatusService,
         PaymentGatewayService,
+        PdfService,
+        InvoicePdfService,
       ],
       exports: [
         SequelizeModule,
@@ -105,6 +108,8 @@ export class PlatformModule {
         PaymentModeService,
         PaymentStatusService,
         PaymentGatewayService,
+        PdfService,
+        InvoicePdfService,
       ],
     };
   }

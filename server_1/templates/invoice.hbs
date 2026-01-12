@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>{{invoice.header.title}}</title>
+  <style type="text/css">
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Arial', 'Helvetica', sans-serif;
+      font-size: 12px;
+      color: #333;
+      line-height: 1.5;
+      padding: 20px;
+    }
+
+    .invoice-header {
+      text-align: center;
+      margin-bottom: 30px;
+      border-bottom: 2px solid #000;
+      padding-bottom: 15px;
+    }
+
+    .invoice-header h1 {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .invoice-meta {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      font-size: 11px;
+    }
+
+    .invoice-meta-item {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .invoice-meta-label {
+      font-weight: bold;
+      margin-bottom: 3px;
+    }
+
+    .parties-section {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 30px;
+    }
+
+    .party-block {
+      width: 48%;
+      border: 1px solid #ddd;
+      padding: 15px;
+      background-color: #f9f9f9;
+    }
+
+    .party-title {
+      font-weight: bold;
+      font-size: 14px;
+      margin-bottom: 10px;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 5px;
+    }
+
+    .party-name {
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+
+    .party-address {
+      margin-bottom: 5px;
+      line-height: 1.6;
+    }
+
+    .party-contact {
+      margin-top: 10px;
+      font-size: 11px;
+    }
+
+    .items-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+
+    .items-table thead {
+      background-color: #333;
+      color: #fff;
+    }
+
+    .items-table th {
+      padding: 10px;
+      text-align: left;
+      font-weight: bold;
+      border: 1px solid #ddd;
+    }
+
+    .items-table td {
+      padding: 10px;
+      border: 1px solid #ddd;
+    }
+
+    .items-table tbody tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+
+    .text-right {
+      text-align: right;
+    }
+
+    .text-center {
+      text-align: center;
+    }
+
+    .summary-section {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 20px;
+    }
+
+    .summary-table {
+      width: 400px;
+      border-collapse: collapse;
+    }
+
+    .summary-table td {
+      padding: 8px 15px;
+      border: 1px solid #ddd;
+    }
+
+    .summary-table td:first-child {
+      font-weight: bold;
+      background-color: #f9f9f9;
+      width: 60%;
+    }
+
+    .summary-table td:last-child {
+      text-align: right;
+      width: 40%;
+    }
+
+    .summary-table .total-row {
+      font-weight: bold;
+      font-size: 14px;
+      background-color: #333;
+      color: #fff;
+    }
+
+    .tax-note {
+      margin-top: 10px;
+      padding: 10px;
+      background-color: #fff3cd;
+      border-left: 4px solid #ffc107;
+      font-size: 11px;
+      font-style: italic;
+    }
+
+    .qr-section {
+      display: flex;
+      justify-content: flex-end;
+      align-items: flex-start;
+      margin-top: 30px;
+      margin-bottom: 20px;
+    }
+
+    .qr-block {
+      text-align: center;
+      padding: 15px;
+      border: 1px solid #ddd;
+      background-color: #f9f9f9;
+    }
+
+    .qr-code-img {
+      width: 150px;
+      height: 150px;
+      margin-bottom: 10px;
+    }
+
+    .qr-label {
+      font-size: 10px;
+      color: #666;
+    }
+
+    .payment-info {
+      margin-top: 20px;
+      padding: 10px;
+      background-color: #e7f3ff;
+      border-left: 4px solid #2196F3;
+      font-size: 11px;
+    }
+
+    .footer {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid #ddd;
+      font-size: 10px;
+      color: #666;
+      text-align: center;
+    }
+
+    .no-tax-label {
+      color: #666;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+  <!-- Invoice Header -->
+  <div class="invoice-header">
+    <h1>{{invoice.header.title}}</h1>
+  </div>
+
+  <!-- Invoice Meta Information -->
+  <div class="invoice-meta">
+    <div class="invoice-meta-item">
+      <span class="invoice-meta-label">Invoice Number:</span>
+      <span>{{invoice.header.invoiceNumber}}</span>
+    </div>
+    <div class="invoice-meta-item">
+      <span class="invoice-meta-label">Invoice Date:</span>
+      <span>{{formatDate invoice.header.invoiceDate}}</span>
+    </div>
+    {{#if invoice.header.dueDate}}
+    <div class="invoice-meta-item">
+      <span class="invoice-meta-label">Due Date:</span>
+      <span>{{formatDate invoice.header.dueDate}}</span>
+    </div>
+    {{/if}}
+    <div class="invoice-meta-item">
+      <span class="invoice-meta-label">Currency:</span>
+      <span>{{invoice.header.currency}}</span>
+    </div>
+  </div>
+
+  <!-- Seller and Buyer Information -->
+  <div class="parties-section">
+    <!-- Seller Block -->
+    <div class="party-block">
+      <div class="party-title">Sold By</div>
+      <div class="party-name">{{invoice.seller.name}}</div>
+      <div class="party-address">
+        {{invoice.seller.address.line1}}<br>
+        {{#if invoice.seller.address.line2}}{{invoice.seller.address.line2}}<br>{{/if}}
+        {{invoice.seller.address.city}}{{#if invoice.seller.address.state}}, {{invoice.seller.address.state}}{{/if}}<br>
+        {{invoice.seller.address.postalCode}}<br>
+        {{invoice.seller.address.country}}
+      </div>
+      {{#if invoice.seller.taxId}}
+      <div class="party-contact">
+        <strong>{{invoice.seller.taxIdLabel}}:</strong> {{invoice.seller.taxId}}
+      </div>
+      {{/if}}
+      {{#if invoice.seller.phone}}
+      <div class="party-contact">
+        <strong>Phone:</strong> {{invoice.seller.phone}}
+      </div>
+      {{/if}}
+      {{#if invoice.seller.email}}
+      <div class="party-contact">
+        <strong>Email:</strong> {{invoice.seller.email}}
+      </div>
+      {{/if}}
+    </div>
+
+    <!-- Buyer Block -->
+    <div class="party-block">
+      <div class="party-title">Bill To</div>
+      <div class="party-name">{{invoice.buyer.name}}</div>
+      <div class="party-address">
+        {{invoice.buyer.address.line1}}<br>
+        {{#if invoice.buyer.address.line2}}{{invoice.buyer.address.line2}}<br>{{/if}}
+        {{invoice.buyer.address.city}}{{#if invoice.buyer.address.state}}, {{invoice.buyer.address.state}}{{/if}}<br>
+        {{invoice.buyer.address.postalCode}}<br>
+        {{invoice.buyer.address.country}}
+      </div>
+      {{#if invoice.buyer.taxId}}
+      <div class="party-contact">
+        <strong>{{invoice.buyer.taxIdLabel}}:</strong> {{invoice.buyer.taxId}}
+      </div>
+      {{/if}}
+      {{#if invoice.buyer.phone}}
+      <div class="party-contact">
+        <strong>Phone:</strong> {{invoice.buyer.phone}}
+      </div>
+      {{/if}}
+      {{#if invoice.buyer.email}}
+      <div class="party-contact">
+        <strong>Email:</strong> {{invoice.buyer.email}}
+      </div>
+      {{/if}}
+    </div>
+  </div>
+
+  <!-- Items Table -->
+  <table class="items-table">
+    <thead>
+      <tr>
+        <th style="width: 5%;">#</th>
+        <th style="width: 40%;">Description</th>
+        {{#if showSacColumn}}
+        <th style="width: 10%;" class="text-center">SAC</th>
+        {{/if}}
+        {{#if showHsnColumn}}
+        <th style="width: 10%;" class="text-center">HSN</th>
+        {{/if}}
+        <th style="width: 10%;" class="text-center">Qty</th>
+        <th style="width: 12.5%;" class="text-right">Rate</th>
+        <th style="width: 12.5%;" class="text-right">Amount</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each invoice.items}}
+      <tr>
+        <td>{{@index}}</td>
+        <td>{{this.description}}</td>
+        {{#if ../showSacColumn}}
+        <td class="text-center">{{#if this.sacCode}}{{this.sacCode}}{{else}}-{{/if}}</td>
+        {{/if}}
+        {{#if ../showHsnColumn}}
+        <td class="text-center">{{#if this.hsnCode}}{{this.hsnCode}}{{else}}-{{/if}}</td>
+        {{/if}}
+        <td class="text-center">{{this.qty}}</td>
+        <td class="text-right">{{formatCurrency this.rate ../invoice.header.currency}}</td>
+        <td class="text-right">{{formatCurrency this.amount ../invoice.header.currency}}</td>
+      </tr>
+      {{/each}}
+    </tbody>
+  </table>
+
+  <!-- Summary Section -->
+  <div class="summary-section">
+    <table class="summary-table">
+      <tr>
+        <td>Subtotal</td>
+        <td class="text-right">{{formatCurrency invoice.pricing.subtotal invoice.header.currency}}</td>
+      </tr>
+      {{#if invoice.pricing.discount}}
+      <tr>
+        <td>Discount</td>
+        <td class="text-right">{{formatCurrency invoice.pricing.discount invoice.header.currency}}</td>
+      </tr>
+      {{/if}}
+      <tr>
+        <td>Net Amount</td>
+        <td class="text-right">{{formatCurrency invoice.pricing.netAmount invoice.header.currency}}</td>
+      </tr>
+      {{#if showTaxRows}}
+        {{#each invoice.tax.rows}}
+        <tr>
+          <td>{{taxRowLabel this}}</td>
+          <td class="text-right">{{formatCurrency this.amount ../invoice.header.currency}}</td>
+        </tr>
+        {{/each}}
+        <tr>
+          <td><strong>Total Tax</strong></td>
+          <td class="text-right"><strong>{{formatCurrency invoice.tax.totalTax invoice.header.currency}}</strong></td>
+        </tr>
+      {{else}}
+        {{#if invoice.tax.note}}
+        <tr>
+          <td class="no-tax-label">{{invoice.tax.note}}</td>
+          <td class="text-right no-tax-label">-</td>
+        </tr>
+        {{/if}}
+      {{/if}}
+      <tr class="total-row">
+        <td>{{invoice.total.label}}</td>
+        <td class="text-right">{{formatCurrency invoice.total.amount invoice.header.currency}}</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- Tax Note -->
+  {{#if invoice.tax.note}}
+  <div class="tax-note">
+    <strong>Note:</strong> {{invoice.tax.note}}
+  </div>
+  {{/if}}
+
+  <!-- QR Code Section (only for Indian GST domestic invoices) -->
+  {{#if showQrCode}}
+  <div class="qr-section">
+    <div class="qr-block">
+      {{#if qrCodeImage}}
+      <img src="{{qrCodeImage}}" alt="QR Code" class="qr-code-img" />
+      {{/if}}
+      <div class="qr-label">{{invoice.qrCode.label}}</div>
+    </div>
+  </div>
+  {{/if}}
+
+  <!-- Payment Information -->
+  <div class="payment-info">
+    <strong>Payment Information:</strong><br>
+    <strong>Method:</strong> {{#each invoice.payment.methods}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}<br>
+    <strong>Status:</strong> {{invoice.payment.status}}
+  </div>
+
+  <!-- Footer -->
+  {{#if invoice.footer.legalNote}}
+  <div class="footer">
+    {{invoice.footer.legalNote}}
+  </div>
+  {{/if}}
+</body>
+</html>
+

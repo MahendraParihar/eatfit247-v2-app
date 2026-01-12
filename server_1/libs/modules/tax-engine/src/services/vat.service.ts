@@ -18,6 +18,10 @@ export class VatService {
         },
       },
       totalAmount: amount + taxAmount,
+      isLutApplied: false,
+      entityCountry: '',
+      placeOfSupply: '',
+      customerCountry: '',
     };
   }
 }

@@ -11,23 +11,27 @@ import {
   IManageMemberPayment,
   IMemberPayment,
   IMemberPaymentMasterData,
+  IMemberPaymentObject,
   IPaymentLinkResponse,
   ITableList,
   PaymentSourceEnum,
   PaymentStatusEnum,
   TableEnum,
-  TransactionType,
+  mapPaymentToInvoiceDocument,
+  MemberInfo,
+  TransactionType, MediaForEnum,
 } from '@eatfit247-shared-lib';
-import { AppConfigService, CommonFunctionsUtil, MstFranchise } from '@server_1/core';
+import { AppConfigService, CommonFunctionsUtil, Env, MstFranchise } from '@server_1/core';
 import {
   AddressService,
   CountryService,
-  EmailNotificationService,
+  InvoicePdfService,
   PaymentModeService,
   PaymentStatusService,
-  RazorpayService,
+  PdfService,
   StateService,
 } from '@server_1/platform';
+import { IFileModel } from '@server_1/platform';
 import { ProgramPlanService, ProgramService } from '@server_1/modules/program-plan';
 import { TaxEngineService, TaxInput } from '@server_1/modules/tax-engine';
 import { FranchisePaymentGatewayService } from '@server_1/modules/franchise';
@@ -38,15 +42,17 @@ import {
 } from '@server_1/modules/payment';
 import { Sequelize } from 'sequelize-typescript';
 import { MemberDietPlanService } from './member-diet-plan.service';
+import fs from 'fs';
 
 @Injectable()
 export class MemberPaymentService {
+  rootFolderPath = `${Env.persistentStorageAssetPath}`;
+
   constructor(
     @InjectModel(TxnMember) private readonly memberRepository: typeof TxnMember,
     @InjectModel(TxnMemberPayment)
     private readonly memberPaymentRepository: typeof TxnMemberPayment,
     private sequelize: Sequelize,
-    private readonly emailNotificationService: EmailNotificationService,
     private readonly appConfigService: AppConfigService,
     private readonly paymentModeService: PaymentModeService,
     private readonly paymentStatusService: PaymentStatusService,
@@ -56,12 +62,13 @@ export class MemberPaymentService {
     private readonly taxEngineService: TaxEngineService,
     private readonly countryService: CountryService,
     private readonly stateService: StateService,
-    private readonly razorpayService: RazorpayService,
     private readonly franchisePaymentGatewayService: FranchisePaymentGatewayService,
     private readonly paymentGatewayResolverService: PaymentGatewayResolverService,
     private readonly memberDietPlanService: MemberDietPlanService,
     private readonly paymentGatewayFactory: PaymentGatewayFactory,
     private readonly paymentGatewayCredentialService: PaymentGatewayCredentialService,
+    private readonly pdfService: PdfService,
+    private readonly invoicePdfService: InvoicePdfService,
   ) {}
 
   /**
@@ -142,14 +149,14 @@ export class MemberPaymentService {
         franchiseAddresses && franchiseAddresses.length > 0 ? franchiseAddresses[0] : null;
     }
     // Get country and state codes from addresses
-    let supplierCountryCode = 'IN'; // Default to India
+    let supplierCountryCode = null;
     let supplierStateCode: string | null = null;
-    let customerCountryCode = 'IN'; // Default to India
+    let customerCountryCode = null;
     let customerStateCode: string | null = null;
     if (franchiseAddress) {
       if (franchiseAddress.countryId) {
         const franchiseCountry = await this.countryService.fetchById(franchiseAddress.countryId);
-        supplierCountryCode = franchiseCountry.countryCode || 'IN';
+        supplierCountryCode = franchiseCountry.countryCode;
       }
       if (franchiseAddress.stateId) {
         const franchiseState = await this.stateService.fetchById(franchiseAddress.stateId);
@@ -159,7 +166,7 @@ export class MemberPaymentService {
     if (billingAddress) {
       if (billingAddress.countryId) {
         const customerCountry = await this.countryService.fetchById(billingAddress.countryId);
-        customerCountryCode = customerCountry.countryCode || 'IN';
+        customerCountryCode = customerCountry.countryCode;
       }
       if (billingAddress.stateId) {
         const customerState = await this.stateService.fetchById(billingAddress.stateId);
@@ -172,7 +179,7 @@ export class MemberPaymentService {
     let baseAmountForTax = systemOrderAmount;
     // Handle isPlanFeesIncludedTax - extract base amount if tax is included
     if (payload.isTaxApplicable && payload.isPlanFeesIncludedTax) {
-      // First, get tax percentage to extract base amount
+      // First, get tax percentage to extract the base amount
       const tempTaxInput: TaxInput = {
         baseAmount: systemOrderAmount,
         discountAmount: 0,
@@ -693,7 +700,7 @@ export class MemberPaymentService {
       noOfDaysInCycle: item.paymentObj?.noOfDaysInCycle || 0,
       currentCycleNo: item.paymentObj?.currentCycleNo,
       currentDayNo: item.paymentObj?.currentDayNo,
-      deletable: true, // TODO: Add logic to determine if payment can be deleted
+      deletable: false, // TODO: Add logic to determine if payment can be deleted
       createdBy: item.createdBy,
       updatedBy: item.modifiedBy,
       createdAt: item.createdAt,
@@ -762,19 +769,19 @@ export class MemberPaymentService {
   }
 
   /**
-   * Calculate a payment object using tax engine based on billing address and franchise address
+   * Calculate a payment object using the tax engine based on billing address and franchise address
    */
   private async calculatePaymentObject(
     paymentObjInput: {
       orderAmount: number;
       discountAmount: number;
       currencyCode: string;
-      isPlanFeesIncludedTax: boolean
+      isPlanFeesIncludedTax: boolean;
     },
     isTaxApplicable: boolean,
     billingAddress: IAddress | null,
     franchiseAddress: IAddress | null,
-  ): Promise<any> {
+  ): Promise<IMemberPaymentObject> {
     const orderAmount = paymentObjInput.orderAmount;
     const discountAmount = paymentObjInput.discountAmount;
     const currencyCode = paymentObjInput.currencyCode;
@@ -858,30 +865,37 @@ export class MemberPaymentService {
       systemTaxAmount = extractedTax;
       systemTotalAmount = discountedBase + extractedTax;
     }
-    // Calculate user amounts (same as system for now, can be converted later)
+    // Calculate user amounts (same as a system for now, can be converted later)
     const userOrderAmount = systemOrderAmount;
     const userDiscountAmount = systemDiscountAmount;
     const userTaxAmount = systemTaxAmount;
     const userTotalAmount = systemTotalAmount;
-    return {
-      user: {
+    return <IMemberPaymentObject>{
+      currency: currencyCode,
+      pricing: {
         orderAmount: userOrderAmount,
         discountAmount: userDiscountAmount,
         taxAmount: userTaxAmount,
         totalAmount: userTotalAmount,
-        currency: currencyCode,
+      },
+      tax: {
+        taxType: taxResult.taxType,
+        taxMode: taxResult.taxMode,
+        taxPercentage: taxResult.taxPercentage,
+        taxAmount: userTaxAmount,
+        isTaxIncludedInPrice: isPlanFeesIncludedTax,
+        isLutApplied: taxResult.isLutApplied,
         taxObj: taxResult.taxObj,
       },
-      system: {
-        orderAmount: systemOrderAmount,
-        discountAmount: systemDiscountAmount,
-        taxAmount: systemTaxAmount,
-        totalAmount: systemTotalAmount,
-        currency: currencyCode,
-        taxObj: taxResult.taxObj,
+      jurisdiction: {
+        entityCountry: taxResult.entityCountry,
+        customerCountry: taxResult.customerCountry,
+        placeOfSupply: taxResult.placeOfSupply,
       },
-      taxPercentage: taxResult.taxPercentage,
-      isPlanFeesIncludedTax: isPlanFeesIncludedTax,
+      invoice: {
+        note: taxResult.invoiceNote || null,
+      },
+      calculationVersion: '',
     };
   }
 
@@ -1034,7 +1048,7 @@ export class MemberPaymentService {
     const adaptor = this.paymentGatewayFactory.getAdapter(gatewayCode);
     const paymentLink = await adaptor.createPaymentLink(
       payload.amount,
-      payload.currency || 'INR',
+      payload.currency,
       paymentDescription,
       customerDetails,
       paymentNotes,
@@ -1048,5 +1062,133 @@ export class MemberPaymentService {
       id: paymentLink.id,
       gatewayCode: gatewayCode,
     };
+  }
+
+  /**
+   * Generate invoice PDF for a member payment using the universal invoice system
+   * @param memberId - Member ID
+   * @param paymentId - Payment ID
+   * @returns File model with PDF details
+   */
+  public async generateInvoicePDF(memberId: number, paymentId: number): Promise<IFileModel> {
+    // Get payment with all details
+    const payment = await this.memberPaymentRepository.scope('details').findOne({
+      where: {
+        memberPaymentId: paymentId,
+        memberId,
+        active: true,
+      },
+      include: [
+        {
+          model: TxnMember,
+          as: 'member',
+          required: true,
+          include: [
+            {
+              model: MstFranchise,
+              as: 'franchise',
+              required: false,
+            },
+          ],
+        },
+      ],
+    });
+    if (!payment) {
+      throw new NotFoundException('Payment not found');
+    }
+    // Get member with franchise
+    const member = await this.memberRepository.scope('details').findOne({
+      where: { memberId },
+      include: [
+        {
+          model: MstFranchise,
+          as: 'franchise',
+          required: false,
+        },
+      ],
+    });
+    if (!member) {
+      throw new NotFoundException('Member not found');
+    }
+    if (!member.franchiseId) {
+      throw new BadRequestException('Member does not have an associated franchise');
+    }
+    // Get franchise address
+    const franchiseAddress = await this.addressService.findByTableIdAndPk(
+      TableEnum.MST_FRANCHISES,
+      member.franchiseId,
+    );
+    // Get billing address - use from a payment object if available, otherwise use address
+    let billingAddress: IAddress | null = null;
+    if (payment.billingAddress) {
+      billingAddress = {
+        addressId: payment.billingAddress.addressId,
+        addressName: payment.billingAddress.addressName,
+        postalAddress: payment.billingAddress.postalAddress,
+        cityVillage: payment.billingAddress.cityVillage,
+        stateId: payment.billingAddress.stateId,
+        state: payment.billingAddress.state?.state || '',
+        countryId: payment.billingAddress.countryId,
+        country: payment.billingAddress.country.country || '',
+        countryCode: payment.billingAddress.country.countryCode || '',
+        pinCode: payment.billingAddress.pinCode,
+        addressTypeId: payment.billingAddress.addressTypeId,
+        addressType: payment.billingAddress.addressType.addressType || '',
+      } as IAddress;
+    } else if (payment.address) {
+      billingAddress = {
+        addressId: payment.address.addressId,
+        addressName: payment.address.addressName,
+        postalAddress: payment.address.postalAddress,
+        cityVillage: payment.address.cityVillage,
+        stateId: payment.address.stateId,
+        state: payment.address.state?.state || '',
+        countryId: payment.address.countryId,
+        country: payment.address.country.country || '',
+        countryCode: payment.billingAddress.country.countryCode || '',
+        pinCode: payment.address.pinCode,
+        addressTypeId: payment.address.addressTypeId,
+        addressType: payment.address.addressType.addressType || '',
+      } as IAddress;
+    }
+    if (!billingAddress) {
+      throw new BadRequestException('Billing address not found for invoice generation');
+    }
+    // Convert payment to model to get calculated amounts
+    const paymentModel = this.convertToModel(payment);
+    // Prepare member info
+    const memberInfo: MemberInfo = {
+      fullName: paymentModel.memberName,
+      emailId: payment.member.emailId,
+      contactNumber: payment.member.contactNumber,
+    };
+    // Map payment to InvoiceDocument using the universal invoice system
+    const invoiceDoc = mapPaymentToInvoiceDocument(
+      paymentModel,
+      member.franchise,
+      billingAddress,
+      TransactionType.SERVICE, // Default to SERVICE for diet consultancy
+      franchiseAddress,
+      `Diet Consultancy - ${paymentModel.program} - ${paymentModel.programPlan}`,
+      memberInfo,
+    );
+    const fileName = `invoice-${paymentModel.memberPaymentId}.pdf`;
+    const relativePath = `${MediaForEnum.DOWNLOADS}/${memberId}/invoices`;
+    const destinationFolderPath = `${this.rootFolderPath}/${relativePath}`;
+    //CREATE DIRECTORY IF NOT EXISTS
+    if (!fs.existsSync(destinationFolderPath)) {
+      fs.mkdirSync(destinationFolderPath, { recursive: true });
+    }
+    const destinationPath = `${destinationFolderPath}/${fileName}`;
+    // Generate PDF using the new InvoicePdfService
+    const pdfBuffer = await this.invoicePdfService.generateInvoicePdf(invoiceDoc);
+    const base64Buffer = pdfBuffer.toString('base64');
+    // Write PDF buffer to destination folder (write the binary buffer, not the base64 string)
+    fs.writeFileSync(destinationPath, Uint8Array.from(pdfBuffer));
+    return {
+      filePath: relativePath,
+      fileName: fileName,
+      buffer: base64Buffer,
+    } as IFileModel;
   }
 }

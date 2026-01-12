@@ -45,4 +45,5 @@ export * from './checkout.interface';
 export * from './success-story.interface';
 export * from './product.interface';
 export * from './woocommerce.interface';
+export * from './invoice';
 

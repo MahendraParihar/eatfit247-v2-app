@@ -1,4 +1,5 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Header, Param, Post, Put, Query, Res, UseGuards } from '@nestjs/common';
+import { Response } from 'express';
 import { CurrentUser, JwtAuthGuard, RequestedIp } from '@server_1/core';
 import { MemberPaymentService } from '../../services';
 import {
@@ -12,6 +13,7 @@ import { CreateMemberPaymentDto } from '../../dto';
 import { CalculateTaxDto } from '../../dto/calculate-tax.dto';
 import { CreatePaymentLinkDto } from '../../dto/create-payment-link.dto';
 import { ProgramPlanService } from '@server_1/modules/program-plan';
+import { IFileModel } from '@server_1/platform';
 
 @Controller('member/:id/payment-history')
 @UseGuards(JwtAuthGuard)
@@ -121,5 +123,14 @@ export class MemberPaymentController {
     @Body() body: CreatePaymentLinkDto,
   ): Promise<IPaymentLinkResponse> {
     return await this.memberPaymentService.createPaymentLink(id, body);
+  }
+
+  @Get(':paymentId/invoice')
+  @Header('Content-Type', 'application/pdf')
+  async downloadInvoice(
+    @Param('id') id: number,
+    @Param('paymentId') paymentId: number,
+  ): Promise<IFileModel> {
+    return await this.memberPaymentService.generateInvoicePDF(id, paymentId);
   }
 }

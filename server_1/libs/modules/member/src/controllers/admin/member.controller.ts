@@ -1,14 +1,32 @@
-import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  NotFoundException,
+  Param,
+  Patch,
+  Post,
+  Put,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
+import { InjectModel } from '@nestjs/sequelize';
 import { CurrentUser, JwtAuthGuard, RequestedIp } from '@server_1/core';
-import { BasicSearchDto } from '@server_1/shared-dto';
+import { AddressService, TxnAddress } from '@server_1/platform';
+import { BasicSearchDto, CreateAddressDto } from '@server_1/shared-dto';
 import { MemberService } from '../../services';
 import { CreateMemberDto } from '../../dto';
-import { IMember, ITableList } from '@eatfit247-shared-lib';
+import { IAddress, IMember, ITableList, TableEnum } from '@eatfit247-shared-lib';
 
 @Controller('member')
 @UseGuards(JwtAuthGuard)
 export class MemberController {
-  constructor(private readonly service: MemberService) {}
+  constructor(
+    private readonly service: MemberService,
+    private readonly addressService: AddressService,
+    @InjectModel(TxnAddress) private readonly addressRepository: typeof TxnAddress,
+  ) {}
 
   @Get('list')
   async list(@Query() req: BasicSearchDto): Promise<ITableList<IMember>> {
@@ -83,5 +101,111 @@ export class MemberController {
       requestedIp,
       currentUser.adminId,
     );
+  }
+
+  // Address endpoints
+  @Get(':memberId/addresses')
+  async getAddresses(@Param('memberId') memberId: number): Promise<IAddress[]> {
+    return await this.addressService.filterByTableIdAndPk(TableEnum.TXN_MEMBER, memberId);
+  }
+
+  @Get(':memberId/addresses/:addressId')
+  async getAddress(
+    @Param('memberId') memberId: number,
+    @Param('addressId') addressId: number,
+  ): Promise<IAddress> {
+    const addresses = await this.addressService.filterByTableIdAndPk(
+      TableEnum.TXN_MEMBER,
+      memberId,
+    );
+    const address = addresses.find((addr) => addr.addressId === addressId);
+    if (!address) {
+      throw new NotFoundException('Address not found');
+    }
+    return address;
+  }
+
+  @Post(':memberId/addresses')
+  async createAddress(
+    @Param('memberId') memberId: number,
+    @Body() body: CreateAddressDto,
+    @CurrentUser() currentUser: any,
+    @RequestedIp() requestedIp: string,
+  ): Promise<IAddress> {
+    const addressObj: any = {
+      tableId: TableEnum.TXN_MEMBER,
+      pkOfTable: memberId,
+      postalAddress: body.postalAddress,
+      cityVillage: body.cityVillage || null,
+      stateId: body.stateId,
+      countryId: body.countryId,
+      pinCode: body.pinCode || null,
+      latitude: body.latitude ? String(body.latitude) : null,
+      longitude: body.longitude ? String(body.longitude) : null,
+      addressName: body.addressName || null,
+      addressTypeId: body.addressTypeId,
+      active: body.active !== undefined ? body.active : true,
+      createdBy: currentUser.adminId,
+      createdIp: requestedIp,
+      modifiedBy: currentUser.adminId,
+      modifiedIp: requestedIp,
+    };
+    const createdAddress = await this.addressRepository.create(addressObj);
+    const addresses = await this.addressService.filterByTableIdAndPk(
+      TableEnum.TXN_MEMBER,
+      memberId,
+    );
+    return addresses.find((addr) => addr.addressId === createdAddress.addressId)!;
+  }
+
+  @Put(':memberId/addresses/:addressId')
+  async updateAddress(
+    @Param('memberId') memberId: number,
+    @Param('addressId') addressId: number,
+    @Body() body: CreateAddressDto,
+    @CurrentUser() currentUser: any,
+    @RequestedIp() requestedIp: string,
+  ): Promise<IAddress> {
+    const existingAddress = await this.addressRepository.findOne({
+      where: { addressId, tableId: TableEnum.TXN_MEMBER, pkOfTable: memberId },
+    });
+    if (!existingAddress) {
+      throw new NotFoundException('Address not found');
+    }
+    const addressObj: any = {
+      postalAddress: body.postalAddress,
+      cityVillage: body.cityVillage || null,
+      stateId: body.stateId,
+      countryId: body.countryId,
+      pinCode: body.pinCode || null,
+      latitude: body.latitude ? String(body.latitude) : null,
+      longitude: body.longitude ? String(body.longitude) : null,
+      addressName: body.addressName || null,
+      addressTypeId: body.addressTypeId,
+      active: body.active !== undefined ? body.active : existingAddress.active,
+      modifiedBy: currentUser.adminId,
+      modifiedIp: requestedIp,
+    };
+    await this.addressRepository.update(addressObj, {
+      where: { addressId },
+    });
+    const addresses = await this.addressService.filterByTableIdAndPk(
+      TableEnum.TXN_MEMBER,
+      memberId,
+    );
+    const updatedAddress = addresses.find((addr) => addr.addressId === addressId);
+    if (!updatedAddress) {
+      throw new NotFoundException('Address not found after update');
+    }
+    return updatedAddress;
+  }
+
+  @Delete(':memberId/addresses/:addressId')
+  async deleteAddress(
+    @Param('addressId') addressId: number,
+    @CurrentUser() currentUser: any,
+    @RequestedIp() requestedIp: string,
+  ): Promise<void> {
+    await this.addressService.delete(addressId, requestedIp, currentUser.adminId);
   }
 }

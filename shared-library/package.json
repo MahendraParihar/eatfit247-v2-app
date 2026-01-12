@@ -6,6 +6,8 @@
   "license": "private",
   "scripts": {
     "build": "tsc --build",
+    "build:clean": "rm -rf dist tsconfig.tsbuildinfo && npm run build",
+    "clean": "rm -rf dist tsconfig.tsbuildinfo",
     "dev": "tsc --build --watch",
     "lint": "eslint . --ext .ts"
   },

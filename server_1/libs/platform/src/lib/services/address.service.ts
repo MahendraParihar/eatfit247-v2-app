@@ -140,6 +140,7 @@ export class AddressService {
       stateId: item.stateId,
       countryId: item.countryId,
       pinCode: item.pinCode || '',
+      countryCode: item.country?.countryCode || '',
       addressTypeId: item.addressTypeId,
       addressType: item.addressType?.addressType || '',
       latitude: item.latitude ? parseFloat(item.latitude) : undefined,
