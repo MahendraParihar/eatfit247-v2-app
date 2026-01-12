@@ -1,6 +1,6 @@
-import { IBaseAdminUser, IDropdownItem } from "../base.interface";
-import { IAddress, IManageAddress } from "./location.interface";
-import { PaymentSourceEnum } from "../enum";
+import { IBaseAdminUser, IDropdownItem } from '../base.interface';
+import { IAddress } from './location.interface';
+import { PaymentSourceEnum } from '../enum';
 
 export interface IBasicMemberPayment {
   memberId: number;
@@ -14,7 +14,7 @@ export interface IBasicMemberPayment {
   paymentStatusId: number;
   promoCode?: string;
   isTaxApplicable: boolean;
-  paymentObj: object;
+  paymentObj: IMemberPaymentObject;
   refundObj?: object | null;
   paymentGatewayResponse?: object | null;
   gstNumber?: string;
@@ -115,4 +115,41 @@ export interface ICalculateTaxResponse {
   taxType?: string;
   taxMode?: string;
   invoiceNote?: string;
+}
+
+export interface IMemberPaymentEntity {
+  currency: string;
+  orderAmount: number;
+  discountAmount: number;
+  taxAmount: number;
+  totalAmount: number;
+  taxObj: Record<string, { amount: number; taxPercentage: number }>;
+}
+
+export interface IMemberPaymentObject {
+  currency: string;
+  pricing: {
+    orderAmount: number;
+    discountAmount: number;
+    taxAmount: number;
+    totalAmount: number;
+  };
+  tax: {
+    taxType?: string;
+    taxMode?: string;
+    taxPercentage: number;
+    taxAmount: number;
+    isTaxIncludedInPrice: boolean;
+    isLutApplied: boolean;
+    taxObj: Record<string, { amount: number; taxPercentage: number }>;
+  };
+  jurisdiction: {
+    entityCountry: string;
+    customerCountry: string;
+    placeOfSupply: string;
+  };
+  invoice: {
+    note?: string;
+  };
+  calculationVersion: string;
 }

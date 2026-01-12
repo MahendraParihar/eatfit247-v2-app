@@ -70,3 +70,58 @@ mat-icon {
 
 // Status utilities are in _status-tokens.scss
 // Use .status-chip class for status indicators (e.g., <span class="status-chip success">Active</span>)
+
+// Invoice Preview Dialog Styles
+.invoice-preview-dialog {
+  .mat-mdc-dialog-container {
+    padding: 0 !important;
+    max-height: 95vh !important;
+    height: 95vh !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+  }
+
+  .mat-mdc-dialog-content {
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: var(--md-sys-color-outline-variant, #d6d6d6) transparent;
+  }
+
+  .mat-mdc-dialog-content::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .mat-mdc-dialog-content::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .mat-mdc-dialog-content::-webkit-scrollbar-thumb {
+    background-color: var(--md-sys-color-outline-variant, #d6d6d6);
+    border-radius: 4px;
+  }
+
+  .mat-mdc-dialog-content::-webkit-scrollbar-thumb:hover {
+    background-color: var(--md-sys-color-outline, #e0e0e0);
+  }
+
+  .mat-mdc-dialog-surface {
+    overflow: hidden !important;
+    max-height: 95vh !important;
+    height: 95vh !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  .mat-mdc-dialog-actions {
+    flex-shrink: 0;
+    margin: 0 !important;
+    padding: 16px 24px !important;
+  }
+}

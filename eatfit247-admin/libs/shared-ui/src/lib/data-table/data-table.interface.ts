@@ -38,12 +38,12 @@ export interface ITableActionsConfig {
   className?: string;
 }
 
-export interface ITableColumn<T = any> {
+export interface ITableColumn<T> {
   key: string;
   label?: string;
   header?: ITableHeader<T>;
   dataKey?: string;
-  type?: 'image' | 'text' | 'number' | 'date' | 'boolean';
+  type?: 'image' | 'text' | 'number' | 'date' | 'boolean' | 'custom';
   sortable?: boolean;
   sortFn?: (a: T, b: T) => number;
   searchable?: boolean;

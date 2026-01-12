@@ -118,24 +118,46 @@
           <div class="info-grid">
             <div class="info-item">
               <span class="info-label">Order Amount:</span>
-              <span class="info-value">{{ formatCurrency(payment.orderAmount) }}</span>
+              <span
+                class="info-value">{{ formatCurrency(payment.paymentObj.currency, payment.paymentObj.pricing.orderAmount) }}</span>
             </div>
             <div class="info-item">
               <span class="info-label">Discount Amount:</span>
-              <span class="info-value">{{ formatCurrency(payment.discountAmount) }}</span>
+              <span
+                class="info-value">{{ formatCurrency(payment.paymentObj.currency, payment.paymentObj.pricing.discountAmount) }}</span>
             </div>
             <div class="info-item">
               <span class="info-label">Tax Amount:</span>
-              <span class="info-value">{{ formatCurrency(payment.taxAmount) }}</span>
+              <span
+                class="info-value">{{ formatCurrency(payment.paymentObj.currency, payment.paymentObj.pricing.taxAmount) }}</span>
             </div>
             <div class="info-item total-amount">
               <span class="info-label">Total Amount:</span>
-              <span class="info-value">{{ formatCurrency(payment.totalAmount) }}</span>
+              <span
+                class="info-value">{{ formatCurrency(payment.paymentObj.currency, payment.paymentObj.pricing.totalAmount) }}</span>
             </div>
             <div class="info-item">
               <span class="info-label">Tax Applicable:</span>
               <span class="info-value">{{ payment.isTaxApplicable ? 'Yes' : 'No' }}</span>
             </div>
+            @if (payment.paymentObj.tax.taxType) {
+              <div class="info-item">
+                <span class="info-label">Tax Type:</span>
+                <span class="info-value">{{ payment.paymentObj.tax.taxType }}</span>
+              </div>
+            }
+            @if (payment.paymentObj.tax.taxMode) {
+              <div class="info-item">
+                <span class="info-label">Tax Mode:</span>
+                <span class="info-value">{{ payment.paymentObj.tax.taxMode }}</span>
+              </div>
+            }
+            @if (payment.paymentObj.invoice.note) {
+              <div class="info-item">
+                <span class="info-label">Invoice Note:</span>
+                <span class="info-value">{{ payment.paymentObj.invoice.note }}</span>
+              </div>
+            }
             @if (payment.promoCode) {
               <div class="info-item">
                 <span class="info-label">Promo Code:</span>
@@ -217,11 +239,11 @@
           <div class="info-grid">
             <div class="info-item">
               <span class="info-label">Created At:</span>
-              <span class="info-value">{{ formatDate(payment.createdAt) }}</span>
+              <span class="info-value">{{ payment.createdAt | date }}</span>
             </div>
             <div class="info-item">
               <span class="info-label">Updated At:</span>
-              <span class="info-value">{{ formatDate(payment.updatedAt) }}</span>
+              <span class="info-value">{{ payment.updatedAt | date }}</span>
             </div>
             @if (payment.createdByUser) {
               <div class="info-item">

@@ -1,0 +1,408 @@
+/**
+ * Invoice Preview Component Styles
+ * Uses Material 3 design tokens - NO hardcoded colors
+ */
+
+mat-dialog-content.invoice-preview-content {
+  padding: 0 !important;
+  margin: 0 !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  max-height: calc(95vh - 64px) !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+.invoice-preview {
+  padding: 24px;
+  max-width: 800px;
+  margin: 0 auto;
+  min-height: 100%;
+  background-color: var(--md-sys-color-surface, #ffffff);
+  color: var(--md-sys-color-on-surface, #1c1b1f);
+  font-family: 'Inter', 'Roboto', sans-serif;
+  box-sizing: border-box;
+
+  // Invoice Header
+  .invoice-header {
+    margin-bottom: 32px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid var(--md-sys-color-outline, #e0e0e0);
+
+    .header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      gap: 16px;
+
+      .invoice-title {
+        margin: 0;
+        font-size: 32px;
+        font-weight: 700;
+        color: var(--md-sys-color-primary, #fc2305);
+        letter-spacing: 1px;
+      }
+
+      .invoice-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        text-align: right;
+
+        .meta-item {
+          display: flex;
+          gap: 8px;
+          align-items: center;
+
+          .meta-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--md-sys-color-on-surface);
+            opacity: 0.7;
+          }
+
+          .meta-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--md-sys-color-on-surface);
+          }
+        }
+      }
+    }
+  }
+
+  // Supplier & Customer Information
+  .party-info-section {
+    margin-bottom: 32px;
+
+    .party-info-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+
+      @media (max-width: 768px) {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .party-card {
+      padding: 20px;
+      background-color: var(--md-sys-color-surface-container-low, #fafafa);
+      border: 1px solid var(--md-sys-color-outline-variant, #d6d6d6);
+      border-radius: var(--radius-card, 0);
+
+      .party-title {
+        margin: 0 0 16px 0;
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--md-sys-color-on-surface);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid var(--md-sys-color-outline, #e0e0e0);
+      }
+
+      .party-details {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+
+        .company-name,
+        .customer-name {
+          font-size: 18px;
+          font-weight: 600;
+          color: var(--md-sys-color-on-surface);
+        }
+
+        .party-address {
+          font-size: 14px;
+          line-height: 1.6;
+          color: var(--md-sys-color-on-surface);
+          opacity: 0.87;
+
+          p {
+            margin: 4px 0;
+          }
+        }
+
+        .party-contact {
+          font-size: 14px;
+          line-height: 1.6;
+          color: var(--md-sys-color-on-surface);
+          opacity: 0.87;
+
+          p {
+            margin: 4px 0;
+          }
+        }
+      }
+    }
+  }
+
+  // Service Details Table
+  .service-details-section {
+    margin-bottom: 24px;
+
+    .service-table {
+      width: 100%;
+      background-color: var(--md-sys-color-surface, #ffffff);
+
+      th {
+        background-color: var(--md-sys-color-surface-container, #f7f7f7);
+        color: var(--md-sys-color-on-surface);
+        font-weight: 600;
+        font-size: 14px;
+        padding: 16px;
+        text-align: left;
+        border-bottom: 2px solid var(--md-sys-color-outline, #e0e0e0);
+
+        &.text-right {
+          text-align: right;
+        }
+      }
+
+      td {
+        padding: 16px;
+        font-size: 14px;
+        color: var(--md-sys-color-on-surface);
+        border-bottom: 1px solid var(--md-sys-color-outline-variant, #d6d6d6);
+
+        &.text-right {
+          text-align: right;
+        }
+      }
+
+      tr:last-child td {
+        border-bottom: none;
+      }
+    }
+  }
+
+  // Pricing Summary
+  .pricing-summary {
+    margin-bottom: 24px;
+    padding: 16px;
+    background-color: var(--md-sys-color-surface-container-low, #fafafa);
+    border-radius: var(--radius-card, 0);
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      font-size: 14px;
+
+      &.subtotal {
+        margin-top: 8px;
+        padding-top: 16px;
+        border-top: 1px solid var(--md-sys-color-outline, #e0e0e0);
+        font-weight: 600;
+      }
+
+      .summary-label {
+        color: var(--md-sys-color-on-surface);
+        opacity: 0.87;
+      }
+
+      .summary-value {
+        color: var(--md-sys-color-on-surface);
+        font-weight: 500;
+
+        &.discount {
+          color: var(--status-success, #1b8f5a);
+        }
+      }
+    }
+  }
+
+  // Tax Section
+  .tax-section {
+    margin-bottom: 24px;
+    padding: 16px;
+    background-color: var(--md-sys-color-surface-container-low, #fafafa);
+    border-radius: var(--radius-card, 0);
+    border-left: 4px solid var(--md-sys-color-primary, #fc2305);
+
+    &.export-service {
+      border-left-color: var(--status-info, #1976d2);
+    }
+
+    &.domestic-gst {
+      border-left-color: var(--status-success, #1b8f5a);
+    }
+
+    &.rcm {
+      border-left-color: var(--status-warning, #f29900);
+    }
+
+    .tax-header {
+      margin-bottom: 12px;
+
+      h4 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--md-sys-color-on-surface);
+      }
+    }
+
+    .tax-content {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+
+      .tax-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 0;
+        font-size: 14px;
+
+        &.total-tax {
+          margin-top: 8px;
+          padding-top: 12px;
+          border-top: 1px solid var(--md-sys-color-outline, #e0e0e0);
+          font-weight: 600;
+        }
+
+        .tax-label {
+          color: var(--md-sys-color-on-surface);
+          opacity: 0.87;
+        }
+
+        .tax-value {
+          color: var(--md-sys-color-on-surface);
+          font-weight: 500;
+        }
+
+        .tax-amount {
+          color: var(--md-sys-color-on-surface);
+          font-weight: 500;
+        }
+      }
+
+      .tax-note {
+        margin-top: 12px;
+        padding: 12px;
+        background-color: var(--md-sys-color-surface-container, #f7f7f7);
+        border-radius: 4px;
+        font-size: 13px;
+        line-height: 1.6;
+        color: var(--md-sys-color-on-surface);
+        opacity: 0.87;
+
+        &.rcm-note {
+          background-color: var(--status-warning-bg, #fff4e0);
+          color: var(--status-warning, #f29900);
+        }
+
+        p {
+          margin: 0;
+        }
+      }
+    }
+  }
+
+  // Total Section
+  .total-section {
+    margin-bottom: 24px;
+    padding: 20px;
+    background-color: var(--md-sys-color-primary, #fc2305);
+    border-radius: var(--radius-card, 0);
+
+    .total-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      .total-label {
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--md-sys-color-on-primary, #ffffff);
+      }
+
+      .total-value {
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--md-sys-color-on-primary, #ffffff);
+      }
+    }
+  }
+
+  // Invoice Note Section
+  .invoice-note-section {
+    margin-bottom: 24px;
+    padding: 16px;
+    background-color: var(--md-sys-color-surface-container, #f7f7f7);
+    border-radius: var(--radius-card, 0);
+
+    .invoice-note {
+      margin: 0;
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--md-sys-color-on-surface);
+      opacity: 0.87;
+      font-style: italic;
+    }
+  }
+
+  // Jurisdiction Section
+  .jurisdiction-section {
+    margin-bottom: 24px;
+    padding: 16px;
+    background-color: var(--md-sys-color-surface-container-low, #fafafa);
+    border-radius: var(--radius-card, 0);
+    border: 1px solid var(--md-sys-color-outline-variant, #d6d6d6);
+
+    .jurisdiction-info {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+
+      p {
+        margin: 0;
+        font-size: 13px;
+        color: var(--md-sys-color-on-surface);
+        opacity: 0.87;
+
+        strong {
+          font-weight: 600;
+        }
+      }
+    }
+  }
+
+  // Invoice Actions
+  .invoice-actions {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 24px;
+    border-top: 1px solid var(--md-sys-color-outline, #e0e0e0);
+
+    .download-button {
+      border-radius: var(--radius-button, 12px);
+      padding: 10px 24px;
+      font-weight: 500;
+
+      mat-icon {
+        margin-right: 8px;
+      }
+    }
+
+    .close-button {
+      margin-left: 8px;
+      border-radius: var(--radius-button, 12px);
+      padding: 10px 24px;
+      font-weight: 500;
+    }
+  }
+}
+
+// Dark theme support
+.dark-theme {
+  .invoice-preview {
+    background-color: var(--md-sys-color-surface, #121212);
+    color: var(--md-sys-color-on-surface, #e6e6e6);
+  }
+}
+

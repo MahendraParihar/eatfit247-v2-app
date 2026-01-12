@@ -1,0 +1,243 @@
+<mat-dialog-content class="invoice-preview-content">
+<div class="invoice-preview">
+  <!-- Invoice Header -->
+  <div class="invoice-header">
+    <div class="header-content">
+      <h1 class="invoice-title">INVOICE</h1>
+      <div class="invoice-meta">
+        <div class="meta-item">
+          <span class="meta-label">Invoice Number:</span>
+          <span class="meta-value">{{ invoiceData.invoiceNumber }}</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Date:</span>
+          <span class="meta-value">{{ formatDate(invoiceData.invoiceDate) }}</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Currency:</span>
+          <span class="meta-value">{{ invoiceData.currency }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Supplier & Customer Information -->
+  <div class="party-info-section">
+    <div class="party-info-grid">
+      <!-- Supplier Information -->
+      <div class="party-card supplier-info">
+        <h3 class="party-title">Invoice By</h3>
+        <div class="party-details">
+          <div class="company-name">
+            <!-- Note: Supplier info should be passed separately or fetched -->
+            <strong>EatFit247</strong>
+          </div>
+          <div class="party-address">
+            <!-- Supplier address would go here -->
+            <p>Supplier Address</p>
+            <p>City, State, Country</p>
+            <p>PIN Code</p>
+          </div>
+          <div class="party-contact">
+            <p>Contact: +91-XXXXXXXXXX</p>
+            <p>Email: info@eatfit247.com</p>
+            @if (paymentData.isTaxApplicable && paymentData.gstNumber) {
+              <p>GST Number: {{ paymentData.gstNumber }}</p>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Customer Information -->
+      <div class="party-card customer-info">
+        <h3 class="party-title">Bill To</h3>
+        <div class="party-details">
+          <div class="customer-name">
+            <strong>{{ paymentData.memberName }}</strong>
+          </div>
+          <div class="party-address">
+            <p>{{ formatAddress(customerAddress) }}</p>
+          </div>
+          @if (paymentData.gstNumber) {
+            <div class="party-contact">
+              <p>GST Number: {{ paymentData.gstNumber }}</p>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Service Details Table -->
+  <div class="service-details-section">
+    <table mat-table [dataSource]="[serviceDetails]" class="service-table">
+      <ng-container matColumnDef="description">
+        <th mat-header-cell *matHeaderCellDef>Description</th>
+        <td mat-cell *matCellDef="let item">{{ item.description }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="quantity">
+        <th mat-header-cell *matHeaderCellDef class="text-right">Quantity</th>
+        <td mat-cell *matCellDef="let item" class="text-right">{{ item.quantity }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="rate">
+        <th mat-header-cell *matHeaderCellDef class="text-right">Rate</th>
+        <td mat-cell *matCellDef="let item" class="text-right">
+          {{ formatCurrency(item.rate) }}
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="amount">
+        <th mat-header-cell *matHeaderCellDef class="text-right">Amount</th>
+        <td mat-cell *matCellDef="let item" class="text-right">
+          {{ formatCurrency(item.amount) }}
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+    </table>
+  </div>
+
+  <!-- Pricing Summary -->
+  <div class="pricing-summary">
+    <div class="summary-row">
+      <span class="summary-label">Order Amount:</span>
+      <span class="summary-value">{{ formatCurrency(pricing.orderAmount) }}</span>
+    </div>
+    @if (pricing.discountAmount > 0) {
+      <div class="summary-row">
+        <span class="summary-label">Discount:</span>
+        <span class="summary-value discount">
+          -{{ formatCurrency(pricing.discountAmount) }}
+        </span>
+      </div>
+    }
+    <div class="summary-row subtotal">
+      <span class="summary-label">Subtotal:</span>
+      <span class="summary-value">
+        {{ formatCurrency(pricing.orderAmount - pricing.discountAmount) }}
+      </span>
+    </div>
+  </div>
+
+  <!-- Tax Section - Conditional based on tax mode -->
+  @if (isExportOfService) {
+    <div class="tax-section export-service">
+      <div class="tax-header">
+        <h4>Tax Details (Export of Service)</h4>
+      </div>
+      <div class="tax-content">
+        <div class="tax-row">
+          <span class="tax-label">GST:</span>
+          <span class="tax-value">0%</span>
+          <span class="tax-amount">{{ formatCurrency(0) }}</span>
+        </div>
+        @if (tax.isLutApplied && invoiceNote) {
+          <div class="tax-note">
+            <p><strong>Note:</strong> {{ invoiceNote }}</p>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  @if (isDomesticGst && taxBreakdown.length > 0) {
+    <div class="tax-section domestic-gst">
+      <div class="tax-header">
+        <h4>Tax Details (GST)</h4>
+      </div>
+      <div class="tax-content">
+        @for (taxItem of taxBreakdown; track taxItem.name) {
+          <div class="tax-row">
+            <span class="tax-label">{{ taxItem.name }} ({{ taxItem.percentage }}%):</span>
+            <span class="tax-amount">{{ formatCurrency(taxItem.amount) }}</span>
+          </div>
+        }
+        <div class="tax-row total-tax">
+          <span class="tax-label">Total Tax:</span>
+          <span class="tax-amount">{{ formatCurrency(pricing.taxAmount) }}</span>
+        </div>
+      </div>
+    </div>
+  }
+
+  @if (isRcm) {
+    <div class="tax-section rcm">
+      <div class="tax-header">
+        <h4>Tax Details (Reverse Charge Mechanism)</h4>
+      </div>
+      <div class="tax-content">
+        <div class="tax-row">
+          <span class="tax-label">Tax Amount:</span>
+          <span class="tax-amount">{{ formatCurrency(pricing.taxAmount) }}</span>
+        </div>
+        <div class="tax-note rcm-note">
+          <p>
+            <strong>RCM Disclaimer:</strong> Tax payable under Reverse Charge Mechanism (RCM).
+            The recipient is liable to pay the tax.
+          </p>
+        </div>
+      </div>
+    </div>
+  }
+
+  @if (!isExportOfService && !isDomesticGst && !isRcm && pricing.taxAmount > 0) {
+    <div class="tax-section">
+      <div class="tax-content">
+        <div class="tax-row">
+          <span class="tax-label">Tax Amount:</span>
+          <span class="tax-amount">{{ formatCurrency(pricing.taxAmount) }}</span>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Total Payable -->
+  <div class="total-section">
+    <div class="total-row">
+      <span class="total-label">Total Payable:</span>
+      <span class="total-value">{{ formatCurrency(pricing.totalAmount) }}</span>
+    </div>
+  </div>
+
+  <!-- Invoice Note (if any) -->
+  @if (invoiceNote && !isExportOfService) {
+    <div class="invoice-note-section">
+      <p class="invoice-note">{{ invoiceNote }}</p>
+    </div>
+  }
+
+  <!-- Jurisdiction Information -->
+  @if (jurisdiction.entityCountry || jurisdiction.customerCountry || jurisdiction.placeOfSupply) {
+    <div class="jurisdiction-section">
+      <div class="jurisdiction-info">
+        @if (jurisdiction.entityCountry) {
+          <p><strong>Entity Country:</strong> {{ jurisdiction.entityCountry }}</p>
+        }
+        @if (jurisdiction.customerCountry) {
+          <p><strong>Customer Country:</strong> {{ jurisdiction.customerCountry }}</p>
+        }
+        @if (jurisdiction.placeOfSupply) {
+          <p><strong>Place of Supply:</strong> {{ jurisdiction.placeOfSupply }}</p>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- Download PDF Button -->
+  <div class="invoice-actions">
+    <button mat-raised-button color="primary" (click)="downloadPdf()" class="download-button">
+      <mat-icon>download</mat-icon>
+      Download PDF
+    </button>
+    @if (dialogRef) {
+      <button mat-button (click)="close()" class="close-button">
+        Close
+      </button>
+    }
+  </div>
+</div>
+</mat-dialog-content>
+

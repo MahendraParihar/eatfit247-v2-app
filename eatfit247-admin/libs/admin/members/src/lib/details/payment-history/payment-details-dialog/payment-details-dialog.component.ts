@@ -65,11 +65,11 @@ export class PaymentDetailsDialogComponent {
     }
   }
 
-  formatCurrency(amount: number | undefined | null): string {
+  formatCurrency(currencyCode: string,amount: number | undefined | null): string {
     if (amount === null || amount === undefined) {
-      return '₹0';
+      return `${currencyCode} 0`;
     }
-    return `₹${Number(amount).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    return `${currencyCode} ${Number(amount).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   }
 
   formatDate(date: Date | string | undefined | null): string {

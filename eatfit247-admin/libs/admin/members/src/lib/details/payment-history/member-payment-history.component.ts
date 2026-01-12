@@ -9,11 +9,21 @@ import { DataTableComponent, ITableColumn, ITableConfig, ITableAction, EmptyStat
 import { EmptyStateComponent } from '@shared';
 import { LoaderComponent } from '@shared';
 import {
-  IMemberPayment,
+  IMemberPayment, IMemberPaymentObject
 } from '@eatfit247-shared-lib';
 import { MembersApiService } from '../../api.service';
-import { ManageMemberPaymentComponent, ManageMemberPaymentData } from './manage-member-payment/manage-member-payment.component';
-import { PaymentDetailsDialogComponent, PaymentDetailsDialogData } from './payment-details-dialog/payment-details-dialog.component';
+import {
+  ManageMemberPaymentComponent,
+  ManageMemberPaymentData
+} from './manage-member-payment/manage-member-payment.component';
+import {
+  PaymentDetailsDialogComponent,
+  PaymentDetailsDialogData
+} from './payment-details-dialog/payment-details-dialog.component';
+import {
+  InvoicePreviewComponent,
+  InvoicePreviewDialogData
+} from './invoice-preview/invoice-preview.component';
 
 @Component({
   selector: 'lib-member-payment-history',
@@ -25,10 +35,10 @@ import { PaymentDetailsDialogComponent, PaymentDetailsDialogData } from './payme
     MatIconModule,
     DataTableComponent,
     EmptyStateComponent,
-    LoaderComponent,
+    LoaderComponent
   ],
   templateUrl: './member-payment-history.component.html',
-  styleUrl: './member-payment-history.component.scss',
+  styleUrl: './member-payment-history.component.scss'
 })
 export class MemberPaymentHistoryComponent implements OnInit, OnDestroy {
   memberId!: number;
@@ -41,7 +51,7 @@ export class MemberPaymentHistoryComponent implements OnInit, OnDestroy {
   constructor(
     private route: ActivatedRoute,
     private apiService: MembersApiService,
-    private dialog: MatDialog,
+    private dialog: MatDialog
   ) {
     this.initializeTable();
   }
@@ -67,79 +77,76 @@ export class MemberPaymentHistoryComponent implements OnInit, OnDestroy {
         key: 'invoiceId',
         label: 'Invoice ID',
         dataKey: 'invoiceId',
-        sortable: true,
+        sortable: true
       },
       {
         key: 'paymentDate',
         label: 'Payment Date',
         dataKey: 'paymentDate',
         type: 'date',
-        sortable: true,
-      },
-      {
-        key: 'paymentMode',
-        label: 'Payment Mode',
-        dataKey: 'paymentMode',
-        sortable: false,
-      },
-      {
-        key: 'program',
-        label: 'Program',
-        dataKey: 'program',
-        sortable: false,
+        sortable: true
       },
       {
         key: 'programPlan',
         label: 'Plan',
         dataKey: 'programPlan',
-        sortable: false,
+        sortable: false
       },
       {
         key: 'paymentStatus',
         label: 'Status',
         dataKey: 'paymentStatus',
-        sortable: false,
+        sortable: false
       },
       {
-        key: 'totalAmount',
+        key: 'paymentObj',
         label: 'Total Amount',
         dataKey: 'totalAmount',
-        type: 'number',
+        type: 'custom',
         sortable: true,
-        formatter: (value: any) => `₹${value ? Number(value).toLocaleString('en-IN') : '0'}`,
+        formatter: (value: any, row: IMemberPayment) => {
+          return `${row.paymentObj.currency} ${Number(row.paymentObj.pricing.totalAmount).toLocaleString('en-IN', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+          })}`;
+        }
       },
       {
         key: 'createdAt',
         label: 'Created At',
         dataKey: 'createdAt',
         type: 'date',
-        sortable: true,
-      },
+        sortable: true
+      }
     ];
-
     const actions: ITableAction<IMemberPayment>[] = [
       {
         label: 'Edit',
         icon: 'edit',
         color: 'primary',
-        onClick: (row) => this.editPayment(row),
+        onClick: (row) => this.editPayment(row)
       },
       {
         label: 'Details',
         icon: 'info',
         color: 'primary',
-        onClick: (row) => this.viewPaymentDetails(row),
+        onClick: (row) => this.viewPaymentDetails(row)
       },
+      {
+        label: 'View Invoice',
+        icon: 'receipt_long',
+        color: 'accent',
+        onClick: (row) => this.viewInvoice(row)
+      }
     ];
-
-      this.tableConfig = {
+    this.tableConfig = {
       columns,
       actions,
       pageSize: 10,
       pageSizeOptions: [10, 25, 50, 100],
       showPagination: true,
       showSearch: true,
-      onRowClick: (row: IMemberPayment) => this.viewPaymentDetails(row),
+      onRowClick: (row: IMemberPayment) => this.viewPaymentDetails(row)
     };
   }
 
@@ -158,17 +165,17 @@ export class MemberPaymentHistoryComponent implements OnInit, OnDestroy {
 
   addPayment(): void {
     const dialogData: ManageMemberPaymentData = {
-      memberId: this.memberId,
+      memberId: this.memberId
     };
     const dialogRef = this.dialog.open(ManageMemberPaymentComponent, {
       width: '1000px',
       maxWidth: '90vw',
       maxHeight: '90vh',
-      data: dialogData,
+      data: dialogData
     });
     dialogRef.afterClosed().subscribe((result) => {
       if (result === true) {
-        // Reload payments after successful create/update
+        // Reload payments after a successful create / update
         this.loadPayments();
       }
     });
@@ -177,13 +184,13 @@ export class MemberPaymentHistoryComponent implements OnInit, OnDestroy {
   editPayment(payment: IMemberPayment): void {
     const dialogData: ManageMemberPaymentData = {
       memberId: this.memberId,
-      payment: payment,
+      payment: payment
     };
     const dialogRef = this.dialog.open(ManageMemberPaymentComponent, {
       width: '1000px',
       maxWidth: '90vw',
       maxHeight: '90vh',
-      data: dialogData,
+      data: dialogData
     });
     dialogRef.afterClosed().subscribe((result) => {
       if (result === true) {
@@ -195,13 +202,29 @@ export class MemberPaymentHistoryComponent implements OnInit, OnDestroy {
 
   viewPaymentDetails(payment: IMemberPayment): void {
     const dialogData: PaymentDetailsDialogData = {
-      payment: payment,
+      payment: payment
     };
     this.dialog.open(PaymentDetailsDialogComponent, {
       width: '800px',
       maxWidth: '90vw',
       maxHeight: '90vh',
+      data: dialogData
+    });
+  }
+
+  viewInvoice(payment: IMemberPayment): void {
+    const dialogData: InvoicePreviewDialogData = {
+      payment: payment
+    };
+    this.dialog.open(InvoicePreviewComponent, {
+      width: '900px',
+      maxWidth: '95vw',
+      height: '95vh',
+      maxHeight: '95vh',
+      panelClass: 'invoice-preview-dialog',
       data: dialogData,
+      autoFocus: false,
+      disableClose: false
     });
   }
 }
