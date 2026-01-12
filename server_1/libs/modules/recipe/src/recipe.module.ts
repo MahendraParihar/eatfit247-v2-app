@@ -17,6 +17,7 @@ import {
   RecipeTypeController,
 } from './controllers';
 import { RecipeCategoryService, RecipeCuisineService, RecipeService, RecipeTypeService } from './services';
+import { FranchiseModule } from '@server_1/modules/franchise';
 // Register models with the model registry
 // Models with @Scopes decorator MUST be registered for scopes to work
 // Models used in scopes (like MstRecipeCategoryMapping and MstRecipeCuisineMapping) also need to be registered
@@ -40,6 +41,7 @@ modelRegistry.register([
       MstRecipeCuisineMapping,
       MstRecipeNutritive,
     ]),
+    FranchiseModule,
   ],
   controllers: [
     RecipeCategoryController,

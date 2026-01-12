@@ -4,6 +4,7 @@ import { BasicSearchDto, UpdateActiveDto } from '@server_1/shared-dto';
 import { RecipeCategoryService, RecipeCuisineService, RecipeService, RecipeTypeService } from '../../services';
 import { CreateRecipeDto } from '../../dto';
 import { IDropdownItem, IRecipe, ITableList } from '@eatfit247-shared-lib';
+import { IFileModel } from '@server_1/platform';
 
 @Controller('recipe')
 @UseGuards(JwtAuthGuard)
@@ -68,6 +69,11 @@ export class RecipeController {
       recipeCategory: categories,
       recipeCuisine: cuisines,
     };
+  }
+
+  @Get('download-pdf/:id')
+  async downloadRecipePdf(@Param('id') id: number): Promise<IFileModel> {
+    return await this.service.downloadRecipePdf(id);
   }
 }
 

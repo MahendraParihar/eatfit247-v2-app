@@ -1,14 +1,17 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { MstRecipe, MstRecipeCategoryMapping, MstRecipeCuisineMapping } from '../models';
-import { ConfigParam, IBasicSearch, IManageRecipe, IRecipe, ITableList } from '@eatfit247-shared-lib';
-import { AppConfigService, CommonFunctionsUtil, SearchUtil } from '@server_1/core';
+import { IBasicSearch, IManageRecipe, IRecipe, ITableList, MediaForEnum } from '@eatfit247-shared-lib';
+import { CommonFunctionsUtil, SearchUtil } from '@server_1/core';
+import { IFileModel, PdfService } from '@server_1/platform';
+import { FranchiseService } from '@server_1/modules/franchise';
 
 @Injectable()
 export class RecipeService {
   constructor(
     @InjectModel(MstRecipe) private readonly recipeRepository: typeof MstRecipe,
-    private appConfigService: AppConfigService,
+    private pdfService: PdfService,
+    private franchiseService: FranchiseService,
   ) {}
 
   public async findAll(searchDto: IBasicSearch): Promise<ITableList<IRecipe>> {
@@ -176,6 +179,46 @@ export class RecipeService {
       modifiedIp: cIp,
     };
     await this.recipeRepository.update(updateObj, { where: { recipeId: id } });
+  }
+
+  public async downloadRecipePdf(recipeId: number): Promise<IFileModel> {
+    const recipe = await this.recipeRepository.scope('details').findOne({
+      where: { recipeId },
+      nest: true,
+    });
+    if (!recipe) {
+      throw new NotFoundException('Recipe not found');
+    }
+    const recipeData = recipe.get({ plain: true });
+    // Fetch primary franchise for header information
+    let franchise = null;
+    try {
+      const franchiseList = await this.franchiseService.findAll({ page: 0, limit: 100 });
+      franchise = franchiseList.tableData.find((f: any) => f.isPrimary) || franchiseList.tableData[0];
+    } catch (error) {
+      console.warn('Could not fetch franchise information', error);
+    }
+    // Prepare recipe data for PDF template
+    const recipeObj = {
+      id: recipeData.recipeId,
+      name: recipeData.name,
+      howToMake: recipeData.howToMake || recipeData.preparationMethod || '',
+      ingredient: recipeData.ingredient || '',
+      imagePath: recipeData.imagePath || [],
+      serving: recipeData.servingCount || 0,
+      recipeType: recipeData.recipeType?.recipeType || '',
+      franchise: franchise,
+    };
+    // Generate PDF using the PdfService
+    const fileName = `${recipeData.name
+      .replace(/[^\w\s]/gi, '')
+      .replace(/ /g, '_')}_${recipeId}`;
+    return await this.pdfService.generatePDF(
+      'recipe',
+      MediaForEnum.RECIPE,
+      fileName,
+      recipeObj,
+    );
   }
 }
 
