@@ -32,7 +32,8 @@ import {
   ICalculateTaxResponse,
   IMemberDietPlan,
   IMemberDietDetail, IMemberDietPlanDetail,
-  IMemberProduct, ICreatePaymentLinkRequest, IPaymentLinkResponse
+  IMemberProduct, ICreatePaymentLinkRequest, IPaymentLinkResponse,
+  IAddress, IManageAddress, IAddressMaster
 } from '@eatfit247-shared-lib';
 
 @Injectable({
@@ -103,6 +104,30 @@ export class MembersApiService extends ApiBaseService {
       {
         active,
         deactivationReason
+      }
+    );
+  }
+
+  async updateNutritionist(
+    id: number,
+    nutritionistId: number | null
+  ): Promise<void> {
+    return await this.httpService.patch<void>(
+      `${this.endpoint}/update-nutritionist/${id}`,
+      {
+        nutritionistId
+      }
+    );
+  }
+
+  async updateFranchise(
+    id: number,
+    franchiseId: number | null
+  ): Promise<void> {
+    return await this.httpService.patch<void>(
+      `${this.endpoint}/update-franchise/${id}`,
+      {
+        franchiseId
       }
     );
   }
@@ -751,6 +776,60 @@ export class MembersApiService extends ApiBaseService {
     return res.data as IMemberProduct;
   }
 
+  // endregion
+  // region Member Addresses
+  async getAddressMasterData(): Promise<IAddressMaster> {
+    const res = await this.httpService.get<IResponse<IAddressMaster>>(
+      '/address/address-master'
+    );
+    return res.data as IAddressMaster;
+  }
+
+  async getAddresses(memberId: number): Promise<IAddress[]> {
+    const res = await this.httpService.get<IResponse<IAddress[]>>(
+      `${this.endpoint}/${memberId}/addresses`
+    );
+    return res.data as IAddress[];
+  }
+
+  async getAddress(
+    memberId: number,
+    addressId: number
+  ): Promise<IAddress> {
+    const res = await this.httpService.get<IResponse<IAddress>>(
+      `${this.endpoint}/${memberId}/addresses/${addressId}`
+    );
+    return res.data as IAddress;
+  }
+
+  async createAddress(
+    memberId: number,
+    data: IManageAddress
+  ): Promise<IAddress> {
+    const res = await this.httpService.post<IResponse<IAddress>>(
+      `${this.endpoint}/${memberId}/addresses`,
+      data
+    );
+    return res.data as IAddress;
+  }
+
+  async updateAddress(
+    memberId: number,
+    addressId: number,
+    data: IManageAddress
+  ): Promise<IAddress> {
+    const res = await this.httpService.put<IResponse<IAddress>>(
+      `${this.endpoint}/${memberId}/addresses/${addressId}`,
+      data
+    );
+    return res.data as IAddress;
+  }
+
+  async deleteAddress(memberId: number, addressId: number): Promise<void> {
+    return await this.httpService.delete<void>(
+      `${this.endpoint}/${memberId}/addresses/${addressId}`
+    );
+  }
   // endregion
 }
 

@@ -1,0 +1,47 @@
+.dialog-container {
+  min-width: 500px;
+  max-width: 700px;
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+}
+
+.address-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px 0;
+}
+
+.form-row {
+  display: flex;
+  gap: 16px;
+  width: 100%;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.half-width {
+  flex: 1;
+}
+
+.button-spinner {
+  display: inline-block;
+  margin-right: 8px;
+}
+
+mat-dialog-content {
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+mat-dialog-actions {
+  padding: 16px 24px;
+}
+

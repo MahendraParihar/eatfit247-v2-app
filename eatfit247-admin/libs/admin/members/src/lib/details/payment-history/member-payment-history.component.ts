@@ -10,10 +10,10 @@ import { EmptyStateComponent } from '@shared';
 import { LoaderComponent } from '@shared';
 import {
   IMemberPayment,
-  ITableList,
 } from '@eatfit247-shared-lib';
 import { MembersApiService } from '../../api.service';
 import { ManageMemberPaymentComponent, ManageMemberPaymentData } from './manage-member-payment/manage-member-payment.component';
+import { PaymentDetailsDialogComponent, PaymentDetailsDialogData } from './payment-details-dialog/payment-details-dialog.component';
 
 @Component({
   selector: 'lib-member-payment-history',
@@ -125,22 +125,21 @@ export class MemberPaymentHistoryComponent implements OnInit, OnDestroy {
         onClick: (row) => this.editPayment(row),
       },
       {
-        label: 'Delete',
-        icon: 'delete',
-        color: 'warn',
-        onClick: (row: IMemberPayment) => this.deletePayment(row),
-        visible: (row: IMemberPayment) => row.deletable === true,
+        label: 'Details',
+        icon: 'info',
+        color: 'primary',
+        onClick: (row) => this.viewPaymentDetails(row),
       },
     ];
 
-    this.tableConfig = {
+      this.tableConfig = {
       columns,
       actions,
       pageSize: 10,
       pageSizeOptions: [10, 25, 50, 100],
       showPagination: true,
       showSearch: true,
-      onRowClick: (row: IMemberPayment) => this.editPayment(row),
+      onRowClick: (row: IMemberPayment) => this.viewPaymentDetails(row),
     };
   }
 
@@ -194,19 +193,15 @@ export class MemberPaymentHistoryComponent implements OnInit, OnDestroy {
     });
   }
 
-  async deletePayment(payment: IMemberPayment): Promise<void> {
-    if (
-      confirm(
-        `Are you sure you want to delete payment with invoice ID: ${payment.invoiceId}?`,
-      )
-    ) {
-      try {
-        await this.apiService.deletePayment(this.memberId, payment.memberPaymentId);
-        this.loadPayments();
-      } catch (error) {
-        console.error('Error deleting payment:', error);
-        alert('Failed to delete payment. Please try again.');
-      }
-    }
+  viewPaymentDetails(payment: IMemberPayment): void {
+    const dialogData: PaymentDetailsDialogData = {
+      payment: payment,
+    };
+    this.dialog.open(PaymentDetailsDialogComponent, {
+      width: '800px',
+      maxWidth: '90vw',
+      maxHeight: '90vh',
+      data: dialogData,
+    });
   }
 }

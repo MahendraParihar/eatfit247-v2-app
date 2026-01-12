@@ -213,6 +213,46 @@ export class MemberService {
     await this.memberRepository.update(updateObj, { where: { memberId: id } });
   }
 
+  public async updateNutritionist(
+    id: number,
+    nutritionistId: number | null,
+    cIp: string,
+    adminId: number,
+  ): Promise<void> {
+    const find = await this.memberRepository.findOne({ where: { memberId: id } });
+    if (!find) {
+      throw new NotFoundException('Member not found');
+    }
+    await this.memberRepository.update(
+      {
+        nutritionistId: nutritionistId,
+        modifiedBy: adminId,
+        modifiedIp: cIp,
+      },
+      { where: { memberId: id } },
+    );
+  }
+
+  public async updateFranchise(
+    id: number,
+    franchiseId: number | null,
+    cIp: string,
+    adminId: number,
+  ): Promise<void> {
+    const find = await this.memberRepository.findOne({ where: { memberId: id } });
+    if (!find) {
+      throw new NotFoundException('Member not found');
+    }
+    await this.memberRepository.update(
+      {
+        franchiseId: franchiseId,
+        modifiedBy: adminId,
+        modifiedIp: cIp,
+      },
+      { where: { memberId: id } },
+    );
+  }
+
   /**
    * Determine franchise based on member's countryId
    * First tries to find a franchise matching the countryId, then falls back to default franchise

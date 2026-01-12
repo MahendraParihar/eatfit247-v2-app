@@ -13,6 +13,7 @@ import { MemberHealthParameterLogsComponent } from './details/health-parameter-l
 import { MemberIssuesComponent } from './details/issues/member-issues.component';
 import { MemberDietPlanListComponent } from './details/diet-plan/member-diet-plan-list.component';
 import { MemberDietPlanDetailComponent } from './details/diet-plan/member-diet-plan-detail/member-diet-plan-detail.component';
+import { MemberAddressesComponent } from './details/addresses/member-addresses.component';
 
 export const membersRoutes: Route[] = [
   { path: '', component: Members, title: 'Members' },
@@ -38,6 +39,7 @@ export const membersRoutes: Route[] = [
       { path: 'diet-plan/:dietId/cycle/:cycleId/day/:dayNo/copy/:copyCycleId/:copyDayNo', component: MemberDietPlanDetailComponent, title: 'Member Diet Plan Detail' },
       { path: 'health-parameter-logs', component: MemberHealthParameterLogsComponent, title: 'Member Health Parameter Logs' },
       { path: 'issues', component: MemberIssuesComponent, title: 'Member Issues' },
+      { path: 'addresses', component: MemberAddressesComponent, title: 'Member Addresses' },
     ],
   },
 ];

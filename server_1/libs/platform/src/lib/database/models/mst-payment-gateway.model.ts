@@ -6,6 +6,7 @@ import { CommonScopes } from '@server_1/core';
   modelName: 'mst_payment_gateway',
   schema: 'public',
   tableName: 'mst_payment_gateway',
+  timestamps: false,
 })
 @Scopes(() => ({
   list: CommonScopes.list(),

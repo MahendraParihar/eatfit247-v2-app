@@ -16,6 +16,8 @@ export class TaxEngineService {
   ) {}
 
   async calculate(input: TaxInput): Promise<TaxResult> {
+    console.log('-------------------------------------');
+    console.log(input);
     const taxableAmount = input.baseAmount - input.discountAmount;
     if (input.isTaxApplicable === false) {
       return this.noTax(taxableAmount);

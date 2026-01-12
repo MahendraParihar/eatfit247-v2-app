@@ -19,6 +19,7 @@ import { DietTemplateService, TxnDietTemplateDietDetail } from '@server_1/module
 import { MemberDietPlanDetailDto, MemberDietTemplateDto } from '../dto';
 import * as _ from 'lodash';
 import moment from 'moment';
+import { Transaction } from 'sequelize';
 
 @Injectable()
 export class MemberDietPlanService {
@@ -124,7 +125,7 @@ export class MemberDietPlanService {
     daysInCycle: number,
     requestedIp: string,
     adminId: number,
-    transaction?: any,
+    transaction?: Transaction,
   ): Promise<TxnMemberDietPlan | null> {
     // Check if entry already exists
     const existing = await this.memberDietPlanRepository.findOne({

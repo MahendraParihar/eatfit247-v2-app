@@ -54,4 +54,34 @@ export class MemberController {
       currentUser.adminId,
     );
   }
+
+  @Patch('update-nutritionist/:id')
+  async updateNutritionist(
+    @Param('id') id: number,
+    @Body() body: { nutritionistId: number | null },
+    @CurrentUser() currentUser: any,
+    @RequestedIp() requestedIp: string,
+  ): Promise<void> {
+    await this.service.updateNutritionist(
+      id,
+      body.nutritionistId,
+      requestedIp,
+      currentUser.adminId,
+    );
+  }
+
+  @Patch('update-franchise/:id')
+  async updateFranchise(
+    @Param('id') id: number,
+    @Body() body: { franchiseId: number | null },
+    @CurrentUser() currentUser: any,
+    @RequestedIp() requestedIp: string,
+  ): Promise<void> {
+    await this.service.updateFranchise(
+      id,
+      body.franchiseId,
+      requestedIp,
+      currentUser.adminId,
+    );
+  }
 }

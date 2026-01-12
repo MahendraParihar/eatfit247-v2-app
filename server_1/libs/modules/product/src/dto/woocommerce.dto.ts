@@ -1,16 +1,14 @@
 import {
-  CreateWooCommerceOrderDto,
-  WooCommerceBillingAddress,
-  WooCommerceOrderItem,
+  ICreateWooCommerceOrderDto,
+  IWooCommerceBillingAddress,
+  IWooCommerceOrderItem,
 } from '@eatfit247-shared-lib';
 
-export class CreateWooCommerceOrderRequestDto
-  implements CreateWooCommerceOrderDto
-{
+export class CreateWooCommerceOrderRequestDto implements ICreateWooCommerceOrderDto {
   payment_method?: string;
   payment_method_title?: string;
   set_paid?: boolean;
-  billing: WooCommerceBillingAddress;
+  billing: IWooCommerceBillingAddress;
   shipping?: {
     first_name: string;
     last_name: string;
@@ -22,7 +20,7 @@ export class CreateWooCommerceOrderRequestDto
     postcode: string;
     country: string;
   };
-  line_items: WooCommerceOrderItem[];
+  line_items: IWooCommerceOrderItem[];
   shipping_lines?: Array<{
     method_id: string;
     method_title: string;

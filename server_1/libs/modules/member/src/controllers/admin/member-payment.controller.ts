@@ -4,12 +4,13 @@ import { MemberPaymentService } from '../../services';
 import {
   ICalculateTaxResponse,
   IMemberPayment,
-  IMemberPaymentMasterData,
+  IMemberPaymentMasterData, IPaymentLinkResponse,
   IProgramPlan,
   ITableList,
 } from '@eatfit247-shared-lib';
 import { CreateMemberPaymentDto } from '../../dto';
 import { CalculateTaxDto } from '../../dto/calculate-tax.dto';
+import { CreatePaymentLinkDto } from '../../dto/create-payment-link.dto';
 import { ProgramPlanService } from '@server_1/modules/program-plan';
 
 @Controller('member/:id/payment-history')
@@ -24,16 +25,18 @@ export class MemberPaymentController {
   async getSupportedGateways(
     @Param('id') id: number,
     @Query('currency') currency: string,
-  ): Promise<Array<{
-    franchisePaymentGatewayId: number;
-    gatewayCode: string;
-    gatewayName: string;
-    providerCountryCode: string;
-    currencyCode: string;
-    isPrimary: boolean;
-    supportsDomestic: boolean;
-    supportsInternational: boolean;
-  }>> {
+  ): Promise<
+    Array<{
+      franchisePaymentGatewayId: number;
+      gatewayCode: string;
+      gatewayName: string;
+      providerCountryCode: string;
+      currencyCode: string;
+      isPrimary: boolean;
+      supportsDomestic: boolean;
+      supportsInternational: boolean;
+    }>
+  > {
     return await this.memberPaymentService.getSupportedPaymentGateways(id, currency);
   }
 
@@ -63,12 +66,7 @@ export class MemberPaymentController {
     @RequestedIp() requestedIp: string,
   ): Promise<IMemberPayment> {
     body.memberId = id;
-    return await this.memberPaymentService.create(
-      id,
-      body,
-      requestedIp,
-      currentUser.adminId,
-    );
+    return await this.memberPaymentService.create(id, body, requestedIp, currentUser.adminId);
   }
 
   @Put(':paymentId')
@@ -96,12 +94,7 @@ export class MemberPaymentController {
     @CurrentUser() currentUser: any,
     @RequestedIp() requestedIp: string,
   ): Promise<void> {
-    return await this.memberPaymentService.delete(
-      id,
-      paymentId,
-      requestedIp,
-      currentUser.adminId,
-    );
+    return await this.memberPaymentService.delete(id, paymentId, requestedIp, currentUser.adminId);
   }
 
   @Get('program-plan/:programPlanId')
@@ -118,13 +111,15 @@ export class MemberPaymentController {
   ): Promise<ICalculateTaxResponse> {
     return await this.memberPaymentService.calculateTax(
       id,
-      body.orderAmount,
-      body.discountAmount,
-      body.isTaxApplicable,
-      body.isPlanFeesIncludedTax,
-      body.currencyCode,
-      body.billingAddressId,
-      body.addressId,
+      body,
     );
+  }
+
+  @Post('create-payment-link')
+  async createPaymentLink(
+    @Param('id') id: number,
+    @Body() body: CreatePaymentLinkDto,
+  ): Promise<IPaymentLinkResponse> {
+    return await this.memberPaymentService.createPaymentLink(id, body);
   }
 }

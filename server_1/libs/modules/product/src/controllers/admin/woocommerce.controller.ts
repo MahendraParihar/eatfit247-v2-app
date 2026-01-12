@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { JwtAuthGuard } from '@server_1/core';
 import { WooCommerceService } from '@server_1/platform';
-import { CreateWooCommerceOrderRequestDto } from '../../dto/woocommerce.dto';
+import { CreateWooCommerceOrderRequestDto } from '../../dto';
 
 @Controller('woocommerce/orders')
 @UseGuards(JwtAuthGuard)
@@ -23,7 +23,7 @@ export class WooCommerceController {
   async createOrder(
     @Body() createOrderDto: CreateWooCommerceOrderRequestDto,
   ) {
-    return await this.woCommerceService.createOrder(createOrderDto);
+    return await this.wooCommerceService.createOrder(createOrderDto);
   }
 
   /**
@@ -32,7 +32,7 @@ export class WooCommerceController {
    */
   @Get(':orderId')
   async getOrderDetails(@Param('orderId') orderId: number) {
-    return await this.woCommerceService.getOrderById(orderId);
+    return await this.wooCommerceService.getOrderById(orderId);
   }
 
   /**
@@ -41,7 +41,7 @@ export class WooCommerceController {
    */
   @Get(':orderId/track')
   async trackOrder(@Param('orderId') orderId: number) {
-    return await this.woCommerceService.trackOrder(orderId);
+    return await this.wooCommerceService.trackOrder(orderId);
   }
 }
 

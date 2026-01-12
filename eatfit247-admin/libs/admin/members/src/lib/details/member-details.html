@@ -28,15 +28,29 @@
               <span class="summary-value">{{ member.contactNumber || 'N/A' }}</span>
             </div>
           </div>
-          @if (member.franchise) {
-            <div class="summary-item">
-              <mat-icon>business</mat-icon>
-              <div class="summary-content">
-                <span class="summary-label">Franchise</span>
-                <span class="summary-value">{{ member.franchise || 'N/A' }}</span>
+          <div class="summary-item">
+            <mat-icon>business</mat-icon>
+            <div class="summary-content">
+              <span class="summary-label">Franchise</span>
+              <div class="dropdown-container">
+                <mat-form-field appearance="outline" class="summary-dropdown">
+                  <mat-select
+                    [value]="selectedFranchiseId"
+                    (selectionChange)="selectedFranchiseId = $event.value; updateFranchise()"
+                    [disabled]="updatingFranchise"
+                  >
+                    <mat-option [value]="null">Not Assigned</mat-option>
+                    @for (franchise of franchiseOptions; track franchise.id) {
+                      <mat-option [value]="franchise.id">{{ franchise.label }}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+                @if (updatingFranchise) {
+                  <mat-spinner diameter="20" class="update-spinner"></mat-spinner>
+                }
               </div>
             </div>
-          }
+          </div>
           @if (member.referrer) {
             <div class="summary-item">
               <mat-icon>person_search</mat-icon>
@@ -55,15 +69,29 @@
               </div>
             </div>
           }
-          @if (member.nutritionist) {
-            <div class="summary-item">
-              <mat-icon>medical_services</mat-icon>
-              <div class="summary-content">
-                <span class="summary-label">Nutritionist</span>
-                <span class="summary-value">{{ member.nutritionist || 'N/A' }}</span>
+          <div class="summary-item">
+            <mat-icon>medical_services</mat-icon>
+            <div class="summary-content">
+              <span class="summary-label">Nutritionist</span>
+              <div class="dropdown-container">
+                <mat-form-field appearance="outline" class="summary-dropdown">
+                  <mat-select
+                    [value]="selectedNutritionistId"
+                    (selectionChange)="selectedNutritionistId = $event.value; updateNutritionist()"
+                    [disabled]="updatingNutritionist"
+                  >
+                    <mat-option [value]="null">Not Assigned</mat-option>
+                    @for (nutritionist of nutritionistOptions; track nutritionist.id) {
+                      <mat-option [value]="nutritionist.id">{{ nutritionist.label }}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+                @if (updatingNutritionist) {
+                  <mat-spinner diameter="20" class="update-spinner"></mat-spinner>
+                }
               </div>
             </div>
-          }
+          </div>
         </div>
       </mat-card-content>
     </mat-card>

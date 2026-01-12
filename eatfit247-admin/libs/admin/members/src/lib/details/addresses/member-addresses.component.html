@@ -1,0 +1,25 @@
+@if (loading) {
+  <shared-ui-loader></shared-ui-loader>
+}
+@if (!loading && addresses.length > 0) {
+  <shared-ui-data-table
+    [config]="tableConfig"
+    [data]="addresses"
+    [totalCount]="addresses.length">
+    <div headerActions>
+      <button mat-raised-button color="primary" (click)="addAddress()">
+        <mat-icon>add</mat-icon>
+        Add Address
+      </button>
+    </div>
+  </shared-ui-data-table>
+}
+@if (!loading && addresses.length === 0) {
+  <shared-ui-empty-state
+    [type]="EmptyStateType.GENERAL"
+    buttonLabel="Add Address"
+    buttonIcon="add"
+    (buttonClick)="addAddress()">
+  </shared-ui-empty-state>
+}
+

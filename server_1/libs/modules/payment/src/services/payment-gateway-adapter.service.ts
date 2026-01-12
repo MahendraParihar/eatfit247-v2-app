@@ -1,3 +1,4 @@
+import { PaymentGatewayEnum } from '@eatfit247-shared-lib';
 import { Injectable } from '@nestjs/common';
 import { RazorpayService, StripeService, TelrService } from '@server_1/platform';
 
@@ -25,6 +26,10 @@ export interface PaymentGatewayAdapter {
       contact?: string;
     },
     notes?: Record<string, any>,
+    credentials?: {
+      keyId?: string;
+      keySecret?: string;
+    },
   ): Promise<{ short_url: string; id: string }>;
 
   /**
@@ -86,6 +91,10 @@ export class RazorpayAdapter implements PaymentGatewayAdapter {
       contact?: string;
     },
     notes?: Record<string, any>,
+    credentials?: {
+      keyId?: string;
+      keySecret?: string;
+    },
   ): Promise<{ short_url: string; id: string }> {
     return await this.razorpayService.createPaymentLink(
       amount,
@@ -93,6 +102,8 @@ export class RazorpayAdapter implements PaymentGatewayAdapter {
       description,
       customer,
       notes,
+      credentials?.keyId,
+      credentials?.keySecret,
     );
   }
 
@@ -123,6 +134,10 @@ export class StripeAdapter implements PaymentGatewayAdapter {
       contact?: string;
     },
     notes?: Record<string, any>,
+    credentials?: {
+      keyId?: string;
+      keySecret?: string;
+    },
   ): Promise<{ short_url: string; id: string }> {
     return await this.stripeService.createPaymentLink(
       amount,
@@ -190,6 +205,10 @@ export class TelrAdapter implements PaymentGatewayAdapter {
       contact?: string;
     },
     notes?: Record<string, any>,
+    credentials?: {
+      keyId?: string;
+      keySecret?: string;
+    },
   ): Promise<{ short_url: string; id: string }> {
     return await this.telrService.createPaymentLink(
       amount,
@@ -249,18 +268,18 @@ export class PaymentGatewayFactory {
   ) {}
 
   /**
-   * Get payment gateway adapter for the given gateway code
+   * Get a payment gateway adapter for the given gateway code
    * @param gatewayCode - Gateway code (e.g., 'RAZORPAY', 'STRIPE', 'TELR')
    * @returns PaymentGatewayAdapter instance
    * @throws Error if gateway code is not supported
    */
   getAdapter(gatewayCode: string): PaymentGatewayAdapter {
     switch (gatewayCode.toUpperCase()) {
-      case 'RAZORPAY':
+      case PaymentGatewayEnum.RAZORPAY:
         return new RazorpayAdapter(this.razorpayService);
-      case 'STRIPE':
+      case PaymentGatewayEnum.STRIPE:
         return new StripeAdapter(this.stripeService);
-      case 'TELR':
+      case PaymentGatewayEnum.TELR:
         return new TelrAdapter(this.telrService);
       default:
         throw new Error(`Unsupported payment gateway: ${gatewayCode}`);

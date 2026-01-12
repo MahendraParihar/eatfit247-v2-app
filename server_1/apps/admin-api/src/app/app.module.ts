@@ -67,7 +67,7 @@ import { ReportsModule } from '@server_1/admin-only/reports';
     AdminUserModule,
     ReportsModule,
     CommonModule.forRoot(
-      ['Common', 'Email', 'Google', 'Calendar', 'RazorPay'],
+      ['Common', 'Email', 'Google', 'Calendar', 'Payment'],
       PlatformModule.getModels(),
     ),
   ],

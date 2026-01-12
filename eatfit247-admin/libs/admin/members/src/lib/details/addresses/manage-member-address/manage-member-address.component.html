@@ -1,0 +1,112 @@
+<div class="dialog-container">
+  <h2 mat-dialog-title>
+    {{ isEditMode ? 'Edit Address' : 'Add Address' }}
+  </h2>
+
+  <mat-dialog-content>
+    @if (loading()) {
+      <div class="loading-container">
+        <mat-spinner diameter="40"></mat-spinner>
+      </div>
+    } @else {
+      <form [formGroup]="formGroup" class="address-form">
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Address Name</mat-label>
+            <input matInput formControlName="addressName" placeholder="e.g., Home, Office" />
+            <shared-ui-input-error [control]="formGroup.get('addressName')"></shared-ui-input-error>
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Postal Address *</mat-label>
+            <textarea matInput formControlName="postalAddress" rows="3" placeholder="Enter full address"></textarea>
+            <shared-ui-input-error [control]="formGroup.get('postalAddress')"></shared-ui-input-error>
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>City/Village</mat-label>
+            <input matInput formControlName="cityVillage" />
+            <shared-ui-input-error [control]="formGroup.get('cityVillage')"></shared-ui-input-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>Pin Code</mat-label>
+            <input matInput formControlName="pinCode" type="text" />
+            <shared-ui-input-error [control]="formGroup.get('pinCode')"></shared-ui-input-error>
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>Country *</mat-label>
+            <mat-select formControlName="countryId">
+              <mat-option [value]="null">Select Country</mat-option>
+              @for (country of masterData()?.country; track country.id) {
+                <mat-option [value]="country.id">{{ country.label }}</mat-option>
+              }
+            </mat-select>
+            <shared-ui-input-error [control]="formGroup.get('countryId')"></shared-ui-input-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>State *</mat-label>
+            <mat-select formControlName="stateId" [disabled]="!formGroup.get('countryId')?.value">
+              <mat-option [value]="null">Select State</mat-option>
+              @for (state of filteredStates; track state.id) {
+                <mat-option [value]="state.id">{{ state.label }}</mat-option>
+              }
+            </mat-select>
+            <shared-ui-input-error [control]="formGroup.get('stateId')"></shared-ui-input-error>
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Address Type *</mat-label>
+            <mat-select formControlName="addressTypeId">
+              <mat-option [value]="null">Select Address Type</mat-option>
+              @for (addressType of masterData()?.addressType; track addressType.id) {
+                <mat-option [value]="addressType.id">{{ addressType.label }}</mat-option>
+              }
+            </mat-select>
+            <shared-ui-input-error [control]="formGroup.get('addressTypeId')"></shared-ui-input-error>
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>Latitude</mat-label>
+            <input matInput formControlName="latitude" type="number" step="any" />
+            <shared-ui-input-error [control]="formGroup.get('latitude')"></shared-ui-input-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>Longitude</mat-label>
+            <input matInput formControlName="longitude" type="number" step="any" />
+            <shared-ui-input-error [control]="formGroup.get('longitude')"></shared-ui-input-error>
+          </mat-form-field>
+        </div>
+      </form>
+    }
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button (click)="onCancel()" [disabled]="submitting()">Cancel</button>
+    <button
+      mat-raised-button
+      color="primary"
+      (click)="onSubmit()"
+      [disabled]="submitting() || formGroup.invalid">
+      @if (submitting()) {
+        <mat-spinner diameter="20" class="button-spinner"></mat-spinner>
+      } @else {
+        {{ isEditMode ? 'Update' : 'Create' }}
+      }
+    </button>
+  </mat-dialog-actions>
+</div>
+

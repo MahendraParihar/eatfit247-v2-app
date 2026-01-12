@@ -18,7 +18,7 @@ export class CreateMemberPaymentDto implements IManageMemberPayment {
   @IsNotEmpty()
   @IsNumber()
   memberId!: number;
-  @IsNotEmpty()
+  @IsOptional()
   @IsNumber()
   paymentModeId!: number;
   @IsNotEmpty()
@@ -92,5 +92,14 @@ export class CreateMemberPaymentDto implements IManageMemberPayment {
   @IsNumber()
   @Min(0)
   totalAmount!: number;
+  @IsOptional()
+  @IsString()
+  paymentLink?: string;
+  @IsOptional()
+  @IsString()
+  gatewayProvider?: string;
+  @IsOptional()
+  @IsString()
+  gatewayOrderId?: string;
 }
 
