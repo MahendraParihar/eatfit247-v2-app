@@ -3,9 +3,11 @@ import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { DataTableComponent, ITableColumn, ITableConfig, ITableAction, createdByUserFormatter, updatedByUserFormatter } from '@shared';
 import { ITableList, IRecipe } from '@eatfit247-shared-lib';
 import { RecipesApiService } from './api.service';
+import { ViewRecipeDialogComponent } from './view-recipe-dialog/view-recipe-dialog.component';
 import { Subject, debounceTime, distinctUntilChanged, switchMap } from 'rxjs';
 
 @Component({
@@ -25,7 +27,8 @@ export class Recipes implements OnInit {
   constructor(
     private apiService: RecipesApiService,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private dialog: MatDialog
   ) {
     this.setupSearch();
   }
@@ -200,7 +203,17 @@ export class Recipes implements OnInit {
   }
 
   viewItem(item: IRecipe): void {
-    console.log('View recipe:', item);
+    const dialogRef = this.dialog.open(ViewRecipeDialogComponent, {
+      width: '900px',
+      maxWidth: '90vw',
+      maxHeight: '90vh',
+      data: { recipe: item },
+      closeOnNavigation: false,
+      disableClose: false
+    });
+    dialogRef.afterClosed().subscribe((result) => {
+      // Handle dialog close if needed
+    });
   }
 
   async toggleStatus(item: IRecipe): Promise<void> {

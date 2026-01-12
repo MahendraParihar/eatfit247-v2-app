@@ -40,4 +40,11 @@ export class RecipesApiService extends ApiBaseService {
     );
     return res.data as { recipeType: IDropdownItem[]; recipeCategory: IDropdownItem[]; recipeCuisine: IDropdownItem[] };
   }
+
+  async downloadRecipePdf(recipeId: number): Promise<{ buffer: string; fileName: string }> {
+    const res = await this.httpService.get<IResponse<{ buffer: string; fileName: string }>>(
+      `${this.endpoint}/download-pdf/${recipeId}`
+    );
+    return res.data as { buffer: string; fileName: string };
+  }
 }

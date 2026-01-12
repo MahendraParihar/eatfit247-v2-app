@@ -1,0 +1,172 @@
+<div class="recipe-dialog-container">
+  <!-- Dialog Header -->
+  <div class="dialog-header">
+    <div class="header-content">
+      <div class="header-info">
+        <h2 mat-dialog-title class="recipe-title">{{ recipe?.name || recipe?.title || 'Recipe Details' }}</h2>
+        <div class="recipe-meta">
+          <span class="meta-item">
+            <mat-icon>restaurant</mat-icon>
+            <span>{{ recipe?.recipeType || 'N/A' }}</span>
+          </span>
+          <span class="meta-separator">•</span>
+          <span class="meta-item">
+            <mat-icon>people</mat-icon>
+            <span>{{ recipe?.servingCount || 0 }} Servings</span>
+          </span>
+          <span class="meta-separator">•</span>
+          <span class="meta-item">
+            <mat-icon [class.active]="recipe?.active" [class.inactive]="!recipe?.active">
+              {{ recipe?.active ? 'check_circle' : 'cancel' }}
+            </mat-icon>
+            <span>{{ recipe?.active ? 'Active' : 'Inactive' }}</span>
+          </span>
+        </div>
+      </div>
+      <button type="button" mat-icon-button (click)="onClose()" class="close-button" aria-label="Close dialog">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <!-- Dialog Content -->
+  <mat-dialog-content class="recipe-content">
+    @if (loading) {
+      <div class="loading-container">
+        <mat-icon class="spinner">hourglass_empty</mat-icon>
+        <p>Loading recipe details...</p>
+      </div>
+    } @else if (recipe) {
+      <div class="recipe-details">
+        <!-- Recipe Image -->
+        @if (getImageUrl(recipe.imagePath)) {
+          <div class="recipe-image-section">
+            <img [src]="getImageUrl(recipe.imagePath)" [alt]="recipe.name || recipe.title" class="recipe-image" />
+          </div>
+        }
+
+        <!-- Recipe Information Cards -->
+        <div class="info-grid">
+          <!-- Details Card -->
+          @if (recipe.details) {
+            <mat-card class="info-card">
+              <mat-card-header>
+                <mat-card-title>
+                  <mat-icon>description</mat-icon>
+                  Details
+                </mat-card-title>
+              </mat-card-header>
+              <mat-card-content>
+                <div [innerHTML]="recipe.details" class="content-text"></div>
+              </mat-card-content>
+            </mat-card>
+          }
+
+          <!-- Ingredients Card -->
+          @if (recipe.ingredient || recipe.ingredients) {
+            <mat-card class="info-card">
+              <mat-card-header>
+                <mat-card-title>
+                  <mat-icon>list</mat-icon>
+                  Ingredients
+                </mat-card-title>
+              </mat-card-header>
+              <mat-card-content>
+                <div [innerHTML]="recipe.ingredient || recipe.ingredients" class="content-text"></div>
+              </mat-card-content>
+            </mat-card>
+          }
+
+          <!-- Preparation Method Card -->
+          @if (recipe.preparationMethod || recipe.howToMake) {
+            <mat-card class="info-card">
+              <mat-card-header>
+                <mat-card-title>
+                  <mat-icon>restaurant_menu</mat-icon>
+                  Preparation Method
+                </mat-card-title>
+              </mat-card-header>
+              <mat-card-content>
+                <div [innerHTML]="recipe.preparationMethod || recipe.howToMake" class="content-text"></div>
+              </mat-card-content>
+            </mat-card>
+          }
+
+          <!-- Benefits Card -->
+          @if (recipe.benefits) {
+            <mat-card class="info-card">
+              <mat-card-header>
+                <mat-card-title>
+                  <mat-icon>favorite</mat-icon>
+                  Benefits
+                </mat-card-title>
+              </mat-card-header>
+              <mat-card-content>
+                <div [innerHTML]="recipe.benefits" class="content-text"></div>
+              </mat-card-content>
+            </mat-card>
+          }
+        </div>
+
+        <!-- Additional Information -->
+        <div class="additional-info">
+          <mat-card class="info-card">
+            <mat-card-header>
+              <mat-card-title>
+                <mat-icon>info</mat-icon>
+                Additional Information
+              </mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <div class="info-row">
+                <span class="info-label">Categories:</span>
+                <span class="info-value">{{ getCategories() }}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Cuisines:</span>
+                <span class="info-value">{{ getCuisines() }}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Views:</span>
+                <span class="info-value">{{ recipe.visitedCount || 0 }}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Shares:</span>
+                <span class="info-value">{{ recipe.shareCount || 0 }}</span>
+              </div>
+              @if (getTags().length > 0) {
+                <div class="info-row">
+                  <span class="info-label">Tags:</span>
+                  <div class="tags-container">
+                    @for (tag of getTags(); track tag) {
+                      <mat-chip>{{ tag }}</mat-chip>
+                    }
+                  </div>
+                </div>
+              }
+            </mat-card-content>
+          </mat-card>
+        </div>
+      </div>
+    }
+  </mat-dialog-content>
+
+  <!-- Dialog Footer -->
+  <mat-dialog-actions align="end" class="dialog-footer">
+    <button type="button" (click)="onClose()" mat-button class="action-button">
+      Close
+    </button>
+    <button 
+      type="button" 
+      (click)="downloadRecipe()" 
+      mat-raised-button 
+      color="primary" 
+      class="action-button"
+      [disabled]="loading"
+    >
+      <mat-icon>download</mat-icon>
+      Download PDF
+    </button>
+  </mat-dialog-actions>
+</div>
+
