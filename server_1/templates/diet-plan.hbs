@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Diet Plan - {{memberName}}</title>
+  <style type="text/css">
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Arial', 'Helvetica', sans-serif;
+      font-size: 12px;
+      color: #333;
+      line-height: 1.6;
+      padding: 20px;
+      background-color: #fff;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+    }
+
+    .header h1 {
+      font-size: 24px;
+      font-weight: bold;
+      color: #000;
+      margin-bottom: 5px;
+      text-transform: uppercase;
+    }
+
+    .header .company-info {
+      font-size: 11px;
+      color: #333;
+      line-height: 1.4;
+      margin-top: 5px;
+    }
+
+    .member-info-table {
+      width: 100%;
+      border: 1px solid #d3d3d3;
+      border-collapse: collapse;
+      margin-bottom: 15px;
+    }
+
+    .member-info-table td {
+      border: 1px solid #d3d3d3;
+      padding: 8px 10px;
+    }
+
+    .member-info-table td:first-child {
+      font-weight: bold;
+      width: 20%;
+      background-color: #f5f5f5;
+    }
+
+    .diet-plan-table {
+      width: 100%;
+      border: 1px solid #d3d3d3;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+
+    .diet-plan-table th {
+      border: 1px solid #d3d3d3;
+      padding: 10px;
+      background-color: #f5f5f5;
+      font-weight: bold;
+      text-align: left;
+    }
+
+    .diet-plan-table td {
+      border: 1px solid #d3d3d3;
+      padding: 10px;
+      vertical-align: top;
+    }
+
+    .diet-plan-table th:nth-child(1),
+    .diet-plan-table td:nth-child(1) {
+      width: 20%;
+    }
+
+    .diet-plan-table th:nth-child(2),
+    .diet-plan-table td:nth-child(2) {
+      width: 50%;
+    }
+
+    .diet-plan-table th:nth-child(3),
+    .diet-plan-table td:nth-child(3) {
+      width: 30%;
+    }
+
+    .recipe-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .recipe-list li {
+      margin-bottom: 5px;
+      padding-left: 0;
+    }
+
+    .recipes-section {
+      margin-top: 30px;
+      page-break-before: auto;
+    }
+
+    .recipes-section h4 {
+      font-size: 14px;
+      font-weight: bold;
+      margin-bottom: 15px;
+    }
+
+    .recipe-detail-table {
+      width: 100%;
+      border: 1px solid #d3d3d3;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+      page-break-inside: avoid;
+    }
+
+    .recipe-detail-table td {
+      border: 1px solid #d3d3d3;
+      padding: 15px;
+      vertical-align: top;
+    }
+
+    .recipe-header {
+      border-bottom: 2px solid #d3d3d3;
+    }
+
+    .recipe-meta {
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+    }
+
+    .recipe-image {
+      width: 150px;
+      height: 150px;
+      border-radius: 25px;
+      border: 1px solid #d3d3d3;
+      object-fit: cover;
+      flex-shrink: 0;
+    }
+
+    .recipe-meta-info {
+      flex: 1;
+    }
+
+    .recipe-title {
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .recipe-meta-row {
+      font-size: 12px;
+      margin-bottom: 5px;
+    }
+
+    .recipe-ingredients {
+      width: 40%;
+      vertical-align: top;
+    }
+
+    .recipe-preparation {
+      width: 60%;
+      vertical-align: top;
+    }
+
+    .section-title {
+      font-size: 16px;
+      font-style: italic;
+      text-align: center;
+      margin-bottom: 10px;
+      font-weight: normal;
+    }
+
+    .ingredients-content,
+    .preparation-content {
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    @media print {
+      body {
+        padding: 10px;
+      }
+      .recipe-detail-table {
+        page-break-inside: avoid;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <div class="header">
+    <h1>Eatfit 24/7</h1>
+    <div class="company-info">
+      <div><strong>EAT FIT 247</strong></div>
+      {{#if franchise}}
+        {{#if franchise.addressObj}}
+          <div>{{franchise.addressObj.addressLine1}}</div>
+          {{#if franchise.addressObj.addressLine2}}
+            <div>{{franchise.addressObj.addressLine2}}</div>
+          {{/if}}
+          {{#if franchise.addressObj.city}}
+            <div>{{franchise.addressObj.city}}{{#if franchise.addressObj.state}}, {{franchise.addressObj.state}}{{/if}}{{#if franchise.addressObj.pincode}} {{franchise.addressObj.pincode}}{{/if}}</div>
+          {{/if}}
+          {{#if franchise.addressObj.country}}
+            <div>{{franchise.addressObj.country}}</div>
+          {{/if}}
+        {{else}}
+          <div>C-2, HIRA MANEK, OPP BMC MARKET, BAPISTA ROAD</div>
+          <div>Vile Parle (West), Maharashtra, India, 400056</div>
+        {{/if}}
+        {{#if franchise.contactNumber}}
+          <div>{{franchise.contactNumber}}{{#if franchise.emailId}} / {{franchise.emailId}}{{/if}}</div>
+        {{else}}
+          <div>+91-9820577553 / eatfit24by7@gmail.com</div>
+        {{/if}}
+      {{else}}
+        <div>C-2, HIRA MANEK, OPP BMC MARKET, BAPISTA ROAD</div>
+        <div>Vile Parle (West), Maharashtra, India, 400056</div>
+        <div>+91-9820577553 / eatfit24by7@gmail.com</div>
+      {{/if}}
+    </div>
+  </div>
+
+  <!-- Member Information Table -->
+  <table class="member-info-table">
+    <tr>
+      <td>Name</td>
+      <td>{{memberName}}</td>
+    </tr>
+    <tr>
+      <td>Plan</td>
+      <td>Diet Plan - Cycle {{cycleNo}}{{#if planStartDate}} ({{planStartDate}}){{/if}}</td>
+    </tr>
+  </table>
+
+  <!-- Diet Plan Table -->
+  <table class="diet-plan-table">
+    <thead>
+      <tr>
+        <th>Category</th>
+        <th>Details</th>
+        <th>Recipes</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each diet.dietPlan}}
+        {{#if this.dietDetail}}
+          <tr>
+            <td>{{this.recipeCategory}}</td>
+            <td>{{{this.dietDetail}}}</td>
+            <td>
+              {{#if this.recipeList}}
+                {{#each this.recipeList}}
+                  {{#if this.label}}{{this.label}}{{else}}{{this.name}}{{/if}}{{#unless @last}}, {{/unless}}
+                {{/each}}
+              {{/if}}
+            </td>
+          </tr>
+        {{else if this.recipeList}}
+          <tr>
+            <td>{{this.recipeCategory}}</td>
+            <td></td>
+            <td>
+              {{#each this.recipeList}}
+                {{#if this.label}}{{this.label}}{{else}}{{this.name}}{{/if}}{{#unless @last}}, {{/unless}}
+              {{/each}}
+            </td>
+          </tr>
+        {{/if}}
+      {{/each}}
+    </tbody>
+  </table>
+
+  <!-- Recipes Section -->
+  {{#if recipes}}
+    {{#if (gt recipes.length 0)}}
+      <div class="recipes-section">
+        <h4>Recipes:</h4>
+        {{#each recipes}}
+          <table class="recipe-detail-table">
+            <tr class="recipe-header">
+              <td colspan="2">
+                <div class="recipe-meta">
+                  {{#if this.imagePath}}
+                    {{#if (gt this.imagePath.length 0)}}
+                      <img src="{{this.imagePath.[0].webUrl}}" alt="{{this.name}}" class="recipe-image" />
+                    {{/if}}
+                  {{/if}}
+                  <div class="recipe-meta-info">
+                    <div class="recipe-title">{{this.name}}</div>
+                    {{#if this.servingCount}}
+                      <div class="recipe-meta-row">Serving: {{this.servingCount}}</div>
+                    {{/if}}
+                    {{#if this.recipeType}}
+                      <div class="recipe-meta-row">Type: {{this.recipeType}}</div>
+                    {{/if}}
+                  </div>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td class="recipe-ingredients">
+                <div class="section-title">Ingredients</div>
+                <div class="ingredients-content">
+                  {{#if this.ingredient}}
+                    {{{this.ingredient}}}
+                  {{else}}
+                    <em>No ingredients listed</em>
+                  {{/if}}
+                </div>
+              </td>
+              <td class="recipe-preparation">
+                <div class="section-title">Preparation Method</div>
+                <div class="preparation-content">
+                  {{#if this.preparationMethod}}
+                    {{{this.preparationMethod}}}
+                  {{else if this.howToMake}}
+                    {{{this.howToMake}}}
+                  {{else}}
+                    <em>No preparation method listed</em>
+                  {{/if}}
+                </div>
+              </td>
+            </tr>
+          </table>
+        {{/each}}
+      </div>
+    {{/if}}
+  {{/if}}
+</body>
+</html>

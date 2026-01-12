@@ -1,5 +1,6 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Header, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { CurrentUser, JwtAuthGuard, RequestedIp } from '@server_1/core';
+import { IFileModel } from '@server_1/platform';
 import { MemberDietPlanService } from '../../services';
 import { MemberDietPlanDetailDto, MemberDietTemplateDto } from '../../dto';
 
@@ -51,21 +52,23 @@ export class MemberDietPlanController {
   }
 
   @Get('download-cycle/:dietPlanId/:cycleNo')
+  @Header('Content-Type', 'application/pdf')
   async downloadDietPlanByCycle(
     @Param('id') memberId: number,
     @Param('dietPlanId') dietPlanId: number,
     @Param('cycleNo') cycleNo: number,
-  ) {
+  ): Promise<IFileModel> {
     return await this.service.downloadDietPlan(memberId, dietPlanId, cycleNo, null);
   }
 
   @Get('download-day/:dietPlanId/:cycleNo/:dayNo')
+  @Header('Content-Type', 'application/pdf')
   async downloadDietPlanByDay(
     @Param('id') memberId: number,
     @Param('dietPlanId') dietPlanId: number,
     @Param('cycleNo') cycleNo: number,
     @Param('dayNo') dayNo: number,
-  ) {
+  ): Promise<IFileModel> {
     return await this.service.downloadDietPlan(memberId, dietPlanId, cycleNo, dayNo);
   }
 

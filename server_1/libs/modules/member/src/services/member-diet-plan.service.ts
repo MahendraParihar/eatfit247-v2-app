@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize-typescript';
-import { TxnMemberDietDetail, TxnMemberDietPlan, TxnMemberPayment } from '../models';
+import { TxnMember, TxnMemberDietDetail, TxnMemberDietPlan, TxnMemberPayment } from '../models';
 import {
   DietPlanStatusEnum,
   DietTypeEnum,
@@ -11,15 +11,20 @@ import {
   IDropdownItem,
   IMemberDietDetail,
   IMemberDietPlan,
+  MediaForEnum,
 } from '@eatfit247-shared-lib';
-import { ADMIN_USER_SHORT_INFO_ATTRIBUTE, CommonFunctionsUtil, MstAdminUser } from '@server_1/core';
+import { ADMIN_USER_SHORT_INFO_ATTRIBUTE, CommonFunctionsUtil, Env, MstAdminUser } from '@server_1/core';
 import { MstProgram, MstProgramCategory } from '@server_1/modules/program-plan';
 import { RecipeCategoryService, RecipeService } from '@server_1/modules/recipe';
 import { DietTemplateService, TxnDietTemplateDietDetail } from '@server_1/modules/diet';
+import { DietPlanPdfService } from '@server_1/platform';
+import { IFileModel } from '@server_1/platform';
+import { FranchiseService } from '@server_1/modules/franchise';
 import { MemberDietPlanDetailDto, MemberDietTemplateDto } from '../dto';
 import * as _ from 'lodash';
 import moment from 'moment';
 import { Transaction } from 'sequelize';
+import fs from 'fs';
 
 @Injectable()
 export class MemberDietPlanService {
@@ -30,9 +35,13 @@ export class MemberDietPlanService {
     private readonly memberDietPlanDetailRepository: typeof TxnMemberDietDetail,
     @InjectModel(TxnDietTemplateDietDetail)
     private readonly dietTemplateDietDetailRepository: typeof TxnDietTemplateDietDetail,
+    @InjectModel(TxnMember)
+    private readonly memberRepository: typeof TxnMember,
     private readonly recipeCategoryService: RecipeCategoryService,
     private readonly recipeService: RecipeService,
     private readonly dietTemplateService: DietTemplateService,
+    private readonly dietPlanPdfService: DietPlanPdfService,
+    private readonly franchiseService: FranchiseService,
     private readonly sequelize: Sequelize,
   ) {}
 
@@ -931,14 +940,99 @@ export class MemberDietPlanService {
     dietPlanId: number,
     cycleNo: number,
     dayNo: number = null,
-  ): Promise<any> {
-    // TODO: Implement PDF generation when PDF service is available
-    // For now, return the diet plan data
-    const data = await this.fetchDietDetail(memberId, dietPlanId, cycleNo, dayNo);
-    return {
-      message: 'PDF generation not yet implemented',
-      data: data,
+  ): Promise<IFileModel> {
+    // Fetch diet plan detail
+    const dietDetailData = await this.fetchDietDetail(memberId, dietPlanId, cycleNo, dayNo);
+    
+    // Fetch member information to get name
+    const member = await this.memberRepository.findOne({
+      where: { memberId: memberId },
+      attributes: ['memberId', 'firstName', 'lastName'],
+    });
+
+    if (!member) {
+      throw new NotFoundException(`Member with ID ${memberId} not found`);
+    }
+
+    const memberName = `${member.firstName} ${member.lastName}`.trim();
+
+    // Collect all recipe IDs from the diet plan
+    const recipeIds: number[] = [];
+    if (dietDetailData.diet.dietPlan) {
+      for (const planItem of dietDetailData.diet.dietPlan) {
+        if (planItem.recipeIds && planItem.recipeIds.length > 0) {
+          recipeIds.push(...planItem.recipeIds);
+        }
+      }
+    }
+
+    // Fetch full recipe details for all recipes
+    const recipes = [];
+    if (recipeIds.length > 0) {
+      const uniqueRecipeIds = [...new Set(recipeIds)];
+      for (const recipeId of uniqueRecipeIds) {
+        try {
+          const recipe = await this.recipeService.fetchById(recipeId);
+          recipes.push(recipe);
+        } catch (error) {
+          // Skip if recipe not found
+          console.warn(`Recipe ${recipeId} not found, skipping`);
+        }
+      }
+    }
+
+    // Fetch primary franchise for header information
+    let franchise = null;
+    try {
+      const franchiseList = await this.franchiseService.findAll({ page: 0, limit: 100 });
+      franchise = franchiseList.tableData.find((f: any) => f.isPrimary) || franchiseList.tableData[0];
+    } catch (error) {
+      console.warn('Could not fetch franchise information', error);
+    }
+
+    // Format start date for plan display
+    const startDate = dietDetailData.diet.startDate 
+      ? moment(dietDetailData.diet.startDate).format('YYYY-MM-DD')
+      : moment().format('YYYY-MM-DD');
+
+    // Prepare PDF data
+    const pdfData = {
+      memberName: memberName,
+      diet: dietDetailData.diet,
+      cycleNo: cycleNo,
+      dayNo: dayNo,
+      type: dayNo ? 'DAY' : 'CYCLE' as 'CYCLE' | 'DAY',
+      recipes: recipes,
+      franchise: franchise,
+      planStartDate: startDate,
     };
+
+    // Generate PDF
+    const pdfBuffer = await this.dietPlanPdfService.generateDietPlanPdf(pdfData);
+
+    // Prepare file name and path
+    const fileName = `diet-plan-${dietPlanId}-cycle-${cycleNo}${dayNo ? `-day-${dayNo}` : ''}.pdf`;
+    const relativePath = `${MediaForEnum.DOWNLOADS}/${memberId}/diet-plans`;
+    const destinationFolderPath = `${Env.persistentStorageAssetPath}/${relativePath}`;
+
+    // Create directory if not exists
+    if (!fs.existsSync(destinationFolderPath)) {
+      fs.mkdirSync(destinationFolderPath, { recursive: true });
+    }
+
+    const destinationPath = `${destinationFolderPath}/${fileName}`;
+
+    // Write PDF buffer to destination folder
+    fs.writeFileSync(destinationPath, Uint8Array.from(pdfBuffer));
+
+    // Convert to base64 for response
+    const base64Buffer = pdfBuffer.toString('base64');
+
+    return {
+      filePath: relativePath,
+      fileName: fileName,
+      buffer: base64Buffer,
+    } as IFileModel;
   }
 
   /**
