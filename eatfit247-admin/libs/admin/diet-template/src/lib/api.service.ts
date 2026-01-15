@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
 import { ApiBaseService, HttpService } from '@core';
-import { ITableList, IDietTemplate, IResponse, IManageDietTemplate, IDietPlanDetail, IDropdownItem } from '@eatfit247-shared-lib';
+import { ITableList, IDietTemplate, IManageDietTemplate, IDietPlanDetail, IDropdownItem } from '@eatfit247-shared-lib';
 
 @Injectable({
-  providedIn: 'root',
+  providedIn: 'root'
 })
 export class DietTemplateApiService extends ApiBaseService {
   private readonly endpoint = '/diet-template';
@@ -13,7 +13,7 @@ export class DietTemplateApiService extends ApiBaseService {
   }
 
   async getList(params?: any): Promise<ITableList<IDietTemplate>> {
-    const res = await this.httpService.get<IResponse<ITableList<IDietTemplate>>>(
+    const res = await this.httpService.get<ITableList<IDietTemplate>>(
       `${this.endpoint}/list`,
       { params }
     );
@@ -21,7 +21,7 @@ export class DietTemplateApiService extends ApiBaseService {
   }
 
   async getById(id: number): Promise<IDietTemplate> {
-    const res = await this.httpService.get<IResponse<IDietTemplate>>(
+    const res = await this.httpService.get<IDietTemplate>(
       `${this.endpoint}/manage/${id}`
     );
     return res.data as IDietTemplate;
@@ -47,7 +47,7 @@ export class DietTemplateApiService extends ApiBaseService {
     if (dayNo) {
       url = `${url}/${dayNo}`;
     }
-    const res = await this.httpService.get<IResponse<{
+    const res = await this.httpService.get<{
       recipes: IDropdownItem[];
       diet: {
         dietTemplateId: number;
@@ -57,7 +57,7 @@ export class DietTemplateApiService extends ApiBaseService {
         noOfDaysInCycle: number;
         dietPlan: IDietPlanDetail[];
       };
-    }>>(url, { params });
+    }>(url, { params });
     return res.data as {
       recipes: IDropdownItem[];
       diet: {
@@ -72,11 +72,11 @@ export class DietTemplateApiService extends ApiBaseService {
   }
 
   async create(data: IManageDietTemplate): Promise<void> {
-    return await this.httpService.post<void>(`${this.endpoint}/manage`, data);
+    await this.httpService.post<void>(`${this.endpoint}/manage`, data);
   }
 
   async update(id: number, data: IManageDietTemplate): Promise<void> {
-    return await this.httpService.put<void>(
+    await this.httpService.put<void>(
       `${this.endpoint}/manage/${id}`,
       data
     );
@@ -91,14 +91,14 @@ export class DietTemplateApiService extends ApiBaseService {
       dietPlan: IDietPlanDetail[];
     }
   ): Promise<void> {
-    return await this.httpService.post<void>(
+    await this.httpService.post<void>(
       `${this.endpoint}/manage-detail/${dietTemplateId}`,
       data
     );
   }
 
   async updateStatus(id: number, active: boolean): Promise<void> {
-    return await this.httpService.patch<void>(
+    await this.httpService.patch<void>(
       `${this.endpoint}/update-status/${id}`,
       { active }
     );

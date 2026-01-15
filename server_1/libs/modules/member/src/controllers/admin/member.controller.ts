@@ -14,10 +14,10 @@ import {
 import { InjectModel } from '@nestjs/sequelize';
 import { CurrentUser, JwtAuthGuard, RequestedIp } from '@server_1/core';
 import { AddressService, TxnAddress } from '@server_1/platform';
-import { BasicSearchDto, CreateAddressDto } from '@server_1/shared-dto';
+import { BasicSearchDto, CreateAddressDto, UpdateMemberStatusDto, UpdateNutritionistDto, UpdateFranchiseDto } from '@server_1/shared-dto';
 import { MemberService } from '../../services';
 import { CreateMemberDto } from '../../dto';
-import { IAddress, IMember, ITableList, TableEnum } from '@eatfit247-shared-lib';
+import { IAddress, IManageAddress, IMember, ITableList, TableEnum } from '@eatfit247-shared-lib';
 
 @Controller('member')
 @UseGuards(JwtAuthGuard)
@@ -60,7 +60,7 @@ export class MemberController {
   @Patch('update-status/:id')
   async changeStatus(
     @Param('id') id: number,
-    @Body() body: { active: boolean; deactivationReason?: string },
+    @Body() body: UpdateMemberStatusDto,
     @CurrentUser() currentUser: any,
     @RequestedIp() requestedIp: string,
   ): Promise<void> {
@@ -76,7 +76,7 @@ export class MemberController {
   @Patch('update-nutritionist/:id')
   async updateNutritionist(
     @Param('id') id: number,
-    @Body() body: { nutritionistId: number | null },
+    @Body() body: UpdateNutritionistDto,
     @CurrentUser() currentUser: any,
     @RequestedIp() requestedIp: string,
   ): Promise<void> {
@@ -91,7 +91,7 @@ export class MemberController {
   @Patch('update-franchise/:id')
   async updateFranchise(
     @Param('id') id: number,
-    @Body() body: { franchiseId: number | null },
+    @Body() body: UpdateFranchiseDto,
     @CurrentUser() currentUser: any,
     @RequestedIp() requestedIp: string,
   ): Promise<void> {
@@ -132,30 +132,20 @@ export class MemberController {
     @CurrentUser() currentUser: any,
     @RequestedIp() requestedIp: string,
   ): Promise<IAddress> {
-    const addressObj: any = {
+    const addressData: IManageAddress = {
       tableId: TableEnum.TXN_MEMBER,
       pkOfTable: memberId,
       postalAddress: body.postalAddress,
-      cityVillage: body.cityVillage || null,
+      cityVillage: body.cityVillage,
       stateId: body.stateId,
       countryId: body.countryId,
-      pinCode: body.pinCode || null,
-      latitude: body.latitude ? String(body.latitude) : null,
-      longitude: body.longitude ? String(body.longitude) : null,
-      addressName: body.addressName || null,
-      addressTypeId: body.addressTypeId,
-      active: body.active !== undefined ? body.active : true,
-      createdBy: currentUser.adminId,
-      createdIp: requestedIp,
-      modifiedBy: currentUser.adminId,
-      modifiedIp: requestedIp,
+      pinCode: body.pinCode,
+      latitude: body.latitude,
+      longitude: body.longitude,
+      addressName: body.addressName,
+      addressTypeId: body.addressTypeId
     };
-    const createdAddress = await this.addressRepository.create(addressObj);
-    const addresses = await this.addressService.filterByTableIdAndPk(
-      TableEnum.TXN_MEMBER,
-      memberId,
-    );
-    return addresses.find((addr) => addr.addressId === createdAddress.addressId)!;
+    return await this.addressService.create(addressData, requestedIp, currentUser.adminId);
   }
 
   @Put(':memberId/addresses/:addressId')

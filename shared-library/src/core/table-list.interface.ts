@@ -18,3 +18,9 @@ export interface IBasicSearch extends ITableListFilter {
   createdTo?: Date | null;
   active?: boolean | null;
 }
+
+export interface IRecipeSearch extends IBasicSearch {
+  recipeCuisineIds?: number[];
+  recipeTypeId?: number[];
+  recipeCategoryIds?: number[];
+}

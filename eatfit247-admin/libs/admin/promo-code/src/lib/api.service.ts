@@ -13,25 +13,25 @@ export class PromoCodeApiService extends ApiBaseService {
   }
 
   async getList(params?: any): Promise<ITableList<IPromoCode>> {
-    const res = await this.httpService.get<IResponse<ITableList<IPromoCode>>>(`${this.endpoint}/list`, { params });
+    const res = await this.httpService.get<ITableList<IPromoCode>>(`${this.endpoint}/list`, { params });
     return res.data as ITableList<IPromoCode>;
   }
 
   async getById(id: number): Promise<IPromoCode> {
-    const res = await this.httpService.get<IResponse<IPromoCode>>(`${this.endpoint}/manage/${id}`);
+    const res = await this.httpService.get<IPromoCode>(`${this.endpoint}/manage/${id}`);
     return res.data as IPromoCode;
   }
 
   async create(data: any): Promise<void> {
-    return await this.httpService.post<void>(`${this.endpoint}/manage`, data);
+    await this.httpService.post<void>(`${this.endpoint}/manage`, data);
   }
 
   async update(id: number, data: any): Promise<void> {
-    return await this.httpService.put<void>(`${this.endpoint}/manage/${id}`, data);
+    await this.httpService.put<void>(`${this.endpoint}/manage/${id}`, data);
   }
 
   async updateStatus(id: number, active: boolean): Promise<void> {
-    return await this.httpService.patch<void>(`${this.endpoint}/update-status/${id}`, { active });
+    await this.httpService.patch<void>(`${this.endpoint}/update-status/${id}`, { active });
   }
 }
 

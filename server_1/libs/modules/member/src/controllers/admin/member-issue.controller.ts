@@ -3,6 +3,7 @@ import { CurrentUser, JwtAuthGuard, RequestedIp } from '@server_1/core';
 import { MemberIssueResponseService, MemberIssueService } from '../../services';
 import { IIssueMasterData, IMemberIssue, IMemberIssueResponse } from '@eatfit247-shared-lib';
 import { CreateMemberIssueDto, CreateMemberIssueResponseDto } from '../../dto';
+import { UpdateIsSolvedDto } from '@server_1/shared-dto';
 
 @Controller('member')
 @UseGuards(JwtAuthGuard)
@@ -80,7 +81,7 @@ export class MemberIssueController {
   async markIssueAsSolved(
     @Param('id') id: number,
     @Param('issueId') issueId: number,
-    @Body() body: { isSolved: boolean },
+    @Body() body: UpdateIsSolvedDto,
     @CurrentUser() currentUser: any,
   ): Promise<IMemberIssue> {
     return await this.memberIssueResponseService.markAsSolved(

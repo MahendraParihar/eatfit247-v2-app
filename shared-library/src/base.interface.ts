@@ -33,3 +33,39 @@ export interface IDropdownItem {
   parentId?: number;
 }
 
+export interface IBreadcrumbItem {
+  label: string;
+  url?: string;
+  isActive?: boolean;
+}
+
+export interface INavItem {
+  label: string;
+  url: string;
+  icon?: string;
+  children?: INavItem[];
+  isActive?: boolean;
+  permissions?: string[];
+}
+
+export interface IFileModel {
+  fileName: string;
+  filePath: string;
+  fileSize?: number;
+  fileType?: string;
+  buffer?: string;
+}
+
+export interface ITableColumn {
+  name: string;
+  dataKey: string;
+  isSortable?: boolean;
+  isFilterable?: boolean;
+  width?: string;
+}
+
+export class IPaging {
+  pageNumber: number = 0;
+  pageSize: number = 15;
+}
+

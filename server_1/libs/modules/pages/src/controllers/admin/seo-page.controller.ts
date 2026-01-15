@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Param, Patch, Post, Put, UseGuards } from '@nestjs/common';
 import { CurrentUser, JwtAuthGuard, RequestedIp } from '@server_1/core';
-import { UpdateActiveDto } from '@server_1/shared-dto';
+import { UpdateActiveDto, CsvFilePathDto } from '@server_1/shared-dto';
 import { SeoPageService, ISeoPageData } from '../../services/seo-page.service';
 import { CreateSeoPageDto, UpdateSeoPageDto } from '../../dto';
 
@@ -50,7 +50,7 @@ export class SeoPageAdminController {
 
   @Post('seed')
   async seed(
-    @Body() body: { csvFilePath: string },
+    @Body() body: CsvFilePathDto,
     @CurrentUser() currentUser: any,
     @RequestedIp() requestedIp: string,
   ): Promise<{ message: string }> {

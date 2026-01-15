@@ -8,6 +8,41 @@ import { TxnAddress } from '../database/models';
 export class AddressService {
   constructor(@InjectModel(TxnAddress) private readonly addressRepository: typeof TxnAddress) {}
 
+  /**
+   * Create a new address
+   * @param addressData Address data
+   * @param cIp Client IP address
+   * @param adminId Admin user ID
+   * @returns Created address
+   */
+  async create(addressData: IManageAddress, cIp: string, adminId: number): Promise<IAddress> {
+    const addressObj = {
+      tableId: addressData.tableId!,
+      pkOfTable: addressData.pkOfTable!,
+      postalAddress: addressData.postalAddress,
+      cityVillage: addressData.cityVillage || null,
+      stateId: addressData.stateId || null,
+      countryId: addressData.countryId,
+      pinCode: addressData.pinCode || null,
+      latitude: addressData.latitude ? String(addressData.latitude) : null,
+      longitude: addressData.longitude ? String(addressData.longitude) : null,
+      addressName: addressData.addressName || null,
+      addressTypeId: addressData.addressTypeId || 1,
+      active: (addressData as any).active !== undefined ? (addressData as any).active : true,
+      createdBy: adminId,
+      createdIp: cIp,
+      modifiedBy: adminId,
+      modifiedIp: cIp,
+    };
+    const createdAddress = await this.addressRepository.create(addressObj as any);
+    const addresses = await this.filterByTableIdAndPk(addressData.tableId!, addressData.pkOfTable!);
+    const address = addresses.find((addr) => addr.addressId === createdAddress.addressId);
+    if (!address) {
+      throw new NotFoundException('Address not found after creation');
+    }
+    return address;
+  }
+
   async createOrUpdate(addressData: IManageAddress, cIp: string, adminId: number): Promise<void> {
     const existing = await this.addressRepository.findOne({
       where: {

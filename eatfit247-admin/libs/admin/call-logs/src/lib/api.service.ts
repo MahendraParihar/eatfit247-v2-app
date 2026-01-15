@@ -13,20 +13,20 @@ export class CallLogsApiService extends ApiBaseService {
   }
 
   async getList(params?: any): Promise<ITableList<IMemberCallLog>> {
-    const res = await this.httpService.get<IResponse<ITableList<IMemberCallLog>>>(`${this.endpoint}/list`, { params });
+    const res = await this.httpService.get<ITableList<IMemberCallLog>>(`${this.endpoint}/list`, { params });
     return res.data as ITableList<IMemberCallLog>;
   }
 
   async getById(id: number): Promise<IMemberCallLog> {
-    const res = await this.httpService.get<IResponse<IMemberCallLog>>(`${this.endpoint}/manage/${id}`);
+    const res = await this.httpService.get<IMemberCallLog>(`${this.endpoint}/manage/${id}`);
     return res.data as IMemberCallLog;
   }
 
   async create(data: any): Promise<void> {
-    return await this.httpService.post<void>(`${this.endpoint}/manage`, data);
+    await this.httpService.post<void>(`${this.endpoint}/manage`, data);
   }
 
   async update(id: number, data: any): Promise<void> {
-    return await this.httpService.put<void>(`${this.endpoint}/manage/${id}`, data);
+    await this.httpService.put<void>(`${this.endpoint}/manage/${id}`, data);
   }
 }

@@ -14,7 +14,7 @@ export class ReferrerApiService extends ApiBaseService {
   }
 
   async getList(params?: any): Promise<ITableList<IReferrer>> {
-    const res = await this.httpService.get<IResponse<ITableList<IReferrer>>>(
+    const res = await this.httpService.get<ITableList<IReferrer>>(
       `${this.endpoint}/list`,
       { params }
     );
@@ -22,32 +22,26 @@ export class ReferrerApiService extends ApiBaseService {
   }
 
   async getById(id: number): Promise<IReferrer> {
-    const res = await this.httpService.get<IResponse<IReferrer>>(
+    const res = await this.httpService.get<IReferrer>(
       `${this.endpoint}/manage/${id}`
     );
     return res.data as IReferrer;
   }
 
   async create(data: any): Promise<void> {
-    return await this.httpService.post<void>(`${this.endpoint}/manage`, data);
+    await this.httpService.post<void>(`${this.endpoint}/manage`, data);
   }
 
   async update(id: number, data: any): Promise<void> {
-    return await this.httpService.put<void>(
-      `${this.endpoint}/manage/${id}`,
-      data
-    );
+    await this.httpService.put<void>(`${this.endpoint}/manage/${id}`, data);
   }
 
   async updateStatus(id: number, active: boolean): Promise<void> {
-    return await this.httpService.patch<void>(
-      `${this.endpoint}/update-status/${id}`,
-      { active }
-    );
+    await this.httpService.patch<void>(`${this.endpoint}/update-status/${id}`, { active });
   }
 
   async getFranchiseDropdown(): Promise<IDropdownItem[]> {
-    const res = await this.httpService.get<IResponse<IDropdownItem[]>>(`${this.franchiseEndpoint}/dropdown`);
+    const res = await this.httpService.get<IDropdownItem[]>(`${this.franchiseEndpoint}/dropdown`);
     return res.data as IDropdownItem[];
   }
 }

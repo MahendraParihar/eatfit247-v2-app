@@ -1,7 +1,6 @@
 export * from "./input-length.enum";
 export * from "./file-type.enum";
 export * from "./media-for.enum";
-export * from "./label-key.enum";
 export * from "./config.enum";
 export * from "./banner-for.enum";
 export * from "./table.enum";
@@ -14,4 +13,6 @@ export * from "./tax-type.enum";
 export * from "./discount-type.enum";
 export * from "./member-diet-plan.enum";
 export * from "./payment-gateway.enum";
+export * from "./field-type.enum";
+export * from "./issue-status.enum";
 

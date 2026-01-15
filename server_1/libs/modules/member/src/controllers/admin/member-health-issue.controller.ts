@@ -1,5 +1,6 @@
 import { Body, Controller, Get, Param, Put, UseGuards } from '@nestjs/common';
 import { CurrentUser, JwtAuthGuard, RequestedIp } from '@server_1/core';
+import { UpdateHealthIssueIdsDto } from '@server_1/shared-dto';
 import { MemberHealthIssueService } from '../../services';
 import { IMemberHealthIssue, ITableList } from '@eatfit247-shared-lib';
 
@@ -21,7 +22,7 @@ export class MemberHealthIssueController {
   @Put('manage')
   async manageHealthIssues(
     @Param('id') id: number,
-    @Body() body: { healthIssueIds: number[] },
+    @Body() body: UpdateHealthIssueIdsDto,
     @CurrentUser() currentUser: any,
     @RequestedIp() requestedIp: string,
   ): Promise<void> {

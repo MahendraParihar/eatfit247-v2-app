@@ -21,7 +21,7 @@ export class PaymentService {
     });
     // environment decides mode
     const credentialMode = this.appConfig.getString(ConfigParam.PAYMENT_MODE);
-    const credentials = await this.gatewayCredentialService.getActiveCredentials(gateway.franchisePaymentGatewayId, credentialMode);
+    return await this.gatewayCredentialService.getActiveCredentials(gateway.franchisePaymentGatewayId, credentialMode);
   }
 }
 

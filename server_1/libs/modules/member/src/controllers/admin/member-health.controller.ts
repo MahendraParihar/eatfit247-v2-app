@@ -9,6 +9,7 @@ import {
   ITableList,
 } from '@eatfit247-shared-lib';
 import { CreateMemberAssessmentDto, CreateMemberHealthParameterLogDto } from '../../dto';
+import { UpdateHealthIssueIdsDto } from '@server_1/shared-dto';
 
 /**
  * Consolidated controller for all member health-related operations:
@@ -64,7 +65,7 @@ export class MemberHealthController {
   @Put('health-issues/manage')
   async manageHealthIssues(
     @Param('id') id: number,
-    @Body() body: { healthIssueIds: number[] },
+    @Body() body: UpdateHealthIssueIdsDto,
     @CurrentUser() currentUser: any,
     @RequestedIp() requestedIp: string,
   ): Promise<void> {

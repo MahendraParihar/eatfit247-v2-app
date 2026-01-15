@@ -63,7 +63,7 @@ export class AddressFormComponent implements OnInit {
   filteredStates: IDropdownItem[] = [];
 
   async ngOnInit(): Promise<void> {
-    const res = await this.httpService.get<IResponse<IAddressMaster>>(
+    const res = await this.httpService.get<IAddressMaster>(
       'address/address-master'
     );
     this.masterAddress = res.data as IAddressMaster;

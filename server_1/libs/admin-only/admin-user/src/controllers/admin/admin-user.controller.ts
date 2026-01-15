@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { CurrentUser, JwtAuthGuard, RequestedIp } from '@server_1/core';
-import { BasicSearchDto } from '@server_1/shared-dto';
+import { BasicSearchDto, UpdateAdminUserStatusDto } from '@server_1/shared-dto';
 import { AdminUserService } from '../../services';
 import { CreateAdminUserDto } from '../../dto';
 import { IAdminUser, IDropdownItem, IResponse, ITableList } from '@eatfit247-shared-lib';
@@ -43,7 +43,7 @@ export class AdminUserController {
   @Patch('update-status/:id')
   async changeStatus(
     @Param('id') id: number,
-    @Body() body: { active: boolean; deactivationReason?: string },
+    @Body() body: UpdateAdminUserStatusDto,
     @CurrentUser() currentUser: any,
     @RequestedIp() requestedIp: string,
   ): Promise<void> {

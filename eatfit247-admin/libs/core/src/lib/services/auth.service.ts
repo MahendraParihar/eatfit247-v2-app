@@ -129,7 +129,7 @@ export class AuthService extends ApiBaseService {
 
   async getProfile(): Promise<IAuthUser> {
     // withCredentials is set automatically by AuthInterceptor
-    const res = await this.httpService.get<IResponse<IAuthUser>>(`${this.endpoint}/profile`);
+    const res = await this.httpService.get<IAuthUser>(`${this.endpoint}/profile`);
     const user = res.data as IAuthUser;
     this.storage.setUser(user);
     this.currentUserSubject.next(user);
@@ -138,18 +138,19 @@ export class AuthService extends ApiBaseService {
 
   async forgotPassword(request: IForgotPasswordRequest): Promise<string> {
     // withCredentials is set automatically by AuthInterceptor
-    const res = await this.httpService.post<IResponse<string>>(`${this.endpoint}/forgot-password`, request);
+    const res = await this.httpService.post<string>(`${this.endpoint}/forgot-password`, request);
     return res.data as string;
   }
 
   async resetPassword(request: IResetPasswordRequest): Promise<boolean> {
     // withCredentials is set automatically by AuthInterceptor
-    return (await this.httpService.post<IResponse<boolean>>(`${this.endpoint}/reset-password`, request)).data as boolean;
+    const res = await this.httpService.post<boolean>(`${this.endpoint}/reset-password`, request);
+    return res.data as boolean;
   }
 
   async changePassword(request: IChangePassword): Promise<void> {
     // withCredentials is set automatically by AuthInterceptor
-    return await this.httpService.post<void>(`${this.endpoint}/change-password`, request);
+    await this.httpService.post<void>(`${this.endpoint}/change-password`, request);
   }
 
   logout(): void {

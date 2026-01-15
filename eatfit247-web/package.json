@@ -34,7 +34,6 @@
     "@angular/platform-browser": "^20.3.10",
     "@angular/router": "^20.3.0",
     "eatfit247-shared-library": "file:../shared-library",
-    "shared-lib": "file:../shared-lib",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.15.0"

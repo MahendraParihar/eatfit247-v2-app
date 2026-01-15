@@ -9,10 +9,6 @@ import { MatChipsModule } from '@angular/material/chips';
 import { IRecipe } from '@eatfit247-shared-lib';
 import { RecipesApiService } from '../api.service';
 
-export interface ViewRecipeDialogData {
-  recipe: IRecipe;
-}
-
 @Component({
   selector: 'lib-view-recipe-dialog',
   standalone: true,
@@ -34,11 +30,11 @@ export class ViewRecipeDialogComponent implements OnInit {
 
   constructor(
     public dialogRef: MatDialogRef<ViewRecipeDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: ViewRecipeDialogData,
+    @Inject(MAT_DIALOG_DATA) public data: IRecipe,
     private apiService: RecipesApiService,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
   ) {
-    this.recipe = data.recipe;
+    this.recipe = data;
   }
 
   ngOnInit(): void {
@@ -51,11 +47,12 @@ export class ViewRecipeDialogComponent implements OnInit {
   async loadRecipeDetails(): Promise<void> {
     try {
       this.loading = true;
-      const fullRecipe = await this.apiService.getById(this.recipe.recipeId);
-      this.recipe = fullRecipe;
+      this.recipe = await this.apiService.getById(this.recipe.recipeId);
     } catch (error) {
       console.error('Error loading recipe details:', error);
-      this.snackBar.open('Failed to load recipe details', 'Close', { duration: 3000 });
+      this.snackBar.open('Failed to load recipe details', 'Close', {
+        duration: 3000,
+      });
     } finally {
       this.loading = false;
     }
@@ -68,14 +65,20 @@ export class ViewRecipeDialogComponent implements OnInit {
   async downloadRecipe(): Promise<void> {
     try {
       this.loading = true;
-      const fileData = await this.apiService.downloadRecipePdf(this.recipe.recipeId);
+      const fileData = await this.apiService.downloadRecipePdf(
+        this.recipe.recipeId,
+      );
       if (fileData) {
         this.downloadFile(fileData.buffer, fileData.fileName);
-        this.snackBar.open('Recipe PDF downloaded successfully', 'Close', { duration: 3000 });
+        this.snackBar.open('Recipe PDF downloaded successfully', 'Close', {
+          duration: 3000,
+        });
       }
     } catch (error) {
       console.error('Error downloading recipe PDF:', error);
-      this.snackBar.open('Failed to download recipe PDF', 'Close', { duration: 3000 });
+      this.snackBar.open('Failed to download recipe PDF', 'Close', {
+        duration: 3000,
+      });
     } finally {
       this.loading = false;
     }
@@ -101,21 +104,41 @@ export class ViewRecipeDialogComponent implements OnInit {
   }
 
   getCategories(): string {
-    if (this.recipe.recipeCategoryMappings && this.recipe.recipeCategoryMappings.length > 0) {
-      return this.recipe.recipeCategoryMappings.map(cat => cat.recipeCategory).join(', ');
+    if (
+      this.recipe.recipeCategoryMappings &&
+      this.recipe.recipeCategoryMappings.length > 0
+    ) {
+      return this.recipe.recipeCategoryMappings
+        .map((cat) => cat.recipeCategory)
+        .join(', ');
     }
-    if ((this.recipe as any).recipeCategoryList && (this.recipe as any).recipeCategoryList.length > 0) {
-      return (this.recipe as any).recipeCategoryList.map((cat: any) => cat.recipeCategory || cat.name).join(', ');
+    if (
+      (this.recipe as any).recipeCategoryList &&
+      (this.recipe as any).recipeCategoryList.length > 0
+    ) {
+      return (this.recipe as any).recipeCategoryList
+        .map((cat: any) => cat.recipeCategory || cat.name)
+        .join(', ');
     }
     return 'N/A';
   }
 
   getCuisines(): string {
-    if (this.recipe.recipeCuisineMappings && this.recipe.recipeCuisineMappings.length > 0) {
-      return this.recipe.recipeCuisineMappings.map(cuisine => cuisine.recipeCuisine).join(', ');
+    if (
+      this.recipe.recipeCuisineMappings &&
+      this.recipe.recipeCuisineMappings.length > 0
+    ) {
+      return this.recipe.recipeCuisineMappings
+        .map((cuisine) => cuisine.recipeCuisine)
+        .join(', ');
     }
-    if ((this.recipe as any).recipeCuisineList && (this.recipe as any).recipeCuisineList.length > 0) {
-      return (this.recipe as any).recipeCuisineList.map((cuisine: any) => cuisine.recipeCuisine || cuisine.name).join(', ');
+    if (
+      (this.recipe as any).recipeCuisineList &&
+      (this.recipe as any).recipeCuisineList.length > 0
+    ) {
+      return (this.recipe as any).recipeCuisineList
+        .map((cuisine: any) => cuisine.recipeCuisine || cuisine.name)
+        .join(', ');
     }
     return 'N/A';
   }

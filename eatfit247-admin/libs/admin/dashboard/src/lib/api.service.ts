@@ -73,7 +73,7 @@ export class DashboardApiService extends ApiBaseService {
   }
 
   async getKpis(): Promise<DashboardKpis> {
-    const res = await this.httpService.get<IResponse<DashboardKpis>>(`${this.endpoint}/kpis`);
+    const res = await this.httpService.get<DashboardKpis>(`${this.endpoint}/kpis`);
     if (!res || !res.data) {
       throw new Error('Invalid response format: missing data property');
     }
@@ -81,7 +81,7 @@ export class DashboardApiService extends ApiBaseService {
   }
 
   async getRevenueData(): Promise<RevenueData> {
-    const res = await this.httpService.get<IResponse<RevenueData>>(`${this.endpoint}/revenue`);
+    const res = await this.httpService.get<RevenueData>(`${this.endpoint}/revenue`);
     if (!res || !res.data) {
       throw new Error('Invalid response format: missing data property');
     }
@@ -89,7 +89,7 @@ export class DashboardApiService extends ApiBaseService {
   }
 
   async getMemberGrowthData(period: 'weekly' | 'monthly' = 'monthly'): Promise<MemberGrowthData> {
-    const res = await this.httpService.get<IResponse<MemberGrowthData>>(`${this.endpoint}/members`, {
+    const res = await this.httpService.get<MemberGrowthData>(`${this.endpoint}/members`, {
       params: { period },
     });
     if (!res || !res.data) {
@@ -99,7 +99,7 @@ export class DashboardApiService extends ApiBaseService {
   }
 
   async getProgramPerformanceData(): Promise<ProgramPerformanceData[]> {
-    const res = await this.httpService.get<IResponse<ProgramPerformanceData[]>>(
+    const res = await this.httpService.get<ProgramPerformanceData[]>(
       `${this.endpoint}/programs`
     );
     if (!res || !res.data) {
@@ -109,7 +109,7 @@ export class DashboardApiService extends ApiBaseService {
   }
 
   async getOperationsSnapshot(): Promise<OperationsSnapshot> {
-    const res = await this.httpService.get<IResponse<OperationsSnapshot>>(`${this.endpoint}/tasks`);
+    const res = await this.httpService.get<OperationsSnapshot>(`${this.endpoint}/tasks`);
     if (!res || !res.data) {
       throw new Error('Invalid response format: missing data property');
     }
@@ -117,7 +117,7 @@ export class DashboardApiService extends ApiBaseService {
   }
 
   async getEngagementData(): Promise<EngagementData> {
-    const res = await this.httpService.get<IResponse<EngagementData>>(`${this.endpoint}/engagement`);
+    const res = await this.httpService.get<EngagementData>(`${this.endpoint}/engagement`);
     if (!res || !res.data) {
       throw new Error('Invalid response format: missing data property');
     }

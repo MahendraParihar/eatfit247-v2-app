@@ -9,6 +9,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
 import { Observable, firstValueFrom } from 'rxjs';
 import { environment } from '@env';
+import { IResponse } from '@eatfit247-shared-lib';
 
 export interface HttpOptions {
   params?: any;
@@ -97,7 +98,7 @@ export class HttpService {
    * @param endpoint API endpoint (e.g., '/users' or 'users')
    * @param options Optional HTTP options (params, headers, etc.)
    */
-  async get<T>(endpoint: string, options?: HttpOptions): Promise<T> {
+  async get<T>(endpoint: string, options?: HttpOptions): Promise<IResponse<T>> {
     const url = this.buildUrl(endpoint);
     const requestOptions: any = {
       headers: options?.headers,
@@ -113,8 +114,8 @@ export class HttpService {
       requestOptions.observe = options.observe;
     }
     try {
-      const result = await firstValueFrom(this.http.get<T>(url, requestOptions));
-      return result as T;
+      const result = await firstValueFrom(this.http.get<IResponse<T>>(url, requestOptions));
+      return result as IResponse<T>;
     } catch (error: any) {
       if (error instanceof HttpErrorResponse) {
         this.handleError(error);
@@ -129,7 +130,7 @@ export class HttpService {
    * @param body Request body
    * @param options Optional HTTP options
    */
-  async post<T>(endpoint: string, body?: any, options?: HttpOptions): Promise<T> {
+  async post<T>(endpoint: string, body?: any, options?: HttpOptions): Promise<IResponse<T>> {
     const url = this.buildUrl(endpoint);
     const requestOptions: any = {
       headers: options?.headers,
@@ -144,8 +145,8 @@ export class HttpService {
       requestOptions.observe = options.observe;
     }
     try {
-      const result = await firstValueFrom(this.http.post<T>(url, body, requestOptions));
-      return result as T;
+      const result = await firstValueFrom(this.http.post<IResponse<T>>(url, body, requestOptions));
+      return result as IResponse<T>;
     } catch (error: any) {
       if (error instanceof HttpErrorResponse) {
         this.handleError(error);
@@ -160,7 +161,7 @@ export class HttpService {
    * @param body Request body
    * @param options Optional HTTP options
    */
-  async put<T>(endpoint: string, body?: any, options?: HttpOptions): Promise<T> {
+  async put<T>(endpoint: string, body?: any, options?: HttpOptions): Promise<IResponse<T>> {
     const url = this.buildUrl(endpoint);
     const requestOptions: any = {
       headers: options?.headers,
@@ -175,8 +176,8 @@ export class HttpService {
       requestOptions.observe = options.observe;
     }
     try {
-      const result = await firstValueFrom(this.http.put<T>(url, body, requestOptions));
-      return result as T;
+      const result = await firstValueFrom(this.http.put<IResponse<T>>(url, body, requestOptions));
+      return result as IResponse<T>;
     } catch (error: any) {
       if (error instanceof HttpErrorResponse) {
         this.handleError(error);
@@ -191,7 +192,7 @@ export class HttpService {
    * @param body Request body
    * @param options Optional HTTP options
    */
-  async patch<T>(endpoint: string, body?: any, options?: HttpOptions): Promise<T> {
+  async patch<T>(endpoint: string, body?: any, options?: HttpOptions): Promise<IResponse<T>> {
     const url = this.buildUrl(endpoint);
     const requestOptions: any = {
       headers: options?.headers,
@@ -206,8 +207,8 @@ export class HttpService {
       requestOptions.observe = options.observe;
     }
     try {
-      const result = await firstValueFrom(this.http.patch<T>(url, body, requestOptions));
-      return result as T;
+      const result = await firstValueFrom(this.http.patch<IResponse<T>>(url, body, requestOptions));
+      return result as IResponse<T>;
     } catch (error: any) {
       if (error instanceof HttpErrorResponse) {
         this.handleError(error);
@@ -221,7 +222,7 @@ export class HttpService {
    * @param endpoint API endpoint
    * @param options Optional HTTP options
    */
-  async delete<T>(endpoint: string, options?: HttpOptions): Promise<T> {
+  async delete<T>(endpoint: string, options?: HttpOptions): Promise<IResponse<T>> {
     const url = this.buildUrl(endpoint);
     const requestOptions: any = {
       headers: options?.headers,
@@ -236,8 +237,8 @@ export class HttpService {
       requestOptions.observe = options.observe;
     }
     try {
-      const result = await firstValueFrom(this.http.delete<T>(url, requestOptions));
-      return result as T;
+      const result = await firstValueFrom(this.http.delete<IResponse<T>>(url, requestOptions));
+      return result as IResponse<T>;
     } catch (error: any) {
       if (error instanceof HttpErrorResponse) {
         this.handleError(error);

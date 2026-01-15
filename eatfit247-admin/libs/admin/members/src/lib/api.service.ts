@@ -47,7 +47,7 @@ export class MembersApiService extends ApiBaseService {
   }
 
   async getList(params?: any): Promise<ITableList<IMember>> {
-    const res = await this.httpService.get<IResponse<ITableList<IMember>>>(
+    const res = await this.httpService.get<ITableList<IMember>>(
       `${this.endpoint}/list`,
       { params }
     );
@@ -55,25 +55,25 @@ export class MembersApiService extends ApiBaseService {
   }
 
   async getById(id: number): Promise<IMember> {
-    const res = await this.httpService.get<IResponse<IMember>>(
+    const res = await this.httpService.get<IMember>(
       `${this.endpoint}/manage/${id}`
     );
     return res.data as IMember;
   }
 
   async create(data: IManageMember): Promise<void> {
-    return await this.httpService.post<void>(`${this.endpoint}/manage`, data);
+    await this.httpService.post<void>(`${this.endpoint}/manage`, data);
   }
 
   async update(id: number, data: IManageMember): Promise<void> {
-    return await this.httpService.put<void>(
+    await this.httpService.put<void>(
       `${this.endpoint}/manage/${id}`,
       data
     );
   }
 
   async getFranchiseDropdown(): Promise<IDropdownItem[]> {
-    const res = await this.httpService.get<IResponse<IDropdownItem[]>>(
+    const res = await this.httpService.get<IDropdownItem[]>(
       '/franchise/dropdown'
     );
     return res.data as IDropdownItem[];
@@ -81,14 +81,14 @@ export class MembersApiService extends ApiBaseService {
 
   async getReferrerDropdown(): Promise<IDropdownItem[]> {
     const res =
-      await this.httpService.get<IResponse<IDropdownItem[]>>(
+      await this.httpService.get<IDropdownItem[]>(
         '/referrer/dropdown'
       );
     return res.data as IDropdownItem[];
   }
 
   async getNutritionistDropdown(): Promise<IDropdownItem[]> {
-    const res = await this.httpService.get<IResponse<IDropdownItem[]>>(
+    const res = await this.httpService.get<IDropdownItem[]>(
       '/admin-user/nutritionist/dropdown'
     );
     return res.data as IDropdownItem[];
@@ -99,7 +99,7 @@ export class MembersApiService extends ApiBaseService {
     active: boolean,
     deactivationReason?: string
   ): Promise<void> {
-    return await this.httpService.patch<void>(
+    await this.httpService.patch<void>(
       `${this.endpoint}/update-status/${id}`,
       {
         active,
@@ -112,7 +112,7 @@ export class MembersApiService extends ApiBaseService {
     id: number,
     nutritionistId: number | null
   ): Promise<void> {
-    return await this.httpService.patch<void>(
+    await this.httpService.patch<void>(
       `${this.endpoint}/update-nutritionist/${id}`,
       {
         nutritionistId
@@ -124,7 +124,7 @@ export class MembersApiService extends ApiBaseService {
     id: number,
     franchiseId: number | null
   ): Promise<void> {
-    return await this.httpService.patch<void>(
+    await this.httpService.patch<void>(
       `${this.endpoint}/update-franchise/${id}`,
       {
         franchiseId
@@ -134,7 +134,7 @@ export class MembersApiService extends ApiBaseService {
 
   async getCountryDropdown(): Promise<IDropdownItem[]> {
     const res =
-      await this.httpService.get<IResponse<IDropdownItem[]>>(
+      await this.httpService.get<IDropdownItem[]>(
         `country/dropdown`
       );
     return res.data as IDropdownItem[];
@@ -143,9 +143,7 @@ export class MembersApiService extends ApiBaseService {
   async getHealthIssues(
     memberId: number
   ): Promise<ITableList<IMemberHealthIssue>> {
-    const res = await this.httpService.get<
-      IResponse<ITableList<IMemberHealthIssue>>
-    >(`${this.endpoint}/${memberId}/health-issues`);
+    const res = await this.httpService.get<ITableList<IMemberHealthIssue>>(`${this.endpoint}/${memberId}/health-issues`);
     return res.data as ITableList<IMemberHealthIssue>;
   }
 
@@ -153,7 +151,7 @@ export class MembersApiService extends ApiBaseService {
     memberId: number
   ): Promise<ITableList<IMemberHealthIssue>> {
     const res = await this.httpService.get<
-      IResponse<ITableList<IMemberHealthIssue>>
+      ITableList<IMemberHealthIssue>
     >(`${this.endpoint}/${memberId}/health-issues/list`);
     return res.data as ITableList<IMemberHealthIssue>;
   }
@@ -162,7 +160,7 @@ export class MembersApiService extends ApiBaseService {
     memberId: number,
     healthIssueIds: number[]
   ): Promise<void> {
-    return await this.httpService.put<void>(
+    await this.httpService.put<void>(
       `${this.endpoint}/${memberId}/health-issues/manage`,
       { healthIssueIds }
     );
@@ -172,7 +170,7 @@ export class MembersApiService extends ApiBaseService {
     memberId: number
   ): Promise<IMemberHealthParameterLog[]> {
     const res = await this.httpService.get<
-      IResponse<IMemberHealthParameterLog[]>
+      IMemberHealthParameterLog[]
     >(`${this.endpoint}/${memberId}/health-parameter-logs`);
     return res.data as IMemberHealthParameterLog[];
   }
@@ -180,7 +178,7 @@ export class MembersApiService extends ApiBaseService {
   async getHealthParameterMasterData(
     memberId: number
   ): Promise<IHealthParameterMaster> {
-    const res = await this.httpService.get<IResponse<IHealthParameterMaster>>(
+    const res = await this.httpService.get<IHealthParameterMaster>(
       `${this.endpoint}/${memberId}/health-parameter-logs/master-data`
     );
     return res.data as IHealthParameterMaster;
@@ -201,7 +199,7 @@ export class MembersApiService extends ApiBaseService {
     logId: number
   ): Promise<IMemberHealthParameterLog> {
     const res = await this.httpService.get<
-      IResponse<IMemberHealthParameterLog>
+      IMemberHealthParameterLog
     >(`${this.endpoint}/${memberId}/health-parameter-logs/${logId}`);
     return res.data as IMemberHealthParameterLog;
   }
@@ -318,7 +316,7 @@ export class MembersApiService extends ApiBaseService {
     memberId: number,
     data: IManageMemberAssessment
   ): Promise<void> {
-    return await this.httpService.put<void>(
+    await this.httpService.put<void>(
       `${this.endpoint}/${memberId}/assessment`,
       data
     );
@@ -354,7 +352,7 @@ export class MembersApiService extends ApiBaseService {
     memberId: number,
     pocketGuideIds: number[]
   ): Promise<void> {
-    return await this.httpService.put<void>(
+    await this.httpService.put<void>(
       `${this.endpoint}/${memberId}/pocket-guide/manage`,
       { pocketGuideIds }
     );
@@ -404,7 +402,7 @@ export class MembersApiService extends ApiBaseService {
     memberCallLogId: number,
     reason: string
   ): Promise<void> {
-    return await this.httpService.post<void>(
+    await this.httpService.post<void>(
       `${this.endpoint}/${memberId}/call-logs/cancel`,
       <IStatusChangeCallLog>{ memberCallLogId, reason }
     );
@@ -415,7 +413,7 @@ export class MembersApiService extends ApiBaseService {
     memberCallLogId: number,
     reason: string
   ): Promise<void> {
-    return await this.httpService.post<void>(
+    await this.httpService.post<void>(
       `${this.endpoint}/${memberId}/call-logs/complete`,
       <IStatusChangeCallLog>{ memberCallLogId, reason }
     );
@@ -472,7 +470,7 @@ export class MembersApiService extends ApiBaseService {
   }
 
   async deletePayment(memberId: number, paymentId: number): Promise<void> {
-    return await this.httpService.delete<void>(
+    await this.httpService.delete<void>(
       `${this.endpoint}/${memberId}/payment-history/${paymentId}`
     );
   }
@@ -638,7 +636,7 @@ export class MembersApiService extends ApiBaseService {
     memberId: number,
     data: IMemberDietPlanDetail
   ): Promise<void> {
-    return await this.httpService.post<void>(
+    await this.httpService.post<void>(
       `${this.endpoint}/${memberId}/diet-plan/manage`,
       data
     );
@@ -648,7 +646,7 @@ export class MembersApiService extends ApiBaseService {
     memberId: number,
     dietPlanId: number
   ): Promise<void> {
-    return await this.httpService.put<void>(
+    await this.httpService.put<void>(
       `${this.endpoint}/${memberId}/diet-plan/update-status/${dietPlanId}`,
       null
     );
@@ -659,7 +657,7 @@ export class MembersApiService extends ApiBaseService {
     dietPlanId: number,
     cycleNo: number
   ): Promise<void> {
-    return await this.httpService.delete<void>(
+    await this.httpService.delete<void>(
       `${this.endpoint}/${memberId}/diet-plan/delete-cycle/${dietPlanId}/${cycleNo}`
     );
   }
@@ -670,7 +668,7 @@ export class MembersApiService extends ApiBaseService {
     cycleNo: number,
     dayNo: number
   ): Promise<void> {
-    return await this.httpService.delete<void>(
+    await this.httpService.delete<void>(
       `${this.endpoint}/${memberId}/diet-plan/delete-day/${dietPlanId}/${cycleNo}/${dayNo}`
     );
   }
@@ -719,7 +717,7 @@ export class MembersApiService extends ApiBaseService {
     dietPlanId: number,
     cycleNo: number
   ): Promise<void> {
-    return await this.httpService.get<void>(
+    await this.httpService.get<void>(
       `${this.endpoint}/${memberId}/diet-plan/send-email-cycle/${dietPlanId}/${cycleNo}`
     );
   }
@@ -730,7 +728,7 @@ export class MembersApiService extends ApiBaseService {
     cycleNo: number,
     dayNo: number
   ): Promise<void> {
-    return await this.httpService.get<void>(
+    await this.httpService.get<void>(
       `${this.endpoint}/${memberId}/diet-plan/send-email-day/${dietPlanId}/${cycleNo}/${dayNo}`
     );
   }
@@ -842,7 +840,7 @@ export class MembersApiService extends ApiBaseService {
   }
 
   async deleteAddress(memberId: number, addressId: number): Promise<void> {
-    return await this.httpService.delete<void>(
+    await this.httpService.delete<void>(
       `${this.endpoint}/${memberId}/addresses/${addressId}`
     );
   }

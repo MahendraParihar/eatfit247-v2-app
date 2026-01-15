@@ -1,5 +1,6 @@
 import { Body, Controller, Get, Param, Put, UseGuards } from '@nestjs/common';
 import { CurrentUser, JwtAuthGuard, RequestedIp } from '@server_1/core';
+import { UpdatePocketGuideIdsDto } from '@server_1/shared-dto';
 import { MemberPocketGuideService } from '../../services';
 import { IMemberPocketGuide, ITableList } from '@eatfit247-shared-lib';
 
@@ -21,7 +22,7 @@ export class MemberPocketGuideController {
   @Put('manage')
   async managePocketGuides(
     @Param('id') id: number,
-    @Body() body: { pocketGuideIds: number[] },
+    @Body() body: UpdatePocketGuideIdsDto,
     @CurrentUser() currentUser: any,
     @RequestedIp() requestedIp: string,
   ): Promise<void> {
