@@ -6,60 +6,18 @@
     <mat-card-content>
       <div class="quick-filters">
         <span class="quick-filters-label">Quick Filters:</span>
-        <button
-          mat-stroked-button
-          type="button"
-          [class.active]="selectedQuickFilter === 'today'"
-          (click)="applyQuickFilter('today')"
-          class="quick-filter-btn"
+        <mat-button-toggle-group
+          [value]="selectedQuickFilter"
+          (change)="onQuickFilterChange($event.value)"
+          class="quick-filter-group"
         >
-          Today
-        </button>
-        <button
-          mat-stroked-button
-          type="button"
-          [class.active]="selectedQuickFilter === 'currentMonth'"
-          (click)="applyQuickFilter('currentMonth')"
-          class="quick-filter-btn"
-        >
-          Current Month
-        </button>
-        <button
-          mat-stroked-button
-          type="button"
-          [class.active]="selectedQuickFilter === 'lastMonth'"
-          (click)="applyQuickFilter('lastMonth')"
-          class="quick-filter-btn"
-        >
-          Last Month
-        </button>
-        <button
-          mat-stroked-button
-          type="button"
-          [class.active]="selectedQuickFilter === 'thisQuarter'"
-          (click)="applyQuickFilter('thisQuarter')"
-          class="quick-filter-btn"
-        >
-          This Quarter
-        </button>
-        <button
-          mat-stroked-button
-          type="button"
-          [class.active]="selectedQuickFilter === 'thisFinancialYear'"
-          (click)="applyQuickFilter('thisFinancialYear')"
-          class="quick-filter-btn"
-        >
-          This Financial Year
-        </button>
-        <button
-          mat-stroked-button
-          type="button"
-          [class.active]="selectedQuickFilter === 'lastFinancialYear'"
-          (click)="applyQuickFilter('lastFinancialYear')"
-          class="quick-filter-btn"
-        >
-          Last Financial Year
-        </button>
+          <mat-button-toggle value="today">Today</mat-button-toggle>
+          <mat-button-toggle value="currentMonth">Current Month</mat-button-toggle>
+          <mat-button-toggle value="lastMonth">Last Month</mat-button-toggle>
+          <mat-button-toggle value="thisQuarter">This Quarter</mat-button-toggle>
+          <mat-button-toggle value="thisFinancialYear">This Financial Year</mat-button-toggle>
+          <mat-button-toggle value="lastFinancialYear">Last Financial Year</mat-button-toggle>
+        </mat-button-toggle-group>
       </div>
       <form [formGroup]="filterForm" (ngSubmit)="onSearch()">
         <div class="filter-row">

@@ -11,6 +11,7 @@
       margin-bottom: 16px;
       padding-bottom: 16px;
       border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+      justify-content: space-between;
 
       .quick-filters-label {
         font-weight: 500;
@@ -18,16 +19,27 @@
         color: rgba(0, 0, 0, 0.87);
       }
 
-      .quick-filter-btn {
-        min-width: auto;
-        padding: 0 12px;
-        font-size: 13px;
-        text-transform: none;
+      .quick-filter-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0;
 
-        &.active {
-          background-color: rgba(25, 118, 210, 0.12);
-          color: #1976d2;
-          border-color: #1976d2;
+        ::ng-deep .mat-button-toggle {
+          min-width: auto;
+          padding: 0 12px;
+          font-size: 13px;
+          text-transform: none;
+          border-radius: 0;
+
+          &:first-child {
+            border-top-left-radius: 4px;
+            border-bottom-left-radius: 4px;
+          }
+
+          &:last-child {
+            border-top-right-radius: 4px;
+            border-bottom-right-radius: 4px;
+          }
         }
       }
     }

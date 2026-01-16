@@ -10,6 +10,7 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { Router } from '@angular/router';
 import {
   DataTableComponent,
@@ -35,6 +36,7 @@ import { PaymentDetailsDialogComponent } from 'members';
     MatNativeDateModule,
     MatCardModule,
     MatDialogModule,
+    MatButtonToggleModule,
     DataTableComponent,
   ],
   templateUrl: './payment-report.html',
@@ -84,6 +86,14 @@ export class PaymentReportComponent implements OnInit {
         this.selectedQuickFilter = null;
       }
     });
+  }
+
+  onQuickFilterChange(value: string | null): void {
+    if (value) {
+      this.applyQuickFilter(value);
+    } else {
+      this.selectedQuickFilter = null;
+    }
   }
 
   private initializeForm(): void {
