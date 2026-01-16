@@ -156,7 +156,18 @@ export class BaseLayoutComponent implements OnInit, OnDestroy {
     {
       label: 'Reports',
       icon: 'assessment',
-      route: '/reports',
+      children: [
+        {
+          label: 'Payment Report',
+          icon: 'payment',
+          route: '/reports/payment',
+        },
+        {
+          label: 'Contact Form Report',
+          icon: 'contact_mail',
+          route: '/reports/contact-form',
+        },
+      ],
     },
     {
       label: 'LOV Master',
