@@ -11,14 +11,14 @@ import {
 import { OperationsSummaryComponent } from './components/operations-summary/operations-summary.component';
 import { QuickActionsComponent } from './components/quick-actions/quick-actions.component';
 import {
-  DashboardApiService,
-  DashboardKpis,
-  EngagementData,
-  MemberGrowthData,
-  OperationsSnapshot,
-  ProgramPerformanceData,
-  RevenueData
-} from './api.service';
+  IDashboardKpis,
+  IEngagementData,
+  IMemberGrowthData,
+  IOperationsSnapshot,
+  IProgramPerformanceData,
+  IRevenueData,
+} from '@eatfit247-shared-lib';
+import { DashboardApiService } from './api.service';
 
 @Component({
   selector: 'lib-dashboard',
@@ -39,12 +39,12 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DashboardComponent implements OnInit, OnDestroy {
-  kpis?: DashboardKpis;
-  revenueData?: RevenueData;
-  memberGrowthData?: MemberGrowthData;
-  programPerformanceData?: ProgramPerformanceData[];
-  operationsSnapshot?: OperationsSnapshot;
-  engagementData?: EngagementData;
+  kpis?: IDashboardKpis;
+  revenueData?: IRevenueData;
+  memberGrowthData?: IMemberGrowthData;
+  programPerformanceData?: IProgramPerformanceData[];
+  operationsSnapshot?: IOperationsSnapshot;
+  engagementData?: IEngagementData;
 
   loading = {
     kpis: false,

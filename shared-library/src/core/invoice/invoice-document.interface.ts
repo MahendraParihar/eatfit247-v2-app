@@ -5,20 +5,20 @@ import { TaxMode, TaxTypeEnum, InvoiceItemType } from '../../enum';
  * This is a pure data structure, immutable once generated
  * Used for PDF generation, UI preview, and email attachments
  */
-export interface InvoiceDocument {
-  header: InvoiceHeader;
-  seller: InvoiceParty;
-  buyer: InvoiceParty;
-  items: InvoiceItem[];
-  pricing: InvoicePricing;
-  tax: InvoiceTax;
-  total: InvoiceTotal;
-  payment: InvoicePayment;
-  qrCode?: InvoiceQrCode;
-  footer: InvoiceFooter;
+export interface IInvoiceDocument {
+  header: IInvoiceHeader;
+  seller: IInvoiceParty;
+  buyer: IInvoiceParty;
+  items: IInvoiceItem[];
+  pricing: IInvoicePricing;
+  tax: IInvoiceTax;
+  total: IInvoiceTotal;
+  payment: IInvoicePayment;
+  qrCode?: IInvoiceQrCode;
+  footer: IInvoiceFooter;
 }
 
-export interface InvoiceHeader {
+export interface IInvoiceHeader {
   title: string; // e.g., "TAX INVOICE", "INVOICE"
   invoiceNumber: string;
   invoiceDate: string; // ISO date string
@@ -26,7 +26,7 @@ export interface InvoiceHeader {
   currency: string; // ISO currency code (INR, USD, AED, etc.)
 }
 
-export interface InvoiceParty {
+export interface IInvoiceParty {
   name: string;
   address: {
     line1: string;
@@ -43,7 +43,7 @@ export interface InvoiceParty {
   email?: string;
 }
 
-export interface InvoiceItem {
+export interface IInvoiceItem {
   type: InvoiceItemType; // SERVICE or PRODUCT
   description: string;
   sacCode?: string; // Service Accounting Code (for SERVICE items when GST)
@@ -53,43 +53,43 @@ export interface InvoiceItem {
   amount: number; // qty * rate
 }
 
-export interface InvoicePricing {
+export interface IInvoicePricing {
   subtotal: number; // Sum of all item amounts
   discount: number; // Total discount amount
   netAmount: number; // subtotal - discount
 }
 
-export interface InvoiceTax {
+export interface IInvoiceTax {
   taxType: TaxTypeEnum; // GST, VAT, NONE, etc.
   taxMode: TaxMode; // DOMESTIC_GST, EXPORT_OF_SERVICE, VAT, RCM_IMPORT_SERVICE, NO_TAX
-  rows: InvoiceTaxRow[]; // Individual tax components (CGST, SGST, IGST, VAT, etc.)
+  rows: IInvoiceTaxRow[]; // Individual tax components (CGST, SGST, IGST, VAT, etc.)
   totalTax: number; // Sum of all tax rows
   note?: string; // Tax-related notes (e.g., LUT note, RCM note)
 }
 
-export interface InvoiceTaxRow {
+export interface IInvoiceTaxRow {
   label: string; // "CGST", "SGST", "IGST", "VAT", etc.
   amount: number;
   percentage?: number; // Optional percentage for display
 }
 
-export interface InvoiceTotal {
+export interface IInvoiceTotal {
   label: string; // "Total Amount", "Amount Payable", etc.
   amount: number; // netAmount + totalTax
 }
 
-export interface InvoicePayment {
+export interface IInvoicePayment {
   methods: string[]; // Payment method names
   status: string; // Payment status
 }
 
-export interface InvoiceQrCode {
+export interface IInvoiceQrCode {
   enabled: boolean; // Only true for Indian GST domestic invoices
   value: string; // QR code data (JSON string or concatenated string)
   label: string; // Label to display below QR code
 }
 
-export interface InvoiceFooter {
+export interface IInvoiceFooter {
   legalNote?: string; // Legal disclaimer, terms, etc.
 }
 

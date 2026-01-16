@@ -1,4 +1,4 @@
-import { InvoiceDocument, InvoiceItem, InvoiceTaxRow } from './invoice-document.interface';
+import { IInvoiceDocument, IInvoiceItem, IInvoiceTaxRow } from './invoice-document.interface';
 import { TaxMode, TaxTypeEnum, InvoiceItemType, TransactionType } from '../../enum/tax-type.enum';
 import { IMemberPayment, IMemberPaymentObject } from '../member-payment.interface';
 import { IFranchise } from '../franchise.interface';
@@ -7,7 +7,7 @@ import { IAddress } from '../location.interface';
 /**
  * Optional member information for buyer details
  */
-export interface MemberInfo {
+export interface IMemberInfo {
   firstName?: string;
   lastName?: string;
   fullName?: string;
@@ -45,8 +45,8 @@ export function mapPaymentToInvoiceDocument(
   transactionType: TransactionType = TransactionType.SERVICE,
   franchiseAddress: IAddress,
   itemDescription?: string,
-  memberInfo?: MemberInfo,
-): InvoiceDocument {
+  memberInfo?: IMemberInfo,
+): IInvoiceDocument {
   const paymentObj: IMemberPaymentObject = payment.paymentObj;
   const tax = paymentObj.tax;
   const pricing = paymentObj.pricing;
@@ -55,7 +55,7 @@ export function mapPaymentToInvoiceDocument(
   const taxType = tax.taxType as TaxTypeEnum;
   const taxMode = tax.taxMode as TaxMode;
   // Build tax rows from taxObj
-  const taxRows: InvoiceTaxRow[] = buildTaxRows(tax.taxObj, taxType, taxMode);
+  const taxRows: IInvoiceTaxRow[] = buildTaxRows(tax.taxObj, taxType, taxMode);
   // Determine if QR code should be enabled
   const qrCodeEnabled = taxType === TaxTypeEnum.GST && taxMode === TaxMode.DOMESTIC_GST;
   // Build QR code value if enabled
@@ -73,7 +73,7 @@ export function mapPaymentToInvoiceDocument(
   const itemType: InvoiceItemType =
     transactionType === TransactionType.PRODUCT ? InvoiceItemType.PRODUCT : InvoiceItemType.SERVICE;
   // Build invoice items
-  const items: InvoiceItem[] = [
+  const items: IInvoiceItem[] = [
     {
       type: itemType,
       description: itemDescription || `${payment.program} - ${payment.programPlan}`,
@@ -146,7 +146,7 @@ function buildTaxRows(
   taxObj: Record<string, { amount: number; taxPercentage: number }>,
   taxType: TaxTypeEnum,
   taxMode: TaxMode,
-): InvoiceTaxRow[] {
+): IInvoiceTaxRow[] {
   if (taxMode === TaxMode.NO_TAX || taxMode === TaxMode.RCM_IMPORT_SERVICE) {
     return [];
   }
@@ -159,7 +159,7 @@ function buildTaxRows(
       },
     ];
   }
-  const rows: InvoiceTaxRow[] = [];
+  const rows: IInvoiceTaxRow[] = [];
   // For GST (DOMESTIC_GST)
   if (taxType === TaxTypeEnum.GST && taxMode === TaxMode.DOMESTIC_GST) {
     if (taxObj['CGST']) {
@@ -233,7 +233,7 @@ function buildSellerInfo(
   franchise: IFranchise,
   taxType: TaxTypeEnum,
   franchiseAddress: IAddress,
-): InvoiceDocument['seller'] {
+): IInvoiceDocument['seller'] {
   // Determine tax ID and label based on a tax type
   let taxId: string | undefined;
   let taxIdLabel: string | undefined;
@@ -271,8 +271,8 @@ function buildBuyerInfo(
   address: IAddress,
   gstNumber?: string,
   taxType?: TaxTypeEnum,
-  memberInfo?: MemberInfo,
-): InvoiceDocument['buyer'] {
+  memberInfo?: IMemberInfo,
+): IInvoiceDocument['buyer'] {
   let taxId: string | undefined;
   let taxIdLabel: string | undefined;
   if (taxType === TaxTypeEnum.GST && gstNumber) {

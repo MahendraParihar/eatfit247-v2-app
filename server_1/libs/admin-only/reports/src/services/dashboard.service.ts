@@ -2,68 +2,16 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op, Sequelize } from 'sequelize';
 import { TxnMember, TxnMemberDietPlan, TxnMemberIssue, TxnMemberPayment } from '@server_1/modules/member';
-import { PaymentStatusEnum } from '@eatfit247-shared-lib';
+import {
+  PaymentStatusEnum,
+  IDashboardKpis,
+  IRevenueData,
+  IMemberGrowthData,
+  IProgramPerformanceData,
+  IOperationsSnapshot,
+  IEngagementData,
+} from '@eatfit247-shared-lib';
 import moment from 'moment';
-
-export interface DashboardKpis {
-  totalMembers: number;
-  newMembers: number;
-  monthlyRevenue: number;
-  pendingPayments: number;
-  dietPlansSent: number;
-  openIssues: number;
-  trends?: {
-    totalMembers?: number;
-    newMembers?: number;
-    monthlyRevenue?: number;
-    pendingPayments?: number;
-    dietPlansSent?: number;
-    openIssues?: number;
-  };
-}
-
-export interface RevenueDataPoint {
-  month: string;
-  revenue: number;
-  paid: number;
-  pending: number;
-}
-
-export interface RevenueData {
-  lineChart: RevenueDataPoint[];
-  barChart: RevenueDataPoint[];
-}
-
-export interface MemberGrowthDataPoint {
-  period: string;
-  newMembers: number;
-  activeMembers: number;
-}
-
-export interface MemberGrowthData {
-  data: MemberGrowthDataPoint[];
-  period: 'weekly' | 'monthly';
-}
-
-export interface ProgramPerformanceData {
-  programName: string;
-  enrollment: number;
-  percentage: number;
-}
-
-export interface OperationsSnapshot {
-  todaysCalls: number;
-  pendingAssessments: number;
-  openMemberIssues: number;
-  unreadIssueResponses: number;
-}
-
-export interface EngagementData {
-  dietPlansSent: number;
-  dietPlansPending: number;
-  assessmentCompletionPercent: number;
-  avgHealthLogsPerMember: number;
-}
 
 @Injectable()
 export class DashboardService {
@@ -81,7 +29,7 @@ export class DashboardService {
   /**
    * Get dashboard KPIs
    */
-  async getKpis(): Promise<DashboardKpis> {
+  async getKpis(): Promise<IDashboardKpis> {
     const now = moment();
     const startOfMonth = now.clone().startOf('month').toDate();
     const startOfLastMonth = now.clone().subtract(1, 'month').startOf('month').toDate();
@@ -291,9 +239,9 @@ export class DashboardService {
   /**
    * Get revenue data for charts
    */
-  async getRevenueData(): Promise<RevenueData> {
+  async getRevenueData(): Promise<IRevenueData> {
     // TODO: Implement actual database queries for revenue data
-    const data: RevenueData = {
+    const data: IRevenueData = {
       lineChart: [],
       barChart: [],
     };
@@ -303,9 +251,9 @@ export class DashboardService {
   /**
    * Get member growth data
    */
-  async getMemberGrowthData(period: 'weekly' | 'monthly' = 'monthly'): Promise<MemberGrowthData> {
+  async getMemberGrowthData(period: 'weekly' | 'monthly' = 'monthly'): Promise<IMemberGrowthData> {
     // TODO: Implement actual database queries for member growth
-    const data: MemberGrowthData = {
+    const data: IMemberGrowthData = {
       data: [],
       period,
     };
@@ -315,7 +263,7 @@ export class DashboardService {
   /**
    * Get program performance data
    */
-  async getProgramPerformanceData(): Promise<ProgramPerformanceData[]> {
+  async getProgramPerformanceData(): Promise<IProgramPerformanceData[]> {
     // TODO: Implement actual database queries for program performance
     return [];
   }
@@ -323,9 +271,9 @@ export class DashboardService {
   /**
    * Get operations snapshot
    */
-  async getOperationsSnapshot(): Promise<OperationsSnapshot> {
+  async getOperationsSnapshot(): Promise<IOperationsSnapshot> {
     // TODO: Implement actual database queries for operations snapshot
-    const data: OperationsSnapshot = {
+    const data: IOperationsSnapshot = {
       todaysCalls: 0,
       pendingAssessments: 0,
       openMemberIssues: 0,
@@ -337,9 +285,9 @@ export class DashboardService {
   /**
    * Get engagement data
    */
-  async getEngagementData(): Promise<EngagementData> {
+  async getEngagementData(): Promise<IEngagementData> {
     // TODO: Implement actual database queries for engagement data
-    const data: EngagementData = {
+    const data: IEngagementData = {
       dietPlansSent: 0,
       dietPlansPending: 0,
       assessmentCompletionPercent: 0,

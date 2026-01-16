@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { EmptyStateComponent, LoaderComponent } from '@shared';
-import { OperationsSnapshot } from '../../api.service';
+import { IOperationsSnapshot } from '@eatfit247-shared-lib';
 
 @Component({
   selector: 'lib-operations-summary',
@@ -14,7 +14,7 @@ import { OperationsSnapshot } from '../../api.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class OperationsSummaryComponent {
-  @Input() data?: OperationsSnapshot;
+  @Input() data?: IOperationsSnapshot;
   @Input() loading = false;
 
   getStatusClass(value: number): 'info' | 'warning' | 'error' {

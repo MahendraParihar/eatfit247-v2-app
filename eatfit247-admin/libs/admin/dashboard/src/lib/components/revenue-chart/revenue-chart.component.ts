@@ -14,7 +14,7 @@ import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatTabsModule } from '@angular/material/tabs';
 import { EmptyStateComponent, LoaderComponent } from '@shared';
-import { RevenueData } from '../../api.service';
+import { IRevenueData } from '@eatfit247-shared-lib';
 
 declare var echarts: any;
 
@@ -27,7 +27,7 @@ declare var echarts: any;
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RevenueChartComponent implements OnInit, OnChanges, OnDestroy {
-  @Input() data?: RevenueData;
+  @Input() data?: IRevenueData;
   @Input() loading = false;
   @ViewChild('lineChart', { static: false }) lineChartRef!: ElementRef;
   @ViewChild('barChart', { static: false }) barChartRef!: ElementRef;

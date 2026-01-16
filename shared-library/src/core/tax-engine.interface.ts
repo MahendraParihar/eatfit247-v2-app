@@ -1,6 +1,6 @@
 import { TaxTypeEnum } from "../enum";
 
-export interface TaxInput {
+export interface ITaxInput {
   supplierCountryCode: string;
   supplierStateCode?: string | null;
   supplierTaxNumber?: string | null;
@@ -11,7 +11,7 @@ export interface TaxInput {
   isTaxApplicable: boolean;
 }
 
-export interface TaxResult {
+export interface ITaxResult {
   taxType: TaxTypeEnum;
   taxPercentage: number;
   taxAmount: number;

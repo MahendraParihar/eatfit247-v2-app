@@ -1,19 +1,9 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { ApiBaseService, HttpService } from '@core';
-import { IMemberPayment, ITableList, IDropdownItem } from '@eatfit247-shared-lib';
+import { ITableList, IDropdownItem, IPaymentReportFilter, IPaymentReportItem } from '@eatfit247-shared-lib';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '@env';
-
-export interface PaymentReportFilter {
-  startDate: string;
-  endDate: string;
-  franchiseId?: number;
-}
-
-export interface PaymentReportItem extends IMemberPayment {
-  franchiseName?: string;
-}
 
 @Injectable({
   providedIn: 'root',
@@ -27,9 +17,9 @@ export class PaymentReportApiService extends ApiBaseService {
     this.baseUrl = environment.apiUrl;
   }
 
-  async getPaymentReport(params: PaymentReportFilter): Promise<ITableList<PaymentReportItem>> {
-    const res = await this.httpService.get<ITableList<PaymentReportItem>>(this.endpoint, { params });
-    return res.data as ITableList<PaymentReportItem>;
+  async getPaymentReport(params: IPaymentReportFilter): Promise<ITableList<IPaymentReportItem>> {
+    const res = await this.httpService.get<ITableList<IPaymentReportItem>>(this.endpoint, { params });
+    return res.data as ITableList<IPaymentReportItem>;
   }
 
   async getFranchiseDropdown(): Promise<IDropdownItem[]> {
@@ -37,14 +27,14 @@ export class PaymentReportApiService extends ApiBaseService {
     return res.data as IDropdownItem[];
   }
 
-  async exportPaymentReports(params: PaymentReportFilter): Promise<Blob> {
+  async exportPaymentReports(params: IPaymentReportFilter): Promise<Blob> {
     // Normalize URL to avoid double slashes
     const baseUrl = this.baseUrl.endsWith('/') ? this.baseUrl.slice(0, -1) : this.baseUrl;
     const endpointPath = this.endpoint.startsWith('/') ? this.endpoint.slice(1) : this.endpoint;
     const url = `${baseUrl}/${endpointPath}/export`;
     let httpParams = new HttpParams();
     Object.keys(params).forEach((key) => {
-      const value = params[key as keyof PaymentReportFilter];
+      const value = params[key as keyof IPaymentReportFilter];
       if (value !== null && value !== undefined && value !== '') {
         httpParams = httpParams.set(key, value.toString());
       }

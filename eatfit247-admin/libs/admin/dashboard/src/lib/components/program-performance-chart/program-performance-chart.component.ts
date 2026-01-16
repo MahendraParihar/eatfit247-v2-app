@@ -13,7 +13,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { EmptyStateComponent, LoaderComponent } from '@shared';
-import { ProgramPerformanceData } from '../../api.service';
+import { IProgramPerformanceData } from '@eatfit247-shared-lib';
 
 declare var echarts: any;
 
@@ -26,7 +26,7 @@ declare var echarts: any;
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProgramPerformanceChartComponent implements OnInit, OnChanges, OnDestroy {
-  @Input() data?: ProgramPerformanceData[];
+  @Input() data?: IProgramPerformanceData[];
   @Input() loading = false;
   @ViewChild('chart', { static: false }) chartRef!: ElementRef;
 

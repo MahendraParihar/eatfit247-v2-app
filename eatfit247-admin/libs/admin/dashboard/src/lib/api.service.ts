@@ -1,65 +1,13 @@
 import { Injectable } from '@angular/core';
 import { ApiBaseService, HttpService } from '@core';
-
-export interface DashboardKpis {
-  totalMembers: number;
-  newMembers: number;
-  monthlyRevenue: number;
-  pendingPayments: number;
-  dietPlansSent: number;
-  openIssues: number;
-  trends?: {
-    totalMembers?: number;
-    newMembers?: number;
-    monthlyRevenue?: number;
-    pendingPayments?: number;
-    dietPlansSent?: number;
-    openIssues?: number;
-  };
-}
-
-export interface RevenueDataPoint {
-  month: string;
-  revenue: number;
-  paid: number;
-  pending: number;
-}
-
-export interface RevenueData {
-  lineChart: RevenueDataPoint[];
-  barChart: RevenueDataPoint[];
-}
-
-export interface MemberGrowthDataPoint {
-  period: string;
-  newMembers: number;
-  activeMembers: number;
-}
-
-export interface MemberGrowthData {
-  data: MemberGrowthDataPoint[];
-  period: 'weekly' | 'monthly';
-}
-
-export interface ProgramPerformanceData {
-  programName: string;
-  enrollment: number;
-  percentage: number;
-}
-
-export interface OperationsSnapshot {
-  todaysCalls: number;
-  pendingAssessments: number;
-  openMemberIssues: number;
-  unreadIssueResponses: number;
-}
-
-export interface EngagementData {
-  dietPlansSent: number;
-  dietPlansPending: number;
-  assessmentCompletionPercent: number;
-  avgHealthLogsPerMember: number;
-}
+import {
+  IDashboardKpis,
+  IRevenueData,
+  IMemberGrowthData,
+  IProgramPerformanceData,
+  IOperationsSnapshot,
+  IEngagementData,
+} from '@eatfit247-shared-lib';
 
 @Injectable({
   providedIn: 'root',
@@ -71,56 +19,56 @@ export class DashboardApiService extends ApiBaseService {
     super(httpService);
   }
 
-  async getKpis(): Promise<DashboardKpis> {
-    const res = await this.httpService.get<DashboardKpis>(`${this.endpoint}/kpis`);
+  async getKpis(): Promise<IDashboardKpis> {
+    const res = await this.httpService.get<IDashboardKpis>(`${this.endpoint}/kpis`);
     if (!res || !res.data) {
       throw new Error('Invalid response format: missing data property');
     }
-    return res.data as DashboardKpis;
+    return res.data as IDashboardKpis;
   }
 
-  async getRevenueData(): Promise<RevenueData> {
-    const res = await this.httpService.get<RevenueData>(`${this.endpoint}/revenue`);
+  async getRevenueData(): Promise<IRevenueData> {
+    const res = await this.httpService.get<IRevenueData>(`${this.endpoint}/revenue`);
     if (!res || !res.data) {
       throw new Error('Invalid response format: missing data property');
     }
-    return res.data as RevenueData;
+    return res.data as IRevenueData;
   }
 
-  async getMemberGrowthData(period: 'weekly' | 'monthly' = 'monthly'): Promise<MemberGrowthData> {
-    const res = await this.httpService.get<MemberGrowthData>(`${this.endpoint}/members`, {
+  async getMemberGrowthData(period: 'weekly' | 'monthly' = 'monthly'): Promise<IMemberGrowthData> {
+    const res = await this.httpService.get<IMemberGrowthData>(`${this.endpoint}/members`, {
       params: { period },
     });
     if (!res || !res.data) {
       throw new Error('Invalid response format: missing data property');
     }
-    return res.data as MemberGrowthData;
+    return res.data as IMemberGrowthData;
   }
 
-  async getProgramPerformanceData(): Promise<ProgramPerformanceData[]> {
-    const res = await this.httpService.get<ProgramPerformanceData[]>(
+  async getProgramPerformanceData(): Promise<IProgramPerformanceData[]> {
+    const res = await this.httpService.get<IProgramPerformanceData[]>(
       `${this.endpoint}/programs`
     );
     if (!res || !res.data) {
       throw new Error('Invalid response format: missing data property');
     }
-    return res.data as ProgramPerformanceData[];
+    return res.data as IProgramPerformanceData[];
   }
 
-  async getOperationsSnapshot(): Promise<OperationsSnapshot> {
-    const res = await this.httpService.get<OperationsSnapshot>(`${this.endpoint}/tasks`);
+  async getOperationsSnapshot(): Promise<IOperationsSnapshot> {
+    const res = await this.httpService.get<IOperationsSnapshot>(`${this.endpoint}/tasks`);
     if (!res || !res.data) {
       throw new Error('Invalid response format: missing data property');
     }
-    return res.data as OperationsSnapshot;
+    return res.data as IOperationsSnapshot;
   }
 
-  async getEngagementData(): Promise<EngagementData> {
-    const res = await this.httpService.get<EngagementData>(`${this.endpoint}/engagement`);
+  async getEngagementData(): Promise<IEngagementData> {
+    const res = await this.httpService.get<IEngagementData>(`${this.endpoint}/engagement`);
     if (!res || !res.data) {
       throw new Error('Invalid response format: missing data property');
     }
-    return res.data as EngagementData;
+    return res.data as IEngagementData;
   }
 }
 

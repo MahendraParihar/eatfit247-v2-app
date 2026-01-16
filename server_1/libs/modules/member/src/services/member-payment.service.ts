@@ -16,7 +16,7 @@ import {
   ITableList,
   mapPaymentToInvoiceDocument,
   MediaForEnum,
-  MemberInfo,
+  IMemberInfo,
   PaymentSourceEnum,
   PaymentStatusEnum,
   TableEnum,
@@ -1158,7 +1158,7 @@ export class MemberPaymentService {
     // Convert payment to model to get calculated amounts
     const paymentModel = this.convertToModel(payment);
     // Prepare member info
-    const memberInfo: MemberInfo = {
+    const memberInfo: IMemberInfo = {
       fullName: paymentModel.memberName,
       emailId: payment.member.emailId,
       contactNumber: payment.member.contactNumber,

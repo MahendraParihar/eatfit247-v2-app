@@ -18,7 +18,8 @@ import {
   ITableColumn,
   ITableConfig,
 } from '@shared';
-import { PaymentReportApiService, PaymentReportItem, PaymentReportFilter } from './api.service';
+import { IPaymentReportItem, IPaymentReportFilter } from '@eatfit247-shared-lib';
+import { PaymentReportApiService } from './api.service';
 import { PaymentDetailsDialogComponent } from 'members';
 
 @Component({
@@ -44,11 +45,11 @@ import { PaymentDetailsDialogComponent } from 'members';
 })
 export class PaymentReportComponent implements OnInit {
   filterForm!: FormGroup;
-  data: PaymentReportItem[] = [];
+  data: IPaymentReportItem[] = [];
   totalCount = 0;
   loading = false;
   exporting = false;
-  tableConfig!: ITableConfig<PaymentReportItem>;
+  tableConfig!: ITableConfig<IPaymentReportItem>;
   franchiseOptions: { id: number | null; label: string }[] = [];
   startDatePicker: any;
   endDatePicker: any;
@@ -105,7 +106,7 @@ export class PaymentReportComponent implements OnInit {
   }
 
   private initializeTable(): void {
-    const columns: ITableColumn<PaymentReportItem>[] = [
+    const columns: ITableColumn<IPaymentReportItem>[] = [
       {
         key: 'memberName',
         label: 'Member Name',
@@ -117,7 +118,7 @@ export class PaymentReportComponent implements OnInit {
         label: 'Total Amount',
         dataKey: 'totalAmount',
         sortable: true,
-        formatter: (value: number, row: PaymentReportItem) => {
+        formatter: (value: number, row: IPaymentReportItem) => {
           return `${row.paymentObj.currency} ${row.paymentObj.pricing.totalAmount.toLocaleString(
             'en-IN',
             {
@@ -142,7 +143,7 @@ export class PaymentReportComponent implements OnInit {
       },
     ];
 
-    const actions: ITableAction<PaymentReportItem>[] = [
+    const actions: ITableAction<IPaymentReportItem>[] = [
       {
         label: 'View Invoice',
         icon: 'receipt',
@@ -189,7 +190,7 @@ export class PaymentReportComponent implements OnInit {
     this.loading = true;
     try {
       const formValue = this.filterForm.value;
-      const params: PaymentReportFilter = {
+      const params: IPaymentReportFilter = {
         startDate: this.formatDate(formValue.startDate),
         endDate: this.formatDate(formValue.endDate),
         franchiseId: formValue.franchiseId || undefined,
@@ -216,7 +217,7 @@ export class PaymentReportComponent implements OnInit {
     await this.onSearch();
   }
 
-  viewInvoice(payment: PaymentReportItem): void {
+  viewInvoice(payment: IPaymentReportItem): void {
     this.dialog.open(PaymentDetailsDialogComponent, {
       width: '800px',
       maxWidth: '90vw',
@@ -224,7 +225,7 @@ export class PaymentReportComponent implements OnInit {
     });
   }
 
-  viewMember(payment: PaymentReportItem): void {
+  viewMember(payment: IPaymentReportItem): void {
     this.router.navigate(['/members/details', payment.memberId, 'dashboard']);
   }
 
@@ -321,7 +322,7 @@ export class PaymentReportComponent implements OnInit {
     this.exporting = true;
     try {
       const formValue = this.filterForm.value;
-      const params: PaymentReportFilter = {
+      const params: IPaymentReportFilter = {
         startDate: this.formatDate(formValue.startDate),
         endDate: this.formatDate(formValue.endDate),
         franchiseId: formValue.franchiseId || undefined,

@@ -28,6 +28,7 @@ import {
   TxnAdminLastLoginDetail,
   TxnAdminPasswordResetToken,
   TxnAdminRefreshToken,
+  TxnContactForm,
 } from './database/models';
 // Model registry for feature modules
 import { modelRegistry } from './database/model-registry';
@@ -58,6 +59,8 @@ export class CommonModule {
       TxnAdminLastLoginDetail,
       TxnAdminRefreshToken,
       TxnAdminPasswordResetToken,
+      // Transactional contact forms
+      TxnContactForm,
     ];
     // Get models registered by feature modules via modelRegistry
     // Each feature module registers its own models during module initialization

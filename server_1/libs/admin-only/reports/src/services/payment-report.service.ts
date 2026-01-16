@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { TxnMember, TxnMemberPayment, MemberPaymentService } from '@server_1/modules/member';
-import { IMemberPayment, ITableList } from '@eatfit247-shared-lib';
+import { ITableList, IPaymentReportItem } from '@eatfit247-shared-lib';
 import { MstFranchise, Env } from '@server_1/core';
 import { PaymentReportDto } from '../dto/payment-report.dto';
 import archiver from 'archiver';
@@ -22,7 +22,7 @@ export class PaymentReportService {
    * @param dto - Payment report filter DTO
    * @returns List of payments with member and franchise information
    */
-  async getPaymentReport(dto: PaymentReportDto): Promise<ITableList<IMemberPayment & { franchiseName?: string }>> {
+  async getPaymentReport(dto: PaymentReportDto): Promise<ITableList<IPaymentReportItem>> {
     const whereCondition: any = {
       active: true,
       paymentDate: {

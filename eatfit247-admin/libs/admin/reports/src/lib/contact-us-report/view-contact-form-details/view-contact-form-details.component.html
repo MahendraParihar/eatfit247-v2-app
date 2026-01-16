@@ -1,0 +1,149 @@
+<div class="contact-form-details-dialog">
+  <div class="dialog-header">
+    <h2 mat-dialog-title>Contact Form Details</h2>
+    <button mat-icon-button (click)="onClose()" class="close-button" aria-label="Close dialog">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <mat-dialog-content>
+    @if (loading) {
+      <div class="loading-container">
+        <mat-spinner diameter="40"></mat-spinner>
+        <p>Loading contact form details...</p>
+      </div>
+    } @else {
+      <div class="details-container">
+        <!-- Contact Information -->
+        <div class="detail-section">
+          <h3 class="section-title">
+            <mat-icon>person</mat-icon>
+            Contact Information
+          </h3>
+          <div class="detail-grid">
+            <div class="detail-item">
+              <span class="label">Name:</span>
+              <span class="value">{{ contactForm.name || 'N/A' }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="label">Email:</span>
+              <span class="value">{{ contactForm.emailId || 'N/A' }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="label">Contact Number:</span>
+              <span class="value">{{ getFullContactNumber() || 'N/A' }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="label">Status:</span>
+              <mat-chip [class]="getStatusChipClass()">
+                {{ contactForm.isResponded ? 'Responded' : 'Pending' }}
+              </mat-chip>
+            </div>
+          </div>
+        </div>
+
+        <!-- Message Section -->
+        <div class="detail-section">
+          <h3 class="section-title">
+            <mat-icon>message</mat-icon>
+            Message
+          </h3>
+          <div class="message-content">
+            <p>{{ contactForm.message || 'N/A' }}</p>
+          </div>
+        </div>
+
+        <!-- Response Information (if responded) -->
+        @if (contactForm.isResponded) {
+          <div class="detail-section">
+            <h3 class="section-title">
+              <mat-icon>reply</mat-icon>
+              Response Information
+            </h3>
+            <div class="detail-grid">
+              <div class="detail-item">
+                <span class="label">Responded By:</span>
+                <span class="value">{{ contactForm.respondedByUserName || 'N/A' }}</span>
+              </div>
+              @if (contactForm.updatedAt) {
+                <div class="detail-item">
+                  <span class="label">Responded On:</span>
+                  <span class="value">{{ contactForm.updatedAt | date: 'dd MMM yyyy hh:mm a' }}</span>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Admin Response Section -->
+        <div class="detail-section">
+          <h3 class="section-title">
+            <mat-icon>edit</mat-icon>
+            Admin Response
+          </h3>
+          <form [formGroup]="responseForm" (ngSubmit)="onSubmitResponse()">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Response Message</mat-label>
+              <textarea
+                matInput
+                formControlName="respondedMessage"
+                rows="6"
+                placeholder="Enter your response message here..."
+                [readonly]="isReadonly"
+              ></textarea>
+              @if (!isReadonly) {
+                <mat-hint>Maximum 1000 characters</mat-hint>
+              }
+            </mat-form-field>
+            @if (responseForm.get('respondedMessage')?.hasError('required') && responseForm.get('respondedMessage')?.touched && !isReadonly) {
+              <div class="error-message">Response message is required</div>
+            }
+            @if (responseForm.get('respondedMessage')?.hasError('maxlength') && !isReadonly) {
+              <div class="error-message">Response message cannot exceed 1000 characters</div>
+            }
+          </form>
+        </div>
+
+        <!-- Audit Information -->
+        <div class="detail-section">
+          <h3 class="section-title">
+            <mat-icon>info</mat-icon>
+            Audit Information
+          </h3>
+          <div class="detail-grid">
+            <div class="detail-item">
+              <span class="label">Submitted Date:</span>
+              <span class="value">{{ contactForm.createdAt | date: 'dd MMM yyyy hh:mm a' }}</span>
+            </div>
+            @if (contactForm.updatedAt) {
+              <div class="detail-item">
+                <span class="label">Last Updated:</span>
+                <span class="value">{{ contactForm.updatedAt | date: 'dd MMM yyyy hh:mm a' }}</span>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    }
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button (click)="onClose()" [disabled]="submitting">Close</button>
+    @if (!isReadonly) {
+      <button
+        mat-raised-button
+        color="primary"
+        (click)="onSubmitResponse()"
+        [disabled]="responseForm.invalid || submitting"
+      >
+        @if (submitting) {
+          <mat-spinner diameter="20" class="button-spinner"></mat-spinner>
+        } @else {
+          <mat-icon>send</mat-icon>
+        }
+        Submit Response
+      </button>
+    }
+  </mat-dialog-actions>
+</div>
+

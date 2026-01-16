@@ -46,4 +46,7 @@ export * from './success-story.interface';
 export * from './product.interface';
 export * from './woocommerce.interface';
 export * from './invoice';
+export * from './contact-form-report.interface';
+export * from './payment-report.interface';
+export * from './dashboard-report.interface';
 

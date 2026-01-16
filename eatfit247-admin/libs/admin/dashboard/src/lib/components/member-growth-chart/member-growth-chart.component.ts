@@ -17,7 +17,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { FormsModule } from '@angular/forms';
 import { EmptyStateComponent, LoaderComponent } from '@shared';
-import { MemberGrowthData } from '../../api.service';
+import { IMemberGrowthData } from '@eatfit247-shared-lib';
 
 declare var echarts: any;
 
@@ -37,7 +37,7 @@ declare var echarts: any;
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MemberGrowthChartComponent implements OnInit, OnChanges, OnDestroy {
-  @Input() data?: MemberGrowthData;
+  @Input() data?: IMemberGrowthData;
   @Input() loading = false;
   @Output() periodChange = new EventEmitter<'weekly' | 'monthly'>();
   @ViewChild('chart', { static: false }) chartRef!: ElementRef;

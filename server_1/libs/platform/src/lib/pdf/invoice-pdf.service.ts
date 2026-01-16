@@ -4,7 +4,7 @@ import { existsSync, readFileSync } from 'fs';
 import * as hbs from 'handlebars';
 import * as puppeteer from 'puppeteer';
 import { TEMPLATE_FOLDER } from '@server_1/core';
-import { InvoiceDocument, InvoiceItem, InvoiceTaxRow, TaxMode } from '@eatfit247-shared-lib';
+import { IInvoiceDocument, IInvoiceItem, IInvoiceTaxRow, TaxMode } from '@eatfit247-shared-lib';
 import * as QRCode from 'qrcode';
 
 @Injectable()
@@ -15,7 +15,7 @@ export class InvoicePdfService {
    * @param invoiceDoc - Canonical invoice document (pure data, no logic)
    * @returns PDF buffer
    */
-  async generateInvoicePdf(invoiceDoc: InvoiceDocument): Promise<Buffer> {
+  async generateInvoicePdf(invoiceDoc: IInvoiceDocument): Promise<Buffer> {
     // Generate QR code image if enabled
     let qrCodeImageDataUrl: string | null = null;
     if (invoiceDoc.qrCode?.enabled && invoiceDoc.qrCode.value) {
@@ -129,19 +129,19 @@ export class InvoicePdfService {
     }
     // Conditional helper for SAC/HSN column
     if (!hbs.helpers['hasSacOrHsn']) {
-      hbs.registerHelper('hasSacOrHsn', (items: InvoiceItem[]) => {
+      hbs.registerHelper('hasSacOrHsn', (items: IInvoiceItem[]) => {
         return items.some((item) => item.sacCode || item.hsnCode);
       });
     }
     // Get SAC or HSN code helper
     if (!hbs.helpers['getSacOrHsn']) {
-      hbs.registerHelper('getSacOrHsn', (item: InvoiceItem) => {
+      hbs.registerHelper('getSacOrHsn', (item: IInvoiceItem) => {
         return item.sacCode || item.hsnCode || '-';
       });
     }
     // Tax row label helper
     if (!hbs.helpers['taxRowLabel']) {
-      hbs.registerHelper('taxRowLabel', (row: InvoiceTaxRow) => {
+      hbs.registerHelper('taxRowLabel', (row: IInvoiceTaxRow) => {
         if (row.percentage !== undefined) {
           return `${row.label} @ ${row.percentage}%`;
         }
