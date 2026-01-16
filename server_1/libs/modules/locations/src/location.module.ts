@@ -4,8 +4,8 @@ import {
   AddressController,
   AddressTypeController,
   CountryController,
-  StateController,
   PublicAddressController,
+  StateController,
 } from './controllers';
 
 @Module({

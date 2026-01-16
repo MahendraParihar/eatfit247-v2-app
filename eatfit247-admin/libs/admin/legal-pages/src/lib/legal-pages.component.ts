@@ -1,15 +1,19 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import {
-  DataTableComponent, createdByUserFormatter, updatedByUserFormatter,
-  ITableColumn, ITableConfig, ITableAction
+  createdByUserFormatter,
+  DataTableComponent,
+  ITableAction,
+  ITableColumn,
+  ITableConfig,
+  updatedByUserFormatter
 } from '@shared';
-import { ITableList, ILegalPageList } from '@eatfit247-shared-lib';
+import { ILegalPageList, ITableList } from '@eatfit247-shared-lib';
 import { LegalPagesApiService } from './api.service';
-import { Subject, debounceTime, distinctUntilChanged, switchMap } from 'rxjs';
+import { debounceTime, distinctUntilChanged, Subject, switchMap } from 'rxjs';
 
 @Component({
   selector: 'lib-legal-pages',

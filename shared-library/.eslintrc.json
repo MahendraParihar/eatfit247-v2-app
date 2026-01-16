@@ -1,0 +1,7 @@
+{
+  "extends": ["plugin:@nx/typescript"],
+  "rules": {
+    "@typescript-eslint/no-unused-vars": ["error"],
+    "import/no-cycle": ["error"]
+  }
+}

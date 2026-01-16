@@ -10,7 +10,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatCardModule } from '@angular/material/card';
 import { InputErrorComponent, UploadFormComponent, ValidationUtil } from '@shared';
 import { LovMasterApiService } from '../../api.service';
-import { FileTypeEnum, IRecipeType, IManageRecipeType, InputLengthEnum, MediaForEnum } from '@eatfit247-shared-lib';
+import { FileTypeEnum, IManageRecipeType, InputLengthEnum, IRecipeType, MediaForEnum } from '@eatfit247-shared-lib';
 
 @Component({
   selector: 'lib-manage-recipe-type',

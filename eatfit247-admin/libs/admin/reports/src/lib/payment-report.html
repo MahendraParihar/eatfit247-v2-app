@@ -1,0 +1,137 @@
+<div class="payment-report-container">
+  <mat-card class="filter-card">
+    <mat-card-header>
+      <mat-card-title>Payment Report Filters</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="quick-filters">
+        <span class="quick-filters-label">Quick Filters:</span>
+        <button
+          mat-stroked-button
+          type="button"
+          [class.active]="selectedQuickFilter === 'today'"
+          (click)="applyQuickFilter('today')"
+          class="quick-filter-btn"
+        >
+          Today
+        </button>
+        <button
+          mat-stroked-button
+          type="button"
+          [class.active]="selectedQuickFilter === 'currentMonth'"
+          (click)="applyQuickFilter('currentMonth')"
+          class="quick-filter-btn"
+        >
+          Current Month
+        </button>
+        <button
+          mat-stroked-button
+          type="button"
+          [class.active]="selectedQuickFilter === 'lastMonth'"
+          (click)="applyQuickFilter('lastMonth')"
+          class="quick-filter-btn"
+        >
+          Last Month
+        </button>
+        <button
+          mat-stroked-button
+          type="button"
+          [class.active]="selectedQuickFilter === 'thisQuarter'"
+          (click)="applyQuickFilter('thisQuarter')"
+          class="quick-filter-btn"
+        >
+          This Quarter
+        </button>
+        <button
+          mat-stroked-button
+          type="button"
+          [class.active]="selectedQuickFilter === 'thisFinancialYear'"
+          (click)="applyQuickFilter('thisFinancialYear')"
+          class="quick-filter-btn"
+        >
+          This Financial Year
+        </button>
+        <button
+          mat-stroked-button
+          type="button"
+          [class.active]="selectedQuickFilter === 'lastFinancialYear'"
+          (click)="applyQuickFilter('lastFinancialYear')"
+          class="quick-filter-btn"
+        >
+          Last Financial Year
+        </button>
+      </div>
+      <form [formGroup]="filterForm" (ngSubmit)="onSearch()">
+        <div class="filter-row">
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>Start Date</mat-label>
+            <input
+              matInput
+              [matDatepicker]="startDatePicker"
+              formControlName="startDate"
+              readonly
+            />
+            <mat-datepicker-toggle matSuffix [for]="startDatePicker"></mat-datepicker-toggle>
+            <mat-datepicker #startDatePicker></mat-datepicker>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>End Date</mat-label>
+            <input
+              matInput
+              [matDatepicker]="endDatePicker"
+              formControlName="endDate"
+              readonly
+            />
+            <mat-datepicker-toggle matSuffix [for]="endDatePicker"></mat-datepicker-toggle>
+            <mat-datepicker #endDatePicker></mat-datepicker>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>Franchise</mat-label>
+            <mat-select formControlName="franchiseId">
+              @for (franchise of franchiseOptions; track franchise.id) {
+                <mat-option [value]="franchise.id">{{ franchise.label }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+
+          <button
+            mat-raised-button
+            color="primary"
+            type="submit"
+            [disabled]="filterForm.invalid || loading"
+            class="search-button"
+          >
+            <mat-icon>search</mat-icon>
+            Search
+          </button>
+
+          <button
+            mat-raised-button
+            color="accent"
+            type="button"
+            [disabled]="filterForm.invalid || loading || exporting"
+            (click)="onExport()"
+            class="export-button"
+          >
+            <mat-icon>download</mat-icon>
+            Export
+          </button>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+
+  @if (data.length > 0 || loading) {
+    <shared-ui-data-table
+      [config]="tableConfig"
+      [data]="data"
+      [totalCount]="totalCount"
+      [loading]="loading"
+      (pageChange)="onPageChange($event)"
+      (sortChange)="onSortChange($event)"
+    ></shared-ui-data-table>
+  }
+</div>
+

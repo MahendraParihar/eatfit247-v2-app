@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { TxnMember, TxnMemberProduct } from '../models';
-import { ITableList, IMemberProduct, PaymentSourceEnum } from '@eatfit247-shared-lib';
+import { IMemberProduct, ITableList, PaymentSourceEnum } from '@eatfit247-shared-lib';
 import { CommonFunctionsUtil } from '@server_1/core';
 
 @Injectable()

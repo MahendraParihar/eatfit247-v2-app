@@ -4,9 +4,8 @@
  * ⚠️ DESIGN SYSTEM: See DESIGN_SYSTEM.md
  * Redirects authenticated users away from login page to home
  */
-
 import { Injectable } from '@angular/core';
-import { CanActivate, Router, ActivatedRouteSnapshot } from '@angular/router';
+import { ActivatedRouteSnapshot, CanActivate, Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 
 @Injectable({

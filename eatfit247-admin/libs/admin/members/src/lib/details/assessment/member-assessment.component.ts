@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -10,8 +10,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
-import { LoaderComponent, InputErrorComponent } from '@shared';
-import { IMemberAssessment, IManageMemberAssessment, IDropdownItem, InputLengthEnum } from '@eatfit247-shared-lib';
+import { InputErrorComponent, LoaderComponent } from '@shared';
+import { IDropdownItem, IManageMemberAssessment, IMemberAssessment, InputLengthEnum } from '@eatfit247-shared-lib';
 import { MembersApiService } from '../../api.service';
 import { Subject, takeUntil } from 'rxjs';
 

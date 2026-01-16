@@ -2,7 +2,10 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { BadRequestException } from '@nestjs/common';
 import { getModelToken } from '@nestjs/sequelize';
 import axios from 'axios';
-
+// Now import after mocks
+import { GoogleService } from './google.service';
+import { AppConfigService, MstAdminUser } from '@server_1/core';
+import { LogErrorService } from '../logging/log-error.service';
 // Mock axios first
 jest.mock('axios');
 const mockedAxios = axios as jest.Mocked<typeof axios>;
@@ -31,13 +34,6 @@ jest.mock('../logging/log-error.service', () => ({
     logWarning: jest.fn(),
   })),
 }));
-
-// Now import after mocks
-import { GoogleService } from './google.service';
-import { AppConfigService } from '@server_1/core';
-import { LogErrorService } from '../logging/log-error.service';
-import { MstAdminUser } from '@server_1/core';
-
 describe('GoogleService - getGoogleBusinessReviews', () => {
   let service: GoogleService;
   let appConfigService: jest.Mocked<AppConfigService>;

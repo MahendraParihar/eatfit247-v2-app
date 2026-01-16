@@ -7,7 +7,6 @@
  * Example:
  *   npx ts-node server_1/libs/modules/pages/src/scripts/run-seed.ts /Users/mahendraparihar/Downloads/eatfit24by7_seo_each_link_seed.csv
  */
-
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from '../../../../apps/public-api/src/app/app.module';
 import { SeoPageService } from '../services/seo-page.service';

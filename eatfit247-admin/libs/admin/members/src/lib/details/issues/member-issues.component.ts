@@ -1,32 +1,26 @@
-import { Component, OnInit, OnDestroy } from "@angular/core";
-import { CommonModule } from "@angular/common";
-import { ActivatedRoute } from "@angular/router";
-import { MatCardModule } from "@angular/material/card";
-import { MatButtonModule } from "@angular/material/button";
-import { MatIconModule } from "@angular/material/icon";
-import { MatDialog } from "@angular/material/dialog";
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ActivatedRoute } from '@angular/router';
+import { MatCardModule } from '@angular/material/card';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatDialog } from '@angular/material/dialog';
 import {
+  createdByUserFormatter,
   DataTableComponent,
-  ITableColumn,
-  ITableConfig,
-  ITableAction,
   EmptyStateComponent,
   EmptyStateType,
+  ITableAction,
+  ITableColumn,
+  ITableConfig,
   LoaderComponent,
-  createdByUserFormatter,
   updatedByUserFormatter
-} from "@shared";
-import { IMemberIssue } from "@eatfit247-shared-lib";
-import { MembersApiService } from "../../api.service";
-import { Subject, takeUntil } from "rxjs";
-import {
-  ManageMemberIssueComponent,
-  ManageMemberIssueData
-} from "./manage-member-issue/manage-member-issue.component";
-import {
-  IssueChatComponent,
-  IssueChatData
-} from "./issue-chat/issue-chat.component";
+} from '@shared';
+import { IMemberIssue } from '@eatfit247-shared-lib';
+import { MembersApiService } from '../../api.service';
+import { Subject, takeUntil } from 'rxjs';
+import { ManageMemberIssueComponent, ManageMemberIssueData } from './manage-member-issue/manage-member-issue.component';
+import { IssueChatComponent, IssueChatData } from './issue-chat/issue-chat.component';
 
 @Component({
   selector: "lib-member-issues",

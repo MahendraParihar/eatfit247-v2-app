@@ -9,12 +9,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { InputErrorComponent } from '@shared';
-import {
-  IManageAddress,
-  IAddress,
-  IAddressMaster,
-  IDropdownItem,
-} from '@eatfit247-shared-lib';
+import { IAddress, IAddressMaster, IDropdownItem, IManageAddress } from '@eatfit247-shared-lib';
 import { MembersApiService } from '../../../api.service';
 
 export interface ManageMemberAddressData {

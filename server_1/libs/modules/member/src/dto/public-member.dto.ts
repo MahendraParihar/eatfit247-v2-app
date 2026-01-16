@@ -1,11 +1,4 @@
-import {
-  IsEmail,
-  IsNotEmpty,
-  IsNumber,
-  IsOptional,
-  MaxLength,
-  MinLength,
-} from 'class-validator';
+import { IsEmail, IsNotEmpty, IsNumber, IsOptional, MaxLength, MinLength } from 'class-validator';
 import { InputLengthEnum } from '@eatfit247-shared-lib';
 
 export class CreatePublicMemberDto {

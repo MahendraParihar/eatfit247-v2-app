@@ -1,37 +1,37 @@
-import { Component, inject, OnDestroy, OnInit, signal } from "@angular/core";
-import { CommonModule } from "@angular/common";
-import { ActivatedRoute, Router } from "@angular/router";
-import { MatDialog, MatDialogModule } from "@angular/material/dialog";
-import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
-import { MatTableModule } from "@angular/material/table";
-import { MatIconModule } from "@angular/material/icon";
-import { MatButtonModule } from "@angular/material/button";
-import { MatMenuModule } from "@angular/material/menu";
-import { MatTooltipModule } from "@angular/material/tooltip";
-import { Subject, takeUntil } from "rxjs";
-import { animate, state, style, transition, trigger } from "@angular/animations";
+import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ActivatedRoute, Router } from '@angular/router';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatTableModule } from '@angular/material/table';
+import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { Subject, takeUntil } from 'rxjs';
+import { animate, state, style, transition, trigger } from '@angular/animations';
 import {
-  LoaderComponent,
+  createdByUserFormatter,
   EmptyStateComponent,
   EmptyStateType,
-  ITableConfig,
-  ITableColumn,
   ITableActionButton,
-  createdByUserFormatter,
+  ITableColumn,
+  ITableConfig,
+  LoaderComponent,
   updatedByUserFormatter
-} from "@shared";
-import { MembersApiService } from "../../api.service";
-import { MemberDietPlanDatasource } from "./member-diet-plan.datasource";
+} from '@shared';
+import { MembersApiService } from '../../api.service';
+import { MemberDietPlanDatasource } from './member-diet-plan.datasource';
 import {
   MemberDietPlanDetailsDialogComponent
-} from "./member-diet-plan-details-dialog/member-diet-plan-details-dialog.component";
+} from './member-diet-plan-details-dialog/member-diet-plan-details-dialog.component';
 import {
   DietPlanStatusEnum,
   DietTypeEnum,
   ICyclePlan,
   IMemberDietDetail,
   IMemberDietPlan
-} from "@eatfit247-shared-lib";
+} from '@eatfit247-shared-lib';
 
 @Component({
   selector: "lib-member-diet-plan-list",

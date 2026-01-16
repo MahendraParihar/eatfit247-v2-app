@@ -1,18 +1,5 @@
-import {
-  BelongsTo,
-  Column,
-  CreatedAt,
-  DataType,
-  Model,
-  Scopes,
-  Table,
-  UpdatedAt,
-} from 'sequelize-typescript';
-import {
-  getCreatedByUserInclude,
-  getUpdatedByUserInclude,
-  MstAdminUser,
-} from '@server_1/core';
+import { BelongsTo, Column, CreatedAt, DataType, Model, Scopes, Table, UpdatedAt } from 'sequelize-typescript';
+import { getCreatedByUserInclude, getUpdatedByUserInclude, MstAdminUser } from '@server_1/core';
 import { IMediaUpload, InputLengthEnum } from '@eatfit247-shared-lib';
 
 @Table({

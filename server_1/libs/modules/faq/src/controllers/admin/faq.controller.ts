@@ -1,10 +1,9 @@
 import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { CurrentUser, JwtAuthGuard, RequestedIp } from '@server_1/core';
 import { BasicSearchDto, UpdateActiveDto } from '@server_1/shared-dto';
-import { FaqService } from '../../services';
+import { FaqCategoryService, FaqService } from '../../services';
 import { CreateFaqDto } from '../../dto';
 import { IDropdownItem, IFaq, ITableList } from '@eatfit247-shared-lib';
-import { FaqCategoryService } from '../../services';
 
 @Controller('faq')
 @UseGuards(JwtAuthGuard)

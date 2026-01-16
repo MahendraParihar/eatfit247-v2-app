@@ -1,14 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { MstBlogCategory } from '../models';
-import {
-  ConfigParam,
-  IBasicSearch,
-  IBlogCategory,
-  IManageBlogCategory,
-  IStatusChange,
-  ITableList,
-} from '@eatfit247-shared-lib';
+import { IBasicSearch, IBlogCategory, IManageBlogCategory, IStatusChange, ITableList } from '@eatfit247-shared-lib';
 import { AppConfigService, CommonFunctionsUtil, SearchUtil } from '@server_1/core';
 
 @Injectable()

@@ -4,12 +4,11 @@
  * ⚠️ DESIGN SYSTEM: See DESIGN_SYSTEM.md
  * Base layout with toolbar, sidenav, and main container for all components
  */
-import { Component, ViewChild, OnInit, OnDestroy } from '@angular/core';
-import { MatSidenav } from '@angular/material/sidenav';
-import { Router } from '@angular/router';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { MatSidenav, MatSidenavModule } from '@angular/material/sidenav';
+import { Router, RouterModule } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { CommonModule } from '@angular/common';
-import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -17,7 +16,6 @@ import { MatListModule } from '@angular/material/list';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDividerModule } from '@angular/material/divider';
-import { RouterModule } from '@angular/router';
 import { AuthService } from '@core';
 import { IAuthUser } from '@eatfit247-shared-lib';
 
@@ -154,6 +152,11 @@ export class BaseLayoutComponent implements OnInit, OnDestroy {
       label: 'Success Stories',
       icon: 'emoji_events',
       route: '/success-stories',
+    },
+    {
+      label: 'Reports',
+      icon: 'assessment',
+      route: '/reports',
     },
     {
       label: 'LOV Master',

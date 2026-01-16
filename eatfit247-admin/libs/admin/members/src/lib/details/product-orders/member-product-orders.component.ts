@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, inject } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
@@ -6,12 +6,15 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
 import { Subscription } from 'rxjs';
-import { DataTableComponent, ITableColumn, ITableConfig, EmptyStateType } from '@shared';
-import { EmptyStateComponent } from '@shared';
-import { LoaderComponent } from '@shared';
 import {
-  IMemberProduct,
-} from '@eatfit247-shared-lib';
+  DataTableComponent,
+  EmptyStateComponent,
+  EmptyStateType,
+  ITableColumn,
+  ITableConfig,
+  LoaderComponent
+} from '@shared';
+import { IMemberProduct } from '@eatfit247-shared-lib';
 import { MembersApiService } from '../../api.service';
 
 @Component({

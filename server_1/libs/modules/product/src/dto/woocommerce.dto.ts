@@ -1,8 +1,4 @@
-import {
-  ICreateWooCommerceOrderDto,
-  IWooCommerceBillingAddress,
-  IWooCommerceOrderItem,
-} from '@eatfit247-shared-lib';
+import { ICreateWooCommerceOrderDto, IWooCommerceBillingAddress, IWooCommerceOrderItem } from '@eatfit247-shared-lib';
 
 export class CreateWooCommerceOrderRequestDto implements ICreateWooCommerceOrderDto {
   payment_method?: string;

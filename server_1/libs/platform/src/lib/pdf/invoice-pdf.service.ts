@@ -4,8 +4,7 @@ import { existsSync, readFileSync } from 'fs';
 import * as hbs from 'handlebars';
 import * as puppeteer from 'puppeteer';
 import { TEMPLATE_FOLDER } from '@server_1/core';
-import { InvoiceDocument, InvoiceItem, InvoiceTaxRow } from '@eatfit247-shared-lib';
-import { TaxMode } from '@eatfit247-shared-lib';
+import { InvoiceDocument, InvoiceItem, InvoiceTaxRow, TaxMode } from '@eatfit247-shared-lib';
 import * as QRCode from 'qrcode';
 
 @Injectable()

@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { MemberModule, TxnMember, TxnMemberDietPlan, TxnMemberIssue, TxnMemberPayment } from '@server_1/modules/member';
-import { DashboardController } from './controllers';
-import { DashboardService } from './services';
+import { DashboardController, PaymentReportController } from './controllers';
+import { DashboardService, PaymentReportService } from './services';
 
 @Module({
   imports: [
@@ -14,11 +14,12 @@ import { DashboardService } from './services';
       TxnMemberIssue,
     ]),
   ],
-  controllers: [DashboardController],
-  providers: [DashboardService],
+  controllers: [DashboardController, PaymentReportController],
+  providers: [DashboardService, PaymentReportService],
   exports: [
     SequelizeModule,
     DashboardService,
+    PaymentReportService,
   ],
 })
 export class ReportsModule {

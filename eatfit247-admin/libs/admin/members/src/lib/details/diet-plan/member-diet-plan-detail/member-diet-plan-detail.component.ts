@@ -5,19 +5,15 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatDatepickerInputEvent, MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { MatDatepickerInputEvent } from '@angular/material/datepicker';
 import { Subject, takeUntil } from 'rxjs';
 import moment from 'moment';
-import { NgxEditorComponent, NgxEditorMenuComponent, Editor, Toolbar } from 'ngx-editor';
-import {
-  IDropdownItem,
-  IMemberDietDetail, IMemberDietPlanDetail
-} from '@eatfit247-shared-lib';
+import { Editor, NgxEditorComponent, NgxEditorMenuComponent, Toolbar } from 'ngx-editor';
+import { IDropdownItem, IMemberDietDetail, IMemberDietPlanDetail } from '@eatfit247-shared-lib';
 import { MembersApiService } from '../../../api.service';
 import { InputErrorComponent } from '@shared';
 

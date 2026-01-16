@@ -2,7 +2,6 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { MstRecipeCategory } from '../models';
 import {
-  ConfigParam,
   IBasicSearch,
   IDropdownItem,
   IManageRecipeCategory,

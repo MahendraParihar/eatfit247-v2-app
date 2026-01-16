@@ -17,11 +17,12 @@ import { HttpService } from './http.service';
 import { StorageService } from './storage.service';
 import {
   IAuthUser,
-  ILogin,
-  IToken,
   IChangePassword,
   IForgotPasswordRequest,
-  IResetPasswordRequest, IResponse
+  ILogin,
+  IResetPasswordRequest,
+  IResponse,
+  IToken
 } from '@eatfit247-shared-lib';
 
 @Injectable({

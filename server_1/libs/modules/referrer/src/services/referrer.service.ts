@@ -2,16 +2,16 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { MstReferrer } from '../models';
 import {
-  ConfigParam,
   IBasicSearch,
   IDropdownItem,
   IManageAddress,
-  IManageReferrer, IPublicReferrer,
+  IManageReferrer,
+  IPublicReferrer,
   IReferrer,
   ITableList,
   TableEnum,
 } from '@eatfit247-shared-lib';
-import { AppConfigService, CommonFunctionsUtil, SearchUtil } from '@server_1/core';
+import { CommonFunctionsUtil, SearchUtil } from '@server_1/core';
 import { AddressService } from '@server_1/platform';
 
 @Injectable()

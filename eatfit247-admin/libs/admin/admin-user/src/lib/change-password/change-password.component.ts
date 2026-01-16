@@ -7,7 +7,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
-import { InputErrorComponent, ValidationUtil, LoaderComponent } from '@shared';
+import { InputErrorComponent, ValidationUtil } from '@shared';
 import { AuthService } from '@core';
 import { IChangePassword, InputLengthEnum } from '@eatfit247-shared-lib';
 

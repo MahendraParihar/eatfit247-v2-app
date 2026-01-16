@@ -3,13 +3,7 @@ import { SequelizeModule } from '@nestjs/sequelize';
 import { modelRegistry } from '@server_1/core';
 import { MstBlogAuthor, MstBlogCategory, TxnBlog } from './models';
 import { BlogAuthorService, BlogCategoryService, BlogService } from './services';
-import {
-  BlogAuthorController,
-  BlogCategoryController,
-  BlogCommentsController,
-  BlogController,
-} from './controllers';
-
+import { BlogAuthorController, BlogCategoryController, BlogCommentsController, BlogController } from './controllers';
 // Register models with the model registry
 // These models have @Scopes decorator, so they MUST be registered for scopes to work
 modelRegistry.register([TxnBlog, MstBlogAuthor, MstBlogCategory]);

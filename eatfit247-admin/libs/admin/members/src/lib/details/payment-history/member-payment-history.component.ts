@@ -6,12 +6,16 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { DataTableComponent, ITableColumn, ITableConfig, ITableAction, EmptyStateType } from '@shared';
-import { EmptyStateComponent } from '@shared';
-import { LoaderComponent } from '@shared';
 import {
-  IMemberPayment, IMemberPaymentObject
-} from '@eatfit247-shared-lib';
+  DataTableComponent,
+  EmptyStateComponent,
+  EmptyStateType,
+  ITableAction,
+  ITableColumn,
+  ITableConfig,
+  LoaderComponent
+} from '@shared';
+import { IMemberPayment } from '@eatfit247-shared-lib';
 import { MembersApiService } from '../../api.service';
 import {
   ManageMemberPaymentComponent,

@@ -10,7 +10,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatCardModule } from '@angular/material/card';
 import { InputErrorComponent, UploadFormComponent, ValidationUtil } from '@shared';
 import { LovMasterApiService } from '../../api.service';
-import { FileTypeEnum, IUrineOutput, IManageUrineOutput, InputLengthEnum, MediaForEnum } from '@eatfit247-shared-lib';
+import { FileTypeEnum, IManageUrineOutput, InputLengthEnum, IUrineOutput, MediaForEnum } from '@eatfit247-shared-lib';
 
 @Component({
   selector: 'lib-manage-urine-output',

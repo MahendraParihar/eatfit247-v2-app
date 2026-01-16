@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -11,12 +11,12 @@ import { MatCardModule } from '@angular/material/card';
 import { InputErrorComponent, UploadFormComponent, ValidationUtil } from '@shared';
 import { BannersApiService } from '../api.service';
 import {
+  BannerForEnum,
+  FileTypeEnum,
   IBanner,
   IManageBanner,
   InputLengthEnum,
-  FileTypeEnum,
-  MediaForEnum,
-  BannerForEnum
+  MediaForEnum
 } from '@eatfit247-shared-lib';
 
 @Component({

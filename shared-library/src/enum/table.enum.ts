@@ -1,3 +1,7 @@
+/**
+ * Table Enums
+ * Shared across all EatFit247 applications
+ */
 export enum TableEnum {
   TXN_ADMIN = 1,
   TXN_MEMBER = 2,

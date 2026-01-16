@@ -1,5 +1,5 @@
-import { ICreatePaymentLinkRequest } from "@eatfit247-shared-lib";
-import { IsNotEmpty, IsNumber, IsOptional, IsString, Min, IsObject } from 'class-validator';
+import { ICreatePaymentLinkRequest } from '@eatfit247-shared-lib';
+import { IsNotEmpty, IsNumber, IsObject, IsOptional, IsString, Min } from 'class-validator';
 
 export class CreatePaymentLinkDto implements ICreatePaymentLinkRequest {
   @IsNotEmpty()

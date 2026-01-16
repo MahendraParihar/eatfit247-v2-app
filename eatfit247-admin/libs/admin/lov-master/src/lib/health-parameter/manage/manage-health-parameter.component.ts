@@ -11,7 +11,13 @@ import { MatCardModule } from '@angular/material/card';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { InputErrorComponent, UploadFormComponent, ValidationUtil } from '@shared';
 import { LovMasterApiService } from '../../api.service';
-import { FileTypeEnum, IHealthParameter, IManageHealthParameter, InputLengthEnum, MediaForEnum } from '@eatfit247-shared-lib';
+import {
+  FileTypeEnum,
+  IHealthParameter,
+  IManageHealthParameter,
+  InputLengthEnum,
+  MediaForEnum
+} from '@eatfit247-shared-lib';
 
 @Component({
   selector: 'lib-manage-health-parameter',

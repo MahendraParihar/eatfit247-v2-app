@@ -1,6 +1,6 @@
 import { Component, Inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -13,9 +13,8 @@ import { MatRadioModule } from '@angular/material/radio';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatStepperModule } from '@angular/material/stepper';
 import { StepperSelectionEvent } from '@angular/cdk/stepper';
-import { FormsModule } from '@angular/forms';
 import { InputErrorComponent, LoaderComponent } from '@shared';
-import { IDropdownItem, IAvailableSlot, ICallLogSlot, ISetupMemberCallLog } from '@eatfit247-shared-lib';
+import { IAvailableSlot, ICallLogSlot, IDropdownItem, ISetupMemberCallLog } from '@eatfit247-shared-lib';
 import { MembersApiService } from '../../../api.service';
 import moment from 'moment';
 

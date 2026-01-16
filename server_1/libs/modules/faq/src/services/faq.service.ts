@@ -1,10 +1,10 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
-import { InjectModel } from "@nestjs/sequelize";
-import { TxnFaq } from "../models";
-import { IBasicSearch, IFaq, IManageFaq, ITableList, IPublicTableList, IPublicFaq } from '@eatfit247-shared-lib';
-import { SearchUtil } from "@server_1/core";
-import { BasicSearchDto } from "@server_1/shared-dto";
-import { FaqCategoryService } from "./faq-category.service";
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectModel } from '@nestjs/sequelize';
+import { TxnFaq } from '../models';
+import { IBasicSearch, IFaq, IManageFaq, IPublicFaq, IPublicTableList, ITableList } from '@eatfit247-shared-lib';
+import { SearchUtil } from '@server_1/core';
+import { BasicSearchDto } from '@server_1/shared-dto';
+import { FaqCategoryService } from './faq-category.service';
 
 @Injectable()
 export class FaqService {

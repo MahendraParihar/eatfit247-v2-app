@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { ApiBaseService, HttpService } from '@core';
-import { ITableList, ILegalPageList, IResponse, IManageLegalPage } from '@eatfit247-shared-lib';
+import { ILegalPageList, IManageLegalPage, ITableList } from '@eatfit247-shared-lib';
 
 @Injectable({
   providedIn: 'root',

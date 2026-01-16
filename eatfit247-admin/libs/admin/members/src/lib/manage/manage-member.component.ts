@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -12,12 +12,12 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { InputErrorComponent, UploadFormComponent, ValidationUtil } from '@shared';
 import { MembersApiService } from '../api.service';
 import {
-  IMember,
-  IManageMember,
-  InputLengthEnum,
-  IDropdownItem,
   FileTypeEnum,
-  IMediaUpload
+  IDropdownItem,
+  IManageMember,
+  IMediaUpload,
+  IMember,
+  InputLengthEnum
 } from '@eatfit247-shared-lib';
 
 @Component({

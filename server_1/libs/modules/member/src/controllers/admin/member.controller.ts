@@ -14,7 +14,13 @@ import {
 import { InjectModel } from '@nestjs/sequelize';
 import { CurrentUser, JwtAuthGuard, RequestedIp } from '@server_1/core';
 import { AddressService, TxnAddress } from '@server_1/platform';
-import { BasicSearchDto, CreateAddressDto, UpdateMemberStatusDto, UpdateNutritionistDto, UpdateFranchiseDto } from '@server_1/shared-dto';
+import {
+  BasicSearchDto,
+  CreateAddressDto,
+  UpdateFranchiseDto,
+  UpdateMemberStatusDto,
+  UpdateNutritionistDto,
+} from '@server_1/shared-dto';
 import { MemberService } from '../../services';
 import { CreateMemberDto } from '../../dto';
 import { IAddress, IManageAddress, IMember, ITableList, TableEnum } from '@eatfit247-shared-lib';

@@ -6,8 +6,8 @@
  * Provides GET, POST, PUT, DELETE methods with consistent error handling
  */
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
-import { Observable, firstValueFrom } from 'rxjs';
+import { HttpClient, HttpErrorResponse, HttpHeaders, HttpParams } from '@angular/common/http';
+import { firstValueFrom, Observable } from 'rxjs';
 import { environment } from '@env';
 import { IResponse } from '@eatfit247-shared-lib';
 

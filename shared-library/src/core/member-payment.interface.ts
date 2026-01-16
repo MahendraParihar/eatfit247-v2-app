@@ -19,6 +19,7 @@ export interface IBasicMemberPayment {
   paymentGatewayResponse?: object | null;
   gstNumber?: string;
   billingAddressId?: number | null;
+  paymentSource: PaymentSourceEnum;
   gatewayProvider?: string;
   gatewayOrderId?: string;
   gatewayPaymentId?: string;

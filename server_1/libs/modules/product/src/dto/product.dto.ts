@@ -12,12 +12,12 @@ import {
 import { Type } from 'class-transformer';
 import {
   IManageProduct,
+  InputLengthEnum,
+  IProductBenefit,
   IProductConsumptionInstructions,
   IProductFAQ,
   IProductIngredient,
-  IProductBenefit,
   IProductSize,
-  InputLengthEnum,
 } from '@eatfit247-shared-lib';
 import { MediaUploadDto } from '@server_1/core';
 

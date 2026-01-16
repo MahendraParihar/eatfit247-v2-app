@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -13,12 +13,7 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { InputErrorComponent, UploadFormComponent, ValidationUtil } from '@shared';
 import { FranchiseApiService } from '../api.service';
-import {
-  IFranchise,
-  InputLengthEnum,
-  FileTypeEnum,
-  InternationalTaxModeEnum
-} from '@eatfit247-shared-lib';
+import { FileTypeEnum, IFranchise, InputLengthEnum, InternationalTaxModeEnum } from '@eatfit247-shared-lib';
 
 @Component({
   selector: 'lib-manage-franchise',

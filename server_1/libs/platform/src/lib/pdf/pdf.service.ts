@@ -3,10 +3,9 @@ import * as path from 'path';
 import { existsSync, mkdirSync, readFileSync } from 'fs';
 import * as hbs from 'handlebars';
 import * as puppeteer from 'puppeteer';
-import { TEMPLATE_FOLDER } from '@server_1/core';
+import { Env, TEMPLATE_FOLDER } from '@server_1/core';
 import { IFileModel } from './file-model.interface';
 import { IFranchise, MediaForEnum } from '@eatfit247-shared-lib';
-import { Env } from '@server_1/core';
 
 @Injectable()
 export class PdfService {

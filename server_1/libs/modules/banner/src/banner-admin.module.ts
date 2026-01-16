@@ -4,7 +4,6 @@ import { TxnBanner } from './models';
 import { modelRegistry } from '@server_1/core';
 import { BannerController } from './controllers';
 import { BannerService } from './services';
-
 // Register models with the model registry
 modelRegistry.register([TxnBanner]);
 

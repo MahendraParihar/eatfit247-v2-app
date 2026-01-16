@@ -1,7 +1,7 @@
 import { Controller, Get, Param, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '@server_1/core';
 import { MemberProductService } from '../../services/member-product.service';
-import { ITableList, IMemberProduct } from '@eatfit247-shared-lib';
+import { IMemberProduct, ITableList } from '@eatfit247-shared-lib';
 
 @Controller('member/:id/product')
 @UseGuards(JwtAuthGuard)

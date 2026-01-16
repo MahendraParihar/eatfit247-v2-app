@@ -2,13 +2,8 @@ import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { TxnProduct } from './models';
 import { modelRegistry } from '@server_1/core';
-import {
-  ProductController,
-  PublicProductController,
-  WooCommerceController,
-} from './controllers';
+import { ProductController, PublicProductController, WooCommerceController } from './controllers';
 import { ProductService } from './services';
-
 // Register models with the model registry
 modelRegistry.register([TxnProduct]);
 

@@ -5,7 +5,6 @@ import { modelRegistry } from '@server_1/core';
 import { LegalPagesService, SeoPageService } from './services';
 import { LegalPagesController } from './controllers';
 import { SeoPageAdminController } from './controllers/admin/seo-page.controller';
-
 // Register models with the model registry
 modelRegistry.register([LegalPagesModel, SeoPageModel]);
 

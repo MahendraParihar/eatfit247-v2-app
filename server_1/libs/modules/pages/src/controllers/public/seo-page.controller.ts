@@ -1,5 +1,5 @@
 import { Controller, Get, Param } from '@nestjs/common';
-import { SeoPageService, ISeoPageData } from '../../services/seo-page.service';
+import { ISeoPageData, SeoPageService } from '../../services/seo-page.service';
 
 @Controller('seo-page')
 export class SeoPageController {

@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
@@ -12,7 +12,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { LoaderComponent } from '@shared';
-import { IMember, IDropdownItem } from '@eatfit247-shared-lib';
+import { IDropdownItem, IMember } from '@eatfit247-shared-lib';
 import { MembersApiService } from '../api.service';
 import { Subject, takeUntil } from 'rxjs';
 

@@ -10,16 +10,9 @@
  * - Handles 401 errors by refreshing token and retrying request
  * - Access token stored in memory only (not localStorage)
  */
-
 import { Injectable } from '@angular/core';
-import {
-  HttpRequest,
-  HttpHandler,
-  HttpEvent,
-  HttpInterceptor,
-  HttpErrorResponse,
-} from '@angular/common/http';
-import { Observable, throwError, from } from 'rxjs';
+import { HttpErrorResponse, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from '@angular/common/http';
+import { from, Observable, throwError } from 'rxjs';
 import { catchError, switchMap } from 'rxjs/operators';
 import { StorageService } from '../services/storage.service';
 import { AuthService } from '../services/auth.service';

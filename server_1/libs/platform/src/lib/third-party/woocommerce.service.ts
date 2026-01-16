@@ -3,8 +3,8 @@ import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import { AxiosRequestConfig } from 'axios';
 import { AppConfigService } from '@server_1/core';
-import { ConfigParam } from "@eatfit247-shared-lib";
 import {
+  ConfigParam,
   ICreateWooCommerceOrderDto,
   IWooCommerceBillingAddress,
   IWooCommerceOrder,

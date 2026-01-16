@@ -6,6 +6,7 @@ import { LegalPagesService, SeoPageService } from './services';
 import { LegalPagesController } from './controllers';
 import { SeoPageController } from './controllers/public/seo-page.controller';
 import { SeoPageAdminController } from './controllers/admin/seo-page.controller';
+
 modelRegistry.register([LegalPagesModel, SeoPageModel]);
 
 @Module({

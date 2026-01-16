@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { ApiBaseService, HttpService } from '@core';
-import { ITableList, IBlog, IDropdownItem, IResponse } from '@eatfit247-shared-lib';
+import { IBlog, IDropdownItem, IResponse, ITableList } from '@eatfit247-shared-lib';
 
 @Injectable({
   providedIn: 'root',

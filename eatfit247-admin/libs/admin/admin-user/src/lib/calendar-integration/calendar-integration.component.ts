@@ -1,14 +1,11 @@
-import { Component, OnInit, OnChanges, SimpleChanges, signal, inject, Input } from '@angular/core';
+import { Component, inject, OnChanges, OnInit, signal, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDividerModule } from '@angular/material/divider';
 import { GoogleCalendarApiService } from '../google-calendar-api.service';
-import { AdminUserApiService } from '../api.service';
-import { AuthService } from '@core';
-import { IAuthUser, IAdminUser } from '@eatfit247-shared-lib';
-import { Router } from '@angular/router';
+import { IAdminUser } from '@eatfit247-shared-lib';
 
 @Component({
   selector: 'lib-calendar-integration',

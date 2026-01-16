@@ -9,10 +9,14 @@ import { MemberHealthIssuesComponent } from './details/health-issues/member-heal
 import { MemberCallLogsComponent } from './details/call-logs/member-call-logs.component';
 import { MemberPaymentHistoryComponent } from './details/payment-history/member-payment-history.component';
 import { MemberProductOrdersComponent } from './details/product-orders/member-product-orders.component';
-import { MemberHealthParameterLogsComponent } from './details/health-parameter-logs/member-health-parameter-logs.component';
+import {
+  MemberHealthParameterLogsComponent
+} from './details/health-parameter-logs/member-health-parameter-logs.component';
 import { MemberIssuesComponent } from './details/issues/member-issues.component';
 import { MemberDietPlanListComponent } from './details/diet-plan/member-diet-plan-list.component';
-import { MemberDietPlanDetailComponent } from './details/diet-plan/member-diet-plan-detail/member-diet-plan-detail.component';
+import {
+  MemberDietPlanDetailComponent
+} from './details/diet-plan/member-diet-plan-detail/member-diet-plan-detail.component';
 import { MemberAddressesComponent } from './details/addresses/member-addresses.component';
 
 export const membersRoutes: Route[] = [

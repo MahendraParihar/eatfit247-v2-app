@@ -1,22 +1,22 @@
 import {
-  Component,
-  Input,
-  OnInit,
-  OnChanges,
-  SimpleChanges,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
-  OnDestroy,
-  ViewChild,
+  Component,
   ElementRef,
   inject,
+  Input,
+  OnChanges,
+  OnDestroy,
+  OnInit,
+  SimpleChanges,
+  ViewChild
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
-import { LoaderComponent, EmptyStateComponent, EmptyStateType } from '@shared';
+import { EmptyStateComponent, EmptyStateType, LoaderComponent } from '@shared';
 
 declare var echarts: any;
 

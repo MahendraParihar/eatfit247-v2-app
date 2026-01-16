@@ -13,8 +13,7 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { InputErrorComponent } from '@shared';
 import { PromoCodeApiService } from '../api.service';
-import { IPromoCode } from '@eatfit247-shared-lib';
-import { DiscountTypeEnum, InputLengthEnum } from '@eatfit247-shared-lib';
+import { DiscountTypeEnum, IPromoCode } from '@eatfit247-shared-lib';
 
 @Component({
   selector: 'lib-manage-promo-code',

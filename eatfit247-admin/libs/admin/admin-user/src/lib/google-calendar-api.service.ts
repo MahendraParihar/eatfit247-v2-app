@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { ApiBaseService, HttpService } from '@core';
-import { IGoogleCalendarStatus, IResponse } from '@eatfit247-shared-lib';
+import { IGoogleCalendarStatus } from '@eatfit247-shared-lib';
 
 @Injectable({
   providedIn: 'root',

@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit, computed, signal } from '@angular/core';
+import { Component, computed, Inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -13,11 +13,11 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatIconModule } from '@angular/material/icon';
 import { InputErrorComponent } from '@shared';
 import {
+  IDropdownItem,
   IHealthParameterMaster,
   IManageMemberHealthParameterLog,
   IMemberHealthParameterLog,
-  IDropdownItem,
-  InputLengthEnum,
+  InputLengthEnum
 } from '@eatfit247-shared-lib';
 import { MembersApiService } from '../../../api.service';
 

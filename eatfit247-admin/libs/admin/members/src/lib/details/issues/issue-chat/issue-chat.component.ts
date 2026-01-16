@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewChecked } from '@angular/core';
+import { AfterViewChecked, Component, ElementRef, Inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -11,7 +11,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { InputErrorComponent } from '@shared';
 import { IManageMemberIssueResponse, IMemberIssue, IMemberIssueResponse, InputLengthEnum } from '@eatfit247-shared-lib';
 import { MembersApiService } from '../../../api.service';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject } from 'rxjs';
 
 export interface IssueChatData {
   memberId: number;

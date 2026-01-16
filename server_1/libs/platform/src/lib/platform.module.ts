@@ -9,12 +9,12 @@ import {
   MstCountry,
   MstCurrencyModel,
   MstEmailTemplate,
+  MstPaymentGateway,
   MstPaymentMode,
   MstPaymentStatus,
   MstState,
   TxnAddress,
 } from './database/models';
-import { MstPaymentGateway } from './database/models';
 // Platform services
 import {
   AddressService,
@@ -24,6 +24,7 @@ import {
   EmailNotificationService,
   GoogleService,
   LogErrorService,
+  PaymentGatewayService,
   PaymentModeService,
   PaymentStatusService,
   RazorpayService,
@@ -33,8 +34,7 @@ import {
   WooCommerceService,
   ZoomService,
 } from './services';
-import { PaymentGatewayService } from './services';
-import { InvoicePdfService, PdfService, DietPlanPdfService } from './pdf';
+import { DietPlanPdfService, InvoicePdfService, PdfService } from './pdf';
 // Platform modules and controllers
 import { LabelModule } from './label';
 import { FileUploadController } from './file-upload';

@@ -1,6 +1,6 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { BannerService } from '../../services';
-import { IPublicBanner, IPublicTableList, BannerForEnum } from '@eatfit247-shared-lib';
+import { BannerForEnum, IPublicBanner, IPublicTableList } from '@eatfit247-shared-lib';
 import { BasicSearchDto } from '@server_1/shared-dto';
 import { Public } from '@server_1/core';
 

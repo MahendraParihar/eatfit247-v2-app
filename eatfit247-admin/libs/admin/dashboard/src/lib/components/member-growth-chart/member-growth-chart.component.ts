@@ -1,23 +1,22 @@
 import {
-  Component,
-  Input,
-  Output,
-  EventEmitter,
-  OnInit,
-  OnChanges,
-  SimpleChanges,
   ChangeDetectionStrategy,
-  OnDestroy,
-  HostListener,
-  ViewChild,
+  Component,
   ElementRef,
+  EventEmitter,
+  HostListener,
+  Input,
+  OnChanges,
+  OnDestroy,
+  OnInit,
+  Output,
+  SimpleChanges,
+  ViewChild
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { FormsModule } from '@angular/forms';
-import { LoaderComponent } from '@shared';
-import { EmptyStateComponent } from '@shared';
+import { EmptyStateComponent, LoaderComponent } from '@shared';
 import { MemberGrowthData } from '../../api.service';
 
 declare var echarts: any;

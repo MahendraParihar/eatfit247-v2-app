@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { ConfigParam, IBasicSearch, ILegalPageList, IManageLegalPage, ITableList } from '@eatfit247-shared-lib';
+import { IBasicSearch, ILegalPageList, IManageLegalPage, ITableList } from '@eatfit247-shared-lib';
 import { AppConfigService, CommonFunctionsUtil, SearchUtil } from '@server_1/core';
 import { LegalPagesModel } from '../models';
 

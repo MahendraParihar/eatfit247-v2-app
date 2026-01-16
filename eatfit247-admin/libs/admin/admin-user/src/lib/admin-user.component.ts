@@ -1,19 +1,19 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import {
+  createdByUserFormatter,
   DataTableComponent,
+  ITableAction,
   ITableColumn,
   ITableConfig,
-  ITableAction,
-  createdByUserFormatter,
   updatedByUserFormatter
 } from '@shared';
-import { ITableList, IAdminUser } from '@eatfit247-shared-lib';
+import { IAdminUser, ITableList } from '@eatfit247-shared-lib';
 import { AdminUserApiService } from './api.service';
-import { Subject, debounceTime, distinctUntilChanged, switchMap } from 'rxjs';
+import { debounceTime, distinctUntilChanged, Subject, switchMap } from 'rxjs';
 
 @Component({
   selector: 'lib-admin-user',

@@ -1,8 +1,7 @@
 import { Controller, Get } from '@nestjs/common';
 import { Public } from '@server_1/core';
-import { CountryService } from '@server_1/platform';
+import { CountryService, MstCountry } from '@server_1/platform';
 import { InjectModel } from '@nestjs/sequelize';
-import { MstCountry } from '@server_1/platform';
 
 @Public()
 @Controller('member-payment')

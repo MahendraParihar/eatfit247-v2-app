@@ -8,7 +8,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { InputErrorComponent } from '@shared';
-import { IManageMemberIssue, IDropdownItem, InputLengthEnum } from '@eatfit247-shared-lib';
+import { IDropdownItem, IManageMemberIssue, InputLengthEnum } from '@eatfit247-shared-lib';
 import { MembersApiService } from '../../../api.service';
 
 export interface ManageMemberIssueData {

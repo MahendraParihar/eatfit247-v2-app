@@ -6,9 +6,9 @@ import {
   IDropdownItem,
   IFaqCategory,
   IManageFaqCategory,
+  IPublicFaqCategory,
   IStatusChange,
   ITableList,
-  IPublicFaqCategory,
 } from '@eatfit247-shared-lib';
 import { CommonFunctionsUtil, SearchUtil } from '@server_1/core';
 

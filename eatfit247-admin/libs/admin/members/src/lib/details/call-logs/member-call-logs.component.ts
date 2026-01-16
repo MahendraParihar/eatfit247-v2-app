@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
@@ -7,28 +7,20 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import {
   DataTableComponent,
-  ITableColumn,
-  ITableConfig,
-  ITableActionButton,
   EmptyStateComponent,
   EmptyStateType,
+  ITableActionButton,
+  ITableColumn,
+  ITableConfig,
   LoaderComponent
 } from '@shared';
 import { IMemberCallLog } from '@eatfit247-shared-lib';
 import { MembersApiService } from '../../api.service';
 import { Subject, takeUntil } from 'rxjs';
-import {
-  ManageMemberCallLogComponent
-} from './manage-member-call-log/manage-member-call-log.component';
-import {
-  ViewCallLogDetailsComponent
-} from './view-call-log-details/view-call-log-details.component';
-import {
-  CancelCallLogDialogComponent
-} from './cancel-call-log-dialog/cancel-call-log-dialog.component';
-import {
-  CompleteCallLogDialogComponent
-} from './complete-call-log-dialog/complete-call-log-dialog.component';
+import { ManageMemberCallLogComponent } from './manage-member-call-log/manage-member-call-log.component';
+import { ViewCallLogDetailsComponent } from './view-call-log-details/view-call-log-details.component';
+import { CancelCallLogDialogComponent } from './cancel-call-log-dialog/cancel-call-log-dialog.component';
+import { CompleteCallLogDialogComponent } from './complete-call-log-dialog/complete-call-log-dialog.component';
 
 @Component({
   selector: 'lib-member-call-logs',

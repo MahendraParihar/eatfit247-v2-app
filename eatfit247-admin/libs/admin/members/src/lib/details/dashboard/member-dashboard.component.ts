@@ -1,17 +1,11 @@
-import {
-  Component,
-  OnInit,
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  inject,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
-import { LoaderComponent, EmptyStateComponent } from '@shared';
+import { EmptyStateComponent, LoaderComponent } from '@shared';
 import { MembersApiService } from '../../api.service';
 import { MemberSummaryStripComponent } from './components/member-summary-strip/member-summary-strip.component';
 import { HealthProgressComponent } from './components/health-progress/health-progress.component';
@@ -92,9 +86,6 @@ export class MemberDashboardComponent implements OnInit {
         this.apiService.getIssuesSummary(this.memberId),
       ]);
 
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/07dbdf51-4ad9-4b43-98c1-f0c556815f0b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'member-dashboard.component.ts:95',message:'healthProgress data received from API',data:{hasHealthProgress:!!healthProgress,healthProgressType:typeof healthProgress,healthProgressKeys:healthProgress?Object.keys(healthProgress):[],healthProgressStringified:JSON.stringify(healthProgress).substring(0,1000)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A,B,C'})}).catch(()=>{});
-      // #endregion
       this.dashboardData = {
         summary,
         healthProgress,

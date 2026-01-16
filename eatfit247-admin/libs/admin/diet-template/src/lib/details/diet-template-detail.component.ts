@@ -9,11 +9,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Subject, takeUntil } from 'rxjs';
-import { NgxEditorComponent, NgxEditorMenuComponent, Editor, Toolbar } from 'ngx-editor';
-import {
-  IDropdownItem,
-  IDietPlanDetail
-} from '@eatfit247-shared-lib';
+import { Editor, NgxEditorComponent, NgxEditorMenuComponent, Toolbar } from 'ngx-editor';
+import { IDietPlanDetail, IDropdownItem } from '@eatfit247-shared-lib';
 import { DietTemplateApiService } from '../api.service';
 import { InputErrorComponent } from '@shared';
 

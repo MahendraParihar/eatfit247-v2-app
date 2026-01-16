@@ -4,9 +4,8 @@
  * ⚠️ DESIGN SYSTEM: See DESIGN_SYSTEM.md
  * Protects routes and redirects unauthenticated users to login
  */
-
 import { Injectable } from '@angular/core';
-import { CanActivate, Router, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
+import { ActivatedRouteSnapshot, CanActivate, Router, RouterStateSnapshot } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 
 @Injectable({

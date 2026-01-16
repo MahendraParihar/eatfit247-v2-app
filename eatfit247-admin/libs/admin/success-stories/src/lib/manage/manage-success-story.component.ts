@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -12,12 +12,7 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { InputErrorComponent, UploadFormComponent, ValidationUtil } from '@shared';
 import { SuccessStoriesApiService } from '../api.service';
-import {
-  ISuccessStory,
-  InputLengthEnum,
-  FileTypeEnum,
-  MediaForEnum
-} from '@eatfit247-shared-lib';
+import { FileTypeEnum, InputLengthEnum, ISuccessStory, MediaForEnum } from '@eatfit247-shared-lib';
 import { Editor, NgxEditorComponent, NgxEditorMenuComponent, Toolbar } from 'ngx-editor';
 
 @Component({

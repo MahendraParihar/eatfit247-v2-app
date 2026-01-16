@@ -1,14 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { MstMaritalStatus } from '../models';
-import {
-  ConfigParam,
-  IBasicSearch,
-  IDropdownItem,
-  IManageMaritalStatus,
-  IMaritalStatus,
-  ITableList,
-} from '@eatfit247-shared-lib';
+import { IBasicSearch, IDropdownItem, IManageMaritalStatus, IMaritalStatus, ITableList } from '@eatfit247-shared-lib';
 import { AppConfigService, CommonFunctionsUtil, SearchUtil } from '@server_1/core';
 
 @Injectable()

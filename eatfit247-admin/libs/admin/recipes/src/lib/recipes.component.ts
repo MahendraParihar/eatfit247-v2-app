@@ -5,17 +5,17 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialog } from '@angular/material/dialog';
 import {
+  createdByUserFormatter,
   DataTableComponent,
+  ITableAction,
   ITableColumn,
   ITableConfig,
-  ITableAction,
-  createdByUserFormatter,
   updatedByUserFormatter
 } from '@shared';
-import { ITableList, IRecipe } from '@eatfit247-shared-lib';
+import { IRecipe, ITableList } from '@eatfit247-shared-lib';
 import { RecipesApiService } from './api.service';
 import { ViewRecipeDialogComponent } from './view-recipe-dialog/view-recipe-dialog.component';
-import { Subject, debounceTime, distinctUntilChanged, switchMap } from 'rxjs';
+import { debounceTime, distinctUntilChanged, Subject, switchMap } from 'rxjs';
 
 @Component({
   selector: 'lib-recipes',

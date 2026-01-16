@@ -1,7 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { TxnPressMedia } from '../models';
-import { ConfigParam, IBasicSearch, IManagePressMedia, IPressMedia, ITableList, IPublicPressMedia, IPublicTableList } from '@eatfit247-shared-lib';
+import {
+  IBasicSearch,
+  IManagePressMedia,
+  IPressMedia,
+  IPublicPressMedia,
+  IPublicTableList,
+  ITableList,
+} from '@eatfit247-shared-lib';
 import { AppConfigService, CommonFunctionsUtil, SearchUtil } from '@server_1/core';
 
 @Injectable()

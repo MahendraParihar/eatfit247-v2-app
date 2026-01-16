@@ -22,8 +22,8 @@ import {
   TxnMemberIssue,
   TxnMemberIssueResponse,
   TxnMemberPayment,
-  TxnMemberProduct,
   TxnMemberPocketGuide,
+  TxnMemberProduct,
 } from './models';
 import {
   MemberCallLogController,
@@ -47,8 +47,8 @@ import {
   MemberIssueResponseService,
   MemberIssueService,
   MemberPaymentService,
-  MemberProductService,
   MemberPocketGuideService,
+  MemberProductService,
   MemberService,
 } from './services';
 import { FranchiseModule } from '@server_1/modules/franchise';
@@ -140,6 +140,7 @@ modelRegistry.register([
   ],
   exports: [
     MemberService,
+    MemberPaymentService,
     SequelizeModule,
   ],
 })

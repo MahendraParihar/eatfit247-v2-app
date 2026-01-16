@@ -10,7 +10,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatCardModule } from '@angular/material/card';
 import { InputErrorComponent, ValidationUtil } from '@shared';
 import { FaqApiService } from '../api.service';
-import { IFaq, IManageFaq, InputLengthEnum, IDropdownItem } from '@eatfit247-shared-lib';
+import { IDropdownItem, IFaq, IManageFaq, InputLengthEnum } from '@eatfit247-shared-lib';
 
 @Component({
   selector: 'lib-manage-faq',

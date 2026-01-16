@@ -1,14 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { MstBloodSugar } from '../models';
-import {
-  ConfigParam,
-  IBasicSearch,
-  IBloodSugar,
-  IDropdownItem,
-  IManageBloodSugar,
-  ITableList,
-} from '@eatfit247-shared-lib';
+import { IBasicSearch, IBloodSugar, IDropdownItem, IManageBloodSugar, ITableList } from '@eatfit247-shared-lib';
 import { AppConfigService, CommonFunctionsUtil, SearchUtil } from '@server_1/core';
 
 @Injectable()

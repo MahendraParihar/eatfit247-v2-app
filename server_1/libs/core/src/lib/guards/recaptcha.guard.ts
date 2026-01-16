@@ -1,17 +1,6 @@
-import {
-  CanActivate,
-  ExecutionContext,
-  Injectable,
-  BadRequestException,
-  Optional,
-  Inject,
-} from '@nestjs/common';
+import { BadRequestException, CanActivate, ExecutionContext, Inject, Injectable, Optional } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import {
-  RECAPTCHA_REQUIRED,
-  RECAPTCHA_ACTION,
-  RECAPTCHA_SCORE_THRESHOLD,
-} from '../decorators/auth.decorator';
+import { RECAPTCHA_ACTION, RECAPTCHA_REQUIRED, RECAPTCHA_SCORE_THRESHOLD } from '../decorators/auth.decorator';
 // Using string token to avoid circular dependency with platform
 const GOOGLE_SERVICE_TOKEN = 'GoogleService';
 

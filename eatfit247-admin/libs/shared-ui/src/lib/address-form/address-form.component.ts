@@ -6,7 +6,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { InputErrorComponent } from '../input-error/input-error.component';
-import { IDropdownItem, InputLengthEnum, IAddressMaster, IManageAddress, IResponse } from '@eatfit247-shared-lib';
+import { IAddressMaster, IDropdownItem, IManageAddress, InputLengthEnum } from '@eatfit247-shared-lib';
 import { HttpService } from '@core';
 
 @Component({

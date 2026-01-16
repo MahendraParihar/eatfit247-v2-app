@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { TxnSuccessStories } from './models';
 import { modelRegistry } from '@server_1/core';
-import { SuccessStoryController, PublicSuccessStoryController } from './controllers';
+import { PublicSuccessStoryController, SuccessStoryController } from './controllers';
 import { SuccessStoryService } from './services';
 // Register models with the model registry
 modelRegistry.register([TxnSuccessStories]);

@@ -5,9 +5,9 @@ import {
   IBasicSearch,
   IManageProduct,
   IProduct,
-  ITableList,
   IPublicProduct,
   IPublicTableList,
+  ITableList,
 } from '@eatfit247-shared-lib';
 import { AppConfigService, CommonFunctionsUtil, SearchUtil } from '@server_1/core';
 

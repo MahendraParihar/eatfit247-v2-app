@@ -9,7 +9,6 @@ import {
   PaymentService,
 } from './services';
 import { MstPaymentGatewayCredentials } from './models';
-
 // Register models with the model registry
 // Models with @Scopes decorator MUST be registered for scopes to work
 modelRegistry.register([MstPaymentGatewayCredentials]);

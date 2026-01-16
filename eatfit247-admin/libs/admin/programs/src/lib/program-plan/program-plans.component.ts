@@ -1,19 +1,21 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import {
+  createdByUserFormatter,
   DataTableComponent,
+  ITableAction,
   ITableColumn,
   ITableConfig,
-  ITableAction,
-  createdByUserFormatter,
-  updatedByUserFormatter, ITablePagination, ITableSort
+  ITablePagination,
+  ITableSort,
+  updatedByUserFormatter
 } from '@shared';
-import { ITableList, IProgramPlan } from '@eatfit247-shared-lib';
+import { IProgramPlan, ITableList } from '@eatfit247-shared-lib';
 import { ProgramPlanApiService } from '../program-plan-api.service';
-import { Subject, debounceTime, distinctUntilChanged, switchMap } from 'rxjs';
+import { debounceTime, distinctUntilChanged, Subject, switchMap } from 'rxjs';
 
 @Component({
   selector: 'lib-program-plans',

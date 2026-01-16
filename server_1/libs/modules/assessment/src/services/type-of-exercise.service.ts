@@ -2,7 +2,6 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { MstTypeOfExercise } from '../models';
 import {
-  ConfigParam,
   IBasicSearch,
   IDropdownItem,
   IManageTypeOfExercise,

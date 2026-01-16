@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -11,12 +11,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { InputErrorComponent, UploadFormComponent, ValidationUtil } from '@shared';
 import { PressMediaApiService } from '../api.service';
-import {
-  IPressMedia,
-  InputLengthEnum,
-  FileTypeEnum,
-  MediaForEnum
-} from '@eatfit247-shared-lib';
+import { FileTypeEnum, InputLengthEnum, IPressMedia, MediaForEnum } from '@eatfit247-shared-lib';
 
 @Component({
   selector: 'lib-manage-media-press',

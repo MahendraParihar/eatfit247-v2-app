@@ -4,7 +4,7 @@ import { existsSync, readFileSync } from 'fs';
 import * as hbs from 'handlebars';
 import * as puppeteer from 'puppeteer';
 import { TEMPLATE_FOLDER } from '@server_1/core';
-import { IMemberDietDetail, IDietPlanDetail, IRecipe, IFranchise } from '@eatfit247-shared-lib';
+import { IFranchise, IMemberDietDetail, IRecipe } from '@eatfit247-shared-lib';
 
 export interface DietPlanPdfData {
   memberName: string;

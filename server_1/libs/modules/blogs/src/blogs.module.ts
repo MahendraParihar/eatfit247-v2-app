@@ -8,8 +8,8 @@ import {
   BlogCategoryController,
   BlogCommentsController,
   BlogController,
-  PublicBlogController,
   PublicBlogCategoryController,
+  PublicBlogController,
 } from './controllers';
 // Register models with the model registry
 // These models have @Scopes decorator, so they MUST be registered for scopes to work

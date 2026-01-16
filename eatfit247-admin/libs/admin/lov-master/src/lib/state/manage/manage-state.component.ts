@@ -10,7 +10,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatCardModule } from '@angular/material/card';
 import { InputErrorComponent, ValidationUtil } from '@shared';
 import { LovMasterApiService } from '../../api.service';
-import { IState, IManageState, IDropdownItem, InputLengthEnum } from '@eatfit247-shared-lib';
+import { IDropdownItem, IManageState, InputLengthEnum, IState } from '@eatfit247-shared-lib';
 
 @Component({
   selector: 'lib-manage-state',

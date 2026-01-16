@@ -5,7 +5,6 @@
  * Base service for API services - provides common functionality
  * Uses HttpService for all HTTP operations
  */
-
 import { Injectable } from '@angular/core';
 import { HttpService } from './http.service';
 

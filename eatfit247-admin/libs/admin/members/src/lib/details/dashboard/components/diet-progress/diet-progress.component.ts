@@ -1,8 +1,8 @@
-import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
-import { LoaderComponent, EmptyStateComponent, EmptyStateType } from '@shared';
+import { EmptyStateComponent, EmptyStateType, LoaderComponent } from '@shared';
 
 @Component({
   selector: 'lib-diet-progress',

@@ -1,20 +1,19 @@
 import {
-  Component,
-  Input,
-  OnInit,
-  OnChanges,
-  SimpleChanges,
   ChangeDetectionStrategy,
-  OnDestroy,
-  HostListener,
-  ViewChild,
+  Component,
   ElementRef,
+  HostListener,
+  Input,
+  OnChanges,
+  OnDestroy,
+  OnInit,
+  SimpleChanges,
+  ViewChild
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatTabsModule } from '@angular/material/tabs';
-import { LoaderComponent } from '@shared';
-import { EmptyStateComponent } from '@shared';
+import { EmptyStateComponent, LoaderComponent } from '@shared';
 import { RevenueData } from '../../api.service';
 
 declare var echarts: any;

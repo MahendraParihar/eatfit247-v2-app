@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import { ApiBaseService, HttpService } from '@core';
-import { IResponse } from '@eatfit247-shared-lib';
 
 export interface DashboardKpis {
   totalMembers: number;

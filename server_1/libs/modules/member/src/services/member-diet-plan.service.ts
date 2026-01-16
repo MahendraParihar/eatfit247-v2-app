@@ -17,8 +17,7 @@ import { ADMIN_USER_SHORT_INFO_ATTRIBUTE, CommonFunctionsUtil, Env, MstAdminUser
 import { MstProgram, MstProgramCategory } from '@server_1/modules/program-plan';
 import { RecipeCategoryService, RecipeService } from '@server_1/modules/recipe';
 import { DietTemplateService, TxnDietTemplateDietDetail } from '@server_1/modules/diet';
-import { DietPlanPdfService } from '@server_1/platform';
-import { IFileModel } from '@server_1/platform';
+import { DietPlanPdfService, IFileModel } from '@server_1/platform';
 import { FranchiseService } from '@server_1/modules/franchise';
 import { MemberDietPlanDetailDto, MemberDietTemplateDto } from '../dto';
 import * as _ from 'lodash';

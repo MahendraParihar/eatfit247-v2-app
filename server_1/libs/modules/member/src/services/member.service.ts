@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { TxnMember } from '../models';
-import { ConfigParam, IBasicSearch, IManageMember, IMember, ITableList } from '@eatfit247-shared-lib';
+import { IBasicSearch, IManageMember, IMember, ITableList } from '@eatfit247-shared-lib';
 import { AppConfigService, CommonFunctionsUtil, CryptoUtil, generateRandomPassword } from '@server_1/core';
 import { FranchiseService } from '@server_1/modules/franchise';
 import { Op } from 'sequelize';

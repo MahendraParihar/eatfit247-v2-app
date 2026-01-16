@@ -1,11 +1,20 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialog } from '@angular/material/dialog';
-import { DataTableComponent, ITableColumn, ITableConfig, EmptyStateComponent, EmptyStateType, LoaderComponent, createdByUserFormatter, updatedByUserFormatter } from '@shared';
+import {
+  createdByUserFormatter,
+  DataTableComponent,
+  EmptyStateComponent,
+  EmptyStateType,
+  ITableColumn,
+  ITableConfig,
+  LoaderComponent,
+  updatedByUserFormatter
+} from '@shared';
 import { IMemberHealthIssue } from '@eatfit247-shared-lib';
 import { MembersApiService } from '../../api.service';
 import { Subject, takeUntil } from 'rxjs';

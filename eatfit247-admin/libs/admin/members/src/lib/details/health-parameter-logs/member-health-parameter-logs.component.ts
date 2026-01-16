@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
@@ -6,14 +6,14 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import {
+  createdByUserFormatter,
   DataTableComponent,
-  ITableColumn,
-  ITableConfig,
-  ITableActionButton,
   EmptyStateComponent,
   EmptyStateType,
+  ITableActionButton,
+  ITableColumn,
+  ITableConfig,
   LoaderComponent,
-  createdByUserFormatter,
   updatedByUserFormatter,
   WarningDialogComponent,
   WarningDialogData
@@ -24,7 +24,9 @@ import {
   ManageMemberBodyStatsComponent,
   ManageMemberBodyStatsData
 } from './manage-member-body-stats/manage-member-body-stats.component';
-import { ViewHealthParameterLogDetailsComponent } from './view-health-parameter-log-details/view-health-parameter-log-details.component';
+import {
+  ViewHealthParameterLogDetailsComponent
+} from './view-health-parameter-log-details/view-health-parameter-log-details.component';
 import { Subject, takeUntil } from 'rxjs';
 
 @Component({

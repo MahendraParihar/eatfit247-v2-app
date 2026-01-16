@@ -7,16 +7,16 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatCardModule } from '@angular/material/card';
 import { MatDialog } from '@angular/material/dialog';
 import {
+  createdByUserFormatter,
   DataTableComponent,
+  ITableAction,
   ITableColumn,
   ITableConfig,
-  ITableAction,
-  createdByUserFormatter,
   updatedByUserFormatter
 } from '@shared';
-import { ITableList, IDietTemplate } from '@eatfit247-shared-lib';
+import { IDietTemplate, ITableList } from '@eatfit247-shared-lib';
 import { DietTemplateApiService } from './api.service';
-import { Subject, debounceTime, distinctUntilChanged, switchMap } from 'rxjs';
+import { debounceTime, distinctUntilChanged, Subject, switchMap } from 'rxjs';
 import {
   ManageDietTemplateDialogComponent,
   ManageDietTemplateDialogData

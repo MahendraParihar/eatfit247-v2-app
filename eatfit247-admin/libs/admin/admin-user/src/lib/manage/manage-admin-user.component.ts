@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -10,16 +10,15 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatCardModule } from '@angular/material/card';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
-import { InputErrorComponent, UploadFormComponent, ValidationUtil, AddressFormComponent } from '@shared';
+import { AddressFormComponent, InputErrorComponent, UploadFormComponent, ValidationUtil } from '@shared';
 import { AdminUserApiService } from '../api.service';
 import {
-  IAdminUser,
-  IManageAdminUser,
-  InputLengthEnum,
-  IDropdownItem,
   FileTypeEnum,
-  TableEnum,
-  IMediaUpload
+  IAdminUser,
+  IDropdownItem,
+  IManageAdminUser,
+  IMediaUpload,
+  InputLengthEnum
 } from '@eatfit247-shared-lib';
 
 @Component({

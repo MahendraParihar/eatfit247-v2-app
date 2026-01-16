@@ -14,12 +14,9 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.LabelKey = void 0;
 __exportStar(require("./base.interface.js"), exports);
 __exportStar(require("./core/index.js"), exports);
 __exportStar(require("./enum/index.js"), exports);
 __exportStar(require("./utils/index.js"), exports);
 __exportStar(require("./auth/index.js"), exports);
-var label_key_enum_js_1 = require("./enum/label-key.enum.js");
-Object.defineProperty(exports, "LabelKey", { enumerable: true, get: function () { return label_key_enum_js_1.LabelKey; } });
 //# sourceMappingURL=index.js.map

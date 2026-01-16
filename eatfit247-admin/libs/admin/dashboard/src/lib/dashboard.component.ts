@@ -1,14 +1,24 @@
-import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy, HostListener } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { KpiCardComponent } from './components/kpi-card/kpi-card.component';
 import { RevenueChartComponent } from './components/revenue-chart/revenue-chart.component';
 import { MemberGrowthChartComponent } from './components/member-growth-chart/member-growth-chart.component';
-import { ProgramPerformanceChartComponent } from './components/program-performance-chart/program-performance-chart.component';
+import {
+  ProgramPerformanceChartComponent
+} from './components/program-performance-chart/program-performance-chart.component';
 import { OperationsSummaryComponent } from './components/operations-summary/operations-summary.component';
 import { QuickActionsComponent } from './components/quick-actions/quick-actions.component';
-import { DashboardApiService, DashboardKpis, RevenueData, MemberGrowthData, ProgramPerformanceData, OperationsSnapshot, EngagementData } from './api.service';
+import {
+  DashboardApiService,
+  DashboardKpis,
+  EngagementData,
+  MemberGrowthData,
+  OperationsSnapshot,
+  ProgramPerformanceData,
+  RevenueData
+} from './api.service';
 
 @Component({
   selector: 'lib-dashboard',

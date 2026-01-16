@@ -1,7 +1,7 @@
-import { Component, inject, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
@@ -11,18 +11,10 @@ import { MatCardModule } from '@angular/material/card';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
-import { NgxEditorComponent, NgxEditorMenuComponent, Editor } from 'ngx-editor';
-import { FormsModule } from '@angular/forms';
-import { InputErrorComponent, UploadFormComponent, ValidationUtil, SeoFormComponent } from '@shared';
+import { Editor, NgxEditorComponent, NgxEditorMenuComponent } from 'ngx-editor';
+import { InputErrorComponent, SeoFormComponent, UploadFormComponent, ValidationUtil } from '@shared';
 import { BlogsApiService } from '../api.service';
-import {
-  IBlog,
-  IManageBlog,
-  InputLengthEnum,
-  IDropdownItem,
-  FileTypeEnum,
-  MediaForEnum
-} from '@eatfit247-shared-lib';
+import { FileTypeEnum, IBlog, IDropdownItem, IManageBlog, InputLengthEnum, MediaForEnum } from '@eatfit247-shared-lib';
 
 @Component({
   selector: 'lib-manage-blog',

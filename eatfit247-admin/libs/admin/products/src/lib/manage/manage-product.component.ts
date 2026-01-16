@@ -1,7 +1,7 @@
-import { Component, inject, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { FormArray, FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
@@ -9,21 +9,11 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { MatCardModule } from '@angular/material/card';
 import { MatCheckboxModule } from '@angular/material/checkbox';
-import { NgxEditorComponent, NgxEditorMenuComponent, Editor } from 'ngx-editor';
-import { FormsModule } from '@angular/forms';
+import { Editor, NgxEditorComponent, NgxEditorMenuComponent } from 'ngx-editor';
 import { InputErrorComponent, UploadFormComponent, ValidationUtil } from '@shared';
-import { ProductsApiService } from '../api.service';
-import {
-  IProduct,
-  IManageProduct,
-  IProductSize,
-  IProductIngredient,
-  IProductBenefit,
-  IProductFAQ,
-  InputLengthEnum,
-  FileTypeEnum,
-  MediaForEnum
-} from '@eatfit247-shared-lib';
+import { ProductsApiService } from 'products';
+import { ProductFormService } from './product-form.service';
+import { FileTypeEnum, InputLengthEnum, IProduct, MediaForEnum } from '@eatfit247-shared-lib';
 
 @Component({
   selector: 'lib-manage-product',
@@ -86,7 +76,8 @@ export class ManageProduct implements OnInit, OnDestroy {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private apiService: ProductsApiService
+    private apiService: ProductsApiService,
+    private productFormService: ProductFormService
   ) {}
 
   async ngOnInit(): Promise<void> {
@@ -117,105 +108,7 @@ export class ManageProduct implements OnInit, OnDestroy {
 
   private patchFormValues(): void {
     if (this.initialData) {
-      this.formGroup.patchValue({
-        name: this.initialData.name || '',
-        slug: this.initialData.slug || '',
-        description: this.initialData.description || '',
-        dose: this.initialData.dose || '',
-        howToTake: this.initialData.howToTake || '',
-        active: this.initialData.active !== undefined ? this.initialData.active : true
-      });
-
-      if (this.initialData.priceRange) {
-        this.formGroup.get('priceRange')?.patchValue({
-          min: this.initialData.priceRange.min || 0,
-          max: this.initialData.priceRange.max || 0
-        });
-      }
-
-      if (this.initialData.consumptionInstructions) {
-        const consumptionGroup = this.formGroup.get('consumptionInstructions') as FormGroup;
-        consumptionGroup.patchValue({
-          amount: this.initialData.consumptionInstructions.amount || '',
-          timing: {
-            morning: this.initialData.consumptionInstructions.timing?.morning || '',
-            evening: this.initialData.consumptionInstructions.timing?.evening || ''
-          }
-        });
-
-        // Clear and populate methods
-        const methodsArray = consumptionGroup.get('methods') as FormArray;
-        while (methodsArray.length !== 0) {
-          methodsArray.removeAt(0);
-        }
-        if (this.initialData.consumptionInstructions.methods) {
-          this.initialData.consumptionInstructions.methods.forEach(method => {
-            methodsArray.push(this.fb.control(method, Validators.required));
-          });
-        }
-      }
-
-      // Populate arrays
-      this.populateFormArray('sizes', this.initialData.sizes, (item: IProductSize) => 
-        this.fb.group({
-          value: [item.value, Validators.required],
-          label: [item.label, Validators.required],
-          price: [item.price, [Validators.required, Validators.min(0)]]
-        })
-      );
-
-      this.populateFormArray('benefits', this.initialData.benefits, (item: string) => 
-        this.fb.control(item, Validators.required)
-      );
-
-      this.populateFormArray('precautions', this.initialData.precautions, (item: string) => 
-        this.fb.control(item, Validators.required)
-      );
-
-      this.populateFormArray('ingredients', this.initialData.ingredients, (item: IProductIngredient) => 
-        this.fb.group({
-          name: [item.name, Validators.required],
-          icon: [item.icon || ''],
-          description: [item.description || '']
-        })
-      );
-
-      this.populateFormArray('outcomes', this.initialData.outcomes, (item: IProductBenefit) => 
-        this.fb.group({
-          title: [item.title, Validators.required],
-          description: [item.description, Validators.required],
-          icon: [item.icon || '']
-        })
-      );
-
-      this.populateFormArray('faqs', this.initialData.faqs, (item: IProductFAQ) => 
-        this.fb.group({
-          question: [item.question, Validators.required],
-          answer: [item.answer, Validators.required]
-        })
-      );
-
-      if (this.initialData.videos) {
-        const videosArray = this.formGroup.get('videos') as FormArray;
-        while (videosArray.length !== 0) {
-          videosArray.removeAt(0);
-        }
-        this.initialData.videos.forEach(video => {
-          videosArray.push(this.fb.control(video));
-        });
-      }
-    }
-  }
-
-  private populateFormArray<T>(controlName: string, data: T[], createControl: (item: T) => any): void {
-    const formArray = this.formGroup.get(controlName) as FormArray;
-    while (formArray.length !== 0) {
-      formArray.removeAt(0);
-    }
-    if (data && data.length > 0) {
-      data.forEach(item => {
-        formArray.push(createControl(item));
-      });
+      this.productFormService.populateForm(this.formGroup, this.initialData);
     }
   }
 
@@ -362,37 +255,7 @@ export class ManageProduct implements OnInit, OnDestroy {
   async onSubmit(): Promise<void> {
     ValidationUtil.validateAllFormFields(this.formGroup);
     if (this.formGroup.valid) {
-      const formValue: IManageProduct = {
-        name: this.formGroup.value.name,
-        slug: this.formGroup.value.slug,
-        description: this.formGroup.value.description || undefined,
-        priceRange: this.formGroup.value.priceRange,
-        sizes: this.formGroup.value.sizes,
-        benefits: this.formGroup.value.benefits,
-        dose: this.formGroup.value.dose,
-        howToTake: this.formGroup.value.howToTake,
-        precautions: this.formGroup.value.precautions,
-        ingredients: this.formGroup.value.ingredients,
-        consumptionInstructions: this.formGroup.value.consumptionInstructions,
-        outcomes: this.formGroup.value.outcomes,
-        faqs: this.formGroup.value.faqs,
-        active: this.formGroup.value.active
-      };
-
-      // Handle images
-      const imagePathControl = this.formGroup.get('images');
-      if (imagePathControl && imagePathControl.value) {
-        const imagePathValue = imagePathControl.value;
-        if (Array.isArray(imagePathValue) && imagePathValue.length > 0) {
-          formValue.images = imagePathValue;
-        }
-      }
-
-      // Handle videos
-      if (this.formGroup.value.videos && this.formGroup.value.videos.length > 0) {
-        formValue.videos = this.formGroup.value.videos.filter((v: string) => v && v.trim());
-      }
-
+      const formValue = this.productFormService.transformFormToProductPayload(this.formGroup);
       if (this.isEditMode && this.initialData) {
         formValue.productId = this.initialData.productId;
         await this.apiService.update(this.initialData.productId, formValue);

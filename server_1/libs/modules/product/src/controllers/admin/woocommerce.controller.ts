@@ -1,11 +1,4 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  Post,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '@server_1/core';
 import { WooCommerceService } from '@server_1/platform';
 import { CreateWooCommerceOrderRequestDto } from '../../dto';

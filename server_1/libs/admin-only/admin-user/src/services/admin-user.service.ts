@@ -1,7 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import {
-  ConfigParam,
   IAdminUser,
   IBasicSearch,
   IDropdownItem,

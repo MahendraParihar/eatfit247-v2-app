@@ -1,14 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { MstRecipeCuisine } from '../models';
-import {
-  ConfigParam,
-  IBasicSearch,
-  IDropdownItem,
-  IManageRecipeCuisine,
-  IRecipeCuisine,
-  ITableList,
-} from '@eatfit247-shared-lib';
+import { IBasicSearch, IDropdownItem, IManageRecipeCuisine, IRecipeCuisine, ITableList } from '@eatfit247-shared-lib';
 import { AppConfigService, CommonFunctionsUtil, SearchUtil } from '@server_1/core';
 
 @Injectable()

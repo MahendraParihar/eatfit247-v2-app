@@ -1,11 +1,11 @@
-import { Body, Controller, Delete, Get, Header, Param, Post, Put, Query, Res, UseGuards } from '@nestjs/common';
-import { Response } from 'express';
+import { Body, Controller, Delete, Get, Header, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { CurrentUser, JwtAuthGuard, RequestedIp } from '@server_1/core';
 import { MemberPaymentService } from '../../services';
 import {
   ICalculateTaxResponse,
   IMemberPayment,
-  IMemberPaymentMasterData, IPaymentLinkResponse,
+  IMemberPaymentMasterData,
+  IPaymentLinkResponse,
   IProgramPlan,
   ITableList,
 } from '@eatfit247-shared-lib';
