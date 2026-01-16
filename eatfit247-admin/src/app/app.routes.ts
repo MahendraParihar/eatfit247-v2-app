@@ -125,6 +125,10 @@ export const appRoutes: Route[] = [
         loadChildren: () => import('dashboard').then((m) => m.dashboardRoutes),
       },
       {
+        path: 'reports',
+        loadChildren: () => import('reports').then((m) => m.reportsRoutes),
+      },
+      {
         path: '',
         redirectTo: 'dashboard',
         pathMatch: 'full',

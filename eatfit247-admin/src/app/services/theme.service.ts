@@ -7,8 +7,7 @@
  * - User override saved in localStorage (key: 'eatfit247-theme')
  * - Class-based switching: .light-theme or .dark-theme (ONLY via class per design system)
  */
-
-import { Injectable, signal, effect } from '@angular/core';
+import { effect, Injectable, signal } from '@angular/core';
 
 export type ThemeMode = 'light' | 'dark' | 'auto';
 

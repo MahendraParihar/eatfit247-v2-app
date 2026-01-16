@@ -35,6 +35,7 @@
       "success-stories": ["libs/admin/success-stories/src/index.ts"],
       "products": ["libs/admin/products/src/index.ts"],
       "dashboard": ["libs/admin/dashboard/src/index.ts"],
+      "reports": ["libs/admin/reports/src/index.ts"],
       "@env": ["src/environments/environment.ts"],
       "@eatfit247-shared-lib": ["../shared-library/src/index.ts"],
       "@core": ["libs/core/src/index.ts"],

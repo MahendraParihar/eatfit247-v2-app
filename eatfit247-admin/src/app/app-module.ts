@@ -1,7 +1,7 @@
 import { NgModule, provideBrowserGlobalErrorListeners } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { provideAnimations } from '@angular/platform-browser/animations';
-import { RouterModule, provideRouter, withComponentInputBinding, TitleStrategy } from '@angular/router';
+import { provideRouter, RouterModule, TitleStrategy, withComponentInputBinding } from '@angular/router';
 import { HTTP_INTERCEPTORS, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -11,12 +11,12 @@ import { MatListModule } from '@angular/material/list';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDividerModule } from '@angular/material/divider';
-import { MatDialogModule, MAT_DIALOG_DEFAULT_OPTIONS } from '@angular/material/dialog';
+import { MAT_DIALOG_DEFAULT_OPTIONS, MatDialogModule } from '@angular/material/dialog';
 import { MAT_FORM_FIELD_DEFAULT_OPTIONS } from '@angular/material/form-field';
 import { provideMomentDateAdapter } from '@angular/material-moment-adapter';
 import { App } from './app';
 import { appRoutes } from './app.routes';
-import { AuthInterceptor, HttpErrorInterceptor, AuthGuard, MY_FORMATS } from '@core';
+import { AuthGuard, AuthInterceptor, HttpErrorInterceptor, MY_FORMATS } from '@core';
 import { PageTitleStrategy } from './page-title.strategy';
 
 @NgModule({

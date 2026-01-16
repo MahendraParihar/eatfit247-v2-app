@@ -3,7 +3,6 @@
  * 
  * ⚠️ DESIGN SYSTEM: See DESIGN_SYSTEM.md
  */
-
 import { Component, OnInit } from '@angular/core';
 import { ThemeService } from './services/theme.service';
 
