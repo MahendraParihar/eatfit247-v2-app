@@ -58,7 +58,6 @@ export class PlatformModule {
 
     return {
       module: PlatformModule,
-      global: true,
       controllers: [FileUploadController],
       imports: [
         SequelizeModule.forFeature(platformModels),

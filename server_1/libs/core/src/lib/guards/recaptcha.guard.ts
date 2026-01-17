@@ -51,7 +51,7 @@ export class RecaptchaGuard implements CanActivate {
       );
     }
 
-    // Get reCAPTCHA token from request body
+    // Get reCAPTCHA token from the request body
     const recaptchaToken = request.body?.recaptchaToken;
 
     if (!recaptchaToken) {
