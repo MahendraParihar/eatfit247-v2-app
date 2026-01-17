@@ -1,12 +1,7 @@
+import { PUBLIC_API, RECAPTCHA_ACTION, RECAPTCHA_REQUIRED, RECAPTCHA_SCORE_THRESHOLD } from '@eatfit247-shared-lib';
 import { SetMetadata } from '@nestjs/common';
 
-export const PUBLIC_API = 'PUBLIC_API';
 export const Public = () => SetMetadata(PUBLIC_API, true);
-
-export const RECAPTCHA_REQUIRED = 'RECAPTCHA_REQUIRED';
-export const RECAPTCHA_ACTION = 'RECAPTCHA_ACTION';
-export const RECAPTCHA_SCORE_THRESHOLD = 'RECAPTCHA_SCORE_THRESHOLD';
-
 /**
  * Decorator to require reCAPTCHA verification for an endpoint
  * @param action - Optional: Expected action name (e.g., 'contact_form_submit')

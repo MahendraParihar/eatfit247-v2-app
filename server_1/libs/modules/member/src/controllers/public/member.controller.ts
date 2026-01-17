@@ -1,8 +1,9 @@
 import { Body, Controller, Post, UseGuards } from '@nestjs/common';
-import { Public, RecaptchaGuard, RequestedIp, RequireRecaptcha } from '@server_1/core';
+import { Public, RequestedIp, RequireRecaptcha } from '@server_1/core';
+import { RecaptchaGuard } from '@server_1/platform';
 import { IManageMember } from '@eatfit247-shared-lib';
 import { MemberService } from '../../services';
-import { CreatePublicMemberDto } from '../../dto/public-member.dto';
+import { CreatePublicMemberDto } from '../../dto';
 
 @Public()
 @Controller('member')

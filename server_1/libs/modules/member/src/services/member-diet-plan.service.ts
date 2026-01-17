@@ -12,8 +12,9 @@ import {
   IMemberDietDetail,
   IMemberDietPlan,
   MediaForEnum,
+  ADMIN_USER_SHORT_INFO_ATTRIBUTE,
 } from '@eatfit247-shared-lib';
-import { ADMIN_USER_SHORT_INFO_ATTRIBUTE, CommonFunctionsUtil, Env, MstAdminUser } from '@server_1/core';
+import { CommonFunctionsUtil, Env, MstAdminUser } from '@server_1/core';
 import { MstProgram, MstProgramCategory } from '@server_1/modules/program-plan';
 import { RecipeCategoryService, RecipeService } from '@server_1/modules/recipe';
 import { DietTemplateService, TxnDietTemplateDietDetail } from '@server_1/modules/diet';

@@ -15,7 +15,6 @@ export { RequestedIp } from './lib/decorators/requested-ip.decorator';
 // Guards
 export * from './lib/guards/jwt-auth.guard';
 export * from './lib/guards/jwt.strategy';
-export * from './lib/guards/recaptcha.guard';
 // Auth
 export * from './lib/auth/admin-user.service';
 // Filters
@@ -35,5 +34,4 @@ export * from './lib/utils/common-functions.utils';
 export * from './lib/utils/search.util';
 export * from './lib/utils/model-scopes.utils';
 export * from './lib/dto/index';
-export * from './lib/constants/index';
 export { getCreatedByUserInclude, getUpdatedByUserInclude, CommonScopes } from './lib/utils/model-scopes.utils';

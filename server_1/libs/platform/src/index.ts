@@ -18,5 +18,7 @@ export * from './lib/database/models';
 export * from './lib/services';
 // Platform Module
 export * from './lib/platform.module';
+// Guard
+export * from './lib/guards/recaptcha.guard';
 
 

@@ -1,6 +1,6 @@
 import { Includeable } from 'sequelize';
 import { MstAdminUser } from '../database/models';
-import { ADMIN_USER_SHORT_INFO_ATTRIBUTE } from '../constants';
+import { ADMIN_USER_SHORT_INFO_ATTRIBUTE } from '@eatfit247-shared-lib';
 
 /**
  * Creates include options for createdByUser relationship
@@ -15,7 +15,6 @@ export function getCreatedByUserInclude(required: boolean = false): Includeable 
     as: 'createdByUser',
   };
 }
-
 /**
  * Creates include options for updatedByUser relationship
  * @param required - Whether the relationship is required (default: false)
@@ -29,7 +28,6 @@ export function getUpdatedByUserInclude(required: boolean = false): Includeable 
     as: 'updatedByUser',
   };
 }
-
 /**
  * Creates a scope definition with both createdByUser and updatedByUser includes
  * @param required - Whether the relationships are required (default: false)
@@ -43,7 +41,6 @@ export function getAdminUserScope(required: boolean = false) {
     ],
   };
 }
-
 /**
  * Common scope definitions for models with admin user relationships
  * These can be used directly in @Scopes decorator

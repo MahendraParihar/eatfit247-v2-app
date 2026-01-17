@@ -3,9 +3,9 @@ import * as path from 'path';
 import { existsSync, mkdirSync, readFileSync } from 'fs';
 import * as hbs from 'handlebars';
 import * as puppeteer from 'puppeteer';
-import { Env, TEMPLATE_FOLDER } from '@server_1/core';
+import { Env } from '@server_1/core';
 import { IFileModel } from './file-model.interface';
-import { IFranchise, MediaForEnum } from '@eatfit247-shared-lib';
+import { IFranchise, MediaForEnum, TEMPLATE_FOLDER } from '@eatfit247-shared-lib';
 
 @Injectable()
 export class PdfService {
@@ -150,7 +150,7 @@ export class PdfService {
    * Register Image Tag with Src having escape chars
    */
   registerHbsControls() {
-    hbs.registerHelper('img', function (url, cssClass) {
+    hbs.registerHelper('img', function(url, cssClass) {
       try {
         url = `data:image/jpeg;base64,${readFileSync(path.join(process.cwd(), url)).toString('base64')}`;
         if (cssClass === 'img-logo') {

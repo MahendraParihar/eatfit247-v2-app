@@ -1,5 +1,6 @@
 import { Body, Controller, Post, UseGuards } from '@nestjs/common';
-import { Public, RecaptchaGuard, RequestedIp, RequireRecaptcha } from '@server_1/core';
+import { Public, RequestedIp, RequireRecaptcha } from '@server_1/core';
+import { RecaptchaGuard } from '@server_1/platform';
 import { ContactFormService } from '../../services';
 import { CreateContactFormDto } from '../../dto';
 

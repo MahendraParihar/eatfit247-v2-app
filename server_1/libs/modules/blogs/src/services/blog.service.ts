@@ -1,12 +1,18 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { TxnBlog } from '../models';
-import { IBasicSearch, IBlog, IManageBlog, IPublicBlog, IPublicTableList, ITableList } from '@eatfit247-shared-lib';
+import {
+  DB_DATE_FORMAT, DEFAULT_DATE_FORMAT,
+  IBasicSearch,
+  IBlog,
+  IManageBlog,
+  IPublicBlog,
+  IPublicTableList,
+  ITableList,
+} from '@eatfit247-shared-lib';
 import {
   AppConfigService,
   CommonFunctionsUtil,
-  DB_DATE_FORMAT,
-  DEFAULT_DATE_FORMAT,
   SearchUtil,
 } from '@server_1/core';
 import { BasicSearchDto } from '@server_1/core';
@@ -63,12 +69,10 @@ export class BlogService {
     // Only show published and active blogs for public
     whereCondition.isPublished = true;
     whereCondition.active = true;
-    
     // Filter by blogCategoryId if provided (from query parameters)
     if (searchDto.blogCategoryId) {
       whereCondition.blogCategoryId = searchDto.blogCategoryId;
     }
-    
     const pageNumber = searchDto.page || 0;
     const pageSize = searchDto.limit || 15;
     const offset = pageNumber === 0 ? 0 : pageNumber * pageSize;
