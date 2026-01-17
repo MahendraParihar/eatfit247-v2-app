@@ -6,6 +6,7 @@ import { ITableList, IPaymentReportItem } from '@eatfit247-shared-lib';
 import { MstFranchise, Env } from '@server_1/core';
 import { PaymentReportDto } from '../dto/payment-report.dto';
 import archiver from 'archiver';
+import moment from 'moment/moment';
 
 @Injectable()
 export class PaymentReportService {
@@ -23,10 +24,15 @@ export class PaymentReportService {
    * @returns List of payments with member and franchise information
    */
   async getPaymentReport(dto: PaymentReportDto): Promise<ITableList<IPaymentReportItem>> {
+    const startDateStr = moment(dto.startDate).startOf('day').utc().startOf('day');
+    const endDateStr = moment(dto.endDate).endOf('day').utc().endOf('day');
     const whereCondition: any = {
       active: true,
       paymentDate: {
-        [Op.between]: [new Date(dto.startDate), new Date(dto.endDate)],
+        [Op.and]: {
+          [Op.gte]: startDateStr.format(),
+          [Op.lte]: endDateStr.format(),
+        },
       },
     };
 

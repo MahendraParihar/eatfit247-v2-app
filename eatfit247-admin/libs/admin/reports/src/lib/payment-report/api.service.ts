@@ -6,7 +6,7 @@ import { firstValueFrom } from 'rxjs';
 import { environment } from '@env';
 
 @Injectable({
-  providedIn: 'root',
+  providedIn: 'root'
 })
 export class PaymentReportApiService extends ApiBaseService {
   private readonly endpoint = '/reports/payment';
@@ -18,7 +18,7 @@ export class PaymentReportApiService extends ApiBaseService {
   }
 
   async getPaymentReport(params: IPaymentReportFilter): Promise<ITableList<IPaymentReportItem>> {
-    const res = await this.httpService.get<ITableList<IPaymentReportItem>>(this.endpoint, { params });
+    const res = await this.httpService.post<ITableList<IPaymentReportItem>>(this.endpoint, params);
     return res.data as ITableList<IPaymentReportItem>;
   }
 
@@ -39,15 +39,12 @@ export class PaymentReportApiService extends ApiBaseService {
         httpParams = httpParams.set(key, value.toString());
       }
     });
-    
-    const blob = await firstValueFrom(
-      this.http.get(url, {
-        params: httpParams,
+    return await firstValueFrom(
+      this.http.post(url, params, {
         responseType: 'blob',
-        withCredentials: true,
+        withCredentials: true
       })
     );
-    return blob;
   }
 }
 

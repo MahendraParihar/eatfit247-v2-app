@@ -330,7 +330,7 @@ export class PaymentReportComponent implements OnInit {
 
       const blob = await this.apiService.exportPaymentReports(params);
       
-      // Create download link
+      // Create a download link
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
