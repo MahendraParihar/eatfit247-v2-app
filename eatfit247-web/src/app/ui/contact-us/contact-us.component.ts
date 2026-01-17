@@ -295,7 +295,7 @@ export class ContactUsComponent implements OnInit {
 
         // Submit to API
         const response = await this.httpService.post<{ contactFormId: number; message: string }>(
-          'contact/submit',
+          'public/contact/submit',
           formData
         );
 

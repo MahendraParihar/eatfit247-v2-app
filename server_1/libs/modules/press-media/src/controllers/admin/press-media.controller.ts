@@ -2,7 +2,7 @@ import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { CurrentUser, JwtAuthGuard, RequestedIp } from '@server_1/core';
 import { GoogleService } from '@server_1/platform';
-import { BasicSearchDto, UpdateActiveDto } from '@server_1/shared-dto';
+import { BasicSearchDto, UpdateActiveDto } from '@server_1/core';
 import { PressMediaService } from '../../services';
 import { CreatePressMediaDto } from '../../dto';
 import { IPressMedia, ITableList } from '@eatfit247-shared-lib';

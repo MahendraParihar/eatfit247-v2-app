@@ -9,7 +9,7 @@ import {
   ITableList,
 } from '@eatfit247-shared-lib';
 import { CreateMemberAssessmentDto, CreateMemberHealthParameterLogDto } from '../../dto';
-import { UpdateHealthIssueIdsDto } from '@server_1/shared-dto';
+import { UpdateHealthIssueIdsDto } from '@server_1/core';
 
 /**
  * Consolidated controller for all member health-related operations:

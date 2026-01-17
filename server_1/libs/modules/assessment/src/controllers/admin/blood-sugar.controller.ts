@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from '@nestjs/common';
-import { BasicSearchDto, UpdateActiveDto } from '@server_1/shared-dto';
+import { BasicSearchDto, UpdateActiveDto } from '@server_1/core';
 import { BloodSugarService } from '../../services';
 import { CreateBloodSugarDto } from '../../dto';
 import { IBloodSugar, IDropdownItem, ITableList } from '@eatfit247-shared-lib';

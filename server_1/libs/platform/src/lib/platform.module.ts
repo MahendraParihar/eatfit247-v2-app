@@ -59,6 +59,7 @@ export class PlatformModule {
     return {
       module: PlatformModule,
       controllers: [FileUploadController],
+      global: true,
       imports: [
         SequelizeModule.forFeature(platformModels),
         LabelModule.asyncRegister(['admin']),

@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { CurrentUser, JwtAuthGuard, RequestedIp } from '@server_1/core';
-import { BasicSearchDto, UpdateActiveDto } from '@server_1/shared-dto';
+import { BasicSearchDto, UpdateActiveDto } from '@server_1/core';
 import { FranchiseService } from '../../services';
 import { CreateFranchiseDto } from '../../dto';
 import { IDropdownItem, IFranchise, ITableList } from '@eatfit247-shared-lib';

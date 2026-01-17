@@ -756,7 +756,7 @@
           "metadata": {
             "targetGroups": {},
             "js": {
-              "packageName": "@server_1/shared-dto",
+              "packageName": "@server_1/core",
               "packageVersion": "0.0.1",
               "packageMain": "./src/index.js",
               "isInPackageManagerWorkspaces": false

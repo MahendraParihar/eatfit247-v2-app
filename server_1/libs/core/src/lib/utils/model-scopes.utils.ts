@@ -1,5 +1,5 @@
 import { Includeable } from 'sequelize';
-import { MstAdminUser } from '../database/models/admin';
+import { MstAdminUser } from '../database/models';
 import { ADMIN_USER_SHORT_INFO_ATTRIBUTE } from '../constants';
 
 /**

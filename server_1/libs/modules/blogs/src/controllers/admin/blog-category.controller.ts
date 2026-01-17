@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { CurrentUser, JwtAuthGuard, RequestedIp } from '@server_1/core';
-import { BasicSearchDto, UpdateActiveDto } from '@server_1/shared-dto';
+import { BasicSearchDto, UpdateActiveDto } from '@server_1/core';
 import { BlogCategoryService } from '../../services';
 import { CreateBlogCategoryDto } from '../../dto';
 import { IBlogCategory, ITableList } from '@eatfit247-shared-lib';

@@ -9,7 +9,7 @@ import {
   DEFAULT_DATE_FORMAT,
   SearchUtil,
 } from '@server_1/core';
-import { BasicSearchDto } from '@server_1/shared-dto';
+import { BasicSearchDto } from '@server_1/core';
 import moment from 'moment';
 
 @Injectable()

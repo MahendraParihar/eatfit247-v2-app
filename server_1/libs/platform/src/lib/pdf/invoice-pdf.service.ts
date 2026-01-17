@@ -3,9 +3,9 @@ import * as path from 'path';
 import { existsSync, readFileSync } from 'fs';
 import * as hbs from 'handlebars';
 import * as puppeteer from 'puppeteer';
-import { TEMPLATE_FOLDER } from '@server_1/core';
 import { IInvoiceDocument, IInvoiceItem, IInvoiceTaxRow, TaxMode } from '@eatfit247-shared-lib';
 import * as QRCode from 'qrcode';
+import { TEMPLATE_FOLDER } from '@server_1/core';
 
 @Injectable()
 export class InvoicePdfService {

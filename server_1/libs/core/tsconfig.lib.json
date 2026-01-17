@@ -12,7 +12,7 @@
       "@eatfit247-shared-lib": ["../shared-library/dist"],
       "@server_1/core": ["libs/core/src/index.ts"],
       "@server_1/platform": ["libs/platform/src/index.ts"],
-      "@server_1/shared-dto": ["libs/shared-dto/src/index.ts"],
+      "@server_1/core": ["libs/shared-dto/src/index.ts"],
       "@server_1/modules/*": ["libs/modules/*/index.ts"],
       "@server_1/admin-only/*": ["libs/admin-only/*/index.ts"]
     },

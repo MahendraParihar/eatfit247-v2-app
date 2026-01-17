@@ -20,7 +20,7 @@ import {
   UpdateFranchiseDto,
   UpdateMemberStatusDto,
   UpdateNutritionistDto,
-} from '@server_1/shared-dto';
+} from '@server_1/core';
 import { MemberService } from '../../services';
 import { CreateMemberDto } from '../../dto';
 import { IAddress, IManageAddress, IMember, ITableList, TableEnum } from '@eatfit247-shared-lib';

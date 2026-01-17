@@ -692,97 +692,6 @@
           "implicitDependencies": []
         }
       },
-      "shared-dto": {
-        "name": "shared-dto",
-        "type": "lib",
-        "data": {
-          "root": "libs/shared-dto",
-          "targets": {
-            "test": {
-              "options": {
-                "cwd": "libs/shared-dto",
-                "env": {
-                  "TS_NODE_COMPILER_OPTIONS": "{\"moduleResolution\":\"node10\",\"module\":\"commonjs\",\"customConditions\":null}"
-                },
-                "command": "jest"
-              },
-              "metadata": {
-                "technologies": [
-                  "jest"
-                ],
-                "description": "Run Jest Tests",
-                "help": {
-                  "command": "npx jest --help",
-                  "example": {
-                    "options": {
-                      "coverage": true
-                    }
-                  }
-                }
-              },
-              "cache": true,
-              "inputs": [
-                "default",
-                "^production",
-                "{workspaceRoot}/jest.preset.js",
-                {
-                  "externalDependencies": [
-                    "jest"
-                  ]
-                }
-              ],
-              "outputs": [
-                "{workspaceRoot}/coverage/libs/shared-dto"
-              ],
-              "executor": "nx:run-commands",
-              "configurations": {},
-              "parallelism": true
-            },
-            "build": {
-              "executor": "@nx/js:tsc",
-              "outputs": [
-                "{options.outputPath}"
-              ],
-              "options": {
-                "outputPath": "dist/libs/shared-dto",
-                "tsConfig": "libs/shared-dto/tsconfig.lib.json",
-                "packageJson": "libs/shared-dto/package.json",
-                "main": "libs/shared-dto/src/index.ts",
-                "assets": [
-                  "libs/shared-dto/*.md"
-                ]
-              },
-              "configurations": {},
-              "parallelism": true,
-              "dependsOn": [
-                "^build"
-              ],
-              "inputs": [
-                "production",
-                "^production"
-              ]
-            }
-          },
-          "name": "shared-dto",
-          "tags": [
-            "npm:private",
-            "type:shared"
-          ],
-          "metadata": {
-            "targetGroups": {},
-            "js": {
-              "packageName": "@server_1/shared-dto",
-              "packageVersion": "0.0.1",
-              "packageMain": "./src/index.js",
-              "isInPackageManagerWorkspaces": false
-            }
-          },
-          "$schema": "../../node_modules/nx/schemas/project-schema.json",
-          "sourceRoot": "libs/shared-dto/src",
-          "projectType": "library",
-          "implicitDependencies": []
-        }
-      },
       "admin-api": {
         "name": "admin-api",
         "type": "app",
@@ -1219,11 +1128,6 @@
         {
           "source": "admin-user",
           "target": "core",
-          "type": "static"
-        },
-        {
-          "source": "admin-user",
-          "target": "shared-dto",
           "type": "static"
         },
         {

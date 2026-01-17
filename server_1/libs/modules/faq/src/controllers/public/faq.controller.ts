@@ -1,7 +1,7 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
 import { FaqService } from '../../services';
 import { IPublicFaq, IPublicTableList } from '@eatfit247-shared-lib';
-import { BasicSearchDto } from '@server_1/shared-dto';
+import { BasicSearchDto } from '@server_1/core';
 import { Public } from '@server_1/core';
 
 @Public()

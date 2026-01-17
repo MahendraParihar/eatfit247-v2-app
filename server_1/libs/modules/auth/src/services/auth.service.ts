@@ -4,7 +4,6 @@ import { JwtService, JwtSignOptions } from '@nestjs/jwt';
 import {
   AppConfigService,
   CryptoUtil,
-  EmailType,
   Env,
   MstAdminUser,
   TxnAdminLastLoginDetail,
@@ -12,7 +11,7 @@ import {
   TxnAdminRefreshToken,
 } from '@server_1/core';
 import { EmailNotificationService, LogErrorService } from '@server_1/platform';
-import { IAuthUser, IChangePassword, IForgotPasswordRequest, ILogin, IToken } from '@eatfit247-shared-lib';
+import { EmailType, IAuthUser, IChangePassword, IForgotPasswordRequest, ILogin, IToken } from '@eatfit247-shared-lib';
 import { randomBytes } from 'node:crypto';
 import moment from 'moment';
 

@@ -3,7 +3,7 @@ import { CurrentUser, JwtAuthGuard, RequestedIp } from '@server_1/core';
 import { MemberIssueResponseService, MemberIssueService } from '../../services';
 import { IIssueMasterData, IMemberIssue, IMemberIssueResponse } from '@eatfit247-shared-lib';
 import { CreateMemberIssueDto, CreateMemberIssueResponseDto } from '../../dto';
-import { UpdateIsSolvedDto } from '@server_1/shared-dto';
+import { UpdateIsSolvedDto } from '@server_1/core';
 
 @Controller('member')
 @UseGuards(JwtAuthGuard)

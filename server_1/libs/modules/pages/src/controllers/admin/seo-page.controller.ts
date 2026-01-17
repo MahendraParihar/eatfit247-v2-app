@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Param, Patch, Post, Put, UseGuards } from '@nestjs/common';
 import { CurrentUser, JwtAuthGuard, RequestedIp } from '@server_1/core';
-import { CsvFilePathDto, UpdateActiveDto } from '@server_1/shared-dto';
+import { CsvFilePathDto, UpdateActiveDto } from '@server_1/core';
 import { ISeoPageData, SeoPageService } from '../../services/seo-page.service';
 import { CreateSeoPageDto, UpdateSeoPageDto } from '../../dto';
 
