@@ -3,10 +3,8 @@ import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import {
   IManageProduct,
   IProduct,
-  IProductBenefit,
-  IProductFAQ,
-  IProductIngredient,
-  IProductSize
+  IProductAdditionalInfo,
+  IProductFee
 } from '@eatfit247-shared-lib';
 
 @Injectable({
@@ -19,32 +17,33 @@ export class ProductFormService {
    * Transform product data to form values for editing
    */
   transformProductToFormValues(product: IProduct): any {
+    const additionalInfo = product.additionalInfo || {};
     return {
       name: product.name || '',
-      slug: product.slug || '',
-      description: product.description || '',
-      dose: product.dose || '',
-      howToTake: product.howToTake || '',
+      imagePath: product.imagePath || [],
+      fees: product.fees || [],
       active: product.active !== undefined ? product.active : true,
-      priceRange: product.priceRange ? {
-        min: product.priceRange.min || 0,
-        max: product.priceRange.max || 0
-      } : null,
-      consumptionInstructions: product.consumptionInstructions ? {
-        amount: product.consumptionInstructions.amount || '',
-        timing: {
-          morning: product.consumptionInstructions.timing?.morning || '',
-          evening: product.consumptionInstructions.timing?.evening || ''
+      additionalInfo: {
+        priceRange: additionalInfo.priceRange || { min: 0, max: 0 },
+        benefits: additionalInfo.benefits || [],
+        dose: additionalInfo.dose || '',
+        howToTake: additionalInfo.howToTake || '',
+        precautions: additionalInfo.precautions || [],
+        ingredients: additionalInfo.ingredients || {
+          title: '',
+          description: '',
+          ingredients: []
         },
-        methods: product.consumptionInstructions.methods || []
-      } : null,
-      sizes: product.sizes || [],
-      benefits: product.benefits || [],
-      precautions: product.precautions || [],
-      ingredients: product.ingredients || [],
-      outcomes: product.outcomes || [],
-      faqs: product.faqs || [],
-      videos: product.videos || []
+        consumptionInstructions: additionalInfo.consumptionInstructions || null,
+        outcomes: additionalInfo.outcomes || {
+          title: '',
+          description: '',
+          outcome: []
+        },
+        feature: additionalInfo.feature || null,
+        report: additionalInfo.report || null,
+        startEndorsed: additionalInfo.startEndorsed || null
+      }
     };
   }
 
@@ -57,105 +56,256 @@ export class ProductFormService {
     // Patch basic fields
     formGroup.patchValue({
       name: formValues.name,
-      slug: formValues.slug,
-      description: formValues.description,
-      dose: formValues.dose,
-      howToTake: formValues.howToTake,
       active: formValues.active
     });
 
-    // Patch price range
-    if (formValues.priceRange) {
-      formGroup.get('priceRange')?.patchValue(formValues.priceRange);
+    // Patch imagePath
+    const imagePathArray = formGroup.get('imagePath') as FormArray;
+    while (imagePathArray.length !== 0) {
+      imagePathArray.removeAt(0);
+    }
+    if (formValues.imagePath && formValues.imagePath.length > 0) {
+      formValues.imagePath.forEach((image: any) => {
+        imagePathArray.push(this.fb.control(image));
+      });
     }
 
-    // Patch consumption instructions
-    if (formValues.consumptionInstructions) {
-      const consumptionGroup = formGroup.get('consumptionInstructions') as FormGroup;
-      consumptionGroup.patchValue({
-        amount: formValues.consumptionInstructions.amount,
-        timing: formValues.consumptionInstructions.timing
+    // Patch fees
+    this.populateFormArray(
+      formGroup,
+      'fees',
+      formValues.fees,
+      (item: IProductFee) => this.fb.group({
+        price: [item.price, [Validators.required, Validators.min(0)]],
+        currency: [item.currency, Validators.required],
+        quantity: [item.quantity, [Validators.required, Validators.min(0)]],
+        unit: [item.unit, Validators.required]
+      })
+    );
+
+    // Patch additionalInfo
+    const additionalInfoGroup = formGroup.get('additionalInfo') as FormGroup;
+    if (additionalInfoGroup && formValues.additionalInfo) {
+      const ai = formValues.additionalInfo;
+      
+      // Price range
+      if (ai.priceRange) {
+        additionalInfoGroup.get('priceRange')?.patchValue(ai.priceRange);
+      }
+
+      // Benefits
+      this.populateFormArray(
+        additionalInfoGroup,
+        'benefits',
+        ai.benefits || [],
+        (item: string) => this.fb.control(item, Validators.required)
+      );
+
+      // Dose and howToTake
+      additionalInfoGroup.patchValue({
+        dose: ai.dose || '',
+        howToTake: ai.howToTake || ''
       });
 
-      // Clear and populate methods
-      const methodsArray = consumptionGroup.get('methods') as FormArray;
-      while (methodsArray.length !== 0) {
-        methodsArray.removeAt(0);
+      // Precautions
+      this.populateFormArray(
+        additionalInfoGroup,
+        'precautions',
+        ai.precautions || [],
+        (item: string) => this.fb.control(item, Validators.required)
+      );
+
+      // Ingredients
+      if (ai.ingredients) {
+        const ingredientsGroup = additionalInfoGroup.get('ingredients') as FormGroup;
+        if (ingredientsGroup) {
+          ingredientsGroup.patchValue({
+            title: ai.ingredients.title || '',
+            description: ai.ingredients.description || ''
+          });
+          this.populateFormArray(
+            ingredientsGroup,
+            'ingredients',
+            ai.ingredients.ingredients || [],
+            (item: any) => {
+              const iconArray = this.fb.array([]);
+              if (item.icon && Array.isArray(item.icon) && item.icon.length > 0) {
+                item.icon.forEach((iconItem: any) => {
+                  iconArray.push(this.fb.control(iconItem));
+                });
+              }
+              return this.fb.group({
+                name: [item.name, Validators.required],
+                icon: iconArray,
+                description: [item.description || '']
+              });
+            }
+          );
+        }
       }
-      if (formValues.consumptionInstructions.methods) {
-        formValues.consumptionInstructions.methods.forEach((method: any) => {
-          methodsArray.push(this.fb.control(method, Validators.required));
-        });
+
+      // Outcomes
+      if (ai.outcomes) {
+        const outcomesGroup = additionalInfoGroup.get('outcomes') as FormGroup;
+        if (outcomesGroup) {
+          outcomesGroup.patchValue({
+            title: ai.outcomes.title || '',
+            description: ai.outcomes.description || ''
+          });
+          this.populateFormArray(
+            outcomesGroup,
+            'outcome',
+            ai.outcomes.outcome || [],
+            (item: any) => {
+              const iconArray = this.fb.array([]);
+              if (item.icon && Array.isArray(item.icon) && item.icon.length > 0) {
+                item.icon.forEach((iconItem: any) => {
+                  iconArray.push(this.fb.control(iconItem));
+                });
+              }
+              return this.fb.group({
+                title: [item.title, Validators.required],
+                description: [item.description, Validators.required],
+                icon: iconArray
+              });
+            }
+          );
+        }
       }
-    }
 
-    // Populate arrays
-    this.populateFormArray(
-      formGroup,
-      'sizes',
-      formValues.sizes,
-      (item: IProductSize) => this.fb.group({
-        value: [item.value, Validators.required],
-        label: [item.label, Validators.required],
-        price: [item.price, [Validators.required, Validators.min(0)]]
-      })
-    );
+      // Consumption instructions
+      if (ai.consumptionInstructions) {
+        const ciGroup = additionalInfoGroup.get('consumptionInstructions') as FormGroup;
+        if (ciGroup) {
+          ciGroup.patchValue({
+            title: ai.consumptionInstructions.title || '',
+            description: ai.consumptionInstructions.description || '',
+            mediaDirection: ai.consumptionInstructions.mediaDirection || 'left'
+          });
+          
+          // Meta data
+          const metaDataGroup = ciGroup.get('metaData') as FormGroup;
+          if (metaDataGroup) {
+            this.populateFormArray(
+              metaDataGroup,
+              'howToConsume',
+              ai.consumptionInstructions.metaData?.howToConsume || [],
+              (item: string) => this.fb.control(item, Validators.required)
+            );
+            this.populateFormArray(
+              metaDataGroup,
+              'whenToConsume',
+              ai.consumptionInstructions.metaData?.whenToConsume || [],
+              (item: string) => this.fb.control(item, Validators.required)
+            );
+          }
 
-    this.populateFormArray(
-      formGroup,
-      'benefits',
-      formValues.benefits,
-      (item: string) => this.fb.control(item, Validators.required)
-    );
-
-    this.populateFormArray(
-      formGroup,
-      'precautions',
-      formValues.precautions,
-      (item: string) => this.fb.control(item, Validators.required)
-    );
-
-    this.populateFormArray(
-      formGroup,
-      'ingredients',
-      formValues.ingredients,
-      (item: IProductIngredient) => this.fb.group({
-        name: [item.name, Validators.required],
-        icon: [item.icon || ''],
-        description: [item.description || '']
-      })
-    );
-
-    this.populateFormArray(
-      formGroup,
-      'outcomes',
-      formValues.outcomes,
-      (item: IProductBenefit) => this.fb.group({
-        title: [item.title, Validators.required],
-        description: [item.description, Validators.required],
-        icon: [item.icon || '']
-      })
-    );
-
-    this.populateFormArray(
-      formGroup,
-      'faqs',
-      formValues.faqs,
-      (item: IProductFAQ) => this.fb.group({
-        question: [item.question, Validators.required],
-        answer: [item.answer, Validators.required]
-      })
-    );
-
-    // Populate videos
-    if (formValues.videos) {
-      const videosArray = formGroup.get('videos') as FormArray;
-      while (videosArray.length !== 0) {
-        videosArray.removeAt(0);
+          // Media data
+          const mediaDataGroup = ciGroup.get('mediaData') as FormGroup;
+          if (mediaDataGroup) {
+            mediaDataGroup.patchValue({
+              mediaType: ai.consumptionInstructions.mediaData?.mediaType || 'image'
+            });
+            const mediaLinkArray = mediaDataGroup.get('mediaLink') as FormArray;
+            while (mediaLinkArray.length !== 0) {
+              mediaLinkArray.removeAt(0);
+            }
+            if (ai.consumptionInstructions.mediaData?.mediaLink && ai.consumptionInstructions.mediaData.mediaLink.length > 0) {
+              ai.consumptionInstructions.mediaData.mediaLink.forEach((media: any) => {
+                mediaLinkArray.push(this.fb.control(media));
+              });
+            }
+          }
+        }
       }
-      formValues.videos.forEach((video: string) => {
-        videosArray.push(this.fb.control(video));
-      });
+
+      // Feature
+      if (ai.feature) {
+        const featureGroup = additionalInfoGroup.get('feature') as FormGroup;
+        if (featureGroup) {
+          featureGroup.patchValue({
+            title: ai.feature.title || '',
+            description: ai.feature.description || '',
+            tagLine: ai.feature.tagLine || ''
+          });
+          
+          // Feature images
+          const imagesArray = featureGroup.get('images') as FormArray;
+          while (imagesArray.length !== 0) {
+            imagesArray.removeAt(0);
+          }
+          if (ai.feature.images && ai.feature.images.length > 0) {
+            ai.feature.images.forEach((image: any) => {
+              imagesArray.push(this.fb.control(image));
+            });
+          }
+
+          // Feature list
+          this.populateFormArray(
+            featureGroup,
+            'feature',
+            ai.feature.feature || [],
+            (item: string) => this.fb.control(item, Validators.required)
+          );
+        }
+      }
+
+      // Report
+      if (ai.report) {
+        const reportGroup = additionalInfoGroup.get('report') as FormGroup;
+        if (reportGroup) {
+          reportGroup.patchValue({
+            title: ai.report.title || '',
+            description: ai.report.description || '',
+            mediaDirection: ai.report.mediaDirection || 'left'
+          });
+
+          // Media data
+          const mediaDataGroup = reportGroup.get('mediaData') as FormGroup;
+          if (mediaDataGroup) {
+            mediaDataGroup.patchValue({
+              mediaType: ai.report.mediaData?.mediaType || 'image'
+            });
+            const mediaLinkArray = mediaDataGroup.get('mediaLink') as FormArray;
+            while (mediaLinkArray.length !== 0) {
+              mediaLinkArray.removeAt(0);
+            }
+            if (ai.report.mediaData?.mediaLink && ai.report.mediaData.mediaLink.length > 0) {
+              ai.report.mediaData.mediaLink.forEach((media: any) => {
+                mediaLinkArray.push(this.fb.control(media));
+              });
+            }
+          }
+        }
+      }
+
+      // Star Endorsed
+      if (ai.startEndorsed) {
+        const startEndorsedGroup = additionalInfoGroup.get('startEndorsed') as FormGroup;
+        if (startEndorsedGroup) {
+          startEndorsedGroup.patchValue({
+            title: ai.startEndorsed.title || '',
+            description: ai.startEndorsed.description || ''
+          });
+
+          // Media data
+          const mediaDataGroup = startEndorsedGroup.get('mediaData') as FormGroup;
+          if (mediaDataGroup) {
+            mediaDataGroup.patchValue({
+              mediaType: ai.startEndorsed.mediaData?.mediaType || 'image'
+            });
+            const mediaLinkArray = mediaDataGroup.get('mediaLink') as FormArray;
+            while (mediaLinkArray.length !== 0) {
+              mediaLinkArray.removeAt(0);
+            }
+            if (ai.startEndorsed.mediaData?.mediaLink && ai.startEndorsed.mediaData.mediaLink.length > 0) {
+              ai.startEndorsed.mediaData.mediaLink.forEach((media: any) => {
+                mediaLinkArray.push(this.fb.control(media));
+              });
+            }
+          }
+        }
+      }
     }
   }
 
@@ -183,36 +333,93 @@ export class ProductFormService {
    * Transform form values to product submission payload
    */
   transformFormToProductPayload(formGroup: FormGroup): IManageProduct {
-    const payload: IManageProduct = {
-      name: formGroup.value.name,
-      slug: formGroup.value.slug,
-      description: formGroup.value.description || undefined,
-      priceRange: formGroup.value.priceRange,
-      sizes: formGroup.value.sizes,
-      benefits: formGroup.value.benefits,
-      dose: formGroup.value.dose,
-      howToTake: formGroup.value.howToTake,
-      precautions: formGroup.value.precautions,
-      ingredients: formGroup.value.ingredients,
-      consumptionInstructions: formGroup.value.consumptionInstructions,
-      outcomes: formGroup.value.outcomes,
-      faqs: formGroup.value.faqs,
-      active: formGroup.value.active
-    };
+    const formValue = formGroup.value;
+    const additionalInfo: IProductAdditionalInfo = {};
 
-    // Handle images
-    const imagePathControl = formGroup.get('images');
-    if (imagePathControl && imagePathControl.value) {
-      const imagePathValue = imagePathControl.value;
-      if (Array.isArray(imagePathValue) && imagePathValue.length > 0) {
-        payload.images = imagePathValue;
+    // Build additionalInfo from form
+    if (formValue.additionalInfo) {
+      const ai = formValue.additionalInfo;
+      
+      if (ai.priceRange) {
+        additionalInfo.priceRange = ai.priceRange;
+      }
+      
+      if (ai.benefits && ai.benefits.length > 0) {
+        additionalInfo.benefits = ai.benefits;
+      }
+      
+      if (ai.dose) {
+        additionalInfo.dose = ai.dose;
+      }
+      
+      if (ai.howToTake) {
+        additionalInfo.howToTake = ai.howToTake;
+      }
+      
+      if (ai.precautions && ai.precautions.length > 0) {
+        additionalInfo.precautions = ai.precautions;
+      }
+      
+      if (ai.ingredients) {
+        additionalInfo.ingredients = ai.ingredients;
+      }
+      
+      if (ai.consumptionInstructions) {
+        additionalInfo.consumptionInstructions = ai.consumptionInstructions;
+      }
+      
+      if (ai.outcomes) {
+        // Only include outcomes if it has meaningful data
+        if (ai.outcomes.title || ai.outcomes.description || (ai.outcomes.outcome && ai.outcomes.outcome.length > 0)) {
+          additionalInfo.outcomes = {
+            title: ai.outcomes.title || '',
+            description: ai.outcomes.description || '',
+            outcome: ai.outcomes.outcome && ai.outcomes.outcome.length > 0 ? ai.outcomes.outcome : undefined
+          };
+        }
+      }
+      
+      if (ai.feature) {
+        additionalInfo.feature = ai.feature;
+      }
+      
+      if (ai.report) {
+        // Only include report if it has meaningful data, excluding metaData
+        if (ai.report.title || ai.report.description || (ai.report.mediaData?.mediaLink && ai.report.mediaData.mediaLink.length > 0)) {
+          additionalInfo.report = {
+            title: ai.report.title || '',
+            description: ai.report.description || '',
+            mediaDirection: ai.report.mediaDirection || 'left',
+            mediaData: {
+              mediaType: ai.report.mediaData?.mediaType || 'image',
+              mediaLink: ai.report.mediaData?.mediaLink || []
+            }
+          };
+        }
+      }
+      
+      if (ai.startEndorsed) {
+        // Only include startEndorsed if it has meaningful data
+        if (ai.startEndorsed.title || ai.startEndorsed.description || (ai.startEndorsed.mediaData?.mediaLink && ai.startEndorsed.mediaData.mediaLink.length > 0)) {
+          additionalInfo.startEndorsed = {
+            title: ai.startEndorsed.title || '',
+            description: ai.startEndorsed.description || '',
+            mediaData: {
+              mediaType: ai.startEndorsed.mediaData?.mediaType || 'image',
+              mediaLink: ai.startEndorsed.mediaData?.mediaLink || []
+            }
+          };
+        }
       }
     }
 
-    // Handle videos
-    if (formGroup.value.videos && formGroup.value.videos.length > 0) {
-      payload.videos = formGroup.value.videos.filter((v: string) => v && v.trim());
-    }
+    const payload: IManageProduct = {
+      name: formValue.name,
+      imagePath: formValue.imagePath || [],
+      fees: formValue.fees || [],
+      additionalInfo: additionalInfo,
+      active: formValue.active
+    };
 
     return payload;
   }

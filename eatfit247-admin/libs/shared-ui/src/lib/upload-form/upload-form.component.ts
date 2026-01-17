@@ -50,23 +50,60 @@ export class UploadFormComponent implements OnInit, OnChanges {
   }
 
   ngOnInit(): void {
-    this.fileUploadForm = this.fb.array([]);
-    this.formGroup.addControl(this.controlName, this.fileUploadForm);
+    // Check if a control already exists, if so use it, otherwise create new one
+    const existingControl = this.formGroup.get(this.controlName);
+    if (existingControl instanceof FormArray) {
+      this.fileUploadForm = existingControl;
+    } else {
+      this.fileUploadForm = this.fb.array([]);
+      this.formGroup.addControl(this.controlName, this.fileUploadForm);
+    }
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    if (this.uploadedMediaList && this.uploadedMediaList.length > 0) {
-      for (const s of this.uploadedMediaList) {
-        this.addFile(s);
-        this.uploadedFiles.push(<FileHandle>{
-          url: s.webUrl,
-          name: s.originalName,
-          size: s.size,
-          progress: 100,
-          fileUpdateStatus: 1,
-          isRequested: true,
-          isPastFile: true
+    // Only process if uploadedMediaList input changed
+    if (changes['uploadedMediaList'] && this.uploadedMediaList && this.uploadedMediaList.length > 0) {
+      const formArray = this.fileArray();
+      
+      // If FormArray already has items, sync uploadedFiles with FormArray values
+      // This handles the case where form was pre-populated and items were removed
+      if (formArray.length > 0) {
+        // Sync uploadedFiles with current FormArray values
+        this.uploadedFiles = [];
+        formArray.controls.forEach((control) => {
+          const mediaValue = control.value as IMediaUpload;
+          if (mediaValue && mediaValue.webUrl) {
+            this.uploadedFiles.push(<FileHandle>{
+              url: mediaValue.webUrl,
+              name: mediaValue.originalName,
+              size: mediaValue.size,
+              progress: 100,
+              fileUpdateStatus: 1,
+              isRequested: true,
+              isPastFile: true
+            });
+          }
         });
+      } else {
+        // FormArray is empty, initialize from uploadedMediaList
+        for (const s of this.uploadedMediaList) {
+          // Check if file already exists to avoid duplicates
+          const exists = formArray.controls.some(
+            (control) => control.value?.webUrl === s.webUrl || control.value?.fileName === s.fileName
+          );
+          if (!exists) {
+            this.addFile(s);
+            this.uploadedFiles.push(<FileHandle>{
+              url: s.webUrl,
+              name: s.originalName,
+              size: s.size,
+              progress: 100,
+              fileUpdateStatus: 1,
+              isRequested: true,
+              isPastFile: true
+            });
+          }
+        }
       }
     }
   }
@@ -117,8 +154,8 @@ export class UploadFormComponent implements OnInit, OnChanges {
   }
 
   removeItem(index: number): void {
-    this.uploadedFiles.splice(index, 1);
     this.removeFile(index);
+    this.uploadedFiles.splice(index, 1);
     this.cdr.detectChanges();
   }
 

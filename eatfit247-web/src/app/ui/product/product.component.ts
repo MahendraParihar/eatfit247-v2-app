@@ -7,59 +7,25 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { BannerService } from '../../services/banner.service';
-import { FaqService } from '../../services/faq.service';
-import { BannerForEnum, IFaq } from 'eatfit247-shared-library';
+import { ProductService } from '../../services/product.service';
+import {
+  BannerForEnum,
+  IPublicProduct,
+  IProductFee,
+  IProductIngredientSection,
+  IOutcomeSection, IOutcomes, IProjectConsumptionInstructionSection, IProductReport, IProjectStarEndorsedSection
+} from 'eatfit247-shared-library';
 import { ImageSliderComponent, SliderItem } from '../shared/image-slider/image-slider.component';
-import { FaqItemComponent } from '../shared/faq-item/faq-item.component';
 import { SectionFaqComponent } from '../shared/section-faq/section-faq.component';
 
-interface ProductSize {
-  value: string;
+// Extended interface for size display with value and label
+interface ISizeOption extends IProductFee {
+  value: IProductFee;
   label: string;
-  price: number;
 }
 
-interface Ingredient {
-  name: string;
-  icon?: string;
-  description?: string;
-}
-
-interface Benefit {
-  title: string;
-  description: string;
-  icon?: string;
-}
-
-interface ProductData {
-  name: string;
-  priceRange: {
-    min: number;
-    max: number;
-  };
-  sizes: ProductSize[];
-  benefits: string[];
-  dose: string;
-  howToTake: string;
-  precautions: string[];
-  ingredients: Ingredient[];
-  consumptionInstructions: {
-    amount: string;
-    methods: string[];
-    timing: {
-      morning: string;
-      evening: string;
-    };
-  };
-  outcomes: Benefit[];
-}
-
-/**
- * Product Component
- * Displays product details page for De-bloat powder
- */
 @Component({
   selector: 'app-product',
   standalone: true,
@@ -81,22 +47,20 @@ interface ProductData {
 export class ProductComponent implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
   private readonly bannerService = inject(BannerService);
+  private readonly productService = inject(ProductService);
   // Banner items
   bannerItems: SliderItem[] = [];
   // Product data
-  productName = 'De-bloat';
-  productDescription = 'Debloat yourself within 3 months';
-  selectedSize: string = '100gm';
+  product: IPublicProduct = {} as IPublicProduct;
+  productName = '';
+  productDescription = '';
+  selectedSize: ISizeOption | null = null;
   quantity: number = 1;
+  loading = true;
+  error: string | null = null;
   // Product images
-  productImages: string[] = [
-    '/assets/images/products/debloat-main-1200x1200.jpg',
-    '/assets/images/products/debloat-alt-1200x1205.jpg'
-  ];
-  productImages1: string[] = [
-    '/assets/images/products/debloat-alt-1200x1205.jpg',
-    '/assets/images/products/debloat-3.jpg'
-  ];
+  productImages: string[] = [];
+  productImages1: string[] = [];
   selectedImageIndex: number = 0;
   // Star powder image
   starPowderImage: string = '/assets/images/products/start-powder.png';
@@ -104,23 +68,15 @@ export class ProductComponent implements OnInit, OnDestroy {
   featureSliderCurrentIndex: number = 0;
   private featureSliderTimer: any = null;
   private readonly featureSliderInterval: number = 5000; // 5-second
-  // Product feature bullet points for the 3rd section
-  productFeatureBullets: string[] = [
-    'Say Goodbye to bloating',
-    'Reverse your gut issues and calms an upset stomach',
-    'Bid farewell to IBS symptoms, including pain, gas acidity and constipation',
-    'Discover the power of nature with our organic herbal ingredients'
-  ];
-  // Product tag line for 3rd section
-  productTagLine = 'Promotes gut health and digestive comfort – try it today!';
-  // Video links (MP4 files from the website)
-  productVideos: string[] = ['/assets/videos/video-2.mp4'];
-  // Tried and Tested Section
-  triedAndTestedImage: string = '/assets/images/products/tried-and-tested.jpg';
+  productVideos: string[] = [];
 
-  // Use product.sizes for sizes
-  get sizes(): ProductSize[] {
-    return this.product.sizes;
+  get sizes(): ISizeOption[] {
+    if (!this.product?.fees) return [];
+    return this.product.fees.map((fee) => ({
+      ...fee,
+      value: fee,
+      label: `${fee.quantity} ${fee.unit}`
+    }));
   }
 
   get currentPrice(): number {
@@ -128,114 +84,89 @@ export class ProductComponent implements OnInit, OnDestroy {
   }
 
   get priceRange(): string {
-    return `₹ ${this.product.priceRange.min}.00 – ₹ ${this.product.priceRange.max}.00`;
-  }
-
-  get consumeVideoUrl(): string {
-    return this.productVideos[0] || '/assets/videos/video-2.mp4';
+    if (!this.product?.additionalInfo?.priceRange) {
+      if (this.product?.fees && this.product.fees.length > 0) {
+        const prices = this.product.fees.map((f) => f.price);
+        const min = Math.min(...prices);
+        const max = Math.max(...prices);
+        return `₹ ${min}.00 – ₹ ${max}.00`;
+      }
+      return '';
+    }
+    return `₹ ${this.product.additionalInfo.priceRange.min}.00 – ₹ ${this.product.additionalInfo.priceRange.max}.00`;
   }
 
   getCurrentPrice(): number {
-    const selectedSizeObj = this.product.sizes.find((s) => s.value === this.selectedSize);
-    return selectedSizeObj?.price || this.product.priceRange.min;
+    if (!this.selectedSize) {
+      return this.product.fees[0].price || 0;
+    }
+    return this.selectedSize.price;
   }
 
-  benefits: Benefit[] = [
-    {
-      title: 'Say Goodbye to bloating',
-      description: 'Helps achieve long–term bloat reduction'
-    },
-    {
-      title: 'Reverse your gut issues',
-      description: 'Calms an upset stomach and restores lost energy'
-    },
-    {
-      title: 'Bid farewell to IBS symptoms',
-      description: 'Relieves pain, gas, acidity and constipation'
-    },
-    {
-      title: '100% Natural',
-      description: 'Discover the power of nature with our organic herbal ingredients'
-    }
-  ];
-  // Product data structure matching showcase component
-  product: ProductData = {
-    name: 'De-bloat',
-    priceRange: {
-      min: 700,
-      max: 1200
-    },
-    sizes: [
-      { value: '100gm', label: '100gm', price: 700 },
-      { value: '200gm', label: '200gm', price: 1200 }
-    ],
-    benefits: [
-      'Helps achieve long–term bloat reduction',
-      'Relives Hyperacidity',
-      'Calms an upset stomach',
-      'Restores lost energy',
-      'Weight Loss'
-    ],
-    dose: '10 GMs of powder each day',
-    howToTake:
-      'With a glass of normal water, you can add it in smoothies, fruit juices, vegetable juices, coconut water, buttermilk, Mountain Dew.',
-    precautions: [
-      'Store in cool and dry place away from direct sunlight',
-      'Keep out of reach of children',
-      'Do not refrigerate',
-      'Should be avoided by People with serious medical conditions',
-      'Protect from moisture'
-    ],
-    ingredients: [
-      { name: 'Curry Leaves', icon: '/assets/images/products/ingredients/curry-leaves.png' },
-      { name: 'Haldi', icon: '/assets/images/products/ingredients/haldi.png' },
-      { name: 'Jeera', icon: '/assets/images/products/ingredients/jira.png' },
-      { name: 'Seasame Seeds', icon: '/assets/images/products/ingredients/seasame-seeds.png' },
-      { name: 'Haritaki', icon: '/assets/images/products/ingredients/haritaki.webp' },
-      { name: 'Saunf', icon: '/assets/images/products/ingredients/saunf.png' }
-    ],
-    consumptionInstructions: {
-      amount: '10 grams (2tsp) powder daily',
-      methods: ['water', 'juices', 'coconut water', 'buttermilk'],
-      timing: {
-        morning: '1 tsp in AM (morning)',
-        evening: '1 tsp in PM (evening)'
-      }
-    },
-    outcomes: [
-      {
-        icon: '/assets/images/speed-food-breakdown.png',
-        title: 'SPEEDS FOOD BREAKDOWN',
-        description: 'Enjoy your favorite foods without any discomfort'
-      },
-      {
-        icon: '/assets/images/relieves-heartburn.jpg',
-        title: 'RELIEVES HEARTBURN',
-        description: 'So food can digest smoothly'
-      },
-      {
-        icon: '/assets/images/prevent-gas.png',
-        title: 'PREVENTS GAS',
-        description: 'Have fun spend quality time with loved ones worry-free'
-      }
-    ]
-  };
-  // Keep existing properties for backward compatibility
-  ingredients: Ingredient[] = this.product.ingredients;
-  // Keep outcomes for backward compatibility
-  outcomes: Benefit[] = this.product.outcomes;
+  // Helper getters for template compatibility
+  get productBenefits(): string[] {
+    return this.product.additionalInfo.benefits || [];
+  }
+
+  get productDose(): string {
+    return this.product.additionalInfo.dose || '';
+  }
+
+  get productHowToTake(): string {
+    return this.product.additionalInfo.howToTake || '';
+  }
+
+  get productPrecautions(): string[] {
+    return this.product.additionalInfo.precautions || [];
+  }
+
+  get productIngredients(): IProductIngredientSection {
+    return this.product.additionalInfo.ingredients as IProductIngredientSection;
+  }
+
+  get productConsumptionInstructions(): IProjectConsumptionInstructionSection {
+    return this.product.additionalInfo.consumptionInstructions as IProjectConsumptionInstructionSection;
+  }
+
+  get productReportSection(): IProductReport {
+    return this.product.additionalInfo.report as IProductReport;
+  }
+
+  get outcomesObject(): IOutcomeSection {
+    return this.product.additionalInfo.outcomes as IOutcomeSection;
+  }
+
+  get productOutcomes(): IOutcomes[] {
+    return this.outcomesObject.outcome || [];
+  }
+
+  get productFeature(): any {
+    return this.product.additionalInfo.feature;
+  }
+
+  get productStartEndorsed(): IProjectStarEndorsedSection {
+    return this.product.additionalInfo.startEndorsed as IProjectStarEndorsedSection;
+  }
+
+  /**
+   * Get current feature slider image
+   */
+  get currentFeatureImage(): string {
+    return this.productImages1[this.featureSliderCurrentIndex] || this.productImages1[0];
+  }
+
+  /**
+   * Check if a feature slider has multiple images
+   */
+  get hasMultipleFeatureImages(): boolean {
+    return this.productImages1.length > 1;
+  }
 
   ngOnInit(): void {
     // Load banner data
     this.loadBannerData();
-    // Start auto-switch for feature slider
-    this.startFeatureSliderAutoSwitch();
-    // Get product slug from route if available
-    const slug = this.route.snapshot.paramMap.get('slug');
-    if (slug) {
-      // TODO: Load product data based on slug
-      // For now, we'll use the default product data
-    }
+    // Load product data
+    this.loadProductData();
   }
 
   ngOnDestroy(): void {
@@ -255,17 +186,70 @@ export class ProductComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Get current feature slider image
+   * Load product data from API
    */
-  get currentFeatureImage(): string {
-    return this.productImages1[this.featureSliderCurrentIndex] || this.productImages1[0];
+  private async loadProductData(): Promise<void> {
+    try {
+      this.loading = true;
+      this.error = null;
+      let product: IPublicProduct | null = null;
+      const products = await this.productService.getAllProducts(0, 1);
+      product = products.length > 0 ? products[0] : null;
+      if (product) {
+        this.product = product;
+        this.initializeProductData(product);
+      } else {
+        this.error = 'Product not found';
+      }
+    } catch (error) {
+      console.error('Failed to load product data:', error);
+      this.error = 'Failed to load product information. Please try again later.';
+    } finally {
+      this.loading = false;
+    }
   }
 
   /**
-   * Check if feature slider has multiple images
+   * Initialize product data from API response
    */
-  get hasMultipleFeatureImages(): boolean {
-    return this.productImages1.length > 1;
+  private initializeProductData(product: IPublicProduct): void {
+    // Set the product name and description
+    this.productName = product.name;
+    this.productDescription = product.additionalInfo?.feature?.tagLine || product.name;
+    // Set product images from imagePath
+    if (product.imagePath && product.imagePath.length > 0) {
+      this.productImages = product.imagePath.map((img) => img.webUrl);
+      this.productImages1 = [...this.productImages];
+    }
+    // Set feature images if available
+    if (product.additionalInfo?.feature?.images) {
+      const featureImages = product.additionalInfo.feature.images.map((img) => img.webUrl);
+      if (featureImages.length > 0) {
+        this.productImages1 = featureImages;
+      }
+    }
+    // Set consumption video if available
+    if (product.additionalInfo?.consumptionInstructions?.mediaData?.mediaLink) {
+      const videos = product.additionalInfo.consumptionInstructions.mediaData.mediaLink.map(
+        (media) => media.webUrl
+      );
+      if (videos.length > 0) {
+        this.productVideos = videos;
+      }
+    }
+    // Set the default selected size
+    if (product.fees && product.fees.length > 0) {
+      const firstSize = product.fees[0];
+      this.selectedSize = {
+        ...firstSize,
+        value: firstSize,
+        label: `${firstSize.quantity} ${firstSize.unit}`
+      };
+    }
+    // Start auto-switch for feature slider if we have multiple images
+    if (this.productImages1.length > 1) {
+      this.startFeatureSliderAutoSwitch();
+    }
   }
 
   /**
@@ -367,23 +351,26 @@ export class ProductComponent implements OnInit, OnDestroy {
   /**
    * Handle size selection change
    */
-  onSizeChange(size: string | null): void {
+  onSizeChange(size: ISizeOption | null): void {
     if (size) {
       this.selectedSize = size;
     }
   }
 
   /**
-   * Select product image by index
+   * Select a product image by index
    */
   selectImage(index: number): void {
     this.selectedImageIndex = index;
   }
 
   /**
-   * Get current selected image
+   * Get the current selected image
    */
   get selectedImage(): string {
+    if (this.productImages.length === 0) {
+      return '/assets/images/products/debloat-main-1200x1200.jpg'; // Fallback image
+    }
     return this.productImages[this.selectedImageIndex] || this.productImages[0];
   }
 

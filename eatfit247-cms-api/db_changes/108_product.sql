@@ -1,3 +1,23 @@
+create table public.mst_product
+(
+    product_id      serial primary key,
+    name            varchar(255)             not null,
+    image_path      jsonb                    not null,
+    fees            jsonb                    not null,
+    additional_info jsonb                    not null default '{}',
+    active          boolean                           default true not null,
+    created_by      integer
+        constraint fk_txn_member_product_mst_admin_created_by
+            references public.mst_admin_users,
+    created_at      timestamp with time zone not null,
+    modified_by     integer
+        constraint fk_txn_member_product_mst_admin_modified_by
+            references public.mst_admin_users,
+    updated_at      timestamp with time zone not null,
+    created_ip      varchar(255)             not null,
+    modified_ip     varchar(255)             not null
+);
+
 create table public.txn_member_products
 (
     member_product_id        serial
@@ -116,3 +136,8 @@ SET payment_obj =
                            ),
                 'calculationVersion', ''
         );
+
+alter table public.txn_member_products
+    add product_id integer not null
+        constraint txn_member_products_mst_product_product_id_fk
+            references public.mst_product;

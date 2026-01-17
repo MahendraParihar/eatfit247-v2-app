@@ -139,7 +139,7 @@ export class TxnProduct extends Model<TxnProduct> {
   declare outcomes: Array<{
     title: string;
     description: string;
-    icon?: string;
+    icon?: IMediaUpload[];
   }>;
 
   @Column({

@@ -14,289 +14,257 @@
 
   <!-- Product Details Section - 2 Column Layout -->
   <div class="container">
-    <div class="product-details-section">
-      <!-- Column 1: Image Section -->
-      <div class="product-image-column">
-        <div class="product-image-container">
-          <img
-            [src]="selectedImage"
-            [alt]="productName"
-            class="main-product-image"
-          />
+    @if (loading) {
+      <div class="loading-container">
+        <p>Loading product information...</p>
+      </div>
+    } @else if (error) {
+      <div class="error-container">
+        <p>{{ error }}</p>
+      </div>
+    } @else if (product) {
+      <div class="product-details-section">
+        <!-- Column 1: Image Section -->
+        <div class="product-image-column">
+          <div class="product-image-container">
+            <img
+              [src]="selectedImage"
+              [alt]="productName"
+              class="main-product-image"
+            />
+          </div>
+          @if (productImages.length > 1) {
+            <div class="product-image-thumbnails">
+              @for (image of productImages; track $index) {
+                <div
+                  class="thumbnail-item"
+                  [class.active]="selectedImageIndex === $index"
+                  (click)="selectImage($index)"
+                >
+                  <img [src]="image" [alt]="productName + ' thumbnail ' + ($index + 1)" />
+                </div>
+              }
+            </div>
+          }
         </div>
-        @if (productImages.length > 1) {
-          <div class="product-image-thumbnails">
-            @for (image of productImages; track $index) {
-              <div
-                class="thumbnail-item"
-                [class.active]="selectedImageIndex === $index"
-                (click)="selectImage($index)"
-              >
-                <img [src]="image" [alt]="productName + ' thumbnail ' + ($index + 1)" />
+
+        <!-- Column 2: Product Information -->
+        <div class="product-info-column">
+          <div class="product-info-content">
+            <!-- Product Name -->
+            <h1 class="product-name">{{ productName }}</h1>
+
+            <!-- Price Range -->
+            <div class="price-range">
+              <span class="price-range-text">{{ priceRange }}</span>
+            </div>
+
+            <!-- Tax Information -->
+            <p class="tax-info">Inclusive of all taxes.</p>
+
+            <!-- Size Selection -->
+            <div class="size-selection">
+              <label class="size-label">Size</label>
+              <div class="size-options">
+                @for (size of sizes; track size.value) {
+                  <button
+                    type="button"
+                    class="size-option"
+                    [class.selected]="selectedSize?.value === size.value"
+                    (click)="onSizeChange(size)"
+                  >
+                    <span class="size-value">{{ size.label }}</span>
+                    <span class="size-price">₹ {{ size.price }}.00</span>
+                  </button>
+                }
               </div>
-            }
+            </div>
+
+            <!-- Quantity Selection -->
+            <div class="quantity-selection">
+              <label class="quantity-label">Quantity</label>
+              <div class="quantity-and-buy-row">
+                <div class="quantity-controls">
+                  <button
+                    type="button"
+                    class="quantity-btn"
+                    (click)="decrementQuantity()"
+                    [disabled]="quantity <= 1"
+                    aria-label="Decrease quantity"
+                  >
+                    <mat-icon>remove</mat-icon>
+                  </button>
+                  <input
+                    type="number"
+                    class="quantity-input"
+                    [value]="quantity"
+                    (input)="updateQuantity($any($event.target).value)"
+                    min="1"
+                    max="5"
+                    aria-label="Quantity"
+                  />
+                  <button
+                    type="button"
+                    class="quantity-btn"
+                    (click)="incrementQuantity()"
+                    [disabled]="quantity >= 5"
+                    aria-label="Increase quantity"
+                  >
+                    <mat-icon>add</mat-icon>
+                  </button>
+                </div>
+                <!-- Buy Now Button -->
+                <button
+                  mat-raised-button
+                  color="primary"
+                  class="buy-now-btn"
+                  (click)="onBuyNow()"
+                >
+                  Buy Now
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Product Information Section - 2 Column Layout -->
+      <div class="product-info-section">
+        <!-- Column 1: Benefits, Dose, How to take -->
+        <div class="info-column-left">
+          <!-- Benefits -->
+          @if (productBenefits.length > 0) {
+            <div class="info-block">
+              <h2 class="info-block-title">Benefits</h2>
+              <ul class="benefits-list">
+                @for (benefit of productBenefits; track $index) {
+                  <li>{{ benefit }}</li>
+                }
+              </ul>
+            </div>
+          }
+
+          <!-- Dose -->
+          @if (productDose) {
+            <div class="info-block">
+              <h2 class="info-block-title">Dose</h2>
+              <p class="info-block-content">{{ productDose }}</p>
+            </div>
+          }
+
+          <!-- How to take -->
+          @if (productHowToTake) {
+            <div class="info-block">
+              <h2 class="info-block-title">How to take</h2>
+              <p class="info-block-content">{{ productHowToTake }}</p>
+            </div>
+          }
+        </div>
+
+        <!-- Column 2: Precautions -->
+        @if (productPrecautions.length > 0) {
+          <div class="info-column-right">
+            <div class="info-block">
+              <h2 class="info-block-title">Any Precautions</h2>
+              <ul class="precautions-list">
+                @for (precaution of productPrecautions; track $index) {
+                  <li>{{ precaution }}</li>
+                }
+              </ul>
+            </div>
           </div>
         }
       </div>
 
-      <!-- Column 2: Product Information -->
-      <div class="product-info-column">
-        <div class="product-info-content">
-          <!-- Product Name -->
-          <h1 class="product-name">{{ productName }}</h1>
+      <!-- Product Feature Section - 3rd Section with 2 Column Layout -->
+      <div class="product-feature-section">
+        <!-- Column 1: Custom Image Slider -->
+        <div class="feature-image-column">
+          <div
+            class="feature-image-slider"
+            (mouseenter)="onFeatureSliderHover()"
+            (mouseleave)="onFeatureSliderLeave()"
+          >
+            <div class="feature-slider-container">
+              <img
+                [src]="currentFeatureImage"
+                [alt]="productName + ' - Image ' + (featureSliderCurrentIndex + 1)"
+                class="feature-slider-image"
+              />
 
-          <!-- Price Range -->
-          <div class="price-range">
-            <span class="price-range-text">{{ priceRange }}</span>
-          </div>
-
-          <!-- Tax Information -->
-          <p class="tax-info">Inclusive of all taxes.</p>
-
-          <!-- Size Selection -->
-          <div class="size-selection">
-            <label class="size-label">Size</label>
-            <div class="size-options">
-              @for (size of sizes; track size.value) {
+              <!-- Navigation Arrows -->
+              @if (hasMultipleFeatureImages) {
                 <button
                   type="button"
-                  class="size-option"
-                  [class.selected]="selectedSize === size.value"
-                  (click)="onSizeChange(size.value)"
+                  class="feature-slider-arrow feature-slider-arrow-left"
+                  (click)="featureSliderPrevious()"
+                  aria-label="Previous image"
                 >
-                  <span class="size-value">{{ size.label }}</span>
-                  <span class="size-price">₹ {{ size.price }}.00</span>
+                  <mat-icon>chevron_left</mat-icon>
                 </button>
+                <button
+                  type="button"
+                  class="feature-slider-arrow feature-slider-arrow-right"
+                  (click)="featureSliderNext()"
+                  aria-label="Next image"
+                >
+                  <mat-icon>chevron_right</mat-icon>
+                </button>
+              }
+
+              <!-- Dots Indicator -->
+              @if (hasMultipleFeatureImages) {
+                <div class="feature-slider-dots">
+                  @for (image of productImages1; track $index) {
+                    <button
+                      type="button"
+                      class="feature-slider-dot"
+                      [class.active]="featureSliderCurrentIndex === $index"
+                      (click)="featureSliderGoTo($index)"
+                      [attr.aria-label]="'Go to image ' + ($index + 1)"
+                    ></button>
+                  }
+                </div>
               }
             </div>
           </div>
-
-          <!-- Quantity Selection -->
-          <div class="quantity-selection">
-            <label class="quantity-label">Quantity</label>
-            <div class="quantity-and-buy-row">
-              <div class="quantity-controls">
-                <button
-                  type="button"
-                  class="quantity-btn"
-                  (click)="decrementQuantity()"
-                  [disabled]="quantity <= 1"
-                  aria-label="Decrease quantity"
-                >
-                  <mat-icon>remove</mat-icon>
-                </button>
-                <input
-                  type="number"
-                  class="quantity-input"
-                  [value]="quantity"
-                  (input)="updateQuantity($any($event.target).value)"
-                  min="1"
-                  max="5"
-                  aria-label="Quantity"
-                />
-                <button
-                  type="button"
-                  class="quantity-btn"
-                  (click)="incrementQuantity()"
-                  [disabled]="quantity >= 5"
-                  aria-label="Increase quantity"
-                >
-                  <mat-icon>add</mat-icon>
-                </button>
-              </div>
-              <!-- Buy Now Button -->
-              <button
-                mat-raised-button
-                color="primary"
-                class="buy-now-btn"
-                (click)="onBuyNow()"
-              >
-                Buy Now
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Product Information Section - 2 Column Layout -->
-    <div class="product-info-section">
-      <!-- Column 1: Benefits, Dose, How to take -->
-      <div class="info-column-left">
-        <!-- Benefits -->
-        <div class="info-block">
-          <h2 class="info-block-title">Benefits</h2>
-          <ul class="benefits-list">
-            @for (benefit of product.benefits; track $index) {
-              <li>{{ benefit }}</li>
-            }
-          </ul>
         </div>
 
-        <!-- Dose -->
-        <div class="info-block">
-          <h2 class="info-block-title">Dose</h2>
-          <p class="info-block-content">{{ product.dose }}</p>
-        </div>
-
-        <!-- How to take -->
-        <div class="info-block">
-          <h2 class="info-block-title">How to take</h2>
-          <p class="info-block-content">{{ product.howToTake }}</p>
-        </div>
-      </div>
-
-      <!-- Column 2: Precautions -->
-      <div class="info-column-right">
-        <div class="info-block">
-          <h2 class="info-block-title">Any Precautions</h2>
-          <ul class="precautions-list">
-            @for (precaution of product.precautions; track $index) {
-              <li>{{ precaution }}</li>
-            }
-          </ul>
-        </div>
-      </div>
-    </div>
-
-    <!-- Product Feature Section - 3rd Section with 2 Column Layout -->
-    <div class="product-feature-section">
-      <!-- Column 1: Custom Image Slider -->
-      <div class="feature-image-column">
-        <div
-          class="feature-image-slider"
-          (mouseenter)="onFeatureSliderHover()"
-          (mouseleave)="onFeatureSliderLeave()"
-        >
-          <div class="feature-slider-container">
-            <img
-              [src]="currentFeatureImage"
-              [alt]="productName + ' - Image ' + (featureSliderCurrentIndex + 1)"
-              class="feature-slider-image"
-            />
-
-            <!-- Navigation Arrows -->
-            @if (hasMultipleFeatureImages) {
-              <button
-                type="button"
-                class="feature-slider-arrow feature-slider-arrow-left"
-                (click)="featureSliderPrevious()"
-                aria-label="Previous image"
-              >
-                <mat-icon>chevron_left</mat-icon>
-              </button>
-              <button
-                type="button"
-                class="feature-slider-arrow feature-slider-arrow-right"
-                (click)="featureSliderNext()"
-                aria-label="Next image"
-              >
-                <mat-icon>chevron_right</mat-icon>
-              </button>
+        <!-- Column 2: Product Information -->
+        <div class="feature-info-column">
+          <div class="feature-info-content">
+            <!-- Product Title -->
+            @if (productFeature.title) {
+              <h1 class="feature-title">{{ productFeature?.title }}</h1>
             }
 
-            <!-- Dots Indicator -->
-            @if (hasMultipleFeatureImages) {
-              <div class="feature-slider-dots">
-                @for (image of productImages1; track $index) {
-                  <button
-                    type="button"
-                    class="feature-slider-dot"
-                    [class.active]="featureSliderCurrentIndex === $index"
-                    (click)="featureSliderGoTo($index)"
-                    [attr.aria-label]="'Go to image ' + ($index + 1)"
-                  ></button>
+            <!-- Product Subtitle -->
+            @if (productFeature.description) {
+              <h2 class="feature-subtitle">{{ productFeature.description }}</h2>
+            }
+
+            <!-- Bullet Points -->
+            @if (productFeature?.feature && productFeature.feature.length > 0) {
+              <ul class="feature-bullets">
+                @for (bullet of productFeature.feature; track $index) {
+                  <li class="feature-bullet-item">
+                    <span class="bullet-number">{{ $index + 1 }}</span>
+                    <span class="bullet-text">{{ bullet }}</span>
+                  </li>
                 }
-              </div>
+              </ul>
             }
-          </div>
-        </div>
-      </div>
 
-      <!-- Column 2: Product Information -->
-      <div class="feature-info-column">
-        <div class="feature-info-content">
-          <!-- Product Title -->
-          <h1 class="feature-title">DE-BLOAT</h1>
-
-          <!-- Product Subtitle -->
-          <h2 class="feature-subtitle">{{ productDescription }}</h2>
-
-          <!-- Bullet Points -->
-          <ul class="feature-bullets">
-            @for (bullet of productFeatureBullets; track $index) {
-              <li class="feature-bullet-item">
-                <span class="bullet-number">{{ $index + 1 }}</span>
-                <span class="bullet-text">{{ bullet }}</span>
-              </li>
+            <!-- Tag Line -->
+            @if (productFeature?.tagLine) {
+              <p class="feature-tagline">{{ productFeature.tagLine }}</p>
             }
-          </ul>
 
-          <!-- Tag Line -->
-          <p class="feature-tagline">{{ productTagLine }}</p>
-
-          <!-- Buy Now Button -->
-          <button
-            mat-raised-button
-            color="primary"
-            class="feature-buy-now-btn"
-            (click)="onBuyNow()"
-          >
-            Buy Now
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Ingredients Section - 4th Section -->
-    <div class="ingredients-section">
-      <div class="ingredients-header">
-        <h2 class="ingredients-title">PURE INGREDIENTS, 100% EFFECTIVE</h2>
-        <h3 class="ingredients-subtitle">POTENT INGREDIENTS, WITHOUT ANY ADDITIVES</h3>
-      </div>
-      <div class="ingredients-grid">
-        @for (ingredient of product.ingredients; track ingredient.name) {
-          <div class="ingredient-item">
-            <div class="ingredient-image-container">
-              <img
-                [src]="ingredient.icon"
-                [alt]="ingredient.name"
-                class="ingredient-image"
-              />
-            </div>
-            <h4 class="ingredient-name">{{ ingredient.name }}</h4>
-          </div>
-        }
-      </div>
-    </div>
-
-    <!-- Star-Endorsed Excellence Section - 5th Section -->
-    <div class="star-endorsed-section">
-      <div class="star-endorsed-content">
-        <!-- Column 1: Image (40%) -->
-        <div class="star-endorsed-image-column">
-          <div class="star-endorsed-image-container">
-            <img
-              [src]="starPowderImage"
-              alt="Star Powder"
-              class="star-endorsed-image"
-            />
-          </div>
-        </div>
-        <!-- Column 2: Text Content (60%) -->
-        <div class="star-endorsed-text-column">
-          <div class="star-endorsed-text-content">
-            <h2 class="star-endorsed-title">Star-Endorsed Excellence!</h2>
-            <p class="star-endorsed-description">
-              Crafted by a dedicated (Your Designation), Mrs. Shweta Shah, our Debloat Powder Supplement has garnered
-              the admiration of numerous celebrities who rely on its effectiveness. With a formula that combines science
-              and nature, our product stands as a trusted choice in the wellness routines of those in the limelight.
-              Join the ranks of the satisfied and experience the debloating power that celebrities trust.
-            </p>
+            <!-- Buy Now Button -->
             <button
               mat-raised-button
               color="primary"
-              class="star-endorsed-buy-btn"
+              class="feature-buy-now-btn"
               (click)="onBuyNow()"
             >
               Buy Now
@@ -304,103 +272,226 @@
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- How to Consume Section - 2 Column Layout -->
-    <div class="consume-section">
-      <!-- Column 1: Text Content (30%) -->
-      <div class="consume-text-column">
-        <div class="consume-text-content">
-          <!-- How to Consume -->
-          <div class="consume-block">
-            <h2 class="consume-title">How to Consume:</h2>
-            <ul class="consume-list">
-              <li>{{ product.consumptionInstructions.amount }}</li>
-              <li>Can mix it with {{ product.consumptionInstructions.methods.join(', ') }}</li>
-            </ul>
-          </div>
-
-          <!-- When to Consume -->
-          <div class="consume-block">
-            <h2 class="consume-title">When to Consume</h2>
-            <p class="consume-subtext">Take 2 tsp a day</p>
-            <ul class="consume-list">
-              <li>{{ product.consumptionInstructions.timing.morning }}</li>
-              <li>{{ product.consumptionInstructions.timing.evening }}</li>
-            </ul>
-          </div>
-
-          <!-- Buy Now Button -->
-          <button
-            mat-raised-button
-            color="primary"
-            class="consume-buy-now-btn"
-            (click)="onBuyNow()"
-          >
-            Buy Now
-          </button>
+      <!-- Ingredients Section - 4th Section -->
+      <div class="ingredients-section">
+        <div class="ingredients-header">
+          @if (productIngredients.title) {
+            <h2 class="ingredients-title">{{ productIngredients.title }}</h2>
+          }
+          @if (productIngredients.description) {
+            <h3 class="ingredients-subtitle">productIngredients.description</h3>
+          }
+        </div>
+        <div class="ingredients-grid">
+          @for (ingredient of productIngredients.ingredients; track ingredient.name) {
+            <div class="ingredient-item">
+              @if (ingredient.icon && ingredient.icon.length > 0) {
+                <div class="ingredient-image-container">
+                  <img
+                    [src]="ingredient.icon[0].webUrl"
+                    [alt]="ingredient.name"
+                    class="ingredient-image"
+                  />
+                </div>
+              }
+              <h4 class="ingredient-name">{{ ingredient.name }}</h4>
+              @if (ingredient.description) {
+                <p class="ingredient-description">{{ ingredient.description }}</p>
+              }
+            </div>
+          }
         </div>
       </div>
 
-      <!-- Column 2: Video (70%) -->
-      <div class="consume-video-column">
-        <div class="consume-video-container">
-          <video
-            src="/assets/videos/video-2.mp4"
-            controls
-            loop
-            autoplay
-            muted
-            playsinline
-            preload="auto"
-            class="consume-video"
-            [poster]="productImages[0]"
-            (error)="onVideoError($event)"
-            (loadeddata)="onVideoLoaded()"
-          >
-            Your browser does not support the video tag.
-          </video>
+      <!-- Star-Endorsed Excellence Section - 5th Section -->
+      @if (productStartEndorsed && productStartEndorsed.mediaData) {
+        <div class="star-endorsed-section">
+          <div class="star-endorsed-content">
+            <!-- Column 1: Image/Video (40%) -->
+            <div class="star-endorsed-image-column">
+              <div class="star-endorsed-image-container">
+                @if (productStartEndorsed.mediaData.mediaType === 'video' && productStartEndorsed.mediaData.mediaLink && productStartEndorsed.mediaData.mediaLink.length > 0) {
+                  <video
+                    [src]="productStartEndorsed.mediaData.mediaLink[0].webUrl"
+                    controls
+                    loop
+                    autoplay
+                    muted
+                    playsinline
+                    preload="auto"
+                    class="star-endorsed-media"
+                    [poster]="productImages[0] || ''"
+                    (error)="onVideoError($event)"
+                    (loadeddata)="onVideoLoaded()"
+                  >
+                    Your browser does not support the video tag.
+                  </video>
+                } @else if (productStartEndorsed.mediaData.mediaLink && productStartEndorsed.mediaData.mediaLink.length > 0) {
+                  <img
+                    [src]="productStartEndorsed.mediaData.mediaLink[0].webUrl"
+                    [alt]="productStartEndorsed.title || 'Star Endorsed'"
+                    class="star-endorsed-image"
+                  />
+                } @else {
+                  <img
+                    [src]="starPowderImage"
+                    alt="Star Powder"
+                    class="star-endorsed-image"
+                  />
+                }
+              </div>
+            </div>
+            <!-- Column 2: Text Content (60%) -->
+            <div class="star-endorsed-text-column">
+              <div class="star-endorsed-text-content">
+                @if (productStartEndorsed.title) {
+                  <h2 class="star-endorsed-title">{{ productStartEndorsed.title }}</h2>
+                }
+                @if (productStartEndorsed.description) {
+                  <p class="star-endorsed-description">{{ productStartEndorsed.description }}</p>
+                }
+                <button
+                  mat-raised-button
+                  color="primary"
+                  class="star-endorsed-buy-btn"
+                  (click)="onBuyNow()"
+                >
+                  Buy Now
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
+      }
 
-    <!-- Efficient Outcomes Section -->
-    <div class="efficient-outcomes-section">
-      <div class="efficient-outcomes-header">
-        <h2 class="efficient-outcomes-title">Efficient Outcomes</h2>
-        <h3 class="efficient-outcomes-subtitle">Instant Comfort, Powered by 100% Natural Ingredients</h3>
-      </div>
-      <div class="efficient-outcomes-grid">
-        @for (outcome of product.outcomes; track outcome.title) {
-          <div class="outcome-item">
-            @if (outcome.icon) {
-              <div class="outcome-icon-container">
-                <img [src]="outcome.icon" [alt]="outcome.title" class="outcome-icon" />
+      <!-- How to Consume Section - 2 Column Layout -->
+      @if (productConsumptionInstructions && productConsumptionInstructions.metaData){
+        <div class="consume-section">
+          <!-- Column 1: Text Content (30%) -->
+          <div class="consume-text-column">
+            <div class="consume-text-content">
+              <!-- How to Consume -->
+              @if (productConsumptionInstructions.metaData.howToConsume) {
+                <div class="consume-block">
+                  <h2 class="consume-title">How to Consume:</h2>
+                  <ul class="consume-list">
+                    @for (instruction of productConsumptionInstructions.metaData.howToConsume; track $index) {
+                      <li>{{ instruction }}</li>
+                    }
+                  </ul>
+                </div>
+              }
+
+              <!-- When to Consume -->
+              @if (productConsumptionInstructions.metaData.whenToConsume) {
+                <div class="consume-block">
+                  <h2 class="consume-title">When to Consume</h2>
+                  <ul class="consume-list">
+                    @for (timing of productConsumptionInstructions.metaData.whenToConsume; track $index) {
+                      <li>{{ timing }}</li>
+                    }
+                  </ul>
+                </div>
+              }
+
+              <!-- Buy Now Button -->
+              <button
+                mat-raised-button
+                color="primary"
+                class="consume-buy-now-btn"
+                (click)="onBuyNow()"
+              >
+                Buy Now
+              </button>
+            </div>
+          </div>
+
+          <!-- Column 2: Video (70%) -->
+          @if (productConsumptionInstructions.mediaData.mediaLink && productConsumptionInstructions.mediaData.mediaType === 'video') {
+            <div class="consume-video-column">
+              <div class="consume-video-container">
+                <video
+                  [src]="productConsumptionInstructions.mediaData.mediaLink[0].webUrl"
+                  controls
+                  loop
+                  autoplay
+                  muted
+                  playsinline
+                  preload="auto"
+                  class="consume-video"
+                  [poster]="productImages[0] || ''"
+                  (error)="onVideoError($event)"
+                  (loadeddata)="onVideoLoaded()"
+                >
+                  Your browser does not support the video tag.
+                </video>
+              </div>
+            </div>
+          } @else if (productImages.length > 0) {
+            <div class="consume-video-column">
+              <div class="consume-video-container">
+                <img
+                  [src]="productImages[0]"
+                  [alt]="productName"
+                  class="consume-image"
+                />
+              </div>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- Efficient Outcomes Section -->
+      @if (outcomesObject) {
+        <div class="efficient-outcomes-section">
+          <div class="efficient-outcomes-header">
+            @if (outcomesObject.title) {
+              <h2 class="efficient-outcomes-title">{{ outcomesObject.title }}</h2>
+            }
+            @if (outcomesObject.description) {
+              <h3 class="efficient-outcomes-subtitle">{{ outcomesObject.description }}</h3>
+            }
+          </div>
+          <div class="efficient-outcomes-grid">
+            @for (outcome of productOutcomes; track outcome.title) {
+              <div class="outcome-item">
+                @if (outcome.icon) {
+                  <div class="outcome-icon-container">
+                    <img [src]="outcome.icon[0].webUrl" [alt]="outcome.title" class="outcome-icon" />
+                  </div>
+                }
+                <h4 class="outcome-title">{{ outcome.title }}</h4>
+                <p class="outcome-description">{{ outcome.description }}</p>
               </div>
             }
-            <h4 class="outcome-title">{{ outcome.title }}</h4>
-            <p class="outcome-description">{{ outcome.description }}</p>
           </div>
-        }
-      </div>
-    </div>
+        </div>
+      }
 
-    <!-- Tried and Tested Section -->
-    <div class="tried-and-tested-section">
-      <div class="tried-and-tested-header">
-        <h2 class="tried-and-tested-title">TRIED AND TESTED</h2>
-        <h3 class="tried-and-tested-subtitle">After 6 days of taking debloat twice a day, consumer said</h3>
-      </div>
-      <div class="tried-and-tested-image-container">
-        <img
-          [src]="triedAndTestedImage"
-          alt="Tried and Tested Statistics"
-          class="tried-and-tested-image"
-        />
-      </div>
-    </div>
+      <!-- Tried and Tested Section -->
+      @if (productReportSection) {
+        <div class="tried-and-tested-section">
+          <div class="tried-and-tested-header">
+            @if (productReportSection.title) {
+              <h2 class="tried-and-tested-title">{{ productReportSection.title }}</h2>
+            }
+            @if (productReportSection.description) {
+              <h3 class="tried-and-tested-subtitle">{{ productReportSection.description }}</h3>
+            }
+          </div>
+          <div class="tried-and-tested-image-container">
+            <img
+              [src]="productReportSection.mediaData.mediaLink[0].webUrl"
+              alt="Tried and Tested Statistics"
+              class="tried-and-tested-image"
+            />
+          </div>
+        </div>
+      }
 
-    <!-- FAQs Section -->
-    <app-section-faq [categories]="['debloat-powder']" [showCategory]="false" />
+      <!-- FAQs Section -->
+      <app-section-faq [categories]="['debloat-powder']" [showCategory]="false" />
+    }
   </div>
 </section>

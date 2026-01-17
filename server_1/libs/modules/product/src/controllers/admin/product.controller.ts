@@ -1,14 +1,18 @@
 import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { CurrentUser, JwtAuthGuard, RequestedIp } from '@server_1/core';
 import { BasicSearchDto, UpdateActiveDto } from '@server_1/shared-dto';
+import { CurrencyService } from '@server_1/platform';
 import { ProductService } from '../../services';
 import { CreateProductDto } from '../../dto';
-import { IProduct, ITableList } from '@eatfit247-shared-lib';
+import { IDropdownItem, IProduct, ITableList } from '@eatfit247-shared-lib';
 
 @Controller('product')
 @UseGuards(JwtAuthGuard)
 export class ProductController {
-  constructor(private readonly service: ProductService) {}
+  constructor(
+    private readonly service: ProductService,
+    private readonly currencyService: CurrencyService,
+  ) {}
 
   @Get('list')
   async list(@Query() req: BasicSearchDto): Promise<ITableList<IProduct>> {
@@ -52,6 +56,16 @@ export class ProductController {
       requestedIp,
       currentUser.adminId,
     );
+  }
+
+  @Get('product-master')
+  async productMasterData(): Promise<{
+    currencies: IDropdownItem[];
+  }> {
+    const currencies = await this.currencyService.getAllCurrencies();
+    return {
+      currencies: currencies.map((s: any) => {return { id: s.currencyCode, label: s.label };}),
+    };
   }
 }
 

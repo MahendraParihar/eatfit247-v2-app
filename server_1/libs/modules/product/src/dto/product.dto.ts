@@ -3,6 +3,7 @@ import {
   IsBoolean,
   IsNotEmpty,
   IsNumber,
+  IsObject,
   IsOptional,
   IsString,
   MaxLength,
@@ -12,182 +13,176 @@ import {
 import { Type } from 'class-transformer';
 import {
   IManageProduct,
-  InputLengthEnum,
-  IProductBenefit,
-  IProductConsumptionInstructions,
-  IProductFAQ,
-  IProductIngredient,
-  IProductSize,
+  IProductAdditionalInfo,
+  IProductFee,
+  InputLengthEnum, IOutcomeSection, IProductIngredientSection, IOutcomes, IMediaUpload, IIngredient,
 } from '@eatfit247-shared-lib';
 import { MediaUploadDto } from '@server_1/core';
 
-class ProductSizeDto implements IProductSize {
-  @IsNotEmpty()
-  @IsString()
-  value!: string;
-
-  @IsNotEmpty()
-  @IsString()
-  label!: string;
-
+class ProductFeeDto implements IProductFee {
   @IsNotEmpty()
   @IsNumber()
   price!: number;
-}
-
-class ProductIngredientDto implements IProductIngredient {
   @IsNotEmpty()
   @IsString()
-  name!: string;
-
-  @IsOptional()
+  currency!: string;
+  @IsNotEmpty()
+  @IsNumber()
+  quantity!: number;
+  @IsNotEmpty()
   @IsString()
-  icon?: string;
-
-  @IsOptional()
-  @IsString()
-  description?: string;
+  unit!: string;
 }
 
-class ProductBenefitDto implements IProductBenefit {
+class OutcomeSection implements IOutcomeSection {
+  @IsOptional()
+  @IsString()
+  title!: string;
+  @IsOptional()
+  @IsString()
+  description!: string;
+  @IsArray()
+  @ValidateNested({ each: true })
+  outcome: OutcomeDto[];
+}
+
+class OutcomeDto implements IOutcomes {
   @IsNotEmpty()
   @IsString()
   title!: string;
-
   @IsNotEmpty()
   @IsString()
   description!: string;
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => MediaUploadDto)
+  icon?: MediaUploadDto[];
+}
 
+export class IngredientDto implements IIngredient {
   @IsOptional()
   @IsString()
-  icon?: string;
+  name: string;
+  @IsOptional()
+  @IsString()
+  description?: string;
+  @IsArray()
+  @ValidateNested({ each: true })
+  icon?: IMediaUpload[];
 }
 
-class ProductConsumptionTimingDto {
-  @IsNotEmpty()
+export class ProductIngredientSectionDto implements IProductIngredientSection {
+  @IsOptional()
   @IsString()
-  morning!: string;
-
-  @IsNotEmpty()
+  title!: string;
+  @IsOptional()
   @IsString()
-  evening!: string;
+  description!: string;
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  ingredients: IngredientDto[];
 }
 
-class ProductConsumptionInstructionsDto
-  implements IProductConsumptionInstructions
-{
-  @IsNotEmpty()
-  @IsString()
-  amount!: string;
-
-  @IsNotEmpty()
+class ProductAdditionalInfoDto implements IProductAdditionalInfo {
+  @IsOptional()
+  @IsObject()
+  ingredients?: ProductIngredientSectionDto;
+  @IsOptional()
+  @IsObject()
+  priceRange?: {
+    min: number;
+    max: number;
+  };
+  @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  methods!: string[];
-
-  @IsNotEmpty()
-  @ValidateNested()
-  @Type(() => ProductConsumptionTimingDto)
-  timing!: ProductConsumptionTimingDto;
-}
-
-class ProductFAQDto implements IProductFAQ {
-  @IsNotEmpty()
+  benefits?: string[];
+  @IsOptional()
   @IsString()
-  question!: string;
-
-  @IsNotEmpty()
+  dose?: string;
+  @IsOptional()
   @IsString()
-  answer!: string;
+  howToTake?: string;
+  @IsOptional()
+  @IsObject()
+  feature?: {
+    title: string;
+    description: string;
+    images: any[];
+    feature: string[];
+    tagLine: string;
+  };
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  precautions?: string[];
+  @IsOptional()
+  @IsObject()
+  consumptionInstructions?: {
+    title: string;
+    description: string;
+    mediaDirection: 'left' | 'right' | 'center';
+    metaData: {
+      howToConsume: string[];
+      whenToConsume: string[];
+    };
+    mediaData: {
+      mediaType: 'image' | 'video';
+      mediaLink: any[];
+    };
+  };
+  @IsOptional()
+  @IsObject()
+  report?: {
+    title: string;
+    description: string;
+    mediaDirection: 'left' | 'right' | 'center';
+    mediaData: {
+      mediaType: 'image' | 'video';
+      mediaLink: any[];
+    };
+  };
+  @IsOptional()
+  @IsObject()
+  @Type(() => OutcomeSection)
+  outcomes?: OutcomeSection;
+  @IsOptional()
+  @IsObject()
+  startEndorsed?: {
+    title: string;
+    description: string;
+    mediaData: {
+      mediaType: 'image' | 'video';
+      mediaLink: any[];
+    };
+  };
 }
 
 export class CreateProductDto implements IManageProduct {
   @IsNotEmpty()
   @MinLength(InputLengthEnum.CHAR_2)
-  @MaxLength(InputLengthEnum.CHAR_100)
+  @MaxLength(InputLengthEnum.CHAR_250)
   @IsString()
   name!: string;
-
   @IsNotEmpty()
-  @MinLength(InputLengthEnum.CHAR_2)
-  @MaxLength(InputLengthEnum.CHAR_100)
-  @IsString()
-  slug!: string;
-
-  @IsOptional()
-  @IsString()
-  description?: string;
-
-  @IsNotEmpty()
-  @IsNumber()
-  priceRange!: {
-    min: number;
-    max: number;
-  };
-
-  @IsNotEmpty()
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => ProductSizeDto)
-  sizes!: ProductSizeDto[];
-
-  @IsNotEmpty()
-  @IsArray()
-  @IsString({ each: true })
-  benefits!: string[];
-
-  @IsNotEmpty()
-  @MaxLength(InputLengthEnum.CHAR_200)
-  @IsString()
-  dose!: string;
-
-  @IsNotEmpty()
-  @IsString()
-  howToTake!: string;
-
-  @IsNotEmpty()
-  @IsArray()
-  @IsString({ each: true })
-  precautions!: string[];
-
-  @IsNotEmpty()
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => ProductIngredientDto)
-  ingredients!: ProductIngredientDto[];
-
-  @IsNotEmpty()
-  @ValidateNested()
-  @Type(() => ProductConsumptionInstructionsDto)
-  consumptionInstructions!: ProductConsumptionInstructionsDto;
-
-  @IsNotEmpty()
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => ProductBenefitDto)
-  outcomes!: ProductBenefitDto[];
-
-  @IsNotEmpty()
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => ProductFAQDto)
-  faqs!: ProductFAQDto[];
-
-  @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => MediaUploadDto)
-  images?: MediaUploadDto[];
-
-  @IsOptional()
+  imagePath!: MediaUploadDto[];
+  @IsNotEmpty()
   @IsArray()
-  @IsString({ each: true })
-  videos?: string[];
-
+  @ValidateNested({ each: true })
+  @Type(() => ProductFeeDto)
+  fees!: ProductFeeDto[];
+  @IsObject()
+  @ValidateNested()
+  @Type(() => ProductAdditionalInfoDto)
+  additionalInfo!: ProductAdditionalInfoDto;
   @IsNotEmpty()
   @IsBoolean()
   active!: boolean;
-
   @IsOptional()
   @IsNumber()
   productId?: number;

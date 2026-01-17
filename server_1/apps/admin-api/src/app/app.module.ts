@@ -31,6 +31,7 @@ import { LovsModule } from '@server_1/modules/lovs';
 import { SuccessStoriesModule } from '@server_1/modules/success-stories';
 import { AdminUserModule } from '@server_1/admin-only/admin-user';
 import { ReportsModule } from '@server_1/admin-only/reports';
+import { ProductAdminModule } from '@server_1/modules/product';
 
 @Module({
   imports: [
@@ -66,6 +67,7 @@ import { ReportsModule } from '@server_1/admin-only/reports';
     SuccessStoriesModule,
     AdminUserModule,
     ReportsModule,
+    ProductAdminModule,
     CommonModule.forRoot(
       ['Common', 'Email', 'Google', 'Calendar', 'Payment'],
       PlatformModule.getModels(),

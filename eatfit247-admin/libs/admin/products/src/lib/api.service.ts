@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { ApiBaseService, HttpService } from '@core';
-import { IProduct, ITableList } from '@eatfit247-shared-lib';
+import { IDropdownItem, IProduct, ITableList } from '@eatfit247-shared-lib';
 
 @Injectable({
   providedIn: 'root',
@@ -32,6 +32,11 @@ export class ProductsApiService extends ApiBaseService {
 
   async updateStatus(id: number, active: boolean): Promise<void> {
     await this.httpService.patch<void>(`${this.endpoint}/update-status/${id}`, { active });
+  }
+
+  async getMasterData(): Promise<{ currencies: IDropdownItem[] }> {
+    const res = await this.httpService.get<{ currencies: IDropdownItem[] }>(`${this.endpoint}/product-master`);
+    return res.data as { currencies: IDropdownItem[] };
   }
 }
 

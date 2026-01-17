@@ -22,7 +22,7 @@ export class FileUploadController {
   async uploadFile(@Body() mediaDto: MediaDto,
     @UploadedFile(
       new ParseFilePipeBuilder()
-        .addMaxSizeValidator({ maxSize: 5 * 1024 * 1024 })
+        .addMaxSizeValidator({ maxSize: 50 * 1024 * 1024 })
         .build({ errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY })
     ) file: Express.Multer.File) {
     const fileName = file.originalname.replace(/[/\\?%*:|"<>]/g, "-");

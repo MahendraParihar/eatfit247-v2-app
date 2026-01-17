@@ -1,59 +1,100 @@
 import { IBaseAdminUser } from '../base.interface';
 import { IMediaUpload } from './media-upload.interface';
 
-export interface IProductSize {
-  value: string;
-  label: string;
+export interface IProductFee {
   price: number;
+  currency: string;
+  quantity: number;
+  unit: string;
 }
 
-export interface IProductIngredient {
+export interface IIngredient {
   name: string;
-  icon?: string;
+  icon?: IMediaUpload[];
   description?: string;
 }
 
-export interface IProductBenefit {
+export interface IOutcomeSection {
   title: string;
   description: string;
-  icon?: string;
+  outcome?: IOutcomes[];
 }
 
-export interface IProductConsumptionTiming {
-  morning: string;
-  evening: string;
+export interface IOutcomes {
+  title: string;
+  description: string;
+  icon?: IMediaUpload[];
 }
 
-export interface IProductConsumptionInstructions {
-  amount: string;
-  methods: string[];
-  timing: IProductConsumptionTiming;
+export interface IProductIngredientSection {
+  title: string;
+  description: string;
+  ingredients: IIngredient[];
 }
 
-export interface IProductFAQ {
-  question: string;
-  answer: string;
+export interface IProductReport {
+  title: string;
+  description: string;
+  mediaDirection: 'left' | 'right' | 'center';
+  mediaData: {
+    mediaType: 'image' | 'video';
+    mediaLink: IMediaUpload[];
+  };
 }
 
-export interface IBaseProduct {
-  name: string;
-  slug: string;
-  description?: string;
-  priceRange: {
+export interface IProjectConsumptionInstructionSection {
+  title: string;
+  description: string;
+  mediaDirection: 'left' | 'right' | 'center';
+  metaData: {
+    howToConsume: string[];
+    whenToConsume: string[];
+  };
+  mediaData: {
+    mediaType: 'image' | 'video';
+    mediaLink: IMediaUpload[];
+  };
+}
+
+export interface IProjectFeatureSection {
+  title: string;
+  description: string;
+  images: IMediaUpload[];
+  feature: string[];
+  tagLine: string;
+}
+
+export interface IProjectStarEndorsedSection {
+  title: string;
+  description: string;
+  mediaData: {
+    mediaType: 'image' | 'video';
+    mediaLink: IMediaUpload[];
+  };
+}
+
+export interface IProductAdditionalInfo {
+  ingredients?: IProductIngredientSection;
+  priceRange?: {
     min: number;
     max: number;
   };
-  sizes: IProductSize[];
-  benefits: string[];
-  dose: string;
-  howToTake: string;
-  precautions: string[];
-  ingredients: IProductIngredient[];
-  consumptionInstructions: IProductConsumptionInstructions;
-  outcomes: IProductBenefit[];
-  faqs: IProductFAQ[];
-  images?: IMediaUpload[];
-  videos?: string[];
+  benefits?: string[];
+  dose?: string;
+  howToTake?: string;
+  feature?: IProjectFeatureSection;
+  precautions?: string[];
+  consumptionInstructions?: IProjectConsumptionInstructionSection;
+  report?: IProductReport;
+  outcomes?: IOutcomeSection;
+  startEndorsed?: IProjectStarEndorsedSection;
+}
+
+interface IBaseProduct {
+  name: string;
+  imagePath: IMediaUpload[];
+  fees: IProductFee[];
+  additionalInfo: IProductAdditionalInfo;
 }
 
 export interface IManageProduct extends IBaseProduct {
@@ -65,9 +106,11 @@ export interface IProduct extends IBaseProduct {
   productId: number;
   active: boolean;
   createdBy: number;
-  updatedBy: number;
+  modifiedBy: number;
   createdAt: Date;
   updatedAt: Date;
+  createdIp: string;
+  modifiedIp: string;
   createdByUser?: IBaseAdminUser;
   updatedByUser?: IBaseAdminUser;
 }

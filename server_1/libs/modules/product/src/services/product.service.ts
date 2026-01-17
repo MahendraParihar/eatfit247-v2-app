@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { TxnProduct } from '../models';
+import { MstProduct } from '../models';
 import {
   IBasicSearch,
   IManageProduct,
@@ -14,9 +14,8 @@ import { AppConfigService, CommonFunctionsUtil, SearchUtil } from '@server_1/cor
 @Injectable()
 export class ProductService {
   constructor(
-    @InjectModel(TxnProduct)
-    private readonly productRepository: typeof TxnProduct,
-    private appConfigService: AppConfigService,
+    @InjectModel(MstProduct)
+    private readonly productRepository: typeof MstProduct,
   ) {}
 
   public async findAll(
@@ -26,7 +25,6 @@ export class ProductService {
     const pageNumber = searchDto.page || 0;
     const pageSize = searchDto.limit || 15;
     const offset = pageNumber === 0 ? 0 : pageNumber * pageSize;
-
     const { rows, count } = await this.productRepository
       .scope('list')
       .findAndCountAll({
@@ -37,7 +35,6 @@ export class ProductService {
         raw: true,
         nest: true,
       });
-
     const resList: IProduct[] = rows.map((item: any) => {
       return this.convertToModel(item);
     });
@@ -52,11 +49,9 @@ export class ProductService {
   ): Promise<IPublicTableList<IPublicProduct>> {
     const whereCondition: any = SearchUtil.filterBasicSearch(searchDto, 'name');
     whereCondition.active = true; // Only active products for public
-
     const pageNumber = searchDto.page || 0;
     const pageSize = searchDto.limit || 15;
     const offset = pageNumber === 0 ? 0 : pageNumber * pageSize;
-
     const { rows, count } = await this.productRepository.findAndCountAll({
       where: whereCondition,
       order: [['createdAt', 'DESC']],
@@ -65,7 +60,6 @@ export class ProductService {
       raw: true,
       nest: true,
     });
-
     const resList: IPublicProduct[] = rows.map((item: any) => {
       return this.convertToPublic(this.convertToModel(item));
     });
@@ -76,46 +70,29 @@ export class ProductService {
   }
 
   public async findBySlug(slug: string): Promise<IPublicProduct> {
-    const find = await this.productRepository.findOne({
-      where: { slug, active: true },
-      raw: true,
-      nest: true,
-    });
-    if (!find) {
-      throw new NotFoundException('Product not found');
-    }
-    return this.convertToPublic(this.convertToModel(find));
+    // Note: slug is not in the new mst_product table structure
+    // This method is kept for backward compatibility but may need to be updated
+    // to use productId or name instead
+    throw new NotFoundException('Product lookup by slug is not supported in the new schema');
   }
 
   private convertToModel(item: any): IProduct {
+    const imagePath = item.imagePath
+      ? CommonFunctionsUtil.buildImageUrl(item.imagePath)
+      : [];
     return <IProduct>{
       productId: item.productId,
-      id: item.productId,
       name: item.name,
-      slug: item.slug,
-      description: item.description,
-      priceRange: {
-        min: item.priceRangeMin,
-        max: item.priceRangeMax,
-      },
-      sizes: item.sizes,
-      benefits: item.benefits,
-      dose: item.dose,
-      howToTake: item.howToTake,
-      precautions: item.precautions,
-      ingredients: item.ingredients,
-      consumptionInstructions: item.consumptionInstructions,
-      outcomes: item.outcomes,
-      faqs: item.faqs,
-      images: item.images
-        ? CommonFunctionsUtil.buildImageUrl(item.images)
-        : undefined,
-      videos: item.videos,
+      imagePath: imagePath,
+      fees: item.fees || [],
+      additionalInfo: item.additionalInfo || {},
       active: item.active,
       createdBy: item.createdBy,
-      updatedBy: item.updatedBy,
+      modifiedBy: item.modifiedBy,
       createdAt: item.createdAt,
       updatedAt: item.updatedAt,
+      createdIp: item.createdIp,
+      modifiedIp: item.modifiedIp,
       createdByUser: item.createdByUser,
       updatedByUser: item.updatedByUser,
     };
@@ -127,7 +104,7 @@ export class ProductService {
   private convertToPublic(product: IProduct): IPublicProduct {
     const {
       createdBy,
-      updatedBy,
+      modifiedBy,
       createdAt,
       updatedAt,
       active,
@@ -157,24 +134,12 @@ export class ProductService {
   ): Promise<void> {
     const createObj = {
       name: obj.name,
-      slug: obj.slug,
-      description: obj.description || null,
-      priceRangeMin: obj.priceRange.min,
-      priceRangeMax: obj.priceRange.max,
-      sizes: obj.sizes,
-      benefits: obj.benefits,
-      dose: obj.dose,
-      howToTake: obj.howToTake,
-      precautions: obj.precautions,
-      ingredients: obj.ingredients,
-      consumptionInstructions: obj.consumptionInstructions,
-      outcomes: obj.outcomes,
-      faqs: obj.faqs,
-      images: obj.images && obj.images.length > 0 ? obj.images : null,
-      videos: obj.videos && obj.videos.length > 0 ? obj.videos : null,
+      imagePath: obj.imagePath || [],
+      fees: obj.fees || [],
+      additionalInfo: obj.additionalInfo || {},
       active: obj.active,
       createdBy: adminId,
-      updatedBy: adminId,
+      modifiedBy: adminId,
       createdIp: cIp,
       modifiedIp: cIp,
     };
@@ -195,23 +160,11 @@ export class ProductService {
     }
     const updateObj = {
       name: obj.name,
-      slug: obj.slug,
-      description: obj.description || null,
-      priceRangeMin: obj.priceRange.min,
-      priceRangeMax: obj.priceRange.max,
-      sizes: obj.sizes,
-      benefits: obj.benefits,
-      dose: obj.dose,
-      howToTake: obj.howToTake,
-      precautions: obj.precautions,
-      ingredients: obj.ingredients,
-      consumptionInstructions: obj.consumptionInstructions,
-      outcomes: obj.outcomes,
-      faqs: obj.faqs,
-      images: obj.images && obj.images.length > 0 ? obj.images : null,
-      videos: obj.videos && obj.videos.length > 0 ? obj.videos : null,
+      imagePath: obj.imagePath || [],
+      fees: obj.fees || [],
+      additionalInfo: obj.additionalInfo || {},
       active: obj.active,
-      updatedBy: adminId,
+      modifiedBy: adminId,
       modifiedIp: cIp,
     };
     await this.productRepository.update(updateObj, {
@@ -233,7 +186,7 @@ export class ProductService {
     }
     const updateObj = {
       active: active,
-      updatedBy: adminId,
+      modifiedBy: adminId,
       modifiedIp: cIp,
     };
     await this.productRepository.update(updateObj, {

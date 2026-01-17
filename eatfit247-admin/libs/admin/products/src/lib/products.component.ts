@@ -49,7 +49,7 @@ export class Products implements OnInit {
         key: 'image',
         label: 'Image',
         isAvatar: true,
-        dataKey: 'images',
+        dataKey: 'imagePath',
         sortable: false,
         type: 'image',
         formatter: (value) => {
@@ -60,15 +60,15 @@ export class Products implements OnInit {
         }
       },
       { key: 'name', label: 'Name', dataKey: 'name', sortable: true, searchable: true },
-      { key: 'slug', label: 'Slug', dataKey: 'slug', sortable: true, searchable: true },
       {
         key: 'priceRange',
         label: 'Price Range',
-        dataKey: 'priceRange',
+        dataKey: 'additionalInfo.priceRange',
         sortable: false,
-        formatter: (value) => {
-          if (value && value.min !== undefined && value.max !== undefined) {
-            return `₹${value.min} - ₹${value.max}`;
+        formatter: (value, row) => {
+          const priceRange = row?.additionalInfo?.priceRange;
+          if (priceRange && priceRange.min !== undefined && priceRange.max !== undefined) {
+            return `₹${priceRange.min} - ₹${priceRange.max}`;
           }
           return '-';
         }

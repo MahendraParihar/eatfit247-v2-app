@@ -7,189 +7,160 @@
       <div class="form-fields">
         <!-- Basic Information -->
         <div class="section-header">Basic Information</div>
-        
-        <div class="row">
-          <mat-form-field class="half-width">
-            <mat-label>Product Name</mat-label>
-            <input
-              matInput
-              formControlName="name"
-              placeholder="Enter product name"
-              [maxlength]="100"
-              [minlength]="2"
-            />
-            <mat-hint align="end">
-              {{ formGroup.get('name')?.value?.length || 0 }}/100
-            </mat-hint>
-            <shared-ui-input-error [control]="formGroup.get('name')" controlName="Product Name"></shared-ui-input-error>
-          </mat-form-field>
 
-          <mat-form-field class="half-width">
-            <mat-label>Slug</mat-label>
-            <input
-              matInput
-              formControlName="slug"
-              placeholder="Enter product slug"
-              [maxlength]="100"
-              [minlength]="2"
-            />
-            <mat-hint align="end">
-              {{ formGroup.get('slug')?.value?.length || 0 }}/100
-            </mat-hint>
-            <shared-ui-input-error [control]="formGroup.get('slug')" controlName="Slug"></shared-ui-input-error>
-          </mat-form-field>
-        </div>
+        <mat-form-field class="full-width">
+          <mat-label>Product Name</mat-label>
+          <input
+            matInput
+            formControlName="name"
+            placeholder="Enter product name"
+            [maxlength]="100"
+            [minlength]="2"
+          />
+          <mat-hint align="end">
+            {{ formGroup.get('name')?.value?.length || 0 }}/100
+          </mat-hint>
+          <shared-ui-input-error [control]="formGroup.get('name')" controlName="Product Name"></shared-ui-input-error>
+        </mat-form-field>
 
-        <div class="full-width">
-          <label class="editor-label">Description</label>
-          @if (editor) {
-            <div class="NgxEditor__Wrapper">
-              <ngx-editor-menu [editor]="editor"></ngx-editor-menu>
-              <ngx-editor
-                [editor]="editor"
-                formControlName="description"
-                placeholder="Enter product description"
-              ></ngx-editor>
-            </div>
-          }
-          <shared-ui-input-error [control]="formGroup.get('description')" controlName="Description"></shared-ui-input-error>
-        </div>
-
-        <!-- Price Range -->
-        <div class="section-header">Pricing</div>
-        
-        <div [formGroup]="priceRangeGroup" class="row">
-          <mat-form-field class="half-width">
-            <mat-label>Min Price (₹)</mat-label>
-            <input
-              matInput
-              type="number"
-              formControlName="min"
-              placeholder="Enter minimum price"
-              [min]="0"
-            />
-            <shared-ui-input-error [control]="formGroup.get('priceRange')?.get('min')" controlName="Min Price"></shared-ui-input-error>
-          </mat-form-field>
-
-          <mat-form-field class="half-width">
-            <mat-label>Max Price (₹)</mat-label>
-            <input
-              matInput
-              type="number"
-              formControlName="max"
-              placeholder="Enter maximum price"
-              [min]="0"
-            />
-            <shared-ui-input-error [control]="formGroup.get('priceRange')?.get('max')" controlName="Max Price"></shared-ui-input-error>
-          </mat-form-field>
-        </div>
-
-        <!-- Sizes -->
+        <!-- Fees -->
         <div class="section-header">
-          Product Sizes
-          <button type="button" mat-icon-button color="primary" (click)="addSize()">
+          Product Fees
+          <button type="button" mat-icon-button color="primary" (click)="addFee()">
             <mat-icon>add</mat-icon>
           </button>
         </div>
-        
-        <div formArrayName="sizes" class="array-container">
-          @for (sizeControl of sizesArray.controls; track $index) {
+
+        <div formArrayName="fees" class="array-container">
+          @for (feeControl of feesArray.controls; track $index) {
             <div [formGroupName]="$index" class="array-item">
-              <mat-form-field class="third-width">
-                <mat-label>Value</mat-label>
-                <input matInput formControlName="value" placeholder="e.g., 500g" />
-                <shared-ui-input-error [control]="sizeControl.get('value')" controlName="Value"></shared-ui-input-error>
-              </mat-form-field>
-              <mat-form-field class="third-width">
-                <mat-label>Label</mat-label>
-                <input matInput formControlName="label" placeholder="e.g., 500 grams" />
-                <shared-ui-input-error [control]="sizeControl.get('label')" controlName="Label"></shared-ui-input-error>
-              </mat-form-field>
-              <mat-form-field class="third-width">
-                <mat-label>Price (₹)</mat-label>
+              <mat-form-field class="quarter-width">
+                <mat-label>Price</mat-label>
                 <input matInput type="number" formControlName="price" placeholder="Enter price" [min]="0" />
-                <shared-ui-input-error [control]="sizeControl.get('price')" controlName="Price"></shared-ui-input-error>
+                <shared-ui-input-error [control]="feeControl.get('price')" controlName="Price"></shared-ui-input-error>
               </mat-form-field>
-              <button type="button" mat-icon-button color="warn" (click)="removeSize($index)">
+              <mat-form-field class="quarter-width">
+                <mat-label>Currency</mat-label>
+                <mat-select formControlName="currency">
+                  <mat-option [value]="">Select Currency</mat-option>
+                  @for (currency of currencyOptions; track currency.id) {
+                    <mat-option [value]="currency.id">{{ currency.id }}</mat-option>
+                  }
+                </mat-select>
+                <shared-ui-input-error [control]="feeControl.get('currency')"
+                                       controlName="Currency"></shared-ui-input-error>
+              </mat-form-field>
+              <mat-form-field class="quarter-width">
+                <mat-label>Quantity</mat-label>
+                <input matInput type="number" formControlName="quantity" placeholder="Enter quantity" [min]="1" />
+                <shared-ui-input-error [control]="feeControl.get('quantity')"
+                                       controlName="Quantity"></shared-ui-input-error>
+              </mat-form-field>
+              <mat-form-field class="quarter-width">
+                <mat-label>Unit</mat-label>
+                <mat-select formControlName="unit">
+                  @for (unit of unitOptions; track unit) {
+                    <mat-option [value]="unit">{{ unit }}</mat-option>
+                  }
+                </mat-select>
+                <shared-ui-input-error [control]="feeControl.get('unit')" controlName="Unit"></shared-ui-input-error>
+              </mat-form-field>
+              <button type="button" mat-icon-button color="warn" (click)="removeFee($index)">
                 <mat-icon>delete</mat-icon>
               </button>
             </div>
           }
         </div>
 
-        <!-- Benefits -->
-        <div class="section-header">
-          Benefits
-          <button type="button" mat-icon-button color="primary" (click)="addBenefit()">
-            <mat-icon>add</mat-icon>
-          </button>
-        </div>
-        
-        <div formArrayName="benefits" class="array-container">
-          @for (benefitControl of benefitsArray.controls; track $index) {
-            <div class="array-item">
-              <mat-form-field class="full-width-minus-button">
-                <mat-label>Benefit</mat-label>
-                <input matInput [formControl]="$any(benefitControl)" placeholder="Enter benefit" />
-                <shared-ui-input-error [control]="benefitControl" controlName="Benefit"></shared-ui-input-error>
-              </mat-form-field>
-              <button type="button" mat-icon-button color="warn" (click)="removeBenefit($index)">
-                <mat-icon>delete</mat-icon>
+        <div class="row">
+          <!-- Benefits -->
+          <div class="half-width">
+            <div class="section-header">
+              Benefits
+              <button type="button" mat-icon-button color="primary" (click)="addBenefit()">
+                <mat-icon>add</mat-icon>
               </button>
             </div>
-          }
+
+            <div [formGroup]="additionalInfoGroup">
+              <div formArrayName="benefits" class="array-container">
+                @for (benefitControl of benefitsArray.controls; track $index) {
+                  <div class="array-item">
+                    <mat-form-field class="full-width-minus-button">
+                      <mat-label>Benefit</mat-label>
+                      <input matInput [formControl]="$any(benefitControl)" placeholder="Enter benefit" />
+                      <shared-ui-input-error [control]="benefitControl" controlName="Benefit"></shared-ui-input-error>
+                    </mat-form-field>
+                    <button type="button" mat-icon-button color="warn" (click)="removeBenefit($index)">
+                      <mat-icon>delete</mat-icon>
+                    </button>
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+
+          <!-- Precautions -->
+          <div class="half-width">
+            <div class="section-header">
+              Precautions
+              <button type="button" mat-icon-button color="primary" (click)="addPrecaution()">
+                <mat-icon>add</mat-icon>
+              </button>
+            </div>
+
+            <div [formGroup]="additionalInfoGroup">
+              <div formArrayName="precautions" class="array-container">
+                @for (precautionControl of precautionsArray.controls; track $index) {
+                  <div class="array-item">
+                    <mat-form-field class="full-width-minus-button">
+                      <mat-label>Precaution</mat-label>
+                      <input matInput [formControl]="$any(precautionControl)" placeholder="Enter precaution" />
+                      <shared-ui-input-error [control]="precautionControl"
+                                             controlName="Precaution"></shared-ui-input-error>
+                    </mat-form-field>
+                    <button type="button" mat-icon-button color="warn" (click)="removePrecaution($index)">
+                      <mat-icon>delete</mat-icon>
+                    </button>
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- Dose and How to Take -->
         <div class="section-header">Usage Information</div>
-        
-        <mat-form-field class="full-width">
-          <mat-label>Dose</mat-label>
-          <input
-            matInput
-            formControlName="dose"
-            placeholder="Enter dose information"
-            [maxlength]="200"
-          />
-          <mat-hint align="end">
-            {{ formGroup.get('dose')?.value?.length || 0 }}/200
-          </mat-hint>
-          <shared-ui-input-error [control]="formGroup.get('dose')" controlName="Dose"></shared-ui-input-error>
-        </mat-form-field>
 
-        <mat-form-field class="full-width">
-          <mat-label>How to Take</mat-label>
-          <textarea
-            matInput
-            formControlName="howToTake"
-            placeholder="Enter how to take instructions"
-            rows="3"
-          ></textarea>
-          <shared-ui-input-error [control]="formGroup.get('howToTake')" controlName="How to Take"></shared-ui-input-error>
-        </mat-form-field>
+        <div [formGroup]="additionalInfoGroup">
+          <mat-form-field class="full-width">
+            <mat-label>Dose</mat-label>
+            <input
+              matInput
+              formControlName="dose"
+              placeholder="Enter dose information"
+              [maxlength]="200"
+            />
+            <mat-hint align="end">
+              {{ additionalInfoGroup.get('dose')?.value?.length || 0 }}/200
+            </mat-hint>
+            <shared-ui-input-error [control]="additionalInfoGroup.get('dose')"
+                                   controlName="Dose"></shared-ui-input-error>
+          </mat-form-field>
 
-        <!-- Precautions -->
-        <div class="section-header">
-          Precautions
-          <button type="button" mat-icon-button color="primary" (click)="addPrecaution()">
-            <mat-icon>add</mat-icon>
-          </button>
+          <mat-form-field class="full-width">
+            <mat-label>How to Take</mat-label>
+            <textarea
+              matInput
+              formControlName="howToTake"
+              placeholder="Enter how to take instructions"
+              rows="3"
+            ></textarea>
+            <shared-ui-input-error [control]="additionalInfoGroup.get('howToTake')"
+                                   controlName="How to Take"></shared-ui-input-error>
+          </mat-form-field>
         </div>
-        
-        <div formArrayName="precautions" class="array-container">
-          @for (precautionControl of precautionsArray.controls; track $index) {
-            <div class="array-item">
-              <mat-form-field class="full-width-minus-button">
-                <mat-label>Precaution</mat-label>
-                <input matInput [formControl]="$any(precautionControl)" placeholder="Enter precaution" />
-                <shared-ui-input-error [control]="precautionControl" controlName="Precaution"></shared-ui-input-error>
-              </mat-form-field>
-              <button type="button" mat-icon-button color="warn" (click)="removePrecaution($index)">
-                <mat-icon>delete</mat-icon>
-              </button>
-            </div>
-          }
-        </div>
+
 
         <!-- Ingredients -->
         <div class="section-header">
@@ -198,157 +169,361 @@
             <mat-icon>add</mat-icon>
           </button>
         </div>
-        
-        <div formArrayName="ingredients" class="array-container">
-          @for (ingredientControl of ingredientsArray.controls; track $index) {
-            <div [formGroupName]="$index" class="array-item">
-              <mat-form-field class="third-width">
-                <mat-label>Name</mat-label>
-                <input matInput formControlName="name" placeholder="Enter ingredient name" />
-                <shared-ui-input-error [control]="ingredientControl.get('name')" controlName="Name"></shared-ui-input-error>
-              </mat-form-field>
-              <mat-form-field class="third-width">
-                <mat-label>Icon</mat-label>
-                <input matInput formControlName="icon" placeholder="Enter icon (optional)" />
-              </mat-form-field>
-              <mat-form-field class="third-width">
-                <mat-label>Description</mat-label>
-                <input matInput formControlName="description" placeholder="Enter description (optional)" />
-              </mat-form-field>
-              <button type="button" mat-icon-button color="warn" (click)="removeIngredient($index)">
-                <mat-icon>delete</mat-icon>
-              </button>
-            </div>
-          }
-        </div>
 
-        <!-- Consumption Instructions -->
-        <div class="section-header">Consumption Instructions</div>
-        
-        <div [formGroup]="consumptionInstructionsGroup">
-          <mat-form-field class="full-width">
-            <mat-label>Amount</mat-label>
-            <input matInput formControlName="amount" placeholder="Enter amount" />
-            <shared-ui-input-error [control]="formGroup.get('consumptionInstructions')?.get('amount')" controlName="Amount"></shared-ui-input-error>
-          </mat-form-field>
-
-          <div class="section-subheader">
-            Methods
-            <button type="button" mat-icon-button color="primary" (click)="addConsumptionMethod()">
-              <mat-icon>add</mat-icon>
-            </button>
+        <div [formGroup]="ingredientsGroup">
+          <div class="row">
+            <mat-form-field class="half-width">
+              <mat-label>Ingredients Title</mat-label>
+              <input matInput formControlName="title" placeholder="Enter ingredients section title" />
+              <shared-ui-input-error [control]="ingredientsGroup.get('title')"
+                                     controlName="Ingredients Title"></shared-ui-input-error>
+            </mat-form-field>
+            <mat-form-field class="half-width">
+              <mat-label>Ingredients Description</mat-label>
+              <input matInput formControlName="description" placeholder="Enter ingredients description" />
+              <shared-ui-input-error [control]="ingredientsGroup.get('description')"
+                                     controlName="Ingredients Description"></shared-ui-input-error>
+            </mat-form-field>
           </div>
-          
-          <div formArrayName="methods" class="array-container">
-            @for (methodControl of consumptionMethodsArray.controls; track $index) {
-              <div class="array-item">
-                <mat-form-field class="full-width-minus-button">
-                  <mat-label>Method</mat-label>
-                  <input matInput [formControl]="$any(methodControl)" placeholder="Enter consumption method" />
-                  <shared-ui-input-error [control]="methodControl" controlName="Method"></shared-ui-input-error>
+
+
+          <div formArrayName="ingredients" class="array-container">
+            @for (ingredientControl of ingredientsArray.controls; track $index) {
+              <div [formGroupName]="$index" class="array-item">
+                <mat-form-field class="third-width">
+                  <mat-label>Name</mat-label>
+                  <input matInput formControlName="name" placeholder="Enter ingredient name" />
+                  <shared-ui-input-error [control]="ingredientControl.get('name')"
+                                         controlName="Name"></shared-ui-input-error>
                 </mat-form-field>
-                <button type="button" mat-icon-button color="warn" (click)="removeConsumptionMethod($index)">
+                <div class="third-width">
+                  <shared-ui-upload-form
+                    [formGroup]="getIngredientFormGroup($index)"
+                    [isMultiFile]="true"
+                    [isRequired]="false"
+                    [uploadedMediaList]="getIngredientUploadedMediaList($index)"
+                    controlName="icon"
+                    [mediaFor]="mediaFor"
+                    [mediaType]="mediaType"
+                  ></shared-ui-upload-form>
+                </div>
+                <mat-form-field class="third-width">
+                  <mat-label>Description</mat-label>
+                  <input matInput formControlName="description" placeholder="Enter description (optional)" />
+                </mat-form-field>
+                <button type="button" mat-icon-button color="warn" (click)="removeIngredient($index)">
                   <mat-icon>delete</mat-icon>
                 </button>
               </div>
             }
           </div>
+        </div>
 
-          <div [formGroup]="consumptionInstructionsTimingGroup" class="row">
-            <mat-form-field class="half-width">
-              <mat-label>Morning</mat-label>
-              <input matInput formControlName="morning" placeholder="Enter morning timing" />
-              <shared-ui-input-error [control]="formGroup.get('consumptionInstructions')?.get('timing')?.get('morning')" controlName="Morning"></shared-ui-input-error>
+        <!-- Consumption Instructions -->
+        <div class="section-header">Consumption Instructions</div>
+
+        <div [formGroup]="consumptionInstructionsGroup">
+          <mat-form-field class="full-width">
+            <mat-label>Title</mat-label>
+            <input matInput formControlName="title" placeholder="Enter consumption instructions title" />
+            <shared-ui-input-error [control]="consumptionInstructionsGroup.get('title')"
+                                   controlName="Title"></shared-ui-input-error>
+          </mat-form-field>
+
+          <mat-form-field class="full-width">
+            <mat-label>Description</mat-label>
+            <textarea matInput formControlName="description" placeholder="Enter consumption instructions description"
+                      rows="3"></textarea>
+            <shared-ui-input-error [control]="consumptionInstructionsGroup.get('description')"
+                                   controlName="Description"></shared-ui-input-error>
+          </mat-form-field>
+
+          <mat-form-field class="full-width">
+            <mat-label>Media Direction</mat-label>
+            <mat-select formControlName="mediaDirection">
+              <mat-option value="left">Left</mat-option>
+              <mat-option value="right">Right</mat-option>
+              <mat-option value="center">Center</mat-option>
+            </mat-select>
+            <shared-ui-input-error [control]="consumptionInstructionsGroup.get('mediaDirection')"
+                                   controlName="Media Direction"></shared-ui-input-error>
+          </mat-form-field>
+
+          <div class="section-subheader">
+            How to Consume
+            <button type="button" mat-icon-button color="primary" (click)="addHowToConsume()">
+              <mat-icon>add</mat-icon>
+            </button>
+          </div>
+
+          <div formGroupName="metaData">
+            <div formArrayName="howToConsume" class="array-container">
+              @for (howToConsumeControl of howToConsumeArray.controls; track $index) {
+                <div class="array-item">
+                  <mat-form-field class="full-width-minus-button">
+                    <mat-label>How to Consume</mat-label>
+                    <input matInput [formControl]="$any(howToConsumeControl)"
+                           placeholder="Enter how to consume instruction" />
+                    <shared-ui-input-error [control]="howToConsumeControl"
+                                           controlName="How to Consume"></shared-ui-input-error>
+                  </mat-form-field>
+                  <button type="button" mat-icon-button color="warn" (click)="removeHowToConsume($index)">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </div>
+              }
+            </div>
+
+            <div class="section-subheader">
+              When to Consume
+              <button type="button" mat-icon-button color="primary" (click)="addWhenToConsume()">
+                <mat-icon>add</mat-icon>
+              </button>
+            </div>
+
+            <div formArrayName="whenToConsume" class="array-container">
+              @for (whenToConsumeControl of whenToConsumeArray.controls; track $index) {
+                <div class="array-item">
+                  <mat-form-field class="full-width-minus-button">
+                    <mat-label>When to Consume</mat-label>
+                    <input matInput [formControl]="$any(whenToConsumeControl)"
+                           placeholder="Enter when to consume instruction" />
+                    <shared-ui-input-error [control]="whenToConsumeControl"
+                                           controlName="When to Consume"></shared-ui-input-error>
+                  </mat-form-field>
+                  <button type="button" mat-icon-button color="warn" (click)="removeWhenToConsume($index)">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </div>
+              }
+            </div>
+          </div>
+
+          <div formGroupName="mediaData">
+            <mat-form-field class="full-width">
+              <mat-label>Media Type</mat-label>
+              <mat-select formControlName="mediaType">
+                <mat-option value="image">Image</mat-option>
+                <mat-option value="video">Video</mat-option>
+              </mat-select>
+              <shared-ui-input-error [control]="consumptionInstructionsGroup.get('mediaData')?.get('mediaType')"
+                                     controlName="Media Type"></shared-ui-input-error>
             </mat-form-field>
 
-            <mat-form-field class="half-width">
-              <mat-label>Evening</mat-label>
-              <input matInput formControlName="evening" placeholder="Enter evening timing" />
-              <shared-ui-input-error [control]="formGroup.get('consumptionInstructions')?.get('timing')?.get('evening')" controlName="Evening"></shared-ui-input-error>
-            </mat-form-field>
+            <shared-ui-upload-form
+              [formGroup]="consumptionInstructionsMediaDataFormGroup"
+              [isMultiFile]="true"
+              [isRequired]="false"
+              [uploadedMediaList]="consumptionInstructionsUploadedMediaList"
+              controlName="mediaLink"
+              [mediaFor]="mediaFor"
+              [mediaType]="consumptionInstructionsMediaType"
+            ></shared-ui-upload-form>
           </div>
         </div>
 
         <!-- Outcomes -->
         <div class="section-header">
           Outcomes
-          <button type="button" mat-icon-button color="primary" (click)="addOutcome()">
-            <mat-icon>add</mat-icon>
-          </button>
-        </div>
-        
-        <div formArrayName="outcomes" class="array-container">
-          @for (outcomeControl of outcomesArray.controls; track $index) {
-            <div [formGroupName]="$index" class="array-item">
-              <mat-form-field class="third-width">
-                <mat-label>Title</mat-label>
-                <input matInput formControlName="title" placeholder="Enter outcome title" />
-                <shared-ui-input-error [control]="outcomeControl.get('title')" controlName="Title"></shared-ui-input-error>
-              </mat-form-field>
-              <mat-form-field class="third-width">
-                <mat-label>Description</mat-label>
-                <input matInput formControlName="description" placeholder="Enter outcome description" />
-                <shared-ui-input-error [control]="outcomeControl.get('description')" controlName="Description"></shared-ui-input-error>
-              </mat-form-field>
-              <mat-form-field class="third-width">
-                <mat-label>Icon</mat-label>
-                <input matInput formControlName="icon" placeholder="Enter icon (optional)" />
-              </mat-form-field>
-              <button type="button" mat-icon-button color="warn" (click)="removeOutcome($index)">
-                <mat-icon>delete</mat-icon>
-              </button>
-            </div>
-          }
         </div>
 
-        <!-- FAQs -->
-        <div class="section-header">
-          FAQs
-          <button type="button" mat-icon-button color="primary" (click)="addFAQ()">
-            <mat-icon>add</mat-icon>
-          </button>
-        </div>
-        
-        <div formArrayName="faqs" class="array-container">
-          @for (faqControl of faqsArray.controls; track $index) {
-            <div [formGroupName]="$index" class="array-item faq-item">
-              <mat-form-field class="full-width">
-                <mat-label>Question</mat-label>
-                <input matInput formControlName="question" placeholder="Enter question" />
-                <shared-ui-input-error [control]="faqControl.get('question')" controlName="Question"></shared-ui-input-error>
-              </mat-form-field>
-              <mat-form-field class="full-width">
-                <mat-label>Answer</mat-label>
-                <textarea matInput formControlName="answer" placeholder="Enter answer" rows="2"></textarea>
-                <shared-ui-input-error [control]="faqControl.get('answer')" controlName="Answer"></shared-ui-input-error>
-              </mat-form-field>
-              <button type="button" mat-icon-button color="warn" (click)="removeFAQ($index)">
-                <mat-icon>delete</mat-icon>
-              </button>
-            </div>
-          }
+        <div [formGroup]="outcomesGroup">
+          <div class="row">
+            <mat-form-field class="half-width">
+              <mat-label>Outcomes Title</mat-label>
+              <input matInput formControlName="title" placeholder="Enter outcomes section title" />
+              <shared-ui-input-error [control]="outcomesGroup.get('title')"
+                                     controlName="Outcomes Title"></shared-ui-input-error>
+            </mat-form-field>
+            <mat-form-field class="half-width">
+              <mat-label>Outcomes Description</mat-label>
+              <input matInput formControlName="description" placeholder="Enter outcomes description" />
+              <shared-ui-input-error [control]="outcomesGroup.get('description')"
+                                     controlName="Outcomes Description"></shared-ui-input-error>
+            </mat-form-field>
+          </div>
+
+          <div class="section-subheader">
+            Outcome Items
+            <button type="button" mat-icon-button color="primary" (click)="addOutcome()">
+              <mat-icon>add</mat-icon>
+            </button>
+          </div>
+
+          <div formArrayName="outcome" class="array-container">
+            @for (outcomeControl of outcomesArray.controls; track $index) {
+              <div [formGroupName]="$index" class="array-item">
+                <mat-form-field class="third-width">
+                  <mat-label>Title</mat-label>
+                  <input matInput formControlName="title" placeholder="Enter outcome title" />
+                  <shared-ui-input-error [control]="outcomeControl.get('title')"
+                                         controlName="Title"></shared-ui-input-error>
+                </mat-form-field>
+                <mat-form-field class="third-width">
+                  <mat-label>Description</mat-label>
+                  <input matInput formControlName="description" placeholder="Enter outcome description" />
+                  <shared-ui-input-error [control]="outcomeControl.get('description')"
+                                         controlName="Description"></shared-ui-input-error>
+                </mat-form-field>
+                <div class="third-width">
+                  <shared-ui-upload-form
+                    [formGroup]="getOutcomeFormGroup($index)"
+                    [isMultiFile]="true"
+                    [isRequired]="false"
+                    [uploadedMediaList]="getOutcomeUploadedMediaList($index)"
+                    controlName="icon"
+                    [mediaFor]="mediaFor"
+                    [mediaType]="mediaType"
+                  ></shared-ui-upload-form>
+                </div>
+                <button type="button" mat-icon-button color="warn" (click)="removeOutcome($index)">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+            }
+          </div>
         </div>
 
-        <!-- Videos -->
-        <div class="section-header">
-          Videos
-          <button type="button" mat-icon-button color="primary" (click)="addVideo()">
-            <mat-icon>add</mat-icon>
-          </button>
+        <!-- Feature -->
+        <div class="section-header">Feature</div>
+
+        <div [formGroup]="featureGroup">
+          <mat-form-field class="full-width">
+            <mat-label>Feature Title</mat-label>
+            <input matInput formControlName="title" placeholder="Enter feature title" />
+            <shared-ui-input-error [control]="featureGroup.get('title')"
+                                   controlName="Feature Title"></shared-ui-input-error>
+          </mat-form-field>
+
+          <mat-form-field class="full-width">
+            <mat-label>Feature Description</mat-label>
+            <textarea matInput formControlName="description" placeholder="Enter feature description"
+                      rows="3"></textarea>
+            <shared-ui-input-error [control]="featureGroup.get('description')"
+                                   controlName="Feature Description"></shared-ui-input-error>
+          </mat-form-field>
+
+          <mat-form-field class="full-width">
+            <mat-label>Tag Line</mat-label>
+            <input matInput formControlName="tagLine" placeholder="Enter tag line" />
+            <shared-ui-input-error [control]="featureGroup.get('tagLine')"
+                                   controlName="Tag Line"></shared-ui-input-error>
+          </mat-form-field>
+
+          <div class="section-subheader">
+            Features
+            <button type="button" mat-icon-button color="primary" (click)="addFeature()">
+              <mat-icon>add</mat-icon>
+            </button>
+          </div>
+
+          <div formArrayName="feature" class="array-container">
+            @for (featureControl of featuresArray.controls; track $index) {
+              <div class="array-item">
+                <mat-form-field class="full-width-minus-button">
+                  <mat-label>Feature</mat-label>
+                  <input matInput [formControl]="$any(featureControl)" placeholder="Enter feature" />
+                  <shared-ui-input-error [control]="featureControl" controlName="Feature"></shared-ui-input-error>
+                </mat-form-field>
+                <button type="button" mat-icon-button color="warn" (click)="removeFeature($index)">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+            }
+          </div>
         </div>
-        
-        <div formArrayName="videos" class="array-container">
-          @for (videoControl of videosArray.controls; track $index) {
-            <div class="array-item">
-              <mat-form-field class="full-width-minus-button">
-                <mat-label>Video URL</mat-label>
-                <input matInput [formControl]="$any(videoControl)" placeholder="Enter video URL" />
-              </mat-form-field>
-              <button type="button" mat-icon-button color="warn" (click)="removeVideo($index)">
-                <mat-icon>delete</mat-icon>
-              </button>
-            </div>
-          }
+
+        <!-- Report -->
+        <div class="section-header">Report</div>
+
+        <div [formGroup]="reportGroup">
+          <mat-form-field class="full-width">
+            <mat-label>Report Title</mat-label>
+            <input matInput formControlName="title" placeholder="Enter report title" />
+            <shared-ui-input-error [control]="reportGroup.get('title')"
+                                   controlName="Report Title"></shared-ui-input-error>
+          </mat-form-field>
+
+          <mat-form-field class="full-width">
+            <mat-label>Report Description</mat-label>
+            <textarea matInput formControlName="description" placeholder="Enter report description" rows="3"></textarea>
+            <shared-ui-input-error [control]="reportGroup.get('description')"
+                                   controlName="Report Description"></shared-ui-input-error>
+          </mat-form-field>
+
+          <mat-form-field class="full-width">
+            <mat-label>Media Direction</mat-label>
+            <mat-select formControlName="mediaDirection">
+              <mat-option value="left">Left</mat-option>
+              <mat-option value="right">Right</mat-option>
+              <mat-option value="center">Center</mat-option>
+            </mat-select>
+            <shared-ui-input-error [control]="reportGroup.get('mediaDirection')"
+                                   controlName="Media Direction"></shared-ui-input-error>
+          </mat-form-field>
+
+          <div formGroupName="mediaData">
+            <mat-form-field class="full-width">
+              <mat-label>Media Type</mat-label>
+              <mat-select formControlName="mediaType">
+                <mat-option value="image">Image</mat-option>
+                <mat-option value="video">Video</mat-option>
+              </mat-select>
+              <shared-ui-input-error [control]="reportGroup.get('mediaData')?.get('mediaType')"
+                                     controlName="Media Type"></shared-ui-input-error>
+            </mat-form-field>
+
+            <shared-ui-upload-form
+              [formGroup]="reportMediaDataFormGroup"
+              [isMultiFile]="true"
+              [isRequired]="false"
+              [uploadedMediaList]="reportUploadedMediaList"
+              controlName="mediaLink"
+              [mediaFor]="mediaFor"
+              [mediaType]="reportMediaType"
+            ></shared-ui-upload-form>
+          </div>
+        </div>
+
+        <!-- Star Endorsed -->
+        <div class="section-header">Star Endorsed</div>
+
+        <div [formGroup]="startEndorsedGroup">
+          <mat-form-field class="full-width">
+            <mat-label>Star Endorsed Title</mat-label>
+            <input matInput formControlName="title" placeholder="Enter star endorsed title" />
+            <shared-ui-input-error [control]="startEndorsedGroup.get('title')"
+                                   controlName="Star Endorsed Title"></shared-ui-input-error>
+          </mat-form-field>
+
+          <mat-form-field class="full-width">
+            <mat-label>Star Endorsed Description</mat-label>
+            <textarea matInput formControlName="description" placeholder="Enter star endorsed description" rows="3"></textarea>
+            <shared-ui-input-error [control]="startEndorsedGroup.get('description')"
+                                   controlName="Star Endorsed Description"></shared-ui-input-error>
+          </mat-form-field>
+
+          <div formGroupName="mediaData">
+            <mat-form-field class="full-width">
+              <mat-label>Media Type</mat-label>
+              <mat-select formControlName="mediaType">
+                <mat-option value="image">Image</mat-option>
+                <mat-option value="video">Video</mat-option>
+              </mat-select>
+              <shared-ui-input-error [control]="startEndorsedGroup.get('mediaData')?.get('mediaType')"
+                                     controlName="Media Type"></shared-ui-input-error>
+            </mat-form-field>
+
+            <shared-ui-upload-form
+              [formGroup]="startEndorsedMediaDataFormGroup"
+              [isMultiFile]="true"
+              [isRequired]="false"
+              [uploadedMediaList]="startEndorsedUploadedMediaList"
+              controlName="mediaLink"
+              [mediaFor]="mediaFor"
+              [mediaType]="startEndorsedMediaType"
+            ></shared-ui-upload-form>
+          </div>
         </div>
 
         <!-- Images -->
@@ -357,8 +532,8 @@
           [formGroup]="formGroup"
           [isMultiFile]="true"
           [isRequired]="false"
-          [uploadedMediaList]="initialData && initialData.images ? initialData.images : []"
-          controlName="images"
+          [uploadedMediaList]="initialData && initialData.imagePath ? initialData.imagePath : []"
+          controlName="imagePath"
           [mediaFor]="mediaFor"
           [mediaType]="mediaType"
         ></shared-ui-upload-form>
