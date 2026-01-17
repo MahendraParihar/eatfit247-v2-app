@@ -1,9 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Op } from 'sequelize';
+import { Op, Sequelize } from 'sequelize';
 import { TxnContactForm, MstAdminUser } from '@server_1/core';
 import { ITableList, IContactFormReportItem } from '@eatfit247-shared-lib';
 import { ContactFormReportDto, SendContactFormResponseDto } from '../dto';
+import moment from 'moment';
 
 @Injectable()
 export class ContactFormReportService {
@@ -18,13 +19,21 @@ export class ContactFormReportService {
    * @returns List of contact forms with response information
    */
   async getContactFormReport(dto: ContactFormReportDto): Promise<ITableList<IContactFormReportItem>> {
+    const startDateStr = moment(dto.startDate).startOf('day').utc().startOf('day');
+    const endDateStr = moment(dto.endDate).endOf('day').utc().endOf('day');
     const whereCondition: any = {
       active: true,
       createdAt: {
-        [Op.between]: [new Date(dto.startDate), new Date(dto.endDate)],
+        [Op.and]: {
+          [Op.gte]: startDateStr.format(),
+          [Op.lte]: endDateStr.format(),
+        },
       },
     };
-
+    // Add isResponded filter if provided
+    if (dto.isResponded === true) {
+      whereCondition.respondedBy = { [Op.ne]: null };
+    }
     // Add search condition if provided
     if (dto.search && dto.search.trim()) {
       const searchTerm = `%${dto.search.trim()}%`;
@@ -35,7 +44,6 @@ export class ContactFormReportService {
         { message: { [Op.iLike]: searchTerm } },
       ];
     }
-
     // Build include conditions
     const includeConditions: any[] = [
       {
@@ -45,7 +53,6 @@ export class ContactFormReportService {
         attributes: ['adminId', 'firstName', 'lastName'],
       },
     ];
-
     const { rows, count } = await this.contactFormRepository.scope('list').findAndCountAll({
       where: whereCondition,
       include: includeConditions,
@@ -53,13 +60,11 @@ export class ContactFormReportService {
       raw: true,
       nest: true,
     });
-
     // Transform data
     const tableData: IContactFormReportItem[] = rows.map((item: any) => {
       const respondedByUserName = item.respondedByUser
         ? `${item.respondedByUser.firstName || ''} ${item.respondedByUser.lastName || ''}`.trim() || null
         : null;
-
       return {
         contactFormId: item.contactFormId,
         name: item.name,
@@ -77,7 +82,6 @@ export class ContactFormReportService {
         isResponded: !!item.respondedBy,
       };
     });
-
     return {
       tableData,
       count,
@@ -98,16 +102,13 @@ export class ContactFormReportService {
       raw: true,
       nest: true,
     });
-
     if (!contactForm) {
       throw new NotFoundException('Contact form not found');
     }
-
     const item: any = contactForm;
     const respondedByUserName = item.respondedByUser
       ? `${item.respondedByUser.firstName || ''} ${item.respondedByUser.lastName || ''}`.trim() || null
       : null;
-
     return {
       contactFormId: item.contactFormId,
       name: item.name,
@@ -145,11 +146,9 @@ export class ContactFormReportService {
         active: true,
       },
     });
-
     if (!contactForm) {
       throw new NotFoundException('Contact form not found');
     }
-
     await this.contactFormRepository.update(
       {
         respondedMessage: dto.respondedMessage,

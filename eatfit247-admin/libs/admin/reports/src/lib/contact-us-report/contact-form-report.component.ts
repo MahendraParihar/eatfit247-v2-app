@@ -6,7 +6,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatNativeDateModule } from '@angular/material/core';
+import { MatNativeDateModule, MatOption } from '@angular/material/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
@@ -14,11 +14,12 @@ import {
   DataTableComponent,
   ITableAction,
   ITableColumn,
-  ITableConfig,
+  ITableConfig
 } from '@shared';
 import { IContactFormReportItem, IContactFormReportFilter } from '@eatfit247-shared-lib';
 import { ContactFormReportApiService } from './api.service';
 import { ViewContactFormDetailsComponent } from './view-contact-form-details/view-contact-form-details.component';
+import { MatSelect } from '@angular/material/select';
 
 @Component({
   selector: 'lib-contact-form-report',
@@ -36,9 +37,11 @@ import { ViewContactFormDetailsComponent } from './view-contact-form-details/vie
     MatButtonToggleModule,
     MatDialogModule,
     DataTableComponent,
+    MatSelect,
+    MatOption
   ],
   templateUrl: './contact-form-report.html',
-  styleUrl: './contact-form-report.scss',
+  styleUrl: './contact-form-report.scss'
 })
 export class ContactFormReportComponent implements OnInit {
   filterForm!: FormGroup;
@@ -46,14 +49,12 @@ export class ContactFormReportComponent implements OnInit {
   totalCount = 0;
   loading = false;
   tableConfig!: ITableConfig<IContactFormReportItem>;
-  startDatePicker: any;
-  endDatePicker: any;
   selectedQuickFilter: string | null = null;
 
   constructor(
     private fb: FormBuilder,
     private apiService: ContactFormReportApiService,
-    private dialog: MatDialog,
+    private dialog: MatDialog
   ) {
     this.initializeForm();
   }
@@ -67,8 +68,10 @@ export class ContactFormReportComponent implements OnInit {
     this.filterForm.patchValue({
       startDate,
       endDate,
+      isResponded: false
     });
-
+    // Automatically trigger search on init with default filters
+    this.onSearch();
     // Reset quick filter when dates are manually changed
     this.filterForm.get('startDate')?.valueChanges.subscribe(() => {
       if (this.selectedQuickFilter) {
@@ -95,6 +98,7 @@ export class ContactFormReportComponent implements OnInit {
       startDate: [null, Validators.required],
       endDate: [null, Validators.required],
       search: [null],
+      isResponded: [false]
     });
   }
 
@@ -104,7 +108,7 @@ export class ContactFormReportComponent implements OnInit {
         key: 'name',
         label: 'Name',
         dataKey: 'name',
-        sortable: true,
+        sortable: true
       },
       {
         key: 'emailId',
@@ -113,7 +117,7 @@ export class ContactFormReportComponent implements OnInit {
         sortable: true,
         formatter: (value: string, row: IContactFormReportItem) => {
           return `${row.contactNumber}\n${row.emailId}`;
-        },
+        }
       },
       {
         key: 'message',
@@ -124,7 +128,7 @@ export class ContactFormReportComponent implements OnInit {
           return value && value.length > 50
             ? `${value.substring(0, 50)}...`
             : value;
-        },
+        }
       },
       {
         key: 'isResponded',
@@ -133,7 +137,7 @@ export class ContactFormReportComponent implements OnInit {
         sortable: true,
         formatter: (value: boolean) => {
           return value ? 'Responded' : 'Pending';
-        },
+        }
       },
       {
         key: 'respondedByUserName',
@@ -142,26 +146,24 @@ export class ContactFormReportComponent implements OnInit {
         sortable: false,
         formatter: (value: string | null) => {
           return value || 'N/A';
-        },
+        }
       },
       {
         key: 'createdAt',
         label: 'Submitted Date',
         dataKey: 'createdAt',
         type: 'date',
-        sortable: true,
-      },
+        sortable: true
+      }
     ];
-
     const actions: ITableAction<IContactFormReportItem>[] = [
       {
         label: 'View Details',
         icon: 'visibility',
         onClick: (item: IContactFormReportItem) => this.viewDetails(item),
-        color: 'primary',
-      },
+        color: 'primary'
+      }
     ];
-
     this.tableConfig = {
       columns,
       actions,
@@ -170,7 +172,7 @@ export class ContactFormReportComponent implements OnInit {
       pageSize: 10,
       pageSizeOptions: [5, 10, 25, 50, 100],
       showHeader: true,
-      emptyMessage: 'No contact form submissions found',
+      emptyMessage: 'No contact form submissions found'
     };
   }
 
@@ -178,16 +180,15 @@ export class ContactFormReportComponent implements OnInit {
     if (this.filterForm.invalid) {
       return;
     }
-
     this.loading = true;
     try {
       const formValue = this.filterForm.value;
       const params: IContactFormReportFilter = {
         startDate: this.formatDate(formValue.startDate),
         endDate: this.formatDate(formValue.endDate),
-        search: formValue.search || undefined,
+        search: formValue.search || '',
+        isResponded: formValue.isResponded
       };
-
       const response = await this.apiService.getContactFormReport(params);
       this.data = response.tableData;
       this.totalCount = response.count;
@@ -221,35 +222,29 @@ export class ContactFormReportComponent implements OnInit {
     this.selectedQuickFilter = filterType;
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    
     let startDate: Date;
     let endDate: Date = new Date(today);
-
     switch (filterType) {
       case 'today':
         startDate = new Date(today);
         endDate = new Date(today);
         break;
-
       case 'currentMonth':
         startDate = new Date(today.getFullYear(), today.getMonth(), 1);
         endDate = new Date(today);
         break;
-
       case 'lastMonth': {
         const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
         startDate = new Date(lastMonth);
         endDate = new Date(today.getFullYear(), today.getMonth(), 0);
         break;
       }
-
       case 'thisQuarter': {
         const currentQuarter = Math.floor(today.getMonth() / 3);
         startDate = new Date(today.getFullYear(), currentQuarter * 3, 1);
         endDate = new Date(today);
         break;
       }
-
       case 'thisFinancialYear': {
         // Assuming financial year starts from April (month 3, 0-indexed)
         const currentFYStartMonth = 3; // April
@@ -263,7 +258,6 @@ export class ContactFormReportComponent implements OnInit {
         endDate = new Date(today);
         break;
       }
-
       case 'lastFinancialYear': {
         // Assuming financial year starts from April (month 3, 0-indexed)
         if (today.getMonth() >= 3) {
@@ -277,16 +271,13 @@ export class ContactFormReportComponent implements OnInit {
         }
         break;
       }
-
       default:
         return;
     }
-
     this.filterForm.patchValue({
       startDate,
-      endDate,
+      endDate
     });
-
     // Automatically trigger search
     this.onSearch();
   }
@@ -301,9 +292,8 @@ export class ContactFormReportComponent implements OnInit {
         maxHeight: '90vh',
         data: { contactForm: fullDetails },
         closeOnNavigation: false,
-        disableClose: false,
+        disableClose: false
       });
-
       dialogRef.afterClosed().subscribe((result) => {
         // Reload data if response was submitted
         if (result?.updated) {

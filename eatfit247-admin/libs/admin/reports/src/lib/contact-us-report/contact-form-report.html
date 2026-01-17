@@ -51,6 +51,15 @@
             <mat-icon matSuffix>search</mat-icon>
           </mat-form-field>
 
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>Is Responded</mat-label>
+            <mat-select formControlName="isResponded" placeholder="Select one">
+              <mat-option [value]="true">Yes</mat-option>
+              <mat-option [value]="false">No</mat-option>
+            </mat-select>
+            <mat-icon matSuffix>search</mat-icon>
+          </mat-form-field>
+
           <button
             mat-raised-button
             color="primary"

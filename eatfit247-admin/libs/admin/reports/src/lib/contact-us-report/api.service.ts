@@ -4,11 +4,11 @@ import {
   ITableList,
   IContactFormReportFilter,
   IContactFormReportItem,
-  ISendResponseDto,
+  ISendResponseDto
 } from '@eatfit247-shared-lib';
 
 @Injectable({
-  providedIn: 'root',
+  providedIn: 'root'
 })
 export class ContactFormReportApiService extends ApiBaseService {
   private readonly endpoint = '/reports/contact-form';
@@ -18,7 +18,7 @@ export class ContactFormReportApiService extends ApiBaseService {
   }
 
   async getContactFormReport(params: IContactFormReportFilter): Promise<ITableList<IContactFormReportItem>> {
-    const res = await this.httpService.get<ITableList<IContactFormReportItem>>(this.endpoint, { params });
+    const res = await this.httpService.post<ITableList<IContactFormReportItem>>(this.endpoint, params);
     return res.data as ITableList<IContactFormReportItem>;
   }
 

@@ -1,12 +1,8 @@
-/**
- * Contact Form Report Interfaces
- * Shared interfaces for contact form reporting across frontend and backend
- */
-
 export interface IContactFormReportFilter {
   startDate: string;
   endDate: string;
   search?: string;
+  isResponded: boolean;
 }
 
 export interface IContactFormReportItem {

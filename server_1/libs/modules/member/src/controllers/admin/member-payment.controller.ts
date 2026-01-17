@@ -11,7 +11,7 @@ import {
 } from '@eatfit247-shared-lib';
 import { CreateMemberPaymentDto } from '../../dto';
 import { CalculateTaxDto } from '../../dto/calculate-tax.dto';
-import { CreatePaymentLinkDto } from '../../dto/create-payment-link.dto';
+import { CreatePaymentLinkDto } from '../../dto';
 import { ProgramPlanService } from '@server_1/modules/program-plan';
 import { IFileModel } from '@server_1/platform';
 
