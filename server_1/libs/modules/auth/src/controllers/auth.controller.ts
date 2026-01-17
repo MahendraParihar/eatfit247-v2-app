@@ -12,8 +12,8 @@
  */
 import { Body, Controller, Get, Post, Req, Res, SetMetadata, UseGuards } from '@nestjs/common';
 import { Response } from 'express';
-import { IAuthUser, IToken } from '@eatfit247-shared-lib';
-import { CurrentUser, Env, JwtAuthGuard, PUBLIC_API, RequestedIp } from '@server_1/core';
+import { IAuthUser, IToken, PUBLIC_API } from '@eatfit247-shared-lib';
+import { CurrentUser, Env, JwtAuthGuard, RequestedIp } from '@server_1/core';
 import { AuthService } from '../services/auth.service';
 import { ChangePasswordDto, ForgotPasswordDto, LoginDto, ResetPasswordDto } from '../dto';
 
