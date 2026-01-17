@@ -1,8 +1,7 @@
 import { Body, Controller, Get, Param, Put, Query, UseGuards } from '@nestjs/common';
 import { CurrentUser, JwtAuthGuard, RequestedIp } from '@server_1/core';
 import { ContactFormReportService } from '../../services/contact-form-report.service';
-import { ContactFormReportDto } from '../../dto/contact-form-report.dto';
-import { SendContactFormResponseDto } from '../../dto/send-contact-form-response.dto';
+import { ContactFormReportDto, SendContactFormResponseDto } from '../../dto';
 import { ITableList, IAuthUser } from '@eatfit247-shared-lib';
 
 @Controller('reports/contact-form')

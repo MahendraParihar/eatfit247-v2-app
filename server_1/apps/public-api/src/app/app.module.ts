@@ -14,6 +14,7 @@ import { MemberModule } from '@server_1/modules/member';
 import { LocationModule } from '@server_1/modules/locations';
 import { SuccessStoriesModule } from '@server_1/modules/success-stories';
 import { ProductPublicModule } from '@server_1/modules/product';
+import { ContactModule } from '@server_1/modules/contact';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { ProductPublicModule } from '@server_1/modules/product';
     LocationModule,
     SuccessStoriesModule,
     ProductPublicModule,
+    ContactModule,
     CommonModule.forRoot(['Common', 'Email', 'Google'], PlatformModule.getModels()),
   ],
   controllers: [AppController],

@@ -10,6 +10,7 @@ import { MemberModule } from '@server_1/modules/member';
 import { AssessmentModule } from '@server_1/modules/assessment';
 import { ProgramPlanModule } from '@server_1/modules/program-plan';
 import { CallLogsModule } from '@server_1/modules/call-logs';
+import { ContactModule } from '@server_1/modules/contact';
 import { TaxEngineModule } from '@server_1/modules/tax-engine';
 import { PaymentModule } from '@server_1/modules/payment';
 import { BlogAdminModule } from '@server_1/modules/blogs';
@@ -46,6 +47,7 @@ import { ProductAdminModule } from '@server_1/modules/product';
     AssessmentModule,
     ProgramPlanModule,
     CallLogsModule,
+    ContactModule,
     TaxEngineModule,
     PaymentModule,
     BlogAdminModule,

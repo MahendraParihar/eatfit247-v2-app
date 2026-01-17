@@ -16,6 +16,8 @@ import { SocialLink } from '../shared/social-icons/social-icons.component';
 import { JoinShwetaShahComponent } from '../shared/join-shweta-shah/join-shweta-shah.component';
 import { SectionFaqComponent } from '../shared/section-faq/section-faq.component';
 import { BannerService } from '../../services/banner.service';
+import { RecaptchaService } from '../../services/recaptcha.service';
+import { HttpService } from '../../services/http.service';
 import { BannerForEnum } from 'eatfit247-shared-library';
 
 interface ContactPageData {
@@ -55,6 +57,8 @@ interface Section {
 })
 export class ContactUsComponent implements OnInit {
   private readonly bannerService = inject(BannerService);
+  private readonly recaptchaService = inject(RecaptchaService);
+  private readonly httpService = inject(HttpService);
   contactForm!: FormGroup;
   formSubmitted = false;
   formSuccess = false;
@@ -263,23 +267,53 @@ export class ContactUsComponent implements OnInit {
       this.formSuccess = false;
       this.formError = false;
       this.errorMessage = '';
+      
       try {
+        // Get reCAPTCHA token
+        let recaptchaToken: string | undefined;
+        if (this.recaptchaService.isAvailable()) {
+          try {
+            recaptchaToken = await this.recaptchaService.getToken('contact_form_submit');
+          } catch (error) {
+            console.error('Failed to get reCAPTCHA token:', error);
+            this.formError = true;
+            this.errorMessage = 'Failed to verify reCAPTCHA. Please refresh the page and try again.';
+            this.formSubmitted = false;
+            return;
+          }
+        }
+
         // Prepare form data with reCAPTCHA token
         const formData = {
-          ...this.contactForm.value
+          name: this.contactForm.value.name,
+          email: this.contactForm.value.email,
+          phone: this.contactForm.value.phone || undefined,
+          subject: this.contactForm.value.subject || undefined,
+          message: this.contactForm.value.message || undefined,
+          recaptchaToken: recaptchaToken,
         };
-        console.log('Form submitted with reCAPTCHA token:', formData);
-        this.formSuccess = true;
-        // Reset form after 3 seconds
-        setTimeout(() => {
-          this.contactForm.reset();
-          this.formSubmitted = false;
-          this.formSuccess = false;
-        }, 3000);
-      } catch (error) {
-        console.error('reCAPTCHA error:', error);
+
+        // Submit to API
+        const response = await this.httpService.post<{ contactFormId: number; message: string }>(
+          'contact/submit',
+          formData
+        );
+
+        if (response) {
+          this.formSuccess = true;
+          // Reset form after 3 seconds
+          setTimeout(() => {
+            this.contactForm.reset();
+            this.formSubmitted = false;
+            this.formSuccess = false;
+          }, 3000);
+        } else {
+          throw new Error('No response from server');
+        }
+      } catch (error: any) {
+        console.error('Form submission error:', error);
         this.formError = true;
-        this.errorMessage = 'reCAPTCHA verification failed. Please try again.';
+        this.errorMessage = error.message || 'Failed to submit form. Please try again.';
         this.formSubmitted = false;
       }
     } else {

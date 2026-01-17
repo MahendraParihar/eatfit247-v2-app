@@ -3,8 +3,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { TxnContactForm, MstAdminUser } from '@server_1/core';
 import { ITableList, IContactFormReportItem } from '@eatfit247-shared-lib';
-import { ContactFormReportDto } from '../dto/contact-form-report.dto';
-import { SendContactFormResponseDto } from '../dto/send-contact-form-response.dto';
+import { ContactFormReportDto, SendContactFormResponseDto } from '../dto';
 
 @Injectable()
 export class ContactFormReportService {
