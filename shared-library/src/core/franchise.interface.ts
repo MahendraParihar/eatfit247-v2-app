@@ -1,5 +1,6 @@
 import { IBaseAdminUser } from '../base.interface';
 import { IMediaUpload } from './media-upload.interface';
+import { IManageAddress } from './location.interface';
 
 export interface IBaseFranchise {
   companyName: string;
@@ -23,6 +24,8 @@ export interface IBaseFranchise {
   endDate?: Date;
   isPrimary: boolean;
   isDefault: boolean;
+  businessType?: ('service' | 'product')[];
+  addressObj?: IManageAddress;
 }
 
 export interface IManageFranchise extends IBaseFranchise {

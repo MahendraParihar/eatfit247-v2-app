@@ -1,4 +1,5 @@
 import {
+  IsArray,
   IsBoolean,
   IsDate,
   IsEmail,
@@ -11,8 +12,8 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { IManageFranchise, InputLengthEnum, InternationalTaxModeEnum } from '@eatfit247-shared-lib';
-import { MediaUploadDto } from '@server_1/core';
+import { IManageFranchise, InputLengthEnum, InternationalTaxModeEnum, BusinessTypeEnum } from '@eatfit247-shared-lib';
+import { MediaUploadDto, CreateAddressDto } from '@server_1/core';
 
 export class CreateFranchiseDto implements IManageFranchise {
   @MinLength(InputLengthEnum.CHAR_2)
@@ -102,6 +103,11 @@ export class CreateFranchiseDto implements IManageFranchise {
   @IsBoolean()
   isDefault!: boolean;
 
+  @IsOptional()
+  @IsArray()
+  @IsEnum(BusinessTypeEnum, { each: true })
+  businessType?: BusinessTypeEnum[];
+
   @IsNotEmpty()
   @IsBoolean()
   active!: boolean;
@@ -114,5 +120,10 @@ export class CreateFranchiseDto implements IManageFranchise {
   @IsOptional()
   @IsNumber()
   franchiseId?: number;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => CreateAddressDto)
+  address?: CreateAddressDto;
 }
 

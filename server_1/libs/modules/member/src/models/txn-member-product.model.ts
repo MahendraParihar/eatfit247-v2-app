@@ -1,5 +1,5 @@
 import { BelongsTo, Column, CreatedAt, DataType, Model, Scopes, Table, UpdatedAt } from 'sequelize-typescript';
-import { getCreatedByUserInclude, getUpdatedByUserInclude, MstAdminUser } from '@server_1/core';
+import { getCreatedByUserInclude, getUpdatedByUserInclude, MstAdminUser, MstFranchise } from '@server_1/core';
 import { MstPaymentMode, MstPaymentStatus, TxnAddress } from '@server_1/platform';
 import { TxnMember } from './txn-member.model';
 import { InputLengthEnum, PaymentSourceEnum } from '@eatfit247-shared-lib';
@@ -52,6 +52,12 @@ import { InputLengthEnum, PaymentSourceEnum } from '@eatfit247-shared-lib';
         required: false,
         attributes: ['addressId', 'postalAddress', 'cityVillage', 'pinCode'],
       },
+      {
+        model: MstFranchise,
+        as: 'franchise',
+        required: false,
+        attributes: ['franchiseId', 'companyName'],
+      },
     ],
   },
   details: {
@@ -86,6 +92,12 @@ import { InputLengthEnum, PaymentSourceEnum } from '@eatfit247-shared-lib';
         as: 'billingAddress',
         required: false,
       },
+      {
+        model: MstFranchise,
+        as: 'franchise',
+        required: false,
+        attributes: ['franchiseId', 'companyName'],
+      },
     ],
   },
 }))
@@ -104,6 +116,13 @@ export class TxnMemberProduct extends Model<TxnMemberProduct> {
     type: DataType.INTEGER,
   })
   declare memberId: number;
+
+  @Column({
+    allowNull: true,
+    field: 'franchise_id',
+    type: DataType.INTEGER,
+  })
+  declare franchiseId: number;
 
   @Column({
     allowNull: true,
@@ -274,6 +293,13 @@ export class TxnMemberProduct extends Model<TxnMemberProduct> {
     as: 'billingAddress',
   })
   declare billingAddress: TxnAddress;
+
+  @BelongsTo(() => MstFranchise, {
+    foreignKey: 'franchiseId',
+    targetKey: 'franchiseId',
+    as: 'franchise',
+  })
+  declare franchise: MstFranchise;
 
   @BelongsTo(() => MstAdminUser, {
     as: 'createdByUser',

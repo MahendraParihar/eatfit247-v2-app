@@ -280,6 +280,15 @@
           </mat-checkbox>
         </div>
 
+        <mat-form-field class="full-width">
+          <mat-label>Business Type</mat-label>
+          <mat-select formControlName="businessType" multiple>
+            <mat-option [value]="businessTypeOptions.SERVICE">Service</mat-option>
+            <mat-option [value]="businessTypeOptions.PRODUCT">Product</mat-option>
+          </mat-select>
+          <shared-ui-input-error [control]="formGroup.get('businessType')" controlName="Business Type"></shared-ui-input-error>
+        </mat-form-field>
+
         <div class="row">
           <mat-form-field appearance="outline" class="half-width">
             <mat-label>Status</mat-label>
@@ -302,6 +311,14 @@
             [mediaFor]="mediaFor"
             [mediaType]="mediaType"
           ></shared-ui-upload-form>
+        </div>
+
+        <div class="full-width">
+          <h3>Address</h3>
+          <shared-ui-address-form
+            [formGroup]="formGroup"
+            [address]="initialData.addressObj ? initialData.addressObj : undefined"
+          ></shared-ui-address-form>
         </div>
 
       </div>

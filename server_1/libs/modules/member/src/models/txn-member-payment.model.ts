@@ -1,5 +1,5 @@
 import { BelongsTo, Column, CreatedAt, DataType, Model, Scopes, Table, UpdatedAt } from 'sequelize-typescript';
-import { getCreatedByUserInclude, getUpdatedByUserInclude, MstAdminUser } from '@server_1/core';
+import { getCreatedByUserInclude, getUpdatedByUserInclude, MstAdminUser, MstFranchise } from '@server_1/core';
 import { MstAddressType, MstCountry, MstPaymentMode, MstPaymentStatus, MstState, TxnAddress } from '@server_1/platform';
 import { MstProgram, MstProgramPlan } from '@server_1/modules/program-plan';
 import { TxnMember } from './txn-member.model';
@@ -69,6 +69,12 @@ import { IMemberPaymentObject, InputLengthEnum, PaymentSourceEnum } from '@eatfi
         as: 'billingAddress',
         required: false,
         attributes: ['addressId', 'postalAddress', 'cityVillage', 'pinCode'],
+      },
+      {
+        model: MstFranchise,
+        as: 'franchise',
+        required: false,
+        attributes: ['franchiseId', 'companyName'],
       },
     ],
   },
@@ -156,6 +162,12 @@ import { IMemberPaymentObject, InputLengthEnum, PaymentSourceEnum } from '@eatfi
           },
         ],
       },
+      {
+        model: MstFranchise,
+        as: 'franchise',
+        required: false,
+        attributes: ['franchiseId', 'companyName'],
+      },
     ],
   },
 }))
@@ -173,6 +185,12 @@ export class TxnMemberPayment extends Model<TxnMemberPayment> {
     type: DataType.INTEGER,
   })
   declare memberId: number;
+  @Column({
+    allowNull: true,
+    field: 'franchise_id',
+    type: DataType.INTEGER,
+  })
+  declare franchiseId: number;
   @Column({
     allowNull: true,
     field: 'payment_mode_id',
@@ -344,6 +362,12 @@ export class TxnMemberPayment extends Model<TxnMemberPayment> {
     as: 'billingAddress',
   })
   declare billingAddress: TxnAddress;
+  @BelongsTo(() => MstFranchise, {
+    foreignKey: 'franchiseId',
+    targetKey: 'franchiseId',
+    as: 'franchise',
+  })
+  declare franchise: MstFranchise;
   @BelongsTo(() => MstAdminUser, {
     as: 'createdByUser',
     foreignKey: 'createdBy',

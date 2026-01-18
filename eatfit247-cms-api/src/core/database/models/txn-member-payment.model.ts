@@ -6,6 +6,7 @@ import { TxnAddress } from './txn-address.model';
 import { MstPaymentStatus } from './mst-payment-status.model';
 import { MstProgram } from './mst-program.model';
 import { MstProgramPlan } from './mst-program-plan.model';
+import { MstFranchise } from './mst-franchise.model';
 
 @Table({
   freezeTableName: true,
@@ -44,6 +45,18 @@ export class TxnMemberPayment extends Model<TxnMemberPayment> {
     type: DataType.INTEGER,
   })
   memberId: number;
+
+  @BelongsTo(() => MstFranchise, {
+    foreignKey: 'franchiseId',
+    targetKey: 'franchiseId',
+    as: 'Franchise',
+  })
+  @Column({
+    allowNull: true,
+    field: 'franchise_id',
+    type: DataType.INTEGER,
+  })
+  franchiseId: number;
 
   @BelongsTo(() => MstPaymentMode, {
     foreignKey: 'paymentModeId',

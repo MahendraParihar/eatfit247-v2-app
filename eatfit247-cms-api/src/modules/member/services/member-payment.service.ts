@@ -189,6 +189,13 @@ export class MemberPaymentService {
     const t = await this.sequelize.transaction();
     let addressId = null;
     try {
+      // Get member to fetch franchiseId
+      const member = await this.memberRepository.findOne({
+        where: { memberId },
+      });
+      if (!member) {
+        throw new NotFoundException('Member not found');
+      }
       if (obj.address) {
         if (obj.address.addressId && obj.address.addressId > 0) addressId = obj.address.addressId;
         else {
@@ -215,6 +222,7 @@ export class MemberPaymentService {
       }
       const createObj = {
         memberId: memberId,
+        franchiseId: (member as any).franchiseId || null,
         paymentDate: moment(obj.paymentDate),
         paymentModeId: obj.paymentModeId,
         programId: obj.programId,
@@ -278,8 +286,13 @@ export class MemberPaymentService {
         await t.rollback();
         throw new NotFoundException(StringResource.NO_DATA_FOUND);
       }
+      // Get member to fetch franchiseId
+      const member = await this.memberRepository.findOne({
+        where: { memberId: obj.memberId || find.memberId },
+      });
       const updateObj = {
         memberId: obj.memberId,
+        franchiseId: member ? (member as any).franchiseId || null : null,
         date: moment(obj.paymentDate),
         active: obj.active != null ? obj.active : find.active,
         modifiedBy: adminId,

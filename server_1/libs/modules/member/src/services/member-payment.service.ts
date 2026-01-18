@@ -376,6 +376,7 @@ export class MemberPaymentService {
       // Create a payment record
       const paymentData: any = {
         memberId,
+        franchiseId: member.franchiseId || null,
         paymentModeId: obj.paymentModeId,
         programPlanId: obj.programPlanId,
         programId: obj.programId,
@@ -534,6 +535,7 @@ export class MemberPaymentService {
       }
       // Update payment record
       const updateData: any = {
+        franchiseId: memberWithFranchise?.franchiseId || null,
         paymentModeId: obj.paymentModeId !== undefined ? obj.paymentModeId : payment.paymentModeId,
         programPlanId: obj.programPlanId !== undefined ? obj.programPlanId : payment.programPlanId,
         programId: obj.programId !== undefined ? obj.programId : payment.programId,

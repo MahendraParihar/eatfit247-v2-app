@@ -141,3 +141,8 @@ alter table public.txn_member_products
     add product_id integer not null
         constraint txn_member_products_mst_product_product_id_fk
             references public.mst_product;
+
+alter table public.txn_member_products
+    add franchise_id integer
+        constraint txn_member_products_mst_franchises_franchise_id_fk
+            references public.mst_franchises;

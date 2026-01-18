@@ -11,9 +11,9 @@ import { MatCardModule } from '@angular/material/card';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
-import { InputErrorComponent, UploadFormComponent, ValidationUtil } from '@shared';
+import { AddressFormComponent, InputErrorComponent, UploadFormComponent, ValidationUtil } from '@shared';
 import { FranchiseApiService } from '../api.service';
-import { FileTypeEnum, IFranchise, InputLengthEnum, InternationalTaxModeEnum } from '@eatfit247-shared-lib';
+import { FileTypeEnum, IFranchise, InputLengthEnum, InternationalTaxModeEnum, BusinessTypeEnum } from '@eatfit247-shared-lib';
 
 @Component({
   selector: 'lib-manage-franchise',
@@ -31,7 +31,8 @@ import { FileTypeEnum, IFranchise, InputLengthEnum, InternationalTaxModeEnum } f
     MatDatepickerModule,
     MatNativeDateModule,
     InputErrorComponent,
-    UploadFormComponent
+    UploadFormComponent,
+    AddressFormComponent
   ],
   templateUrl: './manage-franchise.html',
   styleUrl: './manage-franchise.scss'
@@ -80,6 +81,7 @@ export class ManageFranchise implements OnInit, OnDestroy {
     endDate: [null],
     isPrimary: [false, [Validators.required]],
     isDefault: [false, [Validators.required]],
+    businessType: [[]],
     active: [true, [Validators.required]]
   });
   initialData!: IFranchise;
@@ -88,6 +90,7 @@ export class ManageFranchise implements OnInit, OnDestroy {
   mediaFor = 'franchise' as any; // Using string literal
   mediaType = FileTypeEnum.IMAGE;
   internationalTaxModeOptions = InternationalTaxModeEnum;
+  businessTypeOptions = BusinessTypeEnum;
   masterData: { taxApplicable: boolean } | null = null;
   private route = inject(ActivatedRoute);
   private router = inject(Router);
@@ -135,8 +138,11 @@ export class ManageFranchise implements OnInit, OnDestroy {
         endDate: endDate,
         isPrimary: (this.initialData as any).isPrimary !== undefined ? (this.initialData as any).isPrimary : false,
         isDefault: (this.initialData as any).isDefault !== undefined ? (this.initialData as any).isDefault : false,
+        businessType: (this.initialData as any).businessType || [],
         active: this.initialData.active !== undefined ? this.initialData.active : true
       });
+      
+      // Address will be bound by AddressFormComponent when address input is set
     }
   }
 
@@ -218,6 +224,27 @@ export class ManageFranchise implements OnInit, OnDestroy {
       } else {
         formValue.logo = undefined;
       }
+      
+      // Handle address from address form
+      const addressControl = this.formGroup.get('address');
+      if (addressControl && addressControl.valid) {
+        const addressValue = addressControl.value;
+        if (addressValue.postalAddress && addressValue.countryId && addressValue.stateId) {
+          formValue.address = {
+            postalAddress: addressValue.postalAddress,
+            cityVillage: addressValue.cityVillage,
+            stateId: addressValue.stateId,
+            countryId: addressValue.countryId,
+            pinCode: addressValue.pinCode,
+            addressTypeId: addressValue.addressTypeId,
+            latitude: addressValue.latitude,
+            longitude: addressValue.longitude,
+            addressName: addressValue.addressName,
+            addressId: addressValue.addressId || undefined,
+          };
+        }
+      }
+      
       if (this.isEditMode && this.initialData) {
         const franchiseId = (this.initialData as any).franchiseId;
         await this.apiService.update(franchiseId, formValue);

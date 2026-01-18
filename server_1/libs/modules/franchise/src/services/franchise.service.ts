@@ -5,6 +5,7 @@ import {
   IBasicSearch,
   IDropdownItem,
   IFranchise,
+  IManageAddress,
   IManageFranchise,
   ITableList,
   TableEnum,
@@ -33,14 +34,20 @@ export class FranchiseService {
       raw: true,
       nest: true,
     });
-    const resList: IFranchise[] = rows.map((item: any) => {return this.convertToModel(item);});
+    const resList: IFranchise[] = await Promise.all(rows.map((item: any) => this.convertToModel(item)));
     return {
       tableData: resList,
       count: count,
     };
   }
 
-  private convertToModel(item: any): IFranchise {
+  private async convertToModel(item: any): Promise<IFranchise> {
+    // Fetch address for this franchise
+    const address = await this.addressService.findByTableIdAndPk(
+      TableEnum.MST_FRANCHISES,
+      item.franchiseId,
+    );
+    
     return <IFranchise>{
       franchiseId: item.franchiseId,
       id: item.franchiseId,
@@ -67,7 +74,9 @@ export class FranchiseService {
       endDate: item.endDate,
       isPrimary: item.isPrimary,
       isDefault: item.isDefault,
+      businessType: item.businessType,
       active: item.active,
+      addressObj: address || undefined,
       createdBy: item.createdBy,
       updatedBy: item.modifiedBy,
       createdAt: item.createdAt,
@@ -90,7 +99,7 @@ export class FranchiseService {
     if (!find) {
       throw new NotFoundException('Franchise not found');
     }
-    return this.convertToModel(find);
+    return await this.convertToModel(find);
   }
 
   public async create(obj: IManageFranchise, cIp: string, adminId: number): Promise<void> {
@@ -115,13 +124,24 @@ export class FranchiseService {
       startDate: obj.startDate,
       endDate: obj.endDate || null,
       isPrimary: obj.isPrimary,
+      businessType: obj.businessType || null,
       active: obj.active,
       createdBy: adminId,
       modifiedBy: adminId,
       createdIp: cIp,
       modifiedIp: cIp,
     };
-    await this.franchiseRepository.create(createObj);
+    const franchise = await this.franchiseRepository.create(createObj);
+    
+    // Handle address creation if provided
+    if (obj.address) {
+      const addressData: IManageAddress = {
+        ...obj.address,
+        tableId: TableEnum.MST_FRANCHISES,
+        pkOfTable: franchise.franchiseId,
+      };
+      await this.addressService.createOrUpdate(addressData, cIp, adminId);
+    }
   }
 
   public async update(id: number, obj: IManageFranchise, cIp: string, adminId: number): Promise<void> {
@@ -153,11 +173,22 @@ export class FranchiseService {
       endDate: obj.endDate || null,
       isPrimary: obj.isPrimary,
       isDefault: obj.isDefault,
+      businessType: obj.businessType || null,
       active: obj.active,
       modifiedBy: adminId,
       modifiedIp: cIp,
     };
     await this.franchiseRepository.update(updateObj, { where: { franchiseId: id } });
+    
+    // Handle address creation/update if provided
+    if (obj.address) {
+      const addressData: IManageAddress = {
+        ...obj.address,
+        tableId: TableEnum.MST_FRANCHISES,
+        pkOfTable: id,
+      };
+      await this.addressService.createOrUpdate(addressData, cIp, adminId);
+    }
   }
 
   public async changeStatus(id: number, active: boolean, cIp: string, adminId: number): Promise<void> {

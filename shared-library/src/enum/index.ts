@@ -15,4 +15,5 @@ export * from "./member-diet-plan.enum";
 export * from "./payment-gateway.enum";
 export * from "./field-type.enum";
 export * from "./issue-status.enum";
+export * from "./business-type.enum";
 

@@ -121,7 +121,7 @@ export class ManageMemberProductOrderComponent implements OnInit {
 
   private initializeForm(): void {
     const paymentDate = this.data.productOrder?.paymentDate;
-    const defaultPaymentSource = PaymentSourceEnum?.MANUAL || 'MANUAL';
+    const defaultPaymentSource = PaymentSourceEnum.MANUAL;
     // Step 1: Product Selection Form
     this.step1FormGroup = this.fb.group({
       productId: [null, [Validators.required]],
@@ -130,11 +130,11 @@ export class ManageMemberProductOrderComponent implements OnInit {
     // Step 2: Quantity and Cart Form
     this.step2FormGroup = this.fb.group({
       addressId: [null],
-      billingAddressId: [null],
+      billingAddressId: [null, [Validators.required]],
       gstNumber: ['', [Validators.maxLength(InputLengthEnum.CHAR_50)]],
       isTaxApplicable: [true, [Validators.required]],
-      isPlanFeesIncludedTax: [false, [Validators.required]],
-      currencyCode: ['INR', [Validators.required]],
+      isPlanFeesIncludedTax: [true, [Validators.required]],
+      currencyCode: ['', [Validators.required]],
       orderAmount: [0, [Validators.required, Validators.min(0)]],
       discountAmount: [0, [Validators.required, Validators.min(0)]]
     });

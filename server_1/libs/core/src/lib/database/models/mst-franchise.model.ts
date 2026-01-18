@@ -158,6 +158,12 @@ export class MstFranchise extends Model<MstFranchise> {
   })
   declare isDefault: boolean;
   @Column({
+    allowNull: true,
+    field: 'business_type',
+    type: DataType.ARRAY(DataType.ENUM('service', 'product')),
+  })
+  declare businessType: ('service' | 'product')[];
+  @Column({
     allowNull: false,
     defaultValue: true,
     field: 'active',

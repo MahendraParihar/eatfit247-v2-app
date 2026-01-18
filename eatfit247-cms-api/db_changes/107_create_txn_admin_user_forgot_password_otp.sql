@@ -534,3 +534,12 @@ create table public.txn_success_stories
     CONSTRAINT fk_txn_success_stories_mst_admin_created_by FOREIGN KEY (created_by) REFERENCES mst_admin_users (admin_id),
     CONSTRAINT fk_txn_success_stories_mst_admin_updated_by FOREIGN KEY (updated_by) REFERENCES mst_admin_users (admin_id)
 );
+
+alter table public.txn_member_payments
+    add franchise_id integer
+        constraint txn_member_payments_mst_franchises_franchise_id_fk
+            references public.mst_franchises;
+
+CREATE TYPE public.business_type AS ENUM ('service', 'product');
+ALTER TABLE public.mst_franchises
+    ADD COLUMN business_type public.business_type[];
