@@ -134,9 +134,9 @@ export class FranchiseService {
     const franchise = await this.franchiseRepository.create(createObj);
     
     // Handle address creation if provided
-    if (obj.address) {
+    if (obj.addressObj) {
       const addressData: IManageAddress = {
-        ...obj.address,
+        ...obj.addressObj,
         tableId: TableEnum.MST_FRANCHISES,
         pkOfTable: franchise.franchiseId,
       };
@@ -181,9 +181,9 @@ export class FranchiseService {
     await this.franchiseRepository.update(updateObj, { where: { franchiseId: id } });
     
     // Handle address creation/update if provided
-    if (obj.address) {
+    if (obj.addressObj) {
       const addressData: IManageAddress = {
-        ...obj.address,
+        ...obj.addressObj,
         tableId: TableEnum.MST_FRANCHISES,
         pkOfTable: id,
       };
