@@ -19,7 +19,7 @@ export interface IMemberInfo {
  * SAC Code for Diet Consultancy Services (GST)
  * Standard SAC code for nutrition/diet consultation services
  */
-const SAC_CODE_DIET_CONSULTANCY = '998314';
+const SAC_CODE_DIET_CONSULTANCY = '999319';
 /**
  * Default HSN Code for Products (can be overridden per product)
  */
