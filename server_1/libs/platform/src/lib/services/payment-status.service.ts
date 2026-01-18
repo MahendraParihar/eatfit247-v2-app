@@ -10,7 +10,7 @@ export class PaymentStatusService {
   ) {}
 
   /**
-   * Get active payment statuses as dropdown list
+   * Get active payment statuses as a dropdown list
    */
   public async getDropdownList(): Promise<IDropdownItem[]> {
     const statuses = await this.paymentStatusRepository.findAll({

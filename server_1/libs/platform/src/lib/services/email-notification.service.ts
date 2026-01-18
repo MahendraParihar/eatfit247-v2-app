@@ -4,20 +4,22 @@ import path from 'path';
 import fs from 'fs';
 import * as ejs from 'ejs';
 import { InjectModel } from '@nestjs/sequelize';
-import { IEmailData, ISendEmailParams } from '@eatfit247-shared-lib';
+import { ConfigParam, IEmailData, ISendEmailParams } from '@eatfit247-shared-lib';
 import { AppConfigService } from '@server_1/core';
-import { LogErrorService } from '../logging/log-error.service';
-import { MstEmailTemplate } from '../database/models';
+import { LogErrorService, MstEmailTemplate } from '@server_1/platform';
 
 @Injectable()
 export class EmailNotificationService {
   private transporter: nodemailer.Transporter;
   private readonly serviceName = 'EmailNotificationService';
-  private templatesPath: string;
+  private readonly templatesPath: string;
 
-  constructor(private readonly appConfigService: AppConfigService,
+  constructor(
+    private readonly appConfigService: AppConfigService,
     private readonly logErrorService: LogErrorService,
-    @InjectModel(MstEmailTemplate) private readonly emailTemplateRepository: typeof MstEmailTemplate) {
+    @InjectModel(MstEmailTemplate)
+    private readonly emailTemplateRepository: typeof MstEmailTemplate,
+  ) {
     const distPath = path.join(__dirname, '../templates');
     const sourcePath = path.join(process.cwd(), 'libs/modules/email/src/templates');
     // Check if templates exist in the dist folder (production build)
@@ -30,11 +32,11 @@ export class EmailNotificationService {
       this.templatesPath = distPath;
     }
     // Initialize email transporter
-    const mailHost = this.appConfigService.getString('SYSTEM_EMAIL_HOST', true);
-    const mailPort = this.appConfigService.getNumber('SYSTEM_EMAIL_PORT', true);
-    const mailUser = this.appConfigService.getString('SYSTEM_EMAIL_USER', true);
-    const mailPassword = this.appConfigService.getString('SYSTEM_EMAIL_PASSWORD', true);
-    const enableMail = this.appConfigService.getBoolean('SYSTEM_EMAIL_ENABLE', true);
+    const mailHost = this.appConfigService.getString(ConfigParam.SYSTEM_EMAIL_HOST);
+    const mailPort = this.appConfigService.getNumber(ConfigParam.SYSTEM_EMAIL_PORT);
+    const mailUser = this.appConfigService.getString(ConfigParam.SYSTEM_EMAIL_USER);
+    const mailPassword = this.appConfigService.getString(ConfigParam.SYSTEM_EMAIL_PASSWORD);
+    const enableMail = this.appConfigService.getBoolean(ConfigParam.SYSTEM_EMAIL_ENABLE);
     if (!enableMail || !mailHost || !mailUser || !mailPassword) {
       this.transporter = nodemailer.createTransport({
         jsonTransport: true, // Use dummy transport for testing
@@ -62,7 +64,7 @@ export class EmailNotificationService {
     try {
       // Get email template
       const template = await this.emailTemplateRepository.findOne({
-        where: { emailTemplateId: params.emailTemplateId, active: true },
+        where: { templateName: params.emailTemplate, active: true },
       });
       if (!template) {
         throw new NotFoundException('Email template not found or inactive');
@@ -71,8 +73,14 @@ export class EmailNotificationService {
       let subject = params.subject || template.subject;
       let body = params.body || template.body;
       // Replace template variables if replacements provided
-      if (params.replacements && subject && typeof subject === 'string' && body && typeof body === 'string') {
-        Object.keys(params.replacements).forEach(key => {
+      if (
+        params.replacements &&
+        subject &&
+        typeof subject === 'string' &&
+        body &&
+        typeof body === 'string'
+      ) {
+        Object.keys(params.replacements).forEach((key) => {
           const regex = new RegExp(`{{${key}}}`, 'g');
           subject = subject.replace(regex, String(params.replacements![key]));
           body = body.replace(regex, String(params.replacements![key]));
@@ -81,15 +89,16 @@ export class EmailNotificationService {
       // Prepare recipients
       const recipients = Array.isArray(params.to) ? params.to : [params.to];
       // Prepare attachments
-      const attachments = params.attachments?.map(att => ({
-        filename: att.filename,
-        path: att.path,
-        content: att.content,
-        contentType: att.contentType,
-      })) || [];
+      const attachments =
+        params.attachments?.map((att) => ({
+          filename: att.filename,
+          path: att.path,
+          content: att.content,
+          contentType: att.contentType,
+        })) || [];
       // Send email
       const mailOptions = {
-        from: process.env['MAIL_USER'] || 'noreply@eatfit247.com',
+        from: this.appConfigService.getString(ConfigParam.SYSTEM_EMAIL_USER),
         to: recipients.join(', '),
         subject: subject,
         html: body,
@@ -145,10 +154,7 @@ export class EmailNotificationService {
           );
           return; // Skip email process if a template file not found
         }
-        htmlBody = await this.renderTemplate(
-          templateFile,
-          data,
-        );
+        htmlBody = await this.renderTemplate(templateFile, data);
       } catch (ejsError) {
         await this.logErrorService.logError(
           ejsError instanceof Error ? ejsError : new Error(String(ejsError)),
@@ -159,12 +165,13 @@ export class EmailNotificationService {
       // Prepare recipients
       const recipients = Array.isArray(to) ? to : [to];
       // Prepare attachments
-      const emailAttachments = attachments?.map(att => ({
-        filename: att.filename,
-        path: att.path,
-        content: att.content,
-        contentType: att.contentType,
-      })) || [];
+      const emailAttachments =
+        attachments?.map((att) => ({
+          filename: att.filename,
+          path: att.path,
+          content: att.content,
+          contentType: att.contentType,
+        })) || [];
       // Send email
       const mailOptions = {
         from: process.env['MAIL_USER'] || 'noreply@eatfit247.com',
@@ -185,19 +192,15 @@ export class EmailNotificationService {
         { controller: this.serviceName, methodName: 'sendEmailByType' },
       );
       // Don't throw an error, just log and skip
-      await this.logErrorService.logWarning(
-        'Skipping email send due to error.',
-        { controller: this.serviceName, methodName: 'sendEmailByType' },
-      );
+      await this.logErrorService.logWarning('Skipping email send due to error.', {
+        controller: this.serviceName,
+        methodName: 'sendEmailByType',
+      });
     }
   }
 
   async renderTemplate(template: string, data: any) {
-    return ejs.renderFile(
-      path.join(this.templatesPath, `${template}.ejs`),
-      data,
-      { async: true },
-    );
+    return ejs.renderFile(path.join(this.templatesPath, `${template}.ejs`), data, { async: true });
   }
 }
 

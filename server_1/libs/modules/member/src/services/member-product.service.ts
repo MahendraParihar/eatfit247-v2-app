@@ -1,12 +1,26 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { TxnMember, TxnMemberProduct } from '../models';
-import { IMemberProduct, ITableList, PaymentSourceEnum } from '@eatfit247-shared-lib';
-import { CommonFunctionsUtil } from '@server_1/core';
+import {
+  ConfigParam, IAddress, IDropdownItem,
+  IMemberPaymentMasterData,
+  IMemberProduct, IMemberProductMasterData,
+  ITableList,
+  PaymentSourceEnum,
+  TableEnum,
+} from '@eatfit247-shared-lib';
+import { AppConfigService, CommonFunctionsUtil } from '@server_1/core';
+import { AddressService, PaymentModeService, PaymentStatusService } from '@server_1/platform';
+import { ProductService } from '@server_1/modules/product';
 
 @Injectable()
 export class MemberProductService {
   constructor(
+    private readonly appConfigService: AppConfigService,
+    private readonly addressService: AddressService,
+    private readonly paymentModeService: PaymentModeService,
+    private readonly paymentStatusService: PaymentStatusService,
+    private readonly productService: ProductService,
     @InjectModel(TxnMember) private readonly memberRepository: typeof TxnMember,
     @InjectModel(TxnMemberProduct)
     private readonly memberProductRepository: typeof TxnMemberProduct,
@@ -109,6 +123,29 @@ export class MemberProductService {
       updatedByUser: item.updatedByUser
         ? CommonFunctionsUtil.getAdminShortInfo(item.updatedByUser, 'updatedByUser')
         : undefined,
+    };
+  }
+
+  public async loadMasterData(memberId: number): Promise<IMemberProductMasterData> {
+    const [paymentModes, product, paymentStatuses, addresses] = await Promise.all([
+      this.paymentModeService.getDropdownList(),
+      this.productService.getProductList(),
+      this.paymentStatusService.getDropdownList(),
+      this.addressService.filterByTableIdAndPk(TableEnum.TXN_MEMBER, memberId),
+    ]);
+    const taxApplicable = this.appConfigService.getBoolean(ConfigParam.GST_ENABLED, true, false);
+    const paymentSource: IDropdownItem[] = Object.values(PaymentSourceEnum).map((source) => ({
+      id: source,
+      label: source,
+      selected: false,
+    }));
+    return <IMemberProductMasterData>{
+      paymentMode: paymentModes,
+      product: product,
+      paymentStatus: paymentStatuses,
+      addresses: addresses as IAddress[],
+      taxApplicable: taxApplicable,
+      paymentSource: paymentSource,
     };
   }
 }

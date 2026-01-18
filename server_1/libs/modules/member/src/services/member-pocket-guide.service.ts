@@ -141,7 +141,7 @@ export class MemberPocketGuideService {
           try {
             const emailData: IEmailData = {
               to: member.emailId,
-              type: EmailTemplateEnum.POCKET_GUIDE_ASSIGNED,
+              type: EmailTemplateEnum.MEMBER_POCKET_GUIDE_ASSIGNED,
               data: {
                 memberName: `${member.firstName} ${member.lastName}`,
                 pocketGuideNames: pocketGuideNames,

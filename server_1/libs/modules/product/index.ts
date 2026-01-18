@@ -1,3 +1,4 @@
+export * from './src/product.module';
 export * from './src/product-admin.module';
 export * from './src/product-public.module';
 export * from './src/models';

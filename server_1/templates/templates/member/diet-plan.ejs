@@ -1,0 +1,46 @@
+<h2>Your Diet Plan Has Been Assigned</h2>
+
+<p>Dear <%= memberName %>,</p>
+
+<p>Great news! Your personalized diet plan has been assigned and is now ready for you to view.</p>
+
+<div style="background-color: #f9f9f9; padding: 20px; border-radius: 4px; margin: 20px 0;">
+  <h3 style="margin-top: 0;">Diet Plan Details</h3>
+  <table style="width: 100%; border-collapse: collapse;">
+    <tr>
+      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><strong>Plan Name:</strong></td>
+      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><%= planName %></td>
+    </tr>
+    <% if (nutritionistName) { %>
+    <tr>
+      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><strong>Assigned By:</strong></td>
+      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><%= nutritionistName %></td>
+    </tr>
+    <% } %>
+    <tr>
+      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><strong>Assigned Date:</strong></td>
+      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><%= assignedDate %></td>
+    </tr>
+    <% if (planDuration) { %>
+    <tr>
+      <td style="padding: 8px 0;"><strong>Duration:</strong></td>
+      <td style="padding: 8px 0;"><%= planDuration %></td>
+    </tr>
+    <% } %>
+  </table>
+</div>
+
+<% if (planUrl) { %>
+<p>
+  <a href="<%= planUrl %>" style="display: inline-block; padding: 12px 24px; background-color: <%= franchise.brandColor || '#4CAF50' %>; color: #ffffff; text-decoration: none; border-radius: 4px; margin: 20px 0;">
+    View Your Diet Plan
+  </a>
+</p>
+<% } %>
+
+<p>Your diet plan has been carefully crafted based on your health goals and preferences. Make sure to follow it consistently for the best results.</p>
+
+<p>If you have any questions or need to make adjustments to your plan, please contact our support team at <a href="mailto:<%= franchise.supportEmail %>"><%= franchise.supportEmail %></a>.</p>
+
+<p>Best regards,<br>The <%= franchise.franchiseName %> Team</p>
+

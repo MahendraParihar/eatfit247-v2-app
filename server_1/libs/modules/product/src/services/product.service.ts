@@ -2,14 +2,14 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { MstProduct } from '../models';
 import {
-  IBasicSearch,
+  IBasicSearch, IDropdownItem,
   IManageProduct,
   IProduct,
   IPublicProduct,
   IPublicTableList,
   ITableList,
 } from '@eatfit247-shared-lib';
-import { AppConfigService, CommonFunctionsUtil, SearchUtil } from '@server_1/core';
+import { CommonFunctionsUtil, SearchUtil } from '@server_1/core';
 
 @Injectable()
 export class ProductService {
@@ -18,23 +18,19 @@ export class ProductService {
     private readonly productRepository: typeof MstProduct,
   ) {}
 
-  public async findAll(
-    searchDto: IBasicSearch,
-  ): Promise<ITableList<IProduct>> {
+  public async findAll(searchDto: IBasicSearch): Promise<ITableList<IProduct>> {
     const whereCondition: any = SearchUtil.filterBasicSearch(searchDto, 'name');
     const pageNumber = searchDto.page || 0;
     const pageSize = searchDto.limit || 15;
     const offset = pageNumber === 0 ? 0 : pageNumber * pageSize;
-    const { rows, count } = await this.productRepository
-      .scope('list')
-      .findAndCountAll({
-        where: whereCondition,
-        order: [['createdAt', 'DESC']],
-        offset: offset,
-        limit: pageSize,
-        raw: true,
-        nest: true,
-      });
+    const { rows, count } = await this.productRepository.scope('list').findAndCountAll({
+      where: whereCondition,
+      order: [['createdAt', 'DESC']],
+      offset: offset,
+      limit: pageSize,
+      raw: true,
+      nest: true,
+    });
     const resList: IProduct[] = rows.map((item: any) => {
       return this.convertToModel(item);
     });
@@ -44,9 +40,7 @@ export class ProductService {
     };
   }
 
-  public async findAllPublic(
-    searchDto: IBasicSearch,
-  ): Promise<IPublicTableList<IPublicProduct>> {
+  public async findAllPublic(searchDto: IBasicSearch): Promise<IPublicTableList<IPublicProduct>> {
     const whereCondition: any = SearchUtil.filterBasicSearch(searchDto, 'name');
     whereCondition.active = true; // Only active products for public
     const pageNumber = searchDto.page || 0;
@@ -77,9 +71,7 @@ export class ProductService {
   }
 
   private convertToModel(item: any): IProduct {
-    const imagePath = item.imagePath
-      ? CommonFunctionsUtil.buildImageUrl(item.imagePath)
-      : [];
+    const imagePath = item.imagePath ? CommonFunctionsUtil.buildImageUrl(item.imagePath) : [];
     return <IProduct>{
       productId: item.productId,
       name: item.name,
@@ -127,11 +119,7 @@ export class ProductService {
     return this.convertToModel(find);
   }
 
-  public async create(
-    obj: IManageProduct,
-    cIp: string,
-    adminId: number,
-  ): Promise<void> {
+  public async create(obj: IManageProduct, cIp: string, adminId: number): Promise<void> {
     const createObj = {
       name: obj.name,
       imagePath: obj.imagePath || [],
@@ -191,6 +179,13 @@ export class ProductService {
     };
     await this.productRepository.update(updateObj, {
       where: { productId: id },
+    });
+  }
+
+  public async getProductList(): Promise<IProduct[]> {
+    return await this.productRepository.findAll({
+      where: { active: true },
+      order: [['createdAt', 'DESC']],
     });
   }
 }

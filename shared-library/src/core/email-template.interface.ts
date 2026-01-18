@@ -1,5 +1,6 @@
 /// <reference types="node" />
 import { IBaseAdminUser } from '../base.interface';
+import { EmailTemplateEnum } from '../enum';
 
 export interface IBaseEmailTemplate {
   templateName: string;
@@ -25,11 +26,13 @@ export interface IEmailTemplate extends IBaseEmailTemplate {
 }
 
 export interface ISendEmailParams {
-  emailTemplateId: number;
+  emailTemplate: EmailTemplateEnum;
   to: string | string[];
+  franchiseBranding: { logoUrl: string, brandName: string };
   subject?: string; // Optional override
   body?: string; // Optional override
-  replacements?: Record<string, string>; // For template variable replacement
+  from?: string;
+  replacements?: { [key: string]: string | number }; // For template variable replacement
   attachments?: IEmailAttachment[];
 }
 

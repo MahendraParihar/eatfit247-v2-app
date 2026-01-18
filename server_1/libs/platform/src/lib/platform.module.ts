@@ -55,7 +55,6 @@ export class PlatformModule {
       MstPaymentStatus,
       MstPaymentGateway,
     ];
-
     return {
       module: PlatformModule,
       controllers: [FileUploadController],
@@ -77,7 +76,6 @@ export class PlatformModule {
         StripeService,
         TelrService,
         WooCommerceService,
-        EmailNotificationService,
         CurrencyService,
         StateService,
         CountryService,
@@ -89,6 +87,7 @@ export class PlatformModule {
         PdfService,
         InvoicePdfService,
         DietPlanPdfService,
+        EmailNotificationService,
       ],
       exports: [
         SequelizeModule,
@@ -100,7 +99,6 @@ export class PlatformModule {
         StripeService,
         TelrService,
         WooCommerceService,
-        EmailNotificationService,
         CurrencyService,
         StateService,
         CountryService,
@@ -112,6 +110,7 @@ export class PlatformModule {
         PdfService,
         InvoicePdfService,
         DietPlanPdfService,
+        EmailNotificationService,
       ],
     };
   }

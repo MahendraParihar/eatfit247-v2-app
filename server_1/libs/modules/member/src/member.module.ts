@@ -53,6 +53,7 @@ import {
 } from './services';
 import { FranchiseModule } from '@server_1/modules/franchise';
 import { PaymentModule } from '@server_1/modules/payment';
+import { ProductModule } from '@server_1/modules/product';
 // Register models with the model registry
 modelRegistry.register([
   TxnMember,
@@ -81,6 +82,7 @@ modelRegistry.register([
     IssuesModule,
     FranchiseModule,
     PaymentModule,
+    ProductModule,
     RecipeModule,
     DietModule,
     SequelizeModule.forFeature([

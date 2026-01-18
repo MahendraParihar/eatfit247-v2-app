@@ -1,0 +1,20 @@
+<h2>Welcome to <%= franchise.franchiseName %>!</h2>
+
+<p>Dear <%= memberName %>,</p>
+
+<p>We're thrilled to have you join the <%= franchise.franchiseName %> family! Your account has been successfully created.</p>
+
+<p>You can now access your account and start your journey towards a healthier lifestyle.</p>
+
+<% if (loginUrl) { %>
+<p>
+  <a href="<%= loginUrl %>" style="display: inline-block; padding: 12px 24px; background-color: <%= franchise.brandColor || '#4CAF50' %>; color: #ffffff; text-decoration: none; border-radius: 4px; margin: 20px 0;">
+    Login to Your Account
+  </a>
+</p>
+<% } %>
+
+<p>If you have any questions or need assistance, please don't hesitate to contact our support team at <a href="mailto:<%= franchise.supportEmail %>"><%= franchise.supportEmail %></a>.</p>
+
+<p>Best regards,<br>The <%= franchise.franchiseName %> Team</p>
+

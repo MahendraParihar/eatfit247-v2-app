@@ -1,0 +1,42 @@
+<h2>Call Cancelled</h2>
+
+<p>Dear <%= memberName %>,</p>
+
+<p>This is to confirm that your scheduled consultation call has been cancelled.</p>
+
+<div style="background-color: #f9f9f9; padding: 20px; border-radius: 4px; margin: 20px 0;">
+  <h3 style="margin-top: 0;">Cancelled Call Details</h3>
+  <table style="width: 100%; border-collapse: collapse;">
+    <tr>
+      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><strong>Original Date:</strong></td>
+      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><%= callDate %></td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><strong>Original Time:</strong></td>
+      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><%= callTime %></td>
+    </tr>
+    <% if (cancellationReason) { %>
+    <tr>
+      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><strong>Reason:</strong></td>
+      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><%= cancellationReason %></td>
+    </tr>
+    <% } %>
+    <tr>
+      <td style="padding: 8px 0;"><strong>Cancelled On:</strong></td>
+      <td style="padding: 8px 0;"><%= cancelledDate || new Date().toLocaleString() %></td>
+    </tr>
+  </table>
+</div>
+
+<% if (rescheduleUrl) { %>
+<p>
+  <a href="<%= rescheduleUrl %>" style="display: inline-block; padding: 12px 24px; background-color: <%= franchise.brandColor || '#4CAF50' %>; color: #ffffff; text-decoration: none; border-radius: 4px; margin: 20px 0;">
+    Schedule a New Call
+  </a>
+</p>
+<% } %>
+
+<p>If you'd like to schedule a new call, please contact our support team at <a href="mailto:<%= franchise.supportEmail %>"><%= franchise.supportEmail %></a>.</p>
+
+<p>Best regards,<br>The <%= franchise.franchiseName %> Team</p>
+

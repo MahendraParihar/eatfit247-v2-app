@@ -1,0 +1,58 @@
+<h2>Order Confirmation</h2>
+
+<p>Dear <%= memberName %>,</p>
+
+<p>Thank you for your order! We're excited to confirm that your order has been received and is being processed.</p>
+
+<div style="background-color: #f9f9f9; padding: 20px; border-radius: 4px; margin: 20px 0;">
+  <h3 style="margin-top: 0;">Order Details</h3>
+  <table style="width: 100%; border-collapse: collapse;">
+    <tr>
+      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><strong>Order Number:</strong></td>
+      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><%= orderNumber %></td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><strong>Order Date:</strong></td>
+      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><%= orderDate %></td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><strong>Product:</strong></td>
+      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><%= productName %></td>
+    </tr>
+    <% if (quantity) { %>
+    <tr>
+      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><strong>Quantity:</strong></td>
+      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><%= quantity %></td>
+    </tr>
+    <% } %>
+    <% if (shippingAddress) { %>
+    <tr>
+      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><strong>Shipping Address:</strong></td>
+      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><%= shippingAddress %></td>
+    </tr>
+    <% } %>
+    <% if (estimatedDelivery) { %>
+    <tr>
+      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><strong>Estimated Delivery:</strong></td>
+      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><%= estimatedDelivery %></td>
+    </tr>
+    <% } %>
+    <tr>
+      <td style="padding: 8px 0;"><strong>Total Amount:</strong></td>
+      <td style="padding: 8px 0;"><strong><%= currency || '₹' %><%= totalAmount %></strong></td>
+    </tr>
+  </table>
+</div>
+
+<% if (orderTrackingUrl) { %>
+<p>
+  <a href="<%= orderTrackingUrl %>" style="display: inline-block; padding: 12px 24px; background-color: <%= franchise.brandColor || '#4CAF50' %>; color: #ffffff; text-decoration: none; border-radius: 4px; margin: 20px 0;">
+    Track Your Order
+  </a>
+</p>
+<% } %>
+
+<p>We'll send you another email once your order has been shipped. If you have any questions, please contact our support team at <a href="mailto:<%= franchise.supportEmail %>"><%= franchise.supportEmail %></a>.</p>
+
+<p>Best regards,<br>The <%= franchise.franchiseName %> Team</p>
+

@@ -5,6 +5,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { Subscription } from 'rxjs';
 import {
   DataTableComponent,
@@ -16,6 +17,10 @@ import {
 } from '@shared';
 import { IMemberProduct } from '@eatfit247-shared-lib';
 import { MembersApiService } from '../../api.service';
+import {
+  ManageMemberProductOrderComponent,
+  ManageMemberProductOrderData
+} from './manage-member-product-order/manage-member-product-order.component';
 
 @Component({
   selector: 'lib-member-product-orders',
@@ -26,6 +31,7 @@ import { MembersApiService } from '../../api.service';
     MatButtonModule,
     MatIconModule,
     MatChipsModule,
+    MatDialogModule,
     DataTableComponent,
     EmptyStateComponent,
     LoaderComponent,
@@ -36,6 +42,7 @@ import { MembersApiService } from '../../api.service';
 export class MemberProductOrdersComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private apiService = inject(MembersApiService);
+  private dialog = inject(MatDialog);
 
   memberId!: number;
   productOrders: IMemberProduct[] = [];
@@ -165,6 +172,47 @@ export class MemberProductOrdersComponent implements OnInit, OnDestroy {
       return 'status-failed';
     }
     return '';
+  }
+
+  addProductOrder(): void {
+    if (!this.memberId) {
+      console.error('Member ID is not available');
+      return;
+    }
+    const dialogData: ManageMemberProductOrderData = {
+      memberId: this.memberId
+    };
+    const dialogRef = this.dialog.open(ManageMemberProductOrderComponent, {
+      width: '1000px',
+      maxWidth: '90vw',
+      maxHeight: '90vh',
+      data: dialogData
+    });
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result === true) {
+        // Reload product orders after a successful create / update
+        this.loadProductOrders();
+      }
+    });
+  }
+
+  editProductOrder(productOrder: IMemberProduct): void {
+    const dialogData: ManageMemberProductOrderData = {
+      memberId: this.memberId,
+      productOrder: productOrder
+    };
+    const dialogRef = this.dialog.open(ManageMemberProductOrderComponent, {
+      width: '1000px',
+      maxWidth: '90vw',
+      maxHeight: '90vh',
+      data: dialogData
+    });
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result === true) {
+        // Reload product orders after successful update
+        this.loadProductOrders();
+      }
+    });
   }
 }
 

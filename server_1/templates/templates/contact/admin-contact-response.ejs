@@ -1,0 +1,36 @@
+<h2>Response to Your Contact Request</h2>
+
+<p>Dear <%= memberName || 'Valued Customer' %>,</p>
+
+<p>Thank you for contacting <%= franchise.franchiseName %>. We have reviewed your request and are pleased to provide the following response:</p>
+
+<div style="background-color: #f9f9f9; padding: 20px; border-radius: 4px; margin: 20px 0;">
+  <h3 style="margin-top: 0;">Response Details</h3>
+  <table style="width: 100%; border-collapse: collapse;">
+    <tr>
+      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><strong>Original Request:</strong></td>
+      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><%= originalSubject %></td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><strong>Response Date:</strong></td>
+      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><%= responseDate || new Date().toLocaleString() %></td>
+    </tr>
+    <% if (respondedBy) { %>
+    <tr>
+      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><strong>Responded By:</strong></td>
+      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><%= respondedBy %></td>
+    </tr>
+    <% } %>
+    <tr>
+      <td style="padding: 8px 0; vertical-align: top;"><strong>Response:</strong></td>
+      <td style="padding: 8px 0;"><%= responseMessage %></td>
+    </tr>
+  </table>
+</div>
+
+<p>If you have any further questions or need additional assistance, please don't hesitate to contact us at <a href="mailto:<%= franchise.supportEmail %>"><%= franchise.supportEmail %></a>.</p>
+
+<p>We appreciate your patience and look forward to serving you.</p>
+
+<p>Best regards,<br>The <%= franchise.franchiseName %> Team</p>
+

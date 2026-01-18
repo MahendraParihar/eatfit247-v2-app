@@ -1,0 +1,62 @@
+<h2>New Contact Request Received</h2>
+
+<p>Dear Admin Team,</p>
+
+<p>A new contact request has been submitted through the <%= franchise.franchiseName %> website.</p>
+
+<div style="background-color: #f9f9f9; padding: 20px; border-radius: 4px; margin: 20px 0;">
+  <h3 style="margin-top: 0;">Contact Request Details</h3>
+  <table style="width: 100%; border-collapse: collapse;">
+    <tr>
+      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><strong>Request ID:</strong></td>
+      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><%= requestId || 'N/A' %></td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><strong>Name:</strong></td>
+      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><%= contactName %></td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><strong>Email:</strong></td>
+      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><a href="mailto:<%= contactEmail %>"><%= contactEmail %></a></td>
+    </tr>
+    <% if (contactPhone) { %>
+    <tr>
+      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><strong>Phone:</strong></td>
+      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><%= contactPhone %></td>
+    </tr>
+    <% } %>
+    <tr>
+      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><strong>Subject:</strong></td>
+      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><%= subject %></td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><strong>Submitted On:</strong></td>
+      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><%= submittedDate || new Date().toLocaleString() %></td>
+    </tr>
+    <% if (message) { %>
+    <tr>
+      <td style="padding: 8px 0; vertical-align: top;"><strong>Message:</strong></td>
+      <td style="padding: 8px 0;"><%= message %></td>
+    </tr>
+    <% } %>
+    <% if (memberId) { %>
+    <tr>
+      <td style="padding: 8px 0;"><strong>Member ID:</strong></td>
+      <td style="padding: 8px 0;"><%= memberId %></td>
+    </tr>
+    <% } %>
+  </table>
+</div>
+
+<% if (adminUrl) { %>
+<p>
+  <a href="<%= adminUrl %>" style="display: inline-block; padding: 12px 24px; background-color: <%= franchise.brandColor || '#4CAF50' %>; color: #ffffff; text-decoration: none; border-radius: 4px; margin: 20px 0;">
+    View in Admin Panel
+  </a>
+</p>
+<% } %>
+
+<p>Please review and respond to this contact request at your earliest convenience.</p>
+
+<p>Best regards,<br><%= franchise.franchiseName %> System</p>
+

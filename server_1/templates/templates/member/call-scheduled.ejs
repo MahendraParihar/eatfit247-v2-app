@@ -1,0 +1,63 @@
+<h2>Call Scheduled Successfully</h2>
+
+<p>Dear <%= memberName %>,</p>
+
+<p>Your consultation call has been successfully scheduled. We're looking forward to speaking with you!</p>
+
+<div style="background-color: #f9f9f9; padding: 20px; border-radius: 4px; margin: 20px 0;">
+  <h3 style="margin-top: 0;">Call Details</h3>
+  <table style="width: 100%; border-collapse: collapse;">
+    <tr>
+      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><strong>Date:</strong></td>
+      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><%= callDate %></td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><strong>Time:</strong></td>
+      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><%= callTime %></td>
+    </tr>
+    <% if (timezone) { %>
+    <tr>
+      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><strong>Timezone:</strong></td>
+      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><%= timezone %></td>
+    </tr>
+    <% } %>
+    <% if (nutritionistName) { %>
+    <tr>
+      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><strong>With:</strong></td>
+      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><%= nutritionistName %></td>
+    </tr>
+    <% } %>
+    <% if (callType) { %>
+    <tr>
+      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><strong>Call Type:</strong></td>
+      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><%= callType %></td>
+    </tr>
+    <% } %>
+    <% if (meetingLink) { %>
+    <tr>
+      <td style="padding: 8px 0;"><strong>Meeting Link:</strong></td>
+      <td style="padding: 8px 0; word-break: break-all;"><a href="<%= meetingLink %>"><%= meetingLink %></a></td>
+    </tr>
+    <% } %>
+  </table>
+</div>
+
+<% if (meetingLink) { %>
+<p>
+  <a href="<%= meetingLink %>" style="display: inline-block; padding: 12px 24px; background-color: <%= franchise.brandColor || '#4CAF50' %>; color: #ffffff; text-decoration: none; border-radius: 4px; margin: 20px 0;">
+    Join Call
+  </a>
+</p>
+<% } %>
+
+<p><strong>Please make sure to:</strong></p>
+<ul>
+  <li>Be available 5 minutes before the scheduled time</li>
+  <li>Have a stable internet connection</li>
+  <li>Prepare any questions you'd like to discuss</li>
+</ul>
+
+<p>If you need to reschedule or cancel this call, please contact our support team at <a href="mailto:<%= franchise.supportEmail %>"><%= franchise.supportEmail %></a>.</p>
+
+<p>Best regards,<br>The <%= franchise.franchiseName %> Team</p>
+

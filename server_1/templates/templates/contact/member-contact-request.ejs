@@ -1,0 +1,36 @@
+<h2>Thank You for Contacting Us</h2>
+
+<p>Dear <%= memberName || 'Valued Customer' %>,</p>
+
+<p>We have received your contact request and appreciate you reaching out to <%= franchise.franchiseName %>.</p>
+
+<div style="background-color: #f9f9f9; padding: 20px; border-radius: 4px; margin: 20px 0;">
+  <h3 style="margin-top: 0;">Your Request Details</h3>
+  <table style="width: 100%; border-collapse: collapse;">
+    <tr>
+      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><strong>Request ID:</strong></td>
+      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><%= requestId || 'N/A' %></td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><strong>Subject:</strong></td>
+      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><%= subject %></td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><strong>Submitted On:</strong></td>
+      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><%= submittedDate || new Date().toLocaleString() %></td>
+    </tr>
+    <% if (message) { %>
+    <tr>
+      <td style="padding: 8px 0; vertical-align: top;"><strong>Your Message:</strong></td>
+      <td style="padding: 8px 0;"><%= message %></td>
+    </tr>
+    <% } %>
+  </table>
+</div>
+
+<p>Our team will review your request and get back to you as soon as possible, typically within 24-48 hours.</p>
+
+<p>If you have any urgent concerns, please feel free to contact us directly at <a href="mailto:<%= franchise.supportEmail %>"><%= franchise.supportEmail %></a>.</p>
+
+<p>Best regards,<br>The <%= franchise.franchiseName %> Team</p>
+

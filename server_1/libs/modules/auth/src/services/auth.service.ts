@@ -10,8 +10,17 @@ import {
   TxnAdminPasswordResetToken,
   TxnAdminRefreshToken,
 } from '@server_1/core';
-import { EmailNotificationService, LogErrorService } from '@server_1/platform';
-import { EmailType, IAuthUser, IChangePassword, IForgotPasswordRequest, ILogin, IToken } from '@eatfit247-shared-lib';
+import { EmailNotificationService } from '@server_1/platform';
+import {
+  ConfigParam,
+  EmailTemplateEnum,
+  IAuthUser,
+  IChangePassword,
+  IForgotPasswordRequest,
+  ILogin,
+  ISendEmailParams,
+  IToken,
+} from '@eatfit247-shared-lib';
 import { randomBytes } from 'node:crypto';
 import moment from 'moment';
 
@@ -19,13 +28,15 @@ import moment from 'moment';
 export class AuthService {
   constructor(
     @InjectModel(MstAdminUser) private readonly adminRepository: typeof MstAdminUser,
-    @InjectModel(TxnAdminLastLoginDetail) private readonly loginHistoryRepository: typeof TxnAdminLastLoginDetail,
-    @InjectModel(TxnAdminRefreshToken) private readonly refreshTokenRepository: typeof TxnAdminRefreshToken,
-    @InjectModel(TxnAdminPasswordResetToken) private readonly passwordResetTokenRepository: typeof TxnAdminPasswordResetToken,
+    @InjectModel(TxnAdminLastLoginDetail)
+    private readonly loginHistoryRepository: typeof TxnAdminLastLoginDetail,
+    @InjectModel(TxnAdminRefreshToken)
+    private readonly refreshTokenRepository: typeof TxnAdminRefreshToken,
+    @InjectModel(TxnAdminPasswordResetToken)
+    private readonly passwordResetTokenRepository: typeof TxnAdminPasswordResetToken,
     private jwtService: JwtService,
     private emailNotificationService: EmailNotificationService,
     private appConfigService: AppConfigService,
-    private logErrorService: LogErrorService,
   ) {}
 
   async findById(id: number): Promise<IAuthUser | null> {
@@ -37,9 +48,10 @@ export class AuthService {
       emailId: user.emailId,
       firstName: user.firstName,
       lastName: user.lastName,
-      profilePicture: typeof user.profilePicture === 'string'
-        ? JSON.parse(user.profilePicture || '{}')
-        : user.profilePicture || {},
+      profilePicture:
+        typeof user.profilePicture === 'string'
+          ? JSON.parse(user.profilePicture || '{}')
+          : user.profilePicture || {},
       countryCode: user.countryCode,
       contactNumber: user.contactNumber,
     };
@@ -169,11 +181,16 @@ export class AuthService {
   public async signOut(adminId: number, refreshToken?: string): Promise<void> {
     if (refreshToken) {
       // revoke specific token
-      const tokens = await this.refreshTokenRepository.findAll({ where: { adminId: adminId, revoked: false } });
+      const tokens = await this.refreshTokenRepository.findAll({
+        where: { adminId: adminId, revoked: false },
+      });
       for (const t of tokens) {
         const match = await CryptoUtil.compareHash(refreshToken, t.tokenHash);
         if (match) {
-          await this.refreshTokenRepository.update({ revoked: true }, { where: { adminRefreshTokenId: t.adminRefreshTokenId } });
+          await this.refreshTokenRepository.update(
+            { revoked: true },
+            { where: { adminRefreshTokenId: t.adminRefreshTokenId } },
+          );
           return;
         }
       }
@@ -182,7 +199,11 @@ export class AuthService {
     await this.refreshTokenRepository.update({ revoked: true }, { where: { adminId: adminId } });
   }
 
-  public async forgotPassword(forgotPasswordDto: IForgotPasswordRequest, ipAddress: string, userAgent?: string): Promise<string> {
+  public async forgotPassword(
+    forgotPasswordDto: IForgotPasswordRequest,
+    ipAddress: string,
+    userAgent?: string,
+  ): Promise<string> {
     const user: MstAdminUser = await this.findOneByEmail(forgotPasswordDto.emailId);
     if (!user) {
       throw new NotFoundException('Account not found');
@@ -202,85 +223,110 @@ export class AuthService {
       userAgent: userAgent || null,
     });
     // Generate reset link
-    const resetLink = `${this.appConfigService.get('CLIENT_URL')}/reset-password?token=${tokenPlain}&uid=${user.emailId}`;
+    const resetLink = `${this.appConfigService.get(ConfigParam.CLIENT_URL)}/reset-password?token=${tokenPlain}&uid=${user.emailId}`;
     try {
-      const userName = user.firstName && user.lastName
-        ? `${user.firstName} ${user.lastName}`
-        : user.firstName || user.emailId;
-      await this.emailNotificationService.sendEmailByType({
+      const userName =
+        user.firstName && user.lastName
+          ? `${user.firstName} ${user.lastName}`
+          : user.firstName || user.emailId;
+      // Use franchiseId from user, default to 1 if not set
+      const franchiseId = user.franchiseId;
+      const expiryHours = Math.ceil((Env.passwordResetExpirationMin || 60) / 60);
+      await this.emailNotificationService.sendEmail(<ISendEmailParams>{
+        emailTemplate: EmailTemplateEnum.ADMIN_PASSWORD_CHANGED,
         to: user.emailId,
-        type: EmailType.FORGOT_PASSWORD,
-        data: {
-          userName,
-          resetLink,
+        franchiseBranding: { brandName: '', logoUrl: '' },
+        replacements: {
+          adminEmail: user.emailId,
+          adminName: userName,
+          resetUrl: resetLink,
+          expiryHours: expiryHours,
         },
       });
     } catch (error) {
-      await this.logErrorService.logError(
-        error instanceof Error ? error : new Error(String(error)),
-        {
-          controller: 'AuthService',
-          methodName: 'forgotPassword',
-        },
-      );
+      // Log error but don't fail the request - password reset token is already created
+      // In production, you might want to use a proper logging service here
+      console.error('Failed to send password reset email:', error);
     }
     return 'Password reset link has been sent to your email address.';
   }
 
-  public async resetPassword(tokenPlain: string, newPassword: string, requestedIp: string): Promise<boolean> {
+  public async resetPassword(
+    tokenPlain: string,
+    newPassword: string,
+    requestedIp: string,
+  ): Promise<boolean> {
     if (!tokenPlain || !newPassword) {
       throw new BadRequestException('Token and new password are required');
     }
     // Validate password strength
     this.validatePasswordStrength(newPassword);
-    const tokens = await this.passwordResetTokenRepository.findAll({ where: { used: false }, nest: true, raw: true });
+    const tokens = await this.passwordResetTokenRepository.findAll({
+      where: { used: false },
+      nest: true,
+      raw: true,
+    });
     for (const t of tokens) {
       if (!t.tokenHash) continue;
       const ok = await CryptoUtil.compareHash(tokenPlain, t.tokenHash);
       if (!ok) continue;
       if (moment().isAfter(moment(t.expiresAt))) {
         t.used = true;
-        await this.passwordResetTokenRepository.update({ used: true }, { where: { adminPasswordResetTokenId: t.adminPasswordResetTokenId } });
+        await this.passwordResetTokenRepository.update(
+          { used: true },
+          { where: { adminPasswordResetTokenId: t.adminPasswordResetTokenId } },
+        );
         throw new BadRequestException('Reset token expired');
       }
       // update user's password
-      await this.passwordResetTokenRepository.update({ used: true }, { where: { adminPasswordResetTokenId: t.adminPasswordResetTokenId } });
+      await this.passwordResetTokenRepository.update(
+        { used: true },
+        { where: { adminPasswordResetTokenId: t.adminPasswordResetTokenId } },
+      );
       const pwHash = await CryptoUtil.generateHash(newPassword, +Env.bcryptSaltRounds || 12);
-      await this.adminRepository.update({
-        password: pwHash,
-        modifiedIp: requestedIp,
-      }, { where: { adminId: t.adminId } });
+      await this.adminRepository.update(
+        {
+          password: pwHash,
+          modifiedIp: requestedIp,
+        },
+        { where: { adminId: t.adminId } },
+      );
       // Get user details for email
       const user = await this.findOneById(t.adminId);
       // Revoke all refresh tokens
-      await this.refreshTokenRepository.update({ revoked: true }, { where: { adminId: t.adminId } });
-      // Send password reset success email using generic email service
+      await this.refreshTokenRepository.update(
+        { revoked: true },
+        { where: { adminId: t.adminId } },
+      );
+      // Send password reset success email
       if (user) {
         try {
-          const userName = user.firstName && user.lastName
-            ? `${user.firstName} ${user.lastName}`
-            : user.firstName || user.emailId;
+          const userName =
+            user.firstName && user.lastName
+              ? `${user.firstName} ${user.lastName}`
+              : user.firstName || user.emailId;
           const resetTime = new Date().toLocaleString('en-US', {
             dateStyle: 'long',
             timeStyle: 'short',
           });
-          await this.emailNotificationService.sendEmailByType({
+          // Use franchiseId from user, default to 1 if not set
+          const franchiseId = user.franchiseId || 1;
+          const clientUrl = this.appConfigService.get(ConfigParam.CLIENT_URL);
+          await this.emailNotificationService.sendEmail(<ISendEmailParams>{
+            emailTemplate: EmailTemplateEnum.ADMIN_FORGOT_PASSWORD,
             to: user.emailId,
-            type: EmailType.PASSWORD_RESET_SUCCESS,
-            data: {
-              userName,
-              resetTime,
+            franchiseBranding: { brandName: '', logoUrl: '' },
+            replacements: {
+              adminEmail: user.emailId,
+              adminName: userName,
+              changeDate: resetTime,
+              ipAddress: requestedIp,
+              loginUrl: clientUrl ? `${clientUrl}/login` : undefined,
             },
           });
         } catch (error) {
           // Log error but don't fail the request
-          await this.logErrorService.logError(
-            error instanceof Error ? error : new Error(String(error)),
-            {
-              controller: 'AuthService',
-              methodName: 'resetPassword',
-            },
-          );
+          console.error('Failed to send password reset success email:', error);
         }
       }
       return true;
@@ -289,7 +335,11 @@ export class AuthService {
     throw new BadRequestException('Invalid or expired reset token');
   }
 
-  public async changePassword(changePasswordDto: IChangePassword, adminId: number, ipAddress: string): Promise<void> {
+  public async changePassword(
+    changePasswordDto: IChangePassword,
+    adminId: number,
+    ipAddress: string,
+  ): Promise<void> {
     const user = await this.findOneById(adminId);
     if (!user) {
       throw new NotFoundException('User not found');
@@ -332,7 +382,11 @@ export class AuthService {
     });
   }
 
-  private async recordLoginHistory(adminId: number, ipAddress: string, device: string): Promise<void> {
+  private async recordLoginHistory(
+    adminId: number,
+    ipAddress: string,
+    device: string,
+  ): Promise<void> {
     // Mark previous login as not latest
     await this.loginHistoryRepository.update(
       { isLatest: false },
@@ -365,7 +419,9 @@ export class AuthService {
       throw new BadRequestException('Password must contain at least one number');
     }
     if (!/[#?!@$%^&*-]/.test(password)) {
-      throw new BadRequestException('Password must contain at least one special character (#?!@$%^&*-)');
+      throw new BadRequestException(
+        'Password must contain at least one special character (#?!@$%^&*-)',
+      );
     }
   }
 }

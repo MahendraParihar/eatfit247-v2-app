@@ -1,6 +1,7 @@
 import { IBaseAdminUser, IDropdownItem } from '../base.interface';
 import { IAddress } from './location.interface';
 import { PaymentSourceEnum } from '../enum';
+import { IProduct } from './product.interface';
 
 export interface IBasicMemberPayment {
   memberId: number;
@@ -92,6 +93,15 @@ export interface IMemberPaymentMasterData {
   paymentMode: IDropdownItem[];
   program: IDropdownItem[];
   programPlan: IDropdownItem[];
+  paymentStatus: IDropdownItem[];
+  addresses: IAddress[];
+  taxApplicable: boolean;
+  paymentSource: IDropdownItem[];
+}
+
+export interface IMemberProductMasterData {
+  paymentMode: IDropdownItem[];
+  product: IProduct[];
   paymentStatus: IDropdownItem[];
   addresses: IAddress[];
   taxApplicable: boolean;

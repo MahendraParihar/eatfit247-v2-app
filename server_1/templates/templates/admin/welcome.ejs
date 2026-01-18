@@ -1,0 +1,42 @@
+<h2>Welcome to <%= franchise.franchiseName %> Admin Portal</h2>
+
+<p>Dear <%= adminName %>,</p>
+
+<p>Your admin account has been successfully created for the <%= franchise.franchiseName %> system.</p>
+
+<div style="background-color: #f9f9f9; padding: 20px; border-radius: 4px; margin: 20px 0;">
+  <h3 style="margin-top: 0;">Account Details</h3>
+  <table style="width: 100%; border-collapse: collapse;">
+    <tr>
+      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><strong>Email:</strong></td>
+      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><%= adminEmail %></td>
+    </tr>
+    <% if (role) { %>
+    <tr>
+      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><strong>Role:</strong></td>
+      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><%= role %></td>
+    </tr>
+    <% } %>
+    <tr>
+      <td style="padding: 8px 0;"><strong>Account Created:</strong></td>
+      <td style="padding: 8px 0;"><%= createdDate || new Date().toLocaleString() %></td>
+    </tr>
+  </table>
+</div>
+
+<% if (loginUrl) { %>
+<p>
+  <a href="<%= loginUrl %>" style="display: inline-block; padding: 12px 24px; background-color: <%= franchise.brandColor || '#4CAF50' %>; color: #ffffff; text-decoration: none; border-radius: 4px; margin: 20px 0;">
+    Access Admin Portal
+  </a>
+</p>
+<% } %>
+
+<% if (temporaryPassword) { %>
+<p><strong>Important:</strong> Please use the temporary password provided separately to log in. You will be required to change it on your first login.</p>
+<% } %>
+
+<p>If you have any questions or need assistance, please contact the system administrator.</p>
+
+<p>Best regards,<br>The <%= franchise.franchiseName %> Team</p>
+

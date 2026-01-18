@@ -1,5 +1,3 @@
-// Email
-export * from './lib/email/email-notification.service';
 // Logging
 export * from './lib/logging/log-error.service';
 // PDF
