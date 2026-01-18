@@ -1,6 +1,7 @@
 import { IBaseAdminUser } from '../base.interface';
 import { IMediaUpload } from './media-upload.interface';
 import { IManageAddress } from './location.interface';
+import { BusinessTypeEnum } from '../enum';
 
 export interface IBaseFranchise {
   companyName: string;
@@ -24,7 +25,7 @@ export interface IBaseFranchise {
   endDate?: Date;
   isPrimary: boolean;
   isDefault: boolean;
-  businessType?: ('service' | 'product')[];
+  businessType?: BusinessTypeEnum[];
   addressObj?: IManageAddress;
 }
 
