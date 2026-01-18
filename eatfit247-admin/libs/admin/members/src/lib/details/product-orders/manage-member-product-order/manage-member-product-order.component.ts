@@ -444,6 +444,11 @@ export class ManageMemberProductOrderComponent implements OnInit {
       this.taxCalculationResult.set(null);
       return;
     }
+    // Do not call calculate-tax API if billing address is empty
+    if (!formData.billingAddressId) {
+      this.taxCalculationResult.set(null);
+      return;
+    }
     this.calculatingTax.set(true);
     try {
       const result = await this.productOrderFormService.calculateTax(

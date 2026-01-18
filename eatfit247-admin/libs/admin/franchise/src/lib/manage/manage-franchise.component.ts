@@ -13,7 +13,14 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { AddressFormComponent, InputErrorComponent, UploadFormComponent, ValidationUtil } from '@shared';
 import { FranchiseApiService } from '../api.service';
-import { FileTypeEnum, IFranchise, InputLengthEnum, InternationalTaxModeEnum, BusinessTypeEnum } from '@eatfit247-shared-lib';
+import {
+  FileTypeEnum,
+  IFranchise,
+  InputLengthEnum,
+  InternationalTaxModeEnum,
+  BusinessTypeEnum,
+  IManageFranchise
+} from '@eatfit247-shared-lib';
 
 @Component({
   selector: 'lib-manage-franchise',
@@ -211,7 +218,7 @@ export class ManageFranchise implements OnInit, OnDestroy {
   async onSubmit(): Promise<void> {
     ValidationUtil.validateAllFormFields(this.formGroup);
     if (this.formGroup.valid) {
-      const formValue: any = { ...this.formGroup.value };
+      const formValue: IManageFranchise = { ...this.formGroup.value };
       // Handle logo from upload form
       const logoControl = this.formGroup.get('logo');
       if (logoControl) {
@@ -230,7 +237,7 @@ export class ManageFranchise implements OnInit, OnDestroy {
       if (addressControl && addressControl.valid) {
         const addressValue = addressControl.value;
         if (addressValue.postalAddress && addressValue.countryId && addressValue.stateId) {
-          formValue.address = {
+          formValue.addressObj = {
             postalAddress: addressValue.postalAddress,
             cityVillage: addressValue.cityVillage,
             stateId: addressValue.stateId,
