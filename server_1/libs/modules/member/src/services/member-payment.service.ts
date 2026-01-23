@@ -29,7 +29,6 @@ import {
   InvoicePdfService,
   PaymentModeService,
   PaymentStatusService,
-  PdfService,
   StateService,
 } from '@server_1/platform';
 import { ProgramPlanService, ProgramService } from '@server_1/modules/program-plan';
@@ -43,6 +42,7 @@ import {
 import { Sequelize } from 'sequelize-typescript';
 import { MemberDietPlanService } from './member-diet-plan.service';
 import fs from 'fs';
+import { find } from 'lodash';
 
 @Injectable()
 export class MemberPaymentService {
@@ -349,41 +349,21 @@ export class MemberPaymentService {
         franchiseAddress =
           franchiseAddresses && franchiseAddresses.length > 0 ? franchiseAddresses[0] : null;
       }
-      // Calculate payment amounts using tax engine if not provided
-      let finalOrderAmount = obj.orderAmount;
-      let finalDiscountAmount = obj.discountAmount || 0;
-      let finalTaxAmount = obj.taxAmount;
-      let finalTotalAmount = obj.totalAmount;
-      let finalTaxType = obj.taxType;
-      let finalTaxMode = obj.taxMode;
-      let finalTaxPercentage = obj.taxPercentage || 0;
-      let finalIsLutApplied = obj.isLutApplied || false;
-      let finalIsTaxIncluded = obj.isTaxIncluded || false;
-      let finalTaxObj = obj.taxObj;
-      let finalJurisdiction = obj.jurisdiction;
-      // If tax amounts are not provided, calculate them using tax engine
-      if (obj.isTaxApplicable && (finalTaxAmount === undefined || finalTotalAmount === undefined)) {
-        const paymentObj = await this.calculatePaymentObject(
-          {
-            orderAmount: obj.orderAmount,
-            discountAmount: finalDiscountAmount,
-            currencyCode: obj.currencyCode,
-            isPlanFeesIncludedTax: obj.isPlanFeesIncludedTax,
-          },
-          obj.isTaxApplicable,
-          billingAddress,
-          franchiseAddress,
-        );
-        finalTaxAmount = paymentObj.taxAmount;
-        finalTotalAmount = paymentObj.totalAmount;
-        finalTaxType = paymentObj.taxType;
-        finalTaxMode = paymentObj.taxMode;
-        finalTaxPercentage = paymentObj.taxPercentage;
-        finalIsLutApplied = paymentObj.isLutApplied;
-        finalIsTaxIncluded = paymentObj.isTaxIncludedInPrice;
-        finalTaxObj = paymentObj.taxObj;
-        finalJurisdiction = paymentObj.jurisdiction;
-      }
+      const programPlan = await this.programPlanService.fetchById(obj.programPlanId);
+      const fees = find(programPlan.programPlanFees, { currencyCode: obj.currencyCode });
+      // If tax amounts are not provided, calculate them using the tax engine
+      const paymentObj = await this.calculatePaymentObject(
+        {
+          orderAmount: fees ? fees.fees : obj.orderAmount,
+          discountAmount: obj.discountAmount || 0,
+          currencyCode: obj.currencyCode,
+          isPlanFeesIncludedTax: obj.isPlanFeesIncludedTax,
+        },
+        obj.isTaxApplicable,
+        billingAddress,
+        franchiseAddress,
+      );
+      console.log(paymentObj);
       // Create a payment record
       const paymentData: any = {
         memberId,
@@ -403,23 +383,24 @@ export class MemberPaymentService {
         gstNumber: obj.gstNumber || null,
         memberAddress: memberAddressSnapshot,
         paymentSource: obj.paymentSource,
+        orderAmount: paymentObj.orderAmount,
+        discountAmount: paymentObj.discountAmount,
+        taxAmount: paymentObj.taxAmount,
+        totalAmount: paymentObj.totalAmount,
+        currency: paymentObj.currency,
+        taxType: paymentObj.taxType,
+        taxMode: paymentObj.taxMode,
+        taxPercentage: paymentObj.taxPercentage,
+        isLutApplied: paymentObj.isLutApplied,
+        isTaxIncluded: paymentObj.isTaxIncludedInPrice,
+        taxObj: paymentObj.taxObj,
+        jurisdiction: paymentObj.jurisdiction,
+        invoiceNote: paymentObj.invoiceNote,
         active: true,
         createdBy: adminId,
         modifiedBy: adminId,
         createdIp: requestedIp,
         modifiedIp: requestedIp,
-        orderAmount: finalOrderAmount,
-        discountAmount: finalDiscountAmount,
-        taxAmount: finalTaxAmount || 0,
-        totalAmount: finalTotalAmount || finalOrderAmount - finalDiscountAmount,
-        currency: obj.currency || obj.currencyCode || 'INR',
-        taxType: finalTaxType,
-        taxMode: finalTaxMode,
-        taxPercentage: finalTaxPercentage,
-        isLutApplied: finalIsLutApplied,
-        isTaxIncluded: finalIsTaxIncluded,
-        taxObj: finalTaxObj,
-        jurisdiction: finalJurisdiction,
       };
       if (obj.paymentSource === PaymentSourceEnum.PAYMENT_GATEWAY) {
         paymentData.paymentLink = obj.paymentLink;
@@ -434,7 +415,6 @@ export class MemberPaymentService {
         let noOfDaysInCycle = obj.noOfDaysInCycle;
         // If not available in the request, fetch from the program plan
         if (!noOfCycle || !noOfDaysInCycle) {
-          const programPlan = await this.programPlanService.fetchById(obj.programPlanId);
           noOfCycle = programPlan.noOfCycle;
           noOfDaysInCycle = programPlan.noOfDaysInCycle;
         }

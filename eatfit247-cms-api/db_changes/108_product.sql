@@ -29,57 +29,49 @@ VALUES (DEFAULT, 'WOOCOMMERCE_API_VERSION', 'v3', 'WooCommerce');
 
 
 UPDATE txn_member_payments AS tu
-SET payment_obj =
-        jsonb_build_object(
-                'currency', tu.payment_obj -> 'user' ->> 'currency',
-                'pricing', jsonb_build_object(
-                        'orderAmount', (tu.payment_obj -> 'user' ->> 'orderAmount')::double precision,
-                        'discountAmount', (tu.payment_obj -> 'user' ->> 'discountAmount')::double precision,
-                        'taxAmount', (tu.payment_obj -> 'user' ->> 'taxAmount')::double precision,
-                        'totalAmount', (tu.payment_obj -> 'user' ->> 'totalAmount')::double precision
-                           ),
-                'tax', jsonb_build_object(
-                        'taxType', 'GST',
-                        'taxMode', 'DOMESTIC',
-                        'taxPercentage', (tu.payment_obj ->> 'taxPercentage')::double precision,
-                        'taxAmount', (tu.payment_obj -> 'user' ->> 'taxAmount')::double precision,
-                        'isTaxIncludedInPrice', false,
-                        'isLutApplied', false,
-                        'taxObj', (tu.payment_obj -> 'user' -> 'taxObj')::jsonb
-                       ),
-                'jurisdiction', jsonb_build_object(
-                        'entityCountry', (SELECT mc.country
-                                          FROM txn_member_payments tmp
-                                                   JOIN txn_members tm ON tm.member_id = tmp.member_id
-                                                   JOIN mst_franchises mf ON mf.franchise_id = tm.franchise_id
-                                                   JOIN txn_addresses ta
-                                                        ON mf.franchise_id = ta.pk_of_table
-                                                            AND ta.table_id = (SELECT table_id
-                                                                               FROM mst_table
-                                                                               WHERE table_name = 'mst_franchises'
-                                                                               LIMIT 1)
-                                                   JOIN public.mst_countries mc ON ta.country_id = mc.country_id
-                                          WHERE tmp.member_payment_id = tu.member_payment_id),
-                        'customerCountry',
-                        (SELECT mc.country
-                         FROM txn_member_payments tmp
-                                  JOIN txn_addresses ta ON tmp.billing_address_id = ta.address_id
-                                  JOIN public.mst_countries mc ON ta.country_id = mc.country_id
-                         WHERE tmp.member_payment_id = tu.member_payment_id
-                         LIMIT 1),
-                        'placeOfSupply',
-                        (SELECT mc.country
-                         FROM txn_member_payments tmp
-                                  JOIN txn_addresses ta ON tmp.address_id = ta.address_id
-                                  JOIN public.mst_countries mc ON ta.country_id = mc.country_id
-                         WHERE tmp.member_payment_id = tu.member_payment_id
-                         LIMIT 1)
-                                ),
-                'invoice', jsonb_build_object(
-                        'note', ''
-                           ),
-                'calculationVersion', ''
-        );
+set currency        = tu.payment_obj -> 'user' ->> 'currency',
+    order_amount    = (tu.payment_obj -> 'user' ->> 'orderAmount')::double precision,
+    discount_amount = (tu.payment_obj -> 'user' ->> 'discountAmount')::double precision,
+    tax_amount      = (tu.payment_obj -> 'user' ->> 'taxAmount')::double precision,
+    total_amount    = (tu.payment_obj -> 'user' ->> 'totalAmount')::double precision,
+    tax_obj         = jsonb_build_object(
+            'taxType', 'GST',
+            'taxMode', 'DOMESTIC',
+            'taxPercentage', (tu.payment_obj ->> 'taxPercentage')::double precision,
+            'taxAmount', (tu.payment_obj -> 'user' ->> 'taxAmount')::double precision,
+            'isTaxIncludedInPrice', false,
+            'isLutApplied', false,
+            'taxObj', (tu.payment_obj -> 'user' -> 'taxObj')::jsonb
+                      ),
+    jurisdiction= jsonb_build_object(
+            'entityCountry', (SELECT mc.country
+                              FROM txn_member_payments tmp
+                                       JOIN txn_members tm ON tm.member_id = tmp.member_id
+                                       JOIN mst_franchises mf ON mf.franchise_id = tm.franchise_id
+                                       JOIN txn_addresses ta
+                                            ON mf.franchise_id = ta.pk_of_table
+                                                AND ta.table_id = (SELECT table_id
+                                                                   FROM mst_table
+                                                                   WHERE table_name = 'mst_franchises'
+                                                                   LIMIT 1)
+                                       JOIN public.mst_countries mc ON ta.country_id = mc.country_id
+                              WHERE tmp.member_payment_id = tu.member_payment_id),
+            'customerCountry',
+            (SELECT mc.country
+             FROM txn_member_payments tmp
+                      JOIN txn_addresses ta ON tmp.billing_address_id = ta.address_id
+                      JOIN public.mst_countries mc ON ta.country_id = mc.country_id
+             WHERE tmp.member_payment_id = tu.member_payment_id
+             LIMIT 1),
+            'placeOfSupply',
+            (SELECT mc.country
+             FROM txn_member_payments tmp
+                      JOIN txn_addresses ta ON tmp.address_id = ta.address_id
+                      JOIN public.mst_countries mc ON ta.country_id = mc.country_id
+             WHERE tmp.member_payment_id = tu.member_payment_id
+             LIMIT 1)
+                  ),
+    invoice_note    = null;
 
 CREATE TABLE mst_product_variants
 (

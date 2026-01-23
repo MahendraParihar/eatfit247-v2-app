@@ -111,23 +111,40 @@ export class PaymentFormService {
       programPlanId: getValue('programPlanId') || formGroup.value.programPlanId,
       programId: getValue('programId') || formGroup.value.programId,
       addressId: getValue('addressId') || formGroup.value.addressId || null,
-      billingAddressId: getValue('billingAddressId') || formGroup.value.billingAddressId,
+      billingAddressId:
+        getValue('billingAddressId') || formGroup.value.billingAddressId,
       transactionId: formGroup.value.transactionId?.trim() || undefined,
       paymentStatusId: formGroup.value.paymentStatusId,
-      isTaxApplicable: getValue('isTaxApplicable') ?? formGroup.value.isTaxApplicable ?? false,
-      gstNumber: getValue('gstNumber')?.trim() || formGroup.value.gstNumber?.trim() || undefined,
-      noOfCycle: Number(getValue('noOfCycle') || formGroup.value.noOfCycle || 0),
-      noOfDaysInCycle: Number(getValue('noOfDaysInCycle') || formGroup.value.noOfDaysInCycle || 0),
-      taxPercentage,
-      isPlanFeesIncludedTax: getValue('isPlanFeesIncludedTax') ?? formGroup.value.isPlanFeesIncludedTax ?? false,
+      isTaxApplicable:
+        getValue('isTaxApplicable') ?? formGroup.value.isTaxApplicable ?? false,
+      gstNumber:
+        getValue('gstNumber')?.trim() ||
+        formGroup.value.gstNumber?.trim() ||
+        undefined,
+      noOfCycle: Number(
+        getValue('noOfCycle') || formGroup.value.noOfCycle || 0,
+      ),
+      noOfDaysInCycle: Number(
+        getValue('noOfDaysInCycle') || formGroup.value.noOfDaysInCycle || 0,
+      ),
+      taxPercentage: Number(taxPercentage),
+      isPlanFeesIncludedTax:
+        getValue('isPlanFeesIncludedTax') ??
+        formGroup.value.isPlanFeesIncludedTax ??
+        false,
       paymentSource: formGroup.value.paymentSource,
-      currencyCode: getValue('currencyCode') || formGroup.value.currencyCode || 'INR',
-      orderAmount: Number(getValue('orderAmount') || formGroup.value.orderAmount || 0),
+      currencyCode:
+        getValue('currencyCode') || formGroup.value.currencyCode || 'INR',
+      orderAmount: Number(
+        getValue('orderAmount') || formGroup.value.orderAmount || 0,
+      ),
       taxAmount,
-      discountAmount: Number(getValue('discountAmount') || formGroup.value.discountAmount || 0),
+      discountAmount: Number(
+        getValue('discountAmount') || formGroup.value.discountAmount || 0,
+      ),
       totalAmount,
       promoCode: '',
-      paymentDate: formGroup.value.paymentDate || new Date()
+      paymentDate: formGroup.value.paymentDate || new Date(),
     };
 
     // Add gateway-specific fields for non-manual payments

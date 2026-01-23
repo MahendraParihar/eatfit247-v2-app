@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ITaxCalculationInput } from '../interfaces/tax.interface';
 import { InjectModel } from '@nestjs/sequelize';
+import { Op } from 'sequelize';
 import { MstTaxMaster } from '../models';
 import { IBasicSearch, ITaxMaster, ITableList } from '@eatfit247-shared-lib';
 import { SearchUtil, CommonFunctionsUtil } from '@server_1/core';
@@ -11,12 +12,19 @@ export class TaxMasterService {
   constructor(@InjectModel(MstTaxMaster) private readonly mstTaxMaster: typeof MstTaxMaster) {}
 
   async getApplicableTaxRule(input: ITaxCalculationInput) {
+    const today = new Date();
     return this.mstTaxMaster.findOne({
       where: {
         franchiseId: input.franchiseId,
         referenceId: input.referenceId,
         countryCode: input.buyerCountryCode,
-        effectiveFrom: new Date(),
+        effectiveFrom: {
+          [Op.lte]: today,
+        },
+        [Op.or]: [
+          { effectiveTo: null },
+          { effectiveTo: { [Op.gte]: today } },
+        ],
       },
     });
   }

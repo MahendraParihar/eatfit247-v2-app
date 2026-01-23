@@ -183,13 +183,6 @@ export class TxnMemberProduct extends Model<TxnMemberProduct> {
 
   @Column({
     allowNull: true,
-    field: 'refund_obj',
-    type: DataType.JSONB,
-  })
-  declare refundObj: any;
-
-  @Column({
-    allowNull: true,
     field: 'payment_gateway_response',
     type: DataType.JSONB,
   })
