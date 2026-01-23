@@ -133,6 +133,24 @@
           }
         ]
       }
+    },
+    {
+      "files": [
+        "**/*.service.ts"
+      ],
+      "rules": {
+        "no-restricted-imports": [
+          "warn",
+          {
+            "paths": [
+              {
+                "name": "**/dto/**",
+                "message": "Services must not import DTOs. Use interfaces instead. DTOs should only be used in controllers. See CODING_STANDARDS.md for details. During migration, you can disable this rule with eslint-disable-next-line."
+              }
+            ]
+          }
+        ]
+      }
     }
   ]
 }

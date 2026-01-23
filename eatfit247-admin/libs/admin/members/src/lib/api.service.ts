@@ -33,12 +33,20 @@ import {
   IMemberPayment,
   IMemberPaymentMasterData,
   IMemberPocketGuide,
-  IMemberProduct, IMemberProductMasterData,
+  IBasicMemberProduct,
+  IMemberProduct,
+  IMemberProductMasterData,
+  IMemberDashboardSummary,
+  IMemberHealthProgress,
+  IMemberEngagement,
+  IMemberPaymentsSummary,
+  IMemberIssuesSummary,
   IPaymentLinkResponse,
   IProgramPlan,
   IResponse,
   IStatusChangeCallLog,
-  ITableList
+  ITableList,
+  ITableListFilter
 } from '@eatfit247-shared-lib';
 
 @Injectable({
@@ -51,7 +59,7 @@ export class MembersApiService extends ApiBaseService {
     super(httpService);
   }
 
-  async getList(params?: any): Promise<ITableList<IMember>> {
+  async getList(params?: ITableListFilter & { sortBy?: string; sortOrder?: string }): Promise<ITableList<IMember>> {
     const res = await this.httpService.get<ITableList<IMember>>(
       `${this.endpoint}/list`,
       { params },
@@ -727,39 +735,39 @@ export class MembersApiService extends ApiBaseService {
   }
 
   // region Dashboard APIs
-  async getDashboardSummary(memberId: number): Promise<any> {
-    const res = await this.httpService.get<IResponse<any>>(
+  async getDashboardSummary(memberId: number): Promise<IMemberDashboardSummary> {
+    const res = await this.httpService.get<IResponse<IMemberDashboardSummary>>(
       `${this.endpoint}/${memberId}/dashboard/summary`,
     );
-    return res.data;
+    return res.data as IMemberDashboardSummary;
   }
 
-  async getHealthProgress(memberId: number): Promise<any> {
-    const res = await this.httpService.get<IResponse<any>>(
+  async getHealthProgress(memberId: number): Promise<IMemberHealthProgress> {
+    const res = await this.httpService.get<IResponse<IMemberHealthProgress>>(
       `${this.endpoint}/${memberId}/health-progress`,
     );
-    return res.data;
+    return res.data as IMemberHealthProgress;
   }
 
-  async getEngagement(memberId: number): Promise<any> {
-    const res = await this.httpService.get<IResponse<any>>(
+  async getEngagement(memberId: number): Promise<IMemberEngagement> {
+    const res = await this.httpService.get<IResponse<IMemberEngagement>>(
       `${this.endpoint}/${memberId}/engagement`,
     );
-    return res.data;
+    return res.data as IMemberEngagement;
   }
 
-  async getPaymentsSummary(memberId: number): Promise<any> {
-    const res = await this.httpService.get<IResponse<any>>(
+  async getPaymentsSummary(memberId: number): Promise<IMemberPaymentsSummary> {
+    const res = await this.httpService.get<IResponse<IMemberPaymentsSummary>>(
       `${this.endpoint}/${memberId}/payments/summary`,
     );
-    return res.data;
+    return res.data as IMemberPaymentsSummary;
   }
 
-  async getIssuesSummary(memberId: number): Promise<any> {
-    const res = await this.httpService.get<IResponse<any>>(
+  async getIssuesSummary(memberId: number): Promise<IMemberIssuesSummary> {
+    const res = await this.httpService.get<IResponse<IMemberIssuesSummary>>(
       `${this.endpoint}/${memberId}/issues/summary`,
     );
-    return res.data;
+    return res.data as IMemberIssuesSummary;
   }
 
   // endregion
@@ -794,7 +802,7 @@ export class MembersApiService extends ApiBaseService {
 
   async createProductOrder(
     memberId: number,
-    data: any,
+    data: IBasicMemberProduct,
   ): Promise<IMemberProduct> {
     const res = await this.httpService.post<IResponse<IMemberProduct>>(
       `${this.endpoint}/${memberId}/product`,
@@ -806,7 +814,7 @@ export class MembersApiService extends ApiBaseService {
   async updateProductOrder(
     memberId: number,
     productId: number,
-    data: any,
+    data: IBasicMemberProduct,
   ): Promise<IMemberProduct> {
     const res = await this.httpService.put<IResponse<IMemberProduct>>(
       `${this.endpoint}/${memberId}/product/${productId}`,

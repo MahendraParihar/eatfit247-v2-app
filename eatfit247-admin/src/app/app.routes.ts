@@ -112,6 +112,10 @@ export const appRoutes: Route[] = [
         loadChildren: () => import('products').then((m) => m.productsRoutes),
       },
       {
+        path: 'tax-master',
+        loadChildren: () => import('tax-master').then((m) => m.taxMasterRoutes),
+      },
+      {
         path: 'setting',
         loadChildren: () => import('admin-user').then((m) => m.settingRoutes),
       },

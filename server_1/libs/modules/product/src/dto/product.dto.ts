@@ -183,6 +183,10 @@ export class CreateProductDto implements IManageProduct {
   @IsNotEmpty()
   @IsBoolean()
   active!: boolean;
+  @IsNotEmpty()
+  @IsString()
+  @MaxLength(100)
+  hsnCode: string;
   @IsOptional()
   @IsNumber()
   productId?: number;

@@ -3,8 +3,8 @@ create table public.mst_product
     product_id      serial primary key,
     name            varchar(255)             not null,
     image_path      jsonb                    not null,
-    fees            jsonb                    not null,
     additional_info jsonb                    not null default '{}',
+    hsn_code        varchar(100)             not null,
     active          boolean                           default true not null,
     created_by      integer
         constraint fk_txn_member_product_mst_admin_created_by
@@ -37,6 +37,10 @@ create table public.txn_member_products
     payment_status_id        integer                   not null
         constraint fk_txn_member_product_mst_payment_statuses_id
             references public.mst_payment_status,
+    franchise_id             integer
+        constraint txn_member_products_mst_franchises_franchise_id_fk
+            references public.mst_franchises,
+    products                 jsonb,
     promo_code               varchar(100) default NULL::character varying,
     is_tax_applicable        boolean                   not null,
     payment_obj              jsonb                     not null,
@@ -63,9 +67,6 @@ create table public.txn_member_products
     gateway_payment_id       varchar(100),
     payment_link             varchar(500)
 );
-
-alter table public.txn_member_products
-    owner to eatfit;
 
 create index ix_txn_member_product_member_id
     on public.txn_member_products (member_id);
@@ -137,12 +138,72 @@ SET payment_obj =
                 'calculationVersion', ''
         );
 
-alter table public.txn_member_products
-    add product_id integer not null
-        constraint txn_member_products_mst_product_product_id_fk
-            references public.mst_product;
+CREATE TABLE mst_product_variants
+(
+    product_variant_id serial primary key,
+    product_id         integer REFERENCES mst_product (product_id),
+    quantity_value     NUMERIC(10, 2), -- 200, 500
+    quantity_unit      VARCHAR(10),    -- gm, kg
+    sku                VARCHAR(50) UNIQUE
+);
 
-alter table public.txn_member_products
-    add franchise_id integer
-        constraint txn_member_products_mst_franchises_franchise_id_fk
-            references public.mst_franchises;
+CREATE TABLE mst_product_prices
+(
+    id                 serial primary key,
+    product_variant_id integer REFERENCES mst_product_variants (product_variant_id),
+    currency           VARCHAR(3), -- INR, USD
+    price              NUMERIC(10, 2),
+    tax_percent        NUMERIC(5, 2),
+    is_active          BOOLEAN DEFAULT true,
+    valid_from         DATE,
+    valid_to           DATE
+);
+
+CREATE TYPE public.tax_type AS ENUM ('GST','VAT','SALES_TAX','NONE');
+CREATE TYPE public.transaction_type AS ENUM ('SERVICE','PRODUCT');
+
+CREATE TABLE mst_tax_master
+(
+    id               serial PRIMARY KEY,
+    franchise_id     integer REFERENCES mst_franchises (franchise_id) NOT NULL,
+    reference_id     BIGINT                                           NOT NULL,
+
+    -- Geography
+    country_code     CHAR(3)                                          NOT NULL, -- IN, AE, US
+
+    -- Tax system
+    transaction_type public.transaction_type                          NOT NULL, -- SERVICE, PRODUCT
+    tax_system       public.tax_type                                  NOT NULL, -- GST, VAT, SALES_TAX
+    tax_code         VARCHAR(50)                                      NOT NULL, -- GST_18, VAT_5, VAT_0
+    tax_name         VARCHAR(100)                                     NOT NULL, -- GST 18%, UAE VAT 5%
+    tax_percent      NUMERIC(5, 2)                                    NOT NULL CHECK (tax_percent >= 0),
+
+    -- Behavior
+    apply_on         VARCHAR(20)                                      NOT NULL DEFAULT 'SALE',
+    is_tax_inclusive BOOLEAN                                          NOT NULL DEFAULT FALSE,
+
+    -- Validity
+    effective_from   DATE                                             NOT NULL,
+    effective_to     DATE,
+    active        BOOLEAN                                          NOT NULL DEFAULT TRUE,
+
+    created_by               integer
+        constraint fk_mst_tax_master_mst_admin_created_by
+            references public.mst_admin_users,
+    created_at               timestamp with time zone  not null,
+    modified_by              integer
+        constraint fk_mst_tax_master_mst_admin_modified_by
+            references public.mst_admin_users,
+    updated_at               timestamp with time zone  not null,
+    created_ip               varchar(255)              not null,
+    modified_ip              varchar(255)              not null,
+
+    -- Constraints
+    CONSTRAINT uq_tax_master UNIQUE (
+                                     franchise_id,
+                                     reference_id,
+                                     country_code,
+                                     tax_code,
+                                     effective_from
+        )
+);

@@ -1,6 +1,8 @@
-import { BelongsTo, Column, CreatedAt, DataType, Model, Scopes, Table, UpdatedAt } from 'sequelize-typescript';
+import { BelongsTo, Column, CreatedAt, DataType, HasMany, Model, Scopes, Table, UpdatedAt } from 'sequelize-typescript';
 import { getCreatedByUserInclude, getUpdatedByUserInclude, MstAdminUser } from '@server_1/core';
-import { IMediaUpload, IProductAdditionalInfo, IProductFee, InputLengthEnum } from '@eatfit247-shared-lib';
+import { IMediaUpload, IProductAdditionalInfo, InputLengthEnum } from '@eatfit247-shared-lib';
+import { MstProductVariant } from './mst-product-variant.model';
+import { MstProductPrice } from './mst-product-price.model';
 
 @Table({
   freezeTableName: true,
@@ -13,12 +15,36 @@ import { IMediaUpload, IProductAdditionalInfo, IProductFee, InputLengthEnum } fr
     include: [
       getCreatedByUserInclude(false),
       getUpdatedByUserInclude(false),
+      {
+        model: MstProductVariant,
+        as: 'variants',
+        required: false,
+        include: [
+          {
+            model: MstProductPrice,
+            as: 'prices',
+            required: false,
+          },
+        ],
+      },
     ],
   },
   details: {
     include: [
       getCreatedByUserInclude(false),
       getUpdatedByUserInclude(false),
+      {
+        model: MstProductVariant,
+        as: 'variants',
+        required: false,
+        include: [
+          {
+            model: MstProductPrice,
+            as: 'prices',
+            required: false,
+          },
+        ],
+      },
     ],
   },
 }))
@@ -47,13 +73,6 @@ export class MstProduct extends Model<MstProduct> {
 
   @Column({
     allowNull: false,
-    field: 'fees',
-    type: DataType.JSONB,
-  })
-  declare fees: IProductFee[];
-
-  @Column({
-    allowNull: false,
     field: 'additional_info',
     type: DataType.JSONB,
     defaultValue: {},
@@ -67,6 +86,20 @@ export class MstProduct extends Model<MstProduct> {
     type: DataType.BOOLEAN,
   })
   declare active: boolean;
+
+  @Column({
+    allowNull: false,
+    field: 'hsn_code',
+    type: DataType.STRING(100),
+  })
+  declare hsnCode: string;
+
+  @HasMany(() => MstProductVariant, {
+    foreignKey: 'productId',
+    sourceKey: 'productId',
+    as: 'variants',
+  })
+  declare variants?: MstProductVariant[];
 
   @BelongsTo(() => MstAdminUser, {
     as: 'createdByUser',

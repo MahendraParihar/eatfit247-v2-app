@@ -94,6 +94,11 @@ export class BaseLayoutComponent implements OnInit, OnDestroy {
       route: '/products',
     },
     {
+      label: 'Tax Master',
+      icon: 'account_balance',
+      route: '/tax-master',
+    },
+    {
       label: 'Media & Press',
       icon: 'perm_media',
       route: '/media-press',

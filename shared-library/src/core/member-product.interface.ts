@@ -2,6 +2,15 @@ import { IBaseAdminUser } from '../base.interface';
 import { IAddress } from './location.interface';
 import { PaymentSourceEnum } from '../enum';
 
+export interface IOrderItem {
+  productId: number;
+  productUnit: string;
+  productQuantity: number;
+  perQuantityAmount: number;
+  orderQuantity: number;
+  totalAmount: number;
+}
+
 export interface IBasicMemberProduct {
   memberId: number;
   paymentModeId?: number | null;
@@ -22,6 +31,7 @@ export interface IBasicMemberProduct {
   gatewayOrderId?: string;
   gatewayPaymentId?: string;
   paymentLink?: string;
+  products: IOrderItem[];
 }
 
 export interface IMemberProduct extends IBasicMemberProduct {

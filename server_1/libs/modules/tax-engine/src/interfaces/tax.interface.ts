@@ -1,8 +1,17 @@
 import { TaxMode, TaxTypeEnum, TransactionType } from '@eatfit247-shared-lib';
 
+export interface ITaxCalculationInput {
+  franchiseId: number;
+  referenceId: number;
+  transactionType: TransactionType;
+  buyerCountryCode: string;
+}
+
 export interface TaxInput {
   baseAmount: number; // price before discount
   discountAmount: number; // absolute discount (not %)
+  franchiseId: number; // franchise id
+  referenceId: number; // plan id or product id
   supplierCountryCode: string; // from entity address (ISO code)
   supplierStateCode?: string; // required for GST / US sales tax
   customerCountryCode: string; // from the customer address (ISO code)

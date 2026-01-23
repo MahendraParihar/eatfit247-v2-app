@@ -1,0 +1,22 @@
+<div class="tax-master-header">
+  <div class="title-section">
+    <h1>Tax Master</h1>
+    <p>Manage tax rules for different countries, transaction types, and systems.</p>
+  </div>
+  <button mat-raised-button color="primary" (click)="createItem()">
+    <mat-icon>add</mat-icon>
+    New Tax Rule
+  </button>
+</div>
+
+<shared-ui-data-table
+  [config]="tableConfig"
+  [data]="data"
+  [totalCount]="totalCount"
+  [loading]="loading"
+  (pageChange)="onPageChange($event)"
+  (sortChange)="onSortChange($event)"
+  (searchChange)="onSearchChange($event)"
+></shared-ui-data-table>
+
+

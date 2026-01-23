@@ -1,0 +1,123 @@
+<mat-card class="form-card">
+  <mat-card-header>
+    <mat-card-title>{{ pageTitle }}</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <form [formGroup]="formGroup" (ngSubmit)="onSubmit()">
+      <div class="form-fields">
+        <div class="form-grid">
+          <mat-form-field appearance="outline">
+            <mat-label>Franchise</mat-label>
+            <mat-select formControlName="franchiseId">
+              <mat-option [value]="">Select Franchise</mat-option>
+              <mat-option *ngFor="let franchise of franchiseOptions" [value]="franchise.id">
+                {{ franchise.label }}
+              </mat-option>
+            </mat-select>
+            <shared-ui-input-error [control]="formGroup.get('franchiseId')"></shared-ui-input-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Buyer Country</mat-label>
+            <mat-select formControlName="countryCode">
+              <mat-option [value]="">Select Country</mat-option>
+              <mat-option *ngFor="let country of countryOptions" [value]="country.id">
+                {{ country.label }}
+              </mat-option>
+            </mat-select>
+            <shared-ui-input-error [control]="formGroup.get('countryCode')"></shared-ui-input-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Transaction Type</mat-label>
+            <mat-select formControlName="transactionType">
+              <mat-option [value]="">Select Transaction Type</mat-option>
+              <mat-option *ngFor="let t of transactionTypes" [value]="t">{{ t }}</mat-option>
+            </mat-select>
+            <shared-ui-input-error [control]="formGroup.get('transactionType')"></shared-ui-input-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" *ngIf="showProductDropdown">
+            <mat-label>Product</mat-label>
+            <mat-select formControlName="referenceId">
+              <mat-option [value]="">Select Product</mat-option>
+              <mat-option *ngFor="let product of productOptions" [value]="product.id">
+                {{ product.label }}
+              </mat-option>
+            </mat-select>
+            <shared-ui-input-error [control]="formGroup.get('referenceId')"></shared-ui-input-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Tax System</mat-label>
+            <mat-select formControlName="taxSystem">
+              <mat-option *ngFor="let t of taxSystems" [value]="t">{{ t }}</mat-option>
+            </mat-select>
+            <shared-ui-input-error [control]="formGroup.get('taxSystem')"></shared-ui-input-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Tax Code</mat-label>
+            <input matInput formControlName="taxCode" />
+            <shared-ui-input-error [control]="formGroup.get('taxCode')"></shared-ui-input-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Tax Name</mat-label>
+            <input matInput formControlName="taxName" />
+            <shared-ui-input-error [control]="formGroup.get('taxName')"></shared-ui-input-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Tax Percentage</mat-label>
+            <input matInput type="number" formControlName="taxPercent" />
+            <span matSuffix>%</span>
+            <shared-ui-input-error [control]="formGroup.get('taxPercent')"></shared-ui-input-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Apply On</mat-label>
+            <input matInput formControlName="applyOn" />
+            <shared-ui-input-error [control]="formGroup.get('applyOn')"></shared-ui-input-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Effective From</mat-label>
+            <input matInput [matDatepicker]="fromPicker" formControlName="effectiveFrom" />
+            <mat-datepicker-toggle matSuffix [for]="fromPicker"></mat-datepicker-toggle>
+            <mat-datepicker #fromPicker></mat-datepicker>
+            <shared-ui-input-error [control]="formGroup.get('effectiveFrom')"></shared-ui-input-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Effective To</mat-label>
+            <input matInput [matDatepicker]="toPicker" formControlName="effectiveTo" />
+            <mat-datepicker-toggle matSuffix [for]="toPicker"></mat-datepicker-toggle>
+            <mat-datepicker #toPicker></mat-datepicker>
+            <shared-ui-input-error [control]="formGroup.get('effectiveTo')"></shared-ui-input-error>
+          </mat-form-field>
+
+          <div class="checkbox-group">
+            <mat-checkbox formControlName="isTaxInclusive">
+              Tax Inclusive
+            </mat-checkbox>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button mat-stroked-button type="button" (click)="onCancel()">
+          <mat-icon>close</mat-icon>
+          Cancel
+        </button>
+
+        <button mat-raised-button color="primary" type="submit">
+          <mat-icon>save</mat-icon>
+          {{ isEditMode ? 'Update' : 'Save' }}
+        </button>
+      </div>
+    </form>
+  </mat-card-content>
+</mat-card>
+
+

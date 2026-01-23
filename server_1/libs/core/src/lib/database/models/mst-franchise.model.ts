@@ -1,7 +1,7 @@
 import { BelongsTo, Column, CreatedAt, DataType, Model, Scopes, Table, UpdatedAt } from 'sequelize-typescript';
 import { MstAdminUser } from './admin/mst-admin-user.model';
 import { CommonScopes } from '../../utils/model-scopes.utils';
-import { IMediaUpload, InputLengthEnum } from '@eatfit247-shared-lib';
+import { BusinessTypeEnum, IMediaUpload, InputLengthEnum } from "@eatfit247-shared-lib";
 
 @Table({
   freezeTableName: true,
@@ -162,7 +162,7 @@ export class MstFranchise extends Model<MstFranchise> {
     field: 'business_type',
     type: DataType.ARRAY(DataType.ENUM('service', 'product')),
   })
-  declare businessType: ('service' | 'product')[];
+  declare businessType: BusinessTypeEnum[];
   @Column({
     allowNull: false,
     defaultValue: true,

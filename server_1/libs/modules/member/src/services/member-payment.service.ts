@@ -68,7 +68,6 @@ export class MemberPaymentService {
     private readonly memberDietPlanService: MemberDietPlanService,
     private readonly paymentGatewayFactory: PaymentGatewayFactory,
     private readonly paymentGatewayCredentialService: PaymentGatewayCredentialService,
-    private readonly pdfService: PdfService,
     private readonly invoicePdfService: InvoicePdfService,
   ) {}
 
@@ -178,26 +177,6 @@ export class MemberPaymentService {
     let systemOrderAmount = payload.orderAmount;
     let systemDiscountAmount = payload.discountAmount;
     let baseAmountForTax = systemOrderAmount;
-    // Handle isPlanFeesIncludedTax - extract base amount if tax is included
-    if (payload.isTaxApplicable && payload.isPlanFeesIncludedTax) {
-      // First, get tax percentage to extract the base amount
-      const tempTaxInput: TaxInput = {
-        baseAmount: systemOrderAmount,
-        discountAmount: 0,
-        isTaxApplicable: true,
-        supplierCountryCode,
-        supplierStateCode: supplierStateCode || undefined,
-        customerCountryCode,
-        customerStateCode: customerStateCode || undefined,
-        currency: payload.currencyCode,
-        transactionType: TransactionType.SERVICE,
-      };
-      const tempTaxResult = await this.taxEngineService.calculate(tempTaxInput);
-      if (tempTaxResult.taxPercentage > 0) {
-        // Extract base amount from order amount that includes tax
-        baseAmountForTax = systemOrderAmount / (1 + tempTaxResult.taxPercentage / 100);
-      }
-    }
     // Use tax engine to calculate tax
     const taxInput: TaxInput = {
       baseAmount: payload.isPlanFeesIncludedTax ? baseAmountForTax : systemOrderAmount,
@@ -207,6 +186,8 @@ export class MemberPaymentService {
       supplierStateCode: supplierStateCode || undefined,
       customerCountryCode,
       customerStateCode: customerStateCode || undefined,
+      referenceId: 1,
+      franchiseId: member.franchiseId,
       currency: payload.currencyCode,
       transactionType: TransactionType.SERVICE,
     };
@@ -339,14 +320,22 @@ export class MemberPaymentService {
     try {
       // Handle address if provided
       const addressId = obj.addressId;
-      // Handle billing address if provided
-      let billingAddressId = obj.billingAddressId;
+      // Load all member addresses at once
       const addresses = await this.addressService.filterByTableIdAndPk(
         TableEnum.TXN_MEMBER,
         memberId,
       );
-      let billingAddress: IAddress =
-        addresses.find((a) => a.addressId === billingAddressId) || null;
+      // Resolve selected addresses
+      let billingAddressId = obj.billingAddressId;
+      const billingAddress: IAddress | null =
+        (billingAddressId && addresses.find((a) => a.addressId === billingAddressId)) || null;
+      const primaryAddress: IAddress | null =
+        (addressId && addresses.find((a) => a.addressId === addressId)) || null;
+      // Build address snapshot to store with payment
+      const memberAddressSnapshot = {
+        address: primaryAddress,
+        billingAddress: billingAddress,
+      };
       // Validate billing address country if the billing address exists and tax is applicable
       if (billingAddress && obj.isTaxApplicable && !billingAddress.countryId) {
         throw new BadRequestException('Billing address country is required when tax is applicable');
@@ -391,6 +380,7 @@ export class MemberPaymentService {
         refundObj: null,
         paymentGatewayResponse: null,
         gstNumber: obj.gstNumber || null,
+        memberAddress: memberAddressSnapshot,
         paymentSource: obj.paymentSource,
         active: true,
         createdBy: adminId,
@@ -475,8 +465,7 @@ export class MemberPaymentService {
       throw new NotFoundException('Payment not found');
     }
     // Validate mandatory fields for MANUAL payment source
-    const paymentSource =
-      obj.paymentSource !== undefined ? obj.paymentSource : (payment as any).paymentSource;
+    const paymentSource = obj.paymentSource !== undefined ? obj.paymentSource : payment.paymentSource;
     if (paymentSource === PaymentSourceEnum.MANUAL) {
       const paymentModeId =
         obj.paymentModeId !== undefined ? obj.paymentModeId : payment.paymentModeId;
@@ -526,12 +515,10 @@ export class MemberPaymentService {
       });
       let franchiseAddress: IAddress | null = null;
       if (memberWithFranchise?.franchiseId) {
-        const franchiseAddresses = await this.addressService.filterByTableIdAndPk(
+        franchiseAddress = await this.addressService.findByTableIdAndPk(
           TableEnum.MST_FRANCHISES,
           memberWithFranchise.franchiseId,
         );
-        franchiseAddress =
-          franchiseAddresses && franchiseAddresses.length > 0 ? franchiseAddresses[0] : null;
       }
       // Update payment record
       const updateData: any = {
@@ -554,8 +541,8 @@ export class MemberPaymentService {
         modifiedIp: requestedIp,
       };
       // Update payment source if provided
-      if ((obj as any).paymentSource !== undefined) {
-        updateData.paymentSource = (obj as any).paymentSource;
+      if (obj.paymentSource !== undefined) {
+        updateData.paymentSource = obj.paymentSource;
       }
       await payment.update(updateData, { transaction: t });
       // Check if payment status is being updated to PAID
@@ -571,17 +558,9 @@ export class MemberPaymentService {
         programPlanId
       ) {
         // Get program plan details to get noOfCycle and noOfDaysInCycle
-        let noOfCycle = 1;
-        let noOfDaysInCycle = 1;
-        try {
-          const programPlan = await this.programPlanService.fetchById(programPlanId);
-          noOfCycle = programPlan.noOfCycle || 1;
-          noOfDaysInCycle = programPlan.noOfDaysInCycle || 1;
-        } catch (error) {
-          // If program plan not found, use defaults
-          noOfCycle = 1;
-          noOfDaysInCycle = 1;
-        }
+        const programPlan = await this.programPlanService.fetchById(programPlanId);
+        const noOfCycle = programPlan.noOfCycle;
+        const noOfDaysInCycle = programPlan.noOfDaysInCycle;
         // Create TxnMemberDietPlan entry using service
         await this.memberDietPlanService.createIfNotExists(
           memberId,
@@ -651,7 +630,7 @@ export class MemberPaymentService {
    */
   private convertToModel(item: any): IMemberPayment {
     const paymentAmounts = this.calculatePaymentAmounts(item.paymentObj, item.isTaxApplicable);
-    return <IMemberPayment>{
+    return {
       memberPaymentId: item.memberPaymentId,
       memberId: item.memberId,
       memberName: item.member ? `${item.member.firstName} ${item.member.lastName}`.trim() : '',
@@ -662,27 +641,9 @@ export class MemberPaymentService {
       programId: item.programId,
       program: item.program?.program || '',
       addressId: item.addressId,
-      address: item.address
-        ? {
-          addressId: item.address.addressId,
-          postalAddress: item.address.postalAddress,
-          cityVillage: item.address.cityVillage || '',
-          pinCode: item.address.pinCode || '',
-          stateId: item.address.stateId,
-          countryId: item.address.countryId,
-        }
-        : undefined,
+      address: item.address,
       billingAddressId: item.billingAddressId,
-      billingAddress: item.billingAddress
-        ? {
-          addressId: item.billingAddress.addressId,
-          postalAddress: item.billingAddress.postalAddress,
-          cityVillage: item.billingAddress.cityVillage || '',
-          pinCode: item.billingAddress.pinCode || '',
-          stateId: item.billingAddress.stateId,
-          countryId: item.billingAddress.countryId,
-        }
-        : undefined,
+      billingAddress: item.billingAddress,
       transactionId: item.transactionId,
       paymentDate: item.paymentDate,
       invoiceId: item.invoiceId,
@@ -694,6 +655,8 @@ export class MemberPaymentService {
       refundObj: item.refundObj,
       paymentGatewayResponse: item.paymentGatewayResponse,
       gstNumber: item.gstNumber,
+      memberAddress: item.memberAddress || null,
+      paymentSource: item.paymentSource,
       orderAmount: paymentAmounts.orderAmount,
       discountAmount: paymentAmounts.discountAmount,
       taxAmount: paymentAmounts.taxAmount,
@@ -718,7 +681,7 @@ export class MemberPaymentService {
       paymentLink: item.paymentLink,
       gatewayOrderId: item.gatewayOrderId,
       gatewayProvider: item.gatewayProvider,
-    };
+    } as IMemberPayment;
   }
 
   /**
@@ -821,20 +784,21 @@ export class MemberPaymentService {
     // Calculate base amounts
     let systemOrderAmount = orderAmount;
     let systemDiscountAmount = discountAmount;
-    let systemSubtotal = systemOrderAmount - systemDiscountAmount;
-    let baseAmountForTax = systemSubtotal;
+    let baseAmountForTax = systemOrderAmount - discountAmount;
     // Handle isPlanFeesIncludedTax - extract base amount if tax is included
     if (isTaxApplicable && isPlanFeesIncludedTax) {
       // We need to know the tax percentage first to extract the base amount
       // For now, use tax engine to get tax percentage, then recalculate
       const tempTaxInput: TaxInput = {
-        baseAmount: systemOrderAmount,
+        baseAmount: orderAmount,
         discountAmount: 0,
         isTaxApplicable: true,
         supplierCountryCode,
         supplierStateCode,
         customerCountryCode,
         customerStateCode,
+        referenceId: 1,
+        franchiseId: franchiseAddress.pkOfTable,
         currency: currencyCode,
         transactionType: TransactionType.SERVICE,
       };
@@ -842,18 +806,19 @@ export class MemberPaymentService {
       if (tempTaxResult.taxPercentage > 0) {
         // Extract base amount from order amount that includes tax
         baseAmountForTax = systemOrderAmount / (1 + tempTaxResult.taxPercentage / 100);
-        systemSubtotal = baseAmountForTax - systemDiscountAmount;
       }
     }
     // Use tax engine to calculate tax
     const taxInput: TaxInput = {
-      baseAmount: isPlanFeesIncludedTax ? baseAmountForTax : systemOrderAmount,
+      baseAmount: baseAmountForTax,
       discountAmount: systemDiscountAmount,
       isTaxApplicable,
       supplierCountryCode,
       supplierStateCode,
       customerCountryCode,
       customerStateCode,
+      referenceId: 1,
+      franchiseId: franchiseAddress.pkOfTable,
       currency: currencyCode,
       transactionType: TransactionType.SERVICE,
     };
@@ -1121,9 +1086,19 @@ export class MemberPaymentService {
       TableEnum.MST_FRANCHISES,
       member.franchiseId,
     );
-    // Get billing address - use from a payment object if available, otherwise use address
+    // Get billing address:
+    // 1. Prefer snapshot stored on payment (memberAddress.billingAddress)
+    // 2. Fallback to related billingAddress/address records for backward compatibility
     let billingAddress: IAddress | null = null;
-    if (payment.billingAddress) {
+    const memberAddressSnapshot = (payment as any).memberAddress as
+      | {
+      address?: IAddress | null;
+      billingAddress?: IAddress | null;
+    }
+      | null;
+    if (memberAddressSnapshot?.billingAddress) {
+      billingAddress = memberAddressSnapshot.billingAddress as IAddress;
+    } else if (payment.billingAddress) {
       billingAddress = {
         addressId: payment.billingAddress.addressId,
         addressName: payment.billingAddress.addressName,
@@ -1148,7 +1123,7 @@ export class MemberPaymentService {
         state: payment.address.state?.state || '',
         countryId: payment.address.countryId,
         country: payment.address.country.country || '',
-        countryCode: payment.billingAddress.country.countryCode || '',
+        countryCode: payment.address.country.countryCode || '',
         pinCode: payment.address.pinCode,
         addressTypeId: payment.address.addressTypeId,
         addressType: payment.address.addressType.addressType || '',

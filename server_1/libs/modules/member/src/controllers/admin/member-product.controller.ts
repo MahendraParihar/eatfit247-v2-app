@@ -1,7 +1,17 @@
-import { Controller, Get, Param, UseGuards } from '@nestjs/common';
-import { JwtAuthGuard } from '@server_1/core';
+import { Body, Controller, Delete, Get, Header, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
+import { CurrentUser, JwtAuthGuard, RequestedIp } from '@server_1/core';
 import { MemberProductService } from '../../services';
-import { IMemberProduct, IMemberProductMasterData, ITableList } from '@eatfit247-shared-lib';
+import {
+  ICalculateTaxResponse,
+  IMemberProduct,
+  IMemberProductMasterData,
+  IPaymentLinkResponse,
+  ITableList,
+} from '@eatfit247-shared-lib';
+import { CalculateTaxDto } from '../../dto/calculate-tax.dto';
+import { CreateMemberProductDto } from '../../dto';
+import { CreatePaymentLinkDto } from '../../dto';
+import { IFileModel } from '@server_1/platform';
 
 @Controller('member/:id/product')
 @UseGuards(JwtAuthGuard)
@@ -11,6 +21,25 @@ export class MemberProductController {
   @Get('master-data')
   async getMasterData(@Param('id') id: number): Promise<IMemberProductMasterData> {
     return await this.memberProductService.loadMasterData(id);
+  }
+
+  @Get('supported-gateways')
+  async getSupportedGateways(
+    @Param('id') id: number,
+    @Query('currency') currency: string,
+  ): Promise<
+    Array<{
+      franchisePaymentGatewayId: number;
+      gatewayCode: string;
+      gatewayName: string;
+      providerCountryCode: string;
+      currencyCode: string;
+      isPrimary: boolean;
+      supportsDomestic: boolean;
+      supportsInternational: boolean;
+    }>
+  > {
+    return await this.memberProductService.getSupportedPaymentGateways(id, currency);
   }
 
   @Get('list')
@@ -24,6 +53,33 @@ export class MemberProductController {
     @Param('productId') productId: number,
   ): Promise<IMemberProduct> {
     return await this.memberProductService.findById(id, productId);
+  }
+
+  @Delete(':productId')
+  async deleteProduct(
+    @Param('id') id: number,
+    @Param('productId') productId: number,
+    @CurrentUser() currentUser: any,
+    @RequestedIp() requestedIp: string,
+  ): Promise<void> {
+    return await this.memberProductService.delete(id, productId, requestedIp, currentUser.adminId);
+  }
+
+  @Post('create-payment-link')
+  async createPaymentLink(
+    @Param('id') id: number,
+    @Body() body: CreatePaymentLinkDto,
+  ): Promise<IPaymentLinkResponse> {
+    return await this.memberProductService.createPaymentLink(id, body);
+  }
+
+  @Get(':productId/invoice')
+  @Header('Content-Type', 'application/pdf')
+  async downloadInvoice(
+    @Param('id') id: number,
+    @Param('productId') productId: number,
+  ): Promise<IFileModel> {
+    return await this.memberProductService.generateInvoicePDF(id, productId);
   }
 }
 

@@ -252,7 +252,7 @@ export class ManageMemberProductOrderComponent implements OnInit {
 
   private updatePaymentFieldValidators(paymentSource: string): void {
     const isManual =
-      paymentSource === PaymentSourceEnum?.MANUAL || paymentSource === 'MANUAL';
+      paymentSource === PaymentSourceEnum.MANUAL;
     const paymentModeIdControl = this.formGroup.get('paymentModeId');
     const paymentDateControl = this.formGroup.get('paymentDate');
     const paymentStatusIdControl = this.formGroup.get('paymentStatusId');

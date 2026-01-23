@@ -20,6 +20,7 @@ export enum TaxMode {
   EXPORT_OF_SERVICE = 'EXPORT_OF_SERVICE', // India → Outside India (LUT)
   VAT = 'VAT', // UAE / VAT countries
   RCM_IMPORT_SERVICE = 'RCM_IMPORT_SERVICE', // UAE → India (Reverse Charge)
+  SALES_TAX = 'SALES_TAX', // USA
   NO_TAX = 'NO_TAX', // USA / Others
 }
 

@@ -1,6 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
+import { Op } from 'sequelize';
 import {
+  BusinessTypeEnum,
   ConfigParam,
   IBasicSearch,
   IDropdownItem,
@@ -258,6 +260,23 @@ export class FranchiseService {
   public async getMasterData(): Promise<{ taxApplicable: boolean }> {
     const taxApplicable = this.appConfigService.getBoolean(ConfigParam.GST_ENABLED, true, false);
     return { taxApplicable };
+  }
+
+  public async franchiseByBusinessType(businessType: BusinessTypeEnum): Promise<IDropdownItem[]> {
+    const tempList = await this.franchiseRepository.scope('list').findAll({
+      where: {
+        active: true,
+        businessType: { [Op.contains]: [businessType] },
+      },
+      order: [['companyName', 'ASC']],
+      raw: true,
+      nest: true,
+    });
+    return tempList.map((t: any) => ({
+      id: t.franchiseId,
+      label: t.companyName,
+      isActive: t.active,
+    }));
   }
 }
 

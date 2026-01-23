@@ -20,6 +20,7 @@ export class ProductFormService {
     const additionalInfo = product.additionalInfo || {};
     return {
       name: product.name || '',
+      hsnCode: product.hsnCode || '',
       imagePath: product.imagePath || [],
       fees: product.fees || [],
       active: product.active !== undefined ? product.active : true,
@@ -56,6 +57,7 @@ export class ProductFormService {
     // Patch basic fields
     formGroup.patchValue({
       name: formValues.name,
+      hsnCode: formValues.hsnCode,
       active: formValues.active
     });
 
@@ -415,6 +417,7 @@ export class ProductFormService {
 
     const payload: IManageProduct = {
       name: formValue.name,
+      hsnCode: formValue.hsnCode,
       imagePath: formValue.imagePath || [],
       fees: formValue.fees || [],
       additionalInfo: additionalInfo,

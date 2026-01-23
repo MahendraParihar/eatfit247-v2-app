@@ -3,6 +3,11 @@ import { IAddress } from './location.interface';
 import { PaymentSourceEnum } from '../enum';
 import { IProduct } from './product.interface';
 
+export interface IMemberAddressSnapshot {
+  address: IAddress | null;
+  billingAddress: IAddress | null;
+}
+
 export interface IBasicMemberPayment {
   memberId: number;
   paymentModeId: number;
@@ -19,6 +24,11 @@ export interface IBasicMemberPayment {
   refundObj?: object | null;
   paymentGatewayResponse?: object | null;
   gstNumber?: string;
+  /**
+   * Snapshot of member addresses (shipping and billing) at the time of payment creation.
+   * Used for invoice generation so that invoice is not affected by future address changes.
+   */
+  memberAddress?: IMemberAddressSnapshot | null;
   billingAddressId?: number | null;
   paymentSource: PaymentSourceEnum;
   gatewayProvider?: string;
@@ -35,6 +45,7 @@ export interface IMemberPayment extends IBasicMemberPayment {
   program: string;
   address?: IAddress;
   paymentStatus: string;
+  memberAddress?: IMemberAddressSnapshot | null;
   orderAmount: number;
   discountAmount: number;
   taxAmount: number;

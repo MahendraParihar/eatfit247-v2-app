@@ -3,7 +3,7 @@ import { getCreatedByUserInclude, getUpdatedByUserInclude, MstAdminUser, MstFran
 import { MstAddressType, MstCountry, MstPaymentMode, MstPaymentStatus, MstState, TxnAddress } from '@server_1/platform';
 import { MstProgram, MstProgramPlan } from '@server_1/modules/program-plan';
 import { TxnMember } from './txn-member.model';
-import { IMemberPaymentObject, InputLengthEnum, PaymentSourceEnum } from '@eatfit247-shared-lib';
+import { IAddress, IMemberPaymentObject, InputLengthEnum, PaymentSourceEnum } from '@eatfit247-shared-lib';
 
 @Table({
   freezeTableName: true,
@@ -258,6 +258,15 @@ export class TxnMemberPayment extends Model<TxnMemberPayment> {
     type: DataType.JSONB,
   })
   declare paymentObj: IMemberPaymentObject;
+  @Column({
+    allowNull: true,
+    field: 'member_address',
+    type: DataType.JSONB,
+  })
+  declare memberAddress: {
+    address: IAddress | null;
+    billingAddress: IAddress | null;
+  } | null;
   @Column({
     allowNull: true,
     field: 'refund_obj',

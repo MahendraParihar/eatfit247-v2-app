@@ -23,6 +23,20 @@
           <shared-ui-input-error [control]="formGroup.get('name')" controlName="Product Name"></shared-ui-input-error>
         </mat-form-field>
 
+        <mat-form-field class="full-width">
+          <mat-label>HSN Code</mat-label>
+          <input
+            matInput
+            formControlName="hsnCode"
+            placeholder="Enter HSN code"
+            [maxlength]="100"
+          />
+          <mat-hint align="end">
+            {{ formGroup.get('hsnCode')?.value?.length || 0 }}/100
+          </mat-hint>
+          <shared-ui-input-error [control]="formGroup.get('hsnCode')" controlName="HSN Code"></shared-ui-input-error>
+        </mat-form-field>
+
         <!-- Fees -->
         <div class="section-header">
           Product Fees

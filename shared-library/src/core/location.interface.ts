@@ -3,7 +3,7 @@ import { TaxTypeEnum } from "../enum/tax-type.enum";
 
 export interface IBaseCountry {
   country: string;
-  countryCode?: string;
+  countryCode: string;
   phoneNumberCode?: string;
   taxType?: TaxTypeEnum | string;
   defaultTaxPercentage?: number;

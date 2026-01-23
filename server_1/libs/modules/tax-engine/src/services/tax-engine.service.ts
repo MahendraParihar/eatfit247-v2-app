@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { TaxInput, TaxResult } from '../interfaces/tax.interface';
+import { ITaxCalculationInput, TaxInput, TaxResult } from '../interfaces/tax.interface';
 import { IndiaGstService } from './india-gst.service';
 import { VatService } from './vat.service';
 import { UsSalesTaxService } from './us-sales-tax.service';
 import { TaxMode, TaxTypeEnum } from '@eatfit247-shared-lib';
 import { CountryService } from '@server_1/platform';
+import { TaxMasterService } from './tax-master.service';
 
 @Injectable()
 export class TaxEngineService {
@@ -13,15 +14,25 @@ export class TaxEngineService {
     private readonly vatService: VatService,
     private readonly usSalesTax: UsSalesTaxService,
     private readonly countryService: CountryService,
+    private readonly taxMasterService: TaxMasterService,
   ) {}
 
   async calculate(input: TaxInput): Promise<TaxResult> {
-    console.log('-------------------------------------');
-    console.log(input);
     const taxableAmount = input.baseAmount - input.discountAmount;
     if (input.isTaxApplicable === false) {
       return this.noTax(taxableAmount);
     }
+    // 1️⃣ Fetch tax rule (SINGLE SOURCE OF TRUTH)
+    const taxRule = await this.taxMasterService.getApplicableTaxRule(<ITaxCalculationInput>{
+      franchiseId: input.franchiseId,
+      referenceId: input.referenceId,
+      buyerCountryCode: input.customerCountryCode,
+      transactionType: input.transactionType,
+    });
+    if (!taxRule || taxRule.taxPercent === 0) {
+      return this.noTax(taxableAmount);
+    }
+
     const countries = await this.countryService.findAll({ page: 0, limit: 1000 });
     const supplierCountry = countries.tableData.find(
       (c) => c.countryCode === input.supplierCountryCode,
@@ -29,14 +40,12 @@ export class TaxEngineService {
     const customerCountry = countries.tableData.find(
       (c) => c.countryCode === input.customerCountryCode,
     );
-    console.log('--------------------------------------');
-    console.log(supplierCountry, customerCountry);
-    if (!supplierCountry || supplierCountry.taxType === TaxTypeEnum.NONE) {
-      return this.noTax(taxableAmount);
-    }
-    const isDomestic = supplierCountry.countryCode === customerCountry.countryCode;
     // 🔴 EXPORT OF SERVICE (INDIA → INTERNATIONAL)
-    if (supplierCountry.countryCode === 'IN' && !isDomestic) {
+    if (
+      taxRule.countryCode === 'IN' &&
+      input.supplierCountryCode === 'IN' &&
+      input.customerCountryCode !== 'IN'
+    ) {
       if (input.currency === 'INR') {
         throw new Error('Export of service requires foreign currency payment');
       }
@@ -55,30 +64,30 @@ export class TaxEngineService {
       };
     }
     let taxObject: TaxResult;
-    switch (supplierCountry.taxType) {
+    switch (taxRule.taxSystem) {
       case TaxTypeEnum.GST:
         taxObject = {
-          ...this.indiaGst.calculate(input, taxableAmount, supplierCountry.defaultTaxPercentage),
+          ...this.indiaGst.calculate(input, taxableAmount, taxRule.taxPercent),
           taxMode: TaxMode.DOMESTIC_GST,
           isLutApplied: false,
         };
         break;
       case TaxTypeEnum.VAT:
         taxObject = {
-          ...this.vatService.calculate(supplierCountry.defaultTaxPercentage || 0, taxableAmount),
-          taxMode: isDomestic ? TaxMode.DOMESTIC_GST : TaxMode.VAT,
+          ...this.vatService.calculate(taxRule.taxPercent, taxableAmount),
+          taxMode: TaxMode.VAT,
           isLutApplied: false,
         };
         break;
       case TaxTypeEnum.SALES_TAX:
-        // US Sales Tax is calculated based on customer's billing address state
+        // US Sales Tax is calculated based on the customer's billing address state
         const result = await this.usSalesTax.calculate(
           input.customerStateCode || null,
           taxableAmount,
         );
         taxObject = {
           ...result,
-          taxMode: isDomestic ? TaxMode.DOMESTIC_GST : TaxMode.VAT,
+          taxMode: TaxMode.SALES_TAX,
           isLutApplied: false,
         };
         break;

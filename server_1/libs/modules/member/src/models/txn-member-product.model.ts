@@ -2,7 +2,7 @@ import { BelongsTo, Column, CreatedAt, DataType, Model, Scopes, Table, UpdatedAt
 import { getCreatedByUserInclude, getUpdatedByUserInclude, MstAdminUser, MstFranchise } from '@server_1/core';
 import { MstPaymentMode, MstPaymentStatus, TxnAddress } from '@server_1/platform';
 import { TxnMember } from './txn-member.model';
-import { InputLengthEnum, PaymentSourceEnum } from '@eatfit247-shared-lib';
+import { InputLengthEnum, IOrderItem, PaymentSourceEnum } from '@eatfit247-shared-lib';
 
 @Table({
   freezeTableName: true,
@@ -258,6 +258,13 @@ export class TxnMemberProduct extends Model<TxnMemberProduct> {
     type: DataType.STRING(500),
   })
   declare paymentLink: string;
+
+  @Column({
+    allowNull: true,
+    field: 'products',
+    type: DataType.JSONB,
+  })
+  declare products: IOrderItem[];
 
   @BelongsTo(() => TxnMember, {
     foreignKey: 'memberId',

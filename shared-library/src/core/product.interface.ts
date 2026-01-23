@@ -2,10 +2,42 @@ import { IBaseAdminUser } from '../base.interface';
 import { IMediaUpload } from './media-upload.interface';
 
 export interface IProductFee {
-  price: number;
-  currency: string;
+  /**
+   * Quantity for this product option, e.g. 200, 500
+   */
   quantity: number;
+  /**
+   * Unit for the quantity, e.g. gm, kg
+   */
   unit: string;
+  /**
+   * Currency for the price, e.g. INR, USD
+   */
+  currency: string;
+  /**
+   * Base price for this product option
+   */
+  price: number;
+  /**
+   * Optional SKU identifier for this variant
+   */
+  sku?: string;
+  /**
+   * Optional tax percentage applied on this price
+   */
+  taxPercent?: number;
+  /**
+   * Optional flag to mark this price as active/inactive
+   */
+  isActive?: boolean;
+  /**
+   * Optional validity start date for this price
+   */
+  validFrom?: Date | string | null;
+  /**
+   * Optional validity end date for this price
+   */
+  validTo?: Date | string | null;
 }
 
 export interface IIngredient {
@@ -90,16 +122,71 @@ export interface IProductAdditionalInfo {
   startEndorsed?: IProjectStarEndorsedSection;
 }
 
+export interface IProductVariant {
+  productVariantId: number;
+  productId: number;
+  /**
+   * Quantity for this variant, e.g. 200, 500
+   */
+  quantityValue: number;
+  /**
+   * Unit for the quantity, e.g. gm, kg
+   */
+  quantityUnit: string;
+  /**
+   * Optional SKU identifier for this variant
+   */
+  sku?: string;
+  /**
+   * Prices associated with this variant
+   */
+  prices?: IProductPrice[];
+}
+
+export interface IProductPrice {
+  id: number;
+  productVariantId: number;
+  /**
+   * Currency code, e.g. INR, USD
+   */
+  currency: string;
+  /**
+   * Price amount
+   */
+  price: number;
+  /**
+   * Tax percentage applied on this price
+   */
+  taxPercent: number;
+  /**
+   * Whether this price is currently active
+   */
+  isActive: boolean;
+  /**
+   * Validity period for this price
+   */
+  validFrom: Date | string | null;
+  validTo: Date | string | null;
+}
+
 interface IBaseProduct {
   name: string;
   imagePath: IMediaUpload[];
-  fees: IProductFee[];
   additionalInfo: IProductAdditionalInfo;
+  hsnCode: string;
+  /**
+   * Flattened fee structure used by existing UI (quantity, unit, currency, price)
+   */
+  fees?: IProductFee[];
 }
 
 export interface IManageProduct extends IBaseProduct {
   productId?: number;
   active: boolean;
+  /**
+   * Variant/price structure linked to the product
+   */
+  variants?: IProductVariant[];
 }
 
 export interface IProduct extends IBaseProduct {
@@ -113,5 +200,9 @@ export interface IProduct extends IBaseProduct {
   modifiedIp: string;
   createdByUser?: IBaseAdminUser;
   updatedByUser?: IBaseAdminUser;
+  /**
+   * Variant/price structure linked to the product
+   */
+  variants?: IProductVariant[];
 }
 

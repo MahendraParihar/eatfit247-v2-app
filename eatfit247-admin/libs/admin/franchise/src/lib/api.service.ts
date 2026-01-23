@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { ApiBaseService, HttpService } from '@core';
-import { IFranchise, ITableList } from '@eatfit247-shared-lib';
+import { IDropdownItem, IFranchise, ITableList } from '@eatfit247-shared-lib';
 
 @Injectable({
   providedIn: 'root',
@@ -37,5 +37,10 @@ export class FranchiseApiService extends ApiBaseService {
   async getMasterData(): Promise<{ taxApplicable: boolean }> {
     const res = await this.httpService.get<{ taxApplicable: boolean }>(`${this.endpoint}/master-data`);
     return res.data as { taxApplicable: boolean };
+  }
+
+  async getFranchiseDropdown(): Promise<IDropdownItem[]> {
+    const res = await this.httpService.get<IDropdownItem[]>(`${this.endpoint}/dropdown`);
+    return res.data as IDropdownItem[];
   }
 }

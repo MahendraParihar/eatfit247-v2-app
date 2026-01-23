@@ -32,11 +32,31 @@ import { ICountry, IManageCountry, InputLengthEnum, TaxTypeEnum } from '@eatfit2
 export class ManageCountry implements OnInit {
   private fb: FormBuilder = inject(FormBuilder);
   formGroup: FormGroup = this.fb.group({
-    country: ['', [Validators.required, Validators.minLength(InputLengthEnum.CHAR_2), Validators.maxLength(InputLengthEnum.CHAR_50)]],
-    countryCode: ['', [Validators.maxLength(InputLengthEnum.MAX_COUNTRY_CODE)]],
-    phoneNumberCode: ['', [Validators.maxLength(InputLengthEnum.MAX_COUNTRY_CODE)]],
+    country: [
+      '',
+      [
+        Validators.required,
+        Validators.minLength(InputLengthEnum.CHAR_2),
+        Validators.maxLength(InputLengthEnum.CHAR_50)
+      ]
+    ],
+    countryCode: [
+      '',
+      [
+        Validators.required, Validators.maxLength(
+        InputLengthEnum.MAX_COUNTRY_CODE
+      )
+      ]
+    ],
+    phoneNumberCode: [
+      '',
+      [Validators.maxLength(InputLengthEnum.MAX_COUNTRY_CODE)]
+    ],
     taxType: [TaxTypeEnum.NONE, [Validators.required]],
-    defaultTaxPercentage: [0, [Validators.required, Validators.min(0), Validators.max(100)]],
+    defaultTaxPercentage: [
+      0,
+      [Validators.required, Validators.min(0), Validators.max(100)]
+    ],
     active: [true, [Validators.required]]
   });
   initialData!: ICountry;
@@ -71,11 +91,25 @@ export class ManageCountry implements OnInit {
           Validators.maxLength(InputLengthEnum.CHAR_50)
         ]
       ],
-      countryCode: [this.initialData?.countryCode || '', [Validators.maxLength(InputLengthEnum.MAX_COUNTRY_CODE)]],
-      phoneNumberCode: [this.initialData?.phoneNumberCode || '', [Validators.maxLength(InputLengthEnum.MAX_COUNTRY_CODE)]],
-      taxType: [this.initialData?.taxType || TaxTypeEnum.NONE, [Validators.required]],
-      defaultTaxPercentage: [this.initialData?.defaultTaxPercentage || 0, [Validators.required, Validators.min(0), Validators.max(100)]],
-      active: [this.initialData?.active !== undefined ? this.initialData.active : true]
+      countryCode: [
+        this.initialData?.countryCode || '',
+        [Validators.maxLength(InputLengthEnum.MAX_COUNTRY_CODE)]
+      ],
+      phoneNumberCode: [
+        this.initialData?.phoneNumberCode || '',
+        [Validators.maxLength(InputLengthEnum.MAX_COUNTRY_CODE)]
+      ],
+      taxType: [
+        this.initialData?.taxType || TaxTypeEnum.NONE,
+        [Validators.required]
+      ],
+      defaultTaxPercentage: [
+        this.initialData?.defaultTaxPercentage || 0,
+        [Validators.required, Validators.min(0), Validators.max(100)]
+      ],
+      active: [
+        this.initialData?.active !== undefined ? this.initialData.active : true
+      ]
     });
   }
 
@@ -87,15 +121,15 @@ export class ManageCountry implements OnInit {
     ValidationUtil.validateAllFormFields(this.formGroup);
     if (this.formGroup.valid) {
       const formValue: IManageCountry = { ...this.formGroup.value };
-      if (!formValue.countryCode) {
-        delete formValue.countryCode;
-      }
       if (!formValue.phoneNumberCode) {
         delete formValue.phoneNumberCode;
       }
       if (this.isEditMode && this.initialData) {
         formValue.countryId = this.initialData.countryId;
-        await this.apiService.updateCountry(this.initialData.countryId, formValue);
+        await this.apiService.updateCountry(
+          this.initialData.countryId,
+          formValue
+        );
       } else {
         await this.apiService.createCountry(formValue);
       }

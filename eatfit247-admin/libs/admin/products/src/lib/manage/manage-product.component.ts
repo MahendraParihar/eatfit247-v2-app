@@ -39,6 +39,7 @@ export class ManageProduct implements OnInit, OnDestroy {
   private fb: FormBuilder = inject(FormBuilder);
   formGroup: FormGroup = this.fb.group({
     name: ['', [Validators.required, Validators.minLength(InputLengthEnum.CHAR_2), Validators.maxLength(InputLengthEnum.CHAR_250)]],
+    hsnCode: ['', [Validators.maxLength(100)]],
     imagePath: this.fb.array([]),
     fees: this.fb.array([]),
     additionalInfo: this.fb.group({
@@ -190,6 +191,41 @@ export class ManageProduct implements OnInit, OnDestroy {
 
   private patchFormValues(): void {
     if (this.initialData) {
+      // If variants with prices are present, derive the flattened fees structure
+      // expected by the existing form before delegating to the form service.
+      if (this.initialData.variants && this.initialData.variants.length) {
+        const derivedFees: any[] = [];
+        this.initialData.variants.forEach((variant) => {
+          const prices = variant.prices && variant.prices.length ? variant.prices : [];
+          if (prices.length === 0) {
+            // Still push a row so that quantity/unit are visible in the UI
+            derivedFees.push({
+              quantity: variant.quantityValue,
+              unit: variant.quantityUnit,
+              currency: 'INR',
+              price: 0,
+              sku: variant.sku
+            });
+          } else {
+            prices.forEach((price) => {
+              derivedFees.push({
+                quantity: variant.quantityValue,
+                unit: variant.quantityUnit,
+                currency: price.currency,
+                price: price.price,
+                sku: variant.sku,
+                taxPercent: price.taxPercent,
+                isActive: price.isActive,
+                validFrom: price.validFrom,
+                validTo: price.validTo
+              });
+            });
+          }
+        });
+        // Attach the derived fees to initialData so the form service can use it.
+        (this.initialData as any).fees = derivedFees;
+      }
+
       this.productFormService.populateForm(this.formGroup, this.initialData);
       // Recalculate price range and set up listeners after populating form
       setTimeout(() => {
