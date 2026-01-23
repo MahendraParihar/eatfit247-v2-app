@@ -37,52 +37,103 @@
           <shared-ui-input-error [control]="formGroup.get('hsnCode')" controlName="HSN Code"></shared-ui-input-error>
         </mat-form-field>
 
-        <!-- Fees -->
+        <!-- Variants and Prices -->
         <div class="section-header">
-          Product Fees
-          <button type="button" mat-icon-button color="primary" (click)="addFee()">
+          <span>Product Variants & Prices</span>
+          <button type="button" mat-raised-button color="primary" (click)="addVariant()">
             <mat-icon>add</mat-icon>
+            Add Variant
           </button>
         </div>
 
-        <div formArrayName="fees" class="array-container">
-          @for (feeControl of feesArray.controls; track $index) {
-            <div [formGroupName]="$index" class="array-item">
-              <mat-form-field class="quarter-width">
-                <mat-label>Price</mat-label>
-                <input matInput type="number" formControlName="price" placeholder="Enter price" [min]="0" />
-                <shared-ui-input-error [control]="feeControl.get('price')" controlName="Price"></shared-ui-input-error>
-              </mat-form-field>
-              <mat-form-field class="quarter-width">
-                <mat-label>Currency</mat-label>
-                <mat-select formControlName="currency">
-                  <mat-option [value]="">Select Currency</mat-option>
-                  @for (currency of currencyOptions; track currency.id) {
-                    <mat-option [value]="currency.id">{{ currency.id }}</mat-option>
-                  }
-                </mat-select>
-                <shared-ui-input-error [control]="feeControl.get('currency')"
-                                       controlName="Currency"></shared-ui-input-error>
-              </mat-form-field>
-              <mat-form-field class="quarter-width">
-                <mat-label>Quantity</mat-label>
-                <input matInput type="number" formControlName="quantity" placeholder="Enter quantity" [min]="1" />
-                <shared-ui-input-error [control]="feeControl.get('quantity')"
-                                       controlName="Quantity"></shared-ui-input-error>
-              </mat-form-field>
-              <mat-form-field class="quarter-width">
-                <mat-label>Unit</mat-label>
-                <mat-select formControlName="unit">
-                  @for (unit of unitOptions; track unit) {
-                    <mat-option [value]="unit">{{ unit }}</mat-option>
-                  }
-                </mat-select>
-                <shared-ui-input-error [control]="feeControl.get('unit')" controlName="Unit"></shared-ui-input-error>
-              </mat-form-field>
-              <button type="button" mat-icon-button color="warn" (click)="removeFee($index)">
-                <mat-icon>delete</mat-icon>
-              </button>
-            </div>
+        <div formArrayName="variants" class="variants-container">
+          @for (variantControl of variantsArray.controls; track $index) {
+            <mat-card [formGroupName]="$index" class="variant-card">
+              <mat-card-header class="variant-card-header">
+                <mat-card-title>Variant {{ $index + 1 }}</mat-card-title>
+                <button type="button" mat-icon-button color="warn" (click)="removeVariant($index)" matTooltip="Delete Variant">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </mat-card-header>
+              <mat-card-content>
+                <div class="variant-fields">
+                  <mat-form-field appearance="outline" class="variant-quantity">
+                    <mat-label>Quantity *</mat-label>
+                    <input matInput type="number" formControlName="quantityValue" placeholder="Enter quantity" [min]="0.01" step="0.01" />
+                    <shared-ui-input-error [control]="variantControl.get('quantityValue')"
+                                           controlName="Quantity"></shared-ui-input-error>
+                  </mat-form-field>
+                  <mat-form-field appearance="outline" class="variant-unit">
+                    <mat-label>Unit *</mat-label>
+                    <mat-select formControlName="quantityUnit">
+                      <mat-option [value]="">Select Unit</mat-option>
+                      @for (unit of unitOptions; track unit) {
+                        <mat-option [value]="unit">{{ unit }}</mat-option>
+                      }
+                    </mat-select>
+                    <shared-ui-input-error [control]="variantControl.get('quantityUnit')"
+                                           controlName="Unit"></shared-ui-input-error>
+                  </mat-form-field>
+                  <mat-form-field appearance="outline" class="variant-sku">
+                    <mat-label>SKU (Optional)</mat-label>
+                    <input matInput formControlName="sku" placeholder="Enter SKU" />
+                  </mat-form-field>
+                </div>
+
+                <!-- Prices for this variant -->
+                <div class="prices-section">
+                  <div class="prices-header">
+                    <h3 class="prices-title">Prices</h3>
+                    <button type="button" mat-raised-button color="primary" (click)="addPriceToVariant($index)">
+                      <mat-icon>add</mat-icon>
+                      Add Price
+                    </button>
+                  </div>
+                  <div formArrayName="prices" class="prices-list">
+                    @for (priceControl of getPricesArray($index).controls; track priceIndex; let priceIndex = $index) {
+                      <div [formGroupName]="priceIndex" class="price-item">
+                        <div class="price-fields-row">
+                          <mat-form-field appearance="outline" class="price-currency-field">
+                            <mat-label>Currency *</mat-label>
+                            <mat-select formControlName="currency">
+                              <mat-option [value]="">Select Currency</mat-option>
+                              @for (currency of currencyOptions; track currency.id) {
+                                <mat-option [value]="currency.id">{{ currency.id }}</mat-option>
+                              }
+                            </mat-select>
+                            <shared-ui-input-error [control]="priceControl.get('currency')"
+                                                   controlName="Currency"></shared-ui-input-error>
+                          </mat-form-field>
+                          <mat-form-field appearance="outline" class="price-amount-field">
+                            <mat-label>Price *</mat-label>
+                            <input matInput type="number" formControlName="price" placeholder="0.00" [min]="0" step="0.01" />
+                            <shared-ui-input-error [control]="priceControl.get('price')"
+                                                   controlName="Price"></shared-ui-input-error>
+                          </mat-form-field>
+                          <mat-form-field appearance="outline" class="price-tax-field">
+                            <mat-label>Tax %</mat-label>
+                            <input matInput type="number" formControlName="taxPercent" placeholder="0" [min]="0" [max]="100" step="0.01" />
+                            <shared-ui-input-error [control]="priceControl.get('taxPercent')"
+                                                   controlName="Tax Percent"></shared-ui-input-error>
+                          </mat-form-field>
+                          <mat-form-field appearance="outline" class="price-status-field">
+                            <mat-label>Status</mat-label>
+                            <mat-select formControlName="isActive">
+                              <mat-option [value]="true">Active</mat-option>
+                              <mat-option [value]="false">Inactive</mat-option>
+                            </mat-select>
+                          </mat-form-field>
+                          <button type="button" mat-icon-button color="warn" (click)="removePriceFromVariant($index, priceIndex)" 
+                                  class="price-delete-btn" matTooltip="Delete Price">
+                            <mat-icon>delete</mat-icon>
+                          </button>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                </div>
+              </mat-card-content>
+            </mat-card>
           }
         </div>
 

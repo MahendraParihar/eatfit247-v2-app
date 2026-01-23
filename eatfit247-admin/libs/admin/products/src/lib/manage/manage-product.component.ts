@@ -9,6 +9,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { MatCardModule } from '@angular/material/card';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { Editor } from 'ngx-editor';
 import { InputErrorComponent, UploadFormComponent, ValidationUtil } from '@shared';
 import { ProductsApiService } from 'products';
@@ -28,6 +29,7 @@ import { FileTypeEnum, IDropdownItem, InputLengthEnum, IProduct, MediaForEnum } 
     MatSelectModule,
     MatCardModule,
     MatCheckboxModule,
+    MatTooltipModule,
     FormsModule,
     InputErrorComponent,
     UploadFormComponent
@@ -41,7 +43,7 @@ export class ManageProduct implements OnInit, OnDestroy {
     name: ['', [Validators.required, Validators.minLength(InputLengthEnum.CHAR_2), Validators.maxLength(InputLengthEnum.CHAR_250)]],
     hsnCode: ['', [Validators.maxLength(100)]],
     imagePath: this.fb.array([]),
-    fees: this.fb.array([]),
+    variants: this.fb.array([]),
     additionalInfo: this.fb.group({
       priceRange: this.fb.group({
         min: [0, [Validators.required, Validators.min(0)]],
@@ -129,7 +131,7 @@ export class ManageProduct implements OnInit, OnDestroy {
       this.patchFormValues();
     } else {
       this.pageTitle = 'Create Product';
-      this.addFee();
+      this.addVariant();
       this.addBenefit();
       this.addPrecaution();
       this.addIngredient();
@@ -143,25 +145,35 @@ export class ManageProduct implements OnInit, OnDestroy {
   }
 
   private setupPriceRangeAutoCalculation(): void {
-    // Listen to changes in feesArray to auto-calculate price range
-    this.feesArray.valueChanges.subscribe(() => {
+    // Listen to changes in variantsArray to auto-calculate price range
+    this.variantsArray.valueChanges.subscribe(() => {
       this.calculatePriceRange();
     });
-    // Listen to when fees are added/removed to set up new listeners
-    this.feesArray.statusChanges.subscribe(() => {
-      this.setupFeePriceListeners();
+    // Listen to when variants are added/removed to set up new listeners
+    this.variantsArray.statusChanges.subscribe(() => {
+      this.setupVariantPriceListeners();
       this.calculatePriceRange();
     });
     // Set up initial listeners
-    this.setupFeePriceListeners();
+    this.setupVariantPriceListeners();
   }
 
-  private setupFeePriceListeners(): void {
-    // Set up listeners for all fee price controls
-    this.feesArray.controls.forEach((feeControl) => {
-      const priceControl = feeControl.get('price');
-      if (priceControl) {
-        priceControl.valueChanges.subscribe(() => {
+  private setupVariantPriceListeners(): void {
+    // Set up listeners for all variant prices
+    this.variantsArray.controls.forEach((variantControl) => {
+      const pricesArray = variantControl.get('prices') as FormArray;
+      if (pricesArray) {
+        pricesArray.controls.forEach((priceControl) => {
+          const priceValueControl = priceControl.get('price');
+          if (priceValueControl) {
+            priceValueControl.valueChanges.subscribe(() => {
+              this.calculatePriceRange();
+            });
+          }
+        });
+        // Listen to when prices are added/removed
+        pricesArray.statusChanges.subscribe(() => {
+          this.setupVariantPriceListeners();
           this.calculatePriceRange();
         });
       }
@@ -169,14 +181,21 @@ export class ManageProduct implements OnInit, OnDestroy {
   }
 
   private calculatePriceRange(): void {
-    const fees = this.feesArray.value;
-    if (!fees || fees.length === 0) {
+    const variants = this.variantsArray.value;
+    if (!variants || variants.length === 0) {
       this.priceRangeGroup.patchValue({ min: 0, max: 0 }, { emitEvent: false });
       return;
     }
-    const prices = fees
-      .map((fee: any) => fee.price)
-      .filter((price: any) => price !== null && price !== undefined && !isNaN(price) && price >= 0);
+    const prices: number[] = [];
+    variants.forEach((variant: any) => {
+      if (variant.prices && Array.isArray(variant.prices)) {
+        variant.prices.forEach((price: any) => {
+          if (price.price !== null && price.price !== undefined && !isNaN(price.price) && price.price >= 0) {
+            prices.push(price.price);
+          }
+        });
+      }
+    });
     if (prices.length === 0) {
       this.priceRangeGroup.patchValue({ min: 0, max: 0 }, { emitEvent: false });
       return;
@@ -191,45 +210,10 @@ export class ManageProduct implements OnInit, OnDestroy {
 
   private patchFormValues(): void {
     if (this.initialData) {
-      // If variants with prices are present, derive the flattened fees structure
-      // expected by the existing form before delegating to the form service.
-      if (this.initialData.variants && this.initialData.variants.length) {
-        const derivedFees: any[] = [];
-        this.initialData.variants.forEach((variant) => {
-          const prices = variant.prices && variant.prices.length ? variant.prices : [];
-          if (prices.length === 0) {
-            // Still push a row so that quantity/unit are visible in the UI
-            derivedFees.push({
-              quantity: variant.quantityValue,
-              unit: variant.quantityUnit,
-              currency: 'INR',
-              price: 0,
-              sku: variant.sku
-            });
-          } else {
-            prices.forEach((price) => {
-              derivedFees.push({
-                quantity: variant.quantityValue,
-                unit: variant.quantityUnit,
-                currency: price.currency,
-                price: price.price,
-                sku: variant.sku,
-                taxPercent: price.taxPercent,
-                isActive: price.isActive,
-                validFrom: price.validFrom,
-                validTo: price.validTo
-              });
-            });
-          }
-        });
-        // Attach the derived fees to initialData so the form service can use it.
-        (this.initialData as any).fees = derivedFees;
-      }
-
       this.productFormService.populateForm(this.formGroup, this.initialData);
       // Recalculate price range and set up listeners after populating form
       setTimeout(() => {
-        this.setupFeePriceListeners();
+        this.setupVariantPriceListeners();
         this.calculatePriceRange();
       }, 0);
     }
@@ -252,26 +236,59 @@ export class ManageProduct implements OnInit, OnDestroy {
     }
   }
 
-  // Fee methods
-  get feesArray(): FormArray {
-    return this.formGroup.get('fees') as FormArray;
+  // Variant methods
+  get variantsArray(): FormArray {
+    return this.formGroup.get('variants') as FormArray;
   }
 
-  addFee(): void {
-    const feeGroup = this.fb.group({
-      price: [0, [Validators.required, Validators.min(0)]],
-      currency: ['INR', Validators.required],
-      quantity: [1, [Validators.required, Validators.min(1)]],
-      unit: ['', Validators.required]
+  addVariant(): void {
+    const variantGroup = this.fb.group({
+      quantityValue: [1, [Validators.required, Validators.min(0.01)]],
+      quantityUnit: ['', Validators.required],
+      sku: [''],
+      prices: this.fb.array([])
     });
-    this.feesArray.push(feeGroup);
-    // Set up listener for the new fee
-    this.setupFeePriceListeners();
+    this.variantsArray.push(variantGroup);
+    // Add at least one price for the new variant
+    this.addPriceToVariant(this.variantsArray.length - 1);
+    // Set up listener for the new variant
+    this.setupVariantPriceListeners();
     this.calculatePriceRange();
   }
 
-  removeFee(index: number): void {
-    this.feesArray.removeAt(index);
+  removeVariant(index: number): void {
+    this.variantsArray.removeAt(index);
+    this.calculatePriceRange();
+  }
+
+  getVariantFormGroup(index: number): FormGroup {
+    return this.variantsArray.at(index) as FormGroup;
+  }
+
+  // Price methods for variants
+  getPricesArray(variantIndex: number): FormArray {
+    return (this.variantsArray.at(variantIndex) as FormGroup).get('prices') as FormArray;
+  }
+
+  addPriceToVariant(variantIndex: number): void {
+    const pricesArray = this.getPricesArray(variantIndex);
+    const priceGroup = this.fb.group({
+      currency: ['INR', Validators.required],
+      price: [0, [Validators.required, Validators.min(0)]],
+      taxPercent: [0, [Validators.min(0), Validators.max(100)]],
+      isActive: [true],
+      validFrom: [null],
+      validTo: [null]
+    });
+    pricesArray.push(priceGroup);
+    // Set up listener for the new price
+    this.setupVariantPriceListeners();
+    this.calculatePriceRange();
+  }
+
+  removePriceFromVariant(variantIndex: number, priceIndex: number): void {
+    const pricesArray = this.getPricesArray(variantIndex);
+    pricesArray.removeAt(priceIndex);
     this.calculatePriceRange();
   }
 

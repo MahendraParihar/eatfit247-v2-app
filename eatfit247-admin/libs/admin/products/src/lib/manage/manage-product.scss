@@ -109,6 +109,162 @@ textarea {
   gap: 12px;
 }
 
+// Variants and Prices Styling
+.variants-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin-top: 16px;
+}
+
+.variant-card {
+  margin-bottom: 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  transition: box-shadow 0.2s ease;
+
+  &:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  }
+}
+
+.variant-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 16px 0 16px;
+  margin-bottom: 0;
+
+  mat-card-title {
+    font-size: 18px;
+    font-weight: 500;
+    margin: 0;
+  }
+}
+
+.variant-fields {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+
+  .variant-quantity {
+    flex: 0 0 150px;
+  }
+
+  .variant-unit {
+    flex: 0 0 150px;
+  }
+
+  .variant-sku {
+    flex: 1;
+    min-width: 200px;
+  }
+}
+
+.prices-section {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.prices-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+
+  .prices-title {
+    font-size: 16px;
+    font-weight: 500;
+    margin: 0;
+    color: rgba(0, 0, 0, 0.87);
+  }
+}
+
+.prices-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.price-item {
+  padding: 16px;
+  background-color: #fafafa;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 8px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: #f5f5f5;
+    border-color: rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+  }
+}
+
+.price-fields-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
+
+  .price-currency-field {
+    flex: 0 0 140px;
+    min-width: 140px;
+  }
+
+  .price-amount-field {
+    flex: 0 0 150px;
+    min-width: 150px;
+  }
+
+  .price-tax-field {
+    flex: 0 0 120px;
+    min-width: 120px;
+  }
+
+  .price-status-field {
+    flex: 0 0 130px;
+    min-width: 130px;
+  }
+
+  .price-delete-btn {
+    flex: 0 0 auto;
+    margin-top: 8px;
+    align-self: flex-start;
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .variant-fields {
+    flex-direction: column;
+
+    .variant-quantity,
+    .variant-unit,
+    .variant-sku {
+      flex: 1 1 100%;
+    }
+  }
+
+  .price-fields-row {
+    flex-direction: column;
+
+    .price-currency-field,
+    .price-amount-field,
+    .price-tax-field,
+    .price-status-field {
+      flex: 1 1 100%;
+      min-width: 100%;
+    }
+
+    .price-delete-btn {
+      align-self: flex-end;
+      margin-top: 0;
+    }
+  }
+}
+
 ::ng-deep {
   .NgxEditor {
     min-height: 200px;

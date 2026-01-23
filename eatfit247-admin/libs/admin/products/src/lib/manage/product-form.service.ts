@@ -4,7 +4,8 @@ import {
   IManageProduct,
   IProduct,
   IProductAdditionalInfo,
-  IProductFee
+  IProductVariant,
+  IProductPrice
 } from '@eatfit247-shared-lib';
 
 @Injectable({
@@ -22,7 +23,7 @@ export class ProductFormService {
       name: product.name || '',
       hsnCode: product.hsnCode || '',
       imagePath: product.imagePath || [],
-      fees: product.fees || [],
+      variants: product.variants || [],
       active: product.active !== undefined ? product.active : true,
       additionalInfo: {
         priceRange: additionalInfo.priceRange || { min: 0, max: 0 },
@@ -72,18 +73,8 @@ export class ProductFormService {
       });
     }
 
-    // Patch fees
-    this.populateFormArray(
-      formGroup,
-      'fees',
-      formValues.fees,
-      (item: IProductFee) => this.fb.group({
-        price: [item.price, [Validators.required, Validators.min(0)]],
-        currency: [item.currency, Validators.required],
-        quantity: [item.quantity, [Validators.required, Validators.min(0)]],
-        unit: [item.unit, Validators.required]
-      })
-    );
+    // Patch variants
+    this.populateVariantsArray(formGroup, formValues.variants || []);
 
     // Patch additionalInfo
     const additionalInfoGroup = formGroup.get('additionalInfo') as FormGroup;
@@ -312,6 +303,39 @@ export class ProductFormService {
   }
 
   /**
+   * Populate variants array with nested prices
+   */
+  private populateVariantsArray(formGroup: FormGroup, variants: IProductVariant[]): void {
+    const variantsArray = formGroup.get('variants') as FormArray;
+    while (variantsArray.length !== 0) {
+      variantsArray.removeAt(0);
+    }
+    if (variants && variants.length > 0) {
+      variants.forEach((variant) => {
+        const pricesArray = this.fb.array<FormGroup>([]);
+        if (variant.prices && variant.prices.length > 0) {
+          variant.prices.forEach((price) => {
+            pricesArray.push(this.fb.group({
+              currency: [price.currency, Validators.required],
+              price: [price.price, [Validators.required, Validators.min(0)]],
+              taxPercent: [price.taxPercent || 0, [Validators.min(0), Validators.max(100)]],
+              isActive: [price.isActive !== undefined ? price.isActive : true],
+              validFrom: [price.validFrom || null],
+              validTo: [price.validTo || null]
+            }));
+          });
+        }
+        variantsArray.push(this.fb.group({
+          quantityValue: [variant.quantityValue, [Validators.required, Validators.min(0.01)]],
+          quantityUnit: [variant.quantityUnit, Validators.required],
+          sku: [variant.sku || ''],
+          prices: pricesArray
+        }));
+      });
+    }
+  }
+
+  /**
    * Populate a form array with data
    */
   private populateFormArray<T>(
@@ -415,11 +439,41 @@ export class ProductFormService {
       }
     }
 
+    // Transform variants from form structure to API structure
+    const variants: IProductVariant[] = [];
+    if (formValue.variants && Array.isArray(formValue.variants)) {
+      formValue.variants.forEach((variant: any) => {
+        const prices: IProductPrice[] = [];
+        if (variant.prices && Array.isArray(variant.prices)) {
+          variant.prices.forEach((price: any) => {
+            prices.push({
+              id: price.id || 0,
+              productVariantId: price.productVariantId || 0,
+              currency: price.currency,
+              price: price.price,
+              taxPercent: price.taxPercent || 0,
+              isActive: price.isActive !== undefined ? price.isActive : true,
+              validFrom: price.validFrom || null,
+              validTo: price.validTo || null
+            });
+          });
+        }
+        variants.push({
+          productVariantId: variant.productVariantId || 0,
+          productId: variant.productId || 0,
+          quantityValue: variant.quantityValue,
+          quantityUnit: variant.quantityUnit,
+          sku: variant.sku || undefined,
+          prices: prices.length > 0 ? prices : undefined
+        });
+      });
+    }
+
     const payload: IManageProduct = {
       name: formValue.name,
       hsnCode: formValue.hsnCode,
       imagePath: formValue.imagePath || [],
-      fees: formValue.fees || [],
+      variants: variants.length > 0 ? variants : undefined,
       additionalInfo: additionalInfo,
       active: formValue.active
     };
