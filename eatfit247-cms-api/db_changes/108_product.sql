@@ -14,8 +14,8 @@ create table public.mst_product
         constraint fk_txn_member_product_mst_admin_modified_by
             references public.mst_admin_users,
     updated_at      timestamp with time zone not null,
-    created_ip      varchar(255)             not null,
-    modified_ip     varchar(255)             not null
+    created_ip       character varying(50),
+    modified_ip      character varying(50)
 );
 
 create table public.txn_member_products
@@ -55,8 +55,8 @@ create table public.txn_member_products
         constraint fk_txn_member_product_mst_admin_modified_by
             references public.mst_admin_users,
     updated_at               timestamp with time zone  not null,
-    created_ip               varchar(255)              not null,
-    modified_ip              varchar(255)              not null,
+    created_ip       character varying(50),
+    modified_ip      character varying(50),
     gst_number               varchar(50),
     billing_address_id       integer
         constraint txn_member_products_txn_addresses_address_id_fk
@@ -195,8 +195,8 @@ CREATE TABLE mst_tax_master
         constraint fk_mst_tax_master_mst_admin_modified_by
             references public.mst_admin_users,
     updated_at               timestamp with time zone  not null,
-    created_ip               varchar(255)              not null,
-    modified_ip              varchar(255)              not null,
+    created_ip       character varying(50),
+    modified_ip      character varying(50),
 
     -- Constraints
     CONSTRAINT uq_tax_master UNIQUE (
