@@ -45,11 +45,14 @@ export interface IBasicMemberProduct {
   totalAmount?: number;
   discountAmount?: number;
   currency?: string;
+  currencyCode?: string;
   taxType?: TaxTypeEnum;
   taxMode?: TaxMode;
   taxPercentage?: number;
   isLutApplied?: boolean;
   isTaxIncluded?: boolean;
+  isTaxApplicable?: boolean;
+  isPlanFeesIncludedTax?: boolean;
   jurisdiction?: any;
   invoiceNote?: string;
   paymentSource: PaymentSourceEnum;

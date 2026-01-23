@@ -800,6 +800,17 @@ export class MembersApiService extends ApiBaseService {
     return res.data as IMemberProduct;
   }
 
+  async calculateProductTax(
+    memberId: number,
+    data: ICalculateTaxRequest,
+  ): Promise<ICalculateTaxResponse> {
+    const res = await this.httpService.post<IResponse<ICalculateTaxResponse>>(
+      `${this.endpoint}/${memberId}/product/calculate-tax`,
+      data,
+    );
+    return res.data as ICalculateTaxResponse;
+  }
+
   async createProductOrder(
     memberId: number,
     data: IBasicMemberProduct,

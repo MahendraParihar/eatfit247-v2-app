@@ -1,0 +1,211 @@
+.dialog-container {
+  min-width: 800px;
+  max-width: 1200px;
+}
+
+.product-order-form {
+  .step-content {
+    padding: 20px 0;
+  }
+
+  .step-title {
+    margin-bottom: 20px;
+  }
+
+  .form-section {
+    margin-bottom: 20px;
+  }
+
+  .form-row {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 16px;
+
+    .half-width {
+      flex: 1;
+    }
+
+    .full-width {
+      width: 100%;
+    }
+  }
+
+  .variant-selection,
+  .price-selection {
+    margin: 20px 0;
+
+    h4 {
+      margin-bottom: 12px;
+    }
+  }
+
+  .variants-grid,
+  .prices-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .variant-card,
+  .price-card {
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.04);
+    }
+
+    &.selected {
+      border: 2px solid #1976d2;
+      background-color: rgba(25, 118, 210, 0.1);
+    }
+
+    .variant-info,
+    .price-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+
+      .sku {
+        font-size: 0.85em;
+        color: #666;
+      }
+
+      .price-value {
+        font-size: 1.2em;
+        font-weight: bold;
+        color: #1976d2;
+      }
+    }
+  }
+
+  .add-to-cart-section {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-top: 16px;
+
+    .quantity-field {
+      width: 120px;
+    }
+
+    .add-button {
+      height: 56px;
+    }
+  }
+
+  .cart-card {
+    margin-top: 20px;
+
+    .cart-table {
+      width: 100%;
+      margin-bottom: 16px;
+
+      .quantity-input {
+        width: 60px;
+        padding: 4px 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+      }
+    }
+
+    .cart-summary {
+      border-top: 1px solid #e0e0e0;
+      padding-top: 16px;
+      margin-top: 16px;
+
+      .summary-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+
+        .label {
+          font-weight: 500;
+        }
+
+        .value {
+          font-weight: bold;
+        }
+      }
+    }
+  }
+
+  .tax-summary-card {
+    margin-top: 20px;
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #e0e0e0;
+
+      &.total {
+        border-top: 2px solid #1976d2;
+        margin-top: 8px;
+        padding-top: 12px;
+        font-weight: bold;
+        font-size: 1.1em;
+      }
+
+      .label {
+        font-weight: 500;
+      }
+
+      .value {
+        font-weight: bold;
+      }
+    }
+
+    .invoice-note {
+      margin-top: 12px;
+      padding: 12px;
+      background-color: #fff3cd;
+      border-radius: 4px;
+      font-size: 0.9em;
+    }
+  }
+
+  .payment-link-card {
+    margin-top: 16px;
+
+    .payment-link-info {
+      .link-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 8px;
+
+        .link-input {
+          flex: 1;
+          padding: 8px;
+          border: 1px solid #ccc;
+          border-radius: 4px;
+        }
+      }
+    }
+  }
+
+  .step-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid #e0e0e0;
+  }
+
+  .loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    gap: 16px;
+  }
+
+  .spinner-inline {
+    display: inline-block;
+    margin-right: 8px;
+  }
+}
+

@@ -21,6 +21,10 @@ import {
   ManageMemberProductOrderComponent,
   ManageMemberProductOrderData
 } from './manage-member-product-order/manage-member-product-order.component';
+import {
+  PlaceProductOrderComponent,
+  PlaceProductOrderData
+} from './place-product-order/place-product-order.component';
 
 @Component({
   selector: 'lib-member-product-orders',
@@ -180,13 +184,13 @@ export class MemberProductOrdersComponent implements OnInit, OnDestroy {
       console.error('Member ID is not available');
       return;
     }
-    const dialogData: ManageMemberProductOrderData = {
+    const dialogData: PlaceProductOrderData = {
       memberId: this.memberId
     };
-    const dialogRef = this.dialog.open(ManageMemberProductOrderComponent, {
-      width: '1000px',
-      maxWidth: '90vw',
-      maxHeight: '90vh',
+    const dialogRef = this.dialog.open(PlaceProductOrderComponent, {
+      width: '1200px',
+      maxWidth: '95vw',
+      maxHeight: '95vh',
       data: dialogData
     });
     dialogRef.afterClosed().subscribe((result) => {
