@@ -1,9 +1,16 @@
-import { BelongsTo, Column, CreatedAt, DataType, Model, Scopes, Table, UpdatedAt } from 'sequelize-typescript';
+import { BelongsTo, Column, CreatedAt, DataType, HasOne, Model, Scopes, Table, UpdatedAt } from 'sequelize-typescript';
 import { getCreatedByUserInclude, getUpdatedByUserInclude, MstAdminUser, MstFranchise } from '@server_1/core';
-import { MstAddressType, MstCountry, MstPaymentMode, MstPaymentStatus, MstState, TxnAddress } from '@server_1/platform';
+import { MstCountry, MstPaymentMode, MstPaymentStatus, MstState, TxnAddress } from '@server_1/platform';
 import { MstProgram, MstProgramPlan } from '@server_1/modules/program-plan';
 import { TxnMember } from './txn-member.model';
-import { IAddress, IMemberPaymentObject, InputLengthEnum, PaymentSourceEnum } from '@eatfit247-shared-lib';
+import { TxnMemberDietPlan } from './txn-member-diet-plan.model';
+import {
+  IAddress, IMemberAddress,
+  InputLengthEnum,
+  PaymentSourceEnum,
+  TaxMode,
+  TaxTypeEnum,
+} from '@eatfit247-shared-lib';
 
 @Table({
   freezeTableName: true,
@@ -76,6 +83,12 @@ import { IAddress, IMemberPaymentObject, InputLengthEnum, PaymentSourceEnum } fr
         required: false,
         attributes: ['franchiseId', 'companyName'],
       },
+      {
+        model: TxnMemberDietPlan,
+        as: 'memberDietPlan',
+        required: false,
+        attributes: ['noOfCycle', 'daysInCycle', 'currentCycleNo', 'currentDayNo'],
+      },
     ],
   },
   details: {
@@ -118,12 +131,6 @@ import { IAddress, IMemberPaymentObject, InputLengthEnum, PaymentSourceEnum } fr
         required: false,
         include: [
           {
-            model: MstAddressType,
-            as: 'addressType',
-            required: false,
-            attributes: ['addressTypeId', 'addressType'],
-          },
-          {
             model: MstCountry,
             as: 'country',
             required: true,
@@ -143,12 +150,6 @@ import { IAddress, IMemberPaymentObject, InputLengthEnum, PaymentSourceEnum } fr
         required: false,
         include: [
           {
-            model: MstAddressType,
-            as: 'addressType',
-            required: false,
-            attributes: ['addressTypeId', 'addressType'],
-          },
-          {
             model: MstCountry,
             as: 'country',
             required: true,
@@ -167,6 +168,12 @@ import { IAddress, IMemberPaymentObject, InputLengthEnum, PaymentSourceEnum } fr
         as: 'franchise',
         required: false,
         attributes: ['franchiseId', 'companyName'],
+      },
+      {
+        model: TxnMemberDietPlan,
+        as: 'memberDietPlan',
+        required: false,
+        attributes: ['noOfCycle', 'daysInCycle', 'currentCycleNo', 'currentDayNo'],
       },
     ],
   },
@@ -253,20 +260,14 @@ export class TxnMemberPayment extends Model<TxnMemberPayment> {
   })
   declare isTaxApplicable: boolean;
   @Column({
-    allowNull: false,
-    field: 'payment_obj',
-    type: DataType.JSONB,
-  })
-  declare paymentObj: IMemberPaymentObject;
-  @Column({
     allowNull: true,
     field: 'member_address',
     type: DataType.JSONB,
   })
   declare memberAddress: {
-    address: IAddress | null;
-    billingAddress: IAddress | null;
-  } | null;
+    address: IMemberAddress | null;
+    billingAddress: IMemberAddress | null;
+  };
   @Column({
     allowNull: true,
     field: 'refund_obj',
@@ -329,6 +330,92 @@ export class TxnMemberPayment extends Model<TxnMemberPayment> {
     type: DataType.STRING(500),
   })
   declare paymentLink: string;
+  @Column({
+    allowNull: true,
+    field: 'order_amount',
+    type: DataType.DECIMAL(10, 2),
+  })
+  declare orderAmount: number;
+  @Column({
+    allowNull: true,
+    field: 'tax_amount',
+    type: DataType.DECIMAL(10, 2),
+  })
+  declare taxAmount: number;
+  @Column({
+    allowNull: true,
+    field: 'total_amount',
+    type: DataType.DECIMAL(10, 2),
+  })
+  declare totalAmount: number;
+  @Column({
+    allowNull: true,
+    defaultValue: 0,
+    field: 'discount_amount',
+    type: DataType.DECIMAL(10, 2),
+  })
+  declare discountAmount: number;
+  @Column({
+    allowNull: true,
+    field: 'currency',
+    type: DataType.STRING(3),
+  })
+  declare currency: string;
+  @Column({
+    allowNull: true,
+    field: 'tax_obj',
+    type: DataType.JSONB,
+  })
+  declare taxObj: Record<string, { amount: number; taxPercentage: number }>;
+  @Column({
+    allowNull: true,
+    field: 'tax_type',
+    type: DataType.ENUM('GST', 'VAT', 'SALES_TAX', 'NONE'),
+  })
+  declare taxType: TaxTypeEnum;
+  @Column({
+    allowNull: true,
+    field: 'tax_mode',
+    type: DataType.ENUM(
+      'DOMESTIC_GST',
+      'EXPORT_OF_SERVICE',
+      'VAT',
+      'RCM_IMPORT_SERVICE',
+      'SALES_TAX',
+      'NO_TAX',
+    ),
+  })
+  declare taxMode: TaxMode;
+  @Column({
+    allowNull: true,
+    field: 'tax_percentage',
+    type: DataType.DECIMAL(5, 2),
+  })
+  declare taxPercentage: number;
+  @Column({
+    allowNull: true,
+    defaultValue: false,
+    field: 'is_lut_applied',
+    type: DataType.BOOLEAN,
+  })
+  declare isLutApplied: boolean;
+  @Column({
+    allowNull: true,
+    defaultValue: false,
+    field: 'is_tax_included',
+    type: DataType.BOOLEAN,
+  })
+  declare isTaxIncluded: boolean;
+  @Column({
+    allowNull: true,
+    field: 'jurisdiction',
+    type: DataType.JSONB,
+  })
+  declare jurisdiction: {
+    entityCountry: string;
+    customerCountry: string;
+    placeOfSupply: string;
+  };
   @BelongsTo(() => TxnMember, {
     foreignKey: 'memberId',
     targetKey: 'memberId',
@@ -377,6 +464,12 @@ export class TxnMemberPayment extends Model<TxnMemberPayment> {
     as: 'franchise',
   })
   declare franchise: MstFranchise;
+  @HasOne(() => TxnMemberDietPlan, {
+    foreignKey: 'memberPaymentId',
+    sourceKey: 'memberPaymentId',
+    as: 'memberDietPlan',
+  })
+  declare memberDietPlan: TxnMemberDietPlan;
   @BelongsTo(() => MstAdminUser, {
     as: 'createdByUser',
     foreignKey: 'createdBy',

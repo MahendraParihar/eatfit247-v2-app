@@ -1,6 +1,6 @@
 import { IInvoiceDocument, IInvoiceItem, IInvoiceTaxRow } from './invoice-document.interface';
-import { TaxMode, TaxTypeEnum, InvoiceItemType, TransactionType } from '../../enum/tax-type.enum';
-import { IMemberPayment, IMemberPaymentObject } from '../member-payment.interface';
+import { TaxMode, TaxTypeEnum, InvoiceItemType, TransactionType } from '../../enum';
+import { IMemberPayment } from '../member-payment.interface';
 import { IFranchise } from '../franchise.interface';
 import { IAddress } from '../location.interface';
 
@@ -27,9 +27,9 @@ const DEFAULT_HSN_CODE = '30049099'; // Example: Other medicaments
 /**
  * Maps payment entity to InvoiceDocument
  *
- * IMPORTANT: Does NOT calculate tax - uses stored taxSnapshot from paymentObj
+ * IMPORTANT: Does NOT calculate tax - uses stored tax information from payment
  *
- * @param payment - Member payment entity with paymentObj containing tax snapshot
+ * @param payment - Member payment entity with tax information
  * @param franchise - Franchise entity for seller information
  * @param memberAddress - Member address for buyer information
  * @param transactionType - SERVICE or PRODUCT (defaults to SERVICE)
@@ -47,15 +47,15 @@ export function mapPaymentToInvoiceDocument(
   itemDescription?: string,
   memberInfo?: IMemberInfo,
 ): IInvoiceDocument {
-  const paymentObj: IMemberPaymentObject = payment.paymentObj;
-  const tax = paymentObj.tax;
-  const pricing = paymentObj.pricing;
-  const jurisdiction = paymentObj.jurisdiction;
   // Determine tax type and mode
-  const taxType = tax.taxType as TaxTypeEnum;
-  const taxMode = tax.taxMode as TaxMode;
+  const taxType = payment.taxType as TaxTypeEnum;
+  const taxMode = payment.taxMode as TaxMode;
   // Build tax rows from taxObj
-  const taxRows: IInvoiceTaxRow[] = buildTaxRows(tax.taxObj, taxType, taxMode);
+  const taxRows: IInvoiceTaxRow[] = buildTaxRows(
+    payment.taxObj || {},
+    taxType,
+    taxMode,
+  );
   // Determine if QR code should be enabled
   const qrCodeEnabled = taxType === TaxTypeEnum.GST && taxMode === TaxMode.DOMESTIC_GST;
   // Build QR code value if enabled
@@ -65,8 +65,8 @@ export function mapPaymentToInvoiceDocument(
       franchise.gstNumber,
       payment.invoiceId || '',
       payment.paymentDate.toString(),
-      pricing.totalAmount,
-      tax.taxAmount,
+      payment.totalAmount,
+      payment.taxAmount,
     );
   }
   // Determine item type
@@ -80,8 +80,8 @@ export function mapPaymentToInvoiceDocument(
       sacCode: itemType === InvoiceItemType.SERVICE && taxType === TaxTypeEnum.GST ? SAC_CODE_DIET_CONSULTANCY : undefined,
       hsnCode: itemType === InvoiceItemType.PRODUCT && taxType === TaxTypeEnum.GST ? DEFAULT_HSN_CODE : undefined,
       qty: 1,
-      rate: pricing.orderAmount,
-      amount: pricing.orderAmount,
+      rate: payment.orderAmount,
+      amount: payment.orderAmount,
     },
   ];
   // Build seller (franchise) information
@@ -96,32 +96,32 @@ export function mapPaymentToInvoiceDocument(
     },
   );
   // Build tax note
-  const taxNote = buildTaxNote(taxMode, paymentObj.invoice.note);
+  const taxNote = buildTaxNote(taxMode, payment.invoiceNote);
   return {
     header: {
       title: taxType === TaxTypeEnum.GST ? 'TAX INVOICE' : 'INVOICE',
       invoiceNumber: payment.invoiceId || `INV-${payment.memberPaymentId}`,
       invoiceDate: payment.paymentDate.toString(),
-      currency: paymentObj.currency,
+      currency: payment.currency,
     },
     seller,
     buyer,
     items,
     pricing: {
-      subtotal: pricing.orderAmount,
-      discount: pricing.discountAmount,
-      netAmount: pricing.orderAmount - pricing.discountAmount,
+      subtotal: payment.orderAmount,
+      discount: payment.discountAmount,
+      netAmount: payment.orderAmount - payment.discountAmount,
     },
     tax: {
       taxType,
       taxMode,
       rows: taxRows,
-      totalTax: tax.taxAmount,
+      totalTax: payment.taxAmount,
       note: taxNote,
     },
     total: {
       label: 'Total Amount Payable',
-      amount: pricing.totalAmount,
+      amount: payment.totalAmount,
     },
     payment: {
       methods: [payment.paymentMode || 'Online Payment'],

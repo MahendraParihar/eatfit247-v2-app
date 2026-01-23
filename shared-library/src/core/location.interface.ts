@@ -1,5 +1,5 @@
-import { IBaseAdminUser, IDropdownItem } from "../base.interface";
-import { TaxTypeEnum } from "../enum/tax-type.enum";
+import { IBaseAdminUser, IDropdownItem } from '../base.interface';
+import { TaxTypeEnum } from '../enum';
 
 export interface IBaseCountry {
   country: string;
@@ -56,7 +56,6 @@ export interface IAddressBasic {
   countryId: number;
   stateId: number;
   pinCode?: string;
-  addressTypeId: number;
   latitude?: number;
   longitude?: number;
 }
@@ -69,7 +68,6 @@ export interface IManageAddress extends IAddressBasic {
 
 export interface IAddress extends IManageAddress {
   addressId: number;
-  addressType: string;
   state: string;
   country: string;
   countryCode?: string;
@@ -80,5 +78,12 @@ export interface IAddress extends IManageAddress {
 export interface IAddressMaster {
   state: IDropdownItem[];
   country: IDropdownItem[];
-  addressType: IDropdownItem[];
+}
+
+export interface IMemberAddress extends IAddressBasic {
+  addressId: number;
+  state: string;
+  stateCode?: string;
+  country: string;
+  countryCode?: string;
 }

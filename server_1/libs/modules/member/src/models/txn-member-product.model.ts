@@ -1,8 +1,9 @@
-import { BelongsTo, Column, CreatedAt, DataType, Model, Scopes, Table, UpdatedAt } from 'sequelize-typescript';
+import { BelongsTo, Column, CreatedAt, DataType, HasMany, Model, Scopes, Table, UpdatedAt } from 'sequelize-typescript';
 import { getCreatedByUserInclude, getUpdatedByUserInclude, MstAdminUser, MstFranchise } from '@server_1/core';
 import { MstPaymentMode, MstPaymentStatus, TxnAddress } from '@server_1/platform';
 import { TxnMember } from './txn-member.model';
-import { InputLengthEnum, IOrderItem, PaymentSourceEnum } from '@eatfit247-shared-lib';
+import { InputLengthEnum, PaymentSourceEnum, TaxMode, TaxTypeEnum } from '@eatfit247-shared-lib';
+import { TxnMemberProductOrderItem } from './txn-member-product-order-item.model';
 
 @Table({
   freezeTableName: true,
@@ -146,11 +147,11 @@ export class TxnMemberProduct extends Model<TxnMemberProduct> {
   declare transactionId: string;
 
   @Column({
-    allowNull: false,
+    allowNull: true,
     field: 'payment_date',
     type: DataType.DATEONLY,
   })
-  declare paymentDate: Date;
+  declare paymentDate: Date | null;
 
   @Column({
     allowNull: true,
@@ -174,18 +175,11 @@ export class TxnMemberProduct extends Model<TxnMemberProduct> {
   declare promoCode: string;
 
   @Column({
-    allowNull: false,
-    field: 'is_tax_applicable',
-    type: DataType.BOOLEAN,
-  })
-  declare isTaxApplicable: boolean;
-
-  @Column({
-    allowNull: false,
-    field: 'payment_obj',
+    allowNull: true,
+    field: 'refund_obj',
     type: DataType.JSONB,
   })
-  declare paymentObj: any;
+  declare refundObj: any;
 
   @Column({
     allowNull: true,
@@ -261,10 +255,104 @@ export class TxnMemberProduct extends Model<TxnMemberProduct> {
 
   @Column({
     allowNull: true,
-    field: 'products',
+    field: 'member_address',
     type: DataType.JSONB,
   })
-  declare products: IOrderItem[];
+  declare memberAddress: any;
+
+  @Column({
+    allowNull: true,
+    field: 'order_amount',
+    type: DataType.DECIMAL(10, 2),
+  })
+  declare orderAmount: number;
+
+  @Column({
+    allowNull: true,
+    field: 'tax_amount',
+    type: DataType.DECIMAL(10, 2),
+  })
+  declare taxAmount: number;
+
+  @Column({
+    allowNull: true,
+    field: 'total_amount',
+    type: DataType.DECIMAL(10, 2),
+  })
+  declare totalAmount: number;
+
+  @Column({
+    allowNull: true,
+    field: 'discount_amount',
+    type: DataType.DECIMAL(10, 2),
+    defaultValue: 0,
+  })
+  declare discountAmount: number;
+
+  @Column({
+    allowNull: true,
+    field: 'currency',
+    type: DataType.STRING(3),
+  })
+  declare currency: string;
+
+  @Column({
+    allowNull: true,
+    field: 'tax_type',
+    type: DataType.ENUM('GST', 'VAT', 'SALES_TAX', 'NONE'),
+  })
+  declare taxType: TaxTypeEnum;
+
+  @Column({
+    allowNull: true,
+    field: 'tax_mode',
+    type: DataType.ENUM(
+      'DOMESTIC_GST',
+      'EXPORT_OF_SERVICE',
+      'VAT',
+      'RCM_IMPORT_SERVICE',
+      'SALES_TAX',
+      'NO_TAX',
+    ),
+  })
+  declare taxMode: TaxMode;
+
+  @Column({
+    allowNull: true,
+    field: 'tax_percentage',
+    type: DataType.DECIMAL(5, 2),
+  })
+  declare taxPercentage: number;
+
+  @Column({
+    allowNull: true,
+    field: 'is_lut_applied',
+    type: DataType.BOOLEAN,
+    defaultValue: false,
+  })
+  declare isLutApplied: boolean;
+
+  @Column({
+    allowNull: true,
+    field: 'is_tax_included',
+    type: DataType.BOOLEAN,
+    defaultValue: false,
+  })
+  declare isTaxIncluded: boolean;
+
+  @Column({
+    allowNull: true,
+    field: 'jurisdiction',
+    type: DataType.JSONB,
+  })
+  declare jurisdiction: any;
+
+  @Column({
+    allowNull: true,
+    field: 'invoice_note',
+    type: DataType.TEXT,
+  })
+  declare invoiceNote: string;
 
   @BelongsTo(() => TxnMember, {
     foreignKey: 'memberId',
@@ -307,6 +395,13 @@ export class TxnMemberProduct extends Model<TxnMemberProduct> {
     as: 'franchise',
   })
   declare franchise: MstFranchise;
+
+  @HasMany(() => TxnMemberProductOrderItem, {
+    foreignKey: 'memberProductId',
+    sourceKey: 'memberProductId',
+    as: 'orderItems',
+  })
+  declare orderItems?: TxnMemberProductOrderItem[];
 
   @BelongsTo(() => MstAdminUser, {
     as: 'createdByUser',

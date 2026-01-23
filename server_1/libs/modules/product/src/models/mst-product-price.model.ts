@@ -55,10 +55,10 @@ export class MstProductPrice extends Model<MstProductPrice> {
   @Column({
     allowNull: false,
     defaultValue: true,
-    field: 'is_active',
+    field: 'active',
     type: DataType.BOOLEAN,
   })
-  declare isActive: boolean;
+  declare active: boolean;
 
   @Column({
     allowNull: true,

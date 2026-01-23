@@ -112,10 +112,26 @@
                           </mat-form-field>
                           <mat-form-field appearance="outline" class="price-status-field">
                             <mat-label>Status</mat-label>
-                            <mat-select formControlName="isActive">
+                            <mat-select formControlName="active">
                               <mat-option [value]="true">Active</mat-option>
                               <mat-option [value]="false">Inactive</mat-option>
                             </mat-select>
+                          </mat-form-field>
+                          <mat-form-field appearance="outline" class="price-date-field">
+                            <mat-label>Valid From *</mat-label>
+                            <input matInput [matDatepicker]="validFromPicker" formControlName="validFrom" placeholder="Select date" />
+                            <mat-datepicker-toggle matIconSuffix [for]="validFromPicker"></mat-datepicker-toggle>
+                            <mat-datepicker #validFromPicker></mat-datepicker>
+                            <shared-ui-input-error [control]="priceControl.get('validFrom')"
+                                                   controlName="Valid From"></shared-ui-input-error>
+                          </mat-form-field>
+                          <mat-form-field appearance="outline" class="price-date-field">
+                            <mat-label>Valid To</mat-label>
+                            <input matInput [matDatepicker]="validToPicker" formControlName="validTo" placeholder="Select date (optional)" />
+                            <mat-datepicker-toggle matIconSuffix [for]="validToPicker"></mat-datepicker-toggle>
+                            <mat-datepicker #validToPicker></mat-datepicker>
+                            <shared-ui-input-error [control]="priceControl.get('validTo')"
+                                                   controlName="Valid To"></shared-ui-input-error>
                           </mat-form-field>
                           <button type="button" mat-icon-button color="warn" (click)="removePriceFromVariant($index, priceIndex)" 
                                   class="price-delete-btn" matTooltip="Delete Price">

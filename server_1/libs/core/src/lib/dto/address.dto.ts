@@ -29,9 +29,6 @@ export class CreateAddressDto implements Partial<IManageAddress> {
   @IsString()
   @MaxLength(InputLengthEnum.PIN_CODE)
   pinCode?: string;
-  @IsNotEmpty()
-  @IsNumber()
-  addressTypeId!: number;
   @IsOptional()
   @IsNumber()
   latitude?: number;

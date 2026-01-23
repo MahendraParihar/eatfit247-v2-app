@@ -315,14 +315,35 @@ export class ProductFormService {
         const pricesArray = this.fb.array<FormGroup>([]);
         if (variant.prices && variant.prices.length > 0) {
           variant.prices.forEach((price) => {
-            pricesArray.push(this.fb.group({
-              currency: [price.currency, Validators.required],
-              price: [price.price, [Validators.required, Validators.min(0)]],
-              isActive: [price.isActive !== undefined ? price.isActive : true],
-              validFrom: [price.validFrom || null],
-              validTo: [price.validTo || null]
-            }));
+            // Convert date strings to Date objects for Material datepicker
+            const validFrom = price.validFrom
+              ? (typeof price.validFrom === 'string' ? new Date(price.validFrom) : price.validFrom)
+              : null;
+            const validTo = price.validTo
+              ? (typeof price.validTo === 'string' ? new Date(price.validTo) : price.validTo)
+              : null;
+            
+            pricesArray.push(
+              this.fb.group({
+                currency: [price.currency, Validators.required],
+                price: [price.price, [Validators.required, Validators.min(0)]],
+                active: [price.active !== undefined ? price.active : true],
+                validFrom: [validFrom, Validators.required],
+                validTo: [validTo],
+              }),
+            );
           });
+        } else {
+          // If variant has no prices, add at least one empty price entry to match create flow behavior
+          pricesArray.push(
+            this.fb.group({
+              currency: ['INR', Validators.required],
+              price: [0, [Validators.required, Validators.min(0)]],
+              active: [true],
+              validFrom: [null, Validators.required],
+              validTo: [null]
+            })
+          );
         }
         variantsArray.push(this.fb.group({
           quantityValue: [variant.quantityValue, [Validators.required, Validators.min(0.01)]],
@@ -450,9 +471,9 @@ export class ProductFormService {
               productVariantId: price.productVariantId || 0,
               currency: price.currency,
               price: price.price,
-              isActive: price.isActive !== undefined ? price.isActive : true,
-              validFrom: price.validFrom || null,
-              validTo: price.validTo || null
+              active: price.active !== undefined ? price.active : true,
+              validFrom: price.validFrom !== undefined ? price.validFrom : null,
+              validTo: price.validTo !== undefined ? price.validTo : null,
             });
           });
         }

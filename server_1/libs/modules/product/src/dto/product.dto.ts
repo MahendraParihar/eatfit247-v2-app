@@ -62,9 +62,9 @@ class ProductPriceDto implements IProductPrice {
   price!: number;
   @IsOptional()
   @IsBoolean()
-  isActive?: boolean;
-  @IsOptional()
-  validFrom?: Date | string | null;
+  active?: boolean;
+  @IsNotEmpty()
+  validFrom: Date | string | null;
   @IsOptional()
   validTo?: Date | string | null;
 }

@@ -5,21 +5,18 @@ import {
   BusinessTypeEnum,
   ConfigParam,
   IAddress,
-  ICalculateTaxRequest,
-  ICalculateTaxResponse,
   ICreatePaymentLinkRequest,
   IDropdownItem,
   IMemberInfo,
   IMemberProduct,
   IMemberProductMasterData,
-  IMemberPaymentObject,
   IPaymentLinkResponse,
   ITableList,
   mapPaymentToInvoiceDocument,
   MediaForEnum,
   PaymentSourceEnum,
   TableEnum,
-  TransactionType, IBasicMemberProduct,
+  TransactionType,
 } from '@eatfit247-shared-lib';
 import { AppConfigService, CommonFunctionsUtil, Env, MstFranchise } from '@server_1/core';
 import {
@@ -32,7 +29,7 @@ import {
   StateService,
 } from '@server_1/platform';
 import { ProductService } from '@server_1/modules/product';
-import { TaxEngineService, TaxInput } from '@server_1/modules/tax-engine';
+import { TaxEngineService } from '@server_1/modules/tax-engine';
 import { FranchiseService, FranchisePaymentGatewayService } from '@server_1/modules/franchise';
 import {
   PaymentGatewayCredentialService,
@@ -138,32 +135,28 @@ export class MemberProductService {
       addressId: item.addressId,
       address: item.address
         ? {
-            addressTypeId: item.address.addressTypeId,
-            addressType: item.address.addressType,
-            country: item.address.country,
-            state: item.address.state,
-            addressId: item.address.addressId,
-            postalAddress: item.address.postalAddress,
-            cityVillage: item.address.cityVillage || '',
-            pinCode: item.address.pinCode || '',
-            stateId: item.address.stateId,
-            countryId: item.address.countryId,
-          }
+          country: item.address.country,
+          state: item.address.state,
+          addressId: item.address.addressId,
+          postalAddress: item.address.postalAddress,
+          cityVillage: item.address.cityVillage || '',
+          pinCode: item.address.pinCode || '',
+          stateId: item.address.stateId,
+          countryId: item.address.countryId,
+        }
         : undefined,
       billingAddressId: item.billingAddressId,
       billingAddress: item.billingAddress
         ? {
-            addressTypeId: item.address.addressTypeId,
-            addressType: item.address.addressType,
-            country: item.address.country,
-            state: item.address.state,
-            addressId: item.billingAddress.addressId,
-            postalAddress: item.billingAddress.postalAddress,
-            cityVillage: item.billingAddress.cityVillage || '',
-            pinCode: item.billingAddress.pinCode || '',
-            stateId: item.billingAddress.stateId,
-            countryId: item.billingAddress.countryId,
-          }
+          country: item.address.country,
+          state: item.address.state,
+          addressId: item.billingAddress.addressId,
+          postalAddress: item.billingAddress.postalAddress,
+          cityVillage: item.billingAddress.cityVillage || '',
+          pinCode: item.billingAddress.pinCode || '',
+          stateId: item.billingAddress.stateId,
+          countryId: item.billingAddress.countryId,
+        }
         : undefined,
       transactionId: item.transactionId,
       paymentDate: item.paymentDate,
@@ -468,8 +461,6 @@ export class MemberProductService {
         country: productOrder.billingAddress.country.country || '',
         countryCode: productOrder.billingAddress.country.countryCode || '',
         pinCode: productOrder.billingAddress.pinCode,
-        addressTypeId: productOrder.billingAddress.addressTypeId,
-        addressType: productOrder.billingAddress.addressType.addressType || '',
       } as IAddress;
     } else if (productOrder.address) {
       billingAddress = {
@@ -483,8 +474,6 @@ export class MemberProductService {
         country: productOrder.address.country.country || '',
         countryCode: productOrder.address.country.countryCode || '',
         pinCode: productOrder.address.pinCode,
-        addressTypeId: productOrder.address.addressTypeId,
-        addressType: productOrder.address.addressType.addressType || '',
       } as IAddress;
     }
     if (!billingAddress) {
@@ -500,17 +489,17 @@ export class MemberProductService {
     };
     // Get product details for description from paymentObj
     let productDescription = `Product Order - ID: ${productId}`;
-    if (productOrder.paymentObj && (productOrder.paymentObj as any).productName) {
-      const productName = (productOrder.paymentObj as any).productName;
-      const quantity = (productOrder.paymentObj as any).quantity || 1;
-      const size = (productOrder.paymentObj as any).size || '';
-      productDescription = `Product Order - ${productName}${size ? ` (${size})` : ''}${quantity > 1 ? ` x${quantity}` : ''}`;
-    }
+    // if (productOrder.paymentObj && (productOrder.paymentObj as any).productName) {
+    //   const productName = (productOrder.paymentObj as any).productName;
+    //   const quantity = (productOrder.paymentObj as any).quantity || 1;
+    //   const size = (productOrder.paymentObj as any).size || '';
+    //   productDescription = `Product Order - ${productName}${size ? ` (${size})` : ''}${quantity > 1 ? ` x${quantity}` : ''}`;
+    // }
     // Map product order to InvoiceDocument using the universal invoice system
     // Note: We need to convert IMemberProduct to a format compatible with mapPaymentToInvoiceDocument
     // Since mapPaymentToInvoiceDocument expects IMemberPayment, we'll need to adapt it
     // For now, we'll create a compatible structure
-    const paymentObj: IMemberPaymentObject = productModel.paymentObj as IMemberPaymentObject;
+    // const paymentObj: IMemberPaymentObject = productModel.paymentObj as IMemberPaymentObject;
     const invoiceDoc = mapPaymentToInvoiceDocument(
       {
         ...productModel,

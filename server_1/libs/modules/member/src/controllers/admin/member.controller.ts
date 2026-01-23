@@ -148,8 +148,7 @@ export class MemberController {
       pinCode: body.pinCode,
       latitude: body.latitude,
       longitude: body.longitude,
-      addressName: body.addressName,
-      addressTypeId: body.addressTypeId
+      addressName: body.addressName
     };
     return await this.addressService.create(addressData, requestedIp, currentUser.adminId);
   }
@@ -177,7 +176,6 @@ export class MemberController {
       latitude: body.latitude ? String(body.latitude) : null,
       longitude: body.longitude ? String(body.longitude) : null,
       addressName: body.addressName || null,
-      addressTypeId: body.addressTypeId,
       active: body.active !== undefined ? body.active : existingAddress.active,
       modifiedBy: currentUser.adminId,
       modifiedIp: requestedIp,

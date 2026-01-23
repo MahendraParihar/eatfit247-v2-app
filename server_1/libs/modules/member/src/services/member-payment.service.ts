@@ -11,7 +11,6 @@ import {
   IManageMemberPayment,
   IMemberPayment,
   IMemberPaymentMasterData,
-  IMemberPaymentObject,
   IPaymentLinkResponse,
   ITableList,
   mapPaymentToInvoiceDocument,
@@ -350,18 +349,41 @@ export class MemberPaymentService {
         franchiseAddress =
           franchiseAddresses && franchiseAddresses.length > 0 ? franchiseAddresses[0] : null;
       }
-      // Calculate payment object using tax engine
-      const paymentObj = await this.calculatePaymentObject(
-        {
-          orderAmount: obj.orderAmount,
-          discountAmount: obj.discountAmount,
-          currencyCode: obj.currencyCode,
-          isPlanFeesIncludedTax: obj.isPlanFeesIncludedTax,
-        },
-        obj.isTaxApplicable,
-        billingAddress,
-        franchiseAddress,
-      );
+      // Calculate payment amounts using tax engine if not provided
+      let finalOrderAmount = obj.orderAmount;
+      let finalDiscountAmount = obj.discountAmount || 0;
+      let finalTaxAmount = obj.taxAmount;
+      let finalTotalAmount = obj.totalAmount;
+      let finalTaxType = obj.taxType;
+      let finalTaxMode = obj.taxMode;
+      let finalTaxPercentage = obj.taxPercentage || 0;
+      let finalIsLutApplied = obj.isLutApplied || false;
+      let finalIsTaxIncluded = obj.isTaxIncluded || false;
+      let finalTaxObj = obj.taxObj;
+      let finalJurisdiction = obj.jurisdiction;
+      // If tax amounts are not provided, calculate them using tax engine
+      if (obj.isTaxApplicable && (finalTaxAmount === undefined || finalTotalAmount === undefined)) {
+        const paymentObj = await this.calculatePaymentObject(
+          {
+            orderAmount: obj.orderAmount,
+            discountAmount: finalDiscountAmount,
+            currencyCode: obj.currencyCode,
+            isPlanFeesIncludedTax: obj.isPlanFeesIncludedTax,
+          },
+          obj.isTaxApplicable,
+          billingAddress,
+          franchiseAddress,
+        );
+        finalTaxAmount = paymentObj.taxAmount;
+        finalTotalAmount = paymentObj.totalAmount;
+        finalTaxType = paymentObj.taxType;
+        finalTaxMode = paymentObj.taxMode;
+        finalTaxPercentage = paymentObj.taxPercentage;
+        finalIsLutApplied = paymentObj.isLutApplied;
+        finalIsTaxIncluded = paymentObj.isTaxIncludedInPrice;
+        finalTaxObj = paymentObj.taxObj;
+        finalJurisdiction = paymentObj.jurisdiction;
+      }
       // Create a payment record
       const paymentData: any = {
         memberId,
@@ -376,7 +398,6 @@ export class MemberPaymentService {
         paymentStatusId: obj.paymentStatusId,
         promoCode: obj.promoCode || null,
         isTaxApplicable: obj.isTaxApplicable,
-        paymentObj: paymentObj,
         refundObj: null,
         paymentGatewayResponse: null,
         gstNumber: obj.gstNumber || null,
@@ -387,6 +408,18 @@ export class MemberPaymentService {
         modifiedBy: adminId,
         createdIp: requestedIp,
         modifiedIp: requestedIp,
+        orderAmount: finalOrderAmount,
+        discountAmount: finalDiscountAmount,
+        taxAmount: finalTaxAmount || 0,
+        totalAmount: finalTotalAmount || finalOrderAmount - finalDiscountAmount,
+        currency: obj.currency || obj.currencyCode || 'INR',
+        taxType: finalTaxType,
+        taxMode: finalTaxMode,
+        taxPercentage: finalTaxPercentage,
+        isLutApplied: finalIsLutApplied,
+        isTaxIncluded: finalIsTaxIncluded,
+        taxObj: finalTaxObj,
+        jurisdiction: finalJurisdiction,
       };
       if (obj.paymentSource === PaymentSourceEnum.PAYMENT_GATEWAY) {
         paymentData.paymentLink = obj.paymentLink;
@@ -399,7 +432,7 @@ export class MemberPaymentService {
         // Get program plan details to get noOfCycle and noOfDaysInCycle
         let noOfCycle = obj.noOfCycle;
         let noOfDaysInCycle = obj.noOfDaysInCycle;
-        // If not available in paymentObj, fetch from the program plan
+        // If not available in the request, fetch from the program plan
         if (!noOfCycle || !noOfDaysInCycle) {
           const programPlan = await this.programPlanService.fetchById(obj.programPlanId);
           noOfCycle = programPlan.noOfCycle;
@@ -520,6 +553,49 @@ export class MemberPaymentService {
           memberWithFranchise.franchiseId,
         );
       }
+      // Determine if we need to recalculate tax
+      const orderAmount = obj.orderAmount !== undefined ? obj.orderAmount : payment.orderAmount;
+      const discountAmount = obj.discountAmount !== undefined ? obj.discountAmount : payment.discountAmount;
+      const isTaxApplicable = obj.isTaxApplicable !== undefined ? obj.isTaxApplicable : payment.isTaxApplicable;
+      const currencyCode = obj.currencyCode || obj.currency || payment.currency || 'INR';
+      const isPlanFeesIncludedTax = obj.isPlanFeesIncludedTax !== undefined ? obj.isPlanFeesIncludedTax : payment.isTaxIncluded;
+      // Recalculate tax if amounts or tax applicability changed
+      let finalTaxAmount = obj.taxAmount !== undefined ? obj.taxAmount : payment.taxAmount;
+      let finalTotalAmount = obj.totalAmount !== undefined ? obj.totalAmount : payment.totalAmount;
+      let finalTaxType = obj.taxType !== undefined ? obj.taxType : payment.taxType;
+      let finalTaxMode = obj.taxMode !== undefined ? obj.taxMode : payment.taxMode;
+      let finalTaxPercentage = obj.taxPercentage !== undefined ? obj.taxPercentage : payment.taxPercentage;
+      let finalIsLutApplied = obj.isLutApplied !== undefined ? obj.isLutApplied : payment.isLutApplied;
+      let finalIsTaxIncluded = obj.isTaxIncluded !== undefined ? obj.isTaxIncluded : payment.isTaxIncluded;
+      let finalTaxObj = obj.taxObj !== undefined ? obj.taxObj : payment.taxObj;
+      let finalJurisdiction = obj.jurisdiction !== undefined ? obj.jurisdiction : payment.jurisdiction;
+      const needsRecalculation =
+        (obj.orderAmount !== undefined && obj.orderAmount !== payment.orderAmount) ||
+        (obj.discountAmount !== undefined && obj.discountAmount !== payment.discountAmount) ||
+        (obj.isTaxApplicable !== undefined && obj.isTaxApplicable !== payment.isTaxApplicable) ||
+        (obj.billingAddressId !== undefined && obj.billingAddressId !== payment.billingAddressId);
+      if (needsRecalculation && isTaxApplicable && billingAddress) {
+        const paymentObj = await this.calculatePaymentObject(
+          {
+            orderAmount,
+            discountAmount,
+            currencyCode,
+            isPlanFeesIncludedTax,
+          },
+          isTaxApplicable,
+          billingAddress,
+          franchiseAddress,
+        );
+        finalTaxAmount = paymentObj.taxAmount;
+        finalTotalAmount = paymentObj.totalAmount;
+        finalTaxType = paymentObj.taxType;
+        finalTaxMode = paymentObj.taxMode;
+        finalTaxPercentage = paymentObj.taxPercentage;
+        finalIsLutApplied = paymentObj.isLutApplied;
+        finalIsTaxIncluded = paymentObj.isTaxIncludedInPrice;
+        finalTaxObj = paymentObj.taxObj;
+        finalJurisdiction = paymentObj.jurisdiction;
+      }
       // Update payment record
       const updateData: any = {
         franchiseId: memberWithFranchise?.franchiseId || null,
@@ -527,18 +603,29 @@ export class MemberPaymentService {
         programPlanId: obj.programPlanId !== undefined ? obj.programPlanId : payment.programPlanId,
         programId: obj.programId !== undefined ? obj.programId : payment.programId,
         addressId: addressId || null,
-        billingAddressId: obj.billingAddressId,
+        billingAddressId: obj.billingAddressId !== undefined ? obj.billingAddressId : payment.billingAddressId,
         transactionId:
           obj.transactionId !== undefined ? obj.transactionId || null : payment.transactionId,
         paymentDate: obj.paymentDate !== undefined ? obj.paymentDate : payment.paymentDate,
         paymentStatusId:
           obj.paymentStatusId !== undefined ? obj.paymentStatusId : payment.paymentStatusId,
         promoCode: obj.promoCode !== undefined ? obj.promoCode || null : payment.promoCode,
-        isTaxApplicable:
-          obj.isTaxApplicable !== undefined ? obj.isTaxApplicable : payment.isTaxApplicable,
+        isTaxApplicable: isTaxApplicable,
         gstNumber: obj.gstNumber !== undefined ? obj.gstNumber : payment.gstNumber,
         modifiedBy: adminId,
         modifiedIp: requestedIp,
+        orderAmount: orderAmount,
+        discountAmount: discountAmount,
+        taxAmount: finalTaxAmount,
+        totalAmount: finalTotalAmount,
+        currency: currencyCode,
+        taxType: finalTaxType,
+        taxMode: finalTaxMode,
+        taxPercentage: finalTaxPercentage,
+        isLutApplied: finalIsLutApplied,
+        isTaxIncluded: finalIsTaxIncluded,
+        taxObj: finalTaxObj,
+        jurisdiction: finalJurisdiction,
       };
       // Update payment source if provided
       if (obj.paymentSource !== undefined) {
@@ -628,22 +715,29 @@ export class MemberPaymentService {
   /**
    * Convert database model to IMemberPayment interface
    */
-  private convertToModel(item: any): IMemberPayment {
-    const paymentAmounts = this.calculatePaymentAmounts(item.paymentObj, item.isTaxApplicable);
+  private convertToModel(item: TxnMemberPayment): IMemberPayment {
+    // Read amounts directly from model fields (new structure)
+    const orderAmount = item.orderAmount || 0;
+    const discountAmount = item.discountAmount || 0;
+    const taxAmount = item.taxAmount || 0;
+    const totalAmount = item.totalAmount || 0;
+    // Read cycle information from memberDietPlan relationship
+    const noOfCycle = item.memberDietPlan?.noOfCycle || 0;
+    const noOfDaysInCycle = item.memberDietPlan?.daysInCycle || 0;
+    const currentCycleNo = item.memberDietPlan?.currentCycleNo;
+    const currentDayNo = item.memberDietPlan?.currentDayNo;
     return {
       memberPaymentId: item.memberPaymentId,
       memberId: item.memberId,
       memberName: item.member ? `${item.member.firstName} ${item.member.lastName}`.trim() : '',
       paymentModeId: item.paymentModeId,
-      paymentMode: item.paymentMode?.paymentMode || '',
+      paymentMode: item.paymentMode.paymentMode || '',
       programPlanId: item.programPlanId,
-      programPlan: item.programPlan?.plan || '',
+      programPlan: item.programPlan?.plan,
       programId: item.programId,
-      program: item.program?.program || '',
+      program: item.program?.program,
       addressId: item.addressId,
-      address: item.address,
       billingAddressId: item.billingAddressId,
-      billingAddress: item.billingAddress,
       transactionId: item.transactionId,
       paymentDate: item.paymentDate,
       invoiceId: item.invoiceId,
@@ -651,21 +745,28 @@ export class MemberPaymentService {
       paymentStatus: item.paymentStatus?.paymentStatus || '',
       promoCode: item.promoCode,
       isTaxApplicable: item.isTaxApplicable,
-      paymentObj: item.paymentObj,
+      isPlanFeesIncludedTax: false,
       refundObj: item.refundObj,
       paymentGatewayResponse: item.paymentGatewayResponse,
       gstNumber: item.gstNumber,
-      memberAddress: item.memberAddress || null,
+      memberAddress: item.memberAddress,
       paymentSource: item.paymentSource,
-      orderAmount: paymentAmounts.orderAmount,
-      discountAmount: paymentAmounts.discountAmount,
-      taxAmount: paymentAmounts.taxAmount,
-      totalAmount: paymentAmounts.totalAmount,
-      taxObject: paymentAmounts.taxObject,
-      noOfCycle: item.paymentObj?.noOfCycle || 0,
-      noOfDaysInCycle: item.paymentObj?.noOfDaysInCycle || 0,
-      currentCycleNo: item.paymentObj?.currentCycleNo,
-      currentDayNo: item.paymentObj?.currentDayNo,
+      orderAmount: orderAmount,
+      discountAmount: discountAmount,
+      taxAmount: taxAmount,
+      totalAmount: totalAmount,
+      currency: item.currency,
+      taxType: item.taxType,
+      taxMode: item.taxMode,
+      taxPercentage: item.taxPercentage,
+      isLutApplied: item.isLutApplied,
+      isTaxIncluded: item.isTaxIncluded,
+      taxObj: item.taxObj,
+      jurisdiction: item.jurisdiction,
+      noOfCycle: noOfCycle,
+      noOfDaysInCycle: noOfDaysInCycle,
+      currentCycleNo: currentCycleNo,
+      currentDayNo: currentDayNo,
       deletable: false, // TODO: Add logic to determine if payment can be deleted
       createdBy: item.createdBy,
       updatedBy: item.modifiedBy,
@@ -685,56 +786,6 @@ export class MemberPaymentService {
   }
 
   /**
-   * Calculate payment amounts from payment object
-   * Reads from the stored payment object structure (user/system sections)
-   */
-  private calculatePaymentAmounts(
-    paymentObj: any,
-    isTaxApplicable: boolean,
-  ): {
-    orderAmount: number;
-    discountAmount: number;
-    taxAmount: number;
-    totalAmount: number;
-    taxObject?: object;
-  } {
-    // Read from user section if available (new structure), otherwise fallback to old structure
-    const userSection = paymentObj?.user;
-    const systemSection = paymentObj?.system;
-    const orderAmount = userSection?.orderAmount || paymentObj?.orderAmount || 0;
-    const discountAmount = userSection?.discountAmount || paymentObj?.discountAmount || 0;
-    const taxAmount = userSection?.taxAmount || paymentObj?.taxAmount || 0;
-    const totalAmount = userSection?.totalAmount || paymentObj?.totalAmount || 0;
-    const taxObject =
-      userSection?.taxObj || systemSection?.taxObj || paymentObj?.taxObj || undefined;
-    // If using old structure, calculate tax
-    if (!userSection && !systemSection && isTaxApplicable && !taxObject) {
-      const subtotal = orderAmount - discountAmount;
-      const taxPercentage =
-        paymentObj?.taxPercentage ||
-        this.appConfigService.getNumber(ConfigParam.TAX_PERCENTAGE, true, 0);
-      const calculatedTaxAmount = (subtotal * taxPercentage) / 100;
-      return {
-        orderAmount,
-        discountAmount,
-        taxAmount: calculatedTaxAmount,
-        totalAmount: subtotal + calculatedTaxAmount,
-        taxObject: {
-          percentage: taxPercentage,
-          amount: calculatedTaxAmount,
-        },
-      };
-    }
-    return {
-      orderAmount,
-      discountAmount,
-      taxAmount,
-      totalAmount,
-      taxObject,
-    };
-  }
-
-  /**
    * Calculate a payment object using the tax engine based on billing address and franchise address
    */
   private async calculatePaymentObject(
@@ -747,7 +798,7 @@ export class MemberPaymentService {
     isTaxApplicable: boolean,
     billingAddress: IAddress | null,
     franchiseAddress: IAddress | null,
-  ): Promise<IMemberPaymentObject> {
+  ) {
     const orderAmount = paymentObjInput.orderAmount;
     const discountAmount = paymentObjInput.discountAmount;
     const currencyCode = paymentObjInput.currencyCode;
@@ -838,32 +889,24 @@ export class MemberPaymentService {
     const userDiscountAmount = systemDiscountAmount;
     const userTaxAmount = systemTaxAmount;
     const userTotalAmount = systemTotalAmount;
-    return <IMemberPaymentObject>{
+    return {
+      orderAmount: userOrderAmount,
+      discountAmount: userDiscountAmount,
+      taxAmount: userTaxAmount,
+      totalAmount: userTotalAmount,
       currency: currencyCode,
-      pricing: {
-        orderAmount: userOrderAmount,
-        discountAmount: userDiscountAmount,
-        taxAmount: userTaxAmount,
-        totalAmount: userTotalAmount,
-      },
-      tax: {
-        taxType: taxResult.taxType,
-        taxMode: taxResult.taxMode,
-        taxPercentage: taxResult.taxPercentage,
-        taxAmount: userTaxAmount,
-        isTaxIncludedInPrice: isPlanFeesIncludedTax,
-        isLutApplied: taxResult.isLutApplied,
-        taxObj: taxResult.taxObj,
-      },
+      taxType: taxResult.taxType,
+      taxMode: taxResult.taxMode,
+      taxPercentage: taxResult.taxPercentage,
+      isTaxIncludedInPrice: isPlanFeesIncludedTax,
+      isLutApplied: taxResult.isLutApplied,
+      taxObj: taxResult.taxObj,
       jurisdiction: {
         entityCountry: taxResult.entityCountry,
         customerCountry: taxResult.customerCountry,
         placeOfSupply: taxResult.placeOfSupply,
       },
-      invoice: {
-        note: taxResult.invoiceNote || null,
-      },
-      calculationVersion: '',
+      invoiceNote: taxResult.invoiceNote || null,
     };
   }
 
@@ -1110,8 +1153,6 @@ export class MemberPaymentService {
         country: payment.billingAddress.country.country || '',
         countryCode: payment.billingAddress.country.countryCode || '',
         pinCode: payment.billingAddress.pinCode,
-        addressTypeId: payment.billingAddress.addressTypeId,
-        addressType: payment.billingAddress.addressType.addressType || '',
       } as IAddress;
     } else if (payment.address) {
       billingAddress = {
@@ -1125,8 +1166,6 @@ export class MemberPaymentService {
         country: payment.address.country.country || '',
         countryCode: payment.address.country.countryCode || '',
         pinCode: payment.address.pinCode,
-        addressTypeId: payment.address.addressTypeId,
-        addressType: payment.address.addressType.addressType || '',
       } as IAddress;
     }
     if (!billingAddress) {

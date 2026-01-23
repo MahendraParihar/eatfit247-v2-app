@@ -103,13 +103,14 @@ export class MemberProductOrdersComponent implements OnInit, OnDestroy {
       {
         key: 'totalAmount',
         label: 'Total Amount',
-        dataKey: 'paymentObj',
+        dataKey: 'totalAmount',
         sortable: false,
-        formatter: (value: Record<string, unknown> | undefined) => {
-          if (!value) return '₹0';
-          const userSection = value?.['user'] as { totalAmount?: number } | undefined;
-          const totalAmount = userSection?.totalAmount || (value?.['totalAmount'] as number) || 0;
-          return `₹${Number(totalAmount).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        formatter: (value: number | undefined, row: any) => {
+          if (!value && !row?.totalAmount) return '₹0';
+          const totalAmount = value || row?.totalAmount || 0;
+          const currency = row?.currency || 'INR';
+          const currencySymbol = currency === 'INR' ? '₹' : currency;
+          return `${currencySymbol}${Number(totalAmount).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
         },
       },
       {

@@ -10,6 +10,8 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatCardModule } from '@angular/material/card';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
 import { Editor } from 'ngx-editor';
 import { InputErrorComponent, UploadFormComponent, ValidationUtil } from '@shared';
 import { ProductsApiService } from 'products';
@@ -30,6 +32,8 @@ import { FileTypeEnum, IDropdownItem, InputLengthEnum, IProduct, MediaForEnum } 
     MatCardModule,
     MatCheckboxModule,
     MatTooltipModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
     FormsModule,
     InputErrorComponent,
     UploadFormComponent
@@ -275,8 +279,8 @@ export class ManageProduct implements OnInit, OnDestroy {
     const priceGroup = this.fb.group({
       currency: ['INR', Validators.required],
       price: [0, [Validators.required, Validators.min(0)]],
-      isActive: [true],
-      validFrom: [null],
+      active: [true],
+      validFrom: [null, Validators.required],
       validTo: [null]
     });
     pricesArray.push(priceGroup);

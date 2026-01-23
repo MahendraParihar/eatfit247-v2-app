@@ -3,7 +3,6 @@ import { getCreatedByUserInclude, getUpdatedByUserInclude, MstAdminUser } from '
 import { InputLengthEnum } from '@eatfit247-shared-lib';
 import { MstState } from './mst-state.model';
 import { MstCountry } from './mst-country.model';
-import { MstAddressType } from './mst-address-type.model';
 
 @Table({
   freezeTableName: true,
@@ -28,12 +27,6 @@ import { MstAddressType } from './mst-address-type.model';
         required: false,
         attributes: ['countryId', 'country', 'countryCode'],
       },
-      {
-        model: MstAddressType,
-        as: 'addressType',
-        required: false,
-        attributes: ['addressTypeId', 'addressType'],
-      },
     ],
   },
   details: {
@@ -52,12 +45,6 @@ import { MstAddressType } from './mst-address-type.model';
         required: false,
         attributes: ['countryId', 'country', 'countryCode'],
       },
-      {
-        model: MstAddressType,
-        as: 'addressType',
-        required: false,
-        attributes: ['addressTypeId', 'addressType'],
-      },
     ],
   },
 }))
@@ -69,19 +56,6 @@ export class TxnAddress extends Model<TxnAddress> {
     autoIncrement: true,
   })
   declare addressId: number;
-  @Column({
-    allowNull: false,
-    defaultValue: 1,
-    field: 'address_type_id',
-    type: DataType.INTEGER,
-  })
-  declare addressTypeId: number;
-  @BelongsTo(() => MstAddressType, {
-    foreignKey: 'addressTypeId',
-    targetKey: 'addressTypeId',
-    as: 'addressType',
-  })
-  declare addressType: MstAddressType;
   @Column({
     allowNull: false,
     field: 'table_id',

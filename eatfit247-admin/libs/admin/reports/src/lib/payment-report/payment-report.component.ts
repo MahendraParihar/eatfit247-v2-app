@@ -16,7 +16,7 @@ import {
   DataTableComponent,
   ITableAction,
   ITableColumn,
-  ITableConfig,
+  ITableConfig
 } from '@shared';
 import { IPaymentReportItem, IPaymentReportFilter } from '@eatfit247-shared-lib';
 import { PaymentReportApiService } from './api.service';
@@ -38,10 +38,10 @@ import { PaymentDetailsDialogComponent } from 'members';
     MatCardModule,
     MatDialogModule,
     MatButtonToggleModule,
-    DataTableComponent,
+    DataTableComponent
   ],
   templateUrl: './payment-report.html',
-  styleUrl: './payment-report.scss',
+  styleUrl: './payment-report.scss'
 })
 export class PaymentReportComponent implements OnInit {
   filterForm!: FormGroup;
@@ -59,7 +59,7 @@ export class PaymentReportComponent implements OnInit {
     private fb: FormBuilder,
     private apiService: PaymentReportApiService,
     private dialog: MatDialog,
-    private router: Router,
+    private router: Router
   ) {
     this.initializeForm();
   }
@@ -73,9 +73,8 @@ export class PaymentReportComponent implements OnInit {
     startDate.setDate(startDate.getDate() - 30);
     this.filterForm.patchValue({
       startDate,
-      endDate,
+      endDate
     });
-
     // Reset quick filter when dates are manually changed
     this.filterForm.get('startDate')?.valueChanges.subscribe(() => {
       if (this.selectedQuickFilter) {
@@ -101,7 +100,7 @@ export class PaymentReportComponent implements OnInit {
     this.filterForm = this.fb.group({
       startDate: [null, Validators.required],
       endDate: [null, Validators.required],
-      franchiseId: [null],
+      franchiseId: [null]
     });
   }
 
@@ -111,7 +110,7 @@ export class PaymentReportComponent implements OnInit {
         key: 'memberName',
         label: 'Member Name',
         dataKey: 'memberName',
-        sortable: true,
+        sortable: true
       },
       {
         key: 'totalAmount',
@@ -119,45 +118,45 @@ export class PaymentReportComponent implements OnInit {
         dataKey: 'totalAmount',
         sortable: true,
         formatter: (value: number, row: IPaymentReportItem) => {
-          return `${row.paymentObj.currency} ${row.paymentObj.pricing.totalAmount.toLocaleString(
+          const currency = row.currency;
+          const totalAmount = row.totalAmount;
+          return `${currency} ${totalAmount.toLocaleString(
             'en-IN',
             {
               minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            },
+              maximumFractionDigits: 2
+            }
           )}`;
-        },
+        }
       },
       {
         key: 'paymentDate',
         label: 'Payment Date',
         dataKey: 'paymentDate',
         type: 'date',
-        sortable: true,
+        sortable: true
       },
       {
         key: 'franchiseName',
         label: 'Franchise Name',
         dataKey: 'franchiseName',
-        sortable: true,
-      },
+        sortable: true
+      }
     ];
-
     const actions: ITableAction<IPaymentReportItem>[] = [
       {
         label: 'View Invoice',
         icon: 'receipt',
         color: 'primary',
-        onClick: (row) => this.viewInvoice(row),
+        onClick: (row) => this.viewInvoice(row)
       },
       {
         label: 'View Member',
         icon: 'person',
         color: 'primary',
-        onClick: (row) => this.viewMember(row),
-      },
+        onClick: (row) => this.viewMember(row)
+      }
     ];
-
     this.tableConfig = {
       columns,
       actions,
@@ -166,7 +165,7 @@ export class PaymentReportComponent implements OnInit {
       pageSize: 10,
       pageSizeOptions: [5, 10, 25, 50, 100],
       showHeader: true,
-      emptyMessage: 'No payment records found',
+      emptyMessage: 'No payment records found'
     };
   }
 
@@ -175,7 +174,7 @@ export class PaymentReportComponent implements OnInit {
       const franchises = await this.apiService.getFranchiseDropdown();
       this.franchiseOptions = [
         { id: null, label: 'All Franchises' },
-        ...franchises.map((f) => ({ id: typeof f.id === 'string' ? Number(f.id) : f.id, label: f.label })),
+        ...franchises.map((f) => ({ id: typeof f.id === 'string' ? Number(f.id) : f.id, label: f.label }))
       ];
     } catch (error) {
       console.error('Failed to load franchise options:', error);
@@ -186,16 +185,14 @@ export class PaymentReportComponent implements OnInit {
     if (this.filterForm.invalid) {
       return;
     }
-
     this.loading = true;
     try {
       const formValue = this.filterForm.value;
       const params: IPaymentReportFilter = {
         startDate: this.formatDate(formValue.startDate),
         endDate: this.formatDate(formValue.endDate),
-        franchiseId: formValue.franchiseId || undefined,
+        franchiseId: formValue.franchiseId || undefined
       };
-
       const response = await this.apiService.getPaymentReport(params);
       this.data = response.tableData;
       this.totalCount = response.count;
@@ -221,7 +218,7 @@ export class PaymentReportComponent implements OnInit {
     this.dialog.open(PaymentDetailsDialogComponent, {
       width: '800px',
       maxWidth: '90vw',
-      data: { payment },
+      data: { payment }
     });
   }
 
@@ -244,35 +241,29 @@ export class PaymentReportComponent implements OnInit {
     this.selectedQuickFilter = filterType;
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    
     let startDate: Date;
     let endDate: Date = new Date(today);
-
     switch (filterType) {
       case 'today':
         startDate = new Date(today);
         endDate = new Date(today);
         break;
-
       case 'currentMonth':
         startDate = new Date(today.getFullYear(), today.getMonth(), 1);
         endDate = new Date(today);
         break;
-
       case 'lastMonth': {
         const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
         startDate = new Date(lastMonth);
         endDate = new Date(today.getFullYear(), today.getMonth(), 0);
         break;
       }
-
       case 'thisQuarter': {
         const currentQuarter = Math.floor(today.getMonth() / 3);
         startDate = new Date(today.getFullYear(), currentQuarter * 3, 1);
         endDate = new Date(today);
         break;
       }
-
       case 'thisFinancialYear': {
         // Assuming financial year starts from April (month 3, 0-indexed)
         const currentFYStartMonth = 3; // April
@@ -286,7 +277,6 @@ export class PaymentReportComponent implements OnInit {
         endDate = new Date(today);
         break;
       }
-
       case 'lastFinancialYear': {
         // Assuming financial year starts from April (month 3, 0-indexed)
         if (today.getMonth() >= 3) {
@@ -300,16 +290,13 @@ export class PaymentReportComponent implements OnInit {
         }
         break;
       }
-
       default:
         return;
     }
-
     this.filterForm.patchValue({
       startDate,
-      endDate,
+      endDate
     });
-
     // Automatically trigger search
     this.onSearch();
   }
@@ -318,28 +305,23 @@ export class PaymentReportComponent implements OnInit {
     if (this.filterForm.invalid) {
       return;
     }
-
     this.exporting = true;
     try {
       const formValue = this.filterForm.value;
       const params: IPaymentReportFilter = {
         startDate: this.formatDate(formValue.startDate),
         endDate: this.formatDate(formValue.endDate),
-        franchiseId: formValue.franchiseId || undefined,
+        franchiseId: formValue.franchiseId || undefined
       };
-
       const blob = await this.apiService.exportPaymentReports(params);
-      
       // Create a download link
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      
       // Generate filename with date range
       const startDateStr = params.startDate.replace(/-/g, '');
       const endDateStr = params.endDate.replace(/-/g, '');
       link.download = `payment-reports_${startDateStr}_to_${endDateStr}.zip`;
-      
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);

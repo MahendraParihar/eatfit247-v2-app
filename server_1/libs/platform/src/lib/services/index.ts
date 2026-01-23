@@ -1,5 +1,4 @@
 export * from './address.service';
-export * from './address-type.service';
 export * from './country.service';
 export * from './currency.service';
 export * from './state.service';

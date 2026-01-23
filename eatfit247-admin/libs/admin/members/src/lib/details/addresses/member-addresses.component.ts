@@ -109,12 +109,6 @@ export class MemberAddressesComponent implements OnInit, OnDestroy {
         sortable: true,
       },
       {
-        key: 'addressType',
-        label: 'Type',
-        dataKey: 'addressType',
-        sortable: false,
-      },
-      {
         key: 'createdByUser',
         label: 'Created By',
         dataKey: 'createdByUser',

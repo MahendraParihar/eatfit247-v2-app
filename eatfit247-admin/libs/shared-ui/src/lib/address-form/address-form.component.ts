@@ -56,7 +56,6 @@ export class AddressFormComponent implements OnInit {
     addressName: new FormControl(null, [
       Validators.maxLength(InputLengthEnum.CHAR_100)
     ]),
-    addressTypeId: new FormControl(null, [Validators.required]),
     tableId: new FormControl(null),
     pkOfTable: new FormControl(null)
   });
@@ -82,7 +81,6 @@ export class AddressFormComponent implements OnInit {
     this.filterStates();
     this.addressFormGroup.patchValue({
       addressId: this._address.addressId || null,
-      addressTypeId: this._address.addressTypeId || null,
       postalAddress: this._address.postalAddress || null,
       cityVillage: this._address.cityVillage || null,
       pinCode: this._address.pinCode || null,
@@ -113,9 +111,6 @@ export class AddressFormComponent implements OnInit {
     }
   }
 
-  getAddressType(): IDropdownItem[] {
-    return this.masterAddress.addressType || [];
-  }
 
   getCountries(): IDropdownItem[] {
     return this.masterAddress.country || [];

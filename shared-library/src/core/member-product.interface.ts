@@ -1,6 +1,6 @@
 import { IBaseAdminUser } from '../base.interface';
 import { IAddress } from './location.interface';
-import { PaymentSourceEnum } from '../enum';
+import { PaymentSourceEnum, TaxMode, TaxTypeEnum } from '../enum';
 
 export interface IOrderItem {
   productId: number;
@@ -11,36 +11,63 @@ export interface IOrderItem {
   totalAmount: number;
 }
 
+export interface IMemberProductOrderItem {
+  memberProductOrderItemId: number;
+  memberProductId: number;
+  productId?: number;
+  productVariantId?: number;
+  productName?: string;
+  quantityLabel?: string;
+  unitPrice?: number;
+  taxAmount?: number;
+  taxPercent?: number;
+  totalPrice?: number;
+  taxObj?: any;
+}
+
 export interface IBasicMemberProduct {
   memberId: number;
   paymentModeId?: number | null;
   addressId?: number | null;
   transactionId?: string;
-  paymentDate: Date;
+  paymentDate?: Date | null;
   invoiceId?: string;
   paymentStatusId: number;
+  franchiseId?: number | null;
   promoCode?: string;
-  isTaxApplicable: boolean;
-  paymentObj: object;
   refundObj?: object | null;
   paymentGatewayResponse?: object | null;
   gstNumber?: string;
   billingAddressId?: number | null;
+  memberAddress?: any;
+  orderAmount?: number;
+  taxAmount?: number;
+  totalAmount?: number;
+  discountAmount?: number;
+  currency?: string;
+  taxType?: TaxTypeEnum;
+  taxMode?: TaxMode;
+  taxPercentage?: number;
+  isLutApplied?: boolean;
+  isTaxIncluded?: boolean;
+  jurisdiction?: any;
+  invoiceNote?: string;
   paymentSource: PaymentSourceEnum;
   gatewayProvider?: string;
   gatewayOrderId?: string;
   gatewayPaymentId?: string;
   paymentLink?: string;
-  products: IOrderItem[];
 }
 
 export interface IMemberProduct extends IBasicMemberProduct {
   memberProductId: number;
-  memberName: string;
+  memberName?: string;
   paymentMode?: string;
   paymentStatus?: string;
   address?: IAddress;
   billingAddress?: IAddress;
+  franchise?: string;
+  orderItems?: IMemberProductOrderItem[];
   createdBy: number;
   updatedBy: number;
   createdAt: Date;

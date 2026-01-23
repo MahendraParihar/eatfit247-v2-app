@@ -316,12 +316,31 @@ VALUES (DEFAULT, 'ZOOM_ACCOUNT_ID', '', 'Zoom'),
 alter table public.mst_payment_statuses
     rename to mst_payment_status;
 
+CREATE TYPE public.tax_type AS ENUM ('GST','VAT','SALES_TAX','NONE');
+CREATE TYPE public.tax_mode AS ENUM ('DOMESTIC_GST','EXPORT_OF_SERVICE','VAT','RCM_IMPORT_SERVICE','SALES_TAX','NO_TAX');
+CREATE TYPE public.transaction_type AS ENUM ('SERVICE','PRODUCT');
+
 ALTER TABLE txn_member_payments
     ADD COLUMN payment_source     varchar(30) DEFAULT 'MANUAL',
     ADD COLUMN gateway_provider   varchar(50),
     ADD COLUMN gateway_order_id   varchar(100),
     ADD COLUMN gateway_payment_id varchar(100),
     ADD COLUMN payment_link       varchar(500);
+
+ALTER TABLE public.txn_member_payments
+    ADD COLUMN order_amount    NUMERIC(10, 2),
+    ADD COLUMN tax_amount      NUMERIC(10, 2),
+    ADD COLUMN total_amount    NUMERIC(10, 2),
+    ADD COLUMN discount_amount NUMERIC(10, 2) DEFAULT 0,
+    ADD COLUMN currency        VARCHAR(3),
+    ADD COLUMN tax_type        public.tax_type,
+    ADD COLUMN tax_mode        public.tax_mode,
+    ADD COLUMN tax_percentage  NUMERIC(5, 2),
+    ADD COLUMN is_lut_applied  BOOLEAN        DEFAULT false,
+    ADD COLUMN is_tax_included BOOLEAN        DEFAULT false,
+    ADD COLUMN tax_obj         jsonb,
+    ADD COLUMN jurisdiction    jsonb,
+    ADD COLUMN invoice_note    text           default null;
 
 INSERT INTO public.mst_payment_status (payment_status_id, payment_status, active, created_at, created_by, updated_at,
                                        modified_by, created_ip, modified_ip)
@@ -543,3 +562,8 @@ alter table public.txn_member_payments
 CREATE TYPE public.business_type AS ENUM ('service', 'product');
 ALTER TABLE public.mst_franchises
     ADD COLUMN business_type public.business_type[];
+
+alter table public.txn_addresses
+    drop column address_type_id;
+
+drop table public.mst_address_types;

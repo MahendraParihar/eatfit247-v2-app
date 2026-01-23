@@ -1,6 +1,6 @@
 import { Controller, Get } from '@nestjs/common';
 import { Public } from '@server_1/core';
-import { AddressTypeService, CountryService, MstState } from '@server_1/platform';
+import { CountryService, MstState } from '@server_1/platform';
 import { IAddressMaster, IDropdownItem } from '@eatfit247-shared-lib';
 import { InjectModel } from '@nestjs/sequelize';
 
@@ -9,14 +9,12 @@ import { InjectModel } from '@nestjs/sequelize';
 export class PublicAddressController {
   constructor(
     private readonly countryService: CountryService,
-    private readonly addressTypeService: AddressTypeService,
     @InjectModel(MstState) private readonly stateRepository: typeof MstState,
   ) {}
 
   @Get('address-master')
   async addressMasterData(): Promise<IAddressMaster> {
     const countryList = await this.countryService.getCountryList();
-    const addressTypeList = await this.addressTypeService.getAddressTypeList();
     // Fetch states with countryId for parentId mapping
     const statesWithCountry = await this.stateRepository.findAll({
       where: { active: true },
@@ -32,7 +30,6 @@ export class PublicAddressController {
     return <IAddressMaster>{
       state: statesWithParentId,
       country: countryList,
-      addressType: addressTypeList,
     };
   }
 }

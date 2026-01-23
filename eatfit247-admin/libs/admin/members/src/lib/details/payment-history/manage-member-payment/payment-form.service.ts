@@ -63,8 +63,6 @@ export class PaymentFormService {
    * Transform payment data to form values for editing
    */
   transformPaymentToFormValues(payment: IMemberPayment): any {
-    const paymentObj = payment.paymentObj as any;
-    
     return {
       paymentModeId: payment.paymentModeId,
       programId: payment.programId,
@@ -75,12 +73,12 @@ export class PaymentFormService {
       paymentDate: payment.paymentDate,
       paymentStatusId: payment.paymentStatusId,
       isTaxApplicable: payment.isTaxApplicable,
-      isPlanFeesIncludedTax: paymentObj.isPlanFeesIncludedTax ?? (payment.isTaxApplicable ? false : false),
-      noOfCycle: paymentObj.noOfCycle || payment.noOfCycle,
-      noOfDaysInCycle: paymentObj.noOfDaysInCycle || payment.noOfDaysInCycle,
-      currencyCode: paymentObj.currencyCode,
-      orderAmount: paymentObj.orderAmount || payment.orderAmount,
-      discountAmount: paymentObj.discountAmount || payment.discountAmount,
+      isPlanFeesIncludedTax: payment.isTaxIncluded ?? false,
+      noOfCycle: payment.noOfCycle || 0,
+      noOfDaysInCycle: payment.noOfDaysInCycle || 0,
+      currencyCode: payment.currency || 'INR',
+      orderAmount: payment.orderAmount || 0,
+      discountAmount: payment.discountAmount || 0,
       gstNumber: payment.gstNumber || '',
       paymentSource: payment.paymentSource,
       gatewayProvider: payment.gatewayProvider || '',

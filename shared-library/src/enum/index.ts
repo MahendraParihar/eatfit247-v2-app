@@ -16,4 +16,6 @@ export * from "./payment-gateway.enum";
 export * from "./field-type.enum";
 export * from "./issue-status.enum";
 export * from "./business-type.enum";
+export * from "./shipment-status.enum";
+export * from "./shipment-tracking.enum";
 

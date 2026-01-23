@@ -101,13 +101,13 @@ export class MemberPaymentHistoryComponent implements OnInit, OnDestroy {
         sortable: false
       },
       {
-        key: 'paymentObj',
+        key: 'totalAmount',
         label: 'Total Amount',
         dataKey: 'totalAmount',
         type: 'custom',
         sortable: true,
         formatter: (value: any, row: IMemberPayment) => {
-          return `${row.paymentObj.currency} ${Number(row.paymentObj.pricing.totalAmount).toLocaleString('en-IN', {
+          return `${row.currency || 'INR'} ${Number(row.totalAmount).toLocaleString('en-IN', {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
           })}`;

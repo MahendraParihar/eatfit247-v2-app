@@ -24,6 +24,10 @@ import {
   TxnMemberPayment,
   TxnMemberPocketGuide,
   TxnMemberProduct,
+  TxnMemberProductOrderItem,
+  TxnShipment,
+  TxnShipmentItem,
+  TxnShipmentTrackingEvent,
 } from './models';
 import {
   MemberCallLogController,
@@ -67,8 +71,12 @@ modelRegistry.register([
   TxnAssessment,
   TxnMemberPayment,
   TxnMemberProduct,
+  TxnMemberProductOrderItem,
   TxnMemberDietPlan,
   TxnMemberDietDetail,
+  TxnShipment,
+  TxnShipmentItem,
+  TxnShipmentTrackingEvent,
 ]);
 
 @Module({
@@ -98,8 +106,12 @@ modelRegistry.register([
       TxnAssessment,
       TxnMemberPayment,
       TxnMemberProduct,
+      TxnMemberProductOrderItem,
       TxnMemberDietPlan,
       TxnMemberDietDetail,
+      TxnShipment,
+      TxnShipmentItem,
+      TxnShipmentTrackingEvent,
       // Diet template models
       TxnDietTemplateDietDetail,
       // Core/platform models (allowed)

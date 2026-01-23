@@ -1,11 +1,11 @@
 import { IBaseAdminUser, IDropdownItem } from '../base.interface';
-import { IAddress } from './location.interface';
-import { PaymentSourceEnum } from '../enum';
+import { IAddress, IMemberAddress } from './location.interface';
+import { PaymentSourceEnum, TaxMode, TaxTypeEnum } from '../enum';
 import { IProduct } from './product.interface';
 
 export interface IMemberAddressSnapshot {
-  address: IAddress | null;
-  billingAddress: IAddress | null;
+  address: IMemberAddress | null;
+  billingAddress: IMemberAddress | null;
 }
 
 export interface IBasicMemberPayment {
@@ -19,22 +19,34 @@ export interface IBasicMemberPayment {
   invoiceId?: string;
   paymentStatusId: number;
   promoCode?: string;
-  isTaxApplicable: boolean;
-  paymentObj: IMemberPaymentObject;
   refundObj?: object | null;
   paymentGatewayResponse?: object | null;
   gstNumber?: string;
-  /**
-   * Snapshot of member addresses (shipping and billing) at the time of payment creation.
-   * Used for invoice generation so that invoice is not affected by future address changes.
-   */
-  memberAddress?: IMemberAddressSnapshot | null;
   billingAddressId?: number | null;
   paymentSource: PaymentSourceEnum;
   gatewayProvider?: string;
   gatewayOrderId?: string;
   gatewayPaymentId?: string;
   paymentLink?: string;
+  orderAmount: number;
+  discountAmount: number;
+  taxAmount: number;
+  totalAmount: number;
+  isTaxApplicable: boolean;
+  taxPercentage: number;
+  isPlanFeesIncludedTax: boolean;
+  currency: string;
+  taxType: TaxTypeEnum;
+  taxMode: TaxMode;
+  isLutApplied: boolean;
+  isTaxIncluded: boolean;
+  taxObj?: Record<string, { amount: number; taxPercentage: number }>;
+  jurisdiction?: {
+    entityCountry: string;
+    customerCountry: string;
+    placeOfSupply: string;
+  };
+  invoiceNote?: string;
 }
 
 export interface IMemberPayment extends IBasicMemberPayment {
@@ -45,12 +57,7 @@ export interface IMemberPayment extends IBasicMemberPayment {
   program: string;
   address?: IAddress;
   paymentStatus: string;
-  memberAddress?: IMemberAddressSnapshot | null;
-  orderAmount: number;
-  discountAmount: number;
-  taxAmount: number;
-  totalAmount: number;
-  taxObject?: object;
+  memberAddress?: IMemberAddressSnapshot;
   noOfCycle: number;
   noOfDaysInCycle: number;
   currentCycleNo?: number;
@@ -78,26 +85,31 @@ export interface IManageMemberPayment {
   transactionId?: string;
   paymentDate: Date;
   paymentStatusId: number;
-  isTaxApplicable: boolean;
-  taxPercentage: number;
-  isPlanFeesIncludedTax: boolean;
-  currencyCode: string;
   promoCode?: string;
   gstNumber?: string;
   paymentSource: PaymentSourceEnum;
-  orderAmount: number;
-  taxAmount: number;
-  discountAmount: number;
-  totalAmount: number;
   paymentLink?: string;
   gatewayProvider?: string;
   gatewayOrderId?: string;
-}
-
-export interface IPaymentReport {
-  fromDate: Date;
-  toDate: Date;
-  gstOnly: boolean;
+  orderAmount: number;
+  discountAmount: number;
+  taxAmount: number;
+  totalAmount: number;
+  currencyCode: string;
+  currency?: string;
+  isTaxApplicable: boolean;
+  taxPercentage: number;
+  isPlanFeesIncludedTax: boolean;
+  taxType?: TaxTypeEnum;
+  taxMode?: TaxMode;
+  isLutApplied?: boolean;
+  isTaxIncluded?: boolean;
+  taxObj?: Record<string, { amount: number; taxPercentage: number }>;
+  jurisdiction?: {
+    entityCountry: string;
+    customerCountry: string;
+    placeOfSupply: string;
+  };
 }
 
 export interface IMemberPaymentMasterData {
@@ -146,32 +158,4 @@ export interface IMemberPaymentEntity {
   taxAmount: number;
   totalAmount: number;
   taxObj: Record<string, { amount: number; taxPercentage: number }>;
-}
-
-export interface IMemberPaymentObject {
-  currency: string;
-  pricing: {
-    orderAmount: number;
-    discountAmount: number;
-    taxAmount: number;
-    totalAmount: number;
-  };
-  tax: {
-    taxType?: string;
-    taxMode?: string;
-    taxPercentage: number;
-    taxAmount: number;
-    isTaxIncludedInPrice: boolean;
-    isLutApplied: boolean;
-    taxObj: Record<string, { amount: number; taxPercentage: number }>;
-  };
-  jurisdiction: {
-    entityCountry: string;
-    customerCountry: string;
-    placeOfSupply: string;
-  };
-  invoice: {
-    note?: string;
-  };
-  calculationVersion: string;
 }

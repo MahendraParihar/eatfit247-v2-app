@@ -69,7 +69,6 @@ export class ManageMemberAddressComponent implements OnInit {
       countryId: [null, [Validators.required]],
       stateId: [null, [Validators.required]],
       pinCode: [''],
-      addressTypeId: [null, [Validators.required]],
       latitude: [null],
       longitude: [null],
     });
@@ -118,7 +117,6 @@ export class ManageMemberAddressComponent implements OnInit {
       countryId: address.countryId,
       stateId: address.stateId,
       pinCode: address.pinCode || '',
-      addressTypeId: address.addressTypeId,
       latitude: address.latitude ? Number(address.latitude) : null,
       longitude: address.longitude ? Number(address.longitude) : null,
     });
@@ -141,7 +139,6 @@ export class ManageMemberAddressComponent implements OnInit {
         countryId: formValue.countryId,
         stateId: formValue.stateId,
         pinCode: formValue.pinCode || undefined,
-        addressTypeId: formValue.addressTypeId,
         latitude: formValue.latitude || undefined,
         longitude: formValue.longitude || undefined,
         tableId: 2, // TableEnum.TXN_MEMBER

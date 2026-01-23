@@ -8,17 +8,11 @@ import { Public } from '@server_1/core';
 @Controller('products')
 export class PublicProductController {
   constructor(private readonly service: ProductService) {}
-
   @Get('list')
   async list(
     @Query() req: BasicSearchDto,
   ): Promise<IPublicTableList<IPublicProduct>> {
     return await this.service.findAllPublic(req);
-  }
-
-  @Get('slug/:slug')
-  async getBySlug(@Param('slug') slug: string): Promise<IPublicProduct> {
-    return await this.service.findBySlug(slug);
   }
 }
 

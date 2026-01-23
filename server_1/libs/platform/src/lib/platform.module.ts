@@ -5,7 +5,6 @@ import { HttpModule } from '@nestjs/axios';
 import {
   LabelModel,
   LogErrorModel,
-  MstAddressType,
   MstCountry,
   MstCurrencyModel,
   MstEmailTemplate,
@@ -18,7 +17,6 @@ import {
 // Platform services
 import {
   AddressService,
-  AddressTypeService,
   CountryService,
   CurrencyService,
   EmailNotificationService,
@@ -48,7 +46,6 @@ export class PlatformModule {
       MstEmailTemplate,
       MstCountry,
       MstState,
-      MstAddressType,
       TxnAddress,
       MstCurrencyModel,
       MstPaymentMode,
@@ -80,7 +77,6 @@ export class PlatformModule {
         StateService,
         CountryService,
         AddressService,
-        AddressTypeService,
         PaymentModeService,
         PaymentStatusService,
         PaymentGatewayService,
@@ -103,7 +99,6 @@ export class PlatformModule {
         StateService,
         CountryService,
         AddressService,
-        AddressTypeService,
         PaymentModeService,
         PaymentStatusService,
         PaymentGatewayService,
@@ -126,7 +121,6 @@ export class PlatformModule {
       MstEmailTemplate,
       MstCountry,
       MstState,
-      MstAddressType,
       TxnAddress,
       MstCurrencyModel,
       MstPaymentMode,

@@ -243,7 +243,6 @@ export class ManageFranchise implements OnInit, OnDestroy {
             stateId: addressValue.stateId,
             countryId: addressValue.countryId,
             pinCode: addressValue.pinCode,
-            addressTypeId: addressValue.addressTypeId,
             latitude: addressValue.latitude,
             longitude: addressValue.longitude,
             addressName: addressValue.addressName,

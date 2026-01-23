@@ -27,13 +27,13 @@ export class ProductService {
     const pageNumber = searchDto.page || 0;
     const pageSize = searchDto.limit || 15;
     const offset = pageNumber === 0 ? 0 : pageNumber * pageSize;
-    const { rows, count } = await this.productRepository.scope("list").findAndCountAll({
+    // Don't include variants in list query to avoid duplicates - variants are not needed for listing
+    const { rows, count } = await this.productRepository.scope('list').findAndCountAll({
       where: whereCondition,
-      order: [["createdAt", "DESC"]],
+      order: [['createdAt', 'DESC']],
       offset: offset,
       limit: pageSize,
-      raw: true,
-      nest: true
+      nest: true,
     });
     const resList: IProduct[] = rows.map((item: any) => {
       return this.convertToModel(item);
@@ -67,20 +67,13 @@ export class ProductService {
     };
   }
 
-  public async findBySlug(slug: string): Promise<IPublicProduct> {
-    // Note: slug is not in the new mst_product table structure
-    // This method is kept for backward compatibility but may need to be updated
-    // to use productId or name instead
-    throw new NotFoundException("Product lookup by slug is not supported in the new schema");
-  }
-
-  private convertToModel(item: MstProduct): IProduct {
+  private convertToModel(item: MstProduct & { fees?: any[]; variants?: any[] }): IProduct {
     const imagePath = item.imagePath ? CommonFunctionsUtil.buildImageUrl(item.imagePath) : [];
     return <IProduct>{
       productId: item.productId,
       name: item.name,
       imagePath: imagePath,
-      fees: [],
+      fees: item.fees || [],
       additionalInfo: item.additionalInfo || {},
       hsnCode: item.hsnCode,
       active: item.active,
@@ -91,7 +84,8 @@ export class ProductService {
       createdIp: item.createdIp,
       modifiedIp: item.modifiedIp,
       createdByUser: item.createdByUser,
-      updatedByUser: item.updatedByUser
+      updatedByUser: item.updatedByUser,
+      variants: item.variants || []
     };
   }
 
@@ -115,31 +109,37 @@ export class ProductService {
   public async fetchById(id: number): Promise<IProduct> {
     const find = await this.productRepository.scope("details").findOne({
       where: { productId: id },
-      raw: true,
-      nest: true
+      raw: false, // Use model instance to properly handle associations
     });
     if (!find) {
       throw new NotFoundException("Product not found");
     }
-    // Load variants and prices for this product and map them to the
-    // existing IProductFee[] structure expected by the UI.
-    const variants = await this.productVariantRepository.findAll({
-      where: { productId: id },
-      include: [
-        {
-          model: MstProductPrice,
-          required: false,
-          as: "prices"
-        }
-      ],
-      nest: true
-    });
+    
+    // Use variants from the scope if available, otherwise load them separately
+    let variants: MstProductVariant[] = [];
+    if (find.variants && Array.isArray(find.variants) && find.variants.length > 0) {
+      variants = find.variants;
+    } else {
+      // Load variants and prices separately if not included in scope
+      variants = await this.productVariantRepository.findAll({
+        where: { productId: id },
+        include: [
+          {
+            model: MstProductPrice,
+            required: false,
+            as: "prices"
+          }
+        ],
+        raw: false, // Use model instances to properly handle associations
+      });
+    }
 
     const fees: any[] = [];
     const variantPayload: any[] = [];
 
     for (const variant of variants) {
-      const variantPrices: MstProductPrice[] = (variant as any).prices || [];
+      // Get prices from the association
+      const variantPrices: MstProductPrice[] = variant.prices || [];
 
       const mappedPrices = variantPrices.map((price) => {
         const feeEntry = {
@@ -147,8 +147,8 @@ export class ProductService {
           unit: variant.quantityUnit,
           currency: price.currency,
           price: Number(price.price),
-          sku: (variant as any).sku || undefined,
-          isActive: price.isActive,
+          sku: variant.sku || undefined,
+          active: price.active,
           validFrom: price.validFrom,
           validTo: price.validTo
         };
@@ -159,9 +159,9 @@ export class ProductService {
           productVariantId: price.productVariantId,
           currency: price.currency,
           price: Number(price.price),
-          isActive: price.isActive,
+          active: price.active,
           validFrom: price.validFrom,
-          validTo: price.validTo
+          validTo: price.validTo,
         };
       });
 
@@ -170,13 +170,16 @@ export class ProductService {
         productId: variant.productId,
         quantityValue: Number(variant.quantityValue),
         quantityUnit: variant.quantityUnit,
-        sku: (variant as any).sku || undefined,
+        sku: variant.sku || undefined,
         prices: mappedPrices
       });
     }
 
+    // Convert model instance to plain object for convertToModel
+    // Sequelize model instances can be accessed like plain objects, but toJSON() ensures proper conversion
+    const productData = find.toJSON ? find.toJSON() : find;
     return this.convertToModel({
-      ...find,
+      ...productData,
       fees,
       variants: variantPayload
     } as any);
@@ -275,9 +278,9 @@ export class ProductService {
               unit: variant.quantityUnit,
               currency: price.currency,
               price: price.price,
-              isActive: price.isActive !== undefined ? price.isActive : true,
+              isActive: price.active !== undefined ? price.active : true,
               validFrom: price.validFrom !== undefined ? price.validFrom : null,
-              validTo: price.validTo !== undefined ? price.validTo : null
+              validTo: price.validTo !== undefined ? price.validTo : null,
             });
           }
         }
@@ -352,9 +355,17 @@ export class ProductService {
           productVariantId: variant.productVariantId,
           currency: priceData.currency,
           price: priceData.price,
-          isActive: priceData.isActive !== undefined ? priceData.isActive : true,
-          validFrom: priceData.validFrom ? (typeof priceData.validFrom === 'string' ? new Date(priceData.validFrom) : priceData.validFrom) : null,
-          validTo: priceData.validTo ? (typeof priceData.validTo === 'string' ? new Date(priceData.validTo) : priceData.validTo) : null
+          active: priceData.isActive !== undefined ? priceData.isActive : true,
+          validFrom: priceData.validFrom
+            ? typeof priceData.validFrom === 'string'
+              ? new Date(priceData.validFrom)
+              : priceData.validFrom
+            : null,
+          validTo: priceData.validTo
+            ? typeof priceData.validTo === 'string'
+              ? new Date(priceData.validTo)
+              : priceData.validTo
+            : null,
         });
       }
     }

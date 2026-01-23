@@ -119,8 +119,8 @@ export interface IProductAdditionalInfo {
 }
 
 export interface IProductVariant {
-  productVariantId: number;
-  productId: number;
+  productVariantId?: number;
+  productId?: number;
   /**
    * Quantity for this variant, e.g. 200, 500
    */
@@ -140,8 +140,8 @@ export interface IProductVariant {
 }
 
 export interface IProductPrice {
-  id: number;
-  productVariantId: number;
+  id?: number;
+  productVariantId?: number;
   /**
    * Currency code, e.g. INR, USD
    */
@@ -153,12 +153,43 @@ export interface IProductPrice {
   /**
    * Whether this price is currently active
    */
-  isActive: boolean;
+  active?: boolean;
   /**
    * Validity period for this price
    */
-  validFrom: Date | string | null;
-  validTo: Date | string | null;
+  validFrom?: Date | string | null;
+  validTo?: Date | string | null;
+}
+
+export interface IProductPriceWithQuantity {
+  /**
+   * Quantity for this product option, e.g. 200, 500
+   */
+  quantity: number;
+  /**
+   * Unit for the quantity, e.g. gm, kg
+   */
+  unit: string;
+  /**
+   * Currency for the price, e.g. INR, USD
+   */
+  currency: string;
+  /**
+   * Base price for this product option
+   */
+  price: number;
+  /**
+   * Whether this price is currently active
+   */
+  active?: boolean;
+  /**
+   * Optional validity start date for this price
+   */
+  validFrom?: Date | string | null;
+  /**
+   * Optional validity end date for this price
+   */
+  validTo?: Date | string | null;
 }
 
 interface IBaseProduct {

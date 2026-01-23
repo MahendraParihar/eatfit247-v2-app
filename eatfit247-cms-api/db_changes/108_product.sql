@@ -14,66 +14,9 @@ create table public.mst_product
         constraint fk_txn_member_product_mst_admin_modified_by
             references public.mst_admin_users,
     updated_at      timestamp with time zone not null,
-    created_ip       character varying(50),
-    modified_ip      character varying(50)
+    created_ip      character varying(50),
+    modified_ip     character varying(50)
 );
-
-create table public.txn_member_products
-(
-    member_product_id        serial
-        primary key,
-    member_id                integer                   not null
-        constraint fk_txn_member_product_txn_member_member_id
-            references public.txn_members,
-    payment_mode_id          integer
-        constraint fk_txn_member_product_mst_payment_mode_id
-            references public.mst_payment_modes,
-    address_id               integer
-        constraint fk_txn_member_product_txn_member_address_id
-            references public.txn_addresses,
-    transaction_id           varchar(250),
-    payment_date             date                      not null,
-    invoice_id               varchar(100),
-    payment_status_id        integer                   not null
-        constraint fk_txn_member_product_mst_payment_statuses_id
-            references public.mst_payment_status,
-    franchise_id             integer
-        constraint txn_member_products_mst_franchises_franchise_id_fk
-            references public.mst_franchises,
-    products                 jsonb,
-    promo_code               varchar(100) default NULL::character varying,
-    is_tax_applicable        boolean                   not null,
-    payment_obj              jsonb                     not null,
-    refund_obj               jsonb,
-    payment_gateway_response jsonb,
-    active                   boolean      default true not null,
-    created_by               integer
-        constraint fk_txn_member_product_mst_admin_created_by
-            references public.mst_admin_users,
-    created_at               timestamp with time zone  not null,
-    modified_by              integer
-        constraint fk_txn_member_product_mst_admin_modified_by
-            references public.mst_admin_users,
-    updated_at               timestamp with time zone  not null,
-    created_ip       character varying(50),
-    modified_ip      character varying(50),
-    gst_number               varchar(50),
-    billing_address_id       integer
-        constraint txn_member_products_txn_addresses_address_id_fk
-            references public.txn_addresses,
-    payment_source           varchar(30)  default 'MANUAL'::character varying,
-    gateway_provider         varchar(50),
-    gateway_order_id         varchar(100),
-    gateway_payment_id       varchar(100),
-    payment_link             varchar(500)
-);
-
-create index ix_txn_member_product_member_id
-    on public.txn_member_products (member_id);
-
-create unique index ix_uk_txn_member_product_invoice_id
-    on public.txn_member_products (invoice_id);
-
 
 INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
 VALUES (DEFAULT, 'WOOCOMMERCE_BASE_URL', 'XYZ', 'WooCommerce');
@@ -154,13 +97,10 @@ CREATE TABLE mst_product_prices
     currency           VARCHAR(3), -- INR, USD
     price              NUMERIC(10, 2),
     tax_percent        NUMERIC(5, 2),
-    is_active          BOOLEAN DEFAULT true,
+    active             BOOLEAN DEFAULT true,
     valid_from         DATE,
     valid_to           DATE
 );
-
-CREATE TYPE public.tax_type AS ENUM ('GST','VAT','SALES_TAX','NONE');
-CREATE TYPE public.transaction_type AS ENUM ('SERVICE','PRODUCT');
 
 CREATE TABLE mst_tax_master
 (
@@ -184,16 +124,16 @@ CREATE TABLE mst_tax_master
     -- Validity
     effective_from   DATE                                             NOT NULL,
     effective_to     DATE,
-    active        BOOLEAN                                          NOT NULL DEFAULT TRUE,
+    active           BOOLEAN                                          NOT NULL DEFAULT TRUE,
 
-    created_by               integer
+    created_by       integer
         constraint fk_mst_tax_master_mst_admin_created_by
             references public.mst_admin_users,
-    created_at               timestamp with time zone  not null,
-    modified_by              integer
+    created_at       timestamp with time zone                         not null,
+    modified_by      integer
         constraint fk_mst_tax_master_mst_admin_modified_by
             references public.mst_admin_users,
-    updated_at               timestamp with time zone  not null,
+    updated_at       timestamp with time zone                         not null,
     created_ip       character varying(50),
     modified_ip      character varying(50),
 
@@ -205,4 +145,151 @@ CREATE TABLE mst_tax_master
                                      tax_code,
                                      effective_from
         )
+);
+
+CREATE TYPE public.shipment_status_enum AS ENUM (
+    'CREATED',
+    'PACKED',
+    'SHIPPED',
+    'IN_TRANSIT',
+    'OUT_FOR_DELIVERY',
+    'DELIVERED',
+    'FAILED',
+    'RETURNED'
+    );
+
+CREATE TYPE public.shipment_tracking_enum AS ENUM (
+    'COURIER',
+    'SYSTEM',
+    'ADMIN'
+    );
+
+drop table if exists public.txn_member_products;
+create table public.txn_member_products
+(
+    member_product_id        serial
+        primary key,
+    member_id                integer                     not null
+        constraint fk_txn_member_product_txn_member_member_id
+            references public.txn_members,
+    payment_mode_id          integer
+        constraint fk_txn_member_product_mst_payment_mode_id
+            references public.mst_payment_modes,
+    address_id               integer
+        constraint fk_txn_member_product_txn_member_address_id
+            references public.txn_addresses,
+    transaction_id           varchar(250),
+    payment_date             date                        null,
+    invoice_id               varchar(100),
+    payment_status_id        integer                     not null
+        constraint fk_txn_member_product_mst_payment_statuses_id
+            references public.mst_payment_status,
+    franchise_id             integer
+        constraint txn_member_products_mst_franchises_franchise_id_fk
+            references public.mst_franchises,
+    promo_code               varchar(100)   default NULL::character varying,
+    refund_obj               jsonb,
+    payment_gateway_response jsonb,
+    gst_number               varchar(50),
+    billing_address_id       integer
+        constraint txn_member_products_txn_addresses_address_id_fk
+            references public.txn_addresses,
+    member_address           jsonb,
+    order_amount             NUMERIC(10, 2),
+    tax_amount               NUMERIC(10, 2),
+    total_amount             NUMERIC(10, 2),
+    discount_amount          NUMERIC(10, 2) DEFAULT 0,
+    currency                 VARCHAR(3),
+    tax_type                 public.tax_type,
+    tax_mode                 public.tax_mode,
+    tax_percentage           NUMERIC(5, 2),
+    is_lut_applied           BOOLEAN        DEFAULT false,
+    is_tax_included          BOOLEAN        DEFAULT false,
+    jurisdiction             jsonb,
+    invoice_note             text           default null,
+    payment_source           varchar(30)    default 'MANUAL'::character varying,
+    gateway_provider         varchar(50),
+    gateway_order_id         varchar(100),
+    gateway_payment_id       varchar(100),
+    payment_link             varchar(500),
+    active                   boolean        default true not null,
+    created_by               integer
+        constraint fk_txn_member_product_mst_admin_created_by
+            references public.mst_admin_users,
+    created_at               timestamp
+                                 with time zone          not null,
+    modified_by              integer
+        constraint fk_txn_member_product_mst_admin_modified_by
+            references public.mst_admin_users,
+    updated_at               timestamp with time zone    not null,
+    created_ip               character varying(50),
+    modified_ip              character varying(50)
+);
+
+create index ix_txn_member_product_member_id
+    on public.txn_member_products (member_id);
+
+create unique index ix_uk_txn_member_product_invoice_id
+    on public.txn_member_products (invoice_id);
+
+drop table if exists public.txn_member_product_order_items;
+create TABLE public.txn_member_product_order_items
+(
+    member_product_order_item_id serial primary key,
+    member_product_id            integer REFERENCES txn_member_products (member_product_id),
+    product_id                   integer REFERENCES mst_product (product_id),
+    product_variant_id           integer REFERENCES mst_product_variants (product_variant_id),
+    product_name                 varchar(100),
+    quantity_label               VARCHAR(50),
+    unit_price                   NUMERIC(10, 2),
+    tax_amount                   NUMERIC(10, 2) DEFAULT 0,
+    tax_percent                  NUMERIC(5, 2),
+    total_price                  NUMERIC(10, 2),
+    tax_obj                      jsonb
+);
+
+drop table if exists public.txn_shipments;
+CREATE TABLE public.txn_shipments
+(
+    shipment_id       serial primary key,
+    member_product_id integer                     NOT NULL REFERENCES txn_member_products (member_product_id) ON DELETE CASCADE,
+    franchise_id      integer                     NOT NULL REFERENCES mst_franchises (franchise_id),
+    shipment_no       VARCHAR(30) UNIQUE          NOT NULL,
+    courier           VARCHAR(50), -- delhivery, dtdc, aramex
+    tracking_no       VARCHAR(100),
+    tracking_url      TEXT,
+    status            public.shipment_status_enum not null default 'CREATED',
+    shipped_at        TIMESTAMP,
+    delivered_at      TIMESTAMP,
+    created_by        integer
+        constraint fk_txn_shipments_mst_admin_created_by
+            references public.mst_admin_users,
+    created_at        timestamp with time zone    not null,
+    modified_by       integer
+        constraint fk_txn_shipments_mst_admin_modified_by
+            references public.mst_admin_users,
+    updated_at        timestamp with time zone    not null,
+    created_ip        character varying(50),
+    modified_ip       character varying(50)
+);
+
+drop table if exists public.txn_shipment_items;
+CREATE TABLE public.txn_shipment_items
+(
+    shipment_item_id             serial primary key,
+    shipment_id                  integer REFERENCES txn_shipments (shipment_id) ON DELETE CASCADE,
+    member_product_order_item_id integer REFERENCES txn_member_product_order_items (member_product_order_item_id),
+    quantity                     INTEGER NOT NULL
+);
+
+drop table if exists public.txn_shipment_tracking_events;
+CREATE TABLE txn_shipment_tracking_events
+(
+    shipment_tracking_event_id serial primary key,
+    shipment_id                integer REFERENCES txn_shipments (shipment_id) ON DELETE CASCADE,
+    status                     public.shipment_tracking_enum NOT NULL,
+    description                TEXT,
+    event_time                 TIMESTAMP                     NOT NULL,
+    source                     public.shipment_tracking_enum, -- COURIER | SYSTEM | ADMIN
+    created_at                 TIMESTAMP DEFAULT NOW()
 );

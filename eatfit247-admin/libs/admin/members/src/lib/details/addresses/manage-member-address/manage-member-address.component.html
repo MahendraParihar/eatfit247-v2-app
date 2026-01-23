@@ -65,19 +65,6 @@
         </div>
 
         <div class="form-row">
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Address Type *</mat-label>
-            <mat-select formControlName="addressTypeId">
-              <mat-option [value]="null">Select Address Type</mat-option>
-              @for (addressType of masterData()?.addressType; track addressType.id) {
-                <mat-option [value]="addressType.id">{{ addressType.label }}</mat-option>
-              }
-            </mat-select>
-            <shared-ui-input-error [control]="formGroup.get('addressTypeId')"></shared-ui-input-error>
-          </mat-form-field>
-        </div>
-
-        <div class="form-row">
           <mat-form-field appearance="outline" class="half-width">
             <mat-label>Latitude</mat-label>
             <input matInput formControlName="latitude" type="number" step="any" />

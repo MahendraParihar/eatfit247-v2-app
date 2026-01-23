@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 import {
   AddressController,
-  AddressTypeController,
   CountryController,
   PublicAddressController,
   StateController,
@@ -17,7 +16,6 @@ import {
     CountryController,
     StateController,
     AddressController,
-    AddressTypeController,
   ],
   providers: [
     // Services are now provided by CommonModule (global)

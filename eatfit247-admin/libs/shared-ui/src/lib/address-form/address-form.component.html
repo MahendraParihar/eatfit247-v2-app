@@ -1,18 +1,6 @@
 <div class="address-form" [formGroup]="addressFormGroup">
   <div class="row">
     <mat-form-field appearance="outline" class="half-width">
-      <mat-label>Address Type</mat-label>
-      <mat-select formControlName="addressTypeId">
-        <mat-option [value]="">Select Address Type</mat-option>
-        @for (addressType of getAddressType(); track addressType.id) {
-          <mat-option [value]="addressType.id">
-            {{ addressType.label }}
-          </mat-option>
-        }
-      </mat-select>
-      <shared-ui-input-error [control]="addressFormGroup.get('addressTypeId')" controlName="addressTypeId"></shared-ui-input-error>
-    </mat-form-field>
-    <mat-form-field appearance="outline" class="half-width">
       <mat-label>Address Name</mat-label>
       <input
         matInput
