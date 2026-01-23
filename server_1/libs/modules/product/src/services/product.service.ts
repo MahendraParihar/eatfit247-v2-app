@@ -148,7 +148,6 @@ export class ProductService {
           currency: price.currency,
           price: Number(price.price),
           sku: (variant as any).sku || undefined,
-          taxPercent: price.taxPercent !== null ? Number(price.taxPercent) : undefined,
           isActive: price.isActive,
           validFrom: price.validFrom,
           validTo: price.validTo
@@ -160,7 +159,6 @@ export class ProductService {
           productVariantId: price.productVariantId,
           currency: price.currency,
           price: Number(price.price),
-          taxPercent: price.taxPercent !== null ? Number(price.taxPercent) : null,
           isActive: price.isActive,
           validFrom: price.validFrom,
           validTo: price.validTo
@@ -254,17 +252,18 @@ export class ProductService {
   }
 
   public async getProductList(): Promise<IProduct[]> {
-    return await this.productRepository.findAll({
+    const products = await this.productRepository.findAll({
       where: { active: true },
       order: [["createdAt", "DESC"]]
     });
+    return products.map((item: any) => this.convertToModel(item));
   }
 
   /**
    * Transform IManageProduct variants or fees to the fees format needed by replaceProductVariantsAndPrices
    */
-  private transformToFeesFormat(obj: IManageProduct): { quantity: number; unit: string; currency: string; price: number; taxPercent?: number; isActive?: boolean; validFrom?: Date | string | null; validTo?: Date | string | null }[] {
-    const fees: { quantity: number; unit: string; currency: string; price: number; taxPercent?: number; isActive?: boolean; validFrom?: Date | string | null; validTo?: Date | string | null }[] = [];
+  private transformToFeesFormat(obj: IManageProduct): { quantity: number; unit: string; currency: string; price: number; isActive?: boolean; validFrom?: Date | string | null; validTo?: Date | string | null }[] {
+    const fees: { quantity: number; unit: string; currency: string; price: number; isActive?: boolean; validFrom?: Date | string | null; validTo?: Date | string | null }[] = [];
 
     // If variants are provided, transform them to fees format
     if (obj.variants && obj.variants.length > 0) {
@@ -276,7 +275,6 @@ export class ProductService {
               unit: variant.quantityUnit,
               currency: price.currency,
               price: price.price,
-              taxPercent: price.taxPercent !== undefined ? price.taxPercent : undefined,
               isActive: price.isActive !== undefined ? price.isActive : true,
               validFrom: price.validFrom !== undefined ? price.validFrom : null,
               validTo: price.validTo !== undefined ? price.validTo : null
@@ -293,7 +291,6 @@ export class ProductService {
           unit: fee.unit,
           currency: fee.currency,
           price: fee.price,
-          taxPercent: fee.taxPercent,
           isActive: fee.isActive !== undefined ? fee.isActive : true,
           validFrom: fee.validFrom,
           validTo: fee.validTo
@@ -310,7 +307,7 @@ export class ProductService {
    */
   private async replaceProductVariantsAndPrices(
     productId: number,
-    fees: { quantity: number; unit: string; currency: string; price: number; taxPercent?: number; isActive?: boolean; validFrom?: Date | string | null; validTo?: Date | string | null }[]
+    fees: { quantity: number; unit: string; currency: string; price: number; isActive?: boolean; validFrom?: Date | string | null; validTo?: Date | string | null }[]
   ): Promise<void> {
     // Remove existing prices and variants for this product
     const existingVariants = await this.productVariantRepository.findAll({
@@ -355,10 +352,9 @@ export class ProductService {
           productVariantId: variant.productVariantId,
           currency: priceData.currency,
           price: priceData.price,
-          taxPercent: priceData.taxPercent !== undefined ? priceData.taxPercent : null,
           isActive: priceData.isActive !== undefined ? priceData.isActive : true,
-          validFrom: priceData.validFrom || null,
-          validTo: priceData.validTo || null
+          validFrom: priceData.validFrom ? (typeof priceData.validFrom === 'string' ? new Date(priceData.validFrom) : priceData.validFrom) : null,
+          validTo: priceData.validTo ? (typeof priceData.validTo === 'string' ? new Date(priceData.validTo) : priceData.validTo) : null
         });
       }
     }

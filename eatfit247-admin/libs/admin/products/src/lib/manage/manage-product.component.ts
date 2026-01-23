@@ -275,7 +275,6 @@ export class ManageProduct implements OnInit, OnDestroy {
     const priceGroup = this.fb.group({
       currency: ['INR', Validators.required],
       price: [0, [Validators.required, Validators.min(0)]],
-      taxPercent: [0, [Validators.min(0), Validators.max(100)]],
       isActive: [true],
       validFrom: [null],
       validTo: [null]

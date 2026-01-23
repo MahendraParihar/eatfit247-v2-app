@@ -23,10 +23,6 @@ export interface IProductFee {
    */
   sku?: string;
   /**
-   * Optional tax percentage applied on this price
-   */
-  taxPercent?: number;
-  /**
    * Optional flag to mark this price as active/inactive
    */
   isActive?: boolean;
@@ -154,10 +150,6 @@ export interface IProductPrice {
    * Price amount
    */
   price: number;
-  /**
-   * Tax percentage applied on this price
-   */
-  taxPercent: number;
   /**
    * Whether this price is currently active
    */

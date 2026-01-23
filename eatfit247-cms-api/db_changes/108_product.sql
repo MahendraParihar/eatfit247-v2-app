@@ -176,7 +176,6 @@ CREATE TABLE mst_tax_master
     tax_system       public.tax_type                                  NOT NULL, -- GST, VAT, SALES_TAX
     tax_code         VARCHAR(50)                                      NOT NULL, -- GST_18, VAT_5, VAT_0
     tax_name         VARCHAR(100)                                     NOT NULL, -- GST 18%, UAE VAT 5%
-    tax_percent      NUMERIC(5, 2)                                    NOT NULL CHECK (tax_percent >= 0),
 
     -- Behavior
     apply_on         VARCHAR(20)                                      NOT NULL DEFAULT 'SALE',

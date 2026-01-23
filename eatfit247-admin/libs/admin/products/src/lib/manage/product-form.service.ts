@@ -318,7 +318,6 @@ export class ProductFormService {
             pricesArray.push(this.fb.group({
               currency: [price.currency, Validators.required],
               price: [price.price, [Validators.required, Validators.min(0)]],
-              taxPercent: [price.taxPercent || 0, [Validators.min(0), Validators.max(100)]],
               isActive: [price.isActive !== undefined ? price.isActive : true],
               validFrom: [price.validFrom || null],
               validTo: [price.validTo || null]
@@ -451,7 +450,6 @@ export class ProductFormService {
               productVariantId: price.productVariantId || 0,
               currency: price.currency,
               price: price.price,
-              taxPercent: price.taxPercent || 0,
               isActive: price.isActive !== undefined ? price.isActive : true,
               validFrom: price.validFrom || null,
               validTo: price.validTo || null

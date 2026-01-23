@@ -39,9 +39,6 @@ class ProductFeeDto implements IProductFee {
   @IsString()
   sku?: string;
   @IsOptional()
-  @IsNumber()
-  taxPercent?: number;
-  @IsOptional()
   @IsBoolean()
   isActive?: boolean;
   @IsOptional()
@@ -63,9 +60,6 @@ class ProductPriceDto implements IProductPrice {
   @IsNotEmpty()
   @IsNumber()
   price!: number;
-  @IsOptional()
-  @IsNumber()
-  taxPercent?: number;
   @IsOptional()
   @IsBoolean()
   isActive?: boolean;

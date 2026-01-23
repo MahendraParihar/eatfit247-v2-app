@@ -53,13 +53,6 @@ export class MstProductPrice extends Model<MstProductPrice> {
   declare price: number;
 
   @Column({
-    allowNull: true,
-    field: 'tax_percent',
-    type: DataType.DECIMAL(5, 2),
-  })
-  declare taxPercent: number | null;
-
-  @Column({
     allowNull: false,
     defaultValue: true,
     field: 'is_active',
