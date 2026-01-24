@@ -50,7 +50,7 @@
             </div>
             <div class="info-item">
               <span class="info-label">Payment Date:</span>
-              <span class="info-value">{{ formatDate(payment.paymentDate) }}</span>
+              <span class="info-value">{{ payment.paymentDate | date:'fullDate' }}</span>
             </div>
             <div class="info-item">
               <span class="info-label">Payment Status:</span>
@@ -118,23 +118,19 @@
           <div class="info-grid">
             <div class="info-item">
               <span class="info-label">Order Amount:</span>
-              <span
-                class="info-value">{{ formatCurrency(payment.currency || 'INR', payment.orderAmount) }}</span>
+              <span class="info-value">{{ payment.orderAmount | formatCurrency:(payment.currency || 'INR') }}</span>
             </div>
             <div class="info-item">
               <span class="info-label">Discount Amount:</span>
-              <span
-                class="info-value">{{ formatCurrency(payment.currency || 'INR', payment.discountAmount) }}</span>
+              <span class="info-value">{{ payment.discountAmount | formatCurrency:(payment.currency || 'INR') }}</span>
             </div>
             <div class="info-item">
               <span class="info-label">Tax Amount:</span>
-              <span
-                class="info-value">{{ formatCurrency(payment.currency || 'INR', payment.taxAmount) }}</span>
+              <span class="info-value">{{ payment.taxAmount | formatCurrency:(payment.currency || 'INR') }}</span>
             </div>
             <div class="info-item total-amount">
               <span class="info-label">Total Amount:</span>
-              <span
-                class="info-value">{{ formatCurrency(payment.currency || 'INR', payment.totalAmount) }}</span>
+              <span class="info-value">{{ payment.totalAmount | formatCurrency:(payment.currency || 'INR') }}</span>
             </div>
             <div class="info-item">
               <span class="info-label">Tax Applicable:</span>
@@ -200,23 +196,23 @@
       }
 
       <!-- Address Information -->
-      @if (payment.address || payment.billingAddress) {
+      @if (payment.memberAddress.address || payment.memberAddress.billingAddress) {
         <mat-card class="info-card">
           <mat-card-header>
             <mat-card-title>Address Information</mat-card-title>
           </mat-card-header>
           <mat-card-content>
             <div class="info-grid">
-              @if (payment.address) {
+              @if (payment.memberAddress.address) {
                 <div class="info-item full-width">
                   <span class="info-label">Delivery Address:</span>
-                  <span class="info-value">{{ formatAddress(payment.address) }}</span>
+                  <span class="info-value">{{ payment.memberAddress.address | address }}</span>
                 </div>
               }
-              @if (payment.billingAddress) {
+              @if (payment.memberAddress.billingAddress) {
                 <div class="info-item full-width">
                   <span class="info-label">Billing Address:</span>
-                  <span class="info-value">{{ formatAddress(payment.billingAddress) }}</span>
+                  <span class="info-value">{{ payment.memberAddress.billingAddress | address }}</span>
                 </div>
               }
             </div>

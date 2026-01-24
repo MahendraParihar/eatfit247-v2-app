@@ -38,7 +38,7 @@
               </div>
               <div class="detail-item">
                 <span class="label">Order Date:</span>
-                <span class="value">{{ formatDate(productOrder()?.paymentDate) }}</span>
+                <span class="value">{{ (productOrder()?.paymentDate | date:'medium') ?? 'N/A' }}</span>
               </div>
               <div class="detail-item">
                 <span class="label">Payment Mode:</span>
@@ -126,7 +126,7 @@
                   <ng-container matColumnDef="unitPrice">
                     <th mat-header-cell *matHeaderCellDef>Unit Price</th>
                     <td mat-cell *matCellDef="let item" class="amount-cell">
-                      {{ formatAmount(item.unitPrice) }}
+                      {{ item.unitPrice | formatCurrency }}
                     </td>
                   </ng-container>
 
@@ -140,7 +140,7 @@
                   <ng-container matColumnDef="baseAmount">
                     <th mat-header-cell *matHeaderCellDef>Base Amount</th>
                     <td mat-cell *matCellDef="let item" class="amount-cell">
-                      {{ formatAmount(item.baseAmount) }}
+                      {{ item.baseAmount | formatCurrency }}
                     </td>
                   </ng-container>
 
@@ -148,7 +148,7 @@
                   <ng-container matColumnDef="discountAmount">
                     <th mat-header-cell *matHeaderCellDef>Discount</th>
                     <td mat-cell *matCellDef="let item" class="amount-cell discount">
-                      {{ item.discountAmount ? '-' + formatAmount(item.discountAmount) : '-' }}
+                      {{ item.discountAmount ? '-' + (item.discountAmount | formatCurrency) : '-' }}
                     </td>
                   </ng-container>
 
@@ -156,7 +156,7 @@
                   <ng-container matColumnDef="taxAmount">
                     <th mat-header-cell *matHeaderCellDef>Tax</th>
                     <td mat-cell *matCellDef="let item" class="amount-cell">
-                      {{ item.taxAmount ? formatAmount(item.taxAmount) : '-' }}
+                      {{ item.taxAmount ? (item.taxAmount | formatCurrency) : '-' }}
                     </td>
                   </ng-container>
 
@@ -164,7 +164,7 @@
                   <ng-container matColumnDef="totalAmount">
                     <th mat-header-cell *matHeaderCellDef>Total</th>
                     <td mat-cell *matCellDef="let item" class="amount-cell total">
-                      {{ formatAmount(item.totalAmount) }}
+                      {{ item.totalAmount | formatCurrency }}
                     </td>
                   </ng-container>
 
@@ -185,30 +185,30 @@
             <div class="amount-breakdown">
               <div class="amount-row">
                 <span class="label">Subtotal:</span>
-                <span class="value">{{ formatAmount(productOrder()?.subTotalAmount) }}</span>
+                <span class="value">{{ productOrder()?.subTotalAmount | formatCurrency }}</span>
               </div>
               @if (productOrder()?.discountAmount && productOrder()!.discountAmount! > 0) {
                 <div class="amount-row discount">
                   <span class="label">Discount:</span>
-                  <span class="value">-{{ formatAmount(productOrder()?.discountAmount) }}</span>
+                  <span class="value">-{{ productOrder()?.discountAmount | formatCurrency }}</span>
                 </div>
               }
               @if (productOrder()?.taxAmount && productOrder()!.taxAmount! > 0) {
                 <div class="amount-row">
                   <span class="label">Tax:</span>
-                  <span class="value">{{ formatAmount(productOrder()?.taxAmount) }}</span>
+                  <span class="value">{{ productOrder()?.taxAmount | formatCurrency }}</span>
                 </div>
               }
               @if (productOrder()?.roundingAdjustment && productOrder()!.roundingAdjustment! !== 0) {
                 <div class="amount-row">
                   <span class="label">Rounding Adjustment:</span>
-                  <span class="value">{{ formatAmount(productOrder()?.roundingAdjustment) }}</span>
+                  <span class="value">{{ productOrder()?.roundingAdjustment | formatCurrency }}</span>
                 </div>
               }
               <mat-divider></mat-divider>
               <div class="amount-row total">
                 <span class="label">Total Amount:</span>
-                <span class="value">{{ formatAmount(productOrder()?.totalAmount) }}</span>
+                <span class="value">{{ productOrder()?.totalAmount | formatCurrency }}</span>
               </div>
             </div>
           </mat-card-content>
@@ -256,7 +256,7 @@
             <div class="details-grid">
               <div class="detail-item">
                 <span class="label">Created At:</span>
-                <span class="value">{{ formatDate(productOrder()?.createdAt) }}</span>
+                <span class="value">{{ (productOrder()?.createdAt | date:'medium') ?? 'N/A' }}</span>
               </div>
               <div class="detail-item">
                 <span class="label">Created By:</span>
@@ -264,7 +264,7 @@
               </div>
               <div class="detail-item">
                 <span class="label">Updated At:</span>
-                <span class="value">{{ formatDate(productOrder()?.updatedAt) }}</span>
+                <span class="value">{{ (productOrder()?.updatedAt | date:'medium') ?? 'N/A' }}</span>
               </div>
               <div class="detail-item">
                 <span class="label">Updated By:</span>

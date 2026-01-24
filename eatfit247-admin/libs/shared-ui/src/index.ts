@@ -15,3 +15,6 @@ export * from './lib/loader/loader.component';
 export * from './lib/social-link/social-link-form.component';
 export * from './lib/upload-form/upload-form.component';
 export * from './lib/address-form/address-form.component';
+
+// Pipes
+export * from './lib/pipes';

@@ -20,6 +20,7 @@ import {
   IPaymentLinkResponse, IProductPrice,
   ITableList,
   mapPaymentToInvoiceDocument,
+  mapProductOrderToInvoiceDocument,
   MediaForEnum,
   PaymentSourceEnum,
   PaymentStatusEnum,
@@ -435,6 +436,10 @@ export class MemberProductService {
     if (!productOrder) {
       throw new NotFoundException('Product order not found');
     }
+    // Validate that order items exist
+    if (!productOrder.orderItems || productOrder.orderItems.length === 0) {
+      throw new BadRequestException('Product order has no items');
+    }
     // Get member
     const member = await this.memberRepository.scope('details').findOne({
       where: { memberId },
@@ -484,7 +489,7 @@ export class MemberProductService {
     if (!billingAddress) {
       throw new BadRequestException('Billing address not found for invoice generation');
     }
-    // Convert product order to model to get calculated amounts
+    // Convert product order to model
     const productModel = this.convertToModel(productOrder);
     // Prepare member info
     const memberInfo: IMemberInfo = {
@@ -492,22 +497,45 @@ export class MemberProductService {
       emailId: member.emailId,
       contactNumber: member.contactNumber,
     };
-    // Get product details for description from paymentObj
-    let productDescription = `Product Order - ID: ${productId}`;
-    const invoiceDoc = mapPaymentToInvoiceDocument(
-      {
-        ...productModel,
-        program: '',
-        programPlan: '',
-        programId: 0,
-        programPlanId: 0,
-        memberPaymentId: productModel.memberProductId,
-      } as any,
+    // Map product order items to the invoice format
+    const orderItemsForInvoice = productModel.orderItems?.map((item) => ({
+      productName: item.productName,
+      quantityLabel: item.quantityLabel,
+      quantity: item.quantity,
+      unitPrice: item.unitPrice,
+      baseAmount: item.baseAmount,
+      discountAmount: item.discountAmount,
+      taxAmount: item.taxAmount,
+      totalAmount: item.totalAmount,
+      taxObj: item.taxObj || {},
+      taxType: item.taxType,
+      taxMode: item.taxMode,
+      hsnCode: undefined, // Can be added later if stored in product variant
+    })) || [];
+    // Prepare product order data for invoice
+    const productOrderData = {
+      memberProductId: productModel.memberProductId,
+      memberId: productModel.memberId,
+      memberName: productModel.memberName,
+      invoiceId: productModel.invoiceId,
+      paymentDate: productModel.paymentDate,
+      paymentMode: productModel.paymentMode,
+      paymentStatus: productModel.paymentStatus,
+      transactionId: productModel.transactionId,
+      gstNumber: productModel.gstNumber,
+      subTotalAmount: productModel.subTotalAmount,
+      discountAmount: productModel.discountAmount,
+      taxAmount: productModel.taxAmount,
+      totalAmount: productModel.totalAmount,
+      currency: productModel.currency,
+      orderItems: orderItemsForInvoice,
+    };
+    // Generate invoice document using the new product order mapper
+    const invoiceDoc = mapProductOrderToInvoiceDocument(
+      productOrderData,
       franchise[0] as any,
       billingAddress,
-      TransactionType.PRODUCT,
       franchiseAddress,
-      productDescription,
       memberInfo,
     );
     const fileName = `invoice-${productModel.memberProductId}.pdf`;
@@ -518,7 +546,7 @@ export class MemberProductService {
       fs.mkdirSync(destinationFolderPath, { recursive: true });
     }
     const destinationPath = `${destinationFolderPath}/${fileName}`;
-    // Generate PDF using the new InvoicePdfService
+    // Generate PDF using the InvoicePdfService
     const pdfBuffer = await this.invoicePdfService.generateInvoicePdf(invoiceDoc);
     const base64Buffer = pdfBuffer.toString('base64');
     // Write PDF buffer to destination folder

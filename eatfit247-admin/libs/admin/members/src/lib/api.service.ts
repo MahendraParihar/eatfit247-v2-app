@@ -836,6 +836,22 @@ export class MembersApiService extends ApiBaseService {
     return res.data as IMemberProduct;
   }
 
+  async downloadProductInvoice(
+    memberId: number,
+    productId: number,
+  ): Promise<{
+    buffer: string;
+    fileName: string;
+  }> {
+    const res = await this.httpService.get<
+      IResponse<{
+        buffer: string;
+        fileName: string;
+      }>
+    >(`${this.endpoint}/${memberId}/product/${productId}/invoice`);
+    return res.data as { buffer: string; fileName: string };
+  }
+
   // endregion
   // region Member Addresses
   async getAddressMasterData(): Promise<IAddressMaster> {

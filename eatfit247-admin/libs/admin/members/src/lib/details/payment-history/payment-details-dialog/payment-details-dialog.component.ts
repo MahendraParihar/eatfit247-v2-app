@@ -1,11 +1,12 @@
 import { Component, Inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { IMemberPayment } from '@eatfit247-shared-lib';
+import { IMemberAddress, IMemberPayment } from '@eatfit247-shared-lib';
+import { AddressPipe, FormatCurrencyPipe } from '@shared';
 
 export interface PaymentDetailsDialogData {
   payment: IMemberPayment;
@@ -21,6 +22,9 @@ export interface PaymentDetailsDialogData {
     MatIconModule,
     MatCardModule,
     MatSnackBarModule,
+    DatePipe,
+    AddressPipe,
+    FormatCurrencyPipe,
   ],
   templateUrl: './payment-details-dialog.component.html',
   styleUrl: './payment-details-dialog.component.scss',
@@ -63,36 +67,6 @@ export class PaymentDetailsDialogComponent {
         },
       );
     }
-  }
-
-  formatCurrency(currencyCode: string,amount: number | undefined | null): string {
-    if (amount === null || amount === undefined) {
-      return `${currencyCode} 0`;
-    }
-    return `${currencyCode} ${Number(amount).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-  }
-
-  formatDate(date: Date | string | undefined | null): string {
-    if (!date) {
-      return 'N/A';
-    }
-    const d = new Date(date);
-    return d.toLocaleDateString('en-IN', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
-  }
-
-  formatAddress(address: any): string {
-    if (!address) {
-      return 'N/A';
-    }
-    const parts: string[] = [];
-    if (address.postalAddress) parts.push(address.postalAddress);
-    if (address.cityVillage) parts.push(address.cityVillage);
-    if (address.pinCode) parts.push(address.pinCode);
-    return parts.length > 0 ? parts.join(', ') : 'N/A';
   }
 
   close(): void {

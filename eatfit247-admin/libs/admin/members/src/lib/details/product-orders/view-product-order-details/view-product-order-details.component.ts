@@ -1,5 +1,5 @@
 import { Component, inject, Inject, OnInit, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -10,6 +10,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatTableModule } from '@angular/material/table';
 import { IMemberProduct } from '@eatfit247-shared-lib';
 import { MembersApiService } from '../../../api.service';
+import { FormatCurrencyPipe } from '@shared';
 
 export interface ViewProductOrderDetailsData {
   memberId: number;
@@ -21,6 +22,7 @@ export interface ViewProductOrderDetailsData {
   standalone: true,
   imports: [
     CommonModule,
+    DatePipe,
     MatDialogModule,
     MatButtonModule,
     MatIconModule,
@@ -28,7 +30,8 @@ export interface ViewProductOrderDetailsData {
     MatCardModule,
     MatDividerModule,
     MatChipsModule,
-    MatTableModule
+    MatTableModule,
+    FormatCurrencyPipe
   ],
   templateUrl: './view-product-order-details.component.html',
   styleUrl: './view-product-order-details.component.scss'
@@ -78,26 +81,6 @@ export class ViewProductOrderDetailsComponent implements OnInit {
       return 'status-failed';
     }
     return '';
-  }
-
-  formatAmount(amount: number | undefined): string {
-    if (amount === undefined || amount === null) return '0.00';
-    return `${Number(amount).toLocaleString('en-IN', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    })}`;
-  }
-
-  formatDate(date: Date | string | null | undefined): string {
-    if (!date) return 'N/A';
-    const dateObj = typeof date === 'string' ? new Date(date) : date;
-    return dateObj.toLocaleDateString('en-IN', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
   }
 }
 

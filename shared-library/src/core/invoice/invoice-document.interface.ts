@@ -51,6 +51,9 @@ export interface IInvoiceItem {
   qty: number;
   rate: number; // Unit price
   amount: number; // qty * rate
+  discount?: number; // Discount amount for this item
+  taxAmount?: number; // Tax amount for this item
+  totalAmount?: number; // Total for this item (amount - discount + tax)
 }
 
 export interface IInvoicePricing {
@@ -71,6 +74,7 @@ export interface IInvoiceTaxRow {
   label: string; // "CGST", "SGST", "IGST", "VAT", etc.
   amount: number;
   percentage?: number; // Optional percentage for display
+  taxableAmount?: number; // Taxable amount (base amount - discount) for this tax row
 }
 
 export interface IInvoiceTotal {
@@ -81,6 +85,7 @@ export interface IInvoiceTotal {
 export interface IInvoicePayment {
   methods: string[]; // Payment method names
   status: string; // Payment status
+  transactionId?: string; // Optional transaction ID
 }
 
 export interface IInvoiceQrCode {

@@ -23,6 +23,7 @@ export interface IMemberProductOrderItem {
   baseAmount: number;
   discountAmount?: number;
   effectiveTaxRate?: number;
+  taxAmount?: number;
   totalAmount: number;
   taxObj?: any;
   taxType?: TaxTypeEnum;

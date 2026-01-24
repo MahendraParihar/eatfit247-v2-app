@@ -303,16 +303,18 @@
     <thead>
       <tr>
         <th style="width: 5%;">#</th>
-        <th style="width: 40%;">Description</th>
+        <th style="width: 30%;">Description</th>
         {{#if showSacColumn}}
-        <th style="width: 10%;" class="text-center">SAC</th>
+        <th style="width: 8%;" class="text-center">SAC</th>
         {{/if}}
         {{#if showHsnColumn}}
-        <th style="width: 10%;" class="text-center">HSN</th>
+        <th style="width: 8%;" class="text-center">HSN</th>
         {{/if}}
-        <th style="width: 10%;" class="text-center">Qty</th>
-        <th style="width: 12.5%;" class="text-right">Rate</th>
-        <th style="width: 12.5%;" class="text-right">Amount</th>
+        <th style="width: 8%;" class="text-center">Qty</th>
+        <th style="width: 10%;" class="text-right">Price</th>
+        <th style="width: 10%;" class="text-right">Discount</th>
+        <th style="width: 10%;" class="text-right">Tax</th>
+        <th style="width: 11%;" class="text-right">Amount</th>
       </tr>
     </thead>
     <tbody>
@@ -328,7 +330,9 @@
         {{/if}}
         <td class="text-center">{{this.qty}}</td>
         <td class="text-right">{{formatCurrency this.rate ../invoice.header.currency}}</td>
-        <td class="text-right">{{formatCurrency this.amount ../invoice.header.currency}}</td>
+        <td class="text-right">{{#if this.discount}}{{formatCurrency this.discount ../invoice.header.currency}}{{else}}-{{/if}}</td>
+        <td class="text-right">{{#if this.taxAmount}}{{formatCurrency this.taxAmount ../invoice.header.currency}}{{else}}-{{/if}}</td>
+        <td class="text-right">{{#if this.totalAmount}}{{formatCurrency this.totalAmount ../invoice.header.currency}}{{else}}{{formatCurrency this.amount ../invoice.header.currency}}{{/if}}</td>
       </tr>
       {{/each}}
     </tbody>
@@ -338,19 +342,15 @@
   <div class="summary-section">
     <table class="summary-table">
       <tr>
-        <td>Subtotal</td>
+        <td>Subtotal (Before Discount)</td>
         <td class="text-right">{{formatCurrency invoice.pricing.subtotal invoice.header.currency}}</td>
       </tr>
       {{#if invoice.pricing.discount}}
       <tr>
-        <td>Discount</td>
-        <td class="text-right">{{formatCurrency invoice.pricing.discount invoice.header.currency}}</td>
+        <td>Order Discount</td>
+        <td class="text-right">-{{formatCurrency invoice.pricing.discount invoice.header.currency}}</td>
       </tr>
       {{/if}}
-      <tr>
-        <td>Net Amount</td>
-        <td class="text-right">{{formatCurrency invoice.pricing.netAmount invoice.header.currency}}</td>
-      </tr>
       {{#if showTaxRows}}
         {{#each invoice.tax.rows}}
         <tr>
@@ -359,7 +359,7 @@
         </tr>
         {{/each}}
         <tr>
-          <td><strong>Total Tax</strong></td>
+          <td><strong>Tax Total</strong></td>
           <td class="text-right"><strong>{{formatCurrency invoice.tax.totalTax invoice.header.currency}}</strong></td>
         </tr>
       {{else}}
@@ -376,6 +376,33 @@
       </tr>
     </table>
   </div>
+  
+  <!-- Tax Summary (Detailed Breakdown) -->
+  {{#if showTaxRows}}
+  <div style="margin-bottom: 20px;">
+    <h3 style="font-size: 14px; margin-bottom: 10px; border-bottom: 1px solid #ddd; padding-bottom: 5px;">Tax Summary</h3>
+    <table class="items-table">
+      <thead>
+        <tr>
+          <th style="width: 30%;">Tax Type</th>
+          <th style="width: 20%;" class="text-center">Rate</th>
+          <th style="width: 25%;" class="text-right">Taxable Amount</th>
+          <th style="width: 25%;" class="text-right">Tax Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each invoice.tax.rows}}
+        <tr>
+          <td>{{this.label}}</td>
+          <td class="text-center">{{#if this.percentage}}{{this.percentage}}%{{else}}-{{/if}}</td>
+          <td class="text-right">{{#if this.taxableAmount}}{{formatCurrency this.taxableAmount ../invoice.header.currency}}{{else}}-{{/if}}</td>
+          <td class="text-right">{{formatCurrency this.amount ../invoice.header.currency}}</td>
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  </div>
+  {{/if}}
 
   <!-- Tax Note -->
   {{#if invoice.tax.note}}
@@ -399,8 +426,18 @@
   <!-- Payment Information -->
   <div class="payment-info">
     <strong>Payment Information:</strong><br>
-    <strong>Method:</strong> {{#each invoice.payment.methods}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}<br>
-    <strong>Status:</strong> {{invoice.payment.status}}
+    <strong>Status:</strong> {{invoice.payment.status}}<br>
+    <strong>Method:</strong> {{#each invoice.payment.methods}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}
+    {{#if invoice.payment.transactionId}}<br><strong>Transaction ID:</strong> {{invoice.payment.transactionId}}{{/if}}
+  </div>
+  
+  <!-- Notes Section -->
+  <div style="margin-top: 20px; padding: 10px; background-color: #f9f9f9; border-left: 3px solid #333;">
+    <strong>Notes:</strong><br>
+    <ul style="margin: 5px 0 0 20px; line-height: 1.8;">
+      <li>Discount allocated proportionally per item</li>
+      <li>Tax calculated post discount</li>
+    </ul>
   </div>
 
   <!-- Footer -->

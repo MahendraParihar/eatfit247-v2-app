@@ -161,12 +161,18 @@ export class MemberProductOrdersComponent implements OnInit, OnDestroy {
             icon: 'visibility',
             tooltip: 'View Order Details',
             onClick: (row: IMemberProduct) => this.viewProductOrderDetails(row)
+          },
+          {
+            label: 'Download Invoice',
+            icon: 'download',
+            tooltip: 'Download Invoice',
+            onClick: (row: IMemberProduct) => this.downloadInvoice(row)
           }
         ],
         column: {
           headerLabel: 'Actions',
           align: 'center',
-          width: '100px'
+          width: '150px'
         }
       }
     };
@@ -255,6 +261,44 @@ export class MemberProductOrdersComponent implements OnInit, OnDestroy {
       data: dialogData,
       disableClose: false
     });
+  }
+
+  async downloadInvoice(productOrder: IMemberProduct): Promise<void> {
+    if (!this.memberId || !productOrder.memberProductId) {
+      console.error('Member ID or Product Order ID is not available');
+      return;
+    }
+
+    try {
+      const result = await this.apiService.downloadProductInvoice(
+        this.memberId,
+        productOrder.memberProductId
+      );
+
+      if (result && result.buffer && result.fileName) {
+        // Convert base64 buffer to blob and download
+        const byteCharacters = atob(result.buffer);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: 'application/pdf' });
+
+        // Create download link
+        const link = document.createElement('a');
+        link.href = window.URL.createObjectURL(blob);
+        link.download = result.fileName;
+        link.click();
+
+        // Clean up
+        window.URL.revokeObjectURL(link.href);
+      } else {
+        console.error('Invalid invoice data received');
+      }
+    } catch (error) {
+      console.error('Error downloading invoice:', error);
+    }
   }
 }
 

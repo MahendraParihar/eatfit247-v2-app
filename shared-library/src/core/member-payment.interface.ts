@@ -55,7 +55,7 @@ export interface IMemberPayment extends IBasicMemberPayment {
   program: string;
   address?: IAddress;
   paymentStatus: string;
-  memberAddress?: IMemberAddressSnapshot;
+  memberAddress: IMemberAddressSnapshot;
   noOfCycle: number;
   noOfDaysInCycle: number;
   currentCycleNo?: number;
