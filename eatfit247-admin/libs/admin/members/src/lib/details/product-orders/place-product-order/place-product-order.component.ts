@@ -22,6 +22,7 @@ import { StepperSelectionEvent } from '@angular/cdk/stepper';
 import { InputErrorComponent } from '@shared';
 import {
   ICalculateTaxResponse,
+  ICalculateProductVariantTaxRequest,
   IDropdownItem,
   IMemberProduct,
   IProduct,
@@ -86,6 +87,7 @@ export class PlaceProductOrderComponent implements OnInit {
   step1FormGroup!: FormGroup;
   step2FormGroup!: FormGroup;
   step3FormGroup!: FormGroup;
+  step4FormGroup!: FormGroup;
   masterData = signal<IMemberProductMasterData | null>(null);
   products = signal<IProduct[]>([]);
   loading = signal(false);
@@ -119,6 +121,7 @@ export class PlaceProductOrderComponent implements OnInit {
   selectedPrice = signal<IProductPrice | null>(null);
   quantity = signal(1);
   displayedColumns: string[] = ['product', 'variant', 'quantity', 'price', 'tax', 'total', 'actions'];
+  taxComputationColumns: string[] = ['product', 'variant', 'quantity', 'unitPrice', 'subtotal', 'tax', 'total'];
 
   // Computed signals for reactive product/variant selection
   selectedProduct = computed<IProduct | null>(() => {
@@ -172,13 +175,14 @@ export class PlaceProductOrderComponent implements OnInit {
       addressId: [null],
       billingAddressId: [null, [Validators.required]],
       gstNumber: ['', [Validators.maxLength(InputLengthEnum.CHAR_50)]],
-      isTaxApplicable: [true, [Validators.required]],
-      isPlanFeesIncludedTax: [false, [Validators.required]],
       discountAmount: [0, [Validators.required, Validators.min(0)]],
     });
 
-    // Step 3: Payment
-    this.step3FormGroup = this.fb.group({
+    // Step 3: Tax Computation Summary (no form needed, just display)
+    this.step3FormGroup = this.fb.group({});
+
+    // Step 4: Payment
+    this.step4FormGroup = this.fb.group({
       paymentModeId: [null],
       paymentDate: [paymentDate || new Date(), [Validators.required]],
       paymentStatusId: [null, [Validators.required]],
@@ -196,8 +200,6 @@ export class PlaceProductOrderComponent implements OnInit {
       addressId: [null],
       billingAddressId: [null],
       gstNumber: ['', [Validators.maxLength(InputLengthEnum.CHAR_50)]],
-      isTaxApplicable: [true, [Validators.required]],
-      isPlanFeesIncludedTax: [false, [Validators.required]],
       currencyCode: ['INR', [Validators.required]],
       orderAmount: [0, [Validators.required, Validators.min(0)]],
       discountAmount: [0, [Validators.required, Validators.min(0)]],
@@ -226,26 +228,6 @@ export class PlaceProductOrderComponent implements OnInit {
       });
 
     this.step2FormGroup
-      .get('isTaxApplicable')
-      ?.valueChanges.subscribe(() => {
-        this.formGroup.patchValue(
-          { isTaxApplicable: this.step2FormGroup.get('isTaxApplicable')?.value },
-          { emitEvent: false },
-        );
-        this.calculateTaxFromBackend();
-      });
-
-    this.step2FormGroup
-      .get('isPlanFeesIncludedTax')
-      ?.valueChanges.subscribe(() => {
-        this.formGroup.patchValue(
-          { isPlanFeesIncludedTax: this.step2FormGroup.get('isPlanFeesIncludedTax')?.value },
-          { emitEvent: false },
-        );
-        this.calculateTaxFromBackend();
-      });
-
-    this.step2FormGroup
       .get('discountAmount')
       ?.valueChanges.pipe(debounceTime(500), distinctUntilChanged())
       .subscribe(() => {
@@ -256,13 +238,13 @@ export class PlaceProductOrderComponent implements OnInit {
         this.calculateTaxFromBackend();
       });
 
-    this.formGroup
+    this.step4FormGroup
       .get('paymentSource')
       ?.valueChanges.subscribe((paymentSource) => {
         this.updatePaymentFieldValidators(paymentSource);
         this.paymentLink.set(null);
         this.paymentLinkId.set(null);
-        this.formGroup.patchValue(
+        this.step4FormGroup.patchValue(
           {
             paymentLink: '',
             gatewayOrderId: '',
@@ -282,10 +264,10 @@ export class PlaceProductOrderComponent implements OnInit {
 
   private updatePaymentFieldValidators(paymentSource: string): void {
     const isManual = paymentSource === PaymentSourceEnum.MANUAL;
-    const paymentModeIdControl = this.step3FormGroup.get('paymentModeId');
-    const paymentDateControl = this.step3FormGroup.get('paymentDate');
-    const paymentStatusIdControl = this.step3FormGroup.get('paymentStatusId');
-    const transactionIdControl = this.step3FormGroup.get('transactionId');
+    const paymentModeIdControl = this.step4FormGroup.get('paymentModeId');
+    const paymentDateControl = this.step4FormGroup.get('paymentDate');
+    const paymentStatusIdControl = this.step4FormGroup.get('paymentStatusId');
+    const transactionIdControl = this.step4FormGroup.get('transactionId');
 
     if (isManual) {
       paymentModeIdControl?.setValidators([Validators.required]);
@@ -437,17 +419,7 @@ export class PlaceProductOrderComponent implements OnInit {
       return;
     }
 
-    const orderAmount = this.formGroup.get('orderAmount')?.value || 0;
-    const currencyCode = this.formGroup.get('currencyCode')?.value || 'INR';
-    const discountAmount = this.step2FormGroup.get('discountAmount')?.value || 0;
-    const isTaxApplicable = this.step2FormGroup.get('isTaxApplicable')?.value ?? false;
-    const isPlanFeesIncludedTax = this.step2FormGroup.get('isPlanFeesIncludedTax')?.value ?? false;
     const billingAddressId = this.step2FormGroup.get('billingAddressId')?.value;
-
-    if (!orderAmount || !currencyCode) {
-      this.taxCalculationResult.set(null);
-      return;
-    }
 
     if (!billingAddressId) {
       this.taxCalculationResult.set(null);
@@ -456,32 +428,63 @@ export class PlaceProductOrderComponent implements OnInit {
 
     this.calculatingTax.set(true);
     try {
-      const request: ICalculateTaxRequest = {
-        orderAmount,
-        discountAmount,
-        isTaxApplicable,
-        isPlanFeesIncludedTax,
-        currencyCode,
+      // Build request with all cart items
+      const request: ICalculateProductVariantTaxRequest = {
+        items: cartItems.map((item) => ({
+          productId: item.productId,
+          productVariantId: item.productVariantId,
+          currencyCode: item.currency,
+        })),
         billingAddressId,
       };
 
       const result = await this.apiService.calculateProductTax(this.data.memberId, request);
-      this.taxCalculationResult.set(result);
 
-      // Calculate tax for each cart item proportionally
-      const subtotal = orderAmount - discountAmount;
-      const taxAmount = result.taxAmount || 0;
+      // Update cart items with calculated tax for each item
       const updatedCartItems = cartItems.map((item) => {
-        const itemSubtotal = item.totalPrice;
-        const itemTaxRatio = subtotal > 0 ? itemSubtotal / subtotal : 0;
-        const itemTaxAmount = taxAmount * itemTaxRatio;
-        return {
-          ...item,
-          taxAmount: itemTaxAmount,
-          taxPercent: result.taxPercentage || 0,
-        };
+        const taxResult = result.items.find(
+          (r) =>
+            r.productId === item.productId &&
+            r.productVariantId === item.productVariantId &&
+            r.currencyCode === item.currency
+        );
+
+        if (taxResult) {
+          // Calculate tax based on quantity
+          const itemTaxAmount = taxResult.taxAmount * item.quantity;
+          return {
+            ...item,
+            taxAmount: itemTaxAmount,
+            taxPercent: taxResult.taxPercentage || 0,
+          };
+        }
+        return item;
       });
       this.cartItems.set(updatedCartItems);
+
+      // Calculate aggregate totals for display
+      const totalTaxAmount = updatedCartItems.reduce((sum, item) => sum + (item.taxAmount || 0), 0);
+      const totalOrderAmount = updatedCartItems.reduce((sum, item) => sum + item.totalPrice, 0);
+      const totalAmount = totalOrderAmount + totalTaxAmount;
+
+      // Store aggregate tax result (using first item's tax info for common fields)
+      if (result.items.length > 0) {
+        const firstItem = result.items[0];
+        this.taxCalculationResult.set({
+          taxPercentage: firstItem.taxPercentage,
+          orderAmount: totalOrderAmount,
+          discountAmount: 0,
+          taxAmount: totalTaxAmount,
+          totalAmount: totalAmount,
+          taxObj: firstItem.taxObj,
+          taxType: firstItem.taxType,
+          taxMode: firstItem.taxMode,
+          invoiceNote: firstItem.invoiceNote,
+          currency: firstItem.currencyCode,
+          isLutApplied: firstItem.isLutApplied,
+          jurisdiction: firstItem.jurisdiction,
+        });
+      }
     } catch (error) {
       console.error('Error calculating tax:', error);
       this.taxCalculationResult.set(null);
@@ -495,11 +498,13 @@ export class PlaceProductOrderComponent implements OnInit {
 
   async onStepperSelectionChange(event: StepperSelectionEvent): Promise<void> {
     this.selectedIndex.set(event.selectedIndex);
-    if (event.selectedIndex === 1) {
+    if (event.selectedIndex === 2) {
+      // Step 3: Calculate tax when entering tax computation step
       this.calculateTaxFromBackend();
     }
-    if (event.selectedIndex === 2) {
-      const paymentSource = this.formGroup.get('paymentSource')?.value;
+    if (event.selectedIndex === 3) {
+      // Step 4: Load gateways if payment gateway is selected
+      const paymentSource = this.step4FormGroup.get('paymentSource')?.value;
       if (
         paymentSource === PaymentSourceEnum?.PAYMENT_GATEWAY ||
         paymentSource === 'PAYMENT_GATEWAY'
@@ -519,13 +524,18 @@ export class PlaceProductOrderComponent implements OnInit {
     return this.step2FormGroup?.valid ?? false;
   }
 
+  canProceedToStep4(): boolean {
+    // Step 3 is just a display step, so we can always proceed if step 2 is valid
+    return this.step2FormGroup?.valid ?? false;
+  }
+
   isManualPaymentSource(): boolean {
-    const paymentSource = this.formGroup.get('paymentSource')?.value;
+    const paymentSource = this.step4FormGroup.get('paymentSource')?.value;
     return paymentSource === PaymentSourceEnum?.MANUAL;
   }
 
   isPaymentLinkRequiredAndGenerated(): boolean {
-    const paymentSource = this.formGroup.get('paymentSource')?.value;
+    const paymentSource = this.step4FormGroup.get('paymentSource')?.value;
     const isPaymentGateway =
       paymentSource === PaymentSourceEnum?.PAYMENT_GATEWAY ||
       paymentSource === 'PAYMENT_GATEWAY';
@@ -599,7 +609,7 @@ export class PlaceProductOrderComponent implements OnInit {
       const result = await this.apiService.createPaymentLink(this.data.memberId, request);
       this.paymentLink.set(result.shortUrl);
       this.paymentLinkId.set(result.id);
-      this.formGroup.patchValue({
+      this.step4FormGroup.patchValue({
         paymentLink: result.shortUrl,
         gatewayProvider: result.gatewayCode,
         gatewayOrderId: result.id,
@@ -617,12 +627,12 @@ export class PlaceProductOrderComponent implements OnInit {
 
   onGatewaySelectionChange(gatewayId: number): void {
     this.selectedGatewayId.set(gatewayId);
-    this.formGroup.patchValue({
+    this.step4FormGroup.patchValue({
       franchisePaymentGatewayId: gatewayId,
     });
     this.paymentLink.set(null);
     this.paymentLinkId.set(null);
-    this.formGroup.patchValue(
+    this.step4FormGroup.patchValue(
       {
         paymentLink: '',
         gatewayOrderId: '',
@@ -655,15 +665,15 @@ export class PlaceProductOrderComponent implements OnInit {
     if (
       this.formGroup.valid &&
       this.step2FormGroup?.valid &&
-      this.step3FormGroup?.valid &&
+      this.step4FormGroup?.valid &&
       this.cartItems().length > 0
     ) {
       this.submitting.set(true);
       try {
         if (!this.isManualPaymentSource()) {
           if (
-            !this.formGroup.value.paymentLink ||
-            this.formGroup.value.paymentLink.length === 0
+            !this.step4FormGroup.value.paymentLink ||
+            this.step4FormGroup.value.paymentLink.length === 0
           ) {
             this.snackBar.open(
               'Payment link not generated, order can not be placed',
@@ -700,7 +710,7 @@ export class PlaceProductOrderComponent implements OnInit {
     const getValue = (key: string) => {
       return (
         this.step2FormGroup?.get(key)?.value ??
-        this.step3FormGroup?.get(key)?.value ??
+        this.step4FormGroup?.get(key)?.value ??
         this.formGroup.get(key)?.value
       );
     };
@@ -719,8 +729,6 @@ export class PlaceProductOrderComponent implements OnInit {
       billingAddressId: getValue('billingAddressId') || null,
       transactionId: getValue('transactionId')?.trim() || undefined,
       paymentStatusId: getValue('paymentStatusId'),
-      isTaxApplicable: getValue('isTaxApplicable') ?? false,
-      isPlanFeesIncludedTax: getValue('isPlanFeesIncludedTax') ?? false,
       gstNumber: getValue('gstNumber')?.trim() || undefined,
       taxPercentage: Number(taxPercentage),
       currencyCode: this.formGroup.get('currencyCode')?.value || 'INR',
@@ -736,11 +744,11 @@ export class PlaceProductOrderComponent implements OnInit {
       gatewayOrderId: getValue('gatewayOrderId'),
       gatewayPaymentId: getValue('gatewayPaymentId'),
       orderItems: this.cartItems().map((item) => ({
-        productId: item.productId,
-        productVariantId: item.productVariantId,
-        quantity: item.quantity,
+        productId: Number(item.productId),
+        productVariantId: Number(item.productVariantId),
+        quantity: Number(item.quantity),
         unit: item.unit,
-        price: item.price,
+        price: Number(item.price),
         currency: item.currency,
       })),
     };

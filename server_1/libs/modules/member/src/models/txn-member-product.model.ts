@@ -2,7 +2,7 @@ import { BelongsTo, Column, CreatedAt, DataType, HasMany, Model, Scopes, Table, 
 import { getCreatedByUserInclude, getUpdatedByUserInclude, MstAdminUser, MstFranchise } from '@server_1/core';
 import { MstPaymentMode, MstPaymentStatus, TxnAddress } from '@server_1/platform';
 import { TxnMember } from './txn-member.model';
-import { InputLengthEnum, PaymentSourceEnum, TaxMode, TaxTypeEnum } from '@eatfit247-shared-lib';
+import { InputLengthEnum, PaymentSourceEnum } from '@eatfit247-shared-lib';
 import { TxnMemberProductOrderItem } from './txn-member-product-order-item.model';
 
 @Table({
@@ -99,6 +99,11 @@ import { TxnMemberProductOrderItem } from './txn-member-product-order-item.model
         required: false,
         attributes: ['franchiseId', 'companyName'],
       },
+      {
+        model: TxnMemberProductOrderItem,
+        as: 'orderItems',
+        required: false,
+      },
     ],
   },
 }))
@@ -149,7 +154,7 @@ export class TxnMemberProduct extends Model<TxnMemberProduct> {
   @Column({
     allowNull: true,
     field: 'payment_date',
-    type: DataType.DATEONLY,
+    type: DataType.DATE,
   })
   declare paymentDate: Date | null;
 
@@ -255,10 +260,10 @@ export class TxnMemberProduct extends Model<TxnMemberProduct> {
 
   @Column({
     allowNull: true,
-    field: 'order_amount',
+    field: 'sub_total_amount',
     type: DataType.DECIMAL(10, 2),
   })
-  declare orderAmount: number;
+  declare subTotalAmount: number;
 
   @Column({
     allowNull: true,
@@ -266,13 +271,6 @@ export class TxnMemberProduct extends Model<TxnMemberProduct> {
     type: DataType.DECIMAL(10, 2),
   })
   declare taxAmount: number;
-
-  @Column({
-    allowNull: true,
-    field: 'total_amount',
-    type: DataType.DECIMAL(10, 2),
-  })
-  declare totalAmount: number;
 
   @Column({
     allowNull: true,
@@ -284,68 +282,25 @@ export class TxnMemberProduct extends Model<TxnMemberProduct> {
 
   @Column({
     allowNull: true,
+    field: 'total_amount',
+    type: DataType.DECIMAL(10, 2),
+  })
+  declare totalAmount: number;
+
+  @Column({
+    allowNull: true,
+    field: 'rounding_adjustment',
+    type: DataType.DECIMAL(10, 2),
+    defaultValue: 0,
+  })
+  declare roundingAdjustment: number;
+
+  @Column({
+    allowNull: true,
     field: 'currency',
     type: DataType.STRING(3),
   })
   declare currency: string;
-
-  @Column({
-    allowNull: true,
-    field: 'tax_type',
-    type: DataType.ENUM('GST', 'VAT', 'SALES_TAX', 'NONE'),
-  })
-  declare taxType: TaxTypeEnum;
-
-  @Column({
-    allowNull: true,
-    field: 'tax_mode',
-    type: DataType.ENUM(
-      'DOMESTIC_GST',
-      'EXPORT_OF_SERVICE',
-      'VAT',
-      'RCM_IMPORT_SERVICE',
-      'SALES_TAX',
-      'NO_TAX',
-    ),
-  })
-  declare taxMode: TaxMode;
-
-  @Column({
-    allowNull: true,
-    field: 'tax_percentage',
-    type: DataType.DECIMAL(5, 2),
-  })
-  declare taxPercentage: number;
-
-  @Column({
-    allowNull: true,
-    field: 'is_lut_applied',
-    type: DataType.BOOLEAN,
-    defaultValue: false,
-  })
-  declare isLutApplied: boolean;
-
-  @Column({
-    allowNull: true,
-    field: 'is_tax_included',
-    type: DataType.BOOLEAN,
-    defaultValue: false,
-  })
-  declare isTaxIncluded: boolean;
-
-  @Column({
-    allowNull: true,
-    field: 'jurisdiction',
-    type: DataType.JSONB,
-  })
-  declare jurisdiction: any;
-
-  @Column({
-    allowNull: true,
-    field: 'invoice_note',
-    type: DataType.TEXT,
-  })
-  declare invoiceNote: string;
 
   @BelongsTo(() => TxnMember, {
     foreignKey: 'memberId',
@@ -394,7 +349,7 @@ export class TxnMemberProduct extends Model<TxnMemberProduct> {
     sourceKey: 'memberProductId',
     as: 'orderItems',
   })
-  declare orderItems?: TxnMemberProductOrderItem[];
+  declare orderItems: TxnMemberProductOrderItem[];
 
   @BelongsTo(() => MstAdminUser, {
     as: 'createdByUser',

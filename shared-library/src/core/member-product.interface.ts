@@ -2,27 +2,34 @@ import { IBaseAdminUser } from '../base.interface';
 import { IAddress } from './location.interface';
 import { PaymentSourceEnum, TaxMode, TaxTypeEnum } from '../enum';
 
-export interface IOrderItem {
+export interface IMemberProductOrderItemBasic {
   productId: number;
-  productUnit: string;
-  productQuantity: number;
-  perQuantityAmount: number;
-  orderQuantity: number;
-  totalAmount: number;
+  productVariantId: number;
+  quantity: number;
+  unit: string;
+  price: number;
+  currency: string;
 }
 
 export interface IMemberProductOrderItem {
   memberProductOrderItemId: number;
   memberProductId: number;
-  productId?: number;
-  productVariantId?: number;
-  productName?: string;
-  quantityLabel?: string;
-  unitPrice?: number;
-  taxAmount?: number;
-  taxPercent?: number;
-  totalPrice?: number;
+  productId: number;
+  productVariantId: number;
+  productName: string;
+  quantityLabel: string;
+  quantity: number;
+  unitPrice: number;
+  baseAmount: number;
+  discountAmount?: number;
+  effectiveTaxRate?: number;
+  totalAmount: number;
   taxObj?: any;
+  taxType?: TaxTypeEnum;
+  taxMode?: TaxMode;
+  isLutApplied?: boolean;
+  jurisdiction?: any;
+  invoiceNote?: string;
 }
 
 export interface IBasicMemberProduct {
@@ -40,26 +47,21 @@ export interface IBasicMemberProduct {
   gstNumber?: string;
   billingAddressId?: number | null;
   memberAddress?: any;
-  orderAmount?: number;
+  subTotalAmount?: number;
   taxAmount?: number;
-  totalAmount?: number;
   discountAmount?: number;
+  totalAmount?: number;
+  roundingAdjustment?: number;
   currency?: string;
-  currencyCode?: string;
-  taxType?: TaxTypeEnum;
-  taxMode?: TaxMode;
-  taxPercentage?: number;
-  isLutApplied?: boolean;
-  isTaxIncluded?: boolean;
-  isTaxApplicable?: boolean;
-  isPlanFeesIncludedTax?: boolean;
-  jurisdiction?: any;
-  invoiceNote?: string;
   paymentSource: PaymentSourceEnum;
   gatewayProvider?: string;
   gatewayOrderId?: string;
   gatewayPaymentId?: string;
   paymentLink?: string;
+}
+
+export interface IManageMemberProduct extends IBasicMemberProduct {
+  orderItems: IMemberProductOrderItemBasic[];
 }
 
 export interface IMemberProduct extends IBasicMemberProduct {

@@ -52,8 +52,6 @@ export class ProductOrderFormService {
     const request: ICalculateTaxRequest = {
       orderAmount,
       discountAmount: formData.discountAmount || 0,
-      isTaxApplicable: formData.isTaxApplicable ?? false,
-      isPlanFeesIncludedTax: formData.isPlanFeesIncludedTax ?? false,
       currencyCode,
       billingAddressId: formData.billingAddressId || undefined,
       addressId: formData.addressId || undefined

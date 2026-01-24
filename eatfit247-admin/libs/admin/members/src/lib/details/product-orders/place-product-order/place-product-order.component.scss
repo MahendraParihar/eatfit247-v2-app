@@ -166,6 +166,52 @@
     }
   }
 
+  .tax-computation-card {
+    margin-top: 20px;
+
+    .tax-computation-table {
+      width: 100%;
+      margin-bottom: 16px;
+    }
+
+    .tax-computation-summary {
+      border-top: 2px solid #1976d2;
+      padding-top: 16px;
+      margin-top: 16px;
+
+      .summary-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px solid #e0e0e0;
+
+        &.total {
+          border-top: 2px solid #1976d2;
+          margin-top: 8px;
+          padding-top: 12px;
+          font-weight: bold;
+          font-size: 1.1em;
+        }
+
+        .label {
+          font-weight: 500;
+        }
+
+        .value {
+          font-weight: bold;
+        }
+      }
+
+      .invoice-note {
+        margin-top: 12px;
+        padding: 12px;
+        background-color: #fff3cd;
+        border-radius: 4px;
+        font-size: 0.9em;
+      }
+    }
+  }
+
   .payment-link-card {
     margin-top: 16px;
 

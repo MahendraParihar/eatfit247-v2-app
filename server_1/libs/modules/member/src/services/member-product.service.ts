@@ -1,35 +1,44 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { TxnMember, TxnMemberProduct } from '../models';
+import { TxnMemberProductOrderItem } from '../models';
 import {
   BusinessTypeEnum,
   ConfigParam,
   IAddress,
+  ICalculateTaxRequest,
+  ICalculateTaxResponse,
+  ICalculateProductVariantTaxRequest,
+  ICalculateProductVariantTaxResponse,
+  IProductVariantTaxResult,
   ICreatePaymentLinkRequest,
   IDropdownItem,
+  IManageMemberProduct,
   IMemberInfo,
   IMemberProduct,
-  IMemberProductMasterData,
-  IPaymentLinkResponse,
+  IMemberProductMasterData, IMemberProductOrderItemBasic,
+  IPaymentLinkResponse, IProductPrice,
   ITableList,
   mapPaymentToInvoiceDocument,
   MediaForEnum,
   PaymentSourceEnum,
+  PaymentStatusEnum,
   TableEnum,
   TransactionType,
 } from '@eatfit247-shared-lib';
-import { AppConfigService, CommonFunctionsUtil, Env, MstFranchise } from '@server_1/core';
+import { AppConfigService, CommonFunctionsUtil, Env, MstFranchise, PaymentValidationUtil } from '@server_1/core';
 import {
   AddressService,
   CountryService,
   IFileModel,
   InvoicePdfService,
+  PaymentUtil,
   PaymentModeService,
   PaymentStatusService,
   StateService,
 } from '@server_1/platform';
 import { ProductService } from '@server_1/modules/product';
-import { TaxEngineService } from '@server_1/modules/tax-engine';
+import { TaxEngineService, TaxInput } from '@server_1/modules/tax-engine';
 import { FranchiseService, FranchisePaymentGatewayService } from '@server_1/modules/franchise';
 import {
   PaymentGatewayCredentialService,
@@ -38,6 +47,7 @@ import {
 } from '@server_1/modules/payment';
 import { Sequelize } from 'sequelize-typescript';
 import fs from 'fs';
+import { find } from 'lodash';
 
 @Injectable()
 export class MemberProductService {
@@ -61,6 +71,8 @@ export class MemberProductService {
     @InjectModel(TxnMember) private readonly memberRepository: typeof TxnMember,
     @InjectModel(TxnMemberProduct)
     private readonly memberProductRepository: typeof TxnMemberProduct,
+    @InjectModel(TxnMemberProductOrderItem)
+    private readonly memberProductOrderItemRepository: typeof TxnMemberProductOrderItem,
     private sequelize: Sequelize,
   ) {}
 
@@ -83,8 +95,6 @@ export class MemberProductService {
         active: true,
       },
       order: [['paymentDate', 'DESC']],
-      raw: true,
-      nest: true,
     });
     return <ITableList<IMemberProduct>>{
       tableData: rows.map((item: any) => this.convertToModel(item)),
@@ -112,8 +122,6 @@ export class MemberProductService {
         memberId,
         active: true,
       },
-      raw: true,
-      nest: true,
     });
     if (!product) {
       throw new NotFoundException('Member product not found');
@@ -124,48 +132,22 @@ export class MemberProductService {
   /**
    * Convert database model to IMemberProduct interface
    */
-  private convertToModel(item: any): IMemberProduct {
-    const paymentAmounts = this.calculatePaymentAmounts(item.paymentObj, item.isTaxApplicable);
+  private convertToModel(item: TxnMemberProduct): IMemberProduct {
     return <IMemberProduct>{
       memberProductId: item.memberProductId,
       memberId: item.memberId,
-      memberName: `${item.member.firstName} ${item.member.lastName}`.trim(),
+      memberName: `${item.member?.firstName || ''} ${item.member?.lastName || ''}`.trim(),
       paymentModeId: item.paymentModeId,
       paymentMode: item.paymentMode?.paymentMode,
       addressId: item.addressId,
-      address: item.address
-        ? {
-          country: item.address.country,
-          state: item.address.state,
-          addressId: item.address.addressId,
-          postalAddress: item.address.postalAddress,
-          cityVillage: item.address.cityVillage || '',
-          pinCode: item.address.pinCode || '',
-          stateId: item.address.stateId,
-          countryId: item.address.countryId,
-        }
-        : undefined,
+      memberAddress: item.memberAddress,
       billingAddressId: item.billingAddressId,
-      billingAddress: item.billingAddress
-        ? {
-          country: item.address.country,
-          state: item.address.state,
-          addressId: item.billingAddress.addressId,
-          postalAddress: item.billingAddress.postalAddress,
-          cityVillage: item.billingAddress.cityVillage || '',
-          pinCode: item.billingAddress.pinCode || '',
-          stateId: item.billingAddress.stateId,
-          countryId: item.billingAddress.countryId,
-        }
-        : undefined,
       transactionId: item.transactionId,
       paymentDate: item.paymentDate,
       invoiceId: item.invoiceId,
       paymentStatusId: item.paymentStatusId,
       paymentStatus: item.paymentStatus?.paymentStatus,
       promoCode: item.promoCode,
-      isTaxApplicable: item.isTaxApplicable,
-      paymentObj: item.paymentObj,
       refundObj: item.refundObj,
       paymentGatewayResponse: item.paymentGatewayResponse,
       gstNumber: item.gstNumber,
@@ -184,12 +166,35 @@ export class MemberProductService {
       updatedByUser: item.updatedByUser
         ? CommonFunctionsUtil.getAdminShortInfo(item.updatedByUser, 'updatedByUser')
         : undefined,
-      // Add calculated payment amounts (for compatibility with invoice generation)
-      orderAmount: paymentAmounts.orderAmount,
-      discountAmount: paymentAmounts.discountAmount,
-      taxAmount: paymentAmounts.taxAmount,
-      totalAmount: paymentAmounts.totalAmount,
-      products: item.products,
+      orderAmount: item.subTotalAmount,
+      discountAmount: item.discountAmount,
+      taxAmount: item.taxAmount,
+      totalAmount: item.totalAmount,
+      subTotalAmount: item.subTotalAmount,
+      roundingAdjustment: item.roundingAdjustment,
+      currency: item.currency,
+      franchise: item.franchise?.companyName,
+      franchiseId: item.franchiseId,
+      orderItems: Array.isArray(item.orderItems) ? item.orderItems.map(orderItem => ({
+        memberProductOrderItemId: orderItem.memberProductOrderItemId,
+        memberProductId: orderItem.memberProductId,
+        productId: orderItem.productId,
+        productVariantId: orderItem.productVariantId,
+        productName: orderItem.productName,
+        quantityLabel: orderItem.quantityLabel,
+        quantity: orderItem.quantity,
+        unitPrice: orderItem.unitPrice,
+        baseAmount: orderItem.baseAmount,
+        discountAmount: orderItem.discountAmount,
+        effectiveTaxRate: orderItem.effectiveTaxRate,
+        taxAmount: orderItem.taxAmount,
+        totalAmount: orderItem.totalAmount,
+        taxObj: orderItem.taxObj,
+        taxType: orderItem.taxType,
+        taxMode: orderItem.taxMode,
+        jurisdiction: orderItem.jurisdiction,
+        invoiceNote: orderItem.invoiceNote,
+      })) : [],
     };
   }
 
@@ -295,7 +300,7 @@ export class MemberProductService {
     });
     // Transform to response format
     return gateways.map((gateway: any) => {
-      const paymentGateway = (gateway as any).paymentGateway || (gateway as any).PaymentGateway;
+      const paymentGateway = gateway.paymentGateway;
       return {
         franchisePaymentGatewayId: gateway.franchisePaymentGatewayId,
         gatewayCode: paymentGateway?.code || '',
@@ -489,17 +494,6 @@ export class MemberProductService {
     };
     // Get product details for description from paymentObj
     let productDescription = `Product Order - ID: ${productId}`;
-    // if (productOrder.paymentObj && (productOrder.paymentObj as any).productName) {
-    //   const productName = (productOrder.paymentObj as any).productName;
-    //   const quantity = (productOrder.paymentObj as any).quantity || 1;
-    //   const size = (productOrder.paymentObj as any).size || '';
-    //   productDescription = `Product Order - ${productName}${size ? ` (${size})` : ''}${quantity > 1 ? ` x${quantity}` : ''}`;
-    // }
-    // Map product order to InvoiceDocument using the universal invoice system
-    // Note: We need to convert IMemberProduct to a format compatible with mapPaymentToInvoiceDocument
-    // Since mapPaymentToInvoiceDocument expects IMemberPayment, we'll need to adapt it
-    // For now, we'll create a compatible structure
-    // const paymentObj: IMemberPaymentObject = productModel.paymentObj as IMemberPaymentObject;
     const invoiceDoc = mapPaymentToInvoiceDocument(
       {
         ...productModel,
@@ -536,62 +530,368 @@ export class MemberProductService {
     } as IFileModel;
   }
 
-  /**
-   * Calculate payment amounts from payment object
-   * Reads from the stored payment object structure (user/system sections)
-   */
-  private calculatePaymentAmounts(
-    paymentObj: any,
-    isTaxApplicable: boolean,
-  ): {
-    orderAmount: number;
-    discountAmount: number;
-    taxAmount: number;
-    totalAmount: number;
-    taxObject?: object;
-  } {
-    // Read from user section if available (new structure), otherwise fallback to old structure
-    const userSection = paymentObj?.user;
-    const systemSection = paymentObj?.system;
-    const pricing = paymentObj?.pricing;
-    const orderAmount =
-      pricing?.orderAmount || userSection?.orderAmount || paymentObj?.orderAmount || 0;
-    const discountAmount =
-      pricing?.discountAmount || userSection?.discountAmount || paymentObj?.discountAmount || 0;
-    const taxAmount = pricing?.taxAmount || userSection?.taxAmount || paymentObj?.taxAmount || 0;
-    const totalAmount =
-      pricing?.totalAmount || userSection?.totalAmount || paymentObj?.totalAmount || 0;
-    const taxObject =
-      paymentObj?.tax?.taxObj ||
-      userSection?.taxObj ||
-      systemSection?.taxObj ||
-      paymentObj?.taxObj ||
-      undefined;
-    // If using old structure, calculate tax
-    if (!userSection && !systemSection && !pricing && isTaxApplicable && !taxObject) {
-      const subtotal = orderAmount - discountAmount;
-      const taxPercentage =
-        paymentObj?.taxPercentage ||
-        this.appConfigService.getNumber(ConfigParam.TAX_PERCENTAGE, true, 0);
-      const calculatedTaxAmount = (subtotal * taxPercentage) / 100;
-      return {
-        orderAmount,
-        discountAmount,
-        taxAmount: calculatedTaxAmount,
-        totalAmount: subtotal + calculatedTaxAmount,
-        taxObject: {
-          percentage: taxPercentage,
-          amount: calculatedTaxAmount,
+  public async calculateProductTax(memberId: number, payload: ICalculateProductVariantTaxRequest): Promise<ICalculateProductVariantTaxResponse> {
+    // Verify member exists
+    const member = await this.memberRepository.scope('details').findOne({
+      where: { memberId },
+      include: [
+        {
+          model: MstFranchise,
+          as: 'franchise',
+          required: false,
         },
-      };
+      ],
+    });
+    if (!member) {
+      throw new NotFoundException('Member not found');
+    }
+    // Get franchise for products
+    const franchise = await this.franchiseService.franchiseByBusinessType(BusinessTypeEnum.PRODUCT);
+    if (!franchise || franchise.length === 0) {
+      throw new BadRequestException('Franchise not found for products');
+    }
+    // Get addresses
+    const addresses = await this.findAddresses(
+      franchise[0],
+      memberId,
+      payload.addressId,
+      payload.billingAddressId,
+    );
+    const memberAddressSnapshot = addresses.memberAddressSnapshot;
+    const franchiseAddress = addresses.franchiseAddress;
+    // Calculate tax for each product variant
+    const results: IProductVariantTaxResult[] = [];
+    for (const item of payload.items) {
+      // Get product details
+      const product = await this.productService.fetchById(item.productId);
+      // Find the variant
+      const variant = product.variants?.find((v) => v.productVariantId === item.productVariantId);
+      if (!variant) {
+        throw new BadRequestException(
+          `Variant ${item.productVariantId} not found for product ${item.productId}`,
+        );
+      }
+      // Find the price for the specified currency
+      const variantPrice: IProductPrice = find(variant.prices, { currency: item.currencyCode });
+      if (!variantPrice) {
+        throw new BadRequestException(
+          `Price not found for variant ${item.productVariantId} with currency ${item.currencyCode}`,
+        );
+      }
+      // Calculate tax for this item
+      const taxCalculationResult = await this.calculateTax(
+        item.productId,
+        franchise[0],
+        {
+          orderAmount: variantPrice.price,
+          discountAmount: 0,
+          currencyCode: item.currencyCode,
+          billingAddressId: payload.billingAddressId || undefined,
+          addressId: payload.addressId || undefined,
+        },
+        franchiseAddress,
+        memberAddressSnapshot.billingAddress,
+      );
+      results.push({
+        productId: item.productId,
+        productVariantId: item.productVariantId,
+        currencyCode: item.currencyCode,
+        price: variantPrice.price,
+        taxPercentage: taxCalculationResult.taxPercentage,
+        taxAmount: taxCalculationResult.taxAmount,
+        totalAmount: taxCalculationResult.totalAmount,
+        taxObj: taxCalculationResult.taxObj,
+        taxType: taxCalculationResult.taxType,
+        taxMode: taxCalculationResult.taxMode,
+        invoiceNote: taxCalculationResult.invoiceNote,
+        isLutApplied: taxCalculationResult.isLutApplied,
+        jurisdiction: taxCalculationResult.jurisdiction,
+      });
+    }
+    return { items: results };
+  }
+
+  /**
+   * Calculate tax for product order
+   * Used by frontend to get real-time tax calculations
+   */
+  public async calculateTax(
+    productId: number,
+    franchise: IDropdownItem,
+    payload: ICalculateTaxRequest,
+    billingAddress: IAddress | null,
+    franchiseAddress: IAddress | null,
+  ): Promise<ICalculateTaxResponse> {
+    // Validate billing address is provided when tax is applicable
+    if (!billingAddress) {
+      throw new BadRequestException(
+        'Billing address is required for tax calculation. Please provide billingAddressId or addressId.',
+      );
+    }
+    // Get country and state codes from addresses
+    const addressCodes = await PaymentUtil.extractAddressCodes(
+      franchiseAddress,
+      billingAddress,
+      this.countryService,
+      this.stateService,
+    );
+    const supplierCountryCode = addressCodes.supplierCountryCode;
+    const supplierStateCode = addressCodes.supplierStateCode;
+    const customerCountryCode = addressCodes.customerCountryCode;
+    const customerStateCode = addressCodes.customerStateCode;
+    // Use tax engine to calculate tax
+    const taxInput: TaxInput = {
+      baseAmount: payload.orderAmount,
+      discountAmount: payload.discountAmount,
+      supplierCountryCode,
+      supplierStateCode: supplierStateCode || undefined,
+      customerCountryCode,
+      customerStateCode: customerStateCode || undefined,
+      referenceId: productId,
+      franchiseId: franchise.id as number,
+      currency: payload.currencyCode,
+      transactionType: TransactionType.PRODUCT,
+    };
+    const taxResult = await this.taxEngineService.calculate(taxInput);
+    // Calculate base amounts
+    return <ICalculateTaxResponse>{
+      orderAmount: payload.orderAmount,
+      taxAmount: taxResult.taxAmount,
+      totalAmount: taxResult.totalAmount,
+      discountAmount: payload.discountAmount,
+      taxType: taxResult.taxType,
+      taxMode: taxResult.taxMode,
+      taxPercentage: taxResult.taxPercentage,
+      taxObj: taxResult.taxObj,
+      invoiceNote: taxResult.invoiceNote || null,
+      currency: payload.currencyCode,
+      isLutApplied: taxResult.isLutApplied,
+      jurisdiction: {
+        entityCountry: taxResult.entityCountry,
+        customerCountry: taxResult.customerCountry,
+        placeOfSupply: taxResult.placeOfSupply,
+      },
+    };
+  }
+
+  private async findAddresses(
+    franchise: IDropdownItem,
+    memberId: number,
+    addressId?: number,
+    billingAddressId?: number,
+  ) {
+    // Handle address if provided
+    // Load all member addresses at once
+    const addresses = await this.addressService.filterByTableIdAndPk(
+      TableEnum.TXN_MEMBER,
+      memberId,
+    );
+    // Resolve selected addresses
+    const billingAddress: IAddress | null =
+      (billingAddressId && addresses.find((a) => a.addressId === billingAddressId)) || null;
+    const primaryAddress: IAddress | null =
+      (addressId && addresses.find((a) => a.addressId === addressId)) || null;
+    // Build address snapshot to store with payment
+    const memberAddressSnapshot = {
+      address: primaryAddress,
+      billingAddress: billingAddress,
+    };
+    // Validate billing address country if the billing address exists and tax is applicable
+    if (billingAddress && !billingAddress.countryId) {
+      throw new BadRequestException('Billing address country is required when tax is applicable');
+    }
+    // Get franchise address for tax calculation
+    let franchiseAddress: IAddress | null = null;
+    if (franchise.id) {
+      franchiseAddress = await this.addressService.findByTableIdAndPk(
+        TableEnum.MST_FRANCHISES,
+        franchise.id as number,
+      );
     }
     return {
-      orderAmount,
-      discountAmount,
-      taxAmount,
-      totalAmount,
-      taxObject,
+      memberAddressSnapshot,
+      franchiseAddress,
     };
+  }
+
+  private async buildOrderItem(orderItems: IMemberProductOrderItemBasic[], discountAmount: number) {
+    const orderItemObjs = [];
+    // calculate order item level tax calculation
+    if (orderItems) {
+      for (const item of orderItems) {
+        // Get product details
+        const product = await this.productService.fetchById(item.productId);
+        // Find the variant to get quantityValue and quantityUnit
+        const variant = product.variants?.find((v) => v.productVariantId === item.productVariantId);
+        if (!variant) {
+          throw new BadRequestException(
+            `Variant ${item.productVariantId} not found for product ${item.productId}`,
+          );
+        }
+        const variantFees: IProductPrice = find(variant.prices, { currency: item.currency });
+        // Calculate tax if not already calculated
+        orderItemObjs.push({
+          productId: item.productId,
+          productVariantId: item.productVariantId,
+          productName: product.name,
+          quantity: item.quantity, // Admin ordered quantity
+          quantityLabel: `${variant.quantityValue} ${variant.quantityUnit}`, // Variant quantity + unit (e.g., "100gm")
+          unitPrice: variantFees.price,
+          baseAmount: variantFees.price * item.quantity,
+        });
+      }
+    }
+    const orderSubtotal = orderItemObjs.reduce((acc, item) => acc + item.baseAmount, 0);
+    // Apply discount logic
+    for (const orderItem of orderItemObjs) {
+      // Allocate discount proportionally by item value:
+      orderItem.discountAmount = (orderItem.baseAmount / orderSubtotal) * discountAmount;
+    }
+    return orderItemObjs;
+  }
+
+  /**
+   * Create a new product order
+   * @param memberId - Member ID
+   * @param obj - Product order data
+   * @param requestedIp - Request IP
+   * @param adminId - Admin user ID
+   * @returns Created product order
+   */
+  public async create(
+    memberId: number,
+    obj: IManageMemberProduct,
+    requestedIp: string,
+    adminId: number,
+  ): Promise<IMemberProduct> {
+    // Verify member exists
+    const member = await this.memberRepository.scope('details').findOne({
+      where: { memberId },
+      include: [
+        {
+          model: MstFranchise,
+          as: 'franchise',
+          required: false,
+        },
+      ],
+    });
+    if (!member) {
+      throw new NotFoundException('Member not found');
+    }
+    // Validate mandatory fields for MANUAL payment source
+    PaymentValidationUtil.validateManualPaymentSource({
+      paymentSource: obj.paymentSource,
+      paymentModeId: obj.paymentModeId,
+      paymentDate: obj.paymentDate,
+      paymentStatusId: obj.paymentStatusId,
+      transactionId: obj.transactionId,
+    });
+    // Get franchise for products
+    const franchise = await this.franchiseService.franchiseByBusinessType(BusinessTypeEnum.PRODUCT);
+    if (!franchise || franchise.length === 0) {
+      throw new BadRequestException('Franchise not found for products');
+    }
+    const t = await this.sequelize.transaction();
+    try {
+      const addresses = await this.findAddresses(
+        franchise[0],
+        memberId,
+        obj.addressId,
+        obj.billingAddressId,
+      );
+      const memberAddressSnapshot = addresses.memberAddressSnapshot;
+      const orderItemObjs = [];
+      const tempOrderItem = await this.buildOrderItem(obj.orderItems, obj.discountAmount || 0);
+      // calculate order item level tax calculation
+      for (const item of tempOrderItem) {
+        const taxCalculationResult = await this.calculateTax(
+          item.productId,
+          franchise[0],
+          {
+            orderAmount: item.baseAmount,
+            discountAmount: item.discountAmount,
+            currencyCode: item.currencyCode,
+            billingAddressId: obj.billingAddressId || undefined,
+            addressId: obj.addressId || undefined,
+          },
+          addresses.franchiseAddress,
+          memberAddressSnapshot.billingAddress,
+        );
+        orderItemObjs.push({
+          productId: item.productId,
+          productVariantId: item.productVariantId,
+          productName: item.productName,
+          quantity: item.quantity, // Admin ordered quantity
+          quantityLabel: item.quantityLabel,
+          unitPrice: item.unitPrice,
+          baseAmount: taxCalculationResult.orderAmount,
+          discountAmount: item.discountAmount,
+          taxAmount: taxCalculationResult.taxAmount,
+          effectiveTaxRate: taxCalculationResult.taxPercentage,
+          totalAmount: taxCalculationResult.totalAmount,
+          taxObj: taxCalculationResult.taxObj,
+          taxType: taxCalculationResult.taxType,
+          taxMode: taxCalculationResult.taxMode,
+          isLutApplied: taxCalculationResult.isLutApplied,
+          jurisdiction: taxCalculationResult.jurisdiction,
+          invoice_note: taxCalculationResult.invoiceNote,
+        });
+      }
+      const totalOrderAmount = orderItemObjs.reduce((acc, item) => acc + item.baseAmount, 0);
+      const totalTaxAmount = orderItemObjs.reduce((acc, item) => acc + item.taxAmount, 0);
+      const totalAmount = orderItemObjs.reduce((acc, item) => acc + item.totalAmount, 0);
+      const totalDiscount = orderItemObjs.reduce((acc, item) => acc + item.totalAmount, 0);
+      // Build payment object structure
+      const productOrderData: any = {
+        memberId,
+        franchiseId: franchise[0].id as number,
+        paymentModeId: obj.paymentModeId || null,
+        addressId: obj.addressId || null,
+        billingAddressId: obj.billingAddressId || null,
+        transactionId: obj.transactionId || null,
+        paymentDate: obj.paymentDate || new Date(),
+        paymentStatusId: obj.paymentStatusId || PaymentStatusEnum.PENDING,
+        promoCode: obj.promoCode || null,
+        isTaxApplicable: true,
+        refundObj: null,
+        paymentGatewayResponse: null,
+        gstNumber: obj.gstNumber || null,
+        memberAddress: memberAddressSnapshot,
+        paymentSource: obj.paymentSource,
+        subTotalAmount: totalOrderAmount,
+        discountAmount: totalDiscount,
+        taxAmount: totalTaxAmount,
+        totalAmount: totalAmount,
+        active: true,
+        createdBy: adminId,
+        modifiedBy: adminId,
+        createdIp: requestedIp,
+        modifiedIp: requestedIp,
+      };
+      if (obj.paymentSource === PaymentSourceEnum.PAYMENT_GATEWAY) {
+        productOrderData.paymentLink = obj.paymentLink;
+        productOrderData.gatewayOrderId = obj.gatewayOrderId;
+        productOrderData.gatewayProvider = obj.gatewayProvider;
+        productOrderData.gatewayPaymentId = obj.gatewayPaymentId;
+      }
+      const productOrder = await this.memberProductRepository.create(productOrderData, {
+        transaction: t,
+      });
+      // Create order items
+      for (const itemOrder of orderItemObjs) {
+        itemOrder.memberProductId = productOrder.memberProductId;
+      }
+      await this.memberProductOrderItemRepository.bulkCreate(orderItemObjs, { transaction: t });
+      await t.commit();
+      // Fetch the created product order with relationships
+      const createdOrder = await this.memberProductRepository.scope('details').findOne({
+        where: { memberProductId: productOrder.memberProductId },
+      });
+      return this.convertToModel(createdOrder!);
+    } catch (error) {
+      await t.rollback();
+      throw error;
+    }
   }
 }
 

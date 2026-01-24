@@ -171,7 +171,7 @@ create table public.txn_member_products
         constraint fk_txn_member_product_txn_member_address_id
             references public.txn_addresses,
     transaction_id           varchar(250),
-    payment_date             date                        null,
+    payment_date             timestamptz                 null,
     invoice_id               varchar(100),
     payment_status_id        integer                     not null
         constraint fk_txn_member_product_mst_payment_statuses_id
@@ -187,18 +187,12 @@ create table public.txn_member_products
         constraint txn_member_products_txn_addresses_address_id_fk
             references public.txn_addresses,
     member_address           jsonb,
-    order_amount             NUMERIC(10, 2),
+    sub_total_amount         NUMERIC(10, 2),
     tax_amount               NUMERIC(10, 2),
-    total_amount             NUMERIC(10, 2),
     discount_amount          NUMERIC(10, 2) DEFAULT 0,
+    total_amount             NUMERIC(10, 2), -- total_amount = sub_total_amount - discount_amount + tax_amount + rounding_adjustment
+    rounding_adjustment      NUMERIC(10, 2) DEFAULT 0,
     currency                 VARCHAR(3),
-    tax_type                 public.tax_type,
-    tax_mode                 public.tax_mode,
-    tax_percentage           NUMERIC(5, 2),
-    is_lut_applied           BOOLEAN        DEFAULT false,
-    is_tax_included          BOOLEAN        DEFAULT false,
-    jurisdiction             jsonb,
-    invoice_note             text           default null,
     payment_source           varchar(30)    default 'MANUAL'::character varying,
     gateway_provider         varchar(50),
     gateway_order_id         varchar(100),
@@ -229,15 +223,23 @@ create TABLE public.txn_member_product_order_items
 (
     member_product_order_item_id serial primary key,
     member_product_id            integer REFERENCES txn_member_products (member_product_id),
-    product_id                   integer REFERENCES mst_product (product_id),
-    product_variant_id           integer REFERENCES mst_product_variants (product_variant_id),
-    product_name                 varchar(100),
-    quantity_label               VARCHAR(50),
-    unit_price                   NUMERIC(10, 2),
-    tax_amount                   NUMERIC(10, 2) DEFAULT 0,
-    tax_percent                  NUMERIC(5, 2),
-    total_price                  NUMERIC(10, 2),
-    tax_obj                      jsonb
+    product_id                   integer        not null REFERENCES mst_product (product_id),
+    product_variant_id           integer        not null REFERENCES mst_product_variants (product_variant_id),
+    product_name                 varchar(100)   not null,
+    quantity_label               VARCHAR(50)    not null,
+    quantity                     integer        NOT NULL CHECK (quantity > 0),
+    unit_price                   NUMERIC(10, 2) not null,
+    base_amount                  NUMERIC(10, 2) not null,
+    discount_amount              numeric(10, 2),
+    tax_amount                   numeric(10, 2),
+    effective_tax_rate           NUMERIC(10, 2) DEFAULT 0,
+    total_amount                 NUMERIC(10, 2) not null,
+    tax_obj                      jsonb,
+    tax_type                     public.tax_type,
+    tax_mode                     public.tax_mode,
+    is_lut_applied               BOOLEAN        DEFAULT false,
+    jurisdiction                 jsonb,
+    invoice_note                 text           default null
 );
 
 drop table if exists public.txn_shipments;
@@ -285,3 +287,12 @@ CREATE TABLE txn_shipment_tracking_events
     source                     public.shipment_tracking_enum, -- COURIER | SYSTEM | ADMIN
     created_at                 TIMESTAMP DEFAULT NOW()
 );
+
+CREATE INDEX ix_txn_member_product_order_items_member_product_id
+    ON txn_member_product_order_items (member_product_id);
+
+CREATE INDEX ix_txn_member_product_payment_status
+    ON txn_member_products (payment_status_id);
+
+CREATE INDEX ix_txn_member_product_created_at
+    ON txn_member_products (created_at);

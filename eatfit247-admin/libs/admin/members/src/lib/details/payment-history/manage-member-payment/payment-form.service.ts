@@ -15,8 +15,6 @@ import { MembersApiService } from '../../../api.service';
 export interface PaymentFormData {
   orderAmount: number;
   discountAmount: number;
-  isTaxApplicable: boolean;
-  isPlanFeesIncludedTax: boolean;
   currencyCode: string;
   billingAddressId?: number;
   addressId?: number;
@@ -44,8 +42,6 @@ export class PaymentFormService {
     const request: ICalculateTaxRequest = {
       orderAmount,
       discountAmount: formData.discountAmount || 0,
-      isTaxApplicable: formData.isTaxApplicable ?? false,
-      isPlanFeesIncludedTax: formData.isPlanFeesIncludedTax ?? false,
       currencyCode,
       billingAddressId: formData.billingAddressId || undefined,
       addressId: formData.addressId || undefined
@@ -72,8 +68,6 @@ export class PaymentFormService {
       transactionId: payment.transactionId || '',
       paymentDate: payment.paymentDate,
       paymentStatusId: payment.paymentStatusId,
-      isTaxApplicable: payment.isTaxApplicable,
-      isPlanFeesIncludedTax: payment.isTaxIncluded ?? false,
       noOfCycle: payment.noOfCycle || 0,
       noOfDaysInCycle: payment.noOfDaysInCycle || 0,
       currencyCode: payment.currency || 'INR',
@@ -115,8 +109,7 @@ export class PaymentFormService {
         getValue('billingAddressId') || formGroup.value.billingAddressId,
       transactionId: formGroup.value.transactionId?.trim() || undefined,
       paymentStatusId: formGroup.value.paymentStatusId,
-      isTaxApplicable:
-        getValue('isTaxApplicable') ?? formGroup.value.isTaxApplicable ?? false,
+      isTaxApplicable: false,
       gstNumber:
         getValue('gstNumber')?.trim() ||
         formGroup.value.gstNumber?.trim() ||
@@ -128,10 +121,6 @@ export class PaymentFormService {
         getValue('noOfDaysInCycle') || formGroup.value.noOfDaysInCycle || 0,
       ),
       taxPercentage: Number(taxPercentage),
-      isPlanFeesIncludedTax:
-        getValue('isPlanFeesIncludedTax') ??
-        formGroup.value.isPlanFeesIncludedTax ??
-        false,
       paymentSource: formGroup.value.paymentSource,
       currencyCode:
         getValue('currencyCode') || formGroup.value.currencyCode || 'INR',
@@ -198,8 +187,6 @@ export class PaymentFormService {
     return {
       orderAmount: Number(step1FormGroup?.get('orderAmount')?.value || formGroup.get('orderAmount')?.value) || 0,
       discountAmount: Number(step1FormGroup?.get('discountAmount')?.value || formGroup.get('discountAmount')?.value) || 0,
-      isTaxApplicable: step1FormGroup?.get('isTaxApplicable')?.value || formGroup.get('isTaxApplicable')?.value || false,
-      isPlanFeesIncludedTax: step1FormGroup?.get('isPlanFeesIncludedTax')?.value || formGroup.get('isPlanFeesIncludedTax')?.value || false,
       currencyCode: step1FormGroup?.get('currencyCode')?.value || formGroup.get('currencyCode')?.value || 'INR',
       billingAddressId: step1FormGroup?.get('billingAddressId')?.value || formGroup.get('billingAddressId')?.value,
       addressId: step1FormGroup?.get('addressId')?.value || formGroup.get('addressId')?.value

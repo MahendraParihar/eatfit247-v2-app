@@ -19,9 +19,6 @@ export class TaxEngineService {
 
   async calculate(input: TaxInput): Promise<TaxResult> {
     const taxableAmount = input.baseAmount - input.discountAmount;
-    if (input.isTaxApplicable === false) {
-      return this.noTax(taxableAmount);
-    }
     // 1️⃣ Fetch tax rule (SINGLE SOURCE OF TRUTH)
     const taxRule = await this.taxMasterService.getApplicableTaxRule(<ITaxCalculationInput>{
       franchiseId: input.franchiseId,
@@ -32,7 +29,6 @@ export class TaxEngineService {
     if (!taxRule || taxRule.taxPercent === 0) {
       return this.noTax(taxableAmount);
     }
-
     const countries = await this.countryService.findAll({ page: 0, limit: 1000 });
     const supplierCountry = countries.tableData.find(
       (c) => c.countryCode === input.supplierCountryCode,

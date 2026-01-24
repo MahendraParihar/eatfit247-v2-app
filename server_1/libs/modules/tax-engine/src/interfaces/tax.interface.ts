@@ -18,7 +18,6 @@ export interface TaxInput {
   customerStateCode?: string; // required for GST / US sales tax
   currency: string; // INR, USD, AED, etc.
   transactionType: TransactionType;
-  isTaxApplicable?: boolean; // default = true (used only for exemptions)
 }
 
 export interface TaxResult {

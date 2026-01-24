@@ -13,30 +13,13 @@ export class CalculateTaxDto implements ICalculateTaxRequest {
   discountAmount!: number;
 
   @IsNotEmpty()
-  @IsBoolean()
-  isTaxApplicable!: boolean;
-
-  @IsNotEmpty()
-  @IsBoolean()
-  isPlanFeesIncludedTax!: boolean;
-
-  @IsNotEmpty()
   @IsString()
   currencyCode!: string;
 
-  /**
-   * Billing address ID (customer address)
-   * Required when isTaxApplicable is true for accurate tax calculation
-   * Tax rates depend on customer's location (country/state)
-   */
   @IsOptional()
   @IsNumber()
   billingAddressId?: number;
 
-  /**
-   * Alternative address ID if billingAddressId is not provided
-   * Required when isTaxApplicable is true for accurate tax calculation
-   */
   @IsOptional()
   @IsNumber()
   addressId?: number;

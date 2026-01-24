@@ -21,12 +21,13 @@ import {
   TableEnum,
   TransactionType,
 } from '@eatfit247-shared-lib';
-import { AppConfigService, CommonFunctionsUtil, Env, MstFranchise } from '@server_1/core';
+import { AppConfigService, CommonFunctionsUtil, Env, MstFranchise, PaymentValidationUtil } from '@server_1/core';
 import {
   AddressService,
   CountryService,
   IFileModel,
   InvoicePdfService,
+  PaymentUtil,
   PaymentModeService,
   PaymentStatusService,
   StateService,
@@ -132,7 +133,7 @@ export class MemberPaymentService {
       billingAddress = addresses.find((a) => a.addressId === payload.addressId) || null;
     }
     // Validate billing address is provided when tax is applicable
-    if (payload.isTaxApplicable && !billingAddress) {
+    if (!billingAddress) {
       throw new BadRequestException(
         'Billing address is required for tax calculation. Please provide billingAddressId or addressId.',
       );
@@ -173,14 +174,10 @@ export class MemberPaymentService {
       }
     }
     // Calculate base amounts
-    let systemOrderAmount = payload.orderAmount;
-    let systemDiscountAmount = payload.discountAmount;
-    let baseAmountForTax = systemOrderAmount;
     // Use tax engine to calculate tax
     const taxInput: TaxInput = {
-      baseAmount: payload.isPlanFeesIncludedTax ? baseAmountForTax : systemOrderAmount,
-      discountAmount: systemDiscountAmount,
-      isTaxApplicable: payload.isTaxApplicable,
+      baseAmount: payload.orderAmount,
+      discountAmount: payload.discountAmount,
       supplierCountryCode,
       supplierStateCode: supplierStateCode || undefined,
       customerCountryCode,
@@ -191,20 +188,11 @@ export class MemberPaymentService {
       transactionType: TransactionType.SERVICE,
     };
     const taxResult = await this.taxEngineService.calculate(taxInput);
-    // Calculate final amounts
-    let taxAmount = taxResult.taxAmount;
-    let totalAmount = taxResult.totalAmount;
     // If tax is included in plan fees, adjust calculations
-    if (payload.isTaxApplicable && payload.isPlanFeesIncludedTax && taxResult.taxPercentage > 0) {
-      const extractedTax = systemOrderAmount - baseAmountForTax;
-      const discountedBase = baseAmountForTax - systemDiscountAmount;
-      taxAmount = extractedTax;
-      totalAmount = discountedBase + extractedTax;
-    }
     return <ICalculateTaxResponse>{
       taxPercentage: taxResult.taxPercentage,
-      taxAmount,
-      totalAmount,
+      taxAmount: taxResult.taxAmount,
+      totalAmount: taxResult.totalAmount,
       taxObj: taxResult.taxObj,
       taxType: taxResult.taxType,
       taxMode: taxResult.taxMode,
@@ -301,20 +289,13 @@ export class MemberPaymentService {
       throw new BadRequestException('Invalid amount');
     }
     // Validate mandatory fields for MANUAL payment source
-    if (obj.paymentSource === PaymentSourceEnum.MANUAL) {
-      if (!obj.paymentModeId) {
-        throw new BadRequestException('Payment Mode is required for MANUAL payment source');
-      }
-      if (!obj.paymentDate) {
-        throw new BadRequestException('Payment Date is required for MANUAL payment source');
-      }
-      if (!obj.paymentStatusId) {
-        throw new BadRequestException('Payment Status is required for MANUAL payment source');
-      }
-      if (!obj.transactionId || obj.transactionId.trim() === '') {
-        throw new BadRequestException('Transaction ID is required for MANUAL payment source');
-      }
-    }
+    PaymentValidationUtil.validateManualPaymentSource({
+      paymentSource: obj.paymentSource,
+      paymentModeId: obj.paymentModeId,
+      paymentDate: obj.paymentDate,
+      paymentStatusId: obj.paymentStatusId,
+      transactionId: obj.transactionId,
+    });
     const t = await this.sequelize.transaction();
     try {
       // Handle address if provided
@@ -357,7 +338,6 @@ export class MemberPaymentService {
           orderAmount: fees ? fees.fees : obj.orderAmount,
           discountAmount: obj.discountAmount || 0,
           currencyCode: obj.currencyCode,
-          isPlanFeesIncludedTax: obj.isPlanFeesIncludedTax,
         },
         obj.isTaxApplicable,
         billingAddress,
@@ -392,7 +372,6 @@ export class MemberPaymentService {
         taxMode: paymentObj.taxMode,
         taxPercentage: paymentObj.taxPercentage,
         isLutApplied: paymentObj.isLutApplied,
-        isTaxIncluded: paymentObj.isTaxIncludedInPrice,
         taxObj: paymentObj.taxObj,
         jurisdiction: paymentObj.jurisdiction,
         invoiceNote: paymentObj.invoiceNote,
@@ -478,28 +457,22 @@ export class MemberPaymentService {
       throw new NotFoundException('Payment not found');
     }
     // Validate mandatory fields for MANUAL payment source
-    const paymentSource = obj.paymentSource !== undefined ? obj.paymentSource : payment.paymentSource;
-    if (paymentSource === PaymentSourceEnum.MANUAL) {
-      const paymentModeId =
-        obj.paymentModeId !== undefined ? obj.paymentModeId : payment.paymentModeId;
-      const paymentDate = obj.paymentDate !== undefined ? obj.paymentDate : payment.paymentDate;
-      const paymentStatusId =
-        obj.paymentStatusId !== undefined ? obj.paymentStatusId : payment.paymentStatusId;
-      const transactionId =
-        obj.transactionId !== undefined ? obj.transactionId : payment.transactionId;
-      if (!paymentModeId) {
-        throw new BadRequestException('Payment Mode is required for MANUAL payment source');
-      }
-      if (!paymentDate) {
-        throw new BadRequestException('Payment Date is required for MANUAL payment source');
-      }
-      if (!paymentStatusId) {
-        throw new BadRequestException('Payment Status is required for MANUAL payment source');
-      }
-      if (!transactionId || (typeof transactionId === 'string' && transactionId.trim() === '')) {
-        throw new BadRequestException('Transaction ID is required for MANUAL payment source');
-      }
-    }
+    const paymentSource =
+      obj.paymentSource !== undefined ? obj.paymentSource : payment.paymentSource;
+    const paymentModeId =
+      obj.paymentModeId !== undefined ? obj.paymentModeId : payment.paymentModeId;
+    const paymentDate = obj.paymentDate !== undefined ? obj.paymentDate : payment.paymentDate;
+    const paymentStatusId =
+      obj.paymentStatusId !== undefined ? obj.paymentStatusId : payment.paymentStatusId;
+    const transactionId =
+      obj.transactionId !== undefined ? obj.transactionId : payment.transactionId;
+    PaymentValidationUtil.validateManualPaymentSourceWithFallback(
+      paymentSource,
+      paymentModeId,
+      paymentDate,
+      paymentStatusId,
+      transactionId,
+    );
     const t = await this.sequelize.transaction();
     try {
       // Handle address updates if provided
@@ -535,20 +508,23 @@ export class MemberPaymentService {
       }
       // Determine if we need to recalculate tax
       const orderAmount = obj.orderAmount !== undefined ? obj.orderAmount : payment.orderAmount;
-      const discountAmount = obj.discountAmount !== undefined ? obj.discountAmount : payment.discountAmount;
-      const isTaxApplicable = obj.isTaxApplicable !== undefined ? obj.isTaxApplicable : payment.isTaxApplicable;
+      const discountAmount =
+        obj.discountAmount !== undefined ? obj.discountAmount : payment.discountAmount;
+      const isTaxApplicable =
+        obj.isTaxApplicable !== undefined ? obj.isTaxApplicable : payment.isTaxApplicable;
       const currencyCode = obj.currencyCode || obj.currency || payment.currency || 'INR';
-      const isPlanFeesIncludedTax = obj.isPlanFeesIncludedTax !== undefined ? obj.isPlanFeesIncludedTax : payment.isTaxIncluded;
       // Recalculate tax if amounts or tax applicability changed
       let finalTaxAmount = obj.taxAmount !== undefined ? obj.taxAmount : payment.taxAmount;
       let finalTotalAmount = obj.totalAmount !== undefined ? obj.totalAmount : payment.totalAmount;
       let finalTaxType = obj.taxType !== undefined ? obj.taxType : payment.taxType;
       let finalTaxMode = obj.taxMode !== undefined ? obj.taxMode : payment.taxMode;
-      let finalTaxPercentage = obj.taxPercentage !== undefined ? obj.taxPercentage : payment.taxPercentage;
-      let finalIsLutApplied = obj.isLutApplied !== undefined ? obj.isLutApplied : payment.isLutApplied;
-      let finalIsTaxIncluded = obj.isTaxIncluded !== undefined ? obj.isTaxIncluded : payment.isTaxIncluded;
+      let finalTaxPercentage =
+        obj.taxPercentage !== undefined ? obj.taxPercentage : payment.taxPercentage;
+      let finalIsLutApplied =
+        obj.isLutApplied !== undefined ? obj.isLutApplied : payment.isLutApplied;
       let finalTaxObj = obj.taxObj !== undefined ? obj.taxObj : payment.taxObj;
-      let finalJurisdiction = obj.jurisdiction !== undefined ? obj.jurisdiction : payment.jurisdiction;
+      let finalJurisdiction =
+        obj.jurisdiction !== undefined ? obj.jurisdiction : payment.jurisdiction;
       const needsRecalculation =
         (obj.orderAmount !== undefined && obj.orderAmount !== payment.orderAmount) ||
         (obj.discountAmount !== undefined && obj.discountAmount !== payment.discountAmount) ||
@@ -560,7 +536,6 @@ export class MemberPaymentService {
             orderAmount,
             discountAmount,
             currencyCode,
-            isPlanFeesIncludedTax,
           },
           isTaxApplicable,
           billingAddress,
@@ -572,7 +547,6 @@ export class MemberPaymentService {
         finalTaxMode = paymentObj.taxMode;
         finalTaxPercentage = paymentObj.taxPercentage;
         finalIsLutApplied = paymentObj.isLutApplied;
-        finalIsTaxIncluded = paymentObj.isTaxIncludedInPrice;
         finalTaxObj = paymentObj.taxObj;
         finalJurisdiction = paymentObj.jurisdiction;
       }
@@ -583,7 +557,8 @@ export class MemberPaymentService {
         programPlanId: obj.programPlanId !== undefined ? obj.programPlanId : payment.programPlanId,
         programId: obj.programId !== undefined ? obj.programId : payment.programId,
         addressId: addressId || null,
-        billingAddressId: obj.billingAddressId !== undefined ? obj.billingAddressId : payment.billingAddressId,
+        billingAddressId:
+          obj.billingAddressId !== undefined ? obj.billingAddressId : payment.billingAddressId,
         transactionId:
           obj.transactionId !== undefined ? obj.transactionId || null : payment.transactionId,
         paymentDate: obj.paymentDate !== undefined ? obj.paymentDate : payment.paymentDate,
@@ -603,7 +578,6 @@ export class MemberPaymentService {
         taxMode: finalTaxMode,
         taxPercentage: finalTaxPercentage,
         isLutApplied: finalIsLutApplied,
-        isTaxIncluded: finalIsTaxIncluded,
         taxObj: finalTaxObj,
         jurisdiction: finalJurisdiction,
       };
@@ -740,7 +714,6 @@ export class MemberPaymentService {
       taxMode: item.taxMode,
       taxPercentage: item.taxPercentage,
       isLutApplied: item.isLutApplied,
-      isTaxIncluded: item.isTaxIncluded,
       taxObj: item.taxObj,
       jurisdiction: item.jurisdiction,
       noOfCycle: noOfCycle,
@@ -773,77 +746,33 @@ export class MemberPaymentService {
       orderAmount: number;
       discountAmount: number;
       currencyCode: string;
-      isPlanFeesIncludedTax: boolean;
     },
     isTaxApplicable: boolean,
     billingAddress: IAddress | null,
     franchiseAddress: IAddress | null,
-  ) {
+  ): Promise<ICalculateTaxResponse> {
     const orderAmount = paymentObjInput.orderAmount;
     const discountAmount = paymentObjInput.discountAmount;
     const currencyCode = paymentObjInput.currencyCode;
-    const isPlanFeesIncludedTax = paymentObjInput.isPlanFeesIncludedTax;
     // Get country and state codes from addresses
-    let supplierCountryCode = '';
-    let supplierStateCode: string | null = null;
-    let customerCountryCode = '';
-    let customerStateCode: string | null = null;
-    if (franchiseAddress) {
-      // Get franchise country code
-      if (franchiseAddress.countryId) {
-        const franchiseCountry = await this.countryService.fetchById(franchiseAddress.countryId);
-        supplierCountryCode = franchiseCountry.countryCode;
-      }
-      // Get franchise state code
-      if (franchiseAddress.stateId) {
-        const franchiseState = await this.stateService.fetchById(franchiseAddress.stateId);
-        supplierStateCode = franchiseState.code;
-      }
-    }
-    if (billingAddress) {
-      // Get customer country code
-      if (billingAddress.countryId) {
-        const customerCountry = await this.countryService.fetchById(billingAddress.countryId);
-        customerCountryCode = customerCountry.countryCode;
-      }
-      // Get customer state code
-      if (billingAddress.stateId) {
-        const customerState = await this.stateService.fetchById(billingAddress.stateId);
-        customerStateCode = customerState.code;
-      }
-    }
+    const addressCodes = await PaymentUtil.extractAddressCodes(
+      franchiseAddress,
+      billingAddress,
+      this.countryService,
+      this.stateService,
+    );
+    const supplierCountryCode = addressCodes.supplierCountryCode || '';
+    const supplierStateCode = addressCodes.supplierStateCode;
+    const customerCountryCode = addressCodes.customerCountryCode || '';
+    const customerStateCode = addressCodes.customerStateCode;
     // Calculate base amounts
     let systemOrderAmount = orderAmount;
     let systemDiscountAmount = discountAmount;
     let baseAmountForTax = systemOrderAmount - discountAmount;
-    // Handle isPlanFeesIncludedTax - extract base amount if tax is included
-    if (isTaxApplicable && isPlanFeesIncludedTax) {
-      // We need to know the tax percentage first to extract the base amount
-      // For now, use tax engine to get tax percentage, then recalculate
-      const tempTaxInput: TaxInput = {
-        baseAmount: orderAmount,
-        discountAmount: 0,
-        isTaxApplicable: true,
-        supplierCountryCode,
-        supplierStateCode,
-        customerCountryCode,
-        customerStateCode,
-        referenceId: 1,
-        franchiseId: franchiseAddress.pkOfTable,
-        currency: currencyCode,
-        transactionType: TransactionType.SERVICE,
-      };
-      const tempTaxResult = await this.taxEngineService.calculate(tempTaxInput);
-      if (tempTaxResult.taxPercentage > 0) {
-        // Extract base amount from order amount that includes tax
-        baseAmountForTax = systemOrderAmount / (1 + tempTaxResult.taxPercentage / 100);
-      }
-    }
     // Use tax engine to calculate tax
     const taxInput: TaxInput = {
       baseAmount: baseAmountForTax,
       discountAmount: systemDiscountAmount,
-      isTaxApplicable,
       supplierCountryCode,
       supplierStateCode,
       customerCountryCode,
@@ -858,7 +787,7 @@ export class MemberPaymentService {
     let systemTaxAmount = taxResult.taxAmount;
     let systemTotalAmount = taxResult.totalAmount;
     // If tax is included in plan fees, adjust calculations
-    if (isTaxApplicable && isPlanFeesIncludedTax && taxResult.taxPercentage > 0) {
+    if (isTaxApplicable && taxResult.taxPercentage > 0) {
       const extractedTax = systemOrderAmount - baseAmountForTax;
       const discountedBase = baseAmountForTax - systemDiscountAmount;
       systemTaxAmount = extractedTax;
@@ -869,7 +798,7 @@ export class MemberPaymentService {
     const userDiscountAmount = systemDiscountAmount;
     const userTaxAmount = systemTaxAmount;
     const userTotalAmount = systemTotalAmount;
-    return {
+    return <ICalculateTaxResponse>{
       orderAmount: userOrderAmount,
       discountAmount: userDiscountAmount,
       taxAmount: userTaxAmount,
@@ -878,7 +807,6 @@ export class MemberPaymentService {
       taxType: taxResult.taxType,
       taxMode: taxResult.taxMode,
       taxPercentage: taxResult.taxPercentage,
-      isTaxIncludedInPrice: isPlanFeesIncludedTax,
       isLutApplied: taxResult.isLutApplied,
       taxObj: taxResult.taxObj,
       jurisdiction: {
@@ -1113,12 +1041,10 @@ export class MemberPaymentService {
     // 1. Prefer snapshot stored on payment (memberAddress.billingAddress)
     // 2. Fallback to related billingAddress/address records for backward compatibility
     let billingAddress: IAddress | null = null;
-    const memberAddressSnapshot = (payment as any).memberAddress as
-      | {
+    const memberAddressSnapshot = (payment as any).memberAddress as {
       address?: IAddress | null;
       billingAddress?: IAddress | null;
-    }
-      | null;
+    } | null;
     if (memberAddressSnapshot?.billingAddress) {
       billingAddress = memberAddressSnapshot.billingAddress as IAddress;
     } else if (payment.billingAddress) {

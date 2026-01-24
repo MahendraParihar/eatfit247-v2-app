@@ -401,13 +401,6 @@ export class TxnMemberPayment extends Model<TxnMemberPayment> {
   declare isLutApplied: boolean;
   @Column({
     allowNull: true,
-    defaultValue: false,
-    field: 'is_tax_included',
-    type: DataType.BOOLEAN,
-  })
-  declare isTaxIncluded: boolean;
-  @Column({
-    allowNull: true,
     field: 'jurisdiction',
     type: DataType.JSONB,
   })

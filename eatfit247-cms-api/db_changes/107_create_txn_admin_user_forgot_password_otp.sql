@@ -567,3 +567,6 @@ alter table public.txn_addresses
     drop column address_type_id;
 
 drop table public.mst_address_types;
+
+alter table public.txn_member_payments
+    drop column is_tax_included;

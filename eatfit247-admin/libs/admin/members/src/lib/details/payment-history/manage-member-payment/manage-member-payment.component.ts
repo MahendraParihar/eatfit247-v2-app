@@ -125,8 +125,6 @@ export class ManageMemberPaymentComponent implements OnInit {
       addressId: [null],
       billingAddressId: [null],
       gstNumber: ['', [Validators.maxLength(InputLengthEnum.CHAR_50)]],
-      isTaxApplicable: [true, [Validators.required]],
-      isPlanFeesIncludedTax: [false, [Validators.required]],
       currencyCode: ['INR', [Validators.required]],
       orderAmount: [0, [Validators.required, Validators.min(0)]],
       discountAmount: [0, [Validators.required, Validators.min(0)]]
@@ -143,9 +141,7 @@ export class ManageMemberPaymentComponent implements OnInit {
       billingAddressId: [null],
       gstNumber: ['', [Validators.maxLength(InputLengthEnum.CHAR_50)]],
       // Tax Configuration
-      isTaxApplicable: [true, [Validators.required]],
       taxPercentageDisplay: [0], // For display only
-      isPlanFeesIncludedTax: [false, [Validators.required]],
       // Pricing & Amounts
       currencyCode: ['INR', [Validators.required]],
       orderAmount: [0, [Validators.required, Validators.min(0)]],
@@ -172,10 +168,6 @@ export class ManageMemberPaymentComponent implements OnInit {
       debounceTime(500),
       distinctUntilChanged()
     ).subscribe(() => this.calculateTaxFromBackend());
-    this.formGroup.get('isTaxApplicable')?.valueChanges.subscribe((value) => {
-      this.updateTaxPercentageDisplay(value);
-    });
-    this.formGroup.get('isPlanFeesIncludedTax')?.valueChanges.subscribe(() => this.calculateTaxFromBackend());
     this.formGroup.get('currencyCode')?.valueChanges.subscribe(() => this.calculateTaxFromBackend());
     // Sync step1FormGroup with main formGroup
     this.step1FormGroup.get('programId')?.valueChanges.subscribe(val => {
@@ -202,14 +194,6 @@ export class ManageMemberPaymentComponent implements OnInit {
     });
     this.step1FormGroup.get('gstNumber')?.valueChanges.subscribe(val => {
       this.formGroup.patchValue({ gstNumber: val }, { emitEvent: false });
-    });
-    this.step1FormGroup.get('isTaxApplicable')?.valueChanges.subscribe(val => {
-      this.formGroup.patchValue({ isTaxApplicable: val }, { emitEvent: false });
-      this.updateTaxPercentageDisplay(val);
-    });
-    this.step1FormGroup.get('isPlanFeesIncludedTax')?.valueChanges.subscribe(val => {
-      this.formGroup.patchValue({ isPlanFeesIncludedTax: val }, { emitEvent: false });
-      this.calculateTaxFromBackend();
     });
     this.step1FormGroup.get('currencyCode')?.valueChanges.subscribe(val => {
       this.formGroup.patchValue({ currencyCode: val }, { emitEvent: false });
@@ -292,9 +276,8 @@ export class ManageMemberPaymentComponent implements OnInit {
     try {
       const res = await this.apiService.getPaymentMasterData(this.data.memberId);
       this.masterData.set(res);
-      // Update tax percentage display based on current tax applicable value
-      const taxApplicable = this.step1FormGroup?.get('isTaxApplicable')?.value || this.formGroup.get('isTaxApplicable')?.value;
-      this.updateTaxPercentageDisplay(taxApplicable);
+      // Calculate tax to update tax percentage display
+      this.calculateTaxFromBackend();
     } catch (error) {
       console.error('Error loading master data:', error);
     } finally {
@@ -302,7 +285,7 @@ export class ManageMemberPaymentComponent implements OnInit {
     }
   }
 
-  updateTaxPercentageDisplay(isTaxApplicable: boolean): void {
+  updateTaxPercentageDisplay(): void {
     // Tax percentage will be updated from backend calculation
     // Only calculate if step1FormGroup is initialized
     if (this.step1FormGroup) {
@@ -518,8 +501,6 @@ export class ManageMemberPaymentComponent implements OnInit {
       this.formGroup.patchValue(formValues, { emitEvent: false });
       // Update validators based on payment source
       this.updatePaymentFieldValidators(formValues.paymentSource);
-      // Update tax percentage display after loading data
-      this.updateTaxPercentageDisplay(this.data.payment.isTaxApplicable || false);
       // Calculate tax from the backend after loading data
       setTimeout(() => this.calculateTaxFromBackend(), 100);
       // Sync step1FormGroup
@@ -531,8 +512,6 @@ export class ManageMemberPaymentComponent implements OnInit {
         addressId: formValues.addressId,
         billingAddressId: formValues.billingAddressId,
         gstNumber: formValues.gstNumber,
-        isTaxApplicable: formValues.isTaxApplicable,
-        isPlanFeesIncludedTax: formValues.isPlanFeesIncludedTax,
         currencyCode: formValues.currencyCode,
         orderAmount: formValues.orderAmount,
         discountAmount: formValues.discountAmount

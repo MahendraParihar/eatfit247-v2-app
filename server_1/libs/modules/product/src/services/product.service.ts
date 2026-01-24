@@ -255,9 +255,10 @@ export class ProductService {
   }
 
   public async getProductList(): Promise<IProduct[]> {
-    const products = await this.productRepository.findAll({
+    const products = await this.productRepository.scope('list').findAll({
       where: { active: true },
-      order: [["createdAt", "DESC"]]
+      order: [["createdAt", "DESC"]],
+      nest: true,
     });
     return products.map((item: any) => this.convertToModel(item));
   }

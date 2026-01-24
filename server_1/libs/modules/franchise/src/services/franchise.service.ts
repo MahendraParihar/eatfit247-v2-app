@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Op } from 'sequelize';
+import { Op, Sequelize } from 'sequelize';
 import {
   BusinessTypeEnum,
   ConfigParam,
@@ -266,7 +266,9 @@ export class FranchiseService {
     const tempList = await this.franchiseRepository.scope('list').findAll({
       where: {
         active: true,
-        businessType: { [Op.contains]: [businessType] },
+        [Op.and]: [
+          Sequelize.literal(`'${businessType}'::public.business_type = ANY("business_type")`),
+        ],
       },
       order: [['companyName', 'ASC']],
       raw: true,

@@ -33,5 +33,6 @@ export * from './lib/utils/crypto.util';
 export * from './lib/utils/common-functions.utils';
 export * from './lib/utils/search.util';
 export * from './lib/utils/model-scopes.utils';
+export * from './lib/utils/payment-validation.util';
 export * from './lib/dto/index';
 export { getCreatedByUserInclude, getUpdatedByUserInclude, CommonScopes } from './lib/utils/model-scopes.utils';

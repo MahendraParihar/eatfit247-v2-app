@@ -18,5 +18,6 @@ export * from './lib/services';
 export * from './lib/platform.module';
 // Guard
 export * from './lib/guards/recaptcha.guard';
-
+// Utils
+export * from './lib/utils/payment.util';
 

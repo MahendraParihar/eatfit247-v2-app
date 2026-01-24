@@ -160,7 +160,7 @@ export class MstFranchise extends Model<MstFranchise> {
   @Column({
     allowNull: true,
     field: 'business_type',
-    type: DataType.ARRAY(DataType.ENUM('service', 'product')),
+    type: 'public.business_type[]' as any,
   })
   declare businessType: BusinessTypeEnum[];
   @Column({

@@ -3,12 +3,13 @@ import { CurrentUser, JwtAuthGuard, RequestedIp } from '@server_1/core';
 import { MemberProductService } from '../../services';
 import {
   ICalculateTaxResponse,
+  ICalculateProductVariantTaxResponse,
   IMemberProduct,
   IMemberProductMasterData,
   IPaymentLinkResponse,
   ITableList,
 } from '@eatfit247-shared-lib';
-import { CalculateTaxDto } from '../../dto/calculate-tax.dto';
+import { CalculateTaxDto, CalculateProductVariantTaxDto } from '../../dto';
 import { CreateMemberProductDto } from '../../dto';
 import { CreatePaymentLinkDto } from '../../dto';
 import { IFileModel } from '@server_1/platform';
@@ -71,6 +72,24 @@ export class MemberProductController {
     @Body() body: CreatePaymentLinkDto,
   ): Promise<IPaymentLinkResponse> {
     return await this.memberProductService.createPaymentLink(id, body);
+  }
+
+  @Post('calculate-tax')
+  async calculateTax(
+    @Param('id') id: number,
+    @Body() body: CalculateProductVariantTaxDto,
+  ): Promise<ICalculateProductVariantTaxResponse> {
+    return await this.memberProductService.calculateProductTax(id, body);
+  }
+
+  @Post()
+  async createProductOrder(
+    @Param('id') id: number,
+    @Body() body: CreateMemberProductDto,
+    @CurrentUser() currentUser: any,
+    @RequestedIp() requestedIp: string,
+  ): Promise<IMemberProduct> {
+    return await this.memberProductService.create(id, body, requestedIp, currentUser.adminId);
   }
 
   @Get(':productId/invoice')

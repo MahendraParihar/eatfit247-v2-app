@@ -7,6 +7,8 @@ import {
   IAvailableSlot,
   ICalculateTaxRequest,
   ICalculateTaxResponse,
+  ICalculateProductVariantTaxRequest,
+  ICalculateProductVariantTaxResponse,
   ICallLogMasterData,
   ICallLogSlot,
   ICreatePaymentLinkRequest,
@@ -802,13 +804,13 @@ export class MembersApiService extends ApiBaseService {
 
   async calculateProductTax(
     memberId: number,
-    data: ICalculateTaxRequest,
-  ): Promise<ICalculateTaxResponse> {
-    const res = await this.httpService.post<IResponse<ICalculateTaxResponse>>(
+    data: ICalculateProductVariantTaxRequest,
+  ): Promise<ICalculateProductVariantTaxResponse> {
+    const res = await this.httpService.post<IResponse<ICalculateProductVariantTaxResponse>>(
       `${this.endpoint}/${memberId}/product/calculate-tax`,
       data,
     );
-    return res.data as ICalculateTaxResponse;
+    return res.data as ICalculateProductVariantTaxResponse;
   }
 
   async createProductOrder(

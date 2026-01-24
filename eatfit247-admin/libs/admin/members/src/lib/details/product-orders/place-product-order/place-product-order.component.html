@@ -247,29 +247,7 @@
                       >
                       <shared-ui-input-error [control]="step2FormGroup.get('gstNumber')"></shared-ui-input-error>
                     </mat-form-field>
-
-                    <mat-form-field appearance="outline" class="half-width">
-                      <mat-label>Tax Applicable*</mat-label>
-                      <mat-select formControlName="isTaxApplicable">
-                        <mat-option [value]="false">No</mat-option>
-                        <mat-option [value]="true">Yes</mat-option>
-                      </mat-select>
-                      <shared-ui-input-error [control]="step2FormGroup.get('isTaxApplicable')"></shared-ui-input-error>
-                    </mat-form-field>
                   </div>
-
-                  @if (step2FormGroup.get('isTaxApplicable')?.value === true) {
-                    <div class="form-row">
-                      <mat-form-field appearance="outline" class="half-width">
-                        <mat-label>Is Product Price Included Tax?*</mat-label>
-                        <mat-select formControlName="isPlanFeesIncludedTax">
-                          <mat-option [value]="false">No - Tax will be added on top</mat-option>
-                          <mat-option [value]="true">Yes - Tax is already included</mat-option>
-                        </mat-select>
-                        <shared-ui-input-error [control]="step2FormGroup.get('isPlanFeesIncludedTax')"></shared-ui-input-error>
-                      </mat-form-field>
-                    </div>
-                  }
 
                   <div class="form-row">
                     <mat-form-field appearance="outline" class="half-width">
@@ -309,46 +287,6 @@
                 </div>
               </form>
 
-              @if (calculatingTax()) {
-                <div class="loading-container">
-                  <mat-spinner diameter="30"></mat-spinner>
-                  <p>Calculating tax...</p>
-                </div>
-              } @else if (taxCalculationResult()) {
-                <mat-card class="tax-summary-card">
-                  <mat-card-header>
-                    <mat-card-title>Tax Summary</mat-card-title>
-                  </mat-card-header>
-                  <mat-card-content>
-                    <div class="summary-row">
-                      <span class="label">Order Amount:</span>
-                      <span class="value">{{ formGroup.get('orderAmount')?.value || 0 | number:'1.2-2' }} {{ formGroup.get('currencyCode')?.value || 'INR' }}</span>
-                    </div>
-                    <div class="summary-row">
-                      <span class="label">Discount Amount:</span>
-                      <span class="value">{{ step2FormGroup.get('discountAmount')?.value || 0 | number:'1.2-2' }} {{ formGroup.get('currencyCode')?.value || 'INR' }}</span>
-                    </div>
-                    <div class="summary-row">
-                      <span class="label">Tax Percentage:</span>
-                      <span class="value">{{ taxPercentage | number:'1.2-2' }}%</span>
-                    </div>
-                    <div class="summary-row">
-                      <span class="label">Tax Amount:</span>
-                      <span class="value">{{ taxAmount | number:'1.2-2' }} {{ formGroup.get('currencyCode')?.value || 'INR' }}</span>
-                    </div>
-                    <div class="summary-row total">
-                      <span class="label">Total Amount:</span>
-                      <span class="value">{{ totalAmount | number:'1.2-2' }} {{ formGroup.get('currencyCode')?.value || 'INR' }}</span>
-                    </div>
-                    @if (taxCalculationResult()?.invoiceNote) {
-                      <div class="invoice-note">
-                        <strong>Note:</strong> {{ taxCalculationResult()?.invoiceNote }}
-                      </div>
-                    }
-                  </mat-card-content>
-                </mat-card>
-              }
-
               <div class="step-actions">
                 <button mat-button (click)="stepper.previous()">Previous</button>
                 <button mat-button (click)="onCancel()">Cancel</button>
@@ -363,13 +301,123 @@
             </div>
           </mat-step>
 
-          <!-- Step 3: Payment -->
-          <mat-step [stepControl]="step3FormGroup">
+          <!-- Step 3: Tax Computation -->
+          <mat-step [stepControl]="step3FormGroup" [completed]="canProceedToStep4()">
+            <ng-template matStepLabel>Tax Computation</ng-template>
+            <div class="step-content">
+              <h3 class="step-title">Tax Computation Summary</h3>
+              
+              @if (calculatingTax()) {
+                <div class="loading-container">
+                  <mat-spinner diameter="30"></mat-spinner>
+                  <p>Calculating tax...</p>
+                </div>
+              } @else if (cartItems().length > 0) {
+                <mat-card class="tax-computation-card">
+                  <mat-card-header>
+                    <mat-card-title>Order Items with Tax Computation</mat-card-title>
+                  </mat-card-header>
+                  <mat-card-content>
+                    <table mat-table [dataSource]="cartItems()" class="tax-computation-table">
+                      <ng-container matColumnDef="product">
+                        <th mat-header-cell *matHeaderCellDef>Product</th>
+                        <td mat-cell *matCellDef="let item">{{ item.productName }}</td>
+                      </ng-container>
+
+                      <ng-container matColumnDef="variant">
+                        <th mat-header-cell *matHeaderCellDef>Variant</th>
+                        <td mat-cell *matCellDef="let item">{{ item.variantLabel }}</td>
+                      </ng-container>
+
+                      <ng-container matColumnDef="quantity">
+                        <th mat-header-cell *matHeaderCellDef>Quantity</th>
+                        <td mat-cell *matCellDef="let item">{{ item.quantity }}</td>
+                      </ng-container>
+
+                      <ng-container matColumnDef="unitPrice">
+                        <th mat-header-cell *matHeaderCellDef>Unit Price</th>
+                        <td mat-cell *matCellDef="let item">
+                          {{ item.price | number:'1.2-2' }} {{ item.currency }}
+                        </td>
+                      </ng-container>
+
+                      <ng-container matColumnDef="subtotal">
+                        <th mat-header-cell *matHeaderCellDef>Subtotal</th>
+                        <td mat-cell *matCellDef="let item">
+                          {{ item.totalPrice | number:'1.2-2' }} {{ item.currency }}
+                        </td>
+                      </ng-container>
+
+                      <ng-container matColumnDef="tax">
+                        <th mat-header-cell *matHeaderCellDef>Tax</th>
+                        <td mat-cell *matCellDef="let item">
+                          @if (item.taxAmount !== undefined) {
+                            {{ item.taxAmount | number:'1.2-2' }} ({{ item.taxPercent | number:'1.2-2' }}%)
+                          } @else {
+                            -
+                          }
+                        </td>
+                      </ng-container>
+
+                      <ng-container matColumnDef="total">
+                        <th mat-header-cell *matHeaderCellDef>Total</th>
+                        <td mat-cell *matCellDef="let item">
+                          {{ (item.totalPrice + (item.taxAmount || 0)) | number:'1.2-2' }} {{ item.currency }}
+                        </td>
+                      </ng-container>
+
+                      <tr mat-header-row *matHeaderRowDef="taxComputationColumns"></tr>
+                      <tr mat-row *matRowDef="let row; columns: taxComputationColumns"></tr>
+                    </table>
+
+                    <div class="tax-computation-summary">
+                      <div class="summary-row">
+                        <span class="label">Subtotal:</span>
+                        <span class="value">{{ cartSubtotal | number:'1.2-2' }} {{ formGroup.get('currencyCode')?.value || 'INR' }}</span>
+                      </div>
+                      <div class="summary-row">
+                        <span class="label">Discount:</span>
+                        <span class="value">-{{ step2FormGroup.get('discountAmount')?.value || 0 | number:'1.2-2' }} {{ formGroup.get('currencyCode')?.value || 'INR' }}</span>
+                      </div>
+                      <div class="summary-row">
+                        <span class="label">Total Tax:</span>
+                        <span class="value">{{ cartTaxTotal | number:'1.2-2' }} {{ formGroup.get('currencyCode')?.value || 'INR' }}</span>
+                      </div>
+                      <div class="summary-row total">
+                        <span class="label">Total Order Amount:</span>
+                        <span class="value">{{ cartGrandTotal | number:'1.2-2' }} {{ formGroup.get('currencyCode')?.value || 'INR' }}</span>
+                      </div>
+                      @if (taxCalculationResult()?.invoiceNote) {
+                        <div class="invoice-note">
+                          <strong>Note:</strong> {{ taxCalculationResult()?.invoiceNote }}
+                        </div>
+                      }
+                    </div>
+                  </mat-card-content>
+                </mat-card>
+              }
+
+              <div class="step-actions">
+                <button mat-button (click)="stepper.previous()">Previous</button>
+                <button mat-button (click)="onCancel()">Cancel</button>
+                <button
+                  mat-raised-button
+                  color="primary"
+                  (click)="stepper.next()"
+                  [disabled]="!canProceedToStep4()">
+                  Next
+                </button>
+              </div>
+            </div>
+          </mat-step>
+
+          <!-- Step 4: Payment -->
+          <mat-step [stepControl]="step4FormGroup">
             <ng-template matStepLabel>Payment</ng-template>
             <div class="step-content">
               <h3 class="step-title">Payment Information</h3>
               
-              <form [formGroup]="step3FormGroup">
+              <form [formGroup]="step4FormGroup">
                 <div class="form-section">
                   <div class="form-row">
                     <mat-form-field appearance="outline" class="half-width">
@@ -379,7 +427,7 @@
                           <mat-option [value]="source.id">{{ source.label }}</mat-option>
                         }
                       </mat-select>
-                      <shared-ui-input-error [control]="step3FormGroup.get('paymentSource')"></shared-ui-input-error>
+                      <shared-ui-input-error [control]="step4FormGroup.get('paymentSource')"></shared-ui-input-error>
                     </mat-form-field>
                   </div>
 
@@ -393,7 +441,7 @@
                             <mat-option [value]="mode.id">{{ mode.label }}</mat-option>
                           }
                         </mat-select>
-                        <shared-ui-input-error [control]="step3FormGroup.get('paymentModeId')"></shared-ui-input-error>
+                        <shared-ui-input-error [control]="step4FormGroup.get('paymentModeId')"></shared-ui-input-error>
                       </mat-form-field>
 
                       <mat-form-field appearance="outline" class="half-width">
@@ -401,7 +449,7 @@
                         <input matInput [matDatepicker]="picker" formControlName="paymentDate" />
                         <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
                         <mat-datepicker #picker></mat-datepicker>
-                        <shared-ui-input-error [control]="step3FormGroup.get('paymentDate')"></shared-ui-input-error>
+                        <shared-ui-input-error [control]="step4FormGroup.get('paymentDate')"></shared-ui-input-error>
                       </mat-form-field>
                     </div>
 
@@ -414,7 +462,7 @@
                             <mat-option [value]="status.id">{{ status.label }}</mat-option>
                           }
                         </mat-select>
-                        <shared-ui-input-error [control]="step3FormGroup.get('paymentStatusId')"></shared-ui-input-error>
+                        <shared-ui-input-error [control]="step4FormGroup.get('paymentStatusId')"></shared-ui-input-error>
                       </mat-form-field>
 
                       <mat-form-field appearance="outline" class="half-width">
@@ -425,7 +473,7 @@
                           [maxlength]="InputLengthEnum.CHAR_250"
                           placeholder="Enter transaction ID"
                         />
-                        <shared-ui-input-error [control]="step3FormGroup.get('transactionId')"></shared-ui-input-error>
+                        <shared-ui-input-error [control]="step4FormGroup.get('transactionId')"></shared-ui-input-error>
                       </mat-form-field>
                     </div>
                   } @else {
@@ -472,7 +520,7 @@
                         mat-raised-button
                         color="primary"
                         (click)="createPaymentLinkIfNeeded()"
-                        [disabled]="creatingPaymentLink() || !step3FormGroup.get('franchisePaymentGatewayId')?.value">
+                        [disabled]="creatingPaymentLink() || !step4FormGroup.get('franchisePaymentGatewayId')?.value">
                         @if (creatingPaymentLink()) {
                           <mat-spinner diameter="20" class="spinner-inline"></mat-spinner>
                         } @else {

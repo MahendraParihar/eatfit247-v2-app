@@ -25,6 +25,10 @@ import {
   PlaceProductOrderComponent,
   PlaceProductOrderData
 } from './place-product-order/place-product-order.component';
+import {
+  ViewProductOrderDetailsComponent,
+  ViewProductOrderDetailsData
+} from './view-product-order-details/view-product-order-details.component';
 
 @Component({
   selector: 'lib-member-product-orders',
@@ -150,6 +154,21 @@ export class MemberProductOrdersComponent implements OnInit, OnDestroy {
       pageSizeOptions: [10, 25, 50, 100],
       showPagination: true,
       showSearch: true,
+      actionsConfig: {
+        buttons: [
+          {
+            label: 'View Details',
+            icon: 'visibility',
+            tooltip: 'View Order Details',
+            onClick: (row: IMemberProduct) => this.viewProductOrderDetails(row)
+          }
+        ],
+        column: {
+          headerLabel: 'Actions',
+          align: 'center',
+          width: '100px'
+        }
+      }
     };
   }
 
@@ -217,6 +236,24 @@ export class MemberProductOrdersComponent implements OnInit, OnDestroy {
         // Reload product orders after successful update
         this.loadProductOrders();
       }
+    });
+  }
+
+  viewProductOrderDetails(productOrder: IMemberProduct): void {
+    if (!this.memberId || !productOrder.memberProductId) {
+      console.error('Member ID or Product Order ID is not available');
+      return;
+    }
+    const dialogData: ViewProductOrderDetailsData = {
+      memberId: this.memberId,
+      memberProductId: productOrder.memberProductId
+    };
+    this.dialog.open(ViewProductOrderDetailsComponent, {
+      width: '1200px',
+      maxWidth: '95vw',
+      maxHeight: '95vh',
+      data: dialogData,
+      disableClose: false
     });
   }
 }

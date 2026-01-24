@@ -34,12 +34,10 @@ export interface IBasicMemberPayment {
   totalAmount: number;
   isTaxApplicable: boolean;
   taxPercentage: number;
-  isPlanFeesIncludedTax: boolean;
   currency: string;
   taxType: TaxTypeEnum;
   taxMode: TaxMode;
   isLutApplied: boolean;
-  isTaxIncluded: boolean;
   taxObj?: Record<string, { amount: number; taxPercentage: number }>;
   jurisdiction?: {
     entityCountry: string;
@@ -99,11 +97,9 @@ export interface IManageMemberPayment {
   currency?: string;
   isTaxApplicable: boolean;
   taxPercentage: number;
-  isPlanFeesIncludedTax: boolean;
   taxType?: TaxTypeEnum;
   taxMode?: TaxMode;
   isLutApplied?: boolean;
-  isTaxIncluded?: boolean;
   taxObj?: Record<string, { amount: number; taxPercentage: number }>;
   jurisdiction?: {
     entityCountry: string;
@@ -134,8 +130,6 @@ export interface IMemberProductMasterData {
 export interface ICalculateTaxRequest {
   orderAmount: number;
   discountAmount: number;
-  isTaxApplicable: boolean;
-  isPlanFeesIncludedTax: boolean;
   currencyCode: string;
   billingAddressId?: number;
   addressId?: number;
@@ -143,12 +137,21 @@ export interface ICalculateTaxRequest {
 
 export interface ICalculateTaxResponse {
   taxPercentage: number;
+  orderAmount: number;
+  discountAmount: number;
   taxAmount: number;
   totalAmount: number;
   taxObj: Record<string, { amount: number; taxPercentage: number }>;
-  taxType?: string;
-  taxMode?: string;
+  taxType: TaxTypeEnum;
+  taxMode: TaxMode;
   invoiceNote?: string;
+  currency: string;
+  isLutApplied: boolean;
+  jurisdiction: {
+    entityCountry: string;
+    customerCountry: string;
+    placeOfSupply: string;
+  };
 }
 
 export interface IMemberPaymentEntity {
@@ -158,4 +161,40 @@ export interface IMemberPaymentEntity {
   taxAmount: number;
   totalAmount: number;
   taxObj: Record<string, { amount: number; taxPercentage: number }>;
+}
+
+export interface IProductVariantTaxItem {
+  productId: number;
+  productVariantId: number;
+  currencyCode: string;
+}
+
+export interface ICalculateProductVariantTaxRequest {
+  items: IProductVariantTaxItem[];
+  billingAddressId?: number;
+  addressId?: number;
+}
+
+export interface IProductVariantTaxResult {
+  productId: number;
+  productVariantId: number;
+  currencyCode: string;
+  price: number;
+  taxPercentage: number;
+  taxAmount: number;
+  totalAmount: number;
+  taxObj: Record<string, { amount: number; taxPercentage: number }>;
+  taxType: TaxTypeEnum;
+  taxMode: TaxMode;
+  invoiceNote?: string;
+  isLutApplied: boolean;
+  jurisdiction: {
+    entityCountry: string;
+    customerCountry: string;
+    placeOfSupply: string;
+  };
+}
+
+export interface ICalculateProductVariantTaxResponse {
+  items: IProductVariantTaxResult[];
 }
