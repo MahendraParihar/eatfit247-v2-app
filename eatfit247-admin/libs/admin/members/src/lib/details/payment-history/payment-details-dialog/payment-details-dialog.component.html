@@ -1,12 +1,15 @@
-<div class="payment-details-dialog">
-  <div mat-dialog-title class="dialog-header">
-    <h2>Payment Details</h2>
+<div class="dialog-container">
+  <div class="dialog-header">
+    <h2 mat-dialog-title>
+      <mat-icon>payment</mat-icon>
+      Payment Details
+    </h2>
     <button mat-icon-button (click)="close()" class="close-button">
       <mat-icon>close</mat-icon>
     </button>
   </div>
 
-  <mat-dialog-content class="dialog-content">
+  <mat-dialog-content>
     <div class="payment-details-container">
       <!-- Payment Link Section (if pending) -->
       @if (isPending && hasPaymentLink) {
@@ -39,32 +42,32 @@
           <mat-card-title>Basic Information</mat-card-title>
         </mat-card-header>
         <mat-card-content>
-          <div class="info-grid">
-            <div class="info-item">
-              <span class="info-label">Invoice ID:</span>
-              <span class="info-value">{{ payment.invoiceId || 'N/A' }}</span>
+          <div class="details-grid">
+            <div class="detail-item">
+              <span class="label">Invoice ID:</span>
+              <span class="value">{{ payment.invoiceId || 'N/A' }}</span>
             </div>
-            <div class="info-item">
-              <span class="info-label">Transaction ID:</span>
-              <span class="info-value">{{ payment.transactionId || 'N/A' }}</span>
+            <div class="detail-item">
+              <span class="label">Transaction ID:</span>
+              <span class="value">{{ payment.transactionId || 'N/A' }}</span>
             </div>
-            <div class="info-item">
-              <span class="info-label">Payment Date:</span>
-              <span class="info-value">{{ payment.paymentDate | date:'fullDate' }}</span>
+            <div class="detail-item">
+              <span class="label">Payment Date:</span>
+              <span class="value">{{ (payment.paymentDate | date:'medium') ?? 'N/A' }}</span>
             </div>
-            <div class="info-item">
-              <span class="info-label">Payment Status:</span>
-              <span class="info-value status-badge" [class.pending]="isPending">
+            <div class="detail-item">
+              <span class="label">Payment Status:</span>
+              <mat-chip [class]="getStatusClass(payment.paymentStatus)">
                 {{ payment.paymentStatus || 'N/A' }}
-              </span>
+              </mat-chip>
             </div>
-            <div class="info-item">
-              <span class="info-label">Payment Mode:</span>
-              <span class="info-value">{{ payment.paymentMode || 'N/A' }}</span>
+            <div class="detail-item">
+              <span class="label">Payment Mode:</span>
+              <span class="value">{{ payment.paymentMode || 'N/A' }}</span>
             </div>
-            <div class="info-item">
-              <span class="info-label">Member Name:</span>
-              <span class="info-value">{{ payment.memberName || 'N/A' }}</span>
+            <div class="detail-item">
+              <span class="label">Member Name:</span>
+              <span class="value">{{ payment.memberName || 'N/A' }}</span>
             </div>
           </div>
         </mat-card-content>
@@ -76,33 +79,33 @@
           <mat-card-title>Program Information</mat-card-title>
         </mat-card-header>
         <mat-card-content>
-          <div class="info-grid">
-            <div class="info-item">
-              <span class="info-label">Program:</span>
-              <span class="info-value">{{ payment.program || 'N/A' }}</span>
+          <div class="details-grid">
+            <div class="detail-item">
+              <span class="label">Program:</span>
+              <span class="value">{{ payment.program || 'N/A' }}</span>
             </div>
-            <div class="info-item">
-              <span class="info-label">Plan:</span>
-              <span class="info-value">{{ payment.programPlan || 'N/A' }}</span>
+            <div class="detail-item">
+              <span class="label">Plan:</span>
+              <span class="value">{{ payment.programPlan || 'N/A' }}</span>
             </div>
-            <div class="info-item">
-              <span class="info-label">Number of Cycles:</span>
-              <span class="info-value">{{ payment.noOfCycle || 'N/A' }}</span>
+            <div class="detail-item">
+              <span class="label">Number of Cycles:</span>
+              <span class="value">{{ payment.noOfCycle || 'N/A' }}</span>
             </div>
-            <div class="info-item">
-              <span class="info-label">Days in Cycle:</span>
-              <span class="info-value">{{ payment.noOfDaysInCycle || 'N/A' }}</span>
+            <div class="detail-item">
+              <span class="label">Days in Cycle:</span>
+              <span class="value">{{ payment.noOfDaysInCycle || 'N/A' }}</span>
             </div>
             @if (payment.currentCycleNo) {
-              <div class="info-item">
-                <span class="info-label">Current Cycle:</span>
-                <span class="info-value">{{ payment.currentCycleNo }}</span>
+              <div class="detail-item">
+                <span class="label">Current Cycle:</span>
+                <span class="value">{{ payment.currentCycleNo }}</span>
               </div>
             }
             @if (payment.currentDayNo) {
-              <div class="info-item">
-                <span class="info-label">Current Day:</span>
-                <span class="info-value">{{ payment.currentDayNo }}</span>
+              <div class="detail-item">
+                <span class="label">Current Day:</span>
+                <span class="value">{{ payment.currentDayNo }}</span>
               </div>
             }
           </div>
@@ -115,49 +118,57 @@
           <mat-card-title>Financial Information</mat-card-title>
         </mat-card-header>
         <mat-card-content>
-          <div class="info-grid">
-            <div class="info-item">
-              <span class="info-label">Order Amount:</span>
-              <span class="info-value">{{ payment.orderAmount | formatCurrency:(payment.currency || 'INR') }}</span>
+          <div class="amount-breakdown">
+            <div class="amount-row">
+              <span class="label">Order Amount:</span>
+              <span class="value">{{ payment.orderAmount | formatCurrency:(payment.currency || 'INR') }}</span>
             </div>
-            <div class="info-item">
-              <span class="info-label">Discount Amount:</span>
-              <span class="info-value">{{ payment.discountAmount | formatCurrency:(payment.currency || 'INR') }}</span>
+            @if (payment.discountAmount && payment.discountAmount > 0) {
+              <div class="amount-row discount">
+                <span class="label">Discount:</span>
+                <span class="value">-{{ payment.discountAmount | formatCurrency:(payment.currency || 'INR') }}</span>
+              </div>
+            }
+            @if (payment.taxAmount && payment.taxAmount > 0) {
+              <div class="amount-row">
+                <span class="label">Tax:</span>
+                <span class="value">{{ payment.taxAmount | formatCurrency:(payment.currency || 'INR') }}</span>
+              </div>
+            }
+            <mat-divider></mat-divider>
+            <div class="amount-row total">
+              <span class="label">Total Amount:</span>
+              <span class="value">{{ payment.totalAmount | formatCurrency:(payment.currency || 'INR') }}</span>
             </div>
-            <div class="info-item">
-              <span class="info-label">Tax Amount:</span>
-              <span class="info-value">{{ payment.taxAmount | formatCurrency:(payment.currency || 'INR') }}</span>
-            </div>
-            <div class="info-item total-amount">
-              <span class="info-label">Total Amount:</span>
-              <span class="info-value">{{ payment.totalAmount | formatCurrency:(payment.currency || 'INR') }}</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">Tax Applicable:</span>
-              <span class="info-value">{{ payment.isTaxApplicable ? 'Yes' : 'No' }}</span>
+          </div>
+          
+          <div class="details-grid" style="margin-top: 16px;">
+            <div class="detail-item">
+              <span class="label">Tax Applicable:</span>
+              <span class="value">{{ payment.isTaxApplicable ? 'Yes' : 'No' }}</span>
             </div>
             @if (payment.taxType) {
-              <div class="info-item">
-                <span class="info-label">Tax Type:</span>
-                <span class="info-value">{{ payment.taxType }}</span>
+              <div class="detail-item">
+                <span class="label">Tax Type:</span>
+                <span class="value">{{ payment.taxType }}</span>
               </div>
             }
             @if (payment.taxMode) {
-              <div class="info-item">
-                <span class="info-label">Tax Mode:</span>
-                <span class="info-value">{{ payment.taxMode }}</span>
+              <div class="detail-item">
+                <span class="label">Tax Mode:</span>
+                <span class="value">{{ payment.taxMode }}</span>
               </div>
             }
             @if (payment.promoCode) {
-              <div class="info-item">
-                <span class="info-label">Promo Code:</span>
-                <span class="info-value">{{ payment.promoCode }}</span>
+              <div class="detail-item">
+                <span class="label">Promo Code:</span>
+                <span class="value promo-code">{{ payment.promoCode }}</span>
               </div>
             }
             @if (payment.gstNumber) {
-              <div class="info-item">
-                <span class="info-label">GST Number:</span>
-                <span class="info-value">{{ payment.gstNumber }}</span>
+              <div class="detail-item">
+                <span class="label">GST Number:</span>
+                <span class="value">{{ payment.gstNumber }}</span>
               </div>
             }
           </div>
@@ -171,23 +182,23 @@
             <mat-card-title>Gateway Information</mat-card-title>
           </mat-card-header>
           <mat-card-content>
-            <div class="info-grid">
+            <div class="details-grid">
               @if (payment.gatewayProvider) {
-                <div class="info-item">
-                  <span class="info-label">Gateway Provider:</span>
-                  <span class="info-value">{{ payment.gatewayProvider }}</span>
+                <div class="detail-item">
+                  <span class="label">Gateway Provider:</span>
+                  <span class="value">{{ payment.gatewayProvider }}</span>
                 </div>
               }
               @if (payment.gatewayOrderId) {
-                <div class="info-item">
-                  <span class="info-label">Gateway Order ID:</span>
-                  <span class="info-value">{{ payment.gatewayOrderId }}</span>
+                <div class="detail-item">
+                  <span class="label">Gateway Order ID:</span>
+                  <span class="value">{{ payment.gatewayOrderId }}</span>
                 </div>
               }
               @if (payment.gatewayPaymentId) {
-                <div class="info-item">
-                  <span class="info-label">Gateway Payment ID:</span>
-                  <span class="info-value">{{ payment.gatewayPaymentId }}</span>
+                <div class="detail-item">
+                  <span class="label">Gateway Payment ID:</span>
+                  <span class="value">{{ payment.gatewayPaymentId }}</span>
                 </div>
               }
             </div>
@@ -197,22 +208,26 @@
 
       <!-- Address Information -->
       @if (payment.memberAddress.address || payment.memberAddress.billingAddress) {
-        <mat-card class="info-card">
+        <mat-card class="info-card address-card">
           <mat-card-header>
-            <mat-card-title>Address Information</mat-card-title>
+            <mat-card-title>Addresses</mat-card-title>
           </mat-card-header>
           <mat-card-content>
-            <div class="info-grid">
+            <div class="addresses-container">
               @if (payment.memberAddress.address) {
-                <div class="info-item full-width">
-                  <span class="info-label">Delivery Address:</span>
-                  <span class="info-value">{{ payment.memberAddress.address | address }}</span>
+                <div class="address-section">
+                  <h4>Delivery Address</h4>
+                  <div class="address-content">
+                    <p>{{ payment.memberAddress.address | address }}</p>
+                  </div>
                 </div>
               }
               @if (payment.memberAddress.billingAddress) {
-                <div class="info-item full-width">
-                  <span class="info-label">Billing Address:</span>
-                  <span class="info-value">{{ payment.memberAddress.billingAddress | address }}</span>
+                <div class="address-section">
+                  <h4>Billing Address</h4>
+                  <div class="address-content">
+                    <p>{{ payment.memberAddress.billingAddress | address }}</p>
+                  </div>
                 </div>
               }
             </div>
@@ -221,32 +236,32 @@
       }
 
       <!-- Timestamps -->
-      <mat-card class="info-card">
+      <mat-card class="info-card metadata-card">
         <mat-card-header>
-          <mat-card-title>Timestamps</mat-card-title>
+          <mat-card-title>Record Information</mat-card-title>
         </mat-card-header>
         <mat-card-content>
-          <div class="info-grid">
-            <div class="info-item">
-              <span class="info-label">Created At:</span>
-              <span class="info-value">{{ payment.createdAt | date }}</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">Updated At:</span>
-              <span class="info-value">{{ payment.updatedAt | date }}</span>
+          <div class="details-grid">
+            <div class="detail-item">
+              <span class="label">Created At:</span>
+              <span class="value">{{ (payment.createdAt | date:'medium') ?? 'N/A' }}</span>
             </div>
             @if (payment.createdByUser) {
-              <div class="info-item">
-                <span class="info-label">Created By:</span>
-                <span class="info-value">
+              <div class="detail-item">
+                <span class="label">Created By:</span>
+                <span class="value">
                   {{ payment.createdByUser.firstName }} {{ payment.createdByUser.lastName }}
                 </span>
               </div>
             }
+            <div class="detail-item">
+              <span class="label">Updated At:</span>
+              <span class="value">{{ (payment.updatedAt | date:'medium') ?? 'N/A' }}</span>
+            </div>
             @if (payment.updatedByUser) {
-              <div class="info-item">
-                <span class="info-label">Updated By:</span>
-                <span class="info-value">
+              <div class="detail-item">
+                <span class="label">Updated By:</span>
+                <span class="value">
                   {{ payment.updatedByUser.firstName }} {{ payment.updatedByUser.lastName }}
                 </span>
               </div>
@@ -257,8 +272,8 @@
     </div>
   </mat-dialog-content>
 
-  <mat-dialog-actions class="dialog-actions">
-    <button mat-button (click)="close()">Close</button>
+  <mat-dialog-actions align="end">
+    <button mat-raised-button (click)="close()">Close</button>
   </mat-dialog-actions>
 </div>
 

@@ -18,10 +18,6 @@ import {
 import { IMemberProduct } from '@eatfit247-shared-lib';
 import { MembersApiService } from '../../api.service';
 import {
-  ManageMemberProductOrderComponent,
-  ManageMemberProductOrderData
-} from './manage-member-product-order/manage-member-product-order.component';
-import {
   PlaceProductOrderComponent,
   PlaceProductOrderData
 } from './place-product-order/place-product-order.component';
@@ -221,25 +217,6 @@ export class MemberProductOrdersComponent implements OnInit, OnDestroy {
     dialogRef.afterClosed().subscribe((result) => {
       if (result === true) {
         // Reload product orders after a successful create / update
-        this.loadProductOrders();
-      }
-    });
-  }
-
-  editProductOrder(productOrder: IMemberProduct): void {
-    const dialogData: ManageMemberProductOrderData = {
-      memberId: this.memberId,
-      productOrder: productOrder
-    };
-    const dialogRef = this.dialog.open(ManageMemberProductOrderComponent, {
-      width: '1000px',
-      maxWidth: '90vw',
-      maxHeight: '90vh',
-      data: dialogData
-    });
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result === true) {
-        // Reload product orders after successful update
         this.loadProductOrders();
       }
     });

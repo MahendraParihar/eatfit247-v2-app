@@ -8,6 +8,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatTableModule } from '@angular/material/table';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { IMemberProduct } from '@eatfit247-shared-lib';
 import { MembersApiService } from '../../../api.service';
 import { FormatCurrencyPipe } from '@shared';
@@ -31,6 +32,7 @@ export interface ViewProductOrderDetailsData {
     MatDividerModule,
     MatChipsModule,
     MatTableModule,
+    MatSnackBarModule,
     FormatCurrencyPipe
   ],
   templateUrl: './view-product-order-details.component.html',
@@ -38,6 +40,7 @@ export interface ViewProductOrderDetailsData {
 })
 export class ViewProductOrderDetailsComponent implements OnInit {
   private apiService = inject(MembersApiService);
+  private snackBar = inject(MatSnackBar);
   loading = signal(false);
   productOrder = signal<IMemberProduct | null>(null);
   displayedColumns: string[] = ['productName', 'quantityLabel', 'unitPrice', 'quantity', 'baseAmount', 'discountAmount', 'taxAmount', 'totalAmount'];
@@ -68,6 +71,37 @@ export class ViewProductOrderDetailsComponent implements OnInit {
 
   close(): void {
     this.dialogRef.close();
+  }
+
+  get isNotPaid(): boolean {
+    const status = this.productOrder()?.paymentStatus?.toLowerCase();
+    return status !== 'paid' && status !== 'success' && status !== 'completed';
+  }
+
+  get hasPaymentLink(): boolean {
+    return !!this.productOrder()?.paymentLink;
+  }
+
+  copyPaymentLink(): void {
+    const paymentLink = this.productOrder()?.paymentLink;
+    if (paymentLink) {
+      navigator.clipboard.writeText(paymentLink).then(
+        () => {
+          this.snackBar.open('Payment link copied to clipboard!', 'Close', {
+            duration: 3000,
+            horizontalPosition: 'center',
+            verticalPosition: 'bottom',
+          });
+        },
+        () => {
+          this.snackBar.open('Failed to copy payment link', 'Close', {
+            duration: 3000,
+            horizontalPosition: 'center',
+            verticalPosition: 'bottom',
+          });
+        },
+      );
+    }
   }
 
   getStatusClass(status: string | undefined): string {

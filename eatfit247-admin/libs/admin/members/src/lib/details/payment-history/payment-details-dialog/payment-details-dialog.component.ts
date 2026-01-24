@@ -5,6 +5,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatChipsModule } from '@angular/material/chips';
 import { IMemberAddress, IMemberPayment } from '@eatfit247-shared-lib';
 import { AddressPipe, FormatCurrencyPipe } from '@shared';
 
@@ -22,6 +24,8 @@ export interface PaymentDetailsDialogData {
     MatIconModule,
     MatCardModule,
     MatSnackBarModule,
+    MatDividerModule,
+    MatChipsModule,
     DatePipe,
     AddressPipe,
     FormatCurrencyPipe,
@@ -71,6 +75,19 @@ export class PaymentDetailsDialogComponent {
 
   close(): void {
     this.dialogRef.close();
+  }
+
+  getStatusClass(status: string | undefined): string {
+    if (!status) return '';
+    const statusLower = status.toLowerCase();
+    if (statusLower.includes('success') || statusLower.includes('completed') || statusLower.includes('paid')) {
+      return 'status-success';
+    } else if (statusLower.includes('pending')) {
+      return 'status-pending';
+    } else if (statusLower.includes('failed') || statusLower.includes('cancelled') || statusLower.includes('refunded')) {
+      return 'status-failed';
+    }
+    return '';
   }
 }
 

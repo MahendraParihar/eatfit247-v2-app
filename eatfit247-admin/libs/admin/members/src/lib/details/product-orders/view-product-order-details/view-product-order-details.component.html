@@ -19,6 +19,31 @@
 
     @if (!loading() && productOrder()) {
       <div class="order-details">
+        <!-- Payment Link Section (if not paid) -->
+        @if (isNotPaid && hasPaymentLink) {
+          <mat-card class="payment-link-card">
+            <mat-card-content>
+              <div class="payment-link-section">
+                <div class="payment-link-header">
+                  <mat-icon>link</mat-icon>
+                  <h3>Payment Link</h3>
+                </div>
+                <div class="payment-link-content">
+                  <p class="payment-link-text">{{ productOrder()?.paymentLink }}</p>
+                  <button
+                    mat-raised-button
+                    color="primary"
+                    (click)="copyPaymentLink()"
+                    class="copy-button">
+                    <mat-icon>content_copy</mat-icon>
+                    Copy Payment Link
+                  </button>
+                </div>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        }
+
         <!-- Order Summary Card -->
         <mat-card class="summary-card">
           <mat-card-header>

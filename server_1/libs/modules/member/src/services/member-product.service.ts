@@ -881,6 +881,7 @@ export class MemberProductService {
         paymentStatusId: obj.paymentStatusId || PaymentStatusEnum.PENDING,
         promoCode: obj.promoCode || null,
         isTaxApplicable: true,
+        currency: orderItemObjs[0].currencyCode,
         refundObj: null,
         paymentGatewayResponse: null,
         gstNumber: obj.gstNumber || null,
