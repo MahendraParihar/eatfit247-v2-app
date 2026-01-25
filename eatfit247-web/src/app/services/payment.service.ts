@@ -77,7 +77,7 @@ export class PaymentService {
   }
 
   /**
-   * Create payment order for embedded checkout
+   * Create payment order for embedded checkout (products)
    */
   async createPaymentOrder(
     memberId: number,
@@ -99,7 +99,29 @@ export class PaymentService {
   }
 
   /**
-   * Verify payment after completion
+   * Create payment order for embedded checkout (plans)
+   */
+  async createPlanPaymentOrder(
+    memberId: number,
+    paymentData: PaymentOrderRequest
+  ): Promise<PaymentOrderResponse> {
+    try {
+      const data = await this.httpService.post<PaymentOrderResponse>(
+        `public/checkout/plan/member/${memberId}/payment-order`,
+        paymentData
+      );
+      if (!data) {
+        throw new Error('Failed to create payment order: No data returned');
+      }
+      return data;
+    } catch (error) {
+      console.error('Error creating plan payment order:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Verify payment after completion (products)
    */
   async verifyPayment(
     memberId: number,
@@ -116,6 +138,28 @@ export class PaymentService {
       return data;
     } catch (error) {
       console.error('Error verifying payment:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Verify payment after completion (plans)
+   */
+  async verifyPlanPayment(
+    memberId: number,
+    verifyData: VerifyPaymentRequest
+  ): Promise<VerifyPaymentResponse> {
+    try {
+      const data = await this.httpService.post<VerifyPaymentResponse>(
+        `public/checkout/plan/member/${memberId}/verify-payment`,
+        verifyData
+      );
+      if (!data) {
+        throw new Error('Failed to verify payment: No data returned');
+      }
+      return data;
+    } catch (error) {
+      console.error('Error verifying plan payment:', error);
       throw error;
     }
   }

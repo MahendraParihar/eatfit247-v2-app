@@ -2,6 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { InjectModel } from '@nestjs/sequelize';
 import { TxnMember, TxnMemberPayment } from '../models';
 import {
+  BusinessTypeEnum,
   ConfigParam,
   IAddress,
   ICalculateTaxRequest,
@@ -16,6 +17,7 @@ import {
   mapPaymentToInvoiceDocument,
   MediaForEnum,
   IMemberInfo,
+  PaymentGatewayEnum,
   PaymentSourceEnum,
   PaymentStatusEnum,
   TableEnum,
@@ -34,7 +36,7 @@ import {
 } from '@server_1/platform';
 import { ProgramPlanService, ProgramService } from '@server_1/modules/program-plan';
 import { TaxEngineService, TaxInput } from '@server_1/modules/tax-engine';
-import { FranchisePaymentGatewayService } from '@server_1/modules/franchise';
+import { FranchisePaymentGatewayService, FranchiseService } from '@server_1/modules/franchise';
 import {
   PaymentGatewayCredentialService,
   PaymentGatewayFactory,
@@ -64,6 +66,7 @@ export class MemberPaymentService {
     private readonly countryService: CountryService,
     private readonly stateService: StateService,
     private readonly franchisePaymentGatewayService: FranchisePaymentGatewayService,
+    private readonly franchiseService: FranchiseService,
     private readonly paymentGatewayResolverService: PaymentGatewayResolverService,
     private readonly memberDietPlanService: MemberDietPlanService,
     private readonly paymentGatewayFactory: PaymentGatewayFactory,
@@ -1264,5 +1267,290 @@ export class MemberPaymentService {
 
     // Convert to IMemberPayment and return
     return this.convertToModel(updatedPayment);
+  }
+
+  /**
+   * Get supported payment gateways for public checkout (no member required)
+   * For franchise SERVICE type (plans)
+   * Reuses the same logic as getSupportedPaymentGateways but without member validation
+   */
+  public async getSupportedPaymentGatewaysForCheckout(
+    currencyCode: string,
+  ): Promise<
+    Array<{
+      franchisePaymentGatewayId: number;
+      gatewayCode: string;
+      gatewayName: string;
+      providerCountryCode: string;
+      currencyCode: string;
+      isPrimary: boolean;
+      supportsDomestic: boolean;
+      supportsInternational: boolean;
+    }>
+  > {
+    // Get franchise for services (plans)
+    const franchise = await this.franchiseService.franchiseByBusinessType(BusinessTypeEnum.SERVICE);
+    if (!franchise || franchise.length === 0) {
+      return [];
+    }
+    // Get all active gateways for franchise and currency
+    const gateways = await this.franchisePaymentGatewayService.findActiveByFranchiseAndCurrency({
+      franchiseId: franchise[0].id as number,
+      currency: currencyCode,
+    });
+    // Transform to response format
+    return gateways.map((gateway: any) => {
+      const paymentGateway = gateway.paymentGateway;
+      return {
+        franchisePaymentGatewayId: gateway.franchisePaymentGatewayId,
+        gatewayCode: paymentGateway?.code || '',
+        gatewayName: paymentGateway?.name || '',
+        providerCountryCode: paymentGateway?.providerCountryCode || '',
+        currencyCode: gateway.currencyCode,
+        isPrimary: gateway.isPrimary,
+        supportsDomestic: gateway.supportsDomestic,
+        supportsInternational: gateway.supportsInternational,
+      };
+    });
+  }
+
+  /**
+   * Create payment order for embedded checkout (for plans)
+   * Returns order details that can be used with payment gateway SDKs
+   */
+  public async createPaymentOrder(
+    memberId: number,
+    payload: ICreatePaymentLinkRequest,
+  ): Promise<{
+    orderId: string;
+    gatewayCode: string;
+    keyId: string;
+    amount: number;
+    currency: string;
+    customer: {
+      name?: string;
+      email?: string;
+      contact?: string;
+    };
+    notes: Record<string, any>;
+  }> {
+    // Verify a member exists
+    const member = await this.memberRepository.findOne({
+      where: { memberId: memberId },
+    });
+    if (!member) {
+      throw new NotFoundException('Member not found');
+    }
+    // Get franchise for services (plans)
+    const franchise = await this.franchiseService.franchiseByBusinessType(BusinessTypeEnum.SERVICE);
+    if (!franchise || franchise.length === 0) {
+      throw new BadRequestException('Franchise not found for services');
+    }
+    if (payload.amount <= 0) {
+      throw new BadRequestException('Invalid amount');
+    }
+    // Use PaymentGatewayResolverService to find the gateway
+    let resolvedGateway;
+    try {
+      resolvedGateway = await this.paymentGatewayResolverService.resolve({
+        franchiseId: franchise[0].id as number,
+        currency: payload.currency,
+        isInternational: false,
+        amount: payload.amount,
+      });
+    } catch (error) {
+      throw new BadRequestException(
+        error instanceof Error ? error.message : 'Failed to resolve payment gateway',
+      );
+    }
+    // If a specific gateway ID was provided, validate it matches the resolved gateway
+    if (
+      payload.franchisePaymentGatewayId &&
+      resolvedGateway.franchisePaymentGatewayId !== payload.franchisePaymentGatewayId
+    ) {
+      throw new BadRequestException(
+        'Selected payment gateway is not available for the given criteria',
+      );
+    }
+    const gatewayCode = resolvedGateway.gatewayCode;
+    // Get payment gateway credentials
+    const credentialMode = this.appConfigService.getString(ConfigParam.PAYMENT_MODE);
+    const credentials = await this.paymentGatewayCredentialService.getActiveCredentials(
+      resolvedGateway.franchisePaymentGatewayId,
+      credentialMode,
+    );
+    if (!credentials) {
+      throw new BadRequestException(
+        `Payment gateway credentials not found for gateway ID: ${resolvedGateway.franchisePaymentGatewayId} in mode: ${credentialMode}`,
+      );
+    }
+    const keyId = credentials.apiKeyEncrypted;
+    const keySecret = credentials.apiSecretEncrypted;
+    // Prepare customer details from member if not provided
+    const customerDetails = payload.customer || {
+      name: member.firstName ? `${member.firstName} ${member.lastName || ''}`.trim() : undefined,
+      email: member.emailId || undefined,
+      contact: member.contactNumber || undefined,
+    };
+    // Prepare description
+    const paymentDescription =
+      payload.description || `Plan Payment for Member ID: ${memberId}`;
+    // Prepare notes with member ID
+    const paymentNotes = {
+      memberId: memberId.toString(),
+      franchisePaymentGatewayId: resolvedGateway.franchisePaymentGatewayId.toString(),
+      ...payload.notes,
+    };
+    const adaptor = this.paymentGatewayFactory.getAdapter(gatewayCode);
+    // Create order based on a gateway type
+    let orderId: string;
+    const receipt = `order_${memberId}_${Date.now()}`;
+    switch (gatewayCode) {
+      case PaymentGatewayEnum.RAZORPAY: {
+        if (!adaptor.createOrder) {
+          throw new BadRequestException('Razorpay createOrder method not available');
+        }
+        const order = await adaptor.createOrder(
+          payload.amount,
+          receipt,
+          payload.currency,
+          paymentNotes,
+          {
+            keyId,
+            keySecret,
+          },
+        );
+        orderId = order.id;
+      }
+        break;
+      case PaymentGatewayEnum.STRIPE: {
+        const stripeAdapter = adaptor as any;
+        if (stripeAdapter.createPaymentIntent) {
+          const paymentIntent = await stripeAdapter.createPaymentIntent(
+            payload.amount,
+            payload.currency,
+            paymentDescription,
+            customerDetails,
+            paymentNotes,
+          );
+          orderId = paymentIntent.id;
+        } else {
+          // Fallback to payment link if payment intent is not available
+          const paymentLink = await adaptor.createPaymentLink(
+            payload.amount,
+            payload.currency,
+            paymentDescription,
+            customerDetails,
+            paymentNotes,
+            {
+              keyId,
+              keySecret,
+            },
+          );
+          orderId = paymentLink.id;
+        }
+      }
+        break;
+      case PaymentGatewayEnum.TELR: {
+        if (!adaptor.createOrder) {
+          throw new BadRequestException('Telr createOrder method not available');
+        }
+        const order = await adaptor.createOrder(
+          payload.amount,
+          receipt,
+          payload.currency,
+          paymentNotes,
+          {
+            keyId,
+            keySecret,
+          },
+        );
+        orderId = order.order?.ref || order.id || receipt;
+      }
+        break;
+      default:
+        throw new BadRequestException(`Unsupported payment gateway: ${gatewayCode}`);
+    }
+    return {
+      orderId,
+      gatewayCode,
+      keyId, // Return keyId for frontend SDK initialization
+      amount: payload.amount,
+      currency: payload.currency,
+      customer: customerDetails,
+      notes: paymentNotes,
+    };
+  }
+
+  /**
+   * Verify payment after completion (for plans)
+   */
+  public async verifyPayment(
+    memberId: number,
+    gatewayCode: string,
+    paymentId: string,
+    orderId?: string,
+    signature?: string,
+  ): Promise<{ verified: boolean; paymentDetails?: any }> {
+    // Verify a member exists
+    const member = await this.memberRepository.findOne({
+      where: { memberId: memberId },
+    });
+    if (!member) {
+      throw new NotFoundException('Member not found');
+    }
+    // Get franchise for services (plans)
+    const franchise = await this.franchiseService.franchiseByBusinessType(BusinessTypeEnum.SERVICE);
+    if (!franchise || franchise.length === 0) {
+      throw new BadRequestException('Franchise not found for services');
+    }
+    // Get payment gateway credentials
+    const gateways = await this.getSupportedPaymentGatewaysForCheckout('INR');
+    const gateway = gateways.find((g) => g.gatewayCode === gatewayCode);
+    if (!gateway) {
+      throw new BadRequestException(`Payment gateway not found: ${gatewayCode}`);
+    }
+    const credentialMode = this.appConfigService.getString(ConfigParam.PAYMENT_MODE);
+    const credentials = await this.paymentGatewayCredentialService.getActiveCredentials(
+      gateway.franchisePaymentGatewayId,
+      credentialMode,
+    );
+    if (!credentials) {
+      throw new BadRequestException(
+        `Payment gateway credentials not found for gateway: ${gatewayCode}`,
+      );
+    }
+    const adaptor = this.paymentGatewayFactory.getAdapter(gatewayCode);
+    if (!adaptor.verifyPayment) {
+      throw new BadRequestException(`Payment verification not supported for gateway: ${gatewayCode}`);
+    }
+    // Extract credentials for verification
+    const keyId = credentials.apiKeyEncrypted;
+    const keySecret = credentials.apiSecretEncrypted;
+    return await adaptor.verifyPayment(
+      paymentId,
+      orderId,
+      signature,
+      {
+        keyId,
+        keySecret,
+      },
+    );
+  }
+
+  /**
+   * Create a payment order for public checkout (no admin required)
+   * Similar to create() but uses system admin ID (0) for public orders
+   * @param memberId - Member ID
+   * @param obj - Payment data
+   * @param requestedIp - Request IP
+   * @returns Created payment
+   */
+  public async createPublicOrder(
+    memberId: number,
+    obj: IManageMemberPayment,
+    requestedIp: string,
+  ): Promise<IMemberPayment> {
+    return await this.create(memberId, obj, requestedIp, null);
   }
 }

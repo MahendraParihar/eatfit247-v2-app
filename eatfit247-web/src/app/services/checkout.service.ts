@@ -93,6 +93,35 @@ export interface CreateProductOrderRequest {
   }>;
 }
 
+export interface CreatePlanOrderRequest {
+  paymentModeId?: number | null;
+  billingAddressId?: number | null;
+  addressId?: number | null;
+  transactionId?: string;
+  paymentDate: string; // ISO date string
+  paymentStatusId: number;
+  programId: number;
+  programPlanId: number;
+  noOfCycle: number;
+  noOfDaysInCycle: number;
+  isTaxApplicable: boolean;
+  taxPercentage: number;
+  currencyCode: string;
+  promoCode?: string;
+  gstNumber?: string;
+  paymentSource: string; // PaymentSourceEnum
+  orderAmount: number;
+  taxAmount: number;
+  discountAmount: number;
+  totalAmount: number;
+  paymentLink?: string;
+  gatewayProvider?: string;
+  gatewayOrderId?: string;
+  gatewayPaymentId?: string;
+  paymentGatewayResponse?: Record<string, any>;
+  recaptchaToken?: string; // reCAPTCHA v3 token (required by backend)
+}
+
 /**
  * Service to handle checkout operations
  * Manages member creation, address, tax calculation, and payment
@@ -250,6 +279,22 @@ export class CheckoutService {
   }
 
   /**
+   * Get supported payment gateways for plan checkout
+   * Uses franchise SERVICE type (BusinessTypeEnum.SERVICE)
+   */
+  async getSupportedPaymentGatewaysForPlan(currency: string = 'INR'): Promise<PaymentGateway[]> {
+    try {
+      const data = await this.httpService.get<PaymentGateway[]>(
+        `public/checkout/plan/supported-gateways?currency=${currency}`
+      );
+      return data || [];
+    } catch (error) {
+      console.error('Error fetching supported payment gateways for plan:', error);
+      return [];
+    }
+  }
+
+  /**
    * Create product order in txn_member_products table
    * Follows the same pattern as Admin-side Member Product order creation
    */
@@ -270,6 +315,26 @@ export class CheckoutService {
   }
 
   /**
+   * Create plan order in txn_member_payments table
+   * Uses member-payment.service for plan orders
+   */
+  async createPlanOrder(
+    memberId: number,
+    orderData: CreatePlanOrderRequest
+  ): Promise<any> {
+    try {
+      const data = await this.httpService.post(
+        `public/checkout/plan/member/${memberId}/order`,
+        orderData
+      );
+      return data;
+    } catch (error) {
+      console.error('Error creating plan order:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Download invoice for product order
    * @param memberId - Member ID
    * @param memberProductId - Member Product ID (order ID)
@@ -282,6 +347,23 @@ export class CheckoutService {
       return data;
     } catch (error) {
       console.error('Error downloading invoice:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Download invoice for plan order
+   * @param memberId - Member ID
+   * @param paymentId - Member Payment ID (order ID)
+   */
+  async downloadPlanInvoice(memberId: number, paymentId: number): Promise<{ buffer: string; fileName: string } | null> {
+    try {
+      const data = await this.httpService.get<{ buffer: string; fileName: string }>(
+        `public/checkout/plan/member/${memberId}/payment/${paymentId}/invoice`
+      );
+      return data;
+    } catch (error) {
+      console.error('Error downloading plan invoice:', error);
       throw error;
     }
   }

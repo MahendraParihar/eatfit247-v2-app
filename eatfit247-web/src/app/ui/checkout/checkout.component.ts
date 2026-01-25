@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { MatStepperModule } from '@angular/material/stepper';
-import { StepperSelectionEvent } from '@angular/cdk/stepper';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
@@ -50,10 +49,8 @@ export class CheckoutComponent implements OnInit {
   private readonly checkoutService = inject(CheckoutService);
   private readonly recaptchaService = inject(RecaptchaService);
   private readonly paymentService = inject(PaymentService);
-  // Form groups for each step
+  // Unified form for both products and plans
   basicDetailsForm!: FormGroup;
-  addressForm!: FormGroup;
-  paymentForm!: FormGroup;
   // Data
   programPlan: ProgramPlan | null = null;
   programPlanId: number | null = null;
@@ -107,6 +104,8 @@ export class CheckoutComponent implements OnInit {
         this.isProductCheckout = false;
         this.initializeForms();
         this.loadProgramPlan();
+        // Check payment gateway availability for plans too
+        this.checkPaymentGatewayAvailability();
       } else if (productName) {
         this.isProductCheckout = true;
         this.productName = decodeURIComponent(productName);
@@ -128,56 +127,27 @@ export class CheckoutComponent implements OnInit {
 
   /**
    * Initialize form groups
+   * Unified form structure for both products and plans
    */
   initializeForms(): void {
-    // Product checkout uses a single billing form
-    if (this.isProductCheckout) {
-      this.basicDetailsForm = this.fb.group({
-        firstName: ['Mahendra', [Validators.required, Validators.maxLength(50)]],
-        lastName: ['Parihar', [Validators.required, Validators.maxLength(50)]],
-        companyName: ['India', [Validators.maxLength(100)]],
-        countryId: [96, [Validators.required]],
-        streetAddress1: ['K-203', [Validators.required, Validators.maxLength(200)]],
-        streetAddress2: ['Plantaria', [Validators.maxLength(200)]],
-        city: ['Mumbai', [Validators.required, Validators.maxLength(100)]],
-        stateId: ['', [Validators.required]],
-        postcode: ['401101', [Validators.required, Validators.maxLength(10)]],
-        phone: ['8097421877', [Validators.required, Validators.maxLength(16)]],
-        email: ['mahendra.parihar10@gmail.com', [Validators.required, Validators.email, Validators.maxLength(100)]],
-        orderNotes: ['']
-      });
-      // Watch for country changes to filter states
-      this.basicDetailsForm.get('countryId')?.valueChanges.subscribe((countryId) => {
-        this.filterStatesByCountry(countryId);
-      });
-    } else {
-      // Step 1: Basic Details
-      this.basicDetailsForm = this.fb.group({
-        firstName: ['', [Validators.required, Validators.maxLength(50)]],
-        lastName: ['', [Validators.required, Validators.maxLength(50)]],
-        emailId: ['', [Validators.required, Validators.email, Validators.maxLength(100)]],
-        countryCode: ['', [Validators.required]],
-        contactNumber: ['', [Validators.required, Validators.maxLength(16)]],
-        countryId: ['', [Validators.required]]
-      });
-      // Step 2: Address Details
-      this.addressForm = this.fb.group({
-        postalAddress: ['', [Validators.required, Validators.maxLength(100)]],
-        cityVillage: ['', [Validators.maxLength(100)]],
-        stateId: ['', [Validators.required]],
-        countryId: ['', [Validators.required]],
-        pinCode: ['', [Validators.maxLength(10)]]
-      });
-      // Watch for country changes to filter states
-      this.addressForm.get('countryId')?.valueChanges.subscribe((countryId) => {
-        this.filterStatesByCountry(countryId);
-      });
-    }
-    // Step 3: Payment Details
-    this.paymentForm = this.fb.group({
-      isTaxApplicable: [false],
-      isPlanFeesIncludedTax: [false],
-      promoCode: ['', [Validators.maxLength(100)]]
+    // Use the same unified billing form for both products and plans
+    this.basicDetailsForm = this.fb.group({
+      firstName: ['', [Validators.required, Validators.maxLength(50)]],
+      lastName: ['', [Validators.required, Validators.maxLength(50)]],
+      companyName: ['', [Validators.maxLength(100)]],
+      countryId: ['', [Validators.required]],
+      streetAddress1: ['', [Validators.required, Validators.maxLength(200)]],
+      streetAddress2: ['', [Validators.maxLength(200)]],
+      city: ['', [Validators.required, Validators.maxLength(100)]],
+      stateId: ['', [Validators.required]],
+      postcode: ['', [Validators.required, Validators.maxLength(10)]],
+      phone: ['', [Validators.required, Validators.maxLength(16)]],
+      email: ['', [Validators.required, Validators.email, Validators.maxLength(100)]],
+      orderNotes: ['']
+    });
+    // Watch for country changes to filter states
+    this.basicDetailsForm.get('countryId')?.valueChanges.subscribe((countryId) => {
+      this.filterStatesByCountry(countryId);
     });
     // Set default country after forms are initialized (if master data is already loaded)
     this.setDefaultCountry();
@@ -222,32 +192,13 @@ export class CheckoutComponent implements OnInit {
     if (this.countryOptions.length === 0) return;
     const indiaCountry = this.countryOptions.find((c) => c.label.toLowerCase() === 'india');
     if (!indiaCountry) return;
-    // Set the default country for product checkout
-    if (this.isProductCheckout && this.basicDetailsForm) {
+    // Set the default country for unified checkout form
+    if (this.basicDetailsForm) {
       const currentCountryId = this.basicDetailsForm.get('countryId')?.value;
       if (!currentCountryId) {
         this.basicDetailsForm.patchValue({ countryId: indiaCountry.id });
         // Filter states for India
         this.filterStatesByCountry(indiaCountry.id as number);
-      }
-    }
-    // Set the default country for program plan checkout
-    if (!this.isProductCheckout) {
-      // Set in basic details form
-      if (this.basicDetailsForm) {
-        const currentCountryId = this.basicDetailsForm.get('countryId')?.value;
-        if (!currentCountryId) {
-          this.basicDetailsForm.patchValue({ countryId: indiaCountry.id });
-        }
-      }
-      // Set in the address form
-      if (this.addressForm) {
-        const currentAddressCountryId = this.addressForm.get('countryId')?.value;
-        if (!currentAddressCountryId) {
-          this.addressForm.patchValue({ countryId: indiaCountry.id });
-          // Filter states for India
-          this.filterStatesByCountry(indiaCountry.id as number);
-        }
       }
     }
   }
@@ -268,17 +219,10 @@ export class CheckoutComponent implements OnInit {
       if (addressMasterData) {
         this.stateOptions = addressMasterData.state || [];
         // Re-filter states if the country is already set
-        if (this.isProductCheckout && this.basicDetailsForm) {
+        if (this.basicDetailsForm) {
           const countryId = this.basicDetailsForm.get('countryId')?.value;
           if (countryId) {
             this.filterStatesByCountry(countryId);
-          }
-        } else if (!this.isProductCheckout) {
-          if (this.addressForm) {
-            const countryId = this.addressForm.get('countryId')?.value;
-            if (countryId) {
-              this.filterStatesByCountry(countryId);
-            }
           }
         }
       }
@@ -294,205 +238,103 @@ export class CheckoutComponent implements OnInit {
     if (!countryId) {
       this.filteredStateOptions = [];
       // Reset state selection when the country is cleared
-      if (this.isProductCheckout && this.basicDetailsForm) {
+      if (this.basicDetailsForm) {
         this.basicDetailsForm.patchValue({ stateId: '' }, { emitEvent: false });
-      } else if (!this.isProductCheckout && this.addressForm) {
-        this.addressForm.patchValue({ stateId: '' }, { emitEvent: false });
       }
       return;
     }
-    const previousStateId = this.isProductCheckout
-      ? this.basicDetailsForm?.get('stateId')?.value
-      : this.addressForm?.get('stateId')?.value;
+    const previousStateId = this.basicDetailsForm?.get('stateId')?.value;
     this.filteredStateOptions = sortBy(filter(this.stateOptions, { parentId: countryId }), 'label');
     // Reset state selection if the previously selected state is not in the new country's states
     const isPreviousStateValid = this.filteredStateOptions.some(
       (state) => state.id === previousStateId
     );
-    if (!isPreviousStateValid) {
-      if (this.isProductCheckout && this.basicDetailsForm) {
-        this.basicDetailsForm.patchValue({ stateId: '' }, { emitEvent: false });
-      } else if (!this.isProductCheckout && this.addressForm) {
-        this.addressForm.patchValue({ stateId: '' }, { emitEvent: false });
-      }
+    if (!isPreviousStateValid && this.basicDetailsForm) {
+      this.basicDetailsForm.patchValue({ stateId: '' }, { emitEvent: false });
     }
   }
 
   /**
-   * Handle stepper selection change
+   * Place order for plan checkout
+   * Uses the same unified flow as product checkout
    */
-  async onStepperSelectionChange(event: StepperSelectionEvent): Promise<void> {
-    // When moving to step 2, ensure step 1 is completed
-    if (event.selectedIndex === 1 && !this.basicDetailsForm.valid) {
-      this.markFormGroupTouched(this.basicDetailsForm);
-      return;
-    }
-    // When moving to step 3, ensure step 2 is completed and create member/address
-    if (event.selectedIndex === 2) {
-      if (!this.basicDetailsForm.valid) {
-        this.markFormGroupTouched(this.basicDetailsForm);
-        return;
-      }
-      if (!this.addressForm.valid) {
-        this.markFormGroupTouched(this.addressForm);
-        return;
-      }
-      // Create member if not already created
-      if (!this.memberId) {
-        await this.createMember();
-      }
-      // Create address if not already created
-      if (this.memberId && !this.addressId) {
-        await this.createAddress();
-      }
-      // Calculate tax
-      if (this.memberId && this.addressId) {
-        await this.calculateTax();
-      }
-    }
-  }
-
-  /**
-   * Create member from basic details
-   */
-  async createMember(): Promise<void> {
+  async placePlanOrder(): Promise<void> {
     if (!this.basicDetailsForm.valid) {
       this.markFormGroupTouched(this.basicDetailsForm);
       return;
     }
     try {
       this.loading = true;
+      // Create member first
       const memberData: ICheckoutMemberData = {
         firstName: this.basicDetailsForm.get('firstName')?.value,
         lastName: this.basicDetailsForm.get('lastName')?.value,
-        emailId: this.basicDetailsForm.get('emailId')?.value,
-        countryCode: this.basicDetailsForm.get('countryCode')?.value,
-        contactNumber: this.basicDetailsForm.get('contactNumber')?.value,
-        countryId: Number(this.basicDetailsForm.get('countryId')?.value)
+        emailId: this.basicDetailsForm.get('email')?.value,
+        countryCode: '+91', // Default for India
+        contactNumber: this.basicDetailsForm.get('phone')?.value,
+        countryId: this.basicDetailsForm.get('countryId')?.value
       };
-      // Get reCAPTCHA token if service is available
       let recaptchaToken: string | undefined;
       if (this.recaptchaService.isAvailable()) {
         try {
           recaptchaToken = await this.recaptchaService.getToken('member_creation');
         } catch (recaptchaError: any) {
           console.warn('Failed to get reCAPTCHA token:', recaptchaError);
-          // Continue without token if reCAPTCHA fails (backend will handle the error)
         }
       }
-      const result = await this.checkoutService.createMember(memberData, recaptchaToken);
-      if (result?.memberId) {
-        this.memberId = result.memberId;
-      } else {
+      const memberResult = await this.checkoutService.createMember(memberData, recaptchaToken);
+      if (!memberResult?.memberId) {
         throw new Error('Failed to create member');
       }
-    } catch (error: any) {
-      console.error('Error creating member:', error);
-      this.error = error.message || 'Failed to create member. Please try again.';
-    } finally {
-      this.loading = false;
-    }
-  }
-
-  /**
-   * Create address
-   */
-  async createAddress(): Promise<void> {
-    if (!this.addressForm.valid || !this.memberId) {
-      this.markFormGroupTouched(this.addressForm);
-      return;
-    }
-    try {
-      this.loading = true;
+      this.memberId = memberResult.memberId;
+      // Create address
       const addressData: CheckoutAddressData = {
-        postalAddress: this.addressForm.get('postalAddress')?.value,
-        cityVillage: this.addressForm.get('cityVillage')?.value || undefined,
-        stateId: Number(this.addressForm.get('stateId')?.value),
-        countryId: Number(this.addressForm.get('countryId')?.value),
-        pinCode: this.addressForm.get('pinCode')?.value || undefined,
-        addressName: this.addressForm.get('addressName')?.value || undefined
+        postalAddress:
+          `${this.basicDetailsForm.get('streetAddress1')?.value} ${this.basicDetailsForm.get('streetAddress2')?.value || ''}`.trim(),
+        cityVillage: this.basicDetailsForm.get('city')?.value,
+        stateId: Number(this.basicDetailsForm.get('stateId')?.value),
+        countryId: Number(this.basicDetailsForm.get('countryId')?.value),
+        pinCode: this.basicDetailsForm.get('postcode')?.value
       };
-      const result = await this.checkoutService.createAddress(this.memberId, addressData);
-      if (result?.addressId) {
-        this.addressId = result.addressId;
-      } else {
+      const addressResult = await this.checkoutService.createAddress(this.memberId, addressData);
+      if (!addressResult?.addressId) {
         throw new Error('Failed to create address');
       }
-    } catch (error: any) {
-      this.error = error.message || 'Failed to create address. Please try again.';
-    } finally {
-      this.loading = false;
-    }
-  }
-
-  /**
-   * Calculate tax
-   */
-  async calculateTax(): Promise<void> {
-    if (!this.memberId || !this.addressId) return;
-    try {
-      this.calculatingTax = true;
-      const isTaxApplicable = this.paymentForm.get('isTaxApplicable')?.value || false;
-      const isPlanFeesIncludedTax = this.paymentForm.get('isPlanFeesIncludedTax')?.value || false;
-      const result = await this.checkoutService.calculateTax(this.memberId, {
-        orderAmount: this.orderAmount,
-        discountAmount: this.discountAmount,
-        isTaxApplicable: isTaxApplicable,
-        isPlanFeesIncludedTax: isPlanFeesIncludedTax,
-        currencyCode: this.currencyCode,
-        billingAddressId: this.addressId
-      });
-      if (result) {
-        this.taxCalculation = result;
-        this.isTaxApplicable = isTaxApplicable;
+      this.addressId = addressResult.addressId;
+      // Check payment gateway availability if not already checked
+      if (!this.isPaymentGatewayAvailable) {
+        await this.checkPaymentGatewayAvailability();
+        if (!this.isPaymentGatewayAvailable || !this.selectedGateway) {
+          throw new Error('Payment gateway not available');
+        }
       }
-    } catch (error: any) {
-      console.error('Error calculating tax:', error);
-      this.error = error.message || 'Failed to calculate tax. Please try again.';
-    } finally {
-      this.calculatingTax = false;
-    }
-  }
-
-  /**
-   * Watch tax applicable checkbox
-   */
-  onTaxApplicableChange(): void {
-    if (this.memberId && this.addressId) {
-      this.calculateTax();
-    }
-  }
-
-  /**
-   * Proceed to payment
-   */
-  async proceedToPayment(): Promise<void> {
-    if (!this.paymentForm.valid || !this.memberId) {
-      this.markFormGroupTouched(this.paymentForm);
-      return;
-    }
-    try {
-      this.loading = true;
+      // Calculate tax (simplified - using 0% for now, can be enhanced later)
+      const taxPercentage = 0;
+      const taxAmount = 0;
+      const discountAmount = 0;
+      const totalAmount = this.orderAmount;
+      // Validate programPlanId is available
+      if (!this.programPlanId) {
+        throw new Error('Program Plan ID missing. Please go back and select the plan again.');
+      }
+      // Create payment order for embedded checkout (plans)
       const customerName = `${this.basicDetailsForm.get('firstName')?.value} ${this.basicDetailsForm.get('lastName')?.value}`;
-      const totalAmount = this.taxCalculation?.totalAmount || this.orderAmount;
-      
-      // Create payment order for embedded checkout
-      const paymentOrderResponse = await this.paymentService.createPaymentOrder(this.memberId, {
+      const paymentOrderResponse = await this.paymentService.createPlanPaymentOrder(this.memberId, {
         amount: totalAmount,
         currency: this.currencyCode,
         description: `Payment for ${this.programPlan?.plan || 'Plan'}`,
+        franchisePaymentGatewayId: this.selectedGateway?.franchisePaymentGatewayId,
         customer: {
           name: customerName,
-          email: this.basicDetailsForm.get('emailId')?.value,
-          contact: `${this.basicDetailsForm.get('countryCode')?.value}${this.basicDetailsForm.get('contactNumber')?.value}`
+          email: this.basicDetailsForm.get('email')?.value,
+          contact: this.basicDetailsForm.get('phone')?.value
         },
         notes: {
           programPlanId: this.programPlanId,
           addressId: this.addressId,
-          promoCode: this.paymentForm.get('promoCode')?.value || undefined
+          orderNotes: this.basicDetailsForm.get('orderNotes')?.value || undefined
         }
       });
-      
       // Initialize embedded payment
       this.processingPayment = true;
       this.showPaymentModal = true;
@@ -504,7 +346,7 @@ export class CheckoutComponent implements OnInit {
             if (!this.memberId) {
               throw new Error('Member ID is required');
             }
-            const verifyResponse = await this.paymentService.verifyPayment(this.memberId, {
+            const verifyResponse = await this.paymentService.verifyPlanPayment(this.memberId, {
               gatewayCode: paymentOrderResponse.gatewayCode,
               paymentId: paymentId,
               orderId: orderId,
@@ -513,6 +355,61 @@ export class CheckoutComponent implements OnInit {
             if (!verifyResponse.verified) {
               throw new Error('Payment verification failed');
             }
+            // Create plan order in txn_member_payments table
+            // Get programId from programPlan (assuming it's available) or set to 0 if not available
+            // Note: programId might need to be fetched separately if not in programPlan
+            const programId = (this.programPlan as any)?.programId || 0; // TODO: Get actual programId
+            const orderData = {
+              paymentModeId: null,
+              billingAddressId: this.addressId,
+              addressId: this.addressId,
+              transactionId: paymentId,
+              paymentDate: new Date().toISOString(),
+              paymentStatusId: PaymentStatusEnum.PAID,
+              programId: programId,
+              programPlanId: this.programPlanId!,
+              noOfCycle: this.programPlan?.noOfCycle || 1,
+              noOfDaysInCycle: this.programPlan?.noOfDaysInCycle || 30,
+              isTaxApplicable: this.isTaxApplicable,
+              taxPercentage: taxPercentage,
+              currencyCode: this.currencyCode,
+              promoCode: undefined,
+              gstNumber: undefined,
+              paymentSource: PaymentSourceEnum.PAYMENT_GATEWAY,
+              orderAmount: this.orderAmount,
+              taxAmount: taxAmount,
+              discountAmount: discountAmount,
+              totalAmount: totalAmount,
+              paymentLink: undefined,
+              gatewayProvider: paymentOrderResponse.gatewayCode,
+              gatewayOrderId: orderId,
+              gatewayPaymentId: paymentId,
+              paymentGatewayResponse: verifyResponse.paymentDetails || {
+                paymentId: paymentId,
+                orderId: orderId,
+                signature: signature,
+                gatewayCode: paymentOrderResponse.gatewayCode,
+                verified: verifyResponse.verified
+              }
+            };
+            // Create order with reCAPTCHA token
+            let recaptchaToken: string | undefined;
+            if (this.recaptchaService.isAvailable()) {
+              try {
+                recaptchaToken = await this.recaptchaService.getToken('checkout_order');
+              } catch (recaptchaError: any) {
+                console.warn('Failed to get reCAPTCHA token for order:', recaptchaError);
+              }
+            }
+            if (!this.memberId) {
+              throw new Error('Member ID is required');
+            }
+            // Include reCAPTCHA token in order data
+            const orderDataWithRecaptcha = {
+              ...orderData,
+              recaptchaToken: recaptchaToken
+            };
+            await this.checkoutService.createPlanOrder(this.memberId, orderDataWithRecaptcha);
             // Payment successful - redirect to success page
             this.processingPayment = false;
             this.showPaymentModal = false;
@@ -539,8 +436,9 @@ export class CheckoutComponent implements OnInit {
         }
       );
     } catch (error: any) {
-      console.error('Error creating payment order:', error);
-      this.error = error.message || 'Failed to create payment order. Please try again.';
+      console.error('Error placing order:', error);
+      this.error = error.message || 'Failed to place order. Please try again.';
+    } finally {
       this.loading = false;
     }
   }
@@ -621,15 +519,18 @@ export class CheckoutComponent implements OnInit {
   }
 
   /**
-   * Check payment gateway availability for product checkout
-   * Reuses Admin-side logic to get gateways for franchise (BusinessTypeEnum.PRODUCT)
+   * Check payment gateway availability for checkout
+   * Uses different services based on checkout type:
+   * - Products: getSupportedPaymentGateways (BusinessTypeEnum.PRODUCT)
+   * - Plans: getSupportedPaymentGatewaysForPlan (BusinessTypeEnum.SERVICE)
    */
   async checkPaymentGatewayAvailability(): Promise<void> {
-    if (!this.isProductCheckout) return;
     try {
       this.paymentGatewayLoading = true;
       this.error = null; // Clear any previous errors
-      const gateways = await this.checkoutService.getSupportedPaymentGateways(this.currencyCode);
+      const gateways = this.isProductCheckout
+        ? await this.checkoutService.getSupportedPaymentGateways(this.currencyCode)
+        : await this.checkoutService.getSupportedPaymentGatewaysForPlan(this.currencyCode);
       console.log('Payment gateways received:', gateways);
       this.paymentGateways = gateways || [];
       if (!gateways || gateways.length === 0) {

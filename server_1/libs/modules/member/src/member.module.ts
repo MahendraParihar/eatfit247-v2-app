@@ -40,7 +40,7 @@ import {
   MemberPaymentController,
   MemberProductController,
 } from './controllers';
-import { PublicCheckoutController, PublicMemberController, PublicMemberPaymentController } from './controllers/public';
+import { PublicCheckoutController, PublicCheckoutPlanController, PublicMemberController, PublicMemberPaymentController } from './controllers/public';
 import {
   MemberAssessmentService,
   MemberCallLogsService,
@@ -138,6 +138,7 @@ modelRegistry.register([
     PublicMemberPaymentController,
     PublicMemberController,
     PublicCheckoutController,
+    PublicCheckoutPlanController,
   ],
   providers: [
     MemberService,
