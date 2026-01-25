@@ -1,13 +1,10 @@
 services:
-  eatfit247-api:
-    container_name: eatfit247-cms-api
-    image: eatfit247-cms-server
-    build:
-      context: ..
-      dockerfile: infra/Dockerfile.server
+  public:
+    container_name: eatfit-server-public
+    image: eatfit-server
+    command: sh -c "cd server && node dist/apps/public-api/main.js"
     restart: always
     volumes:
-      - media_files:/home/app/assets/media-files
       - assets:/home/app/assets
     env_file:
       - main.env
@@ -16,32 +13,55 @@ services:
     ports:
       - "8001:3000"
     healthcheck:
-      test: [ 'CMD', 'curl', '-f', 'http://localhost:3000/api/v1/health' ]
+      test: [ 'CMD', 'curl', '-f', 'http://localhost:3000/api/v2/public/health' ]
       interval: 20s
       retries: 5
       start_period: 5s
       timeout: 10s
-
-  eatfit247-client:
-    container_name: eatfit247-cms-client
-    image: eatfit247-cms-client
-    build:
-      context: ..
-      dockerfile: infra/Dockerfile.client
+  admin:
+    container_name: eatfit-server-admin
+    image: eatfit-server
+    command: sh -c "cd server && node dist/apps/admin-api/main.js"
     restart: always
     volumes:
-      - ./eatfit247.conf:/etc/nginx/conf.d/eatfit247.conf
-      - ./certs/eatfit247.key:/etc/ssl/certs/eatfit247.key
-      - ./certs/eatfit247.pem:/etc/ssl/certs/eatfit247.pem
+      - assets:/home/app/assets
+    env_file:
+      - main.env
+    environment:
+      API_PORT: '3000'
     ports:
-      - "80:80"
+      - "8001:3000"
+    healthcheck:
+      test: [ 'CMD', 'curl', '-f', 'http://localhost:3000/api/v2/public/health' ]
+      interval: 20s
+      retries: 5
+      start_period: 5s
+      timeout: 10s
+  web-app:
+    container_name: eatfit-client
+    image: eatfit-client
+    restart: always
+    volumes:
+      - ./eatfit24by7.conf:/etc/nginx/conf.d/eatfit24by7.conf
+      - ./certs/eatfit24by7.key:/etc/ssl/certs/eatfit24by7.key
+      - ./certs/eatfit24by7.pem:/etc/ssl/certs/eatfit24by7.pem
+    ports:
       - "443:443"
     depends_on:
-      eatfit247-api:
-        condition: service_healthy
+      - core
+  admin-app:
+    container_name: eatfit-admin
+    image: eatfit-admin
+    restart: always
+    volumes:
+      - ./eatfit24by7-admin.conf:/etc/nginx/conf.d/eatfit24by7.conf
+      - ./certs/eatfit24by7.key:/etc/ssl/certs/eatfit24by7.key
+      - ./certs/eatfit24by7.pem:/etc/ssl/certs/eatfit24by7.pem
+    ports:
+      - "8090:443"
+    depends_on:
+      - core
 
 volumes:
-  media_files:
-    driver: local
   assets:
     driver: local
