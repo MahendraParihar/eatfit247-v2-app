@@ -38,6 +38,7 @@ export interface PaymentGatewayAdapter {
    * @param receipt - Receipt identifier
    * @param currency - Currency code (optional, defaults to gateway default)
    * @param notes - Additional notes (optional)
+   * @param credentials - Payment gateway credentials (optional)
    * @returns Order details
    */
   createOrder?(
@@ -45,6 +46,10 @@ export interface PaymentGatewayAdapter {
     receipt: string,
     currency?: string,
     notes?: Record<string, any>,
+    credentials?: {
+      keyId?: string;
+      keySecret?: string;
+    },
   ): Promise<any>;
 
   /**
@@ -52,12 +57,17 @@ export interface PaymentGatewayAdapter {
    * @param paymentId - Payment ID from gateway
    * @param orderId - Order ID (optional)
    * @param signature - Payment signature for verification (optional)
+   * @param credentials - Payment gateway credentials (optional)
    * @returns Verification result
    */
   verifyPayment?(
     paymentId: string,
     orderId?: string,
     signature?: string,
+    credentials?: {
+      keyId?: string;
+      keySecret?: string;
+    },
   ): Promise<{ verified: boolean; paymentDetails?: any }>;
 
   /**
@@ -112,8 +122,41 @@ export class RazorpayAdapter implements PaymentGatewayAdapter {
     receipt: string,
     currency: string = 'INR',
     notes?: Record<string, any>,
+    credentials?: {
+      keyId?: string;
+      keySecret?: string;
+    },
   ): Promise<any> {
-    return await this.razorpayService.createOrder(amount, receipt, notes);
+    return await this.razorpayService.createOrder(
+      amount,
+      receipt,
+      notes,
+      credentials?.keyId,
+      credentials?.keySecret,
+    );
+  }
+
+  async verifyPayment(
+    paymentId: string,
+    orderId?: string,
+    signature?: string,
+    credentials?: {
+      keyId?: string;
+      keySecret?: string;
+    },
+  ): Promise<{ verified: boolean; paymentDetails?: any }> {
+    if (!orderId || !signature) {
+      return {
+        verified: false,
+        paymentDetails: null,
+      };
+    }
+    return await this.razorpayService.verifyPayment(
+      paymentId,
+      orderId,
+      signature,
+      credentials?.keySecret,
+    );
   }
 }
 
@@ -168,7 +211,15 @@ export class StripeAdapter implements PaymentGatewayAdapter {
     );
   }
 
-  async verifyPayment(paymentIntentId: string): Promise<{ verified: boolean; paymentDetails?: any }> {
+  async verifyPayment(
+    paymentIntentId: string,
+    orderId?: string,
+    signature?: string,
+    credentials?: {
+      keyId?: string;
+      keySecret?: string;
+    },
+  ): Promise<{ verified: boolean; paymentDetails?: any }> {
     try {
       const paymentDetails = await this.stripeService.verifyPayment(paymentIntentId);
       return {
@@ -224,6 +275,10 @@ export class TelrAdapter implements PaymentGatewayAdapter {
     receipt: string,
     currency: string = 'AED',
     notes?: Record<string, any>,
+    credentials?: {
+      keyId?: string;
+      keySecret?: string;
+    },
   ): Promise<any> {
     return await this.telrService.createOrder(
       amount,
@@ -235,7 +290,15 @@ export class TelrAdapter implements PaymentGatewayAdapter {
     );
   }
 
-  async verifyPayment(orderRef: string): Promise<{ verified: boolean; paymentDetails?: any }> {
+  async verifyPayment(
+    orderRef: string,
+    orderId?: string,
+    signature?: string,
+    credentials?: {
+      keyId?: string;
+      keySecret?: string;
+    },
+  ): Promise<{ verified: boolean; paymentDetails?: any }> {
     try {
       const paymentDetails = await this.telrService.verifyPayment(orderRef);
       return {

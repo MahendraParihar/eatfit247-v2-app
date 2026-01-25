@@ -9,11 +9,14 @@
   grid-template-columns: 1fr 1fr;
   gap: $spacing-3xl;
   max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 $spacing-lg;
   align-items: center;
 
   @media (max-width: 1024px) {
     grid-template-columns: 1fr;
     gap: $spacing-2xl;
+    padding: 0 $spacing-md;
 
     .journey-image-wrapper {
       order: 2; // Show image after content on mobile
@@ -100,6 +103,12 @@
   display: flex;
   flex-direction: column;
   gap: $spacing-xl;
+  margin-top: $spacing-2xl;
+
+  @media (max-width: 768px) {
+    gap: $spacing-lg;
+    margin-top: $spacing-xl;
+  }
 }
 
 .step-item {
@@ -109,8 +118,8 @@
 
   .step-number {
     flex-shrink: 0;
-    width: 50px;
-    height: 50px;
+    width: 56px;
+    height: 56px;
     border-radius: 50%;
     background-color: #FFE5D4;
     color: #FF6B35;
@@ -120,6 +129,13 @@
     align-items: center;
     justify-content: center;
     line-height: 1;
+    transition: all $transition-base;
+
+    @media (max-width: 768px) {
+      width: 48px;
+      height: 48px;
+      font-size: 1.125rem;
+    }
   }
 
   .step-content {
@@ -127,18 +143,28 @@
     padding-top: $spacing-xs;
 
     .step-title {
-      font-size: 1.25rem;
+      font-size: 1.375rem;
       font-weight: 700;
-      color: #333;
+      color: #1a1a1a;
       margin: 0 0 $spacing-sm 0;
-      line-height: 1.3;
+      line-height: 1.4;
+      letter-spacing: -0.2px;
+
+      @media (max-width: 768px) {
+        font-size: 1.25rem;
+      }
     }
 
     .step-description {
-      font-size: 1rem;
-      color: #333;
-      line-height: 1.6;
+      font-size: 1.0625rem;
+      color: #555;
+      line-height: 1.7;
       margin: 0;
+
+      @media (max-width: 768px) {
+        font-size: 1rem;
+        line-height: 1.6;
+      }
     }
   }
 }
@@ -156,25 +182,30 @@
 .cta-button {
   display: inline-block;
   padding: $spacing-md $spacing-2xl;
-  font-size: 1.125rem;
+  font-size: 1.0625rem;
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  text-transform: none;
+  letter-spacing: 0.3px;
   color: #ffffff;
   background-color: #FF6B35;
-  border-radius: $border-radius-2xl;
+  border-radius: $border-radius-lg;
   text-decoration: none;
   transition: all $transition-base;
-  box-shadow: 0 4px 6px rgba(255, 107, 53, 0.2);
+  box-shadow: 0 2px 8px rgba(255, 107, 53, 0.25);
 
   &:hover {
     background-color: #e55a2b;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(255, 107, 53, 0.3);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(255, 107, 53, 0.35);
   }
 
   &:active {
     transform: translateY(0);
+  }
+
+  &:focus {
+    outline: 2px solid #FF6B35;
+    outline-offset: 2px;
   }
 
   @media (max-width: 768px) {

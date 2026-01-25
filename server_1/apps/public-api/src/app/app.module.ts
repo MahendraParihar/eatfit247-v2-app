@@ -32,7 +32,7 @@ import { ContactModule } from '@server_1/modules/contact';
     SuccessStoriesModule,
     ProductPublicModule,
     ContactModule,
-    CommonModule.forRoot(['Common', 'Email', 'Google'], PlatformModule.getModels()),
+    CommonModule.forRoot(['Common', 'Email', 'Google', 'Payment'], PlatformModule.getModels()),
   ],
   controllers: [AppController],
   providers: [AppService],

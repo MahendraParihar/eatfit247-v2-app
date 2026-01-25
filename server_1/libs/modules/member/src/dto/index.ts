@@ -11,5 +11,6 @@ export * from './public-member.dto';
 export * from './create-payment-link.dto';
 export * from './calculate-tax.dto';
 export * from './calculate-product-variant-tax.dto';
+export * from './public-checkout.dto';
 
 

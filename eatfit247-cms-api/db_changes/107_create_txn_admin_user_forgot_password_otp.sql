@@ -570,3 +570,28 @@ drop table public.mst_address_types;
 
 alter table public.txn_member_payments
     drop column is_tax_included;
+
+
+alter table public.txn_addresses
+    alter column created_by drop not null;
+
+alter table public.txn_addresses
+    alter column modified_by drop not null;
+
+alter table public.txn_member_products
+    alter column created_by drop not null;
+
+alter table public.txn_member_products
+    alter column modified_by drop not null;
+
+alter table public.txn_member_payments
+    alter column created_by drop not null;
+
+alter table public.txn_member_payments
+    alter column modified_by drop not null;
+
+alter table public.txn_member_diet_plans
+    alter column created_by drop not null;
+
+alter table public.txn_member_diet_plans
+    alter column modified_by drop not null;

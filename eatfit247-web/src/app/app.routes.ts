@@ -12,6 +12,7 @@ import { BlogComponent } from './ui/blog/blog.component';
 import { BlogDetailComponent } from './ui/blog-detail/blog-detail.component';
 import { ContactUsComponent } from './ui/contact-us/contact-us.component';
 import { CheckoutComponent } from './ui/checkout/checkout.component';
+import { CheckoutSuccessComponent } from './ui/checkout-success/checkout-success.component';
 import { ProductComponent } from './ui/product/product.component';
 import { FaqComponent } from './ui/faq/faq.component';
 
@@ -79,6 +80,10 @@ export const routes: Routes = [
   {
     path: 'checkout',
     component: CheckoutComponent,
+  },
+  {
+    path: 'checkout/success',
+    component: CheckoutSuccessComponent,
   },
   {
     path: '**',

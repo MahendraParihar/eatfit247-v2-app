@@ -199,6 +199,8 @@ interface IBaseProduct {
   hsnCode: string;
   /**
    * Flattened fee structure used by existing UI (quantity, unit, currency, price)
+   * This is a backward-compatible format derived from variants.
+   * For new implementations, prefer using the variants structure in IProduct.
    */
   fees?: IProductFee[];
 }
@@ -224,7 +226,11 @@ export interface IProduct extends IBaseProduct {
   createdByUser?: IBaseAdminUser;
   updatedByUser?: IBaseAdminUser;
   /**
-   * Variant/price structure linked to the product
+   * Variant/price structure linked to the product.
+   * This is the primary structure for product variants and prices.
+   * Each variant represents a quantity/unit combination (e.g., 200gm, 500gm),
+   * and can have multiple prices (for different currencies or time periods).
+   * The fees array is a flattened version of this structure for backward compatibility.
    */
   variants?: IProductVariant[];
 }

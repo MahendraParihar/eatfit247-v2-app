@@ -1,0 +1,145 @@
+@use '../../../../theme/variables' as *;
+
+.press-media-section {
+  padding: $spacing-3xl 0;
+  background-color: var(--mat-sys-surface);
+
+  @media (max-width: 768px) {
+    padding: $spacing-2xl 0;
+  }
+}
+
+.press-media-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 $spacing-lg;
+
+  @media (max-width: 768px) {
+    padding: 0 $spacing-md;
+  }
+}
+
+// Section Header
+.section-header {
+  text-align: center;
+  margin-bottom: $spacing-3xl;
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+
+  @media (max-width: 768px) {
+    margin-bottom: $spacing-2xl;
+  }
+
+  .section-title {
+    font-size: 2.25rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0 0 $spacing-md 0;
+    line-height: 1.2;
+
+    @media (max-width: 768px) {
+      font-size: 1.75rem;
+    }
+  }
+
+  .section-description {
+    font-size: 1.125rem;
+    color: #666;
+    line-height: 1.6;
+    margin: 0;
+
+    @media (max-width: 768px) {
+      font-size: 1rem;
+    }
+  }
+}
+
+// Loading Container
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: $spacing-2xl 0;
+}
+
+// Logo Grid
+.logo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: $spacing-xl;
+  align-items: center;
+
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+    gap: $spacing-lg;
+  }
+}
+
+// Logo Item
+.logo-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-lg;
+  background: #fff;
+  border-radius: $border-radius-md;
+  border: 1px solid #e5e7eb;
+  cursor: pointer;
+  transition: all $transition-base;
+  min-height: 120px;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-color: #FF6B35;
+  }
+
+  @media (max-width: 768px) {
+    padding: $spacing-md;
+    min-height: 100px;
+  }
+}
+
+// Logo Image
+.logo-image {
+  max-width: 100%;
+  max-height: 80px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  filter: grayscale(100%);
+  opacity: 0.7;
+  transition: all $transition-base;
+
+  .logo-item:hover & {
+    filter: grayscale(0%);
+    opacity: 1;
+  }
+}
+
+// Logo Placeholder
+.logo-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: $spacing-sm;
+  color: #999;
+  font-size: 0.875rem;
+  text-align: center;
+
+  mat-icon {
+    font-size: 32px;
+    width: 32px;
+    height: 32px;
+  }
+}
+
+// No Articles Message
+.no-articles-message {
+  text-align: center;
+  padding: $spacing-2xl 0;
+  color: #666;
+}
+

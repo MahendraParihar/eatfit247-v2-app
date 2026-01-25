@@ -50,6 +50,49 @@ export interface PaymentLinkResponse {
   gatewayCode: string;
 }
 
+export interface PaymentGateway {
+  franchisePaymentGatewayId: number;
+  gatewayCode: string;
+  gatewayName: string;
+  providerCountryCode: string;
+  currencyCode: string;
+  isPrimary: boolean;
+  supportsDomestic: boolean;
+  supportsInternational: boolean;
+}
+
+export interface CreateProductOrderRequest {
+  paymentModeId?: number | null;
+  billingAddressId?: number | null;
+  addressId?: number | null;
+  transactionId?: string;
+  paymentDate: string; // ISO date string
+  paymentStatusId: number;
+  taxPercentage: number;
+  currencyCode: string;
+  promoCode?: string;
+  gstNumber?: string;
+  paymentSource: string; // PaymentSourceEnum
+  orderAmount: number;
+  taxAmount: number;
+  discountAmount: number;
+  totalAmount: number;
+  paymentLink?: string;
+  gatewayProvider?: string;
+  gatewayOrderId?: string;
+  gatewayPaymentId?: string;
+  paymentGatewayResponse?: Record<string, any>;
+  recaptchaToken?: string; // reCAPTCHA v3 token (required by backend)
+  orderItems: Array<{
+    productId: number;
+    productVariantId: number;
+    quantity: number;
+    unit: string;
+    price: number;
+    currency: string;
+  }>;
+}
+
 /**
  * Service to handle checkout operations
  * Manages member creation, address, tax calculation, and payment
@@ -187,6 +230,59 @@ export class CheckoutService {
     } catch (error) {
       console.error('Error fetching checkout master data:', error);
       return null;
+    }
+  }
+
+  /**
+   * Get supported payment gateways for product checkout
+   * Reuses Admin-side logic to get gateways for franchise (BusinessTypeEnum.PRODUCT)
+   */
+  async getSupportedPaymentGateways(currency: string = 'INR'): Promise<PaymentGateway[]> {
+    try {
+      const data = await this.httpService.get<PaymentGateway[]>(
+        `public/checkout/product/supported-gateways?currency=${currency}`
+      );
+      return data || [];
+    } catch (error) {
+      console.error('Error fetching supported payment gateways:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Create product order in txn_member_products table
+   * Follows the same pattern as Admin-side Member Product order creation
+   */
+  async createProductOrder(
+    memberId: number,
+    orderData: CreateProductOrderRequest
+  ): Promise<any> {
+    try {
+      const data = await this.httpService.post(
+        `public/checkout/member/${memberId}/product/order`,
+        orderData
+      );
+      return data;
+    } catch (error) {
+      console.error('Error creating product order:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Download invoice for product order
+   * @param memberId - Member ID
+   * @param memberProductId - Member Product ID (order ID)
+   */
+  async downloadInvoice(memberId: number, memberProductId: number): Promise<{ buffer: string; fileName: string } | null> {
+    try {
+      const data = await this.httpService.get<{ buffer: string; fileName: string }>(
+        `public/checkout/member/${memberId}/product/${memberProductId}/invoice`
+      );
+      return data;
+    } catch (error) {
+      console.error('Error downloading invoice:', error);
+      throw error;
     }
   }
 }

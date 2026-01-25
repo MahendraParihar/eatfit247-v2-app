@@ -32,8 +32,6 @@ export class TestimonialsComponent implements OnInit, OnDestroy {
   readonly isLoading = signal(false);
 
   readonly currentIndex = signal(0);
-  readonly autoPlayInterval = 5000; // 5 seconds
-  private autoPlayTimer: any = null;
 
   readonly currentTestimonial = computed(() => {
     const testimonials = this.testimonials();
@@ -69,10 +67,7 @@ export class TestimonialsComponent implements OnInit, OnDestroy {
 
       this.testimonials.set(latestReviews);
       
-      // Start auto-play if we have multiple testimonials
-      if (this.hasMultipleTestimonials()) {
-        this.startAutoPlay();
-      }
+      // Autoplay disabled - manual navigation only
     } catch (error) {
       console.error('Failed to load Google reviews:', error);
       this.testimonials.set([]);
@@ -108,7 +103,7 @@ export class TestimonialsComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.stopAutoPlay();
+    // Autoplay disabled - no cleanup needed
   }
 
   /**
@@ -141,56 +136,6 @@ export class TestimonialsComponent implements OnInit, OnDestroy {
     const testimonials = this.testimonials();
     if (index >= 0 && index < testimonials.length) {
       this.currentIndex.set(index);
-      this.resetAutoPlay();
-    }
-  }
-
-  /**
-   * Start auto-play
-   */
-  startAutoPlay(): void {
-    if (!this.hasMultipleTestimonials()) return;
-    if (this.autoPlayTimer) {
-      this.stopAutoPlay();
-    }
-    this.autoPlayTimer = setInterval(() => {
-      this.next();
-    }, this.autoPlayInterval);
-  }
-
-  /**
-   * Stop auto-play
-   */
-  stopAutoPlay(): void {
-    if (this.autoPlayTimer) {
-      clearInterval(this.autoPlayTimer);
-      this.autoPlayTimer = null;
-    }
-  }
-
-  /**
-   * Reset auto-play timer
-   */
-  resetAutoPlay(): void {
-    if (this.hasMultipleTestimonials()) {
-      this.stopAutoPlay();
-      this.startAutoPlay();
-    }
-  }
-
-  /**
-   * Pause auto-play on hover
-   */
-  onMouseEnter(): void {
-    this.stopAutoPlay();
-  }
-
-  /**
-   * Resume auto-play on mouse leave
-   */
-  onMouseLeave(): void {
-    if (this.hasMultipleTestimonials()) {
-      this.startAutoPlay();
     }
   }
 

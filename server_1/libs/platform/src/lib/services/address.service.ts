@@ -15,7 +15,7 @@ export class AddressService {
    * @param adminId Admin user ID
    * @returns Created address
    */
-  async create(addressData: IManageAddress, cIp: string, adminId: number): Promise<IAddress> {
+  async create(addressData: IManageAddress, cIp: string, adminId: number = null): Promise<IAddress> {
     const addressObj = {
       tableId: addressData.tableId!,
       pkOfTable: addressData.pkOfTable!,
@@ -28,11 +28,12 @@ export class AddressService {
       longitude: addressData.longitude ? String(addressData.longitude) : null,
       addressName: addressData.addressName || null,
       active: (addressData as any).active !== undefined ? (addressData as any).active : true,
-      createdBy: adminId,
       createdIp: cIp,
-      modifiedBy: adminId,
       modifiedIp: cIp,
     };
+    if (adminId) {
+      Object.assign(addressObj, { createdBy: adminId, modifiedBy: adminId });
+    }
     const createdAddress = await this.addressRepository.create(addressObj as any);
     const addresses = await this.filterByTableIdAndPk(addressData.tableId!, addressData.pkOfTable!);
     const address = addresses.find((addr) => addr.addressId === createdAddress.addressId);

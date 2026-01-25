@@ -50,17 +50,113 @@ export class ProductService {
     const pageNumber = searchDto.page || 0;
     const pageSize = searchDto.limit || 15;
     const offset = pageNumber === 0 ? 0 : pageNumber * pageSize;
+    
+    // Load products with variants and prices
     const { rows, count } = await this.productRepository.findAndCountAll({
       where: whereCondition,
       order: [["createdAt", "DESC"]],
       offset: offset,
       limit: pageSize,
-      raw: true,
+      include: [
+        {
+          model: MstProductVariant,
+          as: 'variants',
+          required: false,
+          include: [
+            {
+              model: MstProductPrice,
+              as: 'prices',
+              required: false,
+              where: { active: true }, // Only active prices for public
+            },
+          ],
+        },
+      ],
+      raw: false, // Use model instances to properly handle associations
       nest: true
     });
-    const resList: IPublicProduct[] = rows.map((item: any) => {
-      return this.convertToPublic(this.convertToModel(item));
-    });
+    
+    // Process each product to load variants and prices
+    const resList: IPublicProduct[] = await Promise.all(
+      rows.map(async (item: MstProduct) => {
+        // Get product data
+        const productData = item.toJSON ? item.toJSON() : item;
+        
+        // Load variants and prices - check if already loaded via include
+        let variants: MstProductVariant[] = [];
+        if (item.variants && Array.isArray(item.variants) && item.variants.length > 0) {
+          // Variants already loaded via include
+          variants = item.variants;
+        } else {
+          // Load variants and prices separately if not included
+          variants = await this.productVariantRepository.findAll({
+            where: { productId: item.productId },
+            include: [
+              {
+                model: MstProductPrice,
+                required: false,
+                as: 'prices',
+                where: { active: true }, // Only active prices for public
+              },
+            ],
+            raw: false,
+          });
+        }
+        
+        // Transform variants to the format needed
+        const fees: any[] = [];
+        const variantPayload: any[] = [];
+        
+        for (const variant of variants) {
+          const variantPrices: MstProductPrice[] = variant.prices || [];
+          
+          const mappedPrices = variantPrices
+            .filter(price => price.active !== false) // Only active prices
+            .map((price) => {
+              const feeEntry = {
+                quantity: Number(variant.quantityValue),
+                unit: variant.quantityUnit,
+                currency: price.currency,
+                price: Number(price.price),
+                sku: variant.sku || undefined,
+                isActive: price.active,
+                validFrom: price.validFrom,
+                validTo: price.validTo
+              };
+              fees.push(feeEntry);
+              
+              return {
+                id: price.id,
+                productVariantId: price.productVariantId,
+                currency: price.currency,
+                price: Number(price.price),
+                active: price.active,
+                validFrom: price.validFrom,
+                validTo: price.validTo,
+              };
+            });
+          
+          variantPayload.push({
+            productVariantId: variant.productVariantId,
+            productId: variant.productId,
+            quantityValue: Number(variant.quantityValue),
+            quantityUnit: variant.quantityUnit,
+            sku: variant.sku || undefined,
+            prices: mappedPrices
+          });
+        }
+        
+        // Convert to model with variants and fees
+        const product = this.convertToModel({
+          ...productData,
+          fees,
+          variants: variantPayload
+        } as any);
+        
+        return this.convertToPublic(product);
+      })
+    );
+    
     return {
       tableData: resList,
       count: count

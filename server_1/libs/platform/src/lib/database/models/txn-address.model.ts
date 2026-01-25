@@ -148,7 +148,7 @@ export class TxnAddress extends Model<TxnAddress> {
   })
   declare updatedByUser: MstAdminUser;
   @Column({
-    allowNull: false,
+    allowNull: true,
     field: 'created_by',
     type: DataType.INTEGER,
   })
@@ -160,7 +160,7 @@ export class TxnAddress extends Model<TxnAddress> {
   })
   declare createdAt: Date;
   @Column({
-    allowNull: false,
+    allowNull: true,
     field: 'modified_by',
     type: DataType.INTEGER,
   })

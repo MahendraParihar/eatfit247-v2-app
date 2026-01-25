@@ -5,7 +5,7 @@ import { MstProgram, MstProgramPlan } from '@server_1/modules/program-plan';
 import { TxnMember } from './txn-member.model';
 import { TxnMemberDietPlan } from './txn-member-diet-plan.model';
 import {
-  IAddress, IMemberAddress,
+  IMemberAddress,
   InputLengthEnum,
   PaymentSourceEnum,
   TaxMode,

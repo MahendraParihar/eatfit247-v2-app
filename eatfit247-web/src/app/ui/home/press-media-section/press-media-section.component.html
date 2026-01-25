@@ -1,0 +1,48 @@
+<section class="press-media-section">
+  <div class="press-media-container">
+    <!-- Section Header -->
+    <div class="section-header">
+      <h2 class="section-title">Press & Media</h2>
+      <p class="section-description">
+        Featured in leading publications and media outlets
+      </p>
+    </div>
+
+    <!-- Loading State -->
+    @if (loading) {
+      <div class="loading-container">
+        <mat-spinner diameter="40"></mat-spinner>
+      </div>
+    }
+
+    <!-- Logo Grid -->
+    @if (!loading && pressArticles.length > 0) {
+      <div class="logo-grid">
+        @for (article of pressArticles; track article.pressMediaId) {
+          <div class="logo-item" (click)="openArticle(article)">
+            @if (getImageUrl(article)) {
+              <img
+                [src]="getImageUrl(article)"
+                [alt]="article.title || 'Press Media'"
+                class="logo-image"
+                (error)="onImageError($event)"
+              />
+            } @else {
+              <div class="logo-placeholder">
+                <mat-icon>article</mat-icon>
+                <span>{{ article.title || 'Media' }}</span>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+
+    @if (!loading && pressArticles.length === 0) {
+      <div class="no-articles-message">
+        <p>No press articles available at the moment.</p>
+      </div>
+    }
+  </div>
+</section>
+

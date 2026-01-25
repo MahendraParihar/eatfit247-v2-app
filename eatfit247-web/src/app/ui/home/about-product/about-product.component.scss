@@ -1,0 +1,139 @@
+@use '../../../../theme/variables' as *;
+
+.about-product-section {
+  padding: $spacing-3xl 0;
+  background-color: var(--mat-sys-surface);
+
+  @media (max-width: 768px) {
+    padding: $spacing-2xl 0;
+  }
+}
+
+.about-product-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 $spacing-lg;
+
+  @media (max-width: 768px) {
+    padding: 0 $spacing-md;
+  }
+}
+
+// Section Header
+.section-header {
+  text-align: center;
+  margin-bottom: $spacing-3xl;
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+
+  @media (max-width: 768px) {
+    margin-bottom: $spacing-2xl;
+  }
+
+  .section-title {
+    font-size: 2.25rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0 0 $spacing-md 0;
+    line-height: 1.2;
+
+    @media (max-width: 768px) {
+      font-size: 1.75rem;
+    }
+  }
+
+  .section-description {
+    font-size: 1.125rem;
+    color: #666;
+    line-height: 1.6;
+    margin: 0;
+
+    @media (max-width: 768px) {
+      font-size: 1rem;
+    }
+  }
+}
+
+// Features Grid
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: $spacing-2xl;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: $spacing-xl;
+  }
+}
+
+// Feature Card
+.feature-card {
+  text-align: center;
+  padding: $spacing-xl;
+  transition: transform $transition-base;
+
+  @media (max-width: 768px) {
+    padding: $spacing-lg;
+  }
+
+  &:hover {
+    transform: translateY(-4px);
+  }
+}
+
+// Feature Icon
+.feature-icon-wrapper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, #FF6B35 0%, #FFB366 100%);
+  border-radius: 50%;
+  margin-bottom: $spacing-lg;
+
+  @media (max-width: 768px) {
+    width: 64px;
+    height: 64px;
+    margin-bottom: $spacing-md;
+  }
+
+  .feature-icon {
+    font-size: 40px;
+    width: 40px;
+    height: 40px;
+    color: #fff;
+
+    @media (max-width: 768px) {
+      font-size: 32px;
+      width: 32px;
+      height: 32px;
+    }
+  }
+}
+
+// Feature Title
+.feature-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0 0 $spacing-md 0;
+
+  @media (max-width: 768px) {
+    font-size: 1.25rem;
+  }
+}
+
+// Feature Description
+.feature-description {
+  font-size: 1rem;
+  color: #666;
+  line-height: 1.6;
+  margin: 0;
+
+  @media (max-width: 768px) {
+    font-size: 0.9375rem;
+  }
+}
+

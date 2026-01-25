@@ -1,5 +1,5 @@
 <div class="home">
-  <!-- Hero Slider Section -->
+  <!-- 1. Hero Banner Section -->
   <section class="hero-slider-section">
     <app-image-slider
       [items]="sliderItems"
@@ -10,23 +10,23 @@
     />
   </section>
 
-  <!-- Journey Steps Section -->
-  <section class="home-section home-section-alt">
-    <app-journey-steps />
-  </section>
-
-  <!-- Product Showcase Section -->
+  <!-- 2. About Product Section -->
   <section class="home-section">
-    <app-product-showcase />
+    <app-about-product />
   </section>
 
-  <!-- Testimonials Section -->
+  <!-- 3. Program Plans Section -->
   <section class="home-section home-section-alt">
+    <app-program-plans-section />
+  </section>
+
+  <!-- 4. Testimonials Section -->
+  <section class="home-section">
     <app-testimonials />
   </section>
 
-  <!-- Blog Section Example -->
-  <section class="home-section">
+  <!-- 5. Blogs Section -->
+  <section class="home-section home-section-alt">
     <app-blog-section
       sectionTitle="Latest from Our Blog"
       sectionDescription="Discover expert insights, success stories, and wellness tips from our nutrition experts"
@@ -34,5 +34,15 @@
       [showViewAll]="true"
       viewAllUrl="/blog"
     />
+  </section>
+
+  <!-- 6. Press & Media Section -->
+  <section class="home-section">
+    <app-press-media-section />
+  </section>
+
+  <!-- 7. Contact Us Section -->
+  <section class="home-section home-section-alt">
+    <app-contact-form-section />
   </section>
 </div>

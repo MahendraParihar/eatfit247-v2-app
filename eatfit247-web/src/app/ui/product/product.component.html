@@ -66,16 +66,20 @@
             <div class="size-selection">
               <label class="size-label">Size</label>
               <div class="size-options">
-                @for (size of sizes; track size.value) {
-                  <button
-                    type="button"
-                    class="size-option"
-                    [class.selected]="selectedSize?.value === size.value"
-                    (click)="onSizeChange(size)"
-                  >
-                    <span class="size-value">{{ size.label }}</span>
-                    <span class="size-price">₹ {{ size.price }}.00</span>
-                  </button>
+                @if (sizes.length === 0) {
+                  <p class="no-sizes-message">No sizes available</p>
+                } @else {
+                  @for (size of sizes; track size.sku || size.label) {
+                    <button
+                      type="button"
+                      class="size-option"
+                      [class.selected]="selectedSize?.sku === size.sku && selectedSize?.quantity === size.quantity"
+                      (click)="onSizeChange(size)"
+                    >
+                      <span class="size-value">{{ size.label }}</span>
+                      <span class="size-price">₹ {{ size.price }}.00</span>
+                    </button>
+                  }
                 }
               </div>
             </div>

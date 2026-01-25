@@ -1,5 +1,6 @@
 import Razorpay from 'razorpay';
 import { Injectable } from '@nestjs/common';
+import * as crypto from 'crypto';
 
 @Injectable()
 export class RazorpayService {
@@ -66,6 +67,67 @@ export class RazorpayService {
       customer: customer || {},
       notes: notes || {},
     });
+  }
+
+  /**
+   * Verify Razorpay payment signature
+   * @param paymentId - Payment ID from Razorpay
+   * @param orderId - Order ID from Razorpay
+   * @param signature - Signature received from Razorpay
+   * @param keySecret - Razorpay key secret for signature verification
+   * @returns Verification result with payment details
+   */
+  async verifyPayment(
+    paymentId: string,
+    orderId: string,
+    signature: string,
+    keySecret?: string,
+  ): Promise<{ verified: boolean; paymentDetails?: any }> {
+    if (!keySecret) {
+      throw new Error('Razorpay key secret is required for payment verification');
+    }
+
+    if (!paymentId || !orderId || !signature) {
+      return {
+        verified: false,
+        paymentDetails: null,
+      };
+    }
+
+    try {
+      // Razorpay signature verification: HMAC SHA256 of orderId|paymentId
+      const text = `${orderId}|${paymentId}`;
+      const generatedSignature = crypto
+        .createHmac('sha256', keySecret)
+        .update(text)
+        .digest('hex');
+
+      const isSignatureValid = generatedSignature === signature;
+
+      if (!isSignatureValid) {
+        return {
+          verified: false,
+          paymentDetails: null,
+        };
+      }
+
+      // If signature is valid, optionally fetch payment details from Razorpay
+      // For now, we'll just return verified: true
+      // You can enhance this to fetch actual payment details from Razorpay API if needed
+      return {
+        verified: true,
+        paymentDetails: {
+          paymentId,
+          orderId,
+          signature,
+        },
+      };
+    } catch (error) {
+      return {
+        verified: false,
+        paymentDetails: null,
+      };
+    }
   }
 }
 
