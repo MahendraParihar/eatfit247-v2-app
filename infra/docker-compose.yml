@@ -2,7 +2,7 @@ services:
   public:
     container_name: eatfit-server-public
     image: eatfit-server
-    command: sh -c "cd server && node dist/apps/public-api/main.js"
+    command: sh -c "cd server_1 && node dist/apps/public-api/main.js"
     restart: always
     volumes:
       - assets:/home/app/assets
@@ -21,7 +21,7 @@ services:
   admin:
     container_name: eatfit-server-admin
     image: eatfit-server
-    command: sh -c "cd server && node dist/apps/admin-api/main.js"
+    command: sh -c "cd server_1 && node dist/apps/admin-api/main.js"
     restart: always
     volumes:
       - assets:/home/app/assets
@@ -30,7 +30,7 @@ services:
     environment:
       API_PORT: '3000'
     ports:
-      - "8001:3000"
+      - "8002:3000"
     healthcheck:
       test: [ 'CMD', 'curl', '-f', 'http://localhost:3000/api/v2/public/health' ]
       interval: 20s
@@ -48,7 +48,7 @@ services:
     ports:
       - "443:443"
     depends_on:
-      - core
+      - public
   admin-app:
     container_name: admin-app
     image: eatfit-admin
@@ -60,7 +60,7 @@ services:
     ports:
       - "8090:443"
     depends_on:
-      - core
+      - admin
 
 volumes:
   assets:

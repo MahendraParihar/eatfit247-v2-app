@@ -5,16 +5,15 @@
   "scripts": {
     "build_shared_lib": "npm --prefix ../shared-library run build",
     "dev_shared_lib": "npm --prefix ../shared-library run dev",
-    "start": "nx run-many --target=serve --maxParallel=10 --projects=admin-api,public-api",
-    "build": "npm run build_shared_lib && nx run-many --target=build --projects=admin-api,public-api",
+    "start": "concurrently \"npm run dev_shared_lib\" \"nx run-many --target=serve --maxParallel=7 --projects=admin-api,public-api\"",
+    "build": "npm run build_shared_lib && nx clear-cache && nx run-many --target=build --projects=admin-api,public-api --skip-nx-cache",
+    "lint": "nx run-many --target=lint --all",
     "start:admin": "nx serve admin-api",
     "start:public": "nx serve public-api",
     "build:admin": "nx build admin-api",
     "build:public": "nx build public-api",
     "postinstall": "npm run build_shared_lib",
-    "lint": "nx run-many --target=lint --all",
-    "analyze:dependencies": "node scripts/generate-dependency-graph.js",
-    "clean": "npx rimraf dist"
+    "analyze:dependencies": "node scripts/generate-dependency-graph.js"
   },
   "private": true,
   "overrides": {

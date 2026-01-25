@@ -3,12 +3,14 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve --proxy-config proxy.conf.json",
-    "start:no-proxy": "ng serve",
-    "build": "ng build",
-    "build:prod": "ng build --configuration production",
-    "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "build_shared_lib": "npm --prefix ../shared-library run build",
+    "dev_shared_lib": "npm --prefix ../shared-library run dev",
+    "start": "npm run build_shared_lib && nx serve --proxy-config proxy.conf.json",
+    "dev": "nx serve main",
+    "dev:main": "nx serve main",
+    "dev_all": "concurrently \"npm run dev_shared_lib\"  \"npm run dev\"",
+    "build": "npm run build_shared_lib && ng build",
+    "postinstall": "mkdir -p .nx"
   },
   "prettier": {
     "printWidth": 100,

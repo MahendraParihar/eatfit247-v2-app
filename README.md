@@ -1005,7 +1005,7 @@ This project is licensed under the MIT License.
 
 ---
 
-#### Docker For VSD
+#### Docker For EatFit247
 
 Note: the Following commands should be executed from root of the project.
 
@@ -1019,7 +1019,7 @@ For building admin panel image
 
 ```shell
 docker build . -f ./infra/Dockerfile.admin -t eatfit-admin
-````
+```
 
 For building website image
 

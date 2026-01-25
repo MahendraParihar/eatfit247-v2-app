@@ -3,14 +3,17 @@ RUN apk add g++ make py3-pip
 WORKDIR /home/app
 RUN mkdir -p eatfit247-web && mkdir -p shared-library && mkdir -p infra
 COPY ./infra/ ./infra/
-COPY ./shared-library/package*.json ./shared-library/
-RUN npm --prefix shared-library install
+
+RUN mkdir -p shared-library
+COPY shared-library/package.json shared-library/tsconfig.json shared-library/
+COPY shared-library/src shared-library/src
+RUN cd shared-library && npm install && npm run build
+
 COPY ./eatfit247-web ./eatfit247-web
 RUN npm --prefix eatfit247-web install --legacy-peer-deps
-COPY ./shared-library ./shared-library
 RUN npm --prefix eatfit247-web run build
 
 FROM nginx:latest AS ngi
-COPY --from=build /home/app/eatfit247-web/dist/apps/main /usr/share/nginx/html
-COPY /infra/nginx-client.conf /etc/nginx/conf.d/default.conf
+COPY --from=build /home/app/eatfit247-web/dist/eatfit247-web/browser /usr/share/nginx/html
+COPY --from=build /home/app/infra/nginx-client.conf /etc/nginx/conf.d/default.conf
 EXPOSE 80
