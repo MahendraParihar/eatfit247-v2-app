@@ -1005,4 +1005,81 @@ This project is licensed under the MIT License.
 
 ---
 
+#### Docker For VSD
+
+Note: the Following commands should be executed from root of the project.
+
+For building Server image
+
+```shell
+docker build . -f ./infra/Dockerfile.server -t eatfit-server
+```
+
+For building admin panel image
+
+```shell
+docker build . -f ./infra/Dockerfile.admin -t eatfit-admin
+````
+
+For building website image
+
+```shell
+docker build . -f ./infra/Dockerfile.client -t eatfit-client
+```
+
+### Docker container up
+```shell
+docker compose -f ./infra/docker-compose.yml up -d
+```
+
+### Docker container down
+```shell
+docker compose -f ./infra/docker-compose.yml down
+```
+
+#### Docker run
+```shell
+docker run  [CONTAINER_NAME] sleep infinity
+```
+#### List docker containers list
+```shell
+docker ps -a
+```
+
+#### Docker all images
+```ssh
+/var/lib/docker# du -sch /var/lib/docker/overlay2/*
+```
+
+#### Go inside docker image
+```shell
+docker exec -it [CONTAINER_NAME] bash
+```
+
+Note: Ensure that you have .env file created in infra folder with ENV variable defined
+For running all Servers
+
+### Docer images
+```shell list 
+docker images # list images
+```
+
+### Delete all images
+```shell list
+docker rmi [IMAGE_ID]
+```
+### Delete unused images
+```shell list
+docker image prune
+```
+
+### Delete all containers including its volumes use
+```shell list
+docker rm -vf $(docker ps -aq)
+```
+
+### logs all containers
+```shell list 
+docker logs [Container_NAME]
+
 **Note**: This is a full-stack application with persistent media storage, comprehensive security measures, and production-ready Docker configuration. For detailed setup instructions, please refer to the documentation sections above.
