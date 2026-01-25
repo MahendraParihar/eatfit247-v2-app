@@ -717,14 +717,16 @@ export class MemberProductService {
       throw new NotFoundException('Member not found');
     }
     // Get franchise for products
-    const franchise = await this.franchiseService.franchiseByBusinessType(BusinessTypeEnum.PRODUCT);
-    if (!franchise || franchise.length === 0) {
+    const franchiseDropdown = await this.franchiseService.franchiseByBusinessType(BusinessTypeEnum.PRODUCT);
+    if (!franchiseDropdown || franchiseDropdown.length === 0) {
       throw new BadRequestException('Franchise not found for products');
     }
+    // Fetch full franchise details (needed for invoice generation)
+    const franchise = await this.franchiseService.fetchById(franchiseDropdown[0].id as number);
     // Get franchise address
     const franchiseAddress = await this.addressService.findByTableIdAndPk(
       TableEnum.MST_FRANCHISES,
-      franchise[0].id as number,
+      franchise.franchiseId,
     );
     if (!franchiseAddress) {
       throw new BadRequestException('Franchise address not found for invoice generation');
@@ -805,7 +807,7 @@ export class MemberProductService {
     // Generate invoice document using the new product order mapper
     const invoiceDoc = mapProductOrderToInvoiceDocument(
       productOrderData,
-      franchise[0] as any,
+      franchise,
       billingAddress,
       franchiseAddress,
       memberInfo,
