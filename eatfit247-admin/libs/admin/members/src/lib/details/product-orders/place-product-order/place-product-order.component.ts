@@ -552,7 +552,7 @@ export class PlaceProductOrderComponent implements OnInit {
     }
     this.loadingGateways.set(true);
     try {
-      const gateways = await this.apiService.getSupportedPaymentGateways(
+      const gateways = await this.apiService.getProductSupportedPaymentGateways(
         this.data.memberId,
         currencyCode,
       );
@@ -606,7 +606,10 @@ export class PlaceProductOrderComponent implements OnInit {
         },
       };
 
-      const result = await this.apiService.createPaymentLink(this.data.memberId, request);
+      const result = await this.apiService.createProductPaymentLink(
+        this.data.memberId,
+        request,
+      );
       this.paymentLink.set(result.shortUrl);
       this.paymentLinkId.set(result.id);
       this.step4FormGroup.patchValue({

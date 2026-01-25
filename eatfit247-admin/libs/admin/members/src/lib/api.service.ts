@@ -558,6 +558,49 @@ export class MembersApiService extends ApiBaseService {
     }>;
   }
 
+  async getProductSupportedPaymentGateways(
+    memberId: number,
+    currency: string,
+  ): Promise<
+    Array<{
+      franchisePaymentGatewayId: number;
+      gatewayCode: string;
+      gatewayName: string;
+      providerCountryCode: string;
+      currencyCode: string;
+      isPrimary: boolean;
+      supportsDomestic: boolean;
+      supportsInternational: boolean;
+    }>
+  > {
+    const res = await this.httpService.get<
+      IResponse<
+        Array<{
+          franchisePaymentGatewayId: number;
+          gatewayCode: string;
+          gatewayName: string;
+          providerCountryCode: string;
+          currencyCode: string;
+          isPrimary: boolean;
+          supportsDomestic: boolean;
+          supportsInternational: boolean;
+        }>
+      >
+    >(`${this.endpoint}/${memberId}/product/supported-gateways`, {
+      params: { currency },
+    });
+    return res.data as Array<{
+      franchisePaymentGatewayId: number;
+      gatewayCode: string;
+      gatewayName: string;
+      providerCountryCode: string;
+      currencyCode: string;
+      isPrimary: boolean;
+      supportsDomestic: boolean;
+      supportsInternational: boolean;
+    }>;
+  }
+
   async createPaymentLink(
     memberId: number,
     data: ICreatePaymentLinkRequest,
@@ -860,6 +903,17 @@ export class MembersApiService extends ApiBaseService {
       }>
     >(`${this.endpoint}/${memberId}/product/${productId}/invoice`);
     return res.data as { buffer: string; fileName: string };
+  }
+
+  async createProductPaymentLink(
+    memberId: number,
+    data: ICreatePaymentLinkRequest,
+  ): Promise<IPaymentLinkResponse> {
+    const res = await this.httpService.post<IResponse<IPaymentLinkResponse>>(
+      `${this.endpoint}/${memberId}/product/create-payment-link`,
+      data,
+    );
+    return res.data as IPaymentLinkResponse;
   }
 
   async regenerateProductPaymentLink(
