@@ -15,7 +15,7 @@ import {
   ITableConfig,
   LoaderComponent
 } from '@shared';
-import { IMemberProduct } from '@eatfit247-shared-lib';
+import { IMemberProduct, PaymentStatusEnum, PaymentSourceEnum } from '@eatfit247-shared-lib';
 import { MembersApiService } from '../../api.service';
 import {
   PlaceProductOrderComponent,
@@ -153,7 +153,7 @@ export class MemberProductOrdersComponent implements OnInit, OnDestroy {
       actionsConfig: {
         buttons: [
           {
-            label: 'View Details',
+            label: 'View order',
             icon: 'visibility',
             tooltip: 'View Order Details',
             onClick: (row: IMemberProduct) => this.viewProductOrderDetails(row)
@@ -163,6 +163,16 @@ export class MemberProductOrdersComponent implements OnInit, OnDestroy {
             icon: 'download',
             tooltip: 'Download Invoice',
             onClick: (row: IMemberProduct) => this.downloadInvoice(row)
+          },
+          {
+            label: 'Generate Payment Link',
+            icon: 'link',
+            tooltip: 'Generate Payment Link',
+            onClick: (row: IMemberProduct) => this.regeneratePaymentLink(row),
+            visible: (row: IMemberProduct) => {
+              return row.paymentStatusId !== PaymentStatusEnum.PAID && 
+                     row.paymentSource !== PaymentSourceEnum.MANUAL;
+            }
           }
         ],
         column: {
@@ -275,6 +285,24 @@ export class MemberProductOrdersComponent implements OnInit, OnDestroy {
       }
     } catch (error) {
       console.error('Error downloading invoice:', error);
+    }
+  }
+
+  async regeneratePaymentLink(productOrder: IMemberProduct): Promise<void> {
+    if (!this.memberId || !productOrder.memberProductId) {
+      console.error('Member ID or Product Order ID is not available');
+      return;
+    }
+
+    try {
+      await this.apiService.regenerateProductPaymentLink(
+        this.memberId,
+        productOrder.memberProductId
+      );
+      // Reload product orders after successful regeneration
+      await this.loadProductOrders();
+    } catch (error) {
+      console.error('Error regenerating payment link:', error);
     }
   }
 }

@@ -172,6 +172,11 @@ export class BaseLayoutComponent implements OnInit, OnDestroy {
           icon: 'contact_mail',
           route: '/reports/contact-form',
         },
+        {
+          label: 'Member Product Report',
+          icon: 'inventory',
+          route: '/reports/member-product',
+        },
       ],
     },
     {

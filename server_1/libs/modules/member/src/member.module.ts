@@ -155,6 +155,7 @@ modelRegistry.register([
   exports: [
     MemberService,
     MemberPaymentService,
+    MemberProductService,
     SequelizeModule,
   ],
 })

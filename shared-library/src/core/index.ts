@@ -48,6 +48,7 @@ export * from './woocommerce.interface';
 export * from './invoice';
 export * from './contact-form-report.interface';
 export * from './payment-report.interface';
+export * from './member-product-report.interface';
 export * from './dashboard-report.interface';
 export * from './member-dashboard.interface';
 export * from './tax-master.interface';

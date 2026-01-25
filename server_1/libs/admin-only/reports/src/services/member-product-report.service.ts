@@ -1,31 +1,32 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op, Sequelize } from 'sequelize';
-import { TxnMember, TxnMemberPayment, MemberPaymentService } from '@server_1/modules/member';
-import { ITableList, IPaymentReportItem, BusinessTypeEnum } from '@eatfit247-shared-lib';
-import { MstFranchise, Env } from '@server_1/core';
-import { PaymentReportDto } from '../dto/payment-report.dto';
+import { TxnMember, TxnMemberProduct, MemberProductService } from '@server_1/modules/member';
+import { ITableList, IMemberProductReportItem, BusinessTypeEnum } from '@eatfit247-shared-lib';
+import { MstFranchise } from '@server_1/core';
+import { MemberProductReportDto } from '../dto/member-product-report.dto';
 import archiver from 'archiver';
 import moment from 'moment/moment';
 
 @Injectable()
-export class PaymentReportService {
+export class MemberProductReportService {
   constructor(
-    @InjectModel(TxnMemberPayment)
-    private readonly memberPaymentRepository: typeof TxnMemberPayment,
+    @InjectModel(TxnMemberProduct)
+    private readonly memberProductRepository: typeof TxnMemberProduct,
     @InjectModel(TxnMember)
     private readonly memberRepository: typeof TxnMember,
-    private readonly memberPaymentService: MemberPaymentService,
+    private readonly memberProductService: MemberProductService,
   ) {}
 
   /**
-   * Get payment report based on date range and franchise filter
-   * @param dto - Payment report filter DTO
-   * @returns List of payments with member and franchise information
+   * Get member product order report based on date range and filters
+   * @param dto - Member product report filter DTO
+   * @returns List of product orders with member and franchise information
    */
-  async getPaymentReport(dto: PaymentReportDto): Promise<ITableList<IPaymentReportItem>> {
+  async getMemberProductReport(dto: MemberProductReportDto): Promise<ITableList<IMemberProductReportItem>> {
     const startDateStr = moment(dto.startDate).startOf('day').utc().startOf('day');
     const endDateStr = moment(dto.endDate).endOf('day').utc().endOf('day');
+    
     const whereCondition: any = {
       active: true,
       paymentDate: {
@@ -36,6 +37,11 @@ export class PaymentReportService {
       },
     };
 
+    // Add payment status filter if provided
+    if (dto.paymentStatusId) {
+      whereCondition.paymentStatusId = dto.paymentStatusId;
+    }
+
     // Build member where condition
     const memberWhereCondition: any = {};
     if (dto.franchiseId) {
@@ -50,24 +56,10 @@ export class PaymentReportService {
         required: true,
         where: Object.keys(memberWhereCondition).length > 0 ? memberWhereCondition : undefined,
         attributes: ['memberId', 'firstName', 'lastName', 'emailId', 'contactNumber', 'franchiseId'],
-        include: [
-          {
-            model: MstFranchise,
-            as: 'franchise',
-            required: true,
-            attributes: ['franchiseId', 'companyName'],
-            where: {
-              active: true,
-              [Op.and]: [
-                Sequelize.literal(`'${BusinessTypeEnum.SERVICE}'::public.business_type = ANY("business_type")`),
-              ],
-            },
-          },
-        ],
       },
     ];
 
-    const { rows, count } = await this.memberPaymentRepository.scope('list').findAndCountAll({
+    const { rows, count } = await this.memberProductRepository.scope('list').findAndCountAll({
       where: whereCondition,
       include: includeConditions,
       order: [['paymentDate', 'DESC']],
@@ -75,16 +67,14 @@ export class PaymentReportService {
       nest: true,
     });
 
-    // Convert to model and add franchise name
-    // We need to use a workaround to access the private convertToModel method
-    // by creating a similar conversion or accessing through reflection
+    // Convert to model and add additional fields
     const tableData = rows.map((item: any) => {
-      // Use the service's convertToModel through a public method or duplicate logic
-      // For now, we'll create a simplified version
-      const payment = (this.memberPaymentService as any).convertToModel(item);
+      const productOrder = (this.memberProductService as any).convertToModel(item);
       return {
-        ...payment,
+        ...productOrder,
         franchiseName: item.member?.franchise?.companyName || 'N/A',
+        memberEmail: item.member?.emailId || '',
+        memberContactNumber: item.member?.contactNumber || '',
       };
     });
 
@@ -95,17 +85,22 @@ export class PaymentReportService {
   }
 
   /**
-   * Export payment reports as zip file containing all invoices
-   * @param dto - Payment report filter DTO
+   * Export member product reports as zip file containing all invoices
+   * @param dto - Member product report filter DTO
    * @returns Stream of zip file
    */
-  async exportPaymentReports(dto: PaymentReportDto): Promise<archiver.Archiver> {
+  async exportMemberProductReports(dto: MemberProductReportDto): Promise<archiver.Archiver> {
     const whereCondition: any = {
       active: true,
       paymentDate: {
         [Op.between]: [new Date(dto.startDate), new Date(dto.endDate)],
       },
     };
+
+    // Add payment status filter if provided
+    if (dto.paymentStatusId) {
+      whereCondition.paymentStatusId = dto.paymentStatusId;
+    }
 
     // Build member where condition
     const memberWhereCondition: any = {};
@@ -128,9 +123,8 @@ export class PaymentReportService {
             required: true,
             attributes: ['franchiseId', 'companyName'],
             where: {
-              active: true,
               [Op.and]: [
-                Sequelize.literal(`'${BusinessTypeEnum.SERVICE}'::public.business_type = ANY("business_type")`),
+                Sequelize.literal(`'${BusinessTypeEnum.PRODUCT}'::public.business_type = ANY("business_type")`),
               ],
             },
           },
@@ -138,8 +132,8 @@ export class PaymentReportService {
       },
     ];
 
-    // Fetch all payments (no pagination for export)
-    const payments = await this.memberPaymentRepository.scope('list').findAll({
+    // Fetch all product orders (no pagination for export)
+    const productOrders = await this.memberProductRepository.scope('list').findAll({
       where: whereCondition,
       include: includeConditions,
       order: [['paymentDate', 'DESC']],
@@ -152,25 +146,25 @@ export class PaymentReportService {
       zlib: { level: 9 }, // Maximum compression
     });
 
-    // Generate invoices for each payment and add to zip
-    const invoicePromises = payments.map(async (item: any) => {
+    // Generate invoices for each product order and add to zip
+    const invoicePromises = productOrders.map(async (item: any) => {
       try {
-        const payment = (this.memberPaymentService as any).convertToModel(item);
-        const memberId = payment.memberId;
-        const paymentId = payment.memberPaymentId;
+        const productOrder = (this.memberProductService as any).convertToModel(item);
+        const memberId = productOrder.memberId;
+        const productId = productOrder.memberProductId;
 
         // Generate invoice PDF
-        const invoiceFile = await this.memberPaymentService.generateInvoicePDF(memberId, paymentId);
+        const invoiceFile = await this.memberProductService.generateInvoicePDF(memberId, productId);
 
         // Convert base64 buffer to Buffer
         const pdfBuffer = Buffer.from(invoiceFile.buffer, 'base64');
 
         // Add to zip with a clean filename
-        const memberName = `${payment.memberName || 'Member'}_${memberId}`.replace(/[^a-zA-Z0-9_]/g, '_');
-        const fileName = `Invoice_${memberName}_${paymentId}.pdf`;
+        const memberName = `${productOrder.memberName || 'Member'}_${memberId}`.replace(/[^a-zA-Z0-9_]/g, '_');
+        const fileName = `Product_Invoice_${memberName}_${productId}.pdf`;
         archive.append(pdfBuffer, { name: fileName });
       } catch (error) {
-        console.error(`Failed to generate invoice for payment ${item.memberPaymentId}:`, error);
+        console.error(`Failed to generate invoice for product order ${item.memberProductId}:`, error);
         // Continue with other invoices even if one fails
       }
     });

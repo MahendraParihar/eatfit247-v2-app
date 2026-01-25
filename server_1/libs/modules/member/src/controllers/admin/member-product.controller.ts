@@ -100,5 +100,13 @@ export class MemberProductController {
   ): Promise<IFileModel> {
     return await this.memberProductService.generateInvoicePDF(id, productId);
   }
+
+  @Post(':productId/regenerate-payment-link')
+  async regeneratePaymentLink(
+    @Param('id') id: number,
+    @Param('productId') productId: number,
+  ): Promise<IMemberProduct> {
+    return await this.memberProductService.regeneratePaymentLink(id, productId);
+  }
 }
 

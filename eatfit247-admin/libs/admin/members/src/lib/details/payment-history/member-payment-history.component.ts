@@ -15,7 +15,7 @@ import {
   ITableConfig,
   LoaderComponent
 } from '@shared';
-import { IMemberPayment } from '@eatfit247-shared-lib';
+import { IMemberPayment, PaymentSourceEnum, PaymentStatusEnum } from '@eatfit247-shared-lib';
 import { MembersApiService } from '../../api.service';
 import {
   ManageMemberPaymentComponent,
@@ -135,6 +135,15 @@ export class MemberPaymentHistoryComponent implements OnInit, OnDestroy {
         onClick: (row) => this.viewPaymentDetails(row)
       },
       {
+        label: 'Regenerate Payment Link',
+        icon: 'refresh',
+        color: 'accent',
+        visible: (row) => 
+          row.paymentSource !== PaymentSourceEnum.MANUAL && 
+          row.paymentStatusId === PaymentStatusEnum.PENDING,
+        onClick: (row) => this.regeneratePaymentLink(row)
+      },
+      {
         label: 'Download Invoice',
         icon: 'download',
         color: 'accent',
@@ -247,6 +256,38 @@ export class MemberPaymentHistoryComponent implements OnInit, OnDestroy {
       link.setAttribute('download', `${fileName}`);
       link.click();
       link.remove();
+    }
+  }
+
+  async regeneratePaymentLink(payment: IMemberPayment): Promise<void> {
+    if (!payment.memberPaymentId) {
+      this.snackBar.open('Payment ID not found', 'Close', {
+        duration: 3000
+      });
+      return;
+    }
+
+    try {
+      await this.apiService.regeneratePaymentLink(
+        this.memberId,
+        payment.memberPaymentId
+      );
+
+      this.snackBar.open('Payment link regenerated successfully', 'Close', {
+        duration: 3000
+      });
+
+      // Reload payments to show updated data
+      await this.loadPayments();
+    } catch (error) {
+      console.error('Error regenerating payment link:', error);
+      this.snackBar.open(
+        error instanceof Error ? error.message : 'Failed to regenerate payment link',
+        'Close',
+        {
+          duration: 3000
+        }
+      );
     }
   }
 }

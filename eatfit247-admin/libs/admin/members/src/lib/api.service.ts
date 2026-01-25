@@ -569,6 +569,16 @@ export class MembersApiService extends ApiBaseService {
     return res.data as IPaymentLinkResponse;
   }
 
+  async regeneratePaymentLink(
+    memberId: number,
+    paymentId: number,
+  ): Promise<IMemberPayment> {
+    const res = await this.httpService.post<IResponse<IMemberPayment>>(
+      `${this.endpoint}/${memberId}/payment-history/${paymentId}/regenerate-payment-link`,
+    );
+    return res.data as IMemberPayment;
+  }
+
   // endregion
   // region Member Diet Plans
   async getDietPlans(memberId: number): Promise<{
@@ -850,6 +860,16 @@ export class MembersApiService extends ApiBaseService {
       }>
     >(`${this.endpoint}/${memberId}/product/${productId}/invoice`);
     return res.data as { buffer: string; fileName: string };
+  }
+
+  async regenerateProductPaymentLink(
+    memberId: number,
+    productId: number,
+  ): Promise<IMemberProduct> {
+    const res = await this.httpService.post<IResponse<IMemberProduct>>(
+      `${this.endpoint}/${memberId}/product/${productId}/regenerate-payment-link`,
+    );
+    return res.data as IMemberProduct;
   }
 
   // endregion

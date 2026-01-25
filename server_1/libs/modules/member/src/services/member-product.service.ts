@@ -878,10 +878,10 @@ export class MemberProductService {
         billingAddressId: obj.billingAddressId || null,
         transactionId: obj.transactionId || null,
         paymentDate: obj.paymentDate || new Date(),
-        paymentStatusId: obj.paymentStatusId || PaymentStatusEnum.PENDING,
+        paymentStatusId: obj.paymentStatusId,
         promoCode: obj.promoCode || null,
         isTaxApplicable: true,
-        currency: orderItemObjs[0].currencyCode,
+        currency: obj.orderItems[0].currency,
         refundObj: null,
         paymentGatewayResponse: null,
         gstNumber: obj.gstNumber || null,
@@ -921,6 +921,158 @@ export class MemberProductService {
       await t.rollback();
       throw error;
     }
+  }
+
+  /**
+   * Regenerate payment link for a product order
+   * Only allowed if payment status is not PAID and payment source is not MANUAL
+   * @param memberId - Member ID
+   * @param productId - Product order ID
+   * @returns Updated product order with new payment link
+   */
+  public async regeneratePaymentLink(
+    memberId: number,
+    productId: number,
+  ): Promise<IMemberProduct> {
+    // Get product order with all details
+    const productOrder = await this.memberProductRepository.scope('details').findOne({
+      where: {
+        memberProductId: productId,
+        memberId,
+        active: true,
+      },
+    });
+
+    if (!productOrder) {
+      throw new NotFoundException('Product order not found');
+    }
+
+    // Validate payment status is not PAID
+    if (productOrder.paymentStatusId === PaymentStatusEnum.PAID) {
+      throw new BadRequestException(
+        'Payment link can only be regenerated for orders with non-PAID status',
+      );
+    }
+
+    // Validate payment source is not MANUAL
+    if (productOrder.paymentSource === PaymentSourceEnum.MANUAL) {
+      throw new BadRequestException(
+        'Payment link cannot be regenerated for manual payments',
+      );
+    }
+
+    // Get member
+    const member = await this.memberRepository.findOne({
+      where: { memberId },
+    });
+
+    if (!member) {
+      throw new NotFoundException('Member not found');
+    }
+
+    // Get franchise for products
+    const franchise = await this.franchiseService.franchiseByBusinessType(BusinessTypeEnum.PRODUCT);
+    if (!franchise || franchise.length === 0) {
+      throw new BadRequestException('Franchise not found for products');
+    }
+
+    // Resolve gateway to ensure it's valid
+    const currency = productOrder.currency;
+    let resolvedGateway;
+    try {
+      resolvedGateway = await this.paymentGatewayResolverService.resolve({
+        franchiseId: franchise[0].id as number,
+        currency: currency,
+        isInternational: false,
+        amount: productOrder.totalAmount,
+      });
+    } catch (error) {
+      throw new BadRequestException(
+        error instanceof Error
+          ? error.message
+          : 'Failed to resolve payment gateway',
+      );
+    }
+
+    const gatewayCode = resolvedGateway.gatewayCode;
+
+    // Get payment gateway credentials
+    const credentialMode = this.appConfigService.getString(ConfigParam.PAYMENT_MODE);
+    const credentials =
+      await this.paymentGatewayCredentialService.getActiveCredentials(
+        resolvedGateway.franchisePaymentGatewayId,
+        credentialMode,
+      );
+
+    if (!credentials) {
+      throw new BadRequestException(
+        `Payment gateway credentials not found for gateway ID: ${resolvedGateway.franchisePaymentGatewayId} in mode: ${credentialMode}`,
+      );
+    }
+
+    // Decrypt credentials (if needed)
+    const keyId = credentials.apiKeyEncrypted;
+    const keySecret = credentials.apiSecretEncrypted;
+
+    // Prepare customer details from member
+    const customerDetails = {
+      name: member.firstName
+        ? `${member.firstName} ${member.lastName || ''}`.trim()
+        : undefined,
+      email: member.emailId || undefined,
+      contact: member.contactNumber || undefined,
+    };
+
+    // Prepare description from order items
+    const orderItems = productOrder.orderItems || [];
+    const productNames = orderItems.map((item) => item.productName).join(', ');
+    const paymentDescription = productNames
+      ? `Payment for products: ${productNames}`
+      : `Product Order Payment for Member ID: ${memberId}`;
+
+    // Prepare notes with member ID and product order ID
+    const paymentNotes = {
+      memberId: memberId.toString(),
+      franchisePaymentGatewayId: resolvedGateway.franchisePaymentGatewayId.toString(),
+      productOrderId: productId.toString(),
+      type: 'product',
+    };
+
+    // Create payment link using the adapter
+    const adaptor = this.paymentGatewayFactory.getAdapter(gatewayCode);
+    const paymentLink = await adaptor.createPaymentLink(
+      productOrder.totalAmount,
+      currency,
+      paymentDescription,
+      customerDetails,
+      paymentNotes,
+      {
+        keyId,
+        keySecret,
+      },
+    );
+
+    // Update product order with new payment link
+    productOrder.paymentLink = paymentLink.short_url;
+    productOrder.gatewayProvider = gatewayCode;
+    productOrder.gatewayOrderId = paymentLink.id;
+
+    await productOrder.save();
+
+    // Reload product order with all relationships for conversion
+    const updatedProductOrder = await this.memberProductRepository.scope('details').findOne({
+      where: {
+        memberProductId: productId,
+        memberId,
+      },
+    });
+
+    if (!updatedProductOrder) {
+      throw new NotFoundException('Product order not found after update');
+    }
+
+    // Convert to IMemberProduct and return
+    return this.convertToModel(updatedProductOrder);
   }
 }
 

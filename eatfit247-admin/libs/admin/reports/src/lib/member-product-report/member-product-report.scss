@@ -1,0 +1,94 @@
+.member-product-report-container {
+
+  .filter-card {
+    margin-bottom: 24px;
+
+    .quick-filters {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-bottom: 16px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+      justify-content: space-between;
+
+      .quick-filters-label {
+        font-weight: 500;
+        margin-right: 8px;
+        color: rgba(0, 0, 0, 0.87);
+      }
+
+      .quick-filter-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0;
+
+        ::ng-deep .mat-button-toggle {
+          min-width: auto;
+          padding: 0 12px;
+          font-size: 13px;
+          text-transform: none;
+          border-radius: 0;
+
+          &:first-child {
+            border-top-left-radius: 4px;
+            border-bottom-left-radius: 4px;
+          }
+
+          &:last-child {
+            border-top-right-radius: 4px;
+            border-bottom-right-radius: 4px;
+          }
+        }
+      }
+    }
+
+    .filter-row {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      align-items: center;
+
+      .filter-field {
+        flex: 1;
+        min-width: 200px;
+      }
+
+      .search-button,
+      .export-button {
+        height: 56px;
+      }
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .member-product-report-container {
+    padding: 16px;
+
+    .filter-card {
+      .quick-filters {
+        .quick-filters-label {
+          width: 100%;
+          margin-bottom: 8px;
+        }
+      }
+
+      .filter-row {
+        flex-direction: column;
+
+        .filter-field {
+          width: 100%;
+        }
+
+        .search-button,
+        .export-button {
+          width: 100%;
+          margin-top: 0;
+        }
+      }
+    }
+  }
+}
+

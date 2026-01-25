@@ -12,6 +12,7 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatStepperModule } from '@angular/material/stepper';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { StepperSelectionEvent } from '@angular/cdk/stepper';
 import { InputErrorComponent, LoaderComponent } from '@shared';
 import { IAvailableSlot, ICallLogSlot, IDropdownItem, ISetupMemberCallLog } from '@eatfit247-shared-lib';
@@ -36,6 +37,7 @@ import moment from 'moment';
     MatRadioModule,
     MatCheckboxModule,
     MatStepperModule,
+    MatSnackBarModule,
     InputErrorComponent,
     LoaderComponent,
   ],
@@ -71,6 +73,7 @@ export class ManageMemberCallLogComponent implements OnInit {
     @Inject(MAT_DIALOG_DATA) public data: number,
     private apiService: MembersApiService,
     private fb: FormBuilder,
+    private snackBar: MatSnackBar,
   ) {
     this.initializeCriteriaForm();
   }
@@ -97,8 +100,12 @@ export class ManageMemberCallLogComponent implements OnInit {
       this.callPurposeOptions = data.callPurposes;
       this.nutritionistOptions = data.nutritionists;
       this.durationOptions = data.durations;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading master data:', error);
+      const errorMessage = error?.error?.message || error?.message || 'Failed to load master data. Please try again.';
+      this.snackBar.open(errorMessage, 'Close', { 
+        duration: 5000 
+      });
     } finally {
       this.loading.set(false);
     }
@@ -145,11 +152,17 @@ export class ManageMemberCallLogComponent implements OnInit {
         this.selectedIndex.set(1);
       } else {
         // Show a message that no slots are available
-        console.warn('No available slots found');
+        this.snackBar.open('No available slots found. Please try different criteria.', 'Close', { 
+          duration: 3000 
+        });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error checking availability:', error);
       this.slots = [];
+      const errorMessage = error?.error?.message || error?.message || 'Failed to check availability. Please try again.';
+      this.snackBar.open(errorMessage, 'Close', { 
+        duration: 5000 
+      });
     } finally {
       this.checkingAvailability.set(false);
     }
@@ -178,6 +191,9 @@ export class ManageMemberCallLogComponent implements OnInit {
 
   async confirmBooking(): Promise<void> {
     if (!this.selectedSlot || !this.form.callTypeId) {
+      this.snackBar.open('Please select a meeting type to continue.', 'Close', { 
+        duration: 3000 
+      });
       return;
     }
     this.submitting.set(true);
@@ -194,9 +210,16 @@ export class ManageMemberCallLogComponent implements OnInit {
         notifyUser: this.form.notifyUser,
       };
       await this.apiService.createCallLog(this.data, callLogData as any);
+      this.snackBar.open('Call log created successfully!', 'Close', { 
+        duration: 3000 
+      });
       this.dialogRef.close(true);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error confirming booking:', error);
+      const errorMessage = error?.error?.message || error?.message || 'Failed to create call log. Please try again.';
+      this.snackBar.open(errorMessage, 'Close', { 
+        duration: 5000 
+      });
     } finally {
       this.submitting.set(false);
     }

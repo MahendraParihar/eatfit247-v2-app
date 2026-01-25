@@ -125,6 +125,14 @@ export class MemberPaymentController {
     return await this.memberPaymentService.createPaymentLink(id, body);
   }
 
+  @Post(':paymentId/regenerate-payment-link')
+  async regeneratePaymentLink(
+    @Param('id') id: number,
+    @Param('paymentId') paymentId: number,
+  ): Promise<IMemberPayment> {
+    return await this.memberPaymentService.regeneratePaymentLink(id, paymentId);
+  }
+
   @Get(':paymentId/invoice')
   @Header('Content-Type', 'application/pdf')
   async downloadInvoice(
