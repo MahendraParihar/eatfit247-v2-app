@@ -1,7 +1,6 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -67,7 +66,7 @@ export class ContactUsComponent implements OnInit {
   reviewsLoading = true;
   googleReviews: any[] = [];
   heroSliderItems: SliderItem[] = [];
-  
+
   readonly contactInfo = {
     address: '943-951 N. Broadway, Los Angeles, CA 90012, United States',
     phone: '+91-859-185-4209',
@@ -267,7 +266,7 @@ export class ContactUsComponent implements OnInit {
       this.formSuccess = false;
       this.formError = false;
       this.errorMessage = '';
-      
+
       try {
         // Get reCAPTCHA token
         let recaptchaToken: string | undefined;

@@ -4,13 +4,7 @@ import { MstCountry, MstPaymentMode, MstPaymentStatus, MstState, TxnAddress } fr
 import { MstProgram, MstProgramPlan } from '@server_1/modules/program-plan';
 import { TxnMember } from './txn-member.model';
 import { TxnMemberDietPlan } from './txn-member-diet-plan.model';
-import {
-  IMemberAddress,
-  InputLengthEnum,
-  PaymentSourceEnum,
-  TaxMode,
-  TaxTypeEnum,
-} from '@eatfit247-shared-lib';
+import { IMemberAddress, InputLengthEnum, PaymentSourceEnum, TaxMode, TaxTypeEnum } from '@eatfit247-shared-lib';
 
 @Table({
   freezeTableName: true,

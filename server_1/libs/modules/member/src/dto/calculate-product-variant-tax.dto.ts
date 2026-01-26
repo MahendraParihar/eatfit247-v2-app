@@ -1,9 +1,6 @@
 import { IsArray, IsNotEmpty, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
-import {
-  ICalculateProductVariantTaxRequest,
-  IProductVariantTaxItem,
-} from '@eatfit247-shared-lib';
+import { ICalculateProductVariantTaxRequest, IProductVariantTaxItem } from '@eatfit247-shared-lib';
 
 export class ProductVariantTaxItemDto implements IProductVariantTaxItem {
   @IsNotEmpty()

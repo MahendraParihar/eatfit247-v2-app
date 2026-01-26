@@ -15,12 +15,9 @@ import {
   ITableConfig,
   LoaderComponent
 } from '@shared';
-import { IMemberProduct, PaymentStatusEnum, PaymentSourceEnum } from '@eatfit247-shared-lib';
+import { IMemberProduct, PaymentSourceEnum, PaymentStatusEnum } from '@eatfit247-shared-lib';
 import { MembersApiService } from '../../api.service';
-import {
-  PlaceProductOrderComponent,
-  PlaceProductOrderData
-} from './place-product-order/place-product-order.component';
+import { PlaceProductOrderComponent, PlaceProductOrderData } from './place-product-order/place-product-order.component';
 import {
   ViewProductOrderDetailsComponent,
   ViewProductOrderDetailsData

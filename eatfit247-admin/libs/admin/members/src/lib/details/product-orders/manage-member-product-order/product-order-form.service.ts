@@ -5,8 +5,7 @@ import {
   ICalculateTaxResponse,
   ICreatePaymentLinkRequest,
   IDropdownItem,
-  IPaymentLinkResponse,
-  PaymentSourceEnum
+  IPaymentLinkResponse
 } from '@eatfit247-shared-lib';
 import { MembersApiService } from '../../../api.service';
 

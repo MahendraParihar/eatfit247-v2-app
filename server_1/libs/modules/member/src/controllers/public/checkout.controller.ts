@@ -1,9 +1,16 @@
-import { Body, Controller, Get, Header, Param, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
 import { CreateAddressDto, Public, RequestedIp, RequireRecaptcha } from '@server_1/core';
 import { AddressService, RecaptchaGuard } from '@server_1/platform';
 import { MemberProductService } from '../../services';
 import { CreatePublicCheckoutOrderDto, CreatePublicCheckoutPaymentLinkDto } from '../../dto';
-import { IAddress, IManageAddress, IPaymentLinkResponse, IManageMemberProduct, TableEnum } from '@eatfit247-shared-lib';
+import {
+  IAddress,
+  IManageAddress,
+  IManageMemberProduct,
+  IPaymentGateway,
+  IPaymentLinkResponse,
+  TableEnum,
+} from '@eatfit247-shared-lib';
 
 @Public()
 @Controller('checkout')
@@ -20,18 +27,7 @@ export class PublicCheckoutController {
   @Get('product/supported-gateways')
   async getSupportedGateways(
     @Query('currency') currency: string = 'INR',
-  ): Promise<
-    Array<{
-      franchisePaymentGatewayId: number;
-      gatewayCode: string;
-      gatewayName: string;
-      providerCountryCode: string;
-      currencyCode: string;
-      isPrimary: boolean;
-      supportsDomestic: boolean;
-      supportsInternational: boolean;
-    }>
-  > {
+  ): Promise<IPaymentGateway[]> {
     return await this.memberProductService.getSupportedPaymentGatewaysForCheckout(currency);
   }
 
@@ -174,7 +170,7 @@ export class PublicCheckoutController {
   }
 
   /**
-   * Get order details by gateway order ID
+   * Get order details by gateway order ID (for product orders)
    */
   @Get('order/:gatewayOrderId')
   async getOrderByGatewayOrderId(

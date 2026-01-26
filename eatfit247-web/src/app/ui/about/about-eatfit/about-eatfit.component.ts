@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, inject } from '@angular/core';
+import { Component, inject, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { MatCardModule } from '@angular/material/card';
@@ -7,7 +7,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { BlogSectionComponent } from '../../shared/blog-section/blog-section.component';
 import { SocialLink } from '../../shared/social-icons/social-icons.component';
 import { JoinShwetaShahComponent } from '../../shared/join-shweta-shah/join-shweta-shah.component';
-import { ReferrerService, Partner } from '../../../services/referrer.service';
+import { Partner, ReferrerService } from '../../../services/referrer.service';
 import { BannerService } from '../../../services/banner.service';
 import { ImageSliderComponent, SliderItem } from '../../shared/image-slider/image-slider.component';
 import { BannerForEnum } from 'eatfit247-shared-library';

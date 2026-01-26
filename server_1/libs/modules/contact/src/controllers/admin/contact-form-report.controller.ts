@@ -1,8 +1,8 @@
-import { Body, Controller, Get, Param, Post, Put, UseGuards } from "@nestjs/common";
-import { CurrentUser, JwtAuthGuard, RequestedIp } from "@server_1/core";
-import { ContactFormReportService } from "../../services";
-import { ContactFormReportDto, SendContactFormResponseDto } from "../../dto";
-import { ITableList, IAuthUser } from "@eatfit247-shared-lib";
+import { Body, Controller, Get, Param, Post, Put, UseGuards } from '@nestjs/common';
+import { CurrentUser, JwtAuthGuard, RequestedIp } from '@server_1/core';
+import { ContactFormReportService } from '../../services';
+import { ContactFormReportDto, SendContactFormResponseDto } from '../../dto';
+import { IAuthUser, ITableList } from '@eatfit247-shared-lib';
 
 @Controller("reports/contact-form")
 @UseGuards(JwtAuthGuard)

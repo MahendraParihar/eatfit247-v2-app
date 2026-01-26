@@ -1,4 +1,4 @@
-import { Controller, Get, Query, UseGuards, Res, Post, Body } from '@nestjs/common';
+import { Body, Controller, Post, Res, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '@server_1/core';
 import { MemberProductReportService } from '../../services/member-product-report.service';
 import { MemberProductReportDto } from '../../dto/member-product-report.dto';

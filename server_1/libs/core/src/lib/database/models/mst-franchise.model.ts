@@ -1,7 +1,7 @@
 import { BelongsTo, Column, CreatedAt, DataType, Model, Scopes, Table, UpdatedAt } from 'sequelize-typescript';
 import { MstAdminUser } from './admin/mst-admin-user.model';
 import { CommonScopes } from '../../utils/model-scopes.utils';
-import { BusinessTypeEnum, IMediaUpload, InputLengthEnum } from "@eatfit247-shared-lib";
+import { BusinessTypeEnum, IMediaUpload, InputLengthEnum } from '@eatfit247-shared-lib';
 
 @Table({
   freezeTableName: true,

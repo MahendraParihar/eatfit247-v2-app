@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
@@ -12,10 +12,14 @@ import { BannerService } from '../../services/banner.service';
 import { ProductService } from '../../services/product.service';
 import {
   BannerForEnum,
-  IPublicProduct,
+  IOutcomes,
+  IOutcomeSection,
   IProductFee,
   IProductIngredientSection,
-  IOutcomeSection, IOutcomes, IProjectConsumptionInstructionSection, IProductReport, IProjectStarEndorsedSection
+  IProductReport,
+  IProjectConsumptionInstructionSection,
+  IProjectStarEndorsedSection,
+  IPublicProduct
 } from 'eatfit247-shared-library';
 import { ImageSliderComponent, SliderItem } from '../shared/image-slider/image-slider.component';
 import { SectionFaqComponent } from '../shared/section-faq/section-faq.component';

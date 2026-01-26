@@ -7,7 +7,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatChipsModule } from '@angular/material/chips';
-import { IMemberAddress, IMemberPayment } from '@eatfit247-shared-lib';
+import { IMemberPayment } from '@eatfit247-shared-lib';
 import { AddressPipe, FormatCurrencyPipe } from '@shared';
 
 export interface PaymentDetailsDialogData {

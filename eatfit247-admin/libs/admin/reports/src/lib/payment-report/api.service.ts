@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { ApiBaseService, HttpService } from '@core';
-import { ITableList, IDropdownItem, IPaymentReportFilter, IPaymentReportItem } from '@eatfit247-shared-lib';
+import { IDropdownItem, IPaymentReportFilter, IPaymentReportItem, ITableList } from '@eatfit247-shared-lib';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '@env';
 

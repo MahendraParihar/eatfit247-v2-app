@@ -1,8 +1,15 @@
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
-import { MemberModule, TxnMember, TxnMemberDietPlan, TxnMemberIssue, TxnMemberPayment, TxnMemberProduct } from '@server_1/modules/member';
-import { DashboardController, PaymentReportController, MemberProductReportController } from './controllers';
-import { DashboardService, PaymentReportService, MemberProductReportService } from './services';
+import {
+  MemberModule,
+  TxnMember,
+  TxnMemberDietPlan,
+  TxnMemberIssue,
+  TxnMemberPayment,
+  TxnMemberProduct,
+} from '@server_1/modules/member';
+import { DashboardController, MemberProductReportController, PaymentReportController } from './controllers';
+import { DashboardService, MemberProductReportService, PaymentReportService } from './services';
 
 @Module({
   imports: [

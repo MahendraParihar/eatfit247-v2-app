@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards } from '@nestjs/common';
-import { CurrentUser, JwtAuthGuard, RequestedIp } from '@server_1/core';
+import { CurrentUser, JwtAuthGuard, RequestedIp, UpdateHealthIssueIdsDto } from '@server_1/core';
 import { MemberAssessmentService, MemberHealthIssueService, MemberHealthParameterLogsService } from '../../services';
 import {
   IHealthParameterMaster,
@@ -9,7 +9,6 @@ import {
   ITableList,
 } from '@eatfit247-shared-lib';
 import { CreateMemberAssessmentDto, CreateMemberHealthParameterLogDto } from '../../dto';
-import { UpdateHealthIssueIdsDto } from '@server_1/core';
 
 /**
  * Consolidated controller for all member health-related operations:

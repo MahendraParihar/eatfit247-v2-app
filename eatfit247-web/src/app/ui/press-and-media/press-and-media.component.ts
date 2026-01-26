@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { MatCardModule } from '@angular/material/card';
@@ -113,7 +113,7 @@ export class PressAndMediaComponent implements OnInit {
   getGalleryItemSize(index: number): 'small' | 'medium' | 'large' | 'wide' {
     // Pattern repeats every 3 items: big, small, small
     const positionInGroup = index % 3;
-    
+
     if (positionInGroup === 0) {
       return 'large'; // Big item (spans 2 columns, 2 rows)
     } else {

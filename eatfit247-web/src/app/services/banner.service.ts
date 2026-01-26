@@ -1,7 +1,7 @@
-import { Injectable, inject } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { HttpService } from './http.service';
 import { SliderItem } from '../ui/shared/image-slider/image-slider.component';
-import { IPublicBanner, IPublicTableList, BannerForEnum } from 'eatfit247-shared-library';
+import { BannerForEnum, IPublicBanner, IPublicTableList } from 'eatfit247-shared-library';
 
 /**
  * Service to manage banner/slider data

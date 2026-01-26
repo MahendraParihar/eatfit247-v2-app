@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { BaseLayoutComponent } from './ui/base-layout/base-layout.component';
 import { SEOService } from './services/seo.service';
 

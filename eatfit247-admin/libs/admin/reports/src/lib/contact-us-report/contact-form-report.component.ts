@@ -10,13 +10,8 @@ import { MatNativeDateModule, MatOption } from '@angular/material/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import {
-  DataTableComponent,
-  ITableAction,
-  ITableColumn,
-  ITableConfig
-} from '@shared';
-import { IContactFormReportItem, IContactFormReportFilter } from '@eatfit247-shared-lib';
+import { DataTableComponent, ITableAction, ITableColumn, ITableConfig } from '@shared';
+import { IContactFormReportFilter, IContactFormReportItem } from '@eatfit247-shared-lib';
 import { ContactFormReportApiService } from './api.service';
 import { ViewContactFormDetailsComponent } from './view-contact-form-details/view-contact-form-details.component';
 import { MatSelect } from '@angular/material/select';

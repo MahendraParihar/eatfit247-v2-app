@@ -8,17 +8,22 @@ import {
   IsString,
   MaxLength,
   MinLength,
-  ValidateNested,
   ValidateIf,
+  ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import {
+  IIngredient,
   IManageProduct,
+  IMediaUpload,
+  InputLengthEnum,
+  IOutcomes,
+  IOutcomeSection,
   IProductAdditionalInfo,
   IProductFee,
-  IProductVariant,
+  IProductIngredientSection,
   IProductPrice,
-  InputLengthEnum, IOutcomeSection, IProductIngredientSection, IOutcomes, IMediaUpload, IIngredient,
+  IProductVariant,
 } from '@eatfit247-shared-lib';
 import { MediaUploadDto } from '@server_1/core';
 

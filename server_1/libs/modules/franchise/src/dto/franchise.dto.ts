@@ -12,8 +12,8 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { IManageFranchise, InputLengthEnum, InternationalTaxModeEnum, BusinessTypeEnum } from '@eatfit247-shared-lib';
-import { MediaUploadDto, CreateAddressDto } from '@server_1/core';
+import { BusinessTypeEnum, IManageFranchise, InputLengthEnum, InternationalTaxModeEnum } from '@eatfit247-shared-lib';
+import { CreateAddressDto, MediaUploadDto } from '@server_1/core';
 
 export class CreateFranchiseDto implements IManageFranchise {
   @MinLength(InputLengthEnum.CHAR_2)

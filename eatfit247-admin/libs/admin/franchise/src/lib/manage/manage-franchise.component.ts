@@ -14,12 +14,12 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { AddressFormComponent, InputErrorComponent, UploadFormComponent, ValidationUtil } from '@shared';
 import { FranchiseApiService } from '../api.service';
 import {
+  BusinessTypeEnum,
   FileTypeEnum,
   IFranchise,
+  IManageFranchise,
   InputLengthEnum,
-  InternationalTaxModeEnum,
-  BusinessTypeEnum,
-  IManageFranchise
+  InternationalTaxModeEnum
 } from '@eatfit247-shared-lib';
 
 @Component({

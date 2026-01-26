@@ -38,7 +38,7 @@ export interface IBasicMemberProduct {
   paymentModeId?: number | null;
   addressId?: number | null;
   transactionId?: string;
-  paymentDate?: Date | null;
+  paymentDate: Date;
   invoiceId?: string;
   paymentStatusId: number;
   franchiseId?: number | null;
@@ -48,12 +48,12 @@ export interface IBasicMemberProduct {
   gstNumber?: string;
   billingAddressId?: number | null;
   memberAddress?: any;
-  subTotalAmount?: number;
-  taxAmount?: number;
-  discountAmount?: number;
-  totalAmount?: number;
+  subTotalAmount: number;
+  taxAmount: number;
+  discountAmount: number;
+  totalAmount: number;
   roundingAdjustment?: number;
-  currency?: string;
+  currency: string;
   paymentSource: PaymentSourceEnum;
   gatewayProvider?: string;
   gatewayOrderId?: string;

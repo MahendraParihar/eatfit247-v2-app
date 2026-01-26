@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { HttpService } from './http.service';
 import { IPublicProgram, IPublicTableList } from 'eatfit247-shared-library';
 

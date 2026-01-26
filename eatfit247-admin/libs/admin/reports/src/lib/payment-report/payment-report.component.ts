@@ -12,13 +12,8 @@ import { MatCardModule } from '@angular/material/card';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { Router } from '@angular/router';
-import {
-  DataTableComponent,
-  ITableAction,
-  ITableColumn,
-  ITableConfig
-} from '@shared';
-import { IPaymentReportItem, IPaymentReportFilter } from '@eatfit247-shared-lib';
+import { DataTableComponent, ITableAction, ITableColumn, ITableConfig } from '@shared';
+import { IPaymentReportFilter, IPaymentReportItem } from '@eatfit247-shared-lib';
 import { PaymentReportApiService } from './api.service';
 import { PaymentDetailsDialogComponent } from 'members';
 

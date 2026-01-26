@@ -1,4 +1,15 @@
-import { BelongsTo, Column, CreatedAt, DataType, ForeignKey, HasMany, Model, Scopes, Table, UpdatedAt } from 'sequelize-typescript';
+import {
+  BelongsTo,
+  Column,
+  CreatedAt,
+  DataType,
+  ForeignKey,
+  HasMany,
+  Model,
+  Scopes,
+  Table,
+  UpdatedAt,
+} from 'sequelize-typescript';
 import { getCreatedByUserInclude, getUpdatedByUserInclude, MstAdminUser, MstFranchise } from '@server_1/core';
 import { TxnMemberProduct } from './txn-member-product.model';
 import { TxnShipmentItem } from './txn-shipment-item.model';

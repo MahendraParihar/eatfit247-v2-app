@@ -1,7 +1,6 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { ReferrerService } from '../../services';
-import { BasicSearchDto } from '@server_1/core';
-import { Public } from '@server_1/core';
+import { BasicSearchDto, Public } from '@server_1/core';
 import { IPublicReferrer, ITableList } from '@eatfit247-shared-lib';
 
 @Public()

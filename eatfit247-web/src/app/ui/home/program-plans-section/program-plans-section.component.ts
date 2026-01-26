@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
@@ -6,7 +6,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { ProgramPlanService, ProgramPlan } from '../../../services/program-plan.service';
+import { ProgramPlan, ProgramPlanService } from '../../../services/program-plan.service';
 
 interface Plan {
   id: number;
@@ -98,7 +98,7 @@ export class ProgramPlansSectionComponent implements OnInit {
    */
   private extractFeatures(description: string): string[] {
     if (!description) return [];
-    
+
     // Simple feature extraction - split by common delimiters
     const lines = description.split(/[•\-\n]/).filter(line => line.trim().length > 0);
     return lines.slice(0, 4).map(line => line.trim()); // Max 4 features

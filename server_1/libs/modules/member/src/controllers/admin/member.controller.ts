@@ -12,15 +12,17 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { CurrentUser, JwtAuthGuard, RequestedIp } from '@server_1/core';
-import { AddressService, TxnAddress } from '@server_1/platform';
 import {
   BasicSearchDto,
   CreateAddressDto,
+  CurrentUser,
+  JwtAuthGuard,
+  RequestedIp,
   UpdateFranchiseDto,
   UpdateMemberStatusDto,
   UpdateNutritionistDto,
 } from '@server_1/core';
+import { AddressService, TxnAddress } from '@server_1/platform';
 import { MemberService } from '../../services';
 import { CreateMemberDto } from '../../dto';
 import { IAddress, IManageAddress, IMember, ITableList, TableEnum } from '@eatfit247-shared-lib';

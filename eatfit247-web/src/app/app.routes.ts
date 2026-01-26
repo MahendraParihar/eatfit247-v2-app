@@ -5,7 +5,9 @@ import { AboutShwetaShahComponent } from './ui/about/about-shweta-shah/about-shw
 import { OurProgramsComponent } from './ui/our-programs/our-programs.component';
 import { ProgramDetailsComponent } from './ui/program-details/program-details.component';
 import { KnowYourBodyDoshaComponent } from './ui/quiz/know-your-body-dosha/know-your-body-dosha.component';
-import { KnowYourCurrentImmunityScoreComponent } from './ui/quiz/know-your-current-immunity-score/know-your-current-immunity-score.component';
+import {
+  KnowYourCurrentImmunityScoreComponent
+} from './ui/quiz/know-your-current-immunity-score/know-your-current-immunity-score.component';
 import { PressAndMediaComponent } from './ui/press-and-media/press-and-media.component';
 import { SuccessStoriesComponent } from './ui/success-stories/success-stories.component';
 import { BlogComponent } from './ui/blog/blog.component';

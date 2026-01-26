@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
@@ -7,11 +7,9 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { BannerService } from '../../services/banner.service';
-import { ProgramPlanService, ProgramPlan } from '../../services/program-plan.service';
+import { ProgramPlan, ProgramPlanService } from '../../services/program-plan.service';
 import { ImageSliderComponent, SliderItem } from '../shared/image-slider/image-slider.component';
 import { BannerForEnum, IFaq } from 'eatfit247-shared-library';
-import { FaqService } from '../../services/faq.service';
-import { FaqItemComponent } from '../shared/faq-item/faq-item.component';
 import { SectionFaqComponent } from '../shared/section-faq/section-faq.component';
 
 interface Plan {

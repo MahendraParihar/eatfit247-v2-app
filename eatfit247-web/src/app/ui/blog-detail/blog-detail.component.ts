@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
@@ -8,7 +8,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatDividerModule } from '@angular/material/divider';
 import { Subscription } from 'rxjs';
-import { BlogService, BlogPost } from '../../services/blog.service';
+import { BlogPost, BlogService } from '../../services/blog.service';
 import { SEOService } from '../../services/seo.service';
 
 /**
@@ -227,8 +227,8 @@ export class BlogDetailComponent implements OnInit, OnDestroy {
         let media = '';
         if (this.blogPost.imageUrl) {
           // Construct full image URL using the same pattern as the template
-          const imageUrl = this.blogPost.imageUrl.startsWith('http') 
-            ? this.blogPost.imageUrl 
+          const imageUrl = this.blogPost.imageUrl.startsWith('http')
+            ? this.blogPost.imageUrl
             : `http://localhost:3001/${this.blogPost.imageUrl}`;
           media = `&media=${encodeURIComponent(imageUrl)}`;
         }

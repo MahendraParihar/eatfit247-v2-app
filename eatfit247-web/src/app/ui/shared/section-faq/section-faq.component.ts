@@ -1,10 +1,10 @@
-import { Component, Input, OnInit, inject } from '@angular/core';
+import { Component, inject, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { FaqService } from '../../../services/faq.service';
-import { IFaq, IFaqCategory } from 'eatfit247-shared-library';
+import { IFaq } from 'eatfit247-shared-library';
 import { FaqItemComponent } from '../faq-item/faq-item.component';
 
 /**

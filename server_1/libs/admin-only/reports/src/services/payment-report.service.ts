@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op, Sequelize } from 'sequelize';
-import { TxnMember, TxnMemberPayment, MemberPaymentService } from '@server_1/modules/member';
-import { ITableList, IPaymentReportItem, BusinessTypeEnum } from '@eatfit247-shared-lib';
-import { MstFranchise, Env } from '@server_1/core';
+import { MemberPaymentService, TxnMember, TxnMemberPayment } from '@server_1/modules/member';
+import { BusinessTypeEnum, IPaymentReportItem, ITableList } from '@eatfit247-shared-lib';
+import { MstFranchise } from '@server_1/core';
 import { PaymentReportDto } from '../dto/payment-report.dto';
 import archiver from 'archiver';
 import moment from 'moment/moment';

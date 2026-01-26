@@ -1,32 +1,33 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { TxnMember, TxnMemberProduct } from '../models';
-import { TxnMemberProductOrderItem } from '../models';
+import { TxnMember, TxnMemberProduct, TxnMemberProductOrderItem } from '../models';
 import {
   BusinessTypeEnum,
   ConfigParam,
   IAddress,
-  ICalculateTaxRequest,
-  ICalculateTaxResponse,
   ICalculateProductVariantTaxRequest,
   ICalculateProductVariantTaxResponse,
-  IProductVariantTaxResult,
+  ICalculateTaxRequest,
+  ICalculateTaxResponse,
   ICreatePaymentLinkRequest,
   IDropdownItem,
   IManageMemberProduct,
   IMemberInfo,
   IMemberProduct,
-  IMemberProductMasterData, IMemberProductOrderItemBasic,
-  IPaymentLinkResponse, IProductPrice,
+  IMemberProductMasterData,
+  IMemberProductOrderItemBasic,
+  IPaymentGateway,
+  IPaymentLinkResponse,
+  IProductPrice,
+  IProductVariantTaxResult,
   ITableList,
-  mapPaymentToInvoiceDocument,
   mapProductOrderToInvoiceDocument,
   MediaForEnum,
+  PaymentGatewayEnum,
   PaymentSourceEnum,
   PaymentStatusEnum,
   TableEnum,
   TransactionType,
-  PaymentGatewayEnum,
 } from '@eatfit247-shared-lib';
 import { AppConfigService, CommonFunctionsUtil, Env, MstFranchise, PaymentValidationUtil } from '@server_1/core';
 import {
@@ -34,14 +35,14 @@ import {
   CountryService,
   IFileModel,
   InvoicePdfService,
-  PaymentUtil,
   PaymentModeService,
   PaymentStatusService,
+  PaymentUtil,
   StateService,
 } from '@server_1/platform';
 import { ProductService } from '@server_1/modules/product';
 import { TaxEngineService, TaxInput } from '@server_1/modules/tax-engine';
-import { FranchiseService, FranchisePaymentGatewayService } from '@server_1/modules/franchise';
+import { FranchisePaymentGatewayService, FranchiseService } from '@server_1/modules/franchise';
 import {
   PaymentGatewayCredentialService,
   PaymentGatewayFactory,
@@ -271,18 +272,7 @@ export class MemberProductService {
   public async getSupportedPaymentGateways(
     memberId: number,
     currencyCode: string,
-  ): Promise<
-    Array<{
-      franchisePaymentGatewayId: number;
-      gatewayCode: string;
-      gatewayName: string;
-      providerCountryCode: string;
-      currencyCode: string;
-      isPrimary: boolean;
-      supportsDomestic: boolean;
-      supportsInternational: boolean;
-    }>
-  > {
+  ): Promise<IPaymentGateway[]> {
     // Verify a member exists
     const member = await this.memberRepository.findOne({
       where: { memberId },
@@ -322,18 +312,7 @@ export class MemberProductService {
    */
   public async getSupportedPaymentGatewaysForCheckout(
     currencyCode: string,
-  ): Promise<
-    Array<{
-      franchisePaymentGatewayId: number;
-      gatewayCode: string;
-      gatewayName: string;
-      providerCountryCode: string;
-      currencyCode: string;
-      isPrimary: boolean;
-      supportsDomestic: boolean;
-      supportsInternational: boolean;
-    }>
-  > {
+  ): Promise<IPaymentGateway[]> {
     // Get franchise for products
     const franchise = await this.franchiseService.franchiseByBusinessType(BusinessTypeEnum.PRODUCT);
     if (!franchise || franchise.length === 0) {

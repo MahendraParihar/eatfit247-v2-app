@@ -8,7 +8,7 @@ import { InjectModel } from '@nestjs/sequelize';
 export class PublicMemberPaymentController {
   constructor(
     private readonly countryService: CountryService,
-    @InjectModel(MstCountry) private readonly countryRepository: typeof MstCountry,
+    @InjectModel(MstCountry) private readonly countryRepository: typeof MstCountry
   ) {}
 
   @Get('master-data')
@@ -23,10 +23,8 @@ export class PublicMemberPaymentController {
 
     return {
       country: countryList,
-      countryCode: countryCodeList,
-    };
+      countryCode: countryCodeList, };
   }
-
   private async getCountryListWithPhoneCode(): Promise<Array<{ id: number; label: string; phoneNumberCode: string | null }>> {
     const tempList = await this.countryRepository.findAll<MstCountry>({
       where: { active: true },

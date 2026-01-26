@@ -10,11 +10,7 @@ import {
   MaxLength,
   Min,
 } from 'class-validator';
-import {
-  IMemberProductOrderItemBasic,
-  InputLengthEnum,
-  PaymentSourceEnum,
-} from '@eatfit247-shared-lib';
+import { IMemberProductOrderItemBasic, InputLengthEnum, PaymentSourceEnum } from '@eatfit247-shared-lib';
 
 export class CreatePublicCheckoutPaymentLinkDto {
   @IsNotEmpty()

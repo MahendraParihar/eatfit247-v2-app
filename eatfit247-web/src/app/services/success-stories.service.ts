@@ -1,6 +1,6 @@
-import { Injectable, inject } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { HttpService } from './http.service';
-import { IResponse, ISuccessStory, ITableList } from 'eatfit247-shared-library';
+import { ISuccessStory, ITableList } from 'eatfit247-shared-library';
 
 /**
  * Service to manage success stories

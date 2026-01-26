@@ -1,12 +1,12 @@
-import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
+import { inject, Injectable } from '@angular/core';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { IResponse } from 'eatfit247-shared-library';
 
 /**
  * Centralized HTTP Service
- * 
+ *
  * Provides a single point of access for all HTTP operations with:
  * - Consistent IResponse<T> handling
  * - Async/await support
@@ -35,7 +35,7 @@ export class HttpService {
     try {
       const url = this.buildUrl(endpoint);
       const httpParams = this.buildParams(params);
-      
+
       const response = await firstValueFrom(
         this.http.get<IResponse<T>>(url, {
           params: httpParams,

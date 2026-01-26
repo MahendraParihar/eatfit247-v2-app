@@ -34,19 +34,15 @@
         </mat-card-header>
         <mat-card-content>
           <div class="order-info-grid">
-            <div class="info-item">
-              <span class="info-label">Order ID:</span>
-              <span class="info-value">{{ orderDetails.orderId || orderDetails.memberProductId }}</span>
-            </div>
-            @if (orderDetails.paymentId) {
+            @if (orderDetails.invoiceId) {
               <div class="info-item">
-                <span class="info-label">Payment ID:</span>
-                <span class="info-value">{{ orderDetails.paymentId }}</span>
+                <span class="info-label">Invoice No.:</span>
+                <span class="info-value">{{ orderDetails.invoiceId }}</span>
               </div>
             }
             <div class="info-item">
               <span class="info-label">Order Date:</span>
-              <span class="info-value">{{ formatDate(orderDetails.paymentDate) }}</span>
+              <span class="info-value">{{ orderDetails.paymentDate | date : 'medium' }}</span>
             </div>
             @if (orderDetails.paymentStatus) {
               <div class="info-item">
@@ -173,11 +169,11 @@
                 </p>
               </div>
             </div>
-            <button 
-              mat-raised-button 
-              color="accent" 
+            <button
+              mat-raised-button
+              color="accent"
               (click)="downloadInvoice()"
-              [disabled]="downloadingInvoice || !orderDetails.memberId || !orderDetails.memberProductId">
+              [disabled]="downloadingInvoice && canDownloadInvoice">
               <mat-icon>download</mat-icon>
               @if (downloadingInvoice) {
                 Downloading...

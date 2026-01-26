@@ -40,7 +40,12 @@ import {
   MemberPaymentController,
   MemberProductController,
 } from './controllers';
-import { PublicCheckoutController, PublicCheckoutPlanController, PublicMemberController, PublicMemberPaymentController } from './controllers/public';
+import {
+  PublicCheckoutController,
+  PublicCheckoutPlanController,
+  PublicMemberController,
+  PublicMemberPaymentController,
+} from './controllers/public';
 import {
   MemberAssessmentService,
   MemberCallLogsService,

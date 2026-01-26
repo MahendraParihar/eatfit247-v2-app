@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit, signal, computed } from '@angular/core';
+import { Component, computed, Inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
@@ -21,18 +21,17 @@ import { MatTableModule } from '@angular/material/table';
 import { StepperSelectionEvent } from '@angular/cdk/stepper';
 import { InputErrorComponent } from '@shared';
 import {
-  ICalculateTaxResponse,
   ICalculateProductVariantTaxRequest,
+  ICalculateTaxResponse,
   IDropdownItem,
   IMemberProduct,
+  IMemberProductMasterData,
+  InputLengthEnum,
   IProduct,
   IProductPrice,
   IProductVariant,
-  InputLengthEnum,
   PaymentSourceEnum,
-  PaymentStatusEnum,
-  IMemberProductMasterData,
-  ICalculateTaxRequest,
+  PaymentStatusEnum
 } from '@eatfit247-shared-lib';
 import { MembersApiService } from '../../../api.service';
 

@@ -12,13 +12,8 @@ import { MatCardModule } from '@angular/material/card';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { Router } from '@angular/router';
-import {
-  DataTableComponent,
-  ITableAction,
-  ITableColumn,
-  ITableConfig
-} from '@shared';
-import { IMemberProductReportItem, IMemberProductReportFilter } from '@eatfit247-shared-lib';
+import { DataTableComponent, ITableAction, ITableColumn, ITableConfig } from '@shared';
+import { IMemberProductReportFilter, IMemberProductReportItem } from '@eatfit247-shared-lib';
 import { MemberProductReportApiService } from './api.service';
 
 @Component({

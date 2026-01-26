@@ -1,17 +1,14 @@
-import { Body, Controller, Get, Header, Param, Post, Query, UseGuards } from '@nestjs/common';
-import { CreateAddressDto, Public, RequestedIp, RequireRecaptcha } from '@server_1/core';
-import { AddressService, RecaptchaGuard } from '@server_1/platform';
+import { Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
+import { Public, RequestedIp, RequireRecaptcha } from '@server_1/core';
+import { RecaptchaGuard } from '@server_1/platform';
 import { MemberPaymentService } from '../../services';
 import { CreatePublicCheckoutPaymentLinkDto, CreatePublicCheckoutPlanOrderDto } from '../../dto';
-import { IAddress, IManageAddress, IPaymentLinkResponse, IManageMemberPayment, TableEnum } from '@eatfit247-shared-lib';
+import { IManageMemberPayment, IPaymentGateway, IPaymentLinkResponse } from '@eatfit247-shared-lib';
 
 @Public()
 @Controller('checkout/plan')
 export class PublicCheckoutPlanController {
-  constructor(
-    private readonly memberPaymentService: MemberPaymentService,
-    private readonly addressService: AddressService,
-  ) {}
+  constructor(private readonly memberPaymentService: MemberPaymentService) {}
 
   /**
    * Get supported payment gateways for plan checkout
@@ -20,19 +17,13 @@ export class PublicCheckoutPlanController {
   @Get('supported-gateways')
   async getSupportedGateways(
     @Query('currency') currency: string = 'INR',
-  ): Promise<
-    Array<{
-      franchisePaymentGatewayId: number;
-      gatewayCode: string;
-      gatewayName: string;
-      providerCountryCode: string;
-      currencyCode: string;
-      isPrimary: boolean;
-      supportsDomestic: boolean;
-      supportsInternational: boolean;
-    }>
-  > {
+  ): Promise<IPaymentGateway[]> {
     return await this.memberPaymentService.getSupportedPaymentGatewaysForCheckout(currency);
+  }
+
+  @Get('/:gatewayOrderId')
+  async getPlanOrderByGatewayOrderId(@Param('gatewayOrderId') gatewayOrderId: string) {
+    return await this.memberPaymentService.findByGatewayOrderId(gatewayOrderId);
   }
 
   /**
@@ -93,7 +84,8 @@ export class PublicCheckoutPlanController {
   @Post('member/:memberId/verify-payment')
   async verifyPayment(
     @Param('memberId') memberId: number,
-    @Body() body: {
+    @Body()
+    body: {
       gatewayCode: string;
       paymentId: string;
       orderId?: string;

@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
-import { TxnContactForm, MstAdminUser } from '@server_1/core';
-import { PublicContactFormController, ContactFormReportController } from './controllers';
-import { ContactFormService, ContactFormReportService } from './services';
+import { MstAdminUser, TxnContactForm } from '@server_1/core';
+import { ContactFormReportController, PublicContactFormController } from './controllers';
+import { ContactFormReportService, ContactFormService } from './services';
 
 @Module({
   imports: [

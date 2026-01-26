@@ -1,8 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Op, Sequelize } from 'sequelize';
-import { TxnContactForm, MstAdminUser } from '@server_1/core';
-import { ITableList, IContactFormReportItem } from '@eatfit247-shared-lib';
+import { Op } from 'sequelize';
+import { MstAdminUser, TxnContactForm } from '@server_1/core';
+import { IContactFormReportItem, ITableList } from '@eatfit247-shared-lib';
 import { ContactFormReportDto, SendContactFormResponseDto } from '../dto';
 import moment from 'moment';
 

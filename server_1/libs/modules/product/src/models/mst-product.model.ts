@@ -1,6 +1,6 @@
 import { BelongsTo, Column, CreatedAt, DataType, HasMany, Model, Scopes, Table, UpdatedAt } from 'sequelize-typescript';
 import { getCreatedByUserInclude, getUpdatedByUserInclude, MstAdminUser } from '@server_1/core';
-import { IMediaUpload, IProductAdditionalInfo, InputLengthEnum } from '@eatfit247-shared-lib';
+import { IMediaUpload, InputLengthEnum, IProductAdditionalInfo } from '@eatfit247-shared-lib';
 import { MstProductVariant } from './mst-product-variant.model';
 import { MstProductPrice } from './mst-product-price.model';
 

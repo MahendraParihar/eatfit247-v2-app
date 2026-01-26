@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { AppConfigService } from '@server_1/core';
 import { PaymentGatewayResolverService } from './payment-gateway-resolver.service';
-import { ConfigParam, TaxTypeEnum } from '@eatfit247-shared-lib';
+import { ConfigParam } from '@eatfit247-shared-lib';
 import { PaymentGatewayCredentialService } from './payment-gateway-credential.service';
 
 @Injectable()

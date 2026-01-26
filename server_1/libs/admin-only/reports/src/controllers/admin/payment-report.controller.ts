@@ -1,4 +1,4 @@
-import { Controller, Get, Query, UseGuards, Res, Post, Body } from '@nestjs/common';
+import { Body, Controller, Post, Res, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '@server_1/core';
 import { PaymentReportService } from '../../services';
 import { PaymentReportDto } from '../../dto/payment-report.dto';

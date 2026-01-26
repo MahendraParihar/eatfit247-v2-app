@@ -1,7 +1,7 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { Router, ActivatedRoute } from '@angular/router';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
 import { MatStepperModule } from '@angular/material/stepper';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -11,17 +11,20 @@ import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCheckboxModule } from '@angular/material/checkbox';
-import {
-  CheckoutService,
-  CheckoutAddressData,
-  TaxCalculationResponse,
-  PaymentGateway
-} from '../../services/checkout.service';
+import { CheckoutService } from '../../services/checkout.service';
 import { ProgramPlan } from '../../services/program-plan.service';
 import { RecaptchaService } from '../../services/recaptcha.service';
 import { PaymentService } from '../../services/payment.service';
-import { ICheckoutMemberData, IDropdownItem, PaymentSourceEnum, PaymentStatusEnum } from 'eatfit247-shared-library';
-import { sortBy, filter } from 'lodash';
+import {
+  ICheckoutAddressData,
+  ICheckoutMemberData,
+  IDropdownItem,
+  IPaymentGateway,
+  ITaxCalculationResponse,
+  PaymentSourceEnum,
+  PaymentStatusEnum
+} from 'eatfit247-shared-library';
+import { filter, sortBy } from 'lodash';
 
 @Component({
   selector: 'app-checkout',
@@ -66,8 +69,8 @@ export class CheckoutComponent implements OnInit {
   productId: number | null = null;
   productVariantId: number | null = null;
   // Payment gateway
-  paymentGateways: PaymentGateway[] = [];
-  selectedGateway: PaymentGateway | null = null;
+  paymentGateways: IPaymentGateway[] = [];
+  selectedGateway: IPaymentGateway | null = null;
   isPaymentGatewayAvailable = false;
   paymentGatewayLoading = false;
   // Master data
@@ -76,7 +79,7 @@ export class CheckoutComponent implements OnInit {
   stateOptions: IDropdownItem[] = [];
   filteredStateOptions: IDropdownItem[] = [];
   // Tax calculation
-  taxCalculation: TaxCalculationResponse | null = null;
+  taxCalculation: ITaxCalculationResponse | null = null;
   calculatingTax = false;
   isTaxApplicable = false;
   // Payment
@@ -132,17 +135,20 @@ export class CheckoutComponent implements OnInit {
   initializeForms(): void {
     // Use the same unified billing form for both products and plans
     this.basicDetailsForm = this.fb.group({
-      firstName: ['', [Validators.required, Validators.maxLength(50)]],
-      lastName: ['', [Validators.required, Validators.maxLength(50)]],
+      firstName: ['Mahendra', [Validators.required, Validators.maxLength(50)]],
+      lastName: ['Parihar', [Validators.required, Validators.maxLength(50)]],
       companyName: ['', [Validators.maxLength(100)]],
       countryId: ['', [Validators.required]],
-      streetAddress1: ['', [Validators.required, Validators.maxLength(200)]],
-      streetAddress2: ['', [Validators.maxLength(200)]],
-      city: ['', [Validators.required, Validators.maxLength(100)]],
+      streetAddress1: ['K-203', [Validators.required, Validators.maxLength(200)]],
+      streetAddress2: ['Plantaria', [Validators.maxLength(200)]],
+      city: ['Bhayendar', [Validators.required, Validators.maxLength(100)]],
       stateId: ['', [Validators.required]],
-      postcode: ['', [Validators.required, Validators.maxLength(10)]],
-      phone: ['', [Validators.required, Validators.maxLength(16)]],
-      email: ['', [Validators.required, Validators.email, Validators.maxLength(100)]],
+      postcode: ['401101', [Validators.required, Validators.maxLength(10)]],
+      phone: ['8097421877', [Validators.required, Validators.maxLength(16)]],
+      email: [
+        'mahendra.parihar10@gmail.com',
+        [Validators.required, Validators.email, Validators.maxLength(100)]
+      ],
       orderNotes: ['']
     });
     // Watch for country changes to filter states
@@ -288,7 +294,7 @@ export class CheckoutComponent implements OnInit {
       }
       this.memberId = memberResult.memberId;
       // Create address
-      const addressData: CheckoutAddressData = {
+      const addressData: ICheckoutAddressData = {
         postalAddress:
           `${this.basicDetailsForm.get('streetAddress1')?.value} ${this.basicDetailsForm.get('streetAddress2')?.value || ''}`.trim(),
         cityVillage: this.basicDetailsForm.get('city')?.value,
@@ -581,7 +587,7 @@ export class CheckoutComponent implements OnInit {
       }
       this.memberId = memberResult.memberId;
       // Create address
-      const addressData: CheckoutAddressData = {
+      const addressData: ICheckoutAddressData = {
         postalAddress:
           `${this.basicDetailsForm.get('streetAddress1')?.value} ${this.basicDetailsForm.get('streetAddress2')?.value || ''}`.trim(),
         cityVillage: this.basicDetailsForm.get('city')?.value,

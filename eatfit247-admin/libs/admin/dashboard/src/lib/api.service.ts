@@ -2,11 +2,11 @@ import { Injectable } from '@angular/core';
 import { ApiBaseService, HttpService } from '@core';
 import {
   IDashboardKpis,
-  IRevenueData,
-  IMemberGrowthData,
-  IProgramPerformanceData,
-  IOperationsSnapshot,
   IEngagementData,
+  IMemberGrowthData,
+  IOperationsSnapshot,
+  IProgramPerformanceData,
+  IRevenueData
 } from '@eatfit247-shared-lib';
 
 @Injectable({

@@ -1,6 +1,6 @@
-import { Injectable, inject } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { HttpService } from './http.service';
-import { IPublicBlog, IPublicTableList, IBlogCategory } from 'eatfit247-shared-library';
+import { IBlogCategory, IPublicBlog, IPublicTableList } from 'eatfit247-shared-library';
 
 export interface BlogPost {
   id: string;

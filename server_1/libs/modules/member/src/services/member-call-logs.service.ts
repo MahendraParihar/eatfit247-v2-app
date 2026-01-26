@@ -3,7 +3,6 @@ import { InjectModel } from '@nestjs/sequelize';
 import { TxnMember, TxnMemberCallLog } from '../models';
 import { AppConfigService, CommonFunctionsUtil, MstAdminUser } from '@server_1/core';
 import { GoogleService, ZoomService } from '@server_1/platform';
-
 import {
   CallLogStatusEnum,
   CallTypeEnum,

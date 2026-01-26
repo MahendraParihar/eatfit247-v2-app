@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { HttpService } from './http.service';
 import { IPublicTableList } from 'eatfit247-shared-library';
 
@@ -51,7 +51,7 @@ export class ReferrerService {
     // Handle logo - backend returns it as a string URL via buildImageUrl
     // But handle both string and array cases for safety
     let logoUrl: string | undefined;
-    
+
     if (typeof item.logo === 'string') {
       logoUrl = item.logo;
     } else if (Array.isArray(item.logo) && item.logo.length > 0) {

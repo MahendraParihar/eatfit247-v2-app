@@ -3,8 +3,8 @@ import { ITaxCalculationInput } from '../interfaces/tax.interface';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { MstTaxMaster } from '../models';
-import { IBasicSearch, ITaxMaster, ITableList } from '@eatfit247-shared-lib';
-import { SearchUtil, CommonFunctionsUtil } from '@server_1/core';
+import { IBasicSearch, ITableList, ITaxMaster } from '@eatfit247-shared-lib';
+import { CommonFunctionsUtil, SearchUtil } from '@server_1/core';
 import { CreateTaxMasterDto } from '../dto/tax-master.dto';
 
 @Injectable()

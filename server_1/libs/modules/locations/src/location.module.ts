@@ -1,11 +1,6 @@
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
-import {
-  AddressController,
-  CountryController,
-  PublicAddressController,
-  StateController,
-} from './controllers';
+import { AddressController, CountryController, PublicAddressController, StateController } from './controllers';
 
 @Module({
   imports: [

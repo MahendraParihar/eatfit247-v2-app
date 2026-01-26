@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { HttpService } from './http.service';
 
 export interface PaymentOrderRequest {
@@ -174,7 +174,7 @@ export class PaymentService {
   ): Promise<void> {
     try {
       await this.loadRazorpayScript();
-      
+
       const options = {
         key: orderResponse.keyId,
         amount: Math.round(orderResponse.amount * 100), // Convert to paise

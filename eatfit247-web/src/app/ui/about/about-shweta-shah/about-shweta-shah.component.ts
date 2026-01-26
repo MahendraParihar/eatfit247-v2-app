@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
@@ -24,7 +24,7 @@ export class AboutShwetaShahComponent implements OnInit {
   private readonly bannerService = inject(BannerService);
 
   bannerItems: SliderItem[] = [];
-  
+
   // Social media links
   socialLinks: SocialLink[] = [
     {

@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, signal, computed, inject } from '@angular/core';
+import { Component, computed, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { GoogleReviewsService } from '../../../services/google-reviews.service';
@@ -58,7 +58,7 @@ export class TestimonialsComponent implements OnInit, OnDestroy {
     try {
       const response = await this.googleReviewsService.loadReviews();
       const reviews = response.reviews || [];
-      
+
       // Sort by createTime (newest first) and take latest 5
       const latestReviews = reviews
         .sort((a, b) => new Date(b.createTime).getTime() - new Date(a.createTime).getTime())
@@ -66,7 +66,7 @@ export class TestimonialsComponent implements OnInit, OnDestroy {
         .map((review: IGoogleReview) => this.mapGoogleReviewToTestimonial(review));
 
       this.testimonials.set(latestReviews);
-      
+
       // Autoplay disabled - manual navigation only
     } catch (error) {
       console.error('Failed to load Google reviews:', error);

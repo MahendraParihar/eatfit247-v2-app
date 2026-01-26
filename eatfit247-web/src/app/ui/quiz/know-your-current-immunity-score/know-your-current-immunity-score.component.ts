@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BannerService } from '../../../services/banner.service';
 import { ImageSliderComponent, SliderItem } from '../../shared/image-slider/image-slider.component';

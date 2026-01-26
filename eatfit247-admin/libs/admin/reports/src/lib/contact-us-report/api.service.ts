@@ -1,11 +1,6 @@
 import { Injectable } from '@angular/core';
 import { ApiBaseService, HttpService } from '@core';
-import {
-  ITableList,
-  IContactFormReportFilter,
-  IContactFormReportItem,
-  ISendResponseDto
-} from '@eatfit247-shared-lib';
+import { IContactFormReportFilter, IContactFormReportItem, ISendResponseDto, ITableList } from '@eatfit247-shared-lib';
 
 @Injectable({
   providedIn: 'root'

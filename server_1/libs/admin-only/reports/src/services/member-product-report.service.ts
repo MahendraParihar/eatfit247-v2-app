@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op, Sequelize } from 'sequelize';
-import { TxnMember, TxnMemberProduct, MemberProductService } from '@server_1/modules/member';
-import { ITableList, IMemberProductReportItem, BusinessTypeEnum } from '@eatfit247-shared-lib';
+import { MemberProductService, TxnMember, TxnMemberProduct } from '@server_1/modules/member';
+import { BusinessTypeEnum, IMemberProductReportItem, ITableList } from '@eatfit247-shared-lib';
 import { MstFranchise } from '@server_1/core';
 import { MemberProductReportDto } from '../dto/member-product-report.dto';
 import archiver from 'archiver';

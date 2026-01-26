@@ -1,6 +1,5 @@
 import { Body, Controller, Get, Param, Put, UseGuards } from '@nestjs/common';
-import { CurrentUser, JwtAuthGuard, RequestedIp } from '@server_1/core';
-import { UpdateHealthIssueIdsDto } from '@server_1/core';
+import { CurrentUser, JwtAuthGuard, RequestedIp, UpdateHealthIssueIdsDto } from '@server_1/core';
 import { MemberHealthIssueService } from '../../services';
 import { IMemberHealthIssue, ITableList } from '@eatfit247-shared-lib';
 

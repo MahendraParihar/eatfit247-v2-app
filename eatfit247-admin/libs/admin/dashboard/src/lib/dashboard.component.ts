@@ -16,7 +16,7 @@ import {
   IMemberGrowthData,
   IOperationsSnapshot,
   IProgramPerformanceData,
-  IRevenueData,
+  IRevenueData
 } from '@eatfit247-shared-lib';
 import { DashboardApiService } from './api.service';
 

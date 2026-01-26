@@ -1,9 +1,8 @@
 import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from '@nestjs/common';
-import { CurrentUser, JwtAuthGuard, RequestedIp } from '@server_1/core';
-import { BasicSearchDto, UpdateActiveDto } from '@server_1/core';
+import { BasicSearchDto, CurrentUser, JwtAuthGuard, RequestedIp, UpdateActiveDto } from '@server_1/core';
 import { TaxMasterService } from '../../services/tax-master.service';
 import { CreateTaxMasterDto } from '../../dto/tax-master.dto';
-import { ITaxMaster, ITableList } from '@eatfit247-shared-lib';
+import { ITableList, ITaxMaster } from '@eatfit247-shared-lib';
 
 @Controller('tax-master')
 @UseGuards(JwtAuthGuard)

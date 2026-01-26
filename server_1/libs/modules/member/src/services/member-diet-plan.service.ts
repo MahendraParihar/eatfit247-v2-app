@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize-typescript';
 import { TxnMember, TxnMemberDietDetail, TxnMemberDietPlan, TxnMemberPayment } from '../models';
 import {
+  ADMIN_USER_SHORT_INFO_ATTRIBUTE,
   DietPlanStatusEnum,
   DietTypeEnum,
   ICyclePlan,
@@ -12,7 +13,6 @@ import {
   IMemberDietDetail,
   IMemberDietPlan,
   MediaForEnum,
-  ADMIN_USER_SHORT_INFO_ATTRIBUTE,
 } from '@eatfit247-shared-lib';
 import { CommonFunctionsUtil, Env, MstAdminUser } from '@server_1/core';
 import { MstProgram, MstProgramCategory } from '@server_1/modules/program-plan';

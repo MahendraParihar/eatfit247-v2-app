@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
@@ -6,7 +6,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
-import { BlogService, BlogPost } from '../../services/blog.service';
+import { BlogPost, BlogService } from '../../services/blog.service';
 import { BannerService } from '../../services/banner.service';
 import { ImageSliderComponent, SliderItem } from '../shared/image-slider/image-slider.component';
 import { BannerForEnum, IBlogCategory } from 'eatfit247-shared-library';
@@ -49,7 +49,7 @@ export class BlogComponent implements OnInit {
   recentPosts: BlogPost[] = [];
   categories: IBlogCategory[] = [];
   selectedCategoryId: number | null = null; // null means "All Posts" is selected
-  
+
   // Loading states
   loading = false;
   loadingRecent = false;
@@ -135,10 +135,10 @@ export class BlogComponent implements OnInit {
   onPageChange(event: PageEvent): void {
     this.currentPage = event.pageIndex + 1;
     this.pageSize = event.pageSize;
-    
+
     // Reload posts with current category filter
     this.loadPostsForCurrentFilter();
-    
+
     // Scroll to top of blog section
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }

@@ -10,13 +10,14 @@ import {
   ICreatePaymentLinkRequest,
   IDropdownItem,
   IManageMemberPayment,
+  IMemberInfo,
   IMemberPayment,
   IMemberPaymentMasterData,
+  IPaymentGateway,
   IPaymentLinkResponse,
   ITableList,
   mapPaymentToInvoiceDocument,
   MediaForEnum,
-  IMemberInfo,
   PaymentGatewayEnum,
   PaymentSourceEnum,
   PaymentStatusEnum,
@@ -29,9 +30,9 @@ import {
   CountryService,
   IFileModel,
   InvoicePdfService,
-  PaymentUtil,
   PaymentModeService,
   PaymentStatusService,
+  PaymentUtil,
   StateService,
 } from '@server_1/platform';
 import { ProgramPlanService, ProgramService } from '@server_1/modules/program-plan';
@@ -672,14 +673,13 @@ export class MemberPaymentService {
    * Convert database model to IMemberPayment interface
    */
   private convertToModel(item: TxnMemberPayment): IMemberPayment {
-    // Read amounts directly from model fields (new structure)
-    const orderAmount = item.orderAmount || 0;
-    const discountAmount = item.discountAmount || 0;
-    const taxAmount = item.taxAmount || 0;
-    const totalAmount = item.totalAmount || 0;
-    // Read cycle information from memberDietPlan relationship
-    const noOfCycle = item.memberDietPlan?.noOfCycle || 0;
-    const noOfDaysInCycle = item.memberDietPlan?.daysInCycle || 0;
+    console.log(item);
+    const orderAmount = item.orderAmount;
+    const discountAmount = item.discountAmount;
+    const taxAmount = item.taxAmount;
+    const totalAmount = item.totalAmount;
+    const noOfCycle = item.memberDietPlan?.noOfCycle;
+    const noOfDaysInCycle = item.memberDietPlan?.daysInCycle;
     const currentCycleNo = item.memberDietPlan?.currentCycleNo;
     const currentDayNo = item.memberDietPlan?.currentDayNo;
     return {
@@ -687,7 +687,7 @@ export class MemberPaymentService {
       memberId: item.memberId,
       memberName: item.member ? `${item.member.firstName} ${item.member.lastName}`.trim() : '',
       paymentModeId: item.paymentModeId,
-      paymentMode: item.paymentMode.paymentMode || '',
+      paymentMode: item.paymentMode?.paymentMode || '',
       programPlanId: item.programPlanId,
       programPlan: item.programPlan?.plan,
       programId: item.programId,
@@ -811,18 +811,7 @@ export class MemberPaymentService {
   public async getSupportedPaymentGateways(
     memberId: number,
     currencyCode: string,
-  ): Promise<
-    Array<{
-      franchisePaymentGatewayId: number;
-      gatewayCode: string;
-      gatewayName: string;
-      providerCountryCode: string;
-      currencyCode: string;
-      isPrimary: boolean;
-      supportsDomestic: boolean;
-      supportsInternational: boolean;
-    }>
-  > {
+  ): Promise<IPaymentGateway[]> {
     // Verify a member exists and get a franchise
     const member = await this.memberRepository.findOne({
       where: { memberId },
@@ -1117,25 +1106,21 @@ export class MemberPaymentService {
         active: true,
       },
     });
-
     if (!payment) {
       throw new NotFoundException('Payment not found');
     }
-
     // Validate payment status is PENDING
     if (payment.paymentStatusId !== PaymentStatusEnum.PENDING) {
       throw new BadRequestException(
         'Payment link can only be regenerated for payments with PENDING status',
       );
     }
-
     // Validate payment source is not MANUAL
     if (payment.paymentSource === PaymentSourceEnum.MANUAL) {
       throw new BadRequestException(
         'Payment link cannot be regenerated for manual payments',
       );
     }
-
     // Get member with franchise
     const member = await this.memberRepository.findOne({
       where: { memberId },
@@ -1147,15 +1132,12 @@ export class MemberPaymentService {
         },
       ],
     });
-
     if (!member) {
       throw new NotFoundException('Member not found');
     }
-
     if (!member.franchiseId) {
       throw new BadRequestException('Member does not have an associated franchise');
     }
-
     // Resolve gateway to ensure it's valid
     const currency = payment.currency;
     let resolvedGateway;
@@ -1173,9 +1155,7 @@ export class MemberPaymentService {
           : 'Failed to resolve payment gateway',
       );
     }
-
     const gatewayCode = resolvedGateway.gatewayCode;
-
     // Get payment gateway credentials
     const credentialMode = this.appConfigService.getString(ConfigParam.PAYMENT_MODE);
     const credentials =
@@ -1183,17 +1163,14 @@ export class MemberPaymentService {
         resolvedGateway.franchisePaymentGatewayId,
         credentialMode,
       );
-
     if (!credentials) {
       throw new BadRequestException(
         `Payment gateway credentials not found for gateway ID: ${resolvedGateway.franchisePaymentGatewayId} in mode: ${credentialMode}`,
       );
     }
-
     // Decrypt credentials (if needed)
     const keyId = credentials.apiKeyEncrypted;
     const keySecret = credentials.apiSecretEncrypted;
-
     // Prepare customer details from member
     const customerDetails = {
       name: member.firstName
@@ -1202,19 +1179,16 @@ export class MemberPaymentService {
       email: member.emailId || undefined,
       contact: member.contactNumber || undefined,
     };
-
     // Prepare description
     const programName = payment.program || '';
     const planName = payment.programPlan || '';
     const paymentDescription = `Payment for ${programName} - ${planName}`;
-
     // Prepare notes with member ID
     const paymentNotes = {
       memberId: memberId.toString(),
       franchisePaymentGatewayId: resolvedGateway.franchisePaymentGatewayId.toString(),
       paymentId: paymentId.toString(),
     };
-
     // Create payment link using the adapter
     const adaptor = this.paymentGatewayFactory.getAdapter(gatewayCode);
     const paymentLink = await adaptor.createPaymentLink(
@@ -1228,14 +1202,11 @@ export class MemberPaymentService {
         keySecret,
       },
     );
-
     // Update payment with new payment link
     payment.paymentLink = paymentLink.short_url;
     payment.gatewayProvider = gatewayCode;
     payment.gatewayOrderId = paymentLink.id;
-
     await payment.save();
-
     // Reload payment with all relationships for conversion
     const updatedPayment = await this.memberPaymentRepository.scope('details').findOne({
       where: {
@@ -1243,11 +1214,9 @@ export class MemberPaymentService {
         memberId,
       },
     });
-
     if (!updatedPayment) {
       throw new NotFoundException('Payment not found after update');
     }
-
     // Convert to IMemberPayment and return
     return this.convertToModel(updatedPayment);
   }
@@ -1259,18 +1228,7 @@ export class MemberPaymentService {
    */
   public async getSupportedPaymentGatewaysForCheckout(
     currencyCode: string,
-  ): Promise<
-    Array<{
-      franchisePaymentGatewayId: number;
-      gatewayCode: string;
-      gatewayName: string;
-      providerCountryCode: string;
-      currencyCode: string;
-      isPrimary: boolean;
-      supportsDomestic: boolean;
-      supportsInternational: boolean;
-    }>
-  > {
+  ): Promise<IPaymentGateway[]> {
     // Get franchise for services (plans)
     const franchise = await this.franchiseService.franchiseByBusinessType(BusinessTypeEnum.SERVICE);
     if (!franchise || franchise.length === 0) {
@@ -1535,5 +1493,24 @@ export class MemberPaymentService {
     requestedIp: string,
   ): Promise<IMemberPayment> {
     return await this.create(memberId, obj, requestedIp, null);
+  }
+
+  /**
+   * Find order by gateway order ID
+   * @param gatewayOrderId - Gateway order ID
+   * @returns Order details
+   */
+  public async findByGatewayOrderId(gatewayOrderId: string): Promise<IMemberPayment> {
+    const paymentOrder = await this.memberPaymentRepository.scope('details').findOne({
+      where: {
+        gatewayOrderId: gatewayOrderId,
+        active: true,
+      },
+      nest: true,
+    });
+    if (!paymentOrder) {
+      throw new NotFoundException(`Order not found for gateway order ID: ${gatewayOrderId}`);
+    }
+    return this.convertToModel(paymentOrder.get({ plain: true }));
   }
 }

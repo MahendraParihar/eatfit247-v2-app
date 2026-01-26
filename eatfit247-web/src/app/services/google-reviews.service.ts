@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { IGoogleReviewsResponse } from 'eatfit247-shared-library';
 import { HttpService } from './http.service';
 

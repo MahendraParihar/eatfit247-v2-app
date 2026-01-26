@@ -4,8 +4,8 @@ import {
   IManageProduct,
   IProduct,
   IProductAdditionalInfo,
-  IProductVariant,
-  IProductPrice
+  IProductPrice,
+  IProductVariant
 } from '@eatfit247-shared-lib';
 
 @Injectable({

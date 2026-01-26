@@ -1,15 +1,15 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
-import { InjectModel } from "@nestjs/sequelize";
-import { MstProduct, MstProductPrice, MstProductVariant } from "../models";
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectModel } from '@nestjs/sequelize';
+import { MstProduct, MstProductPrice, MstProductVariant } from '../models';
 import {
   IBasicSearch,
   IManageProduct,
   IProduct,
   IPublicProduct,
   IPublicTableList,
-  ITableList
-} from "@eatfit247-shared-lib";
-import { CommonFunctionsUtil, SearchUtil } from "@server_1/core";
+  ITableList,
+} from '@eatfit247-shared-lib';
+import { CommonFunctionsUtil, SearchUtil } from '@server_1/core';
 
 @Injectable()
 export class ProductService {

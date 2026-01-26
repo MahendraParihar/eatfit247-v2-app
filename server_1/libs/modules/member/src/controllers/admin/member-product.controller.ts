@@ -1,17 +1,14 @@
-import { Body, Controller, Delete, Get, Header, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Header, Param, Post, Query, UseGuards } from '@nestjs/common';
 import { CurrentUser, JwtAuthGuard, RequestedIp } from '@server_1/core';
 import { MemberProductService } from '../../services';
 import {
-  ICalculateTaxResponse,
   ICalculateProductVariantTaxResponse,
   IMemberProduct,
   IMemberProductMasterData,
   IPaymentLinkResponse,
   ITableList,
 } from '@eatfit247-shared-lib';
-import { CalculateTaxDto, CalculateProductVariantTaxDto } from '../../dto';
-import { CreateMemberProductDto } from '../../dto';
-import { CreatePaymentLinkDto } from '../../dto';
+import { CalculateProductVariantTaxDto, CreateMemberProductDto, CreatePaymentLinkDto } from '../../dto';
 import { IFileModel } from '@server_1/platform';
 
 @Controller('member/:id/product')

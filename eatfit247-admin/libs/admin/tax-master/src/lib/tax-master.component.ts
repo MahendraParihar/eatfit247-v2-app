@@ -9,7 +9,7 @@ import {
   ITableAction,
   ITableColumn,
   ITableConfig,
-  updatedByUserFormatter,
+  updatedByUserFormatter
 } from '@shared';
 import { IBasicSearch, ITableList, ITaxMaster } from '@eatfit247-shared-lib';
 import { TaxMasterApiService } from './api.service';
