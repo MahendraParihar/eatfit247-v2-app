@@ -355,10 +355,6 @@ export class CheckoutComponent implements OnInit {
             if (!verifyResponse.verified) {
               throw new Error('Payment verification failed');
             }
-            // Create plan order in txn_member_payments table
-            // Get programId from programPlan (assuming it's available) or set to 0 if not available
-            // Note: programId might need to be fetched separately if not in programPlan
-            const programId = (this.programPlan as any)?.programId || 0; // TODO: Get actual programId
             const orderData = {
               paymentModeId: null,
               billingAddressId: this.addressId,
@@ -366,7 +362,7 @@ export class CheckoutComponent implements OnInit {
               transactionId: paymentId,
               paymentDate: new Date().toISOString(),
               paymentStatusId: PaymentStatusEnum.PAID,
-              programId: programId,
+              programId: null,
               programPlanId: this.programPlanId!,
               noOfCycle: this.programPlan?.noOfCycle || 1,
               noOfDaysInCycle: this.programPlan?.noOfDaysInCycle || 30,
@@ -392,7 +388,7 @@ export class CheckoutComponent implements OnInit {
                 verified: verifyResponse.verified
               }
             };
-            // Create order with reCAPTCHA token
+            // Create order with a reCAPTCHA token
             let recaptchaToken: string | undefined;
             if (this.recaptchaService.isAvailable()) {
               try {
@@ -520,7 +516,7 @@ export class CheckoutComponent implements OnInit {
 
   /**
    * Check payment gateway availability for checkout
-   * Uses different services based on checkout type:
+   * Uses different services based on a checkout type:
    * - Products: getSupportedPaymentGateways (BusinessTypeEnum.PRODUCT)
    * - Plans: getSupportedPaymentGatewaysForPlan (BusinessTypeEnum.SERVICE)
    */
@@ -535,10 +531,10 @@ export class CheckoutComponent implements OnInit {
       this.paymentGateways = gateways || [];
       if (!gateways || gateways.length === 0) {
         this.isPaymentGatewayAvailable = false;
-        // Don't set error here, let the template show the message
+        // Don't set an error here, let the template show the message
       } else {
         this.isPaymentGatewayAvailable = true;
-        // Select first active/primary gateway
+        // Select the first active / primary gateway
         this.selectedGateway = gateways.find((g) => g.isPrimary) || gateways[0];
         console.log('Selected payment gateway:', this.selectedGateway);
       }
@@ -562,7 +558,7 @@ export class CheckoutComponent implements OnInit {
     }
     try {
       this.loading = true;
-      // Create member first
+      // Create a member first
       const memberData: ICheckoutMemberData = {
         firstName: this.basicDetailsForm.get('firstName')?.value,
         lastName: this.basicDetailsForm.get('lastName')?.value,
@@ -619,7 +615,7 @@ export class CheckoutComponent implements OnInit {
       // Store validated non-null values for TypeScript
       const validatedProductId: number = this.productId;
       const validatedProductVariantId: number = this.productVariantId;
-      // Create payment order for embedded checkout
+      // Create a payment order for embedded checkout
       const customerName = `${this.basicDetailsForm.get('firstName')?.value} ${this.basicDetailsForm.get('lastName')?.value}`;
       const paymentOrderResponse = await this.paymentService.createPaymentOrder(this.memberId, {
         amount: totalAmount,
@@ -659,7 +655,7 @@ export class CheckoutComponent implements OnInit {
             if (!verifyResponse.verified) {
               throw new Error('Payment verification failed');
             }
-            // Create order in txn_member_products table
+            // Create order in the txn_member_products table
             const orderData = {
               paymentModeId: null,
               billingAddressId: this.addressId,
@@ -733,7 +729,7 @@ export class CheckoutComponent implements OnInit {
           }
         },
         (error: any) => {
-          // Payment failed or cancelled
+          // Payment failed or canceled
           console.error('Payment error:', error);
           this.processingPayment = false;
           this.showPaymentModal = false;

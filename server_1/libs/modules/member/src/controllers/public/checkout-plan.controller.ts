@@ -52,7 +52,7 @@ export class PublicCheckoutPlanController {
       if (gateways.length === 0) {
         throw new Error('No payment gateway available');
       }
-      // Use primary gateway or first available
+      // Use the primary gateway or first available
       const selectedGateway = gateways.find((g) => g.isPrimary) || gateways[0];
       franchisePaymentGatewayId = selectedGateway.franchisePaymentGatewayId;
     }
@@ -121,8 +121,6 @@ export class PublicCheckoutPlanController {
     @Body() body: CreatePublicCheckoutPlanOrderDto,
     @RequestedIp() requestedIp: string,
   ) {
-    // Convert public DTO to internal format and create order
-    // Map DTO to IManageMemberPayment interface format
     const orderData: IManageMemberPayment = {
       memberId,
       paymentModeId: body.paymentModeId,

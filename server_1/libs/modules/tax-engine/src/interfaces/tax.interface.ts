@@ -21,6 +21,8 @@ export interface TaxInput {
 }
 
 export interface TaxResult {
+  baseAmount: number;
+  discount: number;
   taxType: TaxTypeEnum;
   taxPercentage: number;
   taxAmount: number;

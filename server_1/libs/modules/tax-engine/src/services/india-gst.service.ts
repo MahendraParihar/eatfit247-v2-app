@@ -31,6 +31,8 @@ export class IndiaGstService {
       };
     }
     return {
+      discount: input.discountAmount,
+      baseAmount: amount,
       taxType: TaxTypeEnum.GST,
       taxPercentage: gstPercentage,
       taxAmount,

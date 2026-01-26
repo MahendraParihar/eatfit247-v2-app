@@ -957,10 +957,10 @@ export class MemberProductService {
     const taxResult = await this.taxEngineService.calculate(taxInput);
     // Calculate base amounts
     return <ICalculateTaxResponse>{
-      orderAmount: payload.orderAmount,
+      orderAmount: taxResult.baseAmount,
       taxAmount: taxResult.taxAmount,
       totalAmount: taxResult.totalAmount,
-      discountAmount: payload.discountAmount,
+      discountAmount: taxResult.discount,
       taxType: taxResult.taxType,
       taxMode: taxResult.taxMode,
       taxPercentage: taxResult.taxPercentage,

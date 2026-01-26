@@ -18,7 +18,7 @@ export class TaxEngineService {
   ) {}
 
   async calculate(input: TaxInput): Promise<TaxResult> {
-    const taxableAmount = input.baseAmount - input.discountAmount;
+    let taxableAmount = input.baseAmount - input.discountAmount;
     // 1️⃣ Fetch tax rule (SINGLE SOURCE OF TRUTH)
     const taxRule = await this.taxMasterService.getApplicableTaxRule(<ITaxCalculationInput>{
       franchiseId: input.franchiseId,
@@ -27,7 +27,11 @@ export class TaxEngineService {
       transactionType: input.transactionType,
     });
     if (!taxRule || taxRule.taxPercent === 0) {
-      return this.noTax(taxableAmount);
+      return this.noTax(taxableAmount, input.discountAmount);
+    }
+    if (taxRule.isTaxInclusive) {
+      const rate = taxRule.taxPercent / 100;
+      taxableAmount = Math.max(input.baseAmount / (1 + rate) - input.discountAmount, 0);
     }
     const countries = await this.countryService.findAll({ page: 0, limit: 1000 });
     const supplierCountry = countries.tableData.find(
@@ -46,6 +50,8 @@ export class TaxEngineService {
         throw new Error('Export of service requires foreign currency payment');
       }
       return {
+        baseAmount: taxableAmount,
+        discount: input.discountAmount,
         taxType: TaxTypeEnum.GST,
         taxPercentage: 0,
         taxAmount: 0,
@@ -88,19 +94,23 @@ export class TaxEngineService {
         };
         break;
       default:
-        taxObject = this.noTax(taxableAmount);
+        taxObject = this.noTax(taxableAmount, input.discountAmount);
         break;
     }
     return {
       ...taxObject,
+      baseAmount: taxableAmount,
+      discount: input.discountAmount,
       entityCountry: supplierCountry.country,
       placeOfSupply: customerCountry.country,
       customerCountry: customerCountry.country,
     };
   }
 
-  private noTax(amount: number): TaxResult {
+  private noTax(amount: number, discount: number): TaxResult {
     return {
+      baseAmount: amount,
+      discount: discount,
       taxType: TaxTypeEnum.NONE,
       taxPercentage: 0,
       taxAmount: 0,

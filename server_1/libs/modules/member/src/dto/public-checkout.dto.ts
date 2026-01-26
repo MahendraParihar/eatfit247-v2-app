@@ -163,7 +163,7 @@ export class CreatePublicCheckoutPlanOrderDto {
   @IsNumber()
   paymentStatusId!: number;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsNumber()
   programId!: number;
 

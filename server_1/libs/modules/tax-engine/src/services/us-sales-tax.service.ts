@@ -17,6 +17,8 @@ export class UsSalesTaxService {
     }
     const taxAmount = Number(((amount * state.taxPercentage) / 100).toFixed(2));
     return {
+      discount: 0,
+      baseAmount: amount,
       taxType: TaxTypeEnum.SALES_TAX,
       taxPercentage: state.taxPercentage,
       taxAmount,
@@ -36,6 +38,8 @@ export class UsSalesTaxService {
 
   private noTax(amount: number): TaxResult {
     return {
+      discount: 0,
+      baseAmount: amount,
       taxType: TaxTypeEnum.NONE,
       taxPercentage: 0,
       taxAmount: 0,

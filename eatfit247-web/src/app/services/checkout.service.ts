@@ -100,7 +100,7 @@ export interface CreatePlanOrderRequest {
   transactionId?: string;
   paymentDate: string; // ISO date string
   paymentStatusId: number;
-  programId: number;
+  programId?: number | null;
   programPlanId: number;
   noOfCycle: number;
   noOfDaysInCycle: number;

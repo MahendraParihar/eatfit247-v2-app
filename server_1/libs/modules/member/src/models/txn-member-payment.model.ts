@@ -211,7 +211,7 @@ export class TxnMemberPayment extends Model<TxnMemberPayment> {
   })
   declare programPlanId: number;
   @Column({
-    allowNull: false,
+    allowNull: true,
     field: 'program_id',
     type: DataType.INTEGER,
   })
@@ -231,7 +231,7 @@ export class TxnMemberPayment extends Model<TxnMemberPayment> {
   @Column({
     allowNull: false,
     field: 'payment_date',
-    type: DataType.DATEONLY,
+    type: DataType.DATE,
   })
   declare paymentDate: Date;
   @Column({

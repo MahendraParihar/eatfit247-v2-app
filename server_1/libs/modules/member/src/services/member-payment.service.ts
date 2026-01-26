@@ -193,6 +193,8 @@ export class MemberPaymentService {
     const taxResult = await this.taxEngineService.calculate(taxInput);
     // If tax is included in plan fees, adjust calculations
     return <ICalculateTaxResponse>{
+      orderAmount: taxResult.baseAmount,
+      discountAmount: taxResult.discount,
       taxPercentage: taxResult.taxPercentage,
       taxAmount: taxResult.taxAmount,
       totalAmount: taxResult.totalAmount,
@@ -350,7 +352,7 @@ export class MemberPaymentService {
       // Create a payment record
       const paymentData: any = {
         memberId,
-        franchiseId: member.franchiseId || null,
+        franchiseId: member.franchiseId,
         paymentModeId: obj.paymentModeId,
         programPlanId: obj.programPlanId,
         programId: obj.programId,
@@ -362,7 +364,7 @@ export class MemberPaymentService {
         promoCode: obj.promoCode || null,
         isTaxApplicable: obj.isTaxApplicable,
         refundObj: null,
-        paymentGatewayResponse: null,
+        paymentGatewayResponse: obj.paymentGatewayResponse || null,
         gstNumber: obj.gstNumber || null,
         memberAddress: memberAddressSnapshot,
         paymentSource: obj.paymentSource,
@@ -765,14 +767,10 @@ export class MemberPaymentService {
     const supplierStateCode = addressCodes.supplierStateCode;
     const customerCountryCode = addressCodes.customerCountryCode || '';
     const customerStateCode = addressCodes.customerStateCode;
-    // Calculate base amounts
-    let systemOrderAmount = orderAmount;
-    let systemDiscountAmount = discountAmount;
-    let baseAmountForTax = systemOrderAmount - discountAmount;
     // Use tax engine to calculate tax
     const taxInput: TaxInput = {
-      baseAmount: baseAmountForTax,
-      discountAmount: systemDiscountAmount,
+      baseAmount: orderAmount,
+      discountAmount: discountAmount,
       supplierCountryCode,
       supplierStateCode,
       customerCountryCode,
@@ -783,26 +781,11 @@ export class MemberPaymentService {
       transactionType: TransactionType.SERVICE,
     };
     const taxResult = await this.taxEngineService.calculate(taxInput);
-    // Calculate system amounts
-    let systemTaxAmount = taxResult.taxAmount;
-    let systemTotalAmount = taxResult.totalAmount;
-    // If tax is included in plan fees, adjust calculations
-    if (isTaxApplicable && taxResult.taxPercentage > 0) {
-      const extractedTax = systemOrderAmount - baseAmountForTax;
-      const discountedBase = baseAmountForTax - systemDiscountAmount;
-      systemTaxAmount = extractedTax;
-      systemTotalAmount = discountedBase + extractedTax;
-    }
-    // Calculate user amounts (same as a system for now, can be converted later)
-    const userOrderAmount = systemOrderAmount;
-    const userDiscountAmount = systemDiscountAmount;
-    const userTaxAmount = systemTaxAmount;
-    const userTotalAmount = systemTotalAmount;
     return <ICalculateTaxResponse>{
-      orderAmount: userOrderAmount,
-      discountAmount: userDiscountAmount,
-      taxAmount: userTaxAmount,
-      totalAmount: userTotalAmount,
+      orderAmount: taxResult.baseAmount,
+      discountAmount: taxResult.discount,
+      taxAmount: taxResult.taxAmount,
+      totalAmount: taxResult.totalAmount,
       currency: currencyCode,
       taxType: taxResult.taxType,
       taxMode: taxResult.taxMode,

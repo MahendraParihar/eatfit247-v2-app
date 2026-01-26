@@ -12,7 +12,7 @@ export interface IBasicMemberPayment {
   memberId: number;
   paymentModeId: number;
   programPlanId: number;
-  programId: number;
+  programId?: number | null;
   addressId?: number | null;
   transactionId?: string;
   paymentDate: Date;
@@ -74,7 +74,7 @@ export interface IManageMemberPayment {
   memberPaymentId?: number;
   memberId: number;
   paymentModeId: number;
-  programId: number;
+  programId?: number | null;
   programPlanId: number;
   noOfCycle: number;
   noOfDaysInCycle: number;
