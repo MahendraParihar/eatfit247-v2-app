@@ -65,7 +65,6 @@ export class CheckoutSuccessComponent implements OnInit {
   ngOnInit(): void {
     this.route.queryParams.subscribe(async (params) => {
       const orderId = params['orderId'];
-      const paymentId = params['paymentId'];
       const planId = params['planId'];
       if (!orderId) {
         this.error = 'Order ID is missing. Please contact support.';

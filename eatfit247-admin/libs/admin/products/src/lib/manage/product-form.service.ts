@@ -488,7 +488,7 @@ export class ProductFormService {
       });
     }
 
-    const payload: IManageProduct = {
+    return <IManageProduct>{
       name: formValue.name,
       hsnCode: formValue.hsnCode,
       imagePath: formValue.imagePath || [],
@@ -496,8 +496,6 @@ export class ProductFormService {
       additionalInfo: additionalInfo,
       active: formValue.active
     };
-
-    return payload;
   }
 }
 

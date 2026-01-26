@@ -338,18 +338,15 @@ export class MemberPaymentService {
       }
       const programPlan = await this.programPlanService.fetchById(obj.programPlanId);
       const fees = find(programPlan.programPlanFees, { currencyCode: obj.currencyCode });
-      // If tax amounts are not provided, calculate them using the tax engine
       const paymentObj = await this.calculatePaymentObject(
         {
           orderAmount: fees ? fees.fees : obj.orderAmount,
           discountAmount: obj.discountAmount || 0,
           currencyCode: obj.currencyCode,
         },
-        obj.isTaxApplicable,
         billingAddress,
         franchiseAddress,
       );
-      console.log(paymentObj);
       // Create a payment record
       const paymentData: any = {
         memberId,
@@ -533,14 +530,13 @@ export class MemberPaymentService {
         (obj.discountAmount !== undefined && obj.discountAmount !== payment.discountAmount) ||
         (obj.isTaxApplicable !== undefined && obj.isTaxApplicable !== payment.isTaxApplicable) ||
         (obj.billingAddressId !== undefined && obj.billingAddressId !== payment.billingAddressId);
-      if (needsRecalculation && isTaxApplicable && billingAddress) {
+      if (needsRecalculation && billingAddress) {
         const paymentObj = await this.calculatePaymentObject(
           {
             orderAmount,
             discountAmount,
             currencyCode,
           },
-          isTaxApplicable,
           billingAddress,
           franchiseAddress,
         );
@@ -749,7 +745,6 @@ export class MemberPaymentService {
       discountAmount: number;
       currencyCode: string;
     },
-    isTaxApplicable: boolean,
     billingAddress: IAddress | null,
     franchiseAddress: IAddress | null,
   ): Promise<ICalculateTaxResponse> {

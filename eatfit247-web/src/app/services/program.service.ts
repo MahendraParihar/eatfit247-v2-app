@@ -88,11 +88,7 @@ export class ProgramService {
     // Convert idealFor from string to array if needed
     let idealFor: string[] = [];
     if (program.idealFor) {
-      if (typeof program.idealFor === 'string') {
-        idealFor = program.idealFor.split(',').map(item => item.trim()).filter(item => item.length > 0);
-      } else if (Array.isArray(program.idealFor)) {
-        idealFor = program.idealFor;
-      }
+      idealFor = program.idealFor.split(',').map(item => item.trim()).filter(item => item.length > 0);
     }
     // Convert tags from array or string
     let tags: string[] = [];

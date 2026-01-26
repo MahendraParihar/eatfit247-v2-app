@@ -1048,11 +1048,7 @@ export class MemberDietPlanService {
     cycleNo: number,
     dayNo: number = null,
   ): Promise<void> {
-    // TODO: Implement email sending when email service is properly configured
-    // For now, just log that email would be sent
-    const data = await this.fetchDietDetail(memberId, dietPlanId, cycleNo, dayNo);
-    // Email sending would happen here
-    // await this.emailService.sendEmail(emailParams);
+    await this.fetchDietDetail(memberId, dietPlanId, cycleNo, dayNo);
   }
 
   /**

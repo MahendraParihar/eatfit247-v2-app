@@ -12,7 +12,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { AddressFormComponent, InputErrorComponent, UploadFormComponent, ValidationUtil } from '@shared';
-import { FranchiseApiService } from '../api.service';
+import { FranchiseApiService } from 'franchise';
 import {
   BusinessTypeEnum,
   FileTypeEnum,

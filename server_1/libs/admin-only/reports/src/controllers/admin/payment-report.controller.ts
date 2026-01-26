@@ -1,7 +1,7 @@
 import { Body, Controller, Post, Res, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '@server_1/core';
 import { PaymentReportService } from '../../services';
-import { PaymentReportDto } from '../../dto/payment-report.dto';
+import { PaymentReportDto } from '../../dto';
 import { ITableList } from '@eatfit247-shared-lib';
 import { Response } from 'express';
 

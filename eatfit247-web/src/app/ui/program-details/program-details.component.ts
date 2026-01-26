@@ -32,12 +32,8 @@ import { SectionFaqComponent } from '../shared/section-faq/section-faq.component
   styleUrl: './program-details.component.scss'
 })
 export class ProgramDetailsComponent implements OnInit {
-  private readonly route = inject(ActivatedRoute);
-  private readonly router = inject(Router);
-  private readonly programService = inject(ProgramService);
   programId: string | null = null;
   loading = true;
-  notFound = false;
 
   ngOnInit(): void {
   }
