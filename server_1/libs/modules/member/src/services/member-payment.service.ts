@@ -24,7 +24,13 @@ import {
   TableEnum,
   TransactionType,
 } from '@eatfit247-shared-lib';
-import { AppConfigService, CommonFunctionsUtil, Env, MstFranchise, PaymentValidationUtil } from '@server_1/core';
+import {
+  AppConfigService,
+  CommonFunctionsUtil,
+  Env,
+  MstFranchise,
+  PaymentValidationUtil,
+} from '@server_1/core';
 import {
   AddressService,
   CountryService,
@@ -964,20 +970,6 @@ export class MemberPaymentService {
         memberId,
         active: true,
       },
-      include: [
-        {
-          model: TxnMember,
-          as: 'member',
-          required: true,
-          include: [
-            {
-              model: MstFranchise,
-              as: 'franchise',
-              required: false,
-            },
-          ],
-        },
-      ],
     });
     if (!payment) {
       throw new NotFoundException('Payment not found');
@@ -996,50 +988,20 @@ export class MemberPaymentService {
     if (!member) {
       throw new NotFoundException('Member not found');
     }
-    if (!member.franchiseId) {
-      throw new BadRequestException('Member does not have an associated franchise');
-    }
     // Get franchise address
     const franchiseAddress = await this.addressService.findByTableIdAndPk(
       TableEnum.MST_FRANCHISES,
-      member.franchiseId,
+      payment.franchiseId,
     );
     // Get billing address:
-    // 1. Prefer snapshot stored on payment (memberAddress.billingAddress)
+    // 1. Prefer a snapshot stored on payment (memberAddress.billingAddress)
     // 2. Fallback to related billingAddress/address records for backward compatibility
     let billingAddress: IAddress | null = null;
-    const memberAddressSnapshot = (payment as any).memberAddress as {
-      address?: IAddress | null;
-      billingAddress?: IAddress | null;
-    } | null;
-    if (memberAddressSnapshot?.billingAddress) {
+    const memberAddressSnapshot = payment.memberAddress;
+    if (memberAddressSnapshot.billingAddress) {
       billingAddress = memberAddressSnapshot.billingAddress as IAddress;
-    } else if (payment.billingAddress) {
-      billingAddress = {
-        addressId: payment.billingAddress.addressId,
-        addressName: payment.billingAddress.addressName,
-        postalAddress: payment.billingAddress.postalAddress,
-        cityVillage: payment.billingAddress.cityVillage,
-        stateId: payment.billingAddress.stateId,
-        state: payment.billingAddress.state?.state || '',
-        countryId: payment.billingAddress.countryId,
-        country: payment.billingAddress.country.country || '',
-        countryCode: payment.billingAddress.country.countryCode || '',
-        pinCode: payment.billingAddress.pinCode,
-      } as IAddress;
     } else if (payment.address) {
-      billingAddress = {
-        addressId: payment.address.addressId,
-        addressName: payment.address.addressName,
-        postalAddress: payment.address.postalAddress,
-        cityVillage: payment.address.cityVillage,
-        stateId: payment.address.stateId,
-        state: payment.address.state?.state || '',
-        countryId: payment.address.countryId,
-        country: payment.address.country.country || '',
-        countryCode: payment.address.country.countryCode || '',
-        pinCode: payment.address.pinCode,
-      } as IAddress;
+      billingAddress = memberAddressSnapshot.address as IAddress;
     }
     if (!billingAddress) {
       throw new BadRequestException('Billing address not found for invoice generation');
@@ -1059,7 +1021,7 @@ export class MemberPaymentService {
       billingAddress,
       TransactionType.SERVICE, // Default to SERVICE for diet consultancy
       franchiseAddress,
-      `Diet Consultancy - ${paymentModel.program} - ${paymentModel.programPlan}`,
+      `Diet Consultancy ${paymentModel.program ? paymentModel.program : ''} - ${paymentModel.programPlan}`,
       memberInfo,
     );
     const fileName = `invoice-${paymentModel.memberPaymentId}.pdf`;
@@ -1089,10 +1051,7 @@ export class MemberPaymentService {
    * @param paymentId - Payment ID
    * @returns Updated payment with new payment link
    */
-  public async regeneratePaymentLink(
-    memberId: number,
-    paymentId: number,
-  ): Promise<IMemberPayment> {
+  public async regeneratePaymentLink(memberId: number, paymentId: number): Promise<IMemberPayment> {
     // Get payment with all details
     const payment = await this.memberPaymentRepository.scope('details').findOne({
       where: {
@@ -1112,9 +1071,7 @@ export class MemberPaymentService {
     }
     // Validate payment source is not MANUAL
     if (payment.paymentSource === PaymentSourceEnum.MANUAL) {
-      throw new BadRequestException(
-        'Payment link cannot be regenerated for manual payments',
-      );
+      throw new BadRequestException('Payment link cannot be regenerated for manual payments');
     }
     // Get member with franchise
     const member = await this.memberRepository.findOne({
@@ -1145,19 +1102,16 @@ export class MemberPaymentService {
       });
     } catch (error) {
       throw new BadRequestException(
-        error instanceof Error
-          ? error.message
-          : 'Failed to resolve payment gateway',
+        error instanceof Error ? error.message : 'Failed to resolve payment gateway',
       );
     }
     const gatewayCode = resolvedGateway.gatewayCode;
     // Get payment gateway credentials
     const credentialMode = this.appConfigService.getString(ConfigParam.PAYMENT_MODE);
-    const credentials =
-      await this.paymentGatewayCredentialService.getActiveCredentials(
-        resolvedGateway.franchisePaymentGatewayId,
-        credentialMode,
-      );
+    const credentials = await this.paymentGatewayCredentialService.getActiveCredentials(
+      resolvedGateway.franchisePaymentGatewayId,
+      credentialMode,
+    );
     if (!credentials) {
       throw new BadRequestException(
         `Payment gateway credentials not found for gateway ID: ${resolvedGateway.franchisePaymentGatewayId} in mode: ${credentialMode}`,
@@ -1168,9 +1122,7 @@ export class MemberPaymentService {
     const keySecret = credentials.apiSecretEncrypted;
     // Prepare customer details from member
     const customerDetails = {
-      name: member.firstName
-        ? `${member.firstName} ${member.lastName || ''}`.trim()
-        : undefined,
+      name: member.firstName ? `${member.firstName} ${member.lastName || ''}`.trim() : undefined,
       email: member.emailId || undefined,
       contact: member.contactNumber || undefined,
     };
@@ -1329,8 +1281,7 @@ export class MemberPaymentService {
       contact: member.contactNumber || undefined,
     };
     // Prepare description
-    const paymentDescription =
-      payload.description || `Plan Payment for Member ID: ${memberId}`;
+    const paymentDescription = payload.description || `Plan Payment for Member ID: ${memberId}`;
     // Prepare notes with member ID
     const paymentNotes = {
       memberId: memberId.toString(),
@@ -1342,67 +1293,70 @@ export class MemberPaymentService {
     let orderId: string;
     const receipt = `order_${memberId}_${Date.now()}`;
     switch (gatewayCode) {
-      case PaymentGatewayEnum.RAZORPAY: {
-        if (!adaptor.createOrder) {
-          throw new BadRequestException('Razorpay createOrder method not available');
-        }
-        const order = await adaptor.createOrder(
-          payload.amount,
-          receipt,
-          payload.currency,
-          paymentNotes,
-          {
-            keyId,
-            keySecret,
-          },
-        );
-        orderId = order.id;
-      }
-        break;
-      case PaymentGatewayEnum.STRIPE: {
-        const stripeAdapter = adaptor as any;
-        if (stripeAdapter.createPaymentIntent) {
-          const paymentIntent = await stripeAdapter.createPaymentIntent(
+      case PaymentGatewayEnum.RAZORPAY:
+        {
+          if (!adaptor.createOrder) {
+            throw new BadRequestException('Razorpay createOrder method not available');
+          }
+          const order = await adaptor.createOrder(
             payload.amount,
+            receipt,
             payload.currency,
-            paymentDescription,
-            customerDetails,
-            paymentNotes,
-          );
-          orderId = paymentIntent.id;
-        } else {
-          // Fallback to payment link if payment intent is not available
-          const paymentLink = await adaptor.createPaymentLink(
-            payload.amount,
-            payload.currency,
-            paymentDescription,
-            customerDetails,
             paymentNotes,
             {
               keyId,
               keySecret,
             },
           );
-          orderId = paymentLink.id;
+          orderId = order.id;
         }
-      }
         break;
-      case PaymentGatewayEnum.TELR: {
-        if (!adaptor.createOrder) {
-          throw new BadRequestException('Telr createOrder method not available');
+      case PaymentGatewayEnum.STRIPE:
+        {
+          const stripeAdapter = adaptor as any;
+          if (stripeAdapter.createPaymentIntent) {
+            const paymentIntent = await stripeAdapter.createPaymentIntent(
+              payload.amount,
+              payload.currency,
+              paymentDescription,
+              customerDetails,
+              paymentNotes,
+            );
+            orderId = paymentIntent.id;
+          } else {
+            // Fallback to payment link if payment intent is not available
+            const paymentLink = await adaptor.createPaymentLink(
+              payload.amount,
+              payload.currency,
+              paymentDescription,
+              customerDetails,
+              paymentNotes,
+              {
+                keyId,
+                keySecret,
+              },
+            );
+            orderId = paymentLink.id;
+          }
         }
-        const order = await adaptor.createOrder(
-          payload.amount,
-          receipt,
-          payload.currency,
-          paymentNotes,
-          {
-            keyId,
-            keySecret,
-          },
-        );
-        orderId = order.order?.ref || order.id || receipt;
-      }
+        break;
+      case PaymentGatewayEnum.TELR:
+        {
+          if (!adaptor.createOrder) {
+            throw new BadRequestException('Telr createOrder method not available');
+          }
+          const order = await adaptor.createOrder(
+            payload.amount,
+            receipt,
+            payload.currency,
+            paymentNotes,
+            {
+              keyId,
+              keySecret,
+            },
+          );
+          orderId = order.order?.ref || order.id || receipt;
+        }
         break;
       default:
         throw new BadRequestException(`Unsupported payment gateway: ${gatewayCode}`);
@@ -1458,20 +1412,17 @@ export class MemberPaymentService {
     }
     const adaptor = this.paymentGatewayFactory.getAdapter(gatewayCode);
     if (!adaptor.verifyPayment) {
-      throw new BadRequestException(`Payment verification not supported for gateway: ${gatewayCode}`);
+      throw new BadRequestException(
+        `Payment verification not supported for gateway: ${gatewayCode}`,
+      );
     }
     // Extract credentials for verification
     const keyId = credentials.apiKeyEncrypted;
     const keySecret = credentials.apiSecretEncrypted;
-    return await adaptor.verifyPayment(
-      paymentId,
-      orderId,
-      signature,
-      {
-        keyId,
-        keySecret,
-      },
-    );
+    return await adaptor.verifyPayment(paymentId, orderId, signature, {
+      keyId,
+      keySecret,
+    });
   }
 
   /**

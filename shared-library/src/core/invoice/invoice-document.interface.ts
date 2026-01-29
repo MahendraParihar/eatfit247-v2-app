@@ -41,6 +41,7 @@ export interface IInvoiceParty {
   taxIdLabel?: string; // "GSTIN", "VAT No.", etc.
   phone?: string;
   email?: string;
+  logo?: string; // Logo URL for display in invoice header
 }
 
 export interface IInvoiceItem {

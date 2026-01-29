@@ -61,7 +61,24 @@ export interface IBasicMemberProduct {
   paymentLink?: string;
 }
 
-export interface IManageMemberProduct extends IBasicMemberProduct {
+export interface IManageMemberProduct {
+  memberProductId?: number;
+  paymentModeId?: number;
+  billingAddressId: number;
+  addressId?: number;
+  transactionId?: string;
+  paymentDate: Date;
+  paymentStatusId: number;
+  currencyCode: string;
+  promoCode?: string;
+  gstNumber?: string;
+  paymentSource: PaymentSourceEnum;
+  paymentGatewayResponse?: object;
+  discountAmount: number;
+  paymentLink?: string;
+  gatewayProvider?: string;
+  gatewayOrderId?: string;
+  gatewayPaymentId?: string;
   orderItems: IMemberProductOrderItemBasic[];
 }
 

@@ -147,6 +147,12 @@ export class InvoicePdfService {
         return row.label;
       });
     }
+    // Increment helper for index (to make it 1-based)
+    if (!hbs.helpers['increment']) {
+      hbs.registerHelper('increment', (value: number) => {
+        return value + 1;
+      });
+    }
   }
 
   /**

@@ -254,6 +254,12 @@ function buildSellerInfo(
     postalCode: franchiseAddress.pinCode || '',
     country: franchiseAddress.country || '',
   };
+  // Get logo URL from franchise logo array if available
+  let logoUrl: string | undefined;
+  if (franchise.logo && Array.isArray(franchise.logo) && franchise.logo.length > 0) {
+    logoUrl = franchise.logo[0].webUrl;
+  }
+
   return {
     name: franchise.companyName || `${franchise.firstName} ${franchise.lastName}`,
     address,
@@ -262,6 +268,7 @@ function buildSellerInfo(
     taxIdLabel,
     phone: franchise.contactNumber,
     email: franchise.emailId,
+    logo: logoUrl,
   };
 }
 /**

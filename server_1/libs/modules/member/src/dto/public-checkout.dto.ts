@@ -10,24 +10,31 @@ import {
   MaxLength,
   Min,
 } from 'class-validator';
-import { IMemberProductOrderItemBasic, InputLengthEnum, PaymentSourceEnum } from '@eatfit247-shared-lib';
+import {
+  ICreatePaymentLinkRequest,
+  IManageMemberProduct,
+  IMemberProductOrderItemBasic,
+  InputLengthEnum,
+  PaymentSourceEnum,
+} from '@eatfit247-shared-lib';
 
-export class CreatePublicCheckoutPaymentLinkDto {
+export class CreatePublicCheckoutPaymentLinkDto implements ICreatePaymentLinkRequest {
   @IsNotEmpty()
   @IsNumber()
   @Min(0)
-  amount!: number;
+  amount: number;
 
   @IsNotEmpty()
   @IsString()
-  currency!: string;
+  currency: string;
 
   @IsOptional()
   @IsString()
   description?: string;
 
-  @IsOptional()
-  franchisePaymentGatewayId?: number;
+  @IsNotEmpty()
+  @IsNumber()
+  franchisePaymentGatewayId: number;
 
   @IsOptional()
   customer?: {
@@ -40,18 +47,18 @@ export class CreatePublicCheckoutPaymentLinkDto {
   notes?: Record<string, any>;
 }
 
-export class CreatePublicCheckoutOrderDto {
+export class CreatePublicCheckoutOrderDto implements IManageMemberProduct {
   @IsOptional()
   @IsNumber()
-  paymentModeId?: number | null;
+  paymentModeId?: number;
 
   @IsOptional()
   @IsNumber()
-  billingAddressId?: number | null;
+  billingAddressId: number;
 
   @IsOptional()
   @IsNumber()
-  addressId?: number | null;
+  addressId?: number;
 
   @IsOptional()
   @IsString()
@@ -65,10 +72,6 @@ export class CreatePublicCheckoutOrderDto {
   @IsNotEmpty()
   @IsNumber()
   paymentStatusId!: number;
-
-  @IsNotEmpty()
-  @IsNumber()
-  taxPercentage!: number;
 
   @IsNotEmpty()
   @IsString()
@@ -92,22 +95,7 @@ export class CreatePublicCheckoutOrderDto {
   @IsNotEmpty()
   @IsNumber()
   @Min(0)
-  orderAmount!: number;
-
-  @IsNotEmpty()
-  @IsNumber()
-  @Min(0)
-  taxAmount!: number;
-
-  @IsNotEmpty()
-  @IsNumber()
-  @Min(0)
   discountAmount!: number;
-
-  @IsNotEmpty()
-  @IsNumber()
-  @Min(0)
-  totalAmount!: number;
 
   @IsOptional()
   @IsString()
@@ -244,4 +232,3 @@ export class CreatePublicCheckoutPlanOrderDto {
   @IsOptional()
   paymentGatewayResponse?: Record<string, any>;
 }
-

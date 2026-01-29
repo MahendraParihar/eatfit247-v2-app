@@ -23,15 +23,15 @@ export class CreateMemberProductDto implements IManageMemberProduct {
   @IsNotEmpty()
   @IsNumber()
   memberId!: number;
+  @IsNotEmpty()
+  @IsNumber()
+  paymentModeId: number;
+  @IsNotEmpty()
+  @IsNumber()
+  billingAddressId: number;
   @IsOptional()
   @IsNumber()
-  paymentModeId?: number | null;
-  @IsOptional()
-  @IsNumber()
-  billingAddressId?: number | null;
-  @IsOptional()
-  @IsNumber()
-  addressId?: number | null;
+  addressId?: number;
   @IsOptional()
   @IsString()
   @MaxLength(InputLengthEnum.CHAR_250)
@@ -39,16 +39,9 @@ export class CreateMemberProductDto implements IManageMemberProduct {
   @IsNotEmpty()
   @IsDateString()
   paymentDate!: Date;
-  @IsOptional()
-  @IsString()
-  @MaxLength(InputLengthEnum.CHAR_100)
-  invoiceId?: string;
   @IsNotEmpty()
   @IsNumber()
   paymentStatusId!: number;
-  @IsNotEmpty()
-  @IsNumber()
-  taxPercentage!: number;
   @IsNotEmpty()
   @IsString()
   @MaxLength(InputLengthEnum.CHAR_10)
@@ -96,4 +89,3 @@ export class CreateMemberProductDto implements IManageMemberProduct {
   @IsArray()
   orderItems: IMemberProductOrderItemBasic[];
 }
-

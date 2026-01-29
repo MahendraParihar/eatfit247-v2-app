@@ -6,7 +6,6 @@ import { CreatePublicCheckoutOrderDto, CreatePublicCheckoutPaymentLinkDto } from
 import {
   IAddress,
   IManageAddress,
-  IManageMemberProduct,
   IPaymentGateway,
   IPaymentLinkResponse,
   TableEnum,
@@ -67,12 +66,12 @@ export class PublicCheckoutController {
     let franchisePaymentGatewayId = body.franchisePaymentGatewayId;
     if (!franchisePaymentGatewayId) {
       const gateways = await this.memberProductService.getSupportedPaymentGatewaysForCheckout(
-        body.currency || 'INR',
+        body.currency,
       );
       if (gateways.length === 0) {
         throw new Error('No payment gateway available');
       }
-      // Use primary gateway or first available
+      // Use the primary gateway or first available
       const selectedGateway = gateways.find((g) => g.isPrimary) || gateways[0];
       franchisePaymentGatewayId = selectedGateway.franchisePaymentGatewayId;
     }
@@ -88,7 +87,7 @@ export class PublicCheckoutController {
   }
 
   /**
-   * Create payment order for embedded checkout
+   * Create a payment order for embedded checkout
    * Returns order details that can be used with payment gateway SDKs
    */
   @Post('member/:memberId/product/payment-order')
@@ -96,15 +95,7 @@ export class PublicCheckoutController {
     @Param('memberId') memberId: number,
     @Body() body: CreatePublicCheckoutPaymentLinkDto,
   ) {
-    const paymentOrderRequest = {
-      amount: body.amount,
-      currency: body.currency,
-      franchisePaymentGatewayId: body.franchisePaymentGatewayId,
-      description: body.description,
-      customer: body.customer,
-      notes: body.notes,
-    };
-    return await this.memberProductService.createPaymentOrder(memberId, paymentOrderRequest);
+    return await this.memberProductService.createPaymentOrder(memberId, body);
   }
 
   /**
@@ -113,7 +104,8 @@ export class PublicCheckoutController {
   @Post('member/:memberId/product/verify-payment')
   async verifyPayment(
     @Param('memberId') memberId: number,
-    @Body() body: {
+    @Body()
+    body: {
       gatewayCode: string;
       paymentId: string;
       orderId?: string;
@@ -131,7 +123,7 @@ export class PublicCheckoutController {
 
   /**
    * Create product order for checkout
-   * This creates the order in txn_member_products table
+   * This creates the order in the txn_member_products table
    */
   @UseGuards(RecaptchaGuard)
   @RequireRecaptcha('checkout_order', 0.5)
@@ -141,41 +133,14 @@ export class PublicCheckoutController {
     @Body() body: CreatePublicCheckoutOrderDto,
     @RequestedIp() requestedIp: string,
   ) {
-    // Convert public DTO to internal format and create order
-    // Map DTO to IManageMemberProduct interface format
-    const orderData: IManageMemberProduct = {
-      memberId,
-      paymentModeId: body.paymentModeId,
-      billingAddressId: body.billingAddressId,
-      addressId: body.addressId,
-      transactionId: body.transactionId,
-      paymentDate: body.paymentDate,
-      paymentStatusId: body.paymentStatusId,
-      promoCode: body.promoCode,
-      gstNumber: body.gstNumber,
-      paymentSource: body.paymentSource,
-      subTotalAmount: body.orderAmount,
-      taxAmount: body.taxAmount,
-      discountAmount: body.discountAmount,
-      totalAmount: body.totalAmount,
-      currency: body.currencyCode,
-      paymentLink: body.paymentLink,
-      gatewayProvider: body.gatewayProvider,
-      gatewayOrderId: body.gatewayOrderId,
-      gatewayPaymentId: body.gatewayPaymentId,
-      paymentGatewayResponse: body.paymentGatewayResponse,
-      orderItems: body.orderItems,
-    };
-    return await this.memberProductService.createPublicOrder(memberId, orderData, requestedIp);
+    return await this.memberProductService.create(memberId, body, requestedIp);
   }
 
   /**
    * Get order details by gateway order ID (for product orders)
    */
   @Get('order/:gatewayOrderId')
-  async getOrderByGatewayOrderId(
-    @Param('gatewayOrderId') gatewayOrderId: string,
-  ) {
+  async getOrderByGatewayOrderId(@Param('gatewayOrderId') gatewayOrderId: string) {
     return await this.memberProductService.findByGatewayOrderId(gatewayOrderId);
   }
 
@@ -195,4 +160,3 @@ export class PublicCheckoutController {
     };
   }
 }
-
