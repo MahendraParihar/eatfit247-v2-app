@@ -298,9 +298,6 @@ export class MemberPaymentService {
     if (!member) {
       throw new NotFoundException('Member not found');
     }
-    if (obj.orderAmount <= 0) {
-      throw new BadRequestException('Invalid amount');
-    }
     // Validate mandatory fields for MANUAL payment source
     PaymentValidationUtil.validateManualPaymentSource({
       paymentSource: obj.paymentSource,
@@ -330,7 +327,7 @@ export class MemberPaymentService {
         billingAddress: billingAddress,
       };
       // Validate billing address country if the billing address exists and tax is applicable
-      if (billingAddress && obj.isTaxApplicable && !billingAddress.countryId) {
+      if (billingAddress && !billingAddress.countryId) {
         throw new BadRequestException('Billing address country is required when tax is applicable');
       }
       // Get franchise address for tax calculation
@@ -347,13 +344,23 @@ export class MemberPaymentService {
       const fees = find(programPlan.programPlanFees, { currencyCode: obj.currencyCode });
       const paymentObj = await this.calculatePaymentObject(
         {
-          orderAmount: fees ? fees.fees : obj.orderAmount,
+          orderAmount: fees.fees,
           discountAmount: obj.discountAmount || 0,
           currencyCode: obj.currencyCode,
         },
         billingAddress,
         franchiseAddress,
       );
+
+      // Get program plan details to get noOfCycle and noOfDaysInCycle
+      let noOfCycle = obj.noOfCycle;
+      let noOfDaysInCycle = obj.noOfDaysInCycle;
+      // If not available in the request, fetch from the program plan
+      if (!noOfCycle || !noOfDaysInCycle) {
+        noOfCycle = programPlan.noOfCycle;
+        noOfDaysInCycle = programPlan.noOfDaysInCycle;
+      }
+
       // Create a payment record
       const paymentData: any = {
         memberId,
@@ -367,7 +374,7 @@ export class MemberPaymentService {
         paymentDate: obj.paymentDate,
         paymentStatusId: obj.paymentStatusId,
         promoCode: obj.promoCode || null,
-        isTaxApplicable: obj.isTaxApplicable,
+        isTaxApplicable: true,
         refundObj: null,
         paymentGatewayResponse: obj.paymentGatewayResponse || null,
         gstNumber: obj.gstNumber || null,
@@ -385,6 +392,8 @@ export class MemberPaymentService {
         taxObj: paymentObj.taxObj,
         jurisdiction: paymentObj.jurisdiction,
         invoiceNote: paymentObj.invoiceNote,
+        noOfCycle: noOfCycle,
+        daysInCycle: noOfDaysInCycle,
         active: true,
         createdBy: adminId,
         modifiedBy: adminId,
@@ -397,14 +406,6 @@ export class MemberPaymentService {
         paymentData.gatewayProvider = obj.gatewayProvider;
       }
       const payment = await this.memberPaymentRepository.create(paymentData, { transaction: t });
-      // Get program plan details to get noOfCycle and noOfDaysInCycle
-      let noOfCycle = obj.noOfCycle;
-      let noOfDaysInCycle = obj.noOfDaysInCycle;
-      // If not available in the request, fetch from the program plan
-      if (!noOfCycle || !noOfDaysInCycle) {
-        noOfCycle = programPlan.noOfCycle;
-        noOfDaysInCycle = programPlan.noOfDaysInCycle;
-      }
       // Create TxnMemberDietPlan entry using service
       await this.memberDietPlanService.createIfNotExists(
         memberId,
@@ -423,210 +424,6 @@ export class MemberPaymentService {
         nest: true,
       });
       return this.convertToModel(createdPayment!);
-    } catch (error) {
-      await t.rollback();
-      throw error;
-    }
-  }
-
-  /**
-   * Update an existing payment
-   * @param memberId - Member ID
-   * @param paymentId - Payment ID
-   * @param obj - Updated payment data
-   * @param requestedIp - Request IP
-   * @param adminId - Admin user ID
-   * @returns Updated payment
-   */
-  public async update(
-    memberId: number,
-    paymentId: number,
-    obj: IManageMemberPayment,
-    requestedIp: string,
-    adminId: number,
-  ): Promise<IMemberPayment> {
-    // Verify member exists
-    const member = await this.memberRepository.findOne({
-      where: { memberId },
-    });
-    if (!member) {
-      throw new NotFoundException('Member not found');
-    }
-    // Find existing payment
-    const payment = await this.memberPaymentRepository.findOne({
-      where: {
-        memberPaymentId: paymentId,
-        memberId,
-        active: true,
-      },
-    });
-    if (!payment) {
-      throw new NotFoundException('Payment not found');
-    }
-    // Validate mandatory fields for MANUAL payment source
-    const paymentSource =
-      obj.paymentSource !== undefined ? obj.paymentSource : payment.paymentSource;
-    const paymentModeId =
-      obj.paymentModeId !== undefined ? obj.paymentModeId : payment.paymentModeId;
-    const paymentDate = obj.paymentDate !== undefined ? obj.paymentDate : payment.paymentDate;
-    const paymentStatusId =
-      obj.paymentStatusId !== undefined ? obj.paymentStatusId : payment.paymentStatusId;
-    const transactionId =
-      obj.transactionId !== undefined ? obj.transactionId : payment.transactionId;
-    PaymentValidationUtil.validateManualPaymentSourceWithFallback(
-      paymentSource,
-      paymentModeId,
-      paymentDate,
-      paymentStatusId,
-      transactionId,
-    );
-    const t = await this.sequelize.transaction();
-    try {
-      // Handle address updates if provided
-      let addressId = obj.addressId !== undefined ? obj.addressId : payment.addressId;
-      // Handle billing address updates if provided
-      const addresses = await this.addressService.filterByTableIdAndPk(
-        TableEnum.TXN_MEMBER,
-        memberId,
-      );
-      let billingAddress: IAddress =
-        addresses.find((a) => a.addressId === obj.billingAddressId) || null;
-      // Validate billing address country if the billing address exists and tax is applicable
-      if (billingAddress && obj.isTaxApplicable && !billingAddress.countryId) {
-        throw new BadRequestException('Billing address country is required when tax is applicable');
-      }
-      // Get franchise address for GST calculation
-      const memberWithFranchise = await this.memberRepository.scope('details').findOne({
-        where: { memberId },
-        include: [
-          {
-            model: MstFranchise,
-            as: 'franchise',
-            required: false,
-          },
-        ],
-      });
-      let franchiseAddress: IAddress | null = null;
-      if (memberWithFranchise?.franchiseId) {
-        franchiseAddress = await this.addressService.findByTableIdAndPk(
-          TableEnum.MST_FRANCHISES,
-          memberWithFranchise.franchiseId,
-        );
-      }
-      // Determine if we need to recalculate tax
-      const orderAmount = obj.orderAmount !== undefined ? obj.orderAmount : payment.orderAmount;
-      const discountAmount =
-        obj.discountAmount !== undefined ? obj.discountAmount : payment.discountAmount;
-      const isTaxApplicable =
-        obj.isTaxApplicable !== undefined ? obj.isTaxApplicable : payment.isTaxApplicable;
-      const currencyCode = obj.currencyCode || obj.currency || payment.currency || 'INR';
-      // Recalculate tax if amounts or tax applicability changed
-      let finalTaxAmount = obj.taxAmount !== undefined ? obj.taxAmount : payment.taxAmount;
-      let finalTotalAmount = obj.totalAmount !== undefined ? obj.totalAmount : payment.totalAmount;
-      let finalTaxType = obj.taxType !== undefined ? obj.taxType : payment.taxType;
-      let finalTaxMode = obj.taxMode !== undefined ? obj.taxMode : payment.taxMode;
-      let finalTaxPercentage =
-        obj.taxPercentage !== undefined ? obj.taxPercentage : payment.taxPercentage;
-      let finalIsLutApplied =
-        obj.isLutApplied !== undefined ? obj.isLutApplied : payment.isLutApplied;
-      let finalTaxObj = obj.taxObj !== undefined ? obj.taxObj : payment.taxObj;
-      let finalJurisdiction =
-        obj.jurisdiction !== undefined ? obj.jurisdiction : payment.jurisdiction;
-      const needsRecalculation =
-        (obj.orderAmount !== undefined && obj.orderAmount !== payment.orderAmount) ||
-        (obj.discountAmount !== undefined && obj.discountAmount !== payment.discountAmount) ||
-        (obj.isTaxApplicable !== undefined && obj.isTaxApplicable !== payment.isTaxApplicable) ||
-        (obj.billingAddressId !== undefined && obj.billingAddressId !== payment.billingAddressId);
-      if (needsRecalculation && billingAddress) {
-        const paymentObj = await this.calculatePaymentObject(
-          {
-            orderAmount,
-            discountAmount,
-            currencyCode,
-          },
-          billingAddress,
-          franchiseAddress,
-        );
-        finalTaxAmount = paymentObj.taxAmount;
-        finalTotalAmount = paymentObj.totalAmount;
-        finalTaxType = paymentObj.taxType;
-        finalTaxMode = paymentObj.taxMode;
-        finalTaxPercentage = paymentObj.taxPercentage;
-        finalIsLutApplied = paymentObj.isLutApplied;
-        finalTaxObj = paymentObj.taxObj;
-        finalJurisdiction = paymentObj.jurisdiction;
-      }
-      // Update payment record
-      const updateData: any = {
-        franchiseId: memberWithFranchise?.franchiseId || null,
-        paymentModeId: obj.paymentModeId !== undefined ? obj.paymentModeId : payment.paymentModeId,
-        programPlanId: obj.programPlanId !== undefined ? obj.programPlanId : payment.programPlanId,
-        programId: obj.programId !== undefined ? obj.programId : payment.programId,
-        addressId: addressId || null,
-        billingAddressId:
-          obj.billingAddressId !== undefined ? obj.billingAddressId : payment.billingAddressId,
-        transactionId:
-          obj.transactionId !== undefined ? obj.transactionId || null : payment.transactionId,
-        paymentDate: obj.paymentDate !== undefined ? obj.paymentDate : payment.paymentDate,
-        paymentStatusId:
-          obj.paymentStatusId !== undefined ? obj.paymentStatusId : payment.paymentStatusId,
-        promoCode: obj.promoCode !== undefined ? obj.promoCode || null : payment.promoCode,
-        isTaxApplicable: isTaxApplicable,
-        gstNumber: obj.gstNumber !== undefined ? obj.gstNumber : payment.gstNumber,
-        modifiedBy: adminId,
-        modifiedIp: requestedIp,
-        orderAmount: orderAmount,
-        discountAmount: discountAmount,
-        taxAmount: finalTaxAmount,
-        totalAmount: finalTotalAmount,
-        currency: currencyCode,
-        taxType: finalTaxType,
-        taxMode: finalTaxMode,
-        taxPercentage: finalTaxPercentage,
-        isLutApplied: finalIsLutApplied,
-        taxObj: finalTaxObj,
-        jurisdiction: finalJurisdiction,
-      };
-      // Update payment source if provided
-      if (obj.paymentSource !== undefined) {
-        updateData.paymentSource = obj.paymentSource;
-      }
-      await payment.update(updateData, { transaction: t });
-      // Check if payment status is being updated to PAID
-      const newPaymentStatusId =
-        obj.paymentStatusId !== undefined ? obj.paymentStatusId : payment.paymentStatusId;
-      const oldPaymentStatusId = payment.paymentStatusId;
-      const programPlanId =
-        obj.programPlanId !== undefined ? obj.programPlanId : payment.programPlanId;
-      // If payment status changed to PAID, create TxnMemberDietPlan entry if it doesn't exist
-      if (
-        newPaymentStatusId === PaymentStatusEnum.PAID &&
-        oldPaymentStatusId !== PaymentStatusEnum.PAID &&
-        programPlanId
-      ) {
-        // Get program plan details to get noOfCycle and noOfDaysInCycle
-        const programPlan = await this.programPlanService.fetchById(programPlanId);
-        const noOfCycle = programPlan.noOfCycle;
-        const noOfDaysInCycle = programPlan.noOfDaysInCycle;
-        // Create TxnMemberDietPlan entry using service
-        await this.memberDietPlanService.createIfNotExists(
-          memberId,
-          paymentId,
-          noOfCycle,
-          noOfDaysInCycle,
-          requestedIp,
-          adminId,
-          t,
-        );
-      }
-      await t.commit();
-      // Fetch the updated payment with relationships
-      const updatedPayment = await this.memberPaymentRepository.scope('details').findOne({
-        where: { memberPaymentId: paymentId },
-        raw: true,
-        nest: true,
-      });
-      return this.convertToModel(updatedPayment!);
     } catch (error) {
       await t.rollback();
       throw error;
@@ -676,7 +473,6 @@ export class MemberPaymentService {
    * Convert database model to IMemberPayment interface
    */
   private convertToModel(item: TxnMemberPayment): IMemberPayment {
-    console.log(item);
     return {
       memberPaymentId: item.memberPaymentId,
       memberId: item.memberId,
@@ -702,14 +498,14 @@ export class MemberPaymentService {
       gstNumber: item.gstNumber,
       memberAddress: item.memberAddress,
       paymentSource: item.paymentSource,
-      orderAmount: Number(item.orderAmount),
-      discountAmount: Number(item.discountAmount || 0),
-      taxAmount: Number(item.taxAmount),
-      totalAmount: Number(item.totalAmount),
+      orderAmount: CommonFunctionsUtil.toNumber(item.orderAmount),
+      discountAmount: CommonFunctionsUtil.toNumber(item.discountAmount || 0),
+      taxAmount: CommonFunctionsUtil.toNumber(item.taxAmount),
+      totalAmount: CommonFunctionsUtil.toNumber(item.totalAmount),
       currency: item.currency,
       taxType: item.taxType,
       taxMode: item.taxMode,
-      taxPercentage: item.taxPercentage,
+      taxPercentage: CommonFunctionsUtil.toNumber(item.taxPercentage),
       isLutApplied: item.isLutApplied,
       taxObj: item.taxObj,
       jurisdiction: item.jurisdiction,
@@ -1001,10 +797,11 @@ export class MemberPaymentService {
       [
         'Diet consulting services are advisory in nature and not medical treatment.',
         'All payments are non-refundable and non-transferable under any circumstances.',
+        'Program is valid only for the registered individual.',
+        'Pause up to 20 days may be approved in genuine case.',
         `Payment confirms acceptance of ${payment.franchise.companyName} terms and service validity conditions.`,
       ],
     );
-    console.log(invoiceDoc);
     const fileName = `invoice-${paymentModel.memberPaymentId}.pdf`;
     const relativePath = `${MediaForEnum.DOWNLOADS}/${memberId}/invoices`;
     const destinationFolderPath = `${this.rootFolderPath}/${relativePath}`;
@@ -1449,9 +1246,10 @@ export class MemberPaymentService {
         sacCode: this.appConfigService.getString(ConfigParam.DIET_SAC_CODE),
         hsnCode: undefined,
         qty: 1,
-        rate: payment.orderAmount,
+        unitPrice: payment.orderAmount,
         amount: payment.orderAmount,
         discount: payment.discountAmount,
+        taxPercentage: payment.taxPercentage,
         taxAmount: payment.taxAmount,
         totalAmount: payment.totalAmount,
       },

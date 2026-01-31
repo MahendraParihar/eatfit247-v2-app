@@ -6,7 +6,10 @@ export class CommonFunctionsUtil {
     if (!tempStr) {
       return null;
     }
-    return tempStr.replace(/[^a-zA-Z0-9]/g, replaceChar).replace(/\s+/g, replaceChar).toLowerCase();
+    return tempStr
+      .replace(/[^a-zA-Z0-9]/g, replaceChar)
+      .replace(/\s+/g, replaceChar)
+      .toLowerCase();
   }
 
   public static getAdminShortInfo(obj: any, aliasString: string): IBaseAdminUser | null {
@@ -55,5 +58,10 @@ export class CommonFunctionsUtil {
       };
     });
   }
+  public static toNumber(value: string | number | null | undefined): number {
+    if (value === null || value === undefined) return 0;
+    if (typeof value === 'number') return value;
+    const parsed = parseFloat(String(value));
+    return isNaN(parsed) ? 0 : parsed;
+  }
 }
-

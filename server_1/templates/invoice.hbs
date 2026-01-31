@@ -311,13 +311,19 @@
   <div class="invoice-header-title">{{invoice.header.title}}</div>
   <div class="invoice-header-invoice-meta">
     <div class="invoice-meta-item">
-      <span class="invoice-meta-label">Invoice Number:</span>
+      <span class="invoice-meta-label">Invoice No:</span>
       <span>{{invoice.header.invoiceNumber}}</span>
     </div>
     <div class="invoice-meta-item">
       <span class="invoice-meta-label">Invoice Date:</span>
       <span>{{formatDate invoice.header.invoiceDate}}</span>
     </div>
+    {{#if invoice.header.playOfSupply}}
+      <div class="invoice-meta-item">
+        <span class="invoice-meta-label">Place of Supply:</span>
+        <span>{{formatDate invoice.header.playOfSupply}}</span>
+      </div>
+    {{/if}}
   </div>
 </div>
 
@@ -399,9 +405,9 @@
     {{/if}}
     <th style="width: 6%;" class="text-center">Qty</th>
     <th style="width: 8%;" class="text-right">Price/Unit</th>
-    <th style="width: 8%;" class="text-right">Price</th>
     <th style="width: 8%;" class="text-right">Disc.</th>
-    <th style="width: 8%;" class="text-right">Tax</th>
+    <th style="width: 8%;" class="text-right">Tax %.</th>
+    <th style="width: 8%;" class="text-right">Tax Amt</th>
     <th style="width: 10%;" class="text-right">Amount ({{invoice.header.currency}})</th>
   </tr>
   </thead>
@@ -417,9 +423,9 @@
         <td class="text-center">{{#if this.hsnCode}}{{this.hsnCode}}{{else}}-{{/if}}</td>
       {{/if}}
       <td class="text-center">{{this.qty}}</td>
-      <td class="text-right">{{formatCurrency this.rate }}</td>
-      <td class="text-right">{{formatCurrency this.amount }}</td>
+      <td class="text-right">{{formatCurrency this.unitPrice }}</td>
       <td class="text-right">{{#if this.discount}}{{formatCurrency this.discount }}{{else}}-{{/if}}</td>
+      <td class="text-right">{{#if this.effectiveTaxRate}}{{this.effectiveTaxRate }}{{else}}-{{/if}}</td>
       <td class="text-right">{{#if this.taxAmount}}{{formatCurrency this.taxAmount }}{{else}}-{{/if}}</td>
       <td class="text-right">{{#if this.totalAmount}}{{formatCurrency this.totalAmount }}{{else}}-{{/if}}</td>
     </tr>
@@ -431,38 +437,33 @@
 <div class="summary-section">
   <table class="summary-table">
     <tr>
-      <td>Subtotal (Before Discount)</td>
+      <td>Subtotal</td>
       <td class="text-right">{{formatCurrency invoice.pricing.subtotal}}</td>
     </tr>
     {{#if invoice.pricing.discount}}
       <tr>
-        <td>Order Discount</td>
+        <td>Discount</td>
         <td class="text-right">-{{formatCurrency invoice.pricing.discount}}</td>
       </tr>
     {{/if}}
-    {{#if showTaxRows}}
-      {{#each invoice.tax.rows}}
-        <tr>
-          <td>{{taxRowLabel this}}</td>
-          <td class="text-right">{{formatCurrency this.amount }}</td>
-        </tr>
-      {{/each}}
+    {{#if invoice.pricing.taxableAmount}}
       <tr>
-        <td><strong>Tax Total</strong></td>
+        <td><strong>Taxable Amount</strong></td>
+        <td class="text-right"><strong>{{formatCurrency invoice.pricing.taxableAmount }}</strong></td>
+      </tr>
+    {{/if}}
+    {{#if invoice.pricing.taxAmount}}
+      <tr>
+        <td><strong>Tax</strong></td>
         <td class="text-right"><strong>{{formatCurrency invoice.pricing.taxAmount }}</strong></td>
       </tr>
-    {{else}}
-      {{#if invoice.tax.note}}
-        <tr>
-          <td class="no-tax-label">{{invoice.tax.note}}</td>
-          <td class="text-right no-tax-label">-</td>
-        </tr>
-      {{/if}}
     {{/if}}
-    <tr class="total-row">
-      <td>{{invoice.total.label}}</td>
-      <td class="text-right">{{formatCurrency invoice.total.amount}}</td>
-    </tr>
+    {{#if invoice.pricing.totalAmount}}
+      <tr class="total-row">
+        <td>{{invoice.total.label}}</td>
+        <td class="text-right">{{formatCurrency invoice.pricing.totalAmount}}</td>
+      </tr>
+    {{/if}}
   </table>
 </div>
 

@@ -175,36 +175,37 @@ export class MemberProductService {
       updatedByUser: item.updatedByUser
         ? CommonFunctionsUtil.getAdminShortInfo(item.updatedByUser, 'updatedByUser')
         : undefined,
-      orderAmount: item.subTotalAmount,
-      discountAmount: item.discountAmount,
-      taxAmount: item.taxAmount,
-      totalAmount: item.totalAmount,
-      subTotalAmount: item.subTotalAmount,
-      roundingAdjustment: item.roundingAdjustment,
+      orderAmount: CommonFunctionsUtil.toNumber(item.subTotalAmount),
+      discountAmount: CommonFunctionsUtil.toNumber(item.discountAmount),
+      taxAmount: CommonFunctionsUtil.toNumber(item.taxAmount),
+      totalAmount: CommonFunctionsUtil.toNumber(item.totalAmount),
+      subTotalAmount: CommonFunctionsUtil.toNumber(item.subTotalAmount),
+      roundingAdjustment: CommonFunctionsUtil.toNumber(item.roundingAdjustment),
       currency: item.currency,
       franchise: item.franchise?.companyName,
       franchiseId: item.franchiseId,
       orderItems: Array.isArray(item.orderItems)
         ? item.orderItems.map((orderItem) => ({
-            memberProductOrderItemId: orderItem.memberProductOrderItemId,
-            memberProductId: orderItem.memberProductId,
-            productId: orderItem.productId,
-            productVariantId: orderItem.productVariantId,
-            productName: orderItem.productName,
-            quantityLabel: orderItem.quantityLabel,
-            quantity: orderItem.quantity,
-            unitPrice: orderItem.unitPrice,
-            baseAmount: orderItem.baseAmount,
-            discountAmount: orderItem.discountAmount,
-            effectiveTaxRate: orderItem.effectiveTaxRate,
-            taxAmount: orderItem.taxAmount,
-            totalAmount: orderItem.totalAmount,
-            taxObj: orderItem.taxObj,
-            taxType: orderItem.taxType,
-            taxMode: orderItem.taxMode,
-            jurisdiction: orderItem.jurisdiction,
-            invoiceNote: orderItem.invoiceNote,
-          }))
+          memberProductOrderItemId: orderItem.memberProductOrderItemId,
+          memberProductId: orderItem.memberProductId,
+          productId: orderItem.productId,
+          productVariantId: orderItem.productVariantId,
+          productName: orderItem.productName,
+          quantityLabel: orderItem.quantityLabel,
+          hsnCode: orderItem.product.hsnCode,
+          quantity: CommonFunctionsUtil.toNumber(orderItem.quantity),
+          unitPrice: CommonFunctionsUtil.toNumber(orderItem.unitPrice),
+          baseAmount: CommonFunctionsUtil.toNumber(orderItem.baseAmount),
+          discountAmount: orderItem.discountAmount !== null && orderItem.discountAmount !== undefined ? CommonFunctionsUtil.toNumber(orderItem.discountAmount) : undefined,
+          effectiveTaxRate: CommonFunctionsUtil.toNumber(orderItem.effectiveTaxRate),
+          taxAmount: CommonFunctionsUtil.toNumber(orderItem.taxAmount),
+          totalAmount: CommonFunctionsUtil.toNumber(orderItem.totalAmount),
+          taxObj: orderItem.taxObj,
+          taxType: orderItem.taxType,
+          taxMode: orderItem.taxMode,
+          jurisdiction: orderItem.jurisdiction,
+          invoiceNote: orderItem.invoiceNote,
+        }))
         : [],
     };
   }
@@ -230,45 +231,6 @@ export class MemberProductService {
       taxApplicable: taxApplicable,
       paymentSource: paymentSource,
     };
-  }
-
-  /**
-   * Delete (soft delete) a product order
-   * @param memberId - Member ID
-   * @param productId - Product order ID
-   * @param requestedIp - Request IP
-   * @param adminId - Admin user ID
-   */
-  public async delete(
-    memberId: number,
-    productId: number,
-    requestedIp: string,
-    adminId: number,
-  ): Promise<void> {
-    // Verify member exists
-    const member = await this.memberRepository.findOne({
-      where: { memberId },
-    });
-    if (!member) {
-      throw new NotFoundException('Member not found');
-    }
-    // Find product order
-    const productOrder = await this.memberProductRepository.findOne({
-      where: {
-        memberProductId: productId,
-        memberId,
-        active: true,
-      },
-    });
-    if (!productOrder) {
-      throw new NotFoundException('Product order not found');
-    }
-    // Soft delete
-    await productOrder.update({
-      active: false,
-      modifiedBy: adminId,
-      modifiedIp: requestedIp,
-    });
   }
 
   /**
@@ -535,70 +497,67 @@ export class MemberProductService {
     let orderId: string;
     const receipt = `order_${memberId}_${Date.now()}`;
     switch (gatewayCode) {
-      case PaymentGatewayEnum.RAZORPAY:
-        {
-          if (!adaptor.createOrder) {
-            throw new BadRequestException('Razorpay createOrder method not available');
-          }
-          const order = await adaptor.createOrder(
+      case PaymentGatewayEnum.RAZORPAY: {
+        if (!adaptor.createOrder) {
+          throw new BadRequestException('Razorpay createOrder method not available');
+        }
+        const order = await adaptor.createOrder(
+          payload.amount,
+          receipt,
+          payload.currency,
+          paymentNotes,
+          {
+            keyId,
+            keySecret,
+          },
+        );
+        orderId = order.id;
+      }
+        break;
+      case PaymentGatewayEnum.STRIPE: {
+        const stripeAdapter = adaptor as any;
+        if (stripeAdapter.createPaymentIntent) {
+          const paymentIntent = await stripeAdapter.createPaymentIntent(
             payload.amount,
-            receipt,
             payload.currency,
+            paymentDescription,
+            customerDetails,
+            paymentNotes,
+          );
+          orderId = paymentIntent.id;
+        } else {
+          // Fallback to payment link if payment intent is not available
+          const paymentLink = await adaptor.createPaymentLink(
+            payload.amount,
+            payload.currency,
+            paymentDescription,
+            customerDetails,
             paymentNotes,
             {
               keyId,
               keySecret,
             },
           );
-          orderId = order.id;
+          orderId = paymentLink.id;
         }
+      }
         break;
-      case PaymentGatewayEnum.STRIPE:
-        {
-          const stripeAdapter = adaptor as any;
-          if (stripeAdapter.createPaymentIntent) {
-            const paymentIntent = await stripeAdapter.createPaymentIntent(
-              payload.amount,
-              payload.currency,
-              paymentDescription,
-              customerDetails,
-              paymentNotes,
-            );
-            orderId = paymentIntent.id;
-          } else {
-            // Fallback to payment link if payment intent is not available
-            const paymentLink = await adaptor.createPaymentLink(
-              payload.amount,
-              payload.currency,
-              paymentDescription,
-              customerDetails,
-              paymentNotes,
-              {
-                keyId,
-                keySecret,
-              },
-            );
-            orderId = paymentLink.id;
-          }
+      case PaymentGatewayEnum.TELR: {
+        if (!adaptor.createOrder) {
+          throw new BadRequestException('Telr createOrder method not available');
         }
-        break;
-      case PaymentGatewayEnum.TELR:
-        {
-          if (!adaptor.createOrder) {
-            throw new BadRequestException('Telr createOrder method not available');
-          }
-          const order = await adaptor.createOrder(
-            payload.amount,
-            receipt,
-            payload.currency,
-            paymentNotes,
-            {
-              keyId,
-              keySecret,
-            },
-          );
-          orderId = order.order?.ref || order.id || receipt;
-        }
+        const order = await adaptor.createOrder(
+          payload.amount,
+          receipt,
+          payload.currency,
+          paymentNotes,
+          {
+            keyId,
+            keySecret,
+          },
+        );
+        orderId = order.order?.ref || order.id || receipt;
+      }
         break;
       default:
         throw new BadRequestException(`Unsupported payment gateway: ${gatewayCode}`);
@@ -675,19 +634,12 @@ export class MemberProductService {
    */
   public async generateInvoicePDF(memberId: number, productId: number): Promise<IFileModel> {
     // Get product order with all details
-    const productOrder = await this.memberProductRepository.scope('details').findOne({
+    const productOrder = await this.memberProductRepository.scope('invoice').findOne({
       where: {
         memberProductId: productId,
         memberId,
         active: true,
       },
-      include: [
-        {
-          model: TxnMember,
-          as: 'member',
-          required: true,
-        },
-      ],
     });
     if (!productOrder) {
       throw new NotFoundException('Product order not found');
@@ -696,112 +648,45 @@ export class MemberProductService {
     if (!productOrder.orderItems || productOrder.orderItems.length === 0) {
       throw new BadRequestException('Product order has no items');
     }
-    // Get member
-    const member = await this.memberRepository.scope('details').findOne({
-      where: { memberId },
-    });
-    if (!member) {
-      throw new NotFoundException('Member not found');
-    }
-    // Get franchise for products
-    const franchiseDropdown = await this.franchiseService.franchiseByBusinessType(
-      BusinessTypeEnum.PRODUCT,
-    );
-    if (!franchiseDropdown || franchiseDropdown.length === 0) {
-      throw new BadRequestException('Franchise not found for products');
-    }
-    // Fetch full franchise details (needed for invoice generation)
-    const franchise = await this.franchiseService.fetchById(franchiseDropdown[0].id as number);
     // Get franchise address
     const franchiseAddress = await this.addressService.findByTableIdAndPk(
       TableEnum.MST_FRANCHISES,
-      franchise.franchiseId,
+      productOrder.franchiseId,
     );
-    if (!franchiseAddress) {
-      throw new BadRequestException('Franchise address not found for invoice generation');
-    }
-    // Get billing address
+    // Get billing address:
     let billingAddress: IAddress | null = null;
-    if (productOrder.billingAddress) {
-      billingAddress = {
-        addressId: productOrder.billingAddress.addressId,
-        addressName: productOrder.billingAddress.addressName,
-        postalAddress: productOrder.billingAddress.postalAddress,
-        cityVillage: productOrder.billingAddress.cityVillage,
-        stateId: productOrder.billingAddress.stateId,
-        state: productOrder.billingAddress.state?.state || '',
-        countryId: productOrder.billingAddress.countryId,
-        country: productOrder.billingAddress.country?.country || '',
-        countryCode: productOrder.billingAddress.country?.countryCode || '',
-        pinCode: productOrder.billingAddress.pinCode,
-      } as IAddress;
+    const memberAddressSnapshot = productOrder.memberAddress;
+    if (memberAddressSnapshot.billingAddress) {
+      billingAddress = memberAddressSnapshot.billingAddress as IAddress;
     } else if (productOrder.address) {
-      billingAddress = {
-        addressId: productOrder.address.addressId,
-        addressName: productOrder.address.addressName,
-        postalAddress: productOrder.address.postalAddress,
-        cityVillage: productOrder.address.cityVillage,
-        stateId: productOrder.address.stateId,
-        state: productOrder.address.state?.state || '',
-        countryId: productOrder.address.countryId,
-        country: productOrder.address.country?.country || '',
-        countryCode: productOrder.address.country?.countryCode || '',
-        pinCode: productOrder.address.pinCode,
-      } as IAddress;
+      billingAddress = memberAddressSnapshot.address as IAddress;
     }
     if (!billingAddress) {
       throw new BadRequestException('Billing address not found for invoice generation');
     }
     // Convert product order to model
     const productModel = this.convertToModel(productOrder);
+    console.log(productModel);
     // Prepare member info
     const memberInfo: IMemberInfo = {
       fullName: productModel.memberName,
-      emailId: member.emailId,
-      contactNumber: member.contactNumber,
-    };
-    // Map product order items to the invoice format
-    const orderItemsForInvoice =
-      productModel.orderItems?.map((item) => ({
-        productName: item.productName,
-        quantityLabel: item.quantityLabel,
-        quantity: item.quantity,
-        unitPrice: item.unitPrice,
-        baseAmount: item.baseAmount,
-        discountAmount: item.discountAmount,
-        taxAmount: item.taxAmount,
-        totalAmount: item.totalAmount,
-        taxObj: item.taxObj || {},
-        taxType: item.taxType,
-        taxMode: item.taxMode,
-        hsnCode: undefined, // Can be added later if stored in product variant
-      })) || [];
-    // Prepare product order data for invoice
-    const productOrderData = {
-      memberProductId: productModel.memberProductId,
-      memberId: productModel.memberId,
-      memberName: productModel.memberName,
-      invoiceId: productModel.invoiceId,
-      paymentDate: productModel.paymentDate,
-      paymentMode: productModel.paymentMode,
-      paymentStatus: productModel.paymentStatus,
-      transactionId: productModel.transactionId,
-      gstNumber: productModel.gstNumber,
-      subTotalAmount: productModel.subTotalAmount,
-      discountAmount: productModel.discountAmount,
-      taxAmount: productModel.taxAmount,
-      totalAmount: productModel.totalAmount,
-      currency: productModel.currency,
-      orderItems: orderItemsForInvoice,
+      emailId: productOrder.member.emailId,
+      contactNumber: productOrder.member.contactNumber,
+      businessRegNumber: productOrder.gstNumber,
     };
     // Generate an invoice document using the new product order mapper
     const invoiceDoc = mapProductOrderToInvoiceDocument(
-      productOrderData,
-      franchise,
+      productModel,
+      productOrder.franchise,
       billingAddress,
       franchiseAddress,
       memberInfo,
+      [
+        'All payments for each item listed in this invoice are non-refundable and non-transferable under any circumstances.',
+        `Payment confirms acceptance of ${productOrder.franchise.companyName} terms and service validity conditions.`,
+      ],
     );
+    console.log(invoiceDoc);
     const fileName = `invoice-${productModel.memberProductId}.pdf`;
     const relativePath = `${MediaForEnum.DOWNLOADS}/${memberId}/invoices`;
     const destinationFolderPath = `${this.rootFolderPath}/${relativePath}`;
@@ -1118,7 +1003,7 @@ export class MemberProductService {
           productName: item.productName,
           quantity: item.quantity, // Admin ordered quantity
           quantityLabel: item.quantityLabel,
-          unitPrice: item.unitPrice,
+          unitPrice: taxCalculationResult.orderAmount / item.quantity,
           baseAmount: taxCalculationResult.orderAmount,
           discountAmount: item.discountAmount,
           taxAmount: taxCalculationResult.taxAmount,
@@ -1135,7 +1020,7 @@ export class MemberProductService {
       const totalOrderAmount = orderItemObjs.reduce((acc, item) => acc + item.baseAmount, 0);
       const totalTaxAmount = orderItemObjs.reduce((acc, item) => acc + item.taxAmount, 0);
       const totalAmount = orderItemObjs.reduce((acc, item) => acc + item.totalAmount, 0);
-      const totalDiscount = orderItemObjs.reduce((acc, item) => acc + item.totalAmount, 0);
+      const totalDiscount = orderItemObjs.reduce((acc, item) => acc + item.discountAmount, 0);
       // Build payment object structure
       const productOrderData: any = {
         memberId,
@@ -1186,6 +1071,7 @@ export class MemberProductService {
       });
       return this.convertToModel(createdOrder!);
     } catch (error) {
+      console.log(error);
       await t.rollback();
       throw error;
     }
@@ -1325,11 +1211,9 @@ export class MemberProductService {
         active: true,
       },
     });
-
     if (!productOrder) {
       throw new NotFoundException(`Order not found for gateway order ID: ${gatewayOrderId}`);
     }
-
     return this.convertToModel(productOrder);
   }
 }

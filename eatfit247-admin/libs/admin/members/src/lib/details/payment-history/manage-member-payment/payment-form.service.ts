@@ -34,11 +34,9 @@ export class PaymentFormService {
     formData: PaymentFormData
   ): Promise<ICalculateTaxResponse | null> {
     const { orderAmount, currencyCode } = formData;
-    
     if (!orderAmount || !currencyCode) {
       return null;
     }
-
     const request: ICalculateTaxRequest = {
       orderAmount,
       discountAmount: formData.discountAmount || 0,
@@ -46,7 +44,6 @@ export class PaymentFormService {
       billingAddressId: formData.billingAddressId || undefined,
       addressId: formData.addressId || undefined
     };
-
     try {
       return await this.apiService.calculateTax(memberId, request);
     } catch (error) {
@@ -88,17 +85,11 @@ export class PaymentFormService {
   transformFormToPaymentPayload(
     memberId: number,
     formGroup: FormGroup,
-    step1FormGroup: FormGroup | null,
-    taxCalculationResult: ICalculateTaxResponse | null
+    step1FormGroup: FormGroup | null
   ): IManageMemberPayment {
     const getValue = (key: string) => {
       return step1FormGroup?.get(key)?.value ?? formGroup.get(key)?.value;
     };
-
-    const taxAmount = taxCalculationResult?.taxAmount || 0;
-    const taxPercentage = taxCalculationResult?.taxPercentage || 0;
-    const totalAmount = taxCalculationResult?.totalAmount || this.calculateTotalAmountFallback(formGroup, step1FormGroup);
-
     const payload: IManageMemberPayment = {
       memberId,
       paymentModeId: formGroup.value.paymentModeId,
@@ -109,43 +100,34 @@ export class PaymentFormService {
         getValue('billingAddressId') || formGroup.value.billingAddressId,
       transactionId: formGroup.value.transactionId?.trim() || undefined,
       paymentStatusId: formGroup.value.paymentStatusId,
-      isTaxApplicable: false,
       gstNumber:
         getValue('gstNumber')?.trim() ||
         formGroup.value.gstNumber?.trim() ||
         undefined,
       noOfCycle: Number(
-        getValue('noOfCycle') || formGroup.value.noOfCycle || 0,
+        getValue('noOfCycle') || formGroup.value.noOfCycle || 0
       ),
       noOfDaysInCycle: Number(
-        getValue('noOfDaysInCycle') || formGroup.value.noOfDaysInCycle || 0,
+        getValue('noOfDaysInCycle') || formGroup.value.noOfDaysInCycle || 0
       ),
-      taxPercentage: Number(taxPercentage),
       paymentSource: formGroup.value.paymentSource,
       currencyCode:
         getValue('currencyCode') || formGroup.value.currencyCode || 'INR',
-      orderAmount: Number(
-        getValue('orderAmount') || formGroup.value.orderAmount || 0,
-      ),
-      taxAmount,
       discountAmount: Number(
-        getValue('discountAmount') || formGroup.value.discountAmount || 0,
+        getValue('discountAmount') || formGroup.value.discountAmount || 0
       ),
-      totalAmount,
       promoCode: '',
-      paymentDate: formGroup.value.paymentDate || new Date(),
+      paymentDate: formGroup.value.paymentDate || new Date()
     };
-
     // Add gateway-specific fields for non-manual payments
     const paymentSource = formGroup.value.paymentSource;
-    const isManual = paymentSource === PaymentSourceEnum?.MANUAL || paymentSource === 'MANUAL';
-    
+    const isManual =
+      paymentSource === PaymentSourceEnum?.MANUAL || paymentSource === 'MANUAL';
     if (!isManual) {
       payload.paymentLink = formGroup.value.paymentLink;
       payload.gatewayProvider = formGroup.value.gatewayProvider;
       payload.gatewayOrderId = formGroup.value.gatewayOrderId;
     }
-
     return payload;
   }
 
@@ -173,7 +155,6 @@ export class PaymentFormService {
         programPlanId: programPlanId?.toString()
       }
     };
-
     return await this.apiService.createPaymentLink(memberId, request);
   }
 
@@ -185,11 +166,26 @@ export class PaymentFormService {
     step1FormGroup: FormGroup | null
   ): PaymentFormData {
     return {
-      orderAmount: Number(step1FormGroup?.get('orderAmount')?.value || formGroup.get('orderAmount')?.value) || 0,
-      discountAmount: Number(step1FormGroup?.get('discountAmount')?.value || formGroup.get('discountAmount')?.value) || 0,
-      currencyCode: step1FormGroup?.get('currencyCode')?.value || formGroup.get('currencyCode')?.value || 'INR',
-      billingAddressId: step1FormGroup?.get('billingAddressId')?.value || formGroup.get('billingAddressId')?.value,
-      addressId: step1FormGroup?.get('addressId')?.value || formGroup.get('addressId')?.value
+      orderAmount:
+        Number(
+          step1FormGroup?.get('orderAmount')?.value ||
+          formGroup.get('orderAmount')?.value
+        ) || 0,
+      discountAmount:
+        Number(
+          step1FormGroup?.get('discountAmount')?.value ||
+          formGroup.get('discountAmount')?.value
+        ) || 0,
+      currencyCode:
+        step1FormGroup?.get('currencyCode')?.value ||
+        formGroup.get('currencyCode')?.value ||
+        'INR',
+      billingAddressId:
+        step1FormGroup?.get('billingAddressId')?.value ||
+        formGroup.get('billingAddressId')?.value,
+      addressId:
+        step1FormGroup?.get('addressId')?.value ||
+        formGroup.get('addressId')?.value
     };
   }
 
@@ -200,8 +196,16 @@ export class PaymentFormService {
     formGroup: FormGroup,
     step1FormGroup: FormGroup | null
   ): number {
-    const orderAmount = Number(step1FormGroup?.get('orderAmount')?.value || formGroup.get('orderAmount')?.value) || 0;
-    const discountAmount = Number(step1FormGroup?.get('discountAmount')?.value || formGroup.get('discountAmount')?.value) || 0;
+    const orderAmount =
+      Number(
+        step1FormGroup?.get('orderAmount')?.value ||
+        formGroup.get('orderAmount')?.value
+      ) || 0;
+    const discountAmount =
+      Number(
+        step1FormGroup?.get('discountAmount')?.value ||
+        formGroup.get('discountAmount')?.value
+      ) || 0;
     return orderAmount - discountAmount;
   }
 
@@ -220,7 +224,7 @@ export class PaymentFormService {
    * Transform program plan fees to currency dropdown items
    */
   transformFeesToCurrencyDropdown(fees: any[]): IDropdownItem[] {
-    return fees.map(fee => ({
+    return fees.map((fee) => ({
       id: fee.currencyCode,
       label: fee.currencyCode,
       selected: false

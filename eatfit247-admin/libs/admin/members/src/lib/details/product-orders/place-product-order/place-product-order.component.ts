@@ -23,7 +23,7 @@ import { InputErrorComponent } from '@shared';
 import {
   ICalculateProductVariantTaxRequest,
   ICalculateTaxResponse,
-  IDropdownItem,
+  IDropdownItem, IManageMemberProduct,
   IMemberProduct,
   IMemberProductMasterData,
   InputLengthEnum,
@@ -724,7 +724,7 @@ export class PlaceProductOrderComponent implements OnInit {
       (this.formGroup.get('orderAmount')?.value || 0) -
         (this.step2FormGroup.get('discountAmount')?.value || 0);
 
-    return {
+    return <IManageMemberProduct>{
       memberId: this.data.memberId,
       paymentModeId: getValue('paymentModeId'),
       addressId: getValue('addressId') || null,
@@ -732,7 +732,6 @@ export class PlaceProductOrderComponent implements OnInit {
       transactionId: getValue('transactionId')?.trim() || undefined,
       paymentStatusId: getValue('paymentStatusId'),
       gstNumber: getValue('gstNumber')?.trim() || undefined,
-      taxPercentage: Number(taxPercentage),
       currencyCode: this.formGroup.get('currencyCode')?.value || 'INR',
       orderAmount: Number(this.formGroup.get('orderAmount')?.value || 0),
       taxAmount,

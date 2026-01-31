@@ -84,23 +84,8 @@ export interface IManageMemberPayment {
   gatewayProvider?: string;
   gatewayOrderId?: string;
   paymentGatewayResponse?: object | null;
-  orderAmount: number;
   discountAmount: number;
-  taxAmount: number;
-  totalAmount: number;
-  currencyCode: string;
-  currency?: string;
-  isTaxApplicable: boolean;
-  taxPercentage: number;
-  taxType?: TaxTypeEnum;
-  taxMode?: TaxMode;
-  isLutApplied?: boolean;
-  taxObj?: Record<string, { amount: number; taxPercentage: number }>;
-  jurisdiction?: {
-    entityCountry: string;
-    customerCountry: string;
-    placeOfSupply: string;
-  };
+  currencyCode?: string;
 }
 
 export interface IMemberPaymentMasterData {

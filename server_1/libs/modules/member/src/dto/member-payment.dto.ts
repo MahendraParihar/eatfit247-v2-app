@@ -52,16 +52,6 @@ export class CreateMemberPaymentDto implements IManageMemberPayment {
   @IsNumber()
   paymentStatusId!: number;
   @IsNotEmpty()
-  @IsBoolean()
-  isTaxApplicable!: boolean;
-  @IsNotEmpty()
-  @IsNumber()
-  @Min(0)
-  taxPercentage!: number;
-  @IsNotEmpty()
-  @IsBoolean()
-  isPlanFeesIncludedTax!: boolean;
-  @IsNotEmpty()
   @IsString()
   @MaxLength(InputLengthEnum.CHAR_10)
   currencyCode!: string;
@@ -79,19 +69,7 @@ export class CreateMemberPaymentDto implements IManageMemberPayment {
   @IsNotEmpty()
   @IsNumber()
   @Min(0)
-  orderAmount!: number;
-  @IsNotEmpty()
-  @IsNumber()
-  @Min(0)
-  taxAmount!: number;
-  @IsNotEmpty()
-  @IsNumber()
-  @Min(0)
   discountAmount!: number;
-  @IsNotEmpty()
-  @IsNumber()
-  @Min(0)
-  totalAmount!: number;
   @IsOptional()
   @IsString()
   paymentLink?: string;

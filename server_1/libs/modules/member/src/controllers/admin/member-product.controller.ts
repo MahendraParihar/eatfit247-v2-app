@@ -53,16 +53,6 @@ export class MemberProductController {
     return await this.memberProductService.findById(id, productId);
   }
 
-  @Delete(':productId')
-  async deleteProduct(
-    @Param('id') id: number,
-    @Param('productId') productId: number,
-    @CurrentUser() currentUser: any,
-    @RequestedIp() requestedIp: string,
-  ): Promise<void> {
-    return await this.memberProductService.delete(id, productId, requestedIp, currentUser.adminId);
-  }
-
   @Post('create-payment-link')
   async createPaymentLink(
     @Param('id') id: number,

@@ -22,12 +22,13 @@ export interface IMemberProductOrderItem {
   unitPrice: number;
   baseAmount: number;
   discountAmount?: number;
-  effectiveTaxRate?: number;
-  taxAmount?: number;
+  effectiveTaxRate: number;
+  taxAmount: number;
+  hsnCode?: string;
   totalAmount: number;
-  taxObj?: any;
-  taxType?: TaxTypeEnum;
-  taxMode?: TaxMode;
+  taxObj?: Record<string, { amount: number; taxPercentage: number }>;
+  taxType: TaxTypeEnum;
+  taxMode: TaxMode;
   isLutApplied?: boolean;
   jurisdiction?: any;
   invoiceNote?: string;
@@ -84,12 +85,12 @@ export interface IManageMemberProduct {
 
 export interface IMemberProduct extends IBasicMemberProduct, IAdminInfo {
   memberProductId: number;
-  memberName?: string;
+  memberName: string;
   paymentMode?: string;
-  paymentStatus?: string;
+  paymentStatus: string;
   address?: IAddress;
   billingAddress?: IAddress;
   franchise?: string;
-  orderItems?: IMemberProductOrderItem[];
+  orderItems: IMemberProductOrderItem[];
 }
 

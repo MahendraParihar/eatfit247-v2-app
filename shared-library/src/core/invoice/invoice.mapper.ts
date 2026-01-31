@@ -3,6 +3,7 @@ import { TaxMode, TaxTypeEnum, TransactionType } from '../../enum';
 import { IMemberPayment } from '../member-payment.interface';
 import { IFranchise } from '../franchise.interface';
 import { IAddress } from '../location.interface';
+import { IMemberProduct } from '../member-product.interface';
 
 /**
  * Optional member information for buyer details
@@ -16,10 +17,6 @@ export interface IMemberInfo {
   businessRegNumber?: string;
 }
 
-/**
- * Default HSN Code for Products (can be overridden per product)
- */
-const DEFAULT_HSN_CODE = '30049099'; // Example: Other medicaments
 /**
  * Maps payment entity to InvoiceDocument
  *
@@ -92,8 +89,9 @@ export function mapPaymentToInvoiceDocument(
     pricing: {
       subtotal: payment.orderAmount,
       discount: payment.discountAmount,
+      taxableAmount: payment.orderAmount - (payment.discountAmount || 0),
       taxAmount: payment.taxAmount,
-      netAmount: payment.totalAmount,
+      totalAmount: payment.totalAmount,
     },
     tax: {
       taxType,
@@ -112,10 +110,10 @@ export function mapPaymentToInvoiceDocument(
     },
     qrCode: qrCodeEnabled
       ? {
-        enabled: true,
-        value: qrCodeValue,
-        label: 'Scan QR Code for Invoice Verification',
-      }
+          enabled: true,
+          value: qrCodeValue,
+          label: 'Scan QR Code for Invoice Verification',
+        }
       : undefined,
     footer: {
       legalNote: 'This is a computer-generated invoice and is valid without signature.',
@@ -317,44 +315,21 @@ function buildTaxNote(taxMode: TaxMode, existingNote?: string): string | undefin
   }
 }
 
-/**
- * Product Order Item interface for invoice generation
- */
-export interface IProductOrderItem {
-  productName: string;
-  quantityLabel: string;
-  quantity: number;
-  unitPrice: number;
-  baseAmount: number;
-  discountAmount: number;
-  taxAmount: number;
-  totalAmount: number;
-  taxObj: Record<string, { amount: number; taxPercentage: number }>;
-  taxType: TaxTypeEnum;
-  taxMode: TaxMode;
-  hsnCode?: string;
-  invoiceNote?: string;
-}
-
-/**
- * Product Order data for invoice generation
- */
-export interface IProductOrderData {
-  memberProductId: number;
-  memberId: number;
-  memberName: string;
-  invoiceId: string;
-  paymentDate: Date | null;
-  paymentMode: string;
-  paymentStatus: string;
-  transactionId?: string;
-  gstNumber?: string;
-  subTotalAmount: number;
-  discountAmount: number;
-  taxAmount: number;
-  totalAmount: number;
-  currency: string;
-  orderItems: IProductOrderItem[];
+function buildInvoiceOrderItem(productOrder: IMemberProduct): IInvoiceItem[] {
+  return productOrder.orderItems.map((orderItem) => ({
+    type: TransactionType.PRODUCT,
+    description: `${orderItem.productName} ${orderItem.quantityLabel}`,
+    hsnCode: orderItem.taxType === TaxTypeEnum.GST ? orderItem.hsnCode : undefined,
+    qty: orderItem.quantity,
+    unitPrice: orderItem.unitPrice,
+    amount: orderItem.baseAmount,
+    discount: orderItem.discountAmount,
+    taxPercentage: orderItem.effectiveTaxRate,
+    taxAmount: orderItem.taxAmount,
+    totalAmount: orderItem.totalAmount,
+    taxType: orderItem.taxType,
+    taxMode: orderItem.taxMode,
+  })) as IInvoiceItem[];
 }
 
 /**
@@ -369,61 +344,22 @@ export interface IProductOrderData {
  * @returns InvoiceDocument ready for PDF/UI rendering
  */
 export function mapProductOrderToInvoiceDocument(
-  productOrder: IProductOrderData,
+  productOrder: IMemberProduct,
   franchise: IFranchise,
   memberAddress: IAddress,
   franchiseAddress: IAddress,
   memberInfo?: IMemberInfo,
   conditions: string[] = [],
 ): IInvoiceDocument {
-  // Use the first order item's tax settings (all items should have consistent tax type/mode)
-  const firstItem = productOrder.orderItems[0];
-  const taxType = firstItem?.taxType || TaxTypeEnum.NONE;
-  const taxMode = firstItem?.taxMode || TaxMode.NO_TAX;
-  // Build invoice items from order items
-  const items: IInvoiceItem[] = productOrder.orderItems.map((orderItem) => ({
-    type: TransactionType.PRODUCT,
-    description: `${orderItem.productName} ${orderItem.quantityLabel}`,
-    hsnCode: taxType === TaxTypeEnum.GST ? orderItem.hsnCode : undefined,
-    qty: orderItem.quantity,
-    rate: orderItem.unitPrice,
-    amount: orderItem.baseAmount,
-    discount: orderItem.discountAmount,
-    taxAmount: orderItem.taxAmount,
-    totalAmount: orderItem.totalAmount,
-  }));
-  // Aggregate tax rows across all order items by tax type and rate
-  const taxRowsMap = new Map<string, { label: string; amount: number; percentage: number; taxableAmount: number }>();
-  productOrder.orderItems.forEach((orderItem) => {
-    if (orderItem.taxObj && taxMode !== TaxMode.NO_TAX && taxMode !== TaxMode.RCM_IMPORT_SERVICE) {
-      Object.entries(orderItem.taxObj).forEach(([taxLabel, taxData]) => {
-        const key = `${taxLabel}_${taxData.taxPercentage}`;
-        const existing = taxRowsMap.get(key);
-        // Calculate taxable amount (base amount - discount)
-        const taxableAmount = orderItem.baseAmount - (orderItem.discountAmount || 0);
-        if (existing) {
-          existing.amount += taxData.amount;
-          existing.taxableAmount += taxableAmount;
-        } else {
-          taxRowsMap.set(key, {
-            label: taxLabel,
-            amount: taxData.amount,
-            percentage: taxData.taxPercentage,
-            taxableAmount: taxableAmount,
-          });
-        }
-      });
-    }
-  });
-  // Convert tax rows map to array
-  const taxRows: IInvoiceTaxRow[] = Array.from(taxRowsMap.values()).map((row) => ({
-    label: row.label,
-    amount: row.amount,
-    percentage: row.percentage,
-    taxableAmount: row.taxableAmount,
-  }));
+  const taxRows: IInvoiceTaxRow[][] = [];
+  for(const orderItem of productOrder.orderItems) {
+    taxRows.push(buildTaxRows(orderItem.taxObj || {}, orderItem.taxType, orderItem.taxMode));
+  }
+  console.log(taxRows);
+  const items = buildInvoiceOrderItem(productOrder);
+
   // Determine if QR code should be enabled
-  const qrCodeEnabled = taxType === TaxTypeEnum.GST && taxMode === TaxMode.DOMESTIC_GST;
+  const qrCodeEnabled = productOrder.orderItems[0].taxType === TaxTypeEnum.GST && productOrder.orderItems[0].taxMode === TaxMode.DOMESTIC_GST;
   // Build QR code value if enabled
   let qrCodeValue = '';
   if (qrCodeEnabled && franchise.gstNumber) {
@@ -436,22 +372,22 @@ export function mapProductOrderToInvoiceDocument(
     );
   }
   // Build seller (franchise) information
-  const seller = buildSellerInfo(franchise, taxType, franchiseAddress);
+  const seller = buildSellerInfo(franchise, productOrder.orderItems[0].taxType, franchiseAddress);
   // Build buyer (member) information
   const buyer = buildBuyerInfo(
     memberAddress,
     productOrder.gstNumber,
-    taxType,
+    productOrder.orderItems[0].taxType,
     memberInfo || {
       fullName: productOrder.memberName,
     },
   );
   // Build tax note
-  const taxNote = buildTaxNote(taxMode, firstItem?.invoiceNote);
+  const taxNote = buildTaxNote(productOrder.orderItems[0].taxMode, productOrder.orderItems[0].invoiceNote);
   return {
     header: {
       brandName: franchise.companyName,
-      title: taxType === TaxTypeEnum.GST ? 'TAX INVOICE' : 'INVOICE',
+      title: productOrder.orderItems[0].taxType === TaxTypeEnum.GST ? 'TAX INVOICE' : 'INVOICE',
       invoiceNumber: productOrder.invoiceId || `INV-${productOrder.memberProductId}`,
       invoiceDate: productOrder.paymentDate?.toString() || new Date().toISOString(),
       currency: productOrder.currency,
@@ -462,13 +398,14 @@ export function mapProductOrderToInvoiceDocument(
     pricing: {
       subtotal: productOrder.subTotalAmount,
       discount: productOrder.discountAmount,
-      netAmount: productOrder.totalAmount,
+      taxableAmount: productOrder.subTotalAmount - (productOrder.discountAmount || 0),
       taxAmount: productOrder.taxAmount,
+      totalAmount: productOrder.totalAmount,
     },
     tax: {
-      taxType,
-      taxMode,
-      rows: taxRows,
+      taxType: productOrder.orderItems[0].taxType,
+      taxMode: productOrder.orderItems[0].taxMode,
+      rows: [],
       totalTax: productOrder.taxAmount,
       note: taxNote,
     },

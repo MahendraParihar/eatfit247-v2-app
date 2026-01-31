@@ -53,18 +53,20 @@ export interface IInvoiceItem {
   sacCode?: string; // Service Accounting Code (for SERVICE items when GST)
   hsnCode?: string; // Harmonized System of Nomenclature (for PRODUCT items when GST)
   qty: number;
-  rate: number; // Unit price
-  amount: number; // qty * rate
-  discount?: number; // Discount amount for this item
-  taxAmount?: number; // Tax amount for this item
-  totalAmount?: number; // Total for this item (amount - discount + tax)
+  unitPrice: number;
+  amount: number;
+  discount: number;
+  taxPercentage?: number;
+  taxAmount: number;
+  totalAmount: number;
 }
 
 export interface IInvoicePricing {
   subtotal: number;
   discount: number;
-  netAmount: number;
+  taxableAmount: number;
   taxAmount: number;
+  totalAmount: number;
 }
 
 export interface IInvoiceTax {

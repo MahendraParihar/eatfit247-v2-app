@@ -295,12 +295,10 @@ export class ManageMemberPaymentComponent implements OnInit {
 
   async calculateTaxFromBackend(): Promise<void> {
     const formData = this.paymentFormService.getPaymentFormData(this.formGroup, this.step1FormGroup);
-    
     if (!formData.orderAmount || !formData.currencyCode) {
       this.taxCalculationResult.set(null);
       return;
     }
-
     this.calculatingTax.set(true);
     try {
       const result = await this.paymentFormService.calculateTax(this.data.memberId, formData);
@@ -354,12 +352,10 @@ export class ManageMemberPaymentComponent implements OnInit {
   isPaymentLinkRequiredAndGenerated(): boolean {
     const paymentSource = this.formGroup.get('paymentSource')?.value;
     const isPaymentGateway = paymentSource === PaymentSourceEnum?.PAYMENT_GATEWAY || paymentSource === 'PAYMENT_GATEWAY';
-    
     // If payment source is PAYMENT_GATEWAY, payment link must be generated
     if (isPaymentGateway) {
       return !!this.paymentLink() && this.paymentLink()!.trim().length > 0;
     }
-    
     // For other payment sources, payment link is not required
     return true;
   }
@@ -410,7 +406,6 @@ export class ManageMemberPaymentComponent implements OnInit {
       const programPlanId = this.step1FormGroup?.get('programPlanId')?.value || this.formGroup.get('programPlanId')?.value;
       const programName = this.programOptions.find(p => p.id === programId)?.label || '';
       const planName = this.programPlanOptions.find(p => p.id === programPlanId)?.label || '';
-      
       const result = await this.paymentFormService.createPaymentLink(
         this.data.memberId,
         totalAmount,
@@ -421,7 +416,6 @@ export class ManageMemberPaymentComponent implements OnInit {
         programName,
         planName
       );
-      
       this.paymentLink.set(result.shortUrl);
       this.paymentLinkId.set(result.id);
       this.formGroup.patchValue({
@@ -497,7 +491,6 @@ export class ManageMemberPaymentComponent implements OnInit {
   private loadData(): void {
     if (this.data.payment) {
       const formValues = this.paymentFormService.transformPaymentToFormValues(this.data.payment);
-      
       this.formGroup.patchValue(formValues, { emitEvent: false });
       // Update validators based on payment source
       this.updatePaymentFieldValidators(formValues.paymentSource);
@@ -539,14 +532,11 @@ export class ManageMemberPaymentComponent implements OnInit {
             return;
           }
         }
-
         const formValue = this.paymentFormService.transformFormToPaymentPayload(
           this.data.memberId,
           this.formGroup,
-          this.step1FormGroup,
-          this.taxCalculationResult()
+          this.step1FormGroup
         );
-
         if (this.isEditMode && this.data.payment?.memberPaymentId) {
           await this.apiService.updatePayment(
             this.data.memberId,

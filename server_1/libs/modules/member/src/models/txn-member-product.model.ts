@@ -1,9 +1,25 @@
-import { BelongsTo, Column, CreatedAt, DataType, HasMany, Model, Scopes, Table, UpdatedAt } from 'sequelize-typescript';
-import { getCreatedByUserInclude, getUpdatedByUserInclude, MstAdminUser, MstFranchise } from '@server_1/core';
+import {
+  BelongsTo,
+  Column,
+  CreatedAt,
+  DataType,
+  HasMany,
+  Model,
+  Scopes,
+  Table,
+  UpdatedAt,
+} from 'sequelize-typescript';
+import {
+  getCreatedByUserInclude,
+  getUpdatedByUserInclude,
+  MstAdminUser,
+  MstFranchise,
+} from '@server_1/core';
 import { MstPaymentMode, MstPaymentStatus, TxnAddress } from '@server_1/platform';
 import { TxnMember } from './txn-member.model';
 import { InputLengthEnum, PaymentSourceEnum } from '@eatfit247-shared-lib';
 import { TxnMemberProductOrderItem } from './txn-member-product-order-item.model';
+import { MstProduct } from '../../../product';
 
 @Table({
   freezeTableName: true,
@@ -103,6 +119,63 @@ import { TxnMemberProductOrderItem } from './txn-member-product-order-item.model
         model: TxnMemberProductOrderItem,
         as: 'orderItems',
         required: false,
+        include: [
+          {
+            model: MstProduct,
+            as: 'product',
+            required: true,
+            attributes: ['hsnCode'],
+          },
+        ],
+      },
+    ],
+  },
+  invoice: {
+    include: [
+      {
+        model: TxnMember,
+        as: 'member',
+        required: false,
+        attributes: ['memberId', 'firstName', 'lastName', 'emailId', 'contactNumber'],
+      },
+      {
+        model: MstPaymentMode,
+        as: 'paymentMode',
+        required: false,
+        attributes: ['paymentModeId', 'paymentMode'],
+      },
+      {
+        model: MstPaymentStatus,
+        as: 'paymentStatus',
+        required: false,
+        attributes: ['paymentStatusId', 'paymentStatus'],
+      },
+      {
+        model: MstFranchise,
+        as: 'franchise',
+        required: true,
+        attributes: [
+          'franchiseId',
+          'companyName',
+          'gstNumber',
+          'tanNumber',
+          'vatNumber',
+          'lutNumber',
+          'brandName',
+        ],
+      },
+      {
+        model: TxnMemberProductOrderItem,
+        as: 'orderItems',
+        required: false,
+        include: [
+          {
+            model: MstProduct,
+            as: 'product',
+            required: true,
+            attributes: ['hsnCode'],
+          },
+        ],
       },
     ],
   },
@@ -407,4 +480,3 @@ export class TxnMemberProduct extends Model<TxnMemberProduct> {
   })
   declare modifiedIp: string;
 }
-

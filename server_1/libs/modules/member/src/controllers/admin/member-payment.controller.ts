@@ -10,7 +10,7 @@ import {
   ITableList,
 } from '@eatfit247-shared-lib';
 import { CreateMemberPaymentDto, CreatePaymentLinkDto } from '../../dto';
-import { CalculateTaxDto } from '../../dto/calculate-tax.dto';
+import { CalculateTaxDto } from '../../dto';
 import { ProgramPlanService } from '@server_1/modules/program-plan';
 import { IFileModel } from '@server_1/platform';
 
@@ -68,24 +68,6 @@ export class MemberPaymentController {
   ): Promise<IMemberPayment> {
     body.memberId = id;
     return await this.memberPaymentService.create(id, body, requestedIp, currentUser.adminId);
-  }
-
-  @Put(':paymentId')
-  async updatePayment(
-    @Param('id') id: number,
-    @Param('paymentId') paymentId: number,
-    @Body() body: CreateMemberPaymentDto,
-    @CurrentUser() currentUser: any,
-    @RequestedIp() requestedIp: string,
-  ): Promise<IMemberPayment> {
-    body.memberId = id;
-    return await this.memberPaymentService.update(
-      id,
-      paymentId,
-      body,
-      requestedIp,
-      currentUser.adminId,
-    );
   }
 
   @Delete(':paymentId')
