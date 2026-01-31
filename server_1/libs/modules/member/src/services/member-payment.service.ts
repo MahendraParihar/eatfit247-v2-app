@@ -802,6 +802,7 @@ export class MemberPaymentService {
         `Payment confirms acceptance of ${payment.franchise.companyName} terms and service validity conditions.`,
       ],
     );
+    console.log(JSON.stringify(invoiceDoc));
     const fileName = `invoice-${paymentModel.memberPaymentId}.pdf`;
     const relativePath = `${MediaForEnum.DOWNLOADS}/${memberId}/invoices`;
     const destinationFolderPath = `${this.rootFolderPath}/${relativePath}`;

@@ -121,24 +121,28 @@
           <div class="amount-breakdown">
             <div class="amount-row">
               <span class="label">Order Amount:</span>
-              <span class="value">{{ payment.orderAmount | formatCurrency:(payment.currency || 'INR') }}</span>
+              <span class="value">{{ payment.orderAmount | formatCurrency:(payment.currency) }}</span>
             </div>
             @if (payment.discountAmount && payment.discountAmount > 0) {
               <div class="amount-row discount">
                 <span class="label">Discount:</span>
-                <span class="value">-{{ payment.discountAmount | formatCurrency:(payment.currency || 'INR') }}</span>
+                <span class="value">-{{ payment.discountAmount | formatCurrency:(payment.currency) }}</span>
               </div>
             }
+            <div class="amount-row">
+              <span class="label">Taxable Amount:</span>
+              <span class="value">{{ payment.orderAmount - (payment.discountAmount || 0) | formatCurrency:(payment.currency) }}</span>
+            </div>
             @if (payment.taxAmount && payment.taxAmount > 0) {
               <div class="amount-row">
                 <span class="label">Tax:</span>
-                <span class="value">{{ payment.taxAmount | formatCurrency:(payment.currency || 'INR') }}</span>
+                <span class="value">{{ payment.taxAmount | formatCurrency:(payment.currency) }}</span>
               </div>
             }
             <mat-divider></mat-divider>
             <div class="amount-row total">
               <span class="label">Total Amount:</span>
-              <span class="value">{{ payment.totalAmount | formatCurrency:(payment.currency || 'INR') }}</span>
+              <span class="value">{{ payment.totalAmount | formatCurrency:(payment.currency) }}</span>
             </div>
           </div>
           
