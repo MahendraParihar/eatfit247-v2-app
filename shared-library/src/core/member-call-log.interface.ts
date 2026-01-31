@@ -1,4 +1,4 @@
-import { IBaseAdminUser, IDropdownItem } from "../base.interface";
+import { IBaseAdminUser, IDropdownItem, IAdminInfo } from "../base.interface";
 import { IGoogleCalendarEvent } from "./google.interface";
 import { IZoomEvent } from "./zoom.interface";
 
@@ -54,7 +54,7 @@ export interface IManageMemberCallLog extends IBaseMemberCallLog {
   memberCallLogId?: number;
 }
 
-export interface IMemberCallLog extends IBaseMemberCallLog {
+export interface IMemberCallLog extends IBaseMemberCallLog, IAdminInfo {
   memberCallLogId: number;
   callType: string;
   callPurpose: string;
@@ -63,12 +63,6 @@ export interface IMemberCallLog extends IBaseMemberCallLog {
   memberFirstName: string;
   memberLastName: string;
   memberEmail: string;
-  createdBy: number;
-  updatedBy: number;
-  createdAt: Date;
-  updatedAt: Date;
-  createdByUser?: IBaseAdminUser;
-  updatedByUser?: IBaseAdminUser;
   nutritionist?: IBaseAdminUser;
 }
 

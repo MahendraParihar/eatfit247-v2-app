@@ -1,10 +1,37 @@
-import { BelongsTo, Column, CreatedAt, DataType, HasOne, Model, Scopes, Table, UpdatedAt } from 'sequelize-typescript';
-import { getCreatedByUserInclude, getUpdatedByUserInclude, MstAdminUser, MstFranchise } from '@server_1/core';
-import { MstCountry, MstPaymentMode, MstPaymentStatus, MstState, TxnAddress } from '@server_1/platform';
+import {
+  BelongsTo,
+  Column,
+  CreatedAt,
+  DataType,
+  HasOne,
+  Model,
+  Scopes,
+  Table,
+  UpdatedAt,
+} from 'sequelize-typescript';
+import {
+  getCreatedByUserInclude,
+  getUpdatedByUserInclude,
+  MstAdminUser,
+  MstFranchise,
+} from '@server_1/core';
+import {
+  MstCountry,
+  MstPaymentMode,
+  MstPaymentStatus,
+  MstState,
+  TxnAddress,
+} from '@server_1/platform';
 import { MstProgram, MstProgramPlan } from '@server_1/modules/program-plan';
 import { TxnMember } from './txn-member.model';
 import { TxnMemberDietPlan } from './txn-member-diet-plan.model';
-import { IMemberAddress, InputLengthEnum, PaymentSourceEnum, TaxMode, TaxTypeEnum } from '@eatfit247-shared-lib';
+import {
+  IMemberAddress,
+  InputLengthEnum,
+  PaymentSourceEnum,
+  TaxMode,
+  TaxTypeEnum,
+} from '@eatfit247-shared-lib';
 
 @Table({
   freezeTableName: true,
@@ -168,6 +195,42 @@ import { IMemberAddress, InputLengthEnum, PaymentSourceEnum, TaxMode, TaxTypeEnu
         as: 'memberDietPlan',
         required: false,
         attributes: ['noOfCycle', 'daysInCycle', 'currentCycleNo', 'currentDayNo'],
+      },
+    ],
+  },
+  invoice: {
+    include: [
+      {
+        model: TxnMember,
+        as: 'member',
+        required: false,
+        attributes: ['memberId', 'firstName', 'lastName', 'emailId', 'contactNumber'],
+      },
+      {
+        model: MstPaymentMode,
+        as: 'paymentMode',
+        required: false,
+        attributes: ['paymentModeId', 'paymentMode'],
+      },
+      {
+        model: MstPaymentStatus,
+        as: 'paymentStatus',
+        required: false,
+        attributes: ['paymentStatusId', 'paymentStatus'],
+      },
+      {
+        model: MstFranchise,
+        as: 'franchise',
+        required: true,
+        attributes: [
+          'franchiseId',
+          'companyName',
+          'gstNumber',
+          'tanNumber',
+          'vatNumber',
+          'lutNumber',
+          'brandName',
+        ],
       },
     ],
   },
@@ -403,6 +466,21 @@ export class TxnMemberPayment extends Model<TxnMemberPayment> {
     customerCountry: string;
     placeOfSupply: string;
   };
+
+  @Column({
+    allowNull: false,
+    field: 'no_of_cycle',
+    type: DataType.INTEGER,
+  })
+  declare noOfCycle: number;
+
+  @Column({
+    allowNull: false,
+    field: 'days_in_cycle',
+    type: DataType.INTEGER,
+  })
+  declare daysInCycle: number;
+
   @BelongsTo(() => TxnMember, {
     foreignKey: 'memberId',
     targetKey: 'memberId',
@@ -506,4 +584,3 @@ export class TxnMemberPayment extends Model<TxnMemberPayment> {
   })
   declare modifiedIp: string;
 }
-

@@ -48,7 +48,7 @@ export class ProgramCategoryService {
       active: item.active,
       imagePath: CommonFunctionsUtil.buildImageUrl(item.imagePath),
       createdBy: item.createdBy,
-      updatedBy: item.modifiedBy,
+      modifiedBy: item.modifiedBy,
       createdAt: item.createdAt,
       updatedAt: item.updatedAt,
       createdByUser: item.createdByUser ? CommonFunctionsUtil.getAdminShortInfo(item.createdByUser, 'createdByUser') : undefined,

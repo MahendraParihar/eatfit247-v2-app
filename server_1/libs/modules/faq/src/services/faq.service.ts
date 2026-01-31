@@ -45,7 +45,7 @@ export class FaqService {
       answer: item.answer,
       active: item.active,
       createdBy: item.createdBy,
-      updatedBy: item.modifiedBy,
+      modifiedBy: item.modifiedBy,
       createdAt: item.createdAt,
       updatedAt: item.updatedAt,
       createdByUser: item.createdByUser,
@@ -188,7 +188,7 @@ export class FaqService {
    * Convert IFaq to IPublicFaq (removes admin fields)
    */
   private convertToPublic(faq: IFaq): IPublicFaq {
-    const { createdBy, updatedBy, createdAt, updatedAt, active, createdByUser, updatedByUser, ...publicFaq } = faq;
+    const { createdBy, modifiedBy, createdAt, updatedAt, active, createdByUser, updatedByUser, ...publicFaq } = faq;
     return publicFaq as IPublicFaq;
   }
 }

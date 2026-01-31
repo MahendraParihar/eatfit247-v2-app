@@ -1,4 +1,4 @@
-import { IBaseAdminUser } from "../base.interface";
+import { IBaseAdminUser, IAdminInfo } from "../base.interface";
 import { IMediaUpload } from "./media-upload.interface";
 
 // Gender specific interfaces
@@ -12,15 +12,9 @@ export interface IManageGender extends IBaseGender {
   active: boolean;
 }
 
-export interface IGender extends IBaseGender {
+export interface IGender extends IBaseGender, IAdminInfo {
   genderId: number;
   active: boolean;
-  createdBy: number;
-  updatedBy: number;
-  createdAt: Date;
-  updatedAt: Date;
-  createdByUser?: IBaseAdminUser;
-  updatedByUser?: IBaseAdminUser;
 }
 
 // Blood Sugar specific interfaces
@@ -34,15 +28,9 @@ export interface IManageBloodSugar extends IBaseBloodSugar {
   active: boolean;
 }
 
-export interface IBloodSugar extends IBaseBloodSugar {
+export interface IBloodSugar extends IBaseBloodSugar, IAdminInfo {
   bloodSugarId: number;
   active: boolean;
-  createdBy: number;
-  updatedBy: number;
-  createdAt: Date;
-  updatedAt: Date;
-  createdByUser?: IBaseAdminUser;
-  updatedByUser?: IBaseAdminUser;
 }
 
 // Health Issue specific interfaces
@@ -57,15 +45,9 @@ export interface IManageHealthIssue extends IBaseHealthIssue {
   active: boolean;
 }
 
-export interface IHealthIssue extends IBaseHealthIssue {
+export interface IHealthIssue extends IBaseHealthIssue, IAdminInfo {
   healthIssueId: number;
   active: boolean;
-  createdBy: number;
-  updatedBy: number;
-  createdAt: Date;
-  updatedAt: Date;
-  createdByUser?: IBaseAdminUser;
-  updatedByUser?: IBaseAdminUser;
 }
 
 // Eating Habit specific interfaces
@@ -79,15 +61,9 @@ export interface IManageEatingHabit extends IBaseEatingHabit {
   active: boolean;
 }
 
-export interface IEatingHabit extends IBaseEatingHabit {
+export interface IEatingHabit extends IBaseEatingHabit, IAdminInfo {
   eatingHabitId: number;
   active: boolean;
-  createdBy: number;
-  updatedBy: number;
-  createdAt: Date;
-  updatedAt: Date;
-  createdByUser?: IBaseAdminUser;
-  updatedByUser?: IBaseAdminUser;
 }
 
 export interface IBaseLifestyle {
@@ -100,15 +76,9 @@ export interface IManageLifestyle extends IBaseLifestyle {
   active: boolean;
 }
 
-export interface ILifestyle extends IBaseLifestyle {
+export interface ILifestyle extends IBaseLifestyle, IAdminInfo {
   lifestyleId: number;
   active: boolean;
-  createdBy: number;
-  updatedBy: number;
-  createdAt: Date;
-  updatedAt: Date;
-  createdByUser?: IBaseAdminUser;
-  updatedByUser?: IBaseAdminUser;
 }
 
 // Marital Status specific interfaces
@@ -122,15 +92,9 @@ export interface IManageMaritalStatus extends IBaseMaritalStatus {
   active: boolean;
 }
 
-export interface IMaritalStatus extends IBaseMaritalStatus {
+export interface IMaritalStatus extends IBaseMaritalStatus, IAdminInfo {
   maritalStatusId: number;
   active: boolean;
-  createdBy: number;
-  updatedBy: number;
-  createdAt: Date;
-  updatedAt: Date;
-  createdByUser?: IBaseAdminUser;
-  updatedByUser?: IBaseAdminUser;
 }
 
 // Religion specific interfaces
@@ -144,15 +108,9 @@ export interface IManageReligion extends IBaseReligion {
   active: boolean;
 }
 
-export interface IReligion extends IBaseReligion {
+export interface IReligion extends IBaseReligion, IAdminInfo {
   religionId: number;
   active: boolean;
-  createdBy: number;
-  updatedBy: number;
-  createdAt: Date;
-  updatedAt: Date;
-  createdByUser?: IBaseAdminUser;
-  updatedByUser?: IBaseAdminUser;
 }
 
 // Sleeping Pattern specific interfaces
@@ -166,15 +124,9 @@ export interface IManageSleepingPattern extends IBaseSleepingPattern {
   active: boolean;
 }
 
-export interface ISleepingPattern extends IBaseSleepingPattern {
+export interface ISleepingPattern extends IBaseSleepingPattern, IAdminInfo {
   sleepingPatternId: number;
   active: boolean;
-  createdBy: number;
-  updatedBy: number;
-  createdAt: Date;
-  updatedAt: Date;
-  createdByUser?: IBaseAdminUser;
-  updatedByUser?: IBaseAdminUser;
 }
 
 // Type of Exercise specific interfaces
@@ -188,15 +140,9 @@ export interface IManageTypeOfExercise extends IBaseTypeOfExercise {
   active: boolean;
 }
 
-export interface ITypeOfExercise extends IBaseTypeOfExercise {
+export interface ITypeOfExercise extends IBaseTypeOfExercise, IAdminInfo {
   typeOfExerciseId: number;
   active: boolean;
-  createdBy: number;
-  updatedBy: number;
-  createdAt: Date;
-  updatedAt: Date;
-  createdByUser?: IBaseAdminUser;
-  updatedByUser?: IBaseAdminUser;
 }
 
 // Urine Output specific interfaces
@@ -210,15 +156,9 @@ export interface IManageUrineOutput extends IBaseUrineOutput {
   active: boolean;
 }
 
-export interface IUrineOutput extends IBaseUrineOutput {
+export interface IUrineOutput extends IBaseUrineOutput, IAdminInfo {
   urineOutputId: number;
   active: boolean;
-  createdBy: number;
-  updatedBy: number;
-  createdAt: Date;
-  updatedAt: Date;
-  createdByUser?: IBaseAdminUser;
-  updatedByUser?: IBaseAdminUser;
 }
 
 // Health Parameter-specific interfaces (more complex)
@@ -237,15 +177,9 @@ export interface IManageHealthParameter extends IBaseHealthParameter {
   active: boolean;
 }
 
-export interface IHealthParameter extends IBaseHealthParameter {
+export interface IHealthParameter extends IBaseHealthParameter, IAdminInfo {
   healthParameterId: number;
   active: boolean;
-  createdBy: number;
-  updatedBy: number;
-  createdAt: Date;
-  updatedAt: Date;
-  createdByUser?: IBaseAdminUser;
-  updatedByUser?: IBaseAdminUser;
 }
 
 // Health Parameter Unit specific interfaces
@@ -258,15 +192,9 @@ export interface IManageHealthParameterUnit extends IBaseHealthParameterUnit {
   active: boolean;
 }
 
-export interface IHealthParameterUnit extends IBaseHealthParameterUnit {
+export interface IHealthParameterUnit extends IBaseHealthParameterUnit, IAdminInfo {
   healthParameterUnitId: number;
   id: number;
   active: boolean;
-  createdBy: number;
-  updatedBy: number;
-  createdAt: Date;
-  updatedAt: Date;
-  createdByUser?: IBaseAdminUser;
-  updatedByUser?: IBaseAdminUser;
 }
 

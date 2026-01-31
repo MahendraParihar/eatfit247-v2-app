@@ -1,4 +1,4 @@
-import { IBaseAdminUser, ICommonTable } from '../base.interface';
+import { IBaseAdminUser, ICommonTable, IAdminInfo } from '../base.interface';
 
 // Issue Category Interfaces
 export interface IBaseIssueCategory {
@@ -10,15 +10,9 @@ export interface IManageIssueCategory extends IBaseIssueCategory {
   active: boolean;
 }
 
-export interface IIssueCategory extends IBaseIssueCategory, ICommonTable {
+export interface IIssueCategory extends IBaseIssueCategory, ICommonTable, IAdminInfo {
   issueCategoryId: number;
   active: boolean;
-  createdBy: number;
-  updatedBy: number;
-  createdAt: Date;
-  updatedAt: Date;
-  createdByUser?: IBaseAdminUser;
-  updatedByUser?: IBaseAdminUser;
 }
 
 // Issue Status Interfaces
@@ -31,15 +25,9 @@ export interface IManageIssueStatus extends IBaseIssueStatus {
   active: boolean;
 }
 
-export interface IIssueStatus extends IBaseIssueStatus, ICommonTable {
+export interface IIssueStatus extends IBaseIssueStatus, ICommonTable, IAdminInfo {
   issueStatusId: number;
   active: boolean;
-  createdBy: number;
-  updatedBy: number;
-  createdAt: Date;
-  updatedAt: Date;
-  createdByUser?: IBaseAdminUser;
-  updatedByUser?: IBaseAdminUser;
 }
 
 // Issue Transaction Interface
@@ -57,7 +45,7 @@ export interface IManageIssue extends IBaseIssue {
   issueId?: number;
 }
 
-export interface IIssue extends IBaseIssue {
+export interface IIssue extends IBaseIssue, IAdminInfo {
   issueId: number;
   issueCategory?: IIssueCategory;
   issueStatus?: IIssueStatus;
@@ -66,10 +54,4 @@ export interface IIssue extends IBaseIssue {
     firstName?: string;
     lastName?: string;
   };
-  createdBy: number;
-  updatedBy: number;
-  createdAt: Date;
-  updatedAt: Date;
-  createdByUser?: IBaseAdminUser;
-  updatedByUser?: IBaseAdminUser;
 }

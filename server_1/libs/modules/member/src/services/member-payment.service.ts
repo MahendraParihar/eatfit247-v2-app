@@ -9,6 +9,7 @@ import {
   ICalculateTaxResponse,
   ICreatePaymentLinkRequest,
   IDropdownItem,
+  IInvoiceItem,
   IManageMemberPayment,
   IMemberInfo,
   IMemberPayment,
@@ -676,14 +677,6 @@ export class MemberPaymentService {
    */
   private convertToModel(item: TxnMemberPayment): IMemberPayment {
     console.log(item);
-    const orderAmount = item.orderAmount;
-    const discountAmount = item.discountAmount;
-    const taxAmount = item.taxAmount;
-    const totalAmount = item.totalAmount;
-    const noOfCycle = item.memberDietPlan?.noOfCycle;
-    const noOfDaysInCycle = item.memberDietPlan?.daysInCycle;
-    const currentCycleNo = item.memberDietPlan?.currentCycleNo;
-    const currentDayNo = item.memberDietPlan?.currentDayNo;
     return {
       memberPaymentId: item.memberPaymentId,
       memberId: item.memberId,
@@ -709,10 +702,10 @@ export class MemberPaymentService {
       gstNumber: item.gstNumber,
       memberAddress: item.memberAddress,
       paymentSource: item.paymentSource,
-      orderAmount: orderAmount,
-      discountAmount: discountAmount,
-      taxAmount: taxAmount,
-      totalAmount: totalAmount,
+      orderAmount: Number(item.orderAmount),
+      discountAmount: Number(item.discountAmount || 0),
+      taxAmount: Number(item.taxAmount),
+      totalAmount: Number(item.totalAmount),
       currency: item.currency,
       taxType: item.taxType,
       taxMode: item.taxMode,
@@ -720,13 +713,11 @@ export class MemberPaymentService {
       isLutApplied: item.isLutApplied,
       taxObj: item.taxObj,
       jurisdiction: item.jurisdiction,
-      noOfCycle: noOfCycle,
-      noOfDaysInCycle: noOfDaysInCycle,
-      currentCycleNo: currentCycleNo,
-      currentDayNo: currentDayNo,
+      noOfCycle: item.noOfCycle,
+      noOfDaysInCycle: item.daysInCycle,
       deletable: false, // TODO: Add logic to determine if payment can be deleted
       createdBy: item.createdBy,
-      updatedBy: item.modifiedBy,
+      modifiedBy: item.modifiedBy,
       createdAt: item.createdAt,
       updatedAt: item.updatedAt,
       createdByUser: item.createdByUser
@@ -964,7 +955,7 @@ export class MemberPaymentService {
    */
   public async generateInvoicePDF(memberId: number, paymentId: number): Promise<IFileModel> {
     // Get payment with all details
-    const payment = await this.memberPaymentRepository.scope('details').findOne({
+    const payment: TxnMemberPayment = await this.memberPaymentRepository.scope('invoice').findOne({
       where: {
         memberPaymentId: paymentId,
         memberId,
@@ -974,28 +965,12 @@ export class MemberPaymentService {
     if (!payment) {
       throw new NotFoundException('Payment not found');
     }
-    // Get member with franchise
-    const member = await this.memberRepository.scope('details').findOne({
-      where: { memberId },
-      include: [
-        {
-          model: MstFranchise,
-          as: 'franchise',
-          required: false,
-        },
-      ],
-    });
-    if (!member) {
-      throw new NotFoundException('Member not found');
-    }
     // Get franchise address
     const franchiseAddress = await this.addressService.findByTableIdAndPk(
       TableEnum.MST_FRANCHISES,
       payment.franchiseId,
     );
     // Get billing address:
-    // 1. Prefer a snapshot stored on payment (memberAddress.billingAddress)
-    // 2. Fallback to related billingAddress/address records for backward compatibility
     let billingAddress: IAddress | null = null;
     const memberAddressSnapshot = payment.memberAddress;
     if (memberAddressSnapshot.billingAddress) {
@@ -1007,23 +982,29 @@ export class MemberPaymentService {
       throw new BadRequestException('Billing address not found for invoice generation');
     }
     // Convert payment to model to get calculated amounts
-    const paymentModel = this.convertToModel(payment);
+    const paymentModel = this.convertToModel(payment.get({ plain: true }));
     // Prepare member info
     const memberInfo: IMemberInfo = {
       fullName: paymentModel.memberName,
       emailId: payment.member.emailId,
       contactNumber: payment.member.contactNumber,
+      businessRegNumber: payment.gstNumber,
     };
     // Map payment to InvoiceDocument using the universal invoice system
     const invoiceDoc = mapPaymentToInvoiceDocument(
       paymentModel,
-      member.franchise,
+      payment.franchise,
       billingAddress,
-      TransactionType.SERVICE, // Default to SERVICE for diet consultancy
       franchiseAddress,
-      `Diet Consultancy ${paymentModel.program ? paymentModel.program : ''} - ${paymentModel.programPlan}`,
+      this.buildInvoiceItems(payment),
       memberInfo,
+      [
+        'Diet consulting services are advisory in nature and not medical treatment.',
+        'All payments are non-refundable and non-transferable under any circumstances.',
+        `Payment confirms acceptance of ${payment.franchise.companyName} terms and service validity conditions.`,
+      ],
     );
+    console.log(invoiceDoc);
     const fileName = `invoice-${paymentModel.memberPaymentId}.pdf`;
     const relativePath = `${MediaForEnum.DOWNLOADS}/${memberId}/invoices`;
     const destinationFolderPath = `${this.rootFolderPath}/${relativePath}`;
@@ -1458,5 +1439,22 @@ export class MemberPaymentService {
       throw new NotFoundException(`Order not found for gateway order ID: ${gatewayOrderId}`);
     }
     return this.convertToModel(paymentOrder.get({ plain: true }));
+  }
+
+  private buildInvoiceItems(payment: TxnMemberPayment): IInvoiceItem[] {
+    return [
+      {
+        type: TransactionType.SERVICE,
+        description: `Nutrition & Diet Counseling Services`,
+        sacCode: this.appConfigService.getString(ConfigParam.DIET_SAC_CODE),
+        hsnCode: undefined,
+        qty: 1,
+        rate: payment.orderAmount,
+        amount: payment.orderAmount,
+        discount: payment.discountAmount,
+        taxAmount: payment.taxAmount,
+        totalAmount: payment.totalAmount,
+      },
+    ] as IInvoiceItem[];
   }
 }

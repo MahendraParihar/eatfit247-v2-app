@@ -80,7 +80,7 @@ export class AdminUserService {
       deactivationReason: item.deactivationReason,
       verificationCode: item.verificationCode,
       createdBy: item.createdBy,
-      updatedBy: item.modifiedBy,
+      modifiedBy: item.modifiedBy,
       createdAt: item.createdAt,
       updatedAt: item.updatedAt,
       createdByUser: item.createdByUser

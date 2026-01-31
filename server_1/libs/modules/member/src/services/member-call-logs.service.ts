@@ -350,12 +350,14 @@ export class MemberCallLogsService {
       calendarEventId: item.calendarEventId,
       isSystemGenerated: item.isSystemGenerated,
       active: item.active,
-      createdBy: item.createdByUser
+      createdBy: item.createdBy,
+      modifiedBy: item.modifiedBy,
+      createdByUser: item.createdByUser
         ? CommonFunctionsUtil.getAdminShortInfo(item.createdByUser, 'createdByUser')
-        : (null as any),
-      updatedBy: item.updatedByUser
+        : undefined,
+      updatedByUser: item.updatedByUser
         ? CommonFunctionsUtil.getAdminShortInfo(item.updatedByUser, 'updatedByUser')
-        : (null as any),
+        : undefined,
       createdAt: item.createdAt,
       updatedAt: item.updatedAt,
       nutritionist: item.nutritionist

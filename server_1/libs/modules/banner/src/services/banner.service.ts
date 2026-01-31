@@ -90,7 +90,7 @@ export class BannerService {
       secondaryActionUrl: item.secondaryActionUrl,
       imagePath: CommonFunctionsUtil.buildImageUrl(item.imagePath),
       createdBy: item.createdBy,
-      updatedBy: item.updatedBy,
+      modifiedBy: item.updatedBy,
       createdAt: item.createdAt,
       updatedAt: item.updatedAt,
       createdByUser: item.createdByUser,
@@ -103,7 +103,7 @@ export class BannerService {
    * Omits: createdBy, updatedBy, modifiedBy, createdAt, updatedAt, createdIp, updatedIp, modifiedIp, active, createdByUser, updatedByUser
    */
   private convertToPublic(banner: IBanner): IPublicBanner {
-    const { createdBy, updatedBy, createdAt, updatedAt, active, createdByUser, updatedByUser, ...publicBanner } = banner;
+    const { createdBy, modifiedBy, createdAt, updatedAt, active, createdByUser, updatedByUser, ...publicBanner } = banner;
     return publicBanner as IPublicBanner;
   }
 

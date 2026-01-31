@@ -1,6 +1,6 @@
-import { IBaseAdminUser } from '../base.interface';
+import { IBaseAdminUser, IAdminInfo } from '../base.interface';
 
-export interface ITaxMaster {
+export interface ITaxMaster extends IAdminInfo {
   id: number;
   franchiseId: number;
   referenceId: number;
@@ -15,14 +15,8 @@ export interface ITaxMaster {
   effectiveFrom: Date | string;
   effectiveTo: Date | string | null;
   active: boolean;
-  createdBy: number;
-  modifiedBy: number;
-  createdAt: Date | string;
-  updatedAt: Date | string;
   createdIp: string;
   modifiedIp: string;
-  createdByUser?: IBaseAdminUser;
-  updatedByUser?: IBaseAdminUser;
 }
 
 

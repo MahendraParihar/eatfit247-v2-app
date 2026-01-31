@@ -47,7 +47,7 @@ export class SuccessStoryService {
       imagePath: CommonFunctionsUtil.buildImageUrl(item.imagePath),
       active: item.active,
       createdBy: item.createdBy,
-      updatedBy: item.updatedBy,
+      modifiedBy: item.updatedBy,
       createdAt: item.createdAt,
       updatedAt: item.updatedAt,
       createdByUser: item.createdByUser

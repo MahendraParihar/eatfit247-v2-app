@@ -1,4 +1,4 @@
-import { IBaseAdminUser } from "../base.interface";
+import { IBaseAdminUser, IAdminInfo } from "../base.interface";
 import { IMediaUpload } from "./media-upload.interface";
 
 export interface IBaseCallLogStatus {
@@ -10,15 +10,9 @@ export interface IManageCallLogStatus extends IBaseCallLogStatus {
   active: boolean;
 }
 
-export interface ICallLogStatus extends IBaseCallLogStatus {
+export interface ICallLogStatus extends IBaseCallLogStatus, IAdminInfo {
   callLogStatusId: number;
   active: boolean;
-  createdBy: number;
-  updatedBy: number;
-  createdAt: Date;
-  updatedAt: Date;
-  createdByUser?: IBaseAdminUser;
-  updatedByUser?: IBaseAdminUser;
 }
 
 export interface IBaseCallPurpose {
@@ -31,15 +25,9 @@ export interface IManageCallPurpose extends IBaseCallPurpose {
   active: boolean;
 }
 
-export interface ICallPurpose extends IBaseCallPurpose {
+export interface ICallPurpose extends IBaseCallPurpose, IAdminInfo {
   callPurposeId: number;
   active: boolean;
-  createdBy: number;
-  updatedBy: number;
-  createdAt: Date;
-  updatedAt: Date;
-  createdByUser?: IBaseAdminUser;
-  updatedByUser?: IBaseAdminUser;
 }
 
 export interface IBaseCallType {
@@ -52,13 +40,7 @@ export interface IManageCallType extends IBaseCallType {
   active: boolean;
 }
 
-export interface ICallType extends IBaseCallType {
+export interface ICallType extends IBaseCallType, IAdminInfo {
   callTypeId: number;
   active: boolean;
-  createdBy: number;
-  updatedBy: number;
-  createdAt: Date;
-  updatedAt: Date;
-  createdByUser?: IBaseAdminUser;
-  updatedByUser?: IBaseAdminUser;
 }

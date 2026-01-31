@@ -1,4 +1,4 @@
-import { IBaseAdminUser } from '../base.interface';
+import { IBaseAdminUser, IAdminInfo } from '../base.interface';
 import { IMediaUpload } from './media-upload.interface';
 
 export interface IBaseProgramCategory {
@@ -13,14 +13,8 @@ export interface IManageProgramCategory extends IBaseProgramCategory {
   uploadFiles?: IMediaUpload[];
 }
 
-export interface IProgramCategory extends IBaseProgramCategory {
+export interface IProgramCategory extends IBaseProgramCategory, IAdminInfo {
   programCategoryId: number;
   active: boolean;
-  createdBy: number;
-  updatedBy: number;
-  createdAt: Date;
-  updatedAt: Date;
-  createdByUser?: IBaseAdminUser;
-  updatedByUser?: IBaseAdminUser;
 }
 

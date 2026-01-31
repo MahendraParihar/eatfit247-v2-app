@@ -84,7 +84,7 @@ export class PressMediaService {
       active: item.active,
       imagePath: CommonFunctionsUtil.buildImageUrl(item.imagePath),
       createdBy: item.createdBy,
-      updatedBy: item.modifiedBy,
+      modifiedBy: item.modifiedBy,
       createdAt: item.createdAt,
       updatedAt: item.updatedAt,
       createdByUser: item.createdByUser,
@@ -97,7 +97,7 @@ export class PressMediaService {
    * Omits: createdBy, updatedBy, modifiedBy, createdAt, updatedAt, createdIp, updatedIp, modifiedIp, active, createdByUser, updatedByUser
    */
   private convertToPublic(pressMedia: IPressMedia): IPublicPressMedia {
-    const { createdBy, updatedBy, createdAt, updatedAt, active, createdByUser, updatedByUser, ...publicPressMedia } = pressMedia;
+    const { createdBy, modifiedBy, createdAt, updatedAt, active, createdByUser, updatedByUser, ...publicPressMedia } = pressMedia;
     return publicPressMedia as IPublicPressMedia;
   }
 

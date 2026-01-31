@@ -1,4 +1,4 @@
-import { IBaseAdminUser } from "../base.interface";
+import { IBaseAdminUser, IAdminInfo } from "../base.interface";
 import { IMediaUpload } from "./media-upload.interface";
 import { BannerForEnum } from "../enum/banner-for.enum";
 
@@ -22,13 +22,7 @@ export interface IManageBanner extends IBaseBanner {
   active: boolean;
 }
 
-export interface IBanner extends IBaseBanner {
+export interface IBanner extends IBaseBanner, IAdminInfo {
   bannerId: number;
   active: boolean;
-  createdBy: number;
-  updatedBy: number;
-  createdAt: Date;
-  updatedAt: Date;
-  createdByUser?: IBaseAdminUser;
-  updatedByUser?: IBaseAdminUser;
 }

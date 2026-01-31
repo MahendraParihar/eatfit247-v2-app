@@ -75,7 +75,7 @@ export class MemberService {
       active: item.active !== undefined ? item.active : true,
       deactivationReason: item.deactivationReason,
       createdBy: item.createdBy,
-      updatedBy: item.modifiedBy,
+      modifiedBy: item.modifiedBy,
       createdAt: item.createdAt,
       updatedAt: item.updatedAt,
       createdByUser: item.createdByUser

@@ -1,4 +1,4 @@
-import { IBaseAdminUser, IDropdownItem } from '../base.interface';
+import { IBaseAdminUser, IDropdownItem, IAdminInfo } from '../base.interface';
 import { IAddress, IMemberAddress } from './location.interface';
 import { PaymentSourceEnum, TaxMode, TaxTypeEnum } from '../enum';
 import { IProduct } from './product.interface';
@@ -47,7 +47,7 @@ export interface IBasicMemberPayment {
   invoiceNote?: string;
 }
 
-export interface IMemberPayment extends IBasicMemberPayment {
+export interface IMemberPayment extends IBasicMemberPayment, IAdminInfo {
   memberPaymentId: number;
   memberName: string;
   paymentMode: string;
@@ -62,12 +62,6 @@ export interface IMemberPayment extends IBasicMemberPayment {
   currentDayNo?: number;
   deletable: boolean;
   billingAddress?: IAddress;
-  createdBy: number;
-  updatedBy: number;
-  createdAt: Date;
-  updatedAt: Date;
-  createdByUser?: IBaseAdminUser;
-  updatedByUser?: IBaseAdminUser;
 }
 
 export interface IManageMemberPayment {

@@ -167,7 +167,7 @@ export class MemberIssueResponseService {
       issueStatus: updatedIssue.issueStatus.issueStatus,
       issueCategory: updatedIssue.issueCategory.issueCategory,
       createdBy: updatedIssue.createdBy,
-      updatedBy: updatedIssue.modifiedBy,
+      modifiedBy: updatedIssue.modifiedBy,
       createdAt: updatedIssue.createdAt,
       updatedAt: updatedIssue.updatedAt,
       createdByUser: updatedIssue.createdByUser
@@ -186,7 +186,7 @@ export class MemberIssueResponseService {
       response: item.response,
       isLatest: item.isLatest,
       createdBy: item.createdBy,
-      updatedBy: item.modifiedBy,
+      modifiedBy: item.modifiedBy,
       createdAt: item.createdAt,
       updatedAt: item.updatedAt,
       createdByUser: item.createdByUser

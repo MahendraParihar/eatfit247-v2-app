@@ -81,7 +81,7 @@ export interface IMemberIssuesSummary {
       issueCategory: string;
     };
     createdBy?: number;
-    updatedBy?: number;
+    modifiedBy?: number;
     createdAt?: Date;
     updatedAt?: Date;
   }>;

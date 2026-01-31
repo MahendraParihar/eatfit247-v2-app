@@ -63,7 +63,7 @@ export class ProgramService {
       imagePath: CommonFunctionsUtil.buildImageUrl(item.imagePath),
       active: item.active,
       createdBy: item.createdBy,
-      updatedBy: item.modifiedBy,
+      modifiedBy: item.modifiedBy,
       createdAt: item.createdAt,
       updatedAt: item.updatedAt,
       createdByUser: item.createdByUser
@@ -235,7 +235,7 @@ export class ProgramService {
    * Convert IProgram to IPublicProgram (exclude admin/internal fields)
    */
   private convertToPublic(program: IProgram): IPublicProgram {
-    const { createdBy, updatedBy, createdAt, updatedAt, createdByUser, updatedByUser, active, ...publicProgram } = program;
+    const { createdBy, modifiedBy, createdAt, updatedAt, createdByUser, updatedByUser, active, ...publicProgram } = program;
     return publicProgram as IPublicProgram;
   }
 }

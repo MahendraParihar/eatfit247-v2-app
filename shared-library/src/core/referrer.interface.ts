@@ -1,4 +1,4 @@
-import { IBaseAdminUser } from "../base.interface";
+import { IBaseAdminUser, IAdminInfo } from "../base.interface";
 import { IMediaUpload } from "./media-upload.interface";
 import { IManageAddress } from "./location.interface";
 
@@ -25,16 +25,10 @@ export interface IManageReferrer extends IBaseReferrer {
   active: boolean;
 }
 
-export interface IReferrer extends IBaseReferrer {
+export interface IReferrer extends IBaseReferrer, IAdminInfo {
   referrerId: number;
   franchise?: string;
   active: boolean;
-  createdBy: number;
-  updatedBy: number;
-  createdAt: Date;
-  updatedAt: Date;
-  createdByUser?: IBaseAdminUser;
-  updatedByUser?: IBaseAdminUser;
 }
 
 export interface IPublicReferrer {

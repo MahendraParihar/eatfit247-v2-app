@@ -1,4 +1,4 @@
-import { IBaseAdminUser } from "../base.interface";
+import { IBaseAdminUser, IAdminInfo } from "../base.interface";
 import { IMediaUpload } from "./media-upload.interface";
 import { IManageAddress } from "./location.interface";
 
@@ -29,16 +29,10 @@ export interface IManageAdminUser extends IBaseAdminUserFull {
   address?: IManageAddress; // Address details
 }
 
-export interface IAdminUser extends IBaseAdminUserFull {
+export interface IAdminUser extends IBaseAdminUserFull, IAdminInfo {
   adminId: number;
   franchise?: string; // Franchise name from relationship
   address?: IManageAddress; // Address details
-  createdBy: number;
-  updatedBy: number;
-  createdAt: Date;
-  updatedAt: Date;
-  createdByUser?: IBaseAdminUser;
-  updatedByUser?: IBaseAdminUser;
 }
 
 export interface IBaseAdminRolePermission {
@@ -51,16 +45,10 @@ export interface IManageAdminRolePermission extends IBaseAdminRolePermission {
   active: boolean;
 }
 
-export interface IAdminRolePermission extends IBaseAdminRolePermission {
+export interface IAdminRolePermission extends IBaseAdminRolePermission, IAdminInfo {
   adminRolePermissionId: number;
   id?: number; // For compatibility
   role?: string; // Role name from relationship
   active: boolean;
-  createdBy: number;
-  updatedBy: number;
-  createdAt: Date;
-  updatedAt: Date;
-  createdByUser?: IBaseAdminUser;
-  updatedByUser?: IBaseAdminUser;
 }
 

@@ -23,8 +23,3 @@ export enum TaxMode {
   SALES_TAX = 'SALES_TAX', // USA
   NO_TAX = 'NO_TAX', // USA / Others
 }
-
-export enum InvoiceItemType {
-  SERVICE = 'SERVICE',
-  PRODUCT = 'PRODUCT',
-}

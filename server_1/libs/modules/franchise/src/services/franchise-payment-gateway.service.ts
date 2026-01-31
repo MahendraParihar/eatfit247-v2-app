@@ -59,7 +59,7 @@ export class FranchisePaymentGatewayService {
       gatewayFeePercentage: item.gatewayFeePercentage,
       active: item.active,
       createdBy: item.createdBy,
-      updatedBy: item.modifiedBy,
+      modifiedBy: item.modifiedBy,
       createdAt: item.createdAt,
       updatedAt: item.updatedAt,
       createdByUser: item.createdByUser

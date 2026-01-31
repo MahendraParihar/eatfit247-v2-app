@@ -44,7 +44,7 @@ export class TypeOfExerciseService {
       imagePath: CommonFunctionsUtil.buildImageUrl(item.imagePath),
       active: item.active,
       createdBy: item.createdBy,
-      updatedBy: item.modifiedBy,
+      modifiedBy: item.modifiedBy,
       createdAt: item.createdAt,
       updatedAt: item.updatedAt,
       createdByUser: item.createdByUser ? CommonFunctionsUtil.getAdminShortInfo(item.createdByUser, 'createdByUser') : undefined,

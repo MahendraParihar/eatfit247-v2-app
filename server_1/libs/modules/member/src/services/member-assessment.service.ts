@@ -263,7 +263,7 @@ export class MemberAssessmentService {
       bloodSugar: item.bloodSugar?.bloodSugar || null,
       urineOutput: item.urineOutput?.urineOutput || null,
       createdBy: item.createdBy,
-      updatedBy: item.modifiedBy,
+      modifiedBy: item.modifiedBy,
       createdAt: item.createdAt,
       updatedAt: item.updatedAt,
       createdByUser: item.createdByUser

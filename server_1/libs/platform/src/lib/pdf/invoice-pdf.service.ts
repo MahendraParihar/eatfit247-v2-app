@@ -3,11 +3,20 @@ import * as path from 'path';
 import { existsSync, readFileSync } from 'fs';
 import * as hbs from 'handlebars';
 import * as puppeteer from 'puppeteer';
-import { IInvoiceDocument, IInvoiceItem, IInvoiceTaxRow, TaxMode, TEMPLATE_FOLDER } from '@eatfit247-shared-lib';
+import {
+  IInvoiceDocument,
+  IInvoiceItem,
+  IInvoiceTaxRow,
+  TaxMode,
+  TEMPLATE_FOLDER,
+} from '@eatfit247-shared-lib';
 import * as QRCode from 'qrcode';
 
 @Injectable()
 export class InvoicePdfService {
+  private currencySymbolCache: Map<string, string> = new Map();
+
+  constructor() {}
   /**
    * Generates PDF from InvoiceDocument
    *
@@ -40,7 +49,7 @@ export class InvoicePdfService {
       showTaxRows: invoiceDoc.tax.taxMode !== TaxMode.NO_TAX && invoiceDoc.tax.rows.length > 0,
       showQrCode: invoiceDoc.qrCode?.enabled === true && qrCodeImageDataUrl !== null,
       // Format helpers
-      formatCurrency: (amount: number) => this.formatCurrency(amount, invoiceDoc.header.currency),
+      formatCurrency: (amount: number) => this.formatCurrency(amount),
       formatDate: (dateStr: string) => this.formatDate(dateStr),
     };
     // Get HTML from the template
@@ -66,10 +75,10 @@ export class InvoicePdfService {
         format: 'A4',
         printBackground: true,
         margin: {
-          top: '20mm',
-          bottom: '20mm',
-          right: '15mm',
-          left: '15mm',
+          top: '10mm',
+          bottom: '10mm',
+          right: '10mm',
+          left: '10mm',
         },
       });
       return Buffer.from(pdfBuffer);
@@ -116,8 +125,10 @@ export class InvoicePdfService {
   private registerHandlebarsHelpers() {
     // Format currency helper
     if (!hbs.helpers['formatCurrency']) {
-      hbs.registerHelper('formatCurrency', (amount: number, currency: string) => {
-        return this.formatCurrency(amount, currency);
+      const self = this;
+      hbs.registerHelper('formatCurrency', function (amount: number) {
+        // Handlebars pass arguments in order, currency might be undefined
+        return self.formatCurrency(amount);
       });
     }
     // Format date helper
@@ -158,25 +169,24 @@ export class InvoicePdfService {
   /**
    * Formats currency amount
    */
-  private formatCurrency(amount: number, currency: string): string {
+  private formatCurrency(amount: number): string {
     // Basic currency formatting - can be enhanced with Intl.NumberFormat
+    if (amount === undefined || amount === null || isNaN(amount)) {
+      return '-';
+    }
     const formatted = Math.abs(amount).toFixed(2);
-    const symbol = this.getCurrencySymbol(currency);
-    return `${symbol} ${formatted}`;
+    return `${formatted}`;
   }
 
   /**
-   * Gets currency symbol
+   * Gets currency symbol from the database cache
    */
-  private getCurrencySymbol(currency: string): string {
-    const symbols: Record<string, string> = {
-      INR: '₹',
-      USD: '$',
-      AED: 'AED',
-      EUR: '€',
-      GBP: '£',
-    };
-    return symbols[currency] || currency;
+  private getCurrencySymbol(currency: string | undefined | null): string {
+    if (!currency || typeof currency !== 'string' || currency.trim() === '') {
+      return '₹'; // Default to INR symbol if currency is not provided
+    }
+    const currencyCode = currency.toUpperCase();
+    return this.currencySymbolCache.get(currencyCode) || currency;
   }
 
   /**
@@ -195,4 +205,3 @@ export class InvoicePdfService {
     }
   }
 }
-

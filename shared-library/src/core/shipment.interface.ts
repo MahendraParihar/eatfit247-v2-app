@@ -1,4 +1,4 @@
-import { IBaseAdminUser } from '../base.interface';
+import { IBaseAdminUser, IAdminInfo } from '../base.interface';
 import { ShipmentStatusEnum, ShipmentTrackingEnum, ShipmentTrackingSourceEnum } from '../enum';
 
 export interface IShipmentItem {
@@ -30,15 +30,9 @@ export interface IBasicShipment {
   deliveredAt?: Date;
 }
 
-export interface IShipment extends IBasicShipment {
+export interface IShipment extends IBasicShipment, IAdminInfo {
   shipmentId: number;
   shipmentItems?: IShipmentItem[];
   trackingEvents?: IShipmentTrackingEvent[];
-  createdBy: number;
-  updatedBy: number;
-  createdAt: Date;
-  updatedAt: Date;
-  createdByUser?: IBaseAdminUser;
-  updatedByUser?: IBaseAdminUser;
 }
 

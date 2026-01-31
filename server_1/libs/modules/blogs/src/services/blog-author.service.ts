@@ -44,7 +44,7 @@ export class BlogAuthorService {
       active: item.active,
       profilePicture: CommonFunctionsUtil.buildImageUrl(item.profilePicture),
       createdBy: item.createdBy,
-      updatedBy: item.modifiedBy,
+      modifiedBy: item.modifiedBy,
       createdAt: item.createdAt,
       updatedAt: item.updatedAt,
       createdByUser: item.createdByUser,

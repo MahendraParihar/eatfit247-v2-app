@@ -1,4 +1,4 @@
-import { IBaseAdminUser } from '../base.interface';
+import { IBaseAdminUser, IAdminInfo } from '../base.interface';
 import { IAddress } from './location.interface';
 import { PaymentSourceEnum, TaxMode, TaxTypeEnum } from '../enum';
 
@@ -82,7 +82,7 @@ export interface IManageMemberProduct {
   orderItems: IMemberProductOrderItemBasic[];
 }
 
-export interface IMemberProduct extends IBasicMemberProduct {
+export interface IMemberProduct extends IBasicMemberProduct, IAdminInfo {
   memberProductId: number;
   memberName?: string;
   paymentMode?: string;
@@ -91,11 +91,5 @@ export interface IMemberProduct extends IBasicMemberProduct {
   billingAddress?: IAddress;
   franchise?: string;
   orderItems?: IMemberProductOrderItem[];
-  createdBy: number;
-  updatedBy: number;
-  createdAt: Date;
-  updatedAt: Date;
-  createdByUser?: IBaseAdminUser;
-  updatedByUser?: IBaseAdminUser;
 }
 

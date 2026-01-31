@@ -1,4 +1,4 @@
-import { IBaseAdminUser, IDropdownItem } from "../base.interface";
+import { IBaseAdminUser, IDropdownItem, IAdminInfo } from "../base.interface";
 
 export interface IAssessmentMaster {
   gender: IDropdownItem[];
@@ -98,7 +98,7 @@ export interface IManageMemberAssessment extends IBasicMemberAssessment {
   assessmentId?: number;
 }
 
-export interface IMemberAssessment extends IBasicMemberAssessment {
+export interface IMemberAssessment extends IBasicMemberAssessment, IAdminInfo {
   assessmentId: number;
   gender: string;
   maritalStatus: string;
@@ -109,10 +109,4 @@ export interface IMemberAssessment extends IBasicMemberAssessment {
   sleepingPattern: string;
   bloodSugar: string;
   urineOutput: string;
-  createdBy: number;
-  updatedBy: number;
-  createdAt: Date;
-  updatedAt: Date;
-  createdByUser?: IBaseAdminUser;
-  updatedByUser?: IBaseAdminUser;
 }

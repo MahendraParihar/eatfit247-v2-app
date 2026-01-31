@@ -81,6 +81,16 @@ import { IMediaUpload, InputLengthEnum } from '@eatfit247-shared-lib';
       },
     ],
   },
+  invoice: {
+    include: [
+      {
+        model: MstFranchise,
+        as: 'franchise',
+        required: false,
+        attributes: ['franchiseId', 'companyName'],
+      }
+    ],
+  },
 }))
 export class TxnMember extends Model<TxnMember> {
   @Column({

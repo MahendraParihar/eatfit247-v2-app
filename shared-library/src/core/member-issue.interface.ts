@@ -1,4 +1,4 @@
-import { IBaseAdminUser, IDropdownItem } from "../base.interface";
+import { IBaseAdminUser, IDropdownItem, IAdminInfo } from "../base.interface";
 import { IIssueStatus, IIssueCategory } from "./issue.interface";
 
 export interface IIssueMasterData {
@@ -17,16 +17,10 @@ export interface IManageMemberIssue extends IBaseMemberIssue {
   memberIssueId?: number;
 }
 
-export interface IMemberIssue extends IBaseMemberIssue {
+export interface IMemberIssue extends IBaseMemberIssue, IAdminInfo {
   memberIssueId: number;
   issueStatus: string;
   issueCategory: string;
-  createdBy: number;
-  updatedBy: number;
-  createdAt: Date;
-  updatedAt: Date;
-  createdByUser?: IBaseAdminUser;
-  updatedByUser?: IBaseAdminUser;
 }
 
 export interface IBaseMemberIssueResponse {
@@ -37,13 +31,7 @@ export interface IBaseMemberIssueResponse {
 export interface IManageMemberIssueResponse extends IBaseMemberIssueResponse {
 }
 
-export interface IMemberIssueResponse extends IBaseMemberIssueResponse {
+export interface IMemberIssueResponse extends IBaseMemberIssueResponse, IAdminInfo {
   memberIssueResponseId: number;
   isLatest: boolean;
-  createdBy: number;
-  updatedBy: number;
-  createdAt: Date;
-  updatedAt: Date;
-  createdByUser?: IBaseAdminUser;
-  updatedByUser?: IBaseAdminUser;
 }

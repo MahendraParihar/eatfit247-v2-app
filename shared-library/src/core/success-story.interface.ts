@@ -1,4 +1,4 @@
-import { IBaseAdminUser } from '../base.interface';
+import { IBaseAdminUser, IAdminInfo } from '../base.interface';
 import { IMediaUpload } from './media-upload.interface';
 
 export interface IBaseSuccessStory {
@@ -14,14 +14,8 @@ export interface IManageSuccessStory extends IBaseSuccessStory {
   active: boolean;
 }
 
-export interface ISuccessStory extends IBaseSuccessStory {
+export interface ISuccessStory extends IBaseSuccessStory, IAdminInfo {
   successStoryId: number;
   active: boolean;
-  createdBy: number;
-  updatedBy: number;
-  createdAt: Date;
-  updatedAt: Date;
-  createdByUser?: IBaseAdminUser;
-  updatedByUser?: IBaseAdminUser;
 }
 

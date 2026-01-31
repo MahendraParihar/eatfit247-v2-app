@@ -1,4 +1,4 @@
-import { IBaseAdminUser, ICommonTable } from "../base.interface";
+import { IBaseAdminUser, ICommonTable, IAdminInfo } from "../base.interface";
 
 export interface IBaseFaq {
   faq: string;
@@ -11,16 +11,10 @@ export interface IManageFaq extends IBaseFaq {
   active: boolean;
 }
 
-export interface IFaq extends IBaseFaq {
+export interface IFaq extends IBaseFaq, IAdminInfo {
   faqId: number;
   faqCategory: string;
   active: boolean;
-  createdBy: number;
-  updatedBy: number;
-  createdAt: Date;
-  updatedAt: Date;
-  createdByUser?: IBaseAdminUser;
-  updatedByUser?: IBaseAdminUser;
 }
 
 export interface IBaseFaqCategory {
@@ -33,14 +27,8 @@ export interface IManageFaqCategory extends IBaseFaqCategory {
   active: boolean;
 }
 
-export interface IFaqCategory extends IBaseFaqCategory {
+export interface IFaqCategory extends IBaseFaqCategory, IAdminInfo {
   faqCategoryId: number;
   active: boolean;
-  createdBy: number;
-  updatedBy: number;
-  createdAt: Date;
-  updatedAt: Date;
-  createdByUser?: IBaseAdminUser;
-  updatedByUser?: IBaseAdminUser;
 }
 

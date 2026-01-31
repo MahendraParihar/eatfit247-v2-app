@@ -595,3 +595,25 @@ alter table public.txn_member_diet_plans
 
 alter table public.txn_member_diet_plans
     alter column modified_by drop not null;
+
+alter table public.txn_member_payments
+    add column no_of_cycle integer,
+    add column days_in_cycle integer;
+
+update txn_member_payments as tmp
+set no_of_cycle   = tmdp.no_of_cycle,
+    days_in_cycle = tmdp.days_in_cycle
+from txn_member_diet_plans as tmdp
+where tmp.member_payment_id = tmdp.member_payment_id;
+
+update txn_member_payments set no_of_cycle = 1 , days_in_cycle = 7
+where no_of_cycle is null and days_in_cycle is null;
+
+alter table public.txn_member_payments
+    alter column no_of_cycle set not null;
+
+alter table public.txn_member_payments
+    alter column days_in_cycle set not null;
+
+INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
+VALUES (DEFAULT, 'DIET_SAC_CODE', '999319', 'Invoice');

@@ -1,4 +1,4 @@
-import { IBaseAdminUser } from '../base.interface';
+import { IBaseAdminUser, IAdminInfo } from '../base.interface';
 import { IMediaUpload } from './media-upload.interface';
 
 export interface IProductFee {
@@ -214,17 +214,11 @@ export interface IManageProduct extends IBaseProduct {
   variants?: IProductVariant[];
 }
 
-export interface IProduct extends IBaseProduct {
+export interface IProduct extends IBaseProduct, IAdminInfo {
   productId: number;
   active: boolean;
-  createdBy: number;
-  modifiedBy: number;
-  createdAt: Date;
-  updatedAt: Date;
   createdIp: string;
   modifiedIp: string;
-  createdByUser?: IBaseAdminUser;
-  updatedByUser?: IBaseAdminUser;
   /**
    * Variant/price structure linked to the product.
    * This is the primary structure for product variants and prices.

@@ -1,4 +1,4 @@
-import { IBaseAdminUser } from '../base.interface';
+import { IBaseAdminUser, IAdminInfo } from '../base.interface';
 import { IMediaUpload } from './media-upload.interface';
 import { IManageAddress } from './location.interface';
 import { BusinessTypeEnum } from '../enum';
@@ -34,14 +34,8 @@ export interface IManageFranchise extends IBaseFranchise {
   active: boolean;
 }
 
-export interface IFranchise extends IBaseFranchise {
+export interface IFranchise extends IBaseFranchise, IAdminInfo {
   franchiseId: number;
   active: boolean;
-  createdBy: number;
-  updatedBy: number;
-  createdAt: Date;
-  updatedAt: Date;
-  createdByUser?: IBaseAdminUser;
-  updatedByUser?: IBaseAdminUser;
 }
 

@@ -332,7 +332,7 @@ export class MemberDietPlanService {
       active: obj.active,
       deletable: false,
       createdBy: obj.createdBy,
-      updatedBy: obj.updatedBy,
+      modifiedBy: obj.updatedBy,
       createdByUser: CommonFunctionsUtil.getAdminShortInfo(obj.createdByUser, 'createdByUser'),
       updatedByUser: CommonFunctionsUtil.getAdminShortInfo(obj.updatedByUser, 'updatedByUser'),
       createdAt: obj.createdAt,

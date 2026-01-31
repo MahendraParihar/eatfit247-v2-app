@@ -71,13 +71,12 @@ import { ProductAdminModule } from '@server_1/modules/product';
     ReportsModule,
     ProductAdminModule,
     CommonModule.forRoot(
-      ['Common', 'Email', 'Google', 'Calendar', 'Payment'],
+      ['Common', 'Email', 'Google', 'Calendar', 'Payment', 'Invoice'],
       PlatformModule.getModels(),
     ),
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {
-}
+export class AppModule {}
 

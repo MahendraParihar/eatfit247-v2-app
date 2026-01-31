@@ -1,4 +1,4 @@
-import { IBaseAdminUser, IDropdownItem } from '../base.interface';
+import { IBaseAdminUser, IDropdownItem, IAdminInfo } from '../base.interface';
 import { TaxTypeEnum } from '../enum';
 
 export interface IBaseCountry {
@@ -14,15 +14,9 @@ export interface IManageCountry extends IBaseCountry {
   active: boolean;
 }
 
-export interface ICountry extends IBaseCountry {
+export interface ICountry extends IBaseCountry, IAdminInfo {
   countryId: number;
   active: boolean;
-  createdBy: number;
-  updatedBy: number;
-  createdAt: Date;
-  updatedAt: Date;
-  createdByUser?: IBaseAdminUser;
-  updatedByUser?: IBaseAdminUser;
 }
 
 export interface IBaseState {
@@ -37,16 +31,10 @@ export interface IManageState extends IBaseState {
   active: boolean;
 }
 
-export interface IState extends IBaseState {
+export interface IState extends IBaseState, IAdminInfo {
   stateId: number;
   country?: string; // Country name from relationship
   active: boolean;
-  createdBy: number;
-  updatedBy: number;
-  createdAt: Date;
-  updatedAt: Date;
-  createdByUser?: IBaseAdminUser;
-  updatedByUser?: IBaseAdminUser;
 }
 
 export interface IAddressBasic {

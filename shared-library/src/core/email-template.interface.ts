@@ -1,5 +1,5 @@
 /// <reference types="node" />
-import { IBaseAdminUser } from '../base.interface';
+import { IBaseAdminUser, IAdminInfo } from '../base.interface';
 import { EmailTemplateEnum } from '../enum';
 
 export interface IBaseEmailTemplate {
@@ -13,16 +13,10 @@ export interface IManageEmailTemplate extends IBaseEmailTemplate {
   active: boolean;
 }
 
-export interface IEmailTemplate extends IBaseEmailTemplate {
+export interface IEmailTemplate extends IBaseEmailTemplate, IAdminInfo {
   emailTemplateId: number;
   id?: number; // For compatibility with old interface
   active: boolean;
-  createdBy: number;
-  updatedBy: number;
-  createdAt: Date;
-  updatedAt: Date;
-  createdByUser?: IBaseAdminUser;
-  updatedByUser?: IBaseAdminUser;
 }
 
 export interface ISendEmailParams {

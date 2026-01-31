@@ -19,11 +19,11 @@ export class ProductService {
     @InjectModel(MstProductVariant)
     private readonly productVariantRepository: typeof MstProductVariant,
     @InjectModel(MstProductPrice)
-    private readonly productPriceRepository: typeof MstProductPrice
+    private readonly productPriceRepository: typeof MstProductPrice,
   ) {}
 
   public async findAll(searchDto: IBasicSearch): Promise<ITableList<IProduct>> {
-    const whereCondition: any = SearchUtil.filterBasicSearch(searchDto, "name");
+    const whereCondition: any = SearchUtil.filterBasicSearch(searchDto, 'name');
     const pageNumber = searchDto.page || 0;
     const pageSize = searchDto.limit || 15;
     const offset = pageNumber === 0 ? 0 : pageNumber * pageSize;
@@ -40,21 +40,20 @@ export class ProductService {
     });
     return {
       tableData: resList,
-      count: count
+      count: count,
     };
   }
 
   public async findAllPublic(searchDto: IBasicSearch): Promise<IPublicTableList<IPublicProduct>> {
-    const whereCondition: any = SearchUtil.filterBasicSearch(searchDto, "name");
+    const whereCondition: any = SearchUtil.filterBasicSearch(searchDto, 'name');
     whereCondition.active = true; // Only active products for public
     const pageNumber = searchDto.page || 0;
     const pageSize = searchDto.limit || 15;
     const offset = pageNumber === 0 ? 0 : pageNumber * pageSize;
-    
     // Load products with variants and prices
     const { rows, count } = await this.productRepository.findAndCountAll({
       where: whereCondition,
-      order: [["createdAt", "DESC"]],
+      order: [['createdAt', 'DESC']],
       offset: offset,
       limit: pageSize,
       include: [
@@ -73,15 +72,13 @@ export class ProductService {
         },
       ],
       raw: false, // Use model instances to properly handle associations
-      nest: true
+      nest: true,
     });
-    
     // Process each product to load variants and prices
     const resList: IPublicProduct[] = await Promise.all(
       rows.map(async (item: MstProduct) => {
         // Get product data
         const productData = item.toJSON ? item.toJSON() : item;
-        
         // Load variants and prices - check if already loaded via include
         let variants: MstProductVariant[] = [];
         if (item.variants && Array.isArray(item.variants) && item.variants.length > 0) {
@@ -102,14 +99,11 @@ export class ProductService {
             raw: false,
           });
         }
-        
         // Transform variants to the format needed
         const fees: any[] = [];
         const variantPayload: any[] = [];
-        
         for (const variant of variants) {
           const variantPrices: MstProductPrice[] = variant.prices || [];
-          
           const mappedPrices = variantPrices
             .filter(price => price.active !== false) // Only active prices
             .map((price) => {
@@ -121,10 +115,9 @@ export class ProductService {
                 sku: variant.sku || undefined,
                 isActive: price.active,
                 validFrom: price.validFrom,
-                validTo: price.validTo
+                validTo: price.validTo,
               };
               fees.push(feeEntry);
-              
               return {
                 id: price.id,
                 productVariantId: price.productVariantId,
@@ -135,31 +128,27 @@ export class ProductService {
                 validTo: price.validTo,
               };
             });
-          
           variantPayload.push({
             productVariantId: variant.productVariantId,
             productId: variant.productId,
             quantityValue: Number(variant.quantityValue),
             quantityUnit: variant.quantityUnit,
             sku: variant.sku || undefined,
-            prices: mappedPrices
+            prices: mappedPrices,
           });
         }
-        
         // Convert to model with variants and fees
         const product = this.convertToModel({
           ...productData,
           fees,
-          variants: variantPayload
+          variants: variantPayload,
         } as any);
-        
         return this.convertToPublic(product);
-      })
+      }),
     );
-    
     return {
       tableData: resList,
-      count: count
+      count: count,
     };
   }
 
@@ -181,7 +170,7 @@ export class ProductService {
       modifiedIp: item.modifiedIp,
       createdByUser: item.createdByUser,
       updatedByUser: item.updatedByUser,
-      variants: item.variants || []
+      variants: item.variants || [],
     };
   }
 
@@ -203,14 +192,13 @@ export class ProductService {
   }
 
   public async fetchById(id: number): Promise<IProduct> {
-    const find = await this.productRepository.scope("details").findOne({
+    const find = await this.productRepository.scope('details').findOne({
       where: { productId: id },
       raw: false, // Use model instance to properly handle associations
     });
     if (!find) {
-      throw new NotFoundException("Product not found");
+      throw new NotFoundException('Product not found');
     }
-    
     // Use variants from the scope if available, otherwise load them separately
     let variants: MstProductVariant[] = [];
     if (find.variants && Array.isArray(find.variants) && find.variants.length > 0) {
@@ -223,20 +211,17 @@ export class ProductService {
           {
             model: MstProductPrice,
             required: false,
-            as: "prices"
-          }
+            as: 'prices',
+          },
         ],
         raw: false, // Use model instances to properly handle associations
       });
     }
-
     const fees: any[] = [];
     const variantPayload: any[] = [];
-
     for (const variant of variants) {
       // Get prices from the association
       const variantPrices: MstProductPrice[] = variant.prices || [];
-
       const mappedPrices = variantPrices.map((price) => {
         const feeEntry = {
           quantity: Number(variant.quantityValue),
@@ -246,10 +231,9 @@ export class ProductService {
           sku: variant.sku || undefined,
           active: price.active,
           validFrom: price.validFrom,
-          validTo: price.validTo
+          validTo: price.validTo,
         };
         fees.push(feeEntry);
-
         return {
           id: price.id,
           productVariantId: price.productVariantId,
@@ -260,24 +244,22 @@ export class ProductService {
           validTo: price.validTo,
         };
       });
-
       variantPayload.push({
         productVariantId: variant.productVariantId,
         productId: variant.productId,
         quantityValue: Number(variant.quantityValue),
         quantityUnit: variant.quantityUnit,
         sku: variant.sku || undefined,
-        prices: mappedPrices
+        prices: mappedPrices,
       });
     }
-
     // Convert model instance to plain object for convertToModel
     // Sequelize model instances can be accessed like plain objects, but toJSON() ensures proper conversion
     const productData = find.toJSON ? find.toJSON() : find;
     return this.convertToModel({
       ...productData,
       fees,
-      variants: variantPayload
+      variants: variantPayload,
     } as any);
   }
 
@@ -291,7 +273,7 @@ export class ProductService {
       createdBy: adminId,
       modifiedBy: adminId,
       createdIp: cIp,
-      modifiedIp: cIp
+      modifiedIp: cIp,
     };
     const product = await this.productRepository.create(createObj);
     // Transform variants or fees to the format needed for replaceProductVariantsAndPrices
@@ -303,13 +285,13 @@ export class ProductService {
     id: number,
     obj: IManageProduct,
     cIp: string,
-    adminId: number
+    adminId: number,
   ): Promise<void> {
     const find = await this.productRepository.findOne({
-      where: { productId: id }
+      where: { productId: id },
     });
     if (!find) {
-      throw new NotFoundException("Product not found");
+      throw new NotFoundException('Product not found');
     }
     const updateObj = {
       name: obj.name,
@@ -318,10 +300,10 @@ export class ProductService {
       hsnCode: obj.hsnCode,
       active: obj.active,
       modifiedBy: adminId,
-      modifiedIp: cIp
+      modifiedIp: cIp,
     };
     await this.productRepository.update(updateObj, {
-      where: { productId: id }
+      where: { productId: id },
     });
     // Transform variants or fees to the format needed for replaceProductVariantsAndPrices
     const fees = this.transformToFeesFormat(obj);
@@ -332,28 +314,28 @@ export class ProductService {
     id: number,
     active: boolean,
     cIp: string,
-    adminId: number
+    adminId: number,
   ): Promise<void> {
     const find = await this.productRepository.findOne({
-      where: { productId: id }
+      where: { productId: id },
     });
     if (!find) {
-      throw new NotFoundException("Product not found");
+      throw new NotFoundException('Product not found');
     }
     const updateObj = {
       active: active,
       modifiedBy: adminId,
-      modifiedIp: cIp
+      modifiedIp: cIp,
     };
     await this.productRepository.update(updateObj, {
-      where: { productId: id }
+      where: { productId: id },
     });
   }
 
   public async getProductList(): Promise<IProduct[]> {
     const products = await this.productRepository.scope('list').findAll({
       where: { active: true },
-      order: [["createdAt", "DESC"]],
+      order: [['createdAt', 'DESC']],
       nest: true,
     });
     return products.map((item: any) => this.convertToModel(item));
@@ -362,9 +344,24 @@ export class ProductService {
   /**
    * Transform IManageProduct variants or fees to the fees format needed by replaceProductVariantsAndPrices
    */
-  private transformToFeesFormat(obj: IManageProduct): { quantity: number; unit: string; currency: string; price: number; isActive?: boolean; validFrom?: Date | string | null; validTo?: Date | string | null }[] {
-    const fees: { quantity: number; unit: string; currency: string; price: number; isActive?: boolean; validFrom?: Date | string | null; validTo?: Date | string | null }[] = [];
-
+  private transformToFeesFormat(obj: IManageProduct): {
+    quantity: number;
+    unit: string;
+    currency: string;
+    price: number;
+    isActive?: boolean;
+    validFrom?: Date | string | null;
+    validTo?: Date | string | null
+  }[] {
+    const fees: {
+      quantity: number;
+      unit: string;
+      currency: string;
+      price: number;
+      isActive?: boolean;
+      validFrom?: Date | string | null;
+      validTo?: Date | string | null
+    }[] = [];
     // If variants are provided, transform them to fees format
     if (obj.variants && obj.variants.length > 0) {
       for (const variant of obj.variants) {
@@ -393,11 +390,10 @@ export class ProductService {
           price: fee.price,
           isActive: fee.isActive !== undefined ? fee.isActive : true,
           validFrom: fee.validFrom,
-          validTo: fee.validTo
+          validTo: fee.validTo,
         });
       }
     }
-
     return fees;
   }
 
@@ -407,45 +403,50 @@ export class ProductService {
    */
   private async replaceProductVariantsAndPrices(
     productId: number,
-    fees: { quantity: number; unit: string; currency: string; price: number; isActive?: boolean; validFrom?: Date | string | null; validTo?: Date | string | null }[]
+    fees: {
+      quantity: number;
+      unit: string;
+      currency: string;
+      price: number;
+      isActive?: boolean;
+      validFrom?: Date | string | null;
+      validTo?: Date | string | null
+    }[],
   ): Promise<void> {
     // Remove existing prices and variants for this product
     const existingVariants = await this.productVariantRepository.findAll({
-      where: { productId }
+      where: { productId },
     });
     const variantIds = existingVariants.map((v) => v.productVariantId);
     if (variantIds.length > 0) {
       await this.productPriceRepository.destroy({
-        where: { productVariantId: variantIds }
+        where: { productVariantId: variantIds },
       });
       await this.productVariantRepository.destroy({
-        where: { productId }
+        where: { productId },
       });
     }
     // Create new variants and prices from the provided fees
     // Group fees by quantity and unit to create variants
     const variantMap = new Map<string, { quantity: number; unit: string; prices: typeof fees }>();
-    
     for (const fee of fees) {
       const key = `${fee.quantity}_${fee.unit}`;
       if (!variantMap.has(key)) {
         variantMap.set(key, {
           quantity: fee.quantity,
           unit: fee.unit,
-          prices: []
+          prices: [],
         });
       }
       variantMap.get(key)!.prices.push(fee);
     }
-
     // Create variants and their prices
     for (const [key, variantData] of variantMap) {
       const variant = await this.productVariantRepository.create({
         productId,
         quantityValue: variantData.quantity,
-        quantityUnit: variantData.unit
+        quantityUnit: variantData.unit,
       });
-
       // Create prices for this variant
       for (const priceData of variantData.prices) {
         await this.productPriceRepository.create({

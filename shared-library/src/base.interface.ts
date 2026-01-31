@@ -13,7 +13,7 @@ export interface ICommonTable {
   active: boolean;
   createdBy: number;
   createdAt: Date;
-  updatedBy: number;
+  modifiedBy: number;
   updatedAt: Date;
 }
 
@@ -69,3 +69,11 @@ export class IPaging {
   pageSize: number = 15;
 }
 
+export interface IAdminInfo {
+  createdBy: number;
+  modifiedBy: number;
+  createdAt: Date;
+  updatedAt: Date;
+  createdByUser?: IBaseAdminUser;
+  updatedByUser?: IBaseAdminUser;
+}

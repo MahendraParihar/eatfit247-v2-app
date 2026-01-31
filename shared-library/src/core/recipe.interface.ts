@@ -1,4 +1,4 @@
-import { IBaseAdminUser, ICommonSEO } from "../base.interface";
+import { IBaseAdminUser, ICommonSEO, IAdminInfo } from "../base.interface";
 import { IMediaUpload } from "./media-upload.interface";
 
 // Recipe Category Interfaces
@@ -15,15 +15,9 @@ export interface IManageRecipeCategory extends IBaseRecipeCategory {
   active: boolean;
 }
 
-export interface IRecipeCategory extends IBaseRecipeCategory {
+export interface IRecipeCategory extends IBaseRecipeCategory, IAdminInfo {
   recipeCategoryId: number;
   active: boolean;
-  createdBy: number;
-  updatedBy: number;
-  createdAt: Date;
-  updatedAt: Date;
-  createdByUser?: IBaseAdminUser;
-  updatedByUser?: IBaseAdminUser;
 }
 
 // Recipe Cuisine Interfaces
@@ -37,15 +31,9 @@ export interface IManageRecipeCuisine extends IBaseRecipeCuisine {
   active: boolean;
 }
 
-export interface IRecipeCuisine extends IBaseRecipeCuisine {
+export interface IRecipeCuisine extends IBaseRecipeCuisine, IAdminInfo {
   recipeCuisineId: number;
   active: boolean;
-  createdBy: number;
-  updatedBy: number;
-  createdAt: Date;
-  updatedAt: Date;
-  createdByUser?: IBaseAdminUser;
-  updatedByUser?: IBaseAdminUser;
 }
 
 // Recipe Type Interfaces
@@ -59,15 +47,9 @@ export interface IManageRecipeType extends IBaseRecipeType {
   active: boolean;
 }
 
-export interface IRecipeType extends IBaseRecipeType {
+export interface IRecipeType extends IBaseRecipeType, IAdminInfo {
   recipeTypeId: number;
   active: boolean;
-  createdBy: number;
-  updatedBy: number;
-  createdAt: Date;
-  updatedAt: Date;
-  createdByUser?: IBaseAdminUser;
-  updatedByUser?: IBaseAdminUser;
 }
 
 // Recipe Interfaces
@@ -91,18 +73,12 @@ export interface IManageRecipe extends IBaseRecipe {
   active: boolean;
 }
 
-export interface IRecipe extends IBaseRecipe {
+export interface IRecipe extends IBaseRecipe, IAdminInfo {
   recipeId: number;
   recipeType?: string;
   visitedCount: number;
   shareCount: number;
   active: boolean;
-  createdBy: number;
-  updatedBy: number;
-  createdAt: Date;
-  updatedAt: Date;
-  createdByUser?: IBaseAdminUser;
-  updatedByUser?: IBaseAdminUser;
   recipeCategoryMappings: {
     recipeCategoryId: number;
     recipeCategory: string;
@@ -126,7 +102,7 @@ export interface IRecipeCategoryMapping extends IBaseRecipeCategoryMapping {
   recipeCategoryMappingId: number;
   active: boolean;
   createdBy: number;
-  updatedBy: number;
+  modifiedBy: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -146,7 +122,7 @@ export interface IRecipeCuisineMapping extends IBaseRecipeCuisineMapping {
   recipeCuisineMappingId: number;
   active: boolean;
   createdBy: number;
-  updatedBy: number;
+  modifiedBy: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -167,7 +143,7 @@ export interface IRecipeNutritive extends IBaseRecipeNutritive {
   recipeNutritiveId: number;
   active: boolean;
   createdBy: number;
-  updatedBy: number;
+  modifiedBy: number;
   createdAt: Date;
   updatedAt: Date;
 }

@@ -73,7 +73,7 @@ export class ProgramPlanService {
       imagePath: CommonFunctionsUtil.buildImageUrl(item.imagePath),
       active: item.active,
       createdBy: item.createdBy,
-      updatedBy: item.modifiedBy,
+      modifiedBy: item.modifiedBy,
       createdAt: item.createdAt,
       updatedAt: item.updatedAt,
       createdByUser: item.createdByUser
@@ -274,7 +274,7 @@ export class ProgramPlanService {
   private convertToPublic(programPlan: IProgramPlan): any {
     const {
       createdBy,
-      updatedBy,
+      modifiedBy,
       createdAt,
       updatedAt,
       createdByUser,

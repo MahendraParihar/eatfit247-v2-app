@@ -1,4 +1,4 @@
-import { IBaseAdminUser, IDropdownItem } from "../base.interface";
+import { IBaseAdminUser, IDropdownItem, IAdminInfo } from "../base.interface";
 import { IMediaUpload } from "./media-upload.interface";
 
 export interface IBasicDietTemplate {
@@ -11,18 +11,12 @@ export interface IManageDietTemplate extends IBasicDietTemplate {
   dietTemplateId?: number;
 }
 
-export interface IDietTemplate extends IBasicDietTemplate {
+export interface IDietTemplate extends IBasicDietTemplate, IAdminInfo {
   dietTemplateId: number;
   showDaily: boolean;
   showWeekly: boolean;
   dietDetail: IDietTemplateDetail;
   active: boolean;
-  createdBy: number;
-  updatedBy: number;
-  createdAt: Date;
-  updatedAt: Date;
-  createdByUser?: IBaseAdminUser;
-  updatedByUser?: IBaseAdminUser;
 }
 
 export interface IDietPlanRecipes {

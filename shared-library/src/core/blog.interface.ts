@@ -1,4 +1,4 @@
-import { IBaseAdminUser, ICommonSEO, ICommonTable } from "../base.interface";
+import { IBaseAdminUser, ICommonSEO, ICommonTable, IAdminInfo } from "../base.interface";
 import { IMediaUpload } from "./media-upload.interface";
 
 export interface IBaseBlog {
@@ -18,7 +18,7 @@ export interface IManageBlog extends IBaseBlog {
   blogId?: number;
 }
 
-export interface IBlog extends IBaseBlog, ICommonTable {
+export interface IBlog extends IBaseBlog, ICommonTable, IAdminInfo {
   blogId: number;
   blogCategory: string;
   blogAuthor: string;
@@ -26,8 +26,6 @@ export interface IBlog extends IBaseBlog, ICommonTable {
   shareCount: number;
   url: string;
   active: boolean;
-  createdByUser?: IBaseAdminUser;
-  updatedByUser?: IBaseAdminUser;
 }
 
 // Blog Category Interfaces
@@ -45,16 +43,10 @@ export interface IManageBlogCategory {
   active: boolean;
 }
 
-export interface IBlogCategory extends IBaseBlogCategory {
+export interface IBlogCategory extends IBaseBlogCategory, IAdminInfo {
   blogCategoryId: number;
   id?: number; // For compatibility with old interface
   active: boolean;
-  createdBy: number;
-  updatedBy: number;
-  createdAt: Date;
-  updatedAt: Date;
-  createdByUser?: IBaseAdminUser;
-  updatedByUser?: IBaseAdminUser;
 }
 
 // Blog Author Interfaces
@@ -73,15 +65,9 @@ export interface IManageBlogAuthor extends IBaseBlogAuthor {
   active: boolean;
 }
 
-export interface IBlogAuthor extends IBaseBlogAuthor {
+export interface IBlogAuthor extends IBaseBlogAuthor, IAdminInfo {
   blogAuthorId: number;
   active: boolean;
-  createdBy: number;
-  updatedBy: number;
-  createdAt: Date;
-  updatedAt: Date;
-  createdByUser?: IBaseAdminUser;
-  updatedByUser?: IBaseAdminUser;
 }
 
 // Blog Comment Interfaces
@@ -98,15 +84,9 @@ export interface IManageBlogComment extends IBaseBlogComment {
   active: boolean;
 }
 
-export interface IBlogComment extends IBaseBlogComment {
+export interface IBlogComment extends IBaseBlogComment, IAdminInfo {
   blogCommentId: number;
   active: boolean;
-  createdBy: number;
-  updatedBy: number;
-  createdAt: Date;
-  updatedAt: Date;
-  createdByUser?: IBaseAdminUser;
-  updatedByUser?: IBaseAdminUser;
   member?: {
     memberId: number;
     firstName?: string;

@@ -1,4 +1,4 @@
-import { IBaseAdminUser } from "../base.interface";
+import { IBaseAdminUser, IAdminInfo } from "../base.interface";
 import { IDietPlanDetail } from "./diet-template.interface";
 
 export interface IBasicMemberDietPlan {
@@ -17,7 +17,7 @@ export interface IManageMemberDietPlan extends IBasicMemberDietPlan {
   memberDietPlanId?: number;
 }
 
-export interface IMemberDietPlan extends IBasicMemberDietPlan {
+export interface IMemberDietPlan extends IBasicMemberDietPlan, IAdminInfo {
   program: string;
   programCategory: string;
   dietPlanStatusId: number;
@@ -30,12 +30,6 @@ export interface IMemberDietPlan extends IBasicMemberDietPlan {
   showDaily: boolean;
   showWeekly: boolean;
   memberDietPlanId: number;
-  createdBy: number;
-  updatedBy: number;
-  createdAt: Date;
-  updatedAt: Date;
-  createdByUser?: IBaseAdminUser;
-  updatedByUser?: IBaseAdminUser;
 }
 
 export interface ICyclePlan {

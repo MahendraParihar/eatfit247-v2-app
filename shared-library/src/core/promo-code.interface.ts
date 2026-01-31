@@ -1,4 +1,4 @@
-import { IBaseAdminUser, ICommonTable } from "../base.interface";
+import { IBaseAdminUser, ICommonTable, IAdminInfo } from "../base.interface";
 import { DiscountTypeEnum } from "../enum";
 
 export interface IBasePromoCode {
@@ -16,11 +16,9 @@ export interface IManagePromoCode extends IBasePromoCode {
   promoCodeId?: number;
 }
 
-export interface IPromoCode extends IBasePromoCode, ICommonTable {
+export interface IPromoCode extends IBasePromoCode, ICommonTable, IAdminInfo {
   promoCodeId: number;
   usedCount: number;
-  createdByUser?: IBaseAdminUser;
-  updatedByUser?: IBaseAdminUser;
 }
 
 export interface IApplyPromoCodeResult {

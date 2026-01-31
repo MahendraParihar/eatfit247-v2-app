@@ -1,4 +1,4 @@
-import { IBaseAdminUser } from '../base.interface';
+import { IBaseAdminUser, IAdminInfo } from '../base.interface';
 import { IMediaUpload } from './media-upload.interface';
 
 export interface IBaseMember {
@@ -22,18 +22,12 @@ export interface IManageMember extends IBaseMember {
   password?: string; // For create/update operations
 }
 
-export interface IMember extends IBaseMember {
+export interface IMember extends IBaseMember, IAdminInfo {
   memberId: number;
   referrer?: string; // Referrer name from relationship
   franchise?: string; // Franchise name from relationship
   country?: string; // Country name from relationship
   nutritionist?: string; // Nutritionist name from relationship
   userStatus?: string; // User status from relationship
-  createdBy: number;
-  updatedBy: number;
-  createdAt: Date;
-  updatedAt: Date;
-  createdByUser?: IBaseAdminUser;
-  updatedByUser?: IBaseAdminUser;
 }
 

@@ -1,4 +1,4 @@
-import { TaxMode, TaxTypeEnum, InvoiceItemType } from '../../enum';
+import { TaxMode, TaxTypeEnum, TransactionType } from '../../enum';
 
 /**
  * Invoice Document - Canonical JSON structure for invoices
@@ -16,9 +16,12 @@ export interface IInvoiceDocument {
   payment: IInvoicePayment;
   qrCode?: IInvoiceQrCode;
   footer: IInvoiceFooter;
+  termsAndConditions?: string[];
+  currencyCode: string;
 }
 
 export interface IInvoiceHeader {
+  brandName: string;
   title: string; // e.g., "TAX INVOICE", "INVOICE"
   invoiceNumber: string;
   invoiceDate: string; // ISO date string
@@ -45,7 +48,7 @@ export interface IInvoiceParty {
 }
 
 export interface IInvoiceItem {
-  type: InvoiceItemType; // SERVICE or PRODUCT
+  type: TransactionType; // SERVICE or PRODUCT
   description: string;
   sacCode?: string; // Service Accounting Code (for SERVICE items when GST)
   hsnCode?: string; // Harmonized System of Nomenclature (for PRODUCT items when GST)
@@ -58,9 +61,10 @@ export interface IInvoiceItem {
 }
 
 export interface IInvoicePricing {
-  subtotal: number; // Sum of all item amounts
-  discount: number; // Total discount amount
-  netAmount: number; // subtotal - discount
+  subtotal: number;
+  discount: number;
+  netAmount: number;
+  taxAmount: number;
 }
 
 export interface IInvoiceTax {
@@ -74,8 +78,8 @@ export interface IInvoiceTax {
 export interface IInvoiceTaxRow {
   label: string; // "CGST", "SGST", "IGST", "VAT", etc.
   amount: number;
-  percentage?: number; // Optional percentage for display
-  taxableAmount?: number; // Taxable amount (base amount - discount) for this tax row
+  percentage?: number;
+  taxableAmount?: number;
 }
 
 export interface IInvoiceTotal {

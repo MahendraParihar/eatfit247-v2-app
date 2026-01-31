@@ -171,7 +171,7 @@ export class MemberHealthIssueService {
         healthIssueId: json.healthIssueId,
         healthIssue: json.healthIssue?.healthIssue || '',
         createdBy: json.createdBy,
-        updatedBy: json.modifiedBy,
+        modifiedBy: json.modifiedBy,
         createdAt: json.createdAt,
         updatedAt: json.updatedAt,
         createdByUser: json.createdByUser
@@ -193,7 +193,7 @@ export class MemberHealthIssueService {
       healthIssue: item.healthIssue,
       isSelected: !!txnMemberHealthIssue?.memberHealthIssueId,
       createdBy: txnMemberHealthIssue?.createdBy,
-      updatedBy: txnMemberHealthIssue?.modifiedBy,
+      modifiedBy: txnMemberHealthIssue?.modifiedBy,
       createdAt: txnMemberHealthIssue?.createdAt,
       updatedAt: txnMemberHealthIssue?.updatedAt,
       createdByUser: txnMemberHealthIssue?.createdByUser

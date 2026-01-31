@@ -45,7 +45,7 @@ export class FaqCategoryService {
       url: item.url,
       active: item.active,
       createdBy: item.createdBy,
-      updatedBy: item.modifiedBy,
+      modifiedBy: item.modifiedBy,
       createdAt: item.createdAt,
       updatedAt: item.updatedAt,
       createdByUser: item.createdByUser,
@@ -173,7 +173,7 @@ export class FaqCategoryService {
    * Convert IFaqCategory to IPublicFaqCategory (removes admin fields)
    */
   private convertToPublic(category: IFaqCategory): IPublicFaqCategory {
-    const { createdBy, updatedBy, createdAt, updatedAt, active, createdByUser, updatedByUser, ...publicCategory } = category;
+    const { createdBy, modifiedBy, createdAt, updatedAt, active, createdByUser, updatedByUser, ...publicCategory } = category;
     return publicCategory as IPublicFaqCategory;
   }
 }

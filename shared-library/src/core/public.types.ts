@@ -20,7 +20,6 @@ import { ITableList } from './table-list.interface';
 export type PublicData<T> = Omit<
   T,
   | 'createdBy'
-  | 'updatedBy'
   | 'modifiedBy'
   | 'createdAt'
   | 'updatedAt'
@@ -34,43 +33,43 @@ export type PublicData<T> = Omit<
 
 /**
  * Public Blog Interface
- * Excludes: createdBy, updatedBy, modifiedBy, createdAt, updatedAt, createdIp, updatedIp, modifiedIp, active, createdByUser, updatedByUser
+ * Excludes: createdBy, modifiedBy, createdAt, updatedAt, createdIp, updatedIp, modifiedIp, active, createdByUser, updatedByUser
  */
 export type IPublicBlog = PublicData<IBlog>;
 
 /**
  * Public Banner Interface
- * Excludes: createdBy, updatedBy, modifiedBy, createdAt, updatedAt, createdIp, updatedIp, modifiedIp, active, createdByUser, updatedByUser
+ * Excludes: createdBy, modifiedBy, createdAt, updatedAt, createdIp, updatedIp, modifiedIp, active, createdByUser, updatedByUser
  */
 export type IPublicBanner = PublicData<IBanner>;
 
 /**
  * Public Press Media Interface
- * Excludes: createdBy, updatedBy, modifiedBy, createdAt, updatedAt, createdIp, updatedIp, modifiedIp, active, createdByUser, updatedByUser
+ * Excludes: createdBy, modifiedBy, createdAt, updatedAt, createdIp, updatedIp, modifiedIp, active, createdByUser, updatedByUser
  */
 export type IPublicPressMedia = PublicData<IPressMedia>;
 
 /**
  * Public Program Interface
- * Excludes: createdBy, updatedBy, modifiedBy, createdAt, updatedAt, createdIp, updatedIp, modifiedIp, active, createdByUser, updatedByUser
+ * Excludes: createdBy, modifiedBy, createdAt, updatedAt, createdIp, updatedIp, modifiedIp, active, createdByUser, updatedByUser
  */
 export type IPublicProgram = PublicData<IProgram>;
 
 /**
  * Public FAQ Interface
- * Excludes: createdBy, updatedBy, modifiedBy, createdAt, updatedAt, createdIp, updatedIp, modifiedIp, active, createdByUser, updatedByUser
+ * Excludes: createdBy, modifiedBy, createdAt, updatedAt, createdIp, updatedIp, modifiedIp, active, createdByUser, updatedByUser
  */
 export type IPublicFaq = PublicData<IFaq>;
 
 /**
  * Public FAQ Category Interface
- * Excludes: createdBy, updatedBy, modifiedBy, createdAt, updatedAt, createdIp, updatedIp, modifiedIp, active, createdByUser, updatedByUser
+ * Excludes: createdBy, modifiedBy, createdAt, updatedAt, createdIp, updatedIp, modifiedIp, active, createdByUser, updatedByUser
  */
 export type IPublicFaqCategory = PublicData<IFaqCategory>;
 
 /**
  * Public Product Interface
- * Excludes: createdBy, updatedBy, modifiedBy, createdAt, updatedAt, createdIp, updatedIp, modifiedIp, active, createdByUser, updatedByUser
+ * Excludes: createdBy, modifiedBy, createdAt, updatedAt, createdIp, updatedIp, modifiedIp, active, createdByUser, updatedByUser
  */
 export type IPublicProduct = PublicData<IProduct>;
 

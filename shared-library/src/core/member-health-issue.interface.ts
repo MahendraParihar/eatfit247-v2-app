@@ -14,7 +14,7 @@ export interface IMemberHealthIssue extends IBaseMemberHealthIssue {
   healthIssue: string; // Health issue name for display
   isSelected?: boolean;
   createdBy?: number;
-  updatedBy?: number;
+  modifiedBy?: number;
   createdAt?: Date;
   updatedAt?: Date;
   createdByUser?: IBaseAdminUser;

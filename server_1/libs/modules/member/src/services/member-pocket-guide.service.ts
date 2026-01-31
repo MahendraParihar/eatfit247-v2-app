@@ -181,7 +181,7 @@ export class MemberPocketGuideService {
       pocketGuide: item.pocketGuide,
       isSelected: !!txnMemberPocketGuide?.memberPocketGuideId,
       createdBy: txnMemberPocketGuide?.createdBy,
-      updatedBy: txnMemberPocketGuide?.modifiedBy,
+      modifiedBy: txnMemberPocketGuide?.modifiedBy,
       createdAt: txnMemberPocketGuide?.createdAt,
       updatedAt: txnMemberPocketGuide?.updatedAt,
       createdByUser: CommonFunctionsUtil.getAdminShortInfo(

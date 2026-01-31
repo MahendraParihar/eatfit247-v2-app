@@ -143,7 +143,7 @@ export class MemberIssueService {
       issueStatus: item.issueStatus.issueStatus,
       issueCategory: item.issueCategory.issueCategory,
       createdBy: item.createdBy,
-      updatedBy: item.modifiedBy,
+      modifiedBy: item.modifiedBy,
       createdAt: item.createdAt,
       updatedAt: item.updatedAt,
       createdByUser: item.createdByUser

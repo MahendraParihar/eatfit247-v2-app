@@ -166,7 +166,7 @@ export class MemberProductService {
       gatewayPaymentId: item.gatewayPaymentId,
       paymentLink: item.paymentLink,
       createdBy: item.createdBy,
-      updatedBy: item.modifiedBy,
+      modifiedBy: item.modifiedBy,
       createdAt: item.createdAt,
       updatedAt: item.updatedAt,
       createdByUser: item.createdByUser
@@ -794,7 +794,7 @@ export class MemberProductService {
       currency: productModel.currency,
       orderItems: orderItemsForInvoice,
     };
-    // Generate invoice document using the new product order mapper
+    // Generate an invoice document using the new product order mapper
     const invoiceDoc = mapProductOrderToInvoiceDocument(
       productOrderData,
       franchise,

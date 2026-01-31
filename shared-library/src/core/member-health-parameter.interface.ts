@@ -1,4 +1,4 @@
-import { IBaseAdminUser, IDropdownItem } from "../base.interface";
+import { IBaseAdminUser, IDropdownItem, IAdminInfo } from "../base.interface";
 
 export interface IBasicMemberHealthParameter {
   healthParameterId: number;
@@ -23,16 +23,10 @@ export interface IManageMemberHealthParameterLog extends IBaseMemberHealthParame
 }
 
 export interface IMemberHealthParameterLog
-  extends IBaseMemberHealthParameterLog {
+  extends IBaseMemberHealthParameterLog, IAdminInfo {
   healthParameters: IMemberHealthParameter[];
   memberHealthParameterLogId: number;
   active: boolean;
-  createdBy: number;
-  updatedBy: number;
-  createdAt: Date;
-  updatedAt: Date;
-  createdByUser?: IBaseAdminUser;
-  updatedByUser?: IBaseAdminUser;
 }
 
 export interface IHealthParameterMaster {

@@ -152,7 +152,7 @@ export class BlogService {
       },
       active: find.active,
       createdBy: find.createdBy,
-      updatedBy: find.modifiedBy,
+      modifiedBy: find.modifiedBy,
       imagePath: CommonFunctionsUtil.buildImageUrl(find.imagePath),
       createdAt: find.createdAt,
       updatedAt: find.updatedAt,
@@ -170,7 +170,7 @@ export class BlogService {
    * Omits: createdBy, updatedBy, modifiedBy, createdAt, updatedAt, createdIp, updatedIp, modifiedIp, active, createdByUser, updatedByUser
    */
   private convertToPublic(blog: IBlog): IPublicBlog {
-    const { createdBy, updatedBy, createdAt, updatedAt, active, createdByUser, updatedByUser, ...publicBlog } = blog;
+    const { createdBy, modifiedBy, createdAt, updatedAt, active, createdByUser, updatedByUser, ...publicBlog } = blog;
     return publicBlog as IPublicBlog;
   }
 

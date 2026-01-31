@@ -1,4 +1,4 @@
-import { IBaseAdminUser, ICommonSEO } from "../base.interface";
+import { IBaseAdminUser, ICommonSEO, IAdminInfo } from "../base.interface";
 import { IMediaUpload } from "./media-upload.interface";
 
 export interface IBaseProgram {
@@ -19,15 +19,9 @@ export interface IManageProgram extends IBaseProgram {
   active: boolean;
 }
 
-export interface IProgram extends IBaseProgram {
+export interface IProgram extends IBaseProgram, IAdminInfo {
   programId: number;
   programCategory: string;
   active: boolean;
-  createdBy: number;
-  updatedBy: number;
-  createdAt: Date;
-  updatedAt: Date;
-  createdByUser?: IBaseAdminUser;
-  updatedByUser?: IBaseAdminUser;
 }
 

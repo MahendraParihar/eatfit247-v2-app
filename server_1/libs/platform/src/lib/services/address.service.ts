@@ -180,7 +180,7 @@ export class AddressService {
       state: item.state?.state || '',
       country: item.country?.country || '',
       createdBy: item.createdBy,
-      updatedBy: item.modifiedBy,
+      modifiedBy: item.modifiedBy,
       createdAt: item.createdAt,
       updatedAt: item.updatedAt,
       createdByUser: item.createdByUser

@@ -1,5 +1,5 @@
 import { IInvoiceDocument, IInvoiceItem, IInvoiceTaxRow } from './invoice-document.interface';
-import { TaxMode, TaxTypeEnum, InvoiceItemType, TransactionType } from '../../enum';
+import { TaxMode, TaxTypeEnum, TransactionType } from '../../enum';
 import { IMemberPayment } from '../member-payment.interface';
 import { IFranchise } from '../franchise.interface';
 import { IAddress } from '../location.interface';
@@ -13,13 +13,9 @@ export interface IMemberInfo {
   fullName?: string;
   emailId?: string;
   contactNumber?: string;
+  businessRegNumber?: string;
 }
 
-/**
- * SAC Code for Diet Consultancy Services (GST)
- * Standard SAC code for nutrition/diet consultation services
- */
-const SAC_CODE_DIET_CONSULTANCY = '999319';
 /**
  * Default HSN Code for Products (can be overridden per product)
  */
@@ -32,20 +28,20 @@ const DEFAULT_HSN_CODE = '30049099'; // Example: Other medicaments
  * @param payment - Member payment entity with tax information
  * @param franchise - Franchise entity for seller information
  * @param memberAddress - Member address for buyer information
- * @param transactionType - SERVICE or PRODUCT (defaults to SERVICE)
- * @param itemDescription - Description for the invoice line item
  * @param franchiseAddress - Franchise address
+ * @param items
  * @param memberInfo
+ * @param conditions
  * @returns InvoiceDocument ready for PDF/UI rendering
  */
 export function mapPaymentToInvoiceDocument(
   payment: IMemberPayment,
   franchise: IFranchise,
   memberAddress: IAddress,
-  transactionType: TransactionType = TransactionType.SERVICE,
   franchiseAddress: IAddress,
-  itemDescription?: string,
+  items: IInvoiceItem[],
   memberInfo?: IMemberInfo,
+  conditions: string[] = [],
 ): IInvoiceDocument {
   // Determine tax type and mode
   const taxType = payment.taxType as TaxTypeEnum;
@@ -69,21 +65,6 @@ export function mapPaymentToInvoiceDocument(
       payment.taxAmount,
     );
   }
-  // Determine item type
-  const itemType: InvoiceItemType =
-    transactionType === TransactionType.PRODUCT ? InvoiceItemType.PRODUCT : InvoiceItemType.SERVICE;
-  // Build invoice items
-  const items: IInvoiceItem[] = [
-    {
-      type: itemType,
-      description: itemDescription || `${payment.program} - ${payment.programPlan}`,
-      sacCode: itemType === InvoiceItemType.SERVICE && taxType === TaxTypeEnum.GST ? SAC_CODE_DIET_CONSULTANCY : undefined,
-      hsnCode: itemType === InvoiceItemType.PRODUCT && taxType === TaxTypeEnum.GST ? DEFAULT_HSN_CODE : undefined,
-      qty: 1,
-      rate: payment.orderAmount,
-      amount: payment.orderAmount,
-    },
-  ];
   // Build seller (franchise) information
   const seller = buildSellerInfo(franchise, taxType, franchiseAddress);
   // Build buyer (member) information
@@ -99,6 +80,7 @@ export function mapPaymentToInvoiceDocument(
   const taxNote = buildTaxNote(taxMode, payment.invoiceNote);
   return {
     header: {
+      brandName: franchise.companyName,
       title: taxType === TaxTypeEnum.GST ? 'TAX INVOICE' : 'INVOICE',
       invoiceNumber: payment.invoiceId || `INV-${payment.memberPaymentId}`,
       invoiceDate: payment.paymentDate.toString(),
@@ -110,7 +92,8 @@ export function mapPaymentToInvoiceDocument(
     pricing: {
       subtotal: payment.orderAmount,
       discount: payment.discountAmount,
-      netAmount: payment.orderAmount - payment.discountAmount,
+      taxAmount: payment.taxAmount,
+      netAmount: payment.totalAmount,
     },
     tax: {
       taxType,
@@ -137,8 +120,11 @@ export function mapPaymentToInvoiceDocument(
     footer: {
       legalNote: 'This is a computer-generated invoice and is valid without signature.',
     },
+    termsAndConditions: conditions,
+    currencyCode: payment.currency,
   };
 }
+
 /**
  * Builds tax rows from taxObj
  */
@@ -206,6 +192,7 @@ function buildTaxRows(
   }
   return rows;
 }
+
 /**
  * Builds QR code value for Indian GST invoices
  * Format: JSON string with required fields
@@ -226,6 +213,7 @@ function buildQrCodeValue(
   };
   return JSON.stringify(qrData);
 }
+
 /**
  * Builds seller (franchise) information
  */
@@ -259,7 +247,6 @@ function buildSellerInfo(
   if (franchise.logo && Array.isArray(franchise.logo) && franchise.logo.length > 0) {
     logoUrl = franchise.logo[0].webUrl;
   }
-
   return {
     name: franchise.companyName || `${franchise.firstName} ${franchise.lastName}`,
     address,
@@ -271,6 +258,7 @@ function buildSellerInfo(
     logo: logoUrl,
   };
 }
+
 /**
  * Builds buyer (member) information
  */
@@ -309,6 +297,7 @@ function buildBuyerInfo(
     email: memberInfo?.emailId,
   };
 }
+
 /**
  * Builds tax note based on tax mode
  */
@@ -376,6 +365,7 @@ export interface IProductOrderData {
  * @param memberAddress - Member address for buyer information
  * @param franchiseAddress - Franchise address
  * @param memberInfo - Member contact information
+ * @param conditions
  * @returns InvoiceDocument ready for PDF/UI rendering
  */
 export function mapProductOrderToInvoiceDocument(
@@ -384,17 +374,17 @@ export function mapProductOrderToInvoiceDocument(
   memberAddress: IAddress,
   franchiseAddress: IAddress,
   memberInfo?: IMemberInfo,
+  conditions: string[] = [],
 ): IInvoiceDocument {
   // Use the first order item's tax settings (all items should have consistent tax type/mode)
   const firstItem = productOrder.orderItems[0];
   const taxType = firstItem?.taxType || TaxTypeEnum.NONE;
   const taxMode = firstItem?.taxMode || TaxMode.NO_TAX;
-
   // Build invoice items from order items
   const items: IInvoiceItem[] = productOrder.orderItems.map((orderItem) => ({
-    type: InvoiceItemType.PRODUCT,
+    type: TransactionType.PRODUCT,
     description: `${orderItem.productName} ${orderItem.quantityLabel}`,
-    hsnCode: taxType === TaxTypeEnum.GST ? (orderItem.hsnCode || DEFAULT_HSN_CODE) : undefined,
+    hsnCode: taxType === TaxTypeEnum.GST ? orderItem.hsnCode : undefined,
     qty: orderItem.quantity,
     rate: orderItem.unitPrice,
     amount: orderItem.baseAmount,
@@ -402,10 +392,8 @@ export function mapProductOrderToInvoiceDocument(
     taxAmount: orderItem.taxAmount,
     totalAmount: orderItem.totalAmount,
   }));
-
   // Aggregate tax rows across all order items by tax type and rate
   const taxRowsMap = new Map<string, { label: string; amount: number; percentage: number; taxableAmount: number }>();
-
   productOrder.orderItems.forEach((orderItem) => {
     if (orderItem.taxObj && taxMode !== TaxMode.NO_TAX && taxMode !== TaxMode.RCM_IMPORT_SERVICE) {
       Object.entries(orderItem.taxObj).forEach(([taxLabel, taxData]) => {
@@ -413,7 +401,6 @@ export function mapProductOrderToInvoiceDocument(
         const existing = taxRowsMap.get(key);
         // Calculate taxable amount (base amount - discount)
         const taxableAmount = orderItem.baseAmount - (orderItem.discountAmount || 0);
-        
         if (existing) {
           existing.amount += taxData.amount;
           existing.taxableAmount += taxableAmount;
@@ -428,7 +415,6 @@ export function mapProductOrderToInvoiceDocument(
       });
     }
   });
-
   // Convert tax rows map to array
   const taxRows: IInvoiceTaxRow[] = Array.from(taxRowsMap.values()).map((row) => ({
     label: row.label,
@@ -436,10 +422,8 @@ export function mapProductOrderToInvoiceDocument(
     percentage: row.percentage,
     taxableAmount: row.taxableAmount,
   }));
-
   // Determine if QR code should be enabled
   const qrCodeEnabled = taxType === TaxTypeEnum.GST && taxMode === TaxMode.DOMESTIC_GST;
-
   // Build QR code value if enabled
   let qrCodeValue = '';
   if (qrCodeEnabled && franchise.gstNumber) {
@@ -451,10 +435,8 @@ export function mapProductOrderToInvoiceDocument(
       productOrder.taxAmount,
     );
   }
-
   // Build seller (franchise) information
   const seller = buildSellerInfo(franchise, taxType, franchiseAddress);
-
   // Build buyer (member) information
   const buyer = buildBuyerInfo(
     memberAddress,
@@ -464,12 +446,11 @@ export function mapProductOrderToInvoiceDocument(
       fullName: productOrder.memberName,
     },
   );
-
   // Build tax note
   const taxNote = buildTaxNote(taxMode, firstItem?.invoiceNote);
-
   return {
     header: {
+      brandName: franchise.companyName,
       title: taxType === TaxTypeEnum.GST ? 'TAX INVOICE' : 'INVOICE',
       invoiceNumber: productOrder.invoiceId || `INV-${productOrder.memberProductId}`,
       invoiceDate: productOrder.paymentDate?.toString() || new Date().toISOString(),
@@ -481,7 +462,8 @@ export function mapProductOrderToInvoiceDocument(
     pricing: {
       subtotal: productOrder.subTotalAmount,
       discount: productOrder.discountAmount,
-      netAmount: productOrder.subTotalAmount - productOrder.discountAmount,
+      netAmount: productOrder.totalAmount,
+      taxAmount: productOrder.taxAmount,
     },
     tax: {
       taxType,
@@ -509,6 +491,8 @@ export function mapProductOrderToInvoiceDocument(
     footer: {
       legalNote: 'This is a computer-generated invoice and is valid without signature.',
     },
+    termsAndConditions: conditions,
+    currencyCode: productOrder.currency,
   };
 }
 
