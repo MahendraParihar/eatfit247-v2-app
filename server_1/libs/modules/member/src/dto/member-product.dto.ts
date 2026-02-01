@@ -53,8 +53,8 @@ export class CreateMemberProductDto implements IManageMemberProduct {
   paymentStatusId!: number;
   @IsNotEmpty()
   @IsString()
-  @MaxLength(InputLengthEnum.CHAR_10)
-  currencyCode!: string;
+  @MaxLength(InputLengthEnum.CHAR_5)
+  currency!: string;
   @IsOptional()
   @IsString()
   @MaxLength(InputLengthEnum.CHAR_100)
@@ -160,7 +160,7 @@ export class ProductVariantTaxResultDto implements IProductVariantTaxResult {
   @IsNotEmpty()
   @IsString()
   @MaxLength(InputLengthEnum.CHAR_10)
-  currencyCode!: string;
+  currency!: string;
 
   @IsNotEmpty()
   @IsNumber()
