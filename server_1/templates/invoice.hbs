@@ -406,7 +406,7 @@
     <th style="width: 6%;" class="text-center">Qty</th>
     <th style="width: 8%;" class="text-right">Price/Unit</th>
     <th style="width: 8%;" class="text-right">Disc.</th>
-    <th style="width: 8%;" class="text-right">Tax %.</th>
+    <th style="width: 8%;" class="text-right">Tax (%)</th>
     <th style="width: 8%;" class="text-right">Tax Amt</th>
     <th style="width: 10%;" class="text-right">Amount ({{invoice.header.currency}})</th>
   </tr>
@@ -425,7 +425,7 @@
       <td class="text-center">{{this.qty}}</td>
       <td class="text-right">{{formatCurrency this.unitPrice }}</td>
       <td class="text-right">{{#if this.discount}}{{formatCurrency this.discount }}{{else}}-{{/if}}</td>
-      <td class="text-right">{{#if this.effectiveTaxRate}}{{this.effectiveTaxRate }}{{else}}-{{/if}}</td>
+      <td class="text-right">{{#if this.taxPercentage}}{{this.taxPercentage }}{{else}}-{{/if}}</td>
       <td class="text-right">{{#if this.taxAmount}}{{formatCurrency this.taxAmount }}{{else}}-{{/if}}</td>
       <td class="text-right">{{#if this.totalAmount}}{{formatCurrency this.totalAmount }}{{else}}-{{/if}}</td>
     </tr>

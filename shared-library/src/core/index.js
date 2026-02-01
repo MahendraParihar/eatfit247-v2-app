@@ -34,7 +34,6 @@ __exportStar(require("./pocket-guide.interface"), exports);
 __exportStar(require("./call-log.interface"), exports);
 __exportStar(require("./assessment-master.interface"), exports);
 __exportStar(require("./location.interface"), exports);
-__exportStar(require("./address-type.interface"), exports);
 __exportStar(require("./member.interface"), exports);
 __exportStar(require("./member-pocket-guide.interface"), exports);
 __exportStar(require("./member-issue.interface"), exports);
@@ -44,5 +43,4 @@ __exportStar(require("./admin-user.interface"), exports);
 __exportStar(require("./email-template.interface"), exports);
 __exportStar(require("./issue.interface"), exports);
 __exportStar(require("./banner.interface"), exports);
-__exportStar(require("./call-log.interface"), exports);
 //# sourceMappingURL=index.js.map
