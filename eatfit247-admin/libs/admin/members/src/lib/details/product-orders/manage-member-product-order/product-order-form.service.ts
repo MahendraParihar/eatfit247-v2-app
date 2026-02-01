@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import {
   ICalculateTaxRequest,
@@ -33,7 +33,9 @@ export interface SelectedProduct {
   providedIn: 'root'
 })
 export class ProductOrderFormService {
-  constructor(private apiService: MembersApiService) {}
+  private readonly apiService = inject(MembersApiService);
+
+  constructor() {}
 
   /**
    * Calculate tax from backend based on form values

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { ApiBaseService, HttpService } from '@core';
+import { ApiBaseService } from '@core';
 import { IBasicSearch, ICountry, ITableList, ITaxMaster } from '@eatfit247-shared-lib';
 
 @Injectable({
@@ -8,8 +8,8 @@ import { IBasicSearch, ICountry, ITableList, ITaxMaster } from '@eatfit247-share
 export class TaxMasterApiService extends ApiBaseService {
   private readonly endpoint = '/tax-master';
 
-  constructor(httpService: HttpService) {
-    super(httpService);
+  constructor() {
+    super();
   }
 
   async getList(params?: IBasicSearch): Promise<ITableList<ITaxMaster>> {

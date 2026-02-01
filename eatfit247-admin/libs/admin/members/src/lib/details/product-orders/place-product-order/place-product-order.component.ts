@@ -1,8 +1,17 @@
 import { Component, computed, Inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
-import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import {
+  MAT_DIALOG_DATA,
+  MatDialogModule,
+  MatDialogRef,
+} from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -19,11 +28,11 @@ import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatTableModule } from '@angular/material/table';
 import { StepperSelectionEvent } from '@angular/cdk/stepper';
-import { InputErrorComponent } from '@shared';
 import {
   ICalculateProductVariantTaxRequest,
   ICalculateTaxResponse,
-  IDropdownItem, IManageMemberProduct,
+  IDropdownItem,
+  IManageMemberProduct,
   IMemberProduct,
   IMemberProductMasterData,
   InputLengthEnum,
@@ -31,9 +40,10 @@ import {
   IProductPrice,
   IProductVariant,
   PaymentSourceEnum,
-  PaymentStatusEnum
+  PaymentStatusEnum,
 } from '@eatfit247-shared-lib';
 import { MembersApiService } from '../../../api.service';
+import { InputErrorComponent } from '@shared';
 
 export interface PlaceProductOrderData {
   memberId: number;
@@ -119,8 +129,24 @@ export class PlaceProductOrderComponent implements OnInit {
   selectedVariantId = signal<number | null>(null);
   selectedPrice = signal<IProductPrice | null>(null);
   quantity = signal(1);
-  displayedColumns: string[] = ['product', 'variant', 'quantity', 'price', 'tax', 'total', 'actions'];
-  taxComputationColumns: string[] = ['product', 'variant', 'quantity', 'unitPrice', 'subtotal', 'tax', 'total'];
+  displayedColumns: string[] = [
+    'product',
+    'variant',
+    'quantity',
+    'price',
+    'tax',
+    'total',
+    'actions',
+  ];
+  taxComputationColumns: string[] = [
+    'product',
+    'variant',
+    'quantity',
+    'unitPrice',
+    'subtotal',
+    'tax',
+    'total',
+  ];
 
   // Computed signals for reactive product/variant selection
   selectedProduct = computed<IProduct | null>(() => {
@@ -133,7 +159,9 @@ export class PlaceProductOrderComponent implements OnInit {
     const product = this.selectedProduct();
     const variantId = this.selectedVariantId();
     if (!product || !variantId) return null;
-    return product.variants?.find((v) => v.productVariantId === variantId) || null;
+    return (
+      product.variants?.find((v) => v.productVariantId === variantId) || null
+    );
   });
 
   availablePrices = computed<IProductPrice[]>(() => {
@@ -147,7 +175,7 @@ export class PlaceProductOrderComponent implements OnInit {
     @Inject(MAT_DIALOG_DATA) public data: PlaceProductOrderData,
     private apiService: MembersApiService,
     private fb: FormBuilder,
-    private snackBar: MatSnackBar,
+    private snackBar: MatSnackBar
   ) {
     this.initializeForm();
     this.isEditMode = !!data.productOrder;
@@ -220,8 +248,11 @@ export class PlaceProductOrderComponent implements OnInit {
       ?.valueChanges.pipe(debounceTime(500), distinctUntilChanged())
       .subscribe(() => {
         this.formGroup.patchValue(
-          { billingAddressId: this.step2FormGroup.get('billingAddressId')?.value },
-          { emitEvent: false },
+          {
+            billingAddressId:
+              this.step2FormGroup.get('billingAddressId')?.value,
+          },
+          { emitEvent: false }
         );
         this.calculateTaxFromBackend();
       });
@@ -232,7 +263,7 @@ export class PlaceProductOrderComponent implements OnInit {
       .subscribe(() => {
         this.formGroup.patchValue(
           { discountAmount: this.step2FormGroup.get('discountAmount')?.value },
-          { emitEvent: false },
+          { emitEvent: false }
         );
         this.calculateTaxFromBackend();
       });
@@ -248,7 +279,7 @@ export class PlaceProductOrderComponent implements OnInit {
             paymentLink: '',
             gatewayOrderId: '',
           },
-          { emitEvent: false },
+          { emitEvent: false }
         );
         if (
           paymentSource === PaymentSourceEnum?.PAYMENT_GATEWAY ||
@@ -280,7 +311,9 @@ export class PlaceProductOrderComponent implements OnInit {
       paymentModeIdControl?.setValidators([]);
       paymentDateControl?.setValidators([]);
       paymentStatusIdControl?.setValidators([]);
-      transactionIdControl?.setValidators([Validators.maxLength(InputLengthEnum.CHAR_250)]);
+      transactionIdControl?.setValidators([
+        Validators.maxLength(InputLengthEnum.CHAR_250),
+      ]);
     }
     paymentModeIdControl?.updateValueAndValidity({ emitEvent: false });
     paymentDateControl?.updateValueAndValidity({ emitEvent: false });
@@ -291,7 +324,9 @@ export class PlaceProductOrderComponent implements OnInit {
   async loadMasterData(): Promise<void> {
     this.loading.set(true);
     try {
-      const res = await this.apiService.getProductMasterData(this.data.memberId);
+      const res = await this.apiService.getProductMasterData(
+        this.data.memberId
+      );
       this.products.set(res.product);
       this.masterData.set(res);
     } catch (error) {
@@ -315,7 +350,10 @@ export class PlaceProductOrderComponent implements OnInit {
   onPriceSelectionChange(price: IProductPrice): void {
     this.selectedPrice.set(price);
     if (price.currency) {
-      this.formGroup.patchValue({ currencyCode: price.currency }, { emitEvent: false });
+      this.formGroup.patchValue(
+        { currencyCode: price.currency },
+        { emitEvent: false }
+      );
     }
   }
 
@@ -326,9 +364,13 @@ export class PlaceProductOrderComponent implements OnInit {
     const quantity = this.quantity();
 
     if (!productId || !variantId || !price || quantity <= 0) {
-      this.snackBar.open('Please select product, variant, price, and quantity', 'Close', {
-        duration: 3000,
-      });
+      this.snackBar.open(
+        'Please select product, variant, price, and quantity',
+        'Close',
+        {
+          duration: 3000,
+        }
+      );
       return;
     }
 
@@ -337,21 +379,25 @@ export class PlaceProductOrderComponent implements OnInit {
       return;
     }
 
-    const variant = product.variants?.find((v) => v.productVariantId === variantId);
+    const variant = product.variants?.find(
+      (v) => v.productVariantId === variantId
+    );
     if (!variant) {
       return;
     }
 
     // Check if same variant and currency already exists in cart
     const existingIndex = this.cartItems().findIndex(
-      (item) => item.productVariantId === variantId && item.currency === price.currency,
+      (item) =>
+        item.productVariantId === variantId && item.currency === price.currency
     );
 
     if (existingIndex >= 0) {
       // Update existing item quantity
       const updated = [...this.cartItems()];
       updated[existingIndex].quantity += quantity;
-      updated[existingIndex].totalPrice = updated[existingIndex].price * updated[existingIndex].quantity;
+      updated[existingIndex].totalPrice =
+        updated[existingIndex].price * updated[existingIndex].quantity;
       this.cartItems.set(updated);
     } else {
       // Add new item
@@ -398,7 +444,10 @@ export class PlaceProductOrderComponent implements OnInit {
   }
 
   private updateOrderAmount(): void {
-    const total = this.cartItems().reduce((sum, item) => sum + item.totalPrice, 0);
+    const total = this.cartItems().reduce(
+      (sum, item) => sum + item.totalPrice,
+      0
+    );
     const currency =
       this.cartItems().length > 0 ? this.cartItems()[0].currency : 'INR';
     this.formGroup.patchValue(
@@ -406,7 +455,7 @@ export class PlaceProductOrderComponent implements OnInit {
         orderAmount: total,
         currencyCode: currency,
       },
-      { emitEvent: false },
+      { emitEvent: false }
     );
     this.calculateTaxFromBackend();
   }
@@ -432,12 +481,16 @@ export class PlaceProductOrderComponent implements OnInit {
         items: cartItems.map((item) => ({
           productId: item.productId,
           productVariantId: item.productVariantId,
-          currencyCode: item.currency,
+          currency: item.currency,
+          quantity: item.quantity,
         })),
         billingAddressId,
       };
 
-      const result = await this.apiService.calculateProductTax(this.data.memberId, request);
+      const result = await this.apiService.calculateProductTax(
+        this.data.memberId,
+        request
+      );
 
       // Update cart items with calculated tax for each item
       const updatedCartItems = cartItems.map((item) => {
@@ -445,7 +498,7 @@ export class PlaceProductOrderComponent implements OnInit {
           (r) =>
             r.productId === item.productId &&
             r.productVariantId === item.productVariantId &&
-            r.currencyCode === item.currency
+            r.currency === item.currency
         );
 
         if (taxResult) {
@@ -462,8 +515,14 @@ export class PlaceProductOrderComponent implements OnInit {
       this.cartItems.set(updatedCartItems);
 
       // Calculate aggregate totals for display
-      const totalTaxAmount = updatedCartItems.reduce((sum, item) => sum + (item.taxAmount || 0), 0);
-      const totalOrderAmount = updatedCartItems.reduce((sum, item) => sum + item.totalPrice, 0);
+      const totalTaxAmount = updatedCartItems.reduce(
+        (sum, item) => sum + (item.taxAmount || 0),
+        0
+      );
+      const totalOrderAmount = updatedCartItems.reduce(
+        (sum, item) => sum + item.totalPrice,
+        0
+      );
       const totalAmount = totalOrderAmount + totalTaxAmount;
 
       // Store aggregate tax result (using first item's tax info for common fields)
@@ -479,7 +538,7 @@ export class PlaceProductOrderComponent implements OnInit {
           taxType: firstItem.taxType,
           taxMode: firstItem.taxMode,
           invoiceNote: firstItem.invoiceNote,
-          currency: firstItem.currencyCode,
+          currency: firstItem.currency,
           isLutApplied: firstItem.isLutApplied,
           jurisdiction: firstItem.jurisdiction,
         });
@@ -487,9 +546,13 @@ export class PlaceProductOrderComponent implements OnInit {
     } catch (error) {
       console.error('Error calculating tax:', error);
       this.taxCalculationResult.set(null);
-      this.snackBar.open('Failed to calculate tax. Please try again.', 'Close', {
-        duration: 3000,
-      });
+      this.snackBar.open(
+        'Failed to calculate tax. Please try again.',
+        'Close',
+        {
+          duration: 3000,
+        }
+      );
     } finally {
       this.calculatingTax.set(false);
     }
@@ -553,7 +616,7 @@ export class PlaceProductOrderComponent implements OnInit {
     try {
       const gateways = await this.apiService.getProductSupportedPaymentGateways(
         this.data.memberId,
-        currencyCode,
+        currencyCode
       );
       this.supportedGateways.set(gateways);
       const primaryGateway = gateways.find((g) => g.isPrimary);
@@ -583,7 +646,8 @@ export class PlaceProductOrderComponent implements OnInit {
       return;
     }
     const selectedGatewayId =
-      this.formGroup.get('franchisePaymentGatewayId')?.value || this.selectedGatewayId();
+      this.formGroup.get('franchisePaymentGatewayId')?.value ||
+      this.selectedGatewayId();
     if (!selectedGatewayId) {
       this.snackBar.open('Please select a payment gateway', 'Close', {
         duration: 3000,
@@ -607,7 +671,7 @@ export class PlaceProductOrderComponent implements OnInit {
 
       const result = await this.apiService.createProductPaymentLink(
         this.data.memberId,
-        request,
+        request
       );
       this.paymentLink.set(result.shortUrl);
       this.paymentLinkId.set(result.id);
@@ -639,7 +703,7 @@ export class PlaceProductOrderComponent implements OnInit {
         paymentLink: '',
         gatewayOrderId: '',
       },
-      { emitEvent: false },
+      { emitEvent: false }
     );
   }
 
@@ -682,7 +746,7 @@ export class PlaceProductOrderComponent implements OnInit {
               'Close',
               {
                 duration: 3000,
-              },
+              }
             );
             return;
           }
@@ -700,7 +764,7 @@ export class PlaceProductOrderComponent implements OnInit {
           'Close',
           {
             duration: 3000,
-          },
+          }
         );
       } finally {
         this.submitting.set(false);
@@ -732,7 +796,7 @@ export class PlaceProductOrderComponent implements OnInit {
       transactionId: getValue('transactionId')?.trim() || undefined,
       paymentStatusId: getValue('paymentStatusId'),
       gstNumber: getValue('gstNumber')?.trim() || undefined,
-      currencyCode: this.formGroup.get('currencyCode')?.value || 'INR',
+      currency: this.formGroup.get('currencyCode')?.value || 'INR',
       orderAmount: Number(this.formGroup.get('orderAmount')?.value || 0),
       taxAmount,
       discountAmount: Number(getValue('discountAmount') || 0),
@@ -791,7 +855,8 @@ export class PlaceProductOrderComponent implements OnInit {
       return result.totalAmount;
     }
     const orderAmount = this.formGroup.get('orderAmount')?.value || 0;
-    const discountAmount = this.step2FormGroup.get('discountAmount')?.value || 0;
+    const discountAmount =
+      this.step2FormGroup.get('discountAmount')?.value || 0;
     return orderAmount - discountAmount;
   }
 
@@ -805,11 +870,17 @@ export class PlaceProductOrderComponent implements OnInit {
   }
 
   get cartTaxTotal(): number {
-    return this.cartItems().reduce((sum, item) => sum + (item.taxAmount || 0), 0);
+    return this.cartItems().reduce(
+      (sum, item) => sum + (item.taxAmount || 0),
+      0
+    );
   }
 
   get cartGrandTotal(): number {
-    return this.cartSubtotal - (this.step2FormGroup.get('discountAmount')?.value || 0) + this.cartTaxTotal;
+    return (
+      this.cartSubtotal -
+      (this.step2FormGroup.get('discountAmount')?.value || 0) +
+      this.cartTaxTotal
+    );
   }
 }
-

@@ -3,7 +3,7 @@
  * 
  * ⚠️ DESIGN SYSTEM: See DESIGN_SYSTEM.md
  */
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { ThemeService } from './services/theme.service';
 
 @Component({
@@ -14,8 +14,9 @@ import { ThemeService } from './services/theme.service';
 })
 export class App implements OnInit {
   protected title = 'eatfit247-admin';
+  private readonly themeService = inject(ThemeService);
 
-  constructor(private themeService: ThemeService) {}
+  constructor() {}
 
   ngOnInit(): void {
     // Theme service initializes automatically via constructor

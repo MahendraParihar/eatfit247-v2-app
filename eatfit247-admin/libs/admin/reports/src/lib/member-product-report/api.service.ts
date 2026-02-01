@@ -1,6 +1,6 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { ApiBaseService, HttpService } from '@core';
+import { ApiBaseService } from '@core';
 import { IDropdownItem, IMemberProductReportFilter, IMemberProductReportItem, ITableList } from '@eatfit247-shared-lib';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '@env';
@@ -11,9 +11,10 @@ import { environment } from '@env';
 export class MemberProductReportApiService extends ApiBaseService {
   private readonly endpoint = '/reports/member-product';
   private readonly baseUrl: string;
+  private readonly http = inject(HttpClient);
 
-  constructor(httpService: HttpService, private http: HttpClient) {
-    super(httpService);
+  constructor() {
+    super();
     this.baseUrl = environment.apiUrl;
   }
 

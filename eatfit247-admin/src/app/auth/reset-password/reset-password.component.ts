@@ -3,7 +3,7 @@
  * 
  * ⚠️ DESIGN SYSTEM: See DESIGN_SYSTEM.md
  */
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import {
   AbstractControl,
   FormBuilder,
@@ -47,13 +47,12 @@ export class ResetPasswordComponent implements OnInit {
   token = '';
   hideNewPassword = true;
   hideConfirmPassword = true;
+  private readonly fb = inject(FormBuilder);
+  private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
 
-  constructor(
-    private fb: FormBuilder,
-    private authService: AuthService,
-    private router: Router,
-    private route: ActivatedRoute
-  ) {
+  constructor() {
     this.resetPasswordForm = this.fb.group(
       {
         token: ['', [Validators.required]],

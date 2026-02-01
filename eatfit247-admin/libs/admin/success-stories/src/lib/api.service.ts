@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { ApiBaseService, HttpService } from '@core';
+import { ApiBaseService } from '@core';
 import { ISuccessStory, ITableList } from '@eatfit247-shared-lib';
 
 @Injectable({
@@ -8,8 +8,8 @@ import { ISuccessStory, ITableList } from '@eatfit247-shared-lib';
 export class SuccessStoriesApiService extends ApiBaseService {
   private readonly endpoint = '/success-story';
 
-  constructor(httpService: HttpService) {
-    super(httpService);
+  constructor() {
+    super();
   }
 
   async getList(params?: any): Promise<ITableList<ISuccessStory>> {

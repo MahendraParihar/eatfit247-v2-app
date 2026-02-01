@@ -4,7 +4,7 @@
  * ⚠️ DESIGN SYSTEM: See DESIGN_SYSTEM.md
  * Base layout with toolbar, sidenav, and main container for all components
  */
-import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { MatSidenav, MatSidenavModule } from '@angular/material/sidenav';
 import { Router, RouterModule } from '@angular/router';
 import { Subscription } from 'rxjs';
@@ -326,19 +326,13 @@ export class BaseLayoutComponent implements OnInit, OnDestroy {
           icon: 'map',
           route: '/lov-master/state',
         },
-        {
-          label: 'Address Type',
-          icon: 'location_on',
-          route: '/lov-master/address-type',
-        },
       ],
     },
   ];
+  private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
 
-  constructor(
-    private authService: AuthService,
-    private router: Router,
-  ) {}
+  constructor() {}
 
   ngOnInit(): void {
     // Subscribe to auth state
@@ -411,4 +405,3 @@ export class BaseLayoutComponent implements OnInit, OnDestroy {
     return this.currentUser.emailId;
   }
 }
-

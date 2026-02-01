@@ -295,7 +295,7 @@ export class ManageMemberPaymentComponent implements OnInit {
 
   async calculateTaxFromBackend(): Promise<void> {
     const formData = this.paymentFormService.getPaymentFormData(this.formGroup, this.step1FormGroup);
-    if (!formData.orderAmount || !formData.currencyCode) {
+    if (!formData.programPlanId || !formData.currencyCode) {
       this.taxCalculationResult.set(null);
       return;
     }

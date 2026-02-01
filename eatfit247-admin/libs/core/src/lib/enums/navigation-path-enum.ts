@@ -35,7 +35,6 @@ export enum NavigationPathEnum {
   PROGRAM_CATEGORY = 'lov-master/program-category',
   COUNTRY = 'lov-master/country',
   STATE = 'lov-master/state',
-  ADDRESS_TYPE = 'lov-master/address-type',
 
   // Main Features
   MEMBERS = 'members',

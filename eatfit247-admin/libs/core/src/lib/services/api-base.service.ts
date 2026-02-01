@@ -5,7 +5,7 @@
  * Base service for API services - provides common functionality
  * Uses HttpService for all HTTP operations
  */
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { HttpService } from './http.service';
 
 @Injectable({
@@ -13,11 +13,10 @@ import { HttpService } from './http.service';
 })
 export class ApiBaseService {
   protected apiUrl: string;
-  protected httpService: HttpService;
+  protected httpService = inject(HttpService);
 
-  constructor(httpService: HttpService) {
-    this.httpService = httpService;
-    this.apiUrl = httpService.getBaseUrl();
+  constructor() {
+    this.apiUrl = this.httpService.getBaseUrl();
   }
 
   /**

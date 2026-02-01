@@ -1,4 +1,4 @@
-import { Directive, EventEmitter, HostBinding, HostListener, Output } from '@angular/core';
+import { Directive, EventEmitter, HostBinding, HostListener, inject, Output } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
 import { FileHandle } from '@core';
 
@@ -8,8 +8,9 @@ import { FileHandle } from '@core';
 export class ImageDragDirective {
   @Output() files: EventEmitter<FileHandle[]> = new EventEmitter();
   @HostBinding('style.background') public background = '#eee';
+  private readonly sanitizer = inject(DomSanitizer);
 
-  constructor(private sanitizer: DomSanitizer) {
+  constructor() {
   }
 
   @HostListener('dragover', ['$event'])

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, HostListener, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, HostListener, inject, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -56,11 +56,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
   };
 
   memberPeriod: 'weekly' | 'monthly' = 'monthly';
+  private readonly apiService = inject(DashboardApiService);
+  private readonly cdr = inject(ChangeDetectorRef);
 
-  constructor(
-    private apiService: DashboardApiService,
-    private cdr: ChangeDetectorRef
-  ) {}
+  constructor() {}
 
   ngOnInit(): void {
     this.loadAllData();

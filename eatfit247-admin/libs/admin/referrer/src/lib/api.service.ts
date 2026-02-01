@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { ApiBaseService, HttpService } from '@core';
+import { ApiBaseService } from '@core';
 import { IDropdownItem, IReferrer, ITableList } from '@eatfit247-shared-lib';
 
 @Injectable({
@@ -9,8 +9,8 @@ export class ReferrerApiService extends ApiBaseService {
   private readonly endpoint = '/referrer';
   private readonly franchiseEndpoint = '/franchise';
 
-  constructor(httpService: HttpService) {
-    super(httpService);
+  constructor() {
+    super();
   }
 
   async getList(params?: any): Promise<ITableList<IReferrer>> {

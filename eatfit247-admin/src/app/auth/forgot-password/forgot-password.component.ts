@@ -3,7 +3,7 @@
  * 
  * ⚠️ DESIGN SYSTEM: See DESIGN_SYSTEM.md
  */
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -37,12 +37,11 @@ export class ForgotPasswordComponent {
   successMessage = '';
   errorMessage = '';
   emailSent = false;
+  private readonly fb = inject(FormBuilder);
+  private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
 
-  constructor(
-    private fb: FormBuilder,
-    private authService: AuthService,
-    private router: Router
-  ) {
+  constructor() {
     this.forgotPasswordForm = this.fb.group({
       emailId: ['', [Validators.required, Validators.email]],
     });

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { ApiBaseService, HttpService } from '@core';
+import { ApiBaseService } from '@core';
 import { IContactFormReportFilter, IContactFormReportItem, ISendResponseDto, ITableList } from '@eatfit247-shared-lib';
 
 @Injectable({
@@ -8,8 +8,8 @@ import { IContactFormReportFilter, IContactFormReportItem, ISendResponseDto, ITa
 export class ContactFormReportApiService extends ApiBaseService {
   private readonly endpoint = '/reports/contact-form';
 
-  constructor(httpService: HttpService) {
-    super(httpService);
+  constructor() {
+    super();
   }
 
   async getContactFormReport(params: IContactFormReportFilter): Promise<ITableList<IContactFormReportItem>> {

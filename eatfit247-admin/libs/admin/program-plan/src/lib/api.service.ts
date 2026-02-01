@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { ApiBaseService, HttpService } from '@core';
+import { ApiBaseService } from '@core';
 import { IDropdownItem, IProgramPlan, ITableList } from '@eatfit247-shared-lib';
 
 @Injectable({
@@ -8,8 +8,8 @@ import { IDropdownItem, IProgramPlan, ITableList } from '@eatfit247-shared-lib';
 export class ProgramPlanApiService extends ApiBaseService {
   private readonly endpoint = '/program-plan';
 
-  constructor(httpService: HttpService) {
-    super(httpService);
+  constructor() {
+    super();
   }
 
   async getList(params?: any): Promise<ITableList<IProgramPlan>> {

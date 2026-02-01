@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { ApiBaseService, HttpService } from '@core';
+import { ApiBaseService } from '@core';
 import { ILegalPageList, IManageLegalPage, ITableList } from '@eatfit247-shared-lib';
 
 @Injectable({
@@ -8,8 +8,8 @@ import { ILegalPageList, IManageLegalPage, ITableList } from '@eatfit247-shared-
 export class LegalPagesApiService extends ApiBaseService {
   private readonly endpoint = '/legal-page';
 
-  constructor(httpService: HttpService) {
-    super(httpService);
+  constructor() {
+    super();
   }
 
   async getList(params?: any): Promise<ITableList<ILegalPageList>> {

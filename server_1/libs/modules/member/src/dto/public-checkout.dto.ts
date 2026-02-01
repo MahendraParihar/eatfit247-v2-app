@@ -76,7 +76,7 @@ export class CreatePublicCheckoutOrderDto implements IManageMemberProduct {
   @IsNotEmpty()
   @IsString()
   @MaxLength(InputLengthEnum.CHAR_10)
-  currencyCode!: string;
+  currency!: string;
 
   @IsOptional()
   @IsString()

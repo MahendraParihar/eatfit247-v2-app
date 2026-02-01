@@ -5,7 +5,7 @@
  * Centralized HTTP service for all API calls
  * Provides GET, POST, PUT, DELETE methods with consistent error handling
  */
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpHeaders, HttpParams } from '@angular/common/http';
 import { firstValueFrom, Observable } from 'rxjs';
 import { environment } from '@env';
@@ -25,8 +25,9 @@ export interface HttpOptions {
 })
 export class HttpService {
   private readonly baseUrl: string;
+  private readonly http = inject(HttpClient);
 
-  constructor(private http: HttpClient) {
+  constructor() {
     this.baseUrl = environment.apiUrl;
   }
 

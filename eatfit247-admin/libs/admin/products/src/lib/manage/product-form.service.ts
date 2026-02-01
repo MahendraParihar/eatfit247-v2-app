@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import {
   IManageProduct,
@@ -12,7 +12,9 @@ import {
   providedIn: 'root'
 })
 export class ProductFormService {
-  constructor(private fb: FormBuilder) {}
+  private readonly fb = inject(FormBuilder);
+
+  constructor() {}
 
   /**
    * Transform product data to form values for editing

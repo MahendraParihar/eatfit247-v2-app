@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   createdByUserFormatter,
@@ -25,8 +25,9 @@ export class IssueStatus implements OnInit {
   loading = false;
   tableConfig!: ITableConfig<any>;
   private searchSubject = new Subject<string>();
+  private readonly apiService = inject(LovMasterApiService);
 
-  constructor(private apiService: LovMasterApiService) {
+  constructor() {
     this.setupSearch();
   }
 

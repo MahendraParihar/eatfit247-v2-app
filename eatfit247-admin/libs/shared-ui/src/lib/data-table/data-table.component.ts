@@ -2,18 +2,23 @@ import {
   ChangeDetectorRef,
   Component,
   EventEmitter,
+  inject,
   Input,
   OnChanges,
   OnInit,
   Output,
   SimpleChanges,
   TemplateRef,
-  ViewChild
+  ViewChild,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
-import { MatPaginator, MatPaginatorModule, PageEvent } from '@angular/material/paginator';
+import {
+  MatPaginator,
+  MatPaginatorModule,
+  PageEvent,
+} from '@angular/material/paginator';
 import { MatSort, MatSortModule, Sort } from '@angular/material/sort';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -32,7 +37,7 @@ import {
   ITableColumn,
   ITableConfig,
   ITablePagination,
-  ITableSort
+  ITableSort,
 } from './data-table.interface';
 
 @Component({
@@ -53,12 +58,12 @@ import {
     MatTooltipModule,
     MatChipsModule,
     MatMenuModule,
-    ImgComponent
+    ImgComponent,
   ],
   templateUrl: './data-table.component.html',
-  styleUrls: ['./data-table.component.scss']
+  styleUrls: ['./data-table.component.scss'],
 })
-export class DataTableComponent<T = any> implements OnInit, OnChanges {
+export class DataTableComponent<T> implements OnInit, OnChanges {
   @Input() config!: ITableConfig<T>;
   @Input() data: T[] = [];
   @Input() totalCount = 0;
@@ -74,8 +79,7 @@ export class DataTableComponent<T = any> implements OnInit, OnChanges {
   dataSource = new MatTableDataSource<T>([]);
   searchValue = '';
   selectedRows: Set<T> = new Set();
-
-  constructor(private cdr: ChangeDetectorRef) {}
+  private readonly cdr = inject(ChangeDetectorRef);
 
   ngOnInit(): void {
     this.initializeTable();
@@ -101,8 +105,10 @@ export class DataTableComponent<T = any> implements OnInit, OnChanges {
       this.displayedColumns = ['select', ...this.displayedColumns];
     }
     // Add an actions column if actions exist
-    const hasActions = (this.config.actions && this.config.actions.length > 0) ||
-      (this.config.actionsConfig?.buttons && this.config.actionsConfig.buttons.length > 0);
+    const hasActions =
+      (this.config.actions && this.config.actions.length > 0) ||
+      (this.config.actionsConfig?.buttons &&
+        this.config.actionsConfig.buttons.length > 0);
     if (hasActions) {
       this.displayedColumns = [...this.displayedColumns, 'actions'];
     }
@@ -181,7 +187,7 @@ export class DataTableComponent<T = any> implements OnInit, OnChanges {
 
   hasVisibleActions(row: T): boolean {
     const actions = this.getActions();
-    return actions.some(action => this.isActionVisible(action, row));
+    return actions.some((action) => this.isActionVisible(action, row));
   }
 
   getActionsConfig(): ITableActionsConfig | null {
@@ -216,7 +222,7 @@ export class DataTableComponent<T = any> implements OnInit, OnChanges {
     const pagination: ITablePagination = {
       pageIndex: event.pageIndex,
       pageSize: event.pageSize,
-      length: this.totalCount
+      length: this.totalCount,
     };
     this.pageChange.emit(pagination);
   }
@@ -224,7 +230,7 @@ export class DataTableComponent<T = any> implements OnInit, OnChanges {
   onSortChange(sort: Sort): void {
     const tableSort: ITableSort = {
       active: sort.active,
-      direction: sort.direction as 'asc' | 'desc' | ''
+      direction: sort.direction as 'asc' | 'desc' | '',
     };
     this.sortChange.emit(tableSort);
   }
@@ -241,7 +247,11 @@ export class DataTableComponent<T = any> implements OnInit, OnChanges {
     this.rowClick.emit(row);
   }
 
-  onActionClick(action: ITableAction<T> | ITableActionButton<T>, row: T, event: Event): void {
+  onActionClick(
+    action: ITableAction<T> | ITableActionButton<T>,
+    row: T,
+    event: Event
+  ): void {
     event.stopPropagation();
     // Check if it's the new TableActionButton interface
     if ('confirm' in action && action.confirm) {
@@ -265,21 +275,30 @@ export class DataTableComponent<T = any> implements OnInit, OnChanges {
     }
   }
 
-  isActionVisible(action: ITableAction<T> | ITableActionButton<T>, row: T): boolean {
+  isActionVisible(
+    action: ITableAction<T> | ITableActionButton<T>,
+    row: T
+  ): boolean {
     if ('visible' in action && action.visible) {
       return action.visible(row);
     }
     return true;
   }
 
-  isActionDisabled(action: ITableAction<T> | ITableActionButton<T>, row: T): boolean {
+  isActionDisabled(
+    action: ITableAction<T> | ITableActionButton<T>,
+    row: T
+  ): boolean {
     if ('disabled' in action && action.disabled) {
       return action.disabled(row);
     }
     return false;
   }
 
-  getActionTooltip(action: ITableAction<T> | ITableActionButton<T>, row: T): string {
+  getActionTooltip(
+    action: ITableAction<T> | ITableActionButton<T>,
+    row: T
+  ): string {
     if ('tooltip' in action && action.tooltip) {
       return action.tooltip;
     }
@@ -289,7 +308,10 @@ export class DataTableComponent<T = any> implements OnInit, OnChanges {
     return '';
   }
 
-  getActionBadge(action: ITableActionButton<T>, row: T): number | string | null {
+  getActionBadge(
+    action: ITableActionButton<T>,
+    row: T
+  ): number | string | null {
     if (action.badge) {
       return action.badge(row);
     }
@@ -327,7 +349,10 @@ export class DataTableComponent<T = any> implements OnInit, OnChanges {
   }
 
   isAllSelected(): boolean {
-    return this.data.length > 0 && this.data.every((row) => this.selectedRows.has(row));
+    return (
+      this.data.length > 0 &&
+      this.data.every((row) => this.selectedRows.has(row))
+    );
   }
 
   isIndeterminate(): boolean {
@@ -354,4 +379,3 @@ export class DataTableComponent<T = any> implements OnInit, OnChanges {
     return this.config.showSearch !== false;
   }
 }
-

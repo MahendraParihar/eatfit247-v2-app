@@ -10,10 +10,9 @@
  * - Token Rotation: Enabled (new refresh token on each refresh)
  * - Logout: Revokes refresh token on server
  */
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { ApiBaseService } from './api-base.service';
-import { HttpService } from './http.service';
 import { StorageService } from './storage.service';
 import {
   IAuthUser,
@@ -32,9 +31,10 @@ export class AuthService extends ApiBaseService {
   private currentUserSubject = new BehaviorSubject<IAuthUser | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
   private readonly endpoint = '/auth';
+  private readonly storage = inject(StorageService);
 
-  constructor(httpService: HttpService, private storage: StorageService) {
-    super(httpService);
+  constructor() {
+    super();
     // Load user from storage on init
     const user = this.storage.getUser();
     if (user) {

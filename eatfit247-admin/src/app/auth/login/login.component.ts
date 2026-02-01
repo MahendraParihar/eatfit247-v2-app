@@ -3,7 +3,7 @@
  * 
  * ⚠️ DESIGN SYSTEM: See DESIGN_SYSTEM.md
  */
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -37,12 +37,11 @@ export class LoginComponent implements OnInit {
   loading = false;
   errorMessage = '';
   hidePassword = true;
+  private readonly fb = inject(FormBuilder);
+  private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
 
-  constructor(
-    private fb: FormBuilder,
-    private authService: AuthService,
-    private router: Router
-  ) {
+  constructor() {
     this.loginForm = this.fb.group({
       emailId: ['mahendra.parihar10@gmail.com', [Validators.required, Validators.email]],
       password: ['Mahendra@123', [Validators.required, Validators.minLength(6)]],

@@ -39,8 +39,8 @@ import {
 export class LovMasterApiService extends ApiBaseService {
   private readonly baseEndpoint = '';
 
-  constructor(httpService: HttpService) {
-    super(httpService);
+  constructor() {
+    super();
   }
 
   // Gender

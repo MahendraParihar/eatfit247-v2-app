@@ -1,18 +1,19 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import {
-  ICalculateTaxRequest,
   ICalculateTaxResponse,
   ICreatePaymentLinkRequest,
   IDropdownItem,
   IManageMemberPayment,
   IMemberPayment,
   IPaymentLinkResponse,
-  PaymentSourceEnum
+  PaymentSourceEnum,
+  IPlanTaxCalculationRequest,
 } from '@eatfit247-shared-lib';
 import { MembersApiService } from '../../../api.service';
 
 export interface PaymentFormData {
+  programPlanId: number;
   orderAmount: number;
   discountAmount: number;
   currencyCode: string;
@@ -21,10 +22,12 @@ export interface PaymentFormData {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class PaymentFormService {
-  constructor(private apiService: MembersApiService) {}
+  private readonly apiService = inject(MembersApiService);
+
+  constructor() {}
 
   /**
    * Calculate tax from backend based on form values
@@ -33,16 +36,14 @@ export class PaymentFormService {
     memberId: number,
     formData: PaymentFormData
   ): Promise<ICalculateTaxResponse | null> {
-    const { orderAmount, currencyCode } = formData;
-    if (!orderAmount || !currencyCode) {
+    const { programPlanId, currencyCode } = formData;
+    if (!programPlanId || !currencyCode) {
       return null;
     }
-    const request: ICalculateTaxRequest = {
-      orderAmount,
+    const request: IPlanTaxCalculationRequest = {
+      programPlanId: formData.programPlanId,
       discountAmount: formData.discountAmount || 0,
-      currencyCode,
-      billingAddressId: formData.billingAddressId || undefined,
-      addressId: formData.addressId || undefined
+      currency: formData.currencyCode,
     };
     try {
       return await this.apiService.calculateTax(memberId, request);
@@ -75,7 +76,7 @@ export class PaymentFormService {
       gatewayProvider: payment.gatewayProvider || '',
       gatewayOrderId: payment.gatewayOrderId || '',
       gatewayPaymentId: payment.gatewayPaymentId || '',
-      paymentLink: payment.paymentLink || ''
+      paymentLink: payment.paymentLink || '',
     };
   }
 
@@ -111,13 +112,13 @@ export class PaymentFormService {
         getValue('noOfDaysInCycle') || formGroup.value.noOfDaysInCycle || 0
       ),
       paymentSource: formGroup.value.paymentSource,
-      currencyCode:
+      currency:
         getValue('currencyCode') || formGroup.value.currencyCode || 'INR',
       discountAmount: Number(
         getValue('discountAmount') || formGroup.value.discountAmount || 0
       ),
       promoCode: '',
-      paymentDate: formGroup.value.paymentDate || new Date()
+      paymentDate: formGroup.value.paymentDate || new Date(),
     };
     // Add gateway-specific fields for non-manual payments
     const paymentSource = formGroup.value.paymentSource;
@@ -152,8 +153,8 @@ export class PaymentFormService {
       notes: {
         memberId: memberId.toString(),
         programId: programId?.toString(),
-        programPlanId: programPlanId?.toString()
-      }
+        programPlanId: programPlanId?.toString(),
+      },
     };
     return await this.apiService.createPaymentLink(memberId, request);
   }
@@ -169,12 +170,17 @@ export class PaymentFormService {
       orderAmount:
         Number(
           step1FormGroup?.get('orderAmount')?.value ||
-          formGroup.get('orderAmount')?.value
+            formGroup.get('orderAmount')?.value
+        ) || 0,
+      programPlanId:
+        Number(
+          step1FormGroup?.get('programPlanId')?.value ||
+            formGroup.get('programPlanId')?.value
         ) || 0,
       discountAmount:
         Number(
           step1FormGroup?.get('discountAmount')?.value ||
-          formGroup.get('discountAmount')?.value
+            formGroup.get('discountAmount')?.value
         ) || 0,
       currencyCode:
         step1FormGroup?.get('currencyCode')?.value ||
@@ -185,7 +191,7 @@ export class PaymentFormService {
         formGroup.get('billingAddressId')?.value,
       addressId:
         step1FormGroup?.get('addressId')?.value ||
-        formGroup.get('addressId')?.value
+        formGroup.get('addressId')?.value,
     };
   }
 
@@ -199,12 +205,12 @@ export class PaymentFormService {
     const orderAmount =
       Number(
         step1FormGroup?.get('orderAmount')?.value ||
-        formGroup.get('orderAmount')?.value
+          formGroup.get('orderAmount')?.value
       ) || 0;
     const discountAmount =
       Number(
         step1FormGroup?.get('discountAmount')?.value ||
-        formGroup.get('discountAmount')?.value
+          formGroup.get('discountAmount')?.value
       ) || 0;
     return orderAmount - discountAmount;
   }
@@ -216,7 +222,7 @@ export class PaymentFormService {
     return addresses.map((addr) => ({
       id: addr.addressId,
       label: `${addr.postalAddress}, ${addr.cityVillage}, ${addr.pinCode}`,
-      selected: false
+      selected: false,
     }));
   }
 
@@ -227,8 +233,7 @@ export class PaymentFormService {
     return fees.map((fee) => ({
       id: fee.currencyCode,
       label: fee.currencyCode,
-      selected: false
+      selected: false,
     }));
   }
 }
-

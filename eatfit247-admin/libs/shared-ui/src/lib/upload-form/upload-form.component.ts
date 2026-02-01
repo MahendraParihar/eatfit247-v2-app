@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
+import { ChangeDetectorRef, Component, inject, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -41,12 +41,13 @@ export class UploadFormComponent implements OnInit, OnChanges {
   fileUploadForm!: FormArray;
   uploadedFiles: FileHandle[] = [];
   mediaTypeEnum = FileTypeEnum;
+  private readonly fb = inject(FormBuilder);
+  private readonly sanitizer = inject(DomSanitizer);
+  private readonly httpService = inject(HttpService);
+  private readonly cdr = inject(ChangeDetectorRef);
+  readonly dialog = inject(MatDialog);
 
-  constructor(private fb: FormBuilder,
-    private sanitizer: DomSanitizer,
-    private httpService: HttpService,
-    private cdr: ChangeDetectorRef,
-    public dialog: MatDialog) {
+  constructor() {
   }
 
   ngOnInit(): void {

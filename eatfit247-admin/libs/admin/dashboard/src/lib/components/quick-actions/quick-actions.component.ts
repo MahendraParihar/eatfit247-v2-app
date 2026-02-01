@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
@@ -14,7 +14,9 @@ import { MatIconModule } from '@angular/material/icon';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class QuickActionsComponent {
-  constructor(private router: Router) {}
+  private readonly router = inject(Router);
+
+  constructor() {}
 
   actions = [
     { label: 'Add Member', icon: 'person_add', route: '/members/new', color: 'primary' },

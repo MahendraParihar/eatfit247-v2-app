@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { ApiBaseService, HttpService } from '@core';
+import { ApiBaseService } from '@core';
 import { IPocketGuide, ITableList } from '@eatfit247-shared-lib';
 
 @Injectable({
@@ -8,8 +8,8 @@ import { IPocketGuide, ITableList } from '@eatfit247-shared-lib';
 export class PocketGuideApiService extends ApiBaseService {
   private readonly endpoint = '/pocket-guide';
 
-  constructor(httpService: HttpService) {
-    super(httpService);
+  constructor() {
+    super();
   }
 
   async getList(params?: any): Promise<ITableList<IPocketGuide>> {

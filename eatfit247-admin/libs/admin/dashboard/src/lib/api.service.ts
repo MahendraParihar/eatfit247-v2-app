@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { ApiBaseService, HttpService } from '@core';
+import { ApiBaseService } from '@core';
 import {
   IDashboardKpis,
   IEngagementData,
@@ -15,8 +15,8 @@ import {
 export class DashboardApiService extends ApiBaseService {
   private readonly endpoint = '/reports/dashboard';
 
-  constructor(httpService: HttpService) {
-    super(httpService);
+  constructor() {
+    super();
   }
 
   async getKpis(): Promise<IDashboardKpis> {
