@@ -1,13 +1,48 @@
-import { IBaseAdminUser, IAdminInfo } from '../base.interface';
+import { IBaseAdminUser, IAdminInfo, IDropdownItem } from '../base.interface';
 import { IAddress } from './location.interface';
 import { PaymentSourceEnum, TaxMode, TaxTypeEnum } from '../enum';
+import { IProduct } from './product.interface';
+
+export interface ICalculateProductVariantTaxRequest {
+  items: IMemberProductOrderItemBasic[];
+  billingAddressId?: number;
+  addressId?: number;
+  discountAmount?: number;
+}
+
+export interface IProductVariantTaxResult {
+  productId: number;
+  productVariantId: number;
+  currency: string;
+  price: number;
+  taxPercentage: number;
+  taxAmount: number;
+  totalAmount: number;
+  taxObj: Record<string, { amount: number; taxPercentage: number }>;
+  taxType: TaxTypeEnum;
+  taxMode: TaxMode;
+  invoiceNote?: string;
+  isLutApplied: boolean;
+  jurisdiction: {
+    entityCountry: string;
+    customerCountry: string;
+    placeOfSupply: string;
+  };
+}
+
+export interface ICalculateProductVariantTaxResponse {
+  items: IProductVariantTaxResult[];
+  orderAmount: number;
+  taxAmount: number;
+  discountAmount: number;
+  taxableAmount: number;
+  totalAmount: number;
+}
 
 export interface IMemberProductOrderItemBasic {
   productId: number;
   productVariantId: number;
   quantity: number;
-  unit: string;
-  price: number;
   currency: string;
 }
 
@@ -70,7 +105,7 @@ export interface IManageMemberProduct {
   transactionId?: string;
   paymentDate: Date;
   paymentStatusId: number;
-  currencyCode: string;
+  currency: string;
   promoCode?: string;
   gstNumber?: string;
   paymentSource: PaymentSourceEnum;
@@ -92,5 +127,13 @@ export interface IMemberProduct extends IBasicMemberProduct, IAdminInfo {
   billingAddress?: IAddress;
   franchise?: string;
   orderItems: IMemberProductOrderItem[];
+}
+
+export interface IMemberProductMasterData {
+  paymentMode: IDropdownItem[],
+  product: IProduct[],
+  paymentStatus: IDropdownItem[],
+  addresses: IAddress[],
+  paymentSource: IDropdownItem[],
 }
 

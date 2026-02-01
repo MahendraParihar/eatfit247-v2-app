@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op, Sequelize } from 'sequelize';
-import { MemberPaymentService, TxnMember, TxnMemberPayment } from '@server_1/modules/member';
+import { MemberPlanService, TxnMember, TxnMemberPayment } from '@server_1/modules/member';
 import { BusinessTypeEnum, IPaymentReportItem, ITableList } from '@eatfit247-shared-lib';
 import { MstFranchise } from '@server_1/core';
 import { PaymentReportDto } from '../dto/payment-report.dto';
@@ -15,7 +15,7 @@ export class PaymentReportService {
     private readonly memberPaymentRepository: typeof TxnMemberPayment,
     @InjectModel(TxnMember)
     private readonly memberRepository: typeof TxnMember,
-    private readonly memberPaymentService: MemberPaymentService,
+    private readonly memberPaymentService: MemberPlanService,
   ) {}
 
   /**

@@ -52,4 +52,5 @@ export * from './member-product-report.interface';
 export * from './dashboard-report.interface';
 export * from './member-dashboard.interface';
 export * from './tax-master.interface';
+export * from './tax-calculation.interface';
 

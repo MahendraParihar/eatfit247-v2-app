@@ -11,7 +11,7 @@ import {
 } from '../models';
 import { PaymentStatusEnum } from '@eatfit247-shared-lib';
 import { MemberService } from './member.service';
-import { MemberPaymentService } from './member-payment.service';
+import { MemberPlanService } from './member-plan.service';
 import { MemberIssueService } from './member-issue.service';
 import { MemberHealthParameterLogsService } from './member-health-parameter-logs.service';
 import { MemberAssessmentService } from './member-assessment.service';
@@ -32,7 +32,7 @@ export class MemberDashboardService {
     @InjectModel(TxnAssessment)
     private readonly assessmentRepository: typeof TxnAssessment,
     private readonly memberService: MemberService,
-    private readonly memberPaymentService: MemberPaymentService,
+    private readonly memberPaymentService: MemberPlanService,
     private readonly memberIssueService: MemberIssueService,
     private readonly memberHealthParameterLogsService: MemberHealthParameterLogsService,
     private readonly memberAssessmentService: MemberAssessmentService,

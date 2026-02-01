@@ -9,7 +9,12 @@ import {
   MaxLength,
   Min,
 } from 'class-validator';
-import { IManageMemberPayment, InputLengthEnum, PaymentSourceEnum } from '@eatfit247-shared-lib';
+import {
+  IManageMemberPayment,
+  InputLengthEnum,
+  IPlanTaxCalculationRequest,
+  PaymentSourceEnum,
+} from '@eatfit247-shared-lib';
 
 export class CreateMemberPaymentDto implements IManageMemberPayment {
   @IsOptional()
@@ -81,3 +86,25 @@ export class CreateMemberPaymentDto implements IManageMemberPayment {
   gatewayOrderId?: string;
 }
 
+export class PlanTaxCalculationRequestDto implements IPlanTaxCalculationRequest {
+  @IsNotEmpty()
+  @IsNumber()
+  @Min(0)
+  programPlanId!: number;
+
+  @IsNotEmpty()
+  @IsNumber()
+  @Min(0)
+  discountAmount!: number;
+
+  @IsNotEmpty()
+  @IsString()
+  currency!: string;
+
+  @IsOptional()
+  @IsNumber()
+  billingAddressId?: number;
+  @IsOptional()
+  @IsNumber()
+  addressId?: number;
+}

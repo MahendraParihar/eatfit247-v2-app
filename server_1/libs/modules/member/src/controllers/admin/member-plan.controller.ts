@@ -1,6 +1,17 @@
-import { Body, Controller, Delete, Get, Header, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Header,
+  Param,
+  Post,
+  Put,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { CurrentUser, JwtAuthGuard, RequestedIp } from '@server_1/core';
-import { MemberPaymentService } from '../../services';
+import { MemberPlanService } from '../../services';
 import {
   ICalculateTaxResponse,
   IMemberPayment,
@@ -9,16 +20,19 @@ import {
   IProgramPlan,
   ITableList,
 } from '@eatfit247-shared-lib';
-import { CreateMemberPaymentDto, CreatePaymentLinkDto } from '../../dto';
-import { CalculateTaxDto } from '../../dto';
+import {
+  CreateMemberPaymentDto,
+  CreatePaymentLinkDto,
+  PlanTaxCalculationRequestDto,
+} from '../../dto';
 import { ProgramPlanService } from '@server_1/modules/program-plan';
 import { IFileModel } from '@server_1/platform';
 
 @Controller('member/:id/payment-history')
 @UseGuards(JwtAuthGuard)
-export class MemberPaymentController {
+export class MemberPlanController {
   constructor(
-    private readonly memberPaymentService: MemberPaymentService,
+    private readonly memberPaymentService: MemberPlanService,
     private readonly programPlanService: ProgramPlanService,
   ) {}
 
@@ -70,16 +84,6 @@ export class MemberPaymentController {
     return await this.memberPaymentService.create(id, body, requestedIp, currentUser.adminId);
   }
 
-  @Delete(':paymentId')
-  async deletePayment(
-    @Param('id') id: number,
-    @Param('paymentId') paymentId: number,
-    @CurrentUser() currentUser: any,
-    @RequestedIp() requestedIp: string,
-  ): Promise<void> {
-    return await this.memberPaymentService.delete(id, paymentId, requestedIp, currentUser.adminId);
-  }
-
   @Get('program-plan/:programPlanId')
   async getProgramPlanDetails(
     @Param('programPlanId') programPlanId: number,
@@ -90,12 +94,9 @@ export class MemberPaymentController {
   @Post('calculate-tax')
   async calculateTax(
     @Param('id') id: number,
-    @Body() body: CalculateTaxDto,
+    @Body() body: PlanTaxCalculationRequestDto,
   ): Promise<ICalculateTaxResponse> {
-    return await this.memberPaymentService.calculateTax(
-      id,
-      body,
-    );
+    return await this.memberPaymentService.calculateTax(id, body);
   }
 
   @Post('create-payment-link')

@@ -1,14 +1,18 @@
-import { Body, Controller, Delete, Get, Header, Param, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Header, Param, Post, Query, UseGuards } from '@nestjs/common';
 import { CurrentUser, JwtAuthGuard, RequestedIp } from '@server_1/core';
 import { MemberProductService } from '../../services';
 import {
-  ICalculateProductVariantTaxResponse,
   IMemberProduct,
   IMemberProductMasterData,
   IPaymentLinkResponse,
   ITableList,
 } from '@eatfit247-shared-lib';
-import { CalculateProductVariantTaxDto, CreateMemberProductDto, CreatePaymentLinkDto } from '../../dto';
+import {
+  CalculateProductVariantTaxDto,
+  CalculateProductVariantTaxResponseDto,
+  CreateMemberProductDto,
+  CreatePaymentLinkDto,
+} from '../../dto';
 import { IFileModel } from '@server_1/platform';
 
 @Controller('member/:id/product')
@@ -65,7 +69,7 @@ export class MemberProductController {
   async calculateTax(
     @Param('id') id: number,
     @Body() body: CalculateProductVariantTaxDto,
-  ): Promise<ICalculateProductVariantTaxResponse> {
+  ): Promise<CalculateProductVariantTaxResponseDto> {
     return await this.memberProductService.calculateProductTax(id, body);
   }
 
@@ -96,4 +100,3 @@ export class MemberProductController {
     return await this.memberProductService.regeneratePaymentLink(id, productId);
   }
 }
-

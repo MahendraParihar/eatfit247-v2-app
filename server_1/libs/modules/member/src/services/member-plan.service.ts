@@ -5,7 +5,6 @@ import {
   BusinessTypeEnum,
   ConfigParam,
   IAddress,
-  ICalculateTaxRequest,
   ICalculateTaxResponse,
   ICreatePaymentLinkRequest,
   IDropdownItem,
@@ -16,6 +15,8 @@ import {
   IMemberPaymentMasterData,
   IPaymentGateway,
   IPaymentLinkResponse,
+  IPlanTaxCalculationRequest,
+  IProductFee,
   ITableList,
   mapPaymentToInvoiceDocument,
   MediaForEnum,
@@ -56,7 +57,7 @@ import fs from 'fs';
 import { find } from 'lodash';
 
 @Injectable()
-export class MemberPaymentService {
+export class MemberPlanService {
   rootFolderPath = `${Env.persistentStorageAssetPath}`;
 
   constructor(
@@ -118,7 +119,7 @@ export class MemberPaymentService {
    */
   public async calculateTax(
     memberId: number,
-    payload: ICalculateTaxRequest,
+    payload: IPlanTaxCalculationRequest,
   ): Promise<ICalculateTaxResponse> {
     // Get member to find a franchise
     const member = await this.memberRepository.findOne({
@@ -184,10 +185,14 @@ export class MemberPaymentService {
         customerStateCode = customerState.code || null;
       }
     }
+
+    const programPlan = await this.programPlanService.fetchById(payload.programPlanId);
+    const fees: IProductFee = find(programPlan.programPlanFees, { currencyCode: payload.currency });
+
     // Calculate base amounts
     // Use tax engine to calculate tax
     const taxInput: TaxInput = {
-      baseAmount: payload.orderAmount,
+      baseAmount: fees.price,
       discountAmount: payload.discountAmount,
       supplierCountryCode,
       supplierStateCode: supplierStateCode || undefined,
@@ -195,7 +200,7 @@ export class MemberPaymentService {
       customerStateCode: customerStateCode || undefined,
       referenceId: 1,
       franchiseId: member.franchiseId,
-      currency: payload.currencyCode,
+      currency: payload.currency,
       transactionType: TransactionType.SERVICE,
     };
     const taxResult = await this.taxEngineService.calculate(taxInput);
@@ -341,12 +346,12 @@ export class MemberPaymentService {
           franchiseAddresses && franchiseAddresses.length > 0 ? franchiseAddresses[0] : null;
       }
       const programPlan = await this.programPlanService.fetchById(obj.programPlanId);
-      const fees = find(programPlan.programPlanFees, { currencyCode: obj.currencyCode });
+      const fees = find(programPlan.programPlanFees, { currencyCode: obj.currency });
       const paymentObj = await this.calculatePaymentObject(
         {
           orderAmount: fees.fees,
           discountAmount: obj.discountAmount || 0,
-          currencyCode: obj.currencyCode,
+          currencyCode: obj.currency,
         },
         billingAddress,
         franchiseAddress,
@@ -428,45 +433,6 @@ export class MemberPaymentService {
       await t.rollback();
       throw error;
     }
-  }
-
-  /**
-   * Delete (soft delete) a payment
-   * @param memberId - Member ID
-   * @param paymentId - Payment ID
-   * @param requestedIp - Request IP
-   * @param adminId - Admin user ID
-   */
-  public async delete(
-    memberId: number,
-    paymentId: number,
-    requestedIp: string,
-    adminId: number,
-  ): Promise<void> {
-    // Verify member exists
-    const member = await this.memberRepository.findOne({
-      where: { memberId },
-    });
-    if (!member) {
-      throw new NotFoundException('Member not found');
-    }
-    // Find payment
-    const payment = await this.memberPaymentRepository.findOne({
-      where: {
-        memberPaymentId: paymentId,
-        memberId,
-        active: true,
-      },
-    });
-    if (!payment) {
-      throw new NotFoundException('Payment not found');
-    }
-    // Soft delete
-    await payment.update({
-      active: false,
-      modifiedBy: adminId,
-      modifiedIp: requestedIp,
-    });
   }
 
   /**

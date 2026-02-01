@@ -1,14 +1,14 @@
 import { Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
 import { Public, RequestedIp, RequireRecaptcha } from '@server_1/core';
 import { RecaptchaGuard } from '@server_1/platform';
-import { MemberPaymentService } from '../../services';
+import { MemberPlanService } from '../../services';
 import { CreatePublicCheckoutPaymentLinkDto, CreatePublicCheckoutPlanOrderDto } from '../../dto';
 import { IManageMemberPayment, IPaymentGateway, IPaymentLinkResponse } from '@eatfit247-shared-lib';
 
 @Public()
 @Controller('checkout/plan')
 export class PublicCheckoutPlanController {
-  constructor(private readonly memberPaymentService: MemberPaymentService) {}
+  constructor(private readonly memberPaymentService: MemberPlanService) {}
 
   /**
    * Get supported payment gateways for plan checkout

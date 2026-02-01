@@ -56,7 +56,7 @@ import {
 } from '@server_1/modules/payment';
 import { Sequelize } from 'sequelize-typescript';
 import fs from 'fs';
-import { find } from 'lodash';
+import { find, sumBy } from 'lodash';
 
 @Injectable()
 export class MemberProductService {
@@ -92,12 +92,7 @@ export class MemberProductService {
    */
   public async findAll(memberId: number): Promise<ITableList<IMemberProduct>> {
     // Verify member exists
-    const member = await this.memberRepository.findOne({
-      where: { memberId },
-    });
-    if (!member) {
-      throw new NotFoundException('Member not found');
-    }
+    await this.verifyMember(memberId);
     const { rows, count } = await this.memberProductRepository.scope('list').findAndCountAll({
       where: {
         memberId,
@@ -119,12 +114,7 @@ export class MemberProductService {
    */
   public async findById(memberId: number, productId: number): Promise<IMemberProduct> {
     // Verify member exists
-    const member = await this.memberRepository.findOne({
-      where: { memberId },
-    });
-    if (!member) {
-      throw new NotFoundException('Member not found');
-    }
+    await this.verifyMember(memberId);
     const product = await this.memberProductRepository.scope('details').findOne({
       where: {
         memberProductId: productId,
@@ -136,6 +126,218 @@ export class MemberProductService {
       throw new NotFoundException('Member product not found');
     }
     return this.convertToModel(product);
+  }
+
+  /**
+   * Verify member exists and return member record
+   * @param memberId - Member ID
+   * @returns Member record
+   * @throws NotFoundException if member not found
+   */
+  private async verifyMember(memberId: number): Promise<TxnMember> {
+    const member = await this.memberRepository.findOne({
+      where: { memberId },
+    });
+    if (!member) {
+      throw new NotFoundException('Member not found');
+    }
+    return member;
+  }
+
+  /**
+   * Get franchise for products business type
+   * @returns Franchise array
+   * @throws BadRequestException if franchise not found
+   */
+  private async getProductFranchise(): Promise<IDropdownItem[]> {
+    const franchise = await this.franchiseService.franchiseByBusinessType(BusinessTypeEnum.PRODUCT);
+    if (!franchise || franchise.length === 0) {
+      throw new BadRequestException('Franchise not found for products');
+    }
+    return franchise;
+  }
+
+  /**
+   * Transform gateway data to IPaymentGateway format
+   * @param gateways - Gateway data from repository
+   * @returns Transformed gateway array
+   */
+  private transformGateways(gateways: any[]): IPaymentGateway[] {
+    return gateways.map((gateway: any) => {
+      const paymentGateway = gateway.paymentGateway;
+      return {
+        franchisePaymentGatewayId: gateway.franchisePaymentGatewayId,
+        gatewayCode: paymentGateway?.code || '',
+        gatewayName: paymentGateway?.name || '',
+        providerCountryCode: paymentGateway?.providerCountryCode || '',
+        currencyCode: gateway.currencyCode,
+        isPrimary: gateway.isPrimary,
+        supportsDomestic: gateway.supportsDomestic,
+        supportsInternational: gateway.supportsInternational,
+      };
+    });
+  }
+
+  /**
+   * Resolve payment gateway and get credentials
+   * @param franchiseId - Franchise ID
+   * @param currency - Currency code
+   * @param amount - Payment amount
+   * @param requestedGatewayId - Optional specific gateway ID to validate
+   * @returns Resolved gateway and credentials
+   */
+  private async resolveGatewayAndCredentials(
+    franchiseId: number,
+    currency: string,
+    amount: number,
+    requestedGatewayId?: number,
+  ): Promise<{
+    resolvedGateway: any;
+    keyId: string;
+    keySecret: string;
+    gatewayCode: string;
+  }> {
+    // Resolve gateway
+    let resolvedGateway;
+    try {
+      resolvedGateway = await this.paymentGatewayResolverService.resolve({
+        franchiseId,
+        currency,
+        isInternational: false,
+        amount,
+      });
+    } catch (error) {
+      throw new BadRequestException(
+        error instanceof Error ? error.message : 'Failed to resolve payment gateway',
+      );
+    }
+
+    // Validate requested gateway if provided
+    if (requestedGatewayId && resolvedGateway.franchisePaymentGatewayId !== requestedGatewayId) {
+      throw new BadRequestException(
+        'Selected payment gateway is not available for the given criteria',
+      );
+    }
+
+    const gatewayCode = resolvedGateway.gatewayCode;
+
+    // Get credentials
+    const credentialMode = this.appConfigService.getString(ConfigParam.PAYMENT_MODE);
+    const credentials = await this.paymentGatewayCredentialService.getActiveCredentials(
+      resolvedGateway.franchisePaymentGatewayId,
+      credentialMode,
+    );
+    if (!credentials) {
+      throw new BadRequestException(
+        `Payment gateway credentials not found for gateway ID: ${resolvedGateway.franchisePaymentGatewayId} in mode: ${credentialMode}`,
+      );
+    }
+
+    return {
+      resolvedGateway,
+      keyId: credentials.apiKeyEncrypted,
+      keySecret: credentials.apiSecretEncrypted,
+      gatewayCode,
+    };
+  }
+
+  /**
+   * Prepare customer details from member or use provided details
+   * @param member - Member record
+   * @param providedCustomer - Optional customer details from payload
+   * @returns Customer details object
+   */
+  private prepareCustomerDetails(
+    member: TxnMember,
+    providedCustomer?: { name?: string; email?: string; contact?: string },
+  ): { name?: string; email?: string; contact?: string } {
+    if (providedCustomer) {
+      return providedCustomer;
+    }
+    return {
+      name: member.firstName ? `${member.firstName} ${member.lastName || ''}`.trim() : undefined,
+      email: member.emailId || undefined,
+      contact: member.contactNumber || undefined,
+    };
+  }
+
+  /**
+   * Calculate tax for order items and build complete order item objects
+   * @param tempOrderItems - Initial order items with base amounts
+   * @param franchise - Franchise dropdown item
+   * @param franchiseAddress - Franchise address
+   * @param billingAddress - Billing address
+   * @returns Complete order items with tax calculations
+   */
+  private async calculateOrderItemsTax(
+    tempOrderItems: Array<{
+      productId: number;
+      productVariantId: number;
+      productName: string;
+      quantity: number;
+      quantityLabel: string;
+      baseAmount: number;
+      discountAmount: number;
+      currencyCode?: string;
+    }>,
+    franchise: IDropdownItem,
+    franchiseAddress: IAddress | null,
+    billingAddress: IAddress | null,
+  ): Promise<
+    Array<{
+      productId: number;
+      productVariantId: number;
+      productName: string;
+      quantity: number;
+      quantityLabel: string;
+      unitPrice: number;
+      baseAmount: number;
+      discountAmount: number;
+      taxAmount: number;
+      effectiveTaxRate: number;
+      totalAmount: number;
+      taxObj: any;
+      taxType: string;
+      taxMode: string;
+      isLutApplied?: boolean;
+      jurisdiction: any;
+      invoiceNote?: string | null;
+    }>
+  > {
+    const orderItemObjs = [];
+    for (const item of tempOrderItems) {
+      const taxCalculationResult = await this.calculateTax(
+        item.productId,
+        franchise,
+        {
+          orderAmount: item.baseAmount,
+          discountAmount: item.discountAmount,
+          currency: item.currencyCode,
+        },
+        franchiseAddress,
+        billingAddress,
+      );
+      orderItemObjs.push({
+        productId: item.productId,
+        productVariantId: item.productVariantId,
+        productName: item.productName,
+        quantity: item.quantity,
+        quantityLabel: item.quantityLabel,
+        unitPrice: taxCalculationResult.orderAmount / item.quantity,
+        baseAmount: taxCalculationResult.orderAmount,
+        discountAmount: item.discountAmount,
+        taxAmount: taxCalculationResult.taxAmount,
+        effectiveTaxRate: taxCalculationResult.taxPercentage,
+        totalAmount: taxCalculationResult.totalAmount,
+        taxObj: taxCalculationResult.taxObj,
+        taxType: taxCalculationResult.taxType,
+        taxMode: taxCalculationResult.taxMode,
+        isLutApplied: taxCalculationResult.isLutApplied,
+        jurisdiction: taxCalculationResult.jurisdiction,
+        invoiceNote: taxCalculationResult.invoiceNote,
+      });
+    }
+    return orderItemObjs;
   }
 
   /**
@@ -186,26 +388,29 @@ export class MemberProductService {
       franchiseId: item.franchiseId,
       orderItems: Array.isArray(item.orderItems)
         ? item.orderItems.map((orderItem) => ({
-          memberProductOrderItemId: orderItem.memberProductOrderItemId,
-          memberProductId: orderItem.memberProductId,
-          productId: orderItem.productId,
-          productVariantId: orderItem.productVariantId,
-          productName: orderItem.productName,
-          quantityLabel: orderItem.quantityLabel,
-          hsnCode: orderItem.product.hsnCode,
-          quantity: CommonFunctionsUtil.toNumber(orderItem.quantity),
-          unitPrice: CommonFunctionsUtil.toNumber(orderItem.unitPrice),
-          baseAmount: CommonFunctionsUtil.toNumber(orderItem.baseAmount),
-          discountAmount: orderItem.discountAmount !== null && orderItem.discountAmount !== undefined ? CommonFunctionsUtil.toNumber(orderItem.discountAmount) : undefined,
-          effectiveTaxRate: CommonFunctionsUtil.toNumber(orderItem.effectiveTaxRate),
-          taxAmount: CommonFunctionsUtil.toNumber(orderItem.taxAmount),
-          totalAmount: CommonFunctionsUtil.toNumber(orderItem.totalAmount),
-          taxObj: orderItem.taxObj,
-          taxType: orderItem.taxType,
-          taxMode: orderItem.taxMode,
-          jurisdiction: orderItem.jurisdiction,
-          invoiceNote: orderItem.invoiceNote,
-        }))
+            memberProductOrderItemId: orderItem.memberProductOrderItemId,
+            memberProductId: orderItem.memberProductId,
+            productId: orderItem.productId,
+            productVariantId: orderItem.productVariantId,
+            productName: orderItem.productName,
+            quantityLabel: orderItem.quantityLabel,
+            hsnCode: orderItem.product.hsnCode,
+            quantity: CommonFunctionsUtil.toNumber(orderItem.quantity),
+            unitPrice: CommonFunctionsUtil.toNumber(orderItem.unitPrice),
+            baseAmount: CommonFunctionsUtil.toNumber(orderItem.baseAmount),
+            discountAmount:
+              orderItem.discountAmount !== null && orderItem.discountAmount !== undefined
+                ? CommonFunctionsUtil.toNumber(orderItem.discountAmount)
+                : undefined,
+            effectiveTaxRate: CommonFunctionsUtil.toNumber(orderItem.effectiveTaxRate),
+            taxAmount: CommonFunctionsUtil.toNumber(orderItem.taxAmount),
+            totalAmount: CommonFunctionsUtil.toNumber(orderItem.totalAmount),
+            taxObj: orderItem.taxObj,
+            taxType: orderItem.taxType,
+            taxMode: orderItem.taxMode,
+            jurisdiction: orderItem.jurisdiction,
+            invoiceNote: orderItem.invoiceNote,
+          }))
         : [],
     };
   }
@@ -217,7 +422,6 @@ export class MemberProductService {
       this.paymentStatusService.getDropdownList(),
       this.addressService.filterByTableIdAndPk(TableEnum.TXN_MEMBER, memberId),
     ]);
-    const taxApplicable = this.appConfigService.getBoolean(ConfigParam.GST_ENABLED, true, false);
     const paymentSource: IDropdownItem[] = Object.values(PaymentSourceEnum).map((source) => ({
       id: source,
       label: source,
@@ -228,7 +432,6 @@ export class MemberProductService {
       product: product,
       paymentStatus: paymentStatuses,
       addresses: addresses as IAddress[],
-      taxApplicable: taxApplicable,
       paymentSource: paymentSource,
     };
   }
@@ -244,15 +447,10 @@ export class MemberProductService {
     currencyCode: string,
   ): Promise<IPaymentGateway[]> {
     // Verify a member exists
-    const member = await this.memberRepository.findOne({
-      where: { memberId },
-    });
-    if (!member) {
-      throw new NotFoundException('Member not found');
-    }
+    await this.verifyMember(memberId);
     // Get franchise for products
-    const franchise = await this.franchiseService.franchiseByBusinessType(BusinessTypeEnum.PRODUCT);
-    if (!franchise || franchise.length === 0) {
+    const franchise = await this.getProductFranchise();
+    if (franchise.length === 0) {
       return [];
     }
     // Get all active gateways for franchise and currency
@@ -261,19 +459,7 @@ export class MemberProductService {
       currency: currencyCode,
     });
     // Transform to response format
-    return gateways.map((gateway: any) => {
-      const paymentGateway = gateway.paymentGateway;
-      return {
-        franchisePaymentGatewayId: gateway.franchisePaymentGatewayId,
-        gatewayCode: paymentGateway?.code || '',
-        gatewayName: paymentGateway?.name || '',
-        providerCountryCode: paymentGateway?.providerCountryCode || '',
-        currencyCode: gateway.currencyCode,
-        isPrimary: gateway.isPrimary,
-        supportsDomestic: gateway.supportsDomestic,
-        supportsInternational: gateway.supportsInternational,
-      };
-    });
+    return this.transformGateways(gateways);
   }
 
   /**
@@ -294,19 +480,7 @@ export class MemberProductService {
       currency: currencyCode,
     });
     // Transform to response format
-    return gateways.map((gateway: any) => {
-      const paymentGateway = gateway.paymentGateway;
-      return {
-        franchisePaymentGatewayId: gateway.franchisePaymentGatewayId,
-        gatewayCode: paymentGateway?.code || '',
-        gatewayName: paymentGateway?.name || '',
-        providerCountryCode: paymentGateway?.providerCountryCode || '',
-        currencyCode: gateway.currencyCode,
-        isPrimary: gateway.isPrimary,
-        supportsDomestic: gateway.supportsDomestic,
-        supportsInternational: gateway.supportsInternational,
-      };
-    });
+    return this.transformGateways(gateways);
   }
 
   /**
@@ -320,63 +494,22 @@ export class MemberProductService {
     payload: ICreatePaymentLinkRequest,
   ): Promise<IPaymentLinkResponse> {
     // Verify a member exists
-    const member = await this.memberRepository.findOne({
-      where: { memberId: memberId },
-    });
-    if (!member) {
-      throw new NotFoundException('Member not found');
-    }
+    const member = await this.verifyMember(memberId);
     // Get franchise for products
-    const franchise = await this.franchiseService.franchiseByBusinessType(BusinessTypeEnum.PRODUCT);
-    if (!franchise || franchise.length === 0) {
-      throw new BadRequestException('Franchise not found for products');
-    }
+    const franchise = await this.getProductFranchise();
     if (payload.amount <= 0) {
       throw new BadRequestException('Invalid amount');
     }
-    // Use PaymentGatewayResolverService to find the gateway
-    let resolvedGateway;
-    try {
-      resolvedGateway = await this.paymentGatewayResolverService.resolve({
-        franchiseId: franchise[0].id as number,
-        currency: payload.currency,
-        isInternational: false,
-        amount: payload.amount,
-      });
-    } catch (error) {
-      throw new BadRequestException(
-        error instanceof Error ? error.message : 'Failed to resolve payment gateway',
+    // Resolve gateway and get credentials
+    const { resolvedGateway, keyId, keySecret, gatewayCode } =
+      await this.resolveGatewayAndCredentials(
+        franchise[0].id as number,
+        payload.currency,
+        payload.amount,
+        payload.franchisePaymentGatewayId,
       );
-    }
-    // If a specific gateway ID was provided, validate it matches the resolved gateway
-    if (
-      payload.franchisePaymentGatewayId &&
-      resolvedGateway.franchisePaymentGatewayId !== payload.franchisePaymentGatewayId
-    ) {
-      throw new BadRequestException(
-        'Selected payment gateway is not available for the given criteria',
-      );
-    }
-    const gatewayCode = resolvedGateway.gatewayCode;
-    // Get payment gateway credentials
-    const credentialMode = this.appConfigService.getString(ConfigParam.PAYMENT_MODE);
-    const credentials = await this.paymentGatewayCredentialService.getActiveCredentials(
-      resolvedGateway.franchisePaymentGatewayId,
-      credentialMode,
-    );
-    if (!credentials) {
-      throw new BadRequestException(
-        `Payment gateway credentials not found for gateway ID: ${resolvedGateway.franchisePaymentGatewayId} in mode: ${credentialMode}`,
-      );
-    }
-    const keyId = credentials.apiKeyEncrypted;
-    const keySecret = credentials.apiSecretEncrypted;
     // Prepare customer details from member if not provided
-    const customerDetails = payload.customer || {
-      name: member.firstName ? `${member.firstName} ${member.lastName || ''}`.trim() : undefined,
-      email: member.emailId || undefined,
-      contact: member.contactNumber || undefined,
-    };
+    const customerDetails = this.prepareCustomerDetails(member, payload.customer);
     // Prepare description
     const paymentDescription =
       payload.description || `Product Order Payment for Member ID: ${memberId}`;
@@ -426,63 +559,22 @@ export class MemberProductService {
     notes: Record<string, any>;
   }> {
     // Verify a member exists
-    const member = await this.memberRepository.findOne({
-      where: { memberId: memberId },
-    });
-    if (!member) {
-      throw new NotFoundException('Member not found');
-    }
+    const member = await this.verifyMember(memberId);
     // Get franchise for products
-    const franchise = await this.franchiseService.franchiseByBusinessType(BusinessTypeEnum.PRODUCT);
-    if (!franchise || franchise.length === 0) {
-      throw new BadRequestException('Franchise not found for products');
-    }
+    const franchise = await this.getProductFranchise();
     if (payload.amount <= 0) {
       throw new BadRequestException('Invalid amount');
     }
-    // Use PaymentGatewayResolverService to find the gateway
-    let resolvedGateway;
-    try {
-      resolvedGateway = await this.paymentGatewayResolverService.resolve({
-        franchiseId: franchise[0].id as number,
-        currency: payload.currency,
-        isInternational: false,
-        amount: payload.amount,
-      });
-    } catch (error) {
-      throw new BadRequestException(
-        error instanceof Error ? error.message : 'Failed to resolve payment gateway',
+    // Resolve gateway and get credentials
+    const { resolvedGateway, keyId, keySecret, gatewayCode } =
+      await this.resolveGatewayAndCredentials(
+        franchise[0].id as number,
+        payload.currency,
+        payload.amount,
+        payload.franchisePaymentGatewayId,
       );
-    }
-    // If a specific gateway ID was provided, validate it matches the resolved gateway
-    if (
-      payload.franchisePaymentGatewayId &&
-      resolvedGateway.franchisePaymentGatewayId !== payload.franchisePaymentGatewayId
-    ) {
-      throw new BadRequestException(
-        'Selected payment gateway is not available for the given criteria',
-      );
-    }
-    const gatewayCode = resolvedGateway.gatewayCode;
-    // Get payment gateway credentials
-    const credentialMode = this.appConfigService.getString(ConfigParam.PAYMENT_MODE);
-    const credentials = await this.paymentGatewayCredentialService.getActiveCredentials(
-      resolvedGateway.franchisePaymentGatewayId,
-      credentialMode,
-    );
-    if (!credentials) {
-      throw new BadRequestException(
-        `Payment gateway credentials not found for gateway ID: ${resolvedGateway.franchisePaymentGatewayId} in mode: ${credentialMode}`,
-      );
-    }
-    const keyId = credentials.apiKeyEncrypted;
-    const keySecret = credentials.apiSecretEncrypted;
     // Prepare customer details from member if not provided
-    const customerDetails = payload.customer || {
-      name: member.firstName ? `${member.firstName} ${member.lastName || ''}`.trim() : undefined,
-      email: member.emailId || undefined,
-      contact: member.contactNumber || undefined,
-    };
+    const customerDetails = this.prepareCustomerDetails(member, payload.customer);
     // Prepare description
     const paymentDescription =
       payload.description || `Product Order Payment for Member ID: ${memberId}`;
@@ -497,67 +589,70 @@ export class MemberProductService {
     let orderId: string;
     const receipt = `order_${memberId}_${Date.now()}`;
     switch (gatewayCode) {
-      case PaymentGatewayEnum.RAZORPAY: {
-        if (!adaptor.createOrder) {
-          throw new BadRequestException('Razorpay createOrder method not available');
-        }
-        const order = await adaptor.createOrder(
-          payload.amount,
-          receipt,
-          payload.currency,
-          paymentNotes,
-          {
-            keyId,
-            keySecret,
-          },
-        );
-        orderId = order.id;
-      }
-        break;
-      case PaymentGatewayEnum.STRIPE: {
-        const stripeAdapter = adaptor as any;
-        if (stripeAdapter.createPaymentIntent) {
-          const paymentIntent = await stripeAdapter.createPaymentIntent(
+      case PaymentGatewayEnum.RAZORPAY:
+        {
+          if (!adaptor.createOrder) {
+            throw new BadRequestException('Razorpay createOrder method not available');
+          }
+          const order = await adaptor.createOrder(
             payload.amount,
+            receipt,
             payload.currency,
-            paymentDescription,
-            customerDetails,
-            paymentNotes,
-          );
-          orderId = paymentIntent.id;
-        } else {
-          // Fallback to payment link if payment intent is not available
-          const paymentLink = await adaptor.createPaymentLink(
-            payload.amount,
-            payload.currency,
-            paymentDescription,
-            customerDetails,
             paymentNotes,
             {
               keyId,
               keySecret,
             },
           );
-          orderId = paymentLink.id;
+          orderId = order.id;
         }
-      }
         break;
-      case PaymentGatewayEnum.TELR: {
-        if (!adaptor.createOrder) {
-          throw new BadRequestException('Telr createOrder method not available');
+      case PaymentGatewayEnum.STRIPE:
+        {
+          const stripeAdapter = adaptor as any;
+          if (stripeAdapter.createPaymentIntent) {
+            const paymentIntent = await stripeAdapter.createPaymentIntent(
+              payload.amount,
+              payload.currency,
+              paymentDescription,
+              customerDetails,
+              paymentNotes,
+            );
+            orderId = paymentIntent.id;
+          } else {
+            // Fallback to payment link if payment intent is not available
+            const paymentLink = await adaptor.createPaymentLink(
+              payload.amount,
+              payload.currency,
+              paymentDescription,
+              customerDetails,
+              paymentNotes,
+              {
+                keyId,
+                keySecret,
+              },
+            );
+            orderId = paymentLink.id;
+          }
         }
-        const order = await adaptor.createOrder(
-          payload.amount,
-          receipt,
-          payload.currency,
-          paymentNotes,
-          {
-            keyId,
-            keySecret,
-          },
-        );
-        orderId = order.order?.ref || order.id || receipt;
-      }
+        break;
+      case PaymentGatewayEnum.TELR:
+        {
+          if (!adaptor.createOrder) {
+            throw new BadRequestException('Telr createOrder method not available');
+          }
+          const order = await adaptor.createOrder(
+            payload.amount,
+            receipt,
+            payload.currency,
+            paymentNotes,
+            {
+              keyId,
+              keySecret,
+            },
+          );
+          orderId = order.order?.ref || order.id || receipt;
+        }
         break;
       default:
         throw new BadRequestException(`Unsupported payment gateway: ${gatewayCode}`);
@@ -584,17 +679,9 @@ export class MemberProductService {
     signature?: string,
   ): Promise<{ verified: boolean; paymentDetails?: any }> {
     // Verify a member exists
-    const member = await this.memberRepository.findOne({
-      where: { memberId: memberId },
-    });
-    if (!member) {
-      throw new NotFoundException('Member not found');
-    }
+    await this.verifyMember(memberId);
     // Get franchise for products
-    const franchise = await this.franchiseService.franchiseByBusinessType(BusinessTypeEnum.PRODUCT);
-    if (!franchise || franchise.length === 0) {
-      throw new BadRequestException('Franchise not found for products');
-    }
+    await this.getProductFranchise();
     // Get payment gateway credentials
     const gateways = await this.getSupportedPaymentGatewaysForCheckout('INR');
     const gateway = gateways.find((g) => g.gatewayCode === gatewayCode);
@@ -712,24 +799,9 @@ export class MemberProductService {
     payload: ICalculateProductVariantTaxRequest,
   ): Promise<ICalculateProductVariantTaxResponse> {
     // Verify member exists
-    const member = await this.memberRepository.scope('details').findOne({
-      where: { memberId },
-      include: [
-        {
-          model: MstFranchise,
-          as: 'franchise',
-          required: false,
-        },
-      ],
-    });
-    if (!member) {
-      throw new NotFoundException('Member not found');
-    }
+    await this.verifyMember(memberId);
     // Get franchise for products
-    const franchise = await this.franchiseService.franchiseByBusinessType(BusinessTypeEnum.PRODUCT);
-    if (!franchise || franchise.length === 0) {
-      throw new BadRequestException('Franchise not found for products');
-    }
+    const franchise = await this.getProductFranchise();
     // Get addresses
     const addresses = await this.findAddresses(
       franchise[0],
@@ -738,57 +810,52 @@ export class MemberProductService {
       payload.billingAddressId,
     );
     const memberAddressSnapshot = addresses.memberAddressSnapshot;
-    const franchiseAddress = addresses.franchiseAddress;
+
+    const tempOrderItems = await this.buildOrderItem(payload.items, payload.discountAmount || 0);
+    console.log(tempOrderItems);
+    // Add currencyCode to tempOrderItems for tax calculation
+    const tempOrderItemsWithCurrency = tempOrderItems.map((item) => ({
+      ...item,
+      currencyCode: payload.items.find((i) => i.productId === item.productId)?.currency,
+    }));
+    // Calculate tax for order items
+    const orderItemObjs = await this.calculateOrderItemsTax(
+      tempOrderItemsWithCurrency,
+      franchise[0],
+      addresses.franchiseAddress,
+      memberAddressSnapshot.billingAddress,
+    );
+
+    const totalOrderAmount = orderItemObjs.reduce((acc, item) => acc + item.baseAmount, 0);
+    const totalDiscount = orderItemObjs.reduce((acc, item) => acc + item.discountAmount, 0);
+    const totalTaxAmount = orderItemObjs.reduce((acc, item) => acc + item.taxAmount, 0);
+    const totalAmount = orderItemObjs.reduce((acc, item) => acc + item.totalAmount, 0);
+
     // Calculate tax for each product variant
     const results: IProductVariantTaxResult[] = [];
-    for (const item of payload.items) {
-      // Get product details
-      const product = await this.productService.fetchById(item.productId);
-      // Find the variant
-      const variant = product.variants?.find((v) => v.productVariantId === item.productVariantId);
-      if (!variant) {
-        throw new BadRequestException(
-          `Variant ${item.productVariantId} not found for product ${item.productId}`,
-        );
-      }
-      // Find the price for the specified currency
-      const variantPrice: IProductPrice = find(variant.prices, { currency: item.currencyCode });
-      if (!variantPrice) {
-        throw new BadRequestException(
-          `Price not found for variant ${item.productVariantId} with currency ${item.currencyCode}`,
-        );
-      }
-      // Calculate tax for this item
-      const taxCalculationResult = await this.calculateTax(
-        item.productId,
-        franchise[0],
-        {
-          orderAmount: variantPrice.price,
-          discountAmount: 0,
-          currencyCode: item.currencyCode,
-          billingAddressId: payload.billingAddressId || undefined,
-          addressId: payload.addressId || undefined,
-        },
-        franchiseAddress,
-        memberAddressSnapshot.billingAddress,
-      );
-      results.push({
+    for (const item of orderItemObjs) {
+      results.push(<IProductVariantTaxResult>{
         productId: item.productId,
         productVariantId: item.productVariantId,
-        currencyCode: item.currencyCode,
-        price: variantPrice.price,
-        taxPercentage: taxCalculationResult.taxPercentage,
-        taxAmount: taxCalculationResult.taxAmount,
-        totalAmount: taxCalculationResult.totalAmount,
-        taxObj: taxCalculationResult.taxObj,
-        taxType: taxCalculationResult.taxType,
-        taxMode: taxCalculationResult.taxMode,
-        invoiceNote: taxCalculationResult.invoiceNote,
-        isLutApplied: taxCalculationResult.isLutApplied,
-        jurisdiction: taxCalculationResult.jurisdiction,
+        currency: 'INR',
+        price: item.baseAmount,
+        taxPercentage: item.effectiveTaxRate,
+        taxAmount: item.taxAmount,
+        totalAmount: item.totalAmount,
+        taxObj: item.taxObj,
+        invoiceNote: item.invoiceNote,
+        isLutApplied: item.isLutApplied,
+        jurisdiction: item.jurisdiction,
       });
     }
-    return { items: results };
+    return <ICalculateProductVariantTaxResponse>{
+      items: results,
+      orderAmount: totalOrderAmount,
+      taxAmount: totalTaxAmount,
+      discountAmount: totalDiscount,
+      taxableAmount: totalOrderAmount - totalDiscount,
+      totalAmount: totalAmount,
+    };
   }
 
   /**
@@ -829,7 +896,7 @@ export class MemberProductService {
       customerStateCode: customerStateCode || undefined,
       referenceId: productId,
       franchiseId: franchise.id as number,
-      currency: payload.currencyCode,
+      currency: payload.currency,
       transactionType: TransactionType.PRODUCT,
     };
     const taxResult = await this.taxEngineService.calculate(taxInput);
@@ -844,7 +911,7 @@ export class MemberProductService {
       taxPercentage: taxResult.taxPercentage,
       taxObj: taxResult.taxObj,
       invoiceNote: taxResult.invoiceNote || null,
-      currency: payload.currencyCode,
+      currency: payload.currency,
       isLutApplied: taxResult.isLutApplied,
       jurisdiction: {
         entityCountry: taxResult.entityCountry,
@@ -917,11 +984,11 @@ export class MemberProductService {
           quantity: item.quantity, // Admin ordered quantity
           quantityLabel: `${variant.quantityValue} ${variant.quantityUnit}`, // Variant quantity + unit (e.g., "100gm")
           unitPrice: variantFees.price,
-          baseAmount: variantFees.price * item.quantity,
+          baseAmount: Number(variantFees.price * item.quantity),
         });
       }
     }
-    const orderSubtotal = orderItemObjs.reduce((acc, item) => acc + item.baseAmount, 0);
+    const orderSubtotal = sumBy(orderItemObjs, 'baseAmount');
     // Apply discount logic
     for (const orderItem of orderItemObjs) {
       // Allocate discount proportionally by item value:
@@ -944,7 +1011,7 @@ export class MemberProductService {
     requestedIp: string,
     adminId: number = null,
   ): Promise<IMemberProduct> {
-    // Verify member exists
+    // Verify member exists (with scope for franchise relationship)
     const member = await this.memberRepository.scope('details').findOne({
       where: { memberId },
       include: [
@@ -967,10 +1034,7 @@ export class MemberProductService {
       transactionId: obj.transactionId,
     });
     // Get franchise for products
-    const franchise = await this.franchiseService.franchiseByBusinessType(BusinessTypeEnum.PRODUCT);
-    if (!franchise || franchise.length === 0) {
-      throw new BadRequestException('Franchise not found for products');
-    }
+    const franchise = await this.getProductFranchise();
     const t = await this.sequelize.transaction();
     try {
       const addresses = await this.findAddresses(
@@ -980,43 +1044,20 @@ export class MemberProductService {
         obj.billingAddressId,
       );
       const memberAddressSnapshot = addresses.memberAddressSnapshot;
-      const orderItemObjs = [];
       const tempOrderItem = await this.buildOrderItem(obj.orderItems, obj.discountAmount || 0);
-      // calculate order item level tax calculation
-      for (const item of tempOrderItem) {
-        const taxCalculationResult = await this.calculateTax(
-          item.productId,
-          franchise[0],
-          {
-            orderAmount: item.baseAmount,
-            discountAmount: item.discountAmount,
-            currencyCode: item.currencyCode,
-            billingAddressId: obj.billingAddressId || undefined,
-            addressId: obj.addressId || undefined,
-          },
-          addresses.franchiseAddress,
-          memberAddressSnapshot.billingAddress,
-        );
-        orderItemObjs.push({
-          productId: item.productId,
-          productVariantId: item.productVariantId,
-          productName: item.productName,
-          quantity: item.quantity, // Admin ordered quantity
-          quantityLabel: item.quantityLabel,
-          unitPrice: taxCalculationResult.orderAmount / item.quantity,
-          baseAmount: taxCalculationResult.orderAmount,
-          discountAmount: item.discountAmount,
-          taxAmount: taxCalculationResult.taxAmount,
-          effectiveTaxRate: taxCalculationResult.taxPercentage,
-          totalAmount: taxCalculationResult.totalAmount,
-          taxObj: taxCalculationResult.taxObj,
-          taxType: taxCalculationResult.taxType,
-          taxMode: taxCalculationResult.taxMode,
-          isLutApplied: taxCalculationResult.isLutApplied,
-          jurisdiction: taxCalculationResult.jurisdiction,
-          invoice_note: taxCalculationResult.invoiceNote,
-        });
-      }
+      console.log(tempOrderItem);
+      // Add currencyCode to tempOrderItems for tax calculation
+      const tempOrderItemsWithCurrency = tempOrderItem.map((item) => ({
+        ...item,
+        currencyCode: obj.orderItems.find((i) => i.productId === item.productId)?.currency || 'INR',
+      }));
+      // Calculate tax for order items
+      const orderItemObjs = await this.calculateOrderItemsTax(
+        tempOrderItemsWithCurrency,
+        franchise[0],
+        addresses.franchiseAddress,
+        memberAddressSnapshot.billingAddress,
+      );
       const totalOrderAmount = orderItemObjs.reduce((acc, item) => acc + item.baseAmount, 0);
       const totalTaxAmount = orderItemObjs.reduce((acc, item) => acc + item.taxAmount, 0);
       const totalAmount = orderItemObjs.reduce((acc, item) => acc + item.totalAmount, 0);
@@ -1059,11 +1100,14 @@ export class MemberProductService {
       const productOrder = await this.memberProductRepository.create(productOrderData, {
         transaction: t,
       });
-      // Create order items
-      for (const itemOrder of orderItemObjs) {
-        itemOrder.memberProductId = productOrder.memberProductId;
-      }
-      await this.memberProductOrderItemRepository.bulkCreate(orderItemObjs, { transaction: t });
+      // Create order items - add memberProductId to each item
+      const orderItemsForCreate = orderItemObjs.map((itemOrder) => ({
+        ...itemOrder,
+        memberProductId: productOrder.memberProductId,
+      }));
+      await this.memberProductOrderItemRepository.bulkCreate(orderItemsForCreate as any, {
+        transaction: t,
+      });
       await t.commit();
       // Fetch the created product order with relationships
       const createdOrder = await this.memberProductRepository.scope('details').findOne({
@@ -1107,53 +1151,19 @@ export class MemberProductService {
       throw new BadRequestException('Payment link cannot be regenerated for manual payments');
     }
     // Get member
-    const member = await this.memberRepository.findOne({
-      where: { memberId },
-    });
-    if (!member) {
-      throw new NotFoundException('Member not found');
-    }
+    const member = await this.verifyMember(memberId);
     // Get franchise for products
-    const franchise = await this.franchiseService.franchiseByBusinessType(BusinessTypeEnum.PRODUCT);
-    if (!franchise || franchise.length === 0) {
-      throw new BadRequestException('Franchise not found for products');
-    }
+    const franchise = await this.getProductFranchise();
     // Resolve gateway to ensure it's valid
     const currency = productOrder.currency;
-    let resolvedGateway;
-    try {
-      resolvedGateway = await this.paymentGatewayResolverService.resolve({
-        franchiseId: franchise[0].id as number,
-        currency: currency,
-        isInternational: false,
-        amount: productOrder.totalAmount,
-      });
-    } catch (error) {
-      throw new BadRequestException(
-        error instanceof Error ? error.message : 'Failed to resolve payment gateway',
+    const { resolvedGateway, keyId, keySecret, gatewayCode } =
+      await this.resolveGatewayAndCredentials(
+        franchise[0].id as number,
+        currency,
+        productOrder.totalAmount,
       );
-    }
-    const gatewayCode = resolvedGateway.gatewayCode;
-    // Get payment gateway credentials
-    const credentialMode = this.appConfigService.getString(ConfigParam.PAYMENT_MODE);
-    const credentials = await this.paymentGatewayCredentialService.getActiveCredentials(
-      resolvedGateway.franchisePaymentGatewayId,
-      credentialMode,
-    );
-    if (!credentials) {
-      throw new BadRequestException(
-        `Payment gateway credentials not found for gateway ID: ${resolvedGateway.franchisePaymentGatewayId} in mode: ${credentialMode}`,
-      );
-    }
-    // Decrypt credentials (if needed)
-    const keyId = credentials.apiKeyEncrypted;
-    const keySecret = credentials.apiSecretEncrypted;
     // Prepare customer details from member
-    const customerDetails = {
-      name: member.firstName ? `${member.firstName} ${member.lastName || ''}`.trim() : undefined,
-      email: member.emailId || undefined,
-      contact: member.contactNumber || undefined,
-    };
+    const customerDetails = this.prepareCustomerDetails(member);
     // Prepare description from order items
     const orderItems = productOrder.orderItems || [];
     const productNames = orderItems.map((item) => item.productName).join(', ');

@@ -26,7 +26,6 @@ export class TaxEngineService {
       buyerCountryCode: input.customerCountryCode,
       transactionType: input.transactionType,
     });
-    console.log(taxRule);
     if (!taxRule || taxRule.taxPercent === 0) {
       return this.noTax(taxableAmount, input.discountAmount);
     }
