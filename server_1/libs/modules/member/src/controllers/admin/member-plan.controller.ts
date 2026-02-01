@@ -1,19 +1,7 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Header,
-  Param,
-  Post,
-  Put,
-  Query,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Get, Header, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { CurrentUser, JwtAuthGuard, RequestedIp } from '@server_1/core';
 import { MemberPlanService } from '../../services';
 import {
-  ICalculateTaxResponse,
   IMemberPayment,
   IMemberPaymentMasterData,
   IPaymentLinkResponse,
@@ -21,6 +9,7 @@ import {
   ITableList,
 } from '@eatfit247-shared-lib';
 import {
+  CalculateTaxResponseDto,
   CreateMemberPaymentDto,
   CreatePaymentLinkDto,
   PlanTaxCalculationRequestDto,
@@ -95,7 +84,7 @@ export class MemberPlanController {
   async calculateTax(
     @Param('id') id: number,
     @Body() body: PlanTaxCalculationRequestDto,
-  ): Promise<ICalculateTaxResponse> {
+  ): Promise<CalculateTaxResponseDto> {
     return await this.memberPaymentService.calculateTax(id, body);
   }
 

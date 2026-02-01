@@ -129,7 +129,7 @@ export class PublicCheckoutPlanController {
       gstNumber: body.gstNumber,
       paymentSource: body.paymentSource,
       discountAmount: body.discountAmount,
-      currencyCode: body.currencyCode,
+      currency: body.currencyCode,
       paymentLink: body.paymentLink,
       gatewayProvider: body.gatewayProvider,
       gatewayOrderId: body.gatewayOrderId,

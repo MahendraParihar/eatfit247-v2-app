@@ -18,7 +18,7 @@
     "incremental": true,
     "baseUrl": ".",
     "paths": {
-      "@eatfit247-shared-lib": ["../shared-library/dist"],
+      "@eatfit247-shared-lib": ["../shared-library/dist/index"],
       "@server_1/core": ["libs/core/src/index.ts"],
       "@server_1/platform": ["libs/platform/src/index.ts"],
       "@server_1/modules/*": ["libs/modules/*/index.ts"],

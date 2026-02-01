@@ -1,5 +1,4 @@
 import {
-  IsBoolean,
   IsDateString,
   IsEnum,
   IsNotEmpty,
@@ -58,8 +57,8 @@ export class CreateMemberPaymentDto implements IManageMemberPayment {
   paymentStatusId!: number;
   @IsNotEmpty()
   @IsString()
-  @MaxLength(InputLengthEnum.CHAR_10)
-  currencyCode!: string;
+  @MaxLength(InputLengthEnum.CHAR_5)
+  currency!: string;
   @IsOptional()
   @IsString()
   @MaxLength(InputLengthEnum.CHAR_100)

@@ -9,7 +9,6 @@ import {
   IPublicTableList,
   ITableList,
 } from '@eatfit247-shared-lib';
-import { CommonFunctionsUtil, SearchUtil } from '@server_1/core';
 
 @Injectable()
 export class ProgramPlanService {
@@ -18,24 +17,24 @@ export class ProgramPlanService {
     @InjectModel(MstProgramPlanType)
     private readonly programPlanTypeRepository: typeof MstProgramPlanType,
     @InjectModel(MstProgramPlanFees)
-    private readonly programPlanFeesRepository: typeof MstProgramPlanFees
+    private readonly programPlanFeesRepository: typeof MstProgramPlanFees,
   ) {}
 
   public async findAll(searchDto: IBasicSearch): Promise<ITableList<IProgramPlan>> {
-    const whereCondition: any = SearchUtil.filterBasicSearch(searchDto, "plan");
+    const whereCondition: any = SearchUtil.filterBasicSearch(searchDto, 'plan');
     const pageNumber = searchDto.page || 0;
     const pageSize = searchDto.limit || 15;
     const offset = pageNumber === 0 ? 0 : pageNumber * pageSize;
-    const { rows, count } = await this.programPlanRepository.scope("list").findAndCountAll({
+    const { rows, count } = await this.programPlanRepository.scope('list').findAndCountAll({
       where: whereCondition,
       order: [
-        ["active", "DESC"],
-        ["sequenceNumber", "ASC"]
+        ['active', 'DESC'],
+        ['sequenceNumber', 'ASC'],
       ],
       offset: offset,
       limit: pageSize,
       raw: true,
-      nest: true
+      nest: true,
     });
     const resList: IProgramPlan[] = rows.map((item: any) => {
       // Ensure programPlanFees is an array (might not be loaded in list scope)
@@ -46,16 +45,16 @@ export class ProgramPlanService {
     });
     return {
       tableData: resList,
-      count: count
+      count: count,
     };
   }
 
   private convertToModel(item: any): IProgramPlan {
     const fees = Array.isArray(item.programPlanFees)
       ? item.programPlanFees.map((s: any) => ({
-        fees: s.fees,
-        currencyCode: s.currencyCode
-      }))
+          fees: s.fees,
+          currencyCode: s.currencyCode,
+        }))
       : [];
     return <IProgramPlan>{
       programPlanId: item.programPlanId,
@@ -66,7 +65,7 @@ export class ProgramPlanService {
       noOfCycle: item.noOfCycle,
       noOfDaysInCycle: item.noOfDaysInCycle,
       programPlanTypeId: item.programPlanTypeId,
-      programPlanType: item.programPlanType?.programPlanType || "",
+      programPlanType: item.programPlanType?.programPlanType || '',
       isOnline: item.isOnline,
       isVisibleOnWeb: item.isVisibleOnWeb,
       programPlanFees: fees,
@@ -77,20 +76,20 @@ export class ProgramPlanService {
       createdAt: item.createdAt,
       updatedAt: item.updatedAt,
       createdByUser: item.createdByUser
-        ? CommonFunctionsUtil.getAdminShortInfo(item.createdByUser, "createdByUser")
+        ? CommonFunctionsUtil.getAdminShortInfo(item.createdByUser, 'createdByUser')
         : undefined,
       updatedByUser: item.updatedByUser
-        ? CommonFunctionsUtil.getAdminShortInfo(item.updatedByUser, "updatedByUser")
-        : undefined
+        ? CommonFunctionsUtil.getAdminShortInfo(item.updatedByUser, 'updatedByUser')
+        : undefined,
     };
   }
 
   public async fetchById(id: number): Promise<IProgramPlan> {
-    const find = await this.programPlanRepository.scope("details").findOne({
-      where: { programPlanId: id }
+    const find = await this.programPlanRepository.scope('details').findOne({
+      where: { programPlanId: id },
     });
     if (!find) {
-      throw new NotFoundException("Program plan not found");
+      throw new NotFoundException('Program plan not found');
     }
     return this.convertToModel(find.get({ plain: true }));
   }
@@ -98,7 +97,7 @@ export class ProgramPlanService {
   public async create(obj: IManageProgramPlan, cIp: string, adminId: number): Promise<void> {
     const createObj = {
       plan: obj.plan,
-      url: CommonFunctionsUtil.removeSpecialChar(obj.plan.toString().toLowerCase(), "-"),
+      url: CommonFunctionsUtil.removeSpecialChar(obj.plan.toString().toLowerCase(), '-'),
       details: obj.details || null,
       sequenceNumber: obj.sequenceNumber,
       noOfCycle: obj.noOfCycle,
@@ -111,7 +110,7 @@ export class ProgramPlanService {
       createdBy: adminId,
       modifiedBy: adminId,
       createdIp: cIp,
-      modifiedIp: cIp
+      modifiedIp: cIp,
     };
     const created = await this.programPlanRepository.create(createObj);
     // Create program plan fees
@@ -120,7 +119,9 @@ export class ProgramPlanService {
       const currencyCodes = obj.programPlanFees.map((fee) => fee.currencyCode);
       const uniqueCurrencyCodes = new Set(currencyCodes);
       if (currencyCodes.length !== uniqueCurrencyCodes.size) {
-        throw new BadRequestException("Duplicate currency codes are not allowed for the same program plan");
+        throw new BadRequestException(
+          'Duplicate currency codes are not allowed for the same program plan',
+        );
       }
       const feesToCreate = obj.programPlanFees.map((fee) => ({
         programPlanId: created.programPlanId,
@@ -130,7 +131,7 @@ export class ProgramPlanService {
         createdBy: adminId,
         updatedBy: adminId,
         createdIp: cIp,
-        modifiedIp: cIp
+        modifiedIp: cIp,
       }));
       await this.programPlanFeesRepository.bulkCreate(feesToCreate);
     }
@@ -140,17 +141,17 @@ export class ProgramPlanService {
     id: number,
     obj: IManageProgramPlan,
     cIp: string,
-    adminId: number
+    adminId: number,
   ): Promise<void> {
     const find = await this.programPlanRepository.findOne({
-      where: { programPlanId: id }
+      where: { programPlanId: id },
     });
     if (!find) {
-      throw new NotFoundException("Program plan not found");
+      throw new NotFoundException('Program plan not found');
     }
     const updateObj = {
       plan: obj.plan,
-      url: CommonFunctionsUtil.removeSpecialChar(obj.plan.toString().toLowerCase(), "-"),
+      url: CommonFunctionsUtil.removeSpecialChar(obj.plan.toString().toLowerCase(), '-'),
       details: obj.details || null,
       sequenceNumber: obj.sequenceNumber,
       noOfCycle: obj.noOfCycle,
@@ -161,7 +162,7 @@ export class ProgramPlanService {
       imagePath: obj.imagePath && obj.imagePath.length > 0 ? obj.imagePath : null,
       active: obj.active,
       modifiedBy: adminId,
-      modifiedIp: cIp
+      modifiedIp: cIp,
     };
     await this.programPlanRepository.update(updateObj, { where: { programPlanId: id } });
     // Update program plan fees - delete existing and create new ones
@@ -171,7 +172,9 @@ export class ProgramPlanService {
       const currencyCodes = obj.programPlanFees.map((fee) => fee.currencyCode);
       const uniqueCurrencyCodes = new Set(currencyCodes);
       if (currencyCodes.length !== uniqueCurrencyCodes.size) {
-        throw new BadRequestException("Duplicate currency codes are not allowed for the same program plan");
+        throw new BadRequestException(
+          'Duplicate currency codes are not allowed for the same program plan',
+        );
       }
       const feesToCreate = obj.programPlanFees.map((fee) => ({
         programPlanId: id,
@@ -181,7 +184,7 @@ export class ProgramPlanService {
         createdBy: adminId,
         updatedBy: adminId,
         createdIp: cIp,
-        modifiedIp: cIp
+        modifiedIp: cIp,
       }));
       await this.programPlanFeesRepository.bulkCreate(feesToCreate);
     }
@@ -191,18 +194,18 @@ export class ProgramPlanService {
     id: number,
     active: boolean,
     cIp: string,
-    adminId: number
+    adminId: number,
   ): Promise<void> {
     const find = await this.programPlanRepository.findOne({
-      where: { programPlanId: id }
+      where: { programPlanId: id },
     });
     if (!find) {
-      throw new NotFoundException("Program plan not found");
+      throw new NotFoundException('Program plan not found');
     }
     const updateObj = {
       active: active,
       modifiedBy: adminId,
-      modifiedIp: cIp
+      modifiedIp: cIp,
     };
     await this.programPlanRepository.update(updateObj, { where: { programPlanId: id } });
   }
@@ -210,50 +213,53 @@ export class ProgramPlanService {
   public async getProgramPlanTypeList(): Promise<IDropdownItem[]> {
     const tempList = await this.programPlanTypeRepository.findAll({
       where: { active: true },
-      order: [["programPlanType", "ASC"]],
+      order: [['programPlanType', 'ASC']],
       raw: true,
-      nest: true
+      nest: true,
     });
     return tempList.map((t: any) => ({
       id: t.programPlanTypeId,
       label: t.programPlanType,
-      isActive: t.active
+      isActive: t.active,
     }));
   }
 
   public async getProgramPlanList(): Promise<IDropdownItem[]> {
-    const tempList = await this.programPlanRepository.scope("list").findAll({
+    const tempList = await this.programPlanRepository.scope('list').findAll({
       where: { active: true },
-      order: [["plan", "ASC"]],
+      order: [['plan', 'ASC']],
       raw: true,
-      nest: true
+      nest: true,
     });
     return tempList.map((t: any) => ({
       id: t.programPlanId,
-      label: `${t.plan} (${t.noOfCycle} Cycle, ${t.noOfDaysInCycle} Days in a cycle, - ${t.isOnline ? "Online" : "Offline"})`,
-      isActive: t.active
+      label: `${t.plan} (${t.noOfCycle} Cycle, ${t.noOfDaysInCycle} Days in a cycle, - ${
+        t.isOnline ? 'Online' : 'Offline'
+      })`,
+      isActive: t.active,
     }));
   }
 
   /**
    * Public method to fetch all active program plans visible on web
    */
-  public async findAllPublic(searchDto: IBasicSearch & { isVisibleOnWeb?: boolean }): Promise<IPublicTableList<any>> {
-    const whereCondition: any = SearchUtil.filterBasicSearch(searchDto, "plan");
+  public async findAllPublic(
+    searchDto: IBasicSearch & { isVisibleOnWeb?: boolean },
+  ): Promise<IPublicTableList<any>> {
+    const whereCondition: any = SearchUtil.filterBasicSearch(searchDto, 'plan');
     // Only show active program plans visible on web
     whereCondition.active = true;
-    whereCondition.isVisibleOnWeb = searchDto.isVisibleOnWeb !== undefined ? searchDto.isVisibleOnWeb : true;
+    whereCondition.isVisibleOnWeb =
+      searchDto.isVisibleOnWeb !== undefined ? searchDto.isVisibleOnWeb : true;
     const pageNumber = searchDto.page || 0;
     const pageSize = searchDto.limit || 15;
     const offset = pageNumber === 0 ? 0 : pageNumber * pageSize;
-    const { rows, count } = await this.programPlanRepository.scope("details").findAndCountAll({
+    const { rows, count } = await this.programPlanRepository.scope('details').findAndCountAll({
       where: whereCondition,
-      order: [
-        ["sequenceNumber", "ASC"]
-      ],
+      order: [['sequenceNumber', 'ASC']],
       offset: offset,
       limit: pageSize,
-      nest: true
+      nest: true,
     });
     const resList = rows.map((item: MstProgramPlan) => {
       // Ensure programPlanFees is an array
@@ -264,7 +270,7 @@ export class ProgramPlanService {
     });
     return {
       tableData: resList,
-      count: count
+      count: count,
     };
   }
 
@@ -285,4 +291,3 @@ export class ProgramPlanService {
     return publicProgramPlan;
   }
 }
-

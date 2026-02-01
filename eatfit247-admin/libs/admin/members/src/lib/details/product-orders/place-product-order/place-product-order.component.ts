@@ -523,17 +523,17 @@ export class PlaceProductOrderComponent implements OnInit {
         (sum, item) => sum + item.totalPrice,
         0
       );
-      const totalAmount = totalOrderAmount + totalTaxAmount;
 
-      // Store aggregate tax result (using first item's tax info for common fields)
+      // Store aggregate tax result (using the first item's tax info for common fields)
       if (result.items.length > 0) {
         const firstItem = result.items[0];
         this.taxCalculationResult.set({
           taxPercentage: firstItem.taxPercentage,
           orderAmount: totalOrderAmount,
-          discountAmount: 0,
+          discountAmount: firstItem.discountAmount,
+          taxableAmount: firstItem.taxableAmount,
           taxAmount: totalTaxAmount,
-          totalAmount: totalAmount,
+          totalAmount: firstItem.totalAmount,
           taxObj: firstItem.taxObj,
           taxType: firstItem.taxType,
           taxMode: firstItem.taxMode,

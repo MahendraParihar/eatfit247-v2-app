@@ -1,8 +1,17 @@
-import { Component, Inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
-import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import {
+  MAT_DIALOG_DATA,
+  MatDialogModule,
+  MatDialogRef,
+} from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -24,7 +33,7 @@ import {
   IMemberPaymentMasterData,
   InputLengthEnum,
   PaymentSourceEnum,
-  PaymentStatusEnum
+  PaymentStatusEnum,
 } from '@eatfit247-shared-lib';
 import { MembersApiService } from '../../../api.service';
 import { PaymentFormService } from './payment-form.service';
@@ -53,12 +62,21 @@ export interface ManageMemberPaymentData {
     MatIconModule,
     MatSnackBarModule,
     MatTooltipModule,
-    InputErrorComponent
+    InputErrorComponent,
   ],
   templateUrl: './manage-member-payment.component.html',
-  styleUrl: './manage-member-payment.component.scss'
+  styleUrl: './manage-member-payment.component.scss',
 })
 export class ManageMemberPaymentComponent implements OnInit {
+  private apiService: MembersApiService = inject(MembersApiService);
+  private paymentFormService: PaymentFormService = inject(PaymentFormService);
+  private fb: FormBuilder = inject(FormBuilder);
+  private snackBar: MatSnackBar = inject(MatSnackBar);
+  public dialogRef: MatDialogRef<ManageMemberPaymentComponent> = inject(
+    MatDialogRef<ManageMemberPaymentComponent>
+  );
+  public data: ManageMemberPaymentData = inject(MAT_DIALOG_DATA);
+
   formGroup!: FormGroup;
   step1FormGroup!: FormGroup;
   masterData = signal<IMemberPaymentMasterData | null>(null);
@@ -69,34 +87,28 @@ export class ManageMemberPaymentComponent implements OnInit {
   isEditMode = false;
   selectedIndex = signal(0);
   InputLengthEnum = InputLengthEnum;
-  PaymentSourceEnum = PaymentSourceEnum;
   availableCurrencies = signal<IDropdownItem[]>([]);
   taxCalculationResult = signal<ICalculateTaxResponse | null>(null);
   paymentLink = signal<string | null>(null);
   paymentLinkId = signal<string | null>(null);
-  supportedGateways = signal<Array<{
-    franchisePaymentGatewayId: number;
-    gatewayCode: string;
-    gatewayName: string;
-    providerCountryCode: string;
-    currencyCode: string;
-    isPrimary: boolean;
-    supportsDomestic: boolean;
-    supportsInternational: boolean;
-  }>>([]);
+  supportedGateways = signal<
+    Array<{
+      franchisePaymentGatewayId: number;
+      gatewayCode: string;
+      gatewayName: string;
+      providerCountryCode: string;
+      currencyCode: string;
+      isPrimary: boolean;
+      supportsDomestic: boolean;
+      supportsInternational: boolean;
+    }>
+  >([]);
   loadingGateways = signal(false);
   selectedGatewayId = signal<number | null>(null);
 
-  constructor(
-    public dialogRef: MatDialogRef<ManageMemberPaymentComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: ManageMemberPaymentData,
-    private apiService: MembersApiService,
-    private paymentFormService: PaymentFormService,
-    private fb: FormBuilder,
-    private snackBar: MatSnackBar
-  ) {
+  constructor() {
     this.initializeForm();
-    this.isEditMode = !!data.payment;
+    this.isEditMode = !!this.data.payment;
   }
 
   async ngOnInit(): Promise<void> {
@@ -105,11 +117,13 @@ export class ManageMemberPaymentComponent implements OnInit {
       this.loadData();
     }
     // Subscribe to program plan changes in step1FormGroup
-    this.step1FormGroup.get('programPlanId')?.valueChanges.subscribe((programPlanId) => {
-      if (programPlanId) {
-        this.loadProgramPlanFees(programPlanId);
-      }
-    });
+    this.step1FormGroup
+      .get('programPlanId')
+      ?.valueChanges.subscribe((programPlanId) => {
+        if (programPlanId) {
+          this.loadProgramPlanFees(programPlanId);
+        }
+      });
   }
 
   private initializeForm(): void {
@@ -127,7 +141,7 @@ export class ManageMemberPaymentComponent implements OnInit {
       gstNumber: ['', [Validators.maxLength(InputLengthEnum.CHAR_50)]],
       currencyCode: ['INR', [Validators.required]],
       orderAmount: [0, [Validators.required, Validators.min(0)]],
-      discountAmount: [0, [Validators.required, Validators.min(0)]]
+      discountAmount: [0, [Validators.required, Validators.min(0)]],
     });
     // Main form group (includes all fields)
     this.formGroup = this.fb.group({
@@ -157,84 +171,110 @@ export class ManageMemberPaymentComponent implements OnInit {
       gatewayOrderId: ['', [Validators.maxLength(InputLengthEnum.CHAR_100)]],
       gatewayPaymentId: ['', [Validators.maxLength(InputLengthEnum.CHAR_100)]],
       paymentLink: ['', [Validators.maxLength(InputLengthEnum.CHAR_500)]],
-      franchisePaymentGatewayId: [null]
+      franchisePaymentGatewayId: [null],
     });
     // Subscribe to changes to calculate tax and total from backend with debouncing
-    this.formGroup.get('orderAmount')?.valueChanges.pipe(
-      debounceTime(500),
-      distinctUntilChanged()
-    ).subscribe(() => this.calculateTaxFromBackend());
-    this.formGroup.get('discountAmount')?.valueChanges.pipe(
-      debounceTime(500),
-      distinctUntilChanged()
-    ).subscribe(() => this.calculateTaxFromBackend());
-    this.formGroup.get('currencyCode')?.valueChanges.subscribe(() => this.calculateTaxFromBackend());
+    this.formGroup
+      .get('orderAmount')
+      ?.valueChanges.pipe(debounceTime(500), distinctUntilChanged())
+      .subscribe(() => this.calculateTaxFromBackend());
+    this.formGroup
+      .get('discountAmount')
+      ?.valueChanges.pipe(debounceTime(500), distinctUntilChanged())
+      .subscribe(() => this.calculateTaxFromBackend());
+    this.formGroup
+      .get('currencyCode')
+      ?.valueChanges.subscribe(() => this.calculateTaxFromBackend());
     // Sync step1FormGroup with main formGroup
-    this.step1FormGroup.get('programId')?.valueChanges.subscribe(val => {
+    this.step1FormGroup.get('programId')?.valueChanges.subscribe((val) => {
       this.formGroup.patchValue({ programId: val }, { emitEvent: false });
     });
-    this.step1FormGroup.get('programPlanId')?.valueChanges.subscribe(val => {
+    this.step1FormGroup.get('programPlanId')?.valueChanges.subscribe((val) => {
       this.formGroup.patchValue({ programPlanId: val }, { emitEvent: false });
       if (val) {
         this.loadProgramPlanFees(val);
       }
     });
-    this.step1FormGroup.get('noOfCycle')?.valueChanges.subscribe(val => {
+    this.step1FormGroup.get('noOfCycle')?.valueChanges.subscribe((val) => {
       this.formGroup.patchValue({ noOfCycle: val }, { emitEvent: false });
     });
-    this.step1FormGroup.get('noOfDaysInCycle')?.valueChanges.subscribe(val => {
-      this.formGroup.patchValue({ noOfDaysInCycle: val }, { emitEvent: false });
-    });
-    this.step1FormGroup.get('addressId')?.valueChanges.subscribe(val => {
+    this.step1FormGroup
+      .get('noOfDaysInCycle')
+      ?.valueChanges.subscribe((val) => {
+        this.formGroup.patchValue(
+          { noOfDaysInCycle: val },
+          { emitEvent: false }
+        );
+      });
+    this.step1FormGroup.get('addressId')?.valueChanges.subscribe((val) => {
       this.formGroup.patchValue({ addressId: val }, { emitEvent: false });
     });
-    this.step1FormGroup.get('billingAddressId')?.valueChanges.subscribe(val => {
-      this.formGroup.patchValue({ billingAddressId: val }, { emitEvent: false });
-      this.calculateTaxFromBackend();
-    });
-    this.step1FormGroup.get('gstNumber')?.valueChanges.subscribe(val => {
+    this.step1FormGroup
+      .get('billingAddressId')
+      ?.valueChanges.subscribe((val) => {
+        this.formGroup.patchValue(
+          { billingAddressId: val },
+          { emitEvent: false }
+        );
+        this.calculateTaxFromBackend();
+      });
+    this.step1FormGroup.get('gstNumber')?.valueChanges.subscribe((val) => {
       this.formGroup.patchValue({ gstNumber: val }, { emitEvent: false });
     });
-    this.step1FormGroup.get('currencyCode')?.valueChanges.subscribe(val => {
+    this.step1FormGroup.get('currencyCode')?.valueChanges.subscribe((val) => {
       this.formGroup.patchValue({ currencyCode: val }, { emitEvent: false });
       const programPlanId = this.step1FormGroup.get('programPlanId')?.value;
       if (programPlanId && val) {
         this.updateFeeForCurrency(programPlanId, val);
       }
     });
-    this.step1FormGroup.get('orderAmount')?.valueChanges.pipe(
-      debounceTime(500),
-      distinctUntilChanged()
-    ).subscribe(val => {
-      this.formGroup.patchValue({ orderAmount: val }, { emitEvent: false });
-      this.calculateTaxFromBackend();
-    });
-    this.step1FormGroup.get('discountAmount')?.valueChanges.pipe(
-      debounceTime(500),
-      distinctUntilChanged()
-    ).subscribe(val => {
-      this.formGroup.patchValue({ discountAmount: val }, { emitEvent: false });
-      this.calculateTaxFromBackend();
-    });
+    this.step1FormGroup
+      .get('orderAmount')
+      ?.valueChanges.pipe(debounceTime(500), distinctUntilChanged())
+      .subscribe((val) => {
+        this.formGroup.patchValue({ orderAmount: val }, { emitEvent: false });
+        this.calculateTaxFromBackend();
+      });
+    this.step1FormGroup
+      .get('discountAmount')
+      ?.valueChanges.pipe(debounceTime(500), distinctUntilChanged())
+      .subscribe((val) => {
+        this.formGroup.patchValue(
+          { discountAmount: val },
+          { emitEvent: false }
+        );
+        this.calculateTaxFromBackend();
+      });
     // Subscribe to payment source changes to update field validators
-    this.formGroup.get('paymentSource')?.valueChanges.subscribe((paymentSource) => {
-      this.updatePaymentFieldValidators(paymentSource);
-      // Clear payment link when payment source changes
-      this.paymentLink.set(null);
-      this.paymentLinkId.set(null);
-      this.formGroup.patchValue({
-        paymentLink: '',
-        gatewayOrderId: ''
-      }, { emitEvent: false });
-      // Load gateways when switching to gateway payment
-      if (paymentSource === PaymentSourceEnum?.PAYMENT_GATEWAY || paymentSource === 'PAYMENT_GATEWAY') {
-        this.loadSupportedGateways();
-      }
-    });
+    this.formGroup
+      .get('paymentSource')
+      ?.valueChanges.subscribe((paymentSource) => {
+        this.updatePaymentFieldValidators(paymentSource);
+        // Clear payment link when payment source changes
+        this.paymentLink.set(null);
+        this.paymentLinkId.set(null);
+        this.formGroup.patchValue(
+          {
+            paymentLink: '',
+            gatewayOrderId: '',
+          },
+          { emitEvent: false }
+        );
+        // Load gateways when switching to gateway payment
+        if (
+          paymentSource === PaymentSourceEnum?.PAYMENT_GATEWAY ||
+          paymentSource === 'PAYMENT_GATEWAY'
+        ) {
+          this.loadSupportedGateways();
+        }
+      });
     // Subscribe to currency changes to reload gateways
     this.step1FormGroup.get('currencyCode')?.valueChanges.subscribe(() => {
-      if (this.formGroup.get('paymentSource')?.value === PaymentSourceEnum?.PAYMENT_GATEWAY ||
-        this.formGroup.get('paymentSource')?.value === 'PAYMENT_GATEWAY') {
+      if (
+        this.formGroup.get('paymentSource')?.value ===
+          PaymentSourceEnum?.PAYMENT_GATEWAY ||
+        this.formGroup.get('paymentSource')?.value === 'PAYMENT_GATEWAY'
+      ) {
         this.loadSupportedGateways();
       }
     });
@@ -246,7 +286,8 @@ export class ManageMemberPaymentComponent implements OnInit {
    * Update validators for payment fields based on payment source
    */
   private updatePaymentFieldValidators(paymentSource: string): void {
-    const isManual = paymentSource === PaymentSourceEnum?.MANUAL || paymentSource === 'MANUAL';
+    const isManual =
+      paymentSource === PaymentSourceEnum?.MANUAL || paymentSource === 'MANUAL';
     const paymentModeIdControl = this.formGroup.get('paymentModeId');
     const paymentDateControl = this.formGroup.get('paymentDate');
     const paymentStatusIdControl = this.formGroup.get('paymentStatusId');
@@ -256,13 +297,18 @@ export class ManageMemberPaymentComponent implements OnInit {
       paymentModeIdControl?.setValidators([Validators.required]);
       paymentDateControl?.setValidators([Validators.required]);
       paymentStatusIdControl?.setValidators([Validators.required]);
-      transactionIdControl?.setValidators([Validators.required, Validators.maxLength(InputLengthEnum.CHAR_250)]);
+      transactionIdControl?.setValidators([
+        Validators.required,
+        Validators.maxLength(InputLengthEnum.CHAR_250),
+      ]);
     } else {
       // Make fields optional for RAZORPAY payment source
       paymentModeIdControl?.setValidators([]);
       paymentDateControl?.setValidators([]);
       paymentStatusIdControl?.setValidators([]);
-      transactionIdControl?.setValidators([Validators.maxLength(InputLengthEnum.CHAR_250)]);
+      transactionIdControl?.setValidators([
+        Validators.maxLength(InputLengthEnum.CHAR_250),
+      ]);
     }
     // Update validity
     paymentModeIdControl?.updateValueAndValidity({ emitEvent: false });
@@ -274,7 +320,9 @@ export class ManageMemberPaymentComponent implements OnInit {
   async loadMasterData(): Promise<void> {
     this.loading.set(true);
     try {
-      const res = await this.apiService.getPaymentMasterData(this.data.memberId);
+      const res = await this.apiService.getPaymentMasterData(
+        this.data.memberId
+      );
       this.masterData.set(res);
       // Calculate tax to update tax percentage display
       this.calculateTaxFromBackend();
@@ -285,29 +333,34 @@ export class ManageMemberPaymentComponent implements OnInit {
     }
   }
 
-  updateTaxPercentageDisplay(): void {
-    // Tax percentage will be updated from backend calculation
-    // Only calculate if step1FormGroup is initialized
-    if (this.step1FormGroup) {
-      this.calculateTaxFromBackend();
-    }
-  }
-
   async calculateTaxFromBackend(): Promise<void> {
-    const formData = this.paymentFormService.getPaymentFormData(this.formGroup, this.step1FormGroup);
-    if (!formData.programPlanId || !formData.currencyCode) {
+    const formData = this.paymentFormService.getPaymentFormData(
+      this.formGroup,
+      this.step1FormGroup
+    );
+    if (
+      !formData.programPlanId ||
+      !formData.currencyCode ||
+      !formData.billingAddressId
+    ) {
       this.taxCalculationResult.set(null);
       return;
     }
     this.calculatingTax.set(true);
     try {
-      const result = await this.paymentFormService.calculateTax(this.data.memberId, formData);
+      const result = await this.paymentFormService.calculateTax(
+        this.data.memberId,
+        formData
+      );
       this.taxCalculationResult.set(result);
       if (result) {
         // Update tax percentage display
-        this.formGroup.patchValue({
-          taxPercentageDisplay: result.taxPercentage
-        }, { emitEvent: false });
+        this.formGroup.patchValue(
+          {
+            taxPercentageDisplay: result.taxPercentage,
+          },
+          { emitEvent: false }
+        );
       }
     } catch (error) {
       console.error('Error calculating tax:', error);
@@ -326,7 +379,10 @@ export class ManageMemberPaymentComponent implements OnInit {
     // When moving to step 3, load gateways if gateway payment
     if (event.selectedIndex === 2) {
       const paymentSource = this.formGroup.get('paymentSource')?.value;
-      if (paymentSource === PaymentSourceEnum?.PAYMENT_GATEWAY || paymentSource === 'PAYMENT_GATEWAY') {
+      if (
+        paymentSource === PaymentSourceEnum?.PAYMENT_GATEWAY ||
+        paymentSource === 'PAYMENT_GATEWAY'
+      ) {
         if (this.supportedGateways().length === 0) {
           await this.loadSupportedGateways();
         }
@@ -351,7 +407,9 @@ export class ManageMemberPaymentComponent implements OnInit {
 
   isPaymentLinkRequiredAndGenerated(): boolean {
     const paymentSource = this.formGroup.get('paymentSource')?.value;
-    const isPaymentGateway = paymentSource === PaymentSourceEnum?.PAYMENT_GATEWAY || paymentSource === 'PAYMENT_GATEWAY';
+    const isPaymentGateway =
+      paymentSource === PaymentSourceEnum?.PAYMENT_GATEWAY ||
+      paymentSource === 'PAYMENT_GATEWAY';
     // If payment source is PAYMENT_GATEWAY, payment link must be generated
     if (isPaymentGateway) {
       return !!this.paymentLink() && this.paymentLink()!.trim().length > 0;
@@ -361,20 +419,26 @@ export class ManageMemberPaymentComponent implements OnInit {
   }
 
   async loadSupportedGateways(): Promise<void> {
-    const currencyCode = this.step1FormGroup?.get('currencyCode')?.value || this.formGroup.get('currencyCode')?.value || 'INR';
+    const currencyCode =
+      this.step1FormGroup?.get('currencyCode')?.value ||
+      this.formGroup.get('currencyCode')?.value ||
+      'INR';
     if (!currencyCode) {
       return;
     }
     this.loadingGateways.set(true);
     try {
-      const gateways = await this.apiService.getSupportedPaymentGateways(this.data.memberId, currencyCode);
+      const gateways = await this.apiService.getSupportedPaymentGateways(
+        this.data.memberId,
+        currencyCode
+      );
       this.supportedGateways.set(gateways);
       // Auto-select primary gateway if available
-      const primaryGateway = gateways.find(g => g.isPrimary);
+      const primaryGateway = gateways.find((g) => g.isPrimary);
       if (primaryGateway && !this.selectedGatewayId()) {
         this.selectedGatewayId.set(primaryGateway.franchisePaymentGatewayId);
         this.formGroup.patchValue({
-          franchisePaymentGatewayId: primaryGateway.franchisePaymentGatewayId
+          franchisePaymentGatewayId: primaryGateway.franchisePaymentGatewayId,
         });
       }
     } catch (error) {
@@ -391,21 +455,37 @@ export class ManageMemberPaymentComponent implements OnInit {
     }
     const totalAmount = this.totalAmount;
     if (totalAmount <= 0) {
-      this.snackBar.open('Invalid amount for payment link', 'Close', { duration: 3000 });
+      this.snackBar.open('Invalid amount for payment link', 'Close', {
+        duration: 3000,
+      });
       return;
     }
-    const selectedGatewayId = this.formGroup.get('franchisePaymentGatewayId')?.value || this.selectedGatewayId();
+    const selectedGatewayId =
+      this.formGroup.get('franchisePaymentGatewayId')?.value ||
+      this.selectedGatewayId();
     if (!selectedGatewayId) {
-      this.snackBar.open('Please select a payment gateway', 'Close', { duration: 3000 });
+      this.snackBar.open('Please select a payment gateway', 'Close', {
+        duration: 3000,
+      });
       return;
     }
     this.creatingPaymentLink.set(true);
     try {
-      const currencyCode = this.step1FormGroup?.get('currencyCode')?.value || this.formGroup.get('currencyCode')?.value || 'INR';
-      const programId = this.step1FormGroup?.get('programId')?.value || this.formGroup.get('programId')?.value;
-      const programPlanId = this.step1FormGroup?.get('programPlanId')?.value || this.formGroup.get('programPlanId')?.value;
-      const programName = this.programOptions.find(p => p.id === programId)?.label || '';
-      const planName = this.programPlanOptions.find(p => p.id === programPlanId)?.label || '';
+      const currencyCode =
+        this.step1FormGroup?.get('currencyCode')?.value ||
+        this.formGroup.get('currencyCode')?.value ||
+        'INR';
+      const programId =
+        this.step1FormGroup?.get('programId')?.value ||
+        this.formGroup.get('programId')?.value;
+      const programPlanId =
+        this.step1FormGroup?.get('programPlanId')?.value ||
+        this.formGroup.get('programPlanId')?.value;
+      const programName =
+        this.programOptions.find((p) => p.id === programId)?.label || '';
+      const planName =
+        this.programPlanOptions.find((p) => p.id === programPlanId)?.label ||
+        '';
       const result = await this.paymentFormService.createPaymentLink(
         this.data.memberId,
         totalAmount,
@@ -422,11 +502,13 @@ export class ManageMemberPaymentComponent implements OnInit {
         paymentLink: result.shortUrl,
         gatewayProvider: result.gatewayCode,
         gatewayOrderId: result.id,
-        paymentStatusId: PaymentStatusEnum.PENDING
+        paymentStatusId: PaymentStatusEnum.PENDING,
       });
     } catch (error) {
       console.error('Error creating payment link:', error);
-      this.snackBar.open('Failed to create payment link', 'Close', { duration: 3000 });
+      this.snackBar.open('Failed to create payment link', 'Close', {
+        duration: 3000,
+      });
     } finally {
       this.creatingPaymentLink.set(false);
     }
@@ -435,14 +517,14 @@ export class ManageMemberPaymentComponent implements OnInit {
   onGatewaySelectionChange(gatewayId: number): void {
     this.selectedGatewayId.set(gatewayId);
     this.formGroup.patchValue({
-      franchisePaymentGatewayId: gatewayId
+      franchisePaymentGatewayId: gatewayId,
     });
     // Clear the existing payment link when gateway changes
     this.paymentLink.set(null);
     this.paymentLinkId.set(null);
     this.formGroup.patchValue({
       paymentLink: '',
-      gatewayOrderId: ''
+      gatewayOrderId: '',
     });
   }
 
@@ -453,7 +535,9 @@ export class ManageMemberPaymentComponent implements OnInit {
     }
     try {
       await navigator.clipboard.writeText(link);
-      this.snackBar.open('Payment link copied to clipboard!', 'Close', { duration: 3000 });
+      this.snackBar.open('Payment link copied to clipboard!', 'Close', {
+        duration: 3000,
+      });
     } catch (error) {
       console.error('Error copying to clipboard:', error);
       this.snackBar.open('Failed to copy link', 'Close', { duration: 3000 });
@@ -471,7 +555,7 @@ export class ManageMemberPaymentComponent implements OnInit {
         await navigator.share({
           title: 'Payment Link',
           text: 'Please use this link to complete your payment',
-          url: link
+          url: link,
         });
         this.snackBar.open('Payment link shared!', 'Close', { duration: 3000 });
       } else {
@@ -490,25 +574,30 @@ export class ManageMemberPaymentComponent implements OnInit {
 
   private loadData(): void {
     if (this.data.payment) {
-      const formValues = this.paymentFormService.transformPaymentToFormValues(this.data.payment);
+      const formValues = this.paymentFormService.transformPaymentToFormValues(
+        this.data.payment
+      );
       this.formGroup.patchValue(formValues, { emitEvent: false });
       // Update validators based on payment source
       this.updatePaymentFieldValidators(formValues.paymentSource);
       // Calculate tax from the backend after loading data
       setTimeout(() => this.calculateTaxFromBackend(), 100);
       // Sync step1FormGroup
-      this.step1FormGroup.patchValue({
-        programId: formValues.programId,
-        programPlanId: formValues.programPlanId,
-        noOfCycle: formValues.noOfCycle,
-        noOfDaysInCycle: formValues.noOfDaysInCycle,
-        addressId: formValues.addressId,
-        billingAddressId: formValues.billingAddressId,
-        gstNumber: formValues.gstNumber,
-        currencyCode: formValues.currencyCode,
-        orderAmount: formValues.orderAmount,
-        discountAmount: formValues.discountAmount
-      }, { emitEvent: false });
+      this.step1FormGroup.patchValue(
+        {
+          programId: formValues.programId,
+          programPlanId: formValues.programPlanId,
+          noOfCycle: formValues.noOfCycle,
+          noOfDaysInCycle: formValues.noOfDaysInCycle,
+          addressId: formValues.addressId,
+          billingAddressId: formValues.billingAddressId,
+          gstNumber: formValues.gstNumber,
+          currencyCode: formValues.currencyCode,
+          orderAmount: formValues.orderAmount,
+          discountAmount: formValues.discountAmount,
+        },
+        { emitEvent: false }
+      );
       // Set payment link if exists
       if (formValues.paymentLink) {
         this.paymentLink.set(formValues.paymentLink);
@@ -525,10 +614,17 @@ export class ManageMemberPaymentComponent implements OnInit {
       this.submitting.set(true);
       try {
         if (!this.isManualPaymentSource()) {
-          if (!this.formGroup.value.paymentLink || this.formGroup.value.paymentLink.length === 0) {
-            this.snackBar.open('Payment link not generated, order can not be placed', 'Close', {
-              duration: 3000
-            });
+          if (
+            !this.formGroup.value.paymentLink ||
+            this.formGroup.value.paymentLink.length === 0
+          ) {
+            this.snackBar.open(
+              'Payment link not generated, order can not be placed',
+              'Close',
+              {
+                duration: 3000,
+              }
+            );
             return;
           }
         }
@@ -587,41 +683,68 @@ export class ManageMemberPaymentComponent implements OnInit {
 
   async loadProgramPlanFees(programPlanId: number): Promise<void> {
     try {
-      const programPlan = await this.apiService.getProgramPlanDetails(this.data.memberId, programPlanId);
+      const programPlan = await this.apiService.getProgramPlanDetails(
+        this.data.memberId,
+        programPlanId
+      );
       // Update available currencies from program plan fees
-      if (programPlan.programPlanFees && programPlan.programPlanFees.length > 0) {
-        const currencies = this.paymentFormService.transformFeesToCurrencyDropdown(programPlan.programPlanFees);
+      if (
+        programPlan.programPlanFees &&
+        programPlan.programPlanFees.length > 0
+      ) {
+        const currencies =
+          this.paymentFormService.transformFeesToCurrencyDropdown(
+            programPlan.programPlanFees
+          );
         this.availableCurrencies.set(currencies);
       }
       // Get default currency from master data or use first fee's currency
-      const defaultCurrency = programPlan.programPlanFees && programPlan.programPlanFees.length > 0
-        ? programPlan.programPlanFees[0].currencyCode
-        : 'INR';
+      const defaultCurrency =
+        programPlan.programPlanFees && programPlan.programPlanFees.length > 0
+          ? programPlan.programPlanFees[0].currencyCode
+          : 'INR';
       // Find fee for default currency
-      const fee = programPlan.programPlanFees?.find(f => f.currencyCode === defaultCurrency)
-        || programPlan.programPlanFees?.[0];
+      const fee =
+        programPlan.programPlanFees?.find(
+          (f) => f.currencyCode === defaultCurrency
+        ) || programPlan.programPlanFees?.[0];
       if (fee) {
         // Auto-populate individual fields with plan details
-        this.step1FormGroup.patchValue({
-          noOfCycle: programPlan.noOfCycle,
-          noOfDaysInCycle: programPlan.noOfDaysInCycle,
-          currencyCode: fee.currencyCode,
-          orderAmount: fee.fees,
-          discountAmount: 0
-        }, { emitEvent: false });
-        this.formGroup.patchValue({
-          noOfCycle: programPlan.noOfCycle,
-          noOfDaysInCycle: programPlan.noOfDaysInCycle,
-          currencyCode: fee.currencyCode,
-          orderAmount: fee.fees,
-          discountAmount: 0
-        }, { emitEvent: false });
+        this.step1FormGroup.patchValue(
+          {
+            noOfCycle: programPlan.noOfCycle,
+            noOfDaysInCycle: programPlan.noOfDaysInCycle,
+            currencyCode: fee.currencyCode,
+            orderAmount: fee.fees,
+            discountAmount: 0,
+          },
+          { emitEvent: false }
+        );
+        this.formGroup.patchValue(
+          {
+            noOfCycle: programPlan.noOfCycle,
+            noOfDaysInCycle: programPlan.noOfDaysInCycle,
+            currencyCode: fee.currencyCode,
+            orderAmount: fee.fees,
+            discountAmount: 0,
+          },
+          { emitEvent: false }
+        );
         // Calculate tax after loading program plan fees
         setTimeout(() => this.calculateTaxFromBackend(), 100);
       }
     } catch (error) {
       console.error('Error loading program plan fees:', error);
     }
+  }
+
+  get taxableAmount(): number {
+    const result = this.taxCalculationResult();
+    if (result) {
+      return result.taxableAmount;
+    }
+    // Fallback to 0 if calculation not available
+    return 0;
   }
 
   get taxAmount(): number {
@@ -639,7 +762,10 @@ export class ManageMemberPaymentComponent implements OnInit {
       return result.totalAmount;
     }
     // Fallback calculation if backend result not available
-    const formData = this.paymentFormService.getPaymentFormData(this.formGroup, this.step1FormGroup);
+    const formData = this.paymentFormService.getPaymentFormData(
+      this.formGroup,
+      this.step1FormGroup
+    );
     return formData.orderAmount - formData.discountAmount;
   }
 
@@ -652,7 +778,10 @@ export class ManageMemberPaymentComponent implements OnInit {
     return 0;
   }
 
-  get taxObj(): Record<string, { amount: number; taxPercentage: number }> | null {
+  get taxObj(): Record<
+    string,
+    { amount: number; taxPercentage: number }
+  > | null {
     const result = this.taxCalculationResult();
     return result?.taxObj || null;
   }
@@ -677,23 +806,37 @@ export class ManageMemberPaymentComponent implements OnInit {
     return [
       { id: 'INR', label: 'INR', selected: false },
       { id: 'USD', label: 'USD', selected: false },
-      { id: 'EUR', label: 'EUR', selected: false }
+      { id: 'EUR', label: 'EUR', selected: false },
     ];
   }
 
-  async updateFeeForCurrency(programPlanId: number, currencyCode: string): Promise<void> {
+  async updateFeeForCurrency(
+    programPlanId: number,
+    currencyCode: string
+  ): Promise<void> {
     try {
-      const programPlan = await this.apiService.getProgramPlanDetails(this.data.memberId, programPlanId);
-      const fee = programPlan.programPlanFees?.find(f => f.currencyCode === currencyCode);
+      const programPlan = await this.apiService.getProgramPlanDetails(
+        this.data.memberId,
+        programPlanId
+      );
+      const fee = programPlan.programPlanFees?.find(
+        (f) => f.currencyCode === currencyCode
+      );
       if (fee) {
         if (this.step1FormGroup) {
-          this.step1FormGroup.patchValue({
-            orderAmount: fee.fees
-          }, { emitEvent: false });
+          this.step1FormGroup.patchValue(
+            {
+              orderAmount: fee.fees,
+            },
+            { emitEvent: false }
+          );
         }
-        this.formGroup.patchValue({
-          orderAmount: fee.fees
-        }, { emitEvent: false });
+        this.formGroup.patchValue(
+          {
+            orderAmount: fee.fees,
+          },
+          { emitEvent: false }
+        );
         this.calculateTaxFromBackend();
       }
     } catch (error) {
@@ -701,4 +844,3 @@ export class ManageMemberPaymentComponent implements OnInit {
     }
   }
 }
-

@@ -16,7 +16,6 @@ import {
   IPaymentGateway,
   IPaymentLinkResponse,
   IPlanTaxCalculationRequest,
-  IProductFee,
   ITableList,
   mapPaymentToInvoiceDocument,
   MediaForEnum,
@@ -187,12 +186,16 @@ export class MemberPlanService {
     }
 
     const programPlan = await this.programPlanService.fetchById(payload.programPlanId);
-    const fees: IProductFee = find(programPlan.programPlanFees, { currencyCode: payload.currency });
+    const fee: { fees: number; currencyCode: string } = find(programPlan.programPlanFees, {
+      currencyCode: payload.currency,
+    });
+    console.log(programPlan);
+    console.log(fee);
 
     // Calculate base amounts
     // Use tax engine to calculate tax
     const taxInput: TaxInput = {
-      baseAmount: fees.price,
+      baseAmount: fee.fees,
       discountAmount: payload.discountAmount,
       supplierCountryCode,
       supplierStateCode: supplierStateCode || undefined,
@@ -207,6 +210,7 @@ export class MemberPlanService {
     // If tax is included in plan fees, adjust calculations
     return <ICalculateTaxResponse>{
       orderAmount: taxResult.baseAmount,
+      taxableAmount: taxInput.baseAmount - (taxResult.discount || 0),
       discountAmount: taxResult.discount,
       taxPercentage: taxResult.taxPercentage,
       taxAmount: taxResult.taxAmount,

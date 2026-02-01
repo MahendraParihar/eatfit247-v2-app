@@ -1,7 +1,8 @@
-import { IBaseAdminUser, IAdminInfo, IDropdownItem } from '../base.interface';
+import { IAdminInfo, IDropdownItem } from '../base.interface';
 import { IAddress } from './location.interface';
 import { PaymentSourceEnum, TaxMode, TaxTypeEnum } from '../enum';
 import { IProduct } from './product.interface';
+import { ICalculateTaxResponse } from './tax-calculation.interface';
 
 export interface ICalculateProductVariantTaxRequest {
   items: IMemberProductOrderItemBasic[];
@@ -10,24 +11,9 @@ export interface ICalculateProductVariantTaxRequest {
   discountAmount?: number;
 }
 
-export interface IProductVariantTaxResult {
+export interface IProductVariantTaxResult extends ICalculateTaxResponse {
   productId: number;
   productVariantId: number;
-  currency: string;
-  price: number;
-  taxPercentage: number;
-  taxAmount: number;
-  totalAmount: number;
-  taxObj: Record<string, { amount: number; taxPercentage: number }>;
-  taxType: TaxTypeEnum;
-  taxMode: TaxMode;
-  invoiceNote?: string;
-  isLutApplied: boolean;
-  jurisdiction: {
-    entityCountry: string;
-    customerCountry: string;
-    placeOfSupply: string;
-  };
 }
 
 export interface ICalculateProductVariantTaxResponse {

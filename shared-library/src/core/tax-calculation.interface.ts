@@ -10,6 +10,7 @@ export interface ICalculateTaxResponse {
   taxPercentage: number;
   orderAmount: number;
   discountAmount: number;
+  taxableAmount: number;
   taxAmount: number;
   totalAmount: number;
   taxObj: Record<string, { amount: number; taxPercentage: number }>;

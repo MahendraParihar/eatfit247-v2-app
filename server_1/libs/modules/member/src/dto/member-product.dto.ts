@@ -1,11 +1,9 @@
 import {
   IsArray,
-  IsBoolean,
   IsDateString,
   IsEnum,
   IsNotEmpty,
   IsNumber,
-  IsObject,
   IsOptional,
   IsString,
   MaxLength,
@@ -20,10 +18,9 @@ import {
   IProductVariantTaxResult,
   InputLengthEnum,
   PaymentSourceEnum,
-  TaxMode,
-  TaxTypeEnum,
 } from '@eatfit247-shared-lib';
 import { Type } from 'class-transformer';
+import { CalculateTaxResponseDto } from './tax-calculation.dto';
 
 export class CreateMemberProductDto implements IManageMemberProduct {
   @IsOptional()
@@ -134,21 +131,10 @@ export class CalculateProductVariantTaxDto implements ICalculateProductVariantTa
   discountAmount!: number;
 }
 
-export class ProductVariantTaxResultJurisdictionDto {
-  @IsNotEmpty()
-  @IsString()
-  entityCountry!: string;
-
-  @IsNotEmpty()
-  @IsString()
-  customerCountry!: string;
-
-  @IsNotEmpty()
-  @IsString()
-  placeOfSupply!: string;
-}
-
-export class ProductVariantTaxResultDto implements IProductVariantTaxResult {
+export class ProductVariantTaxResultDto
+  extends CalculateTaxResponseDto
+  implements IProductVariantTaxResult
+{
   @IsNotEmpty()
   @IsNumber()
   productId!: number;
@@ -156,56 +142,6 @@ export class ProductVariantTaxResultDto implements IProductVariantTaxResult {
   @IsNotEmpty()
   @IsNumber()
   productVariantId!: number;
-
-  @IsNotEmpty()
-  @IsString()
-  @MaxLength(InputLengthEnum.CHAR_10)
-  currency!: string;
-
-  @IsNotEmpty()
-  @IsNumber()
-  @Min(0)
-  price!: number;
-
-  @IsNotEmpty()
-  @IsNumber()
-  @Min(0)
-  taxPercentage!: number;
-
-  @IsNotEmpty()
-  @IsNumber()
-  @Min(0)
-  taxAmount!: number;
-
-  @IsNotEmpty()
-  @IsNumber()
-  @Min(0)
-  totalAmount!: number;
-
-  @IsNotEmpty()
-  @IsObject()
-  taxObj!: Record<string, { amount: number; taxPercentage: number }>;
-
-  @IsNotEmpty()
-  @IsEnum(TaxTypeEnum)
-  taxType!: TaxTypeEnum;
-
-  @IsNotEmpty()
-  @IsEnum(TaxMode)
-  taxMode!: TaxMode;
-
-  @IsOptional()
-  @IsString()
-  invoiceNote?: string;
-
-  @IsNotEmpty()
-  @IsBoolean()
-  isLutApplied!: boolean;
-
-  @IsNotEmpty()
-  @ValidateNested()
-  @Type(() => ProductVariantTaxResultJurisdictionDto)
-  jurisdiction!: ProductVariantTaxResultJurisdictionDto;
 }
 
 export class CalculateProductVariantTaxResponseDto implements ICalculateProductVariantTaxResponse {

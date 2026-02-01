@@ -27,8 +27,6 @@ export interface PaymentFormData {
 export class PaymentFormService {
   private readonly apiService = inject(MembersApiService);
 
-  constructor() {}
-
   /**
    * Calculate tax from backend based on form values
    */
@@ -44,6 +42,8 @@ export class PaymentFormService {
       programPlanId: formData.programPlanId,
       discountAmount: formData.discountAmount || 0,
       currency: formData.currencyCode,
+      billingAddressId: formData.billingAddressId,
+      addressId: formData.addressId,
     };
     try {
       return await this.apiService.calculateTax(memberId, request);

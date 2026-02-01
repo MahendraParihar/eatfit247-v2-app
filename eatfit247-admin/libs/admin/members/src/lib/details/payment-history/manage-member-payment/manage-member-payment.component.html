@@ -184,29 +184,33 @@
                   <h4>Tax Summary</h4>
                   <div class="summary-row">
                     <span class="label">Plan Fees:</span>
-                    <span class="value">{{ step1FormGroup.get('orderAmount')?.value || 0 | number:'1.2-2' }} {{ step1FormGroup.get('currencyCode')?.value || 'INR' }}</span>
+                    <span class="value">{{ step1FormGroup.get('orderAmount')?.value || 0 | number:'1.2-2' }} {{ step1FormGroup.get('currencyCode')?.value }}</span>
                   </div>
                   <div class="summary-row">
                     <span class="label">Discount:</span>
-                    <span class="value">-{{ step1FormGroup.get('discountAmount')?.value || 0 | number:'1.2-2' }} {{ step1FormGroup.get('currencyCode')?.value || 'INR' }}</span>
+                    <span class="value">-{{ step1FormGroup.get('discountAmount')?.value || 0 | number:'1.2-2' }} {{ step1FormGroup.get('currencyCode')?.value }}</span>
+                  </div>
+                  <div class="summary-row">
+                    <span class="label">Taxable Amount:</span>
+                    <span class="value">{{ taxableAmount | number:'1.2-2' }} {{ step1FormGroup.get('currencyCode')?.value }}</span>
                   </div>
                   <div class="summary-row">
                     <span class="label">Tax ({{ taxPercentage }}%):</span>
-                    <span class="value">{{ taxAmount | number:'1.2-2' }} {{ step1FormGroup.get('currencyCode')?.value || 'INR' }}</span>
+                    <span class="value">{{ taxAmount | number:'1.2-2' }} {{ step1FormGroup.get('currencyCode')?.value }}</span>
                   </div>
                   @if (taxObj) {
                     <div class="tax-breakdown">
                       @for (taxItem of taxObj | keyvalue; track taxItem.key) {
                         <div class="summary-row sub-item">
                           <span class="label">{{ taxItem.key }} ({{ taxItem.value.taxPercentage }}%):</span>
-                          <span class="value">{{ taxItem.value.amount | number:'1.2-2' }} {{ step1FormGroup.get('currencyCode')?.value || 'INR' }}</span>
+                          <span class="value">{{ taxItem.value.amount | number:'1.2-2' }} {{ step1FormGroup.get('currencyCode')?.value }}</span>
                         </div>
                       }
                     </div>
                   }
                   <div class="summary-row total">
                     <span class="label">Total Amount:</span>
-                    <span class="value">{{ totalAmount | number:'1.2-2' }} {{ step1FormGroup.get('currencyCode')?.value || 'INR' }}</span>
+                    <span class="value">{{ totalAmount | number:'1.2-2' }} {{ step1FormGroup.get('currencyCode')?.value }}</span>
                   </div>
                   @if (invoiceNote) {
                     <div class="invoice-note">
