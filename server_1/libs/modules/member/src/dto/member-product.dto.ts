@@ -125,7 +125,7 @@ export class CalculateProductVariantTaxDto implements ICalculateProductVariantTa
   @IsOptional()
   @IsNumber()
   addressId?: number;
-  @IsNotEmpty()
+  @IsOptional()
   @IsNumber()
   @Min(0)
   discountAmount!: number;

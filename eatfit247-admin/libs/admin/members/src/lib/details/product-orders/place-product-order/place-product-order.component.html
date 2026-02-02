@@ -13,19 +13,20 @@
           (selectionChange)="onStepperSelectionChange($event)"
           [linear]="true"
           #stepper>
-          
+
           <!-- Step 1: Product & Variant Selection -->
           <mat-step [stepControl]="step1FormGroup" [completed]="canProceedToStep2()">
             <ng-template matStepLabel>Select Products</ng-template>
             <div class="step-content">
               <h3 class="step-title">Select Product, Variant & Currency</h3>
-              
+
               <form [formGroup]="step1FormGroup">
                 <div class="form-section">
                   <div class="form-row">
                     <mat-form-field appearance="outline" class="full-width">
                       <mat-label>Product*</mat-label>
-                      <mat-select formControlName="productId" (selectionChange)="onProductSelectionChange($event.value)">
+                      <mat-select formControlName="productId"
+                                  (selectionChange)="onProductSelectionChange($event.value)">
                         <mat-option [value]="null">Select Product</mat-option>
                         @for (product of products(); track product.productId) {
                           <mat-option [value]="product.productId">{{ product.name }}</mat-option>
@@ -40,7 +41,7 @@
                       <h4>Select Variant</h4>
                       <div class="variants-grid">
                         @for (variant of selectedProduct()!.variants; track variant.productVariantId) {
-                          <mat-card 
+                          <mat-card
                             class="variant-card"
                             [class.selected]="selectedVariantId() === variant.productVariantId"
                             (click)="onVariantSelectionChange(variant.productVariantId!)">
@@ -123,38 +124,13 @@
                           <ng-container matColumnDef="quantity">
                             <th mat-header-cell *matHeaderCellDef>Quantity</th>
                             <td mat-cell *matCellDef="let item; let i = index">
-                            <input
-                              type="number"
-                              [min]="1"
-                              [value]="item.quantity"
-                              (input)="updateCartQuantity(i, +$any($event.target).value)"
-                              class="quantity-input"
-                            />
-                            </td>
-                          </ng-container>
-
-                          <ng-container matColumnDef="price">
-                            <th mat-header-cell *matHeaderCellDef>Unit Price</th>
-                            <td mat-cell *matCellDef="let item">
-                              {{ item.price | number:'1.2-2' }} {{ item.currency }}
-                            </td>
-                          </ng-container>
-
-                          <ng-container matColumnDef="tax">
-                            <th mat-header-cell *matHeaderCellDef>Tax</th>
-                            <td mat-cell *matCellDef="let item">
-                              @if (item.taxAmount !== undefined) {
-                                {{ item.taxAmount | number:'1.2-2' }} ({{ item.taxPercent | number:'1.2-2' }}%)
-                              } @else {
-                                -
-                              }
-                            </td>
-                          </ng-container>
-
-                          <ng-container matColumnDef="total">
-                            <th mat-header-cell *matHeaderCellDef>Total</th>
-                            <td mat-cell *matCellDef="let item">
-                              {{ (item.totalPrice + (item.taxAmount || 0)) | number:'1.2-2' }} {{ item.currency }}
+                              <input
+                                type="number"
+                                [min]="1"
+                                [value]="item.quantity"
+                                (input)="updateCartQuantity(i, +$any($event.target).value)"
+                                class="quantity-input"
+                              />
                             </td>
                           </ng-container>
 
@@ -178,7 +154,8 @@
                         <div class="cart-summary">
                           <div class="summary-row">
                             <span class="label">Subtotal:</span>
-                            <span class="value">{{ cartSubtotal | number:'1.2-2' }} {{ formGroup.get('currencyCode')?.value || 'INR' }}</span>
+                            <span
+                              class="value">{{ cartSubtotal | number:'1.2-2' }} {{ formGroup.get('currencyCode')?.value || 'INR' }}</span>
                           </div>
                         </div>
                       </mat-card-content>
@@ -205,7 +182,7 @@
             <ng-template matStepLabel>Address & Tax</ng-template>
             <div class="step-content">
               <h3 class="step-title">Address & Tax Configuration</h3>
-              
+
               <form [formGroup]="step2FormGroup">
                 <div class="form-section">
                   <div class="form-row">
@@ -243,7 +220,8 @@
                         placeholder="Optional"
                       />
                       <mat-hint align="end"
-                        >{{ step2FormGroup.get('gstNumber')?.value?.length || 0 }}/{{ InputLengthEnum.CHAR_50 }}</mat-hint
+                      >{{ step2FormGroup.get('gstNumber')?.value?.length || 0 }}/{{ InputLengthEnum.CHAR_50 }}
+                      </mat-hint
                       >
                       <shared-ui-input-error [control]="step2FormGroup.get('gstNumber')"></shared-ui-input-error>
                     </mat-form-field>
@@ -306,7 +284,7 @@
             <ng-template matStepLabel>Tax Computation</ng-template>
             <div class="step-content">
               <h3 class="step-title">Tax Computation Summary</h3>
-              
+
               @if (calculatingTax()) {
                 <div class="loading-container">
                   <mat-spinner diameter="30"></mat-spinner>
@@ -337,14 +315,21 @@
                       <ng-container matColumnDef="unitPrice">
                         <th mat-header-cell *matHeaderCellDef>Unit Price</th>
                         <td mat-cell *matCellDef="let item">
-                          {{ item.price | number:'1.2-2' }} {{ item.currency }}
+                          {{ item.unitPrice | number:'1.2-2' }} {{ item.currency }}
                         </td>
                       </ng-container>
 
-                      <ng-container matColumnDef="subtotal">
-                        <th mat-header-cell *matHeaderCellDef>Subtotal</th>
+                      <ng-container matColumnDef="discountAmount">
+                        <th mat-header-cell *matHeaderCellDef>Discount</th>
                         <td mat-cell *matCellDef="let item">
-                          {{ item.totalPrice | number:'1.2-2' }} {{ item.currency }}
+                          {{ item.discountAmount | number:'1.2-2' }} {{ item.currency }}
+                        </td>
+                      </ng-container>
+
+                      <ng-container matColumnDef="taxableAmount">
+                        <th mat-header-cell *matHeaderCellDef>Taxable Amount</th>
+                        <td mat-cell *matCellDef="let item">
+                          {{ item.taxableAmount | number:'1.2-2' }} {{ item.currency }}
                         </td>
                       </ng-container>
 
@@ -362,7 +347,7 @@
                       <ng-container matColumnDef="total">
                         <th mat-header-cell *matHeaderCellDef>Total</th>
                         <td mat-cell *matCellDef="let item">
-                          {{ (item.totalPrice + (item.taxAmount || 0)) | number:'1.2-2' }} {{ item.currency }}
+                          {{ item.totalAmount | number:'1.2-2' }} {{ item.currency }}
                         </td>
                       </ng-container>
 
@@ -373,19 +358,23 @@
                     <div class="tax-computation-summary">
                       <div class="summary-row">
                         <span class="label">Subtotal:</span>
-                        <span class="value">{{ cartSubtotal | number:'1.2-2' }} {{ formGroup.get('currencyCode')?.value || 'INR' }}</span>
+                        <span
+                          class="value">{{ cartSubtotal | number:'1.2-2' }} {{ formGroup.get('currencyCode')?.value || 'INR' }}</span>
                       </div>
                       <div class="summary-row">
                         <span class="label">Discount:</span>
-                        <span class="value">-{{ step2FormGroup.get('discountAmount')?.value || 0 | number:'1.2-2' }} {{ formGroup.get('currencyCode')?.value || 'INR' }}</span>
+                        <span
+                          class="value">-{{ step2FormGroup.get('discountAmount')?.value || 0 | number:'1.2-2' }} {{ formGroup.get('currencyCode')?.value || 'INR' }}</span>
                       </div>
                       <div class="summary-row">
                         <span class="label">Total Tax:</span>
-                        <span class="value">{{ cartTaxTotal | number:'1.2-2' }} {{ formGroup.get('currencyCode')?.value || 'INR' }}</span>
+                        <span
+                          class="value">{{ cartTaxTotal | number:'1.2-2' }} {{ formGroup.get('currencyCode')?.value || 'INR' }}</span>
                       </div>
                       <div class="summary-row total">
                         <span class="label">Total Order Amount:</span>
-                        <span class="value">{{ cartGrandTotal | number:'1.2-2' }} {{ formGroup.get('currencyCode')?.value || 'INR' }}</span>
+                        <span
+                          class="value">{{ cartGrandTotal | number:'1.2-2' }} {{ formGroup.get('currencyCode')?.value || 'INR' }}</span>
                       </div>
                       @if (taxCalculationResult()?.invoiceNote) {
                         <div class="invoice-note">
@@ -416,7 +405,7 @@
             <ng-template matStepLabel>Payment</ng-template>
             <div class="step-content">
               <h3 class="step-title">Payment Information</h3>
-              
+
               <form [formGroup]="step4FormGroup">
                 <div class="form-section">
                   <div class="form-row">
@@ -462,7 +451,8 @@
                             <mat-option [value]="status.id">{{ status.label }}</mat-option>
                           }
                         </mat-select>
-                        <shared-ui-input-error [control]="step4FormGroup.get('paymentStatusId')"></shared-ui-input-error>
+                        <shared-ui-input-error
+                          [control]="step4FormGroup.get('paymentStatusId')"></shared-ui-input-error>
                       </mat-form-field>
 
                       <mat-form-field appearance="outline" class="half-width">

@@ -5,7 +5,6 @@ import {
   IAddressMaster,
   IAssessmentMaster,
   IAvailableSlot,
-  IBasicMemberProduct,
   ICalculateProductVariantTaxRequest,
   ICalculateProductVariantTaxResponse,
   ICalculateTaxResponse,
@@ -22,6 +21,7 @@ import {
   IManageMemberHealthParameterLog,
   IManageMemberIssue,
   IManageMemberPayment,
+  IManageMemberProduct,
   IMember,
   IMemberAssessment,
   IMemberCallLog,
@@ -872,22 +872,10 @@ export class MembersApiService extends ApiBaseService {
 
   async createProductOrder(
     memberId: number,
-    data: IBasicMemberProduct
+    data: IManageMemberProduct
   ): Promise<IMemberProduct> {
     const res = await this.httpService.post<IResponse<IMemberProduct>>(
       `${this.endpoint}/${memberId}/product`,
-      data
-    );
-    return res.data as IMemberProduct;
-  }
-
-  async updateProductOrder(
-    memberId: number,
-    productId: number,
-    data: IBasicMemberProduct
-  ): Promise<IMemberProduct> {
-    const res = await this.httpService.put<IResponse<IMemberProduct>>(
-      `${this.endpoint}/${memberId}/product/${productId}`,
       data
     );
     return res.data as IMemberProduct;
