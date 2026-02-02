@@ -64,12 +64,16 @@
     },
     "serve": {
       "executor": "@angular/build:dev-server",
+      "options": {
+        "proxyConfig": "proxy.conf.json"
+      },
       "configurations": {
         "production": {
           "buildTarget": "eatfit247-web:build:production"
         },
         "development": {
-          "buildTarget": "eatfit247-web:build:development"
+          "buildTarget": "eatfit247-web:build:development",
+          "proxyConfig": "proxy.conf.json"
         }
       },
       "defaultConfiguration": "development"

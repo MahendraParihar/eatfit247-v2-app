@@ -362,22 +362,6 @@ Reusable data table component with:
 - **Token Rotation**: Enabled - new refresh token on each refresh
 - **Automatic Refresh**: Handles 401 → refresh → retry flow
 
-### HTTP Service Usage
-
-All HTTP operations use the centralized `HttpService` with async/await pattern:
-
-```typescript
-import { HttpService } from '@core';
-
-constructor(private httpService: HttpService) {}
-
-async getList(): Promise<YourType[]> {
-  return await this.httpService.get<YourType[]>(`${this.endpoint}/list`);
-}
-```
-
-See `libs/core/src/lib/services/HTTP_SERVICE_USAGE.md` for complete documentation.
-
 ---
 
 # Server Backend (server_1)
@@ -478,18 +462,6 @@ This project **supports FULL SQL JOINs** without circular dependencies.
 
 ```ts
 import { MstAdminUser } from '@admin-only/admin-user';
-```
-
-### ✅ REQUIRED (SAFE JOIN PATTERN)
-
-Use **string-based Sequelize associations**:
-
-```ts
-@BelongsTo('MstAdminUser', {
-  foreignKey: 'created_by',
-  constraints: false,
-})
-createdBy?: any;
 ```
 
 **Why this works:**
@@ -733,45 +705,6 @@ QR code value includes:
 - Invoice date
 - Total invoice value
 - Tax amount
-
-## SAC/HSN Codes
-
-- **SAC Code** (998314): Automatically injected for SERVICE items when GST
-- **HSN Code**: Automatically injected for PRODUCT items when GST
-- Codes are only shown in the invoice when applicable
-
-## Usage Example
-
-```typescript
-// In your payment service or controller
-async generateInvoice(paymentId: number): Promise<Buffer> {
-  // 1. Fetch payment with all required relations
-  const payment = await this.memberPaymentRepository.findOne({
-    where: { memberPaymentId: paymentId },
-    include: [
-      { model: TxnMember, as: 'member' },
-      { model: TxnAddress, as: 'address' },
-      { model: TxnAddress, as: 'billingAddress' },
-      { model: MstFranchise, as: 'franchise', include: [{ model: TxnAddress, as: 'address' }] },
-    ],
-  });
-
-  // 2. Map payment to InvoiceDocument
-  const invoiceDoc = mapPaymentToInvoiceDocument(
-    payment,
-    payment.franchise,
-    payment.billingAddress || payment.address,
-    TransactionType.SERVICE,
-    `Diet Consultancy - ${payment.program} - ${payment.programPlan}`,
-    franchiseAddress,
-    memberInfo,
-  );
-
-  // 3. Generate PDF
-  const pdfBuffer = await this.invoicePdfService.generateInvoicePdf(invoiceDoc);
-  return pdfBuffer;
-}
-```
 
 ---
 
@@ -1027,6 +960,11 @@ For building website image
 docker build . -f ./infra/Dockerfile.client -t eatfit-client
 ```
 
+### Docker build images
+```shell
+docker compose -f ./infra/docker-compose.yml build --no-cache
+```
+
 ### Docker container up
 ```shell
 docker compose -f ./infra/docker-compose.yml up -d
@@ -1082,4 +1020,4 @@ docker rm -vf $(docker ps -aq)
 ```shell list 
 docker logs [Container_NAME]
 
-**Note**: This is a full-stack application with persistent media storage, comprehensive security measures, and production-ready Docker configuration. For detailed setup instructions, please refer to the documentation sections above.
+**Note**: This is a full-stack application with persistent media storage, comprehensive security measures, and production-ready Docker configuration. For detailed setup instructions, please refer to the documentation sections above.~~

@@ -1,7 +1,10 @@
 services:
-  public:
-    container_name: eatfit-server-public
+  public-api:
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile.server
     image: eatfit-server
+    container_name: eatfit-public-api
     command: sh -c "cd server_1 && node dist/apps/public-api/main.js"
     restart: always
     volumes:
@@ -11,16 +14,16 @@ services:
     environment:
       API_PORT: '3000'
     ports:
-      - "8001:3000"
+      - "3000:3000"
     healthcheck:
       test: [ 'CMD', 'curl', '-f', 'http://localhost:3000/api/v2/public/health' ]
       interval: 20s
       retries: 5
       start_period: 5s
       timeout: 10s
-  admin:
-    container_name: eatfit-server-admin
+  admin-api:
     image: eatfit-server
+    container_name: eatfit-admin-api
     command: sh -c "cd server_1 && node dist/apps/admin-api/main.js"
     restart: always
     volumes:
@@ -30,37 +33,43 @@ services:
     environment:
       API_PORT: '3000'
     ports:
-      - "8002:3000"
+      - "3001:3001"
     healthcheck:
-      test: [ 'CMD', 'curl', '-f', 'http://localhost:3000/api/v2/public/health' ]
+      test: [ 'CMD', 'curl', '-f', 'http://localhost:3001/api/v2/admin/health' ]
       interval: 20s
       retries: 5
       start_period: 5s
       timeout: 10s
-  web-app:
-    container_name: web-app
+  client-web:
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile.client
     image: eatfit-client
+    container_name: eatfit-client-web
     restart: always
     volumes:
       - ./eatfit24by7.conf:/etc/nginx/conf.d/eatfit24by7.conf
       - ./certs/eatfit24by7.key:/etc/ssl/certs/eatfit24by7.key
       - ./certs/eatfit24by7.pem:/etc/ssl/certs/eatfit24by7.pem
     ports:
-      - "443:443"
+      - "80:80"
     depends_on:
-      - public
-  admin-app:
-    container_name: admin-app
+      - public-api
+  admin-web:
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile.admin
     image: eatfit-admin
+    container_name: eatfit-admin-web
     restart: always
     volumes:
       - ./eatfit24by7-admin.conf:/etc/nginx/conf.d/eatfit24by7.conf
       - ./certs/eatfit24by7.key:/etc/ssl/certs/eatfit24by7.key
       - ./certs/eatfit24by7.pem:/etc/ssl/certs/eatfit24by7.pem
     ports:
-      - "8090:443"
+      - "4200:80"
     depends_on:
-      - admin
+      - admin-api
 
 volumes:
   assets:

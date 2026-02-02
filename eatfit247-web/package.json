@@ -1,6 +1,7 @@
 {
-  "name": "eatfit24by7-web",
+  "name": "eatfit247-web",
   "version": "0.0.0",
+  "license": "MIT",
   "scripts": {
     "ng": "ng",
     "build_shared_lib": "npm --prefix ../shared-library run build",

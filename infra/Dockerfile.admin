@@ -4,7 +4,7 @@ WORKDIR /home/app
 RUN mkdir -p eatfit247-admin && mkdir -p shared-library && mkdir -p infra
 COPY ./infra/ ./infra/
 
-RUN mkdir -p shared-library
+# RUN mkdir -p shared-library
 COPY shared-library/package.json shared-library/tsconfig.json shared-library/
 COPY shared-library/src shared-library/src
 RUN cd shared-library && npm install && npm run build
@@ -13,7 +13,7 @@ COPY ./eatfit247-admin ./eatfit247-admin
 RUN npm --prefix eatfit247-admin install --legacy-peer-deps
 RUN npm --prefix eatfit247-admin run build
 
-FROM nginx:latest AS ngi
+FROM nginx:latest
 COPY --from=build /home/app/eatfit247-admin/dist/eatfit247-admin /usr/share/nginx/html
 COPY --from=build /home/app/infra/nginx-admin.conf /etc/nginx/conf.d/default.conf
 EXPOSE 80
