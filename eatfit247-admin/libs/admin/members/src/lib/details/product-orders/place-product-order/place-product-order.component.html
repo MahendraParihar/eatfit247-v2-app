@@ -229,28 +229,6 @@
 
                   <div class="form-row">
                     <mat-form-field appearance="outline" class="half-width">
-                      <mat-label>Currency*</mat-label>
-                      <input
-                        matInput
-                        [value]="formGroup.get('currencyCode')?.value || 'INR'"
-                        [readonly]="true"
-                      />
-                    </mat-form-field>
-
-                    <mat-form-field appearance="outline" class="half-width">
-                      <mat-label>Order Amount*</mat-label>
-                      <input
-                        matInput
-                        type="number"
-                        [value]="orderAmount"
-                        [readonly]="true"
-                        placeholder="0"
-                      />
-                    </mat-form-field>
-                  </div>
-
-                  <div class="form-row">
-                    <mat-form-field appearance="outline" class="half-width">
                       <mat-label>Discount Amount*</mat-label>
                       <input
                         matInput
@@ -371,16 +349,16 @@
                         <span
                           class="value">{{ cartTaxTotal | number:'1.2-2' }} {{ formGroup.get('currencyCode')?.value || 'INR' }}</span>
                       </div>
+                      <div class="summary-row">
+                        <span class="label">Taxable Amount:</span>
+                        <span
+                          class="value">{{ cartTaxableAmount | number:'1.2-2' }} {{ formGroup.get('currencyCode')?.value || 'INR' }}</span>
+                      </div>
                       <div class="summary-row total">
                         <span class="label">Total Order Amount:</span>
                         <span
                           class="value">{{ cartGrandTotal | number:'1.2-2' }} {{ formGroup.get('currencyCode')?.value || 'INR' }}</span>
                       </div>
-                      @if (taxCalculationResult()?.invoiceNote) {
-                        <div class="invoice-note">
-                          <strong>Note:</strong> {{ taxCalculationResult()?.invoiceNote }}
-                        </div>
-                      }
                     </div>
                   </mat-card-content>
                 </mat-card>

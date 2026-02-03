@@ -4,13 +4,13 @@ import {
   FormBuilder,
   FormGroup,
   ReactiveFormsModule,
-  Validators,
+  Validators
 } from '@angular/forms';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import {
   MAT_DIALOG_DATA,
   MatDialogModule,
-  MatDialogRef,
+  MatDialogRef
 } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -29,7 +29,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatTableModule } from '@angular/material/table';
 import { StepperSelectionEvent } from '@angular/cdk/stepper';
 import {
-  ICalculateProductVariantTaxRequest,
+  ICalculateProductVariantTaxRequest, ICalculateProductVariantTaxResponse,
   ICalculateTaxResponse,
   IDropdownItem,
   IManageMemberProduct,
@@ -41,7 +41,7 @@ import {
   IProductPrice,
   IProductVariant,
   PaymentSourceEnum,
-  PaymentStatusEnum,
+  PaymentStatusEnum
 } from '@eatfit247-shared-lib';
 import { MembersApiService } from '../../../api.service';
 import { InputErrorComponent } from '@shared';
@@ -109,7 +109,9 @@ export class PlaceProductOrderComponent implements OnInit {
   selectedIndex = signal(0);
   InputLengthEnum = InputLengthEnum;
   cartItems = signal<CartItem[]>([]);
-  taxCalculationResult = signal<ICalculateTaxResponse | null>(null);
+  taxCalculationResult = signal<ICalculateProductVariantTaxResponse | null>(
+    null
+  );
   paymentLink = signal<string | null>(null);
   paymentLinkId = signal<string | null>(null);
   supportedGateways = signal<
@@ -141,14 +143,12 @@ export class PlaceProductOrderComponent implements OnInit {
     'tax',
     'total',
   ];
-
   // Computed signals for reactive product/variant selection
   selectedProduct = computed<IProduct | null>(() => {
     const productId = this.selectedProductId();
     if (!productId) return null;
     return this.products().find((p) => p.productId === productId) || null;
   });
-
   selectedVariant = computed<IProductVariant | null>(() => {
     const product = this.selectedProduct();
     const variantId = this.selectedVariantId();
@@ -157,7 +157,6 @@ export class PlaceProductOrderComponent implements OnInit {
       product.variants?.find((v) => v.productVariantId === variantId) || null
     );
   });
-
   availablePrices = computed<IProductPrice[]>(() => {
     const variant = this.selectedVariant();
     if (!variant) return [];
@@ -185,12 +184,10 @@ export class PlaceProductOrderComponent implements OnInit {
   private initializeForm(): void {
     const paymentDate = this.data.productOrder?.paymentDate;
     const defaultPaymentSource = PaymentSourceEnum.MANUAL;
-
     // Step 1: Product and Variant Selection
     this.step1FormGroup = this.fb.group({
       productId: [null, [Validators.required]],
     });
-
     // Step 2: Address and Tax Calculation
     this.step2FormGroup = this.fb.group({
       addressId: [null],
@@ -198,10 +195,8 @@ export class PlaceProductOrderComponent implements OnInit {
       gstNumber: ['', [Validators.maxLength(InputLengthEnum.CHAR_50)]],
       discountAmount: [0, [Validators.required, Validators.min(0)]],
     });
-
     // Step 3: Tax Computation Summary (no form needed, just display)
     this.step3FormGroup = this.fb.group({});
-
     // Step 4: Payment
     this.step4FormGroup = this.fb.group({
       paymentModeId: [null],
@@ -215,7 +210,6 @@ export class PlaceProductOrderComponent implements OnInit {
       paymentLink: ['', [Validators.maxLength(InputLengthEnum.CHAR_500)]],
       franchisePaymentGatewayId: [null],
     });
-
     // Main form group
     this.formGroup = this.fb.group({
       addressId: [null],
@@ -234,7 +228,6 @@ export class PlaceProductOrderComponent implements OnInit {
       paymentLink: ['', [Validators.maxLength(InputLengthEnum.CHAR_500)]],
       franchisePaymentGatewayId: [null],
     });
-
     // Subscribe to changes for tax calculation
     this.step2FormGroup
       .get('billingAddressId')
@@ -249,7 +242,6 @@ export class PlaceProductOrderComponent implements OnInit {
         );
         this.calculateTaxFromBackend();
       });
-
     this.step2FormGroup
       .get('discountAmount')
       ?.valueChanges.pipe(debounceTime(500), distinctUntilChanged())
@@ -260,7 +252,6 @@ export class PlaceProductOrderComponent implements OnInit {
         );
         this.calculateTaxFromBackend();
       });
-
     this.step4FormGroup
       .get('paymentSource')
       ?.valueChanges.subscribe((paymentSource) => {
@@ -281,7 +272,6 @@ export class PlaceProductOrderComponent implements OnInit {
           this.loadSupportedGateways();
         }
       });
-
     this.updatePaymentFieldValidators(defaultPaymentSource);
   }
 
@@ -291,7 +281,6 @@ export class PlaceProductOrderComponent implements OnInit {
     const paymentDateControl = this.step4FormGroup.get('paymentDate');
     const paymentStatusIdControl = this.step4FormGroup.get('paymentStatusId');
     const transactionIdControl = this.step4FormGroup.get('transactionId');
-
     if (isManual) {
       paymentModeIdControl?.setValidators([Validators.required]);
       paymentDateControl?.setValidators([Validators.required]);
@@ -355,7 +344,6 @@ export class PlaceProductOrderComponent implements OnInit {
     const variantId = this.selectedVariantId();
     const price = this.selectedPrice();
     const quantity = this.quantity();
-
     if (!productId || !variantId || !price || quantity <= 0) {
       this.snackBar.open(
         'Please select product, variant, price, and quantity',
@@ -366,25 +354,21 @@ export class PlaceProductOrderComponent implements OnInit {
       );
       return;
     }
-
     const product = this.products().find((p) => p.productId === productId);
     if (!product) {
       return;
     }
-
     const variant = product.variants?.find(
       (v) => v.productVariantId === variantId
     );
     if (!variant) {
       return;
     }
-
     // Check if same variant and currency already exists in cart
     const existingIndex = this.cartItems().findIndex(
       (item) =>
         item.productVariantId === variantId && item.currency === price.currency
     );
-
     if (existingIndex >= 0) {
       // Update existing item quantity
       const updated = [...this.cartItems()];
@@ -409,7 +393,6 @@ export class PlaceProductOrderComponent implements OnInit {
       };
       this.cartItems.set([...this.cartItems(), newItem]);
     }
-
     this.updateOrderAmount();
     this.quantity.set(1);
     this.selectedProductId.set(null);
@@ -454,14 +437,11 @@ export class PlaceProductOrderComponent implements OnInit {
       this.taxCalculationResult.set(null);
       return;
     }
-
     const billingAddressId = this.step2FormGroup.get('billingAddressId')?.value;
-
     if (!billingAddressId) {
       this.taxCalculationResult.set(null);
       return;
     }
-
     this.calculatingTax.set(true);
     try {
       // Build request with all cart items
@@ -475,13 +455,9 @@ export class PlaceProductOrderComponent implements OnInit {
         billingAddressId,
         discountAmount: this.step2FormGroup.get('discountAmount')?.value || 0,
       };
-
-      const result = await this.apiService.calculateProductTax(
-        this.data.memberId,
-        request
-      );
-
-      // Update cart items with calculated tax for each item
+      const result: ICalculateProductVariantTaxResponse =
+        await this.apiService.calculateProductTax(this.data.memberId, request);
+      // Update cart items with a calculated tax for each item
       const updatedCartItems = cartItems.map((item) => {
         const taxResult = result.items.find(
           (r) =>
@@ -489,7 +465,6 @@ export class PlaceProductOrderComponent implements OnInit {
             r.productVariantId === item.productVariantId &&
             r.currency === item.currency
         );
-
         if (taxResult) {
           return <CartItem>{
             ...item,
@@ -504,36 +479,7 @@ export class PlaceProductOrderComponent implements OnInit {
         return item;
       });
       this.cartItems.set(updatedCartItems);
-
-      // Calculate aggregate totals for display
-      const totalTaxAmount = updatedCartItems.reduce(
-        (sum, item) => sum + (item.taxAmount || 0),
-        0
-      );
-      const totalOrderAmount = updatedCartItems.reduce(
-        (sum, item) => sum + item.totalAmount,
-        0
-      );
-
-      // Store aggregate tax result (using the first item's tax info for common fields)
-      if (result.items.length > 0) {
-        const firstItem = result.items[0];
-        this.taxCalculationResult.set({
-          taxPercentage: firstItem.taxPercentage,
-          orderAmount: totalOrderAmount,
-          discountAmount: firstItem.discountAmount,
-          taxableAmount: firstItem.taxableAmount,
-          taxAmount: totalTaxAmount,
-          totalAmount: firstItem.totalAmount,
-          taxObj: firstItem.taxObj,
-          taxType: firstItem.taxType,
-          taxMode: firstItem.taxMode,
-          invoiceNote: firstItem.invoiceNote,
-          currency: firstItem.currency,
-          isLutApplied: firstItem.isLutApplied,
-          jurisdiction: firstItem.jurisdiction,
-        });
-      }
+      this.taxCalculationResult.set(result);
     } catch (error) {
       console.error('Error calculating tax:', error);
       this.taxCalculationResult.set(null);
@@ -659,7 +605,6 @@ export class PlaceProductOrderComponent implements OnInit {
           type: 'product',
         },
       };
-
       const result = await this.apiService.createProductPaymentLink(
         this.data.memberId,
         request
@@ -771,7 +716,6 @@ export class PlaceProductOrderComponent implements OnInit {
         this.formGroup.get(key)?.value
       );
     };
-
     return <IManageMemberProduct>{
       memberId: this.data.memberId,
       paymentModeId: getValue('paymentModeId'),
@@ -849,32 +793,22 @@ export class PlaceProductOrderComponent implements OnInit {
     if (result) {
       return result.totalAmount;
     }
-    const discountAmount =
-      this.step2FormGroup.get('discountAmount')?.value || 0;
-    return this.orderAmount - discountAmount;
-  }
-
-  get taxPercentage(): number {
-    const result = this.taxCalculationResult();
-    return result?.taxPercentage || 0;
+    return this.orderAmount;
   }
 
   get cartSubtotal(): number {
-    return this.cartItems().reduce((sum, item) => sum + item.taxableAmount, 0);
+    return this.taxCalculationResult()?.orderAmount || 0;
   }
 
   get cartTaxTotal(): number {
-    return this.cartItems().reduce(
-      (sum, item) => sum + (item.taxAmount || 0),
-      0
-    );
+    return this.taxCalculationResult()?.taxAmount || 0;
+  }
+
+  get cartTaxableAmount(): number {
+    return this.taxCalculationResult()?.taxableAmount || 0;
   }
 
   get cartGrandTotal(): number {
-    return (
-      this.cartSubtotal -
-      (this.step2FormGroup.get('discountAmount')?.value || 0) +
-      this.cartTaxTotal
-    );
+    return this.taxCalculationResult()?.totalAmount || 0;
   }
 }

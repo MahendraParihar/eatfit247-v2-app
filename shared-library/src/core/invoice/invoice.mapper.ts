@@ -126,7 +126,7 @@ export function mapPaymentToInvoiceDocument(
 /**
  * Builds tax rows from taxObj
  */
-function buildTaxRows(
+export function buildTaxRows(
   taxObj: Record<string, { amount: number; taxPercentage: number }>,
   taxType: TaxTypeEnum,
   taxMode: TaxMode,
@@ -316,20 +316,24 @@ function buildTaxNote(taxMode: TaxMode, existingNote?: string): string | undefin
 }
 
 function buildInvoiceOrderItem(productOrder: IMemberProduct): IInvoiceItem[] {
-  return productOrder.orderItems.map((orderItem) => ({
-    type: TransactionType.PRODUCT,
-    description: `${orderItem.productName} ${orderItem.quantityLabel}`,
-    hsnCode: orderItem.taxType === TaxTypeEnum.GST ? orderItem.hsnCode : undefined,
-    qty: orderItem.quantity,
-    unitPrice: orderItem.unitPrice,
-    amount: orderItem.baseAmount,
-    discount: orderItem.discountAmount,
-    taxPercentage: orderItem.effectiveTaxRate,
-    taxAmount: orderItem.taxAmount,
-    totalAmount: orderItem.totalAmount,
-    taxType: orderItem.taxType,
-    taxMode: orderItem.taxMode,
-  })) as IInvoiceItem[];
+  return productOrder.orderItems.map((orderItem) => {
+    const taxRows = buildTaxRows(orderItem.taxObj || {}, orderItem.taxType, orderItem.taxMode);
+    return {
+      type: TransactionType.PRODUCT,
+      description: `${orderItem.productName} ${orderItem.quantityLabel}`,
+      hsnCode: orderItem.taxType === TaxTypeEnum.GST ? orderItem.hsnCode : undefined,
+      qty: orderItem.quantity,
+      unitPrice: orderItem.unitPrice,
+      amount: orderItem.baseAmount,
+      discount: orderItem.discountAmount,
+      taxPercentage: orderItem.effectiveTaxRate,
+      taxAmount: orderItem.taxAmount,
+      totalAmount: orderItem.totalAmount,
+      taxType: orderItem.taxType,
+      taxMode: orderItem.taxMode,
+      taxRows: taxRows,
+    } as IInvoiceItem;
+  });
 }
 
 /**
@@ -351,11 +355,6 @@ export function mapProductOrderToInvoiceDocument(
   memberInfo?: IMemberInfo,
   conditions: string[] = [],
 ): IInvoiceDocument {
-  const taxRows: IInvoiceTaxRow[][] = [];
-  for(const orderItem of productOrder.orderItems) {
-    taxRows.push(buildTaxRows(orderItem.taxObj || {}, orderItem.taxType, orderItem.taxMode));
-  }
-  console.log(taxRows);
   const items = buildInvoiceOrderItem(productOrder);
 
   // Determine if QR code should be enabled

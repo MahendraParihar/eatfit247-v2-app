@@ -300,6 +300,48 @@
       line-height: 1.4;
       padding: 0;
     }
+
+    .tax-summary-section {
+      margin-bottom: 10px;
+      margin-top: 8px;
+    }
+
+    .tax-summary-title {
+      font-size: 10px;
+      font-weight: bold;
+      margin-bottom: 4px;
+      color: #333;
+    }
+
+    .tax-summary-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 8px;
+      margin-bottom: 8px;
+    }
+
+    .tax-summary-table thead {
+      background-color: #333;
+      color: #fff;
+    }
+
+    .tax-summary-table th {
+      padding: 4px 3px;
+      text-align: left;
+      font-weight: bold;
+      border: 1px solid #ddd;
+      font-size: 8px;
+    }
+
+    .tax-summary-table td {
+      padding: 3px;
+      border: 1px solid #ddd;
+      font-size: 8px;
+    }
+
+    .tax-summary-table tbody tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
   </style>
 </head>
 <body>
@@ -432,6 +474,59 @@
   {{/each}}
   </tbody>
 </table>
+
+<!-- Tax Summary Section -->
+{{#if isGstTaxType}}
+{{#if gstTaxSummary}}
+{{#if (gt (length gstTaxSummary) 0)}}
+<div class="tax-summary-section">
+  <h3 class="tax-summary-title">Tax Summary</h3>
+  <table class="tax-summary-table">
+    <thead>
+      <tr>
+        <th style="width: 15%;" class="text-center">GST Rate</th>
+        <th style="width: 25%;" class="text-right">Taxable Amount</th>
+        <th style="width: 15%;" class="text-right">CGST</th>
+        <th style="width: 15%;" class="text-right">SGST</th>
+        <th style="width: 15%;" class="text-right">IGST</th>
+        <th style="width: 15%;" class="text-right">Total Tax</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each gstTaxSummary}}
+        <tr>
+          <td class="text-center">{{this.gstRate}}%</td>
+          <td class="text-right">{{formatCurrency this.taxableAmount}}</td>
+          <td class="text-right">
+            {{#if this.cgst}}
+              {{formatCurrency this.cgst}}
+            {{else}}
+              -
+            {{/if}}
+          </td>
+          <td class="text-right">
+            {{#if this.sgst}}
+              {{formatCurrency this.sgst}}
+            {{else}}
+              -
+            {{/if}}
+          </td>
+          <td class="text-right">
+            {{#if this.igst}}
+              {{formatCurrency this.igst}}
+            {{else}}
+              -
+            {{/if}}
+          </td>
+          <td class="text-right">{{formatCurrency this.totalTax}}</td>
+        </tr>
+      {{/each}}
+    </tbody>
+  </table>
+</div>
+{{/if}}
+{{/if}}
+{{/if}}
 
 <!-- Summary Section -->
 <div class="summary-section">

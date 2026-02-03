@@ -17,12 +17,15 @@ import {
   IPaymentLinkResponse,
   IPlanTaxCalculationRequest,
   ITableList,
+  buildTaxRows,
   mapPaymentToInvoiceDocument,
   MediaForEnum,
   PaymentGatewayEnum,
   PaymentSourceEnum,
   PaymentStatusEnum,
   TableEnum,
+  TaxMode,
+  TaxTypeEnum,
   TransactionType,
 } from '@eatfit247-shared-lib';
 import {
@@ -1210,6 +1213,9 @@ export class MemberPlanService {
   }
 
   private buildInvoiceItems(payment: TxnMemberPayment): IInvoiceItem[] {
+    const taxType = payment.taxType as TaxTypeEnum;
+    const taxMode = payment.taxMode as TaxMode;
+    const taxRows = buildTaxRows(payment.taxObj || {}, taxType, taxMode);
     return [
       {
         type: TransactionType.SERVICE,
@@ -1223,6 +1229,9 @@ export class MemberPlanService {
         taxPercentage: payment.taxPercentage,
         taxAmount: payment.taxAmount,
         totalAmount: payment.totalAmount,
+        taxType: taxType,
+        taxMode: taxMode,
+        taxRows: taxRows,
       },
     ] as IInvoiceItem[];
   }

@@ -313,7 +313,6 @@ export class MemberProductService {
         franchiseAddress,
         billingAddress
       );
-      console.log(taxCalculationResult);
       orderItemObjs.push({
         productId: item.productId,
         productVariantId: item.productVariantId,
@@ -749,7 +748,6 @@ export class MemberProductService {
     }
     // Convert product order to model
     const productModel = this.convertToModel(productOrder);
-    console.log(productModel);
     // Prepare member info
     const memberInfo: IMemberInfo = {
       fullName: productModel.memberName,
@@ -769,7 +767,6 @@ export class MemberProductService {
         `Payment confirms acceptance of ${productOrder.franchise.companyName} terms and service validity conditions.`
       ]
     );
-    console.log(invoiceDoc);
     const fileName = `invoice-${productModel.memberProductId}.pdf`;
     const relativePath = `${MediaForEnum.DOWNLOADS}/${memberId}/invoices`;
     const destinationFolderPath = `${this.rootFolderPath}/${relativePath}`;
@@ -807,7 +804,6 @@ export class MemberProductService {
     );
     const memberAddressSnapshot = addresses.memberAddressSnapshot;
     const tempOrderItems = await this.buildOrderItem(payload.items, payload.discountAmount || 0);
-    console.log(tempOrderItems);
     // Add currencyCode to tempOrderItems for tax calculation
     const tempOrderItemsWithCurrency = tempOrderItems.map((item) => ({
       ...item,
@@ -820,7 +816,6 @@ export class MemberProductService {
       addresses.franchiseAddress,
       memberAddressSnapshot.billingAddress
     );
-    console.log(orderItemObjs);
     const totalOrderAmount = orderItemObjs.reduce((acc, item) => acc + item.baseAmount, 0);
     const totalDiscount = orderItemObjs.reduce((acc, item) => acc + item.discountAmount, 0);
     const totalTaxAmount = orderItemObjs.reduce((acc, item) => acc + item.taxAmount, 0);
@@ -1041,7 +1036,6 @@ export class MemberProductService {
       );
       const memberAddressSnapshot = addresses.memberAddressSnapshot;
       const tempOrderItem = await this.buildOrderItem(obj.orderItems, obj.discountAmount || 0);
-      console.log(tempOrderItem);
       // Add currencyCode to tempOrderItems for tax calculation
       const tempOrderItemsWithCurrency = tempOrderItem.map((item) => ({
         ...item,
@@ -1111,7 +1105,6 @@ export class MemberProductService {
       });
       return this.convertToModel(createdOrder!);
     } catch (error) {
-      console.log(error);
       await t.rollback();
       throw error;
     }

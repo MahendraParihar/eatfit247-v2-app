@@ -59,6 +59,9 @@ export interface IInvoiceItem {
   taxPercentage?: number;
   taxAmount: number;
   totalAmount: number;
+  taxType?: TaxTypeEnum; // GST, VAT, NONE, etc. (for item-level tax breakdown)
+  taxMode?: TaxMode; // DOMESTIC_GST, EXPORT_OF_SERVICE, VAT, etc. (for item-level tax breakdown)
+  taxRows?: IInvoiceTaxRow[]; // Individual tax components per item (CGST, SGST, IGST, VAT, etc.)
 }
 
 export interface IInvoicePricing {
