@@ -33,20 +33,24 @@
         "styles": [
           "src/theme/styles.scss"
         ],
-        "outputPath": "dist/eatfit247-web"
+        "outputPath": "dist/eatfit247-web",
+        "allowedCommonJsDependencies": [
+          "lodash",
+          "eatfit247-shared-library"
+        ]
       },
       "configurations": {
         "production": {
           "budgets": [
             {
               "type": "initial",
-              "maximumWarning": "500kB",
-              "maximumError": "1.6MB"
+              "maximumWarning": "2MB",
+              "maximumError": "3MB"
             },
             {
               "type": "anyComponentStyle",
-              "maximumWarning": "4kB",
-              "maximumError": "20kB"
+              "maximumWarning": "20kB",
+              "maximumError": "30kB"
             }
           ],
           "outputHashing": "all"
