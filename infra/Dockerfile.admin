@@ -12,7 +12,7 @@ COPY ./infra/ ./infra/
 # -------------------------------
 COPY shared-library/package.json shared-library/tsconfig.json shared-library/
 COPY shared-library/src shared-library/src
-RUN cd shared-library && npm ci && npm run build
+RUN cd shared-library && npm install && npm run build
 
 # -------------------------------
 # Admin app
