@@ -984,11 +984,6 @@ docker run  [CONTAINER_NAME] sleep infinity
 docker ps -a
 ```
 
-#### Docker all images
-```ssh
-/var/lib/docker# du -sch /var/lib/docker/overlay2/*
-```
-
 #### Go inside docker image
 ```shell
 docker exec -it [CONTAINER_NAME] bash
@@ -1019,5 +1014,6 @@ docker rm -vf $(docker ps -aq)
 ### logs all containers
 ```shell list 
 docker logs [Container_NAME]
+```
 
 **Note**: This is a full-stack application with persistent media storage, comprehensive security measures, and production-ready Docker configuration. For detailed setup instructions, please refer to the documentation sections above.~~
