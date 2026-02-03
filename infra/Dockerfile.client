@@ -7,11 +7,18 @@ COPY ./infra/ ./infra/
 # RUN mkdir -p shared-library
 COPY shared-library/package.json shared-library/tsconfig.json shared-library/
 COPY shared-library/src shared-library/src
-RUN cd shared-library && npm install && npm run build
+RUN cd shared-library && \
+    find src -name "*.js" -delete && \
+    find src -name "*.js.map" -delete && \
+    rm -rf dist tsconfig.tsbuildinfo && \
+    npm install && \
+    npm run build
 
 COPY ./eatfit247-web ./eatfit247-web
 RUN npm --prefix eatfit247-web install --legacy-peer-deps
-RUN npm --prefix eatfit247-web run build
+# Clean Nx cache to avoid dependency rebuild issues
+RUN rm -rf eatfit247-web/.nx eatfit247-web/node_modules/.cache
+RUN cd eatfit247-web && npx nx build eatfit247-web
 
 FROM nginx:latest
 COPY --from=build /home/app/eatfit247-web/dist/eatfit247-web/browser /usr/share/nginx/html

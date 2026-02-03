@@ -15,6 +15,10 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "typeRoots": ["node_modules/@types"],
-  }
+    "composite": true,
+    "incremental": true
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "dist", "**/*.spec.ts", "**/*.test.ts", "**/*.js", "**/*.js.map"]
 }
 

@@ -1,2 +1,2 @@
-export * from './auth-user.interface.js';
+export * from './auth-user.interface';
 

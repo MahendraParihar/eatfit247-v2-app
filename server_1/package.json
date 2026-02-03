@@ -45,6 +45,7 @@
     "class-validator": "0.14.3",
     "cookie-parser": "^1.4.7",
     "dotenv": "16.4.5",
+    "eatfit247-shared-library": "file:../shared-library",
     "googleapis": "^169.0.0",
     "handlebars": "^4.7.8",
     "jsonwebtoken": "9.0.3",

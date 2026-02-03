@@ -40,21 +40,21 @@ services:
       retries: 5
       start_period: 5s
       timeout: 10s
-  # client-web:
-  #  build:
-   #   context: ..
-#      dockerfile: infra/Dockerfile.client
- #   image: eatfit-client
-    #container_name: eatfit-client-web
-    #restart: always
-    #volumes:
-      #- ./eatfit24by7.conf:/etc/nginx/conf.d/eatfit24by7.conf
-#      - ./certs/eatfit24by7.key:/etc/ssl/certs/eatfit24by7.key
- #     - ./certs/eatfit24by7.pem:/etc/ssl/certs/eatfit24by7.pem
-#    ports:
- #     - "80:80"
- #   depends_on:
- #     - public-api
+  client-web:
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile.client
+    image: eatfit-client
+    container_name: eatfit-client-web
+    restart: always
+    volumes:
+      - ./eatfit24by7-admin.conf:/etc/nginx/conf.d/eatfit24by7.conf
+      - ./certs/eatfit24by7.key:/etc/ssl/certs/eatfit24by7.key
+      - ./certs/eatfit24by7.pem:/etc/ssl/certs/eatfit24by7.pem
+    ports:
+      - "80:80"
+    depends_on:
+      - public-api
   admin-web:
     build:
       context: ..
