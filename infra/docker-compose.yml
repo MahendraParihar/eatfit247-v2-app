@@ -63,7 +63,7 @@ services:
     container_name: eatfit-admin-web
     restart: always
     volumes:
-      - ./eatfit24by7-admin.conf:/etc/nginx/conf.d/eatfit24by7.conf
+      - ./eatfit24by7.conf:/etc/nginx/conf.d/eatfit24by7.conf
       - ./certs/eatfit24by7.key:/etc/ssl/certs/eatfit24by7.key
       - ./certs/eatfit24by7.pem:/etc/ssl/certs/eatfit24by7.pem
     ports:
