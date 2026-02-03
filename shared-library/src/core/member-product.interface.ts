@@ -71,6 +71,7 @@ export interface IBasicMemberProduct {
   billingAddressId?: number | null;
   memberAddress?: any;
   subTotalAmount: number;
+  taxableAmount?: number;
   taxAmount: number;
   discountAmount: number;
   totalAmount: number;

@@ -218,6 +218,12 @@
                   <span class="value">-{{ productOrder()?.discountAmount | formatCurrency }}</span>
                 </div>
               }
+              @if (productOrder()?.taxableAmount && productOrder()!.taxableAmount! > 0) {
+                <div class="amount-row">
+                  <span class="label">Taxable Amount:</span>
+                  <span class="value">{{ productOrder()?.taxableAmount | formatCurrency }}</span>
+                </div>
+              }
               @if (productOrder()?.taxAmount && productOrder()!.taxAmount! > 0) {
                 <div class="amount-row">
                   <span class="label">Tax:</span>

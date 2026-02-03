@@ -138,9 +138,8 @@ export class PlaceProductOrderComponent implements OnInit {
     'unitPrice',
     'discountAmount',
     'taxableAmount',
-    'orderAmount',
-    'taxAmount',
-    'taxPercent',
+    'tax',
+    'total',
   ];
 
   // Computed signals for reactive product/variant selection
@@ -401,7 +400,7 @@ export class PlaceProductOrderComponent implements OnInit {
         variantLabel: variantLabel,
         quantity: quantity,
         taxableAmount: 0,
-        currency: 'INR',
+        currency: price.currency || 'INR',
         discountAmount: 0,
         unitPrice: 0,
         totalAmount: 0,
@@ -474,6 +473,7 @@ export class PlaceProductOrderComponent implements OnInit {
           quantity: item.quantity,
         })),
         billingAddressId,
+        discountAmount: this.step2FormGroup.get('discountAmount')?.value || 0,
       };
 
       const result = await this.apiService.calculateProductTax(
@@ -832,15 +832,26 @@ export class PlaceProductOrderComponent implements OnInit {
     return result?.taxAmount || 0;
   }
 
+  get orderAmount(): number {
+    const result = this.taxCalculationResult();
+    if (result) {
+      return result.orderAmount;
+    }
+    // Calculate from cart items if tax not calculated yet
+    return this.cartItems().reduce(
+      (sum, item) => sum + item.unitPrice * item.quantity,
+      0
+    );
+  }
+
   get totalAmount(): number {
     const result = this.taxCalculationResult();
     if (result) {
       return result.totalAmount;
     }
-    const orderAmount = this.formGroup.get('orderAmount')?.value || 0;
     const discountAmount =
       this.step2FormGroup.get('discountAmount')?.value || 0;
-    return orderAmount - discountAmount;
+    return this.orderAmount - discountAmount;
   }
 
   get taxPercentage(): number {

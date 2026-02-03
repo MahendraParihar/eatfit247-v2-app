@@ -66,19 +66,7 @@ export class CreateMemberProductDto implements IManageMemberProduct {
   @IsNotEmpty()
   @IsNumber()
   @Min(0)
-  orderAmount!: number;
-  @IsNotEmpty()
-  @IsNumber()
-  @Min(0)
-  taxAmount!: number;
-  @IsNotEmpty()
-  @IsNumber()
-  @Min(0)
   discountAmount!: number;
-  @IsNotEmpty()
-  @IsNumber()
-  @Min(0)
-  totalAmount!: number;
   @IsOptional()
   @IsString()
   paymentLink?: string;
