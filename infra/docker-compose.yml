@@ -67,7 +67,7 @@ services:
       - ./certs/eatfit24by7.key:/etc/ssl/certs/eatfit24by7.key
       - ./certs/eatfit24by7.pem:/etc/ssl/certs/eatfit24by7.pem
     ports:
-      - "443:443"
+      - "8080:80"
     depends_on:
       - admin-api
 
