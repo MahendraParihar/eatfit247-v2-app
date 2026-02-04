@@ -83,7 +83,12 @@ export class CalendarIntegrationComponent implements OnInit, OnChanges {
     try {
       const response = await this.googleCalendarApiService.connect();
       if (response.redirectUrl) {
+        // Reset connecting before redirect to prevent stuck loading state
+        // if user navigates back or redirect fails
+        this.connecting.set(false);
         window.location.href = response.redirectUrl;
+      } else {
+        this.connecting.set(false);
       }
     } catch (error) {
       this.snackBar.open('Failed to connect Google Calendar. Please try again.', 'Close', {

@@ -9,21 +9,8 @@ import { IconComponent } from '@shared';
   selector: 'lib-manage-call-log',
   standalone: true,
   imports: [CommonModule, MatButtonModule, MatCardModule, IconComponent],
-  template: `
-    <mat-card class="form-card">
-      <mat-card-header>
-        <mat-card-title>{{ pageTitle }}</mat-card-title>
-      </mat-card-header>
-      <mat-card-content>
-        <p>Call Log manage component - Coming Soon</p>
-        <button mat-raised-button (click)="onCancel()">
-          <shared-ui-icon name="arrow_back" size="small"></shared-ui-icon>
-          Back
-        </button>
-      </mat-card-content>
-    </mat-card>
-  `,
-  styles: ['.form-card { margin: 20px; }']
+  templateUrl: './manage-call-log.component.html',
+  styleUrl: './manage-call-log.component.scss'
 })
 export class ManageCallLog implements OnInit {
   pageTitle = 'Create Call Log';

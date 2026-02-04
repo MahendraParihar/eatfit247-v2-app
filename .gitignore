@@ -40,6 +40,8 @@ server_1/libs/**/email.module.js
 
 
 .cursor/rules/nx-rules.mdc
+.cursor/*.log
+.cursor/debug.log
 .github/instructions/nx.instructions.md
 .angular
 ./server_1/node_modules
