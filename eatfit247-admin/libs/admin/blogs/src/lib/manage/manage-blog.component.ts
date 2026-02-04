@@ -11,6 +11,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Editor, NgxEditorComponent, NgxEditorMenuComponent } from 'ngx-editor';
 import { InputErrorComponent, SeoFormComponent, UploadFormComponent, ValidationUtil } from '@shared';
 import { BlogsApiService } from '../api.service';
@@ -31,6 +32,7 @@ import { FileTypeEnum, IBlog, IDropdownItem, IManageBlog, InputLengthEnum, Media
     MatCheckboxModule,
     MatDatepickerModule,
     MatNativeDateModule,
+    MatSnackBarModule,
     FormsModule,
     NgxEditorComponent,
     NgxEditorMenuComponent,
@@ -66,7 +68,8 @@ export class ManageBlog implements OnInit, OnDestroy {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private apiService: BlogsApiService
+    private apiService: BlogsApiService,
+    private snackBar: MatSnackBar
   ) {}
 
   async ngOnInit(): Promise<void> {
@@ -114,7 +117,7 @@ export class ManageBlog implements OnInit, OnDestroy {
       this.blogCategoryOptions = masterData.blogCategory || [];
       this.blogAuthorOptions = masterData.blogAuthor || [];
     } catch (error) {
-      console.error('Error loading master data:', error);
+      // Error toast is handled by HttpErrorInterceptor
     }
   }
 
@@ -122,7 +125,7 @@ export class ManageBlog implements OnInit, OnDestroy {
     try {
       this.initialData = await this.apiService.getById(id);
     } catch (error) {
-      console.error('Error loading blog:', error);
+      // Error toast is handled by HttpErrorInterceptor
     }
   }
 
@@ -176,8 +179,14 @@ export class ManageBlog implements OnInit, OnDestroy {
       if (this.isEditMode && this.initialData) {
         const blogId = (this.initialData as any).blogId;
         await this.apiService.update(blogId, formValue);
+        this.snackBar.open('Blog updated successfully', 'Close', {
+          duration: 3000,
+        });
       } else {
         await this.apiService.create(formValue);
+        this.snackBar.open('Blog created successfully', 'Close', {
+          duration: 3000,
+        });
       }
       this.router.navigate(['/blogs']);
     } else {
@@ -195,7 +204,6 @@ export class ManageBlog implements OnInit, OnDestroy {
         this.editor.destroy();
       } catch (error) {
         // Ignore destroy errors
-        console.warn('Error destroying editor:', error);
       }
       this.editor = null as any;
     }

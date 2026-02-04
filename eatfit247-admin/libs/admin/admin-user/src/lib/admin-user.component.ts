@@ -1,6 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { AfterViewInit, Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import {
@@ -18,16 +18,19 @@ import { debounceTime, distinctUntilChanged, Subject, switchMap } from 'rxjs';
 @Component({
   selector: 'lib-admin-user',
   standalone: true,
-  imports: [CommonModule, DataTableComponent, MatButtonModule, MatIconModule],
+  imports: [CommonModule, DataTableComponent, MatButtonModule, MatIconModule, RouterLink],
   templateUrl: './admin-user.html',
   styleUrl: './admin-user.scss'
 })
-export class AdminUser implements OnInit {
+export class AdminUser implements OnInit, AfterViewInit {
   data: IAdminUser[] = [];
   totalCount = 0;
   loading = false;
   tableConfig!: ITableConfig<IAdminUser>;
   private searchSubject = new Subject<string>();
+
+  @ViewChild('nameCell', { static: false })
+  nameCellTemplate!: TemplateRef<any>;
 
   constructor(
     private apiService: AdminUserApiService,
@@ -42,6 +45,23 @@ export class AdminUser implements OnInit {
     this.loadData();
   }
 
+  ngAfterViewInit(): void {
+    // Attach custom cell template for name column and trigger table re-initialization
+    if (this.tableConfig?.columns && this.nameCellTemplate) {
+      const nameColumn = this.tableConfig.columns.find(
+        (col) => col.key === 'name'
+      );
+      if (nameColumn) {
+        nameColumn.cellTemplate = this.nameCellTemplate;
+        // Reassign config reference so data table detects the change
+        this.tableConfig = {
+          ...this.tableConfig,
+          columns: [...this.tableConfig.columns],
+        };
+      }
+    }
+  }
+
   private initializeTable(): void {
     const columns: ITableColumn<IAdminUser>[] = [
       { key: 'adminId', label: 'ID', dataKey: 'adminId', sortable: true, width: '80px' },
@@ -54,8 +74,18 @@ export class AdminUser implements OnInit {
         type: 'image',
         width: '80px'
       },
-      { key: 'firstName', label: 'First Name', dataKey: 'firstName', sortable: true, searchable: true },
-      { key: 'lastName', label: 'Last Name', dataKey: 'lastName', sortable: true, searchable: true },
+      { 
+        key: 'name', 
+        label: 'Name', 
+        dataKey: 'firstName', 
+        sortable: true, 
+        searchable: true,
+        formatter: (value, row) => {
+          const firstName = row?.firstName || '';
+          const lastName = row?.lastName || '';
+          return `${firstName} ${lastName}`.trim() || '-';
+        }
+      },
       { key: 'emailId', label: 'Email', dataKey: 'emailId', sortable: true, searchable: true },
       { key: 'contactNumber', label: 'Contact', dataKey: 'contactNumber', sortable: true },
       {
@@ -208,7 +238,7 @@ export class AdminUser implements OnInit {
   }
 
   viewItem(item: IAdminUser): void {
-    console.log('View admin user:', item);
+    this.router.navigate(['/admin-user/details', item.adminId, 'dashboard']);
   }
 
   async toggleStatus(item: IAdminUser): Promise<void> {

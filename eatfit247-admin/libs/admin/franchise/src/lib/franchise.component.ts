@@ -1,6 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { AfterViewInit, Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import {
@@ -18,16 +18,19 @@ import { debounceTime, distinctUntilChanged, Subject, switchMap } from 'rxjs';
 @Component({
   selector: 'lib-franchise',
   standalone: true,
-  imports: [CommonModule, DataTableComponent, MatButtonModule, MatIconModule],
+  imports: [CommonModule, DataTableComponent, MatButtonModule, MatIconModule, RouterLink],
   templateUrl: './franchise.html',
   styleUrl: './franchise.scss',
 })
-export class Franchise implements OnInit {
+export class Franchise implements OnInit, AfterViewInit {
   data: IFranchise[] = [];
   totalCount = 0;
   loading = false;
   tableConfig!: ITableConfig<IFranchise>;
   private searchSubject = new Subject<string>();
+
+  @ViewChild('companyNameCell', { static: false })
+  companyNameCellTemplate!: TemplateRef<any>;
 
   constructor(
     private apiService: FranchiseApiService,
@@ -42,16 +45,43 @@ export class Franchise implements OnInit {
     this.loadData();
   }
 
+  ngAfterViewInit(): void {
+    // Attach custom cell template for company name column and trigger table re-initialization
+    if (this.tableConfig?.columns) {
+      if (this.companyNameCellTemplate) {
+        const companyNameColumn = this.tableConfig.columns.find(
+          (col) => col.key === 'companyName'
+        );
+        if (companyNameColumn) {
+          companyNameColumn.cellTemplate = this.companyNameCellTemplate;
+          // Reassign config reference so data table detects the change
+          this.tableConfig = {
+            ...this.tableConfig,
+            columns: [...this.tableConfig.columns],
+          };
+        }
+      }
+    }
+  }
+
   private initializeTable(): void {
     const columns: ITableColumn<IFranchise>[] = [
       { key: 'franchiseId', label: 'ID', dataKey: 'franchiseId', sortable: true, width: '80px' },
       { key: 'companyName', label: 'Company Name', dataKey: 'companyName', sortable: true, searchable: true },
-      { key: 'firstName', label: 'First Name', dataKey: 'firstName', sortable: true },
-      { key: 'lastName', label: 'Last Name', dataKey: 'lastName', sortable: true },
+      { 
+        key: 'name', 
+        label: 'Name', 
+        dataKey: 'firstName', 
+        sortable: true, 
+        searchable: true,
+        formatter: (value, row) => {
+          const firstName = row?.firstName || '';
+          const lastName = row?.lastName || '';
+          return `${firstName} ${lastName}`.trim() || '-';
+        }
+      },
       { key: 'emailId', label: 'Email', dataKey: 'emailId', sortable: true, searchable: true },
       { key: 'contactNumber', label: 'Contact', dataKey: 'contactNumber', sortable: true },
-      { key: 'isPrimary', label: 'Primary', dataKey: 'isPrimary', sortable: true, width: '100px', align: 'center', formatter: (value) => (value ? 'Yes' : 'No') },
-      { key: 'isDefault', label: 'Default', dataKey: 'isDefault', sortable: true, width: '100px', align: 'center', formatter: (value) => (value ? 'Yes' : 'No') },
       { key: 'active', label: 'Status', dataKey: 'active', sortable: true, width: '120px', align: 'center', formatter: (value) => (value ? 'Active' : 'Inactive') },
       { key: 'createdByUser', label: 'Created By', dataKey: 'createdByUser', sortable: false, formatter: createdByUserFormatter() },
       { key: 'updatedByUser', label: 'Updated By', dataKey: 'updatedByUser', sortable: false, formatter: updatedByUserFormatter() },
@@ -150,7 +180,7 @@ export class Franchise implements OnInit {
   }
 
   viewItem(item: IFranchise): void {
-    console.log('View franchise:', item);
+    this.router.navigate(['/franchise/details', item.franchiseId, 'dashboard']);
   }
 
   async toggleStatus(item: IFranchise): Promise<void> {

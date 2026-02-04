@@ -8,6 +8,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { MatCardModule } from '@angular/material/card';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { InputErrorComponent, ValidationUtil } from '@shared';
 import { FaqApiService } from '../api.service';
 import { IDropdownItem, IFaq, IManageFaq, InputLengthEnum } from '@eatfit247-shared-lib';
@@ -24,6 +25,7 @@ import { IDropdownItem, IFaq, IManageFaq, InputLengthEnum } from '@eatfit247-sha
     MatIconModule,
     MatSelectModule,
     MatCardModule,
+    MatSnackBarModule,
     InputErrorComponent
   ],
   templateUrl: './manage-faq.html',
@@ -45,7 +47,8 @@ export class ManageFaq implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private apiService: FaqApiService
+    private apiService: FaqApiService,
+    private snackBar: MatSnackBar
   ) {}
 
   async ngOnInit(): Promise<void> {
@@ -87,7 +90,7 @@ export class ManageFaq implements OnInit {
       const masterData = await this.apiService.getMasterData();
       this.faqCategoryOptions = masterData.faqCategory || [];
     } catch (error) {
-      console.error('Error loading master data:', error);
+      // Error toast is handled by HttpErrorInterceptor
     }
   }
 
@@ -95,7 +98,7 @@ export class ManageFaq implements OnInit {
     try {
       this.initialData = await this.apiService.getById(id);
     } catch (error) {
-      console.error('Error loading FAQ:', error);
+      // Error toast is handled by HttpErrorInterceptor
     }
   }
 
@@ -106,8 +109,14 @@ export class ManageFaq implements OnInit {
       if (this.isEditMode && this.initialData) {
         formValue.faqId = this.initialData.faqId;
         await this.apiService.update(this.initialData.faqId, formValue);
+        this.snackBar.open('FAQ updated successfully', 'Close', {
+          duration: 3000,
+        });
       } else {
         await this.apiService.create(formValue);
+        this.snackBar.open('FAQ created successfully', 'Close', {
+          duration: 3000,
+        });
       }
       this.router.navigate(['/faq']);
     } else {

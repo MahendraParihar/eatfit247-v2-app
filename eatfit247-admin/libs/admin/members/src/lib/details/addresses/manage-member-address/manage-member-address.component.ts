@@ -90,7 +90,6 @@ export class ManageMemberAddressComponent implements OnInit {
         this.filterStatesByCountry(this.data.address.countryId);
       }
     } catch (error) {
-      console.error('Error loading master data:', error);
       this.snackBar.open('Failed to load address data', 'Close', {
         duration: 3000,
       });
@@ -164,7 +163,6 @@ export class ManageMemberAddressComponent implements OnInit {
 
       this.dialogRef.close(true);
     } catch (error) {
-      console.error('Error saving address:', error);
       this.snackBar.open(
         `Failed to ${this.isEditMode ? 'update' : 'create'} address`,
         'Close',

@@ -10,6 +10,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatCardModule } from '@angular/material/card';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { AddressFormComponent, InputErrorComponent, UploadFormComponent, ValidationUtil } from '@shared';
 import { AdminUserApiService } from '../api.service';
 import {
@@ -35,6 +36,7 @@ import {
     MatCardModule,
     MatDatepickerModule,
     MatNativeDateModule,
+    MatSnackBarModule,
     InputErrorComponent,
     UploadFormComponent,
     AddressFormComponent
@@ -96,6 +98,7 @@ export class ManageAdminUser implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private apiService = inject(AdminUserApiService);
+  private snackBar = inject(MatSnackBar);
 
   async ngOnInit(): Promise<void> {
     const id = this.route.snapshot.paramMap.get('id');
@@ -139,7 +142,7 @@ export class ManageAdminUser implements OnInit, OnDestroy {
       this.franchiseOptions = await this.apiService.getFranchiseDropdown();
       // this.roleOptions = await this.apiService.getRoleDropdown();
     } catch (error) {
-      console.error('Error loading master data:', error);
+      // Error toast is handled by HttpErrorInterceptor
     }
   }
 
@@ -147,7 +150,7 @@ export class ManageAdminUser implements OnInit, OnDestroy {
     try {
       this.initialData = await this.apiService.getById(id);
     } catch (error) {
-      console.error('Error loading admin user:', error);
+      // Error toast is handled by HttpErrorInterceptor
     }
   }
 
@@ -196,8 +199,14 @@ export class ManageAdminUser implements OnInit, OnDestroy {
       if (this.isEditMode && this.initialData) {
         const adminId = this.initialData.adminId;
         await this.apiService.update(adminId, formValue);
+        this.snackBar.open('Admin user updated successfully', 'Close', {
+          duration: 3000,
+        });
       } else {
         await this.apiService.create(formValue);
+        this.snackBar.open('Admin user created successfully', 'Close', {
+          duration: 3000,
+        });
       }
       this.router.navigate(['/admin-user']);
     } else {

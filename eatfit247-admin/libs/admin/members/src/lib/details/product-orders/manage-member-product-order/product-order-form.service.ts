@@ -61,7 +61,7 @@ export class ProductOrderFormService {
     try {
       return await this.apiService.calculateTax(memberId, request);
     } catch (error) {
-      console.error('Error calculating tax:', error);
+      // Error is handled by the calling component
       return null;
     }
   }

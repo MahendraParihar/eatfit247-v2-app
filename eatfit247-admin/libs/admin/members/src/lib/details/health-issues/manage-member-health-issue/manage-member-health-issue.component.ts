@@ -5,6 +5,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MembersApiService } from '../../../api.service';
 import { IMemberHealthIssue } from '@eatfit247-shared-lib';
 
@@ -22,6 +23,7 @@ export interface ManageMemberHealthIssueData {
     MatCheckboxModule,
     MatTableModule,
     MatProgressSpinnerModule,
+    MatSnackBarModule,
   ],
   templateUrl: './manage-member-health-issue.component.html',
   styleUrl: './manage-member-health-issue.component.scss',
@@ -36,6 +38,7 @@ export class ManageMemberHealthIssueComponent implements OnInit {
     public dialogRef: MatDialogRef<ManageMemberHealthIssueComponent>,
     @Inject(MAT_DIALOG_DATA) public data: ManageMemberHealthIssueData,
     private apiService: MembersApiService,
+    private snackBar: MatSnackBar
   ) {}
 
   ngOnInit(): void {
@@ -49,7 +52,9 @@ export class ManageMemberHealthIssueComponent implements OnInit {
       this.healthIssues = res.tableData;
       this.dataSource.data = this.healthIssues;
     } catch (error) {
-      console.error('Error loading health issues:', error);
+      this.snackBar.open('Failed to load health issues. Please try again.', 'Close', {
+        duration: 5000,
+      });
       this.healthIssues = [];
       this.dataSource.data = [];
     } finally {
@@ -87,9 +92,12 @@ export class ManageMemberHealthIssueComponent implements OnInit {
     this.loading = true;
     try {
       await this.apiService.manageHealthIssues(this.data.memberId, selectedIds);
+      this.snackBar.open('Health issues updated successfully', 'Close', {
+        duration: 3000,
+      });
       this.dialogRef.close(true);
     } catch (error) {
-      console.error('Error updating health issues:', error);
+      // Error toast is handled by HttpErrorInterceptor
     } finally {
       this.loading = false;
     }

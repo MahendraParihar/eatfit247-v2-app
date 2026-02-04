@@ -10,6 +10,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatSelectModule } from '@angular/material/select';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { InputErrorComponent, UploadFormComponent, ValidationUtil } from '@shared';
 import { SuccessStoriesApiService } from '../api.service';
 import { FileTypeEnum, InputLengthEnum, ISuccessStory, MediaForEnum } from '@eatfit247-shared-lib';
@@ -29,6 +30,7 @@ import { Editor, NgxEditorComponent, NgxEditorMenuComponent, Toolbar } from 'ngx
     MatSelectModule,
     MatDatepickerModule,
     MatNativeDateModule,
+    MatSnackBarModule,
     InputErrorComponent,
     UploadFormComponent,
     NgxEditorComponent,
@@ -74,6 +76,7 @@ export class ManageSuccessStory implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private apiService: SuccessStoriesApiService,
+    private snackBar: MatSnackBar,
   ) {}
 
   ngOnInit(): void {
@@ -120,7 +123,10 @@ export class ManageSuccessStory implements OnInit, OnDestroy {
         this.patchFormValues();
       }
     } catch (error) {
-      console.error('Error loading success story:', error);
+      this.snackBar.open('Failed to load success story. Please try again.', 'Close', {
+        duration: 5000,
+      });
+      this.router.navigate(['/success-stories']);
     }
   }
 
@@ -147,13 +153,23 @@ export class ManageSuccessStory implements OnInit, OnDestroy {
         formValue.imagePath = [];
       }
 
-      if (this.isEditMode && this.initialData) {
-        const successStoryId = (this.initialData as any).successStoryId;
-        await this.apiService.update(successStoryId, formValue);
-      } else {
-        await this.apiService.create(formValue);
+      try {
+        if (this.isEditMode && this.initialData) {
+          const successStoryId = (this.initialData as any).successStoryId;
+          await this.apiService.update(successStoryId, formValue);
+          this.snackBar.open('Success story updated successfully', 'Close', {
+            duration: 3000,
+          });
+        } else {
+          await this.apiService.create(formValue);
+          this.snackBar.open('Success story created successfully', 'Close', {
+            duration: 3000,
+          });
+        }
+        this.router.navigate(['/success-stories']);
+      } catch (error) {
+        // Error toast is handled by HttpErrorInterceptor
       }
-      this.router.navigate(['/success-stories']);
     } else {
       this.formGroup.markAllAsTouched();
     }

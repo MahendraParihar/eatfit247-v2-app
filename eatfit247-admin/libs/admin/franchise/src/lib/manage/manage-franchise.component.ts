@@ -11,8 +11,9 @@ import { MatCardModule } from '@angular/material/card';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { AddressFormComponent, InputErrorComponent, UploadFormComponent, ValidationUtil } from '@shared';
-import { FranchiseApiService } from 'franchise';
+import { FranchiseApiService } from '../api.service';
 import {
   BusinessTypeEnum,
   FileTypeEnum,
@@ -37,6 +38,7 @@ import {
     MatCheckboxModule,
     MatDatepickerModule,
     MatNativeDateModule,
+    MatSnackBarModule,
     InputErrorComponent,
     UploadFormComponent,
     AddressFormComponent
@@ -102,6 +104,7 @@ export class ManageFranchise implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private apiService = inject(FranchiseApiService);
+  private snackBar = inject(MatSnackBar);
 
   async ngOnInit(): Promise<void> {
     const id = this.route.snapshot.paramMap.get('id');
@@ -157,7 +160,7 @@ export class ManageFranchise implements OnInit, OnDestroy {
     try {
       this.masterData = await this.apiService.getMasterData();
     } catch (error) {
-      console.error('Error loading master data:', error);
+      // Error toast is handled by HttpErrorInterceptor
     }
   }
 
@@ -178,7 +181,7 @@ export class ManageFranchise implements OnInit, OnDestroy {
     try {
       this.initialData = await this.apiService.getById(id);
     } catch (error) {
-      console.error('Error loading franchise:', error);
+      // Error toast is handled by HttpErrorInterceptor
     }
   }
 
@@ -254,8 +257,14 @@ export class ManageFranchise implements OnInit, OnDestroy {
       if (this.isEditMode && this.initialData) {
         const franchiseId = (this.initialData as any).franchiseId;
         await this.apiService.update(franchiseId, formValue);
+        this.snackBar.open('Franchise updated successfully', 'Close', {
+          duration: 3000,
+        });
       } else {
         await this.apiService.create(formValue);
+        this.snackBar.open('Franchise created successfully', 'Close', {
+          duration: 3000,
+        });
       }
       this.router.navigate(['/franchise']);
     } else {

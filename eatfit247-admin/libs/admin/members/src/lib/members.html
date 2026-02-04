@@ -14,5 +14,31 @@
         Create New
       </button>
     </div>
+
+    <ng-template #nameCell let-row let-value="value">
+      <a
+        class="name-link"
+        [routerLink]="['/members/details', row.memberId, 'dashboard']"
+        (click)="$event.stopPropagation()"
+      >
+        {{ row.firstName }} {{ row.lastName }}
+      </a>
+    </ng-template>
+
+    <ng-template #emailCell let-row let-value="value">
+      <div class="email-cell">
+        <span class="email-text">{{ value }}</span>
+        <button
+          mat-icon-button
+          class="copy-icon-button"
+          type="button"
+          (click)="copyEmail(value); $event.stopPropagation()"
+          matTooltip="Copy email"
+          aria-label="Copy email"
+        >
+          <mat-icon class="copy-icon">content_copy</mat-icon>
+        </button>
+      </div>
+    </ng-template>
   </shared-ui-data-table>
 </div>

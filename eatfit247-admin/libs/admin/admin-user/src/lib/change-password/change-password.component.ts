@@ -7,6 +7,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { InputErrorComponent, ValidationUtil } from '@shared';
 import { AuthService } from '@core';
 import { IChangePassword, InputLengthEnum } from '@eatfit247-shared-lib';
@@ -22,6 +23,7 @@ import { IChangePassword, InputLengthEnum } from '@eatfit247-shared-lib';
     MatButtonModule,
     MatIconModule,
     MatCardModule,
+    MatSnackBarModule,
     InputErrorComponent
   ],
   templateUrl: './change-password.component.html',
@@ -60,7 +62,8 @@ export class ChangePasswordComponent implements OnInit {
 
   constructor(
     private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    private snackBar: MatSnackBar
   ) {}
 
   ngOnInit(): void {
@@ -89,9 +92,12 @@ export class ChangePasswordComponent implements OnInit {
           repeatPassword: this.formGroup.get('repeatPassword')?.value
         };
         await this.authService.changePassword(formValue);
+        this.snackBar.open('Password changed successfully', 'Close', {
+          duration: 3000,
+        });
         this.router.navigate(['/']);
       } catch (error) {
-        console.error('Error changing password:', error);
+        // Error toast is handled by HttpErrorInterceptor
       } finally {
         this.submitting.set(false);
       }

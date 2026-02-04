@@ -123,7 +123,7 @@ export class MemberDietPlanDetailComponent implements OnInit, OnDestroy {
       try {
         editor.destroy();
       } catch (error) {
-        console.warn('Error destroying editor:', error);
+        // Ignore destroy errors
       }
     });
     this.editors = [];
@@ -240,7 +240,7 @@ export class MemberDietPlanDetailComponent implements OnInit, OnDestroy {
         try {
           editor.destroy();
         } catch (error) {
-          console.warn('Error destroying editor:', error);
+          // Ignore destroy errors
         }
       });
       this.editors = [];
@@ -254,7 +254,6 @@ export class MemberDietPlanDetailComponent implements OnInit, OnDestroy {
         this.checkFormHasValue();
       }, 100);
     } catch (error) {
-      console.error('Error loading diet plan detail:', error);
       this.snackBar.open('Failed to load diet plan details', 'Close', { duration: 3000 });
     }
   }
@@ -340,8 +339,7 @@ export class MemberDietPlanDetailComponent implements OnInit, OnDestroy {
         this.router.navigate(['/members', 'details', this.memberId, 'diet-plan']);
       }
     } catch (error) {
-      console.error('Error saving diet plan:', error);
-      this.snackBar.open('Failed to save diet plan', 'Close', { duration: 3000 });
+      // Error toast is handled by HttpErrorInterceptor
     }
   }
 }

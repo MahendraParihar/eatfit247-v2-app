@@ -75,9 +75,9 @@ export class MemberDietPlanDetailsDialogComponent implements OnInit {
       }
       if (fileData) {
         this.downloadTemplate(fileData.buffer, fileData.fileName);
+        this.snackBar.open('Diet plan downloaded successfully', 'Close', { duration: 3000 });
       }
     } catch (error) {
-      console.error('Error downloading diet plan:', error);
       this.snackBar.open('Failed to download diet plan', 'Close', { duration: 3000 });
     }
   }
@@ -115,7 +115,6 @@ export class MemberDietPlanDetailsDialogComponent implements OnInit {
       }
       this.snackBar.open('Email sent successfully', 'Close', { duration: 3000 });
     } catch (error) {
-      console.error('Error sending email:', error);
       this.snackBar.open('Failed to send email', 'Close', { duration: 3000 });
     }
   }

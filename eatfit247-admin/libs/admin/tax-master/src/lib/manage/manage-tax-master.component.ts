@@ -11,6 +11,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatCardModule } from '@angular/material/card';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { InputErrorComponent, ValidationUtil } from '@shared';
 import { IDropdownItem, ITaxMaster, TaxTypeEnum, TransactionType } from '@eatfit247-shared-lib';
 import { TaxMasterApiService } from '../api.service';
@@ -33,6 +34,7 @@ import { ProductsApiService } from 'products';
     MatDatepickerModule,
     MatNativeDateModule,
     MatCardModule,
+    MatSnackBarModule,
     InputErrorComponent,
   ],
   templateUrl: './manage-tax-master.html',
@@ -58,6 +60,7 @@ export class ManageTaxMasterComponent implements OnInit {
     private readonly apiService: TaxMasterApiService,
     private readonly franchiseApiService: FranchiseApiService,
     private readonly productsApiService: ProductsApiService,
+    private readonly snackBar: MatSnackBar,
   ) {}
 
   async ngOnInit(): Promise<void> {
@@ -133,7 +136,7 @@ export class ManageTaxMasterComponent implements OnInit {
           selected: false,
         }));
     } catch (error) {
-      console.error('Error loading master data:', error);
+      // Error toast is handled by HttpErrorInterceptor
     }
   }
 
@@ -158,7 +161,8 @@ export class ManageTaxMasterComponent implements OnInit {
         effectiveTo: this.initialData.effectiveTo ? new Date(this.initialData.effectiveTo) : null,
       });
     } catch (error) {
-      console.error('Error loading tax rule:', error);
+      // Error toast is handled by HttpErrorInterceptor
+      this.router.navigate(['/tax-master']);
     }
   }
 
@@ -183,12 +187,18 @@ export class ManageTaxMasterComponent implements OnInit {
     try {
       if (this.isEditMode && this.initialData?.id) {
         await this.apiService.update(this.initialData.id, payload);
+        this.snackBar.open('Tax rule updated successfully', 'Close', {
+          duration: 3000,
+        });
       } else {
         await this.apiService.create(payload);
+        this.snackBar.open('Tax rule created successfully', 'Close', {
+          duration: 3000,
+        });
       }
       this.router.navigate(['/tax-master']);
     } catch (error) {
-      console.error('Error saving tax rule:', error);
+      // Error toast is handled by HttpErrorInterceptor
     }
   }
 

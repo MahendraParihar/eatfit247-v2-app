@@ -2,13 +2,13 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
+import { IconComponent } from '@shared';
 
 @Component({
   selector: 'lib-manage-issue',
   standalone: true,
-  imports: [CommonModule, MatButtonModule, MatIconModule, MatCardModule],
+  imports: [CommonModule, MatButtonModule, MatCardModule, IconComponent],
   template: `
     <mat-card class="form-card">
       <mat-card-header>
@@ -17,7 +17,7 @@ import { MatCardModule } from '@angular/material/card';
       <mat-card-content>
         <p>Issue manage component - Coming Soon</p>
         <button mat-raised-button (click)="onCancel()">
-          <mat-icon>arrow_back</mat-icon>
+          <shared-ui-icon name="arrow_back" size="small"></shared-ui-icon>
           Back
         </button>
       </mat-card-content>

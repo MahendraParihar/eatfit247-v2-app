@@ -39,7 +39,6 @@ export class AuthGuard implements CanActivate {
         }
       } catch (error) {
         // Token refresh failed - user needs to login again
-        console.warn('Token refresh failed in AuthGuard:', error);
         this.authService.logout();
       }
     }

@@ -9,6 +9,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { MatCardModule } from '@angular/material/card';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Editor, NgxEditorComponent, NgxEditorMenuComponent } from 'ngx-editor';
 import { InputErrorComponent, UploadFormComponent, ValidationUtil } from '@shared';
 import { ProgramPlanApiService } from '../api.service';
@@ -34,6 +35,7 @@ import {
     MatSelectModule,
     MatCardModule,
     MatCheckboxModule,
+    MatSnackBarModule,
     FormsModule,
     NgxEditorComponent,
     NgxEditorMenuComponent,
@@ -69,7 +71,8 @@ export class ManageProgramPlan implements OnInit, OnDestroy {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private apiService: ProgramPlanApiService
+    private apiService: ProgramPlanApiService,
+    private snackBar: MatSnackBar
   ) {}
 
   async ngOnInit(): Promise<void> {
@@ -145,7 +148,7 @@ export class ManageProgramPlan implements OnInit, OnDestroy {
       this.programPlanTypeOptions = masterData.programPlanType || [];
       this.currencyOptions = masterData.currencies || [];
     } catch (error) {
-      console.error('Error loading master data:', error);
+      // Error toast is handled by HttpErrorInterceptor
     }
   }
 
@@ -153,7 +156,10 @@ export class ManageProgramPlan implements OnInit, OnDestroy {
     try {
       this.initialData = await this.apiService.getById(id);
     } catch (error) {
-      console.error('Error loading program plan:', error);
+      this.snackBar.open('Failed to load program plan. Please try again.', 'Close', {
+        duration: 5000,
+      });
+      this.router.navigate(['/program-plans']);
     }
   }
 
@@ -178,13 +184,23 @@ export class ManageProgramPlan implements OnInit, OnDestroy {
       } else {
         formValue.imagePath = undefined;
       }
-      if (this.isEditMode && this.initialData) {
-        formValue.programPlanId = this.initialData.programPlanId;
-        await this.apiService.update(this.initialData.programPlanId, formValue);
-      } else {
-        await this.apiService.create(formValue);
+      try {
+        if (this.isEditMode && this.initialData) {
+          formValue.programPlanId = this.initialData.programPlanId;
+          await this.apiService.update(this.initialData.programPlanId, formValue);
+          this.snackBar.open('Program plan updated successfully', 'Close', {
+            duration: 3000,
+          });
+        } else {
+          await this.apiService.create(formValue);
+          this.snackBar.open('Program plan created successfully', 'Close', {
+            duration: 3000,
+          });
+        }
+        this.router.navigate(['/program-plans']);
+      } catch (error) {
+        // Error toast is handled by HttpErrorInterceptor
       }
-      this.router.navigate(['/program-plans']);
     } else {
       this.formGroup.markAllAsTouched();
     }
@@ -198,8 +214,8 @@ export class ManageProgramPlan implements OnInit, OnDestroy {
     if (this.editor) {
       try {
         this.editor.destroy();
-      } catch (error) {
-        console.warn('Error destroying editor:', error);
+      } catch {
+        // Ignore destroy errors
       }
       this.editor = null as any;
     }

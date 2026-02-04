@@ -70,7 +70,7 @@ export class ManageDietTemplateDialogComponent implements OnInit {
           noOfDaysInCycle: template.noOfDaysInCycle
         });
       } catch (error) {
-        console.error('Error loading diet template:', error);
+        // Error toast is handled by HttpErrorInterceptor
       }
     }
   }
@@ -91,7 +91,7 @@ export class ManageDietTemplateDialogComponent implements OnInit {
         }
         this.dialogRef.close(true);
       } catch (error) {
-        console.error('Error saving diet template:', error);
+        // Error toast is handled by HttpErrorInterceptor
       } finally {
         this.loading = false;
       }

@@ -311,7 +311,6 @@ export class MemberDietPlanListComponent implements OnInit, OnDestroy {
   }
 
   copyCycleDietPlan(cyclePlan: ICyclePlan, dietPlan: IMemberDietPlan) {
-    console.log(cyclePlan, dietPlan);
     if (dietPlan.upcomingCycle) {
       this.router.navigate(
         [
@@ -391,7 +390,6 @@ export class MemberDietPlanListComponent implements OnInit, OnDestroy {
       });
       this.loadData();
     } catch (error) {
-      console.error("Error deleting diet plan:", error);
       this.snackBar.open("Failed to delete diet plan", "Close", {
         duration: 3000
       });
@@ -439,7 +437,6 @@ export class MemberDietPlanListComponent implements OnInit, OnDestroy {
       });
       this.loadData();
     } catch (error) {
-      console.error("Error updating status:", error);
       this.snackBar.open("Failed to update status", "Close", {
         duration: 3000
       });
@@ -476,7 +473,6 @@ export class MemberDietPlanListComponent implements OnInit, OnDestroy {
         this.downloadTemplate(fileData.buffer, fileData.fileName);
       }
     } catch (error) {
-      console.error("Error downloading diet plan:", error);
       this.snackBar.open("Failed to download diet plan", "Close", {
         duration: 3000
       });
@@ -518,7 +514,6 @@ export class MemberDietPlanListComponent implements OnInit, OnDestroy {
       // Download the first diet plan in the first cycle
       await this.downloadDietPlan(firstCycle, 0);
     } catch (error) {
-      console.error("Error downloading diet plan:", error);
       this.snackBar.open("Failed to download diet plan", "Close", {
         duration: 3000
       });

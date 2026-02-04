@@ -10,6 +10,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { InputErrorComponent, LoaderComponent } from '@shared';
 import { IDropdownItem, IManageMemberAssessment, IMemberAssessment, InputLengthEnum } from '@eatfit247-shared-lib';
 import { MembersApiService } from '../../api.service';
@@ -29,6 +30,7 @@ import { Subject, takeUntil } from 'rxjs';
     MatSelectModule,
     MatDatepickerModule,
     MatNativeDateModule,
+    MatSnackBarModule,
     LoaderComponent,
     InputErrorComponent
   ],
@@ -57,7 +59,8 @@ export class MemberAssessmentComponent implements OnInit, OnDestroy {
   constructor(
     private route: ActivatedRoute,
     private apiService: MembersApiService,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private snackBar: MatSnackBar
   ) {
     this.initializeForm();
   }
@@ -180,7 +183,9 @@ export class MemberAssessmentComponent implements OnInit, OnDestroy {
         this.populateForm(this.assessment);
       }
     } catch (error) {
-      console.error('Error loading assessment:', error);
+      this.snackBar.open('Failed to load assessment. Please try again.', 'Close', {
+        duration: 5000,
+      });
     } finally {
       this.loading = false;
     }
@@ -290,9 +295,12 @@ export class MemberAssessmentComponent implements OnInit, OnDestroy {
       };
       await this.apiService.updateAssessment(this.memberId, assessmentData);
       await this.loadAssessment();
+      this.snackBar.open('Assessment updated successfully', 'Close', {
+        duration: 3000,
+      });
       this.isEditMode = false;
     } catch (error) {
-      console.error('Error updating assessment:', error);
+      // Error toast is handled by HttpErrorInterceptor
     }
   }
 

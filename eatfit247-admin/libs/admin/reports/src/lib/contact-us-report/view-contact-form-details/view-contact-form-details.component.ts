@@ -103,7 +103,6 @@ export class ViewContactFormDetailsComponent implements OnInit {
       // Close dialog and return updated data
       this.dialogRef.close({ updated: true });
     } catch (error) {
-      console.error('Error submitting response:', error);
       this.snackBar.open('Failed to submit response. Please try again.', 'Close', {
         duration: 5000,
       });

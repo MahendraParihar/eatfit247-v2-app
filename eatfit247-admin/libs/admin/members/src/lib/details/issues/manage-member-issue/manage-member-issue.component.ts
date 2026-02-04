@@ -7,6 +7,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { InputErrorComponent } from '@shared';
 import { IDropdownItem, IManageMemberIssue, InputLengthEnum } from '@eatfit247-shared-lib';
 import { MembersApiService } from '../../../api.service';
@@ -28,6 +29,7 @@ export interface ManageMemberIssueData {
     MatInputModule,
     MatSelectModule,
     MatProgressSpinnerModule,
+    MatSnackBarModule,
     InputErrorComponent
   ],
   templateUrl: './manage-member-issue.component.html',
@@ -45,7 +47,8 @@ export class ManageMemberIssueComponent implements OnInit {
     public dialogRef: MatDialogRef<ManageMemberIssueComponent>,
     @Inject(MAT_DIALOG_DATA) public data: ManageMemberIssueData,
     private apiService: MembersApiService,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private snackBar: MatSnackBar
   ) {
     this.initializeForm();
     this.isEditMode = !!data.issue;
@@ -72,7 +75,7 @@ export class ManageMemberIssueComponent implements OnInit {
       this.issueCategoryOptions = res.categories;
       this.issueStatusOptions = res.status;
     } catch (error) {
-      console.error('Error loading master data:', error);
+      // Error toast is handled by HttpErrorInterceptor
     }
   }
 
@@ -105,9 +108,14 @@ export class ManageMemberIssueComponent implements OnInit {
         } else {
           await this.apiService.createIssue(this.data.memberId, formValue);
         }
+        this.snackBar.open(
+          this.isEditMode ? 'Issue updated successfully' : 'Issue created successfully',
+          'Close',
+          { duration: 3000 }
+        );
         this.dialogRef.close(true);
       } catch (error) {
-        console.error('Error saving issue:', error);
+        // Error toast is handled by HttpErrorInterceptor
       } finally {
         this.loading = false;
       }

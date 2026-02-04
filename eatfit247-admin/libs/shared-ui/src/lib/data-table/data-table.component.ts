@@ -99,6 +99,15 @@ export class DataTableComponent<T> implements OnInit, OnChanges {
     // Build displayed columns
     this.displayedColumns = this.config.columns
       .filter((col) => !col.hidden)
+      // Hide technical ID / primary key columns by default
+      .filter(
+        (col) =>
+          !(
+            col.label === 'ID' &&
+            typeof col.key === 'string' &&
+            col.key.toLowerCase().endsWith('id')
+          )
+      )
       .map((col) => col.key);
     // Add a selection column if enabled
     if (this.config.selectable) {
@@ -269,7 +278,7 @@ export class DataTableComponent<T> implements OnInit, OnChanges {
       // Handle async actions
       if (result instanceof Promise) {
         result.catch((error) => {
-          console.error('Action error:', error);
+          // Error is handled by HttpErrorInterceptor or component-level error handling
         });
       }
     }

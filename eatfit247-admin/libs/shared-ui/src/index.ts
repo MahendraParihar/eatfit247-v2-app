@@ -7,6 +7,7 @@ export * from './lib/confirmation-menu/confirmation-menu.component';
 export * from './lib/alert-dialog/alert-dialog.component';
 export * from './lib/input-error/input-error.component';
 export * from './lib/img/img.component';
+export * from './lib/icon/icon.component';
 export * from './lib/warning-dialog/warning-dialog.component';
 export * from './lib/seo-form/seo-form.component';
 export * from './lib/empty-state/empty-state.component';

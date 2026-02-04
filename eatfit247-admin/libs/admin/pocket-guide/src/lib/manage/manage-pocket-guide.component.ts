@@ -9,6 +9,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatSelectModule } from '@angular/material/select';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Editor, NgxEditorComponent, NgxEditorMenuComponent } from 'ngx-editor';
 import { InputErrorComponent, UploadFormComponent, ValidationUtil } from '@shared';
 import { PocketGuideApiService } from '../api.service';
@@ -27,6 +28,7 @@ import { FileTypeEnum, InputLengthEnum, IPocketGuide, MediaForEnum } from '@eatf
     MatCardModule,
     MatCheckboxModule,
     MatSelectModule,
+    MatSnackBarModule,
     FormsModule,
     NgxEditorComponent,
     NgxEditorMenuComponent,
@@ -54,7 +56,8 @@ export class ManagePocketGuide implements OnInit, OnDestroy {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private apiService: PocketGuideApiService
+    private apiService: PocketGuideApiService,
+    private snackBar: MatSnackBar
   ) {}
 
   async ngOnInit(): Promise<void> {
@@ -121,7 +124,10 @@ export class ManagePocketGuide implements OnInit, OnDestroy {
         this.patchFormValues();
       }
     } catch (error) {
-      console.error('Error loading pocket guide:', error);
+      this.snackBar.open('Failed to load pocket guide. Please try again.', 'Close', {
+        duration: 5000,
+      });
+      this.router.navigate(['/pocket-guide']);
     }
   }
 
@@ -161,13 +167,23 @@ export class ManagePocketGuide implements OnInit, OnDestroy {
         delete formValue.description;
       }
       
-      if (this.isEditMode && this.initialData) {
-        const pocketGuideId = (this.initialData as any).pocketGuideId;
-        await this.apiService.update(pocketGuideId, formValue);
-      } else {
-        await this.apiService.create(formValue);
+      try {
+        if (this.isEditMode && this.initialData) {
+          const pocketGuideId = (this.initialData as any).pocketGuideId;
+          await this.apiService.update(pocketGuideId, formValue);
+          this.snackBar.open('Pocket guide updated successfully', 'Close', {
+            duration: 3000,
+          });
+        } else {
+          await this.apiService.create(formValue);
+          this.snackBar.open('Pocket guide created successfully', 'Close', {
+            duration: 3000,
+          });
+        }
+        this.router.navigate(['/pocket-guide']);
+      } catch (error) {
+        // Error toast is handled by HttpErrorInterceptor
       }
-      this.router.navigate(['/pocket-guide']);
     } else {
       this.formGroup.markAllAsTouched();
     }
@@ -181,8 +197,8 @@ export class ManagePocketGuide implements OnInit, OnDestroy {
     if (this.editor) {
       try {
         this.editor.destroy();
-      } catch (error) {
-        console.warn('Error destroying editor:', error);
+      } catch {
+        // Ignore destroy errors
       }
       this.editor = null as any;
     }

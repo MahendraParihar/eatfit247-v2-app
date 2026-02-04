@@ -14,11 +14,12 @@ import {
 import { DiscountTypeEnum, IPromoCode } from '@eatfit247-shared-lib';
 import { PromoCodeApiService } from './api.service';
 import { debounceTime, distinctUntilChanged, Subject, switchMap } from 'rxjs';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'lib-promo-code',
   standalone: true,
-  imports: [CommonModule, DataTableComponent, MatButtonModule, MatIconModule],
+  imports: [CommonModule, DataTableComponent, MatButtonModule, MatIconModule, MatSnackBarModule],
   templateUrl: './promo-code.html',
   styleUrl: './promo-code.scss'
 })
@@ -32,7 +33,8 @@ export class PromoCode implements OnInit {
   constructor(
     private apiService: PromoCodeApiService,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private snackBar: MatSnackBar
   ) {
     this.setupSearch();
   }
@@ -191,7 +193,7 @@ export class PromoCode implements OnInit {
       this.data = result.tableData;
       this.totalCount = result.count;
     } catch (error) {
-      console.error('Error loading promo codes:', error);
+      // Error toast is handled by HttpErrorInterceptor
     } finally {
       this.loading = false;
     }
@@ -214,7 +216,7 @@ export class PromoCode implements OnInit {
       await this.apiService.updateStatus(row.promoCodeId, !row.active);
       await this.loadData();
     } catch (error) {
-      console.error('Error updating status:', error);
+      // Error toast is handled by HttpErrorInterceptor
     }
   }
 

@@ -9,6 +9,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { MatCardModule } from '@angular/material/card';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Editor, NgxEditorComponent, NgxEditorMenuComponent } from 'ngx-editor';
 import { InputErrorComponent, SeoFormComponent, UploadFormComponent, ValidationUtil } from '@shared';
 import { RecipesApiService } from 'recipes';
@@ -27,6 +28,7 @@ import { FileTypeEnum, IDropdownItem, InputLengthEnum, IRecipe, MediaForEnum } f
     MatSelectModule,
     MatCardModule,
     MatCheckboxModule,
+    MatSnackBarModule,
     FormsModule,
     NgxEditorComponent,
     NgxEditorMenuComponent,
@@ -74,7 +76,8 @@ export class ManageRecipe implements OnInit, OnDestroy {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private apiService: RecipesApiService
+    private apiService: RecipesApiService,
+    private snackBar: MatSnackBar
   ) {}
 
   async ngOnInit(): Promise<void> {
@@ -143,7 +146,7 @@ export class ManageRecipe implements OnInit, OnDestroy {
       this.recipeCategoryOptions = masterData.recipeCategory || [];
       this.recipeCuisineOptions = masterData.recipeCuisine || [];
     } catch (error) {
-      console.error('Error loading master data:', error);
+      // Error toast is handled by HttpErrorInterceptor
     }
   }
 
@@ -151,7 +154,10 @@ export class ManageRecipe implements OnInit, OnDestroy {
     try {
       this.initialData = await this.apiService.getById(id);
     } catch (error) {
-      console.error('Error loading recipe:', error);
+      this.snackBar.open('Failed to load recipe. Please try again.', 'Close', {
+        duration: 5000,
+      });
+      this.router.navigate(['/recipes']);
     }
   }
 
@@ -182,14 +188,18 @@ export class ManageRecipe implements OnInit, OnDestroy {
     // Validate that at least one category is selected
     const categoryIds = this.formGroup.get('recipeCategoryIds')?.value || [];
     if (!Array.isArray(categoryIds) || categoryIds.length === 0) {
-      alert('Please select at least one recipe category');
+      this.snackBar.open('Please select at least one recipe category', 'Close', {
+        duration: 3000,
+      });
       return;
     }
     
     // Validate that at least one cuisine is selected
     const cuisineIds = this.formGroup.get('recipeCuisineIds')?.value || [];
     if (!Array.isArray(cuisineIds) || cuisineIds.length === 0) {
-      alert('Please select at least one recipe cuisine');
+      this.snackBar.open('Please select at least one recipe cuisine', 'Close', {
+        duration: 3000,
+      });
       return;
     }
     
@@ -228,13 +238,23 @@ export class ManageRecipe implements OnInit, OnDestroy {
             : seoValue.tags
           : undefined;
       }
-      if (this.isEditMode && this.initialData) {
-        const recipeId = (this.initialData as any).recipeId;
-        await this.apiService.update(recipeId, formValue);
-      } else {
-        await this.apiService.create(formValue);
+      try {
+        if (this.isEditMode && this.initialData) {
+          const recipeId = (this.initialData as any).recipeId;
+          await this.apiService.update(recipeId, formValue);
+          this.snackBar.open('Recipe updated successfully', 'Close', {
+            duration: 3000,
+          });
+        } else {
+          await this.apiService.create(formValue);
+          this.snackBar.open('Recipe created successfully', 'Close', {
+            duration: 3000,
+          });
+        }
+        this.router.navigate(['/recipes']);
+      } catch (error) {
+        // Error toast is handled by HttpErrorInterceptor
       }
-      this.router.navigate(['/recipes']);
     } else {
       this.formGroup.markAllAsTouched();
     }
@@ -248,8 +268,8 @@ export class ManageRecipe implements OnInit, OnDestroy {
     if (this.editor) {
       try {
         this.editor.destroy();
-      } catch (error) {
-        console.warn('Error destroying editor:', error);
+      } catch {
+        // Ignore destroy errors
       }
       this.editor = null as any;
     }

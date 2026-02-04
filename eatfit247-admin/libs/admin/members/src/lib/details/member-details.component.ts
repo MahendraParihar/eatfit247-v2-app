@@ -98,7 +98,7 @@ export class MemberDetailsComponent implements OnInit, OnDestroy {
         this.apiService.getNutritionistDropdown(),
       ]);
     } catch (error) {
-      console.error('Error loading dropdowns:', error);
+      // Error toast is handled by HttpErrorInterceptor
     }
   }
 
@@ -111,7 +111,7 @@ export class MemberDetailsComponent implements OnInit, OnDestroy {
         this.selectedNutritionistId = this.member.nutritionistId || null;
       }
     } catch (error) {
-      console.error('Error loading member details:', error);
+      // Error toast is handled by HttpErrorInterceptor
     } finally {
       this.loading = false;
     }
@@ -133,7 +133,6 @@ export class MemberDetailsComponent implements OnInit, OnDestroy {
         { duration: 3000 }
       );
     } catch (error) {
-      console.error('Error updating nutritionist:', error);
       this.snackBar.open(
         'Failed to update nutritionist',
         'Close',
@@ -160,7 +159,6 @@ export class MemberDetailsComponent implements OnInit, OnDestroy {
         { duration: 3000 }
       );
     } catch (error) {
-      console.error('Error updating franchise:', error);
       this.snackBar.open(
         'Failed to update franchise',
         'Close',

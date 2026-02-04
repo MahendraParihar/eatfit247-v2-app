@@ -147,7 +147,7 @@ export class SuccessStories implements OnInit {
   }
 
   viewItem(item: ISuccessStory): void {
-    console.log('View success story:', item);
+    // View success story - implementation depends on requirements
   }
 
   async toggleStatus(item: ISuccessStory): Promise<void> {

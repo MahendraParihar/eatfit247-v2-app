@@ -9,6 +9,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { MatCardModule } from '@angular/material/card';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { InputErrorComponent, UploadFormComponent, ValidationUtil } from '@shared';
 import { PressMediaApiService } from '../api.service';
 import { FileTypeEnum, InputLengthEnum, IPressMedia, MediaForEnum } from '@eatfit247-shared-lib';
@@ -26,6 +27,7 @@ import { FileTypeEnum, InputLengthEnum, IPressMedia, MediaForEnum } from '@eatfi
     MatSelectModule,
     MatCardModule,
     MatCheckboxModule,
+    MatSnackBarModule,
     InputErrorComponent,
     UploadFormComponent
   ],
@@ -53,7 +55,8 @@ export class ManageMediaPress implements OnInit, OnDestroy {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private apiService: PressMediaApiService
+    private apiService: PressMediaApiService,
+    private snackBar: MatSnackBar
   ) {}
 
   async ngOnInit(): Promise<void> {
@@ -88,7 +91,7 @@ export class ManageMediaPress implements OnInit, OnDestroy {
         this.patchFormValues();
       }
     } catch (error) {
-      console.error('Error loading media & press:', error);
+      // Error toast is handled by HttpErrorInterceptor
     }
   }
 
@@ -118,8 +121,14 @@ export class ManageMediaPress implements OnInit, OnDestroy {
       if (this.isEditMode && this.initialData) {
         const pressMediaId = (this.initialData as any).pressMediaId;
         await this.apiService.update(pressMediaId, formValue);
+        this.snackBar.open('Media & press updated successfully', 'Close', {
+          duration: 3000,
+        });
       } else {
         await this.apiService.create(formValue);
+        this.snackBar.open('Media & press created successfully', 'Close', {
+          duration: 3000,
+        });
       }
       this.router.navigate(['/media-press']);
     } else {

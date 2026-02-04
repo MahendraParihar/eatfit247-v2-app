@@ -1,1 +1,8 @@
 /* Admin User component styles */
+
+.name-link {
+  color: inherit; /* Use default text color */
+  text-decoration: underline;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}

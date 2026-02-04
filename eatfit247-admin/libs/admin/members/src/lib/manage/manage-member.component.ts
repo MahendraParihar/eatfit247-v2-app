@@ -9,6 +9,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { MatCardModule } from '@angular/material/card';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { InputErrorComponent, UploadFormComponent, ValidationUtil } from '@shared';
 import { MembersApiService } from '../api.service';
 import {
@@ -33,6 +34,7 @@ import {
     MatSelectModule,
     MatCardModule,
     MatCheckboxModule,
+    MatSnackBarModule,
     InputErrorComponent,
     UploadFormComponent
   ],
@@ -96,6 +98,7 @@ export class ManageMember implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private apiService = inject(MembersApiService);
+  private snackBar = inject(MatSnackBar);
 
   async ngOnInit(): Promise<void> {
     const id = this.route.snapshot.paramMap.get('id');
@@ -137,16 +140,18 @@ export class ManageMember implements OnInit, OnDestroy {
       try {
         this.referrerOptions = await this.apiService.getReferrerDropdown();
       } catch (error) {
-        console.warn('Referrer dropdown not available:', error);
+        // Referrer dropdown is optional, fail silently
       }
       // Load nutritionist dropdown if endpoint exists
       try {
         this.nutritionistOptions = await this.apiService.getNutritionistDropdown();
       } catch (error) {
-        console.warn('Nutritionist dropdown not available:', error);
+        // Nutritionist dropdown is optional, fail silently
       }
     } catch (error) {
-      console.error('Error loading master data:', error);
+      this.snackBar.open('Failed to load master data. Please refresh the page.', 'Close', {
+        duration: 5000,
+      });
     }
   }
 
@@ -154,7 +159,10 @@ export class ManageMember implements OnInit, OnDestroy {
     try {
       this.initialData = await this.apiService.getById(id);
     } catch (error) {
-      console.error('Error loading member:', error);
+      this.snackBar.open('Failed to load member details. Please try again.', 'Close', {
+        duration: 5000,
+      });
+      this.router.navigate(['/members']);
     }
   }
 
@@ -187,30 +195,40 @@ export class ManageMember implements OnInit, OnDestroy {
   async onSubmit(): Promise<void> {
     ValidationUtil.validateAllFormFields(this.formGroup);
     if (this.formGroup.valid) {
-      const formValue: IManageMember = this.formGroup.value;
-      // Handle setting picture from the upload form
-      const profilePictureControl = this.formGroup.get('profilePicture');
-      if (profilePictureControl) {
-        const profilePictureValue = profilePictureControl.value;
-        if (Array.isArray(profilePictureValue) && profilePictureValue.length > 0) {
-          formValue.profilePicture = profilePictureValue;
+      try {
+        const formValue: IManageMember = this.formGroup.value;
+        // Handle setting picture from the upload form
+        const profilePictureControl = this.formGroup.get('profilePicture');
+        if (profilePictureControl) {
+          const profilePictureValue = profilePictureControl.value;
+          if (Array.isArray(profilePictureValue) && profilePictureValue.length > 0) {
+            formValue.profilePicture = profilePictureValue;
+          } else {
+            formValue.profilePicture = undefined;
+          }
         } else {
           formValue.profilePicture = undefined;
         }
-      } else {
-        formValue.profilePicture = undefined;
+        // Handle password - only send if provided (for create) or if changing (for update)
+        if (!formValue.password || formValue.password === '') {
+          delete formValue.password;
+        }
+        if (this.isEditMode && this.initialData) {
+          const memberId = this.initialData.memberId;
+          await this.apiService.update(memberId, formValue);
+          this.snackBar.open('Member updated successfully', 'Close', {
+            duration: 3000,
+          });
+        } else {
+          await this.apiService.create(formValue);
+          this.snackBar.open('Member created successfully', 'Close', {
+            duration: 3000,
+          });
+        }
+        this.router.navigate(['/members']);
+      } catch (error) {
+        // Error toast is handled by HttpErrorInterceptor
       }
-      // Handle password - only send if provided (for create) or if changing (for update)
-      if (!formValue.password || formValue.password === '') {
-        delete formValue.password;
-      }
-      if (this.isEditMode && this.initialData) {
-        const memberId = this.initialData.memberId;
-        await this.apiService.update(memberId, formValue);
-      } else {
-        await this.apiService.create(formValue);
-      }
-      this.router.navigate(['/members']);
     } else {
       this.formGroup.markAllAsTouched();
     }

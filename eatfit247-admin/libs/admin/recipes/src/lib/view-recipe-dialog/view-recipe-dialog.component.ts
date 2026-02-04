@@ -49,7 +49,6 @@ export class ViewRecipeDialogComponent implements OnInit {
       this.loading = true;
       this.recipe = await this.apiService.getById(this.recipe.recipeId);
     } catch (error) {
-      console.error('Error loading recipe details:', error);
       this.snackBar.open('Failed to load recipe details', 'Close', {
         duration: 3000,
       });
@@ -75,7 +74,6 @@ export class ViewRecipeDialogComponent implements OnInit {
         });
       }
     } catch (error) {
-      console.error('Error downloading recipe PDF:', error);
       this.snackBar.open('Failed to download recipe PDF', 'Close', {
         duration: 3000,
       });

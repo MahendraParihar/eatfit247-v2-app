@@ -207,7 +207,7 @@ export class Referrer implements OnInit {
   }
 
   viewItem(item: IReferrer): void {
-    console.log('View referrer:', item);
+    // View referrer - implementation depends on requirements
   }
 
   async toggleStatus(item: IReferrer): Promise<void> {

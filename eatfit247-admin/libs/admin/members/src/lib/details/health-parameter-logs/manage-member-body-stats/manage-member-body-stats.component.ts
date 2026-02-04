@@ -11,6 +11,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatIconModule } from '@angular/material/icon';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { InputErrorComponent } from '@shared';
 import {
   IDropdownItem,
@@ -42,6 +43,7 @@ export interface ManageMemberBodyStatsData {
     MatDatepickerModule,
     MatNativeDateModule,
     MatIconModule,
+    MatSnackBarModule,
     InputErrorComponent,
   ],
   templateUrl: './manage-member-body-stats.component.html',
@@ -69,6 +71,7 @@ export class ManageMemberBodyStatsComponent implements OnInit {
     @Inject(MAT_DIALOG_DATA) public data: ManageMemberBodyStatsData,
     private apiService: MembersApiService,
     private fb: FormBuilder,
+    private snackBar: MatSnackBar
   ) {
     this.initializeForm();
   }
@@ -136,7 +139,7 @@ export class ManageMemberBodyStatsComponent implements OnInit {
         this.addHealthParameterRow();
       }
     } catch (error) {
-      console.error('Error loading master data:', error);
+      // Error toast is handled by HttpErrorInterceptor
     } finally {
       this.loading.set(false);
     }
@@ -224,9 +227,14 @@ export class ManageMemberBodyStatsComponent implements OnInit {
           // Create new log
           await this.apiService.createHealthParameterLog(this.data.memberId, data);
         }
+        this.snackBar.open(
+          this.data.log ? 'Health parameter log updated successfully' : 'Health parameter log created successfully',
+          'Close',
+          { duration: 3000 }
+        );
         this.dialogRef.close(true);
       } catch (error) {
-        console.error('Error saving health parameter log:', error);
+        // Error toast is handled by HttpErrorInterceptor
       } finally {
         this.submitting.set(false);
       }

@@ -5,6 +5,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import {
   createdByUserFormatter,
   DataTableComponent,
@@ -31,6 +32,7 @@ import {
     MatCardModule,
     MatButtonModule,
     MatIconModule,
+    MatSnackBarModule,
     DataTableComponent,
     EmptyStateComponent,
     LoaderComponent,
@@ -50,6 +52,7 @@ export class MemberAddressesComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private apiService: MembersApiService,
     private dialog: MatDialog,
+    private snackBar: MatSnackBar
   ) {
     this.initializeTable();
   }
@@ -154,7 +157,9 @@ export class MemberAddressesComponent implements OnInit, OnDestroy {
     try {
       this.addresses = await this.apiService.getAddresses(this.memberId);
     } catch (error) {
-      console.error('Error loading addresses:', error);
+      this.snackBar.open('Failed to load addresses. Please try again.', 'Close', {
+        duration: 5000,
+      });
       this.addresses = [];
     } finally {
       this.loading = false;
@@ -200,10 +205,14 @@ export class MemberAddressesComponent implements OnInit, OnDestroy {
     }
     try {
       await this.apiService.deleteAddress(this.memberId, address.addressId);
+      this.snackBar.open('Address deleted successfully', 'Close', {
+        duration: 3000,
+      });
       this.loadAddresses();
     } catch (error) {
-      console.error('Error deleting address:', error);
-      alert('Failed to delete address. Please try again.');
+      this.snackBar.open('Failed to delete address. Please try again.', 'Close', {
+        duration: 5000,
+      });
     }
   }
 }

@@ -104,7 +104,7 @@ export class DietTemplateDetailComponent implements OnInit, OnDestroy {
       try {
         editor.destroy();
       } catch (error) {
-        console.warn('Error destroying editor:', error);
+        // Ignore destroy errors
       }
     });
   }
@@ -144,7 +144,7 @@ export class DietTemplateDetailComponent implements OnInit, OnDestroy {
       try {
         this.editors[i].destroy();
       } catch (error) {
-        console.warn('Error destroying editor:', error);
+        // Ignore destroy errors
       }
       this.editors.splice(i, 1);
     }
@@ -205,7 +205,7 @@ export class DietTemplateDetailComponent implements OnInit, OnDestroy {
         try {
           editor.destroy();
         } catch (error) {
-          console.warn('Error destroying editor:', error);
+          // Ignore destroy errors
         }
       });
       this.editors = [];
@@ -219,7 +219,6 @@ export class DietTemplateDetailComponent implements OnInit, OnDestroy {
         this.checkFormHasValue();
       }, 100);
     } catch (error) {
-      console.error('Error loading diet template detail:', error);
       this.snackBar.open('Failed to load diet template detail', 'Close', { duration: 3000 });
     }
   }
@@ -247,8 +246,7 @@ export class DietTemplateDetailComponent implements OnInit, OnDestroy {
       this.snackBar.open('Diet Template Saved Successfully.', 'Close', { duration: 3000 });
       this.router.navigate(['/diet-template']);
     } catch (error) {
-      console.error('Error saving diet template:', error);
-      this.snackBar.open('Failed to save diet template', 'Close', { duration: 3000 });
+      // Error toast is handled by HttpErrorInterceptor
     }
   }
 }

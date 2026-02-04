@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { AfterViewInit, Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import {
   createdByUserFormatter,
   DataTableComponent,
@@ -18,16 +19,22 @@ import { debounceTime, distinctUntilChanged, Subject, switchMap } from 'rxjs';
 @Component({
   selector: 'lib-members',
   standalone: true,
-  imports: [CommonModule, DataTableComponent, MatButtonModule, MatIconModule],
+  imports: [CommonModule, DataTableComponent, MatButtonModule, MatIconModule, MatTooltipModule, RouterLink],
   templateUrl: './members.html',
   styleUrl: './members.scss',
 })
-export class Members implements OnInit {
+export class Members implements OnInit, AfterViewInit {
   data: IMember[] = [];
   totalCount = 0;
   loading = false;
   tableConfig!: ITableConfig<IMember>;
   private searchSubject = new Subject<string>();
+
+  @ViewChild('emailCell', { static: false })
+  emailCellTemplate!: TemplateRef<any>;
+
+  @ViewChild('nameCell', { static: false })
+  nameCellTemplate!: TemplateRef<any>;
 
   constructor(
     private apiService: MembersApiService,
@@ -42,11 +49,56 @@ export class Members implements OnInit {
     this.loadData();
   }
 
+  ngAfterViewInit(): void {
+    // Attach custom cell templates for name and email columns and trigger table re-initialization
+    if (this.tableConfig?.columns) {
+      let updated = false;
+
+      if (this.nameCellTemplate) {
+        const nameColumn = this.tableConfig.columns.find(
+          (col) => col.key === 'name'
+        );
+        if (nameColumn) {
+          nameColumn.cellTemplate = this.nameCellTemplate;
+          updated = true;
+        }
+      }
+
+      if (this.emailCellTemplate) {
+        const emailColumn = this.tableConfig.columns.find(
+          (col) => col.key === 'emailId'
+        );
+        if (emailColumn) {
+          emailColumn.cellTemplate = this.emailCellTemplate;
+          updated = true;
+        }
+      }
+
+      if (updated) {
+        // Reassign config reference so data table detects the change
+        this.tableConfig = {
+          ...this.tableConfig,
+          columns: [...this.tableConfig.columns],
+        };
+      }
+    }
+  }
+
   private initializeTable(): void {
     const columns: ITableColumn<IMember>[] = [
       { key: 'memberId', label: 'ID', dataKey: 'memberId', sortable: true, width: '80px' },
-      { key: 'firstName', label: 'First Name', dataKey: 'firstName', sortable: true, searchable: true },
-      { key: 'lastName', label: 'Last Name', dataKey: 'lastName', sortable: true, searchable: true },
+      { 
+        key: 'name', 
+        label: 'Name', 
+        dataKey: 'firstName', 
+        sortable: true, 
+        searchable: true,
+        formatter: (value, row) => {
+          const firstName = row?.firstName || '';
+          const lastName = row?.lastName || '';
+          return `${firstName} ${lastName}`.trim() || '-';
+        }
+      },
       { key: 'emailId', label: 'Email', dataKey: 'emailId', sortable: true, searchable: true },
       { key: 'contactNumber', label: 'Contact', dataKey: 'contactNumber', sortable: true },
       { key: 'active', label: 'Status', dataKey: 'active', sortable: true, width: '120px', align: 'center', formatter: (value) => (value ? 'Active' : 'Inactive') },
@@ -134,6 +186,31 @@ export class Members implements OnInit {
 
   onSearchChange(search: string): void {
     this.searchSubject.next(search);
+  }
+
+  copyEmail(email?: string): void {
+    if (!email) return;
+
+    if (navigator && navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(email).catch(() => this.fallbackCopy(email));
+    } else {
+      this.fallbackCopy(email);
+    }
+  }
+
+  private fallbackCopy(text: string): void {
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.focus();
+    textarea.select();
+    try {
+      document.execCommand('copy');
+    } finally {
+      document.body.removeChild(textarea);
+    }
   }
 
   editItem(item: IMember): void {

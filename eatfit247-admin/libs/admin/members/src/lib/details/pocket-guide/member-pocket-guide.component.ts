@@ -5,6 +5,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import {
   createdByUserFormatter,
   DataTableComponent,
@@ -26,7 +27,7 @@ import {
 @Component({
   selector: 'lib-member-pocket-guide',
   standalone: true,
-  imports: [CommonModule, MatCardModule, MatButtonModule, MatIconModule, DataTableComponent, EmptyStateComponent, LoaderComponent],
+  imports: [CommonModule, MatCardModule, MatButtonModule, MatIconModule, MatSnackBarModule, DataTableComponent, EmptyStateComponent, LoaderComponent],
   templateUrl: './member-pocket-guide.component.html',
   styleUrl: './member-pocket-guide.component.scss'
 })
@@ -42,7 +43,8 @@ export class MemberPocketGuideComponent implements OnInit, OnDestroy {
   constructor(
     private route: ActivatedRoute,
     private apiService: MembersApiService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private snackBar: MatSnackBar
   ) {
     this.initializeTable();
   }
@@ -109,7 +111,9 @@ export class MemberPocketGuideComponent implements OnInit, OnDestroy {
       this.pocketGuides = res.tableData;
       this.totalCount = res.count;
     } catch (error) {
-      console.error('Error loading pocket guides:', error);
+      this.snackBar.open('Failed to load pocket guides. Please try again.', 'Close', {
+        duration: 5000,
+      });
       this.pocketGuides = [];
     } finally {
       this.loading = false;

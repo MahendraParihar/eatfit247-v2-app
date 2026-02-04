@@ -10,6 +10,7 @@ import { MatNativeDateModule, MatOption } from '@angular/material/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { DataTableComponent, ITableAction, ITableColumn, ITableConfig } from '@shared';
 import { IContactFormReportFilter, IContactFormReportItem } from '@eatfit247-shared-lib';
 import { ContactFormReportApiService } from './api.service';
@@ -31,6 +32,7 @@ import { MatSelect } from '@angular/material/select';
     MatCardModule,
     MatButtonToggleModule,
     MatDialogModule,
+    MatSnackBarModule,
     DataTableComponent,
     MatSelect,
     MatOption
@@ -49,7 +51,8 @@ export class ContactFormReportComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private apiService: ContactFormReportApiService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private snackBar: MatSnackBar
   ) {
     this.initializeForm();
   }
@@ -188,7 +191,7 @@ export class ContactFormReportComponent implements OnInit {
       this.data = response.tableData;
       this.totalCount = response.count;
     } catch (error) {
-      console.error('Failed to load contact form report:', error);
+      // Error toast is handled by HttpErrorInterceptor
     } finally {
       this.loading = false;
     }
@@ -296,7 +299,7 @@ export class ContactFormReportComponent implements OnInit {
         }
       });
     } catch (error) {
-      console.error('Error loading contact form details:', error);
+      // Error toast is handled by HttpErrorInterceptor
     }
   }
 }

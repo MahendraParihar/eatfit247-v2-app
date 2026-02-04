@@ -11,6 +11,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { InputErrorComponent } from '@shared';
 import { PromoCodeApiService } from '../api.service';
 import { DiscountTypeEnum, IPromoCode } from '@eatfit247-shared-lib';
@@ -30,6 +31,7 @@ import { DiscountTypeEnum, IPromoCode } from '@eatfit247-shared-lib';
     MatCheckboxModule,
     MatDatepickerModule,
     MatNativeDateModule,
+    MatSnackBarModule,
     InputErrorComponent
   ],
   templateUrl: './manage-promo-code.html',
@@ -58,7 +60,8 @@ export class ManagePromoCode implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private apiService: PromoCodeApiService
+    private apiService: PromoCodeApiService,
+    private snackBar: MatSnackBar
   ) {}
 
   async ngOnInit(): Promise<void> {
@@ -96,7 +99,10 @@ export class ManagePromoCode implements OnInit {
       this.initialData = await this.apiService.getById(id);
       this.patchFormValues();
     } catch (error) {
-      console.error('Error loading promo code:', error);
+      this.snackBar.open('Failed to load promo code. Please try again.', 'Close', {
+        duration: 5000,
+      });
+      this.router.navigate(['../'], { relativeTo: this.route });
     }
   }
 
@@ -121,13 +127,19 @@ export class ManagePromoCode implements OnInit {
 
       if (this.isEditMode && this.initialData) {
         await this.apiService.update(this.initialData.promoCodeId, data);
+        this.snackBar.open('Promo code updated successfully', 'Close', {
+          duration: 3000,
+        });
       } else {
         await this.apiService.create(data);
+        this.snackBar.open('Promo code created successfully', 'Close', {
+          duration: 3000,
+        });
       }
 
       this.router.navigate(['../'], { relativeTo: this.route });
     } catch (error) {
-      console.error('Error saving promo code:', error);
+      // Error toast is handled by HttpErrorInterceptor
     }
   }
 

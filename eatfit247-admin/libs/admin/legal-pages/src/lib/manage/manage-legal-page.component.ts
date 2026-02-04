@@ -8,6 +8,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { MatCardModule } from '@angular/material/card';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Editor, NgxEditorComponent, NgxEditorMenuComponent } from 'ngx-editor';
 import { InputErrorComponent, SeoFormComponent, UploadFormComponent, ValidationUtil } from '@shared';
 import { LegalPagesApiService } from '../api.service';
@@ -25,6 +26,7 @@ import { FileTypeEnum, ILegalPageList, IManageLegalPage, InputLengthEnum, MediaF
     MatIconModule,
     MatSelectModule,
     MatCardModule,
+    MatSnackBarModule,
     FormsModule,
     NgxEditorComponent,
     NgxEditorMenuComponent,
@@ -52,7 +54,8 @@ export class ManageLegalPage implements OnInit, OnDestroy {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private apiService: LegalPagesApiService
+    private apiService: LegalPagesApiService,
+    private snackBar: MatSnackBar
   ) {}
 
   async ngOnInit(): Promise<void> {
@@ -88,7 +91,7 @@ export class ManageLegalPage implements OnInit, OnDestroy {
     try {
       this.initialData = await this.apiService.getById(id);
     } catch (error) {
-      console.error('Error loading legal page:', error);
+      // Error toast is handled by HttpErrorInterceptor
     }
   }
 
@@ -142,8 +145,14 @@ export class ManageLegalPage implements OnInit, OnDestroy {
       if (this.isEditMode && this.initialData) {
         const legalPageId = this.initialData.legalPageId;
         await this.apiService.update(legalPageId, formValue);
+        this.snackBar.open('Legal page updated successfully', 'Close', {
+          duration: 3000,
+        });
       } else {
         await this.apiService.create(formValue);
+        this.snackBar.open('Legal page created successfully', 'Close', {
+          duration: 3000,
+        });
       }
       this.router.navigate(['/legal-pages']);
     } else {
@@ -161,7 +170,6 @@ export class ManageLegalPage implements OnInit, OnDestroy {
         this.editor.destroy();
       } catch (error) {
         // Ignore destroy errors
-        console.warn('Error destroying editor:', error);
       }
       this.editor = null as any;
     }

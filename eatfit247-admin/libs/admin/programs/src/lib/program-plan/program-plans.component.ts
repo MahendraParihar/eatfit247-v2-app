@@ -201,8 +201,8 @@ export class ProgramPlans implements OnInit {
           this.totalCount = response.count;
           this.loading = false;
         },
-        error: (error) => {
-          console.error('Error loading program plans:', error);
+        error: () => {
+          // Error toast is handled by HttpErrorInterceptor
           this.loading = false;
         }
       });

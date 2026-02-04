@@ -117,7 +117,7 @@ export class IssueStatus implements OnInit {
   }
 
   editItem(item: any): void {
-    console.log('Edit issue status:', item);
+    // Navigate to edit page - implementation depends on routing setup
   }
 
   async toggleStatus(item: any): Promise<void> {

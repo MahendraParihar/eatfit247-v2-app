@@ -10,6 +10,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatCardModule } from '@angular/material/card';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { AddressFormComponent, InputErrorComponent, UploadFormComponent, ValidationUtil } from '@shared';
 import { ReferrerApiService } from '../api.service';
 import { FileTypeEnum, IDropdownItem, IManageReferrer, InputLengthEnum, IReferrer } from '@eatfit247-shared-lib';
@@ -28,6 +29,7 @@ import { FileTypeEnum, IDropdownItem, IManageReferrer, InputLengthEnum, IReferre
     MatCardModule,
     MatDatepickerModule,
     MatNativeDateModule,
+    MatSnackBarModule,
     InputErrorComponent,
     UploadFormComponent,
     AddressFormComponent
@@ -95,6 +97,7 @@ export class ManageReferrer implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private apiService = inject(ReferrerApiService);
+  private snackBar = inject(MatSnackBar);
 
   async ngOnInit(): Promise<void> {
     this.franchiseOptions = await this.apiService.getFranchiseDropdown();
@@ -147,7 +150,10 @@ export class ManageReferrer implements OnInit, OnDestroy {
     try {
       this.initialData = await this.apiService.getById(id);
     } catch (error) {
-      console.error('Error loading referrer:', error);
+      this.snackBar.open('Failed to load referrer. Please try again.', 'Close', {
+        duration: 5000,
+      });
+      this.router.navigate(['/referrer']);
     }
   }
 
@@ -196,13 +202,23 @@ export class ManageReferrer implements OnInit, OnDestroy {
       } else {
         formValue.logo = undefined;
       }
-      if (this.isEditMode && this.initialData) {
-        const referrerId = this.initialData.referrerId;
-        await this.apiService.update(referrerId, formValue);
-      } else {
-        await this.apiService.create(formValue);
+      try {
+        if (this.isEditMode && this.initialData) {
+          const referrerId = this.initialData.referrerId;
+          await this.apiService.update(referrerId, formValue);
+          this.snackBar.open('Referrer updated successfully', 'Close', {
+            duration: 3000,
+          });
+        } else {
+          await this.apiService.create(formValue);
+          this.snackBar.open('Referrer created successfully', 'Close', {
+            duration: 3000,
+          });
+        }
+        this.router.navigate(['/referrer']);
+      } catch (error) {
+        // Error toast is handled by HttpErrorInterceptor
       }
-      this.router.navigate(['/referrer']);
     } else {
       this.formGroup.markAllAsTouched();
     }

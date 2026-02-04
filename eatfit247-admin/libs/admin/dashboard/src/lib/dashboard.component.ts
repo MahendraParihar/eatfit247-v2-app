@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, HostListener, in
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { KpiCardComponent } from './components/kpi-card/kpi-card.component';
 import { RevenueChartComponent } from './components/revenue-chart/revenue-chart.component';
 import { MemberGrowthChartComponent } from './components/member-growth-chart/member-growth-chart.component';
@@ -27,6 +28,7 @@ import { DashboardApiService } from './api.service';
     CommonModule,
     MatCardModule,
     MatProgressSpinnerModule,
+    MatSnackBarModule,
     KpiCardComponent,
     RevenueChartComponent,
     MemberGrowthChartComponent,
@@ -58,6 +60,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   memberPeriod: 'weekly' | 'monthly' = 'monthly';
   private readonly apiService = inject(DashboardApiService);
   private readonly cdr = inject(ChangeDetectorRef);
+  private readonly snackBar = inject(MatSnackBar);
 
   constructor() {}
 
@@ -92,7 +95,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     try {
       this.kpis = await this.apiService.getKpis();
     } catch (error: any) {
-      console.error('Failed to load KPIs:', error);
+      // Error toast is handled by HttpErrorInterceptor
     } finally {
       this.loading.kpis = false;
       this.cdr.markForCheck();
@@ -105,7 +108,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     try {
       this.revenueData = await this.apiService.getRevenueData();
     } catch (error: any) {
-      console.error('Failed to load revenue data:', error);
+      // Error toast is handled by HttpErrorInterceptor
     } finally {
       this.loading.revenue = false;
       this.cdr.markForCheck();
@@ -118,7 +121,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     try {
       this.memberGrowthData = await this.apiService.getMemberGrowthData(this.memberPeriod);
     } catch (error: any) {
-      console.error('Failed to load member growth data:', error);
+      // Error toast is handled by HttpErrorInterceptor
     } finally {
       this.loading.members = false;
       this.cdr.markForCheck();
@@ -131,7 +134,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     try {
       this.programPerformanceData = await this.apiService.getProgramPerformanceData();
     } catch (error: any) {
-      console.error('Failed to load program performance data:', error);
+      // Error toast is handled by HttpErrorInterceptor
     } finally {
       this.loading.programs = false;
       this.cdr.markForCheck();
@@ -144,7 +147,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     try {
       this.operationsSnapshot = await this.apiService.getOperationsSnapshot();
     } catch (error: any) {
-      console.error('Failed to load operations snapshot:', error);
+      // Error toast is handled by HttpErrorInterceptor
     } finally {
       this.loading.operations = false;
       this.cdr.markForCheck();
@@ -157,7 +160,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     try {
       this.engagementData = await this.apiService.getEngagementData();
     } catch (error: any) {
-      console.error('Failed to load engagement data:', error);
+      // Error toast is handled by HttpErrorInterceptor
     } finally {
       this.loading.engagement = false;
       this.cdr.markForCheck();

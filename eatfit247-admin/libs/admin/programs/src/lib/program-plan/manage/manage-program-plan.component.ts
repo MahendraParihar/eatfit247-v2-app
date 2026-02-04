@@ -145,7 +145,7 @@ export class ManageProgramPlan implements OnInit, OnDestroy {
       const masterData = await this.apiService.getMasterData();
       this.programPlanTypeOptions = masterData.programPlanType || [];
     } catch (error) {
-      console.error('Error loading master data:', error);
+      // Error toast is handled by HttpErrorInterceptor
     }
   }
 
@@ -153,7 +153,7 @@ export class ManageProgramPlan implements OnInit, OnDestroy {
     try {
       this.initialData = await this.apiService.getById(id);
     } catch (error) {
-      console.error('Error loading program plan:', error);
+      // Error toast is handled by HttpErrorInterceptor
     }
   }
 
@@ -189,7 +189,7 @@ export class ManageProgramPlan implements OnInit, OnDestroy {
       try {
         this.editor.destroy();
       } catch (error) {
-        console.warn('Error destroying editor:', error);
+        // Ignore destroy errors
       }
       this.editor = null as any;
     }

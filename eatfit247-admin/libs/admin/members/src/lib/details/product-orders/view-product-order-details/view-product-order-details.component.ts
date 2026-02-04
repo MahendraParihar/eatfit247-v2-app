@@ -63,7 +63,9 @@ export class ViewProductOrderDetailsComponent implements OnInit {
       );
       this.productOrder.set(result);
     } catch (error) {
-      console.error('Error loading product order details:', error);
+      this.snackBar.open('Failed to load product order details. Please try again.', 'Close', {
+        duration: 5000,
+      });
     } finally {
       this.loading.set(false);
     }

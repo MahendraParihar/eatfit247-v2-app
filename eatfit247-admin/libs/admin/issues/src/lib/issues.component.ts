@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import {
   createdByUserFormatter,
   DataTableComponent,
@@ -18,7 +19,7 @@ import { debounceTime, distinctUntilChanged, Subject, switchMap } from 'rxjs';
 @Component({
   selector: 'lib-issues',
   standalone: true,
-  imports: [CommonModule, DataTableComponent, MatButtonModule, MatIconModule],
+  imports: [CommonModule, DataTableComponent, MatButtonModule, MatIconModule, MatSnackBarModule],
   templateUrl: './issues.html',
   styleUrl: './issues.scss',
 })
@@ -32,7 +33,8 @@ export class Issues implements OnInit {
   constructor(
     private apiService: IssuesApiService,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private snackBar: MatSnackBar
   ) {
     this.setupSearch();
   }
@@ -146,6 +148,6 @@ export class Issues implements OnInit {
   }
 
   viewItem(item: any): void {
-    console.log('View issue:', item);
+    // View functionality can be implemented here if needed
   }
 }

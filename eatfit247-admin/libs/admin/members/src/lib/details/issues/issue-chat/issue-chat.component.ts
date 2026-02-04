@@ -8,6 +8,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { InputErrorComponent } from '@shared';
 import { IManageMemberIssueResponse, IMemberIssue, IMemberIssueResponse, InputLengthEnum } from '@eatfit247-shared-lib';
 import { MembersApiService } from '../../../api.service';
@@ -31,6 +32,7 @@ export interface IssueChatData {
     MatProgressSpinnerModule,
     MatIconModule,
     MatChipsModule,
+    MatSnackBarModule,
     InputErrorComponent
   ],
   templateUrl: './issue-chat.component.html',
@@ -52,7 +54,8 @@ export class IssueChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     public dialogRef: MatDialogRef<IssueChatComponent>,
     @Inject(MAT_DIALOG_DATA) public data: IssueChatData,
     private apiService: MembersApiService,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private snackBar: MatSnackBar
   ) {
     this.issue = data.issue;
     this.initializeForm();
@@ -79,7 +82,9 @@ export class IssueChatComponent implements OnInit, OnDestroy, AfterViewChecked {
       this.responses = await this.apiService.getIssueResponses(this.data.memberId, this.issue.memberIssueId);
       this.shouldScrollToBottom = true;
     } catch (error) {
-      console.error('Error loading responses:', error);
+      this.snackBar.open('Failed to load responses. Please try again.', 'Close', {
+        duration: 5000,
+      });
       this.responses = [];
     } finally {
       this.loading = false;
@@ -115,9 +120,12 @@ export class IssueChatComponent implements OnInit, OnDestroy, AfterViewChecked {
           },
         );
         this.formGroup.reset();
+        this.snackBar.open('Response sent successfully', 'Close', {
+          duration: 3000,
+        });
         await this.loadResponses(); // Reload responses - will trigger scroll
       } catch (error) {
-        console.error('Error sending response:', error);
+        // Error toast is handled by HttpErrorInterceptor
       } finally {
         this.sendingResponse = false;
       }
@@ -137,8 +145,13 @@ export class IssueChatComponent implements OnInit, OnDestroy, AfterViewChecked {
         // Reload responses to show any system messages
         await this.loadResponses();
       }
+      this.snackBar.open(
+        isSolved ? 'Issue marked as solved' : 'Issue reopened',
+        'Close',
+        { duration: 3000 }
+      );
     } catch (error) {
-      console.error('Error marking issue as solved:', error);
+      // Error toast is handled by HttpErrorInterceptor
     } finally {
       this.loading = false;
     }

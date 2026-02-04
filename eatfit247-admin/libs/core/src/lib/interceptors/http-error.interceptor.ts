@@ -5,19 +5,15 @@
  * Handles general HTTP errors (403, 500+, etc.)
  * Note: 401 errors are handled by AuthInterceptor
  */
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { HttpErrorResponse, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { Router } from '@angular/router';
-import { AuthService } from '../services/auth.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Injectable()
 export class HttpErrorInterceptor implements HttpInterceptor {
-  constructor(
-    private router: Router,
-    private authService: AuthService
-  ) {}
+  private snackBar = inject(MatSnackBar);
 
   intercept(
     request: HttpRequest<unknown>,
@@ -30,21 +26,27 @@ export class HttpErrorInterceptor implements HttpInterceptor {
           return throwError(() => error);
         }
 
+        let errorMessage = 'An error occurred';
+        
         if (error.status === 403) {
-          // Forbidden - user doesn't have permission
-          console.error('Access forbidden:', error.message);
-          // Optionally redirect to unauthorized page
-          // this.router.navigate(['/unauthorized']);
+          errorMessage = 'Access forbidden. You do not have permission to perform this action.';
         } else if (error.status === 404) {
-          // Not found
-          console.error('Resource not found:', error.message);
+          errorMessage = 'Resource not found. Please check your request and try again.';
         } else if (error.status >= 500) {
-          // Server error
-          console.error('Server error:', error.message);
+          errorMessage = 'Server error. Please try again later.';
         } else if (error.status === 0) {
-          // Network error or CORS issue
-          console.error('Network error - please check your connection');
+          errorMessage = 'Network error. Please check your connection and try again.';
+        } else if (error.error?.message) {
+          errorMessage = error.error.message;
+        } else if (error.message) {
+          errorMessage = error.message;
         }
+
+        this.snackBar.open(errorMessage, 'Close', {
+          duration: 5000,
+          horizontalPosition: 'center',
+          verticalPosition: 'bottom',
+        });
 
         return throwError(() => error);
       })

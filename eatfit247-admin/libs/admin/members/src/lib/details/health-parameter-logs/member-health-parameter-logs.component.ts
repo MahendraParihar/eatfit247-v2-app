@@ -5,6 +5,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import {
   createdByUserFormatter,
   DataTableComponent,
@@ -32,7 +33,7 @@ import { Subject, takeUntil } from 'rxjs';
 @Component({
   selector: 'lib-member-health-parameter-logs',
   standalone: true,
-  imports: [CommonModule, MatCardModule, MatButtonModule, MatIconModule, MatDialogModule, DataTableComponent, EmptyStateComponent, LoaderComponent],
+  imports: [CommonModule, MatCardModule, MatButtonModule, MatIconModule, MatDialogModule, MatSnackBarModule, DataTableComponent, EmptyStateComponent, LoaderComponent],
   templateUrl: './member-health-parameter-logs.component.html',
   styleUrl: './member-health-parameter-logs.component.scss'
 })
@@ -47,7 +48,8 @@ export class MemberHealthParameterLogsComponent implements OnInit, OnDestroy {
   constructor(
     private route: ActivatedRoute,
     private apiService: MembersApiService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private snackBar: MatSnackBar
   ) {
     this.initializeTable();
   }
@@ -158,7 +160,9 @@ export class MemberHealthParameterLogsComponent implements OnInit, OnDestroy {
     try {
       this.healthParameterLogs = await this.apiService.getHealthParameterLogs(this.memberId);
     } catch (error) {
-      console.error('Error loading health parameter logs:', error);
+      this.snackBar.open('Failed to load health parameter logs. Please try again.', 'Close', {
+        duration: 5000,
+      });
       this.healthParameterLogs = [];
     } finally {
       this.loading = false;
@@ -179,7 +183,9 @@ export class MemberHealthParameterLogsComponent implements OnInit, OnDestroy {
 
   addBodyStatsLog(): void {
     if (!this.memberId) {
-      console.error('Member ID is not available');
+      this.snackBar.open('Member ID is not available', 'Close', {
+        duration: 3000,
+      });
       return;
     }
     const dialogData: ManageMemberBodyStatsData = {
@@ -197,7 +203,9 @@ export class MemberHealthParameterLogsComponent implements OnInit, OnDestroy {
         }
       });
     } catch (error) {
-      console.error('Error opening dialog:', error);
+      this.snackBar.open('Failed to open dialog. Please try again.', 'Close', {
+        duration: 3000,
+      });
     }
   }
 
@@ -211,13 +219,17 @@ export class MemberHealthParameterLogsComponent implements OnInit, OnDestroy {
         data: fullLog
       });
     } catch (error) {
-      console.error('Error loading health parameter log details:', error);
+      this.snackBar.open('Failed to load health parameter log details. Please try again.', 'Close', {
+        duration: 5000,
+      });
     }
   }
 
   editHealthParameterLog(log: IMemberHealthParameterLog): void {
     if (!this.memberId) {
-      console.error('Member ID is not available');
+      this.snackBar.open('Member ID is not available', 'Close', {
+        duration: 3000,
+      });
       return;
     }
     const dialogData: ManageMemberBodyStatsData = {
@@ -236,7 +248,9 @@ export class MemberHealthParameterLogsComponent implements OnInit, OnDestroy {
         }
       });
     } catch (error) {
-      console.error('Error opening edit dialog:', error);
+      this.snackBar.open('Failed to open edit dialog. Please try again.', 'Close', {
+        duration: 3000,
+      });
     }
   }
 
@@ -257,9 +271,12 @@ export class MemberHealthParameterLogsComponent implements OnInit, OnDestroy {
       if (confirmed) {
         try {
           await this.apiService.deleteHealthParameterLog(this.memberId, log.memberHealthParameterLogId);
+          this.snackBar.open('Health parameter log deleted successfully', 'Close', {
+            duration: 3000,
+          });
           this.loadHealthParameterLogs();
         } catch (error) {
-          console.error('Error deleting health parameter log:', error);
+          // Error toast is handled by HttpErrorInterceptor
         }
       }
     });

@@ -210,7 +210,7 @@ export class PocketGuide implements OnInit {
   }
 
   viewItem(item: IPocketGuide): void {
-    console.log('View pocket guide:', item);
+    // View pocket guide - implementation depends on requirements
   }
 
   async toggleStatus(item: IPocketGuide): Promise<void> {

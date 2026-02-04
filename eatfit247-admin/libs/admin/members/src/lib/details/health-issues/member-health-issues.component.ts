@@ -5,6 +5,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import {
   createdByUserFormatter,
   DataTableComponent,
@@ -31,6 +32,7 @@ import {
     MatCardModule,
     MatButtonModule,
     MatIconModule,
+    MatSnackBarModule,
     DataTableComponent,
     EmptyStateComponent,
     LoaderComponent,
@@ -51,6 +53,7 @@ export class MemberHealthIssuesComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private apiService: MembersApiService,
     private dialog: MatDialog,
+    private snackBar: MatSnackBar
   ) {
     this.initializeTable();
   }
@@ -125,7 +128,9 @@ export class MemberHealthIssuesComponent implements OnInit, OnDestroy {
       this.healthIssues = res.tableData;
       this.totalCount = res.count;
     } catch (error) {
-      console.error('Error loading health issues:', error);
+      this.snackBar.open('Failed to load health issues. Please try again.', 'Close', {
+        duration: 5000,
+      });
       this.healthIssues = [];
     } finally {
       this.loading = false;

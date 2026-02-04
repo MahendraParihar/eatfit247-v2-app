@@ -11,6 +11,7 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
 import { DataTableComponent, ITableAction, ITableColumn, ITableConfig } from '@shared';
 import { IMemberProductReportFilter, IMemberProductReportItem } from '@eatfit247-shared-lib';
@@ -32,6 +33,7 @@ import { MemberProductReportApiService } from './api.service';
     MatCardModule,
     MatDialogModule,
     MatButtonToggleModule,
+    MatSnackBarModule,
     DataTableComponent
   ],
   templateUrl: './member-product-report.html',
@@ -54,7 +56,8 @@ export class MemberProductReportComponent implements OnInit {
     private fb: FormBuilder,
     private apiService: MemberProductReportApiService,
     private dialog: MatDialog,
-    private router: Router
+    private router: Router,
+    private snackBar: MatSnackBar
   ) {
     this.initializeForm();
   }
@@ -218,7 +221,7 @@ export class MemberProductReportComponent implements OnInit {
         }))
       ];
     } catch (error) {
-      console.error('Failed to load franchise options:', error);
+      // Error toast is handled by HttpErrorInterceptor
     }
   }
 
@@ -233,7 +236,7 @@ export class MemberProductReportComponent implements OnInit {
         }))
       ];
     } catch (error) {
-      console.error('Failed to load payment status options:', error);
+      // Error toast is handled by HttpErrorInterceptor
     }
   }
 
@@ -256,7 +259,7 @@ export class MemberProductReportComponent implements OnInit {
       this.data = response.tableData;
       this.totalCount = response.count;
     } catch (error) {
-      console.error('Failed to load member product report:', error);
+      // Error toast is handled by HttpErrorInterceptor
     } finally {
       this.loading = false;
     }
@@ -398,7 +401,9 @@ export class MemberProductReportComponent implements OnInit {
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
     } catch (error) {
-      console.error('Failed to export member product reports:', error);
+      this.snackBar.open('Failed to export member product reports. Please try again.', 'Close', {
+        duration: 5000,
+      });
     } finally {
       this.exporting = false;
     }

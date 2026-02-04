@@ -31,11 +31,9 @@ export class QuickActionsComponent {
     if (action.route) {
       this.router.navigate([action.route]);
     } else if (action.action === 'whatsapp') {
-      // Handle WhatsApp action
-      console.log('WhatsApp action');
+      // Handle WhatsApp action - TODO: Implement WhatsApp functionality
     } else if (action.action === 'email') {
-      // Handle Email action
-      console.log('Email action');
+      // Handle Email action - TODO: Implement Email functionality
     }
   }
 }

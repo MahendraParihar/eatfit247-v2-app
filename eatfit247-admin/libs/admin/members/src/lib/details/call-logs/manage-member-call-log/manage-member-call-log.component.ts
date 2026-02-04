@@ -101,7 +101,6 @@ export class ManageMemberCallLogComponent implements OnInit {
       this.nutritionistOptions = data.nutritionists;
       this.durationOptions = data.durations;
     } catch (error: any) {
-      console.error('Error loading master data:', error);
       const errorMessage = error?.error?.message || error?.message || 'Failed to load master data. Please try again.';
       this.snackBar.open(errorMessage, 'Close', { 
         duration: 5000 
@@ -157,7 +156,6 @@ export class ManageMemberCallLogComponent implements OnInit {
         });
       }
     } catch (error: any) {
-      console.error('Error checking availability:', error);
       this.slots = [];
       const errorMessage = error?.error?.message || error?.message || 'Failed to check availability. Please try again.';
       this.snackBar.open(errorMessage, 'Close', { 
@@ -215,7 +213,6 @@ export class ManageMemberCallLogComponent implements OnInit {
       });
       this.dialogRef.close(true);
     } catch (error: any) {
-      console.error('Error confirming booking:', error);
       const errorMessage = error?.error?.message || error?.message || 'Failed to create call log. Please try again.';
       this.snackBar.open(errorMessage, 'Close', { 
         duration: 5000 

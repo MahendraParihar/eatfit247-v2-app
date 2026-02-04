@@ -40,7 +40,7 @@ export class MemberDietPlanDatasource implements DataSource<IMemberDietPlan> {
       }
       return true;
     } catch (error) {
-      console.error('Error loading diet plans:', error);
+      // Error is handled by the calling component
       this.dataSubject.next([]);
       this.totalCountSubject.next(0);
       return false;

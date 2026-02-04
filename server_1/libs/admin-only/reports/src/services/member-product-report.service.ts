@@ -26,7 +26,6 @@ export class MemberProductReportService {
   async getMemberProductReport(dto: MemberProductReportDto): Promise<ITableList<IMemberProductReportItem>> {
     const startDateStr = moment(dto.startDate).startOf('day').utc().startOf('day');
     const endDateStr = moment(dto.endDate).endOf('day').utc().endOf('day');
-    
     const whereCondition: any = {
       active: true,
       paymentDate: {
@@ -36,29 +35,22 @@ export class MemberProductReportService {
         },
       },
     };
-
-    // Add payment status filter if provided
+    // Add a payment status filter if provided
     if (dto.paymentStatusId) {
       whereCondition.paymentStatusId = dto.paymentStatusId;
     }
-
-    // Build member where condition
-    const memberWhereCondition: any = {};
     if (dto.franchiseId) {
-      memberWhereCondition.franchiseId = dto.franchiseId;
+      whereCondition.franchiseId = dto.franchiseId;
     }
-
     // Build include conditions
     const includeConditions: any[] = [
       {
         model: TxnMember,
         as: 'member',
         required: true,
-        where: Object.keys(memberWhereCondition).length > 0 ? memberWhereCondition : undefined,
         attributes: ['memberId', 'firstName', 'lastName', 'emailId', 'contactNumber', 'franchiseId'],
       },
     ];
-
     const { rows, count } = await this.memberProductRepository.scope('list').findAndCountAll({
       where: whereCondition,
       include: includeConditions,
@@ -66,7 +58,6 @@ export class MemberProductReportService {
       raw: true,
       nest: true,
     });
-
     // Convert to model and add additional fields
     const tableData = rows.map((item: any) => {
       const productOrder = (this.memberProductService as any).convertToModel(item);
@@ -77,7 +68,6 @@ export class MemberProductReportService {
         memberContactNumber: item.member?.contactNumber || '',
       };
     });
-
     return {
       tableData,
       count,
@@ -96,18 +86,15 @@ export class MemberProductReportService {
         [Op.between]: [new Date(dto.startDate), new Date(dto.endDate)],
       },
     };
-
     // Add payment status filter if provided
     if (dto.paymentStatusId) {
       whereCondition.paymentStatusId = dto.paymentStatusId;
     }
-
     // Build member where condition
     const memberWhereCondition: any = {};
     if (dto.franchiseId) {
       memberWhereCondition.franchiseId = dto.franchiseId;
     }
-
     // Build include conditions
     const includeConditions: any[] = [
       {
@@ -131,7 +118,6 @@ export class MemberProductReportService {
         ],
       },
     ];
-
     // Fetch all product orders (no pagination for export)
     const productOrders = await this.memberProductRepository.scope('list').findAll({
       where: whereCondition,
@@ -140,25 +126,20 @@ export class MemberProductReportService {
       raw: true,
       nest: true,
     });
-
     // Create a zip archive
     const archive = archiver('zip', {
       zlib: { level: 9 }, // Maximum compression
     });
-
     // Generate invoices for each product order and add to zip
     const invoicePromises = productOrders.map(async (item: any) => {
       try {
         const productOrder = (this.memberProductService as any).convertToModel(item);
         const memberId = productOrder.memberId;
         const productId = productOrder.memberProductId;
-
         // Generate invoice PDF
         const invoiceFile = await this.memberProductService.generateInvoicePDF(memberId, productId);
-
         // Convert base64 buffer to Buffer
         const pdfBuffer = Buffer.from(invoiceFile.buffer, 'base64');
-
         // Add to zip with a clean filename
         const memberName = `${productOrder.memberName || 'Member'}_${memberId}`.replace(/[^a-zA-Z0-9_]/g, '_');
         const fileName = `Product_Invoice_${memberName}_${productId}.pdf`;
@@ -168,13 +149,10 @@ export class MemberProductReportService {
         // Continue with other invoices even if one fails
       }
     });
-
     // Wait for all invoices to be added to the archive
     await Promise.all(invoicePromises);
-
     // Finalize the archive
     await archive.finalize();
-
     return archive;
   }
 }

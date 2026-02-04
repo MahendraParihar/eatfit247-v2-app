@@ -5,6 +5,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import {
   DataTableComponent,
   EmptyStateComponent,
@@ -25,7 +26,7 @@ import { CompleteCallLogDialogComponent } from './complete-call-log-dialog/compl
 @Component({
   selector: 'lib-member-call-logs',
   standalone: true,
-  imports: [CommonModule, MatCardModule, MatButtonModule, MatIconModule, MatDialogModule, DataTableComponent, EmptyStateComponent, LoaderComponent],
+  imports: [CommonModule, MatCardModule, MatButtonModule, MatIconModule, MatDialogModule, MatSnackBarModule, DataTableComponent, EmptyStateComponent, LoaderComponent],
   templateUrl: './member-call-logs.component.html',
   styleUrl: './member-call-logs.component.scss'
 })
@@ -40,7 +41,8 @@ export class MemberCallLogsComponent implements OnInit, OnDestroy {
   constructor(
     private route: ActivatedRoute,
     private apiService: MembersApiService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private snackBar: MatSnackBar
   ) {
     this.initializeTable();
   }
@@ -155,7 +157,9 @@ export class MemberCallLogsComponent implements OnInit, OnDestroy {
     try {
       this.callLogs = await this.apiService.getCallLogs(this.memberId);
     } catch (error) {
-      console.error('Error loading call logs:', error);
+      this.snackBar.open('Failed to load call logs. Please try again.', 'Close', {
+        duration: 5000,
+      });
       this.callLogs = [];
     } finally {
       this.loading = false;
@@ -233,9 +237,12 @@ export class MemberCallLogsComponent implements OnInit, OnDestroy {
             callLog.memberCallLogId,
             reason
           );
+          this.snackBar.open('Call log cancelled successfully', 'Close', {
+            duration: 3000,
+          });
           this.loadCallLogs();
         } catch (error) {
-          console.error('Error cancelling call log:', error);
+          // Error toast is handled by HttpErrorInterceptor
         }
       }
     });
@@ -255,9 +262,12 @@ export class MemberCallLogsComponent implements OnInit, OnDestroy {
             callLog.memberCallLogId,
             reason
           );
+          this.snackBar.open('Call log completed successfully', 'Close', {
+            duration: 3000,
+          });
           this.loadCallLogs();
         } catch (error) {
-          console.error('Error completing call log:', error);
+          // Error toast is handled by HttpErrorInterceptor
         }
       }
     });

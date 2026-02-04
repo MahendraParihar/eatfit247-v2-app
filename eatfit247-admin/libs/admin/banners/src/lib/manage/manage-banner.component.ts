@@ -8,6 +8,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { MatCardModule } from '@angular/material/card';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { InputErrorComponent, UploadFormComponent, ValidationUtil } from '@shared';
 import { BannersApiService } from '../api.service';
 import {
@@ -31,6 +32,7 @@ import {
     MatIconModule,
     MatSelectModule,
     MatCardModule,
+    MatSnackBarModule,
     InputErrorComponent,
     UploadFormComponent
   ],
@@ -70,7 +72,8 @@ export class ManageBanner implements OnInit, OnDestroy {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private apiService: BannersApiService
+    private apiService: BannersApiService,
+    private snackBar: MatSnackBar
   ) {}
 
   async ngOnInit(): Promise<void> {
@@ -107,7 +110,7 @@ export class ManageBanner implements OnInit, OnDestroy {
     try {
       this.initialData = await this.apiService.getById(id);
     } catch (error) {
-      console.error('Error loading banner:', error);
+      // Error toast is handled by HttpErrorInterceptor
     }
   }
 
@@ -156,8 +159,14 @@ export class ManageBanner implements OnInit, OnDestroy {
       if (this.isEditMode && this.initialData) {
         const bannerId = this.initialData.bannerId;
         await this.apiService.update(bannerId, formValue);
+        this.snackBar.open('Banner updated successfully', 'Close', {
+          duration: 3000,
+        });
       } else {
         await this.apiService.create(formValue);
+        this.snackBar.open('Banner created successfully', 'Close', {
+          duration: 3000,
+        });
       }
       this.router.navigate(['/banners']);
     } else {

@@ -167,7 +167,7 @@ export class MemberPaymentHistoryComponent implements OnInit, OnDestroy {
       const res = await this.apiService.getPayments(this.memberId);
       this.payments = res.tableData || [];
     } catch (error) {
-      console.error('Error loading payments:', error);
+      // Error toast is handled by HttpErrorInterceptor
       this.payments = [];
     } finally {
       this.loading = false;
@@ -240,7 +240,6 @@ export class MemberPaymentHistoryComponent implements OnInit, OnDestroy {
         this.downloadTemplate(fileData.buffer, fileData.fileName);
       }
     } catch (error) {
-      console.error('Error downloading invoice:', error);
       this.snackBar.open('Failed to download invoice', 'Close', {
         duration: 3000
       });
@@ -280,7 +279,6 @@ export class MemberPaymentHistoryComponent implements OnInit, OnDestroy {
       // Reload payments to show updated data
       await this.loadPayments();
     } catch (error) {
-      console.error('Error regenerating payment link:', error);
       this.snackBar.open(
         error instanceof Error ? error.message : 'Failed to regenerate payment link',
         'Close',

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import {
   createdByUserFormatter,
   DataTableComponent,
@@ -18,7 +19,7 @@ import { debounceTime, distinctUntilChanged, Subject, switchMap } from 'rxjs';
 @Component({
   selector: 'lib-media-press',
   standalone: true,
-  imports: [CommonModule, DataTableComponent, MatButtonModule, MatIconModule],
+  imports: [CommonModule, DataTableComponent, MatButtonModule, MatIconModule, MatSnackBarModule],
   templateUrl: './media-press.html',
   styleUrl: './media-press.scss',
 })
@@ -32,7 +33,8 @@ export class MediaPress implements OnInit {
   constructor(
     private apiService: PressMediaApiService,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private snackBar: MatSnackBar
   ) {
     this.setupSearch();
   }
@@ -146,7 +148,7 @@ export class MediaPress implements OnInit {
   }
 
   viewItem(item: IPressMedia): void {
-    console.log('View media & press:', item);
+    // View functionality can be implemented here if needed
   }
 
   async toggleStatus(item: IPressMedia): Promise<void> {
@@ -156,6 +158,11 @@ export class MediaPress implements OnInit {
       this.loading = true;
       try {
         await this.apiService.updateStatus(item.pressMediaId, !item.active);
+        this.snackBar.open(
+          `Media & press ${item.active ? 'deactivated' : 'activated'} successfully`,
+          'Close',
+          { duration: 3000 }
+        );
         await this.loadData();
       } catch {
         this.loading = false;

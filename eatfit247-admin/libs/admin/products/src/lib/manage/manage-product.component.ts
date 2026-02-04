@@ -12,6 +12,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Editor } from 'ngx-editor';
 import { InputErrorComponent, UploadFormComponent, ValidationUtil } from '@shared';
 import { ProductsApiService } from 'products';
@@ -34,6 +35,7 @@ import { FileTypeEnum, IDropdownItem, InputLengthEnum, IProduct, MediaForEnum } 
     MatTooltipModule,
     MatDatepickerModule,
     MatNativeDateModule,
+    MatSnackBarModule,
     FormsModule,
     InputErrorComponent,
     UploadFormComponent
@@ -120,7 +122,8 @@ export class ManageProduct implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private apiService: ProductsApiService,
-    private productFormService: ProductFormService
+    private productFormService: ProductFormService,
+    private snackBar: MatSnackBar
   ) {}
 
   async ngOnInit(): Promise<void> {
@@ -228,7 +231,7 @@ export class ManageProduct implements OnInit, OnDestroy {
       const masterData = await this.apiService.getMasterData();
       this.currencyOptions = masterData.currencies || [];
     } catch (error) {
-      console.error('Error loading master data:', error);
+      // Error toast is handled by HttpErrorInterceptor
     }
   }
 
@@ -236,7 +239,10 @@ export class ManageProduct implements OnInit, OnDestroy {
     try {
       this.initialData = await this.apiService.getById(id);
     } catch (error) {
-      console.error('Error loading product:', error);
+      this.snackBar.open('Failed to load product. Please try again.', 'Close', {
+        duration: 5000,
+      });
+      this.router.navigate(['/products']);
     }
   }
 
@@ -553,16 +559,20 @@ export class ManageProduct implements OnInit, OnDestroy {
         if (this.isEditMode && this.initialData) {
           formValue.productId = this.initialData.productId;
           await this.apiService.update(this.initialData.productId, formValue);
+          this.snackBar.open('Product updated successfully', 'Close', {
+            duration: 3000,
+          });
         } else {
           await this.apiService.create(formValue);
+          this.snackBar.open('Product created successfully', 'Close', {
+            duration: 3000,
+          });
         }
         this.router.navigate(['/products']);
       } catch (error) {
-        console.error('Error saving product:', error);
-        // You may want to show a user-friendly error message here
+        // Error toast is handled by HttpErrorInterceptor
       }
     } else {
-      console.error('Form validation failed. Invalid controls:');
       this.formGroup.markAllAsTouched();
     }
   }
@@ -575,8 +585,8 @@ export class ManageProduct implements OnInit, OnDestroy {
     if (this.editor) {
       try {
         this.editor.destroy();
-      } catch (error) {
-        console.warn('Error destroying editor:', error);
+      } catch {
+        // Ignore destroy errors
       }
       this.editor = null as any;
     }

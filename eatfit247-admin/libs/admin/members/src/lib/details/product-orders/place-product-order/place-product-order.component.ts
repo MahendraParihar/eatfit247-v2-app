@@ -312,7 +312,7 @@ export class PlaceProductOrderComponent implements OnInit {
       this.products.set(res.product);
       this.masterData.set(res);
     } catch (error) {
-      console.error('Error loading master data:', error);
+      // Error toast is handled by HttpErrorInterceptor
     } finally {
       this.loading.set(false);
     }
@@ -481,7 +481,6 @@ export class PlaceProductOrderComponent implements OnInit {
       this.cartItems.set(updatedCartItems);
       this.taxCalculationResult.set(result);
     } catch (error) {
-      console.error('Error calculating tax:', error);
       this.taxCalculationResult.set(null);
       this.snackBar.open(
         'Failed to calculate tax. Please try again.',
@@ -564,8 +563,8 @@ export class PlaceProductOrderComponent implements OnInit {
         });
       }
     } catch (error) {
-      console.error('Error loading supported gateways:', error);
       this.supportedGateways.set([]);
+      // Error toast is handled by HttpErrorInterceptor
     } finally {
       this.loadingGateways.set(false);
     }
@@ -618,7 +617,6 @@ export class PlaceProductOrderComponent implements OnInit {
         paymentStatusId: PaymentStatusEnum.PENDING,
       });
     } catch (error) {
-      console.error('Error creating payment link:', error);
       this.snackBar.open('Failed to create payment link', 'Close', {
         duration: 3000,
       });
@@ -654,7 +652,6 @@ export class PlaceProductOrderComponent implements OnInit {
         duration: 3000,
       });
     } catch (error) {
-      console.error('Error copying to clipboard:', error);
       this.snackBar.open('Failed to copy link', 'Close', { duration: 3000 });
     }
   }
@@ -694,7 +691,6 @@ export class PlaceProductOrderComponent implements OnInit {
         });
         this.dialogRef.close(true);
       } catch (error) {
-        console.error('Error saving product order:', error);
         this.snackBar.open(
           'Failed to save product order. Please check the form and try again.',
           'Close',

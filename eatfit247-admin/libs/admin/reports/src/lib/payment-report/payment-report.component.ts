@@ -11,6 +11,7 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
 import { DataTableComponent, ITableAction, ITableColumn, ITableConfig } from '@shared';
 import { IPaymentReportFilter, IPaymentReportItem } from '@eatfit247-shared-lib';
@@ -33,6 +34,7 @@ import { PaymentDetailsDialogComponent } from 'members';
     MatCardModule,
     MatDialogModule,
     MatButtonToggleModule,
+    MatSnackBarModule,
     DataTableComponent
   ],
   templateUrl: './payment-report.html',
@@ -54,7 +56,8 @@ export class PaymentReportComponent implements OnInit {
     private fb: FormBuilder,
     private apiService: PaymentReportApiService,
     private dialog: MatDialog,
-    private router: Router
+    private router: Router,
+    private snackBar: MatSnackBar
   ) {
     this.initializeForm();
   }
@@ -172,7 +175,7 @@ export class PaymentReportComponent implements OnInit {
         ...franchises.map((f) => ({ id: typeof f.id === 'string' ? Number(f.id) : f.id, label: f.label }))
       ];
     } catch (error) {
-      console.error('Failed to load franchise options:', error);
+      // Error toast is handled by HttpErrorInterceptor
     }
   }
 
@@ -192,7 +195,7 @@ export class PaymentReportComponent implements OnInit {
       this.data = response.tableData;
       this.totalCount = response.count;
     } catch (error) {
-      console.error('Failed to load payment report:', error);
+      // Error toast is handled by HttpErrorInterceptor
     } finally {
       this.loading = false;
     }
@@ -322,7 +325,9 @@ export class PaymentReportComponent implements OnInit {
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
     } catch (error) {
-      console.error('Failed to export payment reports:', error);
+      this.snackBar.open('Failed to export payment reports. Please try again.', 'Close', {
+        duration: 5000,
+      });
     } finally {
       this.exporting = false;
     }

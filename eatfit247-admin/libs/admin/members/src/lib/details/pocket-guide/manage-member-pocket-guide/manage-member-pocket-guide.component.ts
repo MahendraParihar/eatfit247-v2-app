@@ -5,6 +5,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MembersApiService } from '../../../api.service';
 import { IMemberPocketGuide } from '@eatfit247-shared-lib';
 
@@ -22,6 +23,7 @@ export interface ManageMemberPocketGuideData {
     MatCheckboxModule,
     MatTableModule,
     MatProgressSpinnerModule,
+    MatSnackBarModule,
   ],
   templateUrl: './manage-member-pocket-guide.component.html',
   styleUrl: './manage-member-pocket-guide.component.scss',
@@ -36,6 +38,7 @@ export class ManageMemberPocketGuideComponent implements OnInit {
     public dialogRef: MatDialogRef<ManageMemberPocketGuideComponent>,
     @Inject(MAT_DIALOG_DATA) public data: ManageMemberPocketGuideData,
     private apiService: MembersApiService,
+    private snackBar: MatSnackBar,
   ) {}
 
   ngOnInit(): void {
@@ -49,7 +52,9 @@ export class ManageMemberPocketGuideComponent implements OnInit {
       this.pocketGuides = res.tableData;
       this.dataSource.data = this.pocketGuides;
     } catch (error) {
-      console.error('Error loading pocket guides:', error);
+      this.snackBar.open('Failed to load pocket guides. Please try again.', 'Close', {
+        duration: 5000,
+      });
       this.pocketGuides = [];
       this.dataSource.data = [];
     } finally {
@@ -87,9 +92,12 @@ export class ManageMemberPocketGuideComponent implements OnInit {
     this.loading = true;
     try {
       await this.apiService.managePocketGuides(this.data.memberId, selectedIds);
+      this.snackBar.open('Pocket guides updated successfully', 'Close', {
+        duration: 3000,
+      });
       this.dialogRef.close(true);
     } catch (error) {
-      console.error('Error updating pocket guides:', error);
+      // Error toast is handled by HttpErrorInterceptor
     } finally {
       this.loading = false;
     }

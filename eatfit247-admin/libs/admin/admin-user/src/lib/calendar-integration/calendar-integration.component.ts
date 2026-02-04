@@ -4,6 +4,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDividerModule } from '@angular/material/divider';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { GoogleCalendarApiService } from '../google-calendar-api.service';
 import { IAdminUser } from '@eatfit247-shared-lib';
 
@@ -15,13 +16,15 @@ import { IAdminUser } from '@eatfit247-shared-lib';
     MatCardModule,
     MatButtonModule,
     MatIconModule,
-    MatDividerModule
+    MatDividerModule,
+    MatSnackBarModule
   ],
   templateUrl: './calendar-integration.component.html',
   styleUrl: './calendar-integration.component.scss'
 })
 export class CalendarIntegrationComponent implements OnInit, OnChanges {
   private googleCalendarApiService = inject(GoogleCalendarApiService);
+  private snackBar = inject(MatSnackBar);
   isConnected = signal(false);
   connecting = signal(false);
   googleCalendarEmail = signal<string | null>(null);
@@ -83,7 +86,9 @@ export class CalendarIntegrationComponent implements OnInit, OnChanges {
         window.location.href = response.redirectUrl;
       }
     } catch (error) {
-      console.error('Error connecting Google Calendar:', error);
+      this.snackBar.open('Failed to connect Google Calendar. Please try again.', 'Close', {
+        duration: 5000,
+      });
       this.connecting.set(false);
     }
   }

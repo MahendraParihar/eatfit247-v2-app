@@ -33,7 +33,16 @@ body {
   line-height: 1.5;
 }
 
-// Material Icons
+// Material Icons - Local Font Files
+@font-face {
+  font-family: 'Material Icons';
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src: url('/assets/fonts/material-icons/material-icons.woff2') format('woff2'),
+       url('/assets/fonts/material-icons/material-icons.woff') format('woff');
+}
+
 .material-icons {
   font-family: 'Material Icons';
   font-weight: normal;

@@ -6,6 +6,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Subscription } from 'rxjs';
 import {
   DataTableComponent,
@@ -33,6 +34,7 @@ import {
     MatIconModule,
     MatChipsModule,
     MatDialogModule,
+    MatSnackBarModule,
     DataTableComponent,
     EmptyStateComponent,
     LoaderComponent,
@@ -44,6 +46,7 @@ export class MemberProductOrdersComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private apiService = inject(MembersApiService);
   private dialog = inject(MatDialog);
+  private snackBar = inject(MatSnackBar);
 
   memberId!: number;
   productOrders: IMemberProduct[] = [];
@@ -187,7 +190,9 @@ export class MemberProductOrdersComponent implements OnInit, OnDestroy {
       const res = await this.apiService.getProductOrders(this.memberId);
       this.productOrders = res.tableData || [];
     } catch (error) {
-      console.error('Error loading product orders:', error);
+      this.snackBar.open('Failed to load product orders. Please try again.', 'Close', {
+        duration: 5000,
+      });
       this.productOrders = [];
     } finally {
       this.loading = false;
@@ -209,7 +214,9 @@ export class MemberProductOrdersComponent implements OnInit, OnDestroy {
 
   addProductOrder(): void {
     if (!this.memberId) {
-      console.error('Member ID is not available');
+      this.snackBar.open('Member ID is not available', 'Close', {
+        duration: 3000,
+      });
       return;
     }
     const dialogData: PlaceProductOrderData = {
@@ -231,7 +238,9 @@ export class MemberProductOrdersComponent implements OnInit, OnDestroy {
 
   viewProductOrderDetails(productOrder: IMemberProduct): void {
     if (!this.memberId || !productOrder.memberProductId) {
-      console.error('Member ID or Product Order ID is not available');
+      this.snackBar.open('Member ID or Product Order ID is not available', 'Close', {
+        duration: 3000,
+      });
       return;
     }
     const dialogData: ViewProductOrderDetailsData = {
@@ -249,7 +258,9 @@ export class MemberProductOrdersComponent implements OnInit, OnDestroy {
 
   async downloadInvoice(productOrder: IMemberProduct): Promise<void> {
     if (!this.memberId || !productOrder.memberProductId) {
-      console.error('Member ID or Product Order ID is not available');
+      this.snackBar.open('Member ID or Product Order ID is not available', 'Close', {
+        duration: 3000,
+      });
       return;
     }
 
@@ -277,17 +288,26 @@ export class MemberProductOrdersComponent implements OnInit, OnDestroy {
 
         // Clean up
         window.URL.revokeObjectURL(link.href);
+        this.snackBar.open('Invoice downloaded successfully', 'Close', {
+          duration: 3000,
+        });
       } else {
-        console.error('Invalid invoice data received');
+        this.snackBar.open('Invalid invoice data received', 'Close', {
+          duration: 3000,
+        });
       }
     } catch (error) {
-      console.error('Error downloading invoice:', error);
+      this.snackBar.open('Failed to download invoice. Please try again.', 'Close', {
+        duration: 5000,
+      });
     }
   }
 
   async regeneratePaymentLink(productOrder: IMemberProduct): Promise<void> {
     if (!this.memberId || !productOrder.memberProductId) {
-      console.error('Member ID or Product Order ID is not available');
+      this.snackBar.open('Member ID or Product Order ID is not available', 'Close', {
+        duration: 3000,
+      });
       return;
     }
 
@@ -296,10 +316,13 @@ export class MemberProductOrdersComponent implements OnInit, OnDestroy {
         this.memberId,
         productOrder.memberProductId
       );
+      this.snackBar.open('Payment link regenerated successfully', 'Close', {
+        duration: 3000,
+      });
       // Reload product orders after successful regeneration
       await this.loadProductOrders();
     } catch (error) {
-      console.error('Error regenerating payment link:', error);
+      // Error toast is handled by HttpErrorInterceptor
     }
   }
 }

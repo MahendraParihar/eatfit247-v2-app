@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import {
   createdByUserFormatter,
   DataTableComponent,
@@ -18,7 +19,7 @@ import { debounceTime, distinctUntilChanged, Subject, switchMap } from 'rxjs';
 @Component({
   selector: 'lib-faq',
   standalone: true,
-  imports: [CommonModule, DataTableComponent, MatButtonModule, MatIconModule],
+  imports: [CommonModule, DataTableComponent, MatButtonModule, MatIconModule, MatSnackBarModule],
   templateUrl: './faq.html',
   styleUrl: './faq.scss'
 })
@@ -32,7 +33,8 @@ export class Faq implements OnInit {
   constructor(
     private apiService: FaqApiService,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private snackBar: MatSnackBar
   ) {
     this.setupSearch();
   }
@@ -190,7 +192,7 @@ export class Faq implements OnInit {
   }
 
   viewItem(item: IFaq): void {
-    console.log('View FAQ:', item);
+    // View functionality can be implemented here if needed
   }
 
   async toggleStatus(item: IFaq): Promise<void> {
@@ -200,6 +202,11 @@ export class Faq implements OnInit {
       this.loading = true;
       try {
         await this.apiService.updateStatus(item.faqId, !item.active);
+        this.snackBar.open(
+          `FAQ ${item.active ? 'deactivated' : 'activated'} successfully`,
+          'Close',
+          { duration: 3000 }
+        );
         await this.loadData();
       } catch {
         this.loading = false;

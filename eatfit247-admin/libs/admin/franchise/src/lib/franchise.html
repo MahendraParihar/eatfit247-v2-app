@@ -14,5 +14,15 @@
         Create New
       </button>
     </div>
+
+    <ng-template #companyNameCell let-row let-value="value">
+      <a
+        class="company-name-link"
+        [routerLink]="['/franchise/details', row.franchiseId, 'dashboard']"
+        (click)="$event.stopPropagation()"
+      >
+        {{ value }}
+      </a>
+    </ng-template>
   </shared-ui-data-table>
 </div>

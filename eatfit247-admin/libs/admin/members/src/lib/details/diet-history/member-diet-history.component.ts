@@ -67,7 +67,6 @@ export class MemberDietHistoryComponent implements OnInit, OnDestroy {
       this.list.set(completedPlans);
       this.totalCount.set(completedPlans.length);
     } catch (error) {
-      console.error('Error loading diet history:', error);
       this.snackBar.open('Failed to load diet history', 'Close', { duration: 3000 });
       this.list.set([]);
       this.totalCount.set(0);

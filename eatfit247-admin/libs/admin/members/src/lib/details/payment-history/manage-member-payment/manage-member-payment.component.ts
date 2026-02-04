@@ -327,7 +327,7 @@ export class ManageMemberPaymentComponent implements OnInit {
       // Calculate tax to update tax percentage display
       this.calculateTaxFromBackend();
     } catch (error) {
-      console.error('Error loading master data:', error);
+      // Error toast is handled by HttpErrorInterceptor
     } finally {
       this.loading.set(false);
     }
@@ -363,8 +363,8 @@ export class ManageMemberPaymentComponent implements OnInit {
         );
       }
     } catch (error) {
-      console.error('Error calculating tax:', error);
       this.taxCalculationResult.set(null);
+      // Error toast is handled by HttpErrorInterceptor
     } finally {
       this.calculatingTax.set(false);
     }
@@ -442,8 +442,8 @@ export class ManageMemberPaymentComponent implements OnInit {
         });
       }
     } catch (error) {
-      console.error('Error loading supported gateways:', error);
       this.supportedGateways.set([]);
+      // Error toast is handled by HttpErrorInterceptor
     } finally {
       this.loadingGateways.set(false);
     }
@@ -505,7 +505,6 @@ export class ManageMemberPaymentComponent implements OnInit {
         paymentStatusId: PaymentStatusEnum.PENDING,
       });
     } catch (error) {
-      console.error('Error creating payment link:', error);
       this.snackBar.open('Failed to create payment link', 'Close', {
         duration: 3000,
       });
@@ -539,7 +538,6 @@ export class ManageMemberPaymentComponent implements OnInit {
         duration: 3000,
       });
     } catch (error) {
-      console.error('Error copying to clipboard:', error);
       this.snackBar.open('Failed to copy link', 'Close', { duration: 3000 });
     }
   }
@@ -565,7 +563,6 @@ export class ManageMemberPaymentComponent implements OnInit {
     } catch (error: any) {
       // User cancelled or error occurred
       if (error.name !== 'AbortError') {
-        console.error('Error sharing payment link:', error);
         // Fallback to copy on error
         await this.copyPaymentLink();
       }
@@ -644,8 +641,9 @@ export class ManageMemberPaymentComponent implements OnInit {
         }
         this.dialogRef.close(true);
       } catch (error) {
-        console.error('Error saving payment:', error);
-        alert('Failed to save payment. Please check the form and try again.');
+        this.snackBar.open('Failed to save payment. Please check the form and try again.', 'Close', {
+          duration: 5000,
+        });
       } finally {
         this.submitting.set(false);
       }
@@ -734,7 +732,7 @@ export class ManageMemberPaymentComponent implements OnInit {
         setTimeout(() => this.calculateTaxFromBackend(), 100);
       }
     } catch (error) {
-      console.error('Error loading program plan fees:', error);
+      // Error toast is handled by HttpErrorInterceptor
     }
   }
 
@@ -840,7 +838,7 @@ export class ManageMemberPaymentComponent implements OnInit {
         this.calculateTaxFromBackend();
       }
     } catch (error) {
-      console.error('Error updating fee for currency:', error);
+      // Error toast is handled by HttpErrorInterceptor
     }
   }
 }
