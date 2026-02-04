@@ -1,0 +1,102 @@
+<div class="franchise-details-container">
+  <!-- Franchise Summary Card -->
+  @if (franchise && !loading) {
+    <mat-card class="summary-card">
+      <mat-card-header>
+        <div class="franchise-header">
+          <div class="franchise-avatar">
+            <mat-icon class="avatar-icon">business</mat-icon>
+          </div>
+          <div class="franchise-info">
+            <mat-card-title>{{ getFranchiseDisplayName() }}</mat-card-title>
+            <mat-card-subtitle>{{ franchise.emailId }}</mat-card-subtitle>
+          </div>
+          <div class="franchise-status">
+            <mat-chip [class.active]="franchise.active" [class.inactive]="!franchise.active">
+              {{ franchise.active ? 'Active' : 'Inactive' }}
+            </mat-chip>
+          </div>
+        </div>
+      </mat-card-header>
+      <mat-divider></mat-divider>
+      <mat-card-content>
+        <div class="summary-grid">
+          <div class="summary-item">
+            <mat-icon>person</mat-icon>
+            <div class="summary-content">
+              <span class="summary-label">Contact Person</span>
+              <span class="summary-value">{{ getContactPersonName() }}</span>
+            </div>
+          </div>
+          <div class="summary-item">
+            <mat-icon>phone</mat-icon>
+            <div class="summary-content">
+              <span class="summary-label">Contact</span>
+              <span class="summary-value">{{ franchise.contactNumber || 'N/A' }}</span>
+            </div>
+          </div>
+          @if (franchise.alternateContactNumber) {
+            <div class="summary-item">
+              <mat-icon>phone</mat-icon>
+              <div class="summary-content">
+                <span class="summary-label">Alternate Contact</span>
+                <span class="summary-value">{{ franchise.alternateContactNumber }}</span>
+              </div>
+            </div>
+          }
+          @if (franchise.gstNumber) {
+            <div class="summary-item">
+              <mat-icon>receipt</mat-icon>
+              <div class="summary-content">
+                <span class="summary-label">GST Number</span>
+                <span class="summary-value">{{ franchise.gstNumber }}</span>
+              </div>
+            </div>
+          }
+          @if (franchise.panNumber) {
+            <div class="summary-item">
+              <mat-icon>description</mat-icon>
+              <div class="summary-content">
+                <span class="summary-label">PAN Number</span>
+                <span class="summary-value">{{ franchise.panNumber }}</span>
+              </div>
+            </div>
+          }
+        </div>
+      </mat-card-content>
+    </mat-card>
+  }
+
+  <!-- Loading State -->
+  @if (loading) {
+    <shared-ui-loader [diameter]="50"></shared-ui-loader>
+  }
+
+  <!-- Main Content with Sidebar -->
+  @if (franchise && !loading) {
+    <div class="details-content">
+      <!-- Left Sidebar Navigation -->
+      <mat-card class="sidebar-card">
+        <mat-nav-list>
+          @for (item of menuItems; track item.route) {
+            <a
+              mat-list-item
+              [routerLink]="item.route"
+              routerLinkActive="active"
+              [routerLinkActiveOptions]="{ exact: false }"
+            >
+              <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
+              <span matListItemTitle>{{ item.label }}</span>
+            </a>
+          }
+        </mat-nav-list>
+      </mat-card>
+
+      <!-- Right Content Area -->
+      <div class="content-area">
+        <router-outlet></router-outlet>
+      </div>
+    </div>
+  }
+</div>
+

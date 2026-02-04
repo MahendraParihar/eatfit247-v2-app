@@ -1,0 +1,19 @@
+# Node
+node_modules/
+package-lock.json
+
+# Compiled output
+dist/
+
+# Nx
+.nx/cache
+.nx/workspace-data
+
+# IDEs and editors
+.idea/
+.vscode/
+.cursor/
+
+# System files
+.DS_Store
+

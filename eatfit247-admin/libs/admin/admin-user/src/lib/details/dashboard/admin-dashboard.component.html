@@ -1,0 +1,23 @@
+@if (loading) {
+  <shared-ui-loader [fullScreen]="false" [message]="'Loading dashboard...'"></shared-ui-loader>
+} @else if (error) {
+  <shared-ui-empty-state
+    [title]="'Failed to Load Dashboard'"
+    [description]="error"
+    buttonLabel="Retry"
+    buttonIcon="refresh"
+    (buttonClick)="onRefresh()"
+  ></shared-ui-empty-state>
+} @else {
+  <div class="dashboard-container">
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>Admin Overview</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <p>Admin dashboard content will be displayed here.</p>
+      </mat-card-content>
+    </mat-card>
+  </div>
+}
+
