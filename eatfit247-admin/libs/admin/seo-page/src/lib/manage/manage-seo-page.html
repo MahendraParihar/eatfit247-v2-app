@@ -1,0 +1,161 @@
+<mat-card class="form-card">
+  <mat-card-header>
+    <mat-card-title>{{ pageTitle }}</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <form [formGroup]="formGroup" (ngSubmit)="onSubmit()">
+      <div class="form-fields">
+        <mat-form-field class="full-width">
+          <mat-label>URL</mat-label>
+          <input
+            matInput
+            formControlName="url"
+            placeholder="Enter URL (e.g., /about-us)"
+          />
+          <shared-ui-input-error [control]="formGroup.get('url')" controlName="URL"></shared-ui-input-error>
+        </mat-form-field>
+
+        <mat-form-field class="full-width">
+          <mat-label>Meta Title</mat-label>
+          <input
+            matInput
+            formControlName="metaTitle"
+            placeholder="Enter meta title"
+          />
+          @if (getMaxLength('metaTitle')) {
+            <mat-hint align="end">
+              {{ getCurrentLength('metaTitle') }}/{{ getMaxLength('metaTitle') }}
+            </mat-hint>
+          }
+          <shared-ui-input-error [control]="formGroup.get('metaTitle')" controlName="Meta Title"></shared-ui-input-error>
+        </mat-form-field>
+
+        <mat-form-field class="full-width">
+          <mat-label>Meta Description</mat-label>
+          <textarea
+            matInput
+            formControlName="metaDescription"
+            placeholder="Enter meta description"
+            rows="3"
+          ></textarea>
+          @if (getMaxLength('metaDescription')) {
+            <mat-hint align="end">
+              {{ getCurrentLength('metaDescription') }}/{{ getMaxLength('metaDescription') }}
+            </mat-hint>
+          }
+          <shared-ui-input-error [control]="formGroup.get('metaDescription')" controlName="Meta Description"></shared-ui-input-error>
+        </mat-form-field>
+
+        <mat-form-field class="full-width">
+          <mat-label>Canonical URL</mat-label>
+          <input
+            matInput
+            formControlName="canonicalUrl"
+            placeholder="Enter canonical URL"
+          />
+          <shared-ui-input-error [control]="formGroup.get('canonicalUrl')" controlName="Canonical URL"></shared-ui-input-error>
+        </mat-form-field>
+
+        <mat-form-field class="full-width">
+          <mat-label>OG Type</mat-label>
+          <input
+            matInput
+            formControlName="ogType"
+            placeholder="Enter OG type (e.g., website, article)"
+          />
+          @if (getMaxLength('ogType')) {
+            <mat-hint align="end">
+              {{ getCurrentLength('ogType') }}/{{ getMaxLength('ogType') }}
+            </mat-hint>
+          }
+          <shared-ui-input-error [control]="formGroup.get('ogType')" controlName="OG Type"></shared-ui-input-error>
+        </mat-form-field>
+
+        <mat-form-field class="full-width">
+          <mat-label>OG Title</mat-label>
+          <input
+            matInput
+            formControlName="ogTitle"
+            placeholder="Enter OG title"
+          />
+          @if (getMaxLength('ogTitle')) {
+            <mat-hint align="end">
+              {{ getCurrentLength('ogTitle') }}/{{ getMaxLength('ogTitle') }}
+            </mat-hint>
+          }
+          <shared-ui-input-error [control]="formGroup.get('ogTitle')" controlName="OG Title"></shared-ui-input-error>
+        </mat-form-field>
+
+        <mat-form-field class="full-width">
+          <mat-label>OG Description</mat-label>
+          <textarea
+            matInput
+            formControlName="ogDescription"
+            placeholder="Enter OG description"
+            rows="3"
+          ></textarea>
+          @if (getMaxLength('ogDescription')) {
+            <mat-hint align="end">
+              {{ getCurrentLength('ogDescription') }}/{{ getMaxLength('ogDescription') }}
+            </mat-hint>
+          }
+          <shared-ui-input-error [control]="formGroup.get('ogDescription')" controlName="OG Description"></shared-ui-input-error>
+        </mat-form-field>
+
+        <mat-form-field class="full-width">
+          <mat-label>OG URL</mat-label>
+          <input
+            matInput
+            formControlName="ogUrl"
+            placeholder="Enter OG URL"
+          />
+          <shared-ui-input-error [control]="formGroup.get('ogUrl')" controlName="OG URL"></shared-ui-input-error>
+        </mat-form-field>
+
+        <mat-form-field class="full-width">
+          <mat-label>Twitter Card</mat-label>
+          <input
+            matInput
+            formControlName="twitterCard"
+            placeholder="Enter Twitter card type (e.g., summary, summary_large_image)"
+          />
+          @if (getMaxLength('twitterCard')) {
+            <mat-hint align="end">
+              {{ getCurrentLength('twitterCard') }}/{{ getMaxLength('twitterCard') }}
+            </mat-hint>
+          }
+          <shared-ui-input-error [control]="formGroup.get('twitterCard')" controlName="Twitter Card"></shared-ui-input-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Status</mat-label>
+          <mat-select formControlName="active">
+            <mat-option [value]="true">Active</mat-option>
+            <mat-option [value]="false">Inactive</mat-option>
+          </mat-select>
+          <shared-ui-input-error [control]="formGroup.get('active')" controlName="Status"></shared-ui-input-error>
+        </mat-form-field>
+      </div>
+
+      <div class="form-actions">
+        <button
+          type="button"
+          mat-stroked-button
+          (click)="onCancel()"
+        >
+          <mat-icon>close</mat-icon>
+          Cancel
+        </button>
+        <button
+          type="submit"
+          mat-raised-button
+          color="primary"
+        >
+          <mat-icon>{{ isEditMode ? 'save' : 'add' }}</mat-icon>
+          {{ isEditMode ? 'Update' : 'Create' }}
+        </button>
+      </div>
+    </form>
+  </mat-card-content>
+</mat-card>
+
