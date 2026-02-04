@@ -29,32 +29,32 @@ export class AboutShwetaShahComponent implements OnInit {
   socialLinks: SocialLink[] = [
     {
       name: 'Facebook',
-      icon: '/assets/images/social/facebook.svg',
+      icon: 'assets/images/social/facebook.svg',
       url: 'https://www.facebook.com/sharer/sharer.php?u=https://eatfit24by7.com/about-shweta-shah/',
     },
     {
       name: 'Twitter',
-      icon: '/assets/images/social/twitter.svg',
+      icon: 'assets/images/social/twitter.svg',
       url: 'https://twitter.com/share?url=https://eatfit24by7.com/about-shweta-shah/',
     },
     {
       name: 'Telegram',
-      icon: '/assets/images/social/telegram.svg',
+      icon: 'assets/images/social/telegram.svg',
       url: 'https://telegram.me/share/url?url=https://eatfit24by7.com/about-shweta-shah/',
     },
     {
       name: 'YouTube',
-      icon: '/assets/images/social/youtube.svg',
+      icon: 'assets/images/social/youtube.svg',
       url: 'https://www.youtube.com/@shwetashahEatfit247',
     },
     {
       name: 'Pinterest',
-      icon: '/assets/images/social/pinterest.svg',
+      icon: 'assets/images/social/pinterest.svg',
       url: 'https://pinterest.com/pin/create/button/?url=https://eatfit24by7.com/about-shweta-shah/&media=https://eatfit24by7.com/wp-includes/images/media/default.svg',
     },
     {
       name: 'LinkedIn',
-      icon: '/assets/images/social/linkedin.svg',
+      icon: 'assets/images/social/linkedin.svg',
       url: 'https://www.linkedin.com/shareArticle?mini=true&url=https://eatfit24by7.com/about-shweta-shah/',
     },
   ];

@@ -37,7 +37,7 @@ export class JourneyStepsComponent {
   ];
 
   // Image URL - can be made configurable via @Input if needed
-  readonly imageUrl = '/assets/images/home/steps.png';
+  readonly imageUrl = 'assets/images/home/steps.png';
   readonly imageAlt = 'Steps';
 
   /**

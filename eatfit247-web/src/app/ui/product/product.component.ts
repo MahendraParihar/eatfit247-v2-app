@@ -70,7 +70,7 @@ export class ProductComponent implements OnInit, OnDestroy {
   productImages1: string[] = [];
   selectedImageIndex: number = 0;
   // Star powder image
-  starPowderImage: string = '/assets/images/products/start-powder.png';
+  starPowderImage: string = 'assets/images/products/start-powder.png';
   // Custom slider for the 3rd section
   featureSliderCurrentIndex: number = 0;
   private featureSliderTimer: any = null;
@@ -656,7 +656,7 @@ export class ProductComponent implements OnInit, OnDestroy {
    */
   get selectedImage(): string {
     if (this.productImages.length === 0) {
-      return '/assets/images/products/debloat-main-1200x1200.jpg'; // Fallback image
+      return 'assets/images/products/debloat-main-1200x1200.jpg'; // Fallback image
     }
     return this.productImages[this.selectedImageIndex] || this.productImages[0];
   }

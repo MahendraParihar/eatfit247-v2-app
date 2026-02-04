@@ -32,32 +32,32 @@ export class FooterComponent {
   readonly socialLinks: SocialLink[] = [
     {
       name: 'Facebook',
-      icon: '/assets/images/social/facebook.svg',
+      icon: 'assets/images/social/facebook.svg',
       url: 'https://www.facebook.com/eatfit24by7',
     },
     {
       name: 'Twitter',
-      icon: '/assets/images/social/twitter.svg',
+      icon: 'assets/images/social/twitter.svg',
       url: 'https://twitter.com/eatfit24by7',
     },
     {
       name: 'Instagram',
-      icon: '/assets/images/social/instagram.svg',
+      icon: 'assets/images/social/instagram.svg',
       url: 'https://www.instagram.com/eatfit24by7',
     },
     {
       name: 'YouTube',
-      icon: '/assets/images/social/youtube.svg',
+      icon: 'assets/images/social/youtube.svg',
       url: 'https://www.youtube.com/eatfit24by7',
     },
     {
       name: 'Pinterest',
-      icon: '/assets/images/social/pinterest.svg',
+      icon: 'assets/images/social/pinterest.svg',
       url: 'https://www.pinterest.com/eatfit24by7',
     },
     {
       name: 'LinkedIn',
-      icon: '/assets/images/social/linkedin.svg',
+      icon: 'assets/images/social/linkedin.svg',
       url: 'https://www.linkedin.com/company/eatfit24by7',
     },
   ];

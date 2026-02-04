@@ -27,7 +27,7 @@ export class ProductShowcaseComponent {
     'Discover the power of nature with our organic herbal ingredients',
   ];
   productTagLine = 'Promotes gut health and digestive comfort – try it today!';
-  productImage = '/assets/images/products/debloat-alt-1200x1205.jpg';
+  productImage = 'assets/images/products/debloat-alt-1200x1205.jpg';
 
   /**
    * Navigate to product page

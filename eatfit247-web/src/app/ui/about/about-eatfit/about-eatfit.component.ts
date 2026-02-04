@@ -55,27 +55,27 @@ export class AboutEatfitComponent implements OnInit {
   socialLinks: SocialLink[] = [
     {
       name: 'Facebook',
-      icon: '/assets/images/social/facebook.svg',
+      icon: 'assets/images/social/facebook.svg',
       url: 'https://www.facebook.com/eatfit247',
     },
     {
       name: 'Twitter',
-      icon: '/assets/images/social/twitter.svg',
+      icon: 'assets/images/social/twitter.svg',
       url: 'https://twitter.com/eatfit247',
     },
     {
       name: 'Pinterest',
-      icon: '/assets/images/social/pinterest.svg',
+      icon: 'assets/images/social/pinterest.svg',
       url: 'https://pinterest.com/eatfit247',
     },
     {
       name: 'LinkedIn',
-      icon: '/assets/images/social/linkedin.svg',
+      icon: 'assets/images/social/linkedin.svg',
       url: 'https://www.linkedin.com/company/eatfit247',
     },
     {
       name: 'Telegram',
-      icon: '/assets/images/social/telegram.svg',
+      icon: 'assets/images/social/telegram.svg',
       url: 'https://telegram.me/eatfit247',
     },
   ];
