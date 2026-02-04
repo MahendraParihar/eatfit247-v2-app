@@ -19,7 +19,7 @@ RUN cd shared-library && npm install && npm run build
 # -------------------------------
 COPY ./eatfit247-admin ./eatfit247-admin
 RUN npm --prefix eatfit247-admin install --legacy-peer-deps
-RUN npm --prefix eatfit247-admin run build
+RUN npm --prefix eatfit247-admin run build -- --configuration=production
 
 FROM nginx:latest
 
