@@ -28,8 +28,8 @@ export const trailingSlashGuard: CanActivateFn = (): boolean | UrlTree => {
     const queryAndFragment = originalUrl.substring(path.length);
     const normalizedUrl = normalizedPath + queryAndFragment;
     
-    // Return UrlTree for redirect (replaces URL in history for SEO)
-    return router.createUrlTree([normalizedUrl], { replaceUrl: true });
+    // Return UrlTree for redirect
+    return router.createUrlTree([normalizedUrl]);
   }
 
   return true;
