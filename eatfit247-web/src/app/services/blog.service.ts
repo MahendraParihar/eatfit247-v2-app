@@ -166,9 +166,6 @@ export class BlogService {
     const readTime = Math.ceil(wordCount / 200);
     // Convert tags from CSV string to array
     let tags: string[] = [];
-    if (blog.seo?.tags) {
-      tags = blog.seo.tags;
-    }
     return {
       id: blog.blogId.toString(),
       title: blog.title,

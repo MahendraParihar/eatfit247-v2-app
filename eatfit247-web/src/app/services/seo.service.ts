@@ -1,4 +1,5 @@
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { Meta, Title } from '@angular/platform-browser';
 import { NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs/operators';
@@ -26,6 +27,8 @@ export class SEOService {
   private readonly siteUrl = 'https://eatfit24by7.com';
   private readonly defaultImage = `${this.siteUrl}/assets/images/logo.png`;
   private readonly seoPageService = inject(SeoPageService);
+  private readonly platformId = inject(PLATFORM_ID);
+  private isInitialNavigation = true;
 
   constructor(private meta: Meta, private title: Title, private router: Router) {
     this.initializeRouterListener();
@@ -38,8 +41,16 @@ export class SEOService {
     this.router.events
       .pipe(filter((event) => event instanceof NavigationEnd))
       .subscribe(() => {
+        // Skip initial navigation on browser (SEO already set from SSR)
+        // Only process subsequent route changes on browser
+        if (isPlatformBrowser(this.platformId) && this.isInitialNavigation) {
+          this.isInitialNavigation = false;
+          return;
+        }
+        
         // Load SEO data from API on route change
         this.loadSeoForCurrentRoute();
+        this.isInitialNavigation = false;
       });
   }
 

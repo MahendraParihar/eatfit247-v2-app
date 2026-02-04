@@ -50,7 +50,6 @@ interface Program {
 }
 
 export class SitemapGenerator {
-  private readonly baseUrl: string;
   private readonly siteUrl: string = 'https://eatfit24by7.com';
   private readonly apiUrl: string;
 

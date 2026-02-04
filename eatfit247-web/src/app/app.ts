@@ -1,4 +1,5 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
 import { BaseLayoutComponent } from './ui/base-layout/base-layout.component';
 import { SEOService } from './services/seo.service';
@@ -17,19 +18,24 @@ export class App implements OnInit {
   private seoPageService = inject(SeoPageService);
   private router = inject(Router);
   private analyticsService = inject(AnalyticsService);
+  private platformId = inject(PLATFORM_ID);
 
   async ngOnInit(): Promise<void> {
-    // Initialize Google Analytics
+    // Initialize Google Analytics (only on browser)
     this.analyticsService.initialize();
 
-    // Load SEO data for initial route
-    await this.loadInitialSeo();
+    // Load SEO data for initial route only on server (SSR)
+    // On client, SEO is already set from SSR, and router listener will handle route changes
+    if (!isPlatformBrowser(this.platformId)) {
+      await this.loadInitialSeo();
+    }
 
-    // Add organization structured data
-    this.seoService.addOrganizationStructuredData();
-
-    // Add website structured data
-    this.seoService.addWebsiteStructuredData();
+    // Add organization structured data (only on browser)
+    if (isPlatformBrowser(this.platformId)) {
+      this.seoService.addOrganizationStructuredData();
+      // Add website structured data
+      this.seoService.addWebsiteStructuredData();
+    }
   }
 
   /**
