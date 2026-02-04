@@ -19,7 +19,6 @@
           "zone.js"
         ],
         "tsConfig": "tsconfig.app.json",
-        "serverTsConfig": "tsconfig.server.json",
         "inlineStyleLanguage": "scss",
         "assets": [
           {
