@@ -1003,7 +1003,7 @@ docker rmi [IMAGE_ID]
 ```
 ### Delete unused images
 ```shell list
-docker image prune
+docker system prune
 ```
 
 ### Delete all containers including its volumes use
