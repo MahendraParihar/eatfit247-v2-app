@@ -1,4 +1,5 @@
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { HttpService } from './http.service';
 
 export interface PaymentOrderRequest {
@@ -57,12 +58,18 @@ export interface PaymentErrorCallback {
 })
 export class PaymentService {
   private readonly httpService = inject(HttpService);
+  private readonly platformId = inject(PLATFORM_ID);
   private razorpayInstance: any = null;
 
   /**
    * Load Razorpay script dynamically
    */
   private loadRazorpayScript(): Promise<void> {
+    // Only load script in browser environment
+    if (!isPlatformBrowser(this.platformId)) {
+      return Promise.reject(new Error('Razorpay is only available in browser environment'));
+    }
+
     return new Promise((resolve, reject) => {
       if (window.Razorpay) {
         resolve();
@@ -172,6 +179,12 @@ export class PaymentService {
     onSuccess: PaymentSuccessCallback,
     onError: PaymentErrorCallback
   ): Promise<void> {
+    // Only execute in browser environment
+    if (!isPlatformBrowser(this.platformId)) {
+      onError(new Error('Razorpay payment is only available in browser environment'));
+      return;
+    }
+
     try {
       await this.loadRazorpayScript();
 

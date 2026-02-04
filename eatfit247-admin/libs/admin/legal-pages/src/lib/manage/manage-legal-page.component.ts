@@ -136,11 +136,6 @@ export class ManageLegalPage implements OnInit, OnDestroy {
       if (seoControl && seoControl.value) {
         const seoValue = seoControl.value;
         formValue.seo = seoValue;
-        formValue.seo.tags = seoValue.tags
-          ? typeof seoValue.tags === 'string'
-            ? seoValue.tags.split(', ').filter((t: string) => t.trim())
-            : seoValue.tags
-          : undefined;
       }
       if (this.isEditMode && this.initialData) {
         const legalPageId = this.initialData.legalPageId;

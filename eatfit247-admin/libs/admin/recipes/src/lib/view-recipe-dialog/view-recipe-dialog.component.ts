@@ -141,11 +141,5 @@ export class ViewRecipeDialogComponent implements OnInit {
     return 'N/A';
   }
 
-  getTags(): string[] {
-    if (this.recipe.tags && Array.isArray(this.recipe.tags)) {
-      return this.recipe.tags;
-    }
-    return [];
-  }
 }
 

@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
@@ -6,6 +6,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { FaqService } from '../../services/faq.service';
+import { SEOService } from '../../services/seo.service';
 import { IFaq, IFaqCategory } from 'eatfit247-shared-library';
 import { FaqItemComponent } from '../shared/faq-item/faq-item.component';
 
@@ -28,8 +29,9 @@ import { FaqItemComponent } from '../shared/faq-item/faq-item.component';
   templateUrl: './faq.component.html',
   styleUrl: './faq.component.scss',
 })
-export class FaqComponent implements OnInit {
+export class FaqComponent implements OnInit, OnDestroy {
   private readonly faqService = inject(FaqService);
+  private readonly seoService = inject(SEOService);
 
   // Pagination
   currentPage = 1;
@@ -65,6 +67,12 @@ export class FaqComponent implements OnInit {
       this.faqs = result.faqs;
       this.totalFaqs = result.total;
       this.totalPages = result.totalPages;
+
+      // Add FAQ structured data for SEO
+      this.addFaqStructuredData();
+      
+      // Add breadcrumb structured data for SEO
+      this.addBreadcrumbStructuredData();
     } catch (error) {
       console.error('Error loading FAQs:', error);
       this.faqs = [];
@@ -73,6 +81,32 @@ export class FaqComponent implements OnInit {
     } finally {
       this.loading = false;
     }
+  }
+
+  /**
+   * Add FAQ structured data for SEO
+   */
+  private addFaqStructuredData(): void {
+    if (this.faqs.length === 0) return;
+
+    const faqData = this.faqs.map((faq) => ({
+      question: faq.faq,
+      answer: faq.answer,
+    }));
+
+    this.seoService.addFaqStructuredData(faqData);
+  }
+
+  /**
+   * Add breadcrumb structured data for SEO
+   */
+  private addBreadcrumbStructuredData(): void {
+    const breadcrumbItems = [
+      { name: 'Home', url: '/' },
+      { name: 'FAQ', url: '/faq' },
+    ];
+    
+    this.seoService.addBreadcrumbStructuredData(breadcrumbItems);
   }
 
   /**
@@ -111,6 +145,13 @@ export class FaqComponent implements OnInit {
     this.selectedCategoryId = categoryId;
     this.currentPage = 1;
     await this.loadFaqs();
+  }
+
+  ngOnDestroy(): void {
+    // Remove FAQ structured data when component is destroyed
+    this.seoService.removeStructuredData(undefined, 'FAQPage');
+    // Remove breadcrumb structured data when component is destroyed
+    this.seoService.removeStructuredData(undefined, 'BreadcrumbList');
   }
 }
 

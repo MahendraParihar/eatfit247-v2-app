@@ -3,16 +3,6 @@ import { ICommonSEO } from '@eatfit247-shared-lib';
 
 export class SeoDto implements ICommonSEO {
   @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  tags?: string[];
-  @IsOptional()
-  @IsString()
-  metaTitle?: string;
-  @IsOptional()
-  @IsString()
-  metaDescription?: string;
-  @IsOptional()
   @IsString()
   url?: string;
 }

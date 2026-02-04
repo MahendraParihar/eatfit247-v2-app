@@ -69,9 +69,6 @@ export class RecipeService {
       servingCount: item.servingCount,
       downloadPath: item.downloadPath,
       seo: {
-        metaTitle: item.metaTitle,
-        metaDescription: item.metaDescription,
-        tags: item.tags,
         url: item.url,
       },
       visitedCount: item.visitedCount,
@@ -119,9 +116,6 @@ export class RecipeService {
       url: obj.seo
         ? obj.seo.url
         : CommonFunctionsUtil.removeSpecialChar(obj.name.toString().toLowerCase(), '-'),
-      tags: obj.seo ? obj.seo.tags : null,
-      metaTitle: obj.seo ? obj.seo.metaTitle : null,
-      metaDescription: obj.seo ? obj.seo.metaDescription : null,
       visitedCount: 0,
       shareCount: 0,
       isVisibleToAll: obj.isVisibleToAll,
@@ -155,9 +149,6 @@ export class RecipeService {
       url: obj.seo
         ? obj.seo.url
         : CommonFunctionsUtil.removeSpecialChar(obj.name.toString().toLowerCase(), '-'),
-      tags: obj.seo ? obj.seo.tags : null,
-      metaTitle: obj.seo ? obj.seo.metaTitle : null,
-      metaDescription: obj.seo ? obj.seo.metaDescription : null,
       isVisibleToAll: obj.isVisibleToAll,
       active: obj.active,
       modifiedBy: adminId,

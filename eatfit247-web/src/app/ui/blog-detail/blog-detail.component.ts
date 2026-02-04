@@ -72,6 +72,8 @@ export class BlogDetailComponent implements OnInit, OnDestroy {
     if (this.routeSubscription) {
       this.routeSubscription.unsubscribe();
     }
+    // Remove breadcrumb structured data when component is destroyed
+    this.seoService.removeStructuredData(undefined, 'BreadcrumbList');
   }
 
   /**
@@ -138,6 +140,9 @@ export class BlogDetailComponent implements OnInit, OnDestroy {
 
       // Update SEO
       this.updateSEO();
+      
+      // Add breadcrumb structured data
+      this.addBreadcrumbStructuredData();
 
       this.loading = false;
     } catch (error) {
@@ -185,6 +190,21 @@ export class BlogDetailComponent implements OnInit, OnDestroy {
       },
     };
     this.seoService.addStructuredData(articleData);
+  }
+
+  /**
+   * Add breadcrumb structured data for SEO
+   */
+  private addBreadcrumbStructuredData(): void {
+    if (!this.blogPost) return;
+
+    const breadcrumbItems = [
+      { name: 'Home', url: '/' },
+      { name: 'Blog', url: '/blog' },
+      { name: this.blogPost.title, url: this.router.url },
+    ];
+    
+    this.seoService.addBreadcrumbStructuredData(breadcrumbItems);
   }
 
   /**

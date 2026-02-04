@@ -145,9 +145,6 @@ export class BlogService {
       shareCount: find.shareCount,
       writtenAt: find.writtenAt ? moment(find.writtenAt, DB_DATE_FORMAT).toDate() : null,
       seo: {
-        metaTitle: find.metaTitle,
-        metaDescription: find.metaDescription,
-        tags: find.tags,
         url: find.url,
       },
       active: find.active,
@@ -189,9 +186,6 @@ export class BlogService {
       url: obj.seo
         ? obj.seo.url
         : CommonFunctionsUtil.removeSpecialChar(obj.title.toString().toLowerCase(), '-'),
-      tags: obj.seo ? obj.seo.tags : null,
-      metaTitle: obj.seo ? obj.seo.metaTitle : null,
-      metaDescription: obj.seo ? obj.seo.metaDescription : null,
       active: true,
       imagePath: obj.imagePath && obj.imagePath.length > 0 ? obj.imagePath : null,
       createdBy: adminId,
@@ -223,9 +217,6 @@ export class BlogService {
       url: obj.seo
         ? obj.seo.url
         : CommonFunctionsUtil.removeSpecialChar(obj.title.toString().toLowerCase(), '-'),
-      tags: obj.seo ? obj.seo.tags : null,
-      metaTitle: obj.seo ? obj.seo.metaTitle : null,
-      metaDescription: obj.seo ? obj.seo.metaDescription : null,
       imagePath: obj.imagePath && obj.imagePath.length > 0 ? obj.imagePath : null,
       modifiedBy: adminId,
       modifiedIp: cIp,

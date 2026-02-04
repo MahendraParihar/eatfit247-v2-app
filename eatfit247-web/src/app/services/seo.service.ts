@@ -175,22 +175,66 @@ export class SEOService {
 
   /**
    * Add structured data (JSON-LD)
+   * @param data The structured data object
+   * @param id Optional unique identifier for the structured data script. If not provided, a unique ID will be generated.
    */
-  addStructuredData(data: object): void {
+  addStructuredData(data: object, id?: string): void {
     const script = document.createElement('script');
     script.type = 'application/ld+json';
     script.text = JSON.stringify(data);
-    script.id = 'structured-data';
+    
+    // Use provided ID or generate a unique one based on schema type
+    if (id) {
+      script.id = id;
+    } else {
+      // Generate ID based on schema type
+      const schemaType = (data as any)['@type'] || 'structured-data';
+      const timestamp = Date.now();
+      script.id = `structured-data-${schemaType.toLowerCase()}-${timestamp}`;
+    }
+    
     document.head.appendChild(script);
   }
 
   /**
-   * Remove structured data
+   * Remove structured data by ID or by schema type
+   * @param id The ID of the structured data script to remove
+   * @param schemaType Optional schema type to remove (e.g., 'Product', 'FAQPage', 'BreadcrumbList')
    */
-  removeStructuredData(): void {
-    const script = document.getElementById('structured-data');
-    if (script) {
-      script.remove();
+  removeStructuredData(id?: string, schemaType?: string): void {
+    if (id) {
+      const script = document.getElementById(id);
+      if (script) {
+        script.remove();
+      }
+    } else if (schemaType) {
+      // Remove structured data scripts matching the schema type
+      const scripts = document.querySelectorAll('script[type="application/ld+json"]');
+      scripts.forEach((script) => {
+        try {
+          const data = JSON.parse(script.textContent || '{}');
+          if (data['@type'] === schemaType) {
+            script.remove();
+          }
+        } catch (e) {
+          // Ignore parsing errors
+        }
+      });
+    } else {
+      // Remove page-specific structured data (Product, FAQPage, BreadcrumbList, BlogPosting)
+      // but preserve global schemas (Organization, WebSite)
+      const pageSpecificTypes = ['Product', 'FAQPage', 'BreadcrumbList', 'BlogPosting'];
+      const scripts = document.querySelectorAll('script[type="application/ld+json"]');
+      scripts.forEach((script) => {
+        try {
+          const data = JSON.parse(script.textContent || '{}');
+          if (pageSpecificTypes.includes(data['@type'])) {
+            script.remove();
+          }
+        } catch (e) {
+          // Ignore parsing errors
+        }
+      });
     }
   }
 
@@ -246,6 +290,109 @@ export class SEOService {
     };
 
     this.addStructuredData(websiteData);
+  }
+
+  /**
+   * Add product structured data
+   */
+  addProductStructuredData(productData: {
+    name: string;
+    description?: string;
+    image?: string | string[];
+    price?: number;
+    priceCurrency?: string;
+    availability?: string;
+    sku?: string;
+    url?: string;
+  }): void {
+    if (!productData.name) return;
+
+    const productSchema: any = {
+      '@context': 'https://schema.org',
+      '@type': 'Product',
+      name: productData.name,
+      description: productData.description || this.defaultDescription,
+      brand: {
+        '@type': 'Brand',
+        name: 'EatFit24By7',
+      },
+    };
+
+    // Add image(s)
+    if (productData.image) {
+      if (Array.isArray(productData.image)) {
+        productSchema.image = productData.image;
+      } else {
+        productSchema.image = productData.image;
+      }
+    } else {
+      productSchema.image = this.defaultImage;
+    }
+
+    // Add offer/price information
+    if (productData.price !== undefined) {
+      productSchema.offers = {
+        '@type': 'Offer',
+        priceCurrency: productData.priceCurrency || 'INR',
+        price: productData.price.toString(),
+        availability: productData.availability || 'https://schema.org/InStock',
+        url: productData.url || `${this.siteUrl}/product`,
+      };
+    }
+
+    // Add SKU if available
+    if (productData.sku) {
+      productSchema.sku = productData.sku;
+    }
+
+    // Add URL if available
+    if (productData.url) {
+      productSchema.url = productData.url;
+    }
+
+    this.addStructuredData(productSchema);
+  }
+
+  /**
+   * Add FAQ page structured data
+   */
+  addFaqStructuredData(faqs: Array<{ question: string; answer: string }>): void {
+    if (!faqs || faqs.length === 0) return;
+
+    const faqSchema = {
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: faqs.map((faq) => ({
+        '@type': 'Question',
+        name: faq.question,
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: faq.answer,
+        },
+      })),
+    };
+
+    this.addStructuredData(faqSchema);
+  }
+
+  /**
+   * Add breadcrumb structured data
+   */
+  addBreadcrumbStructuredData(items: Array<{ name: string; url: string }>): void {
+    if (!items || items.length === 0) return;
+
+    const breadcrumbSchema = {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: items.map((item, index) => ({
+        '@type': 'ListItem',
+        position: index + 1,
+        name: item.name,
+        item: item.url.startsWith('http') ? item.url : `${this.siteUrl}${item.url}`,
+      })),
+    };
+
+    this.addStructuredData(breadcrumbSchema);
   }
 }
 

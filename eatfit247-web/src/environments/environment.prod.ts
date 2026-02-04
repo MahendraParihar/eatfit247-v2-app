@@ -10,5 +10,8 @@ export const environment = {
   recaptcha: {
     siteKey: 'YOUR_RECAPTCHA_V3_SITE_KEY', // Replace with your reCAPTCHA v3 site key
   },
+  googleAnalytics: {
+    trackingId: 'G-WXHQ6LPSLV', // Replace with your Google Analytics 4 tracking ID
+  },
 };
 

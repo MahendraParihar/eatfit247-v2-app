@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { BaseLayoutComponent } from './ui/base-layout/base-layout.component';
 import { SEOService } from './services/seo.service';
 import { SeoPageService } from './services/seo-page.service';
+import { AnalyticsService } from './services/analytics.service';
 
 @Component({
   selector: 'app-root',
@@ -15,8 +16,12 @@ export class App implements OnInit {
   private seoService = inject(SEOService);
   private seoPageService = inject(SeoPageService);
   private router = inject(Router);
+  private analyticsService = inject(AnalyticsService);
 
   async ngOnInit(): Promise<void> {
+    // Initialize Google Analytics
+    this.analyticsService.initialize();
+
     // Load SEO data for initial route
     await this.loadInitialSeo();
 

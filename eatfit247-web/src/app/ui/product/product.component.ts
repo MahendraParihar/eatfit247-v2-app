@@ -10,6 +10,7 @@ import { MatInputModule } from '@angular/material/input';
 import { FormsModule } from '@angular/forms';
 import { BannerService } from '../../services/banner.service';
 import { ProductService } from '../../services/product.service';
+import { SEOService } from '../../services/seo.service';
 import {
   BannerForEnum,
   IOutcomes,
@@ -53,6 +54,7 @@ export class ProductComponent implements OnInit, OnDestroy {
   private readonly bannerService = inject(BannerService);
   private readonly productService = inject(ProductService);
   private readonly router = inject(Router);
+  private readonly seoService = inject(SEOService);
   // Banner items
   bannerItems: SliderItem[] = [];
   // Product data
@@ -269,6 +271,10 @@ export class ProductComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.stopFeatureSliderAutoSwitch();
+    // Remove product structured data when component is destroyed
+    this.seoService.removeStructuredData(undefined, 'Product');
+    // Remove breadcrumb structured data when component is destroyed
+    this.seoService.removeStructuredData(undefined, 'BreadcrumbList');
   }
 
   /**
@@ -520,6 +526,53 @@ export class ProductComponent implements OnInit, OnDestroy {
     if (this.productImages1.length > 1) {
       this.startFeatureSliderAutoSwitch();
     }
+
+    // Add product structured data for SEO
+    this.addProductStructuredData();
+    
+    // Add breadcrumb structured data for SEO
+    this.addBreadcrumbStructuredData();
+  }
+
+  /**
+   * Add product structured data for SEO
+   */
+  private addProductStructuredData(): void {
+    if (!this.product) return;
+
+    const siteUrl = 'https://eatfit24by7.com';
+    const productUrl = `${siteUrl}${this.router.url}`;
+    
+    this.seoService.addProductStructuredData({
+      name: this.productName,
+      description: this.productDescription || this.product.additionalInfo?.feature?.tagLine,
+      image: this.productImages.length > 0 ? this.productImages : undefined,
+      price: this.currentPrice,
+      priceCurrency: 'INR',
+      availability: 'https://schema.org/InStock',
+      sku: this.selectedSize?.sku,
+      url: productUrl,
+    });
+  }
+
+  /**
+   * Add breadcrumb structured data for SEO
+   */
+  private addBreadcrumbStructuredData(): void {
+    const breadcrumbItems = [
+      { name: 'Home', url: '/' },
+      { name: 'Product', url: '/product' },
+    ];
+    
+    // If we have a product name, add it as the last breadcrumb
+    if (this.productName) {
+      breadcrumbItems.push({
+        name: this.productName,
+        url: this.router.url,
+      });
+    }
+    
+    this.seoService.addBreadcrumbStructuredData(breadcrumbItems);
   }
 
   /**

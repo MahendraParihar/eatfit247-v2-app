@@ -54,32 +54,11 @@ export class LegalPagesModel extends Model<LegalPagesModel> {
   declare imagePath: IMediaUpload[];
 
   @Column({
-    field: 'tags',
-    allowNull: true,
-    type: DataType.ARRAY(DataType.STRING),
-  })
-  declare tags: string[];
-
-  @Column({
     field: 'url',
     allowNull: true,
     type: DataType.TEXT,
   })
   declare url: string;
-
-  @Column({
-    field: 'meta_title',
-    allowNull: true,
-    type: DataType.STRING(60),
-  })
-  declare metaTitle: string;
-
-  @Column({
-    field: 'meta_description',
-    allowNull: true,
-    type: DataType.STRING(160),
-  })
-  declare metaDescription: string;
 
   @Column({
     allowNull: false,

@@ -18,9 +18,6 @@ export interface ICommonTable {
 }
 
 export interface ICommonSEO {
-  tags?: string[];
-  metaTitle?: string;
-  metaDescription?: string;
   url?: string;
 }
 

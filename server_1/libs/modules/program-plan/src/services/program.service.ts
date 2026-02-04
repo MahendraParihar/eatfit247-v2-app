@@ -55,9 +55,6 @@ export class ProgramService {
       isSpecialProgram: item.isSpecialProgram,
       videoUrl: item.videoUrl,
       seo: {
-        metaTitle: item.metaTitle,
-        metaDescription: item.metaDescription,
-        tags: item.tags,
         url: item.url,
       },
       imagePath: CommonFunctionsUtil.buildImageUrl(item.imagePath),
@@ -97,9 +94,6 @@ export class ProgramService {
       isSpecialProgram: obj.isSpecialProgram,
       videoUrl: obj.videoUrl,
       url: obj.seo ? obj.seo.url : CommonFunctionsUtil.removeSpecialChar(obj.program.toString().toLowerCase(), '-'),
-      tags: obj.seo ? obj.seo.tags : null,
-      metaTitle: obj.seo ? obj.seo.metaTitle : null,
-      metaDescription: obj.seo ? obj.seo.metaDescription : null,
       imagePath: obj.imagePath && obj.imagePath.length > 0 ? obj.imagePath : null,
       active: obj.active,
       createdBy: adminId,
@@ -129,9 +123,6 @@ export class ProgramService {
       url: obj.seo
         ? obj.seo.url
         : CommonFunctionsUtil.removeSpecialChar(obj.program.toString().toLowerCase(), '-'),
-      tags: obj.seo ? obj.seo.tags : null,
-      metaTitle: obj.seo ? obj.seo.metaTitle : null,
-      metaDescription: obj.seo ? obj.seo.metaDescription : null,
       imagePath: obj.imagePath && obj.imagePath.length > 0 ? obj.imagePath : null,
       active: obj.active,
       modifiedBy: adminId,

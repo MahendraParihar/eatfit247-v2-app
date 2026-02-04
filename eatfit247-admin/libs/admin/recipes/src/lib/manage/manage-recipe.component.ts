@@ -130,7 +130,6 @@ export class ManageRecipe implements OnInit, OnDestroy {
           this.initialData.isVisibleToAll !== undefined
             ? this.initialData.isVisibleToAll
             : false,
-        tags: this.initialData.tags || [],
         active:
           this.initialData.active !== undefined
             ? this.initialData.active
@@ -232,11 +231,6 @@ export class ManageRecipe implements OnInit, OnDestroy {
       if (seoControl && seoControl.value) {
         const seoValue = seoControl.value;
         formValue.seo = seoValue;
-        formValue.seo.tags = seoValue.tags
-          ? typeof seoValue.tags === 'string'
-            ? seoValue.tags.split(', ').filter((t: string) => t.trim())
-            : seoValue.tags
-          : undefined;
       }
       try {
         if (this.isEditMode && this.initialData) {

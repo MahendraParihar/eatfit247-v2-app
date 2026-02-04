@@ -1,4 +1,5 @@
-import { Injectable } from '@angular/core';
+import { Injectable, PLATFORM_ID, inject } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { environment } from '../../environments/environment';
 
 declare global {
@@ -20,6 +21,7 @@ declare global {
   providedIn: 'root'
 })
 export class RecaptchaService {
+  private readonly platformId = inject(PLATFORM_ID);
   private readonly siteKey = environment.recaptcha?.siteKey;
   private scriptLoaded = false;
   private scriptLoading = false;
@@ -29,6 +31,11 @@ export class RecaptchaService {
    * @returns Promise that resolves when script is loaded
    */
   private async loadScript(): Promise<void> {
+    // Only load script in browser environment
+    if (!isPlatformBrowser(this.platformId)) {
+      return Promise.resolve();
+    }
+
     if (this.scriptLoaded) {
       return;
     }
@@ -88,6 +95,11 @@ export class RecaptchaService {
    * @returns Promise that resolves with the reCAPTCHA token
    */
   async getToken(action: string): Promise<string> {
+    // Only execute in browser environment
+    if (!isPlatformBrowser(this.platformId)) {
+      throw new Error('reCAPTCHA is only available in browser environment');
+    }
+
     try {
       // Ensure script is loaded
       await this.loadScript();
@@ -115,10 +127,10 @@ export class RecaptchaService {
 
   /**
    * Check if reCAPTCHA is available and configured
-   * @returns true if reCAPTCHA is configured
+   * @returns true if reCAPTCHA is configured and in browser environment
    */
   isAvailable(): boolean {
-    return !!this.siteKey;
+    return isPlatformBrowser(this.platformId) && !!this.siteKey;
   }
 }
 

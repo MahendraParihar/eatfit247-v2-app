@@ -119,27 +119,6 @@ export class MstProgram extends Model<MstProgram> {
   declare videoUrl: string;
 
   @Column({
-    field: 'tags',
-    allowNull: true,
-    type: DataType.ARRAY(DataType.STRING),
-  })
-  declare tags: string[];
-
-  @Column({
-    allowNull: true,
-    field: 'meta_title',
-    type: DataType.STRING(InputLengthEnum.CHAR_60),
-  })
-  declare metaTitle: string;
-
-  @Column({
-    allowNull: true,
-    field: 'meta_description',
-    type: DataType.STRING(InputLengthEnum.CHAR_160),
-  })
-  declare metaDescription: string;
-
-  @Column({
     allowNull: false,
     defaultValue: true,
     field: 'active',

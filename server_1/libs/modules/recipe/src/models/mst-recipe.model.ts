@@ -186,12 +186,6 @@ export class MstRecipe extends Model<MstRecipe> {
   })
   declare shareCount: number;
   @Column({
-    field: 'tags',
-    allowNull: true,
-    type: DataType.ARRAY(DataType.STRING),
-  })
-  declare tags: string[];
-  @Column({
     allowNull: true,
     field: 'download_path',
     type: DataType.JSONB,
@@ -203,18 +197,6 @@ export class MstRecipe extends Model<MstRecipe> {
     type: DataType.STRING(250),
   })
   declare url: string;
-  @Column({
-    allowNull: true,
-    field: 'meta_title',
-    type: DataType.STRING(InputLengthEnum.CHAR_60),
-  })
-  declare metaTitle: string;
-  @Column({
-    allowNull: true,
-    field: 'meta_description',
-    type: DataType.STRING(InputLengthEnum.CHAR_160),
-  })
-  declare metaDescription: string;
   @Column({
     allowNull: false,
     defaultValue: true,
