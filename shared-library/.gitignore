@@ -1,7 +1,12 @@
 node_modules/
 dist/
+package-lock.json
 *.tsbuildinfo
 .DS_Store
+
+# IDEs and editors
+.idea/
+.cursor/
 
 # Compiled JavaScript files in src (should only be in dist)
 src/**/*.js
