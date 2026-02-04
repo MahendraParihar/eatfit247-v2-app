@@ -13,6 +13,7 @@ import {
   MstPaymentStatus,
   MstState,
   TxnAddress,
+  SeoPageModel,
 } from './database/models';
 // Platform services
 import {
@@ -26,6 +27,7 @@ import {
   PaymentModeService,
   PaymentStatusService,
   RazorpayService,
+  SeoPageService,
   StateService,
   StripeService,
   TelrService,
@@ -51,6 +53,7 @@ export class PlatformModule {
       MstPaymentMode,
       MstPaymentStatus,
       MstPaymentGateway,
+      SeoPageModel,
     ];
     return {
       module: PlatformModule,
@@ -84,6 +87,7 @@ export class PlatformModule {
         InvoicePdfService,
         DietPlanPdfService,
         EmailNotificationService,
+        SeoPageService,
       ],
       exports: [
         SequelizeModule,
@@ -106,6 +110,7 @@ export class PlatformModule {
         InvoicePdfService,
         DietPlanPdfService,
         EmailNotificationService,
+        SeoPageService,
       ],
     };
   }
@@ -126,6 +131,7 @@ export class PlatformModule {
       MstPaymentMode,
       MstPaymentStatus,
       MstPaymentGateway,
+      SeoPageModel,
     ];
   }
 }

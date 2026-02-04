@@ -265,6 +265,38 @@ export class HttpService {
   }
 
   /**
+   * POST request for blob downloads (file exports)
+   * @param endpoint API endpoint
+   * @param body Request body
+   * @param options Optional HTTP options
+   * @returns Promise<Blob> - The blob file data
+   */
+  async postBlob(endpoint: string, body?: unknown, options?: Omit<HttpOptions, 'responseType'>): Promise<Blob> {
+    const url = this.buildUrl(endpoint);
+    const requestOptions = {
+      headers: options?.headers,
+      reportProgress: options?.reportProgress || false,
+      responseType: 'blob' as const,
+      withCredentials: options?.withCredentials ?? true // Default to true for blob downloads
+    };
+    if (options?.params) {
+      (requestOptions as { params?: HttpParams }).params = this.buildParams(options.params);
+    }
+    try {
+      const result = await firstValueFrom(
+        this.http.post(url, body, requestOptions)
+      );
+      // When responseType is 'blob', HttpClient returns Blob directly
+      return result as unknown as Blob;
+    } catch (error: unknown) {
+      if (error instanceof HttpErrorResponse) {
+        this.handleError(error);
+      }
+      throw error;
+    }
+  }
+
+  /**
    * Get base URL
    */
   getBaseUrl(): string {

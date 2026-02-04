@@ -1,7 +1,9 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
 import { NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs/operators';
+import { ISeoPageData } from 'eatfit247-shared-library';
+import { SeoPageService } from './seo-page.service';
 
 export interface SEOData {
   title?: string;
@@ -23,6 +25,7 @@ export class SEOService {
     'nutrition, diet plan, weight loss, health, wellness, Shweta Shah, EatFit24By7, Ayurveda, dosha, immunity, celebrity nutritionist';
   private readonly siteUrl = 'https://eatfit24by7.com';
   private readonly defaultImage = `${this.siteUrl}/assets/images/logo.png`;
+  private readonly seoPageService = inject(SeoPageService);
 
   constructor(private meta: Meta, private title: Title, private router: Router) {
     this.initializeRouterListener();
@@ -35,9 +38,65 @@ export class SEOService {
     this.router.events
       .pipe(filter((event) => event instanceof NavigationEnd))
       .subscribe(() => {
-        // Update canonical URL on route change
-        this.updateCanonicalUrl();
+        // Load SEO data from API on route change
+        this.loadSeoForCurrentRoute();
       });
+  }
+
+  /**
+   * Load SEO data for the current route from API
+   */
+  private async loadSeoForCurrentRoute(): Promise<void> {
+    const currentUrl = this.router.url.split('?')[0]; // Remove query params
+    const seoData = await this.seoPageService.getSeoByUrl(currentUrl);
+    
+    if (seoData && seoData.active) {
+      this.updateSEOFromApiData(seoData);
+    } else {
+      // Fallback to default SEO if no data found
+      this.updateCanonicalUrl();
+    }
+  }
+
+  /**
+   * Update SEO meta tags from API data (ISeoPageData)
+   */
+  updateSEOFromApiData(seoData: ISeoPageData): void {
+    const title = seoData.metaTitle
+      ? `${seoData.metaTitle} | EatFit24By7`
+      : this.defaultTitle;
+    const description = seoData.metaDescription || this.defaultDescription;
+    const canonicalUrl = seoData.canonicalUrl
+      ? seoData.canonicalUrl
+      : `${this.siteUrl}${seoData.url}`;
+    const ogType = seoData.ogType || 'website';
+    const ogTitle = seoData.ogTitle || title;
+    const ogDescription = seoData.ogDescription || description;
+    const ogUrl = seoData.ogUrl || canonicalUrl;
+    const twitterCard = seoData.twitterCard || 'summary_large_image';
+
+    // Update title
+    this.title.setTitle(title);
+
+    // Update or create meta tags
+    this.updateMetaTag('description', description);
+
+    // Open Graph tags
+    this.updateMetaTag('og:title', ogTitle);
+    this.updateMetaTag('og:description', ogDescription);
+    this.updateMetaTag('og:image', this.defaultImage);
+    this.updateMetaTag('og:url', ogUrl);
+    this.updateMetaTag('og:type', ogType);
+    this.updateMetaTag('og:site_name', 'EatFit24By7');
+
+    // Twitter Card tags
+    this.updateMetaTag('twitter:card', twitterCard);
+    this.updateMetaTag('twitter:title', ogTitle);
+    this.updateMetaTag('twitter:description', ogDescription);
+    this.updateMetaTag('twitter:image', this.defaultImage);
+
+    // Update canonical URL
+    this.updateCanonicalUrl(canonicalUrl);
   }
 
   /**

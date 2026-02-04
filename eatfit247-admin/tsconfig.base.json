@@ -31,6 +31,7 @@
       "admin-user": ["libs/admin/admin-user/src/index.ts"],
       "promo-code": ["libs/admin/promo-code/src/index.ts"],
       "legal-pages": ["libs/admin/legal-pages/src/index.ts"],
+      "seo-page": ["libs/admin/seo-page/src/index.ts"],
       "banners": ["libs/admin/banners/src/index.ts"],
       "success-stories": ["libs/admin/success-stories/src/index.ts"],
       "products": ["libs/admin/products/src/index.ts"],

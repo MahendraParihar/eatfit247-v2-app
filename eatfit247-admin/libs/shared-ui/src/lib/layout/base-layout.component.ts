@@ -149,6 +149,11 @@ export class BaseLayoutComponent implements OnInit, OnDestroy {
       route: '/legal-pages',
     },
     {
+      label: 'SEO Pages',
+      icon: 'search',
+      route: '/seo-page',
+    },
+    {
       label: 'Banners',
       icon: 'image',
       route: '/banners',

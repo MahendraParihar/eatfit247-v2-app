@@ -1,6 +1,9 @@
 import { Controller, Get, Param } from '@nestjs/common';
-import { ISeoPageData, SeoPageService } from '../../services/seo-page.service';
+import { ISeoPageData } from '@eatfit247-shared-lib';
+import { SeoPageService } from '@server_1/platform';
+import { Public } from '@server_1/core';
 
+@Public()
 @Controller('seo-page')
 export class SeoPageController {
   constructor(private readonly service: SeoPageService) {}

@@ -100,6 +100,10 @@ export const appRoutes: Route[] = [
         loadChildren: () => import('legal-pages').then((m) => m.legalPagesRoutes),
       },
       {
+        path: 'seo-page',
+        loadChildren: () => import('seo-page').then((m) => m.seoPageRoutes),
+      },
+      {
         path: 'banners',
         loadChildren: () => import('banners').then((m) => m.bannersRoutes),
       },

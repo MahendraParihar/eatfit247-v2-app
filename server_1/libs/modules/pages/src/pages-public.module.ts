@@ -1,11 +1,12 @@
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
-import { LegalPagesModel, SeoPageModel } from './models';
+import { LegalPagesModel } from './models';
+import { SeoPageModel, SeoPageService } from '@server_1/platform';
 import { modelRegistry } from '@server_1/core';
-import { SeoPageService } from './services';
 import { SeoPageController } from './controllers/public/seo-page.controller';
 // Register models with the model registry
-modelRegistry.register([LegalPagesModel, SeoPageModel]);
+// Note: SeoPageModel is already registered via PlatformModule.getModels(), so only register LegalPagesModel
+modelRegistry.register([LegalPagesModel]);
 
 /**
  * Public-only Pages Module
@@ -18,11 +19,8 @@ modelRegistry.register([LegalPagesModel, SeoPageModel]);
   controllers: [
     SeoPageController,
   ],
-  providers: [
-    SeoPageService,
-  ],
+  providers: [],
   exports: [
-    SeoPageService,
     SequelizeModule,
   ],
 })

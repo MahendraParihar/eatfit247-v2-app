@@ -61,10 +61,7 @@ export class MemberCallLogsService {
     const offset = pageNumber === 0 ? 0 : pageNumber * pageSize;
     const { rows, count } = await this.memberCallLogRepository.scope('list').findAndCountAll({
       where: whereCondition,
-      order: [
-        ['date', 'DESC'],
-        ['startTime', 'DESC'],
-      ],
+      order: [['startTime', 'DESC']],
       offset: offset,
       limit: pageSize,
       raw: true,

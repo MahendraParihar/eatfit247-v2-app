@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Param, Patch, Post, Put, UseGuards } from '@nestjs/common';
 import { CsvFilePathDto, CurrentUser, JwtAuthGuard, RequestedIp, UpdateActiveDto } from '@server_1/core';
-import { ISeoPageData, SeoPageService } from '../../services';
+import { ISeoPageData } from '@eatfit247-shared-lib';
+import { SeoPageService } from '@server_1/platform';
 import { CreateSeoPageDto, UpdateSeoPageDto } from '../../dto';
 
 @Controller('seo-page')

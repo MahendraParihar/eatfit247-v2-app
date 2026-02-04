@@ -1,6 +1,6 @@
 import { readFileSync } from 'fs';
-import { SeoPageService } from '../services/seo-page.service';
-import { CreateSeoPageDto } from '../dto/seo-page.dto';
+import { ICreateSeoPageDto } from '@eatfit247-shared-lib';
+import { SeoPageService } from '@server_1/platform';
 
 interface CsvRow {
   url: string;
@@ -93,7 +93,7 @@ export async function seedSeoData(
         console.warn(`Failed to parse URL: ${record.url}, using as-is`);
       }
 
-      const seoData: CreateSeoPageDto = {
+      const seoData: ICreateSeoPageDto = {
         url: urlPath,
         metaTitle: record.suggested_title || undefined,
         metaDescription: record.suggested_meta_description || undefined,
