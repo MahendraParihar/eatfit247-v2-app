@@ -1,3 +1,5 @@
+// Import compiler to ensure JIT compilation is available for SSR
+import '@angular/compiler';
 import {
   BootstrapContext,
   bootstrapApplication,
