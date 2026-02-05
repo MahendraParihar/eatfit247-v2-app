@@ -9,7 +9,7 @@ services:
     restart: always
     volumes:
       - assets:/home/app/assets
-      - ${ASSET_PATH}:${CONTAINER_ASSET_PATH}
+      - ${MEDIA_FILES_PATH:-../media-files}:${ASSET_PATH:-/home/projects/eatfit247-v2-app/media-files}
     env_file:
       - main.env
     environment:
@@ -29,7 +29,7 @@ services:
     restart: always
     volumes:
       - assets:/home/app/assets
-      - ${ASSET_PATH}:${CONTAINER_ASSET_PATH}
+      - ${MEDIA_FILES_PATH:-../media-files}:${ASSET_PATH:-/home/projects/eatfit247-v2-app/media-files}
     env_file:
       - main.env
     environment:
