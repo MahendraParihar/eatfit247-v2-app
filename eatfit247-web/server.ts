@@ -1,11 +1,8 @@
-// Import Angular compiler first to ensure JIT compilation is available
-import '@angular/compiler';
-
 import { APP_BASE_HREF } from '@angular/common';
 import {
   CommonEngine,
-  type RenderOptions,
-} from '@angular/ssr';
+  type CommonEngineRenderOptions,
+} from '@angular/ssr/node';
 import express from 'express';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
