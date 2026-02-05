@@ -9,6 +9,7 @@ services:
     restart: always
     volumes:
       - assets:/home/app/assets
+      - ${ASSET_PATH}:${CONTAINER_ASSET_PATH}
     env_file:
       - main.env
     environment:
@@ -28,6 +29,7 @@ services:
     restart: always
     volumes:
       - assets:/home/app/assets
+      - ${ASSET_PATH}:${CONTAINER_ASSET_PATH}
     env_file:
       - main.env
     environment:
@@ -54,7 +56,8 @@ services:
     ports:
       - "443:443"
     depends_on:
-      - public-api
+      - public-api:
+          condition: service_healthy
   admin-web:
     build:
       context: ..
@@ -69,7 +72,8 @@ services:
     ports:
       - "8080:443"
     depends_on:
-      - admin-api
+      - admin-api:
+          condition: service_healthy
 
 volumes:
   assets:
