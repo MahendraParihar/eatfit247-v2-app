@@ -53,12 +53,14 @@ COPY --from=build /home/app/eatfit247-web/package.json ./eatfit247-web/
 COPY --from=build /home/app/eatfit247-web/server.ts ./eatfit247-web/
 COPY --from=build /home/app/eatfit247-web/tsconfig.server.json ./eatfit247-web/
 COPY --from=build /home/app/eatfit247-web/tsconfig.json ./eatfit247-web/
+# Copy src directory needed for server.ts imports (main.server.ts and sitemap-generator)
 COPY --from=build /home/app/eatfit247-web/src ./eatfit247-web/src
 
 # Install only production dependencies
+# Note: @angular/compiler is in dependencies, so it will be installed
 RUN npm --prefix eatfit247-web install --omit=dev --legacy-peer-deps
 
-# Install tsx to run TypeScript directly
+# Install tsx globally to run TypeScript server file
 RUN npm install -g tsx
 
 # Create nginx directories and copy nginx config
