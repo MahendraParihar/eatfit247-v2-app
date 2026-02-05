@@ -1,0 +1,15 @@
+.layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--app-bg-page);
+  color: var(--app-text-primary);
+}
+
+.layout__content {
+  flex: 1;
+  display: flex;
+  padding: 2rem 1.5rem;
+}
+
+

@@ -1,0 +1,320 @@
+<mat-toolbar class="layout__header" role="banner">
+  <div class="layout__header-inner">
+    <!-- Logo -->
+    <a class="layout__brand" routerLink="/" aria-label="EatFit247 home">
+      <div class="layout__brand-content">
+        <img src="/logo-white.svg" alt="EatFit247 Logo" class="layout__brand-icon">
+      </div>
+    </a>
+
+    <!-- Desktop Navigation -->
+    <nav class="layout__nav layout__nav--desktop" aria-label="Main navigation">
+      <a
+        routerLink="/"
+        routerLinkActive="layout__nav-link--active"
+        class="layout__nav-link"
+        [routerLinkActiveOptions]="{ exact: true }"
+      >
+        Home
+      </a>
+
+      <!-- AboutUs (dropdown) -->
+      <button
+        mat-button
+        [matMenuTriggerFor]="aboutUsMenu"
+        class="layout__nav-link layout__nav-link--button"
+        type="button"
+      >
+        AboutUs
+      </button>
+      <mat-menu #aboutUsMenu="matMenu">
+        <a
+          mat-menu-item
+          routerLink="/about-us"
+          routerLinkActive="layout__nav-link--active"
+          [routerLinkActiveOptions]="{ exact: false }"
+        >
+          About EatFit247
+        </a>
+        <a
+          mat-menu-item
+          routerLink="/about-shweta-shah"
+          routerLinkActive="layout__nav-link--active"
+          [routerLinkActiveOptions]="{ exact: false }"
+        >
+          About Shweta Shah
+        </a>
+      </mat-menu>
+
+      <!-- Our Program -->
+      <a
+        routerLink="/our-programs"
+        routerLinkActive="layout__nav-link--active"
+        class="layout__nav-link"
+      >
+        Our Program
+      </a>
+
+      <!-- Product -->
+      <a
+        routerLink="/product"
+        class="layout__nav-link"
+      >
+        Product
+      </a>
+
+      <!-- Quiz (dropdown) -->
+      <button
+        mat-button
+        [matMenuTriggerFor]="quizMenu"
+        class="layout__nav-link layout__nav-link--button"
+        type="button"
+      >
+        Quiz
+      </button>
+      <mat-menu #quizMenu="matMenu">
+        <a
+          mat-menu-item
+          routerLink="/know-your-body-dosha"
+          routerLinkActive="layout__nav-link--active"
+          [routerLinkActiveOptions]="{ exact: false }"
+        >
+          Quiz 1
+        </a>
+        <a
+          mat-menu-item
+          routerLink="/know-your-current-immunity-score"
+          routerLinkActive="layout__nav-link--active"
+          [routerLinkActiveOptions]="{ exact: false }"
+        >
+          Quiz 2
+        </a>
+      </mat-menu>
+
+      <!-- Success Stories -->
+      <a
+        routerLink="/success-stories"
+        routerLinkActive="layout__nav-link--active"
+        class="layout__nav-link"
+      >
+        Success Stories
+      </a>
+
+      <!-- Press & Media -->
+      <a
+        routerLink="/press-and-media"
+        routerLinkActive="layout__nav-link--active"
+        class="layout__nav-link"
+      >
+        Press &amp; Media
+      </a>
+
+      <!-- Blog -->
+      <a
+        routerLink="/blog"
+        routerLinkActive="layout__nav-link--active"
+        class="layout__nav-link"
+      >
+        Blog
+      </a>
+
+      <!-- Contact Us -->
+      <a
+        routerLink="/contact-us"
+        routerLinkActive="layout__nav-link--active"
+        class="layout__nav-link"
+      >
+        Contact Us
+      </a>
+    </nav>
+
+    <!-- Desktop Get Started Button -->
+    <a routerLink="/our-programs" mat-raised-button color="primary" class="layout__cta layout__cta--desktop">
+      Get Started
+    </a>
+
+    <!-- Mobile Menu Button -->
+    <button
+      mat-icon-button
+      class="layout__menu-toggle"
+      (click)="toggleMobileMenu()"
+      [attr.aria-expanded]="isMobileMenuOpen"
+      aria-label="Toggle navigation menu"
+      aria-controls="mobile-nav"
+    >
+      <mat-icon [class.layout__menu-icon--open]="isMobileMenuOpen">
+        {{ isMobileMenuOpen ? 'close' : 'menu' }}
+      </mat-icon>
+    </button>
+  </div>
+
+  <!-- Mobile Side Navigation -->
+  <mat-sidenav-container class="layout__mobile-nav-container">
+    <mat-sidenav
+      #mobileSidenav
+      mode="over"
+      position="end"
+      [opened]="isMobileMenuOpen"
+      (closed)="closeMobileMenu()"
+      class="layout__mobile-nav-drawer"
+      id="mobile-nav"
+    >
+      <div class="layout__mobile-nav-header">
+        <a class="layout__brand layout__brand--mobile" routerLink="/" (click)="closeMobileMenu()">
+          <div class="layout__brand-content">
+            <img src="/logo-white.svg" alt="EatFit247 Logo" class="layout__brand-icon">
+          </div>
+        </a>
+        <button
+          mat-icon-button
+          class="layout__mobile-nav-close"
+          (click)="closeMobileMenu()"
+          aria-label="Close navigation menu"
+        >
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+      <nav class="layout__mobile-nav-links" aria-label="Mobile navigation">
+        <a
+          routerLink="/"
+          routerLinkActive="layout__mobile-nav-link--active"
+          class="layout__mobile-nav-link"
+          [routerLinkActiveOptions]="{ exact: true }"
+          (click)="closeMobileMenu()"
+        >
+          Home
+        </a>
+
+        <!-- AboutUs (with sub-links) -->
+        <div class="layout__mobile-group">
+          <div class="layout__mobile-group-title">
+            AboutUs
+          </div>
+          <a
+            routerLink="/about-us"
+            routerLinkActive="layout__mobile-nav-link--active"
+            class="layout__mobile-nav-link layout__mobile-nav-link--child"
+            (click)="closeMobileMenu()"
+          >
+            About EatFit247
+          </a>
+          <a
+            routerLink="/about-shweta-shah"
+            routerLinkActive="layout__mobile-nav-link--active"
+            class="layout__mobile-nav-link layout__mobile-nav-link--child"
+            (click)="closeMobileMenu()"
+          >
+            About Shweta Shah
+          </a>
+        </div>
+
+        <!-- Our Program -->
+        <a
+          routerLink="/our-programs"
+          routerLinkActive="layout__mobile-nav-link--active"
+          class="layout__mobile-nav-link"
+          (click)="closeMobileMenu()"
+        >
+          Our Program
+        </a>
+
+        <!-- Product -->
+        <a
+          routerLink="/product"
+          class="layout__mobile-nav-link"
+          (click)="closeMobileMenu()"
+        >
+          Product
+        </a>
+
+        <!-- Quiz (with sub-links) -->
+        <div class="layout__mobile-group">
+          <div class="layout__mobile-group-title">
+            Quiz
+          </div>
+          <a
+            routerLink="/know-your-body-dosha"
+            routerLinkActive="layout__mobile-nav-link--active"
+            class="layout__mobile-nav-link layout__mobile-nav-link--child"
+            (click)="closeMobileMenu()"
+          >
+            Quiz 1
+          </a>
+          <a
+            routerLink="/know-your-current-immunity-score"
+            routerLinkActive="layout__mobile-nav-link--active"
+            class="layout__mobile-nav-link layout__mobile-nav-link--child"
+            (click)="closeMobileMenu()"
+          >
+            Quiz 2
+          </a>
+        </div>
+
+        <!-- Success Stories -->
+        <a
+          routerLink="/success-stories"
+          routerLinkActive="layout__mobile-nav-link--active"
+          class="layout__mobile-nav-link"
+          (click)="closeMobileMenu()"
+        >
+          Success Stories
+        </a>
+
+        <!-- Press & Media -->
+        <a
+          routerLink="/press-and-media"
+          routerLinkActive="layout__mobile-nav-link--active"
+          class="layout__mobile-nav-link"
+          (click)="closeMobileMenu()"
+        >
+          Press &amp; Media
+        </a>
+
+        <!-- Blog -->
+        <a
+          routerLink="/blog"
+          routerLinkActive="layout__mobile-nav-link--active"
+          class="layout__mobile-nav-link"
+          (click)="closeMobileMenu()"
+        >
+          Blog
+        </a>
+
+        <!-- Contact Us -->
+        <a
+          routerLink="/contact-us"
+          routerLinkActive="layout__mobile-nav-link--active"
+          class="layout__mobile-nav-link"
+          (click)="closeMobileMenu()"
+        >
+          Contact Us
+        </a>
+
+        <!-- Get Started CTA -->
+        <a
+          routerLink="/our-programs"
+          mat-raised-button
+          color="primary"
+          class="layout__cta layout__cta--mobile"
+          (click)="closeMobileMenu()"
+        >
+          Get Started
+        </a>
+      </nav>
+    </mat-sidenav>
+    <mat-sidenav-content>
+      <!-- Overlay for mobile menu -->
+      @if (isMobileMenuOpen) {
+        <div
+          class="layout__mobile-nav-overlay"
+          (click)="closeMobileMenu()"
+          role="button"
+          tabindex="0"
+          (keydown.enter)="closeMobileMenu()"
+          (keydown.space)="closeMobileMenu()"
+          aria-label="Close navigation menu"
+        ></div>
+      }
+    </mat-sidenav-content>
+  </mat-sidenav-container>
+</mat-toolbar>

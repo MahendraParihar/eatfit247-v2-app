@@ -1,0 +1,223 @@
+
+@use '@angular/material' as mat;
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif,
+    'Apple Color Emoji', 'Segoe UI Emoji';
+}
+
+// Light theme using Material 3 + custom EatFit247 brand tokens.
+body.light-theme {
+  color-scheme: light;
+
+  @include mat.theme((
+    color: (
+      theme-type: light,
+      primary: mat.$red-palette,
+    ),
+    typography: Roboto,
+    density: 0,
+  ));
+
+  // App design tokens (light)
+  --mat-sys-primary: #f84141; // primary brand color
+  --app-action-hover: #bf3232;
+  --app-text-primary: #111827;
+  --app-text-secondary: #6b7280;
+  --app-bg-page: #fafafa;
+  --app-bg-card: #ffffff;
+  --app-border-subtle: #e5e7eb;
+
+  background-color: var(--app-bg-page);
+  color: var(--app-text-primary);
+}
+
+// Dark theme counterpart – ready to be toggled by swapping body classes.
+body.dark-theme {
+  color-scheme: dark;
+
+  @include mat.theme((
+    color: (
+      theme-type: dark,
+      primary: mat.$red-palette,
+    ),
+    typography: Roboto,
+    density: 0,
+  ));
+
+  // App design tokens (dark) – tuned for contrast while keeping the same brand feel.
+  --mat-sys-primary: #f97373;
+  --app-action-hover: #fb5a5a;
+  --app-text-primary: #f9fafb;
+  --app-text-secondary: #9ca3af;
+  --app-bg-page: #020617;
+  --app-bg-card: #020617;
+  --app-border-subtle: #1e293b;
+
+  background-color: var(--app-bg-page);
+  color: var(--app-text-primary);
+}
+
+/* You can add global styles to this file, and also import other style files */
+
+// -----------------------------------------------------------------------------
+// EatFit247 – Typography scale
+// Mobile‑first, adjusted at 768px+ breakpoint.
+// -----------------------------------------------------------------------------
+
+:root {
+  // Base font family token so we can reuse it if needed.
+  --ef-font-family-base: 'Inter', system-ui, -apple-system, BlinkMacSystemFont,
+    'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif,
+    'Apple Color Emoji', 'Segoe UI Emoji';
+
+  // Desktop sizes from the design spec (used at >= 768px).
+  --ef-h1-size-desktop: 32px;
+  --ef-h2-size-desktop: 24px;
+  --ef-h3-size-desktop: 20px;
+  --ef-h4-size-desktop: 20px;
+  --ef-h5-size-desktop: 20px;
+
+  --ef-body-size-16: 16px;
+  --ef-body-size-14: 14px;
+
+  --ef-line-40: 40px;
+  --ef-line-32: 32px;
+  --ef-line-28: 28px;
+  --ef-line-24: 24px;
+  --ef-line-20: 20px;
+}
+
+// Shared helpers
+.ef-text {
+  font-family: var(--ef-font-family-base);
+  color: inherit;
+}
+
+// Headings
+.ef-h1 {
+  @extend .ef-text;
+  font-weight: 800; // ExtraBold
+  font-size: 28px;
+  line-height: 36px;
+}
+
+.ef-h2 {
+  @extend .ef-text;
+  font-weight: 700; // Bold
+  font-size: 22px;
+  line-height: 32px;
+}
+
+.ef-h3 {
+  @extend .ef-text;
+  font-weight: 700; // Bold
+  font-size: 20px;
+  line-height: 28px;
+}
+
+.ef-h4 {
+  @extend .ef-text;
+  font-weight: 600; // SemiBold
+  font-size: 18px;
+  line-height: 26px;
+}
+
+.ef-h5 {
+  @extend .ef-text;
+  font-weight: 600; // SemiBold
+  font-size: 16px;
+  line-height: 24px;
+}
+
+// Body text
+.ef-b1 {
+  @extend .ef-text;
+  font-weight: 700; // Bold
+  font-size: var(--ef-body-size-16);
+  line-height: var(--ef-line-24);
+}
+
+.ef-b2 {
+  @extend .ef-text;
+  font-weight: 600; // SemiBold
+  font-size: var(--ef-body-size-16);
+  line-height: var(--ef-line-24);
+}
+
+.ef-b3 {
+  @extend .ef-text;
+  font-weight: 400; // Regular
+  font-size: var(--ef-body-size-16);
+  line-height: var(--ef-line-24);
+}
+
+.ef-b4 {
+  @extend .ef-text;
+  font-weight: 700; // Bold
+  font-size: var(--ef-body-size-14);
+  line-height: var(--ef-line-20);
+}
+
+.ef-b5 {
+  @extend .ef-text;
+  font-weight: 600; // SemiBold
+  font-size: var(--ef-body-size-14);
+  line-height: var(--ef-line-20);
+}
+
+.ef-b6 {
+  @extend .ef-text;
+  font-weight: 400; // Regular
+  font-size: var(--ef-body-size-14);
+  line-height: var(--ef-line-20);
+}
+
+// Buttons
+.ef-btn-text {
+  @extend .ef-text;
+  font-weight: 500; // Medium
+  font-size: 15px;
+  line-height: 22px;
+  text-transform: none;
+}
+
+// Desktop / tablet breakpoint – match the design spec exactly.
+@media (min-width: 768px) {
+  .ef-h1 {
+    font-size: var(--ef-h1-size-desktop); // 32px
+    line-height: var(--ef-line-40); // 40px
+  }
+
+  .ef-h2 {
+    font-size: var(--ef-h2-size-desktop); // 24px
+    line-height: var(--ef-line-32); // 32px
+  }
+
+  .ef-h3 {
+    font-size: var(--ef-h3-size-desktop); // 20px
+    line-height: var(--ef-line-28); // 28px
+  }
+
+  .ef-h4 {
+    font-size: var(--ef-h4-size-desktop); // 20px
+    line-height: var(--ef-line-28); // 28px
+  }
+
+  .ef-h5 {
+    font-size: var(--ef-h5-size-desktop); // 20px
+    line-height: var(--ef-line-28); // 28px
+  }
+
+  .ef-btn-text {
+    font-size: 16px;
+    line-height: var(--ef-line-24); // 24px
+  }
+}
