@@ -1,3 +1,6 @@
+// Import Angular compiler first to ensure JIT compilation is available
+import '@angular/compiler';
+
 import { APP_BASE_HREF } from '@angular/common';
 import {
   CommonEngine,
