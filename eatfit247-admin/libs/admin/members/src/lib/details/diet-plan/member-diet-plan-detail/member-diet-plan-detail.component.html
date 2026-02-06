@@ -88,21 +88,14 @@
                 </div>
               </td>
               <td class="recipe-cell">
-                <input type="hidden" formControlName="recipeIds">
-                <mat-form-field>
-                  <mat-label>Recipes</mat-label>
-                  <mat-select formControlName="recipeIds" multiple>
-                    @for (recipe of recipeList(); track recipe.id) {
-                      <mat-option [value]="recipe.id">
-                        {{ recipe.label }}
-                      </mat-option>
-                    }
-                  </mat-select>
-                  <mat-error>
-                    <shared-ui-input-error controlName="Recipes"
-                                           [control]="getArrayFormGroup(i).get('recipeIds')"></shared-ui-input-error>
-                  </mat-error>
-                </mat-form-field>
+                <lib-recipe-multi-select
+                  formControlName="recipeIds"
+                  [initialOptions]="recipeList()"
+                  label="Recipes"
+                  placeholder="Type to search recipes"
+                ></lib-recipe-multi-select>
+                <shared-ui-input-error controlName="Recipes"
+                                       [control]="getArrayFormGroup(i).get('recipeIds')"></shared-ui-input-error>
               </td>
             </tr>
               }

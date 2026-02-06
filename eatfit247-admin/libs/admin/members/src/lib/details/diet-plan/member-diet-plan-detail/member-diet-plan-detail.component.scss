@@ -66,7 +66,7 @@
     
     th {
       text-align: left;
-      padding: 16px;
+      padding: var(--spacing-8) var(--spacing-16);
       font-weight: 500;
       font-size: 14px;
       color: rgba(0, 0, 0, 0.87);
@@ -115,7 +115,7 @@
   
   .detail-cell {
     vertical-align: top;
-    padding: 16px;
+    padding: 16px 0;
     
     .detail-wrapper {
       width: 100%;

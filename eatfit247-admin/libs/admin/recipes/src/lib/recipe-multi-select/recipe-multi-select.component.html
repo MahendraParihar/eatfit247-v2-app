@@ -1,0 +1,69 @@
+<mat-form-field class="recipe-multi-select" appearance="outline">
+  <mat-label>{{ label }}</mat-label>
+
+  <mat-chip-grid #chipGrid aria-label="Selected recipes">
+    <mat-chip-row
+      *ngFor="let item of selectedItems"
+      (removed)="remove(item)"
+    >
+      <div class="chip-content">
+        <div class="chip-title">
+          {{ item.label }}
+        </div>
+        <div *ngIf="item.metadata?.subtitle" class="chip-subtitle">
+          {{ item.metadata.subtitle }}
+        </div>
+      </div>
+      <button
+        *ngIf="!isDisabled"
+        matChipRemove
+        type="button"
+        aria-label="Remove recipe"
+      >
+        <mat-icon>close</mat-icon>
+      </button>
+    </mat-chip-row>
+
+    <input
+      matInput
+      [placeholder]="selectedItems.length ? '' : placeholder"
+      [matAutocomplete]="auto"
+      [formControl]="searchControl"
+      [disabled]="isDisabled"
+      (blur)="onTouched()"
+      [matChipInputFor]="chipGrid"
+      [matChipInputAddOnBlur]="false"
+    />
+  </mat-chip-grid>
+
+  <mat-autocomplete
+    #auto="matAutocomplete"
+    (optionSelected)="onOptionSelected($event.option.value)"
+  >
+    <mat-option
+      *ngFor="let option of filteredOptions"
+      [value]="option"
+    >
+      <div class="option-content">
+        <div class="option-title">
+          {{ option.label }}
+        </div>
+        <div *ngIf="option.metadata?.subtitle" class="option-subtitle">
+          {{ option.metadata.subtitle }}
+        </div>
+      </div>
+    </mat-option>
+    <mat-option *ngIf="!loading && !filteredOptions.length && searchControl.value">
+      No recipes found
+    </mat-option>
+  </mat-autocomplete>
+
+  <mat-progress-spinner
+    *ngIf="loading"
+    matSuffix
+    mode="indeterminate"
+    diameter="18"
+  ></mat-progress-spinner>
+</mat-form-field>
+
+

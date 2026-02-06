@@ -74,5 +74,10 @@ export class RecipeController {
   async downloadRecipePdf(@Param('id') id: number): Promise<IFileModel> {
     return await this.service.downloadRecipePdf(id);
   }
+
+  @Get('dropdown')
+  async getDropdown(@Query() req: BasicSearchDto): Promise<Array<{ id: number; title: string; subtitle: string }>> {
+    return await this.service.searchForDropdown(req);
+  }
 }
 

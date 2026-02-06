@@ -13,6 +13,7 @@ import { Editor, NgxEditorComponent, NgxEditorMenuComponent, Toolbar } from 'ngx
 import { IDietPlanDetail, IDropdownItem } from '@eatfit247-shared-lib';
 import { DietTemplateApiService } from '../api.service';
 import { InputErrorComponent } from '@shared';
+import { RecipeMultiSelectComponent } from 'recipes';
 
 @Component({
   selector: 'lib-diet-template-detail',
@@ -28,7 +29,8 @@ import { InputErrorComponent } from '@shared';
     MatSnackBarModule,
     NgxEditorComponent,
     NgxEditorMenuComponent,
-    InputErrorComponent
+    InputErrorComponent,
+    RecipeMultiSelectComponent
   ],
   templateUrl: './diet-template-detail.component.html',
   styleUrl: './diet-template-detail.component.scss'

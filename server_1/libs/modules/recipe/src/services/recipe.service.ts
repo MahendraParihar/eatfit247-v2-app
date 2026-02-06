@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { MstRecipe, MstRecipeCategoryMapping, MstRecipeCuisineMapping } from '../models';
+import { Op } from 'sequelize';
+import { MstRecipe, MstRecipeCategoryMapping, MstRecipeCuisineMapping, MstRecipeType } from '../models';
 import { IBasicSearch, IManageRecipe, IRecipe, ITableList, MediaForEnum } from '@eatfit247-shared-lib';
 import { CommonFunctionsUtil, SearchUtil } from '@server_1/core';
 import { IFileModel, PdfService } from '@server_1/platform';
@@ -210,6 +211,57 @@ export class RecipeService {
       fileName,
       recipeObj,
     );
+  }
+
+  /**
+   * Lightweight search for dropdown options
+   * Searches only on recipe name and recipe type
+   * Returns minimal data: id, title (recipe name), subtitle (recipe type)
+   */
+  public async searchForDropdown(searchDto: IBasicSearch): Promise<Array<{ id: number; title: string; subtitle: string }>> {
+    const whereCondition: any = {
+      active: true, // Only return active recipes
+    };
+
+    // Build search condition for recipe name and recipe type
+    const searchTerm = searchDto.search || searchDto.name;
+    if (searchTerm) {
+      whereCondition[Op.or] = [
+        { name: { [Op.iLike]: `%${searchTerm}%` } },
+        { '$recipeType.recipeType$': { [Op.iLike]: `%${searchTerm}%` } },
+      ];
+    }
+
+    const pageNumber = searchDto.page || 0;
+    const pageSize = searchDto.limit || 10;
+    const offset = pageNumber === 0 ? 0 : pageNumber * pageSize;
+
+    const { rows } = await this.recipeRepository.findAndCountAll({
+      attributes: ['recipeId', 'name'],
+      include: [
+        {
+          model: MstRecipeType,
+          as: 'recipeType',
+          required: false,
+          attributes: ['recipeType'],
+        },
+      ],
+      where: whereCondition,
+      order: [['name', 'ASC']],
+      offset: offset,
+      limit: pageSize,
+      nest: true,
+      raw: false,
+    });
+
+    return rows.map((item: any) => {
+      const plain = item.get({ plain: true });
+      return {
+        id: plain.recipeId,
+        title: plain.name,
+        subtitle: plain.recipeType?.recipeType || '',
+      };
+    });
   }
 }
 

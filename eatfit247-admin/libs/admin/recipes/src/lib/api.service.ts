@@ -47,4 +47,12 @@ export class RecipesApiService extends ApiBaseService {
     );
     return res.data as { buffer: string; fileName: string };
   }
+
+  async searchDropdown(params?: any): Promise<Array<{ id: number; title: string; subtitle: string }>> {
+    const res = await this.httpService.get<Array<{ id: number; title: string; subtitle: string }>>(
+      `${this.endpoint}/dropdown`,
+      { params }
+    );
+    return res.data as Array<{ id: number; title: string; subtitle: string }>;
+  }
 }

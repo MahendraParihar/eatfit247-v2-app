@@ -296,3 +296,26 @@ CREATE INDEX ix_txn_member_product_payment_status
 
 CREATE INDEX ix_txn_member_product_created_at
     ON txn_member_products (created_at);
+
+alter table mst_franchises
+    add column franchise_code varchar(10),
+    add column financial_year integer;
+
+update mst_franchises
+set financial_year = 4,
+    franchise_code = 'EFMUM'
+where franchise_id = 1;
+update mst_franchises
+set financial_year = 4,
+    franchise_code = 'MEMUM'
+where franchise_id = 3;
+update mst_franchises
+set financial_year = 1,
+    franchise_code = 'HCUAE'
+where franchise_id = 2;
+
+alter table public.mst_franchises
+    alter column franchise_code set not null;
+
+alter table public.mst_franchises
+    alter column financial_year set not null;

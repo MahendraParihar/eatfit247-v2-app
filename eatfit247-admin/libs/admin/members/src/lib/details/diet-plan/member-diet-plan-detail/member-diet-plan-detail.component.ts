@@ -16,6 +16,7 @@ import { Editor, NgxEditorComponent, NgxEditorMenuComponent, Toolbar } from 'ngx
 import { IDropdownItem, IMemberDietDetail, IMemberDietPlanDetail } from '@eatfit247-shared-lib';
 import { MembersApiService } from '../../../api.service';
 import { InputErrorComponent } from '@shared';
+import { RecipeMultiSelectComponent } from 'recipes';
 
 @Component({
   selector: 'lib-member-diet-plan-detail',
@@ -33,7 +34,8 @@ import { InputErrorComponent } from '@shared';
     MatSnackBarModule,
     NgxEditorComponent,
     NgxEditorMenuComponent,
-    InputErrorComponent
+    InputErrorComponent,
+    RecipeMultiSelectComponent
   ],
   templateUrl: './member-diet-plan-detail.component.html',
   styleUrl: './member-diet-plan-detail.component.scss'
@@ -142,16 +144,6 @@ export class MemberDietPlanDetailComponent implements OnInit, OnDestroy {
       }
     }
     // Trigger validation check after date change
-    setTimeout(() => this.checkFormHasValue(), 0);
-  }
-
-  onRecipeChange(event: IDropdownItem[], index: number): void {
-    if (event && event.length > 0) {
-      const s = this.detailArray().value;
-      s[index].recipeIds = event.map(item => item.id);
-      this.detailArray().patchValue(s);
-    }
-    // Trigger validation check after recipe change
     setTimeout(() => this.checkFormHasValue(), 0);
   }
 

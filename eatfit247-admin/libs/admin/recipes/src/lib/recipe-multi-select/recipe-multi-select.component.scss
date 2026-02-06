@@ -1,0 +1,69 @@
+.recipe-multi-select {
+  width: 100%;
+
+  .mat-mdc-chip-set {
+    // Let height grow based on number of selected items
+    max-height: none;
+    overflow-y: visible;
+  }
+
+  .mat-mdc-chip {
+    margin: var(--spacing-0) var(--spacing-0);
+  }
+
+  .mat-mdc-form-field-infix {
+    display: flex;
+    align-items: center;
+  }
+
+  .chip-content {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+  }
+
+  .chip-title {
+    font-size: 0.85rem;
+    font-weight: 500;
+  }
+
+  .chip-subtitle {
+    font-size: 0.75rem;
+    color: rgba(0, 0, 0, 0.6);
+  }
+
+  input[matInput] {
+    min-width: 120px;
+  }
+
+  .option-content {
+    display: flex;
+    flex-direction: column;
+    padding: 4px 0;
+  }
+
+  .option-title {
+    font-size: 0.9rem;
+  }
+
+  .option-subtitle {
+    font-size: 0.75rem;
+    color: rgba(0, 0, 0, 0.6);
+    margin-top: 2px;
+  }
+
+  // Target the chip-grid container to add gaps between chips
+  ::ng-deep mat-chip-grid {
+    .mdc-evolution-chip-grid__chips,
+    .mdc-evolution-chip-set__chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+  }
+
+  // Remove margin from chips since we're using gap
+  ::ng-deep .mat-mdc-chip-row {
+    margin: 0;
+  }
+}
