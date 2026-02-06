@@ -87,6 +87,7 @@ services:
       - "443:443"
     depends_on:
       - public-api
+      - admin-api
 
 volumes:
   assets:
