@@ -64,4 +64,22 @@ export class CommonFunctionsUtil {
     const parsed = parseFloat(String(value));
     return isNaN(parsed) ? 0 : parsed;
   }
+
+  /**
+   * Get financial year based on the given date and financial year start month
+   * @param date - The date to calculate financial year for
+   * @param fyStartMonth - The month when financial year starts (1-12, where 1 = January)
+   * @returns The financial year (e.g., 2024 for FY 2024-2025)
+   */
+  public static getFinancialYear(date: Date, fyStartMonth: number): number {
+    const month = date.getMonth() + 1; // getMonth() returns 0-11, so add 1
+    const year = date.getFullYear();
+    
+    // If current month is before the financial year start month, 
+    // the financial year started in the previous calendar year
+    if (month < fyStartMonth) {
+      return year - 1;
+    }
+    return year;
+  }
 }

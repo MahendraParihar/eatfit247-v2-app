@@ -49,6 +49,20 @@ import {
 export class ManageFranchise implements OnInit, OnDestroy {
   private fb: FormBuilder = inject(FormBuilder);
   formGroup: FormGroup = this.fb.group({
+    franchiseCode: [
+      '',
+      [
+        Validators.required,
+        Validators.minLength(InputLengthEnum.CHAR_2),
+        Validators.maxLength(InputLengthEnum.CHAR_10)
+      ]
+    ],
+    financialYear: [
+      null,
+      [
+        Validators.required
+      ]
+    ],
     firstName: [
       '',
       [
@@ -101,12 +115,26 @@ export class ManageFranchise implements OnInit, OnDestroy {
   internationalTaxModeOptions = InternationalTaxModeEnum;
   businessTypeOptions = BusinessTypeEnum;
   masterData: { taxApplicable: boolean } | null = null;
+  financialYearOptions: { value: number; label: string }[] = [];
+
+  private initializeFinancialYearOptions(): void {
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    this.financialYearOptions = Array.from({ length: 12 }, (_, i) => {
+      const startMonth = months[i];
+      const endMonth = months[(i + 11) % 12];
+      return {
+        value: i + 1,
+        label: `${startMonth} to ${endMonth}`
+      };
+    });
+  }
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private apiService = inject(FranchiseApiService);
   private snackBar = inject(MatSnackBar);
 
   async ngOnInit(): Promise<void> {
+    this.initializeFinancialYearOptions();
     const id = this.route.snapshot.paramMap.get('id');
     await this.loadMasterData();
     if (id && id !== 'new') {
@@ -128,6 +156,8 @@ export class ManageFranchise implements OnInit, OnDestroy {
         : new Date();
       const endDate = this.initialData.endDate ? new Date(this.initialData.endDate) : null;
       this.formGroup.patchValue({
+        franchiseCode: (this.initialData as any).franchiseCode || '',
+        financialYear: (this.initialData as any).financialYear || null,
         firstName: this.initialData.firstName || '',
         lastName: this.initialData.lastName || '',
         companyName: this.initialData.companyName || '',
@@ -195,6 +225,7 @@ export class ManageFranchise implements OnInit, OnDestroy {
 
   getMaxLength(controlName: string): number | null {
     const maxLengthMap: { [key: string]: number } = {
+      franchiseCode: InputLengthEnum.CHAR_10,
       firstName: InputLengthEnum.CHAR_50,
       lastName: InputLengthEnum.CHAR_50,
       companyName: InputLengthEnum.CHAR_100,

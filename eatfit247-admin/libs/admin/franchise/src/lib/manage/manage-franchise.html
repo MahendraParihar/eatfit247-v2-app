@@ -7,6 +7,34 @@
       <div class="form-fields">
         <div class="row">
           <mat-form-field class="half-width">
+            <mat-label>Franchise Code</mat-label>
+            <input
+              matInput
+              formControlName="franchiseCode"
+              placeholder="Enter franchise code"
+            />
+            @if (getMaxLength('franchiseCode')) {
+              <mat-hint align="end">
+                {{ getCurrentLength('franchiseCode') }}/{{ getMaxLength('franchiseCode') }}
+              </mat-hint>
+            }
+            <shared-ui-input-error [control]="formGroup.get('franchiseCode')" controlName="Franchise Code"></shared-ui-input-error>
+          </mat-form-field>
+
+          <mat-form-field class="half-width">
+            <mat-label>Financial Year</mat-label>
+            <mat-select formControlName="financialYear">
+              <mat-option [value]="null">Select Financial Year</mat-option>
+              @for (option of financialYearOptions; track option.value) {
+                <mat-option [value]="option.value">{{ option.label }}</mat-option>
+              }
+            </mat-select>
+            <shared-ui-input-error [control]="formGroup.get('financialYear')" controlName="Financial Year"></shared-ui-input-error>
+          </mat-form-field>
+        </div>
+
+        <div class="row">
+          <mat-form-field class="half-width">
             <mat-label>First Name</mat-label>
             <input
               matInput

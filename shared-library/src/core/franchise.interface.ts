@@ -4,6 +4,8 @@ import { IManageAddress } from './location.interface';
 import { BusinessTypeEnum } from '../enum';
 
 export interface IBaseFranchise {
+  franchiseCode?: string;
+  financialYear?: number;
   companyName: string;
   logo?: IMediaUpload[];
   firstName: string;

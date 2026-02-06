@@ -35,6 +35,24 @@
               <span class="summary-value">{{ franchise.contactNumber || 'N/A' }}</span>
             </div>
           </div>
+          @if (franchise.franchiseCode) {
+            <div class="summary-item">
+              <mat-icon>confirmation_number</mat-icon>
+              <div class="summary-content">
+                <span class="summary-label">Franchise Code</span>
+                <span class="summary-value">{{ franchise.franchiseCode }}</span>
+              </div>
+            </div>
+          }
+          @if (franchise.financialYear) {
+            <div class="summary-item">
+              <mat-icon>event</mat-icon>
+              <div class="summary-content">
+                <span class="summary-label">Financial Year</span>
+                <span class="summary-value">{{ franchise.financialYear }}</span>
+              </div>
+            </div>
+          }
           @if (franchise.alternateContactNumber) {
             <div class="summary-item">
               <mat-icon>phone</mat-icon>

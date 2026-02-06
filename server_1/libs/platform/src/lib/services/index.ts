@@ -14,4 +14,5 @@ export * from '../third-party/telr.service';
 export * from '../third-party/woocommerce.service';
 export * from './payment-gateway.service';
 export * from './seo-page.service';
+export * from './invoice-sequence.service';
 

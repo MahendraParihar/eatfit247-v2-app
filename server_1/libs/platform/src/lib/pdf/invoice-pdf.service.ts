@@ -52,6 +52,8 @@ export class InvoicePdfService {
       hasTaxSummary: invoiceDoc.items.some((item) => item.taxRows && item.taxRows.length > 0),
       isGstTaxType: invoiceDoc.tax.taxType === TaxTypeEnum.GST,
       gstTaxSummary: this.buildGstTaxSummary(invoiceDoc),
+      // Amount in words (mandatory)
+      amountInWords: this.getAmountInWords(invoiceDoc.total.amount, invoiceDoc.currencyCode),
       // Format helpers
       formatCurrency: (amount: number) => this.formatCurrency(amount),
       formatDate: (dateStr: string) => this.formatDate(dateStr),
@@ -202,6 +204,13 @@ export class InvoicePdfService {
         return arr ? arr.length : 0;
       });
     }
+    // Amount in words helper
+    if (!hbs.helpers['amountInWords']) {
+      const self = this;
+      hbs.registerHelper('amountInWords', function (amount: number, currencyCode?: string) {
+        return self.getAmountInWords(amount, currencyCode);
+      });
+    }
   }
 
   /**
@@ -240,6 +249,156 @@ export class InvoicePdfService {
       });
     } catch {
       return dateStr;
+    }
+  }
+
+  /**
+   * Converts amount to words (Indian numbering system)
+   * Returns format: "Rupees [amount in words] Only"
+   */
+  private getAmountInWords(amount: number, currencyCode?: string): string {
+    if (amount === undefined || amount === null || isNaN(amount)) {
+      return 'Rupees Zero Only';
+    }
+
+    const absAmount = Math.abs(amount);
+    const rupees = Math.floor(absAmount);
+    const paise = Math.round((absAmount - rupees) * 100);
+
+    const currencyName = this.getCurrencyName(currencyCode);
+    let result = '';
+
+    if (rupees === 0) {
+      result = 'Zero';
+    } else {
+      result = this.numberToWords(rupees);
+    }
+
+    let amountInWords = `${currencyName} ${result}`;
+
+    if (paise > 0) {
+      const paiseWords = this.numberToWords(paise);
+      amountInWords += ` and ${paiseWords} Paise`;
+    }
+
+    return `${amountInWords} Only`;
+  }
+
+  /**
+   * Gets currency name from currency code
+   */
+  private getCurrencyName(currencyCode?: string): string {
+    if (!currencyCode || typeof currencyCode !== 'string') {
+      return 'Rupees';
+    }
+
+    const currencyMap: Record<string, string> = {
+      INR: 'Rupees',
+      USD: 'Dollars',
+      EUR: 'Euros',
+      GBP: 'Pounds',
+      AUD: 'Dollars',
+      CAD: 'Dollars',
+      JPY: 'Yen',
+    };
+
+    return currencyMap[currencyCode.toUpperCase()] || 'Rupees';
+  }
+
+  /**
+   * Converts number to words (supports up to crores - Indian numbering system)
+   */
+  private numberToWords(num: number): string {
+    if (num === 0) {
+      return 'Zero';
+    }
+
+    const ones = [
+      '',
+      'One',
+      'Two',
+      'Three',
+      'Four',
+      'Five',
+      'Six',
+      'Seven',
+      'Eight',
+      'Nine',
+      'Ten',
+      'Eleven',
+      'Twelve',
+      'Thirteen',
+      'Fourteen',
+      'Fifteen',
+      'Sixteen',
+      'Seventeen',
+      'Eighteen',
+      'Nineteen',
+    ];
+
+    const tens = [
+      '',
+      '',
+      'Twenty',
+      'Thirty',
+      'Forty',
+      'Fifty',
+      'Sixty',
+      'Seventy',
+      'Eighty',
+      'Ninety',
+    ];
+
+    const convertHundreds = (n: number): string => {
+      let result = '';
+      if (n >= 100) {
+        result += ones[Math.floor(n / 100)] + ' Hundred';
+        n %= 100;
+        if (n > 0) {
+          result += ' ';
+        }
+      }
+      if (n >= 20) {
+        result += tens[Math.floor(n / 10)];
+        n %= 10;
+        if (n > 0) {
+          result += ' ' + ones[n];
+        }
+      } else if (n > 0) {
+        result += ones[n];
+      }
+      return result.trim();
+    };
+
+    if (num >= 10000000) {
+      // Crores
+      const crores = Math.floor(num / 10000000);
+      const remainder = num % 10000000;
+      let result = convertHundreds(crores) + ' Crore';
+      if (remainder > 0) {
+        result += ' ' + this.numberToWords(remainder);
+      }
+      return result;
+    } else if (num >= 100000) {
+      // Lakhs
+      const lakhs = Math.floor(num / 100000);
+      const remainder = num % 100000;
+      let result = convertHundreds(lakhs) + ' Lakh';
+      if (remainder > 0) {
+        result += ' ' + this.numberToWords(remainder);
+      }
+      return result;
+    } else if (num >= 1000) {
+      // Thousands
+      const thousands = Math.floor(num / 1000);
+      const remainder = num % 1000;
+      let result = convertHundreds(thousands) + ' Thousand';
+      if (remainder > 0) {
+        result += ' ' + convertHundreds(remainder);
+      }
+      return result;
+    } else {
+      return convertHundreds(num);
     }
   }
 

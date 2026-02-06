@@ -113,7 +113,7 @@ export class AddressFormComponent implements OnInit {
 
 
   getCountries(): IDropdownItem[] {
-    return this.masterAddress.country || [];
+    return this.masterAddress?.country || [];
   }
 
   getStates(): IDropdownItem[] {

@@ -40,6 +40,7 @@ import {
   CountryService,
   IFileModel,
   InvoicePdfService,
+  InvoiceSequenceService,
   PaymentModeService,
   PaymentStatusService,
   PaymentUtil,
@@ -83,6 +84,7 @@ export class MemberPlanService {
     private readonly paymentGatewayFactory: PaymentGatewayFactory,
     private readonly paymentGatewayCredentialService: PaymentGatewayCredentialService,
     private readonly invoicePdfService: InvoicePdfService,
+    private readonly invoiceSequenceService: InvoiceSequenceService,
   ) {}
 
   /**
@@ -428,6 +430,21 @@ export class MemberPlanService {
         adminId,
         t,
       );
+      // Generate an invoice number if payment status is PAID and invoiceId is not already set
+      if (obj.paymentStatusId === PaymentStatusEnum.PAID && !payment.invoiceId) {
+        if (member.franchiseId) {
+          const franchiseDetails = await this.franchiseService.fetchById(member.franchiseId);
+          const invoiceNumber = await this.invoiceSequenceService.generateInvoiceNumber(
+            member.franchiseId,
+            franchiseDetails.financialYear,
+            franchiseDetails.franchiseCode,
+            'SERVICE',
+            t
+          );
+          payment.invoiceId = invoiceNumber;
+          await payment.save({ transaction: t });
+        }
+      }
       await t.commit();
       // Fetch the created payment with relationships
       const createdPayment = await this.memberPaymentRepository.scope('details').findOne({

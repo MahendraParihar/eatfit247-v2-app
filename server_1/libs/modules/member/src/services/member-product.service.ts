@@ -41,6 +41,7 @@ import {
   CountryService,
   IFileModel,
   InvoicePdfService,
+  InvoiceSequenceService,
   PaymentModeService,
   PaymentStatusService,
   PaymentUtil,
@@ -77,6 +78,7 @@ export class MemberProductService {
     private readonly paymentGatewayFactory: PaymentGatewayFactory,
     private readonly paymentGatewayCredentialService: PaymentGatewayCredentialService,
     private readonly invoicePdfService: InvoicePdfService,
+    private readonly invoiceSequenceService: InvoiceSequenceService,
     @InjectModel(TxnMember) private readonly memberRepository: typeof TxnMember,
     @InjectModel(TxnMemberProduct)
     private readonly memberProductRepository: typeof TxnMemberProduct,
@@ -1098,6 +1100,19 @@ export class MemberProductService {
       await this.memberProductOrderItemRepository.bulkCreate(orderItemsForCreate as any, {
         transaction: t
       });
+      // Generate invoice number if payment status is PAID and invoiceId is not already set
+      if (obj.paymentStatusId === PaymentStatusEnum.PAID && !productOrder.invoiceId) {
+        const franchiseDetails = await this.franchiseService.fetchById(franchise[0].id as number);
+        const invoiceNumber = await this.invoiceSequenceService.generateInvoiceNumber(
+          franchise[0].id as number,
+          franchiseDetails.financialYear,
+          franchiseDetails.franchiseCode,
+          'PRODUCT',
+          t
+        );
+        productOrder.invoiceId = invoiceNumber;
+        await productOrder.save({ transaction: t });
+      }
       await t.commit();
       // Fetch the created product order with relationships
       const createdOrder = await this.memberProductRepository.scope("details").findOne({

@@ -68,6 +68,7 @@ export class Franchise implements OnInit, AfterViewInit {
     const columns: ITableColumn<IFranchise>[] = [
       { key: 'franchiseId', label: 'ID', dataKey: 'franchiseId', sortable: true, width: '80px' },
       { key: 'companyName', label: 'Company Name', dataKey: 'companyName', sortable: true, searchable: true },
+      { key: 'franchiseCode', label: 'Code', dataKey: 'franchiseCode', sortable: true },
       { 
         key: 'name', 
         label: 'Name', 

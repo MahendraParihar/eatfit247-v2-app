@@ -298,8 +298,8 @@ CREATE INDEX ix_txn_member_product_created_at
     ON txn_member_products (created_at);
 
 alter table mst_franchises
-    add column franchise_code varchar(10),
-    add column financial_year integer;
+    add column franchise_code varchar(10) not null,
+    add column financial_year integer     not null;
 
 update mst_franchises
 set financial_year = 4,
@@ -319,3 +319,15 @@ alter table public.mst_franchises
 
 alter table public.mst_franchises
     alter column financial_year set not null;
+
+CREATE TABLE public.mst_invoice_sequences
+(
+    id             UUID PRIMARY KEY,
+    franchise_id   integer     NOT NULL
+        constraint fk_mst_invoice_sequences_mst_franchises_fk
+            references public.mst_franchises,
+    invoice_type   VARCHAR(10) NOT NULL, -- PRODUCT | SERVICE
+    financial_year VARCHAR(10) NOT NULL,
+    current_number INT         NOT NULL DEFAULT 0,
+    UNIQUE (franchise_id, invoice_type, financial_year)
+);

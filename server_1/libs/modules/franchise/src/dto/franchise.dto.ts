@@ -16,6 +16,16 @@ import { BusinessTypeEnum, IManageFranchise, InputLengthEnum, InternationalTaxMo
 import { CreateAddressDto, MediaUploadDto } from '@server_1/core';
 
 export class CreateFranchiseDto implements IManageFranchise {
+  @IsNotEmpty()
+  @MinLength(InputLengthEnum.CHAR_2)
+  @MaxLength(InputLengthEnum.CHAR_10)
+  franchiseCode!: string;
+
+  @IsNotEmpty()
+  @IsNumber()
+  @Type(() => Number)
+  financialYear!: number;
+
   @MinLength(InputLengthEnum.CHAR_2)
   @MaxLength(InputLengthEnum.CHAR_100)
   @IsNotEmpty()

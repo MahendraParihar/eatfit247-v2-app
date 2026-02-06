@@ -14,6 +14,7 @@ import {
   MstState,
   TxnAddress,
   SeoPageModel,
+  InvoiceSequenceModel,
 } from './database/models';
 // Platform services
 import {
@@ -22,6 +23,7 @@ import {
   CurrencyService,
   EmailNotificationService,
   GoogleService,
+  InvoiceSequenceService,
   LogErrorService,
   PaymentGatewayService,
   PaymentModeService,
@@ -54,6 +56,7 @@ export class PlatformModule {
       MstPaymentStatus,
       MstPaymentGateway,
       SeoPageModel,
+      InvoiceSequenceModel,
     ];
     return {
       module: PlatformModule,
@@ -88,6 +91,7 @@ export class PlatformModule {
         DietPlanPdfService,
         EmailNotificationService,
         SeoPageService,
+        InvoiceSequenceService,
       ],
       exports: [
         SequelizeModule,
@@ -111,6 +115,7 @@ export class PlatformModule {
         DietPlanPdfService,
         EmailNotificationService,
         SeoPageService,
+        InvoiceSequenceService,
       ],
     };
   }
@@ -132,6 +137,7 @@ export class PlatformModule {
       MstPaymentStatus,
       MstPaymentGateway,
       SeoPageModel,
+      InvoiceSequenceModel,
     ];
   }
 }

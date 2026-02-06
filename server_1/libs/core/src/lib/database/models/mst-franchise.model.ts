@@ -42,6 +42,18 @@ export class MstFranchise extends Model<MstFranchise> {
   declare logo: IMediaUpload[];
   @Column({
     allowNull: false,
+    field: 'franchise_code',
+    type: DataType.STRING(10),
+  })
+  declare franchiseCode: string;
+  @Column({
+    allowNull: false,
+    field: 'financial_year',
+    type: DataType.INTEGER,
+  })
+  declare financialYear: number;
+  @Column({
+    allowNull: false,
     field: 'first_name',
     type: DataType.STRING(50),
   })

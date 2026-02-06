@@ -54,6 +54,8 @@ export class FranchiseService {
       franchiseId: item.franchiseId,
       id: item.franchiseId,
       companyName: item.companyName,
+      franchiseCode: item.franchiseCode,
+      financialYear: item.financialYear,
       logo: CommonFunctionsUtil.buildImageUrl(
         item.logo
       ),
@@ -106,6 +108,8 @@ export class FranchiseService {
 
   public async create(obj: IManageFranchise, cIp: string, adminId: number): Promise<void> {
     const createObj = {
+      franchiseCode: obj.franchiseCode,
+      financialYear: obj.financialYear,
       companyName: obj.companyName,
       logo: (obj.logo && obj.logo.length > 0) ? obj.logo : null,
       firstName: obj.firstName,
@@ -154,6 +158,8 @@ export class FranchiseService {
       throw new NotFoundException('Franchise not found');
     }
     const updateObj = {
+      franchiseCode: obj.franchiseCode,
+      financialYear: obj.financialYear,
       companyName: obj.companyName,
       logo: (obj.logo && obj.logo.length > 0) ? obj.logo : null,
       firstName: obj.firstName,

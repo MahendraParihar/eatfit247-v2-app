@@ -627,11 +627,12 @@
 </div>
 
 <!-- Footer -->
-{{#if invoice.footer.legalNote}}
-  <div class="footer">
-    {{invoice.footer.legalNote}}
-  </div>
-{{/if}}
+<div class="footer">
+  This is a computer-generated invoice.
+  {{#if invoice.footer.legalNote}}
+    <br>{{invoice.footer.legalNote}}
+  {{/if}}
+</div>
 </body>
 </html>
 
