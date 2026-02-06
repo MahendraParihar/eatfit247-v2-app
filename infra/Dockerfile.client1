@@ -60,7 +60,7 @@ RUN npm --prefix eatfit247-web-1 install --omit=dev --legacy-peer-deps
 # Create nginx directories and copy nginx config
 RUN mkdir -p /var/log/nginx /var/cache/nginx /var/run /etc/nginx/conf.d
 COPY --from=build /home/app/infra/nginx.conf /etc/nginx/nginx.conf
-COPY --from=build /home/app/infra/nginx-client1.conf /etc/nginx/conf.d/default.conf
+# Note: nginx config is mounted via docker-compose (eatfit24by71.conf), so we don't copy default.conf here
 
 # Set environment variables
 ENV NODE_ENV=production
