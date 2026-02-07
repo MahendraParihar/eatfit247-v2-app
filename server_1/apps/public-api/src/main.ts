@@ -37,7 +37,8 @@ async function bootstrap() {
   
   // Middleware to preserve raw body for webhook signature verification
   // Must be before json() middleware
-  app.use('/api/v2/razorpay/webhook', (req, res, next) => {
+  // Note: This path matches the global prefix + controller route: /api/v2/public/razorpay/webhook
+  app.use('/api/v2/public/razorpay/webhook', (req, res, next) => {
     let data = '';
     req.setEncoding('utf8');
     req.on('data', (chunk) => {

@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Transaction } from 'sequelize';
 import { InvoiceSequenceModel } from '../database/models';
+import { BusinessTypeEnum } from '@eatfit247-shared-lib';
 
 @Injectable()
 export class InvoiceSequenceService {
@@ -23,7 +24,7 @@ export class InvoiceSequenceService {
     franchiseId: number,
     startMonth: number,
     franchiseCode: string,
-    invoiceType: 'PRODUCT' | 'SERVICE',
+    invoiceType: BusinessTypeEnum,
     trx: Transaction,
   ) {
     const fy = this.getFinancialYear(new Date(), startMonth);
@@ -39,7 +40,7 @@ export class InvoiceSequenceService {
     });
     sequence.currentNumber += 1;
     await sequence.save({ transaction: trx });
-    const typeCode = invoiceType === 'PRODUCT' ? 'P' : 'S';
+    const typeCode = invoiceType === BusinessTypeEnum.PRODUCT ? 'P' : 'S';
     return `${franchiseCode}/${fy}/${typeCode}/${String(sequence.currentNumber).padStart(6, '0')}`;
   }
 

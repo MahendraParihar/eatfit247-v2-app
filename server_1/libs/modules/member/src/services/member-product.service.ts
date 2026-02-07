@@ -1,6 +1,6 @@
-import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
-import { InjectModel } from "@nestjs/sequelize";
-import { TxnMember, TxnMemberProduct, TxnMemberProductOrderItem } from "../models";
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { InjectModel } from '@nestjs/sequelize';
+import { TxnMember, TxnMemberProduct, TxnMemberProductOrderItem } from '../models';
 import {
   BusinessTypeEnum,
   ConfigParam,
@@ -27,15 +27,9 @@ import {
   PaymentSourceEnum,
   PaymentStatusEnum,
   TableEnum,
-  TransactionType
-} from "@eatfit247-shared-lib";
-import {
-  AppConfigService,
-  CommonFunctionsUtil,
-  Env,
-  MstFranchise,
-  PaymentValidationUtil
-} from "@server_1/core";
+  TransactionType,
+} from '@eatfit247-shared-lib';
+import { AppConfigService, CommonFunctionsUtil, Env, MstFranchise, PaymentValidationUtil } from '@server_1/core';
 import {
   AddressService,
   CountryService,
@@ -45,19 +39,19 @@ import {
   PaymentModeService,
   PaymentStatusService,
   PaymentUtil,
-  StateService
-} from "@server_1/platform";
-import { ProductService } from "@server_1/modules/product";
-import { TaxEngineService, TaxInput } from "@server_1/modules/tax-engine";
-import { FranchisePaymentGatewayService, FranchiseService } from "@server_1/modules/franchise";
+  StateService,
+} from '@server_1/platform';
+import { ProductService } from '@server_1/modules/product';
+import { TaxEngineService, TaxInput } from '@server_1/modules/tax-engine';
+import { FranchisePaymentGatewayService, FranchiseService } from '@server_1/modules/franchise';
 import {
   PaymentGatewayCredentialService,
   PaymentGatewayFactory,
-  PaymentGatewayResolverService
-} from "@server_1/modules/payment";
-import { Sequelize } from "sequelize-typescript";
-import fs from "fs";
-import { find, sumBy } from "lodash";
+  PaymentGatewayResolverService,
+} from '@server_1/modules/payment';
+import { Sequelize } from 'sequelize-typescript';
+import fs from 'fs';
+import { find, sumBy } from 'lodash';
 
 @Injectable()
 export class MemberProductService {
@@ -513,10 +507,11 @@ export class MemberProductService {
     // Prepare description
     const paymentDescription =
       payload.description || `Product Order Payment for Member ID: ${memberId}`;
-    // Prepare notes with member ID
+    // Prepare notes with member ID and order type
     const paymentNotes = {
       memberId: memberId.toString(),
       franchisePaymentGatewayId: resolvedGateway.franchisePaymentGatewayId.toString(),
+      type: 'product',
       ...payload.notes
     };
     const adaptor = this.paymentGatewayFactory.getAdapter(gatewayCode);
@@ -578,10 +573,11 @@ export class MemberProductService {
     // Prepare description
     const paymentDescription =
       payload.description || `Product Order Payment for Member ID: ${memberId}`;
-    // Prepare notes with member ID
+    // Prepare notes with member ID and order type
     const paymentNotes = {
       memberId: memberId.toString(),
       franchisePaymentGatewayId: resolvedGateway.franchisePaymentGatewayId.toString(),
+      type: 'product',
       ...payload.notes
     };
     const adaptor = this.paymentGatewayFactory.getAdapter(gatewayCode);
@@ -1107,7 +1103,7 @@ export class MemberProductService {
           franchise[0].id as number,
           franchiseDetails.financialYear,
           franchiseDetails.franchiseCode,
-          'PRODUCT',
+          BusinessTypeEnum.PRODUCT,
           t
         );
         productOrder.invoiceId = invoiceNumber;

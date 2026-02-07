@@ -45,6 +45,7 @@ import {
   PublicCheckoutPlanController,
   PublicMemberController,
   PublicMemberPaymentController,
+  RazorpayWebhookController,
 } from './controllers/public';
 import {
   MemberAssessmentService,
@@ -144,6 +145,7 @@ modelRegistry.register([
     PublicMemberController,
     PublicCheckoutController,
     PublicCheckoutPlanController,
+    RazorpayWebhookController,
   ],
   providers: [
     MemberService,

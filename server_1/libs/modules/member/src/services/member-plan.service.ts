@@ -2,6 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { InjectModel } from '@nestjs/sequelize';
 import { TxnMember, TxnMemberPayment } from '../models';
 import {
+  buildTaxRows,
   BusinessTypeEnum,
   ConfigParam,
   IAddress,
@@ -17,7 +18,6 @@ import {
   IPaymentLinkResponse,
   IPlanTaxCalculationRequest,
   ITableList,
-  buildTaxRows,
   mapPaymentToInvoiceDocument,
   MediaForEnum,
   PaymentGatewayEnum,
@@ -28,13 +28,7 @@ import {
   TaxTypeEnum,
   TransactionType,
 } from '@eatfit247-shared-lib';
-import {
-  AppConfigService,
-  CommonFunctionsUtil,
-  Env,
-  MstFranchise,
-  PaymentValidationUtil,
-} from '@server_1/core';
+import { AppConfigService, CommonFunctionsUtil, Env, MstFranchise, PaymentValidationUtil } from '@server_1/core';
 import {
   AddressService,
   CountryService,
@@ -438,7 +432,7 @@ export class MemberPlanService {
             member.franchiseId,
             franchiseDetails.financialYear,
             franchiseDetails.franchiseCode,
-            'SERVICE',
+            BusinessTypeEnum.SERVICE,
             t
           );
           payment.invoiceId = invoiceNumber;
@@ -708,10 +702,11 @@ export class MemberPlanService {
     };
     // Prepare description
     const paymentDescription = payload.description || `Payment for Member ID: ${memberId}`;
-    // Prepare notes with member ID
+    // Prepare notes with member ID and order type
     const paymentNotes = {
       memberId: memberId.toString(),
       franchisePaymentGatewayId: resolvedGateway.franchisePaymentGatewayId.toString(),
+      type: 'plan',
       ...payload.notes,
     };
     const adaptor = this.paymentGatewayFactory.getAdapter(gatewayCode);
@@ -899,11 +894,12 @@ export class MemberPlanService {
     const programName = payment.program || '';
     const planName = payment.programPlan || '';
     const paymentDescription = `Payment for ${programName} - ${planName}`;
-    // Prepare notes with member ID
+    // Prepare notes with member ID and order type
     const paymentNotes = {
       memberId: memberId.toString(),
       franchisePaymentGatewayId: resolvedGateway.franchisePaymentGatewayId.toString(),
       paymentId: paymentId.toString(),
+      type: 'plan',
     };
     // Create payment link using the adapter
     const adaptor = this.paymentGatewayFactory.getAdapter(gatewayCode);
@@ -1051,10 +1047,11 @@ export class MemberPlanService {
     };
     // Prepare description
     const paymentDescription = payload.description || `Plan Payment for Member ID: ${memberId}`;
-    // Prepare notes with member ID
+    // Prepare notes with member ID and order type
     const paymentNotes = {
       memberId: memberId.toString(),
       franchisePaymentGatewayId: resolvedGateway.franchisePaymentGatewayId.toString(),
+      type: 'plan',
       ...payload.notes,
     };
     const adaptor = this.paymentGatewayFactory.getAdapter(gatewayCode);
