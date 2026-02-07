@@ -1,0 +1,123 @@
+<div class="chat-dialog-container">
+  <div class="chat-header">
+    <div class="header-content">
+      <h2 mat-dialog-title>Member Issue Details</h2>
+      <button mat-icon-button (click)="onClose()" class="close-button">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+    <!-- Member Info -->
+    <div class="member-info">
+      <div class="info-row">
+        <span class="label">Member:</span>
+        <span class="value">{{ memberIssue.memberId }}</span>
+        <button mat-icon-button (click)="viewMember()" matTooltip="View Member">
+          <mat-icon>person</mat-icon>
+        </button>
+      </div>
+    </div>
+    <!-- Issue Info -->
+    <div class="issue-info">
+      <div class="info-row">
+        <span class="label">Issue:</span>
+        <span class="value">{{ memberIssue.issue }}</span>
+      </div>
+      <div class="info-row">
+        <span class="label">Category:</span>
+        <span class="value">{{ memberIssue.issueCategory }}</span>
+      </div>
+      <div class="info-row">
+        <span class="label">Status:</span>
+        <mat-chip [class.closed]="isIssueClosed()">{{ memberIssue.issueStatus }}</mat-chip>
+      </div>
+    </div>
+  </div>
+
+  <mat-dialog-content class="chat-content">
+    <!-- Chat Messages -->
+    <div class="chat-messages" #chatMessages>
+      @if (loading && responses.length === 0) {
+        <div class="loading-container">
+          <mat-spinner diameter="40"></mat-spinner>
+        </div>
+      } @else {
+        <!-- Initial Issue Message -->
+        <div class="message issue-message">
+          <div class="message-header">
+            <span class="sender">Issue Raised</span>
+            <span class="timestamp">{{ formatDate(memberIssue.createdAt) }}</span>
+          </div>
+          <div class="message-content">{{ memberIssue.issue }}</div>
+        </div>
+
+        <!-- Responses -->
+        @for (response of responses; track response.memberIssueResponseId) {
+          <div class="message response-message">
+            <div class="message-header">
+              <span class="sender">
+                {{ response.createdByUser?.firstName }} {{ response.createdByUser?.lastName }}
+              </span>
+              <span class="timestamp">{{ formatDate(response.createdAt) }}</span>
+            </div>
+            <div class="message-content">{{ response.response }}</div>
+          </div>
+        }
+      }
+    </div>
+
+    <!-- Response Form -->
+    @if (!isIssueClosed()) {
+      <form [formGroup]="formGroup" class="response-form" (ngSubmit)="sendResponse()">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Type your response...</mat-label>
+          <textarea
+            matInput
+            formControlName="response"
+            rows="3"
+            [maxlength]="InputLengthEnum.CHAR_1000"
+            placeholder="Enter your response">
+          </textarea>
+          <mat-hint align="end">
+            {{ formGroup.get('response')?.value?.length || 0 }}/{{ InputLengthEnum.CHAR_1000 }}
+          </mat-hint>
+          <shared-ui-input-error [control]="formGroup.get('response')"></shared-ui-input-error>
+        </mat-form-field>
+        <div class="form-actions">
+          <button
+            mat-raised-button
+            color="primary"
+            type="submit"
+            [disabled]="formGroup.invalid || sendingResponse">
+            @if (sendingResponse) {
+              <mat-spinner diameter="20" class="inline-spinner"></mat-spinner>
+            }
+            @if (!sendingResponse) {
+              <mat-icon>send</mat-icon>
+            }
+            <span [style.visibility]="sendingResponse ? 'hidden' : 'visible'">Send</span>
+          </button>
+        </div>
+      </form>
+    }
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end" class="chat-actions">
+    @if (!isIssueClosed()) {
+      <button mat-button color="primary" (click)="markAsSolved(true)" [disabled]="loading">
+        <mat-icon>check_circle</mat-icon>
+        Mark as Solved
+      </button>
+    } @else {
+      <button mat-button color="warn" (click)="markAsSolved(false)" [disabled]="loading">
+        <mat-icon>refresh</mat-icon>
+        Reopen Issue
+      </button>
+    }
+    <button mat-button (click)="viewMember()">
+      <mat-icon>person</mat-icon>
+      View Member
+    </button>
+    <button mat-button (click)="onClose()">Close</button>
+  </mat-dialog-actions>
+</div>
+

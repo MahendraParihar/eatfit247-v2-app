@@ -21,6 +21,7 @@ export * from './location.interface';
 export * from './member.interface';
 export * from './member-pocket-guide.interface';
 export * from './member-issue.interface';
+export * from './member-issue-report.interface';
 export * from './member-health-issue.interface';
 export * from './member-health-parameter.interface';
 export * from './admin-user.interface';

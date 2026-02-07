@@ -129,11 +129,6 @@ export class BaseLayoutComponent implements OnInit, OnDestroy {
       route: '/call-logs',
     },
     {
-      label: 'Issues',
-      icon: 'report_problem',
-      route: '/issues',
-    },
-    {
       label: 'Admin Users',
       icon: 'admin_panel_settings',
       route: '/admin-user',
@@ -181,6 +176,11 @@ export class BaseLayoutComponent implements OnInit, OnDestroy {
           label: 'Member Product Report',
           icon: 'inventory',
           route: '/reports/member-product',
+        },
+        {
+          label: 'Member Issues Report',
+          icon: 'report_problem',
+          route: '/reports/member-issues',
         },
       ],
     },

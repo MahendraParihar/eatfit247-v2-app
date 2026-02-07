@@ -1,8 +1,8 @@
 import { Body, Controller, Get, Param, Post, Put, UseGuards } from '@nestjs/common';
 import { CurrentUser, JwtAuthGuard, RequestedIp, UpdateIsSolvedDto } from '@server_1/core';
 import { MemberIssueResponseService, MemberIssueService } from '../../services';
-import { IIssueMasterData, IMemberIssue, IMemberIssueResponse } from '@eatfit247-shared-lib';
-import { CreateMemberIssueDto, CreateMemberIssueResponseDto } from '../../dto';
+import { IIssueMasterData, IMemberIssue, IMemberIssueResponse, ITableList } from '@eatfit247-shared-lib';
+import { CreateMemberIssueDto, CreateMemberIssueResponseDto, MemberIssueReportDto } from '../../dto';
 
 @Controller('member')
 @UseGuards(JwtAuthGuard)
@@ -15,6 +15,11 @@ export class MemberIssueController {
   @Get('issues-master')
   async getIssuesMasterData(): Promise<IIssueMasterData> {
     return await this.memberIssueService.getIssuesMasterData();
+  }
+
+  @Post('issues-report')
+  async getMemberIssuesReport(@Body() dto: MemberIssueReportDto): Promise<ITableList<any>> {
+    return await this.memberIssueService.getMemberIssuesReport(dto);
   }
 
   @Get(':id/issues')

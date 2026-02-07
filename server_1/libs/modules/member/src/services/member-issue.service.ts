@@ -1,10 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
+import { Op } from 'sequelize';
 import { TxnMember, TxnMemberIssue } from '../models';
-import { IDropdownItem, IIssueMasterData, IMemberIssue } from '@eatfit247-shared-lib';
-import { CommonFunctionsUtil } from '@server_1/core';
+import { IDropdownItem, IIssueMasterData, IMemberIssue, IMemberIssueReportItem, ITableList } from '@eatfit247-shared-lib';
+import { CommonFunctionsUtil, MstAdminUser } from '@server_1/core';
 import { MstIssueCategory, MstIssueStatus } from '@server_1/modules/issues';
-import { CreateMemberIssueDto } from '../dto';
+import { CreateMemberIssueDto, MemberIssueReportDto } from '../dto';
+import { TxnMemberIssueResponse } from '../models/txn-member-issue-response.model';
+import moment from 'moment';
 
 @Injectable()
 export class MemberIssueService {
@@ -14,6 +17,8 @@ export class MemberIssueService {
     @InjectModel(TxnMember) private readonly memberRepository: typeof TxnMember,
     @InjectModel(MstIssueStatus) private readonly issueStatus: typeof MstIssueStatus,
     @InjectModel(MstIssueCategory) private readonly issueCategory: typeof MstIssueCategory,
+    @InjectModel(TxnMemberIssueResponse)
+    private readonly memberIssueResponseRepository: typeof TxnMemberIssueResponse,
   ) {}
 
   public async getIssuesMasterData(): Promise<IIssueMasterData> {
@@ -131,6 +136,180 @@ export class MemberIssueService {
       throw new NotFoundException('Failed to retrieve updated issue');
     }
     return this.convertToModel(updatedIssue.toJSON());
+  }
+
+  /**
+   * Get member issues report with filters
+   * @param dto - Member issue report filter DTO
+   * @returns List of member issues with member information
+   */
+  public async getMemberIssuesReport(dto: MemberIssueReportDto): Promise<ITableList<IMemberIssueReportItem>> {
+    const startDateStr = moment(dto.startDate).startOf('day').utc().startOf('day');
+    const endDateStr = moment(dto.endDate).endOf('day').utc().endOf('day');
+    
+    const whereCondition: any = {
+      createdAt: {
+        [Op.and]: {
+          [Op.gte]: startDateStr.format(),
+          [Op.lte]: endDateStr.format(),
+        },
+      },
+    };
+
+    // Add status filter if provided
+    if (dto.issueStatusId) {
+      whereCondition.issueStatusId = dto.issueStatusId;
+    }
+
+    // Add category filter if provided
+    if (dto.issueCategoryId) {
+      whereCondition.issueCategoryId = dto.issueCategoryId;
+    }
+
+    // Add open/closed filter if provided
+    if (dto.isOpen !== undefined) {
+      // Assuming open status has a specific status ID or status name contains "open"
+      // You may need to adjust this based on your status naming convention
+      const openStatuses = await this.issueStatus.findAll({
+        where: {
+          active: true,
+          issueStatus: { [Op.iLike]: '%open%' },
+        },
+        attributes: ['issueStatusId'],
+      });
+      const openStatusIds = openStatuses.map((s) => s.issueStatusId);
+      if (dto.isOpen) {
+        whereCondition.issueStatusId = { [Op.in]: openStatusIds };
+      } else {
+        whereCondition.issueStatusId = { [Op.notIn]: openStatusIds };
+      }
+    }
+
+    // Build include conditions
+    const includeConditions: any[] = [
+      {
+        model: TxnMember,
+        as: 'member',
+        required: true,
+        attributes: ['memberId', 'firstName', 'lastName', 'emailId', 'contactNumber'],
+      },
+      {
+        model: MstIssueStatus,
+        as: 'issueStatus',
+        required: false,
+        attributes: ['issueStatusId', 'issueStatus'],
+      },
+      {
+        model: MstIssueCategory,
+        as: 'issueCategory',
+        required: false,
+        attributes: ['issueCategoryId', 'issueCategory'],
+      },
+      {
+        model: MstAdminUser,
+        as: 'createdByUser',
+        required: false,
+        attributes: ['adminId', 'firstName', 'lastName'],
+      },
+      {
+        model: MstAdminUser,
+        as: 'updatedByUser',
+        required: false,
+        attributes: ['adminId', 'firstName', 'lastName'],
+      },
+    ];
+
+    // Add search condition if provided
+    if (dto.search && dto.search.trim()) {
+      const searchTerm = `%${dto.search.trim()}%`;
+      includeConditions[0].where = {
+        [Op.or]: [
+          { firstName: { [Op.iLike]: searchTerm } },
+          { lastName: { [Op.iLike]: searchTerm } },
+          { emailId: { [Op.iLike]: searchTerm } },
+          { contactNumber: { [Op.iLike]: searchTerm } },
+        ],
+      };
+    }
+
+    const { rows, count } = await this.memberIssueRepository.scope('list').findAndCountAll({
+      where: whereCondition,
+      include: includeConditions,
+      order: [['createdAt', 'DESC']],
+      raw: true,
+      nest: true,
+    });
+
+    // Get response information for each issue
+    const memberIssueIds = rows.map((r: any) => r.memberIssueId || r.member_issue_id).filter((id: any) => id);
+    const responses = await this.memberIssueResponseRepository.findAll({
+      where: {
+        memberIssueId: { [Op.in]: memberIssueIds },
+        isLatest: true,
+      },
+      attributes: ['memberIssueId', 'createdAt'],
+      order: [['createdAt', 'DESC']],
+      raw: true,
+    });
+
+    const responseMap = new Map<number, Date>();
+    responses.forEach((r: any) => {
+      if (!responseMap.has(r.memberIssueId) || responseMap.get(r.memberIssueId)! < r.createdAt) {
+        responseMap.set(r.memberIssueId, r.createdAt);
+      }
+    });
+
+    // Transform data
+    const tableData: IMemberIssueReportItem[] = rows.map((item: any) => {
+      // With raw: true and nest: true, nested objects use the alias as key
+      const memberIssueId = item.memberIssueId || item.member_issue_id;
+      const hasResponse = responseMap.has(memberIssueId);
+      const lastResponseDate = responseMap.get(memberIssueId) || null;
+      
+      const member = item.member || {};
+      const issueStatus = item.issueStatus || {};
+      const issueCategory = item.issueCategory || {};
+      const createdByUser = item.createdByUser || {};
+      const updatedByUser = item.updatedByUser || {};
+
+      return {
+        memberIssueId,
+        memberId: member.memberId || item.memberId || item.member_id,
+        memberName: member.firstName && member.lastName
+          ? `${member.firstName} ${member.lastName}`.trim()
+          : '',
+        memberEmail: member.emailId || '',
+        memberContactNumber: member.contactNumber || '',
+        issue: item.issue,
+        issueStatusId: item.issueStatusId || item.issue_status_id,
+        issueStatus: issueStatus.issueStatus || '',
+        issueCategoryId: item.issueCategoryId || item.issue_category_id,
+        issueCategory: issueCategory.issueCategory || '',
+        hasResponse,
+        lastResponseDate,
+        createdAt: item.createdAt || item.created_at,
+        updatedAt: item.updatedAt || item.updated_at,
+        createdByUser: createdByUser.adminId
+          ? {
+              adminId: createdByUser.adminId,
+              firstName: createdByUser.firstName || '',
+              lastName: createdByUser.lastName || '',
+            }
+          : undefined,
+        updatedByUser: updatedByUser.adminId
+          ? {
+              adminId: updatedByUser.adminId,
+              firstName: updatedByUser.firstName || '',
+              lastName: updatedByUser.lastName || '',
+            }
+          : undefined,
+      };
+    });
+
+    return {
+      tableData,
+      count,
+    };
   }
 
   private convertToModel(item: any): IMemberIssue {
