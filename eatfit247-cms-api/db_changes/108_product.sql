@@ -139,6 +139,9 @@ CREATE TABLE mst_tax_master
         )
 );
 
+alter table public.mst_tax_master
+    add tax_percent decimal(5, 2);
+
 CREATE TYPE public.shipment_status_enum AS ENUM (
     'CREATED',
     'PACKED',
@@ -298,8 +301,8 @@ CREATE INDEX ix_txn_member_product_created_at
     ON txn_member_products (created_at);
 
 alter table mst_franchises
-    add column franchise_code varchar(10) not null,
-    add column financial_year integer     not null;
+    add column franchise_code varchar(10),
+    add column financial_year integer;
 
 update mst_franchises
 set financial_year = 4,

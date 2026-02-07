@@ -94,27 +94,8 @@ CREATE TABLE IF NOT EXISTS txn_admin_password_reset_tokens
         FOREIGN KEY (admin_id) REFERENCES mst_admin_users (admin_id)
 );
 
-INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
-VALUES (DEFAULT, 'JWT_ACCESS_SECRET', 'GrdlksuiFEFjbwiuwkjbcwfdkjhsa&UFehjc7iuidy3jn89dy478', 'Auth');
-
-INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
-VALUES (DEFAULT, 'JWT_REFRESH_SECRET', 'GrdlksuiFEFjbwiuwkjbcwfdkjhsa&dkldg74682jsadkfly478', 'Auth');
-
 alter table public.mst_email_templates
     alter column body type varchar(100) using body::varchar(100);
-
-INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
-VALUES (DEFAULT, 'CLIENT_URL', 'http://localhost:4200', 'Common');
-
-INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
-VALUES (DEFAULT, 'SYSTEM_EMAIL_USER', 'info@eatfit247.com', 'Email'),
-       (DEFAULT, 'SYSTEM_EMAIL_PASSWORD', 'shweta@123456789', 'Email'),
-       (DEFAULT, 'SYSTEM_EMAIL_HOST', 'server.eatfit247.com', 'Email'),
-       (DEFAULT, 'SYSTEM_EMAIL_ENABLE', 'true', 'Email'),
-       (DEFAULT, 'SYSTEM_EMAIL_PORT', '587', 'Email');
-
-INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
-VALUES (DEFAULT, 'CLIENT_URL', 'localhost:4200', 'Common');
 
 alter table public.log_errors
     alter column environment type varchar(250) using environment::varchar(250);
@@ -182,9 +163,10 @@ create table public.txn_program_plan_fees
     CONSTRAINT fk_txn_program_plan_fees_mst_admin_updated_by FOREIGN KEY (updated_by) REFERENCES mst_admin_users (admin_id)
 );
 
+drop index if exists txn_program_plan_fees_currency_fees_uindex;
 create unique index txn_program_plan_fees_currency_fees_uindex on public.txn_program_plan_fees using btree (program_plan_id, currency_code);
 
-insert into txn_program_plan_fees
+insert into public.txn_program_plan_fees
 (program_plan_id, currency_code, fees, active, created_at,
  updated_at, created_by, updated_by, created_ip, modified_ip)
 select program_plan_id,
@@ -197,7 +179,7 @@ select program_plan_id,
        modified_by,
        created_ip,
        modified_ip
-from mst_program_plans;
+from public.mst_program_plans;
 
 create table public.mst_currencies
 (
@@ -207,6 +189,7 @@ create table public.mst_currencies
     symbol        varchar(10)  not null
 );
 
+drop index if exists ix_mst_currencies_currency_code;
 CREATE INDEX ix_mst_currencies_currency_code
     ON mst_currencies (currency_code);
 
@@ -266,25 +249,6 @@ ALTER TABLE public.mst_admin_users
 ALTER TABLE public.mst_admin_users
     ADD COLUMN google_calendar_timezone varchar(100);
 
-INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
-VALUES (DEFAULT, 'GOOGLE_CLIENT_ID', '',
-        'Google');
-INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
-VALUES (DEFAULT, 'GOOGLE_CLIENT_SECRET', '', 'Google');
-INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
-VALUES (DEFAULT, 'GOOGLE_REDIRECT_URI', 'http://localhost:3001/api/v2/admin/google-calendar/callback', 'Google');
-INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
-VALUES (DEFAULT, 'GOOGLE_CALENDAR_SCOPE', 'https://www.googleapis.com/auth/calendar', 'Google');
-
-INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
-VALUES (DEFAULT, 'CALENDAR_SLOT_STEP_MINUTES', 15, 'Calendar');
-INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
-VALUES (DEFAULT, 'CALENDAR_MAX_SLOT', 10, 'Calendar');
-INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
-VALUES (DEFAULT, 'CALENDAR_WORKING_HOURS', '09:00-18:00', 'Calendar');
-INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
-VALUES (DEFAULT, 'CALENDAR_TIMEZONE', 'Asia/Kolkata', 'Calendar');
-
 alter table public.txn_member_call_logs
     drop column start_time;
 alter table public.txn_member_call_logs
@@ -308,17 +272,8 @@ alter table public.txn_member_call_logs
     add constraint fk_txn_member_call_logs_mst_call_log_statuses_id
         foreign key (call_log_status_id) references public.mst_call_log_status;
 
-INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
-VALUES (DEFAULT, 'ZOOM_ACCOUNT_ID', '', 'Zoom'),
-       (DEFAULT, 'ZOOM_CLIENT_ID', '', 'Zoom'),
-       (DEFAULT, 'ZOOM_CLIENT_SECRET', '', 'Zoom');
-
 alter table public.mst_payment_statuses
     rename to mst_payment_status;
-
-CREATE TYPE public.tax_type AS ENUM ('GST','VAT','SALES_TAX','NONE');
-CREATE TYPE public.tax_mode AS ENUM ('DOMESTIC_GST','EXPORT_OF_SERVICE','VAT','RCM_IMPORT_SERVICE','SALES_TAX','NO_TAX');
-CREATE TYPE public.transaction_type AS ENUM ('SERVICE','PRODUCT');
 
 ALTER TABLE txn_member_payments
     ADD COLUMN payment_source     varchar(30) DEFAULT 'MANUAL',
@@ -326,6 +281,10 @@ ALTER TABLE txn_member_payments
     ADD COLUMN gateway_order_id   varchar(100),
     ADD COLUMN gateway_payment_id varchar(100),
     ADD COLUMN payment_link       varchar(500);
+
+CREATE TYPE public.tax_type AS ENUM ('GST','VAT','SALES_TAX','NONE');
+CREATE TYPE public.tax_mode AS ENUM ('DOMESTIC_GST','EXPORT_OF_SERVICE','VAT','RCM_IMPORT_SERVICE','SALES_TAX','NO_TAX');
+CREATE TYPE public.transaction_type AS ENUM ('SERVICE','PRODUCT');
 
 ALTER TABLE public.txn_member_payments
     ADD COLUMN order_amount    NUMERIC(10, 2),
@@ -344,10 +303,7 @@ ALTER TABLE public.txn_member_payments
 
 INSERT INTO public.mst_payment_status (payment_status_id, payment_status, active, created_at, created_by, updated_at,
                                        modified_by, created_ip, modified_ip)
-VALUES (4, 'FAILED', true, '2017-03-24 00:00:00.000000', 1, '2017-03-24 00:00:00.000000', 1, '0:', '0:')
-
-INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
-VALUES (DEFAULT, 'PAYMENT_MODE', 'LIVE', 'Payment');
+VALUES (4, 'FAILED', true, '2017-03-24 00:00:00.000000', 1, '2017-03-24 00:00:00.000000', 1, '0:', '0:');
 
 UPDATE public.mst_configs
 SET config_value = 'true'
@@ -517,20 +473,6 @@ alter table public.txn_banner
 alter table public.txn_banner
     drop column url;
 
-INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
-VALUES (DEFAULT, 'GOOGLE_PROJECT_ID', 'eatfit247-172005', 'Google');
-INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
-VALUES (DEFAULT, 'GOOGLE_KEY', 'XYZ', 'Google');
-INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
-VALUES (DEFAULT, 'YOUTUBE_CHANNEL_ID', 'UCif2j57srYKBbxlRdv9kEMQ', 'Google');
-
-INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
-VALUES (DEFAULT, 'GOOGLE_RECAPTCHA_SITE_KEY', 'XYZ', 'Google');
-INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
-VALUES (DEFAULT, 'GOOGLE_RECAPTCHA_SECRET_KEY', 'XYZ', 'Google');
-INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
-VALUES (DEFAULT, 'GOOGLE_PLACE_ID', 'XYZ', 'Google');
-
 alter table public.mst_franchises
     add is_default boolean default false not null;
 
@@ -578,11 +520,6 @@ alter table public.txn_addresses
 alter table public.txn_addresses
     alter column modified_by drop not null;
 
-alter table public.txn_member_products
-    alter column created_by drop not null;
-
-alter table public.txn_member_products
-    alter column modified_by drop not null;
 
 alter table public.txn_member_payments
     alter column created_by drop not null;
@@ -615,5 +552,62 @@ alter table public.txn_member_payments
 alter table public.txn_member_payments
     alter column days_in_cycle set not null;
 
+
+INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
+VALUES (DEFAULT, 'JWT_ACCESS_SECRET', 'GrdlksuiFEFjbwiuwkjbcwfdkjhsa&UFehjc7iuidy3jn89dy478', 'Auth');
+
+INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
+VALUES (DEFAULT, 'JWT_REFRESH_SECRET', 'GrdlksuiFEFjbwiuwkjbcwfdkjhsa&dkldg74682jsadkfly478', 'Auth');
+INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
+VALUES (DEFAULT, 'CLIENT_URL', 'http://localhost:4200', 'Common');
+
+INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
+VALUES (DEFAULT, 'SYSTEM_EMAIL_USER', 'info@eatfit247.com', 'Email'),
+       (DEFAULT, 'SYSTEM_EMAIL_PASSWORD', 'shweta@123456789', 'Email'),
+       (DEFAULT, 'SYSTEM_EMAIL_HOST', 'server.eatfit247.com', 'Email'),
+       (DEFAULT, 'SYSTEM_EMAIL_ENABLE', 'true', 'Email'),
+       (DEFAULT, 'SYSTEM_EMAIL_PORT', '587', 'Email');
+
+INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
+VALUES (DEFAULT, 'CLIENT_URL', 'localhost:4200', 'Common');
+
+INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
+VALUES (DEFAULT, 'GOOGLE_CLIENT_ID', '',
+        'Google');
+INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
+VALUES (DEFAULT, 'GOOGLE_CLIENT_SECRET', '', 'Google');
+INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
+VALUES (DEFAULT, 'GOOGLE_REDIRECT_URI', 'http://localhost:3001/api/v2/admin/google-calendar/callback', 'Google');
+INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
+VALUES (DEFAULT, 'GOOGLE_CALENDAR_SCOPE', 'https://www.googleapis.com/auth/calendar', 'Google');
+
+INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
+VALUES (DEFAULT, 'CALENDAR_SLOT_STEP_MINUTES', 15, 'Calendar');
+INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
+VALUES (DEFAULT, 'CALENDAR_MAX_SLOT', 10, 'Calendar');
+INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
+VALUES (DEFAULT, 'CALENDAR_WORKING_HOURS', '09:00-18:00', 'Calendar');
+INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
+VALUES (DEFAULT, 'CALENDAR_TIMEZONE', 'Asia/Kolkata', 'Calendar');
+INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
+VALUES (DEFAULT, 'ZOOM_ACCOUNT_ID', '', 'Zoom'),
+       (DEFAULT, 'ZOOM_CLIENT_ID', '', 'Zoom'),
+       (DEFAULT, 'ZOOM_CLIENT_SECRET', '', 'Zoom');
+
+INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
+VALUES (DEFAULT, 'PAYMENT_MODE', 'LIVE', 'Payment');
+INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
+VALUES (DEFAULT, 'GOOGLE_PROJECT_ID', 'eatfit247-172005', 'Google');
+INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
+VALUES (DEFAULT, 'GOOGLE_KEY', 'XYZ', 'Google');
+INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
+VALUES (DEFAULT, 'YOUTUBE_CHANNEL_ID', 'UCif2j57srYKBbxlRdv9kEMQ', 'Google');
+
+INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
+VALUES (DEFAULT, 'GOOGLE_RECAPTCHA_SITE_KEY', 'XYZ', 'Google');
+INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
+VALUES (DEFAULT, 'GOOGLE_RECAPTCHA_SECRET_KEY', 'XYZ', 'Google');
+INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
+VALUES (DEFAULT, 'GOOGLE_PLACE_ID', 'XYZ', 'Google');
 INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
 VALUES (DEFAULT, 'DIET_SAC_CODE', '999319', 'Invoice');
