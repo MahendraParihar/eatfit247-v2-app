@@ -54,12 +54,6 @@ export class Members implements OnInit, AfterViewInit {
   @ViewChild('nameCell', { static: false })
   nameCellTemplate!: TemplateRef<any>;
 
-  @ViewChild('franchiseHeader', { static: false })
-  franchiseHeaderTemplate!: TemplateRef<any>;
-
-  @ViewChild('countryHeader', { static: false })
-  countryHeaderTemplate!: TemplateRef<any>;
-
   constructor(
     private apiService: MembersApiService,
     private router: Router,
@@ -95,26 +89,6 @@ export class Members implements OnInit, AfterViewInit {
         );
         if (emailColumn) {
           emailColumn.cellTemplate = this.emailCellTemplate;
-          updated = true;
-        }
-      }
-
-      if (this.franchiseHeaderTemplate) {
-        const franchiseColumn = this.tableConfig.columns.find(
-          (col) => col.key === 'franchise'
-        );
-        if (franchiseColumn) {
-          franchiseColumn.headerTemplate = this.franchiseHeaderTemplate;
-          updated = true;
-        }
-      }
-
-      if (this.countryHeaderTemplate) {
-        const countryColumn = this.tableConfig.columns.find(
-          (col) => col.key === 'country'
-        );
-        if (countryColumn) {
-          countryColumn.headerTemplate = this.countryHeaderTemplate;
           updated = true;
         }
       }

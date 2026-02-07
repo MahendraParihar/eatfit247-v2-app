@@ -27,22 +27,29 @@
   height: 16px;
 }
 
-.filter-header {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  min-width: 150px;
+// Override default headerActions positioning to place filters beside search
+::ng-deep .table-header {
+  [headerActions] {
+    margin-left: 0 !important;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex: 1;
+  }
+
+  .filters-container {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .header-actions-right {
+    margin-left: auto;
+  }
 }
 
-.filter-select {
-  width: 100%;
-  font-size: 12px;
-  
-  ::ng-deep .mat-mdc-form-field-subscript-wrapper {
-    display: none;
-  }
-  
-  ::ng-deep .mat-mdc-text-field-wrapper {
-    padding-bottom: 0;
-  }
+.filter-field {
+  min-width: 180px;
+  max-width: 250px;
 }

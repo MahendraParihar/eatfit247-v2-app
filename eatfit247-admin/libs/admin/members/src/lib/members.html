@@ -9,10 +9,41 @@
     (searchChange)="onSearchChange($event)"
   >
     <div headerActions>
-      <button mat-raised-button color="primary" (click)="createItem()">
-        <mat-icon>add</mat-icon>
-        Create New
-      </button>
+      <div class="filters-container">
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>Franchise</mat-label>
+          <mat-select
+            [value]="selectedFranchiseId"
+            (selectionChange)="onFranchiseFilterChange($event.value)"
+            placeholder="All Franchises"
+          >
+            <mat-option [value]="null">All Franchises</mat-option>
+            @for (franchise of franchiseOptions; track franchise.id) {
+              <mat-option [value]="franchise.id">{{ franchise.label }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>Country</mat-label>
+          <mat-select
+            [value]="selectedCountryId"
+            (selectionChange)="onCountryFilterChange($event.value)"
+            placeholder="All Countries"
+          >
+            <mat-option [value]="null">All Countries</mat-option>
+            @for (country of countryOptions; track country.id) {
+              <mat-option [value]="country.id">{{ country.label }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      </div>
+      <div class="header-actions-right">
+        <button mat-raised-button color="primary" (click)="createItem()">
+          <mat-icon>add</mat-icon>
+          Create New
+        </button>
+      </div>
     </div>
 
     <ng-template #nameCell let-row let-value="value">
@@ -38,44 +69,6 @@
         >
           <mat-icon class="copy-icon">content_copy</mat-icon>
         </button>
-      </div>
-    </ng-template>
-
-    <ng-template #franchiseHeader>
-      <div class="filter-header">
-        <span>Franchise</span>
-        <mat-form-field appearance="outline" class="filter-select">
-          <mat-select
-            [value]="selectedFranchiseId"
-            (selectionChange)="onFranchiseFilterChange($event.value)"
-            placeholder="All"
-            (click)="$event.stopPropagation()"
-          >
-            <mat-option [value]="null">All</mat-option>
-            @for (franchise of franchiseOptions; track franchise.id) {
-              <mat-option [value]="franchise.id">{{ franchise.label }}</mat-option>
-            }
-          </mat-select>
-        </mat-form-field>
-      </div>
-    </ng-template>
-
-    <ng-template #countryHeader>
-      <div class="filter-header">
-        <span>Country</span>
-        <mat-form-field appearance="outline" class="filter-select">
-          <mat-select
-            [value]="selectedCountryId"
-            (selectionChange)="onCountryFilterChange($event.value)"
-            placeholder="All"
-            (click)="$event.stopPropagation()"
-          >
-            <mat-option [value]="null">All</mat-option>
-            @for (country of countryOptions; track country.id) {
-              <mat-option [value]="country.id">{{ country.label }}</mat-option>
-            }
-          </mat-select>
-        </mat-form-field>
       </div>
     </ng-template>
   </shared-ui-data-table>
