@@ -16,6 +16,7 @@ import { AddressFormComponent, InputErrorComponent, UploadFormComponent, Validat
 import { FranchiseApiService } from '../api.service';
 import {
   BusinessTypeEnum,
+  CommonUtil,
   FileTypeEnum,
   IFranchise,
   IManageFranchise,
@@ -252,7 +253,11 @@ export class ManageFranchise implements OnInit, OnDestroy {
   async onSubmit(): Promise<void> {
     ValidationUtil.validateAllFormFields(this.formGroup);
     if (this.formGroup.valid) {
-      const formValue: IManageFranchise = { ...this.formGroup.value };
+      const formValue: any = { ...this.formGroup.value };
+      // Format dates to avoid timezone conversion issues
+      formValue.startDate = CommonUtil.formatDateForAPI(formValue.startDate) || undefined;
+      formValue.endDate = CommonUtil.formatDateForAPI(formValue.endDate) || undefined;
+      
       // Handle logo from upload form
       const logoControl = this.formGroup.get('logo');
       if (logoControl) {
@@ -266,23 +271,17 @@ export class ManageFranchise implements OnInit, OnDestroy {
         formValue.logo = undefined;
       }
       
-      // Handle address from address form
-      const addressControl = this.formGroup.get('address');
-      if (addressControl && addressControl.valid) {
-        const addressValue = addressControl.value;
+      // Handle address from address form - addressObj is already in formValue from formGroup.value
+      const addressObjControl = this.formGroup.get('addressObj');
+      if (addressObjControl && addressObjControl.valid) {
+        const addressValue = addressObjControl.value;
         if (addressValue.postalAddress && addressValue.countryId && addressValue.stateId) {
-          formValue.addressObj = {
-            postalAddress: addressValue.postalAddress,
-            cityVillage: addressValue.cityVillage,
-            stateId: addressValue.stateId,
-            countryId: addressValue.countryId,
-            pinCode: addressValue.pinCode,
-            latitude: addressValue.latitude,
-            longitude: addressValue.longitude,
-            addressName: addressValue.addressName,
-            addressId: addressValue.addressId || undefined,
-          };
+          formValue.addressObj = addressValue;
+        } else {
+          formValue.addressObj = undefined;
         }
+      } else {
+        formValue.addressObj = undefined;
       }
       
       if (this.isEditMode && this.initialData) {

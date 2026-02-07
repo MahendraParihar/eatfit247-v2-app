@@ -277,11 +277,23 @@ export class ManageProduct implements OnInit, OnDestroy {
 
   // Price methods for variants
   getPricesArray(variantIndex: number): FormArray {
-    return (this.variantsArray.at(variantIndex) as FormGroup).get('prices') as FormArray;
+    const variant = this.variantsArray.at(variantIndex);
+    if (!variant) {
+      return this.fb.array([]) as FormArray;
+    }
+    const pricesArray = (variant as FormGroup).get('prices') as FormArray;
+    return pricesArray || (this.fb.array([]) as FormArray);
   }
 
   addPriceToVariant(variantIndex: number): void {
-    const pricesArray = this.getPricesArray(variantIndex);
+    const variant = this.variantsArray.at(variantIndex);
+    if (!variant) {
+      return;
+    }
+    const pricesArray = (variant as FormGroup).get('prices') as FormArray;
+    if (!pricesArray) {
+      return;
+    }
     const priceGroup = this.fb.group({
       currency: ['INR', Validators.required],
       price: [0, [Validators.required, Validators.min(0)]],
@@ -296,7 +308,14 @@ export class ManageProduct implements OnInit, OnDestroy {
   }
 
   removePriceFromVariant(variantIndex: number, priceIndex: number): void {
-    const pricesArray = this.getPricesArray(variantIndex);
+    const variant = this.variantsArray.at(variantIndex);
+    if (!variant) {
+      return;
+    }
+    const pricesArray = (variant as FormGroup).get('prices') as FormArray;
+    if (!pricesArray || priceIndex < 0 || priceIndex >= pricesArray.length) {
+      return;
+    }
     pricesArray.removeAt(priceIndex);
     this.calculatePriceRange();
   }

@@ -173,6 +173,53 @@ export class PdfService {
         return new hbs.SafeString(``);
       }
     });
+    
+    // Equality helper
+    if (!hbs.helpers['eq']) {
+      hbs.registerHelper('eq', (a: any, b: any) => {
+        return a === b;
+      });
+    }
+    
+    // Greater than helper
+    if (!hbs.helpers['gt']) {
+      hbs.registerHelper('gt', (a: number, b: number) => {
+        return (a || 0) > (b || 0);
+      });
+    }
+    
+    // Length helper
+    if (!hbs.helpers['length']) {
+      hbs.registerHelper('length', (arr: any[]) => {
+        return arr ? arr.length : 0;
+      });
+    }
+    
+    // Split directions helper (for backward compatibility)
+    if (!hbs.helpers['splitDirections']) {
+      hbs.registerHelper('splitDirections', (text: string) => {
+        if (!text || text.trim() === '') {
+          return [];
+        }
+        const cleanText = text
+          .replace(/<br\s*\/?>/gi, '\n')
+          .replace(/<\/p>/gi, '\n')
+          .replace(/<p[^>]*>/gi, '')
+          .replace(/<li[^>]*>/gi, '')
+          .replace(/<\/li>/gi, '\n')
+          .replace(/<ol[^>]*>/gi, '')
+          .replace(/<\/ol>/gi, '')
+          .replace(/<ul[^>]*>/gi, '')
+          .replace(/<\/ul>/gi, '')
+          .replace(/<[^>]+>/g, '')
+          .trim();
+        const items = cleanText
+          .split(/\n+/)
+          .map((item) => item.trim())
+          .filter((item) => item.length > 0);
+        return items.length > 0 ? items : [text.trim()];
+      });
+    }
   }
 }
 

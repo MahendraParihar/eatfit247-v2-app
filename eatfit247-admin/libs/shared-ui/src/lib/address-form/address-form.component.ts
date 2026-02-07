@@ -28,6 +28,7 @@ export class AddressFormComponent implements OnInit {
   httpService: HttpService = inject(HttpService);
   masterAddress!: IAddressMaster;
   @Input() formGroup!: FormGroup;
+  @Input() controlName: string = 'address'; // Default to 'address' for backward compatibility
 
   @Input() set address(data: IManageAddress | undefined) {
     this._address = data;
@@ -66,7 +67,7 @@ export class AddressFormComponent implements OnInit {
       'address/address-master'
     );
     this.masterAddress = res.data as IAddressMaster;
-    this.formGroup.addControl('address', this.addressFormGroup);
+    this.formGroup.addControl(this.controlName, this.addressFormGroup);
     this.bindAddress();
     // Watch for country changes to filter states
     this.addressFormGroup.get('countryId')?.valueChanges.subscribe(() => {

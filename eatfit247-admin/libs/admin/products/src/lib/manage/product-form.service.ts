@@ -1,6 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import {
+  CommonUtil,
   IManageProduct,
   IProduct,
   IProductAdditionalInfo,
@@ -474,8 +475,8 @@ export class ProductFormService {
               currency: price.currency,
               price: price.price,
               active: price.active !== undefined ? price.active : true,
-              validFrom: price.validFrom !== undefined ? price.validFrom : null,
-              validTo: price.validTo !== undefined ? price.validTo : null,
+              validFrom: CommonUtil.formatDateForAPI(price.validFrom),
+              validTo: CommonUtil.formatDateForAPI(price.validTo),
             });
           });
         }

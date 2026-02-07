@@ -17,12 +17,27 @@ export class CommonUtil {
 
   /**
    * Format date to YYYY-MM-DD for API
+   * Uses local date components to avoid timezone conversion issues
+   * When Date objects are serialized to JSON, they become UTC ISO strings which shifts the date
+   * 
+   * @param date - Date object, date string, or null/undefined
+   * @returns Formatted date string (YYYY-MM-DD) or null if date is invalid/null/undefined
    */
-  static formatDateForAPI(date: Date | string): string {
-    const d = new Date(date);
-    const day = String(d.getDate()).padStart(2, '0');
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const year = d.getFullYear();
+  static formatDateForAPI(date: Date | string | null | undefined): string | null {
+    if (!date) {
+      return null;
+    }
+    // Convert to Date object if it's a string
+    const dateObj = date instanceof Date ? date : new Date(date);
+    // Check if the date is valid
+    if (isNaN(dateObj.getTime())) {
+      return null;
+    }
+    // Use local date components to preserve the selected date
+    // This prevents timezone shift when serialized to JSON
+    const year = dateObj.getFullYear();
+    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const day = String(dateObj.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
   }
 

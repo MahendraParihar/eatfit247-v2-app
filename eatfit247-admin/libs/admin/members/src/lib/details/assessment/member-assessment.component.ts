@@ -12,7 +12,7 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { InputErrorComponent, LoaderComponent } from '@shared';
-import { IDropdownItem, IManageMemberAssessment, IMemberAssessment, InputLengthEnum } from '@eatfit247-shared-lib';
+import { CommonUtil, IDropdownItem, IManageMemberAssessment, IMemberAssessment, InputLengthEnum } from '@eatfit247-shared-lib';
 import { MembersApiService } from '../../api.service';
 import { Subject, takeUntil } from 'rxjs';
 
@@ -291,7 +291,7 @@ export class MemberAssessmentComponent implements OnInit, OnDestroy {
       const assessmentData: IManageMemberAssessment = {
         memberId: this.memberId,
         ...formValue,
-        dateOfBirth: formValue.dateOfBirth ? formValue.dateOfBirth.toISOString().split('T')[0] : undefined
+        dateOfBirth: CommonUtil.formatDateForAPI(formValue.dateOfBirth) || undefined
       };
       await this.apiService.updateAssessment(this.memberId, assessmentData);
       await this.loadAssessment();

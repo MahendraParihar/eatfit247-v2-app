@@ -1,146 +1,342 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Eatfit247</title>
+  <title>{{name}} — Recipe Card</title>
   <style>
-    @media print {
-      .myDiv {
-        break-inside: avoid;
-      }
+    :root {
+      --ink: #121212;
+      --muted: #666;
+      --panel: #f8f5f2;
+      --border: #e0d7cf;
+      --radius: 10px;
     }
 
-    body {
+    * {
+      box-sizing: border-box;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
     }
 
-    tr {
-      page-break-inside: avoid;
-      page-break-after: auto;
+    html, body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+      color: var(--ink);
+      background: white;
+      font-size: 11px;
     }
 
-    thead {
-      display: table-header-group;
-    }
-
-    table {
+    /* PUPPETEER A4 LAYOUT - Account for header (60px) and footer (50px) margins */
+    .print-sheet {
       width: 100%;
-      border: 1px solid #d3d3d3;;
-      margin-top: 10px;
-      margin-bottom: 10px;
+      box-sizing: border-box;
+      page-break-after: avoid;
+    }
+
+    /* SINGLE RECIPE TABLE - Optimized for header/footer layout */
+    .recipe {
+      width: 100%;
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 0;
+      page-break-inside: avoid;
+      page-break-after: avoid;
+      background: white;
+      table-layout: fixed;
+    }
+
+    .recipe:last-child {
+      margin-bottom: 0;
+    }
+
+    /* ROW 1: Image + Header (55% height) */
+    .row1 {
+      table-layout: fixed;
+      width: 100%;
       border-collapse: collapse;
-      page-break-inside: auto;
     }
 
-    td,
-    th {
-      border: 1px solid #d3d3d3;
+    .image-cell {
+      width: 36%;
+      padding: 4px;
+      vertical-align: top;
+    }
+
+    .header-cell {
+      width: 64%;
+      padding: 4px;
+      vertical-align: top;
+    }
+
+    /* ROW 2: Ingredients + Method (45% height) */
+    .row2 {
+      table-layout: fixed;
+      width: 100%;
       border-collapse: collapse;
-      padding: 10px;
     }
 
-    th {
-      font-weight: bold
+    .ingredients-cell {
+      width: 42%;
+      padding: 4px;
+      vertical-align: top;
+      background: var(--panel) !important;
     }
 
-    .recipe-section {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
+    .method-cell {
+      width: 58%;
+      padding: 4px;
+      vertical-align: top;
+      border: 1px solid var(--border);
     }
 
-    .recipe-item {
-      display: flex;
-      flex-direction: column;
-      border: 1px solid #d3d3d3;
-      margin-top: 12px;
-      padding: 12px;
-    }
-
-    .recipe-title-section {
-      display: grid;
-      grid-template-columns: 60% 40%;
-      align-items: center;
-    }
-
+    /* IMAGE */
     .recipe-image {
       width: 100%;
-      height: 250px;
-      border-radius: 25px;
-      border: 1px solid #d3d3d3;
+      height: 160px;
+      min-height: 80px;
+      border-radius: var(--radius);
+      overflow: hidden;
+      background: #f5f5f5;
+      display: block;
+      text-align: center;
+    }
+
+    .recipe-image img {
+      width: 100%;
+      height: 160px;
       object-fit: cover;
+      display: block;
     }
 
-    .recipe-title {
-      margin-left: -60px;
-      padding: 20px;
-      background: whitesmoke;
-      font-size: 26px;
+    .no-image {
+      color: #999;
+      font-size: 11px;
+      padding: 30px 8px;
+      display: block;
+      text-align: center;
+      min-height: 80px;
+      max-height: 120px;
     }
 
-    .recipe-meta-section {
-      display: flex;
-      flex-direction: row;
-      justify-content: space-between;
-      margin-top: 12px;
-      padding: 12px;
-      background: whitesmoke;
+    /* HEADER */
+    .recipe-header h1 {
+      font-size: 18px;
+      font-weight: 800;
+      margin: 0 0 3px 0;
+      line-height: 1.1;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      overflow: hidden;
     }
 
-    .recipe-data {
-      margin-top: 12px;
-      display: grid;
-      grid-template-columns: 40% 60%;
-      flex-direction: row;
+    .recipe-description {
+      font-size: 10px;
+      line-height: 1.3;
+      margin: 0 0 6px 0;
+      overflow: hidden;
     }
 
-    .recipe-ingredient {
-
+    .recipe-meta {
+      font-size: 10.5px;
+      line-height: 1.3;
     }
 
-    .recipe-method {
+    .recipe-meta-item {
+      display: block;
+      margin-bottom: 2px;
+    }
 
+    .recipe-meta-item .label {
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      font-size: 10px;
+      display: inline;
+    }
+
+    .recipe-meta-item .value {
+      display: inline;
+    }
+
+    /* INGREDIENTS */
+    .ingredients h2, .method h2 {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      text-align: center;
+      margin: 0 0 4px 0;
+      letter-spacing: 0.3px;
+    }
+
+    .ingredients ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      font-size: 10.5px;
+    }
+
+    .ingredients li {
+      padding: 1px 0;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+      line-height: 1.25;
+      overflow: hidden;
+    }
+
+    .ingredients li:last-child {
+      border-bottom: none;
+    }
+
+    /* METHOD */
+    .method ol {
+      padding-left: 16px;
+      margin: 0;
+      font-size: 10.5px;
+    }
+
+    .method li {
+      margin: 1px 0;
+      line-height: 1.25;
+      overflow: hidden;
+    }
+
+    /* BRANDING */
+    .branding-header {
+      text-align: center;
+      padding: 4px 10px;
+      border-bottom: 2px solid var(--border);
+      margin-bottom: 8px;
+      margin-top: 0;
+      font-size: 11px;
+      page-break-after: avoid;
+    }
+
+    .branding-header h1 {
+      font-size: 16px;
+      margin: 0 0 2px 0;
+    }
+
+    .branding-header p {
+      font-size: 10px;
+      margin: 0;
+      opacity: 0.8;
+    }
+
+    /* PAGE BREAK CONTROL */
+    @page {
+      size: A4;
+      margin: 0;
+    }
+
+    /* SCREEN PREVIEW */
+    @media screen {
+      .print-sheet {
+        width: 100%;
+      }
+
+      .recipe {
+        height: auto;
+        margin-bottom: 24px;
+        border: 1px solid #f5f5f5;
+        border-radius: 8px;
+      }
+
+      .row1, .row2 {
+        height: auto;
+      }
+
+      .recipe-header h1 {
+        font-size: 24px;
+      }
+
+      .ingredients ul, .method ol {
+        font-size: 12px;
+      }
     }
   </style>
 </head>
-
 <body>
-<div class='recipe-section'>
-  <div class='recipe-item myDiv'>
-    <div class='recipe-title-section'>
-      <div class='recipe-image'>
-        {{#if imagePath}}
-          {{#each imagePath}}
-            <img src="{{webUrl}}" alt="Recipe Image" class="recipe-image" />
-          {{/each}}
-        {{/if}}
-      </div>
-      <div class='recipe-title'>
-        {{name}}
-      </div>
-    </div>
-    <div class='recipe-meta-section'>
-      <div>Serving: {{serving}}</div>
-      <div>{{recipeType}}</div>
-    </div>
-    <div class='recipe-data'>
-      <div class='recipe-ingredient'>
-        <div style='font-size: 20px; font-style: italic; text-align: center'>Ingredients</div>
-        <div style="font-size: 14px;">
-          {{{ingredient}}}
+<div class="print-sheet">
+  <!-- ROW 1 TABLE: Image + Header -->
+  <table class="recipe" role="presentation">
+    <tr class="row1">
+      <td class="image-cell">
+        <div class="recipe-image">
+          {{#if imagePath}}
+            {{#if (gt (length imagePath) 0)}}
+              {{#with (lookup imagePath 0)}}
+                {{#if webUrl}}
+                  <img src="{{webUrl}}" alt="{{../name}}" />
+                {{else}}
+                  <div class="no-image">📷<br>No image</div>
+                {{/if}}
+              {{/with}}
+            {{else}}
+              <div class="no-image">📷<br>No image</div>{{/if}}
+          {{else}}
+            <div class="no-image">📷<br>No image</div>{{/if}}
         </div>
-      </div>
-      <div class='recipe-method'>
-        <div style='font-size: 20px; font-style: italic; text-align: center'>Preparation Method</div>
-        <div style="font-size: 14px;">
-          {{{howToMake}}}
+      </td>
+      <td class="header-cell">
+        <div class="recipe-header">
+          <h1>{{name}}</h1>
+          {{#if details}}<p class="recipe-description">{{details}}</p>{{/if}}
+          <div class="recipe-meta">
+            {{#if serving}}
+              <div class="recipe-meta-item">
+                <span class="label">Serving:</span><span class="value">{{serving}} {{#if (eq serving 1)}}
+                serving{{else}}servings{{/if}}</span>
+              </div>
+            {{/if}}
+            {{#if recipeType}}
+              <div class="recipe-meta-item">
+                <span class="label">Type:</span><span class="value">{{recipeType}}</span>
+              </div>
+            {{/if}}
+          </div>
         </div>
-      </div>
-    </div>
-  </div>
+      </td>
+    </tr>
+
+    <!-- ROW 2 TABLE: Ingredients + Method -->
+    <tr class="row2">
+      <td class="ingredients-cell">
+        <section class="ingredients">
+          <h2>Ingredients</h2>
+          <ul>
+            {{#if ingredientList}}
+              {{#each ingredientList}}
+                <li>{{this}}</li>{{/each}}
+            {{else}}
+              {{#if ingredient}}
+                <li>{{ingredient}}</li>{{else}}
+                <li>No ingredients</li>{{/if}}
+            {{/if}}
+          </ul>
+        </section>
+      </td>
+      <td class="method-cell">
+        <section class="method">
+          <h2>Method</h2>
+          <ol>
+            {{#if directionsList}}
+              {{#each directionsList}}
+                <li>{{this}}</li>{{/each}}
+            {{else}}
+              {{#if howToMake}}
+                {{#each (splitDirections howToMake)}}
+                  <li>{{this}}</li>{{/each}}
+              {{else}}
+                {{#if preparationMethod}}
+                  {{#each (splitDirections preparationMethod)}}
+                    <li>{{this}}</li>{{/each}}
+                {{else}}
+                  <li>No method provided</li>{{/if}}
+              {{/if}}
+            {{/if}}
+          </ol>
+        </section>
+      </td>
+    </tr>
+  </table>
 </div>
-
 </body>
-
 </html>
-

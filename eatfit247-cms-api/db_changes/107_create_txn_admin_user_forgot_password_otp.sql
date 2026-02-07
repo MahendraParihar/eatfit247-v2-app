@@ -611,3 +611,9 @@ INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
 VALUES (DEFAULT, 'GOOGLE_PLACE_ID', 'XYZ', 'Google');
 INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
 VALUES (DEFAULT, 'DIET_SAC_CODE', '999319', 'Invoice');
+
+alter table txn_member_payments
+    add column member_address jsonb;
+
+alter table public.txn_member_payments
+    alter column payment_obj drop not null;

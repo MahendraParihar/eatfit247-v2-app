@@ -134,6 +134,6 @@ export class CreateFranchiseDto implements IManageFranchise {
   @IsOptional()
   @ValidateNested()
   @Type(() => CreateAddressDto)
-  address?: CreateAddressDto;
+  addressObj?: CreateAddressDto;
 }
 

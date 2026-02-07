@@ -1,9 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as hbs from 'handlebars';
+import * as puppeteer from 'puppeteer';
 import { MstRecipe, MstRecipeCategoryMapping, MstRecipeCuisineMapping, MstRecipeType } from '../models';
-import { IBasicSearch, IManageRecipe, IRecipe, ITableList, MediaForEnum } from '@eatfit247-shared-lib';
-import { CommonFunctionsUtil, SearchUtil } from '@server_1/core';
+import { IBasicSearch, IManageRecipe, IRecipe, ITableList, MediaForEnum, TEMPLATE_FOLDER } from '@eatfit247-shared-lib';
+import { CommonFunctionsUtil, Env, SearchUtil } from '@server_1/core';
 import { IFileModel, PdfService } from '@server_1/platform';
 import { FranchiseService } from '@server_1/modules/franchise';
 
@@ -190,27 +194,275 @@ export class RecipeService {
     } catch (error) {
       console.warn('Could not fetch franchise information', error);
     }
+    // Parse ingredients into list
+    const ingredientText = recipeData.ingredient || '';
+    const ingredientList = this.parseTextToList(ingredientText);
+    // Parse directions into list
+    const directionsText = recipeData.howToMake || recipeData.preparationMethod || '';
+    const directionsList = this.parseTextToList(directionsText);
+    // Process images - convert to base64 if they are local files
+    let processedImagePath = recipeData.imagePath || [];
+    if (processedImagePath.length > 0) {
+      processedImagePath = await Promise.all(
+        processedImagePath.map(async (img: any) => {
+          if (!img.webUrl) {
+            return img;
+          }
+          // If it's already a data URL or HTTP URL, use it as is
+          if (img.webUrl.startsWith('data:') || img.webUrl.startsWith('http://') || img.webUrl.startsWith('https://')) {
+            return img;
+          }
+          // Otherwise, try to convert local file to base64
+          try {
+            let normalizedPath = img.webUrl.startsWith('media-files/')
+              ? img.webUrl.replace('media-files/', '')
+              : img.webUrl;
+            // Remove leading slash if present
+            normalizedPath = normalizedPath.startsWith('/') ? normalizedPath.substring(1) : normalizedPath;
+            const filePath = path.join(Env.persistentStorageAssetPath, normalizedPath);
+            if (fs.existsSync(filePath)) {
+              const fileBuffer = fs.readFileSync(filePath);
+              const mimeType = img.mimetype || 'image/jpeg';
+              return {
+                ...img,
+                webUrl: `data:${mimeType};base64,${fileBuffer.toString('base64')}`,
+              };
+            }
+          } catch (error) {
+            console.warn(`Failed to convert image ${img.webUrl} to base64:`, error);
+          }
+          return img;
+        }),
+      );
+    }
     // Prepare recipe data for PDF template
     const recipeObj = {
       id: recipeData.recipeId,
       name: recipeData.name,
-      howToMake: recipeData.howToMake || recipeData.preparationMethod || '',
-      ingredient: recipeData.ingredient || '',
-      imagePath: recipeData.imagePath || [],
+      details: recipeData.details || '',
+      howToMake: directionsText,
+      preparationMethod: directionsText,
+      ingredient: ingredientText,
+      ingredientList: ingredientList,
+      directionsList: directionsList,
+      imagePath: processedImagePath,
       serving: recipeData.servingCount || 0,
       recipeType: recipeData.recipeType?.recipeType || '',
       franchise: franchise,
     };
-    // Generate PDF using the PdfService
+    // Generate PDF with optimized margins for single page
     const fileName = `${recipeData.name
       .replace(/[^\w\s]/gi, '')
       .replace(/ /g, '_')}_${recipeId}`;
-    return await this.pdfService.generatePDF(
-      'recipe',
-      MediaForEnum.RECIPE,
-      fileName,
-      recipeObj,
+    return await this.generateRecipePdfWithMargins('recipe', fileName, recipeObj, franchise);
+  }
+
+  /**
+   * Generate recipe PDF with optimized margins to fit on one page
+   */
+  private async generateRecipePdfWithMargins(
+    templateName: string,
+    fileName: string,
+    data: any,
+    franchise: any,
+  ): Promise<IFileModel> {
+    const rPath = `${Env.persistentStorageAssetPath}`;
+    const fileNameWithExtension = `${fileName}.pdf`;
+    const relativePath = `${MediaForEnum.RECIPE}/${fileNameWithExtension}`;
+    const downloadFullPath = `${rPath}/${MediaForEnum.DOWNLOADS}`;
+    const physicalFolderPath = `${downloadFullPath}/${MediaForEnum.RECIPE}`;
+    const physicalFilePath = `${downloadFullPath}/${relativePath}`;
+    // Create directory if not exists
+    if (!fs.existsSync(physicalFolderPath)) {
+      fs.mkdirSync(physicalFolderPath, { recursive: true });
+    }
+    // Register header and footer
+    const { headerTemplate, footerTemplate } = await this.getHeaderFooter(franchise);
+    // Get HTML from template
+    const html = await this.getTemplateHtml(templateName, data);
+    // Generate PDF using Puppeteer with optimized margins
+    const browser = await puppeteer.launch({
+      headless: true,
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-gpu',
+        '--no-first-run',
+        '--no-zygote',
+        '--single-process',
+      ],
+    });
+    try {
+      const page = await browser.newPage();
+      await page.setContent(html, { waitUntil: 'domcontentloaded' });
+      await page.emulateMediaType('screen');
+      const pdfBuffer = await page.pdf({
+        format: 'A4',
+        printBackground: true,
+        displayHeaderFooter: true,
+        headerTemplate: headerTemplate,
+        footerTemplate: footerTemplate,
+        margin: {
+          top: '160px',
+          bottom: '15mm',
+          right: '15mm',
+          left: '15mm',
+        },
+      });
+      fs.writeFileSync(physicalFilePath, pdfBuffer);
+      const tempFile = fs.readFileSync(physicalFilePath);
+      return {
+        filePath: relativePath,
+        fileName: fileNameWithExtension,
+        buffer: tempFile.toString('base64'),
+      } as IFileModel;
+    } finally {
+      await browser.close();
+    }
+  }
+
+  /**
+   * Get header and footer templates
+   */
+  private async getHeaderFooter(franchise: any): Promise<{ headerTemplate: string; footerTemplate: string }> {
+    // Register Handlebars helpers
+    this.registerHbsHelpers();
+    // Get header template
+    const headerPath = this.findTemplatePath('header.hbs');
+    const headerHbsTemplate = fs.readFileSync(headerPath, 'utf-8');
+    const headerTemplate = hbs.compile(headerHbsTemplate)(franchise);
+    // Get footer template
+    const footerPath = this.findTemplatePath('footer.hbs');
+    const footerHbsTemplate = fs.readFileSync(footerPath, 'utf-8');
+    const footerTemplate = hbs.compile(footerHbsTemplate)(franchise);
+    return { headerTemplate, footerTemplate };
+  }
+
+  /**
+   * Get template HTML
+   */
+  private async getTemplateHtml(templateName: string, data: any): Promise<string> {
+    const templatePath = this.findTemplatePath(`${templateName}.hbs`);
+    const hbsTemplate = fs.readFileSync(templatePath, 'utf-8');
+    this.registerHbsHelpers();
+    return hbs.compile(hbsTemplate)(data);
+  }
+
+  /**
+   * Find template path
+   */
+  private findTemplatePath(templateName: string): string {
+    const distPath = path.join(process.cwd(), `${TEMPLATE_FOLDER}/${templateName}`);
+    const cwdPath = path.join(process.cwd(), `${TEMPLATE_FOLDER}/${templateName}`);
+    const relativePath = path.join(
+      __dirname,
+      '..',
+      '..',
+      '..',
+      '..',
+      '..',
+      `${TEMPLATE_FOLDER}/${templateName}`,
     );
+    if (fs.existsSync(distPath)) {
+      return distPath;
+    } else if (fs.existsSync(relativePath)) {
+      return relativePath;
+    } else if (fs.existsSync(cwdPath)) {
+      return cwdPath;
+    }
+    throw new Error(
+      `Template not found: ${templateName}. Searched in: ${distPath}, ${cwdPath}, ${relativePath}`,
+    );
+  }
+
+  /**
+   * Register Handlebars helpers
+   */
+  private registerHbsHelpers(): void {
+    // Register img helper
+    if (!hbs.helpers['img']) {
+      hbs.registerHelper('img', function(url: string, cssClass: string) {
+        try {
+          const imagePath = path.join(process.cwd(), url);
+          if (fs.existsSync(imagePath)) {
+            const fileBuffer = fs.readFileSync(imagePath);
+            const base64 = fileBuffer.toString('base64');
+            const mimeType = url.endsWith('.png') ? 'image/png' : 'image/jpeg';
+            const dataUrl = `data:${mimeType};base64,${base64}`;
+            return new hbs.SafeString(`<img class="${cssClass}" src="${dataUrl}" alt="" />`);
+          }
+        } catch (e) {
+          // Ignore errors
+        }
+        return new hbs.SafeString('');
+      });
+    }
+    // Register other helpers if not already registered
+    if (!hbs.helpers['eq']) {
+      hbs.registerHelper('eq', (a: any, b: any) => a === b);
+    }
+    if (!hbs.helpers['gt']) {
+      hbs.registerHelper('gt', (a: number, b: number) => (a || 0) > (b || 0));
+    }
+    if (!hbs.helpers['length']) {
+      hbs.registerHelper('length', (arr: any[]) => (arr ? arr.length : 0));
+    }
+    if (!hbs.helpers['splitDirections']) {
+      hbs.registerHelper('splitDirections', (text: string) => {
+        if (!text || text.trim() === '') return [];
+        const cleanText = text
+          .replace(/<br\s*\/?>/gi, '\n')
+          .replace(/<\/p>/gi, '\n')
+          .replace(/<p[^>]*>/gi, '')
+          .replace(/<li[^>]*>/gi, '')
+          .replace(/<\/li>/gi, '\n')
+          .replace(/<ol[^>]*>/gi, '')
+          .replace(/<\/ol>/gi, '')
+          .replace(/<ul[^>]*>/gi, '')
+          .replace(/<\/ul>/gi, '')
+          .replace(/<[^>]+>/g, '')
+          .trim();
+        const items = cleanText
+          .split(/\n+/)
+          .map((item) => item.trim())
+          .filter((item) => item.length > 0);
+        return items.length > 0 ? items : [text.trim()];
+      });
+    }
+  }
+
+  /**
+   * Parses text (HTML or plain text) into a list of items
+   * Handles HTML lists, numbered lists, and plain text with line breaks
+   */
+  private parseTextToList(text: string): string[] {
+    if (!text || text.trim() === '') {
+      return [];
+    }
+    // Remove HTML tags but preserve line breaks
+    let cleanText = text
+      .replace(/<br\s*\/?>/gi, '\n')
+      .replace(/<\/p>/gi, '\n')
+      .replace(/<p[^>]*>/gi, '')
+      .replace(/<li[^>]*>/gi, '')
+      .replace(/<\/li>/gi, '\n')
+      .replace(/<ol[^>]*>/gi, '')
+      .replace(/<\/ol>/gi, '')
+      .replace(/<ul[^>]*>/gi, '')
+      .replace(/<\/ul>/gi, '')
+      .replace(/<[^>]+>/g, '') // Remove any remaining HTML tags
+      .trim();
+    // Split by newlines and filter out empty lines
+    const items = cleanText
+      .split(/\n+/)
+      .map((item) => item.trim())
+      .filter((item) => item.length > 0);
+    // If no items found, return the original text as a single item
+    if (items.length === 0) {
+      return [text.trim()];
+    }
+    return items;
   }
 
   /**
@@ -218,24 +470,25 @@ export class RecipeService {
    * Searches only on recipe name and recipe type
    * Returns minimal data: id, title (recipe name), subtitle (recipe type)
    */
-  public async searchForDropdown(searchDto: IBasicSearch): Promise<Array<{ id: number; title: string; subtitle: string }>> {
+  public async searchForDropdown(searchDto: IBasicSearch): Promise<Array<{
+    id: number;
+    title: string;
+    subtitle: string
+  }>> {
     const whereCondition: any = {
       active: true, // Only return active recipes
     };
-
     // Build search condition for recipe name and recipe type
     const searchTerm = searchDto.search || searchDto.name;
     if (searchTerm) {
       whereCondition[Op.or] = [
         { name: { [Op.iLike]: `%${searchTerm}%` } },
-        { '$recipeType.recipeType$': { [Op.iLike]: `%${searchTerm}%` } },
+        { '$recipeType.recipe_type$': { [Op.iLike]: `%${searchTerm}%` } },
       ];
     }
-
     const pageNumber = searchDto.page || 0;
     const pageSize = searchDto.limit || 10;
     const offset = pageNumber === 0 ? 0 : pageNumber * pageSize;
-
     const { rows } = await this.recipeRepository.findAndCountAll({
       attributes: ['recipeId', 'name'],
       include: [
@@ -253,7 +506,6 @@ export class RecipeService {
       nest: true,
       raw: false,
     });
-
     return rows.map((item: any) => {
       const plain = item.get({ plain: true });
       return {

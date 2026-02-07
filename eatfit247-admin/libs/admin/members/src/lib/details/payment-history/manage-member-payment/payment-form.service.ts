@@ -1,6 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import {
+  CommonUtil,
   ICalculateTaxResponse,
   ICreatePaymentLinkRequest,
   IDropdownItem,
@@ -57,6 +58,10 @@ export class PaymentFormService {
    * Transform payment data to form values for editing
    */
   transformPaymentToFormValues(payment: IMemberPayment): any {
+    // Convert date string to Date object for Material datepicker
+    const paymentDate = payment.paymentDate
+      ? (typeof payment.paymentDate === 'string' ? new Date(payment.paymentDate) : payment.paymentDate)
+      : null;
     return {
       paymentModeId: payment.paymentModeId,
       programId: payment.programId,
@@ -64,7 +69,7 @@ export class PaymentFormService {
       addressId: payment.addressId,
       billingAddressId: payment.billingAddressId,
       transactionId: payment.transactionId || '',
-      paymentDate: payment.paymentDate,
+      paymentDate: paymentDate,
       paymentStatusId: payment.paymentStatusId,
       noOfCycle: payment.noOfCycle || 0,
       noOfDaysInCycle: payment.noOfDaysInCycle || 0,
@@ -91,7 +96,11 @@ export class PaymentFormService {
     const getValue = (key: string) => {
       return step1FormGroup?.get(key)?.value ?? formGroup.get(key)?.value;
     };
-    const payload: IManageMemberPayment = {
+    // Format paymentDate to avoid timezone conversion issues
+    const paymentDateValue = formGroup.value.paymentDate || new Date();
+    const formattedPaymentDate = CommonUtil.formatDateForAPI(paymentDateValue);
+    
+    const payload: any = {
       memberId,
       paymentModeId: formGroup.value.paymentModeId,
       programPlanId: getValue('programPlanId') || formGroup.value.programPlanId,
@@ -118,7 +127,7 @@ export class PaymentFormService {
         getValue('discountAmount') || formGroup.value.discountAmount || 0
       ),
       promoCode: '',
-      paymentDate: formGroup.value.paymentDate || new Date(),
+      paymentDate: formattedPaymentDate || CommonUtil.formatDateForAPI(new Date()) || undefined,
     };
     // Add gateway-specific fields for non-manual payments
     const paymentSource = formGroup.value.paymentSource;
@@ -129,7 +138,7 @@ export class PaymentFormService {
       payload.gatewayProvider = formGroup.value.gatewayProvider;
       payload.gatewayOrderId = formGroup.value.gatewayOrderId;
     }
-    return payload;
+    return payload as IManageMemberPayment;
   }
 
   /**

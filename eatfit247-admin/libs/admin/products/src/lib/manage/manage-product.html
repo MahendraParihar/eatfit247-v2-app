@@ -47,11 +47,11 @@
         </div>
 
         <div formArrayName="variants" class="variants-container">
-          @for (variantControl of variantsArray.controls; track $index) {
-            <mat-card [formGroupName]="$index" class="variant-card">
+          @for (variantControl of variantsArray.controls; track $index; let variantIndex = $index) {
+            <mat-card [formGroupName]="variantIndex" class="variant-card">
               <mat-card-header class="variant-card-header">
-                <mat-card-title>Variant {{ $index + 1 }}</mat-card-title>
-                <button type="button" mat-icon-button color="warn" (click)="removeVariant($index)" matTooltip="Delete Variant">
+                <mat-card-title>Variant {{ variantIndex + 1 }}</mat-card-title>
+                <button type="button" mat-icon-button color="warn" (click)="removeVariant(variantIndex)" matTooltip="Delete Variant">
                   <mat-icon>delete</mat-icon>
                 </button>
               </mat-card-header>
@@ -84,14 +84,14 @@
                 <div class="prices-section">
                   <div class="prices-header">
                     <h3 class="prices-title">Prices</h3>
-                    <button type="button" mat-raised-button color="primary" (click)="addPriceToVariant($index)">
+                    <button type="button" mat-raised-button color="primary" (click)="addPriceToVariant(variantIndex)">
                       <mat-icon>add</mat-icon>
                       Add Price
                     </button>
                   </div>
                   <div formArrayName="prices" class="prices-list">
-                    @for (priceControl of getPricesArray($index).controls; track priceIndex; let priceIndex = $index) {
-                      <div [formGroupName]="priceIndex" class="price-item">
+                    @for (priceControl of getPricesArray(variantIndex).controls; track $index) {
+                      <div [formGroupName]="$index" class="price-item">
                         <div class="price-fields-row">
                           <mat-form-field appearance="outline" class="price-currency-field">
                             <mat-label>Currency *</mat-label>
@@ -133,7 +133,7 @@
                             <shared-ui-input-error [control]="priceControl.get('validTo')"
                                                    controlName="Valid To"></shared-ui-input-error>
                           </mat-form-field>
-                          <button type="button" mat-icon-button color="warn" (click)="removePriceFromVariant($index, priceIndex)" 
+                          <button type="button" mat-icon-button color="warn" (click)="removePriceFromVariant(variantIndex, $index)" 
                                   class="price-delete-btn" matTooltip="Delete Price">
                             <mat-icon>delete</mat-icon>
                           </button>

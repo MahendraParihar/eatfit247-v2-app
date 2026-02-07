@@ -76,22 +76,6 @@ export class Recipes implements OnInit {
         formatter: (value) => value || '-'
       },
       {
-        key: 'visitedCount',
-        label: 'Views',
-        dataKey: 'visitedCount',
-        sortable: true,
-        width: '100px',
-        align: 'center'
-      },
-      {
-        key: 'shareCount',
-        label: 'Shares',
-        dataKey: 'shareCount',
-        sortable: true,
-        width: '100px',
-        align: 'center'
-      },
-      {
         key: 'active',
         label: 'Status',
         dataKey: 'active',
@@ -132,6 +116,7 @@ export class Recipes implements OnInit {
     const actions: ITableAction<IRecipe>[] = [
       { label: 'Edit', icon: 'edit', color: 'primary', onClick: (row) => this.editItem(row) },
       { label: 'View', icon: 'visibility', color: 'primary', onClick: (row) => this.viewItem(row) },
+      { label: 'Download PDF', icon: 'download', color: 'primary', onClick: (row) => this.downloadPdf(row) },
       {
         label: 'Active',
         icon: 'check_circle',
@@ -258,6 +243,34 @@ export class Recipes implements OnInit {
       } catch {
         this.loading = false;
       }
+    }
+  }
+
+  async downloadPdf(item: IRecipe): Promise<void> {
+    this.loading = true;
+    try {
+      const response = await this.apiService.downloadRecipePdf(item.recipeId);
+      // Convert base64 buffer to blob and download
+      const byteCharacters = atob(response.buffer);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = response.fileName || `${item.name.replace(/[^\w\s]/gi, '').replace(/ /g, '_')}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      this.loading = false;
+    } catch (error) {
+      console.error('Error downloading PDF:', error);
+      alert('Failed to download recipe PDF. Please try again.');
+      this.loading = false;
     }
   }
 }
