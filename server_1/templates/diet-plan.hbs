@@ -5,38 +5,27 @@
   <title>Diet Plan - {{memberName}}</title>
   <style type="text/css">
     * {
+      box-sizing: border-box;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
+    html, body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+      color: var(--ink);
+      background: #ffffff;
+      font-size: 11px;
       margin: 0;
       padding: 0;
-      box-sizing: border-box;
     }
 
-    body {
-      font-family: 'Arial', 'Helvetica', sans-serif;
-      font-size: 12px;
-      color: #333;
-      line-height: 1.6;
-      background-color: #fff;
-    }
-
-    .header {
-      text-align: center;
-      margin-bottom: 20px;
-      padding-bottom: 10px;
-    }
-
-    .header h1 {
-      font-size: 24px;
-      font-weight: bold;
-      color: #000;
-      margin-bottom: 5px;
-      text-transform: uppercase;
-    }
-
-    .header .company-info {
-      font-size: 11px;
-      color: #333;
-      line-height: 1.4;
-      margin-top: 5px;
+    /* =========================
+       PRINT LAYOUT (PUPPETEER)
+       ========================= */
+    .print-sheet {
+      width: 100%;
+      padding: 10px;
+      page-break-inside: avoid;
     }
 
     .member-info-table {
@@ -115,123 +104,225 @@
       margin-bottom: 15px;
     }
 
-    .recipe-detail-table {
+    /* =========================
+       RECIPE GRID STYLING (from recipe.hbs)
+       ========================= */
+    :root {
+      --ink: #121212;
+      --muted: #666;
+      --panel: #f8f5f2;
+      --border: #e0d7cf;
+      --radius: 10px;
+    }
+
+    .recipe-grid {
       width: 100%;
-      border: 1px solid #d3d3d3;
-      border-collapse: collapse;
+      padding: 8px;
+      border-radius: var(--radius);
+      background: white;
+      border: 1px solid var(--border);
       margin-bottom: 20px;
       page-break-inside: avoid;
     }
 
-    .recipe-detail-table td {
-      border: 1px solid #d3d3d3;
-      padding: 15px;
-      vertical-align: top;
+    /* ---------- ROW 1 ---------- */
+    .row1 {
+      display: grid;
+      grid-template-columns: 1fr 3fr;
+      gap: 12px;
     }
 
-    .recipe-header {
-      border-bottom: 2px solid #d3d3d3;
+    .image-cell,
+    .header-cell {
+      width: 100%;
+    }
+
+    /* ---------- ROW 2 ---------- */
+    .row2 {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    /* =========================
+       IMAGE
+       ========================= */
+    .recipe-image {
+      width: 100%;
+      height: 180px;
+      border-radius: var(--radius);
+      overflow: hidden;
+      background: #f5f5f5;
+    }
+
+    .recipe-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .no-image {
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      font-size: 11px;
+      color: #999;
+    }
+
+    /* =========================
+       HEADER
+       ========================= */
+    .recipe-header h1 {
+      font-size: 18px;
+      font-weight: 800;
+      margin: 0 0 4px 0;
+      line-height: 1.1;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .recipe-description {
+      font-size: 10px;
+      line-height: 1.3;
+      margin: 0 0 6px 0;
     }
 
     .recipe-meta {
-      display: flex;
-      gap: 20px;
-      align-items: flex-start;
+      font-size: 10.5px;
+      line-height: 1.3;
     }
 
-    .recipe-image {
-      width: 150px;
-      height: 150px;
-      border-radius: 25px;
-      border: 1px solid #d3d3d3;
-      object-fit: cover;
-      flex-shrink: 0;
+    .recipe-meta-item {
+      margin-bottom: 2px;
     }
 
-    .recipe-meta-info {
-      flex: 1;
+    .recipe-meta-item .label {
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      font-size: 10px;
     }
 
-    .recipe-title {
-      font-size: 20px;
-      font-weight: bold;
-      margin-bottom: 10px;
+    /* =========================
+       INGREDIENTS
+       ========================= */
+    .ingredients-cell {
+      padding: 6px;
+      border-radius: 8px;
+      background: var(--panel);
+      border: 1px solid var(--panel);
     }
 
-    .recipe-meta-row {
-      font-size: 12px;
-      margin-bottom: 5px;
-    }
-
-    .recipe-ingredients {
-      width: 40%;
-      vertical-align: top;
-    }
-
-    .recipe-preparation {
-      width: 60%;
-      vertical-align: top;
-    }
-
-    .section-title {
-      font-size: 16px;
-      font-style: italic;
+    .ingredients h2 {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
       text-align: center;
-      margin-bottom: 10px;
-      font-weight: normal;
+      margin: 0 0 4px 0;
+      letter-spacing: 0.3px;
     }
 
-    .ingredients-content,
-    .preparation-content {
-      font-size: 12px;
-      line-height: 1.6;
+    .ingredients ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      font-size: 10.5px;
+    }
+
+    .ingredients li {
+      padding: 2px 0;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+      line-height: 1.25;
+    }
+
+    .ingredients li:last-child {
+      border-bottom: none;
+    }
+
+    .ingredients-content {
+      font-size: 10.5px;
+      line-height: 1.25;
+    }
+
+    .ingredients-content ul,
+    .ingredients-content ol {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .ingredients-content li {
+      padding: 2px 0;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    }
+
+    .ingredients-content li:last-child {
+      border-bottom: none;
+    }
+
+    /* =========================
+       METHOD
+       ========================= */
+    .method-cell {
+      padding: 6px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+
+    .method h2 {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      text-align: center;
+      margin: 0 0 4px 0;
+      letter-spacing: 0.3px;
+    }
+
+    .method ol {
+      padding-left: 16px;
+      margin: 0;
+      font-size: 10.5px;
+    }
+
+    .method li {
+      margin: 2px 0;
+      line-height: 1.25;
+    }
+
+    .method-content {
+      font-size: 10.5px;
+      line-height: 1.25;
+    }
+
+    .method-content ol,
+    .method-content ul {
+      padding-left: 16px;
+      margin: 0;
+    }
+
+    .method-content li {
+      margin: 2px 0;
+    }
+
+    .method-content p {
+      margin: 2px 0;
     }
 
     @media print {
       body {
         padding: 10px;
       }
-      .recipe-detail-table {
+      .recipe-grid {
         page-break-inside: avoid;
       }
     }
   </style>
 </head>
 <body>
-  <!-- Header -->
-  <div class="header">
-    <h1>Eatfit 24/7</h1>
-    <div class="company-info">
-      <div><strong>EAT FIT 247</strong></div>
-      {{#if franchise}}
-        {{#if franchise.addressObj}}
-          <div>{{franchise.addressObj.addressLine1}}</div>
-          {{#if franchise.addressObj.addressLine2}}
-            <div>{{franchise.addressObj.addressLine2}}</div>
-          {{/if}}
-          {{#if franchise.addressObj.city}}
-            <div>{{franchise.addressObj.city}}{{#if franchise.addressObj.state}}, {{franchise.addressObj.state}}{{/if}}{{#if franchise.addressObj.pincode}} {{franchise.addressObj.pincode}}{{/if}}</div>
-          {{/if}}
-          {{#if franchise.addressObj.country}}
-            <div>{{franchise.addressObj.country}}</div>
-          {{/if}}
-        {{else}}
-          <div>C-2, HIRA MANEK, OPP BMC MARKET, BAPISTA ROAD</div>
-          <div>Vile Parle (West), Maharashtra, India, 400056</div>
-        {{/if}}
-        {{#if franchise.contactNumber}}
-          <div>{{franchise.contactNumber}}{{#if franchise.emailId}} / {{franchise.emailId}}{{/if}}</div>
-        {{else}}
-          <div>+91-9820577553 / eatfit24by7@gmail.com</div>
-        {{/if}}
-      {{else}}
-        <div>C-2, HIRA MANEK, OPP BMC MARKET, BAPISTA ROAD</div>
-        <div>Vile Parle (West), Maharashtra, India, 400056</div>
-        <div>+91-9820577553 / eatfit24by7@gmail.com</div>
-      {{/if}}
-    </div>
-  </div>
-
   <!-- Member Information Table -->
   <table class="member-info-table">
     <tr>
@@ -288,52 +379,103 @@
       <div class="recipes-section">
         <h4>Recipes:</h4>
         {{#each recipes}}
-          <table class="recipe-detail-table">
-            <tr class="recipe-header">
-              <td colspan="2">
-                <div class="recipe-meta">
+          <div class="recipe-grid">
+            <!-- ROW 1 -->
+            <div class="row1">
+              <div class="image-cell">
+                <div class="recipe-image">
                   {{#if this.imagePath}}
-                    {{#if (gt this.imagePath.length 0)}}
-                      <img src="{{this.imagePath.[0].webUrl}}" alt="{{this.name}}" class="recipe-image" />
+                    {{#if (gt (length this.imagePath) 0)}}
+                      {{#with (lookup this.imagePath 0)}}
+                        {{#if webUrl}}
+                          <img src="{{webUrl}}" alt="{{../this.name}}" />
+                        {{else}}
+                          <div class="no-image">📷<br>No image</div>
+                        {{/if}}
+                      {{/with}}
+                    {{else}}
+                      <div class="no-image">📷<br>No image</div>
                     {{/if}}
+                  {{else}}
+                    <div class="no-image">📷<br>No image</div>
                   {{/if}}
-                  <div class="recipe-meta-info">
-                    <div class="recipe-title">{{this.name}}</div>
+                </div>
+              </div>
+
+              <div class="header-cell">
+                <div class="recipe-header">
+                  <h1>{{this.name}}</h1>
+
+                  {{#if this.details}}
+                    <p class="recipe-description">{{this.details}}</p>
+                  {{/if}}
+
+                  <div class="recipe-meta">
                     {{#if this.servingCount}}
-                      <div class="recipe-meta-row">Serving: {{this.servingCount}}</div>
+                      <div class="recipe-meta-item">
+                        <span class="label">Serving:</span>
+                        <span class="value">
+                          {{this.servingCount}} {{#if (eq this.servingCount 1)}}serving{{else}}servings{{/if}}
+                        </span>
+                      </div>
                     {{/if}}
+
                     {{#if this.recipeType}}
-                      <div class="recipe-meta-row">Type: {{this.recipeType}}</div>
+                      <div class="recipe-meta-item">
+                        <span class="label">Type:</span>
+                        <span class="value">{{this.recipeType}}</span>
+                      </div>
                     {{/if}}
                   </div>
                 </div>
-              </td>
-            </tr>
-            <tr>
-              <td class="recipe-ingredients">
-                <div class="section-title">Ingredients</div>
-                <div class="ingredients-content">
-                  {{#if this.ingredient}}
-                    {{{this.ingredient}}}
+              </div>
+            </div>
+
+            <!-- ROW 2 -->
+            <div class="row2">
+              <div class="ingredients-cell">
+                <section class="ingredients">
+                  <h2>Ingredients</h2>
+                  {{#if this.ingredientList}}
+                    <ul>
+                      {{#each this.ingredientList}}
+                        <li>{{{this}}}</li>
+                      {{/each}}
+                    </ul>
                   {{else}}
-                    <em>No ingredients listed</em>
+                    {{#if this.ingredient}}
+                      <div class="ingredients-content">{{{this.ingredient}}}</div>
+                    {{else}}
+                      <ul><li>No ingredients</li></ul>
+                    {{/if}}
                   {{/if}}
-                </div>
-              </td>
-              <td class="recipe-preparation">
-                <div class="section-title">Preparation Method</div>
-                <div class="preparation-content">
-                  {{#if this.preparationMethod}}
-                    {{{this.preparationMethod}}}
-                  {{else if this.howToMake}}
-                    {{{this.howToMake}}}
+                </section>
+              </div>
+
+              <div class="method-cell">
+                <section class="method">
+                  <h2>Method</h2>
+                  {{#if this.directionsList}}
+                    <ol>
+                      {{#each this.directionsList}}
+                        <li>{{{this}}}</li>
+                      {{/each}}
+                    </ol>
                   {{else}}
-                    <em>No preparation method listed</em>
+                    {{#if this.howToMake}}
+                      <div class="method-content">{{{this.howToMake}}}</div>
+                    {{else}}
+                      {{#if this.preparationMethod}}
+                        <div class="method-content">{{{this.preparationMethod}}}</div>
+                      {{else}}
+                        <ol><li>No method provided</li></ol>
+                      {{/if}}
+                    {{/if}}
                   {{/if}}
-                </div>
-              </td>
-            </tr>
-          </table>
+                </section>
+              </div>
+            </div>
+          </div>
         {{/each}}
       </div>
     {{/if}}

@@ -51,6 +51,9 @@ export class DietPlanPdfService {
     // Get HTML from the template
     const html = await this.getTemplateHtml('diet-plan', templateData);
 
+    // Register header and footer
+    const { headerTemplate, footerTemplate } = await this.getHeaderFooter(dietPlanData.franchise);
+
     // Generate PDF using Puppeteer
     const browser = await puppeteer.launch({
       headless: true,
@@ -72,9 +75,12 @@ export class DietPlanPdfService {
       const pdfBuffer = await page.pdf({
         format: 'A4',
         printBackground: true,
+        displayHeaderFooter: true,
+        headerTemplate: headerTemplate,
+        footerTemplate: footerTemplate,
         margin: {
-          top: '20mm',
-          bottom: '20mm',
+          top: '100px',
+          bottom: '15mm',
           right: '15mm',
           left: '15mm',
         },
@@ -89,38 +95,78 @@ export class DietPlanPdfService {
    * Gets compiled HTML from the Handlebars template
    */
   private async getTemplateHtml(templateName: string, data: any): Promise<string> {
-    // Try multiple paths for a template
-    const distPath = path.join(process.cwd(), `${TEMPLATE_FOLDER}/${templateName}.hbs`);
-    const cwdPath = path.join(process.cwd(), `${TEMPLATE_FOLDER}/${templateName}.hbs`);
+    const templatePath = this.findTemplatePath(`${templateName}.hbs`);
+    const hbsTemplate = readFileSync(templatePath, 'utf-8');
+    this.registerHandlebarsHelpers();
+    return hbs.compile(hbsTemplate)(data);
+  }
+
+  /**
+   * Find template path
+   */
+  private findTemplatePath(templateName: string): string {
+    const distPath = path.join(process.cwd(), `${TEMPLATE_FOLDER}/${templateName}`);
+    const cwdPath = path.join(process.cwd(), `${TEMPLATE_FOLDER}/${templateName}`);
     const relativePath = path.join(
       __dirname,
       '..',
       '..',
       '..',
       '..',
-      `${TEMPLATE_FOLDER}/${templateName}.hbs`,
+      '..',
+      `${TEMPLATE_FOLDER}/${templateName}`,
     );
-    let filePath = cwdPath;
     if (existsSync(distPath)) {
-      filePath = distPath;
+      return distPath;
     } else if (existsSync(relativePath)) {
-      filePath = relativePath;
-    } else if (!existsSync(filePath)) {
-      throw new Error(
-        `Diet plan template not found: ${templateName}.hbs. Searched in: ${distPath}, ${cwdPath}, ${relativePath}`,
-      );
+      return relativePath;
+    } else if (existsSync(cwdPath)) {
+      return cwdPath;
     }
-    const hbsTemplate = readFileSync(filePath, 'utf-8');
-    const template = hbs.compile(hbsTemplate);
-    // Register helpers
+    throw new Error(
+      `Template not found: ${templateName}. Searched in: ${distPath}, ${cwdPath}, ${relativePath}`,
+    );
+  }
+
+  /**
+   * Get header and footer templates
+   */
+  private async getHeaderFooter(franchise: any): Promise<{ headerTemplate: string; footerTemplate: string }> {
+    // Register Handlebars helpers
     this.registerHandlebarsHelpers();
-    return template(data);
+    // Get header template
+    const headerPath = this.findTemplatePath('header.hbs');
+    const headerHbsTemplate = readFileSync(headerPath, 'utf-8');
+    const headerTemplate = hbs.compile(headerHbsTemplate)(franchise);
+    // Get footer template
+    const footerPath = this.findTemplatePath('footer.hbs');
+    const footerHbsTemplate = readFileSync(footerPath, 'utf-8');
+    const footerTemplate = hbs.compile(footerHbsTemplate)(franchise);
+    return { headerTemplate, footerTemplate };
   }
 
   /**
    * Registers Handlebars helpers for diet plan template
    */
   private registerHandlebarsHelpers() {
+    // Register img helper
+    if (!hbs.helpers['img']) {
+      hbs.registerHelper('img', function(url: string, cssClass: string) {
+        try {
+          const imagePath = path.join(process.cwd(), url);
+          if (existsSync(imagePath)) {
+            const fileBuffer = readFileSync(imagePath);
+            const base64 = fileBuffer.toString('base64');
+            const mimeType = url.endsWith('.png') ? 'image/png' : 'image/jpeg';
+            const dataUrl = `data:${mimeType};base64,${base64}`;
+            return new hbs.SafeString(`<img class="${cssClass}" src="${dataUrl}" alt="" />`);
+          }
+        } catch (e) {
+          // Ignore errors
+        }
+        return new hbs.SafeString('');
+      });
+    }
     // Format date helper
     if (!hbs.helpers['formatDate']) {
       hbs.registerHelper('formatDate', (dateStr: string | Date) => {
@@ -137,6 +183,47 @@ export class DietPlanPdfService {
     if (!hbs.helpers['gt']) {
       hbs.registerHelper('gt', (a: number, b: number) => {
         return a > b;
+      });
+    }
+    // Equality helper
+    if (!hbs.helpers['eq']) {
+      hbs.registerHelper('eq', (a: any, b: any) => {
+        return a === b;
+      });
+    }
+    // Length helper
+    if (!hbs.helpers['length']) {
+      hbs.registerHelper('length', (arr: any[]) => {
+        return arr ? arr.length : 0;
+      });
+    }
+    // Split directions helper
+    if (!hbs.helpers['splitDirections']) {
+      hbs.registerHelper('splitDirections', (text: string) => {
+        if (!text || text.trim() === '') return [];
+        const cleanText = text
+          .replace(/<br\s*\/?>/gi, '\n')
+          .replace(/<\/p>/gi, '\n')
+          .replace(/<p[^>]*>/gi, '')
+          .replace(/<li[^>]*>/gi, '')
+          .replace(/<\/li>/gi, '\n')
+          .replace(/<ol[^>]*>/gi, '')
+          .replace(/<\/ol>/gi, '')
+          .replace(/<ul[^>]*>/gi, '')
+          .replace(/<\/ul>/gi, '')
+          .replace(/<[^>]+>/g, '')
+          .trim();
+        const items = cleanText
+          .split(/\n+/)
+          .map((item) => item.trim())
+          .filter((item) => item.length > 0);
+        return items.length > 0 ? items : [text.trim()];
+      });
+    }
+    // Lookup helper (built-in but ensure it's available)
+    if (!hbs.helpers['lookup']) {
+      hbs.registerHelper('lookup', (obj: any, key: string | number) => {
+        return obj && obj[key];
       });
     }
   }

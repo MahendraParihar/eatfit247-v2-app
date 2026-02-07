@@ -944,10 +944,10 @@ export class MemberDietPlanService {
     // Fetch diet plan detail
     const dietDetailData = await this.fetchDietDetail(memberId, dietPlanId, cycleNo, dayNo);
     
-    // Fetch member information to get name
+    // Fetch member information to get name and franchiseId
     const member = await this.memberRepository.findOne({
       where: { memberId: memberId },
-      attributes: ['memberId', 'firstName', 'lastName'],
+      attributes: ['memberId', 'firstName', 'lastName', 'franchiseId'],
     });
 
     if (!member) {
@@ -981,11 +981,16 @@ export class MemberDietPlanService {
       }
     }
 
-    // Fetch primary franchise for header information
+    // Fetch franchise for header information using member's franchiseId
     let franchise = null;
     try {
-      const franchiseList = await this.franchiseService.findAll({ page: 0, limit: 100 });
-      franchise = franchiseList.tableData.find((f: any) => f.isPrimary) || franchiseList.tableData[0];
+      if (member.franchiseId) {
+        franchise = await this.franchiseService.fetchById(member.franchiseId);
+      } else {
+        // Fallback to primary franchise if member doesn't have franchiseId
+        const franchiseList = await this.franchiseService.findAll({ page: 0, limit: 100 });
+        franchise = franchiseList.tableData.find((f: any) => f.isPrimary) || franchiseList.tableData[0];
+      }
     } catch (error) {
       console.warn('Could not fetch franchise information', error);
     }

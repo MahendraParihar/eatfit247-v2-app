@@ -150,27 +150,84 @@ export class PdfService {
    * Register Image Tag with Src having escape chars
    */
   registerHbsControls() {
-    hbs.registerHelper('img', function(url, cssClass) {
+    hbs.registerHelper('img', (url, cssClass) => {
       try {
-        url = `data:image/jpeg;base64,${readFileSync(path.join(process.cwd(), url)).toString('base64')}`;
+        if (!url) {
+          return new hbs.SafeString('');
+        }
+
+        let imageSrc = url;
+
+        // If it's already a data URL or HTTP/HTTPS URL, use it as is
+        if (typeof url === 'string' && (url.startsWith('data:') || url.startsWith('http://') || url.startsWith('https://'))) {
+          imageSrc = url;
+        } else {
+          // Handle local file path
+          let normalizedPath = typeof url === 'string' ? url : '';
+          
+          // Remove leading slash if present
+          normalizedPath = normalizedPath.startsWith('/') ? normalizedPath.substring(1) : normalizedPath;
+          
+          // Remove 'media-files/' prefix if present (it's only for HTTP serving, not file system)
+          if (normalizedPath.startsWith('media-files/')) {
+            normalizedPath = normalizedPath.substring('media-files/'.length);
+          }
+
+          // Try to find the file
+          const persistentStoragePath = Env.persistentStorageAssetPath;
+          const fullPath = path.join(persistentStoragePath, normalizedPath);
+          
+          let filePath = fullPath;
+          if (!existsSync(fullPath)) {
+            // Try with process.cwd() as fallback
+            const cwdPath = path.join(process.cwd(), normalizedPath);
+            if (existsSync(cwdPath)) {
+              filePath = cwdPath;
+            } else {
+              // File not found, return empty string
+              return new hbs.SafeString('');
+            }
+          }
+
+          // Read file and convert to base64
+          const fileBuffer = readFileSync(filePath);
+          
+          // Determine mime type from file extension
+          const ext = path.extname(normalizedPath).toLowerCase();
+          let mimeType = 'image/jpeg'; // default
+          if (ext === '.png') {
+            mimeType = 'image/png';
+          } else if (ext === '.gif') {
+            mimeType = 'image/gif';
+          } else if (ext === '.webp') {
+            mimeType = 'image/webp';
+          } else if (ext === '.svg') {
+            mimeType = 'image/svg+xml';
+          }
+
+          imageSrc = `data:${mimeType};base64,${fileBuffer.toString('base64')}`;
+        }
+
+        // Generate img tag with appropriate styles based on cssClass
         if (cssClass === 'img-logo') {
           return new hbs.SafeString(
-            `<img class="${cssClass}" src="${url}" style="height: 100%;width: 100%;" alt="" />`,
+            `<img class="${cssClass}" src="${imageSrc}" style="height: 100%;width: 100%;object-fit: contain;" alt="" />`,
           );
         } else if (cssClass === 'recipe-image') {
           return new hbs.SafeString(
-            `<img class="${cssClass}" src="${url}" style="width: 150px;height: 150px;border-radius: 25px;border: 1px solid #d3d3d3;" alt="" />`,
+            `<img class="${cssClass}" src="${imageSrc}" style="width: 150px;height: 150px;border-radius: 25px;border: 1px solid #d3d3d3;" alt="" />`,
           );
         } else if (cssClass === 'owner-sign') {
           return new hbs.SafeString(
-            `<img class="${cssClass}" src="${url}" style="width: 100px;height: 50px;border-radius: 0px;border: 1px solid #d3d3d3;" alt="" />`,
+            `<img class="${cssClass}" src="${imageSrc}" style="width: 100px;height: 50px;border-radius: 0px;border: 1px solid #d3d3d3;" alt="" />`,
           );
         }
         return new hbs.SafeString(
-          `<img class="${cssClass}" src="${url}" style="height: 100%;width: 100%;" alt="" />`,
+          `<img class="${cssClass}" src="${imageSrc}" style="height: 100%;width: 100%;" alt="" />`,
         );
       } catch (e) {
-        return new hbs.SafeString(``);
+        console.warn(`Failed to process image in PDF helper:`, e);
+        return new hbs.SafeString('');
       }
     });
     
