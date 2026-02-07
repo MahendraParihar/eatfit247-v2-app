@@ -59,17 +59,17 @@ export class CreateFranchiseDto implements IManageFranchise {
   @MaxLength(InputLengthEnum.MAX_CONTACT_NUMBER)
   alternateContactNumber!: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @MaxLength(InputLengthEnum.CHAR_20)
-  panNumber!: string;
+  panNumber?: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @MaxLength(InputLengthEnum.CHAR_20)
-  tanNumber!: string;
+  tanNumber?: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @MaxLength(InputLengthEnum.CHAR_50)
-  gstNumber!: string;
+  gstNumber?: string;
 
   @IsOptional()
   @MaxLength(InputLengthEnum.CHAR_100)

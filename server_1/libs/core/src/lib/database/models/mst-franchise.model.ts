@@ -90,19 +90,19 @@ export class MstFranchise extends Model<MstFranchise> {
   })
   declare alternateContactNumber: string;
   @Column({
-    allowNull: false,
+    allowNull: true,
     field: 'pan_number',
     type: DataType.STRING(20),
   })
   declare panNumber: string;
   @Column({
-    allowNull: false,
+    allowNull: true,
     field: 'tan_number',
     type: DataType.STRING(20),
   })
   declare tanNumber: string;
   @Column({
-    allowNull: false,
+    allowNull: true,
     field: 'gst_number',
     type: DataType.STRING(50),
   })

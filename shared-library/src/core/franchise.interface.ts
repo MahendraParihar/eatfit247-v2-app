@@ -4,8 +4,8 @@ import { IManageAddress } from './location.interface';
 import { BusinessTypeEnum } from '../enum';
 
 export interface IBaseFranchise {
-  franchiseCode?: string;
-  financialYear?: number;
+  franchiseCode: string;
+  financialYear: number;
   companyName: string;
   logo?: IMediaUpload[];
   firstName: string;
@@ -14,9 +14,9 @@ export interface IBaseFranchise {
   alternateEmailId: string;
   contactNumber: string;
   alternateContactNumber: string;
-  panNumber: string;
-  tanNumber: string;
-  gstNumber: string;
+  panNumber?: string;
+  tanNumber?: string;
+  gstNumber?: string;
   vatNumber?: string;
   bankAccountId?: string;
   paymentGatewayConfigId?: number;

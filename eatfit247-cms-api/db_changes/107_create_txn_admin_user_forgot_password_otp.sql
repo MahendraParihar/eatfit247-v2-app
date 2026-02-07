@@ -617,3 +617,12 @@ alter table txn_member_payments
 
 alter table public.txn_member_payments
     alter column payment_obj drop not null;
+
+alter table mst_franchises
+    alter column pan_number drop not null;
+
+alter table mst_franchises
+    alter column tan_number drop not null;
+
+alter table mst_franchises
+    alter column gst_number drop not null;
