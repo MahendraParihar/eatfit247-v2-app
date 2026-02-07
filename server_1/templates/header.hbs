@@ -1,53 +1,60 @@
-<style type="text/css">
-
+<!-- header.hbs -->
+<style>
   .header-container {
     width: 100%;
-    font-size: 10px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    height: 60px;
+    font-size: 9px;
     color: #393939;
-  }
-
-  .header-info {
     display: grid;
-    column-gap: 10px;
-    grid-template-columns: 120px auto;
-    align-items: center;
-    padding-left: 20px;
+    grid-template-columns: 1fr 1fr;
+    padding: 6px 12px;
+    box-sizing: border-box;
   }
 
-  .img-logo {
+  .header-left,
+  .header-right {
+    display: table-cell;
+    vertical-align: middle;
+  }
+
+  .header-left {
     width: 120px;
-    height: 50px;
   }
 
-  .contact-info {
+  .img-logo img {
+    width: 100px;
+    height: 36px;
+    object-fit: contain;
+  }
+
+  .header-right {
     text-align: right;
-    padding-right: 20px;
+    line-height: 1.15;
+  }
+
+  .company-name {
+    font-size: 12px;
+    font-weight: 600;
   }
 </style>
 
-<header style="width:100%;">
+<header>
   <div class="header-container">
-    <div class="header-info">
-      <div class="img-logo">
-        {{#if logo}}
-          {{#each logo}}
-            {{img webUrl "img-logo"}}
-          {{/each}}
-        {{/if}}
-      </div>
+    <div class="header-left">
+      {{#if logo}}
+        {{#each logo}}
+          {{img webUrl "img-logo"}}
+        {{/each}}
+      {{/if}}
     </div>
-    <div class="contact-info">
-      <span style="font-size: 12px; font-weight: 600">{{companyName}}</span><br>
+
+    <div class="header-right">
+      <div class="company-name">{{companyName}}</div>
       {{#if addressObj}}
-        {{addressObj.postalAddress}}<br>
-        {{addressObj.cityVillage}}, {{addressObj.state}},
-        {{addressObj.country}}, {{addressObj.pinCode}} <br>
+        {{addressObj.cityVillage}}, {{addressObj.state}}<br />
+        {{addressObj.country}} - {{addressObj.pinCode}}<br />
       {{/if}}
       {{contactNumber}} / {{emailId}}
     </div>
   </div>
 </header>
-

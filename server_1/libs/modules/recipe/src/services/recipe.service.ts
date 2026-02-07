@@ -304,7 +304,7 @@ export class RecipeService {
         headerTemplate: headerTemplate,
         footerTemplate: footerTemplate,
         margin: {
-          top: '160px',
+          top: '100px',
           bottom: '15mm',
           right: '15mm',
           left: '15mm',
