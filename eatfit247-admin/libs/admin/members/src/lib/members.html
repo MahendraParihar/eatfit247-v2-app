@@ -40,5 +40,43 @@
         </button>
       </div>
     </ng-template>
+
+    <ng-template #franchiseHeader>
+      <div class="filter-header">
+        <span>Franchise</span>
+        <mat-form-field appearance="outline" class="filter-select">
+          <mat-select
+            [value]="selectedFranchiseId"
+            (selectionChange)="onFranchiseFilterChange($event.value)"
+            placeholder="All"
+            (click)="$event.stopPropagation()"
+          >
+            <mat-option [value]="null">All</mat-option>
+            @for (franchise of franchiseOptions; track franchise.id) {
+              <mat-option [value]="franchise.id">{{ franchise.label }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      </div>
+    </ng-template>
+
+    <ng-template #countryHeader>
+      <div class="filter-header">
+        <span>Country</span>
+        <mat-form-field appearance="outline" class="filter-select">
+          <mat-select
+            [value]="selectedCountryId"
+            (selectionChange)="onCountryFilterChange($event.value)"
+            placeholder="All"
+            (click)="$event.stopPropagation()"
+          >
+            <mat-option [value]="null">All</mat-option>
+            @for (country of countryOptions; track country.id) {
+              <mat-option [value]="country.id">{{ country.label }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      </div>
+    </ng-template>
   </shared-ui-data-table>
 </div>

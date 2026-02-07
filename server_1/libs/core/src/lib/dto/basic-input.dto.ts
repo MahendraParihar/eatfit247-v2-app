@@ -34,6 +34,14 @@ export class BasicSearchDto implements IBasicSearch {
   @Type(() => Number)
   @IsNumber()
   faqCategoryId?: number;
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  franchiseId?: number;
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  countryId?: number;
 }
 
 export class UpdateActiveDto implements IStatusChange {

@@ -4,6 +4,9 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatSelectModule } from '@angular/material/select';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { FormsModule } from '@angular/forms';
 import {
   createdByUserFormatter,
   DataTableComponent,
@@ -12,14 +15,24 @@ import {
   ITableConfig,
   updatedByUserFormatter
 } from '@shared';
-import { IMember, ITableList } from '@eatfit247-shared-lib';
+import { IMember, ITableList, IDropdownItem } from '@eatfit247-shared-lib';
 import { MembersApiService } from './api.service';
 import { debounceTime, distinctUntilChanged, Subject, switchMap } from 'rxjs';
 
 @Component({
   selector: 'lib-members',
   standalone: true,
-  imports: [CommonModule, DataTableComponent, MatButtonModule, MatIconModule, MatTooltipModule, RouterLink],
+  imports: [
+    CommonModule,
+    DataTableComponent,
+    MatButtonModule,
+    MatIconModule,
+    MatTooltipModule,
+    MatSelectModule,
+    MatFormFieldModule,
+    FormsModule,
+    RouterLink
+  ],
   templateUrl: './members.html',
   styleUrl: './members.scss',
 })
@@ -29,12 +42,23 @@ export class Members implements OnInit, AfterViewInit {
   loading = false;
   tableConfig!: ITableConfig<IMember>;
   private searchSubject = new Subject<string>();
+  
+  franchiseOptions: IDropdownItem[] = [];
+  countryOptions: IDropdownItem[] = [];
+  selectedFranchiseId: number | null = null;
+  selectedCountryId: number | null = null;
 
   @ViewChild('emailCell', { static: false })
   emailCellTemplate!: TemplateRef<any>;
 
   @ViewChild('nameCell', { static: false })
   nameCellTemplate!: TemplateRef<any>;
+
+  @ViewChild('franchiseHeader', { static: false })
+  franchiseHeaderTemplate!: TemplateRef<any>;
+
+  @ViewChild('countryHeader', { static: false })
+  countryHeaderTemplate!: TemplateRef<any>;
 
   constructor(
     private apiService: MembersApiService,
@@ -46,6 +70,7 @@ export class Members implements OnInit, AfterViewInit {
 
   ngOnInit(): void {
     this.initializeTable();
+    this.loadMasterData();
     this.loadData();
   }
 
@@ -70,6 +95,26 @@ export class Members implements OnInit, AfterViewInit {
         );
         if (emailColumn) {
           emailColumn.cellTemplate = this.emailCellTemplate;
+          updated = true;
+        }
+      }
+
+      if (this.franchiseHeaderTemplate) {
+        const franchiseColumn = this.tableConfig.columns.find(
+          (col) => col.key === 'franchise'
+        );
+        if (franchiseColumn) {
+          franchiseColumn.headerTemplate = this.franchiseHeaderTemplate;
+          updated = true;
+        }
+      }
+
+      if (this.countryHeaderTemplate) {
+        const countryColumn = this.tableConfig.columns.find(
+          (col) => col.key === 'country'
+        );
+        if (countryColumn) {
+          countryColumn.headerTemplate = this.countryHeaderTemplate;
           updated = true;
         }
       }
@@ -101,6 +146,8 @@ export class Members implements OnInit, AfterViewInit {
       },
       { key: 'emailId', label: 'Email', dataKey: 'emailId', sortable: true, searchable: true },
       { key: 'contactNumber', label: 'Contact', dataKey: 'contactNumber', sortable: true },
+      { key: 'country', label: 'Country', dataKey: 'country', sortable: true, formatter: (value) => value || '-' },
+      { key: 'franchise', label: 'Franchise', dataKey: 'franchise', sortable: true, formatter: (value) => value || '-' },
       { key: 'active', label: 'Status', dataKey: 'active', sortable: true, width: '120px', align: 'center', formatter: (value) => (value ? 'Active' : 'Inactive') },
       { key: 'createdByUser', label: 'Created By', dataKey: 'createdByUser', sortable: false, formatter: createdByUserFormatter() },
       { key: 'updatedByUser', label: 'Updated By', dataKey: 'updatedByUser', sortable: false, formatter: updatedByUserFormatter() },
@@ -138,10 +185,25 @@ export class Members implements OnInit, AfterViewInit {
     };
   }
 
+  private async loadMasterData(): Promise<void> {
+    try {
+      this.franchiseOptions = await this.apiService.getFranchiseDropdown();
+      this.countryOptions = await this.apiService.getCountryDropdown();
+    } catch {
+      // Error toast is handled by HttpErrorInterceptor
+    }
+  }
+
   private setupSearch(): void {
     this.searchSubject.pipe(debounceTime(300), distinctUntilChanged(), switchMap((search) => {
       this.loading = true;
-      return this.apiService.getList({ search, page: 0, limit: this.tableConfig.pageSize || 10 });
+      return this.apiService.getList({ 
+        search, 
+        page: 0, 
+        limit: this.tableConfig.pageSize || 10,
+        franchiseId: this.selectedFranchiseId || undefined,
+        countryId: this.selectedCountryId || undefined
+      } as any);
     })).subscribe({
       next: (response) => { this.data = response.tableData; this.totalCount = response.count; this.loading = false; },
       error: () => { this.loading = false; },
@@ -151,7 +213,12 @@ export class Members implements OnInit, AfterViewInit {
   async loadData(): Promise<void> {
     this.loading = true;
     try {
-      const response: ITableList<IMember> = await this.apiService.getList({ page: 0, limit: this.tableConfig.pageSize || 10 });
+      const response: ITableList<IMember> = await this.apiService.getList({ 
+        page: 0, 
+        limit: this.tableConfig.pageSize || 10,
+        franchiseId: this.selectedFranchiseId || undefined,
+        countryId: this.selectedCountryId || undefined
+      } as any);
       this.data = response.tableData;
       this.totalCount = response.count;
       this.loading = false;
@@ -163,7 +230,12 @@ export class Members implements OnInit, AfterViewInit {
   async onPageChange(pagination: any): Promise<void> {
     this.loading = true;
     try {
-      const response: ITableList<IMember> = await this.apiService.getList({ page: pagination.pageIndex, limit: pagination.pageSize });
+      const response: ITableList<IMember> = await this.apiService.getList({ 
+        page: pagination.pageIndex, 
+        limit: pagination.pageSize,
+        franchiseId: this.selectedFranchiseId || undefined,
+        countryId: this.selectedCountryId || undefined
+      } as any);
       this.data = response.tableData;
       this.totalCount = response.count;
       this.loading = false;
@@ -175,7 +247,14 @@ export class Members implements OnInit, AfterViewInit {
   async onSortChange(sort: any): Promise<void> {
     this.loading = true;
     try {
-      const response: ITableList<IMember> = await this.apiService.getList({ page: 0, limit: this.tableConfig.pageSize || 10, sortBy: sort.active, sortOrder: sort.direction });
+      const response: ITableList<IMember> = await this.apiService.getList({ 
+        page: 0, 
+        limit: this.tableConfig.pageSize || 10, 
+        sortBy: sort.active, 
+        sortOrder: sort.direction,
+        franchiseId: this.selectedFranchiseId || undefined,
+        countryId: this.selectedCountryId || undefined
+      } as any);
       this.data = response.tableData;
       this.totalCount = response.count;
       this.loading = false;
@@ -223,5 +302,15 @@ export class Members implements OnInit, AfterViewInit {
 
   viewItem(item: IMember): void {
     this.router.navigate(['/members/details', item.memberId, 'dashboard']);
+  }
+
+  onFranchiseFilterChange(franchiseId: number | null): void {
+    this.selectedFranchiseId = franchiseId;
+    this.loadData();
+  }
+
+  onCountryFilterChange(countryId: number | null): void {
+    this.selectedCountryId = countryId;
+    this.loadData();
   }
 }

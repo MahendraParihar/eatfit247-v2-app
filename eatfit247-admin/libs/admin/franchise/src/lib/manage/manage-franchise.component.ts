@@ -217,11 +217,10 @@ export class ManageFranchise implements OnInit, OnDestroy {
   }
 
   getLogoPathList(): any[] {
-    if (!this.initialData || !(this.initialData as any).imagePath) {
+    if (!this.initialData || !this.initialData.logo) {
       return [];
     }
-    const imagePath = (this.initialData as any).imagePath;
-    return Array.isArray(imagePath) ? imagePath : [];
+    return Array.isArray(this.initialData.logo) ? this.initialData.logo : [];
   }
 
   getMaxLength(controlName: string): number | null {

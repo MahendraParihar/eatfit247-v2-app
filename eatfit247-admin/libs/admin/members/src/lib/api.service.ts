@@ -62,7 +62,7 @@ export class MembersApiService extends ApiBaseService {
   }
 
   async getList(
-    params?: ITableListFilter & { sortBy?: string; sortOrder?: string }
+    params?: ITableListFilter & { sortBy?: string; sortOrder?: string; franchiseId?: number; countryId?: number }
   ): Promise<ITableList<IMember>> {
     const res = await this.httpService.get<ITableList<IMember>>(
       `${this.endpoint}/list`,

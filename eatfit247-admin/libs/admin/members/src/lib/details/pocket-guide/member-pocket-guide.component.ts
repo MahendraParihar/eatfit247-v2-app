@@ -1,11 +1,11 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
-import { MatCardModule } from '@angular/material/card';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatDialog } from '@angular/material/dialog';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { Component, OnDestroy, OnInit } from "@angular/core";
+import { CommonModule } from "@angular/common";
+import { ActivatedRoute } from "@angular/router";
+import { MatCardModule } from "@angular/material/card";
+import { MatButtonModule } from "@angular/material/button";
+import { MatIconModule } from "@angular/material/icon";
+import { MatDialog } from "@angular/material/dialog";
+import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
 import {
   createdByUserFormatter,
   DataTableComponent,
@@ -15,21 +15,21 @@ import {
   ITableConfig,
   LoaderComponent,
   updatedByUserFormatter
-} from '@shared';
-import { IMemberPocketGuide } from '@eatfit247-shared-lib';
-import { MembersApiService } from '../../api.service';
-import { Subject, takeUntil } from 'rxjs';
+} from "@shared";
+import { IMemberPocketGuide } from "@eatfit247-shared-lib";
+import { MembersApiService } from "../../api.service";
+import { Subject, takeUntil } from "rxjs";
 import {
   ManageMemberPocketGuideComponent,
   ManageMemberPocketGuideData
-} from './manage-member-pocket-guide/manage-member-pocket-guide.component';
+} from "./manage-member-pocket-guide/manage-member-pocket-guide.component";
 
 @Component({
-  selector: 'lib-member-pocket-guide',
+  selector: "lib-member-pocket-guide",
   standalone: true,
   imports: [CommonModule, MatCardModule, MatButtonModule, MatIconModule, MatSnackBarModule, DataTableComponent, EmptyStateComponent, LoaderComponent],
-  templateUrl: './member-pocket-guide.component.html',
-  styleUrl: './member-pocket-guide.component.scss'
+  templateUrl: "./member-pocket-guide.component.html",
+  styleUrl: "./member-pocket-guide.component.scss"
 })
 export class MemberPocketGuideComponent implements OnInit, OnDestroy {
   memberId!: number;
@@ -51,7 +51,7 @@ export class MemberPocketGuideComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.route.parent?.params.pipe(takeUntil(this.destroy$)).subscribe((params) => {
-      this.memberId = +params['id'];
+      this.memberId = +params["id"];
       if (this.memberId) {
         this.loadPocketGuides();
       }
@@ -65,33 +65,33 @@ export class MemberPocketGuideComponent implements OnInit, OnDestroy {
 
   private initializeTable(): void {
     const columns: ITableColumn<IMemberPocketGuide>[] = [
-      { key: 'pocketGuide', label: 'Pocket Guide', dataKey: 'pocketGuide', sortable: true },
+      { key: "pocketGuide", label: "Pocket Guide", dataKey: "pocketGuide", sortable: true },
       {
-        key: 'createdByUser',
-        label: 'Created By',
-        dataKey: 'createdByUser',
+        key: "createdByUser",
+        label: "Created By",
+        dataKey: "createdByUser",
         sortable: false,
         formatter: createdByUserFormatter()
       },
       {
-        key: 'updatedByUser',
-        label: 'Updated By',
-        dataKey: 'updatedByUser',
+        key: "updatedByUser",
+        label: "Updated By",
+        dataKey: "updatedByUser",
         sortable: false,
         formatter: updatedByUserFormatter()
       },
       {
-        key: 'createdAt',
-        label: 'Created At',
-        dataKey: 'createdAt',
-        type: 'date',
+        key: "createdAt",
+        label: "Created At",
+        dataKey: "createdAt",
+        type: "date",
         sortable: true
       },
       {
-        key: 'updatedAt',
-        label: 'Updated At',
-        dataKey: 'updatedAt',
-        type: 'date',
+        key: "updatedAt",
+        label: "Updated At",
+        dataKey: "updatedAt",
+        type: "date",
         sortable: true
       }
     ];
@@ -101,6 +101,7 @@ export class MemberPocketGuideComponent implements OnInit, OnDestroy {
       pageSizeOptions: [10, 25, 50, 100],
       showPagination: false,
       showSearch: false,
+      showHeader: true
     };
   }
 
@@ -111,8 +112,8 @@ export class MemberPocketGuideComponent implements OnInit, OnDestroy {
       this.pocketGuides = res.tableData;
       this.totalCount = res.count;
     } catch (error) {
-      this.snackBar.open('Failed to load pocket guides. Please try again.', 'Close', {
-        duration: 5000,
+      this.snackBar.open("Failed to load pocket guides. Please try again.", "Close", {
+        duration: 5000
       });
       this.pocketGuides = [];
     } finally {
@@ -125,7 +126,7 @@ export class MemberPocketGuideComponent implements OnInit, OnDestroy {
       memberId: this.memberId
     };
     const dialogRef = this.dialog.open(ManageMemberPocketGuideComponent, {
-      width: '600px',
+      width: "600px",
       data: dialogData
     });
     dialogRef.afterClosed().subscribe((result) => {

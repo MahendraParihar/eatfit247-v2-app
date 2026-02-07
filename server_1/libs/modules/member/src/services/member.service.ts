@@ -14,7 +14,7 @@ export class MemberService {
     private franchiseService: FranchiseService,
   ) {}
 
-  public async findAll(searchDto: IBasicSearch): Promise<ITableList<IMember>> {
+  public async findAll(searchDto: IBasicSearch & { franchiseId?: number; countryId?: number }): Promise<ITableList<IMember>> {
     const whereCondition: any = {};
     if (searchDto.name) {
       whereCondition[Op.or] = [
@@ -30,6 +30,12 @@ export class MemberService {
         { emailId: { [Op.iLike]: `%${searchDto.search}%` } },
         { contactNumber: { [Op.iLike]: `%${searchDto.search}%` } },
       ];
+    }
+    if (searchDto.franchiseId !== undefined && searchDto.franchiseId !== null) {
+      whereCondition.franchiseId = searchDto.franchiseId;
+    }
+    if (searchDto.countryId !== undefined && searchDto.countryId !== null) {
+      whereCondition.countryId = searchDto.countryId;
     }
     const pageNumber = searchDto.page || 0;
     const pageSize = searchDto.limit || 15;

@@ -382,9 +382,11 @@ export class DataTableComponent<T> implements OnInit, OnChanges {
   }
 
   hasHeaderContent(): boolean {
+    // Show header if explicitly enabled, or if search is enabled
+    if (this.config.showHeader === true) {
+      return true;
+    }
     // Show header if search is enabled
-    // Note: If headerActions are used without search, set showSearch to true
-    // and hide the search field with CSS, or add showTableHeader config option
     return this.config.showSearch !== false;
   }
 }

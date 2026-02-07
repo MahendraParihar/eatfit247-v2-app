@@ -118,6 +118,7 @@ export class MemberHealthIssuesComponent implements OnInit, OnDestroy {
       pageSizeOptions: [10, 25, 50, 100],
       showPagination: false,
       showSearch: false,
+      showHeader: true
     };
   }
 
