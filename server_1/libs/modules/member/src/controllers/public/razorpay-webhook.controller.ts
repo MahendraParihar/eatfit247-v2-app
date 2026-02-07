@@ -115,7 +115,6 @@ export class RazorpayWebhookController {
   async handleWebhook(
     @Req() req: any,
     @Headers("x-razorpay-signature") signature: string,
-    @Body() payload: RazorpayWebhookPayload,
     @RequestedIp() requestedIp: string
   ) {
     // Get raw body from request (set by middleware)
@@ -125,6 +124,20 @@ export class RazorpayWebhookController {
     }
     if (!signature) {
       throw new UnauthorizedException("Razorpay signature header missing");
+    }
+    // Parse payload from raw body (since body stream is consumed by middleware)
+    let payload: RazorpayWebhookPayload;
+    try {
+      payload = JSON.parse(rawBody);
+    } catch (error) {
+      throw new UnauthorizedException("Invalid webhook payload format");
+    }
+    // Validate payload exists
+    if (!payload) {
+      throw new UnauthorizedException("Webhook payload is missing");
+    }
+    if (!payload.payload) {
+      throw new UnauthorizedException("Webhook payload structure is invalid");
     }
     // Extract order ID from payload to find the payment gateway credentials
     let orderId: string | null = null;
