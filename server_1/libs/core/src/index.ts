@@ -24,6 +24,11 @@ export * from './lib/filters/validation.exception';
 export * from './lib/error-handler/global-exception.filter';
 // Interceptors
 export * from './lib/interceptors/transform.interceptor';
+// Monitoring
+export * from './lib/monitoring/sentry.module';
+export * from './lib/monitoring/sentry.interceptor';
+// Cache
+export * from './lib/cache/cache.module';
 // Health
 export * from './lib/health/health.controller';
 // Common Module

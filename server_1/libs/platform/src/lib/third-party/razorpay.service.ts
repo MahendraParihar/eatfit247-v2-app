@@ -102,7 +102,22 @@ export class RazorpayService {
         .update(text)
         .digest('hex');
 
-      const isSignatureValid = generatedSignature === signature;
+      // Use timing-safe comparison to prevent timing attacks
+      if (generatedSignature.length !== signature.length) {
+        return {
+          verified: false,
+          paymentDetails: null,
+        };
+      }
+
+      // Convert hex strings to buffers for timing-safe comparison
+      const generatedBuffer = Buffer.from(generatedSignature, 'hex');
+      const signatureBuffer = Buffer.from(signature, 'hex');
+
+      const isSignatureValid = crypto.timingSafeEqual(
+        new Uint8Array(generatedBuffer),
+        new Uint8Array(signatureBuffer),
+      );
 
       if (!isSignatureValid) {
         return {

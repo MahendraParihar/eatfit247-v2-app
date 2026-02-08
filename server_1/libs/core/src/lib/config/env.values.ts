@@ -27,6 +27,7 @@ export class Env {
   public static readonly nodeEnv = envToString('NODE_ENV');
   public static readonly persistentStorageAssetPath = `${Env.staticAssetPath}`;
   public static readonly recaptchaSecretKey = envToString('RECAPTCHA_SECRET_KEY', false);
+  public static readonly sentryDSN = envToString('SENTRY_DSN', false);
 
   public static get(key: string): string {
     return process.env[key] || '';

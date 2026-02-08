@@ -39,16 +39,35 @@ export class MemberProductReportService {
     if (dto.paymentStatusId) {
       whereCondition.paymentStatusId = dto.paymentStatusId;
     }
+
+    // Build member where condition
+    const memberWhereCondition: any = {};
     if (dto.franchiseId) {
-      whereCondition.franchiseId = dto.franchiseId;
+      memberWhereCondition.franchiseId = dto.franchiseId;
     }
+
     // Build include conditions
     const includeConditions: any[] = [
       {
         model: TxnMember,
         as: 'member',
         required: true,
+        where: Object.keys(memberWhereCondition).length > 0 ? memberWhereCondition : undefined,
         attributes: ['memberId', 'firstName', 'lastName', 'emailId', 'contactNumber', 'franchiseId'],
+        include: [
+          {
+            model: MstFranchise,
+            as: 'franchise',
+            required: true,
+            attributes: ['franchiseId', 'companyName'],
+            where: {
+              active: true,
+              [Op.and]: [
+                Sequelize.literal(`'${BusinessTypeEnum.PRODUCT}'::public.business_type = ANY("business_type")`),
+              ],
+            },
+          },
+        ],
       },
     ];
     const { rows, count } = await this.memberProductRepository.scope('list').findAndCountAll({
@@ -80,10 +99,15 @@ export class MemberProductReportService {
    * @returns Stream of zip file
    */
   async exportMemberProductReports(dto: MemberProductReportDto): Promise<archiver.Archiver> {
+    const startDateStr = moment(dto.startDate).startOf('day').utc().startOf('day');
+    const endDateStr = moment(dto.endDate).endOf('day').utc().endOf('day');
     const whereCondition: any = {
       active: true,
       paymentDate: {
-        [Op.between]: [new Date(dto.startDate), new Date(dto.endDate)],
+        [Op.and]: {
+          [Op.gte]: startDateStr.format(),
+          [Op.lte]: endDateStr.format(),
+        },
       },
     };
     // Add payment status filter if provided
@@ -110,6 +134,7 @@ export class MemberProductReportService {
             required: true,
             attributes: ['franchiseId', 'companyName'],
             where: {
+              active: true,
               [Op.and]: [
                 Sequelize.literal(`'${BusinessTypeEnum.PRODUCT}'::public.business_type = ANY("business_type")`),
               ],

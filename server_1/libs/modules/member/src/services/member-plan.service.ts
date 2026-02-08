@@ -50,7 +50,7 @@ import {
 } from '@server_1/modules/payment';
 import { Sequelize } from 'sequelize-typescript';
 import { MemberDietPlanService } from './member-diet-plan.service';
-import fs from 'fs';
+import { promises as fs } from 'fs';
 import { find } from 'lodash';
 
 @Injectable()
@@ -791,16 +791,18 @@ export class MemberPlanService {
     const fileName = `invoice-${paymentModel.memberPaymentId}.pdf`;
     const relativePath = `${MediaForEnum.DOWNLOADS}/${memberId}/invoices`;
     const destinationFolderPath = `${this.rootFolderPath}/${relativePath}`;
-    //CREATE DIRECTORY IF NOT EXISTS
-    if (!fs.existsSync(destinationFolderPath)) {
-      fs.mkdirSync(destinationFolderPath, { recursive: true });
+    //CREATE DIRECTORY IF NOT EXISTS (async)
+    try {
+      await fs.access(destinationFolderPath);
+    } catch {
+      await fs.mkdir(destinationFolderPath, { recursive: true });
     }
     const destinationPath = `${destinationFolderPath}/${fileName}`;
     // Generate PDF using the new InvoicePdfService
     const pdfBuffer = await this.invoicePdfService.generateInvoicePdf(invoiceDoc);
     const base64Buffer = pdfBuffer.toString('base64');
-    // Write PDF buffer to destination folder (write the binary buffer, not the base64 string)
-    fs.writeFileSync(destinationPath, Uint8Array.from(pdfBuffer));
+    // Write PDF buffer to destination folder (async)
+    await fs.writeFile(destinationPath, pdfBuffer as Uint8Array);
     return {
       filePath: relativePath,
       fileName: fileName,

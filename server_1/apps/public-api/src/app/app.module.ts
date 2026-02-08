@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
-import { CommonModule } from '@server_1/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { CommonModule, SentryModule, SentryInterceptor } from '@server_1/core';
 import { PlatformModule } from '@server_1/platform';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -18,6 +20,13 @@ import { ContactModule } from '@server_1/modules/contact';
 
 @Module({
   imports: [
+    // Sentry error tracking
+    SentryModule,
+    // Rate limiting configuration
+    ThrottlerModule.forRoot([{
+      ttl: 60000, // 1 minute
+      limit: 100, // 100 requests per minute per IP
+    }]),
     PlatformModule.forRoot(),
     // Import feature modules before CommonModule so modelRegistry.register() executes
     BlogPublicModule,
@@ -35,7 +44,17 @@ import { ContactModule } from '@server_1/modules/contact';
     CommonModule.forRoot(['Common', 'Email', 'Google', 'Payment'], PlatformModule.getModels()),
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: SentryInterceptor,
+    },
+  ],
 })
 export class AppModule {
 }

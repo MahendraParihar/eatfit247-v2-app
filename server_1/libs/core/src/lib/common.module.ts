@@ -17,6 +17,7 @@ import { Env } from './config/env.values';
 import { HealthController } from './health/health.controller';
 import { AppConfigModule } from './config/app-config';
 import { AdminUserService } from './auth/admin-user.service';
+import { CacheModule } from './cache/cache.module';
 // Models moved to core - import from there
 // Admin models from core
 import {
@@ -89,6 +90,7 @@ export class CommonModule {
         }),
         PassportModule,
         TerminusModule,
+        CacheModule,
       ],
       providers: [
         {

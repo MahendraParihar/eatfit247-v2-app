@@ -7,7 +7,7 @@ import {
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
-import fs from 'fs';
+import { promises as fs } from 'fs';
 import { Env } from '@server_1/core';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { MediaDto } from './dto/media-for.dto';
@@ -28,12 +28,14 @@ export class FileUploadController {
     const fileName = file.originalname.replace(/[/\\?%*:|"<>]/g, "-");
     const destinationFolderPath = `${this.rootFolderPath}/${mediaDto.mediaFor}`;
     const destinationPath = `${destinationFolderPath}/${fileName}`;
-    //CREATE DIRECTORY IF NOT EXISTS
-    if (!fs.existsSync(destinationFolderPath)) {
-      fs.mkdirSync(destinationFolderPath, { recursive: true });
+    //CREATE DIRECTORY IF NOT EXISTS (async)
+    try {
+      await fs.access(destinationFolderPath);
+    } catch {
+      await fs.mkdir(destinationFolderPath, { recursive: true });
     }
-    //Write File
-    fs.writeFileSync(destinationPath, file.buffer as any);
+    //Write File (async)
+    await fs.writeFile(destinationPath, file.buffer as Uint8Array);
     return {
       fieldName: file.fieldname,
       fileName: fileName,

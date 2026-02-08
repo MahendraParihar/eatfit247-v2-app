@@ -1,4 +1,6 @@
 import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { CommonModule, Env } from '@server_1/core';
 import { PlatformModule } from '@server_1/platform';
@@ -36,6 +38,11 @@ import { ProductAdminModule } from '@server_1/modules/product';
 
 @Module({
   imports: [
+    // Rate limiting configuration
+    ThrottlerModule.forRoot([{
+      ttl: 60000, // 1 minute
+      limit: 100, // 100 requests per minute per IP
+    }]),
     ServeStaticModule.forRoot({
       rootPath: Env.persistentStorageAssetPath,
       serveRoot: '/media-files',
@@ -76,7 +83,13 @@ import { ProductAdminModule } from '@server_1/modules/product';
     ),
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+  ],
 })
 export class AppModule {}
 
