@@ -27,5 +27,10 @@ export class MemberProductReportApiService extends ApiBaseService {
     const exportEndpoint = `${this.endpoint}/export`;
     return await this.httpService.postBlob(exportEndpoint, params);
   }
+
+  async exportMemberProductReportsBulk(memberProductIds: number[]): Promise<Blob> {
+    const exportEndpoint = `${this.endpoint}/export/bulk`;
+    return await this.httpService.postBlob(exportEndpoint, { memberProductIds });
+  }
 }
 

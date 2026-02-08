@@ -324,6 +324,7 @@ export class RazorpayWebhookController {
 
   /**
    * Process webhook event based on event type
+   * For payment links, focus only on payment_link.* events to avoid duplicate processing
    */
   private async processWebhookEvent(
     payload: RazorpayWebhookPayload,
@@ -331,10 +332,27 @@ export class RazorpayWebhookController {
     requestedIp: string,
   ): Promise<void> {
     const event = payload.event;
+    const hasPaymentLink = !!payload.payload?.payment_link?.entity?.id;
+
+    // If payload contains payment_link, only process payment_link.* events
+    // Skip other events (payment.captured, order.paid) to avoid duplicate processing
+    if (hasPaymentLink && !event.startsWith('payment_link.')) {
+      this.logger.log(
+        `Skipping ${event} event for payment link. Only processing payment_link.* events.`,
+        {
+          event,
+          paymentLinkId: payload.payload.payment_link.entity.id,
+        },
+      );
+      return;
+    }
 
     switch (event) {
       case 'payment.captured':
-        await this.handlePaymentCaptured(payload, orderType, requestedIp);
+        // Only process if not related to payment link
+        if (!hasPaymentLink) {
+          await this.handlePaymentCaptured(payload, orderType, requestedIp);
+        }
         break;
       case 'payment.failed':
         await this.handlePaymentFailed(payload, orderType, requestedIp);
@@ -342,8 +360,17 @@ export class RazorpayWebhookController {
       case 'payment_link.paid':
         await this.handlePaymentLinkPaid(payload, orderType, requestedIp);
         break;
+      case 'payment_link.cancelled':
+        await this.handlePaymentLinkCancelled(payload, orderType, requestedIp);
+        break;
+      case 'payment_link.expired':
+        await this.handlePaymentLinkExpired(payload, orderType, requestedIp);
+        break;
       case 'order.paid':
-        await this.handleOrderPaid(payload, orderType, requestedIp);
+        // Only process if not related to payment link
+        if (!hasPaymentLink) {
+          await this.handleOrderPaid(payload, orderType, requestedIp);
+        }
         break;
       case 'payment.refunded':
         await this.handlePaymentRefunded(payload, orderType, requestedIp);
@@ -523,6 +550,7 @@ export class RazorpayWebhookController {
 
   /**
    * Handle payment link paid event
+   * This is the primary event for payment links - Razorpay emits this when user pays via link
    */
   private async handlePaymentLinkPaid(
     payload: RazorpayWebhookPayload,
@@ -534,31 +562,126 @@ export class RazorpayWebhookController {
       throw new Error('Payment link entity or id not found in payload');
     }
 
+    const paymentLinkId = paymentLink.id;
+    this.logger.log('Processing payment_link.paid event', {
+      paymentLinkId,
+      orderType,
+      amount: paymentLink.amount,
+      currency: paymentLink.currency,
+    });
+
     // Extract payment entity from payload (payment_link.paid includes payment entity)
     const payment = payload.payload?.payment?.entity;
     const paymentId = payment?.id || null;
 
+    // Use payment's created_at if available (when payment was actually made),
+    // otherwise fall back to paymentLink.created_at (when link was created)
+    const paymentDate = payment?.created_at
+      ? new Date(payment.created_at * 1000)
+      : new Date(paymentLink.created_at * 1000);
+
+    // Verify amount and currency before processing
     if (orderType === 'plan') {
+      const order = await this.memberPaymentRepository.findOne({
+        where: { gatewayOrderId: paymentLinkId },
+      });
+
+      if (!order) {
+        throw new Error(
+          `Plan payment order not found for payment link ID: ${paymentLinkId}`,
+        );
+      }
+
+      // Verify payment amount (Razorpay sends amount in paise, convert to rupees)
+      const razorpayAmountInRupees = paymentLink.amount / 100;
+      const expectedAmount = Number(order.totalAmount || 0);
+
+      // Allow small rounding differences (1 paise tolerance)
+      if (Math.abs(razorpayAmountInRupees - expectedAmount) > 0.01) {
+        this.logger.error('Payment amount mismatch for plan payment link', {
+          expected: expectedAmount,
+          received: razorpayAmountInRupees,
+          paymentLinkId,
+          memberPaymentId: order.memberPaymentId,
+        });
+        throw new Error(
+          `Payment amount verification failed. Expected: ${expectedAmount}, Received: ${razorpayAmountInRupees}`,
+        );
+      }
+
+      // Verify currency
+      const expectedCurrency = (order as any).currency || 'INR';
+      if (paymentLink.currency !== expectedCurrency.toUpperCase()) {
+        this.logger.error('Payment currency mismatch for plan payment link', {
+          expected: expectedCurrency,
+          received: paymentLink.currency,
+          paymentLinkId,
+        });
+        throw new Error(
+          `Payment currency verification failed. Expected: ${expectedCurrency}, Received: ${paymentLink.currency}`,
+        );
+      }
+
       await this.updatePlanPaymentByPaymentLink(
-        paymentLink.id,
+        paymentLinkId,
         {
           paymentStatusId: PaymentStatusEnum.PAID,
           gatewayPaymentId: paymentId,
           transactionId: paymentId,
-          paymentDate: new Date(paymentLink.created_at * 1000),
+          paymentDate,
           paymentGatewayResponse: payment || paymentLink,
           modifiedIp: requestedIp,
         },
         true,
       );
     } else if (orderType === 'product') {
+      const order = await this.memberProductRepository.findOne({
+        where: { gatewayOrderId: paymentLinkId },
+      });
+
+      if (!order) {
+        throw new Error(
+          `Product order not found for payment link ID: ${paymentLinkId}`,
+        );
+      }
+
+      // Verify payment amount (Razorpay sends amount in paise, convert to rupees)
+      const razorpayAmountInRupees = paymentLink.amount / 100;
+      const expectedAmount = Number(order.totalAmount || 0);
+
+      // Allow small rounding differences (1 paise tolerance)
+      if (Math.abs(razorpayAmountInRupees - expectedAmount) > 0.01) {
+        this.logger.error('Payment amount mismatch for product payment link', {
+          expected: expectedAmount,
+          received: razorpayAmountInRupees,
+          paymentLinkId,
+          memberProductId: order.memberProductId,
+        });
+        throw new Error(
+          `Payment amount verification failed. Expected: ${expectedAmount}, Received: ${razorpayAmountInRupees}`,
+        );
+      }
+
+      // Verify currency
+      const expectedCurrency = order.currency || 'INR';
+      if (paymentLink.currency !== expectedCurrency.toUpperCase()) {
+        this.logger.error('Payment currency mismatch for product payment link', {
+          expected: expectedCurrency,
+          received: paymentLink.currency,
+          paymentLinkId,
+        });
+        throw new Error(
+          `Payment currency verification failed. Expected: ${expectedCurrency}, Received: ${paymentLink.currency}`,
+        );
+      }
+
       await this.updateProductOrderByPaymentLink(
-        paymentLink.id,
+        paymentLinkId,
         {
           paymentStatusId: PaymentStatusEnum.PAID,
           gatewayPaymentId: paymentId,
           transactionId: paymentId,
-          paymentDate: new Date(paymentLink.created_at * 1000),
+          paymentDate,
           paymentGatewayResponse: payment || paymentLink,
           modifiedIp: requestedIp,
         },
@@ -566,8 +689,12 @@ export class RazorpayWebhookController {
       );
     } else {
       this.logger.warn('Order type not found for payment_link.paid event', {
-        paymentLinkId: paymentLink.id,
+        paymentLinkId,
+        notes: paymentLink.notes,
       });
+      throw new Error(
+        `Order type not found for payment link: ${paymentLinkId}. Ensure 'type' is set in payment link notes.`,
+      );
     }
   }
 
@@ -581,6 +708,98 @@ export class RazorpayWebhookController {
   ): Promise<void> {
     // Order.paid is similar to payment.captured, delegate to that handler
     await this.handlePaymentCaptured(payload, orderType, requestedIp);
+  }
+
+  /**
+   * Handle payment link cancelled event
+   */
+  private async handlePaymentLinkCancelled(
+    payload: RazorpayWebhookPayload,
+    orderType: 'plan' | 'product' | null,
+    requestedIp: string,
+  ): Promise<void> {
+    const paymentLink = payload.payload?.payment_link?.entity;
+    if (!paymentLink?.id) {
+      throw new Error('Payment link entity or id not found in payload');
+    }
+
+    const paymentLinkId = paymentLink.id;
+    this.logger.log('Processing payment_link.cancelled event', {
+      paymentLinkId,
+      orderType,
+    });
+
+    if (orderType === 'plan') {
+      await this.updatePlanPaymentByPaymentLink(
+        paymentLinkId,
+        {
+          paymentStatusId: PaymentStatusEnum.FAILED,
+          paymentGatewayResponse: paymentLink,
+          modifiedIp: requestedIp,
+        },
+        false,
+      );
+    } else if (orderType === 'product') {
+      await this.updateProductOrderByPaymentLink(
+        paymentLinkId,
+        {
+          paymentStatusId: PaymentStatusEnum.FAILED,
+          paymentGatewayResponse: paymentLink,
+          modifiedIp: requestedIp,
+        },
+        false,
+      );
+    } else {
+      this.logger.warn('Order type not found for payment_link.cancelled event', {
+        paymentLinkId,
+      });
+    }
+  }
+
+  /**
+   * Handle payment link expired event
+   */
+  private async handlePaymentLinkExpired(
+    payload: RazorpayWebhookPayload,
+    orderType: 'plan' | 'product' | null,
+    requestedIp: string,
+  ): Promise<void> {
+    const paymentLink = payload.payload?.payment_link?.entity;
+    if (!paymentLink?.id) {
+      throw new Error('Payment link entity or id not found in payload');
+    }
+
+    const paymentLinkId = paymentLink.id;
+    this.logger.log('Processing payment_link.expired event', {
+      paymentLinkId,
+      orderType,
+    });
+
+    if (orderType === 'plan') {
+      await this.updatePlanPaymentByPaymentLink(
+        paymentLinkId,
+        {
+          paymentStatusId: PaymentStatusEnum.FAILED,
+          paymentGatewayResponse: paymentLink,
+          modifiedIp: requestedIp,
+        },
+        false,
+      );
+    } else if (orderType === 'product') {
+      await this.updateProductOrderByPaymentLink(
+        paymentLinkId,
+        {
+          paymentStatusId: PaymentStatusEnum.FAILED,
+          paymentGatewayResponse: paymentLink,
+          modifiedIp: requestedIp,
+        },
+        false,
+      );
+    } else {
+      this.logger.warn('Order type not found for payment_link.expired event', {
+        paymentLinkId,
+      });
+    }
   }
 
   /**
@@ -721,6 +940,7 @@ export class RazorpayWebhookController {
 
   /**
    * Update plan payment by payment link ID
+   * Compares paymentLinkId with database gatewayOrderId field
    */
   private async updatePlanPaymentByPaymentLink(
     paymentLinkId: string,
@@ -736,14 +956,42 @@ export class RazorpayWebhookController {
   ): Promise<void> {
     const transaction = await this.sequelize.transaction();
     try {
+      this.logger.log('Searching for plan payment with gatewayOrderId', {
+        paymentLinkId,
+        searchingFor: paymentLinkId,
+      });
+
       const paymentRecord = await this.memberPaymentRepository.findOne({
         where: { gatewayOrderId: paymentLinkId },
         transaction,
       });
 
       if (!paymentRecord) {
-        this.logger.warn('Payment record not found for payment link ID', {
+        this.logger.error('Plan payment record not found for payment link ID', {
           paymentLinkId,
+          searchedField: 'gatewayOrderId',
+        });
+        await transaction.rollback();
+        throw new Error(
+          `Plan payment record not found for payment link ID: ${paymentLinkId}. Ensure gatewayOrderId matches the payment link ID.`,
+        );
+      }
+
+      this.logger.log('Found plan payment record', {
+        paymentLinkId,
+        memberPaymentId: paymentRecord.memberPaymentId,
+        currentStatus: paymentRecord.paymentStatusId,
+        storedGatewayOrderId: paymentRecord.gatewayOrderId,
+      });
+
+      // Idempotency check: only update if status is PENDING or if already PAID (allow re-processing)
+      if (
+        paymentRecord.paymentStatusId === PaymentStatusEnum.PAID &&
+        updateData.paymentStatusId === PaymentStatusEnum.PAID
+      ) {
+        this.logger.log('Plan payment already processed, skipping update', {
+          paymentLinkId,
+          memberPaymentId: paymentRecord.memberPaymentId,
         });
         await transaction.rollback();
         return;
@@ -751,9 +999,10 @@ export class RazorpayWebhookController {
 
       // Only update if the status is PENDING (idempotency)
       if (paymentRecord.paymentStatusId !== PaymentStatusEnum.PENDING) {
-        this.logger.log('Payment record not in PENDING status, skipping update', {
+        this.logger.log('Plan payment record not in PENDING status, skipping update', {
           paymentLinkId,
           currentStatus: paymentRecord.paymentStatusId,
+          memberPaymentId: paymentRecord.memberPaymentId,
         });
         await transaction.rollback();
         return;
@@ -772,11 +1021,14 @@ export class RazorpayWebhookController {
       this.logger.log('Plan payment updated by payment link successfully', {
         paymentLinkId,
         memberPaymentId: paymentRecord.memberPaymentId,
+        paymentStatusId: updateData.paymentStatusId,
+        gatewayPaymentId: updateData.gatewayPaymentId,
       });
     } catch (error) {
       await transaction.rollback();
       this.logger.error('Error updating plan payment by payment link', {
         error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
         paymentLinkId,
       });
       throw error;
@@ -785,6 +1037,7 @@ export class RazorpayWebhookController {
 
   /**
    * Update product order by payment link ID
+   * Compares paymentLinkId with database gatewayOrderId field
    */
   private async updateProductOrderByPaymentLink(
     paymentLinkId: string,
@@ -800,14 +1053,42 @@ export class RazorpayWebhookController {
   ): Promise<void> {
     const transaction = await this.sequelize.transaction();
     try {
+      this.logger.log('Searching for product order with gatewayOrderId', {
+        paymentLinkId,
+        searchingFor: paymentLinkId,
+      });
+
       const productOrder = await this.memberProductRepository.findOne({
         where: { gatewayOrderId: paymentLinkId },
         transaction,
       });
 
       if (!productOrder) {
-        this.logger.warn('Product order not found for payment link ID', {
+        this.logger.error('Product order not found for payment link ID', {
           paymentLinkId,
+          searchedField: 'gatewayOrderId',
+        });
+        await transaction.rollback();
+        throw new Error(
+          `Product order not found for payment link ID: ${paymentLinkId}. Ensure gatewayOrderId matches the payment link ID.`,
+        );
+      }
+
+      this.logger.log('Found product order record', {
+        paymentLinkId,
+        memberProductId: productOrder.memberProductId,
+        currentStatus: productOrder.paymentStatusId,
+        storedGatewayOrderId: productOrder.gatewayOrderId,
+      });
+
+      // Idempotency check: only update if status is PENDING or if already PAID (allow re-processing)
+      if (
+        productOrder.paymentStatusId === PaymentStatusEnum.PAID &&
+        updateData.paymentStatusId === PaymentStatusEnum.PAID
+      ) {
+        this.logger.log('Product order already processed, skipping update', {
+          paymentLinkId,
+          memberProductId: productOrder.memberProductId,
         });
         await transaction.rollback();
         return;
@@ -818,6 +1099,7 @@ export class RazorpayWebhookController {
         this.logger.log('Product order not in PENDING status, skipping update', {
           paymentLinkId,
           currentStatus: productOrder.paymentStatusId,
+          memberProductId: productOrder.memberProductId,
         });
         await transaction.rollback();
         return;
@@ -836,11 +1118,14 @@ export class RazorpayWebhookController {
       this.logger.log('Product order updated by payment link successfully', {
         paymentLinkId,
         memberProductId: productOrder.memberProductId,
+        paymentStatusId: updateData.paymentStatusId,
+        gatewayPaymentId: updateData.gatewayPaymentId,
       });
     } catch (error) {
       await transaction.rollback();
       this.logger.error('Error updating product order by payment link', {
         error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
         paymentLinkId,
       });
       throw error;

@@ -5,7 +5,7 @@
 import { ModuleRef, NestFactory } from '@nestjs/core';
 import { AppModule } from './app/app.module';
 import { Logger, ValidationPipe } from '@nestjs/common';
-import { json, urlencoded } from 'express';
+import { json, urlencoded, raw } from 'express';
 import { ValidationFilter } from '@server_1/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import helmet from 'helmet';
@@ -107,22 +107,56 @@ async function bootstrap() {
   app.enableShutdownHooks();
   app.set('trust proxy', true); // This is crucial behind Nginx or any proxy
   
-  // Middleware to preserve raw body for webhook signature verification
-  // Must be before json() middleware
+  // Use raw body parser for webhook route to preserve raw body for signature verification
+  // This must be before the json() middleware
   // Note: This path matches the global prefix + controller route: /api/v2/public/razorpay/webhook
-  app.use('/api/v2/public/razorpay/webhook', (req, res, next) => {
-    let data = '';
-    req.setEncoding('utf8');
-    req.on('data', (chunk) => {
-      data += chunk;
-    });
-    req.on('end', () => {
-      (req as any).rawBody = data;
+  app.use('/api/v2/public/razorpay/webhook', raw({ type: 'application/json', limit: '50mb' }), (req, res, next) => {
+    try {
+      // Store raw body as string for signature verification
+      const rawBody = req.body instanceof Buffer ? req.body.toString('utf8') : String(req.body || '');
+      (req as any).rawBody = rawBody;
+      
+      // Parse and set body for ValidationPipe to use
+      if (rawBody) {
+        try {
+          req.body = JSON.parse(rawBody);
+        } catch (parseError) {
+          logger.warn('Failed to parse webhook body as JSON', { 
+            error: parseError instanceof Error ? parseError.message : String(parseError) 
+          });
+          // If JSON parsing fails, set empty object and let ValidationPipe handle it
+          req.body = {};
+        }
+      } else {
+        req.body = {};
+      }
+      
       next();
-    });
+    } catch (error) {
+      logger.error('Error processing webhook request', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      });
+      res.status(400).json({ status: 'error', message: 'Failed to process request' });
+    }
   });
   
-  app.use(json({ limit: '50mb' }));
+  // Apply json() middleware to all other routes
+  // Skip for webhook route since we've already parsed it with raw() middleware
+  app.use((req, res, next) => {
+    // Skip json() middleware for webhook route since we've already parsed it
+    // Check both path and URL to handle global prefix correctly
+    const isWebhookRoute = req.path === '/razorpay/webhook' || 
+                          req.url === '/razorpay/webhook' ||
+                          req.path === '/api/v2/public/razorpay/webhook' ||
+                          req.url.startsWith('/api/v2/public/razorpay/webhook');
+    
+    if (isWebhookRoute) {
+      return next();
+    }
+    return json({ limit: '50mb' })(req, res, next);
+  });
+  
   app.use(urlencoded({ extended: true, limit: '50mb' }));
 
   const port = process.env.PUBLIC_API_PORT || 3000;

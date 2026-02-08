@@ -18,6 +18,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDividerModule } from '@angular/material/divider';
 import { AuthService } from '@core';
 import { IAuthUser } from '@eatfit247-shared-lib';
+import { BreadcrumbComponent } from '../breadcrumb/breadcrumb.component';
 
 interface MenuItem {
   label: string;
@@ -40,6 +41,7 @@ interface MenuItem {
     MatMenuModule,
     MatTooltipModule,
     MatDividerModule,
+    BreadcrumbComponent,
   ],
   templateUrl: './base-layout.component.html',
   styleUrl: './base-layout.component.scss',

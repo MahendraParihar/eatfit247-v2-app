@@ -1,7 +1,7 @@
 import { Body, Controller, Post, Res, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '@server_1/core';
 import { MemberProductReportService } from '../../services';
-import { MemberProductReportDto } from '../../dto';
+import { MemberProductReportDto, MemberProductBulkExportDto } from '../../dto';
 import { ITableList } from '@eatfit247-shared-lib';
 import { Response } from 'express';
 
@@ -22,6 +22,19 @@ export class MemberProductReportController {
     const startDate = dto.startDate.replace(/-/g, '');
     const endDate = dto.endDate.replace(/-/g, '');
     const filename = `member-product-reports_${startDate}_to_${endDate}.zip`;
+    res.set({
+      'Content-Type': 'application/zip',
+      'Content-Disposition': `attachment; filename="${filename}"`,
+    });
+    archive.pipe(res);
+  }
+
+  @Post('export/bulk')
+  async exportMemberProductReportsBulk(@Body() dto: MemberProductBulkExportDto, @Res() res: Response): Promise<void> {
+    const archive = await this.memberProductReportService.exportMemberProductReportsBulk(dto.memberProductIds);
+    // Generate filename with timestamp
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+    const filename = `member-product-reports_selected_${timestamp}.zip`;
     res.set({
       'Content-Type': 'application/zip',
       'Content-Disposition': `attachment; filename="${filename}"`,

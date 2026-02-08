@@ -180,5 +180,88 @@ export class MemberProductReportService {
     await archive.finalize();
     return archive;
   }
+
+  /**
+   * Export selected member product reports as zip file containing invoices for specific IDs
+   * @param memberProductIds - Array of member product IDs to export
+   * @returns Stream of zip file
+   */
+  async exportMemberProductReportsBulk(memberProductIds: number[]): Promise<archiver.Archiver> {
+    if (!memberProductIds || memberProductIds.length === 0) {
+      throw new Error('At least one member product ID is required');
+    }
+
+    // Build where condition to fetch only selected product orders
+    const whereCondition: any = {
+      active: true,
+      memberProductId: {
+        [Op.in]: memberProductIds,
+      },
+    };
+
+    // Build include conditions
+    const includeConditions: any[] = [
+      {
+        model: TxnMember,
+        as: 'member',
+        required: true,
+        attributes: ['memberId', 'firstName', 'lastName', 'emailId', 'contactNumber', 'franchiseId'],
+        include: [
+          {
+            model: MstFranchise,
+            as: 'franchise',
+            required: true,
+            attributes: ['franchiseId', 'companyName'],
+            where: {
+              active: true,
+              [Op.and]: [
+                Sequelize.literal(`'${BusinessTypeEnum.PRODUCT}'::public.business_type = ANY("business_type")`),
+              ],
+            },
+          },
+        ],
+      },
+    ];
+
+    // Fetch selected product orders
+    const productOrders = await this.memberProductRepository.scope('list').findAll({
+      where: whereCondition,
+      include: includeConditions,
+      order: [['paymentDate', 'DESC']],
+      raw: true,
+      nest: true,
+    });
+
+    // Create a zip archive
+    const archive = archiver('zip', {
+      zlib: { level: 9 }, // Maximum compression
+    });
+
+    // Generate invoices for each product order and add to zip
+    const invoicePromises = productOrders.map(async (item: any) => {
+      try {
+        const productOrder = (this.memberProductService as any).convertToModel(item);
+        const memberId = productOrder.memberId;
+        const productId = productOrder.memberProductId;
+        // Generate invoice PDF
+        const invoiceFile = await this.memberProductService.generateInvoicePDF(memberId, productId);
+        // Convert base64 buffer to Buffer
+        const pdfBuffer = Buffer.from(invoiceFile.buffer, 'base64');
+        // Add to zip with a clean filename
+        const memberName = `${productOrder.memberName || 'Member'}_${memberId}`.replace(/[^a-zA-Z0-9_]/g, '_');
+        const fileName = `Product_Invoice_${memberName}_${productId}.pdf`;
+        archive.append(pdfBuffer, { name: fileName });
+      } catch (error) {
+        console.error(`Failed to generate invoice for product order ${item.memberProductId}:`, error);
+        // Continue with other invoices even if one fails
+      }
+    });
+
+    // Wait for all invoices to be added to the archive
+    await Promise.all(invoicePromises);
+    // Finalize the archive
+    await archive.finalize();
+    return archive;
+  }
 }
 

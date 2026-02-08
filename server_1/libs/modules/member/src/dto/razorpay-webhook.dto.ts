@@ -126,6 +126,21 @@ export class RazorpayPaymentEntityDto {
   @IsNumber()
   @IsNotEmpty()
   created_at!: number;
+
+  @IsObject()
+  @IsOptional()
+  reward?: any | null;
+
+  @IsObject()
+  @IsOptional()
+  upi?: {
+    vpa?: string;
+    flow?: string;
+  } | null;
+
+  @IsNumber()
+  @IsOptional()
+  base_amount?: number;
 }
 
 export class RazorpayPaymentDto {
@@ -221,8 +236,12 @@ export class RazorpayOrderEntityDto {
   currency!: string;
 
   @IsString()
-  @IsNotEmpty()
-  receipt!: string;
+  @IsOptional()
+  receipt?: string | null;
+
+  @IsString()
+  @IsOptional()
+  offer_id?: string | null;
 
   @IsString()
   @IsNotEmpty()
@@ -239,6 +258,14 @@ export class RazorpayOrderEntityDto {
   @IsNumber()
   @IsNotEmpty()
   created_at!: number;
+
+  @IsString()
+  @IsOptional()
+  description?: string | null;
+
+  @IsObject()
+  @IsOptional()
+  checkout?: any | null;
 }
 
 export class RazorpayOrderDto {
@@ -287,5 +314,9 @@ export class RazorpayWebhookDto {
   @Type(() => RazorpayWebhookPayloadDto)
   @IsNotEmpty()
   payload!: RazorpayWebhookPayloadDto;
+
+  @IsNumber()
+  @IsOptional()
+  created_at?: number;
 }
 

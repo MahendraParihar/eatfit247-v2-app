@@ -1,0 +1,65 @@
+/**
+ * Breadcrumb Component Styles
+ * 
+ * ⚠️ DESIGN SYSTEM: See DESIGN_SYSTEM.md
+ */
+
+.breadcrumb-container {
+  padding: 12px 0;
+  margin-bottom: 16px;
+}
+
+.breadcrumb-list {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.breadcrumb-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.breadcrumb-separator {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  color: var(--md-sys-color-outline);
+  margin: 0 4px;
+}
+
+.breadcrumb-link {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--md-sys-color-primary);
+  text-decoration: none;
+  transition: color 0.2s;
+  padding: 4px 8px;
+  border-radius: var(--radius-button, 4px);
+
+  &:hover {
+    color: var(--md-sys-color-primary);
+    background-color: var(--md-sys-color-surface-container-low);
+  }
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.breadcrumb-current {
+  color: var(--md-sys-color-on-surface);
+  font-weight: 500;
+  padding: 4px 8px;
+}
+

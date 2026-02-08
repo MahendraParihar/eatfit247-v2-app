@@ -1,0 +1,21 @@
+<nav class="breadcrumb-container" aria-label="Breadcrumb">
+  <ol class="breadcrumb-list">
+    <li class="breadcrumb-item">
+      <a routerLink="/dashboard" class="breadcrumb-link">
+        <mat-icon>home</mat-icon>
+        <span>Home</span>
+      </a>
+    </li>
+    @for (breadcrumb of breadcrumbs; track breadcrumb.title; let last = $last) {
+      <li class="breadcrumb-item">
+        <mat-icon class="breadcrumb-separator">chevron_right</mat-icon>
+        @if (last) {
+          <span class="breadcrumb-current">{{ breadcrumb.title }}</span>
+        } @else {
+          <a [routerLink]="breadcrumb.path" class="breadcrumb-link">{{ breadcrumb.title }}</a>
+        }
+      </li>
+    }
+  </ol>
+</nav>
+

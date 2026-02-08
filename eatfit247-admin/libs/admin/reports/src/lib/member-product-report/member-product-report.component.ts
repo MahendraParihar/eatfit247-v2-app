@@ -45,12 +45,14 @@ export class MemberProductReportComponent implements OnInit {
   totalCount = 0;
   loading = false;
   exporting = false;
+  bulkExporting = false;
   tableConfig!: ITableConfig<IMemberProductReportItem>;
   franchiseOptions: { id: number | null; label: string }[] = [];
   paymentStatusOptions: { id: number | null; label: string }[] = [];
   startDatePicker: any;
   endDatePicker: any;
   selectedQuickFilter: string | null = null;
+  selectedItems: IMemberProductReportItem[] = [];
 
   constructor(
     private fb: FormBuilder,
@@ -60,10 +62,10 @@ export class MemberProductReportComponent implements OnInit {
     private snackBar: MatSnackBar
   ) {
     this.initializeForm();
+    this.initializeTable();
   }
 
   ngOnInit(): void {
-    this.initializeTable();
     this.loadFranchiseOptions();
     this.loadPaymentStatusOptions();
     
@@ -201,6 +203,7 @@ export class MemberProductReportComponent implements OnInit {
     this.tableConfig = {
       columns,
       actions,
+      selectable: true,
       showSearch: false,
       showPagination: true,
       pageSize: 10,
@@ -258,11 +261,17 @@ export class MemberProductReportComponent implements OnInit {
       const response = await this.apiService.getMemberProductReport(params);
       this.data = response.tableData;
       this.totalCount = response.count;
+      // Clear selection when new data is loaded
+      this.selectedItems = [];
     } catch (error) {
       // Error toast is handled by HttpErrorInterceptor
     } finally {
       this.loading = false;
     }
+  }
+
+  onSelectionChange(selectedItems: IMemberProductReportItem[]): void {
+    this.selectedItems = selectedItems;
   }
 
   async onPageChange(pagination: any): Promise<void> {
@@ -406,6 +415,44 @@ export class MemberProductReportComponent implements OnInit {
       });
     } finally {
       this.exporting = false;
+    }
+  }
+
+  async onBulkExport(): Promise<void> {
+    if (this.selectedItems.length === 0) {
+      this.snackBar.open('Please select at least one item to export.', 'Close', {
+        duration: 3000,
+      });
+      return;
+    }
+
+    this.bulkExporting = true;
+    try {
+      const memberProductIds = this.selectedItems.map(item => item.memberProductId);
+      const blob = await this.apiService.exportMemberProductReportsBulk(memberProductIds);
+
+      // Create a download link
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+
+      // Generate filename with timestamp
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+      link.download = `member-product-reports_selected_${timestamp}.zip`;
+
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      // Clear selection after successful export
+      this.selectedItems = [];
+    } catch (error) {
+      this.snackBar.open('Failed to export selected reports. Please try again.', 'Close', {
+        duration: 5000,
+      });
+    } finally {
+      this.bulkExporting = false;
     }
   }
 }

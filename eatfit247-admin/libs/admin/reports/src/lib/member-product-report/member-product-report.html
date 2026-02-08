@@ -83,7 +83,19 @@
             class="export-button"
           >
             <mat-icon>download</mat-icon>
-            Export
+            Export All
+          </button>
+
+          <button
+            mat-raised-button
+            color="primary"
+            type="button"
+            [disabled]="selectedItems.length === 0 || loading || bulkExporting"
+            (click)="onBulkExport()"
+            class="bulk-export-button"
+          >
+            <mat-icon>file_download</mat-icon>
+            Bulk Export ({{ selectedItems.length }})
           </button>
         </div>
       </form>
@@ -98,6 +110,7 @@
       [loading]="loading"
       (pageChange)="onPageChange($event)"
       (sortChange)="onSortChange($event)"
+      (selectionChange)="onSelectionChange($event)"
     ></shared-ui-data-table>
   }
 </div>
