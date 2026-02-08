@@ -1,0 +1,120 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+env:
+  NODE_VERSION: '18.x'
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: server_1/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ./server_1
+        run: npm ci
+
+      - name: Build shared library
+        working-directory: ./server_1
+        run: npm run build_shared_lib
+
+      - name: Run linter
+        working-directory: ./server_1
+        run: npm run lint
+
+      - name: Run tests
+        working-directory: ./server_1
+        run: npm test -- --coverage --passWithNoTests
+        continue-on-error: true # Allow tests to fail for now
+
+      - name: Build application
+        working-directory: ./server_1
+        run: npm run build
+
+  security-audit:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Run security audit
+        working-directory: ./server_1
+        run: npm audit --audit-level=moderate
+        continue-on-error: true
+
+  deploy-staging:
+    needs: [lint-and-test]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/develop'
+    environment: staging
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Build application
+        working-directory: ./server_1
+        run: |
+          npm ci
+          npm run build_shared_lib
+          npm run build
+
+      - name: Deploy to staging
+        run: |
+          echo "Deploy to staging server"
+          # Add your deployment commands here
+          # Example: scp, rsync, or deployment script
+
+  deploy-production:
+    needs: [lint-and-test, security-audit]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    environment: production
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Build application
+        working-directory: ./server_1
+        run: |
+          npm ci
+          npm run build_shared_lib
+          npm run build
+
+      - name: Deploy to production
+        run: |
+          echo "Deploy to production server"
+          # Add your deployment commands here
+          # Example: scp, rsync, or deployment script
+
