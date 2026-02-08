@@ -29,9 +29,9 @@ export class CreateMemberProductDto implements IManageMemberProduct {
   @IsNotEmpty()
   @IsNumber()
   memberId!: number;
-  @IsNotEmpty()
+  @IsOptional()
   @IsNumber()
-  paymentModeId: number;
+  paymentModeId!: number;
   @IsNotEmpty()
   @IsNumber()
   billingAddressId: number;

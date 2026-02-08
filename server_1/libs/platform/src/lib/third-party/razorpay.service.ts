@@ -62,7 +62,7 @@ export class RazorpayService {
     const razorpay = this.getRazorpayInstance(keyId, keySecret);
     return razorpay.paymentLink.create({
       amount: Math.round(amount * 100), // Convert to smallest currency unit (paise for INR)
-      currency: currency || 'INR',
+      currency: currency,
       description,
       customer: customer || {},
       notes: notes || {},

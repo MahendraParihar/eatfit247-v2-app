@@ -1000,7 +1000,7 @@ export class MemberProductService {
     requestedIp: string,
     adminId: number = null
   ): Promise<IMemberProduct> {
-    // Verify member exists (with scope for franchise relationship)
+    // Verify a member exists (with scope for franchise relationship)
     const member = await this.memberRepository.scope("details").findOne({
       where: { memberId },
       include: [
