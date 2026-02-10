@@ -10,6 +10,58 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
+export class RazorpayPaymentAuthenticationDto {
+  @IsString()
+  @IsOptional()
+  authentication_channel?: string;
+
+  @IsString()
+  @IsOptional()
+  version?: string;
+}
+
+export class RazorpayPaymentCardDto {
+  @IsString()
+  @IsOptional()
+  entity?: string;
+
+  @IsString()
+  @IsOptional()
+  id?: string;
+
+  @IsBoolean()
+  @IsOptional()
+  emi?: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  international?: boolean;
+
+  @IsString()
+  @IsOptional()
+  issuer?: string;
+
+  @IsString()
+  @IsOptional()
+  last4?: string;
+
+  @IsString()
+  @IsOptional()
+  name?: string;
+
+  @IsString()
+  @IsOptional()
+  network?: string;
+
+  @IsString()
+  @IsOptional()
+  sub_type?: string;
+
+  @IsString()
+  @IsOptional()
+  type?: string;
+}
+
 export class RazorpayPaymentEntityDto {
   @IsString()
   @IsNotEmpty()
@@ -22,6 +74,14 @@ export class RazorpayPaymentEntityDto {
   @IsNumber()
   @IsNotEmpty()
   amount!: number;
+
+  @IsNumber()
+  @IsOptional()
+  amount_captured?: number;
+
+  @IsNumber()
+  @IsOptional()
+  amount_transferred?: number;
 
   @IsString()
   @IsNotEmpty()
@@ -95,6 +155,10 @@ export class RazorpayPaymentEntityDto {
   @IsOptional()
   fee?: number | null;
 
+  @IsString()
+  @IsOptional()
+  fee_bearer?: string;
+
   @IsNumber()
   @IsOptional()
   tax?: number | null;
@@ -122,6 +186,16 @@ export class RazorpayPaymentEntityDto {
   @IsObject()
   @IsOptional()
   acquirer_data?: Record<string, any>;
+
+  @ValidateNested()
+  @Type(() => RazorpayPaymentAuthenticationDto)
+  @IsOptional()
+  authentication?: RazorpayPaymentAuthenticationDto;
+
+  @ValidateNested()
+  @Type(() => RazorpayPaymentCardDto)
+  @IsOptional()
+  card?: RazorpayPaymentCardDto;
 
   @IsNumber()
   @IsNotEmpty()
@@ -164,6 +238,26 @@ export class RazorpayPaymentLinkCustomerDto {
   contact!: string;
 }
 
+export class RazorpayPaymentLinkNotifyDto {
+  @IsBoolean()
+  @IsOptional()
+  email?: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  sms?: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  whatsapp?: boolean;
+}
+
+export class RazorpayPaymentLinkRemindersDto {
+  @IsString()
+  @IsOptional()
+  status?: string;
+}
+
 export class RazorpayPaymentLinkEntityDto {
   @IsString()
   @IsNotEmpty()
@@ -176,6 +270,10 @@ export class RazorpayPaymentLinkEntityDto {
   @IsNumber()
   @IsNotEmpty()
   amount!: number;
+
+  @IsNumber()
+  @IsOptional()
+  amount_paid?: number;
 
   @IsString()
   @IsNotEmpty()
@@ -196,11 +294,81 @@ export class RazorpayPaymentLinkEntityDto {
 
   @IsObject()
   @IsOptional()
-  notes?: Record<string, any>;
+  notes?: Record<string, any> | null;
 
   @IsNumber()
   @IsNotEmpty()
   created_at!: number;
+
+  @IsBoolean()
+  @IsOptional()
+  accept_partial?: boolean;
+
+  @IsString()
+  @IsOptional()
+  callback_method?: string;
+
+  @IsString()
+  @IsOptional()
+  callback_url?: string;
+
+  @IsNumber()
+  @IsOptional()
+  cancelled_at?: number;
+
+  @IsNumber()
+  @IsOptional()
+  expire_by?: number;
+
+  @IsNumber()
+  @IsOptional()
+  expired_at?: number;
+
+  @IsNumber()
+  @IsOptional()
+  first_min_partial_amount?: number;
+
+  @ValidateNested()
+  @Type(() => RazorpayPaymentLinkNotifyDto)
+  @IsOptional()
+  notify?: RazorpayPaymentLinkNotifyDto;
+
+  @IsString()
+  @IsOptional()
+  order_id?: string;
+
+  @IsString()
+  @IsOptional()
+  reference_id?: string;
+
+  @IsBoolean()
+  @IsOptional()
+  reminder_enable?: boolean;
+
+  @ValidateNested()
+  @Type(() => RazorpayPaymentLinkRemindersDto)
+  @IsOptional()
+  reminders?: RazorpayPaymentLinkRemindersDto;
+
+  @IsString()
+  @IsOptional()
+  short_url?: string;
+
+  @IsNumber()
+  @IsOptional()
+  updated_at?: number;
+
+  @IsBoolean()
+  @IsOptional()
+  upi_link?: boolean;
+
+  @IsString()
+  @IsOptional()
+  user_id?: string;
+
+  @IsBoolean()
+  @IsOptional()
+  whatsapp_link?: boolean;
 }
 
 export class RazorpayPaymentLinkDto {
@@ -219,6 +387,10 @@ export class RazorpayOrderEntityDto {
   @IsNotEmpty()
   entity!: string;
 
+  @IsString()
+  @IsOptional()
+  account_number?: string | null;
+
   @IsNumber()
   @IsNotEmpty()
   amount!: number;
@@ -231,9 +403,113 @@ export class RazorpayOrderEntityDto {
   @IsNotEmpty()
   amount_due!: number;
 
+  @IsBoolean()
+  @IsOptional()
+  app_offer?: boolean;
+
+  @IsNumber()
+  @IsNotEmpty()
+  attempts!: number;
+
+  @IsBoolean()
+  @IsOptional()
+  authorized?: boolean;
+
+  @IsString()
+  @IsOptional()
+  bank?: string | null;
+
+  @IsObject()
+  @IsOptional()
+  bank_account?: any | null;
+
+  @IsString()
+  @IsOptional()
+  checkout_config_id?: string | null;
+
+  @IsNumber()
+  @IsNotEmpty()
+  created_at!: number;
+
   @IsString()
   @IsNotEmpty()
   currency!: string;
+
+  @IsString()
+  @IsOptional()
+  customer_id?: string | null;
+
+  @IsBoolean()
+  @IsOptional()
+  discount?: boolean;
+
+  @IsNumber()
+  @IsOptional()
+  first_payment_min_amount?: number;
+
+  @IsString()
+  @IsOptional()
+  force_offer?: string | null;
+
+  @IsString()
+  @IsOptional()
+  late_auth_config_id?: string | null;
+
+  @IsString()
+  @IsOptional()
+  merchant_id?: string;
+
+  @IsString()
+  @IsOptional()
+  method?: string | null;
+
+  @IsObject()
+  @IsOptional()
+  notes?: Record<string, any> | null;
+
+  @IsObject()
+  @IsOptional()
+  offers?: Record<string, any>;
+
+  @IsArray()
+  @IsOptional()
+  order_metas?: any[];
+
+  @IsArray()
+  @IsOptional()
+  order_relationships?: any[];
+
+  @IsBoolean()
+  @IsOptional()
+  partial_payment?: boolean;
+
+  @IsString()
+  @IsOptional()
+  payer_name?: string | null;
+
+  @IsBoolean()
+  @IsOptional()
+  payment_capture?: boolean;
+
+  @IsString()
+  @IsOptional()
+  product_id?: string;
+
+  @IsString()
+  @IsOptional()
+  product_type?: string;
+
+  @IsObject()
+  @IsOptional()
+  provider_context?: any | null;
+
+  @IsString()
+  @IsOptional()
+  public_key?: string;
+
+  @IsObject()
+  @IsOptional()
+  public_response?: any | null;
 
   @IsString()
   @IsOptional()
@@ -241,23 +517,47 @@ export class RazorpayOrderEntityDto {
 
   @IsString()
   @IsOptional()
-  offer_id?: string | null;
+  reference2?: string | null;
+
+  @IsString()
+  @IsOptional()
+  reference3?: string | null;
+
+  @IsString()
+  @IsOptional()
+  reference4?: string | null;
+
+  @IsString()
+  @IsOptional()
+  reference5?: string | null;
+
+  @IsString()
+  @IsOptional()
+  reference6?: string | null;
+
+  @IsString()
+  @IsOptional()
+  reference7?: string | null;
+
+  @IsString()
+  @IsOptional()
+  reference8?: string | null;
+
+  @IsString()
+  @IsOptional()
+  source?: string | null;
 
   @IsString()
   @IsNotEmpty()
   status!: string;
 
-  @IsNumber()
-  @IsNotEmpty()
-  attempts!: number;
-
   @IsObject()
   @IsOptional()
-  notes?: Record<string, any>;
+  transfers?: any | null;
 
   @IsNumber()
-  @IsNotEmpty()
-  created_at!: number;
+  @IsOptional()
+  updated_at?: number;
 
   @IsString()
   @IsOptional()

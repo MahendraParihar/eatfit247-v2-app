@@ -20,88 +20,10 @@ import { PaymentStatusEnum, ConfigParam, BusinessTypeEnum } from '@eatfit247-sha
 import { RazorpayWebhookDto } from '../../dto/razorpay-webhook.dto';
 import * as crypto from 'crypto';
 
-// Keep interface for backward compatibility and type safety
-interface RazorpayWebhookPayload {
-  entity: string;
-  account_id: string;
-  event: string;
-  contains: string[];
-  payload: {
-    payment?: {
-      entity: {
-        id: string;
-        entity: string;
-        amount: number;
-        currency: string;
-        status: string;
-        order_id: string;
-        invoice_id: string | null;
-        international: boolean;
-        method: string;
-        amount_refunded: number;
-        refund_status: string | null;
-        captured: boolean;
-        description: string | null;
-        card_id: string | null;
-        bank: string | null;
-        wallet: string | null;
-        vpa: string | null;
-        email: string;
-        contact: string;
-        notes: Record<string, any>;
-        fee: number | null;
-        tax: number | null;
-        error_code: string | null;
-        error_description: string | null;
-        error_source: string | null;
-        error_step: string | null;
-        error_reason: string | null;
-        acquirer_data: Record<string, any>;
-        created_at: number;
-      };
-    };
-    payment_link?: {
-      entity: {
-        id: string;
-        entity: string;
-        amount: number;
-        currency: string;
-        description: string | null;
-        customer: {
-          name: string;
-          email: string;
-          contact: string;
-        };
-        status: string;
-        notes: Record<string, any>;
-        created_at: number;
-      };
-    };
-    order?: {
-      entity: {
-        id: string;
-        entity: string;
-        amount: number;
-        amount_paid: number;
-        amount_due: number;
-        currency: string;
-        receipt: string;
-        status: string;
-        attempts: number;
-        notes: Record<string, any>;
-        created_at: number;
-      };
-    };
-  };
-}
-
 @Public()
 @Controller('razorpay/webhook')
 export class RazorpayWebhookController {
   private readonly logger = new Logger(RazorpayWebhookController.name);
-  // In-memory set to track processed webhook events (for idempotency)
-  // In production, use Redis or database table for distributed systems
-  private readonly processedEvents = new Set<string>();
 
   constructor(
     private readonly paymentGatewayCredentialService: PaymentGatewayCredentialService,
@@ -124,28 +46,21 @@ export class RazorpayWebhookController {
     @RequestedIp() requestedIp: string,
   ): Promise<{ status: string; message?: string }> {
     const rawBody = req.rawBody;
-    
     // Validate raw body
     if (!rawBody) {
       this.logger.warn('Webhook request missing raw body');
       throw new UnauthorizedException('Raw body not found');
     }
-
     // Validate signature header
     if (!signature) {
       this.logger.warn('Webhook request missing signature header');
       throw new UnauthorizedException('Razorpay signature header missing');
     }
-
     // Payload is already validated by ValidationPipe via DTO
-    // Convert DTO to interface for backward compatibility
-    const webhookPayload: RazorpayWebhookPayload = payload as any;
-
     // Extract order type and franchise payment gateway ID from notes
-    const notes = this.extractNotes(webhookPayload);
+    const notes = this.extractNotes(payload);
     const orderType = this.extractOrderType(notes);
     const franchisePaymentGatewayId = this.extractFranchisePaymentGatewayId(notes);
-
     if (!franchisePaymentGatewayId) {
       this.logger.warn('Franchise payment gateway ID not found in webhook payload', {
         event: payload.event,
@@ -155,14 +70,12 @@ export class RazorpayWebhookController {
         'Franchise payment gateway ID not found in webhook payload',
       );
     }
-
     // Get and validate credentials
     const credentialMode = this.appConfigService.getString(ConfigParam.PAYMENT_MODE);
     const credentials = await this.paymentGatewayCredentialService.getActiveCredentials(
       franchisePaymentGatewayId,
       credentialMode,
     );
-
     if (!credentials?.webhookSecretEncrypted) {
       this.logger.error('Payment gateway credentials not found', {
         franchisePaymentGatewayId,
@@ -170,14 +83,12 @@ export class RazorpayWebhookController {
       });
       throw new UnauthorizedException('Payment gateway credentials not found');
     }
-
     // Verify webhook signature
     const isValidSignature = this.verifySignature(
       rawBody,
       signature,
       credentials.webhookSecretEncrypted,
     );
-
     if (!isValidSignature) {
       this.logger.warn('Invalid webhook signature', {
         event: payload.event,
@@ -185,40 +96,21 @@ export class RazorpayWebhookController {
       });
       throw new UnauthorizedException('Invalid webhook signature');
     }
-
-    // Idempotency check: prevent duplicate webhook processing
-    const eventId = this.generateEventId(webhookPayload);
-    if (this.isEventProcessed(eventId)) {
-      this.logger.warn('Duplicate webhook event detected, skipping', {
-        eventId,
-        event: webhookPayload.event,
-        orderType,
-      });
-      return { status: 'duplicate', message: 'Event already processed' };
-    }
-
-    // Mark event as processed
-    this.markEventAsProcessed(eventId);
-
     // Process webhook event
-    const event = webhookPayload.event;
+    const event = payload.event;
     this.logger.log(`Processing webhook event: ${event}`, {
-      eventId,
       orderType,
       franchisePaymentGatewayId,
     });
-
     try {
-      await this.processWebhookEvent(webhookPayload, orderType, requestedIp);
+      await this.processWebhookEvent(payload, orderType, requestedIp);
       return { status: 'success' };
     } catch (error) {
       // Remove from processed events on error so it can be retried
-      this.processedEvents.delete(eventId);
       this.logger.error(`Error processing webhook event ${event}`, {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
         event,
-        eventId,
         orderType,
       });
       throw error;
@@ -226,47 +118,13 @@ export class RazorpayWebhookController {
   }
 
   /**
-   * Generate a unique event ID for idempotency checking
-   */
-  private generateEventId(payload: RazorpayWebhookPayload): string {
-    // Use payment ID or payment link ID as unique identifier
-    const paymentId = payload.payload?.payment?.entity?.id;
-    const paymentLinkId = payload.payload?.payment_link?.entity?.id;
-    const orderId = payload.payload?.order?.entity?.id;
-    
-    // Combine event type with unique identifier
-    const uniqueId = paymentId || paymentLinkId || orderId || 'unknown';
-    return `${payload.event}_${uniqueId}`;
-  }
-
-  /**
-   * Check if event has already been processed
-   */
-  private isEventProcessed(eventId: string): boolean {
-    return this.processedEvents.has(eventId);
-  }
-
-  /**
-   * Mark event as processed
-   * Note: In production, use Redis with TTL (e.g., 24 hours) or database table
-   */
-  private markEventAsProcessed(eventId: string): void {
-    this.processedEvents.add(eventId);
-    // Clean up old events periodically (keep last 10000 events)
-    if (this.processedEvents.size > 10000) {
-      const firstEvent = this.processedEvents.values().next().value;
-      this.processedEvents.delete(firstEvent);
-    }
-  }
-
-  /**
    * Extract notes from webhook payload
    */
-  private extractNotes(payload: RazorpayWebhookPayload): Record<string, any> {
+  private extractNotes(payload: RazorpayWebhookDto): Record<string, any> {
     return (
-      payload.payload?.payment?.entity?.notes ||
-      payload.payload?.payment_link?.entity?.notes ||
-      payload.payload?.order?.entity?.notes ||
+      payload.payload.payment?.entity?.notes ||
+      payload.payload.payment_link?.entity?.notes ||
+      payload.payload.order?.entity?.notes ||
       {}
     );
   }
@@ -302,16 +160,13 @@ export class RazorpayWebhookController {
         .createHmac('sha256', webhookSecret)
         .update(rawBody)
         .digest('hex');
-      
       // Use timing-safe comparison to prevent timing attacks
       if (expectedSignature.length !== signature.length) {
         return false;
       }
-      
       // Convert hex strings to buffers for timing-safe comparison
       const expectedBuffer = Buffer.from(expectedSignature, 'hex');
       const signatureBuffer = Buffer.from(signature, 'hex');
-      
       return crypto.timingSafeEqual(
         new Uint8Array(expectedBuffer),
         new Uint8Array(signatureBuffer),
@@ -327,38 +182,36 @@ export class RazorpayWebhookController {
    * For payment links, focus only on payment_link.* events to avoid duplicate processing
    */
   private async processWebhookEvent(
-    payload: RazorpayWebhookPayload,
+    payload: RazorpayWebhookDto,
     orderType: 'plan' | 'product' | null,
     requestedIp: string,
   ): Promise<void> {
     const event = payload.event;
-    const hasPaymentLink = !!payload.payload?.payment_link?.entity?.id;
-
-    // If payload contains payment_link, only process payment_link.* events
+    const hasPaymentLink = !!payload.payload.payment_link?.entity?.id;
+    // If the payload contains payment_link, only process payment_link.* events
     // Skip other events (payment.captured, order.paid) to avoid duplicate processing
     if (hasPaymentLink && !event.startsWith('payment_link.')) {
       this.logger.log(
         `Skipping ${event} event for payment link. Only processing payment_link.* events.`,
         {
           event,
-          paymentLinkId: payload.payload.payment_link.entity.id,
+          paymentLinkId: payload.payload.payment_link?.entity?.id,
         },
       );
       return;
     }
-
     switch (event) {
       case 'payment.captured':
-        // Only process if not related to payment link
-        if (!hasPaymentLink) {
-          await this.handlePaymentCaptured(payload, orderType, requestedIp);
-        }
+        await this.handlePaymentCaptured(payload, orderType, requestedIp);
         break;
       case 'payment.failed':
         await this.handlePaymentFailed(payload, orderType, requestedIp);
         break;
       case 'payment_link.paid':
         await this.handlePaymentLinkPaid(payload, orderType, requestedIp);
+        break;
+      case 'payment_link.partially_paid':
+        await this.handlePaymentLinkPartiallyPaid(payload, orderType, requestedIp);
         break;
       case 'payment_link.cancelled':
         await this.handlePaymentLinkCancelled(payload, orderType, requestedIp);
@@ -367,10 +220,7 @@ export class RazorpayWebhookController {
         await this.handlePaymentLinkExpired(payload, orderType, requestedIp);
         break;
       case 'order.paid':
-        // Only process if not related to payment link
-        if (!hasPaymentLink) {
-          await this.handleOrderPaid(payload, orderType, requestedIp);
-        }
+        await this.handleOrderPaid(payload, orderType, requestedIp);
         break;
       case 'payment.refunded':
         await this.handlePaymentRefunded(payload, orderType, requestedIp);
@@ -387,29 +237,25 @@ export class RazorpayWebhookController {
    * Handle payment captured event
    */
   private async handlePaymentCaptured(
-    payload: RazorpayWebhookPayload,
+    payload: RazorpayWebhookDto,
     orderType: 'plan' | 'product' | null,
     requestedIp: string,
   ): Promise<void> {
-    const payment = payload.payload?.payment?.entity;
+    const payment = payload.payload.payment?.entity;
     if (!payment?.order_id) {
       throw new Error('Payment entity or order_id not found in payload');
     }
-
     // Verify amount and currency before processing
     if (orderType === 'plan') {
       const order = await this.memberPaymentRepository.findOne({
         where: { gatewayOrderId: payment.order_id },
       });
-
       if (!order) {
         throw new Error(`Plan payment order not found for gateway order ID: ${payment.order_id}`);
       }
-
       // Verify payment amount (Razorpay sends amount in paise, convert to rupees)
       const razorpayAmountInRupees = payment.amount / 100;
       const expectedAmount = Number(order.totalAmount || 0);
-      
       // Allow small rounding differences (1 paise tolerance)
       if (Math.abs(razorpayAmountInRupees - expectedAmount) > 0.01) {
         this.logger.error('Payment amount mismatch for plan payment', {
@@ -422,7 +268,6 @@ export class RazorpayWebhookController {
           `Payment amount verification failed. Expected: ${expectedAmount}, Received: ${razorpayAmountInRupees}`,
         );
       }
-
       // Verify currency
       const expectedCurrency = (order as any).currency || 'INR';
       if (payment.currency !== expectedCurrency.toUpperCase()) {
@@ -435,7 +280,6 @@ export class RazorpayWebhookController {
           `Payment currency verification failed. Expected: ${expectedCurrency}, Received: ${payment.currency}`,
         );
       }
-
       await this.updatePlanPayment(
         payment.order_id,
         {
@@ -452,15 +296,12 @@ export class RazorpayWebhookController {
       const order = await this.memberProductRepository.findOne({
         where: { gatewayOrderId: payment.order_id },
       });
-
       if (!order) {
         throw new Error(`Product order not found for gateway order ID: ${payment.order_id}`);
       }
-
       // Verify payment amount (Razorpay sends amount in paise, convert to rupees)
       const razorpayAmountInRupees = payment.amount / 100;
       const expectedAmount = Number(order.totalAmount || 0);
-      
       // Allow small rounding differences (1 paise tolerance)
       if (Math.abs(razorpayAmountInRupees - expectedAmount) > 0.01) {
         this.logger.error('Payment amount mismatch for product order', {
@@ -473,7 +314,6 @@ export class RazorpayWebhookController {
           `Payment amount verification failed. Expected: ${expectedAmount}, Received: ${razorpayAmountInRupees}`,
         );
       }
-
       // Verify currency
       const expectedCurrency = order.currency || 'INR';
       if (payment.currency !== expectedCurrency.toUpperCase()) {
@@ -486,7 +326,6 @@ export class RazorpayWebhookController {
           `Payment currency verification failed. Expected: ${expectedCurrency}, Received: ${payment.currency}`,
         );
       }
-
       await this.updateProductOrder(
         payment.order_id,
         {
@@ -510,15 +349,14 @@ export class RazorpayWebhookController {
    * Handle payment failed event
    */
   private async handlePaymentFailed(
-    payload: RazorpayWebhookPayload,
+    payload: RazorpayWebhookDto,
     orderType: 'plan' | 'product' | null,
     requestedIp: string,
   ): Promise<void> {
-    const payment = payload.payload?.payment?.entity;
+    const payment = payload.payload.payment?.entity;
     if (!payment?.order_id) {
       throw new Error('Payment entity or order_id not found in payload');
     }
-
     if (orderType === 'plan') {
       await this.updatePlanPayment(
         payment.order_id,
@@ -553,15 +391,14 @@ export class RazorpayWebhookController {
    * This is the primary event for payment links - Razorpay emits this when user pays via link
    */
   private async handlePaymentLinkPaid(
-    payload: RazorpayWebhookPayload,
+    payload: RazorpayWebhookDto,
     orderType: 'plan' | 'product' | null,
     requestedIp: string,
   ): Promise<void> {
-    const paymentLink = payload.payload?.payment_link?.entity;
+    const paymentLink = payload.payload.payment_link?.entity;
     if (!paymentLink?.id) {
       throw new Error('Payment link entity or id not found in payload');
     }
-
     const paymentLinkId = paymentLink.id;
     this.logger.log('Processing payment_link.paid event', {
       paymentLinkId,
@@ -569,33 +406,27 @@ export class RazorpayWebhookController {
       amount: paymentLink.amount,
       currency: paymentLink.currency,
     });
-
     // Extract payment entity from payload (payment_link.paid includes payment entity)
-    const payment = payload.payload?.payment?.entity;
+    const payment = payload.payload.payment?.entity;
     const paymentId = payment?.id || null;
-
     // Use payment's created_at if available (when payment was actually made),
     // otherwise fall back to paymentLink.created_at (when link was created)
     const paymentDate = payment?.created_at
       ? new Date(payment.created_at * 1000)
       : new Date(paymentLink.created_at * 1000);
-
     // Verify amount and currency before processing
     if (orderType === 'plan') {
       const order = await this.memberPaymentRepository.findOne({
         where: { gatewayOrderId: paymentLinkId },
       });
-
       if (!order) {
         throw new Error(
           `Plan payment order not found for payment link ID: ${paymentLinkId}`,
         );
       }
-
       // Verify payment amount (Razorpay sends amount in paise, convert to rupees)
       const razorpayAmountInRupees = paymentLink.amount / 100;
       const expectedAmount = Number(order.totalAmount || 0);
-
       // Allow small rounding differences (1 paise tolerance)
       if (Math.abs(razorpayAmountInRupees - expectedAmount) > 0.01) {
         this.logger.error('Payment amount mismatch for plan payment link', {
@@ -608,7 +439,6 @@ export class RazorpayWebhookController {
           `Payment amount verification failed. Expected: ${expectedAmount}, Received: ${razorpayAmountInRupees}`,
         );
       }
-
       // Verify currency
       const expectedCurrency = (order as any).currency || 'INR';
       if (paymentLink.currency !== expectedCurrency.toUpperCase()) {
@@ -621,7 +451,6 @@ export class RazorpayWebhookController {
           `Payment currency verification failed. Expected: ${expectedCurrency}, Received: ${paymentLink.currency}`,
         );
       }
-
       await this.updatePlanPaymentByPaymentLink(
         paymentLinkId,
         {
@@ -638,17 +467,14 @@ export class RazorpayWebhookController {
       const order = await this.memberProductRepository.findOne({
         where: { gatewayOrderId: paymentLinkId },
       });
-
       if (!order) {
         throw new Error(
           `Product order not found for payment link ID: ${paymentLinkId}`,
         );
       }
-
       // Verify payment amount (Razorpay sends amount in paise, convert to rupees)
       const razorpayAmountInRupees = paymentLink.amount / 100;
       const expectedAmount = Number(order.totalAmount || 0);
-
       // Allow small rounding differences (1 paise tolerance)
       if (Math.abs(razorpayAmountInRupees - expectedAmount) > 0.01) {
         this.logger.error('Payment amount mismatch for product payment link', {
@@ -661,7 +487,6 @@ export class RazorpayWebhookController {
           `Payment amount verification failed. Expected: ${expectedAmount}, Received: ${razorpayAmountInRupees}`,
         );
       }
-
       // Verify currency
       const expectedCurrency = order.currency || 'INR';
       if (paymentLink.currency !== expectedCurrency.toUpperCase()) {
@@ -674,7 +499,6 @@ export class RazorpayWebhookController {
           `Payment currency verification failed. Expected: ${expectedCurrency}, Received: ${paymentLink.currency}`,
         );
       }
-
       await this.updateProductOrderByPaymentLink(
         paymentLinkId,
         {
@@ -702,7 +526,7 @@ export class RazorpayWebhookController {
    * Handle order paid event
    */
   private async handleOrderPaid(
-    payload: RazorpayWebhookPayload,
+    payload: RazorpayWebhookDto,
     orderType: 'plan' | 'product' | null,
     requestedIp: string,
   ): Promise<void> {
@@ -711,24 +535,126 @@ export class RazorpayWebhookController {
   }
 
   /**
-   * Handle payment link cancelled event
+   * Handle payment link partially paid event
+   * This event is emitted when a partial payment is made for a payment link
    */
-  private async handlePaymentLinkCancelled(
-    payload: RazorpayWebhookPayload,
+  private async handlePaymentLinkPartiallyPaid(
+    payload: RazorpayWebhookDto,
     orderType: 'plan' | 'product' | null,
     requestedIp: string,
   ): Promise<void> {
-    const paymentLink = payload.payload?.payment_link?.entity;
+    const paymentLink = payload.payload.payment_link?.entity;
     if (!paymentLink?.id) {
       throw new Error('Payment link entity or id not found in payload');
     }
+    const paymentLinkId = paymentLink.id;
+    this.logger.log('Processing payment_link.partially_paid event', {
+      paymentLinkId,
+      orderType,
+      amount: paymentLink.amount,
+      amountPaid: paymentLink.amount_paid,
+      currency: paymentLink.currency,
+    });
+    // Extract payment entity from payload (payment_link.partially_paid includes payment entity)
+    const payment = payload.payload.payment?.entity;
+    const paymentId = payment?.id || null;
+    // Use payment's created_at if available (when payment was actually made),
+    // otherwise fall back to paymentLink.created_at (when link was created)
+    const paymentDate = payment?.created_at
+      ? new Date(payment.created_at * 1000)
+      : new Date(paymentLink.created_at * 1000);
+    // For partially paid, we should update the order with the partial payment status
+    // Note: The status might remain as PENDING or be set to a PARTIAL status depending on your enum
+    if (orderType === 'plan') {
+      const order = await this.memberPaymentRepository.findOne({
+        where: { gatewayOrderId: paymentLinkId },
+      });
+      if (!order) {
+        throw new Error(
+          `Plan payment order not found for payment link ID: ${paymentLinkId}`,
+        );
+      }
+      // Verify partial payment amount (Razorpay sends amount in paise, convert to rupees)
+      const razorpayAmountPaidInRupees = (paymentLink.amount_paid || 0) / 100;
+      // Update with partial payment information
+      // Note: You may want to add a PARTIAL status to PaymentStatusEnum if it doesn't exist
+      // For now, keeping as PENDING since full payment hasn't been made
+      await this.updatePlanPaymentByPaymentLink(
+        paymentLinkId,
+        {
+          paymentStatusId: PaymentStatusEnum.PENDING, // Keep as PENDING until fully paid
+          gatewayPaymentId: paymentId,
+          transactionId: paymentId,
+          paymentDate,
+          paymentGatewayResponse: payment || paymentLink,
+          modifiedIp: requestedIp,
+        },
+        false, // Don't generate invoice for partial payments
+      );
+      this.logger.log('Plan payment updated for partial payment', {
+        paymentLinkId,
+        memberPaymentId: order.memberPaymentId,
+        amountPaid: razorpayAmountPaidInRupees,
+        totalAmount: order.totalAmount,
+      });
+    } else if (orderType === 'product') {
+      const order = await this.memberProductRepository.findOne({
+        where: { gatewayOrderId: paymentLinkId },
+      });
+      if (!order) {
+        throw new Error(
+          `Product order not found for payment link ID: ${paymentLinkId}`,
+        );
+      }
+      // Verify partial payment amount (Razorpay sends amount in paise, convert to rupees)
+      const razorpayAmountPaidInRupees = (paymentLink.amount_paid || 0) / 100;
+      // Update with partial payment information
+      await this.updateProductOrderByPaymentLink(
+        paymentLinkId,
+        {
+          paymentStatusId: PaymentStatusEnum.PENDING, // Keep as PENDING until fully paid
+          gatewayPaymentId: paymentId,
+          transactionId: paymentId,
+          paymentDate,
+          paymentGatewayResponse: payment || paymentLink,
+          modifiedIp: requestedIp,
+        },
+        false, // Don't generate invoice for partial payments
+      );
+      this.logger.log('Product order updated for partial payment', {
+        paymentLinkId,
+        memberProductId: order.memberProductId,
+        amountPaid: razorpayAmountPaidInRupees,
+        totalAmount: order.totalAmount,
+      });
+    } else {
+      this.logger.warn('Order type not found for payment_link.partially_paid event', {
+        paymentLinkId,
+        notes: paymentLink.notes,
+      });
+      throw new Error(
+        `Order type not found for payment link: ${paymentLinkId}. Ensure 'type' is set in payment link notes.`,
+      );
+    }
+  }
 
+  /**
+   * Handle payment link cancelled event
+   */
+  private async handlePaymentLinkCancelled(
+    payload: RazorpayWebhookDto,
+    orderType: 'plan' | 'product' | null,
+    requestedIp: string,
+  ): Promise<void> {
+    const paymentLink = payload.payload.payment_link?.entity;
+    if (!paymentLink?.id) {
+      throw new Error('Payment link entity or id not found in payload');
+    }
     const paymentLinkId = paymentLink.id;
     this.logger.log('Processing payment_link.cancelled event', {
       paymentLinkId,
       orderType,
     });
-
     if (orderType === 'plan') {
       await this.updatePlanPaymentByPaymentLink(
         paymentLinkId,
@@ -760,21 +686,19 @@ export class RazorpayWebhookController {
    * Handle payment link expired event
    */
   private async handlePaymentLinkExpired(
-    payload: RazorpayWebhookPayload,
+    payload: RazorpayWebhookDto,
     orderType: 'plan' | 'product' | null,
     requestedIp: string,
   ): Promise<void> {
-    const paymentLink = payload.payload?.payment_link?.entity;
+    const paymentLink = payload.payload.payment_link?.entity;
     if (!paymentLink?.id) {
       throw new Error('Payment link entity or id not found in payload');
     }
-
     const paymentLinkId = paymentLink.id;
     this.logger.log('Processing payment_link.expired event', {
       paymentLinkId,
       orderType,
     });
-
     if (orderType === 'plan') {
       await this.updatePlanPaymentByPaymentLink(
         paymentLinkId,
@@ -823,7 +747,6 @@ export class RazorpayWebhookController {
         where: { gatewayOrderId },
         transaction,
       });
-
       if (!paymentRecord) {
         this.logger.warn('Payment record not found for gateway order ID', {
           gatewayOrderId,
@@ -831,7 +754,6 @@ export class RazorpayWebhookController {
         await transaction.rollback();
         return;
       }
-
       // Idempotency check: only update if status is PENDING or if already PAID (allow re-processing)
       if (
         paymentRecord.paymentStatusId === PaymentStatusEnum.PAID &&
@@ -844,16 +766,13 @@ export class RazorpayWebhookController {
         await transaction.rollback();
         return;
       }
-
       // Update payment record
       Object.assign(paymentRecord, updateData);
       await paymentRecord.save({ transaction });
-
       // Generate invoice if needed
       if (generateInvoice && !paymentRecord.invoiceId && paymentRecord.franchiseId) {
         await this.generateInvoiceForPlan(paymentRecord, transaction);
       }
-
       await transaction.commit();
       this.logger.log('Plan payment updated successfully', {
         gatewayOrderId,
@@ -891,7 +810,6 @@ export class RazorpayWebhookController {
         where: { gatewayOrderId },
         transaction,
       });
-
       if (!productOrder) {
         this.logger.warn('Product order not found for gateway order ID', {
           gatewayOrderId,
@@ -899,7 +817,6 @@ export class RazorpayWebhookController {
         await transaction.rollback();
         return;
       }
-
       // Idempotency check
       if (
         productOrder.paymentStatusId === PaymentStatusEnum.PAID &&
@@ -912,16 +829,13 @@ export class RazorpayWebhookController {
         await transaction.rollback();
         return;
       }
-
       // Update product order
       Object.assign(productOrder, updateData);
       await productOrder.save({ transaction });
-
       // Generate invoice if needed
       if (generateInvoice && !productOrder.invoiceId && productOrder.franchiseId) {
         await this.generateInvoiceForProduct(productOrder, transaction);
       }
-
       await transaction.commit();
       this.logger.log('Product order updated successfully', {
         gatewayOrderId,
@@ -960,12 +874,10 @@ export class RazorpayWebhookController {
         paymentLinkId,
         searchingFor: paymentLinkId,
       });
-
       const paymentRecord = await this.memberPaymentRepository.findOne({
         where: { gatewayOrderId: paymentLinkId },
         transaction,
       });
-
       if (!paymentRecord) {
         this.logger.error('Plan payment record not found for payment link ID', {
           paymentLinkId,
@@ -976,14 +888,12 @@ export class RazorpayWebhookController {
           `Plan payment record not found for payment link ID: ${paymentLinkId}. Ensure gatewayOrderId matches the payment link ID.`,
         );
       }
-
       this.logger.log('Found plan payment record', {
         paymentLinkId,
         memberPaymentId: paymentRecord.memberPaymentId,
         currentStatus: paymentRecord.paymentStatusId,
         storedGatewayOrderId: paymentRecord.gatewayOrderId,
       });
-
       // Idempotency check: only update if status is PENDING or if already PAID (allow re-processing)
       if (
         paymentRecord.paymentStatusId === PaymentStatusEnum.PAID &&
@@ -996,7 +906,6 @@ export class RazorpayWebhookController {
         await transaction.rollback();
         return;
       }
-
       // Only update if the status is PENDING (idempotency)
       if (paymentRecord.paymentStatusId !== PaymentStatusEnum.PENDING) {
         this.logger.log('Plan payment record not in PENDING status, skipping update', {
@@ -1007,16 +916,13 @@ export class RazorpayWebhookController {
         await transaction.rollback();
         return;
       }
-
       // Update payment record
       Object.assign(paymentRecord, updateData);
       await paymentRecord.save({ transaction });
-
       // Generate invoice if needed
       if (generateInvoice && !paymentRecord.invoiceId && paymentRecord.franchiseId) {
         await this.generateInvoiceForPlan(paymentRecord, transaction);
       }
-
       await transaction.commit();
       this.logger.log('Plan payment updated by payment link successfully', {
         paymentLinkId,
@@ -1057,12 +963,10 @@ export class RazorpayWebhookController {
         paymentLinkId,
         searchingFor: paymentLinkId,
       });
-
       const productOrder = await this.memberProductRepository.findOne({
         where: { gatewayOrderId: paymentLinkId },
         transaction,
       });
-
       if (!productOrder) {
         this.logger.error('Product order not found for payment link ID', {
           paymentLinkId,
@@ -1073,14 +977,12 @@ export class RazorpayWebhookController {
           `Product order not found for payment link ID: ${paymentLinkId}. Ensure gatewayOrderId matches the payment link ID.`,
         );
       }
-
       this.logger.log('Found product order record', {
         paymentLinkId,
         memberProductId: productOrder.memberProductId,
         currentStatus: productOrder.paymentStatusId,
         storedGatewayOrderId: productOrder.gatewayOrderId,
       });
-
       // Idempotency check: only update if status is PENDING or if already PAID (allow re-processing)
       if (
         productOrder.paymentStatusId === PaymentStatusEnum.PAID &&
@@ -1093,7 +995,6 @@ export class RazorpayWebhookController {
         await transaction.rollback();
         return;
       }
-
       // Only update if the status is PENDING (idempotency)
       if (productOrder.paymentStatusId !== PaymentStatusEnum.PENDING) {
         this.logger.log('Product order not in PENDING status, skipping update', {
@@ -1104,16 +1005,13 @@ export class RazorpayWebhookController {
         await transaction.rollback();
         return;
       }
-
       // Update product order
       Object.assign(productOrder, updateData);
       await productOrder.save({ transaction });
-
       // Generate invoice if needed
       if (generateInvoice && !productOrder.invoiceId && productOrder.franchiseId) {
         await this.generateInvoiceForProduct(productOrder, transaction);
       }
-
       await transaction.commit();
       this.logger.log('Product order updated by payment link successfully', {
         paymentLinkId,
@@ -1202,35 +1100,31 @@ export class RazorpayWebhookController {
    * Handle payment refunded event
    */
   private async handlePaymentRefunded(
-    payload: RazorpayWebhookPayload,
+    payload: RazorpayWebhookDto,
     orderType: 'plan' | 'product' | null,
     requestedIp: string,
   ): Promise<void> {
-    const payment = payload.payload?.payment?.entity;
+    const payment = payload.payload.payment?.entity;
     if (!payment?.order_id) {
       throw new Error('Payment entity or order_id not found in payload');
     }
-
     this.logger.log('Processing payment refunded event', {
       paymentId: payment.id,
       orderId: payment.order_id,
       refundStatus: payment.refund_status,
       amountRefunded: payment.amount_refunded,
     });
-
     // Update payment record with refund information
     if (orderType === 'plan') {
       const order = await this.memberPaymentRepository.findOne({
         where: { gatewayOrderId: payment.order_id },
       });
-
       if (order) {
         const refundObj = {
           refundStatus: payment.refund_status,
           amountRefunded: payment.amount_refunded / 100, // Convert from paise to rupees
           refundedAt: new Date(),
         };
-
         await this.memberPaymentRepository.update(
           {
             refundObj: refundObj,
@@ -1240,7 +1134,6 @@ export class RazorpayWebhookController {
             where: { gatewayOrderId: payment.order_id },
           },
         );
-
         this.logger.log('Plan payment refund updated', {
           memberPaymentId: order.memberPaymentId,
           refundAmount: refundObj.amountRefunded,
@@ -1250,14 +1143,12 @@ export class RazorpayWebhookController {
       const order = await this.memberProductRepository.findOne({
         where: { gatewayOrderId: payment.order_id },
       });
-
       if (order) {
         const refundObj = {
           refundStatus: payment.refund_status,
           amountRefunded: payment.amount_refunded / 100, // Convert from paise to rupees
           refundedAt: new Date(),
         };
-
         await this.memberProductRepository.update(
           {
             refundObj: refundObj,
@@ -1267,7 +1158,6 @@ export class RazorpayWebhookController {
             where: { gatewayOrderId: payment.order_id },
           },
         );
-
         this.logger.log('Product order refund updated', {
           memberProductId: order.memberProductId,
           refundAmount: refundObj.amountRefunded,
@@ -1280,7 +1170,7 @@ export class RazorpayWebhookController {
    * Handle refund created event
    */
   private async handleRefundCreated(
-    payload: RazorpayWebhookPayload,
+    payload: RazorpayWebhookDto,
     orderType: 'plan' | 'product' | null,
     requestedIp: string,
   ): Promise<void> {

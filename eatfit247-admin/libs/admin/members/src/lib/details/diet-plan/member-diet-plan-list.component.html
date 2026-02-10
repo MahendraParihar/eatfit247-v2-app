@@ -64,30 +64,30 @@
               <mat-icon>more_vert</mat-icon>
             </button>
             <mat-menu #actionsMenu="matMenu">
-            @if (row.showDaily) {
-              <button mat-menu-item (click)="onAddClick(true, row)">
-                <mat-icon>add</mat-icon>
-                <span>Add Day Plan</span>
-              </button>
-            }
-            @if (row.showWeekly) {
-              <button mat-menu-item (click)="onAddClick(false, row)">
-                <mat-icon>add</mat-icon>
-                <span>Add Cycle Plan</span>
-              </button>
-            }
-            @if (row.dietPlanStatusId !== completedPlanStatus) {
-              <button mat-menu-item (click)="onStatusChangeDialog(row)">
-                <mat-icon>check_circle</mat-icon>
-                <span>Mark as Completed</span>
-              </button>
-            }
-            @if (row.cyclePlans && row.cyclePlans.length > 0 && row.upcomingCycle) {
-              <button mat-menu-item (click)="onEditDietPlanFromRow(row)">
-                <mat-icon>edit</mat-icon>
-                <span>Edit</span>
-              </button>
-            }
+              @if (row.showDaily) {
+                <button mat-menu-item (click)="onAddClick(true, row)">
+                  <mat-icon>add</mat-icon>
+                  <span>Add Day Plan</span>
+                </button>
+              }
+              @if (row.showWeekly) {
+                <button mat-menu-item (click)="onAddClick(false, row)">
+                  <mat-icon>add</mat-icon>
+                  <span>Add Cycle Plan</span>
+                </button>
+              }
+              @if (row.dietPlanStatusId !== completedPlanStatus) {
+                <button mat-menu-item (click)="onStatusChangeDialog(row)">
+                  <mat-icon>check_circle</mat-icon>
+                  <span>Mark as Completed</span>
+                </button>
+              }
+              @if (row.cyclePlans && row.cyclePlans.length > 0 && row.upcomingCycle) {
+                <button mat-menu-item (click)="onEditDietPlanFromRow(row)">
+                  <mat-icon>edit</mat-icon>
+                  <span>Edit</span>
+                </button>
+              }
             </mat-menu>
           }
           @if (!isChildListSmall(row)) {
@@ -131,12 +131,21 @@
                       }
                     </td>
                     <td style="text-align: right">
-                      @if (row.showWeekly || row.showDaily) {
+                      @if (row.showDaily && row.upcomingDay && day.dayNo) {
                         <button
-                          (click)="row.upcomingDay ? copyDayDietPlan(day, row) : copyCycleDietPlan(cycle, row)"
+                          (click)="copyDayDietPlan(day, row)"
                           color="primary"
                           mat-icon-button
-                          matTooltip="Copy Plan">
+                          matTooltip="Copy Day Plan">
+                          <mat-icon>content_copy</mat-icon>
+                        </button>
+                      }
+                      @if (row.showWeekly) {
+                        <button
+                          (click)="copyCycleDietPlan(cycle, row)"
+                          color="primary"
+                          mat-icon-button
+                          matTooltip="Copy Cycle Plan">
                           <mat-icon>content_copy</mat-icon>
                         </button>
                       }

@@ -55,4 +55,5 @@ export * from './member-dashboard.interface';
 export * from './tax-master.interface';
 export * from './tax-calculation.interface';
 export * from './seo-page.interface';
+export * from './razorpay-webhook.interface';
 
