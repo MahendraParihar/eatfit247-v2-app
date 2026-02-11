@@ -1,10 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit, inject } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { BannerComponent } from '@shared-ui';
+import { BannerComponent, LoaderComponent } from '@shared-ui';
 import { BannerService } from '../../core/services/banner.service';
 import { ProductService } from '../../core/services/product.service';
 import { SEOService } from '../../core/services/seo.service';
@@ -32,7 +32,7 @@ interface ISizeOption extends IProductFee {
 @Component({
   standalone: true,
   selector: 'app-product',
-  imports: [CommonModule, FormsModule, BannerComponent, MatButtonModule, MatIconModule],
+  imports: [CommonModule, FormsModule, BannerComponent, LoaderComponent, MatButtonModule, MatIconModule],
   templateUrl: './product.component.html',
   styleUrl: './product.component.scss',
 })
@@ -53,8 +53,8 @@ export class ProductComponent implements OnInit, OnDestroy {
   quantity = 1;
   productId: number | null = null;
   productVariantId: number | null = null;
-  loading = true;
-  error: string | null = null;
+  loading = signal(true);
+  error = signal<string | null>(null);
 
   // Product images
   productImages: string[] = [];
@@ -265,8 +265,8 @@ export class ProductComponent implements OnInit, OnDestroy {
    */
   private async loadProductData(): Promise<void> {
     try {
-      this.loading = true;
-      this.error = null;
+      this.loading.set(true);
+      this.error.set(null);
 
       let product: IPublicProduct | null = null;
       const products = await this.productService.getAllProducts(0, 1);
@@ -275,14 +275,14 @@ export class ProductComponent implements OnInit, OnDestroy {
       if (product) {
         this.initializeProductData(product);
       } else {
-        this.error = 'Product not found';
+        this.error.set('Product not found');
       }
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error('Failed to load product data:', error);
-      this.error = 'Failed to load product information. Please try again later.';
+      this.error.set('Failed to load product information. Please try again later.');
     } finally {
-      this.loading = false;
+      this.loading.set(false);
     }
   }
 

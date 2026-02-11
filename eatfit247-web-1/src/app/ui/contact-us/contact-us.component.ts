@@ -6,12 +6,12 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { ButtonComponent, ContainerComponent, SectionComponent, BannerComponent } from '@shared-ui';
-import { BannerService } from '../../core/services/banner.service';
+import { ContainerComponent, BannerComponent } from '@shared-ui';
+import { BannerService } from '../../core/services';
 import { BannerForEnum } from '@eatfit247-shared-library/enum';
 import { IMediaUpload } from '@eatfit247-shared-library/core';
 import { RecaptchaService } from '../../core/services/recaptcha.service';
-import { HttpService } from '../../core/services/http.service';
+import { HttpService } from '../../core/services';
 
 @Component({
   standalone: true,
@@ -25,7 +25,6 @@ import { HttpService } from '../../core/services/http.service';
     MatIconModule,
     MatProgressSpinnerModule,
     ContainerComponent,
-    ButtonComponent,
     BannerComponent
   ],
   templateUrl: './contact-us.component.html',
@@ -51,7 +50,6 @@ export class ContactUsComponent implements OnInit {
     phone: '+91-859-185-4209',
     email: 'eatfit24by7@gmail.com'
   };
-
   banners: IMediaUpload[] = [];
 
   ngOnInit(): void {
@@ -75,7 +73,7 @@ export class ContactUsComponent implements OnInit {
   private async loadBannerData(): Promise<void> {
     try {
       this.banners = await this.bannerService.getBannerMediaForPage(
-        BannerForEnum.CONTACT_US,
+        BannerForEnum.CONTACT_US
       );
     } catch (error) {
       // eslint-disable-next-line no-console

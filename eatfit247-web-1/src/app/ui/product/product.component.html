@@ -6,13 +6,11 @@
 
   <!-- Main Content -->
   <div class="product-page__container">
-    @if (loading) {
-      <div class="product-page__state product-page__state--loading">
-        <p>Loading product information...</p>
-      </div>
-    } @else if (error) {
+    @if (loading()) {
+      <app-loader page="product"></app-loader>
+    } @else if (error()) {
       <div class="product-page__state product-page__state--error">
-        <p>{{ error }}</p>
+        <p>{{ error() }}</p>
       </div>
     } @else if (product) {
       <!-- Product Details: 2-column -->

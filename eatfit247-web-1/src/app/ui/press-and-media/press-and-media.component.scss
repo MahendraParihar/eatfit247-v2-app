@@ -135,7 +135,6 @@
   margin-right: 0.25rem;
 }
 
-.loading-state,
 .no-articles {
   grid-column: 1 / -1;
   display: flex;
@@ -146,7 +145,6 @@
   text-align: center;
 }
 
-.loading-icon,
 .empty-icon {
   font-size: 3rem;
   margin-bottom: 0.75rem;
@@ -210,8 +208,6 @@
   }
 }
 
-.press-and-media-page {
-}
 
 // Section header wrapper for consistent section title/subtitle layout
 .section-header {

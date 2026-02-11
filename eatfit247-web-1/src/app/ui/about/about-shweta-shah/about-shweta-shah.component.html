@@ -11,13 +11,15 @@
       </div>
       <div class="about-shweta-shah-right">
         <div class="about-shweta-shah__text">
-          <section class="legal-section" *ngIf="isLoading">
-            <p>Loading content...</p>
-          </section>
-          <section class="legal-section" *ngIf="!isLoading && errorMessage">
-            <p>{{ errorMessage }}</p>
-          </section>
-          <section *ngIf="!isLoading && !errorMessage && pageData" [innerHTML]="pageData.details"></section>
+          @if (isLoading()) {
+            <app-loader page="about"></app-loader>
+          } @else if (errorMessage()) {
+            <section class="legal-section">
+              <p>{{ errorMessage() }}</p>
+            </section>
+          } @else if (pageData) {
+            <section [innerHTML]="pageData.details"></section>
+          }
         </div>
         <div class="about-shweta-sign__image">
           <img src="/sign.svg" alt="Shweta Shah" class="about-shweta-sign__photo" />

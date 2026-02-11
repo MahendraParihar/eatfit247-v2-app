@@ -9,19 +9,18 @@
       </p>
     </header>
 
-    <section class="legal-section" *ngIf="isLoading">
-      <p>Loading content...</p>
-    </section>
-
-    <section class="legal-section" *ngIf="!isLoading && errorMessage">
-      <p>{{ errorMessage }}</p>
-    </section>
-
-    <section
-      class="legal-section"
-      *ngIf="!isLoading && !errorMessage && pageData"
-      [innerHTML]="pageData.details"
-    ></section>
+    @if (isLoading()) {
+      <app-loader page="default"></app-loader>
+    } @else if (errorMessage()) {
+      <section class="legal-section">
+        <p>{{ errorMessage() }}</p>
+      </section>
+    } @else if (pageData) {
+      <section
+        class="legal-section"
+        [innerHTML]="pageData.details"
+      ></section>
+    }
   </div>
 </div>
 

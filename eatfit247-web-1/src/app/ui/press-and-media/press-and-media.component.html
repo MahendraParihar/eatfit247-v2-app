@@ -10,11 +10,8 @@
     </header>
 
     <!-- Loading State -->
-    @if (loadingPress) {
-      <div class="loading-state">
-        <mat-icon class="loading-icon">hourglass_empty</mat-icon>
-        <p>Loading press articles...</p>
-      </div>
+    @if (loadingPress()) {
+      <app-loader page="press-and-media"></app-loader>
     }
 
     <!-- Articles Grid -->
@@ -41,11 +38,8 @@
     </header>
 
     <!-- Loading State -->
-    @if (loadingYouTube) {
-      <div class="loading-state">
-        <mat-icon class="loading-icon">hourglass_empty</mat-icon>
-        <p>Loading YouTube videos...</p>
-      </div>
+    @if (loadingYouTube()) {
+      <app-loader page="press-and-media"></app-loader>
     }
 
     <!-- YouTube Videos Grid - Masonry Gallery -->

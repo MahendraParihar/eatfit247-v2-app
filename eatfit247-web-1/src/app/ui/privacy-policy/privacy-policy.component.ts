@@ -1,13 +1,14 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { IPublicLegalPage } from '@eatfit247-shared-library/core';
 import { LegalPagesService } from '../../core/services/legal-pages.service';
+import { LoaderComponent } from '@shared-ui';
 
 @Component({
   selector: 'app-privacy-policy',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, LoaderComponent],
   templateUrl: './privacy-policy.component.html',
   styleUrl: './privacy-policy.component.scss'
 })
@@ -18,16 +19,16 @@ export class PrivacyPolicyComponent implements OnInit {
   readonly lastUpdated = 'February 2026';
 
   pageData: IPublicLegalPage | null = null;
-  isLoading = true;
-  errorMessage: string | null = null;
+  isLoading = signal(true);
+  errorMessage = signal<string | null>(null);
 
   async ngOnInit(): Promise<void> {
     await this.loadPage();
   }
 
   private async loadPage(): Promise<void> {
-    this.isLoading = true;
-    this.errorMessage = null;
+    this.isLoading.set(true);
+    this.errorMessage.set(null);
 
     try {
       // Use current route path (without leading slash) as the URL slug
@@ -39,12 +40,12 @@ export class PrivacyPolicyComponent implements OnInit {
       if (data) {
         this.pageData = data;
       } else {
-        this.errorMessage = 'Content is not available at the moment.';
+        this.errorMessage.set('Content is not available at the moment.');
       }
     } catch (_error) {
-      this.errorMessage = 'Failed to load content. Please try again later.';
+      this.errorMessage.set('Failed to load content. Please try again later.');
     } finally {
-      this.isLoading = false;
+      this.isLoading.set(false);
     }
   }
 }

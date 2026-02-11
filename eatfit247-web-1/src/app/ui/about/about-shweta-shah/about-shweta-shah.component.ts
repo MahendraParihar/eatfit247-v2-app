@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { ContainerComponent } from '@shared-ui/layout';
-import { BannerComponent } from '@shared-ui';
+import { BannerComponent, LoaderComponent } from '@shared-ui';
 import { BannerService } from '../../../core/services/banner.service';
 import { BannerForEnum } from '@eatfit247-shared-library/enum';
 import { IMediaUpload, IPublicLegalPage } from '@eatfit247-shared-library/core';
@@ -11,7 +11,7 @@ import { Router } from '@angular/router';
 @Component({
   standalone: true,
   selector: 'app-about-shweta-shah',
-  imports: [CommonModule, ContainerComponent, BannerComponent],
+  imports: [CommonModule, ContainerComponent, BannerComponent, LoaderComponent],
   templateUrl: './about-shweta-shah.component.html',
   styleUrl: './about-shweta-shah.component.scss',
 })
@@ -20,8 +20,8 @@ export class AboutShwetaShahComponent implements OnInit {
   private readonly legalPagesService = inject(LegalPagesService);
   private readonly router = inject(Router);
   pageData: IPublicLegalPage | null = null;
-  isLoading = true;
-  errorMessage: string | null = null;
+  isLoading = signal(true);
+  errorMessage = signal<string | null>(null);
   banners: IMediaUpload[] = [];
 
   async ngOnInit(): Promise<void> {
@@ -45,8 +45,8 @@ export class AboutShwetaShahComponent implements OnInit {
   }
 
   private async loadPage(): Promise<void> {
-    this.isLoading = true;
-    this.errorMessage = null;
+    this.isLoading.set(true);
+    this.errorMessage.set(null);
 
     try {
       // Use current route path (without leading slash) as the URL slug
@@ -58,12 +58,12 @@ export class AboutShwetaShahComponent implements OnInit {
       if (data) {
         this.pageData = data;
       } else {
-        this.errorMessage = 'Content is not available at the moment.';
+        this.errorMessage.set('Content is not available at the moment.');
       }
     } catch (_error) {
-      this.errorMessage = 'Failed to load content. Please try again later.';
+      this.errorMessage.set('Failed to load content. Please try again later.');
     } finally {
-      this.isLoading = false;
+      this.isLoading.set(false);
     }
   }
 }

@@ -30,8 +30,8 @@ export class PressAndMediaComponent implements OnInit {
   banners: IMediaUpload[] = [];
   pressArticles: ICardData[] = [];
   youtubeArticles: ICardData[] = [];
-  loadingPress = false;
-  loadingYouTube = false;
+  loadingPress = signal(false);
+  loadingYouTube = signal(false);
 
   async ngOnInit(): Promise<void> {
     await Promise.all([
@@ -60,7 +60,7 @@ export class PressAndMediaComponent implements OnInit {
    * Load press articles (type='press')
    */
   async loadPressArticles(): Promise<void> {
-    this.loadingPress = true;
+    this.loadingPress.set(true);
     try {
       this.pressArticles = await this.pressMediaService.getAllArticles('press');
     } catch (error) {
@@ -68,7 +68,7 @@ export class PressAndMediaComponent implements OnInit {
       console.error('Error loading press articles:', error);
       this.pressArticles = [];
     } finally {
-      this.loadingPress = false;
+      this.loadingPress.set(false);
     }
   }
 
@@ -76,7 +76,7 @@ export class PressAndMediaComponent implements OnInit {
    * Load YouTube articles (type='youtube')
    */
   async loadYouTubeArticles(): Promise<void> {
-    this.loadingYouTube = true;
+    this.loadingYouTube.set(true);
     try {
       this.youtubeArticles = await this.pressMediaService.getAllArticles(
         'youtube'
@@ -86,7 +86,7 @@ export class PressAndMediaComponent implements OnInit {
       console.error('Error loading YouTube articles:', error);
       this.youtubeArticles = [];
     } finally {
-      this.loadingYouTube = false;
+      this.loadingYouTube.set(false);
     }
   }
 

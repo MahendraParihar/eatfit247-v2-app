@@ -1,16 +1,16 @@
-<section class="blog-detail-page" *ngIf="!loading && blog; else blogDetailLoading">
+@if (!loading() && blog) {
+<section class="blog-detail-page">
   <div class="blog-detail-container">
     <!-- Breadcrumb -->
     <nav class="blog-detail-breadcrumb" aria-label="Breadcrumb">
-      <app-button
-        variant="text"
-        size="sm"
-        color="primary"
+      <button
+        matButton
+        [type]="'button'"
         class="breadcrumb-link"
         routerLink="/blog"
       >
         Blog
-      </app-button>
+      </button>
       <span class="breadcrumb-separator">&gt;</span>
       <span class="breadcrumb-current">Blog Details</span>
     </nav>
@@ -113,10 +113,8 @@
     </div>
   </div>
 </section>
-
-<!-- Skeleton loader / loading state -->
-<ng-template #blogDetailLoading>
-  <section class="blog-detail-page blog-detail-page--loading" *ngIf="!error">
+} @else if (loading()) {
+  <section class="blog-detail-page blog-detail-page--loading">
     <div class="blog-detail-container">
       <app-loader page="blog-detail"></app-loader>
 
@@ -141,14 +139,14 @@
       </div>
     </div>
   </section>
-
-  <section class="blog-detail-error" *ngIf="error">
+} @else if (error()) {
+  <section class="blog-detail-error">
     <div class="blog-detail-container">
       <p class="blog-detail-error-message body-b6">
-        We couldn’t load this blog article. Please try again later.
+        We couldn't load this blog article. Please try again later.
       </p>
     </div>
   </section>
-</ng-template>
+}
 
 

@@ -124,15 +124,14 @@
           </mat-form-field>
 
           <div class="contact-us__actions">
-            <app-button
-              variant="primary"
-              size="md"
+            <button
+              color="primary"
+              mat-flat-button
               type="submit"
               [disabled]="contactForm.invalid || formSubmitted"
-              [loading]="formSubmitted"
             >
               <span>Send Message</span>
-            </app-button>
+            </button>
           </div>
         </form>
       </div>

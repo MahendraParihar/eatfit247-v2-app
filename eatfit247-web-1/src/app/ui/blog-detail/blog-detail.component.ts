@@ -1,17 +1,17 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { BlogService, SEOService } from '../../core/services';
 import { buildMediaUrl } from '../../core/utils/media-url.util';
-import { IPublicBlog, IPublicTableList } from '@eatfit247-shared-library/core';
+import { IPublicBlog } from '@eatfit247-shared-library/core';
 import {
-  ButtonComponent,
   ICardData,
   LoaderComponent,
   SocialSiteComponent,
   SocialSiteItem
 } from '@shared-ui';
+import { MatButton } from '@angular/material/button';
 
 /**
  * Interface for blog details data used on this page.
@@ -41,7 +41,7 @@ interface IBlogDetails {
     RouterModule,
     LoaderComponent,
     SocialSiteComponent,
-    ButtonComponent
+    MatButton
   ],
   templateUrl: './blog-detail.component.html',
   styleUrl: './blog-detail.component.scss'
@@ -53,8 +53,8 @@ export class BlogDetailsComponent implements OnInit {
   private readonly sanitizer = inject(DomSanitizer);
   blog: IBlogDetails | null = null;
   relatedArticles: ICardData[] = [];
-  loading = true;
-  error = false;
+  loading = signal(true);
+  error = signal(false);
 
   /**
    * Social share items for this blog, derived from `getShareLink`.
@@ -105,13 +105,13 @@ export class BlogDetailsComponent implements OnInit {
    * Load blog details by slug from public API.
    */
   private async loadBlogDetails(slug: string): Promise<void> {
-    this.loading = true;
-    this.error = false;
+    this.loading.set(true);
+    this.error.set(false);
     try {
       const apiBlog = await this.blogService.getBlogBySlug(slug);
       if (!apiBlog) {
         this.blog = null;
-        this.error = true;
+        this.error.set(true);
         return;
       }
       this.blog = this.mapApiBlogToDetails(apiBlog);
@@ -127,9 +127,9 @@ export class BlogDetailsComponent implements OnInit {
     } catch (err) {
       console.error('Error loading blog details:', err);
       this.blog = null;
-      this.error = true;
+      this.error.set(true);
     } finally {
-      this.loading = false;
+      this.loading.set(false);
     }
   }
 
