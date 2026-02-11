@@ -1,5 +1,90 @@
 @if (banners.length > 0) {
   <app-banner [banners]="banners"></app-banner>
 }
+<div class="press-and-media-page">
+  <ng-container>
+    <header class="press-and-media__header">
+      <h1 class="press-and-media__title">
+        Press and Media
+      </h1>
+    </header>
 
-<p>Press and Media works!</p>
+    <!-- Loading State -->
+    @if (loadingPress) {
+      <div class="loading-state">
+        <mat-icon class="loading-icon">hourglass_empty</mat-icon>
+        <p>Loading press articles...</p>
+      </div>
+    }
+
+    <!-- Articles Grid -->
+    <div class="articles-grid">
+      @for (article of pressArticles; track article.id) {
+        <app-card [data]="article"></app-card>
+      } @empty {
+        <div class="no-articles">
+          <mat-icon class="empty-icon">search_off</mat-icon>
+          <p class="empty-message">No press articles found.</p>
+        </div>
+      }
+    </div>
+  </ng-container>
+
+  <div>
+    <header class="press-and-media__header">
+      <h1 class="press-and-media__title">
+        Shweta Shah's Secret Tips & Tricks
+      </h1>
+      <p class="our-programs__tagline">
+        Protecting you from yourself
+      </p>
+    </header>
+
+    <!-- Loading State -->
+    @if (loadingYouTube) {
+      <div class="loading-state">
+        <mat-icon class="loading-icon">hourglass_empty</mat-icon>
+        <p>Loading YouTube videos...</p>
+      </div>
+    }
+
+    <!-- YouTube Videos Grid - Masonry Gallery -->
+    <div class="youtube-gallery-grid">
+      @for (article of youtubeArticles; track article.id; let i = $index) {
+        <mat-card
+          class="article-card youtube-card"
+          [class.gallery-item-small]="getGalleryItemSize(i) === 'small'"
+          [class.gallery-item-medium]="getGalleryItemSize(i) === 'medium'"
+          [class.gallery-item-large]="getGalleryItemSize(i) === 'large'"
+          [class.gallery-item-wide]="getGalleryItemSize(i) === 'wide'"
+        >
+          <!-- YouTube Video -->
+          <div class="article-image-container">
+            @if (getSafeYoutubeUrl(article)) {
+              <div class="video-wrapper">
+                <iframe
+                  [src]="getSafeYoutubeUrl(article)!"
+                  frameborder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowfullscreen
+                  class="youtube-iframe"
+                  [title]="article.title || 'YouTube video'"
+                ></iframe>
+              </div>
+            } @else {
+              <div class="article-image-placeholder">
+                <mat-icon class="image-icon">play_circle</mat-icon>
+              </div>
+            }
+          </div>
+        </mat-card>
+      } @empty {
+        <div class="no-articles">
+          <mat-icon class="empty-icon">video_library</mat-icon>
+          <p class="empty-message">No YouTube videos found.</p>
+        </div>
+      }
+    </div>
+  </div>
+</div>
+

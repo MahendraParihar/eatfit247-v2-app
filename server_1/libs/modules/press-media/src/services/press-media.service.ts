@@ -33,7 +33,9 @@ export class PressMediaService {
       nest: true,
     });
 
-    const resList: IPressMedia[] = rows.map((item: any) => {return this.convertToModel(item);});
+    const resList: IPressMedia[] = rows.map((item: any) => {
+      return this.convertToModel(item);
+    });
     return {
       tableData: resList,
       count: count,
@@ -43,16 +45,18 @@ export class PressMediaService {
   /**
    * Public method to fetch all active press media items
    */
-  public async findAllPublic(searchDto: IBasicSearch & { type?: 'youtube' | 'press'; active?: boolean }): Promise<IPublicTableList<IPublicPressMedia>> {
+  public async findAllPublic(
+    searchDto: IBasicSearch & { type?: 'youtube' | 'press'; active?: boolean },
+  ): Promise<IPublicTableList<IPublicPressMedia>> {
     const whereCondition: any = SearchUtil.filterBasicSearch(searchDto, 'title');
     // Only show active press media for public
     whereCondition.active = searchDto.active !== undefined ? searchDto.active : true;
-    
+
     // Filter by type if provided
     if (searchDto.type) {
       whereCondition.type = searchDto.type;
     }
-    
+
     const pageNumber = searchDto.page || 0;
     const pageSize = searchDto.limit || 15;
     const offset = pageNumber === 0 ? 0 : pageNumber * pageSize;
@@ -67,14 +71,16 @@ export class PressMediaService {
       nest: true,
     });
 
-    const resList: IPublicPressMedia[] = rows.map((item: any) => {return this.convertToPublic(this.convertToModel(item));});
+    const resList: IPublicPressMedia[] = rows.map((item: any) => {
+      return this.convertToPublic(this.convertToModel(item));
+    });
     return {
       tableData: resList,
       count: count,
     };
   }
 
-  private convertToModel(item: any): IPressMedia {
+  private convertToModel(item: TxnPressMedia): IPressMedia {
     return <IPressMedia>{
       pressMediaId: item.pressMediaId,
       id: item.pressMediaId,
@@ -82,6 +88,7 @@ export class PressMediaService {
       type: item.type as 'youtube' | 'press',
       link: item.link,
       active: item.active,
+      publishDate: item.createdAt,
       imagePath: CommonFunctionsUtil.buildImageUrl(item.imagePath),
       createdBy: item.createdBy,
       modifiedBy: item.modifiedBy,
@@ -97,7 +104,16 @@ export class PressMediaService {
    * Omits: createdBy, updatedBy, modifiedBy, createdAt, updatedAt, createdIp, updatedIp, modifiedIp, active, createdByUser, updatedByUser
    */
   private convertToPublic(pressMedia: IPressMedia): IPublicPressMedia {
-    const { createdBy, modifiedBy, createdAt, updatedAt, active, createdByUser, updatedByUser, ...publicPressMedia } = pressMedia;
+    const {
+      createdBy,
+      modifiedBy,
+      createdAt,
+      updatedAt,
+      active,
+      createdByUser,
+      updatedByUser,
+      ...publicPressMedia
+    } = pressMedia;
     return publicPressMedia as IPublicPressMedia;
   }
 
@@ -119,7 +135,7 @@ export class PressMediaService {
       type: obj.type,
       link: obj.link,
       active: obj.active,
-      imagePath: (obj.imagePath && obj.imagePath.length > 0) ? obj.imagePath : null,
+      imagePath: obj.imagePath && obj.imagePath.length > 0 ? obj.imagePath : null,
       createdBy: adminId,
       modifiedBy: adminId,
       createdIp: cIp,
@@ -128,7 +144,12 @@ export class PressMediaService {
     await this.pressMediaRepository.create(createObj);
   }
 
-  public async update(id: number, obj: IManagePressMedia, cIp: string, adminId: number): Promise<void> {
+  public async update(
+    id: number,
+    obj: IManagePressMedia,
+    cIp: string,
+    adminId: number,
+  ): Promise<void> {
     const find = await this.pressMediaRepository.findOne({
       where: { pressMediaId: id },
     });
@@ -140,14 +161,19 @@ export class PressMediaService {
       type: obj.type,
       link: obj.link,
       active: obj.active,
-      imagePath: (obj.imagePath && obj.imagePath.length > 0) ? obj.imagePath : null,
+      imagePath: obj.imagePath && obj.imagePath.length > 0 ? obj.imagePath : null,
       modifiedBy: adminId,
       modifiedIp: cIp,
     };
     await this.pressMediaRepository.update(updateObj, { where: { pressMediaId: id } });
   }
 
-  public async changeStatus(id: number, active: boolean, cIp: string, adminId: number): Promise<void> {
+  public async changeStatus(
+    id: number,
+    active: boolean,
+    cIp: string,
+    adminId: number,
+  ): Promise<void> {
     const find = await this.pressMediaRepository.findOne({
       where: { pressMediaId: id },
     });

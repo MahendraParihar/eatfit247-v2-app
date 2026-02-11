@@ -1,4 +1,4 @@
-import { IBaseAdminUser, IAdminInfo } from "../base.interface";
+import { IAdminInfo } from "../base.interface";
 import { IMediaUpload } from "./media-upload.interface";
 
 export type PressMediaType = "youtube" | "press";
@@ -18,5 +18,6 @@ export interface IManagePressMedia extends IBasePressMedia {
 export interface IPressMedia extends IBasePressMedia, IAdminInfo {
   pressMediaId: number;
   active: boolean;
+  publishDate: Date;
 }
 

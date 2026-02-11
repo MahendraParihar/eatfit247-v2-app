@@ -28,3 +28,9 @@ CREATE INDEX ix_mst_seo_pages_url
 CREATE INDEX ix_mst_seo_pages_active
     ON mst_seo_pages (active);
 
+
+alter table public.txn_press_media
+    alter column image_path drop not null;
+
+alter table public.txn_press_media
+    alter column image_path set default null;
