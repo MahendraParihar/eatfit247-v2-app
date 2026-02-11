@@ -1,0 +1,55 @@
+<div class="social-site_list">
+  <ng-container *ngFor="let item of items; let i = index">
+    <ng-container [ngSwitch]="item.type || type">
+      <!-- External link -->
+      <a
+        *ngSwitchCase="'external'"
+        class="social-site"
+        [href]="item.link"
+        target="_blank"
+        rel="noopener noreferrer"
+        [attr.aria-label]="ariaLabel(item)"
+        (click)="onClick($event, item, i)"
+      >
+        <img
+          class="social-site__icon"
+          [src]="iconSrc(item)"
+          [alt]="ariaLabel(item)"
+        />
+      </a>
+
+      <!-- Internal router link -->
+      <a
+        *ngSwitchCase="'internal'"
+        class="social-site"
+        [routerLink]="item.link"
+        [attr.aria-label]="ariaLabel(item)"
+        (click)="onClick($event, item, i)"
+      >
+        <img
+          class="social-site__icon"
+          [src]="iconSrc(item)"
+          [alt]="ariaLabel(item)"
+        />
+      </a>
+
+      <!-- Fallback to external if type is unknown -->
+      <a
+        *ngSwitchDefault
+        class="social-site"
+        [href]="item.link"
+        target="_blank"
+        rel="noopener noreferrer"
+        [attr.aria-label]="ariaLabel(item)"
+        (click)="onClick($event, item, i)"
+      >
+        <img
+          class="social-site__icon"
+          [src]="iconSrc(item)"
+          [alt]="ariaLabel(item)"
+        />
+      </a>
+    </ng-container>
+  </ng-container>
+</div>
+

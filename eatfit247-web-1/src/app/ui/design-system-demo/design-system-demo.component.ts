@@ -5,7 +5,7 @@ import {
   ContainerComponent,
   SectionComponent,
   ButtonComponent,
-} from '../../../../libs/shared-ui/src';
+} from '@shared-ui';
 
 @Component({
   selector: 'app-design-system-demo',

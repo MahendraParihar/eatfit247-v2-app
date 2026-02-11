@@ -1,5 +1,5 @@
-import { IBaseAdminUser, ICommonSEO, ICommonTable, IAdminInfo } from '../base.interface';
-import { IMediaUpload } from './media-upload.interface';
+import { IBaseAdminUser, ICommonSEO, ICommonTable, IAdminInfo } from "../base.interface";
+import { IMediaUpload } from "./media-upload.interface";
 
 export interface IBaseLegalPage {
   title: string;
@@ -22,5 +22,9 @@ export interface ILegalPage extends IBaseLegalPage, ICommonTable, ICommonSEO {
 export interface ILegalPageList extends ILegalPage, IAdminInfo {
   createdByUser: IBaseAdminUser; // Required, overriding IAdminInfo's optional field
   updatedByUser: IBaseAdminUser; // Required, overriding IAdminInfo's optional field
+}
+
+export interface IPublicLegalPage extends IBaseLegalPage {
+  url: string;
 }
 

@@ -156,7 +156,11 @@ export class HttpService {
   private handleError(error: HttpErrorResponse): never {
     let errorMessage = 'An unknown error occurred';
 
-    if (error.error instanceof ErrorEvent) {
+    // Guard against environments where ErrorEvent is not defined (e.g. SSR/Node)
+    if (
+      typeof ErrorEvent !== 'undefined' &&
+      error.error instanceof ErrorEvent
+    ) {
       // Client-side error
       errorMessage = `Error: ${error.error.message}`;
     } else {

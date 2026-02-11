@@ -23,10 +23,12 @@ import { ContactModule } from '@server_1/modules/contact';
     // Sentry error tracking
     SentryModule,
     // Rate limiting configuration
-    ThrottlerModule.forRoot([{
-      ttl: 60000, // 1 minute
-      limit: 100, // 100 requests per minute per IP
-    }]),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000, // 1 minute
+        limit: 100, // 100 requests per minute per IP
+      },
+    ]),
     PlatformModule.forRoot(),
     // Import feature modules before CommonModule so modelRegistry.register() executes
     BlogPublicModule,
@@ -56,6 +58,5 @@ import { ContactModule } from '@server_1/modules/contact';
     },
   ],
 })
-export class AppModule {
-}
+export class AppModule {}
 

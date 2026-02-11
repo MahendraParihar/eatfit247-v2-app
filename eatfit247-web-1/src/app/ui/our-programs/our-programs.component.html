@@ -1,3 +1,108 @@
-<p>Our Programs works!</p>
+@if (banners.length > 0) {
+  <app-banner [banners]="banners"></app-banner>
+}
 
+<div class="our-programs-page">
+  <section class="our-programs__section our-programs__section--hero">
+    <header class="our-programs__header">
+      <h1 class="our-programs__title">
+        {{ pageTitle }}
+      </h1>
+      <p class="our-programs__tagline">
+        {{ pageTagline }}
+      </p>
+    </header>
+
+    <div class="our-programs__cards">
+      <article
+        class="our-programs__card"
+        *ngFor="let program of programs"
+      >
+        <header class="our-programs__card-header">
+          <h2 class="our-programs__card-title">
+            {{ program.name }}
+          </h2>
+          <p class="our-programs__card-subtitle">
+            {{ program.subtitle }}
+          </p>
+        </header>
+
+        <div class="our-programs__pricing">
+          <div
+            class="our-programs__price-row"
+            *ngFor="let price of program.prices"
+          >
+            <div
+              class="our-programs__price-label"
+              *ngIf="price.label"
+              [innerHTML]="price.label"
+            >
+            </div>
+
+            <div class="our-programs__price-value">
+              <span class="our-programs__price-amount">
+                {{ price.value }}
+              </span>
+              <span
+                *ngIf="price.note"
+                class="our-programs__price-note"
+              >
+                {{ price.note }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="our-programs__divider"></div>
+
+        <div class="our-programs__card-section">
+          <p class="our-programs__section-label">
+            WHAT'S INCLUDED
+          </p>
+
+          <ul class="our-programs__feature-list">
+            <li
+              class="our-programs__feature-item"
+              *ngFor="let feature of program.features"
+            >
+              <span class="our-programs__feature-icon">
+                ✓
+              </span>
+              <span class="our-programs__feature-text">
+                {{ feature }}
+              </span>
+            </li>
+          </ul>
+        </div>
+
+        <button
+          type="button"
+          mat-flat-button
+          class="our-programs__cta button-text"
+        >
+          Book Consultation
+        </button>
+      </article>
+    </div>
+  </section>
+
+  <section class="our-programs__section our-programs__section--terms">
+    <header class="our-programs__terms-header">
+      <h2 class="our-programs__terms-title">
+        Terms &amp; Conditions
+      </h2>
+    </header>
+
+    <div class="our-programs__terms-card">
+      <ul class="our-programs__terms-list">
+        <li
+          *ngFor="let item of termsAndConditions"
+          class="our-programs__terms-item"
+        >
+          {{ item }}
+        </li>
+      </ul>
+    </div>
+  </section>
+</div>
 

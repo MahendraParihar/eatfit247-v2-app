@@ -1,0 +1,27 @@
+<div class="legal-page">
+  <div class="legal-container">
+    <header class="legal-header">
+      <h1 class="heading-1">
+        {{ pageData?.title || 'Terms & Conditions' }}
+      </h1>
+      <p class="legal-last-updated">
+        Last updated: {{ lastUpdated }}
+      </p>
+    </header>
+
+    <section class="legal-section" *ngIf="isLoading">
+      <p>Loading content...</p>
+    </section>
+
+    <section class="legal-section" *ngIf="!isLoading && errorMessage">
+      <p>{{ errorMessage }}</p>
+    </section>
+
+    <section
+      class="legal-section"
+      *ngIf="!isLoading && !errorMessage && pageData"
+      [innerHTML]="pageData.details"
+    ></section>
+  </div>
+</div>
+

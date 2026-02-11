@@ -207,11 +207,9 @@ export class ReferrerService {
     const whereCondition: any = SearchUtil.filterBasicSearch(searchDto, 'companyName');
     // Only return active referrers
     whereCondition.active = true;
-
     const pageNumber = searchDto.page || 0;
     const pageSize = searchDto.limit || 15;
     const offset = pageNumber === 0 ? 0 : pageNumber * pageSize;
-
     // For public endpoints, don't use scope with includes to avoid issues with raw: true
     const { rows, count } = await this.referrerRepository.findAndCountAll({
       where: whereCondition,
@@ -222,12 +220,11 @@ export class ReferrerService {
       nest: true,
       attributes: ['companyName', 'logo'], // Only select companyName and logo using model property names
     });
-
     const resList = rows.map((item: any) => ({
-      companyName: item.companyName || item.company_name || '',
+      companyName: item.companyName,
+      name: item.name,
       logo: CommonFunctionsUtil.buildImageUrl(item.logo),
     }));
-
     return {
       tableData: resList,
       count: count,

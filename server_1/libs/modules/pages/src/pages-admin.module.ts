@@ -3,12 +3,12 @@ import { SequelizeModule } from '@nestjs/sequelize';
 import { LegalPagesModel } from './models';
 import { SeoPageModel } from '@server_1/platform';
 import { modelRegistry } from '@server_1/core';
+import { SeoPageAdminController, LegalPagesController } from './controllers/admin';
 import { LegalPagesService } from './services';
-import { SeoPageService } from '@server_1/platform';
-import { LegalPagesController } from './controllers';
-import { SeoPageAdminController } from './controllers/admin/seo-page.controller';
+
 // Register models with the model registry
-// Note: SeoPageModel is already registered via PlatformModule.getModels(), so only register LegalPagesModel
+// Note: SeoPageModel is already registered via PlatformModule.getModels(),
+// so only register LegalPagesModel here
 modelRegistry.register([LegalPagesModel]);
 
 /**
@@ -16,23 +16,11 @@ modelRegistry.register([LegalPagesModel]);
  * Only includes the admin controllers
  */
 @Module({
-  imports: [
-    SequelizeModule.forFeature([LegalPagesModel, SeoPageModel]),
-  ],
-  controllers: [
-    LegalPagesController,
-    SeoPageAdminController,
-  ],
-  providers: [
-    LegalPagesService,
-    SeoPageService,
-  ],
-  exports: [
-    LegalPagesService,
-    SeoPageService,
-    SequelizeModule,
-  ],
+  imports: [SequelizeModule.forFeature([LegalPagesModel, SeoPageModel])],
+  controllers: [SeoPageAdminController, LegalPagesController],
+  providers: [LegalPagesService],
+  exports: [LegalPagesService, SequelizeModule],
 })
-export class PagesAdminModule {
-}
+export class PagesAdminModule {}
+
 

@@ -1,5 +1,5 @@
 import { Route } from '@angular/router';
-import { PublicShellComponent } from '../../libs/shared-ui/src/lib/layout/public-shell/public-shell.component';
+import { PublicShellComponent } from './ui/public-shell/public-shell.component';
 
 export const appRoutes: Route[] = [
   {
@@ -67,7 +67,7 @@ export const appRoutes: Route[] = [
         path: 'blog/:slug',
         loadComponent: () =>
           import('./ui/blog-detail/blog-detail.component').then(
-            (m) => m.BlogDetailComponent
+            (m) => m.BlogDetailsComponent
           ),
         title: 'Blog details | EatFit247',
       },
@@ -144,6 +144,22 @@ export const appRoutes: Route[] = [
           ),
         title:
           'Frequently asked questions | EatFit247',
+      },
+      {
+        path: 'terms-and-conditions',
+        loadComponent: () =>
+          import('./ui/terms-and-conditions/terms-and-conditions.component').then(
+            (m) => m.TermsAndConditionsComponent
+          ),
+        title: 'Terms & Conditions | EatFit247',
+      },
+      {
+        path: 'privacy-policy',
+        loadComponent: () =>
+          import('./ui/privacy-policy/privacy-policy.component').then(
+            (m) => m.PrivacyPolicyComponent
+          ),
+        title: 'Privacy Policy | EatFit247',
       },
       {
         path: 'design-system-demo',

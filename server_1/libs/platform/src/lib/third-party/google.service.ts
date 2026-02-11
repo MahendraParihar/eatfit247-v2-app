@@ -27,7 +27,7 @@ export class GoogleService {
   async validateCaptcha({
     // TO-DO: Replace the token and reCAPTCHA action variables before running the sample.
     projectID = this.appConfig.getString(ConfigParam.GOOGLE_PROJECT_ID),
-    recaptchaKey = this.appConfig.getString(ConfigParam.GOOGLE_KEY),
+    recaptchaKey = this.appConfig.getString(ConfigParam.GOOGLE_RECAPTCHA_SITE_KEY),
     token = 'action-token',
     recaptchaAction = 'action-name',
   }) {
@@ -551,11 +551,9 @@ export class GoogleService {
       if (!apiKey) {
         throw new BadRequestException('Google API key is not configured');
       }
-
       if (!input) {
         throw new BadRequestException('Input text is required');
       }
-
       const response = await axios.get(
         'https://maps.googleapis.com/maps/api/place/findplacefromtext/json',
         {
@@ -567,25 +565,25 @@ export class GoogleService {
           },
         },
       );
-
       if (response.data.status !== 'OK' && response.data.status !== 'ZERO_RESULTS') {
         throw new BadRequestException(
-          `Google Places API error: ${response.data.status} - ${response.data.error_message || 'Unknown error'}`,
+          `Google Places API error: ${response.data.status} - ${
+            response.data.error_message || 'Unknown error'
+          }`,
         );
       }
-
       return response.data.candidates?.[0]?.place_id || null;
     } catch (error: any) {
       await this.logErrorService.logError(`Failed to fetch place ID: ${error.message}`, {
         controller: 'GoogleService',
         methodName: 'getPlaceId',
       });
-
       if (error instanceof BadRequestException) {
         throw error;
       }
-
-      throw new BadRequestException(`Failed to fetch place ID: ${error.message || 'Unknown error'}`);
+      throw new BadRequestException(
+        `Failed to fetch place ID: ${error.message || 'Unknown error'}`,
+      );
     }
   }
 
@@ -600,19 +598,15 @@ export class GoogleService {
       if (!apiKey) {
         throw new BadRequestException('Google API key is not configured');
       }
-
       const res = await this.getPlaceId('EatFit247');
-      console.log(res)
-
+      console.log(res);
       // Get place ID from parameter or config (you may want to add GOOGLE_PLACE_ID to ConfigParam)
       const targetPlaceId = placeId || this.appConfig.getString(ConfigParam.GOOGLE_PLACE_ID);
       if (!targetPlaceId) {
         throw new BadRequestException('Google Place ID is required');
       }
-
       // Use Google Places API to fetch place details including reviews
       const placesApiUrl = 'https://maps.googleapis.com/maps/api/place/details/json';
-
       const response = await axios.get(placesApiUrl, {
         params: {
           place_id: targetPlaceId,
@@ -620,15 +614,14 @@ export class GoogleService {
           key: apiKey,
         },
       });
-
       if (response.data.status !== 'OK') {
         throw new BadRequestException(
-          `Google Places API error: ${response.data.status} - ${response.data.error_message || 'Unknown error'}`,
+          `Google Places API error: ${response.data.status} - ${
+            response.data.error_message || 'Unknown error'
+          }`,
         );
       }
-
       const placeData = response.data.result;
-
       // Transform reviews to match the expected format
       const reviews = (placeData.reviews || []).map((review: any, index: number) => {
         // Map star rating from number to enum
@@ -639,7 +632,6 @@ export class GoogleService {
           4: 'FOUR',
           5: 'FIVE',
         };
-
         return {
           reviewId:
             review.author_url || `review-${targetPlaceId}-${index}-${review.time || Date.now()}`,
@@ -658,7 +650,6 @@ export class GoogleService {
           reviewReply: undefined, // Google Places API doesn't return reply information in standard format
         };
       });
-
       return {
         reviews,
         averageRating: placeData.rating,
@@ -672,12 +663,10 @@ export class GoogleService {
           methodName: 'getGoogleBusinessReviews',
         },
       );
-
       // If it's a BadRequestException, rethrow it
       if (error instanceof BadRequestException) {
         throw error;
       }
-
       // Otherwise, throw a generic error
       throw new BadRequestException(
         `Failed to fetch Google Business reviews: ${error.message || 'Unknown error'}`,

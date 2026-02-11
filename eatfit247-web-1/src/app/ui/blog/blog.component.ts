@@ -1,114 +1,91 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { PageEvent } from '@angular/material/paginator';
 import { MatPaginatorModule } from '@angular/material/paginator';
-import { HttpService } from '../../core/services';
-import { IPublicBlog, IPublicTableList } from '@eatfit247-shared-library/core';
-import { ICardData } from '../../core/types/card.interface';
-import { CardComponent } from '../../shared/components/card/card.component';
-import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
-import { buildMediaUrl } from '../../core/utils/media-url.util';
+import { BlogService, BannerService } from '../../core/services';
+import { CardComponent, EmptyStateComponent, ICardData, LoaderComponent, BannerComponent } from '@shared-ui';
+import { BannerForEnum } from '@eatfit247-shared-library/enum';
+import { IMediaUpload } from '@eatfit247-shared-library/core';
 
 @Component({
   standalone: true,
   selector: 'app-blog',
-  imports: [CommonModule, MatPaginatorModule, CardComponent, EmptyStateComponent],
+  imports: [
+    CommonModule,
+    MatPaginatorModule,
+    CardComponent,
+    EmptyStateComponent,
+    LoaderComponent,
+    BannerComponent
+  ],
   templateUrl: './blog.component.html',
-  styleUrl: './blog.component.scss',
+  styleUrl: './blog.component.scss'
 })
 export class BlogComponent implements OnInit {
-  private readonly httpService = inject(HttpService);
-
-  blogs: ICardData[] = [];
-  loading = false;
-  totalBlogs = 0;
-  pageSize = 12;
-  currentPage = 0;
+  private readonly blogService = inject(BlogService);
+  private readonly bannerService = inject(BannerService);
+  readonly blogs = signal<ICardData[]>([]);
+  readonly loading = signal(false);
+  readonly totalBlogs = signal(0);
+  readonly pageSize = signal(12);
+  readonly currentPage = signal(0);
+  readonly banners = signal<IMediaUpload[]>([]);
 
   ngOnInit(): void {
-    this.loadBlogs();
+    void this.loadBannerData();
+    void this.loadBlogs();
   }
 
   /**
    * Load blogs from API
    */
   async loadBlogs(): Promise<void> {
-    this.loading = true;
+    this.loading.set(true);
     try {
-      const response = await this.httpService.get<IPublicTableList<IPublicBlog>>(
-        'public/blog/list',
-        {
-          params: {
-            page: this.currentPage.toString(),
-            limit: this.pageSize.toString(),
-          },
-        }
+      const response = await this.blogService.getBlogs(
+        this.currentPage(),
+        this.pageSize()
       );
-
       if (response) {
-        this.totalBlogs = response.count;
-        this.blogs = response.tableData.map((blog) => this.mapBlogToCard(blog));
+        this.totalBlogs.set(response.count);
+        this.blogs.set(this.blogService.mapBlogsToCards(response.tableData));
       } else {
-        this.blogs = [];
-        this.totalBlogs = 0;
+        this.blogs.set([]);
+        this.totalBlogs.set(0);
       }
     } catch (error) {
       console.error('Error loading blogs:', error);
-      this.blogs = [];
-      this.totalBlogs = 0;
+      this.blogs.set([]);
+      this.totalBlogs.set(0);
     } finally {
-      this.loading = false;
+      this.loading.set(false);
     }
   }
 
   /**
-   * Map IPublicBlog to ICardData
+   * Load banner images for Blog listing page.
+   * Banner section will be hidden automatically if no banners are returned.
    */
-  private mapBlogToCard(blog: IPublicBlog): ICardData {
-    // Get the first image from imagePath array
-    const firstImage = blog.imagePath && blog.imagePath.length > 0
-      ? blog.imagePath[0]
-      : null;
-    
-    // Handle image URL using media URL utility (uses /media-files proxy)
-    const imageUrl = buildMediaUrl(firstImage?.webUrl);
-
-    // Extract summary from description (strip HTML tags, first 150 characters)
-    const summary = blog.description
-      ? blog.description.replace(/<[^>]*>/g, '').substring(0, 150).trim() + '...'
-      : '';
-
-    // Calculate read time (rough estimate: 200 words per minute)
-    const wordCount = blog.description
-      ? blog.description.replace(/<[^>]*>/g, '').split(/\s+/).length
-      : 0;
-    const readTime = Math.ceil(wordCount / 200);
-
-    // Build blog URL from SEO URL or generate from title
-    const blogUrl = blog.seo?.url
-      ? `/blog/${blog.seo.url}`
-      : `/blog/${blog.title.toLowerCase().replace(/\s+/g, '-')}`;
-
-    return {
-      id: blog.blogId,
-      title: blog.title,
-      summary: summary,
-      linkUrl: blogUrl,
-      imageUrl: imageUrl,
-      imageAlt: blog.title,
-      category: blog.blogCategory || undefined,
-      date: blog.writtenAt ? new Date(blog.writtenAt) : undefined,
-      readTime: readTime > 0 ? readTime : undefined,
-    };
+  private async loadBannerData(): Promise<void> {
+    try {
+      const images = await this.bannerService.getBannerMediaForPage(
+        BannerForEnum.BLOGS,
+      );
+      this.banners.set(images ?? []);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Error loading blog banners:', error);
+      this.banners.set([]);
+    }
   }
 
   /**
    * Handle pagination change
    */
   onPageChange(event: PageEvent): void {
-    this.currentPage = event.pageIndex;
-    this.pageSize = event.pageSize;
-    this.loadBlogs();
+    this.currentPage.set(event.pageIndex);
+    this.pageSize.set(event.pageSize);
+    void this.loadBlogs();
     // Scroll to top when page changes
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }

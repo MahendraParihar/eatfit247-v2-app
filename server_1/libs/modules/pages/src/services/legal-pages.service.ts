@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { IBasicSearch, ILegalPageList, IManageLegalPage, ITableList } from '@eatfit247-shared-lib';
+import { IBasicSearch, ILegalPageList, IManageLegalPage, IPublicLegalPage, ITableList } from '@eatfit247-shared-lib';
 import { AppConfigService, CommonFunctionsUtil, SearchUtil } from '@server_1/core';
 import { LegalPagesModel } from '../models';
 
@@ -16,7 +16,6 @@ export class LegalPagesService {
     const pageNumber = searchDto.page || 0;
     const pageSize = searchDto.limit || 15;
     const offset = pageNumber === 0 ? 0 : pageNumber * pageSize;
-
     const { rows, count } = await this.legalPagesRepository.scope('list').findAndCountAll({
       where: whereCondition,
       order: [['title', 'ASC']],
@@ -25,8 +24,9 @@ export class LegalPagesService {
       raw: true,
       nest: true,
     });
-
-    const resList: ILegalPageList[] = rows.map((item: any) => {return this.convertToModel(item);});
+    const resList: ILegalPageList[] = rows.map((item: any) => {
+      return this.convertToModel(item);
+    });
     return {
       tableData: resList,
       count: count,
@@ -45,8 +45,12 @@ export class LegalPagesService {
       modifiedBy: item.modifiedBy,
       createdAt: item.createdAt,
       updatedAt: item.updatedAt,
-      createdByUser: item.createdByUser ? CommonFunctionsUtil.getAdminShortInfo(item.createdByUser, 'createdByUser') : undefined,
-      updatedByUser: item.updatedByUser ? CommonFunctionsUtil.getAdminShortInfo(item.updatedByUser, 'updatedByUser') : undefined,
+      createdByUser: item.createdByUser
+        ? CommonFunctionsUtil.getAdminShortInfo(item.createdByUser, 'createdByUser')
+        : undefined,
+      updatedByUser: item.updatedByUser
+        ? CommonFunctionsUtil.getAdminShortInfo(item.updatedByUser, 'updatedByUser')
+        : undefined,
     };
   }
 
@@ -91,7 +95,12 @@ export class LegalPagesService {
     await this.legalPagesRepository.create(createObj);
   }
 
-  public async update(id: number, obj: IManageLegalPage, cIp: string, adminId: number): Promise<void> {
+  public async update(
+    id: number,
+    obj: IManageLegalPage,
+    cIp: string,
+    adminId: number,
+  ): Promise<void> {
     const find = await this.legalPagesRepository.findOne({
       where: { legalPageId: id },
     });
@@ -110,7 +119,12 @@ export class LegalPagesService {
     await this.legalPagesRepository.update(updateObj, { where: { legalPageId: id } });
   }
 
-  public async changeStatus(id: number, active: boolean, cIp: string, adminId: number): Promise<void> {
+  public async changeStatus(
+    id: number,
+    active: boolean,
+    cIp: string,
+    adminId: number,
+  ): Promise<void> {
     const find = await this.legalPagesRepository.findOne({
       where: { legalPageId: id },
     });
@@ -123,6 +137,23 @@ export class LegalPagesService {
       modifiedIp: cIp,
     };
     await this.legalPagesRepository.update(updateObj, { where: { legalPageId: id } });
+  }
+
+  public async findByUrl(url: string): Promise<IPublicLegalPage | null> {
+    const find = await this.legalPagesRepository.findOne({
+      where: { url: url, active: true },
+      raw: true,
+      nest: true,
+    });
+    if (!find) {
+      return null;
+    }
+    return <IPublicLegalPage>{
+      title: find.title,
+      details: find.details,
+      url: find.url,
+      imagePath: CommonFunctionsUtil.buildImageUrl(find.imagePath),
+    };
   }
 }
 

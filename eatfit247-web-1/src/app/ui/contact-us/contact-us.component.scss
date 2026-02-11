@@ -1,4 +1,171 @@
-.contact-us-page {
+.contact-us__container {
+  width: 100%;
 }
 
+.contact-us__content {
+  margin-top: var(--space-6);
+}
+
+.about-shweta-shah__text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.about-shweta-sign__image {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+
+.contact-us__image {
+  width: 100%;
+}
+
+.contact-us-right {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.contact-us__title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  line-height: 1.2;
+  margin: 0 0 var(--space-4);
+}
+
+.contact-us__photo {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 0;
+}
+
+.contact-us__cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.contact-us__card {
+  align-items: center;
+  padding: var(--space-4) var(--space-4);
+  border-radius: 16px;
+  background-color: #ffffff;
+  border: 1px solid var(--color-border);
+}
+
+.contact-us__card-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #111827;
+  color: #ffffff;
+}
+
+.contact-us__card-icon mat-icon,
+.contact-us__message-icon mat-icon {
+  font-size: 18px;
+}
+
+.contact-us__card-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.contact-us__card-label {
+  font-size: 0.8rem;
+  color: #6b7280;
+}
+
+.contact-us__card-value {
+  font-weight: 600;
+  color: #111827;
+  text-decoration: none;
+}
+
+.contact-us__card-value:hover {
+  text-decoration: underline;
+}
+
+.contact-us__form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+}
+
+.contact-us__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.contact-us__field--textarea textarea {
+  min-height: 120px;
+}
+
+.contact-us__submit {
+  margin-top: var(--space-2);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.contact-us__actions {
+  margin-top: var(--space-2);
+}
+
+.contact-us__spinner {
+  margin-right: var(--space-1);
+}
+
+.contact-us__message {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border-radius: 0.75rem;
+  font-size: 0.875rem;
+}
+
+.contact-us__message--success {
+  background-color: #e8f5e9;
+  color: #1b5e20;
+}
+
+.contact-us__message--error {
+  background-color: #ffebee;
+  color: #b71c1c;
+}
+
+.contact-us__message-icon {
+  display: inline-flex;
+}
+
+.contact-us__message-title {
+  font-weight: 600;
+  margin-bottom: 0.125rem;
+}
+
+.contact-us__message-text {
+  margin: 0;
+}
+
+.contact-us__info {
+  margin-top: var(--space-4);
+  font-size: 0.9rem;
+}
+
+.contact-us__info a {
+  color: inherit;
+  text-decoration: underline;
+}
 

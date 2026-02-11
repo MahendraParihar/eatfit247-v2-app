@@ -33,5 +33,6 @@ export interface IReferrer extends IBaseReferrer, IAdminInfo {
 
 export interface IPublicReferrer {
   companyName: string;
+  name: string;
   logo?: IMediaUpload[];
 }

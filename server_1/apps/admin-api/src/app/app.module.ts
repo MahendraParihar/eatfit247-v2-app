@@ -18,7 +18,6 @@ import { PaymentModule } from '@server_1/modules/payment';
 import { BlogAdminModule } from '@server_1/modules/blogs';
 import { FaqModule } from '@server_1/modules/faq';
 import { PressMediaModule } from '@server_1/modules/press-media';
-import { PagesAdminModule } from '@server_1/modules/pages';
 import { RecipeModule } from '@server_1/modules/recipe';
 import { ReferrerAdminModule } from '@server_1/modules/referrer';
 import { FranchiseModule } from '@server_1/modules/franchise';
@@ -35,14 +34,17 @@ import { SuccessStoriesModule } from '@server_1/modules/success-stories';
 import { AdminUserModule } from '@server_1/admin-only/admin-user';
 import { ReportsModule } from '@server_1/admin-only/reports';
 import { ProductAdminModule } from '@server_1/modules/product';
+import { PagesAdminModule } from '@server_1/modules/pages';
 
 @Module({
   imports: [
     // Rate limiting configuration
-    ThrottlerModule.forRoot([{
-      ttl: 60000, // 1 minute
-      limit: 100, // 100 requests per minute per IP
-    }]),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000, // 1 minute
+        limit: 100, // 100 requests per minute per IP
+      },
+    ]),
     ServeStaticModule.forRoot({
       rootPath: Env.persistentStorageAssetPath,
       serveRoot: '/media-files',

@@ -27,3 +27,38 @@ body.light-theme {
 body.dark-theme {
   color-scheme: dark;
 }
+
+// ------------------------------
+// Angular Material form field overrides
+// ------------------------------
+
+// Ensure all Material form fields take full width in their container
+.mat-form-field,
+.mat-mdc-form-field {
+  width: 100%;
+}
+
+// MDC-based (Angular Material v15+) outlined appearance
+.mat-mdc-text-field-wrapper.mdc-text-field--outlined {
+  border-radius: var(--input-border-radius);
+}
+
+.mat-mdc-text-field-wrapper {
+  min-height: var(--input-min-height);
+}
+
+.mat-mdc-form-field-infix {
+  padding-block: var(--input-padding-y);
+}
+
+.mat-mdc-text-field-wrapper .mdc-notched-outline__leading,
+.mat-mdc-text-field-wrapper .mdc-notched-outline__notch,
+.mat-mdc-text-field-wrapper .mdc-notched-outline__trailing {
+  border-color: var(--color-border);
+}
+
+// Legacy (pre-MDC) outlined appearance support, if used anywhere
+.mat-form-field-appearance-outline .mat-form-field-outline {
+  border-radius: var(--input-border-radius);
+  border-color: var(--color-border);
+}

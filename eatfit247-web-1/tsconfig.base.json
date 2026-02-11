@@ -9,6 +9,7 @@
     "baseUrl": ".",
     "paths": {
       "@eatfit247-web-1/ui": ["ui/src/index.ts"],
+      "@shared-ui": ["libs/shared-ui/src/index.ts"],
       "@shared-ui/layout": ["libs/shared-ui/src/lib/layout/index.ts"],
       "@app/layout/*": ["src/app/layout/*"],
       "@eatfit247-shared-library/*": ["../shared-library/src/*"]

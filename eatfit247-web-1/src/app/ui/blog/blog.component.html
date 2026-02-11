@@ -1,29 +1,33 @@
 <div class="blog-page">
+  <!-- Banner Section -->
+  @if (banners().length > 0) {
+    <app-banner [banners]="banners()"></app-banner>
+  }
+
   <!-- Page Header -->
   <section class="blog-header">
-    <h1 class="blog-title">Our Blog</h1>
-    <p class="blog-subtitle">Discover the latest articles, tips, and insights</p>
+    <h1 class="blog-title heading-1">Our Blog</h1>
+    <p class="blog-subtitle body-b3">
+      Discover the latest articles, tips, and insights
+    </p>
   </section>
 
   <!-- Loading State -->
-  @if (loading) {
-    <div class="blog-loading">
-      <div class="loading-spinner"></div>
-      <p>Loading blogs...</p>
-    </div>
+  @if (loading()) {
+    <app-loader page="blog"></app-loader>
   }
 
   <!-- Blogs Grid -->
-  @if (!loading && blogs.length > 0) {
+  @if (!loading() && blogs().length > 0) {
     <div class="blogs-grid">
-      @for (blog of blogs; track blog.id) {
+      @for (blog of blogs(); track blog.id) {
         <app-card [data]="blog"></app-card>
       }
     </div>
   }
 
   <!-- Empty State -->
-  @if (!loading && blogs.length === 0) {
+  @if (!loading() && blogs().length === 0) {
     <app-empty-state
       title="No blogs found"
       description="There are no blog posts available at the moment."
@@ -31,12 +35,12 @@
   }
 
   <!-- Pagination -->
-  @if (!loading && totalBlogs > pageSize) {
+  @if (!loading() && totalBlogs() > pageSize()) {
     <div class="blog-pagination">
       <mat-paginator
-        [length]="totalBlogs"
-        [pageSize]="pageSize"
-        [pageIndex]="currentPage"
+        [length]="totalBlogs()"
+        [pageSize]="pageSize()"
+        [pageIndex]="currentPage()"
         [pageSizeOptions]="[6, 12, 24, 48]"
         (page)="onPageChange($event)"
         showFirstLastButtons

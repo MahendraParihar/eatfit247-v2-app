@@ -1,3 +1,154 @@
-<p>Blog Detail works!</p>
+<section class="blog-detail-page" *ngIf="!loading && blog; else blogDetailLoading">
+  <div class="blog-detail-container">
+    <!-- Breadcrumb -->
+    <nav class="blog-detail-breadcrumb" aria-label="Breadcrumb">
+      <app-button
+        variant="text"
+        size="sm"
+        color="primary"
+        class="breadcrumb-link"
+        routerLink="/blog"
+      >
+        Blog
+      </app-button>
+      <span class="breadcrumb-separator">&gt;</span>
+      <span class="breadcrumb-current">Blog Details</span>
+    </nav>
+
+    <!-- Layout: main content + sidebar -->
+    <div class="blog-detail-layout">
+      <!-- Left column: blog content -->
+      <article class="blog-detail-main">
+        <!-- Category badge -->
+        <div class="blog-detail-category" *ngIf="blog.category">
+          <span class="category-badge">{{ blog.category }}</span>
+        </div>
+
+        <!-- Featured image -->
+        <figure class="blog-detail-image" *ngIf="blog.imageUrl">
+          <img
+            [src]="blog.imageUrl"
+            [alt]="blog.imageAlt || blog.title"
+            loading="lazy"
+          />
+        </figure>
+
+        <!-- Meta row -->
+        <div
+          class="blog-detail-meta body-b6"
+          *ngIf="blog.formattedDate || blog.readTimeMinutes"
+        >
+          <span class="meta-item" *ngIf="blog.formattedDate">
+            {{ blog.formattedDate }}
+          </span>
+          <span
+            class="meta-separator"
+            *ngIf="blog.formattedDate && blog.readTimeMinutes"
+          >
+            &bull;
+          </span>
+          <span class="meta-item" *ngIf="blog.readTimeMinutes">
+            {{ blog.readTimeMinutes }} min read
+          </span>
+        </div>
+
+        <!-- Title -->
+        <h1 class="blog-detail-title heading-2">
+          {{ blog.title }}
+        </h1>
+
+        <!-- Content -->
+        <div
+          class="blog-detail-content body-b3"
+          [innerHTML]="blog.safeContentHtml"
+        ></div>
+      </article>
+
+      <!-- Right column: share + related (moves below content on mobile) -->
+      <aside class="blog-detail-sidebar" aria-label="Share and related articles">
+        <!-- Share section -->
+        <section class="share-card" aria-labelledby="share-card-title">
+          <div class="share-card-header">
+            <h2 id="share-card-title" class="share-card-title heading-2">
+              Share with your community!
+            </h2>
+          </div>
+
+          <div class="share-icons" aria-label="Share on social platforms">
+            <app-social-site
+              [items]="shareItems"
+              aria-label="Share this blog on social media"
+            ></app-social-site>
+          </div>
+        </section>
+
+        <!-- Related blogs -->
+        <section
+          class="related-articles"
+          *ngIf="relatedArticles.length > 0"
+          aria-labelledby="related-articles-title"
+        >
+          <h2 id="related-articles-title" class="related-title heading-3">
+            Related Blogs
+          </h2>
+
+          <div class="related-list">
+            <article
+              class="related-card"
+              *ngFor="let article of relatedArticles"
+            >
+              <!-- Related blog title only -->
+              <h3 class="related-card-title body-b4">
+                <a
+                  class="related-card-title-link"
+                  [routerLink]="article.linkUrl"
+                >
+                  {{ article.title }}
+                </a>
+              </h3>
+            </article>
+          </div>
+        </section>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<!-- Skeleton loader / loading state -->
+<ng-template #blogDetailLoading>
+  <section class="blog-detail-page blog-detail-page--loading" *ngIf="!error">
+    <div class="blog-detail-container">
+      <app-loader page="blog-detail"></app-loader>
+
+      <div class="skeleton-breadcrumb"></div>
+
+      <div class="blog-detail-layout">
+        <div class="blog-detail-main">
+          <div class="skeleton-chip"></div>
+          <div class="skeleton-image"></div>
+          <div class="skeleton-meta"></div>
+          <div class="skeleton-title"></div>
+          <div class="skeleton-paragraph"></div>
+          <div class="skeleton-paragraph"></div>
+          <div class="skeleton-paragraph skeleton-paragraph--short"></div>
+        </div>
+
+        <div class="blog-detail-sidebar">
+          <div class="skeleton-share-card"></div>
+          <div class="skeleton-related-card"></div>
+          <div class="skeleton-related-card"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="blog-detail-error" *ngIf="error">
+    <div class="blog-detail-container">
+      <p class="blog-detail-error-message body-b6">
+        We couldn’t load this blog article. Please try again later.
+      </p>
+    </div>
+  </section>
+</ng-template>
 
 
