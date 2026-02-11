@@ -1,8 +1,19 @@
+@use '../../../styles/breakpoints' as *;
+@use '../../../styles/tokens' as *;
+
 .site-footer {
   padding: 2.5rem 1.5rem 1.75rem;
   background-color: #050608;
   color: #e5e7eb;
   font-size: 0.875rem;
+
+  @include respond(md) {
+    padding: 3rem 2rem 2rem;
+  }
+
+  @include respond(lg) {
+    padding: 3.5rem 2.5rem 2.25rem;
+  }
 }
 
 .site-footer__inner {
@@ -23,6 +34,14 @@
   max-width: 100%;
   height: auto;
   margin-bottom: 1.25rem;
+
+  @include respond(md) {
+    width: 200px;
+  }
+
+  @include respond(lg) {
+    width: 220px;
+  }
 }
 
 .site-footer__description {
@@ -42,8 +61,10 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
   border-radius: 50%;
   transition: transform 0.2s ease, opacity 0.2s ease;
   text-decoration: none;
@@ -61,8 +82,8 @@
 }
 
 .site-footer__social-icon {
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
   display: block;
 }
 
@@ -80,10 +101,6 @@
   color: #FEFEFE;
 }
 
-.site-footer__heading--spaced {
-  margin-top: 1.5rem;
-}
-
 .site-footer__nav {
   display: flex;
   flex-direction: column;
@@ -96,6 +113,8 @@
   gap: 0.4rem;
   text-decoration: none;
   color: #FEFEFECC;
+  min-height: 44px;
+  transition: color 0.2s ease, text-decoration 0.2s ease;
 }
 
 .site-footer__link:hover,
@@ -104,10 +123,16 @@
   text-decoration: underline;
 }
 
+.site-footer__link:focus-visible {
+  outline: 2px solid #f9fafb;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
 .site-footer__text {
   margin: 0;
   line-height: 1.6;
-  color: #d1d5db;
+  color: #FEFEFECC;
 }
 
 .site-footer__bottom {
@@ -150,7 +175,7 @@ color: #FEFEFECC;
   border: 0;
 }
 
-@media (min-width: 768px) {
+@include respond(md) {
   .site-footer__inner {
     flex-direction: row;
     align-items: flex-start;
@@ -170,6 +195,16 @@ color: #FEFEFECC;
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
+  }
+}
+
+@include respond(lg) {
+  .site-footer__inner {
+    gap: 3rem;
+  }
+
+  .site-footer__social {
+    gap: 1rem;
   }
 }
 

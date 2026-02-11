@@ -1,4 +1,36 @@
-.about-shweta-shah-page {
+.about-shweta-shah {
+  width: 100%;
 }
 
+.about-shweta-shah__content {
+  margin-top: var(--space-6);
+}
 
+.about-shweta-shah__text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.about-shweta-sign__image {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+
+.about-shweta-shah__image {
+  width: 100%;
+}
+
+.about-shweta-shah-right {
+  display: flex;
+  flex-direction: column;
+}
+
+.about-shweta-shah__photo {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 0;
+}

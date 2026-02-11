@@ -1,22 +1,32 @@
-import { Component, inject } from '@angular/core';
-import { DOCUMENT } from '@angular/common';
-import { BaseLayoutComponent } from './layout/base-layout/base-layout.component';
+import { Component, inject, OnInit } from '@angular/core';
+import { RouterOutlet } from '@angular/router';
+import { ThemeService } from './core/services/theme.service';
+import { SEOService } from './core/services/seo.service';
+import { HttpService } from './core/services/http.service';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [BaseLayoutComponent],
-  template: `<app-base-layout />`,
+  imports: [RouterOutlet],
+  template: `<router-outlet />`,
   styleUrl: './app.scss',
 })
-export class App {
-  protected title = 'eatfit247-web-1';
+export class App implements OnInit {
+  private readonly themeService = inject(ThemeService);
+  private readonly seoService = inject(SEOService);
+  private readonly httpService = inject(HttpService);
 
-  private readonly document = inject(DOCUMENT);
-
-  constructor() {
-    // Default the application to the light theme. Switch between
-    // `light-theme` and `dark-theme` on `document.body` to toggle.
-    this.document.body.classList.add('light-theme');
+  async ngOnInit(): Promise<void> {
+    // Theme is initialized in ThemeService constructor
+    
+    // Set HTTP service base URL for API calls
+    // TODO: Move this to environment configuration or APP_INITIALIZER
+    // For now, using default localhost. Update for production.
+    // In production, this should be set from environment variables or config
+    const apiBaseUrl = 'http://localhost:3000/api/v2';
+    this.httpService.setBaseUrl(apiBaseUrl);
+    
+    // Initialize SEO for the current route
+    await this.seoService.initializeSeo();
   }
 }

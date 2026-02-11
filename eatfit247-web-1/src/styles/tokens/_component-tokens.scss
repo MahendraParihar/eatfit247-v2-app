@@ -1,0 +1,28 @@
+// Component-specific tokens (future-ready)
+// These can be extended as components are built
+
+:root {
+  // Button Tokens
+  --button-border-radius: var(--radius-button);
+  --button-min-height: 44px;
+  --button-padding-x: var(--space-4);
+  --button-padding-y: var(--space-2);
+
+  // Card Tokens
+  --card-border-radius: var(--radius-none);
+  --card-padding: var(--space-5);
+  --card-border: 1px solid var(--color-border);
+
+  // Input Tokens
+  --input-border-radius: var(--radius-none);
+  --input-min-height: 44px;
+  --input-padding-x: var(--space-4);
+  --input-padding-y: var(--space-2);
+  --input-border: 1px solid var(--color-border);
+
+  // Container Tokens
+  --container-max-width-lg: 1200px;
+  --container-max-width-xl: 1320px;
+  --container-padding-fluid: var(--space-fluid-md);
+}
+

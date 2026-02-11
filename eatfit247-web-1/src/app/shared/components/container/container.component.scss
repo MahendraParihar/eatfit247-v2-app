@@ -1,0 +1,20 @@
+@use '../../../../styles/breakpoints' as *;
+@use '../../../../styles/tokens' as *;
+
+:host {
+  display: block;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--container-padding-fluid);
+  padding-right: var(--container-padding-fluid);
+
+  @include respond(lg) {
+    max-width: var(--container-max-width-lg);
+  }
+
+  @include respond(xl) {
+    max-width: var(--container-max-width-xl);
+  }
+}
+

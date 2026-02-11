@@ -1,0 +1,111 @@
+<div class="card" [class]="data.cssClass || ''">
+  <!-- Image Section -->
+  <div class="card-image-container">
+    @if (data.imageUrl) {
+      <img
+        [src]="data.imageUrl"
+        [alt]="data.imageAlt || data.title"
+        class="card-image"
+        loading="lazy"
+        (error)="$event.target.style.display = 'none'"
+      />
+    } @else {
+      <div class="card-image-placeholder">
+        <svg
+          width="64"
+          height="64"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+          <circle cx="8.5" cy="8.5" r="1.5" />
+          <polyline points="21 15 16 10 5 21" />
+        </svg>
+      </div>
+    }
+    
+    @if (data.category) {
+      <span class="card-category-tag">{{ data.category }}</span>
+    }
+  </div>
+
+  <!-- Content Section -->
+  <div class="card-content">
+    <!-- Metadata -->
+    <div class="card-meta">
+      @if (getFormattedDate()) {
+        <span class="card-meta-item">
+          <svg
+            class="card-meta-icon"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+            <line x1="16" y1="2" x2="16" y2="6" />
+            <line x1="8" y1="2" x2="8" y2="6" />
+            <line x1="3" y1="10" x2="21" y2="10" />
+          </svg>
+          {{ getFormattedDate() }}
+        </span>
+      }
+      
+      @if (getReadTime()) {
+        <span class="card-meta-item">
+          <svg
+            class="card-meta-icon"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <polyline points="12 6 12 12 16 14" />
+          </svg>
+          {{ getReadTime() }}
+        </span>
+      }
+    </div>
+
+    <!-- Title -->
+    <h3 class="card-title">{{ data.title }}</h3>
+
+    <!-- Summary -->
+    <p class="card-summary">{{ data.summary }}</p>
+
+    <!-- Read More Link -->
+    @if (data.linkUrl) {
+      <a [routerLink]="data.linkUrl" class="card-read-more">
+        Read More
+        <svg
+          class="card-read-more-icon"
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <line x1="5" y1="12" x2="19" y2="12" />
+          <polyline points="12 5 19 12 12 19" />
+        </svg>
+      </a>
+    }
+  </div>
+</div>
+

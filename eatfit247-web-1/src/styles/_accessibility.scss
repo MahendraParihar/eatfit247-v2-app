@@ -1,0 +1,47 @@
+@use 'tokens' as *;
+@use 'spacing-tokens' as *;
+
+:root {
+  --focus-outline-width: 2px;
+  --focus-outline-offset: 2px;
+  --focus-outline-color: var(--color-primary);
+  --min-tap-target: 44px;
+}
+
+*:focus-visible {
+  outline: var(--focus-outline-width) solid var(--focus-outline-color);
+  outline-offset: var(--focus-outline-offset);
+}
+
+button,
+a,
+input[type='button'],
+input[type='submit'],
+input[type='reset'],
+[role='button'] {
+  min-height: var(--min-tap-target);
+  min-width: var(--min-tap-target);
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+[role='button']:focus-visible {
+  outline: var(--focus-outline-width) solid var(--focus-outline-color);
+  outline-offset: var(--focus-outline-offset);
+}
+
+.skip-link {
+  position: absolute;
+  top: -100px;
+  left: 0;
+  background: var(--color-surface-card);
+  color: var(--color-text-primary);
+  padding: var(--space-2) var(--space-4);
+  text-decoration: none;
+  z-index: 1000;
+}
+
+.skip-link:focus {
+  top: 0;
+}

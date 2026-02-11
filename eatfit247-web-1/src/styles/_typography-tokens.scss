@@ -1,0 +1,150 @@
+@use 'tokens' as *;
+
+:root {
+  // Fluid Typography - Using clamp for responsive scaling
+  --font-h1-size: clamp(28px, 4vw, 32px);
+  --font-h1-line-height: 40px;
+  --font-h1-weight: var(--font-weight-bold);
+
+  --font-h2-size: clamp(22px, 3vw, 24px);
+  --font-h2-line-height: 32px;
+  --font-h2-weight: var(--font-weight-bold);
+
+  --font-h3-size: clamp(18px, 2.5vw, 20px);
+  --font-h3-line-height: 28px;
+  --font-h3-weight: var(--font-weight-bold);
+
+  --font-h4-size: clamp(18px, 2.5vw, 20px);
+  --font-h4-line-height: 28px;
+  --font-h4-weight: var(--font-weight-semibold);
+
+  --font-h5-size: clamp(18px, 2.5vw, 20px);
+  --font-h5-line-height: 28px;
+  --font-h5-weight: var(--font-weight-semibold);
+
+  // Body Text Variants
+  --font-body-b1-size: 16px;
+  --font-body-b1-line-height: 24px;
+  --font-body-b1-weight: var(--font-weight-bold);
+
+  --font-body-b2-size: 16px;
+  --font-body-b2-line-height: 24px;
+  --font-body-b2-weight: var(--font-weight-semibold);
+
+  --font-body-b3-size: 16px;
+  --font-body-b3-line-height: 24px;
+  --font-body-b3-weight: var(--font-weight-regular);
+
+  --font-body-b4-size: 14px;
+  --font-body-b4-line-height: 20px;
+  --font-body-b4-weight: var(--font-weight-bold);
+
+  --font-body-b5-size: 14px;
+  --font-body-b5-line-height: 20px;
+  --font-body-b5-weight: var(--font-weight-semibold);
+
+  --font-body-b6-size: 14px;
+  --font-body-b6-line-height: 20px;
+  --font-body-b6-weight: var(--font-weight-regular);
+
+  // Button Text
+  --font-button-size: 16px;
+  --font-button-line-height: 24px;
+  --font-button-weight: var(--font-weight-medium);
+}
+
+.heading-1 {
+  font-family: var(--font-family-inter);
+  font-size: var(--font-h1-size);
+  line-height: var(--font-h1-line-height);
+  font-weight: var(--font-h1-weight);
+  color: var(--color-text-primary);
+}
+
+.heading-2 {
+  font-family: var(--font-family-inter);
+  font-size: var(--font-h2-size);
+  line-height: var(--font-h2-line-height);
+  font-weight: var(--font-h2-weight);
+  color: var(--color-text-primary);
+}
+
+.heading-3 {
+  font-family: var(--font-family-inter);
+  font-size: var(--font-h3-size);
+  line-height: var(--font-h3-line-height);
+  font-weight: var(--font-h3-weight);
+  color: var(--color-text-primary);
+}
+
+.heading-4 {
+  font-family: var(--font-family-inter);
+  font-size: var(--font-h4-size);
+  line-height: var(--font-h4-line-height);
+  font-weight: var(--font-h4-weight);
+  color: var(--color-text-primary);
+}
+
+.heading-5 {
+  font-family: var(--font-family-inter);
+  font-size: var(--font-h5-size);
+  line-height: var(--font-h5-line-height);
+  font-weight: var(--font-h5-weight);
+  color: var(--color-text-primary);
+}
+
+.body-b1 {
+  font-family: var(--font-family-inter);
+  font-size: var(--font-body-b1-size);
+  line-height: var(--font-body-b1-line-height);
+  font-weight: var(--font-body-b1-weight);
+  color: var(--color-text-primary);
+}
+
+.body-b2 {
+  font-family: var(--font-family-inter);
+  font-size: var(--font-body-b2-size);
+  line-height: var(--font-body-b2-line-height);
+  font-weight: var(--font-body-b2-weight);
+  color: var(--color-text-primary);
+}
+
+.body-b3 {
+  font-family: var(--font-family-inter);
+  font-size: var(--font-body-b3-size);
+  line-height: var(--font-body-b3-line-height);
+  font-weight: var(--font-body-b3-weight);
+  color: var(--color-text-primary);
+}
+
+.body-b4 {
+  font-family: var(--font-family-inter);
+  font-size: var(--font-body-b4-size);
+  line-height: var(--font-body-b4-line-height);
+  font-weight: var(--font-body-b4-weight);
+  color: var(--color-text-primary);
+}
+
+.body-b5 {
+  font-family: var(--font-family-inter);
+  font-size: var(--font-body-b5-size);
+  line-height: var(--font-body-b5-line-height);
+  font-weight: var(--font-body-b5-weight);
+  color: var(--color-text-primary);
+}
+
+.body-b6 {
+  font-family: var(--font-family-inter);
+  font-size: var(--font-body-b6-size);
+  line-height: var(--font-body-b6-line-height);
+  font-weight: var(--font-body-b6-weight);
+  color: var(--color-text-primary);
+}
+
+.button-text {
+  font-family: var(--font-family-inter);
+  font-size: var(--font-button-size);
+  line-height: var(--font-button-line-height);
+  font-weight: var(--font-button-weight);
+  color: var(--color-text-primary);
+}

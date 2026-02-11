@@ -1,0 +1,231 @@
+@use '../../../../../src/styles/tokens' as *;
+
+.app-button {
+  border-radius: var(--button-border-radius);
+  min-height: var(--button-min-height);
+  font-family: var(--font-family-inter);
+  font-size: var(--font-button-size);
+  line-height: var(--font-button-line-height);
+  font-weight: var(--font-button-weight);
+  transition: background-color 0.2s ease, border-color 0.2s ease,
+    color 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  cursor: pointer;
+  border: none;
+  outline: none;
+
+  &:focus-visible {
+    outline: var(--focus-outline-width) solid var(--focus-outline-color);
+    outline-offset: var(--focus-outline-offset);
+  }
+
+  &--full-width {
+    width: 100%;
+  }
+
+  &--disabled,
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+
+  &--loading {
+    cursor: wait;
+  }
+
+  &__spinner {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: var(--space-2);
+  }
+
+  &__icon-start {
+    margin-right: var(--space-1);
+  }
+
+  &__icon-end {
+    margin-left: var(--space-1);
+  }
+
+  &--checked {
+    // Toggle button checked state styling
+    opacity: 1;
+  }
+}
+
+// Size Variants
+.app-button--sm {
+  height: 40px;
+  padding-inline: var(--space-4);
+  min-height: 40px;
+}
+
+.app-button--md {
+  height: 44px;
+  padding-inline: var(--space-5);
+  min-height: 44px;
+}
+
+.app-button--lg {
+  height: 52px;
+  padding-inline: var(--space-6);
+  min-height: 52px;
+}
+
+// Variant Styles - Primary
+.app-button--primary {
+  background-color: var(--color-primary);
+  color: var(--color-surface-white);
+
+  &:hover:not(:disabled):not(.app-button--loading) {
+    background-color: var(--color-primary-hover);
+  }
+
+  &:disabled,
+  &.app-button--disabled {
+    background-color: var(--color-primary);
+    opacity: 0.6;
+  }
+}
+
+// Variant Styles - Secondary
+.app-button--secondary {
+  background-color: var(--color-surface-card);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+
+  &:hover:not(:disabled):not(.app-button--loading) {
+    background-color: var(--color-surface-page);
+  }
+
+  &:disabled,
+  &.app-button--disabled {
+    background-color: var(--color-surface-card);
+    border-color: var(--color-border);
+    opacity: 0.6;
+  }
+}
+
+// Variant Styles - Outline
+.app-button--outline {
+  background-color: transparent;
+  border: 1px solid var(--color-primary);
+  color: var(--color-primary);
+
+  &:hover:not(:disabled):not(.app-button--loading) {
+    background-color: var(--color-primary);
+    color: var(--color-surface-white);
+  }
+
+  &:disabled,
+  &.app-button--disabled {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    opacity: 0.6;
+  }
+}
+
+// Variant Styles - Text
+.app-button--text {
+  background-color: transparent;
+  color: var(--color-primary);
+  border: none;
+
+  &:hover:not(:disabled):not(.app-button--loading) {
+    background-color: var(--color-surface-page);
+  }
+
+  &:disabled,
+  &.app-button--disabled {
+    color: var(--color-primary);
+    opacity: 0.6;
+  }
+}
+
+// Variant Styles - Raised
+.app-button--raised {
+  // Material raised button uses elevation, let Material handle styling
+  // Custom overrides can be added here if needed
+}
+
+// Variant Styles - Icon Button
+.app-button--icon {
+  // Icon buttons are circular/square, Material handles sizing
+  // Custom overrides can be added here if needed
+}
+
+// Variant Styles - FAB
+.app-button--fab {
+  // FAB buttons are circular with elevation, Material handles styling
+  // Custom overrides can be added here if needed
+}
+
+// Variant Styles - Mini FAB
+.app-button--mini-fab {
+  // Mini FAB buttons are smaller circular buttons, Material handles styling
+  // Custom overrides can be added here if needed
+}
+
+// Color Variants (Material theme colors)
+.app-button--color-primary {
+  // Material will handle primary color theming
+}
+
+.app-button--color-accent {
+  // Material will handle accent color theming
+}
+
+.app-button--color-warn {
+  // Material will handle warn color theming
+}
+
+// Override Material button styles via host class binding
+:host {
+  display: inline-block;
+
+  &.app-button--full-width {
+    display: block;
+    width: 100%;
+  }
+}
+
+// Material button styling (direct styling since buttons are in our template)
+.app-button.mat-mdc-flat-button,
+.app-button.mat-mdc-stroked-button,
+.app-button.mat-mdc-button,
+.app-button.mat-mdc-raised-button {
+  border-radius: var(--button-border-radius) !important;
+  min-height: inherit !important;
+  height: inherit !important;
+  padding-inline: inherit !important;
+  font-family: inherit !important;
+  font-size: inherit !important;
+  line-height: inherit !important;
+  font-weight: inherit !important;
+  text-transform: none !important;
+  letter-spacing: normal !important;
+}
+
+.app-button.mat-mdc-stroked-button {
+  border-width: 1px !important;
+}
+
+// Icon button styling
+.app-button.mat-mdc-icon-button {
+  font-family: inherit !important;
+  text-transform: none !important;
+  letter-spacing: normal !important;
+}
+
+// FAB button styling
+.app-button.mat-mdc-fab,
+.app-button.mat-mdc-mini-fab {
+  font-family: inherit !important;
+  text-transform: none !important;
+  letter-spacing: normal !important;
+}
+

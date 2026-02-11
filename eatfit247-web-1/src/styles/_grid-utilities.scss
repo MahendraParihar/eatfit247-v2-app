@@ -1,0 +1,47 @@
+@use 'breakpoints' as *;
+
+.layout-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+
+  @include respond(md) {
+    gap: var(--space-5);
+  }
+
+  @include respond(lg) {
+    gap: var(--space-6);
+  }
+}
+
+.layout-grid--2 {
+  @extend .layout-grid;
+
+  @include respond(md) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.layout-grid--3 {
+  @extend .layout-grid;
+
+  @include respond(md) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @include respond(lg) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.layout-grid--4 {
+  @extend .layout-grid;
+
+  @include respond(md) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @include respond(lg) {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}

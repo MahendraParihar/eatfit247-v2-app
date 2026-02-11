@@ -55,6 +55,9 @@
     "serve": {
       "continuous": true,
       "executor": "@angular/build:dev-server",
+      "options": {
+        "proxyConfig": "proxy.config.json"
+      },
       "configurations": {
         "production": {
           "buildTarget": "eatfit247-web-1:build:production"

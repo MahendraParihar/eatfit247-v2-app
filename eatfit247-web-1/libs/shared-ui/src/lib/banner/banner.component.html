@@ -1,0 +1,72 @@
+@if (banners.length > 0) {
+  <div
+    class="banner"
+    [style.height]="height"
+    (mouseenter)="onMouseEnter()"
+    (mouseleave)="onMouseLeave()"
+  >
+    <!-- Banner Container -->
+    <div class="banner-container">
+      <!-- Slides Wrapper -->
+      <div
+        class="slides-wrapper"
+        [style.transform]="'translateX(-' + (currentIndex() * 100) + '%)'"
+        [style.transition-duration]="transitionDuration + 'ms'"
+      >
+        @for (banner of banners; track banner.fileName; let i = $index) {
+          <div
+            class="slide"
+            [class.active]="currentIndex() === i"
+          >
+            <img
+              [src]="banner.webUrl"
+              [alt]="banner.originalName || 'Banner image'"
+              class="banner-image"
+              loading="lazy"
+            />
+          </div>
+        }
+      </div>
+
+      <!-- Navigation Arrows -->
+      @if (showArrows && hasMultipleItems()) {
+        <button
+          class="banner-nav-btn prev-btn"
+          (click)="previous()"
+          aria-label="Previous banner"
+          type="button"
+        >
+          <mat-icon>chevron_left</mat-icon>
+        </button>
+        <button
+          class="banner-nav-btn next-btn"
+          (click)="next()"
+          aria-label="Next banner"
+          type="button"
+        >
+          <mat-icon>chevron_right</mat-icon>
+        </button>
+      }
+
+      <!-- Dots Indicator -->
+      @if (showDots && hasMultipleItems()) {
+        <div class="banner-dots">
+          @for (banner of banners; track banner.fileName; let i = $index) {
+            <button
+              class="dot"
+              [class.active]="currentIndex() === i"
+              (click)="goToSlide(i)"
+              [attr.aria-label]="'Go to banner ' + (i + 1)"
+              type="button"
+            ></button>
+          }
+        </div>
+      }
+    </div>
+  </div>
+} @else {
+  <div class="banner-empty">
+    <p>No banners available</p>
+  </div>
+}
+

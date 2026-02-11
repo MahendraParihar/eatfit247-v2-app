@@ -1,0 +1,7 @@
+@use '../../../../../../src/styles/spacing-tokens' as *;
+
+:host {
+  display: block;
+  padding-top: var(--space-fluid-lg);
+  padding-bottom: var(--space-fluid-lg);
+}
