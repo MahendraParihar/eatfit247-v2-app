@@ -1,4 +1,68 @@
-.home-page {
+@use '../../../styles/spacing-tokens';
+@use '../../../styles/breakpoints';
+
+// hall of framers
+.home-page__section--hall-of-fame {
+  border-top: 1px solid var(--color-divider);
+  padding-top: var(--space-fluid-lg);
 }
 
+.home_page___section_hall-of_fame_container {
+  display: flex;
+  flex-direction: row;
+  gap: var(--space-8);
+  align-items: center;
+  justify-content: center;
 
+  button {
+    border-radius: 999px;
+  }
+
+  .left-btn {
+
+  }
+
+  .right-btn {
+  }
+
+  .grid-section {
+    max-width: 50%;
+    gap: var(--space-4);
+    padding-right: 40px;
+    border-radius: 12px;
+    border: 1px solid var(--color-divider);
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+
+    img {
+      width: 100%;
+      border-radius: 12px 0 0 12px;
+    }
+
+    .content {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+
+      .heading-5 {
+        color: var(--color-text-primary);
+        margin: 0 !important;
+      }
+
+      .body-b6 {
+        color: var(--color-text-secondary);
+      }
+    }
+
+  }
+}
+
+@include breakpoints.respond(md) {
+  .our-programs__cards {
+    flex-direction: row;
+  }
+
+  .our-programs__card {
+    flex: 1;
+  }
+}

@@ -1,5 +1,53 @@
-@if (banners.length > 0) {
-  <app-banner [banners]="banners"></app-banner>
+@if (loading()) {
+  <app-loader page="home"></app-loader>
 }
 
-<p>Home works!</p>
+<div class="home-page__section page-container">
+
+  @if (!loading()) {
+    @if (banners.length > 0) {
+      <app-banner [banners]="banners"></app-banner>
+    }
+
+    <!-- Programs -->
+    <app-common-program [showFeature]="false" [showReadMoreBtn]="true"></app-common-program>
+
+    <!-- Hall of Fame -->
+    <section class="home-page__section home-page__section--hall-of-fame">
+      <div class="section__header">
+        <p class="section__tagline section__hightlight">Those who believe they can change the world are the ones who
+          do.</p>
+        <h2 class="section__title">Hall of Fame</h2>
+        <p class="section__tagline">
+          Here's an assortment of our healthy superstars who decided to take charge and came out of the journey
+          healthier and happier. Let their story be the one that moves you to write yours.
+        </p>
+      </div>
+      <div class="home_page___section_hall-of_fame_container">
+        <div class="left-btn">
+          <button
+            matButton="outlined">
+            <mat-icon>arrow_back</mat-icon>
+          </button>
+        </div>
+        <div class="grid-section">
+          <img src="{{getStoryImage(stories[0])}}" alt="Hall of Fame" />
+          <div class="content">
+            <h5 class="heading-5">{{ stories[0].name }}</h5>
+            <p class="body-b6" [innerHTML]="stories[0].description"></p>
+          </div>
+        </div>
+        <div class="right-btn">
+          <button
+            matButton="outlined">
+            <mat-icon>arrow_forward</mat-icon>
+          </button>
+        </div>
+      </div>
+    </section>
+  }
+
+  <!-- From Our Blog -->
+  <app-common-blog></app-common-blog>
+
+</div>

@@ -1,0 +1,20 @@
+@if (!loading()) {
+  <!-- From Our Blog -->
+  <section class="common-blog__section">
+    <div class="section__header">
+      <h2 class="section__title">{{ title }}</h2>
+      <p class="section__tagline">
+        {{ tagline }}
+      </p>
+    </div>
+    <div
+      class="common-blog__grid"
+    >
+      @for (blog of latestBlogs; track blog.id) {
+        <app-card
+          [data]="blog"
+        ></app-card>
+      }
+    </div>
+  </section>
+}

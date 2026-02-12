@@ -1,0 +1,25 @@
+@use '../../../styles/spacing-tokens';
+@use '../../../styles/breakpoints';
+
+// Blog
+.common-blog__section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-fluid-xl);
+  border-top: 1px solid var(--color-divider);
+  padding-top: var(--space-fluid-lg);
+}
+
+.common-blog__grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+// Responsive layouts
+@include breakpoints.respond(md) {
+  .common-blog__grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}

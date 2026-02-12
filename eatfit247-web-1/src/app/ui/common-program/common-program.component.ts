@@ -1,24 +1,20 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit } from '@angular/core';
-import { BannerComponent } from '@shared-ui';
-import { BannerService } from '../../core/services/banner.service';
-import { BannerForEnum } from '@eatfit247-shared-library/enum';
-import { IMediaUpload } from '@eatfit247-shared-library/core';
+import { Component, Input, OnInit } from '@angular/core';
+import { MatButton } from '@angular/material/button';
+import { MatIcon } from '@angular/material/icon';
 import { Program } from '../../core/interfaces/program.interface';
-import { CommonProgramComponent } from '../common-program/common-program.component';
+import { RouterLink } from '@angular/router';
 
 @Component({
   standalone: true,
-  selector: 'app-our-programs',
-  imports: [CommonModule, BannerComponent, CommonProgramComponent],
-  templateUrl: './our-programs.component.html',
-  styleUrl: './our-programs.component.scss'
+  selector: 'app-common-program',
+  imports: [CommonModule, MatIcon, MatButton, RouterLink],
+  templateUrl: './common-program.component.html',
+  styleUrl: './common-program.component.scss'
 })
-export class OurProgramsComponent implements OnInit {
-  private readonly bannerService = inject(BannerService);
-  banners: IMediaUpload[] = [];
-  readonly pageTitle = 'Nutritional Consultations & Wellness Programs';
-  readonly pageTagline = 'Personalised • Natural • Sustainable';
+export class CommonProgramComponent implements OnInit {
+  readonly title = 'Nutritional Consultations & Wellness Programs';
+  readonly tagline = 'Personalised • Natural • Sustainable';
   readonly programs: Program[] = [
     {
       id: 'exclusive-shweta',
@@ -117,31 +113,10 @@ export class OurProgramsComponent implements OnInit {
       ]
     }
   ];
-  readonly termsAndConditions: string[] = [
-    'Payments are non-refundable & non-transferable',
-    'Program is valid only for the registered individual',
-    'Pause upto 20 days may be approved in genuine cases',
-    'Prices are valid till 31st Dec, 2026.',
-    '**Prices are inclusive of Tax, tax will be charged on final payment.'
-  ];
+  @Input() showFeature = false;
+  @Input() showReadMoreBtn = false;
 
-  async ngOnInit(): Promise<void> {
-    await this.loadBannerData();
-  }
-
-  private async loadBannerData(): Promise<void> {
-    try {
-      this.banners = await this.bannerService.getBannerMediaForPage(
-        BannerForEnum.OUR_PROGRAM
-      );
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error(
-        'Failed to load banner data for Our Programs page:',
-        error
-      );
-      this.banners = [];
-    }
-  }
+  ngOnInit(): void {}
 }
+
 

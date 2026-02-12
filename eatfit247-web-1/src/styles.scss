@@ -92,6 +92,13 @@ body.dark-theme {
   letter-spacing: 0.12em;
 }
 
+.section__hightlight {
+  color: var(--color-primary);
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-h3-size);
+  line-height: var(--font-h3-line-height);
+}
+
 .section__badge {
   display: inline-flex;
   align-items: center;
