@@ -97,7 +97,6 @@ export class CheckoutComponent implements OnInit {
   filteredStateOptions: IDropdownItem[] = [];
   // Tax calculation
   taxCalculation: ICalculateProductVariantTaxResponse | null = null;
-  productTaxCalculation: ICalculateProductVariantTaxResponse | null = null;
   isTaxApplicable = false;
   calculatingTax = false;
   // Payment
@@ -436,11 +435,15 @@ export class CheckoutComponent implements OnInit {
       billingAddressId: this.addressId,
       discountAmount: 0
     };
-    this.productTaxCalculation = await this.checkoutService.calculateProductTax(
-      this.memberId,
-      productTaxRequest
-    );
-    this.isTaxApplicable = this.productTaxCalculation.taxAmount > 0;
+    if (this.isProductCheckout) {
+      this.taxCalculation = await this.checkoutService.calculateProductTax(
+        this.memberId,
+        productTaxRequest
+      );
+    }
+    if (this.taxCalculation) {
+      this.isTaxApplicable = this.taxCalculation.taxAmount > 0;
+    }
   }
 
   private async checkPlanTax() {
@@ -456,7 +459,9 @@ export class CheckoutComponent implements OnInit {
       this.memberId,
       taxRequest
     );
-    this.isTaxApplicable = this.taxCalculation.taxAmount > 0;
+    if (this.taxCalculation) {
+      this.isTaxApplicable = this.taxCalculation.taxAmount > 0;
+    }
   }
 
   /**
@@ -469,10 +474,16 @@ export class CheckoutComponent implements OnInit {
     }
     this.calculatingTax = true;
     this.error = null;
-    if (this.isProductCheckout) {
-      await this.checkProductTax();
-    } else {
-      await this.checkPlanTax();
+    try {
+      if (this.isProductCheckout) {
+        await this.checkProductTax();
+      } else {
+        await this.checkPlanTax();
+      }
+    } catch (e: any) {
+      this.error = e.message || 'Tax calculation failed';
+    } finally {
+      this.calculatingTax = false;
     }
   }
 
@@ -498,7 +509,6 @@ export class CheckoutComponent implements OnInit {
       this.loading = true;
       this.error = null;
       const totalAmount =
-        this.productTaxCalculation?.totalAmount ||
         this.taxCalculation?.totalAmount ||
         (this.isProductCheckout ? this.productTotal : this.totalAmount);
       const customerName = `${this.basicDetailsForm.get('firstName')?.value} ${
@@ -624,9 +634,8 @@ export class CheckoutComponent implements OnInit {
       if (!verifyResponse.verified) {
         throw new Error('Payment verification failed');
       }
-      const discountAmount = this.productTaxCalculation?.discountAmount || 0;
+      const discountAmount = this.taxCalculation?.discountAmount || 0;
       const totalAmount =
-        this.productTaxCalculation?.totalAmount ||
         this.taxCalculation?.totalAmount ||
         (this.isProductCheckout ? this.productTotal : this.totalAmount);
       let recaptchaToken: string | undefined;
@@ -729,6 +738,11 @@ export class CheckoutComponent implements OnInit {
       this.orderId = orderId;
       this.paymentId = paymentId;
       this.moveToNextStep();
+
+      // Automatically navigate to success page after a short delay to let user see success state
+      setTimeout(() => {
+        this.navigateToSuccess();
+      }, 1500);
     } catch (error: any) {
       console.error('Error processing payment:', error);
       this.handlePaymentError(error);

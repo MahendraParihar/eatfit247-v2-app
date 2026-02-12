@@ -209,7 +209,7 @@
                             }
                             <th class="text-right">Price</th>
                             <th class="text-center">Qty</th>
-                            <th class="text-right">Tax Amount</th>
+                            <th class="text-right">Tax</th>
                             <th class="text-right">Total</th>
                           </tr>
                           </thead>
@@ -217,7 +217,7 @@
                             @for (product of taxCalculation.items; track product.productVariantId) {
                               <tr>
                                 <td
-                                  class="product-name-cell">{{ isProductCheckout ? programPlan?.plan : productName }}
+                                  class="product-name-cell">{{ isProductCheckout ? productName : programPlan?.plan }}
                                 </td>
                                 @if (isProductCheckout) {
                                   <td>{{ productUnit || '-' }}</td>
@@ -252,6 +252,7 @@
 
                     @if (taxCalculation && taxCalculation.taxAmount > 0) {
                       <div class="summary-row tax-row">
+                        <span></span>
                         <span>₹{{ taxCalculation.taxAmount | number:'1.2-2' }}</span>
                       </div>
                     } @else if (calculatingTax) {

@@ -76,7 +76,6 @@ export class CheckoutSuccessComponent implements OnInit {
         this.isPlanOrder = !!planId;
         await this.loadOrderDetails(orderId, this.isPlanOrder);
       } catch (error: any) {
-        console.error('Error loading order details:', error);
         this.error = error.message || 'Failed to load order details. Please contact support.';
       } finally {
         this.loading = false;
