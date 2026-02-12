@@ -184,21 +184,6 @@
   color: var(--color-text-secondary);
 }
 
-.our-programs__cta {
-  margin-top: auto;
-  align-self: stretch;
-  min-height: var(--button-min-height);
-  padding-inline: var(--button-padding-x);
-  padding-block: var(--button-padding-y);
-  border-radius: var(--button-border-radius);
-  border: none;
-  background-color: var(--color-primary);
-  color: var(--color-surface-white);
-  font-size: var(--font-button-size);
-  font-weight: var(--font-button-weight);
-  cursor: pointer;
-}
-
 .our-programs__cta:hover {
   background-color: var(--color-primary-hover);
 }

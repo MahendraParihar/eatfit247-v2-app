@@ -3,7 +3,7 @@ import { HttpService } from './http.service';
 import {
   IMediaUpload,
   IPublicBanner,
-  IPublicTableList,
+  IPublicTableList
 } from '@eatfit247-shared-library/core';
 import { BannerForEnum } from '@eatfit247-shared-library/enum';
 import { buildMediaUrl } from '../utils/media-url.util';
@@ -32,7 +32,7 @@ export interface SliderItem {
  * Fetches banner data from the public API
  */
 @Injectable({
-  providedIn: 'root',
+  providedIn: 'root'
 })
 export class BannerService {
   private readonly httpService = inject(HttpService);
@@ -51,7 +51,7 @@ export class BannerService {
    * @returns Promise of SliderItem array
    */
   async getBannerSlidesForPage(
-    bannerFor: BannerForEnum,
+    bannerFor: BannerForEnum
   ): Promise<SliderItem[]> {
     try {
       const data =
@@ -60,14 +60,13 @@ export class BannerService {
           {
             params: {
               bannerFor: bannerFor.toString(),
-              limit: '50',
-            },
-          },
+              limit: '50'
+            }
+          }
         );
-
       if (data) {
         return data.data.tableData.map((banner: IPublicBanner) =>
-          this.mapBannerToSliderItem(banner),
+          this.mapBannerToSliderItem(banner)
         );
       }
       return [];
@@ -84,7 +83,7 @@ export class BannerService {
    * If no banners or images are available, an empty array is returned.
    */
   async getBannerMediaForPage(
-    bannerFor: BannerForEnum,
+    bannerFor: BannerForEnum
   ): Promise<IMediaUpload[]> {
     try {
       const data =
@@ -93,15 +92,13 @@ export class BannerService {
           {
             params: {
               bannerFor: bannerFor.toString(),
-              limit: '50',
-            },
-          },
+              limit: '50'
+            }
+          }
         );
-
       if (!data.data || !Array.isArray(data.data.tableData)) {
         return [];
       }
-
       // Flatten all imagePath arrays from the banners and filter out invalid entries
       const images: IMediaUpload[] = data.data.tableData.flatMap(
         (banner: IPublicBanner) =>
@@ -109,11 +106,8 @@ export class BannerService {
             ? ((banner as any).imagePath as IMediaUpload[])
             : []
       );
-
       return images;
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error(`Error fetching banner media for ${bannerFor}:`, error);
       return [];
     }
   }
@@ -126,9 +120,7 @@ export class BannerService {
       banner.imagePath && banner.imagePath.length > 0
         ? banner.imagePath[0]
         : null;
-
     const imageUrl = buildMediaUrl(firstImage?.webUrl);
-
     return {
       id: `banner-${banner.bannerId}`,
       imageUrl,
@@ -142,7 +134,7 @@ export class BannerService {
       primaryActionText: banner.primaryActionText,
       primaryActionUrl: banner.primaryActionUrl,
       secondaryActionText: banner.secondaryActionText,
-      secondaryActionUrl: banner.secondaryActionUrl,
+      secondaryActionUrl: banner.secondaryActionUrl
     };
   }
 }

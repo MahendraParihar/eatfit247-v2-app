@@ -10,7 +10,7 @@
     <!-- Desktop Navigation -->
     <nav class="layout__nav layout__nav--desktop" aria-label="Main navigation">
       <a
-        mat-button
+        matButton
         routerLink="/"
         routerLinkActive="layout__nav-link--active"
         class="layout__nav-link"
@@ -21,7 +21,7 @@
 
       <!-- AboutUs (dropdown) -->
       <button
-        mat-button
+        matButton
         [matMenuTriggerFor]="aboutUsMenu"
         class="layout__nav-link layout__nav-link--button"
         type="button"
@@ -49,7 +49,7 @@
 
       <!-- Our Program -->
       <a
-        mat-button
+        matButton
         routerLink="/our-programs"
         routerLinkActive="layout__nav-link--active"
         class="layout__nav-link"
@@ -59,7 +59,7 @@
 
       <!-- Product -->
       <a
-        mat-button
+        matButton
         routerLink="/product"
         class="layout__nav-link"
       >
@@ -95,18 +95,18 @@
 <!--      </mat-menu>-->
 
       <!-- Success Stories -->
-<!--      <a-->
-<!--        mat-button-->
-<!--        routerLink="/success-stories"-->
-<!--        routerLinkActive="layout__nav-link&#45;&#45;active"-->
-<!--        class="layout__nav-link"-->
-<!--      >-->
-<!--        Success Stories-->
-<!--      </a>-->
+      <a
+        mat-button
+        routerLink="/success-stories"
+        routerLinkActive="layout__nav-link--active"
+        class="layout__nav-link"
+      >
+        Success Stories
+      </a>
 
       <!-- Press & Media -->
       <a
-        mat-button
+        matButton
         routerLink="/press-and-media"
         routerLinkActive="layout__nav-link--active"
         class="layout__nav-link"
@@ -116,7 +116,7 @@
 
       <!-- Blog -->
       <a
-        mat-button
+        matButton
         routerLink="/blog"
         routerLinkActive="layout__nav-link--active"
         class="layout__nav-link"
@@ -126,7 +126,7 @@
 
       <!-- Contact Us -->
       <a
-        mat-button
+        matButton
         routerLink="/contact-us"
         routerLinkActive="layout__nav-link--active"
         class="layout__nav-link"
@@ -136,7 +136,7 @@
     </nav>
 
     <!-- Desktop Get Started Button -->
-    <a routerLink="/our-programs" mat-raised-button color="primary" class="layout__cta layout__cta--desktop">
+    <a routerLink="/our-programs" mat-raised-button color="primary" class="primary-color-action-button layout__cta layout__cta--desktop">
       Get Started
     </a>
 
@@ -156,7 +156,7 @@
   </div>
 
   <!-- Mobile Side Navigation -->
-  <mat-sidenav-container class="layout__mobile-nav-container">
+  <mat-sidenav-container class="layout__mobile-nav-container" [class.mat-drawer-opened]="isMobileMenuOpen">
     <mat-sidenav
       #mobileSidenav
       mode="over"

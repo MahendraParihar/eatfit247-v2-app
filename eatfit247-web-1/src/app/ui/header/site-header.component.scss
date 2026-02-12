@@ -10,6 +10,11 @@
   right: 0;
   z-index: 100;
   box-shadow: none;
+
+  @media (max-width: 1023px) {
+    height: auto;
+    min-height: 64px;
+  }
 }
 
 .layout__header-inner {
@@ -52,9 +57,14 @@
 }
 
 .layout__brand-icon {
-  width: 180px;
-  height: 80px;
+  width: 120px;
+  height: auto;
   flex-shrink: 0;
+
+  @media (min-width: 1024px) {
+    width: 180px;
+    height: 80px;
+  }
 }
 
 // Desktop Navigation
@@ -94,18 +104,17 @@
 }
 
 .layout__nav-link:hover {
-  color: #f84141;
+  color: var(--color-primary);
 }
 
 .layout__nav-link--active {
-  color: #111827;
-  font-weight: 500;
+  color: var(--color-primary);
 }
 
 .layout__nav-link--button {
   font-size: 0.9375rem;
   font-weight: 400;
-  color: #111827;
+  color: var(--color-text-primary);
   transition: color 0.2s ease-in-out;
   padding-block: 0.5rem;
   white-space: nowrap;
@@ -113,28 +122,6 @@
   ::ng-deep .mat-mdc-button-persistent-ripple {
     display: none;
   }
-}
-
-// Get Started Button
-.layout__cta {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.625rem 1.5rem;
-  background-color: #f84141;
-  color: #ffffff;
-  text-decoration: none;
-  font-size: 0.9375rem;
-  font-weight: 500;
-  border-radius: 8px;
-  transition: background-color 0.2s ease-in-out;
-  white-space: nowrap;
-  border: none;
-  cursor: pointer;
-}
-
-.layout__cta:hover {
-  background-color: #e03030;
 }
 
 .layout__cta--desktop {
@@ -176,6 +163,15 @@
   height: 100vh;
   z-index: 1000;
   pointer-events: none;
+  background: transparent !important;
+
+  &.mat-drawer-opened {
+    pointer-events: auto;
+  }
+
+  ::ng-deep .mat-drawer-content {
+    background: transparent !important;
+  }
 }
 
 .layout__mobile-nav-overlay {
@@ -228,7 +224,7 @@
   transition: color 0.2s ease-in-out;
 
   &:hover {
-    color: #f84141;
+    color: var(--color-primary);
   }
 }
 
@@ -244,20 +240,14 @@
   padding: 0.875rem 1rem;
   font-size: 1rem;
   font-weight: 400;
-  color: #111827;
   text-decoration: none;
   border-radius: 8px;
   transition: all 0.2s ease-in-out;
-
-  &:hover {
-    background-color: #f9fafb;
-    color: #f84141;
-  }
 }
 
 .layout__mobile-nav-link--active {
   background-color: #fef2f2;
-  color: #f84141;
+  color: var(--color-primary);
   font-weight: 500;
 }
 

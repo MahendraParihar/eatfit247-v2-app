@@ -1,5 +1,34 @@
-@if (banners.length > 0) {
-  <app-banner [banners]="banners"></app-banner>
+@if (loading()) {
+  <app-loader page="success-stories"></app-loader>
 }
+@if (!loading()) {
+  @if (banners.length > 0) {
+    <app-banner [banners]="banners"></app-banner>
+  }
 
-<p>Success Stories works!</p>
+  <div class="success-stories-page page-container">
+    <header class="section__header">
+      <p class="section__tagline section__hightlight">Those who believe they can change the world are the ones who
+        do.</p>
+      <h1 class="section__title">
+        Hall of Fame
+      </h1>
+      <p class="section__tagline">
+        Here's an assortment of our healthy superstars who decided to take charge and came out of the journey healthier
+        and happier. Let their story be the one that moves you to write yours.
+      </p>
+    </header>
+    <div class="success-stories-section">
+      @for (year of years; track year) {
+        <div class="year-group">
+          <h2 class="year-title">{{ year }}</h2>
+          <div class="stories-grid">
+            @for (story of getStoriesForYear(year); track story.successStoryId) {
+              <app-card [data]="mapToCardData(story)"></app-card>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+}

@@ -1,9 +1,42 @@
+@use '@angular/material' as mat;
 @use './styles/tokens' as *;
 @use './styles/spacing-tokens';
 @use './styles/breakpoints';
 @use './styles/typography-tokens';
 @use './styles/grid-utilities';
 @use './styles/accessibility';
+
+// Include core Material styles
+@include mat.core();
+
+// Define a simple Material 3 theme using the project's color tokens
+$theme: mat.define-theme((
+        color: (
+                theme-type: light,
+                primary: mat.$red-palette,
+                tertiary: mat.$blue-palette,
+        ),
+        density: (
+                scale: 0
+        )
+));
+
+// Apply the theme
+html {
+  @include mat.all-component-themes($theme);
+}
+
+// Dark theme support
+.dark-theme {
+  $dark-theme: mat.define-theme((
+          color: (
+                  theme-type: dark,
+                  primary: mat.$red-palette,
+                  tertiary: mat.$blue-palette,
+          )
+  ));
+  @include mat.all-component-colors($dark-theme);
+}
 
 // Angular CDK Overlay styles (required for Material dropdowns, dialogs, tooltips, etc.)
 @import '@angular/cdk/overlay-prebuilt.css';
@@ -77,4 +110,13 @@ body.dark-theme {
   color: var(--color-primary-hover);
   letter-spacing: 0.05em;
   text-transform: uppercase;
+}
+
+.primary-color-action-button {
+  border-radius: var(--button-border-radius);
+  border: none;
+  background-color: var(--color-primary);
+  color: var(--color-surface-white);
+  font-size: var(--font-button-size);
+  font-weight: var(--font-button-weight);
 }
