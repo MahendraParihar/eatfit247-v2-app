@@ -1,9 +1,11 @@
 import {
   Component,
+  ElementRef,
   forwardRef,
   Input,
   OnDestroy,
-  OnInit
+  OnInit,
+  ViewChild
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
@@ -73,6 +75,8 @@ export class RecipeMultiSelectComponent
   private selectedIds: number[] = [];
   private allKnownOptions = new Map<number, IDropdownItem>();
 
+  @ViewChild('searchInput', { static: false }) searchInput?: ElementRef<HTMLInputElement>;
+
   loading = false;
   isDisabled = false;
 
@@ -134,6 +138,10 @@ export class RecipeMultiSelectComponent
     // Clear search box after selection without triggering another search
     this.searchControl.setValue('', { emitEvent: false });
     this.filteredOptions = [];
+    // Clear the input element directly to ensure it's visually cleared
+    if (this.searchInput?.nativeElement) {
+      this.searchInput.nativeElement.value = '';
+    }
     this.onTouched();
   }
 

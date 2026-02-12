@@ -61,6 +61,10 @@ export class MemberDetailsComponent implements OnInit, OnDestroy {
   menuItems: MenuItem[] = [
     { label: 'Dashboard', icon: 'dashboard', route: 'dashboard' },
     { label: 'Assessment', icon: 'assignment', route: 'assessment' },
+    { label: 'Diet Plan', icon: 'restaurant', route: 'diet-plan' },
+    { label: 'Call Logs', icon: 'phone', route: 'call-logs' },
+    { label: 'Payment History', icon: 'payments', route: 'payment-history' },
+    { label: 'Product Orders', icon: 'shopping_cart', route: 'product-orders' },
     { label: 'Pocket Guide', icon: 'menu_book', route: 'pocket-guide' },
     { label: 'Health Issues', icon: 'local_hospital', route: 'health-issues' },
     {
@@ -69,10 +73,6 @@ export class MemberDetailsComponent implements OnInit, OnDestroy {
       route: 'health-parameter-logs',
     },
     { label: 'Issues', icon: 'report_problem', route: 'issues' },
-    { label: 'Call Logs', icon: 'phone', route: 'call-logs' },
-    { label: 'Payment History', icon: 'payments', route: 'payment-history' },
-    { label: 'Product Orders', icon: 'shopping_cart', route: 'product-orders' },
-    { label: 'Diet Plan', icon: 'restaurant', route: 'diet-plan' },
     { label: 'Addresses', icon: 'location_on', route: 'addresses' },
   ];
 
@@ -127,17 +127,13 @@ export class MemberDetailsComponent implements OnInit, OnDestroy {
         this.selectedNutritionistId
       );
       await this.loadMemberDetails();
-      this.snackBar.open(
-        'Nutritionist updated successfully',
-        'Close',
-        { duration: 3000 }
-      );
+      this.snackBar.open('Nutritionist updated successfully', 'Close', {
+        duration: 3000,
+      });
     } catch (error) {
-      this.snackBar.open(
-        'Failed to update nutritionist',
-        'Close',
-        { duration: 3000 }
-      );
+      this.snackBar.open('Failed to update nutritionist', 'Close', {
+        duration: 3000,
+      });
     } finally {
       this.updatingNutritionist = false;
     }
@@ -153,17 +149,13 @@ export class MemberDetailsComponent implements OnInit, OnDestroy {
         this.selectedFranchiseId
       );
       await this.loadMemberDetails();
-      this.snackBar.open(
-        'Franchise updated successfully',
-        'Close',
-        { duration: 3000 }
-      );
+      this.snackBar.open('Franchise updated successfully', 'Close', {
+        duration: 3000,
+      });
     } catch (error) {
-      this.snackBar.open(
-        'Failed to update franchise',
-        'Close',
-        { duration: 3000 }
-      );
+      this.snackBar.open('Failed to update franchise', 'Close', {
+        duration: 3000,
+      });
     } finally {
       this.updatingFranchise = false;
     }
