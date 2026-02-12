@@ -1,13 +1,8 @@
 .checkout-success-container {
-  max-width: var(--container-max-width-lg);
-  margin: 0 auto;
-  padding: var(--space-4) var(--space-fluid-md);
-  min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: flex-start;
 
-  .loading-container,
   .error-container {
     display: flex;
     flex-direction: column;
@@ -382,6 +377,10 @@
         }
       }
     }
+  }
+
+  .mat-mdc-card{
+   background-color: var(--color-surface-card);
   }
 }
 

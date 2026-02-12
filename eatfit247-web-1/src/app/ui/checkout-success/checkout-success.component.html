@@ -1,230 +1,238 @@
-<div class="checkout-success-container">
-  @if (loading) {
-    <div class="loading-container">
-      <mat-spinner></mat-spinner>
-      <p>Loading order details...</p>
-    </div>
-  } @else if (error) {
-    <div class="error-container">
-      <mat-icon class="error-icon">error</mat-icon>
-      <h2>Error</h2>
-      <p>{{ error }}</p>
-      <button mat-raised-button color="primary" (click)="goToHome()">
-        Go to Home
-      </button>
-    </div>
-  } @else if (orderDetails) {
-    <div class="success-content">
-      <!-- Success Header -->
-      <div class="success-header">
-        <div class="success-icon-container">
-          <mat-icon class="success-icon">check_circle</mat-icon>
-        </div>
-        <h1>Order Placed Successfully!</h1>
-        <p class="success-message">Thank you for your order. We've received your payment and will process your order shortly.</p>
-      </div>
-
-      <!-- Order Details Card -->
-      <mat-card class="order-details-card">
-        <mat-card-header>
-          <mat-card-title>
-            <mat-icon>receipt</mat-icon>
-            Order Details
-          </mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-          <div class="order-info-grid">
-            @if (orderDetails.invoiceId) {
-              <div class="info-item">
-                <span class="info-label">Invoice No.:</span>
-                <span class="info-value">{{ orderDetails.invoiceId }}</span>
-              </div>
-            }
-            <div class="info-item">
-              <span class="info-label">Order Date:</span>
-              <span class="info-value">{{ orderDetails.paymentDate | date : 'medium' }}</span>
-            </div>
-            @if (orderDetails.paymentStatus) {
-              <div class="info-item">
-                <span class="info-label">Payment Status:</span>
-                <span class="info-value status-badge">{{ orderDetails.paymentStatus }}</span>
-              </div>
-            }
-          </div>
-        </mat-card-content>
-      </mat-card>
-
-      <!-- Order Items Card -->
-      @if (orderDetails.orderItems && orderDetails.orderItems.length > 0) {
-        <mat-card class="order-items-card">
-          <mat-card-header>
-            <mat-card-title>
-              <mat-icon>shopping_cart</mat-icon>
-              Order Items
-            </mat-card-title>
-          </mat-card-header>
-          <mat-card-content>
-            <div class="order-items-list">
-              @for (item of orderDetails.orderItems; track item.productName) {
-                <div class="order-item">
-                  <div class="item-details">
-                    <h3>{{ item.productName }}</h3>
-                    <p class="item-quantity">Quantity: {{ item.quantity }} {{ item.quantityLabel }}</p>
-                    <p class="item-price">Price: {{ formatCurrency(item.unitPrice, orderDetails.currencyCode) }} each</p>
-                  </div>
-                  <div class="item-total">
-                    {{ formatCurrency(item.totalAmount, orderDetails.currencyCode) }}
-                  </div>
-                </div>
-              }
-            </div>
-          </mat-card-content>
-        </mat-card>
-      }
-
-      <!-- Order Summary Card -->
-      <mat-card class="order-summary-card">
-        <mat-card-header>
-          <mat-card-title>
-            <mat-icon>account_balance_wallet</mat-icon>
-            Order Summary
-          </mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-          <div class="summary-row">
-            <span class="summary-label">Subtotal:</span>
-            <span class="summary-value">{{ formatCurrency(orderDetails.orderAmount, orderDetails.currencyCode) }}</span>
-          </div>
-          @if (orderDetails.taxAmount > 0) {
-            <div class="summary-row">
-              <span class="summary-label">Tax:</span>
-              <span class="summary-value">{{ formatCurrency(orderDetails.taxAmount, orderDetails.currencyCode) }}</span>
-            </div>
-          }
-          @if (orderDetails.discountAmount > 0) {
-            <div class="summary-row discount">
-              <span class="summary-label">Discount:</span>
-              <span class="summary-value">-{{ formatCurrency(orderDetails.discountAmount, orderDetails.currencyCode) }}</span>
-            </div>
-          }
-          <div class="summary-row total">
-            <span class="summary-label">Total Amount:</span>
-            <span class="summary-value">{{ formatCurrency(orderDetails.totalAmount, orderDetails.currencyCode) }}</span>
-          </div>
-        </mat-card-content>
-      </mat-card>
-
-      <!-- Customer Information Card -->
-      @if (orderDetails.member) {
-        <mat-card class="customer-info-card">
-          <mat-card-header>
-            <mat-card-title>
-              <mat-icon>person</mat-icon>
-              Customer Information
-            </mat-card-title>
-          </mat-card-header>
-          <mat-card-content>
-            <div class="customer-info">
-              <p><strong>Name:</strong> {{ orderDetails.member.firstName }} {{ orderDetails.member.lastName }}</p>
-              <p><strong>Email:</strong> {{ orderDetails.member.emailId }}</p>
-              <p><strong>Contact:</strong> {{ orderDetails.member.contactNumber }}</p>
-            </div>
-          </mat-card-content>
-        </mat-card>
-      }
-
-      <!-- Delivery Address Card -->
-      @if (orderDetails.address) {
-        <mat-card class="address-card">
-          <mat-card-header>
-            <mat-card-title>
-              <mat-icon>location_on</mat-icon>
-              Delivery Address
-            </mat-card-title>
-          </mat-card-header>
-          <mat-card-content>
-            <div class="address-info">
-              <p>{{ orderDetails.address.postalAddress }}</p>
-              @if (orderDetails.address.cityVillage) {
-                <p>{{ orderDetails.address.cityVillage }}</p>
-              }
-              @if (orderDetails.address.pinCode) {
-                <p>PIN: {{ orderDetails.address.pinCode }}</p>
-              }
-            </div>
-          </mat-card-content>
-        </mat-card>
-      }
-
-      <!-- Invoice Download Section -->
-      <mat-card class="invoice-card">
-        <mat-card-content>
-          <div class="invoice-section">
-            <div class="invoice-info">
-              <mat-icon class="invoice-icon">description</mat-icon>
-              <div class="invoice-text">
-                <h3>Download Your Invoice</h3>
-                <p class="invoice-message">
-                  Please download your invoice for future reference. Keep it safe as you may need it for returns, exchanges, or warranty claims.
-                </p>
-              </div>
-            </div>
-            <button
-              mat-raised-button
-              color="accent"
-              (click)="downloadInvoice()"
-              [disabled]="downloadingInvoice && canDownloadInvoice">
-              <mat-icon>download</mat-icon>
-              @if (downloadingInvoice) {
-                Downloading...
-              } @else {
-                Download Invoice
-              }
-            </button>
-          </div>
-        </mat-card-content>
-      </mat-card>
-
-      <!-- Contact Information Section -->
-      <mat-card class="contact-info-card">
-        <mat-card-header>
-          <mat-card-title>
-            <mat-icon>support_agent</mat-icon>
-            Need Help?
-          </mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-          <div class="contact-info">
-            <p class="contact-message">
-              If you have any questions about your order or need assistance, please don't hesitate to contact us. Our support team is here to help you.
-            </p>
-            <div class="contact-details">
-              <div class="contact-item">
-                <mat-icon class="contact-icon">phone</mat-icon>
-                <div class="contact-item-content">
-                  <span class="contact-label">Phone</span>
-                  <a [href]="'tel:' + contactInfo.phone" class="contact-link">{{ contactInfo.phone }}</a>
-                </div>
-              </div>
-              <div class="contact-item">
-                <mat-icon class="contact-icon">email</mat-icon>
-                <div class="contact-item-content">
-                  <span class="contact-label">Email</span>
-                  <a [href]="'mailto:' + contactInfo.email" class="contact-link">{{ contactInfo.email }}</a>
-                </div>
-              </div>
-            </div>
-          </div>
-        </mat-card-content>
-      </mat-card>
-
-      <!-- Action Buttons -->
-      <div class="action-buttons">
+@if (loading()) {
+  <app-loader page="checkout-success"></app-loader>
+}
+@if (!loading()) {
+  <div class="checkout-success-container page-container">
+    @if (error()) {
+      <div class="error-container">
+        <mat-icon class="error-icon">error</mat-icon>
+        <h2>Error</h2>
+        <p>{{ error }}</p>
         <button mat-raised-button color="primary" (click)="goToHome()">
-          <mat-icon>home</mat-icon>
-          Continue Shopping
+          Go to Home
         </button>
       </div>
-    </div>
-  }
-</div>
+    } @else {
+      <div class="success-content">
+        <!-- Success Header -->
+        <div class="success-header">
+          <div class="success-icon-container">
+            <mat-icon class="success-icon">check_circle</mat-icon>
+          </div>
+          <h1>Order Placed Successfully!</h1>
+          <p class="success-message">Thank you for your order. We've received your payment and will process your order
+            shortly.</p>
+        </div>
+
+        <!-- Order Details Card -->
+        <mat-card class="order-details-card">
+          <mat-card-header>
+            <mat-card-title>
+              <mat-icon>receipt</mat-icon>
+              Order Details
+            </mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="order-info-grid">
+              @if (orderDetails.invoiceId) {
+                <div class="info-item">
+                  <span class="info-label">Invoice No.:</span>
+                  <span class="info-value">{{ orderDetails.invoiceId }}</span>
+                </div>
+              }
+              <div class="info-item">
+                <span class="info-label">Order Date:</span>
+                <span class="info-value">{{ orderDetails.paymentDate | date : 'medium' }}</span>
+              </div>
+              @if (orderDetails.paymentStatus) {
+                <div class="info-item">
+                  <span class="info-label">Payment Status:</span>
+                  <span class="info-value status-badge">{{ orderDetails.paymentStatus }}</span>
+                </div>
+              }
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Order Items Card -->
+        @if (orderDetails.orderItems && orderDetails.orderItems.length > 0) {
+          <mat-card class="order-items-card">
+            <mat-card-header>
+              <mat-card-title>
+                <mat-icon>shopping_cart</mat-icon>
+                Order Items
+              </mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <div class="order-items-list">
+                @for (item of orderDetails.orderItems; track item.productName) {
+                  <div class="order-item">
+                    <div class="item-details">
+                      <h3>{{ item.productName }}</h3>
+                      <p class="item-quantity">Quantity: {{ item.quantity }} {{ item.quantityLabel }}</p>
+                      <p class="item-price">Price: {{ formatCurrency(item.unitPrice, orderDetails.currencyCode) }} each</p>
+                      <p class="item-price">Tax: {{ formatCurrency(item.taxAmount, orderDetails.currencyCode) }} each</p>
+                    </div>
+                    <div class="item-total">
+                      {{ formatCurrency(item.totalAmount, orderDetails.currencyCode) }}
+                    </div>
+                  </div>
+                }
+              </div>
+            </mat-card-content>
+          </mat-card>
+        }
+
+        <!-- Order Summary Card -->
+        <mat-card class="order-summary-card">
+          <mat-card-header>
+            <mat-card-title>
+              <mat-icon>account_balance_wallet</mat-icon>
+              Order Summary
+            </mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="summary-row">
+              <span class="summary-label">Subtotal:</span>
+              <span
+                class="summary-value">{{ formatCurrency(orderDetails.orderAmount, orderDetails.currencyCode) }}</span>
+            </div>
+            @if (orderDetails.taxAmount > 0) {
+              <div class="summary-row">
+                <span class="summary-label">Tax:</span>
+                <span
+                  class="summary-value">{{ formatCurrency(orderDetails.taxAmount, orderDetails.currencyCode) }}</span>
+              </div>
+            }
+            @if (orderDetails.discountAmount > 0) {
+              <div class="summary-row discount">
+                <span class="summary-label">Discount:</span>
+                <span
+                  class="summary-value">-{{ formatCurrency(orderDetails.discountAmount, orderDetails.currencyCode) }}</span>
+              </div>
+            }
+            <div class="summary-row total">
+              <span class="summary-label">Total Amount:</span>
+              <span
+                class="summary-value">{{ formatCurrency(orderDetails.totalAmount, orderDetails.currencyCode) }}</span>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Customer Information Card -->
+        @if (orderDetails.member) {
+          <mat-card class="customer-info-card">
+            <mat-card-header>
+              <mat-card-title>
+                <mat-icon>person</mat-icon>
+                Customer Information
+              </mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <div class="customer-info">
+                <p><strong>Name:</strong> {{ orderDetails.member.firstName }} {{ orderDetails.member.lastName }}</p>
+                <p><strong>Email:</strong> {{ orderDetails.member.emailId }}</p>
+                <p><strong>Contact:</strong> {{ orderDetails.member.contactNumber }}</p>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        }
+
+        <!-- Delivery Address Card -->
+        @if (orderDetails.address) {
+          <mat-card class="address-card">
+            <mat-card-header>
+              <mat-card-title>
+                <mat-icon>location_on</mat-icon>
+                Delivery Address
+              </mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <div class="address-info">
+                <p>{{ orderDetails.address.postalAddress }}</p>
+                @if (orderDetails.address.cityVillage) {
+                  <p>{{ orderDetails.address.cityVillage }}</p>
+                }
+                @if (orderDetails.address.pinCode) {
+                  <p>PIN: {{ orderDetails.address.pinCode }}</p>
+                }
+              </div>
+            </mat-card-content>
+          </mat-card>
+        }
+
+        <!-- Invoice Download Section -->
+        <mat-card class="invoice-card">
+          <mat-card-content>
+            <div class="invoice-section">
+              <div class="invoice-info">
+                <mat-icon class="invoice-icon">description</mat-icon>
+                <div class="invoice-text">
+                  <h3>Download Your Invoice</h3>
+                  <p class="invoice-message">
+                    Please download your invoice for future reference. Keep it safe as you may need it for returns,
+                    exchanges, or warranty claims.
+                  </p>
+                </div>
+              </div>
+              <button
+                mat-raised-button
+                color="accent"
+                (click)="downloadInvoice()"
+                [disabled]="downloadingInvoice && canDownloadInvoice">
+                <mat-icon>download</mat-icon>
+                @if (downloadingInvoice) {
+                  Downloading...
+                } @else {
+                  Download Invoice
+                }
+              </button>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Contact Information Section -->
+        <mat-card class="contact-info-card">
+          <mat-card-header>
+            <mat-card-title>
+              <mat-icon>support_agent</mat-icon>
+              Need Help?
+            </mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="contact-info">
+              <p class="contact-message">
+                If you have any questions about your order or need assistance, please don't hesitate to contact us. Our
+                support team is here to help you.
+              </p>
+              <div class="contact-details">
+                <div class="contact-item">
+                  <mat-icon class="contact-icon">phone</mat-icon>
+                  <div class="contact-item-content">
+                    <span class="contact-label">Phone</span>
+                    <a [href]="'tel:' + contactInfo.phone" class="contact-link">{{ contactInfo.phone }}</a>
+                  </div>
+                </div>
+                <div class="contact-item">
+                  <mat-icon class="contact-icon">email</mat-icon>
+                  <div class="contact-item-content">
+                    <span class="contact-label">Email</span>
+                    <a [href]="'mailto:' + contactInfo.email" class="contact-link">{{ contactInfo.email }}</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+          <button mat-raised-button color="primary" (click)="goToHome()">
+            <mat-icon>home</mat-icon>
+            Continue Shopping
+          </button>
+        </div>
+      </div>
+    }
+  </div>
+}

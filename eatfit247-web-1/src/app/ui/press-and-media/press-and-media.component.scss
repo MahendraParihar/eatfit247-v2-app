@@ -150,7 +150,8 @@
   padding: 0;
 
   .article-image-container {
-    height: auto;
+    height: 100%;
+    border-radius: 12px;
     padding-bottom: 56.25%;
     background: #000;
   }
