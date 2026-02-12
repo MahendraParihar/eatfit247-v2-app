@@ -2,7 +2,11 @@ import { Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/co
 import { CreateAddressDto, Public, RequestedIp, RequireRecaptcha } from '@server_1/core';
 import { AddressService, RecaptchaGuard } from '@server_1/platform';
 import { MemberProductService } from '../../services';
-import { CreatePublicCheckoutOrderDto, CreatePublicCheckoutPaymentLinkDto } from '../../dto';
+import {
+  CalculateProductVariantTaxDto, CalculateProductVariantTaxResponseDto,
+  CreatePublicCheckoutOrderDto,
+  CreatePublicCheckoutPaymentLinkDto,
+} from '../../dto';
 import {
   IAddress,
   IManageAddress,
@@ -158,5 +162,13 @@ export class PublicCheckoutController {
       buffer: invoiceFile.buffer || '',
       fileName: invoiceFile.fileName,
     };
+  }
+
+  @Post('member/:memberId/calculate-tax')
+  async calculateTax(
+    @Param('memberId') memberId: number,
+    @Body() body: CalculateProductVariantTaxDto,
+  ): Promise<CalculateProductVariantTaxResponseDto> {
+    return await this.memberProductService.calculateProductTax(memberId, body);
   }
 }

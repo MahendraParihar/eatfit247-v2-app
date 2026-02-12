@@ -5,6 +5,9 @@
 @use './styles/grid-utilities';
 @use './styles/accessibility';
 
+// Angular CDK Overlay styles (required for Material dropdowns, dialogs, tooltips, etc.)
+@import '@angular/cdk/overlay-prebuilt.css';
+
 html,
 body {
   height: 100%;

@@ -288,11 +288,12 @@
 
             &:focus {
               outline: none;
-              border-color: #3498db;
-              box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+              border-color: var(--color-primary);
+              background-color: rgba(248, 65, 65, 0.08);
+              box-shadow: 0 14px 28px rgba(248, 65, 65, 0.22);
 
               ~ .input-icon {
-                color: #3498db;
+                color: var(--color-primary);
               }
             }
 
@@ -374,9 +375,10 @@
             min-height: 120px;
 
             &:focus {
+              border-color: var(--color-primary);
+              background-color: rgba(248, 65, 65, 0.08);
+              box-shadow: 0 14px 28px rgba(248, 65, 65, 0.22);
               outline: none;
-              border-color: #3498db;
-              box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
             }
 
             &::placeholder {
@@ -404,7 +406,7 @@
             font-size: 20px;
             width: 20px;
             height: 20px;
-            color: #3498db;
+            color: var(--color-primary);
           }
         }
 
@@ -525,10 +527,10 @@
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 
             &:hover:not(:disabled) {
-              background: #3498db;
+              background: var(--color-primary);
               color: white;
               transform: translateY(-1px);
-              box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3);
+              box-shadow: 0 14px 28px rgba(248, 65, 65, 0.22);
             }
 
             &:active:not(:disabled) {
@@ -562,7 +564,7 @@
             &:focus {
               outline: none;
               border-color: #3498db;
-              box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+              box-shadow: 0 14px 28px rgba(248, 65, 65, 0.22);
             }
           }
         }

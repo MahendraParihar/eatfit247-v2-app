@@ -88,7 +88,7 @@ async function bootstrap() {
   app.enableCors({
     origin: allowedOrigins,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'x-razorpay-signature'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'x-razorpay-signature', 'X-Recaptcha-Token'],
     credentials: false, // Set to true only if needed for cookies
   });
 

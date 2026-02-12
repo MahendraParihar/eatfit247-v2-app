@@ -2,6 +2,8 @@ import { inject, Injectable } from '@angular/core';
 import { HttpService } from './http.service';
 import { ProgramPlan, ProgramPlanService } from './program-plan.service';
 import {
+  ICalculateProductVariantTaxRequest,
+  ICalculateProductVariantTaxResponse,
   ICheckoutAddressData,
   ICheckoutMemberData,
   ICheckoutMemberResponse,
@@ -86,7 +88,7 @@ export class CheckoutService {
   }
 
   /**
-   * Calculate tax for payment
+   * Calculate tax for payment (for plans)
    */
   async calculateTax(
     memberId: number,
@@ -99,6 +101,25 @@ export class CheckoutService {
       );
     } catch (error) {
       console.error('Error calculating tax:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Calculate tax for product checkout
+   * Uses ICalculateProductVariantTaxRequest payload
+   */
+  async calculateProductTax(
+    memberId: number,
+    taxData: ICalculateProductVariantTaxRequest
+  ): Promise<ICalculateProductVariantTaxResponse | null> {
+    try {
+      return await this.httpService.post<ICalculateProductVariantTaxResponse>(
+        `public/checkout/member/${memberId}/calculate-tax`,
+        taxData
+      );
+    } catch (error) {
+      console.error('Error calculating product tax:', error);
       throw error;
     }
   }

@@ -1,7 +1,8 @@
 .checkout-success-container {
+  max-width: var(--container-max-width-lg);
+  margin: 0 auto;
+  padding: var(--space-4) var(--space-fluid-md);
   min-height: 100vh;
-  padding: 2rem;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   display: flex;
   justify-content: center;
   align-items: flex-start;
@@ -88,7 +89,7 @@
           color: #333;
 
           mat-icon {
-            color: #3399cc;
+            color: var(--color-primary);
           }
         }
       }
@@ -225,8 +226,8 @@
     }
 
     .invoice-card {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
+      background: linear-gradient(135deg, #FFF1F2 0%, #FFFBEB 100%);
+      color: var(--color-text-primary);
       margin-bottom: 1.5rem;
 
       mat-card-content {
@@ -249,7 +250,7 @@
             font-size: 48px;
             width: 48px;
             height: 48px;
-            color: white;
+            color: var(--color-text-primary);
             margin-top: 0.25rem;
             flex-shrink: 0;
             display: flex;
@@ -262,14 +263,14 @@
               margin: 0 0 0.5rem 0;
               font-size: 1.5rem;
               font-weight: 600;
-              color: white;
+              color: var(--color-text-primary);
             }
 
             .invoice-message {
               margin: 0;
               font-size: 1rem;
               line-height: 1.6;
-              color: rgba(255, 255, 255, 0.9);
+              color: var(--color-text-secondary);
             }
           }
         }
@@ -288,7 +289,7 @@
 
     .contact-info-card {
       background-color: #f8f9fa;
-      border-left: 4px solid #3399cc;
+      border-left: 4px solid var(--color-primary);
       margin-bottom: 1.5rem;
 
       mat-card-header {
@@ -300,10 +301,10 @@
           gap: 0.5rem;
           font-size: 1.25rem;
           font-weight: 600;
-          color: #333;
+          color: var(--color-text-primary);
 
           mat-icon {
-            color: #3399cc;
+            color: var(--color-primary);
           }
         }
       }
@@ -311,7 +312,7 @@
       .contact-info {
         .contact-message {
           margin: 0 0 1.5rem 0;
-          color: #666;
+          color: var(--color-text-primary);
           line-height: 1.6;
           font-size: 1rem;
         }
@@ -326,7 +327,7 @@
             align-items: center;
             gap: 1rem;
             padding: 1rem;
-            background-color: white;
+            background-color: var(--color-surface-card);
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 
@@ -334,7 +335,7 @@
               font-size: 32px;
               width: 32px;
               height: 32px;
-              color: #3399cc;
+              color: var(--color-primary);
             }
 
             .contact-item-content {
@@ -350,13 +351,13 @@
 
               .contact-link {
                 font-size: 1rem;
-                color: #3399cc;
+                color: var(--color-primary);
                 text-decoration: none;
                 font-weight: 600;
                 transition: color 0.3s ease;
 
                 &:hover {
-                  color: #2673a3;
+                  color: var(--color-primary-hover);
                   text-decoration: underline;
                 }
               }

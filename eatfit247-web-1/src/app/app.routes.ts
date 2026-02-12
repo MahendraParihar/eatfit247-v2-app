@@ -162,14 +162,6 @@ export const appRoutes: Route[] = [
         title: 'Privacy Policy | EatFit247',
       },
       {
-        path: 'design-system-demo',
-        loadComponent: () =>
-          import('./ui/design-system-demo/design-system-demo.component').then(
-            (m) => m.DesignSystemDemoComponent
-          ),
-        title: 'Design System Demo | EatFit247',
-      },
-      {
         path: '**',
         loadComponent: () =>
           import('./ui/not-found/not-found.component').then(

@@ -41,7 +41,7 @@ export class RecaptchaGuard implements CanActivate {
       );
     }
     // Get reCAPTCHA token from the request headers
-    const recaptchaToken = request.headers['x-recaptcha-token'] || request.headers['X-Recaptcha-Token'];
+    const recaptchaToken = request.headers['X-Recaptcha-Token'] || request.headers['x-recaptcha-token'];
     if (!recaptchaToken) {
       throw new BadRequestException('reCAPTCHA token is required');
     }
