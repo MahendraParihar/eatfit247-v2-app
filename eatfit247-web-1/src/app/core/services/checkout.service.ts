@@ -13,7 +13,7 @@ import {
   IMemberPayment,
   IMemberProduct,
   IPaymentGateway,
-  IPaymentLinkResponse,
+  IPaymentLinkResponse, IResponse,
   ITaxCalculationRequest,
   ITaxCalculationResponse
 } from '@eatfit247-shared-library';
@@ -44,7 +44,7 @@ export class CheckoutService {
 
   /**
    * Create member (public endpoint)
-   * Uses PublicMemberController at /api/v2/public/member/create
+   * Uses PublicMemberController at /api/v2/member/create
    * @param memberData - Member data to create
    * @param recaptchaToken - reCAPTCHA v3 token (required by backend, passed in headers)
    */
@@ -58,11 +58,12 @@ export class CheckoutService {
       if (recaptchaToken) {
         headers['X-Recaptcha-Token'] = recaptchaToken;
       }
-      return await this.httpService.post<ICheckoutMemberResponse>(
-        'public/member/create',
+      const res = await this.httpService.post<ICheckoutMemberResponse>(
+        'member/create',
         memberData,
         { headers }
       );
+      return res.data || null;
     } catch (error) {
       console.error('Error creating member:', error);
       throw error;
@@ -77,10 +78,11 @@ export class CheckoutService {
     addressData: ICheckoutAddressData
   ): Promise<{ addressId: number } | null> {
     try {
-      return await this.httpService.post<{ addressId: number }>(
-        `public/checkout/member/${memberId}/address`,
+      const res = await this.httpService.post<{ addressId: number }>(
+        `checkout/member/${memberId}/address`,
         addressData
       );
+      return res.data || null;
     } catch (error) {
       console.error('Error creating address:', error);
       throw error;
@@ -95,10 +97,11 @@ export class CheckoutService {
     taxData: ITaxCalculationRequest
   ): Promise<ITaxCalculationResponse | null> {
     try {
-      return await this.httpService.post<ITaxCalculationResponse>(
-        `public/checkout/member/${memberId}/calculate-tax`,
+      const res = await this.httpService.post<ITaxCalculationResponse>(
+        `checkout/member/${memberId}/calculate-tax`,
         taxData
       );
+      return res.data || null;
     } catch (error) {
       console.error('Error calculating tax:', error);
       throw error;
@@ -114,10 +117,11 @@ export class CheckoutService {
     taxData: ICalculateProductVariantTaxRequest
   ): Promise<ICalculateProductVariantTaxResponse | null> {
     try {
-      return await this.httpService.post<ICalculateProductVariantTaxResponse>(
-        `public/checkout/member/${memberId}/calculate-tax`,
+      const res = await this.httpService.post<ICalculateProductVariantTaxResponse>(
+        `checkout/member/${memberId}/calculate-tax`,
         taxData
       );
+      return res.data || null;
     } catch (error) {
       console.error('Error calculating product tax:', error);
       throw error;
@@ -137,10 +141,11 @@ export class CheckoutService {
     }
   ): Promise<IPaymentLinkResponse | null> {
     try {
-      return await this.httpService.post<IPaymentLinkResponse>(
-        `public/checkout/member/${memberId}/payment-link`,
+      const res = await this.httpService.post<IPaymentLinkResponse>(
+        `checkout/member/${memberId}/payment-link`,
         paymentData
       );
+      return res.data || null;
     } catch (error) {
       console.error('Error creating payment link:', error);
       throw error;
@@ -156,11 +161,12 @@ export class CheckoutService {
     addressType: Array<{ id: number; label: string }>;
   } | null> {
     try {
-      return await this.httpService.get<{
+      const res = await this.httpService.get<{
         country: Array<{ id: number; label: string }>;
         state: Array<{ id: number; label: string; parentId: number }>;
         addressType: Array<{ id: number; label: string }>;
-      }>('public/address/address-master');
+      }>('address/address-master');
+      return res.data || null;
     } catch (error) {
       console.error('Error fetching address master data:', error);
       return null;
@@ -179,14 +185,15 @@ export class CheckoutService {
     countryCode: Array<{ id: string; label: string }>;
   } | null> {
     try {
-      return await this.httpService.get<{
+      const res = await this.httpService.get<{
         country: Array<{
           id: number;
           label: string;
           phoneNumberCode: string | null;
         }>;
         countryCode: Array<{ id: string; label: string }>;
-      }>('public/member-payment/master-data');
+      }>('member-payment/master-data');
+      return res.data || null;
     } catch (error) {
       console.error('Error fetching checkout master data:', error);
       return null;
@@ -202,9 +209,9 @@ export class CheckoutService {
   ): Promise<IPaymentGateway[]> {
     try {
       const data = await this.httpService.get<IPaymentGateway[]>(
-        `public/checkout/product/supported-gateways?currency=${currency}`
+        `checkout/product/supported-gateways?currency=${currency}`
       );
-      return data || [];
+      return data.data || [];
     } catch (error) {
       console.error('Error fetching supported payment gateways:', error);
       return [];
@@ -220,9 +227,9 @@ export class CheckoutService {
   ): Promise<IPaymentGateway[]> {
     try {
       const data = await this.httpService.get<IPaymentGateway[]>(
-        `public/checkout/plan/supported-gateways?currency=${currency}`
+        `checkout/plan/supported-gateways?currency=${currency}`
       );
-      return data || [];
+      return data.data || [];
     } catch (error) {
       console.error(
         'Error fetching supported payment gateways for plan:',
@@ -249,11 +256,12 @@ export class CheckoutService {
       if (recaptchaToken) {
         headers['X-Recaptcha-Token'] = recaptchaToken;
       }
-      return await this.httpService.post(
-        `public/checkout/member/${memberId}/product/order`,
+      const res = await this.httpService.post(
+        `checkout/member/${memberId}/product/order`,
         orderData,
         { headers }
       );
+      return res.data || null;
     } catch (error) {
       console.error('Error creating product order:', error);
       throw error;
@@ -277,11 +285,12 @@ export class CheckoutService {
       if (recaptchaToken) {
         headers['X-Recaptcha-Token'] = recaptchaToken;
       }
-      return await this.httpService.post(
-        `public/checkout/plan/member/${memberId}/order`,
+      const res = await this.httpService.post(
+        `checkout/plan/member/${memberId}/order`,
         orderData,
         { headers }
       );
+      return res.data || null;
     } catch (error) {
       console.error('Error creating plan order:', error);
       throw error;
@@ -301,9 +310,11 @@ export class CheckoutService {
     fileName: string;
   } | null> {
     try {
-      return await this.httpService.get<{ buffer: string; fileName: string }>(
-        `public/checkout/member/${memberId}/product/${memberProductId}/invoice`
-      );
+      const res = await this.httpService.get<{
+        buffer: string;
+        fileName: string;
+      }>(`checkout/member/${memberId}/product/${memberProductId}/invoice`);
+      return res.data || null;
     } catch (error) {
       console.error('Error downloading invoice:', error);
       throw error;
@@ -320,9 +331,11 @@ export class CheckoutService {
     paymentId: number
   ): Promise<{ buffer: string; fileName: string } | null> {
     try {
-      return await this.httpService.get<{ buffer: string; fileName: string }>(
-        `public/checkout/plan/member/${memberId}/payment/${paymentId}/invoice`
-      );
+      const res = await this.httpService.get<{
+        buffer: string;
+        fileName: string;
+      }>(`checkout/plan/member/${memberId}/payment/${paymentId}/invoice`);
+      return res.data || null;
     } catch (error) {
       console.error('Error downloading plan invoice:', error);
       throw error;
@@ -331,16 +344,17 @@ export class CheckoutService {
 
   /**
    * Get product order details by gateway order ID
-   * Uses public/checkout/order/:gatewayOrderId endpoint
+   * Uses checkout/order/:gatewayOrderId endpoint
    * @param gatewayOrderId - Gateway order ID
    */
   async getProductOrderDetails(
     gatewayOrderId: string
   ): Promise<IMemberProduct | null> {
     try {
-      return await this.httpService.get(
-        `public/checkout/order/${gatewayOrderId}`
+      const res = await this.httpService.get<IMemberProduct>(
+        `checkout/order/${gatewayOrderId}`
       );
+      return res.data || null;
     } catch (error) {
       console.error('Error fetching product order details:', error);
       throw error;
@@ -349,16 +363,17 @@ export class CheckoutService {
 
   /**
    * Get plan order details by gateway order ID
-   * Uses public/member-payment/order/plan/:gatewayOrderId endpoint
+   * Uses member-payment/order/plan/:gatewayOrderId endpoint
    * @param gatewayOrderId - Gateway order ID
    */
   async getPlanOrderDetails(
     gatewayOrderId: string
-  ): Promise<IMemberPayment | null> {
+  ): Promise<IMemberProduct> {
     try {
-      return await this.httpService.get(
-        `public/checkout/plan/${gatewayOrderId}`
+      const res = await this.httpService.get<IMemberProduct>(
+        `checkout/plan/${gatewayOrderId}`
       );
+      return res.data || null;
     } catch (error) {
       console.error('Error fetching plan order details:', error);
       throw error;

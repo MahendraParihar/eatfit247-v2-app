@@ -27,7 +27,7 @@ export class ProductService {
   ): Promise<IPublicProduct[]> {
     try {
       const data = await this.httpService.get<IPublicTableList<IPublicProduct>>(
-        'public/products/list',
+        'products/list',
         {
           params: {
             page: page.toString(),
@@ -36,7 +36,7 @@ export class ProductService {
         }
       );
       if (data) {
-        return data.tableData || [];
+        return data.data.tableData || [];
       }
       return [];
     } catch (error) {
@@ -48,9 +48,9 @@ export class ProductService {
 
   async getProducts(productId: number, variantId: number): Promise<IPublicProduct> {
     try {
-      const data = await this.httpService.get<IPublicProduct>(`public/products/${productId}/${variantId}`);
+      const data = await this.httpService.get<IPublicProduct>(`products/${productId}/${variantId}`);
       if (data) {
-        return data;
+        return data.data;
       }
       return null;
     } catch (error) {

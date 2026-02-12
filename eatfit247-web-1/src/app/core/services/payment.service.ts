@@ -92,13 +92,13 @@ export class PaymentService {
   ): Promise<PaymentOrderResponse> {
     try {
       const data = await this.httpService.post<PaymentOrderResponse>(
-        `public/checkout/member/${memberId}/product/payment-order`,
+        `checkout/member/${memberId}/product/payment-order`,
         paymentData
       );
       if (!data) {
         throw new Error('Failed to create payment order: No data returned');
       }
-      return data;
+      return data.data;
     } catch (error) {
       console.error('Error creating payment order:', error);
       throw error;
@@ -114,13 +114,13 @@ export class PaymentService {
   ): Promise<PaymentOrderResponse> {
     try {
       const data = await this.httpService.post<PaymentOrderResponse>(
-        `public/checkout/plan/member/${memberId}/payment-order`,
+        `checkout/plan/member/${memberId}/payment-order`,
         paymentData
       );
       if (!data) {
         throw new Error('Failed to create payment order: No data returned');
       }
-      return data;
+      return data.data;
     } catch (error) {
       console.error('Error creating plan payment order:', error);
       throw error;
@@ -136,13 +136,13 @@ export class PaymentService {
   ): Promise<VerifyPaymentResponse> {
     try {
       const data = await this.httpService.post<VerifyPaymentResponse>(
-        `public/checkout/member/${memberId}/product/verify-payment`,
+        `checkout/member/${memberId}/product/verify-payment`,
         verifyData
       );
       if (!data) {
         throw new Error('Failed to verify payment: No data returned');
       }
-      return data;
+      return data.data;
     } catch (error) {
       console.error('Error verifying payment:', error);
       throw error;
@@ -158,13 +158,13 @@ export class PaymentService {
   ): Promise<VerifyPaymentResponse> {
     try {
       const data = await this.httpService.post<VerifyPaymentResponse>(
-        `public/checkout/plan/member/${memberId}/verify-payment`,
+        `checkout/plan/member/${memberId}/verify-payment`,
         verifyData
       );
       if (!data) {
         throw new Error('Failed to verify payment: No data returned');
       }
-      return data;
+      return data.data;
     } catch (error) {
       console.error('Error verifying plan payment:', error);
       throw error;

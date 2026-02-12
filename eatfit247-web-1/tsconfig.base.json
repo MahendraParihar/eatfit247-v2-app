@@ -5,16 +5,37 @@
     "emitDecoratorMetadata": false,
     "target": "es2022",
     "module": "preserve",
-    "lib": ["es2020", "dom"],
+    "lib": [
+      "es2020",
+      "dom"
+    ],
     "baseUrl": ".",
     "paths": {
-      "@eatfit247-web-1/ui": ["ui/src/index.ts"],
-      "@shared-ui": ["libs/shared-ui/src/index.ts"],
-      "@shared-ui/layout": ["libs/shared-ui/src/lib/layout/index.ts"],
-      "@app/layout/*": ["src/app/layout/*"],
-      "@eatfit247-shared-library": ["../shared-library/src/index.ts"],
-      "@eatfit247-shared-library/*": ["../shared-library/src/*"]
+      "@eatfit247-web-1/ui": [
+        "ui/src/index.ts"
+      ],
+      "@shared-ui": [
+        "libs/shared-ui/src/index.ts"
+      ],
+      "@shared-ui/layout": [
+        "libs/shared-ui/src/lib/layout/index.ts"
+      ],
+      "@app/layout/*": [
+        "src/app/layout/*"
+      ],
+      "@eatfit247-shared-library": [
+        "../shared-library/src/index.ts"
+      ],
+      "@eatfit247-shared-library/*": [
+        "../shared-library/src/*"
+      ],
+      "@env": [
+        "src/environments/environment.ts"
+      ]
     }
   },
-  "exclude": ["node_modules", "tmp"]
+  "exclude": [
+    "node_modules",
+    "tmp"
+  ]
 }

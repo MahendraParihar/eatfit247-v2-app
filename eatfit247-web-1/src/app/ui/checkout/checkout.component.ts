@@ -61,13 +61,13 @@ export class CheckoutComponent implements OnInit {
   private readonly productService = inject(ProductService);
 
   // Stepper state
+  // SELECTION step removed – flow now starts from BILLING
   currentStepIndex = signal(0);
   readonly STEP_INDICES = {
-    SELECTION: 0,
-    BILLING: 1,
-    PREVIEW: 2,
-    PAYMENT: 3,
-    RESULT: 4
+    BILLING: 0,
+    PREVIEW: 1,
+    PAYMENT: 2,
+    RESULT: 3
   };
 
   // Unified form for both products and plans

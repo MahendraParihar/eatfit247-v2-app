@@ -25,10 +25,10 @@ export class SeoPageService {
       const encodedUrl = encodeURIComponent(normalizedUrl);
       
       const seoData = await this.httpService.get<ISeoPageData>(
-        `public/seo-page/url/${encodedUrl}`
+        `seo-page/url/${encodedUrl}`
       );
       
-      return seoData;
+      return seoData.data;
     } catch (error) {
       console.error('Error fetching SEO data:', error);
       return null;
@@ -42,10 +42,10 @@ export class SeoPageService {
   async getAllSeoPages(): Promise<ISeoPageData[]> {
     try {
       const seoPages = await this.httpService.get<ISeoPageData[]>(
-        'public/seo-page/all'
+        'seo-page/all'
       );
       
-      return seoPages || [];
+      return seoPages.data || [];
     } catch (error) {
       console.error('Error fetching all SEO pages:', error);
       return [];

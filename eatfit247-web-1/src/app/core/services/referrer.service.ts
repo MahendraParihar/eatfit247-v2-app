@@ -22,12 +22,12 @@ export class ReferrerService {
     try {
       const data = await this.httpService.get<
         IPublicTableList<IPublicReferrer>
-      >('public/referrer/list', {
+      >('referrer/list', {
         params: {
           limit: '1000'
         }
       });
-      return data.tableData;
+      return data.data.tableData;
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error('Error fetching referrers/partners:', error);

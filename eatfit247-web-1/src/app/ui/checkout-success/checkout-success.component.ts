@@ -86,7 +86,7 @@ export class CheckoutSuccessComponent implements OnInit {
 
   /**
    * Load order details by gateway order ID
-   * Uses different endpoints based on order type:
+   * Uses different endpoints based on an order type:
    * - Plan orders: public/checkout/order/plan/:gatewayOrderId
    * - Product orders: public/checkout/order/:gatewayOrderId
    */
@@ -94,9 +94,7 @@ export class CheckoutSuccessComponent implements OnInit {
     try {
       let data;
       if (isPlanOrder) {
-        data = (await this.checkoutService.getPlanOrderDetails(
-          gatewayOrderId
-        )) as IMemberPayment;
+        data = await this.checkoutService.getPlanOrderDetails(gatewayOrderId);
         this.orderDetails = {
           ...data,
           memberOrderId: data.memberPaymentId,

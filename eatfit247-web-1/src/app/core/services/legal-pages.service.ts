@@ -7,7 +7,7 @@ import { IPublicLegalPage } from '@eatfit247-shared-library/core';
  * from the public API using their URL slug.
  */
 @Injectable({
-  providedIn: 'root',
+  providedIn: 'root'
 })
 export class LegalPagesService {
   private readonly httpService = inject(HttpService);
@@ -16,7 +16,7 @@ export class LegalPagesService {
    * Load a legal page by its URL slug.
    *
    * Backend route:
-   *   GET /api/v2/public/legal-page/url/:url
+   *   GET /api/v2/legal-page/url/:url
    *
    * @param url URL slug for the legal page (e.g. "terms-and-conditions")
    */
@@ -26,10 +26,10 @@ export class LegalPagesService {
       if (!encodedUrl) {
         return null;
       }
-
-      return await this.httpService.get<IPublicLegalPage>(
-        `public/legal-page/url/${encodedUrl}`,
+      const res = await this.httpService.get<IPublicLegalPage>(
+        `legal-page/url/${encodedUrl}`
       );
+      return res.data || null;
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error(`Error fetching legal page for url "${url}":`, error);

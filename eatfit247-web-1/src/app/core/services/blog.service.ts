@@ -23,8 +23,8 @@ export class BlogService {
     page: number,
     limit: number
   ): Promise<IPublicTableList<IPublicBlog> | null> {
-    return this.httpService.get<IPublicTableList<IPublicBlog>>(
-      'public/blog/list',
+    const res = await this.httpService.get<IPublicTableList<IPublicBlog>>(
+      'blog/list',
       {
         params: {
           page: page.toString(),
@@ -32,6 +32,7 @@ export class BlogService {
         }
       }
     );
+    return res.data;
   }
 
   /**
@@ -39,9 +40,10 @@ export class BlogService {
    */
   async getBlogBySlug(slug: string): Promise<IPublicBlog | null> {
     const encodedSlug = encodeURIComponent(slug);
-    return this.httpService.get<IPublicBlog>(
-      `public/blog/by-url/${encodedSlug}`
+    const res = await this.httpService.get<IPublicBlog>(
+      `blog/by-url/${encodedSlug}`
     );
+    return res.data;
   }
 
   /**
@@ -61,10 +63,10 @@ export class BlogService {
       params['blogCategoryId'] = categoryId.toString();
     }
     const response = await this.httpService.get<IPublicTableList<IPublicBlog>>(
-      'public/blog/list',
+      'blog/list',
       { params }
     );
-    const tableData: IPublicBlog[] = response?.tableData ?? [];
+    const tableData: IPublicBlog[] = response.data?.tableData ?? [];
     return tableData
       .filter((blog) => blog.blogId !== currentBlogId)
       .slice(0, limit);

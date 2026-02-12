@@ -22,41 +22,8 @@
     </div>
 
     <!-- Stepper-based Checkout Flow -->
-    @if (formsInitialized && (!error || (error && currentStepIndex() > STEP_INDICES.SELECTION))) {
+    @if (formsInitialized && (!error || (error && currentStepIndex()))) {
       <mat-stepper #stepper [linear]="true">
-        
-        <!-- Step 1: Selection -->
-        <mat-step [editable]="true">
-          <ng-template matStepLabel>Selection</ng-template>
-          <div class="step-content">
-            <h2>Review Selection</h2>
-            <div class="selection-card">
-              @if (isProductCheckout) {
-                <div class="selection-info">
-                  <h3>Product</h3>
-                  <p><strong>Name:</strong> {{ productName || 'Loading...' }}</p>
-                  <p><strong>Price:</strong> ₹{{ productPrice | number:'1.2-2' }}</p>
-                  <p><strong>Quantity:</strong> {{ productQuantity }}</p>
-                  <p><strong>Subtotal:</strong> ₹{{ productSubtotal | number:'1.2-2' }}</p>
-                </div>
-              } @else {
-                <div class="selection-info">
-                  <h3>Plan</h3>
-                  <p><strong>Plan:</strong> {{ programPlan?.plan || 'Loading...' }}</p>
-                  <p><strong>Amount:</strong> ₹{{ orderAmount | number:'1.2-2' }}</p>
-                  <p><strong>Currency:</strong> {{ currencyCode }}</p>
-                </div>
-              }
-            </div>
-            <div class="step-actions">
-              <button mat-raised-button color="primary" (click)="proceedFromSelection()" [disabled]="loading">
-                <mat-icon>arrow_forward</mat-icon>
-                Continue
-              </button>
-            </div>
-          </div>
-        </mat-step>
-
         <!-- Step 2: Billing Details -->
         <mat-step [stepControl]="basicDetailsForm" [editable]="true">
           <ng-template matStepLabel>Billing Details</ng-template>

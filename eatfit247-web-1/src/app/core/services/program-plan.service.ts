@@ -34,10 +34,10 @@ export class ProgramPlanService {
   async getAllProgramPlans(): Promise<ProgramPlan[]> {
     try {
       const data = await this.httpService.get<IPublicTableList<ProgramPlan>>(
-        'public/program-plan/list'
+        'program-plan/list'
       );
       if (data) {
-        return data.tableData || [];
+        return data.data.tableData || [];
       }
       return [];
     } catch (error) {

@@ -22,11 +22,11 @@ export class PressMediaService {
       }
       const data = await this.httpService.get<
         IPublicTableList<IPublicPressMedia>
-      >('public/press-media/list', {
+      >('press-media/list', {
         params
       });
       if (data) {
-        return this.mapPressesToCards(data.tableData);
+        return this.mapPressesToCards(data.data.tableData);
       }
       return [];
     } catch (error) {

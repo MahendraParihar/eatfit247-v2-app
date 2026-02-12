@@ -1,6 +1,5 @@
 import { Injectable, PLATFORM_ID, inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { environment } from '../../../environments/environment';
 import { HttpService } from './http.service';
 
 declare global {
@@ -13,7 +12,7 @@ declare global {
 }
 
 @Injectable({
-  providedIn: 'root',
+  providedIn: 'root'
 })
 export class RecaptchaService {
   private readonly platformId = inject(PLATFORM_ID);
@@ -23,7 +22,7 @@ export class RecaptchaService {
    * - Initially loaded from environment if provided.
    * - If not present, fetched from backend config service.
    */
-  private siteKey: string | null = environment.recaptcha?.siteKey || null;
+  private siteKey: string | null = null;
   private siteKeyLoadingPromise: Promise<string | null> | null = null;
   private scriptLoaded = false;
   private scriptLoading = false;
@@ -36,7 +35,6 @@ export class RecaptchaService {
     if (this.siteKey) {
       return this.siteKey;
     }
-
     // If a fetch is already in progress, await it
     if (this.siteKeyLoadingPromise) {
       const existingKey = await this.siteKeyLoadingPromise;
@@ -45,12 +43,11 @@ export class RecaptchaService {
       }
       return existingKey;
     }
-
     // Start fetching from backend config service
     this.siteKeyLoadingPromise = this.httpService
       .get<{ siteKey: string }>('public/config/recaptcha-site-key')
       .then((result) => {
-        const key = result?.siteKey?.trim();
+        const key = result?.data.siteKey?.trim();
         if (key) {
           this.siteKey = key;
           return key;
@@ -61,12 +58,10 @@ export class RecaptchaService {
         console.error('Failed to load reCAPTCHA site key from server:', error);
         return null;
       });
-
     const loadedKey = await this.siteKeyLoadingPromise;
     if (!loadedKey) {
       throw new Error('reCAPTCHA site key is not configured');
     }
-
     return loadedKey;
   }
 
@@ -74,14 +69,11 @@ export class RecaptchaService {
     if (!isPlatformBrowser(this.platformId)) {
       return Promise.resolve();
     }
-
     // Ensure we have a valid site key (from env or backend)
     const siteKey = await this.ensureSiteKey();
-
     if (this.scriptLoaded) {
       return;
     }
-
     if (this.scriptLoading) {
       return new Promise((resolve) => {
         const checkInterval = setInterval(() => {
@@ -92,9 +84,7 @@ export class RecaptchaService {
         }, 100);
       });
     }
-
     this.scriptLoading = true;
-
     return new Promise((resolve, reject) => {
       const existingScript = document.querySelector(
         'script[src*=\"recaptcha/api.js\"]'
@@ -105,23 +95,19 @@ export class RecaptchaService {
         resolve();
         return;
       }
-
       const script = document.createElement('script');
       script.src = `https://www.google.com/recaptcha/api.js?render=${siteKey}`;
       script.async = true;
       script.defer = true;
-
       script.onload = () => {
         this.scriptLoaded = true;
         this.scriptLoading = false;
         resolve();
       };
-
       script.onerror = () => {
         this.scriptLoading = false;
         reject(new Error('Failed to load reCAPTCHA script'));
       };
-
       document.head.appendChild(script);
     });
   }
@@ -130,20 +116,17 @@ export class RecaptchaService {
     if (!isPlatformBrowser(this.platformId)) {
       throw new Error('reCAPTCHA is only available in browser environment');
     }
-
     try {
       await this.loadScript();
-
       return new Promise((resolve, reject) => {
         if (!window.grecaptcha) {
           reject(new Error('reCAPTCHA is not available'));
           return;
         }
-
         window.grecaptcha.ready(async () => {
           try {
             const token = await window.grecaptcha.execute(this.siteKey!, {
-              action,
+              action
             });
             resolve(token);
           } catch (error: any) {

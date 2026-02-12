@@ -56,7 +56,7 @@ export class BannerService {
     try {
       const data =
         await this.httpService.get<IPublicTableList<IPublicBanner>>(
-          'public/banners/list',
+          'banners/list',
           {
             params: {
               bannerFor: bannerFor.toString(),
@@ -66,7 +66,7 @@ export class BannerService {
         );
 
       if (data) {
-        return data.tableData.map((banner: IPublicBanner) =>
+        return data.data.tableData.map((banner: IPublicBanner) =>
           this.mapBannerToSliderItem(banner),
         );
       }
@@ -89,7 +89,7 @@ export class BannerService {
     try {
       const data =
         await this.httpService.get<IPublicTableList<IPublicBanner>>(
-          'public/banners/list',
+          'banners/list',
           {
             params: {
               bannerFor: bannerFor.toString(),
@@ -98,16 +98,16 @@ export class BannerService {
           },
         );
 
-      if (!data || !Array.isArray(data.tableData)) {
+      if (!data.data || !Array.isArray(data.data.tableData)) {
         return [];
       }
 
       // Flatten all imagePath arrays from the banners and filter out invalid entries
-      const images: IMediaUpload[] = data.tableData.flatMap(
+      const images: IMediaUpload[] = data.data.tableData.flatMap(
         (banner: IPublicBanner) =>
           Array.isArray((banner as any).imagePath)
             ? ((banner as any).imagePath as IMediaUpload[])
-            : [],
+            : []
       );
 
       return images;
