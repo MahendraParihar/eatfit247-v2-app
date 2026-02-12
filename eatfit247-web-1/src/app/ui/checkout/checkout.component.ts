@@ -65,11 +65,9 @@ export class CheckoutComponent implements OnInit {
   readonly STEP_INDICES = {
     SELECTION: 0,
     BILLING: 1,
-    TAX: 2,
-    GATEWAY: 3,
-    PREVIEW: 4,
-    PAYMENT: 5,
-    RESULT: 6
+    PREVIEW: 2,
+    PAYMENT: 3,
+    RESULT: 4
   };
 
   // Unified form for both products and plans
@@ -402,9 +400,16 @@ export class CheckoutComponent implements OnInit {
         this.addressId = addressResult.addressId;
       }
 
-      // Move to tax calculation step and calculate tax
-      this.moveToNextStep();
+      // Calculate tax first, then skip to preview step
       await this.calculateTaxForCurrentStep();
+      // Load payment gateways before moving to preview
+      await this.checkPaymentGatewayAvailability();
+      if (!this.isPaymentGatewayAvailable || !this.selectedGateway) {
+        this.error = 'Payment gateway not available. Please try again later.';
+        return;
+      }
+      // Skip TAX step (index 2) and move directly to PREVIEW step (index 3)
+      this.moveToStep(this.STEP_INDICES.PREVIEW);
     } catch (error: any) {
       console.error('Error proceeding from billing:', error);
       this.error = error.message || 'Failed to proceed. Please try again.';
@@ -505,40 +510,17 @@ export class CheckoutComponent implements OnInit {
   }
 
   /**
-   * Step 4: Load payment gateways and proceed to gateway selection
+   * Step 3: Load payment gateways and proceed to preview (legacy - now handled in proceedFromBilling)
+   * This method is kept for backward compatibility but is no longer used
    */
   async proceedFromTax(): Promise<void> {
-    try {
-      this.loading = true;
-      this.error = null;
-      await this.checkPaymentGatewayAvailability();
-      if (!this.isPaymentGatewayAvailable || !this.selectedGateway) {
-        this.error = 'Payment gateway not available. Please try again later.';
-        return;
-      }
-      // Move to gateway selection step (gateway is already selected as default)
-      this.moveToNextStep();
-    } catch (error: any) {
-      console.error('Error loading payment gateways:', error);
-      this.error = error.message || 'Failed to load payment gateways.';
-    } finally {
-      this.loading = false;
-    }
+    // This step is now skipped - tax calculation and gateway loading happen in proceedFromBilling
+    // Moving directly to preview
+    this.moveToStep(this.STEP_INDICES.PREVIEW);
   }
 
   /**
-   * Step 5: Proceed to payment (gateway is already selected as default)
-   */
-  async proceedFromGateway(): Promise<void> {
-    if (!this.selectedGateway) {
-      this.error = 'Payment gateway not available. Please try again later.';
-      return;
-    }
-    this.moveToNextStep();
-  }
-
-  /**
-   * Step 6: Create payment order and initialize payment
+   * Step 4: Create payment order and initialize payment
    */
   async proceedFromPreview(): Promise<void> {
     if (!this.memberId || !this.addressId || !this.selectedGateway) {
@@ -620,7 +602,7 @@ export class CheckoutComponent implements OnInit {
   }
 
   /**
-   * Step 7: Initialize payment flow
+   * Step 5: Initialize payment flow
    */
   async initializePaymentFlow(): Promise<void> {
     if (!this.paymentOrderResponse) {

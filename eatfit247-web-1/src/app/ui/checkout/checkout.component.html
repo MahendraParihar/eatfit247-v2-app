@@ -180,94 +180,7 @@
           </div>
         </mat-step>
 
-        <!-- Step 3: Tax Calculation -->
-        <mat-step [editable]="true">
-          <ng-template matStepLabel>Tax Calculation</ng-template>
-          <div class="step-content">
-            <h2>Tax Calculation</h2>
-            @if (calculatingTax || loading) {
-              <div class="calculating-tax">
-                <mat-spinner diameter="50"></mat-spinner>
-                <p>Calculating tax based on your address...</p>
-              </div>
-            } @else {
-              <div class="tax-summary">
-                <div class="summary-row">
-                  <span>Subtotal:</span>
-                  <span>₹{{ (isProductCheckout ? productSubtotal : orderAmount) | number:'1.2-2' }}</span>
-                </div>
-                @if (taxCalculation && taxCalculation.taxAmount > 0) {
-                  <div class="summary-row">
-                    <span>Tax ({{ taxCalculation.taxPercentage | number:'1.2-2' }}%):</span>
-                    <span>₹{{ taxCalculation.taxAmount | number:'1.2-2' }}</span>
-                  </div>
-                } @else {
-                  <div class="summary-row">
-                    <span>Tax:</span>
-                    <span>₹0.00</span>
-                  </div>
-                }
-                <div class="summary-row total">
-                  <span><strong>Total:</strong></span>
-                  <span><strong>₹{{ (taxCalculation?.totalAmount || (isProductCheckout ? productSubtotal : orderAmount)) | number:'1.2-2' }}</strong></span>
-                </div>
-              </div>
-              <div class="step-actions">
-                <button mat-button (click)="moveToPreviousStep()" [disabled]="loading">
-                  <mat-icon>arrow_back</mat-icon>
-                  Back
-                </button>
-                <button mat-raised-button color="primary" (click)="proceedFromTax()" [disabled]="loading || !taxCalculation">
-                  <mat-icon>arrow_forward</mat-icon>
-                  Continue
-                </button>
-              </div>
-            }
-          </div>
-        </mat-step>
-
-        <!-- Step 4: Gateway Selection -->
-        <mat-step [editable]="true">
-          <ng-template matStepLabel>Payment Gateway</ng-template>
-          <div class="step-content">
-            <h2>Payment Gateway</h2>
-            @if (paymentGatewayLoading) {
-              <div class="loading-gateways">
-                <mat-spinner diameter="40"></mat-spinner>
-                <p>Loading payment gateways...</p>
-              </div>
-            } @else if (!isPaymentGatewayAvailable || paymentGateways.length === 0) {
-              <div class="no-gateways">
-                <mat-icon>info</mat-icon>
-                <p>Sorry, no payment gateways are available at this time. Please contact support.</p>
-              </div>
-            } @else if (selectedGateway) {
-              <div class="gateway-selected">
-                <div class="gateway-info">
-                  <mat-icon>payment</mat-icon>
-                  <div>
-                    <strong>{{ selectedGateway.gatewayName }}</strong>
-                    @if (selectedGateway.isPrimary) {
-                      <span class="primary-badge">Primary</span>
-                    }
-                  </div>
-                </div>
-              </div>
-              <div class="step-actions">
-                <button mat-button (click)="moveToPreviousStep()" [disabled]="loading">
-                  <mat-icon>arrow_back</mat-icon>
-                  Back
-                </button>
-                <button mat-raised-button color="primary" (click)="proceedFromGateway()" [disabled]="loading">
-                  <mat-icon>arrow_forward</mat-icon>
-                  Continue
-                </button>
-              </div>
-            }
-          </div>
-        </mat-step>
-
-        <!-- Step 5: Preview Order -->
+        <!-- Step 3: Preview Order (Tax step is skipped) -->
         <mat-step [editable]="true">
           <ng-template matStepLabel>Review Order</ng-template>
           <div class="step-content">
@@ -332,7 +245,7 @@
           </div>
         </mat-step>
 
-        <!-- Step 6: Payment -->
+        <!-- Step 5: Payment -->
         <mat-step [editable]="false">
           <ng-template matStepLabel>Payment</ng-template>
           <div class="step-content">
@@ -356,7 +269,7 @@
           </div>
         </mat-step>
 
-        <!-- Step 7: Result -->
+        <!-- Step 6: Result -->
         <mat-step [editable]="false">
           <ng-template matStepLabel>Result</ng-template>
           <div class="step-content">
