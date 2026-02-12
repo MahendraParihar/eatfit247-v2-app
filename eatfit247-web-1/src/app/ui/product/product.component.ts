@@ -656,8 +656,6 @@ export class ProductComponent implements OnInit, OnDestroy {
   }
 
   onVideoLoaded(): void {
-    // eslint-disable-next-line no-console
-    console.log('Video loaded successfully');
   }
 }
 

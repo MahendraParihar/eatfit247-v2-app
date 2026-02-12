@@ -946,7 +946,6 @@ export class CheckoutComponent implements OnInit {
         : await this.checkoutService.getSupportedPaymentGatewaysForPlan(
           this.currencyCode
         );
-      console.log('Payment gateways received:', gateways);
       this.paymentGateways = gateways || [];
       if (!gateways || gateways.length === 0) {
         this.isPaymentGatewayAvailable = false;
@@ -955,10 +954,8 @@ export class CheckoutComponent implements OnInit {
         this.isPaymentGatewayAvailable = true;
         // Select the first active / primary gateway
         this.selectedGateway = gateways.find((g) => g.isPrimary) || gateways[0];
-        console.log('Selected payment gateway:', this.selectedGateway);
       }
     } catch (error) {
-      console.error('Error checking payment gateway availability:', error);
       this.isPaymentGatewayAvailable = false;
       this.error =
         'Failed to check payment gateway availability. Please try again.';
