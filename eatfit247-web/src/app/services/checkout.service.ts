@@ -7,7 +7,7 @@ import {
   ICheckoutMemberResponse,
   ICreatePaymentLinkRequest,
   ICreatePlanOrderRequest,
-  ICreateProductOrderRequest,
+  IManageMemberProduct,
   IMemberPayment,
   IMemberProduct,
   IPaymentGateway,
@@ -21,7 +21,7 @@ import {
  * Manages member creation, address, tax calculation, and payment
  */
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class CheckoutService {
   private readonly httpService = inject(HttpService);
@@ -193,7 +193,7 @@ export class CheckoutService {
    * Create product order in txn_member_products table
    * Follows the same pattern as Admin-side Member Product order creation
    */
-  async createProductOrder(memberId: number, orderData: ICreateProductOrderRequest): Promise<any> {
+  async createProductOrder(memberId: number, orderData: IManageMemberProduct): Promise<any> {
     try {
       return await this.httpService.post(
         `public/checkout/member/${memberId}/product/order`,

@@ -3,8 +3,9 @@
 
 // hall of framers
 .home-page__section--hall-of-fame {
-  border-top: 1px solid var(--color-divider);
-  padding-top: var(--space-fluid-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-fluid-xl);
 }
 
 .home_page___section_hall-of_fame_container {

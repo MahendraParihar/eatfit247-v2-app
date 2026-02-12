@@ -18,7 +18,7 @@ import { PaymentService } from '../../services/payment.service';
 import {
   ICheckoutAddressData,
   ICheckoutMemberData,
-  IDropdownItem,
+  IDropdownItem, IManageMemberProduct,
   IPaymentGateway,
   ITaxCalculationResponse,
   PaymentSourceEnum,
@@ -662,22 +662,16 @@ export class CheckoutComponent implements OnInit {
               throw new Error('Payment verification failed');
             }
             // Create order in the txn_member_products table
-            const orderData = {
-              paymentModeId: null,
-              billingAddressId: this.addressId,
-              addressId: this.addressId,
+            const orderData: IManageMemberProduct = {
+              billingAddressId: 1,
               transactionId: paymentId,
-              paymentDate: new Date().toISOString(),
+              paymentDate: new Date(),
               paymentStatusId: PaymentStatusEnum.PAID,
-              taxPercentage: taxPercentage,
-              currencyCode: this.currencyCode,
+              currency: this.currencyCode,
               promoCode: undefined,
               gstNumber: undefined,
               paymentSource: PaymentSourceEnum.PAYMENT_GATEWAY,
-              orderAmount: this.productPrice * this.productQuantity,
-              taxAmount: taxAmount,
               discountAmount: discountAmount,
-              totalAmount: totalAmount,
               paymentLink: undefined,
               gatewayProvider: paymentOrderResponse.gatewayCode,
               gatewayOrderId: orderId,
@@ -694,8 +688,6 @@ export class CheckoutComponent implements OnInit {
                   productId: validatedProductId,
                   productVariantId: validatedProductVariantId,
                   quantity: this.productQuantity,
-                  unit: 'pcs',
-                  price: this.productPrice,
                   currency: this.currencyCode
                 }
               ]
@@ -712,12 +704,7 @@ export class CheckoutComponent implements OnInit {
             if (!this.memberId) {
               throw new Error('Member ID is required');
             }
-            // Include reCAPTCHA token in order data
-            const orderDataWithRecaptcha = {
-              ...orderData,
-              recaptchaToken: recaptchaToken
-            };
-            await this.checkoutService.createProductOrder(this.memberId, orderDataWithRecaptcha);
+            await this.checkoutService.createProductOrder(this.memberId, orderData);
             // Payment successful - redirect to success page
             this.processingPayment = false;
             this.showPaymentModal = false;
