@@ -8,14 +8,12 @@ import {
   ICheckoutMemberData,
   ICheckoutMemberResponse,
   ICreatePaymentLinkRequest,
-  ICreatePlanOrderRequest,
+  IManageMemberPayment,
   IManageMemberProduct,
-  IMemberPayment,
   IMemberProduct,
   IPaymentGateway,
-  IPaymentLinkResponse, IResponse,
-  ITaxCalculationRequest,
-  ITaxCalculationResponse
+  IPaymentLinkResponse,
+  ITaxCalculationRequest
 } from '@eatfit247-shared-library';
 
 /**
@@ -23,7 +21,7 @@ import {
  * Manages member creation, address, tax calculation, and payment
  */
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class CheckoutService {
   private readonly httpService = inject(HttpService);
@@ -95,12 +93,13 @@ export class CheckoutService {
   async calculateTax(
     memberId: number,
     taxData: ITaxCalculationRequest
-  ): Promise<ITaxCalculationResponse | null> {
+  ): Promise<ICalculateProductVariantTaxResponse | null> {
     try {
-      const res = await this.httpService.post<ITaxCalculationResponse>(
-        `checkout/member/${memberId}/calculate-tax`,
-        taxData
-      );
+      const res =
+        await this.httpService.post<ICalculateProductVariantTaxResponse>(
+          `checkout/member/${memberId}/calculate-tax`,
+          taxData
+        );
       return res.data || null;
     } catch (error) {
       console.error('Error calculating tax:', error);
@@ -117,10 +116,11 @@ export class CheckoutService {
     taxData: ICalculateProductVariantTaxRequest
   ): Promise<ICalculateProductVariantTaxResponse | null> {
     try {
-      const res = await this.httpService.post<ICalculateProductVariantTaxResponse>(
-        `checkout/member/${memberId}/calculate-tax`,
-        taxData
-      );
+      const res =
+        await this.httpService.post<ICalculateProductVariantTaxResponse>(
+          `checkout/member/${memberId}/calculate-tax`,
+          taxData
+        );
       return res.data || null;
     } catch (error) {
       console.error('Error calculating product tax:', error);
@@ -277,7 +277,7 @@ export class CheckoutService {
    */
   async createPlanOrder(
     memberId: number,
-    orderData: ICreatePlanOrderRequest,
+    orderData: IManageMemberPayment,
     recaptchaToken?: string
   ): Promise<any> {
     try {
@@ -366,9 +366,7 @@ export class CheckoutService {
    * Uses member-payment/order/plan/:gatewayOrderId endpoint
    * @param gatewayOrderId - Gateway order ID
    */
-  async getPlanOrderDetails(
-    gatewayOrderId: string
-  ): Promise<IMemberProduct> {
+  async getPlanOrderDetails(gatewayOrderId: string): Promise<IMemberProduct> {
     try {
       const res = await this.httpService.get<IMemberProduct>(
         `checkout/plan/${gatewayOrderId}`

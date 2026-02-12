@@ -84,6 +84,7 @@ export interface IManageMemberPayment {
   paymentLink?: string;
   gatewayProvider?: string;
   gatewayOrderId?: string;
+  gatewayPaymentId?: string;
   paymentGatewayResponse?: object | null;
   discountAmount: number;
   currency?: string;

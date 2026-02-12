@@ -1,8 +1,8 @@
-import { Component, inject, OnInit, ViewChild, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Params, Router } from '@angular/router';
-import { MatStepperModule, MatStepper } from '@angular/material/stepper';
+import { MatStepper, MatStepperModule } from '@angular/material/stepper';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
@@ -12,20 +12,20 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatRadioModule } from '@angular/material/radio';
-import { CheckoutService } from '../../core/services';
-import { ProgramPlan } from '../../core/services';
+import { CheckoutService, PaymentService, ProgramPlan } from '../../core/services';
 import { RecaptchaService } from '../../core/services/recaptcha.service';
-import { PaymentService } from '../../core/services';
 import {
   ICalculateProductVariantTaxRequest,
   ICalculateProductVariantTaxResponse,
   ICheckoutAddressData,
   ICheckoutMemberData,
+  IDropdownItem,
+  IManageMemberPayment,
+  IManageMemberProduct,
   IPaymentGateway,
-  ITaxCalculationResponse,
+  IPublicProduct,
   PaymentSourceEnum,
-  PaymentStatusEnum,
-  IDropdownItem, IManageMemberProduct, IPublicProduct
+  PaymentStatusEnum
 } from '@eatfit247-shared-library';
 import { ProductService } from '../../core/services/product.service';
 
@@ -51,7 +51,6 @@ import { ProductService } from '../../core/services/product.service';
 })
 export class CheckoutComponent implements OnInit {
   @ViewChild('stepper') stepper!: MatStepper;
-
   private readonly fb = inject(FormBuilder);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
@@ -59,7 +58,6 @@ export class CheckoutComponent implements OnInit {
   private readonly recaptchaService = inject(RecaptchaService);
   private readonly paymentService = inject(PaymentService);
   private readonly productService = inject(ProductService);
-
   // Stepper state
   // SELECTION step removed – flow now starts from BILLING
   currentStepIndex = signal(0);
@@ -69,62 +67,52 @@ export class CheckoutComponent implements OnInit {
     PAYMENT: 2,
     RESULT: 3
   };
-
   // Unified form for both products and plans
   basicDetailsForm!: FormGroup;
-  
   // Flag to ensure forms are initialized
   formsInitialized = false;
-
   // Data
   programPlan: ProgramPlan | null = null;
   programPlanId: number | null = null;
   memberId: number | null = null;
   addressId: number | null = null;
-
   // Product checkout data
   isProductCheckout = false;
   productName = '';
   productPrice = 0;
   productQuantity = 1;
+  productUnit = '';
   productSku = '';
   productId: number | null = null;
   productVariantId: number | null = null;
-
   // Payment gateway
   paymentGateways: IPaymentGateway[] = [];
   selectedGateway: IPaymentGateway | null = null;
   isPaymentGatewayAvailable = false;
   paymentGatewayLoading = false;
-
   // Master data
   countryOptions: IDropdownItem[] = [];
   countryCodeOptions: IDropdownItem[] = [];
   stateOptions: IDropdownItem[] = [];
   filteredStateOptions: IDropdownItem[] = [];
-
   // Tax calculation
-  taxCalculation: ITaxCalculationResponse | null = null;
+  taxCalculation: ICalculateProductVariantTaxResponse | null = null;
   productTaxCalculation: ICalculateProductVariantTaxResponse | null = null;
   isTaxApplicable = false;
   calculatingTax = false;
-
   // Payment
   paymentLink: string | null = null;
   loading = false;
   error: string | null = null;
-
   // Embedded payment
   showPaymentModal = false;
   processingPayment = false;
   paymentOrderResponse: any = null;
-
   // Plan details
   orderAmount = 0;
   discountAmount = 0;
   currencyCode = 'INR';
   product!: IPublicProduct;
-
   // Result state
   paymentSuccess = false;
   paymentError: string | null = null;
@@ -181,7 +169,10 @@ export class CheckoutComponent implements OnInit {
       lastName: ['Parihar', [Validators.required, Validators.maxLength(50)]],
       companyName: ['', [Validators.maxLength(100)]],
       countryId: [null, [Validators.required]],
-      streetAddress1: ['K-203', [Validators.required, Validators.maxLength(200)]],
+      streetAddress1: [
+        'K-203',
+        [Validators.required, Validators.maxLength(200)]
+      ],
       streetAddress2: ['Plantaria', [Validators.maxLength(200)]],
       city: ['Bhayendar', [Validators.required, Validators.maxLength(100)]],
       stateId: ['', [Validators.required]],
@@ -216,6 +207,7 @@ export class CheckoutComponent implements OnInit {
         this.programPlanId
       );
       if (this.programPlan) {
+        this.productUnit = '';
         // Set order amount from plan fees
         const inrFee = this.programPlan.programPlanFees?.find(
           (f) => f.currencyCode === 'INR'
@@ -322,22 +314,26 @@ export class CheckoutComponent implements OnInit {
   async proceedFromSelection(): Promise<void> {
     if (this.isProductCheckout) {
       if (!this.productId || !this.productVariantId) {
-        this.error = 'Product ID or Variant ID missing. Please go back and select the product again.';
+        this.error =
+          'Product ID or Variant ID missing. Please go back and select the product again.';
         return;
       }
       await this.loadProductDetails();
       if (!this.product || this.error) {
-        this.error = 'Product or variant not found. Please go back and select the product again.';
+        this.error =
+          'Product or variant not found. Please go back and select the product again.';
         return;
       }
     } else {
       if (!this.programPlanId) {
-        this.error = 'Program Plan ID missing. Please go back and select the plan again.';
+        this.error =
+          'Program Plan ID missing. Please go back and select the plan again.';
         return;
       }
       await this.loadProgramPlan();
       if (!this.programPlan || this.error) {
-        this.error = 'Plan not found. Please go back and select the plan again.';
+        this.error =
+          'Plan not found. Please go back and select the plan again.';
         return;
       }
     }
@@ -356,7 +352,6 @@ export class CheckoutComponent implements OnInit {
     try {
       this.loading = true;
       this.error = null;
-
       // Create member (skip if already exists)
       if (!this.memberId) {
         const memberData: ICheckoutMemberData = {
@@ -370,36 +365,42 @@ export class CheckoutComponent implements OnInit {
         let recaptchaToken: string | undefined;
         if (this.recaptchaService.isAvailable()) {
           try {
-            recaptchaToken = await this.recaptchaService.getToken('member_creation');
+            recaptchaToken = await this.recaptchaService.getToken(
+              'member_creation'
+            );
           } catch (recaptchaError: any) {
             console.warn('Failed to get reCAPTCHA token:', recaptchaError);
           }
         }
-        const memberResult = await this.checkoutService.createMember(memberData, recaptchaToken);
+        const memberResult = await this.checkoutService.createMember(
+          memberData,
+          recaptchaToken
+        );
         if (!memberResult?.memberId) {
           throw new Error('Failed to create member');
         }
         this.memberId = memberResult.memberId;
       }
-
       // Create address (skip if already exists)
       if (!this.addressId || !this.memberId) {
         const addressData: ICheckoutAddressData = {
-          postalAddress: `${this.basicDetailsForm.get('streetAddress1')?.value} ${
-            this.basicDetailsForm.get('streetAddress2')?.value || ''
-          }`.trim(),
+          postalAddress: `${
+            this.basicDetailsForm.get('streetAddress1')?.value
+          } ${this.basicDetailsForm.get('streetAddress2')?.value || ''}`.trim(),
           cityVillage: this.basicDetailsForm.get('city')?.value,
           stateId: Number(this.basicDetailsForm.get('stateId')?.value),
           countryId: Number(this.basicDetailsForm.get('countryId')?.value),
           pinCode: this.basicDetailsForm.get('postcode')?.value
         };
-        const addressResult = await this.checkoutService.createAddress(this.memberId!, addressData);
+        const addressResult = await this.checkoutService.createAddress(
+          this.memberId!,
+          addressData
+        );
         if (!addressResult?.addressId) {
           throw new Error('Failed to create address');
         }
         this.addressId = addressResult.addressId;
       }
-
       // Calculate tax first, then skip to preview step
       await this.calculateTaxForCurrentStep();
       // Load payment gateways before moving to preview
@@ -418,6 +419,46 @@ export class CheckoutComponent implements OnInit {
     }
   }
 
+  private async checkProductTax() {
+    if (!this.productId || !this.productVariantId) {
+      throw new Error('Product ID or Variant ID missing');
+    }
+    const productTaxRequest: ICalculateProductVariantTaxRequest = {
+      items: [
+        {
+          productId: this.productId,
+          productVariantId: this.productVariantId,
+          quantity: this.productQuantity,
+          currency: this.currencyCode
+        }
+      ],
+      addressId: this.addressId,
+      billingAddressId: this.addressId,
+      discountAmount: 0
+    };
+    this.productTaxCalculation = await this.checkoutService.calculateProductTax(
+      this.memberId,
+      productTaxRequest
+    );
+    this.isTaxApplicable = this.productTaxCalculation.taxAmount > 0;
+  }
+
+  private async checkPlanTax() {
+    const taxRequest = {
+      orderAmount: this.orderAmount,
+      discountAmount: 0,
+      isTaxApplicable: true,
+      isPlanFeesIncludedTax: true,
+      currencyCode: this.currencyCode,
+      addressId: this.addressId
+    };
+    this.taxCalculation = await this.checkoutService.calculateTax(
+      this.memberId,
+      taxRequest
+    );
+    this.isTaxApplicable = this.taxCalculation.taxAmount > 0;
+  }
+
   /**
    * Step 3: Calculate tax (auto-triggered after billing)
    */
@@ -426,86 +467,12 @@ export class CheckoutComponent implements OnInit {
       this.error = 'Member and address must be created first.';
       return;
     }
-    try {
-      this.calculatingTax = true;
-      this.error = null;
-
-      if (this.isProductCheckout) {
-        if (!this.productId || !this.productVariantId) {
-          throw new Error('Product ID or Variant ID missing');
-        }
-        const productTaxRequest: ICalculateProductVariantTaxRequest = {
-          items: [
-            {
-              productId: this.productId,
-              productVariantId: this.productVariantId,
-              quantity: this.productQuantity,
-              currency: this.currencyCode
-            }
-          ],
-          addressId: this.addressId,
-          billingAddressId: this.addressId,
-          discountAmount: 0
-        };
-        this.productTaxCalculation = await this.checkoutService.calculateProductTax(
-          this.memberId,
-          productTaxRequest
-        );
-        if (this.productTaxCalculation) {
-          this.isTaxApplicable = this.productTaxCalculation.taxAmount > 0;
-          const taxPercentage = this.productTaxCalculation.taxableAmount > 0
-            ? (this.productTaxCalculation.taxAmount / this.productTaxCalculation.taxableAmount) * 100
-            : 0;
-          this.taxCalculation = {
-            taxPercentage: taxPercentage,
-            taxAmount: this.productTaxCalculation.taxAmount,
-            totalAmount: this.productTaxCalculation.totalAmount,
-            taxObj: {}
-          };
-        } else {
-          const baseAmount = this.productSubtotal;
-          this.taxCalculation = {
-            taxPercentage: 0,
-            taxAmount: 0,
-            totalAmount: baseAmount,
-            taxObj: {}
-          };
-          this.isTaxApplicable = false;
-        }
-      } else {
-        const taxRequest = {
-          orderAmount: this.orderAmount,
-          discountAmount: 0,
-          isTaxApplicable: true,
-          isPlanFeesIncludedTax: true,
-          currencyCode: this.currencyCode,
-          addressId: this.addressId
-        };
-        this.taxCalculation = await this.checkoutService.calculateTax(this.memberId, taxRequest);
-        if (this.taxCalculation) {
-          this.isTaxApplicable = this.taxCalculation.taxAmount > 0;
-        } else {
-          this.taxCalculation = {
-            taxPercentage: 0,
-            taxAmount: 0,
-            totalAmount: this.orderAmount,
-            taxObj: {}
-          };
-          this.isTaxApplicable = false;
-        }
-      }
-    } catch (taxError: any) {
-      console.error('Error calculating tax:', taxError);
-      const baseAmount = this.isProductCheckout ? this.productSubtotal : this.orderAmount;
-      this.taxCalculation = {
-        taxPercentage: 0,
-        taxAmount: 0,
-        totalAmount: baseAmount,
-        taxObj: {}
-      };
-      this.isTaxApplicable = false;
-    } finally {
-      this.calculatingTax = false;
+    this.calculatingTax = true;
+    this.error = null;
+    if (this.isProductCheckout) {
+      await this.checkProductTax();
+    } else {
+      await this.checkPlanTax();
     }
   }
 
@@ -530,72 +497,70 @@ export class CheckoutComponent implements OnInit {
     try {
       this.loading = true;
       this.error = null;
-
-      const taxPercentage = this.productTaxCalculation
-        ? (this.productTaxCalculation.taxableAmount > 0
-          ? (this.productTaxCalculation.taxAmount / this.productTaxCalculation.taxableAmount) * 100
-          : 0)
-        : (this.taxCalculation?.taxPercentage || 0);
-      const taxAmount = this.productTaxCalculation?.taxAmount || this.taxCalculation?.taxAmount || 0;
-      const discountAmount = this.productTaxCalculation?.discountAmount || 0;
-      const totalAmount = this.productTaxCalculation?.totalAmount || this.taxCalculation?.totalAmount || 
+      const totalAmount =
+        this.productTaxCalculation?.totalAmount ||
+        this.taxCalculation?.totalAmount ||
         (this.isProductCheckout ? this.productTotal : this.totalAmount);
-
       const customerName = `${this.basicDetailsForm.get('firstName')?.value} ${
         this.basicDetailsForm.get('lastName')?.value
       }`;
-
-      // Create payment order
+      // Create a payment order
       if (this.isProductCheckout) {
         if (!this.productId || !this.productVariantId) {
           throw new Error('Product ID or Variant ID missing');
         }
-        this.paymentOrderResponse = await this.paymentService.createPaymentOrder(this.memberId, {
-          amount: totalAmount,
-          currency: this.currencyCode,
-          description: `Payment for ${this.productName}`,
-          franchisePaymentGatewayId: this.selectedGateway.franchisePaymentGatewayId,
-          customer: {
-            name: customerName,
-            email: this.basicDetailsForm.get('email')?.value,
-            contact: this.basicDetailsForm.get('phone')?.value
-          },
-          notes: {
-            productName: this.productName,
-            productSku: this.productSku,
-            quantity: this.productQuantity,
-            addressId: this.addressId,
-            orderNotes: this.basicDetailsForm.get('orderNotes')?.value || undefined
-          }
-        });
+        this.paymentOrderResponse =
+          await this.paymentService.createPaymentOrder(this.memberId, {
+            amount: totalAmount,
+            currency: this.currencyCode,
+            description: `Payment for ${this.productName}`,
+            franchisePaymentGatewayId:
+            this.selectedGateway.franchisePaymentGatewayId,
+            customer: {
+              name: customerName,
+              email: this.basicDetailsForm.get('email')?.value,
+              contact: this.basicDetailsForm.get('phone')?.value
+            },
+            notes: {
+              productName: this.productName,
+              productSku: this.productSku,
+              quantity: this.productQuantity,
+              addressId: this.addressId,
+              orderNotes:
+                this.basicDetailsForm.get('orderNotes')?.value || undefined
+            }
+          });
       } else {
         if (!this.programPlanId) {
           throw new Error('Program Plan ID missing');
         }
-        this.paymentOrderResponse = await this.paymentService.createPlanPaymentOrder(this.memberId, {
-          amount: totalAmount,
-          currency: this.currencyCode,
-          description: `Payment for ${this.programPlan?.plan || 'Plan'}`,
-          franchisePaymentGatewayId: this.selectedGateway.franchisePaymentGatewayId,
-          customer: {
-            name: customerName,
-            email: this.basicDetailsForm.get('email')?.value,
-            contact: this.basicDetailsForm.get('phone')?.value
-          },
-          notes: {
-            programPlanId: this.programPlanId,
-            addressId: this.addressId,
-            orderNotes: this.basicDetailsForm.get('orderNotes')?.value || undefined
-          }
-        });
+        this.paymentOrderResponse =
+          await this.paymentService.createPlanPaymentOrder(this.memberId, {
+            amount: totalAmount,
+            currency: this.currencyCode,
+            description: `Payment for ${this.programPlan?.plan || 'Plan'}`,
+            franchisePaymentGatewayId:
+            this.selectedGateway.franchisePaymentGatewayId,
+            customer: {
+              name: customerName,
+              email: this.basicDetailsForm.get('email')?.value,
+              contact: this.basicDetailsForm.get('phone')?.value
+            },
+            notes: {
+              programPlanId: this.programPlanId,
+              addressId: this.addressId,
+              orderNotes:
+                this.basicDetailsForm.get('orderNotes')?.value || undefined
+            }
+          });
       }
-
-      // Move to payment step
+      // Move to a payment step
       this.moveToNextStep();
       await this.initializePaymentFlow();
     } catch (error: any) {
       console.error('Error creating payment order:', error);
-      this.error = error.message || 'Failed to create payment order. Please try again.';
+      this.error =
+        error.message || 'Failed to create payment order. Please try again.';
     } finally {
       this.loading = false;
     }
@@ -613,7 +578,6 @@ export class CheckoutComponent implements OnInit {
       this.processingPayment = true;
       this.showPaymentModal = true;
       this.error = null;
-
       await this.paymentService.initializePayment(
         this.paymentOrderResponse,
         async (paymentId: string, orderId: string, signature?: string) => {
@@ -634,51 +598,50 @@ export class CheckoutComponent implements OnInit {
   /**
    * Handle successful payment
    */
-  async handlePaymentSuccess(paymentId: string, orderId: string, signature?: string): Promise<void> {
+  async handlePaymentSuccess(
+    paymentId: string,
+    orderId: string,
+    signature?: string
+  ): Promise<void> {
     try {
       if (!this.memberId) {
         throw new Error('Member ID is required');
       }
-
       // Verify payment
       const verifyResponse = this.isProductCheckout
         ? await this.paymentService.verifyPayment(this.memberId, {
-            gatewayCode: this.paymentOrderResponse.gatewayCode,
-            paymentId: paymentId,
-            orderId: orderId,
-            signature: signature
-          })
+          gatewayCode: this.paymentOrderResponse.gatewayCode,
+          paymentId: paymentId,
+          orderId: orderId,
+          signature: signature
+        })
         : await this.paymentService.verifyPlanPayment(this.memberId, {
-            gatewayCode: this.paymentOrderResponse.gatewayCode,
-            paymentId: paymentId,
-            orderId: orderId,
-            signature: signature
-          });
-
+          gatewayCode: this.paymentOrderResponse.gatewayCode,
+          paymentId: paymentId,
+          orderId: orderId,
+          signature: signature
+        });
       if (!verifyResponse.verified) {
         throw new Error('Payment verification failed');
       }
-
-      // Create order in database
-      const taxPercentage = this.productTaxCalculation
-        ? (this.productTaxCalculation.taxableAmount > 0
-          ? (this.productTaxCalculation.taxAmount / this.productTaxCalculation.taxableAmount) * 100
-          : 0)
-        : (this.taxCalculation?.taxPercentage || 0);
-      const taxAmount = this.productTaxCalculation?.taxAmount || this.taxCalculation?.taxAmount || 0;
       const discountAmount = this.productTaxCalculation?.discountAmount || 0;
-      const totalAmount = this.productTaxCalculation?.totalAmount || this.taxCalculation?.totalAmount ||
+      const totalAmount =
+        this.productTaxCalculation?.totalAmount ||
+        this.taxCalculation?.totalAmount ||
         (this.isProductCheckout ? this.productTotal : this.totalAmount);
-
       let recaptchaToken: string | undefined;
       if (this.recaptchaService.isAvailable()) {
         try {
-          recaptchaToken = await this.recaptchaService.getToken('checkout_order');
+          recaptchaToken = await this.recaptchaService.getToken(
+            'checkout_order'
+          );
         } catch (recaptchaError: any) {
-          console.warn('Failed to get reCAPTCHA token for order:', recaptchaError);
+          console.warn(
+            'Failed to get reCAPTCHA token for order:',
+            recaptchaError
+          );
         }
       }
-
       if (this.isProductCheckout) {
         if (!this.productId || !this.productVariantId) {
           throw new Error('Product ID or Variant ID missing');
@@ -715,32 +678,32 @@ export class CheckoutComponent implements OnInit {
             }
           ]
         };
-        await this.checkoutService.createProductOrder(this.memberId, orderData, recaptchaToken);
+        await this.checkoutService.createProductOrder(
+          this.memberId,
+          orderData,
+          recaptchaToken
+        );
       } else {
         if (!this.programPlanId) {
           throw new Error('Program Plan ID missing');
         }
-        const orderData = {
+        const orderData: IManageMemberPayment = {
+          memberId: this.memberId,
           paymentModeId: null,
           billingAddressId: this.addressId!,
           addressId: this.addressId!,
           transactionId: paymentId,
-          paymentDate: new Date().toISOString(),
+          paymentDate: new Date(),
           paymentStatusId: PaymentStatusEnum.PAID,
           programId: null,
           programPlanId: this.programPlanId,
           noOfCycle: this.programPlan?.noOfCycle || 1,
           noOfDaysInCycle: this.programPlan?.noOfDaysInCycle || 30,
-          isTaxApplicable: this.isTaxApplicable,
-          taxPercentage: taxPercentage,
-          currencyCode: this.currencyCode,
+          currency: this.currencyCode,
           promoCode: undefined,
           gstNumber: undefined,
           paymentSource: PaymentSourceEnum.PAYMENT_GATEWAY,
-          orderAmount: this.orderAmount,
-          taxAmount: taxAmount,
           discountAmount: discountAmount,
-          totalAmount: totalAmount,
           paymentLink: undefined,
           gatewayProvider: this.paymentOrderResponse.gatewayCode,
           gatewayOrderId: orderId,
@@ -753,10 +716,13 @@ export class CheckoutComponent implements OnInit {
             verified: verifyResponse.verified
           }
         };
-        await this.checkoutService.createPlanOrder(this.memberId, orderData, recaptchaToken);
+        await this.checkoutService.createPlanOrder(
+          this.memberId,
+          orderData,
+          recaptchaToken
+        );
       }
-
-      // Success - move to result step
+      // Success - move to a result step
       this.processingPayment = false;
       this.showPaymentModal = false;
       this.paymentSuccess = true;
@@ -828,20 +794,6 @@ export class CheckoutComponent implements OnInit {
   }
 
   /**
-   * Legacy method - now uses stepper flow
-   */
-  async proceedToReviewPlan(): Promise<void> {
-    await this.proceedFromBilling();
-  }
-
-  /**
-   * Legacy method - now uses stepper flow
-   */
-  async placePlanOrder(): Promise<void> {
-    await this.proceedFromPreview();
-  }
-
-  /**
    * Mark all form fields as touched
    */
   private markFormGroupTouched(formGroup: FormGroup): void {
@@ -868,13 +820,6 @@ export class CheckoutComponent implements OnInit {
   }
 
   /**
-   * Go back from review step to address form (legacy - now uses stepper)
-   */
-  goBackToAddressForm(): void {
-    this.moveToStep(this.STEP_INDICES.BILLING);
-  }
-
-  /**
    * Get tax amount
    */
   get taxAmount(): number {
@@ -885,7 +830,7 @@ export class CheckoutComponent implements OnInit {
    * Get subtotal for product checkout
    */
   get productSubtotal(): number {
-    return this.productPrice * this.productQuantity;
+    return this.taxCalculation?.orderAmount || 0;
   }
 
   /**
@@ -896,37 +841,6 @@ export class CheckoutComponent implements OnInit {
       return this.taxCalculation.totalAmount;
     }
     return this.productSubtotal;
-  }
-
-  /**
-   * Increment product quantity
-   */
-  incrementProductQuantity(): void {
-    if (this.productQuantity < 5) {
-      this.productQuantity++;
-      this.orderAmount = this.productPrice * this.productQuantity;
-    }
-  }
-
-  /**
-   * Decrement product quantity
-   */
-  decrementProductQuantity(): void {
-    if (this.productQuantity > 1) {
-      this.productQuantity--;
-      this.orderAmount = this.productPrice * this.productQuantity;
-    }
-  }
-
-  /**
-   * Update product quantity from input
-   */
-  updateProductQuantity(value: string): void {
-    const numValue = parseInt(value, 10);
-    if (!isNaN(numValue) && numValue > 0) {
-      this.productQuantity = Math.min(numValue, 5);
-      this.orderAmount = this.productPrice * this.productQuantity;
-    }
   }
 
   /**
@@ -964,20 +878,6 @@ export class CheckoutComponent implements OnInit {
     }
   }
 
-  /**
-   * Legacy method - now uses stepper flow
-   */
-  async proceedToReview(): Promise<void> {
-    await this.proceedFromBilling();
-  }
-
-  /**
-   * Legacy method - now uses stepper flow
-   */
-  async placeProductOrder(): Promise<void> {
-    await this.proceedFromPreview();
-  }
-
   async loadProductDetails() {
     try {
       this.loading = true;
@@ -1003,6 +903,7 @@ export class CheckoutComponent implements OnInit {
       this.currencyCode = fees.currency;
       this.productPrice = fees.price;
       this.productName = this.product.name;
+      this.productUnit = variant.quantityValue + ' ' + variant.quantityUnit;
       this.orderAmount = this.productPrice * this.productQuantity;
     } catch (error: any) {
       console.error('Error loading product details:', error);
@@ -1017,7 +918,7 @@ export class CheckoutComponent implements OnInit {
    */
   getStateName(stateId: number | null): string {
     if (!stateId) return '';
-    const state = this.stateOptions.find(s => s.id === stateId);
+    const state = this.stateOptions.find((s) => s.id === stateId);
     return state?.label || '';
   }
 
@@ -1026,7 +927,7 @@ export class CheckoutComponent implements OnInit {
    */
   getCountryName(countryId: number | null): string {
     if (!countryId) return '';
-    const country = this.countryOptions.find(c => c.id === countryId);
+    const country = this.countryOptions.find((c) => c.id === countryId);
     return country?.label || '';
   }
 }
