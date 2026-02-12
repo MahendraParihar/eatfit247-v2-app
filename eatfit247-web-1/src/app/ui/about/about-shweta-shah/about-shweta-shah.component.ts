@@ -1,8 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { ContainerComponent } from '@shared-ui/layout';
 import { BannerComponent, LoaderComponent } from '@shared-ui';
-import { BannerService } from '../../../core/services/banner.service';
+import { BannerService } from '../../../core/services';
 import { BannerForEnum } from '@eatfit247-shared-library/enum';
 import { IMediaUpload, IPublicLegalPage } from '@eatfit247-shared-library/core';
 import { LegalPagesService } from '../../../core/services/legal-pages.service';
@@ -11,9 +10,9 @@ import { Router } from '@angular/router';
 @Component({
   standalone: true,
   selector: 'app-about-shweta-shah',
-  imports: [CommonModule, ContainerComponent, BannerComponent, LoaderComponent],
+  imports: [CommonModule, BannerComponent, LoaderComponent],
   templateUrl: './about-shweta-shah.component.html',
-  styleUrl: './about-shweta-shah.component.scss',
+  styleUrl: './about-shweta-shah.component.scss'
 })
 export class AboutShwetaShahComponent implements OnInit {
   private readonly bannerService = inject(BannerService);
@@ -47,14 +46,12 @@ export class AboutShwetaShahComponent implements OnInit {
   private async loadPage(): Promise<void> {
     this.isLoading.set(true);
     this.errorMessage.set(null);
-
     try {
       // Use current route path (without leading slash) as the URL slug
       const currentPath = this.router.url.split('?')[0].replace(/^\/+/, '');
       const data = await this.legalPagesService.getByUrl(
         currentPath || 'about-shweta-shah'
       );
-
       if (data) {
         this.pageData = data;
       } else {

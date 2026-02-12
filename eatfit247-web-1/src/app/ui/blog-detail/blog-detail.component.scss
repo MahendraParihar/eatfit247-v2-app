@@ -2,13 +2,9 @@
 @use '../../../styles/breakpoints' as *;
 
 .blog-detail-page {
-  background-color: var(--color-surface-card);
 }
 
 .blog-detail-container {
-  max-width: var(--container-max-width-lg);
-  margin: 0 auto;
-  padding: var(--space-4) var(--space-fluid-md);
 }
 
 /* Breadcrumb */
@@ -24,12 +20,11 @@
 
 .breadcrumb-link {
   text-decoration: none;
-  color: #797979;
+  color: var(--color-text-secondary);
 
-  // Style the shared Material button inside the breadcrumb
   .app-button {
     background-color: transparent;
-    color: #797979 !important;
+    color: var(--color-text-secondary) !important;
     padding-inline: 0;
     min-height: auto;
     height: auto;
@@ -41,11 +36,11 @@
 }
 
 .breadcrumb-current {
-  color: #797979;
+  color: var(--color-text-secondary);
 }
 
 .breadcrumb-separator {
-  color: #797979;
+  color: var(--color-text-secondary);
 }
 
 /* Layout */
@@ -62,7 +57,14 @@
 }
 
 .blog-detail-main {
-  max-width: 48rem; // 768px readable content on large screens
+  background-color: var(--color-surface-card);
+}
+
+.blog-detail-content-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-6);
 }
 
 /* Category badge */
@@ -70,16 +72,8 @@
   margin-bottom: var(--space-2);
 }
 
-.category-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 6px 12px;
-  border-radius: 20px;
-  background-color: #fdfbed;
-  color: #fa8547;
-  font-size: 12px;
-  line-height: 16px;
+.section__badge {
+  position: absolute;
 }
 
 /* Featured image */
@@ -429,10 +423,10 @@
   width: 40%;
   height: 100%;
   background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 0.6) 50%,
-    rgba(255, 255, 255, 0) 100%
+                  90deg,
+                  rgba(255, 255, 255, 0) 0%,
+                  rgba(255, 255, 255, 0.6) 50%,
+                  rgba(255, 255, 255, 0) 100%
   );
   animation: shimmer 1.2s infinite;
 }

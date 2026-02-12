@@ -6,7 +6,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { ContainerComponent, BannerComponent } from '@shared-ui';
+import { BannerComponent } from '@shared-ui';
 import { BannerService } from '../../core/services';
 import { BannerForEnum } from '@eatfit247-shared-library/enum';
 import { IMediaUpload } from '@eatfit247-shared-library/core';
@@ -24,7 +24,6 @@ import { HttpService } from '../../core/services';
     MatButtonModule,
     MatIconModule,
     MatProgressSpinnerModule,
-    ContainerComponent,
     BannerComponent
   ],
   templateUrl: './contact-us.component.html',
@@ -46,10 +45,29 @@ export class ContactUsComponent implements OnInit {
   formSuccess = false;
   formError = false;
   errorMessage = '';
-  readonly contactInfo = {
-    phone: '+91-859-185-4209',
-    email: 'eatfit24by7@gmail.com'
-  };
+  readonly contactInfo = [
+    {
+      title: 'WhatsApp Support',
+      description: 'Chat with us instantly',
+      icon: 'whatsapp',
+      cta: 'Chat Now',
+      link: 'https://wa.me/91XXXXXXXXXX'
+    },
+    {
+      title: 'Call Us',
+      description: '+91-XXXXXXXXXX',
+      icon: 'phone',
+      cta: 'Tap to Call',
+      link: 'tel:+91XXXXXXXXXX'
+    },
+    {
+      title: 'Email',
+      description: 'support@eatfit247.com',
+      icon: 'email',
+      cta: 'Send Mail',
+      link: 'mailto:support@eatfit247.com'
+    }
+  ];
   banners: IMediaUpload[] = [];
 
   ngOnInit(): void {

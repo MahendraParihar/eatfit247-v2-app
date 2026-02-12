@@ -1,494 +1,491 @@
-<section class="product-page">
-  <!-- Banner Section -->
-  @if (banners.length > 0) {
-    <app-banner [banners]="banners"></app-banner>
-  }
+<!-- Banner Section -->
+@if (banners.length > 0) {
+  <app-banner [banners]="banners"></app-banner>
+}
+<!-- Main Content -->
+<div class="product-page__container page-container">
+  @if (loading()) {
+    <app-loader page="product"></app-loader>
+  } @else if (error()) {
+    <div class="product-page__state product-page__state--error">
+      <p>{{ error() }}</p>
+    </div>
+  } @else if (product) {
+    <!-- Product Details: 2-column -->
+    <div class="product-page__details">
+      <!-- Left: Images -->
+      <div class="product-page__image-column">
+        <div class="product-page__image-main">
+          <img
+            [src]="selectedImage"
+            [alt]="productName"
+            class="product-page__image-main-img"
+          />
+        </div>
 
-  <!-- Main Content -->
-  <div class="product-page__container">
-    @if (loading()) {
-      <app-loader page="product"></app-loader>
-    } @else if (error()) {
-      <div class="product-page__state product-page__state--error">
-        <p>{{ error() }}</p>
-      </div>
-    } @else if (product) {
-      <!-- Product Details: 2-column -->
-      <div class="product-page__details">
-        <!-- Left: Images -->
-        <div class="product-page__image-column">
-          <div class="product-page__image-main">
-            <img
-              [src]="selectedImage"
-              [alt]="productName"
-              class="product-page__image-main-img"
-            />
+        @if (productImages.length > 1) {
+          <div class="product-page__image-thumbs">
+            @for (image of productImages; track $index) {
+              <button
+                type="button"
+                class="product-page__thumb"
+                [class.product-page__thumb--active]="selectedImageIndex === $index"
+                (click)="selectImage($index)"
+              >
+                <img
+                  [src]="image"
+                  [alt]="productName + ' thumbnail ' + ($index + 1)"
+                />
+              </button>
+            }
           </div>
+        }
+      </div>
 
-          @if (productImages.length > 1) {
-            <div class="product-page__image-thumbs">
-              @for (image of productImages; track $index) {
+      <!-- Right: Info -->
+      <div class="product-page__info-column">
+        <div class="product-page__info">
+          <!-- Natural Ingredients Badge -->
+          <div class="section__badge">
+            <span class="section__badge-text">100% Natural Ingredients</span>
+          </div>
+          <h1 class="section__title">{{ productName }}</h1>
+
+          @if (productDescription && productDescription !== productName) {
+            <p class="product-page__description">
+              {{ productDescription }}
+            </p>
+          } @else {
+            <p class="product-page__description">
+              Experience post-meal discomfort, excessive burping or gas, acidity or indigestion? Debloat is your ideal
+              solution.
+            </p>
+          }
+
+          @if (priceRange) {
+            <div class="product-page__price-range">
+              <span>{{ priceRange }}</span>
+            </div>
+          }
+
+          <p class="product-page__tax-note">Inclusive of all taxes.</p>
+
+          <!-- Sizes -->
+          <section class="product-page__section">
+            <h2 class="product-page__section-label">CHOOSE YOUR SIZE</h2>
+            <div class="product-page__sizes">
+              @if (sizes.length === 0) {
+                <p class="product-page__sizes-empty">
+                  No sizes available
+                </p>
+              } @else {
+                @for (size of sizes; track size.sku || size.label) {
+                  <button
+                    type="button"
+                    class="product-page__size"
+                    [class.product-page__size--selected]="
+                        selectedSize?.sku === size.sku &&
+                        selectedSize?.quantity === size.quantity
+                      "
+                    (click)="onSizeChange(size)"
+                  >
+                      <span class="product-page__size-label">
+                        {{ size.label }}
+                      </span>
+                    <span class="product-page__size-price">
+                        {{ size.currency }} {{ size.price }}.00
+                      </span>
+                  </button>
+                }
+              }
+            </div>
+          </section>
+
+          <!-- Quantity + CTA -->
+          <section class="product-page__section">
+            <h2 class="product-page__section-label">Quantity</h2>
+            <div class="product-page__qty-row">
+              <div class="product-page__qty">
                 <button
                   type="button"
-                  class="product-page__thumb"
-                  [class.product-page__thumb--active]="selectedImageIndex === $index"
-                  (click)="selectImage($index)"
+                  class="product-page__qty-btn"
+                  (click)="decrementQuantity()"
+                  [disabled]="quantity <= 1"
+                  aria-label="Decrease quantity"
                 >
-                  <img
-                    [src]="image"
-                    [alt]="productName + ' thumbnail ' + ($index + 1)"
-                  />
+                  <mat-icon>remove</mat-icon>
                 </button>
+                <input
+                  type="number"
+                  class="product-page__qty-input"
+                  [value]="quantity"
+                  (input)="updateQuantity($any($event.target).value)"
+                  min="1"
+                  max="5"
+                  aria-label="Quantity"
+                />
+                <button
+                  type="button"
+                  class="product-page__qty-btn"
+                  (click)="incrementQuantity()"
+                  [disabled]="quantity >= 5"
+                  aria-label="Increase quantity"
+                >
+                  <mat-icon>add</mat-icon>
+                </button>
+              </div>
+
+              <button
+                type="button"
+                mat-button="filled"
+                color="primary"
+                (click)="onBuyNow()"
+              >
+                Buy Now
+              </button>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <!-- Info: benefits / dose / how to take / precautions -->
+    <section class="product-page__info-grid">
+      @if (productBenefits.length > 0) {
+        <div class="product-page__info-col">
+          <div class="product-page__card">
+            <h2 class="product-page__card-title heading-3">Benefits</h2>
+            <ul class="product-page__list product-page__list--benefits">
+              @for (benefit of productBenefits; track $index) {
+                <li>
+                  <img src="/benefits.svg" alt="Benefits icon" class="product-page__checkmark" />
+                  <span>{{ benefit }}</span>
+                </li>
               }
+            </ul>
+          </div>
+        </div>
+      }
+
+      @if (productPrecautions.length > 0) {
+        <div class="product-page__info-col">
+          <div class="product-page__card">
+            <h2 class="product-page__card-title heading-3">Precautions</h2>
+            <ul class="product-page__list product-page__list--precautions">
+              @for (precaution of productPrecautions; track $index) {
+                <li>
+                  <img src="/Precautions.svg" alt="Precautions icon" class="product-page__checkbox" />
+                  <span>{{ precaution }}</span>
+                </li>
+              }
+            </ul>
+          </div>
+        </div>
+      }
+    </section>
+
+    <!-- Ingredients Section -->
+    @if (productIngredients && productIngredients.ingredients?.length) {
+      <section class="product-page__section-block">
+        <header class="product-page__section-header">
+          @if (productIngredients.title) {
+            <h2 class="product-page__section-title">
+              {{ productIngredients.title }}
+            </h2>
+          } @else {
+            <h2 class="product-page__section-title">
+              Pure Ingredients, 100% Effective
+            </h2>
+          }
+          @if (productIngredients.description) {
+            <p class="product-page__section-subtitle">
+              {{ productIngredients.description }}
+            </p>
+          } @else {
+            <p class="product-page__section-subtitle">
+              Potent ingredients, without any additives
+            </p>
+          }
+        </header>
+
+        <div class="product-page__ingredients-grid">
+          @for (ingredient of productIngredients.ingredients; track ingredient.name) {
+            <article class="product-page__ingredient">
+              @if (ingredient.icon && ingredient.icon.length > 0) {
+                <div class="product-page__ingredient-media">
+                  <img
+                    [src]="ingredient.icon[0].webUrl"
+                    [alt]="ingredient.name"
+                  />
+                </div>
+              }
+              <h3 class="product-page__ingredient-name">
+                {{ ingredient.name }}
+              </h3>
+              @if (ingredient.description) {
+                <p class="product-page__ingredient-text">
+                  {{ ingredient.description }}
+                </p>
+              }
+            </article>
+          }
+        </div>
+      </section>
+    }
+
+    <!-- How to Consume Section -->
+    @if (productConsumptionInstructions && productConsumptionInstructions.metaData) {
+      <section class="product-page__section-block product-page__section-block--split product-page__consume">
+        <div class="product-page__consume-content">
+          @if (productConsumptionInstructions.metaData.howToConsume) {
+            <div class="product-page__card">
+              <h2 class="product-page__card-title heading-3">How to Consume</h2>
+              <ul class="product-page__list product-page__list--doas">
+                @for (instruction of productConsumptionInstructions.metaData.howToConsume; track $index) {
+                  <li><span>{{ instruction }}</span></li>
+                }
+              </ul>
+            </div>
+          }
+
+          @if (productConsumptionInstructions.metaData.whenToConsume) {
+            <div class="product-page__card">
+              <h2 class="product-page__card-title heading-3">When to Consume</h2>
+              <ul class="product-page__list product-page__list--how-to">
+                @for (timing of productConsumptionInstructions.metaData.whenToConsume; track $index) {
+                  <li><span>{{ timing }}</span></li>
+                }
+              </ul>
             </div>
           }
         </div>
 
-        <!-- Right: Info -->
-        <div class="product-page__info-column">
-          <div class="product-page__info">
-            <!-- Natural Ingredients Badge -->
-            <div class="product-page__badge">
-              <span class="product-page__badge-text">100% Natural Ingredients</span>
-            </div>
-            <h1 class="product-page__title">{{ productName }}</h1>
-
-            @if (productDescription && productDescription !== productName) {
-              <p class="product-page__description">
-                {{ productDescription }}
-              </p>
-            } @else {
-              <p class="product-page__description">
-                Experience post-meal discomfort, excessive burping or gas, acidity or indigestion? Debloat is your ideal
-                solution.
-              </p>
-            }
-
-            @if (priceRange) {
-              <div class="product-page__price-range">
-                <span>{{ priceRange }}</span>
-              </div>
-            }
-
-            <p class="product-page__tax-note">Inclusive of all taxes.</p>
-
-            <!-- Sizes -->
-            <section class="product-page__section">
-              <h2 class="product-page__section-label">CHOOSE YOUR SIZE</h2>
-              <div class="product-page__sizes">
-                @if (sizes.length === 0) {
-                  <p class="product-page__sizes-empty">
-                    No sizes available
-                  </p>
-                } @else {
-                  @for (size of sizes; track size.sku || size.label) {
-                    <button
-                      type="button"
-                      class="product-page__size"
-                      [class.product-page__size--selected]="
-                        selectedSize?.sku === size.sku &&
-                        selectedSize?.quantity === size.quantity
-                      "
-                      (click)="onSizeChange(size)"
-                    >
-                      <span class="product-page__size-label">
-                        {{ size.label }}
-                      </span>
-                      <span class="product-page__size-price">
-                        {{ size.currency }} {{ size.price }}.00
-                      </span>
-                    </button>
-                  }
-                }
-              </div>
-            </section>
-
-            <!-- Quantity + CTA -->
-            <section class="product-page__section">
-              <h2 class="product-page__section-label">Quantity</h2>
-              <div class="product-page__qty-row">
-                <div class="product-page__qty">
-                  <button
-                    type="button"
-                    class="product-page__qty-btn"
-                    (click)="decrementQuantity()"
-                    [disabled]="quantity <= 1"
-                    aria-label="Decrease quantity"
-                  >
-                    <mat-icon>remove</mat-icon>
-                  </button>
-                  <input
-                    type="number"
-                    class="product-page__qty-input"
-                    [value]="quantity"
-                    (input)="updateQuantity($any($event.target).value)"
-                    min="1"
-                    max="5"
-                    aria-label="Quantity"
-                  />
-                  <button
-                    type="button"
-                    class="product-page__qty-btn"
-                    (click)="incrementQuantity()"
-                    [disabled]="quantity >= 5"
-                    aria-label="Increase quantity"
-                  >
-                    <mat-icon>add</mat-icon>
-                  </button>
-                </div>
-
-                <button
-                  mat-raised-button
-                  color="primary"
-                  class="product-page__buy-now"
-                  (click)="onBuyNow()"
-                >
-                  Buy Now
-                </button>
-              </div>
-            </section>
+        @if (productConsumptionInstructions.mediaData.mediaLink &&
+        productConsumptionInstructions.mediaData.mediaType === 'video') {
+          <div class="product-page__consume-media">
+            <video
+              [src]="productConsumptionInstructions.mediaData.mediaLink[0].webUrl"
+              controls
+              loop
+              autoplay
+              muted
+              playsinline
+              preload="auto"
+              class="product-page__consume-video"
+              [poster]="productImages[0] || ''"
+              (error)="onVideoError($event)"
+              (loadeddata)="onVideoLoaded()"
+            >
+              Your browser does not support the video tag.
+            </video>
           </div>
-        </div>
-      </div>
-
-      <!-- Info: benefits / dose / how to take / precautions -->
-      <section class="product-page__info-grid">
-        @if (productBenefits.length > 0) {
-          <div class="product-page__info-col">
-            <div class="product-page__card">
-              <h2 class="product-page__card-title heading-3">Benefits</h2>
-              <ul class="product-page__list product-page__list--benefits">
-                @for (benefit of productBenefits; track $index) {
-                  <li>
-                    <img src="/benefits.svg" alt="Benefits icon" class="product-page__checkmark" />
-                    <span>{{ benefit }}</span>
-                  </li>
-                }
-              </ul>
-            </div>
-          </div>
-        }
-
-        @if (productPrecautions.length > 0) {
-          <div class="product-page__info-col">
-            <div class="product-page__card">
-              <h2 class="product-page__card-title heading-3">Precautions</h2>
-              <ul class="product-page__list product-page__list--precautions">
-                @for (precaution of productPrecautions; track $index) {
-                  <li>
-                    <img src="/Precautions.svg" alt="Precautions icon" class="product-page__checkbox" />
-                    <span>{{ precaution }}</span>
-                  </li>
-                }
-              </ul>
-            </div>
+        } @else if (productImages.length > 0) {
+          <div class="product-page__consume-media">
+            <img
+              [src]="productImages[0]"
+              [alt]="productName"
+              class="product-page__consume-image"
+            />
           </div>
         }
       </section>
+    }
 
-      <!-- Ingredients Section -->
-      @if (productIngredients && productIngredients.ingredients?.length) {
-        <section class="product-page__section-block">
-          <header class="product-page__section-header">
-            @if (productIngredients.title) {
-              <h2 class="product-page__section-title">
-                {{ productIngredients.title }}
-              </h2>
-            } @else {
-              <h2 class="product-page__section-title">
-                Pure Ingredients, 100% Effective
-              </h2>
-            }
-            @if (productIngredients.description) {
-              <p class="product-page__section-subtitle">
-                {{ productIngredients.description }}
-              </p>
-            } @else {
-              <p class="product-page__section-subtitle">
-                Potent ingredients, without any additives
-              </p>
-            }
-          </header>
-
-          <div class="product-page__ingredients-grid">
-            @for (ingredient of productIngredients.ingredients; track ingredient.name) {
-              <article class="product-page__ingredient">
-                @if (ingredient.icon && ingredient.icon.length > 0) {
-                  <div class="product-page__ingredient-media">
-                    <img
-                      [src]="ingredient.icon[0].webUrl"
-                      [alt]="ingredient.name"
-                    />
-                  </div>
-                }
-                <h3 class="product-page__ingredient-name">
-                  {{ ingredient.name }}
-                </h3>
-                @if (ingredient.description) {
-                  <p class="product-page__ingredient-text">
-                    {{ ingredient.description }}
-                  </p>
-                }
-              </article>
-            }
-          </div>
-        </section>
-      }
-
-      <!-- How to Consume Section -->
-      @if (productConsumptionInstructions && productConsumptionInstructions.metaData) {
-        <section class="product-page__section-block product-page__section-block--split product-page__consume">
-          <div class="product-page__consume-content">
-            @if (productConsumptionInstructions.metaData.howToConsume) {
-              <div class="product-page__card">
-                <h2 class="product-page__card-title heading-3">How to Consume</h2>
-                <ul class="product-page__list product-page__list--doas">
-                  @for (instruction of productConsumptionInstructions.metaData.howToConsume; track $index) {
-                    <li><span>{{ instruction }}</span></li>
-                  }
-                </ul>
+    <!-- Tried and Tested Section -->
+    @if (productReportSection) {
+      <section class="product-page__report">
+        <div class="product-page__report-inner">
+          @if (productReportSection.title) {
+            <h2 class="product-page__card-title heading-3">{{ productReportSection.title }}</h2>
+          }
+          @if (productReportSection.description) {
+            <span class="product-page__report-text">{{ productReportSection.description }}</span>
+          }
+          <div class="product-page__report_stats_section">
+            <div class="product-page__report-stats-section-item">
+              <div class="product-page__report-stats-section-item-count">75%</div>
+              <div class="product-page__report-stats-section-item-label">said they felt less abdominal pain</div>
+            </div>
+            <div class="product-page__report-stats-section-item">
+              <div class="product-page__report-stats-section-item-count">69%</div>
+              <div class="product-page__report-stats-section-item-label">said their stomach felt less tight and full
               </div>
-            }
-
-            @if (productConsumptionInstructions.metaData.whenToConsume) {
-              <div class="product-page__card">
-                <h2 class="product-page__card-title heading-3">When to Consume</h2>
-                <ul class="product-page__list product-page__list--how-to">
-                  @for (timing of productConsumptionInstructions.metaData.whenToConsume; track $index) {
-                    <li><span>{{ timing }}</span></li>
-                  }
-                </ul>
-              </div>
-            }
+            </div>
+            <div class="product-page__report-stats-section-item">
+              <div class="product-page__report-stats-section-item-count">67%</div>
+              <div class="product-page__report-stats-section-item-label">felt less bloated after eating a meal</div>
+            </div>
           </div>
+        </div>
+      </section>
+    }
 
-          @if (productConsumptionInstructions.mediaData.mediaLink &&
-          productConsumptionInstructions.mediaData.mediaType === 'video') {
-            <div class="product-page__consume-media">
+    <!-- Efficient Outcomes Section -->
+    @if (outcomesObject) {
+      <section class="product-page__section-block">
+        <header class="product-page__section-header">
+          @if (outcomesObject.title) {
+            <h2 class="product-page__section-title">
+              {{ outcomesObject.title }}
+            </h2>
+          } @else {
+            <h2 class="product-page__section-title">
+              Efficient Outcomes
+            </h2>
+          }
+          @if (outcomesObject.description) {
+            <p class="product-page__section-subtitle">
+              {{ outcomesObject.description }}
+            </p>
+          } @else {
+            <p class="product-page__section-subtitle">
+              Instant Comfort, Powered by 100% Natural Ingredients
+            </p>
+          }
+        </header>
+
+        <div class="product-page__outcomes-grid">
+          @for (outcome of productOutcomes; track outcome.title) {
+            <article class="product-page__outcome">
+              @if (outcome.icon) {
+                <div class="product-page__outcome-media">
+                  <img
+                    [src]="outcome.icon[0].webUrl"
+                    [alt]="outcome.title"
+                  />
+                </div>
+              }
+              <h3 class="product-page__outcome-title">
+                {{ outcome.title }}
+              </h3>
+              <p class="product-page__outcome-text">
+                {{ outcome.description }}
+              </p>
+            </article>
+          }
+        </div>
+      </section>
+    }
+
+    <!-- Feature Section -->
+    @if (productFeature) {
+      <section class="product-page__feature">
+        <div
+          class="product-page__feature-media"
+        >
+          <div class="product-page__feature-media-inner">
+            <img
+              src="/product_feature.jpg"
+              [alt]="productName + ' - Image '"
+            />
+          </div>
+        </div>
+
+        <div class="product-page__feature-content">
+          @if (productFeature.title) {
+            <h2 class="product-page__feature-title">
+              {{ productFeature.title }}
+            </h2>
+          }
+
+          @if (productFeature.description) {
+            <h3 class="product-page__feature-subtitle body-b3">
+              {{ productFeature.description }}
+            </h3>
+          }
+
+          @if (productFeature.feature && productFeature.feature.length > 0) {
+            <ul class="product-page__feature-list">
+              @for (bullet of productFeature.feature; track $index) {
+                <li class="product-page__feature-item">
+                  <img src="/benefits.svg" alt="Benefits icon" class="product-page__checkmark" />
+                  <span class="product-page__feature-text">
+                      {{ bullet }}
+                    </span>
+                </li>
+              }
+            </ul>
+          }
+
+          @if (productFeature.tagLine) {
+            <p class="product-page__feature-tagline">
+              {{ productFeature.tagLine }}
+            </p>
+          }
+
+          <button
+            mat-raised-button
+            color="primary"
+            class="product-page__buy-now product-page__buy-now--feature"
+            (click)="onBuyNow()"
+          >
+            Buy Now
+          </button>
+        </div>
+      </section>
+    }
+
+    <!-- Star-Endorsed Excellence Section -->
+    @if (productStartEndorsed && productStartEndorsed.mediaData) {
+      <section class="product-page__section-block product-page__section-block--split">
+        <div class="product-page__star-media">
+          <div class="product-page__star-media-inner">
+            @if (productStartEndorsed.mediaData.mediaType === 'video' &&
+            productStartEndorsed.mediaData.mediaLink &&
+            productStartEndorsed.mediaData.mediaLink.length > 0) {
               <video
-                [src]="productConsumptionInstructions.mediaData.mediaLink[0].webUrl"
+                [src]="productStartEndorsed.mediaData.mediaLink[0].webUrl"
                 controls
                 loop
                 autoplay
                 muted
                 playsinline
                 preload="auto"
-                class="product-page__consume-video"
+                class="product-page__star-video"
                 [poster]="productImages[0] || ''"
                 (error)="onVideoError($event)"
                 (loadeddata)="onVideoLoaded()"
               >
                 Your browser does not support the video tag.
               </video>
-            </div>
-          } @else if (productImages.length > 0) {
-            <div class="product-page__consume-media">
+            } @else if (productStartEndorsed.mediaData.mediaLink &&
+            productStartEndorsed.mediaData.mediaLink.length > 0) {
               <img
-                [src]="productImages[0]"
-                [alt]="productName"
-                class="product-page__consume-image"
+                [src]="productStartEndorsed.mediaData.mediaLink[0].webUrl"
+                [alt]="productStartEndorsed.title || 'Star Endorsed'"
+                class="product-page__star-image"
               />
-            </div>
+            } @else {
+              <img
+                [src]="starPowderImage"
+                alt="Star Powder"
+                class="product-page__star-image"
+              />
+            }
+          </div>
+        </div>
+
+        <div class="product-page__star-content">
+          @if (productStartEndorsed.title) {
+            <h2 class="product-page__section-title">
+              {{ productStartEndorsed.title }}
+            </h2>
           }
-        </section>
-      }
-
-      <!-- Tried and Tested Section -->
-      @if (productReportSection) {
-        <section class="product-page__report">
-          <div class="product-page__report-inner">
-            @if (productReportSection.title) {
-              <h2 class="product-page__card-title heading-3">{{ productReportSection.title }}</h2>
-            }
-            @if (productReportSection.description) {
-              <span class="product-page__report-text">{{ productReportSection.description }}</span>
-            }
-            <div class="product-page__report_stats_section">
-              <div class="product-page__report-stats-section-item">
-                <div class="product-page__report-stats-section-item-count">75%</div>
-                <div class="product-page__report-stats-section-item-label">said they felt less abdominal pain</div>
-              </div>
-              <div class="product-page__report-stats-section-item">
-                <div class="product-page__report-stats-section-item-count">69%</div>
-                <div class="product-page__report-stats-section-item-label">said their stomach felt less tight and full
-                </div>
-              </div>
-              <div class="product-page__report-stats-section-item">
-                <div class="product-page__report-stats-section-item-count">67%</div>
-                <div class="product-page__report-stats-section-item-label">felt less bloated after eating a meal</div>
-              </div>
-            </div>
-          </div>
-        </section>
-      }
-
-      <!-- Efficient Outcomes Section -->
-      @if (outcomesObject) {
-        <section class="product-page__section-block">
-          <header class="product-page__section-header">
-            @if (outcomesObject.title) {
-              <h2 class="product-page__section-title">
-                {{ outcomesObject.title }}
-              </h2>
-            } @else {
-              <h2 class="product-page__section-title">
-                Efficient Outcomes
-              </h2>
-            }
-            @if (outcomesObject.description) {
-              <p class="product-page__section-subtitle">
-                {{ outcomesObject.description }}
-              </p>
-            } @else {
-              <p class="product-page__section-subtitle">
-                Instant Comfort, Powered by 100% Natural Ingredients
-              </p>
-            }
-          </header>
-
-          <div class="product-page__outcomes-grid">
-            @for (outcome of productOutcomes; track outcome.title) {
-              <article class="product-page__outcome">
-                @if (outcome.icon) {
-                  <div class="product-page__outcome-media">
-                    <img
-                      [src]="outcome.icon[0].webUrl"
-                      [alt]="outcome.title"
-                    />
-                  </div>
-                }
-                <h3 class="product-page__outcome-title">
-                  {{ outcome.title }}
-                </h3>
-                <p class="product-page__outcome-text">
-                  {{ outcome.description }}
-                </p>
-              </article>
-            }
-          </div>
-        </section>
-      }
-
-      <!-- Feature Section -->
-      @if (productFeature) {
-        <section class="product-page__feature">
-          <div
-            class="product-page__feature-media"
+          @if (productStartEndorsed.description) {
+            <p class="product-page__text">
+              {{ productStartEndorsed.description }}
+            </p>
+          }
+          <button
+            mat-raised-button
+            color="primary"
+            class="product-page__buy-now"
+            (click)="onBuyNow()"
           >
-            <div class="product-page__feature-media-inner">
-              <img
-                src="/product_feature.jpg"
-                [alt]="productName + ' - Image '"
-              />
-            </div>
-          </div>
-
-          <div class="product-page__feature-content">
-            @if (productFeature.title) {
-              <h2 class="product-page__feature-title">
-                {{ productFeature.title }}
-              </h2>
-            }
-
-            @if (productFeature.description) {
-              <h3 class="product-page__feature-subtitle body-b3">
-                {{ productFeature.description }}
-              </h3>
-            }
-
-            @if (productFeature.feature && productFeature.feature.length > 0) {
-              <ul class="product-page__feature-list">
-                @for (bullet of productFeature.feature; track $index) {
-                  <li class="product-page__feature-item">
-                    <img src="/benefits.svg" alt="Benefits icon" class="product-page__checkmark" />
-                    <span class="product-page__feature-text">
-                      {{ bullet }}
-                    </span>
-                  </li>
-                }
-              </ul>
-            }
-
-            @if (productFeature.tagLine) {
-              <p class="product-page__feature-tagline">
-                {{ productFeature.tagLine }}
-              </p>
-            }
-
-            <button
-              mat-raised-button
-              color="primary"
-              class="product-page__buy-now product-page__buy-now--feature"
-              (click)="onBuyNow()"
-            >
-              Buy Now
-            </button>
-          </div>
-        </section>
-      }
-
-      <!-- Star-Endorsed Excellence Section -->
-      @if (productStartEndorsed && productStartEndorsed.mediaData) {
-        <section class="product-page__section-block product-page__section-block--split">
-          <div class="product-page__star-media">
-            <div class="product-page__star-media-inner">
-              @if (productStartEndorsed.mediaData.mediaType === 'video' &&
-              productStartEndorsed.mediaData.mediaLink &&
-              productStartEndorsed.mediaData.mediaLink.length > 0) {
-                <video
-                  [src]="productStartEndorsed.mediaData.mediaLink[0].webUrl"
-                  controls
-                  loop
-                  autoplay
-                  muted
-                  playsinline
-                  preload="auto"
-                  class="product-page__star-video"
-                  [poster]="productImages[0] || ''"
-                  (error)="onVideoError($event)"
-                  (loadeddata)="onVideoLoaded()"
-                >
-                  Your browser does not support the video tag.
-                </video>
-              } @else if (productStartEndorsed.mediaData.mediaLink &&
-              productStartEndorsed.mediaData.mediaLink.length > 0) {
-                <img
-                  [src]="productStartEndorsed.mediaData.mediaLink[0].webUrl"
-                  [alt]="productStartEndorsed.title || 'Star Endorsed'"
-                  class="product-page__star-image"
-                />
-              } @else {
-                <img
-                  [src]="starPowderImage"
-                  alt="Star Powder"
-                  class="product-page__star-image"
-                />
-              }
-            </div>
-          </div>
-
-          <div class="product-page__star-content">
-            @if (productStartEndorsed.title) {
-              <h2 class="product-page__section-title">
-                {{ productStartEndorsed.title }}
-              </h2>
-            }
-            @if (productStartEndorsed.description) {
-              <p class="product-page__text">
-                {{ productStartEndorsed.description }}
-              </p>
-            }
-            <button
-              mat-raised-button
-              color="primary"
-              class="product-page__buy-now"
-              (click)="onBuyNow()"
-            >
-              Buy Now
-            </button>
-          </div>
-        </section>
-      }
+            Buy Now
+          </button>
+        </div>
+      </section>
     }
-  </div>
-</section>
+  }
+</div>

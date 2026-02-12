@@ -1,17 +1,9 @@
-<div class="blog-page">
-  <!-- Banner Section -->
-  @if (banners().length > 0) {
-    <app-banner [banners]="banners()"></app-banner>
-  }
+<!-- Banner Section -->
+@if (banners().length > 0) {
+  <app-banner [banners]="banners()"></app-banner>
+}
 
-  <!-- Page Header -->
-  <section class="blog-header">
-    <h1 class="blog-title heading-1">Our Blog</h1>
-    <p class="blog-subtitle body-b3">
-      Discover the latest articles, tips, and insights
-    </p>
-  </section>
-
+<div class="blog-page page-container">
   <!-- Loading State -->
   @if (loading()) {
     <app-loader page="blog"></app-loader>
@@ -24,14 +16,6 @@
         <app-card [data]="blog"></app-card>
       }
     </div>
-  }
-
-  <!-- Empty State -->
-  @if (!loading() && blogs().length === 0) {
-    <app-empty-state
-      title="No blogs found"
-      description="There are no blog posts available at the moment."
-    ></app-empty-state>
   }
 
   <!-- Pagination -->

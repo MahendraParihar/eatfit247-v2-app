@@ -2,30 +2,31 @@
   <app-banner [banners]="banners"></app-banner>
 }
 
-<app-container>
-  <div class="about-shweta-shah">
-    <h1 class="heading-1">About Shweta Shah</h1>
-    <div class="about-shweta-shah__content layout-grid layout-grid--2">
-      <div class="about-shweta-shah__image">
-        <img src="/shweta-shah.svg" alt="Shweta Shah" class="about-shweta-shah__photo" />
+<div class="about-shweta-shah page-container">
+  <header class="section__header">
+    <h1 class="section__title">
+      About Shweta Shah
+    </h1>
+  </header>
+  <div class="about-shweta-shah__content layout-grid layout-grid--2">
+    <div class="about-shweta-shah__image">
+      <img src="/shweta-shah.svg" alt="Shweta Shah" class="about-shweta-shah__photo" />
+    </div>
+    <div class="about-shweta-shah-right">
+      <div class="about-shweta-shah__text">
+        @if (isLoading()) {
+          <app-loader page="about"></app-loader>
+        } @else if (errorMessage()) {
+          <section class="legal-section">
+            <p>{{ errorMessage() }}</p>
+          </section>
+        } @else if (pageData) {
+          <section [innerHTML]="pageData.details"></section>
+        }
       </div>
-      <div class="about-shweta-shah-right">
-        <div class="about-shweta-shah__text">
-          @if (isLoading()) {
-            <app-loader page="about"></app-loader>
-          } @else if (errorMessage()) {
-            <section class="legal-section">
-              <p>{{ errorMessage() }}</p>
-            </section>
-          } @else if (pageData) {
-            <section [innerHTML]="pageData.details"></section>
-          }
-        </div>
-        <div class="about-shweta-sign__image">
-          <img src="/sign.svg" alt="Shweta Shah" class="about-shweta-sign__photo" />
-        </div>
+      <div class="about-shweta-sign__image">
+        <img src="/sign.svg" alt="Shweta Shah" class="about-shweta-sign__photo" />
       </div>
-
     </div>
   </div>
-</app-container>
+</div>

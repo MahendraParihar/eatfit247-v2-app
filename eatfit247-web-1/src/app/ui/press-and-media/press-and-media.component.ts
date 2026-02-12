@@ -18,10 +18,10 @@ import { IMediaUpload } from '@eatfit247-shared-library/core';
     MatIconModule,
     CardComponent,
     BannerComponent,
-    LoaderComponent,
+    LoaderComponent
   ],
   templateUrl: './press-and-media.component.html',
-  styleUrl: './press-and-media.component.scss',
+  styleUrl: './press-and-media.component.scss'
 })
 export class PressAndMediaComponent implements OnInit {
   private readonly pressMediaService = inject(PressMediaService);
@@ -30,15 +30,19 @@ export class PressAndMediaComponent implements OnInit {
   banners: IMediaUpload[] = [];
   pressArticles: ICardData[] = [];
   youtubeArticles: ICardData[] = [];
-  loadingPress = signal(false);
-  loadingYouTube = signal(false);
+  loading = signal(false);
 
   async ngOnInit(): Promise<void> {
-    await Promise.all([
-      this.loadBannerData(),
-      this.loadPressArticles(),
-      this.loadYouTubeArticles(),
-    ]);
+    this.loading.set(true);
+    try {
+      await Promise.all([
+        this.loadBannerData(),
+        this.loadPressArticles(),
+        this.loadYouTubeArticles()
+      ]);
+    } finally {
+      this.loading.set(false);
+    }
   }
 
   /**
@@ -60,15 +64,10 @@ export class PressAndMediaComponent implements OnInit {
    * Load press articles (type='press')
    */
   async loadPressArticles(): Promise<void> {
-    this.loadingPress.set(true);
     try {
       this.pressArticles = await this.pressMediaService.getAllArticles('press');
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('Error loading press articles:', error);
       this.pressArticles = [];
-    } finally {
-      this.loadingPress.set(false);
     }
   }
 
@@ -76,17 +75,12 @@ export class PressAndMediaComponent implements OnInit {
    * Load YouTube articles (type='youtube')
    */
   async loadYouTubeArticles(): Promise<void> {
-    this.loadingYouTube.set(true);
     try {
       this.youtubeArticles = await this.pressMediaService.getAllArticles(
         'youtube'
       );
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('Error loading YouTube articles:', error);
       this.youtubeArticles = [];
-    } finally {
-      this.loadingYouTube.set(false);
     }
   }
 

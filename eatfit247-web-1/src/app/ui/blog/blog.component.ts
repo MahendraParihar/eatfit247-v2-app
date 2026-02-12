@@ -3,7 +3,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { PageEvent } from '@angular/material/paginator';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { BlogService, BannerService } from '../../core/services';
-import { CardComponent, EmptyStateComponent, ICardData, LoaderComponent, BannerComponent } from '@shared-ui';
+import { CardComponent, ICardData, LoaderComponent, BannerComponent } from '@shared-ui';
 import { BannerForEnum } from '@eatfit247-shared-library/enum';
 import { IMediaUpload } from '@eatfit247-shared-library/core';
 
@@ -14,7 +14,6 @@ import { IMediaUpload } from '@eatfit247-shared-library/core';
     CommonModule,
     MatPaginatorModule,
     CardComponent,
-    EmptyStateComponent,
     LoaderComponent,
     BannerComponent
   ],
@@ -27,7 +26,7 @@ export class BlogComponent implements OnInit {
   readonly blogs = signal<ICardData[]>([]);
   readonly loading = signal(false);
   readonly totalBlogs = signal(0);
-  readonly pageSize = signal(12);
+  readonly pageSize = signal(6);
   readonly currentPage = signal(0);
   readonly banners = signal<IMediaUpload[]>([]);
 
@@ -54,7 +53,6 @@ export class BlogComponent implements OnInit {
         this.totalBlogs.set(0);
       }
     } catch (error) {
-      console.error('Error loading blogs:', error);
       this.blogs.set([]);
       this.totalBlogs.set(0);
     } finally {
@@ -69,7 +67,7 @@ export class BlogComponent implements OnInit {
   private async loadBannerData(): Promise<void> {
     try {
       const images = await this.bannerService.getBannerMediaForPage(
-        BannerForEnum.BLOGS,
+        BannerForEnum.BLOGS
       );
       this.banners.set(images ?? []);
     } catch (error) {

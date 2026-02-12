@@ -31,37 +31,50 @@ body.dark-theme {
   color-scheme: dark;
 }
 
-// ------------------------------
-// Angular Material form field overrides
-// ------------------------------
-
-// Ensure all Material form fields take full width in their container
-.mat-form-field,
-.mat-mdc-form-field {
-  width: 100%;
+.page-container {
+  padding-block: var(--space-fluid-lg);
+  max-width: var(--container-max-width-xl);
+  margin-inline: auto;
 }
 
-// MDC-based (Angular Material v15+) outlined appearance
-.mat-mdc-text-field-wrapper.mdc-text-field--outlined {
-  border-radius: var(--input-border-radius);
+.section__header {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
 }
 
-.mat-mdc-text-field-wrapper {
-  min-height: var(--input-min-height);
+.section__title {
+  margin: 0;
+  font-size: var(--font-h1-size);
+  line-height: var(--font-h1-line-height);
+  font-weight: var(--font-h1-weight);
 }
 
-.mat-mdc-form-field-infix {
-  padding-block: var(--input-padding-y);
+.section__tagline {
+  margin: 0;
+  font-size: var(--font-body-b3-size);
+  line-height: var(--font-body-b3-line-height);
+  color: var(--color-text-secondary);
+  letter-spacing: 0.12em;
 }
 
-.mat-mdc-text-field-wrapper .mdc-notched-outline__leading,
-.mat-mdc-text-field-wrapper .mdc-notched-outline__notch,
-.mat-mdc-text-field-wrapper .mdc-notched-outline__trailing {
-  border-color: var(--color-border);
+.section__badge {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-1) var(--space-3);
+  border-radius: 999px;
+  background-color: rgba(255, 241, 242, 1);
+  border: 1px solid rgba(255, 241, 242, 0.3);
+  margin-bottom: var(--space-2);
+  width: fit-content;
 }
 
-// Legacy (pre-MDC) outlined appearance support, if used anywhere
-.mat-form-field-appearance-outline .mat-form-field-outline {
-  border-radius: var(--input-border-radius);
-  border-color: var(--color-border);
+.section__badge-text {
+  font-size: var(--font-body-b2-size);
+  line-height: var(--font-body-b2-line-height);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary-hover);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }

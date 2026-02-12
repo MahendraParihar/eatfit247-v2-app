@@ -1,4 +1,4 @@
-import { Injectable, inject, signal, PLATFORM_ID } from '@angular/core';
+import { Injectable, inject, signal, PLATFORM_ID, effect, Injector } from '@angular/core';
 import { DOCUMENT, isPlatformBrowser } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { fromEvent, map, startWith } from 'rxjs';
@@ -11,18 +11,20 @@ export type Theme = 'light' | 'dark';
 export class ThemeService {
   private readonly document = inject(DOCUMENT);
   private readonly platformId = inject(PLATFORM_ID);
+  private readonly injector = inject(Injector);
   private readonly storageKey = 'eatfit247-theme';
 
-  private readonly prefersDark = isPlatformBrowser(this.platformId)
+  private readonly prefersDarkQuery = isPlatformBrowser(this.platformId)
+    ? window.matchMedia('(prefers-color-scheme: dark)')
+    : null;
+
+  private readonly prefersDark = isPlatformBrowser(this.platformId) && this.prefersDarkQuery
     ? toSignal(
-        fromEvent<MediaQueryListEvent>(
-          window.matchMedia('(prefers-color-scheme: dark)'),
-          'change'
-        ).pipe(
-          startWith(window.matchMedia('(prefers-color-scheme: dark)')),
-          map((media) => media.matches)
+        fromEvent<MediaQueryListEvent>(this.prefersDarkQuery, 'change').pipe(
+          map((event) => event.matches),
+          startWith(this.prefersDarkQuery.matches)
         ),
-        { initialValue: window.matchMedia('(prefers-color-scheme: dark)').matches }
+        { initialValue: this.prefersDarkQuery.matches }
       )
     : null;
 
@@ -31,7 +33,23 @@ export class ThemeService {
   constructor() {
     if (isPlatformBrowser(this.platformId)) {
       this.applyTheme(this.currentTheme());
+      this.setupBrowserThemeListener();
     }
+  }
+
+  private setupBrowserThemeListener(): void {
+    if (!this.prefersDark) return;
+
+    effect(() => {
+      const isDark = this.prefersDark?.();
+      const stored = localStorage.getItem(this.storageKey);
+
+      // If no manual preference is stored, follow system
+      if (!stored) {
+        const newTheme: Theme = isDark ? 'dark' : 'light';
+        this.setTheme(newTheme, false);
+      }
+    }, { injector: this.injector });
   }
 
   toggleTheme(): void {
@@ -39,10 +57,12 @@ export class ThemeService {
     this.setTheme(newTheme);
   }
 
-  setTheme(theme: Theme): void {
+  setTheme(theme: Theme, persist = true): void {
     this.currentTheme.set(theme);
     this.applyTheme(theme);
-    this.persistTheme(theme);
+    if (persist) {
+      this.persistTheme(theme);
+    }
   }
 
   private getInitialTheme(): Theme {

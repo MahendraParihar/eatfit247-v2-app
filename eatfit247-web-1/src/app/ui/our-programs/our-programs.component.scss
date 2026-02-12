@@ -2,10 +2,6 @@
 @use '../../../styles/breakpoints';
 
 .our-programs-page {
-  padding-inline: var(--space-fluid-md);
-  padding-block: var(--space-fluid-lg);
-  max-width: var(--container-max-width-xl);
-  margin-inline: auto;
   display: flex;
   flex-direction: column;
   gap: var(--space-fluid-xl);
@@ -55,7 +51,7 @@
   flex-direction: column;
   gap: var(--space-4);
   transition: border-color 150ms ease, box-shadow 150ms ease,
-    transform 150ms ease;
+  transform 150ms ease;
 }
 
 .our-programs__card--highlight {
@@ -249,22 +245,12 @@
 }
 
 @include breakpoints.respond(md) {
-  .our-programs-page {
-    padding-inline: var(--space-fluid-lg);
-  }
-
   .our-programs__cards {
     flex-direction: row;
   }
 
   .our-programs__card {
     flex: 1;
-  }
-}
-
-@include breakpoints.respond(lg) {
-  .our-programs-page {
-    padding-inline: var(--space-fluid-xl);
   }
 }
 

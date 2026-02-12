@@ -2,10 +2,6 @@
 @use '../../../../styles/breakpoints';
 
 .about-eatfit-page {
-  padding-inline: var(--space-fluid-md);
-  padding-block: var(--space-fluid-lg);
-  max-width: var(--container-max-width-xl);
-  margin-inline: auto;
   display: flex;
   flex-direction: column;
   gap: var(--space-fluid-xl);
@@ -338,12 +334,6 @@
   .about-eatfit__blog-grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
-
-@include breakpoints.respond(lg) {
-  .about-eatfit-page {
-    padding-inline: var(--space-fluid-xl);
   }
 }
 

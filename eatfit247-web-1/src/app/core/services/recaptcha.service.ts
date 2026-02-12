@@ -45,7 +45,7 @@ export class RecaptchaService {
     }
     // Start fetching from backend config service
     this.siteKeyLoadingPromise = this.httpService
-      .get<{ siteKey: string }>('public/config/recaptcha-site-key')
+      .get<{ siteKey: string }>('config/recaptcha-site-key')
       .then((result) => {
         const key = result?.data.siteKey?.trim();
         if (key) {

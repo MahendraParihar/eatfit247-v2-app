@@ -1,26 +1,17 @@
-<div class="legal-page">
-  <div class="legal-container">
-    <header class="legal-header">
-      <h1 class="heading-1">
-        {{ pageData?.title || 'Terms & Conditions' }}
+@if (isLoading()) {
+  <app-loader page="default"></app-loader>
+}
+@if (!isLoading() && pageData) {
+  <div class="legal-container page-container">
+    <header class="section__header">
+      <h1 class="section__title">
+        {{ pageData.title }}
       </h1>
-      <p class="legal-last-updated">
-        Last updated: {{ lastUpdated }}
-      </p>
     </header>
-
-    @if (isLoading()) {
-      <app-loader page="default"></app-loader>
-    } @else if (errorMessage()) {
-      <section class="legal-section">
-        <p>{{ errorMessage() }}</p>
-      </section>
-    } @else if (pageData) {
-      <section
-        class="legal-section"
-        [innerHTML]="pageData.details"
-      ></section>
-    }
+    <section
+      class="legal-section"
+      [innerHTML]="pageData.details"
+    ></section>
   </div>
-</div>
+}
 
