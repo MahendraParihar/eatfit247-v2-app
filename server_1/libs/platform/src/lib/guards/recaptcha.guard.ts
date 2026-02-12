@@ -13,7 +13,7 @@ import { RECAPTCHA_ACTION, RECAPTCHA_REQUIRED, RECAPTCHA_SCORE_THRESHOLD } from 
  * @Post('contact')
  * async submitContact(@Body() body: ContactDto) { ... }
  *
- * The request body should include a 'recaptchaToken' field.
+ * The request headers should include a 'X-Recaptcha-Token' header.
  */
 @Injectable()
 export class RecaptchaGuard implements CanActivate {
@@ -40,8 +40,8 @@ export class RecaptchaGuard implements CanActivate {
         'GoogleService is not available. Please ensure PlatformModule is imported.',
       );
     }
-    // Get reCAPTCHA token from the request body
-    const recaptchaToken = request.body?.recaptchaToken;
+    // Get reCAPTCHA token from the request headers
+    const recaptchaToken = request.headers['x-recaptcha-token'] || request.headers['X-Recaptcha-Token'];
     if (!recaptchaToken) {
       throw new BadRequestException('reCAPTCHA token is required');
     }
@@ -75,8 +75,7 @@ export class RecaptchaGuard implements CanActivate {
           scoreThreshold,
         );
       }
-      // Remove token from body after verification (security best practice)
-      delete request.body.recaptchaToken;
+      // Token is in headers, no need to remove from body
       return true;
     } catch (error: any) {
       if (error instanceof BadRequestException) {

@@ -109,13 +109,16 @@ export class ContactUsComponent implements OnInit {
           email: this.contactForm.value.email,
           phone: this.contactForm.value.phone || undefined,
           subject: this.contactForm.value.subject || undefined,
-          message: this.contactForm.value.message || undefined,
-          recaptchaToken: recaptchaToken
+          message: this.contactForm.value.message || undefined
         };
+        const headers: { [key: string]: string } = {};
+        if (recaptchaToken) {
+          headers['X-Recaptcha-Token'] = recaptchaToken;
+        }
         const response = await this.httpService.post<{
           contactFormId: number;
           message: string;
-        }>('public/contact/submit', formData);
+        }>('public/contact/submit', formData, { headers });
         if (response) {
           this.formSuccess = true;
           setTimeout(() => {

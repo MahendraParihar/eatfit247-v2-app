@@ -37,8 +37,5 @@ export class CreatePublicMemberDto {
   @IsOptional()
   @IsNumber()
   nutritionistId?: number;
-
-  @IsOptional()
-  recaptchaToken?: string;
 }
 

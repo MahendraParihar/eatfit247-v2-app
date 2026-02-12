@@ -23,8 +23,5 @@ export class CreateContactFormDto {
   @IsOptional()
   @MaxLength(1000)
   message?: string;
-
-  @IsOptional()
-  recaptchaToken?: string;
 }
 

@@ -1,4 +1,466 @@
-.checkout-success-page {
+.checkout-success-container {
+  min-height: 100vh;
+  padding: 2rem;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+
+  .loading-container,
+  .error-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    text-align: center;
+
+    mat-spinner {
+      margin-bottom: 1rem;
+    }
+
+    .error-icon {
+      font-size: 64px;
+      width: 64px;
+      height: 64px;
+      color: #f44336;
+      margin-bottom: 1rem;
+    }
+
+    h2 {
+      margin-bottom: 1rem;
+      color: #333;
+    }
+
+    p {
+      margin-bottom: 2rem;
+      color: #666;
+      max-width: 500px;
+    }
+  }
+
+  .success-content {
+    max-width: 900px;
+    width: 100%;
+
+    .success-header {
+      text-align: center;
+      margin-bottom: 2rem;
+
+      .success-icon-container {
+        margin-bottom: 1rem;
+
+        .success-icon {
+          font-size: 80px;
+          width: 80px;
+          height: 80px;
+          color: #4caf50;
+        }
+      }
+
+      h1 {
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+        color: #333;
+        font-weight: 600;
+      }
+
+      .success-message {
+        font-size: 1.1rem;
+        color: #666;
+        margin-bottom: 0;
+      }
+    }
+
+    mat-card {
+      margin-bottom: 1.5rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+      mat-card-header {
+        margin-bottom: 1rem;
+
+        mat-card-title {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          font-size: 1.25rem;
+          font-weight: 600;
+          color: #333;
+
+          mat-icon {
+            color: #3399cc;
+          }
+        }
+      }
+
+      mat-card-content {
+        padding-top: 0;
+      }
+    }
+
+    .order-details-card {
+      .order-info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1rem;
+
+        .info-item {
+          display: flex;
+          flex-direction: column;
+          gap: 0.25rem;
+
+          .info-label {
+            font-size: 0.875rem;
+            color: #666;
+            font-weight: 500;
+          }
+
+          .info-value {
+            font-size: 1rem;
+            color: #333;
+            font-weight: 600;
+
+            &.status-badge {
+              display: inline-block;
+              padding: 0.25rem 0.75rem;
+              background-color: #4caf50;
+              color: white;
+              border-radius: 4px;
+              font-size: 0.875rem;
+              width: fit-content;
+            }
+          }
+        }
+      }
+    }
+
+    .order-items-card {
+      .order-items-list {
+        .order-item {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          padding: 1rem 0;
+          border-bottom: 1px solid #e0e0e0;
+
+          &:last-child {
+            border-bottom: none;
+          }
+
+          .item-details {
+            flex: 1;
+
+            h3 {
+              margin: 0 0 0.5rem 0;
+              font-size: 1.1rem;
+              color: #333;
+            }
+
+            .item-quantity,
+            .item-price {
+              margin: 0.25rem 0;
+              font-size: 0.875rem;
+              color: #666;
+            }
+          }
+
+          .item-total {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #333;
+          }
+        }
+      }
+    }
+
+    .order-summary-card {
+      .summary-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #e0e0e0;
+
+        &:last-child {
+          border-bottom: none;
+        }
+
+        &.total {
+          border-top: 2px solid #333;
+          margin-top: 0.5rem;
+          padding-top: 1rem;
+          font-size: 1.25rem;
+          font-weight: 600;
+        }
+
+        &.discount {
+          color: #4caf50;
+        }
+
+        .summary-label {
+          color: #666;
+        }
+
+        .summary-value {
+          color: #333;
+          font-weight: 600;
+        }
+      }
+    }
+
+    .customer-info-card,
+    .address-card {
+      .customer-info,
+      .address-info {
+        p {
+          margin: 0.5rem 0;
+          color: #333;
+          line-height: 1.6;
+
+          strong {
+            color: #666;
+            margin-right: 0.5rem;
+          }
+        }
+      }
+    }
+
+    .invoice-card {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      margin-bottom: 1.5rem;
+
+      mat-card-content {
+        padding: 1.5rem;
+      }
+
+      .invoice-section {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 2rem;
+
+        .invoice-info {
+          display: flex;
+          align-items: flex-start;
+          gap: 1rem;
+          flex: 1;
+
+          .invoice-icon {
+            font-size: 48px;
+            width: 48px;
+            height: 48px;
+            color: white;
+            margin-top: 0.25rem;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+
+          .invoice-text {
+            h3 {
+              margin: 0 0 0.5rem 0;
+              font-size: 1.5rem;
+              font-weight: 600;
+              color: white;
+            }
+
+            .invoice-message {
+              margin: 0;
+              font-size: 1rem;
+              line-height: 1.6;
+              color: rgba(255, 255, 255, 0.9);
+            }
+          }
+        }
+
+        button {
+          padding: 0.75rem 2rem;
+          font-size: 1rem;
+          white-space: nowrap;
+
+          mat-icon {
+            margin-right: 0.5rem;
+          }
+        }
+      }
+    }
+
+    .contact-info-card {
+      background-color: #f8f9fa;
+      border-left: 4px solid #3399cc;
+      margin-bottom: 1.5rem;
+
+      mat-card-header {
+        margin-bottom: 1rem;
+
+        mat-card-title {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          font-size: 1.25rem;
+          font-weight: 600;
+          color: #333;
+
+          mat-icon {
+            color: #3399cc;
+          }
+        }
+      }
+
+      .contact-info {
+        .contact-message {
+          margin: 0 0 1.5rem 0;
+          color: #666;
+          line-height: 1.6;
+          font-size: 1rem;
+        }
+
+        .contact-details {
+          display: flex;
+          flex-direction: column;
+          gap: 1rem;
+
+          .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+
+            .contact-icon {
+              font-size: 32px;
+              width: 32px;
+              height: 32px;
+              color: #3399cc;
+            }
+
+            .contact-item-content {
+              display: flex;
+              flex-direction: column;
+              gap: 0.25rem;
+
+              .contact-label {
+                font-size: 0.875rem;
+                color: #666;
+                font-weight: 500;
+              }
+
+              .contact-link {
+                font-size: 1rem;
+                color: #3399cc;
+                text-decoration: none;
+                font-weight: 600;
+                transition: color 0.3s ease;
+
+                &:hover {
+                  color: #2673a3;
+                  text-decoration: underline;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    .action-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin-top: 2rem;
+
+      button {
+        padding: 0.75rem 2rem;
+        font-size: 1rem;
+
+        mat-icon {
+          margin-right: 0.5rem;
+        }
+      }
+    }
+  }
 }
 
+// Responsive design
+@media (max-width: 768px) {
+  .checkout-success-container {
+    padding: 1rem;
 
+    .success-content {
+      .success-header {
+        h1 {
+          font-size: 2rem;
+        }
+      }
+
+      .order-details-card {
+        .order-info-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .order-items-card {
+        .order-items-list {
+          .order-item {
+            flex-direction: column;
+            gap: 0.5rem;
+
+            .item-total {
+              align-self: flex-end;
+            }
+          }
+        }
+      }
+
+      .invoice-card {
+        .invoice-section {
+          flex-direction: column;
+          align-items: stretch;
+          gap: 1.5rem;
+
+          .invoice-info {
+            .invoice-icon {
+              font-size: 36px;
+              width: 36px;
+              height: 36px;
+              flex-shrink: 0;
+            }
+
+            .invoice-text {
+              h3 {
+                font-size: 1.25rem;
+              }
+
+              .invoice-message {
+                font-size: 0.9rem;
+              }
+            }
+          }
+
+          button {
+            width: 100%;
+          }
+        }
+      }
+
+      .contact-info-card {
+        .contact-info {
+          .contact-details {
+            .contact-item {
+              flex-direction: column;
+              align-items: flex-start;
+              gap: 0.75rem;
+
+              .contact-item-content {
+                width: 100%;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

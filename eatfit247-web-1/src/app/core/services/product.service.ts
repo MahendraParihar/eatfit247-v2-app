@@ -2,7 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { HttpService } from './http.service';
 import {
   IPublicProduct,
-  IPublicTableList,
+  IPublicTableList
 } from '@eatfit247-shared-library/core';
 
 /**
@@ -10,7 +10,7 @@ import {
  * Fetches product data from the public API
  */
 @Injectable({
-  providedIn: 'root',
+  providedIn: 'root'
 })
 export class ProductService {
   private readonly httpService = inject(HttpService);
@@ -23,20 +23,18 @@ export class ProductService {
    */
   async getAllProducts(
     page: number = 0,
-    limit: number = 50,
+    limit: number = 50
   ): Promise<IPublicProduct[]> {
     try {
-      const data =
-        await this.httpService.get<IPublicTableList<IPublicProduct>>(
-          'public/products/list',
-          {
-            params: {
-              page: page.toString(),
-              limit: limit.toString(),
-            },
-          },
-        );
-
+      const data = await this.httpService.get<IPublicTableList<IPublicProduct>>(
+        'public/products/list',
+        {
+          params: {
+            page: page.toString(),
+            limit: limit.toString()
+          }
+        }
+      );
       if (data) {
         return data.tableData || [];
       }
@@ -45,6 +43,20 @@ export class ProductService {
       // eslint-disable-next-line no-console
       console.error('Error fetching products:', error);
       return [];
+    }
+  }
+
+  async getProducts(productId: number, variantId: number): Promise<IPublicProduct> {
+    try {
+      const data = await this.httpService.get<IPublicProduct>(`public/products/${productId}/${variantId}`);
+      if (data) {
+        return data;
+      }
+      return null;
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Error fetching products:', error);
+      return null;
     }
   }
 }

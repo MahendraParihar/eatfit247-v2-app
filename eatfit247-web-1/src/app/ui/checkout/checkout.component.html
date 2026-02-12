@@ -1,3 +1,760 @@
-<p>Checkout works!</p>
+<div class="checkout-container">
+  <div class="checkout-content">
+    <!-- Error Message -->
+    @if (error) {
+      <div class="error-message">
+        <mat-icon>error</mat-icon>
+        <span>{{ error }}</span>
+      </div>
+    }
 
+    <!-- Loading Spinner -->
+    @if (loading) {
+      <div class="loading-overlay">
+        <mat-spinner></mat-spinner>
+        <p>Processing...</p>
+      </div>
+    }
 
+    <!-- Page Title -->
+    <div class="checkout-page-header">
+      <h1 class="page-title">Checkout</h1>
+    </div>
+
+    <!-- Product Checkout Layout -->
+    @if (isProductCheckout && !error) {
+      <div class="product-checkout-layout">
+        <!-- Left Column: Billing Details -->
+        <div class="billing-details-column">
+          <div class="section-header">
+            <h2 class="section-title">Billing Details</h2>
+            <p class="section-subtitle">Please fill in your billing information</p>
+          </div>
+          <form [formGroup]="basicDetailsForm" class="billing-form">
+            <div class="form-row">
+              <div class="form-field">
+                <label for="firstName">
+                  First name <span class="required">*</span>
+                </label>
+                <div class="input-wrapper">
+                  <mat-icon class="input-icon">person</mat-icon>
+                  <input 
+                    id="firstName"
+                    type="text" 
+                    formControlName="firstName" 
+                    placeholder="Enter your first name"
+                    [class.error]="basicDetailsForm.get('firstName')?.invalid && basicDetailsForm.get('firstName')?.touched"
+                  >
+                </div>
+                @if (basicDetailsForm.get('firstName')?.hasError('required') && basicDetailsForm.get('firstName')?.touched) {
+                  <span class="error-text">
+                    <mat-icon>error_outline</mat-icon>
+                    First name is required
+                  </span>
+                }
+              </div>
+              <div class="form-field">
+                <label for="lastName">
+                  Last name <span class="required">*</span>
+                </label>
+                <div class="input-wrapper">
+                  <mat-icon class="input-icon">person</mat-icon>
+                  <input 
+                    id="lastName"
+                    type="text" 
+                    formControlName="lastName" 
+                    placeholder="Enter your last name"
+                    [class.error]="basicDetailsForm.get('lastName')?.invalid && basicDetailsForm.get('lastName')?.touched"
+                  >
+                </div>
+                @if (basicDetailsForm.get('lastName')?.hasError('required') && basicDetailsForm.get('lastName')?.touched) {
+                  <span class="error-text">
+                    <mat-icon>error_outline</mat-icon>
+                    Last name is required
+                  </span>
+                }
+              </div>
+            </div>
+
+            <div class="form-field">
+              <label for="companyName">Company name <span class="optional">(optional)</span></label>
+              <div class="input-wrapper">
+                <mat-icon class="input-icon">business</mat-icon>
+                <input 
+                  id="companyName"
+                  type="text" 
+                  formControlName="companyName" 
+                  placeholder="Enter company name"
+                >
+              </div>
+            </div>
+
+            <div class="form-field">
+              <label for="countryId">
+                Country/Region <span class="required">*</span>
+              </label>
+              <div class="input-wrapper select-wrapper">
+                <mat-icon class="input-icon">public</mat-icon>
+                <select 
+                  id="countryId"
+                  formControlName="countryId"
+                  [class.error]="basicDetailsForm.get('countryId')?.invalid && basicDetailsForm.get('countryId')?.touched"
+                >
+                  <option value="">Select Country</option>
+                  @for (country of countryOptions; track country.id) {
+                    <option [value]="country.id">{{ country.label }}</option>
+                  }
+                </select>
+              </div>
+              @if (basicDetailsForm.get('countryId')?.hasError('required') && basicDetailsForm.get('countryId')?.touched) {
+                <span class="error-text">
+                  <mat-icon>error_outline</mat-icon>
+                  Country is required
+                </span>
+              }
+            </div>
+
+            <div class="form-field">
+              <label for="streetAddress1">
+                Street address <span class="required">*</span>
+              </label>
+              <div class="input-wrapper">
+                <mat-icon class="input-icon">home</mat-icon>
+                <input 
+                  id="streetAddress1"
+                  type="text" 
+                  formControlName="streetAddress1" 
+                  placeholder="House number and street name"
+                  [class.error]="basicDetailsForm.get('streetAddress1')?.invalid && basicDetailsForm.get('streetAddress1')?.touched"
+                >
+              </div>
+              @if (basicDetailsForm.get('streetAddress1')?.hasError('required') && basicDetailsForm.get('streetAddress1')?.touched) {
+                <span class="error-text">
+                  <mat-icon>error_outline</mat-icon>
+                  Street address is required
+                </span>
+              }
+            </div>
+
+            <div class="form-field">
+              <div class="input-wrapper">
+                <mat-icon class="input-icon">apartment</mat-icon>
+                <input 
+                  type="text" 
+                  formControlName="streetAddress2" 
+                  placeholder="Apartment, suite, unit, etc. (optional)"
+                >
+              </div>
+            </div>
+
+            <div class="form-field">
+              <label for="city">
+                Town / City <span class="required">*</span>
+              </label>
+              <div class="input-wrapper">
+                <mat-icon class="input-icon">location_city</mat-icon>
+                <input 
+                  id="city"
+                  type="text" 
+                  formControlName="city" 
+                  placeholder="Enter town or city"
+                  [class.error]="basicDetailsForm.get('city')?.invalid && basicDetailsForm.get('city')?.touched"
+                >
+              </div>
+              @if (basicDetailsForm.get('city')?.hasError('required') && basicDetailsForm.get('city')?.touched) {
+                <span class="error-text">
+                  <mat-icon>error_outline</mat-icon>
+                  Town / City is required
+                </span>
+              }
+            </div>
+
+            <div class="form-row">
+              <div class="form-field">
+                <label for="stateId">
+                  State <span class="required">*</span>
+                </label>
+                <div class="input-wrapper select-wrapper">
+                  <mat-icon class="input-icon">map</mat-icon>
+                  <select 
+                    id="stateId"
+                    formControlName="stateId"
+                    [class.error]="basicDetailsForm.get('stateId')?.invalid && basicDetailsForm.get('stateId')?.touched"
+                  >
+                    <option value="">Select State</option>
+                    @for (state of filteredStateOptions; track state.id) {
+                      <option [value]="state.id">{{ state.label }}</option>
+                    }
+                  </select>
+                </div>
+                @if (basicDetailsForm.get('stateId')?.hasError('required') && basicDetailsForm.get('stateId')?.touched) {
+                  <span class="error-text">
+                    <mat-icon>error_outline</mat-icon>
+                    State is required
+                  </span>
+                }
+              </div>
+              <div class="form-field">
+                <label for="postcode">
+                  Postcode / ZIP <span class="required">*</span>
+                </label>
+                <div class="input-wrapper">
+                  <mat-icon class="input-icon">markunread_mailbox</mat-icon>
+                  <input 
+                    id="postcode"
+                    type="text" 
+                    formControlName="postcode" 
+                    placeholder="Enter postcode"
+                    [class.error]="basicDetailsForm.get('postcode')?.invalid && basicDetailsForm.get('postcode')?.touched"
+                  >
+                </div>
+                @if (basicDetailsForm.get('postcode')?.hasError('required') && basicDetailsForm.get('postcode')?.touched) {
+                  <span class="error-text">
+                    <mat-icon>error_outline</mat-icon>
+                    Postcode is required
+                  </span>
+                }
+              </div>
+            </div>
+
+            <div class="form-field">
+              <label for="phone">
+                Phone <span class="required">*</span>
+              </label>
+              <div class="input-wrapper">
+                <mat-icon class="input-icon">phone</mat-icon>
+                <input 
+                  id="phone"
+                  type="tel" 
+                  formControlName="phone" 
+                  placeholder="Enter phone number"
+                  [class.error]="basicDetailsForm.get('phone')?.invalid && basicDetailsForm.get('phone')?.touched"
+                >
+              </div>
+              @if (basicDetailsForm.get('phone')?.hasError('required') && basicDetailsForm.get('phone')?.touched) {
+                <span class="error-text">
+                  <mat-icon>error_outline</mat-icon>
+                  Phone is required
+                </span>
+              }
+            </div>
+
+            <div class="form-field">
+              <label for="email">
+                Email address <span class="required">*</span>
+              </label>
+              <div class="input-wrapper">
+                <mat-icon class="input-icon">email</mat-icon>
+                <input 
+                  id="email"
+                  type="email" 
+                  formControlName="email" 
+                  placeholder="Enter email address"
+                  [class.error]="basicDetailsForm.get('email')?.invalid && basicDetailsForm.get('email')?.touched"
+                >
+              </div>
+              @if (basicDetailsForm.get('email')?.hasError('required') && basicDetailsForm.get('email')?.touched) {
+                <span class="error-text">
+                  <mat-icon>error_outline</mat-icon>
+                  Email is required
+                </span>
+              }
+              @if (basicDetailsForm.get('email')?.hasError('email') && basicDetailsForm.get('email')?.touched) {
+                <span class="error-text">
+                  <mat-icon>error_outline</mat-icon>
+                  Please enter a valid email
+                </span>
+              }
+            </div>
+
+            <div class="additional-info-section">
+              <h3 class="additional-info-title">
+                <mat-icon>note</mat-icon>
+                Additional information
+              </h3>
+              <p class="additional-info-subtitle">Order notes (optional)</p>
+              <div class="textarea-wrapper">
+                <mat-icon class="textarea-icon">description</mat-icon>
+                <textarea 
+                  formControlName="orderNotes" 
+                  rows="4" 
+                  placeholder="Notes about your order, e.g. special notes for delivery."
+                ></textarea>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <!-- Right Column: Order Summary -->
+        <div class="order-summary-column">
+          <div class="section-header">
+            <h2 class="section-title">Your Order</h2>
+            <p class="section-subtitle">Review your order details</p>
+          </div>
+          <div class="order-summary-card">
+            <div class="order-table-wrapper">
+              <table class="order-table">
+                <thead>
+                  <tr>
+                    <th>Product</th>
+                    <th>Subtotal</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>
+                      <div class="product-info">
+                        <span class="product-name">{{ productName }}</span>
+                        <div class="quantity-controls">
+                          <button 
+                            type="button" 
+                            class="qty-btn qty-decrease" 
+                            (click)="decrementProductQuantity()" 
+                            [disabled]="productQuantity <= 1"
+                            aria-label="Decrease quantity"
+                          >
+                            <mat-icon>remove</mat-icon>
+                          </button>
+                          <input 
+                            type="number" 
+                            class="qty-input" 
+                            [value]="productQuantity" 
+                            (input)="updateProductQuantity($any($event.target).value)" 
+                            min="1" 
+                            max="5"
+                            aria-label="Quantity"
+                          >
+                          <button 
+                            type="button" 
+                            class="qty-btn qty-increase" 
+                            (click)="incrementProductQuantity()" 
+                            [disabled]="productQuantity >= 5"
+                            aria-label="Increase quantity"
+                          >
+                            <mat-icon>add</mat-icon>
+                          </button>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="price-cell">
+                      <span class="price-amount">₹{{ productSubtotal | number:'1.2-2' }}</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="order-totals">
+              <div class="total-row subtotal-row">
+                <span class="total-label">Subtotal</span>
+                <span class="total-value">₹{{ productSubtotal | number:'1.2-2' }}</span>
+              </div>
+              <div class="total-row final-total">
+                <span class="total-label">Total</span>
+                <span class="total-value">₹{{ productTotal | number:'1.2-2' }}</span>
+              </div>
+            </div>
+
+            @if (!paymentGatewayLoading && !isPaymentGatewayAvailable) {
+              <div class="payment-message">
+                <mat-icon>info</mat-icon>
+                <p>Sorry, it seems that there are no available payment methods. Please contact us if you require assistance or wish to make alternate arrangements.</p>
+              </div>
+            }
+            @if (paymentGatewayLoading) {
+              <div class="payment-message">
+                <mat-spinner diameter="20"></mat-spinner>
+                <p>Loading payment methods...</p>
+              </div>
+            }
+
+            <div class="privacy-message">
+              <mat-icon>lock</mat-icon>
+              <p>Your personal data will be used to process your order, support your experience throughout this website, and for other purposes described in our <strong>privacy policy</strong>.</p>
+            </div>
+
+            <button 
+              type="button" 
+              class="place-order-btn" 
+              (click)="placeProductOrder()"
+              [disabled]="!basicDetailsForm.valid || loading"
+            >
+              @if (loading) {
+                <mat-spinner diameter="20" class="btn-spinner"></mat-spinner>
+                <span>Processing...</span>
+              } @else {
+                <mat-icon>shopping_cart</mat-icon>
+                <span>Place Order</span>
+              }
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Plan Checkout Layout (Unified with Product) -->
+    @if (!isProductCheckout && programPlan && !error) {
+      <div class="product-checkout-layout">
+        <!-- Left Column: Billing Details -->
+        <div class="billing-details-column">
+          <div class="section-header">
+            <h2 class="section-title">Billing Details</h2>
+            <p class="section-subtitle">Please fill in your billing information</p>
+          </div>
+          <form [formGroup]="basicDetailsForm" class="billing-form">
+            <div class="form-row">
+              <div class="form-field">
+                <label for="firstName">
+                  First name <span class="required">*</span>
+                </label>
+                <div class="input-wrapper">
+                  <mat-icon class="input-icon">person</mat-icon>
+                  <input 
+                    id="firstName"
+                    type="text" 
+                    formControlName="firstName" 
+                    placeholder="Enter your first name"
+                    [class.error]="basicDetailsForm.get('firstName')?.invalid && basicDetailsForm.get('firstName')?.touched"
+                  >
+                </div>
+                @if (basicDetailsForm.get('firstName')?.hasError('required') && basicDetailsForm.get('firstName')?.touched) {
+                  <span class="error-text">
+                    <mat-icon>error_outline</mat-icon>
+                    First name is required
+                  </span>
+                }
+              </div>
+              <div class="form-field">
+                <label for="lastName">
+                  Last name <span class="required">*</span>
+                </label>
+                <div class="input-wrapper">
+                  <mat-icon class="input-icon">person</mat-icon>
+                  <input 
+                    id="lastName"
+                    type="text" 
+                    formControlName="lastName" 
+                    placeholder="Enter your last name"
+                    [class.error]="basicDetailsForm.get('lastName')?.invalid && basicDetailsForm.get('lastName')?.touched"
+                  >
+                </div>
+                @if (basicDetailsForm.get('lastName')?.hasError('required') && basicDetailsForm.get('lastName')?.touched) {
+                  <span class="error-text">
+                    <mat-icon>error_outline</mat-icon>
+                    Last name is required
+                  </span>
+                }
+              </div>
+            </div>
+
+            <div class="form-field">
+              <label for="companyName">Company name <span class="optional">(optional)</span></label>
+              <div class="input-wrapper">
+                <mat-icon class="input-icon">business</mat-icon>
+                <input 
+                  id="companyName"
+                  type="text" 
+                  formControlName="companyName" 
+                  placeholder="Enter company name"
+                >
+              </div>
+            </div>
+
+            <div class="form-field">
+              <label for="countryId">
+                Country/Region <span class="required">*</span>
+              </label>
+              <div class="input-wrapper select-wrapper">
+                <mat-icon class="input-icon">public</mat-icon>
+                <select 
+                  id="countryId"
+                  formControlName="countryId"
+                  [class.error]="basicDetailsForm.get('countryId')?.invalid && basicDetailsForm.get('countryId')?.touched"
+                >
+                  <option value="">Select Country</option>
+                  @for (country of countryOptions; track country.id) {
+                    <option [value]="country.id">{{ country.label }}</option>
+                  }
+                </select>
+              </div>
+              @if (basicDetailsForm.get('countryId')?.hasError('required') && basicDetailsForm.get('countryId')?.touched) {
+                <span class="error-text">
+                  <mat-icon>error_outline</mat-icon>
+                  Country is required
+                </span>
+              }
+            </div>
+
+            <div class="form-field">
+              <label for="streetAddress1">
+                Street address <span class="required">*</span>
+              </label>
+              <div class="input-wrapper">
+                <mat-icon class="input-icon">home</mat-icon>
+                <input 
+                  id="streetAddress1"
+                  type="text" 
+                  formControlName="streetAddress1" 
+                  placeholder="House number and street name"
+                  [class.error]="basicDetailsForm.get('streetAddress1')?.invalid && basicDetailsForm.get('streetAddress1')?.touched"
+                >
+              </div>
+              @if (basicDetailsForm.get('streetAddress1')?.hasError('required') && basicDetailsForm.get('streetAddress1')?.touched) {
+                <span class="error-text">
+                  <mat-icon>error_outline</mat-icon>
+                  Street address is required
+                </span>
+              }
+            </div>
+
+            <div class="form-field">
+              <div class="input-wrapper">
+                <mat-icon class="input-icon">apartment</mat-icon>
+                <input 
+                  type="text" 
+                  formControlName="streetAddress2" 
+                  placeholder="Apartment, suite, unit, etc. (optional)"
+                >
+              </div>
+            </div>
+
+            <div class="form-field">
+              <label for="city">
+                Town / City <span class="required">*</span>
+              </label>
+              <div class="input-wrapper">
+                <mat-icon class="input-icon">location_city</mat-icon>
+                <input 
+                  id="city"
+                  type="text" 
+                  formControlName="city" 
+                  placeholder="Enter town or city"
+                  [class.error]="basicDetailsForm.get('city')?.invalid && basicDetailsForm.get('city')?.touched"
+                >
+              </div>
+              @if (basicDetailsForm.get('city')?.hasError('required') && basicDetailsForm.get('city')?.touched) {
+                <span class="error-text">
+                  <mat-icon>error_outline</mat-icon>
+                  Town / City is required
+                </span>
+              }
+            </div>
+
+            <div class="form-row">
+              <div class="form-field">
+                <label for="stateId">
+                  State <span class="required">*</span>
+                </label>
+                <div class="input-wrapper select-wrapper">
+                  <mat-icon class="input-icon">map</mat-icon>
+                  <select 
+                    id="stateId"
+                    formControlName="stateId"
+                    [class.error]="basicDetailsForm.get('stateId')?.invalid && basicDetailsForm.get('stateId')?.touched"
+                  >
+                    <option value="">Select State</option>
+                    @for (state of filteredStateOptions; track state.id) {
+                      <option [value]="state.id">{{ state.label }}</option>
+                    }
+                  </select>
+                </div>
+                @if (basicDetailsForm.get('stateId')?.hasError('required') && basicDetailsForm.get('stateId')?.touched) {
+                  <span class="error-text">
+                    <mat-icon>error_outline</mat-icon>
+                    State is required
+                  </span>
+                }
+              </div>
+              <div class="form-field">
+                <label for="postcode">
+                  Postcode / ZIP <span class="required">*</span>
+                </label>
+                <div class="input-wrapper">
+                  <mat-icon class="input-icon">markunread_mailbox</mat-icon>
+                  <input 
+                    id="postcode"
+                    type="text" 
+                    formControlName="postcode" 
+                    placeholder="Enter postcode"
+                    [class.error]="basicDetailsForm.get('postcode')?.invalid && basicDetailsForm.get('postcode')?.touched"
+                  >
+                </div>
+                @if (basicDetailsForm.get('postcode')?.hasError('required') && basicDetailsForm.get('postcode')?.touched) {
+                  <span class="error-text">
+                    <mat-icon>error_outline</mat-icon>
+                    Postcode is required
+                  </span>
+                }
+              </div>
+            </div>
+
+            <div class="form-field">
+              <label for="phone">
+                Phone <span class="required">*</span>
+              </label>
+              <div class="input-wrapper">
+                <mat-icon class="input-icon">phone</mat-icon>
+                <input 
+                  id="phone"
+                  type="tel" 
+                  formControlName="phone" 
+                  placeholder="Enter phone number"
+                  [class.error]="basicDetailsForm.get('phone')?.invalid && basicDetailsForm.get('phone')?.touched"
+                >
+              </div>
+              @if (basicDetailsForm.get('phone')?.hasError('required') && basicDetailsForm.get('phone')?.touched) {
+                <span class="error-text">
+                  <mat-icon>error_outline</mat-icon>
+                  Phone is required
+                </span>
+              }
+            </div>
+
+            <div class="form-field">
+              <label for="email">
+                Email address <span class="required">*</span>
+              </label>
+              <div class="input-wrapper">
+                <mat-icon class="input-icon">email</mat-icon>
+                <input 
+                  id="email"
+                  type="email" 
+                  formControlName="email" 
+                  placeholder="Enter email address"
+                  [class.error]="basicDetailsForm.get('email')?.invalid && basicDetailsForm.get('email')?.touched"
+                >
+              </div>
+              @if (basicDetailsForm.get('email')?.hasError('required') && basicDetailsForm.get('email')?.touched) {
+                <span class="error-text">
+                  <mat-icon>error_outline</mat-icon>
+                  Email is required
+                </span>
+              }
+              @if (basicDetailsForm.get('email')?.hasError('email') && basicDetailsForm.get('email')?.touched) {
+                <span class="error-text">
+                  <mat-icon>error_outline</mat-icon>
+                  Please enter a valid email
+                </span>
+              }
+            </div>
+
+            <div class="additional-info-section">
+              <h3 class="additional-info-title">
+                <mat-icon>note</mat-icon>
+                Additional information
+              </h3>
+              <p class="additional-info-subtitle">Order notes (optional)</p>
+              <div class="textarea-wrapper">
+                <mat-icon class="textarea-icon">description</mat-icon>
+                <textarea 
+                  formControlName="orderNotes" 
+                  rows="4" 
+                  placeholder="Notes about your order, e.g. special notes for delivery."
+                ></textarea>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <!-- Right Column: Order Summary -->
+        <div class="order-summary-column">
+          <div class="section-header">
+            <h2 class="section-title">Your Order</h2>
+            <p class="section-subtitle">Review your order details</p>
+          </div>
+          <div class="order-summary-card">
+            <div class="order-table-wrapper">
+              <table class="order-table">
+                <thead>
+                  <tr>
+                    <th>Plan</th>
+                    <th>Amount</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>
+                      <div class="product-info">
+                        <span class="product-name">{{ programPlan.plan }}</span>
+                      </div>
+                    </td>
+                    <td class="price-cell">
+                      <span class="price-amount">₹{{ orderAmount | number:'1.2-2' }}</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="order-totals">
+              <div class="total-row subtotal-row">
+                <span class="total-label">Subtotal</span>
+                <span class="total-value">₹{{ orderAmount | number:'1.2-2' }}</span>
+              </div>
+              <div class="total-row final-total">
+                <span class="total-label">Total</span>
+                <span class="total-value">₹{{ orderAmount | number:'1.2-2' }}</span>
+              </div>
+            </div>
+
+            @if (!paymentGatewayLoading && !isPaymentGatewayAvailable) {
+              <div class="payment-message">
+                <mat-icon>info</mat-icon>
+                <p>Sorry, it seems that there are no available payment methods. Please contact us if you require assistance or wish to make alternate arrangements.</p>
+              </div>
+            }
+            @if (paymentGatewayLoading) {
+              <div class="payment-message">
+                <mat-spinner diameter="20"></mat-spinner>
+                <p>Loading payment methods...</p>
+              </div>
+            }
+
+            <div class="privacy-message">
+              <mat-icon>lock</mat-icon>
+              <p>Your personal data will be used to process your order, support your experience throughout this website, and for other purposes described in our <strong>privacy policy</strong>.</p>
+            </div>
+
+            <button 
+              type="button" 
+              class="place-order-btn" 
+              (click)="placePlanOrder()"
+              [disabled]="!basicDetailsForm.valid || loading"
+            >
+              @if (loading) {
+                <mat-spinner diameter="20" class="btn-spinner"></mat-spinner>
+                <span>Processing...</span>
+              } @else {
+                <mat-icon>shopping_cart</mat-icon>
+                <span>Place Order</span>
+              }
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Payment Modal -->
+    @if (showPaymentModal) {
+      <div class="payment-modal-overlay" (click)="showPaymentModal = false">
+        <div class="payment-modal-content" (click)="$event.stopPropagation()">
+          <div class="payment-modal-header">
+            <h3>Processing Payment</h3>
+            <button class="close-btn" (click)="showPaymentModal = false" [disabled]="processingPayment">
+              <mat-icon>close</mat-icon>
+            </button>
+          </div>
+          <div class="payment-modal-body">
+            @if (processingPayment) {
+              <div class="payment-processing">
+                <mat-spinner diameter="50"></mat-spinner>
+                <p>Please complete the payment in the popup window...</p>
+                <p class="payment-note">Do not close this window until payment is complete.</p>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+</div>

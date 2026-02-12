@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { IPublicLegalPage } from '@eatfit247-shared-library/core';
+import { IPublicLegalPage } from '@eatfit247-shared-library';
 import { LegalPagesService } from '../../core/services/legal-pages.service';
 import { LoaderComponent } from '@shared-ui';
 
@@ -15,9 +15,7 @@ import { LoaderComponent } from '@shared-ui';
 export class TermsAndConditionsComponent implements OnInit {
   private readonly legalPagesService = inject(LegalPagesService);
   private readonly router = inject(Router);
-
   readonly lastUpdated = 'February 2026';
-
   pageData: IPublicLegalPage | null = null;
   isLoading = signal(true);
   errorMessage = signal<string | null>(null);
@@ -29,12 +27,10 @@ export class TermsAndConditionsComponent implements OnInit {
   private async loadPage(): Promise<void> {
     this.isLoading.set(true);
     this.errorMessage.set(null);
-
     try {
       // Use current route path (without leading slash) as the URL slug
       const currentPath = this.router.url.split('?')[0].replace(/^\/+/, '');
       const data = await this.legalPagesService.getByUrl(currentPath || 'terms-and-conditions');
-
       if (data) {
         this.pageData = data;
       } else {

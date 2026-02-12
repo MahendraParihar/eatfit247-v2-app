@@ -105,7 +105,7 @@ export class ProductService {
         for (const variant of variants) {
           const variantPrices: MstProductPrice[] = variant.prices || [];
           const mappedPrices = variantPrices
-            .filter(price => price.active !== false) // Only active prices
+            .filter((price) => price.active !== false) // Only active prices
             .map((price) => {
               const feeEntry = {
                 quantity: Number(variant.quantityValue),
@@ -150,6 +150,93 @@ export class ProductService {
       tableData: resList,
       count: count,
     };
+  }
+
+  public async findPublicProduct(
+    productId: number,
+    productVariantId: number,
+  ): Promise<IPublicProduct> {
+    const rows = await this.productRepository.findOne({
+      where: { productId: productId },
+      include: [
+        {
+          model: MstProductVariant,
+          as: 'variants',
+          required: false,
+          where: {
+            productVariantId: productVariantId,
+          },
+          include: [
+            {
+              model: MstProductPrice,
+              as: 'prices',
+              required: false,
+              where: { active: true }, // Only active prices for public
+            },
+          ],
+        },
+      ],
+      raw: false, // Use model instances to properly handle associations
+      nest: true,
+    });
+    if (!rows) {
+      throw new NotFoundException('Product not found');
+    }
+    // Process each product to load variants and prices
+    const resList: IPublicProduct[] = [rows].map((item: MstProduct) => {
+      // Get product data
+      const productData = item.toJSON ? item.toJSON() : item;
+      // Load variants and prices - check if already loaded via include
+      let variants: MstProductVariant[] = [];
+      // Variants already loaded via include
+      variants = item.variants;
+      // Transform variants to the format needed
+      const fees: any[] = [];
+      const variantPayload: any[] = [];
+      for (const variant of variants) {
+        const variantPrices: MstProductPrice[] = variant.prices || [];
+        const mappedPrices = variantPrices
+          .filter((price) => price.active !== false) // Only active prices
+          .map((price) => {
+            const feeEntry = {
+              quantity: Number(variant.quantityValue),
+              unit: variant.quantityUnit,
+              currency: price.currency,
+              price: Number(price.price),
+              sku: variant.sku || undefined,
+              isActive: price.active,
+              validFrom: price.validFrom,
+              validTo: price.validTo,
+            };
+            fees.push(feeEntry);
+            return {
+              id: price.id,
+              productVariantId: price.productVariantId,
+              currency: price.currency,
+              price: Number(price.price),
+              active: price.active,
+              validFrom: price.validFrom,
+              validTo: price.validTo,
+            };
+          });
+        variantPayload.push({
+          productVariantId: variant.productVariantId,
+          productId: variant.productId,
+          quantityValue: Number(variant.quantityValue),
+          quantityUnit: variant.quantityUnit,
+          sku: variant.sku || undefined,
+          prices: mappedPrices,
+        });
+      }
+      // Convert to model with variants and fees
+      const product = this.convertToModel({
+        ...productData,
+        fees,
+        variants: variantPayload,
+      } as any);
+      return this.convertToPublic(product);
+    });
+    return resList[0];
   }
 
   private convertToModel(item: MstProduct & { fees?: any[]; variants?: any[] }): IProduct {
@@ -351,7 +438,7 @@ export class ProductService {
     price: number;
     isActive?: boolean;
     validFrom?: Date | string | null;
-    validTo?: Date | string | null
+    validTo?: Date | string | null;
   }[] {
     const fees: {
       quantity: number;
@@ -360,7 +447,7 @@ export class ProductService {
       price: number;
       isActive?: boolean;
       validFrom?: Date | string | null;
-      validTo?: Date | string | null
+      validTo?: Date | string | null;
     }[] = [];
     // If variants are provided, transform them to fees format
     if (obj.variants && obj.variants.length > 0) {
@@ -410,7 +497,7 @@ export class ProductService {
       price: number;
       isActive?: boolean;
       validFrom?: Date | string | null;
-      validTo?: Date | string | null
+      validTo?: Date | string | null;
     }[],
   ): Promise<void> {
     // Remove existing prices and variants for this product

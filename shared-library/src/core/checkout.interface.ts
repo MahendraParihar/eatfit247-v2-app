@@ -74,35 +74,7 @@ export interface IPaymentGateway {
 }
 
 /**
- * Create product order request for checkout
- */
-export interface ICreateProductOrderRequest {
-  paymentModeId?: number | null;
-  billingAddressId?: number | null;
-  addressId?: number | null;
-  transactionId?: string;
-  paymentDate: string; // ISO date string
-  paymentStatusId: number;
-  taxPercentage: number;
-  currencyCode: string;
-  promoCode?: string;
-  gstNumber?: string;
-  paymentSource: PaymentSourceEnum;
-  orderAmount: number;
-  taxAmount: number;
-  discountAmount: number;
-  totalAmount: number;
-  paymentLink?: string;
-  gatewayProvider?: string;
-  gatewayOrderId?: string;
-  gatewayPaymentId?: string;
-  paymentGatewayResponse?: Record<string, any>;
-  recaptchaToken?: string; // reCAPTCHA v3 token (required by backend)
-  orderItems: IMemberProductOrderItemBasic[];
-}
-
-/**
- * Create plan order request for checkout
+ * Create a plan order request for checkout
  */
 export interface ICreatePlanOrderRequest {
   paymentModeId?: number | null;

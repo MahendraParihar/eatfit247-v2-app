@@ -5,9 +5,9 @@ import { Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { BannerComponent, LoaderComponent } from '@shared-ui';
-import { BannerService } from '../../core/services/banner.service';
+import { BannerService } from '../../core/services';
 import { ProductService } from '../../core/services/product.service';
-import { SEOService } from '../../core/services/seo.service';
+import { SEOService } from '../../core/services';
 import {
   IMediaUpload,
   IPublicProduct,
@@ -18,8 +18,8 @@ import {
   IProjectStarEndorsedSection,
   IOutcomeSection,
   IOutcomes,
-} from '@eatfit247-shared-library/core';
-import { BannerForEnum } from '@eatfit247-shared-library/enum';
+  BannerForEnum
+} from '@eatfit247-shared-library';
 
 // Extended interface for size display with value and label
 interface ISizeOption extends IProductFee {
@@ -34,17 +34,15 @@ interface ISizeOption extends IProductFee {
   selector: 'app-product',
   imports: [CommonModule, FormsModule, BannerComponent, LoaderComponent, MatButtonModule, MatIconModule],
   templateUrl: './product.component.html',
-  styleUrl: './product.component.scss',
+  styleUrl: './product.component.scss'
 })
 export class ProductComponent implements OnInit, OnDestroy {
   private readonly bannerService = inject(BannerService);
   private readonly productService = inject(ProductService);
   private readonly router = inject(Router);
   private readonly seoService = inject(SEOService);
-
   // Banner media
   banners: IMediaUpload[] = [];
-
   // Product data
   product!: IPublicProduct;
   productName = '';
@@ -55,26 +53,21 @@ export class ProductComponent implements OnInit, OnDestroy {
   productVariantId: number | null = null;
   loading = signal(true);
   error = signal<string | null>(null);
-
   // Product images
   productImages: string[] = [];
   productImages1: string[] = [];
   selectedImageIndex = 0;
-
   // Star powder image (fallback)
   starPowderImage = 'assets/images/products/start-powder.png';
-
   // Custom slider for the feature section
   featureSliderCurrentIndex = 0;
   private featureSliderTimer: any = null;
   private readonly featureSliderInterval = 5000; // 5 seconds
-
   productVideos: string[] = [];
 
   get sizes(): ISizeOption[] {
     const sizeOptions: ISizeOption[] = [];
     const defaultCurrency = 'INR';
-
     // Process variants - show only variants with INR prices (case-insensitive)
     if (this.product?.variants && this.product.variants.length > 0) {
       for (const variant of this.product.variants as any[]) {
@@ -89,7 +82,6 @@ export class ProductComponent implements OnInit, OnDestroy {
             const activeMatch = active !== false || active === undefined;
             return currencyMatch && activeMatch;
           });
-
           if (inrPrice) {
             sizeOptions.push({
               quantity: variant.quantityValue,
@@ -108,17 +100,16 @@ export class ProductComponent implements OnInit, OnDestroy {
                 sku: variant.sku,
                 isActive: inrPrice.active,
                 validFrom: inrPrice.validFrom,
-                validTo: inrPrice.validTo,
+                validTo: inrPrice.validTo
               },
               label: `${variant.quantityValue} ${variant.quantityUnit}`,
               productId: variant.productId,
-              productVariantId: variant.productVariantId,
+              productVariantId: variant.productVariantId
             } as ISizeOption);
           }
         }
       }
     }
-
     // Fallback: If no variants with INR found, check fees with INR currency
     if (sizeOptions.length === 0 && this.product?.fees && this.product.fees.length > 0) {
       const inrFees = this.product.fees.filter((fee) => {
@@ -133,11 +124,10 @@ export class ProductComponent implements OnInit, OnDestroy {
         sizeOptions.push({
           ...fee,
           value: fee,
-          label: `${fee.quantity} ${fee.unit}`,
+          label: `${fee.quantity} ${fee.unit}`
         });
       }
     }
-
     return sizeOptions;
   }
 
@@ -148,7 +138,6 @@ export class ProductComponent implements OnInit, OnDestroy {
   get priceRange(): string {
     const defaultCurrency = 'INR';
     const allPrices: number[] = [];
-
     if (this.product?.variants && this.product.variants.length > 0) {
       for (const variant of this.product.variants as any[]) {
         if (variant.prices && variant.prices.length > 0) {
@@ -166,11 +155,9 @@ export class ProductComponent implements OnInit, OnDestroy {
         }
       }
     }
-
     if (!allPrices.length) {
       return '';
     }
-
     const min = Math.min(...allPrices);
     const max = Math.max(...allPrices);
     return `₹ ${min}.00 – ₹ ${max}.00`;
@@ -222,20 +209,6 @@ export class ProductComponent implements OnInit, OnDestroy {
       {}) as IProjectStarEndorsedSection;
   }
 
-  /**
-   * Get current feature slider image
-   */
-  get currentFeatureImage(): string {
-    return this.productImages1[this.featureSliderCurrentIndex] || this.productImages1[0];
-  }
-
-  /**
-   * Check if a feature slider has multiple images
-   */
-  get hasMultipleFeatureImages(): boolean {
-    return this.productImages1.length > 1;
-  }
-
   async ngOnInit(): Promise<void> {
     await this.loadBannerData();
     await this.loadProductData();
@@ -251,7 +224,7 @@ export class ProductComponent implements OnInit, OnDestroy {
   private async loadBannerData(): Promise<void> {
     try {
       this.banners = await this.bannerService.getBannerMediaForPage(
-        BannerForEnum.PRODUCT,
+        BannerForEnum.PRODUCT
       );
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -267,11 +240,9 @@ export class ProductComponent implements OnInit, OnDestroy {
     try {
       this.loading.set(true);
       this.error.set(null);
-
       let product: IPublicProduct | null = null;
       const products = await this.productService.getAllProducts(0, 1);
       product = products.length > 0 ? products[0] : null;
-
       if (product) {
         this.initializeProductData(product);
       } else {
@@ -292,19 +263,16 @@ export class ProductComponent implements OnInit, OnDestroy {
    */
   private normalizeProductData(product: IPublicProduct): IPublicProduct {
     const anyProduct = product as any;
-
     if (anyProduct.fees && anyProduct.fees.length > 0) {
       const normalizedFees: IProductFee[] = [];
       const normalizedVariants: any[] = [];
       const variantMap = new Map<string, any>();
-
       for (const item of anyProduct.fees as any[]) {
         const isVariant =
           item.quantityValue !== undefined &&
           (Array.isArray(item.prices) ||
             (item.prices !== undefined && typeof item.prices === 'object') ||
             (item.price !== undefined && item.currency !== undefined));
-
         if (isVariant) {
           const variantKey = `${item.quantityValue}_${item.quantityUnit || ''}`;
           if (!variantMap.has(variantKey)) {
@@ -314,12 +282,10 @@ export class ProductComponent implements OnInit, OnDestroy {
               quantityValue: item.quantityValue,
               quantityUnit: item.quantityUnit,
               sku: item.sku,
-              prices: [],
+              prices: []
             });
           }
-
           const variant = variantMap.get(variantKey);
-
           if (Array.isArray(item.prices) && item.prices.length > 0) {
             variant.prices.push(
               ...item.prices.map((p: any) => ({
@@ -327,10 +293,9 @@ export class ProductComponent implements OnInit, OnDestroy {
                 price: p.price,
                 active: p.active !== false,
                 validFrom: p.validFrom,
-                validTo: p.validTo,
-              })),
+                validTo: p.validTo
+              }))
             );
-
             item.prices.forEach((price: any) => {
               normalizedFees.push({
                 quantity: item.quantityValue,
@@ -340,7 +305,7 @@ export class ProductComponent implements OnInit, OnDestroy {
                 sku: item.sku,
                 isActive: price.active !== false,
                 validFrom: price.validFrom,
-                validTo: price.validTo,
+                validTo: price.validTo
               });
             });
           } else if (item.price !== undefined && item.currency !== undefined) {
@@ -349,10 +314,9 @@ export class ProductComponent implements OnInit, OnDestroy {
               price: item.price,
               active: item.isActive !== false,
               validFrom: item.validFrom,
-              validTo: item.validTo,
+              validTo: item.validTo
             };
             variant.prices.push(priceObj);
-
             normalizedFees.push({
               quantity: item.quantityValue,
               unit: item.quantityUnit,
@@ -361,7 +325,7 @@ export class ProductComponent implements OnInit, OnDestroy {
               sku: item.sku,
               isActive: item.isActive,
               validFrom: item.validFrom,
-              validTo: item.validTo,
+              validTo: item.validTo
             });
           }
         } else if (item.quantity !== undefined && item.price !== undefined) {
@@ -373,35 +337,30 @@ export class ProductComponent implements OnInit, OnDestroy {
             sku: item.sku,
             isActive: item.isActive,
             validFrom: item.validFrom,
-            validTo: item.validTo,
+            validTo: item.validTo
           });
         }
       }
-
       normalizedVariants.push(...Array.from(variantMap.values()));
-
       const existingVariants = (anyProduct.variants || []) as any[];
       const mergedVariants = [...existingVariants];
-
       for (const normalizedVariant of normalizedVariants) {
         const exists = mergedVariants.some(
           (v: any) =>
             v.quantityValue === normalizedVariant.quantityValue &&
-            v.quantityUnit === normalizedVariant.quantityUnit,
+            v.quantityUnit === normalizedVariant.quantityUnit
         );
         if (!exists) {
           mergedVariants.push(normalizedVariant);
         }
       }
-
       return {
         ...(anyProduct as IPublicProduct),
         fees: normalizedFees.length > 0 ? normalizedFees : anyProduct.fees,
         variants:
-          mergedVariants.length > 0 ? (mergedVariants as any) : anyProduct.variants,
+          mergedVariants.length > 0 ? (mergedVariants as any) : anyProduct.variants
       };
     }
-
     return product;
   }
 
@@ -411,45 +370,38 @@ export class ProductComponent implements OnInit, OnDestroy {
   private initializeProductData(product: IPublicProduct): void {
     const normalizedProduct = this.normalizeProductData(product);
     this.product = normalizedProduct;
-
     this.productName = normalizedProduct.name as unknown as string;
     this.productDescription =
       (normalizedProduct as any).additionalInfo?.feature?.tagLine ||
       (normalizedProduct.name as unknown as string);
-
     this.productId = (normalizedProduct as any).productId || null;
-
     if ((normalizedProduct as any).imagePath && (normalizedProduct as any).imagePath.length > 0) {
       this.productImages = (normalizedProduct as any).imagePath.map(
-        (img: IMediaUpload) => img.webUrl,
+        (img: IMediaUpload) => img.webUrl
       );
       this.productImages1 = [...this.productImages];
     }
-
     if ((normalizedProduct as any).additionalInfo?.feature?.images) {
       const featureImages = (normalizedProduct as any).additionalInfo.feature.images.map(
-        (img: IMediaUpload) => img.webUrl,
+        (img: IMediaUpload) => img.webUrl
       );
       if (featureImages.length > 0) {
         this.productImages1 = featureImages;
       }
     }
-
     if (
       (normalizedProduct as any).additionalInfo?.consumptionInstructions?.mediaData
         ?.mediaLink
     ) {
       const videos =
         (normalizedProduct as any).additionalInfo.consumptionInstructions.mediaData.mediaLink.map(
-          (media: IMediaUpload) => media.webUrl,
+          (media: IMediaUpload) => media.webUrl
         );
       if (videos.length > 0) {
         this.productVideos = videos;
       }
     }
-
     const defaultCurrency = 'INR';
-
     if (normalizedProduct.variants && normalizedProduct.variants.length > 0) {
       for (const variant of normalizedProduct.variants as any[]) {
         if (variant.prices && variant.prices.length > 0) {
@@ -463,7 +415,6 @@ export class ProductComponent implements OnInit, OnDestroy {
             const activeMatch = active !== false || active === undefined;
             return currencyMatch && activeMatch;
           });
-
           if (inrPrice) {
             this.selectedSize = {
               quantity: variant.quantityValue,
@@ -482,13 +433,12 @@ export class ProductComponent implements OnInit, OnDestroy {
                 sku: variant.sku,
                 isActive: inrPrice.active,
                 validFrom: inrPrice.validFrom,
-                validTo: inrPrice.validTo,
+                validTo: inrPrice.validTo
               },
               label: `${variant.quantityValue} ${variant.quantityUnit}`,
               productId: variant.productId,
-              productVariantId: variant.productVariantId,
+              productVariantId: variant.productVariantId
             } as ISizeOption;
-
             this.productId = variant.productId || null;
             this.productVariantId = variant.productVariantId || null;
             break;
@@ -496,7 +446,6 @@ export class ProductComponent implements OnInit, OnDestroy {
         }
       }
     }
-
     if (!this.selectedSize && normalizedProduct.fees && normalizedProduct.fees.length > 0) {
       const inrFee = normalizedProduct.fees.find((f) => {
         const currencyMatch =
@@ -510,28 +459,25 @@ export class ProductComponent implements OnInit, OnDestroy {
         this.selectedSize = {
           ...inrFee,
           value: inrFee,
-          label: `${inrFee.quantity} ${inrFee.unit}`,
+          label: `${inrFee.quantity} ${inrFee.unit}`
         };
       }
     }
-
     if (this.productImages1.length > 1) {
       this.startFeatureSliderAutoSwitch();
     }
-
     // Update SEO meta data for this product
     this.seoService.updateSEO({
       title: this.productName,
       description: this.productDescription,
       url: this.router.url,
-      type: 'product',
+      type: 'product'
     });
   }
 
   getCurrentPrice(): number {
     if (!this.selectedSize) {
       const defaultCurrency = 'INR';
-
       if (this.product?.variants && this.product.variants.length > 0) {
         const firstVariant = (this.product.variants as any[])[0];
         if (firstVariant.prices && firstVariant.prices.length > 0) {
@@ -548,7 +494,6 @@ export class ProductComponent implements OnInit, OnDestroy {
           return inrPrice ? inrPrice.price : 0;
         }
       }
-
       if (this.product?.fees && this.product.fees.length > 0) {
         const inrFee = this.product.fees.find((f) => {
           const currencyMatch =
@@ -635,21 +580,18 @@ export class ProductComponent implements OnInit, OnDestroy {
       console.error('Please select a product size');
       return;
     }
-
     const queryParams: any = {
       productName: encodeURIComponent(this.productName),
       productPrice: this.currentPrice.toString(),
       productQuantity: this.quantity.toString(),
-      productSku: encodeURIComponent(this.selectedSize.sku || ''),
+      productSku: encodeURIComponent(this.selectedSize.sku || '')
     };
-
     if (this.productId) {
       queryParams.productId = this.productId.toString();
     }
     if (this.productVariantId) {
       queryParams.productVariantId = this.productVariantId.toString();
     }
-
     this.router.navigate(['/checkout'], { queryParams });
   }
 

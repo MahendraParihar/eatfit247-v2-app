@@ -6,6 +6,7 @@ export class GlobalExceptionsFilter implements ExceptionFilter {
   private readonly logger = new Logger(GlobalExceptionsFilter.name);
 
   catch(exception: unknown, host: ArgumentsHost) {
+    console.log(exception)
     const ctx = host.switchToHttp();
     const response = ctx.getResponse();
     const request = ctx.getRequest();
