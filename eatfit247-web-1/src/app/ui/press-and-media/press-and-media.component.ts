@@ -7,7 +7,7 @@ import { BannerService, SliderItem } from '../../core/services/banner.service';
 import { BannerForEnum } from '@eatfit247-shared-library/enum';
 import { PressMediaService } from '../../core/services/press-media.service';
 import { ICardData, CardComponent, BannerComponent, LoaderComponent } from '@shared-ui';
-import { IMediaUpload } from '@eatfit247-shared-library/core';
+import { IMediaUpload, IPublicBanner } from '@eatfit247-shared-library/core';
 
 @Component({
   standalone: true,
@@ -27,7 +27,7 @@ export class PressAndMediaComponent implements OnInit {
   private readonly pressMediaService = inject(PressMediaService);
   private readonly bannerService = inject(BannerService);
   private readonly sanitizer = inject(DomSanitizer);
-  banners: IMediaUpload[] = [];
+  banners: IPublicBanner[] = [];
   pressArticles: ICardData[] = [];
   youtubeArticles: ICardData[] = [];
   loading = signal(false);

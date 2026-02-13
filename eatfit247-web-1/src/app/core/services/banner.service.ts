@@ -1,10 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpService } from './http.service';
-import {
-  IMediaUpload,
-  IPublicBanner,
-  IPublicTableList
-} from '@eatfit247-shared-library/core';
+import { IPublicBanner, IPublicTableList } from '@eatfit247-shared-library/core';
 import { BannerForEnum } from '@eatfit247-shared-library/enum';
 import { buildMediaUrl } from '../utils/media-url.util';
 
@@ -54,16 +50,15 @@ export class BannerService {
     bannerFor: BannerForEnum
   ): Promise<SliderItem[]> {
     try {
-      const data =
-        await this.httpService.get<IPublicTableList<IPublicBanner>>(
-          'banners/list',
-          {
-            params: {
-              bannerFor: bannerFor.toString(),
-              limit: '50'
-            }
+      const data = await this.httpService.get<IPublicTableList<IPublicBanner>>(
+        'banners/list',
+        {
+          params: {
+            bannerFor: bannerFor.toString(),
+            limit: '50'
           }
-        );
+        }
+      );
       if (data) {
         return data.data.tableData.map((banner: IPublicBanner) =>
           this.mapBannerToSliderItem(banner)
@@ -79,34 +74,26 @@ export class BannerService {
 
   /**
    * Get raw banner media (images) for a specific page.
-   * This is used by the shared BannerComponent which expects IMediaUpload[].
+   * This is used by the shared BannerComponent, which expects IMediaUpload[].
    * If no banners or images are available, an empty array is returned.
    */
   async getBannerMediaForPage(
     bannerFor: BannerForEnum
-  ): Promise<IMediaUpload[]> {
+  ): Promise<IPublicBanner[]> {
     try {
-      const data =
-        await this.httpService.get<IPublicTableList<IPublicBanner>>(
-          'banners/list',
-          {
-            params: {
-              bannerFor: bannerFor.toString(),
-              limit: '50'
-            }
+      const data = await this.httpService.get<IPublicTableList<IPublicBanner>>(
+        'banners/list',
+        {
+          params: {
+            bannerFor: bannerFor.toString(),
+            limit: '50'
           }
-        );
+        }
+      );
       if (!data.data || !Array.isArray(data.data.tableData)) {
         return [];
       }
-      // Flatten all imagePath arrays from the banners and filter out invalid entries
-      const images: IMediaUpload[] = data.data.tableData.flatMap(
-        (banner: IPublicBanner) =>
-          Array.isArray((banner as any).imagePath)
-            ? ((banner as any).imagePath as IMediaUpload[])
-            : []
-      );
-      return images;
+      return data.data.tableData;
     } catch (error) {
       return [];
     }

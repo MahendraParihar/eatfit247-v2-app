@@ -16,8 +16,6 @@ export class PrivacyPolicyComponent implements OnInit {
   private readonly legalPagesService = inject(LegalPagesService);
   private readonly router = inject(Router);
 
-  readonly lastUpdated = 'February 2026';
-
   pageData: IPublicLegalPage | null = null;
   isLoading = signal(true);
   errorMessage = signal<string | null>(null);

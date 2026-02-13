@@ -1,17 +1,16 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject } from '@angular/core';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Component, inject, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MAT_FORM_FIELD_DEFAULT_OPTIONS, MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { BannerComponent } from '@shared-ui';
-import { BannerService } from '../../core/services';
+import { BannerService, HttpService } from '../../core/services';
 import { BannerForEnum } from '@eatfit247-shared-library/enum';
-import { IMediaUpload } from '@eatfit247-shared-library/core';
+import { IPublicBanner } from '@eatfit247-shared-library/core';
 import { RecaptchaService } from '../../core/services/recaptcha.service';
-import { HttpService } from '../../core/services';
 
 @Component({
   standalone: true,
@@ -24,16 +23,16 @@ import { HttpService } from '../../core/services';
     MatButtonModule,
     MatIconModule,
     MatProgressSpinnerModule,
-    BannerComponent
+    BannerComponent,
   ],
   templateUrl: './contact-us.component.html',
   styleUrl: './contact-us.component.scss',
   providers: [
     {
       provide: MAT_FORM_FIELD_DEFAULT_OPTIONS,
-      useValue: { appearance: 'outline' }
-    }
-  ]
+      useValue: { appearance: 'outline' },
+    },
+  ],
 })
 export class ContactUsComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
@@ -51,24 +50,24 @@ export class ContactUsComponent implements OnInit {
       description: 'Chat with us instantly',
       icon: 'whatsapp',
       cta: 'Chat Now',
-      link: 'https://wa.me/91XXXXXXXXXX'
+      link: 'https://wa.me/91XXXXXXXXXX',
     },
     {
       title: 'Call Us',
       description: '+91-XXXXXXXXXX',
       icon: 'phone',
       cta: 'Tap to Call',
-      link: 'tel:+91XXXXXXXXXX'
+      link: 'tel:+91XXXXXXXXXX',
     },
     {
       title: 'Email',
       description: 'support@eatfit247.com',
       icon: 'email',
       cta: 'Send Mail',
-      link: 'mailto:support@eatfit247.com'
-    }
+      link: 'mailto:support@eatfit247.com',
+    },
   ];
-  banners: IMediaUpload[] = [];
+  banners: IPublicBanner[] = [];
 
   ngOnInit(): void {
     this.initForm();
@@ -81,7 +80,7 @@ export class ContactUsComponent implements OnInit {
       email: ['', [Validators.required, Validators.email]],
       phone: ['', [Validators.required, Validators.pattern(/^[0-9+\-\s()]+$/)]],
       subject: ['', [Validators.required]],
-      message: ['']
+      message: [''],
     });
   }
 
@@ -127,7 +126,7 @@ export class ContactUsComponent implements OnInit {
           email: this.contactForm.value.email,
           phone: this.contactForm.value.phone || undefined,
           subject: this.contactForm.value.subject || undefined,
-          message: this.contactForm.value.message || undefined
+          message: this.contactForm.value.message || undefined,
         };
         const headers: { [key: string]: string } = {};
         if (recaptchaToken) {

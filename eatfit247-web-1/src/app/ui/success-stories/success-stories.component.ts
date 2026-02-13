@@ -3,7 +3,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { BannerComponent, CardComponent, LoaderComponent } from '@shared-ui';
 import { BannerService } from '../../core/services/banner.service';
 import { BannerForEnum } from '@eatfit247-shared-library/enum';
-import { IMediaUpload, ISuccessStory } from '@eatfit247-shared-library/core';
+import { IMediaUpload, IPublicBanner, ISuccessStory } from '@eatfit247-shared-library/core';
 import { SuccessStoriesService } from '../../core/services/success-stories.service';
 import { ICardData } from '@shared-ui';
 
@@ -12,13 +12,13 @@ import { ICardData } from '@shared-ui';
   selector: 'app-success-stories',
   imports: [CommonModule, BannerComponent, LoaderComponent, CardComponent],
   templateUrl: './success-stories.component.html',
-  styleUrl: './success-stories.component.scss'
+  styleUrl: './success-stories.component.scss',
 })
 export class SuccessStoriesComponent implements OnInit {
   private readonly bannerService = inject(BannerService);
   private readonly successStoriesService = inject(SuccessStoriesService);
   readonly loading = signal(false);
-  banners: IMediaUpload[] = [];
+  banners: IPublicBanner[] = [];
   storiesByYear: Map<number, ISuccessStory[]> = new Map();
   years: number[] = [];
   totalStories = 0;
@@ -71,7 +71,10 @@ export class SuccessStoriesComponent implements OnInit {
       id: story.successStoryId,
       title: story.name,
       summary: story.description,
-      imageUrl: (story.imagePath && story.imagePath.length > 0) ? story.imagePath[0].webUrl : undefined,
+      imageUrl:
+        story.imagePath && story.imagePath.length > 0
+          ? story.imagePath[0].webUrl
+          : undefined,
       date: story.date,
       category: undefined,
     };

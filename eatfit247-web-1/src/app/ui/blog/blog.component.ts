@@ -5,7 +5,7 @@ import { MatPaginatorModule } from '@angular/material/paginator';
 import { BlogService, BannerService } from '../../core/services';
 import { CardComponent, ICardData, LoaderComponent, BannerComponent } from '@shared-ui';
 import { BannerForEnum } from '@eatfit247-shared-library/enum';
-import { IMediaUpload } from '@eatfit247-shared-library/core';
+import { IMediaUpload, IPublicBanner } from '@eatfit247-shared-library/core';
 
 @Component({
   standalone: true,
@@ -28,7 +28,7 @@ export class BlogComponent implements OnInit {
   readonly totalBlogs = signal(0);
   readonly pageSize = signal(6);
   readonly currentPage = signal(0);
-  readonly banners = signal<IMediaUpload[]>([]);
+  readonly banners = signal<IPublicBanner[]>([]);
 
   ngOnInit(): void {
     void this.loadBannerData();

@@ -3,11 +3,10 @@ import { Component, inject, OnInit, signal } from '@angular/core';
 import { BannerComponent, LoaderComponent } from '@shared-ui';
 import { BannerService } from '../../core/services';
 import { BannerForEnum } from '@eatfit247-shared-library/enum';
-import { IMediaUpload, ISuccessStory } from '@eatfit247-shared-library/core';
+import { IPublicBanner, ISuccessStory } from '@eatfit247-shared-library/core';
 import { SuccessStoriesService } from '../../core/services/success-stories.service';
 import { MatButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
-import { Program } from '../../core/interfaces/program.interface';
 import { CommonBlogComponent } from '../common-blogs/common-blog.component';
 import { CommonProgramComponent } from '../common-program/common-program.component';
 
@@ -30,16 +29,13 @@ export class HomeComponent implements OnInit {
   private readonly bannerService = inject(BannerService);
   private readonly successStoriesService = inject(SuccessStoriesService);
   readonly loading = signal(false);
-  banners: IMediaUpload[] = [];
+  banners: IPublicBanner[] = [];
   stories: ISuccessStory[] = [];
 
   async ngOnInit(): Promise<void> {
     this.loading.set(true);
     try {
-      await Promise.all([
-        this.loadBannerData(),
-        this.loadStories()
-      ]);
+      await Promise.all([this.loadBannerData(), this.loadStories()]);
     } finally {
       this.loading.set(false);
     }

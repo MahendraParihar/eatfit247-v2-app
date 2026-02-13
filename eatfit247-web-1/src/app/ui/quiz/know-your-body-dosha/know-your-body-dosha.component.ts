@@ -1,9 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { BannerComponent } from '@shared-ui';
 import { BannerService } from '../../../core/services/banner.service';
 import { BannerForEnum } from '@eatfit247-shared-library/enum';
-import { IMediaUpload } from '@eatfit247-shared-library/core';
+import { IPublicBanner } from '@eatfit247-shared-library/core';
 
 @Component({
   standalone: true,
@@ -14,7 +14,7 @@ import { IMediaUpload } from '@eatfit247-shared-library/core';
 })
 export class KnowYourBodyDoshaComponent implements OnInit {
   private readonly bannerService = inject(BannerService);
-  banners: IMediaUpload[] = [];
+  banners: IPublicBanner[] = [];
 
   async ngOnInit(): Promise<void> {
     await this.loadBannerData();

@@ -1,17 +1,18 @@
-import { Component, Input, OnInit, OnDestroy, signal, computed } from '@angular/core';
+import { Component, computed, Input, OnDestroy, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
-import { IMediaUpload } from '@eatfit247-shared-library/core';
+import { IPublicBanner } from '@eatfit247-shared-library/core';
+import { MatButton } from '@angular/material/button';
 
 @Component({
   standalone: true,
   selector: 'app-banner',
-  imports: [CommonModule, MatIconModule],
+  imports: [CommonModule, MatIconModule, MatButton],
   templateUrl: './banner.component.html',
   styleUrl: './banner.component.scss',
 })
 export class BannerComponent implements OnInit, OnDestroy {
-  @Input() banners: IMediaUpload[] = [];
+  @Input() banners: IPublicBanner[] = [];
   @Input() autoPlay: boolean = true;
   @Input() autoPlayInterval: number = 5000; // milliseconds
   @Input() showArrows: boolean = true;
@@ -46,7 +47,7 @@ export class BannerComponent implements OnInit, OnDestroy {
 
   previous(): void {
     if (this.banners.length === 0) return;
-    this.currentIndex.update((index) => 
+    this.currentIndex.update((index) =>
       index === 0 ? this.banners.length - 1 : index - 1
     );
     this.resetAutoPlay();

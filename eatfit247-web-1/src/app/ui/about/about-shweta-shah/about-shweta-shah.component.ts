@@ -1,9 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { BannerComponent, LoaderComponent } from '@shared-ui';
 import { BannerService } from '../../../core/services';
 import { BannerForEnum } from '@eatfit247-shared-library/enum';
-import { IMediaUpload, IPublicLegalPage } from '@eatfit247-shared-library/core';
+import { IPublicBanner, IPublicLegalPage } from '@eatfit247-shared-library/core';
 import { LegalPagesService } from '../../../core/services/legal-pages.service';
 import { Router } from '@angular/router';
 
@@ -21,7 +21,7 @@ export class AboutShwetaShahComponent implements OnInit {
   pageData: IPublicLegalPage | null = null;
   isLoading = signal(true);
   errorMessage = signal<string | null>(null);
-  banners: IMediaUpload[] = [];
+  banners: IPublicBanner[] = [];
 
   async ngOnInit(): Promise<void> {
     await this.loadBannerData();

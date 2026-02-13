@@ -1,14 +1,15 @@
 @if (loading()) {
   <app-loader page="home"></app-loader>
 }
+@if (!loading()) {
+  @if (banners.length > 0) {
+    <app-banner [banners]="banners"></app-banner>
+  }
+}
 
 <div class="home-page__section page-container">
 
   @if (!loading()) {
-    @if (banners.length > 0) {
-      <app-banner [banners]="banners"></app-banner>
-    }
-
     <!-- Programs -->
     <app-common-program [showFeature]="false" [showReadMoreBtn]="true"></app-common-program>
 

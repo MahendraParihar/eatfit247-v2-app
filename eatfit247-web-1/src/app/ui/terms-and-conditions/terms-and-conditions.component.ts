@@ -15,7 +15,6 @@ import { LoaderComponent } from '@shared-ui';
 export class TermsAndConditionsComponent implements OnInit {
   private readonly legalPagesService = inject(LegalPagesService);
   private readonly router = inject(Router);
-  readonly lastUpdated = 'February 2026';
   pageData: IPublicLegalPage | null = null;
   isLoading = signal(true);
   errorMessage = signal<string | null>(null);
@@ -28,7 +27,7 @@ export class TermsAndConditionsComponent implements OnInit {
     this.isLoading.set(true);
     this.errorMessage.set(null);
     try {
-      // Use current route path (without leading slash) as the URL slug
+      // Use the current route path (without leading slash) as the URL slug
       const currentPath = this.router.url.split('?')[0].replace(/^\/+/, '');
       const data = await this.legalPagesService.getByUrl(currentPath || 'terms-and-conditions');
       if (data) {

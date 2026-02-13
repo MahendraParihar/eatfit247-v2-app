@@ -13,17 +13,45 @@
         [style.transform]="'translateX(-' + (currentIndex() * 100) + '%)'"
         [style.transition-duration]="transitionDuration + 'ms'"
       >
-        @for (banner of banners; track banner.fileName; let i = $index) {
-          <div
+        @for (banner of banners; track banner.bannerId; let i = $index) {
+            <div
             class="slide"
             [class.active]="currentIndex() === i"
+            [class.image-left]="banner.imagePosition === 'left'"
+            [class.image-right]="banner.imagePosition === 'right'"
+            [class.image-center]="banner.imagePosition === 'center'"
           >
-            <img
-              [src]="banner.webUrl"
-              [alt]="banner.originalName || 'Banner image'"
-              class="banner-image"
-              loading="lazy"
-            />
+            @if (banner.imagePosition !== 'center') {
+              <div class="banner-content">
+                @if (banner.subTitle) {
+                  <h2 class="banner-sub-title">{{ banner.subTitle }}</h2>
+                }
+                @if (banner.title) {
+                  <h2 class="banner-title">{{ banner.title }}</h2>
+                }
+                @if (banner.description) {
+                  <span class="banner-description">{{ banner.description }}</span>
+                }
+                <div class="banner-actions">
+                  @if (banner.primaryActionText && banner.primaryActionUrl) {
+                    <a matButton="filled" [href]="banner.primaryActionUrl" class="btn-primary">{{ banner.primaryActionText }}</a>
+                  }
+                  @if (banner.secondaryActionText && banner.secondaryActionUrl) {
+                    <a matButton="outlined" [href]="banner.secondaryActionUrl" class="btn-secondary">{{ banner.secondaryActionText }}</a>
+                  }
+                </div>
+              </div>
+            }
+            @if (banner.imagePath && banner.imagePath.length > 0) {
+              <div class="banner-image-container">
+                <img
+                  [src]="banner.imagePath[0].webUrl"
+                  [alt]="banner.title"
+                  class="banner-image"
+                  loading="lazy"
+                />
+              </div>
+            }
           </div>
         }
       </div>
@@ -51,7 +79,7 @@
       <!-- Dots Indicator -->
       @if (showDots && hasMultipleItems()) {
         <div class="banner-dots">
-          @for (banner of banners; track banner.fileName; let i = $index) {
+          @for (banner of banners; track banner.bannerId; let i = $index) {
             <button
               class="dot"
               [class.active]="currentIndex() === i"

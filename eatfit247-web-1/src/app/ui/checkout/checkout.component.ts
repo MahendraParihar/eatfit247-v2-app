@@ -164,23 +164,20 @@ export class CheckoutComponent implements OnInit {
   initializeForms(): void {
     // Billing details form
     this.basicDetailsForm = this.fb.group({
-      firstName: ['Mahendra', [Validators.required, Validators.maxLength(50)]],
-      lastName: ['Parihar', [Validators.required, Validators.maxLength(50)]],
+      firstName: ['', [Validators.required, Validators.maxLength(50)]],
+      lastName: ['', [Validators.required, Validators.maxLength(50)]],
       companyName: ['', [Validators.maxLength(100)]],
       countryId: [null, [Validators.required]],
       streetAddress1: [
-        'K-203',
+        '',
         [Validators.required, Validators.maxLength(200)]
       ],
-      streetAddress2: ['Plantaria', [Validators.maxLength(200)]],
-      city: ['Bhayendar', [Validators.required, Validators.maxLength(100)]],
+      streetAddress2: ['', [Validators.maxLength(200)]],
+      city: ['', [Validators.required, Validators.maxLength(100)]],
       stateId: ['', [Validators.required]],
-      postcode: ['401101', [Validators.required, Validators.maxLength(10)]],
-      phone: ['8097421877', [Validators.required, Validators.maxLength(16)]],
-      email: [
-        'mahendra.parihar10@gmail.com',
-        [Validators.required, Validators.email, Validators.maxLength(100)]
-      ],
+      postcode: ['', [Validators.required, Validators.maxLength(10)]],
+      phone: ['', [Validators.required, Validators.maxLength(16)]],
+      email: ['', [Validators.required, Validators.email, Validators.maxLength(100)]],
       orderNotes: ['']
     });
     // Watch for country changes to filter states
@@ -738,7 +735,6 @@ export class CheckoutComponent implements OnInit {
       this.orderId = orderId;
       this.paymentId = paymentId;
       this.moveToNextStep();
-
       // Automatically navigate to success page after a short delay to let user see success state
       setTimeout(() => {
         this.navigateToSuccess();

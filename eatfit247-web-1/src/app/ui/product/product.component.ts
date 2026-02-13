@@ -18,7 +18,7 @@ import {
   IProjectStarEndorsedSection,
   IOutcomeSection,
   IOutcomes,
-  BannerForEnum
+  BannerForEnum, IPublicBanner
 } from '@eatfit247-shared-library';
 
 // Extended interface for size display with value and label
@@ -32,9 +32,16 @@ interface ISizeOption extends IProductFee {
 @Component({
   standalone: true,
   selector: 'app-product',
-  imports: [CommonModule, FormsModule, BannerComponent, LoaderComponent, MatButtonModule, MatIconModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    BannerComponent,
+    LoaderComponent,
+    MatButtonModule,
+    MatIconModule,
+  ],
   templateUrl: './product.component.html',
-  styleUrl: './product.component.scss'
+  styleUrl: './product.component.scss',
 })
 export class ProductComponent implements OnInit, OnDestroy {
   private readonly bannerService = inject(BannerService);
@@ -42,7 +49,7 @@ export class ProductComponent implements OnInit, OnDestroy {
   private readonly router = inject(Router);
   private readonly seoService = inject(SEOService);
   // Banner media
-  banners: IMediaUpload[] = [];
+  banners: IPublicBanner[] = [];
   // Product data
   product!: IPublicProduct;
   productName = '';
@@ -100,31 +107,36 @@ export class ProductComponent implements OnInit, OnDestroy {
                 sku: variant.sku,
                 isActive: inrPrice.active,
                 validFrom: inrPrice.validFrom,
-                validTo: inrPrice.validTo
+                validTo: inrPrice.validTo,
               },
               label: `${variant.quantityValue} ${variant.quantityUnit}`,
               productId: variant.productId,
-              productVariantId: variant.productVariantId
+              productVariantId: variant.productVariantId,
             } as ISizeOption);
           }
         }
       }
     }
     // Fallback: If no variants with INR found, check fees with INR currency
-    if (sizeOptions.length === 0 && this.product?.fees && this.product.fees.length > 0) {
+    if (
+      sizeOptions.length === 0 &&
+      this.product?.fees &&
+      this.product.fees.length > 0
+    ) {
       const inrFees = this.product.fees.filter((fee) => {
         const currencyMatch =
           fee.currency &&
           (fee.currency.toUpperCase() === defaultCurrency.toUpperCase() ||
             fee.currency === defaultCurrency);
-        const activeMatch = fee.isActive !== false || fee.isActive === undefined;
+        const activeMatch =
+          fee.isActive !== false || fee.isActive === undefined;
         return currencyMatch && activeMatch;
       });
       for (const fee of inrFees) {
         sizeOptions.push({
           ...fee,
           value: fee,
-          label: `${fee.quantity} ${fee.unit}`
+          label: `${fee.quantity} ${fee.unit}`,
         });
       }
     }
@@ -180,12 +192,13 @@ export class ProductComponent implements OnInit, OnDestroy {
   }
 
   get productIngredients(): IProductIngredientSection {
-    return (this.product?.additionalInfo?.ingredients || {}) as IProductIngredientSection;
+    return (this.product?.additionalInfo?.ingredients ||
+      {}) as IProductIngredientSection;
   }
 
   get productConsumptionInstructions(): IProjectConsumptionInstructionSection {
-    return (this.product?.additionalInfo
-      ?.consumptionInstructions || {}) as IProjectConsumptionInstructionSection;
+    return (this.product?.additionalInfo?.consumptionInstructions ||
+      {}) as IProjectConsumptionInstructionSection;
   }
 
   get productReportSection(): IProductReport {
@@ -251,7 +264,9 @@ export class ProductComponent implements OnInit, OnDestroy {
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error('Failed to load product data:', error);
-      this.error.set('Failed to load product information. Please try again later.');
+      this.error.set(
+        'Failed to load product information. Please try again later.'
+      );
     } finally {
       this.loading.set(false);
     }
@@ -282,7 +297,7 @@ export class ProductComponent implements OnInit, OnDestroy {
               quantityValue: item.quantityValue,
               quantityUnit: item.quantityUnit,
               sku: item.sku,
-              prices: []
+              prices: [],
             });
           }
           const variant = variantMap.get(variantKey);
@@ -293,7 +308,7 @@ export class ProductComponent implements OnInit, OnDestroy {
                 price: p.price,
                 active: p.active !== false,
                 validFrom: p.validFrom,
-                validTo: p.validTo
+                validTo: p.validTo,
               }))
             );
             item.prices.forEach((price: any) => {
@@ -305,7 +320,7 @@ export class ProductComponent implements OnInit, OnDestroy {
                 sku: item.sku,
                 isActive: price.active !== false,
                 validFrom: price.validFrom,
-                validTo: price.validTo
+                validTo: price.validTo,
               });
             });
           } else if (item.price !== undefined && item.currency !== undefined) {
@@ -314,7 +329,7 @@ export class ProductComponent implements OnInit, OnDestroy {
               price: item.price,
               active: item.isActive !== false,
               validFrom: item.validFrom,
-              validTo: item.validTo
+              validTo: item.validTo,
             };
             variant.prices.push(priceObj);
             normalizedFees.push({
@@ -325,7 +340,7 @@ export class ProductComponent implements OnInit, OnDestroy {
               sku: item.sku,
               isActive: item.isActive,
               validFrom: item.validFrom,
-              validTo: item.validTo
+              validTo: item.validTo,
             });
           }
         } else if (item.quantity !== undefined && item.price !== undefined) {
@@ -337,7 +352,7 @@ export class ProductComponent implements OnInit, OnDestroy {
             sku: item.sku,
             isActive: item.isActive,
             validFrom: item.validFrom,
-            validTo: item.validTo
+            validTo: item.validTo,
           });
         }
       }
@@ -358,7 +373,9 @@ export class ProductComponent implements OnInit, OnDestroy {
         ...(anyProduct as IPublicProduct),
         fees: normalizedFees.length > 0 ? normalizedFees : anyProduct.fees,
         variants:
-          mergedVariants.length > 0 ? (mergedVariants as any) : anyProduct.variants
+          mergedVariants.length > 0
+            ? (mergedVariants as any)
+            : anyProduct.variants,
       };
     }
     return product;
@@ -375,28 +392,32 @@ export class ProductComponent implements OnInit, OnDestroy {
       (normalizedProduct as any).additionalInfo?.feature?.tagLine ||
       (normalizedProduct.name as unknown as string);
     this.productId = (normalizedProduct as any).productId || null;
-    if ((normalizedProduct as any).imagePath && (normalizedProduct as any).imagePath.length > 0) {
+    if (
+      (normalizedProduct as any).imagePath &&
+      (normalizedProduct as any).imagePath.length > 0
+    ) {
       this.productImages = (normalizedProduct as any).imagePath.map(
         (img: IMediaUpload) => img.webUrl
       );
       this.productImages1 = [...this.productImages];
     }
     if ((normalizedProduct as any).additionalInfo?.feature?.images) {
-      const featureImages = (normalizedProduct as any).additionalInfo.feature.images.map(
-        (img: IMediaUpload) => img.webUrl
-      );
+      const featureImages = (
+        normalizedProduct as any
+      ).additionalInfo.feature.images.map((img: IMediaUpload) => img.webUrl);
       if (featureImages.length > 0) {
         this.productImages1 = featureImages;
       }
     }
     if (
-      (normalizedProduct as any).additionalInfo?.consumptionInstructions?.mediaData
-        ?.mediaLink
+      (normalizedProduct as any).additionalInfo?.consumptionInstructions
+        ?.mediaData?.mediaLink
     ) {
-      const videos =
-        (normalizedProduct as any).additionalInfo.consumptionInstructions.mediaData.mediaLink.map(
-          (media: IMediaUpload) => media.webUrl
-        );
+      const videos = (
+        normalizedProduct as any
+      ).additionalInfo.consumptionInstructions.mediaData.mediaLink.map(
+        (media: IMediaUpload) => media.webUrl
+      );
       if (videos.length > 0) {
         this.productVideos = videos;
       }
@@ -433,11 +454,11 @@ export class ProductComponent implements OnInit, OnDestroy {
                 sku: variant.sku,
                 isActive: inrPrice.active,
                 validFrom: inrPrice.validFrom,
-                validTo: inrPrice.validTo
+                validTo: inrPrice.validTo,
               },
               label: `${variant.quantityValue} ${variant.quantityUnit}`,
               productId: variant.productId,
-              productVariantId: variant.productVariantId
+              productVariantId: variant.productVariantId,
             } as ISizeOption;
             this.productId = variant.productId || null;
             this.productVariantId = variant.productVariantId || null;
@@ -446,7 +467,11 @@ export class ProductComponent implements OnInit, OnDestroy {
         }
       }
     }
-    if (!this.selectedSize && normalizedProduct.fees && normalizedProduct.fees.length > 0) {
+    if (
+      !this.selectedSize &&
+      normalizedProduct.fees &&
+      normalizedProduct.fees.length > 0
+    ) {
       const inrFee = normalizedProduct.fees.find((f) => {
         const currencyMatch =
           f.currency &&
@@ -459,7 +484,7 @@ export class ProductComponent implements OnInit, OnDestroy {
         this.selectedSize = {
           ...inrFee,
           value: inrFee,
-          label: `${inrFee.quantity} ${inrFee.unit}`
+          label: `${inrFee.quantity} ${inrFee.unit}`,
         };
       }
     }
@@ -471,7 +496,7 @@ export class ProductComponent implements OnInit, OnDestroy {
       title: this.productName,
       description: this.productDescription,
       url: this.router.url,
-      type: 'product'
+      type: 'product',
     });
   }
 
@@ -584,7 +609,7 @@ export class ProductComponent implements OnInit, OnDestroy {
       productName: encodeURIComponent(this.productName),
       productPrice: this.currentPrice.toString(),
       productQuantity: this.quantity.toString(),
-      productSku: encodeURIComponent(this.selectedSize.sku || '')
+      productSku: encodeURIComponent(this.selectedSize.sku || ''),
     };
     if (this.productId) {
       queryParams.productId = this.productId.toString();
@@ -655,7 +680,6 @@ export class ProductComponent implements OnInit, OnDestroy {
     console.error('Video error code:', video?.error?.code);
   }
 
-  onVideoLoaded(): void {
-  }
+  onVideoLoaded(): void {}
 }
 
