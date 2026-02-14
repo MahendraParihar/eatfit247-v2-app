@@ -22,7 +22,7 @@ export class OurProgramsComponent implements OnInit {
     'Program is valid only for the registered individual',
     'Pause upto 20 days may be approved in genuine cases',
     'Prices are valid till 31st Dec, 2026.',
-    '**Prices are inclusive of Tax, tax will be charged on final payment.'
+    '**Prices are exclusive of Tax, tax will be charged on final payment.'
   ];
 
   async ngOnInit(): Promise<void> {

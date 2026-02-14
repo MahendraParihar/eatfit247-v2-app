@@ -1,148 +1,138 @@
-@if (banners.length > 0) {
-  <app-banner [banners]="banners"></app-banner>
+@if (loading()) {
+  <app-loader page="about-eatfit"></app-loader>
 }
+@if (!loading()) {
+  @if (banners.length > 0) {
+    <app-banner [banners]="banners"></app-banner>
+  }
 
-<div class="about-eatfit-page page-container">
-  <!-- About Us / Hero -->
-  <section class="about-eatfit__section about-eatfit__section--hero">
-    <div class="about-eatfit__section-header">
-      <p class="about-eatfit__eyebrow">PROTECTING YOU FROM YOURSELF</p>
-      <h2 class="about-eatfit__title">About Us</h2>
-      <p class="about-eatfit__subtitle">15 years–2000+ clients–one mission.</p>
-      <p class="about-eatfit__subtitle">A dream venture to lead you to your best self in the most natural way
-        possible.</p>
-      <p class="about-eatfit__subtitle">Lead a healthy life without tweaking your lifestyle.</p>
-      <p class="about-eatfit__subtitle">A decade long journey that encompasses fruitful encounters with the who’s who of
-        industry, corporate, media and fitness industry.</p>
-    </div>
-
-    <div class="about-eatfit__hero-content">
-      <div class="about-eatfit__video">
-        <!-- Video placeholder / embed -->
-        <div class="about-eatfit__video-placeholder" *ngIf="safeYoutubeUrl; else videoFallback">
-          <iframe
-            [src]="safeYoutubeUrl"
-            title="About EatFit247 video"
-            frameborder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            allowfullscreen
-          ></iframe>
-        </div>
-        <ng-template #videoFallback>
-          <div class="about-eatfit__video-placeholder">
-            <span>About Us Page Video Comes Here</span>
-          </div>
-        </ng-template>
+  <div class="about-eatfit-page page-container">
+    <!-- About Us / Hero -->
+    <section class="about-eatfit__section about-eatfit__section--hero">
+      <div class="about-eatfit__section-header">
+        <p class="about-eatfit__eyebrow">PROTECTING YOU FROM YOURSELF</p>
+        <h2 class="about-eatfit__title">About Us</h2>
+        <p class="about-eatfit__subtitle">15 years–2000+ clients–one mission.</p>
+        <p class="about-eatfit__subtitle">A dream venture to lead you to your best self in the most natural way
+          possible.</p>
+        <p class="about-eatfit__subtitle">Lead a healthy life without tweaking your lifestyle.</p>
+        <p class="about-eatfit__subtitle">A decade long journey that encompasses fruitful encounters with the who’s who
+          of
+          industry, corporate, media and fitness industry.</p>
       </div>
 
-      <div class="about-eatfit__cards">
-        <article class="about-eatfit__card">
-          <div class="about-eatfit__card-title-section">
-            <mat-icon class="about-eatfit__card-icon-section">lock</mat-icon>
-            <h3 class="about-eatfit__card-title">Vision</h3>
+      <div class="about-eatfit__hero-content">
+        <div class="about-eatfit__video">
+          <!-- Video placeholder / embed -->
+          <div class="about-eatfit__video-placeholder" *ngIf="safeYoutubeUrl; else videoFallback">
+            <iframe
+              [src]="safeYoutubeUrl"
+              title="About EatFit247 video"
+              frameborder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowfullscreen
+            ></iframe>
           </div>
-          <ul class="about-eatfit__card-list">
-            <li>Pill-free lifestyle</li>
-            <li>Amalgamating ancient intelligence and wisdom with modern lifestyle</li>
-            <li>
-              A switch from the conventional path of resorting to pills towards using natural food, spices and herbs
-              with just
-              an iota of lifestyle change to combat all kinds of medical challenges
-            </li>
-          </ul>
-        </article>
-
-        <article class="about-eatfit__card">
-          <div class="about-eatfit__card-title-section">
-            <mat-icon class="about-eatfit__card-icon-section">lock</mat-icon>
-            <h3 class="about-eatfit__card-title">Mission</h3>
-          </div>
-          <ul class="about-eatfit__card-list">
-            <li>Protecting you from yourself</li>
-            <li>Healthy pill free life</li>
-            <li>1 tsp in the night</li>
-          </ul>
-        </article>
-      </div>
-    </div>
-  </section>
-
-  <!-- Partners / Associated With -->
-  <section class="about-eatfit__section about-eatfit__section--partners">
-    <div class="about-eatfit__section-header about-eatfit__section-header--center">
-      <p class="about-eatfit__eyebrow">PARTNERS IN HEALTH</p>
-      <h2 class="about-eatfit__title">We are Associated with</h2>
-      <p class="about-eatfit__subtitle about-eatfit__subtitle--narrow">
-        We believe the journey is better with like-minded people and we are in esteemed company when it comes to having
-        collaborators.
-      </p>
-    </div>
-
-    <div
-      class="about-eatfit__partners-grid"
-      *ngIf="!isLoadingPartners && partners?.length;"
-    >
-      <article
-        class="about-eatfit__partner-card"
-        *ngFor="let partner of partners"
-      >
-        <div
-          class="about-eatfit__partner-avatar heading-2"
-          [ngClass]="{ 'about-eatfit__partner-avatar--logo': partner.logo }"
-        >
-          <img
-            [src]="buildWebUrl(partner)"
-            [alt]="partner.companyName"
-            loading="lazy"
-          />
+          <ng-template #videoFallback>
+            <div class="about-eatfit__video-placeholder">
+              <span>About Us Page Video Comes Here</span>
+            </div>
+          </ng-template>
         </div>
-        <div class="about-eatfit__partner-body">
-          <h3 class="about-eatfit__partner-name">
-            {{ partner.name }}
-          </h3>
-          <p
-            *ngIf="partner.companyName"
-            class="about-eatfit__partner-tagline"
-          >
-            {{ partner.companyName }}
+
+        <div class="about-eatfit__cards">
+          <article class="about-eatfit__card">
+            <div class="about-eatfit__card-title-section">
+              <mat-icon class="about-eatfit__card-icon-section">lock</mat-icon>
+              <h3 class="about-eatfit__card-title">Vision</h3>
+            </div>
+            <ul class="about-eatfit__card-list">
+              <li>Pill-free lifestyle</li>
+              <li>Amalgamating ancient intelligence and wisdom with modern lifestyle</li>
+              <li>
+                A switch from the conventional path of resorting to pills towards using natural food, spices and herbs
+                with just
+                an iota of lifestyle change to combat all kinds of medical challenges
+              </li>
+            </ul>
+          </article>
+
+          <article class="about-eatfit__card">
+            <div class="about-eatfit__card-title-section">
+              <mat-icon class="about-eatfit__card-icon-section">lock</mat-icon>
+              <h3 class="about-eatfit__card-title">Mission</h3>
+            </div>
+            <ul class="about-eatfit__card-list">
+              <li>Protecting you from yourself</li>
+              <li>Healthy pill free life</li>
+              <li>1 tsp in the night</li>
+            </ul>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Partners / Associated With -->
+    @if (partners && partners.length > 0) {
+      <section class="about-eatfit__section about-eatfit__section--partners">
+        <div class="about-eatfit__section-header about-eatfit__section-header--center">
+          <p class="about-eatfit__eyebrow">PARTNERS IN HEALTH</p>
+          <h2 class="about-eatfit__title">We are Associated with</h2>
+          <p class="about-eatfit__subtitle about-eatfit__subtitle--narrow">
+            We believe the journey is better with like-minded people and we are in esteemed company when it comes to
+            having
+            collaborators.
           </p>
         </div>
-      </article>
-    </div>
-  </section>
 
-  <!-- Join Shweta Shah -->
-  <section class="about-eatfit__section about-eatfit__section--join">
-    <div class="about-eatfit__join-card">
-      <h2 class="about-eatfit__title about-eatfit__title--center">Join Shweta Shah</h2>
-      <p class="about-eatfit__subtitle about-eatfit__subtitle--center">
-        EatFit247 is a dream venture and your answer to weight loss reality and natural health care options without
-        compromising your lifestyle. We pride ourselves in creating a plan that not only meets your health goals but
-        allows
-        you to retain your foodie cravings.
-      </p>
-    </div>
-  </section>
+        <div class="about-eatfit__partners-grid">
+          @for (partner of partners; track partner.companyName) {
+            <article
+              class="about-eatfit__partner-card"
+            >
+              <div
+                class="about-eatfit__partner-avatar heading-2"
+                [ngClass]="{ 'about-eatfit__partner-avatar--logo': partner.logo }"
+              >
+                <img
+                  [src]="buildWebUrl(partner)"
+                  [alt]="partner.companyName"
+                  loading="lazy"
+                />
+              </div>
+              <div class="about-eatfit__partner-body">
+                <h3 class="about-eatfit__partner-name">
+                  {{ partner.name }}
+                </h3>
+                <p
+                  *ngIf="partner.companyName"
+                  class="about-eatfit__partner-tagline"
+                >
+                  {{ partner.companyName }}
+                </p>
+              </div>
+            </article>
+          }
 
-  <!-- From Our Blog -->
-  <section class="about-eatfit__section about-eatfit__section--blog">
-    <div class="about-eatfit__section-header about-eatfit__section-header--center">
-      <h2 class="about-eatfit__title">From Our Blog</h2>
-      <p class="about-eatfit__subtitle about-eatfit__subtitle--narrow">
-        A dream venture to lead you to your best self in the most natural way possible. Lead a healthy life without
-        tweaking
-        your lifestyle.
-      </p>
-    </div>
+        </div>
+      </section>
+    }
 
-    <div
-      class="about-eatfit__blog-grid"
-      *ngIf="latestBlogs?.length"
-    >
-      <app-card
-        *ngFor="let blog of latestBlogs"
-        [data]="blog"
-      ></app-card>
-    </div>
-  </section>
-</div>
+
+    <!-- Join Shweta Shah -->
+    <section class="about-eatfit__section about-eatfit__section--join">
+      <div class="about-eatfit__join-card">
+        <h2 class="about-eatfit__title about-eatfit__title--center">Join Shweta Shah</h2>
+        <p class="about-eatfit__subtitle about-eatfit__subtitle--center">
+          EatFit247 is a dream venture and your answer to weight loss reality and natural health care options without
+          compromising your lifestyle. We pride ourselves in creating a plan that not only meets your health goals but
+          allows
+          you to retain your foodie cravings.
+        </p>
+      </div>
+    </section>
+
+    <!-- From Our Blog -->
+    <app-common-blog></app-common-blog>
+  </div>
+}
