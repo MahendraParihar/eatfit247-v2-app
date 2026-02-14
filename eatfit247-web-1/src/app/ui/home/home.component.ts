@@ -5,10 +5,9 @@ import { BannerService } from '../../core/services';
 import { BannerForEnum } from '@eatfit247-shared-library/enum';
 import { IPublicBanner, ISuccessStory } from '@eatfit247-shared-library/core';
 import { SuccessStoriesService } from '../../core/services/success-stories.service';
-import { MatButton } from '@angular/material/button';
-import { MatIcon } from '@angular/material/icon';
 import { CommonBlogComponent } from '../common-blogs/common-blog.component';
 import { CommonProgramComponent } from '../common-program/common-program.component';
+import { HomeHallOfFameComponent } from './home-hall-of-fame/home-hall-of-fame.component';
 
 @Component({
   standalone: true,
@@ -17,10 +16,9 @@ import { CommonProgramComponent } from '../common-program/common-program.compone
     CommonModule,
     BannerComponent,
     LoaderComponent,
-    MatIcon,
-    MatButton,
     CommonBlogComponent,
-    CommonProgramComponent
+    CommonProgramComponent,
+    HomeHallOfFameComponent
   ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'
@@ -54,12 +52,6 @@ export class HomeComponent implements OnInit {
   async loadStories(): Promise<void> {
     // Load stories from API
     this.stories = await this.successStoriesService.loadStories();
-  }
-
-  getStoryImage(story: ISuccessStory): string | unknown {
-    return story.imagePath && story.imagePath.length > 0
-      ? story.imagePath[0].webUrl
-      : undefined;
   }
 }
 
