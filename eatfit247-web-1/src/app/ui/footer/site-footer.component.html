@@ -67,11 +67,20 @@
     <section class="site-footer__column site-footer__column--contact">
       <h2 class="site-footer__heading body-b4">Contact Us</h2>
       <nav aria-label="Contact information" class="site-footer__nav body-b6">
-        <a href="tel:+918591854209" class="site-footer__link">
-          (+91) 859 185 4209
+        <a href="tel:{{contactNumber}}" class="site-footer__link">
+          {{ contactNumber }}
         </a>
-        <a href="mailto:eatfit24by7@gmail.com" class="site-footer__link">
-          eatfit24by7@gmail.com
+        <a href="mailto:{{contactEmail}}" class="site-footer__link">
+          {{ contactEmail }}
+        </a>
+      </nav>
+      <h2 class="site-footer__heading body-b4">&nbsp;</h2>
+      <nav aria-label="Product links" class="site-footer__nav body-b6">
+        <a routerLink="/privacy-policy" class="site-footer__link">
+          Privacy Policy
+        </a>
+        <a routerLink="/terms-and-conditions" class="site-footer__link">
+          Terms & Conditions
         </a>
       </nav>
     </section>
