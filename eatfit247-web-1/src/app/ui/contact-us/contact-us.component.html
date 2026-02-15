@@ -8,15 +8,6 @@
       <img src="/shweta-shah.svg" alt="Shweta Shah" class="contact-us__photo" />
     </div>
     <div class="contact-us-right">
-      <div class="contact-us__cards">
-        @for (contact of contactInfo; track contact.link) {
-          <a matFab extended [href]="contact.link" class="contact-us__card">
-            <mat-icon>{{ contact.icon }}</mat-icon>
-            {{ contact.title }}
-          </a>
-        }
-      </div>
-
       <header class="section__header">
         <h1 class="section__title">
           Get Personal Health Guidance
@@ -25,7 +16,6 @@
           Fill out this form and our nutrition experts will get back to you shortly.
         </p>
       </header>
-
 
       @if (formSuccess) {
         <div class="contact-us__message contact-us__message--success">
@@ -138,6 +128,15 @@
           </button>
         </div>
       </form>
+
+      <div class="contact-us__cards">
+        @for (contact of contactInfo; track contact.link) {
+          <a matFab extended [href]="contact.link" class="contact-us__card">
+            <mat-icon>{{ contact.icon }}</mat-icon>
+            {{contact.title}}
+          </a>
+        }
+      </div>
     </div>
   </div>
 </div>

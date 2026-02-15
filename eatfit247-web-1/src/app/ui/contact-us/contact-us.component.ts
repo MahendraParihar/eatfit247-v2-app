@@ -11,6 +11,7 @@ import { BannerService, HttpService } from '../../core/services';
 import { BannerForEnum } from '@eatfit247-shared-library/enum';
 import { IPublicBanner } from '@eatfit247-shared-library/core';
 import { RecaptchaService } from '../../core/services/recaptcha.service';
+import { CONTACT_EMAIL, CONTACT_NUMBER } from '../../core/utils/constants';
 
 @Component({
   standalone: true,
@@ -46,25 +47,18 @@ export class ContactUsComponent implements OnInit {
   errorMessage = '';
   readonly contactInfo = [
     {
-      title: 'WhatsApp Support',
-      description: 'Chat with us instantly',
-      icon: 'whatsapp',
-      cta: 'Chat Now',
-      link: 'https://wa.me/91XXXXXXXXXX',
-    },
-    {
-      title: 'Call Us',
-      description: '+91-XXXXXXXXXX',
+      title: CONTACT_NUMBER,
+      description: CONTACT_NUMBER,
       icon: 'phone',
       cta: 'Tap to Call',
-      link: 'tel:+91XXXXXXXXXX',
+      link: `tel:${CONTACT_NUMBER}`,
     },
     {
-      title: 'Email',
-      description: 'support@eatfit247.com',
+      title: CONTACT_EMAIL,
+      description: CONTACT_EMAIL,
       icon: 'email',
       cta: 'Send Mail',
-      link: 'mailto:support@eatfit247.com',
+      link: `mailto:${CONTACT_EMAIL}`,
     },
   ];
   banners: IPublicBanner[] = [];
