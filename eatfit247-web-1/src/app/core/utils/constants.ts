@@ -38,9 +38,9 @@ export const SOCIAL_LINKS: SocialSiteItem[] = [
   //   icon: 'twitter',
   //   link: 'https://twitter.com/eatfit247',
   // },
-  {
-    type: 'external',
-    icon: 'telegram',
-    link: 'https://telegram.me/eatfit247',
-  },
+  // {
+  //   type: 'external',
+  //   icon: 'telegram',
+  //   link: 'https://telegram.me/eatfit247',
+  // },
 ];
