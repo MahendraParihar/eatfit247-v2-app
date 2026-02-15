@@ -2,14 +2,19 @@ import { IBaseAdminUser, IMediaUpload } from '@eatfit247-shared-lib';
 import moment from 'moment';
 
 export class CommonFunctionsUtil {
-  public static removeSpecialChar(tempStr: string, replaceChar: string = '-'): string | null {
+  public static removeSpecialChar(tempStr: string, replaceChar: string = '-', lowerCase = true): string | null {
     if (!tempStr) {
       return null;
     }
-    return tempStr
-      .replace(/[^a-zA-Z0-9]/g, replaceChar)
-      .replace(/\s+/g, replaceChar)
-      .toLowerCase();
+    return lowerCase
+      ? tempStr
+        .replace(/[^a-zA-Z0-9]/g, replaceChar)
+        .replace(/\s+/g, replaceChar)
+        .toLowerCase()
+      : tempStr
+        .replace(/[^a-zA-Z0-9]/g, replaceChar)
+        .replace(/\s+/g, replaceChar)
+        .toString();
   }
 
   public static getAdminShortInfo(obj: any, aliasString: string): IBaseAdminUser | null {
@@ -58,6 +63,7 @@ export class CommonFunctionsUtil {
       };
     });
   }
+
   public static toNumber(value: string | number | null | undefined): number {
     if (value === null || value === undefined) return 0;
     if (typeof value === 'number') return value;
@@ -74,8 +80,7 @@ export class CommonFunctionsUtil {
   public static getFinancialYear(date: Date, fyStartMonth: number): number {
     const month = date.getMonth() + 1; // getMonth() returns 0-11, so add 1
     const year = date.getFullYear();
-    
-    // If current month is before the financial year start month, 
+    // If current month is before the financial year start month,
     // the financial year started in the previous calendar year
     if (month < fyStartMonth) {
       return year - 1;

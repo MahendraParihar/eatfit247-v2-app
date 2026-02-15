@@ -943,19 +943,15 @@ export class MemberDietPlanService {
   ): Promise<IFileModel> {
     // Fetch diet plan detail
     const dietDetailData = await this.fetchDietDetail(memberId, dietPlanId, cycleNo, dayNo);
-    
     // Fetch member information to get name and franchiseId
     const member = await this.memberRepository.findOne({
       where: { memberId: memberId },
       attributes: ['memberId', 'firstName', 'lastName', 'franchiseId'],
     });
-
     if (!member) {
       throw new NotFoundException(`Member with ID ${memberId} not found`);
     }
-
     const memberName = `${member.firstName} ${member.lastName}`.trim();
-
     // Collect all recipe IDs from the diet plan
     const recipeIds: number[] = [];
     if (dietDetailData.diet.dietPlan) {
@@ -965,7 +961,6 @@ export class MemberDietPlanService {
         }
       }
     }
-
     // Fetch full recipe details for all recipes
     const recipes = [];
     if (recipeIds.length > 0) {
@@ -980,7 +975,6 @@ export class MemberDietPlanService {
         }
       }
     }
-
     // Fetch franchise for header information using member's franchiseId
     let franchise = null;
     try {
@@ -994,12 +988,10 @@ export class MemberDietPlanService {
     } catch (error) {
       console.warn('Could not fetch franchise information', error);
     }
-
     // Format start date for plan display
-    const startDate = dietDetailData.diet.startDate 
+    const startDate = dietDetailData.diet.startDate
       ? moment(dietDetailData.diet.startDate).format('YYYY-MM-DD')
       : moment().format('YYYY-MM-DD');
-
     // Prepare PDF data
     const pdfData = {
       memberName: memberName,
@@ -1011,28 +1003,25 @@ export class MemberDietPlanService {
       franchise: franchise,
       planStartDate: startDate,
     };
-
     // Generate PDF
     const pdfBuffer = await this.dietPlanPdfService.generateDietPlanPdf(pdfData);
-
     // Prepare file name and path
-    const fileName = `diet-plan-${dietPlanId}-cycle-${cycleNo}${dayNo ? `-day-${dayNo}` : ''}.pdf`;
+    const fileName = `Session-${CommonFunctionsUtil.removeSpecialChar(
+      memberName,
+      '-',
+      false,
+    )}-Cycle-${cycleNo}${dayNo ? `-Day-${dayNo}` : ''}.pdf`;
     const relativePath = `${MediaForEnum.DOWNLOADS}/${memberId}/diet-plans`;
     const destinationFolderPath = `${Env.persistentStorageAssetPath}/${relativePath}`;
-
-    // Create directory if not exists
+    // Create a directory if not exists
     if (!fs.existsSync(destinationFolderPath)) {
       fs.mkdirSync(destinationFolderPath, { recursive: true });
     }
-
     const destinationPath = `${destinationFolderPath}/${fileName}`;
-
     // Write PDF buffer to destination folder
     fs.writeFileSync(destinationPath, Uint8Array.from(pdfBuffer));
-
     // Convert to base64 for response
     const base64Buffer = pdfBuffer.toString('base64');
-
     return {
       filePath: relativePath,
       fileName: fileName,

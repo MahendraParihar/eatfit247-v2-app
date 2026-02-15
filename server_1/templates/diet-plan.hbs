@@ -341,7 +341,6 @@
       <tr>
         <th>Category</th>
         <th>Details</th>
-        <th>Recipes</th>
       </tr>
     </thead>
     <tbody>
@@ -350,23 +349,11 @@
           <tr>
             <td>{{this.recipeCategory}}</td>
             <td>{{{this.dietDetail}}}</td>
-            <td>
-              {{#if this.recipeList}}
-                {{#each this.recipeList}}
-                  {{#if this.label}}{{this.label}}{{else}}{{this.name}}{{/if}}{{#unless @last}}, {{/unless}}
-                {{/each}}
-              {{/if}}
-            </td>
           </tr>
         {{else if this.recipeList}}
           <tr>
             <td>{{this.recipeCategory}}</td>
             <td></td>
-            <td>
-              {{#each this.recipeList}}
-                {{#if this.label}}{{this.label}}{{else}}{{this.name}}{{/if}}{{#unless @last}}, {{/unless}}
-              {{/each}}
-            </td>
           </tr>
         {{/if}}
       {{/each}}

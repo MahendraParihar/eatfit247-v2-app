@@ -183,14 +183,12 @@ export class MemberPlanService {
         customerStateCode = customerState.code || null;
       }
     }
-
     const programPlan = await this.programPlanService.fetchById(payload.programPlanId);
     const fee: { fees: number; currencyCode: string } = find(programPlan.programPlanFees, {
       currencyCode: payload.currency,
     });
     console.log(programPlan);
     console.log(fee);
-
     // Calculate base amounts
     // Use tax engine to calculate tax
     const taxInput: TaxInput = {
@@ -359,7 +357,6 @@ export class MemberPlanService {
         billingAddress,
         franchiseAddress,
       );
-
       // Get program plan details to get noOfCycle and noOfDaysInCycle
       let noOfCycle = obj.noOfCycle;
       let noOfDaysInCycle = obj.noOfDaysInCycle;
@@ -368,7 +365,6 @@ export class MemberPlanService {
         noOfCycle = programPlan.noOfCycle;
         noOfDaysInCycle = programPlan.noOfDaysInCycle;
       }
-
       // Create a payment record
       const paymentData: any = {
         memberId,
@@ -433,7 +429,7 @@ export class MemberPlanService {
             franchiseDetails.financialYear,
             franchiseDetails.franchiseCode,
             BusinessTypeEnum.SERVICE,
-            t
+            t,
           );
           payment.invoiceId = invoiceNumber;
           await payment.save({ transaction: t });
@@ -787,8 +783,7 @@ export class MemberPlanService {
         `Payment confirms acceptance of ${payment.franchise.companyName} terms and service validity conditions.`,
       ],
     );
-    console.log(JSON.stringify(invoiceDoc));
-    const fileName = `invoice-${paymentModel.memberPaymentId}.pdf`;
+    const fileName = `Invoice-${CommonFunctionsUtil.removeSpecialChar(paymentModel.memberName, '-', false)}-${paymentModel.paymentDate}.pdf`;
     const relativePath = `${MediaForEnum.DOWNLOADS}/${memberId}/invoices`;
     const destinationFolderPath = `${this.rootFolderPath}/${relativePath}`;
     //CREATE DIRECTORY IF NOT EXISTS (async)
@@ -801,7 +796,7 @@ export class MemberPlanService {
     // Generate PDF using the new InvoicePdfService
     const pdfBuffer = await this.invoicePdfService.generateInvoicePdf(invoiceDoc);
     const base64Buffer = pdfBuffer.toString('base64');
-    // Write PDF buffer to destination folder (async)
+    // Write a PDF buffer to the destination folder (async)
     await fs.writeFile(destinationPath, pdfBuffer as Uint8Array);
     return {
       filePath: relativePath,
@@ -1061,70 +1056,67 @@ export class MemberPlanService {
     let orderId: string;
     const receipt = `order_${memberId}_${Date.now()}`;
     switch (gatewayCode) {
-      case PaymentGatewayEnum.RAZORPAY:
-        {
-          if (!adaptor.createOrder) {
-            throw new BadRequestException('Razorpay createOrder method not available');
-          }
-          const order = await adaptor.createOrder(
+      case PaymentGatewayEnum.RAZORPAY: {
+        if (!adaptor.createOrder) {
+          throw new BadRequestException('Razorpay createOrder method not available');
+        }
+        const order = await adaptor.createOrder(
+          payload.amount,
+          receipt,
+          payload.currency,
+          paymentNotes,
+          {
+            keyId,
+            keySecret,
+          },
+        );
+        orderId = order.id;
+      }
+        break;
+      case PaymentGatewayEnum.STRIPE: {
+        const stripeAdapter = adaptor as any;
+        if (stripeAdapter.createPaymentIntent) {
+          const paymentIntent = await stripeAdapter.createPaymentIntent(
             payload.amount,
-            receipt,
             payload.currency,
+            paymentDescription,
+            customerDetails,
+            paymentNotes,
+          );
+          orderId = paymentIntent.id;
+        } else {
+          // Fallback to payment link if payment intent is not available
+          const paymentLink = await adaptor.createPaymentLink(
+            payload.amount,
+            payload.currency,
+            paymentDescription,
+            customerDetails,
             paymentNotes,
             {
               keyId,
               keySecret,
             },
           );
-          orderId = order.id;
+          orderId = paymentLink.id;
         }
+      }
         break;
-      case PaymentGatewayEnum.STRIPE:
-        {
-          const stripeAdapter = adaptor as any;
-          if (stripeAdapter.createPaymentIntent) {
-            const paymentIntent = await stripeAdapter.createPaymentIntent(
-              payload.amount,
-              payload.currency,
-              paymentDescription,
-              customerDetails,
-              paymentNotes,
-            );
-            orderId = paymentIntent.id;
-          } else {
-            // Fallback to payment link if payment intent is not available
-            const paymentLink = await adaptor.createPaymentLink(
-              payload.amount,
-              payload.currency,
-              paymentDescription,
-              customerDetails,
-              paymentNotes,
-              {
-                keyId,
-                keySecret,
-              },
-            );
-            orderId = paymentLink.id;
-          }
+      case PaymentGatewayEnum.TELR: {
+        if (!adaptor.createOrder) {
+          throw new BadRequestException('Telr createOrder method not available');
         }
-        break;
-      case PaymentGatewayEnum.TELR:
-        {
-          if (!adaptor.createOrder) {
-            throw new BadRequestException('Telr createOrder method not available');
-          }
-          const order = await adaptor.createOrder(
-            payload.amount,
-            receipt,
-            payload.currency,
-            paymentNotes,
-            {
-              keyId,
-              keySecret,
-            },
-          );
-          orderId = order.order?.ref || order.id || receipt;
-        }
+        const order = await adaptor.createOrder(
+          payload.amount,
+          receipt,
+          payload.currency,
+          paymentNotes,
+          {
+            keyId,
+            keySecret,
+          },
+        );
+        orderId = order.order?.ref || order.id || receipt;
+      }
         break;
       default:
         throw new BadRequestException(`Unsupported payment gateway: ${gatewayCode}`);
