@@ -1,24 +1,24 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { BannerComponent, LoaderComponent } from '@shared-ui';
-import { BannerService } from '../../core/services';
+import { BannerService, SEOService } from '../../core/services';
 import { ProductService } from '../../core/services/product.service';
-import { SEOService } from '../../core/services';
 import {
+  BannerForEnum,
   IMediaUpload,
-  IPublicProduct,
+  IOutcomes,
+  IOutcomeSection,
   IProductFee,
   IProductIngredientSection,
   IProductReport,
   IProjectConsumptionInstructionSection,
   IProjectStarEndorsedSection,
-  IOutcomeSection,
-  IOutcomes,
-  BannerForEnum, IPublicBanner
+  IPublicBanner,
+  IPublicProduct
 } from '@eatfit247-shared-library';
 
 // Extended interface for size display with value and label

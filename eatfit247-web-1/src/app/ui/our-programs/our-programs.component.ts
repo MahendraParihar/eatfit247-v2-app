@@ -4,7 +4,6 @@ import { BannerComponent } from '@shared-ui';
 import { BannerService } from '../../core/services/banner.service';
 import { BannerForEnum } from '@eatfit247-shared-library/enum';
 import { IPublicBanner } from '@eatfit247-shared-library/core';
-import { Program } from '../../core/interfaces/program.interface';
 import { CommonProgramComponent } from '../common-program/common-program.component';
 
 @Component({

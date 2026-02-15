@@ -67,32 +67,32 @@
       </a>
 
       <!-- Quiz (dropdown) -->
-<!--      <button-->
-<!--        mat-button-->
-<!--        [matMenuTriggerFor]="quizMenu"-->
-<!--        class="layout__nav-link layout__nav-link&#45;&#45;button"-->
-<!--        type="button"-->
-<!--      >-->
-<!--        Quiz-->
-<!--      </button>-->
-<!--      <mat-menu #quizMenu="matMenu">-->
-<!--        <a-->
-<!--          mat-menu-item-->
-<!--          routerLink="/know-your-body-dosha"-->
-<!--          routerLinkActive="layout__nav-link&#45;&#45;active"-->
-<!--          [routerLinkActiveOptions]="{ exact: false }"-->
-<!--        >-->
-<!--          Quiz 1-->
-<!--        </a>-->
-<!--        <a-->
-<!--          mat-menu-item-->
-<!--          routerLink="/know-your-current-immunity-score"-->
-<!--          routerLinkActive="layout__nav-link&#45;&#45;active"-->
-<!--          [routerLinkActiveOptions]="{ exact: false }"-->
-<!--        >-->
-<!--          Quiz 2-->
-<!--        </a>-->
-<!--      </mat-menu>-->
+      <!--      <button-->
+      <!--        mat-button-->
+      <!--        [matMenuTriggerFor]="quizMenu"-->
+      <!--        class="layout__nav-link layout__nav-link&#45;&#45;button"-->
+      <!--        type="button"-->
+      <!--      >-->
+      <!--        Quiz-->
+      <!--      </button>-->
+      <!--      <mat-menu #quizMenu="matMenu">-->
+      <!--        <a-->
+      <!--          mat-menu-item-->
+      <!--          routerLink="/know-your-body-dosha"-->
+      <!--          routerLinkActive="layout__nav-link&#45;&#45;active"-->
+      <!--          [routerLinkActiveOptions]="{ exact: false }"-->
+      <!--        >-->
+      <!--          Quiz 1-->
+      <!--        </a>-->
+      <!--        <a-->
+      <!--          mat-menu-item-->
+      <!--          routerLink="/know-your-current-immunity-score"-->
+      <!--          routerLinkActive="layout__nav-link&#45;&#45;active"-->
+      <!--          [routerLinkActiveOptions]="{ exact: false }"-->
+      <!--        >-->
+      <!--          Quiz 2-->
+      <!--        </a>-->
+      <!--      </mat-menu>-->
 
       <!-- Success Stories -->
       <a
@@ -136,7 +136,8 @@
     </nav>
 
     <!-- Desktop Get Started Button -->
-    <a routerLink="/our-programs" mat-raised-button color="primary" class="primary-color-action-button layout__cta layout__cta--desktop">
+    <a routerLink="/our-programs" matButton="filled" color="primary"
+       class="layout__cta layout__cta--desktop primary-action-button">
       Get Started
     </a>
 
@@ -302,7 +303,7 @@
           routerLink="/our-programs"
           mat-raised-button
           color="primary"
-          class="layout__cta layout__cta--mobile"
+          class="layout__cta layout__cta--mobile primary-action-button"
           (click)="closeMobileMenu()"
         >
           Get Started

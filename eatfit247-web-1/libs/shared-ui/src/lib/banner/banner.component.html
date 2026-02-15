@@ -14,7 +14,7 @@
         [style.transition-duration]="transitionDuration + 'ms'"
       >
         @for (banner of banners; track banner.bannerId; let i = $index) {
-            <div
+          <div
             class="slide"
             [class.active]="currentIndex() === i"
             [class.image-left]="banner.imagePosition === 'left'"
@@ -34,10 +34,12 @@
                 }
                 <div class="banner-actions">
                   @if (banner.primaryActionText && banner.primaryActionUrl) {
-                    <a matButton="filled" [href]="banner.primaryActionUrl" class="btn-primary">{{ banner.primaryActionText }}</a>
+                    <a matButton="filled" [href]="banner.primaryActionUrl"
+                       class="primary-action-button">{{ banner.primaryActionText }}</a>
                   }
                   @if (banner.secondaryActionText && banner.secondaryActionUrl) {
-                    <a matButton="outlined" [href]="banner.secondaryActionUrl" class="btn-secondary">{{ banner.secondaryActionText }}</a>
+                    <a matButton="outlined" [href]="banner.secondaryActionUrl"
+                       class="secondary-action-button">{{ banner.secondaryActionText }}</a>
                   }
                 </div>
               </div>

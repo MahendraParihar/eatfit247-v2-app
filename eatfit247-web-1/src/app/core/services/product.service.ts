@@ -1,9 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpService } from './http.service';
-import {
-  IPublicProduct,
-  IPublicTableList
-} from '@eatfit247-shared-library/core';
+import { IPublicProduct, IPublicTableList } from '@eatfit247-shared-library/core';
 
 /**
  * Service to manage product data

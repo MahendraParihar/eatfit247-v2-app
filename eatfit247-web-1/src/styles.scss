@@ -119,11 +119,21 @@ body.dark-theme {
   text-transform: uppercase;
 }
 
-.primary-color-action-button {
-  border-radius: var(--button-border-radius);
-  border: none;
-  background-color: var(--color-primary);
-  color: var(--color-surface-white);
-  font-size: var(--font-button-size);
-  font-weight: var(--font-button-weight);
+.primary-action-button {
+  border-radius: var(--space-2) !important;
+  background-color: var(--color-primary) !important;
+
+  &:hover {
+    background-color: var(--color-primary-hover) !important;
+  }
+}
+
+.secondary-action-button {
+  border-radius: var(--space-2) !important;
+  border-color: var(--color-primary) !important;
+  color: var(--color-primary) !important;
+
+  &:hover {
+    //background-color: var(--color-primary-hover) !important;
+  }
 }

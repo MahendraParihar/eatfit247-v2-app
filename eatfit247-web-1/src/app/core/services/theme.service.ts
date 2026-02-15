@@ -1,4 +1,4 @@
-import { Injectable, inject, signal, PLATFORM_ID, effect, Injector } from '@angular/core';
+import { effect, inject, Injectable, Injector, PLATFORM_ID, signal } from '@angular/core';
 import { DOCUMENT, isPlatformBrowser } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { fromEvent, map, startWith } from 'rxjs';

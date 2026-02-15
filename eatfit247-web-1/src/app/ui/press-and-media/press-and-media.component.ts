@@ -1,13 +1,13 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
-import { BannerService, SliderItem } from '../../core/services/banner.service';
+import { BannerService } from '../../core/services';
 import { BannerForEnum } from '@eatfit247-shared-library/enum';
 import { PressMediaService } from '../../core/services/press-media.service';
-import { ICardData, CardComponent, BannerComponent, LoaderComponent } from '@shared-ui';
-import { IMediaUpload, IPublicBanner } from '@eatfit247-shared-library/core';
+import { BannerComponent, CardComponent, ICardData, LoaderComponent } from '@shared-ui';
+import { IPublicBanner } from '@eatfit247-shared-library/core';
 
 @Component({
   standalone: true,

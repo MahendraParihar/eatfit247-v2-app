@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { IPublicLegalPage } from '@eatfit247-shared-library/core';
 import { LegalPagesService } from '../../core/services/legal-pages.service';

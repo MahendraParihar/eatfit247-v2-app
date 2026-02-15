@@ -1,11 +1,11 @@
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { Component, HostListener, OnDestroy, ViewChild, AfterViewInit, inject, PLATFORM_ID } from '@angular/core';
+import { AfterViewInit, Component, HostListener, inject, OnDestroy, PLATFORM_ID, ViewChild } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
-import { MatSidenavModule, MatSidenav } from '@angular/material/sidenav';
+import { MatSidenav, MatSidenavModule } from '@angular/material/sidenav';
 import { Subscription } from 'rxjs';
 
 @Component({

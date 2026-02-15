@@ -1,11 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, signal } from '@angular/core';
-import { BannerComponent, CardComponent, LoaderComponent } from '@shared-ui';
+import { Component, inject, OnInit, signal } from '@angular/core';
+import { BannerComponent, CardComponent, ICardData, LoaderComponent } from '@shared-ui';
 import { BannerService } from '../../core/services/banner.service';
 import { BannerForEnum } from '@eatfit247-shared-library/enum';
-import { IMediaUpload, IPublicBanner, ISuccessStory } from '@eatfit247-shared-library/core';
+import { IPublicBanner, ISuccessStory } from '@eatfit247-shared-library/core';
 import { SuccessStoriesService } from '../../core/services/success-stories.service';
-import { ICardData } from '@shared-ui';
 
 @Component({
   standalone: true,

@@ -1,9 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpService } from './http.service';
-import {
-  IPublicReferrer,
-  IPublicTableList
-} from '@eatfit247-shared-library/core';
+import { IPublicReferrer, IPublicTableList } from '@eatfit247-shared-library/core';
 
 /**
  * Service to manage referrer/partner data

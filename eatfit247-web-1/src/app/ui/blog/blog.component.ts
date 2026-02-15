@@ -1,11 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, signal } from '@angular/core';
-import { PageEvent } from '@angular/material/paginator';
-import { MatPaginatorModule } from '@angular/material/paginator';
-import { BlogService, BannerService } from '../../core/services';
-import { CardComponent, ICardData, LoaderComponent, BannerComponent } from '@shared-ui';
+import { Component, inject, OnInit, signal } from '@angular/core';
+import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
+import { BannerService, BlogService } from '../../core/services';
+import { BannerComponent, CardComponent, ICardData, LoaderComponent } from '@shared-ui';
 import { BannerForEnum } from '@eatfit247-shared-library/enum';
-import { IMediaUpload, IPublicBanner } from '@eatfit247-shared-library/core';
+import { IPublicBanner } from '@eatfit247-shared-library/core';
 
 @Component({
   standalone: true,

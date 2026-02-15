@@ -19,11 +19,13 @@
     border-radius: 999px;
   }
 
-  .left-btn {
-
-  }
-
-  .right-btn {
+  .left-btn, .right-btn {
+    .mat-mdc-mini-fab {
+      background-color: var(--color-surface-white);
+      color: var(--color-text-primary);
+      box-shadow:none;
+      border: 1px solid var(--color-border);
+    }
   }
 
   .grid-section {

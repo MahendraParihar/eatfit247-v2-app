@@ -1,16 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { BlogService, SEOService } from '../../core/services';
 import { buildMediaUrl } from '../../core/utils/media-url.util';
 import { IPublicBlog } from '@eatfit247-shared-library/core';
-import {
-  ICardData,
-  LoaderComponent,
-  SocialSiteComponent,
-  SocialSiteItem
-} from '@shared-ui';
+import { ICardData, LoaderComponent, SocialSiteComponent, SocialSiteItem } from '@shared-ui';
 import { MatButton } from '@angular/material/button';
 
 /**
