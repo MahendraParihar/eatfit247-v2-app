@@ -15,7 +15,7 @@ import {
   ITableConfig,
   updatedByUserFormatter
 } from '@shared';
-import { IMember, ITableList, IDropdownItem } from '@eatfit247-shared-lib';
+import { IDropdownItem, IMember, ITableList } from '@eatfit247-shared-lib';
 import { MembersApiService } from './api.service';
 import { debounceTime, distinctUntilChanged, Subject, switchMap } from 'rxjs';
 

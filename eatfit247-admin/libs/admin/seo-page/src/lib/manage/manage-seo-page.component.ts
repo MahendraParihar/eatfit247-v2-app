@@ -11,7 +11,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { InputErrorComponent, ValidationUtil } from '@shared';
 import { SeoPageApiService } from '../api.service';
-import { IManageSeoPage, ISeoPage, InputLengthEnum } from '@eatfit247-shared-lib';
+import { IManageSeoPage, InputLengthEnum, ISeoPage } from '@eatfit247-shared-lib';
 
 @Component({
   selector: 'lib-manage-seo-page',

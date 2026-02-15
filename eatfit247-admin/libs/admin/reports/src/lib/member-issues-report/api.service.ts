@@ -1,10 +1,12 @@
 import { Injectable } from '@angular/core';
 import { ApiBaseService } from '@core';
 import {
-  IIssueMasterData, IMemberIssue,
+  IIssueMasterData,
+  IMemberIssue,
   IMemberIssueReportFilter,
   IMemberIssueReportItem,
-  IMemberIssueResponse, IResponse,
+  IMemberIssueResponse,
+  IResponse,
   ITableList
 } from '@eatfit247-shared-lib';
 

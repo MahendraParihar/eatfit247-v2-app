@@ -8,8 +8,7 @@ import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
-import { BreadcrumbService } from '@core';
-import { BreadcrumbItem } from '@core';
+import { BreadcrumbItem, BreadcrumbService } from '@core';
 
 @Component({
   selector: 'shared-ui-breadcrumb',

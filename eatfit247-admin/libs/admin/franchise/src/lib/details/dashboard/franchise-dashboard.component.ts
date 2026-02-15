@@ -4,8 +4,7 @@ import { ActivatedRoute } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { LoaderComponent } from '@shared';
-import { EmptyStateComponent } from '@shared';
+import { EmptyStateComponent, LoaderComponent } from '@shared';
 import { FranchiseApiService } from '../../api.service';
 
 @Component({

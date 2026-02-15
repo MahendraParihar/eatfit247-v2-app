@@ -8,8 +8,8 @@ import {
   IManageMemberPayment,
   IMemberPayment,
   IPaymentLinkResponse,
-  PaymentSourceEnum,
   IPlanTaxCalculationRequest,
+  PaymentSourceEnum
 } from '@eatfit247-shared-lib';
 import { MembersApiService } from '../../../api.service';
 

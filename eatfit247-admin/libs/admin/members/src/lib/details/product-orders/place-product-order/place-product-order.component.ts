@@ -1,17 +1,8 @@
 import { Component, computed, Inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import {
-  FormBuilder,
-  FormGroup,
-  ReactiveFormsModule,
-  Validators
-} from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
-import {
-  MAT_DIALOG_DATA,
-  MatDialogModule,
-  MatDialogRef
-} from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -29,8 +20,8 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatTableModule } from '@angular/material/table';
 import { StepperSelectionEvent } from '@angular/cdk/stepper';
 import {
-  ICalculateProductVariantTaxRequest, ICalculateProductVariantTaxResponse,
-  ICalculateTaxResponse,
+  ICalculateProductVariantTaxRequest,
+  ICalculateProductVariantTaxResponse,
   IDropdownItem,
   IManageMemberProduct,
   IMemberProduct,

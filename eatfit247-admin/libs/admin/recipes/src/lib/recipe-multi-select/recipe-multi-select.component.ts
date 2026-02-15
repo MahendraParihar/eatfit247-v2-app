@@ -1,38 +1,14 @@
-import {
-  Component,
-  ElementRef,
-  forwardRef,
-  Input,
-  OnDestroy,
-  OnInit,
-  ViewChild
-} from '@angular/core';
+import { Component, ElementRef, forwardRef, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import {
-  ControlValueAccessor,
-  FormControl,
-  NG_VALUE_ACCESSOR,
-  ReactiveFormsModule
-} from '@angular/forms';
+import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatIconModule } from '@angular/material/icon';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import {
-  debounceTime,
-  distinctUntilChanged,
-  of,
-  Subject,
-  switchMap,
-  takeUntil
-} from 'rxjs';
-import {
-  IDropdownItem,
-  IRecipe,
-  ITableList
-} from '@eatfit247-shared-lib';
+import { debounceTime, distinctUntilChanged, of, Subject, switchMap, takeUntil } from 'rxjs';
+import { IDropdownItem } from '@eatfit247-shared-lib';
 import { RecipesApiService } from '../api.service';
 
 @Component({

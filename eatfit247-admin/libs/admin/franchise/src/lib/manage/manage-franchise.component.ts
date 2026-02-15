@@ -19,7 +19,6 @@ import {
   CommonUtil,
   FileTypeEnum,
   IFranchise,
-  IManageFranchise,
   InputLengthEnum,
   InternationalTaxModeEnum
 } from '@eatfit247-shared-lib';

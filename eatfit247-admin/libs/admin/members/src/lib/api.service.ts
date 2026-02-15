@@ -48,7 +48,7 @@ import {
   IResponse,
   IStatusChangeCallLog,
   ITableList,
-  ITableListFilter,
+  ITableListFilter
 } from '@eatfit247-shared-lib';
 
 @Injectable({

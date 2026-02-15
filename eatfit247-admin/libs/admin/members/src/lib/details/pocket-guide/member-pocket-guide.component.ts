@@ -1,11 +1,11 @@
-import { Component, OnDestroy, OnInit } from "@angular/core";
-import { CommonModule } from "@angular/common";
-import { ActivatedRoute } from "@angular/router";
-import { MatCardModule } from "@angular/material/card";
-import { MatButtonModule } from "@angular/material/button";
-import { MatIconModule } from "@angular/material/icon";
-import { MatDialog } from "@angular/material/dialog";
-import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ActivatedRoute } from '@angular/router';
+import { MatCardModule } from '@angular/material/card';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import {
   createdByUserFormatter,
   DataTableComponent,
@@ -15,14 +15,14 @@ import {
   ITableConfig,
   LoaderComponent,
   updatedByUserFormatter
-} from "@shared";
-import { IMemberPocketGuide } from "@eatfit247-shared-lib";
-import { MembersApiService } from "../../api.service";
-import { Subject, takeUntil } from "rxjs";
+} from '@shared';
+import { IMemberPocketGuide } from '@eatfit247-shared-lib';
+import { MembersApiService } from '../../api.service';
+import { Subject, takeUntil } from 'rxjs';
 import {
   ManageMemberPocketGuideComponent,
   ManageMemberPocketGuideData
-} from "./manage-member-pocket-guide/manage-member-pocket-guide.component";
+} from './manage-member-pocket-guide/manage-member-pocket-guide.component';
 
 @Component({
   selector: "lib-member-pocket-guide",
