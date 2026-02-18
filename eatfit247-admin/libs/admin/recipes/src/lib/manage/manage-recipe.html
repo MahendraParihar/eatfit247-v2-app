@@ -5,61 +5,77 @@
   <mat-card-content>
     <form [formGroup]="formGroup" (ngSubmit)="onSubmit()">
       <div class="form-fields">
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Recipe Type</mat-label>
-          <mat-select formControlName="recipeTypeId">
-            <mat-option [value]="">Select Recipe Type</mat-option>
-            @for (type of recipeTypeOptions; track type.id) {
-              <mat-option [value]="type.id">{{ type.label }}</mat-option>
+        <div class="row">
+          <mat-form-field class="half-width">
+            <mat-label>Recipe Name</mat-label>
+            <input
+              matInput
+              formControlName="name"
+              placeholder="Enter recipe name"
+            />
+            @if (getMaxLength('name')) {
+              <mat-hint align="end">
+                {{ getCurrentLength('name') }}/{{ getMaxLength('name') }}
+              </mat-hint>
             }
-          </mat-select>
-          <shared-ui-input-error [control]="formGroup.get('recipeTypeId')" controlName="Recipe Type"></shared-ui-input-error>
-        </mat-form-field>
+            <shared-ui-input-error
+              [control]="formGroup.get('name')"
+              controlName="Recipe Name"
+            ></shared-ui-input-error>
+          </mat-form-field>
 
-        <mat-form-field class="full-width">
-          <mat-label>Recipe Name</mat-label>
-          <input
-            matInput
-            formControlName="name"
-            placeholder="Enter recipe name"
-          />
-          @if (getMaxLength('name')) {
-            <mat-hint align="end">
-              {{ getCurrentLength('name') }}/{{ getMaxLength('name') }}
-            </mat-hint>
-          }
-          <shared-ui-input-error [control]="formGroup.get('name')" controlName="Recipe Name"></shared-ui-input-error>
-        </mat-form-field>
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>Recipe Type</mat-label>
+            <mat-select formControlName="recipeTypeId">
+              <mat-option [value]="">Select Recipe Type</mat-option>
+              @for (type of recipeTypeOptions; track type.id) {
+                <mat-option [value]="type.id">{{ type.label }}</mat-option>
+              }
+            </mat-select>
+            <shared-ui-input-error
+              [control]="formGroup.get('recipeTypeId')"
+              controlName="Recipe Type"
+            ></shared-ui-input-error>
+          </mat-form-field>
+        </div>
 
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Recipe Categories</mat-label>
-          <mat-select formControlName="recipeCategoryIds" multiple>
-            @for (category of recipeCategoryOptions; track category.id) {
-              <mat-option [value]="category.id">{{ category.label }}</mat-option>
-            }
-          </mat-select>
-          <mat-hint>Select one or more categories</mat-hint>
-          <shared-ui-input-error [control]="formGroup.get('recipeCategoryIds')" controlName="Recipe Categories"></shared-ui-input-error>
-        </mat-form-field>
+        <div class="row">
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>Recipe Categories</mat-label>
+            <mat-select formControlName="recipeCategoryIds" multiple>
+              @for (category of recipeCategoryOptions; track category.id) {
+                <mat-option [value]="category.id">{{ category.label }}</mat-option>
+              }
+            </mat-select>
+            <mat-hint>Select one or more categories</mat-hint>
+            <shared-ui-input-error
+              [control]="formGroup.get('recipeCategoryIds')"
+              controlName="Recipe Categories"
+            ></shared-ui-input-error>
+          </mat-form-field>
 
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Recipe Cuisines</mat-label>
-          <mat-select formControlName="recipeCuisineIds" multiple>
-            @for (cuisine of recipeCuisineOptions; track cuisine.id) {
-              <mat-option [value]="cuisine.id">{{ cuisine.label }}</mat-option>
-            }
-          </mat-select>
-          <mat-hint>Select one or more cuisines</mat-hint>
-          <shared-ui-input-error [control]="formGroup.get('recipeCuisineIds')" controlName="Recipe Cuisines"></shared-ui-input-error>
-        </mat-form-field>
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>Recipe Cuisines</mat-label>
+            <mat-select formControlName="recipeCuisineIds" multiple>
+              @for (cuisine of recipeCuisineOptions; track cuisine.id) {
+                <mat-option [value]="cuisine.id">{{ cuisine.label }}</mat-option>
+              }
+            </mat-select>
+            <mat-hint>Select one or more cuisines</mat-hint>
+            <shared-ui-input-error
+              [control]="formGroup.get('recipeCuisineIds')"
+              controlName="Recipe Cuisines"
+            ></shared-ui-input-error>
+          </mat-form-field>
+        </div>
 
         <div class="full-width">
           <label class="editor-label">Details</label>
-          @if (editor) {
+          @if (detailsEditor) {
             <div class="NgxEditor__Wrapper">
-              <ngx-editor-menu [editor]="editor"></ngx-editor-menu>
+              <ngx-editor-menu [editor]="detailsEditor"></ngx-editor-menu>
               <ngx-editor
-                [editor]="editor"
+                [editor]="detailsEditor"
                 formControlName="details"
                 placeholder="Enter recipe details"
               ></ngx-editor>
@@ -70,56 +86,45 @@
 
         <div class="full-width">
           <label class="editor-label">Preparation Method</label>
-          @if (editor) {
+          @if (howToMakeEditor) {
             <div class="NgxEditor__Wrapper">
-              <ngx-editor-menu [editor]="editor"></ngx-editor-menu>
+              <ngx-editor-menu [editor]="howToMakeEditor"></ngx-editor-menu>
               <ngx-editor
-                [editor]="editor"
-                formControlName="preparationMethod"
+                [editor]="howToMakeEditor"
+                formControlName="howToMake"
                 placeholder="Enter preparation method"
               ></ngx-editor>
             </div>
           }
-          <shared-ui-input-error [control]="formGroup.get('preparationMethod')" controlName="Preparation Method"></shared-ui-input-error>
+          <shared-ui-input-error
+            [control]="formGroup.get('howToMake')"
+            controlName="How to make"
+          ></shared-ui-input-error>
         </div>
 
         <div class="full-width">
           <label class="editor-label">Ingredients</label>
-          @if (editor) {
+          @if (ingredientEditor) {
             <div class="NgxEditor__Wrapper">
-              <ngx-editor-menu [editor]="editor"></ngx-editor-menu>
+              <ngx-editor-menu [editor]="ingredientEditor"></ngx-editor-menu>
               <ngx-editor
-                [editor]="editor"
+                [editor]="ingredientEditor"
                 formControlName="ingredient"
                 placeholder="Enter ingredients"
               ></ngx-editor>
             </div>
           }
-          <shared-ui-input-error [control]="formGroup.get('ingredient')" controlName="Ingredients"></shared-ui-input-error>
-        </div>
-
-        <div class="full-width">
-          <label class="editor-label">How to Make</label>
-          @if (editor) {
-            <div class="NgxEditor__Wrapper">
-              <ngx-editor-menu [editor]="editor"></ngx-editor-menu>
-              <ngx-editor
-                [editor]="editor"
-                formControlName="howToMake"
-                placeholder="Enter how to make instructions"
-              ></ngx-editor>
-            </div>
-          }
-          <shared-ui-input-error [control]="formGroup.get('howToMake')" controlName="How to Make"></shared-ui-input-error>
+          <shared-ui-input-error [control]="formGroup.get('ingredient')"
+                                 controlName="Ingredients"></shared-ui-input-error>
         </div>
 
         <div class="full-width">
           <label class="editor-label">Benefits</label>
-          @if (editor) {
+          @if (benefitsEditor) {
             <div class="NgxEditor__Wrapper">
-              <ngx-editor-menu [editor]="editor"></ngx-editor-menu>
+              <ngx-editor-menu [editor]="benefitsEditor"></ngx-editor-menu>
               <ngx-editor
-                [editor]="editor"
+                [editor]="benefitsEditor"
                 formControlName="benefits"
                 placeholder="Enter benefits"
               ></ngx-editor>
@@ -138,7 +143,8 @@
               placeholder="Enter serving count"
               [min]="1"
             />
-            <shared-ui-input-error [control]="formGroup.get('servingCount')" controlName="Serving Count"></shared-ui-input-error>
+            <shared-ui-input-error [control]="formGroup.get('servingCount')"
+                                   controlName="Serving Count"></shared-ui-input-error>
           </mat-form-field>
 
           <mat-form-field appearance="outline" class="half-width">
@@ -169,12 +175,6 @@
             [mediaType]="mediaType"
           ></shared-ui-upload-form>
         </div>
-
-        <shared-ui-seo-form
-          [formGroup]="formGroup"
-          [seo]="initialData && initialData.seo ? initialData.seo : {}"
-        ></shared-ui-seo-form>
-
       </div>
 
       <div class="form-actions">

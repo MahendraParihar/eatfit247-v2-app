@@ -34,3 +34,12 @@ alter table public.txn_press_media
 
 alter table public.txn_press_media
     alter column image_path set default null;
+
+alter table mst_recipes
+    drop column preparation_method;
+
+alter table public.mst_recipes
+    drop column meta_title;
+
+alter table public.mst_recipes
+    drop column meta_description;

@@ -129,12 +129,6 @@ export class MstRecipe extends Model<MstRecipe> {
   declare details: string;
   @Column({
     allowNull: true,
-    field: 'preparation_method',
-    type: DataType.TEXT,
-  })
-  declare preparationMethod: string;
-  @Column({
-    allowNull: true,
     field: 'ingredient',
     type: DataType.TEXT,
   })

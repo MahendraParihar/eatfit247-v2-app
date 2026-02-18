@@ -11,7 +11,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Editor, NgxEditorComponent, NgxEditorMenuComponent } from 'ngx-editor';
-import { InputErrorComponent, SeoFormComponent, UploadFormComponent, ValidationUtil } from '@shared';
+import { InputErrorComponent, UploadFormComponent, ValidationUtil } from '@shared';
 import { RecipesApiService } from 'recipes';
 import { FileTypeEnum, IDropdownItem, InputLengthEnum, IRecipe, MediaForEnum } from '@eatfit247-shared-lib';
 
@@ -33,8 +33,7 @@ import { FileTypeEnum, IDropdownItem, InputLengthEnum, IRecipe, MediaForEnum } f
     NgxEditorComponent,
     NgxEditorMenuComponent,
     InputErrorComponent,
-    UploadFormComponent,
-    SeoFormComponent
+    UploadFormComponent
   ],
   templateUrl: './manage-recipe.html',
   styleUrl: './manage-recipe.scss'
@@ -54,9 +53,8 @@ export class ManageRecipe implements OnInit, OnDestroy {
     recipeCategoryIds: [[], [Validators.required]],
     recipeCuisineIds: [[], [Validators.required]],
     details: [''],
-    preparationMethod: [''],
-    ingredient: [''],
     howToMake: [''],
+    ingredient: [''],
     benefits: [''],
     servingCount: [1, [Validators.required, Validators.min(1)]],
     isVisibleToAll: [false, [Validators.required]],
@@ -70,8 +68,10 @@ export class ManageRecipe implements OnInit, OnDestroy {
   recipeCuisineOptions: IDropdownItem[] = [];
   mediaFor = MediaForEnum.RECIPE;
   mediaType = FileTypeEnum.IMAGE;
-  fileTypePDF = FileTypeEnum.PDF; // For template reference
-  editor: Editor | null = null;
+  detailsEditor: Editor | null = null;
+  howToMakeEditor: Editor | null = null;
+  ingredientEditor: Editor | null = null;
+  benefitsEditor: Editor | null = null;
 
   constructor(
     private route: ActivatedRoute,
@@ -95,35 +95,41 @@ export class ManageRecipe implements OnInit, OnDestroy {
   }
 
   private initializeEditor(): void {
-    if (!this.editor) {
-      this.editor = new Editor();
+    // Create a separate Editor instance for each rich text field.
+    if (!this.detailsEditor) {
+      this.detailsEditor = new Editor();
+    }
+    if (!this.howToMakeEditor) {
+      this.howToMakeEditor = new Editor();
+    }
+    if (!this.ingredientEditor) {
+      this.ingredientEditor = new Editor();
+    }
+    if (!this.benefitsEditor) {
+      this.benefitsEditor = new Editor();
     }
   }
-
 
   private patchFormValues(): void {
     if (this.initialData) {
       // Handle recipe categories - extract IDs from the list
       const categoryIds =
         this.initialData.recipeCategoryMappings?.map(
-          (cat) => cat.recipeCategoryId,
+          (cat) => cat.recipeCategoryId
         ) || [];
-      
       // Handle recipe cuisines - extract IDs from the list
       const cuisineIds =
         this.initialData.recipeCuisineMappings?.map(
-          (cuisine) => cuisine.recipeCuisineId,
+          (cuisine) => cuisine.recipeCuisineId
         ) || [];
-      
       this.formGroup.patchValue({
         name: this.initialData.name,
         recipeTypeId: this.initialData.recipeTypeId || '',
         recipeCategoryIds: categoryIds,
         recipeCuisineIds: cuisineIds,
         details: this.initialData.details || '',
-        preparationMethod: this.initialData.preparationMethod || '',
+        howToMake: this.initialData.howToMake || '',
         ingredient: this.initialData.ingredient || '',
-        howToMake: (this.initialData as any).howToMake || '',
         benefits: this.initialData.benefits || '',
         servingCount: this.initialData.servingCount || 1,
         isVisibleToAll:
@@ -154,7 +160,7 @@ export class ManageRecipe implements OnInit, OnDestroy {
       this.initialData = await this.apiService.getById(id);
     } catch (error) {
       this.snackBar.open('Failed to load recipe. Please try again.', 'Close', {
-        duration: 5000,
+        duration: 5000
       });
       this.router.navigate(['/recipes']);
     }
@@ -183,25 +189,26 @@ export class ManageRecipe implements OnInit, OnDestroy {
 
   async onSubmit(): Promise<void> {
     ValidationUtil.validateAllFormFields(this.formGroup);
-    
     // Validate that at least one category is selected
     const categoryIds = this.formGroup.get('recipeCategoryIds')?.value || [];
     if (!Array.isArray(categoryIds) || categoryIds.length === 0) {
-      this.snackBar.open('Please select at least one recipe category', 'Close', {
-        duration: 3000,
-      });
+      this.snackBar.open(
+        'Please select at least one recipe category',
+        'Close',
+        {
+          duration: 3000
+        }
+      );
       return;
     }
-    
     // Validate that at least one cuisine is selected
     const cuisineIds = this.formGroup.get('recipeCuisineIds')?.value || [];
     if (!Array.isArray(cuisineIds) || cuisineIds.length === 0) {
       this.snackBar.open('Please select at least one recipe cuisine', 'Close', {
-        duration: 3000,
+        duration: 3000
       });
       return;
     }
-    
     if (this.formGroup.valid) {
       const formValue: any = { ...this.formGroup.value };
       // recipeCategoryIds and recipeCuisineIds are already arrays from the multiselect
@@ -227,22 +234,17 @@ export class ManageRecipe implements OnInit, OnDestroy {
           formValue.downloadPath = undefined;
         }
       }
-      const seoControl = this.formGroup.get('seo');
-      if (seoControl && seoControl.value) {
-        const seoValue = seoControl.value;
-        formValue.seo = seoValue;
-      }
       try {
         if (this.isEditMode && this.initialData) {
-          const recipeId = (this.initialData as any).recipeId;
+          const recipeId = this.initialData.recipeId;
           await this.apiService.update(recipeId, formValue);
           this.snackBar.open('Recipe updated successfully', 'Close', {
-            duration: 3000,
+            duration: 3000
           });
         } else {
           await this.apiService.create(formValue);
           this.snackBar.open('Recipe created successfully', 'Close', {
-            duration: 3000,
+            duration: 3000
           });
         }
         this.router.navigate(['/recipes']);
@@ -259,13 +261,26 @@ export class ManageRecipe implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    if (this.editor) {
-      try {
-        this.editor.destroy();
-      } catch {
-        // Ignore destroy errors
+    const editors: (Editor | null)[] = [
+      this.detailsEditor,
+      this.howToMakeEditor,
+      this.ingredientEditor,
+      this.benefitsEditor
+    ];
+
+    editors.forEach((ed, index) => {
+      if (ed) {
+        try {
+          ed.destroy();
+        } catch {
+          // Ignore destroy errors for individual editors
+        }
       }
-      this.editor = null as any;
-    }
+    });
+
+    this.detailsEditor = null;
+    this.howToMakeEditor = null;
+    this.ingredientEditor = null;
+    this.benefitsEditor = null;
   }
 }

@@ -1,5 +1,5 @@
-import { IBaseAdminUser, ICommonSEO, IAdminInfo } from "../base.interface";
-import { IMediaUpload } from "./media-upload.interface";
+import { IAdminInfo, ICommonSEO } from '../base.interface';
+import { IMediaUpload } from './media-upload.interface';
 
 // Recipe Category Interfaces
 export interface IBaseRecipeCategory {
@@ -53,11 +53,10 @@ export interface IRecipeType extends IBaseRecipeType, IAdminInfo {
 }
 
 // Recipe Interfaces
-export interface IBaseRecipe extends ICommonSEO {
+export interface IBaseRecipe {
   name: string;
   recipeTypeId: number;
   details?: string;
-  preparationMethod?: string;
   ingredient?: string;
   howToMake?: string;
   benefits?: string;
@@ -65,10 +64,11 @@ export interface IBaseRecipe extends ICommonSEO {
   servingCount: number;
   downloadPath?: IMediaUpload[];
   isVisibleToAll: boolean;
-  seo: ICommonSEO;
 }
 
 export interface IManageRecipe extends IBaseRecipe {
+  recipeCategoryIds: number[];
+  recipeCuisineIds: number[];
   recipeId?: number;
   active: boolean;
 }

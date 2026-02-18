@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
+import { Sequelize } from 'sequelize-typescript';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as hbs from 'handlebars';
@@ -8,15 +9,17 @@ import * as puppeteer from 'puppeteer';
 import { MstRecipe, MstRecipeCategoryMapping, MstRecipeCuisineMapping, MstRecipeType } from '../models';
 import { IBasicSearch, IManageRecipe, IRecipe, ITableList, MediaForEnum, TEMPLATE_FOLDER } from '@eatfit247-shared-lib';
 import { CommonFunctionsUtil, Env, SearchUtil } from '@server_1/core';
-import { IFileModel, PdfService } from '@server_1/platform';
+import { IFileModel } from '@server_1/platform';
 import { FranchiseService } from '@server_1/modules/franchise';
 
 @Injectable()
 export class RecipeService {
   constructor(
     @InjectModel(MstRecipe) private readonly recipeRepository: typeof MstRecipe,
-    private pdfService: PdfService,
+    @InjectModel(MstRecipeCategoryMapping) private readonly recipeCategoryMappingRepository: typeof MstRecipeCategoryMapping,
+    @InjectModel(MstRecipeCuisineMapping) private readonly recipeCuisineMappingRepository: typeof MstRecipeCuisineMapping,
     private franchiseService: FranchiseService,
+    private sequelize: Sequelize,
   ) {}
 
   public async findAll(searchDto: IBasicSearch): Promise<ITableList<IRecipe>> {
@@ -66,9 +69,8 @@ export class RecipeService {
       recipeTypeId: item.recipeTypeId,
       recipeType: item.recipeType?.recipeType || '',
       details: item.details,
-      preparationMethod: item.preparationMethod,
-      ingredient: item.ingredient,
       howToMake: item.howToMake,
+      ingredient: item.ingredient,
       benefits: item.benefits,
       imagePath: CommonFunctionsUtil.buildImageUrl(item.imagePath),
       servingCount: item.servingCount,
@@ -107,59 +109,139 @@ export class RecipeService {
   }
 
   public async create(obj: IManageRecipe, cIp: string, adminId: number): Promise<void> {
-    const createObj = {
-      name: obj.name,
-      recipeTypeId: obj.recipeTypeId,
-      details: obj.details || null,
-      preparationMethod: obj.preparationMethod || null,
-      ingredient: obj.ingredient || null,
-      howToMake: obj.howToMake || null,
-      benefits: obj.benefits || null,
-      imagePath: obj.imagePath && obj.imagePath.length > 0 ? obj.imagePath : null,
-      servingCount: obj.servingCount,
-      downloadPath: obj.downloadPath || null,
-      url: obj.seo
-        ? obj.seo.url
-        : CommonFunctionsUtil.removeSpecialChar(obj.name.toString().toLowerCase(), '-'),
-      visitedCount: 0,
-      shareCount: 0,
-      isVisibleToAll: obj.isVisibleToAll,
-      active: obj.active,
-      createdBy: adminId,
-      modifiedBy: adminId,
-      createdIp: cIp,
-      modifiedIp: cIp,
-    };
-    await this.recipeRepository.create(createObj);
+    const transaction = await this.sequelize.transaction();
+    try {
+      const createObj = {
+        name: obj.name,
+        recipeTypeId: obj.recipeTypeId,
+        details: obj.details || null,
+        ingredient: obj.ingredient || null,
+        howToMake: obj.howToMake || null,
+        benefits: obj.benefits || null,
+        imagePath: obj.imagePath && obj.imagePath.length > 0 ? obj.imagePath : null,
+        servingCount: obj.servingCount,
+        downloadPath: obj.downloadPath || null,
+        url: CommonFunctionsUtil.removeSpecialChar(obj.name.toString().toLowerCase(), '-'),
+        visitedCount: 0,
+        shareCount: 0,
+        isVisibleToAll: obj.isVisibleToAll,
+        active: obj.active,
+        createdBy: adminId,
+        modifiedBy: adminId,
+        createdIp: cIp,
+        modifiedIp: cIp,
+      };
+      const recipe = await this.recipeRepository.create(createObj, { transaction });
+      const recipeId = recipe.recipeId;
+
+      // Create recipe category mappings
+      if (obj.recipeCategoryIds && obj.recipeCategoryIds.length > 0) {
+        const categoryMappings = obj.recipeCategoryIds.map((categoryId) => ({
+          recipeId: recipeId,
+          recipeCategoryId: categoryId,
+          active: true,
+          createdBy: adminId,
+          modifiedBy: adminId,
+          createdIp: cIp,
+          modifiedIp: cIp,
+        }));
+        await this.recipeCategoryMappingRepository.bulkCreate(categoryMappings, { transaction });
+      }
+
+      // Create recipe cuisine mappings
+      if (obj.recipeCuisineIds && obj.recipeCuisineIds.length > 0) {
+        const cuisineMappings = obj.recipeCuisineIds.map((cuisineId) => ({
+          recipeId: recipeId,
+          recipeCuisineId: cuisineId,
+          active: true,
+          createdBy: adminId,
+          modifiedBy: adminId,
+          createdIp: cIp,
+          modifiedIp: cIp,
+        }));
+        await this.recipeCuisineMappingRepository.bulkCreate(cuisineMappings, { transaction });
+      }
+
+      await transaction.commit();
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
+    }
   }
 
   public async update(id: number, obj: IManageRecipe, cIp: string, adminId: number): Promise<void> {
-    const find = await this.recipeRepository.findOne({
-      where: { recipeId: id },
-    });
-    if (!find) {
-      throw new NotFoundException('Recipe not found');
+    const transaction = await this.sequelize.transaction();
+    try {
+      const find = await this.recipeRepository.findOne({
+        where: { recipeId: id },
+        transaction,
+      });
+      if (!find) {
+        await transaction.rollback();
+        throw new NotFoundException('Recipe not found');
+      }
+      const updateObj = {
+        name: obj.name,
+        recipeTypeId: obj.recipeTypeId,
+        details: obj.details || null,
+        ingredient: obj.ingredient || null,
+        howToMake: obj.howToMake || null,
+        benefits: obj.benefits || null,
+        imagePath: obj.imagePath && obj.imagePath.length > 0 ? obj.imagePath : null,
+        servingCount: obj.servingCount,
+        downloadPath: obj.downloadPath || null,
+        isVisibleToAll: obj.isVisibleToAll,
+        active: obj.active,
+        modifiedBy: adminId,
+        modifiedIp: cIp,
+      };
+      await this.recipeRepository.update(updateObj, { where: { recipeId: id }, transaction });
+
+      // Delete existing category mappings
+      await this.recipeCategoryMappingRepository.destroy({
+        where: { recipeId: id },
+        transaction,
+      });
+
+      // Create new recipe category mappings
+      if (obj.recipeCategoryIds && obj.recipeCategoryIds.length > 0) {
+        const categoryMappings = obj.recipeCategoryIds.map((categoryId) => ({
+          recipeId: id,
+          recipeCategoryId: categoryId,
+          active: true,
+          createdBy: adminId,
+          modifiedBy: adminId,
+          createdIp: cIp,
+          modifiedIp: cIp,
+        }));
+        await this.recipeCategoryMappingRepository.bulkCreate(categoryMappings, { transaction });
+      }
+
+      // Delete existing cuisine mappings
+      await this.recipeCuisineMappingRepository.destroy({
+        where: { recipeId: id },
+        transaction,
+      });
+
+      // Create new recipe cuisine mappings
+      if (obj.recipeCuisineIds && obj.recipeCuisineIds.length > 0) {
+        const cuisineMappings = obj.recipeCuisineIds.map((cuisineId) => ({
+          recipeId: id,
+          recipeCuisineId: cuisineId,
+          active: true,
+          createdBy: adminId,
+          modifiedBy: adminId,
+          createdIp: cIp,
+          modifiedIp: cIp,
+        }));
+        await this.recipeCuisineMappingRepository.bulkCreate(cuisineMappings, { transaction });
+      }
+
+      await transaction.commit();
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
     }
-    const updateObj = {
-      name: obj.name,
-      recipeTypeId: obj.recipeTypeId,
-      details: obj.details || null,
-      preparationMethod: obj.preparationMethod || null,
-      ingredient: obj.ingredient || null,
-      howToMake: obj.howToMake || null,
-      benefits: obj.benefits || null,
-      imagePath: obj.imagePath && obj.imagePath.length > 0 ? obj.imagePath : null,
-      servingCount: obj.servingCount,
-      downloadPath: obj.downloadPath || null,
-      url: obj.seo
-        ? obj.seo.url
-        : CommonFunctionsUtil.removeSpecialChar(obj.name.toString().toLowerCase(), '-'),
-      isVisibleToAll: obj.isVisibleToAll,
-      active: obj.active,
-      modifiedBy: adminId,
-      modifiedIp: cIp,
-    };
-    await this.recipeRepository.update(updateObj, { where: { recipeId: id } });
   }
 
   public async changeStatus(id: number, active: boolean, cIp: string, adminId: number): Promise<void> {
@@ -197,8 +279,8 @@ export class RecipeService {
     // Parse ingredients into list
     const ingredientText = recipeData.ingredient || '';
     const ingredientList = this.parseTextToList(ingredientText);
-    // Parse directions into list
-    const directionsText = recipeData.howToMake || recipeData.preparationMethod || '';
+    // Parse directions into list (use canonical howToMake field)
+    const directionsText = recipeData.howToMake || '';
     const directionsList = this.parseTextToList(directionsText);
     // Process images - convert to base64 if they are local files
     let processedImagePath = recipeData.imagePath || [];
@@ -241,7 +323,6 @@ export class RecipeService {
       name: recipeData.name,
       details: recipeData.details || '',
       howToMake: directionsText,
-      preparationMethod: directionsText,
       ingredient: ingredientText,
       ingredientList: ingredientList,
       directionsList: directionsList,
@@ -258,7 +339,7 @@ export class RecipeService {
   }
 
   /**
-   * Generate recipe PDF with optimized margins to fit on one page
+   * Generate a recipe PDF with optimized margins to fit on one page
    */
   private async generateRecipePdfWithMargins(
     templateName: string,
@@ -278,7 +359,7 @@ export class RecipeService {
     }
     // Register header and footer
     const { headerTemplate, footerTemplate } = await this.getHeaderFooter(franchise);
-    // Get HTML from template
+    // Get HTML from the template
     const html = await this.getTemplateHtml(templateName, data);
     // Generate PDF using Puppeteer with optimized margins
     const browser = await puppeteer.launch({

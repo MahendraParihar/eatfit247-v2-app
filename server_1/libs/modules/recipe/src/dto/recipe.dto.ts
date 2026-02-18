@@ -1,21 +1,28 @@
-import { IsBoolean, IsNotEmpty, IsNumber, IsOptional, MaxLength, MinLength, ValidateNested } from 'class-validator';
+import {
+  IsArray,
+  IsBoolean,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  MaxLength,
+  MinLength,
+  ValidateNested,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import { IManageRecipe, InputLengthEnum } from '@eatfit247-shared-lib';
-import { MediaUploadDto, SeoDto } from '@server_1/core';
+import { MediaUploadDto } from '@server_1/core';
 
 export class CreateRecipeDto implements IManageRecipe {
   @MinLength(InputLengthEnum.CHAR_2)
   @MaxLength(255)
   @IsNotEmpty()
-  name!: string;
+  name: string;
   @IsNotEmpty()
   @IsNumber()
-  recipeTypeId!: number;
+  recipeTypeId: number;
   @IsOptional()
   details?: string;
-  @IsOptional()
-  preparationMethod?: string;
-  @IsOptional()
+  @IsNotEmpty()
   ingredient?: string;
   @IsOptional()
   howToMake?: string;
@@ -23,25 +30,28 @@ export class CreateRecipeDto implements IManageRecipe {
   benefits?: string;
   @IsNotEmpty()
   @IsNumber()
-  servingCount!: number;
+  servingCount: number;
   @IsOptional()
   @MaxLength(InputLengthEnum.CHAR_100)
   downloadPath?: MediaUploadDto[];
   @IsNotEmpty()
   @IsBoolean()
-  isVisibleToAll!: boolean;
+  isVisibleToAll: boolean;
   @IsNotEmpty()
   @IsBoolean()
-  active!: boolean;
+  active: boolean;
   @IsOptional()
   @ValidateNested({ each: true })
   @Type(() => MediaUploadDto)
-  imagePath!: MediaUploadDto[];
+  imagePath: MediaUploadDto[];
   @IsOptional()
   @IsNumber()
   recipeId?: number;
-  @ValidateNested()
-  @Type(() => SeoDto)
-  seo!: SeoDto;
+  @IsNumber({}, { each: true })
+  @Type(() => Number)
+  recipeCategoryIds: number[];
+  @IsNumber({}, { each: true })
+  @Type(() => Number)
+  recipeCuisineIds: number[];
 }
 

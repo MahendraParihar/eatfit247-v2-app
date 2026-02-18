@@ -306,13 +306,7 @@
                     <li>{{this}}</li>
                   {{/each}}
                 {{else}}
-                  {{#if preparationMethod}}
-                    {{#each (splitDirections preparationMethod)}}
-                      <li>{{this}}</li>
-                    {{/each}}
-                  {{else}}
-                    <li>No method provided</li>
-                  {{/if}}
+                  <li>No method provided</li>
                 {{/if}}
               {{/if}}
             </ol>
