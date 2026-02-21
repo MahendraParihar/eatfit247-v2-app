@@ -1,0 +1,8 @@
+{
+  "name": "delivery",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/modules/delivery/src",
+  "projectType": "library",
+  "tags": ["type:domain", "scope:delivery"]
+}
+

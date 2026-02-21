@@ -187,6 +187,22 @@ export class BaseLayoutComponent implements OnInit, OnDestroy {
       ],
     },
     {
+      label: 'Delivery',
+      icon: 'local_shipping',
+      children: [
+        {
+          label: 'Courier Providers',
+          icon: 'business',
+          route: '/delivery/courier-providers',
+        },
+        {
+          label: 'Courier Provider Accounts',
+          icon: 'account_circle',
+          route: '/delivery/courier-provider-accounts',
+        },
+      ],
+    },
+    {
       label: 'LOV Master',
       icon: 'list',
       children: [

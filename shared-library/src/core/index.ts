@@ -45,7 +45,6 @@ export * from './public.types';
 export * from './checkout.interface';
 export * from './success-story.interface';
 export * from './product.interface';
-export * from './woocommerce.interface';
 export * from './invoice';
 export * from './contact-form-report.interface';
 export * from './payment-report.interface';
@@ -56,4 +55,5 @@ export * from './tax-master.interface';
 export * from './tax-calculation.interface';
 export * from './seo-page.interface';
 export * from './razorpay-webhook.interface';
+export * from './courier-provider.interface';
 

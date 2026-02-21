@@ -33,7 +33,6 @@ import {
   StateService,
   StripeService,
   TelrService,
-  WooCommerceService,
   ZoomService,
 } from './services';
 import { DietPlanPdfService, InvoicePdfService, PdfService } from './pdf';
@@ -78,7 +77,6 @@ export class PlatformModule {
         RazorpayService,
         StripeService,
         TelrService,
-        WooCommerceService,
         CurrencyService,
         StateService,
         CountryService,
@@ -102,7 +100,6 @@ export class PlatformModule {
         RazorpayService,
         StripeService,
         TelrService,
-        WooCommerceService,
         CurrencyService,
         StateService,
         CountryService,

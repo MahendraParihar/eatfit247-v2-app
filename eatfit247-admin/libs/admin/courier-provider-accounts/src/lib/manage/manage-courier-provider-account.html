@@ -1,0 +1,137 @@
+<mat-card class="form-card">
+  <mat-card-header>
+    <mat-card-title>{{ pageTitle }}</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <form [formGroup]="formGroup" (ngSubmit)="onSubmit()">
+      <div class="form-fields">
+        <mat-form-field class="full-width">
+          <mat-label>Provider *</mat-label>
+          <mat-select formControlName="providerId">
+            <mat-option [value]="">Select Provider</mat-option>
+            @for (option of providerOptions; track option.id) {
+              <mat-option [value]="option.id">{{ option.label }}</mat-option>
+            }
+          </mat-select>
+          <shared-ui-input-error [control]="formGroup.get('providerId')" controlName="Provider"></shared-ui-input-error>
+        </mat-form-field>
+
+        <mat-form-field class="full-width">
+          <mat-label>Franchise *</mat-label>
+          <mat-select formControlName="franchiseId">
+            <mat-option [value]="">Select Franchise</mat-option>
+            @for (option of franchiseOptions; track option.id) {
+              <mat-option [value]="option.id">{{ option.label }}</mat-option>
+            }
+          </mat-select>
+          <shared-ui-input-error [control]="formGroup.get('franchiseId')" controlName="Franchise"></shared-ui-input-error>
+        </mat-form-field>
+
+        <mat-form-field class="full-width">
+          <mat-label>Account Name</mat-label>
+          <input
+            matInput
+            formControlName="accountName"
+            placeholder="Enter account name (optional)"
+            [maxlength]="100"
+          />
+          <mat-hint align="end">
+            {{ formGroup.get('accountName')?.value?.length || 0 }}/100
+          </mat-hint>
+          <shared-ui-input-error [control]="formGroup.get('accountName')" controlName="Account Name"></shared-ui-input-error>
+        </mat-form-field>
+
+        <mat-form-field class="full-width">
+          <mat-label>API Base URL *</mat-label>
+          <input
+            matInput
+            formControlName="apiBaseUrl"
+            placeholder="Enter API base URL"
+          />
+          <shared-ui-input-error [control]="formGroup.get('apiBaseUrl')" controlName="API Base URL"></shared-ui-input-error>
+        </mat-form-field>
+
+        <mat-form-field class="full-width">
+          <mat-label>API Key</mat-label>
+          <input
+            matInput
+            type="password"
+            formControlName="apiKey"
+            placeholder="Enter API key"
+          />
+        </mat-form-field>
+
+        <mat-form-field class="full-width">
+          <mat-label>API Secret</mat-label>
+          <input
+            matInput
+            type="password"
+            formControlName="apiSecret"
+            placeholder="Enter API secret"
+          />
+        </mat-form-field>
+
+        <mat-form-field class="full-width">
+          <mat-label>Username</mat-label>
+          <input
+            matInput
+            formControlName="username"
+            placeholder="Enter username"
+          />
+        </mat-form-field>
+
+        <mat-form-field class="full-width">
+          <mat-label>Password</mat-label>
+          <input
+            matInput
+            type="password"
+            formControlName="password"
+            placeholder="{{ isEditMode ? 'Leave empty to keep existing password' : 'Enter password' }}"
+          />
+          @if (isEditMode) {
+            <mat-hint>Leave empty to keep existing password</mat-hint>
+          }
+        </mat-form-field>
+
+        <mat-form-field class="full-width">
+          <mat-label>Auth Token</mat-label>
+          <input
+            matInput
+            type="password"
+            formControlName="authToken"
+            placeholder="Enter auth token"
+          />
+        </mat-form-field>
+
+        <mat-form-field class="full-width">
+          <mat-label>Token Expiry</mat-label>
+          <input
+            matInput
+            type="datetime-local"
+            formControlName="tokenExpiry"
+          />
+        </mat-form-field>
+
+        <mat-form-field class="full-width">
+          <mat-label>Webhook Secret</mat-label>
+          <input
+            matInput
+            type="password"
+            formControlName="webhookSecret"
+            placeholder="Enter webhook secret"
+          />
+        </mat-form-field>
+
+        <div class="checkbox-group">
+          <mat-checkbox formControlName="active">Active</mat-checkbox>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button mat-raised-button type="button" (click)="onCancel()">Cancel</button>
+        <button mat-raised-button color="primary" type="submit">Save</button>
+      </div>
+    </form>
+  </mat-card-content>
+</mat-card>
+

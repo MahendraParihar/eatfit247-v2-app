@@ -10,8 +10,8 @@ export enum ShipmentTrackingEnum {
 }
 
 export enum ShipmentTrackingSourceEnum {
-  COURIER = 'COURIER',
-  SYSTEM = 'SYSTEM',
-  ADMIN = 'ADMIN',
+  WEBHOOK = 'WEBHOOK',
+  POLLING = 'POLLING',
+  MANUAL = 'MANUAL',
 }
 

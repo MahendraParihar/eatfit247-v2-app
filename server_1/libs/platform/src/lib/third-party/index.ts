@@ -3,5 +3,4 @@ export * from './zoom.service';
 export * from './razorpay.service';
 export * from './stripe.service';
 export * from './telr.service';
-export * from './woocommerce.service';
 

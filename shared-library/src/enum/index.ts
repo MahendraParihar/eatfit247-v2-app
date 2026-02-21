@@ -18,4 +18,6 @@ export * from "./issue-status.enum";
 export * from "./business-type.enum";
 export * from "./shipment-status.enum";
 export * from "./shipment-tracking.enum";
+export * from "./notification-channel.enum";
+export * from "./notification-type.enum";
 

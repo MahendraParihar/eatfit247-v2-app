@@ -137,6 +137,19 @@ export const appRoutes: Route[] = [
         loadChildren: () => import('reports').then((m) => m.reportsRoutes),
       },
       {
+        path: 'delivery',
+        children: [
+          {
+            path: 'courier-providers',
+            loadChildren: () => import('courier-providers').then((m) => m.courierProvidersRoutes),
+          },
+          {
+            path: 'courier-provider-accounts',
+            loadChildren: () => import('courier-provider-accounts').then((m) => m.courierProviderAccountsRoutes),
+          },
+        ],
+      },
+      {
         path: '',
         redirectTo: 'dashboard',
         pathMatch: 'full',

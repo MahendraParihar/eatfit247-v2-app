@@ -38,6 +38,8 @@
       "dashboard": ["libs/admin/dashboard/src/index.ts"],
       "reports": ["libs/admin/reports/src/index.ts"],
       "tax-master": ["libs/admin/tax-master/src/index.ts"],
+      "courier-providers": ["libs/admin/courier-providers/src/index.ts"],
+      "courier-provider-accounts": ["libs/admin/courier-provider-accounts/src/index.ts"],
       "@env": ["src/environments/environment.ts"],
       "@eatfit247-shared-lib": ["../shared-library/src/index.ts"],
       "@core": ["libs/core/src/index.ts"],
