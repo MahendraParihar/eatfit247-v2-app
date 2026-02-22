@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards } from '@nestjs/common';
 import { CurrentUser, JwtAuthGuard, RequestedIp } from '@server_1/core';
 import { MemberHealthParameterLogsService } from '../../services';
-import { IHealthParameterMaster, IMemberHealthParameterLog } from '@eatfit247-shared-lib';
+import { IAuthUser, IHealthParameterMaster, IMemberHealthParameterLog } from '@eatfit247-shared-lib';
 import { CreateMemberHealthParameterLogDto } from '../../dto';
 
 @Controller('member/:id/health-parameter-logs')
@@ -25,7 +25,7 @@ export class MemberBodyStatsController {
   async create(
     @Param('id') id: number,
     @Body() body: CreateMemberHealthParameterLogDto,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
   ): Promise<IMemberHealthParameterLog> {
     body.memberId = id;
@@ -42,7 +42,7 @@ export class MemberBodyStatsController {
     @Param('id') id: number,
     @Param('logId') logId: number,
     @Body() body: CreateMemberHealthParameterLogDto,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
   ): Promise<IMemberHealthParameterLog> {
     body.memberId = id;
@@ -67,7 +67,7 @@ export class MemberBodyStatsController {
   async delete(
     @Param('id') id: number,
     @Param('logId') logId: number,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
   ): Promise<void> {
     await this.memberHealthParameterLogsService.delete(

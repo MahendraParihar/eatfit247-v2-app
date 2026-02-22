@@ -2,7 +2,7 @@ import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from
 import { BasicSearchDto, CurrentUser, JwtAuthGuard, RequestedIp, UpdateActiveDto } from '@server_1/core';
 import { EatingHabitService } from '../../services';
 import { CreateEatingHabitDto } from '../../dto';
-import { IDropdownItem, IEatingHabit, ITableList } from '@eatfit247-shared-lib';
+import { IAuthUser, IDropdownItem, IEatingHabit, ITableList } from '@eatfit247-shared-lib';
 
 @Controller('eating-habit')
 @UseGuards(JwtAuthGuard)
@@ -22,7 +22,7 @@ export class EatingHabitController {
   @Post('manage')
   async create(
     @Body() body: CreateEatingHabitDto,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
   ): Promise<void> {
     await this.service.create(body, requestedIp, currentUser.adminId);
@@ -32,7 +32,7 @@ export class EatingHabitController {
   async update(
     @Param('id') id: number,
     @Body() body: CreateEatingHabitDto,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
   ): Promise<void> {
     await this.service.update(id, body, requestedIp, currentUser.adminId);
@@ -42,10 +42,15 @@ export class EatingHabitController {
   async changeStatus(
     @Param('id') id: number,
     @Body() body: UpdateActiveDto,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
   ): Promise<void> {
-    await this.service.changeStatus(id, body.active, requestedIp, currentUser.userId || currentUser.adminId);
+    await this.service.changeStatus(
+      id,
+      body.active,
+      requestedIp,
+      currentUser.adminId,
+    );
   }
 
   @Get('dropdown')

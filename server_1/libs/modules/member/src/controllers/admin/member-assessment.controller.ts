@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Param, Put, UseGuards } from '@nestjs/common';
 import { CurrentUser, JwtAuthGuard, RequestedIp } from '@server_1/core';
 import { MemberAssessmentService } from '../../services';
-import { IMemberAssessment } from '@eatfit247-shared-lib';
+import { IAuthUser, IMemberAssessment } from '@eatfit247-shared-lib';
 import { CreateMemberAssessmentDto } from '../../dto';
 
 @Controller('member/:id/assessment')
@@ -18,7 +18,7 @@ export class MemberAssessmentController {
   async updateAssessment(
     @Param('id') id: number,
     @Body() body: CreateMemberAssessmentDto,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
   ): Promise<void> {
     await this.memberAssessmentService.createOrUpdate(

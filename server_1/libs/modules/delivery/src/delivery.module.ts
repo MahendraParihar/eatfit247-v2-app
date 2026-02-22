@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
-import { HttpModule } from '@nestjs/axios';
-import { modelRegistry } from '@server_1/core';
+import { HttpService, modelRegistry } from '@server_1/core';
+import { TxnMemberProduct, TxnMemberProductOrderItem } from '@server_1/modules/member/src/models';
 import {
   MstCourierProvider,
   TxnCourierProviderAccount,
@@ -12,7 +12,11 @@ import {
   TxnCourierApiLog,
   TxnCourierWebhookLog,
 } from './models';
-import { DeliveryController, CourierProviderController, CourierProviderAccountController } from './controllers';
+import {
+  DeliveryController,
+  CourierProviderController,
+  CourierProviderAccountController,
+} from './controllers';
 import {
   DeliveryService,
   ShipmentService,
@@ -27,13 +31,10 @@ import {
   ShipmentRepository,
   RateRepository,
   ApiLogRepository,
+  ShipmentItemRepository,
+  TrackingRepository,
 } from './repositories';
-import {
-  CourierFactory,
-  NimbusAdapter,
-  ShiprocketAdapter,
-  ShipwayAdapter,
-} from './providers';
+import { CourierFactory, NimbusAdapter, ShiprocketAdapter } from './providers';
 
 // Register models with the model registry
 modelRegistry.register([
@@ -58,8 +59,9 @@ modelRegistry.register([
       TxnShipmentTrackingEvent,
       TxnCourierApiLog,
       TxnCourierWebhookLog,
+      TxnMemberProduct,
+      TxnMemberProductOrderItem,
     ]),
-    HttpModule,
   ],
   controllers: [DeliveryController, CourierProviderController, CourierProviderAccountController],
   providers: [
@@ -74,10 +76,12 @@ modelRegistry.register([
     ShipmentRepository,
     RateRepository,
     ApiLogRepository,
+    ShipmentItemRepository,
+    TrackingRepository,
     CourierFactory,
     NimbusAdapter,
     ShiprocketAdapter,
-    ShipwayAdapter,
+    HttpService,
   ],
   exports: [
     DeliveryService,
@@ -91,9 +95,10 @@ modelRegistry.register([
     ShipmentRepository,
     RateRepository,
     ApiLogRepository,
+    ShipmentItemRepository,
+    TrackingRepository,
     CourierFactory,
     SequelizeModule,
   ],
 })
 export class DeliveryModule {}
-

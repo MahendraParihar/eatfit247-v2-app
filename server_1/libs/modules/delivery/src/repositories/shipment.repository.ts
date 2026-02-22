@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
+import { Sequelize, Transaction } from 'sequelize';
 import { TxnShipment, MstCourierProvider, TxnCourierProviderAccount } from '../models';
 
 @Injectable()
@@ -15,26 +16,52 @@ export class ShipmentRepository {
     return this.shipmentModel.scope('details').findByPk(id);
   }
 
-  async findByOrderId(orderId: number): Promise<TxnShipment[]> {
-    return this.shipmentModel.findAll({
-      where: { orderId },
-      order: [['createdAt', 'DESC']],
-    });
-  }
-
   async findByTrackingNumber(trackingNumber: string): Promise<TxnShipment | null> {
     return this.shipmentModel.findOne({
       where: { trackingNumber },
     });
   }
 
-  async create(data: Partial<TxnShipment>): Promise<TxnShipment> {
-    return this.shipmentModel.create(data as any);
+  async create(data: Partial<TxnShipment>, transaction?: Transaction): Promise<TxnShipment> {
+    return this.shipmentModel.create(data as any, { transaction });
   }
 
-  async update(id: number, data: Partial<TxnShipment>): Promise<void> {
+  async createDraft(
+    franchiseId: number,
+    shipmentNumber: string,
+    createdBy: number,
+    createdIp: string,
+    transaction?: Transaction,
+  ): Promise<TxnShipment> {
+    return this.shipmentModel.create(
+      {
+        franchiseId,
+        shipmentNumber,
+        status: 'DRAFT',
+        createdBy,
+        modifiedBy: createdBy,
+        createdIp,
+        modifiedIp: createdIp,
+      } as any,
+      { transaction },
+    );
+  }
+
+  async update(id: number, data: Partial<TxnShipment>, transaction?: Transaction): Promise<void> {
     await this.shipmentModel.update(data, {
       where: { shipmentId: id },
+      transaction,
+    });
+  }
+
+  async updateTotals(
+    shipmentId: number,
+    totals: { totalWeightKg?: number; totalAmount?: number },
+    transaction?: Transaction,
+  ): Promise<void> {
+    await this.shipmentModel.update(totals, {
+      where: { shipmentId },
+      transaction,
     });
   }
 

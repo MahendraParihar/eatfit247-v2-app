@@ -1,88 +1,122 @@
 import { Injectable } from '@nestjs/common';
-import { HttpService } from '@nestjs/axios';
+import { HttpService } from '@server_1/core';
 import { BaseCourierAdapter } from './base-courier.adapter';
 import {
   ICourierProviderCredentials,
   IRateQuote,
   IShipmentBookingResponse,
+  IShipRocketServiceabilityPayload,
+  IShipRocketServiceabilityResponse,
   ITrackingEvent,
 } from '../courier.interface';
-import {
-  CourierProviderAuthError,
-  CourierProviderCancellationError,
-  CourierProviderRateError,
-  CourierProviderShipmentError,
-  CourierProviderTrackingError,
-} from './courier-provider.error';
 
 @Injectable()
 export class ShiprocketAdapter extends BaseCourierAdapter {
-  protected readonly providerCode = 'SHIPROCKET';
+  protected override readonly providerCode = 'SHIPROCKET';
 
   constructor(httpService: HttpService) {
     super(httpService);
   }
 
   /**
+   * Get authentication headers based on the auth type
+   */
+  protected async getAuthHeaders(
+    credentials: ICourierProviderCredentials,
+  ): Promise<Record<string, string>> {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    };
+    switch (credentials.authType) {
+      case 'API_KEY':
+        if (credentials.apiKey) {
+          headers['X-API-Key'] = credentials.apiKey;
+        }
+        if (credentials.apiSecret) {
+          headers['X-API-Secret'] = credentials.apiSecret;
+        }
+        break;
+      case 'JWT':
+        const token = await this.ensureValidToken(credentials);
+        headers['Authorization'] = `Bearer ${token}`;
+        break;
+      case 'BASIC':
+        if (credentials.username && credentials.password) {
+          const auth = Buffer.from(`${credentials.username}:${credentials.password}`).toString(
+            'base64',
+          );
+          headers['Authorization'] = `Basic ${auth}`;
+        }
+        break;
+      default:
+        throw new Error(
+          `${this.providerCode} getAuthHeaders Unsupported auth type: ${credentials.authType}`,
+        );
+    }
+    return headers;
+  }
+
+  /**
    * Get shipping rates from Shiprocket API
    */
-  async getRates(
-    payload: any,
-    credentials: ICourierProviderCredentials,
-  ): Promise<IRateQuote[]> {
-    this.validateCredentials(credentials);
-
+  async getRates(payload: any, credentials: ICourierProviderCredentials): Promise<IRateQuote[]> {
     try {
-      const response = await this.makeRequest<any>(
-        'POST',
-        '/api/v1/external/courier/serviceability/rate',
-        credentials,
-        {
-          pickup_postcode: payload.pickup.postcode || payload.pickupPostcode,
-          delivery_postcode: payload.delivery.postcode || payload.deliveryPostcode,
-          weight: payload.weight,
-          cod: payload.codAmount > 0 ? 1 : 0,
-        },
+      // Ensure valid token before making API call
+      await this.ensureValidToken(credentials);
+
+      // Get authentication headers
+      const headers = await this.getAuthHeaders(credentials);
+
+      const ratePayload: IShipRocketServiceabilityPayload = {
+        pickup_postcode: payload.pickup.postcode || payload.pickupPostcode,
+        delivery_postcode: payload.delivery.postcode || payload.deliveryPostcode,
+        weight: payload.weight,
+        mode: 'cod',
+      };
+      // Add dimensions if provided
+      if (payload.dimensions) {
+        ratePayload.length = payload.dimensions.length;
+        ratePayload.breadth = payload.dimensions.breadth;
+        ratePayload.height = payload.dimensions.height;
+      }
+      const response = await this.httpService.post<IShipRocketServiceabilityResponse>(
+        `${credentials.apiBaseUrl}/external/courier/serviceability`,
+        ratePayload,
+        undefined,
+        headers,
       );
 
-      if (!response.data || !response.data.available_courier_companies) {
-        throw new CourierProviderRateError(
-          this.providerCode,
-          'Invalid response format from Shiprocket rate API',
-          null,
-          { response },
-        );
+      if (!response.data || !response.data) {
+        throw new Error(`${this.providerCode} Invalid response format rate API`);
       }
 
       const rates: IRateQuote[] = [];
+      if (
+        !response.data.available_courier_companies ||
+        response.data.available_courier_companies.length === 0
+      ) {
+        return rates;
+      }
 
-      for (const company of response.data.available_courier_companies) {
-        for (const rate of company.rate || []) {
-          rates.push({
-            serviceName: rate.courier_name || company.courier_name || 'Standard',
-            serviceCode: rate.courier_company_id?.toString() || company.courier_company_id?.toString(),
-            rateAmount: parseFloat(rate.rate || 0),
-            currency: 'INR',
-            estimatedDays: rate.estimated_delivery_days || undefined,
-            metadata: {
-              courierCompanyId: company.courier_company_id,
-              courierName: company.courier_name,
-              ...rate,
-            },
-          });
-        }
+      for (const rate of response.data.available_courier_companies) {
+        rates.push({
+          serviceName: rate.courier_name,
+          serviceCode: rate.courier_company_id.toString(),
+          rateAmount: rate.rate,
+          currency: response.currency,
+          estimatedDays: rate.estimated_delivery_days
+            ? Number(rate.estimated_delivery_days)
+            : undefined,
+          metadata: {
+            ...rate,
+          },
+        });
       }
 
       return rates;
     } catch (error: any) {
-      if (error instanceof CourierProviderAuthError || error instanceof CourierProviderRateError) {
-        throw error;
-      }
-      throw new CourierProviderRateError(
-        this.providerCode,
-        `Failed to get rates from Shiprocket: ${error.message}`,
-        error,
-      );
+      throw new Error(`${this.providerCode} Failed to get rates: ${error.message}`);
     }
   }
 
@@ -93,13 +127,15 @@ export class ShiprocketAdapter extends BaseCourierAdapter {
     payload: any,
     credentials: ICourierProviderCredentials,
   ): Promise<IShipmentBookingResponse> {
-    this.validateCredentials(credentials);
-
     try {
-      const response = await this.makeRequest<any>(
-        'POST',
-        '/api/v1/orders/create/adhoc',
-        credentials,
+      // Ensure valid token before making API call
+      await this.ensureValidToken(credentials);
+
+      // Get authentication headers
+      const headers = await this.getAuthHeaders(credentials);
+
+      const response = await this.httpService.post(
+        `${credentials.apiBaseUrl}/orders/create/adhoc`,
         {
           order_id: payload.orderId,
           order_date: payload.orderDate || new Date().toISOString().split('T')[0],
@@ -138,14 +174,13 @@ export class ShiprocketAdapter extends BaseCourierAdapter {
           height: payload.dimensions?.height,
           weight: payload.weight,
         },
+        undefined,
+        headers,
       );
 
       if (!response.shipment_id) {
-        throw new CourierProviderShipmentError(
-          this.providerCode,
-          'Invalid response format from Shiprocket shipment API',
-          null,
-          { response },
+        throw new Error(
+          `${this.providerCode} Invalid response format from Shiprocket shipment API`,
         );
       }
 
@@ -161,16 +196,8 @@ export class ShiprocketAdapter extends BaseCourierAdapter {
         },
       };
     } catch (error: any) {
-      if (
-        error instanceof CourierProviderAuthError ||
-        error instanceof CourierProviderShipmentError
-      ) {
-        throw error;
-      }
-      throw new CourierProviderShipmentError(
-        this.providerCode,
-        `Failed to create shipment with Shiprocket: ${error.message}`,
-        error,
+      throw new Error(
+        `${this.providerCode} Failed to create shipment with Shiprocket: ${error.message}`,
       );
     }
   }
@@ -182,22 +209,21 @@ export class ShiprocketAdapter extends BaseCourierAdapter {
     trackingNumber: string,
     credentials: ICourierProviderCredentials,
   ): Promise<ITrackingEvent[]> {
-    this.validateCredentials(credentials);
-
     try {
-      const response = await this.makeRequest<any>(
-        'GET',
-        `/api/v1/courier/track/shipment/${trackingNumber}`,
-        credentials,
+      // Ensure valid token before making API call
+      await this.ensureValidToken(credentials);
+
+      // Get authentication headers
+      const headers = await this.getAuthHeaders(credentials);
+
+      const response = await this.httpService.get(
+        `${credentials.apiBaseUrl}/api/v1/courier/track/shipment/${trackingNumber}`,
+        undefined,
+        headers,
       );
 
       if (!response.data || !response.data.track_data) {
-        throw new CourierProviderTrackingError(
-          this.providerCode,
-          'Invalid response format from Shiprocket tracking API',
-          null,
-          { response },
-        );
+        throw new Error(`${this.providerCode} Invalid response format from tracking API`);
       }
 
       const trackData = response.data.track_data;
@@ -208,9 +234,7 @@ export class ShiprocketAdapter extends BaseCourierAdapter {
           events.push({
             status: event.current_status || event.status || 'UNKNOWN',
             description: event.status_message || event.message || '',
-            eventTime: event.updated_time
-              ? new Date(event.updated_time)
-              : new Date(),
+            eventTime: event.updated_time ? new Date(event.updated_time) : new Date(),
             location: event.current_location || event.location || undefined,
             metadata: {
               ...event,
@@ -221,16 +245,8 @@ export class ShiprocketAdapter extends BaseCourierAdapter {
 
       return events;
     } catch (error: any) {
-      if (
-        error instanceof CourierProviderAuthError ||
-        error instanceof CourierProviderTrackingError
-      ) {
-        throw error;
-      }
-      throw new CourierProviderTrackingError(
-        this.providerCode,
-        `Failed to track shipment with Shiprocket: ${error.message}`,
-        error,
+      throw new Error(
+        `${this.providerCode} Failed to track shipment with Shiprocket: ${error.message}`,
       );
     }
   }
@@ -242,65 +258,73 @@ export class ShiprocketAdapter extends BaseCourierAdapter {
     trackingNumber: string,
     credentials: ICourierProviderCredentials,
   ): Promise<void> {
-    this.validateCredentials(credentials);
-
     try {
-      await this.makeRequest<any>(
-        'POST',
-        '/api/v1/orders/cancel/shipment/awbs',
-        credentials,
+      // Ensure valid token before making API call
+      await this.ensureValidToken(credentials);
+
+      // Get authentication headers
+      const headers = await this.getAuthHeaders(credentials);
+
+      await this.httpService.post(
+        `${credentials.apiBaseUrl}/api/v1/orders/cancel/shipment/awbs`,
         {
           awbs: [trackingNumber],
         },
+        undefined,
+        headers,
       );
     } catch (error: any) {
-      if (
-        error instanceof CourierProviderAuthError ||
-        error instanceof CourierProviderCancellationError
-      ) {
-        throw error;
-      }
-      throw new CourierProviderCancellationError(
-        this.providerCode,
-        `Failed to cancel shipment with Shiprocket: ${error.message}`,
-        error,
+      throw new Error(
+        `${this.providerCode} Failed to cancel shipment with Shiprocket: ${error.message}`,
       );
     }
   }
 
-  /**
-   * Refresh Shiprocket authentication token
-   */
-  protected async refreshToken(
-    credentials: ICourierProviderCredentials,
-  ): Promise<string> {
+  protected override async refreshToken(credentials: ICourierProviderCredentials): Promise<string> {
+    this.logger.log('Refreshing Shiprocket authentication token...');
     try {
-      const response = await this.makeRequest<{ token: string }>(
-        'POST',
-        '/api/v1/external/auth/login',
-        credentials,
-        {
-          email: credentials.username,
-          password: credentials.password,
-        },
-      );
+      // According to documentation, use the Users->Login endpoint with email and password
+      if (!credentials.username || !credentials.password || !credentials.apiBaseUrl) {
+        throw new Error(
+          `${this.providerCode} .refreshToken() called without username, password or apiBaseUrl`,
+        );
+      }
+      // Use consistent API path structure: /api/v1/users/login
+      const loginUrl = `${credentials.apiBaseUrl}/external/auth/login`;
+      this.logger.debug(`Calling ${this.providerCode} login API: ${loginUrl}`);
 
-      if (!response.token) {
-        throw new CourierProviderAuthError(
-          this.providerCode,
-          'refreshToken',
-          'Token refresh response missing token',
+      const responseData = await this.httpService.post(loginUrl, {
+        email: credentials.username,
+        password: credentials.password,
+      });
+
+      // Extract token from response - could be in data.token, data.accessToken, or just data
+      const token =
+        responseData?.token || responseData?.accessToken || responseData?.data || responseData;
+
+      if (!token || (typeof token === 'string' && token.trim().length === 0)) {
+        throw new Error(
+          `${
+            this.providerCode
+          } refreshToken Token not found in login response. Response: ${JSON.stringify(
+            responseData,
+          )}`,
         );
       }
 
-      return response.token;
+      const tokenString = typeof token === 'string' ? token : JSON.stringify(token);
+      credentials.authToken = tokenString;
+
+      // Set token expiry (default to 24 hours from now if not provided in response)
+      const expiresIn = responseData?.expiresIn || responseData?.expires_in || 24 * 60 * 60 * 1000; // Default 24 hours in milliseconds
+      credentials.tokenExpiry = new Date(Date.now() + expiresIn);
+
+      this.logger.log(`Successfully refreshed ${this.providerCode} authentication token`);
+      return tokenString;
     } catch (error: any) {
-      throw new CourierProviderAuthError(
-        this.providerCode,
-        'refreshToken',
-        `Failed to refresh Shiprocket token: ${error.message}`,
-        error,
-      );
+      const errorMessage =
+        error.data?.message || error.data?.error || error.message || 'Unknown error';
+      throw new Error(`Failed to refresh ${this.providerCode} token: ${errorMessage}`);
     }
   }
 }

@@ -25,7 +25,7 @@ import {
 import { AddressService, TxnAddress } from '@server_1/platform';
 import { MemberService } from '../../services';
 import { CreateMemberDto } from '../../dto';
-import { IAddress, IManageAddress, IMember, ITableList, TableEnum } from '@eatfit247-shared-lib';
+import { IAddress, IAuthUser, IManageAddress, IMember, ITableList, TableEnum } from '@eatfit247-shared-lib';
 
 @Controller('member')
 @UseGuards(JwtAuthGuard)
@@ -49,7 +49,7 @@ export class MemberController {
   @Post('manage')
   async create(
     @Body() body: CreateMemberDto,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
   ): Promise<void> {
     await this.service.create(body, requestedIp, currentUser.adminId);
@@ -59,7 +59,7 @@ export class MemberController {
   async update(
     @Param('id') id: number,
     @Body() body: CreateMemberDto,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
   ): Promise<void> {
     await this.service.update(id, body, requestedIp, currentUser.adminId);
@@ -69,7 +69,7 @@ export class MemberController {
   async changeStatus(
     @Param('id') id: number,
     @Body() body: UpdateMemberStatusDto,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
   ): Promise<void> {
     await this.service.changeStatus(
@@ -85,7 +85,7 @@ export class MemberController {
   async updateNutritionist(
     @Param('id') id: number,
     @Body() body: UpdateNutritionistDto,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
   ): Promise<void> {
     await this.service.updateNutritionist(
@@ -100,7 +100,7 @@ export class MemberController {
   async updateFranchise(
     @Param('id') id: number,
     @Body() body: UpdateFranchiseDto,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
   ): Promise<void> {
     await this.service.updateFranchise(
@@ -137,7 +137,7 @@ export class MemberController {
   async createAddress(
     @Param('memberId') memberId: number,
     @Body() body: CreateAddressDto,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
   ): Promise<IAddress> {
     const addressData: IManageAddress = {
@@ -160,7 +160,7 @@ export class MemberController {
     @Param('memberId') memberId: number,
     @Param('addressId') addressId: number,
     @Body() body: CreateAddressDto,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
   ): Promise<IAddress> {
     const existingAddress = await this.addressRepository.findOne({
@@ -199,7 +199,7 @@ export class MemberController {
   @Delete(':memberId/addresses/:addressId')
   async deleteAddress(
     @Param('addressId') addressId: number,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
   ): Promise<void> {
     await this.addressService.delete(addressId, requestedIp, currentUser.adminId);

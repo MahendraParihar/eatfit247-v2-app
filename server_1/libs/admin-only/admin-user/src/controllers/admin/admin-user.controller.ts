@@ -2,7 +2,7 @@ import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from
 import { BasicSearchDto, CurrentUser, JwtAuthGuard, RequestedIp, UpdateAdminUserStatusDto } from '@server_1/core';
 import { AdminUserService } from '../../services';
 import { CreateAdminUserDto } from '../../dto';
-import { IAdminUser, IDropdownItem, IResponse, ITableList } from '@eatfit247-shared-lib';
+import { IAdminUser, IAuthUser, IDropdownItem, IResponse, ITableList } from '@eatfit247-shared-lib';
 
 @Controller('admin-user')
 @UseGuards(JwtAuthGuard)
@@ -23,7 +23,7 @@ export class AdminUserController {
   @Post('manage')
   async create(
     @Body() body: CreateAdminUserDto,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
   ): Promise<void> {
     await this.service.create(body, requestedIp, currentUser.adminId);
@@ -33,7 +33,7 @@ export class AdminUserController {
   async update(
     @Param('id') id: number,
     @Body() body: CreateAdminUserDto,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
   ): Promise<void> {
     await this.service.update(id, body, requestedIp, currentUser.adminId);
@@ -43,7 +43,7 @@ export class AdminUserController {
   async changeStatus(
     @Param('id') id: number,
     @Body() body: UpdateAdminUserStatusDto,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
   ): Promise<void> {
     await this.service.changeStatus(id, body.active, body.deactivationReason || null, requestedIp, currentUser.adminId);

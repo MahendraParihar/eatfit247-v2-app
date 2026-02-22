@@ -16,6 +16,7 @@ import { Router } from '@angular/router';
 import { DataTableComponent, ITableAction, ITableColumn, ITableConfig } from '@shared';
 import { IMemberProductReportFilter, IMemberProductReportItem } from '@eatfit247-shared-lib';
 import { MemberProductReportApiService } from './api.service';
+import { ShipmentFlowComponent, ShipmentFlowData } from 'delivery';
 
 @Component({
   selector: 'lib-member-product-report',
@@ -181,22 +182,16 @@ export class MemberProductReportComponent implements OnInit {
 
     const actions: ITableAction<IMemberProductReportItem>[] = [
       {
-        label: 'View Invoice',
-        icon: 'receipt',
-        color: 'primary',
-        onClick: (row) => this.viewInvoice(row)
-      },
-      {
         label: 'View Order',
         icon: 'shopping_cart',
         color: 'primary',
         onClick: (row) => this.viewOrder(row)
       },
       {
-        label: 'View Member',
-        icon: 'person',
-        color: 'primary',
-        onClick: (row) => this.viewMember(row)
+        label: 'Add Shipping Flow',
+        icon: 'local_shipping',
+        color: 'accent',
+        onClick: (row) => this.startShipmentFlow(row)
       }
     ];
 
@@ -285,18 +280,38 @@ export class MemberProductReportComponent implements OnInit {
     await this.onSearch();
   }
 
-  viewInvoice(productOrder: IMemberProductReportItem): void {
-    // Download the invoice directly
-    const url = `/member/${productOrder.memberId}/product/${productOrder.memberProductId}/invoice`;
+  viewOrder(productOrder: IMemberProductReportItem): void {
+    const url = this.router.serializeUrl(
+      this.router.createUrlTree(['/members/details', productOrder.memberId, 'product-orders'])
+    );
     window.open(url, '_blank');
   }
 
-  viewOrder(productOrder: IMemberProductReportItem): void {
-    this.router.navigate(['/members/details', productOrder.memberId, 'product-orders']);
-  }
+  startShipmentFlow(productOrder: IMemberProductReportItem): void {
+    if (!productOrder.memberProductId) {
+      this.snackBar.open('Product Order ID is not available', 'Close', {
+        duration: 3000,
+      });
+      return;
+    }
 
-  viewMember(productOrder: IMemberProductReportItem): void {
-    this.router.navigate(['/members/details', productOrder.memberId, 'dashboard']);
+    const dialogData: ShipmentFlowData = {
+      memberProductId: productOrder.memberProductId,
+    };
+
+    const dialogRef = this.dialog.open(ShipmentFlowComponent, {
+      width: '1200px',
+      maxWidth: '95vw',
+      maxHeight: '95vh',
+      data: dialogData,
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result === true) {
+        // Optionally reload data if needed
+        // this.onSearch();
+      }
+    });
   }
 
   private formatDate(date: Date): string {

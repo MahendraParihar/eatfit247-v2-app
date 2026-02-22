@@ -26,8 +26,18 @@ import { TxnShipmentTrackingEvent } from './txn-shipment-tracking-event.model';
   indexes: [
     {
       unique: false,
-      fields: ['order_id'],
-      name: 'idx_shipments_order',
+      fields: ['franchise_id'],
+      name: 'idx_shipments_franchise',
+    },
+    {
+      unique: false,
+      fields: ['provider_id'],
+      name: 'idx_shipments_provider',
+    },
+    {
+      unique: false,
+      fields: ['status'],
+      name: 'idx_shipments_status',
     },
     {
       unique: false,
@@ -111,20 +121,6 @@ export class TxnShipment extends Model<TxnShipment> {
     autoIncrement: true,
   })
   declare shipmentId: number;
-
-  @Column({
-    allowNull: false,
-    field: 'order_id',
-    type: DataType.INTEGER,
-  })
-  declare orderId: number;
-
-  @Column({
-    allowNull: false,
-    field: 'member_id',
-    type: DataType.INTEGER,
-  })
-  declare memberId: number;
 
   @ForeignKey(() => MstFranchise)
   @Column({
@@ -215,13 +211,6 @@ export class TxnShipment extends Model<TxnShipment> {
   declare totalAmount: number;
 
   @Column({
-    allowNull: true,
-    field: 'cod_amount',
-    type: DataType.DECIMAL(12, 2),
-  })
-  declare codAmount: number;
-
-  @Column({
     allowNull: false,
     defaultValue: 'DRAFT',
     field: 'status',
@@ -257,7 +246,7 @@ export class TxnShipment extends Model<TxnShipment> {
   declare currency: string;
 
   @Column({
-    allowNull: true,
+    allowNull: false,
     defaultValue: 0,
     field: 'retry_count',
     type: DataType.INTEGER,

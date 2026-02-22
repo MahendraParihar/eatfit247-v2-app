@@ -1,8 +1,19 @@
 import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from '@nestjs/common';
-import { BasicSearchDto, CurrentUser, JwtAuthGuard, RequestedIp, UpdateActiveDto } from '@server_1/core';
-import { RecipeCategoryService, RecipeCuisineService, RecipeService, RecipeTypeService } from '../../services';
+import {
+  BasicSearchDto,
+  CurrentUser,
+  JwtAuthGuard,
+  RequestedIp,
+  UpdateActiveDto,
+} from '@server_1/core';
+import {
+  RecipeCategoryService,
+  RecipeCuisineService,
+  RecipeService,
+  RecipeTypeService,
+} from '../../services';
 import { CreateRecipeDto } from '../../dto';
-import { IDropdownItem, IRecipe, ITableList } from '@eatfit247-shared-lib';
+import { IAuthUser, IDropdownItem, IRecipe, ITableList } from '@eatfit247-shared-lib';
 import { IFileModel } from '@server_1/platform';
 
 @Controller('recipe')
@@ -28,7 +39,7 @@ export class RecipeController {
   @Post('manage')
   async create(
     @Body() body: CreateRecipeDto,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
   ): Promise<void> {
     await this.service.create(body, requestedIp, currentUser.adminId);
@@ -38,7 +49,7 @@ export class RecipeController {
   async update(
     @Param('id') id: number,
     @Body() body: CreateRecipeDto,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
   ): Promise<void> {
     await this.service.update(id, body, requestedIp, currentUser.adminId);
@@ -48,7 +59,7 @@ export class RecipeController {
   async changeStatus(
     @Param('id') id: number,
     @Body() body: UpdateActiveDto,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
   ): Promise<void> {
     await this.service.changeStatus(id, body.active, requestedIp, currentUser.adminId);
@@ -76,8 +87,9 @@ export class RecipeController {
   }
 
   @Get('dropdown')
-  async getDropdown(@Query() req: BasicSearchDto): Promise<Array<{ id: number; title: string; subtitle: string }>> {
+  async getDropdown(
+    @Query() req: BasicSearchDto,
+  ): Promise<Array<{ id: number; title: string; subtitle: string }>> {
     return await this.service.searchForDropdown(req);
   }
 }
-

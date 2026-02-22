@@ -2,7 +2,7 @@ import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from
 import { BasicSearchDto, CurrentUser, JwtAuthGuard, RequestedIp, UpdateActiveDto } from '@server_1/core';
 import { PocketGuideService } from '../../services';
 import { CreatePocketGuideDto } from '../../dto';
-import { IPocketGuide, ITableList } from '@eatfit247-shared-lib';
+import { IAuthUser, IPocketGuide, ITableList } from '@eatfit247-shared-lib';
 
 @Controller('pocket-guide')
 @UseGuards(JwtAuthGuard)
@@ -22,7 +22,7 @@ export class PocketGuideController {
   @Post('manage')
   async create(
     @Body() body: CreatePocketGuideDto,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
   ): Promise<void> {
     await this.service.create(body, requestedIp, currentUser.adminId);
@@ -32,7 +32,7 @@ export class PocketGuideController {
   async update(
     @Param('id') id: number,
     @Body() body: CreatePocketGuideDto,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
   ): Promise<void> {
     await this.service.update(id, body, requestedIp, currentUser.adminId);
@@ -42,7 +42,7 @@ export class PocketGuideController {
   async changeStatus(
     @Param('id') id: number,
     @Body() body: UpdateActiveDto,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
   ): Promise<void> {
     await this.service.changeStatus(id, body.active, requestedIp, currentUser.adminId);

@@ -20,4 +20,5 @@ export * from "./shipment-status.enum";
 export * from "./shipment-tracking.enum";
 export * from "./notification-channel.enum";
 export * from "./notification-type.enum";
+export * from "./courier-provider.enum";
 

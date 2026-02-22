@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Param, Patch, Post, Put, UseGuards } from '@nestjs/common';
 import { CsvFilePathDto, CurrentUser, JwtAuthGuard, RequestedIp, UpdateActiveDto } from '@server_1/core';
-import { ISeoPageData } from '@eatfit247-shared-lib';
+import { IAuthUser, ISeoPageData } from '@eatfit247-shared-lib';
 import { SeoPageService } from '@server_1/platform';
 import { CreateSeoPageDto, UpdateSeoPageDto } from '../../dto';
 
@@ -22,7 +22,7 @@ export class SeoPageAdminController {
   @Post('manage')
   async create(
     @Body() body: CreateSeoPageDto,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
   ): Promise<ISeoPageData> {
     return await this.service.create(body, requestedIp, currentUser.adminId);
@@ -32,7 +32,7 @@ export class SeoPageAdminController {
   async update(
     @Param('id') id: number,
     @Body() body: UpdateSeoPageDto,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
   ): Promise<void> {
     await this.service.update(id, body, requestedIp, currentUser.adminId);
@@ -42,7 +42,7 @@ export class SeoPageAdminController {
   async changeStatus(
     @Param('id') id: number,
     @Body() body: UpdateActiveDto,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
   ): Promise<void> {
     await this.service.changeStatus(id, body.active, requestedIp, currentUser.adminId);
@@ -51,7 +51,7 @@ export class SeoPageAdminController {
   @Post('seed')
   async seed(
     @Body() body: CsvFilePathDto,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
   ): Promise<{ message: string }> {
     const { seedSeoData } = await import('../../scripts/seed-seo-data');

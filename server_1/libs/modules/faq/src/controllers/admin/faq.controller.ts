@@ -2,7 +2,7 @@ import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from
 import { BasicSearchDto, CurrentUser, JwtAuthGuard, RequestedIp, UpdateActiveDto } from '@server_1/core';
 import { FaqCategoryService, FaqService } from '../../services';
 import { CreateFaqDto } from '../../dto';
-import { IDropdownItem, IFaq, ITableList } from '@eatfit247-shared-lib';
+import { IAuthUser, IDropdownItem, IFaq, ITableList } from '@eatfit247-shared-lib';
 
 @Controller('faq')
 @UseGuards(JwtAuthGuard)
@@ -25,7 +25,7 @@ export class FaqController {
   @Post('manage')
   async create(
     @Body() body: CreateFaqDto,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
   ): Promise<void> {
     await this.service.create(body, requestedIp, currentUser.adminId);
@@ -35,7 +35,7 @@ export class FaqController {
   async update(
     @Param('id') id: number,
     @Body() body: CreateFaqDto,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
   ): Promise<void> {
     await this.service.update(id, body, requestedIp, currentUser.adminId);
@@ -45,7 +45,7 @@ export class FaqController {
   async changeStatus(
     @Param('id') id: number,
     @Body() body: UpdateActiveDto,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
   ): Promise<void> {
     await this.service.changeStatus(id, body.active, requestedIp, currentUser.adminId);

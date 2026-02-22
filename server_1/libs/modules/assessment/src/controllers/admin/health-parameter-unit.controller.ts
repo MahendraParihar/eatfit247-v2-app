@@ -2,7 +2,7 @@ import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from
 import { BasicSearchDto, CurrentUser, JwtAuthGuard, RequestedIp, UpdateActiveDto } from '@server_1/core';
 import { HealthParameterUnitService } from '../../services';
 import { CreateHealthParameterUnitDto } from '../../dto';
-import { IDropdownItem, IHealthParameterUnit, ITableList } from '@eatfit247-shared-lib';
+import { IAuthUser, IDropdownItem, IHealthParameterUnit, ITableList } from '@eatfit247-shared-lib';
 
 @Controller('health-parameter-unit')
 @UseGuards(JwtAuthGuard)
@@ -22,7 +22,7 @@ export class HealthParameterUnitController {
   @Post('manage')
   async create(
     @Body() body: CreateHealthParameterUnitDto,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
   ): Promise<void> {
     await this.service.create(body, requestedIp, currentUser.adminId);
@@ -32,7 +32,7 @@ export class HealthParameterUnitController {
   async update(
     @Param('id') id: number,
     @Body() body: CreateHealthParameterUnitDto,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
   ): Promise<void> {
     await this.service.update(id, body, requestedIp, currentUser.adminId);
@@ -42,7 +42,7 @@ export class HealthParameterUnitController {
   async changeStatus(
     @Param('id') id: number,
     @Body() body: UpdateActiveDto,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
   ): Promise<void> {
     await this.service.changeStatus(id, body.active, requestedIp, currentUser.adminId);

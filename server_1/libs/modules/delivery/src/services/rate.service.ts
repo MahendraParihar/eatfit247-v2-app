@@ -1,14 +1,20 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { TxnShipment, TxnShipmentRateQuote, TxnCourierProviderAccount, MstCourierProvider } from '../models';
+import {
+  TxnShipment,
+  TxnShipmentRateQuote,
+  TxnCourierProviderAccount,
+  MstCourierProvider,
+} from '../models';
 import { ShipmentRepository } from '../repositories/shipment.repository';
 import { RateRepository } from '../repositories/rate.repository';
 import { CourierFactory } from '../providers/courier.factory';
 import { ICourierProviderCredentials, IRateQuote } from '../providers/courier.interface';
+import { CryptoUtil } from '@server_1/core';
 
 /**
  * Rate Service
- * 
+ *
  * Responsibilities:
  * - Fetch active providers by priority
  * - Call rate APIs in parallel
@@ -44,52 +50,38 @@ export class RateService {
     if (!shipment) {
       throw new NotFoundException(`Shipment with ID ${shipmentId} not found`);
     }
-
     // Get active providers by priority for the franchise
     const providers = await this.shipmentRepository.getProvidersByPriority(shipment.franchiseId);
-    
     // Filter providers that support rate API
-    const rateSupportedProviders = providers.filter(p => p.supportsRateApi);
-
+    const rateSupportedProviders = providers.filter((p) => p.supportsRateApi);
     if (rateSupportedProviders.length === 0) {
-      this.logger.warn(`No active providers with rate API support found for franchise ${shipment.franchiseId}`);
-      // Still update status to RATE_REQUESTED even if no providers
+      this.logger.warn(
+        `No active providers with rate API support found for franchise ${shipment.franchiseId}`,
+      );
+      // Still update the status to RATE_REQUESTED even if no providers
       await this.shipmentRepository.updateStatus(shipmentId, 'RATE_REQUESTED');
       return [];
     }
-
     // Build rate request payload from shipment
     const ratePayload = this.buildRatePayload(shipment);
-
     // Call rate APIs in parallel for all providers
-    const ratePromises = rateSupportedProviders.map(provider =>
-      this.getRatesFromProvider(provider, shipment.franchiseId, ratePayload, shipmentId)
-        .catch(error => {
+    const ratePromises = rateSupportedProviders.map((provider) =>
+      this.getRatesFromProvider(provider, shipment.franchiseId, ratePayload, shipmentId).catch(
+        (error) => {
+          console.log(error);
           // Log error but don't throw - we want to continue with other providers
           this.logger.error(
             `Failed to get rates from provider ${provider.providerCode} for shipment ${shipmentId}: ${error.message}`,
             error.stack,
           );
           return null; // Return null to indicate failure
-        })
+        },
+      ),
     );
-
     // Wait for all rate requests to complete (success or failure)
-    const rateResults = await Promise.allSettled(ratePromises);
-
-    // Collect all successful rate quotes
-    const allRateQuotes: TxnShipmentRateQuote[] = [];
-    
-    for (const result of rateResults) {
-      if (result.status === 'fulfilled' && result.value !== null) {
-        // result.value is an array of rate quotes from one provider
-        allRateQuotes.push(...result.value);
-      }
-    }
-
+    await Promise.allSettled(ratePromises);
     // Update shipment status to RATE_REQUESTED
     await this.shipmentRepository.updateStatus(shipmentId, 'RATE_REQUESTED');
-
     // Return all saved rate quotes ordered by amount
     return this.rateRepository.findByShipmentId(shipmentId);
   }
@@ -104,7 +96,7 @@ export class RateService {
     ratePayload: any,
     shipmentId: number,
   ): Promise<TxnShipmentRateQuote[]> {
-    // Get provider account for this franchise
+    // Get a provider account for this franchise
     const providerAccount = await this.providerAccountModel.findOne({
       where: {
         providerId: provider.providerId,
@@ -112,25 +104,22 @@ export class RateService {
         active: true,
       },
     });
-
     if (!providerAccount) {
-      throw new Error(`No active account found for provider ${provider.providerCode} and franchise ${franchiseId}`);
+      throw new Error(
+        `No active account found for provider ${provider.providerCode} and franchise ${franchiseId}`,
+      );
     }
-
     // Get provider adapter
     const adapter = this.courierFactory.getAdapter(provider.providerCode);
-
     // Build credentials
     const credentials = await this.buildCredentials(providerAccount, provider);
-
     // Call provider's rate API
     const rateQuotes: IRateQuote[] = await adapter.getRates(ratePayload, credentials);
-
-    // Save all rate quotes to database
-    const savedQuotes: TxnShipmentRateQuote[] = [];
+    console.log(rateQuotes);
+    const quotes = [];
     for (const quote of rateQuotes) {
-      const savedQuote = await this.rateRepository.create({
-        shipmentId,
+      quotes.push({
+        shipmentId: shipmentId,
         providerId: provider.providerId,
         providerAccountId: providerAccount.providerAccountId,
         serviceName: quote.serviceName,
@@ -144,13 +133,11 @@ export class RateService {
           metadata: quote.metadata,
         },
       });
-      savedQuotes.push(savedQuote);
     }
-
+    const savedQuotes: TxnShipmentRateQuote[] = await this.rateQuoteModel.bulkCreate(quotes);
     this.logger.log(
       `Successfully retrieved ${savedQuotes.length} rate quotes from ${provider.providerCode} for shipment ${shipmentId}`,
     );
-
     return savedQuotes;
   }
 
@@ -160,15 +147,14 @@ export class RateService {
   private buildRatePayload(shipment: TxnShipment): any {
     // Get shipment items to calculate total weight and dimensions
     const items = (shipment as any).shipmentItems || [];
-    
     // Calculate total weight from items or use shipment totalWeightKg
-    const weight = shipment.totalWeightKg || 
-      items.reduce((sum: number, item: any) => sum + (item.weightKg || 0), 0) || 1; // Default to 1kg if no weight
-
+    const weight =
+      shipment.totalWeightKg ||
+      items.reduce((sum: number, item: any) => sum + (item.weightKg || 0), 0) ||
+      1; // Default to 1kg if no weight
     // Build pickup and delivery addresses from metadata or use defaults
     // Addresses should be in shipment.metadata or fetched from order
     const metadata = shipment.metadata || {};
-    
     const payload: any = {
       pickup: metadata.pickup || {
         postcode: metadata.pickupPostcode || '',
@@ -192,15 +178,14 @@ export class RateService {
         breadth: metadata.breadth || metadata.width || 10,
         height: metadata.height || 10,
       },
-      codAmount: shipment.codAmount || 0,
-      orderId: shipment.orderId,
+      codAmount: shipment.metadata?.codAmount || 0,
+      orderId: shipment.metadata?.orderId || shipment.shipmentNumber,
     };
-
     return payload;
   }
 
   /**
-   * Build credentials object from provider account
+   * Build credentials object from a provider account
    */
   private async buildCredentials(
     account: TxnCourierProviderAccount,
@@ -211,23 +196,22 @@ export class RateService {
       apiBaseUrl: account.apiBaseUrl,
       authType: provider.authType,
     };
-
-    // Add credentials based on auth type
-    if (provider.authType === 'API_KEY') {
-      credentials.apiKey = account.apiKey || undefined;
-      credentials.apiSecret = account.apiSecret || undefined;
-    } else if (provider.authType === 'JWT') {
-      credentials.authToken = account.authToken || undefined;
-      credentials.tokenExpiry = account.tokenExpiry || undefined;
-    } else if (provider.authType === 'BASIC') {
-      credentials.username = account.username || undefined;
-      // Note: passwordEncrypted is bcrypt hashed (one-way), so it cannot be used for API calls
-      // If BASIC auth is needed, the password should be stored in a decryptable format
-      // For now, we'll use it as-is and let the adapter handle the error if it fails
-      // This may need to be addressed by storing passwords in an encrypted (decryptable) format
-      credentials.password = account.passwordEncrypted || undefined;
+    switch (provider.authType) {
+      case 'API_KEY':
+        credentials.apiKey = account.apiKey;
+        credentials.apiSecret = account.apiSecret;
+        break;
+      case 'JWT':
+        credentials.authToken = account.authToken;
+        credentials.tokenExpiry = account.tokenExpiry;
+        credentials.password = account.passwordEncrypted;
+        credentials.username = account.username;
+        break;
+      case 'BASIC':
+        credentials.username = account.username;
+        credentials.password = undefined;
+        break;
     }
-
     return credentials;
   }
 
@@ -236,21 +220,14 @@ export class RateService {
     if (!shipment) {
       throw new NotFoundException(`Shipment with ID ${shipmentId} not found`);
     }
-
     const rateQuote = await this.rateQuoteModel.findByPk(rateQuoteId);
     if (!rateQuote) {
       throw new NotFoundException(`Rate quote with ID ${rateQuoteId} not found`);
     }
-
     // Unselect all other rates for this shipment
-    await this.rateQuoteModel.update(
-      { isSelected: false },
-      { where: { shipmentId } },
-    );
-
+    await this.rateQuoteModel.update({ isSelected: false }, { where: { shipmentId } });
     // Select the chosen rate
     await this.rateRepository.update(rateQuoteId, { isSelected: true });
-
     // Update shipment with selected rate
     await this.shipmentRepository.update(shipmentId, {
       status: 'RATE_SELECTED',
@@ -259,8 +236,6 @@ export class RateService {
       rateAmount: rateQuote.rateAmount,
       currency: rateQuote.currency,
     });
-
     return this.shipmentModel.scope('details').findByPk(shipmentId);
   }
 }
-

@@ -2,27 +2,31 @@
   <mat-label>{{ label }}</mat-label>
 
   <mat-chip-grid #chipGrid aria-label="Selected recipes">
-    <mat-chip-row
-      *ngFor="let item of selectedItems"
-      (removed)="remove(item)"
-    >
-      <div class="chip-content">
-        <div class="chip-title">
-          {{ item.label }}
-        </div>
-        <div *ngIf="item.metadata?.subtitle" class="chip-subtitle">
-          {{ item.metadata.subtitle }}
-        </div>
-      </div>
-      <button
-        *ngIf="!isDisabled"
-        matChipRemove
-        type="button"
-        aria-label="Remove recipe"
+    @for (item of selectedItems; track item) {
+      <mat-chip-row
+        (removed)="remove(item)"
       >
-        <mat-icon>close</mat-icon>
-      </button>
-    </mat-chip-row>
+        <div class="chip-content">
+          <div class="chip-title">
+            {{ item.label }}
+          </div>
+          @if (item.metadata?.subtitle) {
+            <div class="chip-subtitle">
+              {{ item.metadata.subtitle }}
+            </div>
+          }
+        </div>
+        @if (!isDisabled) {
+          <button
+            matChipRemove
+            type="button"
+            aria-label="Remove recipe"
+          >
+            <mat-icon>close</mat-icon>
+          </button>
+        }
+      </mat-chip-row>
+    }
 
     <input
       #searchInput
@@ -41,30 +45,36 @@
     #auto="matAutocomplete"
     (optionSelected)="onOptionSelected($event.option.value)"
   >
-    <mat-option
-      *ngFor="let option of filteredOptions"
-      [value]="option"
-    >
-      <div class="option-content">
-        <div class="option-title">
-          {{ option.label }}
+    @for (option of filteredOptions; track option) {
+      <mat-option
+        [value]="option"
+      >
+        <div class="option-content">
+          <div class="option-title">
+            {{ option.label }}
+          </div>
+          @if (option.metadata?.subtitle) {
+            <div class="option-subtitle">
+              {{ option.metadata.subtitle }}
+            </div>
+          }
         </div>
-        <div *ngIf="option.metadata?.subtitle" class="option-subtitle">
-          {{ option.metadata.subtitle }}
-        </div>
-      </div>
-    </mat-option>
-    <mat-option *ngIf="!loading && !filteredOptions.length && searchControl.value">
-      No recipes found
-    </mat-option>
+      </mat-option>
+    }
+    @if (!loading && !filteredOptions.length && searchControl.value) {
+      <mat-option>
+        No recipes found
+      </mat-option>
+    }
   </mat-autocomplete>
 
-  <mat-progress-spinner
-    *ngIf="loading"
-    matSuffix
-    mode="indeterminate"
-    diameter="18"
-  ></mat-progress-spinner>
+  @if (loading) {
+    <mat-progress-spinner
+      matSuffix
+      mode="indeterminate"
+      diameter="18"
+    ></mat-progress-spinner>
+  }
 </mat-form-field>
 
 

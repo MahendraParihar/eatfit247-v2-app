@@ -1,4 +1,10 @@
-import { Injectable, Logger, BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  BadRequestException,
+  ConflictException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel, InjectConnection } from '@nestjs/sequelize';
 import { Sequelize, Transaction } from 'sequelize';
 import { TxnShipment } from '../models';
@@ -8,7 +14,7 @@ import { FailoverService } from './failover.service';
 
 /**
  * Delivery Service (Orchestrator)
- * 
+ *
  * Responsibilities:
  * - Validate shipment state
  * - Trigger rate calculation
@@ -33,7 +39,7 @@ export class DeliveryService {
   /**
    * Request rates for a shipment
    * Validates shipment state and triggers rate calculation
-   * 
+   *
    * @param shipmentId - The shipment ID
    * @param idempotencyKey - Optional idempotency key to prevent duplicate requests
    * @returns Array of rate quotes
@@ -66,7 +72,7 @@ export class DeliveryService {
   /**
    * Create/Book a shipment (alias for bookShipment)
    * Validates shipment state, prevents double booking, and triggers booking via FailoverService
-   * 
+   *
    * @param shipmentId - The shipment ID
    * @param idempotencyKey - Optional idempotency key to prevent duplicate bookings
    * @returns Updated shipment
@@ -94,10 +100,18 @@ export class DeliveryService {
     }
 
     // Prevent double booking
-    const bookedStates = ['BOOKED', 'PICKUP_SCHEDULED', 'IN_TRANSIT', 'OUT_FOR_DELIVERY', 'DELIVERED'];
+    const bookedStates = [
+      'BOOKED',
+      'PICKUP_SCHEDULED',
+      'IN_TRANSIT',
+      'OUT_FOR_DELIVERY',
+      'DELIVERED',
+    ];
     if (bookedStates.includes(shipment.status)) {
       throw new ConflictException(
-        `Shipment ${shipmentId} is already booked. Current status: ${shipment.status}. Tracking number: ${shipment.trackingNumber || 'N/A'}`,
+        `Shipment ${shipmentId} is already booked. Current status: ${
+          shipment.status
+        }. Tracking number: ${shipment.trackingNumber || 'N/A'}`,
       );
     }
 
@@ -136,7 +150,7 @@ export class DeliveryService {
   /**
    * Book a shipment
    * Validates shipment state, prevents double booking, and triggers booking via FailoverService
-   * 
+   *
    * @param shipmentId - The shipment ID
    * @param idempotencyKey - Optional idempotency key to prevent duplicate bookings
    * @returns Updated shipment
@@ -198,14 +212,14 @@ export class DeliveryService {
   /**
    * Validate shipment state
    * Ensures shipment is in one of the allowed states for the operation
-   * 
+   *
    * @param shipmentId - The shipment ID
    * @param allowedStates - Array of allowed status values
    * @throws BadRequestException if shipment is not in an allowed state
    */
   private async validateShipmentState(shipmentId: number, allowedStates: string[]): Promise<void> {
     const shipment = await this.shipmentRepository.findById(shipmentId);
-    
+
     if (!shipment) {
       throw new NotFoundException(`Shipment with ID ${shipmentId} not found`);
     }
@@ -213,7 +227,7 @@ export class DeliveryService {
     if (!allowedStates.includes(shipment.status)) {
       throw new BadRequestException(
         `Shipment ${shipmentId} is in invalid state for this operation. ` +
-        `Current status: ${shipment.status}. Allowed states: ${allowedStates.join(', ')}`,
+          `Current status: ${shipment.status}. Allowed states: ${allowedStates.join(', ')}`,
       );
     }
   }
@@ -221,22 +235,30 @@ export class DeliveryService {
   /**
    * Prevent double booking
    * Checks if shipment is already booked
-   * 
+   *
    * @param shipmentId - The shipment ID
    * @throws ConflictException if shipment is already booked
    */
   private async preventDoubleBooking(shipmentId: number): Promise<void> {
     const shipment = await this.shipmentRepository.findById(shipmentId);
-    
+
     if (!shipment) {
       throw new NotFoundException(`Shipment with ID ${shipmentId} not found`);
     }
 
     // Check if already booked
-    const bookedStates = ['BOOKED', 'PICKUP_SCHEDULED', 'IN_TRANSIT', 'OUT_FOR_DELIVERY', 'DELIVERED'];
+    const bookedStates = [
+      'BOOKED',
+      'PICKUP_SCHEDULED',
+      'IN_TRANSIT',
+      'OUT_FOR_DELIVERY',
+      'DELIVERED',
+    ];
     if (bookedStates.includes(shipment.status)) {
       throw new ConflictException(
-        `Shipment ${shipmentId} is already booked. Current status: ${shipment.status}. Tracking number: ${shipment.trackingNumber || 'N/A'}`,
+        `Shipment ${shipmentId} is already booked. Current status: ${
+          shipment.status
+        }. Tracking number: ${shipment.trackingNumber || 'N/A'}`,
       );
     }
 
@@ -251,7 +273,7 @@ export class DeliveryService {
   /**
    * Check idempotency
    * Verifies if an operation with the same idempotency key was already performed
-   * 
+   *
    * @param shipmentId - The shipment ID
    * @param idempotencyKey - The idempotency key
    * @param operation - The operation name (e.g., 'requestRates', 'bookShipment')
@@ -263,7 +285,7 @@ export class DeliveryService {
     operation: string,
   ): Promise<void> {
     const shipment = await this.shipmentRepository.findById(shipmentId);
-    
+
     if (!shipment) {
       throw new NotFoundException(`Shipment with ID ${shipmentId} not found`);
     }
@@ -276,15 +298,15 @@ export class DeliveryService {
       this.logger.log(
         `Idempotency check: Operation ${operation} already performed for shipment ${shipmentId} with key ${idempotencyKey}`,
       );
-      
+
       // For booking, check if it was successful
       if (operation === 'bookShipment' && shipment.status === 'BOOKED') {
         throw new ConflictException(
           `Shipment ${shipmentId} was already booked with idempotency key ${idempotencyKey}. ` +
-          `Tracking number: ${shipment.trackingNumber || 'N/A'}`,
+            `Tracking number: ${shipment.trackingNumber || 'N/A'}`,
         );
       }
-      
+
       // For rate requests, allow re-requesting but log it
       if (operation === 'requestRates') {
         this.logger.warn(
@@ -296,7 +318,7 @@ export class DeliveryService {
 
   /**
    * Store idempotency key in shipment metadata
-   * 
+   *
    * @param shipmentId - The shipment ID
    * @param idempotencyKey - The idempotency key
    * @param operation - The operation name
@@ -310,14 +332,14 @@ export class DeliveryService {
 
     try {
       const shipment = await this.shipmentModel.findByPk(shipmentId, { transaction });
-      
+
       if (!shipment) {
         throw new NotFoundException(`Shipment with ID ${shipmentId} not found`);
       }
 
       const metadata = shipment.metadata || {};
       const idempotencyKeys = metadata['idempotencyKeys'] || {};
-      
+
       // Store the idempotency key for this operation
       idempotencyKeys[operation] = idempotencyKey;
       metadata['idempotencyKeys'] = idempotencyKeys;
@@ -344,13 +366,13 @@ export class DeliveryService {
   /**
    * Get shipment status
    * Helper method to get current shipment status
-   * 
+   *
    * @param shipmentId - The shipment ID
    * @returns Shipment with current status
    */
   public async getShipmentStatus(shipmentId: number): Promise<TxnShipment> {
     const shipment = await this.shipmentRepository.findById(shipmentId);
-    
+
     if (!shipment) {
       throw new NotFoundException(`Shipment with ID ${shipmentId} not found`);
     }

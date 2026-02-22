@@ -2,7 +2,7 @@ import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from
 import { BasicSearchDto, CurrentUser, JwtAuthGuard, RequestedIp, UpdateActiveDto } from '@server_1/core';
 import { CallTypeService } from '../../services';
 import { CreateCallTypeDto } from '../../dto';
-import { ICallType, IDropdownItem, ITableList } from '@eatfit247-shared-lib';
+import { IAuthUser, ICallType, IDropdownItem, ITableList } from '@eatfit247-shared-lib';
 
 @Controller('call-type')
 @UseGuards(JwtAuthGuard)
@@ -22,7 +22,7 @@ export class CallTypeController {
   @Post('manage')
   async create(
     @Body() body: CreateCallTypeDto,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
   ): Promise<void> {
     await this.service.create(body, requestedIp, currentUser.adminId);
@@ -32,7 +32,7 @@ export class CallTypeController {
   async update(
     @Param('id') id: number,
     @Body() body: CreateCallTypeDto,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
   ): Promise<void> {
     await this.service.update(id, body, requestedIp, currentUser.adminId);
@@ -42,7 +42,7 @@ export class CallTypeController {
   async changeStatus(
     @Param('id') id: number,
     @Body() body: UpdateActiveDto,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
   ): Promise<void> {
     await this.service.changeStatus(id, body.active, requestedIp, currentUser.adminId);

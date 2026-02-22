@@ -1,0 +1,110 @@
+@if (loading) {
+  <div class="loading-container">
+    <mat-spinner diameter="40"></mat-spinner>
+  </div>
+} @else if (shipmentDetails) {
+  <div class="overview-container">
+    <mat-card class="overview-card">
+      <mat-card-header>
+        <mat-card-title>Order Details</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="detail-row">
+          <span class="label">Order ID:</span>
+          <span class="value">{{ shipmentDetails.orderId }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">Shipment Number:</span>
+          <span class="value">{{ shipmentDetails.shipmentNumber }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">Order Type:</span>
+          <span class="value">{{ shipmentDetails.orderType }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">Status:</span>
+          <span class="value status-badge" [ngClass]="getStatusClass(shipmentDetails.status)">
+            {{ shipmentDetails.status }}
+          </span>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="overview-card">
+      <mat-card-header>
+        <mat-card-title>Member Details</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="detail-row">
+          <span class="label">Member ID:</span>
+          <span class="value">{{ shipmentDetails.memberId }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">Member Name:</span>
+          <span class="value">{{ shipmentDetails.memberName }}</span>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    @if (shipmentDetails.address) {
+      <mat-card class="overview-card">
+        <mat-card-header>
+          <mat-card-title>Delivery Address</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="detail-row">
+            <span class="label">Address:</span>
+            <span class="value">{{ shipmentDetails.address.postalAddress }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">City:</span>
+            <span class="value">{{ shipmentDetails.address.cityVillage }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Pin Code:</span>
+            <span class="value">{{ shipmentDetails.address.pinCode }}</span>
+          </div>
+          @if (shipmentDetails.address.state) {
+            <div class="detail-row">
+              <span class="label">State:</span>
+              <span class="value">{{ shipmentDetails.address.state }}</span>
+            </div>
+          }
+        </mat-card-content>
+      </mat-card>
+    }
+
+    <mat-card class="overview-card">
+      <mat-card-header>
+        <mat-card-title>Shipment Information</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="detail-row">
+          <span class="label">Total Weight:</span>
+          <span class="value">{{ shipmentDetails.totalWeightKg || 0 }} kg</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">COD Amount:</span>
+          <span class="value">{{ shipmentDetails.codAmount || 0 | currency: (shipmentDetails.currency || 'INR') }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">Total Amount:</span>
+          <span class="value">{{ shipmentDetails.totalAmount || 0 | currency: (shipmentDetails.currency || 'INR') }}</span>
+        </div>
+      </mat-card-content>
+      @if (showGetRatesButton) {
+        <mat-card-actions>
+          <button
+            mat-raised-button
+            color="primary"
+            (click)="onGetRates()"
+            [disabled]="loading"
+          >
+            Get Rate Quotes
+          </button>
+        </mat-card-actions>
+      }
+    </mat-card>
+  </div>
+}
+

@@ -1,0 +1,218 @@
+@use 'styles' as *;
+
+.tracking-step-container {
+  padding: var(--spacing-16);
+}
+
+.tracking-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-16);
+}
+
+.tracking-card,
+.timeline-card {
+  background: var(--md-sys-color-surface);
+  border-radius: var(--radius-card);
+
+  mat-card-header {
+    padding: var(--spacing-16);
+  }
+
+  mat-card-content {
+    padding: var(--spacing-16);
+  }
+}
+
+.detail-row {
+  display: flex;
+  gap: var(--spacing-8);
+  margin-bottom: var(--spacing-8);
+
+  .label {
+    font-weight: 500;
+    min-width: clamp(120px, 20vw, 180px);
+    color: var(--md-sys-color-on-surface);
+  }
+
+  .value {
+    color: var(--md-sys-color-on-surface-variant);
+
+    .tracking-link {
+      color: var(--md-sys-color-primary);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: var(--spacing-4);
+
+      &:hover {
+        text-decoration: underline;
+      }
+
+      mat-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+      }
+    }
+  }
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: var(--radius-chip);
+  font-size: 12px;
+  font-weight: 500;
+
+  &.status-booked {
+    background: var(--status-info-bg);
+    color: var(--status-info);
+  }
+
+  &.status-in-transit {
+    background: var(--status-warning-bg);
+    color: var(--status-warning);
+  }
+
+  &.status-delivered {
+    background: var(--status-success-bg);
+    color: var(--status-success);
+  }
+
+  &.status-failed {
+    background: var(--status-error-bg);
+    color: var(--status-error);
+  }
+}
+
+.timeline-list {
+  padding: 0;
+}
+
+.timeline-item {
+  border-left: 2px solid var(--md-sys-color-outline);
+  padding-left: var(--spacing-16);
+  margin-bottom: var(--spacing-16);
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: -6px;
+    top: 8px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--md-sys-color-primary);
+  }
+
+  &:last-child {
+    border-left: none;
+  }
+}
+
+.timeline-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+}
+
+.timeline-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--spacing-8);
+  flex-wrap: wrap;
+}
+
+.timeline-status {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: var(--radius-chip);
+  font-size: 12px;
+  font-weight: 500;
+
+  &.status-booked {
+    background: var(--status-info-bg);
+    color: var(--status-info);
+  }
+
+  &.status-in-transit {
+    background: var(--status-warning-bg);
+    color: var(--status-warning);
+  }
+
+  &.status-delivered {
+    background: var(--status-success-bg);
+    color: var(--status-success);
+  }
+
+  &.status-failed {
+    background: var(--status-error-bg);
+    color: var(--status-error);
+  }
+}
+
+.timeline-date {
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: 0.875rem;
+}
+
+.timeline-location {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-4);
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: 0.875rem;
+
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
+}
+
+.timeline-description {
+  color: var(--md-sys-color-on-surface);
+  margin-top: var(--spacing-4);
+}
+
+.actions {
+  display: flex;
+  gap: var(--spacing-12);
+  padding: var(--spacing-16);
+  justify-content: center;
+
+  button {
+    min-width: clamp(120px, 20vw, 180px);
+  }
+}
+
+@media (max-width: 768px) {
+  .tracking-step-container {
+    padding: var(--spacing-8);
+  }
+
+  .detail-row {
+    flex-direction: column;
+    gap: var(--spacing-4);
+
+    .label {
+      min-width: auto;
+    }
+  }
+
+  .timeline-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .actions {
+    flex-direction: column;
+
+    button {
+      width: 100%;
+    }
+  }
+}

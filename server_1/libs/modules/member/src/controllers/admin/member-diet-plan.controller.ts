@@ -3,6 +3,7 @@ import { CurrentUser, JwtAuthGuard, RequestedIp } from '@server_1/core';
 import { IFileModel } from '@server_1/platform';
 import { MemberDietPlanService } from '../../services';
 import { MemberDietPlanDetailDto, MemberDietTemplateDto } from '../../dto';
+import { IAuthUser } from '@eatfit247-shared-lib';
 
 @Controller('member/:id/diet-plan')
 @UseGuards(JwtAuthGuard)
@@ -95,7 +96,7 @@ export class MemberDietPlanController {
   async create(
     @Param('id') memberId: number,
     @Body() body: MemberDietPlanDetailDto,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
   ) {
     return await this.service.createDietPlanDetail(memberId, body, requestedIp, currentUser.adminId);
@@ -106,7 +107,7 @@ export class MemberDietPlanController {
     @Param('id') memberId: number,
     @Param('dietPlanId') dietPlanId: number,
     @Param('cycleNo') cycleNo: number,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
   ) {
     return await this.service.deleteDietPlan(dietPlanId, cycleNo, requestedIp, currentUser.adminId);
@@ -118,7 +119,7 @@ export class MemberDietPlanController {
     @Param('dietPlanId') dietPlanId: number,
     @Param('cycleNo') cycleNo: number,
     @Param('dayNo') dayNo: number,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
   ) {
     return await this.service.deleteDietPlan(dietPlanId, cycleNo, requestedIp, currentUser.adminId, dayNo);
@@ -128,7 +129,7 @@ export class MemberDietPlanController {
   async applyDietTemplate(
     @Param('id') memberId: number,
     @Body() body: MemberDietTemplateDto,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
   ) {
     return await this.service.applyDietTemplate(memberId, body, requestedIp, currentUser.adminId);
@@ -138,7 +139,7 @@ export class MemberDietPlanController {
   async updateStatus(
     @Param('id') id: number,
     @Param('dietPlanId') dietPlanId: number,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
   ) {
     return await this.service.updateStatus(id, dietPlanId, currentUser.adminId, requestedIp);

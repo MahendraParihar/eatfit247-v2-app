@@ -3,7 +3,7 @@ import { BasicSearchDto, CurrentUser, JwtAuthGuard, RequestedIp, UpdateActiveDto
 import { CurrencyService } from '@server_1/platform';
 import { ProductService } from '../../services';
 import { CreateProductDto } from '../../dto';
-import { IDropdownItem, IProduct, ITableList } from '@eatfit247-shared-lib';
+import { IAuthUser, IDropdownItem, IProduct, ITableList } from '@eatfit247-shared-lib';
 
 @Controller('product')
 @UseGuards(JwtAuthGuard)
@@ -26,7 +26,7 @@ export class ProductController {
   @Post('manage')
   async create(
     @Body() body: CreateProductDto,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
   ): Promise<void> {
     await this.service.create(body, requestedIp, currentUser.adminId);
@@ -36,7 +36,7 @@ export class ProductController {
   async update(
     @Param('id') id: number,
     @Body() body: CreateProductDto,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
   ): Promise<void> {
     await this.service.update(id, body, requestedIp, currentUser.adminId);
@@ -46,7 +46,7 @@ export class ProductController {
   async changeStatus(
     @Param('id') id: number,
     @Body() body: UpdateActiveDto,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
   ): Promise<void> {
     await this.service.changeStatus(

@@ -1,0 +1,40 @@
+@if (selectedRate) {
+  <mat-card class="provider-card">
+    <mat-card-header>
+      <mat-card-title>Selected Rate</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="detail-row">
+        <span class="label">Provider:</span>
+        <span class="value">{{ selectedRate.providerName }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="label">Service:</span>
+        <span class="value">{{ selectedRate.serviceName }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="label">Rate Amount:</span>
+        <span class="value">
+          {{ selectedRate.rateAmount | currency: (selectedRate.currency || 'INR') }}
+        </span>
+      </div>
+      @if (selectedRate.estimatedDays) {
+        <div class="detail-row">
+          <span class="label">Estimated Delivery:</span>
+          <span class="value">{{ selectedRate.estimatedDays }} days</span>
+        </div>
+      }
+      @if (selectedRate.estimatedDeliveryDate) {
+        <div class="detail-row">
+          <span class="label">Estimated Date:</span>
+          <span class="value">{{ selectedRate.estimatedDeliveryDate | date: 'medium' }}</span>
+        </div>
+      }
+    </mat-card-content>
+  </mat-card>
+} @else {
+  <div class="empty-state">
+    <p>No rate selected. Please go back and select a rate.</p>
+  </div>
+}
+

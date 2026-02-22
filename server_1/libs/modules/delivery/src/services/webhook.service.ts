@@ -10,10 +10,11 @@ import {
 import { CourierFactory } from '../providers/courier.factory';
 import { TrackingService } from './tracking.service';
 import { ShipmentRepository } from '../repositories/shipment.repository';
+import { CourierProvider } from '@eatfit247-shared-lib';
 
 /**
  * Webhook Service
- * 
+ *
  * Responsibilities:
  * - Validate provider
  * - Log raw webhook payload
@@ -42,9 +43,13 @@ export class WebhookService {
     private readonly shipmentRepository: ShipmentRepository,
   ) {}
 
+  getSupportedProviders() {
+    return [CourierProvider.NIMBUS, CourierProvider.SHIPROCKET];
+  }
+
   /**
    * Handle incoming webhook from courier provider
-   * 
+   *
    * @param providerCode - The provider code (case-insensitive)
    * @param payload - Raw webhook payload
    * @param headers - Request headers (for signature validation)
@@ -67,9 +72,7 @@ export class WebhookService {
       processed: false,
     });
 
-    this.logger.log(
-      `Webhook received from ${providerCode} (Log ID: ${webhookLog.webhookLogId})`,
-    );
+    this.logger.log(`Webhook received from ${providerCode} (Log ID: ${webhookLog.webhookLogId})`);
 
     try {
       // Process webhook inside transaction
@@ -99,15 +102,12 @@ export class WebhookService {
   /**
    * Process webhook directly from provider payload (simplified version)
    * This method processes webhooks without requiring webhook log entries
-   * 
+   *
    * @param providerCode - The provider code (e.g., 'NIMBUS', 'SHIPROCKET', 'SHIPWAY')
    * @param payload - Raw webhook payload from the provider
    * @returns void
    */
-  public async processWebhookDirectly(
-    providerCode: string,
-    payload: any,
-  ): Promise<void> {
+  public async processWebhookDirectly(providerCode: string, payload: any): Promise<void> {
     // Extract tracking number with fallbacks for different payload formats
     const trackingNumber =
       payload.tracking_number ||
@@ -118,21 +118,15 @@ export class WebhookService {
       payload.trackingId;
 
     if (!trackingNumber) {
-      this.logger.warn(
-        `No tracking number found in webhook payload from ${providerCode}`,
-      );
+      this.logger.warn(`No tracking number found in webhook payload from ${providerCode}`);
       return;
     }
 
     // Find shipment by tracking number
-    const shipment = await this.shipmentRepository.findByTrackingNumber(
-      trackingNumber,
-    );
+    const shipment = await this.shipmentRepository.findByTrackingNumber(trackingNumber);
 
     if (!shipment) {
-      this.logger.warn(
-        `Shipment not found for tracking number: ${trackingNumber}`,
-      );
+      this.logger.warn(`Shipment not found for tracking number: ${trackingNumber}`);
       return;
     }
 
@@ -143,27 +137,18 @@ export class WebhookService {
         providerCode,
         {
           providerStatus:
-            payload.status ||
-            payload.provider_status ||
-            payload.event_status ||
-            'UNKNOWN',
+            payload.status || payload.provider_status || payload.event_status || 'UNKNOWN',
           description:
-            payload.description ||
-            payload.message ||
-            payload.event_description ||
-            payload.status,
+            payload.description || payload.message || payload.event_description || payload.status,
           eventTime: payload.event_time
             ? new Date(payload.event_time)
             : payload.eventTime
-              ? new Date(payload.eventTime)
-              : payload.timestamp
-                ? new Date(payload.timestamp)
-                : new Date(),
+            ? new Date(payload.eventTime)
+            : payload.timestamp
+            ? new Date(payload.timestamp)
+            : new Date(),
           location:
-            payload.location ||
-            payload.city ||
-            payload.location_name ||
-            payload.locationName,
+            payload.location || payload.city || payload.location_name || payload.locationName,
           source: 'WEBHOOK',
           rawPayload: payload,
         },
@@ -187,7 +172,7 @@ export class WebhookService {
   /**
    * Process webhook log entry
    * Processes webhook inside a database transaction
-   * 
+   *
    * @param webhookLogId - The webhook log ID to process
    */
   public async processWebhook(webhookLogId: number): Promise<void> {
@@ -216,10 +201,8 @@ export class WebhookService {
     }
 
     // Validate provider is supported
-    if (!this.courierFactory.isProviderSupported(provider.providerCode)) {
-      throw new BadRequestException(
-        `Provider ${provider.providerCode} is not supported`,
-      );
+    if (!this.getSupportedProviders().includes(provider.providerCode as CourierProvider)) {
+      throw new BadRequestException(`Provider ${provider.providerCode} is not supported`);
     }
 
     // Process webhook inside transaction
@@ -227,10 +210,7 @@ export class WebhookService {
 
     try {
       // Parse webhook payload to extract tracking information
-      const webhookData = this.parseWebhookPayload(
-        provider.providerCode,
-        webhookLog.payload,
-      );
+      const webhookData = this.parseWebhookPayload(provider.providerCode, webhookLog.payload);
 
       if (!webhookData.trackingNumber && !webhookData.providerShipmentId) {
         throw new BadRequestException(
@@ -248,7 +228,9 @@ export class WebhookService {
 
       if (!shipment) {
         this.logger.warn(
-          `Shipment not found for tracking: ${webhookData.trackingNumber || webhookData.providerShipmentId}`,
+          `Shipment not found for tracking: ${
+            webhookData.trackingNumber || webhookData.providerShipmentId
+          }`,
         );
         // Mark as processed even if shipment not found to avoid reprocessing
         await webhookLog.update(
@@ -310,7 +292,9 @@ export class WebhookService {
           );
 
           this.logger.log(
-            `Tracking event inserted for shipment ${shipment.shipmentId}: ${webhookData.status} -> ${internalStatus || 'N/A'}`,
+            `Tracking event inserted for shipment ${shipment.shipmentId}: ${
+              webhookData.status
+            } -> ${internalStatus || 'N/A'}`,
           );
         } catch (error: any) {
           // Handle unique constraint violation (race condition)
@@ -346,9 +330,7 @@ export class WebhookService {
               transaction,
             },
           );
-          this.logger.log(
-            `Shipment ${shipment.shipmentId} status updated to ${internalStatus}`,
-          );
+          this.logger.log(`Shipment ${shipment.shipmentId} status updated to ${internalStatus}`);
         }
       }
 
@@ -368,10 +350,7 @@ export class WebhookService {
       );
     } catch (error: any) {
       await transaction.rollback();
-      this.logger.error(
-        `Error processing webhook ${webhookLogId}: ${error.message}`,
-        error.stack,
-      );
+      this.logger.error(`Error processing webhook ${webhookLogId}: ${error.message}`, error.stack);
 
       // Update webhook log with error
       await webhookLog.update({
@@ -385,7 +364,7 @@ export class WebhookService {
 
   /**
    * Validate provider exists and is active
-   * 
+   *
    * @param providerCode - Provider code to validate
    * @returns Provider model
    */
@@ -395,9 +374,11 @@ export class WebhookService {
     }
 
     // Validate provider is supported by factory
-    if (!this.courierFactory.isProviderSupported(providerCode)) {
+    if (!this.getSupportedProviders().includes(providerCode as CourierProvider)) {
       throw new BadRequestException(
-        `Provider ${providerCode} is not supported. Supported providers: ${this.courierFactory.getSupportedProviders().join(', ')}`,
+        `Provider ${providerCode} is not supported. Supported providers: ${this.getSupportedProviders().join(
+          ', ',
+        )}`,
       );
     }
 
@@ -421,7 +402,7 @@ export class WebhookService {
    * Parse webhook payload to extract tracking information
    * This is a generic parser that works with common webhook formats
    * Provider-specific adapters can override this logic
-   * 
+   *
    * @param providerCode - Provider code
    * @param payload - Raw webhook payload
    * @returns Parsed webhook data
@@ -475,10 +456,10 @@ export class WebhookService {
     const eventTime = payload.event_time
       ? new Date(payload.event_time)
       : payload.eventTime
-        ? new Date(payload.eventTime)
-        : payload.timestamp
-          ? new Date(payload.timestamp)
-          : new Date();
+      ? new Date(payload.eventTime)
+      : payload.timestamp
+      ? new Date(payload.timestamp)
+      : new Date();
 
     const location =
       payload.location ||
@@ -499,7 +480,7 @@ export class WebhookService {
 
   /**
    * Find shipment by tracking number or provider shipment ID
-   * 
+   *
    * @param trackingNumber - Tracking number
    * @param providerShipmentId - Provider shipment ID
    * @param providerId - Provider ID
@@ -541,15 +522,12 @@ export class WebhookService {
   /**
    * Map provider status to internal status
    * This is a basic mapping - can be extended with provider-specific logic
-   * 
+   *
    * @param providerCode - Provider code
    * @param providerStatus - Provider status string
    * @returns Internal status or null if no mapping found
    */
-  private mapProviderStatusToInternal(
-    providerCode: string,
-    providerStatus: string,
-  ): string | null {
+  private mapProviderStatusToInternal(providerCode: string, providerStatus: string): string | null {
     if (!providerStatus) {
       return null;
     }
@@ -607,4 +585,3 @@ export class WebhookService {
     return null;
   }
 }
-

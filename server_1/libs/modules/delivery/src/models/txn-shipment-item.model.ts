@@ -1,11 +1,31 @@
-import { BelongsTo, Column, DataType, ForeignKey, Model, Table } from 'sequelize-typescript';
+import { BelongsTo, Column, CreatedAt, DataType, ForeignKey, Model, Table } from 'sequelize-typescript';
 import { TxnShipment } from './txn-shipment.model';
+import { TxnMemberProductOrderItem } from '@server_1/modules/member';
 
 @Table({
   freezeTableName: true,
   modelName: 'txn_shipment_items',
   schema: 'public',
   tableName: 'txn_shipment_items',
+  timestamps: false,
+  createdAt: true,
+  indexes: [
+    {
+      unique: false,
+      fields: ['shipment_id'],
+      name: 'idx_shipment_items_shipment',
+    },
+    {
+      unique: false,
+      fields: ['member_product_order_item_id'],
+      name: 'idx_shipment_items_order_item',
+    },
+    {
+      unique: true,
+      fields: ['shipment_id', 'member_product_order_item_id'],
+      name: 'uq_shipment_item',
+    },
+  ],
 })
 export class TxnShipmentItem extends Model<TxnShipmentItem> {
   @Column({
@@ -15,62 +35,44 @@ export class TxnShipmentItem extends Model<TxnShipmentItem> {
     autoIncrement: true,
   })
   declare shipmentItemId: number;
-
   @ForeignKey(() => TxnShipment)
   @Column({
-    allowNull: true,
+    allowNull: false,
     field: 'shipment_id',
     type: DataType.BIGINT,
   })
   declare shipmentId: number;
-
   @BelongsTo(() => TxnShipment, {
     foreignKey: 'shipmentId',
     targetKey: 'shipmentId',
     as: 'shipment',
   })
   declare shipment: TxnShipment;
-
+  @ForeignKey(() => TxnMemberProductOrderItem)
   @Column({
     allowNull: false,
-    field: 'order_item_id',
-    type: DataType.INTEGER,
+    field: 'member_product_order_item_id',
+    type: DataType.BIGINT,
   })
-  declare orderItemId: number;
-
-  @Column({
-    allowNull: true,
-    field: 'product_name',
-    type: DataType.STRING(200),
+  declare memberProductOrderItemId: number;
+  @BelongsTo(() => TxnMemberProductOrderItem, {
+    foreignKey: 'memberProductOrderItemId',
+    targetKey: 'memberProductOrderItemId',
+    as: 'memberProductOrderItem',
   })
-  declare productName: string;
-
-  @Column({
-    allowNull: true,
-    field: 'sku',
-    type: DataType.STRING(100),
-  })
-  declare sku: string;
-
+  declare memberProductOrderItem: TxnMemberProductOrderItem;
   @Column({
     allowNull: false,
     field: 'quantity',
     type: DataType.INTEGER,
   })
   declare quantity: number;
-
+  @CreatedAt
   @Column({
     allowNull: true,
-    field: 'unit_price',
-    type: DataType.DECIMAL(10, 2),
+    field: 'created_at',
+    type: DataType.DATE,
   })
-  declare unitPrice: number;
-
-  @Column({
-    allowNull: true,
-    field: 'weight_kg',
-    type: DataType.DECIMAL(10, 2),
-  })
-  declare weightKg: number;
+  declare createdAt: Date;
 }
 

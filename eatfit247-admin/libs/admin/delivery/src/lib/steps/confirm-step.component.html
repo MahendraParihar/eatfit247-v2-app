@@ -1,0 +1,91 @@
+<div class="confirm-step-container">
+  @if (loading && !booking) {
+    <shared-ui-loader [fullScreen]="false" />
+  }
+
+  @if (!selectedRate && !loading) {
+    <shared-ui-empty-state
+      title="No Rate Selected"
+      description="Please go back and select a rate quote."
+    />
+  }
+
+  @if (selectedRate && !loading) {
+    <div>
+      <form [formGroup]="formGroup">
+        <mat-card class="confirm-card">
+          <mat-card-header>
+            <mat-card-title>Booking Confirmation</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="detail-row">
+              <span class="label">Provider:</span>
+              <span class="value">{{ selectedRate.providerName }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">Service:</span>
+              <span class="value">{{ selectedRate.serviceName }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">Rate:</span>
+              <span class="value amount">
+              {{ formatCurrency(selectedRate.rateAmount, selectedRate.currency) }}
+            </span>
+            </div>
+            @if (selectedRate.estimatedDays) {
+              <div class="detail-row">
+                <span class="label">ETA:</span>
+                <span class="value">{{ selectedRate.estimatedDays }} days</span>
+              </div>
+            }
+            @if (selectedRate.estimatedDeliveryDate) {
+              <div class="detail-row">
+                <span class="label">Estimated Delivery Date:</span>
+                <span class="value">{{ selectedRate.estimatedDeliveryDate | date: 'medium' }}</span>
+              </div>
+            }
+          </mat-card-content>
+        </mat-card>
+
+        <div class="terms-section">
+          <mat-checkbox
+            formControlName="termsAccepted"
+            [attr.aria-label]="'I confirm shipment booking'"
+          >
+            I confirm shipment booking
+          </mat-checkbox>
+          <shared-ui-input-error [control]="termsControl" [controlName]="'Confirmation'" />
+        </div>
+
+        <div class="actions">
+          <button
+            mat-raised-button
+            color="primary"
+            (click)="onConfirm()"
+            [disabled]="booking || formGroup.invalid"
+          >
+            @if (booking) {
+              <mat-spinner diameter="20" class="button-spinner"></mat-spinner>
+            }
+            @if (!booking) {
+              <span>Confirm & Book Shipment</span>
+            }
+            @if (booking) {
+              <span>Booking...</span>
+            }
+          </button>
+          @if (showRetryButton) {
+            <button
+              mat-raised-button
+              color="warn"
+              (click)="onRetry()"
+              [disabled]="booking"
+            >
+              Retry Booking
+            </button>
+          }
+        </div>
+      </form>
+    </div>
+  }
+</div>

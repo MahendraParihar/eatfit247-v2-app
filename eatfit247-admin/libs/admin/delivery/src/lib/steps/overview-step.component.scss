@@ -1,0 +1,92 @@
+@use 'styles' as *;
+
+.overview-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-16);
+}
+
+.overview-card {
+  background: var(--md-sys-color-surface);
+  border-radius: var(--radius-card);
+
+  mat-card-content {
+    padding: var(--spacing-16);
+  }
+
+  mat-card-actions {
+    padding: var(--spacing-16);
+    margin: 0;
+  }
+}
+
+.detail-row {
+  display: flex;
+  gap: var(--spacing-8);
+  margin-bottom: var(--spacing-8);
+
+  .label {
+    font-weight: 500;
+    min-width: clamp(100px, 15vw, 150px);
+    color: var(--md-sys-color-on-surface);
+  }
+
+  .value {
+    color: var(--md-sys-color-on-surface-variant);
+  }
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: var(--radius-chip, 0);
+  font-size: 12px;
+  font-weight: 500;
+
+  &.status-booked {
+    background: var(--status-info-bg, #e3f2fd);
+    color: var(--status-info, #1976d2);
+  }
+
+  &.status-in-transit {
+    background: var(--status-warning-bg, #fff4e0);
+    color: var(--status-warning, #f29900);
+  }
+
+  &.status-delivered {
+    background: var(--status-success-bg, #e6f4ec);
+    color: var(--status-success, #1b8f5a);
+  }
+
+  &.status-failed {
+    background: var(--status-error-bg, #fdecea);
+    color: var(--status-error, #d32f2f);
+  }
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: var(--spacing-24);
+}
+
+@media (max-width: 768px) {
+  .detail-row {
+    flex-direction: column;
+    gap: var(--spacing-4);
+
+    .label {
+      min-width: auto;
+    }
+  }
+
+  .overview-card {
+    mat-card-actions {
+      button {
+        width: 100%;
+      }
+    }
+  }
+}
+

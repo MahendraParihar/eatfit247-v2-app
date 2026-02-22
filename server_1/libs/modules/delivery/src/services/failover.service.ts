@@ -1,18 +1,17 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { InjectModel, InjectConnection } from '@nestjs/sequelize';
+import { InjectConnection, InjectModel } from '@nestjs/sequelize';
 import { Sequelize, Transaction } from 'sequelize';
-import { TxnShipment, MstCourierProvider, TxnCourierProviderAccount } from '../models';
-import { ShipmentRepository } from '../repositories/shipment.repository';
-import { CourierFactory } from '../providers/courier.factory';
+import { MstCourierProvider, TxnCourierProviderAccount, TxnShipment } from '../models';
+import { ShipmentRepository } from '../repositories';
 import {
+  CourierFactory,
   ICourierProviderCredentials,
   IShipmentBookingResponse,
-} from '../providers/courier.interface';
-import { CourierProviderError } from '../providers/adapters/courier-provider.error';
+} from '../providers';
 
 /**
  * Failover Service
- * 
+ *
  * Responsibilities:
  * - Implements production-safe booking algorithm with failover
  * - Tries providers in priority order
@@ -29,8 +28,6 @@ export class FailoverService {
     @InjectModel(TxnShipment)
     private readonly shipmentModel: typeof TxnShipment,
     @InjectModel(MstCourierProvider)
-    private readonly courierProviderModel: typeof MstCourierProvider,
-    @InjectModel(TxnCourierProviderAccount)
     private readonly courierProviderAccountModel: typeof TxnCourierProviderAccount,
     @InjectConnection()
     private readonly sequelize: Sequelize,
@@ -40,7 +37,7 @@ export class FailoverService {
 
   /**
    * Handle failover booking - tries providers in priority order until one succeeds
-   * 
+   *
    * Rules:
    * - Fetch providers ordered by priority
    * - Loop providers
@@ -59,27 +56,21 @@ export class FailoverService {
     if (!shipment) {
       throw new NotFoundException(`Shipment with ID ${shipmentId} not found`);
     }
-
     this.logger.log(`Starting failover booking for shipment ${shipmentId}`);
-
     // Fetch providers ordered by priority
     const providers = await this.shipmentRepository.getProvidersByPriority(shipment.franchiseId);
-
     if (providers.length === 0) {
       this.logger.error(`No active providers found for franchise ${shipment.franchiseId}`);
       await this.markShipmentFailed(shipmentId, 'No active providers available');
       return;
     }
-
     // Build booking payload from shipment
     const bookingPayload = this.buildBookingPayload(shipment);
-
     // Loop through providers in priority order
     let lastError: string | null = null;
     let attemptedProviders: string[] = [];
-
     for (const provider of providers) {
-      // Get provider account for this franchise
+      // Get a provider account for this franchise
       const providerAccount = await this.courierProviderAccountModel.findOne({
         where: {
           providerId: provider.providerId,
@@ -94,19 +85,16 @@ export class FailoverService {
           },
         ],
       });
-
       if (!providerAccount) {
         this.logger.warn(
           `No active account found for provider ${provider.providerCode} and franchise ${shipment.franchiseId}, skipping`,
         );
         continue;
       }
-
       attemptedProviders.push(provider.providerCode);
       this.logger.log(
         `Attempting booking with provider ${provider.providerCode} (priority ${provider.priorityOrder}) for shipment ${shipmentId}`,
       );
-
       try {
         // Try booking with this provider
         const bookingResult = await this.attemptBooking(
@@ -115,10 +103,8 @@ export class FailoverService {
           providerAccount,
           bookingPayload,
         );
-
         // Success! Update shipment with transaction
         await this.updateShipmentAfterBooking(shipmentId, provider, providerAccount, bookingResult);
-
         this.logger.log(
           `Successfully booked shipment ${shipmentId} with provider ${provider.providerCode}`,
         );
@@ -127,11 +113,9 @@ export class FailoverService {
         // Determine error type and handle accordingly
         const errorInfo = this.analyzeError(error);
         lastError = errorInfo.message;
-
         this.logger.warn(
           `Booking attempt failed with provider ${provider.providerCode} for shipment ${shipmentId}: ${errorInfo.message}`,
         );
-
         // If 4xx error (business error), break loop
         if (errorInfo.isBusinessError) {
           this.logger.error(
@@ -139,15 +123,15 @@ export class FailoverService {
           );
           break;
         }
-
         // If network error or 5xx, continue to next provider
         // (loop continues)
       }
     }
-
     // All providers failed
     this.logger.error(
-      `All booking attempts failed for shipment ${shipmentId}. Attempted providers: ${attemptedProviders.join(', ')}`,
+      `All booking attempts failed for shipment ${shipmentId}. Attempted providers: ${attemptedProviders.join(
+        ', ',
+      )}`,
     );
     await this.markShipmentFailed(shipmentId, lastError || 'All providers failed');
   }
@@ -163,13 +147,10 @@ export class FailoverService {
   ): Promise<IShipmentBookingResponse> {
     // Get provider adapter
     const adapter = this.courierFactory.getAdapter(provider.providerCode);
-
     // Build credentials
     const credentials = await this.buildCredentials(providerAccount, provider);
-
     // Call provider's createShipment API
     const bookingResponse = await adapter.createShipment(bookingPayload, credentials);
-
     return bookingResponse;
   }
 
@@ -183,14 +164,12 @@ export class FailoverService {
     bookingResult: IShipmentBookingResponse,
   ): Promise<void> {
     const transaction: Transaction = await this.sequelize.transaction();
-
     try {
       // Get the selected rate if available
       const shipment = await this.shipmentModel.findByPk(shipmentId, { transaction });
       if (!shipment) {
         throw new NotFoundException(`Shipment with ID ${shipmentId} not found`);
       }
-
       // Update shipment with booking details using transaction
       await this.shipmentModel.update(
         {
@@ -214,7 +193,6 @@ export class FailoverService {
           transaction,
         },
       );
-
       await transaction.commit();
       this.logger.log(`Shipment ${shipmentId} updated successfully with booking details`);
     } catch (error) {
@@ -229,13 +207,11 @@ export class FailoverService {
    */
   private async markShipmentFailed(shipmentId: number, errorMessage: string): Promise<void> {
     const transaction: Transaction = await this.sequelize.transaction();
-
     try {
       const shipment = await this.shipmentModel.findByPk(shipmentId, { transaction });
       if (!shipment) {
         throw new NotFoundException(`Shipment with ID ${shipmentId} not found`);
       }
-
       // Update shipment with transaction
       await this.shipmentModel.update(
         {
@@ -248,7 +224,6 @@ export class FailoverService {
           transaction,
         },
       );
-
       await transaction.commit();
       this.logger.log(`Shipment ${shipmentId} marked as FAILED`);
     } catch (error) {
@@ -271,7 +246,6 @@ export class FailoverService {
     let isNetworkError = false;
     let isServerError = false;
     let isBusinessError = false;
-
     // Check for network errors
     if (
       error.code === 'ECONNREFUSED' ||
@@ -286,21 +260,9 @@ export class FailoverService {
       message = `Network error: ${message}`;
     }
     // Check for HTTP errors
-    else if (error instanceof CourierProviderError) {
-      const statusCode = error.statusCode || error.getStatus?.() || 500;
-
-      if (statusCode >= 500) {
-        isServerError = true;
-        message = `Server error (${statusCode}): ${message}`;
-      } else if (statusCode >= 400 && statusCode < 500) {
-        isBusinessError = true;
-        message = `Business error (${statusCode}): ${message}`;
-      }
-    }
-    // Check if error has response with status code
-    else if (error.response?.status) {
+    // Check if the error has a response with the status code
+    if (error.response?.status) {
       const statusCode = error.response.status;
-
       if (statusCode >= 500) {
         isServerError = true;
         message = `Server error (${statusCode}): ${message}`;
@@ -312,7 +274,6 @@ export class FailoverService {
     // Check if error has statusCode property
     else if (error.statusCode) {
       const statusCode = error.statusCode;
-
       if (statusCode >= 500) {
         isServerError = true;
         message = `Server error (${statusCode}): ${message}`;
@@ -321,7 +282,6 @@ export class FailoverService {
         message = `Business error (${statusCode}): ${message}`;
       }
     }
-
     return {
       message,
       isNetworkError,
@@ -335,20 +295,18 @@ export class FailoverService {
    */
   private buildBookingPayload(shipment: TxnShipment): any {
     // Get shipment items
-    const items = (shipment as any).shipmentItems || [];
-
+    const items = shipment.shipmentItems || [];
     // Calculate total weight from items or use shipment totalWeightKg
     const weight =
       shipment.totalWeightKg ||
       items.reduce((sum: number, item: any) => sum + (item.weightKg || 0), 0) ||
       1; // Default to 1kg if no weight
-
     // Build pickup and delivery addresses from metadata
     const metadata = shipment.metadata || {};
-
     const payload: any = {
-      orderId: shipment.orderId,
-      orderDate: shipment.createdAt?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0],
+      orderId: shipment.metadata?.orderId || shipment.shipmentNumber,
+      orderDate:
+        shipment.createdAt?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0],
       pickup: metadata.pickup || {
         postcode: metadata.pickupPostcode || '',
         address: metadata.pickupAddress || '',
@@ -365,31 +323,33 @@ export class FailoverService {
         name: metadata.deliveryName || '',
         phone: metadata.deliveryPhone || '',
       },
-      billing: metadata.billing || metadata.pickup || {
-        postcode: metadata.pickupPostcode || '',
-        address: metadata.pickupAddress || '',
-        city: metadata.pickupCity || '',
-        state: metadata.pickupState || '',
-        name: metadata.pickupName || '',
-        phone: metadata.pickupPhone || '',
-        email: metadata.pickupEmail || '',
-      },
-      shipping: metadata.shipping || metadata.delivery || {
-        postcode: metadata.deliveryPostcode || '',
-        address: metadata.deliveryAddress || '',
-        city: metadata.deliveryCity || '',
-        state: metadata.deliveryState || '',
-        name: metadata.deliveryName || '',
-        phone: metadata.deliveryPhone || '',
-        email: metadata.deliveryEmail || '',
-      },
+      billing: metadata.billing ||
+        metadata.pickup || {
+          postcode: metadata.pickupPostcode || '',
+          address: metadata.pickupAddress || '',
+          city: metadata.pickupCity || '',
+          state: metadata.pickupState || '',
+          name: metadata.pickupName || '',
+          phone: metadata.pickupPhone || '',
+          email: metadata.pickupEmail || '',
+        },
+      shipping: metadata.shipping ||
+        metadata.delivery || {
+          postcode: metadata.deliveryPostcode || '',
+          address: metadata.deliveryAddress || '',
+          city: metadata.deliveryCity || '',
+          state: metadata.deliveryState || '',
+          name: metadata.deliveryName || '',
+          phone: metadata.deliveryPhone || '',
+          email: metadata.deliveryEmail || '',
+        },
       weight,
       dimensions: metadata.dimensions || {
         length: metadata.length || 10,
         breadth: metadata.breadth || metadata.width || 10,
         height: metadata.height || 10,
       },
-      codAmount: shipment.codAmount || 0,
+      codAmount: shipment.metadata?.codAmount || 0,
       subTotal: shipment.totalAmount || 0,
       items: items.map((item: any) => ({
         name: item.productName || 'Product',
@@ -399,7 +359,6 @@ export class FailoverService {
         weight: item.weightKg || 0,
       })),
     };
-
     return payload;
   }
 
@@ -415,22 +374,22 @@ export class FailoverService {
       apiBaseUrl: account.apiBaseUrl,
       authType: provider.authType,
     };
-
-    // Add credentials based on auth type
-    if (provider.authType === 'API_KEY') {
-      credentials.apiKey = account.apiKey || undefined;
-      credentials.apiSecret = account.apiSecret || undefined;
-    } else if (provider.authType === 'JWT') {
-      credentials.authToken = account.authToken || undefined;
-      credentials.tokenExpiry = account.tokenExpiry || undefined;
-    } else if (provider.authType === 'BASIC') {
-      credentials.username = account.username || undefined;
-      // Note: Password is encrypted, but for API calls we might need to decrypt
-      // For now, assuming password is stored in a way that can be used directly
-      // If encrypted, you'll need to decrypt it here
-      credentials.password = account.passwordEncrypted || undefined;
+    switch (provider.authType) {
+      case 'API_KEY':
+        credentials.apiKey = account.apiKey;
+        credentials.apiSecret = account.apiSecret;
+        break;
+      case 'JWT':
+        credentials.authToken = account.authToken;
+        credentials.tokenExpiry = account.tokenExpiry;
+        credentials.username = account.username;
+        credentials.password = account.passwordEncrypted;
+        break;
+      case 'BASIC':
+        credentials.username = account.username;
+        credentials.password = undefined;
+        break;
     }
-
     return credentials;
   }
 
@@ -442,19 +401,15 @@ export class FailoverService {
     if (!shipment) {
       throw new NotFoundException(`Shipment with ID ${shipmentId} not found`);
     }
-
     if (shipment.retryCount >= maxRetries) {
       await this.markShipmentFailed(shipmentId, 'Maximum retry count exceeded');
       return;
     }
-
     // Increment retry count and retry booking
     await shipment.update({
       retryCount: shipment.retryCount + 1,
     });
-
     // Retry booking with failover
     await this.handleFailover(shipmentId);
   }
 }
-

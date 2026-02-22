@@ -39,13 +39,11 @@ export class MemberProductReportService {
     if (dto.paymentStatusId) {
       whereCondition.paymentStatusId = dto.paymentStatusId;
     }
-
     // Build member where condition
     const memberWhereCondition: any = {};
     if (dto.franchiseId) {
       memberWhereCondition.franchiseId = dto.franchiseId;
     }
-
     // Build include conditions
     const includeConditions: any[] = [
       {
@@ -54,20 +52,6 @@ export class MemberProductReportService {
         required: true,
         where: Object.keys(memberWhereCondition).length > 0 ? memberWhereCondition : undefined,
         attributes: ['memberId', 'firstName', 'lastName', 'emailId', 'contactNumber', 'franchiseId'],
-        include: [
-          {
-            model: MstFranchise,
-            as: 'franchise',
-            required: true,
-            attributes: ['franchiseId', 'companyName'],
-            where: {
-              active: true,
-              [Op.and]: [
-                Sequelize.literal(`'${BusinessTypeEnum.PRODUCT}'::public.business_type = ANY("business_type")`),
-              ],
-            },
-          },
-        ],
       },
     ];
     const { rows, count } = await this.memberProductRepository.scope('list').findAndCountAll({
@@ -190,7 +174,6 @@ export class MemberProductReportService {
     if (!memberProductIds || memberProductIds.length === 0) {
       throw new Error('At least one member product ID is required');
     }
-
     // Build where condition to fetch only selected product orders
     const whereCondition: any = {
       active: true,
@@ -198,7 +181,6 @@ export class MemberProductReportService {
         [Op.in]: memberProductIds,
       },
     };
-
     // Build include conditions
     const includeConditions: any[] = [
       {
@@ -222,7 +204,6 @@ export class MemberProductReportService {
         ],
       },
     ];
-
     // Fetch selected product orders
     const productOrders = await this.memberProductRepository.scope('list').findAll({
       where: whereCondition,
@@ -231,12 +212,10 @@ export class MemberProductReportService {
       raw: true,
       nest: true,
     });
-
     // Create a zip archive
     const archive = archiver('zip', {
       zlib: { level: 9 }, // Maximum compression
     });
-
     // Generate invoices for each product order and add to zip
     const invoicePromises = productOrders.map(async (item: any) => {
       try {
@@ -256,7 +235,6 @@ export class MemberProductReportService {
         // Continue with other invoices even if one fails
       }
     });
-
     // Wait for all invoices to be added to the archive
     await Promise.all(invoicePromises);
     // Finalize the archive

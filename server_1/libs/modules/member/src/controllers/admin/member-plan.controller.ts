@@ -2,6 +2,7 @@ import { Body, Controller, Get, Header, Param, Post, Put, Query, UseGuards } fro
 import { CurrentUser, JwtAuthGuard, RequestedIp } from '@server_1/core';
 import { MemberPlanService } from '../../services';
 import {
+  IAuthUser,
   IMemberPayment,
   IMemberPaymentMasterData,
   IPaymentLinkResponse,
@@ -66,7 +67,7 @@ export class MemberPlanController {
   async createPayment(
     @Param('id') id: number,
     @Body() body: CreateMemberPaymentDto,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
   ): Promise<IMemberPayment> {
     body.memberId = id;

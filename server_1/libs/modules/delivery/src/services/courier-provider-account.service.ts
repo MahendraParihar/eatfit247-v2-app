@@ -8,7 +8,7 @@ import {
   IManageCourierProviderAccount,
   ITableList,
 } from '@eatfit247-shared-lib';
-import { AppConfigService, CommonFunctionsUtil, SearchUtil } from '@server_1/core';
+import { AppConfigService, CommonFunctionsUtil, SearchUtil, CryptoUtil } from '@server_1/core';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -99,7 +99,19 @@ export class CourierProviderAccountService {
   public async create(obj: IManageCourierProviderAccount, cIp: string, adminId: number): Promise<void> {
     let passwordEncrypted: string | null = null;
     if (obj.password) {
-      passwordEncrypted = await bcrypt.hash(obj.password, 10);
+      // Fetch provider to determine auth type
+      const provider = await MstCourierProvider.findOne({
+        where: { providerId: obj.providerId },
+      });
+      
+      // For JWT providers, use encryption (reversible) instead of bcrypt (one-way hash)
+      // This allows password to be decrypted for token refresh API calls
+      if (provider?.authType === 'JWT') {
+        passwordEncrypted = CryptoUtil.encryptData(obj.password);
+      } else {
+        // For other auth types, use bcrypt hash
+        passwordEncrypted = await bcrypt.hash(obj.password, 10);
+      }
     }
 
     const createObj = {
@@ -147,7 +159,19 @@ export class CourierProviderAccountService {
 
     // Only update password if provided
     if (obj.password) {
-      updateObj.passwordEncrypted = await bcrypt.hash(obj.password, 10);
+      // Fetch provider to determine auth type
+      const provider = await MstCourierProvider.findOne({
+        where: { providerId: obj.providerId },
+      });
+      
+      // For JWT providers, use encryption (reversible) instead of bcrypt (one-way hash)
+      // This allows password to be decrypted for token refresh API calls
+      if (provider?.authType === 'JWT') {
+        updateObj.passwordEncrypted = CryptoUtil.encryptData(obj.password);
+      } else {
+        // For other auth types, use bcrypt hash
+        updateObj.passwordEncrypted = await bcrypt.hash(obj.password, 10);
+      }
     }
 
     await this.courierProviderAccountRepository.update(updateObj, { where: { providerAccountId: id } });
@@ -159,6 +183,30 @@ export class CourierProviderAccountService {
       throw new NotFoundException('Courier provider account not found');
     }
     await this.courierProviderAccountRepository.update({ active, modifiedBy: adminId, modifiedIp: cIp }, { where: { providerAccountId: id } });
+  }
+
+  /**
+   * Update auth token and expiry for a provider account
+   * Used after token refresh to persist new token
+   */
+  public async updateToken(
+    id: number,
+    authToken: string,
+    tokenExpiry?: Date,
+  ): Promise<void> {
+    const find = await this.courierProviderAccountRepository.findOne({ where: { providerAccountId: id } });
+    if (!find) {
+      throw new NotFoundException('Courier provider account not found');
+    }
+    await this.courierProviderAccountRepository.update(
+      { 
+        authToken,
+        tokenExpiry: tokenExpiry || null,
+        // Note: modifiedBy and modifiedIp are not updated for automatic token refreshes
+        // This is intentional to avoid polluting audit trail with system updates
+      },
+      { where: { providerAccountId: id } },
+    );
   }
 
   public async getCourierProviderAccountList(): Promise<IDropdownItem[]> {

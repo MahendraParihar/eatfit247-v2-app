@@ -1,0 +1,74 @@
+<div class="items-step-container">
+  @if (!hasItems() && !loading) {
+    <shared-ui-empty-state
+      title="No Items Available"
+      description="There are no items available for this shipment."
+    />
+  }
+
+  @if (hasItems()) {
+    <mat-card class="items-card">
+    <mat-card-header>
+      <mat-card-title>Select Items for Shipment</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <table mat-table [dataSource]="shipmentDetails?.orderItems || []" class="items-table">
+        <ng-container matColumnDef="productName">
+          <th mat-header-cell *matHeaderCellDef>Product Name</th>
+          <td mat-cell *matCellDef="let item; let i = index">{{ item.productName }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="orderedQuantity">
+          <th mat-header-cell *matHeaderCellDef>Ordered</th>
+          <td mat-cell *matCellDef="let item; let i = index">{{ item.quantity }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="remainingQuantity">
+          <th mat-header-cell *matHeaderCellDef>Remaining</th>
+          <td mat-cell *matCellDef="let item; let i = index">
+            {{ getRemainingQuantity(item) }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="quantity">
+          <th mat-header-cell *matHeaderCellDef>Ship Quantity</th>
+          <td mat-cell *matCellDef="let item; let i = index">
+            <mat-form-field appearance="outline" [formGroup]="getItemControl(i)">
+              <input
+                matInput
+                type="number"
+                formControlName="quantity"
+                [min]="0"
+                [max]="getRemainingQuantity(item)"
+                placeholder="0"
+              />
+              <shared-ui-input-error
+                [control]="getItemControl(i).get('quantity')"
+                [controlName]="'Quantity'"
+              />
+            </mat-form-field>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+      </table>
+    </mat-card-content>
+    <mat-card-actions>
+      <button
+        mat-raised-button
+        color="primary"
+        (click)="onSave()"
+        [disabled]="loading || itemsFormArray.invalid"
+      >
+        Save Items
+      </button>
+    </mat-card-actions>
+  </mat-card>
+  }
+
+  @if (loading) {
+    <mat-spinner diameter="40" class="loading-spinner"></mat-spinner>
+  }
+</div>
+

@@ -2,7 +2,7 @@ import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from
 import { BasicSearchDto, CurrentUser, JwtAuthGuard, RequestedIp, UpdateActiveDto } from '@server_1/core';
 import { IssueCategoryService } from '../../services';
 import { CreateIssueCategoryDto } from '../../dto';
-import { IDropdownItem, IIssueCategory, ITableList } from '@eatfit247-shared-lib';
+import { IAuthUser, IDropdownItem, IIssueCategory, ITableList } from '@eatfit247-shared-lib';
 
 @Controller('issue-category')
 @UseGuards(JwtAuthGuard)
@@ -22,7 +22,7 @@ export class IssueCategoryController {
   @Post('manage')
   async create(
     @Body() body: CreateIssueCategoryDto,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
   ): Promise<void> {
     await this.service.create(body, requestedIp, currentUser.adminId);
@@ -32,7 +32,7 @@ export class IssueCategoryController {
   async update(
     @Param('id') id: number,
     @Body() body: CreateIssueCategoryDto,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
   ): Promise<void> {
     await this.service.update(id, body, requestedIp, currentUser.adminId);
@@ -42,7 +42,7 @@ export class IssueCategoryController {
   async changeStatus(
     @Param('id') id: number,
     @Body() body: UpdateActiveDto,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
   ): Promise<void> {
     await this.service.changeStatus(id, body.active, requestedIp, currentUser.adminId);

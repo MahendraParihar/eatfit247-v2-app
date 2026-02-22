@@ -1,4 +1,12 @@
-import { BelongsTo, Column, CreatedAt, DataType, ForeignKey, Model, Table } from 'sequelize-typescript';
+import {
+  BelongsTo,
+  Column,
+  CreatedAt,
+  DataType,
+  ForeignKey,
+  Model,
+  Table,
+} from 'sequelize-typescript';
 import { MstCourierProvider } from './mst-courier-provider.model';
 import { TxnCourierProviderAccount } from './txn-courier-provider-account.model';
 import { TxnShipment } from './txn-shipment.model';
@@ -8,11 +16,18 @@ import { TxnShipment } from './txn-shipment.model';
   modelName: 'txn_shipment_rate_quotes',
   schema: 'public',
   tableName: 'txn_shipment_rate_quotes',
+  timestamps: false,
+  createdAt: true,
   indexes: [
     {
       unique: false,
       fields: ['shipment_id'],
       name: 'idx_rate_quotes_shipment',
+    },
+    {
+      unique: false,
+      fields: ['provider_id'],
+      name: 'idx_rate_quotes_provider',
     },
   ],
 })
@@ -24,7 +39,6 @@ export class TxnShipmentRateQuote extends Model<TxnShipmentRateQuote> {
     autoIncrement: true,
   })
   declare rateQuoteId: number;
-
   @ForeignKey(() => TxnShipment)
   @Column({
     allowNull: true,
@@ -32,86 +46,77 @@ export class TxnShipmentRateQuote extends Model<TxnShipmentRateQuote> {
     type: DataType.BIGINT,
   })
   declare shipmentId: number;
-
   @BelongsTo(() => TxnShipment, {
     foreignKey: 'shipmentId',
     targetKey: 'shipmentId',
     as: 'shipment',
   })
   declare shipment: TxnShipment;
-
   @ForeignKey(() => MstCourierProvider)
   @Column({
-    allowNull: true,
+    allowNull: false,
     field: 'provider_id',
     type: DataType.INTEGER,
   })
   declare providerId: number;
-
   @BelongsTo(() => MstCourierProvider, {
     foreignKey: 'providerId',
     targetKey: 'providerId',
     as: 'provider',
   })
   declare provider: MstCourierProvider;
-
+  @ForeignKey(() => TxnCourierProviderAccount)
   @Column({
     allowNull: true,
     field: 'provider_account_id',
     type: DataType.INTEGER,
   })
   declare providerAccountId: number;
-
   @BelongsTo(() => TxnCourierProviderAccount, {
     foreignKey: 'providerAccountId',
     targetKey: 'providerAccountId',
     as: 'providerAccount',
   })
   declare providerAccount: TxnCourierProviderAccount;
-
   @Column({
     allowNull: true,
     field: 'service_name',
     type: DataType.STRING(100),
   })
   declare serviceName: string;
-
   @Column({
     allowNull: true,
     field: 'estimated_days',
     type: DataType.INTEGER,
+    // Note: Sequelize doesn't support CHECK constraints directly,
+    // but the database schema has: check (estimated_days >= 0)
   })
   declare estimatedDays: number;
-
   @Column({
-    allowNull: true,
+    allowNull: false,
     field: 'rate_amount',
     type: DataType.DECIMAL(10, 2),
   })
   declare rateAmount: number;
-
   @Column({
-    allowNull: true,
+    allowNull: false,
     field: 'currency',
     type: DataType.STRING(10),
   })
   declare currency: string;
-
   @Column({
-    allowNull: true,
+    allowNull: false,
     defaultValue: false,
     field: 'is_selected',
     type: DataType.BOOLEAN,
   })
   declare isSelected: boolean;
-
   @Column({
     allowNull: true,
     field: 'raw_response',
     type: DataType.JSONB,
   })
   declare rawResponse: Record<string, any>;
-
   @CreatedAt
   @Column({
     allowNull: true,
@@ -120,4 +125,3 @@ export class TxnShipmentRateQuote extends Model<TxnShipmentRateQuote> {
   })
   declare createdAt: Date;
 }
-

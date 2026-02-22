@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Param, Post, Put, UseGuards } from '@nestjs/common';
 import { CurrentUser, JwtAuthGuard, RequestedIp, UpdateIsSolvedDto } from '@server_1/core';
 import { MemberIssueResponseService, MemberIssueService } from '../../services';
-import { IIssueMasterData, IMemberIssue, IMemberIssueResponse, ITableList } from '@eatfit247-shared-lib';
+import { IAuthUser, IIssueMasterData, IMemberIssue, IMemberIssueResponse, ITableList } from '@eatfit247-shared-lib';
 import { CreateMemberIssueDto, CreateMemberIssueResponseDto, MemberIssueReportDto } from '../../dto';
 
 @Controller('member')
@@ -31,7 +31,7 @@ export class MemberIssueController {
   async createIssue(
     @Param('id') id: number,
     @Body() body: CreateMemberIssueDto,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
   ): Promise<IMemberIssue> {
     body.memberId = id;
@@ -47,7 +47,7 @@ export class MemberIssueController {
     @Param('id') id: number,
     @Param('issueId') issueId: number,
     @Body() body: CreateMemberIssueDto,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
   ): Promise<IMemberIssue> {
     body.memberId = id;
@@ -72,7 +72,7 @@ export class MemberIssueController {
     @Param('id') id: number,
     @Param('issueId') issueId: number,
     @Body() body: CreateMemberIssueResponseDto,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: IAuthUser,
   ): Promise<IMemberIssueResponse> {
     return await this.memberIssueResponseService.create(
       issueId,
@@ -86,7 +86,7 @@ export class MemberIssueController {
     @Param('id') id: number,
     @Param('issueId') issueId: number,
     @Body() body: UpdateIsSolvedDto,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: IAuthUser,
   ): Promise<IMemberIssue> {
     return await this.memberIssueResponseService.markAsSolved(
       issueId,

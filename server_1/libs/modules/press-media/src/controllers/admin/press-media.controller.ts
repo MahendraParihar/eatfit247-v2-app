@@ -4,7 +4,7 @@ import { BasicSearchDto, CurrentUser, JwtAuthGuard, RequestedIp, UpdateActiveDto
 import { GoogleService } from '@server_1/platform';
 import { PressMediaService } from '../../services';
 import { CreatePressMediaDto } from '../../dto';
-import { IPressMedia, ITableList } from '@eatfit247-shared-lib';
+import { IAuthUser, IPressMedia, ITableList } from '@eatfit247-shared-lib';
 
 @Controller('press-media')
 @UseGuards(JwtAuthGuard)
@@ -27,7 +27,7 @@ export class PressMediaController {
   @Post('manage')
   async create(
     @Body() body: CreatePressMediaDto,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
   ): Promise<void> {
     await this.service.create(body, requestedIp, currentUser.adminId);
@@ -37,7 +37,7 @@ export class PressMediaController {
   async update(
     @Param('id') id: number,
     @Body() body: CreatePressMediaDto,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
   ): Promise<void> {
     await this.service.update(id, body, requestedIp, currentUser.adminId);
@@ -47,7 +47,7 @@ export class PressMediaController {
   async changeStatus(
     @Param('id') id: number,
     @Body() body: UpdateActiveDto,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
   ): Promise<void> {
     await this.service.changeStatus(id, body.active, requestedIp, currentUser.adminId);

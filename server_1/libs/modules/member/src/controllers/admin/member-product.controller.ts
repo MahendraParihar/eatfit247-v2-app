@@ -2,6 +2,7 @@ import { Body, Controller, Get, Header, Param, Post, Query, UseGuards } from '@n
 import { CurrentUser, JwtAuthGuard, RequestedIp } from '@server_1/core';
 import { MemberProductService } from '../../services';
 import {
+  IAuthUser,
   IMemberProduct,
   IMemberProductMasterData,
   IPaymentLinkResponse,
@@ -77,7 +78,7 @@ export class MemberProductController {
   async createProductOrder(
     @Param('id') id: number,
     @Body() body: CreateMemberProductDto,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
   ): Promise<IMemberProduct> {
     return await this.memberProductService.create(id, body, requestedIp, currentUser.adminId);

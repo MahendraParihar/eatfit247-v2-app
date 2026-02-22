@@ -6,6 +6,8 @@ import { TxnShipment } from './txn-shipment.model';
   modelName: 'txn_shipment_tracking_events',
   schema: 'public',
   tableName: 'txn_shipment_tracking_events',
+  timestamps: false,
+  createdAt: true,
   indexes: [
     {
       unique: false,
@@ -13,9 +15,14 @@ import { TxnShipment } from './txn-shipment.model';
       name: 'idx_tracking_shipment',
     },
     {
+      unique: false,
+      fields: ['event_time'],
+      name: 'idx_tracking_event_time',
+    },
+    {
       unique: true,
       fields: ['shipment_id', 'provider_status', 'event_time'],
-      name: 'ix_uq_txn_shipment_tracking_event',
+      name: 'uq_tracking_event',
     },
   ],
 })
@@ -30,7 +37,7 @@ export class TxnShipmentTrackingEvent extends Model<TxnShipmentTrackingEvent> {
 
   @ForeignKey(() => TxnShipment)
   @Column({
-    allowNull: true,
+    allowNull: false,
     field: 'shipment_id',
     type: DataType.BIGINT,
   })
@@ -51,7 +58,7 @@ export class TxnShipmentTrackingEvent extends Model<TxnShipmentTrackingEvent> {
   declare providerStatus: string;
 
   @Column({
-    allowNull: true,
+    allowNull: false,
     field: 'internal_status',
     type: DataType.ENUM(
       'DRAFT',
@@ -92,7 +99,7 @@ export class TxnShipmentTrackingEvent extends Model<TxnShipmentTrackingEvent> {
   declare location: string;
 
   @Column({
-    allowNull: true,
+    allowNull: false,
     field: 'source',
     type: DataType.ENUM('WEBHOOK', 'POLLING', 'MANUAL'),
   })

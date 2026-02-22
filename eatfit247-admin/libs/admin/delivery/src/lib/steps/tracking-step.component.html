@@ -1,0 +1,119 @@
+<div class="tracking-step-container">
+  @if (loading) {
+    <shared-ui-loader [fullScreen]="false" />
+  }
+
+  @if (!loading && trackingInfo === null) {
+    <shared-ui-empty-state
+      title="No Tracking Information"
+      description="Tracking information is not available yet."
+    />
+  }
+
+  @if (!loading && trackingInfo) {
+    <div class="tracking-content">
+      <mat-card class="tracking-card">
+        <mat-card-header>
+          <mat-card-title>Tracking Information</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="detail-row">
+            <span class="label">Provider:</span>
+            <span class="value">{{ trackingInfo.providerName || 'N/A' }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Tracking Number:</span>
+            <span class="value">{{ trackingInfo.trackingNumber }}</span>
+          </div>
+          @if (trackingInfo.trackingUrl) {
+            <div class="detail-row">
+              <span class="label">Tracking URL:</span>
+              <span class="value">
+              <a
+                [href]="trackingInfo.trackingUrl"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="tracking-link"
+              >
+                {{ trackingInfo.trackingUrl }}
+                <mat-icon>open_in_new</mat-icon>
+              </a>
+            </span>
+            </div>
+          }
+          <div class="detail-row">
+            <span class="label">Current Status:</span>
+            <span class="value status-badge" [ngClass]="getStatusClass(trackingInfo.currentStatus || '')">
+            {{ trackingInfo.currentStatus }}
+          </span>
+          </div>
+          @if (trackingInfo.estimatedDeliveryDate) {
+            <div class="detail-row">
+              <span class="label">Estimated Delivery:</span>
+              <span class="value">{{ trackingInfo.estimatedDeliveryDate | date: 'medium' }}</span>
+            </div>
+          }
+        </mat-card-content>
+      </mat-card>
+
+      @if (trackingInfo.trackingEvents && trackingInfo.trackingEvents.length > 0) {
+        <mat-card class="timeline-card">
+          <mat-card-header>
+            <mat-card-title>Tracking Timeline</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <mat-list class="timeline-list">
+              @for (event of trackingInfo.trackingEvents; track $index) {
+                <mat-list-item class="timeline-item">
+                  <div class="timeline-content">
+                    <div class="timeline-header">
+                    <span class="timeline-status" [ngClass]="getStatusClass(event.internalStatus)">
+                      {{ event.internalStatus }}
+                    </span>
+                      <span class="timeline-date">{{ event.eventTime | date: 'medium' }}</span>
+                    </div>
+                    @if (event.location) {
+                      <div class="timeline-location">
+                        <mat-icon>location_on</mat-icon>
+                        <span>{{ event.location }}</span>
+                      </div>
+                    }
+                    @if (event.description) {
+                      <div class="timeline-description">
+                        {{ event.description }}
+                      </div>
+                    }
+                  </div>
+                </mat-list-item>
+              }
+            </mat-list>
+          </mat-card-content>
+        </mat-card>
+      }
+
+      <div class="actions">
+        <button
+          mat-raised-button
+          color="primary"
+          (click)="onRefresh()"
+          [disabled]="loading"
+          [attr.aria-label]="'Refresh tracking information'"
+        >
+          <mat-icon>refresh</mat-icon>
+          Refresh
+        </button>
+        @if (showRetryButton) {
+          <button
+            mat-raised-button
+            color="warn"
+            (click)="onRetry()"
+            [disabled]="loading"
+            [attr.aria-label]="'Retry booking'"
+          >
+            Retry Booking
+          </button>
+        }
+      </div>
+    </div>
+  }
+</div>

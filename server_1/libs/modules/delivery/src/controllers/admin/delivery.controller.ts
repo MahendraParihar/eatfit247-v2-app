@@ -7,7 +7,15 @@ import {
   TrackingService,
   WebhookService,
 } from '../../services';
-import { CreateShipmentDto, UpdateShipmentDto } from '../../dto';
+import { RateRepository } from '../../repositories';
+import {
+  CreateShipmentDto,
+  UpdateShipmentDto,
+  CreateDraftShipmentDto,
+  AddShipmentItemsDto,
+  SelectRateDto,
+} from '../../dto';
+import { IAuthUser } from '@eatfit247-shared-lib';
 
 @Controller('delivery')
 @UseGuards(JwtAuthGuard)
@@ -18,6 +26,7 @@ export class DeliveryController {
     private readonly rateService: RateService,
     private readonly trackingService: TrackingService,
     private readonly webhookService: WebhookService,
+    private readonly rateRepository: RateRepository,
   ) {}
 
   @Get('shipments/list')
@@ -33,7 +42,7 @@ export class DeliveryController {
   @Post('shipments')
   async createShipment(
     @Body() body: CreateShipmentDto,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
   ): Promise<any> {
     return await this.shipmentService.create(body, requestedIp, currentUser.adminId);
@@ -43,50 +52,108 @@ export class DeliveryController {
   async updateShipment(
     @Param('id') id: number,
     @Body() body: UpdateShipmentDto,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
   ): Promise<any> {
     return await this.shipmentService.update(id, body, requestedIp, currentUser.adminId);
   }
 
   /**
-   * Admin Endpoint: Request rates for a shipment
+   * Step 1: Create Draft Shipment
+   * POST /delivery/create-draft
+   */
+  @Post('create-draft')
+  async createDraft(
+    @Body() body: CreateDraftShipmentDto,
+    @CurrentUser() currentUser: IAuthUser,
+    @RequestedIp() requestedIp: string,
+  ): Promise<any> {
+    return await this.shipmentService.createDraft(
+      body.memberProductId,
+      currentUser.adminId,
+      requestedIp,
+    );
+  }
+
+  /**
+   * Step 2: Add Shipment Items
+   * POST /delivery/:shipmentId/items
+   */
+  @Post(':shipmentId/items')
+  async addItems(
+    @Param('shipmentId') shipmentId: number,
+    @Body() body: AddShipmentItemsDto,
+    @CurrentUser() currentUser: IAuthUser,
+    @RequestedIp() requestedIp: string,
+  ): Promise<any> {
+    return await this.shipmentService.addItems(
+      shipmentId,
+      body.items,
+      currentUser.adminId,
+      requestedIp,
+    );
+  }
+
+  /**
+   * Step 3: Get Rate Quotes
    * POST /delivery/:shipmentId/rates
    */
   @Post(':shipmentId/rates')
   async requestRates(
     @Param('shipmentId') shipmentId: number,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: IAuthUser,
   ): Promise<any> {
     return await this.deliveryService.requestRates(shipmentId);
   }
 
-  @Post('shipments/:id/select-rate')
+  /**
+   * Step 4: Select Provider Rate
+   * POST /delivery/:shipmentId/select-rate
+   */
+  @Post(':shipmentId/select-rate')
   async selectRate(
-    @Param('id') id: number,
-    @Body() body: { rateQuoteId: number },
+    @Param('shipmentId') shipmentId: number,
+    @Body() body: SelectRateDto,
   ): Promise<any> {
-    return await this.rateService.selectRate(id, body.rateQuoteId);
+    const shipment = await this.shipmentService.findById(shipmentId);
+    if (shipment.status !== 'RATE_REQUESTED') {
+      throw new Error(`Shipment ${shipmentId} must have rates requested first. Current status: ${shipment.status}`);
+    }
+    const rateQuotes = await this.rateRepository.findByShipmentId(shipmentId);
+    const selectedRate = rateQuotes.find((rq) => rq.providerId === body.providerId);
+    if (!selectedRate) {
+      throw new Error(`Rate quote not found for provider ${body.providerId} in shipment ${shipmentId}`);
+    }
+    return await this.rateService.selectRate(shipmentId, selectedRate.rateQuoteId);
   }
 
   /**
-   * Admin Endpoint: Book a shipment
+   * Step 5: Book Shipment
    * POST /delivery/:shipmentId/book
    */
   @Post(':shipmentId/book')
   async bookShipment(
     @Param('shipmentId') shipmentId: number,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: IAuthUser,
   ): Promise<any> {
     return await this.deliveryService.bookShipment(shipmentId);
   }
 
   /**
-   * Admin Endpoint: Get tracking information for a shipment
+   * Step 6: Get Tracking Information
+   * GET /delivery/:shipmentId/tracking
+   */
+  @Get(':shipmentId/tracking')
+  async getTracking(@Param('shipmentId') shipmentId: number): Promise<any> {
+    return await this.trackingService.getTracking(shipmentId);
+  }
+
+  /**
+   * Legacy endpoint: Get tracking information for a shipment
    * GET /delivery/:shipmentId/track
    */
   @Get(':shipmentId/track')
-  async getTracking(@Param('shipmentId') shipmentId: number): Promise<any> {
+  async getTrackingLegacy(@Param('shipmentId') shipmentId: number): Promise<any> {
     return await this.trackingService.getTracking(shipmentId);
   }
 

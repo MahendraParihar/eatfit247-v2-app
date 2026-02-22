@@ -10,9 +10,11 @@
             <mat-label>Franchise</mat-label>
             <mat-select formControlName="franchiseId">
               <mat-option [value]="">Select Franchise</mat-option>
-              <mat-option *ngFor="let franchise of franchiseOptions" [value]="franchise.id">
-                {{ franchise.label }}
-              </mat-option>
+              @for (franchise of franchiseOptions; track franchise.id) {
+                <mat-option [value]="franchise.id">
+                  {{ franchise.label }}
+                </mat-option>
+              }
             </mat-select>
             <shared-ui-input-error [control]="formGroup.get('franchiseId')"></shared-ui-input-error>
           </mat-form-field>
@@ -21,9 +23,11 @@
             <mat-label>Buyer Country</mat-label>
             <mat-select formControlName="countryCode">
               <mat-option [value]="">Select Country</mat-option>
-              <mat-option *ngFor="let country of countryOptions" [value]="country.id">
-                {{ country.label }}
-              </mat-option>
+              @for (country of countryOptions; track country.id) {
+                <mat-option [value]="country.id">
+                  {{ country.label }}
+                </mat-option>
+              }
             </mat-select>
             <shared-ui-input-error [control]="formGroup.get('countryCode')"></shared-ui-input-error>
           </mat-form-field>
@@ -32,26 +36,34 @@
             <mat-label>Transaction Type</mat-label>
             <mat-select formControlName="transactionType">
               <mat-option [value]="">Select Transaction Type</mat-option>
-              <mat-option *ngFor="let t of transactionTypes" [value]="t">{{ t }}</mat-option>
+              @for (t of transactionTypes; track t) {
+                <mat-option [value]="t">{{ t }}</mat-option>
+              }
             </mat-select>
             <shared-ui-input-error [control]="formGroup.get('transactionType')"></shared-ui-input-error>
           </mat-form-field>
 
-          <mat-form-field appearance="outline" *ngIf="showProductDropdown">
-            <mat-label>Product</mat-label>
-            <mat-select formControlName="referenceId">
-              <mat-option [value]="">Select Product</mat-option>
-              <mat-option *ngFor="let product of productOptions" [value]="product.id">
-                {{ product.label }}
-              </mat-option>
-            </mat-select>
-            <shared-ui-input-error [control]="formGroup.get('referenceId')"></shared-ui-input-error>
-          </mat-form-field>
+          @if (showProductDropdown) {
+            <mat-form-field appearance="outline">
+              <mat-label>Product</mat-label>
+              <mat-select formControlName="referenceId">
+                <mat-option [value]="">Select Product</mat-option>
+                @for (product of productOptions; track product.id) {
+                  <mat-option [value]="product.id">
+                    {{ product.label }}
+                  </mat-option>
+                }
+              </mat-select>
+              <shared-ui-input-error [control]="formGroup.get('referenceId')"></shared-ui-input-error>
+            </mat-form-field>
+          }
 
           <mat-form-field appearance="outline">
             <mat-label>Tax System</mat-label>
             <mat-select formControlName="taxSystem">
-              <mat-option *ngFor="let t of taxSystems" [value]="t">{{ t }}</mat-option>
+              @for (t of taxSystems; track t) {
+                <mat-option [value]="t">{{ t }}</mat-option>
+              }
             </mat-select>
             <shared-ui-input-error [control]="formGroup.get('taxSystem')"></shared-ui-input-error>
           </mat-form-field>

@@ -147,6 +147,10 @@ export const appRoutes: Route[] = [
             path: 'courier-provider-accounts',
             loadChildren: () => import('courier-provider-accounts').then((m) => m.courierProviderAccountsRoutes),
           },
+          {
+            path: 'shipment',
+            loadChildren: () => import('delivery').then((m) => m.deliveryRoutes),
+          },
         ],
       },
       {

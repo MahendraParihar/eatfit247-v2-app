@@ -1,41 +1,38 @@
-import { IsNotEmpty, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsOptional, IsString, ValidateNested, IsArray, Min } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class ShipmentItemDto {
   @IsNotEmpty()
   @IsNumber()
-  orderItemId: number;
-
-  @IsOptional()
-  @IsString()
-  productName?: string;
-
-  @IsOptional()
-  @IsString()
-  sku?: string;
+  memberProductOrderItemId: number;
 
   @IsNotEmpty()
   @IsNumber()
+  @Min(1)
   quantity: number;
+}
 
-  @IsOptional()
+export class CreateDraftShipmentDto {
+  @IsNotEmpty()
   @IsNumber()
-  unitPrice?: number;
+  memberProductId: number;
+}
 
-  @IsOptional()
+export class AddShipmentItemsDto {
+  @IsNotEmpty()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ShipmentItemDto)
+  items: ShipmentItemDto[];
+}
+
+export class SelectRateDto {
+  @IsNotEmpty()
   @IsNumber()
-  weightKg?: number;
+  providerId: number;
 }
 
 export class CreateShipmentDto {
-  @IsNotEmpty()
-  @IsNumber()
-  orderId: number;
-
-  @IsNotEmpty()
-  @IsNumber()
-  memberId: number;
-
   @IsNotEmpty()
   @IsNumber()
   franchiseId: number;
@@ -66,7 +63,11 @@ export class CreateShipmentDto {
 
   @IsOptional()
   @IsNumber()
-  codAmount?: number;
+  rateAmount?: number;
+
+  @IsOptional()
+  @IsString()
+  currency?: string;
 
   @IsOptional()
   @ValidateNested({ each: true })
@@ -101,7 +102,11 @@ export class UpdateShipmentDto {
 
   @IsOptional()
   @IsNumber()
-  codAmount?: number;
+  rateAmount?: number;
+
+  @IsOptional()
+  @IsString()
+  currency?: string;
 
   @IsOptional()
   @ValidateNested({ each: true })

@@ -676,4 +676,3 @@ export class GoogleService {
 
   // endregion
 }
-

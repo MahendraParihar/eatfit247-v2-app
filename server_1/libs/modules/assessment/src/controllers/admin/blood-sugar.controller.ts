@@ -1,8 +1,14 @@
 import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from '@nestjs/common';
-import { BasicSearchDto, CurrentUser, JwtAuthGuard, RequestedIp, UpdateActiveDto } from '@server_1/core';
+import {
+  BasicSearchDto,
+  CurrentUser,
+  JwtAuthGuard,
+  RequestedIp,
+  UpdateActiveDto,
+} from '@server_1/core';
 import { BloodSugarService } from '../../services';
 import { CreateBloodSugarDto } from '../../dto';
-import { IBloodSugar, IDropdownItem, ITableList } from '@eatfit247-shared-lib';
+import { IAuthUser, IBloodSugar, IDropdownItem, ITableList } from '@eatfit247-shared-lib';
 
 @Controller('blood-sugar')
 @UseGuards(JwtAuthGuard)
@@ -22,30 +28,30 @@ export class BloodSugarController {
   @Post('manage')
   async create(
     @Body() body: CreateBloodSugarDto,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
   ): Promise<void> {
-    await this.service.create(body, requestedIp, currentUser.userId || currentUser.adminId);
+    await this.service.create(body, requestedIp, currentUser.adminId);
   }
 
   @Put('manage/:id')
   async update(
     @Param('id') id: number,
     @Body() body: CreateBloodSugarDto,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
   ): Promise<void> {
-    await this.service.update(id, body, requestedIp, currentUser.userId || currentUser.adminId);
+    await this.service.update(id, body, requestedIp, currentUser.adminId);
   }
 
   @Patch('update-status/:id')
   async changeStatus(
     @Param('id') id: number,
     @Body() body: UpdateActiveDto,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
   ): Promise<void> {
-    await this.service.changeStatus(id, body.active, requestedIp, currentUser.userId || currentUser.adminId);
+    await this.service.changeStatus(id, body.active, requestedIp, currentUser.adminId);
   }
 
   @Get('dropdown')
@@ -53,4 +59,3 @@ export class BloodSugarController {
     return await this.service.getBloodSugarList();
   }
 }
-

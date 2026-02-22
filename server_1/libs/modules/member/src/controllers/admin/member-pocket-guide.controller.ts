@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Param, Put, UseGuards } from '@nestjs/common';
 import { CurrentUser, JwtAuthGuard, RequestedIp, UpdatePocketGuideIdsDto } from '@server_1/core';
 import { MemberPocketGuideService } from '../../services';
-import { IMemberPocketGuide, ITableList } from '@eatfit247-shared-lib';
+import { IAuthUser, IMemberPocketGuide, ITableList } from '@eatfit247-shared-lib';
 
 @Controller('member/:id/pocket-guide')
 @UseGuards(JwtAuthGuard)
@@ -22,7 +22,7 @@ export class MemberPocketGuideController {
   async managePocketGuides(
     @Param('id') id: number,
     @Body() body: UpdatePocketGuideIdsDto,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
   ): Promise<void> {
     await this.memberPocketGuideService.manage(

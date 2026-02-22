@@ -2,6 +2,7 @@ import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards } from '@nes
 import { CurrentUser, JwtAuthGuard, RequestedIp, UpdateHealthIssueIdsDto } from '@server_1/core';
 import { MemberAssessmentService, MemberHealthIssueService, MemberHealthParameterLogsService } from '../../services';
 import {
+  IAuthUser,
   IHealthParameterMaster,
   IMemberAssessment,
   IMemberHealthIssue,
@@ -37,14 +38,14 @@ export class MemberHealthController {
   async updateAssessment(
     @Param('id') id: number,
     @Body() body: CreateMemberAssessmentDto,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
   ): Promise<void> {
     await this.memberAssessmentService.createOrUpdate(
       id,
       body,
       requestedIp,
-      currentUser.userId || currentUser.adminId,
+      currentUser.adminId,
     );
   }
 
@@ -65,14 +66,14 @@ export class MemberHealthController {
   async manageHealthIssues(
     @Param('id') id: number,
     @Body() body: UpdateHealthIssueIdsDto,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
   ): Promise<void> {
     await this.memberHealthIssueService.manage(
       id,
       body.healthIssueIds,
       requestedIp,
-      currentUser.userId || currentUser.adminId,
+      currentUser.adminId,
     );
   }
 
@@ -93,7 +94,7 @@ export class MemberHealthController {
   async createHealthParameterLog(
     @Param('id') id: number,
     @Body() body: CreateMemberHealthParameterLogDto,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
   ): Promise<IMemberHealthParameterLog> {
     body.memberId = id;
@@ -101,7 +102,7 @@ export class MemberHealthController {
       id,
       body,
       requestedIp,
-      currentUser.userId || currentUser.adminId,
+      currentUser.adminId,
     );
   }
 
@@ -110,7 +111,7 @@ export class MemberHealthController {
     @Param('id') id: number,
     @Param('logId') logId: number,
     @Body() body: CreateMemberHealthParameterLogDto,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
   ): Promise<IMemberHealthParameterLog> {
     body.memberId = id;
@@ -119,7 +120,7 @@ export class MemberHealthController {
       id,
       body,
       requestedIp,
-      currentUser.userId || currentUser.adminId,
+      currentUser.adminId,
     );
   }
 
@@ -135,14 +136,14 @@ export class MemberHealthController {
   async deleteHealthParameterLog(
     @Param('id') id: number,
     @Param('logId') logId: number,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
   ): Promise<void> {
     await this.memberHealthParameterLogsService.delete(
       id,
       logId,
       requestedIp,
-      currentUser.userId || currentUser.adminId,
+      currentUser.adminId,
     );
   }
 }
