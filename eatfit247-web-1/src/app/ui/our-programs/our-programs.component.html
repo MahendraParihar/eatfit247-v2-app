@@ -14,12 +14,13 @@
 
     <div class="our-programs__terms-card">
       <ul class="our-programs__terms-list">
-        <li
-          *ngFor="let item of termsAndConditions"
-          class="our-programs__terms-item"
-        >
-          {{ item }}
-        </li>
+        @for (item of termsAndConditions; track item) {
+          <li
+            class="our-programs__terms-item"
+          >
+            {{ item }}
+          </li>
+        }
       </ul>
     </div>
   </section>

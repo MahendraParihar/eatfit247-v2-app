@@ -30,121 +30,112 @@
           <div class="step-content">
             <h2>Billing Information</h2>
             @if (basicDetailsForm) {
-              <form [formGroup]="basicDetailsForm" class="billing-form">
-                <div class="form-row">
+              <form [formGroup]="basicDetailsForm" class="contact-us__form">
+                <div class="contact-us__grid">
                   <mat-form-field>
-                    <mat-label>First Name <span class="required">*</span></mat-label>
+                    <mat-label>First Name *</mat-label>
                     <input matInput formControlName="firstName" placeholder="Enter your first name">
-                    @if (basicDetailsForm.get('firstName')?.hasError('required') && basicDetailsForm.get('firstName')?.touched) {
+                    @if (basicDetailsForm.get('firstName')?.touched && basicDetailsForm.get('firstName')?.invalid) {
                       <mat-error>First name is required</mat-error>
                     }
                   </mat-form-field>
                   <mat-form-field>
-                    <mat-label>Last Name <span class="required">*</span></mat-label>
+                    <mat-label>Last Name *</mat-label>
                     <input matInput formControlName="lastName" placeholder="Enter your last name">
-                    @if (basicDetailsForm.get('lastName')?.hasError('required') && basicDetailsForm.get('lastName')?.touched) {
+                    @if (basicDetailsForm.get('lastName')?.touched && basicDetailsForm.get('lastName')?.invalid) {
                       <mat-error>Last name is required</mat-error>
                     }
                   </mat-form-field>
-                </div>
 
-                <mat-form-field>
-                  <mat-label>Company Name (optional)</mat-label>
-                  <input matInput formControlName="companyName" placeholder="Enter company name">
-                </mat-form-field>
-
-                <mat-form-field>
-                  <mat-label>Country/Region <span class="required">*</span></mat-label>
-                  <mat-select formControlName="countryId">
-                    <mat-option value="">Select Country</mat-option>
-                    @for (country of countryOptions; track country.id) {
-                      <mat-option [value]="country.id">{{ country.label }}</mat-option>
-                    }
-                  </mat-select>
-                  @if (basicDetailsForm.get('countryId')?.hasError('required') && basicDetailsForm.get('countryId')?.touched) {
-                    <mat-error>Country is required</mat-error>
-                  }
-                </mat-form-field>
-
-                <mat-form-field>
-                  <mat-label>Street Address <span class="required">*</span></mat-label>
-                  <input matInput formControlName="streetAddress1" placeholder="House number and street name">
-                  @if (basicDetailsForm.get('streetAddress1')?.hasError('required') && basicDetailsForm.get('streetAddress1')?.touched) {
-                    <mat-error>Street address is required</mat-error>
-                  }
-                </mat-form-field>
-
-                <mat-form-field>
-                  <mat-label>Apartment, suite, unit, etc. (optional)</mat-label>
-                  <input matInput formControlName="streetAddress2" placeholder="Apartment, suite, unit, etc.">
-                </mat-form-field>
-
-                <mat-form-field>
-                  <mat-label>Town / City <span class="required">*</span></mat-label>
-                  <input matInput formControlName="city" placeholder="Enter town or city">
-                  @if (basicDetailsForm.get('city')?.hasError('required') && basicDetailsForm.get('city')?.touched) {
-                    <mat-error>Town / City is required</mat-error>
-                  }
-                </mat-form-field>
-
-                <div class="form-row">
                   <mat-form-field>
-                    <mat-label>State <span class="required">*</span></mat-label>
+                    <mat-label>Company Name (optional)</mat-label>
+                    <input matInput formControlName="companyName" placeholder="Enter company name">
+                  </mat-form-field>
+                  <mat-form-field>
+                    <mat-label>Street Address *</mat-label>
+                    <input matInput formControlName="streetAddress1" placeholder="House number and street name">
+                    @if (basicDetailsForm.get('streetAddress1')?.touched && basicDetailsForm.get('streetAddress1')?.invalid) {
+                      <mat-error>Street address is required</mat-error>
+                    }
+                  </mat-form-field>
+
+                  <mat-form-field>
+                    <mat-label>Country/Region *</mat-label>
+                    <mat-select formControlName="countryId">
+                      <mat-option value="">Select Country</mat-option>
+                      @for (country of countryOptions; track country.id) {
+                        <mat-option [value]="country.id">{{ country.label }}</mat-option>
+                      }
+                    </mat-select>
+                    @if (basicDetailsForm.get('countryId')?.touched && basicDetailsForm.get('countryId')?.invalid) {
+                      <mat-error>Country is required</mat-error>
+                    }
+                  </mat-form-field>
+                  <mat-form-field>
+                    <mat-label>Apartment, suite, unit, etc. (optional)</mat-label>
+                    <input matInput formControlName="streetAddress2" placeholder="Apartment, suite, unit, etc.">
+                  </mat-form-field>
+
+                  <mat-form-field>
+                    <mat-label>State *</mat-label>
                     <mat-select formControlName="stateId">
                       <mat-option value="">Select State</mat-option>
                       @for (state of filteredStateOptions; track state.id) {
                         <mat-option [value]="state.id">{{ state.label }}</mat-option>
                       }
                     </mat-select>
-                    @if (basicDetailsForm.get('stateId')?.hasError('required') && basicDetailsForm.get('stateId')?.touched) {
+                    @if (basicDetailsForm.get('stateId')?.touched && basicDetailsForm.get('stateId')?.invalid) {
                       <mat-error>State is required</mat-error>
                     }
                   </mat-form-field>
                   <mat-form-field>
-                    <mat-label>Postcode / ZIP <span class="required">*</span></mat-label>
+                    <mat-label>Town / City *</mat-label>
+                    <input matInput formControlName="city" placeholder="Enter town or city">
+                    @if (basicDetailsForm.get('city')?.touched && basicDetailsForm.get('city')?.invalid) {
+                      <mat-error>Town / City is required</mat-error>
+                    }
+                  </mat-form-field>
+
+                  <mat-form-field>
+                    <mat-label>Postcode / ZIP *</mat-label>
                     <input matInput formControlName="postcode" placeholder="Enter postcode">
-                    @if (basicDetailsForm.get('postcode')?.hasError('required') && basicDetailsForm.get('postcode')?.touched) {
+                    @if (basicDetailsForm.get('postcode')?.touched && basicDetailsForm.get('postcode')?.invalid) {
                       <mat-error>Postcode is required</mat-error>
+                    }
+                  </mat-form-field>
+                  <mat-form-field>
+                    <mat-label>Phone *</mat-label>
+                    <input matInput formControlName="phone" placeholder="Enter phone number">
+                    @if (basicDetailsForm.get('phone')?.touched && basicDetailsForm.get('phone')?.invalid) {
+                      <mat-error>Phone is required</mat-error>
+                    }
+                  </mat-form-field>
+
+                  <mat-form-field>
+                    <mat-label>Email Address *</mat-label>
+                    <input matInput type="email" formControlName="email" placeholder="Enter email address">
+                    @if (basicDetailsForm.get('email')?.touched && basicDetailsForm.get('email')?.invalid) {
+                      <mat-error>{{ getFieldError('email') }}</mat-error>
                     }
                   </mat-form-field>
                 </div>
 
-                <mat-form-field>
-                  <mat-label>Phone <span class="required">*</span></mat-label>
-                  <input matInput formControlName="phone" placeholder="Enter phone number">
-                  @if (basicDetailsForm.get('phone')?.hasError('required') && basicDetailsForm.get('phone')?.touched) {
-                    <mat-error>Phone is required</mat-error>
-                  }
-                </mat-form-field>
-
-                <mat-form-field>
-                  <mat-label>Email Address <span class="required">*</span></mat-label>
-                  <input matInput type="email" formControlName="email" placeholder="Enter email address">
-                  @if (basicDetailsForm.get('email')?.hasError('required') && basicDetailsForm.get('email')?.touched) {
-                    <mat-error>Email is required</mat-error>
-                  }
-                  @if (basicDetailsForm.get('email')?.hasError('email') && basicDetailsForm.get('email')?.touched) {
-                    <mat-error>Please enter a valid email</mat-error>
-                  }
-                </mat-form-field>
-
-                <mat-form-field>
+                <mat-form-field class="contact-us__field contact-us__field--textarea contact-us__field--full">
                   <mat-label>Order Notes (optional)</mat-label>
-                  <textarea matInput formControlName="orderNotes" rows="4"
-                            placeholder="Notes about your order"></textarea>
+                  <textarea matInput formControlName="orderNotes" rows="4" placeholder="Notes about your order"></textarea>
                 </mat-form-field>
+
+                <div class="contact-us__actions">
+                  <button mat-button (click)="moveToPreviousStep()" [disabled]="loading">
+                    <mat-icon>arrow_back</mat-icon>
+                    Back
+                  </button>
+                  <button mat-flat-button color="primary" (click)="proceedFromBilling()"
+                          [disabled]="!basicDetailsForm.valid || loading">
+                    Continue
+                  </button>
+                </div>
               </form>
-              <div class="step-actions">
-                <button mat-button (click)="moveToPreviousStep()" [disabled]="loading">
-                  <mat-icon>arrow_back</mat-icon>
-                  Back
-                </button>
-                <button mat-raised-button color="primary" (click)="proceedFromBilling()"
-                        [disabled]="!basicDetailsForm.valid || loading">
-                  <mat-icon>arrow_forward</mat-icon>
-                  Continue
-                </button>
-              </div>
             }
           </div>
         </mat-step>
@@ -277,12 +268,12 @@
               }
             </div>
 
-            <div class="step-actions">
+            <div class="contact-us__actions">
               <button mat-button (click)="moveToPreviousStep()" [disabled]="loading">
                 <mat-icon>arrow_back</mat-icon>
                 Back
               </button>
-              <button mat-raised-button color="primary" class="proceed-btn" (click)="proceedFromPreview()"
+              <button mat-flat-button color="primary" class="proceed-btn" (click)="proceedFromPreview()"
                       [disabled]="loading || (isProductCheckout && calculatingTax)">
                 <mat-icon>payment</mat-icon>
                 Proceed to Payment
@@ -306,7 +297,7 @@
               <div class="payment-ready">
                 <mat-icon>payment</mat-icon>
                 <p>Payment gateway is ready. Click below to proceed.</p>
-                <button mat-raised-button color="primary" (click)="initializePaymentFlow()" [disabled]="loading">
+                <button mat-flat-button color="primary" (click)="initializePaymentFlow()" [disabled]="loading">
                   <mat-icon>payment</mat-icon>
                   Initialize Payment
                 </button>
@@ -330,7 +321,7 @@
                 @if (paymentId) {
                   <p><strong>Payment ID:</strong> {{ paymentId }}</p>
                 }
-                <button mat-raised-button color="primary" (click)="navigateToSuccess()">
+                <button mat-flat-button color="primary" (click)="navigateToSuccess()">
                   <mat-icon>check</mat-icon>
                   View Order Details
                 </button>
@@ -345,7 +336,7 @@
                     <mat-icon>arrow_back</mat-icon>
                     Go Back
                   </button>
-                  <button mat-raised-button color="primary" (click)="initializePaymentFlow()">
+                  <button mat-flat-button color="primary" (click)="initializePaymentFlow()">
                     <mat-icon>refresh</mat-icon>
                     Retry Payment
                   </button>

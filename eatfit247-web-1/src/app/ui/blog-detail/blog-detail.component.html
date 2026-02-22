@@ -23,39 +23,47 @@
         <!-- Left column: blog content -->
         <article class="blog-detail-main">
           <!-- Featured image -->
-          <figure class="blog-detail-image" *ngIf="blog.imageUrl">
-            <!-- Category badge -->
-            @if (blog.category) {
-              <div class="section__badge">
-                <span class="section__badge-text">{{ blog.category }}</span>
-              </div>
-            }
-            <img
-              [src]="blog.imageUrl"
-              [alt]="blog.imageAlt || blog.title"
-              loading="lazy"
-            />
-          </figure>
+          @if (blog.imageUrl) {
+            <figure class="blog-detail-image">
+              <!-- Category badge -->
+              @if (blog.category) {
+                <div class="section__badge">
+                  <span class="section__badge-text">{{ blog.category }}</span>
+                </div>
+              }
+              <img
+                [src]="blog.imageUrl"
+                [alt]="blog.imageAlt || blog.title"
+                loading="lazy"
+              />
+            </figure>
+          }
 
           <div class="blog-detail-content-wrapper">
             <!-- Meta row -->
-            <div
-              class="blog-detail-meta body-b6"
-              *ngIf="blog.formattedDate || blog.readTimeMinutes"
-            >
-          <span class="meta-item" *ngIf="blog.formattedDate">
-            {{ blog.formattedDate }}
-          </span>
-              <span
-                class="meta-separator"
-                *ngIf="blog.formattedDate && blog.readTimeMinutes"
+            @if (blog.formattedDate || blog.readTimeMinutes) {
+              <div
+                class="blog-detail-meta body-b6"
               >
-            &bull;
-          </span>
-              <span class="meta-item" *ngIf="blog.readTimeMinutes">
-            {{ blog.readTimeMinutes }} min read
-          </span>
-            </div>
+                @if (blog.formattedDate) {
+                  <span class="meta-item">
+                    {{ blog.formattedDate }}
+                  </span>
+                }
+                @if (blog.formattedDate && blog.readTimeMinutes) {
+                  <span
+                    class="meta-separator"
+                  >
+                    &bull;
+                  </span>
+                }
+                @if (blog.readTimeMinutes) {
+                  <span class="meta-item">
+                    {{ blog.readTimeMinutes }} min read
+                  </span>
+                }
+              </div>
+            }
 
             <!-- Title -->
             <h1 class="blog-detail-title heading-2">
@@ -89,32 +97,34 @@
           </section>
 
           <!-- Related blogs -->
-          <section
-            class="related-articles"
-            *ngIf="relatedArticles.length > 0"
-            aria-labelledby="related-articles-title"
-          >
-            <h2 id="related-articles-title" class="related-title heading-3">
-              Related Blogs
-            </h2>
+          @if (relatedArticles.length > 0) {
+            <section
+              class="related-articles"
+              aria-labelledby="related-articles-title"
+            >
+              <h2 id="related-articles-title" class="related-title heading-3">
+                Related Blogs
+              </h2>
 
-            <div class="related-list">
-              <article
-                class="related-card"
-                *ngFor="let article of relatedArticles"
-              >
-                <!-- Related blog title only -->
-                <h3 class="related-card-title body-b4">
-                  <a
-                    class="related-card-title-link"
-                    [routerLink]="article.linkUrl"
+              <div class="related-list">
+                @for (article of relatedArticles; track article.id || article.linkUrl) {
+                  <article
+                    class="related-card"
                   >
-                    {{ article.title }}
-                  </a>
-                </h3>
-              </article>
-            </div>
-          </section>
+                    <!-- Related blog title only -->
+                    <h3 class="related-card-title body-b4">
+                      <a
+                        class="related-card-title-link"
+                        [routerLink]="article.linkUrl"
+                      >
+                        {{ article.title }}
+                      </a>
+                    </h3>
+                  </article>
+                }
+              </div>
+            </section>
+          }
         </aside>
       </div>
     </div>

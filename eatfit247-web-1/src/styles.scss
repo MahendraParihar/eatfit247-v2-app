@@ -24,6 +24,9 @@ $theme: mat.define-theme((
 // Apply the theme
 html {
   @include mat.all-component-themes($theme);
+  
+  // Set Material 3 form field filled container color to use custom surface page color
+  --mat-form-field-filled-container-color: var(--color-surface-page);
 }
 
 // Dark theme support
@@ -62,6 +65,9 @@ body.light-theme {
 // Dark theme
 body.dark-theme {
   color-scheme: dark;
+  
+  // Set Material 3 form field filled container color for dark theme
+  --mat-form-field-filled-container-color: var(--color-surface-page);
 }
 
 .page-container {

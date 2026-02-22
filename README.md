@@ -958,8 +958,6 @@ For building website image
 
 ```shell
 docker build . -f ./infra/Dockerfile.client -t eatfit-client
-
-docker build . -f ./infra/Dockerfile.client1 -t eatfit-client-1
 ```
 
 ### Docker build images

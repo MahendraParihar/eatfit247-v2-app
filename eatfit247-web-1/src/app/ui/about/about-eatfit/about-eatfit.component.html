@@ -24,20 +24,21 @@
       <div class="about-eatfit__hero-content">
         <div class="about-eatfit__video">
           <!-- Video placeholder / embed -->
-          <div class="about-eatfit__video-placeholder" *ngIf="safeYoutubeUrl; else videoFallback">
-            <iframe
-              [src]="safeYoutubeUrl"
-              title="About EatFit247 video"
-              frameborder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              allowfullscreen
-            ></iframe>
-          </div>
-          <ng-template #videoFallback>
+          @if (safeYoutubeUrl) {
+            <div class="about-eatfit__video-placeholder">
+              <iframe
+                [src]="safeYoutubeUrl"
+                title="About EatFit247 video"
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowfullscreen
+              ></iframe>
+            </div>
+          } @else {
             <div class="about-eatfit__video-placeholder">
               <span>About Us Page Video Comes Here</span>
             </div>
-          </ng-template>
+          }
         </div>
 
         <div class="about-eatfit__cards">
@@ -104,12 +105,13 @@
                 <h3 class="about-eatfit__partner-name">
                   {{ partner.name }}
                 </h3>
-                <p
-                  *ngIf="partner.companyName"
-                  class="about-eatfit__partner-tagline"
-                >
-                  {{ partner.companyName }}
-                </p>
+                @if (partner.companyName) {
+                  <p
+                    class="about-eatfit__partner-tagline"
+                  >
+                    {{ partner.companyName }}
+                  </p>
+                }
               </div>
             </article>
           }

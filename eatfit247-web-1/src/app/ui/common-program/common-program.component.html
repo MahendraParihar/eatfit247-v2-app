@@ -5,86 +5,91 @@
     <p class="section__tagline">{{ tagline }}</p>
   </div>
   <div class="our-programs__cards">
-    <article
-      class="our-programs__card"
-      *ngFor="let program of programs"
-    >
-      <header class="our-programs__card-header">
-        <h2 class="our-programs__card-title">
-          {{ program.name }}
-        </h2>
-        <p class="our-programs__card-subtitle">
-          {{ program.subtitle }}
-        </p>
-      </header>
-
-      <div class="our-programs__pricing">
-        <div
-          class="our-programs__price-row"
-          *ngFor="let price of program.prices"
-        >
-          <div
-            class="our-programs__price-label"
-            *ngIf="price.label"
-            [innerHTML]="price.label"
-          >
-          </div>
-
-          <div class="our-programs__price-value">
-              <span class="our-programs__price-amount">
-                {{ price.value }}
-              </span>
-            <span
-              *ngIf="price.note"
-              class="our-programs__price-note"
-            >
-                {{ price.note }}
-              </span>
-          </div>
-        </div>
-      </div>
-
-      @if (showFeature && program.features && program.features.length > 0) {
-        <div class="our-programs__divider"></div>
-
-        <div class="our-programs__card-section">
-          <p class="our-programs__section-label">
-            WHAT'S INCLUDED
+    @for (program of programs; track program.id) {
+      <article
+        class="our-programs__card"
+      >
+        <header class="our-programs__card-header">
+          <h2 class="our-programs__card-title">
+            {{ program.name }}
+          </h2>
+          <p class="our-programs__card-subtitle">
+            {{ program.subtitle }}
           </p>
+        </header>
 
-          <ul class="our-programs__feature-list">
-            <li
-              class="our-programs__feature-item"
-              *ngFor="let feature of program.features"
+        <div class="our-programs__pricing">
+          @for (price of program.prices; track price.programPlanId || $index) {
+            <div
+              class="our-programs__price-row"
             >
-              <span class="our-programs__feature-icon">
-                ✓
-              </span>
-              <span class="our-programs__feature-text">
-                {{ feature }}
-              </span>
-            </li>
-          </ul>
+              @if (price.label) {
+                <div
+                  class="our-programs__price-label"
+                  [innerHTML]="price.label"
+                >
+                </div>
+              }
+
+              <div class="our-programs__price-value">
+                  <span class="our-programs__price-amount">
+                    {{ price.value }}
+                  </span>
+                @if (price.note) {
+                  <span
+                    class="our-programs__price-note"
+                  >
+                      {{ price.note }}
+                    </span>
+                }
+              </div>
+            </div>
+          }
         </div>
-      }
 
-      @if (!showReadMoreBtn) {
-        <button
-          type="button"
-          mat-flat-button
-          color="primary"
-          class="primary-action-button button-text"
-        >
-          Book Consultation
-        </button>
-      }
+        @if (showFeature && program.features && program.features.length > 0) {
+          <div class="our-programs__divider"></div>
 
-      @if (showReadMoreBtn) {
-        <a [routerLink]="'our-programs'" class="card-read-more">
-          Read More
-          <mat-icon class="card-read-more-icon">arrow_forward</mat-icon>
-        </a>
-      }
-    </article>
+          <div class="our-programs__card-section">
+            <p class="our-programs__section-label">
+              WHAT'S INCLUDED
+            </p>
+
+            <ul class="our-programs__feature-list">
+              @for (feature of program.features; track feature) {
+                <li
+                  class="our-programs__feature-item"
+                >
+                  <span class="our-programs__feature-icon">
+                    ✓
+                  </span>
+                  <span class="our-programs__feature-text">
+                    {{ feature }}
+                  </span>
+                </li>
+              }
+            </ul>
+          </div>
+        }
+
+        @if (!showReadMoreBtn) {
+          <button
+            type="button"
+            mat-flat-button
+            color="primary"
+            class="primary-action-button button-text"
+          >
+            Book Consultation
+          </button>
+        }
+
+        @if (showReadMoreBtn) {
+          <a [routerLink]="'our-programs'" class="card-read-more">
+            Learn More
+            <mat-icon class="card-read-more-icon">arrow_forward</mat-icon>
+          </a>
+        }
+      </article>
+    }
   </div>
 </section>

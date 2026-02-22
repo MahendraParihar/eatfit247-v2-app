@@ -2,11 +2,12 @@ import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { ICardData } from '../../interfaces';
+import { MatIcon } from '@angular/material/icon';
 
 @Component({
   selector: 'app-card',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, MatIcon],
   templateUrl: './card.component.html',
   styleUrl: './card.component.scss'
 })

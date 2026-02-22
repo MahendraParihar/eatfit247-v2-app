@@ -99,6 +99,41 @@
     }
   }
 
+  // Contact-us form styles
+  .contact-us__form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    margin-top: var(--space-3);
+  }
+
+  .contact-us__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-3);
+
+    @media (max-width: 768px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .contact-us__field {
+    &--textarea textarea {
+      min-height: 120px;
+    }
+
+    &--full {
+      width: 100%;
+    }
+  }
+
+  .contact-us__actions {
+    margin-top: var(--space-2);
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--space-2);
+  }
+
   .form-row {
     display: grid;
     grid-template-columns: 1fr 1fr;

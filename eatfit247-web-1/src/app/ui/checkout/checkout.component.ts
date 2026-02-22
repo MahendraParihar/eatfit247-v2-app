@@ -12,6 +12,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatRadioModule } from '@angular/material/radio';
+import { MAT_FORM_FIELD_DEFAULT_OPTIONS } from '@angular/material/form-field';
 import { CheckoutService, PaymentService, ProgramPlan } from '../../core/services';
 import { RecaptchaService } from '../../core/services/recaptcha.service';
 import {
@@ -47,7 +48,13 @@ import { ProductService } from '../../core/services/product.service';
     MatRadioModule
   ],
   templateUrl: './checkout.component.html',
-  styleUrl: './checkout.component.scss'
+  styleUrl: './checkout.component.scss',
+  providers: [
+    {
+      provide: MAT_FORM_FIELD_DEFAULT_OPTIONS,
+      useValue: { appearance: 'outline' },
+    },
+  ],
 })
 export class CheckoutComponent implements OnInit {
   @ViewChild('stepper') stepper!: MatStepper;
@@ -164,20 +171,20 @@ export class CheckoutComponent implements OnInit {
   initializeForms(): void {
     // Billing details form
     this.basicDetailsForm = this.fb.group({
-      firstName: ['', [Validators.required, Validators.maxLength(50)]],
-      lastName: ['', [Validators.required, Validators.maxLength(50)]],
+      firstName: ['Mahendra', [Validators.required, Validators.maxLength(50)]],
+      lastName: ['Parihar', [Validators.required, Validators.maxLength(50)]],
       companyName: ['', [Validators.maxLength(100)]],
       countryId: [null, [Validators.required]],
       streetAddress1: [
-        '',
+        'Plantaria Complex',
         [Validators.required, Validators.maxLength(200)]
       ],
-      streetAddress2: ['', [Validators.maxLength(200)]],
-      city: ['', [Validators.required, Validators.maxLength(100)]],
+      streetAddress2: ['K-203', [Validators.maxLength(200)]],
+      city: ['Bhayendar', [Validators.required, Validators.maxLength(100)]],
       stateId: ['', [Validators.required]],
-      postcode: ['', [Validators.required, Validators.maxLength(10)]],
-      phone: ['', [Validators.required, Validators.maxLength(16)]],
-      email: ['', [Validators.required, Validators.email, Validators.maxLength(100)]],
+      postcode: ['401101', [Validators.required, Validators.maxLength(10)]],
+      phone: ['8097421877', [Validators.required, Validators.maxLength(16)]],
+      email: ['mahendra.parihar10@gmail.com', [Validators.required, Validators.email, Validators.maxLength(100)]],
       orderNotes: ['']
     });
     // Watch for country changes to filter states
@@ -939,5 +946,26 @@ export class CheckoutComponent implements OnInit {
     if (!countryId) return '';
     const country = this.countryOptions.find((c) => c.id === countryId);
     return country?.label || '';
+  }
+
+  /**
+   * Get field error message
+   */
+  getFieldError(fieldName: string): string {
+    const field = this.basicDetailsForm.get(fieldName);
+    if (field?.hasError('required')) {
+      return 'This field is required';
+    }
+    if (field?.hasError('email')) {
+      return 'Please enter a valid email address';
+    }
+    if (field?.hasError('pattern')) {
+      return 'Please enter a valid value';
+    }
+    if (field?.hasError('maxlength')) {
+      const maxLength = field.errors?.['maxlength']?.requiredLength;
+      return `Maximum length is ${maxLength} characters`;
+    }
+    return '';
   }
 }
