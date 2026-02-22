@@ -133,7 +133,7 @@ export class MemberDietPlanService {
     noOfCycle: number,
     daysInCycle: number,
     requestedIp: string,
-    adminId: number,
+    adminId: number = null,
     transaction?: Transaction,
   ): Promise<TxnMemberDietPlan | null> {
     // Check if entry already exists
@@ -159,8 +159,8 @@ export class MemberDietPlanService {
         endDate: null,
         isCompleted: false,
         active: true,
-        createdBy: adminId,
-        modifiedBy: adminId,
+        createdBy: adminId ? adminId : 1,
+        modifiedBy: adminId ? adminId : 1,
         createdIp: requestedIp,
         modifiedIp: requestedIp,
       },

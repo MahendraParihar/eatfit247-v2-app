@@ -1,9 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, inject, Input, OnInit } from '@angular/core';
 import { MatButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { Program } from '../../core/interfaces/program.interface';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 
 @Component({
   standalone: true,
@@ -13,6 +13,7 @@ import { RouterLink } from '@angular/router';
   styleUrl: './common-program.component.scss'
 })
 export class CommonProgramComponent implements OnInit {
+  private readonly router = inject(Router);
   readonly title = 'Nutritional Consultations & Wellness Programs';
   readonly tagline = 'Personalised • Natural • Sustainable';
   readonly programs: Program[] = [
@@ -117,6 +118,13 @@ export class CommonProgramComponent implements OnInit {
   @Input() showReadMoreBtn = false;
 
   ngOnInit(): void {}
+
+  buyNow(programPlanId: number): void {
+    const queryParams: any = {
+      plan: programPlanId,
+    };
+    this.router.navigate(['/checkout'], { queryParams });
+  }
 }
 
 

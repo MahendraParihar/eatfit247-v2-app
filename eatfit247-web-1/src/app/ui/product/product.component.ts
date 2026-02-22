@@ -38,10 +38,10 @@ interface ISizeOption extends IProductFee {
     BannerComponent,
     LoaderComponent,
     MatButtonModule,
-    MatIconModule,
+    MatIconModule
   ],
   templateUrl: './product.component.html',
-  styleUrl: './product.component.scss',
+  styleUrl: './product.component.scss'
 })
 export class ProductComponent implements OnInit, OnDestroy {
   private readonly bannerService = inject(BannerService);
@@ -107,11 +107,11 @@ export class ProductComponent implements OnInit, OnDestroy {
                 sku: variant.sku,
                 isActive: inrPrice.active,
                 validFrom: inrPrice.validFrom,
-                validTo: inrPrice.validTo,
+                validTo: inrPrice.validTo
               },
               label: `${variant.quantityValue} ${variant.quantityUnit}`,
               productId: variant.productId,
-              productVariantId: variant.productVariantId,
+              productVariantId: variant.productVariantId
             } as ISizeOption);
           }
         }
@@ -136,7 +136,7 @@ export class ProductComponent implements OnInit, OnDestroy {
         sizeOptions.push({
           ...fee,
           value: fee,
-          label: `${fee.quantity} ${fee.unit}`,
+          label: `${fee.quantity} ${fee.unit}`
         });
       }
     }
@@ -297,7 +297,7 @@ export class ProductComponent implements OnInit, OnDestroy {
               quantityValue: item.quantityValue,
               quantityUnit: item.quantityUnit,
               sku: item.sku,
-              prices: [],
+              prices: []
             });
           }
           const variant = variantMap.get(variantKey);
@@ -308,7 +308,7 @@ export class ProductComponent implements OnInit, OnDestroy {
                 price: p.price,
                 active: p.active !== false,
                 validFrom: p.validFrom,
-                validTo: p.validTo,
+                validTo: p.validTo
               }))
             );
             item.prices.forEach((price: any) => {
@@ -320,7 +320,7 @@ export class ProductComponent implements OnInit, OnDestroy {
                 sku: item.sku,
                 isActive: price.active !== false,
                 validFrom: price.validFrom,
-                validTo: price.validTo,
+                validTo: price.validTo
               });
             });
           } else if (item.price !== undefined && item.currency !== undefined) {
@@ -329,7 +329,7 @@ export class ProductComponent implements OnInit, OnDestroy {
               price: item.price,
               active: item.isActive !== false,
               validFrom: item.validFrom,
-              validTo: item.validTo,
+              validTo: item.validTo
             };
             variant.prices.push(priceObj);
             normalizedFees.push({
@@ -340,7 +340,7 @@ export class ProductComponent implements OnInit, OnDestroy {
               sku: item.sku,
               isActive: item.isActive,
               validFrom: item.validFrom,
-              validTo: item.validTo,
+              validTo: item.validTo
             });
           }
         } else if (item.quantity !== undefined && item.price !== undefined) {
@@ -352,7 +352,7 @@ export class ProductComponent implements OnInit, OnDestroy {
             sku: item.sku,
             isActive: item.isActive,
             validFrom: item.validFrom,
-            validTo: item.validTo,
+            validTo: item.validTo
           });
         }
       }
@@ -375,7 +375,7 @@ export class ProductComponent implements OnInit, OnDestroy {
         variants:
           mergedVariants.length > 0
             ? (mergedVariants as any)
-            : anyProduct.variants,
+            : anyProduct.variants
       };
     }
     return product;
@@ -454,11 +454,11 @@ export class ProductComponent implements OnInit, OnDestroy {
                 sku: variant.sku,
                 isActive: inrPrice.active,
                 validFrom: inrPrice.validFrom,
-                validTo: inrPrice.validTo,
+                validTo: inrPrice.validTo
               },
               label: `${variant.quantityValue} ${variant.quantityUnit}`,
               productId: variant.productId,
-              productVariantId: variant.productVariantId,
+              productVariantId: variant.productVariantId
             } as ISizeOption;
             this.productId = variant.productId || null;
             this.productVariantId = variant.productVariantId || null;
@@ -484,7 +484,7 @@ export class ProductComponent implements OnInit, OnDestroy {
         this.selectedSize = {
           ...inrFee,
           value: inrFee,
-          label: `${inrFee.quantity} ${inrFee.unit}`,
+          label: `${inrFee.quantity} ${inrFee.unit}`
         };
       }
     }
@@ -496,7 +496,7 @@ export class ProductComponent implements OnInit, OnDestroy {
       title: this.productName,
       description: this.productDescription,
       url: this.router.url,
-      type: 'product',
+      type: 'product'
     });
   }
 
@@ -601,15 +601,13 @@ export class ProductComponent implements OnInit, OnDestroy {
    */
   onBuyNow(): void {
     if (!this.selectedSize) {
-      // eslint-disable-next-line no-console
-      console.error('Please select a product size');
       return;
     }
     const queryParams: any = {
       productName: encodeURIComponent(this.productName),
       productPrice: this.currentPrice.toString(),
       productQuantity: this.quantity.toString(),
-      productSku: encodeURIComponent(this.selectedSize.sku || ''),
+      productSku: encodeURIComponent(this.selectedSize.sku || '')
     };
     if (this.productId) {
       queryParams.productId = this.productId.toString();
@@ -671,13 +669,7 @@ export class ProductComponent implements OnInit, OnDestroy {
    * Video handlers
    */
   onVideoError(event: Event): void {
-    // eslint-disable-next-line no-console
-    console.error('Video error:', event);
     const video = event.target as HTMLVideoElement;
-    // eslint-disable-next-line no-console
-    console.error('Video src:', video?.src);
-    // eslint-disable-next-line no-console
-    console.error('Video error code:', video?.error?.code);
   }
 
   onVideoLoaded(): void {}

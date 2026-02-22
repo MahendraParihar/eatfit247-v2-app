@@ -1,9 +1,7 @@
 /**
  * Checkout-related interfaces for public member creation
  */
-
 import { PaymentSourceEnum } from '../enum';
-import { IMemberProductOrderItemBasic } from './member-product.interface';
 
 export interface ICheckoutMemberData {
   firstName: string;

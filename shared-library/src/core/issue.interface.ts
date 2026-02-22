@@ -1,4 +1,4 @@
-import { IBaseAdminUser, ICommonTable, IAdminInfo } from '../base.interface';
+import { IAdminInfo, ICommonTable } from '../base.interface';
 
 // Issue Category Interfaces
 export interface IBaseIssueCategory {

@@ -1,5 +1,5 @@
-import { IBaseAdminUser, ICommonTable, IAdminInfo } from "../base.interface";
-import { DiscountTypeEnum } from "../enum";
+import { IAdminInfo, ICommonTable } from '../base.interface';
+import { DiscountTypeEnum } from '../enum';
 
 export interface IBasePromoCode {
   code: string;

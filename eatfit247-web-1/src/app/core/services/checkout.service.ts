@@ -4,6 +4,7 @@ import { ProgramPlan, ProgramPlanService } from './program-plan.service';
 import {
   ICalculateProductVariantTaxRequest,
   ICalculateProductVariantTaxResponse,
+  ICalculateTaxResponse,
   ICheckoutAddressData,
   ICheckoutMemberData,
   ICheckoutMemberResponse,
@@ -13,7 +14,7 @@ import {
   IMemberProduct,
   IPaymentGateway,
   IPaymentLinkResponse,
-  ITaxCalculationRequest
+  IPlanTaxCalculationRequest
 } from '@eatfit247-shared-library';
 
 /**
@@ -21,7 +22,7 @@ import {
  * Manages member creation, address, tax calculation, and payment
  */
 @Injectable({
-  providedIn: 'root',
+  providedIn: 'root'
 })
 export class CheckoutService {
   private readonly httpService = inject(HttpService);
@@ -92,14 +93,13 @@ export class CheckoutService {
    */
   async calculateTax(
     memberId: number,
-    taxData: ITaxCalculationRequest
-  ): Promise<ICalculateProductVariantTaxResponse | null> {
+    taxData: IPlanTaxCalculationRequest
+  ): Promise<ICalculateTaxResponse | null> {
     try {
-      const res =
-        await this.httpService.post<ICalculateProductVariantTaxResponse>(
-          `checkout/member/${memberId}/calculate-tax`,
-          taxData
-        );
+      const res = await this.httpService.post<ICalculateTaxResponse>(
+        `checkout/plan/member/${memberId}/calculate-tax`,
+        taxData
+      );
       return res.data || null;
     } catch (error) {
       console.error('Error calculating tax:', error);

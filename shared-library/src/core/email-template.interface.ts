@@ -1,5 +1,5 @@
 /// <reference types="node" />
-import { IBaseAdminUser, IAdminInfo } from '../base.interface';
+import { IAdminInfo } from '../base.interface';
 import { EmailTemplateEnum } from '../enum';
 
 export interface IBaseEmailTemplate {

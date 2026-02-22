@@ -1,5 +1,5 @@
-import { IAdminInfo } from "../base.interface";
-import { IMediaUpload } from "./media-upload.interface";
+import { IAdminInfo } from '../base.interface';
+import { IMediaUpload } from './media-upload.interface';
 
 export type PressMediaType = "youtube" | "press";
 

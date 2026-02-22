@@ -1,4 +1,4 @@
-import { IBaseAdminUser, IAdminInfo } from "../base.interface";
+import { IAdminInfo } from '../base.interface';
 
 export interface IBaseMemberPocketGuide {
   memberId: number;

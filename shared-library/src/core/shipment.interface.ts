@@ -1,4 +1,4 @@
-import { IBaseAdminUser, IAdminInfo } from '../base.interface';
+import { IAdminInfo } from '../base.interface';
 import { ShipmentStatusEnum, ShipmentTrackingEnum, ShipmentTrackingSourceEnum } from '../enum';
 import { IAddress } from './location.interface';
 

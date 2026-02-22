@@ -3,17 +3,12 @@ import { CreateAddressDto, Public, RequestedIp, RequireRecaptcha } from '@server
 import { AddressService, RecaptchaGuard } from '@server_1/platform';
 import { MemberProductService } from '../../services';
 import {
-  CalculateProductVariantTaxDto, CalculateProductVariantTaxResponseDto,
+  CalculateProductVariantTaxDto,
+  CalculateProductVariantTaxResponseDto,
   CreatePublicCheckoutOrderDto,
   CreatePublicCheckoutPaymentLinkDto,
 } from '../../dto';
-import {
-  IAddress,
-  IManageAddress,
-  IPaymentGateway,
-  IPaymentLinkResponse,
-  TableEnum,
-} from '@eatfit247-shared-lib';
+import { IAddress, IManageAddress, IPaymentGateway, IPaymentLinkResponse, TableEnum } from '@eatfit247-shared-lib';
 
 @Public()
 @Controller('checkout')

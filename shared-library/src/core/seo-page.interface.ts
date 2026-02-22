@@ -1,4 +1,4 @@
-import { ICommonTable, IAdminInfo } from "../base.interface";
+import { IAdminInfo, ICommonTable } from '../base.interface';
 
 export interface IBaseSeoPage {
   url: string;

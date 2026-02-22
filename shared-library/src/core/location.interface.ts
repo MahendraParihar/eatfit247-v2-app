@@ -1,4 +1,4 @@
-import { IBaseAdminUser, IDropdownItem, IAdminInfo } from '../base.interface';
+import { IAdminInfo, IBaseAdminUser, IDropdownItem } from '../base.interface';
 import { TaxTypeEnum } from '../enum';
 
 export interface IBaseCountry {

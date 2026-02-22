@@ -1,5 +1,5 @@
-import { IBaseAdminUser, ICommonSEO, IAdminInfo } from "../base.interface";
-import { IMediaUpload } from "./media-upload.interface";
+import { IAdminInfo, ICommonSEO } from '../base.interface';
+import { IMediaUpload } from './media-upload.interface';
 
 export interface IBaseProgram {
   program: string;

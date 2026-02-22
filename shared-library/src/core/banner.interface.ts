@@ -1,6 +1,6 @@
-import { IBaseAdminUser, IAdminInfo } from "../base.interface";
-import { IMediaUpload } from "./media-upload.interface";
-import { BannerForEnum } from "../enum/banner-for.enum";
+import { IAdminInfo } from '../base.interface';
+import { IMediaUpload } from './media-upload.interface';
+import { BannerForEnum } from '../enum/banner-for.enum';
 
 export interface IBaseBanner {
   title: string;

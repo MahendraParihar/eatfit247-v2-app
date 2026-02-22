@@ -1,4 +1,4 @@
-import { IBaseAdminUser, IAdminInfo } from '../base.interface';
+import { IAdminInfo } from '../base.interface';
 import { IMediaUpload } from './media-upload.interface';
 
 export interface IBaseSuccessStory {

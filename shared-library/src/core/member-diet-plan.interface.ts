@@ -1,5 +1,5 @@
-import { IBaseAdminUser, IAdminInfo } from "../base.interface";
-import { IDietPlanDetail } from "./diet-template.interface";
+import { IAdminInfo } from '../base.interface';
+import { IDietPlanDetail } from './diet-template.interface';
 
 export interface IBasicMemberDietPlan {
   memberId: number;

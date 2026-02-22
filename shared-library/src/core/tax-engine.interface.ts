@@ -1,4 +1,4 @@
-import { TaxTypeEnum } from "../enum";
+import { TaxTypeEnum } from '../enum';
 
 export interface ITaxInput {
   supplierCountryCode: string;

@@ -2,7 +2,12 @@ import { Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/co
 import { Public, RequestedIp, RequireRecaptcha } from '@server_1/core';
 import { RecaptchaGuard } from '@server_1/platform';
 import { MemberPlanService } from '../../services';
-import { CreatePublicCheckoutPaymentLinkDto, CreatePublicCheckoutPlanOrderDto } from '../../dto';
+import {
+  CalculateTaxResponseDto,
+  CreatePublicCheckoutPaymentLinkDto,
+  CreatePublicCheckoutPlanOrderDto,
+  PlanTaxCalculationRequestDto,
+} from '../../dto';
 import { IManageMemberPayment, IPaymentGateway, IPaymentLinkResponse } from '@eatfit247-shared-lib';
 
 @Public()
@@ -10,10 +15,14 @@ import { IManageMemberPayment, IPaymentGateway, IPaymentLinkResponse } from '@ea
 export class PublicCheckoutPlanController {
   constructor(private readonly memberPaymentService: MemberPlanService) {}
 
-  /**
-   * Get supported payment gateways for plan checkout
-   * Based on franchise for services (BusinessTypeEnum.SERVICE)
-   */
+  @Post('member/:memberId/calculate-tax')
+  async calculateTax(
+    @Param('memberId') memberId: number,
+    @Body() body: PlanTaxCalculationRequestDto,
+  ): Promise<CalculateTaxResponseDto> {
+    return await this.memberPaymentService.calculateTax(memberId, body);
+  }
+
   @Get('supported-gateways')
   async getSupportedGateways(
     @Query('currency') currency: string = 'INR',
@@ -103,7 +112,7 @@ export class PublicCheckoutPlanController {
 
   /**
    * Create plan order for checkout
-   * This creates the order in txn_member_payments table
+   * This creates the order in the txn_member_payments table
    */
   @UseGuards(RecaptchaGuard)
   @RequireRecaptcha('checkout_order', 0.5)
@@ -113,29 +122,8 @@ export class PublicCheckoutPlanController {
     @Body() body: CreatePublicCheckoutPlanOrderDto,
     @RequestedIp() requestedIp: string,
   ) {
-    const orderData: IManageMemberPayment = {
-      memberId,
-      paymentModeId: body.paymentModeId,
-      billingAddressId: body.billingAddressId,
-      addressId: body.addressId,
-      transactionId: body.transactionId,
-      paymentDate: body.paymentDate,
-      paymentStatusId: body.paymentStatusId,
-      programId: body.programId,
-      programPlanId: body.programPlanId,
-      noOfCycle: body.noOfCycle,
-      noOfDaysInCycle: body.noOfDaysInCycle,
-      promoCode: body.promoCode,
-      gstNumber: body.gstNumber,
-      paymentSource: body.paymentSource,
-      discountAmount: body.discountAmount,
-      currency: body.currencyCode,
-      paymentLink: body.paymentLink,
-      gatewayProvider: body.gatewayProvider,
-      gatewayOrderId: body.gatewayOrderId,
-      paymentGatewayResponse: body.paymentGatewayResponse,
-    };
-    return await this.memberPaymentService.createPublicOrder(memberId, orderData, requestedIp);
+    body.programId = 1;
+    return await this.memberPaymentService.create(memberId, body, requestedIp);
   }
 
   /**

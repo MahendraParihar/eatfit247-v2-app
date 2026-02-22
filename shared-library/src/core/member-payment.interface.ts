@@ -1,8 +1,6 @@
-import { IBaseAdminUser, IDropdownItem, IAdminInfo } from '../base.interface';
+import { IAdminInfo, IDropdownItem } from '../base.interface';
 import { IAddress, IMemberAddress } from './location.interface';
 import { PaymentSourceEnum, TaxMode, TaxTypeEnum } from '../enum';
-import { IProduct } from './product.interface';
-import { IMemberProductOrderItemBasic } from './member-product.interface';
 
 export interface IMemberAddressSnapshot {
   address: IMemberAddress | null;
@@ -68,11 +66,9 @@ export interface IMemberPayment extends IBasicMemberPayment, IAdminInfo {
 export interface IManageMemberPayment {
   memberPaymentId?: number;
   memberId: number;
-  paymentModeId: number;
+  paymentModeId?: number;
   programId?: number | null;
   programPlanId: number;
-  noOfCycle: number;
-  noOfDaysInCycle: number;
   billingAddressId?: number;
   addressId?: number;
   transactionId?: string;

@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Params, Router } from '@angular/router';
 import { MatStepper, MatStepperModule } from '@angular/material/stepper';
-import { MatFormFieldModule } from '@angular/material/form-field';
+import { MAT_FORM_FIELD_DEFAULT_OPTIONS, MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSelectModule } from '@angular/material/select';
@@ -12,7 +12,6 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatRadioModule } from '@angular/material/radio';
-import { MAT_FORM_FIELD_DEFAULT_OPTIONS } from '@angular/material/form-field';
 import { CheckoutService, PaymentService, ProgramPlan } from '../../core/services';
 import { RecaptchaService } from '../../core/services/recaptcha.service';
 import {
@@ -24,6 +23,8 @@ import {
   IManageMemberPayment,
   IManageMemberProduct,
   IPaymentGateway,
+  IPlanTaxCalculationRequest,
+  IProductVariantTaxResult,
   IPublicProduct,
   PaymentSourceEnum,
   PaymentStatusEnum
@@ -52,9 +53,9 @@ import { ProductService } from '../../core/services/product.service';
   providers: [
     {
       provide: MAT_FORM_FIELD_DEFAULT_OPTIONS,
-      useValue: { appearance: 'outline' },
-    },
-  ],
+      useValue: { appearance: 'outline' }
+    }
+  ]
 })
 export class CheckoutComponent implements OnInit {
   @ViewChild('stepper') stepper!: MatStepper;
@@ -171,20 +172,20 @@ export class CheckoutComponent implements OnInit {
   initializeForms(): void {
     // Billing details form
     this.basicDetailsForm = this.fb.group({
-      firstName: ['Mahendra', [Validators.required, Validators.maxLength(50)]],
-      lastName: ['Parihar', [Validators.required, Validators.maxLength(50)]],
+      firstName: ['', [Validators.required, Validators.maxLength(50)]],
+      lastName: ['', [Validators.required, Validators.maxLength(50)]],
       companyName: ['', [Validators.maxLength(100)]],
       countryId: [null, [Validators.required]],
       streetAddress1: [
-        'Plantaria Complex',
+        '',
         [Validators.required, Validators.maxLength(200)]
       ],
-      streetAddress2: ['K-203', [Validators.maxLength(200)]],
-      city: ['Bhayendar', [Validators.required, Validators.maxLength(100)]],
+      streetAddress2: ['', [Validators.maxLength(200)]],
+      city: ['', [Validators.required, Validators.maxLength(100)]],
       stateId: ['', [Validators.required]],
-      postcode: ['401101', [Validators.required, Validators.maxLength(10)]],
-      phone: ['8097421877', [Validators.required, Validators.maxLength(16)]],
-      email: ['mahendra.parihar10@gmail.com', [Validators.required, Validators.email, Validators.maxLength(100)]],
+      postcode: ['', [Validators.required, Validators.maxLength(10)]],
+      phone: ['', [Validators.required, Validators.maxLength(16)]],
+      email: ['', [Validators.required, Validators.email, Validators.maxLength(100)]],
       orderNotes: ['']
     });
     // Watch for country changes to filter states
@@ -229,7 +230,6 @@ export class CheckoutComponent implements OnInit {
         this.error = 'Program plan not found.';
       }
     } catch (error) {
-      console.error('Error loading program plan:', error);
       this.error = 'Failed to load program plan details.';
     } finally {
       this.loading = false;
@@ -281,7 +281,6 @@ export class CheckoutComponent implements OnInit {
         }
       }
     } catch (error) {
-      console.error('Error loading master data:', error);
     }
   }
 
@@ -451,18 +450,40 @@ export class CheckoutComponent implements OnInit {
   }
 
   private async checkPlanTax() {
-    const taxRequest = {
-      orderAmount: this.orderAmount,
-      discountAmount: 0,
-      isTaxApplicable: true,
-      isPlanFeesIncludedTax: true,
-      currencyCode: this.currencyCode,
-      addressId: this.addressId
+    const taxRequest = <IPlanTaxCalculationRequest>{
+      programPlanId: this.programPlanId,
+      billingAddressId: this.addressId,
+      currency: this.currencyCode,
+      discountAmount: 0
     };
-    this.taxCalculation = await this.checkoutService.calculateTax(
+    const tempTaxCalculation = await this.checkoutService.calculateTax(
       this.memberId,
       taxRequest
     );
+    const item: IProductVariantTaxResult[] = [];
+    item.push(<IProductVariantTaxResult>{
+      taxPercentage: tempTaxCalculation.taxPercentage,
+      orderAmount: tempTaxCalculation.orderAmount,
+      discountAmount: tempTaxCalculation.discountAmount,
+      taxableAmount: tempTaxCalculation.taxableAmount,
+      taxAmount: tempTaxCalculation.taxAmount,
+      totalAmount: tempTaxCalculation.totalAmount,
+      taxObj: tempTaxCalculation.taxObj,
+      taxType: tempTaxCalculation.taxType,
+      taxMode: tempTaxCalculation.taxMode,
+      invoiceNote: tempTaxCalculation.invoiceNote,
+      currency: tempTaxCalculation.currency,
+      isLutApplied: tempTaxCalculation.isLutApplied,
+      jurisdiction: tempTaxCalculation.jurisdiction
+    });
+    this.taxCalculation = <ICalculateProductVariantTaxResponse>{
+      items: item,
+      orderAmount: tempTaxCalculation.orderAmount,
+      taxAmount: tempTaxCalculation.taxAmount,
+      discountAmount: tempTaxCalculation.discountAmount,
+      taxableAmount: tempTaxCalculation.taxableAmount,
+      totalAmount: tempTaxCalculation.totalAmount
+    };
     if (this.taxCalculation) {
       this.isTaxApplicable = this.taxCalculation.taxAmount > 0;
     }
@@ -703,21 +724,17 @@ export class CheckoutComponent implements OnInit {
         const orderData: IManageMemberPayment = {
           memberId: this.memberId,
           paymentModeId: null,
-          billingAddressId: this.addressId!,
-          addressId: this.addressId!,
+          billingAddressId: this.addressId,
+          addressId: this.addressId,
           transactionId: paymentId,
           paymentDate: new Date(),
           paymentStatusId: PaymentStatusEnum.PAID,
-          programId: null,
           programPlanId: this.programPlanId,
-          noOfCycle: this.programPlan?.noOfCycle || 1,
-          noOfDaysInCycle: this.programPlan?.noOfDaysInCycle || 30,
           currency: this.currencyCode,
           promoCode: undefined,
           gstNumber: undefined,
           paymentSource: PaymentSourceEnum.PAYMENT_GATEWAY,
           discountAmount: discountAmount,
-          paymentLink: undefined,
           gatewayProvider: this.paymentOrderResponse.gatewayCode,
           gatewayOrderId: orderId,
           gatewayPaymentId: paymentId,

@@ -4,7 +4,6 @@
  * These types are used for public-facing data that excludes internal/admin fields
  * such as createdBy, updatedBy, modifiedBy, createdAt, updatedAt, createdIp, updatedIp, modifiedIp, active flags, etc.
  */
-
 import { IBlog } from './blog.interface';
 import { IBanner } from './banner.interface';
 import { IPressMedia } from './press-media.interface';

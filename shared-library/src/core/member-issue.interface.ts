@@ -1,5 +1,4 @@
-import { IBaseAdminUser, IDropdownItem, IAdminInfo } from "../base.interface";
-import { IIssueStatus, IIssueCategory } from "./issue.interface";
+import { IAdminInfo, IDropdownItem } from '../base.interface';
 
 export interface IIssueMasterData {
   categories: IDropdownItem[];

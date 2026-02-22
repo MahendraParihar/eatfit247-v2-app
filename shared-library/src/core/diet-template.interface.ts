@@ -1,5 +1,5 @@
-import { IBaseAdminUser, IDropdownItem, IAdminInfo } from "../base.interface";
-import { IMediaUpload } from "./media-upload.interface";
+import { IAdminInfo, IDropdownItem } from '../base.interface';
+import { IMediaUpload } from './media-upload.interface';
 
 export interface IBasicDietTemplate {
   dietTemplate: string;

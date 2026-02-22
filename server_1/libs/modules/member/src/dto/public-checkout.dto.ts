@@ -11,7 +11,7 @@ import {
   Min,
 } from 'class-validator';
 import {
-  ICreatePaymentLinkRequest,
+  ICreatePaymentLinkRequest, IManageMemberPayment,
   IManageMemberProduct,
   IMemberProductOrderItemBasic,
   InputLengthEnum,
@@ -23,26 +23,21 @@ export class CreatePublicCheckoutPaymentLinkDto implements ICreatePaymentLinkReq
   @IsNumber()
   @Min(0)
   amount: number;
-
   @IsNotEmpty()
   @IsString()
   currency: string;
-
   @IsOptional()
   @IsString()
   description?: string;
-
   @IsNotEmpty()
   @IsNumber()
   franchisePaymentGatewayId: number;
-
   @IsOptional()
   customer?: {
     name?: string;
     email?: string;
     contact?: string;
   };
-
   @IsOptional()
   notes?: Record<string, any>;
 }
@@ -51,184 +46,120 @@ export class CreatePublicCheckoutOrderDto implements IManageMemberProduct {
   @IsOptional()
   @IsNumber()
   paymentModeId?: number;
-
   @IsOptional()
   @IsNumber()
   billingAddressId: number;
-
   @IsOptional()
   @IsNumber()
   addressId?: number;
-
   @IsOptional()
   @IsString()
   @MaxLength(InputLengthEnum.CHAR_250)
   transactionId?: string;
-
   @IsNotEmpty()
   @IsDateString()
-  paymentDate!: Date;
-
+  paymentDate: Date;
   @IsNotEmpty()
   @IsNumber()
-  paymentStatusId!: number;
-
+  paymentStatusId: number;
   @IsNotEmpty()
   @IsString()
   @MaxLength(InputLengthEnum.CHAR_10)
-  currency!: string;
-
+  currency: string;
   @IsOptional()
   @IsString()
   @MaxLength(InputLengthEnum.CHAR_100)
   promoCode?: string;
-
   @IsOptional()
   @IsString()
   @MaxLength(InputLengthEnum.CHAR_50)
   gstNumber?: string;
-
   @IsNotEmpty()
   @IsEnum(PaymentSourceEnum)
-  paymentSource!: PaymentSourceEnum;
-
+  paymentSource: PaymentSourceEnum;
   @IsNotEmpty()
   @IsNumber()
   @Min(0)
-  discountAmount!: number;
-
+  discountAmount: number;
   @IsOptional()
   @IsString()
   paymentLink?: string;
-
   @IsOptional()
   @IsString()
   gatewayProvider?: string;
-
   @IsOptional()
   @IsString()
   gatewayOrderId?: string;
-
   @IsOptional()
   @IsString()
   @MaxLength(InputLengthEnum.CHAR_100)
   gatewayPaymentId?: string;
-
   @IsOptional()
   paymentGatewayResponse?: Record<string, any>;
-
   @IsArray()
-  orderItems!: IMemberProductOrderItemBasic[];
+  orderItems: IMemberProductOrderItemBasic[];
 }
 
-export class CreatePublicCheckoutPlanOrderDto {
+export class CreatePublicCheckoutPlanOrderDto implements IManageMemberPayment {
   @IsOptional()
   @IsNumber()
-  paymentModeId?: number | null;
-
+  memberPaymentId?: number;
+  @IsNotEmpty()
+  @IsNumber()
+  memberId: number;
+  @IsNotEmpty()
+  @IsString()
+  currency: string;
   @IsOptional()
   @IsNumber()
-  billingAddressId?: number | null;
-
+  paymentModeId?: number;
+  @IsNotEmpty()
+  @IsNumber()
+  billingAddressId: number;
   @IsOptional()
   @IsNumber()
-  addressId?: number | null;
-
+  addressId?: number;
   @IsOptional()
   @IsString()
   @MaxLength(InputLengthEnum.CHAR_250)
   transactionId?: string;
-
   @IsNotEmpty()
   @IsDateString()
-  paymentDate!: Date;
-
+  paymentDate: Date;
   @IsNotEmpty()
   @IsNumber()
-  paymentStatusId!: number;
-
+  paymentStatusId: number;
   @IsOptional()
   @IsNumber()
-  programId!: number;
-
+  programId?: number;
   @IsNotEmpty()
   @IsNumber()
-  programPlanId!: number;
-
-  @IsNotEmpty()
-  @IsNumber()
-  @Min(1)
-  noOfCycle!: number;
-
-  @IsNotEmpty()
-  @IsNumber()
-  @Min(1)
-  noOfDaysInCycle!: number;
-
-  @IsNotEmpty()
-  @IsBoolean()
-  isTaxApplicable!: boolean;
-
-  @IsNotEmpty()
-  @IsNumber()
-  taxPercentage!: number;
-
-  @IsNotEmpty()
-  @IsString()
-  @MaxLength(InputLengthEnum.CHAR_10)
-  currencyCode!: string;
-
+  programPlanId: number;
   @IsOptional()
   @IsString()
   @MaxLength(InputLengthEnum.CHAR_100)
   promoCode?: string;
-
   @IsOptional()
   @IsString()
   @MaxLength(InputLengthEnum.CHAR_50)
   gstNumber?: string;
-
   @IsNotEmpty()
   @IsEnum(PaymentSourceEnum)
-  paymentSource!: PaymentSourceEnum;
-
-  @IsNotEmpty()
+  paymentSource: PaymentSourceEnum;
+  @IsOptional()
   @IsNumber()
   @Min(0)
-  orderAmount!: number;
-
-  @IsNotEmpty()
-  @IsNumber()
-  @Min(0)
-  taxAmount!: number;
-
-  @IsNotEmpty()
-  @IsNumber()
-  @Min(0)
-  discountAmount!: number;
-
-  @IsNotEmpty()
-  @IsNumber()
-  @Min(0)
-  totalAmount!: number;
-
+  discountAmount: number;
   @IsOptional()
   @IsString()
-  paymentLink?: string;
-
+  gatewayProvider: string;
   @IsOptional()
   @IsString()
-  gatewayProvider?: string;
-
-  @IsOptional()
-  @IsString()
-  gatewayOrderId?: string;
-
+  gatewayOrderId: string;
   @IsOptional()
   @IsString()
   @MaxLength(InputLengthEnum.CHAR_100)
-  gatewayPaymentId?: string;
-
+  gatewayPaymentId: string;
   @IsOptional()
   paymentGatewayResponse?: Record<string, any>;
 }

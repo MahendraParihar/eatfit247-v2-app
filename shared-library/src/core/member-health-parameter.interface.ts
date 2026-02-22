@@ -1,4 +1,4 @@
-import { IBaseAdminUser, IDropdownItem, IAdminInfo } from "../base.interface";
+import { IAdminInfo, IDropdownItem } from '../base.interface';
 
 export interface IBasicMemberHealthParameter {
   healthParameterId: number;

@@ -1,4 +1,4 @@
-import { IAdminInfo, ICommonSEO } from '../base.interface';
+import { IAdminInfo } from '../base.interface';
 import { IMediaUpload } from './media-upload.interface';
 
 // Recipe Category Interfaces

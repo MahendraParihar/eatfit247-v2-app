@@ -35,93 +35,6 @@
   letter-spacing: 0.12em;
 }
 
-.our-programs__cards {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-}
-
-.our-programs__card {
-  background-color: var(--color-surface-card);
-  border-radius: 20px;
-  padding: var(--space-5);
-  border: 1px solid var(--color-border);
-  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-  transition: border-color 150ms ease, box-shadow 150ms ease,
-  transform 150ms ease;
-}
-
-.our-programs__card--highlight {
-  border-color: var(--color-primary);
-  box-shadow: 0 22px 50px rgba(248, 65, 65, 0.15);
-}
-
-.our-programs__card:hover {
-  border-color: var(--color-primary);
-  box-shadow: 0 22px 50px rgba(248, 65, 65, 0.15);
-  transform: translateY(-2px);
-}
-
-.our-programs__card--highlight:hover {
-  transform: translateY(-4px);
-}
-
-.our-programs__card-header {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-}
-
-.our-programs__card-title {
-  margin: 0;
-  font-size: var(--font-h3-size);
-  line-height: var(--font-h3-line-height);
-  font-weight: var(--font-h3-weight);
-}
-
-.our-programs__card-subtitle {
-  margin: 0;
-  font-size: var(--font-body-b4-size);
-  line-height: var(--font-body-b4-line-height);
-  color: var(--color-text-secondary);
-}
-
-.our-programs__pricing {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-}
-
-.our-programs__price-row {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--space-2);
-}
-
-.our-programs__price-label {
-  font-size: var(--font-body-b5-size);
-  line-height: var(--font-body-b5-line-height);
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-text-secondary);
-}
-
-.our-programs__price-value {
-  display: flex;
-  align-items: baseline;
-  gap: var(--space-1);
-}
-
-.our-programs__price-amount {
-  font-size: 24px;
-  line-height: 32px;
-  font-weight: var(--font-weight-bold);
-  color: var(--color-primary);
-}
-
 .our-programs__price-note {
   font-size: 12px;
   line-height: 16px;
@@ -230,10 +143,6 @@
 }
 
 @include breakpoints.respond(md) {
-  .our-programs__cards {
-    flex-direction: row;
-  }
-
   .our-programs__card {
     flex: 1;
   }

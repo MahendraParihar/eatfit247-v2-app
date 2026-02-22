@@ -71,13 +71,23 @@
   align-items: baseline;
   justify-content: space-between;
   gap: var(--space-2);
+  border: 1px solid var(--color-border);
+  padding: var(--space-3) var(--space-4);
+  border-radius: 12px;
+}
+
+.our-programs__session {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--space-2);
 }
 
 .our-programs__price-label {
   font-size: var(--font-body-b5-size);
   line-height: var(--font-body-b5-line-height);
   font-weight: var(--font-weight-semibold);
-  color: var(--color-text-secondary);
+  color: var(--color-text-primary);
 }
 
 .our-programs__price-value {
@@ -87,10 +97,8 @@
 }
 
 .our-programs__price-amount {
-  font-size: 24px;
-  line-height: 32px;
   font-weight: var(--font-weight-bold);
-  color: var(--color-primary);
+  color: var(--color-text-primary);
 }
 
 .our-programs__price-note {

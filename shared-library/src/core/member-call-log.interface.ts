@@ -1,6 +1,6 @@
-import { IBaseAdminUser, IDropdownItem, IAdminInfo } from "../base.interface";
-import { IGoogleCalendarEvent } from "./google.interface";
-import { IZoomEvent } from "./zoom.interface";
+import { IAdminInfo, IBaseAdminUser, IDropdownItem } from '../base.interface';
+import { IGoogleCalendarEvent } from './google.interface';
+import { IZoomEvent } from './zoom.interface';
 
 export interface ICallLogMasterData {
   callTypes: IDropdownItem[];

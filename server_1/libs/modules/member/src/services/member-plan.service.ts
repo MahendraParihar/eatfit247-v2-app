@@ -288,7 +288,7 @@ export class MemberPlanService {
     memberId: number,
     obj: IManageMemberPayment,
     requestedIp: string,
-    adminId: number,
+    adminId: number = null,
   ): Promise<IMemberPayment> {
     // Verify member exists with the franchise
     const member = await this.memberRepository.scope('details').findOne({
@@ -358,13 +358,8 @@ export class MemberPlanService {
         franchiseAddress,
       );
       // Get program plan details to get noOfCycle and noOfDaysInCycle
-      let noOfCycle = obj.noOfCycle;
-      let noOfDaysInCycle = obj.noOfDaysInCycle;
-      // If not available in the request, fetch from the program plan
-      if (!noOfCycle || !noOfDaysInCycle) {
-        noOfCycle = programPlan.noOfCycle;
-        noOfDaysInCycle = programPlan.noOfDaysInCycle;
-      }
+      const noOfCycle = programPlan.noOfCycle;
+      const noOfDaysInCycle = programPlan.noOfDaysInCycle;
       // Create a payment record
       const paymentData: any = {
         memberId,
@@ -399,11 +394,12 @@ export class MemberPlanService {
         noOfCycle: noOfCycle,
         daysInCycle: noOfDaysInCycle,
         active: true,
-        createdBy: adminId,
-        modifiedBy: adminId,
         createdIp: requestedIp,
         modifiedIp: requestedIp,
       };
+      if (adminId) {
+        Object.assign(paymentData, { createdBy: adminId, modifiedBy: adminId });
+      }
       if (obj.paymentSource === PaymentSourceEnum.PAYMENT_GATEWAY) {
         paymentData.paymentLink = obj.paymentLink;
         paymentData.gatewayOrderId = obj.gatewayOrderId;
@@ -783,7 +779,11 @@ export class MemberPlanService {
         `Payment confirms acceptance of ${payment.franchise.companyName} terms and service validity conditions.`,
       ],
     );
-    const fileName = `Invoice-${CommonFunctionsUtil.removeSpecialChar(paymentModel.memberName, '-', false)}-${paymentModel.paymentDate}.pdf`;
+    const fileName = `Invoice-${CommonFunctionsUtil.removeSpecialChar(
+      paymentModel.memberName,
+      '-',
+      false,
+    )}-${paymentModel.paymentDate}.pdf`;
     const relativePath = `${MediaForEnum.DOWNLOADS}/${memberId}/invoices`;
     const destinationFolderPath = `${this.rootFolderPath}/${relativePath}`;
     //CREATE DIRECTORY IF NOT EXISTS (async)

@@ -30,17 +30,30 @@
                 >
                 </div>
               }
-
-              <div class="our-programs__price-value">
+              <div class="our-programs__session">
+                <div class="our-programs__price-value">
                   <span class="our-programs__price-amount">
                     {{ price.value }}
                   </span>
-                @if (price.note) {
-                  <span
-                    class="our-programs__price-note"
-                  >
+                  @if (price.note) {
+                    <span
+                      class="our-programs__price-note"
+                    >
                       {{ price.note }}
                     </span>
+                  }
+                </div>
+
+                @if (!showReadMoreBtn) {
+                  <button
+                    type="button"
+                    mat-flat-button
+                    (click)="buyNow(price.programPlanId)"
+                    color="primary"
+                    class="primary-action-button heading-3"
+                  >
+                    Book Now
+                  </button>
                 }
               </div>
             </div>
@@ -70,17 +83,6 @@
               }
             </ul>
           </div>
-        }
-
-        @if (!showReadMoreBtn) {
-          <button
-            type="button"
-            mat-flat-button
-            color="primary"
-            class="primary-action-button button-text"
-          >
-            Book Consultation
-          </button>
         }
 
         @if (showReadMoreBtn) {

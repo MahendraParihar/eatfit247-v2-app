@@ -1,6 +1,6 @@
-import { IBaseAdminUser, IAdminInfo } from "../base.interface";
-import { IMediaUpload } from "./media-upload.interface";
-import { IManageAddress } from "./location.interface";
+import { IAdminInfo } from '../base.interface';
+import { IMediaUpload } from './media-upload.interface';
+import { IManageAddress } from './location.interface';
 
 export interface IBaseAdminUserFull {
   firstName: string;

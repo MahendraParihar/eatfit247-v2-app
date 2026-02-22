@@ -1,5 +1,5 @@
-import { IBaseAdminUser, ICommonSEO, ICommonTable, IAdminInfo } from "../base.interface";
-import { IMediaUpload } from "./media-upload.interface";
+import { IAdminInfo, ICommonSEO, ICommonTable } from '../base.interface';
+import { IMediaUpload } from './media-upload.interface';
 
 export interface IBaseBlog {
   title: string;
