@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { IRateQuote } from '@eatfit247-shared-lib';
+import { IRateQuote } from 'eatfit247-shared-library';
 
 @Component({
   selector: 'lib-provider-step',
@@ -15,4 +15,3 @@ import { IRateQuote } from '@eatfit247-shared-lib';
 export class ProviderStepComponent {
   @Input() selectedRate: IRateQuote | null = null;
 }
-

@@ -7,7 +7,6 @@ export class ValidationFilter implements ExceptionFilter {
   constructor(private moduleRef?: ModuleRef) {}
 
   catch(exception: ValidationException, host: ArgumentsHost): any {
-    console.log(exception);
     const ctx = host.switchToHttp();
     const response = ctx.getResponse();
     const request = ctx.getRequest();

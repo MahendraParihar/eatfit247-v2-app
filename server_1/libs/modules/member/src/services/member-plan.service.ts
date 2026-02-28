@@ -187,8 +187,6 @@ export class MemberPlanService {
     const fee: { fees: number; currencyCode: string } = find(programPlan.programPlanFees, {
       currencyCode: payload.currency,
     });
-    console.log(programPlan);
-    console.log(fee);
     // Calculate base amounts
     // Use tax engine to calculate tax
     const taxInput: TaxInput = {

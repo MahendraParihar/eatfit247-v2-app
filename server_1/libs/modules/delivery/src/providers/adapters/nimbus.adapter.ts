@@ -6,10 +6,10 @@ import {
   INimbusServiceabilityDataItem,
   INimbusServiceabilityPayload,
   INimbusServiceabilityResponse,
-  IRateQuote,
   IShipmentBookingResponse,
   ITrackingEvent,
 } from '../courier.interface';
+import { INimbusShipmentPayload, IRateQuote } from '@eatfit247-shared-lib';
 
 @Injectable()
 export class NimbusAdapter extends BaseCourierAdapter {
@@ -31,32 +31,8 @@ export class NimbusAdapter extends BaseCourierAdapter {
       'Content-Type': 'application/json',
       Accept: 'application/json',
     };
-    switch (credentials.authType) {
-      case 'API_KEY':
-        if (credentials.apiKey) {
-          headers['X-API-Key'] = credentials.apiKey;
-        }
-        if (credentials.apiSecret) {
-          headers['X-API-Secret'] = credentials.apiSecret;
-        }
-        break;
-      case 'JWT':
-        const token = await this.ensureValidToken(credentials);
-        headers['Authorization'] = `Bearer ${token}`;
-        break;
-      case 'BASIC':
-        if (credentials.username && credentials.password) {
-          const auth = Buffer.from(`${credentials.username}:${credentials.password}`).toString(
-            'base64',
-          );
-          headers['Authorization'] = `Basic ${auth}`;
-        }
-        break;
-      default:
-        throw new Error(
-          `${this.providerCode} getAuthHeaders Unsupported auth type: ${credentials.authType}`,
-        );
-    }
+    const token = await this.ensureValidToken(credentials);
+    headers['Authorization'] = `Bearer ${token}`;
     return headers;
   }
 
@@ -105,18 +81,24 @@ export class NimbusAdapter extends BaseCourierAdapter {
       const headers = await this.getAuthHeaders(credentials);
 
       // Build rate request payload according to Nimbus API specification
+      const originPostcode = Number(payload.pickup?.postcode ?? payload.pickupPostcode ?? 0);
+      const destPostcode = Number(payload.delivery?.postcode ?? payload.deliveryPostcode ?? 0);
+      if (!originPostcode || !destPostcode) {
+        throw new Error(`${this.providerCode} getRates requires pickup and delivery postcodes`);
+      }
+      const orderAmount = payload.orderAmount ?? payload.subTotal ?? payload.codAmount ?? 0;
       const ratePayload: INimbusServiceabilityPayload = {
-        order_amount: 700,
-        payment_type: 'prepaid',
-        origin: 400046,
-        destination: 401101,
-        weight: payload.weight,
+        origin: originPostcode,
+        destination: destPostcode,
+        payment_type: (payload.codAmount ?? 0) > 0 ? 'cod' : 'prepaid',
+        order_amount: orderAmount > 0 ? orderAmount : 500,
+        weight: Math.round((payload.weight ?? 0.5) * 1000),
       };
       // Add dimensions if provided
       if (payload.dimensions) {
-        ratePayload.length = payload.dimensions.length;
-        ratePayload.breadth = payload.dimensions.breadth;
-        ratePayload.height = payload.dimensions.height;
+        ratePayload.length = payload.dimensions.length ?? 10;
+        ratePayload.breadth = payload.dimensions.breadth ?? payload.dimensions.width ?? 10;
+        ratePayload.height = payload.dimensions.height ?? 10;
       }
       const response = await this.httpService.post<INimbusServiceabilityResponse>(
         `${credentials.apiBaseUrl}/courier/serviceability`,
@@ -125,8 +107,9 @@ export class NimbusAdapter extends BaseCourierAdapter {
         headers,
       );
       return response.data.map((rate: INimbusServiceabilityDataItem) => ({
+        providerId: credentials.providerAccountId,
         serviceName: rate.name,
-        serviceCode: null,
+        serviceCode: rate.id ?? '',
         rateAmount: rate.total_charges,
         currency: 'INR',
         estimatedDays: undefined,
@@ -166,56 +149,64 @@ export class NimbusAdapter extends BaseCourierAdapter {
           )) ||
         0;
       // Build shipment request payload according to Nimbus API specification
-      const shipmentPayload: any = {
-        order_id: payload.orderId,
-        order_amount: orderAmount,
-        origin_pincode: payload.pickup?.postcode || payload.pickupPostcode,
-        destination_pincode: payload.delivery?.postcode || payload.deliveryPostcode,
-        origin_name: payload.pickup?.name || payload.pickupName,
-        origin_address: payload.pickup?.address || payload.pickupAddress,
-        origin_city: payload.pickup?.city || payload.pickupCity,
-        origin_state: payload.pickup?.state || payload.pickupState,
-        origin_phone: payload.pickup?.phone || payload.pickupPhone,
-        destination_name: payload.delivery?.name || payload.deliveryName,
-        destination_address: payload.delivery?.address || payload.deliveryAddress,
-        destination_city: payload.delivery?.city || payload.deliveryCity,
-        destination_state: payload.delivery?.state || payload.deliveryState,
-        destination_phone: payload.delivery?.phone || payload.deliveryPhone,
-        weight: payload.weight || 1,
-        cod_amount: payload.codAmount || 0,
+      const shipmentPayload: INimbusShipmentPayload = {
+        order_number: payload.orderId,
+        payment_type: 'prepaid',
+        order_amount: 1299,
+        cod_amount: 0,
+        package_weight: 0.5,
+        package_length: 20,
+        package_breadth: 15,
+        package_height: 5,
+        pickup_location: 'Mahi Enterprise',
+        billing_customer_name: 'Rahul Sharma',
+        billing_last_name: '',
+        billing_address: 'Flat 202, Sai Residency',
+        billing_city: 'Mumbai',
+        billing_pincode: '400001',
+        billing_state: 'Maharashtra',
+        billing_country: 'India',
+        billing_email: 'rahul.sharma@gmail.com',
+        billing_phone: '9876543210',
+        shipping_is_billing: true,
+        order_items: [],
+        support_email: 'support@eatfit247.com',
+        support_phone: '9876543210',
       };
-      // Add dimensions if provided
-      if (payload.dimensions) {
-        shipmentPayload.length = payload.dimensions.length || 10;
-        shipmentPayload.breadth = payload.dimensions.breadth || payload.dimensions.width || 10;
-        shipmentPayload.height = payload.dimensions.height || 10;
-      }
-      // Add email if provided
-      if (payload.delivery?.email || payload.deliveryEmail) {
-        shipmentPayload.destination_email = payload.delivery?.email || payload.deliveryEmail;
-      }
-      if (payload.pickup?.email || payload.pickupEmail) {
-        shipmentPayload.origin_email = payload.pickup?.email || payload.pickupEmail;
-      }
       // Add items if provided
       if (payload.items && Array.isArray(payload.items) && payload.items.length > 0) {
-        shipmentPayload.items = payload.items.map((item: any) => ({
-          name: item.name || 'Product',
+        shipmentPayload.order_items = payload.items.map((item: any) => ({
+          name: item.name,
           sku: item.sku || item.productSku || '',
-          quantity: item.quantity || 1,
-          price: item.price || item.unitPrice || 0,
-          weight: item.weight || item.weightKg || 0,
+          units: item.quantity || 1,
+          selling_price: item.price || item.unitPrice || 0,
+          discount: item.price || item.unitPrice || 0,
+          tax: item.weight || item.weightKg || 0,
+          hsn: item.weight || item.weightKg || 0,
         }));
       }
+      console.log(shipmentPayload);
       const response = await this.httpService.post(
         `${credentials.apiBaseUrl}/shipments`,
         shipmentPayload,
         undefined,
         headers,
       );
+      console.log(response);
       const shipment = response?.data || response;
       if (!shipment) {
         throw new Error(`${this.providerCode} Invalid response format from Nimbus shipment API`);
+      }
+      // Provider may return status: false when booking fails - do not treat as success
+      const rawStatus = shipment.status ?? shipment.shipment_status;
+      if (
+        rawStatus === false ||
+        rawStatus === 0 ||
+        (typeof rawStatus === 'string' && rawStatus.toLowerCase() === 'false')
+      ) {
+        const errMsg =
+          shipment.message || shipment.error || shipment.error_message || 'Booking failed';
+        throw new Error(`${this.providerCode} ${errMsg}`);
       }
       return {
         providerShipmentId: shipment.shipment_id || shipment.shipmentId || shipment.id || '',
@@ -228,7 +219,7 @@ export class NimbusAdapter extends BaseCourierAdapter {
         trackingUrl: shipment.tracking_url || shipment.trackingUrl || shipment.tracking_link,
         labelUrl: shipment.label_url || shipment.labelUrl || shipment.label,
         awbNumber: shipment.awb_number || shipment.awbNumber || shipment.awb,
-        status: shipment.status || shipment.shipment_status || 'BOOKED',
+        status: (typeof rawStatus === 'string' ? rawStatus : null) || 'BOOKED',
         metadata: {
           ...shipment,
         },
@@ -242,7 +233,8 @@ export class NimbusAdapter extends BaseCourierAdapter {
 
   /**
    * Track shipment with Nimbus API
-   * Endpoint: GET /api/v1/tracking/{trackingNumber}
+   * Endpoint: GET /tracking/{trackingNumber}
+   * (apiBaseUrl in DB includes prefix e.g. /api/v1)
    */
   async trackShipment(
     trackingNumber: string,
@@ -260,7 +252,7 @@ export class NimbusAdapter extends BaseCourierAdapter {
       const headers = await this.getAuthHeaders(credentials);
 
       const response = await this.httpService.get(
-        `${credentials.apiBaseUrl}/api/v1/tracking/${trackingNumber.trim()}`,
+        `${credentials.apiBaseUrl}/tracking/${trackingNumber.trim()}`,
         undefined,
         headers,
       );
@@ -307,7 +299,8 @@ export class NimbusAdapter extends BaseCourierAdapter {
 
   /**
    * Cancel shipment with Nimbus API
-   * Endpoint: POST /api/v1/shipments/{trackingNumber}/cancel
+   * Endpoint: POST /shipments/{trackingNumber}/cancel
+   * (apiBaseUrl in DB includes prefix e.g. /api/v1)
    */
   async cancelShipment(
     trackingNumber: string,
@@ -330,7 +323,7 @@ export class NimbusAdapter extends BaseCourierAdapter {
       // Some APIs require shipment_id instead of tracking number
       // Try with tracking number first, API will handle the mapping
       await this.httpService.post(
-        `${credentials.apiBaseUrl}/api/v1/shipments/${trackingNumber.trim()}/cancel`,
+        `${credentials.apiBaseUrl}/shipments/${trackingNumber.trim()}/cancel`,
         cancelPayload,
         undefined,
         headers,

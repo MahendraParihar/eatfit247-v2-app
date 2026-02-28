@@ -43,7 +43,6 @@ export class ReferrerService {
   }
 
   private convertToModel(item: MstReferrer): IReferrer {
-    console.log(item);
     return <IReferrer>{
       referrerId: item.referrerId,
       id: item.referrerId,

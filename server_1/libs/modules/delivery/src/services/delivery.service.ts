@@ -8,9 +8,16 @@ import {
 import { InjectModel, InjectConnection } from '@nestjs/sequelize';
 import { Sequelize, Transaction } from 'sequelize';
 import { TxnShipment } from '../models';
-import { ShipmentRepository } from '../repositories/shipment.repository';
+import { ShipmentRepository, RateRepository } from '../repositories';
 import { RateService } from './rate.service';
 import { FailoverService } from './failover.service';
+import { IRateQuote } from '@eatfit247-shared-lib';
+
+export interface BookShipmentOptions {
+  rateQuoteId?: number;
+  providerId?: number;
+  idempotencyKey?: string;
+}
 
 /**
  * Delivery Service (Orchestrator)
@@ -32,6 +39,7 @@ export class DeliveryService {
     @InjectConnection()
     private readonly sequelize: Sequelize,
     private readonly shipmentRepository: ShipmentRepository,
+    private readonly rateRepository: RateRepository,
     private readonly rateService: RateService,
     private readonly failoverService: FailoverService,
   ) {}
@@ -44,12 +52,13 @@ export class DeliveryService {
    * @param idempotencyKey - Optional idempotency key to prevent duplicate requests
    * @returns Array of rate quotes
    */
-  public async requestRates(shipmentId: number, idempotencyKey?: string): Promise<any> {
+  public async requestRates(shipmentId: number, idempotencyKey?: string): Promise<IRateQuote[]> {
     // Validate shipment state
     await this.validateShipmentState(shipmentId, [
       'DRAFT',
       'RATE_REQUESTED', // Allow re-requesting rates
       'RATE_SELECTED', // Allow re-requesting if rate was selected but booking failed
+      'FAILED', // Allow re-requesting rates when retrying after booking failure
     ]);
 
     // Check idempotency if key provided
@@ -61,7 +70,7 @@ export class DeliveryService {
     this.logger.log(`Requesting rates for shipment ${shipmentId}`);
     const rateQuotes = await this.rateService.requestRates(shipmentId);
 
-    // Store idempotency key in metadata if provided
+    // Store idempotency key in metaData if provided
     if (idempotencyKey) {
       await this.storeIdempotencyKey(shipmentId, idempotencyKey, 'requestRates');
     }
@@ -124,7 +133,7 @@ export class DeliveryService {
     // Update status to BOOKING_REQUESTED
     await this.shipmentRepository.updateStatus(shipmentId, 'BOOKING_REQUESTED');
 
-    // Store idempotency key in metadata if provided (before booking attempt)
+    // Store idempotency key in metaData if provided (before booking attempt)
     if (idempotencyKey) {
       await this.storeIdempotencyKey(shipmentId, idempotencyKey, 'createShipment');
     }
@@ -148,60 +157,95 @@ export class DeliveryService {
   }
 
   /**
-   * Book a shipment
-   * Validates shipment state, prevents double booking, and triggers booking via FailoverService
+   * Book a shipment.
+   * When rateQuoteId or providerId is provided and shipment is RATE_REQUESTED, selects rate first then books.
+   * Merges select-rate + book into one call to reduce round-trips.
    *
    * @param shipmentId - The shipment ID
-   * @param idempotencyKey - Optional idempotency key to prevent duplicate bookings
+   * @param options - Optional rateQuoteId, providerId, or idempotencyKey
    * @returns Updated shipment
    */
-  public async bookShipment(shipmentId: number, idempotencyKey?: string): Promise<TxnShipment> {
-    // Validate shipment state - must have a selected rate
-    await this.validateShipmentState(shipmentId, [
-      'RATE_SELECTED',
-      'BOOKING_REQUESTED', // Allow retry if booking was requested but failed
-    ]);
+  public async bookShipment(
+    shipmentId: number,
+    options?: BookShipmentOptions,
+  ): Promise<TxnShipment> {
+    const { rateQuoteId, providerId, idempotencyKey } = options || {};
 
-    // Prevent double booking - check if already booked
-    await this.preventDoubleBooking(shipmentId);
-
-    // Check idempotency if key provided
-    if (idempotencyKey) {
-      await this.checkIdempotency(shipmentId, idempotencyKey, 'bookShipment');
-    }
-
-    // Get shipment to verify rate is selected
     const shipment = await this.shipmentRepository.findById(shipmentId);
     if (!shipment) {
       throw new NotFoundException(`Shipment with ID ${shipmentId} not found`);
     }
 
-    // Verify rate is selected
-    if (!shipment.rateAmount || shipment.status !== 'RATE_SELECTED') {
+    if (shipment.status === 'RATE_REQUESTED') {
+      if (rateQuoteId == null && providerId == null) {
+        throw new BadRequestException(
+          `Shipment ${shipmentId} has rates but none selected. Provide rateQuoteId or providerId in the request body.`,
+        );
+      }
+      let resolvedRateQuoteId: number;
+      if (rateQuoteId != null) {
+        const rateQuotes = await this.rateRepository.findByShipmentId(shipmentId);
+        const found = rateQuotes.find((rq) => Number(rq.rateQuoteId) === Number(rateQuoteId));
+        if (!found) {
+          throw new BadRequestException(
+            `Rate quote ${rateQuoteId} not found for shipment ${shipmentId}`,
+          );
+        }
+        resolvedRateQuoteId = rateQuoteId;
+      } else if (providerId != null) {
+        const rateQuotes = await this.rateRepository.findByShipmentId(shipmentId);
+        const selectedRate = rateQuotes.find((rq) => rq.providerId === providerId);
+        if (!selectedRate) {
+          throw new BadRequestException(
+            `Rate quote not found for provider ${providerId} in shipment ${shipmentId}`,
+          );
+        }
+        resolvedRateQuoteId = selectedRate.rateQuoteId;
+      } else {
+        throw new BadRequestException('Either rateQuoteId or providerId is required');
+      }
+      await this.rateService.selectRate(shipmentId, resolvedRateQuoteId);
+    }
+
+    await this.validateShipmentState(shipmentId, [
+      'RATE_SELECTED',
+      'BOOKING_REQUESTED',
+      'FAILED', // Allow retry when previous booking failed
+    ]);
+
+    await this.preventDoubleBooking(shipmentId);
+
+    if (idempotencyKey) {
+      await this.checkIdempotency(shipmentId, idempotencyKey, 'bookShipment');
+    }
+
+    const currentShipment = await this.shipmentRepository.findById(shipmentId);
+    if (!currentShipment) {
+      throw new NotFoundException(`Shipment with ID ${shipmentId} not found`);
+    }
+
+    const allowedForBooking = ['RATE_SELECTED', 'FAILED'];
+    if (!currentShipment.rateAmount || !allowedForBooking.includes(currentShipment.status)) {
       throw new BadRequestException(
-        `Shipment ${shipmentId} must have a selected rate before booking. Current status: ${shipment.status}`,
+        `Shipment ${shipmentId} must have a selected rate before booking. ` +
+          `Provide rateQuoteId or providerId in the request body. Current status: ${currentShipment.status}`,
       );
     }
 
-    // Update status to BOOKING_REQUESTED
     await this.shipmentRepository.updateStatus(shipmentId, 'BOOKING_REQUESTED');
 
-    // Store idempotency key in metadata if provided (before booking attempt)
     if (idempotencyKey) {
       await this.storeIdempotencyKey(shipmentId, idempotencyKey, 'bookShipment');
     }
 
-    // Trigger booking via FailoverService
     this.logger.log(`Initiating booking for shipment ${shipmentId}`);
     try {
       await this.failoverService.handleFailover(shipmentId);
     } catch (error: any) {
       this.logger.error(`Booking failed for shipment ${shipmentId}: ${error.message}`, error.stack);
-      // FailoverService handles status updates, so we just rethrow
       throw error;
     }
 
-    // Return updated shipment
     const updatedShipment = await this.shipmentRepository.findById(shipmentId);
     if (!updatedShipment) {
       throw new NotFoundException(`Shipment with ID ${shipmentId} not found after booking`);
@@ -290,8 +334,8 @@ export class DeliveryService {
       throw new NotFoundException(`Shipment with ID ${shipmentId} not found`);
     }
 
-    const metadata = shipment.metadata || {};
-    const idempotencyKeys = metadata['idempotencyKeys'] || {};
+    const metaData = shipment.metaData || {};
+    const idempotencyKeys = metaData['idempotencyKeys'] || {};
 
     // Check if this operation was already performed with this key
     if (idempotencyKeys[operation] === idempotencyKey) {
@@ -317,7 +361,7 @@ export class DeliveryService {
   }
 
   /**
-   * Store idempotency key in shipment metadata
+   * Store idempotency key in shipment metaData
    *
    * @param shipmentId - The shipment ID
    * @param idempotencyKey - The idempotency key
@@ -337,15 +381,17 @@ export class DeliveryService {
         throw new NotFoundException(`Shipment with ID ${shipmentId} not found`);
       }
 
-      const metadata = shipment.metadata || {};
-      const idempotencyKeys = metadata['idempotencyKeys'] || {};
+      const metaData = shipment.metaData;
+      const idempotencyKeys = metaData['idempotencyKeys'] || {};
 
       // Store the idempotency key for this operation
       idempotencyKeys[operation] = idempotencyKey;
-      metadata['idempotencyKeys'] = idempotencyKeys;
+      metaData['idempotencyKeys'] = idempotencyKeys;
 
       await this.shipmentModel.update(
-        { metadata },
+        {
+          metaData: metaData,
+        },
         {
           where: { shipmentId },
           transaction,

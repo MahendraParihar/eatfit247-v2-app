@@ -110,7 +110,7 @@ export class TxnShipmentTrackingEvent extends Model<TxnShipmentTrackingEvent> {
     field: 'raw_payload',
     type: DataType.JSONB,
   })
-  declare rawPayload: Record<string, any>;
+  declare rawPayload: Record<string, unknown>;
 
   @CreatedAt
   @Column({

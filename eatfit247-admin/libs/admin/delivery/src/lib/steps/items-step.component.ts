@@ -1,4 +1,13 @@
-import { Component, EventEmitter, Input, Output, OnInit, inject } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  Output,
+  OnInit,
+  OnChanges,
+  SimpleChanges,
+  inject,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormArray,
@@ -6,18 +15,15 @@ import {
   FormGroup,
   ReactiveFormsModule,
   Validators,
-  AbstractControl,
 } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTableModule } from '@angular/material/table';
-import { InputErrorComponent, EmptyStateComponent } from '@shared';
-import { IShipmentDetails } from '@eatfit247-shared-lib';
-import { IOrderItem } from '../models/shipment.model';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { EmptyStateComponent } from '@shared';
+import { IShipment } from '@eatfit247-shared-lib';
+import { IOrderItemShipmentGroup } from '../models/shipment.model';
 
 @Component({
   selector: 'lib-items-step',
@@ -26,92 +32,88 @@ import { IOrderItem } from '../models/shipment.model';
     CommonModule,
     ReactiveFormsModule,
     MatCardModule,
-    MatFormFieldModule,
-    MatInputModule,
     MatButtonModule,
     MatIconModule,
-    MatProgressSpinnerModule,
     MatTableModule,
-    InputErrorComponent,
+    MatCheckboxModule,
     EmptyStateComponent,
   ],
   templateUrl: './items-step.component.html',
   styleUrl: './items-step.component.scss',
 })
-export class ItemsStepComponent implements OnInit {
-  @Input() shipmentDetails: IShipmentDetails | null = null;
+export class ItemsStepComponent implements OnInit, OnChanges {
+  @Input() shipmentDetails: IShipment | null = null;
   @Input() loading = false;
   @Input() formGroup!: FormGroup;
-  @Output() itemsSaved = new EventEmitter<Array<{ memberProductOrderItemId: number; quantity: number }>>();
+  @Input() orderItemGroups: IOrderItemShipmentGroup[] = [];
+  @Output() itemsSaved = new EventEmitter<
+    Array<{ memberProductOrderItemId: number; quantity: number }>
+  >();
 
   private readonly fb = inject(FormBuilder);
   itemsFormArray!: FormArray;
-  displayedColumns: string[] = ['productName', 'orderedQuantity', 'remainingQuantity', 'quantity'];
+  displayedColumns: string[] = [
+    'select',
+    'productName',
+    'orderedQuantity',
+  ];
 
   ngOnInit(): void {
-    if (this.shipmentDetails?.orderItems) {
+    if (this.orderItemGroups.length > 0) {
+      this.initializeForm();
+    }
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (
+      changes['orderItemGroups'] &&
+      this.orderItemGroups &&
+      this.orderItemGroups.length > 0
+    ) {
       this.initializeForm();
     }
   }
 
   private initializeForm(): void {
+    if (!this.formGroup || this.formGroup.get('items')) {
+      return;
+    }
+
     this.itemsFormArray = this.fb.array([]);
     this.formGroup.addControl('items', this.itemsFormArray);
 
-    if (this.shipmentDetails?.orderItems) {
-      this.shipmentDetails.orderItems.forEach((item) => {
+    this.orderItemGroups
+      .filter((group) => group.quantity > 0)
+      .forEach((group) => {
         const itemGroup = this.fb.group({
-          memberProductOrderItemId: [this.getOrderItemId(item), Validators.required],
-          quantity: [
-            0,
-            [
-              Validators.required,
-              Validators.min(1),
-              (control: AbstractControl) => this.validateQuantity(control, item),
-            ],
+          memberProductOrderItemId: [
+            group.orderItem.memberProductOrderItemId,
+            Validators.required,
           ],
+          selected: [false],
         });
         this.itemsFormArray.push(itemGroup);
       });
-    }
-  }
-
-  private getOrderItemId(item: IOrderItem | { productName: string; quantity: number }): number {
-    if ('memberProductOrderItemId' in item) {
-      return item.memberProductOrderItemId;
-    }
-    return 0;
-  }
-
-  private validateQuantity(control: AbstractControl, item: IOrderItem | { productName: string; quantity: number }): { [key: string]: boolean } | null {
-    const value = control.value;
-    const remaining = 'remainingQuantity' in item ? item.remainingQuantity : item.quantity;
-    if (value > remaining) {
-      return { maxQuantity: true };
-    }
-    return null;
   }
 
   getItemControl(index: number): FormGroup {
     return this.itemsFormArray.at(index) as FormGroup;
   }
 
-  getOrderItem(index: number): IOrderItem | { productName: string; quantity: number } {
-    return this.shipmentDetails?.orderItems?.[index] || { productName: '', quantity: 0 };
-  }
-
-  getRemainingQuantity(item: IOrderItem | { productName: string; quantity: number }): number {
-    return 'remainingQuantity' in item ? item.remainingQuantity : item.quantity;
-  }
-
   onSave(): void {
     if (this.itemsFormArray.valid) {
       const items = this.itemsFormArray.value
-        .filter((item: { quantity: number }) => item.quantity > 0)
-        .map((item: { memberProductOrderItemId: number; quantity: number }) => ({
-          memberProductOrderItemId: item.memberProductOrderItemId,
-          quantity: item.quantity,
-        }));
+        .filter((item: { selected: boolean }) => item.selected)
+        .map((item: { memberProductOrderItemId: number }) => {
+          const group = this.orderItemGroups.find(
+            (g) => g.orderItem.memberProductOrderItemId === item.memberProductOrderItemId
+          );
+          const quantity = group?.quantity ?? 0;
+          return {
+            memberProductOrderItemId: item.memberProductOrderItemId,
+            quantity,
+          };
+        });
       this.itemsSaved.emit(items);
     } else {
       this.itemsFormArray.markAllAsTouched();
@@ -119,7 +121,18 @@ export class ItemsStepComponent implements OnInit {
   }
 
   hasItems(): boolean {
-    return (this.shipmentDetails?.orderItems?.length || 0) > 0;
+    return this.orderItemGroups.some((group) => group.quantity > 0);
+  }
+
+  /** Groups that have remaining quantity — used as table dataSource so row index matches form array index */
+  get selectableGroups(): IOrderItemShipmentGroup[] {
+    return this.orderItemGroups.filter((g) => g.quantity > 0);
+  }
+
+  hasSelection(): boolean {
+    if (!this.itemsFormArray) return false;
+    return this.itemsFormArray.controls.some(
+      (c) => (c.get('selected')?.value ?? false) === true
+    );
   }
 }
-

@@ -3,12 +3,12 @@ import { HttpService } from '@server_1/core';
 import { BaseCourierAdapter } from './base-courier.adapter';
 import {
   ICourierProviderCredentials,
-  IRateQuote,
   IShipmentBookingResponse,
   IShipRocketServiceabilityPayload,
   IShipRocketServiceabilityResponse,
   ITrackingEvent,
 } from '../courier.interface';
+import { IRateQuote } from '@eatfit247-shared-lib';
 
 @Injectable()
 export class ShiprocketAdapter extends BaseCourierAdapter {
@@ -68,11 +68,23 @@ export class ShiprocketAdapter extends BaseCourierAdapter {
       // Get authentication headers
       const headers = await this.getAuthHeaders(credentials);
 
+      const pickupPostcode = Number(
+        payload.pickup?.postcode ?? payload.pickupPostcode ?? 0,
+      );
+      const deliveryPostcode = Number(
+        payload.delivery?.postcode ?? payload.deliveryPostcode ?? 0,
+      );
+      if (!pickupPostcode || !deliveryPostcode) {
+        throw new Error(
+          `${this.providerCode} getRates requires pickup and delivery postcodes`,
+        );
+      }
       const ratePayload: IShipRocketServiceabilityPayload = {
-        pickup_postcode: payload.pickup.postcode || payload.pickupPostcode,
-        delivery_postcode: payload.delivery.postcode || payload.deliveryPostcode,
-        weight: payload.weight,
-        mode: 'cod',
+        pickup_postcode: pickupPostcode,
+        delivery_postcode: deliveryPostcode,
+        weight: payload.weight ?? 1,
+        cod: (payload.codAmount ?? 0) > 0,
+        mode: payload.dimensions?.mode ?? 'Surface',
       };
       // Add dimensions if provided
       if (payload.dimensions) {
@@ -80,31 +92,43 @@ export class ShiprocketAdapter extends BaseCourierAdapter {
         ratePayload.breadth = payload.dimensions.breadth;
         ratePayload.height = payload.dimensions.height;
       }
-      const response = await this.httpService.post<IShipRocketServiceabilityResponse>(
+      const params: Record<string, string | number | boolean> = {
+        pickup_postcode: ratePayload.pickup_postcode,
+        delivery_postcode: ratePayload.delivery_postcode,
+        weight: ratePayload.weight,
+        cod: ratePayload.cod ?? false,
+      };
+      if (ratePayload.mode) params['mode'] = ratePayload.mode;
+      if (ratePayload.length) params['length'] = ratePayload.length;
+      if (ratePayload.breadth) params['breadth'] = ratePayload.breadth;
+      if (ratePayload.height) params['height'] = ratePayload.height;
+
+      const response = await this.httpService.get<IShipRocketServiceabilityResponse>(
         `${credentials.apiBaseUrl}/external/courier/serviceability`,
-        ratePayload,
-        undefined,
+        params,
         headers,
       );
 
-      if (!response.data || !response.data) {
+      const responseData = response?.data;
+      if (!responseData) {
         throw new Error(`${this.providerCode} Invalid response format rate API`);
       }
 
       const rates: IRateQuote[] = [];
       if (
-        !response.data.available_courier_companies ||
-        response.data.available_courier_companies.length === 0
+        !responseData.available_courier_companies ||
+        responseData.available_courier_companies.length === 0
       ) {
         return rates;
       }
 
-      for (const rate of response.data.available_courier_companies) {
+      for (const rate of responseData.available_courier_companies) {
         rates.push({
+          providerId: credentials.providerAccountId,
           serviceName: rate.courier_name,
           serviceCode: rate.courier_company_id.toString(),
           rateAmount: rate.rate,
-          currency: response.currency,
+          currency: response?.currency ?? 'INR',
           estimatedDays: rate.estimated_delivery_days
             ? Number(rate.estimated_delivery_days)
             : undefined,
@@ -134,66 +158,94 @@ export class ShiprocketAdapter extends BaseCourierAdapter {
       // Get authentication headers
       const headers = await this.getAuthHeaders(credentials);
 
+      const billing = payload.billing ?? payload.pickup ?? {};
+      const shipping = payload.shipping ?? payload.delivery ?? {};
+      const [billingFirstName, ...billingLastNameParts] = (billing.name ?? '').split(' ');
+      const [shippingFirstName, ...shippingLastNameParts] = (shipping.name ?? '').split(' ');
+
+      const orderItems = Array.isArray(payload.items)
+        ? payload.items.map((item: Record<string, unknown>) => ({
+            name: item.name ?? 'Product',
+            sku: item.sku ?? '',
+            units: Number(item.quantity ?? 1),
+            selling_price: Number(item.price ?? item.unitPrice ?? 0),
+          }))
+        : [];
+
+      const requestBody = {
+        order_id: payload.orderId ?? payload.orderNumber ?? '',
+        order_date: payload.orderDate ?? new Date().toISOString().split('T')[0],
+        pickup_location: payload.pickupLocation ?? 'Primary',
+        billing_customer_name: billingFirstName ?? billing.name ?? '',
+        billing_last_name: billingLastNameParts.join(' ') ?? billing.lastName ?? '',
+        billing_address: billing.address ?? '',
+        billing_address_2: billing.address2 ?? '',
+        billing_city: billing.city ?? '',
+        billing_pincode: billing.pincode ?? billing.postcode ?? '',
+        billing_state: billing.state ?? '',
+        billing_country: billing.country ?? 'India',
+        billing_email: billing.email ?? '',
+        billing_phone: billing.phone ?? '',
+        shipping_is_billing: payload.shippingIsBilling ?? false,
+        shipping_customer_name: shippingFirstName ?? shipping.name ?? '',
+        shipping_last_name: shippingLastNameParts.join(' ') ?? shipping.lastName ?? '',
+        shipping_address: shipping.address ?? '',
+        shipping_address_2: shipping.address2 ?? '',
+        shipping_city: shipping.city ?? '',
+        shipping_pincode: shipping.pincode ?? shipping.postcode ?? '',
+        shipping_state: shipping.state ?? '',
+        shipping_country: shipping.country ?? 'India',
+        shipping_email: shipping.email ?? '',
+        shipping_phone: shipping.phone ?? '',
+        order_items: orderItems,
+        payment_method: (payload.codAmount ?? 0) > 0 ? 'COD' : 'Prepaid',
+        sub_total: payload.subTotal ?? 0,
+        length: payload.dimensions?.length ?? 10,
+        breadth: payload.dimensions?.breadth ?? payload.dimensions?.width ?? 10,
+        height: payload.dimensions?.height ?? 10,
+        weight: payload.weight ?? 1,
+      };
+
       const response = await this.httpService.post(
         `${credentials.apiBaseUrl}/orders/create/adhoc`,
-        {
-          order_id: payload.orderId,
-          order_date: payload.orderDate || new Date().toISOString().split('T')[0],
-          pickup_location: payload.pickupLocation || 'Primary',
-          billing_customer_name: payload.billing.name,
-          billing_last_name: payload.billing.lastName || '',
-          billing_address: payload.billing.address,
-          billing_address_2: payload.billing.address2 || '',
-          billing_city: payload.billing.city,
-          billing_pincode: payload.billing.pincode,
-          billing_state: payload.billing.state,
-          billing_country: payload.billing.country || 'India',
-          billing_email: payload.billing.email,
-          billing_phone: payload.billing.phone,
-          shipping_is_billing: payload.shippingIsBilling || true,
-          shipping_customer_name: payload.shipping.name,
-          shipping_last_name: payload.shipping.lastName || '',
-          shipping_address: payload.shipping.address,
-          shipping_address_2: payload.shipping.address2 || '',
-          shipping_city: payload.shipping.city,
-          shipping_pincode: payload.shipping.pincode,
-          shipping_state: payload.shipping.state,
-          shipping_country: payload.shipping.country || 'India',
-          shipping_email: payload.shipping.email,
-          shipping_phone: payload.shipping.phone,
-          order_items: payload.items.map((item: any) => ({
-            name: item.name,
-            sku: item.sku,
-            units: item.quantity,
-            selling_price: item.price,
-          })),
-          payment_method: payload.codAmount > 0 ? 'COD' : 'Prepaid',
-          sub_total: payload.subTotal,
-          length: payload.dimensions?.length,
-          breadth: payload.dimensions?.breadth,
-          height: payload.dimensions?.height,
-          weight: payload.weight,
-        },
+        requestBody,
         undefined,
         headers,
       );
 
-      if (!response.shipment_id) {
+      const shipmentId =
+        response?.shipment_id ?? response?.data?.shipment_id ?? response?.order_id;
+      const awbCode =
+        response?.awb_code ?? response?.awb_number ?? response?.data?.awb_code ?? '';
+
+      if (!shipmentId && !awbCode) {
         throw new Error(
           `${this.providerCode} Invalid response format from Shiprocket shipment API`,
         );
       }
 
+      // Provider may return status: false/0 when booking fails - do not treat as success
+      const rawStatus = response?.status ?? response?.data?.status;
+      if (
+        rawStatus === false ||
+        rawStatus === 0 ||
+        (typeof rawStatus === 'string' && rawStatus.toLowerCase() === 'false')
+      ) {
+        const errMsg =
+          response?.message ?? response?.data?.message ?? response?.error ?? 'Booking failed';
+        throw new Error(`${this.providerCode} ${errMsg}`);
+      }
+
       return {
-        providerShipmentId: response.shipment_id?.toString() || '',
-        trackingNumber: response.awb_code || response.tracking_number || '',
-        trackingUrl: response.tracking_url || `https://shiprocket.co/tracking/${response.awb_code}`,
-        labelUrl: response.label_url,
-        awbNumber: response.awb_code,
-        status: response.status || 'NEW',
-        metadata: {
-          ...response,
-        },
+        providerShipmentId: String(shipmentId ?? awbCode ?? ''),
+        trackingNumber: awbCode || response?.tracking_number || '',
+        trackingUrl:
+          response?.tracking_url ??
+          (awbCode ? `https://shiprocket.co/tracking/${awbCode}` : undefined),
+        labelUrl: response?.label_url ?? response?.label,
+        awbNumber: awbCode || undefined,
+        status: response?.status ?? 'NEW',
+        metadata: { ...response },
       };
     } catch (error: any) {
       throw new Error(
@@ -204,6 +256,7 @@ export class ShiprocketAdapter extends BaseCourierAdapter {
 
   /**
    * Track shipment with Shiprocket API
+   * (apiBaseUrl in DB includes prefix e.g. /api/v1)
    */
   async trackShipment(
     trackingNumber: string,
@@ -217,7 +270,7 @@ export class ShiprocketAdapter extends BaseCourierAdapter {
       const headers = await this.getAuthHeaders(credentials);
 
       const response = await this.httpService.get(
-        `${credentials.apiBaseUrl}/api/v1/courier/track/shipment/${trackingNumber}`,
+        `${credentials.apiBaseUrl}/courier/track/shipment/${trackingNumber}`,
         undefined,
         headers,
       );
@@ -253,6 +306,7 @@ export class ShiprocketAdapter extends BaseCourierAdapter {
 
   /**
    * Cancel shipment with Shiprocket API
+   * (apiBaseUrl in DB includes prefix e.g. /api/v1)
    */
   async cancelShipment(
     trackingNumber: string,
@@ -266,7 +320,7 @@ export class ShiprocketAdapter extends BaseCourierAdapter {
       const headers = await this.getAuthHeaders(credentials);
 
       await this.httpService.post(
-        `${credentials.apiBaseUrl}/api/v1/orders/cancel/shipment/awbs`,
+        `${credentials.apiBaseUrl}/orders/cancel/shipment/awbs`,
         {
           awbs: [trackingNumber],
         },

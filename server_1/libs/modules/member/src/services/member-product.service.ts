@@ -20,6 +20,7 @@ import {
   IPaymentLinkResponse,
   IProductPrice,
   IProductVariantTaxResult,
+  IShipment,
   ITableList,
   mapProductOrderToInvoiceDocument,
   MediaForEnum,
@@ -29,7 +30,13 @@ import {
   TableEnum,
   TransactionType,
 } from '@eatfit247-shared-lib';
-import { AppConfigService, CommonFunctionsUtil, Env, MstFranchise, PaymentValidationUtil } from '@server_1/core';
+import {
+  AppConfigService,
+  CommonFunctionsUtil,
+  Env,
+  MstFranchise,
+  PaymentValidationUtil,
+} from '@server_1/core';
 import {
   AddressService,
   CountryService,
@@ -51,7 +58,9 @@ import {
 } from '@server_1/modules/payment';
 import { Sequelize } from 'sequelize-typescript';
 import { promises as fs } from 'fs';
-import { find, sumBy } from 'lodash';
+import { find, map, sumBy } from 'lodash';
+import { MemberService } from './member.service';
+import { ShipmentService } from '../../../delivery';
 
 @Injectable()
 export class MemberProductService {
@@ -70,15 +79,17 @@ export class MemberProductService {
     private readonly franchisePaymentGatewayService: FranchisePaymentGatewayService,
     private readonly paymentGatewayResolverService: PaymentGatewayResolverService,
     private readonly paymentGatewayFactory: PaymentGatewayFactory,
+    private readonly shipmentService: ShipmentService,
     private readonly paymentGatewayCredentialService: PaymentGatewayCredentialService,
     private readonly invoicePdfService: InvoicePdfService,
     private readonly invoiceSequenceService: InvoiceSequenceService,
+    private readonly memberService: MemberService,
     @InjectModel(TxnMember) private readonly memberRepository: typeof TxnMember,
     @InjectModel(TxnMemberProduct)
     private readonly memberProductRepository: typeof TxnMemberProduct,
     @InjectModel(TxnMemberProductOrderItem)
     private readonly memberProductOrderItemRepository: typeof TxnMemberProductOrderItem,
-    private sequelize: Sequelize
+    private sequelize: Sequelize,
   ) {}
 
   /**
@@ -88,17 +99,24 @@ export class MemberProductService {
    */
   public async findAll(memberId: number): Promise<ITableList<IMemberProduct>> {
     // Verify member exists
-    await this.verifyMember(memberId);
-    const { rows, count } = await this.memberProductRepository.scope("list").findAndCountAll({
+    await this.memberService.verifyMember(memberId);
+    const { rows, count } = await this.memberProductRepository.scope('details').findAndCountAll({
       where: {
         memberId,
-        active: true
+        active: true,
       },
-      order: [["paymentDate", "DESC"]]
+      order: [['paymentDate', 'DESC']],
     });
+    const memberProductIds = [];
+    for (const m of rows) {
+      memberProductIds.push(...map(m.orderItems, 'memberProductOrderItemId'));
+    }
+    const shipmentDetails: IShipment[] = await this.shipmentService.fetchShipmentDetails(
+      memberProductIds,
+    );
     return <ITableList<IMemberProduct>>{
-      tableData: rows.map((item: any) => this.convertToModel(item)),
-      count
+      tableData: rows.map((item: any) => this.convertToModel(item, shipmentDetails)),
+      count,
     };
   }
 
@@ -110,34 +128,22 @@ export class MemberProductService {
    */
   public async findById(memberId: number, productId: number): Promise<IMemberProduct> {
     // Verify member exists
-    await this.verifyMember(memberId);
-    const product = await this.memberProductRepository.scope("details").findOne({
+    await this.memberService.verifyMember(memberId);
+    const product = await this.memberProductRepository.scope('details').findOne({
       where: {
         memberProductId: productId,
         memberId,
-        active: true
-      }
+        active: true,
+      },
     });
     if (!product) {
-      throw new NotFoundException("Member product not found");
+      throw new NotFoundException('Member product not found');
     }
-    return this.convertToModel(product);
-  }
-
-  /**
-   * Verify member exists and return member record
-   * @param memberId - Member ID
-   * @returns Member record
-   * @throws NotFoundException if member not found
-   */
-  private async verifyMember(memberId: number): Promise<TxnMember> {
-    const member = await this.memberRepository.findOne({
-      where: { memberId }
-    });
-    if (!member) {
-      throw new NotFoundException("Member not found");
-    }
-    return member;
+    const memberProductIds = map(product.orderItems, 'memberProductOrderItemId');
+    const shipmentDetails: IShipment[] = await this.shipmentService.fetchShipmentDetails(
+      memberProductIds,
+    );
+    return this.convertToModel(product, shipmentDetails);
   }
 
   /**
@@ -148,7 +154,7 @@ export class MemberProductService {
   private async getProductFranchise(): Promise<IDropdownItem[]> {
     const franchise = await this.franchiseService.franchiseByBusinessType(BusinessTypeEnum.PRODUCT);
     if (!franchise || franchise.length === 0) {
-      throw new BadRequestException("Franchise not found for products");
+      throw new BadRequestException('Franchise not found for products');
     }
     return franchise;
   }
@@ -163,13 +169,13 @@ export class MemberProductService {
       const paymentGateway = gateway.paymentGateway;
       return {
         franchisePaymentGatewayId: gateway.franchisePaymentGatewayId,
-        gatewayCode: paymentGateway?.code || "",
-        gatewayName: paymentGateway?.name || "",
-        providerCountryCode: paymentGateway?.providerCountryCode || "",
+        gatewayCode: paymentGateway?.code || '',
+        gatewayName: paymentGateway?.name || '',
+        providerCountryCode: paymentGateway?.providerCountryCode || '',
         currencyCode: gateway.currencyCode,
         isPrimary: gateway.isPrimary,
         supportsDomestic: gateway.supportsDomestic,
-        supportsInternational: gateway.supportsInternational
+        supportsInternational: gateway.supportsInternational,
       };
     });
   }
@@ -186,7 +192,7 @@ export class MemberProductService {
     franchiseId: number,
     currency: string,
     amount: number,
-    requestedGatewayId?: number
+    requestedGatewayId?: number,
   ): Promise<{
     resolvedGateway: any;
     keyId: string;
@@ -200,17 +206,17 @@ export class MemberProductService {
         franchiseId,
         currency,
         isInternational: false,
-        amount
+        amount,
       });
     } catch (error) {
       throw new BadRequestException(
-        error instanceof Error ? error.message : "Failed to resolve payment gateway"
+        error instanceof Error ? error.message : 'Failed to resolve payment gateway',
       );
     }
     // Validate requested gateway if provided
     if (requestedGatewayId && resolvedGateway.franchisePaymentGatewayId !== requestedGatewayId) {
       throw new BadRequestException(
-        "Selected payment gateway is not available for the given criteria"
+        'Selected payment gateway is not available for the given criteria',
       );
     }
     const gatewayCode = resolvedGateway.gatewayCode;
@@ -218,18 +224,18 @@ export class MemberProductService {
     const credentialMode = this.appConfigService.getString(ConfigParam.PAYMENT_MODE);
     const credentials = await this.paymentGatewayCredentialService.getActiveCredentials(
       resolvedGateway.franchisePaymentGatewayId,
-      credentialMode
+      credentialMode,
     );
     if (!credentials) {
       throw new BadRequestException(
-        `Payment gateway credentials not found for gateway ID: ${resolvedGateway.franchisePaymentGatewayId} in mode: ${credentialMode}`
+        `Payment gateway credentials not found for gateway ID: ${resolvedGateway.franchisePaymentGatewayId} in mode: ${credentialMode}`,
       );
     }
     return {
       resolvedGateway,
       keyId: credentials.apiKeyEncrypted,
       keySecret: credentials.apiSecretEncrypted,
-      gatewayCode
+      gatewayCode,
     };
   }
 
@@ -241,15 +247,15 @@ export class MemberProductService {
    */
   private prepareCustomerDetails(
     member: TxnMember,
-    providedCustomer?: { name?: string; email?: string; contact?: string }
+    providedCustomer?: { name?: string; email?: string; contact?: string },
   ): { name?: string; email?: string; contact?: string } {
     if (providedCustomer) {
       return providedCustomer;
     }
     return {
-      name: member.firstName ? `${member.firstName} ${member.lastName || ""}`.trim() : undefined,
+      name: member.firstName ? `${member.firstName} ${member.lastName || ''}`.trim() : undefined,
       email: member.emailId || undefined,
-      contact: member.contactNumber || undefined
+      contact: member.contactNumber || undefined,
     };
   }
 
@@ -274,7 +280,7 @@ export class MemberProductService {
     }>,
     franchise: IDropdownItem,
     franchiseAddress: IAddress | null,
-    billingAddress: IAddress | null
+    billingAddress: IAddress | null,
   ): Promise<
     Array<{
       productId: number;
@@ -304,10 +310,10 @@ export class MemberProductService {
         {
           orderAmount: item.baseAmount,
           discountAmount: item.discountAmount,
-          currency: item.currencyCode
+          currency: item.currencyCode,
         },
         franchiseAddress,
-        billingAddress
+        billingAddress,
       );
       orderItemObjs.push({
         productId: item.productId,
@@ -326,7 +332,7 @@ export class MemberProductService {
         taxMode: taxCalculationResult.taxMode,
         isLutApplied: taxCalculationResult.isLutApplied,
         jurisdiction: taxCalculationResult.jurisdiction,
-        invoiceNote: taxCalculationResult.invoiceNote
+        invoiceNote: taxCalculationResult.invoiceNote,
       });
     }
     return orderItemObjs;
@@ -335,11 +341,36 @@ export class MemberProductService {
   /**
    * Convert database model to IMemberProduct interface
    */
-  private convertToModel(item: TxnMemberProduct): IMemberProduct {
+  private convertToModel(item: TxnMemberProduct, shipments: IShipment[]): IMemberProduct {
+    const memberProductOrderItemIds: number[] = item.orderItems
+      ? map(item.orderItems, 'memberProductOrderItemId')
+      : [];
+
+    const productShipments: IShipment[] = [];
+
+    for (const shipment of shipments) {
+      if (!shipment.shipmentItems || shipment.shipmentItems.length === 0) {
+        continue;
+      }
+
+      const matchingItems = shipment.shipmentItems.filter(
+        (shipmentItem) =>
+          shipmentItem.memberProductOrderItemId !== undefined &&
+          memberProductOrderItemIds.includes(shipmentItem.memberProductOrderItemId),
+      );
+
+      if (matchingItems.length > 0) {
+        productShipments.push({
+          ...shipment,
+          shipmentItems: matchingItems,
+        });
+      }
+    }
+
     return <IMemberProduct>{
       memberProductId: item.memberProductId,
       memberId: item.memberId,
-      memberName: `${item.member?.firstName || ""} ${item.member?.lastName || ""}`.trim(),
+      memberName: `${item.member?.firstName || ''} ${item.member?.lastName || ''}`.trim(),
       paymentModeId: item.paymentModeId,
       paymentMode: item.paymentMode?.paymentMode,
       addressId: item.addressId,
@@ -364,10 +395,10 @@ export class MemberProductService {
       createdAt: item.createdAt,
       updatedAt: item.updatedAt,
       createdByUser: item.createdByUser
-        ? CommonFunctionsUtil.getAdminShortInfo(item.createdByUser, "createdByUser")
+        ? CommonFunctionsUtil.getAdminShortInfo(item.createdByUser, 'createdByUser')
         : undefined,
       updatedByUser: item.updatedByUser
-        ? CommonFunctionsUtil.getAdminShortInfo(item.updatedByUser, "updatedByUser")
+        ? CommonFunctionsUtil.getAdminShortInfo(item.updatedByUser, 'updatedByUser')
         : undefined,
       subTotalAmount: CommonFunctionsUtil.toNumber(item.subTotalAmount),
       discountAmount: CommonFunctionsUtil.toNumber(item.discountAmount),
@@ -380,32 +411,33 @@ export class MemberProductService {
       currency: item.currency,
       franchise: item.franchise?.companyName,
       franchiseId: item.franchiseId,
+      shipments: productShipments,
       orderItems: Array.isArray(item.orderItems)
         ? item.orderItems.map((orderItem) => ({
-          memberProductOrderItemId: orderItem.memberProductOrderItemId,
-          memberProductId: orderItem.memberProductId,
-          productId: orderItem.productId,
-          productVariantId: orderItem.productVariantId,
-          productName: orderItem.productName,
-          quantityLabel: orderItem.quantityLabel,
-          hsnCode: orderItem.product.hsnCode,
-          quantity: CommonFunctionsUtil.toNumber(orderItem.quantity),
-          unitPrice: CommonFunctionsUtil.toNumber(orderItem.unitPrice),
-          baseAmount: CommonFunctionsUtil.toNumber(orderItem.baseAmount),
-          discountAmount:
-            orderItem.discountAmount !== null && orderItem.discountAmount !== undefined
-              ? CommonFunctionsUtil.toNumber(orderItem.discountAmount)
-              : undefined,
-          effectiveTaxRate: CommonFunctionsUtil.toNumber(orderItem.effectiveTaxRate),
-          taxAmount: CommonFunctionsUtil.toNumber(orderItem.taxAmount),
-          totalAmount: CommonFunctionsUtil.toNumber(orderItem.totalAmount),
-          taxObj: orderItem.taxObj,
-          taxType: orderItem.taxType,
-          taxMode: orderItem.taxMode,
-          jurisdiction: orderItem.jurisdiction,
-          invoiceNote: orderItem.invoiceNote
-        }))
-        : []
+            memberProductOrderItemId: orderItem.memberProductOrderItemId,
+            memberProductId: orderItem.memberProductId,
+            productId: orderItem.productId,
+            productVariantId: orderItem.productVariantId,
+            productName: orderItem.productName,
+            quantityLabel: orderItem.quantityLabel,
+            hsnCode: orderItem.product.hsnCode,
+            quantity: CommonFunctionsUtil.toNumber(orderItem.quantity),
+            unitPrice: CommonFunctionsUtil.toNumber(orderItem.unitPrice),
+            baseAmount: CommonFunctionsUtil.toNumber(orderItem.baseAmount),
+            discountAmount:
+              orderItem.discountAmount !== null && orderItem.discountAmount !== undefined
+                ? CommonFunctionsUtil.toNumber(orderItem.discountAmount)
+                : undefined,
+            effectiveTaxRate: CommonFunctionsUtil.toNumber(orderItem.effectiveTaxRate),
+            taxAmount: CommonFunctionsUtil.toNumber(orderItem.taxAmount),
+            totalAmount: CommonFunctionsUtil.toNumber(orderItem.totalAmount),
+            taxObj: orderItem.taxObj,
+            taxType: orderItem.taxType,
+            taxMode: orderItem.taxMode,
+            jurisdiction: orderItem.jurisdiction,
+            invoiceNote: orderItem.invoiceNote,
+          }))
+        : [],
     };
   }
 
@@ -414,19 +446,19 @@ export class MemberProductService {
       this.paymentModeService.getDropdownList(),
       this.productService.getProductList(),
       this.paymentStatusService.getDropdownList(),
-      this.addressService.filterByTableIdAndPk(TableEnum.TXN_MEMBER, memberId)
+      this.addressService.filterByTableIdAndPk(TableEnum.TXN_MEMBER, memberId),
     ]);
     const paymentSource: IDropdownItem[] = Object.values(PaymentSourceEnum).map((source) => ({
       id: source,
       label: source,
-      selected: false
+      selected: false,
     }));
     return <IMemberProductMasterData>{
       paymentMode: paymentModes,
       product: product,
       paymentStatus: paymentStatuses,
       addresses: addresses as IAddress[],
-      paymentSource: paymentSource
+      paymentSource: paymentSource,
     };
   }
 
@@ -438,10 +470,10 @@ export class MemberProductService {
    */
   public async getSupportedPaymentGateways(
     memberId: number,
-    currencyCode: string
+    currencyCode: string,
   ): Promise<IPaymentGateway[]> {
     // Verify a member exists
-    await this.verifyMember(memberId);
+    await this.memberService.verifyMember(memberId);
     // Get franchise for products
     const franchise = await this.getProductFranchise();
     if (franchise.length === 0) {
@@ -450,7 +482,7 @@ export class MemberProductService {
     // Get all active gateways for franchise and currency
     const gateways = await this.franchisePaymentGatewayService.findActiveByFranchiseAndCurrency({
       franchiseId: franchise[0].id as number,
-      currency: currencyCode
+      currency: currencyCode,
     });
     // Transform to response format
     return this.transformGateways(gateways);
@@ -461,7 +493,7 @@ export class MemberProductService {
    * Reuses the same logic as getSupportedPaymentGateways but without member validation
    */
   public async getSupportedPaymentGatewaysForCheckout(
-    currencyCode: string
+    currencyCode: string,
   ): Promise<IPaymentGateway[]> {
     // Get franchise for products
     const franchise = await this.franchiseService.franchiseByBusinessType(BusinessTypeEnum.PRODUCT);
@@ -471,7 +503,7 @@ export class MemberProductService {
     // Get all active gateways for franchise and currency
     const gateways = await this.franchisePaymentGatewayService.findActiveByFranchiseAndCurrency({
       franchiseId: franchise[0].id as number,
-      currency: currencyCode
+      currency: currencyCode,
     });
     // Transform to response format
     return this.transformGateways(gateways);
@@ -485,14 +517,14 @@ export class MemberProductService {
    */
   public async createPaymentLink(
     memberId: number,
-    payload: ICreatePaymentLinkRequest
+    payload: ICreatePaymentLinkRequest,
   ): Promise<IPaymentLinkResponse> {
     // Verify a member exists
-    const member = await this.verifyMember(memberId);
+    const member = await this.memberService.verifyMember(memberId);
     // Get franchise for products
     const franchise = await this.getProductFranchise();
     if (payload.amount <= 0) {
-      throw new BadRequestException("Invalid amount");
+      throw new BadRequestException('Invalid amount');
     }
     // Resolve gateway and get credentials
     const { resolvedGateway, keyId, keySecret, gatewayCode } =
@@ -500,7 +532,7 @@ export class MemberProductService {
         franchise[0].id as number,
         payload.currency,
         payload.amount,
-        payload.franchisePaymentGatewayId
+        payload.franchisePaymentGatewayId,
       );
     // Prepare customer details from member if not provided
     const customerDetails = this.prepareCustomerDetails(member, payload.customer);
@@ -512,7 +544,7 @@ export class MemberProductService {
       memberId: memberId.toString(),
       franchisePaymentGatewayId: resolvedGateway.franchisePaymentGatewayId.toString(),
       type: 'product',
-      ...payload.notes
+      ...payload.notes,
     };
     const adaptor = this.paymentGatewayFactory.getAdapter(gatewayCode);
     const paymentLink = await adaptor.createPaymentLink(
@@ -523,13 +555,13 @@ export class MemberProductService {
       paymentNotes,
       {
         keyId,
-        keySecret
-      }
+        keySecret,
+      },
     );
     return <IPaymentLinkResponse>{
       shortUrl: paymentLink.short_url,
       id: paymentLink.id,
-      gatewayCode: gatewayCode
+      gatewayCode: gatewayCode,
     };
   }
 
@@ -539,7 +571,7 @@ export class MemberProductService {
    */
   public async createPaymentOrder(
     memberId: number,
-    payload: ICreatePaymentLinkRequest
+    payload: ICreatePaymentLinkRequest,
   ): Promise<{
     orderId: string;
     gatewayCode: string;
@@ -554,11 +586,11 @@ export class MemberProductService {
     notes: Record<string, any>;
   }> {
     // Verify a member exists
-    const member = await this.verifyMember(memberId);
+    const member = await this.memberService.verifyMember(memberId);
     // Get franchise for products
     const franchise = await this.getProductFranchise();
     if (payload.amount <= 0) {
-      throw new BadRequestException("Invalid amount");
+      throw new BadRequestException('Invalid amount');
     }
     // Resolve gateway and get credentials
     const { resolvedGateway, keyId, keySecret, gatewayCode } =
@@ -566,7 +598,7 @@ export class MemberProductService {
         franchise[0].id as number,
         payload.currency,
         payload.amount,
-        payload.franchisePaymentGatewayId
+        payload.franchisePaymentGatewayId,
       );
     // Prepare customer details from member if not provided
     const customerDetails = this.prepareCustomerDetails(member, payload.customer);
@@ -578,74 +610,77 @@ export class MemberProductService {
       memberId: memberId.toString(),
       franchisePaymentGatewayId: resolvedGateway.franchisePaymentGatewayId.toString(),
       type: 'product',
-      ...payload.notes
+      ...payload.notes,
     };
     const adaptor = this.paymentGatewayFactory.getAdapter(gatewayCode);
     // Create order based on a gateway type
     let orderId: string;
     const receipt = `order_${memberId}_${Date.now()}`;
     switch (gatewayCode) {
-      case PaymentGatewayEnum.RAZORPAY: {
-        if (!adaptor.createOrder) {
-          throw new BadRequestException("Razorpay createOrder method not available");
-        }
-        const order = await adaptor.createOrder(
-          payload.amount,
-          receipt,
-          payload.currency,
-          paymentNotes,
-          {
-            keyId,
-            keySecret
+      case PaymentGatewayEnum.RAZORPAY:
+        {
+          if (!adaptor.createOrder) {
+            throw new BadRequestException('Razorpay createOrder method not available');
           }
-        );
-        orderId = order.id;
-      }
-        break;
-      case PaymentGatewayEnum.STRIPE: {
-        const stripeAdapter = adaptor as any;
-        if (stripeAdapter.createPaymentIntent) {
-          const paymentIntent = await stripeAdapter.createPaymentIntent(
+          const order = await adaptor.createOrder(
             payload.amount,
+            receipt,
             payload.currency,
-            paymentDescription,
-            customerDetails,
-            paymentNotes
-          );
-          orderId = paymentIntent.id;
-        } else {
-          // Fallback to payment link if payment intent is not available
-          const paymentLink = await adaptor.createPaymentLink(
-            payload.amount,
-            payload.currency,
-            paymentDescription,
-            customerDetails,
             paymentNotes,
             {
               keyId,
-              keySecret
-            }
+              keySecret,
+            },
           );
-          orderId = paymentLink.id;
+          orderId = order.id;
         }
-      }
         break;
-      case PaymentGatewayEnum.TELR: {
-        if (!adaptor.createOrder) {
-          throw new BadRequestException("Telr createOrder method not available");
-        }
-        const order = await adaptor.createOrder(
-          payload.amount,
-          receipt,
-          payload.currency,
-          paymentNotes,
-          {
-            keyId,
-            keySecret
+      case PaymentGatewayEnum.STRIPE:
+        {
+          const stripeAdapter = adaptor as any;
+          if (stripeAdapter.createPaymentIntent) {
+            const paymentIntent = await stripeAdapter.createPaymentIntent(
+              payload.amount,
+              payload.currency,
+              paymentDescription,
+              customerDetails,
+              paymentNotes,
+            );
+            orderId = paymentIntent.id;
+          } else {
+            // Fallback to payment link if payment intent is not available
+            const paymentLink = await adaptor.createPaymentLink(
+              payload.amount,
+              payload.currency,
+              paymentDescription,
+              customerDetails,
+              paymentNotes,
+              {
+                keyId,
+                keySecret,
+              },
+            );
+            orderId = paymentLink.id;
           }
-        );
-        orderId = order.order?.ref || order.id || receipt;
-      }
+        }
+        break;
+      case PaymentGatewayEnum.TELR:
+        {
+          if (!adaptor.createOrder) {
+            throw new BadRequestException('Telr createOrder method not available');
+          }
+          const order = await adaptor.createOrder(
+            payload.amount,
+            receipt,
+            payload.currency,
+            paymentNotes,
+            {
+              keyId,
+              keySecret,
+            },
+          );
+          orderId = order.order?.ref || order.id || receipt;
+        }
         break;
       default:
         throw new BadRequestException(`Unsupported payment gateway: ${gatewayCode}`);
@@ -657,7 +692,7 @@ export class MemberProductService {
       amount: payload.amount,
       currency: payload.currency,
       customer: customerDetails,
-      notes: paymentNotes
+      notes: paymentNotes,
     };
   }
 
@@ -669,14 +704,14 @@ export class MemberProductService {
     gatewayCode: string,
     paymentId: string,
     orderId?: string,
-    signature?: string
+    signature?: string,
   ): Promise<{ verified: boolean; paymentDetails?: any }> {
     // Verify a member exists
-    await this.verifyMember(memberId);
+    await this.memberService.verifyMember(memberId);
     // Get franchise for products
     await this.getProductFranchise();
     // Get payment gateway credentials
-    const gateways = await this.getSupportedPaymentGatewaysForCheckout("INR");
+    const gateways = await this.getSupportedPaymentGatewaysForCheckout('INR');
     const gateway = gateways.find((g) => g.gatewayCode === gatewayCode);
     if (!gateway) {
       throw new BadRequestException(`Payment gateway not found: ${gatewayCode}`);
@@ -684,17 +719,17 @@ export class MemberProductService {
     const credentialMode = this.appConfigService.getString(ConfigParam.PAYMENT_MODE);
     const credentials = await this.paymentGatewayCredentialService.getActiveCredentials(
       gateway.franchisePaymentGatewayId,
-      credentialMode
+      credentialMode,
     );
     if (!credentials) {
       throw new BadRequestException(
-        `Payment gateway credentials not found for gateway: ${gatewayCode}`
+        `Payment gateway credentials not found for gateway: ${gatewayCode}`,
       );
     }
     const adaptor = this.paymentGatewayFactory.getAdapter(gatewayCode);
     if (!adaptor.verifyPayment) {
       throw new BadRequestException(
-        `Payment verification not supported for gateway: ${gatewayCode}`
+        `Payment verification not supported for gateway: ${gatewayCode}`,
       );
     }
     // Extract credentials for verification
@@ -702,7 +737,7 @@ export class MemberProductService {
     const keySecret = credentials.apiSecretEncrypted;
     return await adaptor.verifyPayment(paymentId, orderId, signature, {
       keyId,
-      keySecret
+      keySecret,
     });
   }
 
@@ -714,24 +749,24 @@ export class MemberProductService {
    */
   public async generateInvoicePDF(memberId: number, productId: number): Promise<IFileModel> {
     // Get product order with all details
-    const productOrder = await this.memberProductRepository.scope("invoice").findOne({
+    const productOrder = await this.memberProductRepository.scope('invoice').findOne({
       where: {
         memberProductId: productId,
         memberId,
-        active: true
-      }
+        active: true,
+      },
     });
     if (!productOrder) {
-      throw new NotFoundException("Product order not found");
+      throw new NotFoundException('Product order not found');
     }
     // Validate that order items exist
     if (!productOrder.orderItems || productOrder.orderItems.length === 0) {
-      throw new BadRequestException("Product order has no items");
+      throw new BadRequestException('Product order has no items');
     }
     // Get franchise address
     const franchiseAddress = await this.addressService.findByTableIdAndPk(
       TableEnum.MST_FRANCHISES,
-      productOrder.franchiseId
+      productOrder.franchiseId,
     );
     // Get billing address:
     let billingAddress: IAddress | null = null;
@@ -742,16 +777,16 @@ export class MemberProductService {
       billingAddress = memberAddressSnapshot.address as IAddress;
     }
     if (!billingAddress) {
-      throw new BadRequestException("Billing address not found for invoice generation");
+      throw new BadRequestException('Billing address not found for invoice generation');
     }
     // Convert product order to model
-    const productModel = this.convertToModel(productOrder);
+    const productModel = this.convertToModel(productOrder, []);
     // Prepare member info
     const memberInfo: IMemberInfo = {
       fullName: productModel.memberName,
       emailId: productOrder.member.emailId,
       contactNumber: productOrder.member.contactNumber,
-      businessRegNumber: productOrder.gstNumber
+      businessRegNumber: productOrder.gstNumber,
     };
     // Generate an invoice document using the new product order mapper
     const invoiceDoc = mapProductOrderToInvoiceDocument(
@@ -761,9 +796,9 @@ export class MemberProductService {
       franchiseAddress,
       memberInfo,
       [
-        "All payments for each item listed in this invoice are non-refundable and non-transferable under any circumstances.",
-        `Payment confirms acceptance of ${productOrder.franchise.companyName} terms and service validity conditions.`
-      ]
+        'All payments for each item listed in this invoice are non-refundable and non-transferable under any circumstances.',
+        `Payment confirms acceptance of ${productOrder.franchise.companyName} terms and service validity conditions.`,
+      ],
     );
     const fileName = `invoice-${productModel.memberProductId}.pdf`;
     const relativePath = `${MediaForEnum.DOWNLOADS}/${memberId}/invoices`;
@@ -777,22 +812,22 @@ export class MemberProductService {
     const destinationPath = `${destinationFolderPath}/${fileName}`;
     // Generate PDF using the InvoicePdfService
     const pdfBuffer = await this.invoicePdfService.generateInvoicePdf(invoiceDoc);
-    const base64Buffer = pdfBuffer.toString("base64");
+    const base64Buffer = pdfBuffer.toString('base64');
     // Write PDF buffer to destination folder (async)
     await fs.writeFile(destinationPath, pdfBuffer as Uint8Array);
     return {
       filePath: relativePath,
       fileName: fileName,
-      buffer: base64Buffer
+      buffer: base64Buffer,
     } as IFileModel;
   }
 
   public async calculateProductTax(
     memberId: number,
-    payload: ICalculateProductVariantTaxRequest
+    payload: ICalculateProductVariantTaxRequest,
   ): Promise<ICalculateProductVariantTaxResponse> {
     // Verify member exists
-    await this.verifyMember(memberId);
+    await this.memberService.verifyMember(memberId);
     // Get franchise for products
     const franchise = await this.getProductFranchise();
     // Get addresses
@@ -800,21 +835,21 @@ export class MemberProductService {
       franchise[0],
       memberId,
       payload.addressId,
-      payload.billingAddressId
+      payload.billingAddressId,
     );
     const memberAddressSnapshot = addresses.memberAddressSnapshot;
     const tempOrderItems = await this.buildOrderItem(payload.items, payload.discountAmount || 0);
     // Add currencyCode to tempOrderItems for tax calculation
     const tempOrderItemsWithCurrency = tempOrderItems.map((item) => ({
       ...item,
-      currencyCode: payload.items.find((i) => i.productId === item.productId)?.currency
+      currencyCode: payload.items.find((i) => i.productId === item.productId)?.currency,
     }));
     // Calculate tax for order items
     const orderItemObjs = await this.calculateOrderItemsTax(
       tempOrderItemsWithCurrency,
       franchise[0],
       addresses.franchiseAddress,
-      memberAddressSnapshot.billingAddress
+      memberAddressSnapshot.billingAddress,
     );
     const totalOrderAmount = orderItemObjs.reduce((acc, item) => acc + item.baseAmount, 0);
     const totalDiscount = orderItemObjs.reduce((acc, item) => acc + item.discountAmount, 0);
@@ -836,7 +871,7 @@ export class MemberProductService {
         taxObj: item.taxObj,
         invoiceNote: item.invoiceNote,
         isLutApplied: item.isLutApplied,
-        jurisdiction: item.jurisdiction
+        jurisdiction: item.jurisdiction,
       });
     }
     return <ICalculateProductVariantTaxResponse>{
@@ -845,7 +880,7 @@ export class MemberProductService {
       taxAmount: totalTaxAmount,
       discountAmount: totalDiscount,
       taxableAmount: totalOrderAmount - totalDiscount,
-      totalAmount: totalAmount
+      totalAmount: totalAmount,
     };
   }
 
@@ -858,12 +893,12 @@ export class MemberProductService {
     franchise: IDropdownItem,
     payload: ICalculateTaxRequest,
     billingAddress: IAddress | null,
-    franchiseAddress: IAddress | null
+    franchiseAddress: IAddress | null,
   ): Promise<ICalculateTaxResponse> {
     // Validate billing address is provided when tax is applicable
     if (!billingAddress) {
       throw new BadRequestException(
-        "Billing address is required for tax calculation. Please provide billingAddressId or addressId."
+        'Billing address is required for tax calculation. Please provide billingAddressId or addressId.',
       );
     }
     // Get country and state codes from addresses
@@ -871,7 +906,7 @@ export class MemberProductService {
       franchiseAddress,
       billingAddress,
       this.countryService,
-      this.stateService
+      this.stateService,
     );
     const supplierCountryCode = addressCodes.supplierCountryCode;
     const supplierStateCode = addressCodes.supplierStateCode;
@@ -888,7 +923,7 @@ export class MemberProductService {
       referenceId: productId,
       franchiseId: franchise.id as number,
       currency: payload.currency,
-      transactionType: TransactionType.PRODUCT
+      transactionType: TransactionType.PRODUCT,
     };
     const taxResult = await this.taxEngineService.calculate(taxInput);
     // Calculate base amounts
@@ -907,8 +942,8 @@ export class MemberProductService {
       jurisdiction: {
         entityCountry: taxResult.entityCountry,
         customerCountry: taxResult.customerCountry,
-        placeOfSupply: taxResult.placeOfSupply
-      }
+        placeOfSupply: taxResult.placeOfSupply,
+      },
     };
   }
 
@@ -916,13 +951,13 @@ export class MemberProductService {
     franchise: IDropdownItem,
     memberId: number,
     addressId?: number,
-    billingAddressId?: number
+    billingAddressId?: number,
   ) {
     // Handle address if provided
     // Load all member addresses at once
     const addresses = await this.addressService.filterByTableIdAndPk(
       TableEnum.TXN_MEMBER,
-      memberId
+      memberId,
     );
     // Resolve selected addresses
     const billingAddress: IAddress | null =
@@ -932,23 +967,23 @@ export class MemberProductService {
     // Build address snapshot to store with payment
     const memberAddressSnapshot = {
       address: primaryAddress,
-      billingAddress: billingAddress
+      billingAddress: billingAddress,
     };
     // Validate billing address country if the billing address exists and tax is applicable
     if (billingAddress && !billingAddress.countryId) {
-      throw new BadRequestException("Billing address country is required when tax is applicable");
+      throw new BadRequestException('Billing address country is required when tax is applicable');
     }
     // Get franchise address for tax calculation
     let franchiseAddress: IAddress | null = null;
     if (franchise.id) {
       franchiseAddress = await this.addressService.findByTableIdAndPk(
         TableEnum.MST_FRANCHISES,
-        franchise.id as number
+        franchise.id as number,
       );
     }
     return {
       memberAddressSnapshot,
-      franchiseAddress
+      franchiseAddress,
     };
   }
 
@@ -963,7 +998,7 @@ export class MemberProductService {
         const variant = product.variants?.find((v) => v.productVariantId === item.productVariantId);
         if (!variant) {
           throw new BadRequestException(
-            `Variant ${item.productVariantId} not found for product ${item.productId}`
+            `Variant ${item.productVariantId} not found for product ${item.productId}`,
           );
         }
         const variantFees: IProductPrice = find(variant.prices, { currency: item.currency });
@@ -975,11 +1010,11 @@ export class MemberProductService {
           quantity: item.quantity, // Admin ordered quantity
           quantityLabel: `${variant.quantityValue} ${variant.quantityUnit}`, // Variant quantity + unit (e.g., "100gm")
           unitPrice: variantFees.price,
-          baseAmount: Number(variantFees.price * item.quantity)
+          baseAmount: Number(variantFees.price * item.quantity),
         });
       }
     }
-    const orderSubtotal = sumBy(orderItemObjs, "baseAmount");
+    const orderSubtotal = sumBy(orderItemObjs, 'baseAmount');
     // Apply discount logic
     for (const orderItem of orderItemObjs) {
       // Allocate discount proportionally by item value:
@@ -1000,21 +1035,21 @@ export class MemberProductService {
     memberId: number,
     obj: IManageMemberProduct,
     requestedIp: string,
-    adminId: number = null
+    adminId: number = null,
   ): Promise<IMemberProduct> {
     // Verify a member exists (with scope for franchise relationship)
-    const member = await this.memberRepository.scope("details").findOne({
+    const member = await this.memberRepository.scope('details').findOne({
       where: { memberId },
       include: [
         {
           model: MstFranchise,
-          as: "franchise",
-          required: false
-        }
-      ]
+          as: 'franchise',
+          required: false,
+        },
+      ],
     });
     if (!member) {
-      throw new NotFoundException("Member not found");
+      throw new NotFoundException('Member not found');
     }
     // Validate mandatory fields for MANUAL payment source
     PaymentValidationUtil.validateManualPaymentSource({
@@ -1022,7 +1057,7 @@ export class MemberProductService {
       paymentModeId: obj.paymentModeId,
       paymentDate: obj.paymentDate,
       paymentStatusId: obj.paymentStatusId,
-      transactionId: obj.transactionId
+      transactionId: obj.transactionId,
     });
     // Get franchise for products
     const franchise = await this.getProductFranchise();
@@ -1032,21 +1067,21 @@ export class MemberProductService {
         franchise[0],
         memberId,
         obj.addressId,
-        obj.billingAddressId
+        obj.billingAddressId,
       );
       const memberAddressSnapshot = addresses.memberAddressSnapshot;
       const tempOrderItem = await this.buildOrderItem(obj.orderItems, obj.discountAmount || 0);
       // Add currencyCode to tempOrderItems for tax calculation
       const tempOrderItemsWithCurrency = tempOrderItem.map((item) => ({
         ...item,
-        currencyCode: obj.orderItems.find((i) => i.productId === item.productId)?.currency || "INR"
+        currencyCode: obj.orderItems.find((i) => i.productId === item.productId)?.currency || 'INR',
       }));
       // Calculate tax for order items
       const orderItemObjs = await this.calculateOrderItemsTax(
         tempOrderItemsWithCurrency,
         franchise[0],
         addresses.franchiseAddress,
-        memberAddressSnapshot.billingAddress
+        memberAddressSnapshot.billingAddress,
       );
       const totalOrderAmount = orderItemObjs.reduce((acc, item) => acc + item.baseAmount, 0);
       const totalTaxAmount = orderItemObjs.reduce((acc, item) => acc + item.taxAmount, 0);
@@ -1076,7 +1111,7 @@ export class MemberProductService {
         totalAmount: totalAmount,
         active: true,
         createdIp: requestedIp,
-        modifiedIp: requestedIp
+        modifiedIp: requestedIp,
       };
       if (adminId) {
         Object.assign(productOrderData, { createdBy: adminId, modifiedBy: adminId });
@@ -1088,15 +1123,15 @@ export class MemberProductService {
         productOrderData.gatewayPaymentId = obj.gatewayPaymentId;
       }
       const productOrder = await this.memberProductRepository.create(productOrderData, {
-        transaction: t
+        transaction: t,
       });
       // Create order items - add memberProductId to each item
       const orderItemsForCreate = orderItemObjs.map((itemOrder) => ({
         ...itemOrder,
-        memberProductId: productOrder.memberProductId
+        memberProductId: productOrder.memberProductId,
       }));
       await this.memberProductOrderItemRepository.bulkCreate(orderItemsForCreate as any, {
-        transaction: t
+        transaction: t,
       });
       // Generate invoice number if payment status is PAID and invoiceId is not already set
       if (obj.paymentStatusId === PaymentStatusEnum.PAID && !productOrder.invoiceId) {
@@ -1106,17 +1141,17 @@ export class MemberProductService {
           franchiseDetails.financialYear,
           franchiseDetails.franchiseCode,
           BusinessTypeEnum.PRODUCT,
-          t
+          t,
         );
         productOrder.invoiceId = invoiceNumber;
         await productOrder.save({ transaction: t });
       }
       await t.commit();
       // Fetch the created product order with relationships
-      const createdOrder = await this.memberProductRepository.scope("details").findOne({
-        where: { memberProductId: productOrder.memberProductId }
+      const createdOrder = await this.memberProductRepository.scope('details').findOne({
+        where: { memberProductId: productOrder.memberProductId },
       });
-      return this.convertToModel(createdOrder!);
+      return this.convertToModel(createdOrder!, []);
     } catch (error) {
       await t.rollback();
       throw error;
@@ -1132,28 +1167,28 @@ export class MemberProductService {
    */
   public async regeneratePaymentLink(memberId: number, productId: number): Promise<IMemberProduct> {
     // Get product order with all details
-    const productOrder = await this.memberProductRepository.scope("details").findOne({
+    const productOrder = await this.memberProductRepository.scope('details').findOne({
       where: {
         memberProductId: productId,
         memberId,
-        active: true
-      }
+        active: true,
+      },
     });
     if (!productOrder) {
-      throw new NotFoundException("Product order not found");
+      throw new NotFoundException('Product order not found');
     }
     // Validate payment status is not PAID
     if (productOrder.paymentStatusId === PaymentStatusEnum.PAID) {
       throw new BadRequestException(
-        "Payment link can only be regenerated for orders with non-PAID status"
+        'Payment link can only be regenerated for orders with non-PAID status',
       );
     }
     // Validate payment source is not MANUAL
     if (productOrder.paymentSource === PaymentSourceEnum.MANUAL) {
-      throw new BadRequestException("Payment link cannot be regenerated for manual payments");
+      throw new BadRequestException('Payment link cannot be regenerated for manual payments');
     }
     // Get member
-    const member = await this.verifyMember(memberId);
+    const member = await this.memberService.verifyMember(memberId);
     // Get franchise for products
     const franchise = await this.getProductFranchise();
     // Resolve gateway to ensure it's valid
@@ -1162,13 +1197,13 @@ export class MemberProductService {
       await this.resolveGatewayAndCredentials(
         franchise[0].id as number,
         currency,
-        productOrder.totalAmount
+        productOrder.totalAmount,
       );
     // Prepare customer details from member
     const customerDetails = this.prepareCustomerDetails(member);
     // Prepare description from order items
     const orderItems = productOrder.orderItems || [];
-    const productNames = orderItems.map((item) => item.productName).join(", ");
+    const productNames = orderItems.map((item) => item.productName).join(', ');
     const paymentDescription = productNames
       ? `Payment for products: ${productNames}`
       : `Product Order Payment for Member ID: ${memberId}`;
@@ -1177,7 +1212,7 @@ export class MemberProductService {
       memberId: memberId.toString(),
       franchisePaymentGatewayId: resolvedGateway.franchisePaymentGatewayId.toString(),
       productOrderId: productId.toString(),
-      type: "product"
+      type: 'product',
     };
     // Create payment link using the adapter
     const adaptor = this.paymentGatewayFactory.getAdapter(gatewayCode);
@@ -1189,8 +1224,8 @@ export class MemberProductService {
       paymentNotes,
       {
         keyId,
-        keySecret
-      }
+        keySecret,
+      },
     );
     // Update product order with new payment link
     productOrder.paymentLink = paymentLink.short_url;
@@ -1198,17 +1233,17 @@ export class MemberProductService {
     productOrder.gatewayOrderId = paymentLink.id;
     await productOrder.save();
     // Reload product order with all relationships for conversion
-    const updatedProductOrder = await this.memberProductRepository.scope("details").findOne({
+    const updatedProductOrder = await this.memberProductRepository.scope('details').findOne({
       where: {
         memberProductId: productId,
-        memberId
-      }
+        memberId,
+      },
     });
     if (!updatedProductOrder) {
-      throw new NotFoundException("Product order not found after update");
+      throw new NotFoundException('Product order not found after update');
     }
     // Convert to IMemberProduct and return
-    return this.convertToModel(updatedProductOrder);
+    return this.convertToModel(updatedProductOrder, []);
   }
 
   /**
@@ -1217,15 +1252,15 @@ export class MemberProductService {
    * @returns Order details
    */
   public async findByGatewayOrderId(gatewayOrderId: string): Promise<IMemberProduct> {
-    const productOrder = await this.memberProductRepository.scope("details").findOne({
+    const productOrder = await this.memberProductRepository.scope('details').findOne({
       where: {
         gatewayOrderId: gatewayOrderId,
-        active: true
-      }
+        active: true,
+      },
     });
     if (!productOrder) {
       throw new NotFoundException(`Order not found for gateway order ID: ${gatewayOrderId}`);
     }
-    return this.convertToModel(productOrder);
+    return this.convertToModel(productOrder, []);
   }
 }

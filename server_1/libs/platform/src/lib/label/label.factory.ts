@@ -1,30 +1,18 @@
-import { Sequelize } from 'sequelize-typescript';
-import { databaseConfig } from '@server_1/core';
-import { LabelModel } from '../database/models';
-
-async function getLocalConfiguration(applicability: string[]) {
-  const sequelize = new Sequelize(databaseConfig);
-  sequelize.addModels([LabelModel]);
-  await sequelize.authenticate();
-  return await LabelModel.findAll({
-    where: {
-      applicability: applicability,
-    },
-  });
-}
-
 export const LABEL_VALUES = 'LABEL_VALUES';
 
-export async function LabelFactory(modules: string[]) {
-  const configs = await getLocalConfiguration(modules);
-  if (configs && configs.length > 0) {
-    const configMap: { [key: string]: string } = {};
-    for (const item of configs) {
-      configMap[item.labelKey] = item.label;
-    }
-    return configMap;
-  } else {
-    return [];
+import { LabelDataService } from './label-data.service';
+
+export async function LabelFactory(
+  modules: string[],
+  labelDataService: LabelDataService,
+) {
+  const configMap: { [key: string]: string } = {};
+
+  for (const app of modules) {
+    const configs = await labelDataService.load(app);
+    Object.assign(configMap, configs);
   }
+
+  return configMap;
 }
 

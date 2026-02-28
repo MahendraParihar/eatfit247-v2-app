@@ -11,6 +11,15 @@ import { CourierFactory } from '../providers/courier.factory';
 import { TrackingService } from './tracking.service';
 import { ShipmentRepository } from '../repositories/shipment.repository';
 import { CourierProvider } from '@eatfit247-shared-lib';
+import {
+  IBaseWebhookPayload,
+  INimbusWebhookPayload,
+  IParsedWebhookData,
+  IShiprocketWebhookPayload,
+  IWebhookHandleResult,
+  IWebhookHeaders,
+  IUnknownWebhookPayload,
+} from '../dto';
 
 /**
  * Webhook Service
@@ -51,23 +60,23 @@ export class WebhookService {
    * Handle incoming webhook from courier provider
    *
    * @param providerCode - The provider code (case-insensitive)
-   * @param payload - Raw webhook payload
+   * @param payload - Raw webhook payload from provider (Nimbus, Shiprocket, etc.)
    * @param headers - Request headers (for signature validation)
    * @returns Webhook processing result
    */
   public async handleWebhook(
     providerCode: string,
-    payload: any,
-    headers?: any,
-  ): Promise<{ webhookLogId: number; processed: boolean; message: string }> {
+    payload: IBaseWebhookPayload,
+    headers?: IWebhookHeaders,
+  ): Promise<IWebhookHandleResult> {
     // Validate provider
     const provider = await this.validateProvider(providerCode);
 
     // Log raw webhook payload
     const webhookLog = await this.webhookLogRepository.create({
       providerId: provider.providerId,
-      payload,
-      headers: headers || {},
+      payload: payload as Record<string, unknown>,
+      headers: (headers || {}) as Record<string, unknown>,
       signatureValid: false, // Will be validated during processing
       processed: false,
     });
@@ -83,15 +92,16 @@ export class WebhookService {
         processed: true,
         message: 'Webhook processed successfully',
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       this.logger.error(
-        `Failed to process webhook ${webhookLog.webhookLogId}: ${error.message}`,
-        error.stack,
+        `Failed to process webhook ${webhookLog.webhookLogId}: ${err.message}`,
+        err.stack,
       );
 
       // Update webhook log with error
       await webhookLog.update({
-        errorMessage: error.message,
+        errorMessage: err.message,
         processed: false,
       });
 
@@ -103,11 +113,14 @@ export class WebhookService {
    * Process webhook directly from provider payload (simplified version)
    * This method processes webhooks without requiring webhook log entries
    *
-   * @param providerCode - The provider code (e.g., 'NIMBUS', 'SHIPROCKET', 'SHIPWAY')
+   * @param providerCode - The provider code (e.g., 'NIMBUS', 'SHIPROCKET')
    * @param payload - Raw webhook payload from the provider
    * @returns void
    */
-  public async processWebhookDirectly(providerCode: string, payload: any): Promise<void> {
+  public async processWebhookDirectly(
+    providerCode: string,
+    payload: IBaseWebhookPayload,
+  ): Promise<void> {
     // Extract tracking number with fallbacks for different payload formats
     const trackingNumber =
       payload.tracking_number ||
@@ -150,7 +163,7 @@ export class WebhookService {
           location:
             payload.location || payload.city || payload.location_name || payload.locationName,
           source: 'WEBHOOK',
-          rawPayload: payload,
+          rawPayload: payload as Record<string, unknown>,
         },
       );
 
@@ -160,10 +173,11 @@ export class WebhookService {
       this.logger.log(
         `Webhook processed successfully for shipment ${shipment.shipmentId} from ${providerCode}`,
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       this.logger.error(
-        `Failed to process webhook for shipment ${shipment.shipmentId}: ${error.message}`,
-        error.stack,
+        `Failed to process webhook for shipment ${shipment.shipmentId}: ${err.message}`,
+        err.stack,
       );
       throw error;
     }
@@ -209,8 +223,16 @@ export class WebhookService {
     const transaction: Transaction = await this.sequelize.transaction();
 
     try {
+      const rawPayload = webhookLog.payload ?? {};
+      if (typeof rawPayload !== 'object' || Array.isArray(rawPayload)) {
+        throw new BadRequestException('Invalid webhook payload format');
+      }
+
       // Parse webhook payload to extract tracking information
-      const webhookData = this.parseWebhookPayload(provider.providerCode, webhookLog.payload);
+      const webhookData = this.parseWebhookPayload(
+        provider.providerCode,
+        rawPayload as IBaseWebhookPayload,
+      );
 
       if (!webhookData.trackingNumber && !webhookData.providerShipmentId) {
         throw new BadRequestException(
@@ -286,7 +308,7 @@ export class WebhookService {
               eventTime: eventTime,
               location: webhookData.location,
               source: 'WEBHOOK',
-              rawPayload: webhookLog.payload,
+              rawPayload: rawPayload as Record<string, unknown>,
             },
             { transaction },
           );
@@ -296,9 +318,10 @@ export class WebhookService {
               webhookData.status
             } -> ${internalStatus || 'N/A'}`,
           );
-        } catch (error: any) {
+        } catch (error: unknown) {
           // Handle unique constraint violation (race condition)
-          if (error.name === 'SequelizeUniqueConstraintError') {
+          const err = error as { name?: string };
+          if (err?.name === 'SequelizeUniqueConstraintError') {
             this.logger.warn(
               `Duplicate tracking event detected (race condition) for shipment ${shipment.shipmentId}`,
             );
@@ -348,13 +371,14 @@ export class WebhookService {
       this.logger.log(
         `Webhook ${webhookLogId} processed successfully for shipment ${shipment.shipmentId}`,
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       await transaction.rollback();
-      this.logger.error(`Error processing webhook ${webhookLogId}: ${error.message}`, error.stack);
+      const err = error instanceof Error ? error : new Error(String(error));
+      this.logger.error(`Error processing webhook ${webhookLogId}: ${err.message}`, err.stack);
 
       // Update webhook log with error
       await webhookLog.update({
-        errorMessage: error.message,
+        errorMessage: err.message,
         processed: false,
       });
 
@@ -399,83 +423,102 @@ export class WebhookService {
   }
 
   /**
-   * Parse webhook payload to extract tracking information
-   * This is a generic parser that works with common webhook formats
-   * Provider-specific adapters can override this logic
-   *
-   * @param providerCode - Provider code
-   * @param payload - Raw webhook payload
-   * @returns Parsed webhook data
+   * Parse webhook payload - delegates to provider-specific parser when available.
+   * Supports Nimbus, Shiprocket and common webhook formats (snake_case/camelCase).
    */
   private parseWebhookPayload(
     providerCode: string,
-    payload: any,
-  ): {
-    trackingNumber?: string;
-    providerShipmentId?: string;
-    status: string;
-    description?: string;
-    eventTime?: Date;
-    location?: string;
-  } {
-    // Common webhook payload structure
-    // Different providers may have different formats, this is a generic parser
-    // Provider-specific parsing can be added in adapters or extended here
+    payload: IBaseWebhookPayload | IUnknownWebhookPayload,
+  ): IParsedWebhookData {
+    const normalized = providerCode.toUpperCase();
+    if (normalized === CourierProvider.NIMBUS) {
+      return this.parseNimbusPayload(payload as IBaseWebhookPayload);
+    }
+    if (normalized === CourierProvider.SHIPROCKET) {
+      return this.parseShiprocketPayload(payload as IBaseWebhookPayload);
+    }
+    return this.parseGenericPayload(payload);
+  }
 
+  private parseGenericPayload(
+    payload: IBaseWebhookPayload | IUnknownWebhookPayload,
+  ): IParsedWebhookData {
+    const p = payload as Record<string, unknown>;
     const trackingNumber =
-      payload.tracking_number ||
-      payload.trackingNumber ||
-      payload.awb_number ||
-      payload.awbNumber ||
-      payload.tracking_id ||
-      payload.trackingId;
+      (p.tracking_number as string) ||
+      (p.trackingNumber as string) ||
+      (p.awb_number as string) ||
+      (p.awbNumber as string) ||
+      (p.tracking_id as string) ||
+      (p.trackingId as string);
 
     const providerShipmentId =
-      payload.shipment_id ||
-      payload.shipmentId ||
-      payload.order_id ||
-      payload.orderId ||
-      payload.provider_shipment_id ||
-      payload.providerShipmentId;
+      (p.shipment_id as string) ||
+      (p.shipmentId as string) ||
+      (p.order_id as string) ||
+      (p.orderId as string) ||
+      (p.provider_shipment_id as string) ||
+      (p.providerShipmentId as string);
 
     const status =
-      payload.status ||
-      payload.event_status ||
-      payload.eventStatus ||
-      payload.current_status ||
-      payload.currentStatus ||
+      (p.status as string) ||
+      (p.event_status as string) ||
+      (p.eventStatus as string) ||
+      (p.current_status as string) ||
+      (p.currentStatus as string) ||
       'UNKNOWN';
 
     const description =
-      payload.description ||
-      payload.message ||
-      payload.event_description ||
-      payload.eventDescription ||
+      (p.description as string) ||
+      (p.message as string) ||
+      (p.event_description as string) ||
+      (p.eventDescription as string) ||
       status;
 
-    const eventTime = payload.event_time
-      ? new Date(payload.event_time)
-      : payload.eventTime
-      ? new Date(payload.eventTime)
-      : payload.timestamp
-      ? new Date(payload.timestamp)
+    const eventTime = p.event_time
+      ? new Date(p.event_time as string | number)
+      : p.eventTime
+      ? new Date(p.eventTime as string | number)
+      : p.timestamp
+      ? new Date(p.timestamp as string | number)
       : new Date();
 
     const location =
-      payload.location ||
-      payload.city ||
-      payload.location_name ||
-      payload.locationName ||
+      (p.location as string) ||
+      (p.city as string) ||
+      (p.location_name as string) ||
+      (p.locationName as string) ||
       undefined;
 
     return {
-      trackingNumber,
-      providerShipmentId,
+      trackingNumber: trackingNumber || undefined,
+      providerShipmentId: providerShipmentId || undefined,
       status,
       description,
       eventTime,
       location,
     };
+  }
+
+  /** Nimbus-specific payload parsing */
+  private parseNimbusPayload(payload: INimbusWebhookPayload): IParsedWebhookData {
+    const base = this.parseGenericPayload(payload);
+    if (!base.trackingNumber && payload.awb) {
+      base.trackingNumber = payload.awb;
+    }
+    return base;
+  }
+
+  /** Shiprocket-specific payload parsing */
+  private parseShiprocketPayload(payload: IShiprocketWebhookPayload): IParsedWebhookData {
+    const base = this.parseGenericPayload(payload);
+    if (!base.trackingNumber && (payload.awb_code ?? payload.awbCode)) {
+      base.trackingNumber = payload.awb_code ?? payload.awbCode;
+    }
+    if (!base.status && (payload.shipment_status ?? payload.shipmentStatus)) {
+      base.status = payload.shipment_status ?? payload.shipmentStatus ?? 'UNKNOWN';
+    }
+    return base;
   }
 
   /**

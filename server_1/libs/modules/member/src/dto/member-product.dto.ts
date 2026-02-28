@@ -107,16 +107,16 @@ export class CalculateProductVariantTaxDto implements ICalculateProductVariantTa
   @ValidateNested({ each: true })
   @Type(() => MemberProductOrderItemBasicDto)
   items!: MemberProductOrderItemBasicDto[];
-  @IsOptional()
+  @IsNotEmpty()
   @IsNumber()
-  billingAddressId?: number;
+  billingAddressId: number;
   @IsOptional()
   @IsNumber()
   addressId?: number;
   @IsOptional()
   @IsNumber()
   @Min(0)
-  discountAmount!: number;
+  discountAmount?: number;
 }
 
 export class ProductVariantTaxResultDto

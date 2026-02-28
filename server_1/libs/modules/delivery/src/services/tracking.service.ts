@@ -73,7 +73,7 @@ export class TrackingService {
       eventTime: Date;
       location?: string;
       source: 'WEBHOOK' | 'POLLING' | 'MANUAL';
-      rawPayload?: any;
+      rawPayload?: Record<string, unknown>;
     },
   ): Promise<TxnShipmentTrackingEvent> {
     // Validate shipment exists
@@ -122,9 +122,10 @@ export class TrackingService {
       this.logger.log(
         `Tracking event inserted for shipment ${shipmentId}: ${eventData.providerStatus} -> ${internalStatus}`,
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error as { name?: string };
       // Handle unique constraint violation (race condition)
-      if (error.name === 'SequelizeUniqueConstraintError') {
+      if (err?.name === 'SequelizeUniqueConstraintError') {
         this.logger.warn(
           `Duplicate tracking event detected (race condition) for shipment ${shipmentId}, provider status ${eventData.providerStatus}, event time ${eventData.eventTime}`,
         );
@@ -316,10 +317,11 @@ export class TrackingService {
     try {
       await this.shipmentRepo.updateStatus(shipmentId, status);
       this.logger.log(`Shipment ${shipmentId} status updated to ${status}`);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       this.logger.error(
-        `Failed to update shipment ${shipmentId} status to ${status}: ${error.message}`,
-        error.stack,
+        `Failed to update shipment ${shipmentId} status to ${status}: ${err.message}`,
+        err.stack,
       );
       // Don't throw - tracking event was inserted successfully
       // Status update failure should be logged but not fail the tracking event insertion
@@ -339,7 +341,7 @@ export class TrackingService {
       eventTime: Date;
       location?: string;
       source: 'WEBHOOK' | 'POLLING' | 'MANUAL';
-      rawPayload?: any;
+      rawPayload?: Record<string, unknown>;
     },
   ): Promise<TxnShipmentTrackingEvent> {
     const shipment = await this.shipmentRepository.findByPk(shipmentId);

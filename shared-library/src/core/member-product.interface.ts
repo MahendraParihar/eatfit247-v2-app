@@ -3,6 +3,7 @@ import { IAddress } from './location.interface';
 import { PaymentSourceEnum, TaxMode, TaxTypeEnum } from '../enum';
 import { IProduct } from './product.interface';
 import { ICalculateTaxResponse } from './tax-calculation.interface';
+import { IShipment } from './shipment.interface';
 
 export interface ICalculateProductVariantTaxRequest {
   items: IMemberProductOrderItemBasic[];
@@ -114,6 +115,7 @@ export interface IMemberProduct extends IBasicMemberProduct, IAdminInfo {
   billingAddress?: IAddress;
   franchise?: string;
   orderItems: IMemberProductOrderItem[];
+  shipments?: IShipment[];
 }
 
 export interface IMemberProductMasterData {

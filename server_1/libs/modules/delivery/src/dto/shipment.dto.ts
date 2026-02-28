@@ -1,6 +1,12 @@
 import { IsNotEmpty, IsNumber, IsOptional, IsString, ValidateNested, IsArray, Min } from 'class-validator';
 import { Type } from 'class-transformer';
 
+/** Input for adding shipment items (memberProductOrderItemId + quantity) */
+export interface IShipmentItemInput {
+  memberProductOrderItemId: number;
+  quantity: number;
+}
+
 export class ShipmentItemDto {
   @IsNotEmpty()
   @IsNumber()
@@ -16,6 +22,22 @@ export class CreateDraftShipmentDto {
   @IsNotEmpty()
   @IsNumber()
   memberProductId: number;
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ShipmentItemDto)
+  items?: ShipmentItemDto[];
+}
+
+export class BookShipmentDto {
+  @IsOptional()
+  @IsNumber()
+  rateQuoteId?: number;
+
+  @IsOptional()
+  @IsNumber()
+  providerId?: number;
 }
 
 export class AddShipmentItemsDto {
@@ -27,9 +49,13 @@ export class AddShipmentItemsDto {
 }
 
 export class SelectRateDto {
-  @IsNotEmpty()
+  @IsOptional()
   @IsNumber()
-  providerId: number;
+  rateQuoteId?: number;
+
+  @IsOptional()
+  @IsNumber()
+  providerId?: number;
 }
 
 export class CreateShipmentDto {

@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Sequelize, Transaction } from 'sequelize';
 import { TxnShipment, MstCourierProvider, TxnCourierProviderAccount } from '../models';
+import { IShipmentMetaData } from 'eatfit247-shared-library';
 
 @Injectable()
 export class ShipmentRepository {
@@ -29,6 +30,7 @@ export class ShipmentRepository {
   async createDraft(
     franchiseId: number,
     shipmentNumber: string,
+    metaData: IShipmentMetaData,
     createdBy: number,
     createdIp: string,
     transaction?: Transaction,
@@ -38,6 +40,7 @@ export class ShipmentRepository {
         franchiseId,
         shipmentNumber,
         status: 'DRAFT',
+        metaData: metaData,
         createdBy,
         modifiedBy: createdBy,
         createdIp,
@@ -157,4 +160,3 @@ export class ShipmentRepository {
     );
   }
 }
-

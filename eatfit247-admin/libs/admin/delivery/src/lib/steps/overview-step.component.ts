@@ -4,7 +4,13 @@ import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { IShipmentDetails, ShipmentStatusEnum } from '@eatfit247-shared-lib';
+import {
+  IAddress,
+  IMemberProduct,
+  IShipment,
+  ShipmentStatusEnum,
+} from '@eatfit247-shared-lib';
+import { IOrderItemShipmentGroup } from '../models/shipment.model';
 
 @Component({
   selector: 'lib-overview-step',
@@ -20,31 +26,46 @@ import { IShipmentDetails, ShipmentStatusEnum } from '@eatfit247-shared-lib';
   styleUrl: './overview-step.component.scss',
 })
 export class OverviewStepComponent {
-  @Input() shipmentDetails: IShipmentDetails | null = null;
+  @Input() memberProductOrder: IMemberProduct | null = null;
+  @Input() orderItemGroups: IOrderItemShipmentGroup[] = [];
+  @Input() shipmentDetails: IShipment | null = null;
   @Input() loading = false;
   @Output() getRates = new EventEmitter<void>();
 
   getStatusClass(status: string): string {
     const statusUpper = status.toUpperCase();
-    if (statusUpper === ShipmentStatusEnum.BOOKED || statusUpper === 'PICKUP_SCHEDULED') {
+    if (
+      statusUpper === ShipmentStatusEnum.BOOKED ||
+      statusUpper === 'PICKUP_SCHEDULED'
+    ) {
       return 'status-booked';
-    } else if (statusUpper === ShipmentStatusEnum.IN_TRANSIT || statusUpper === 'OUT_FOR_DELIVERY') {
+    } else if (
+      statusUpper === ShipmentStatusEnum.IN_TRANSIT ||
+      statusUpper === 'OUT_FOR_DELIVERY'
+    ) {
       return 'status-in-transit';
     } else if (statusUpper === ShipmentStatusEnum.DELIVERED) {
       return 'status-delivered';
-    } else if (statusUpper === ShipmentStatusEnum.FAILED || statusUpper === 'CANCELLED' || statusUpper === 'RTO') {
+    } else if (
+      statusUpper === ShipmentStatusEnum.FAILED ||
+      statusUpper === 'CANCELLED' ||
+      statusUpper === 'RTO'
+    ) {
       return 'status-failed';
     }
     return '';
   }
 
   get showGetRatesButton(): boolean {
-    const status = this.shipmentDetails?.status.toUpperCase();
-    return status === ShipmentStatusEnum.DRAFT;
+    const status = this.shipmentDetails?.status?.toUpperCase();
+    return !!status && status === ShipmentStatusEnum.DRAFT;
   }
 
   onGetRates(): void {
     this.getRates.emit();
   }
-}
 
+  getAddress(add: string): IAddress {
+    return this.memberProductOrder?.memberAddress[add] as IAddress;
+  }
+}

@@ -1,17 +1,27 @@
 /**
  * Shipment Models
- * 
+ *
  * Type definitions for shipment flow
  */
-import { IShipmentDetails, IRateQuote, ITrackingInfo, IShipmentItem } from '@eatfit247-shared-lib';
+import { IRateQuote, ITrackingInfo, IShipmentItem } from '@eatfit247-shared-lib';
 
 export interface IOrderItem {
   memberProductOrderItemId: number;
   productName: string;
-  orderedQuantity: number;
-  remainingQuantity: number;
+  quantity: number;
   unitPrice: number;
   totalAmount: number;
+}
+
+export interface IOrderItemShipmentGroup {
+  orderItem: IOrderItem;
+  quantity: number;
+  shipments: Array<{
+    shipmentId: number;
+    shipmentNumber: string;
+    status: string;
+    quantity: number;
+  }>;
 }
 
 export interface IAddItemsPayload {
@@ -21,11 +31,25 @@ export interface IAddItemsPayload {
   }>;
 }
 
-export interface ISelectRatePayload {
-  providerId: number;
+export interface ICreateDraftPayload {
+  memberProductId: number;
+  items?: Array<{
+    memberProductOrderItemId: number;
+    quantity: number;
+  }>;
 }
 
-export type ShipmentStatus = 
+export interface ISelectRatePayload {
+  rateQuoteId?: number;
+  providerId?: number;
+}
+
+export interface IBookShipmentPayload {
+  rateQuoteId?: number;
+  providerId?: number;
+}
+
+export type ShipmentStatus =
   | 'DRAFT'
   | 'RATE_REQUESTED'
   | 'RATE_SELECTED'
@@ -37,8 +61,8 @@ export type ShipmentStatus =
 
 export interface ShipmentFlowData {
   memberProductId: number;
+  memberId: number;
   shipmentId?: number;
 }
 
-export type { IShipmentDetails, IRateQuote, ITrackingInfo, IShipmentItem };
-
+export type { IRateQuote, ITrackingInfo, IShipmentItem };

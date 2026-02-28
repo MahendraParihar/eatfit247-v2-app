@@ -97,7 +97,8 @@ export const appRoutes: Route[] = [
       },
       {
         path: 'legal-pages',
-        loadChildren: () => import('legal-pages').then((m) => m.legalPagesRoutes),
+        loadChildren: () =>
+          import('legal-pages').then((m) => m.legalPagesRoutes),
       },
       {
         path: 'seo-page',
@@ -109,7 +110,8 @@ export const appRoutes: Route[] = [
       },
       {
         path: 'success-stories',
-        loadChildren: () => import('success-stories').then((m) => m.successStoriesRoutes),
+        loadChildren: () =>
+          import('success-stories').then((m) => m.successStoriesRoutes),
       },
       {
         path: 'products',
@@ -141,15 +143,20 @@ export const appRoutes: Route[] = [
         children: [
           {
             path: 'courier-providers',
-            loadChildren: () => import('courier-providers').then((m) => m.courierProvidersRoutes),
+            loadChildren: () =>
+              import('courier-providers').then((m) => m.courierProvidersRoutes),
           },
           {
             path: 'courier-provider-accounts',
-            loadChildren: () => import('courier-provider-accounts').then((m) => m.courierProviderAccountsRoutes),
+            loadChildren: () =>
+              import('courier-provider-accounts').then(
+                (m) => m.courierProviderAccountsRoutes
+              ),
           },
           {
             path: 'shipment',
-            loadChildren: () => import('delivery').then((m) => m.deliveryRoutes),
+            loadChildren: () =>
+              import('delivery').then((m) => m.deliveryRoutes),
           },
         ],
       },

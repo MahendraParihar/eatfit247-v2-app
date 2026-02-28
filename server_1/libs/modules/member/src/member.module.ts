@@ -64,6 +64,7 @@ import {
 import { FranchiseModule } from '@server_1/modules/franchise';
 import { PaymentModule } from '@server_1/modules/payment';
 import { ProductModule } from '@server_1/modules/product';
+import { DeliveryModule } from '../../delivery';
 // Register models with the model registry
 modelRegistry.register([
   TxnMember,
@@ -99,6 +100,7 @@ modelRegistry.register([
     ProductModule,
     RecipeModule,
     DietModule,
+    DeliveryModule,
     SequelizeModule.forFeature([
       // Member transaction models (local)
       TxnMember,
@@ -161,12 +163,6 @@ modelRegistry.register([
     MemberDietPlanService,
     MemberDashboardService,
   ],
-  exports: [
-    MemberService,
-    MemberPlanService,
-    MemberProductService,
-    SequelizeModule,
-  ],
+  exports: [MemberService, MemberPlanService, MemberProductService, SequelizeModule],
 })
-export class MemberModule {
-}
+export class MemberModule {}

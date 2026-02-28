@@ -36,14 +36,14 @@ export class TxnCourierWebhookLog extends Model<TxnCourierWebhookLog> {
     field: 'payload',
     type: DataType.JSONB,
   })
-  declare payload: Record<string, any>;
+  declare payload: Record<string, unknown>;
 
   @Column({
     allowNull: true,
     field: 'headers',
     type: DataType.JSONB,
   })
-  declare headers: Record<string, any>;
+  declare headers: Record<string, unknown>;
 
   @Column({
     allowNull: true,

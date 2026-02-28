@@ -1,8 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Sequelize, Op } from 'sequelize';
+import { Op } from 'sequelize';
+import { Transaction } from 'sequelize';
 import { TxnShipmentItem, TxnShipment } from '../models';
 import { TxnMemberProductOrderItem } from '@server_1/modules/member/src/models';
+import { IShipmentItemInput } from '../dto';
 
 @Injectable()
 export class ShipmentItemRepository {
@@ -15,8 +17,8 @@ export class ShipmentItemRepository {
 
   async addItems(
     shipmentId: number,
-    items: Array<{ memberProductOrderItemId: number; quantity: number }>,
-    transaction?: any,
+    items: IShipmentItemInput[],
+    transaction?: Transaction,
   ): Promise<TxnShipmentItem[]> {
     const createdItems: TxnShipmentItem[] = [];
 
@@ -90,11 +92,17 @@ export class ShipmentItemRepository {
     });
   }
 
-  async deleteByShipmentId(shipmentId: number, transaction?: any): Promise<void> {
+  async deleteByShipmentId(shipmentId: number, transaction?: Transaction): Promise<void> {
     await this.shipmentItemModel.destroy({
       where: { shipmentId },
       transaction,
     });
   }
-}
 
+  async deleteByShipmentItemId(memberProductId: number[], transaction?: Transaction): Promise<void> {
+    await this.shipmentItemModel.destroy({
+      where: { memberProductOrderItemId: memberProductId },
+      transaction,
+    });
+  }
+}

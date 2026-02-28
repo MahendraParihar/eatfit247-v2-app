@@ -8,6 +8,7 @@ import {
   ICourierProviderCredentials,
   IShipmentBookingResponse,
 } from '../providers';
+import { IShipmentMetaData } from '@eatfit247-shared-lib';
 
 /**
  * Failover Service
@@ -27,7 +28,7 @@ export class FailoverService {
   constructor(
     @InjectModel(TxnShipment)
     private readonly shipmentModel: typeof TxnShipment,
-    @InjectModel(MstCourierProvider)
+    @InjectModel(TxnCourierProviderAccount)
     private readonly courierProviderAccountModel: typeof TxnCourierProviderAccount,
     @InjectConnection()
     private readonly sequelize: Sequelize,
@@ -97,12 +98,16 @@ export class FailoverService {
       );
       try {
         // Try booking with this provider
-        const bookingResult = await this.attemptBooking(
-          shipment,
-          provider,
-          providerAccount,
-          bookingPayload,
-        );
+        const bookingResult = await this.attemptBooking(provider, providerAccount, bookingPayload);
+        // Validate booking actually succeeded - provider may return 200 with status: false
+        if (!this.isBookingSuccess(bookingResult)) {
+          const msg =
+            (typeof bookingResult.status === 'boolean'
+              ? `Provider returned status: ${bookingResult.status}`
+              : bookingResult.message || `Provider returned status: ${bookingResult.status}`) ||
+            'Booking failed';
+          throw new Error(msg);
+        }
         // Success! Update shipment with transaction
         await this.updateShipmentAfterBooking(shipmentId, provider, providerAccount, bookingResult);
         this.logger.log(
@@ -137,10 +142,27 @@ export class FailoverService {
   }
 
   /**
+   * Check if booking response indicates success.
+   * Providers may return HTTP 200 with status: false when booking fails.
+   */
+  private isBookingSuccess(result: IShipmentBookingResponse): boolean {
+    const s = result?.status;
+    if (s === false) return false;
+    if (typeof s === 'string') {
+      const lower = s.toLowerCase();
+      if (lower === 'false' || lower === 'failed' || lower === 'error' || lower === 'fail') {
+        return false;
+      }
+    }
+    // Must have tracking number for successful booking
+    if (!result?.trackingNumber?.trim?.()) return false;
+    return true;
+  }
+
+  /**
    * Attempt booking with a specific provider
    */
   private async attemptBooking(
-    shipment: TxnShipment,
     provider: MstCourierProvider,
     providerAccount: TxnCourierProviderAccount,
     bookingPayload: any,
@@ -150,8 +172,7 @@ export class FailoverService {
     // Build credentials
     const credentials = await this.buildCredentials(providerAccount, provider);
     // Call provider's createShipment API
-    const bookingResponse = await adapter.createShipment(bookingPayload, credentials);
-    return bookingResponse;
+    return await adapter.createShipment(bookingPayload, credentials);
   }
 
   /**
@@ -181,8 +202,8 @@ export class FailoverService {
           status: 'BOOKED',
           rateAmount: shipment.rateAmount, // Keep existing rate amount
           currency: shipment.currency || 'INR',
-          metadata: {
-            ...(shipment.metadata || {}),
+          metaData: {
+            ...shipment.metaData,
             bookingResponse: bookingResult.metadata,
             labelUrl: bookingResult.labelUrl,
             awbNumber: bookingResult.awbNumber,
@@ -297,59 +318,18 @@ export class FailoverService {
     // Get shipment items
     const items = shipment.shipmentItems || [];
     // Calculate total weight from items or use shipment totalWeightKg
-    const weight =
-      shipment.totalWeightKg ||
-      items.reduce((sum: number, item: any) => sum + (item.weightKg || 0), 0) ||
-      1; // Default to 1kg if no weight
-    // Build pickup and delivery addresses from metadata
-    const metadata = shipment.metadata || {};
-    const payload: any = {
-      orderId: shipment.metadata?.orderId || shipment.shipmentNumber,
-      orderDate:
-        shipment.createdAt?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0],
-      pickup: metadata.pickup || {
-        postcode: metadata.pickupPostcode || '',
-        address: metadata.pickupAddress || '',
-        city: metadata.pickupCity || '',
-        state: metadata.pickupState || '',
-        name: metadata.pickupName || '',
-        phone: metadata.pickupPhone || '',
-      },
-      delivery: metadata.delivery || {
-        postcode: metadata.deliveryPostcode || '',
-        address: metadata.deliveryAddress || '',
-        city: metadata.deliveryCity || '',
-        state: metadata.deliveryState || '',
-        name: metadata.deliveryName || '',
-        phone: metadata.deliveryPhone || '',
-      },
-      billing: metadata.billing ||
-        metadata.pickup || {
-          postcode: metadata.pickupPostcode || '',
-          address: metadata.pickupAddress || '',
-          city: metadata.pickupCity || '',
-          state: metadata.pickupState || '',
-          name: metadata.pickupName || '',
-          phone: metadata.pickupPhone || '',
-          email: metadata.pickupEmail || '',
-        },
-      shipping: metadata.shipping ||
-        metadata.delivery || {
-          postcode: metadata.deliveryPostcode || '',
-          address: metadata.deliveryAddress || '',
-          city: metadata.deliveryCity || '',
-          state: metadata.deliveryState || '',
-          name: metadata.deliveryName || '',
-          phone: metadata.deliveryPhone || '',
-          email: metadata.deliveryEmail || '',
-        },
-      weight,
-      dimensions: metadata.dimensions || {
-        length: metadata.length || 10,
-        breadth: metadata.breadth || metadata.width || 10,
-        height: metadata.height || 10,
-      },
-      codAmount: shipment.metadata?.codAmount || 0,
+    const weight = shipment.totalWeightKg || 1;
+    const metadata = shipment.metaData;
+    return <IShipmentMetaData>{
+      orderId: shipment.metaData?.orderId || shipment.shipmentNumber,
+      orderDate: shipment.createdAt,
+      pickup: metadata.pickup,
+      delivery: metadata.delivery,
+      billing: metadata.billing,
+      shipping: metadata.shipping,
+      weight: weight,
+      dimensions: metadata.dimensions,
+      codAmount: shipment.metaData?.codAmount || 0,
       subTotal: shipment.totalAmount || 0,
       items: items.map((item: any) => ({
         name: item.productName || 'Product',
@@ -359,7 +339,6 @@ export class FailoverService {
         weight: item.weightKg || 0,
       })),
     };
-    return payload;
   }
 
   /**

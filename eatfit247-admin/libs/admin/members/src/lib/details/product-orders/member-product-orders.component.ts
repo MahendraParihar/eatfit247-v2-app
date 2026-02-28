@@ -14,14 +14,21 @@ import {
   EmptyStateType,
   ITableColumn,
   ITableConfig,
-  LoaderComponent
+  LoaderComponent,
 } from '@shared';
-import { IMemberProduct, PaymentSourceEnum, PaymentStatusEnum } from '@eatfit247-shared-lib';
+import {
+  IMemberProduct,
+  PaymentSourceEnum,
+  PaymentStatusEnum,
+} from '@eatfit247-shared-lib';
 import { MembersApiService } from 'members';
-import { PlaceProductOrderComponent, PlaceProductOrderData } from './place-product-order/place-product-order.component';
+import {
+  PlaceProductOrderComponent,
+  PlaceProductOrderData,
+} from './place-product-order/place-product-order.component';
 import {
   ViewProductOrderDetailsComponent,
-  ViewProductOrderDetailsData
+  ViewProductOrderDetailsData,
 } from './view-product-order-details/view-product-order-details.component';
 import { ShipmentFlowComponent, ShipmentFlowData } from 'delivery';
 
@@ -38,10 +45,10 @@ import { ShipmentFlowComponent, ShipmentFlowData } from 'delivery';
     MatSnackBarModule,
     DataTableComponent,
     EmptyStateComponent,
-    LoaderComponent
+    LoaderComponent,
   ],
   templateUrl: './member-product-orders.component.html',
-  styleUrl: './member-product-orders.component.scss'
+  styleUrl: './member-product-orders.component.scss',
 })
 export class MemberProductOrdersComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
@@ -80,20 +87,20 @@ export class MemberProductOrdersComponent implements OnInit, OnDestroy {
         key: 'invoiceId',
         label: 'Invoice ID',
         dataKey: 'invoiceId',
-        sortable: true
+        sortable: true,
       },
       {
         key: 'paymentDate',
         label: 'Order Date',
         dataKey: 'paymentDate',
         type: 'date',
-        sortable: true
+        sortable: true,
       },
       {
         key: 'paymentMode',
         label: 'Payment Mode',
         dataKey: 'paymentMode',
-        sortable: false
+        sortable: false,
       },
       {
         key: 'paymentStatus',
@@ -102,7 +109,7 @@ export class MemberProductOrdersComponent implements OnInit, OnDestroy {
         sortable: false,
         formatter: (value: string | undefined) => {
           return value || 'N/A';
-        }
+        },
       },
       {
         key: 'totalAmount',
@@ -114,37 +121,40 @@ export class MemberProductOrdersComponent implements OnInit, OnDestroy {
           const totalAmount = value || row?.totalAmount || 0;
           const currency = row?.currency || 'INR';
           const currencySymbol = currency === 'INR' ? '₹' : currency;
-          return `${currencySymbol}${Number(totalAmount).toLocaleString('en-IN', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-          })}`;
-        }
+          return `${currencySymbol}${Number(totalAmount).toLocaleString(
+            'en-IN',
+            {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            }
+          )}`;
+        },
       },
       {
         key: 'transactionId',
         label: 'Transaction ID',
         dataKey: 'transactionId',
-        sortable: false
+        sortable: false,
       },
       {
         key: 'gatewayOrderId',
         label: 'Gateway Order ID',
         dataKey: 'gatewayOrderId',
-        sortable: false
+        sortable: false,
       },
       {
         key: 'paymentSource',
         label: 'Payment Source',
         dataKey: 'paymentSource',
-        sortable: false
+        sortable: false,
       },
       {
         key: 'createdAt',
         label: 'Created At',
         dataKey: 'createdAt',
         type: 'date',
-        sortable: true
-      }
+        sortable: true,
+      },
     ];
     this.tableConfig = {
       columns,
@@ -158,13 +168,13 @@ export class MemberProductOrdersComponent implements OnInit, OnDestroy {
             label: 'View order',
             icon: 'visibility',
             tooltip: 'View Order Details',
-            onClick: (row: IMemberProduct) => this.viewProductOrderDetails(row)
+            onClick: (row: IMemberProduct) => this.viewProductOrderDetails(row),
           },
           {
             label: 'Download Invoice',
             icon: 'download',
             tooltip: 'Download Invoice',
-            onClick: (row: IMemberProduct) => this.downloadInvoice(row)
+            onClick: (row: IMemberProduct) => this.downloadInvoice(row),
           },
           {
             label: 'Generate Payment Link',
@@ -172,23 +182,26 @@ export class MemberProductOrdersComponent implements OnInit, OnDestroy {
             tooltip: 'Generate Payment Link',
             onClick: (row: IMemberProduct) => this.regeneratePaymentLink(row),
             visible: (row: IMemberProduct) => {
-              return row.paymentStatusId !== PaymentStatusEnum.PAID &&
-                row.paymentSource !== PaymentSourceEnum.MANUAL;
-            }
+              return (
+                row.paymentStatusId !== PaymentStatusEnum.PAID &&
+                row.paymentSource !== PaymentSourceEnum.MANUAL
+              );
+            },
           },
           {
             label: 'Start Shipment',
             icon: 'local_shipping',
             tooltip: 'Start Shipment Flow',
-            onClick: (row: IMemberProduct) => this.startShipmentFlow(row)
-          }
+            onClick: (row: IMemberProduct) => this.startShipmentFlow(row),
+            visible: (row: IMemberProduct) => !this.isFullyShipped(row),
+          },
         ],
         column: {
           headerLabel: 'Actions',
           align: 'center',
-          width: '150px'
-        }
-      }
+          width: '150px',
+        },
+      },
     };
   }
 
@@ -198,9 +211,13 @@ export class MemberProductOrdersComponent implements OnInit, OnDestroy {
       const res = await this.apiService.getProductOrders(this.memberId);
       this.productOrders = res.tableData || [];
     } catch (error) {
-      this.snackBar.open('Failed to load product orders. Please try again.', 'Close', {
-        duration: 5000
-      });
+      this.snackBar.open(
+        'Failed to load product orders. Please try again.',
+        'Close',
+        {
+          duration: 5000,
+        }
+      );
       this.productOrders = [];
     } finally {
       this.loading = false;
@@ -210,31 +227,76 @@ export class MemberProductOrdersComponent implements OnInit, OnDestroy {
   getStatusClass(status: string): string {
     if (!status) return '';
     const statusLower = status.toLowerCase();
-    if (statusLower.includes('success') || statusLower.includes('completed') || statusLower.includes('paid')) {
+    if (
+      statusLower.includes('success') ||
+      statusLower.includes('completed') ||
+      statusLower.includes('paid')
+    ) {
       return 'status-success';
-    } else if (statusLower.includes('pending') || statusLower.includes('pending')) {
+    } else if (
+      statusLower.includes('pending') ||
+      statusLower.includes('pending')
+    ) {
       return 'status-pending';
-    } else if (statusLower.includes('failed') || statusLower.includes('cancelled') || statusLower.includes('refunded')) {
+    } else if (
+      statusLower.includes('failed') ||
+      statusLower.includes('cancelled') ||
+      statusLower.includes('refunded')
+    ) {
       return 'status-failed';
     }
     return '';
   }
 
+  private isFullyShipped(productOrder: IMemberProduct): boolean {
+    return false;
+    // if (!productOrder || !productOrder.orderItems || productOrder.orderItems.length === 0) {
+    //   return false;
+    // }
+    //
+    // const totalOrdered = productOrder.orderItems.reduce(
+    //   (sum, item) => sum + (item.quantity || 0),
+    //   0
+    // );
+    //
+    // if (totalOrdered === 0) {
+    //   return false;
+    // }
+    //
+    // const shipments = productOrder.shipments || [];
+    //
+    // const totalShipped = shipments
+    //   .filter((shipment) => {
+    //     const status = shipment.status ? shipment.status.toUpperCase() : '';
+    //     return status !== 'FAILED' && status !== 'CANCELLED';
+    //   })
+    //   .reduce((sum, shipment) => {
+    //     const items = shipment.shipmentItems || [];
+    //     const shipmentQty = items.reduce(
+    //       (innerSum, item) => innerSum + (item.quantity || 0),
+    //       0
+    //     );
+    //     return sum + shipmentQty;
+    //   }, 0);
+    //
+    // return totalShipped >= totalOrdered;
+  }
+
   addProductOrder(): void {
     if (!this.memberId) {
       this.snackBar.open('Member ID is not available', 'Close', {
-        duration: 3000
+        duration: 3000,
       });
       return;
     }
     const dialogData: PlaceProductOrderData = {
-      memberId: this.memberId
+      memberId: this.memberId,
     };
     const dialogRef = this.dialog.open(PlaceProductOrderComponent, {
       width: '1200px',
       maxWidth: '95vw',
       maxHeight: '95vh',
-      data: dialogData
+      data: dialogData,
     });
     dialogRef.afterClosed().subscribe((result) => {
       if (result === true) {
@@ -246,29 +308,37 @@ export class MemberProductOrdersComponent implements OnInit, OnDestroy {
 
   viewProductOrderDetails(productOrder: IMemberProduct): void {
     if (!this.memberId || !productOrder.memberProductId) {
-      this.snackBar.open('Member ID or Product Order ID is not available', 'Close', {
-        duration: 3000
-      });
+      this.snackBar.open(
+        'Member ID or Product Order ID is not available',
+        'Close',
+        {
+          duration: 3000,
+        }
+      );
       return;
     }
     const dialogData: ViewProductOrderDetailsData = {
       memberId: this.memberId,
-      memberProductId: productOrder.memberProductId
+      memberProductId: productOrder.memberProductId,
     };
     this.dialog.open(ViewProductOrderDetailsComponent, {
       width: '1200px',
       maxWidth: '95vw',
       maxHeight: '95vh',
       data: dialogData,
-      disableClose: false
+      disableClose: false,
     });
   }
 
   async downloadInvoice(productOrder: IMemberProduct): Promise<void> {
     if (!this.memberId || !productOrder.memberProductId) {
-      this.snackBar.open('Member ID or Product Order ID is not available', 'Close', {
-        duration: 3000
-      });
+      this.snackBar.open(
+        'Member ID or Product Order ID is not available',
+        'Close',
+        {
+          duration: 3000,
+        }
+      );
       return;
     }
     try {
@@ -293,25 +363,33 @@ export class MemberProductOrdersComponent implements OnInit, OnDestroy {
         // Clean up
         window.URL.revokeObjectURL(link.href);
         this.snackBar.open('Invoice downloaded successfully', 'Close', {
-          duration: 3000
+          duration: 3000,
         });
       } else {
         this.snackBar.open('Invalid invoice data received', 'Close', {
-          duration: 3000
+          duration: 3000,
         });
       }
     } catch (error) {
-      this.snackBar.open('Failed to download invoice. Please try again.', 'Close', {
-        duration: 5000
-      });
+      this.snackBar.open(
+        'Failed to download invoice. Please try again.',
+        'Close',
+        {
+          duration: 5000,
+        }
+      );
     }
   }
 
   async regeneratePaymentLink(productOrder: IMemberProduct): Promise<void> {
     if (!this.memberId || !productOrder.memberProductId) {
-      this.snackBar.open('Member ID or Product Order ID is not available', 'Close', {
-        duration: 3000
-      });
+      this.snackBar.open(
+        'Member ID or Product Order ID is not available',
+        'Close',
+        {
+          duration: 3000,
+        }
+      );
       return;
     }
     try {
@@ -320,7 +398,7 @@ export class MemberProductOrdersComponent implements OnInit, OnDestroy {
         productOrder.memberProductId
       );
       this.snackBar.open('Payment link regenerated successfully', 'Close', {
-        duration: 3000
+        duration: 3000,
       });
       // Reload product orders after successful regeneration
       await this.loadProductOrders();
@@ -330,20 +408,31 @@ export class MemberProductOrdersComponent implements OnInit, OnDestroy {
   }
 
   startShipmentFlow(productOrder: IMemberProduct): void {
+    if (this.isFullyShipped(productOrder)) {
+      this.snackBar.open(
+        'This product order is fully shipped. No additional shipments can be created.',
+        'Close',
+        {
+          duration: 5000,
+        }
+      );
+      return;
+    }
     if (!productOrder.memberProductId) {
       this.snackBar.open('Product Order ID is not available', 'Close', {
-        duration: 3000
+        duration: 3000,
       });
       return;
     }
     const dialogData: ShipmentFlowData = {
-      memberProductId: productOrder.memberProductId
+      memberProductId: productOrder.memberProductId,
+      memberId: this.memberId,
     };
     const dialogRef = this.dialog.open(ShipmentFlowComponent, {
       width: '1200px',
       maxWidth: '95vw',
       maxHeight: '95vh',
-      data: dialogData
+      data: dialogData,
     });
     dialogRef.afterClosed().subscribe((result) => {
       if (result === true) {
@@ -352,4 +441,3 @@ export class MemberProductOrdersComponent implements OnInit, OnDestroy {
     });
   }
 }
-

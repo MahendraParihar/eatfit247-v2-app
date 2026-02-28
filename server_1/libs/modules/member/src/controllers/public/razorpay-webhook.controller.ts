@@ -190,7 +190,6 @@ export class RazorpayWebhookController {
     const hasPaymentLink = !!payload.payload.payment_link?.entity?.id;
     // If the payload contains payment_link, only process payment_link.* events
     // Skip other events (payment.captured, order.paid) to avoid duplicate processing
-    console.log('...............', event, hasPaymentLink);
     if (!hasPaymentLink || !event.startsWith('payment_link.')) {
       this.logger.log(
         `Skipping ${event} event for payment link. Only processing payment_link.* events.`,

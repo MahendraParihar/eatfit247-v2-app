@@ -6,7 +6,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatListModule } from '@angular/material/list';
 import { LoaderComponent, EmptyStateComponent } from '@shared';
-import { ITrackingInfo, IShipmentDetails, ShipmentStatusEnum } from '@eatfit247-shared-lib';
+import { ITrackingInfo, IShipment, ShipmentStatusEnum } from '@eatfit247-shared-lib';
 
 @Component({
   selector: 'lib-tracking-step',
@@ -26,7 +26,7 @@ import { ITrackingInfo, IShipmentDetails, ShipmentStatusEnum } from '@eatfit247-
 })
 export class TrackingStepComponent {
   @Input() trackingInfo: ITrackingInfo | null = null;
-  @Input() shipmentDetails: IShipmentDetails | null = null;
+  @Input() shipmentDetails: IShipment | null = null;
   @Input() loading = false;
   @Input() showRetryButton = false;
   @Output() refresh = new EventEmitter<void>();

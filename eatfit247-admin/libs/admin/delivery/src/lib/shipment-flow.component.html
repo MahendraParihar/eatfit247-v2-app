@@ -1,85 +1,122 @@
 <div class="shipment-flow-container">
-  @if (loading()) {
-    <shared-ui-loader [fullScreen]="true" />
-  }
+    @if (loading()) {
+        <shared-ui-loader [fullScreen]="true"/>
+    }
 
-  <mat-stepper
-    [orientation]="(stepperOrientation$ | async) || 'horizontal'"
-    [linear]="true"
-    [(selectedIndex)]="currentStep"
-    (selectionChange)="onStepChange($event)"
-    class="shipment-stepper"
-  >
-    <!-- Step 1: Overview -->
-    <mat-step [completed]="shipmentDetails() !== null">
-      <ng-template matStepLabel>Overview</ng-template>
-      <lib-overview-step
-        [shipmentDetails]="shipmentDetails()"
-        [loading]="loading()"
-        (getRates)="onGetRates()"
-      />
-    </mat-step>
+    <mat-stepper
+            [orientation]="(stepperOrientation$ | async) || 'horizontal'"
+            [linear]="true"
+            [selectedIndex]="currentStep()"
+            (selectionChange)="onStepChange($event)"
+            class="shipment-stepper"
+    >
+        <!-- Step 1: Overview -->
+        <mat-step [completed]="true">
+            <ng-template matStepLabel>Overview</ng-template>
+            <lib-overview-step
+                    [memberProductOrder]="memberProductOrder()"
+                    [orderItemGroups]="orderItemGroups()"
+                    [shipmentDetails]="shipmentDetails()"
+                    [loading]="loading()"
+                    (getRates)="onGetRates()"
+            />
+            <div class="step-actions">
+                <button
+                        mat-raised-button
+                        color="primary"
+                        matStepperNext
+                        [disabled]="loading()"
+                >
+                    Next
+                </button>
+            </div>
+        </mat-step>
 
-    <!-- Step 2: Select Items -->
-    <mat-step [completed]="shipmentDetails()?.status !== 'DRAFT'">
-      <ng-template matStepLabel>Select Items</ng-template>
-      <lib-items-step
-        [shipmentDetails]="shipmentDetails()"
-        [loading]="loading()"
-        [formGroup]="itemsFormGroup"
-        (itemsSaved)="onItemsSaved($event)"
-      />
-    </mat-step>
+        <!-- Step 2: Select Items -->
+        <mat-step [completed]="itemsSaved() || shipmentDetails()?.status !== 'DRAFT' || rates().length > 0">
+            <ng-template matStepLabel>Select Items</ng-template>
+            <lib-items-step
+                    [orderItemGroups]="orderItemGroups()"
+                    [shipmentDetails]="shipmentDetails()"
+                    [loading]="loading()"
+                    [formGroup]="itemsFormGroup"
+            />
+            <div class="step-actions">
+                <button
+                        mat-button
+                        matStepperPrevious
+                        [disabled]="loading()"
+                >
+                    Back
+                </button>
+                <span class="step-actions-spacer"></span>
+                <button
+                        mat-raised-button
+                        color="primary"
+                        (click)="onStep2Next()"
+                        [disabled]="loading() || !hasItemsSelection()"
+                >
+                    Next
+                </button>
+            </div>
+        </mat-step>
 
-    <!-- Step 3: Get Rate Quotes -->
-    <mat-step [completed]="selectedRate() !== null">
-      <ng-template matStepLabel>Get Rate Quotes</ng-template>
-      <lib-rate-step
-        [rates]="rates()"
-        [loading]="loading()"
-        [formGroup]="rateFormGroup"
-        (rateSelected)="onRateSelected($event)"
-      />
-      @if (canProceedToStep3()) {
-        <div class="step-actions">
-          <button
-            mat-raised-button
-            color="primary"
-            (click)="onSelectRate()"
-            [disabled]="loading() || booking()"
-          >
-            Select Rate & Continue
-          </button>
-        </div>
-      }
-    </mat-step>
+        <!-- Step 3: Get Rate Quotes -->
+        <mat-step [completed]="selectedRate() !== null">
+            <ng-template matStepLabel>Get Rate Quotes</ng-template>
+            <lib-rate-step
+                    [rates]="rates()"
+                    [loading]="loading()"
+                    [formGroup]="rateFormGroup"
+                    (rateSelected)="onRateSelected($event)"
+            />
+            <div class="step-actions">
+                <button
+                        mat-button
+                        matStepperPrevious
+                        [disabled]="loading() || booking()"
+                >
+                    Back
+                </button>
+                @if (canProceedToStep3()) {
+                    <button
+                            mat-raised-button
+                            color="primary"
+                            matStepperNext
+                            [disabled]="loading() || booking()"
+                    >
+                        Continue
+                    </button>
+                }
+            </div>
+        </mat-step>
 
-    <!-- Step 4: Confirm Booking -->
-    <mat-step [completed]="shipmentDetails()?.status === 'BOOKED'">
-      <ng-template matStepLabel>Confirm Booking</ng-template>
-      <lib-confirm-step
-        [shipmentDetails]="shipmentDetails()"
-        [selectedRate]="selectedRate()"
-        [loading]="loading()"
-        [booking]="booking()"
-        [formGroup]="confirmFormGroup"
-        [showRetryButton]="showRetryButton"
-        (confirmBooking)="onConfirmBooking()"
-        (retryBooking)="onRetryBooking()"
-      />
-    </mat-step>
+        <!-- Step 4: Confirm Booking -->
+        <mat-step [completed]="shipmentDetails()?.status === 'BOOKED'">
+            <ng-template matStepLabel>Confirm Booking</ng-template>
+            <lib-confirm-step
+                    [shipmentDetails]="shipmentDetails()"
+                    [selectedRate]="selectedRate()"
+                    [loading]="loading()"
+                    [booking]="booking()"
+                    [formGroup]="confirmFormGroup"
+                    [showRetryButton]="showRetryButton"
+                    (confirmBooking)="onConfirmBooking()"
+                    (retryBooking)="onRetryBooking()"
+            />
+        </mat-step>
 
-    <!-- Step 5: Tracking -->
-    <mat-step>
-      <ng-template matStepLabel>Tracking</ng-template>
-      <lib-tracking-step
-        [trackingInfo]="trackingInfo()"
-        [shipmentDetails]="shipmentDetails()"
-        [loading]="loading()"
-        [showRetryButton]="showRetryButton"
-        (refresh)="onRefreshTracking()"
-        (retryBooking)="onRetryBooking()"
-      />
-    </mat-step>
-  </mat-stepper>
+        <!-- Step 5: Tracking -->
+        <mat-step>
+            <ng-template matStepLabel>Tracking</ng-template>
+            <lib-tracking-step
+                    [trackingInfo]="trackingInfo()"
+                    [shipmentDetails]="shipmentDetails()"
+                    [loading]="loading()"
+                    [showRetryButton]="showRetryButton"
+                    (refresh)="onRefreshTracking()"
+                    (retryBooking)="onRetryBooking()"
+            />
+        </mat-step>
+    </mat-stepper>
 </div>

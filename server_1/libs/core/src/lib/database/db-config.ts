@@ -23,8 +23,10 @@ export const databaseConfig: SequelizeOptions & {
     query_timeout: 60000,
   },
   pool: {
-    max: 100,
-    min: 10,
+    max: 5,
+    min: 0,
+    acquire: 30000,
+    idle: 10000,
   },
   retryAttempts: 3, // Reduced from 10 to 3 for faster failure detection
   retryDelay: 1000, // Reduced from 3000ms to 1000ms for faster retries

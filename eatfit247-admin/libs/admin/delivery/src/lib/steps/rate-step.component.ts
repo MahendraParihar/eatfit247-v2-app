@@ -37,24 +37,24 @@ export class RateStepComponent implements OnInit {
     if (!this.formGroup) {
       return;
     }
-    const selectedProviderControl = this.formGroup.get('selectedProvider');
-    if (selectedProviderControl) {
-      selectedProviderControl.valueChanges.subscribe((providerId) => {
-        const rate = this.rates.find((r) => r.providerId === providerId);
-        this.rateSelected.emit(rate || null);
+    const selectedControl = this.formGroup.get('selectedRateQuoteId');
+    if (selectedControl) {
+      selectedControl.valueChanges.subscribe((rateQuoteId) => {
+        const rate = this.rates.find((r) => r.rateQuoteId === rateQuoteId);
+        this.rateSelected.emit(rate ?? null);
       });
     }
   }
 
   onRateChange(rate: IRateQuote): void {
-    this.formGroup.patchValue({ selectedProvider: rate.providerId });
+    const id = rate.rateQuoteId ?? undefined;
+    this.formGroup.patchValue({ selectedRateQuoteId: id });
     this.rateSelected.emit(rate);
   }
 
-  isSelected(rateQuoteId: number): boolean {
-    const selectedProvider = this.formGroup.get('selectedProvider')?.value;
-    const rate = this.rates.find((r) => r.rateQuoteId === rateQuoteId);
-    return rate ? selectedProvider === rate.providerId : false;
+  isSelected(rateQuoteId: number | undefined): boolean {
+    const selectedId = this.formGroup.get('selectedRateQuoteId')?.value;
+    return selectedId != null && selectedId === rateQuoteId;
   }
 
   formatCurrency(amount: number | undefined, currency: string = 'INR'): string {

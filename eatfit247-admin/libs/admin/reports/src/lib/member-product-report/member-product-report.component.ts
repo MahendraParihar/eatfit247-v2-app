@@ -1,6 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -13,8 +18,16 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
-import { DataTableComponent, ITableAction, ITableColumn, ITableConfig } from '@shared';
-import { IMemberProductReportFilter, IMemberProductReportItem } from '@eatfit247-shared-lib';
+import {
+  DataTableComponent,
+  ITableAction,
+  ITableColumn,
+  ITableConfig,
+} from '@shared';
+import {
+  IMemberProductReportFilter,
+  IMemberProductReportItem,
+} from '@eatfit247-shared-lib';
 import { MemberProductReportApiService } from './api.service';
 import { ShipmentFlowComponent, ShipmentFlowData } from 'delivery';
 
@@ -35,10 +48,10 @@ import { ShipmentFlowComponent, ShipmentFlowData } from 'delivery';
     MatDialogModule,
     MatButtonToggleModule,
     MatSnackBarModule,
-    DataTableComponent
+    DataTableComponent,
   ],
   templateUrl: './member-product-report.html',
-  styleUrl: './member-product-report.scss'
+  styleUrl: './member-product-report.scss',
 })
 export class MemberProductReportComponent implements OnInit {
   filterForm!: FormGroup;
@@ -69,15 +82,15 @@ export class MemberProductReportComponent implements OnInit {
   ngOnInit(): void {
     this.loadFranchiseOptions();
     this.loadPaymentStatusOptions();
-    
+
     // Set default dates (last 30 days)
     const endDate = new Date();
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - 30);
-    
+
     this.filterForm.patchValue({
       startDate,
-      endDate
+      endDate,
     });
 
     // Reset quick filter when dates are manually changed
@@ -86,7 +99,7 @@ export class MemberProductReportComponent implements OnInit {
         this.selectedQuickFilter = null;
       }
     });
-    
+
     this.filterForm.get('endDate')?.valueChanges.subscribe(() => {
       if (this.selectedQuickFilter) {
         this.selectedQuickFilter = null;
@@ -107,7 +120,7 @@ export class MemberProductReportComponent implements OnInit {
       startDate: [null, Validators.required],
       endDate: [null, Validators.required],
       franchiseId: [null],
-      paymentStatusId: [null]
+      paymentStatusId: [null],
     });
   }
 
@@ -118,26 +131,26 @@ export class MemberProductReportComponent implements OnInit {
         label: 'Invoice ID',
         dataKey: 'invoiceId',
         sortable: true,
-        width: '120px'
+        width: '120px',
       },
       {
         key: 'memberName',
         label: 'Member Name',
         dataKey: 'memberName',
-        sortable: true
+        sortable: true,
       },
       {
         key: 'memberEmail',
         label: 'Email',
         dataKey: 'memberEmail',
-        sortable: false
+        sortable: false,
       },
       {
         key: 'memberContactNumber',
         label: 'Contact',
         dataKey: 'memberContactNumber',
         sortable: false,
-        width: '120px'
+        width: '120px',
       },
       {
         key: 'totalAmount',
@@ -148,21 +161,18 @@ export class MemberProductReportComponent implements OnInit {
         formatter: (value: number, row: IMemberProductReportItem) => {
           const currency = row.currency || 'INR';
           const totalAmount = row.totalAmount || 0;
-          return `${currency} ${totalAmount.toLocaleString(
-            'en-IN',
-            {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2
-            }
-          )}`;
-        }
+          return `${currency} ${totalAmount.toLocaleString('en-IN', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          })}`;
+        },
       },
       {
         key: 'paymentStatus',
         label: 'Payment Status',
         dataKey: 'paymentStatus',
         sortable: true,
-        width: '130px'
+        width: '130px',
       },
       {
         key: 'paymentDate',
@@ -170,14 +180,14 @@ export class MemberProductReportComponent implements OnInit {
         dataKey: 'paymentDate',
         type: 'date',
         sortable: true,
-        width: '130px'
+        width: '130px',
       },
       {
         key: 'franchiseName',
         label: 'Franchise',
         dataKey: 'franchiseName',
-        sortable: true
-      }
+        sortable: true,
+      },
     ];
 
     const actions: ITableAction<IMemberProductReportItem>[] = [
@@ -185,14 +195,14 @@ export class MemberProductReportComponent implements OnInit {
         label: 'View Order',
         icon: 'shopping_cart',
         color: 'primary',
-        onClick: (row) => this.viewOrder(row)
+        onClick: (row) => this.viewOrder(row),
       },
       {
         label: 'Add Shipping Flow',
         icon: 'local_shipping',
         color: 'accent',
-        onClick: (row) => this.startShipmentFlow(row)
-      }
+        onClick: (row) => this.startShipmentFlow(row),
+      },
     ];
 
     this.tableConfig = {
@@ -204,7 +214,7 @@ export class MemberProductReportComponent implements OnInit {
       pageSize: 10,
       pageSizeOptions: [5, 10, 25, 50, 100],
       showHeader: true,
-      emptyMessage: 'No product orders found'
+      emptyMessage: 'No product orders found',
     };
   }
 
@@ -213,10 +223,10 @@ export class MemberProductReportComponent implements OnInit {
       const franchises = await this.apiService.getFranchiseDropdown();
       this.franchiseOptions = [
         { id: null, label: 'All Franchises' },
-        ...franchises.map((f) => ({ 
-          id: typeof f.id === 'string' ? Number(f.id) : f.id, 
-          label: f.label 
-        }))
+        ...franchises.map((f) => ({
+          id: typeof f.id === 'string' ? Number(f.id) : f.id,
+          label: f.label,
+        })),
       ];
     } catch (error) {
       // Error toast is handled by HttpErrorInterceptor
@@ -228,10 +238,10 @@ export class MemberProductReportComponent implements OnInit {
       const statuses = await this.apiService.getPaymentStatusDropdown();
       this.paymentStatusOptions = [
         { id: null, label: 'All Statuses' },
-        ...statuses.map((s) => ({ 
-          id: typeof s.id === 'string' ? Number(s.id) : s.id, 
-          label: s.label 
-        }))
+        ...statuses.map((s) => ({
+          id: typeof s.id === 'string' ? Number(s.id) : s.id,
+          label: s.label,
+        })),
       ];
     } catch (error) {
       // Error toast is handled by HttpErrorInterceptor
@@ -250,7 +260,7 @@ export class MemberProductReportComponent implements OnInit {
         startDate: this.formatDate(formValue.startDate),
         endDate: this.formatDate(formValue.endDate),
         franchiseId: formValue.franchiseId || undefined,
-        paymentStatusId: formValue.paymentStatusId || undefined
+        paymentStatusId: formValue.paymentStatusId || undefined,
       };
 
       const response = await this.apiService.getMemberProductReport(params);
@@ -282,7 +292,11 @@ export class MemberProductReportComponent implements OnInit {
 
   viewOrder(productOrder: IMemberProductReportItem): void {
     const url = this.router.serializeUrl(
-      this.router.createUrlTree(['/members/details', productOrder.memberId, 'product-orders'])
+      this.router.createUrlTree([
+        '/members/details',
+        productOrder.memberId,
+        'product-orders',
+      ])
     );
     window.open(url, '_blank');
   }
@@ -297,6 +311,7 @@ export class MemberProductReportComponent implements OnInit {
 
     const dialogData: ShipmentFlowData = {
       memberProductId: productOrder.memberProductId,
+      memberId: productOrder.memberId,
     };
 
     const dialogRef = this.dialog.open(ShipmentFlowComponent, {
@@ -329,7 +344,7 @@ export class MemberProductReportComponent implements OnInit {
     this.selectedQuickFilter = filterType;
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    
+
     let startDate: Date;
     let endDate: Date = new Date(today);
 
@@ -343,7 +358,11 @@ export class MemberProductReportComponent implements OnInit {
         endDate = new Date(today);
         break;
       case 'lastMonth': {
-        const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+        const lastMonth = new Date(
+          today.getFullYear(),
+          today.getMonth() - 1,
+          1
+        );
         startDate = new Date(lastMonth);
         endDate = new Date(today.getFullYear(), today.getMonth(), 0);
         break;
@@ -386,7 +405,7 @@ export class MemberProductReportComponent implements OnInit {
 
     this.filterForm.patchValue({
       startDate,
-      endDate
+      endDate,
     });
 
     // Automatically trigger search
@@ -405,7 +424,7 @@ export class MemberProductReportComponent implements OnInit {
         startDate: this.formatDate(formValue.startDate),
         endDate: this.formatDate(formValue.endDate),
         franchiseId: formValue.franchiseId || undefined,
-        paymentStatusId: formValue.paymentStatusId || undefined
+        paymentStatusId: formValue.paymentStatusId || undefined,
       };
 
       const blob = await this.apiService.exportMemberProductReports(params);
@@ -425,9 +444,13 @@ export class MemberProductReportComponent implements OnInit {
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
     } catch (error) {
-      this.snackBar.open('Failed to export member product reports. Please try again.', 'Close', {
-        duration: 5000,
-      });
+      this.snackBar.open(
+        'Failed to export member product reports. Please try again.',
+        'Close',
+        {
+          duration: 5000,
+        }
+      );
     } finally {
       this.exporting = false;
     }
@@ -435,16 +458,24 @@ export class MemberProductReportComponent implements OnInit {
 
   async onBulkExport(): Promise<void> {
     if (this.selectedItems.length === 0) {
-      this.snackBar.open('Please select at least one item to export.', 'Close', {
-        duration: 3000,
-      });
+      this.snackBar.open(
+        'Please select at least one item to export.',
+        'Close',
+        {
+          duration: 3000,
+        }
+      );
       return;
     }
 
     this.bulkExporting = true;
     try {
-      const memberProductIds = this.selectedItems.map(item => item.memberProductId);
-      const blob = await this.apiService.exportMemberProductReportsBulk(memberProductIds);
+      const memberProductIds = this.selectedItems.map(
+        (item) => item.memberProductId
+      );
+      const blob = await this.apiService.exportMemberProductReportsBulk(
+        memberProductIds
+      );
 
       // Create a download link
       const url = window.URL.createObjectURL(blob);
@@ -452,7 +483,10 @@ export class MemberProductReportComponent implements OnInit {
       link.href = url;
 
       // Generate filename with timestamp
-      const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+      const timestamp = new Date()
+        .toISOString()
+        .replace(/[:.]/g, '-')
+        .slice(0, -5);
       link.download = `member-product-reports_selected_${timestamp}.zip`;
 
       document.body.appendChild(link);
@@ -463,12 +497,15 @@ export class MemberProductReportComponent implements OnInit {
       // Clear selection after successful export
       this.selectedItems = [];
     } catch (error) {
-      this.snackBar.open('Failed to export selected reports. Please try again.', 'Close', {
-        duration: 5000,
-      });
+      this.snackBar.open(
+        'Failed to export selected reports. Please try again.',
+        'Close',
+        {
+          duration: 5000,
+        }
+      );
     } finally {
       this.bulkExporting = false;
     }
   }
 }
-

@@ -2,11 +2,11 @@ import { Injectable, Logger } from '@nestjs/common';
 import {
   ICourierProvider,
   ICourierProviderCredentials,
-  IRateQuote,
   IShipmentBookingResponse,
   ITrackingEvent,
 } from '../courier.interface';
 import { HttpService } from '@server_1/core';
+import { IRateQuote } from '@eatfit247-shared-lib';
 
 @Injectable()
 export abstract class BaseCourierAdapter implements ICourierProvider {

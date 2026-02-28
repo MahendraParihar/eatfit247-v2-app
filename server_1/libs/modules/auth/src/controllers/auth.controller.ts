@@ -48,7 +48,6 @@ export class AuthController {
     // Return only access token (refresh token is in cookie)
     // Note: IToken requires refreshToken, but we're storing it in HttpOnly cookie
     // The client should not receive refreshToken in response body for security
-    console.log(tokens);
     return {
       accessToken: tokens.accessToken,
       refreshToken: '', // Empty string - refresh token is in HttpOnly cookie

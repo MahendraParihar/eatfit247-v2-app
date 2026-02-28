@@ -19,59 +19,65 @@ export interface IShipmentTrackingEvent {
   createdAt: Date;
 }
 
-export interface IBasicShipment {
-  memberProductId: number;
-  franchiseId: number;
-  shipmentNo: string;
-  courier?: string;
-  trackingNo?: string;
-  trackingUrl?: string;
-  status: ShipmentStatusEnum;
-  shippedAt?: Date;
-  deliveredAt?: Date;
+export interface IShipmentAddress{
+  postcode: string;
+  address: string;
+  city: string;
+  state: string;
+  name: string;
+  phone: string;
 }
 
-export interface IShipment extends IBasicShipment, IAdminInfo {
-  shipmentId: number;
-  shipmentItems?: IShipmentItem[];
-  trackingEvents?: IShipmentTrackingEvent[];
+export interface IShipmentItemDimensions{
+    length:number;
+    breadth:number;
+    height:number;
+    width:number;
 }
 
-export interface IShipmentDetails {
+export interface IShipmentMetaData{
+  idempotencyKeys?: {[key:string]: string};
+    pickup?: IShipmentAddress;
+    delivery?: IShipmentAddress;
+  billing?: IShipmentAddress;
+  shipping?: IShipmentAddress;
+    weight?: number;
+    dimensions?: IShipmentItemDimensions;
+    codAmount:number;
+    orderId?: string;
+  bookingResponse?: Record<string, any>;
+  labelUrl?: string;
+  awbNumber?: string;
+  orderDate?: Date;
+  serviceName?:string;
+}
+
+export interface IShipment extends IAdminInfo {
   shipmentId: number;
   shipmentNumber: string;
-  orderId: number;
-  orderType: string;
-  status: string;
+  providerId?: number;
+  providerAccountId?: number;
+  franchiseId: number;
   trackingNumber?: string;
   trackingUrl?: string;
   totalWeightKg?: number;
   totalAmount?: number;
-  codAmount?: number;
   rateAmount?: number;
   currency?: string;
-  providerId?: number;
+  status: string;
   providerName?: string;
   serviceName?: string;
-  estimatedDays?: number;
-  memberId: number;
-  memberName: string;
-  address?: IAddress;
-  orderItems?: Array<{
-    productName: string;
-    quantity: number;
-    unitPrice: number;
-    totalAmount: number;
-  }>;
-  createdAt: Date;
-  updatedAt: Date;
+  metaData?: IShipmentMetaData;
+  shipmentItems?: IShipmentItem[];
+  trackingEvents?: IShipmentTrackingEvent[];
 }
 
 export interface IRateQuote {
-  rateQuoteId: number;
+  rateQuoteId?: number;
   providerId: number;
-  providerName: string;
+  providerName?: string;
   serviceId?: number;
+  serviceCode: string;
   serviceName: string;
   rateAmount: number;
   currency: string;
@@ -98,3 +104,34 @@ export interface ITrackingInfo {
   trackingEvents: ITrackingEvent[];
 }
 
+export interface INimbusShipmentPayload{
+  "order_number": string;
+    "payment_type": string;
+    "order_amount": number;
+    "cod_amount": number,
+    "package_weight": number,
+    "package_length": number,
+    "package_breadth": number,
+    "package_height": number,
+    "pickup_location": string;
+    "billing_customer_name": string;
+    "billing_last_name": string;
+    "billing_address": string;
+    "billing_city": string;
+    "billing_pincode": string;
+    "billing_state": string;
+    "billing_country": string;
+    "billing_email": string;
+    "billing_phone": string;
+    "shipping_is_billing": true;
+    "order_items":{
+      "name": string;
+      "sku": string;
+      "units": number,
+      "selling_price": number,
+      "discount": number,
+      "tax": number,
+      "hsn": string }[];
+    "support_email": string;
+    "support_phone": string;
+}

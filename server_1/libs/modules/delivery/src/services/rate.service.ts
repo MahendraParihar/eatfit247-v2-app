@@ -5,12 +5,13 @@ import {
   TxnShipmentRateQuote,
   TxnCourierProviderAccount,
   MstCourierProvider,
+  TxnShipmentItem,
 } from '../models';
-import { ShipmentRepository } from '../repositories/shipment.repository';
-import { RateRepository } from '../repositories/rate.repository';
-import { CourierFactory } from '../providers/courier.factory';
-import { ICourierProviderCredentials, IRateQuote } from '../providers/courier.interface';
-import { CryptoUtil } from '@server_1/core';
+import { ShipmentRepository } from '../repositories';
+import { RateRepository } from '../repositories';
+import { CourierFactory } from '../providers';
+import { ICourierProviderCredentials } from '../providers';
+import { IRateQuote, IShipmentMetaData } from '@eatfit247-shared-lib';
 
 /**
  * Rate Service
@@ -44,7 +45,7 @@ export class RateService {
    * Calls rate APIs in parallel and saves all successful responses
    * Never blocks if one provider fails
    */
-  public async requestRates(shipmentId: number): Promise<TxnShipmentRateQuote[]> {
+  public async requestRates(shipmentId: number): Promise<IRateQuote[]> {
     // Get shipment with items
     const shipment = await this.shipmentModel.scope('details').findByPk(shipmentId);
     if (!shipment) {
@@ -68,7 +69,6 @@ export class RateService {
     const ratePromises = rateSupportedProviders.map((provider) =>
       this.getRatesFromProvider(provider, shipment.franchiseId, ratePayload, shipmentId).catch(
         (error) => {
-          console.log(error);
           // Log error but don't throw - we want to continue with other providers
           this.logger.error(
             `Failed to get rates from provider ${provider.providerCode} for shipment ${shipmentId}: ${error.message}`,
@@ -83,7 +83,7 @@ export class RateService {
     // Update shipment status to RATE_REQUESTED
     await this.shipmentRepository.updateStatus(shipmentId, 'RATE_REQUESTED');
     // Return all saved rate quotes ordered by amount
-    return this.rateRepository.findByShipmentId(shipmentId);
+    return await this.rateRepository.findByShipmentId(shipmentId);
   }
 
   /**
@@ -115,7 +115,6 @@ export class RateService {
     const credentials = await this.buildCredentials(providerAccount, provider);
     // Call provider's rate API
     const rateQuotes: IRateQuote[] = await adapter.getRates(ratePayload, credentials);
-    console.log(rateQuotes);
     const quotes = [];
     for (const quote of rateQuotes) {
       quotes.push({
@@ -144,44 +143,18 @@ export class RateService {
   /**
    * Build rate request payload from shipment data
    */
-  private buildRatePayload(shipment: TxnShipment): any {
-    // Get shipment items to calculate total weight and dimensions
-    const items = (shipment as any).shipmentItems || [];
+  private buildRatePayload(shipment: TxnShipment): IShipmentMetaData {
     // Calculate total weight from items or use shipment totalWeightKg
-    const weight =
-      shipment.totalWeightKg ||
-      items.reduce((sum: number, item: any) => sum + (item.weightKg || 0), 0) ||
-      1; // Default to 1kg if no weight
-    // Build pickup and delivery addresses from metadata or use defaults
-    // Addresses should be in shipment.metadata or fetched from order
-    const metadata = shipment.metadata || {};
-    const payload: any = {
-      pickup: metadata.pickup || {
-        postcode: metadata.pickupPostcode || '',
-        address: metadata.pickupAddress || '',
-        city: metadata.pickupCity || '',
-        state: metadata.pickupState || '',
-        name: metadata.pickupName || '',
-        phone: metadata.pickupPhone || '',
-      },
-      delivery: metadata.delivery || {
-        postcode: metadata.deliveryPostcode || '',
-        address: metadata.deliveryAddress || '',
-        city: metadata.deliveryCity || '',
-        state: metadata.deliveryState || '',
-        name: metadata.deliveryName || '',
-        phone: metadata.deliveryPhone || '',
-      },
+    const weight = shipment.totalWeightKg || 1;
+    const metadata = shipment.metaData;
+    return <IShipmentMetaData>{
+      pickup: metadata.pickup,
+      delivery: metadata.delivery,
       weight,
-      dimensions: metadata.dimensions || {
-        length: metadata.length || 10,
-        breadth: metadata.breadth || metadata.width || 10,
-        height: metadata.height || 10,
-      },
-      codAmount: shipment.metadata?.codAmount || 0,
-      orderId: shipment.metadata?.orderId || shipment.shipmentNumber,
+      dimensions: metadata.dimensions,
+      codAmount: shipment.metaData?.codAmount || 0,
+      orderId: shipment.metaData?.orderId || shipment.shipmentNumber,
     };
-    return payload;
   }
 
   /**

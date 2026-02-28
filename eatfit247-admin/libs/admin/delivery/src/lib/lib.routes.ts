@@ -8,9 +8,8 @@ export const deliveryRoutes: Route[] = [
     title: 'Shipment Flow',
   },
   {
-    path: ':id',
+    path: ':memberId/:memberProductId',
     component: ShipmentFlowComponent,
     title: 'Shipment Flow',
   },
 ];
-

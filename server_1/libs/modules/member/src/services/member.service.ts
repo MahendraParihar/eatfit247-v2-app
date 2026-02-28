@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { InjectModel } from '@nestjs/sequelize';
 import { TxnMember } from '../models';
 import { IBasicSearch, IManageMember, IMember, ITableList } from '@eatfit247-shared-lib';
-import { AppConfigService, CommonFunctionsUtil, CryptoUtil, generateRandomPassword } from '@server_1/core';
+import { CommonFunctionsUtil, CryptoUtil, generateRandomPassword } from '@server_1/core';
 import { FranchiseService } from '@server_1/modules/franchise';
 import { Op } from 'sequelize';
 
@@ -10,11 +10,12 @@ import { Op } from 'sequelize';
 export class MemberService {
   constructor(
     @InjectModel(TxnMember) private readonly memberRepository: typeof TxnMember,
-    private appConfigService: AppConfigService,
     private franchiseService: FranchiseService,
   ) {}
 
-  public async findAll(searchDto: IBasicSearch & { franchiseId?: number; countryId?: number }): Promise<ITableList<IMember>> {
+  public async findAll(
+    searchDto: IBasicSearch & { franchiseId?: number; countryId?: number },
+  ): Promise<ITableList<IMember>> {
     const whereCondition: any = {};
     if (searchDto.name) {
       whereCondition[Op.or] = [
@@ -126,9 +127,7 @@ export class MemberService {
       firstName: obj.firstName,
       lastName: obj.lastName,
       profilePicture:
-        obj.profilePicture && obj.profilePicture.length > 0
-          ? obj.profilePicture
-          : null,
+        obj.profilePicture && obj.profilePicture.length > 0 ? obj.profilePicture : null,
       password: hashedPassword,
       passwordTemp: hashedPassword, // Set the same as password initially
       countryCode: obj.countryCode,
@@ -258,21 +257,12 @@ export class MemberService {
       { where: { memberId: id } },
     );
   }
-
-  /**
-   * Determine franchise based on member's countryId
-   * First tries to find a franchise matching the countryId, then falls back to default franchise
-   * @param countryId Member's country ID
-   * @returns Franchise ID
-   */
   private async determineFranchiseByCountry(countryId: number): Promise<number> {
     // Get all franchises with their country information
     const franchisesWithCountry = await this.franchiseService.getFranchiseListWithCountry();
 
     // First, try to find a franchise matching the member's countryId
-    const matchingFranchise = franchisesWithCountry.find(
-      (f) => f.countryId === countryId,
-    );
+    const matchingFranchise = franchisesWithCountry.find((f) => f.countryId === countryId);
 
     if (matchingFranchise) {
       return matchingFranchise.id;
@@ -290,13 +280,6 @@ export class MemberService {
     return defaultFranchise.id;
   }
 
-  /**
-   * Create or update a member based on email or phone number
-   * If member exists (by email or phone), update it; otherwise create new
-   * @param obj Member data
-   * @param cIp Client IP address
-   * @returns Member ID and whether it was created or updated
-   */
   public async createOrUpdate(
     obj: IManageMember,
     cIp: string,
@@ -389,5 +372,20 @@ export class MemberService {
       return { memberId: newMember.memberId, isNew: true };
     }
   }
-}
 
+  /**
+   * Verify member exists and return member record
+   * @param memberId - Member ID
+   * @returns Member record
+   * @throws NotFoundException if member not found
+   */
+  async verifyMember(memberId: number): Promise<TxnMember> {
+    const member = await this.memberRepository.findOne({
+      where: { memberId },
+    });
+    if (!member) {
+      throw new NotFoundException('Member not found');
+    }
+    return member;
+  }
+}

@@ -73,7 +73,6 @@ export class AuthService {
       throw new UnauthorizedException('Invalid email or password');
     }
     const isMatch = await CryptoUtil.compareHash(loginDto.password, user.password);
-    console.log('--------------', isMatch);
     if (!isMatch) {
       // this.recordFailedAttempt(rateLimitKey);
       throw new UnauthorizedException('Invalid email or password');

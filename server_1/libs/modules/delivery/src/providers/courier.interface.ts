@@ -1,3 +1,5 @@
+import { IRateQuote } from '@eatfit247-shared-lib';
+
 export interface INimbusServiceabilityPayload {
   origin: number;
   destination: number;
@@ -171,20 +173,8 @@ export interface IShipRocketServiceabilityResponse {
 }
 
 /**
- * Rate quote from courier provider
- */
-export interface IRateQuote {
-  serviceName: string;
-  serviceCode?: string;
-  rateAmount: number;
-  currency: string;
-  estimatedDays?: number;
-  estimatedDeliveryDate?: Date;
-  metadata?: Record<string, any>;
-}
-
-/**
  * Shipment booking response from courier provider
+ * status can be boolean (false = failed) or string (e.g. 'BOOKED', 'FAILED')
  */
 export interface IShipmentBookingResponse {
   providerShipmentId: string;
@@ -192,7 +182,8 @@ export interface IShipmentBookingResponse {
   trackingUrl?: string;
   labelUrl?: string;
   awbNumber?: string;
-  status: string;
+  status: string | boolean;
+  message?: string;
   metadata?: Record<string, any>;
 }
 

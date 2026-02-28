@@ -6,8 +6,12 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatIconModule } from '@angular/material/icon';
-import { EmptyStateComponent, InputErrorComponent, LoaderComponent } from '@shared';
-import { IRateQuote, IShipmentDetails } from '@eatfit247-shared-lib';
+import {
+  EmptyStateComponent,
+  InputErrorComponent,
+  LoaderComponent,
+} from '@shared';
+import { IRateQuote, IShipment } from '@eatfit247-shared-lib';
 
 @Component({
   selector: 'lib-confirm-step',
@@ -22,13 +26,13 @@ import { IRateQuote, IShipmentDetails } from '@eatfit247-shared-lib';
     MatIconModule,
     InputErrorComponent,
     LoaderComponent,
-    EmptyStateComponent
+    EmptyStateComponent,
   ],
   templateUrl: './confirm-step.component.html',
   styleUrl: './confirm-step.component.scss',
 })
 export class ConfirmStepComponent {
-  @Input() shipmentDetails: IShipmentDetails | null = null;
+  @Input() shipmentDetails: IShipment | null = null;
   @Input() selectedRate: IRateQuote | null = null;
   @Input() loading = false;
   @Input() booking = false;
@@ -41,7 +45,7 @@ export class ConfirmStepComponent {
     return this.formGroup?.get('termsAccepted');
   }
 
-  formatCurrency(amount: number | undefined, currency: string = 'INR'): string {
+  formatCurrency(amount: number | undefined, currency = 'INR'): string {
     const currencySymbol = currency === 'INR' ? '₹' : currency;
     return `${currencySymbol}${Number(amount || 0).toLocaleString('en-IN', {
       minimumFractionDigits: 2,
@@ -57,4 +61,3 @@ export class ConfirmStepComponent {
     this.retryBooking.emit();
   }
 }
-

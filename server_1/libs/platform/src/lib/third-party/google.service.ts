@@ -239,7 +239,6 @@ export class GoogleService {
 
   public async startOAuth(adminId: number) {
     const oauthClient = this.createGoogleOAuthClient();
-    console.log('adminId', oauthClient);
     const state = CryptoUtil.encryptData(adminId.toString());
     return {
       redirectUrl: oauthClient.generateAuthUrl({
@@ -598,8 +597,7 @@ export class GoogleService {
       if (!apiKey) {
         throw new BadRequestException('Google API key is not configured');
       }
-      const res = await this.getPlaceId('EatFit247');
-      console.log(res);
+      await this.getPlaceId('EatFit247');
       // Get place ID from parameter or config (you may want to add GOOGLE_PLACE_ID to ConfigParam)
       const targetPlaceId = placeId || this.appConfig.getString(ConfigParam.GOOGLE_PLACE_ID);
       if (!targetPlaceId) {

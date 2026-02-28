@@ -10,8 +10,13 @@ import {
   Table,
   UpdatedAt,
 } from 'sequelize-typescript';
-import { getCreatedByUserInclude, getUpdatedByUserInclude, MstAdminUser, MstFranchise } from '@server_1/core';
-import { InputLengthEnum } from '@eatfit247-shared-lib';
+import {
+  getCreatedByUserInclude,
+  getUpdatedByUserInclude,
+  MstAdminUser,
+  MstFranchise,
+} from '@server_1/core';
+import { InputLengthEnum, IShipmentMetaData } from '@eatfit247-shared-lib';
 import { MstCourierProvider } from './mst-courier-provider.model';
 import { TxnCourierProviderAccount } from './txn-courier-provider-account.model';
 import { TxnShipmentItem } from './txn-shipment-item.model';
@@ -122,21 +127,6 @@ export class TxnShipment extends Model<TxnShipment> {
   })
   declare shipmentId: number;
 
-  @ForeignKey(() => MstFranchise)
-  @Column({
-    allowNull: false,
-    field: 'franchise_id',
-    type: DataType.INTEGER,
-  })
-  declare franchiseId: number;
-
-  @BelongsTo(() => MstFranchise, {
-    foreignKey: 'franchiseId',
-    targetKey: 'franchiseId',
-    as: 'franchise',
-  })
-  declare franchise: MstFranchise;
-
   @ForeignKey(() => MstCourierProvider)
   @Column({
     allowNull: true,
@@ -166,6 +156,21 @@ export class TxnShipment extends Model<TxnShipment> {
     as: 'providerAccount',
   })
   declare providerAccount: TxnCourierProviderAccount;
+
+  @ForeignKey(() => TxnCourierProviderAccount)
+  @Column({
+    allowNull: true,
+    field: 'franchise_id',
+    type: DataType.INTEGER,
+  })
+  declare franchiseId: number;
+
+  @BelongsTo(() => MstFranchise, {
+    foreignKey: 'franchiseId',
+    targetKey: 'franchiseId',
+    as: 'franchise',
+  })
+  declare franchise: MstFranchise;
 
   @Column({
     allowNull: true,
@@ -262,10 +267,10 @@ export class TxnShipment extends Model<TxnShipment> {
 
   @Column({
     allowNull: true,
-    field: 'metadata',
+    field: 'meta_data',
     type: DataType.JSONB,
   })
-  declare metadata: Record<string, any>;
+  declare metaData: IShipmentMetaData;
 
   @BelongsTo(() => MstAdminUser, {
     as: 'createdByUser',
@@ -344,4 +349,3 @@ export class TxnShipment extends Model<TxnShipment> {
   })
   declare trackingEvents?: TxnShipmentTrackingEvent[];
 }
-
