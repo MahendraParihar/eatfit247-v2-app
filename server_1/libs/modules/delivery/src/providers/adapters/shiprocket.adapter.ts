@@ -3,19 +3,18 @@ import { HttpService } from '@server_1/core';
 import { BaseCourierAdapter } from './base-courier.adapter';
 import {
   ICourierProviderCredentials,
+  IRateQuote,
   IShipmentBookingResponse,
   IShipRocketServiceabilityPayload,
   IShipRocketServiceabilityResponse,
   ITrackingEvent,
-} from '../courier.interface';
-import { IRateQuote } from '@eatfit247-shared-lib';
+} from '@eatfit247-shared-lib';
+import { BookingRequestDto, RateRequestDto, ShipmentAddressDto } from '../../dto';
 
 @Injectable()
 export class ShiprocketAdapter extends BaseCourierAdapter {
-  protected override readonly providerCode = 'SHIPROCKET';
-
   constructor(httpService: HttpService) {
-    super(httpService);
+    super(httpService, 'SHIPROCKET');
   }
 
   /**
@@ -60,24 +59,21 @@ export class ShiprocketAdapter extends BaseCourierAdapter {
   /**
    * Get shipping rates from Shiprocket API
    */
-  async getRates(payload: any, credentials: ICourierProviderCredentials): Promise<IRateQuote[]> {
-    try {
+  async getRates(
+    payload: RateRequestDto,
+    credentials: ICourierProviderCredentials,
+  ): Promise<IRateQuote[]> {
+    return this.executeWithLogging('getRates', async () => {
       // Ensure valid token before making API call
       await this.ensureValidToken(credentials);
 
       // Get authentication headers
       const headers = await this.getAuthHeaders(credentials);
 
-      const pickupPostcode = Number(
-        payload.pickup?.postcode ?? payload.pickupPostcode ?? 0,
-      );
-      const deliveryPostcode = Number(
-        payload.delivery?.postcode ?? payload.deliveryPostcode ?? 0,
-      );
+      const pickupPostcode = Number(payload.pickup?.postcode ?? payload.pickupPostcode ?? 0);
+      const deliveryPostcode = Number(payload.delivery?.postcode ?? payload.deliveryPostcode ?? 0);
       if (!pickupPostcode || !deliveryPostcode) {
-        throw new Error(
-          `${this.providerCode} getRates requires pickup and delivery postcodes`,
-        );
+        throw new Error(`${this.providerCode} getRates requires pickup and delivery postcodes`);
       }
       const ratePayload: IShipRocketServiceabilityPayload = {
         pickup_postcode: pickupPostcode,
@@ -103,10 +99,14 @@ export class ShiprocketAdapter extends BaseCourierAdapter {
       if (ratePayload.breadth) params['breadth'] = ratePayload.breadth;
       if (ratePayload.height) params['height'] = ratePayload.height;
 
-      const response = await this.httpService.get<IShipRocketServiceabilityResponse>(
-        `${credentials.apiBaseUrl}/external/courier/serviceability`,
-        params,
-        headers,
+      const response = await this.withTimeout(
+        this.httpService.get<IShipRocketServiceabilityResponse>(
+          `${credentials.apiBaseUrl}/external/courier/serviceability`,
+          params,
+          headers,
+        ),
+        5_000,
+        'rate fetch',
       );
 
       const responseData = response?.data;
@@ -139,32 +139,30 @@ export class ShiprocketAdapter extends BaseCourierAdapter {
       }
 
       return rates;
-    } catch (error: any) {
-      throw new Error(`${this.providerCode} Failed to get rates: ${error.message}`);
-    }
+    });
   }
 
   /**
    * Create shipment with Shiprocket API
    */
   async createShipment(
-    payload: any,
+    payload: BookingRequestDto,
     credentials: ICourierProviderCredentials,
   ): Promise<IShipmentBookingResponse> {
-    try {
+    return this.executeWithLogging('createShipment', async () => {
       // Ensure valid token before making API call
       await this.ensureValidToken(credentials);
 
       // Get authentication headers
       const headers = await this.getAuthHeaders(credentials);
 
-      const billing = payload.billing ?? payload.pickup ?? {};
-      const shipping = payload.shipping ?? payload.delivery ?? {};
+      const billing: Partial<ShipmentAddressDto> = payload.billing ?? payload.pickup ?? {};
+      const shipping: Partial<ShipmentAddressDto> = payload.shipping ?? payload.delivery ?? {};
       const [billingFirstName, ...billingLastNameParts] = (billing.name ?? '').split(' ');
       const [shippingFirstName, ...shippingLastNameParts] = (shipping.name ?? '').split(' ');
 
       const orderItems = Array.isArray(payload.items)
-        ? payload.items.map((item: Record<string, unknown>) => ({
+        ? payload.items.map((item) => ({
             name: item.name ?? 'Product',
             sku: item.sku ?? '',
             units: Number(item.quantity ?? 1),
@@ -206,17 +204,19 @@ export class ShiprocketAdapter extends BaseCourierAdapter {
         weight: payload.weight ?? 1,
       };
 
-      const response = await this.httpService.post(
-        `${credentials.apiBaseUrl}/orders/create/adhoc`,
-        requestBody,
-        undefined,
-        headers,
+      const response = await this.withTimeout(
+        this.httpService.post(
+          `${credentials.apiBaseUrl}/orders/create/adhoc`,
+          requestBody,
+          undefined,
+          headers,
+        ),
+        10_000,
+        'shipment booking',
       );
 
-      const shipmentId =
-        response?.shipment_id ?? response?.data?.shipment_id ?? response?.order_id;
-      const awbCode =
-        response?.awb_code ?? response?.awb_number ?? response?.data?.awb_code ?? '';
+      const shipmentId = response?.shipment_id ?? response?.data?.shipment_id ?? response?.order_id;
+      const awbCode = response?.awb_code ?? response?.awb_number ?? response?.data?.awb_code ?? '';
 
       if (!shipmentId && !awbCode) {
         throw new Error(
@@ -247,11 +247,7 @@ export class ShiprocketAdapter extends BaseCourierAdapter {
         status: response?.status ?? 'NEW',
         metadata: { ...response },
       };
-    } catch (error: any) {
-      throw new Error(
-        `${this.providerCode} Failed to create shipment with Shiprocket: ${error.message}`,
-      );
-    }
+    });
   }
 
   /**
@@ -262,17 +258,21 @@ export class ShiprocketAdapter extends BaseCourierAdapter {
     trackingNumber: string,
     credentials: ICourierProviderCredentials,
   ): Promise<ITrackingEvent[]> {
-    try {
+    return this.executeWithLogging('trackShipment', async () => {
       // Ensure valid token before making API call
       await this.ensureValidToken(credentials);
 
       // Get authentication headers
       const headers = await this.getAuthHeaders(credentials);
 
-      const response = await this.httpService.get(
-        `${credentials.apiBaseUrl}/courier/track/shipment/${trackingNumber}`,
-        undefined,
-        headers,
+      const response = await this.withTimeout(
+        this.httpService.get(
+          `${credentials.apiBaseUrl}/courier/track/shipment/${trackingNumber}`,
+          undefined,
+          headers,
+        ),
+        10_000,
+        'tracking fetch',
       );
 
       if (!response.data || !response.data.track_data) {
@@ -285,6 +285,9 @@ export class ShiprocketAdapter extends BaseCourierAdapter {
       if (trackData.tracking) {
         for (const event of trackData.tracking) {
           events.push({
+            trackingEventId: 1,
+            internalStatus: event.status,
+            providerStatus: event.status,
             status: event.current_status || event.status || 'UNKNOWN',
             description: event.status_message || event.message || '',
             eventTime: event.updated_time ? new Date(event.updated_time) : new Date(),
@@ -297,11 +300,7 @@ export class ShiprocketAdapter extends BaseCourierAdapter {
       }
 
       return events;
-    } catch (error: any) {
-      throw new Error(
-        `${this.providerCode} Failed to track shipment with Shiprocket: ${error.message}`,
-      );
-    }
+    });
   }
 
   /**
@@ -312,26 +311,26 @@ export class ShiprocketAdapter extends BaseCourierAdapter {
     trackingNumber: string,
     credentials: ICourierProviderCredentials,
   ): Promise<void> {
-    try {
+    await this.executeWithLogging('cancelShipment', async () => {
       // Ensure valid token before making API call
       await this.ensureValidToken(credentials);
 
       // Get authentication headers
       const headers = await this.getAuthHeaders(credentials);
 
-      await this.httpService.post(
-        `${credentials.apiBaseUrl}/orders/cancel/shipment/awbs`,
-        {
-          awbs: [trackingNumber],
-        },
-        undefined,
-        headers,
+      await this.withTimeout(
+        this.httpService.post(
+          `${credentials.apiBaseUrl}/orders/cancel/shipment/awbs`,
+          {
+            awbs: [trackingNumber],
+          },
+          undefined,
+          headers,
+        ),
+        10_000,
+        'shipment cancellation',
       );
-    } catch (error: any) {
-      throw new Error(
-        `${this.providerCode} Failed to cancel shipment with Shiprocket: ${error.message}`,
-      );
-    }
+    });
   }
 
   protected override async refreshToken(credentials: ICourierProviderCredentials): Promise<string> {

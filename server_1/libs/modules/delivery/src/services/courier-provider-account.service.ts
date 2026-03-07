@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { TxnCourierProviderAccount, MstCourierProvider } from '../models';
+import { MstCourierProvider, TxnCourierProviderAccount } from '../models';
 import {
   IBasicSearch,
   ICourierProviderAccount,
@@ -8,14 +8,14 @@ import {
   IManageCourierProviderAccount,
   ITableList,
 } from '@eatfit247-shared-lib';
-import { AppConfigService, CommonFunctionsUtil, SearchUtil, CryptoUtil } from '@server_1/core';
+import { CommonFunctionsUtil, CryptoUtil, SearchUtil } from '@server_1/core';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class CourierProviderAccountService {
   constructor(
-    @InjectModel(TxnCourierProviderAccount) private readonly courierProviderAccountRepository: typeof TxnCourierProviderAccount,
-    private appConfigService: AppConfigService,
+    @InjectModel(TxnCourierProviderAccount)
+    private readonly courierProviderAccountRepository: typeof TxnCourierProviderAccount,
   ) {}
 
   public async findAll(searchDto: IBasicSearch): Promise<ITableList<ICourierProviderAccount>> {
@@ -24,14 +24,16 @@ export class CourierProviderAccountService {
     const pageSize = searchDto.limit || 15;
     const offset = pageNumber === 0 ? 0 : pageNumber * pageSize;
 
-    const { rows, count } = await this.courierProviderAccountRepository.scope('list').findAndCountAll({
-      where: whereCondition,
-      order: [['providerAccountId', 'DESC']],
-      offset: offset,
-      limit: pageSize,
-      raw: true,
-      nest: true,
-    });
+    const { rows, count } = await this.courierProviderAccountRepository
+      .scope('list')
+      .findAndCountAll({
+        where: whereCondition,
+        order: [['providerAccountId', 'DESC']],
+        offset: offset,
+        limit: pageSize,
+        raw: true,
+        nest: true,
+      });
 
     const resList: ICourierProviderAccount[] = rows.map((item: any) => this.convertToModel(item));
     return { tableData: resList, count: count };
@@ -57,17 +59,25 @@ export class CourierProviderAccountService {
       modifiedBy: item.modifiedBy,
       createdAt: item.createdAt,
       updatedAt: item.updatedAt,
-      createdByUser: item.createdByUser ? CommonFunctionsUtil.getAdminShortInfo(item.createdByUser, 'createdByUser') : undefined,
-      updatedByUser: item.updatedByUser ? CommonFunctionsUtil.getAdminShortInfo(item.updatedByUser, 'updatedByUser') : undefined,
-      provider: item.provider ? {
-        providerId: item.provider.providerId,
-        providerCode: item.provider.providerCode,
-        providerName: item.provider.providerName,
-      } : undefined,
-      franchise: item.franchise ? {
-        franchiseId: item.franchise.franchiseId,
-        companyName: item.franchise.companyName,
-      } : undefined,
+      createdByUser: item.createdByUser
+        ? CommonFunctionsUtil.getAdminShortInfo(item.createdByUser, 'createdByUser')
+        : undefined,
+      updatedByUser: item.updatedByUser
+        ? CommonFunctionsUtil.getAdminShortInfo(item.updatedByUser, 'updatedByUser')
+        : undefined,
+      provider: item.provider
+        ? {
+            providerId: item.provider.providerId,
+            providerCode: item.provider.providerCode,
+            providerName: item.provider.providerName,
+          }
+        : undefined,
+      franchise: item.franchise
+        ? {
+            franchiseId: item.franchise.franchiseId,
+            companyName: item.franchise.companyName,
+          }
+        : undefined,
     };
   }
 
@@ -96,14 +106,18 @@ export class CourierProviderAccountService {
     return this.convertToModelWithSensitive(find);
   }
 
-  public async create(obj: IManageCourierProviderAccount, cIp: string, adminId: number): Promise<void> {
+  public async create(
+    obj: IManageCourierProviderAccount,
+    cIp: string,
+    adminId: number,
+  ): Promise<void> {
     let passwordEncrypted: string | null = null;
     if (obj.password) {
       // Fetch provider to determine auth type
       const provider = await MstCourierProvider.findOne({
         where: { providerId: obj.providerId },
       });
-      
+
       // For JWT providers, use encryption (reversible) instead of bcrypt (one-way hash)
       // This allows password to be decrypted for token refresh API calls
       if (provider?.authType === 'JWT') {
@@ -135,8 +149,15 @@ export class CourierProviderAccountService {
     await this.courierProviderAccountRepository.create(createObj);
   }
 
-  public async update(id: number, obj: IManageCourierProviderAccount, cIp: string, adminId: number): Promise<void> {
-    const find = await this.courierProviderAccountRepository.findOne({ where: { providerAccountId: id } });
+  public async update(
+    id: number,
+    obj: IManageCourierProviderAccount,
+    cIp: string,
+    adminId: number,
+  ): Promise<void> {
+    const find = await this.courierProviderAccountRepository.findOne({
+      where: { providerAccountId: id },
+    });
     if (!find) {
       throw new NotFoundException('Courier provider account not found');
     }
@@ -163,7 +184,7 @@ export class CourierProviderAccountService {
       const provider = await MstCourierProvider.findOne({
         where: { providerId: obj.providerId },
       });
-      
+
       // For JWT providers, use encryption (reversible) instead of bcrypt (one-way hash)
       // This allows password to be decrypted for token refresh API calls
       if (provider?.authType === 'JWT') {
@@ -174,32 +195,42 @@ export class CourierProviderAccountService {
       }
     }
 
-    await this.courierProviderAccountRepository.update(updateObj, { where: { providerAccountId: id } });
+    await this.courierProviderAccountRepository.update(updateObj, {
+      where: { providerAccountId: id },
+    });
   }
 
-  public async changeStatus(id: number, active: boolean, cIp: string, adminId: number): Promise<void> {
-    const find = await this.courierProviderAccountRepository.findOne({ where: { providerAccountId: id } });
+  public async changeStatus(
+    id: number,
+    active: boolean,
+    cIp: string,
+    adminId: number,
+  ): Promise<void> {
+    const find = await this.courierProviderAccountRepository.findOne({
+      where: { providerAccountId: id },
+    });
     if (!find) {
       throw new NotFoundException('Courier provider account not found');
     }
-    await this.courierProviderAccountRepository.update({ active, modifiedBy: adminId, modifiedIp: cIp }, { where: { providerAccountId: id } });
+    await this.courierProviderAccountRepository.update(
+      { active, modifiedBy: adminId, modifiedIp: cIp },
+      { where: { providerAccountId: id } },
+    );
   }
 
   /**
    * Update auth token and expiry for a provider account
    * Used after token refresh to persist new token
    */
-  public async updateToken(
-    id: number,
-    authToken: string,
-    tokenExpiry?: Date,
-  ): Promise<void> {
-    const find = await this.courierProviderAccountRepository.findOne({ where: { providerAccountId: id } });
+  public async updateToken(id: number, authToken: string, tokenExpiry?: Date): Promise<void> {
+    const find = await this.courierProviderAccountRepository.findOne({
+      where: { providerAccountId: id },
+    });
     if (!find) {
       throw new NotFoundException('Courier provider account not found');
     }
     await this.courierProviderAccountRepository.update(
-      { 
+      {
         authToken,
         tokenExpiry: tokenExpiry || null,
         // Note: modifiedBy and modifiedIp are not updated for automatic token refreshes
@@ -210,22 +241,25 @@ export class CourierProviderAccountService {
   }
 
   public async getCourierProviderAccountList(): Promise<IDropdownItem[]> {
-    const tempList = await this.courierProviderAccountRepository.findAll<TxnCourierProviderAccount>({
-      where: { active: true },
-      include: [
-        {
-          model: MstCourierProvider,
-          as: 'provider',
-          attributes: ['providerId', 'providerCode', 'providerName'],
-        },
-      ],
-      order: [['providerAccountId', 'DESC']],
-    });
-    return tempList.map((t) => ({ 
-      id: t.providerAccountId, 
-      label: t.accountName || `${t.provider?.providerName || 'Unknown'} - Account ${t.providerAccountId}`, 
-      selected: false 
+    const tempList = await this.courierProviderAccountRepository.findAll<TxnCourierProviderAccount>(
+      {
+        where: { active: true },
+        include: [
+          {
+            model: MstCourierProvider,
+            as: 'provider',
+            attributes: ['providerId', 'providerCode', 'providerName'],
+          },
+        ],
+        order: [['providerAccountId', 'DESC']],
+      },
+    );
+    return tempList.map((t) => ({
+      id: t.providerAccountId,
+      label:
+        t.accountName ||
+        `${t.provider?.providerName || 'Unknown'} - Account ${t.providerAccountId}`,
+      selected: false,
     }));
   }
 }
-

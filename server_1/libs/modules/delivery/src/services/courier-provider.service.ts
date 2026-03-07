@@ -18,7 +18,10 @@ export class CourierProviderService {
   ) {}
 
   public async findAll(searchDto: IBasicSearch): Promise<ITableList<ICourierProvider>> {
-    const whereCondition: any = SearchUtil.filterBasicSearch(searchDto, 'providerName');
+    const whereCondition: Record<string, unknown> = SearchUtil.filterBasicSearch(
+      searchDto,
+      'providerName',
+    );
     const pageNumber = searchDto.page || 0;
     const pageSize = searchDto.limit || 15;
     const offset = pageNumber === 0 ? 0 : pageNumber * pageSize;
@@ -32,11 +35,13 @@ export class CourierProviderService {
       nest: true,
     });
 
-    const resList: ICourierProvider[] = rows.map((item: any) => this.convertToModel(item));
+    const resList: ICourierProvider[] = rows.map((item: MstCourierProvider) =>
+      this.convertToModel(item),
+    );
     return { tableData: resList, count: count };
   }
 
-  private convertToModel(item: any): ICourierProvider {
+  private convertToModel(item: MstCourierProvider): ICourierProvider {
     return <ICourierProvider>{
       providerId: item.providerId,
       providerCode: item.providerCode,
@@ -44,7 +49,6 @@ export class CourierProviderService {
       authType: item.authType,
       supportsRateApi: item.supportsRateApi,
       supportsWebhook: item.supportsWebhook,
-      supportsCod: item.supportsCod,
       priorityOrder: item.priorityOrder,
       active: item.active,
       createdBy: item.createdBy,
@@ -75,7 +79,6 @@ export class CourierProviderService {
       authType: obj.authType,
       supportsRateApi: obj.supportsRateApi,
       supportsWebhook: obj.supportsWebhook,
-      supportsCod: obj.supportsCod,
       priorityOrder: obj.priorityOrder,
       active: obj.active,
       createdBy: adminId,
@@ -97,7 +100,6 @@ export class CourierProviderService {
       authType: obj.authType,
       supportsRateApi: obj.supportsRateApi,
       supportsWebhook: obj.supportsWebhook,
-      supportsCod: obj.supportsCod,
       priorityOrder: obj.priorityOrder,
       active: obj.active,
       modifiedBy: adminId,

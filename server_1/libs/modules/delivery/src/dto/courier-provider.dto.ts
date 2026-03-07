@@ -25,10 +25,6 @@ export class CreateCourierProviderDto implements IManageCourierProvider {
   supportsWebhook!: boolean;
 
   @IsNotEmpty()
-  @IsBoolean()
-  supportsCod!: boolean;
-
-  @IsNotEmpty()
   @IsNumber()
   priorityOrder!: number;
 

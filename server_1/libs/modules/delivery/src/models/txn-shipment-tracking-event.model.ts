@@ -58,7 +58,7 @@ export class TxnShipmentTrackingEvent extends Model<TxnShipmentTrackingEvent> {
   declare providerStatus: string;
 
   @Column({
-    allowNull: false,
+    allowNull: true,
     field: 'internal_status',
     type: DataType.ENUM(
       'DRAFT',
@@ -75,7 +75,7 @@ export class TxnShipmentTrackingEvent extends Model<TxnShipmentTrackingEvent> {
       'FAILED',
     ),
   })
-  declare internalStatus: string;
+  declare internalStatus: string | null;
 
   @Column({
     allowNull: true,

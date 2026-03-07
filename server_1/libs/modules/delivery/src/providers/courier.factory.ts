@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { ICourierProvider } from './courier.interface';
 import { NimbusAdapter } from './adapters/nimbus.adapter';
 import { ShiprocketAdapter } from './adapters/shiprocket.adapter';
@@ -12,7 +12,9 @@ export class CourierFactory {
   ) {}
 
   getAdapter(providerCode: string): ICourierProvider {
-    // Validate input
+    if (!providerCode || providerCode.trim().length === 0) {
+      throw new BadRequestException('Provider code is required');
+    }
     const code = providerCode.toUpperCase().trim();
     switch (code) {
       case CourierProvider.NIMBUS:
@@ -20,7 +22,7 @@ export class CourierFactory {
       case CourierProvider.SHIPROCKET:
         return this.shiprocket;
       default:
-        throw new Error(`Unsupported courier provider: ${code}`);
+        throw new BadRequestException(`Unsupported courier provider: ${code}`);
     }
   }
 }

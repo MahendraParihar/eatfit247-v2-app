@@ -16,8 +16,13 @@ import {
   MstAdminUser,
   MstFranchise,
 } from '@server_1/core';
-import { InputLengthEnum, IShipmentMetaData } from '@eatfit247-shared-lib';
+import {
+  InputLengthEnum,
+  IShipmentMetaData,
+  ShipmentStatusEnum,
+} from '@eatfit247-shared-lib';
 import { MstCourierProvider } from './mst-courier-provider.model';
+import { MstWarehouse } from './mst-warehouse.model';
 import { TxnCourierProviderAccount } from './txn-courier-provider-account.model';
 import { TxnShipmentItem } from './txn-shipment-item.model';
 import { TxnShipmentRateQuote } from './txn-shipment-rate-quote.model';
@@ -31,8 +36,18 @@ import { TxnShipmentTrackingEvent } from './txn-shipment-tracking-event.model';
   indexes: [
     {
       unique: false,
+      fields: ['order_id'],
+      name: 'idx_shipments_order_id',
+    },
+    {
+      unique: false,
       fields: ['franchise_id'],
       name: 'idx_shipments_franchise',
+    },
+    {
+      unique: false,
+      fields: ['warehouse_id'],
+      name: 'idx_shipments_warehouse',
     },
     {
       unique: false,
@@ -47,7 +62,12 @@ import { TxnShipmentTrackingEvent } from './txn-shipment-tracking-event.model';
     {
       unique: false,
       fields: ['tracking_number'],
-      name: 'idx_shipments_tracking',
+      name: 'idx_shipments_tracking_number',
+    },
+    {
+      unique: false,
+      fields: ['receiver_pincode'],
+      name: 'idx_shipments_receiver_pincode',
     },
     {
       unique: true,
@@ -79,6 +99,12 @@ import { TxnShipmentTrackingEvent } from './txn-shipment-tracking-event.model';
         required: false,
         attributes: ['franchiseId', 'companyName'],
       },
+      {
+        model: MstWarehouse,
+        as: 'warehouse',
+        required: false,
+        attributes: ['warehouseId', 'name'],
+      },
     ],
   },
   details: {
@@ -98,6 +124,11 @@ import { TxnShipmentTrackingEvent } from './txn-shipment-tracking-event.model';
       {
         model: MstFranchise,
         as: 'franchise',
+        required: false,
+      },
+      {
+        model: MstWarehouse,
+        as: 'warehouse',
         required: false,
       },
       {
@@ -126,6 +157,43 @@ export class TxnShipment extends Model<TxnShipment> {
     autoIncrement: true,
   })
   declare shipmentId: number;
+
+  @Column({
+    allowNull: false,
+    field: 'order_id',
+    type: DataType.BIGINT,
+  })
+  declare orderId: number;
+
+  @ForeignKey(() => MstFranchise)
+  @Column({
+    allowNull: false,
+    field: 'franchise_id',
+    type: DataType.INTEGER,
+  })
+  declare franchiseId: number;
+
+  @BelongsTo(() => MstFranchise, {
+    foreignKey: 'franchiseId',
+    targetKey: 'franchiseId',
+    as: 'franchise',
+  })
+  declare franchise: MstFranchise;
+
+  @ForeignKey(() => MstWarehouse)
+  @Column({
+    allowNull: true,
+    field: 'warehouse_id',
+    type: DataType.INTEGER,
+  })
+  declare warehouseId: number;
+
+  @BelongsTo(() => MstWarehouse, {
+    foreignKey: 'warehouseId',
+    targetKey: 'warehouseId',
+    as: 'warehouse',
+  })
+  declare warehouse: MstWarehouse;
 
   @ForeignKey(() => MstCourierProvider)
   @Column({
@@ -157,35 +225,12 @@ export class TxnShipment extends Model<TxnShipment> {
   })
   declare providerAccount: TxnCourierProviderAccount;
 
-  @ForeignKey(() => TxnCourierProviderAccount)
-  @Column({
-    allowNull: true,
-    field: 'franchise_id',
-    type: DataType.INTEGER,
-  })
-  declare franchiseId: number;
-
-  @BelongsTo(() => MstFranchise, {
-    foreignKey: 'franchiseId',
-    targetKey: 'franchiseId',
-    as: 'franchise',
-  })
-  declare franchise: MstFranchise;
-
   @Column({
     allowNull: true,
     field: 'provider_shipment_id',
     type: DataType.STRING(100),
   })
   declare providerShipmentId: string;
-
-  @Column({
-    allowNull: false,
-    unique: true,
-    field: 'shipment_number',
-    type: DataType.STRING(50),
-  })
-  declare shipmentNumber: string;
 
   @Column({
     allowNull: true,
@@ -202,11 +247,89 @@ export class TxnShipment extends Model<TxnShipment> {
   declare trackingUrl: string;
 
   @Column({
+    allowNull: false,
+    unique: true,
+    field: 'shipment_number',
+    type: DataType.STRING(50),
+  })
+  declare shipmentNumber: string;
+
+  @Column({
     allowNull: true,
     field: 'total_weight_kg',
     type: DataType.DECIMAL(10, 2),
   })
   declare totalWeightKg: number;
+
+  @Column({
+    allowNull: true,
+    field: 'length_cm',
+    type: DataType.DECIMAL(8, 2),
+  })
+  declare lengthCm: number;
+
+  @Column({
+    allowNull: true,
+    field: 'width_cm',
+    type: DataType.DECIMAL(8, 2),
+  })
+  declare widthCm: number;
+
+  @Column({
+    allowNull: true,
+    field: 'height_cm',
+    type: DataType.DECIMAL(8, 2),
+  })
+  declare heightCm: number;
+
+  @Column({
+    allowNull: true,
+    field: 'receiver_name',
+    type: DataType.STRING(150),
+  })
+  declare receiverName: string;
+
+  @Column({
+    allowNull: true,
+    field: 'receiver_phone',
+    type: DataType.STRING(20),
+  })
+  declare receiverPhone: string;
+
+  @Column({
+    allowNull: true,
+    field: 'receiver_address',
+    type: DataType.TEXT,
+  })
+  declare receiverAddress: string;
+
+  @Column({
+    allowNull: true,
+    field: 'receiver_city',
+    type: DataType.STRING(100),
+  })
+  declare receiverCity: string;
+
+  @Column({
+    allowNull: true,
+    field: 'receiver_state',
+    type: DataType.STRING(100),
+  })
+  declare receiverState: string;
+
+  @Column({
+    allowNull: true,
+    field: 'receiver_pincode',
+    type: DataType.STRING(10),
+  })
+  declare receiverPincode: string;
+
+  @Column({
+    allowNull: true,
+    field: 'receiver_country',
+    type: DataType.STRING(100),
+  })
+  declare receiverCountry: string;
 
   @Column({
     allowNull: true,
@@ -238,13 +361,41 @@ export class TxnShipment extends Model<TxnShipment> {
 
   @Column({
     allowNull: true,
+    field: 'last_known_status',
+    type: DataType.ENUM(
+      ShipmentStatusEnum.DRAFT,
+      ShipmentStatusEnum.RATE_REQUESTED,
+      ShipmentStatusEnum.RATE_SELECTED,
+      ShipmentStatusEnum.BOOKING_REQUESTED,
+      ShipmentStatusEnum.BOOKED,
+      ShipmentStatusEnum.PICKUP_SCHEDULED,
+      ShipmentStatusEnum.IN_TRANSIT,
+      ShipmentStatusEnum.OUT_FOR_DELIVERY,
+      ShipmentStatusEnum.DELIVERED,
+      ShipmentStatusEnum.RTO,
+      ShipmentStatusEnum.CANCELLED,
+      ShipmentStatusEnum.FAILED,
+    ),
+  })
+  declare lastKnownStatus: ShipmentStatusEnum;
+
+  @Column({
+    allowNull: true,
+    field: 'next_retry_at',
+    type: DataType.DATE,
+  })
+  declare nextRetryAt: Date;
+
+  @Column({
+    allowNull: true,
     field: 'rate_amount',
     type: DataType.DECIMAL(10, 2),
   })
   declare rateAmount: number;
 
   @Column({
-    allowNull: true,
+    allowNull: false,
+    defaultValue: 'INR',
     field: 'currency',
     type: DataType.STRING(10),
   })
@@ -267,10 +418,10 @@ export class TxnShipment extends Model<TxnShipment> {
 
   @Column({
     allowNull: true,
-    field: 'meta_data',
+    field: 'metadata',
     type: DataType.JSONB,
   })
-  declare metaData: IShipmentMetaData;
+  declare metaData: object;
 
   @BelongsTo(() => MstAdminUser, {
     as: 'createdByUser',

@@ -1,6 +1,6 @@
 import { BelongsTo, Column, CreatedAt, DataType, ForeignKey, Model, Table } from 'sequelize-typescript';
 import { TxnShipment } from './txn-shipment.model';
-import { TxnMemberProductOrderItem } from '@server_1/modules/member';
+import { TxnMemberProductOrderItem } from '@server_1/modules/member/models';
 
 @Table({
   freezeTableName: true,

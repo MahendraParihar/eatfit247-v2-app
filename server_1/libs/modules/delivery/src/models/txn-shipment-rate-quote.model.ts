@@ -8,6 +8,7 @@ import {
   Table,
 } from 'sequelize-typescript';
 import { MstCourierProvider } from './mst-courier-provider.model';
+import { MstWarehouse } from './mst-warehouse.model';
 import { TxnCourierProviderAccount } from './txn-courier-provider-account.model';
 import { TxnShipment } from './txn-shipment.model';
 
@@ -41,7 +42,7 @@ export class TxnShipmentRateQuote extends Model<TxnShipmentRateQuote> {
   declare rateQuoteId: number;
   @ForeignKey(() => TxnShipment)
   @Column({
-    allowNull: true,
+    allowNull: false,
     field: 'shipment_id',
     type: DataType.BIGINT,
   })
@@ -78,6 +79,22 @@ export class TxnShipmentRateQuote extends Model<TxnShipmentRateQuote> {
     as: 'providerAccount',
   })
   declare providerAccount: TxnCourierProviderAccount;
+
+  @ForeignKey(() => MstWarehouse)
+  @Column({
+    allowNull: true,
+    field: 'warehouse_id',
+    type: DataType.INTEGER,
+  })
+  declare warehouseId: number;
+
+  @BelongsTo(() => MstWarehouse, {
+    foreignKey: 'warehouseId',
+    targetKey: 'warehouseId',
+    as: 'warehouse',
+  })
+  declare warehouse: MstWarehouse;
+
   @Column({
     allowNull: true,
     field: 'service_name',
@@ -106,17 +123,33 @@ export class TxnShipmentRateQuote extends Model<TxnShipmentRateQuote> {
   declare currency: string;
   @Column({
     allowNull: false,
+    defaultValue: true,
+    field: 'is_serviceable',
+    type: DataType.BOOLEAN,
+  })
+  declare isServiceable: boolean;
+
+  @Column({
+    allowNull: false,
     defaultValue: false,
     field: 'is_selected',
     type: DataType.BOOLEAN,
   })
   declare isSelected: boolean;
+
+  @Column({
+    allowNull: true,
+    field: 'expires_at',
+    type: DataType.DATE,
+  })
+  declare expiresAt: Date;
+
   @Column({
     allowNull: true,
     field: 'raw_response',
     type: DataType.JSONB,
   })
-  declare rawResponse: Record<string, any>;
+  declare rawResponse: Record<string, unknown>;
   @CreatedAt
   @Column({
     allowNull: true,

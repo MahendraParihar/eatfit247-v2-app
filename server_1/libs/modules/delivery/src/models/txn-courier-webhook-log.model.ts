@@ -1,11 +1,27 @@
 import { BelongsTo, Column, CreatedAt, DataType, ForeignKey, Model, Table } from 'sequelize-typescript';
 import { MstCourierProvider } from './mst-courier-provider.model';
+import { TxnCourierProviderAccount } from './txn-courier-provider-account.model';
 
 @Table({
   freezeTableName: true,
   modelName: 'txn_courier_webhook_logs',
   schema: 'public',
   tableName: 'txn_courier_webhook_logs',
+  timestamps: false,
+  createdAt: true,
+  indexes: [
+    {
+      unique: false,
+      fields: ['provider_id'],
+      name: 'idx_webhook_logs_provider',
+    },
+    {
+      unique: false,
+      fields: ['processed'],
+      name: 'idx_webhook_logs_processed',
+      where: { processed: false },
+    },
+  ],
 })
 export class TxnCourierWebhookLog extends Model<TxnCourierWebhookLog> {
   @Column({
@@ -30,6 +46,21 @@ export class TxnCourierWebhookLog extends Model<TxnCourierWebhookLog> {
     as: 'provider',
   })
   declare provider: MstCourierProvider;
+
+  @ForeignKey(() => TxnCourierProviderAccount)
+  @Column({
+    allowNull: true,
+    field: 'provider_account_id',
+    type: DataType.INTEGER,
+  })
+  declare providerAccountId: number;
+
+  @BelongsTo(() => TxnCourierProviderAccount, {
+    foreignKey: 'providerAccountId',
+    targetKey: 'providerAccountId',
+    as: 'providerAccount',
+  })
+  declare providerAccount: TxnCourierProviderAccount;
 
   @Column({
     allowNull: false,

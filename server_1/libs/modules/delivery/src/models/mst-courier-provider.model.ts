@@ -77,14 +77,6 @@ export class MstCourierProvider extends Model<MstCourierProvider> {
 
   @Column({
     allowNull: true,
-    defaultValue: true,
-    field: 'supports_cod',
-    type: DataType.BOOLEAN,
-  })
-  declare supportsCod: boolean;
-
-  @Column({
-    allowNull: true,
     defaultValue: 1,
     field: 'priority_order',
     type: DataType.INTEGER,

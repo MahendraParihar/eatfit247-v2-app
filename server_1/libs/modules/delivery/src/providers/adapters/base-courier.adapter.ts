@@ -1,32 +1,37 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { HttpService } from '@server_1/core';
 import {
-  ICourierProvider,
   ICourierProviderCredentials,
+  IRateQuote,
   IShipmentBookingResponse,
   ITrackingEvent,
-} from '../courier.interface';
-import { HttpService } from '@server_1/core';
-import { IRateQuote } from '@eatfit247-shared-lib';
+} from '@eatfit247-shared-lib';
+import { BookingRequestDto, RateRequestDto } from '../../dto';
+import { ICourierProvider } from '../courier.interface';
 
 @Injectable()
 export abstract class BaseCourierAdapter implements ICourierProvider {
   protected readonly logger: Logger;
   protected readonly providerCode: string;
 
-  constructor(protected readonly httpService: HttpService) {
-    this.logger = new Logger(`${this.providerCode}Adapter`);
+  constructor(protected readonly httpService: HttpService, providerCode: string) {
+    this.providerCode = providerCode;
+    this.logger = new Logger(`${providerCode}Adapter`);
   }
 
   /**
    * Get shipping rates for a shipment
    */
-  abstract getRates(payload: any, credentials: ICourierProviderCredentials): Promise<IRateQuote[]>;
+  abstract getRates(
+    payload: RateRequestDto,
+    credentials: ICourierProviderCredentials,
+  ): Promise<IRateQuote[]>;
 
   /**
    * Create/book a shipment
    */
   abstract createShipment(
-    payload: any,
+    payload: BookingRequestDto,
     credentials: ICourierProviderCredentials,
   ): Promise<IShipmentBookingResponse>;
 
@@ -85,5 +90,42 @@ export abstract class BaseCourierAdapter implements ICourierProvider {
     throw new Error(
       `${this.providerCode} refreshToken Token refresh not implemented for this provider`,
     );
+  }
+
+  protected async executeWithLogging<T>(operation: string, executor: () => Promise<T>): Promise<T> {
+    const startTime = Date.now();
+    this.logger.log(`${operation} started`);
+    try {
+      const result = await executor();
+      const elapsed = Date.now() - startTime;
+      this.logger.log(`${operation} completed in ${elapsed}ms`);
+      return result;
+    } catch (error: unknown) {
+      const elapsed = Date.now() - startTime;
+      const message = error instanceof Error ? error.message : 'unknown error';
+      this.logger.error(`${operation} failed in ${elapsed}ms: ${message}`);
+      throw error;
+    }
+  }
+
+  protected async withTimeout<T>(
+    promise: Promise<T>,
+    timeoutMs: number,
+    context: string,
+  ): Promise<T> {
+    let timeoutHandle: NodeJS.Timeout | null = null;
+    const timeoutPromise = new Promise<T>((_, reject) => {
+      timeoutHandle = setTimeout(() => {
+        reject(new Error(`${this.providerCode} ${context} timed out after ${timeoutMs}ms`));
+      }, timeoutMs);
+    });
+
+    try {
+      return await Promise.race([promise, timeoutPromise]);
+    } finally {
+      if (timeoutHandle) {
+        clearTimeout(timeoutHandle);
+      }
+    }
   }
 }

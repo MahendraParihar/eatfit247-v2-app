@@ -1,5 +1,6 @@
 import { BelongsTo, Column, CreatedAt, DataType, ForeignKey, Model, Table } from 'sequelize-typescript';
 import { MstCourierProvider } from './mst-courier-provider.model';
+import { TxnCourierProviderAccount } from './txn-courier-provider-account.model';
 import { TxnShipment } from './txn-shipment.model';
 
 @Table({
@@ -7,11 +8,18 @@ import { TxnShipment } from './txn-shipment.model';
   modelName: 'txn_courier_api_logs',
   schema: 'public',
   tableName: 'txn_courier_api_logs',
+  timestamps: false,
+  createdAt: true,
   indexes: [
     {
       unique: false,
       fields: ['shipment_id'],
       name: 'idx_api_logs_shipment',
+    },
+    {
+      unique: false,
+      fields: ['provider_id'],
+      name: 'idx_api_logs_provider',
     },
   ],
 })
@@ -53,6 +61,21 @@ export class TxnCourierApiLog extends Model<TxnCourierApiLog> {
     as: 'provider',
   })
   declare provider: MstCourierProvider;
+
+  @ForeignKey(() => TxnCourierProviderAccount)
+  @Column({
+    allowNull: true,
+    field: 'provider_account_id',
+    type: DataType.INTEGER,
+  })
+  declare providerAccountId: number;
+
+  @BelongsTo(() => TxnCourierProviderAccount, {
+    foreignKey: 'providerAccountId',
+    targetKey: 'providerAccountId',
+    as: 'providerAccount',
+  })
+  declare providerAccount: TxnCourierProviderAccount;
 
   @Column({
     allowNull: true,

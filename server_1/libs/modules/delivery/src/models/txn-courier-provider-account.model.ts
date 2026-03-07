@@ -12,7 +12,7 @@ import { MstCourierProvider } from './mst-courier-provider.model';
     {
       unique: true,
       fields: ['provider_id', 'franchise_id'],
-      name: 'ix_uq_txn_courier_provider_account_provider_franchise',
+      name: 'uq_courier_account_provider_franchise',
     },
   ],
 })

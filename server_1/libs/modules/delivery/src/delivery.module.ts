@@ -1,10 +1,15 @@
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
+import { ScheduleModule } from '@nestjs/schedule';
 import { HttpService, modelRegistry } from '@server_1/core';
-import { TxnMemberProduct, TxnMemberProductOrderItem } from '@server_1/modules/member/src/models';
+import { MstState, MstCountry } from '@server_1/platform';
+import { TxnMemberProduct, TxnMemberProductOrderItem } from '@server_1/modules/member/models';
 import {
+  CachePincodeServiceability,
   MstCourierProvider,
+  MstWarehouse,
   TxnCourierProviderAccount,
+  TxnCourierProviderWarehouse,
   TxnShipment,
   TxnShipmentItem,
   TxnShipmentRateQuote,
@@ -13,33 +18,32 @@ import {
   TxnCourierWebhookLog,
 } from './models';
 import {
-  DeliveryController,
   CourierProviderController,
   CourierProviderAccountController,
+  WarehouseController,
+  CourierProviderWarehouseController,
+  ShipmentController,
 } from './controllers';
 import {
-  DeliveryService,
-  ShipmentService,
-  RateService,
-  TrackingService,
-  WebhookService,
-  FailoverService,
   CourierProviderService,
   CourierProviderAccountService,
+  WarehouseService,
+  CourierProviderWarehouseService,
+  ShipmentRecordService,
+  WarehouseResolverService,
+  RateSelectorService,
+  ShipmentOrchestrationService,
+  ShipmentRetryCron,
 } from './services';
-import {
-  ShipmentRepository,
-  RateRepository,
-  ApiLogRepository,
-  ShipmentItemRepository,
-  TrackingRepository,
-} from './repositories';
 import { CourierFactory, NimbusAdapter, ShiprocketAdapter } from './providers';
 
 // Register models with the model registry
 modelRegistry.register([
+  CachePincodeServiceability,
   MstCourierProvider,
+  MstWarehouse,
   TxnCourierProviderAccount,
+  TxnCourierProviderWarehouse,
   TxnShipment,
   TxnShipmentItem,
   TxnShipmentRateQuote,
@@ -51,52 +55,53 @@ modelRegistry.register([
 @Module({
   imports: [
     SequelizeModule.forFeature([
+      CachePincodeServiceability,
       MstCourierProvider,
+      MstWarehouse,
       TxnCourierProviderAccount,
+      TxnCourierProviderWarehouse,
+      TxnMemberProduct,
+      TxnMemberProductOrderItem,
+      MstState,
+      MstCountry,
       TxnShipment,
       TxnShipmentItem,
       TxnShipmentRateQuote,
       TxnShipmentTrackingEvent,
       TxnCourierApiLog,
       TxnCourierWebhookLog,
-      TxnMemberProduct,
-      TxnMemberProductOrderItem,
     ]),
+    ScheduleModule.forRoot(),
   ],
-  controllers: [DeliveryController, CourierProviderController, CourierProviderAccountController],
+  controllers: [
+    CourierProviderController,
+    CourierProviderAccountController,
+    WarehouseController,
+    CourierProviderWarehouseController,
+    ShipmentController,
+  ],
   providers: [
-    DeliveryService,
-    ShipmentService,
-    RateService,
-    TrackingService,
-    WebhookService,
-    FailoverService,
     CourierProviderService,
     CourierProviderAccountService,
-    ShipmentRepository,
-    RateRepository,
-    ApiLogRepository,
-    ShipmentItemRepository,
-    TrackingRepository,
+    WarehouseService,
+    CourierProviderWarehouseService,
+    ShipmentRecordService,
+    WarehouseResolverService,
+    RateSelectorService,
+    ShipmentOrchestrationService,
+    ShipmentRetryCron,
     CourierFactory,
     NimbusAdapter,
     ShiprocketAdapter,
     HttpService,
   ],
   exports: [
-    DeliveryService,
-    ShipmentService,
-    RateService,
-    TrackingService,
-    WebhookService,
-    FailoverService,
     CourierProviderService,
     CourierProviderAccountService,
-    ShipmentRepository,
-    RateRepository,
-    ApiLogRepository,
-    ShipmentItemRepository,
-    TrackingRepository,
+    WarehouseService,
+    CourierProviderWarehouseService,
+    ShipmentRecordService,
+    ShipmentOrchestrationService,
     CourierFactory,
     SequelizeModule,
   ],

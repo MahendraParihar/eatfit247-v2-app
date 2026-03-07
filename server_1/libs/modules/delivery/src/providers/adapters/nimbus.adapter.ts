@@ -6,19 +6,17 @@ import {
   INimbusServiceabilityDataItem,
   INimbusServiceabilityPayload,
   INimbusServiceabilityResponse,
+  INimbusShipmentPayload,
+  IRateQuote,
   IShipmentBookingResponse,
   ITrackingEvent,
-} from '../courier.interface';
-import { INimbusShipmentPayload, IRateQuote } from '@eatfit247-shared-lib';
+} from '@eatfit247-shared-lib';
+import { BookingRequestDto, RateRequestDto } from '../../dto';
 
 @Injectable()
 export class NimbusAdapter extends BaseCourierAdapter {
-  protected override readonly providerCode = 'NIMBUS';
-  override readonly httpService: HttpService;
-
   constructor(httpService: HttpService) {
-    super(httpService);
-    this.httpService = httpService;
+    super(httpService, 'NIMBUS');
   }
 
   /**
@@ -72,8 +70,11 @@ export class NimbusAdapter extends BaseCourierAdapter {
    * Get shipping rates from Nimbus API
    * Endpoint: POST /api/v1/rates
    */
-  async getRates(payload: any, credentials: ICourierProviderCredentials): Promise<IRateQuote[]> {
-    try {
+  async getRates(
+    payload: RateRequestDto,
+    credentials: ICourierProviderCredentials,
+  ): Promise<IRateQuote[]> {
+    return this.executeWithLogging('getRates', async () => {
       // Ensure valid token before making API call
       await this.ensureValidToken(credentials);
 
@@ -100,11 +101,15 @@ export class NimbusAdapter extends BaseCourierAdapter {
         ratePayload.breadth = payload.dimensions.breadth ?? payload.dimensions.width ?? 10;
         ratePayload.height = payload.dimensions.height ?? 10;
       }
-      const response = await this.httpService.post<INimbusServiceabilityResponse>(
-        `${credentials.apiBaseUrl}/courier/serviceability`,
-        ratePayload,
-        undefined,
-        headers,
+      const response = await this.withTimeout(
+        this.httpService.post<INimbusServiceabilityResponse>(
+          `${credentials.apiBaseUrl}/courier/serviceability`,
+          ratePayload,
+          undefined,
+          headers,
+        ),
+        5_000,
+        'rate fetch',
       );
       return response.data.map((rate: INimbusServiceabilityDataItem) => ({
         providerId: credentials.providerAccountId,
@@ -118,9 +123,7 @@ export class NimbusAdapter extends BaseCourierAdapter {
           ...rate,
         },
       }));
-    } catch (error: any) {
-      throw new Error(`${this.providerCode} Failed to get rates from : ${error.message}`);
-    }
+    });
   }
 
   /**
@@ -128,10 +131,10 @@ export class NimbusAdapter extends BaseCourierAdapter {
    * Endpoint: POST /api/v1/shipments
    */
   async createShipment(
-    payload: any,
+    payload: BookingRequestDto,
     credentials: ICourierProviderCredentials,
   ): Promise<IShipmentBookingResponse> {
-    try {
+    return this.executeWithLogging('createShipment', async () => {
       // Ensure valid token before making API call
       await this.ensureValidToken(credentials);
 
@@ -186,11 +189,15 @@ export class NimbusAdapter extends BaseCourierAdapter {
         }));
       }
       console.log(shipmentPayload);
-      const response = await this.httpService.post(
-        `${credentials.apiBaseUrl}/shipments`,
-        shipmentPayload,
-        undefined,
-        headers,
+      const response = await this.withTimeout(
+        this.httpService.post(
+          `${credentials.apiBaseUrl}/shipments`,
+          shipmentPayload,
+          undefined,
+          headers,
+        ),
+        10_000,
+        'shipment booking',
       );
       console.log(response);
       const shipment = response?.data || response;
@@ -224,11 +231,7 @@ export class NimbusAdapter extends BaseCourierAdapter {
           ...shipment,
         },
       };
-    } catch (error: any) {
-      throw new Error(
-        `${this.providerCode} Failed to create shipment with Nimbus: ${error.message}`,
-      );
-    }
+    });
   }
 
   /**
@@ -240,7 +243,7 @@ export class NimbusAdapter extends BaseCourierAdapter {
     trackingNumber: string,
     credentials: ICourierProviderCredentials,
   ): Promise<ITrackingEvent[]> {
-    try {
+    return this.executeWithLogging('trackShipment', async () => {
       if (!trackingNumber || trackingNumber.trim().length === 0) {
         throw new Error(`${this.providerCode} Tracking number is required`);
       }
@@ -251,10 +254,14 @@ export class NimbusAdapter extends BaseCourierAdapter {
       // Get authentication headers
       const headers = await this.getAuthHeaders(credentials);
 
-      const response = await this.httpService.get(
-        `${credentials.apiBaseUrl}/tracking/${trackingNumber.trim()}`,
-        undefined,
-        headers,
+      const response = await this.withTimeout(
+        this.httpService.get(
+          `${credentials.apiBaseUrl}/tracking/${trackingNumber.trim()}`,
+          undefined,
+          headers,
+        ),
+        10_000,
+        'tracking fetch',
       );
       const events = Array.isArray(response)
         ? response
@@ -271,30 +278,33 @@ export class NimbusAdapter extends BaseCourierAdapter {
         this.logger.warn(`No tracking events found for tracking number: ${trackingNumber}`);
         return [];
       }
-      return events.map((event: any) => ({
-        status: event.status || event.event_status || event.current_status || 'UNKNOWN',
-        description:
-          event.description || event.event_description || event.message || event.remarks || '',
-        eventTime: event.event_time
-          ? new Date(event.event_time)
-          : event.timestamp
-          ? new Date(event.timestamp)
-          : event.created_at
-          ? new Date(event.created_at)
-          : event.date
-          ? new Date(event.date)
-          : new Date(),
-        location:
-          event.location || event.city || event.origin_city || event.destination_city || undefined,
-        metadata: {
-          ...event,
-        },
-      }));
-    } catch (error: any) {
-      throw new Error(
-        `${this.providerCode} Failed to track shipment with Nimbus: ${error.message}`,
+      return events.map(
+        (event: any) =>
+          <ITrackingEvent>{
+            status: event.status || event.event_status || event.current_status || 'UNKNOWN',
+            description:
+              event.description || event.event_description || event.message || event.remarks || '',
+            eventTime: event.event_time
+              ? new Date(event.event_time)
+              : event.timestamp
+              ? new Date(event.timestamp)
+              : event.created_at
+              ? new Date(event.created_at)
+              : event.date
+              ? new Date(event.date)
+              : new Date(),
+            location:
+              event.location ||
+              event.city ||
+              event.origin_city ||
+              event.destination_city ||
+              undefined,
+            metadata: {
+              ...event,
+            },
+          },
       );
-    }
+    });
   }
 
   /**
@@ -306,7 +316,7 @@ export class NimbusAdapter extends BaseCourierAdapter {
     trackingNumber: string,
     credentials: ICourierProviderCredentials,
   ): Promise<void> {
-    try {
+    await this.executeWithLogging('cancelShipment', async () => {
       if (!trackingNumber || trackingNumber.trim().length === 0) {
         throw new Error(`${this.providerCode} Tracking number is required for cancellation`);
       }
@@ -322,18 +332,18 @@ export class NimbusAdapter extends BaseCourierAdapter {
       };
       // Some APIs require shipment_id instead of tracking number
       // Try with tracking number first, API will handle the mapping
-      await this.httpService.post(
-        `${credentials.apiBaseUrl}/shipments/${trackingNumber.trim()}/cancel`,
-        cancelPayload,
-        undefined,
-        headers,
+      await this.withTimeout(
+        this.httpService.post(
+          `${credentials.apiBaseUrl}/shipments/${trackingNumber.trim()}/cancel`,
+          cancelPayload,
+          undefined,
+          headers,
+        ),
+        10_000,
+        'shipment cancellation',
       );
       this.logger.log(`Successfully cancelled shipment with tracking number: ${trackingNumber}`);
-    } catch (error: any) {
-      throw new Error(
-        `${this.providerCode} Failed to cancel shipment with Nimbus: ${error.message}`,
-      );
-    }
+    });
   }
 
   protected override async refreshToken(credentials: ICourierProviderCredentials): Promise<string> {
