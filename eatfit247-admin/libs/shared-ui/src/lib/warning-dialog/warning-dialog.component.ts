@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
@@ -19,10 +19,9 @@ export interface WarningDialogData {
   styleUrl: './warning-dialog.component.scss',
 })
 export class WarningDialogComponent {
-  constructor(
-    public dialogRef: MatDialogRef<WarningDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: WarningDialogData
-  ) {}
+  dialogRef = inject<MatDialogRef<WarningDialogComponent>>(MatDialogRef);
+  data = inject<WarningDialogData>(MAT_DIALOG_DATA);
+
 
   onConfirm(): void {
     this.dialogRef.close(true);

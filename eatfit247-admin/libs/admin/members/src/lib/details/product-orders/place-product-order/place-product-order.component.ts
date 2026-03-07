@@ -1,4 +1,4 @@
-import { Component, computed, Inject, OnInit, signal } from '@angular/core';
+import { Component, computed, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
@@ -85,6 +85,12 @@ export interface CartItem {
   styleUrl: './place-product-order.component.scss',
 })
 export class PlaceProductOrderComponent implements OnInit {
+  dialogRef = inject<MatDialogRef<PlaceProductOrderComponent>>(MatDialogRef);
+  data = inject<PlaceProductOrderData>(MAT_DIALOG_DATA);
+  private apiService = inject(MembersApiService);
+  private fb = inject(FormBuilder);
+  private snackBar = inject(MatSnackBar);
+
   formGroup!: FormGroup;
   step1FormGroup!: FormGroup;
   step2FormGroup!: FormGroup;
@@ -154,13 +160,9 @@ export class PlaceProductOrderComponent implements OnInit {
     return variant.prices?.filter((p) => p.active !== false) || [];
   });
 
-  constructor(
-    public dialogRef: MatDialogRef<PlaceProductOrderComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: PlaceProductOrderData,
-    private apiService: MembersApiService,
-    private fb: FormBuilder,
-    private snackBar: MatSnackBar
-  ) {
+  constructor() {
+    const data = this.data;
+
     this.initializeForm();
     this.isEditMode = !!data.productOrder;
   }

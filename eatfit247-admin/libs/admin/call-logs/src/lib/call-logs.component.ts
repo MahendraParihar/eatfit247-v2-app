@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -23,6 +23,10 @@ import { debounceTime, distinctUntilChanged, Subject, switchMap } from 'rxjs';
   styleUrl: './call-logs.scss',
 })
 export class CallLogs implements OnInit {
+  private apiService = inject(CallLogsApiService);
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
+
   data: IMemberCallLog[] = [];
   totalCount = 0;
   loading = false;
@@ -30,11 +34,7 @@ export class CallLogs implements OnInit {
   private searchSubject = new Subject<string>();
   currentSearch = '';
 
-  constructor(
-    private apiService: CallLogsApiService,
-    private router: Router,
-    private route: ActivatedRoute
-  ) {
+  constructor() {
     this.setupSearch();
   }
 

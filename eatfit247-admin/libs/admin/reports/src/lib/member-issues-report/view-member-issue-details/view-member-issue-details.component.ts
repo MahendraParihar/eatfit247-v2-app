@@ -1,4 +1,4 @@
-import { AfterViewChecked, Component, ElementRef, Inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { AfterViewChecked, Component, ElementRef, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -50,6 +50,13 @@ export interface MemberIssueDetailsDialogData {
 })
 export class ViewMemberIssueDetailsComponent
   implements OnInit, OnDestroy, AfterViewChecked {
+  dialogRef = inject<MatDialogRef<ViewMemberIssueDetailsComponent>>(MatDialogRef);
+  data = inject<MemberIssueDetailsDialogData>(MAT_DIALOG_DATA);
+  private apiService = inject(MemberIssuesReportApiService);
+  private fb = inject(FormBuilder);
+  private snackBar = inject(MatSnackBar);
+  private router = inject(Router);
+
   @ViewChild('chatMessages', { static: false })
   chatMessagesElement!: ElementRef<HTMLDivElement>;
   memberIssue!: IMemberIssue;
@@ -61,14 +68,9 @@ export class ViewMemberIssueDetailsComponent
   private destroy$ = new Subject<void>();
   private shouldScrollToBottom = false;
 
-  constructor(
-    public dialogRef: MatDialogRef<ViewMemberIssueDetailsComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: MemberIssueDetailsDialogData,
-    private apiService: MemberIssuesReportApiService,
-    private fb: FormBuilder,
-    private snackBar: MatSnackBar,
-    private router: Router
-  ) {
+  constructor() {
+    const data = this.data;
+
     // Convert IMemberIssueReportItem to IMemberIssue format
     this.memberIssue = {
       memberIssueId: data.memberIssue.memberIssueId,

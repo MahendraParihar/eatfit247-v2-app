@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -26,13 +26,11 @@ import { IconComponent } from '@shared';
   styles: ['.form-card { margin: 20px; }']
 })
 export class ManageIssue implements OnInit {
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
+
   pageTitle = 'Create Issue';
   isEditMode = false;
-
-  constructor(
-    private router: Router,
-    private route: ActivatedRoute
-  ) {}
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');

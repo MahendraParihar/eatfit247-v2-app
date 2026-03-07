@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
@@ -20,10 +20,9 @@ export interface AlertDialogData {
   styleUrl: './alert-dialog.component.scss',
 })
 export class AlertDialogComponent {
-  constructor(
-    public dialogRef: MatDialogRef<AlertDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: AlertDialogData
-  ) {}
+  dialogRef = inject<MatDialogRef<AlertDialogComponent>>(MatDialogRef);
+  data = inject<AlertDialogData>(MAT_DIALOG_DATA);
+
 
   onPositiveClick(): void {
     this.dialogRef.close(true);

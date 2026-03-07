@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -36,6 +36,12 @@ export interface ManageMemberIssueData {
   styleUrl: './manage-member-issue.component.scss'
 })
 export class ManageMemberIssueComponent implements OnInit {
+  dialogRef = inject<MatDialogRef<ManageMemberIssueComponent>>(MatDialogRef);
+  data = inject<ManageMemberIssueData>(MAT_DIALOG_DATA);
+  private apiService = inject(MembersApiService);
+  private fb = inject(FormBuilder);
+  private snackBar = inject(MatSnackBar);
+
   formGroup!: FormGroup;
   loading = false;
   isEditMode = false;
@@ -43,13 +49,9 @@ export class ManageMemberIssueComponent implements OnInit {
   issueStatusOptions: IDropdownItem[] = [];
   InputLengthEnum = InputLengthEnum;
 
-  constructor(
-    public dialogRef: MatDialogRef<ManageMemberIssueComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: ManageMemberIssueData,
-    private apiService: MembersApiService,
-    private fb: FormBuilder,
-    private snackBar: MatSnackBar
-  ) {
+  constructor() {
+    const data = this.data;
+
     this.initializeForm();
     this.isEditMode = !!data.issue;
   }

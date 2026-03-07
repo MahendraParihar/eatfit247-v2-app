@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -31,17 +31,19 @@ export interface ManageDietTemplateDialogData {
   styleUrl: './manage-diet-template-dialog.component.scss'
 })
 export class ManageDietTemplateDialogComponent implements OnInit {
+  dialogRef = inject<MatDialogRef<ManageDietTemplateDialogComponent>>(MatDialogRef);
+  data = inject<ManageDietTemplateDialogData>(MAT_DIALOG_DATA);
+  private apiService = inject(DietTemplateApiService);
+  private fb = inject(FormBuilder);
+
   formGroup!: FormGroup;
   isEditMode = false;
   loading = false;
   InputLengthEnum = InputLengthEnum;
 
-  constructor(
-    public dialogRef: MatDialogRef<ManageDietTemplateDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: ManageDietTemplateDialogData,
-    private apiService: DietTemplateApiService,
-    private fb: FormBuilder
-  ) {
+  constructor() {
+    const data = this.data;
+
     this.initializeForm();
     this.isEditMode = !!data.dietTemplate;
   }

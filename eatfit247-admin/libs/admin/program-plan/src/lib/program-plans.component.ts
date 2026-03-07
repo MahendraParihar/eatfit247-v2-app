@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -25,17 +25,17 @@ import { debounceTime, distinctUntilChanged, Subject, switchMap } from 'rxjs';
   styleUrl: './program-plans.scss'
 })
 export class ProgramPlans implements OnInit {
+  private apiService = inject(ProgramPlanApiService);
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
+
   data: IProgramPlan[] = [];
   totalCount = 0;
   loading = false;
   tableConfig!: ITableConfig<IProgramPlan>;
   private searchSubject = new Subject<string>();
 
-  constructor(
-    private apiService: ProgramPlanApiService,
-    private router: Router,
-    private route: ActivatedRoute
-  ) {
+  constructor() {
     this.setupSearch();
   }
 

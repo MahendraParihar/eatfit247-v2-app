@@ -31,6 +31,10 @@ import { FileTypeEnum, ICallPurpose, IManageCallPurpose, InputLengthEnum, MediaF
   styleUrl: './manage-call-purpose.scss'
 })
 export class ManageCallPurpose implements OnInit {
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private apiService = inject(LovMasterApiService);
+
   private fb: FormBuilder = inject(FormBuilder);
   formGroup: FormGroup = this.fb.group({
     callPurpose: ['', [Validators.required, Validators.minLength(InputLengthEnum.CHAR_2), Validators.maxLength(InputLengthEnum.CHAR_50)]],
@@ -41,12 +45,6 @@ export class ManageCallPurpose implements OnInit {
   mediaType = FileTypeEnum.IMAGE;
   isEditMode = false;
   pageTitle = 'Create Call Purpose';
-
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private apiService: LovMasterApiService
-  ) {}
 
   async ngOnInit(): Promise<void> {
     const id = this.route.snapshot.paramMap.get('id');

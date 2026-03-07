@@ -35,6 +35,11 @@ import { FileTypeEnum, InputLengthEnum, IPressMedia, MediaForEnum } from '@eatfi
   styleUrl: './manage-media-press.scss'
 })
 export class ManageMediaPress implements OnInit, OnDestroy {
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private apiService = inject(PressMediaApiService);
+  private snackBar = inject(MatSnackBar);
+
   private fb: FormBuilder = inject(FormBuilder);
   formGroup: FormGroup = this.fb.group({
     title: ['', [Validators.maxLength(InputLengthEnum.CHAR_200)]],
@@ -51,13 +56,6 @@ export class ManageMediaPress implements OnInit, OnDestroy {
     { value: 'youtube', label: 'YouTube' },
     { value: 'press', label: 'Press' }
   ];
-
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private apiService: PressMediaApiService,
-    private snackBar: MatSnackBar
-  ) {}
 
   async ngOnInit(): Promise<void> {
     const id = this.route.snapshot.paramMap.get('id');

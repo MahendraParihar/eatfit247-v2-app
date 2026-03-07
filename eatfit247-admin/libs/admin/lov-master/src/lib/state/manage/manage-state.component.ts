@@ -30,6 +30,10 @@ import { IDropdownItem, IManageState, InputLengthEnum, IState } from '@eatfit247
   styleUrl: './manage-state.scss'
 })
 export class ManageState implements OnInit {
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private apiService = inject(LovMasterApiService);
+
   private fb: FormBuilder = inject(FormBuilder);
   formGroup: FormGroup = this.fb.group({
     state: ['', [Validators.required, Validators.minLength(InputLengthEnum.CHAR_2), Validators.maxLength(InputLengthEnum.CHAR_100)]],
@@ -42,12 +46,6 @@ export class ManageState implements OnInit {
   countryOptions: IDropdownItem[] = [];
   isEditMode = false;
   pageTitle = 'Create State';
-
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private apiService: LovMasterApiService
-  ) {}
 
   async ngOnInit(): Promise<void> {
     await this.loadCountryOptions();

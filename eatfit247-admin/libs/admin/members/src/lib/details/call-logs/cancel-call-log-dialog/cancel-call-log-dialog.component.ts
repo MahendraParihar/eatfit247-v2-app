@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -25,12 +25,12 @@ import { InputErrorComponent } from '@shared';
   styleUrl: './cancel-call-log-dialog.component.scss',
 })
 export class CancelCallLogDialogComponent {
+  dialogRef = inject<MatDialogRef<CancelCallLogDialogComponent>>(MatDialogRef);
+  private fb = inject(FormBuilder);
+
   formGroup: FormGroup;
 
-  constructor(
-    public dialogRef: MatDialogRef<CancelCallLogDialogComponent>,
-    private fb: FormBuilder
-  ) {
+  constructor() {
     this.formGroup = this.fb.group({
       reason: ['', [Validators.required, Validators.maxLength(250)]],
     });

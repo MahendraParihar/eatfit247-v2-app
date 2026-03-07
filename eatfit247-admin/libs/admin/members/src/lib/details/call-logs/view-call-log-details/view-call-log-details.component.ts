@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
@@ -25,10 +25,9 @@ const CallTypeEnum = {
   styleUrl: './view-call-log-details.component.scss',
 })
 export class ViewCallLogDetailsComponent {
-  constructor(
-    public dialogRef: MatDialogRef<ViewCallLogDetailsComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: IMemberCallLog
-  ) {}
+  dialogRef = inject<MatDialogRef<ViewCallLogDetailsComponent>>(MatDialogRef);
+  data = inject<IMemberCallLog>(MAT_DIALOG_DATA);
+
 
   onClose(): void {
     this.dialogRef.close();

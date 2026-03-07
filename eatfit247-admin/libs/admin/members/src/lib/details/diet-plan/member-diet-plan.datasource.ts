@@ -1,9 +1,11 @@
+import { inject } from '@angular/core';
 import { CollectionViewer, DataSource } from '@angular/cdk/collections';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { IDropdownItem, IMemberDietPlan } from '@eatfit247-shared-lib';
 import { MembersApiService } from '../../api.service';
 
 export class MemberDietPlanDatasource implements DataSource<IMemberDietPlan> {
+  private apiService = inject(MembersApiService);
   private dataSubject = new BehaviorSubject<IMemberDietPlan[]>([]);
   private dietTemplateSubject = new BehaviorSubject<IDropdownItem[]>([]);
   private expandedSubject = new BehaviorSubject<boolean[]>([]);
@@ -13,10 +15,6 @@ export class MemberDietPlanDatasource implements DataSource<IMemberDietPlan> {
   dietTemplate = this.dietTemplateSubject.asObservable();
   expanded = this.expandedSubject.asObservable();
   data = this.dataSubject.asObservable();
-
-  constructor(
-    private apiService: MembersApiService,
-  ) {}
 
   connect(collectionViewer: CollectionViewer): Observable<IMemberDietPlan[]> {
     return this.dataSubject.asObservable();

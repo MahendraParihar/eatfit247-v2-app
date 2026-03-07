@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, OnInit, TemplateRef, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -37,6 +37,10 @@ import { debounceTime, distinctUntilChanged, Subject, switchMap } from 'rxjs';
   styleUrl: './members.scss',
 })
 export class Members implements OnInit, AfterViewInit {
+  private apiService = inject(MembersApiService);
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
+
   data: IMember[] = [];
   totalCount = 0;
   loading = false;
@@ -55,11 +59,7 @@ export class Members implements OnInit, AfterViewInit {
   @ViewChild('nameCell', { static: false })
   nameCellTemplate!: TemplateRef<any>;
 
-  constructor(
-    private apiService: MembersApiService,
-    private router: Router,
-    private route: ActivatedRoute
-  ) {
+  constructor() {
     this.setupSearch();
   }
 

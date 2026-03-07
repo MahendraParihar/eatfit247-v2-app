@@ -39,6 +39,11 @@ import { FileTypeEnum, InputLengthEnum, IPocketGuide, MediaForEnum } from '@eatf
   styleUrl: './manage-pocket-guide.scss'
 })
 export class ManagePocketGuide implements OnInit, OnDestroy {
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private apiService = inject(PocketGuideApiService);
+  private snackBar = inject(MatSnackBar);
+
   private fb: FormBuilder = inject(FormBuilder);
   formGroup: FormGroup = this.fb.group({
     pocketGuide: ['', [Validators.required, Validators.minLength(InputLengthEnum.CHAR_2), Validators.maxLength(InputLengthEnum.CHAR_50)]],
@@ -52,13 +57,6 @@ export class ManagePocketGuide implements OnInit, OnDestroy {
   imageMediaType = FileTypeEnum.IMAGE;
   fileMediaType = FileTypeEnum.PDF;
   editor: Editor | null = null;
-
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private apiService: PocketGuideApiService,
-    private snackBar: MatSnackBar
-  ) {}
 
   async ngOnInit(): Promise<void> {
     this.initializeEditor();

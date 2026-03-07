@@ -10,7 +10,7 @@
  * - Handles 401 errors by refreshing token and retrying request
  * - Access token stored in memory only (not localStorage)
  */
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpErrorResponse, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from '@angular/common/http';
 import { from, Observable, throwError } from 'rxjs';
 import { catchError, switchMap } from 'rxjs/operators';
@@ -20,10 +20,9 @@ import { environment } from '@env';
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
-  constructor(
-    private storage: StorageService,
-    private auth: AuthService
-  ) {}
+  private storage = inject(StorageService);
+  private auth = inject(AuthService);
+
 
   intercept(
     req: HttpRequest<unknown>,

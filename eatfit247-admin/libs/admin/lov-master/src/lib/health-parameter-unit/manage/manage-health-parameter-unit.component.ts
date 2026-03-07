@@ -30,6 +30,10 @@ import { IHealthParameterUnit, IManageHealthParameterUnit, InputLengthEnum } fro
   styleUrl: './manage-health-parameter-unit.scss'
 })
 export class ManageHealthParameterUnit implements OnInit {
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private apiService = inject(LovMasterApiService);
+
   private fb: FormBuilder = inject(FormBuilder);
   formGroup: FormGroup = this.fb.group({
     healthParameterUnit: ['', [Validators.required, Validators.minLength(InputLengthEnum.CHAR_2), Validators.maxLength(InputLengthEnum.CHAR_50)]],
@@ -38,12 +42,6 @@ export class ManageHealthParameterUnit implements OnInit {
   initialData!: IHealthParameterUnit;
   isEditMode = false;
   pageTitle = 'Create Health Parameter Unit';
-
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private apiService: LovMasterApiService
-  ) {}
 
   async ngOnInit(): Promise<void> {
     const id = this.route.snapshot.paramMap.get('id');

@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
@@ -29,17 +29,15 @@ export interface ManageMemberHealthIssueData {
   styleUrl: './manage-member-health-issue.component.scss',
 })
 export class ManageMemberHealthIssueComponent implements OnInit {
+  dialogRef = inject<MatDialogRef<ManageMemberHealthIssueComponent>>(MatDialogRef);
+  data = inject<ManageMemberHealthIssueData>(MAT_DIALOG_DATA);
+  private apiService = inject(MembersApiService);
+  private snackBar = inject(MatSnackBar);
+
   healthIssues: IMemberHealthIssue[] = [];
   dataSource = new MatTableDataSource<IMemberHealthIssue>([]);
   loading = false;
   displayedColumns: string[] = ['select', 'healthIssue'];
-
-  constructor(
-    public dialogRef: MatDialogRef<ManageMemberHealthIssueComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: ManageMemberHealthIssueData,
-    private apiService: MembersApiService,
-    private snackBar: MatSnackBar
-  ) {}
 
   ngOnInit(): void {
     this.loadHealthIssues();

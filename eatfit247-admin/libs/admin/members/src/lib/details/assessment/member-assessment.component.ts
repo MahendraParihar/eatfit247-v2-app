@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -44,6 +44,11 @@ import { Subject, takeUntil } from 'rxjs';
   styleUrl: './member-assessment.component.scss'
 })
 export class MemberAssessmentComponent implements OnInit, OnDestroy {
+  private route = inject(ActivatedRoute);
+  private apiService = inject(MembersApiService);
+  private fb = inject(FormBuilder);
+  private snackBar = inject(MatSnackBar);
+
   memberId!: number;
   assessment: IMemberAssessment | null = null;
   loading = false;
@@ -62,12 +67,7 @@ export class MemberAssessmentComponent implements OnInit, OnDestroy {
   InputLengthEnum = InputLengthEnum;
   private destroy$ = new Subject<void>();
 
-  constructor(
-    private route: ActivatedRoute,
-    private apiService: MembersApiService,
-    private fb: FormBuilder,
-    private snackBar: MatSnackBar
-  ) {
+  constructor() {
     this.initializeForm();
   }
 

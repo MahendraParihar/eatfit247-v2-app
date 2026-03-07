@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
@@ -29,17 +29,15 @@ export interface ManageMemberPocketGuideData {
   styleUrl: './manage-member-pocket-guide.component.scss',
 })
 export class ManageMemberPocketGuideComponent implements OnInit {
+  dialogRef = inject<MatDialogRef<ManageMemberPocketGuideComponent>>(MatDialogRef);
+  data = inject<ManageMemberPocketGuideData>(MAT_DIALOG_DATA);
+  private apiService = inject(MembersApiService);
+  private snackBar = inject(MatSnackBar);
+
   pocketGuides: IMemberPocketGuide[] = [];
   dataSource = new MatTableDataSource<IMemberPocketGuide>([]);
   loading = false;
   displayedColumns: string[] = ['select', 'pocketGuide'];
-
-  constructor(
-    public dialogRef: MatDialogRef<ManageMemberPocketGuideComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: ManageMemberPocketGuideData,
-    private apiService: MembersApiService,
-    private snackBar: MatSnackBar,
-  ) {}
 
   ngOnInit(): void {
     this.loadPocketGuides();

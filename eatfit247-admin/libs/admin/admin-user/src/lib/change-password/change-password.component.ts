@@ -30,6 +30,10 @@ import { IChangePassword, InputLengthEnum } from '@eatfit247-shared-lib';
   styleUrl: './change-password.component.scss'
 })
 export class ChangePasswordComponent implements OnInit {
+  private router = inject(Router);
+  private authService = inject(AuthService);
+  private snackBar = inject(MatSnackBar);
+
   fb: FormBuilder = inject(FormBuilder);
   formGroup: FormGroup = this.fb.group(
     {
@@ -59,12 +63,6 @@ export class ChangePasswordComponent implements OnInit {
   hideNewPassword = signal(true);
   hideConfirmPassword = signal(true);
   InputLengthEnum = InputLengthEnum;
-
-  constructor(
-    private router: Router,
-    private authService: AuthService,
-    private snackBar: MatSnackBar
-  ) {}
 
   ngOnInit(): void {
   }

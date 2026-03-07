@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
@@ -38,6 +38,11 @@ import { Subject, takeUntil } from 'rxjs';
   styleUrl: './member-health-parameter-logs.component.scss'
 })
 export class MemberHealthParameterLogsComponent implements OnInit, OnDestroy {
+  private route = inject(ActivatedRoute);
+  private apiService = inject(MembersApiService);
+  private dialog = inject(MatDialog);
+  private snackBar = inject(MatSnackBar);
+
   memberId!: number;
   healthParameterLogs: IMemberHealthParameterLog[] = [];
   loading = false;
@@ -45,12 +50,7 @@ export class MemberHealthParameterLogsComponent implements OnInit, OnDestroy {
   EmptyStateType = EmptyStateType;
   private destroy$ = new Subject<void>();
 
-  constructor(
-    private route: ActivatedRoute,
-    private apiService: MembersApiService,
-    private dialog: MatDialog,
-    private snackBar: MatSnackBar
-  ) {
+  constructor() {
     this.initializeTable();
   }
 

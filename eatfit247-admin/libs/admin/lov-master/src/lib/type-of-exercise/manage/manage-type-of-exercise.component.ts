@@ -37,6 +37,10 @@ import {
   styleUrl: './manage-type-of-exercise.scss'
 })
 export class ManageTypeOfExercise implements OnInit {
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private apiService = inject(LovMasterApiService);
+
   private fb: FormBuilder = inject(FormBuilder);
   formGroup: FormGroup = this.fb.group({
     typeOfExercise: ['', [Validators.required, Validators.minLength(InputLengthEnum.CHAR_2), Validators.maxLength(InputLengthEnum.CHAR_50)]],
@@ -47,12 +51,6 @@ export class ManageTypeOfExercise implements OnInit {
   mediaType = FileTypeEnum.IMAGE;
   isEditMode = false;
   pageTitle = 'Create Type of Exercise';
-
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private apiService: LovMasterApiService
-  ) {}
 
   async ngOnInit(): Promise<void> {
     const id = this.route.snapshot.paramMap.get('id');

@@ -31,6 +31,10 @@ import { FileTypeEnum, IManageUrineOutput, InputLengthEnum, IUrineOutput, MediaF
   styleUrl: './manage-urine-output.scss'
 })
 export class ManageUrineOutput implements OnInit {
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private apiService = inject(LovMasterApiService);
+
   private fb: FormBuilder = inject(FormBuilder);
   formGroup: FormGroup = this.fb.group({
     urineOutput: ['', [Validators.required, Validators.minLength(InputLengthEnum.CHAR_2), Validators.maxLength(InputLengthEnum.CHAR_50)]],
@@ -41,12 +45,6 @@ export class ManageUrineOutput implements OnInit {
   mediaType = FileTypeEnum.IMAGE;
   isEditMode = false;
   pageTitle = 'Create Urine Output';
-
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private apiService: LovMasterApiService
-  ) {}
 
   async ngOnInit(): Promise<void> {
     const id = this.route.snapshot.paramMap.get('id');

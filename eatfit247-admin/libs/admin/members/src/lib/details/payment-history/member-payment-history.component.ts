@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
@@ -42,6 +42,11 @@ import {
   styleUrl: './member-payment-history.component.scss'
 })
 export class MemberPaymentHistoryComponent implements OnInit, OnDestroy {
+  private route = inject(ActivatedRoute);
+  private apiService = inject(MembersApiService);
+  private dialog = inject(MatDialog);
+  private snackBar = inject(MatSnackBar);
+
   memberId!: number;
   payments: IMemberPayment[] = [];
   loading = false;
@@ -49,12 +54,7 @@ export class MemberPaymentHistoryComponent implements OnInit, OnDestroy {
   EmptyStateType = EmptyStateType;
   private routeParamsSubscription: any;
 
-  constructor(
-    private route: ActivatedRoute,
-    private apiService: MembersApiService,
-    private dialog: MatDialog,
-    private snackBar: MatSnackBar
-  ) {
+  constructor() {
     this.initializeTable();
   }
 

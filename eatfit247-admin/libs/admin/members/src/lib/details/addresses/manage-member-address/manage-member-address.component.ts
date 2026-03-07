@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -36,6 +36,12 @@ export interface ManageMemberAddressData {
   styleUrl: './manage-member-address.component.scss',
 })
 export class ManageMemberAddressComponent implements OnInit {
+  dialogRef = inject<MatDialogRef<ManageMemberAddressComponent>>(MatDialogRef);
+  data = inject<ManageMemberAddressData>(MAT_DIALOG_DATA);
+  private apiService = inject(MembersApiService);
+  private fb = inject(FormBuilder);
+  private snackBar = inject(MatSnackBar);
+
   formGroup!: FormGroup;
   masterData = signal<IAddressMaster | null>(null);
   loading = signal(false);
@@ -43,13 +49,9 @@ export class ManageMemberAddressComponent implements OnInit {
   isEditMode = false;
   filteredStates: IDropdownItem[] = [];
 
-  constructor(
-    public dialogRef: MatDialogRef<ManageMemberAddressComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: ManageMemberAddressData,
-    private apiService: MembersApiService,
-    private fb: FormBuilder,
-    private snackBar: MatSnackBar
-  ) {
+  constructor() {
+    const data = this.data;
+
     this.initializeForm();
     this.isEditMode = !!data.address;
   }

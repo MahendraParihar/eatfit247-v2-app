@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -45,6 +45,12 @@ import moment from 'moment';
   styleUrl: './manage-member-call-log.component.scss',
 })
 export class ManageMemberCallLogComponent implements OnInit {
+  dialogRef = inject<MatDialogRef<ManageMemberCallLogComponent>>(MatDialogRef);
+  data = inject(MAT_DIALOG_DATA);
+  private apiService = inject(MembersApiService);
+  private fb = inject(FormBuilder);
+  private snackBar = inject(MatSnackBar);
+
   // Stepper control
   selectedIndex = signal(0);
   // Form for Step 1
@@ -68,13 +74,7 @@ export class ManageMemberCallLogComponent implements OnInit {
     notifyUser: false,
   };
 
-  constructor(
-    public dialogRef: MatDialogRef<ManageMemberCallLogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: number,
-    private apiService: MembersApiService,
-    private fb: FormBuilder,
-    private snackBar: MatSnackBar,
-  ) {
+  constructor() {
     this.initializeCriteriaForm();
   }
 

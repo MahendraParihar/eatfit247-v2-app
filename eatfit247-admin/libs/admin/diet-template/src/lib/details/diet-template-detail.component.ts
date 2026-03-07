@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -36,6 +36,12 @@ import { RecipeMultiSelectComponent } from 'recipes';
   styleUrl: './diet-template-detail.component.scss'
 })
 export class DietTemplateDetailComponent implements OnInit, OnDestroy {
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private apiService = inject(DietTemplateApiService);
+  private fb = inject(FormBuilder);
+  private snackBar = inject(MatSnackBar);
+
   dietTemplateId!: number;
   cycleNo!: number;
   dayNo?: number;
@@ -62,13 +68,7 @@ export class DietTemplateDetailComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   formHasValue = signal<boolean>(false);
 
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private apiService: DietTemplateApiService,
-    private fb: FormBuilder,
-    private snackBar: MatSnackBar
-  ) {
+  constructor() {
     this.initializeForm();
   }
 

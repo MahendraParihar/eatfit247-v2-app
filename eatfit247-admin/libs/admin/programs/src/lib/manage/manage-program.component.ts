@@ -47,6 +47,11 @@ import {
   styleUrl: './manage-program.scss'
 })
 export class ManageProgram implements OnInit, OnDestroy {
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private apiService = inject(ProgramsApiService);
+  private snackBar = inject(MatSnackBar);
+
   private fb: FormBuilder = inject(FormBuilder);
   formGroup: FormGroup = this.fb.group({
     program: ['', [Validators.required, Validators.minLength(InputLengthEnum.CHAR_2), Validators.maxLength(InputLengthEnum.CHAR_100)]],
@@ -66,13 +71,6 @@ export class ManageProgram implements OnInit, OnDestroy {
   mediaFor = MediaForEnum.PROGRAM;
   mediaType = FileTypeEnum.IMAGE;
   editor: Editor | null = null;
-
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private apiService: ProgramsApiService,
-    private snackBar: MatSnackBar
-  ) {}
 
   async ngOnInit(): Promise<void> {
     this.initializeEditor();

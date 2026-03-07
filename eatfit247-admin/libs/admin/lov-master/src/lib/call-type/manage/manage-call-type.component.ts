@@ -31,6 +31,10 @@ import { FileTypeEnum, ICallType, IManageCallType, InputLengthEnum, MediaForEnum
   styleUrl: './manage-call-type.scss'
 })
 export class ManageCallType implements OnInit {
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private apiService = inject(LovMasterApiService);
+
   private fb: FormBuilder = inject(FormBuilder);
   formGroup: FormGroup = this.fb.group({
     callType: ['', [Validators.required, Validators.minLength(InputLengthEnum.CHAR_2), Validators.maxLength(InputLengthEnum.CHAR_50)]],
@@ -41,12 +45,6 @@ export class ManageCallType implements OnInit {
   mediaType = FileTypeEnum.IMAGE;
   isEditMode = false;
   pageTitle = 'Create Call Type';
-
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private apiService: LovMasterApiService
-  ) {}
 
   async ngOnInit(): Promise<void> {
     const id = this.route.snapshot.paramMap.get('id');

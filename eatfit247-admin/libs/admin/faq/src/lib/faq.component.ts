@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -24,6 +24,11 @@ import { debounceTime, distinctUntilChanged, Subject, switchMap } from 'rxjs';
   styleUrl: './faq.scss'
 })
 export class Faq implements OnInit {
+  private apiService = inject(FaqApiService);
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
+  private snackBar = inject(MatSnackBar);
+
   data: IFaq[] = [];
   totalCount = 0;
   loading = false;
@@ -31,12 +36,7 @@ export class Faq implements OnInit {
   private searchSubject = new Subject<string>();
   currentSearch = '';
 
-  constructor(
-    private apiService: FaqApiService,
-    private router: Router,
-    private route: ActivatedRoute,
-    private snackBar: MatSnackBar
-  ) {
+  constructor() {
     this.setupSearch();
   }
 

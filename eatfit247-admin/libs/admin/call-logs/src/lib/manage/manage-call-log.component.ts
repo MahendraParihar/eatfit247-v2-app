@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -13,13 +13,11 @@ import { IconComponent } from '@shared';
   styleUrl: './manage-call-log.component.scss'
 })
 export class ManageCallLog implements OnInit {
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
+
   pageTitle = 'Create Call Log';
   isEditMode = false;
-
-  constructor(
-    private router: Router,
-    private route: ActivatedRoute
-  ) {}
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');

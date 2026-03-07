@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -23,6 +23,10 @@ import { debounceTime, distinctUntilChanged, Subject, switchMap } from 'rxjs';
   styleUrl: './programs.scss'
 })
 export class Programs implements OnInit {
+  private apiService = inject(ProgramsApiService);
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
+
   data: IProgram[] = [];
   totalCount = 0;
   loading = false;
@@ -30,11 +34,7 @@ export class Programs implements OnInit {
   private searchSubject = new Subject<string>();
   currentSearch = '';
 
-  constructor(
-    private apiService: ProgramsApiService,
-    private router: Router,
-    private route: ActivatedRoute
-  ) {
+  constructor() {
     this.setupSearch();
   }
 

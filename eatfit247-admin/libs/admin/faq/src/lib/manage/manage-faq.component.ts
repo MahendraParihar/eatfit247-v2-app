@@ -32,6 +32,11 @@ import { IDropdownItem, IFaq, IManageFaq, InputLengthEnum } from '@eatfit247-sha
   styleUrl: './manage-faq.scss'
 })
 export class ManageFaq implements OnInit {
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private apiService = inject(FaqApiService);
+  private snackBar = inject(MatSnackBar);
+
   private fb: FormBuilder = inject(FormBuilder);
   formGroup: FormGroup = this.fb.group({
     faq: ['', [Validators.required, Validators.maxLength(InputLengthEnum.CHAR_500)]],
@@ -43,13 +48,6 @@ export class ManageFaq implements OnInit {
   isEditMode = false;
   pageTitle = 'Create FAQ';
   faqCategoryOptions: IDropdownItem[] = [];
-
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private apiService: FaqApiService,
-    private snackBar: MatSnackBar
-  ) {}
 
   async ngOnInit(): Promise<void> {
     const id = this.route.snapshot.paramMap.get('id');

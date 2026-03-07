@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
@@ -21,10 +21,9 @@ import { IMemberHealthParameterLog } from '@eatfit247-shared-lib';
   styleUrl: './view-health-parameter-log-details.component.scss',
 })
 export class ViewHealthParameterLogDetailsComponent {
-  constructor(
-    public dialogRef: MatDialogRef<ViewHealthParameterLogDetailsComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: IMemberHealthParameterLog
-  ) {}
+  dialogRef = inject<MatDialogRef<ViewHealthParameterLogDetailsComponent>>(MatDialogRef);
+  data = inject<IMemberHealthParameterLog>(MAT_DIALOG_DATA);
+
 
   onClose(): void {
     this.dialogRef.close();

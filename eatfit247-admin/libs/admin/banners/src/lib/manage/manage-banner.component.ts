@@ -40,6 +40,11 @@ import {
   styleUrl: './manage-banner.scss'
 })
 export class ManageBanner implements OnInit, OnDestroy {
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private apiService = inject(BannersApiService);
+  private snackBar = inject(MatSnackBar);
+
   private fb: FormBuilder = inject(FormBuilder);
   formGroup: FormGroup = this.fb.group({
     title: ['', [Validators.required, Validators.minLength(InputLengthEnum.CHAR_2), Validators.maxLength(InputLengthEnum.CHAR_100)]],
@@ -68,13 +73,6 @@ export class ManageBanner implements OnInit, OnDestroy {
     { value: 'right', label: 'Right' },
     { value: 'center', label: 'Center' }
   ];
-
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private apiService: BannersApiService,
-    private snackBar: MatSnackBar
-  ) {}
 
   async ngOnInit(): Promise<void> {
     const id = this.route.snapshot.paramMap.get('id');

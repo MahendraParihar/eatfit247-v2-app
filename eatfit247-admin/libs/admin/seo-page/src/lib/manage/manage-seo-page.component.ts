@@ -32,6 +32,11 @@ import { IManageSeoPage, InputLengthEnum, ISeoPage } from '@eatfit247-shared-lib
   styleUrl: './manage-seo-page.scss'
 })
 export class ManageSeoPage implements OnInit {
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private apiService = inject(SeoPageApiService);
+  private snackBar = inject(MatSnackBar);
+
   private fb: FormBuilder = inject(FormBuilder);
   formGroup: FormGroup = this.fb.group({
     url: ['', [Validators.required, Validators.minLength(InputLengthEnum.CHAR_2)]],
@@ -48,13 +53,6 @@ export class ManageSeoPage implements OnInit {
   initialData!: ISeoPage;
   isEditMode = false;
   pageTitle = 'Create SEO Page';
-
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private apiService: SeoPageApiService,
-    private snackBar: MatSnackBar
-  ) {}
 
   async ngOnInit(): Promise<void> {
     const id = this.route.snapshot.paramMap.get('id');

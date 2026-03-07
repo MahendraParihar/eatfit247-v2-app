@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -25,6 +25,10 @@ import { debounceTime, distinctUntilChanged, Subject, switchMap } from 'rxjs';
   styleUrl: './recipes.scss'
 })
 export class Recipes implements OnInit {
+  private apiService = inject(RecipesApiService);
+  private router = inject(Router);
+  private dialog = inject(MatDialog);
+
   data: IRecipe[] = [];
   totalCount = 0;
   loading = false;
@@ -32,11 +36,7 @@ export class Recipes implements OnInit {
   private searchSubject = new Subject<string>();
   currentSearch = '';
 
-  constructor(
-    private apiService: RecipesApiService,
-    private router: Router,
-    private dialog: MatDialog
-  ) {
+  constructor() {
     this.setupSearch();
   }
 

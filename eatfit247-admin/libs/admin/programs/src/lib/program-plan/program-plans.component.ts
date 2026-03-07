@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -31,15 +31,12 @@ export class ProgramPlans implements OnInit {
   tableConfig!: ITableConfig<IProgramPlan>;
   private searchSubject = new Subject<string>();
 
-  constructor(
-    private apiService: ProgramPlanApiService,
-    private router: Router,
-    private route: ActivatedRoute
-  ) {
-    this.setupSearch();
-  }
+  private apiService = inject(ProgramPlanApiService);
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
 
   ngOnInit(): void {
+    this.setupSearch();
     this.initializeTable();
     this.loadData();
   }

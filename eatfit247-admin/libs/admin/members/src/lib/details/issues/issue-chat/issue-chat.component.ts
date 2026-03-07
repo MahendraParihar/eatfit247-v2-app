@@ -1,4 +1,4 @@
-import { AfterViewChecked, Component, ElementRef, Inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { AfterViewChecked, Component, ElementRef, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -39,6 +39,12 @@ export interface IssueChatData {
   styleUrl: './issue-chat.component.scss'
 })
 export class IssueChatComponent implements OnInit, OnDestroy, AfterViewChecked {
+  dialogRef = inject<MatDialogRef<IssueChatComponent>>(MatDialogRef);
+  data = inject<IssueChatData>(MAT_DIALOG_DATA);
+  private apiService = inject(MembersApiService);
+  private fb = inject(FormBuilder);
+  private snackBar = inject(MatSnackBar);
+
   @ViewChild('chatMessages', { static: false }) chatMessagesElement!: ElementRef<HTMLDivElement>;
   
   issue!: IMemberIssue;
@@ -50,13 +56,9 @@ export class IssueChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   private destroy$ = new Subject<void>();
   private shouldScrollToBottom = false;
 
-  constructor(
-    public dialogRef: MatDialogRef<IssueChatComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: IssueChatData,
-    private apiService: MembersApiService,
-    private fb: FormBuilder,
-    private snackBar: MatSnackBar
-  ) {
+  constructor() {
+    const data = this.data;
+
     this.issue = data.issue;
     this.initializeForm();
   }

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -41,6 +41,12 @@ import { PaymentDetailsDialogComponent } from 'members';
   styleUrl: './payment-report.scss'
 })
 export class PaymentReportComponent implements OnInit {
+  private fb = inject(FormBuilder);
+  private apiService = inject(PaymentReportApiService);
+  private dialog = inject(MatDialog);
+  private router = inject(Router);
+  private snackBar = inject(MatSnackBar);
+
   filterForm!: FormGroup;
   data: IPaymentReportItem[] = [];
   totalCount = 0;
@@ -52,13 +58,7 @@ export class PaymentReportComponent implements OnInit {
   endDatePicker: any;
   selectedQuickFilter: string | null = null;
 
-  constructor(
-    private fb: FormBuilder,
-    private apiService: PaymentReportApiService,
-    private dialog: MatDialog,
-    private router: Router,
-    private snackBar: MatSnackBar
-  ) {
+  constructor() {
     this.initializeForm();
   }
 

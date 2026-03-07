@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
@@ -28,16 +28,18 @@ export interface MemberDietPlanDetailsDialogData {
   styleUrl: './member-diet-plan-details-dialog.component.scss',
 })
 export class MemberDietPlanDetailsDialogComponent implements OnInit {
+  dialogRef = inject<MatDialogRef<MemberDietPlanDetailsDialogComponent>>(MatDialogRef);
+  data = inject<MemberDietPlanDetailsDialogData>(MAT_DIALOG_DATA);
+  private apiService = inject(MembersApiService);
+  private snackBar = inject(MatSnackBar);
+
   dietPlanDetail!: IMemberDietDetail;
   displayColumns = ['category', 'detail', 'recipes'];
   memberId!: number;
 
-  constructor(
-    public dialogRef: MatDialogRef<MemberDietPlanDetailsDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: MemberDietPlanDetailsDialogData,
-    private apiService: MembersApiService,
-    private snackBar: MatSnackBar
-  ) {
+  constructor() {
+    const data = this.data;
+
     this.dietPlanDetail = data.dietPlanDetails;
     this.memberId = data.memberId;
   }

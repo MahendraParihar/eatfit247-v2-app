@@ -44,6 +44,12 @@ import { FileTypeEnum, IDropdownItem, InputLengthEnum, IProduct, MediaForEnum } 
   styleUrl: './manage-product.scss'
 })
 export class ManageProduct implements OnInit, OnDestroy {
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private apiService = inject(ProductsApiService);
+  private productFormService = inject(ProductFormService);
+  private snackBar = inject(MatSnackBar);
+
   private fb: FormBuilder = inject(FormBuilder);
   formGroup: FormGroup = this.fb.group({
     name: ['', [Validators.required, Validators.minLength(InputLengthEnum.CHAR_2), Validators.maxLength(InputLengthEnum.CHAR_250)]],
@@ -117,14 +123,6 @@ export class ManageProduct implements OnInit, OnDestroy {
   editor: Editor | null = null;
   unitOptions: string[] = ['kg', 'gm', 'ml', 'l', 'mg', 'oz', 'lb', 'piece', 'pack', 'bottle', 'box', 'sachet'];
   currencyOptions: IDropdownItem[] = [];
-
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private apiService: ProductsApiService,
-    private productFormService: ProductFormService,
-    private snackBar: MatSnackBar
-  ) {}
 
   async ngOnInit(): Promise<void> {
     this.initializeEditor();

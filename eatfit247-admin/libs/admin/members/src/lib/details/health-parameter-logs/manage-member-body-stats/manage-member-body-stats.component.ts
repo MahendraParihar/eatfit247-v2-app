@@ -1,4 +1,4 @@
-import { Component, computed, Inject, OnInit, signal } from '@angular/core';
+import { Component, computed, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -50,6 +50,12 @@ export interface ManageMemberBodyStatsData {
   styleUrl: './manage-member-body-stats.component.scss',
 })
 export class ManageMemberBodyStatsComponent implements OnInit {
+  dialogRef = inject<MatDialogRef<ManageMemberBodyStatsComponent>>(MatDialogRef);
+  data = inject<ManageMemberBodyStatsData>(MAT_DIALOG_DATA);
+  private apiService = inject(MembersApiService);
+  private fb = inject(FormBuilder);
+  private snackBar = inject(MatSnackBar);
+
   formGroup!: FormGroup;
   masterData = signal<IHealthParameterMaster | null>(null);
   loading = signal(false);
@@ -66,13 +72,7 @@ export class ManageMemberBodyStatsComponent implements OnInit {
     return this.healthParametersFormArray.controls as FormGroup[];
   });
 
-  constructor(
-    public dialogRef: MatDialogRef<ManageMemberBodyStatsComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: ManageMemberBodyStatsData,
-    private apiService: MembersApiService,
-    private fb: FormBuilder,
-    private snackBar: MatSnackBar
-  ) {
+  constructor() {
     this.initializeForm();
   }
 

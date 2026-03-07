@@ -30,6 +30,10 @@ import { ICallLogStatus, IManageCallLogStatus, InputLengthEnum } from '@eatfit24
   styleUrl: './manage-call-log-status.scss'
 })
 export class ManageCallLogStatus implements OnInit {
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private apiService = inject(LovMasterApiService);
+
   private fb: FormBuilder = inject(FormBuilder);
   formGroup: FormGroup = this.fb.group({
     callLogStatus: ['', [Validators.required, Validators.minLength(InputLengthEnum.CHAR_2), Validators.maxLength(InputLengthEnum.CHAR_50)]],
@@ -38,12 +42,6 @@ export class ManageCallLogStatus implements OnInit {
   initialData!: ICallLogStatus;
   isEditMode = false;
   pageTitle = 'Create Call Log Status';
-
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private apiService: LovMasterApiService
-  ) {}
 
   async ngOnInit(): Promise<void> {
     const id = this.route.snapshot.paramMap.get('id');

@@ -30,6 +30,10 @@ import { ICountry, IManageCountry, InputLengthEnum, TaxTypeEnum } from '@eatfit2
   styleUrl: './manage-country.scss'
 })
 export class ManageCountry implements OnInit {
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private apiService = inject(LovMasterApiService);
+
   private fb: FormBuilder = inject(FormBuilder);
   formGroup: FormGroup = this.fb.group({
     country: [
@@ -62,12 +66,6 @@ export class ManageCountry implements OnInit {
   initialData!: ICountry;
   isEditMode = false;
   pageTitle = 'Create Country';
-
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private apiService: LovMasterApiService
-  ) {}
 
   async ngOnInit(): Promise<void> {
     const id = this.route.snapshot.paramMap.get('id');

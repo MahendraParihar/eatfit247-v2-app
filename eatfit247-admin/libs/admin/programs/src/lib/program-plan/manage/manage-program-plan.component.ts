@@ -65,11 +65,9 @@ export class ManageProgramPlan implements OnInit, OnDestroy {
   mediaType = FileTypeEnum.IMAGE;
   editor: Editor | null = null;
 
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private apiService: ProgramPlanApiService
-  ) {}
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private apiService = inject(ProgramPlanApiService);
 
   async ngOnInit(): Promise<void> {
     this.initializeEditor();

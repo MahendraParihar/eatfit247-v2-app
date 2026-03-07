@@ -1,7 +1,13 @@
 import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
@@ -11,9 +17,19 @@ import { MatCardModule } from '@angular/material/card';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Editor, NgxEditorComponent, NgxEditorMenuComponent } from 'ngx-editor';
-import { InputErrorComponent, UploadFormComponent, ValidationUtil } from '@shared';
+import {
+  InputErrorComponent,
+  UploadFormComponent,
+  ValidationUtil,
+} from '@shared';
 import { RecipesApiService } from 'recipes';
-import { FileTypeEnum, IDropdownItem, InputLengthEnum, IRecipe, MediaForEnum } from '@eatfit247-shared-lib';
+import {
+  FileTypeEnum,
+  IDropdownItem,
+  InputLengthEnum,
+  IRecipe,
+  MediaForEnum,
+} from '@eatfit247-shared-lib';
 
 @Component({
   selector: 'lib-manage-recipe',
@@ -33,12 +49,17 @@ import { FileTypeEnum, IDropdownItem, InputLengthEnum, IRecipe, MediaForEnum } f
     NgxEditorComponent,
     NgxEditorMenuComponent,
     InputErrorComponent,
-    UploadFormComponent
+    UploadFormComponent,
   ],
   templateUrl: './manage-recipe.html',
-  styleUrl: './manage-recipe.scss'
+  styleUrl: './manage-recipe.scss',
 })
 export class ManageRecipe implements OnInit, OnDestroy {
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private apiService = inject(RecipesApiService);
+  private snackBar = inject(MatSnackBar);
+
   private fb: FormBuilder = inject(FormBuilder);
   formGroup: FormGroup = this.fb.group({
     name: [
@@ -46,8 +67,8 @@ export class ManageRecipe implements OnInit, OnDestroy {
       [
         Validators.required,
         Validators.minLength(InputLengthEnum.CHAR_2),
-        Validators.maxLength(255)
-      ]
+        Validators.maxLength(255),
+      ],
     ],
     recipeTypeId: ['', [Validators.required]],
     recipeCategoryIds: [[], [Validators.required]],
@@ -58,7 +79,7 @@ export class ManageRecipe implements OnInit, OnDestroy {
     benefits: [''],
     servingCount: [1, [Validators.required, Validators.min(1)]],
     isVisibleToAll: [false, [Validators.required]],
-    active: [true, [Validators.required]]
+    active: [true, [Validators.required]],
   });
   initialData!: IRecipe;
   isEditMode = false;
@@ -72,13 +93,6 @@ export class ManageRecipe implements OnInit, OnDestroy {
   howToMakeEditor: Editor | null = null;
   ingredientEditor: Editor | null = null;
   benefitsEditor: Editor | null = null;
-
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private apiService: RecipesApiService,
-    private snackBar: MatSnackBar
-  ) {}
 
   async ngOnInit(): Promise<void> {
     this.initializeEditor();
@@ -139,7 +153,7 @@ export class ManageRecipe implements OnInit, OnDestroy {
         active:
           this.initialData.active !== undefined
             ? this.initialData.active
-            : true
+            : true,
       });
     }
   }
@@ -160,7 +174,7 @@ export class ManageRecipe implements OnInit, OnDestroy {
       this.initialData = await this.apiService.getById(id);
     } catch (error) {
       this.snackBar.open('Failed to load recipe. Please try again.', 'Close', {
-        duration: 5000
+        duration: 5000,
       });
       this.router.navigate(['/recipes']);
     }
@@ -177,7 +191,7 @@ export class ManageRecipe implements OnInit, OnDestroy {
 
   getMaxLength(controlName: string): number | null {
     const maxLengthMap: { [key: string]: number } = {
-      name: 255
+      name: 255,
     };
     return maxLengthMap[controlName] || null;
   }
@@ -196,7 +210,7 @@ export class ManageRecipe implements OnInit, OnDestroy {
         'Please select at least one recipe category',
         'Close',
         {
-          duration: 3000
+          duration: 3000,
         }
       );
       return;
@@ -205,7 +219,7 @@ export class ManageRecipe implements OnInit, OnDestroy {
     const cuisineIds = this.formGroup.get('recipeCuisineIds')?.value || [];
     if (!Array.isArray(cuisineIds) || cuisineIds.length === 0) {
       this.snackBar.open('Please select at least one recipe cuisine', 'Close', {
-        duration: 3000
+        duration: 3000,
       });
       return;
     }
@@ -239,12 +253,12 @@ export class ManageRecipe implements OnInit, OnDestroy {
           const recipeId = this.initialData.recipeId;
           await this.apiService.update(recipeId, formValue);
           this.snackBar.open('Recipe updated successfully', 'Close', {
-            duration: 3000
+            duration: 3000,
           });
         } else {
           await this.apiService.create(formValue);
           this.snackBar.open('Recipe created successfully', 'Close', {
-            duration: 3000
+            duration: 3000,
           });
         }
         this.router.navigate(['/recipes']);
@@ -265,7 +279,7 @@ export class ManageRecipe implements OnInit, OnDestroy {
       this.detailsEditor,
       this.howToMakeEditor,
       this.ingredientEditor,
-      this.benefitsEditor
+      this.benefitsEditor,
     ];
 
     editors.forEach((ed, index) => {

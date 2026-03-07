@@ -1,4 +1,4 @@
-import { Component, inject, Inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
@@ -39,16 +39,14 @@ export interface ViewProductOrderDetailsData {
   styleUrl: './view-product-order-details.component.scss'
 })
 export class ViewProductOrderDetailsComponent implements OnInit {
+  dialogRef = inject<MatDialogRef<ViewProductOrderDetailsComponent>>(MatDialogRef);
+  data = inject<ViewProductOrderDetailsData>(MAT_DIALOG_DATA);
+
   private apiService = inject(MembersApiService);
   private snackBar = inject(MatSnackBar);
   loading = signal(false);
   productOrder = signal<IMemberProduct | null>(null);
   displayedColumns: string[] = ['productName', 'quantityLabel', 'unitPrice', 'quantity', 'baseAmount', 'discountAmount', 'taxAmount', 'totalAmount'];
-
-  constructor(
-    public dialogRef: MatDialogRef<ViewProductOrderDetailsComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: ViewProductOrderDetailsData
-  ) {}
 
   ngOnInit(): void {
     this.loadProductOrderDetails();

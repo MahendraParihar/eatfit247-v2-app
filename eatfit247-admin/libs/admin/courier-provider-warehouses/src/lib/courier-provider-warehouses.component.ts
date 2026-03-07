@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -23,6 +23,9 @@ import { debounceTime, distinctUntilChanged, Subject, switchMap } from 'rxjs';
   styleUrl: './courier-provider-warehouses.scss'
 })
 export class CourierProviderWarehouses implements OnInit {
+  private apiService = inject(CourierProviderWarehousesApiService);
+  private router = inject(Router);
+
   data: ICourierProviderWarehouse[] = [];
   totalCount = 0;
   loading = false;
@@ -30,10 +33,7 @@ export class CourierProviderWarehouses implements OnInit {
   private searchSubject = new Subject<string>();
   currentSearch = '';
 
-  constructor(
-    private apiService: CourierProviderWarehousesApiService,
-    private router: Router
-  ) {
+  constructor() {
     this.setupSearch();
   }
 

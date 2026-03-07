@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -37,19 +37,21 @@ export interface ContactFormDetailsDialogData {
   styleUrl: './view-contact-form-details.component.scss',
 })
 export class ViewContactFormDetailsComponent implements OnInit {
+  dialogRef = inject<MatDialogRef<ViewContactFormDetailsComponent>>(MatDialogRef);
+  data = inject<ContactFormDetailsDialogData>(MAT_DIALOG_DATA);
+  private fb = inject(FormBuilder);
+  private apiService = inject(ContactFormReportApiService);
+  private snackBar = inject(MatSnackBar);
+
   contactForm!: IContactFormReportItem;
   responseForm!: FormGroup;
   loading = false;
   submitting = false;
   isReadonly = false;
 
-  constructor(
-    public dialogRef: MatDialogRef<ViewContactFormDetailsComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: ContactFormDetailsDialogData,
-    private fb: FormBuilder,
-    private apiService: ContactFormReportApiService,
-    private snackBar: MatSnackBar,
-  ) {
+  constructor() {
+    const data = this.data;
+
     this.contactForm = data.contactForm;
     this.isReadonly = !!this.contactForm.respondedMessage;
     this.initializeForm();

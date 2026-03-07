@@ -88,7 +88,7 @@ export class MemberDietPlanListComponent implements OnInit, OnDestroy {
   dietPlanStatusEnum = DietPlanStatusEnum;
 
   constructor() {
-    this.dataSource = new MemberDietPlanDatasource(this.apiService);
+    this.dataSource = new MemberDietPlanDatasource();
     this.dataSource.data
       .pipe(takeUntil(this.destroy$))
       .subscribe((list: IMemberDietPlan[]) => {

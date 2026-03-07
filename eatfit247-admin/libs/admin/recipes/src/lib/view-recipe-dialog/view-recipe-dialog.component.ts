@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
@@ -25,15 +25,17 @@ import { RecipesApiService } from '../api.service';
   styleUrl: './view-recipe-dialog.component.scss',
 })
 export class ViewRecipeDialogComponent implements OnInit {
+  dialogRef = inject<MatDialogRef<ViewRecipeDialogComponent>>(MatDialogRef);
+  data = inject<IRecipe>(MAT_DIALOG_DATA);
+  private apiService = inject(RecipesApiService);
+  private snackBar = inject(MatSnackBar);
+
   recipe!: IRecipe;
   loading = false;
 
-  constructor(
-    public dialogRef: MatDialogRef<ViewRecipeDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: IRecipe,
-    private apiService: RecipesApiService,
-    private snackBar: MatSnackBar,
-  ) {
+  constructor() {
+    const data = this.data;
+
     this.recipe = data;
   }
 

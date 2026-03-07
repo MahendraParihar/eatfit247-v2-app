@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
@@ -34,11 +34,10 @@ export interface PaymentDetailsDialogData {
   styleUrl: './payment-details-dialog.component.scss',
 })
 export class PaymentDetailsDialogComponent {
-  constructor(
-    public dialogRef: MatDialogRef<PaymentDetailsDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: PaymentDetailsDialogData,
-    private snackBar: MatSnackBar,
-  ) {}
+  dialogRef = inject<MatDialogRef<PaymentDetailsDialogComponent>>(MatDialogRef);
+  data = inject<PaymentDetailsDialogData>(MAT_DIALOG_DATA);
+  private snackBar = inject(MatSnackBar);
+
 
   get payment(): IMemberPayment {
     return this.data.payment;

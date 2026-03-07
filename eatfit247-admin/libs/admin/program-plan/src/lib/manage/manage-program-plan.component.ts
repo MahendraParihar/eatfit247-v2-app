@@ -46,6 +46,11 @@ import {
   styleUrl: './manage-program-plan.scss'
 })
 export class ManageProgramPlan implements OnInit, OnDestroy {
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private apiService = inject(ProgramPlanApiService);
+  private snackBar = inject(MatSnackBar);
+
   private fb: FormBuilder = inject(FormBuilder);
   formGroup: FormGroup = this.fb.group({
     plan: ['', [Validators.required, Validators.minLength(InputLengthEnum.CHAR_2), Validators.maxLength(InputLengthEnum.CHAR_100)]],
@@ -67,13 +72,6 @@ export class ManageProgramPlan implements OnInit, OnDestroy {
   mediaFor = MediaForEnum.PROGRAM;
   mediaType = FileTypeEnum.IMAGE;
   editor: Editor | null = null;
-
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private apiService: ProgramPlanApiService,
-    private snackBar: MatSnackBar
-  ) {}
 
   async ngOnInit(): Promise<void> {
     this.initializeEditor();

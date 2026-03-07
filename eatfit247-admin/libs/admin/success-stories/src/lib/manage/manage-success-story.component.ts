@@ -40,6 +40,11 @@ import { Editor, NgxEditorComponent, NgxEditorMenuComponent, Toolbar } from 'ngx
   styleUrl: './manage-success-story.scss',
 })
 export class ManageSuccessStory implements OnInit, OnDestroy {
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private apiService = inject(SuccessStoriesApiService);
+  private snackBar = inject(MatSnackBar);
+
   private fb: FormBuilder = inject(FormBuilder);
   formGroup: FormGroup = this.fb.group({
     name: [
@@ -71,13 +76,6 @@ export class ManageSuccessStory implements OnInit, OnDestroy {
     ['text_color', 'background_color'],
     ['align_left', 'align_center', 'align_right', 'align_justify'],
   ];
-
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private apiService: SuccessStoriesApiService,
-    private snackBar: MatSnackBar,
-  ) {}
 
   ngOnInit(): void {
     this.initializeEditor();

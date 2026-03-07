@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -43,6 +43,12 @@ import { ViewMemberIssueDetailsComponent } from './view-member-issue-details/vie
   styleUrl: './member-issues-report.scss'
 })
 export class MemberIssuesReportComponent implements OnInit {
+  private fb = inject(FormBuilder);
+  private apiService = inject(MemberIssuesReportApiService);
+  private dialog = inject(MatDialog);
+  private snackBar = inject(MatSnackBar);
+  private router = inject(Router);
+
   filterForm!: FormGroup;
   data: IMemberIssueReportItem[] = [];
   totalCount = 0;
@@ -52,13 +58,7 @@ export class MemberIssuesReportComponent implements OnInit {
   issueStatusOptions: { id: number | null; label: string }[] = [];
   issueCategoryOptions: { id: number | null; label: string }[] = [];
 
-  constructor(
-    private fb: FormBuilder,
-    private apiService: MemberIssuesReportApiService,
-    private dialog: MatDialog,
-    private snackBar: MatSnackBar,
-    private router: Router
-  ) {
+  constructor() {
     this.initializeForm();
   }
 

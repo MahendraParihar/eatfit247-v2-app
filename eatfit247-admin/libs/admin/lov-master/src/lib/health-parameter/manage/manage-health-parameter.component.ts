@@ -39,6 +39,10 @@ import {
   styleUrl: './manage-health-parameter.scss'
 })
 export class ManageHealthParameter implements OnInit {
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private apiService = inject(LovMasterApiService);
+
   private fb: FormBuilder = inject(FormBuilder);
   formGroup: FormGroup = this.fb.group({
     healthParameter: ['', [Validators.required, Validators.minLength(InputLengthEnum.CHAR_2), Validators.maxLength(InputLengthEnum.CHAR_50)]],
@@ -55,12 +59,6 @@ export class ManageHealthParameter implements OnInit {
   isEditMode = false;
   pageTitle = 'Create Health Parameter';
   fieldTypeOptions = ['text', 'number', 'select', 'textarea', 'date'];
-
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private apiService: LovMasterApiService
-  ) {}
 
   async ngOnInit(): Promise<void> {
     const id = this.route.snapshot.paramMap.get('id');

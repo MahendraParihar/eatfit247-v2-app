@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
@@ -51,6 +51,11 @@ import { MemberProductReportApiService } from './api.service';
   styleUrl: './member-product-report.scss',
 })
 export class MemberProductReportComponent implements OnInit {
+  private fb = inject(FormBuilder);
+  private apiService = inject(MemberProductReportApiService);
+  private router = inject(Router);
+  private snackBar = inject(MatSnackBar);
+
   filterForm!: FormGroup;
   data: IMemberProductReportItem[] = [];
   totalCount = 0;
@@ -65,12 +70,7 @@ export class MemberProductReportComponent implements OnInit {
   selectedQuickFilter: string | null = null;
   selectedItems: IMemberProductReportItem[] = [];
 
-  constructor(
-    private fb: FormBuilder,
-    private apiService: MemberProductReportApiService,
-    private router: Router,
-    private snackBar: MatSnackBar
-  ) {
+  constructor() {
     this.initializeForm();
     this.initializeTable();
   }

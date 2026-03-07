@@ -38,6 +38,11 @@ import { FileTypeEnum, ILegalPageList, IManageLegalPage, InputLengthEnum, MediaF
   styleUrl: './manage-legal-page.scss'
 })
 export class ManageLegalPage implements OnInit, OnDestroy {
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private apiService = inject(LegalPagesApiService);
+  private snackBar = inject(MatSnackBar);
+
   private fb: FormBuilder = inject(FormBuilder);
   formGroup: FormGroup = this.fb.group({
     title: ['', [Validators.required, Validators.minLength(InputLengthEnum.CHAR_2), Validators.maxLength(InputLengthEnum.CHAR_50)]],
@@ -50,13 +55,6 @@ export class ManageLegalPage implements OnInit, OnDestroy {
   mediaFor = MediaForEnum.LEGAL_PAGE;
   mediaType = FileTypeEnum.IMAGE;
   editor: Editor | null = null;
-
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private apiService: LegalPagesApiService,
-    private snackBar: MatSnackBar
-  ) {}
 
   async ngOnInit(): Promise<void> {
     this.initializeEditor();

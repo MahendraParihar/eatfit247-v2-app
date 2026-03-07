@@ -4,7 +4,7 @@
  * ⚠️ DESIGN SYSTEM: See DESIGN_SYSTEM.md
  * Protects routes and redirects unauthenticated users to login
  */
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { ActivatedRouteSnapshot, CanActivate, Router, RouterStateSnapshot } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 
@@ -12,10 +12,9 @@ import { AuthService } from '../services/auth.service';
   providedIn: 'root',
 })
 export class AuthGuard implements CanActivate {
-  constructor(
-    private authService: AuthService,
-    private router: Router
-  ) {}
+  private authService = inject(AuthService);
+  private router = inject(Router);
+
 
   async canActivate(
     route: ActivatedRouteSnapshot,

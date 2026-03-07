@@ -38,6 +38,11 @@ import { DiscountTypeEnum, IPromoCode } from '@eatfit247-shared-lib';
   styleUrl: './manage-promo-code.scss'
 })
 export class ManagePromoCode implements OnInit {
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private apiService = inject(PromoCodeApiService);
+  private snackBar = inject(MatSnackBar);
+
   private fb: FormBuilder = inject(FormBuilder);
   formGroup: FormGroup = this.fb.group({
     code: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(50)]],
@@ -56,13 +61,6 @@ export class ManagePromoCode implements OnInit {
     { value: DiscountTypeEnum.FLAT, label: 'Flat' },
     { value: DiscountTypeEnum.PERCENT, label: 'Percent' }
   ];
-
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private apiService: PromoCodeApiService,
-    private snackBar: MatSnackBar
-  ) {}
 
   async ngOnInit(): Promise<void> {
     const id = this.route.snapshot.paramMap.get('id');

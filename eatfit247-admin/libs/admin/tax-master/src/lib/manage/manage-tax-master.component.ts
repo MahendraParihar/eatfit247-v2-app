@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -41,6 +41,14 @@ import { ProductsApiService } from 'products';
   styleUrl: './manage-tax-master.scss',
 })
 export class ManageTaxMasterComponent implements OnInit {
+  private readonly fb = inject(FormBuilder);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly apiService = inject(TaxMasterApiService);
+  private readonly franchiseApiService = inject(FranchiseApiService);
+  private readonly productsApiService = inject(ProductsApiService);
+  private readonly snackBar = inject(MatSnackBar);
+
   formGroup!: FormGroup;
   initialData!: ITaxMaster;
   isEditMode = false;
@@ -52,16 +60,6 @@ export class ManageTaxMasterComponent implements OnInit {
   countryOptions: IDropdownItem[] = [];
   productOptions: IDropdownItem[] = [];
   showProductDropdown = false;
-
-  constructor(
-    private readonly fb: FormBuilder,
-    private readonly route: ActivatedRoute,
-    private readonly router: Router,
-    private readonly apiService: TaxMasterApiService,
-    private readonly franchiseApiService: FranchiseApiService,
-    private readonly productsApiService: ProductsApiService,
-    private readonly snackBar: MatSnackBar,
-  ) {}
 
   async ngOnInit(): Promise<void> {
     this.buildForm();

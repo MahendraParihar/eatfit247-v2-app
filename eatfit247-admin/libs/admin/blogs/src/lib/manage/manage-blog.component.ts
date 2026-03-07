@@ -44,6 +44,11 @@ import { FileTypeEnum, IBlog, IDropdownItem, IManageBlog, InputLengthEnum, Media
   styleUrl: './manage-blog.scss'
 })
 export class ManageBlog implements OnInit, OnDestroy {
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private apiService = inject(BlogsApiService);
+  private snackBar = inject(MatSnackBar);
+
   private fb: FormBuilder = inject(FormBuilder);
   formGroup: FormGroup = this.fb.group({
     title: ['', [Validators.required, Validators.minLength(InputLengthEnum.CHAR_2), Validators.maxLength(InputLengthEnum.CHAR_100)]],
@@ -64,13 +69,6 @@ export class ManageBlog implements OnInit, OnDestroy {
   mediaFor = MediaForEnum.BLOG;
   mediaType = FileTypeEnum.IMAGE;
   editor: Editor | null = null;
-
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private apiService: BlogsApiService,
-    private snackBar: MatSnackBar
-  ) {}
 
   async ngOnInit(): Promise<void> {
     this.initializeEditor();

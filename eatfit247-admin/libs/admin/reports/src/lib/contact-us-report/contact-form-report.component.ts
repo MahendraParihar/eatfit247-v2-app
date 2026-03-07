@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -41,6 +41,11 @@ import { MatSelect } from '@angular/material/select';
   styleUrl: './contact-form-report.scss'
 })
 export class ContactFormReportComponent implements OnInit {
+  private fb = inject(FormBuilder);
+  private apiService = inject(ContactFormReportApiService);
+  private dialog = inject(MatDialog);
+  private snackBar = inject(MatSnackBar);
+
   filterForm!: FormGroup;
   data: IContactFormReportItem[] = [];
   totalCount = 0;
@@ -48,12 +53,7 @@ export class ContactFormReportComponent implements OnInit {
   tableConfig!: ITableConfig<IContactFormReportItem>;
   selectedQuickFilter: string | null = null;
 
-  constructor(
-    private fb: FormBuilder,
-    private apiService: ContactFormReportApiService,
-    private dialog: MatDialog,
-    private snackBar: MatSnackBar
-  ) {
+  constructor() {
     this.initializeForm();
   }
 

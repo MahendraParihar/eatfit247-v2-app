@@ -1,4 +1,4 @@
-import { Component, ElementRef, forwardRef, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, forwardRef, Input, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -36,6 +36,8 @@ import { RecipesApiService } from '../api.service';
 })
 export class RecipeMultiSelectComponent
   implements ControlValueAccessor, OnInit, OnDestroy {
+  private apiService = inject(RecipesApiService);
+
   @Input() label = 'Recipes';
   @Input() placeholder = 'Type to search recipes';
 
@@ -59,8 +61,6 @@ export class RecipeMultiSelectComponent
   private destroy$ = new Subject<void>();
   private onChange: (value: number[]) => void = () => {};
   onTouched: () => void = () => {};
-
-  constructor(private apiService: RecipesApiService) {}
 
   ngOnInit(): void {
     this.setupSearch();

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -22,17 +22,15 @@ import { TaxMasterApiService } from './api.service';
   styleUrl: './tax-master.scss',
 })
 export class TaxMasterComponent implements OnInit {
+  private apiService = inject(TaxMasterApiService);
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
+
   data: ITaxMaster[] = [];
   totalCount = 0;
   loading = false;
   tableConfig!: ITableConfig<ITaxMaster>;
   currentSearch = '';
-
-  constructor(
-    private apiService: TaxMasterApiService,
-    private router: Router,
-    private route: ActivatedRoute,
-  ) {}
 
   ngOnInit(): void {
     this.initializeTable();
