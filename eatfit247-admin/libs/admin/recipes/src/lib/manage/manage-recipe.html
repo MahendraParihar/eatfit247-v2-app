@@ -73,7 +73,7 @@
                     <label class="editor-label">Details</label>
                     @if (detailsEditor) {
                         <div class="NgxEditor__Wrapper">
-                            <ngx-editor-menu [editor]="detailsEditor"></ngx-editor-menu>
+                            <ngx-editor-menu [editor]="detailsEditor" [toolbar]="toolbar"></ngx-editor-menu>
                             <ngx-editor
                                     [editor]="detailsEditor"
                                     formControlName="details"
@@ -89,7 +89,7 @@
                     <label class="editor-label">Benefits</label>
                     @if (benefitsEditor) {
                         <div class="NgxEditor__Wrapper">
-                            <ngx-editor-menu [editor]="benefitsEditor"></ngx-editor-menu>
+                            <ngx-editor-menu [editor]="benefitsEditor" [toolbar]="toolbar"></ngx-editor-menu>
                             <ngx-editor
                                     [editor]="benefitsEditor"
                                     formControlName="benefits"
@@ -105,7 +105,7 @@
                     <label class="editor-label">Preparation Method</label>
                     @if (howToMakeEditor) {
                         <div class="NgxEditor__Wrapper">
-                            <ngx-editor-menu [editor]="howToMakeEditor"></ngx-editor-menu>
+                            <ngx-editor-menu [editor]="howToMakeEditor" [toolbar]="toolbar"></ngx-editor-menu>
                             <ngx-editor
                                     [editor]="howToMakeEditor"
                                     formControlName="howToMake"
@@ -123,7 +123,7 @@
                     <label class="editor-label">Ingredients</label>
                     @if (ingredientEditor) {
                         <div class="NgxEditor__Wrapper">
-                            <ngx-editor-menu [editor]="ingredientEditor"></ngx-editor-menu>
+                            <ngx-editor-menu [editor]="ingredientEditor" [toolbar]="toolbar"></ngx-editor-menu>
                             <ngx-editor
                                     [editor]="ingredientEditor"
                                     formControlName="ingredient"

@@ -16,7 +16,12 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatCardModule } from '@angular/material/card';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { Editor, NgxEditorComponent, NgxEditorMenuComponent } from 'ngx-editor';
+import {
+  Editor,
+  NgxEditorComponent,
+  NgxEditorMenuComponent,
+  Toolbar,
+} from 'ngx-editor';
 import {
   InputErrorComponent,
   UploadFormComponent,
@@ -93,6 +98,13 @@ export class ManageRecipe implements OnInit, OnDestroy {
   howToMakeEditor: Editor | null = null;
   ingredientEditor: Editor | null = null;
   benefitsEditor: Editor | null = null;
+
+  toolbar: Toolbar = [
+    ['bold', 'italic', 'underline'],
+    [{ heading: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'] }],
+    ['bullet_list', 'ordered_list'],
+    ['align_left', 'align_center', 'align_right'],
+  ];
 
   async ngOnInit(): Promise<void> {
     this.initializeEditor();
