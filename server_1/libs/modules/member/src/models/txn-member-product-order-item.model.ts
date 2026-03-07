@@ -76,6 +76,18 @@ export class TxnMemberProductOrderItem extends Model<TxnMemberProductOrderItem> 
   })
   declare quantity: number;
   @Column({
+    allowNull: true,
+    field: 'quantity_value',
+    type: DataType.DECIMAL(10, 2),
+  })
+  declare quantityValue: number;
+  @Column({
+    allowNull: true,
+    field: 'quantity_unit',
+    type: DataType.STRING(10),
+  })
+  declare quantityUnit: string;
+  @Column({
     allowNull: false,
     field: 'unit_price',
     type: DataType.DECIMAL(10, 2),

@@ -9,7 +9,7 @@ import {
   IShipRocketServiceabilityResponse,
   ITrackingEvent,
 } from '@eatfit247-shared-lib';
-import { BookingRequestDto, RateRequestDto, ShipmentAddressDto } from '../../dto';
+import { BookingRequestDto, RateRequestDto } from '../../dto';
 
 @Injectable()
 export class ShiprocketAdapter extends BaseCourierAdapter {
@@ -156,48 +156,43 @@ export class ShiprocketAdapter extends BaseCourierAdapter {
       // Get authentication headers
       const headers = await this.getAuthHeaders(credentials);
 
-      const billing: Partial<ShipmentAddressDto> = payload.billing ?? payload.pickup ?? {};
-      const shipping: Partial<ShipmentAddressDto> = payload.shipping ?? payload.delivery ?? {};
-      const [billingFirstName, ...billingLastNameParts] = (billing.name ?? '').split(' ');
-      const [shippingFirstName, ...shippingLastNameParts] = (shipping.name ?? '').split(' ');
-
       const orderItems = Array.isArray(payload.items)
         ? payload.items.map((item) => ({
             name: item.name ?? 'Product',
             sku: item.sku ?? '',
             units: Number(item.quantity ?? 1),
-            selling_price: Number(item.price ?? item.unitPrice ?? 0),
+            selling_price: Number(item.price),
           }))
         : [];
 
       const requestBody = {
-        order_id: payload.orderId ?? payload.orderNumber ?? '',
-        order_date: payload.orderDate ?? new Date().toISOString().split('T')[0],
-        pickup_location: payload.pickupLocation ?? 'Primary',
-        billing_customer_name: billingFirstName ?? billing.name ?? '',
-        billing_last_name: billingLastNameParts.join(' ') ?? billing.lastName ?? '',
-        billing_address: billing.address ?? '',
-        billing_address_2: billing.address2 ?? '',
-        billing_city: billing.city ?? '',
-        billing_pincode: billing.pincode ?? billing.postcode ?? '',
-        billing_state: billing.state ?? '',
-        billing_country: billing.country ?? 'India',
-        billing_email: billing.email ?? '',
-        billing_phone: billing.phone ?? '',
-        shipping_is_billing: payload.shippingIsBilling ?? false,
-        shipping_customer_name: shippingFirstName ?? shipping.name ?? '',
-        shipping_last_name: shippingLastNameParts.join(' ') ?? shipping.lastName ?? '',
-        shipping_address: shipping.address ?? '',
-        shipping_address_2: shipping.address2 ?? '',
-        shipping_city: shipping.city ?? '',
-        shipping_pincode: shipping.pincode ?? shipping.postcode ?? '',
-        shipping_state: shipping.state ?? '',
-        shipping_country: shipping.country ?? 'India',
-        shipping_email: shipping.email ?? '',
-        shipping_phone: shipping.phone ?? '',
+        order_id: payload.shipmentId,
+        order_date: new Date().toISOString().split('T')[0],
+        pickup_location: payload.pickup.name,
+        billing_customer_name: payload.delivery.name,
+        billing_last_name: '',
+        billing_address: payload.pickup.address,
+        billing_address_2: payload.pickup.address2,
+        billing_city: payload.pickup.city,
+        billing_pincode: payload.pickup.pincode,
+        billing_state: payload.pickup.state,
+        billing_country: payload.pickup.country,
+        billing_email: payload.pickup.email,
+        billing_phone: payload.pickup.phone,
+        shipping_is_billing: true,
+        shipping_customer_name: payload.delivery.name,
+        shipping_last_name: '',
+        shipping_address: payload.delivery.address,
+        shipping_address_2: payload.delivery.address2,
+        shipping_city: payload.delivery.city,
+        shipping_pincode: payload.delivery.pincode,
+        shipping_state: payload.delivery.state,
+        shipping_country: payload.delivery.country,
+        shipping_email: payload.delivery.email,
+        shipping_phone: payload.delivery.phone,
         order_items: orderItems,
         payment_method: (payload.codAmount ?? 0) > 0 ? 'COD' : 'Prepaid',
-        sub_total: payload.subTotal ?? 0,
+        sub_total: payload.orderAmount ?? 0,
         length: payload.dimensions?.length ?? 10,
         breadth: payload.dimensions?.breadth ?? payload.dimensions?.width ?? 10,
         height: payload.dimensions?.height ?? 10,

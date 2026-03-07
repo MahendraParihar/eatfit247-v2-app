@@ -171,6 +171,7 @@ export class ShipmentRecordService {
   public async replaceRateQuotes(
     shipmentId: number,
     providerAccountId: number,
+    warehouseId: number,
     quotes: IRateQuote[],
   ): Promise<TxnShipmentRateQuote[]> {
     await this.rateQuoteRepository.destroy({
@@ -181,6 +182,7 @@ export class ShipmentRecordService {
       await this.rateQuoteRepository.bulkCreate(
         quotes.map((q) => ({
           shipmentId,
+          warehouseId: warehouseId,
           providerId: q.providerId,
           providerAccountId,
           serviceName: q.serviceName,

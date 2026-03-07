@@ -263,6 +263,8 @@ export class MemberProductService {
       productName: string;
       quantity: number;
       quantityLabel: string;
+      quantityValue: number;
+      quantityUnit: string;
       baseAmount: number;
       discountAmount: number;
       currencyCode?: string;
@@ -277,6 +279,8 @@ export class MemberProductService {
       productName: string;
       quantity: number;
       quantityLabel: string;
+      quantityValue: number;
+      quantityUnit: string;
       unitPrice: number;
       baseAmount: number;
       discountAmount: number;
@@ -311,6 +315,8 @@ export class MemberProductService {
         quantity: item.quantity,
         quantityLabel: item.quantityLabel,
         unitPrice: taxCalculationResult.orderAmount / item.quantity,
+        quantityValue: item.quantityValue,
+        quantityUnit: item.quantityUnit,
         baseAmount: taxCalculationResult.orderAmount,
         discountAmount: item.discountAmount,
         taxAmount: taxCalculationResult.taxAmount,
@@ -998,6 +1004,8 @@ export class MemberProductService {
           productName: product.name,
           quantity: item.quantity, // Admin ordered quantity
           quantityLabel: `${variant.quantityValue} ${variant.quantityUnit}`, // Variant quantity + unit (e.g., "100gm")
+          quantityValue: variant.quantityValue,
+          quantityUnit: variant.quantityUnit,
           unitPrice: variantFees.price,
           baseAmount: Number(variantFees.price * item.quantity),
         });

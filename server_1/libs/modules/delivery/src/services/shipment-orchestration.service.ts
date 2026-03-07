@@ -30,6 +30,42 @@ export class ShipmentOrchestrationService {
     private readonly warehouseResolverService: WarehouseResolverService,
   ) {}
 
+  /**
+   * Converts a weight value from the given unit to kg.
+   */
+  private convertToKg(value: number, unit: string): number {
+    const u = (unit ?? 'gm').toLowerCase().trim();
+    switch (u) {
+      case 'kg':
+      case 'kgs':
+        return value;
+      case 'g':
+      case 'gm':
+      case 'gram':
+      case 'grams':
+        return value / 1000;
+      case 'mg':
+        return value / 1_000_000;
+      default:
+        return value / 1000; // assume grams if unknown
+    }
+  }
+
+  /**
+   * Sums order item weights in kg. Each item has quantityValue + quantityUnit (e.g. 100, 'gm');
+   * multiplies by item quantity for total per line.
+   */
+  private calculateTotalWeight(order: TxnMemberProduct): number {
+    let totalKg = 0;
+    for (const item of order.orderItems ?? []) {
+      const val = Number(item.quantityValue ?? 0);
+      const unit = String(item.quantityUnit ?? 'gm');
+      const qty = Math.max(0, Number(item.quantity ?? 1));
+      totalKg += this.convertToKg(val, unit) * qty;
+    }
+    return Math.round(totalKg * 1000) / 1000;
+  }
+
   // ────────────────────────────────────────────────────────────────────────
   // PUBLIC: Entry point — called from OrderService via setImmediate()
   // ────────────────────────────────────────────────────────────────────────
@@ -65,7 +101,9 @@ export class ShipmentOrchestrationService {
     // Step 2: Extract delivery address from memberAddress JSONB snapshot
     //   Structure: { address: { postalAddress, cityVillage, pinCode, state, country }, billingAddress: {...} }
     const addressSnapshot = order.memberAddress as IMemberAddressSnapshot;
-    const deliveryAddr = addressSnapshot?.address;
+    const deliveryAddr = addressSnapshot.address
+      ? addressSnapshot.address
+      : addressSnapshot.billingAddress;
 
     if (!deliveryAddr?.pinCode) {
       this.logger.error(
@@ -94,14 +132,14 @@ export class ShipmentOrchestrationService {
     }
 
     // Step 4: Create shipment record (DRAFT)
+    const totalWeightKg = this.calculateTotalWeight(order);
     const createPayload: ICreateShipmentPayload = {
       orderId,
       franchiseId: order.franchiseId,
       shipmentNumber: this.generateShipmentNumber(orderId),
-      totalAmount: Number(order.totalAmount ?? 0),
+      totalAmount: Number(order.totalAmount),
       currency: order.currency,
-      // Dimensions: null at creation — set from product data if available in future
-      totalWeightKg: null,
+      totalWeightKg,
       lengthCm: null,
       widthCm: null,
       heightCm: null,
@@ -252,6 +290,8 @@ export class ShipmentOrchestrationService {
       // ── Step B: Fetch rates in parallel from all pairs ───────────────────
       const rateReq = this.buildRateRequest(shipment, deliveryPincode);
 
+      console.log(rateReq);
+
       await Promise.allSettled(
         pairs.map((pair) => this.fetchAndSaveRatesForPair(shipmentId, pair, rateReq)),
       );
@@ -332,7 +372,7 @@ export class ShipmentOrchestrationService {
     await this.shipmentRecordService.markBookingRequested(shipmentId);
 
     try {
-      const bookingPayload = this.buildBookingRequest(shipment, pair.providerWarehouseId);
+      const bookingPayload = this.buildBookingRequest(shipment);
       const adapter = this.courierFactory.getAdapter(pair.providerCode);
       const providerRes = await adapter.createShipment(bookingPayload, pair.credentials);
 
@@ -409,6 +449,7 @@ export class ShipmentOrchestrationService {
       await this.shipmentRecordService.replaceRateQuotes(
         shipmentId,
         pair.providerAccountId,
+        pair.warehouseId,
         normalised,
       );
     } catch (err: unknown) {
@@ -449,10 +490,9 @@ export class ShipmentOrchestrationService {
         phone: shipment.receiverPhone ?? '',
         country: shipment.receiverCountry ?? 'India',
       },
-      orderAmount: shipment.totalAmount ?? 0,
-      subTotal: shipment.totalAmount ?? 0,
+      orderAmount: shipment.totalAmount,
       codAmount: 0, // Prepaid only
-      weight: shipment.totalWeightKg ?? 0.5,
+      weight: shipment.totalWeightKg,
       dimensions: shipment.lengthCm
         ? {
             length: shipment.lengthCm,
@@ -464,18 +504,20 @@ export class ShipmentOrchestrationService {
     };
   }
 
-  private buildBookingRequest(
-    shipment: TxnShipment,
-    providerWarehouseId?: string,
-  ): BookingRequestDto {
+  private buildBookingRequest(shipment: TxnShipment): BookingRequestDto {
     return {
       ...this.buildRateRequest(shipment),
-      providerId: shipment.providerId ?? undefined,
-      providerAccountId: shipment.providerAccountId ?? undefined,
-      orderId: String(shipment.orderId),
-      orderNumber: shipment.shipmentNumber,
-      pickupLocation: providerWarehouseId,
-      metadata: (shipment.metaData ?? {}) as unknown as Record<string, unknown>,
+      pickup: {
+        address: shipment.warehouse.addressLine1,
+        country: shipment.warehouse.country.country,
+        city: shipment.warehouse.city,
+        phone: shipment.warehouse.phone,
+        state: shipment.warehouse.state.state,
+        name: shipment.warehouse.name,
+        address2: shipment.warehouse.addressLine2,
+        email: shipment.warehouse.email,
+        postcode: shipment.warehouse.pinCode,
+      },
     };
   }
 

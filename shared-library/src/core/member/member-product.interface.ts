@@ -41,6 +41,8 @@ export interface IMemberProductOrderItem {
   productName: string;
   quantityLabel: string;
   quantity: number;
+  quantityValue?: number;
+  quantityUnit?: string;
   unitPrice: number;
   baseAmount: number;
   discountAmount?: number;

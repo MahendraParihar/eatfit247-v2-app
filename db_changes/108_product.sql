@@ -334,3 +334,9 @@ CREATE TABLE public.mst_invoice_sequences
     current_number INT         NOT NULL DEFAULT 0,
     UNIQUE (franchise_id, invoice_type, financial_year)
 );
+
+alter table public.txn_member_product_order_items
+    add quantity_value numeric(10, 2);
+
+alter table public.txn_member_product_order_items
+    add quantity_unit varchar(10);

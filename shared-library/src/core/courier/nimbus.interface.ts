@@ -1,33 +1,39 @@
 export interface INimbusShipmentPayload{
-    "order_number": string;
-    "payment_type": string;
-    "order_amount": number;
-    "cod_amount": number,
-    "package_weight": number,
-    "package_length": number,
-    "package_breadth": number,
-    "package_height": number,
-    "pickup_location": string;
-    "billing_customer_name": string;
-    "billing_last_name": string;
-    "billing_address": string;
-    "billing_city": string;
-    "billing_pincode": string;
-    "billing_state": string;
-    "billing_country": string;
-    "billing_email": string;
-    "billing_phone": string;
-    "shipping_is_billing": true;
-    "order_items":{
-        "name": string;
-        "sku": string;
-        "units": number,
-        "selling_price": number,
-        "discount": number,
-        "tax": number,
-        "hsn": string }[];
-    "support_email": string;
-    "support_phone": string;
+    order_number: string;
+    shipping_charges?: number;
+    discount?:  number;
+    cod_charges:  number;
+    payment_type: string;
+    order_amount:  number;
+    package_weight:  number;
+    package_length?:  number;
+    package_breadth?:  number;
+    package_height?:  number;
+    consignee: {
+        name: string;
+        address: string;
+        address_2: string;
+        city: string;
+        state: string;
+        pincode: string;
+        phone: string;
+    },
+    pickup: {
+        warehouse_name: string;
+        name : string;
+        address: string;
+        address_2: string;
+        city: string;
+        state: string;
+        pincode: string;
+        phone: string;
+    },
+    order_items?: {
+        name: string;
+        qty: string;
+        price: string;
+        sku: string;
+    }[];
 }
 
 export interface INimbusServiceabilityPayload {
@@ -39,6 +45,23 @@ export interface INimbusServiceabilityPayload {
     length?: number; // Package length in cm. Default: 10
     breadth?: number; //Package breadth in cm. Default: 10
     height?: number; //Package height in cm. Default: 10
+}
+
+export interface INimbusShipmentResponse {
+
+    status: boolean,
+    message: string,
+    data: {
+        order_id: number;
+        shipment_id: number;
+        awb_number: string;
+        courier_id: string;
+        courier_name: string;
+        status: string;
+        additional_info: string;
+        payment_type:  'cod' | 'prepaid';
+        label: string
+    }
 }
 
 export interface INimbusServiceabilityDataItem {

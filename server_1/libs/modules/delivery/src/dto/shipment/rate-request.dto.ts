@@ -50,11 +50,6 @@ export class ShipmentAddressDto {
   @IsOptional()
   @IsString()
   @MaxLength(150)
-  lastName?: string;
-
-  @IsOptional()
-  @IsString()
-  @MaxLength(150)
   email?: string;
 
   @IsOptional()

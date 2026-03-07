@@ -7,6 +7,7 @@ import {
   INimbusServiceabilityPayload,
   INimbusServiceabilityResponse,
   INimbusShipmentPayload,
+  INimbusShipmentResponse,
   IRateQuote,
   IShipmentBookingResponse,
   ITrackingEvent,
@@ -87,13 +88,12 @@ export class NimbusAdapter extends BaseCourierAdapter {
       if (!originPostcode || !destPostcode) {
         throw new Error(`${this.providerCode} getRates requires pickup and delivery postcodes`);
       }
-      const orderAmount = payload.orderAmount ?? payload.subTotal ?? payload.codAmount ?? 0;
       const ratePayload: INimbusServiceabilityPayload = {
         origin: originPostcode,
         destination: destPostcode,
         payment_type: (payload.codAmount ?? 0) > 0 ? 'cod' : 'prepaid',
-        order_amount: orderAmount > 0 ? orderAmount : 500,
-        weight: Math.round((payload.weight ?? 0.5) * 1000),
+        order_amount: payload.orderAmount,
+        weight: Math.round(payload.weight * 1000),
       };
       // Add dimensions if provided
       if (payload.dimensions) {
@@ -101,6 +101,7 @@ export class NimbusAdapter extends BaseCourierAdapter {
         ratePayload.breadth = payload.dimensions.breadth ?? payload.dimensions.width ?? 10;
         ratePayload.height = payload.dimensions.height ?? 10;
       }
+      console.log(ratePayload);
       const response = await this.withTimeout(
         this.httpService.post<INimbusServiceabilityResponse>(
           `${credentials.apiBaseUrl}/courier/serviceability`,
@@ -141,52 +142,48 @@ export class NimbusAdapter extends BaseCourierAdapter {
       // Get authentication headers
       const headers = await this.getAuthHeaders(credentials);
 
-      // Calculate order_amount from items if not provided
-      const orderAmount =
-        payload.orderAmount ||
-        payload.subTotal ||
-        (payload.items &&
-          payload.items.reduce(
-            (sum: number, item: any) => sum + (item.price || 0) * (item.quantity || 1),
-            0,
-          )) ||
-        0;
       // Build shipment request payload according to Nimbus API specification
       const shipmentPayload: INimbusShipmentPayload = {
-        order_number: payload.orderId,
+        order_number: payload.shipmentId.toString(),
         payment_type: 'prepaid',
-        order_amount: 1299,
-        cod_amount: 0,
-        package_weight: 0.5,
-        package_length: 20,
-        package_breadth: 15,
-        package_height: 5,
-        pickup_location: 'Mahi Enterprise',
-        billing_customer_name: 'Rahul Sharma',
-        billing_last_name: '',
-        billing_address: 'Flat 202, Sai Residency',
-        billing_city: 'Mumbai',
-        billing_pincode: '400001',
-        billing_state: 'Maharashtra',
-        billing_country: 'India',
-        billing_email: 'rahul.sharma@gmail.com',
-        billing_phone: '9876543210',
-        shipping_is_billing: true,
-        order_items: [],
-        support_email: 'support@eatfit247.com',
-        support_phone: '9876543210',
+        order_amount: payload.orderAmount,
+        cod_charges: 0,
+        package_weight: payload.weight,
+        consignee: {
+          pincode: payload.delivery.pincode,
+          name: payload.delivery.name,
+          address: payload.delivery.address,
+          address_2: payload.delivery.address2,
+          city: payload.delivery.city,
+          state: payload.delivery.state,
+          phone: payload.delivery.phone,
+        },
+        pickup: {
+          warehouse_name: payload.pickup.name,
+          name: payload.pickup.name,
+          address: payload.pickup.address,
+          address_2: payload.pickup.address2,
+          city: payload.pickup.city,
+          state: payload.pickup.state,
+          pincode: payload.pickup.pincode,
+          phone: payload.pickup.phone,
+        },
       };
       // Add items if provided
       if (payload.items && Array.isArray(payload.items) && payload.items.length > 0) {
         shipmentPayload.order_items = payload.items.map((item: any) => ({
           name: item.name,
           sku: item.sku || item.productSku || '',
-          units: item.quantity || 1,
-          selling_price: item.price || item.unitPrice || 0,
-          discount: item.price || item.unitPrice || 0,
-          tax: item.weight || item.weightKg || 0,
-          hsn: item.weight || item.weightKg || 0,
+          qty: item.quantity,
+          price: item.price || 0,
         }));
+      }
+      // Add dimensions
+      if (payload.dimensions) {
+        if (payload.dimensions.height) shipmentPayload.package_height = payload.dimensions.height;
+        if (payload.dimensions.length) shipmentPayload.package_length = payload.dimensions.length;
+        if (payload.dimensions.breadth)
+          shipmentPayload.package_breadth = payload.dimensions.breadth;
       }
       console.log(shipmentPayload);
       const response = await this.withTimeout(
@@ -200,33 +197,23 @@ export class NimbusAdapter extends BaseCourierAdapter {
         'shipment booking',
       );
       console.log(response);
-      const shipment = response?.data || response;
+      const shipment = (response?.data || response) as INimbusShipmentResponse;
       if (!shipment) {
         throw new Error(`${this.providerCode} Invalid response format from Nimbus shipment API`);
       }
       // Provider may return status: false when booking fails - do not treat as success
-      const rawStatus = shipment.status ?? shipment.shipment_status;
-      if (
-        rawStatus === false ||
-        rawStatus === 0 ||
-        (typeof rawStatus === 'string' && rawStatus.toLowerCase() === 'false')
-      ) {
-        const errMsg =
-          shipment.message || shipment.error || shipment.error_message || 'Booking failed';
+      const rawStatus = shipment.status;
+      if (rawStatus === false) {
+        const errMsg = shipment.message;
         throw new Error(`${this.providerCode} ${errMsg}`);
       }
       return {
-        providerShipmentId: shipment.shipment_id || shipment.shipmentId || shipment.id || '',
-        trackingNumber:
-          shipment.tracking_number ||
-          shipment.trackingNumber ||
-          shipment.awb_number ||
-          shipment.awbNumber ||
-          '',
-        trackingUrl: shipment.tracking_url || shipment.trackingUrl || shipment.tracking_link,
-        labelUrl: shipment.label_url || shipment.labelUrl || shipment.label,
-        awbNumber: shipment.awb_number || shipment.awbNumber || shipment.awb,
-        status: (typeof rawStatus === 'string' ? rawStatus : null) || 'BOOKED',
+        providerShipmentId: shipment.data.shipment_id.toString(),
+        trackingNumber: shipment.data.awb_number,
+        trackingUrl: '',
+        labelUrl: shipment.data.label,
+        awbNumber: shipment.data.awb_number,
+        status: shipment.data.status,
         metadata: {
           ...shipment,
         },
