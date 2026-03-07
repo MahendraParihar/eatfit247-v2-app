@@ -154,9 +154,16 @@ export const appRoutes: Route[] = [
               ),
           },
           {
-            path: 'shipment',
+            path: 'warehouses',
             loadChildren: () =>
-              import('delivery').then((m) => m.deliveryRoutes),
+              import('warehouses').then((m) => m.warehousesRoutes),
+          },
+          {
+            path: 'courier-provider-warehouses',
+            loadChildren: () =>
+              import('courier-provider-warehouses').then(
+                (m) => m.courierProviderWarehousesRoutes
+              ),
           },
         ],
       },

@@ -28,6 +28,7 @@ export class BlogAuthor implements OnInit {
   loading = false;
   tableConfig!: ITableConfig<any>;
   private searchSubject = new Subject<string>();
+  currentSearch = '';
 
   constructor(
     private apiService: LovMasterApiService,
@@ -137,7 +138,7 @@ export class BlogAuthor implements OnInit {
   async loadData(): Promise<void> {
     this.loading = true;
     try {
-      const response: ITableList<any> = await this.apiService.getBlogAuthorList({ page: 0, limit: this.tableConfig.pageSize || 10 });
+      const response: ITableList<any> = await this.apiService.getBlogAuthorList({ page: 0, limit: this.tableConfig.pageSize || 10, search: this.currentSearch?.trim() || undefined });
       this.data = response.tableData;
       this.totalCount = response.count;
       this.loading = false;
@@ -149,7 +150,7 @@ export class BlogAuthor implements OnInit {
   async onPageChange(pagination: any): Promise<void> {
     this.loading = true;
     try {
-      const response: ITableList<any> = await this.apiService.getBlogAuthorList({ page: pagination.pageIndex, limit: pagination.pageSize });
+      const response: ITableList<any> = await this.apiService.getBlogAuthorList({ page: pagination.pageIndex, limit: pagination.pageSize, search: this.currentSearch?.trim() || undefined });
       this.data = response.tableData;
       this.totalCount = response.count;
       this.loading = false;
@@ -161,7 +162,7 @@ export class BlogAuthor implements OnInit {
   async onSortChange(sort: any): Promise<void> {
     this.loading = true;
     try {
-      const response: ITableList<any> = await this.apiService.getBlogAuthorList({ page: 0, limit: this.tableConfig.pageSize || 10, sortBy: sort.active, sortOrder: sort.direction });
+      const response: ITableList<any> = await this.apiService.getBlogAuthorList({ page: 0, limit: this.tableConfig.pageSize || 10, sortBy: sort.active, sortOrder: sort.direction, search: this.currentSearch?.trim() || undefined });
       this.data = response.tableData;
       this.totalCount = response.count;
       this.loading = false;
@@ -171,6 +172,7 @@ export class BlogAuthor implements OnInit {
   }
 
   onSearchChange(search: string): void {
+    this.currentSearch = search;
     this.searchSubject.next(search);
   }
 

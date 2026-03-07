@@ -92,7 +92,7 @@ export class ManageCourierProvider implements OnInit, OnDestroy {
         authType: this.initialData.authType || 'API_KEY',
         supportsRateApi: this.initialData.supportsRateApi !== undefined ? this.initialData.supportsRateApi : true,
         supportsWebhook: this.initialData.supportsWebhook !== undefined ? this.initialData.supportsWebhook : true,
-        supportsCod: this.initialData.supportsCod !== undefined ? this.initialData.supportsCod : true,
+        supportsCod: false,
         priorityOrder: this.initialData.priorityOrder || 1,
         active: this.initialData.active !== undefined ? this.initialData.active : true
       });

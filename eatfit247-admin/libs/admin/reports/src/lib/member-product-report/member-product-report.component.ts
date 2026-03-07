@@ -14,7 +14,6 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatCardModule } from '@angular/material/card';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
@@ -29,7 +28,6 @@ import {
   IMemberProductReportItem,
 } from '@eatfit247-shared-lib';
 import { MemberProductReportApiService } from './api.service';
-import { ShipmentFlowComponent, ShipmentFlowData } from 'delivery';
 
 @Component({
   selector: 'lib-member-product-report',
@@ -45,7 +43,6 @@ import { ShipmentFlowComponent, ShipmentFlowData } from 'delivery';
     MatDatepickerModule,
     MatNativeDateModule,
     MatCardModule,
-    MatDialogModule,
     MatButtonToggleModule,
     MatSnackBarModule,
     DataTableComponent,
@@ -71,7 +68,6 @@ export class MemberProductReportComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private apiService: MemberProductReportApiService,
-    private dialog: MatDialog,
     private router: Router,
     private snackBar: MatSnackBar
   ) {
@@ -197,12 +193,6 @@ export class MemberProductReportComponent implements OnInit {
         color: 'primary',
         onClick: (row) => this.viewOrder(row),
       },
-      {
-        label: 'Add Shipping Flow',
-        icon: 'local_shipping',
-        color: 'accent',
-        onClick: (row) => this.startShipmentFlow(row),
-      },
     ];
 
     this.tableConfig = {
@@ -299,34 +289,6 @@ export class MemberProductReportComponent implements OnInit {
       ])
     );
     window.open(url, '_blank');
-  }
-
-  startShipmentFlow(productOrder: IMemberProductReportItem): void {
-    if (!productOrder.memberProductId) {
-      this.snackBar.open('Product Order ID is not available', 'Close', {
-        duration: 3000,
-      });
-      return;
-    }
-
-    const dialogData: ShipmentFlowData = {
-      memberProductId: productOrder.memberProductId,
-      memberId: productOrder.memberId,
-    };
-
-    const dialogRef = this.dialog.open(ShipmentFlowComponent, {
-      width: '1200px',
-      maxWidth: '95vw',
-      maxHeight: '95vh',
-      data: dialogData,
-    });
-
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result === true) {
-        // Optionally reload data if needed
-        // this.onSearch();
-      }
-    });
   }
 
   private formatDate(date: Date): string {

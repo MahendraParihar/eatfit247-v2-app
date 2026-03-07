@@ -1,58 +1,34 @@
-drop table if exists public.txn_shipment_items cascade;
-drop table if exists public.txn_shipment_tracking_events cascade;
-drop table if exists public.txn_shipments cascade;
+-- =============================================================================
+-- Migration: 112_delivery_system.sql
+-- Description: Delivery & Shipment System — Full Schema
+-- Depends on: mst_admin_users, mst_franchises, mst_states, mst_countries,
+--             txn_member_product_orders, txn_member_product_order_items
+-- =============================================================================
 
-create table public.mst_courier_providers
-(
-    provider_id       serial primary key,
-    provider_code     varchar(30)  not null unique, -- NIMBUS, SHIPROCKET, SHIPWAY
-    provider_name     varchar(100) not null,
-    auth_type         varchar(30)  not null,        -- API_KEY, JWT, BASIC
-    supports_rate_api boolean               default true,
-    supports_webhook  boolean               default true,
-    supports_cod      boolean               default true,
-    priority_order    integer               default 1,
-    active            BOOLEAN      NULL     DEFAULT '1',
-    created_at        TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    created_by        INT          NOT NULL,
-    updated_at        TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    modified_by       INT          NOT NULL,
-    created_ip        VARCHAR(50)  NOT NULL,
-    modified_ip       VARCHAR(50)  NOT NULL,
-    CONSTRAINT fk_mst_courier_provider_mst_admin_created_by FOREIGN KEY (created_by) REFERENCES mst_admin_users (admin_id),
-    CONSTRAINT fk_mst_courier_provider_mst_admin_modified_by FOREIGN KEY (modified_by) REFERENCES mst_admin_users (admin_id)
-);
+-- =============================================================================
+-- SECTION 1: CLEANUP (safe drop in dependency order)
+-- =============================================================================
 
-create table public.txn_courier_provider_accounts
-(
-    provider_account_id serial primary key,
-    provider_id         integer     not null
-        references public.mst_courier_providers,
-    franchise_id        integer     not null
-        references public.mst_franchises,
-    account_name        varchar(100),
-    api_base_url        text        not null,
-    api_key             text,
-    api_secret          text,
-    username            text,
-    password_encrypted  text,
-    auth_token          text,
-    token_expiry        timestamptz,
-    webhook_secret      text,
-    active              BOOLEAN     NULL     DEFAULT '1',
-    created_at          TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    created_by          INT         NOT NULL,
-    updated_at          TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    modified_by         INT         NOT NULL,
-    created_ip          VARCHAR(50) NOT NULL,
-    modified_ip         VARCHAR(50) NOT NULL,
-    CONSTRAINT fk_txn_courier_provider_account_mst_admin_created_by FOREIGN KEY (created_by) REFERENCES mst_admin_users (admin_id),
-    CONSTRAINT fk_txn_courier_provider_account_mst_admin_modified_by FOREIGN KEY (modified_by) REFERENCES mst_admin_users (admin_id),
-    unique (provider_id, franchise_id)
-);
+DROP TABLE IF EXISTS public.txn_courier_webhook_logs CASCADE;
+DROP TABLE IF EXISTS public.txn_courier_api_logs CASCADE;
+DROP TABLE IF EXISTS public.txn_shipment_tracking_events CASCADE;
+DROP TABLE IF EXISTS public.txn_shipment_rate_quotes CASCADE;
+DROP TABLE IF EXISTS public.txn_shipment_items CASCADE;
+DROP TABLE IF EXISTS public.txn_shipments CASCADE;
+DROP TABLE IF EXISTS public.cache_pincode_serviceability CASCADE;
+DROP TABLE IF EXISTS public.txn_courier_provider_warehouses CASCADE;
+DROP TABLE IF EXISTS public.mst_warehouses CASCADE;
+DROP TABLE IF EXISTS public.txn_courier_provider_accounts CASCADE;
+DROP TABLE IF EXISTS public.mst_courier_providers CASCADE;
 
-drop type if exists public.shipment_status_enum cascade;
-create type public.shipment_status_enum as enum (
+DROP TYPE IF EXISTS public.tracking_source_enum CASCADE;
+DROP TYPE IF EXISTS public.shipment_status_enum CASCADE;
+
+-- =============================================================================
+-- SECTION 2: ENUMS
+-- =============================================================================
+
+CREATE TYPE public.shipment_status_enum AS ENUM (
     'DRAFT',
     'RATE_REQUESTED',
     'RATE_SELECTED',
@@ -62,239 +38,382 @@ create type public.shipment_status_enum as enum (
     'IN_TRANSIT',
     'OUT_FOR_DELIVERY',
     'DELIVERED',
-    'RTO',
+    'RTO',           -- Return to Origin
     'CANCELLED',
     'FAILED'
-    );
+);
 
-create type public.tracking_source_enum as enum (
+CREATE TYPE public.tracking_source_enum AS ENUM (
     'WEBHOOK',
     'POLLING',
     'MANUAL'
-    );
-
-drop table if exists public.txn_shipments cascade;
-create table public.txn_shipments
-(
-    shipment_id          bigserial primary key,
-    shipment_number      varchar(50) not null unique,
-    franchise_id         integer     not null
-        references public.mst_franchises,
-    provider_id          integer
-        references public.mst_courier_providers,
-    provider_account_id  integer
-        references public.txn_courier_provider_accounts,
-    provider_shipment_id varchar(100),
-    tracking_number      varchar(100),
-    tracking_url         text,
-    total_weight_kg      numeric(10, 2),
-    total_amount         numeric(12, 2),
-    rate_amount          numeric(10, 2),
-    currency             varchar(10),
-    status               shipment_status_enum
-                                     not null default 'DRAFT',
-    retry_count          integer     not null default 0,
-    last_error           text,
-    metadata             jsonb,
-    created_at           TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    created_by           INT         NOT NULL,
-    updated_at           TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    modified_by          INT         NOT NULL,
-    created_ip           VARCHAR(50) NOT NULL,
-    modified_ip          VARCHAR(50) NOT NULL,
-    CONSTRAINT fk_txn_shipments_mst_admin_created_by FOREIGN KEY (created_by) REFERENCES mst_admin_users (admin_id),
-    CONSTRAINT fk_txn_shipments_mst_admin_modified_by FOREIGN KEY (modified_by) REFERENCES mst_admin_users (admin_id)
 );
 
-drop table if exists public.txn_shipment_items cascade;
-create table public.txn_shipment_items
+-- =============================================================================
+-- SECTION 3: MASTER TABLES
+-- =============================================================================
+
+-- -----------------------------------------------------------------------------
+-- Courier Providers (Nimbus, Shiprocket, etc.)
+-- supports_cod removed — prepaid only system
+-- -----------------------------------------------------------------------------
+CREATE TABLE public.mst_courier_providers
 (
-    shipment_item_id             bigserial primary key,
-    shipment_id                  bigint  not null
-        references public.txn_shipments
-            on delete cascade,
-    member_product_order_item_id bigint  not null
-        references public.txn_member_product_order_items,
-    quantity                     integer not null check (quantity > 0),
-    created_at                   timestamptz default now(),
-    constraint uq_shipment_item
-        unique (shipment_id, member_product_order_item_id)
+    provider_id       SERIAL PRIMARY KEY,
+    provider_code     VARCHAR(30)  NOT NULL UNIQUE,  -- NIMBUS, SHIPROCKET
+    provider_name     VARCHAR(100) NOT NULL,
+    auth_type         VARCHAR(30)  NOT NULL,          -- JWT, API_KEY, BASIC
+    supports_rate_api BOOLEAN      NOT NULL DEFAULT TRUE,
+    supports_webhook  BOOLEAN      NOT NULL DEFAULT TRUE,
+    priority_order    INTEGER      NOT NULL DEFAULT 1, -- Lower = higher priority for auto-selection
+    active            BOOLEAN      NOT NULL DEFAULT TRUE,
+    created_at        TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_by        INT          NOT NULL,
+    updated_at        TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    modified_by       INT          NOT NULL,
+    created_ip        VARCHAR(50)  NOT NULL,
+    modified_ip       VARCHAR(50)  NOT NULL,
+    CONSTRAINT fk_mst_courier_providers_created_by  FOREIGN KEY (created_by)  REFERENCES public.mst_admin_users (admin_id),
+    CONSTRAINT fk_mst_courier_providers_modified_by FOREIGN KEY (modified_by) REFERENCES public.mst_admin_users (admin_id)
 );
 
-drop table if exists public.txn_shipment_rate_quotes cascade;
-create table public.txn_shipment_rate_quotes
+-- -----------------------------------------------------------------------------
+-- Warehouses (internal)
+-- -----------------------------------------------------------------------------
+CREATE TABLE public.mst_warehouses
 (
-    rate_quote_id       bigserial primary key,
-    shipment_id         bigint         not null
-        references public.txn_shipments
-            on delete cascade,
-    provider_id         integer        not null
-        references public.mst_courier_providers,
-    provider_account_id integer
-        references public.txn_courier_provider_accounts,
-    service_name        varchar(100),
-    estimated_days      integer check (estimated_days >= 0),
-    rate_amount         numeric(10, 2) not null,
-    currency            varchar(10)    not null,
-    is_selected         boolean        not null default false,
-    raw_response        jsonb,
-    created_at          timestamptz             default now(),
-    constraint uq_rate_per_provider
-        unique (shipment_id, provider_id)
+    warehouse_id  SERIAL PRIMARY KEY,
+    name          VARCHAR(150) NOT NULL,
+    contact_name  VARCHAR(150),
+    email         VARCHAR(150),
+    phone         VARCHAR(20),
+    address_line1 TEXT         NOT NULL,
+    address_line2 TEXT,
+    city          VARCHAR(100) NOT NULL,
+    state_id      INTEGER      NOT NULL,
+    country_id    INTEGER      NOT NULL,
+    pin_code      VARCHAR(10)  NOT NULL,
+    latitude      NUMERIC(10, 6),
+    longitude     NUMERIC(10, 6),
+    active        BOOLEAN      NOT NULL DEFAULT TRUE,
+    created_at    TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_by    INT          NOT NULL,
+    updated_at    TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    modified_by   INT          NOT NULL,
+    created_ip    VARCHAR(50)  NOT NULL,
+    modified_ip   VARCHAR(50)  NOT NULL,
+    CONSTRAINT fk_mst_warehouses_state_id    FOREIGN KEY (state_id)    REFERENCES public.mst_states (state_id),
+    CONSTRAINT fk_mst_warehouses_country_id  FOREIGN KEY (country_id)  REFERENCES public.mst_countries (country_id),
+    CONSTRAINT fk_mst_warehouses_created_by  FOREIGN KEY (created_by)  REFERENCES public.mst_admin_users (admin_id),
+    CONSTRAINT fk_mst_warehouses_modified_by FOREIGN KEY (modified_by) REFERENCES public.mst_admin_users (admin_id)
 );
 
-drop table if exists public.txn_shipment_tracking_events cascade;
-create table public.txn_shipment_tracking_events
+-- =============================================================================
+-- SECTION 4: TRANSACTION / CONFIG TABLES
+-- =============================================================================
+
+-- -----------------------------------------------------------------------------
+-- Courier provider credentials per franchise
+-- -----------------------------------------------------------------------------
+CREATE TABLE public.txn_courier_provider_accounts
 (
-    tracking_event_id     bigserial primary key,
-    shipment_id           bigint not null
-        references public.txn_shipments
-            on delete cascade,
-    provider_status       varchar(100),
-    internal_status       shipment_status_enum,
-    description           text,
-    location              varchar(200),
-    event_time            timestamptz not null,
-    source                tracking_source_enum not null,
-    raw_payload           jsonb,
-    created_at            timestamptz default now(),
-    constraint uq_tracking_event
-        unique (shipment_id, provider_status, event_time)
+    provider_account_id SERIAL PRIMARY KEY,
+    provider_id         INTEGER      NOT NULL REFERENCES public.mst_courier_providers (provider_id),
+    franchise_id        INTEGER      NOT NULL REFERENCES public.mst_franchises (franchise_id),
+    account_name        VARCHAR(100),
+    api_base_url        TEXT         NOT NULL,
+    api_key             TEXT,
+    api_secret          TEXT,
+    username            TEXT,
+    password_encrypted  TEXT,
+    auth_token          TEXT,
+    token_expiry        TIMESTAMPTZ,
+    webhook_secret      TEXT,
+    active              BOOLEAN      NOT NULL DEFAULT TRUE,
+    created_at          TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_by          INT          NOT NULL,
+    updated_at          TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    modified_by         INT          NOT NULL,
+    created_ip          VARCHAR(50)  NOT NULL,
+    modified_ip         VARCHAR(50)  NOT NULL,
+    CONSTRAINT uq_courier_account_provider_franchise UNIQUE (provider_id, franchise_id),
+    CONSTRAINT fk_courier_accounts_created_by  FOREIGN KEY (created_by)  REFERENCES public.mst_admin_users (admin_id),
+    CONSTRAINT fk_courier_accounts_modified_by FOREIGN KEY (modified_by) REFERENCES public.mst_admin_users (admin_id)
 );
 
-drop table if exists public.txn_courier_api_logs cascade;
-create table public.txn_courier_api_logs
+-- -----------------------------------------------------------------------------
+-- Maps internal warehouses to provider-side warehouse IDs
+-- One warehouse can be registered with multiple providers
+-- -----------------------------------------------------------------------------
+CREATE TABLE public.txn_courier_provider_warehouses
 (
-    api_log_id       bigserial primary key,
-    shipment_id      bigint,
-    provider_id      integer,
-    request_type     varchar(50), -- RATE, BOOK, TRACK, CANCEL
-    request_payload  jsonb,
-    response_payload jsonb,
-    http_status      integer,
-    error_message    text,
-    response_time_ms integer,
-    created_at       timestamptz default now()
+    courier_provider_warehouse_id SERIAL PRIMARY KEY,
+    warehouse_id                  INTEGER      NOT NULL REFERENCES public.mst_warehouses (warehouse_id),
+    provider_id                   INTEGER      NOT NULL REFERENCES public.mst_courier_providers (provider_id),
+    provider_warehouse_id         VARCHAR(100),           -- Provider's own warehouse ID (used in booking API)
+    provider_warehouse_name       VARCHAR(150),
+    raw_response                  JSONB,
+    active                        BOOLEAN      NOT NULL DEFAULT TRUE,
+    created_at                    TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_by                    INT          NOT NULL,
+    updated_at                    TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    modified_by                   INT          NOT NULL,
+    created_ip                    VARCHAR(50)  NOT NULL,
+    modified_ip                   VARCHAR(50)  NOT NULL,
+    CONSTRAINT uq_courier_provider_warehouse UNIQUE (warehouse_id, provider_id),
+    CONSTRAINT fk_cpw_created_by  FOREIGN KEY (created_by)  REFERENCES public.mst_admin_users (admin_id),
+    CONSTRAINT fk_cpw_modified_by FOREIGN KEY (modified_by) REFERENCES public.mst_admin_users (admin_id)
 );
 
-drop table if exists public.txn_courier_webhook_logs cascade;
-create table public.txn_courier_webhook_logs
+-- -----------------------------------------------------------------------------
+-- Pincode serviceability cache (Redis-style, in DB as fallback)
+-- Avoids repeated API calls for same pincode+provider combination
+-- -----------------------------------------------------------------------------
+CREATE TABLE public.cache_pincode_serviceability
 (
-    webhook_log_id  bigserial primary key,
-    provider_id     integer,
-    payload         jsonb not null,
-    headers         jsonb,
-    signature_valid boolean,
-    processed       boolean     default false,
-    error_message   text,
-    created_at      timestamptz default now()
+    pincode       VARCHAR(10) NOT NULL,
+    provider_id   INTEGER     NOT NULL REFERENCES public.mst_courier_providers (provider_id),
+    is_serviceable BOOLEAN    NOT NULL,
+    checked_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    expires_at    TIMESTAMPTZ NOT NULL,
+    PRIMARY KEY (pincode, provider_id)
 );
 
--- Shipment lookups
-drop index if exists idx_shipments_franchise;
-create index idx_shipments_franchise
-    on public.txn_shipments(franchise_id);
+-- =============================================================================
+-- SECTION 5: SHIPMENT TABLES
+-- =============================================================================
 
-drop index if exists idx_shipments_provider;
-create index idx_shipments_provider
-    on public.txn_shipments(provider_id);
+-- -----------------------------------------------------------------------------
+-- Core shipment record
+-- Created as DRAFT when order is placed, updated through lifecycle
+-- -----------------------------------------------------------------------------
+CREATE TABLE public.txn_shipments
+(
+    shipment_id          BIGSERIAL PRIMARY KEY,
+    shipment_number      VARCHAR(50)          NOT NULL UNIQUE,           -- Internal reference e.g. SHP-2026-000001
+    order_id             BIGINT               NOT NULL
+        REFERENCES public.txn_member_product_orders (order_id),         -- Direct order link for easy joins
+    franchise_id         INTEGER              NOT NULL
+        REFERENCES public.mst_franchises (franchise_id),
+    warehouse_id         INTEGER
+        REFERENCES public.mst_warehouses (warehouse_id),                -- Set after warehouse resolution
+    provider_id          INTEGER
+        REFERENCES public.mst_courier_providers (provider_id),          -- Set after rate selection
+    provider_account_id  INTEGER
+        REFERENCES public.txn_courier_provider_accounts (provider_account_id),
 
-drop index if exists idx_shipments_provider_account;
-create index idx_shipments_status
-    on public.txn_shipments(status);
+    -- Provider-side identifiers (populated after booking)
+    provider_shipment_id VARCHAR(100),
+    tracking_number      VARCHAR(100),
+    tracking_url         TEXT,
 
-drop index if exists idx_shipments_tracking;
-create index idx_shipments_tracking
-    on public.txn_shipments(tracking_number);
+    -- Package dimensions (required by courier APIs for rate calculation)
+    total_weight_kg      NUMERIC(10, 2),
+    length_cm            NUMERIC(8, 2),
+    width_cm             NUMERIC(8, 2),
+    height_cm            NUMERIC(8, 2),
 
+    -- Receiver address snapshot (denormalized — must not change post-booking)
+    receiver_name        VARCHAR(150),
+    receiver_phone       VARCHAR(20),
+    receiver_address     TEXT,
+    receiver_city        VARCHAR(100),
+    receiver_state       VARCHAR(100),
+    receiver_pincode     VARCHAR(10),
+    receiver_country     VARCHAR(100),
 
--- Shipment items
-drop index if exists idx_shipment_items_shipment;
-create index idx_shipment_items_shipment
-    on public.txn_shipment_items(shipment_id);
+    -- Financials
+    total_amount         NUMERIC(12, 2),
+    rate_amount          NUMERIC(10, 2),                                 -- Final selected rate
+    currency             VARCHAR(10)          NOT NULL DEFAULT 'INR',
 
-drop index if exists idx_shipment_items_order_item;
-create index idx_shipment_items_order_item
-    on public.txn_shipment_items(member_product_order_item_id);
+    -- Lifecycle
+    status               public.shipment_status_enum NOT NULL DEFAULT 'DRAFT',
+    retry_count          INTEGER              NOT NULL DEFAULT 0,
+    last_error           TEXT,                                           -- Last failure reason for retry/alerting
+    metadata             JSONB,                                          -- Provider-specific extra data
 
+    created_at           TIMESTAMP            NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_by           INT                  NOT NULL,
+    updated_at           TIMESTAMP            NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    modified_by          INT                  NOT NULL,
+    created_ip           VARCHAR(50)          NOT NULL,
+    modified_ip          VARCHAR(50)          NOT NULL,
 
--- Rate quotes
-drop index if exists idx_rate_quotes_shipment;
-create index idx_rate_quotes_shipment
-    on public.txn_shipment_rate_quotes(shipment_id);
+    CONSTRAINT fk_txn_shipments_created_by  FOREIGN KEY (created_by)  REFERENCES public.mst_admin_users (admin_id),
+    CONSTRAINT fk_txn_shipments_modified_by FOREIGN KEY (modified_by) REFERENCES public.mst_admin_users (admin_id)
+);
 
-drop index if exists idx_rate_quotes_provider;
-create index idx_rate_quotes_provider
-    on public.txn_shipment_rate_quotes(provider_id);
+-- -----------------------------------------------------------------------------
+-- Items within a shipment (links order items to shipment)
+-- -----------------------------------------------------------------------------
+CREATE TABLE public.txn_shipment_items
+(
+    shipment_item_id             BIGSERIAL PRIMARY KEY,
+    shipment_id                  BIGINT  NOT NULL
+        REFERENCES public.txn_shipments (shipment_id) ON DELETE CASCADE,
+    member_product_order_item_id BIGINT  NOT NULL
+        REFERENCES public.txn_member_product_order_items (member_product_order_item_id),
+    quantity                     INTEGER NOT NULL CHECK (quantity > 0),
+    created_at                   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    CONSTRAINT uq_shipment_item UNIQUE (shipment_id, member_product_order_item_id)
+);
 
+-- -----------------------------------------------------------------------------
+-- Rate quotes from all providers (fetched in parallel, one row per provider)
+-- is_selected enforced to one per shipment via partial unique index
+-- uq_rate_per_provider removed — allows re-quoting if job retries
+-- -----------------------------------------------------------------------------
+CREATE TABLE public.txn_shipment_rate_quotes
+(
+    rate_quote_id       BIGSERIAL PRIMARY KEY,
+    shipment_id         BIGINT         NOT NULL
+        REFERENCES public.txn_shipments (shipment_id) ON DELETE CASCADE,
+    provider_id         INTEGER        NOT NULL
+        REFERENCES public.mst_courier_providers (provider_id),
+    provider_account_id INTEGER
+        REFERENCES public.txn_courier_provider_accounts (provider_account_id),
+    warehouse_id        INTEGER
+        REFERENCES public.mst_warehouses (warehouse_id),               -- Which warehouse this quote is from
+    service_name        VARCHAR(100),
+    estimated_days      INTEGER        CHECK (estimated_days >= 0),
+    rate_amount         NUMERIC(10, 2) NOT NULL,
+    currency            VARCHAR(10)    NOT NULL DEFAULT 'INR',
+    is_serviceable      BOOLEAN        NOT NULL DEFAULT TRUE,
+    is_selected         BOOLEAN        NOT NULL DEFAULT FALSE,
+    expires_at          TIMESTAMPTZ,                                    -- Rate validity window from provider
+    raw_response        JSONB,
+    created_at          TIMESTAMPTZ    NOT NULL DEFAULT NOW()
+);
 
--- Tracking events
+-- Enforce only one selected rate per shipment
+CREATE UNIQUE INDEX uq_one_selected_rate_quote
+    ON public.txn_shipment_rate_quotes (shipment_id)
+    WHERE is_selected = TRUE;
 
-drop index if exists idx_tracking_shipment;
-create index idx_tracking_shipment
-    on public.txn_shipment_tracking_events(shipment_id);
+-- -----------------------------------------------------------------------------
+-- Tracking events — append-only log from webhooks, polling, or manual updates
+-- -----------------------------------------------------------------------------
+CREATE TABLE public.txn_shipment_tracking_events
+(
+    tracking_event_id BIGSERIAL PRIMARY KEY,
+    shipment_id       BIGINT                     NOT NULL
+        REFERENCES public.txn_shipments (shipment_id) ON DELETE CASCADE,
+    provider_status   VARCHAR(100),                                     -- Raw status string from provider
+    internal_status   public.shipment_status_enum,                     -- Mapped to our enum
+    description       TEXT,
+    location          VARCHAR(200),
+    event_time        TIMESTAMPTZ                NOT NULL,
+    source            public.tracking_source_enum NOT NULL,
+    raw_payload       JSONB,
+    created_at        TIMESTAMPTZ                NOT NULL DEFAULT NOW(),
+    CONSTRAINT uq_tracking_event UNIQUE (shipment_id, provider_status, event_time)
+);
 
-drop index if exists idx_tracking_event_time;
-create index idx_tracking_event_time
-    on public.txn_shipment_tracking_events(event_time);
+-- =============================================================================
+-- SECTION 6: LOGGING TABLES
+-- =============================================================================
 
--- Remove WooCommerce configuration entries from the mst_configs table
-DELETE
-FROM public.mst_configs
+-- -----------------------------------------------------------------------------
+-- All outbound API calls to courier providers (rate, book, track, cancel)
+-- -----------------------------------------------------------------------------
+CREATE TABLE public.txn_courier_api_logs
+(
+    api_log_id          BIGSERIAL PRIMARY KEY,
+    shipment_id         BIGINT,
+    provider_id         INTEGER,
+    provider_account_id INTEGER,
+    request_type        VARCHAR(50),    -- RATE, BOOK, TRACK, CANCEL, SERVICEABILITY
+    request_payload     JSONB,
+    response_payload    JSONB,
+    http_status         INTEGER,
+    error_message       TEXT,
+    response_time_ms    INTEGER,
+    created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- -----------------------------------------------------------------------------
+-- Inbound webhook payloads from courier providers
+-- provider_account_id added for multi-account routing
+-- -----------------------------------------------------------------------------
+CREATE TABLE public.txn_courier_webhook_logs
+(
+    webhook_log_id      BIGSERIAL PRIMARY KEY,
+    provider_id         INTEGER,
+    provider_account_id INTEGER REFERENCES public.txn_courier_provider_accounts (provider_account_id),
+    payload             JSONB   NOT NULL,
+    headers             JSONB,
+    signature_valid     BOOLEAN,
+    processed           BOOLEAN     NOT NULL DEFAULT FALSE,
+    error_message       TEXT,
+    created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- =============================================================================
+-- SECTION 7: INDEXES
+-- =============================================================================
+
+-- txn_shipments
+CREATE INDEX idx_shipments_order_id         ON public.txn_shipments (order_id);
+CREATE INDEX idx_shipments_franchise        ON public.txn_shipments (franchise_id);
+CREATE INDEX idx_shipments_warehouse        ON public.txn_shipments (warehouse_id);
+CREATE INDEX idx_shipments_provider         ON public.txn_shipments (provider_id);
+CREATE INDEX idx_shipments_status           ON public.txn_shipments (status);
+CREATE INDEX idx_shipments_tracking_number  ON public.txn_shipments (tracking_number);
+CREATE INDEX idx_shipments_receiver_pincode ON public.txn_shipments (receiver_pincode);
+
+-- txn_shipment_items
+CREATE INDEX idx_shipment_items_shipment    ON public.txn_shipment_items (shipment_id);
+CREATE INDEX idx_shipment_items_order_item  ON public.txn_shipment_items (member_product_order_item_id);
+
+-- txn_shipment_rate_quotes
+CREATE INDEX idx_rate_quotes_shipment       ON public.txn_shipment_rate_quotes (shipment_id);
+CREATE INDEX idx_rate_quotes_provider       ON public.txn_shipment_rate_quotes (provider_id);
+
+-- txn_shipment_tracking_events
+CREATE INDEX idx_tracking_shipment          ON public.txn_shipment_tracking_events (shipment_id);
+CREATE INDEX idx_tracking_event_time        ON public.txn_shipment_tracking_events (event_time);
+
+-- txn_courier_api_logs
+CREATE INDEX idx_api_logs_shipment          ON public.txn_courier_api_logs (shipment_id);
+CREATE INDEX idx_api_logs_provider          ON public.txn_courier_api_logs (provider_id);
+
+-- txn_courier_webhook_logs
+CREATE INDEX idx_webhook_logs_provider      ON public.txn_courier_webhook_logs (provider_id);
+CREATE INDEX idx_webhook_logs_processed     ON public.txn_courier_webhook_logs (processed) WHERE processed = FALSE;
+
+-- cache_pincode_serviceability
+CREATE INDEX idx_pincode_cache_expires      ON public.cache_pincode_serviceability (expires_at);
+
+-- =============================================================================
+-- SECTION 8: SEED DATA
+-- =============================================================================
+
+-- Remove legacy WooCommerce config
+DELETE FROM public.mst_configs
 WHERE config_name IN (
                       'WOOCOMMERCE_BASE_URL',
                       'WOOCOMMERCE_CONSUMER_KEY',
                       'WOOCOMMERCE_CONSUMER_SECRET',
                       'WOOCOMMERCE_API_VERSION'
-    )
-  AND module = 'WooCommerce';
+    ) AND module = 'WooCommerce';
 
-INSERT INTO public.mst_courier_providers (provider_id, provider_code, provider_name, auth_type, supports_rate_api,
-                                          supports_webhook, supports_cod, priority_order, active, created_at,
-                                          created_by, updated_at, modified_by, created_ip, modified_ip)
-VALUES (1, 'NIMBUS', 'Nimbus', 'JWT', true, true, true, 1, true, '2026-02-21 04:57:58.041000', 1,
-        '2026-02-21 04:57:58.041000', 1, '::1', '::1');
-INSERT INTO public.mst_courier_providers (provider_id, provider_code, provider_name, auth_type, supports_rate_api,
-                                          supports_webhook, supports_cod, priority_order, active, created_at,
-                                          created_by, updated_at, modified_by, created_ip, modified_ip)
-VALUES (2, 'SHIPROCKET', 'Ship Rocket', 'JWT', true, true, true, 2, true, '2026-02-21 04:58:19.996000', 1,
-        '2026-02-21 04:58:19.996000', 1, '::1', '::1');
-INSERT INTO public.mst_courier_providers (provider_id, provider_code, provider_name, auth_type, supports_rate_api,
-                                          supports_webhook, supports_cod, priority_order, active, created_at,
-                                          created_by, updated_at, modified_by, created_ip, modified_ip)
-VALUES (3, 'SHIPWAY', 'Shipway', 'API_KEY', true, true, true, 3, true, '2026-02-21 04:58:39.887000', 1,
-        '2026-02-21 04:58:39.887000', 1, '::1', '::1');
+-- Courier Providers (supports_cod removed)
+INSERT INTO public.mst_courier_providers
+(provider_id, provider_code, provider_name, auth_type, supports_rate_api, supports_webhook, priority_order, active, created_at, created_by, updated_at, modified_by, created_ip, modified_ip)
+VALUES
+    (1, 'NIMBUS',     'Nimbus Post', 'JWT',     TRUE, TRUE, 1, TRUE, '2026-02-21 04:57:58', 1, '2026-02-21 04:57:58', 1, '::1', '::1'),
+    (2, 'SHIPROCKET', 'Shiprocket',  'JWT',     TRUE, TRUE, 2, TRUE, '2026-02-21 04:58:19', 1, '2026-02-21 04:58:19', 1, '::1', '::1'),
+    (3, 'SHIPWAY',    'Shipway',     'API_KEY', TRUE, TRUE, 3, TRUE, '2026-02-21 04:58:39', 1, '2026-02-21 04:58:39', 1, '::1', '::1');
 
+-- Courier Provider Accounts (franchise_id = 3)
+INSERT INTO public.txn_courier_provider_accounts
+(provider_id, franchise_id, account_name, api_base_url, username, password_encrypted, webhook_secret, active, created_by, modified_by, created_ip, modified_ip)
+VALUES
+    (1, 3, 'Nimbus Main Account', 'https://api.nimbuspost.com/v1',  'logistics@eatfit24by7.com', 'ENCRYPTED_NIMBUS_PASSWORD',     'nimbus_webhook_secret_key',     TRUE, 1, 1, '127.0.0.1', '127.0.0.1'),
+    (2, 3, 'Shiprocket Primary',  'https://apiv2.shiprocket.in/v1',  'SHIPROCKET_API_KEY',        'ENCRYPTED_SHIPROCKET_SECRET',   'shiprocket_webhook_secret_key', TRUE, 1, 1, '127.0.0.1', '127.0.0.1'),
+    (3, 3, 'Shipway Logistics',   'https://api.shipway.com',      'SHIPWAY_API_KEY',           '',                              'shipway_webhook_secret_key',    TRUE, 1, 1, '127.0.0.1', '127.0.0.1');
 
-insert into public.txn_courier_provider_accounts
-(provider_id,
- franchise_id,
- account_name,
- api_base_url,
- username,
- password_encrypted,
- webhook_secret,
- active, created_by, modified_by, created_ip, modified_ip)
-values (1, -- NIMBUS
-        3, -- franchise_id
-        'Nimbus Main Account',
-        'https://ship.nimbuspost.com',
-        'logistics@eatfit24by7.com',
-        'ENCRYPTED_NIMBUS_PASSWORD',
-        'nimbus_webhook_secret_key',
-        true, 1, 1, '127.0.0.1', '127.0.0.1'),
-       (2, -- SHIPROCKET
-        3,
-        'Shiprocket Primary',
-        'https://apiv2.shiprocket.in',
-        'SHIPROCKET_API_KEY',
-        'ENCRYPTED_SHIPROCKET_SECRET',
-        'shiprocket_webhook_secret_key',
-        true, 1, 1, '127.0.0.1', '127.0.0.1'),
-       (3, -- SHIPWAY
-        3,
-        'Shipway Logistics',
-        'https://api.shipway.com',
-        'SHIPWAY_API_KEY',
-        '',
-        'shipway_webhook_secret_key', true, 1, 1, '127.0.0.1', '127.0.0.1');
+ALTER TABLE public.txn_shipments
+    ADD COLUMN last_known_status public.shipment_status_enum,  -- status before failure
+  ADD COLUMN next_retry_at     TIMESTAMPTZ;                  -- cron checks this field

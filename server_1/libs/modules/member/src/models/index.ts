@@ -12,7 +12,3 @@ export * from './txn-member-product-order-item.model';
 export * from './txn-member-diet-plan.model';
 export * from './txn-member-diet-detail.model';
 export * from './txn-assessment.model';
-export * from './txn-shipment.model';
-export * from './txn-shipment-item.model';
-export * from './txn-shipment-tracking-event.model';
-

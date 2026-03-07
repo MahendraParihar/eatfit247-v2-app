@@ -30,7 +30,6 @@ import {
   ViewProductOrderDetailsComponent,
   ViewProductOrderDetailsData,
 } from './view-product-order-details/view-product-order-details.component';
-import { ShipmentFlowComponent, ShipmentFlowData } from 'delivery';
 
 @Component({
   selector: 'lib-member-product-orders',
@@ -188,13 +187,6 @@ export class MemberProductOrdersComponent implements OnInit, OnDestroy {
               );
             },
           },
-          {
-            label: 'Start Shipment',
-            icon: 'local_shipping',
-            tooltip: 'Start Shipment Flow',
-            onClick: (row: IMemberProduct) => this.startShipmentFlow(row),
-            visible: (row: IMemberProduct) => !this.isFullyShipped(row),
-          },
         ],
         column: {
           headerLabel: 'Actions',
@@ -246,40 +238,6 @@ export class MemberProductOrdersComponent implements OnInit, OnDestroy {
       return 'status-failed';
     }
     return '';
-  }
-
-  private isFullyShipped(productOrder: IMemberProduct): boolean {
-    return false;
-    // if (!productOrder || !productOrder.orderItems || productOrder.orderItems.length === 0) {
-    //   return false;
-    // }
-    //
-    // const totalOrdered = productOrder.orderItems.reduce(
-    //   (sum, item) => sum + (item.quantity || 0),
-    //   0
-    // );
-    //
-    // if (totalOrdered === 0) {
-    //   return false;
-    // }
-    //
-    // const shipments = productOrder.shipments || [];
-    //
-    // const totalShipped = shipments
-    //   .filter((shipment) => {
-    //     const status = shipment.status ? shipment.status.toUpperCase() : '';
-    //     return status !== 'FAILED' && status !== 'CANCELLED';
-    //   })
-    //   .reduce((sum, shipment) => {
-    //     const items = shipment.shipmentItems || [];
-    //     const shipmentQty = items.reduce(
-    //       (innerSum, item) => innerSum + (item.quantity || 0),
-    //       0
-    //     );
-    //     return sum + shipmentQty;
-    //   }, 0);
-    //
-    // return totalShipped >= totalOrdered;
   }
 
   addProductOrder(): void {
@@ -407,37 +365,4 @@ export class MemberProductOrdersComponent implements OnInit, OnDestroy {
     }
   }
 
-  startShipmentFlow(productOrder: IMemberProduct): void {
-    if (this.isFullyShipped(productOrder)) {
-      this.snackBar.open(
-        'This product order is fully shipped. No additional shipments can be created.',
-        'Close',
-        {
-          duration: 5000,
-        }
-      );
-      return;
-    }
-    if (!productOrder.memberProductId) {
-      this.snackBar.open('Product Order ID is not available', 'Close', {
-        duration: 3000,
-      });
-      return;
-    }
-    const dialogData: ShipmentFlowData = {
-      memberProductId: productOrder.memberProductId,
-      memberId: this.memberId,
-    };
-    const dialogRef = this.dialog.open(ShipmentFlowComponent, {
-      width: '1200px',
-      maxWidth: '95vw',
-      maxHeight: '95vh',
-      data: dialogData,
-    });
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result === true) {
-        // Optionally reload product orders if needed
-      }
-    });
-  }
 }

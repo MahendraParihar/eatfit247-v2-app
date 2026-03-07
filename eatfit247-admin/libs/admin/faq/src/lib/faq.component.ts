@@ -29,6 +29,7 @@ export class Faq implements OnInit {
   loading = false;
   tableConfig!: ITableConfig<IFaq>;
   private searchSubject = new Subject<string>();
+  currentSearch = '';
 
   constructor(
     private apiService: FaqApiService,
@@ -137,7 +138,8 @@ export class Faq implements OnInit {
     try {
       const response: ITableList<IFaq> = await this.apiService.getList({
         page: 0,
-        limit: this.tableConfig.pageSize || 10
+        limit: this.tableConfig.pageSize || 10,
+        search: this.currentSearch?.trim() || undefined
       });
       this.data = response.tableData;
       this.totalCount = response.count;
@@ -152,7 +154,8 @@ export class Faq implements OnInit {
     try {
       const response: ITableList<IFaq> = await this.apiService.getList({
         page: pagination.pageIndex,
-        limit: pagination.pageSize
+        limit: pagination.pageSize,
+        search: this.currentSearch?.trim() || undefined
       });
       this.data = response.tableData;
       this.totalCount = response.count;
@@ -169,7 +172,8 @@ export class Faq implements OnInit {
         page: 0,
         limit: this.tableConfig.pageSize || 10,
         sortBy: sort.active,
-        sortOrder: sort.direction
+        sortOrder: sort.direction,
+        search: this.currentSearch?.trim() || undefined
       });
       this.data = response.tableData;
       this.totalCount = response.count;
@@ -180,6 +184,7 @@ export class Faq implements OnInit {
   }
 
   onSearchChange(search: string): void {
+    this.currentSearch = search;
     this.searchSubject.next(search);
   }
 

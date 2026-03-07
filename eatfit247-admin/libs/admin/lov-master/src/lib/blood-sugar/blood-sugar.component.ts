@@ -28,6 +28,7 @@ export class BloodSugar implements OnInit {
   loading = false;
   tableConfig!: ITableConfig<IBloodSugar>;
   private searchSubject = new Subject<string>();
+  currentSearch = '';
 
   constructor(
     private apiService: LovMasterApiService,
@@ -169,7 +170,7 @@ export class BloodSugar implements OnInit {
   async loadData(): Promise<void> {
     this.loading = true;
     try {
-      const response: ITableList<IBloodSugar> = await this.apiService.getBloodSugarList({ page: 0, limit: this.tableConfig.pageSize || 10 });
+      const response: ITableList<IBloodSugar> = await this.apiService.getBloodSugarList({ page: 0, limit: this.tableConfig.pageSize || 10, search: this.currentSearch?.trim() || undefined });
       this.data = response.tableData;
       this.totalCount = response.count;
       this.loading = false;
@@ -184,6 +185,7 @@ export class BloodSugar implements OnInit {
       const response: ITableList<IBloodSugar> = await this.apiService.getBloodSugarList({
         page: pagination.pageIndex,
         limit: pagination.pageSize,
+        search: this.currentSearch?.trim() || undefined,
       });
       this.data = response.tableData;
       this.totalCount = response.count;
@@ -201,6 +203,7 @@ export class BloodSugar implements OnInit {
         limit: this.tableConfig.pageSize || 10,
         sortBy: sort.active,
         sortOrder: sort.direction,
+        search: this.currentSearch?.trim() || undefined,
       });
       this.data = response.tableData;
       this.totalCount = response.count;
@@ -211,6 +214,7 @@ export class BloodSugar implements OnInit {
   }
 
   onSearchChange(search: string): void {
+    this.currentSearch = search;
     this.searchSubject.next(search);
   }
 

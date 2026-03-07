@@ -60,7 +60,6 @@ import { Sequelize } from 'sequelize-typescript';
 import { promises as fs } from 'fs';
 import { find, map, sumBy } from 'lodash';
 import { MemberService } from './member.service';
-import { ShipmentService } from '../../../delivery';
 
 @Injectable()
 export class MemberProductService {
@@ -79,7 +78,6 @@ export class MemberProductService {
     private readonly franchisePaymentGatewayService: FranchisePaymentGatewayService,
     private readonly paymentGatewayResolverService: PaymentGatewayResolverService,
     private readonly paymentGatewayFactory: PaymentGatewayFactory,
-    private readonly shipmentService: ShipmentService,
     private readonly paymentGatewayCredentialService: PaymentGatewayCredentialService,
     private readonly invoicePdfService: InvoicePdfService,
     private readonly invoiceSequenceService: InvoiceSequenceService,
@@ -107,13 +105,7 @@ export class MemberProductService {
       },
       order: [['paymentDate', 'DESC']],
     });
-    const memberProductIds = [];
-    for (const m of rows) {
-      memberProductIds.push(...map(m.orderItems, 'memberProductOrderItemId'));
-    }
-    const shipmentDetails: IShipment[] = await this.shipmentService.fetchShipmentDetails(
-      memberProductIds,
-    );
+    const shipmentDetails: IShipment[] = [];
     return <ITableList<IMemberProduct>>{
       tableData: rows.map((item: any) => this.convertToModel(item, shipmentDetails)),
       count,
@@ -139,10 +131,7 @@ export class MemberProductService {
     if (!product) {
       throw new NotFoundException('Member product not found');
     }
-    const memberProductIds = map(product.orderItems, 'memberProductOrderItemId');
-    const shipmentDetails: IShipment[] = await this.shipmentService.fetchShipmentDetails(
-      memberProductIds,
-    );
+    const shipmentDetails: IShipment[] = [];
     return this.convertToModel(product, shipmentDetails);
   }
 

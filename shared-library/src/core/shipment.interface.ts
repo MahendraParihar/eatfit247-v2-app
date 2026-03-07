@@ -1,6 +1,32 @@
-import { IAdminInfo } from '../base.interface';
-import { ShipmentStatusEnum, ShipmentTrackingEnum, ShipmentTrackingSourceEnum } from '../enum';
-import { IAddress } from './location.interface';
+import {IAdminInfo} from '../base.interface';
+import {ShipmentTrackingEnum, ShipmentTrackingSourceEnum} from '../enum';
+
+export interface ICreateShipmentPayload {
+  orderId: number;
+  franchiseId: number;
+  shipmentNumber: string;
+  totalAmount: number;
+  currency: string;
+  totalWeightKg: number | null;
+  lengthCm: number | null;
+  widthCm: number | null;
+  heightCm: number | null;
+  receiverName: string;
+  receiverPhone: string;
+  receiverAddress: string;
+  receiverCity: string;
+  receiverState: string;
+  receiverPincode: string;
+  receiverCountry: string;
+  items: ICreateShipmentItemPayload[];
+  createdBy: number;
+  createdIp: string;
+}
+
+export interface ICreateShipmentItemPayload {
+  memberProductOrderItemId: number;
+  quantity: number;
+}
 
 export interface IShipmentItem {
   shipmentItemId: number;
@@ -19,15 +45,6 @@ export interface IShipmentTrackingEvent {
   createdAt: Date;
 }
 
-export interface IShipmentAddress{
-  postcode: string;
-  address: string;
-  city: string;
-  state: string;
-  name: string;
-  phone: string;
-}
-
 export interface IShipmentItemDimensions{
     length:number;
     breadth:number;
@@ -37,10 +54,6 @@ export interface IShipmentItemDimensions{
 
 export interface IShipmentMetaData{
   idempotencyKeys?: {[key:string]: string};
-    pickup?: IShipmentAddress;
-    delivery?: IShipmentAddress;
-  billing?: IShipmentAddress;
-  shipping?: IShipmentAddress;
     weight?: number;
     dimensions?: IShipmentItemDimensions;
     codAmount:number;
@@ -54,10 +67,12 @@ export interface IShipmentMetaData{
 
 export interface IShipment extends IAdminInfo {
   shipmentId: number;
+  orderId: number;
   shipmentNumber: string;
   providerId?: number;
   providerAccountId?: number;
   franchiseId: number;
+  warehouseId: number;
   trackingNumber?: string;
   trackingUrl?: string;
   totalWeightKg?: number;
@@ -67,71 +82,7 @@ export interface IShipment extends IAdminInfo {
   status: string;
   providerName?: string;
   serviceName?: string;
-  metaData?: IShipmentMetaData;
+  metaData?: object;
   shipmentItems?: IShipmentItem[];
   trackingEvents?: IShipmentTrackingEvent[];
-}
-
-export interface IRateQuote {
-  rateQuoteId?: number;
-  providerId: number;
-  providerName?: string;
-  serviceId?: number;
-  serviceCode: string;
-  serviceName: string;
-  rateAmount: number;
-  currency: string;
-  estimatedDays?: number;
-  estimatedDeliveryDate?: Date;
-  metadata?: Record<string, unknown>;
-}
-
-export interface ITrackingEvent {
-  trackingEventId: number;
-  providerStatus: string;
-  internalStatus: string;
-  description?: string;
-  eventTime: Date;
-  location?: string;
-}
-
-export interface ITrackingInfo {
-  trackingNumber: string;
-  trackingUrl?: string;
-  currentStatus: string;
-  providerName?: string;
-  estimatedDeliveryDate?: Date;
-  trackingEvents: ITrackingEvent[];
-}
-
-export interface INimbusShipmentPayload{
-  "order_number": string;
-    "payment_type": string;
-    "order_amount": number;
-    "cod_amount": number,
-    "package_weight": number,
-    "package_length": number,
-    "package_breadth": number,
-    "package_height": number,
-    "pickup_location": string;
-    "billing_customer_name": string;
-    "billing_last_name": string;
-    "billing_address": string;
-    "billing_city": string;
-    "billing_pincode": string;
-    "billing_state": string;
-    "billing_country": string;
-    "billing_email": string;
-    "billing_phone": string;
-    "shipping_is_billing": true;
-    "order_items":{
-      "name": string;
-      "sku": string;
-      "units": number,
-      "selling_price": number,
-      "discount": number,
-      "tax": number,
-      "hsn": string }[];
-    "support_email": string;
-    "support_phone": string;
 }

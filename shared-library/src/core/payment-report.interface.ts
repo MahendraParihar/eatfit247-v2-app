@@ -1,9 +1,4 @@
-import { IMemberPayment } from './member-payment.interface';
-
-/**
- * Payment Report Interfaces
- * Shared interfaces for payment reporting across frontend and backend
- */
+import {IMemberPayment} from "./member";
 
 export interface IPaymentReportFilter {
   startDate: string;

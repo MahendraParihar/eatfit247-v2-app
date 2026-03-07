@@ -1,9 +1,8 @@
 import { IInvoiceDocument, IInvoiceItem, IInvoiceTaxRow } from './invoice-document.interface';
 import { TaxMode, TaxTypeEnum, TransactionType } from '../../enum';
-import { IMemberPayment } from '../member-payment.interface';
 import { IFranchise } from '../franchise.interface';
 import { IAddress } from '../location.interface';
-import { IMemberProduct } from '../member-product.interface';
+import {IMemberPayment, IMemberProduct} from "../member";
 
 /**
  * Optional member information for buyer details

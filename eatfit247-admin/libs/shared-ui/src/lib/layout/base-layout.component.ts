@@ -200,6 +200,16 @@ export class BaseLayoutComponent implements OnInit, OnDestroy {
           icon: 'account_circle',
           route: '/delivery/courier-provider-accounts',
         },
+        {
+          label: 'Warehouses',
+          icon: 'warehouse',
+          route: '/delivery/warehouses',
+        },
+        {
+          label: 'Courier Provider Warehouse Mapping',
+          icon: 'local_shipping',
+          route: '/delivery/courier-provider-warehouses',
+        },
       ],
     },
     {

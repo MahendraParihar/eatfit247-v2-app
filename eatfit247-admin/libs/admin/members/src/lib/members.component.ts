@@ -42,7 +42,8 @@ export class Members implements OnInit, AfterViewInit {
   loading = false;
   tableConfig!: ITableConfig<IMember>;
   private searchSubject = new Subject<string>();
-  
+  currentSearch = '';
+
   franchiseOptions: IDropdownItem[] = [];
   countryOptions: IDropdownItem[] = [];
   selectedFranchiseId: number | null = null;
@@ -171,28 +172,35 @@ export class Members implements OnInit, AfterViewInit {
   private setupSearch(): void {
     this.searchSubject.pipe(debounceTime(300), distinctUntilChanged(), switchMap((search) => {
       this.loading = true;
-      return this.apiService.getList({ 
-        search, 
-        page: 0, 
-        limit: this.tableConfig.pageSize || 10,
-        franchiseId: this.selectedFranchiseId || undefined,
-        countryId: this.selectedCountryId || undefined
-      } as any);
+      return this.apiService.getList(this.buildListParams({ search, page: 0 }));
     })).subscribe({
       next: (response) => { this.data = response.tableData; this.totalCount = response.count; this.loading = false; },
       error: () => { this.loading = false; },
     });
   }
 
+  private buildListParams(overrides: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    sortBy?: string;
+    sortOrder?: string;
+  } = {}): Parameters<MembersApiService['getList']>[0] {
+    const search = (overrides.search ?? this.currentSearch)?.trim() || undefined;
+    const base = {
+      page: 0,
+      limit: this.tableConfig?.pageSize || 10,
+      search,
+      franchiseId: this.selectedFranchiseId || undefined,
+      countryId: this.selectedCountryId || undefined,
+    };
+    return { ...base, ...overrides, search } as Parameters<MembersApiService['getList']>[0];
+  }
+
   async loadData(): Promise<void> {
     this.loading = true;
     try {
-      const response: ITableList<IMember> = await this.apiService.getList({ 
-        page: 0, 
-        limit: this.tableConfig.pageSize || 10,
-        franchiseId: this.selectedFranchiseId || undefined,
-        countryId: this.selectedCountryId || undefined
-      } as any);
+      const response: ITableList<IMember> = await this.apiService.getList(this.buildListParams());
       this.data = response.tableData;
       this.totalCount = response.count;
       this.loading = false;
@@ -204,12 +212,9 @@ export class Members implements OnInit, AfterViewInit {
   async onPageChange(pagination: any): Promise<void> {
     this.loading = true;
     try {
-      const response: ITableList<IMember> = await this.apiService.getList({ 
-        page: pagination.pageIndex, 
-        limit: pagination.pageSize,
-        franchiseId: this.selectedFranchiseId || undefined,
-        countryId: this.selectedCountryId || undefined
-      } as any);
+      const response: ITableList<IMember> = await this.apiService.getList(
+        this.buildListParams({ page: pagination.pageIndex, limit: pagination.pageSize })
+      );
       this.data = response.tableData;
       this.totalCount = response.count;
       this.loading = false;
@@ -221,14 +226,9 @@ export class Members implements OnInit, AfterViewInit {
   async onSortChange(sort: any): Promise<void> {
     this.loading = true;
     try {
-      const response: ITableList<IMember> = await this.apiService.getList({ 
-        page: 0, 
-        limit: this.tableConfig.pageSize || 10, 
-        sortBy: sort.active, 
-        sortOrder: sort.direction,
-        franchiseId: this.selectedFranchiseId || undefined,
-        countryId: this.selectedCountryId || undefined
-      } as any);
+      const response: ITableList<IMember> = await this.apiService.getList(
+        this.buildListParams({ page: 0, sortBy: sort.active, sortOrder: sort.direction })
+      );
       this.data = response.tableData;
       this.totalCount = response.count;
       this.loading = false;
@@ -238,6 +238,7 @@ export class Members implements OnInit, AfterViewInit {
   }
 
   onSearchChange(search: string): void {
+    this.currentSearch = search;
     this.searchSubject.next(search);
   }
 

@@ -29,6 +29,7 @@ export class PromoCode implements OnInit {
   loading = false;
   tableConfig!: ITableConfig<IPromoCode>;
   private searchSubject = new Subject<string>();
+  currentSearch = '';
 
   constructor(
     private apiService: PromoCodeApiService,
@@ -200,11 +201,12 @@ export class PromoCode implements OnInit {
   }
 
   onSearch(search: string): void {
+    this.currentSearch = search;
     this.searchSubject.next(search);
   }
 
   onPageChange(page: number, limit: number): void {
-    this.loadData(page, limit);
+    this.loadData(page, limit, this.currentSearch?.trim() || '');
   }
 
   editItem(row: IPromoCode): void {
@@ -214,7 +216,7 @@ export class PromoCode implements OnInit {
   async toggleStatus(row: IPromoCode): Promise<void> {
     try {
       await this.apiService.updateStatus(row.promoCodeId, !row.active);
-      await this.loadData();
+      await this.loadData(0, this.tableConfig.pageSize || 10, this.currentSearch?.trim() || '');
     } catch (error) {
       // Error toast is handled by HttpErrorInterceptor
     }

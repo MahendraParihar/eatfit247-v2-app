@@ -26,6 +26,7 @@ export class TaxMasterComponent implements OnInit {
   totalCount = 0;
   loading = false;
   tableConfig!: ITableConfig<ITaxMaster>;
+  currentSearch = '';
 
   constructor(
     private apiService: TaxMasterApiService,
@@ -176,7 +177,11 @@ export class TaxMasterComponent implements OnInit {
   }
 
   async onPageChange(pagination: { pageIndex: number; pageSize: number }): Promise<void> {
-    await this.loadData({ page: pagination.pageIndex, limit: pagination.pageSize });
+    await this.loadData({
+      page: pagination.pageIndex,
+      limit: pagination.pageSize,
+      name: this.currentSearch?.trim() || undefined,
+    } as IBasicSearch);
   }
 
   async onSortChange(event: any): Promise<void> {
@@ -186,14 +191,16 @@ export class TaxMasterComponent implements OnInit {
       limit: this.tableConfig.pageSize || 10,
       sortBy: sort.active,
       sortOrder: sort.direction,
+      name: this.currentSearch?.trim() || undefined,
     } as IBasicSearch);
   }
 
   onSearchChange(search: string): void {
+    this.currentSearch = search;
     void this.loadData({
       page: 0,
       limit: this.tableConfig.pageSize || 10,
-      name: search || undefined,
+      name: search?.trim() || undefined,
     } as IBasicSearch);
   }
 
@@ -214,7 +221,7 @@ export class TaxMasterComponent implements OnInit {
     this.loading = true;
     try {
       await this.apiService.updateStatus(item.id, !item.active);
-      await this.loadData({ page: 0, limit: this.tableConfig.pageSize || 10 });
+      await this.loadData({ page: 0, limit: this.tableConfig.pageSize || 10, name: this.currentSearch?.trim() || undefined } as IBasicSearch);
     } finally {
       this.loading = false;
     }
