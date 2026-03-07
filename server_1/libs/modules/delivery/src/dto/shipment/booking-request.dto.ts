@@ -42,6 +42,10 @@ export class BookingRequestDto {
 
   @IsOptional()
   @IsString()
+  idempotencyKey?: string;
+
+  @IsOptional()
+  @IsString()
   @MaxLength(100)
   shipmentNumber?: string;
 
