@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import * as path from 'path';
 import { existsSync, readFileSync } from 'fs';
 import * as hbs from 'handlebars';
@@ -16,6 +16,7 @@ import * as QRCode from 'qrcode';
 @Injectable()
 export class InvoicePdfService {
   private currencySymbolCache: Map<string, string> = new Map();
+  private readonly logger = new Logger(InvoicePdfService.name);
 
   constructor() {}
   /**
@@ -36,7 +37,7 @@ export class InvoicePdfService {
           margin: 1,
         });
       } catch (error) {
-        console.error('Failed to generate QR code:', error);
+        this.logger.error('Failed to generate QR code', { error });
         // Continue without QR code if generation fails
       }
     }

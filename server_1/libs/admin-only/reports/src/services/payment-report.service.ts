@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op, Sequelize } from 'sequelize';
 import { MemberPlanService, TxnMember, TxnMemberPayment } from '@server_1/modules/member';
@@ -10,6 +10,8 @@ import moment from 'moment/moment';
 
 @Injectable()
 export class PaymentReportService {
+  private readonly logger = new Logger(PaymentReportService.name);
+
   constructor(
     @InjectModel(TxnMemberPayment)
     private readonly memberPaymentRepository: typeof TxnMemberPayment,
@@ -170,7 +172,10 @@ export class PaymentReportService {
         const fileName = `Invoice_${memberName}_${paymentId}.pdf`;
         archive.append(pdfBuffer, { name: fileName });
       } catch (error) {
-        console.error(`Failed to generate invoice for payment ${item.memberPaymentId}:`, error);
+        this.logger.error(
+          `Failed to generate invoice for payment ${item.memberPaymentId}`,
+          { error },
+        );
         // Continue with other invoices even if one fails
       }
     });

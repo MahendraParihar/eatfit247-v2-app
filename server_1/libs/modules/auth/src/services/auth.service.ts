@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { JwtService, JwtSignOptions } from '@nestjs/jwt';
 import {
@@ -26,6 +26,8 @@ import moment from 'moment';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     @InjectModel(MstAdminUser) private readonly adminRepository: typeof MstAdminUser,
     @InjectModel(TxnAdminLastLoginDetail)
@@ -244,8 +246,7 @@ export class AuthService {
       });
     } catch (error) {
       // Log error but don't fail the request - password reset token is already created
-      // In production, you might want to use a proper logging service here
-      console.error('Failed to send password reset email:', error);
+      this.logger.error('Failed to send password reset email', { error });
     }
     return 'Password reset link has been sent to your email address.';
   }
@@ -325,7 +326,7 @@ export class AuthService {
           });
         } catch (error) {
           // Log error but don't fail the request
-          console.error('Failed to send password reset success email:', error);
+          this.logger.error('Failed to send password reset success email', { error });
         }
       }
       return true;

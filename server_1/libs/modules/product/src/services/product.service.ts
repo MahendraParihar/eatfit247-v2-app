@@ -1,6 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { MstProduct, MstProductPrice, MstProductVariant } from '../models';
+import {
+  MstProduct,
+  MstProductPrice,
+  MstProductVariant,
+} from '@server_1/models/product';
 import {
   IBasicSearch,
   IManageProduct,

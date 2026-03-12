@@ -102,7 +102,10 @@ export class NimbusAdapter extends BaseCourierAdapter {
         ratePayload.breadth = payload.dimensions.breadth ?? payload.dimensions.width ?? 10;
         ratePayload.height = payload.dimensions.height ?? 10;
       }
-      console.log(ratePayload);
+      this.logger.debug(
+        `${this.providerCode} rate request payload`,
+        typeof ratePayload === 'object' ? ratePayload : { ratePayload },
+      );
       const response = await this.withTimeout(
         this.httpService.post<INimbusServiceabilityResponse>(
           `${credentials.apiBaseUrl}/courier/serviceability`,
@@ -143,8 +146,10 @@ export class NimbusAdapter extends BaseCourierAdapter {
       // Get authentication headers
       const headers = await this.getAuthHeaders(credentials);
 
-      console.log('----------------------------PAYLOAD');
-      console.log(payload);
+      this.logger.debug(
+        `${this.providerCode} booking payload`,
+        typeof payload === 'object' ? payload : { payload },
+      );
 
       // Build shipment request payload according to Nimbus API specification
       const shipmentPayload: INimbusShipmentPayload = {
@@ -175,7 +180,7 @@ export class NimbusAdapter extends BaseCourierAdapter {
         },
       };
       // Add items if provided
-      if (payload.items && Array.isArray(payload.items) && payload.items.length > 0) {
+      if (payload.items && payload.items.length > 0) {
         shipmentPayload.order_items = payload.items.map((item: any) => ({
           name: item.name,
           sku: item.sku || item.productSku || '',
@@ -190,7 +195,10 @@ export class NimbusAdapter extends BaseCourierAdapter {
         if (payload.dimensions.breadth)
           shipmentPayload.package_breadth = payload.dimensions.breadth;
       }
-      console.log(shipmentPayload);
+      this.logger.debug(
+        `${this.providerCode} shipment payload`,
+        typeof shipmentPayload === 'object' ? shipmentPayload : { shipmentPayload },
+      );
       const response = await this.withTimeout(
         this.httpService.post(
           `${credentials.apiBaseUrl}/shipments`,
@@ -201,7 +209,6 @@ export class NimbusAdapter extends BaseCourierAdapter {
         10_000,
         'shipment booking',
       );
-      console.log(response);
       const shipment = (response?.data || response) as INimbusShipmentResponse;
       if (!shipment) {
         throw new Error(`${this.providerCode} Invalid response format from Nimbus shipment API`);

@@ -262,7 +262,9 @@ export class ShipmentOrchestrationService {
         throw new Error('No active warehouse-provider pairs found');
       }
 
-      console.log(pairs);
+      this.logger.debug(
+        `[Shipment:${shipmentId}] Resolved ${pairs.length} warehouse-provider pair(s)`,
+      );
 
       // Record the resolved warehouse on the shipment (first available)
       if (!shipment.warehouseId && pairs[0].warehouseId) {
@@ -271,8 +273,7 @@ export class ShipmentOrchestrationService {
 
       // ── Step B: Fetch rates in parallel from all pairs ───────────────────
       const rateReq = this.buildRateRequest(shipment, deliveryPincode);
-
-      console.log(rateReq);
+      this.logger.debug(`[Shipment:${shipmentId}] Built rate request payload`);
 
       await Promise.allSettled(
         pairs.map((pair) => this.fetchAndSaveRatesForPair(shipmentId, pair, rateReq)),
@@ -306,7 +307,9 @@ export class ShipmentOrchestrationService {
         throw new Error('Rate selector returned no valid quote');
       }
 
-      console.log(best);
+      this.logger.log(
+        `[Shipment:${shipmentId}] Selected best quote ${best.rateQuoteId} from provider account ${best.providerAccountId}`,
+      );
 
       // ── Step D: Persist selection ────────────────────────────────────────
       await this.shipmentRecordService.selectRateQuote(shipmentId, best.rateQuoteId ?? 0);
@@ -317,7 +320,6 @@ export class ShipmentOrchestrationService {
       // ── Step E: Book with selected provider ──────────────────────────────
       await this.bookWithSelectedQuote(updatedShipment);
     } catch (err: unknown) {
-      console.log(err);
       const message = this.errMsg(err);
       const retryCount = (shipment.retryCount ?? 0) + 1;
       const nextRetryAt =
@@ -360,9 +362,8 @@ export class ShipmentOrchestrationService {
     await this.shipmentRecordService.markBookingRequested(shipmentId);
 
     try {
-      console.log(shipment);
+      this.logger.debug(`[Shipment:${shipmentId}] Building booking payload`);
       const bookingPayload = this.buildBookingRequest(shipment);
-      console.log(bookingPayload);
       const adapter = this.courierFactory.getAdapter(pair.providerCode);
       const providerRes = await adapter.createShipment(bookingPayload, pair.credentials);
 
@@ -493,7 +494,7 @@ export class ShipmentOrchestrationService {
       orderAmount: shipment.totalAmount,
       codAmount: 0, // Prepaid only
       weight: shipment.totalWeightKg,
-      orderItems: orderItems,
+      items: orderItems,
       dimensions: shipment.lengthCm
         ? {
             length: shipment.lengthCm,
@@ -506,7 +507,6 @@ export class ShipmentOrchestrationService {
   }
 
   private buildBookingRequest(shipment: TxnShipment): IBookingRequest {
-    console.log(shipment.shipmentItems);
     return {
       ...this.buildRateRequest(shipment),
       pickup: {

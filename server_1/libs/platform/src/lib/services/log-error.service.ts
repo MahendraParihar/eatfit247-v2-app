@@ -1,9 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { LogErrorModel } from '../database/models/log-error.model';
 
 @Injectable()
 export class LogErrorService {
+  private readonly logger = new Logger(LogErrorService.name);
+
   constructor(@InjectModel(LogErrorModel) private logErrorModel: typeof LogErrorModel) {}
 
   /**
@@ -23,7 +25,9 @@ export class LogErrorService {
     },
   ): Promise<void> {
     try {
-      console.error(error);
+      this.logger.error(error instanceof Error ? error.message : String(error), {
+        stack: error instanceof Error ? error.stack : undefined,
+      });
       const errorMessage = error instanceof Error ? error.message : String(error);
       const errorStack = error instanceof Error ? error.stack : undefined;
 
@@ -39,9 +43,11 @@ export class LogErrorService {
         exceptionStacktrace: errorStack || null,
       } as any);
     } catch (logError) {
-      // Fallback to console if logging fails
-      console.error('Failed to log error to database:', logError);
-      console.error('Original error:', error);
+      // Swallow secondary logging failures but record in application logger
+      this.logger.error('Failed to log error to database', {
+        logError,
+        originalError: error,
+      });
     }
   }
 
@@ -67,9 +73,11 @@ export class LogErrorService {
         exceptionType: 'Warning',
       } as any);
     } catch (logError) {
-      // Fallback to console if logging fails
-      console.warn('Failed to log warning to database:', logError);
-      console.warn('Original message:', message);
+      // Swallow secondary logging failures but record in application logger
+      this.logger.warn('Failed to log warning to database', {
+        logError,
+        message,
+      });
     }
   }
 

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize-typescript';
 import { TxnMember, TxnMemberDietDetail, TxnMemberDietPlan, TxnMemberPayment } from '../models';
@@ -28,6 +28,8 @@ import fs from 'fs';
 
 @Injectable()
 export class MemberDietPlanService {
+  private readonly logger = new Logger(MemberDietPlanService.name);
+
   constructor(
     @InjectModel(TxnMemberDietPlan)
     private readonly memberDietPlanRepository: typeof TxnMemberDietPlan,
@@ -971,7 +973,7 @@ export class MemberDietPlanService {
           recipes.push(recipe);
         } catch (error) {
           // Skip if recipe not found
-          console.warn(`Recipe ${recipeId} not found, skipping`);
+          this.logger.warn(`Recipe ${recipeId} not found, skipping`, { error });
         }
       }
     }
@@ -986,7 +988,7 @@ export class MemberDietPlanService {
         franchise = franchiseList.tableData.find((f: any) => f.isPrimary) || franchiseList.tableData[0];
       }
     } catch (error) {
-      console.warn('Could not fetch franchise information', error);
+      this.logger.warn('Could not fetch franchise information', { error });
     }
     // Format start date for plan display
     const startDate = dietDetailData.diet.startDate

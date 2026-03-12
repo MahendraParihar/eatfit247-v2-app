@@ -19,7 +19,7 @@ import { MstPaymentMode, MstPaymentStatus, TxnAddress } from '@server_1/platform
 import { TxnMember } from './txn-member.model';
 import { InputLengthEnum, PaymentSourceEnum } from '@eatfit247-shared-lib';
 import { TxnMemberProductOrderItem } from './txn-member-product-order-item.model';
-import { MstProduct } from '../../../product';
+import { MstProduct } from '@server_1/models/product';
 
 @Table({
   freezeTableName: true,

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectConnection } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize-typescript';
 import { AppConfigModel } from '../../database/models';
@@ -7,6 +7,8 @@ export const APP_CONFIG_VALUES = 'APP_CONFIG_VALUES';
 
 @Injectable()
 export class AppConfigFactory {
+  private readonly logger = new Logger(AppConfigFactory.name);
+
   constructor(
     @InjectConnection()
     private readonly sequelize: Sequelize,
@@ -31,7 +33,7 @@ export class AppConfigFactory {
       }
       return configMap;
     } catch (error) {
-      console.error('Error loading app configuration:', error);
+      this.logger.error('Error loading app configuration', { error });
       // Return empty object on error to allow app to continue
       return {};
     }

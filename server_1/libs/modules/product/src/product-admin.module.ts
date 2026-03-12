@@ -1,9 +1,13 @@
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
-import { MstProduct, MstProductPrice, MstProductVariant } from './models';
 import { modelRegistry } from '@server_1/core';
 import { ProductController } from './controllers';
 import { ProductService } from './services';
+import {
+  MstProduct,
+  MstProductPrice,
+  MstProductVariant,
+} from '@server_1/models/product';
 // Register models with the model registry
 modelRegistry.register([MstProduct, MstProductVariant, MstProductPrice]);
 

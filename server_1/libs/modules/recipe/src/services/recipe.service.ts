@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { Sequelize } from 'sequelize-typescript';
@@ -14,6 +14,8 @@ import { FranchiseService } from '@server_1/modules/franchise';
 
 @Injectable()
 export class RecipeService {
+  private readonly logger = new Logger(RecipeService.name);
+
   constructor(
     @InjectModel(MstRecipe) private readonly recipeRepository: typeof MstRecipe,
     @InjectModel(MstRecipeCategoryMapping) private readonly recipeCategoryMappingRepository: typeof MstRecipeCategoryMapping,
@@ -274,7 +276,7 @@ export class RecipeService {
       const franchiseList = await this.franchiseService.findAll({ page: 0, limit: 100 });
       franchise = franchiseList.tableData.find((f: any) => f.isPrimary) || franchiseList.tableData[0];
     } catch (error) {
-      console.warn('Could not fetch franchise information', error);
+      this.logger.warn('Could not fetch franchise information', { error });
     }
     // Parse ingredients into list
     const ingredientText = recipeData.ingredient || '';
@@ -311,7 +313,7 @@ export class RecipeService {
               };
             }
           } catch (error) {
-            console.warn(`Failed to convert image ${img.webUrl} to base64:`, error);
+            this.logger.warn(`Failed to convert image ${img.webUrl} to base64`, { error });
           }
           return img;
         }),

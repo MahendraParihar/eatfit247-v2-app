@@ -1,4 +1,11 @@
-import { BelongsTo, Column, DataType, ForeignKey, Model, Table } from 'sequelize-typescript';
+import {
+  BelongsTo,
+  Column,
+  DataType,
+  ForeignKey,
+  Model,
+  Table,
+} from 'sequelize-typescript';
 import { MstProductVariant } from './mst-product-variant.model';
 
 @Table({
@@ -67,5 +74,4 @@ export class MstProductPrice extends Model<MstProductPrice> {
   })
   declare validTo: Date | null;
 }
-
 

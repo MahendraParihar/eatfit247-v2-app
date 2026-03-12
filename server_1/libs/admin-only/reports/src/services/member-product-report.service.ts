@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op, Sequelize } from 'sequelize';
 import { MemberProductService, TxnMember, TxnMemberProduct } from '@server_1/modules/member';
@@ -10,6 +10,8 @@ import moment from 'moment/moment';
 
 @Injectable()
 export class MemberProductReportService {
+  private readonly logger = new Logger(MemberProductReportService.name);
+
   constructor(
     @InjectModel(TxnMemberProduct)
     private readonly memberProductRepository: typeof TxnMemberProduct,
@@ -154,7 +156,10 @@ export class MemberProductReportService {
         const fileName = `Product_Invoice_${memberName}_${productId}.pdf`;
         archive.append(pdfBuffer, { name: fileName });
       } catch (error) {
-        console.error(`Failed to generate invoice for product order ${item.memberProductId}:`, error);
+        this.logger.error(
+          `Failed to generate invoice for product order ${item.memberProductId}`,
+          { error },
+        );
         // Continue with other invoices even if one fails
       }
     });
@@ -231,7 +236,10 @@ export class MemberProductReportService {
         const fileName = `Product_Invoice_${memberName}_${productId}.pdf`;
         archive.append(pdfBuffer, { name: fileName });
       } catch (error) {
-        console.error(`Failed to generate invoice for product order ${item.memberProductId}:`, error);
+        this.logger.error(
+          `Failed to generate invoice for product order ${item.memberProductId}`,
+          { error },
+        );
         // Continue with other invoices even if one fails
       }
     });

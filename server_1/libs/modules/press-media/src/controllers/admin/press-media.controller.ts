@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Logger, Param, Patch, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { BasicSearchDto, CurrentUser, JwtAuthGuard, RequestedIp, UpdateActiveDto } from '@server_1/core';
 import { GoogleService } from '@server_1/platform';
@@ -9,6 +9,7 @@ import { IAuthUser, IPressMedia, ITableList } from '@eatfit247-shared-lib';
 @Controller('press-media')
 @UseGuards(JwtAuthGuard)
 export class PressMediaController {
+  private readonly logger = new Logger(PressMediaController.name);
   constructor(
     private readonly service: PressMediaService,
     private readonly googleService: GoogleService,
@@ -81,13 +82,13 @@ export class PressMediaController {
         );
         
         if (saved) {
-          console.log(`Successfully saved YouTube video: ${video.title} - ${video.link}`);
+          this.logger.log(`Successfully saved YouTube video: ${video.title} - ${video.link}`);
         } else {
-          console.log(`Skipped YouTube video (already exists): ${video.link}`);
+          this.logger.log(`Skipped YouTube video (already exists): ${video.link}`);
         }
       }
     } catch (error: any) {
-      console.error('Error in fetchAndSaveLatestYouTubeVideo cron job:', error.message);
+      this.logger.error('Error in fetchAndSaveLatestYouTubeVideo cron job', { error });
       // Don't throw error to prevent cron job from failing
     }
   }

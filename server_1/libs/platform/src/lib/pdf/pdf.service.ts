@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import * as path from 'path';
 import { existsSync, mkdirSync, readFileSync } from 'fs';
 import * as hbs from 'handlebars';
@@ -9,6 +9,8 @@ import { IFranchise, MediaForEnum, TEMPLATE_FOLDER } from '@eatfit247-shared-lib
 
 @Injectable()
 export class PdfService {
+  private readonly logger = new Logger(PdfService.name);
+
   isHeaderFooterRegistered = false;
   headerTemplate: string;
   footerTemplate: string;
@@ -226,7 +228,7 @@ export class PdfService {
           `<img class="${cssClass}" src="${imageSrc}" style="height: 100%;width: 100%;" alt="" />`,
         );
       } catch (e) {
-        console.warn(`Failed to process image in PDF helper:`, e);
+        this.logger.warn('Failed to process image in PDF helper', { error: e });
         return new hbs.SafeString('');
       }
     });

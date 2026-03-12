@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import * as path from 'path';
 import { existsSync, readFileSync } from 'fs';
 import * as hbs from 'handlebars';
@@ -20,6 +20,7 @@ export interface DietPlanPdfData {
 
 @Injectable()
 export class DietPlanPdfService {
+  private readonly logger = new Logger(DietPlanPdfService.name);
   /**
    * Generates PDF from Diet Plan data
    *
@@ -280,7 +281,7 @@ export class DietPlanPdfService {
                 webUrl: base64DataUrl,
               };
             } catch (error) {
-              console.error(`Failed to convert image ${image.webUrl} to base64:`, error);
+              this.logger.error(`Failed to convert image ${image.webUrl} to base64`, { error });
               // Return original image if conversion fails
               return image;
             }
@@ -352,7 +353,7 @@ export class DietPlanPdfService {
       const mimeType = mimetype || this.getMimeTypeFromPath(normalizedPath);
       return `data:${mimeType};base64,${fileBuffer.toString('base64')}`;
     } catch (error) {
-      console.error(`Error reading local file ${filePath}:`, error);
+      this.logger.error(`Error reading local file ${filePath}`, { error });
       throw error;
     }
   }
@@ -371,7 +372,7 @@ export class DietPlanPdfService {
       const mimeType = mimetype || response.headers['content-type'] || 'image/jpeg';
       return `data:${mimeType};base64,${buffer.toString('base64')}`;
     } catch (error) {
-      console.error(`Error fetching image from URL ${url}:`, error);
+      this.logger.error(`Error fetching image from URL ${url}`, { error });
       throw error;
     }
   }

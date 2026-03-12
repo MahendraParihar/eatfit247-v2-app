@@ -1,4 +1,5 @@
 import { readFileSync } from 'fs';
+import { Logger } from '@nestjs/common';
 import { ICreateSeoPageDto } from '@eatfit247-shared-lib';
 import { SeoPageService } from '@server_1/platform';
 
@@ -63,6 +64,7 @@ export async function seedSeoData(
   adminId: number = 1,
   ipAddress: string = '127.0.0.1',
 ): Promise<void> {
+  const logger = new Logger('SeedSeoDataScript');
   try {
     // Read CSV file
     const csvContent = readFileSync(csvFilePath, 'utf-8');
@@ -70,12 +72,12 @@ export async function seedSeoData(
     // Parse CSV
     const records: CsvRow[] = parseCSV(csvContent);
 
-    console.log(`Found ${records.length} SEO records to process`);
+    logger.log(`Found ${records.length} SEO records to process`);
 
     // Process each record
     for (const record of records) {
       if (!record.url || record.url.trim() === '') {
-        console.warn('Skipping record with empty URL');
+        logger.warn('Skipping record with empty URL');
         continue;
       }
 
@@ -90,7 +92,7 @@ export async function seedSeoData(
         }
       } catch (e) {
         // If URL parsing fails, use the original value
-        console.warn(`Failed to parse URL: ${record.url}, using as-is`);
+        logger.warn(`Failed to parse URL: ${record.url}, using as-is`, { error: e });
       }
 
       const seoData: ICreateSeoPageDto = {
@@ -108,15 +110,15 @@ export async function seedSeoData(
 
       try {
         await seoPageService.upsertByUrl(seoData, ipAddress, adminId);
-        console.log(`✓ Processed: ${urlPath}`);
+        logger.log(`Processed SEO record for: ${urlPath}`);
       } catch (error) {
-        console.error(`✗ Failed to process ${urlPath}:`, error);
+        logger.error(`Failed to process ${urlPath}`, { error });
       }
     }
 
-    console.log('SEO data seeding completed!');
+    logger.log('SEO data seeding completed');
   } catch (error) {
-    console.error('Error seeding SEO data:', error);
+    logger.error('Error seeding SEO data', { error });
     throw error;
   }
 }

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { TxnMember, TxnMemberPocketGuide } from '../models';
@@ -16,6 +16,8 @@ import { EmailNotificationService } from '@server_1/platform';
 
 @Injectable()
 export class MemberPocketGuideService {
+  private readonly logger = new Logger(MemberPocketGuideService.name);
+
   constructor(
     @InjectModel(TxnMemberPocketGuide)
     private readonly memberPocketGuideRepository: typeof TxnMemberPocketGuide,
@@ -157,7 +159,7 @@ export class MemberPocketGuideService {
             await this.emailNotificationService.sendEmailByType(emailData);
           } catch (emailError) {
             // Log error but don't fail the operation
-            console.error('Failed to send pocket guide email:', emailError);
+            this.logger.error('Failed to send pocket guide email', { emailError });
           }
         }
       } catch (error) {

@@ -1,6 +1,6 @@
 import { BelongsTo, Column, DataType, ForeignKey, Model, Table } from 'sequelize-typescript';
 import { TxnMemberProduct } from './txn-member-product.model';
-import { MstProduct, MstProductVariant } from '@server_1/modules/product';
+import { MstProduct, MstProductVariant } from '@server_1/models/product';
 import { TaxMode, TaxTypeEnum } from '@eatfit247-shared-lib';
 
 @Table({

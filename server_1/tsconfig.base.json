@@ -23,7 +23,8 @@
       "@server_1/platform": ["libs/platform/src/index.ts"],
       "@server_1/modules/*": ["libs/modules/*/index.ts"],
       "@server_1/modules/member/models": ["libs/modules/member/src/models/index.ts"],
-      "@server_1/admin-only/*": ["libs/admin-only/*/index.ts"]
+      "@server_1/admin-only/*": ["libs/admin-only/*/index.ts"],
+      "@server_1/models/product": ["libs/models/product/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"],
