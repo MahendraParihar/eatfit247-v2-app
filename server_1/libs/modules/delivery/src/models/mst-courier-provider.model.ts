@@ -1,4 +1,14 @@
-import { BelongsTo, Column, CreatedAt, DataType, HasMany, Model, Scopes, Table, UpdatedAt } from 'sequelize-typescript';
+import {
+  BelongsTo,
+  Column,
+  CreatedAt,
+  DataType,
+  HasMany,
+  Model,
+  Scopes,
+  Table,
+  UpdatedAt,
+} from 'sequelize-typescript';
 import { getCreatedByUserInclude, getUpdatedByUserInclude, MstAdminUser } from '@server_1/core';
 import { InputLengthEnum } from '@eatfit247-shared-lib';
 import { TxnCourierProviderAccount } from './txn-courier-provider-account.model';
@@ -11,10 +21,7 @@ import { TxnCourierProviderAccount } from './txn-courier-provider-account.model'
 })
 @Scopes(() => ({
   list: {
-    include: [
-      getCreatedByUserInclude(false),
-      getUpdatedByUserInclude(false),
-    ],
+    include: [getCreatedByUserInclude(false), getUpdatedByUserInclude(false)],
   },
   details: {
     include: [
@@ -32,10 +39,10 @@ export class MstCourierProvider extends Model<MstCourierProvider> {
   @Column({
     type: DataType.INTEGER,
     primaryKey: true,
-    field: 'provider_id',
+    field: 'courier_provider_id',
     autoIncrement: true,
   })
-  declare providerId: number;
+  declare courierProviderId: number;
 
   @Column({
     allowNull: false,
@@ -148,10 +155,9 @@ export class MstCourierProvider extends Model<MstCourierProvider> {
   declare modifiedIp: string;
 
   @HasMany(() => TxnCourierProviderAccount, {
-    foreignKey: 'providerId',
-    sourceKey: 'providerId',
+    foreignKey: 'courierProviderId',
+    sourceKey: 'courierProviderId',
     as: 'accounts',
   })
   declare accounts?: TxnCourierProviderAccount[];
 }
-

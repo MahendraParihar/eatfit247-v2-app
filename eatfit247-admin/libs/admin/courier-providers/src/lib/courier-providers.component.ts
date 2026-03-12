@@ -44,15 +44,33 @@ export class CourierProviders implements OnInit {
 
   private initializeTable(): void {
     const columns: ITableColumn<ICourierProvider>[] = [
-      { key: 'providerId', label: 'ID', dataKey: 'providerId', sortable: true, width: '80px' },
-      { key: 'providerCode', label: 'Provider Code', dataKey: 'providerCode', sortable: true, searchable: true },
-      { key: 'providerName', label: 'Provider Name', dataKey: 'providerName', sortable: true, searchable: true },
+      {
+        key: 'courierProviderId',
+        label: 'ID',
+        dataKey: 'courierProviderId',
+        sortable: true,
+        width: '80px',
+      },
+      {
+        key: 'providerCode',
+        label: 'Provider Code',
+        dataKey: 'providerCode',
+        sortable: true,
+        searchable: true,
+      },
+      {
+        key: 'providerName',
+        label: 'Provider Name',
+        dataKey: 'providerName',
+        sortable: true,
+        searchable: true,
+      },
       {
         key: 'authType',
         label: 'Auth Type',
         dataKey: 'authType',
         sortable: true,
-        formatter: (value) => value || '-'
+        formatter: (value) => value || '-',
       },
       {
         key: 'supportsRateApi',
@@ -61,7 +79,7 @@ export class CourierProviders implements OnInit {
         sortable: true,
         width: '100px',
         align: 'center',
-        formatter: (value) => (value ? 'Yes' : 'No')
+        formatter: (value) => (value ? 'Yes' : 'No'),
       },
       {
         key: 'supportsWebhook',
@@ -70,7 +88,7 @@ export class CourierProviders implements OnInit {
         sortable: true,
         width: '100px',
         align: 'center',
-        formatter: (value) => (value ? 'Yes' : 'No')
+        formatter: (value) => (value ? 'Yes' : 'No'),
       },
       {
         key: 'supportsCod',
@@ -79,7 +97,7 @@ export class CourierProviders implements OnInit {
         sortable: true,
         width: '100px',
         align: 'center',
-        formatter: (value) => (value ? 'Yes' : 'No')
+        formatter: (value) => (value ? 'Yes' : 'No'),
       },
       {
         key: 'priorityOrder',
@@ -87,7 +105,7 @@ export class CourierProviders implements OnInit {
         dataKey: 'priorityOrder',
         sortable: true,
         width: '100px',
-        align: 'center'
+        align: 'center',
       },
       {
         key: 'active',
@@ -96,36 +114,36 @@ export class CourierProviders implements OnInit {
         sortable: true,
         width: '120px',
         align: 'center',
-        formatter: (value) => (value ? 'Active' : 'Inactive')
+        formatter: (value) => (value ? 'Active' : 'Inactive'),
       },
       {
         key: 'createdByUser',
         label: 'Created By',
         dataKey: 'createdByUser',
         sortable: false,
-        formatter: createdByUserFormatter()
+        formatter: createdByUserFormatter(),
       },
       {
         key: 'updatedByUser',
         label: 'Updated By',
         dataKey: 'updatedByUser',
         sortable: false,
-        formatter: updatedByUserFormatter()
+        formatter: updatedByUserFormatter(),
       },
       {
         key: 'createdAt',
         label: 'Created At',
         dataKey: 'createdAt',
         type: 'date',
-        sortable: true
+        sortable: true,
       },
       {
         key: 'updatedAt',
         label: 'Updated At',
         dataKey: 'updatedAt',
         type: 'date',
-        sortable: true
-      }
+        sortable: true,
+      },
     ];
     const actions: ITableAction<ICourierProvider>[] = [
       { label: 'Edit', icon: 'edit', color: 'primary', onClick: (row) => this.editItem(row) },
@@ -227,7 +245,10 @@ export class CourierProviders implements OnInit {
   }
 
   editItem(item: ICourierProvider): void {
-    this.router.navigate(['/delivery/courier-providers/edit', item.providerId]);
+    this.router.navigate([
+      '/delivery/courier-providers/edit',
+      item.courierProviderId,
+    ]);
   }
 
   createItem(): void {
@@ -240,7 +261,10 @@ export class CourierProviders implements OnInit {
     if (confirmed) {
       this.loading = true;
       try {
-        await this.apiService.updateStatus(item.providerId, !item.active);
+        await this.apiService.updateStatus(
+          item.courierProviderId,
+          !item.active
+        );
         await this.loadData();
         this.loading = false;
       } catch {

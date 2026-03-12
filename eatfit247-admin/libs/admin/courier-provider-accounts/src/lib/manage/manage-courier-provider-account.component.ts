@@ -36,7 +36,7 @@ import { ICourierProviderAccount, IDropdownItem, IManageCourierProviderAccount, 
 export class ManageCourierProviderAccount implements OnInit, OnDestroy {
   private fb: FormBuilder = inject(FormBuilder);
   formGroup: FormGroup = this.fb.group({
-    providerId: [null, [Validators.required]],
+    courierProviderId: [null, [Validators.required]],
     franchiseId: [null, [Validators.required]],
     accountName: ['', [Validators.maxLength(100)]],
     apiBaseUrl: ['', [Validators.required]],
@@ -75,7 +75,7 @@ export class ManageCourierProviderAccount implements OnInit, OnDestroy {
   private patchFormValues(): void {
     if (this.initialData) {
       this.formGroup.patchValue({
-        providerId: this.initialData.providerId || null,
+        courierProviderId: this.initialData.courierProviderId || null,
         franchiseId: this.initialData.franchiseId || null,
         accountName: this.initialData.accountName || '',
         apiBaseUrl: this.initialData.apiBaseUrl || '',
@@ -85,7 +85,10 @@ export class ManageCourierProviderAccount implements OnInit, OnDestroy {
         authToken: this.initialData.authToken || '',
         tokenExpiry: this.initialData.tokenExpiry || null,
         webhookSecret: this.initialData.webhookSecret || '',
-        active: this.initialData.active !== undefined ? this.initialData.active : true
+        active:
+          this.initialData.active !== undefined
+            ? this.initialData.active
+            : true,
       });
       // Don't populate password field
     }

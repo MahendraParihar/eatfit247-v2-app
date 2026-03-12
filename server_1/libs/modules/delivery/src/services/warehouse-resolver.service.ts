@@ -37,13 +37,13 @@ export class WarehouseResolverService {
       include: [
         {
           model: MstCourierProvider,
-          as: 'provider',
           required: true,
+          as: 'courierProvider',
           where: { active: true },
         },
       ],
       order: [
-        [{ model: MstCourierProvider, as: 'provider' }, 'priorityOrder', 'ASC'],
+        [{ model: MstCourierProvider, as: 'courierProvider' }, 'priorityOrder', 'ASC'],
         ['providerAccountId', 'ASC'],
       ],
     });
@@ -52,14 +52,11 @@ export class WarehouseResolverService {
       return [];
     }
 
-    // Load active warehouse-provider mappings for all relevant providers
-    const providerIds = providerAccounts.map((a) => a.providerId);
     const warehouseMappings = await this.providerWarehouseRepository.findAll({
       where: { active: true },
       include: [
         {
           model: MstWarehouse,
-          as: 'warehouse',
           required: true,
           where: { active: true },
           attributes: ['warehouseId', 'name', 'pinCode'],
@@ -71,10 +68,12 @@ export class WarehouseResolverService {
 
     for (const account of providerAccounts) {
       // provider is guaranteed by the required: true include above
-      const provider = account.provider;
+      const provider = account.courierProvider;
 
       // Find the warehouse mapping for this provider
-      const mapping = warehouseMappings.find((m) => m.providerId === account.providerId);
+      const mapping = warehouseMappings.find(
+        (m) => m.courierProviderId === account.courierProviderId,
+      );
 
       if (!mapping) {
         // Provider account exists but no warehouse registered with them yet — skip
@@ -84,7 +83,7 @@ export class WarehouseResolverService {
       pairs.push({
         warehouseId: mapping.warehouseId,
         warehousePincode: mapping.warehouse?.pinCode ?? '',
-        providerId: account.providerId,
+        courierProviderId: account.courierProviderId,
         providerCode: provider.providerCode,
         providerName: provider.providerName,
         priorityOrder: provider.priorityOrder ?? 99,
@@ -113,9 +112,9 @@ export class WarehouseResolverService {
    */
   public async resolvePairByProvider(
     shipment: TxnShipment,
-    providerId: number,
+    courierProviderId: number,
   ): Promise<IResolvedProviderWarehousePair | null> {
     const pairs = await this.resolvePairs(shipment);
-    return pairs.find((p) => p.providerId === providerId) ?? null;
+    return pairs.find((p) => p.courierProviderId === courierProviderId) ?? null;
   }
 }

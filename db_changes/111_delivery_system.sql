@@ -41,13 +41,13 @@ CREATE TYPE public.shipment_status_enum AS ENUM (
     'RTO',           -- Return to Origin
     'CANCELLED',
     'FAILED'
-);
+    );
 
 CREATE TYPE public.tracking_source_enum AS ENUM (
     'WEBHOOK',
     'POLLING',
     'MANUAL'
-);
+    );
 
 -- =============================================================================
 -- SECTION 3: MASTER TABLES
@@ -59,7 +59,7 @@ CREATE TYPE public.tracking_source_enum AS ENUM (
 -- -----------------------------------------------------------------------------
 CREATE TABLE public.mst_courier_providers
 (
-    provider_id       SERIAL PRIMARY KEY,
+    courier_provider_id       SERIAL PRIMARY KEY,
     provider_code     VARCHAR(30)  NOT NULL UNIQUE,  -- NIMBUS, SHIPROCKET
     provider_name     VARCHAR(100) NOT NULL,
     auth_type         VARCHAR(30)  NOT NULL,          -- JWT, API_KEY, BASIC
@@ -118,7 +118,7 @@ CREATE TABLE public.mst_warehouses
 CREATE TABLE public.txn_courier_provider_accounts
 (
     provider_account_id SERIAL PRIMARY KEY,
-    provider_id         INTEGER      NOT NULL REFERENCES public.mst_courier_providers (provider_id),
+    courier_provider_id         INTEGER      NOT NULL REFERENCES public.mst_courier_providers (courier_provider_id),
     franchise_id        INTEGER      NOT NULL REFERENCES public.mst_franchises (franchise_id),
     account_name        VARCHAR(100),
     api_base_url        TEXT         NOT NULL,
@@ -136,7 +136,7 @@ CREATE TABLE public.txn_courier_provider_accounts
     modified_by         INT          NOT NULL,
     created_ip          VARCHAR(50)  NOT NULL,
     modified_ip         VARCHAR(50)  NOT NULL,
-    CONSTRAINT uq_courier_account_provider_franchise UNIQUE (provider_id, franchise_id),
+    CONSTRAINT uq_courier_account_provider_franchise UNIQUE (courier_provider_id, franchise_id),
     CONSTRAINT fk_courier_accounts_created_by  FOREIGN KEY (created_by)  REFERENCES public.mst_admin_users (admin_id),
     CONSTRAINT fk_courier_accounts_modified_by FOREIGN KEY (modified_by) REFERENCES public.mst_admin_users (admin_id)
 );
@@ -149,7 +149,7 @@ CREATE TABLE public.txn_courier_provider_warehouses
 (
     courier_provider_warehouse_id SERIAL PRIMARY KEY,
     warehouse_id                  INTEGER      NOT NULL REFERENCES public.mst_warehouses (warehouse_id),
-    provider_id                   INTEGER      NOT NULL REFERENCES public.mst_courier_providers (provider_id),
+    courier_provider_id                   INTEGER      NOT NULL REFERENCES public.mst_courier_providers (courier_provider_id),
     provider_warehouse_id         VARCHAR(100),           -- Provider's own warehouse ID (used in booking API)
     provider_warehouse_name       VARCHAR(150),
     raw_response                  JSONB,
@@ -160,7 +160,7 @@ CREATE TABLE public.txn_courier_provider_warehouses
     modified_by                   INT          NOT NULL,
     created_ip                    VARCHAR(50)  NOT NULL,
     modified_ip                   VARCHAR(50)  NOT NULL,
-    CONSTRAINT uq_courier_provider_warehouse UNIQUE (warehouse_id, provider_id),
+    CONSTRAINT uq_courier_provider_warehouse UNIQUE (warehouse_id, courier_provider_id),
     CONSTRAINT fk_cpw_created_by  FOREIGN KEY (created_by)  REFERENCES public.mst_admin_users (admin_id),
     CONSTRAINT fk_cpw_modified_by FOREIGN KEY (modified_by) REFERENCES public.mst_admin_users (admin_id)
 );
@@ -172,11 +172,11 @@ CREATE TABLE public.txn_courier_provider_warehouses
 CREATE TABLE public.cache_pincode_serviceability
 (
     pincode       VARCHAR(10) NOT NULL,
-    provider_id   INTEGER     NOT NULL REFERENCES public.mst_courier_providers (provider_id),
+    courier_provider_id   INTEGER     NOT NULL REFERENCES public.mst_courier_providers (courier_provider_id),
     is_serviceable BOOLEAN    NOT NULL,
     checked_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     expires_at    TIMESTAMPTZ NOT NULL,
-    PRIMARY KEY (pincode, provider_id)
+    PRIMARY KEY (pincode, courier_provider_id)
 );
 
 -- =============================================================================
@@ -192,13 +192,13 @@ CREATE TABLE public.txn_shipments
     shipment_id          BIGSERIAL PRIMARY KEY,
     shipment_number      VARCHAR(50)          NOT NULL UNIQUE,           -- Internal reference e.g. SHP-2026-000001
     order_id             BIGINT               NOT NULL
-        REFERENCES public.txn_member_product_orders (order_id),         -- Direct order link for easy joins
+        REFERENCES public.txn_member_products (member_product_id),         -- Direct order link for easy joins
     franchise_id         INTEGER              NOT NULL
         REFERENCES public.mst_franchises (franchise_id),
     warehouse_id         INTEGER
         REFERENCES public.mst_warehouses (warehouse_id),                -- Set after warehouse resolution
-    provider_id          INTEGER
-        REFERENCES public.mst_courier_providers (provider_id),          -- Set after rate selection
+    courier_provider_id          INTEGER
+        REFERENCES public.mst_courier_providers (courier_provider_id),          -- Set after rate selection
     provider_account_id  INTEGER
         REFERENCES public.txn_courier_provider_accounts (provider_account_id),
 
@@ -269,8 +269,8 @@ CREATE TABLE public.txn_shipment_rate_quotes
     rate_quote_id       BIGSERIAL PRIMARY KEY,
     shipment_id         BIGINT         NOT NULL
         REFERENCES public.txn_shipments (shipment_id) ON DELETE CASCADE,
-    provider_id         INTEGER        NOT NULL
-        REFERENCES public.mst_courier_providers (provider_id),
+    courier_provider_id         INTEGER        NOT NULL
+        REFERENCES public.mst_courier_providers (courier_provider_id),
     provider_account_id INTEGER
         REFERENCES public.txn_courier_provider_accounts (provider_account_id),
     warehouse_id        INTEGER
@@ -321,7 +321,7 @@ CREATE TABLE public.txn_courier_api_logs
 (
     api_log_id          BIGSERIAL PRIMARY KEY,
     shipment_id         BIGINT,
-    provider_id         INTEGER,
+    courier_provider_id         INTEGER,
     provider_account_id INTEGER,
     request_type        VARCHAR(50),    -- RATE, BOOK, TRACK, CANCEL, SERVICEABILITY
     request_payload     JSONB,
@@ -339,7 +339,7 @@ CREATE TABLE public.txn_courier_api_logs
 CREATE TABLE public.txn_courier_webhook_logs
 (
     webhook_log_id      BIGSERIAL PRIMARY KEY,
-    provider_id         INTEGER,
+    courier_provider_id         INTEGER,
     provider_account_id INTEGER REFERENCES public.txn_courier_provider_accounts (provider_account_id),
     payload             JSONB   NOT NULL,
     headers             JSONB,
@@ -357,7 +357,7 @@ CREATE TABLE public.txn_courier_webhook_logs
 CREATE INDEX idx_shipments_order_id         ON public.txn_shipments (order_id);
 CREATE INDEX idx_shipments_franchise        ON public.txn_shipments (franchise_id);
 CREATE INDEX idx_shipments_warehouse        ON public.txn_shipments (warehouse_id);
-CREATE INDEX idx_shipments_provider         ON public.txn_shipments (provider_id);
+CREATE INDEX idx_shipments_provider         ON public.txn_shipments (courier_provider_id);
 CREATE INDEX idx_shipments_status           ON public.txn_shipments (status);
 CREATE INDEX idx_shipments_tracking_number  ON public.txn_shipments (tracking_number);
 CREATE INDEX idx_shipments_receiver_pincode ON public.txn_shipments (receiver_pincode);
@@ -368,7 +368,7 @@ CREATE INDEX idx_shipment_items_order_item  ON public.txn_shipment_items (member
 
 -- txn_shipment_rate_quotes
 CREATE INDEX idx_rate_quotes_shipment       ON public.txn_shipment_rate_quotes (shipment_id);
-CREATE INDEX idx_rate_quotes_provider       ON public.txn_shipment_rate_quotes (provider_id);
+CREATE INDEX idx_rate_quotes_provider       ON public.txn_shipment_rate_quotes (courier_provider_id);
 
 -- txn_shipment_tracking_events
 CREATE INDEX idx_tracking_shipment          ON public.txn_shipment_tracking_events (shipment_id);
@@ -376,10 +376,10 @@ CREATE INDEX idx_tracking_event_time        ON public.txn_shipment_tracking_even
 
 -- txn_courier_api_logs
 CREATE INDEX idx_api_logs_shipment          ON public.txn_courier_api_logs (shipment_id);
-CREATE INDEX idx_api_logs_provider          ON public.txn_courier_api_logs (provider_id);
+CREATE INDEX idx_api_logs_provider          ON public.txn_courier_api_logs (courier_provider_id);
 
 -- txn_courier_webhook_logs
-CREATE INDEX idx_webhook_logs_provider      ON public.txn_courier_webhook_logs (provider_id);
+CREATE INDEX idx_webhook_logs_provider      ON public.txn_courier_webhook_logs (courier_provider_id);
 CREATE INDEX idx_webhook_logs_processed     ON public.txn_courier_webhook_logs (processed) WHERE processed = FALSE;
 
 -- cache_pincode_serviceability
@@ -400,7 +400,7 @@ WHERE config_name IN (
 
 -- Courier Providers (supports_cod removed)
 INSERT INTO public.mst_courier_providers
-(provider_id, provider_code, provider_name, auth_type, supports_rate_api, supports_webhook, priority_order, active, created_at, created_by, updated_at, modified_by, created_ip, modified_ip)
+(courier_provider_id, provider_code, provider_name, auth_type, supports_rate_api, supports_webhook, priority_order, active, created_at, created_by, updated_at, modified_by, created_ip, modified_ip)
 VALUES
     (1, 'NIMBUS',     'Nimbus Post', 'JWT',     TRUE, TRUE, 1, TRUE, '2026-02-21 04:57:58', 1, '2026-02-21 04:57:58', 1, '::1', '::1'),
     (2, 'SHIPROCKET', 'Shiprocket',  'JWT',     TRUE, TRUE, 2, TRUE, '2026-02-21 04:58:19', 1, '2026-02-21 04:58:19', 1, '::1', '::1'),
@@ -408,7 +408,7 @@ VALUES
 
 -- Courier Provider Accounts (franchise_id = 3)
 INSERT INTO public.txn_courier_provider_accounts
-(provider_id, franchise_id, account_name, api_base_url, username, password_encrypted, webhook_secret, active, created_by, modified_by, created_ip, modified_ip)
+(courier_provider_id, franchise_id, account_name, api_base_url, username, password_encrypted, webhook_secret, active, created_by, modified_by, created_ip, modified_ip)
 VALUES
     (1, 3, 'Nimbus Main Account', 'https://api.nimbuspost.com/v1',  'logistics@eatfit24by7.com', 'ENCRYPTED_NIMBUS_PASSWORD',     'nimbus_webhook_secret_key',     TRUE, 1, 1, '127.0.0.1', '127.0.0.1'),
     (2, 3, 'Shiprocket Primary',  'https://apiv2.shiprocket.in/v1',  'SHIPROCKET_API_KEY',        'ENCRYPTED_SHIPROCKET_SECRET',   'shiprocket_webhook_secret_key', TRUE, 1, 1, '127.0.0.1', '127.0.0.1'),
@@ -416,4 +416,4 @@ VALUES
 
 ALTER TABLE public.txn_shipments
     ADD COLUMN last_known_status public.shipment_status_enum,  -- status before failure
-  ADD COLUMN next_retry_at     TIMESTAMPTZ;                  -- cron checks this field
+    ADD COLUMN next_retry_at     TIMESTAMPTZ;                  -- cron checks this field

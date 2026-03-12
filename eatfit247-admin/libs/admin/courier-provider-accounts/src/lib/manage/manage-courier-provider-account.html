@@ -7,13 +7,13 @@
       <div class="form-fields">
         <mat-form-field class="full-width">
           <mat-label>Provider *</mat-label>
-          <mat-select formControlName="providerId">
+          <mat-select formControlName="courierProviderId">
             <mat-option [value]="">Select Provider</mat-option>
             @for (option of providerOptions; track option.id) {
               <mat-option [value]="option.id">{{ option.label }}</mat-option>
             }
           </mat-select>
-          <shared-ui-input-error [control]="formGroup.get('providerId')" controlName="Provider"></shared-ui-input-error>
+          <shared-ui-input-error [control]="formGroup.get('courierProviderId')" controlName="Provider"></shared-ui-input-error>
         </mat-form-field>
 
         <mat-form-field class="full-width">

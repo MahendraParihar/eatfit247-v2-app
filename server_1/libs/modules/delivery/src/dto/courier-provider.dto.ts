@@ -34,6 +34,6 @@ export class CreateCourierProviderDto implements IManageCourierProvider {
 
   @IsOptional()
   @IsNumber()
-  providerId?: number;
+  courierProviderId?: number;
 }
 

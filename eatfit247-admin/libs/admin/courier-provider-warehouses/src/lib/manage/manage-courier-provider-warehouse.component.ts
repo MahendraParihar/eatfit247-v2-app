@@ -46,7 +46,7 @@ export class ManageCourierProviderWarehouse implements OnInit, OnDestroy {
   private fb: FormBuilder = inject(FormBuilder);
   formGroup: FormGroup = this.fb.group({
     warehouseId: [null as number | null, [Validators.required]],
-    providerId: [null as number | null, [Validators.required]],
+    courierProviderId: [null as number | null, [Validators.required]],
     providerWarehouseId: ['', [Validators.maxLength(100)]],
     providerWarehouseName: ['', [Validators.maxLength(150)]],
     active: [true, [Validators.required]],
@@ -79,7 +79,7 @@ export class ManageCourierProviderWarehouse implements OnInit, OnDestroy {
     if (this.initialData) {
       this.formGroup.patchValue({
         warehouseId: this.initialData.warehouseId ?? null,
-        providerId: this.initialData.providerId ?? null,
+        courierProviderId: this.initialData.courierProviderId ?? null,
         providerWarehouseId: this.initialData.providerWarehouseId ?? '',
         providerWarehouseName: this.initialData.providerWarehouseName ?? '',
         active:

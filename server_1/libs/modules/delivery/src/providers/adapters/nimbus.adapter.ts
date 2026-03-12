@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { HttpService } from '@server_1/core';
 import { BaseCourierAdapter } from './base-courier.adapter';
 import {
+  IBookingRequest,
   ICourierProviderCredentials,
   INimbusServiceabilityDataItem,
   INimbusServiceabilityPayload,
@@ -9,10 +10,10 @@ import {
   INimbusShipmentPayload,
   INimbusShipmentResponse,
   IRateQuote,
+  IRateRequest,
   IShipmentBookingResponse,
   ITrackingEvent,
 } from '@eatfit247-shared-lib';
-import { BookingRequestDto, RateRequestDto } from '../../dto';
 
 @Injectable()
 export class NimbusAdapter extends BaseCourierAdapter {
@@ -72,7 +73,7 @@ export class NimbusAdapter extends BaseCourierAdapter {
    * Endpoint: POST /api/v1/rates
    */
   async getRates(
-    payload: RateRequestDto,
+    payload: IRateRequest,
     credentials: ICourierProviderCredentials,
   ): Promise<IRateQuote[]> {
     return this.executeWithLogging('getRates', async () => {
@@ -83,8 +84,8 @@ export class NimbusAdapter extends BaseCourierAdapter {
       const headers = await this.getAuthHeaders(credentials);
 
       // Build rate request payload according to Nimbus API specification
-      const originPostcode = Number(payload.pickup?.postcode ?? payload.pickupPostcode ?? 0);
-      const destPostcode = Number(payload.delivery?.postcode ?? payload.deliveryPostcode ?? 0);
+      const originPostcode = Number(payload.pickup?.pincode ?? payload.pickupPostcode ?? 0);
+      const destPostcode = Number(payload.delivery?.pincode ?? payload.deliveryPostcode ?? 0);
       if (!originPostcode || !destPostcode) {
         throw new Error(`${this.providerCode} getRates requires pickup and delivery postcodes`);
       }
@@ -113,7 +114,7 @@ export class NimbusAdapter extends BaseCourierAdapter {
         'rate fetch',
       );
       return response.data.map((rate: INimbusServiceabilityDataItem) => ({
-        providerId: credentials.providerAccountId,
+        providerAccountId: credentials.providerAccountId,
         serviceName: rate.name,
         serviceCode: rate.id ?? '',
         rateAmount: rate.total_charges,
@@ -132,7 +133,7 @@ export class NimbusAdapter extends BaseCourierAdapter {
    * Endpoint: POST /api/v1/shipments
    */
   async createShipment(
-    payload: BookingRequestDto,
+    payload: IBookingRequest,
     credentials: ICourierProviderCredentials,
   ): Promise<IShipmentBookingResponse> {
     return this.executeWithLogging('createShipment', async () => {
@@ -142,15 +143,19 @@ export class NimbusAdapter extends BaseCourierAdapter {
       // Get authentication headers
       const headers = await this.getAuthHeaders(credentials);
 
+      console.log('----------------------------PAYLOAD');
+      console.log(payload);
+
       // Build shipment request payload according to Nimbus API specification
       const shipmentPayload: INimbusShipmentPayload = {
+        courier_id: 1,
         order_number: payload.shipmentId.toString(),
         payment_type: 'prepaid',
-        order_amount: payload.orderAmount,
+        order_amount: Number(payload.orderAmount),
         cod_charges: 0,
-        package_weight: payload.weight,
+        package_weight: Number(payload.weight),
         consignee: {
-          pincode: payload.delivery.pincode,
+          pincode: Number(payload.delivery.pincode),
           name: payload.delivery.name,
           address: payload.delivery.address,
           address_2: payload.delivery.address2,
@@ -165,7 +170,7 @@ export class NimbusAdapter extends BaseCourierAdapter {
           address_2: payload.pickup.address2,
           city: payload.pickup.city,
           state: payload.pickup.state,
-          pincode: payload.pickup.pincode,
+          pincode: Number(payload.pickup.pincode),
           phone: payload.pickup.phone,
         },
       };

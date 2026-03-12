@@ -29,12 +29,12 @@ export class CachePincodeServiceability extends Model<CachePincodeServiceability
     primaryKey: true,
     field: 'provider_id',
   })
-  declare providerId: number;
+  declare courierProviderId: number;
 
   @BelongsTo(() => MstCourierProvider, {
-    foreignKey: 'providerId',
-    targetKey: 'providerId',
-    as: 'provider',
+  foreignKey: 'courierProviderId',
+  targetKey: 'courierProviderId',
+  as: 'provider',
   })
   declare provider: MstCourierProvider;
 

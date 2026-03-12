@@ -2,14 +2,15 @@ import { Injectable } from '@nestjs/common';
 import { HttpService } from '@server_1/core';
 import { BaseCourierAdapter } from './base-courier.adapter';
 import {
+  IBookingRequest,
   ICourierProviderCredentials,
   IRateQuote,
+  IRateRequest,
   IShipmentBookingResponse,
   IShipRocketServiceabilityPayload,
   IShipRocketServiceabilityResponse,
   ITrackingEvent,
 } from '@eatfit247-shared-lib';
-import { BookingRequestDto, RateRequestDto } from '../../dto';
 
 @Injectable()
 export class ShiprocketAdapter extends BaseCourierAdapter {
@@ -60,7 +61,7 @@ export class ShiprocketAdapter extends BaseCourierAdapter {
    * Get shipping rates from Shiprocket API
    */
   async getRates(
-    payload: RateRequestDto,
+    payload: IRateRequest,
     credentials: ICourierProviderCredentials,
   ): Promise<IRateQuote[]> {
     return this.executeWithLogging('getRates', async () => {
@@ -70,8 +71,8 @@ export class ShiprocketAdapter extends BaseCourierAdapter {
       // Get authentication headers
       const headers = await this.getAuthHeaders(credentials);
 
-      const pickupPostcode = Number(payload.pickup?.postcode ?? payload.pickupPostcode ?? 0);
-      const deliveryPostcode = Number(payload.delivery?.postcode ?? payload.deliveryPostcode ?? 0);
+      const pickupPostcode = Number(payload.pickup?.pincode ?? payload.pickupPostcode ?? 0);
+      const deliveryPostcode = Number(payload.delivery?.pincode ?? payload.deliveryPostcode ?? 0);
       if (!pickupPostcode || !deliveryPostcode) {
         throw new Error(`${this.providerCode} getRates requires pickup and delivery postcodes`);
       }
@@ -124,7 +125,7 @@ export class ShiprocketAdapter extends BaseCourierAdapter {
 
       for (const rate of responseData.available_courier_companies) {
         rates.push({
-          providerId: credentials.providerAccountId,
+          providerAccountId: credentials.providerAccountId,
           serviceName: rate.courier_name,
           serviceCode: rate.courier_company_id.toString(),
           rateAmount: rate.rate,
@@ -146,7 +147,7 @@ export class ShiprocketAdapter extends BaseCourierAdapter {
    * Create shipment with Shiprocket API
    */
   async createShipment(
-    payload: BookingRequestDto,
+    payload: IBookingRequest,
     credentials: ICourierProviderCredentials,
   ): Promise<IShipmentBookingResponse> {
     return this.executeWithLogging('createShipment', async () => {

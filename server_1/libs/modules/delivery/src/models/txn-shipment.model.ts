@@ -16,17 +16,15 @@ import {
   MstAdminUser,
   MstFranchise,
 } from '@server_1/core';
-import {
-  InputLengthEnum,
-  IShipmentMetaData,
-  ShipmentStatusEnum,
-} from '@eatfit247-shared-lib';
+import { InputLengthEnum, ShipmentStatusEnum } from '@eatfit247-shared-lib';
 import { MstCourierProvider } from './mst-courier-provider.model';
 import { MstWarehouse } from './mst-warehouse.model';
 import { TxnCourierProviderAccount } from './txn-courier-provider-account.model';
 import { TxnShipmentItem } from './txn-shipment-item.model';
 import { TxnShipmentRateQuote } from './txn-shipment-rate-quote.model';
 import { TxnShipmentTrackingEvent } from './txn-shipment-tracking-event.model';
+import { MstCountry, MstState } from '@server_1/platform';
+import { TxnMemberProductOrderItem } from '@server_1/modules/member/models';
 
 @Table({
   freezeTableName: true,
@@ -51,7 +49,7 @@ import { TxnShipmentTrackingEvent } from './txn-shipment-tracking-event.model';
     },
     {
       unique: false,
-      fields: ['provider_id'],
+      fields: ['courier_provider_id'],
       name: 'idx_shipments_provider',
     },
     {
@@ -83,9 +81,9 @@ import { TxnShipmentTrackingEvent } from './txn-shipment-tracking-event.model';
       getUpdatedByUserInclude(false),
       {
         model: MstCourierProvider,
-        as: 'provider',
+        as: 'courierProvider',
         required: false,
-        attributes: ['providerId', 'providerCode', 'providerName'],
+        attributes: ['courierProviderId', 'providerCode', 'providerName'],
       },
       {
         model: TxnCourierProviderAccount,
@@ -113,7 +111,7 @@ import { TxnShipmentTrackingEvent } from './txn-shipment-tracking-event.model';
       getUpdatedByUserInclude(false),
       {
         model: MstCourierProvider,
-        as: 'provider',
+        as: 'courierProvider',
         required: false,
       },
       {
@@ -123,17 +121,74 @@ import { TxnShipmentTrackingEvent } from './txn-shipment-tracking-event.model';
       },
       {
         model: MstFranchise,
+        attributes: [
+          'franchiseId',
+          'companyName',
+          'logo',
+          'franchiseCode',
+          'firstName',
+          'lastName',
+          'emailId',
+          'alternateEmailId',
+          'contactNumber',
+          'alternateContactNumber',
+          'panNumber',
+          'tanNumber',
+          'gstNumber',
+          'vatNumber',
+          'lutNumber',
+          'internationalTaxMode',
+          'brandName',
+          'isPrimary',
+          'isDefault',
+          'businessType',
+        ],
         as: 'franchise',
         required: false,
       },
       {
         model: MstWarehouse,
+        attributes: [
+          'warehouseId',
+          'name',
+          'contactName',
+          'email',
+          'phone',
+          'addressLine1',
+          'addressLine2',
+          'city',
+          'stateId',
+          'countryId',
+          'pinCode',
+          'latitude',
+          'longitude',
+        ],
         as: 'warehouse',
         required: false,
+        include: [
+          {
+            model: MstState,
+            as: 'state',
+            required: true,
+            attributes: ['stateId', 'state', 'code'],
+          },
+          {
+            model: MstCountry,
+            as: 'country',
+            required: true,
+            attributes: ['countryId', 'country', 'countryCode'],
+          },
+        ],
       },
       {
         model: TxnShipmentItem,
         as: 'shipmentItems',
+        include: [
+          {
+            model: TxnMemberProductOrderItem,
+            required: true,
+          },
+        ],
         required: false,
       },
       {
@@ -198,17 +253,17 @@ export class TxnShipment extends Model<TxnShipment> {
   @ForeignKey(() => MstCourierProvider)
   @Column({
     allowNull: true,
-    field: 'provider_id',
+    field: 'courier_provider_id',
     type: DataType.INTEGER,
   })
-  declare providerId: number;
+  declare courierProviderId: number;
 
   @BelongsTo(() => MstCourierProvider, {
-    foreignKey: 'providerId',
-    targetKey: 'providerId',
-    as: 'provider',
+    foreignKey: 'courierProviderId',
+    targetKey: 'courierProviderId',
+    as: 'courierProvider',
   })
-  declare provider: MstCourierProvider;
+  declare courierProvider: MstCourierProvider;
 
   @ForeignKey(() => TxnCourierProviderAccount)
   @Column({

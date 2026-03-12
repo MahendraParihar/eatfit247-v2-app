@@ -11,15 +11,15 @@ export interface IBaseCourierProvider {
 }
 
 export interface IManageCourierProvider extends IBaseCourierProvider {
-  providerId?: number;
+  courierProviderId?: number;
 }
 
 export interface ICourierProvider extends IBaseCourierProvider, IAdminInfo {
-  providerId: number;
+  courierProviderId: number;
 }
 
 export interface IBaseCourierProviderAccount {
-  providerId: number;
+  courierProviderId: number;
   franchiseId: number;
   accountName?: string;
   apiBaseUrl: string;
@@ -41,7 +41,7 @@ export interface IManageCourierProviderAccount extends IBaseCourierProviderAccou
 export interface ICourierProviderAccount extends IBaseCourierProviderAccount, IAdminInfo {
   providerAccountId: number;
   provider?: {
-    providerId: number;
+    courierProviderId: number;
     providerCode: string;
     providerName: string;
   };

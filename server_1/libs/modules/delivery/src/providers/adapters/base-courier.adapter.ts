@@ -1,12 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { HttpService } from '@server_1/core';
 import {
+  IBookingRequest,
   ICourierProviderCredentials,
   IRateQuote,
+  IRateRequest,
   IShipmentBookingResponse,
   ITrackingEvent,
 } from '@eatfit247-shared-lib';
-import { BookingRequestDto, RateRequestDto } from '../../dto';
 import { ICourierProvider } from '../courier.interface';
 
 @Injectable()
@@ -23,7 +24,7 @@ export abstract class BaseCourierAdapter implements ICourierProvider {
    * Get shipping rates for a shipment
    */
   abstract getRates(
-    payload: RateRequestDto,
+    payload: IRateRequest,
     credentials: ICourierProviderCredentials,
   ): Promise<IRateQuote[]>;
 
@@ -31,7 +32,7 @@ export abstract class BaseCourierAdapter implements ICourierProvider {
    * Create/book a shipment
    */
   abstract createShipment(
-    payload: BookingRequestDto,
+    payload: IBookingRequest,
     credentials: ICourierProviderCredentials,
   ): Promise<IShipmentBookingResponse>;
 

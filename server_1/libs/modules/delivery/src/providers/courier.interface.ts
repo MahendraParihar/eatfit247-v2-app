@@ -1,14 +1,11 @@
 import {
+  IBookingRequest,
   ICourierProviderCredentials,
   IRateQuote,
+  IRateRequest,
   IShipmentBookingResponse,
   ITrackingEvent,
 } from '@eatfit247-shared-lib';
-import { BookingRequestDto, RateRequestDto } from '../dto';
-
-/**
- * Courier provider account credentials
- */
 
 /**
  * Main courier provider interface
@@ -17,16 +14,13 @@ export interface ICourierProvider {
   /**
    * Get shipping rates for a shipment
    */
-  getRates(
-    payload: RateRequestDto,
-    credentials: ICourierProviderCredentials,
-  ): Promise<IRateQuote[]>;
+  getRates(payload: IRateRequest, credentials: ICourierProviderCredentials): Promise<IRateQuote[]>;
 
   /**
    * Create/book a shipment
    */
   createShipment(
-    payload: BookingRequestDto,
+    payload: IBookingRequest,
     credentials: ICourierProviderCredentials,
   ): Promise<IShipmentBookingResponse>;
 

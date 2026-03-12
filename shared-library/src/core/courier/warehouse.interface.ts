@@ -28,7 +28,7 @@ export interface IWarehouse extends IBaseWarehouse, IAdminInfo {
 
 export interface IBaseCourierProviderWarehouse {
   warehouseId: number;
-  providerId: number;
+  courierProviderId: number;
   providerWarehouseId?: string;
   providerWarehouseName?: string;
   rawResponse?: Record<string, unknown>;
@@ -43,5 +43,5 @@ export interface ICourierProviderWarehouse extends IBaseCourierProviderWarehouse
   courierProviderWarehouseId: number;
   updatedAt: Date;
   warehouse?: { warehouseId: number; name: string };
-  provider?: { providerId: number; providerCode: string; providerName: string };
+  provider?: { courierProviderId: number; providerCode: string; providerName: string };
 }

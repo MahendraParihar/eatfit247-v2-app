@@ -46,7 +46,7 @@ export class CourierProviderWarehouseService {
     return {
       courierProviderWarehouseId: item.courierProviderWarehouseId,
       warehouseId: item.warehouseId,
-      providerId: item.providerId,
+      courierProviderId: item.courierProviderId,
       providerWarehouseId: item.providerWarehouseId,
       providerWarehouseName: item.providerWarehouseName,
       rawResponse: item.rawResponse,
@@ -69,7 +69,7 @@ export class CourierProviderWarehouseService {
         : undefined,
       provider: item.provider
         ? {
-            providerId: item.provider.providerId,
+            courierProviderId: item.provider.courierProviderId,
             providerCode: item.provider.providerCode,
             providerName: item.provider.providerName,
           }
@@ -96,7 +96,7 @@ export class CourierProviderWarehouseService {
   ): Promise<void> {
     const createObj = {
       warehouseId: obj.warehouseId,
-      providerId: obj.providerId,
+      courierProviderId: obj.courierProviderId,
       providerWarehouseId: obj.providerWarehouseId ?? null,
       providerWarehouseName: obj.providerWarehouseName ?? null,
       rawResponse: obj.rawResponse ?? null,
@@ -125,7 +125,7 @@ export class CourierProviderWarehouseService {
     }
     const updateObj = {
       warehouseId: obj.warehouseId,
-      providerId: obj.providerId,
+      courierProviderId: obj.courierProviderId,
       providerWarehouseId: obj.providerWarehouseId ?? null,
       providerWarehouseName: obj.providerWarehouseName ?? null,
       rawResponse: obj.rawResponse ?? null,

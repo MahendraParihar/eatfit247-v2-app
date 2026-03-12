@@ -1,5 +1,5 @@
 export interface CourierProvider {
-  providerId: number;
+  courierProviderId: number;
   providerCode: string;
   providerName: string;
   authType: 'API_KEY' | 'JWT' | 'BASIC';
@@ -9,8 +9,8 @@ export interface CourierProvider {
   active: boolean;
 }
 
-export interface ManageCourierProvider extends Omit<CourierProvider, 'providerId'> {
-  providerId?: number;
+export interface ManageCourierProvider extends Omit<CourierProvider, 'courierProviderId'> {
+  courierProviderId?: number;
 }
 
 export interface Warehouse {
@@ -37,7 +37,7 @@ export interface ManageWarehouse extends Omit<Warehouse, 'warehouseId'> {
 export interface CourierProviderWarehouse {
   courierProviderWarehouseId: number;
   warehouseId: number;
-  providerId: number;
+  courierProviderId: number;
   providerWarehouseId?: string;
   providerWarehouseName?: string;
   rawResponse?: Record<string, unknown>;

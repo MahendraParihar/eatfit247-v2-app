@@ -42,7 +42,7 @@ import { MstCourierProvider } from './mst-courier-provider.model';
         model: MstCourierProvider,
         as: 'provider',
         required: false,
-        attributes: ['providerId', 'providerCode', 'providerName'],
+        attributes: ['courierProviderId', 'providerCode', 'providerName'],
       },
     ],
   },
@@ -90,14 +90,14 @@ export class TxnCourierProviderWarehouse extends Model<TxnCourierProviderWarehou
   @ForeignKey(() => MstCourierProvider)
   @Column({
     allowNull: false,
-    field: 'provider_id',
+    field: 'courier_provider_id',
     type: DataType.INTEGER,
   })
-  declare providerId: number;
+  declare courierProviderId: number;
 
   @BelongsTo(() => MstCourierProvider, {
-    foreignKey: 'providerId',
-    targetKey: 'providerId',
+    foreignKey: 'courierProviderId',
+    targetKey: 'courierProviderId',
     as: 'provider',
   })
   declare provider: MstCourierProvider;

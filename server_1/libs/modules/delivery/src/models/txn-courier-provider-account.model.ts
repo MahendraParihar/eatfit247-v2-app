@@ -11,7 +11,7 @@ import { MstCourierProvider } from './mst-courier-provider.model';
   indexes: [
     {
       unique: true,
-      fields: ['provider_id', 'franchise_id'],
+      fields: ['courier_provider_id', 'franchise_id'],
       name: 'uq_courier_account_provider_franchise',
     },
   ],
@@ -23,9 +23,9 @@ import { MstCourierProvider } from './mst-courier-provider.model';
       getUpdatedByUserInclude(false),
       {
         model: MstCourierProvider,
-        as: 'provider',
+        as: 'courierProvider',
         required: false,
-        attributes: ['providerId', 'providerCode', 'providerName'],
+        attributes: ['courierProviderId', 'providerCode', 'providerName'],
       },
       {
         model: MstFranchise,
@@ -41,7 +41,7 @@ import { MstCourierProvider } from './mst-courier-provider.model';
       getUpdatedByUserInclude(false),
       {
         model: MstCourierProvider,
-        as: 'provider',
+        as: 'courierProvider',
         required: false,
       },
       {
@@ -64,17 +64,17 @@ export class TxnCourierProviderAccount extends Model<TxnCourierProviderAccount> 
   @ForeignKey(() => MstCourierProvider)
   @Column({
     allowNull: false,
-    field: 'provider_id',
+    field: 'courier_provider_id',
     type: DataType.INTEGER,
   })
-  declare providerId: number;
+  declare courierProviderId: number;
 
   @BelongsTo(() => MstCourierProvider, {
-    foreignKey: 'providerId',
-    targetKey: 'providerId',
-    as: 'provider',
+    foreignKey: 'courierProviderId',
+    targetKey: 'courierProviderId',
+    as: 'courierProvider',
   })
-  declare provider: MstCourierProvider;
+  declare courierProvider: MstCourierProvider;
 
   @ForeignKey(() => MstFranchise)
   @Column({

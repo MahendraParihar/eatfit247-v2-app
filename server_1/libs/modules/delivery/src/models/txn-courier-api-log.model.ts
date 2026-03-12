@@ -53,12 +53,12 @@ export class TxnCourierApiLog extends Model<TxnCourierApiLog> {
     field: 'provider_id',
     type: DataType.INTEGER,
   })
-  declare providerId: number;
+  declare courierProviderId: number;
 
   @BelongsTo(() => MstCourierProvider, {
-    foreignKey: 'providerId',
-    targetKey: 'providerId',
-    as: 'provider',
+  foreignKey: 'courierProviderId',
+  targetKey: 'courierProviderId',
+  as: 'provider',
   })
   declare provider: MstCourierProvider;
 

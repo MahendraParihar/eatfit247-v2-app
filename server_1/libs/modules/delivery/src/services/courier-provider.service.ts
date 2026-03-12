@@ -13,7 +13,8 @@ import { AppConfigService, CommonFunctionsUtil, SearchUtil } from '@server_1/cor
 @Injectable()
 export class CourierProviderService {
   constructor(
-    @InjectModel(MstCourierProvider) private readonly courierProviderRepository: typeof MstCourierProvider,
+    @InjectModel(MstCourierProvider)
+    private readonly courierProviderRepository: typeof MstCourierProvider,
     private appConfigService: AppConfigService,
   ) {}
 
@@ -28,7 +29,10 @@ export class CourierProviderService {
 
     const { rows, count } = await this.courierProviderRepository.scope('list').findAndCountAll({
       where: whereCondition,
-      order: [['priorityOrder', 'ASC'], ['providerName', 'ASC']],
+      order: [
+        ['priorityOrder', 'ASC'],
+        ['providerName', 'ASC'],
+      ],
       offset: offset,
       limit: pageSize,
       raw: true,
@@ -43,7 +47,7 @@ export class CourierProviderService {
 
   private convertToModel(item: MstCourierProvider): ICourierProvider {
     return <ICourierProvider>{
-      providerId: item.providerId,
+      courierProviderId: item.courierProviderId,
       providerCode: item.providerCode,
       providerName: item.providerName,
       authType: item.authType,
@@ -55,14 +59,18 @@ export class CourierProviderService {
       modifiedBy: item.modifiedBy,
       createdAt: item.createdAt,
       updatedAt: item.updatedAt,
-      createdByUser: item.createdByUser ? CommonFunctionsUtil.getAdminShortInfo(item.createdByUser, 'createdByUser') : undefined,
-      updatedByUser: item.updatedByUser ? CommonFunctionsUtil.getAdminShortInfo(item.updatedByUser, 'updatedByUser') : undefined,
+      createdByUser: item.createdByUser
+        ? CommonFunctionsUtil.getAdminShortInfo(item.createdByUser, 'createdByUser')
+        : undefined,
+      updatedByUser: item.updatedByUser
+        ? CommonFunctionsUtil.getAdminShortInfo(item.updatedByUser, 'updatedByUser')
+        : undefined,
     };
   }
 
   public async fetchById(id: number): Promise<ICourierProvider> {
     const find = await this.courierProviderRepository.scope('details').findOne({
-      where: { providerId: id },
+      where: { courierProviderId: id },
       raw: true,
       nest: true,
     });
@@ -89,8 +97,13 @@ export class CourierProviderService {
     await this.courierProviderRepository.create(createObj);
   }
 
-  public async update(id: number, obj: IManageCourierProvider, cIp: string, adminId: number): Promise<void> {
-    const find = await this.courierProviderRepository.findOne({ where: { providerId: id } });
+  public async update(
+    id: number,
+    obj: IManageCourierProvider,
+    cIp: string,
+    adminId: number,
+  ): Promise<void> {
+    const find = await this.courierProviderRepository.findOne({ where: { courierProviderId: id } });
     if (!find) {
       throw new NotFoundException('Courier provider not found');
     }
@@ -105,23 +118,37 @@ export class CourierProviderService {
       modifiedBy: adminId,
       modifiedIp: cIp,
     };
-    await this.courierProviderRepository.update(updateObj, { where: { providerId: id } });
+    await this.courierProviderRepository.update(updateObj, { where: { courierProviderId: id } });
   }
 
-  public async changeStatus(id: number, active: boolean, cIp: string, adminId: number): Promise<void> {
-    const find = await this.courierProviderRepository.findOne({ where: { providerId: id } });
+  public async changeStatus(
+    id: number,
+    active: boolean,
+    cIp: string,
+    adminId: number,
+  ): Promise<void> {
+    const find = await this.courierProviderRepository.findOne({ where: { courierProviderId: id } });
     if (!find) {
       throw new NotFoundException('Courier provider not found');
     }
-    await this.courierProviderRepository.update({ active, modifiedBy: adminId, modifiedIp: cIp }, { where: { providerId: id } });
+    await this.courierProviderRepository.update(
+      { active, modifiedBy: adminId, modifiedIp: cIp },
+      { where: { courierProviderId: id } },
+    );
   }
 
   public async getCourierProviderList(): Promise<IDropdownItem[]> {
     const tempList = await this.courierProviderRepository.findAll<MstCourierProvider>({
       where: { active: true },
-      order: [['priorityOrder', 'ASC'], ['providerName', 'ASC']],
+      order: [
+        ['priorityOrder', 'ASC'],
+        ['providerName', 'ASC'],
+      ],
     });
-    return tempList.map((t) => ({ id: t.providerId, label: t.providerName, selected: false }));
+    return tempList.map((t) => ({
+      id: t.courierProviderId,
+      label: t.providerName,
+      selected: false,
+    }));
   }
 }
-

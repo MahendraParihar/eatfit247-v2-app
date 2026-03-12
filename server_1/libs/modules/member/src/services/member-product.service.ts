@@ -343,24 +343,24 @@ export class MemberProductService {
 
     const productShipments: IShipment[] = [];
 
-    for (const shipment of shipments) {
-      if (!shipment.shipmentItems || shipment.shipmentItems.length === 0) {
-        continue;
-      }
-
-      const matchingItems = shipment.shipmentItems.filter(
-        (shipmentItem) =>
-          shipmentItem.memberProductOrderItemId !== undefined &&
-          memberProductOrderItemIds.includes(shipmentItem.memberProductOrderItemId),
-      );
-
-      if (matchingItems.length > 0) {
-        productShipments.push({
-          ...shipment,
-          shipmentItems: matchingItems,
-        });
-      }
-    }
+    // for (const shipment of shipments) {
+    //   if (!shipment.shipmentItems || shipment.shipmentItems.length === 0) {
+    //     continue;
+    //   }
+    //
+    //   const matchingItems = shipment.shipmentItems.filter(
+    //     (shipmentItem) =>
+    //       shipmentItem.memberProductOrderItemId !== undefined &&
+    //       memberProductOrderItemIds.includes(shipmentItem.memberProductOrderItemId),
+    //   );
+    //
+    //   if (matchingItems.length > 0) {
+    //     productShipments.push({
+    //       ...shipment,
+    //       shipmentItems: matchingItems,
+    //     });
+    //   }
+    // }
 
     return <IMemberProduct>{
       memberProductId: item.memberProductId,

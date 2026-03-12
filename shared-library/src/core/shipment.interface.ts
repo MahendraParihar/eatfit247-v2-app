@@ -69,7 +69,7 @@ export interface IShipment extends IAdminInfo {
   shipmentId: number;
   orderId: number;
   shipmentNumber: string;
-  providerId?: number;
+  courierProviderId?: number;
   providerAccountId?: number;
   franchiseId: number;
   warehouseId: number;

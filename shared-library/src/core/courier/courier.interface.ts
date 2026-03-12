@@ -13,7 +13,7 @@ export interface ICourierProviderCredentials{
 export interface IResolvedProviderWarehousePair {
     warehouseId: number;
     warehousePincode: string;
-    providerId: number;
+    courierProviderId: number;
     providerCode: string;
     providerName: string;
     priorityOrder: number;
@@ -144,7 +144,7 @@ export interface ITrackingInfo {
 
 export interface IRateQuote {
     rateQuoteId?: number;
-    providerId: number;
+    providerAccountId: number;
     providerName?: string;
     serviceId?: number;
     serviceCode: string;

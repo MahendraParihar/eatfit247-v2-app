@@ -1,22 +1,27 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import {
+  IBookingItem,
+  IBookingRequest,
   ICreateShipmentPayload,
   IMemberAddressSnapshot,
+  IRateQuote,
   IRateQuoteWithPriority,
+  IRateRequest,
   IResolvedProviderWarehousePair,
   IShipment,
   ITrackingInfo,
   SHIPMENT_CONFIG,
   ShipmentStatusEnum,
 } from '@eatfit247-shared-lib';
-import { BookingRequestDto, BookingResponseDto, RateQuoteDto, RateRequestDto } from '../dto';
+import { BookingResponseDto } from '../dto';
 import { CourierFactory } from '../providers';
 import { ShipmentRecordService } from './shipment-record.service';
 import { RateSelectorService } from './rate-selector.service';
 import { WarehouseResolverService } from './warehouse-resolver.service';
-import { TxnShipment } from '../models';
+import { TxnShipment, TxnShipmentRateQuote } from '../models';
 import { InjectModel } from '@nestjs/sequelize';
 import { TxnMemberProduct } from '@server_1/modules/member/models';
+import { CommonFunctionsUtil } from '@server_1/core';
 
 @Injectable()
 export class ShipmentOrchestrationService {
@@ -31,27 +36,6 @@ export class ShipmentOrchestrationService {
   ) {}
 
   /**
-   * Converts a weight value from the given unit to kg.
-   */
-  private convertToKg(value: number, unit: string): number {
-    const u = (unit ?? 'gm').toLowerCase().trim();
-    switch (u) {
-      case 'kg':
-      case 'kgs':
-        return value;
-      case 'g':
-      case 'gm':
-      case 'gram':
-      case 'grams':
-        return value / 1000;
-      case 'mg':
-        return value / 1_000_000;
-      default:
-        return value / 1000; // assume grams if unknown
-    }
-  }
-
-  /**
    * Sums order item weights in kg. Each item has quantityValue + quantityUnit (e.g. 100, 'gm');
    * multiplies by item quantity for total per line.
    */
@@ -59,11 +43,10 @@ export class ShipmentOrchestrationService {
     let totalKg = 0;
     for (const item of order.orderItems ?? []) {
       const val = Number(item.quantityValue ?? 0);
-      const unit = String(item.quantityUnit ?? 'gm');
       const qty = Math.max(0, Number(item.quantity ?? 1));
-      totalKg += this.convertToKg(val, unit) * qty;
+      totalKg += val * qty;
     }
-    return Math.round(totalKg * 1000) / 1000;
+    return totalKg;
   }
 
   // ────────────────────────────────────────────────────────────────────────
@@ -171,10 +154,7 @@ export class ShipmentOrchestrationService {
   // PUBLIC: Cron retry — resumes from last known status
   // ────────────────────────────────────────────────────────────────────────
 
-  public async retryBooking(
-    shipmentId: number,
-    request: BookingRequestDto = {},
-  ): Promise<BookingResponseDto> {
+  public async retryBooking(shipmentId: number, key: string): Promise<BookingResponseDto> {
     const shipment = await this.shipmentRecordService.getEntityById(shipmentId);
 
     // Determine where to resume based on last known status
@@ -224,7 +204,7 @@ export class ShipmentOrchestrationService {
   // PUBLIC: Admin endpoints
   // ────────────────────────────────────────────────────────────────────────
 
-  public async requestRates(shipmentId: number): Promise<RateQuoteDto[]> {
+  public async requestRates(shipmentId: number): Promise<IRateQuote[]> {
     const shipment = await this.shipmentRecordService.getEntityById(shipmentId);
     const pairs = await this.warehouseResolverService.resolvePairs(shipment);
     const rateReq = this.buildRateRequest(shipment);
@@ -242,13 +222,13 @@ export class ShipmentOrchestrationService {
     if (!shipment.trackingNumber) {
       throw new NotFoundException(`Tracking number missing for shipment ${shipmentId}`);
     }
-    if (!shipment.providerId) {
+    if (!shipment.courierProviderId) {
       throw new NotFoundException(`Provider missing for shipment ${shipmentId}`);
     }
 
     const pair = await this.warehouseResolverService.resolvePairByProvider(
       shipment,
-      shipment.providerId,
+      shipment.courierProviderId,
     );
     if (!pair) {
       throw new NotFoundException(`Provider account not found for shipment ${shipmentId}`);
@@ -282,6 +262,8 @@ export class ShipmentOrchestrationService {
         throw new Error('No active warehouse-provider pairs found');
       }
 
+      console.log(pairs);
+
       // Record the resolved warehouse on the shipment (first available)
       if (!shipment.warehouseId && pairs[0].warehouseId) {
         await this.shipmentRecordService.markWarehouseResolved(shipmentId, pairs[0].warehouseId);
@@ -304,10 +286,11 @@ export class ShipmentOrchestrationService {
 
       // Attach priorityOrder from the resolved pairs for sorting
       const quotesWithPriority: IRateQuoteWithPriority[] = savedQuotes.map((q) => {
-        const matchedPair = pairs.find((p) => p.providerId === q.providerId);
+        const matchedPair = pairs.find((p) => p.courierProviderId === q.courierProviderId);
         return {
           rateQuoteId: q.rateQuoteId,
-          providerId: q.providerId,
+          providerAccountId: q.providerAccountId,
+          courierProviderId: q.courierProviderId,
           serviceCode: q.serviceName ?? '',
           serviceName: q.serviceName ?? '',
           rateAmount: Number(q.rateAmount),
@@ -323,6 +306,8 @@ export class ShipmentOrchestrationService {
         throw new Error('Rate selector returned no valid quote');
       }
 
+      console.log(best);
+
       // ── Step D: Persist selection ────────────────────────────────────────
       await this.shipmentRecordService.selectRateQuote(shipmentId, best.rateQuoteId ?? 0);
 
@@ -332,6 +317,7 @@ export class ShipmentOrchestrationService {
       // ── Step E: Book with selected provider ──────────────────────────────
       await this.bookWithSelectedQuote(updatedShipment);
     } catch (err: unknown) {
+      console.log(err);
       const message = this.errMsg(err);
       const retryCount = (shipment.retryCount ?? 0) + 1;
       const nextRetryAt =
@@ -357,22 +343,26 @@ export class ShipmentOrchestrationService {
   private async bookWithSelectedQuote(shipment: TxnShipment): Promise<BookingResponseDto> {
     const shipmentId = shipment.shipmentId;
 
-    if (!shipment.providerId) {
+    if (!shipment.courierProviderId) {
       throw new NotFoundException(`Shipment ${shipmentId} has no provider set — cannot book`);
     }
 
     const pair = await this.warehouseResolverService.resolvePairByProvider(
       shipment,
-      shipment.providerId,
+      shipment.courierProviderId,
     );
     if (!pair) {
-      throw new NotFoundException(`Provider account not found for provider ${shipment.providerId}`);
+      throw new NotFoundException(
+        `Provider account not found for provider ${shipment.courierProviderId}`,
+      );
     }
 
     await this.shipmentRecordService.markBookingRequested(shipmentId);
 
     try {
+      console.log(shipment);
       const bookingPayload = this.buildBookingRequest(shipment);
+      console.log(bookingPayload);
       const adapter = this.courierFactory.getAdapter(pair.providerCode);
       const providerRes = await adapter.createShipment(bookingPayload, pair.credentials);
 
@@ -380,7 +370,7 @@ export class ShipmentOrchestrationService {
         shipmentId: shipment.shipmentId,
         shipmentNumber: shipment.shipmentNumber,
         status: ShipmentStatusEnum.BOOKED,
-        providerId: pair.providerId,
+        courierProviderId: pair.courierProviderId,
         providerAccountId: pair.providerAccountId,
         providerShipmentId: providerRes.providerShipmentId,
         trackingNumber: providerRes.trackingNumber,
@@ -417,7 +407,7 @@ export class ShipmentOrchestrationService {
   private async fetchAndSaveRatesForPair(
     shipmentId: number,
     pair: IResolvedProviderWarehousePair,
-    rateReq: RateRequestDto,
+    rateReq: IRateRequest,
   ): Promise<void> {
     if (!pair.warehousePincode?.trim()) {
       this.logger.warn(
@@ -428,11 +418,11 @@ export class ShipmentOrchestrationService {
 
     try {
       // Each pair has its own warehouse — adapters require pickup postcode for rate API
-      const rateReqWithPickup: RateRequestDto = {
+      const rateReqWithPickup: IRateRequest = {
         ...rateReq,
         pickup: {
           ...rateReq.pickup,
-          postcode: pair.warehousePincode,
+          pincode: pair.warehousePincode,
         },
         pickupPostcode: Number(pair.warehousePincode),
       };
@@ -442,13 +432,14 @@ export class ShipmentOrchestrationService {
 
       const normalised = quotes.map((q) => ({
         ...q,
-        providerId: pair.providerId,
+        courierProviderId: pair.courierProviderId,
         providerName: pair.providerName,
       }));
 
       await this.shipmentRecordService.replaceRateQuotes(
         shipmentId,
         pair.providerAccountId,
+        pair.courierProviderId,
         pair.warehouseId,
         normalised,
       );
@@ -466,15 +457,24 @@ export class ShipmentOrchestrationService {
   // PRIVATE: DTO builders
   // ────────────────────────────────────────────────────────────────────────
 
-  private buildRateRequest(shipment: TxnShipment, deliveryPincode?: string): RateRequestDto {
+  private buildRateRequest(shipment: TxnShipment, deliveryPincode?: string): IRateRequest {
     const pincode = deliveryPincode ?? shipment.receiverPincode ?? '';
-
-    return {
+    const orderItems: IBookingItem[] = [];
+    if (shipment.shipmentItems && shipment.shipmentItems.length > 0) {
+      for (const s of shipment.shipmentItems) {
+        orderItems.push(<IBookingItem>{
+          name: s.memberProductOrderItem.productName,
+          price: s.memberProductOrderItem.totalAmount,
+          quantity: s.memberProductOrderItem.quantity,
+          sku: `SKU${s.memberProductOrderItem.memberProductOrderItemId}`,
+        });
+      }
+    }
+    return <IRateRequest>{
       shipmentId: shipment.shipmentId,
       shipmentNumber: shipment.shipmentNumber,
-      // Pickup postcode is set per-pair in fetchAndSaveRatesForPair from pair.warehousePincode
       pickup: {
-        postcode: '',
+        pincode: '',
         address: '',
         city: '',
         state: '',
@@ -482,7 +482,7 @@ export class ShipmentOrchestrationService {
         phone: '',
       },
       delivery: {
-        postcode: pincode,
+        pincode: pincode,
         address: shipment.receiverAddress ?? '',
         city: shipment.receiverCity ?? '',
         state: shipment.receiverState ?? '',
@@ -493,6 +493,7 @@ export class ShipmentOrchestrationService {
       orderAmount: shipment.totalAmount,
       codAmount: 0, // Prepaid only
       weight: shipment.totalWeightKg,
+      orderItems: orderItems,
       dimensions: shipment.lengthCm
         ? {
             length: shipment.lengthCm,
@@ -504,37 +505,28 @@ export class ShipmentOrchestrationService {
     };
   }
 
-  private buildBookingRequest(shipment: TxnShipment): BookingRequestDto {
+  private buildBookingRequest(shipment: TxnShipment): IBookingRequest {
+    console.log(shipment.shipmentItems);
     return {
       ...this.buildRateRequest(shipment),
       pickup: {
         address: shipment.warehouse.addressLine1,
+        address2: shipment.warehouse.addressLine2,
         country: shipment.warehouse.country.country,
         city: shipment.warehouse.city,
         phone: shipment.warehouse.phone,
         state: shipment.warehouse.state.state,
         name: shipment.warehouse.name,
-        address2: shipment.warehouse.addressLine2,
         email: shipment.warehouse.email,
-        postcode: shipment.warehouse.pinCode,
+        pincode: shipment.warehouse.pinCode,
       },
     };
   }
 
-  private toRateQuoteDto(quote: {
-    rateQuoteId: number;
-    providerId: number;
-    providerAccountId: number;
-    serviceName: string;
-    rateAmount: number;
-    currency: string;
-    estimatedDays?: number;
-    rawResponse?: Record<string, unknown>;
-    isSelected: boolean;
-  }): RateQuoteDto {
-    return {
+  private toRateQuoteDto(quote: TxnShipmentRateQuote): IRateQuote {
+    return <IRateQuote>{
       rateQuoteId: quote.rateQuoteId,
-      providerId: quote.providerId,
+      courierProviderId: quote.courierProviderId,
       providerAccountId: quote.providerAccountId,
       serviceCode: quote.serviceName,
       serviceName: quote.serviceName,

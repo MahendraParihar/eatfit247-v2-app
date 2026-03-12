@@ -56,16 +56,16 @@ export class TxnShipmentRateQuote extends Model<TxnShipmentRateQuote> {
   @ForeignKey(() => MstCourierProvider)
   @Column({
     allowNull: false,
-    field: 'provider_id',
+    field: 'courier_provider_id',
     type: DataType.INTEGER,
   })
-  declare providerId: number;
+  declare courierProviderId: number;
   @BelongsTo(() => MstCourierProvider, {
-    foreignKey: 'providerId',
-    targetKey: 'providerId',
-    as: 'provider',
+    foreignKey: 'courierProviderId',
+    targetKey: 'courierProviderId',
+    as: 'courierProvider',
   })
-  declare provider: MstCourierProvider;
+  declare courierProvider: MstCourierProvider;
   @ForeignKey(() => TxnCourierProviderAccount)
   @Column({
     allowNull: true,

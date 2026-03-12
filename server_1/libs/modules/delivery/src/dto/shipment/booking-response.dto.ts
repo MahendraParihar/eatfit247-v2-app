@@ -2,7 +2,7 @@ export class BookingResponseDto {
   shipmentId!: number;
   shipmentNumber!: string;
   status!: string;
-  providerId?: number;
+  courierProviderId?: number;
   providerAccountId?: number;
   providerShipmentId?: string;
   trackingNumber?: string;

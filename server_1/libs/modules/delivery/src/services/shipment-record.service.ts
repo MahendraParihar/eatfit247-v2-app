@@ -111,7 +111,7 @@ export class ShipmentRecordService {
   public async getById(shipmentId: number): Promise<IShipment> {
     const shipment = await this.shipmentRepository.scope('details').findOne({
       where: { shipmentId },
-      raw: true,
+      raw: false,
       nest: true,
     });
     if (!shipment) throw new NotFoundException(`Shipment ${shipmentId} not found`);
@@ -121,9 +121,11 @@ export class ShipmentRecordService {
   public async getEntityById(shipmentId: number): Promise<TxnShipment> {
     const shipment = await this.shipmentRepository.scope('details').findOne({
       where: { shipmentId },
+      raw: false,
+      nest: true,
     });
     if (!shipment) throw new NotFoundException(`Shipment ${shipmentId} not found`);
-    return shipment;
+    return shipment.toJSON();
   }
 
   /** Prevents duplicate shipments — called before creating */
@@ -171,6 +173,7 @@ export class ShipmentRecordService {
   public async replaceRateQuotes(
     shipmentId: number,
     providerAccountId: number,
+    courierProviderId: number,
     warehouseId: number,
     quotes: IRateQuote[],
   ): Promise<TxnShipmentRateQuote[]> {
@@ -183,7 +186,7 @@ export class ShipmentRecordService {
         quotes.map((q) => ({
           shipmentId,
           warehouseId: warehouseId,
-          providerId: q.providerId,
+          courierProviderId: courierProviderId,
           providerAccountId,
           serviceName: q.serviceName,
           estimatedDays: q.estimatedDays ?? null,
@@ -216,7 +219,7 @@ export class ShipmentRecordService {
 
     await this.shipmentRepository.update(
       {
-        providerId: quote.providerId,
+        courierProviderId: quote.courierProviderId,
         providerAccountId: quote.providerAccountId,
         rateAmount: quote.rateAmount,
         currency: quote.currency,
@@ -324,7 +327,7 @@ export class ShipmentRecordService {
       trackingNumber: shipment.trackingNumber,
       trackingUrl: shipment.trackingUrl,
       currentStatus: shipment.status,
-      providerName: shipment.provider?.providerName,
+      providerName: shipment.courierProvider?.providerName,
       trackingEvents: events.map((e: TxnShipmentTrackingEvent) => ({
         status: e.internalStatus,
         trackingEventId: e.trackingEventId,
@@ -386,7 +389,7 @@ export class ShipmentRecordService {
       shipmentId: shipment.shipmentId,
       shipmentNumber: shipment.shipmentNumber,
       orderId: shipment.orderId,
-      providerId: shipment.providerId,
+      courierProviderId: shipment.courierProviderId,
       providerAccountId: shipment.providerAccountId,
       franchiseId: shipment.franchiseId,
       warehouseId: shipment.warehouseId,
@@ -406,7 +409,7 @@ export class ShipmentRecordService {
           : selectedQuote?.rateAmount,
       currency: shipment.currency ?? selectedQuote?.currency ?? undefined,
       status: shipment.status,
-      providerName: shipment.provider?.providerName,
+      providerName: shipment.courierProvider?.providerName,
       serviceName: selectedQuote?.serviceName,
       metaData: shipment.metaData,
       shipmentItems,

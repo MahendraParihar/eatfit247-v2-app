@@ -112,8 +112,8 @@ export class ManageCourierProvider implements OnInit, OnDestroy {
     if (this.formGroup.valid) {
       const formValue: IManageCourierProvider = this.formGroup.value;
       if (this.isEditMode && this.initialData) {
-        const providerId = this.initialData.providerId;
-        await this.apiService.update(providerId, formValue);
+        const courierProviderId = this.initialData.courierProviderId;
+        await this.apiService.update(courierProviderId, formValue);
         this.snackBar.open('Courier provider updated successfully', 'Close', {
           duration: 3000,
         });

@@ -42,7 +42,7 @@ export class CourierProviderAccountService {
   private convertToModel(item: any): ICourierProviderAccount {
     return <ICourierProviderAccount>{
       providerAccountId: item.providerAccountId,
-      providerId: item.providerId,
+      courierProviderId: item.courierProviderId,
       franchiseId: item.franchiseId,
       accountName: item.accountName,
       apiBaseUrl: item.apiBaseUrl,
@@ -67,7 +67,7 @@ export class CourierProviderAccountService {
         : undefined,
       provider: item.provider
         ? {
-            providerId: item.provider.providerId,
+            courierProviderId: item.provider.courierProviderId,
             providerCode: item.provider.providerCode,
             providerName: item.provider.providerName,
           }
@@ -115,7 +115,7 @@ export class CourierProviderAccountService {
     if (obj.password) {
       // Fetch provider to determine auth type
       const provider = await MstCourierProvider.findOne({
-        where: { providerId: obj.providerId },
+        where: { courierProviderId: obj.courierProviderId },
       });
 
       // For JWT providers, use encryption (reversible) instead of bcrypt (one-way hash)
@@ -129,7 +129,7 @@ export class CourierProviderAccountService {
     }
 
     const createObj = {
-      providerId: obj.providerId,
+      courierProviderId: obj.courierProviderId,
       franchiseId: obj.franchiseId,
       accountName: obj.accountName || null,
       apiBaseUrl: obj.apiBaseUrl,
@@ -163,7 +163,7 @@ export class CourierProviderAccountService {
     }
 
     const updateObj: any = {
-      providerId: obj.providerId,
+      courierProviderId: obj.courierProviderId,
       franchiseId: obj.franchiseId,
       accountName: obj.accountName || null,
       apiBaseUrl: obj.apiBaseUrl,
@@ -182,7 +182,7 @@ export class CourierProviderAccountService {
     if (obj.password) {
       // Fetch provider to determine auth type
       const provider = await MstCourierProvider.findOne({
-        where: { providerId: obj.providerId },
+        where: { courierProviderId: obj.courierProviderId },
       });
 
       // For JWT providers, use encryption (reversible) instead of bcrypt (one-way hash)
@@ -248,7 +248,7 @@ export class CourierProviderAccountService {
           {
             model: MstCourierProvider,
             as: 'provider',
-            attributes: ['providerId', 'providerCode', 'providerName'],
+            attributes: ['courierProviderId', 'providerCode', 'providerName'],
           },
         ],
         order: [['providerAccountId', 'DESC']],
@@ -258,7 +258,7 @@ export class CourierProviderAccountService {
       id: t.providerAccountId,
       label:
         t.accountName ||
-        `${t.provider?.providerName || 'Unknown'} - Account ${t.providerAccountId}`,
+        `${t.courierProvider?.providerName || 'Unknown'} - Account ${t.providerAccountId}`,
       selected: false,
     }));
   }

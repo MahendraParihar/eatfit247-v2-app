@@ -1,3 +1,4 @@
+export * from './booking-request.interface';
 export * from './courier.interface';
 export * from './courier-provider.interface';
 export * from './nimbus.interface';

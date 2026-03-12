@@ -2,19 +2,23 @@ import { IBaseAdminUser, IMediaUpload } from '@eatfit247-shared-lib';
 import moment from 'moment';
 
 export class CommonFunctionsUtil {
-  public static removeSpecialChar(tempStr: string, replaceChar: string = '-', lowerCase = true): string | null {
+  public static removeSpecialChar(
+    tempStr: string,
+    replaceChar: string = '-',
+    lowerCase = true,
+  ): string | null {
     if (!tempStr) {
       return null;
     }
     return lowerCase
       ? tempStr
-        .replace(/[^a-zA-Z0-9]/g, replaceChar)
-        .replace(/\s+/g, replaceChar)
-        .toLowerCase()
+          .replace(/[^a-zA-Z0-9]/g, replaceChar)
+          .replace(/\s+/g, replaceChar)
+          .toLowerCase()
       : tempStr
-        .replace(/[^a-zA-Z0-9]/g, replaceChar)
-        .replace(/\s+/g, replaceChar)
-        .toString();
+          .replace(/[^a-zA-Z0-9]/g, replaceChar)
+          .replace(/\s+/g, replaceChar)
+          .toString();
   }
 
   public static getAdminShortInfo(obj: any, aliasString: string): IBaseAdminUser | null {

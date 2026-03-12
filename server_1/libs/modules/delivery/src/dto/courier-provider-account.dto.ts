@@ -4,11 +4,11 @@ import { IManageCourierProviderAccount, InputLengthEnum } from '@eatfit247-share
 export class CreateCourierProviderAccountDto implements IManageCourierProviderAccount {
   @IsNotEmpty()
   @IsNumber()
-  providerId!: number;
+  courierProviderId: number;
 
   @IsNotEmpty()
   @IsNumber()
-  franchiseId!: number;
+  franchiseId: number;
 
   @IsOptional()
   @MaxLength(100)
@@ -17,7 +17,7 @@ export class CreateCourierProviderAccountDto implements IManageCourierProviderAc
 
   @IsNotEmpty()
   @IsString()
-  apiBaseUrl!: string;
+  apiBaseUrl: string;
 
   @IsOptional()
   @IsString()
@@ -48,7 +48,7 @@ export class CreateCourierProviderAccountDto implements IManageCourierProviderAc
 
   @IsNotEmpty()
   @IsBoolean()
-  active!: boolean;
+  active: boolean;
 
   @IsOptional()
   @IsNumber()

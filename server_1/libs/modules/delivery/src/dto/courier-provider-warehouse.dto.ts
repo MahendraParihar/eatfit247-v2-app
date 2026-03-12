@@ -4,11 +4,11 @@ import { IManageCourierProviderWarehouse } from '@eatfit247-shared-lib';
 export class CreateCourierProviderWarehouseDto implements IManageCourierProviderWarehouse {
   @IsNotEmpty()
   @IsNumber()
-  warehouseId!: number;
+  warehouseId: number;
 
   @IsNotEmpty()
   @IsNumber()
-  providerId!: number;
+  courierProviderId: number;
 
   @IsOptional()
   @MaxLength(100)
@@ -25,7 +25,7 @@ export class CreateCourierProviderWarehouseDto implements IManageCourierProvider
 
   @IsNotEmpty()
   @IsBoolean()
-  active!: boolean;
+  active: boolean;
 
   @IsOptional()
   @IsNumber()

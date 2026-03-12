@@ -1,4 +1,6 @@
 export interface INimbusShipmentPayload{
+    courier_id: number;
+    request_auto_pickup?: string,
     order_number: string;
     shipping_charges?: number;
     discount?:  number;
@@ -15,7 +17,7 @@ export interface INimbusShipmentPayload{
         address_2: string;
         city: string;
         state: string;
-        pincode: string;
+        pincode: number;
         phone: string;
     },
     pickup: {
@@ -25,7 +27,7 @@ export interface INimbusShipmentPayload{
         address_2: string;
         city: string;
         state: string;
-        pincode: string;
+        pincode: number;
         phone: string;
     },
     order_items?: {
