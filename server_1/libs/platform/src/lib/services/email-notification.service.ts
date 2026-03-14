@@ -13,6 +13,7 @@ export class EmailNotificationService {
   private transporter: nodemailer.Transporter;
   private readonly serviceName = 'EmailNotificationService';
   private readonly templatesPath: string;
+  private readonly emailSenderId: string;
 
   constructor(
     private readonly appConfigService: AppConfigService,
@@ -37,25 +38,30 @@ export class EmailNotificationService {
     const mailUser = this.appConfigService.getString(ConfigParam.SYSTEM_EMAIL_USER);
     const mailPassword = this.appConfigService.getString(ConfigParam.SYSTEM_EMAIL_PASSWORD);
     const enableMail = this.appConfigService.getBoolean(ConfigParam.SYSTEM_EMAIL_ENABLE);
+    this.emailSenderId = this.appConfigService.getString(ConfigParam.SYSTEM_EMAIL_USER);
     if (!enableMail || !mailHost || !mailUser || !mailPassword) {
       this.transporter = nodemailer.createTransport({
         jsonTransport: true, // Use dummy transport for testing
       });
     } else {
+      // MAIL_SECURE=true  → native TLS on port 465 (most secure)
+      // MAIL_SECURE=false → STARTTLS on port 587 (default, still encrypted via requireTLS)
+      const mailSecure = this.appConfigService.getBoolean(ConfigParam.SYSTEM_EMAIL_SECURE);
+      const defaultPort = mailSecure ? 465 : 587;
       this.transporter = nodemailer.createTransport({
         pool: true,
         host: mailHost,
-        secure: false,
-        port: mailPort || 587,
+        secure: mailSecure,
+        port: mailPort || defaultPort,
         auth: {
           user: mailUser,
           pass: mailPassword,
         },
         tls: {
-          rejectUnauthorized: false,
+          rejectUnauthorized: true,
         },
         ignoreTLS: false,
-        requireTLS: true,
+        requireTLS: !mailSecure, // STARTTLS is required only in non-secure (port 587) mode
       });
     }
   }
@@ -98,18 +104,13 @@ export class EmailNotificationService {
         })) || [];
       // Send email
       const mailOptions = {
-        from: this.appConfigService.getString(ConfigParam.SYSTEM_EMAIL_USER),
+        from: this.emailSenderId,
         to: recipients.join(', '),
         subject: subject,
         html: body,
         attachments: attachments.length > 0 ? attachments : undefined,
       };
       await this.transporter.sendMail(mailOptions);
-      // Log success (optional - you may want to remove this or make it configurable)
-      // await this.logErrorService.logWarning(
-      //   `Email sent successfully to ${recipients.join(', ')}. MessageId: ${result.messageId}`,
-      //   { controller: this.serviceName, methodName: 'sendEmail' }
-      // );
     } catch (error) {
       await this.logErrorService.logError(
         error instanceof Error ? error : new Error(String(error)),
@@ -174,18 +175,13 @@ export class EmailNotificationService {
         })) || [];
       // Send email
       const mailOptions = {
-        from: process.env['MAIL_USER'] || 'noreply@eatfit247.com',
+        from: this.emailSenderId,
         to: recipients.join(', '),
         subject: finalSubject,
         html: htmlBody,
         attachments: emailAttachments.length > 0 ? emailAttachments : undefined,
       };
-      const result = await this.transporter.sendMail(mailOptions);
-      // Log success (optional - you may want to remove this or make it configurable)
-      await this.logErrorService.logWarning(
-        `Email sent successfully to ${recipients.join(', ')}. MessageId: ${result.messageId}`,
-        { controller: this.serviceName, methodName: 'sendEmailByType' },
-      );
+      await this.transporter.sendMail(mailOptions);
     } catch (error) {
       await this.logErrorService.logError(
         error instanceof Error ? error : new Error(String(error)),
@@ -203,4 +199,3 @@ export class EmailNotificationService {
     return ejs.renderFile(path.join(this.templatesPath, `${template}.ejs`), data, { async: true });
   }
 }
-

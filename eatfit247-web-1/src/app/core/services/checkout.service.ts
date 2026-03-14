@@ -1,4 +1,5 @@
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { HttpService } from './http.service';
 import { ProgramPlan, ProgramPlanService } from './program-plan.service';
 import {
@@ -27,6 +28,13 @@ import {
 export class CheckoutService {
   private readonly httpService = inject(HttpService);
   private readonly programPlanService = inject(ProgramPlanService);
+  private readonly platformId = inject(PLATFORM_ID);
+
+  private getCheckoutAuthHeaders(): { [key: string]: string } {
+    if (!isPlatformBrowser(this.platformId)) return {};
+    const token = sessionStorage.getItem('checkoutToken');
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  }
 
   /**
    * Get program plan details by ID
@@ -79,7 +87,8 @@ export class CheckoutService {
     try {
       const res = await this.httpService.post<{ addressId: number }>(
         `checkout/member/${memberId}/address`,
-        addressData
+        addressData,
+        { headers: this.getCheckoutAuthHeaders() }
       );
       return res.data || null;
     } catch (error) {
@@ -98,7 +107,8 @@ export class CheckoutService {
     try {
       const res = await this.httpService.post<ICalculateTaxResponse>(
         `checkout/plan/member/${memberId}/calculate-tax`,
-        taxData
+        taxData,
+        { headers: this.getCheckoutAuthHeaders() }
       );
       return res.data || null;
     } catch (error) {
@@ -119,7 +129,8 @@ export class CheckoutService {
       const res =
         await this.httpService.post<ICalculateProductVariantTaxResponse>(
           `checkout/member/${memberId}/calculate-tax`,
-          taxData
+          taxData,
+          { headers: this.getCheckoutAuthHeaders() }
         );
       return res.data || null;
     } catch (error) {
@@ -209,7 +220,8 @@ export class CheckoutService {
   ): Promise<IPaymentGateway[]> {
     try {
       const data = await this.httpService.get<IPaymentGateway[]>(
-        `checkout/product/supported-gateways?currency=${currency}`
+        `checkout/product/supported-gateways?currency=${currency}`,
+        { headers: this.getCheckoutAuthHeaders() }
       );
       return data.data || [];
     } catch (error) {
@@ -227,7 +239,8 @@ export class CheckoutService {
   ): Promise<IPaymentGateway[]> {
     try {
       const data = await this.httpService.get<IPaymentGateway[]>(
-        `checkout/plan/supported-gateways?currency=${currency}`
+        `checkout/plan/supported-gateways?currency=${currency}`,
+        { headers: this.getCheckoutAuthHeaders() }
       );
       return data.data || [];
     } catch (error) {
@@ -252,7 +265,7 @@ export class CheckoutService {
     recaptchaToken?: string
   ): Promise<any> {
     try {
-      const headers: { [key: string]: string } = {};
+      const headers: { [key: string]: string } = { ...this.getCheckoutAuthHeaders() };
       if (recaptchaToken) {
         headers['X-Recaptcha-Token'] = recaptchaToken;
       }
@@ -281,7 +294,7 @@ export class CheckoutService {
     recaptchaToken?: string
   ): Promise<any> {
     try {
-      const headers: { [key: string]: string } = {};
+      const headers: { [key: string]: string } = { ...this.getCheckoutAuthHeaders() };
       if (recaptchaToken) {
         headers['X-Recaptcha-Token'] = recaptchaToken;
       }
@@ -313,7 +326,9 @@ export class CheckoutService {
       const res = await this.httpService.get<{
         buffer: string;
         fileName: string;
-      }>(`checkout/member/${memberId}/product/${memberProductId}/invoice`);
+      }>(`checkout/member/${memberId}/product/${memberProductId}/invoice`, {
+        headers: this.getCheckoutAuthHeaders(),
+      });
       return res.data || null;
     } catch (error) {
       console.error('Error downloading invoice:', error);
@@ -334,7 +349,9 @@ export class CheckoutService {
       const res = await this.httpService.get<{
         buffer: string;
         fileName: string;
-      }>(`checkout/plan/member/${memberId}/payment/${paymentId}/invoice`);
+      }>(`checkout/plan/member/${memberId}/payment/${paymentId}/invoice`, {
+        headers: this.getCheckoutAuthHeaders(),
+      });
       return res.data || null;
     } catch (error) {
       console.error('Error downloading plan invoice:', error);
@@ -352,7 +369,8 @@ export class CheckoutService {
   ): Promise<IMemberProduct | null> {
     try {
       const res = await this.httpService.get<IMemberProduct>(
-        `checkout/order/${gatewayOrderId}`
+        `checkout/order/${gatewayOrderId}`,
+        { headers: this.getCheckoutAuthHeaders() }
       );
       return res.data || null;
     } catch (error) {
@@ -369,7 +387,8 @@ export class CheckoutService {
   async getPlanOrderDetails(gatewayOrderId: string): Promise<IMemberProduct> {
     try {
       const res = await this.httpService.get<IMemberProduct>(
-        `checkout/plan/${gatewayOrderId}`
+        `checkout/plan/${gatewayOrderId}`,
+        { headers: this.getCheckoutAuthHeaders() }
       );
       return res.data || null;
     } catch (error) {

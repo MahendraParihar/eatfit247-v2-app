@@ -1,8 +1,15 @@
-import { BadRequestException, Injectable, Logger, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { JwtService, JwtSignOptions } from '@nestjs/jwt';
 import {
   AppConfigService,
+  CommonFunctionsUtil,
   CryptoUtil,
   Env,
   MstAdminUser,
@@ -21,8 +28,9 @@ import {
   ISendEmailParams,
   IToken,
 } from '@eatfit247-shared-lib';
-import { randomBytes } from 'node:crypto';
+import { randomBytes, randomUUID } from 'node:crypto';
 import moment from 'moment';
+import { Op } from 'sequelize';
 
 @Injectable()
 export class AuthService {
@@ -50,10 +58,7 @@ export class AuthService {
       emailId: user.emailId,
       firstName: user.firstName,
       lastName: user.lastName,
-      profilePicture:
-        typeof user.profilePicture === 'string'
-          ? JSON.parse(user.profilePicture || '{}')
-          : user.profilePicture || {},
+      profilePicture: CommonFunctionsUtil.safeParse(user.profilePicture),
       countryCode: user.countryCode,
       contactNumber: user.contactNumber,
     };
@@ -62,142 +67,141 @@ export class AuthService {
   public async signIn(loginDto: ILogin, ipAddress: string, device: string): Promise<IToken> {
     const user = await this.findOneByEmail(loginDto.emailId);
     if (!user) {
-      // this.recordFailedAttempt(rateLimitKey);
       throw new UnauthorizedException('Invalid email or password');
     }
-    // Check account status
     if (!user.active) {
       throw new UnauthorizedException(user.deactivationReason || 'Account is inactive');
     }
-    // Verify password
     if (!loginDto.password || !user.password) {
-      // this.recordFailedAttempt(rateLimitKey);
       throw new UnauthorizedException('Invalid email or password');
     }
     const isMatch = await CryptoUtil.compareHash(loginDto.password, user.password);
     if (!isMatch) {
-      // this.recordFailedAttempt(rateLimitKey);
       throw new UnauthorizedException('Invalid email or password');
     }
-    // Successful login - reset rate limiting
-    // this.loginAttempts.delete(rateLimitKey);
-    // Record login history
     await this.recordLoginHistory(user.adminId, ipAddress, device);
-    // Generate tokens
+    // Each refresh token gets a unique JWT ID (jti) stored in the DB.
+    // This allows revocation of a single device session without affecting others.
+    const jti = randomUUID();
     const jwtPayload = {
       emailId: user.emailId,
       adminUserId: user.adminId,
+      jti,
     };
-    const accessToken = this.jwtService.sign(jwtPayload, <JwtSignOptions>{
-      secret: Env.jwtSecret,
-      expiresIn: Env.accessTokenTime,
-    });
+    const accessToken = this.jwtService.sign({ emailId: user.emailId, adminUserId: user.adminId }, <
+      JwtSignOptions
+    >{ secret: Env.jwtSecret, expiresIn: Env.accessTokenTime });
     const refreshToken = this.jwtService.sign(jwtPayload, <JwtSignOptions>{
       expiresIn: Env.refreshTokenTime,
       secret: Env.jwtRefreshSecret,
     });
-    const refreshPlain = randomBytes(64).toString('hex');
-    const refreshHash = await CryptoUtil.generateHash(refreshPlain, +Env.bcryptSaltRounds);
-    const expiresAt = moment().add(14, 'days').toDate(); // 14 days expiry per auth flow document
+    const expiresAt = moment().add(14, 'days').toDate();
+    // tokenHash column repurposed to store jti — direct equality lookup,
+    // no bcrypt comparison needed (JWT signature is the proof of authenticity).
     await this.refreshTokenRepository.create({
       adminId: user.adminId,
-      tokenHash: refreshHash,
+      tokenHash: jti,
       expiresAt,
     });
-    return <IToken>{
-      accessToken,
-      refreshToken,
-    };
+    return <IToken>{ accessToken, refreshToken };
   }
 
   /**
-   * Refresh Token with Token Rotation
-   * ⚠️ AUTH FLOW: Follow eatfit247-admin-auth-flow.md
+   * Refresh Token with Token Rotation.
    *
-   * Token Rotation:
-   * 1. Verify old refresh token
-   * 2. Revoke old refresh token in database
-   * 3. Generate new access token (10-15 min expiry)
-   * 4. Generate new refresh token (7-14 days expiry)
-   * 5. Store new refresh token in database
-   *
-   * @param refreshToken - Old refresh token from HttpOnly cookie
-   * @returns New access token and refresh token
+   * 1. Verify the incoming refresh JWT (signature + expiry).
+   * 2. Extract its jti and find the exact DB row — rejects reused/stolen tokens.
+   * 3. Revoke ONLY that row (other device sessions are untouched).
+   * 4. Issue new access + refresh tokens (new jti) and persist the new DB row.
    */
   public async refreshToken(refreshToken: string): Promise<IToken> {
+    let payload: { jti?: string; adminUserId?: number; emailId?: string };
     try {
-      // Verify refresh token with refresh secret
-      const payload = this.jwtService.verify(refreshToken, { secret: Env.jwtRefreshSecret });
-      // Verify the user still exists and is active
-      const user = await this.findOneById(payload.adminUserId);
-      if (!user || !user.active) {
-        throw new UnauthorizedException('User account is not active');
-      }
-      // Token Rotation: Revoke old refresh token
-      // Find and revoke the old refresh token in database
-      const tokens = await this.refreshTokenRepository.findAll({
-        where: { adminId: user.adminId, revoked: false },
-      });
-      // Try to find and revoke the specific token
-      let tokenFound = false;
-      for (const t of tokens) {
-        // Since we're using JWT, we can't directly compare hashes
-        // Instead, we'll revoke all tokens for this user and create a new one
-        // In a production system, you'd store the JWT ID (jti) in the database
-        await this.refreshTokenRepository.update(
-          { revoked: true },
-          { where: { adminRefreshTokenId: t.adminRefreshTokenId } },
-        );
-        tokenFound = true;
-      }
-      // If no tokens found, still proceed (might be first refresh or token already revoked)
-      // Generate new tokens
-      const jwtPayload = {
-        emailId: payload.emailId,
-        adminUserId: payload.adminUserId,
-      };
-      const accessToken = this.jwtService.sign(jwtPayload, {
-        secret: Env.jwtSecret,
-        expiresIn: Env.accessTokenTime as any,
-      });
-      const newRefreshToken = this.jwtService.sign(jwtPayload, {
-        expiresIn: Env.refreshTokenTime as any,
-        secret: Env.jwtRefreshSecret,
-      });
-      // Token Rotation: Store new refresh token in database
-      const refreshPlain = randomBytes(64).toString('hex');
-      const refreshHash = await CryptoUtil.generateHash(refreshPlain, +Env.bcryptSaltRounds || 12);
-      const expiresAt = moment().add(14, 'days').toDate(); // 14 days expiry
-      await this.refreshTokenRepository.create({
-        adminId: user.adminId,
-        tokenHash: refreshHash,
-        expiresAt,
-      });
-      return { accessToken, refreshToken: newRefreshToken };
-    } catch (e) {
+      payload = this.jwtService.verify(refreshToken, { secret: Env.jwtRefreshSecret });
+    } catch {
       throw new UnauthorizedException('Invalid or expired refresh token');
     }
+
+    const { jti, adminUserId, emailId } = payload;
+    if (!jti || !adminUserId) {
+      // Token predates the jti scheme — reject and force re-login
+      throw new UnauthorizedException('Invalid refresh token format. Please log in again.');
+    }
+
+    // Look up the exact token record by jti
+    const tokenRecord = await this.refreshTokenRepository.findOne({
+      where: { adminId: adminUserId, tokenHash: jti, revoked: false },
+    });
+    if (!tokenRecord) {
+      // Token was already revoked or never existed — possible token reuse attack
+      this.logger.warn(`Refresh token not found or already revoked for adminId=${adminUserId}`);
+      throw new UnauthorizedException('Refresh token has already been used or revoked.');
+    }
+    if (moment().isAfter(moment(tokenRecord.expiresAt))) {
+      await this.refreshTokenRepository.update(
+        { revoked: true },
+        { where: { adminRefreshTokenId: tokenRecord.adminRefreshTokenId } },
+      );
+      throw new UnauthorizedException('Refresh token has expired. Please log in again.');
+    }
+
+    // Verify the user is still active
+    const user = await this.findById(adminUserId);
+    if (!user) {
+      throw new UnauthorizedException('User account is not active');
+    }
+
+    // Revoke the consumed token
+    await this.refreshTokenRepository.update(
+      { revoked: true },
+      { where: { adminRefreshTokenId: tokenRecord.adminRefreshTokenId } },
+    );
+
+    // Issue new tokens with a fresh jti
+    const newJti = randomUUID();
+    const accessToken = this.jwtService.sign(
+      { emailId, adminUserId },
+      { secret: Env.jwtSecret, expiresIn: Env.accessTokenTime as any },
+    );
+    const newRefreshToken = this.jwtService.sign(
+      { emailId, adminUserId, jti: newJti },
+      { expiresIn: Env.refreshTokenTime as any, secret: Env.jwtRefreshSecret },
+    );
+    await this.refreshTokenRepository.create({
+      adminId: adminUserId,
+      tokenHash: newJti,
+      expiresAt: moment().add(14, 'days').toDate(),
+    });
+
+    return { accessToken, refreshToken: newRefreshToken };
   }
 
+  /**
+   * Sign out.
+   *
+   * Preferred path: extract the jti from the refresh JWT and revoke only
+   * that one row — other devices stay logged in.
+   * Fallback: if the token is absent, expired, or predates the jti scheme,
+   * revoke every token for this user (safe but logs out all devices).
+   */
   public async signOut(adminId: number, refreshToken?: string): Promise<void> {
     if (refreshToken) {
-      // revoke specific token
-      const tokens = await this.refreshTokenRepository.findAll({
-        where: { adminId: adminId, revoked: false },
-      });
-      for (const t of tokens) {
-        const match = await CryptoUtil.compareHash(refreshToken, t.tokenHash);
-        if (match) {
+      try {
+        const payload = this.jwtService.verify(refreshToken, {
+          secret: Env.jwtRefreshSecret,
+        }) as { jti?: string };
+        if (payload?.jti) {
           await this.refreshTokenRepository.update(
             { revoked: true },
-            { where: { adminRefreshTokenId: t.adminRefreshTokenId } },
+            { where: { adminId, tokenHash: payload.jti } },
           );
           return;
         }
+      } catch {
+        // Expired or invalid refresh JWT — fall through to revoke-all
       }
     }
-    // else revoke all
-    await this.refreshTokenRepository.update({ revoked: true }, { where: { adminId: adminId } });
+    await this.refreshTokenRepository.update({ revoked: true }, { where: { adminId } });
   }
 
   public async forgotPassword(
@@ -206,13 +210,18 @@ export class AuthService {
     userAgent?: string,
   ): Promise<string> {
     const user: MstAdminUser = await this.findOneByEmail(forgotPasswordDto.emailId);
-    if (!user) {
-      throw new NotFoundException('Account not found');
+    if (!user || !user.active) {
+      return 'If that email is registered, a reset link has been sent.';
     }
-    if (!user.active) {
-      throw new BadRequestException(user.deactivationReason || 'Account is inactive');
-    }
-    // Generate new OTP
+    // Invalidate any existing unused tokens for this user before issuing a new one.
+    // This keeps at most 1 active token per user, so resetPassword() always
+    // bcrypt-compares against exactly 1 row instead of a growing unbounded set.
+    await this.passwordResetTokenRepository.update(
+      { used: true },
+      { where: { adminId: user.adminId, used: false } },
+    );
+
+    // Generate new reset token
     const tokenPlain = randomBytes(32).toString('hex');
     const tokenHash = await CryptoUtil.generateHash(tokenPlain, +Env.bcryptSaltRounds);
     const expiresAt = moment().add(Env.passwordResetExpirationMin, 'minutes').toDate();
@@ -224,7 +233,9 @@ export class AuthService {
       userAgent: userAgent || null,
     });
     // Generate reset link
-    const resetLink = `${this.appConfigService.get(ConfigParam.CLIENT_URL)}/reset-password?token=${tokenPlain}&uid=${user.emailId}`;
+    const resetLink = `${this.appConfigService.get(
+      ConfigParam.CLIENT_URL,
+    )}/reset-password?token=${tokenPlain}&uid=${user.emailId}`;
     try {
       const userName =
         user.firstName && user.lastName
@@ -234,7 +245,7 @@ export class AuthService {
       const franchiseId = user.franchiseId;
       const expiryHours = Math.ceil((Env.passwordResetExpirationMin || 60) / 60);
       await this.emailNotificationService.sendEmail(<ISendEmailParams>{
-        emailTemplate: EmailTemplateEnum.ADMIN_PASSWORD_CHANGED,
+        emailTemplate: EmailTemplateEnum.ADMIN_FORGOT_PASSWORD,
         to: user.emailId,
         franchiseBranding: { brandName: '', logoUrl: '' },
         replacements: {
@@ -251,88 +262,111 @@ export class AuthService {
     return 'Password reset link has been sent to your email address.';
   }
 
+  /**
+   * Reset password.
+   *
+   * Security properties:
+   * - Accepts the user's emailId alongside the token so we can scope the DB
+   *   lookup to a single user (O(1) query + O(1) bcrypt).  The previous
+   *   implementation loaded ALL unused tokens for ALL users and scanned them
+   *   linearly — O(n) bcrypt operations, a DoS vector.
+   * - forgotPassword() now invalidates previous tokens before creating a new
+   *   one, guaranteeing at most 1 active token per user at any time.
+   * - Expired-token check is done in the query (Op.gt) before bcrypt runs.
+   */
   public async resetPassword(
     tokenPlain: string,
+    emailId: string,
     newPassword: string,
     requestedIp: string,
   ): Promise<boolean> {
-    if (!tokenPlain || !newPassword) {
-      throw new BadRequestException('Token and new password are required');
+    if (!tokenPlain || !emailId || !newPassword) {
+      throw new BadRequestException('Token, email, and new password are required');
     }
-    // Validate password strength
+
     this.validatePasswordStrength(newPassword);
-    const tokens = await this.passwordResetTokenRepository.findAll({
-      where: { used: false },
-      nest: true,
+
+    // Resolve the user first — narrows every subsequent query to one adminId
+    const user = await this.findOneByEmail(emailId);
+    if (!user) {
+      // Return the same generic error as a missing token to avoid user enumeration
+      throw new BadRequestException('Invalid or expired reset token');
+    }
+
+    // Load only non-expired, unused tokens for this specific user.
+    // After the forgotPassword() change there should be exactly 1 row here.
+    const candidates = await this.passwordResetTokenRepository.findAll({
+      where: {
+        adminId: user.adminId,
+        used: false,
+        expiresAt: { [Op.gt]: new Date() },
+      },
       raw: true,
+      nest: true,
     });
-    for (const t of tokens) {
+
+    if (candidates.length === 0) {
+      throw new BadRequestException('Invalid or expired reset token');
+    }
+
+    // Verify token against the (typically single) candidate
+    let matchedToken: TxnAdminPasswordResetToken | null = null;
+    for (const t of candidates) {
       if (!t.tokenHash) continue;
       const ok = await CryptoUtil.compareHash(tokenPlain, t.tokenHash);
-      if (!ok) continue;
-      if (moment().isAfter(moment(t.expiresAt))) {
-        t.used = true;
-        await this.passwordResetTokenRepository.update(
-          { used: true },
-          { where: { adminPasswordResetTokenId: t.adminPasswordResetTokenId } },
-        );
-        throw new BadRequestException('Reset token expired');
+      if (ok) {
+        matchedToken = t;
+        break;
       }
-      // update user's password
-      await this.passwordResetTokenRepository.update(
-        { used: true },
-        { where: { adminPasswordResetTokenId: t.adminPasswordResetTokenId } },
-      );
-      const pwHash = await CryptoUtil.generateHash(newPassword, +Env.bcryptSaltRounds || 12);
-      await this.adminRepository.update(
-        {
-          password: pwHash,
-          modifiedIp: requestedIp,
-        },
-        { where: { adminId: t.adminId } },
-      );
-      // Get user details for email
-      const user = await this.findOneById(t.adminId);
-      // Revoke all refresh tokens
-      await this.refreshTokenRepository.update(
-        { revoked: true },
-        { where: { adminId: t.adminId } },
-      );
-      // Send password reset success email
-      if (user) {
-        try {
-          const userName =
-            user.firstName && user.lastName
-              ? `${user.firstName} ${user.lastName}`
-              : user.firstName || user.emailId;
-          const resetTime = new Date().toLocaleString('en-US', {
-            dateStyle: 'long',
-            timeStyle: 'short',
-          });
-          // Use franchiseId from user, default to 1 if not set
-          const franchiseId = user.franchiseId || 1;
-          const clientUrl = this.appConfigService.get(ConfigParam.CLIENT_URL);
-          await this.emailNotificationService.sendEmail(<ISendEmailParams>{
-            emailTemplate: EmailTemplateEnum.ADMIN_FORGOT_PASSWORD,
-            to: user.emailId,
-            franchiseBranding: { brandName: '', logoUrl: '' },
-            replacements: {
-              adminEmail: user.emailId,
-              adminName: userName,
-              changeDate: resetTime,
-              ipAddress: requestedIp,
-              loginUrl: clientUrl ? `${clientUrl}/login` : undefined,
-            },
-          });
-        } catch (error) {
-          // Log error but don't fail the request
-          this.logger.error('Failed to send password reset success email', { error });
-        }
-      }
-      return true;
     }
-    // If we get here, no matching token was found
-    throw new BadRequestException('Invalid or expired reset token');
+
+    if (!matchedToken) {
+      throw new BadRequestException('Invalid or expired reset token');
+    }
+
+    // Mark token as consumed
+    await this.passwordResetTokenRepository.update(
+      { used: true },
+      { where: { adminPasswordResetTokenId: matchedToken.adminPasswordResetTokenId } },
+    );
+
+    // Update the password
+    const pwHash = await CryptoUtil.generateHash(newPassword, +Env.bcryptSaltRounds || 12);
+    await this.adminRepository.update(
+      { password: pwHash, modifiedIp: requestedIp },
+      { where: { adminId: user.adminId } },
+    );
+
+    // Revoke all active sessions — force re-login on all devices
+    await this.refreshTokenRepository.update(
+      { revoked: true },
+      { where: { adminId: user.adminId } },
+    );
+
+    // Send confirmation email (non-blocking)
+    try {
+      const userName =
+        user.firstName && user.lastName
+          ? `${user.firstName} ${user.lastName}`
+          : user.firstName || user.emailId;
+      const clientUrl = this.appConfigService.get(ConfigParam.CLIENT_URL);
+      await this.emailNotificationService.sendEmail(<ISendEmailParams>{
+        emailTemplate: EmailTemplateEnum.ADMIN_PASSWORD_CHANGED,
+        to: user.emailId,
+        franchiseBranding: { brandName: '', logoUrl: '' },
+        replacements: {
+          adminEmail: user.emailId,
+          adminName: userName,
+          changeDate: new Date().toLocaleString('en-US', { dateStyle: 'long', timeStyle: 'short' }),
+          ipAddress: requestedIp,
+          loginUrl: clientUrl ? `${clientUrl}/login` : undefined,
+        },
+      });
+    } catch (error) {
+      this.logger.error('Failed to send password reset success email', { error });
+    }
+
+    return true;
   }
 
   public async changePassword(
@@ -425,4 +459,3 @@ export class AuthService {
     }
   }
 }
-

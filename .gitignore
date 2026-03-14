@@ -53,4 +53,4 @@ server_1/libs/**/email.module.js
 /eatfit247-admin/package-lock.json
 /eatfit247-web/package-lock.json
 /server_1/package-lock.json
-/eatfit247-admin/dist/*.*
+/eatfit247-admin/dist/*.*.env

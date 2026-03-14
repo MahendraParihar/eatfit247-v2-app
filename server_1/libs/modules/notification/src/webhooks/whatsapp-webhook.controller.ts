@@ -1,7 +1,17 @@
-import { Body, Controller, Get, Post, Query, HttpCode, HttpStatus, Logger, UnauthorizedException } from '@nestjs/common';
-import { Public } from '@server_1/core';
-import { AppConfigService } from '@server_1/core';
-import { LogService } from '../services/log.service';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Logger,
+  Post,
+  Query,
+  Req,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { AppConfigService, Public } from '@server_1/core';
+import { LogService } from '../services';
 
 @Public()
 @Controller('webhooks/whatsapp')
@@ -25,10 +35,10 @@ export class WhatsAppWebhookController {
     @Query('hub.verify_token') token: string,
     @Query('hub.challenge') challenge: string,
   ): Promise<string> {
-    this.logger.log(`Webhook verification request: mode=${mode}, token=${token}`);
+    this.logger.log(`Webhook verification request: mode=${mode}, token=[REDACTED]`);
 
     const verifyToken = this.appConfigService.getString('WHATSAPP_WEBHOOK_VERIFY_TOKEN');
-    
+
     if (mode === 'subscribe' && token === verifyToken) {
       this.logger.log('Webhook verification successful');
       return challenge;
@@ -44,9 +54,8 @@ export class WhatsAppWebhookController {
    */
   @Post()
   @HttpCode(HttpStatus.OK)
-  async handleWebhook(@Body() body: any): Promise<{ status: string }> {
+  async handleWebhook(@Req() req: Request, @Body() body: any): Promise<{ status: string }> {
     this.logger.log('Received WhatsApp webhook');
-
     try {
       if (body.object === 'whatsapp_business_account') {
         body.entry?.forEach((entry: any) => {
@@ -73,17 +82,21 @@ export class WhatsAppWebhookController {
                   }
 
                   // Update notification log
-                  this.logService.updateStatusByMessageId(messageId, mappedStatus).catch((error) => {
-                    this.logger.error(`Error updating status for message ${messageId}: ${error.message}`);
-                  });
+                  this.logService
+                    .updateStatusByMessageId(messageId, mappedStatus)
+                    .catch((error) => {
+                      this.logger.error(
+                        `Error updating status for message ${messageId}: ${error.message}`,
+                      );
+                    });
                 });
               }
 
-              // Handle incoming messages (if needed)
               if (value.messages) {
                 value.messages.forEach((message: any) => {
-                  this.logger.log(`Received message from ${value.from} to ${value.to}, type: ${message.type}, ID: ${message.id}`);
-                  // TODO: Process incoming messages if needed
+                  this.logger.log(
+                    `Received incoming WhatsApp message, type: ${message.type}`,
+                  );
                 });
               }
             }

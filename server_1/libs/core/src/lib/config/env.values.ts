@@ -15,7 +15,7 @@ export class Env {
   public static databasePort = envToNumber('DB_PORT');
   public static databaseSchema = envToString('DB_SCHEMA', false, 'public');
   public static jwtSecret = envToString('JWT_ACCESS_SECRET');
-  public static jwtRefreshSecret = envToString('JWT_REFRESH_SECRET', false);
+  public static jwtRefreshSecret = envToString('JWT_REFRESH_SECRET', true);
   public static accessTokenTime = envToString('TOKEN_EXPIRATION', false, '15M');
   public static refreshTokenTime = envToString('REFRESH_TOKEN_TIME', false, '7D');
   public static maxLoginAttempts = envToNumber('MAX_LOGIN_ATTEMPTS', false, 5);
@@ -28,6 +28,16 @@ export class Env {
   public static readonly persistentStorageAssetPath = `${Env.staticAssetPath}`;
   public static readonly recaptchaSecretKey = envToString('RECAPTCHA_SECRET_KEY', false);
   public static readonly sentryDSN = envToString('SENTRY_DSN', false);
+
+  // Checkout session token (public website — no login flow)
+  public static readonly checkoutTokenSecret = envToString('CHECKOUT_TOKEN_SECRET');
+  public static readonly checkoutTokenExpiry = envToString('CHECKOUT_TOKEN_EXPIRY', false, '24h');
+
+  // AES-256-CBC encryption keys — must be set in .env; never hardcode these values
+  public static readonly cryptoSecretKey = envToString('CRYPTO_SECRET_KEY');
+  public static readonly cryptoSecretIV = envToString('CRYPTO_SECRET_IV');
+  public static readonly cryptoApiSecretKey = envToString('CRYPTO_API_SECRET_KEY');
+  public static readonly cryptoApiSecretIV = envToString('CRYPTO_API_SECRET_IV');
 
   public static get(key: string): string {
     return process.env[key] || '';

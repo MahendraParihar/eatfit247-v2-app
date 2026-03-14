@@ -1,7 +1,7 @@
 /**
  * Checkout-related interfaces for public member creation
  */
-import { PaymentSourceEnum } from '../enum';
+import {PaymentSourceEnum} from '../enum';
 
 export interface ICheckoutMemberData {
   firstName: string;
@@ -17,6 +17,7 @@ export interface ICheckoutMemberData {
 export interface ICheckoutMemberResponse {
   memberId: number;
   isNew: boolean;
+  checkoutToken: string;
 }
 
 /**

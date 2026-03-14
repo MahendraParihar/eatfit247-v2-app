@@ -13,9 +13,11 @@
 import { Body, Controller, Get, Post, Req, Res, SetMetadata, UseGuards } from '@nestjs/common';
 import { Response } from 'express';
 import { IAuthUser, IToken, PUBLIC_API } from '@eatfit247-shared-lib';
-import { CurrentUser, Env, JwtAuthGuard, RequestedIp } from '@server_1/core';
+import { CommonFunctionsUtil, CurrentUser, Env, JwtAuthGuard, RequestedIp } from '@server_1/core';
 import { AuthService } from '../services/auth.service';
 import { ChangePasswordDto, ForgotPasswordDto, LoginDto, ResetPasswordDto } from '../dto';
+import { RecaptchaGuard } from '@server_1/platform';
+import { Throttle } from '@nestjs/throttler';
 
 @Controller('auth')
 export class AuthController {
@@ -27,6 +29,8 @@ export class AuthController {
    * Sets refresh token as HttpOnly, Secure cookie
    * Returns access token in response body
    */
+  @UseGuards(RecaptchaGuard)
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @SetMetadata(PUBLIC_API, true)
   @Post('login')
   async signIn(
@@ -42,7 +46,7 @@ export class AuthController {
       httpOnly: true, // Not accessible to JavaScript (XSS protection)
       secure: isProduction, // HTTPS only in production
       sameSite: 'strict', // CSRF protection
-      maxAge: 14 * 24 * 60 * 60 * 1000, // 14 days in milliseconds
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 14 days in milliseconds
       path: '/',
     });
     // Return only access token (refresh token is in cookie)
@@ -63,10 +67,7 @@ export class AuthController {
    */
   @SetMetadata(PUBLIC_API, true)
   @Post('refresh')
-  async refreshToken(
-    @Req() req: any,
-    @Res({ passthrough: true }) res: Response,
-  ): Promise<IToken> {
+  async refreshToken(@Req() req: any, @Res({ passthrough: true }) res: Response): Promise<IToken> {
     // Read refresh token from HttpOnly cookie
     const refreshToken = req.cookies?.refreshToken;
     if (!refreshToken) {
@@ -98,6 +99,8 @@ export class AuthController {
    * Revokes refresh token in database
    * Clears refresh token cookie
    */
+  @UseGuards(RecaptchaGuard)
+  @Throttle({ default: { limit: 3, ttl: 300000 } })
   @UseGuards(JwtAuthGuard)
   @Post('logout')
   async signOut(
@@ -107,10 +110,7 @@ export class AuthController {
   ): Promise<void> {
     const refreshToken = req.cookies?.refreshToken;
     // Revoke refresh token in database
-    await this.authService.signOut(
-      currentUser.adminId,
-      refreshToken,
-    );
+    await this.authService.signOut(currentUser.adminId, refreshToken);
     // Clear refresh token cookie
     const isProduction = Env.nodeEnv === 'production';
     res.clearCookie('refreshToken', {
@@ -130,8 +130,11 @@ export class AuthController {
 
   @SetMetadata(PUBLIC_API, true)
   @Post('reset-password')
-  async resetPassword(@Req() req: any, @Body() body: ResetPasswordDto, @RequestedIp() requestedIp: string): Promise<boolean> {
-    return await this.authService.resetPassword(body.token, body.newPassword, requestedIp);
+  async resetPassword(
+    @Body() body: ResetPasswordDto,
+    @RequestedIp() requestedIp: string,
+  ): Promise<boolean> {
+    return await this.authService.resetPassword(body.token, body.emailId, body.newPassword, requestedIp);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -156,12 +159,9 @@ export class AuthController {
       emailId: user.emailId,
       firstName: user.firstName,
       lastName: user.lastName,
-      profilePicture: typeof user.profilePicture === 'string'
-        ? JSON.parse(user.profilePicture || '{}')
-        : user.profilePicture || {},
+      profilePicture: CommonFunctionsUtil.safeParse(user.profilePicture),
       countryCode: user.countryCode,
       contactNumber: user.contactNumber,
     };
   }
 }
-

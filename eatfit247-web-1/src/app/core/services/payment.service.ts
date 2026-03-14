@@ -61,6 +61,12 @@ export class PaymentService {
   private readonly platformId = inject(PLATFORM_ID);
   private razorpayInstance: any = null;
 
+  private getCheckoutAuthHeaders(): { [key: string]: string } {
+    if (!isPlatformBrowser(this.platformId)) return {};
+    const token = sessionStorage.getItem('checkoutToken');
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  }
+
   /**
    * Load Razorpay script dynamically
    */
@@ -93,7 +99,8 @@ export class PaymentService {
     try {
       const data = await this.httpService.post<PaymentOrderResponse>(
         `checkout/member/${memberId}/product/payment-order`,
-        paymentData
+        paymentData,
+        { headers: this.getCheckoutAuthHeaders() }
       );
       if (!data) {
         throw new Error('Failed to create payment order: No data returned');
@@ -115,7 +122,8 @@ export class PaymentService {
     try {
       const data = await this.httpService.post<PaymentOrderResponse>(
         `checkout/plan/member/${memberId}/payment-order`,
-        paymentData
+        paymentData,
+        { headers: this.getCheckoutAuthHeaders() }
       );
       if (!data) {
         throw new Error('Failed to create payment order: No data returned');
@@ -137,7 +145,8 @@ export class PaymentService {
     try {
       const data = await this.httpService.post<VerifyPaymentResponse>(
         `checkout/member/${memberId}/product/verify-payment`,
-        verifyData
+        verifyData,
+        { headers: this.getCheckoutAuthHeaders() }
       );
       if (!data) {
         throw new Error('Failed to verify payment: No data returned');
@@ -159,7 +168,8 @@ export class PaymentService {
     try {
       const data = await this.httpService.post<VerifyPaymentResponse>(
         `checkout/plan/member/${memberId}/verify-payment`,
-        verifyData
+        verifyData,
+        { headers: this.getCheckoutAuthHeaders() }
       );
       if (!data) {
         throw new Error('Failed to verify payment: No data returned');

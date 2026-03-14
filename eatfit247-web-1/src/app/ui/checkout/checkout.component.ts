@@ -1,9 +1,17 @@
 import { Component, inject, OnInit, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { ActivatedRoute, Params, Router } from '@angular/router';
 import { MatStepper, MatStepperModule } from '@angular/material/stepper';
-import { MAT_FORM_FIELD_DEFAULT_OPTIONS, MatFormFieldModule } from '@angular/material/form-field';
+import {
+  MAT_FORM_FIELD_DEFAULT_OPTIONS,
+  MatFormFieldModule,
+} from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSelectModule } from '@angular/material/select';
@@ -12,7 +20,11 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatRadioModule } from '@angular/material/radio';
-import { CheckoutService, PaymentService, ProgramPlan } from '../../core/services';
+import {
+  CheckoutService,
+  PaymentService,
+  ProgramPlan,
+} from '../../core/services';
 import { RecaptchaService } from '../../core/services/recaptcha.service';
 import {
   ICalculateProductVariantTaxRequest,
@@ -27,7 +39,7 @@ import {
   IProductVariantTaxResult,
   IPublicProduct,
   PaymentSourceEnum,
-  PaymentStatusEnum
+  PaymentStatusEnum,
 } from '@eatfit247-shared-library';
 import { ProductService } from '../../core/services/product.service';
 
@@ -46,16 +58,16 @@ import { ProductService } from '../../core/services/product.service';
     MatProgressSpinnerModule,
     MatIconModule,
     MatCheckboxModule,
-    MatRadioModule
+    MatRadioModule,
   ],
   templateUrl: './checkout.component.html',
   styleUrl: './checkout.component.scss',
   providers: [
     {
       provide: MAT_FORM_FIELD_DEFAULT_OPTIONS,
-      useValue: { appearance: 'outline' }
-    }
-  ]
+      useValue: { appearance: 'outline' },
+    },
+  ],
 })
 export class CheckoutComponent implements OnInit {
   @ViewChild('stepper') stepper!: MatStepper;
@@ -73,7 +85,7 @@ export class CheckoutComponent implements OnInit {
     BILLING: 0,
     PREVIEW: 1,
     PAYMENT: 2,
-    RESULT: 3
+    RESULT: 3,
   };
   // Unified form for both products and plans
   basicDetailsForm!: FormGroup;
@@ -176,24 +188,23 @@ export class CheckoutComponent implements OnInit {
       lastName: ['', [Validators.required, Validators.maxLength(50)]],
       companyName: ['', [Validators.maxLength(100)]],
       countryId: [null, [Validators.required]],
-      streetAddress1: [
-        '',
-        [Validators.required, Validators.maxLength(200)]
-      ],
-      streetAddress2: ['', [Validators.maxLength(200)]],
+      postalAddress: ['', [Validators.required, Validators.maxLength(400)]],
       city: ['', [Validators.required, Validators.maxLength(100)]],
       stateId: ['', [Validators.required]],
       postcode: ['', [Validators.required, Validators.maxLength(10)]],
       phone: ['', [Validators.required, Validators.maxLength(16)]],
-      email: ['', [Validators.required, Validators.email, Validators.maxLength(100)]],
-      orderNotes: ['']
+      email: [
+        '',
+        [Validators.required, Validators.email, Validators.maxLength(100)],
+      ],
+      orderNotes: [''],
     });
     // Watch for country changes to filter states
     this.basicDetailsForm
       .get('countryId')
       ?.valueChanges.subscribe((countryId) => {
-      this.filterStatesByCountry(countryId);
-    });
+        this.filterStatesByCountry(countryId);
+      });
     // Set the default country after forms are initialized (if master data is already loaded)
     this.setDefaultCountry();
     // Mark forms as initialized
@@ -208,13 +219,13 @@ export class CheckoutComponent implements OnInit {
     try {
       this.loading = true;
       this.programPlan = await this.checkoutService.getProgramPlan(
-        this.programPlanId
+        this.programPlanId,
       );
       if (this.programPlan) {
         this.productUnit = '';
         // Set order amount from plan fees
         const inrFee = this.programPlan.programPlanFees?.find(
-          (f) => f.currencyCode === 'INR'
+          (f) => f.currencyCode === 'INR',
         );
         if (inrFee) {
           this.orderAmount = inrFee.fees;
@@ -242,7 +253,7 @@ export class CheckoutComponent implements OnInit {
   setDefaultCountry(): void {
     if (this.countryOptions.length === 0) return;
     const indiaCountry = this.countryOptions.find(
-      (c) => c.label.toLowerCase() === 'india'
+      (c) => c.label.toLowerCase() === 'india',
     );
     if (!indiaCountry) return;
     // Set the default country for unified checkout form
@@ -280,8 +291,7 @@ export class CheckoutComponent implements OnInit {
           }
         }
       }
-    } catch (error) {
-    }
+    } catch (error) {}
   }
 
   /**
@@ -303,7 +313,7 @@ export class CheckoutComponent implements OnInit {
       .sort((a, b) => (a.label || '').localeCompare(b.label || ''));
     // Reset state selection if the previously selected state is not in the new country's states
     const isPreviousStateValid = this.filteredStateOptions.some(
-      (state) => state.id === previousStateId
+      (state) => state.id === previousStateId,
     );
     if (!isPreviousStateValid && this.basicDetailsForm) {
       this.basicDetailsForm.patchValue({ stateId: '' }, { emitEvent: false });
@@ -362,41 +372,40 @@ export class CheckoutComponent implements OnInit {
           emailId: this.basicDetailsForm.get('email')?.value,
           countryCode: '+91',
           contactNumber: this.basicDetailsForm.get('phone')?.value,
-          countryId: this.basicDetailsForm.get('countryId')?.value
+          countryId: this.basicDetailsForm.get('countryId')?.value,
         };
         let recaptchaToken: string | undefined;
         if (this.recaptchaService.isAvailable()) {
           try {
-            recaptchaToken = await this.recaptchaService.getToken(
-              'member_creation'
-            );
+            recaptchaToken =
+              await this.recaptchaService.getToken('member_creation');
           } catch (recaptchaError: any) {
             console.warn('Failed to get reCAPTCHA token:', recaptchaError);
           }
         }
         const memberResult = await this.checkoutService.createMember(
           memberData,
-          recaptchaToken
+          recaptchaToken,
         );
         if (!memberResult?.memberId) {
           throw new Error('Failed to create member');
         }
         this.memberId = memberResult.memberId;
+        sessionStorage.setItem('checkoutToken', memberResult.checkoutToken);
       }
       // Create address (skip if already exists)
       if (!this.addressId || !this.memberId) {
         const addressData: ICheckoutAddressData = {
-          postalAddress: `${
-            this.basicDetailsForm.get('streetAddress1')?.value
-          } ${this.basicDetailsForm.get('streetAddress2')?.value || ''}`.trim(),
+          postalAddress:
+            `${this.basicDetailsForm.get('postalAddress')?.value}`.trim(),
           cityVillage: this.basicDetailsForm.get('city')?.value,
           stateId: Number(this.basicDetailsForm.get('stateId')?.value),
           countryId: Number(this.basicDetailsForm.get('countryId')?.value),
-          pinCode: this.basicDetailsForm.get('postcode')?.value
+          pinCode: this.basicDetailsForm.get('postcode')?.value,
         };
         const addressResult = await this.checkoutService.createAddress(
           this.memberId!,
-          addressData
+          addressData,
         );
         if (!addressResult?.addressId) {
           throw new Error('Failed to create address');
@@ -431,17 +440,17 @@ export class CheckoutComponent implements OnInit {
           productId: this.productId,
           productVariantId: this.productVariantId,
           quantity: this.productQuantity,
-          currency: this.currencyCode
-        }
+          currency: this.currencyCode,
+        },
       ],
       addressId: this.addressId,
       billingAddressId: this.addressId,
-      discountAmount: 0
+      discountAmount: 0,
     };
     if (this.isProductCheckout) {
       this.taxCalculation = await this.checkoutService.calculateProductTax(
         this.memberId,
-        productTaxRequest
+        productTaxRequest,
       );
     }
     if (this.taxCalculation) {
@@ -454,11 +463,11 @@ export class CheckoutComponent implements OnInit {
       programPlanId: this.programPlanId,
       billingAddressId: this.addressId,
       currency: this.currencyCode,
-      discountAmount: 0
+      discountAmount: 0,
     };
     const tempTaxCalculation = await this.checkoutService.calculateTax(
       this.memberId,
-      taxRequest
+      taxRequest,
     );
     const item: IProductVariantTaxResult[] = [];
     item.push(<IProductVariantTaxResult>{
@@ -474,7 +483,7 @@ export class CheckoutComponent implements OnInit {
       invoiceNote: tempTaxCalculation.invoiceNote,
       currency: tempTaxCalculation.currency,
       isLutApplied: tempTaxCalculation.isLutApplied,
-      jurisdiction: tempTaxCalculation.jurisdiction
+      jurisdiction: tempTaxCalculation.jurisdiction,
     });
     this.taxCalculation = <ICalculateProductVariantTaxResponse>{
       items: item,
@@ -482,7 +491,7 @@ export class CheckoutComponent implements OnInit {
       taxAmount: tempTaxCalculation.taxAmount,
       discountAmount: tempTaxCalculation.discountAmount,
       taxableAmount: tempTaxCalculation.taxableAmount,
-      totalAmount: tempTaxCalculation.totalAmount
+      totalAmount: tempTaxCalculation.totalAmount,
     };
     if (this.taxCalculation) {
       this.isTaxApplicable = this.taxCalculation.taxAmount > 0;
@@ -513,16 +522,6 @@ export class CheckoutComponent implements OnInit {
   }
 
   /**
-   * Step 3: Load payment gateways and proceed to preview (legacy - now handled in proceedFromBilling)
-   * This method is kept for backward compatibility but is no longer used
-   */
-  async proceedFromTax(): Promise<void> {
-    // This step is now skipped - tax calculation and gateway loading happen in proceedFromBilling
-    // Moving directly to preview
-    this.moveToStep(this.STEP_INDICES.PREVIEW);
-  }
-
-  /**
    * Step 4: Create payment order and initialize payment
    */
   async proceedFromPreview(): Promise<void> {
@@ -550,11 +549,11 @@ export class CheckoutComponent implements OnInit {
             currency: this.currencyCode,
             description: `Payment for ${this.productName}`,
             franchisePaymentGatewayId:
-            this.selectedGateway.franchisePaymentGatewayId,
+              this.selectedGateway.franchisePaymentGatewayId,
             customer: {
               name: customerName,
               email: this.basicDetailsForm.get('email')?.value,
-              contact: this.basicDetailsForm.get('phone')?.value
+              contact: this.basicDetailsForm.get('phone')?.value,
             },
             notes: {
               productName: this.productName,
@@ -562,8 +561,8 @@ export class CheckoutComponent implements OnInit {
               quantity: this.productQuantity,
               addressId: this.addressId,
               orderNotes:
-                this.basicDetailsForm.get('orderNotes')?.value || undefined
-            }
+                this.basicDetailsForm.get('orderNotes')?.value || undefined,
+            },
           });
       } else {
         if (!this.programPlanId) {
@@ -575,18 +574,18 @@ export class CheckoutComponent implements OnInit {
             currency: this.currencyCode,
             description: `Payment for ${this.programPlan?.plan || 'Plan'}`,
             franchisePaymentGatewayId:
-            this.selectedGateway.franchisePaymentGatewayId,
+              this.selectedGateway.franchisePaymentGatewayId,
             customer: {
               name: customerName,
               email: this.basicDetailsForm.get('email')?.value,
-              contact: this.basicDetailsForm.get('phone')?.value
+              contact: this.basicDetailsForm.get('phone')?.value,
             },
             notes: {
               programPlanId: this.programPlanId,
               addressId: this.addressId,
               orderNotes:
-                this.basicDetailsForm.get('orderNotes')?.value || undefined
-            }
+                this.basicDetailsForm.get('orderNotes')?.value || undefined,
+            },
           });
       }
       // Move to a payment step
@@ -622,7 +621,7 @@ export class CheckoutComponent implements OnInit {
         (error: any) => {
           // Payment failed callback
           this.handlePaymentError(error);
-        }
+        },
       );
     } catch (error: any) {
       console.error('Error initializing payment:', error);
@@ -636,7 +635,7 @@ export class CheckoutComponent implements OnInit {
   async handlePaymentSuccess(
     paymentId: string,
     orderId: string,
-    signature?: string
+    signature?: string,
   ): Promise<void> {
     try {
       if (!this.memberId) {
@@ -645,17 +644,17 @@ export class CheckoutComponent implements OnInit {
       // Verify payment
       const verifyResponse = this.isProductCheckout
         ? await this.paymentService.verifyPayment(this.memberId, {
-          gatewayCode: this.paymentOrderResponse.gatewayCode,
-          paymentId: paymentId,
-          orderId: orderId,
-          signature: signature
-        })
+            gatewayCode: this.paymentOrderResponse.gatewayCode,
+            paymentId: paymentId,
+            orderId: orderId,
+            signature: signature,
+          })
         : await this.paymentService.verifyPlanPayment(this.memberId, {
-          gatewayCode: this.paymentOrderResponse.gatewayCode,
-          paymentId: paymentId,
-          orderId: orderId,
-          signature: signature
-        });
+            gatewayCode: this.paymentOrderResponse.gatewayCode,
+            paymentId: paymentId,
+            orderId: orderId,
+            signature: signature,
+          });
       if (!verifyResponse.verified) {
         throw new Error('Payment verification failed');
       }
@@ -666,13 +665,12 @@ export class CheckoutComponent implements OnInit {
       let recaptchaToken: string | undefined;
       if (this.recaptchaService.isAvailable()) {
         try {
-          recaptchaToken = await this.recaptchaService.getToken(
-            'checkout_order'
-          );
+          recaptchaToken =
+            await this.recaptchaService.getToken('checkout_order');
         } catch (recaptchaError: any) {
           console.warn(
             'Failed to get reCAPTCHA token for order:',
-            recaptchaError
+            recaptchaError,
           );
         }
       }
@@ -701,21 +699,21 @@ export class CheckoutComponent implements OnInit {
             orderId: orderId,
             signature: signature,
             gatewayCode: this.paymentOrderResponse.gatewayCode,
-            verified: verifyResponse.verified
+            verified: verifyResponse.verified,
           },
           orderItems: [
             {
               productId: this.productId,
               productVariantId: this.productVariantId,
               quantity: this.productQuantity,
-              currency: this.currencyCode
-            }
-          ]
+              currency: this.currencyCode,
+            },
+          ],
         };
         await this.checkoutService.createProductOrder(
           this.memberId,
           orderData,
-          recaptchaToken
+          recaptchaToken,
         );
       } else {
         if (!this.programPlanId) {
@@ -743,13 +741,13 @@ export class CheckoutComponent implements OnInit {
             orderId: orderId,
             signature: signature,
             gatewayCode: this.paymentOrderResponse.gatewayCode,
-            verified: verifyResponse.verified
-          }
+            verified: verifyResponse.verified,
+          },
         };
         await this.checkoutService.createPlanOrder(
           this.memberId,
           orderData,
-          recaptchaToken
+          recaptchaToken,
         );
       }
       // Success - move to a result step
@@ -786,7 +784,7 @@ export class CheckoutComponent implements OnInit {
   navigateToSuccess(): void {
     const queryParams: any = {
       orderId: this.orderId,
-      paymentId: this.paymentId
+      paymentId: this.paymentId,
     };
     if (!this.isProductCheckout && this.programPlanId) {
       queryParams.planId = this.programPlanId;
@@ -889,11 +887,11 @@ export class CheckoutComponent implements OnInit {
       this.error = null; // Clear any previous errors
       const gateways = this.isProductCheckout
         ? await this.checkoutService.getSupportedPaymentGateways(
-          this.currencyCode
-        )
+            this.currencyCode,
+          )
         : await this.checkoutService.getSupportedPaymentGatewaysForPlan(
-          this.currencyCode
-        );
+            this.currencyCode,
+          );
       this.paymentGateways = gateways || [];
       if (!gateways || gateways.length === 0) {
         this.isPaymentGatewayAvailable = false;
@@ -918,7 +916,7 @@ export class CheckoutComponent implements OnInit {
       this.error = null;
       this.product = await this.productService.getProducts(
         this.productId,
-        this.productVariantId
+        this.productVariantId,
       );
       const variant = this.product.variants.find((value, index) => {
         return value.productVariantId === this.productVariantId;

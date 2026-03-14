@@ -34,6 +34,7 @@ export interface IForgotPasswordRequest {
 
 export interface IResetPasswordRequest {
   token: string;
+  emailId: string;
   newPassword: string;
 }
 

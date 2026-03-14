@@ -4,10 +4,11 @@ import { IAuthUser } from '@eatfit247-shared-lib';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { Env } from '../config/env.values';
 import { AdminUserService } from '../auth/admin-user.service';
+import { CommonFunctionsUtil } from '../utils/common-functions.utils';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor(public adminUserService: AdminUserService) {
+  constructor(private adminUserService: AdminUserService) {
     if (!Env.jwtSecret) {
       throw new Error('JWT_ACCESS_SECRET is not configured');
     }
@@ -31,9 +32,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       adminUserId: payload.adminUserId,
       adminId: payload.adminUserId,
       contactNumber: adminUser.contactNumber,
-      profilePicture: typeof adminUser.profilePicture === 'string'
-        ? JSON.parse(adminUser.profilePicture || '{}')
-        : adminUser.profilePicture || {},
+      profilePicture: CommonFunctionsUtil.safeParse(adminUser.profilePicture),
       countryCode: adminUser.countryCode,
       firstName: adminUser.firstName,
       lastName: adminUser.lastName,

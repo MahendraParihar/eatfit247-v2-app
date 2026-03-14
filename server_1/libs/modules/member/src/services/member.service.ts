@@ -1,8 +1,18 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { TxnMember } from '../models';
 import { IBasicSearch, IManageMember, IMember, ITableList } from '@eatfit247-shared-lib';
-import { CommonFunctionsUtil, CryptoUtil, generateRandomPassword } from '@server_1/core';
+import {
+  CheckoutTokenUtil,
+  CommonFunctionsUtil,
+  CryptoUtil,
+  generateRandomPassword,
+} from '@server_1/core';
 import { FranchiseService } from '@server_1/modules/franchise';
 import { Op } from 'sequelize';
 
@@ -283,7 +293,7 @@ export class MemberService {
   public async createOrUpdate(
     obj: IManageMember,
     cIp: string,
-  ): Promise<{ memberId: number; isNew: boolean }> {
+  ): Promise<{ memberId: number; isNew: boolean; checkoutToken: string }> {
     // Determine franchise based on countryId if not provided
     let franchiseId = obj.franchiseId;
     if (!franchiseId && obj.countryId) {
@@ -306,8 +316,6 @@ export class MemberService {
         firstName: obj.firstName,
         lastName: obj.lastName,
         countryCode: obj.countryCode,
-        contactNumber: obj.contactNumber,
-        emailId: obj.emailId,
         franchiseId: franchiseId,
         countryId: obj.countryId,
         referrerId: obj.referrerId || null,
@@ -333,7 +341,11 @@ export class MemberService {
         where: { memberId: existingMember.memberId },
       });
 
-      return { memberId: existingMember.memberId, isNew: false };
+      return {
+        memberId: existingMember.memberId,
+        isNew: false,
+        checkoutToken: CheckoutTokenUtil.sign(existingMember.memberId),
+      };
     } else {
       // Create new member
       // Generate a temporary password if not provided
@@ -369,7 +381,11 @@ export class MemberService {
       };
 
       const newMember = await this.memberRepository.create(createObj);
-      return { memberId: newMember.memberId, isNew: true };
+      return {
+        memberId: newMember.memberId,
+        isNew: true,
+        checkoutToken: CheckoutTokenUtil.sign(newMember.memberId),
+      };
     }
   }
 

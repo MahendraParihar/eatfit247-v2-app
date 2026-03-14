@@ -188,15 +188,14 @@ export class RazorpayWebhookController {
   ): Promise<void> {
     const event = payload.event;
     const hasPaymentLink = !!payload.payload.payment_link?.entity?.id;
-    // If the payload contains payment_link, only process payment_link.* events
-    // Skip other events (payment.captured, order.paid) to avoid duplicate processing
-    if (!hasPaymentLink || !event.startsWith('payment_link.')) {
+    // Payment-link flows: Razorpay fires payment.captured AND payment_link.paid for the same
+    // transaction.  Skip non-payment_link.* events when the payload already contains a
+    // payment_link entity to prevent double-processing.
+    // Standard order flows (no payment_link entity): process all event types normally.
+    if (hasPaymentLink && !event.startsWith('payment_link.')) {
       this.logger.log(
-        `Skipping ${event} event for payment link. Only processing payment_link.* events.`,
-        {
-          event,
-          paymentLinkId: payload.payload.payment_link?.entity?.id,
-        },
+        `Skipping duplicate event '${event}' — payment_link.* event will handle this transaction.`,
+        { event, paymentLinkId: payload.payload.payment_link?.entity?.id },
       );
       return;
     }

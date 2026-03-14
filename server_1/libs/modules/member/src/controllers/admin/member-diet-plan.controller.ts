@@ -1,4 +1,15 @@
-import { Body, Controller, Delete, Get, Header, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Header,
+  Param,
+  Post,
+  Put,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { CurrentUser, JwtAuthGuard, RequestedIp } from '@server_1/core';
 import { IFileModel } from '@server_1/platform';
 import { MemberDietPlanService } from '../../services';
@@ -99,12 +110,16 @@ export class MemberDietPlanController {
     @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
   ) {
-    return await this.service.createDietPlanDetail(memberId, body, requestedIp, currentUser.adminId);
+    return await this.service.createDietPlanDetail(
+      memberId,
+      body,
+      requestedIp,
+      currentUser.adminId,
+    );
   }
 
   @Delete('delete-cycle/:dietPlanId/:cycleNo')
   async deleteCycle(
-    @Param('id') memberId: number,
     @Param('dietPlanId') dietPlanId: number,
     @Param('cycleNo') cycleNo: number,
     @CurrentUser() currentUser: IAuthUser,
@@ -122,7 +137,13 @@ export class MemberDietPlanController {
     @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
   ) {
-    return await this.service.deleteDietPlan(dietPlanId, cycleNo, requestedIp, currentUser.adminId, dayNo);
+    return await this.service.deleteDietPlan(
+      dietPlanId,
+      cycleNo,
+      requestedIp,
+      currentUser.adminId,
+      dayNo,
+    );
   }
 
   @Post('update-details')

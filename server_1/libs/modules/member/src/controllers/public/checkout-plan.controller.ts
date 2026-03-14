@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
-import { Public, RequestedIp, RequireRecaptcha } from '@server_1/core';
+import { CheckoutTokenGuard, Public, RequestedIp, RequireRecaptcha } from '@server_1/core';
 import { RecaptchaGuard } from '@server_1/platform';
 import { MemberPlanService } from '../../services';
 import {
@@ -15,6 +15,7 @@ import { IManageMemberPayment, IPaymentGateway, IPaymentLinkResponse } from '@ea
 export class PublicCheckoutPlanController {
   constructor(private readonly memberPaymentService: MemberPlanService) {}
 
+  @UseGuards(CheckoutTokenGuard)
   @Post('member/:memberId/calculate-tax')
   async calculateTax(
     @Param('memberId') memberId: number,
@@ -38,6 +39,7 @@ export class PublicCheckoutPlanController {
   /**
    * Create a payment link for plan checkout
    */
+  @UseGuards(CheckoutTokenGuard)
   @Post('member/:memberId/payment-link')
   async createPaymentLink(
     @Param('memberId') memberId: number,
@@ -71,6 +73,7 @@ export class PublicCheckoutPlanController {
    * Create payment order for embedded checkout
    * Returns order details that can be used with payment gateway SDKs
    */
+  @UseGuards(CheckoutTokenGuard)
   @Post('member/:memberId/payment-order')
   async createPaymentOrder(
     @Param('memberId') memberId: number,
@@ -90,6 +93,7 @@ export class PublicCheckoutPlanController {
   /**
    * Verify payment after completion
    */
+  @UseGuards(CheckoutTokenGuard)
   @Post('member/:memberId/verify-payment')
   async verifyPayment(
     @Param('memberId') memberId: number,
@@ -114,7 +118,7 @@ export class PublicCheckoutPlanController {
    * Create plan order for checkout
    * This creates the order in the txn_member_payments table
    */
-  @UseGuards(RecaptchaGuard)
+  @UseGuards(CheckoutTokenGuard, RecaptchaGuard)
   @RequireRecaptcha('checkout_order', 0.5)
   @Post('member/:memberId/order')
   async createPlanOrder(
@@ -130,6 +134,7 @@ export class PublicCheckoutPlanController {
    * Download invoice for plan order (public endpoint)
    * Returns invoice as base64 buffer for frontend download
    */
+  @UseGuards(CheckoutTokenGuard)
   @Get('member/:memberId/payment/:paymentId/invoice')
   async downloadInvoice(
     @Param('memberId') memberId: number,

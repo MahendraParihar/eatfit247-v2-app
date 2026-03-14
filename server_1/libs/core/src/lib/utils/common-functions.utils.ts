@@ -1,4 +1,5 @@
 import { IBaseAdminUser, IMediaUpload } from '@eatfit247-shared-lib';
+import { randomBytes } from 'crypto';
 import moment from 'moment';
 
 export class CommonFunctionsUtil {
@@ -48,6 +49,14 @@ export class CommonFunctionsUtil {
     return result;
   }
 
+  static generateRandomPassword(length = 12): string {
+    const chars = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789@$#*';
+    const bytes = randomBytes(length);
+    return Array.from(bytes)
+      .map((b) => chars[b % chars.length])
+      .join('');
+  }
+
   public static getInvoiceNumber(paymentId: number) {
     return `EF24B7${paymentId}${moment().format('YYYYMMDD')}`;
   }
@@ -90,5 +99,14 @@ export class CommonFunctionsUtil {
       return year - 1;
     }
     return year;
+  }
+
+  public static safeParse(value: string | object, fallback = {}): object {
+    if (typeof value !== 'string') return value ?? fallback;
+    try {
+      return JSON.parse(value);
+    } catch {
+      return fallback;
+    }
   }
 }

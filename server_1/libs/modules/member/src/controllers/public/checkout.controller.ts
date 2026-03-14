@@ -1,5 +1,11 @@
-import { Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
-import { CreateAddressDto, Public, RequestedIp, RequireRecaptcha } from '@server_1/core';
+import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import {
+  CheckoutTokenGuard,
+  CreateAddressDto,
+  Public,
+  RequestedIp,
+  RequireRecaptcha,
+} from '@server_1/core';
 import { AddressService, RecaptchaGuard } from '@server_1/platform';
 import { MemberProductService } from '../../services';
 import {
@@ -7,10 +13,16 @@ import {
   CalculateProductVariantTaxResponseDto,
   CreatePublicCheckoutOrderDto,
   CreatePublicCheckoutPaymentLinkDto,
+  VerifyPaymentDto,
 } from '../../dto';
-import { IAddress, IManageAddress, IPaymentGateway, IPaymentLinkResponse, TableEnum } from '@eatfit247-shared-lib';
+import {
+  IAddress,
+  IManageAddress,
+  IPaymentGateway,
+  IPaymentLinkResponse,
+  TableEnum,
+} from '@eatfit247-shared-lib';
 
-@Public()
 @Controller('checkout')
 export class PublicCheckoutController {
   constructor(
@@ -19,19 +31,37 @@ export class PublicCheckoutController {
   ) {}
 
   /**
-   * Get supported payment gateways for product checkout
-   * Based on franchise for products (BusinessTypeEnum.PRODUCT)
+   * Fully public — no session required.
+   * Returns available payment gateways for the given currency.
    */
+  @Public()
   @Get('product/supported-gateways')
   async getSupportedGateways(
-    @Query('currency') currency: string = 'INR',
+    @Param('currency') currency: string = 'INR',
   ): Promise<IPaymentGateway[]> {
     return await this.memberProductService.getSupportedPaymentGatewaysForCheckout(currency);
   }
 
   /**
-   * Create address for member during checkout
+   * Fully public — Razorpay order IDs are long opaque strings, effectively
+   * capability URLs.  Used by the frontend to poll order status after redirect.
    */
+  @Public()
+  @Get('order/:gatewayOrderId')
+  async getOrderByGatewayOrderId(@Param('gatewayOrderId') gatewayOrderId: string) {
+    return await this.memberProductService.findByGatewayOrderId(gatewayOrderId);
+  }
+
+  // ─── Member-scoped routes — CheckoutTokenGuard required ─────────────────────
+  // The guard verifies the signed token issued by POST /member/create and
+  // ensures the :memberId in the URL matches the token's subject claim.
+  // This prevents any user from touching another member's data or invoices.
+  // @Public() is required on every route here so the global JwtAuthGuard
+  // (registered via CommonModule) skips JWT validation — CheckoutTokenGuard
+  // provides the security instead.
+
+  @Public()
+  @UseGuards(CheckoutTokenGuard)
   @Post('member/:memberId/address')
   async createAddress(
     @Param('memberId') memberId: number,
@@ -53,15 +83,13 @@ export class PublicCheckoutController {
     return await this.addressService.create(addressData, requestedIp, null);
   }
 
-  /**
-   * Create a payment link for product checkout
-   */
+  @Public()
+  @UseGuards(CheckoutTokenGuard)
   @Post('member/:memberId/product/payment-link')
   async createPaymentLink(
     @Param('memberId') memberId: number,
     @Body() body: CreatePublicCheckoutPaymentLinkDto,
   ): Promise<IPaymentLinkResponse> {
-    // Resolve gateway if not provided
     let franchisePaymentGatewayId = body.franchisePaymentGatewayId;
     if (!franchisePaymentGatewayId) {
       const gateways = await this.memberProductService.getSupportedPaymentGatewaysForCheckout(
@@ -70,25 +98,21 @@ export class PublicCheckoutController {
       if (gateways.length === 0) {
         throw new Error('No payment gateway available');
       }
-      // Use the primary gateway or first available
       const selectedGateway = gateways.find((g) => g.isPrimary) || gateways[0];
       franchisePaymentGatewayId = selectedGateway.franchisePaymentGatewayId;
     }
-    const paymentLinkRequest = {
+    return await this.memberProductService.createPaymentLink(memberId, {
       amount: body.amount,
       currency: body.currency,
       franchisePaymentGatewayId,
       description: body.description,
       customer: body.customer,
       notes: body.notes,
-    };
-    return await this.memberProductService.createPaymentLink(memberId, paymentLinkRequest);
+    });
   }
 
-  /**
-   * Create a payment order for embedded checkout
-   * Returns order details that can be used with payment gateway SDKs
-   */
+  @Public()
+  @UseGuards(CheckoutTokenGuard)
   @Post('member/:memberId/product/payment-order')
   async createPaymentOrder(
     @Param('memberId') memberId: number,
@@ -97,20 +121,10 @@ export class PublicCheckoutController {
     return await this.memberProductService.createPaymentOrder(memberId, body);
   }
 
-  /**
-   * Verify payment after completion
-   */
+  @Public()
+  @UseGuards(CheckoutTokenGuard)
   @Post('member/:memberId/product/verify-payment')
-  async verifyPayment(
-    @Param('memberId') memberId: number,
-    @Body()
-    body: {
-      gatewayCode: string;
-      paymentId: string;
-      orderId?: string;
-      signature?: string;
-    },
-  ) {
+  async verifyPayment(@Param('memberId') memberId: number, @Body() body: VerifyPaymentDto) {
     return await this.memberProductService.verifyPayment(
       memberId,
       body.gatewayCode,
@@ -120,11 +134,8 @@ export class PublicCheckoutController {
     );
   }
 
-  /**
-   * Create product order for checkout
-   * This creates the order in the txn_member_products table
-   */
-  @UseGuards(RecaptchaGuard)
+  @Public()
+  @UseGuards(CheckoutTokenGuard, RecaptchaGuard)
   @RequireRecaptcha('checkout_order', 0.5)
   @Post('member/:memberId/product/order')
   async createProductOrder(
@@ -135,18 +146,8 @@ export class PublicCheckoutController {
     return await this.memberProductService.create(memberId, body, requestedIp);
   }
 
-  /**
-   * Get order details by gateway order ID (for product orders)
-   */
-  @Get('order/:gatewayOrderId')
-  async getOrderByGatewayOrderId(@Param('gatewayOrderId') gatewayOrderId: string) {
-    return await this.memberProductService.findByGatewayOrderId(gatewayOrderId);
-  }
-
-  /**
-   * Download invoice for product order (public endpoint)
-   * Returns invoice as base64 buffer for frontend download
-   */
+  @Public()
+  @UseGuards(CheckoutTokenGuard)
   @Get('member/:memberId/product/:productId/invoice')
   async downloadInvoice(
     @Param('memberId') memberId: number,
@@ -159,6 +160,8 @@ export class PublicCheckoutController {
     };
   }
 
+  @Public()
+  @UseGuards(CheckoutTokenGuard)
   @Post('member/:memberId/calculate-tax')
   async calculateTax(
     @Param('memberId') memberId: number,

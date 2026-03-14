@@ -21,6 +21,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { AuthService } from '@core';
+import { IResetPasswordRequest } from '@eatfit247-shared-lib';
 
 @Component({
   selector: 'app-reset-password',
@@ -97,7 +98,7 @@ export class ResetPasswordComponent implements OnInit {
     const formValue = this.resetPasswordForm.value;
 
     try {
-      await this.authService.resetPassword({
+      await this.authService.resetPassword(<IResetPasswordRequest>{
         token: formValue.token,
         newPassword: formValue.newPassword,
       });

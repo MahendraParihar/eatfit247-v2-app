@@ -1,4 +1,4 @@
-import { BadRequestException, CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import { BadRequestException, CanActivate, ExecutionContext, Injectable, Logger } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { GoogleService } from '../third-party';
 import { RECAPTCHA_ACTION, RECAPTCHA_REQUIRED, RECAPTCHA_SCORE_THRESHOLD } from '@eatfit247-shared-lib';
@@ -17,6 +17,8 @@ import { RECAPTCHA_ACTION, RECAPTCHA_REQUIRED, RECAPTCHA_SCORE_THRESHOLD } from 
  */
 @Injectable()
 export class RecaptchaGuard implements CanActivate {
+  private readonly logger = new Logger(RecaptchaGuard.name);
+
   constructor(
     private reflector: Reflector,
     private googleService: GoogleService,
@@ -77,13 +79,16 @@ export class RecaptchaGuard implements CanActivate {
       }
       // Token is in headers, no need to remove from body
       return true;
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (error instanceof BadRequestException) {
         throw error;
       }
-      throw new BadRequestException(
-        `reCAPTCHA verification failed: ${error.message}`,
+      // Log the real reason server-side; never forward internal error details to the client.
+      this.logger.error(
+        'reCAPTCHA verification error',
+        error instanceof Error ? error.stack : String(error),
       );
+      throw new BadRequestException('reCAPTCHA verification failed. Please try again.');
     }
   }
 }

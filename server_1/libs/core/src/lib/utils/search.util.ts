@@ -23,7 +23,8 @@ export class SearchUtil {
     const whereCondition: any = {};
     if (searchDto.search || searchDto.name) {
       const searchTerm = searchDto.search || searchDto.name;
-      whereCondition[nameField] = { [Op.iLike]: `%${searchTerm}%` };
+      const escaped = searchTerm.replace(/[%_\\]/g, '\\$&');
+      whereCondition[nameField] = { [Op.iLike]: `%${escaped}%` };
     }
     if (searchDto.active !== null && searchDto.active !== undefined) {
       whereCondition[activeField] = searchDto.active;
