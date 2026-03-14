@@ -2,6 +2,10 @@
   position: relative;
   width: 100%;
   overflow: hidden;
+
+  @media (max-width: 768px) {
+    height: auto !important;
+  }
 }
 
 .banner-container {
@@ -10,6 +14,10 @@
   height: 100%;
   max-width: var(--container-max-width-xl, 1320px);
   margin: 0 auto;
+
+  @media (max-width: 768px) {
+    height: auto;
+  }
 }
 
 .slides-wrapper {
@@ -17,6 +25,10 @@
   width: 100%;
   height: 100%;
   transition: transform 0.5s ease-in-out;
+
+  @media (max-width: 768px) {
+    height: auto;
+  }
 }
 
 .slide {
@@ -114,25 +126,48 @@
 
   @media (max-width: 768px) {
     flex-direction: column !important;
-    padding: 0 5%;
+    padding: 0;
+    height: auto;
+    min-height: unset;
 
     &.image-center {
       padding: 0;
 
       .banner-image-container {
-        display: none;
+        display: flex;
+        flex: 0 0 auto;
+        height: 220px;
+
+        .banner-image {
+          object-fit: cover;
+          width: 100%;
+          height: 100%;
+        }
       }
     }
 
     .banner-image-container {
-      display: none;
+      display: flex;
+      flex: 0 0 auto;
+      width: 100%;
+      height: 220px;
+      order: -1;
+
+      .banner-image {
+        object-fit: cover;
+        object-position: center top;
+        width: 100%;
+        height: 100%;
+      }
     }
 
     .banner-content {
-      padding: 1rem;
+      padding: 1.25rem 1rem 1.5rem;
       text-align: center;
       align-items: center;
-      flex: 0 0 100%;
+      flex: 0 0 auto;
+      width: 100%;
+      gap: var(--space-3, 0.75rem);
 
       .banner-sub-title {
         font-size: var(--font-h5-size);
@@ -140,8 +175,8 @@
       }
 
       .banner-title {
-        font-size: var(--font-h2-size);
-        line-height: var(--font-h2-line-height);
+        font-size: var(--font-h3-size);
+        line-height: var(--font-h3-line-height);
       }
 
       .banner-description {
@@ -151,6 +186,8 @@
 
       .banner-actions {
         justify-content: center;
+        flex-wrap: wrap;
+        gap: 0.75rem;
       }
     }
   }
@@ -204,22 +241,7 @@
   }
 
   @media (max-width: 768px) {
-    width: 40px;
-    height: 40px;
-
-    mat-icon {
-      font-size: 20px;
-      width: 20px;
-      height: 20px;
-    }
-
-    &.prev-btn {
-      left: 8px;
-    }
-
-    &.next-btn {
-      right: 8px;
-    }
+    display: none;
   }
 }
 
@@ -268,7 +290,8 @@
   }
 
   @media (max-width: 768px) {
-    bottom: 12px;
+    bottom: auto;
+    top: calc(220px - 34px);
     gap: 6px;
     padding: 6px;
 

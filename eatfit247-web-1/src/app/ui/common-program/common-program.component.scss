@@ -62,6 +62,7 @@
 
 .our-programs__pricing {
   display: flex;
+  min-height: 160px;
   flex-direction: column;
   gap: var(--space-2);
 }

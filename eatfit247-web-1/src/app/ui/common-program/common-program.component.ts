@@ -10,7 +10,7 @@ import { Router, RouterLink } from '@angular/router';
   selector: 'app-common-program',
   imports: [CommonModule, MatIcon, MatButton, RouterLink],
   templateUrl: './common-program.component.html',
-  styleUrl: './common-program.component.scss'
+  styleUrl: './common-program.component.scss',
 })
 export class CommonProgramComponent implements OnInit {
   private readonly router = inject(Router);
@@ -26,28 +26,28 @@ export class CommonProgramComponent implements OnInit {
           programPlanId: 263,
           label: '1 session',
           value: '₹20,000',
-          note: ''
+          note: '',
         },
         {
           programPlanId: 261,
           label: '6 Sessions',
           value: '₹67,500',
-          note: ''
+          note: '',
         },
         {
           programPlanId: 262,
           label: '8 Sessions',
           value: '₹90,000',
-          note: ''
-        }
+          note: '',
+        },
       ],
       features: [
         'One-on-one consultation with Shweta Shah',
         'Comprehensive health assessment',
         'Personalized nutrition plan',
         'Detailed dietary recommendations',
-        'Follow-up guidelines'
-      ]
+        'Follow-up guidelines',
+      ],
     },
     {
       id: 'chief-nutritionist',
@@ -58,28 +58,22 @@ export class CommonProgramComponent implements OnInit {
           programPlanId: 239,
           label: '3 Sessions',
           value: '₹15,000',
-          note: ''
+          note: '',
         },
         {
           programPlanId: 266,
           label: '6 Sessions',
           value: '₹30,000',
-          note: ''
+          note: '',
         },
-        {
-          programPlanId: null,
-          label: '&nbsp;',
-          value: '',
-          note: ''
-        }
       ],
       features: [
         'One-on-one consultation with Shweta Shah',
         'Comprehensive health assessment',
         'Personalized nutrition plan',
         'Detailed dietary recommendations',
-        'Follow-up guidelines'
-      ]
+        'Follow-up guidelines',
+      ],
     },
     {
       id: 'shweta-and-team',
@@ -90,29 +84,17 @@ export class CommonProgramComponent implements OnInit {
           programPlanId: 264,
           label: '1+7 Sessions',
           value: '₹55,000',
-          note: ''
+          note: '',
         },
-        {
-          programPlanId: null,
-          label: '&nbsp;',
-          value: '',
-          note: ''
-        },
-        {
-          programPlanId: null,
-          label: '&nbsp;',
-          value: '',
-          note: ''
-        }
       ],
       features: [
         'Initial consultation with Shweta',
         '7 follow-up Sessions with team',
         'Personalized nutrition plan',
         'Detailed dietary recommendations',
-        'Follow-up guidelines'
-      ]
-    }
+        'Follow-up guidelines',
+      ],
+    },
   ];
   @Input() showFeature = false;
   @Input() showReadMoreBtn = false;
@@ -126,5 +108,3 @@ export class CommonProgramComponent implements OnInit {
     this.router.navigate(['/checkout'], { queryParams });
   }
 }
-
-
