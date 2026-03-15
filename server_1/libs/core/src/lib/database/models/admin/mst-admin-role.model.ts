@@ -23,6 +23,13 @@ export class MstAdminRole extends Model<MstAdminRole> {
   })
   declare role: string;
 
+  @Column({
+    allowNull: false,
+    field: 'role_code',
+    type: DataType.STRING(100),
+  })
+  declare roleCode: string;
+
   @CreatedAt
   @Column({
     allowNull: false,

@@ -1,6 +1,22 @@
 import { IAdminInfo } from '../base.interface';
 import { IMediaUpload } from './media-upload.interface';
 import { IManageAddress } from './location.interface';
+import {AdminActionEnum, AdminSubjectEnum} from "../enum";
+
+export interface IAdminPermission {
+  action: AdminActionEnum;
+  subject: AdminSubjectEnum;
+  /** Optional: conditions scoped to franchiseId or ownData */
+  conditions?: Record<string, unknown>;
+}
+
+/** JWT payload decoded on both server and frontend */
+export interface IAdminJwtPayload {
+  sub: number;
+  email: string;
+  roleKeys: string[];          // ← was: roleKey: string
+  franchiseIds: number[];
+}
 
 export interface IBaseAdminUserFull {
   firstName: string;
@@ -33,6 +49,9 @@ export interface IAdminUser extends IBaseAdminUserFull, IAdminInfo {
   adminId: number;
   franchise?: string; // Franchise name from relationship
   address?: IManageAddress; // Address details
+  roleKeys: string[];
+  franchiseIds: number[];
+  permissions: IAdminPermission[];
 }
 
 export interface IBaseAdminRolePermission {
