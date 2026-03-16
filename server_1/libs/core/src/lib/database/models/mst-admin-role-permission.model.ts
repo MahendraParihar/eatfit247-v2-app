@@ -1,6 +1,14 @@
-import { BelongsTo, Column, CreatedAt, DataType, Model, Scopes, Table, UpdatedAt } from 'sequelize-typescript';
-import { MstAdminUser } from './admin/mst-admin-user.model';
-import { MstAdminRole } from './admin/mst-admin-role.model';
+import {
+  BelongsTo,
+  Column,
+  CreatedAt,
+  DataType,
+  Model,
+  Scopes,
+  Table,
+  UpdatedAt,
+} from 'sequelize-typescript';
+import { MstAdminRole, MstAdminUser } from './admin';
 import { getCreatedByUserInclude, getUpdatedByUserInclude } from '../../utils/model-scopes.utils';
 import { InputLengthEnum } from '@eatfit247-shared-lib';
 
@@ -81,10 +89,18 @@ export class MstAdminRolePermission extends Model<MstAdminRolePermission> {
   })
   declare active: boolean;
 
-  @BelongsTo(() => MstAdminUser, { as: 'createdByUser', foreignKey: 'createdBy', targetKey: 'adminId' })
+  @BelongsTo(() => MstAdminUser, {
+    as: 'createdByUser',
+    foreignKey: 'createdBy',
+    targetKey: 'adminId',
+  })
   declare createdByUser: MstAdminUser;
 
-  @BelongsTo(() => MstAdminUser, { as: 'updatedByUser', foreignKey: 'modifiedBy', targetKey: 'adminId' })
+  @BelongsTo(() => MstAdminUser, {
+    as: 'updatedByUser',
+    foreignKey: 'modifiedBy',
+    targetKey: 'adminId',
+  })
   declare updatedByUser: MstAdminUser;
 
   @Column({
@@ -129,4 +145,3 @@ export class MstAdminRolePermission extends Model<MstAdminRolePermission> {
   })
   declare modifiedIp: string;
 }
-

@@ -24,7 +24,8 @@ import { Op } from 'sequelize';
 export class AdminUserService {
   constructor(
     @InjectModel(MstAdminUser) private readonly adminUserRepository: typeof MstAdminUser,
-    @InjectModel(MstAdminRolePermission) private readonly rolePermissionRepository: typeof MstAdminRolePermission,
+    @InjectModel(MstAdminRolePermission)
+    private readonly rolePermissionRepository: typeof MstAdminRolePermission,
     private appConfigService: AppConfigService,
     private addressService: AddressService,
   ) {}
@@ -51,13 +52,18 @@ export class AdminUserService {
     const offset = pageNumber === 0 ? 0 : pageNumber * pageSize;
     const { rows, count } = await this.adminUserRepository.scope('list').findAndCountAll({
       where: whereCondition,
-      order: [['firstName', 'ASC'], ['lastName', 'ASC']],
+      order: [
+        ['firstName', 'ASC'],
+        ['lastName', 'ASC'],
+      ],
       offset: offset,
       limit: pageSize,
       raw: true,
       nest: true,
     });
-    const resList: IAdminUser[] = rows.map((item: MstAdminUser) => {return this.convertToModel(item);});
+    const resList: IAdminUser[] = rows.map((item: MstAdminUser) => {
+      return this.convertToModel(item);
+    });
     return { tableData: resList, count: count };
   }
 
@@ -89,6 +95,9 @@ export class AdminUserService {
       updatedByUser: item.updatedByUser
         ? CommonFunctionsUtil.getAdminShortInfo(item.updatedByUser, 'updatedByUser')
         : undefined,
+      franchiseIds: [item.franchiseId],
+      permissions: [],
+      roleKeys: [],
     };
   }
 
@@ -137,7 +146,8 @@ export class AdminUserService {
     const createObj = {
       firstName: obj.firstName,
       lastName: obj.lastName,
-      profilePicture: (obj.profilePicture && obj.profilePicture.length > 0) ? obj.profilePicture : null,
+      profilePicture:
+        obj.profilePicture && obj.profilePicture.length > 0 ? obj.profilePicture : null,
       password: hashedPassword,
       passwordTemp: hashedPassword,
       countryCode: obj.countryCode,
@@ -164,7 +174,7 @@ export class AdminUserService {
     }
     // Create role permissions if provided
     if (obj.roleIds && obj.roleIds.length > 0) {
-      const rolePermissions = obj.roleIds.map(roleId => ({
+      const rolePermissions = obj.roleIds.map((roleId) => ({
         roleId: roleId,
         adminId: newAdminUser.adminId,
         active: true,
@@ -177,7 +187,12 @@ export class AdminUserService {
     }
   }
 
-  public async update(id: number, obj: IManageAdminUser, cIp: string, adminId: number): Promise<void> {
+  public async update(
+    id: number,
+    obj: IManageAdminUser,
+    cIp: string,
+    adminId: number,
+  ): Promise<void> {
     const find = await this.adminUserRepository.findOne({ where: { adminId: id } });
     if (!find) {
       throw new NotFoundException('Admin user not found');
@@ -239,7 +254,7 @@ export class AdminUserService {
       await this.rolePermissionRepository.destroy({ where: { adminId: id } });
       // Create new role permissions
       if (obj.roleIds.length > 0) {
-        const rolePermissions = obj.roleIds.map(roleId => ({
+        const rolePermissions = obj.roleIds.map((roleId) => ({
           roleId: roleId,
           adminId: id,
           active: true,
@@ -253,12 +268,23 @@ export class AdminUserService {
     }
   }
 
-  public async changeStatus(id: number, active: boolean, deactivationReason: string | null, cIp: string, adminId: number): Promise<void> {
+  public async changeStatus(
+    id: number,
+    active: boolean,
+    deactivationReason: string | null,
+    cIp: string,
+    adminId: number,
+  ): Promise<void> {
     const find = await this.adminUserRepository.findOne({ where: { adminId: id } });
     if (!find) {
       throw new NotFoundException('Admin user not found');
     }
-    const updateObj: { active: boolean; modifiedBy: number; modifiedIp: string; deactivationReason?: string } = {
+    const updateObj: {
+      active: boolean;
+      modifiedBy: number;
+      modifiedIp: string;
+      deactivationReason?: string;
+    } = {
       active: active,
       modifiedBy: adminId,
       modifiedIp: cIp,
@@ -287,4 +313,3 @@ export class AdminUserService {
     }));
   }
 }
-
