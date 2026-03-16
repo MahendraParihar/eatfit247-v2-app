@@ -50,7 +50,7 @@ export class AuthService {
   ) {}
 
   async findById(id: number): Promise<IAuthUser | null> {
-    const user = await this.adminRepository.findOne({ where: [{ adminId: id }] });
+    const user = await this.adminRepository.findOne({ where: { adminId: id } });
     if (!user || !user.active) return null;
     return <IAuthUser>{
       adminUserId: user.adminId,
