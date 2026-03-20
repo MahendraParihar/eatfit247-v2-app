@@ -1,11 +1,10 @@
 import { Body, Controller, Get, Param, Post, ParseIntPipe, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '@server_1/core';
-import { NotificationService } from '../../services/notification.service';
-import { LogService } from '../../services/log.service';
-import { SendNotificationDto } from '../../dto/send-notification.dto';
-import { RetryNotificationDto } from '../../dto/retry-notification.dto';
+import { NotificationService } from '../../services';
+import { LogService } from '../../services';
+import { SendNotificationDto } from '../../dto';
 
-@Controller('admin/notification')
+@Controller('notification')
 @UseGuards(JwtAuthGuard)
 export class NotificationController {
   constructor(

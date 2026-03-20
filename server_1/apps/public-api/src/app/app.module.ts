@@ -1,8 +1,10 @@
 import { Module } from '@nestjs/common';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { CommonModule, SentryModule, SentryInterceptor } from '@server_1/core';
 import { PlatformModule } from '@server_1/platform';
+import { NotificationModule } from '@server_1/modules/notification';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { BlogPublicModule } from '@server_1/modules/blogs';
@@ -20,6 +22,7 @@ import { ContactModule } from '@server_1/modules/contact';
 
 @Module({
   imports: [
+    EventEmitterModule.forRoot(),
     // Sentry error tracking
     SentryModule,
     // Rate limiting configuration
@@ -43,7 +46,8 @@ import { ContactModule } from '@server_1/modules/contact';
     SuccessStoriesModule,
     ProductPublicModule,
     ContactModule,
-    CommonModule.forRoot(['Common', 'Email', 'Google', 'Payment'], PlatformModule.getModels()),
+    NotificationModule,
+    CommonModule.forRoot(['Common', 'Email', 'Google', 'Payment', 'Whatsapp'], PlatformModule.getModels()),
   ],
   controllers: [AppController],
   providers: [

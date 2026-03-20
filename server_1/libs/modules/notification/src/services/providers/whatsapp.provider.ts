@@ -29,9 +29,9 @@ export class WhatsAppProvider {
    * Get WhatsApp access token from config
    */
   private getAccessToken(): string {
-    const token = this.appConfigService.getString('WHATSAPP_ACCESS_TOKEN');
+    const token = this.appConfigService.getString('WHATSAPP_API_TOKEN');
     if (!token) {
-      throw new Error('WHATSAPP_ACCESS_TOKEN is not configured');
+      throw new Error('WHATSAPP_API_TOKEN is not configured');
     }
     return token;
   }

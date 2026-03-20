@@ -1,0 +1,12 @@
+Hello {{memberName}}! ✅
+
+Great news — your inquiry has been resolved by our support team.
+
+{{#if inquiryTitle}}*Inquiry:* {{inquiryTitle}}{{/if}}
+{{#if resolvedBy}}*Resolved By:* {{resolvedBy}}{{/if}}
+*Resolved On:* {{resolvedDate}}
+{{#if resolutionNote}}*Note:* {{resolutionNote}}{{/if}}
+
+If you have further questions, we're always here to help. Reach us at {{supportEmail}}.
+
+— Team {{franchiseName}}

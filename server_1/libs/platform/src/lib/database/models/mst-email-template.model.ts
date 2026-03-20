@@ -1,4 +1,13 @@
-import { BelongsTo, Column, CreatedAt, DataType, Model, Scopes, Table, UpdatedAt } from 'sequelize-typescript';
+import {
+  BelongsTo,
+  Column,
+  CreatedAt,
+  DataType,
+  Model,
+  Scopes,
+  Table,
+  UpdatedAt,
+} from 'sequelize-typescript';
 import { getCreatedByUserInclude, getUpdatedByUserInclude, MstAdminUser } from '@server_1/core';
 
 @Table({
@@ -9,16 +18,10 @@ import { getCreatedByUserInclude, getUpdatedByUserInclude, MstAdminUser } from '
 })
 @Scopes(() => ({
   list: {
-    include: [
-      getCreatedByUserInclude(false),
-      getUpdatedByUserInclude(false),
-    ],
+    include: [getCreatedByUserInclude(false), getUpdatedByUserInclude(false)],
   },
   details: {
-    include: [
-      getCreatedByUserInclude(false),
-      getUpdatedByUserInclude(false),
-    ],
+    include: [getCreatedByUserInclude(false), getUpdatedByUserInclude(false)],
   },
 }))
 export class MstEmailTemplate extends Model<MstEmailTemplate> {
@@ -43,10 +46,34 @@ export class MstEmailTemplate extends Model<MstEmailTemplate> {
   declare subject: string;
   @Column({
     allowNull: false,
-    field: 'body',
-    type: DataType.TEXT,
+    field: 'email_template_file',
+    type: DataType.STRING(200),
   })
-  declare body: string;
+  declare emailTemplateFile: string;
+
+  @Column({
+    allowNull: false,
+    field: 'whatspp_template_file',
+    type: DataType.STRING(200),
+  })
+  declare whatsppTemplateFile: string;
+
+  @Column({
+    allowNull: false,
+    defaultValue: false,
+    field: 'send_whatsapp_notification',
+    type: DataType.BOOLEAN,
+  })
+  declare sendWhatsappNotification: boolean;
+
+  @Column({
+    allowNull: false,
+    defaultValue: false,
+    field: 'send_email_notification',
+    type: DataType.BOOLEAN,
+  })
+  declare sendEmailNotification: boolean;
+
   @Column({
     allowNull: false,
     defaultValue: true,
@@ -54,9 +81,17 @@ export class MstEmailTemplate extends Model<MstEmailTemplate> {
     type: DataType.BOOLEAN,
   })
   declare active: boolean;
-  @BelongsTo(() => MstAdminUser, { as: 'createdByUser', foreignKey: 'createdBy', targetKey: 'adminId' })
+  @BelongsTo(() => MstAdminUser, {
+    as: 'createdByUser',
+    foreignKey: 'createdBy',
+    targetKey: 'adminId',
+  })
   declare createdByUser: MstAdminUser;
-  @BelongsTo(() => MstAdminUser, { as: 'updatedByUser', foreignKey: 'modifiedBy', targetKey: 'adminId' })
+  @BelongsTo(() => MstAdminUser, {
+    as: 'updatedByUser',
+    foreignKey: 'modifiedBy',
+    targetKey: 'adminId',
+  })
   declare updatedByUser: MstAdminUser;
   @Column({
     allowNull: false,
@@ -83,4 +118,3 @@ export class MstEmailTemplate extends Model<MstEmailTemplate> {
   })
   declare updatedAt: Date;
 }
-

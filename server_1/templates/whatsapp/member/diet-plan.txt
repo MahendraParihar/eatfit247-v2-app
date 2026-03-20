@@ -1,0 +1,14 @@
+Hello {{memberName}}! 🥗
+
+Your personalized diet plan is ready!
+
+*Plan:* {{planName}}
+*Assigned By:* {{nutritionistName}}
+*Date:* {{assignedDate}}
+{{#if planDuration}}*Duration:* {{planDuration}}{{/if}}
+
+Log in to your account to view and follow your diet plan. Consistency is key to achieving your health goals!
+
+Need help? Contact us at {{supportEmail}}.
+
+— Team {{franchiseName}}

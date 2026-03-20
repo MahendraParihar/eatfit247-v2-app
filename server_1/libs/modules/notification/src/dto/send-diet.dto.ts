@@ -1,6 +1,5 @@
 import { IsNotEmpty, IsOptional, IsString, IsEnum, IsNumber, MaxLength, MinLength } from 'class-validator';
-import { InputLengthEnum } from '@eatfit247-shared-lib';
-import { NotificationChannel } from '../enums/notification-channel.enum';
+import { NotificationChannel } from '@eatfit247-shared-lib';
 
 export class SendDietDto {
   @IsNotEmpty()

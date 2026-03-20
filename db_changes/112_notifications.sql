@@ -4,6 +4,8 @@ INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
 VALUES (DEFAULT, 'WHATSAPP_API_TOKEN', 'XYZ', 'Whatsapp');
 INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
 VALUES (DEFAULT, 'WHATSAPP_PHONE_NUMBER_ID', 'XYZ', 'Whatsapp');
+INSERT INTO public.mst_configs (config_id, config_name, config_value, module)
+VALUES (DEFAULT, 'WHATSAPP_WEBHOOK_VERIFY_TOKEN', 'XYZ', 'Whatsapp');
 
 CREATE TABLE public.notification_logs
 (
@@ -22,3 +24,17 @@ CREATE TABLE public.notification_logs
     created_at          TIMESTAMP DEFAULT NOW(),
     updated_at          TIMESTAMP DEFAULT NOW()
 );
+
+alter table public.mst_email_templates
+    rename column body to email_template_file;
+
+alter table public.mst_email_templates
+    alter column email_template_file type varchar(200) using email_template_file::varchar(200);
+
+alter table public.mst_email_templates
+    add whatspp_template_file varchar(200);
+
+alter table public.mst_email_templates
+add column send_whatsapp_notification boolean default false,
+add column send_email_notification boolean default false;
+

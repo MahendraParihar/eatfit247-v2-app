@@ -2,7 +2,8 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
-import { SendNotificationDto } from '../dto/send-notification.dto';
+import { SendNotificationDto } from '../dto';
+import { ConfigParam } from 'eatfit247-shared-library';
 
 @Injectable()
 export class WhatsAppService {
@@ -15,9 +16,9 @@ export class WhatsAppService {
     private readonly configService: ConfigService,
     private readonly httpService: HttpService,
   ) {
-    this.apiUrl = this.configService.get<string>('WHATSAPP_API_URL') || 'https://graph.facebook.com/v18.0';
-    this.apiToken = this.configService.get<string>('WHATSAPP_API_TOKEN') || '';
-    this.phoneNumberId = this.configService.get<string>('WHATSAPP_PHONE_NUMBER_ID') || '';
+    this.apiUrl = this.configService.get<string>(ConfigParam.WHATSAPP_API_URL) || 'https://graph.facebook.com/v18.0';
+    this.apiToken = this.configService.get<string>(ConfigParam.WHATSAPP_API_TOKEN) || '';
+    this.phoneNumberId = this.configService.get<string>(ConfigParam.WHATSAPP_PHONE_NUMBER_ID) || '';
   }
 
   /**

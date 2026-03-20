@@ -1,0 +1,14 @@
+Hello {{memberName}}! 🧾
+
+Your product invoice is ready.
+
+*Invoice No:* {{invoiceNumber}}
+*Date:* {{invoiceDate}}
+*Product:* {{productName}}
+{{#if productQuantity}}*Quantity:* {{productQuantity}}{{/if}}
+*Amount:* {{currency}}{{amount}}
+{{#if transactionId}}*Transaction ID:* {{transactionId}}{{/if}}
+
+Your invoice has been sent to your registered email. You can also download it from your account.
+
+— Team {{franchiseName}}

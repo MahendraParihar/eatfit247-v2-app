@@ -1,0 +1,13 @@
+Hello {{memberName}}! 🧾
+
+Thank you for your payment! Here is your invoice summary.
+
+*Invoice No:* {{invoiceNumber}}
+*Date:* {{invoiceDate}}
+*Plan:* {{planName}}
+*Amount:* {{currency}}{{amount}}
+{{#if transactionId}}*Transaction ID:* {{transactionId}}{{/if}}
+
+Your invoice is attached to the email sent to your registered address. You can also download it from your account.
+
+— Team {{franchiseName}}

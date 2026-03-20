@@ -21,14 +21,11 @@ export class EmailNotificationService {
     @InjectModel(MstEmailTemplate)
     private readonly emailTemplateRepository: typeof MstEmailTemplate,
   ) {
-    const distPath = path.join(__dirname, '../templates');
-    const sourcePath = path.join(process.cwd(), 'libs/modules/email/src/templates');
-    // Check if templates exist in the dist folder (production build)
-    if (fs.existsSync(distPath)) {
-      this.templatesPath = distPath;
-    } else if (fs.existsSync(sourcePath)) {
-      // Fallback to source folder (development)
-      this.templatesPath = sourcePath;
+    // Templates live at server_1/templates/ — resolve relative to CWD (dev) or dist output (prod)
+    const cwdPath = path.join(process.cwd(), 'templates');
+    const distPath = path.join(__dirname, '../../../../../../templates');
+    if (fs.existsSync(cwdPath)) {
+      this.templatesPath = cwdPath;
     } else {
       this.templatesPath = distPath;
     }
@@ -75,21 +72,24 @@ export class EmailNotificationService {
       if (!template) {
         throw new NotFoundException('Email template not found or inactive');
       }
-      // Use provided subject/body or template defaults
+      // Use provided subject or template default
       let subject = params.subject || template.subject;
-      let body = params.body || template.body;
-      // Replace template variables if replacements provided
-      if (
-        params.replacements &&
-        subject &&
-        typeof subject === 'string' &&
-        body &&
-        typeof body === 'string'
-      ) {
+      // body: use caller-provided HTML; fallback to rendering the EJS template file
+      let body = params.body;
+      if (!body && template.emailTemplateFile) {
+        const filePath = path.join(this.templatesPath, `${template.emailTemplateFile}.ejs`);
+        if (fs.existsSync(filePath)) {
+          body = await ejs.renderFile(filePath, params.replacements || {}, { async: true });
+        }
+      }
+      // Replace {{variable}} placeholders in subject and body if replacements provided
+      if (params.replacements && subject && typeof subject === 'string') {
         Object.keys(params.replacements).forEach((key) => {
           const regex = new RegExp(`{{${key}}}`, 'g');
           subject = subject.replace(regex, String(params.replacements![key]));
-          body = body.replace(regex, String(params.replacements![key]));
+          if (body && typeof body === 'string') {
+            body = body.replace(regex, String(params.replacements![key]));
+          }
         });
       }
       // Prepare recipients
@@ -145,8 +145,8 @@ export class EmailNotificationService {
       }
       let htmlBody = '';
       const finalSubject = subject || dbTemplate.subject;
-      // Body contains EJS filename - load and render the EJS file
-      const templateFile = path.join(this.templatesPath, `${dbTemplate.body}.ejs`);
+      // emailTemplateFile contains the relative path to the EJS file (e.g. "member/diet-plan")
+      const templateFile = path.join(this.templatesPath, `${dbTemplate.emailTemplateFile}.ejs`);
       try {
         if (!fs.existsSync(templateFile)) {
           await this.logErrorService.logWarning(
@@ -155,7 +155,7 @@ export class EmailNotificationService {
           );
           return; // Skip email process if a template file not found
         }
-        htmlBody = await this.renderTemplate(templateFile, data);
+        htmlBody = await ejs.renderFile(templateFile, data, { async: true });
       } catch (ejsError) {
         await this.logErrorService.logError(
           ejsError instanceof Error ? ejsError : new Error(String(ejsError)),
@@ -197,5 +197,46 @@ export class EmailNotificationService {
 
   async renderTemplate(template: string, data: any) {
     return ejs.renderFile(path.join(this.templatesPath, `${template}.ejs`), data, { async: true });
+  }
+
+  /**
+   * Read and render a WhatsApp message template from the whatspp_template_file field.
+   * Returns null if the template is not found or WhatsApp notifications are disabled.
+   *
+   * @param templateName - The template_name value in mst_email_templates
+   * @param variables - Key-value pairs to replace {{variable}} placeholders
+   */
+  public async getWhatsAppMessageText(
+    templateName: string,
+    variables: Record<string, string | number> = {},
+  ): Promise<string | null> {
+    try {
+      const dbTemplate = await this.emailTemplateRepository.findOne({
+        where: { templateName, active: true },
+      });
+      if (!dbTemplate || !dbTemplate.sendWhatsappNotification || !dbTemplate.whatsppTemplateFile) {
+        return null;
+      }
+      const templateFile = path.join(this.templatesPath, `${dbTemplate.whatsppTemplateFile}.txt`);
+      if (!fs.existsSync(templateFile)) {
+        await this.logErrorService.logWarning(
+          `WhatsApp template file not found: ${templateFile}`,
+          { controller: this.serviceName, methodName: 'getWhatsAppMessageText' },
+        );
+        return null;
+      }
+      let text = fs.readFileSync(templateFile, 'utf-8');
+      Object.entries(variables).forEach(([key, value]) => {
+        const regex = new RegExp(`\\{\\{${key}\\}\\}`, 'g');
+        text = text.replace(regex, String(value));
+      });
+      return text.trim();
+    } catch (error) {
+      await this.logErrorService.logError(
+        error instanceof Error ? error : new Error(String(error)),
+        { controller: this.serviceName, methodName: 'getWhatsAppMessageText' },
+      );
+      return null;
+    }
   }
 }

@@ -2,8 +2,10 @@ import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { ServeStaticModule } from '@nestjs/serve-static';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { CommonModule, Env } from '@server_1/core';
 import { PlatformModule } from '@server_1/platform';
+import { NotificationModule } from '@server_1/modules/notification';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 // Import modules first so their modelRegistry.register() calls execute before CommonModule.forRoot()
@@ -39,6 +41,7 @@ import { DeliveryModule } from '@server_1/modules/delivery';
 
 @Module({
   imports: [
+    EventEmitterModule.forRoot(),
     // Rate limiting configuration
     ThrottlerModule.forRoot([
       {
@@ -81,8 +84,9 @@ import { DeliveryModule } from '@server_1/modules/delivery';
     ReportsModule,
     ProductAdminModule,
     DeliveryModule,
+    NotificationModule,
     CommonModule.forRoot(
-      ['Common', 'Email', 'Google', 'Calendar', 'Payment', 'Invoice'],
+      ['Common', 'Email', 'Google', 'Calendar', 'Payment', 'Invoice', 'Whatsapp'],
       PlatformModule.getModels(),
     ),
   ],

@@ -1,4 +1,5 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectModel } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize-typescript';
 import { TxnMember, TxnMemberDietDetail, TxnMemberDietPlan, TxnMemberPayment } from '../models';
@@ -45,6 +46,7 @@ export class MemberDietPlanService {
     private readonly dietPlanPdfService: DietPlanPdfService,
     private readonly franchiseService: FranchiseService,
     private readonly sequelize: Sequelize,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   /**
@@ -1032,7 +1034,8 @@ export class MemberDietPlanService {
   }
 
   /**
-   * Send diet plan via email
+   * Send diet plan via WhatsApp and email
+   * Generates the diet plan PDF and emits diet.plan.generated event
    * @param memberId - Member ID
    * @param dietPlanId - Diet plan ID
    * @param cycleNo - Cycle number
@@ -1044,7 +1047,35 @@ export class MemberDietPlanService {
     cycleNo: number,
     dayNo: number = null,
   ): Promise<void> {
-    await this.fetchDietDetail(memberId, dietPlanId, cycleNo, dayNo);
+    const member = await this.memberRepository.findOne({
+      where: { memberId },
+      attributes: ['memberId', 'firstName', 'lastName', 'emailId', 'countryCode', 'contactNumber'],
+    });
+    if (!member) {
+      throw new NotFoundException(`Member with ID ${memberId} not found`);
+    }
+
+    // Generate the diet plan PDF and save to disk
+    const pdfFile = await this.downloadDietPlan(memberId, dietPlanId, cycleNo, dayNo);
+
+    const memberName = `${member.firstName} ${member.lastName}`.trim();
+    const phoneNumber = member.countryCode && member.contactNumber
+      ? `${member.countryCode}${member.contactNumber}`
+      : member.contactNumber;
+
+    this.eventEmitter.emit('diet.plan.generated', {
+      memberId,
+      memberName,
+      emailId: member.emailId,
+      phoneNumber,
+      dietPlanId,
+      cycleNo,
+      dayNo,
+      dietPdfPath: pdfFile.filePath,
+      dietPdfFileName: pdfFile.fileName,
+    });
+
+    this.logger.log(`diet.plan.generated event emitted for member ${memberId}`);
   }
 
   /**

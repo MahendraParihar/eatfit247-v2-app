@@ -1,0 +1,11 @@
+Hello {{memberName}},
+
+Your scheduled consultation call has been cancelled.
+
+*Original Date:* {{callDate}}
+*Original Time:* {{callTime}}
+{{#if cancellationReason}}*Reason:* {{cancellationReason}}{{/if}}
+
+If you'd like to schedule a new call, please contact us at {{supportEmail}}.
+
+— Team {{franchiseName}}

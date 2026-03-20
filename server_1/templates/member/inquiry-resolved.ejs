@@ -1,0 +1,39 @@
+<h2>Your Inquiry Has Been Resolved</h2>
+
+<p>Dear <%= memberName %>,</p>
+
+<p>We're pleased to let you know that your inquiry has been reviewed and resolved by our support team.</p>
+
+<div style="background-color: #f9f9f9; padding: 20px; border-radius: 4px; margin: 20px 0;">
+  <h3 style="margin-top: 0;">Resolution Details</h3>
+  <table style="width: 100%; border-collapse: collapse;">
+    <% if (inquiryTitle) { %>
+    <tr>
+      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><strong>Inquiry:</strong></td>
+      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><%= inquiryTitle %></td>
+    </tr>
+    <% } %>
+    <% if (resolvedBy) { %>
+    <tr>
+      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><strong>Resolved By:</strong></td>
+      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><%= resolvedBy %></td>
+    </tr>
+    <% } %>
+    <tr>
+      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><strong>Resolved On:</strong></td>
+      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><%= resolvedDate || new Date().toLocaleString() %></td>
+    </tr>
+    <% if (resolutionNote) { %>
+    <tr>
+      <td style="padding: 8px 0; vertical-align: top;"><strong>Resolution Note:</strong></td>
+      <td style="padding: 8px 0;"><%= resolutionNote %></td>
+    </tr>
+    <% } %>
+  </table>
+</div>
+
+<p>We hope this resolves your concern. If you have any further questions or need additional support, please feel free to contact us at <a href="mailto:<%= franchise.supportEmail %>"><%= franchise.supportEmail %></a>.</p>
+
+<p>Thank you for being a valued member of the <%= franchise.franchiseName %> community.</p>
+
+<p>Best regards,<br>The <%= franchise.franchiseName %> Team</p>

@@ -1,0 +1,16 @@
+Hello {{memberName}}! 📦
+
+Your order has been confirmed. Here are the details:
+
+*Order No:* {{orderNumber}}
+*Date:* {{orderDate}}
+*Product:* {{productName}}
+{{#if quantity}}*Quantity:* {{quantity}}{{/if}}
+*Total:* {{currency}}{{totalAmount}}
+{{#if estimatedDelivery}}*Est. Delivery:* {{estimatedDelivery}}{{/if}}
+
+We will notify you once your order is shipped. Track your order from your account.
+
+Questions? Contact us at {{supportEmail}}.
+
+— Team {{franchiseName}}

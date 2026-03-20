@@ -1,0 +1,9 @@
+Hello {{memberName}}! 👋
+
+Welcome to *{{franchiseName}}*! Your account has been successfully created.
+
+We're excited to begin your health & nutrition journey with you. Log in to your account to explore your personalized dashboard and get started.
+
+If you need any help, reach us at {{supportEmail}}.
+
+— Team {{franchiseName}}
