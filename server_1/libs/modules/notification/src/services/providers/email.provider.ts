@@ -1,7 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { AppConfigService } from '@server_1/core';
 import * as nodemailer from 'nodemailer';
-import { SendNotificationDto } from '../../dto/send-notification.dto';
+import { SendNotificationDto } from '../../dto';
+import { ConfigParam } from 'eatfit247-shared-library';
 
 export interface EmailProviderResult {
   messageId: string;
@@ -23,12 +24,12 @@ export class EmailProvider {
       return this.transporter;
     }
 
-    const smtpHost = this.appConfigService.getString('SMTP_HOST');
-    const smtpPort = this.appConfigService.getNumber('SMTP_PORT') || 587;
-    const smtpSecure = this.appConfigService.getBoolean('SMTP_SECURE') || false;
-    const smtpUser = this.appConfigService.getString('SMTP_USER');
-    const smtpPassword = this.appConfigService.getString('SMTP_PASSWORD');
-    const smtpFrom = this.appConfigService.getString('SMTP_FROM') || smtpUser;
+    const smtpHost = this.appConfigService.getString(ConfigParam.SYSTEM_EMAIL_HOST);
+    const smtpPort = this.appConfigService.getNumber(ConfigParam.SYSTEM_EMAIL_PORT) || 587;
+    const smtpSecure = this.appConfigService.getBoolean(ConfigParam.SYSTEM_EMAIL_SECURE) || false;
+    const smtpUser = this.appConfigService.getString(ConfigParam.SYSTEM_EMAIL_USER);
+    const smtpPassword = this.appConfigService.getString(ConfigParam.SYSTEM_EMAIL_PASSWORD);
+    const smtpFrom = this.appConfigService.getString(ConfigParam.SYSTEM_EMAIL_USER) || smtpUser;
 
     if (!smtpHost || !smtpUser || !smtpPassword) {
       throw new Error('SMTP configuration is incomplete. Please check SMTP_HOST, SMTP_USER, and SMTP_PASSWORD.');
@@ -64,7 +65,8 @@ export class EmailProvider {
   async send(dto: SendNotificationDto): Promise<EmailProviderResult> {
     try {
       const transporter = await this.getTransporter();
-      const smtpFrom = this.appConfigService.getString('SMTP_FROM') || this.appConfigService.getString('SMTP_USER');
+      const smtpFrom =
+        this.appConfigService.getString(ConfigParam.SYSTEM_EMAIL_USER);
 
       const mailOptions: nodemailer.SendMailOptions = {
         from: smtpFrom,

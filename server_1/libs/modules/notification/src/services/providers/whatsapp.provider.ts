@@ -3,6 +3,7 @@ import { HttpService } from '@nestjs/axios';
 import { AppConfigService } from '@server_1/core';
 import { firstValueFrom } from 'rxjs';
 import { SendNotificationDto } from '../../dto/send-notification.dto';
+import { ConfigParam } from 'eatfit247-shared-library';
 
 export interface WhatsAppProviderResult {
   messageId: string;
@@ -22,14 +23,14 @@ export class WhatsAppProvider {
    * Get WhatsApp API URL from config
    */
   private getApiUrl(): string {
-    return this.appConfigService.getString('WHATSAPP_API_URL') || 'https://graph.facebook.com/v18.0';
+    return this.appConfigService.getString(ConfigParam.WHATSAPP_API_URL) || 'https://graph.facebook.com/v18.0';
   }
 
   /**
    * Get WhatsApp access token from config
    */
   private getAccessToken(): string {
-    const token = this.appConfigService.getString('WHATSAPP_API_TOKEN');
+    const token = this.appConfigService.getString(ConfigParam.WHATSAPP_API_TOKEN);
     if (!token) {
       throw new Error('WHATSAPP_API_TOKEN is not configured');
     }
@@ -40,7 +41,7 @@ export class WhatsAppProvider {
    * Get WhatsApp phone number ID from config
    */
   private getPhoneNumberId(): string {
-    const phoneNumberId = this.appConfigService.getString('WHATSAPP_PHONE_NUMBER_ID');
+    const phoneNumberId = this.appConfigService.getString(ConfigParam.WHATSAPP_PHONE_NUMBER_ID);
     if (!phoneNumberId) {
       throw new Error('WHATSAPP_PHONE_NUMBER_ID is not configured');
     }
