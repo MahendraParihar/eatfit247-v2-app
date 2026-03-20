@@ -200,43 +200,121 @@ export class EmailNotificationService {
   }
 
   /**
-   * Read and render a WhatsApp message template from the whatspp_template_file field.
-   * Returns null if the template is not found or WhatsApp notifications are disabled.
-   *
-   * @param templateName - The template_name value in mst_email_templates
-   * @param variables - Key-value pairs to replace {{variable}} placeholders
+   * Fetch the notification template config from DB.
+   * Returns null if not found or inactive.
    */
-  public async getWhatsAppMessageText(
-    templateName: string,
+  public async getNotificationTemplate(templateName: string): Promise<MstEmailTemplate | null> {
+    try {
+      return await this.emailTemplateRepository.findOne({
+        where: { templateName, active: true },
+      });
+    } catch (error) {
+      await this.logErrorService.logError(
+        error instanceof Error ? error : new Error(String(error)),
+        { controller: this.serviceName, methodName: 'getNotificationTemplate' },
+      );
+      return null;
+    }
+  }
+
+  /**
+   * Render the WhatsApp message text from an already-fetched template.
+   * Returns null if WhatsApp notifications are disabled or template file is missing.
+   */
+  public async renderWhatsAppFromTemplate(
+    template: MstEmailTemplate,
     variables: Record<string, string | number> = {},
   ): Promise<string | null> {
     try {
-      const dbTemplate = await this.emailTemplateRepository.findOne({
-        where: { templateName, active: true },
-      });
-      if (!dbTemplate || !dbTemplate.sendWhatsappNotification || !dbTemplate.whatsppTemplateFile) {
+      if (!template.sendWhatsappNotification || !template.whatsppTemplateFile) {
         return null;
       }
-      const templateFile = path.join(this.templatesPath, `${dbTemplate.whatsppTemplateFile}.txt`);
+      const templateFile = path.join(this.templatesPath, `${template.whatsppTemplateFile}.txt`);
       if (!fs.existsSync(templateFile)) {
         await this.logErrorService.logWarning(
           `WhatsApp template file not found: ${templateFile}`,
-          { controller: this.serviceName, methodName: 'getWhatsAppMessageText' },
+          { controller: this.serviceName, methodName: 'renderWhatsAppFromTemplate' },
         );
         return null;
       }
       let text = fs.readFileSync(templateFile, 'utf-8');
       Object.entries(variables).forEach(([key, value]) => {
-        const regex = new RegExp(`\\{\\{${key}\\}\\}`, 'g');
-        text = text.replace(regex, String(value));
+        text = text.replace(new RegExp(`\\{\\{${key}\\}\\}`, 'g'), String(value));
       });
       return text.trim();
     } catch (error) {
       await this.logErrorService.logError(
         error instanceof Error ? error : new Error(String(error)),
-        { controller: this.serviceName, methodName: 'getWhatsAppMessageText' },
+        { controller: this.serviceName, methodName: 'renderWhatsAppFromTemplate' },
       );
       return null;
     }
+  }
+
+  /**
+   * Render and send an email from an already-fetched template.
+   * Skips silently if email notifications are disabled or EJS file is missing.
+   */
+  public async sendEmailFromTemplate(
+    template: MstEmailTemplate,
+    params: { to: string | string[]; subject?: string; data: Record<string, any>; attachments?: any[] },
+  ): Promise<void> {
+    try {
+      if (!template.sendEmailNotification || !template.emailTemplateFile) {
+        return;
+      }
+      const templateFile = path.join(this.templatesPath, `${template.emailTemplateFile}.ejs`);
+      if (!fs.existsSync(templateFile)) {
+        await this.logErrorService.logWarning(
+          `EJS template file not found: ${templateFile}. Skipping email send.`,
+          { controller: this.serviceName, methodName: 'sendEmailFromTemplate' },
+        );
+        return;
+      }
+      let htmlBody = '';
+      try {
+        htmlBody = await ejs.renderFile(templateFile, params.data, { async: true });
+      } catch (ejsError) {
+        await this.logErrorService.logError(
+          ejsError instanceof Error ? ejsError : new Error(String(ejsError)),
+          { controller: this.serviceName, methodName: 'sendEmailFromTemplate' },
+        );
+        return;
+      }
+      const recipients = Array.isArray(params.to) ? params.to : [params.to];
+      const emailAttachments =
+        params.attachments?.map((att) => ({
+          filename: att.filename,
+          path: att.path,
+          content: att.content,
+          contentType: att.contentType,
+        })) || [];
+      await this.transporter.sendMail({
+        from: this.emailSenderId,
+        to: recipients.join(', '),
+        subject: params.subject || template.subject,
+        html: htmlBody,
+        attachments: emailAttachments.length > 0 ? emailAttachments : undefined,
+      });
+    } catch (error) {
+      await this.logErrorService.logError(
+        error instanceof Error ? error : new Error(String(error)),
+        { controller: this.serviceName, methodName: 'sendEmailFromTemplate' },
+      );
+    }
+  }
+
+  /**
+   * Read and render a WhatsApp message template from the whatspp_template_file field.
+   * Returns null if the template is not found or WhatsApp notifications are disabled.
+   * @deprecated Use getNotificationTemplate() + renderWhatsAppFromTemplate() instead.
+   */
+  public async getWhatsAppMessageText(
+    templateName: string,
+    variables: Record<string, string | number> = {},
+  ): Promise<string | null> {
+    const template = await this.getNotificationTemplate(templateName);
+    if (!template) return null;
+    return this.renderWhatsAppFromTemplate(template, variables);
   }
 }

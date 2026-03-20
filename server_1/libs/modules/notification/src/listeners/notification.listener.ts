@@ -25,16 +25,22 @@ export class NotificationListener {
     private readonly emailNotificationService: EmailNotificationService,
   ) {}
 
-  /**
-   * Listen to diet.plan.generated event.
-   * WhatsApp template text is read from DB (mst_email_templates.whatspp_template_file).
-   * Email is sent via EmailNotificationService using the EJS template.
-   */
   @OnEvent('diet.plan.generated')
   async handleDietPlanGenerated(payload: DietPlanGeneratedPayload): Promise<void> {
     this.logger.log(`Received diet.plan.generated event for member ${payload.memberId}`);
 
     try {
+      // ── 1. Fetch template config once (single DB query) ───────────────────
+      const template = await this.emailNotificationService.getNotificationTemplate('member_diet_plan');
+      if (!template) {
+        this.logger.warn('Template member_diet_plan not found or inactive — skipping notifications');
+        return;
+      }
+
+      this.logger.log(
+        `Template config: sendWhatsapp=${template.sendWhatsappNotification}, sendEmail=${template.sendEmailNotification}`,
+      );
+
       const timestamp = Date.now();
       const dayInfo = payload.dayNo ? ` - Day ${payload.dayNo}` : '';
       const templateVars: Record<string, string | number> = {
@@ -43,10 +49,10 @@ export class NotificationListener {
         ...(payload.dayNo ? { dayNo: payload.dayNo } : {}),
       };
 
-      // ── WhatsApp ──────────────────────────────────────────────────────────
-      if (payload.phoneNumber) {
-        const waMessage = await this.emailNotificationService.getWhatsAppMessageText(
-          'member_diet_plan',
+      // ── 2. WhatsApp — only if flag is enabled and phone is available ───────
+      if (template.sendWhatsappNotification && payload.phoneNumber) {
+        const waMessage = await this.emailNotificationService.renderWhatsAppFromTemplate(
+          template,
           templateVars,
         );
         if (waMessage) {
@@ -61,17 +67,24 @@ export class NotificationListener {
           });
           this.logger.log(`WhatsApp diet plan notification sent for member ${payload.memberId}`);
         }
+      } else {
+        this.logger.log(
+          `WhatsApp skipped for member ${payload.memberId}: flag=${template.sendWhatsappNotification}, hasPhone=${!!payload.phoneNumber}`,
+        );
       }
 
-      // ── Email ─────────────────────────────────────────────────────────────
-      if (payload.emailId) {
-        await this.emailNotificationService.sendEmailByType({
+      // ── 3. Email — only if flag is enabled and email is available ──────────
+      if (template.sendEmailNotification && payload.emailId) {
+        await this.emailNotificationService.sendEmailFromTemplate(template, {
           to: payload.emailId,
-          type: 'member_diet_plan',
           subject: `Your Diet Plan - Cycle ${payload.cycleNo}${dayInfo} is Ready`,
           data: templateVars,
         });
         this.logger.log(`Email diet plan notification sent for member ${payload.memberId}`);
+      } else {
+        this.logger.log(
+          `Email skipped for member ${payload.memberId}: flag=${template.sendEmailNotification}, hasEmail=${!!payload.emailId}`,
+        );
       }
     } catch (error: any) {
       this.logger.error(`Error handling diet.plan.generated event: ${error.message}`, error.stack);
@@ -79,4 +92,3 @@ export class NotificationListener {
     }
   }
 }
-
