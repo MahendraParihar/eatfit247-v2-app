@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
-import { NotificationService } from '../services/notification.service';
+import { NotificationService } from '../services';
 import { NotificationChannel, NotificationType } from '@eatfit247-shared-lib';
 import { EmailNotificationService } from '@server_1/platform';
 

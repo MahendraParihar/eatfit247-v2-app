@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { AppConfigService } from '@server_1/core';
 import { firstValueFrom } from 'rxjs';
-import { SendNotificationDto } from '../../dto/send-notification.dto';
+import { SendNotificationDto } from '../../dto';
 import { ConfigParam } from 'eatfit247-shared-library';
 
 export interface WhatsAppProviderResult {

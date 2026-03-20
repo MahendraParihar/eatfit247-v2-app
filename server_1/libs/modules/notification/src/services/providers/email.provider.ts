@@ -29,7 +29,6 @@ export class EmailProvider {
     const smtpSecure = this.appConfigService.getBoolean(ConfigParam.SYSTEM_EMAIL_SECURE) || false;
     const smtpUser = this.appConfigService.getString(ConfigParam.SYSTEM_EMAIL_USER);
     const smtpPassword = this.appConfigService.getString(ConfigParam.SYSTEM_EMAIL_PASSWORD);
-    const smtpFrom = this.appConfigService.getString(ConfigParam.SYSTEM_EMAIL_USER) || smtpUser;
 
     if (!smtpHost || !smtpUser || !smtpPassword) {
       throw new Error('SMTP configuration is incomplete. Please check SMTP_HOST, SMTP_USER, and SMTP_PASSWORD.');
