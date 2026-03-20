@@ -20,13 +20,11 @@ export class EmailService {
     try {
       this.logger.log(`Sending email to ${dto.recipient}`);
 
-      // Map template name to EmailTemplateEnum or use default
-      let emailTemplate: EmailTemplateEnum;
-      try {
-        emailTemplate = dto.templateName ? (EmailTemplateEnum[dto.templateName as keyof typeof EmailTemplateEnum] || EmailTemplateEnum.DEFAULT) : EmailTemplateEnum.DEFAULT;
-      } catch {
-        emailTemplate = EmailTemplateEnum.DEFAULT;
-      }
+      // Map template name to EmailTemplateEnum
+      const emailTemplate: EmailTemplateEnum =
+        dto.templateName && dto.templateName in EmailTemplateEnum
+          ? EmailTemplateEnum[dto.templateName as keyof typeof EmailTemplateEnum]
+          : EmailTemplateEnum.MEMBER_WELCOME;
 
       await this.emailNotificationService.sendEmail({
         to: dto.recipient,
@@ -34,8 +32,8 @@ export class EmailService {
         subject: dto.subject,
         body: dto.message,
         replacements: dto.templateParams as Record<string, string | number>,
-        attachments: dto.metadata?.attachments,
-        franchiseBranding: dto.metadata?.franchiseBranding || {
+        attachments: dto.metadata?.['attachments'],
+        franchiseBranding: dto.metadata?.['franchiseBranding'] || {
           logoUrl: '',
           brandName: 'EatFit247',
         },
