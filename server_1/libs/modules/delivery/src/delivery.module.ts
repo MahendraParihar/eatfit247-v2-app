@@ -35,6 +35,7 @@ import {
   ShipmentOrchestrationService,
   ShipmentRetryCron,
 } from './services';
+import { ShipmentListener } from './listeners';
 import { CourierFactory, NimbusAdapter, ShiprocketAdapter } from './providers';
 
 // Register models with the model registry
@@ -94,6 +95,7 @@ modelRegistry.register([
     NimbusAdapter,
     ShiprocketAdapter,
     HttpService,
+    ShipmentListener,
   ],
   exports: [
     CourierProviderService,

@@ -158,7 +158,7 @@ export class NimbusAdapter extends BaseCourierAdapter {
         payment_type: 'prepaid',
         order_amount: Number(payload.orderAmount),
         cod_charges: 0,
-        package_weight: Number(payload.weight),
+        package_weight: Number(payload.weight) * 1000,
         consignee: {
           pincode: Number(payload.delivery.pincode),
           name: payload.delivery.name,

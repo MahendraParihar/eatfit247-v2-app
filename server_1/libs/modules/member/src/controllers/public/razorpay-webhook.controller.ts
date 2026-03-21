@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize-typescript';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Public, RequestedIp, AppConfigService } from '@server_1/core';
 import { InvoiceSequenceService } from '@server_1/platform';
 import { PaymentGatewayCredentialService } from '@server_1/modules/payment';
@@ -35,6 +36,7 @@ export class RazorpayWebhookController {
     @InjectModel(TxnMemberProduct)
     private readonly memberProductRepository: typeof TxnMemberProduct,
     private readonly sequelize: Sequelize,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   @Post()
@@ -841,6 +843,13 @@ export class RazorpayWebhookController {
         memberProductId: productOrder.memberProductId,
         paymentStatusId: updateData.paymentStatusId,
       });
+      if (updateData.paymentStatusId === PaymentStatusEnum.PAID) {
+        this.eventEmitter.emit('order.product.paid', {
+          memberProductId: productOrder.memberProductId,
+          createdBy: 0,
+          createdIp: updateData.modifiedIp,
+        });
+      }
     } catch (error) {
       await transaction.rollback();
       this.logger.error('Error updating product order', {
@@ -1018,6 +1027,13 @@ export class RazorpayWebhookController {
         paymentStatusId: updateData.paymentStatusId,
         gatewayPaymentId: updateData.gatewayPaymentId,
       });
+      if (updateData.paymentStatusId === PaymentStatusEnum.PAID) {
+        this.eventEmitter.emit('order.product.paid', {
+          memberProductId: productOrder.memberProductId,
+          createdBy: 0,
+          createdIp: updateData.modifiedIp,
+        });
+      }
     } catch (error) {
       await transaction.rollback();
       this.logger.error('Error updating product order by payment link', {

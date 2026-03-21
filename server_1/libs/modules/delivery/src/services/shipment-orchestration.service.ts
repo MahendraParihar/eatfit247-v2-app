@@ -36,6 +36,25 @@ export class ShipmentOrchestrationService {
   ) {}
 
   /**
+   * Converts a quantity value to kg based on its unit.
+   * Non-weight units (piece, pack, bottle, box, sachet) return 0 — no physical weight known.
+   */
+  private toKg(value: number, unit: string): number {
+    switch ((unit ?? '').toLowerCase().trim()) {
+      case 'kg':    return value;
+      case 'gm':
+      case 'g':     return value / 1000;
+      case 'mg':    return value / 1_000_000;
+      case 'lb':    return value * 0.453592;
+      case 'oz':    return value * 0.0283495;
+      case 'l':
+      case 'ltr':   return value;        // 1 litre ≈ 1 kg (water-based liquids)
+      case 'ml':    return value / 1000; // 1 ml ≈ 1 g
+      default:      return 0;            // piece, pack, bottle, box, sachet — no weight
+    }
+  }
+
+  /**
    * Sums order item weights in kg. Each item has quantityValue + quantityUnit (e.g. 100, 'gm');
    * multiplies by item quantity for total per line.
    */
@@ -44,7 +63,7 @@ export class ShipmentOrchestrationService {
     for (const item of order.orderItems ?? []) {
       const val = Number(item.quantityValue ?? 0);
       const qty = Math.max(0, Number(item.quantity ?? 1));
-      totalKg += val * qty;
+      totalKg += this.toKg(val, item.quantityUnit) * qty;
     }
     return totalKg;
   }
@@ -427,6 +446,7 @@ export class ShipmentOrchestrationService {
         },
         pickupPostcode: Number(pair.warehousePincode),
       };
+      console.log(rateReqWithPickup);
 
       const adapter = this.courierFactory.getAdapter(pair.providerCode);
       const quotes = await adapter.getRates(rateReqWithPickup, pair.credentials);

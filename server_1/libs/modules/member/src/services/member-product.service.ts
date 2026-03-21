@@ -57,6 +57,7 @@ import {
   PaymentGatewayResolverService,
 } from '@server_1/modules/payment';
 import { Sequelize } from 'sequelize-typescript';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { promises as fs } from 'fs';
 import { find, map, sumBy } from 'lodash';
 import { MemberService } from './member.service';
@@ -88,6 +89,7 @@ export class MemberProductService {
     @InjectModel(TxnMemberProductOrderItem)
     private readonly memberProductOrderItemRepository: typeof TxnMemberProductOrderItem,
     private sequelize: Sequelize,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   /**
@@ -1144,6 +1146,13 @@ export class MemberProductService {
         await productOrder.save({ transaction: t });
       }
       await t.commit();
+      if (obj.paymentStatusId === PaymentStatusEnum.PAID) {
+        this.eventEmitter.emit('order.product.paid', {
+          memberProductId: productOrder.memberProductId,
+          createdBy: adminId || 0,
+          createdIp: requestedIp,
+        });
+      }
       // Fetch the created product order with relationships
       const createdOrder = await this.memberProductRepository.scope('details').findOne({
         where: { memberProductId: productOrder.memberProductId },
