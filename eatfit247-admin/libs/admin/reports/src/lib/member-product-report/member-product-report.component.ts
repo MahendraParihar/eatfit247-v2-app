@@ -179,9 +179,9 @@ export class MemberProductReportComponent implements OnInit {
         width: '130px',
       },
       {
-        key: 'franchiseName',
+        key: 'franchise',
         label: 'Franchise',
-        dataKey: 'franchiseName',
+        dataKey: 'franchise',
         sortable: true,
       },
     ];

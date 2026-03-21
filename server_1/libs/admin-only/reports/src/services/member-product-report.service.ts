@@ -25,7 +25,9 @@ export class MemberProductReportService {
    * @param dto - Member product report filter DTO
    * @returns List of product orders with member and franchise information
    */
-  async getMemberProductReport(dto: MemberProductReportDto): Promise<ITableList<IMemberProductReportItem>> {
+  async getMemberProductReport(
+    dto: MemberProductReportDto,
+  ): Promise<ITableList<IMemberProductReportItem>> {
     const startDateStr = moment(dto.startDate).startOf('day').utc().startOf('day');
     const endDateStr = moment(dto.endDate).endOf('day').utc().endOf('day');
     const whereCondition: any = {
@@ -41,11 +43,13 @@ export class MemberProductReportService {
     if (dto.paymentStatusId) {
       whereCondition.paymentStatusId = dto.paymentStatusId;
     }
+    if (dto.franchiseId) {
+      whereCondition.franchiseId = dto.franchiseId;
+    }
+
     // Build member where condition
     const memberWhereCondition: any = {};
-    if (dto.franchiseId) {
-      memberWhereCondition.franchiseId = dto.franchiseId;
-    }
+
     // Build include conditions
     const includeConditions: any[] = [
       {
@@ -53,7 +57,14 @@ export class MemberProductReportService {
         as: 'member',
         required: true,
         where: Object.keys(memberWhereCondition).length > 0 ? memberWhereCondition : undefined,
-        attributes: ['memberId', 'firstName', 'lastName', 'emailId', 'contactNumber', 'franchiseId'],
+        attributes: [
+          'memberId',
+          'firstName',
+          'lastName',
+          'emailId',
+          'contactNumber',
+          'franchiseId',
+        ],
       },
     ];
     const { rows, count } = await this.memberProductRepository.scope('list').findAndCountAll({
@@ -112,7 +123,14 @@ export class MemberProductReportService {
         as: 'member',
         required: true,
         where: Object.keys(memberWhereCondition).length > 0 ? memberWhereCondition : undefined,
-        attributes: ['memberId', 'firstName', 'lastName', 'emailId', 'contactNumber', 'franchiseId'],
+        attributes: [
+          'memberId',
+          'firstName',
+          'lastName',
+          'emailId',
+          'contactNumber',
+          'franchiseId',
+        ],
         include: [
           {
             model: MstFranchise,
@@ -122,7 +140,9 @@ export class MemberProductReportService {
             where: {
               active: true,
               [Op.and]: [
-                Sequelize.literal(`'${BusinessTypeEnum.PRODUCT}'::public.business_type = ANY("business_type")`),
+                Sequelize.literal(
+                  `'${BusinessTypeEnum.PRODUCT}'::public.business_type = ANY("business_type")`,
+                ),
               ],
             },
           },
@@ -152,14 +172,16 @@ export class MemberProductReportService {
         // Convert base64 buffer to Buffer
         const pdfBuffer = Buffer.from(invoiceFile.buffer, 'base64');
         // Add to zip with a clean filename
-        const memberName = `${productOrder.memberName || 'Member'}_${memberId}`.replace(/[^a-zA-Z0-9_]/g, '_');
+        const memberName = `${productOrder.memberName || 'Member'}_${memberId}`.replace(
+          /[^a-zA-Z0-9_]/g,
+          '_',
+        );
         const fileName = `Product_Invoice_${memberName}_${productId}.pdf`;
         archive.append(pdfBuffer, { name: fileName });
       } catch (error) {
-        this.logger.error(
-          `Failed to generate invoice for product order ${item.memberProductId}`,
-          { error },
-        );
+        this.logger.error(`Failed to generate invoice for product order ${item.memberProductId}`, {
+          error,
+        });
         // Continue with other invoices even if one fails
       }
     });
@@ -192,7 +214,14 @@ export class MemberProductReportService {
         model: TxnMember,
         as: 'member',
         required: true,
-        attributes: ['memberId', 'firstName', 'lastName', 'emailId', 'contactNumber', 'franchiseId'],
+        attributes: [
+          'memberId',
+          'firstName',
+          'lastName',
+          'emailId',
+          'contactNumber',
+          'franchiseId',
+        ],
         include: [
           {
             model: MstFranchise,
@@ -202,7 +231,9 @@ export class MemberProductReportService {
             where: {
               active: true,
               [Op.and]: [
-                Sequelize.literal(`'${BusinessTypeEnum.PRODUCT}'::public.business_type = ANY("business_type")`),
+                Sequelize.literal(
+                  `'${BusinessTypeEnum.PRODUCT}'::public.business_type = ANY("business_type")`,
+                ),
               ],
             },
           },
@@ -232,14 +263,16 @@ export class MemberProductReportService {
         // Convert base64 buffer to Buffer
         const pdfBuffer = Buffer.from(invoiceFile.buffer, 'base64');
         // Add to zip with a clean filename
-        const memberName = `${productOrder.memberName || 'Member'}_${memberId}`.replace(/[^a-zA-Z0-9_]/g, '_');
+        const memberName = `${productOrder.memberName || 'Member'}_${memberId}`.replace(
+          /[^a-zA-Z0-9_]/g,
+          '_',
+        );
         const fileName = `Product_Invoice_${memberName}_${productId}.pdf`;
         archive.append(pdfBuffer, { name: fileName });
       } catch (error) {
-        this.logger.error(
-          `Failed to generate invoice for product order ${item.memberProductId}`,
-          { error },
-        );
+        this.logger.error(`Failed to generate invoice for product order ${item.memberProductId}`, {
+          error,
+        });
         // Continue with other invoices even if one fails
       }
     });
@@ -250,4 +283,3 @@ export class MemberProductReportService {
     return archive;
   }
 }
-
