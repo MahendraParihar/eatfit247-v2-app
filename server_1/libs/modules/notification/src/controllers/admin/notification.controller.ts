@@ -1,11 +1,12 @@
 import { Body, Controller, Get, Param, Post, ParseIntPipe, UseGuards } from '@nestjs/common';
-import { JwtAuthGuard } from '@server_1/core';
+import { AbilitiesGuard, JwtAuthGuard, RequireAbility } from '@server_1/core';
 import { NotificationService } from '../../services';
 import { LogService } from '../../services';
 import { SendNotificationDto } from '../../dto';
+import { AdminActionEnum, AdminSubjectEnum } from '@eatfit247-shared-lib';
 
 @Controller('notification')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, AbilitiesGuard)
 export class NotificationController {
   constructor(
     private readonly notificationService: NotificationService,
@@ -17,6 +18,7 @@ export class NotificationController {
    * POST /api/v1/admin/notification/send
    */
   @Post('send')
+  @RequireAbility(AdminActionEnum.Create, AdminSubjectEnum.Notification)
   async sendNotification(
     @Body() body: SendNotificationDto,
   ): Promise<{ messageId: string; success: boolean; message: string }> {
@@ -32,6 +34,7 @@ export class NotificationController {
    * POST /api/v1/admin/notification/:id/retry
    */
   @Post(':id/retry')
+  @RequireAbility(AdminActionEnum.Update, AdminSubjectEnum.Notification)
   async retryNotification(
     @Param('id', ParseIntPipe) id: number,
   ): Promise<{ messageId: string; success: boolean; message: string }> {
@@ -47,6 +50,7 @@ export class NotificationController {
    * GET /api/v1/admin/notification/member/:memberId
    */
   @Get('member/:memberId')
+  @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.Notification)
   async getNotificationsByMember(
     @Param('memberId', ParseIntPipe) memberId: number,
   ) {
@@ -63,6 +67,7 @@ export class NotificationController {
    * GET /api/v1/admin/notification/:id
    */
   @Get(':id')
+  @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.Notification)
   async getNotificationById(
     @Param('id', ParseIntPipe) id: number,
   ) {

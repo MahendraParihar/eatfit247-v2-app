@@ -1,5 +1,6 @@
 import { Controller, Get, UseGuards } from '@nestjs/common';
-import { JwtAuthGuard } from '@server_1/core';
+import { AbilitiesGuard, JwtAuthGuard, RequireAbility } from '@server_1/core';
+import { AdminActionEnum, AdminSubjectEnum, IAssessmentMaster } from '@eatfit247-shared-lib';
 import {
   BloodSugarService,
   EatingHabitService,
@@ -11,10 +12,9 @@ import {
   TypeOfExerciseService,
   UrineOutputService,
 } from '../../services';
-import { IAssessmentMaster } from '@eatfit247-shared-lib';
 
 @Controller('assessment')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, AbilitiesGuard)
 export class AssessmentController {
   constructor(
     private readonly genderService: GenderService,
@@ -29,6 +29,7 @@ export class AssessmentController {
   ) {}
 
   @Get('master-data')
+  @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.MemberAssessment)
   async getMasterData(): Promise<IAssessmentMaster> {
     const [gender,
       maritalStatus,

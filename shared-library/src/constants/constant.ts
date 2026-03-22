@@ -18,6 +18,9 @@ export const RECAPTCHA_SCORE_THRESHOLD = 'RECAPTCHA_SCORE_THRESHOLD';
 
 export const PUBLIC_API = 'PUBLIC_API';
 
+/** NestJS `@RequireAbility()` metadata key — checked by AbilitiesGuard. */
+export const REQUIRE_ABILITY = 'REQUIRE_ABILITY';
+
 export const SHIPMENT_CONFIG = {
     MAX_RETRIES: 3,
     BACKOFF_MINUTES: [5, 15, 60],       // per retry attempt

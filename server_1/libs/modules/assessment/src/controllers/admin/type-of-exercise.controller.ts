@@ -1,25 +1,43 @@
 import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from '@nestjs/common';
-import { BasicSearchDto, CurrentUser, JwtAuthGuard, RequestedIp, UpdateActiveDto } from '@server_1/core';
+import {
+  AbilitiesGuard,
+  BasicSearchDto,
+  CurrentUser,
+  JwtAuthGuard,
+  RequestedIp,
+  RequireAbility,
+  UpdateActiveDto,
+} from '@server_1/core';
 import { TypeOfExerciseService } from '../../services';
 import { CreateTypeOfExerciseDto } from '../../dto';
-import { IAuthUser, IDropdownItem, ITableList, ITypeOfExercise } from '@eatfit247-shared-lib';
+import {
+  AdminActionEnum,
+  AdminSubjectEnum,
+  IAuthUser,
+  IDropdownItem,
+  ITableList,
+  ITypeOfExercise,
+} from '@eatfit247-shared-lib';
 
 @Controller('type-of-exercise')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, AbilitiesGuard)
 export class TypeOfExerciseController {
   constructor(private readonly service: TypeOfExerciseService) {}
 
   @Get('list')
+  @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.LovMaster)
   async list(@Query() req: BasicSearchDto): Promise<ITableList<ITypeOfExercise>> {
     return await this.service.findAll(req);
   }
 
   @Get('manage/:id')
+  @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.LovMaster)
   async getById(@Param('id') id: number): Promise<ITypeOfExercise> {
     return await this.service.fetchById(id);
   }
 
   @Post('manage')
+  @RequireAbility(AdminActionEnum.Create, AdminSubjectEnum.LovMaster)
   async create(
     @Body() body: CreateTypeOfExerciseDto,
     @CurrentUser() currentUser: IAuthUser,
@@ -29,6 +47,7 @@ export class TypeOfExerciseController {
   }
 
   @Put('manage/:id')
+  @RequireAbility(AdminActionEnum.Update, AdminSubjectEnum.LovMaster)
   async update(
     @Param('id') id: number,
     @Body() body: CreateTypeOfExerciseDto,
@@ -39,6 +58,7 @@ export class TypeOfExerciseController {
   }
 
   @Patch('update-status/:id')
+  @RequireAbility(AdminActionEnum.Update, AdminSubjectEnum.LovMaster)
   async changeStatus(
     @Param('id') id: number,
     @Body() body: UpdateActiveDto,
@@ -49,6 +69,7 @@ export class TypeOfExerciseController {
   }
 
   @Get('dropdown')
+  @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.LovMaster)
   async getDropdownList(): Promise<IDropdownItem[]> {
     return await this.service.getTypeOfExerciseList();
   }

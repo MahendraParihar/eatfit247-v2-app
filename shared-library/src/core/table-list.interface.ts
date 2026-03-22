@@ -17,6 +17,7 @@ export interface IBasicSearch extends ITableListFilter {
   createdFrom?: Date | null;
   createdTo?: Date | null;
   active?: boolean | null;
+  includeAdminRoles?: boolean;
 }
 
 export interface IRecipeSearch extends IBasicSearch {

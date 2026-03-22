@@ -1,5 +1,5 @@
 import { IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import { IBasicSearch, IStatusChange } from '@eatfit247-shared-lib';
 
 export class BasicSearchDto implements IBasicSearch {
@@ -42,6 +42,10 @@ export class BasicSearchDto implements IBasicSearch {
   @Type(() => Number)
   @IsNumber()
   countryId?: number;
+  @IsOptional()
+  @IsBoolean()
+  @Transform(({ value }) => value === true || value === 'true' || value === 1 || value === '1')
+  includeAdminRoles?: boolean;
 }
 
 export class UpdateActiveDto implements IStatusChange {

@@ -10,23 +10,25 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { CurrentUser, JwtAuthGuard, RequestedIp } from '@server_1/core';
+import { AbilitiesGuard, CurrentUser, JwtAuthGuard, RequestedIp, RequireAbility } from '@server_1/core';
 import { IFileModel } from '@server_1/platform';
 import { MemberDietPlanService } from '../../services';
 import { MemberDietPlanDetailDto, MemberDietTemplateDto } from '../../dto';
-import { IAuthUser } from '@eatfit247-shared-lib';
+import { AdminActionEnum, AdminSubjectEnum, IAuthUser } from '@eatfit247-shared-lib';
 
 @Controller('member/:id/diet-plan')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, AbilitiesGuard)
 export class MemberDietPlanController {
   constructor(private readonly service: MemberDietPlanService) {}
 
   @Get('list')
+  @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.MemberDietPlan)
   async list(@Param('id') id: number) {
     return await this.service.getList(id);
   }
 
   @Get('manage/:dietPlanId/:cycleNo')
+  @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.MemberDietPlan)
   async getDietPlanDetail(
     @Param('id') memberId: number,
     @Param('dietPlanId') dietPlanId: number,
@@ -45,6 +47,7 @@ export class MemberDietPlanController {
   }
 
   @Get('manage/:dietPlanId/:cycleNo/:dayNo')
+  @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.MemberDietPlan)
   async getDietPlanDetailDay(
     @Param('id') memberId: number,
     @Param('dietPlanId') dietPlanId: number,
@@ -65,6 +68,7 @@ export class MemberDietPlanController {
 
   @Get('download-cycle/:dietPlanId/:cycleNo')
   @Header('Content-Type', 'application/pdf')
+  @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.MemberDietPlan)
   async downloadDietPlanByCycle(
     @Param('id') memberId: number,
     @Param('dietPlanId') dietPlanId: number,
@@ -75,6 +79,7 @@ export class MemberDietPlanController {
 
   @Get('download-day/:dietPlanId/:cycleNo/:dayNo')
   @Header('Content-Type', 'application/pdf')
+  @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.MemberDietPlan)
   async downloadDietPlanByDay(
     @Param('id') memberId: number,
     @Param('dietPlanId') dietPlanId: number,
@@ -85,6 +90,7 @@ export class MemberDietPlanController {
   }
 
   @Get('send-email-cycle/:dietPlanId/:cycleNo')
+  @RequireAbility(AdminActionEnum.Update, AdminSubjectEnum.MemberDietPlan)
   async sendDietPlanViaEmailCycle(
     @Param('id') memberId: number,
     @Param('dietPlanId') dietPlanId: number,
@@ -94,6 +100,7 @@ export class MemberDietPlanController {
   }
 
   @Get('send-email-day/:dietPlanId/:cycleNo/:dayNo')
+  @RequireAbility(AdminActionEnum.Update, AdminSubjectEnum.MemberDietPlan)
   async sendDietPlanViaEmailDay(
     @Param('id') memberId: number,
     @Param('dietPlanId') dietPlanId: number,
@@ -104,6 +111,7 @@ export class MemberDietPlanController {
   }
 
   @Post('manage')
+  @RequireAbility(AdminActionEnum.Create, AdminSubjectEnum.MemberDietPlan)
   async create(
     @Param('id') memberId: number,
     @Body() body: MemberDietPlanDetailDto,
@@ -119,6 +127,7 @@ export class MemberDietPlanController {
   }
 
   @Delete('delete-cycle/:dietPlanId/:cycleNo')
+  @RequireAbility(AdminActionEnum.Delete, AdminSubjectEnum.MemberDietPlan)
   async deleteCycle(
     @Param('dietPlanId') dietPlanId: number,
     @Param('cycleNo') cycleNo: number,
@@ -129,6 +138,7 @@ export class MemberDietPlanController {
   }
 
   @Delete('delete-day/:dietPlanId/:cycleNo/:dayNo')
+  @RequireAbility(AdminActionEnum.Delete, AdminSubjectEnum.MemberDietPlan)
   async deleteDay(
     @Param('id') memberId: number,
     @Param('dietPlanId') dietPlanId: number,
@@ -147,6 +157,7 @@ export class MemberDietPlanController {
   }
 
   @Post('update-details')
+  @RequireAbility(AdminActionEnum.Update, AdminSubjectEnum.MemberDietPlan)
   async applyDietTemplate(
     @Param('id') memberId: number,
     @Body() body: MemberDietTemplateDto,
@@ -157,6 +168,7 @@ export class MemberDietPlanController {
   }
 
   @Put('update-status/:dietPlanId')
+  @RequireAbility(AdminActionEnum.Update, AdminSubjectEnum.MemberDietPlan)
   async updateStatus(
     @Param('id') id: number,
     @Param('dietPlanId') dietPlanId: number,

@@ -10,13 +10,20 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { BasicSearchDto, CurrentUser, JwtAuthGuard, RequestedIp, UpdateActiveDto } from '@server_1/core';
+import {
+  AbilitiesGuard,
+  BasicSearchDto,
+  CurrentUser,
+  JwtAuthGuard,
+  RequestedIp,
+  UpdateActiveDto,
+} from '@server_1/core';
 import { WarehouseService } from '../../services';
 import { CreateWarehouseDto } from '../../dto';
 import { IAuthUser, IDropdownItem, IWarehouse, ITableList } from '@eatfit247-shared-lib';
 
 @Controller('warehouse')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, AbilitiesGuard)
 export class WarehouseController {
   constructor(private readonly service: WarehouseService) {}
 

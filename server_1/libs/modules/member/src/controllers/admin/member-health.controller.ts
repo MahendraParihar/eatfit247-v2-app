@@ -1,7 +1,16 @@
 import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards } from '@nestjs/common';
-import { CurrentUser, JwtAuthGuard, RequestedIp, UpdateHealthIssueIdsDto } from '@server_1/core';
+import {
+  AbilitiesGuard,
+  CurrentUser,
+  JwtAuthGuard,
+  RequestedIp,
+  RequireAbility,
+  UpdateHealthIssueIdsDto,
+} from '@server_1/core';
 import { MemberAssessmentService, MemberHealthIssueService, MemberHealthParameterLogsService } from '../../services';
 import {
+  AdminActionEnum,
+  AdminSubjectEnum,
   IAuthUser,
   IHealthParameterMaster,
   IMemberAssessment,
@@ -18,7 +27,7 @@ import { CreateMemberAssessmentDto, CreateMemberHealthParameterLogDto } from '..
  * - Health parameter logs (body stats)
  */
 @Controller('member/:id')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, AbilitiesGuard)
 export class MemberHealthController {
   constructor(
     private readonly memberAssessmentService: MemberAssessmentService,
@@ -30,11 +39,13 @@ export class MemberHealthController {
   // Route: member/:id/assessment
 
   @Get('assessment')
+  @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.MemberAssessment)
   async getAssessment(@Param('id') id: number): Promise<IMemberAssessment | null> {
     return await this.memberAssessmentService.findByMemberId(id);
   }
 
   @Put('assessment')
+  @RequireAbility(AdminActionEnum.Update, AdminSubjectEnum.MemberAssessment)
   async updateAssessment(
     @Param('id') id: number,
     @Body() body: CreateMemberAssessmentDto,
@@ -53,16 +64,19 @@ export class MemberHealthController {
   // Route: member/:id/health-issues
 
   @Get('health-issues')
+  @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.MemberHealth)
   async getHealthIssues(@Param('id') id: number): Promise<ITableList<IMemberHealthIssue>> {
     return await this.memberHealthIssueService.getList(id, true);
   }
 
   @Get('health-issues/list')
+  @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.MemberHealth)
   async getHealthIssueList(@Param('id') id: number): Promise<ITableList<IMemberHealthIssue>> {
     return await this.memberHealthIssueService.getList(id, false);
   }
 
   @Put('health-issues/manage')
+  @RequireAbility(AdminActionEnum.Update, AdminSubjectEnum.MemberHealth)
   async manageHealthIssues(
     @Param('id') id: number,
     @Body() body: UpdateHealthIssueIdsDto,
@@ -81,16 +95,19 @@ export class MemberHealthController {
   // Route: member/:id/health-parameter-logs
 
   @Get('health-parameter-logs')
+  @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.MemberHealth)
   async getHealthParameterLogs(@Param('id') id: number): Promise<IMemberHealthParameterLog[]> {
     return await this.memberHealthParameterLogsService.findByMemberId(id);
   }
 
   @Get('health-parameter-logs/master-data')
+  @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.MemberHealth)
   async getHealthParameterLogsMasterData(): Promise<IHealthParameterMaster> {
     return await this.memberHealthParameterLogsService.getMasterData();
   }
 
   @Post('health-parameter-logs')
+  @RequireAbility(AdminActionEnum.Create, AdminSubjectEnum.MemberHealth)
   async createHealthParameterLog(
     @Param('id') id: number,
     @Body() body: CreateMemberHealthParameterLogDto,
@@ -107,6 +124,7 @@ export class MemberHealthController {
   }
 
   @Put('health-parameter-logs/:logId')
+  @RequireAbility(AdminActionEnum.Update, AdminSubjectEnum.MemberHealth)
   async updateHealthParameterLog(
     @Param('id') id: number,
     @Param('logId') logId: number,
@@ -125,6 +143,7 @@ export class MemberHealthController {
   }
 
   @Get('health-parameter-logs/:logId')
+  @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.MemberHealth)
   async getHealthParameterLogById(
     @Param('id') id: number,
     @Param('logId') logId: number,
@@ -133,6 +152,7 @@ export class MemberHealthController {
   }
 
   @Delete('health-parameter-logs/:logId')
+  @RequireAbility(AdminActionEnum.Delete, AdminSubjectEnum.MemberHealth)
   async deleteHealthParameterLog(
     @Param('id') id: number,
     @Param('logId') logId: number,

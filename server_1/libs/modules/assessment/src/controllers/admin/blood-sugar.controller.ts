@@ -1,31 +1,43 @@
 import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from '@nestjs/common';
 import {
+  AbilitiesGuard,
   BasicSearchDto,
   CurrentUser,
   JwtAuthGuard,
   RequestedIp,
+  RequireAbility,
   UpdateActiveDto,
 } from '@server_1/core';
 import { BloodSugarService } from '../../services';
 import { CreateBloodSugarDto } from '../../dto';
-import { IAuthUser, IBloodSugar, IDropdownItem, ITableList } from '@eatfit247-shared-lib';
+import {
+  AdminActionEnum,
+  AdminSubjectEnum,
+  IAuthUser,
+  IBloodSugar,
+  IDropdownItem,
+  ITableList,
+} from '@eatfit247-shared-lib';
 
 @Controller('blood-sugar')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, AbilitiesGuard)
 export class BloodSugarController {
   constructor(private readonly service: BloodSugarService) {}
 
   @Get('list')
+  @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.LovMaster)
   async list(@Query() req: BasicSearchDto): Promise<ITableList<IBloodSugar>> {
     return await this.service.findAll(req);
   }
 
   @Get('manage/:id')
+  @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.LovMaster)
   async getById(@Param('id') id: number): Promise<IBloodSugar> {
     return await this.service.fetchById(id);
   }
 
   @Post('manage')
+  @RequireAbility(AdminActionEnum.Create, AdminSubjectEnum.LovMaster)
   async create(
     @Body() body: CreateBloodSugarDto,
     @CurrentUser() currentUser: IAuthUser,
@@ -35,6 +47,7 @@ export class BloodSugarController {
   }
 
   @Put('manage/:id')
+  @RequireAbility(AdminActionEnum.Update, AdminSubjectEnum.LovMaster)
   async update(
     @Param('id') id: number,
     @Body() body: CreateBloodSugarDto,
@@ -45,6 +58,7 @@ export class BloodSugarController {
   }
 
   @Patch('update-status/:id')
+  @RequireAbility(AdminActionEnum.Update, AdminSubjectEnum.LovMaster)
   async changeStatus(
     @Param('id') id: number,
     @Body() body: UpdateActiveDto,
@@ -55,6 +69,7 @@ export class BloodSugarController {
   }
 
   @Get('dropdown')
+  @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.LovMaster)
   async getDropdownList(): Promise<IDropdownItem[]> {
     return await this.service.getBloodSugarList();
   }

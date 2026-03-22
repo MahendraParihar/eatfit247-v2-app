@@ -83,4 +83,73 @@ export class AdminUserService {
       franchiseIds,
     };
   }
+
+  /**
+   * Batch role keys + franchise scope for many admins (list/grid) — avoids N+1 per row.
+   */
+  async findRoleScopesForAdminIds(
+    adminIds: number[],
+  ): Promise<Map<number, { roleKeys: string[]; franchiseIds: number[] }>> {
+    const map = new Map<number, { roleKeys: string[]; franchiseIds: number[] }>();
+    if (adminIds.length === 0) {
+      return map;
+    }
+    const uniqueIds = [...new Set(adminIds)];
+    for (const id of uniqueIds) {
+      map.set(id, { roleKeys: [], franchiseIds: [] });
+    }
+
+    const [users, roleRows, txnRows] = await Promise.all([
+      this.adminRepository.findAll({
+        where: { adminId: uniqueIds },
+        attributes: ['adminId', 'franchiseId'],
+        raw: true,
+      }),
+      this.rolePermRepository.findAll({
+        where: { adminId: uniqueIds, active: true },
+        include: [
+          {
+            model: MstAdminRole,
+            as: 'role',
+            attributes: ['roleCode'],
+            required: true,
+          },
+        ],
+      }),
+      this.adminFranchiseRepository.findAll({
+        where: { adminId: uniqueIds },
+        attributes: ['adminId', 'franchiseId'],
+        raw: true,
+      }),
+    ]);
+
+    for (const u of users as { adminId: number; franchiseId: number | null }[]) {
+      const entry = map.get(u.adminId);
+      if (entry && u.franchiseId != null && !entry.franchiseIds.includes(u.franchiseId)) {
+        entry.franchiseIds.push(u.franchiseId);
+      }
+    }
+
+    for (const row of roleRows) {
+      const code = row.role?.roleCode;
+      const entry = map.get(row.adminId);
+      if (entry && typeof code === 'string' && code.length > 0 && !entry.roleKeys.includes(code)) {
+        entry.roleKeys.push(code);
+      }
+    }
+
+    for (const row of txnRows as { adminId: number; franchiseId: number }[]) {
+      const entry = map.get(row.adminId);
+      if (entry && !entry.franchiseIds.includes(row.franchiseId)) {
+        entry.franchiseIds.push(row.franchiseId);
+      }
+    }
+
+    for (const [, v] of map) {
+      v.franchiseIds.sort((a, b) => a - b);
+      v.roleKeys.sort();
+    }
+
+    return map;
+  }
 }

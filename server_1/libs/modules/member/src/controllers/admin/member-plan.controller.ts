@@ -1,7 +1,9 @@
-import { Body, Controller, Get, Header, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
-import { CurrentUser, JwtAuthGuard, RequestedIp } from '@server_1/core';
+import { Body, Controller, Get, Header, Param, Post, Query, UseGuards } from '@nestjs/common';
+import { AbilitiesGuard, CurrentUser, JwtAuthGuard, RequestedIp, RequireAbility } from '@server_1/core';
 import { MemberPlanService } from '../../services';
 import {
+  AdminActionEnum,
+  AdminSubjectEnum,
   IAuthUser,
   IMemberPayment,
   IMemberPaymentMasterData,
@@ -19,7 +21,7 @@ import { ProgramPlanService } from '@server_1/modules/program-plan';
 import { IFileModel } from '@server_1/platform';
 
 @Controller('member/:id/payment-history')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, AbilitiesGuard)
 export class MemberPlanController {
   constructor(
     private readonly memberPaymentService: MemberPlanService,
@@ -27,6 +29,7 @@ export class MemberPlanController {
   ) {}
 
   @Get('supported-gateways')
+  @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.MemberPayment)
   async getSupportedGateways(
     @Param('id') id: number,
     @Query('currency') currency: string,
@@ -46,16 +49,19 @@ export class MemberPlanController {
   }
 
   @Get('master-data')
+  @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.MemberPayment)
   async getMasterData(@Param('id') id: number): Promise<IMemberPaymentMasterData> {
     return await this.memberPaymentService.loadMasterData(id);
   }
 
   @Get()
+  @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.MemberPayment)
   async getPaymentHistory(@Param('id') id: number): Promise<ITableList<IMemberPayment>> {
     return await this.memberPaymentService.findAll(id);
   }
 
   @Get(':paymentId')
+  @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.MemberPayment)
   async getPaymentById(
     @Param('id') id: number,
     @Param('paymentId') paymentId: number,
@@ -64,6 +70,7 @@ export class MemberPlanController {
   }
 
   @Post()
+  @RequireAbility(AdminActionEnum.Create, AdminSubjectEnum.MemberPayment)
   async createPayment(
     @Param('id') id: number,
     @Body() body: CreateMemberPaymentDto,
@@ -75,6 +82,7 @@ export class MemberPlanController {
   }
 
   @Get('program-plan/:programPlanId')
+  @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.MemberPayment)
   async getProgramPlanDetails(
     @Param('programPlanId') programPlanId: number,
   ): Promise<IProgramPlan> {
@@ -82,6 +90,7 @@ export class MemberPlanController {
   }
 
   @Post('calculate-tax')
+  @RequireAbility(AdminActionEnum.Create, AdminSubjectEnum.MemberPayment)
   async calculateTax(
     @Param('id') id: number,
     @Body() body: PlanTaxCalculationRequestDto,
@@ -90,6 +99,7 @@ export class MemberPlanController {
   }
 
   @Post('create-payment-link')
+  @RequireAbility(AdminActionEnum.Create, AdminSubjectEnum.MemberPayment)
   async createPaymentLink(
     @Param('id') id: number,
     @Body() body: CreatePaymentLinkDto,
@@ -98,6 +108,7 @@ export class MemberPlanController {
   }
 
   @Post(':paymentId/regenerate-payment-link')
+  @RequireAbility(AdminActionEnum.Update, AdminSubjectEnum.MemberPayment)
   async regeneratePaymentLink(
     @Param('id') id: number,
     @Param('paymentId') paymentId: number,
@@ -107,6 +118,7 @@ export class MemberPlanController {
 
   @Get(':paymentId/invoice')
   @Header('Content-Type', 'application/pdf')
+  @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.MemberPayment)
   async downloadInvoice(
     @Param('id') id: number,
     @Param('paymentId') paymentId: number,

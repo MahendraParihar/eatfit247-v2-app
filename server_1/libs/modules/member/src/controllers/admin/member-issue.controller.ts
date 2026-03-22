@@ -1,11 +1,26 @@
 import { Body, Controller, Get, Param, Post, Put, UseGuards } from '@nestjs/common';
-import { CurrentUser, JwtAuthGuard, RequestedIp, UpdateIsSolvedDto } from '@server_1/core';
+import {
+  AbilitiesGuard,
+  CurrentUser,
+  JwtAuthGuard,
+  RequestedIp,
+  RequireAbility,
+  UpdateIsSolvedDto,
+} from '@server_1/core';
 import { MemberIssueResponseService, MemberIssueService } from '../../services';
-import { IAuthUser, IIssueMasterData, IMemberIssue, IMemberIssueResponse, ITableList } from '@eatfit247-shared-lib';
+import {
+  AdminActionEnum,
+  AdminSubjectEnum,
+  IAuthUser,
+  IIssueMasterData,
+  IMemberIssue,
+  IMemberIssueResponse,
+  ITableList,
+} from '@eatfit247-shared-lib';
 import { CreateMemberIssueDto, CreateMemberIssueResponseDto, MemberIssueReportDto } from '../../dto';
 
 @Controller('member')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, AbilitiesGuard)
 export class MemberIssueController {
   constructor(
     private readonly memberIssueService: MemberIssueService,
@@ -13,21 +28,25 @@ export class MemberIssueController {
   ) {}
 
   @Get('issues-master')
+  @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.MemberIssues)
   async getIssuesMasterData(): Promise<IIssueMasterData> {
     return await this.memberIssueService.getIssuesMasterData();
   }
 
   @Post('issues-report')
+  @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.MemberIssues)
   async getMemberIssuesReport(@Body() dto: MemberIssueReportDto): Promise<ITableList<any>> {
     return await this.memberIssueService.getMemberIssuesReport(dto);
   }
 
   @Get(':id/issues')
+  @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.MemberIssues)
   async getMemberIssuesList(@Param('id') id: number): Promise<IMemberIssue[]> {
     return await this.memberIssueService.findByMemberId(id);
   }
 
   @Post(':id/issues')
+  @RequireAbility(AdminActionEnum.Create, AdminSubjectEnum.MemberIssues)
   async createIssue(
     @Param('id') id: number,
     @Body() body: CreateMemberIssueDto,
@@ -43,6 +62,7 @@ export class MemberIssueController {
   }
 
   @Put(':id/issues/:issueId')
+  @RequireAbility(AdminActionEnum.Update, AdminSubjectEnum.MemberIssues)
   async updateIssue(
     @Param('id') id: number,
     @Param('issueId') issueId: number,
@@ -60,6 +80,7 @@ export class MemberIssueController {
   }
 
   @Get(':id/issues/:issueId/responses')
+  @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.MemberIssues)
   async getIssueResponses(
     @Param('id') id: number,
     @Param('issueId') issueId: number,
@@ -68,6 +89,7 @@ export class MemberIssueController {
   }
 
   @Post(':id/issues/:issueId/responses')
+  @RequireAbility(AdminActionEnum.Create, AdminSubjectEnum.MemberIssues)
   async createIssueResponse(
     @Param('id') id: number,
     @Param('issueId') issueId: number,
@@ -82,6 +104,7 @@ export class MemberIssueController {
   }
 
   @Post(':id/issues/:issueId/mark-solved')
+  @RequireAbility(AdminActionEnum.Update, AdminSubjectEnum.MemberIssues)
   async markIssueAsSolved(
     @Param('id') id: number,
     @Param('issueId') issueId: number,

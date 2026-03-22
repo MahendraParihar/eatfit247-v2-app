@@ -1,13 +1,22 @@
 import { Body, Controller, Get, Logger, Param, Patch, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { BasicSearchDto, CurrentUser, JwtAuthGuard, RequestedIp, UpdateActiveDto } from '@server_1/core';
+import {
+  AbilitiesGuard,
+  BasicSearchDto,
+  CurrentUser,
+  JwtAuthGuard,
+  Public,
+  RequestedIp,
+  RequireAbility,
+  UpdateActiveDto,
+} from '@server_1/core';
 import { GoogleService } from '@server_1/platform';
 import { PressMediaService } from '../../services';
 import { CreatePressMediaDto } from '../../dto';
-import { IAuthUser, IPressMedia, ITableList } from '@eatfit247-shared-lib';
+import { AdminActionEnum, AdminSubjectEnum, IAuthUser, IPressMedia, ITableList } from '@eatfit247-shared-lib';
 
 @Controller('press-media')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, AbilitiesGuard)
 export class PressMediaController {
   private readonly logger = new Logger(PressMediaController.name);
   constructor(
@@ -16,16 +25,19 @@ export class PressMediaController {
   ) {}
 
   @Get('list')
+  @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.PressMedia)
   async list(@Query() req: BasicSearchDto): Promise<ITableList<IPressMedia>> {
     return await this.service.findAll(req);
   }
 
   @Get('manage/:id')
+  @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.PressMedia)
   async getById(@Param('id') id: number): Promise<IPressMedia> {
     return await this.service.fetchById(id);
   }
 
   @Post('manage')
+  @RequireAbility(AdminActionEnum.Create, AdminSubjectEnum.PressMedia)
   async create(
     @Body() body: CreatePressMediaDto,
     @CurrentUser() currentUser: IAuthUser,
@@ -35,6 +47,7 @@ export class PressMediaController {
   }
 
   @Put('manage/:id')
+  @RequireAbility(AdminActionEnum.Update, AdminSubjectEnum.PressMedia)
   async update(
     @Param('id') id: number,
     @Body() body: CreatePressMediaDto,
@@ -45,6 +58,7 @@ export class PressMediaController {
   }
 
   @Patch('update-status/:id')
+  @RequireAbility(AdminActionEnum.Update, AdminSubjectEnum.PressMedia)
   async changeStatus(
     @Param('id') id: number,
     @Body() body: UpdateActiveDto,
@@ -58,6 +72,7 @@ export class PressMediaController {
    * Cron job to fetch and save latest YouTube video
    * Runs daily at midnight (00:00:00)
    */
+  @Public()
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
   async fetchAndSaveLatestYouTubeVideo(): Promise<void> {
     try {

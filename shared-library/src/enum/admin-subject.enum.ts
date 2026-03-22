@@ -32,11 +32,14 @@ export enum AdminSubjectEnum {
     Product          = 'Product',
     ProductOrder     = 'ProductOrder',
     Shipment         = 'Shipment',
-    DeliveryAccount  = 'DeliveryAccount',
+    CourierProviderAccount  = 'CourierProviderAccount',
+    CourierProviderWarehouse  = 'CourierProviderWarehouse',
+    CourierProvider  = 'CourierProvider',
     PromoCode        = 'PromoCode',
 
     // Program domain
     Program          = 'Program',
+    ProgramCategory  = 'ProgramCategory',
     ProgramPlan      = 'ProgramPlan',
     DietTemplate     = 'DietTemplate',
 

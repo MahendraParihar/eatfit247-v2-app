@@ -124,6 +124,18 @@ export class AdminUserService {
     const resList: IAdminUser[] = rows.map((item: MstAdminUser) => {
       return this.convertToModel(item);
     });
+    if (searchDto.includeAdminRoles && resList.length > 0) {
+      const scopes = await this.coreSessionAdmin.findRoleScopesForAdminIds(
+        resList.map((r) => r.adminId),
+      );
+      for (const row of resList) {
+        const s = scopes.get(row.adminId);
+        if (s) {
+          row.roleKeys = s.roleKeys;
+          row.franchiseIds = s.franchiseIds;
+        }
+      }
+    }
     return { tableData: resList, count: count };
   }
 

@@ -1,9 +1,11 @@
 import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from '@nestjs/common';
 import {
+  AbilitiesGuard,
   BasicSearchDto,
   CurrentUser,
   JwtAuthGuard,
   RequestedIp,
+  RequireAbility,
   UpdateActiveDto,
 } from '@server_1/core';
 import {
@@ -13,11 +15,18 @@ import {
   RecipeTypeService,
 } from '../../services';
 import { CreateRecipeDto } from '../../dto';
-import { IAuthUser, IDropdownItem, IRecipe, ITableList } from '@eatfit247-shared-lib';
+import {
+  AdminActionEnum,
+  AdminSubjectEnum,
+  IAuthUser,
+  IDropdownItem,
+  IRecipe,
+  ITableList,
+} from '@eatfit247-shared-lib';
 import { IFileModel } from '@server_1/platform';
 
 @Controller('recipe')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, AbilitiesGuard)
 export class RecipeController {
   constructor(
     private readonly service: RecipeService,
@@ -27,16 +36,19 @@ export class RecipeController {
   ) {}
 
   @Get('list')
+  @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.Recipe)
   async list(@Query() req: BasicSearchDto): Promise<ITableList<IRecipe>> {
     return await this.service.findAll(req);
   }
 
   @Get('manage/:id')
+  @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.Recipe)
   async getById(@Param('id') id: number): Promise<IRecipe> {
     return await this.service.fetchById(id);
   }
 
   @Post('manage')
+  @RequireAbility(AdminActionEnum.Create, AdminSubjectEnum.Recipe)
   async create(
     @Body() body: CreateRecipeDto,
     @CurrentUser() currentUser: IAuthUser,
@@ -46,6 +58,7 @@ export class RecipeController {
   }
 
   @Put('manage/:id')
+  @RequireAbility(AdminActionEnum.Update, AdminSubjectEnum.Recipe)
   async update(
     @Param('id') id: number,
     @Body() body: CreateRecipeDto,
@@ -56,6 +69,7 @@ export class RecipeController {
   }
 
   @Patch('update-status/:id')
+  @RequireAbility(AdminActionEnum.Update, AdminSubjectEnum.Recipe)
   async changeStatus(
     @Param('id') id: number,
     @Body() body: UpdateActiveDto,
@@ -66,6 +80,7 @@ export class RecipeController {
   }
 
   @Get('recipe-master')
+  @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.Recipe)
   async recipeMasterData(): Promise<{
     recipeType: IDropdownItem[];
     recipeCategory: IDropdownItem[];
@@ -82,11 +97,13 @@ export class RecipeController {
   }
 
   @Get('download-pdf/:id')
+  @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.Recipe)
   async downloadRecipePdf(@Param('id') id: number): Promise<IFileModel> {
     return await this.service.downloadRecipePdf(id);
   }
 
   @Get('dropdown')
+  @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.Recipe)
   async getDropdown(
     @Query() req: BasicSearchDto,
   ): Promise<Array<{ id: number; title: string; subtitle: string }>> {

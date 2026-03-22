@@ -1,14 +1,15 @@
 import { Controller, Get, UseGuards } from '@nestjs/common';
-import { JwtAuthGuard } from '@server_1/core';
+import { AbilitiesGuard, JwtAuthGuard, RequireAbility } from '@server_1/core';
 import { PaymentStatusService } from '@server_1/platform';
-import { IDropdownItem } from '@eatfit247-shared-lib';
+import { AdminActionEnum, AdminSubjectEnum, IDropdownItem } from '@eatfit247-shared-lib';
 
 @Controller('lov/payment-status')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, AbilitiesGuard)
 export class PaymentStatusController {
   constructor(private readonly service: PaymentStatusService) {}
 
   @Get('dropdown')
+  @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.LovMaster)
   async getDropdownList(): Promise<IDropdownItem[]> {
     return await this.service.getDropdownList();
   }

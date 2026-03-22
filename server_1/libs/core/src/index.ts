@@ -18,6 +18,9 @@ export * from './lib/guards/jwt.strategy';
 export * from './lib/guards/checkout-token.guard';
 // Auth
 export * from './lib/auth/admin-user.service';
+export * from './lib/auth/casl-ability.factory';
+export * from './lib/decorators/require-ability.decorator';
+export * from './lib/guards/abilities.guard';
 // Filters
 export * from './lib/filters/validation.filter';
 export * from './lib/filters/validation.exception';

@@ -1,21 +1,23 @@
 import { Body, Controller, Post, Res, UseGuards } from '@nestjs/common';
-import { JwtAuthGuard } from '@server_1/core';
+import { AbilitiesGuard, JwtAuthGuard, RequireAbility } from '@server_1/core';
 import { PaymentReportService } from '../../services';
 import { PaymentReportDto } from '../../dto';
-import { ITableList } from '@eatfit247-shared-lib';
+import { AdminActionEnum, AdminSubjectEnum, ITableList } from '@eatfit247-shared-lib';
 import { Response } from 'express';
 
 @Controller('reports/payment')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, AbilitiesGuard)
 export class PaymentReportController {
   constructor(private readonly paymentReportService: PaymentReportService) {}
 
   @Post()
+  @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.Report)
   async getPaymentReport(@Body() dto: PaymentReportDto): Promise<ITableList<any>> {
     return await this.paymentReportService.getPaymentReport(dto);
   }
 
   @Post('export')
+  @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.Report)
   async exportPaymentReports(@Body() dto: PaymentReportDto, @Res() res: Response): Promise<void> {
     const archive = await this.paymentReportService.exportPaymentReports(dto);
     // Generate filename with date range

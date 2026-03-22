@@ -17,6 +17,8 @@ import { Env } from './config/env.values';
 import { HealthController } from './health/health.controller';
 import { AppConfigModule } from './config/app-config';
 import { AdminUserService } from './auth/admin-user.service';
+import { CaslAbilityFactory } from './auth/casl-ability.factory';
+import { AbilitiesGuard } from './guards/abilities.guard';
 import { CacheModule } from './cache/cache.module';
 // Models moved to core - import from there
 // Admin models from core
@@ -109,6 +111,8 @@ export class CommonModule {
         },
         JwtStrategy,
         AdminUserService,
+        CaslAbilityFactory,
+        AbilitiesGuard,
       ],
       exports: [
         SequelizeModule,
@@ -116,6 +120,8 @@ export class CommonModule {
         PassportModule,
         AppConfigModule,
         AdminUserService,
+        CaslAbilityFactory,
+        AbilitiesGuard,
       ],
     };
   }

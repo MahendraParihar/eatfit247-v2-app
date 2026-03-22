@@ -1,27 +1,36 @@
 import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards } from '@nestjs/common';
-import { CurrentUser, JwtAuthGuard, RequestedIp } from '@server_1/core';
+import { AbilitiesGuard, CurrentUser, JwtAuthGuard, RequestedIp, RequireAbility } from '@server_1/core';
 import { MemberHealthParameterLogsService } from '../../services';
-import { IAuthUser, IHealthParameterMaster, IMemberHealthParameterLog } from '@eatfit247-shared-lib';
+import {
+  AdminActionEnum,
+  AdminSubjectEnum,
+  IAuthUser,
+  IHealthParameterMaster,
+  IMemberHealthParameterLog,
+} from '@eatfit247-shared-lib';
 import { CreateMemberHealthParameterLogDto } from '../../dto';
 
 @Controller('member/:id/health-parameter-logs')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, AbilitiesGuard)
 export class MemberBodyStatsController {
   constructor(
     private readonly memberHealthParameterLogsService: MemberHealthParameterLogsService,
   ) {}
 
   @Get()
+  @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.MemberHealth)
   async getHealthParameterLogs(@Param('id') id: number): Promise<IMemberHealthParameterLog[]> {
     return await this.memberHealthParameterLogsService.findByMemberId(id);
   }
 
   @Get('master-data')
+  @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.MemberHealth)
   async getMasterData(): Promise<IHealthParameterMaster> {
     return await this.memberHealthParameterLogsService.getMasterData();
   }
 
   @Post()
+  @RequireAbility(AdminActionEnum.Create, AdminSubjectEnum.MemberHealth)
   async create(
     @Param('id') id: number,
     @Body() body: CreateMemberHealthParameterLogDto,
@@ -38,6 +47,7 @@ export class MemberBodyStatsController {
   }
 
   @Put(':logId')
+  @RequireAbility(AdminActionEnum.Update, AdminSubjectEnum.MemberHealth)
   async update(
     @Param('id') id: number,
     @Param('logId') logId: number,
@@ -56,6 +66,7 @@ export class MemberBodyStatsController {
   }
 
   @Get(':logId')
+  @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.MemberHealth)
   async getById(
     @Param('id') id: number,
     @Param('logId') logId: number,
@@ -64,6 +75,7 @@ export class MemberBodyStatsController {
   }
 
   @Delete(':logId')
+  @RequireAbility(AdminActionEnum.Delete, AdminSubjectEnum.MemberHealth)
   async delete(
     @Param('id') id: number,
     @Param('logId') logId: number,

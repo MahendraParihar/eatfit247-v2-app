@@ -1,25 +1,43 @@
 import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from '@nestjs/common';
-import { BasicSearchDto, CurrentUser, JwtAuthGuard, RequestedIp, UpdateActiveDto } from '@server_1/core';
+import {
+  AbilitiesGuard,
+  BasicSearchDto,
+  CurrentUser,
+  JwtAuthGuard,
+  RequestedIp,
+  RequireAbility,
+  UpdateActiveDto,
+} from '@server_1/core';
 import { LifestyleService } from '../../services';
 import { CreateLifestyleDto } from '../../dto';
-import { IAuthUser, IDropdownItem, ILifestyle, ITableList } from '@eatfit247-shared-lib';
+import {
+  AdminActionEnum,
+  AdminSubjectEnum,
+  IAuthUser,
+  IDropdownItem,
+  ILifestyle,
+  ITableList,
+} from '@eatfit247-shared-lib';
 
 @Controller('lifestyle')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, AbilitiesGuard)
 export class LifestyleController {
   constructor(private readonly service: LifestyleService) {}
 
   @Get('list')
+  @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.LovMaster)
   async list(@Query() req: BasicSearchDto): Promise<ITableList<ILifestyle>> {
     return await this.service.findAll(req);
   }
 
   @Get('manage/:id')
+  @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.LovMaster)
   async getById(@Param('id') id: number): Promise<ILifestyle> {
     return await this.service.fetchById(id);
   }
 
   @Post('manage')
+  @RequireAbility(AdminActionEnum.Create, AdminSubjectEnum.LovMaster)
   async create(
     @Body() body: CreateLifestyleDto,
     @CurrentUser() currentUser: IAuthUser,
@@ -29,6 +47,7 @@ export class LifestyleController {
   }
 
   @Put('manage/:id')
+  @RequireAbility(AdminActionEnum.Update, AdminSubjectEnum.LovMaster)
   async update(
     @Param('id') id: number,
     @Body() body: CreateLifestyleDto,
@@ -39,6 +58,7 @@ export class LifestyleController {
   }
 
   @Patch('update-status/:id')
+  @RequireAbility(AdminActionEnum.Update, AdminSubjectEnum.LovMaster)
   async changeStatus(
     @Param('id') id: number,
     @Body() body: UpdateActiveDto,
@@ -49,6 +69,7 @@ export class LifestyleController {
   }
 
   @Get('dropdown')
+  @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.LovMaster)
   async getDropdownList(): Promise<IDropdownItem[]> {
     return await this.service.getLifestyleList();
   }

@@ -1,21 +1,23 @@
 import { Body, Controller, Post, Res, UseGuards } from '@nestjs/common';
-import { JwtAuthGuard } from '@server_1/core';
+import { AbilitiesGuard, JwtAuthGuard, RequireAbility } from '@server_1/core';
 import { MemberProductReportService } from '../../services';
 import { MemberProductReportDto, MemberProductBulkExportDto } from '../../dto';
-import { ITableList } from '@eatfit247-shared-lib';
+import { AdminActionEnum, AdminSubjectEnum, ITableList } from '@eatfit247-shared-lib';
 import { Response } from 'express';
 
 @Controller('reports/member-product')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, AbilitiesGuard)
 export class MemberProductReportController {
   constructor(private readonly memberProductReportService: MemberProductReportService) {}
 
   @Post()
+  @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.Report)
   async getMemberProductReport(@Body() dto: MemberProductReportDto): Promise<ITableList<any>> {
     return await this.memberProductReportService.getMemberProductReport(dto);
   }
 
   @Post('export')
+  @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.Report)
   async exportMemberProductReports(
     @Body() dto: MemberProductReportDto,
     @Res() res: Response,
@@ -33,6 +35,7 @@ export class MemberProductReportController {
   }
 
   @Post('export/bulk')
+  @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.Report)
   async exportMemberProductReportsBulk(
     @Body() dto: MemberProductBulkExportDto,
     @Res() res: Response,

@@ -1,24 +1,34 @@
 import { Body, Controller, Get, Param, Put, UseGuards } from '@nestjs/common';
-import { CurrentUser, JwtAuthGuard, RequestedIp, UpdateHealthIssueIdsDto } from '@server_1/core';
+import {
+  AbilitiesGuard,
+  CurrentUser,
+  JwtAuthGuard,
+  RequestedIp,
+  RequireAbility,
+  UpdateHealthIssueIdsDto,
+} from '@server_1/core';
 import { MemberHealthIssueService } from '../../services';
-import { IAuthUser, IMemberHealthIssue, ITableList } from '@eatfit247-shared-lib';
+import { AdminActionEnum, AdminSubjectEnum, IAuthUser, IMemberHealthIssue, ITableList } from '@eatfit247-shared-lib';
 
 @Controller('member/:id/health-issues')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, AbilitiesGuard)
 export class MemberHealthIssueController {
   constructor(private readonly memberHealthIssueService: MemberHealthIssueService) {}
 
   @Get()
+  @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.MemberHealth)
   async getHealthIssues(@Param('id') id: number): Promise<ITableList<IMemberHealthIssue>> {
     return await this.memberHealthIssueService.getList(id, true);
   }
 
   @Get('list')
+  @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.MemberHealth)
   async getHealthIssueList(@Param('id') id: number): Promise<ITableList<IMemberHealthIssue>> {
     return await this.memberHealthIssueService.getList(id, false);
   }
 
   @Put('manage')
+  @RequireAbility(AdminActionEnum.Update, AdminSubjectEnum.MemberHealth)
   async manageHealthIssues(
     @Param('id') id: number,
     @Body() body: UpdateHealthIssueIdsDto,

@@ -13,11 +13,13 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import {
+  AbilitiesGuard,
   BasicSearchDto,
   CreateAddressDto,
   CurrentUser,
   JwtAuthGuard,
   RequestedIp,
+  RequireAbility,
   UpdateFranchiseDto,
   UpdateMemberStatusDto,
   UpdateNutritionistDto,
@@ -25,10 +27,19 @@ import {
 import { AddressService, TxnAddress } from '@server_1/platform';
 import { MemberService } from '../../services';
 import { CreateMemberDto } from '../../dto';
-import { IAddress, IAuthUser, IManageAddress, IMember, ITableList, TableEnum } from '@eatfit247-shared-lib';
+import {
+  AdminActionEnum,
+  AdminSubjectEnum,
+  IAddress,
+  IAuthUser,
+  IManageAddress,
+  IMember,
+  ITableList,
+  TableEnum,
+} from '@eatfit247-shared-lib';
 
 @Controller('member')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, AbilitiesGuard)
 export class MemberController {
   constructor(
     private readonly service: MemberService,
@@ -37,16 +48,19 @@ export class MemberController {
   ) {}
 
   @Get('list')
+  @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.Member)
   async list(@Query() req: BasicSearchDto): Promise<ITableList<IMember>> {
     return await this.service.findAll(req);
   }
 
   @Get('manage/:id')
+  @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.Member)
   async getById(@Param('id') id: number): Promise<IMember> {
     return await this.service.fetchById(id);
   }
 
   @Post('manage')
+  @RequireAbility(AdminActionEnum.Create, AdminSubjectEnum.Member)
   async create(
     @Body() body: CreateMemberDto,
     @CurrentUser() currentUser: IAuthUser,
@@ -56,6 +70,7 @@ export class MemberController {
   }
 
   @Put('manage/:id')
+  @RequireAbility(AdminActionEnum.Update, AdminSubjectEnum.Member)
   async update(
     @Param('id') id: number,
     @Body() body: CreateMemberDto,
@@ -66,6 +81,7 @@ export class MemberController {
   }
 
   @Patch('update-status/:id')
+  @RequireAbility(AdminActionEnum.Update, AdminSubjectEnum.Member)
   async changeStatus(
     @Param('id') id: number,
     @Body() body: UpdateMemberStatusDto,
@@ -82,6 +98,7 @@ export class MemberController {
   }
 
   @Patch('update-nutritionist/:id')
+  @RequireAbility(AdminActionEnum.Update, AdminSubjectEnum.Member)
   async updateNutritionist(
     @Param('id') id: number,
     @Body() body: UpdateNutritionistDto,
@@ -97,6 +114,7 @@ export class MemberController {
   }
 
   @Patch('update-franchise/:id')
+  @RequireAbility(AdminActionEnum.Update, AdminSubjectEnum.Member)
   async updateFranchise(
     @Param('id') id: number,
     @Body() body: UpdateFranchiseDto,
@@ -113,11 +131,13 @@ export class MemberController {
 
   // Address endpoints
   @Get(':memberId/addresses')
+  @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.MemberAddress)
   async getAddresses(@Param('memberId') memberId: number): Promise<IAddress[]> {
     return await this.addressService.filterByTableIdAndPk(TableEnum.TXN_MEMBER, memberId);
   }
 
   @Get(':memberId/addresses/:addressId')
+  @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.MemberAddress)
   async getAddress(
     @Param('memberId') memberId: number,
     @Param('addressId') addressId: number,
@@ -134,6 +154,7 @@ export class MemberController {
   }
 
   @Post(':memberId/addresses')
+  @RequireAbility(AdminActionEnum.Create, AdminSubjectEnum.MemberAddress)
   async createAddress(
     @Param('memberId') memberId: number,
     @Body() body: CreateAddressDto,
@@ -156,6 +177,7 @@ export class MemberController {
   }
 
   @Put(':memberId/addresses/:addressId')
+  @RequireAbility(AdminActionEnum.Update, AdminSubjectEnum.MemberAddress)
   async updateAddress(
     @Param('memberId') memberId: number,
     @Param('addressId') addressId: number,
@@ -197,6 +219,7 @@ export class MemberController {
   }
 
   @Delete(':memberId/addresses/:addressId')
+  @RequireAbility(AdminActionEnum.Delete, AdminSubjectEnum.MemberAddress)
   async deleteAddress(
     @Param('addressId') addressId: number,
     @CurrentUser() currentUser: IAuthUser,
