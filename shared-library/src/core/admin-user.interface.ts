@@ -54,6 +54,8 @@ export interface IAdminUser extends IBaseAdminUserFull, IAdminInfo {
   adminId: number;
   address?: IManageAddress; // Address details
   roleKeys: string[];
+  /** Assigned role primary keys from `mst_admin_role_permissions` (e.g. for edit form). */
+  roleIds?: number[];
   franchiseIds: number[];
   permissions: IAdminPermission[];
 }

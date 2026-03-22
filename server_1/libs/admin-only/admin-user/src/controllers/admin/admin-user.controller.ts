@@ -48,6 +48,11 @@ export class AdminUserController {
     await this.service.changeStatus(id, body.active, body.deactivationReason || null, requestedIp, currentUser.adminId);
   }
 
+  @Get('role/dropdown')
+  async getRoleDropdown(): Promise<IDropdownItem[]> {
+    return await this.service.getRoleDropdown();
+  }
+
   @Get('nutritionist/dropdown')
   async getNutritionistDropdown(): Promise<IDropdownItem[]> {
     return await this.service.getNutritionistDropdown();

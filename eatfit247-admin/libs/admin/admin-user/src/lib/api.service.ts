@@ -43,4 +43,9 @@ export class AdminUserApiService extends ApiBaseService {
     const res = await this.httpService.get<IDropdownItem[]>('/franchise/dropdown');
     return res.data as IDropdownItem[];
   }
+
+  async getRoleDropdown(): Promise<IDropdownItem[]> {
+    const res = await this.httpService.get<IDropdownItem[]>(`${this.endpoint}/role/dropdown`);
+    return res.data as IDropdownItem[];
+  }
 }

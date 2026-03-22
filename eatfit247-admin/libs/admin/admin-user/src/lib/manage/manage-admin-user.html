@@ -115,6 +115,17 @@
         </mat-form-field>
 
         <mat-form-field class="full-width">
+          <mat-label>Roles</mat-label>
+          <mat-select formControlName="roleIds" multiple>
+            @for (role of roleOptions; track role.id) {
+              <mat-option [value]="role.id">{{ role.label }}</mat-option>
+            }
+          </mat-select>
+          <mat-hint>Roles control what this user can access in the admin app.</mat-hint>
+          <shared-ui-input-error [control]="formGroup.get('roleIds')" controlName="Roles"></shared-ui-input-error>
+        </mat-form-field>
+
+        <mat-form-field class="full-width">
           <mat-label>Status</mat-label>
           <mat-select formControlName="active">
             <mat-option [value]="true">Active</mat-option>

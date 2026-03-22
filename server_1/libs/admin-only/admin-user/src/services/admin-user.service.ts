@@ -15,6 +15,7 @@ import {
   CommonFunctionsUtil,
   CryptoUtil,
   generateRandomPassword,
+  MstAdminRole,
   MstAdminRolePermission,
   MstAdminUser,
   TxnAdminFranchise,
@@ -28,6 +29,7 @@ export class AdminUserService {
     @InjectModel(MstAdminUser) private readonly adminUserRepository: typeof MstAdminUser,
     @InjectModel(MstAdminRolePermission)
     private readonly rolePermissionRepository: typeof MstAdminRolePermission,
+    @InjectModel(MstAdminRole) private readonly adminRoleRepository: typeof MstAdminRole,
     @InjectModel(TxnAdminFranchise)
     private readonly adminFranchiseRepository: typeof TxnAdminFranchise,
     private appConfigService: AppConfigService,
@@ -177,6 +179,12 @@ export class AdminUserService {
     if (address) {
       adminUser.address = address;
     }
+    const rolePermRows = await this.rolePermissionRepository.findAll({
+      where: { adminId: id, active: true },
+      attributes: ['roleId'],
+      raw: true,
+    });
+    adminUser.roleIds = rolePermRows.map((r: { roleId: number }) => r.roleId);
     return adminUser;
   }
 
@@ -366,6 +374,18 @@ export class AdminUserService {
       updateObj.deactivationReason = deactivationReason;
     }
     await this.adminUserRepository.update(updateObj, { where: { adminId: id } });
+  }
+
+  public async getRoleDropdown(): Promise<IDropdownItem[]> {
+    const roles = await this.adminRoleRepository.findAll({
+      attributes: ['roleId', 'role', 'roleCode'],
+      order: [['role', 'ASC']],
+      raw: true,
+    });
+    return roles.map((r: { roleId: number; role: string; roleCode: string }) => ({
+      id: r.roleId,
+      label: `${r.role} (${r.roleCode})`,
+    }));
   }
 
   public async getNutritionistDropdown(): Promise<IDropdownItem[]> {

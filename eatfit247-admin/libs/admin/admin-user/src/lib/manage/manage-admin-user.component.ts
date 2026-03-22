@@ -97,7 +97,7 @@ export class ManageAdminUser implements OnInit {
     active: [true, [Validators.required]],
     deactivationReason: ['', [Validators.maxLength(InputLengthEnum.CHAR_1000)]],
     password: ['', [Validators.minLength(InputLengthEnum.MIN_PASSWORD)]],
-    roleIds: [[]],
+    roleIds: [[] as number[]],
   });
   initialData!: IAdminUser;
   isEditMode = false;
@@ -139,6 +139,9 @@ export class ManageAdminUser implements OnInit {
       const franchiseIds = this.initialData.franchiseIds?.length
         ? [...this.initialData.franchiseIds]
         : [];
+      const roleIds = this.initialData.roleIds?.length
+        ? [...this.initialData.roleIds]
+        : [];
       this.formGroup.patchValue({
         firstName: this.initialData.firstName || '',
         lastName: this.initialData.lastName || '',
@@ -148,6 +151,7 @@ export class ManageAdminUser implements OnInit {
         startDate: startDate,
         endDate: endDate,
         franchiseIds,
+        roleIds,
         active:
           this.initialData.active !== undefined
             ? this.initialData.active
@@ -163,7 +167,7 @@ export class ManageAdminUser implements OnInit {
     try {
       // Load franchise and roles dropdowns
       this.franchiseOptions = await this.apiService.getFranchiseDropdown();
-      // this.roleOptions = await this.apiService.getRoleDropdown();
+      this.roleOptions = await this.apiService.getRoleDropdown();
     } catch (error) {
       // Error toast is handled by HttpErrorInterceptor
     }
@@ -212,9 +216,15 @@ export class ManageAdminUser implements OnInit {
             .map((id: number) => Number(id))
             .filter((n: number) => Number.isInteger(n) && n > 0)
         : [];
+      const roleIds = Array.isArray(raw.roleIds)
+        ? raw.roleIds
+            .map((id: number) => Number(id))
+            .filter((n: number) => Number.isInteger(n) && n > 0)
+        : [];
       const formValue: IManageAdminUser = {
         ...raw,
         franchiseIds,
+        roleIds,
       };
       // Handle setting picture from the upload form
       const profilePictureControl = this.formGroup.get('profilePicture');
