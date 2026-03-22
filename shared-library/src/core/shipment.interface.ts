@@ -83,6 +83,9 @@ export interface IShipment extends IAdminInfo {
   providerName?: string;
   serviceName?: string;
   metaData?: object;
+  lastError?: string | null;
+  retryCount?: number;
+  nextRetryAt?: Date | null;
   shipmentItems?: IShipmentItem[];
   trackingEvents?: IShipmentTrackingEvent[];
 }

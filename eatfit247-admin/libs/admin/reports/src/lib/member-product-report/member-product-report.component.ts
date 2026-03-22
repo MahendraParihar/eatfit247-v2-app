@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
@@ -16,6 +16,7 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import {
   DataTableComponent,
@@ -26,8 +27,14 @@ import {
 import {
   IMemberProductReportFilter,
   IMemberProductReportItem,
+  ShipmentStatusEnum,
 } from '@eatfit247-shared-lib';
 import { MemberProductReportApiService } from './api.service';
+import { ShipmentAdminApiService } from './shipment-admin-api.service';
+import {
+  MemberProductShipmentStatusDialogComponent,
+  MemberProductShipmentStatusDialogData,
+} from './shipment-status-dialog/shipment-status-dialog.component';
 
 @Component({
   selector: 'lib-member-product-report',
@@ -53,8 +60,11 @@ import { MemberProductReportApiService } from './api.service';
 export class MemberProductReportComponent implements OnInit {
   private fb = inject(FormBuilder);
   private apiService = inject(MemberProductReportApiService);
+  private shipmentAdminApi = inject(ShipmentAdminApiService);
   private router = inject(Router);
   private snackBar = inject(MatSnackBar);
+  private dialog = inject(MatDialog);
+  private cdr = inject(ChangeDetectorRef);
 
   filterForm!: FormGroup;
   data: IMemberProductReportItem[] = [];
@@ -65,10 +75,12 @@ export class MemberProductReportComponent implements OnInit {
   tableConfig!: ITableConfig<IMemberProductReportItem>;
   franchiseOptions: { id: number | null; label: string }[] = [];
   paymentStatusOptions: { id: number | null; label: string }[] = [];
+  readonly shipmentStatusEnumValues = Object.values(ShipmentStatusEnum);
   startDatePicker: any;
   endDatePicker: any;
   selectedQuickFilter: string | null = null;
   selectedItems: IMemberProductReportItem[] = [];
+  private readonly creatingShipmentOrderIds = new Set<number>();
 
   constructor() {
     this.initializeForm();
@@ -117,6 +129,8 @@ export class MemberProductReportComponent implements OnInit {
       endDate: [null, Validators.required],
       franchiseId: [null],
       paymentStatusId: [null],
+      shipmentPresence: ['all'],
+      shipmentStatus: [null as ShipmentStatusEnum | null],
     });
   }
 
@@ -179,6 +193,33 @@ export class MemberProductReportComponent implements OnInit {
         width: '130px',
       },
       {
+        key: 'shipmentStatus',
+        label: 'Shipment status',
+        dataKey: 'shipment',
+        sortable: false,
+        width: '140px',
+        formatter: (_value: unknown, row: IMemberProductReportItem) =>
+          this.formatShipmentStatusCell(row),
+      },
+      {
+        key: 'shipmentCarrier',
+        label: 'Carrier',
+        dataKey: 'shipment',
+        sortable: false,
+        width: '120px',
+        formatter: (_value: unknown, row: IMemberProductReportItem) =>
+          row.shipment?.providerName ?? '—',
+      },
+      {
+        key: 'shipmentTracking',
+        label: 'Tracking #',
+        dataKey: 'shipment',
+        sortable: false,
+        width: '130px',
+        formatter: (_value: unknown, row: IMemberProductReportItem) =>
+          row.shipment?.trackingNumber ?? '—',
+      },
+      {
         key: 'franchise',
         label: 'Franchise',
         dataKey: 'franchise',
@@ -192,6 +233,23 @@ export class MemberProductReportComponent implements OnInit {
         icon: 'shopping_cart',
         color: 'primary',
         onClick: (row) => this.viewOrder(row),
+      },
+      {
+        label: 'Create shipment',
+        icon: 'add_box',
+        color: 'accent',
+        visible: (row) => !row.shipment?.shipmentId,
+        disabled: (row) => this.creatingShipmentOrderIds.has(row.memberProductId),
+        onClick: (row) => {
+          void this.createShipmentForRow(row);
+        },
+      },
+      {
+        label: 'Shipping',
+        icon: 'local_shipping',
+        color: 'primary',
+        visible: (row) => !!row.shipment?.shipmentId,
+        onClick: (row) => this.openShipmentDialog(row),
       },
     ];
 
@@ -251,6 +309,7 @@ export class MemberProductReportComponent implements OnInit {
         endDate: this.formatDate(formValue.endDate),
         franchiseId: formValue.franchiseId || undefined,
         paymentStatusId: formValue.paymentStatusId || undefined,
+        ...this.buildShipmentFilterParams(formValue),
       };
 
       const response = await this.apiService.getMemberProductReport(params);
@@ -278,6 +337,81 @@ export class MemberProductReportComponent implements OnInit {
   async onSortChange(sort: any): Promise<void> {
     // Sorting can be handled server-side if needed
     await this.onSearch();
+  }
+
+  private buildShipmentFilterParams(formValue: {
+    shipmentPresence?: string;
+    shipmentStatus?: ShipmentStatusEnum | null;
+  }): Pick<IMemberProductReportFilter, 'hasShipment' | 'shipmentStatus'> {
+    const out: Pick<IMemberProductReportFilter, 'hasShipment' | 'shipmentStatus'> = {};
+    if (formValue.shipmentPresence === 'yes') {
+      out.hasShipment = true;
+    } else if (formValue.shipmentPresence === 'no') {
+      out.hasShipment = false;
+    }
+    if (formValue.shipmentStatus) {
+      out.shipmentStatus = formValue.shipmentStatus;
+    }
+    return out;
+  }
+
+  formatShipmentStatusCell(row: IMemberProductReportItem): string {
+    if (!row.shipment) {
+      return 'No shipment';
+    }
+    return this.formatShipmentStatusLabel(row.shipment.status);
+  }
+
+  formatShipmentStatusLabel(status: string): string {
+    if (!status) {
+      return '—';
+    }
+    return status
+      .split('_')
+      .map((part) => part.charAt(0) + part.slice(1).toLowerCase())
+      .join(' ');
+  }
+
+  async createShipmentForRow(row: IMemberProductReportItem): Promise<void> {
+    if (row.shipment?.shipmentId) {
+      return;
+    }
+    const orderId = row.memberProductId;
+    if (this.creatingShipmentOrderIds.has(orderId)) {
+      return;
+    }
+    this.creatingShipmentOrderIds.add(orderId);
+    this.cdr.markForCheck();
+    try {
+      await this.shipmentAdminApi.createShipmentForMemberProductOrder(orderId);
+      this.snackBar.open('Shipment creation requested.', 'Close', {
+        duration: 4000,
+      });
+      await this.onSearch();
+    } catch {
+      // Error toast is handled by HttpErrorInterceptor
+    } finally {
+      this.creatingShipmentOrderIds.delete(orderId);
+      this.cdr.markForCheck();
+    }
+  }
+
+  openShipmentDialog(row: IMemberProductReportItem): void {
+    const shipmentId = row.shipment?.shipmentId;
+    if (!shipmentId) {
+      return;
+    }
+    const data: MemberProductShipmentStatusDialogData = { shipmentId };
+    const ref = this.dialog.open(MemberProductShipmentStatusDialogComponent, {
+      width: '560px',
+      maxWidth: '95vw',
+      data,
+    });
+    ref.afterClosed().subscribe((result) => {
+      if (result?.retried) {
+        void this.onSearch();
+      }
+    });
   }
 
   viewOrder(productOrder: IMemberProductReportItem): void {
@@ -387,6 +521,7 @@ export class MemberProductReportComponent implements OnInit {
         endDate: this.formatDate(formValue.endDate),
         franchiseId: formValue.franchiseId || undefined,
         paymentStatusId: formValue.paymentStatusId || undefined,
+        ...this.buildShipmentFilterParams(formValue),
       };
 
       const blob = await this.apiService.exportMemberProductReports(params);

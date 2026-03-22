@@ -63,6 +63,25 @@
             </mat-select>
           </mat-form-field>
 
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>Shipment</mat-label>
+            <mat-select formControlName="shipmentPresence">
+              <mat-option value="all">All orders</mat-option>
+              <mat-option value="yes">Has shipment</mat-option>
+              <mat-option value="no">No shipment</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>Shipment status</mat-label>
+            <mat-select formControlName="shipmentStatus">
+              <mat-option [value]="null">Any status</mat-option>
+              @for (st of shipmentStatusEnumValues; track st) {
+                <mat-option [value]="st">{{ formatShipmentStatusLabel(st) }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+
           <button
             mat-raised-button
             color="primary"

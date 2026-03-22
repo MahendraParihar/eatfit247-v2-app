@@ -16,7 +16,10 @@ export class MemberProductReportController {
   }
 
   @Post('export')
-  async exportMemberProductReports(@Body() dto: MemberProductReportDto, @Res() res: Response): Promise<void> {
+  async exportMemberProductReports(
+    @Body() dto: MemberProductReportDto,
+    @Res() res: Response,
+  ): Promise<void> {
     const archive = await this.memberProductReportService.exportMemberProductReports(dto);
     // Generate filename with date range
     const startDate = dto.startDate.replace(/-/g, '');
@@ -30,8 +33,13 @@ export class MemberProductReportController {
   }
 
   @Post('export/bulk')
-  async exportMemberProductReportsBulk(@Body() dto: MemberProductBulkExportDto, @Res() res: Response): Promise<void> {
-    const archive = await this.memberProductReportService.exportMemberProductReportsBulk(dto.memberProductIds);
+  async exportMemberProductReportsBulk(
+    @Body() dto: MemberProductBulkExportDto,
+    @Res() res: Response,
+  ): Promise<void> {
+    const archive = await this.memberProductReportService.exportMemberProductReportsBulk(
+      dto.memberProductIds,
+    );
     // Generate filename with timestamp
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
     const filename = `member-product-reports_selected_${timestamp}.zip`;
@@ -41,5 +49,5 @@ export class MemberProductReportController {
     });
     archive.pipe(res);
   }
-}
 
+}

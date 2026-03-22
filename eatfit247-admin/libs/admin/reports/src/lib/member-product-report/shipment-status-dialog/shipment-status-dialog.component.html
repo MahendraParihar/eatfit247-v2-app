@@ -1,0 +1,119 @@
+<h2 mat-dialog-title>Shipment status</h2>
+
+<mat-dialog-content class="dialog-body">
+  @if (loading) {
+    <div class="loading-wrap">
+      <mat-spinner diameter="40"></mat-spinner>
+    </div>
+  } @else if (!shipment) {
+    <p class="empty">Shipment could not be loaded.</p>
+  } @else {
+    <div class="summary">
+      <div class="summary-row">
+        <span class="label">Shipment #</span>
+        <span class="value">{{ shipment.shipmentNumber }}</span>
+      </div>
+      <div class="summary-row">
+        <span class="label">Status</span>
+        <mat-chip-set>
+          <mat-chip>{{ formatShipmentStatus(shipment.status) }}</mat-chip>
+        </mat-chip-set>
+      </div>
+      @if (shipment.providerName) {
+        <div class="summary-row">
+          <span class="label">Carrier</span>
+          <span class="value">{{ shipment.providerName }}</span>
+        </div>
+      }
+      @if (shipment.trackingNumber) {
+        <div class="summary-row">
+          <span class="label">Tracking</span>
+          <span class="value mono">{{ shipment.trackingNumber }}</span>
+        </div>
+      }
+      @if (shipment.trackingUrl) {
+        <div class="summary-row">
+          <span class="label">Link</span>
+          <a [href]="shipment.trackingUrl" target="_blank" rel="noopener noreferrer">Open carrier page</a>
+        </div>
+      }
+      @if (shipment.retryCount != null && shipment.retryCount > 0) {
+        <div class="summary-row">
+          <span class="label">Retry attempts</span>
+          <span class="value">{{ shipment.retryCount }}</span>
+        </div>
+      }
+      @if (shipment.lastError) {
+        <div class="error-box">
+          <mat-icon>error_outline</mat-icon>
+          <span>{{ shipment.lastError }}</span>
+        </div>
+      }
+    </div>
+
+    <mat-divider></mat-divider>
+
+    <div class="events-header">
+      <h3>Delivery events</h3>
+      <button
+        mat-stroked-button
+        type="button"
+        color="primary"
+        [disabled]="!canRefreshFromCarrier || refreshingTrack"
+        (click)="refreshFromCarrier()"
+      >
+        @if (refreshingTrack) {
+          <mat-spinner diameter="18"></mat-spinner>
+        } @else {
+          <mat-icon>sync</mat-icon>
+        }
+        Refresh from carrier
+      </button>
+    </div>
+
+    @if (trackError) {
+      <p class="track-error">{{ trackError }}</p>
+    }
+
+    @if (displayEvents.length === 0) {
+      <p class="empty muted">No tracking events stored yet. Use “Refresh from carrier” after the shipment is booked.</p>
+    } @else {
+      <ul class="event-list">
+        @for (ev of displayEvents; track trackEventId(ev)) {
+          <li class="event-item">
+            <div class="event-time">{{ ev.eventTime | date: 'medium' }}</div>
+            <div class="event-main">
+              <div class="event-title">{{ eventTitle(ev) }}</div>
+              @if (eventDescription(ev)) {
+                <div class="event-desc">{{ eventDescription(ev) }}</div>
+              }
+              @if (providerStatus(ev)) {
+                <div class="event-provider">Carrier: {{ providerStatus(ev) }}</div>
+              }
+            </div>
+          </li>
+        }
+      </ul>
+    }
+  }
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  @if (showRetry && shipment) {
+    <button
+      mat-flat-button
+      color="warn"
+      type="button"
+      [disabled]="retrying"
+      (click)="retryShipment()"
+    >
+      @if (retrying) {
+        <mat-spinner diameter="18"></mat-spinner>
+      } @else {
+        <mat-icon>replay</mat-icon>
+      }
+      Retry booking
+    </button>
+  }
+  <button mat-button type="button" (click)="close()">Close</button>
+</mat-dialog-actions>

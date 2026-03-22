@@ -2,9 +2,15 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op, Sequelize } from 'sequelize';
 import { MemberProductService, TxnMember, TxnMemberProduct } from '@server_1/modules/member';
-import { BusinessTypeEnum, IMemberProductReportItem, ITableList } from '@eatfit247-shared-lib';
+import {
+  BusinessTypeEnum,
+  IMemberProductReportItem,
+  IMemberProductReportShipment,
+  ITableList,
+} from '@eatfit247-shared-lib';
 import { MstFranchise } from '@server_1/core';
-import { MemberProductReportDto } from '../dto/member-product-report.dto';
+import { MstCourierProvider, TxnShipment } from '@server_1/modules/delivery';
+import { MemberProductReportDto } from '../dto';
 import archiver from 'archiver';
 import moment from 'moment/moment';
 
@@ -15,10 +21,52 @@ export class MemberProductReportService {
   constructor(
     @InjectModel(TxnMemberProduct)
     private readonly memberProductRepository: typeof TxnMemberProduct,
-    @InjectModel(TxnMember)
-    private readonly memberRepository: typeof TxnMember,
+    @InjectModel(TxnShipment)
+    private readonly shipmentRepository: typeof TxnShipment,
     private readonly memberProductService: MemberProductService,
   ) {}
+
+  private applyShipmentFilters(whereCondition: Record<string, unknown>, dto: MemberProductReportDto): void {
+    const sequelize = this.memberProductRepository.sequelize;
+    if (dto.hasShipment === false) {
+      (whereCondition as any).memberProductId = {
+        [Op.notIn]: Sequelize.literal('(SELECT order_id FROM public.txn_shipments)'),
+      };
+    } else if (dto.hasShipment === true || dto.shipmentStatus) {
+      let subQuery = '(SELECT order_id FROM public.txn_shipments';
+      if (dto.shipmentStatus) {
+        subQuery += ` WHERE status = ${sequelize.escape(dto.shipmentStatus)}`;
+      }
+      subQuery += ')';
+      (whereCondition as any).memberProductId = {
+        [Op.in]: Sequelize.literal(subQuery),
+      };
+    }
+  }
+
+  private mapReportShipment(raw: Record<string, unknown> | null | undefined): IMemberProductReportShipment | null {
+    if (!raw) {
+      return null;
+    }
+    const s = raw as any;
+    const courier = s.courierProvider;
+    return {
+      shipmentId: s.shipmentId,
+      orderId: s.orderId,
+      shipmentNumber: s.shipmentNumber,
+      status: s.status,
+      lastKnownStatus: s.lastKnownStatus ?? null,
+      trackingNumber: s.trackingNumber ?? null,
+      trackingUrl: s.trackingUrl ?? null,
+      receiverName: s.receiverName ?? null,
+      receiverCity: s.receiverCity ?? null,
+      receiverState: s.receiverState ?? null,
+      receiverPincode: s.receiverPincode ?? null,
+      providerName: courier?.providerName,
+      lastError: s.lastError ?? null,
+      retryCount: s.retryCount ?? 0,
+    };
+  }
 
   /**
    * Get member product order report based on date range and filters
@@ -39,7 +87,7 @@ export class MemberProductReportService {
         },
       },
     };
-    // Add a payment status filter if provided
+
     if (dto.paymentStatusId) {
       whereCondition.paymentStatusId = dto.paymentStatusId;
     }
@@ -47,34 +95,71 @@ export class MemberProductReportService {
       whereCondition.franchiseId = dto.franchiseId;
     }
 
-    // Build member where condition
-    const memberWhereCondition: any = {};
+    this.applyShipmentFilters(whereCondition, dto);
 
-    // Build include conditions
-    const includeConditions: any[] = [
-      {
-        model: TxnMember,
-        as: 'member',
-        required: true,
-        where: Object.keys(memberWhereCondition).length > 0 ? memberWhereCondition : undefined,
-        attributes: [
-          'memberId',
-          'firstName',
-          'lastName',
-          'emailId',
-          'contactNumber',
-          'franchiseId',
-        ],
-      },
-    ];
     const { rows, count } = await this.memberProductRepository.scope('list').findAndCountAll({
       where: whereCondition,
-      include: includeConditions,
+      include: [
+        {
+          model: TxnMember,
+          as: 'member',
+          required: true,
+          attributes: [
+            'memberId',
+            'firstName',
+            'lastName',
+            'emailId',
+            'contactNumber',
+            'franchiseId',
+          ],
+        },
+      ],
       order: [['paymentDate', 'DESC']],
       raw: true,
       nest: true,
     });
-    // Convert to model and add additional fields
+
+    if (rows.length === 0) {
+      return { tableData: [], count: 0 };
+    }
+
+    // Fetch shipment for each returned order (separate query — TxnShipment is in delivery lib)
+    const orderIds = rows.map((item: any) => item.memberProductId);
+    const shipments = await this.shipmentRepository.findAll({
+      where: { orderId: { [Op.in]: orderIds } },
+      attributes: [
+        'shipmentId',
+        'orderId',
+        'shipmentNumber',
+        'status',
+        'lastKnownStatus',
+        'trackingNumber',
+        'trackingUrl',
+        'receiverName',
+        'receiverCity',
+        'receiverState',
+        'receiverPincode',
+        'lastError',
+        'retryCount',
+      ],
+      include: [
+        {
+          model: MstCourierProvider,
+          as: 'courierProvider',
+          required: false,
+          attributes: ['courierProviderId', 'providerCode', 'providerName'],
+        },
+      ],
+      raw: true,
+      nest: true,
+    });
+
+    // orderId → shipment lookup map
+    const shipmentMap: Record<number, any> = {};
+    shipments.forEach((s: any) => {
+      shipmentMap[s.orderId] = s;
+    });
+
     const tableData = rows.map((item: any) => {
       const productOrder = (this.memberProductService as any).convertToModel(item);
       return {
@@ -82,12 +167,11 @@ export class MemberProductReportService {
         franchiseName: item.member?.franchise?.companyName || 'N/A',
         memberEmail: item.member?.emailId || '',
         memberContactNumber: item.member?.contactNumber || '',
+        shipment: this.mapReportShipment(shipmentMap[item.memberProductId]),
       };
     });
-    return {
-      tableData,
-      count,
-    };
+
+    return { tableData, count };
   }
 
   /**
@@ -107,10 +191,10 @@ export class MemberProductReportService {
         },
       },
     };
-    // Add payment status filter if provided
     if (dto.paymentStatusId) {
       whereCondition.paymentStatusId = dto.paymentStatusId;
     }
+    this.applyShipmentFilters(whereCondition, dto);
     // Build member where condition
     const memberWhereCondition: any = {};
     if (dto.franchiseId) {
