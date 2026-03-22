@@ -1,4 +1,11 @@
-import { AfterViewInit, Component, OnInit, TemplateRef, ViewChild, inject } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  OnInit,
+  TemplateRef,
+  ViewChild,
+  inject,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -9,7 +16,7 @@ import {
   ITableAction,
   ITableColumn,
   ITableConfig,
-  updatedByUserFormatter
+  updatedByUserFormatter,
 } from '@shared';
 import { IAdminUser, ITableList } from '@eatfit247-shared-lib';
 import { AdminUserApiService } from './api.service';
@@ -18,9 +25,15 @@ import { debounceTime, distinctUntilChanged, Subject, switchMap } from 'rxjs';
 @Component({
   selector: 'lib-admin-user',
   standalone: true,
-  imports: [CommonModule, DataTableComponent, MatButtonModule, MatIconModule, RouterLink],
+  imports: [
+    CommonModule,
+    DataTableComponent,
+    MatButtonModule,
+    MatIconModule,
+    RouterLink,
+  ],
   templateUrl: './admin-user.html',
-  styleUrl: './admin-user.scss'
+  styleUrl: './admin-user.scss',
 })
 export class AdminUser implements OnInit, AfterViewInit {
   private apiService = inject(AdminUserApiService);
@@ -65,7 +78,13 @@ export class AdminUser implements OnInit, AfterViewInit {
 
   private initializeTable(): void {
     const columns: ITableColumn<IAdminUser>[] = [
-      { key: 'adminId', label: 'ID', dataKey: 'adminId', sortable: true, width: '80px' },
+      {
+        key: 'adminId',
+        label: 'ID',
+        dataKey: 'adminId',
+        sortable: true,
+        width: '80px',
+      },
       {
         key: 'profilePicture',
         label: 'Profile Picture',
@@ -73,28 +92,32 @@ export class AdminUser implements OnInit, AfterViewInit {
         sortable: false,
         isAvatar: true,
         type: 'image',
-        width: '80px'
+        width: '80px',
       },
-      { 
-        key: 'name', 
-        label: 'Name', 
-        dataKey: 'firstName', 
-        sortable: true, 
+      {
+        key: 'name',
+        label: 'Name',
+        dataKey: 'firstName',
+        sortable: true,
         searchable: true,
         formatter: (value, row) => {
           const firstName = row?.firstName || '';
           const lastName = row?.lastName || '';
           return `${firstName} ${lastName}`.trim() || '-';
-        }
+        },
       },
-      { key: 'emailId', label: 'Email', dataKey: 'emailId', sortable: true, searchable: true },
-      { key: 'contactNumber', label: 'Contact', dataKey: 'contactNumber', sortable: true },
       {
-        key: 'franchise',
-        label: 'Franchise',
-        dataKey: 'franchise',
-        sortable: false,
-        formatter: (value) => (typeof value === 'string' ? value : value?.companyName || '-')
+        key: 'emailId',
+        label: 'Email',
+        dataKey: 'emailId',
+        sortable: true,
+        searchable: true,
+      },
+      {
+        key: 'contactNumber',
+        label: 'Contact',
+        dataKey: 'contactNumber',
+        sortable: true,
       },
       {
         key: 'active',
@@ -103,54 +126,64 @@ export class AdminUser implements OnInit, AfterViewInit {
         sortable: true,
         width: '120px',
         align: 'center',
-        formatter: (value) => (value ? 'Active' : 'Inactive')
+        formatter: (value) => (value ? 'Active' : 'Inactive'),
       },
       {
         key: 'createdByUser',
         label: 'Created By',
         dataKey: 'createdByUser',
         sortable: false,
-        formatter: createdByUserFormatter()
+        formatter: createdByUserFormatter(),
       },
       {
         key: 'updatedByUser',
         label: 'Updated By',
         dataKey: 'updatedByUser',
         sortable: false,
-        formatter: updatedByUserFormatter()
+        formatter: updatedByUserFormatter(),
       },
       {
         key: 'createdAt',
         label: 'Created At',
         dataKey: 'createdAt',
         type: 'date',
-        sortable: true
+        sortable: true,
       },
       {
         key: 'updatedAt',
         label: 'Updated At',
         dataKey: 'updatedAt',
         type: 'date',
-        sortable: true
-      }
+        sortable: true,
+      },
     ];
     const actions: ITableAction<IAdminUser>[] = [
-      { label: 'Edit', icon: 'edit', color: 'primary', onClick: (row) => this.editItem(row) },
-      { label: 'View', icon: 'visibility', color: 'primary', onClick: (row) => this.viewItem(row) },
+      {
+        label: 'Edit',
+        icon: 'edit',
+        color: 'primary',
+        onClick: (row) => this.editItem(row),
+      },
+      {
+        label: 'View',
+        icon: 'visibility',
+        color: 'primary',
+        onClick: (row) => this.viewItem(row),
+      },
       {
         label: 'Active',
         icon: 'check_circle',
         color: 'primary',
         visible: (row) => row.active === true,
-        onClick: (row) => this.toggleStatus(row)
+        onClick: (row) => this.toggleStatus(row),
       },
       {
         label: 'Inactive',
         icon: 'cancel',
         color: 'warn',
         visible: (row) => row.active === false,
-        onClick: (row) => this.toggleStatus(row)
-      }
+        onClick: (row) => this.toggleStatus(row),
+      },
     ];
     this.tableConfig = {
       columns,
@@ -161,22 +194,34 @@ export class AdminUser implements OnInit, AfterViewInit {
       pageSize: 10,
       pageSizeOptions: [5, 10, 25, 50],
       showHeader: true,
-      emptyMessage: 'No admin users found'
+      emptyMessage: 'No admin users found',
     };
   }
 
   private setupSearch(): void {
-    this.searchSubject.pipe(debounceTime(300), distinctUntilChanged(), switchMap((search) => {
-      this.loading = true;
-      return this.apiService.getList({ search, page: 0, limit: this.tableConfig.pageSize || 10 });
-    })).subscribe({
-      next: (response) => {
-        this.data = response.tableData;
-        this.totalCount = response.count;
-        this.loading = false;
-      },
-      error: () => { this.loading = false; }
-    });
+    this.searchSubject
+      .pipe(
+        debounceTime(300),
+        distinctUntilChanged(),
+        switchMap((search) => {
+          this.loading = true;
+          return this.apiService.getList({
+            search,
+            page: 0,
+            limit: this.tableConfig.pageSize || 10,
+          });
+        })
+      )
+      .subscribe({
+        next: (response) => {
+          this.data = response.tableData;
+          this.totalCount = response.count;
+          this.loading = false;
+        },
+        error: () => {
+          this.loading = false;
+        },
+      });
   }
 
   async loadData(): Promise<void> {
@@ -185,7 +230,7 @@ export class AdminUser implements OnInit, AfterViewInit {
       const response: ITableList<IAdminUser> = await this.apiService.getList({
         page: 0,
         limit: this.tableConfig.pageSize || 10,
-        search: this.currentSearch?.trim() || undefined
+        search: this.currentSearch?.trim() || undefined,
       });
       this.data = response.tableData;
       this.totalCount = response.count;
@@ -201,7 +246,7 @@ export class AdminUser implements OnInit, AfterViewInit {
       const response: ITableList<IAdminUser> = await this.apiService.getList({
         page: pagination.pageIndex,
         limit: pagination.pageSize,
-        search: this.currentSearch?.trim() || undefined
+        search: this.currentSearch?.trim() || undefined,
       });
       this.data = response.tableData;
       this.totalCount = response.count;
@@ -219,7 +264,7 @@ export class AdminUser implements OnInit, AfterViewInit {
         limit: this.tableConfig.pageSize || 10,
         sortBy: sort.active,
         sortOrder: sort.direction,
-        search: this.currentSearch?.trim() || undefined
+        search: this.currentSearch?.trim() || undefined,
       });
       this.data = response.tableData;
       this.totalCount = response.count;
@@ -248,7 +293,9 @@ export class AdminUser implements OnInit, AfterViewInit {
 
   async toggleStatus(item: IAdminUser): Promise<void> {
     const action = item.active ? 'deactivate' : 'activate';
-    const confirmed = confirm(`Are you sure you want to ${action} "${item.firstName} ${item.lastName}"?`);
+    const confirmed = confirm(
+      `Are you sure you want to ${action} "${item.firstName} ${item.lastName}"?`
+    );
     if (confirmed) {
       this.loading = true;
       try {
