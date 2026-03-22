@@ -28,7 +28,6 @@ export interface IBaseAdminUserFull {
   addressId?: number;
   startDate: Date;
   endDate?: Date;
-  franchiseId?: number;
   active: boolean;
   deactivationReason?: string;
   verificationCode?: string;
@@ -43,11 +42,16 @@ export interface IManageAdminUser extends IBaseAdminUserFull {
   password?: string; // For create/update operations
   roleIds?: number[]; // For role permissions
   address?: IManageAddress; // Address details
+  /**
+   * When sent on create/update, replaces `txn_admin_franchises` for this admin.
+   * `mst_admin_users.franchise_id` is set to the smallest id (stable primary) or null if empty.
+   * If omitted on update, existing franchise links and `franchise_id` are left unchanged.
+   */
+  franchiseIds?: number[];
 }
 
 export interface IAdminUser extends IBaseAdminUserFull, IAdminInfo {
   adminId: number;
-  franchise?: string; // Franchise name from relationship
   address?: IManageAddress; // Address details
   roleKeys: string[];
   franchiseIds: number[];

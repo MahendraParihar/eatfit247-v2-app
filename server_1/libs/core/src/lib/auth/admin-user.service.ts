@@ -1,16 +1,21 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import {
   MstAdminRole,
   MstAdminRolePermission,
   MstAdminUser,
-  MstFranchise,
+  TxnAdminFranchise,
 } from '../database/models';
-import { IAdminUser } from '@eatfit247-shared-lib';
+import { IAuthUser } from '@eatfit247-shared-lib';
+import { CommonFunctionsUtil } from '../utils/common-functions.utils';
 
 @Injectable()
 export class AdminUserService {
-  constructor(@InjectModel(MstAdminUser) private readonly adminRepository: typeof MstAdminUser) {}
+  constructor(
+    @InjectModel(MstAdminUser) private readonly adminRepository: typeof MstAdminUser,
+    @InjectModel(MstAdminRolePermission) private readonly rolePermRepository: typeof MstAdminRolePermission,
+    @InjectModel(TxnAdminFranchise) private readonly adminFranchiseRepository: typeof TxnAdminFranchise,
+  ) {}
 
   async findById(adminId: number): Promise<MstAdminUser | null> {
     return await this.adminRepository.findOne({
@@ -18,54 +23,64 @@ export class AdminUserService {
     });
   }
 
-  // async buildUserWithPermissions(adminId: number): Promise<IAdminUser | null> {
-  //   const adminUser = await this.adminRepository.findOne({
-  //     where: { adminId: adminId },
-  //     include: [
-  //       {
-  //         model: MstAdminRolePermission,
-  //         include: [
-  //           {
-  //             model: MstAdminRole,
-  //             attributes: ['roleKey'],
-  //             include: [
-  //               {
-  //                 model: MstAdminRolePermission,
-  //                 attributes: ['action', 'subject', 'conditions'],
-  //               },
-  //             ],
-  //           },
-  //         ],
-  //       },
-  //       {
-  //         model: MstFranchise,
-  //         attributes: ['franchiseId'],
-  //       },
-  //     ],
-  //   });
-  //
-  //   if (!adminUser) throw new UnauthorizedException();
-  //
-  //   // Flatten all roles and all permissions from all roles
-  //   const roleKeys = adminUser.userRoles?.map((ur) => ur.role?.role_key) ?? [];
-  //   const permissions =
-  //     adminUser.userRoles?.flatMap(
-  //       (ur) =>
-  //         ur.role?.permissions?.map((p) => ({
-  //           action: p.action,
-  //           subject: p.subject,
-  //           conditions: p.conditions,
-  //         })) ?? [],
-  //     ) ?? [];
-  //
-  //   return {
-  //     adminUserId: adminUser.admin_user_id,
-  //     name: adminUser.name,
-  //     email: adminUser.email,
-  //     roleKeys, // ← array
-  //     franchiseIds: adminUser.franchises?.map((f) => f.franchise_id) ?? [],
-  //     permissions,
-  //     isActive: adminUser.is_active,
-  //   };
-  // }
+  /**
+   * Full session user for JWT validate and /auth/profile:
+   * profile fields, role codes, and franchise scope (user.franchise_id ∪ txn_admin_franchises).
+   */
+  async findAuthUserForSession(adminId: number): Promise<IAuthUser | null> {
+    const adminUser = await this.adminRepository.findOne({
+      where: { adminId },
+    });
+    if (!adminUser || !adminUser.active) {
+      return null;
+    }
+
+    const [roleRows, franchiseRows] = await Promise.all([
+      this.rolePermRepository.findAll({
+        where: { adminId, active: true },
+        include: [
+          {
+            model: MstAdminRole,
+            as: 'role',
+            attributes: ['roleCode'],
+            required: true,
+          },
+        ],
+      }),
+      this.adminFranchiseRepository.findAll({
+        where: { adminId },
+        attributes: ['franchiseId'],
+      }),
+    ]);
+
+    const roleKeys = [
+      ...new Set(
+        roleRows
+          .map((r) => r.role?.roleCode)
+          .filter((c): c is string => typeof c === 'string' && c.length > 0),
+      ),
+    ];
+
+    const franchiseIdSet = new Set<number>();
+    if (adminUser.franchiseId != null) {
+      franchiseIdSet.add(adminUser.franchiseId);
+    }
+    for (const row of franchiseRows) {
+      franchiseIdSet.add(row.franchiseId);
+    }
+    const franchiseIds = [...franchiseIdSet].sort((a, b) => a - b);
+
+    return {
+      adminId: adminUser.adminId,
+      adminUserId: adminUser.adminId,
+      emailId: adminUser.emailId,
+      firstName: adminUser.firstName,
+      lastName: adminUser.lastName,
+      profilePicture: CommonFunctionsUtil.safeParse(adminUser.profilePicture),
+      countryCode: adminUser.countryCode,
+      contactNumber: adminUser.contactNumber,
+      roleKeys,
+      franchiseIds,
+    };
+  }
 }

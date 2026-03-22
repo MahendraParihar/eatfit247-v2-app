@@ -71,7 +71,9 @@ export class AuthService extends ApiBaseService {
             // Create minimal user object from token
             const user: IAuthUser = {
               adminId: decoded.adminUserId || decoded.adminId,
-              emailId: decoded.emailId || ''
+              emailId: decoded.emailId || '',
+              roleKeys: [],
+              franchiseIds: [],
             };
             this.storage.setUser(user);
             this.currentUserSubject.next(user);

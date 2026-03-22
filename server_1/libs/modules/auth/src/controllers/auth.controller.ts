@@ -10,10 +10,20 @@
  *
  * Refresh token is stored in HttpOnly, Secure cookie (not in response body)
  */
-import { Body, Controller, Get, Post, Req, Res, SetMetadata, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  NotFoundException,
+  Post,
+  Req,
+  Res,
+  SetMetadata,
+  UseGuards,
+} from '@nestjs/common';
 import { Response } from 'express';
 import { IAuthUser, IToken, PUBLIC_API } from '@eatfit247-shared-lib';
-import { CommonFunctionsUtil, CurrentUser, Env, JwtAuthGuard, RequestedIp } from '@server_1/core';
+import { CurrentUser, Env, JwtAuthGuard, RequestedIp } from '@server_1/core';
 import { AuthService } from '../services/auth.service';
 import { ChangePasswordDto, ForgotPasswordDto, LoginDto, ResetPasswordDto } from '../dto';
 import { RecaptchaGuard } from '@server_1/platform';
@@ -150,18 +160,10 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @Get('profile')
   async getProfile(@CurrentUser() currentUser: IAuthUser): Promise<IAuthUser> {
-    const user = await this.authService.findOneById(currentUser.adminId);
+    const user = await this.authService.findById(currentUser.adminId);
     if (!user) {
-      throw new Error('User not found');
+      throw new NotFoundException('User not found');
     }
-    return {
-      adminId: user.adminId,
-      emailId: user.emailId,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      profilePicture: CommonFunctionsUtil.safeParse(user.profilePicture),
-      countryCode: user.countryCode,
-      contactNumber: user.contactNumber,
-    };
+    return user;
   }
 }

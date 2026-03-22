@@ -15,12 +15,7 @@
         "main": "libs/platform/src/index.ts",
         "assets": ["libs/platform/*.md"]
       },
-      "dependsOn": [
-        {
-          "target": "build",
-          "projects": "dependencies"
-        }
-      ]
+      "dependsOn": ["^build"]
     }
   }
 }

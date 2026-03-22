@@ -8,6 +8,7 @@ import {
 import { InjectModel } from '@nestjs/sequelize';
 import { JwtService, JwtSignOptions } from '@nestjs/jwt';
 import {
+  AdminUserService,
   AppConfigService,
   CommonFunctionsUtil,
   CryptoUtil,
@@ -47,21 +48,11 @@ export class AuthService {
     private jwtService: JwtService,
     private emailNotificationService: EmailNotificationService,
     private appConfigService: AppConfigService,
+    private readonly sessionAdminUserService: AdminUserService,
   ) {}
 
   async findById(id: number): Promise<IAuthUser | null> {
-    const user = await this.adminRepository.findOne({ where: { adminId: id } });
-    if (!user || !user.active) return null;
-    return <IAuthUser>{
-      adminUserId: user.adminId,
-      adminId: user.adminId,
-      emailId: user.emailId,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      profilePicture: CommonFunctionsUtil.safeParse(user.profilePicture),
-      countryCode: user.countryCode,
-      contactNumber: user.contactNumber,
-    };
+    return this.sessionAdminUserService.findAuthUserForSession(id);
   }
 
   public async signIn(loginDto: ILogin, ipAddress: string, device: string): Promise<IToken> {

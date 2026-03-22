@@ -18,10 +18,11 @@ jest.mock('@eatfit247-shared-lib', () => ({
   },
 }));
 
-// Mock @server_1/core to avoid dependency issues
 jest.mock('@server_1/core', () => {
+  const actual = jest.requireActual('@server_1/core') as object;
   const mockMstAdminUser = class {};
   return {
+    ...actual,
     AppConfigService: jest.fn(),
     MstAdminUser: mockMstAdminUser,
   };

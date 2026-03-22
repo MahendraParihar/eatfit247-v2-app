@@ -10,12 +10,14 @@ import {
   TableEnum,
 } from '@eatfit247-shared-lib';
 import {
+  AdminUserService as CoreSessionAdminService,
   AppConfigService,
   CommonFunctionsUtil,
   CryptoUtil,
   generateRandomPassword,
   MstAdminRolePermission,
   MstAdminUser,
+  TxnAdminFranchise,
 } from '@server_1/core';
 import { AddressService } from '@server_1/platform';
 import { Op } from 'sequelize';
@@ -26,9 +28,65 @@ export class AdminUserService {
     @InjectModel(MstAdminUser) private readonly adminUserRepository: typeof MstAdminUser,
     @InjectModel(MstAdminRolePermission)
     private readonly rolePermissionRepository: typeof MstAdminRolePermission,
+    @InjectModel(TxnAdminFranchise)
+    private readonly adminFranchiseRepository: typeof TxnAdminFranchise,
     private appConfigService: AppConfigService,
     private addressService: AddressService,
+    private readonly coreSessionAdmin: CoreSessionAdminService,
   ) {}
+
+  /**
+   * Whether franchise scope was included in the payload (then we replace txn + primary column).
+   */
+  private franchiseScopeFromPayload(obj: IManageAdminUser): {
+    effective: number[];
+    apply: boolean;
+  } {
+    if (obj.franchiseIds !== undefined && Array.isArray(obj.franchiseIds)) {
+      const effective = [
+        ...new Set(
+          obj.franchiseIds.map((id) => Number(id)).filter((n) => Number.isInteger(n) && n > 0),
+        ),
+      ].sort((a, b) => a - b);
+      return { effective, apply: true };
+    }
+    return { effective: [], apply: false };
+  }
+
+  private async syncAdminFranchises(
+    targetAdminId: number,
+    franchiseIds: number[],
+    cIp: string,
+    actorAdminId: number,
+  ): Promise<void> {
+    const sequelize = this.adminUserRepository.sequelize;
+    if (!sequelize) {
+      throw new BadRequestException('Database connection unavailable');
+    }
+    await sequelize.transaction(async (transaction) => {
+      await this.adminFranchiseRepository.destroy({
+        where: { adminId: targetAdminId },
+        transaction,
+      });
+      if (franchiseIds.length === 0) {
+        return;
+      }
+      const now = new Date();
+      await this.adminFranchiseRepository.bulkCreate(
+        franchiseIds.map((franchiseId) => ({
+          adminId: targetAdminId,
+          franchiseId,
+          createdBy: actorAdminId,
+          modifiedBy: actorAdminId,
+          createdIp: cIp,
+          modifiedIp: cIp,
+          createdAt: now,
+          updatedAt: now,
+        })),
+        { transaction },
+      );
+    });
+  }
 
   public async findAll(searchDto: IBasicSearch): Promise<ITableList<IAdminUser>> {
     const whereCondition: any = {};
@@ -80,8 +138,6 @@ export class AdminUserService {
       addressId: item.addressId,
       startDate: item.startDate,
       endDate: item.endDate,
-      franchiseId: item.franchiseId,
-      franchise: item.franchise?.companyName || '',
       active: item.active !== undefined ? item.active : true,
       deactivationReason: item.deactivationReason,
       verificationCode: item.verificationCode,
@@ -95,7 +151,7 @@ export class AdminUserService {
       updatedByUser: item.updatedByUser
         ? CommonFunctionsUtil.getAdminShortInfo(item.updatedByUser, 'updatedByUser')
         : undefined,
-      franchiseIds: [item.franchiseId],
+      franchiseIds: item.franchiseId != null ? [item.franchiseId] : [],
       permissions: [],
       roleKeys: [],
     };
@@ -111,6 +167,11 @@ export class AdminUserService {
       throw new NotFoundException('Admin user not found');
     }
     const adminUser = this.convertToModel(find);
+    const session = await this.coreSessionAdmin.findAuthUserForSession(id);
+    if (session) {
+      adminUser.roleKeys = session.roleKeys;
+      adminUser.franchiseIds = session.franchiseIds;
+    }
     // Fetch address data
     const address = await this.addressService.findByTableIdAndPk(TableEnum.TXN_ADMIN, id);
     if (address) {
@@ -143,6 +204,10 @@ export class AdminUserService {
       const tempPassword = generateRandomPassword();
       hashedPassword = await CryptoUtil.generateHash(tempPassword);
     }
+    const { effective, apply } = this.franchiseScopeFromPayload(obj);
+    const franchiseListForTxn = apply ? effective : [];
+    const primaryFranchiseId = franchiseListForTxn[0] ?? null;
+
     const createObj = {
       firstName: obj.firstName,
       lastName: obj.lastName,
@@ -155,7 +220,7 @@ export class AdminUserService {
       emailId: obj.emailId,
       startDate: obj.startDate,
       endDate: obj.endDate || null,
-      franchiseId: obj.franchiseId || null,
+      franchiseId: primaryFranchiseId,
       active: obj.active !== undefined ? obj.active : true,
       deactivationReason: obj.deactivationReason || null,
       verificationCode: obj.verificationCode || null,
@@ -165,6 +230,7 @@ export class AdminUserService {
       modifiedIp: cIp,
     };
     const newAdminUser = await this.adminUserRepository.create(createObj);
+    await this.syncAdminFranchises(newAdminUser.adminId, franchiseListForTxn, cIp, adminId);
     // Create address if provided
     if (obj.address) {
       const addressData: IManageAddress = obj.address;
@@ -215,6 +281,8 @@ export class AdminUserService {
         throw new BadRequestException('Contact number already exists');
       }
     }
+    const { effective, apply } = this.franchiseScopeFromPayload(obj);
+
     const updateObj: any = {
       firstName: obj.firstName,
       lastName: obj.lastName,
@@ -223,13 +291,15 @@ export class AdminUserService {
       emailId: obj.emailId,
       startDate: obj.startDate,
       endDate: obj.endDate || null,
-      franchiseId: obj.franchiseId || null,
       active: obj.active !== undefined ? obj.active : true,
       deactivationReason: obj.deactivationReason || null,
       verificationCode: obj.verificationCode || null,
       modifiedBy: adminId,
       modifiedIp: cIp,
     };
+    if (apply) {
+      updateObj.franchiseId = effective[0] ?? null;
+    }
     // Update password if provided
     if (obj.password) {
       const hashedPassword = await CryptoUtil.generateHash(obj.password);
@@ -241,6 +311,9 @@ export class AdminUserService {
       updateObj.profilePicture = obj.profilePicture;
     }
     await this.adminUserRepository.update(updateObj, { where: { adminId: id } });
+    if (apply) {
+      await this.syncAdminFranchises(id, effective, cIp, adminId);
+    }
     // Update address if provided
     if (obj.address) {
       const addressData: IManageAddress = obj.address;

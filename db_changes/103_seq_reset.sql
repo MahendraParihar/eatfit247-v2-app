@@ -58,6 +58,7 @@ SELECT SETVAL('mst_urine_outputs_urine_output_id_seq', (SELECT MAX(urine_output_
 SELECT SETVAL('mst_user_statuses_user_status_id_seq', (SELECT MAX(user_status_id) + 1 FROM mst_user_statuses));
 
 SELECT SETVAL('txn_addresses_address_id_seq', (SELECT MAX(address_id) + 1 FROM txn_addresses));
+SELECT SETVAL('txn_admin_franchises_admin_franchise_id_seq', (SELECT COALESCE(MAX(admin_franchise_id), 0) + 1 FROM txn_admin_franchises));
 SELECT SETVAL('txn_admin_last_login_details_admin_last_login_detail_id_seq', (SELECT MAX(admin_last_login_detail_id) + 1 FROM txn_admin_last_login_details));
 SELECT SETVAL('txn_assessments_assessment_id_seq', (SELECT MAX(assessment_id) + 1 FROM txn_assessments));
 SELECT SETVAL('txn_blog_comment_blog_comment_id_seq', (SELECT MAX(blog_comment_id) + 1 FROM txn_blog_comment));

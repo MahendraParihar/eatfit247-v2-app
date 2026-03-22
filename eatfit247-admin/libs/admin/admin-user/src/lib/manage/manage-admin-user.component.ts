@@ -1,7 +1,12 @@
 import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
@@ -11,7 +16,11 @@ import { MatCardModule } from '@angular/material/card';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { AddressFormComponent, InputErrorComponent, UploadFormComponent, ValidationUtil } from '@shared';
+import {
+  InputErrorComponent,
+  UploadFormComponent,
+  ValidationUtil,
+} from '@shared';
 import { AdminUserApiService } from '../api.service';
 import {
   FileTypeEnum,
@@ -19,7 +28,7 @@ import {
   IDropdownItem,
   IManageAdminUser,
   IMediaUpload,
-  InputLengthEnum
+  InputLengthEnum,
 } from '@eatfit247-shared-lib';
 
 @Component({
@@ -39,12 +48,11 @@ import {
     MatSnackBarModule,
     InputErrorComponent,
     UploadFormComponent,
-    AddressFormComponent
   ],
   templateUrl: './manage-admin-user.html',
-  styleUrl: './manage-admin-user.scss'
+  styleUrl: './manage-admin-user.scss',
 })
-export class ManageAdminUser implements OnInit, OnDestroy {
+export class ManageAdminUser implements OnInit {
   private fb: FormBuilder = inject(FormBuilder);
   formGroup: FormGroup = this.fb.group({
     firstName: [
@@ -52,41 +60,44 @@ export class ManageAdminUser implements OnInit, OnDestroy {
       [
         Validators.required,
         Validators.minLength(InputLengthEnum.MIN_NAME),
-        Validators.maxLength(InputLengthEnum.CHAR_50)
-      ]
+        Validators.maxLength(InputLengthEnum.CHAR_50),
+      ],
     ],
     lastName: [
       '',
       [
         Validators.required,
         Validators.minLength(InputLengthEnum.MIN_NAME),
-        Validators.maxLength(InputLengthEnum.CHAR_50)
-      ]
+        Validators.maxLength(InputLengthEnum.CHAR_50),
+      ],
     ],
-    countryCode: ['', [Validators.required, Validators.maxLength(InputLengthEnum.CHAR_5)]],
+    countryCode: [
+      '',
+      [Validators.required, Validators.maxLength(InputLengthEnum.CHAR_5)],
+    ],
     contactNumber: [
       '',
       [
         Validators.required,
         Validators.minLength(InputLengthEnum.MIN_CONTACT_NUMBER),
-        Validators.maxLength(InputLengthEnum.MAX_CONTACT_NUMBER)
-      ]
+        Validators.maxLength(InputLengthEnum.MAX_CONTACT_NUMBER),
+      ],
     ],
     emailId: [
       '',
       [
         Validators.required,
         Validators.email,
-        Validators.maxLength(InputLengthEnum.MAX_EMAIL)
-      ]
+        Validators.maxLength(InputLengthEnum.MAX_EMAIL),
+      ],
     ],
     startDate: [new Date(), [Validators.required]],
     endDate: [null],
-    franchiseId: [null],
+    franchiseIds: [[] as number[]],
     active: [true, [Validators.required]],
     deactivationReason: ['', [Validators.maxLength(InputLengthEnum.CHAR_1000)]],
     password: ['', [Validators.minLength(InputLengthEnum.MIN_PASSWORD)]],
-    roleIds: [[]]
+    roleIds: [[]],
   });
   initialData!: IAdminUser;
   isEditMode = false;
@@ -116,11 +127,18 @@ export class ManageAdminUser implements OnInit, OnDestroy {
   private patchFormValues(): void {
     if (this.initialData) {
       const startDate = this.initialData.startDate
-        ? (typeof this.initialData.startDate === 'string' ? new Date(this.initialData.startDate) : this.initialData.startDate)
+        ? typeof this.initialData.startDate === 'string'
+          ? new Date(this.initialData.startDate)
+          : this.initialData.startDate
         : new Date();
       const endDate = this.initialData.endDate
-        ? (typeof this.initialData.endDate === 'string' ? new Date(this.initialData.endDate) : this.initialData.endDate)
+        ? typeof this.initialData.endDate === 'string'
+          ? new Date(this.initialData.endDate)
+          : this.initialData.endDate
         : null;
+      const franchiseIds = this.initialData.franchiseIds?.length
+        ? [...this.initialData.franchiseIds]
+        : [];
       this.formGroup.patchValue({
         firstName: this.initialData.firstName || '',
         lastName: this.initialData.lastName || '',
@@ -129,10 +147,15 @@ export class ManageAdminUser implements OnInit, OnDestroy {
         emailId: this.initialData.emailId || '',
         startDate: startDate,
         endDate: endDate,
-        franchiseId: this.initialData.franchiseId || null,
-        active: this.initialData.active !== undefined ? this.initialData.active : true,
-        deactivationReason: this.initialData.deactivationReason || ''
+        franchiseIds,
+        active:
+          this.initialData.active !== undefined
+            ? this.initialData.active
+            : true,
+        deactivationReason: this.initialData.deactivationReason || '',
       });
+    } else {
+      this.formGroup.patchValue({ franchiseIds: [] });
     }
   }
 
@@ -170,7 +193,7 @@ export class ManageAdminUser implements OnInit, OnDestroy {
       contactNumber: InputLengthEnum.MAX_CONTACT_NUMBER,
       emailId: InputLengthEnum.MAX_EMAIL,
       deactivationReason: InputLengthEnum.CHAR_1000,
-      password: InputLengthEnum.MAX_PASSWORD
+      password: InputLengthEnum.MAX_PASSWORD,
     };
     return maxLengthMap[controlName] || null;
   }
@@ -183,12 +206,24 @@ export class ManageAdminUser implements OnInit, OnDestroy {
   async onSubmit(): Promise<void> {
     ValidationUtil.validateAllFormFields(this.formGroup);
     if (this.formGroup.valid) {
-      const formValue: IManageAdminUser = this.formGroup.value;
+      const raw = this.formGroup.getRawValue();
+      const franchiseIds = Array.isArray(raw.franchiseIds)
+        ? raw.franchiseIds
+            .map((id: number) => Number(id))
+            .filter((n: number) => Number.isInteger(n) && n > 0)
+        : [];
+      const formValue: IManageAdminUser = {
+        ...raw,
+        franchiseIds,
+      };
       // Handle setting picture from the upload form
       const profilePictureControl = this.formGroup.get('profilePicture');
       if (profilePictureControl) {
         const profilePictureValue = profilePictureControl.value;
-        if (Array.isArray(profilePictureValue) && profilePictureValue.length > 0) {
+        if (
+          Array.isArray(profilePictureValue) &&
+          profilePictureValue.length > 0
+        ) {
           formValue.profilePicture = profilePictureValue;
         } else {
           formValue.profilePicture = undefined;
@@ -216,9 +251,5 @@ export class ManageAdminUser implements OnInit, OnDestroy {
 
   onCancel(): void {
     this.router.navigate(['/admin-user']);
-  }
-
-  ngOnDestroy(): void {
-    // Component cleanup
   }
 }

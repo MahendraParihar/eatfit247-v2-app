@@ -24,6 +24,25 @@
   flex: 1;
 }
 
+.contact-row {
+  align-items: flex-start;
+}
+
+.email-field {
+  flex: 1.4 1 0;
+  min-width: 0;
+}
+
+.country-code-field {
+  flex: 0 0 130px;
+  max-width: 150px;
+}
+
+.contact-number-field {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
 .form-actions {
   display: flex;
   justify-content: flex-end;

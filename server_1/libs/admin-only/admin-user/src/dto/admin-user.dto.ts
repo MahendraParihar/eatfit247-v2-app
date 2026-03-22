@@ -1,4 +1,5 @@
 import {
+  IsArray,
   IsBoolean,
   IsDate,
   IsEmail,
@@ -50,8 +51,9 @@ export class CreateAdminUserDto implements IManageAdminUser {
   @Type(() => Date)
   endDate?: Date;
   @IsOptional()
-  @IsNumber()
-  franchiseId?: number;
+  @IsArray()
+  @IsNumber({}, { each: true })
+  franchiseIds?: number[];
   @IsNotEmpty()
   @IsBoolean()
   active!: boolean;

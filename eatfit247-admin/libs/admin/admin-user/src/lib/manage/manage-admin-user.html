@@ -37,8 +37,8 @@
           </mat-form-field>
         </div>
 
-        <div class="row">
-          <mat-form-field class="half-width">
+        <div class="row contact-row">
+          <mat-form-field class="email-field">
             <mat-label>Email ID</mat-label>
             <input
               matInput
@@ -54,12 +54,12 @@
             <shared-ui-input-error [control]="formGroup.get('emailId')" controlName="Email ID"></shared-ui-input-error>
           </mat-form-field>
 
-          <mat-form-field class="half-width">
+          <mat-form-field class="country-code-field">
             <mat-label>Country Code</mat-label>
             <input
               matInput
               formControlName="countryCode"
-              placeholder="Enter country code"
+              placeholder="e.g. +91"
             />
             @if (getMaxLength('countryCode')) {
               <mat-hint align="end">
@@ -68,22 +68,22 @@
             }
             <shared-ui-input-error [control]="formGroup.get('countryCode')" controlName="Country Code"></shared-ui-input-error>
           </mat-form-field>
-        </div>
 
-        <mat-form-field class="full-width">
-          <mat-label>Contact Number</mat-label>
-          <input
-            matInput
-            formControlName="contactNumber"
-            placeholder="Enter contact number"
-          />
-          @if (getMaxLength('contactNumber')) {
-            <mat-hint align="end">
-              {{ getCurrentLength('contactNumber') }}/{{ getMaxLength('contactNumber') }}
-            </mat-hint>
-          }
-          <shared-ui-input-error [control]="formGroup.get('contactNumber')" controlName="Contact Number"></shared-ui-input-error>
-        </mat-form-field>
+          <mat-form-field class="contact-number-field">
+            <mat-label>Contact Number</mat-label>
+            <input
+              matInput
+              formControlName="contactNumber"
+              placeholder="Enter contact number"
+            />
+            @if (getMaxLength('contactNumber')) {
+              <mat-hint align="end">
+                {{ getCurrentLength('contactNumber') }}/{{ getMaxLength('contactNumber') }}
+              </mat-hint>
+            }
+            <shared-ui-input-error [control]="formGroup.get('contactNumber')" controlName="Contact Number"></shared-ui-input-error>
+          </mat-form-field>
+        </div>
 
         <div class="row">
           <mat-form-field class="half-width">
@@ -104,14 +104,14 @@
         </div>
 
         <mat-form-field class="full-width">
-          <mat-label>Franchise</mat-label>
-          <mat-select formControlName="franchiseId">
-            <mat-option [value]="">Select Franchise</mat-option>
+          <mat-label>Franchises</mat-label>
+          <mat-select formControlName="franchiseIds" multiple>
             @for (franchise of franchiseOptions; track franchise.id) {
               <mat-option [value]="franchise.id">{{ franchise.label }}</mat-option>
             }
           </mat-select>
-          <shared-ui-input-error [control]="formGroup.get('franchiseId')" controlName="Franchise"></shared-ui-input-error>
+          <mat-hint>Select none, one, or many (e.g. nutritionists on multiple branches).</mat-hint>
+          <shared-ui-input-error [control]="formGroup.get('franchiseIds')" controlName="Franchises"></shared-ui-input-error>
         </mat-form-field>
 
         <mat-form-field class="full-width">
@@ -156,14 +156,6 @@
             <shared-ui-input-error [control]="formGroup.get('password')" controlName="Password"></shared-ui-input-error>
           </mat-form-field>
         }
-
-        <div class="full-width">
-          <label class="section-label">Address Details</label>
-          <shared-ui-address-form
-            [formGroup]="formGroup"
-            [address]="initialData && initialData.address ? initialData.address : undefined"
-          ></shared-ui-address-form>
-        </div>
 
         <div class="full-width">
           <label class="upload-label">Profile Picture</label>

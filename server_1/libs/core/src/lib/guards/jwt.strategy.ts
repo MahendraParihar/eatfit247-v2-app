@@ -4,7 +4,6 @@ import { IAuthUser } from '@eatfit247-shared-lib';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { Env } from '../config/env.values';
 import { AdminUserService } from '../auth/admin-user.service';
-import { CommonFunctionsUtil } from '../utils/common-functions.utils';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -20,23 +19,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: any): Promise<IAuthUser> {
-    const adminUser = await this.adminUserService.findById(payload.adminUserId);
-    if (!adminUser) {
+    const sessionUser = await this.adminUserService.findAuthUserForSession(payload.adminUserId);
+    if (!sessionUser) {
       throw new UnauthorizedException('You are not authorized to perform the operation');
     }
-    if (!adminUser.active) {
-      throw new UnauthorizedException('Account is not active');
-    }
-    return <IAuthUser>{
-      emailId: payload.emailId,
-      adminUserId: payload.adminUserId,
-      adminId: payload.adminUserId,
-      contactNumber: adminUser.contactNumber,
-      profilePicture: CommonFunctionsUtil.safeParse(adminUser.profilePicture),
-      countryCode: adminUser.countryCode,
-      firstName: adminUser.firstName,
-      lastName: adminUser.lastName,
-    };
+    return sessionUser;
   }
 }
 

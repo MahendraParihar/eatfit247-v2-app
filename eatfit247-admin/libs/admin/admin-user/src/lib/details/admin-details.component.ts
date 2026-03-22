@@ -71,9 +71,13 @@ export class AdminDetailsComponent implements OnInit, OnDestroy {
     try {
       this.admin = await this.apiService.getById(this.adminId);
     } catch (error) {
-      this.snackBar.open('Failed to load admin details. Please try again.', 'Close', {
-        duration: 5000,
-      });
+      this.snackBar.open(
+        'Failed to load admin details. Please try again.',
+        'Close',
+        {
+          duration: 5000,
+        }
+      );
       this.router.navigate(['/admin-user']);
     } finally {
       this.loading = false;
@@ -86,12 +90,4 @@ export class AdminDetailsComponent implements OnInit, OnDestroy {
     const lastName = this.admin.lastName || '';
     return `${firstName} ${lastName}`.trim() || 'Admin User';
   }
-
-  getFranchiseName(): string {
-    if (!this.admin?.franchise) return 'N/A';
-    return typeof this.admin.franchise === 'string' 
-      ? this.admin.franchise 
-      : (this.admin.franchise as any)?.companyName || 'N/A';
-  }
 }
-

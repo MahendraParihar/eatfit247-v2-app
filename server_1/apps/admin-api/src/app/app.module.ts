@@ -9,7 +9,6 @@ import { NotificationModule } from '@server_1/modules/notification';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 // Import modules first so their modelRegistry.register() calls execute before CommonModule.forRoot()
-import { AuthModule } from '@server_1/modules/auth';
 import { MemberModule } from '@server_1/modules/member';
 import { AssessmentModule } from '@server_1/modules/assessment';
 import { ProgramPlanModule } from '@server_1/modules/program-plan';
@@ -38,6 +37,7 @@ import { ReportsModule } from '@server_1/admin-only/reports';
 import { ProductAdminModule } from '@server_1/modules/product';
 import { PagesAdminModule } from '@server_1/modules/pages';
 import { DeliveryModule } from '@server_1/modules/delivery';
+import { AuthModule } from '@server_1/modules/auth';
 
 @Module({
   imports: [
@@ -55,7 +55,6 @@ import { DeliveryModule } from '@server_1/modules/delivery';
     }),
     PlatformModule.forRoot(),
     // Import feature modules before CommonModule so modelRegistry.register() executes
-    AuthModule,
     MemberModule,
     AssessmentModule,
     ProgramPlanModule,
@@ -80,8 +79,6 @@ import { DeliveryModule } from '@server_1/modules/delivery';
     MemberTestimonialModule,
     LovsModule,
     SuccessStoriesModule,
-    AdminUserModule,
-    ReportsModule,
     ProductAdminModule,
     DeliveryModule,
     NotificationModule,
@@ -89,6 +86,9 @@ import { DeliveryModule } from '@server_1/modules/delivery';
       ['Common', 'Email', 'Google', 'Calendar', 'Payment', 'Invoice', 'Whatsapp'],
       PlatformModule.getModels(),
     ),
+    AuthModule,
+    AdminUserModule,
+    ReportsModule,
   ],
   controllers: [AppController],
   providers: [

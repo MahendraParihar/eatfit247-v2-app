@@ -1,6 +1,11 @@
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
-import { MstAdminRole, MstAdminRolePermission, MstAdminUser } from '@server_1/core';
+import {
+  MstAdminRole,
+  MstAdminRolePermission,
+  MstAdminUser,
+  TxnAdminFranchise,
+} from '@server_1/core';
 import { AdminUserController } from './controllers';
 import { AdminUserService } from './services';
 
@@ -12,6 +17,7 @@ import { AdminUserService } from './services';
       MstAdminUser,
       MstAdminRolePermission,
       MstAdminRole,
+      TxnAdminFranchise,
     ]),
   ],
   controllers: [

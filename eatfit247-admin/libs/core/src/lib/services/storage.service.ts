@@ -15,6 +15,7 @@
  * - ✅ Always use HttpOnly cookies for refresh tokens
  */
 import { Injectable } from '@angular/core';
+import { IAuthUser } from '@eatfit247-shared-lib';
 
 @Injectable({
   providedIn: 'root',
@@ -80,16 +81,29 @@ export class StorageService {
    * Set user data in localStorage
    * User data is non-sensitive and can be stored in localStorage
    */
-  setUser(user: any): void {
+  setUser(user: IAuthUser): void {
     localStorage.setItem(this.USER_KEY, JSON.stringify(user));
   }
 
   /**
    * Get user data from localStorage
    */
-  getUser(): any {
-    const user = localStorage.getItem(this.USER_KEY);
-    return user ? JSON.parse(user) : null;
+  getUser(): IAuthUser | null {
+    const raw = localStorage.getItem(this.USER_KEY);
+    if (!raw) return null;
+    try {
+      const parsed = JSON.parse(raw) as Partial<IAuthUser>;
+      if (parsed.adminId == null || !parsed.emailId) return null;
+      return {
+        ...parsed,
+        adminId: parsed.adminId,
+        emailId: parsed.emailId,
+        roleKeys: parsed.roleKeys ?? [],
+        franchiseIds: parsed.franchiseIds ?? [],
+      };
+    } catch {
+      return null;
+    }
   }
 
   /**

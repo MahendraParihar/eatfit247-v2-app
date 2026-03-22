@@ -1010,11 +1010,11 @@ export class MemberDietPlanService {
     // Generate PDF
     const pdfBuffer = await this.dietPlanPdfService.generateDietPlanPdf(pdfData);
     // Prepare file name and path
-    const fileName = `Session-${CommonFunctionsUtil.removeSpecialChar(
+    const fileName = `${CommonFunctionsUtil.removeSpecialChar(
       memberName,
       '-',
       false,
-    )}-Cycle-${cycleNo}${dayNo ? `-Day-${dayNo}` : ''}.pdf`;
+    )}-${cycleNo}${dayNo ? `-${dayNo}` : ''}.pdf`;
     const relativePath = `${MediaForEnum.DOWNLOADS}/${memberId}/diet-plans`;
     const destinationFolderPath = `${Env.persistentStorageAssetPath}/${relativePath}`;
     // Create a directory if not exists

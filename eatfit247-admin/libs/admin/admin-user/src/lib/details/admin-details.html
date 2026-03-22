@@ -1,77 +1,68 @@
 <div class="admin-details-container">
-  <!-- Admin Summary Card -->
-  @if (admin && !loading) {
-    <mat-card class="summary-card">
-      <mat-card-header>
-        <div class="admin-header">
-          <div class="admin-avatar">
-            <mat-icon class="avatar-icon">person</mat-icon>
-          </div>
-          <div class="admin-info">
-            <mat-card-title>{{ getAdminDisplayName() }}</mat-card-title>
-            <mat-card-subtitle>{{ admin.emailId }}</mat-card-subtitle>
-          </div>
-          <div class="admin-status">
-            <mat-chip [class.active]="admin.active" [class.inactive]="!admin.active">
-              {{ admin.active ? 'Active' : 'Inactive' }}
-            </mat-chip>
-          </div>
-        </div>
-      </mat-card-header>
-      <mat-divider></mat-divider>
-      <mat-card-content>
-        <div class="summary-grid">
-          <div class="summary-item">
-            <mat-icon>phone</mat-icon>
-            <div class="summary-content">
-              <span class="summary-label">Contact</span>
-              <span class="summary-value">{{ admin.contactNumber || 'N/A' }}</span>
+    <!-- Admin Summary Card -->
+    @if (admin && !loading) {
+        <mat-card class="summary-card">
+            <mat-card-header>
+                <div class="admin-header">
+                    <div class="admin-avatar">
+                        <mat-icon class="avatar-icon">person</mat-icon>
+                    </div>
+                    <div class="admin-info">
+                        <mat-card-title>{{ getAdminDisplayName() }}</mat-card-title>
+                        <mat-card-subtitle>{{ admin.emailId }}</mat-card-subtitle>
+                    </div>
+                    <div class="admin-status">
+                        <mat-chip [class.active]="admin.active" [class.inactive]="!admin.active">
+                            {{ admin.active ? 'Active' : 'Inactive' }}
+                        </mat-chip>
+                    </div>
+                </div>
+            </mat-card-header>
+            <mat-divider></mat-divider>
+            <mat-card-content>
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <mat-icon>phone</mat-icon>
+                        <div class="summary-content">
+                            <span class="summary-label">Contact</span>
+                            <span class="summary-value">{{ admin.contactNumber || 'N/A' }}</span>
+                        </div>
+                    </div>
+                </div>
+            </mat-card-content>
+        </mat-card>
+    }
+
+    <!-- Loading State -->
+    @if (loading) {
+        <shared-ui-loader [diameter]="50"></shared-ui-loader>
+    }
+
+    <!-- Main Content with Sidebar -->
+    @if (admin && !loading) {
+        <div class="details-content">
+            <!-- Left Sidebar Navigation -->
+            <mat-card class="sidebar-card">
+                <mat-nav-list>
+                    @for (item of menuItems; track item.route) {
+                        <a
+                                mat-list-item
+                                [routerLink]="item.route"
+                                routerLinkActive="active"
+                                [routerLinkActiveOptions]="{ exact: false }"
+                        >
+                            <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
+                            <span matListItemTitle>{{ item.label }}</span>
+                        </a>
+                    }
+                </mat-nav-list>
+            </mat-card>
+
+            <!-- Right Content Area -->
+            <div class="content-area">
+                <router-outlet></router-outlet>
             </div>
-          </div>
-          @if (admin.franchise) {
-            <div class="summary-item">
-              <mat-icon>business</mat-icon>
-              <div class="summary-content">
-                <span class="summary-label">Franchise</span>
-                <span class="summary-value">{{ getFranchiseName() }}</span>
-              </div>
-            </div>
-          }
         </div>
-      </mat-card-content>
-    </mat-card>
-  }
-
-  <!-- Loading State -->
-  @if (loading) {
-    <shared-ui-loader [diameter]="50"></shared-ui-loader>
-  }
-
-  <!-- Main Content with Sidebar -->
-  @if (admin && !loading) {
-    <div class="details-content">
-      <!-- Left Sidebar Navigation -->
-      <mat-card class="sidebar-card">
-        <mat-nav-list>
-          @for (item of menuItems; track item.route) {
-            <a
-              mat-list-item
-              [routerLink]="item.route"
-              routerLinkActive="active"
-              [routerLinkActiveOptions]="{ exact: false }"
-            >
-              <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
-              <span matListItemTitle>{{ item.label }}</span>
-            </a>
-          }
-        </mat-nav-list>
-      </mat-card>
-
-      <!-- Right Content Area -->
-      <div class="content-area">
-        <router-outlet></router-outlet>
-      </div>
-    </div>
-  }
+    }
 </div>
 

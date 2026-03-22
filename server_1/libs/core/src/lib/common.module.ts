@@ -29,6 +29,7 @@ import {
   TxnAdminLastLoginDetail,
   TxnAdminPasswordResetToken,
   TxnAdminRefreshToken,
+  TxnAdminFranchise,
   TxnContactForm,
 } from './database/models';
 // Model registry for feature modules
@@ -56,6 +57,7 @@ export class CommonModule {
       MstAdminRole, // Used in MstAdminRolePermission scopes
       MstFranchise,
       MstAdminRolePermission,
+      TxnAdminFranchise,
       // Transactional admin models
       TxnAdminLastLoginDetail,
       TxnAdminRefreshToken,
