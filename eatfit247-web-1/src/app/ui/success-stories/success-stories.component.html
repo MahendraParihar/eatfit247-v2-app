@@ -16,22 +16,6 @@
       </p>
     </header>
 
-    <!-- Year filter -->
-    @if (years.length > 1) {
-      <div class="success-stories-filters" role="group" aria-label="Filter by year">
-        <mat-chip-listbox
-          aria-label="Filter success stories by year"
-          (change)="selectYear($event.value)"
-          [value]="selectedYear"
-        >
-          <mat-chip-option [value]="null">All Years</mat-chip-option>
-          @for (year of years; track year) {
-            <mat-chip-option [value]="year">{{ year }}</mat-chip-option>
-          }
-        </mat-chip-listbox>
-      </div>
-    }
-
     @if (!hasStories) {
       <app-empty-state
         title="No stories found"
