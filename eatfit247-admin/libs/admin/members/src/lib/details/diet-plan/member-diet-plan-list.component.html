@@ -204,7 +204,11 @@
           [class.example-expanded-row]="row.isExpanded"
           (click)="!isChildListSmall(row) && (row.isExpanded = !row.isExpanded)">
       </tr>
-      <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="example-detail-row"></tr>
+      <tr
+        mat-row
+        *matRowDef="let row; columns: ['expandedDetail']"
+        class="example-detail-row"
+        [class.example-detail-expanded]="row.isExpanded"></tr>
     </table>
   </div>
 }
