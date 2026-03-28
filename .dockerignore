@@ -1,6 +1,9 @@
 node_modules
+**/node_modules
 .nx
+**/.nx
 dist
+**/dist
 *.log
 .git
 .gitignore
@@ -14,4 +17,7 @@ coverage
 .env
 .env.local
 .env.*.local
-
+tmp
+**/tmp
+.angular
+**/.angular

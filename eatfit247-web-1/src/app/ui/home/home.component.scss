@@ -1,0 +1,119 @@
+@use '../../../styles/spacing-tokens';
+@use '../../../styles/breakpoints';
+
+.home-page__section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-fluid-xl);
+  padding-block: var(--space-fluid-xl);
+}
+
+// Hero CTA Strip
+.home-hero-cta {
+  padding-block: var(--space-fluid-xl);
+}
+
+.home-hero-cta__inner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  background-color: var(--color-surface-card);
+  border: 1px solid var(--color-border);
+  border-radius: 24px;
+  padding: var(--space-7) var(--space-6);
+
+  @media (min-width: 768px) {
+    flex-direction: row;
+    align-items: stretch;
+  }
+}
+
+.home-hero-cta__card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.home-hero-cta__card-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-primary);
+  background-color: color-mix(in srgb, var(--color-primary) 10%, transparent);
+  border-radius: 999px;
+  padding: 3px 10px;
+  width: fit-content;
+}
+
+.home-hero-cta__card-badge--green {
+  color: #16a34a;
+  background-color: #ecfdf3;
+}
+
+.home-hero-cta__card-title {
+  margin: 0;
+  font-size: var(--font-h2-size);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--font-h2-line-height);
+  color: var(--color-text-primary);
+}
+
+.home-hero-cta__card-desc {
+  margin: 0;
+  font-size: var(--font-body-b3-size);
+  line-height: var(--font-body-b3-line-height);
+  color: var(--color-text-secondary);
+  flex: 1;
+}
+
+.home-hero-cta__divider {
+  width: 100%;
+  height: 1px;
+  background-color: var(--color-divider);
+
+  @media (min-width: 768px) {
+    width: 1px;
+    height: auto;
+  }
+}
+
+// Trust bar
+.home-trust-bar {
+  background-color: var(--color-primary);
+  padding: var(--space-5) var(--space-6);
+}
+
+.home-trust-bar__inner {
+  max-width: 1200px;
+  margin-inline: auto;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-4);
+  text-align: center;
+
+  @media (min-width: 640px) {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.home-trust-bar__item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.home-trust-bar__value {
+  font-size: clamp(1.25rem, 3vw, 1.75rem);
+  font-weight: 800;
+  color: #fff;
+  line-height: 1.2;
+}
+
+.home-trust-bar__label {
+  font-size: 0.8125rem;
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 500;
+}

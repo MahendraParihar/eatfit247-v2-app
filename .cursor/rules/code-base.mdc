@@ -1,6 +1,6 @@
 ---
 alwaysApply: true
 Use @shared-library for shared interface between @eatfit247-admin and @server
-No not use any keyword, create interface and use
-Alwasys create .html and .scss file for angular project
+Do not use any keyword, create interface and use
+Always create .html and .scss file for angular project
 ---

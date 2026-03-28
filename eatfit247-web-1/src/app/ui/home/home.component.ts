@@ -1,5 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import { MatButtonModule } from '@angular/material/button';
 import { BannerComponent, LoaderComponent } from '@shared-ui';
 import { BannerService } from '../../core/services';
 import { BannerForEnum } from '@eatfit247-shared-library/enum';
@@ -9,11 +11,15 @@ import { CommonBlogComponent } from '../common-blogs/common-blog.component';
 import { CommonProgramComponent } from '../common-program/common-program.component';
 import { HomeHallOfFameComponent } from './home-hall-of-fame/home-hall-of-fame.component';
 
+interface TrustStat { value: string; label: string }
+
 @Component({
   standalone: true,
   selector: 'app-home',
   imports: [
     CommonModule,
+    RouterLink,
+    MatButtonModule,
     BannerComponent,
     LoaderComponent,
     CommonBlogComponent,
@@ -30,6 +36,13 @@ export class HomeComponent implements OnInit {
   banners: IPublicBanner[] = [];
   stories: ISuccessStory[] = [];
 
+  readonly trustStats: TrustStat[] = [
+    { value: '5000+', label: 'Clients Transformed' },
+    { value: '16+', label: 'Years of Expertise' },
+    { value: '100%', label: 'Natural Ingredients' },
+    { value: '4.9★', label: 'Average Rating' },
+  ];
+
   async ngOnInit(): Promise<void> {
     this.loading.set(true);
     try {
@@ -39,18 +52,11 @@ export class HomeComponent implements OnInit {
     }
   }
 
-  /**
-   * Load banner images for Home page.
-   * If no banners are returned, the banner section will stay hidden.
-   */
   private async loadBannerData(): Promise<void> {
-    this.banners = await this.bannerService.getBannerMediaForPage(
-      BannerForEnum.HOME
-    );
+    this.banners = await this.bannerService.getBannerMediaForPage(BannerForEnum.HOME);
   }
 
   async loadStories(): Promise<void> {
-    // Load stories from API
     this.stories = await this.successStoriesService.loadStories();
   }
 }

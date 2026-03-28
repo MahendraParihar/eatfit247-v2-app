@@ -6,16 +6,15 @@
     <div class="blog-detail-container">
       <!-- Breadcrumb -->
       <nav class="blog-detail-breadcrumb" aria-label="Breadcrumb">
-        <button
-          matButton
-          [type]="'button'"
+        <a
           class="breadcrumb-link"
           routerLink="/blog"
+          aria-label="Back to Blog listing"
         >
           Blog
-        </button>
-        <span class="breadcrumb-separator">&gt;</span>
-        <span class="breadcrumb-current">Blog Details</span>
+        </a>
+        <span class="breadcrumb-separator" aria-hidden="true">&gt;</span>
+        <span class="breadcrumb-current">{{ blog.title }}</span>
       </nav>
 
       <!-- Layout: main content + sidebar -->
@@ -125,6 +124,25 @@
               </div>
             </section>
           }
+
+          <!-- Programs CTA -->
+          <section class="blog-programs-cta" aria-labelledby="blog-programs-cta-title">
+            <h2 id="blog-programs-cta-title" class="blog-programs-cta__title">
+              Ready to start your journey?
+            </h2>
+            <p class="blog-programs-cta__desc">
+              Work 1-on-1 with Shweta Shah for a personalised nutrition plan.
+            </p>
+            <a
+              routerLink="/our-programs"
+              mat-flat-button
+              color="primary"
+              class="primary-action-button blog-programs-cta__btn"
+              aria-label="View our wellness programs"
+            >
+              View Programs
+            </a>
+          </section>
         </aside>
       </div>
     </div>

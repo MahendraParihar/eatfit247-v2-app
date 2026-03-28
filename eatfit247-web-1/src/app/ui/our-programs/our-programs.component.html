@@ -3,26 +3,55 @@
 }
 
 <div class="our-programs-page page-container">
+  <!-- Programs listing -->
   <app-common-program [showReadMoreBtn]="false" [showFeature]="true"></app-common-program>
 
-  <section class="our-programs__section our-programs__section--terms">
+  <!-- How It Works -->
+  <section class="our-programs__section our-programs__section--how" aria-labelledby="how-it-works-title">
+    <header class="section__header">
+      <h2 id="how-it-works-title" class="section__title">How It Works</h2>
+      <p class="section__tagline">Three simple steps to your healthiest self</p>
+    </header>
+    <div class="our-programs__steps">
+      @for (step of howItWorksSteps; track step.number) {
+        <div class="our-programs__step">
+          <div class="our-programs__step-icon-wrap" aria-hidden="true">
+            <mat-icon class="our-programs__step-icon">{{ step.icon }}</mat-icon>
+          </div>
+          <h3 class="our-programs__step-title">{{ step.title }}</h3>
+          <p class="our-programs__step-desc">{{ step.desc }}</p>
+        </div>
+        @if (!$last) {
+          <mat-icon class="our-programs__step-arrow" aria-hidden="true">arrow_forward</mat-icon>
+        }
+      }
+    </div>
+  </section>
+
+  <!-- Terms & Conditions accordion -->
+  <section class="our-programs__section our-programs__section--terms" aria-labelledby="terms-title">
     <header class="our-programs__terms-header">
-      <h2 class="our-programs__terms-title">
+      <h2 id="terms-title" class="our-programs__terms-title">
         Terms &amp; Conditions
       </h2>
     </header>
 
-    <div class="our-programs__terms-card">
-      <ul class="our-programs__terms-list">
-        @for (item of termsAndConditions; track item) {
-          <li
-            class="our-programs__terms-item"
-          >
-            {{ item }}
-          </li>
-        }
-      </ul>
-    </div>
+    <mat-accordion class="our-programs__terms-accordion">
+      <mat-expansion-panel class="our-programs__terms-panel" hideToggle>
+        <mat-expansion-panel-header>
+          <mat-panel-title class="our-programs__terms-panel-title">
+            View program terms &amp; conditions
+          </mat-panel-title>
+          <mat-panel-description class="our-programs__terms-panel-icon">
+            <mat-icon>expand_more</mat-icon>
+          </mat-panel-description>
+        </mat-expansion-panel-header>
+        <ul class="our-programs__terms-list">
+          @for (item of termsAndConditions; track item) {
+            <li class="our-programs__terms-item">{{ item }}</li>
+          }
+        </ul>
+      </mat-expansion-panel>
+    </mat-accordion>
   </section>
 </div>
-

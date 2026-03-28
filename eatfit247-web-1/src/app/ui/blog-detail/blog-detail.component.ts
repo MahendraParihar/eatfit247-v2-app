@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import { BlogService, SEOService } from '../../core/services';
+import { BlogService, JsonLdService, SEOService } from '../../core/services';
 import { buildMediaUrl } from '../../core/utils/media-url.util';
 import { IPublicBlog } from '@eatfit247-shared-library/core';
 import { ICardData, LoaderComponent, SocialSiteComponent, SocialSiteItem } from '@shared-ui';
@@ -45,6 +45,7 @@ export class BlogDetailsComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly blogService = inject(BlogService);
   private readonly seoService = inject(SEOService);
+  private readonly jsonLdService = inject(JsonLdService);
   private readonly sanitizer = inject(DomSanitizer);
   blog: IBlogDetails | null = null;
   relatedArticles: ICardData[] = [];
@@ -118,6 +119,28 @@ export class BlogDetailsComponent implements OnInit {
         url: `/blog/${this.blog.slug}`,
         type: 'article'
       });
+      // Inject BlogPosting + BreadcrumbList structured data
+      this.jsonLdService.setPageSchema([
+        {
+          '@type': 'BlogPosting',
+          headline: this.blog.title,
+          description: this.blog.excerpt,
+          image: this.blog.imageUrl,
+          datePublished: this.blog.publishedAt?.toISOString(),
+          author: { '@type': 'Person', name: 'Shweta Shah' },
+          publisher: {
+            '@type': 'Organization',
+            name: 'EatFit247',
+            logo: { '@type': 'ImageObject', url: 'https://eatfit24by7.com/logo-white.svg' },
+          },
+          url: `https://eatfit24by7.com/blog/${this.blog.slug}`,
+        },
+        this.jsonLdService.buildBreadcrumb([
+          { name: 'Home', url: 'https://eatfit24by7.com/' },
+          { name: 'Blog', url: 'https://eatfit24by7.com/blog' },
+          { name: this.blog.title, url: `https://eatfit24by7.com/blog/${this.blog.slug}` },
+        ]),
+      ]);
       await this.loadRelatedArticles(apiBlog.blogCategoryId, apiBlog.blogId);
     } catch (err) {
       console.error('Error loading blog details:', err);

@@ -11,4 +11,5 @@ export interface Program {
   subtitle: string;
   prices: ProgramPriceLine[];
   features: string[];
+  badge?: string;
 }

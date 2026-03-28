@@ -5,6 +5,7 @@
         class="site-footer__logo"
         src="/logo-white.svg"
         alt="EatFit 24/7"
+        loading="lazy"
       />
 
       <p class="site-footer__description body-b6">
@@ -21,47 +22,24 @@
       <h2 class="site-footer__heading body-b4">Quick Links</h2>
 
       <nav class="site-footer__nav body-b6" aria-label="Quick links">
-        <a routerLink="/about-us" class="site-footer__link">
-          About EatFit
-        </a>
-        <a routerLink="/about-shweta-shah" class="site-footer__link">
-          About Shweta Shah
-        </a>
-        <a routerLink="/our-programs" class="site-footer__link">
-          Our Programs
-        </a>
-        <a routerLink="/success-stories" class="site-footer__link">
-          Success Stories
-        </a>
-        <a routerLink="/press-and-media" class="site-footer__link">
-          Press & Media
-        </a>
-        <a routerLink="/blog" class="site-footer__link">
-          Blog
-        </a>
-        <a routerLink="/contact-us" class="site-footer__link">
-          Contact Us
-        </a>
+        <a routerLink="/about-us" class="site-footer__link">About EatFit</a>
+        <a routerLink="/about-shweta-shah" class="site-footer__link">About Shweta Shah</a>
+        <a routerLink="/our-programs" class="site-footer__link">Our Programs</a>
+        <a routerLink="/success-stories" class="site-footer__link">Success Stories</a>
+        <a routerLink="/press-and-media" class="site-footer__link">Press &amp; Media</a>
+        <a routerLink="/blog" class="site-footer__link">Blog</a>
+        <a routerLink="/faq" class="site-footer__link">FAQ</a>
+        <a routerLink="/contact-us" class="site-footer__link">Contact Us</a>
       </nav>
     </section>
 
     <section class="site-footer__column">
-      <h2 class="site-footer__heading body-b4">Product</h2>
+      <h2 class="site-footer__heading body-b4">Products</h2>
 
       <nav aria-label="Product links" class="site-footer__nav body-b6">
-        <a routerLink="/product" class="site-footer__link">
-          Products
-        </a>
+        <a routerLink="/product" class="site-footer__link">Shop Debloat Powder</a>
       </nav>
 
-      <h2 class="site-footer__heading body-b4">
-        Recent Posts
-      </h2>
-      <nav aria-label="Recent posts" class="site-footer__nav body-b6">
-        <p class="site-footer__text">
-          Get weekly nutrition tips and healthy recipes delivered to your inbox.
-        </p>
-      </nav>
     </section>
 
     <section class="site-footer__column site-footer__column--contact">
@@ -74,13 +52,13 @@
           {{ contactEmail }}
         </a>
       </nav>
-      <h2 class="site-footer__heading body-b4">&nbsp;</h2>
-      <nav aria-label="Product links" class="site-footer__nav body-b6">
+      <h2 class="site-footer__heading body-b4 site-footer__heading--spaced">Legal</h2>
+      <nav aria-label="Legal links" class="site-footer__nav body-b6">
         <a routerLink="/privacy-policy" class="site-footer__link">
           Privacy Policy
         </a>
         <a routerLink="/terms-and-conditions" class="site-footer__link">
-          Terms & Conditions
+          Terms &amp; Conditions
         </a>
       </nav>
     </section>
@@ -98,4 +76,3 @@
     </p>
   </div>
 </footer>
-

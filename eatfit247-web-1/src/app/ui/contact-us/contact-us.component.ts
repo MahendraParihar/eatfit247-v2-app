@@ -7,7 +7,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { BannerComponent } from '@shared-ui';
-import { BannerService, HttpService } from '../../core/services';
+import { BannerService, HttpService, JsonLdService } from '../../core/services';
 import { BannerForEnum } from '@eatfit247-shared-library/enum';
 import { IPublicBanner } from '@eatfit247-shared-library/core';
 import { RecaptchaService } from '../../core/services/recaptcha.service';
@@ -40,6 +40,7 @@ export class ContactUsComponent implements OnInit {
   private readonly recaptchaService = inject(RecaptchaService);
   private readonly httpService = inject(HttpService);
   private readonly bannerService = inject(BannerService);
+  private readonly jsonLdService = inject(JsonLdService);
   contactForm!: FormGroup;
   formSubmitted = false;
   formSuccess = false;
@@ -66,6 +67,19 @@ export class ContactUsComponent implements OnInit {
   ngOnInit(): void {
     this.initForm();
     void this.loadBannerData();
+    this.jsonLdService.setPageSchema({
+      '@type': 'HealthAndBeautyBusiness',
+      name: 'EatFit247',
+      url: 'https://eatfit24by7.com',
+      email: CONTACT_EMAIL,
+      telephone: CONTACT_NUMBER,
+      address: {
+        '@type': 'PostalAddress',
+        addressCountry: 'IN',
+      },
+      description: 'EatFit247 offers personalised diet consultancy and Ayurvedic wellness products. Contact us for bookings and inquiries.',
+      image: 'https://eatfit24by7.com/logo-white.svg',
+    } as Record<string, unknown>);
   }
 
   private initForm(): void {

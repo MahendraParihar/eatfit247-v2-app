@@ -5,19 +5,76 @@
   @if (banners.length > 0) {
     <app-banner [banners]="banners"></app-banner>
   }
-}
 
-<div class="home-page__section page-container">
+  <!-- Hero CTA strip -->
+  <section class="home-hero-cta page-container" aria-labelledby="home-hero-title">
+    <div class="home-hero-cta__inner">
+      <!-- Diet Consultancy card -->
+      <div class="home-hero-cta__card home-hero-cta__card--primary">
+        <span class="home-hero-cta__card-badge">Expert Guidance</span>
+        <h2 id="home-hero-title" class="home-hero-cta__card-title">
+          Personalised Diet Plans
+        </h2>
+        <p class="home-hero-cta__card-desc">
+          Work 1-on-1 with celebrity nutritionist Shweta Shah for a science-backed,
+          Ayurvedic approach to lasting wellness.
+        </p>
+        <a
+          routerLink="/our-programs"
+          mat-flat-button
+          color="primary"
+          class="primary-action-button"
+          aria-label="Book a free diet consultation"
+        >
+          Book Consultation
+        </a>
+      </div>
 
-  @if (!loading()) {
+      <div class="home-hero-cta__divider" aria-hidden="true"></div>
+
+      <!-- Debloat product card -->
+      <div class="home-hero-cta__card">
+        <span class="home-hero-cta__card-badge home-hero-cta__card-badge--green">100% Natural</span>
+        <h2 class="home-hero-cta__card-title">
+          Debloat Powder
+        </h2>
+        <p class="home-hero-cta__card-desc">
+          India's favourite Ayurvedic digestive wellness powder. Reduce bloating,
+          improve gut health, and feel lighter every day.
+        </p>
+        <a
+          routerLink="/product"
+          mat-stroked-button
+          color="primary"
+          class="secondary-action-button"
+          aria-label="Shop Debloat powder"
+        >
+          Shop Now
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Trust bar -->
+  <section class="home-trust-bar" aria-label="Key achievements">
+    <div class="home-trust-bar__inner">
+      @for (stat of trustStats; track stat.label) {
+        <div class="home-trust-bar__item">
+          <span class="home-trust-bar__value">{{ stat.value }}</span>
+          <span class="home-trust-bar__label">{{ stat.label }}</span>
+        </div>
+      }
+    </div>
+  </section>
+
+  <div class="home-page__section page-container">
     <!-- Programs -->
     <app-common-program [showFeature]="false" [showReadMoreBtn]="true"></app-common-program>
 
     <!-- Hall of Fame -->
     <app-home-hall-of-fame [stories]="stories"></app-home-hall-of-fame>
-  }
 
-  <!-- From Our Blog -->
-  <app-common-blog></app-common-blog>
-
-</div>
+    <!-- From Our Blog -->
+    <app-common-blog></app-common-blog>
+  </div>
+}

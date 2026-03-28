@@ -1,12 +1,12 @@
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { AfterViewInit, Component, HostListener, inject, OnDestroy, PLATFORM_ID, ViewChild } from '@angular/core';
-import { RouterModule } from '@angular/router';
+import { NavigationEnd, Router, RouterModule } from '@angular/router';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatSidenav, MatSidenavModule } from '@angular/material/sidenav';
-import { Subscription } from 'rxjs';
+import { filter, Subscription } from 'rxjs';
 
 @Component({
   standalone: true,
@@ -26,11 +26,13 @@ import { Subscription } from 'rxjs';
 export class SiteHeaderComponent implements OnDestroy, AfterViewInit {
   @ViewChild('mobileSidenav') mobileSidenav!: MatSidenav;
   isMobileMenuOpen = false;
+  isAboutActive = false;
   private sidenavSubscription?: Subscription;
+  private routerSubscription?: Subscription;
   private platformId = inject(PLATFORM_ID);
+  private readonly router = inject(Router);
 
   ngAfterViewInit(): void {
-    // Listen to sidenav events to keep state in sync
     if (this.mobileSidenav && isPlatformBrowser(this.platformId)) {
       this.sidenavSubscription = this.mobileSidenav.openedChange.subscribe((opened: boolean) => {
         this.isMobileMenuOpen = opened;
@@ -41,6 +43,14 @@ export class SiteHeaderComponent implements OnDestroy, AfterViewInit {
         }
       });
     }
+    this.updateActiveStates(this.router.url);
+    this.routerSubscription = this.router.events
+      .pipe(filter((e) => e instanceof NavigationEnd))
+      .subscribe((e) => this.updateActiveStates((e as NavigationEnd).url));
+  }
+
+  private updateActiveStates(url: string): void {
+    this.isAboutActive = url.startsWith('/about-us') || url.startsWith('/about-shweta-shah');
   }
 
   toggleMobileMenu(): void {
@@ -61,7 +71,6 @@ export class SiteHeaderComponent implements OnDestroy, AfterViewInit {
 
   @HostListener('window:resize')
   onResize(): void {
-    // Close mobile menu on resize to desktop
     if (isPlatformBrowser(this.platformId) && window.innerWidth > 1024 && this.isMobileMenuOpen) {
       this.closeMobileMenu();
     }
@@ -75,13 +84,11 @@ export class SiteHeaderComponent implements OnDestroy, AfterViewInit {
   }
 
   ngOnDestroy(): void {
-    // Cleanup: restore body scroll if component is destroyed while menu is open
     if (isPlatformBrowser(this.platformId)) {
       document.body.style.overflow = '';
     }
-    if (this.sidenavSubscription) {
-      this.sidenavSubscription.unsubscribe();
-    }
+    this.sidenavSubscription?.unsubscribe();
+    this.routerSubscription?.unsubscribe();
   }
 }
 

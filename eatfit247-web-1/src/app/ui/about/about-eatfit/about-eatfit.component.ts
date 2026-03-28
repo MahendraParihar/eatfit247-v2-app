@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { BannerForEnum } from '@eatfit247-shared-library/enum';
-import { BannerService, ReferrerService } from '../../../core/services';
+import { BannerService, JsonLdService, ReferrerService } from '../../../core/services';
 import { BannerComponent, LoaderComponent, SocialSiteItem } from '@shared-ui';
 import { IPublicBanner, IPublicReferrer } from '@eatfit247-shared-library/core';
 import { buildMediaUrl } from '../../../core/utils/media-url.util';
@@ -20,6 +20,7 @@ export class AboutEatfitComponent implements OnInit {
   private readonly sanitizer = inject(DomSanitizer);
   private readonly referrerService = inject(ReferrerService);
   private readonly bannerService = inject(BannerService);
+  private readonly jsonLdService = inject(JsonLdService);
   readonly loading = signal(false);
   banners: IPublicBanner[] = [];
   safeYoutubeUrl: SafeResourceUrl | null = null;
@@ -86,6 +87,18 @@ export class AboutEatfitComponent implements OnInit {
     } finally {
       this.loading.set(false);
     }
+    this.jsonLdService.setPageSchema({
+      '@type': 'Organization',
+      name: 'EatFit247',
+      url: 'https://eatfit24by7.com',
+      logo: 'https://eatfit24by7.com/logo-white.svg',
+      description: 'EatFit247 is a holistic nutrition and wellness platform founded by celebrity nutritionist Shweta Shah, offering personalised diet consultancy and natural wellness products.',
+      sameAs: [
+        'https://www.instagram.com/shwetashah_eatfit247',
+        'https://www.facebook.com/eatfit247',
+        'https://www.youtube.com/@EatFit247',
+      ],
+    } as Record<string, unknown>);
   }
 
   /**

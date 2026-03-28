@@ -1,6 +1,13 @@
 .success-stories-page {
   display: flex;
   flex-direction: column;
+  gap: var(--space-fluid-xl);
+}
+
+.success-stories-filters {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
 }
 
 

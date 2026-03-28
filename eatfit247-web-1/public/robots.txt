@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+Disallow: /checkout
+Disallow: /checkout/
+Disallow: /checkout/*
+
+Sitemap: https://eatfit24by7.com/sitemap.xml

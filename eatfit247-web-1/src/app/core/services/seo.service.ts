@@ -1,5 +1,5 @@
 import { inject, Injectable, PLATFORM_ID } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
+import { DOCUMENT, isPlatformBrowser } from '@angular/common';
 import { Meta, Title } from '@angular/platform-browser';
 import { NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs/operators';
@@ -19,29 +19,26 @@ export interface SEOData {
   providedIn: 'root',
 })
 export class SEOService {
-  private readonly defaultTitle = 'EatFit247 - Your Health & Wellness Partner';
+  private readonly defaultTitle = 'EatFit247 | Diet Consultancy & Wellness by Shweta Shah';
   private readonly defaultDescription =
-    'EatFit247 offers personalized nutrition plans, health programs, and expert guidance from celebrity nutritionist Shweta Shah. Transform your health journey with our Ayurvedic and natural wellness solutions.';
+    'EatFit247 offers personalized nutrition plans, diet consultancy, and the Debloat powder by celebrity nutritionist Shweta Shah. Transform your health with Ayurvedic and science-backed wellness solutions.';
   private readonly defaultKeywords =
-    'nutrition, diet plan, weight loss, health, wellness, Shweta Shah, EatFit247, Ayurveda, dosha, immunity, celebrity nutritionist';
+    'diet consultancy, nutrition plan, weight loss, Shweta Shah, EatFit247, Debloat powder, gut health, Ayurveda, wellness, PCOD, thyroid diet, celebrity nutritionist';
   private readonly siteUrl = 'https://eatfit24by7.com';
   private readonly defaultImage = `${this.siteUrl}/assets/images/logo.png`;
   private readonly seoPageService = inject(SeoPageService);
   private readonly platformId = inject(PLATFORM_ID);
+  private readonly document = inject(DOCUMENT);
   private isInitialNavigation = true;
 
   constructor(private meta: Meta, private title: Title, private router: Router) {
     this.initializeRouterListener();
   }
 
-  /**
-   * Initialize router listener to update SEO on route changes
-   */
   private initializeRouterListener(): void {
     this.router.events
       .pipe(filter((event) => event instanceof NavigationEnd))
       .subscribe(async () => {
-        // Skip initial navigation as it's handled separately
         if (this.isInitialNavigation) {
           this.isInitialNavigation = false;
           return;
@@ -50,9 +47,6 @@ export class SEOService {
       });
   }
 
-  /**
-   * Load SEO data for the current route
-   */
   private async loadSeoForCurrentRoute(): Promise<void> {
     if (!isPlatformBrowser(this.platformId)) {
       return;
@@ -67,7 +61,8 @@ export class SEOService {
   }
 
   /**
-   * Update SEO meta tags from API data (ISeoPageData)
+   * Update SEO meta tags from API data (ISeoPageData).
+   * Uses CMS og:image when available, falls back to default.
    */
   updateSEOFromApiData(seoData: ISeoPageData): void {
     const title = seoData.metaTitle
@@ -82,33 +77,29 @@ export class SEOService {
     const ogDescription = seoData.ogDescription || description;
     const ogUrl = seoData.ogUrl || canonicalUrl;
     const twitterCard = seoData.twitterCard || 'summary_large_image';
+    const ogImage = (seoData as ISeoPageData & { ogImage?: string }).ogImage ?? this.defaultImage;
 
-    // Update title
     this.title.setTitle(title);
 
-    // Update or create meta tags
     this.updateMetaTag('description', description);
 
-    // Open Graph tags
     this.updateMetaTag('og:title', ogTitle);
     this.updateMetaTag('og:description', ogDescription);
-    this.updateMetaTag('og:image', this.defaultImage);
+    this.updateMetaTag('og:image', ogImage);
     this.updateMetaTag('og:url', ogUrl);
     this.updateMetaTag('og:type', ogType);
     this.updateMetaTag('og:site_name', 'EatFit247');
 
-    // Twitter Card tags
     this.updateMetaTag('twitter:card', twitterCard);
     this.updateMetaTag('twitter:title', ogTitle);
     this.updateMetaTag('twitter:description', ogDescription);
-    this.updateMetaTag('twitter:image', this.defaultImage);
+    this.updateMetaTag('twitter:image', ogImage);
 
-    // Update canonical URL
     this.updateCanonicalUrl(canonicalUrl);
   }
 
   /**
-   * Update SEO meta tags
+   * Update SEO meta tags for non-API flows (product, blog detail, etc.).
    */
   updateSEO(data: SEOData): void {
     const title = data.title
@@ -122,14 +113,11 @@ export class SEOService {
       : `${this.siteUrl}${this.router.url}`;
     const type = data.type || 'website';
 
-    // Update title
     this.title.setTitle(title);
 
-    // Update or create meta tags
     this.updateMetaTag('description', description);
     this.updateMetaTag('keywords', keywords);
 
-    // Open Graph tags
     this.updateMetaTag('og:title', title);
     this.updateMetaTag('og:description', description);
     this.updateMetaTag('og:image', image);
@@ -137,34 +125,25 @@ export class SEOService {
     this.updateMetaTag('og:type', type);
     this.updateMetaTag('og:site_name', 'EatFit247');
 
-    // Twitter Card tags
     this.updateMetaTag('twitter:card', 'summary_large_image');
     this.updateMetaTag('twitter:title', title);
     this.updateMetaTag('twitter:description', description);
     this.updateMetaTag('twitter:image', image);
 
-    // Update canonical URL
     this.updateCanonicalUrl(url);
   }
 
   /**
-   * Update or create a meta tag
+   * Update or create a meta tag. SSR-safe via Angular Meta service.
    */
   private updateMetaTag(property: string, content: string): void {
-    if (!isPlatformBrowser(this.platformId)) {
-      return;
-    }
-
-    // Handle both property and name attributes
     if (property.startsWith('og:') || property.startsWith('twitter:')) {
-      // Open Graph and Twitter tags use property attribute
       if (this.meta.getTag(`property="${property}"`)) {
         this.meta.updateTag({ property, content });
       } else {
         this.meta.addTag({ property, content });
       }
     } else {
-      // Standard meta tags use name attribute
       if (this.meta.getTag(`name="${property}"`)) {
         this.meta.updateTag({ name: property, content });
       } else {
@@ -174,29 +153,24 @@ export class SEOService {
   }
 
   /**
-   * Update canonical URL
+   * Update canonical URL. Uses DOCUMENT token (works in SSR and browser).
    */
   private updateCanonicalUrl(url: string): void {
-    if (!isPlatformBrowser(this.platformId)) {
-      return;
-    }
-
-    let link: HTMLLinkElement | null = document.querySelector(
-      'link[rel="canonical"]'
-    );
+    let link = this.document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
 
     if (link) {
       link.setAttribute('href', url);
     } else {
-      link = document.createElement('link');
+      link = this.document.createElement('link');
       link.setAttribute('rel', 'canonical');
       link.setAttribute('href', url);
-      document.head.appendChild(link);
+      this.document.head.appendChild(link);
     }
   }
 
   /**
-   * Initialize SEO for the current route (call on app init)
+   * Initialize SEO for the current route (call on app init).
+   * API-fetching is browser-only; meta/title/canonical updates are SSR-safe.
    */
   async initializeSeo(): Promise<void> {
     if (!isPlatformBrowser(this.platformId)) {
@@ -206,4 +180,3 @@ export class SEOService {
     await this.loadSeoForCurrentRoute();
   }
 }
-

@@ -1,8 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
-import { BannerService, BlogService } from '../../core/services';
-import { BannerComponent, CardComponent, ICardData, LoaderComponent } from '@shared-ui';
+import { BannerService, BlogService, JsonLdService } from '../../core/services';
+import { BannerComponent, CardComponent, EmptyStateComponent, ICardData, LoaderComponent } from '@shared-ui';
 import { BannerForEnum } from '@eatfit247-shared-library/enum';
 import { IPublicBanner } from '@eatfit247-shared-library/core';
 
@@ -14,6 +14,7 @@ import { IPublicBanner } from '@eatfit247-shared-library/core';
     MatPaginatorModule,
     CardComponent,
     LoaderComponent,
+    EmptyStateComponent,
     BannerComponent
   ],
   templateUrl: './blog.component.html',
@@ -22,6 +23,7 @@ import { IPublicBanner } from '@eatfit247-shared-library/core';
 export class BlogComponent implements OnInit {
   private readonly blogService = inject(BlogService);
   private readonly bannerService = inject(BannerService);
+  private readonly jsonLdService = inject(JsonLdService);
   readonly blogs = signal<ICardData[]>([]);
   readonly loading = signal(false);
   readonly totalBlogs = signal(0);
@@ -47,6 +49,15 @@ export class BlogComponent implements OnInit {
       if (response) {
         this.totalBlogs.set(response.count);
         this.blogs.set(this.blogService.mapBlogsToCards(response.tableData));
+        // Inject ItemList JSON-LD for blog listing
+        this.jsonLdService.setPageSchema({
+          '@type': 'ItemList',
+          itemListElement: response.tableData.slice(0, 10).map((blog, i) => ({
+            '@type': 'ListItem',
+            position: i + 1,
+            url: `https://eatfit24by7.com/blog/${blog.seo?.url || blog.title?.toLowerCase().replace(/\s+/g, '-')}`,
+          })),
+        } as Record<string, unknown>);
       } else {
         this.blogs.set([]);
         this.totalBlogs.set(0);

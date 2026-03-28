@@ -1,3 +1,156 @@
-<p>Program Details works!</p>
+@if (loading()) {
+  <app-loader page="program-details"></app-loader>
+}
 
+@if (!loading() && !program()) {
+  <div class="page-container">
+    <app-empty-state
+      title="Program not found"
+      description="The program you're looking for doesn't exist. Browse all our available programs."
+      buttonText="View All Programs"
+      (buttonClick)="goToPrograms()"
+    ></app-empty-state>
+  </div>
+}
 
+@if (!loading() && program(); as prog) {
+  <div class="program-details-page page-container">
+
+    <!-- Breadcrumb -->
+    <nav class="program-details__breadcrumb" aria-label="Breadcrumb">
+      <a routerLink="/" class="breadcrumb-link">Home</a>
+      <mat-icon class="breadcrumb-sep" aria-hidden="true">chevron_right</mat-icon>
+      <a routerLink="/our-programs" class="breadcrumb-link">Programs</a>
+      <mat-icon class="breadcrumb-sep" aria-hidden="true">chevron_right</mat-icon>
+      <span class="breadcrumb-current">{{ prog.name }}</span>
+    </nav>
+
+    <!-- Hero -->
+    <header class="program-details__hero">
+      <div class="program-details__hero-content">
+        <span class="section__badge">
+          <span class="section__badge-text">Wellness Program</span>
+        </span>
+        <h1 class="program-details__title">{{ prog.name }}</h1>
+        <p class="program-details__subtitle">{{ prog.subtitle }}</p>
+
+        <div class="program-details__hero-actions">
+          <a
+            routerLink="/our-programs"
+            mat-stroked-button
+            color="primary"
+            class="secondary-action-button"
+          >
+            View All Programs
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <!-- Outcomes -->
+    <section class="program-details__section" aria-labelledby="outcomes-title">
+      <h2 id="outcomes-title" class="program-details__section-title">What You'll Achieve</h2>
+      <div class="program-details__outcomes-grid">
+        @for (outcome of outcomes; track outcome) {
+          <div class="program-details__outcome-item">
+            <span class="program-details__outcome-icon" aria-hidden="true">✓</span>
+            <span class="program-details__outcome-text">{{ outcome }}</span>
+          </div>
+        }
+      </div>
+    </section>
+
+    <!-- What's Included -->
+    <section class="program-details__section" aria-labelledby="included-title">
+      <h2 id="included-title" class="program-details__section-title">What's Included</h2>
+      <ul class="program-details__feature-list" aria-label="Program features">
+        @for (feature of prog.features; track feature) {
+          <li class="program-details__feature-item">
+            <span class="program-details__feature-icon" aria-hidden="true">✓</span>
+            <span>{{ feature }}</span>
+          </li>
+        }
+      </ul>
+    </section>
+
+    <!-- Pricing -->
+    <section class="program-details__section" aria-labelledby="pricing-title">
+      <h2 id="pricing-title" class="program-details__section-title">Choose Your Plan</h2>
+      <div class="program-details__pricing-grid">
+        @for (price of prog.prices; track price.programPlanId) {
+          <div class="program-details__price-card">
+            <div class="program-details__price-card-header">
+              <p class="program-details__price-label" [innerHTML]="price.label"></p>
+              @if (price.note) {
+                <span class="program-details__price-badge">{{ price.note }}</span>
+              }
+            </div>
+            <p class="program-details__price-amount">{{ price.value }}</p>
+            <button
+              type="button"
+              mat-flat-button
+              color="primary"
+              class="primary-action-button program-details__book-btn"
+              (click)="bookNow(price.programPlanId)"
+              [attr.aria-label]="'Book ' + price.label + ' for ' + price.value"
+            >
+              Book Now
+            </button>
+          </div>
+        }
+      </div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="program-details__section" aria-labelledby="how-it-works-title">
+      <h2 id="how-it-works-title" class="program-details__section-title">How It Works</h2>
+      <div class="program-details__steps">
+        <div class="program-details__step">
+          <div class="program-details__step-number" aria-hidden="true">1</div>
+          <div class="program-details__step-content">
+            <h3 class="program-details__step-title">Book a Session</h3>
+            <p class="program-details__step-desc">Choose the plan that fits your goals and complete a quick, secure checkout.</p>
+          </div>
+        </div>
+        <mat-icon class="program-details__step-arrow" aria-hidden="true">arrow_forward</mat-icon>
+        <div class="program-details__step">
+          <div class="program-details__step-number" aria-hidden="true">2</div>
+          <div class="program-details__step-content">
+            <h3 class="program-details__step-title">Get Your Plan</h3>
+            <p class="program-details__step-desc">During your consultation, receive a personalised nutrition plan based on your body type and goals.</p>
+          </div>
+        </div>
+        <mat-icon class="program-details__step-arrow" aria-hidden="true">arrow_forward</mat-icon>
+        <div class="program-details__step">
+          <div class="program-details__step-number" aria-hidden="true">3</div>
+          <div class="program-details__step-content">
+            <h3 class="program-details__step-title">Transform</h3>
+            <p class="program-details__step-desc">Follow your plan with expert guidance and track your progress towards lasting wellness.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="program-details__section" aria-labelledby="faq-title">
+      <h2 id="faq-title" class="program-details__section-title">Frequently Asked Questions</h2>
+      <mat-accordion multi="false">
+        @for (faq of faqs; track faq.question) {
+          <mat-expansion-panel class="program-details__faq-panel" hideToggle>
+            <mat-expansion-panel-header>
+              <mat-panel-title class="program-details__faq-question">{{ faq.question }}</mat-panel-title>
+              <mat-panel-description class="program-details__faq-icon">
+                <mat-icon>expand_more</mat-icon>
+              </mat-panel-description>
+            </mat-expansion-panel-header>
+            <p class="program-details__faq-answer">{{ faq.answer }}</p>
+          </mat-expansion-panel>
+        }
+      </mat-accordion>
+      <p class="program-details__faq-more">
+        More questions? Visit our <a routerLink="/faq" class="program-details__faq-link">FAQ page</a> or <a routerLink="/contact-us" class="program-details__faq-link">contact us</a>.
+      </p>
+    </section>
+
+  </div>
+}

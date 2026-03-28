@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { BannerComponent, LoaderComponent } from '@shared-ui';
-import { BannerService } from '../../../core/services';
+import { BannerService, JsonLdService } from '../../../core/services';
 import { BannerForEnum } from '@eatfit247-shared-library/enum';
 import { IPublicBanner, IPublicLegalPage } from '@eatfit247-shared-library/core';
 import { LegalPagesService } from '../../../core/services/legal-pages.service';
@@ -17,6 +17,7 @@ import { Router } from '@angular/router';
 export class AboutShwetaShahComponent implements OnInit {
   private readonly bannerService = inject(BannerService);
   private readonly legalPagesService = inject(LegalPagesService);
+  private readonly jsonLdService = inject(JsonLdService);
   private readonly router = inject(Router);
   pageData: IPublicLegalPage | null = null;
   isLoading = signal(true);
@@ -24,6 +25,19 @@ export class AboutShwetaShahComponent implements OnInit {
   banners: IPublicBanner[] = [];
 
   async ngOnInit(): Promise<void> {
+    this.jsonLdService.setPageSchema({
+      '@type': 'Person',
+      name: 'Shweta Shah',
+      jobTitle: 'Celebrity Nutritionist',
+      url: 'https://eatfit24by7.com/about-shweta-shah',
+      description: 'Shweta Shah is a celebrity nutritionist with 16+ years of experience in holistic nutrition, Ayurveda, and wellness. Founder of EatFit247.',
+      sameAs: [
+        'https://www.instagram.com/shwetashah_eatfit247',
+        'https://www.facebook.com/eatfit247',
+        'https://www.youtube.com/@EatFit247',
+      ],
+      worksFor: { '@type': 'Organization', name: 'EatFit247', url: 'https://eatfit24by7.com' },
+    } as Record<string, unknown>);
     await this.loadBannerData();
     await this.loadPage();
   }

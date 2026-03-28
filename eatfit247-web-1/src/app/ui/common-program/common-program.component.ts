@@ -32,7 +32,7 @@ export class CommonProgramComponent implements OnInit {
           programPlanId: 261,
           label: '6 Sessions',
           value: '₹67,500',
-          note: '',
+          note: 'Best Value',
         },
         {
           programPlanId: 262,
@@ -53,6 +53,7 @@ export class CommonProgramComponent implements OnInit {
       id: 'chief-nutritionist',
       name: 'Plan with Chief Nutritionist',
       subtitle: 'Experience of 16 years',
+      badge: 'Most Popular',
       prices: [
         {
           programPlanId: 239,

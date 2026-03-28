@@ -148,3 +148,106 @@
   }
 }
 
+// How It Works
+.our-programs__section--how {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.our-programs__steps {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  align-items: stretch;
+
+  @media (min-width: 768px) {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+}
+
+.our-programs__step {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-3);
+  background-color: var(--color-surface-card);
+  border: 1px solid var(--color-border);
+  border-radius: 20px;
+  padding: var(--space-6) var(--space-5);
+}
+
+.our-programs__step-icon-wrap {
+  width: 56px;
+  height: 56px;
+  border-radius: 999px;
+  background-color: color-mix(in srgb, var(--color-primary) 10%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.our-programs__step-icon {
+  color: var(--color-primary);
+  font-size: 28px;
+  width: 28px;
+  height: 28px;
+}
+
+.our-programs__step-title {
+  margin: 0;
+  font-size: var(--font-body-b3-size);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.our-programs__step-desc {
+  margin: 0;
+  font-size: var(--font-body-b5-size);
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+}
+
+.our-programs__step-arrow {
+  color: var(--color-primary);
+  font-size: 24px;
+  align-self: center;
+  display: none;
+
+  @media (min-width: 768px) {
+    display: block;
+    margin-top: 28px;
+  }
+}
+
+// T&C accordion
+.our-programs__terms-accordion {
+  max-width: 960px;
+  width: 100%;
+}
+
+.our-programs__terms-panel {
+  border-radius: 12px !important;
+  border: 1px solid var(--color-border) !important;
+  box-shadow: none !important;
+
+  &::before {
+    display: none;
+  }
+}
+
+.our-programs__terms-panel-title {
+  font-size: var(--font-body-b3-size);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.our-programs__terms-panel-icon {
+  justify-content: flex-end;
+  color: var(--color-text-secondary);
+  min-width: 24px;
+}
+

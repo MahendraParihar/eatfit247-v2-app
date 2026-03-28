@@ -13,10 +13,9 @@ import { CONTACT_EMAIL, CONTACT_NUMBER, SOCIAL_LINKS } from '../../core/utils/co
 })
 export class SiteFooterComponent {
   readonly currentYear = new Date().getFullYear();
-
   readonly socialLinks: SocialSiteItem[] = SOCIAL_LINKS;
   readonly contactEmail = CONTACT_EMAIL;
   readonly contactNumber = CONTACT_NUMBER;
+
+
 }
-
-

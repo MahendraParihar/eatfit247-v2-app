@@ -8,8 +8,12 @@
     @for (program of programs; track program.id) {
       <article
         class="our-programs__card"
+        [class.our-programs__card--highlight]="program.badge === 'Most Popular'"
       >
         <header class="our-programs__card-header">
+          @if (program.badge) {
+            <span class="our-programs__card-badge">{{ program.badge }}</span>
+          }
           <h2 class="our-programs__card-title">
             {{ program.name }}
           </h2>

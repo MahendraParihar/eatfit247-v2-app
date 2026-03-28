@@ -1,11 +1,11 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { BannerComponent, LoaderComponent } from '@shared-ui';
-import { BannerService, SEOService } from '../../core/services';
+import { BannerService, JsonLdService, SEOService } from '../../core/services';
 import { ProductService } from '../../core/services/product.service';
 import {
   BannerForEnum,
@@ -35,6 +35,7 @@ interface ISizeOption extends IProductFee {
   imports: [
     CommonModule,
     FormsModule,
+    RouterLink,
     BannerComponent,
     LoaderComponent,
     MatButtonModule,
@@ -48,6 +49,7 @@ export class ProductComponent implements OnInit, OnDestroy {
   private readonly productService = inject(ProductService);
   private readonly router = inject(Router);
   private readonly seoService = inject(SEOService);
+  private readonly jsonLdService = inject(JsonLdService);
   // Banner media
   banners: IPublicBanner[] = [];
   // Product data
@@ -220,6 +222,14 @@ export class ProductComponent implements OnInit, OnDestroy {
   get productStartEndorsed(): IProjectStarEndorsedSection {
     return (this.product?.additionalInfo?.startEndorsed ||
       {}) as IProjectStarEndorsedSection;
+  }
+
+  get reportStats(): { value: string; label: string }[] {
+    const stats = (this.productReportSection as unknown as Record<string, unknown>)?.stats;
+    if (Array.isArray(stats)) {
+      return stats as { value: string; label: string }[];
+    }
+    return [];
   }
 
   async ngOnInit(): Promise<void> {
@@ -498,6 +508,30 @@ export class ProductComponent implements OnInit, OnDestroy {
       url: this.router.url,
       type: 'product'
     });
+    // Inject Product structured data
+    this.jsonLdService.setPageSchema([
+      {
+        '@type': 'Product',
+        name: this.productName,
+        description: this.productDescription,
+        image: this.productImages.length > 0 ? this.productImages : undefined,
+        brand: { '@type': 'Brand', name: 'EatFit247' },
+        offers: this.currentPrice
+          ? {
+              '@type': 'Offer',
+              price: this.currentPrice.toString(),
+              priceCurrency: 'INR',
+              availability: 'https://schema.org/InStock',
+              url: `https://eatfit24by7.com${this.router.url}`,
+            }
+          : undefined,
+      },
+      this.jsonLdService.buildBreadcrumb([
+        { name: 'Home', url: 'https://eatfit24by7.com/' },
+        { name: 'Products', url: 'https://eatfit24by7.com/product' },
+        { name: this.productName, url: `https://eatfit24by7.com${this.router.url}` },
+      ]),
+    ]);
   }
 
   getCurrentPrice(): number {

@@ -1,3 +1,71 @@
-<p>FAQ works!</p>
+<div class="faq-page page-container">
+  <header class="section__header">
+    <span class="section__badge">
+      <span class="section__badge-text">Got questions?</span>
+    </span>
+    <h1 class="section__title">Frequently Asked Questions</h1>
+    <p class="section__tagline">
+      Everything you need to know about diet consultancy, Debloat powder, and working with EatFit247.
+    </p>
+  </header>
 
+  @if (loading()) {
+    <app-loader page="faq"></app-loader>
+  }
 
+  @if (!loading()) {
+    <div class="faq-categories">
+      @for (cat of faqCategories; track cat.category) {
+        <section class="faq-category" [attr.aria-labelledby]="'cat-' + $index">
+          <div class="faq-category__header">
+            <mat-icon class="faq-category__icon" aria-hidden="true">{{ cat.icon }}</mat-icon>
+            <h2 [id]="'cat-' + $index" class="faq-category__title">{{ cat.category }}</h2>
+          </div>
+
+          <mat-accordion class="faq-accordion" multi="false">
+            @for (item of cat.items; track item.question) {
+              <mat-expansion-panel class="faq-panel" hideToggle>
+                <mat-expansion-panel-header class="faq-panel__header">
+                  <mat-panel-title class="faq-panel__question">
+                    {{ item.question }}
+                  </mat-panel-title>
+                  <mat-panel-description class="faq-panel__toggle-icon">
+                    <mat-icon>expand_more</mat-icon>
+                  </mat-panel-description>
+                </mat-expansion-panel-header>
+                <p class="faq-panel__answer">{{ item.answer }}</p>
+              </mat-expansion-panel>
+            }
+          </mat-accordion>
+        </section>
+      }
+    </div>
+
+    <div class="faq-cta-block">
+      <h2 class="faq-cta-block__title">Still have questions?</h2>
+      <p class="faq-cta-block__subtitle">
+        Our team is happy to help. Reach out and we'll get back to you within 24 hours.
+      </p>
+      <div class="faq-cta-block__actions">
+        <a
+          routerLink="/contact-us"
+          mat-flat-button
+          color="primary"
+          class="primary-action-button"
+          aria-label="Go to Contact Us page"
+        >
+          Contact Us
+        </a>
+        <a
+          routerLink="/our-programs"
+          mat-stroked-button
+          color="primary"
+          class="secondary-action-button"
+          aria-label="View our wellness programs"
+        >
+          View Programs
+        </a>
+      </div>
+    </div>
+  }
+</div>

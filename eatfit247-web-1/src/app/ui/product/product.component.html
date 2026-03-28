@@ -11,6 +11,15 @@
       <p>{{ error() }}</p>
     </div>
   } @else if (product) {
+    <!-- Breadcrumb -->
+    <nav class="product-page__breadcrumb" aria-label="Breadcrumb">
+      <a routerLink="/" class="product-page__breadcrumb-link">Home</a>
+      <mat-icon class="product-page__breadcrumb-sep" aria-hidden="true">chevron_right</mat-icon>
+      <a routerLink="/product" class="product-page__breadcrumb-link">Products</a>
+      <mat-icon class="product-page__breadcrumb-sep" aria-hidden="true">chevron_right</mat-icon>
+      <span class="product-page__breadcrumb-current">{{ productName }}</span>
+    </nav>
+
     <!-- Product Details: 2-column -->
     <div class="product-page__details">
       <!-- Left: Images -->
@@ -20,6 +29,7 @@
             [src]="selectedImage"
             [alt]="productName"
             class="product-page__image-main-img"
+            fetchpriority="high"
           />
         </div>
 
@@ -268,10 +278,9 @@
               [src]="productConsumptionInstructions.mediaData.mediaLink[0].webUrl"
               controls
               loop
-              autoplay
               muted
               playsinline
-              preload="auto"
+              preload="none"
               class="product-page__consume-video"
               [poster]="productImages[0] || ''"
               (error)="onVideoError($event)"
@@ -293,7 +302,7 @@
     }
 
     <!-- Tried and Tested Section -->
-    @if (productReportSection) {
+    @if (productReportSection && productReportSection.title) {
       <section class="product-page__report">
         <div class="product-page__report-inner">
           @if (productReportSection.title) {
@@ -302,21 +311,16 @@
           @if (productReportSection.description) {
             <span class="product-page__report-text">{{ productReportSection.description }}</span>
           }
-          <div class="product-page__report_stats_section">
-            <div class="product-page__report-stats-section-item">
-              <div class="product-page__report-stats-section-item-count">75%</div>
-              <div class="product-page__report-stats-section-item-label">said they felt less abdominal pain</div>
+          @if (reportStats.length > 0) {
+            <div class="product-page__report_stats_section">
+              @for (stat of reportStats; track $index) {
+                <div class="product-page__report-stats-section-item">
+                  <div class="product-page__report-stats-section-item-count">{{ stat.value }}</div>
+                  <div class="product-page__report-stats-section-item-label">{{ stat.label }}</div>
+                </div>
+              }
             </div>
-            <div class="product-page__report-stats-section-item">
-              <div class="product-page__report-stats-section-item-count">69%</div>
-              <div class="product-page__report-stats-section-item-label">said their stomach felt less tight and full
-              </div>
-            </div>
-            <div class="product-page__report-stats-section-item">
-              <div class="product-page__report-stats-section-item-count">67%</div>
-              <div class="product-page__report-stats-section-item-label">felt less bloated after eating a meal</div>
-            </div>
-          </div>
+          }
         </div>
       </section>
     }
@@ -371,13 +375,12 @@
     <!-- Feature Section -->
     @if (productFeature) {
       <section class="product-page__feature">
-        <div
-          class="product-page__feature-media"
-        >
+        <div class="product-page__feature-media">
           <div class="product-page__feature-media-inner">
             <img
-              src="/product_feature.jpg"
-              [alt]="productName + ' - Image '"
+              [src]="productImages1[featureSliderCurrentIndex] || productImages[0] || '/product_feature.jpg'"
+              [alt]="productName + ' - feature image'"
+              loading="lazy"
             />
           </div>
         </div>
@@ -429,10 +432,9 @@
                 [src]="productStartEndorsed.mediaData.mediaLink[0].webUrl"
                 controls
                 loop
-                autoplay
                 muted
                 playsinline
-                preload="auto"
+                preload="none"
                 class="product-page__star-video"
                 [poster]="productImages[0] || ''"
                 (error)="onVideoError($event)"

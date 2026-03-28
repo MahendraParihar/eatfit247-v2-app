@@ -1,36 +1,49 @@
-<!-- Banner Section -->
-@if (banners().length > 0) {
-  <app-banner [banners]="banners()"></app-banner>
-}
-
 <div class="blog-page page-container">
+  <!-- Banner -->
+  @if (banners().length > 0) {
+    <app-banner [banners]="banners()"></app-banner>
+  }
+
+  <!-- Page Header -->
+  <header class="section__header">
+    <h1 class="section__title">Our Health Blog</h1>
+    <p class="section__tagline">
+      Science-backed nutrition insights, wellness tips, and healthy recipes from expert nutritionist Shweta Shah.
+    </p>
+  </header>
+
   <!-- Loading State -->
   @if (loading()) {
     <app-loader page="blog"></app-loader>
   }
 
-  <!-- Blogs Grid -->
-  @if (!loading() && blogs().length > 0) {
-    <div class="blogs-grid">
-      @for (blog of blogs(); track blog.id) {
-        <app-card [data]="blog"></app-card>
-      }
-    </div>
-  }
+  @if (!loading()) {
+    <!-- Blogs Grid -->
+    @if (blogs().length > 0) {
+      <div class="blogs-grid">
+        @for (blog of blogs(); track blog.id) {
+          <app-card [data]="blog"></app-card>
+        }
+      </div>
+    } @else {
+      <app-empty-state
+        title="No articles yet"
+        description="We're working on some great wellness content. Check back soon!"
+      ></app-empty-state>
+    }
 
-  <!-- Pagination -->
-  @if (!loading() && totalBlogs() > pageSize()) {
-    <div class="blog-pagination">
-      <mat-paginator
-        [length]="totalBlogs()"
-        [pageSize]="pageSize()"
-        [pageIndex]="currentPage()"
-        [pageSizeOptions]="[6, 12, 24, 48]"
-        (page)="onPageChange($event)"
-        showFirstLastButtons
-      >
-      </mat-paginator>
-    </div>
+    <!-- Pagination -->
+    @if (totalBlogs() > pageSize()) {
+      <div class="blog-pagination">
+        <mat-paginator
+          [length]="totalBlogs()"
+          [pageSize]="pageSize()"
+          [pageIndex]="currentPage()"
+          [pageSizeOptions]="[6, 12, 24, 48]"
+          (page)="onPageChange($event)"
+          showFirstLastButtons
+        ></mat-paginator>
+      </div>
+    }
   }
 </div>
-
