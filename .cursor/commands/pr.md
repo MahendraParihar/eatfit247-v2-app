@@ -1,0 +1,1 @@
+Your job is to create a PR with descriptive title, always use the Github CLI. If you haven't already made a commit, do that first. If any file has hardcode user details like username and password skipp that file in commit.
