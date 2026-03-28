@@ -9,7 +9,11 @@ import * as puppeteer from 'puppeteer';
 import { MstRecipe, MstRecipeCategoryMapping, MstRecipeCuisineMapping, MstRecipeType } from '../models';
 import { IBasicSearch, IManageRecipe, IRecipe, ITableList, MediaForEnum, TEMPLATE_FOLDER } from '@eatfit247-shared-lib';
 import { CommonFunctionsUtil, Env, SearchUtil } from '@server_1/core';
-import { IFileModel } from '@server_1/platform';
+import {
+  IFileModel,
+  PDF_HEADER_H_PADDING_DIET_RECIPE,
+  PDF_PAGE_MARGIN_H_DIET_RECIPE,
+} from '@server_1/platform';
 import { FranchiseService } from '@server_1/modules/franchise';
 
 @Injectable()
@@ -389,8 +393,8 @@ export class RecipeService {
         margin: {
           top: '100px',
           bottom: '15mm',
-          right: '15mm',
-          left: '15mm',
+          right: PDF_PAGE_MARGIN_H_DIET_RECIPE,
+          left: PDF_PAGE_MARGIN_H_DIET_RECIPE,
         },
       });
       fs.writeFileSync(physicalFilePath, pdfBuffer);
@@ -414,11 +418,15 @@ export class RecipeService {
     // Get header template
     const headerPath = this.findTemplatePath('header.hbs');
     const headerHbsTemplate = fs.readFileSync(headerPath, 'utf-8');
-    const headerTemplate = hbs.compile(headerHbsTemplate)(franchise);
+    const headerFooterContext = {
+      ...(franchise ?? {}),
+      pdfHorizontalPadding: PDF_HEADER_H_PADDING_DIET_RECIPE,
+    };
+    const headerTemplate = hbs.compile(headerHbsTemplate)(headerFooterContext);
     // Get footer template
     const footerPath = this.findTemplatePath('footer.hbs');
     const footerHbsTemplate = fs.readFileSync(footerPath, 'utf-8');
-    const footerTemplate = hbs.compile(footerHbsTemplate)(franchise);
+    const footerTemplate = hbs.compile(footerHbsTemplate)(headerFooterContext);
     return { headerTemplate, footerTemplate };
   }
 

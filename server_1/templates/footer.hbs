@@ -1,4 +1,9 @@
 <style type="text/css">
+  .footer-root {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0 {{#if pdfHorizontalPadding}}{{pdfHorizontalPadding}}{{else}}calc(15mm + 10px){{/if}};
+  }
   .footer-text {
     width: 100%;
     display: flex;
@@ -8,7 +13,7 @@
     color: #d3d3d3;
   }
 </style>
-<footer style="width: 100%;">
+<footer class="footer-root" style="width: 100%;">
   <div class="footer-text">
     <div class="pageNumber"></div>
     <div>/</div>

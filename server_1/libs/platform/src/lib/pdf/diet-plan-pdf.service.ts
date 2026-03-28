@@ -6,6 +6,11 @@ import * as puppeteer from 'puppeteer';
 import { IFranchise, IMemberDietDetail, IRecipe, TEMPLATE_FOLDER } from '@eatfit247-shared-lib';
 import { Env } from '@server_1/core';
 import axios from 'axios';
+import {
+  PDF_HEADER_H_PADDING_DIET_RECIPE,
+  PDF_MARGIN_TOP_DIET,
+  PDF_PAGE_MARGIN_H_DIET_RECIPE,
+} from './pdf-layout.constants';
 
 export interface DietPlanPdfData {
   memberName: string;
@@ -52,7 +57,7 @@ export class DietPlanPdfService {
     // Get HTML from the template
     const html = await this.getTemplateHtml('diet-plan', templateData);
 
-    // Register header and footer
+    // Register header and footer (franchise logos embedded as data URLs so Puppeteer header sees them)
     const { headerTemplate, footerTemplate } = await this.getHeaderFooter(dietPlanData.franchise);
 
     // Generate PDF using Puppeteer
@@ -80,10 +85,10 @@ export class DietPlanPdfService {
         headerTemplate: headerTemplate,
         footerTemplate: footerTemplate,
         margin: {
-          top: '100px',
+          top: PDF_MARGIN_TOP_DIET,
           bottom: '15mm',
-          right: '15mm',
-          left: '15mm',
+          right: PDF_PAGE_MARGIN_H_DIET_RECIPE,
+          left: PDF_PAGE_MARGIN_H_DIET_RECIPE,
         },
       });
       return Buffer.from(pdfBuffer);
@@ -135,15 +140,42 @@ export class DietPlanPdfService {
   private async getHeaderFooter(franchise: any): Promise<{ headerTemplate: string; footerTemplate: string }> {
     // Register Handlebars helpers
     this.registerHandlebarsHelpers();
+    const franchiseForHeader = await this.embedFranchiseLogosForPdfHeader(franchise);
+    const headerFooterContext = {
+      ...(franchiseForHeader ?? {}),
+      pdfHorizontalPadding: PDF_HEADER_H_PADDING_DIET_RECIPE,
+    };
     // Get header template
     const headerPath = this.findTemplatePath('header.hbs');
     const headerHbsTemplate = readFileSync(headerPath, 'utf-8');
-    const headerTemplate = hbs.compile(headerHbsTemplate)(franchise);
+    const headerTemplate = hbs.compile(headerHbsTemplate)(headerFooterContext);
     // Get footer template
     const footerPath = this.findTemplatePath('footer.hbs');
     const footerHbsTemplate = readFileSync(footerPath, 'utf-8');
-    const footerTemplate = hbs.compile(footerHbsTemplate)(franchise);
+    const footerTemplate = hbs.compile(footerHbsTemplate)(headerFooterContext);
     return { headerTemplate, footerTemplate };
+  }
+
+  /**
+   * Resolves franchise logo files (under persistent storage or HTTP) to data URLs so the PDF header template can render them.
+   * The previous img helper only looked under process.cwd(), so logos stored in persistentStorageAssetPath were missing.
+   */
+  private async embedFranchiseLogosForPdfHeader(franchise: IFranchise | undefined | null): Promise<IFranchise | undefined | null> {
+    if (!franchise?.logo?.length) {
+      return franchise;
+    }
+    const logos = await Promise.all(
+      franchise.logo.map(async (item) => {
+        try {
+          const dataUrl = await this.convertImageToBase64(item.webUrl, item.mimetype);
+          return { ...item, webUrl: dataUrl };
+        } catch (error) {
+          this.logger.warn(`Failed to embed franchise logo for PDF header: ${item.webUrl}`, { error });
+          return item;
+        }
+      }),
+    );
+    return { ...franchise, logo: logos };
   }
 
   /**
@@ -152,15 +184,37 @@ export class DietPlanPdfService {
   private registerHandlebarsHelpers() {
     // Register img helper
     if (!hbs.helpers['img']) {
-      hbs.registerHelper('img', function(url: string, cssClass: string) {
+      hbs.registerHelper('img', (url: string, cssClass: string) => {
         try {
-          const imagePath = path.join(process.cwd(), url);
-          if (existsSync(imagePath)) {
-            const fileBuffer = readFileSync(imagePath);
-            const base64 = fileBuffer.toString('base64');
-            const mimeType = url.endsWith('.png') ? 'image/png' : 'image/jpeg';
-            const dataUrl = `data:${mimeType};base64,${base64}`;
-            return new hbs.SafeString(`<img class="${cssClass}" src="${dataUrl}" alt="" />`);
+          if (!url) {
+            return new hbs.SafeString('');
+          }
+          if (url.startsWith('data:')) {
+            return new hbs.SafeString(
+              `<img class="${cssClass}" src="${url}" alt="" style="display:block;max-width:160px;max-height:58px;width:auto;height:auto;object-fit:contain;object-position:left center;" />`,
+            );
+          }
+          let normalizedPath = url.startsWith('/') ? url.substring(1) : url;
+          if (normalizedPath.startsWith('media-files/')) {
+            normalizedPath = normalizedPath.substring('media-files/'.length);
+          }
+          const underPersistent = path.join(Env.persistentStorageAssetPath, normalizedPath);
+          const cwdRelative = url.startsWith('/') ? url.substring(1) : url;
+          const underCwd = path.join(process.cwd(), cwdRelative);
+          let fileBuffer: Buffer | null = null;
+          let mimeType = 'image/jpeg';
+          if (existsSync(underPersistent)) {
+            fileBuffer = readFileSync(underPersistent);
+            mimeType = this.getMimeTypeFromPath(normalizedPath);
+          } else if (existsSync(underCwd)) {
+            fileBuffer = readFileSync(underCwd);
+            mimeType = this.getMimeTypeFromPath(cwdRelative);
+          }
+          if (fileBuffer) {
+            const dataUrl = `data:${mimeType};base64,${fileBuffer.toString('base64')}`;
+            return new hbs.SafeString(
+              `<img class="${cssClass}" src="${dataUrl}" alt="" style="display:block;max-width:160px;max-height:58px;width:auto;height:auto;object-fit:contain;object-position:left center;" />`,
+            );
           }
         } catch (e) {
           // Ignore errors

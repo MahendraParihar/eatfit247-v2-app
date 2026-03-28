@@ -11,6 +11,12 @@ import { IFranchise, MediaForEnum, TEMPLATE_FOLDER } from '@eatfit247-shared-lib
 export class PdfService {
   private readonly logger = new Logger(PdfService.name);
 
+  /**
+   * Invoice PDF: page.pdf left/right margin must match header.hbs / footer.hbs pdfHorizontalPadding
+   * so the franchise header aligns with invoice body (no .print-sheet extra padding).
+   */
+  private static readonly INVOICE_PDF_H_MARGIN = '20px';
+
   isHeaderFooterRegistered = false;
   headerTemplate: string;
   footerTemplate: string;
@@ -64,8 +70,8 @@ export class PdfService {
       margin: {
         top: '100px',
         bottom: '80px',
-        right: '20px',
-        left: '20px',
+        right: PdfService.INVOICE_PDF_H_MARGIN,
+        left: PdfService.INVOICE_PDF_H_MARGIN,
       },
     });
     const tempFile = readFileSync(physicalFilePath);
@@ -124,7 +130,10 @@ export class PdfService {
         headerPath = relativeHeaderPath;
       }
       const headerHbsTemplate = readFileSync(headerPath, 'utf-8');
-      this.headerTemplate = hbs.compile(headerHbsTemplate)(franchise);
+      this.headerTemplate = hbs.compile(headerHbsTemplate)({
+        ...(franchise ?? ({} as IFranchise)),
+        pdfHorizontalPadding: PdfService.INVOICE_PDF_H_MARGIN,
+      });
       // Try multiple paths for footer
       const distFooterPath = path.join(process.cwd(), `${TEMPLATE_FOLDER}/footer.hbs`);
       const cwdFooterPath = path.join(process.cwd(), `${TEMPLATE_FOLDER}/footer.hbs`);
@@ -143,7 +152,10 @@ export class PdfService {
         footerPath = relativeFooterPath;
       }
       const footerHbsTemplate = readFileSync(footerPath, 'utf-8');
-      this.footerTemplate = hbs.compile(footerHbsTemplate)(franchise);
+      this.footerTemplate = hbs.compile(footerHbsTemplate)({
+        ...(franchise ?? ({} as IFranchise)),
+        pdfHorizontalPadding: PdfService.INVOICE_PDF_H_MARGIN,
+      });
       this.isHeaderFooterRegistered = true;
     }
   }
