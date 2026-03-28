@@ -1,10 +1,13 @@
 /**
  * EatFit247 Admin - SCSS Mixins
- * 
- * Reusable mixins for common layout patterns
+ *
+ * Reusable mixins for common layout patterns and responsive breakpoints
  */
 
-// Flex Layout Mixins
+@use './variables' as *;
+
+// ─── Flex Layout ─────────────────────────────────────────────────────────────
+
 @mixin flex-row {
   display: flex;
   flex-direction: row;
@@ -39,3 +42,69 @@
   justify-content: flex-end;
 }
 
+// ─── Responsive Breakpoints ───────────────────────────────────────────────────
+// Usage:  @include respond-below-md { ... }
+
+// Below sm  (< 600px) — extra small / phone portrait
+@mixin respond-below-sm {
+  @media (max-width: #{$breakpoint-sm - 1}) {
+    @content;
+  }
+}
+
+// sm and up  (≥ 600px)
+@mixin respond-sm {
+  @media (min-width: #{$breakpoint-sm}) {
+    @content;
+  }
+}
+
+// Below md  (< 960px) — phone landscape + tablet portrait
+@mixin respond-below-md {
+  @media (max-width: #{$breakpoint-md - 1}) {
+    @content;
+  }
+}
+
+// md and up  (≥ 960px) — tablet landscape + desktop
+@mixin respond-md {
+  @media (min-width: #{$breakpoint-md}) {
+    @content;
+  }
+}
+
+// lg and up  (≥ 1280px)
+@mixin respond-lg {
+  @media (min-width: #{$breakpoint-lg}) {
+    @content;
+  }
+}
+
+// xl and up  (≥ 1920px)
+@mixin respond-xl {
+  @media (min-width: #{$breakpoint-xl}) {
+    @content;
+  }
+}
+
+// ─── Truncate text ───────────────────────────────────────────────────────────
+
+@mixin truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// ─── Visually hidden (accessible) ────────────────────────────────────────────
+
+@mixin visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

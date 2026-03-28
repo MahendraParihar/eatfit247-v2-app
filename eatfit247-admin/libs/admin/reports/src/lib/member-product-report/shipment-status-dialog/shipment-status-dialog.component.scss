@@ -2,20 +2,20 @@
   min-width: min(520px, 92vw);
   max-width: 640px;
   max-height: 70vh;
-  padding-top: 8px;
+  padding-top: var(--spacing-8);
 }
 
 .loading-wrap {
   display: flex;
   justify-content: center;
-  padding: 32px;
+  padding: var(--spacing-32);
 }
 
 .summary {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  margin-bottom: 16px;
+  margin-bottom: var(--spacing-16);
 }
 
 .summary-row {
@@ -26,29 +26,30 @@
 
   .label {
     min-width: 120px;
-    color: rgba(0, 0, 0, 0.6);
-    font-size: 13px;
+    color: var(--md-sys-color-on-surface-variant);
+    font-size: 0.8125rem;
   }
 
   .value {
     font-weight: 500;
+    color: var(--md-sys-color-on-surface);
   }
 
   .mono {
     font-family: ui-monospace, monospace;
-    font-size: 13px;
+    font-size: 0.8125rem;
   }
 }
 
 .error-box {
   display: flex;
-  gap: 8px;
+  gap: var(--spacing-8);
   align-items: flex-start;
-  padding: 12px;
-  border-radius: 8px;
-  background: rgba(211, 47, 47, 0.08);
-  color: #b71c1c;
-  font-size: 13px;
+  padding: var(--spacing-12);
+  border-radius: var(--shape-sm);
+  background: var(--status-error-bg);
+  color: var(--status-error);
+  font-size: 0.8125rem;
   line-height: 1.4;
 
   mat-icon {
@@ -64,13 +65,14 @@
   flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
-  gap: 12px;
-  margin: 16px 0 12px;
+  gap: var(--spacing-12);
+  margin: var(--spacing-16) 0 var(--spacing-12);
 
   h3 {
     margin: 0;
-    font-size: 16px;
+    font-size: 1rem;
     font-weight: 600;
+    color: var(--md-sys-color-on-surface);
   }
 
   button mat-spinner,
@@ -85,58 +87,55 @@
   list-style: none;
   margin: 0;
   padding: 0;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  border-radius: 8px;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: var(--shape-sm);
   overflow: hidden;
 }
 
 .event-item {
   display: grid;
   grid-template-columns: 150px 1fr;
-  gap: 12px;
-  padding: 12px 14px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  gap: var(--spacing-12);
+  padding: var(--spacing-12) 14px;
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
 
-  &:last-child {
-    border-bottom: none;
-  }
+  &:last-child { border-bottom: none; }
 }
 
 .event-time {
-  font-size: 12px;
-  color: rgba(0, 0, 0, 0.55);
+  font-size: 0.75rem;
+  color: var(--md-sys-color-on-surface-variant);
 }
 
 .event-title {
   font-weight: 600;
-  font-size: 14px;
+  font-size: 0.875rem;
+  color: var(--md-sys-color-on-surface);
 }
 
 .event-desc {
   margin-top: 4px;
-  font-size: 13px;
-  color: rgba(0, 0, 0, 0.75);
+  font-size: 0.8125rem;
+  color: var(--md-sys-color-on-surface-variant);
 }
 
 .event-provider {
   margin-top: 4px;
-  font-size: 12px;
-  color: rgba(0, 0, 0, 0.5);
+  font-size: 0.75rem;
+  color: var(--md-sys-color-on-surface-variant);
 }
 
-.empty {
-  margin: 16px 0;
-}
+.empty { margin: var(--spacing-16) 0; }
 
 .empty.muted {
-  color: rgba(0, 0, 0, 0.55);
-  font-size: 14px;
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: 0.875rem;
 }
 
 .track-error {
-  color: #c62828;
-  font-size: 13px;
-  margin: 0 0 12px;
+  color: var(--status-error);
+  font-size: 0.8125rem;
+  margin: 0 0 var(--spacing-12);
 }
 
 mat-dialog-actions button mat-spinner {
@@ -146,7 +145,5 @@ mat-dialog-actions button mat-spinner {
 }
 
 @media (max-width: 600px) {
-  .event-item {
-    grid-template-columns: 1fr;
-  }
+  .event-item { grid-template-columns: 1fr; }
 }

@@ -10,22 +10,21 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 24px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+  padding: var(--spacing-16) var(--spacing-24);
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
 
   h2[mat-dialog-title] {
     margin: 0;
-    font-size: 20px;
+    font-size: 1.25rem;
     font-weight: 500;
+    color: var(--md-sys-color-on-surface);
   }
 
-  .close-button {
-    margin-left: auto;
-  }
+  .close-button { margin-left: auto; }
 }
 
 mat-dialog-content {
-  padding: 24px;
+  padding: var(--spacing-24);
   overflow-y: auto;
   flex: 1;
 }
@@ -36,35 +35,35 @@ mat-dialog-content {
   justify-content: center;
   align-items: center;
   min-height: 200px;
-  gap: 16px;
+  gap: var(--spacing-16);
 
   p {
     margin: 0;
-    color: rgba(0, 0, 0, 0.6);
+    color: var(--md-sys-color-on-surface-variant);
   }
 }
 
 .details-container {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: var(--spacing-24);
 }
 
 .detail-section {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--spacing-16);
 
   .section-title {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: var(--spacing-8);
     margin: 0;
-    font-size: 16px;
+    font-size: 1rem;
     font-weight: 600;
-    color: rgba(0, 0, 0, 0.87);
-    padding-bottom: 8px;
-    border-bottom: 2px solid rgba(0, 0, 0, 0.12);
+    color: var(--md-sys-color-on-surface);
+    padding-bottom: var(--spacing-8);
+    border-bottom: 2px solid var(--md-sys-color-outline-variant);
 
     mat-icon {
       font-size: 20px;
@@ -77,7 +76,7 @@ mat-dialog-content {
 .detail-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
+  gap: var(--spacing-16);
 
   .detail-item {
     display: flex;
@@ -85,44 +84,42 @@ mat-dialog-content {
     gap: 4px;
 
     .label {
-      font-size: 12px;
+      font-size: 0.75rem;
       font-weight: 500;
-      color: rgba(0, 0, 0, 0.6);
+      color: var(--md-sys-color-on-surface-variant);
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
 
     .value {
-      font-size: 14px;
-      color: rgba(0, 0, 0, 0.87);
+      font-size: 0.875rem;
+      color: var(--md-sys-color-on-surface);
       word-break: break-word;
     }
   }
 }
 
 .message-content {
-  padding: 16px;
-  background-color: rgba(0, 0, 0, 0.02);
-  border-radius: 4px;
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  padding: var(--spacing-16);
+  background-color: var(--md-sys-color-surface-container-low);
+  border-radius: var(--shape-xs);
+  border: 1px solid var(--md-sys-color-outline-variant);
 
   p {
     margin: 0;
-    font-size: 14px;
+    font-size: 0.875rem;
     line-height: 1.6;
-    color: rgba(0, 0, 0, 0.87);
+    color: var(--md-sys-color-on-surface);
     white-space: pre-wrap;
     word-wrap: break-word;
   }
 }
 
-.full-width {
-  width: 100%;
-}
+.full-width { width: 100%; }
 
 mat-form-field {
   width: 100%;
-  margin-top: 8px;
+  margin-top: var(--spacing-8);
 }
 
 textarea {
@@ -132,35 +129,35 @@ textarea {
 }
 
 .error-message {
-  color: #f44336;
-  font-size: 12px;
+  color: var(--status-error);
+  font-size: 0.75rem;
   margin-top: -16px;
-  margin-bottom: 8px;
+  margin-bottom: var(--spacing-8);
 }
 
 mat-dialog-actions {
-  padding: 8px 24px;
-  border-top: 1px solid rgba(0, 0, 0, 0.12);
+  padding: var(--spacing-8) var(--spacing-24);
+  border-top: 1px solid var(--md-sys-color-outline-variant);
   margin: 0;
 
   button {
-    margin-left: 8px;
+    margin-left: var(--spacing-8);
 
     .button-spinner {
       display: inline-block;
-      margin-right: 8px;
+      margin-right: var(--spacing-8);
     }
   }
 }
 
 .status-responded {
-  background-color: #4caf50 !important;
-  color: white !important;
+  background-color: var(--status-success) !important;
+  color: var(--md-sys-color-on-primary) !important;
 }
 
 .status-pending {
-  background-color: #ff9800 !important;
-  color: white !important;
+  background-color: var(--status-warning) !important;
+  color: var(--md-sys-color-on-primary) !important;
 }
 
 @media (max-width: 768px) {
@@ -169,8 +166,5 @@ mat-dialog-actions {
     max-width: 100%;
   }
 
-  .detail-grid {
-    grid-template-columns: 1fr;
-  }
+  .detail-grid { grid-template-columns: 1fr; }
 }
-

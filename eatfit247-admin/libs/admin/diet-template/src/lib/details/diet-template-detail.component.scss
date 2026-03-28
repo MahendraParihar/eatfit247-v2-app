@@ -3,32 +3,34 @@
 }
 
 .form-card {
-  margin: 20px;
+  margin: var(--spacing-20);
 }
 
 .form-body {
-  padding: 20px;
+  padding: var(--spacing-20);
 }
 
 .diet-plan-table-container {
   overflow-x: auto;
-  margin-top: 20px;
+  margin-top: var(--spacing-20);
 }
 
 .diet-plan-table {
   width: 100%;
   table-layout: fixed;
   border-collapse: collapse;
-  margin-bottom: 20px;
+  margin-bottom: var(--spacing-20);
+  background-color: var(--md-sys-color-surface);
 
   th, td {
-    padding: 12px;
+    padding: var(--spacing-12);
     text-align: left;
-    border-bottom: 1px solid #e0e0e0;
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+    color: var(--md-sys-color-on-surface);
   }
 
   th {
-    background-color: #f5f5f5;
+    background-color: var(--md-sys-color-surface-container-high);
     font-weight: 600;
   }
 
@@ -39,7 +41,7 @@
     h6 {
       margin: 0;
       font-weight: 600;
-      color: #333;
+      color: var(--md-sys-color-on-surface);
     }
   }
 
@@ -47,9 +49,7 @@
     width: 50%;
     vertical-align: top;
 
-    .detail-wrapper {
-      min-height: 200px;
-    }
+    .detail-wrapper { min-height: 200px; }
   }
 
   .recipe-cell {
@@ -60,13 +60,12 @@
 }
 
 .NgxEditor__Wrapper {
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: var(--shape-xs);
   min-height: 200px;
 }
 
 mat-card-actions {
-  padding: 16px;
+  padding: var(--spacing-16);
   margin: 0;
 }
-

@@ -1,8 +1,16 @@
 /**
  * Base Layout Component Styles
- * 
+ *
  * ⚠️ DESIGN SYSTEM: See DESIGN_SYSTEM.md
  */
+
+@use 'mixins' as *;
+@use 'variables' as *;
+
+$toolbar-height: 64px;
+$sidenav-width: 280px;
+
+// ─── Wrapper ──────────────────────────────────────────────────────────────────
 
 .layout-wrapper {
   display: flex;
@@ -10,11 +18,10 @@
   height: 100vh;
   overflow: hidden;
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
 }
+
+// ─── Toolbar ─────────────────────────────────────────────────────────────────
 
 .toolbar {
   position: fixed;
@@ -22,58 +29,104 @@
   left: 0;
   right: 0;
   z-index: 1000;
-  height: 64px;
+  height: $toolbar-height;
   background-color: var(--md-sys-color-primary) !important;
   color: var(--md-sys-color-on-primary) !important;
-  box-shadow: var(--elevation-level-1);
+  box-shadow: var(--elevation-level-2);
+  padding: 0 var(--spacing-8);
 
-  .toolbar-title {
-    font-size: 18px;
-    font-weight: 500;
-    margin-left: 8px;
+  @include respond-md {
+    padding: 0 var(--spacing-16);
+  }
+
+  .menu-toggle {
+    color: var(--md-sys-color-on-primary);
+    flex-shrink: 0;
+
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.12);
+    }
+  }
+
+  .toolbar-brand {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-8);
+    margin-left: var(--spacing-4);
+
+    .brand-icon {
+      font-size: 1.25rem;
+      line-height: 1;
+    }
+
+    .toolbar-title {
+      font-size: 1.125rem;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      color: var(--md-sys-color-on-primary);
+      white-space: nowrap;
+    }
   }
 
   .spacer {
     flex: 1 1 auto;
   }
 
-  button[mat-icon-button] {
+  .theme-toggle-btn {
     color: var(--md-sys-color-on-primary);
 
     &:hover {
-      background-color: rgba(255, 255, 255, 0.1);
+      background-color: rgba(255, 255, 255, 0.12);
     }
   }
 
   .user-info {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: var(--spacing-8);
     cursor: pointer;
-    padding: 4px 8px;
+    padding: var(--spacing-4) var(--spacing-8);
     border-radius: var(--radius-button);
-    transition: background-color 0.2s;
+    transition: background-color $transition-base $easing-ease-in-out;
+    margin-left: var(--spacing-4);
 
     &:hover {
-      background-color: rgba(255, 255, 255, 0.1);
+      background-color: rgba(255, 255, 255, 0.12);
+    }
+
+    .user-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background-color: rgba(255, 255, 255, 0.25);
+      color: var(--md-sys-color-on-primary);
+      font-size: 0.75rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      letter-spacing: 0.05em;
+      border: 1.5px solid rgba(255, 255, 255, 0.4);
     }
 
     .user-name {
-      font-size: 14px;
+      font-size: 0.875rem;
       font-weight: 500;
       color: var(--md-sys-color-on-primary);
       white-space: nowrap;
-      max-width: 200px;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      max-width: 180px;
+      @include truncate;
     }
   }
 }
 
+// ─── Content wrapper ─────────────────────────────────────────────────────────
+
 .content-wrapper {
   display: flex;
   flex: 1;
-  margin-top: 64px; // Toolbar height
+  margin-top: $toolbar-height;
   overflow: hidden;
 }
 
@@ -83,128 +136,210 @@
   background-color: var(--md-sys-color-surface);
 }
 
+// ─── Sidenav ─────────────────────────────────────────────────────────────────
+
 .sidenav {
-  width: 280px;
-  background-color: var(--md-sys-color-surface-container);
+  width: $sidenav-width;
+  background-color: var(--md-sys-color-surface-container-low);
   border-right: 1px solid var(--md-sys-color-outline-variant);
   height: 100%;
   overflow-y: auto;
   overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+
+  @include respond-below-md {
+    width: min(#{$sidenav-width}, 85vw);
+  }
+
+  // ── Brand header ────────────────────────────────────────────────────────────
 
   .sidenav-header {
-    padding: 24px 16px;
+    padding: var(--spacing-20) var(--spacing-16);
     border-bottom: 1px solid var(--md-sys-color-outline-variant);
-    background-color: var(--md-sys-color-surface-container-high);
+    background-color: var(--md-sys-color-surface-container);
+    flex-shrink: 0;
 
-    h2 {
-      margin: 0 0 4px 0;
-      font-size: 20px;
-      font-weight: 600;
-      color: var(--md-sys-color-on-surface);
-    }
+    .sidenav-brand {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-12);
 
-    .subtitle {
-      margin: 0;
-      font-size: 12px;
-      color: var(--md-sys-color-on-surface-variant);
+      .sidenav-brand-icon {
+        font-size: 2rem;
+        line-height: 1;
+        flex-shrink: 0;
+      }
+
+      .sidenav-brand-text {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+
+        .sidenav-brand-name {
+          font-size: 1rem;
+          font-weight: 700;
+          color: var(--md-sys-color-on-surface);
+          letter-spacing: 0.01em;
+        }
+
+        .sidenav-brand-subtitle {
+          font-size: 0.6875rem;
+          font-weight: 500;
+          color: var(--md-sys-color-on-surface);
+          opacity: 0.6;
+          text-transform: uppercase;
+          letter-spacing: 0.08em;
+        }
+      }
     }
   }
 
-  mat-nav-list {
-    padding: 8px 0;
-    width: 100%;
-    box-sizing: border-box;
+  // ── Nav sections ────────────────────────────────────────────────────────────
 
-    a[mat-list-item] {
-      margin: 4px 8px;
-      border-radius: var(--radius-button);
-      transition: background-color 0.2s;
-      width: calc(100% - 16px);
+  .sidenav-nav {
+    flex: 1;
+    padding: var(--spacing-8) 0 var(--spacing-16);
+    overflow-y: auto;
+  }
+
+  .nav-section {
+    margin-bottom: var(--spacing-4);
+
+    .nav-section-label {
+      margin: 0;
+      padding: var(--spacing-12) var(--spacing-20) var(--spacing-4);
+      font-size: 0.6875rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--md-sys-color-on-surface);
+      opacity: 0.45;
+    }
+  }
+
+  // ── Nav items ───────────────────────────────────────────────────────────────
+
+  mat-nav-list {
+    padding: 0;
+
+    .nav-item {
+      margin: 2px var(--spacing-8);
+      border-radius: var(--shape-sm);
+      transition: background-color $transition-base $easing-ease-in-out;
+      width: calc(100% - var(--spacing-16));
       box-sizing: border-box;
-      overflow: hidden;
+      height: 44px;
+
+      mat-icon[matListItemIcon] {
+        color: var(--md-sys-color-on-surface);
+        opacity: 0.6;
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+        margin-right: var(--spacing-12);
+        flex-shrink: 0;
+      }
+
+      span[matListItemTitle] {
+        color: var(--md-sys-color-on-surface);
+        font-size: 0.875rem;
+        font-weight: 500;
+        @include truncate;
+      }
 
       &:hover {
-        background-color: var(--md-sys-color-surface-container-low);
+        background-color: var(--md-sys-color-surface-container);
       }
 
-      &[routerLinkActive="active"] {
-        background-color: var(--md-sys-color-primary-container);
-        color: var(--md-sys-color-on-primary-container);
-        font-weight: 500;
+      &.active {
+        background-color: var(--md-sys-color-primary-container, rgba(252, 35, 5, 0.12));
 
-        mat-icon {
-          color: var(--md-sys-color-on-primary-container);
+        mat-icon[matListItemIcon] {
+          color: var(--md-sys-color-primary);
+          opacity: 1;
         }
-      }
 
-      mat-icon {
-        margin-right: 12px;
-        color: var(--md-sys-color-on-surface-variant);
-      }
-
-      span {
-        color: var(--md-sys-color-on-surface);
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        flex: 1;
-        min-width: 0;
+        span[matListItemTitle] {
+          color: var(--md-sys-color-primary);
+          font-weight: 600;
+        }
       }
     }
 
-    // Nested menu styles
+    // ── Nested menus ──────────────────────────────────────────────────────────
+
     .nested-menu-item {
-      .parent-menu-item {
+      .parent-nav-item {
         cursor: pointer;
-        position: relative;
 
         .expand-icon {
           margin-left: auto;
-          margin-right: 0;
-          transition: transform 0.2s;
+          margin-right: var(--spacing-4);
+          flex-shrink: 0;
+          color: var(--md-sys-color-on-surface);
+          opacity: 0.5;
+          font-size: 18px;
+          width: 18px;
+          height: 18px;
+          transition: transform $transition-base $easing-ease-in-out;
         }
 
         &.expanded {
-          background-color: var(--md-sys-color-surface-container-low);
+          background-color: var(--md-sys-color-surface-container);
+
+          .expand-icon {
+            transform: rotate(0deg);
+            opacity: 0.7;
+          }
         }
       }
 
-      .child-menu-items {
+      .child-nav-items {
         max-height: 0;
         overflow: hidden;
-        transition: max-height 0.3s ease-out;
-        background-color: var(--md-sys-color-surface-container-lowest);
+        transition: max-height $transition-slow $easing-ease-out;
 
         &.expanded {
-          max-height: 2000px; // Large enough to accommodate all children
-          transition: max-height 0.3s ease-in;
+          max-height: 2000px;
+          transition: max-height $transition-slower $easing-ease-in;
         }
 
-        .child-menu-item {
-          padding-left: 48px; // Indent child items
-          margin: 2px 8px;
-          font-size: 14px;
-          width: calc(100% - 16px);
+        .child-nav-item {
+          padding-left: var(--spacing-40);
+          margin: 2px var(--spacing-8);
+          font-size: 0.8125rem;
+          width: calc(100% - var(--spacing-16));
           box-sizing: border-box;
-          overflow: hidden;
+          height: 40px;
 
-          mat-icon {
-            font-size: 20px;
-            width: 20px;
-            height: 20px;
+          mat-icon[matListItemIcon] {
+            font-size: 18px;
+            width: 18px;
+            height: 18px;
           }
 
-          &[routerLinkActive="active"] {
-            background-color: var(--md-sys-color-primary-container);
-            color: var(--md-sys-color-on-primary-container);
-            font-weight: 500;
+          &.active {
+            background-color: var(--md-sys-color-primary-container, rgba(252, 35, 5, 0.12));
             border-left: 3px solid var(--md-sys-color-primary);
+
+            mat-icon[matListItemIcon] {
+              color: var(--md-sys-color-primary);
+              opacity: 1;
+            }
+
+            span[matListItemTitle] {
+              color: var(--md-sys-color-primary);
+              font-weight: 600;
+            }
           }
         }
       }
     }
   }
 }
+
+// ─── Main content ─────────────────────────────────────────────────────────────
 
 .main-container {
   height: 100%;
@@ -216,6 +351,13 @@
 .main-content-scroll {
   flex: 1;
   overflow-y: auto;
-  padding: 24px;
-}
+  padding: var(--spacing-24);
 
+  @include respond-below-md {
+    padding: var(--spacing-16);
+  }
+
+  @include respond-below-sm {
+    padding: var(--spacing-12);
+  }
+}

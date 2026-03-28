@@ -7,16 +7,16 @@
 .dialog-header {
   display: flex;
   align-items: flex-start;
-  gap: 16px;
-  margin-bottom: 24px;
-  padding-top: 8px;
+  gap: var(--spacing-16);
+  margin-bottom: var(--spacing-24);
+  padding-top: var(--spacing-8);
 
   h2 {
     margin: 0;
-    font-size: 20px;
+    font-size: 1.25rem;
     font-weight: 500;
     line-height: 1.4;
-    color: var(--md-sys-color-on-surface, #1c1b1f);
+    color: var(--md-sys-color-on-surface);
     flex: 1;
   }
 }
@@ -29,62 +29,48 @@
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background-color: var(--status-success-bg, #e6f4ec);
+  background-color: var(--status-success-bg);
 }
 
 .success-icon {
-  color: var(--status-success, #1b8f5a);
+  color: var(--status-success);
   font-size: 28px;
   width: 28px;
   height: 28px;
 }
 
 mat-dialog-content {
-  margin: 0 0 24px 0;
+  margin: 0 0 var(--spacing-24) 0;
   padding: 0;
-  color: var(--md-sys-color-on-surface, #1c1b1f);
-  
+  color: var(--md-sys-color-on-surface);
+
   .dialog-message {
-    margin: 0 0 16px 0;
+    margin: 0 0 var(--spacing-16) 0;
     line-height: 1.6;
-    font-size: 14px;
-    color: rgba(0, 0, 0, 0.87);
+    font-size: 0.875rem;
+    color: var(--md-sys-color-on-surface);
   }
 
-  .full-width {
-    width: 100%;
-  }
+  .full-width { width: 100%; }
 }
 
 mat-dialog-actions {
   margin: 0;
-  padding: 16px 0 0 0;
+  padding: var(--spacing-16) 0 0 0;
   min-height: auto;
-  gap: 8px;
+  gap: var(--spacing-8);
 
   .cancel-button {
-    color: var(--md-sys-color-on-surface, rgba(0, 0, 0, 0.87));
+    color: var(--md-sys-color-on-surface);
     text-transform: none;
     font-weight: 500;
-    padding: 0 16px;
+    padding: 0 var(--spacing-16);
   }
 
   .confirm-button {
     text-transform: none;
     font-weight: 500;
-    padding: 0 24px;
+    padding: 0 var(--spacing-24);
     min-width: 120px;
   }
 }
-
-// Dark theme support
-.dark-theme {
-  mat-dialog-content .dialog-message {
-    color: var(--md-sys-color-on-surface, #e6e6e6);
-  }
-
-  .cancel-button {
-    color: var(--md-sys-color-on-surface, #e6e6e6);
-  }
-}
-

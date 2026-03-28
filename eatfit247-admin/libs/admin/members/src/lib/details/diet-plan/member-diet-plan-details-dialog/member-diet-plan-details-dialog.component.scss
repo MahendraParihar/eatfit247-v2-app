@@ -4,51 +4,46 @@
   width: 100%;
   max-width: 800px;
   max-height: 90vh;
-  background: var(--md-sys-color-surface, #fff);
+  background: var(--md-sys-color-surface);
   overflow: hidden;
 }
 
-// Dialog Header
 .dialog-header {
-  padding: 20px 24px;
-  border-bottom: 1px solid var(--md-sys-color-outline-variant, rgba(0, 0, 0, 0.12));
-  background: var(--md-sys-color-surface-container-high, #f5f5f5);
+  padding: var(--spacing-20) var(--spacing-24);
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
+  background: var(--md-sys-color-surface-container-high);
   flex-shrink: 0;
 
   .header-content {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    gap: 16px;
+    gap: var(--spacing-16);
 
     .header-info {
       flex: 1;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: var(--spacing-8);
 
       .diet-plan-title {
         margin: 0;
         font-size: 1.25rem;
         font-weight: 500;
         line-height: 1.4;
-        color: var(--md-sys-color-on-surface, #1c1b1f);
+        color: var(--md-sys-color-on-surface);
       }
 
       .date-range {
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: var(--spacing-8);
         font-size: 0.875rem;
-        color: var(--md-sys-color-on-surface-variant, rgba(0, 0, 0, 0.6));
+        color: var(--md-sys-color-on-surface-variant);
 
-        .date-label {
-          font-weight: 500;
-        }
+        .date-label { font-weight: 500; }
 
-        .date-value {
-          color: var(--md-sys-color-on-surface, rgba(0, 0, 0, 0.87));
-        }
+        .date-value { color: var(--md-sys-color-on-surface); }
 
         .date-separator {
           margin: 0 4px;
@@ -59,18 +54,17 @@
 
     .close-button {
       flex-shrink: 0;
-      color: var(--md-sys-color-on-surface-variant, rgba(0, 0, 0, 0.6));
+      color: var(--md-sys-color-on-surface-variant);
 
       &:hover {
-        background-color: var(--md-sys-color-surface-container-highest, rgba(0, 0, 0, 0.05));
+        background-color: var(--md-sys-color-surface-container-high);
       }
     }
   }
 }
 
-// Dialog Content
 .diet-plan-content {
-  padding: 24px;
+  padding: var(--spacing-24);
   overflow-y: auto;
   flex: 1;
   min-height: 0;
@@ -78,23 +72,23 @@
 
   .dp-table {
     width: 100%;
-    background: var(--md-sys-color-surface, #fff);
-    border-radius: 8px;
+    background: var(--md-sys-color-surface);
+    border-radius: var(--shape-sm);
     overflow: hidden;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--elevation-level-1);
 
     .mat-header-row {
-      background: var(--md-sys-color-surface-container-high, #f5f5f5);
+      background: var(--md-sys-color-surface-container-high);
       height: 48px;
 
       .mat-header-cell {
         font-weight: 600;
         font-size: 0.875rem;
-        color: var(--md-sys-color-on-surface, rgba(0, 0, 0, 0.87));
+        color: var(--md-sys-color-on-surface);
         text-transform: uppercase;
         letter-spacing: 0.5px;
-        padding: 0 16px;
-        border-bottom: 2px solid var(--md-sys-color-outline-variant, rgba(0, 0, 0, 0.12));
+        padding: 0 var(--spacing-16);
+        border-bottom: 2px solid var(--md-sys-color-outline-variant);
       }
     }
 
@@ -102,28 +96,23 @@
       transition: background-color 0.2s ease;
 
       &:hover {
-        background-color: var(--md-sys-color-surface-container-low, rgba(0, 0, 0, 0.02));
+        background-color: var(--md-sys-color-surface-container-low);
       }
 
       &:not(:last-child) {
-        border-bottom: 1px solid var(--md-sys-color-outline-variant, rgba(0, 0, 0, 0.12));
+        border-bottom: 1px solid var(--md-sys-color-outline-variant);
       }
 
       .mat-cell {
-        padding: 16px;
+        padding: var(--spacing-16);
         font-size: 0.875rem;
-        color: var(--md-sys-color-on-surface, rgba(0, 0, 0, 0.87));
+        color: var(--md-sys-color-on-surface);
         line-height: 1.5;
         vertical-align: top;
 
         strong {
           font-weight: 600;
-          color: var(--md-sys-color-on-surface, rgba(0, 0, 0, 0.87));
-        }
-
-        div[innerHTML] {
-          word-wrap: break-word;
-          white-space: pre-wrap;
+          color: var(--md-sys-color-on-surface);
         }
       }
     }
@@ -158,23 +147,22 @@
   }
 }
 
-// Dialog Footer
 .dialog-footer {
-  padding: 16px 24px;
-  border-top: 1px solid var(--md-sys-color-outline-variant, rgba(0, 0, 0, 0.12));
-  background: var(--md-sys-color-surface-container-high, #f5f5f5);
+  padding: var(--spacing-16) var(--spacing-24);
+  border-top: 1px solid var(--md-sys-color-outline-variant);
+  background: var(--md-sys-color-surface-container-high);
   margin: 0;
   min-height: auto;
   flex-shrink: 0;
-  gap: 8px;
+  gap: var(--spacing-8);
 
   .action-button {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: var(--spacing-8);
     text-transform: none;
     font-weight: 500;
-    padding: 0 16px;
+    padding: 0 var(--spacing-16);
     min-width: auto;
 
     mat-icon {
@@ -185,46 +173,11 @@
     }
 
     &[mat-button] {
-      color: var(--md-sys-color-on-surface, rgba(0, 0, 0, 0.87));
+      color: var(--md-sys-color-on-surface);
     }
 
     &[mat-raised-button] {
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
-  }
-}
-
-// Dark theme support
-.dark-theme {
-  .dialog-header {
-    .header-content {
-      .header-info {
-        .diet-plan-title {
-          color: var(--md-sys-color-on-surface, #e6e6e6);
-        }
-
-        .date-range {
-          .date-value {
-            color: var(--md-sys-color-on-surface, #e6e6e6);
-          }
-        }
-      }
-    }
-  }
-
-  .diet-plan-content {
-    .dp-table {
-      .mat-row {
-        .mat-cell {
-          color: var(--md-sys-color-on-surface, #e6e6e6);
-        }
-      }
-    }
-  }
-
-  .dialog-footer {
-    .action-button[mat-button] {
-      color: var(--md-sys-color-on-surface, #e6e6e6);
+      box-shadow: var(--elevation-level-1);
     }
   }
 }

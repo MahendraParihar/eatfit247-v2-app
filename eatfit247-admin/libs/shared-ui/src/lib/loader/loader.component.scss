@@ -3,9 +3,9 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 40px;
+  padding: var(--spacing-40);
   min-height: 300px;
-  gap: 16px;
+  gap: var(--spacing-16);
 
   &.full-screen {
     position: fixed;
@@ -15,7 +15,7 @@
     bottom: 0;
     min-height: 100vh;
     z-index: 9999;
-    background-color: rgba(255, 255, 255, 0.9);
+    background-color: color-mix(in srgb, var(--md-sys-color-surface) 90%, transparent);
   }
 
   &.overlay {
@@ -25,14 +25,14 @@
     right: 0;
     bottom: 0;
     min-height: 100%;
-    background-color: rgba(255, 255, 255, 0.8);
+    background-color: color-mix(in srgb, var(--md-sys-color-surface) 80%, transparent);
     z-index: 100;
   }
 }
 
 .loader-message {
   margin: 0;
-  color: rgba(0, 0, 0, 0.6);
-  font-size: 14px;
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: 0.875rem;
   text-align: center;
 }

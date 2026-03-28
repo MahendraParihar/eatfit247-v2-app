@@ -1,38 +1,35 @@
 .form-card {
   max-width: 1200px;
-  margin: 24px auto;
+  margin: var(--spacing-24) auto;
 }
 
 .form-fields {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--spacing-16);
 }
 
-.full-width {
-  width: 100%;
-}
+.full-width { width: 100%; }
 
 .editor-label {
   display: block;
-  margin-bottom: 8px;
-  font-size: 14px;
+  margin-bottom: var(--spacing-8);
+  font-size: 0.875rem;
   font-weight: 500;
-  color: rgba(0, 0, 0, 0.87);
+  color: var(--md-sys-color-on-surface);
 }
 
 .NgxEditor__Wrapper {
-  border: 1px solid rgba(0, 0, 0, 0.12);
-  border-radius: 4px;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: var(--shape-xs);
   min-height: 200px;
 }
 
 .form-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 16px;
-  margin-top: 24px;
-  padding-top: 24px;
-  border-top: 1px solid rgba(0, 0, 0, 0.12);
+  gap: var(--spacing-16);
+  margin-top: var(--spacing-24);
+  padding-top: var(--spacing-24);
+  border-top: 1px solid var(--md-sys-color-outline-variant);
 }
-

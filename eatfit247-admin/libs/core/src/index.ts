@@ -4,6 +4,7 @@ export * from './lib/services/storage.service';
 export * from './lib/services/api-base.service';
 export * from './lib/services/http.service';
 export * from './lib/services/breadcrumb.service';
+export * from './lib/services/theme.service';
 // Guards
 export * from './lib/guards/auth.guard';
 export * from './lib/guards/login.guard';

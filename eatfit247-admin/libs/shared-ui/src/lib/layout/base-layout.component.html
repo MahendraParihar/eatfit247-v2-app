@@ -1,29 +1,48 @@
 <div class="layout-wrapper">
   <!-- Fixed Toolbar -->
-  <mat-toolbar color="primary" class="toolbar">
-    <button mat-icon-button (click)="drawer.toggle()" aria-label="Toggle menu">
+  <mat-toolbar class="toolbar">
+    <button mat-icon-button (click)="drawer.toggle()" aria-label="Toggle menu" class="menu-toggle">
       <mat-icon>menu</mat-icon>
     </button>
-    <span class="toolbar-title">EatFit247</span>
+
+    <span class="toolbar-brand">
+      <span class="brand-icon">🥗</span>
+      <span class="toolbar-title">EatFit247</span>
+    </span>
+
     <span class="spacer"></span>
+
+    <!-- Theme Toggle -->
+    <button
+      mat-icon-button
+      (click)="themeService.toggleTheme()"
+      [matTooltip]="themeService.effectiveTheme() === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
+      aria-label="Toggle theme"
+      class="theme-toggle-btn"
+    >
+      <mat-icon>{{ themeService.effectiveTheme() === 'dark' ? 'light_mode' : 'dark_mode' }}</mat-icon>
+    </button>
+
+    <!-- User Menu -->
     <div class="user-info" [matMenuTriggerFor]="userMenu">
-      @if (isAuthenticated && getUserDisplayName()) {
-        <span class="user-name">
-          {{ getUserDisplayName() }}
-        </span>
+      @if (isAuthenticated && getUserInitials()) {
+        <div class="user-avatar" [attr.aria-label]="getUserDisplayName()">
+          {{ getUserInitials() }}
+        </div>
+      } @else {
+        <button mat-icon-button aria-label="User menu">
+          <mat-icon>account_circle</mat-icon>
+        </button>
       }
-      <button
-        mat-icon-button
-        [matTooltip]="getUserDisplayName() || 'User Menu'"
-        aria-label="User menu"
-      >
-        <mat-icon>account_circle</mat-icon>
-      </button>
+      @if (!isMobile() && getUserDisplayName()) {
+        <span class="user-name">{{ getUserDisplayName() }}</span>
+      }
     </div>
+
     <mat-menu #userMenu="matMenu">
       @if (isAuthenticated) {
         <div>
-          <div mat-menu-item disabled>
+          <div mat-menu-item disabled class="user-menu-header">
             <mat-icon>person</mat-icon>
             <span>{{ getUserDisplayName() || 'User' }}</span>
           </div>
@@ -49,58 +68,82 @@
   <!-- Main Content Area with Sidenav -->
   <div class="content-wrapper">
     <mat-sidenav-container class="sidenav-container">
-      <mat-sidenav #drawer mode="side" opened class="sidenav">
-        <mat-nav-list>
-          @for (item of menuItems; track item.route || item.label) {
-            <!-- Simple menu item (no children) -->
-            @if (!item.children) {
-              <a
-                mat-list-item
-                [routerLink]="item.route"
-                routerLinkActive="active"
-              >
-                <mat-icon>{{ item.icon }}</mat-icon>
-                <span>{{ item.label }}</span>
-              </a>
-            }
+      <mat-sidenav
+        #drawer
+        [mode]="sidenavMode()"
+        [opened]="sidenavOpened()"
+        class="sidenav"
+      >
+        <!-- Sidenav Brand Header -->
+        <div class="sidenav-header">
+          <div class="sidenav-brand">
+            <div class="sidenav-brand-icon">🥗</div>
+            <div class="sidenav-brand-text">
+              <span class="sidenav-brand-name">EatFit247</span>
+              <span class="sidenav-brand-subtitle">Admin Panel</span>
+            </div>
+          </div>
+        </div>
 
-            <!-- Nested menu item (with children) -->
-            @if (item.children) {
-              <div class="nested-menu-item">
-                <a
-                  mat-list-item
-                  (click)="toggleMenu(item.label); $event.preventDefault()"
-                  [class.expanded]="isMenuExpanded(item.label)"
-                  class="parent-menu-item"
-                >
-                  <mat-icon>{{ item.icon }}</mat-icon>
-                  <span>{{ item.label }}</span>
-                  <mat-icon class="expand-icon">
-                    {{ isMenuExpanded(item.label) ? 'expand_less' : 'expand_more' }}
-                  </mat-icon>
-                </a>
-                
-                <!-- Child menu items -->
-                <div
-                  class="child-menu-items"
-                  [class.expanded]="isMenuExpanded(item.label)"
-                >
-                  @for (child of item.children; track child.route || child.label) {
+        <!-- Navigation Sections -->
+        <nav class="sidenav-nav">
+          @for (section of navSections; track section.label) {
+            <div class="nav-section">
+              <p class="nav-section-label">{{ section.label }}</p>
+              <mat-nav-list>
+                @for (item of section.items; track item.route || item.label) {
+
+                  @if (!item.children) {
                     <a
                       mat-list-item
-                      [routerLink]="child.route"
+                      [routerLink]="item.route"
                       routerLinkActive="active"
-                      class="child-menu-item"
+                      class="nav-item"
                     >
-                      <mat-icon>{{ child.icon }}</mat-icon>
-                      <span>{{ child.label }}</span>
+                      <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
+                      <span matListItemTitle>{{ item.label }}</span>
                     </a>
                   }
-                </div>
-              </div>
-            }
+
+                  @if (item.children) {
+                    <div class="nested-menu-item">
+                      <a
+                        mat-list-item
+                        (click)="toggleMenu(item.label); $event.preventDefault()"
+                        [class.expanded]="isMenuExpanded(item.label)"
+                        class="nav-item parent-nav-item"
+                      >
+                        <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
+                        <span matListItemTitle>{{ item.label }}</span>
+                        <mat-icon class="expand-icon">
+                          {{ isMenuExpanded(item.label) ? 'expand_less' : 'expand_more' }}
+                        </mat-icon>
+                      </a>
+
+                      <div
+                        class="child-nav-items"
+                        [class.expanded]="isMenuExpanded(item.label)"
+                      >
+                        @for (child of item.children; track child.route || child.label) {
+                          <a
+                            mat-list-item
+                            [routerLink]="child.route"
+                            routerLinkActive="active"
+                            class="nav-item child-nav-item"
+                          >
+                            <mat-icon matListItemIcon>{{ child.icon }}</mat-icon>
+                            <span matListItemTitle>{{ child.label }}</span>
+                          </a>
+                        }
+                      </div>
+                    </div>
+                  }
+
+                }
+              </mat-nav-list>
+            </div>
           }
-        </mat-nav-list>
+        </nav>
       </mat-sidenav>
 
       <mat-sidenav-content>
@@ -114,4 +157,3 @@
     </mat-sidenav-container>
   </div>
 </div>
-

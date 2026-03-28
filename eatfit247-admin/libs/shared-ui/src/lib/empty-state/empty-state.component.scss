@@ -2,17 +2,17 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 40px;
+  padding: var(--spacing-40);
   min-height: 200px;
-  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.8), rgba(250, 250, 250, 0.9));
-  border-radius: 8px;
+  background: var(--md-sys-color-surface-container-low);
+  border-radius: var(--shape-sm);
 }
 
 .empty-state-content {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 40px;
+  gap: var(--spacing-40);
   width: 100%;
   max-width: 900px;
 }
@@ -21,7 +21,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: var(--spacing-24);
   min-width: 0;
 }
 
@@ -44,26 +44,59 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--elevation-level-1);
+  background-color: var(--md-sys-color-surface-container);
+
+  // Semantic colour variants — keyed by EmptyStateType CSS class
+  &.icon-success {
+    background-color: var(--status-success-bg);
+    .empty-icon { color: var(--status-success); }
+  }
+
+  &.icon-warning {
+    background-color: var(--status-warning-bg);
+    .empty-icon { color: var(--status-warning); }
+  }
+
+  &.icon-error {
+    background-color: var(--status-error-bg);
+    .empty-icon { color: var(--status-error); }
+  }
+
+  &.icon-info {
+    background-color: var(--status-info-bg);
+    .empty-icon { color: var(--status-info); }
+  }
+
+  &.icon-primary {
+    background-color: color-mix(in srgb, var(--md-sys-color-primary) 12%, transparent);
+    .empty-icon { color: var(--md-sys-color-primary); }
+  }
+
+  &.icon-neutral {
+    background-color: var(--md-sys-color-surface-container-high);
+    .empty-icon { color: var(--md-sys-color-on-surface-variant); }
+  }
 }
 
 .empty-icon {
   font-size: 96px;
   width: 96px;
   height: 96px;
-  opacity: 0.7;
+  opacity: 0.85;
+  color: var(--md-sys-color-on-surface-variant);
 }
 
 .empty-state-title {
-  font-size: 24px;
+  font-size: 1.5rem;
   font-weight: 500;
-  color: rgba(0, 0, 0, 0.87);
-  margin: 0 0 12px 0;
+  color: var(--md-sys-color-on-surface);
+  margin: 0 0 var(--spacing-12) 0;
 }
 
 .empty-state-description {
-  font-size: 16px;
-  color: rgba(0, 0, 0, 0.6);
+  font-size: 1rem;
+  color: var(--md-sys-color-on-surface-variant);
   margin: 0;
   line-height: 1.5;
 }
@@ -71,20 +104,19 @@
 .empty-state-actions {
   display: flex;
   justify-content: flex-start;
-  gap: 12px;
+  gap: var(--spacing-12);
 
   button {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: var(--spacing-8);
   }
 }
 
-// Responsive design
 @media (max-width: 768px) {
   .empty-state-content {
     flex-direction: column;
-    gap: 24px;
+    gap: var(--spacing-24);
   }
 
   .empty-state-left {

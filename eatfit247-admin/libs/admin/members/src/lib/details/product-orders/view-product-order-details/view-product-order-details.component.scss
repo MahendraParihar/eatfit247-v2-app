@@ -7,16 +7,17 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 16px 24px;
-    border-bottom: 1px solid #e0e0e0;
+    padding: var(--spacing-16) var(--spacing-24);
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
 
     h2 {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: var(--spacing-12);
       margin: 0;
-      font-size: 24px;
+      font-size: 1.5rem;
       font-weight: 500;
+      color: var(--md-sys-color-on-surface);
 
       mat-icon {
         font-size: 28px;
@@ -32,7 +33,7 @@
 
   mat-dialog-content {
     flex: 1;
-    padding: 24px;
+    padding: var(--spacing-24);
     overflow-y: auto;
 
     .loading-container {
@@ -41,11 +42,11 @@
       align-items: center;
       justify-content: center;
       min-height: 300px;
-      gap: 16px;
+      gap: var(--spacing-16);
 
       p {
-        color: rgba(0, 0, 0, 0.6);
-        font-size: 14px;
+        color: var(--md-sys-color-on-surface-variant);
+        font-size: 0.875rem;
       }
     }
 
@@ -55,63 +56,64 @@
       align-items: center;
       justify-content: center;
       min-height: 300px;
-      gap: 16px;
+      gap: var(--spacing-16);
 
       mat-icon {
         font-size: 48px;
         width: 48px;
         height: 48px;
+        color: var(--status-error);
       }
 
       p {
-        color: rgba(0, 0, 0, 0.6);
-        font-size: 16px;
+        color: var(--md-sys-color-on-surface-variant);
+        font-size: 1rem;
       }
     }
 
     .order-details {
       display: flex;
       flex-direction: column;
-      gap: 20px;
+      gap: var(--spacing-20);
 
-      // Payment link card styling
       .payment-link-card {
-        background-color: #e3f2fd;
-        border: 1px solid #2196f3;
+        background-color: var(--status-info-bg);
+        border: 1px solid var(--status-info);
 
         .payment-link-section {
           .payment-link-header {
             display: flex;
             align-items: center;
-            gap: 8px;
-            margin-bottom: 16px;
+            gap: var(--spacing-8);
+            margin-bottom: var(--spacing-16);
 
             mat-icon {
-              color: #2196f3;
+              color: var(--status-info);
             }
 
             h3 {
               margin: 0;
-              font-size: 16px;
+              font-size: 1rem;
               font-weight: 500;
-              color: #1976d2;
+              color: var(--md-sys-color-primary);
             }
           }
 
           .payment-link-content {
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: var(--spacing-12);
 
             .payment-link-text {
               word-break: break-all;
-              padding: 12px;
-              background-color: white;
-              border-radius: 4px;
-              border: 1px solid #ccc;
+              padding: var(--spacing-12);
+              background-color: var(--md-sys-color-surface);
+              border-radius: var(--shape-xs);
+              border: 1px solid var(--md-sys-color-outline-variant);
               margin: 0;
               font-family: monospace;
-              font-size: 14px;
+              font-size: 0.875rem;
+              color: var(--md-sys-color-on-surface);
             }
 
             .copy-button {
@@ -123,12 +125,12 @@
 
       mat-card {
         mat-card-header {
-          margin-bottom: 16px;
+          margin-bottom: var(--spacing-16);
 
           mat-card-title {
-            font-size: 18px;
+            font-size: 1.125rem;
             font-weight: 500;
-            color: rgba(0, 0, 0, 0.87);
+            color: var(--md-sys-color-on-surface);
           }
         }
 
@@ -136,7 +138,7 @@
           .details-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 16px;
+            gap: var(--spacing-16);
 
             .detail-item {
               display: flex;
@@ -144,42 +146,42 @@
               gap: 4px;
 
               .label {
-                font-size: 12px;
+                font-size: 0.75rem;
                 font-weight: 500;
-                color: rgba(0, 0, 0, 0.6);
+                color: var(--md-sys-color-on-surface-variant);
                 text-transform: uppercase;
                 letter-spacing: 0.5px;
               }
 
               .value {
-                font-size: 14px;
-                color: rgba(0, 0, 0, 0.87);
+                font-size: 0.875rem;
+                color: var(--md-sys-color-on-surface);
                 word-break: break-word;
 
                 &.promo-code {
-                  color: #4caf50;
+                  color: var(--status-success);
                   font-weight: 500;
                 }
               }
 
               mat-chip {
                 width: fit-content;
-                font-size: 12px;
+                font-size: 0.75rem;
                 padding: 4px 12px;
 
                 &.status-success {
-                  background-color: #e8f5e9;
-                  color: #2e7d32;
+                  background-color: var(--status-success-bg);
+                  color: var(--status-success);
                 }
 
                 &.status-pending {
-                  background-color: #fff3e0;
-                  color: #ef6c00;
+                  background-color: var(--status-warning-bg);
+                  color: var(--status-warning);
                 }
 
                 &.status-failed {
-                  background-color: #ffebee;
-                  color: #c62828;
+                  background-color: var(--status-error-bg);
+                  color: var(--status-error);
                 }
               }
             }
@@ -190,25 +192,25 @@
 
             .order-items-table {
               width: 100%;
-              margin-top: 8px;
+              margin-top: var(--spacing-8);
 
               th {
                 font-weight: 600;
-                font-size: 12px;
-                color: rgba(0, 0, 0, 0.6);
-                background-color: #f5f5f5;
+                font-size: 0.75rem;
+                color: var(--md-sys-color-on-surface-variant);
+                background-color: var(--md-sys-color-surface-container-high);
               }
 
               td {
-                font-size: 14px;
-                color: rgba(0, 0, 0, 0.87);
+                font-size: 0.875rem;
+                color: var(--md-sys-color-on-surface);
 
                 &.amount-cell {
                   text-align: right;
                   font-family: 'Roboto Mono', monospace;
 
                   &.discount {
-                    color: #4caf50;
+                    color: var(--status-success);
                   }
 
                   &.total {
@@ -222,7 +224,7 @@
               }
 
               tr:hover {
-                background-color: #fafafa;
+                background-color: var(--md-sys-color-surface-container-low);
               }
             }
           }
@@ -230,74 +232,72 @@
           .amount-breakdown {
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: var(--spacing-12);
 
             .amount-row {
               display: flex;
               justify-content: space-between;
               align-items: center;
-              padding: 8px 0;
+              padding: var(--spacing-8) 0;
 
               .label {
-                font-size: 14px;
-                color: rgba(0, 0, 0, 0.87);
+                font-size: 0.875rem;
+                color: var(--md-sys-color-on-surface);
               }
 
               .value {
-                font-size: 14px;
+                font-size: 0.875rem;
                 font-family: 'Roboto Mono', monospace;
-                color: rgba(0, 0, 0, 0.87);
+                color: var(--md-sys-color-on-surface);
               }
 
-              &.discount {
-                .value {
-                  color: #4caf50;
-                }
+              &.discount .value {
+                color: var(--status-success);
               }
 
               &.total {
-                margin-top: 8px;
-                padding-top: 16px;
+                margin-top: var(--spacing-8);
+                padding-top: var(--spacing-16);
                 font-weight: 600;
-                font-size: 16px;
+                font-size: 1rem;
 
                 .label,
                 .value {
-                  font-size: 16px;
+                  font-size: 1rem;
                   font-weight: 600;
                 }
               }
             }
 
             mat-divider {
-              margin: 8px 0;
+              margin: var(--spacing-8) 0;
             }
           }
 
           .addresses-container {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 24px;
+            gap: var(--spacing-24);
 
             .address-section {
               h4 {
-                font-size: 14px;
+                font-size: 0.875rem;
                 font-weight: 500;
-                color: rgba(0, 0, 0, 0.6);
-                margin: 0 0 12px 0;
+                color: var(--md-sys-color-on-surface-variant);
+                margin: 0 0 var(--spacing-12) 0;
                 text-transform: uppercase;
                 letter-spacing: 0.5px;
               }
 
               .address-content {
-                padding: 12px;
-                background-color: #f5f5f5;
-                border-radius: 4px;
+                padding: var(--spacing-12);
+                background-color: var(--md-sys-color-surface-container);
+                border-radius: var(--shape-xs);
 
                 p {
-                  margin: 0 0 8px 0;
-                  font-size: 14px;
-                  color: rgba(0, 0, 0, 0.87);
+                  margin: 0 0 var(--spacing-8) 0;
+                  font-size: 0.875rem;
+                  color: var(--md-sys-color-on-surface);
                   line-height: 1.5;
 
                   &:last-child {
@@ -305,7 +305,7 @@
                   }
 
                   &.landmark {
-                    color: rgba(0, 0, 0, 0.6);
+                    color: var(--md-sys-color-on-surface-variant);
                     font-style: italic;
                   }
                 }
@@ -318,29 +318,22 @@
   }
 
   mat-dialog-actions {
-    padding: 16px 24px;
-    border-top: 1px solid #e0e0e0;
+    padding: var(--spacing-16) var(--spacing-24);
+    border-top: 1px solid var(--md-sys-color-outline-variant);
   }
 }
 
-// Responsive adjustments
 @media (max-width: 768px) {
   .dialog-container {
     mat-dialog-content {
       .order-details {
-        mat-card {
-          mat-card-content {
-            .details-grid {
-              grid-template-columns: 1fr;
-            }
-
-            .addresses-container {
-              grid-template-columns: 1fr;
-            }
+        mat-card mat-card-content {
+          .details-grid,
+          .addresses-container {
+            grid-template-columns: 1fr;
           }
         }
       }
     }
   }
 }
-

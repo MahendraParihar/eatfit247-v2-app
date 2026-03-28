@@ -48,11 +48,21 @@ $brand-primary: #fc2305;
   --status-info: #1976d2;
   --status-info-bg: #e3f2fd;
 
-  // Border Radius
-  --radius-card: 0;
-  --radius-button: 12px;
-  --radius-chip: 0;
-  --radius-input: 0;
+  // ── M3 Shape Scale ──────────────────────────────────────────────────────────
+  // Follows the Material 3 shape system: none → extra-small → small → medium → large → extra-large
+  --shape-none: 0px;
+  --shape-xs:   4px;   // extra-small: badges, input corners
+  --shape-sm:   8px;   // small: chips, menu items, nav items
+  --shape-md:   12px;  // medium: cards, dialogs (M3 default surface)
+  --shape-lg:   16px;  // large: sheets, bottom nav
+  --shape-xl:   28px;  // extra-large: FABs, large surfaces
+  --shape-full: 9999px; // fully rounded: avatars, pills
+
+  // ── Semantic Radius Aliases (use these in components) ────────────────────────
+  --radius-card:   var(--shape-md);
+  --radius-button: var(--shape-sm);
+  --radius-chip:   var(--shape-xs);
+  --radius-input:  var(--shape-xs);
 
   // Elevation
   --elevation-level-1: 0px 1px 2px 0px rgba(0, 0, 0, 0.3), 0px 1px 3px 1px rgba(0, 0, 0, 0.15);

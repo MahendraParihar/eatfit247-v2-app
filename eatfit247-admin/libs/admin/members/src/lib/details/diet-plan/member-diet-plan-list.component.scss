@@ -173,31 +173,31 @@ tr.example-element-row:not(.example-expanded-row):active {
   border-radius: 12px;
   font-size: 12px;
   font-weight: 500;
-  
+
   &.red-bg {
-    background-color: #ffebee;
-    color: #c62828;
+    background-color: var(--status-error-bg);
+    color: var(--status-error);
   }
-  
+
   &.green-bg {
-    background-color: #e8f5e9;
-    color: #2e7d32;
+    background-color: var(--status-success-bg);
+    color: var(--status-success);
   }
 }
 
 .status-not-started {
-  background-color: #ffebee;
-  color: #c62828;
+  background-color: var(--status-error-bg);
+  color: var(--status-error);
 }
 
 .status-in-progress {
-  background-color: #fff3e0;
-  color: #e65100;
+  background-color: var(--status-warning-bg);
+  color: var(--status-warning);
 }
 
 .status-completed {
-  background-color: #e8f5e9;
-  color: #2e7d32;
+  background-color: var(--status-success-bg);
+  color: var(--status-success);
 }
 
 .expanded-detail-row {
@@ -251,7 +251,7 @@ tr.example-element-row:not(.example-expanded-row):active {
       transition: background-color 0.2s ease;
       
       &:hover {
-        background-color: rgba(0, 0, 0, 0.02);
+        background-color: var(--md-sys-color-surface-container-low);
       }
       
       &:last-child {

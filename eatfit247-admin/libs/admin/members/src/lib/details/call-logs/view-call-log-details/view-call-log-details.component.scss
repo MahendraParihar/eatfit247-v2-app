@@ -8,23 +8,23 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0px 16px 0px 0px;
-  border-bottom: 1px solid var(--md-sys-color-outline, #e0e0e0);
+  padding: 0 var(--spacing-16) 0 0;
+  border-bottom: 1px solid var(--md-sys-color-outline);
 
   h2 {
     margin: 0;
-    font-size: 20px;
+    font-size: 1.25rem;
     font-weight: 500;
-    color: var(--md-sys-color-on-surface, #1c1b1f);
+    color: var(--md-sys-color-on-surface);
   }
 
   .close-button {
-    color: var(--md-sys-color-on-surface, rgba(0, 0, 0, 0.54));
+    color: var(--md-sys-color-on-surface-variant);
   }
 }
 
 mat-dialog-content {
-  padding: 24px;
+  padding: var(--spacing-24);
   margin: 0;
   max-height: 70vh;
   overflow-y: auto;
@@ -33,45 +33,43 @@ mat-dialog-content {
 .details-container {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: var(--spacing-24);
 }
 
 .detail-section {
   .section-title {
-    margin: 0 0 16px 0;
-    font-size: 16px;
+    margin: 0 0 var(--spacing-16) 0;
+    font-size: 1rem;
     font-weight: 500;
-    color: var(--md-sys-color-primary, #fc2305);
-    padding-bottom: 8px;
-    border-bottom: 1px solid var(--md-sys-color-outline-variant, #d6d6d6);
+    color: var(--md-sys-color-primary);
+    padding-bottom: var(--spacing-8);
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
   }
 }
 
 .detail-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
+  gap: var(--spacing-16);
 
   .detail-item {
     display: flex;
     flex-direction: column;
     gap: 4px;
 
-    &.full-width {
-      grid-column: 1 / -1;
-    }
+    &.full-width { grid-column: 1 / -1; }
 
     .label {
-      font-size: 12px;
+      font-size: 0.75rem;
       font-weight: 500;
-      color: var(--md-sys-color-on-surface, rgba(0, 0, 0, 0.6));
+      color: var(--md-sys-color-on-surface-variant);
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
 
     .value {
-      font-size: 14px;
-      color: var(--md-sys-color-on-surface, #1c1b1f);
+      font-size: 0.875rem;
+      color: var(--md-sys-color-on-surface);
       line-height: 1.5;
       word-break: break-word;
     }
@@ -80,14 +78,12 @@ mat-dialog-content {
       display: inline-flex;
       align-items: center;
       gap: 4px;
-      color: var(--md-sys-color-primary, #fc2305);
+      color: var(--md-sys-color-primary);
       text-decoration: none;
-      font-size: 14px;
+      font-size: 0.875rem;
       word-break: break-all;
 
-      &:hover {
-        text-decoration: underline;
-      }
+      &:hover { text-decoration: underline; }
 
       mat-icon {
         font-size: 16px;
@@ -98,51 +94,35 @@ mat-dialog-content {
 
     mat-chip {
       display: inline-block;
-      font-size: 12px;
+      font-size: 0.75rem;
       height: 24px;
-      padding: 0 8px;
+      padding: 0 var(--spacing-8);
 
       &.status-active {
-        background-color: var(--status-success-bg, #e6f4ec);
-        color: var(--status-success, #1b8f5a);
+        background-color: var(--status-success-bg);
+        color: var(--status-success);
       }
 
       &.status-inactive {
-        background-color: var(--status-error-bg, #fdecea);
-        color: var(--status-error, #d32f2f);
+        background-color: var(--status-error-bg);
+        color: var(--status-error);
       }
 
       &.status-cancelled {
-        background-color: var(--status-error-bg, #fdecea);
-        color: var(--status-error, #d32f2f);
+        background-color: var(--status-error-bg);
+        color: var(--status-error);
       }
     }
   }
 }
 
 mat-dialog-actions {
-  padding: 16px 24px;
+  padding: var(--spacing-16) var(--spacing-24);
   margin: 0;
-  border-top: 1px solid var(--md-sys-color-outline, #e0e0e0);
+  border-top: 1px solid var(--md-sys-color-outline);
 
   button {
     text-transform: none;
     font-weight: 500;
   }
 }
-
-// Dark theme support
-.dark-theme {
-  .dialog-header {
-    border-bottom-color: var(--md-sys-color-outline, #3a3a3a);
-  }
-
-  .detail-section .section-title {
-    border-bottom-color: var(--md-sys-color-outline-variant, #444444);
-  }
-
-  mat-dialog-actions {
-    border-top-color: var(--md-sys-color-outline, #3a3a3a);
-  }
-}
-

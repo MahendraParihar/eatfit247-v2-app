@@ -4,15 +4,15 @@
   width: 100%;
   max-width: 900px;
   max-height: 90vh;
-  background: var(--md-sys-color-surface, #fff);
+  background: var(--md-sys-color-surface);
   overflow: hidden;
 }
 
 // Dialog Header
 .dialog-header {
   padding: 20px 24px;
-  border-bottom: 1px solid var(--md-sys-color-outline-variant, rgba(0, 0, 0, 0.12));
-  background: var(--md-sys-color-surface-container-high, #f5f5f5);
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
+  background: var(--md-sys-color-surface-container-high);
   flex-shrink: 0;
 
   .header-content {
@@ -32,7 +32,7 @@
         font-size: 1.5rem;
         font-weight: 500;
         line-height: 1.4;
-        color: var(--md-sys-color-on-surface, #1c1b1f);
+        color: var(--md-sys-color-on-surface);
       }
 
       .recipe-meta {
@@ -40,7 +40,7 @@
         align-items: center;
         gap: 8px;
         font-size: 0.875rem;
-        color: var(--md-sys-color-on-surface-variant, rgba(0, 0, 0, 0.6));
+        color: var(--md-sys-color-on-surface-variant);
         flex-wrap: wrap;
 
         .meta-item {
@@ -55,11 +55,11 @@
             line-height: 18px;
 
             &.active {
-              color: #4caf50;
+              color: var(--status-success);
             }
 
             &.inactive {
-              color: #f44336;
+              color: var(--status-error);
             }
           }
         }
@@ -73,10 +73,10 @@
 
     .close-button {
       flex-shrink: 0;
-      color: var(--md-sys-color-on-surface-variant, rgba(0, 0, 0, 0.6));
+      color: var(--md-sys-color-on-surface-variant);
 
       &:hover {
-        background-color: var(--md-sys-color-surface-container-highest, rgba(0, 0, 0, 0.05));
+        background-color: var(--md-sys-color-surface-container-highest);
       }
     }
   }
@@ -103,11 +103,11 @@
       width: 48px;
       height: 48px;
       animation: spin 2s linear infinite;
-      color: var(--md-sys-color-primary, #6750a4);
+      color: var(--md-sys-color-primary);
     }
 
     p {
-      color: var(--md-sys-color-on-surface-variant, rgba(0, 0, 0, 0.6));
+      color: var(--md-sys-color-on-surface-variant);
       margin: 0;
     }
   }
@@ -149,7 +149,7 @@
     .info-card {
       mat-card-header {
         padding-bottom: 8px;
-        border-bottom: 1px solid var(--md-sys-color-outline-variant, rgba(0, 0, 0, 0.12));
+        border-bottom: 1px solid var(--md-sys-color-outline-variant);
         margin-bottom: 16px;
 
         mat-card-title {
@@ -164,7 +164,7 @@
             font-size: 24px;
             width: 24px;
             height: 24px;
-            color: var(--md-sys-color-primary, #6750a4);
+            color: var(--md-sys-color-primary);
           }
         }
       }
@@ -176,7 +176,7 @@
           word-wrap: break-word;
           white-space: pre-wrap;
           line-height: 1.6;
-          color: var(--md-sys-color-on-surface, rgba(0, 0, 0, 0.87));
+          color: var(--md-sys-color-on-surface);
 
           ::ng-deep {
             p {
@@ -208,7 +208,7 @@
             align-items: flex-start;
             gap: 12px;
             padding: 12px 0;
-            border-bottom: 1px solid var(--md-sys-color-outline-variant, rgba(0, 0, 0, 0.12));
+            border-bottom: 1px solid var(--md-sys-color-outline-variant);
 
             &:last-child {
               border-bottom: none;
@@ -217,12 +217,12 @@
             .info-label {
               font-weight: 500;
               min-width: 100px;
-              color: var(--md-sys-color-on-surface-variant, rgba(0, 0, 0, 0.6));
+              color: var(--md-sys-color-on-surface-variant);
             }
 
             .info-value {
               flex: 1;
-              color: var(--md-sys-color-on-surface, rgba(0, 0, 0, 0.87));
+              color: var(--md-sys-color-on-surface);
             }
 
             .tags-container {
@@ -245,8 +245,8 @@
 // Dialog Footer
 .dialog-footer {
   padding: 16px 24px;
-  border-top: 1px solid var(--md-sys-color-outline-variant, rgba(0, 0, 0, 0.12));
-  background: var(--md-sys-color-surface-container-high, #f5f5f5);
+  border-top: 1px solid var(--md-sys-color-outline-variant);
+  background: var(--md-sys-color-surface-container-high);
   margin: 0;
   min-height: auto;
   flex-shrink: 0;
@@ -269,7 +269,7 @@
     }
 
     &[mat-button] {
-      color: var(--md-sys-color-on-surface, rgba(0, 0, 0, 0.87));
+      color: var(--md-sys-color-on-surface);
     }
 
     &[mat-raised-button] {
