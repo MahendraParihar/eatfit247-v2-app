@@ -58,6 +58,7 @@
 
 .diet-plan-table {
   width: 100%;
+  table-layout: fixed;
   border-collapse: collapse;
   background-color: #fff;
   
@@ -125,6 +126,7 @@
   .recipe-cell {
     vertical-align: top;
     padding: 16px;
+    min-width: 0;
   }
 }
 
