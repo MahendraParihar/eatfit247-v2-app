@@ -446,7 +446,6 @@ export class ShipmentOrchestrationService {
         },
         pickupPostcode: Number(pair.warehousePincode),
       };
-      console.log(rateReqWithPickup);
 
       const adapter = this.courierFactory.getAdapter(pair.providerCode);
       const quotes = await adapter.getRates(rateReqWithPickup, pair.credentials);
