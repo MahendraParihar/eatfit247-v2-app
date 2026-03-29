@@ -1,6 +1,5 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { BannerComponent, LoaderComponent } from '@shared-ui';
 import { BannerService } from '../../core/services';
@@ -11,23 +10,25 @@ import { CommonBlogComponent } from '../common-blogs/common-blog.component';
 import { CommonProgramComponent } from '../common-program/common-program.component';
 import { HomeHallOfFameComponent } from './home-hall-of-fame/home-hall-of-fame.component';
 
-interface TrustStat { value: string; label: string }
+interface TrustStat {
+  value: string;
+  label: string;
+}
 
 @Component({
   standalone: true,
   selector: 'app-home',
   imports: [
     CommonModule,
-    RouterLink,
     MatButtonModule,
     BannerComponent,
     LoaderComponent,
     CommonBlogComponent,
     CommonProgramComponent,
-    HomeHallOfFameComponent
+    HomeHallOfFameComponent,
   ],
   templateUrl: './home.component.html',
-  styleUrl: './home.component.scss'
+  styleUrl: './home.component.scss',
 })
 export class HomeComponent implements OnInit {
   private readonly bannerService = inject(BannerService);
@@ -53,12 +54,12 @@ export class HomeComponent implements OnInit {
   }
 
   private async loadBannerData(): Promise<void> {
-    this.banners = await this.bannerService.getBannerMediaForPage(BannerForEnum.HOME);
+    this.banners = await this.bannerService.getBannerMediaForPage(
+      BannerForEnum.HOME,
+    );
   }
 
   async loadStories(): Promise<void> {
     this.stories = await this.successStoriesService.loadStories();
   }
 }
-
-
