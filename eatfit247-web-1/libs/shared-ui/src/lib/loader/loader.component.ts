@@ -12,6 +12,7 @@ type LoaderPageKey =
   | 'contact-us'
   | 'faq'
   | 'about'
+  | 'about-eatfit'
   | 'success-stories'
   | 'press-and-media'
   | 'quiz'
@@ -88,6 +89,11 @@ export class LoaderComponent implements OnInit, OnDestroy {
       'Sorting through your most-asked questions…',
       'Serving crisp answers with zero jargon…',
       'Untangling nutrition myths for you…',
+    ],
+    'about-eatfit': [
+      'Sharing the story behind EatFit247…',
+      'Rewinding to where your wellness story began…',
+      'Opening up our kitchen of ideas…',
     ],
     about: [
       'Sharing the story behind EatFit247…',

@@ -1,8 +1,13 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { MatChipsModule } from '@angular/material/chips';
-import { BannerComponent, CardComponent, EmptyStateComponent, ICardData, LoaderComponent } from '@shared-ui';
-import { BannerService } from '../../core/services/banner.service';
+import {
+  BannerComponent,
+  EmptyStateComponent,
+  ICardData,
+  LoaderComponent,
+} from '@shared-ui';
+import { BannerService } from '../../core/services';
 import { BannerForEnum } from '@eatfit247-shared-library/enum';
 import { IPublicBanner, ISuccessStory } from '@eatfit247-shared-library/core';
 import { SuccessStoriesService } from '../../core/services/success-stories.service';
@@ -11,7 +16,13 @@ import { JsonLdService } from '../../core/services';
 @Component({
   standalone: true,
   selector: 'app-success-stories',
-  imports: [CommonModule, MatChipsModule, BannerComponent, LoaderComponent, CardComponent, EmptyStateComponent],
+  imports: [
+    CommonModule,
+    MatChipsModule,
+    BannerComponent,
+    LoaderComponent,
+    EmptyStateComponent,
+  ],
   templateUrl: './success-stories.component.html',
   styleUrl: './success-stories.component.scss',
 })
@@ -37,7 +48,9 @@ export class SuccessStoriesComponent implements OnInit {
   }
 
   private async loadBannerData(): Promise<void> {
-    this.banners = await this.bannerService.getBannerMediaForPage(BannerForEnum.SUCCESS_STORIES);
+    this.banners = await this.bannerService.getBannerMediaForPage(
+      BannerForEnum.SUCCESS_STORIES,
+    );
   }
 
   async loadStories(): Promise<void> {
