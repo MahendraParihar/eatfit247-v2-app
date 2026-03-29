@@ -1,52 +1,138 @@
-.success-stories-page {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-fluid-xl);
+// Hall of Fame
+.section-header {
+  margin-bottom: 60px;
+
+  h2 {
+    margin-block: 12px;
+  }
 }
 
-.success-stories-filters {
+.timeline {
   display: flex;
+  flex-direction: column;
+  gap: 48px;
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--color-border);
+    transform: translateX(-50%);
+  }
+}
+
+.timeline-entry {
+  display: grid;
+  grid-template-columns: 1fr 48px 1fr;
+  gap: 0;
+  align-items: center;
+  position: relative;
+}
+
+.timeline-year {
+  position: absolute;
+  left: 50%;
+  top: -24px;
+  transform: translateX(-50%);
+  background: var(--color-primary);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 12px;
+  z-index: 2;
+}
+
+.timeline-line {
+  width: 48px;
+  display: flex;
+  align-items: center;
   justify-content: center;
-  flex-wrap: wrap;
+  position: relative;
+
+  &::before {
+    content: '';
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--color-primary);
+    border: 3px solid #fff;
+    box-shadow: 0 0 0 2px var(--color-primary);
+    z-index: 2;
+  }
 }
 
+.entry-image {
+  padding: 16px;
+}
 
-.success-stories-section {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-8);
-  margin-top: var(--space-8);
+.entry-img {
+  width: 100%;
+  border-radius: 12px;
+  object-fit: cover;
+  aspect-ratio: 4/3;
+}
 
-  .year-group {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-4);
-    align-items: center;
+.entry-content {
+  padding: 24px;
+  background: var(--color-surface-card);
+  border: 1px solid var(--color-divider);
+  border-radius: 12px;
 
-    .year-title {
-      font-size: var(--font-body-b4-size);
-      line-height: var(--font-body-b4-line-height);
-      font-weight: var(--font-weight-semibold);
-      box-shadow: 0px 4px 6px -4px #0000001A;
-      padding: var(--space-3) var(--space-6);
-      background-color: var(--color-white);
-      border-radius: 8px;
-      color: var(--color-primary);
-      width: fit-content;
-    }
+  &.right-content {
+    margin-left: 0;
+  }
 
-    .stories-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: var(--space-6);
+  &.left-content {
+    margin-right: 0;
+  }
+}
 
-      @media (min-width: 640px) {
-        grid-template-columns: repeat(2, 1fr);
-      }
+.entry-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0 0 8px;
+}
 
-      @media (min-width: 1024px) {
-        grid-template-columns: repeat(3, 1fr);
-      }
-    }
+.entry-quote {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  line-height: 1.7;
+  font-style: italic;
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .stories-hero-grid {
+    grid-template-columns: 1fr;
+  }
+  .stories-hero-image {
+    display: none;
+  }
+
+  .timeline::before {
+    left: 16px;
+  }
+
+  .timeline-entry {
+    grid-template-columns: 1fr;
+    padding-left: 40px;
+  }
+
+  .timeline-year {
+    left: 0;
+    transform: none;
+  }
+  .timeline-line {
+    display: none;
+  }
+
+  .entry-image {
+    display: none;
   }
 }

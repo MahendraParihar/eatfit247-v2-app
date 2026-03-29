@@ -1,41 +1,70 @@
 @if (loading()) {
-  <app-loader page="success-stories"></app-loader>
+    <app-loader page="success-stories"></app-loader>
 }
 @if (!loading()) {
-  @if (banners.length > 0) {
-    <app-banner [banners]="banners"></app-banner>
-  }
-
-  <div class="success-stories-page page-container">
-    <header class="section__header">
-      <p class="section__tagline section__hightlight">Those who believe they can change the world are the ones who do.</p>
-      <h1 class="section__title">Hall of Fame</h1>
-      <p class="section__tagline">
-        Here's an assortment of our healthy superstars who decided to take charge and came out of the journey healthier
-        and happier. Let their story be the one that moves you to write yours.
-      </p>
-    </header>
-
-    @if (!hasStories) {
-      <app-empty-state
-        title="No stories found"
-        description="No success stories available for this filter. Try a different year or check back soon!"
-        buttonText="Show All"
-        (buttonClick)="selectYear(null)"
-      ></app-empty-state>
-    } @else {
-      <div class="success-stories-section">
-        @for (year of filteredYears; track year) {
-          <div class="year-group">
-            <h2 class="year-title">{{ year }}</h2>
-            <div class="stories-grid">
-              @for (story of getStoriesForYear(year); track story.successStoryId) {
-                <app-card [data]="mapToCardData(story)"></app-card>
-              }
-            </div>
-          </div>
-        }
-      </div>
+    @if (banners.length > 0) {
+        <app-banner [banners]="banners"></app-banner>
     }
-  </div>
+
+    <!-- Hall of Fame -->
+    <section class="page-container">
+        <header class="section-header">
+            <p class="section__hightlight">THOSE WHO BELIEVE THEY CAN CHANGE THE WORLD ARE THE ONES WHO DO.</p>
+            <h2 class="section__title">Hall of Fame</h2>
+            <p class="section__tagline">
+                Here's an assortment of our healthy superstars who decided to take charge and came out of the
+                journey healthier
+                and happier. Let their story be the one that moves you to write yours.
+            </p>
+        </header>
+        @if (!hasStories) {
+            <app-empty-state
+                    title="No stories found"
+                    description="No success stories available for this filter. Try a different year or check back soon!"
+                    buttonText="Show All"
+                    (buttonClick)="selectYear(null)"
+            ></app-empty-state>
+        } @else {
+
+        }
+        <div class="timeline">
+            @for (year of filteredYears; let i = $index; track $index) {
+                <div class="timeline-entry" [class.left]="i%2 === 0 ? 'left' : ''"
+                     [class.right]="i%2 !== 0 ? 'right': ''">
+                    <!-- Year marker -->
+                    <div class="timeline-year">{{ year }}</div>
+
+                    @if (i % 2 === 0) {
+                        @for (story of getStoriesForYear(year); track story.successStoryId) {
+                            <!-- Image left, content right -->
+                            <div class="entry-image">
+                                <img [src]="mapToCardData(story).imageUrl" [alt]="mapToCardData(story).imageAlt"
+                                     class="entry-img"/>
+                            </div>
+                            <div class="timeline-line"></div>
+                            <div class="entry-content right-content">
+                                <p class="entry-name">{{ mapToCardData(story).title }}</p>
+                                <p class="entry-quote">{{ mapToCardData(story).summary }}</p>
+                            </div>
+                        }
+
+                    } @else {
+                        @for (story of getStoriesForYear(year); track story.successStoryId) {
+                            <!-- Content left, image right -->
+                            <div class="entry-content left-content">
+                                <p class="entry-name">{{ mapToCardData(story).title }}</p>
+                                <p class="entry-quote">{{ mapToCardData(story).summary }}</p>
+                            </div>
+                            <div class="timeline-line"></div>
+                            <div class="entry-image">
+                                <img [src]="mapToCardData(story).imageUrl" [alt]="mapToCardData(story).imageAlt"
+                                     class="entry-img"/>
+                            </div>
+                        }
+                    }
+
+                </div>
+            }
+        </div>
+    </section>
 }
