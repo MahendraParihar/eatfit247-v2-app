@@ -151,7 +151,7 @@ export class RecipeMultiSelectComponent
 
           this.loading = true;
           return this.apiService
-            .searchDropdown({ search: term, page: 0, limit: 10 })
+            .searchDropdown({ search: term, page: 0, limit: 100 })
             .then(
               (res: Array<{ id: number; title: string; subtitle: string }>) => res,
               () => null
