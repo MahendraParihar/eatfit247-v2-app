@@ -128,7 +128,7 @@ export class ManageMemberPaymentComponent implements OnInit {
       noOfCycle: [0, [Validators.required, Validators.min(1)]],
       noOfDaysInCycle: [0, [Validators.required, Validators.min(1)]],
       addressId: [null],
-      billingAddressId: [null],
+      billingAddressId: [null, [Validators.required]],
       gstNumber: ['', [Validators.maxLength(InputLengthEnum.CHAR_50)]],
       currencyCode: ['INR', [Validators.required]],
       orderAmount: [0, [Validators.required, Validators.min(0)]],
@@ -143,7 +143,7 @@ export class ManageMemberPaymentComponent implements OnInit {
       noOfDaysInCycle: [0, [Validators.required, Validators.min(1)]],
       // Billing & Address Information
       addressId: [null],
-      billingAddressId: [null],
+      billingAddressId: [null, [Validators.required]],
       gstNumber: ['', [Validators.maxLength(InputLengthEnum.CHAR_50)]],
       // Tax Configuration
       taxPercentageDisplay: [0], // For display only

@@ -1,4 +1,4 @@
-import { IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsIn, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
 import { IBasicSearch, IStatusChange } from '@eatfit247-shared-lib';
 
@@ -46,6 +46,22 @@ export class BasicSearchDto implements IBasicSearch {
   @IsBoolean()
   @Transform(({ value }) => value === true || value === 'true' || value === 1 || value === '1')
   includeAdminRoles?: boolean;
+  @IsOptional()
+  @IsString()
+  sortField?: string;
+  @IsOptional()
+  @Transform(({ value }) => {
+    if (value === '' || value === null || value === undefined) {
+      return undefined;
+    }
+    return String(value).toLowerCase();
+  })
+  @IsIn(['asc', 'desc'])
+  sortDirection?: string;
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  programId?: number;
 }
 
 export class UpdateActiveDto implements IStatusChange {

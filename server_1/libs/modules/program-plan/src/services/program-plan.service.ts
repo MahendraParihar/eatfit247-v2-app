@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { Order } from 'sequelize';
 import { InjectModel } from '@nestjs/sequelize';
 import { MstProgramPlan, MstProgramPlanFees, MstProgramPlanType } from '../models';
 import {
@@ -10,6 +11,19 @@ import {
   ITableList,
 } from '@eatfit247-shared-lib';
 import { CommonFunctionsUtil, SearchUtil } from '@server_1/core';
+
+const PROGRAM_PLAN_LIST_SORT_FIELDS = new Set<string>([
+  'programPlanId',
+  'plan',
+  'sequenceNumber',
+  'noOfCycle',
+  'noOfDaysInCycle',
+  'isOnline',
+  'isVisibleOnWeb',
+  'active',
+  'createdAt',
+  'updatedAt',
+]);
 
 @Injectable()
 export class ProgramPlanService {
@@ -26,12 +40,10 @@ export class ProgramPlanService {
     const pageNumber = searchDto.page || 0;
     const pageSize = searchDto.limit || 15;
     const offset = pageNumber === 0 ? 0 : pageNumber * pageSize;
+    const order = this.buildProgramPlanListOrder(searchDto);
     const { rows, count } = await this.programPlanRepository.scope('list').findAndCountAll({
       where: whereCondition,
-      order: [
-        ['active', 'DESC'],
-        ['sequenceNumber', 'ASC'],
-      ],
+      order,
       offset: offset,
       limit: pageSize,
       raw: true,
@@ -48,6 +60,18 @@ export class ProgramPlanService {
       tableData: resList,
       count: count,
     };
+  }
+
+  private buildProgramPlanListOrder(searchDto: IBasicSearch): Order {
+    const rawField = searchDto.sortField?.trim();
+    if (rawField && PROGRAM_PLAN_LIST_SORT_FIELDS.has(rawField)) {
+      const direction = searchDto.sortDirection === 'desc' ? 'DESC' : 'ASC';
+      return [[rawField, direction]];
+    }
+    return [
+      ['active', 'DESC'],
+      ['sequenceNumber', 'ASC'],
+    ];
   }
 
   private convertToModel(item: any): IProgramPlan {

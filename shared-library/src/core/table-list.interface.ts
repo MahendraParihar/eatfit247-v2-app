@@ -18,6 +18,10 @@ export interface IBasicSearch extends ITableListFilter {
   createdTo?: Date | null;
   active?: boolean | null;
   includeAdminRoles?: boolean;
+  /** Declared for list endpoints; each module applies its own allowlist. */
+  sortField?: string;
+  sortDirection?: string;
+  programId?: number;
 }
 
 export interface IRecipeSearch extends IBasicSearch {

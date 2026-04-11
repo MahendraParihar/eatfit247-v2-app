@@ -1,9 +1,9 @@
 <div class="file-upload-list">
   <div class="form-item">
     @if (mediaType === mediaTypeEnum.PDF) {
-      <mat-label>CHOOSE_ATTACHMENT</mat-label>
+      <mat-label>Choose attachment</mat-label>
     } @else {
-      <mat-label>CHOOSE_FILE</mat-label>
+      <mat-label>Choose file</mat-label>
     }
   </div>
   <div class="form-item">
@@ -17,14 +17,14 @@
         <mat-icon>picture_as_pdf</mat-icon>
       }
       @if (mediaTypeEnum.PDF === mediaType) {
-        <span style="font-size: 25px;">DRAG_DROP_PDF_FILE</span>
+        <span style="font-size: 25px;">Drag and drop a PDF here</span>
       } @else {
-        <span style="font-size: 25px;">DRAG_DROP_IMAGE_FILE</span>
+        <span style="font-size: 25px;">Drag and drop an image here</span>
       }
       <input #fileInput (change)="selectFile($event)" hidden type="file">
-      <span style="font-size: 14px; font-weight: 500">OR</span>
+      <span style="font-size: 14px; font-weight: 500">or</span>
       <button (click)="fileInput.click()" class="gradient-btn" mat-raised-button type="button">
-        {{ mediaType === mediaTypeEnum.PDF ? 'CHOOSE_ATTACHMENT' : 'CHOOSE_FILE' }}
+        {{ mediaType === mediaTypeEnum.PDF ? 'Choose attachment' : 'Choose file' }}
       </button>
     </div>
     <div class="file-upload-list" style="margin-top: 20px;">
@@ -46,11 +46,11 @@
               class="example-margin">
             </mat-progress-bar>
             @if (file.fileUpdateStatus === 1) {
-              <span class="primary-text">SUCCESS_FILE_UPLOADED</span>
+              <span class="primary-text">File uploaded</span>
             } @else if (file.fileUpdateStatus === -1) {
-              <span class="warn-text">SUCCESS_FILE_ERROR</span>
+              <span class="warn-text">Upload failed</span>
             } @else if (file.fileUpdateStatus === 0) {
-              <span>SUCCESS_FILE_PROGRESS</span>
+              <span>Uploading…</span>
             }
           </div>
           <button (click)="removeItem($index)" color="warn" mat-icon-button type="button">

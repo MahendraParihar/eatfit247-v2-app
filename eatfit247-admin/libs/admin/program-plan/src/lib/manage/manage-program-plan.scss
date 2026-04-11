@@ -51,6 +51,8 @@ mat-card-title {
 }
 
 .fees-section {
+  box-sizing: border-box;
+  max-width: 100%;
   margin-top: var(--spacing-24);
   padding: var(--spacing-16);
   border: 1px solid var(--md-sys-color-outline-variant);
@@ -75,19 +77,37 @@ mat-card-title {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-16);
+  min-width: 0;
 }
 
 .fee-item {
+  box-sizing: border-box;
+  max-width: 100%;
   padding: var(--spacing-16);
   background-color: var(--md-sys-color-surface-container);
   border-radius: var(--shape-xs);
 
   .row {
     display: flex;
+    flex-wrap: wrap;
     gap: var(--spacing-16);
     align-items: flex-start;
+    min-width: 0;
 
-    button[mat-icon-button] { margin-top: var(--spacing-8); }
+    mat-form-field.half-width {
+      flex: 1 1 12rem;
+      min-width: 0;
+    }
+
+    button[mat-icon-button] {
+      flex-shrink: 0;
+      margin-top: var(--spacing-8);
+    }
+
+    ::ng-deep mat-form-field.half-width .mat-mdc-form-field-infix {
+      min-width: 0;
+      width: 100%;
+    }
   }
 }
 

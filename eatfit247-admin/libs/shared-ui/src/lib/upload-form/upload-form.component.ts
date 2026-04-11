@@ -37,7 +37,7 @@ export class UploadFormComponent implements OnInit, OnChanges {
   @Input() isRequired = true;
   @Input() uploadedMediaList: IMediaUpload[] = [];
   @Input() controlName!: string;
-  @Input() labels!: Map<string, string>;
+  @Input() labels?: Map<string, string>;
   fileUploadForm!: FormArray;
   uploadedFiles: FileHandle[] = [];
   mediaTypeEnum = FileTypeEnum;

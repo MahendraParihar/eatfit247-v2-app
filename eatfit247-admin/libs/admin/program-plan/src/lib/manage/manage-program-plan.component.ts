@@ -62,7 +62,8 @@ export class ManageProgramPlan implements OnInit, OnDestroy {
     isOnline: [true, [Validators.required]],
     isVisibleOnWeb: [false, [Validators.required]],
     active: [true, [Validators.required]],
-    url: ['']
+    url: [''],
+    programPlanFees: this.fb.array([])
   });
   initialData!: IProgramPlan;
   isEditMode = false;
@@ -164,7 +165,9 @@ export class ManageProgramPlan implements OnInit, OnDestroy {
   async onSubmit(): Promise<void> {
     ValidationUtil.validateAllFormFields(this.formGroup);
     if (this.formGroup.valid) {
-      const formValue: IManageProgramPlan = { ...this.formGroup.value };
+      // `url` is display-only; API derives slug from `plan` and rejects unknown keys (forbidNonWhitelisted).
+      const { url: _url, ...rest } = this.formGroup.value;
+      const formValue: IManageProgramPlan = { ...rest };
       // Extract fees from a form array
       formValue.programPlanFees = this.feesFormArray.value.map((fee: any) => ({
         currencyCode: fee.currencyCode,
