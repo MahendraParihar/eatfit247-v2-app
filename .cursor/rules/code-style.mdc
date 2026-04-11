@@ -1,0 +1,57 @@
+---
+description: Code style standards — TypeScript, Angular functional components, snake_case DB columns
+globs: **/*.ts
+alwaysApply: false
+---
+
+# Code Style Standards
+
+## TypeScript for All New Files
+
+Always use TypeScript. Never create plain `.js` files.
+
+```typescript
+// BAD
+export function getUser(id) { ... }
+
+// GOOD
+export function getUser(id: number): Promise<IUser> { ... }
+```
+
+## Angular: Functional / Standalone Components
+
+Prefer standalone components with `inject()` over class-based injection via constructor where possible.
+
+```typescript
+// BAD — old class-based injection style
+@Component({ selector: 'app-foo', templateUrl: './foo.component.html' })
+export class FooComponent {
+  constructor(private userService: UserService) {}
+}
+
+// GOOD — standalone, inject()
+@Component({
+  selector: 'app-foo',
+  standalone: true,
+  templateUrl: './foo.component.html',
+})
+export class FooComponent {
+  private userService = inject(UserService);
+}
+```
+
+## Database Columns: snake_case
+
+All database column names must use `snake_case`.
+
+```typescript
+// BAD
+firstName: string;
+createdAt: Date;
+
+// GOOD
+first_name: string;
+created_at: Date;
+```
+
+When mapping DB results to TypeScript interfaces, convert to camelCase in the service/repository layer — keep the DB schema snake_case.

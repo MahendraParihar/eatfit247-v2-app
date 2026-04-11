@@ -1,0 +1,71 @@
+---
+description: Angular Material, theming, shared interfaces, and TypeScript standards for eatfit247-admin
+globs: eatfit247-admin/src/**/*.{ts,html,scss}
+alwaysApply: false
+---
+
+# Admin Frontend Standards
+
+## Angular Material Components
+
+Always use Angular Material (`@angular/material`) components. Never use raw HTML equivalents for UI elements.
+
+```html
+<!-- BAD -->
+<button>Save</button>
+<input type="text" />
+<table>...</table>
+
+<!-- GOOD -->
+<button mat-raised-button>Save</button>
+<mat-form-field><input matInput /></mat-form-field>
+<mat-table [dataSource]="dataSource">...</mat-table>
+```
+
+## Material Color Tokens — No Hardcoded Colors
+
+Always use Material 3 CSS color tokens via `var(--mat-*)` or `var(--mdc-*)`. Never hardcode hex, RGB, HSL, or named colors in `.scss` files or inline styles.
+
+```scss
+// BAD
+color: #1976d2;
+background: rgb(255, 255, 255);
+border-color: blue;
+
+// GOOD
+color: var(--mat-primary-color);
+background: var(--mat-app-background-color);
+border-color: var(--mat-divider-color);
+```
+
+## Material Theme Defaults
+
+Do not override Material component internal styles with custom colors. Let the configured theme palette control color, typography, and elevation. Only customize via the Angular Material theme definition (e.g. `mat.define-theme`), never by targeting internal MDC classes directly.
+
+## Shared Interfaces
+
+Any interface used by both `eatfit247-admin` and `server_1` must be defined in `shared-library/src/` and imported via the `@eatfit247-shared-lib` path alias.
+
+```typescript
+// BAD — duplicating an interface that server also uses
+interface IProgram { id: number; name: string; }
+
+// GOOD
+import { IProgram } from '@eatfit247-shared-lib';
+```
+
+Frontend-only interfaces (not consumed by the server) may be defined within the admin app.
+
+## No `any` Keyword
+
+Never use `any` in TypeScript. Define a typed interface or use a specific union/generic instead.
+
+```typescript
+// BAD
+getData(): any { ... }
+const result: any = response;
+
+// GOOD
+getData(): IApiResponse<IProgram[]> { ... }
+const result: IApiResponse<IProgram[]> = response;
+```

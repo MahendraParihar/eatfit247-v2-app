@@ -1,0 +1,50 @@
+---
+description: Architecture guidelines — repository pattern and service layer for business logic
+alwaysApply: true
+---
+
+# Architecture Guidelines
+
+## Repository Pattern
+
+Data access must go through a repository class. Controllers and services must never query the database directly.
+
+```
+Controller → Service → Repository → Database
+```
+
+```typescript
+// BAD — querying DB directly in a service
+async getUser(id: number) {
+  return this.db.query('SELECT * FROM users WHERE id = $1', [id]);
+}
+
+// GOOD — delegating to a repository
+async getUser(id: number): Promise<IUser> {
+  return this.userRepository.findById(id);
+}
+```
+
+Repositories live in a `repositories/` folder alongside their domain (e.g. `server_1/src/repositories/`).
+
+## Business Logic in Service Layers
+
+Keep all business logic inside service classes. Controllers only handle HTTP concerns (parsing request, returning response).
+
+```typescript
+// BAD — business logic in controller
+async createOrder(req: Request, res: Response) {
+  if (req.body.items.length === 0) throw new Error('Empty order');
+  const total = req.body.items.reduce((sum, i) => sum + i.price, 0);
+  await this.orderRepo.save({ ...req.body, total });
+  res.json({ success: true });
+}
+
+// GOOD — controller delegates to service
+async createOrder(req: Request, res: Response) {
+  const order = await this.orderService.createOrder(req.body);
+  res.json(order);
+}
+```
+
+Services live in a `services/` folder (e.g. `server_1/src/services/`).
