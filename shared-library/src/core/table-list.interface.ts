@@ -21,6 +21,10 @@ export interface IBasicSearch extends ITableListFilter {
   /** Declared for list endpoints; each module applies its own allowlist. */
   sortField?: string;
   sortDirection?: string;
+  /** Query alias for `sortField` (admin UI / data table). */
+  sortBy?: string;
+  /** Query alias for `sortDirection` (admin UI / data table). */
+  sortOrder?: string;
   programId?: number;
 }
 

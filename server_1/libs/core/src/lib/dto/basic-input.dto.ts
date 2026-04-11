@@ -46,15 +46,25 @@ export class BasicSearchDto implements IBasicSearch {
   @IsBoolean()
   @Transform(({ value }) => value === true || value === 'true' || value === 1 || value === '1')
   includeAdminRoles?: boolean;
+  /** Legacy / admin UI query alias for `sortField`. */
   @IsOptional()
   @IsString()
+  sortBy?: string;
+  /** Legacy / admin UI query alias for `sortDirection` (asc/desc, case-insensitive). */
+  @IsOptional()
+  @IsString()
+  sortOrder?: string;
+  @IsOptional()
+  @IsString()
+  @Transform(({ value, obj }) => value ?? obj.sortBy)
   sortField?: string;
   @IsOptional()
-  @Transform(({ value }) => {
-    if (value === '' || value === null || value === undefined) {
+  @Transform(({ value, obj }) => {
+    const raw = value ?? obj.sortOrder;
+    if (raw === '' || raw === null || raw === undefined) {
       return undefined;
     }
-    return String(value).toLowerCase();
+    return String(raw).toLowerCase();
   })
   @IsIn(['asc', 'desc'])
   sortDirection?: string;
