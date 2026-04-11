@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { MstLifestyle } from '../models';
 import { IBasicSearch, IDropdownItem, ILifestyle, IManageLifestyle, ITableList } from '@eatfit247-shared-lib';
-import { AppConfigService, CommonFunctionsUtil, SearchUtil } from '@server_1/core';
+import { AppConfigService, CommonFunctionsUtil, SearchUtil, TableListSortUtil } from '@server_1/core';
 
 @Injectable()
 export class LifestyleService {
@@ -19,7 +19,11 @@ export class LifestyleService {
 
     const { rows, count } = await this.lifestyleRepository.scope('list').findAndCountAll({
       where: whereCondition,
-      order: [['lifestyle', 'ASC']],
+      order: TableListSortUtil.orderFromAllowlist(
+        searchDto,
+        new Set(['lifestyleId', 'lifestyle', 'imagePath', 'active', 'createdAt', 'updatedAt']),
+        [['lifestyle', 'ASC']],
+      ),
       offset: offset,
       limit: pageSize,
       raw: true,

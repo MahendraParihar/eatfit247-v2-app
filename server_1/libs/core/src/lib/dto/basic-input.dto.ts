@@ -64,7 +64,8 @@ export class BasicSearchDto implements IBasicSearch {
     if (raw === '' || raw === null || raw === undefined) {
       return undefined;
     }
-    return String(raw).toLowerCase();
+    const normalized = String(raw).toLowerCase().trim();
+    return normalized.length === 0 ? undefined : normalized;
   })
   @IsIn(['asc', 'desc'])
   sortDirection?: string;

@@ -1,6 +1,7 @@
-import { Body, Controller, Get, Param, Patch, Post, Put, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from '@nestjs/common';
 import {
   AbilitiesGuard,
+  BasicSearchDto,
   CsvFilePathDto,
   CurrentUser,
   JwtAuthGuard,
@@ -8,7 +9,7 @@ import {
   RequireAbility,
   UpdateActiveDto,
 } from '@server_1/core';
-import { AdminActionEnum, AdminSubjectEnum, IAuthUser, ISeoPageData } from '@eatfit247-shared-lib';
+import { AdminActionEnum, AdminSubjectEnum, IAuthUser, ISeoPageData, ITableList } from '@eatfit247-shared-lib';
 import { SeoPageService } from '@server_1/platform';
 import { CreateSeoPageDto, UpdateSeoPageDto } from '../../dto';
 
@@ -19,8 +20,8 @@ export class SeoPageAdminController {
 
   @Get('list')
   @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.SeoPage)
-  async list(): Promise<ISeoPageData[]> {
-    return await this.service.findAll();
+  async list(@Query() req: BasicSearchDto): Promise<ITableList<ISeoPageData>> {
+    return await this.service.findAllForAdmin(req);
   }
 
   @Get('manage/:id')

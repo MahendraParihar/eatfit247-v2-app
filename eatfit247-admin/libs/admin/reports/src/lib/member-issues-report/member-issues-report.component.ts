@@ -13,7 +13,7 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatSelect, MatSelectModule } from '@angular/material/select';
 import { Router } from '@angular/router';
-import { DataTableComponent, ITableAction, ITableColumn, ITableConfig } from '@shared';
+import { DataTableComponent, ITableAction, ITableColumn, ITableConfig, ITableSort } from '@shared';
 import { IMemberIssueReportFilter, IMemberIssueReportItem } from '@eatfit247-shared-lib';
 import { MemberIssuesReportApiService } from './api.service';
 import { ViewMemberIssueDetailsComponent } from './view-member-issue-details/view-member-issue-details.component';
@@ -57,6 +57,7 @@ export class MemberIssuesReportComponent implements OnInit {
   selectedQuickFilter: string | null = null;
   issueStatusOptions: { id: number | null; label: string }[] = [];
   issueCategoryOptions: { id: number | null; label: string }[] = [];
+  private reportSort: { sortBy: string; sortOrder: 'asc' | 'desc' } | null = null;
 
   constructor() {
     this.initializeForm();
@@ -199,14 +200,7 @@ export class MemberIssuesReportComponent implements OnInit {
     }
     this.loading = true;
     try {
-      const formValue = this.filterForm.value;
-      const params: IMemberIssueReportFilter = {
-        startDate: this.formatDate(formValue.startDate),
-        endDate: this.formatDate(formValue.endDate),
-        search: formValue.search || undefined,
-        issueStatusId: formValue.issueStatusId || undefined,
-        issueCategoryId: formValue.issueCategoryId || undefined
-      };
+      const params = this.buildReportParams();
       const response = await this.apiService.getMemberIssuesReport(params);
       this.data = response.tableData;
       this.totalCount = response.count;
@@ -221,8 +215,29 @@ export class MemberIssuesReportComponent implements OnInit {
     await this.onSearch();
   }
 
-  async onSortChange(sort: any): Promise<void> {
+  async onSortChange(sort: ITableSort): Promise<void> {
+    if (sort.direction === 'asc' || sort.direction === 'desc') {
+      this.reportSort = { sortBy: sort.active, sortOrder: sort.direction };
+    } else {
+      this.reportSort = null;
+    }
     await this.onSearch();
+  }
+
+  private buildReportParams(): IMemberIssueReportFilter {
+    const formValue = this.filterForm.value;
+    const params: IMemberIssueReportFilter = {
+      startDate: this.formatDate(formValue.startDate),
+      endDate: this.formatDate(formValue.endDate),
+      search: formValue.search || undefined,
+      issueStatusId: formValue.issueStatusId || undefined,
+      issueCategoryId: formValue.issueCategoryId || undefined,
+    };
+    if (this.reportSort) {
+      params.sortBy = this.reportSort.sortBy;
+      params.sortOrder = this.reportSort.sortOrder;
+    }
+    return params;
   }
 
   private formatDate(date: Date): string {

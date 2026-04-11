@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { MstUrineOutput } from '../models';
 import { IBasicSearch, IDropdownItem, IManageUrineOutput, ITableList, IUrineOutput } from '@eatfit247-shared-lib';
-import { AppConfigService, CommonFunctionsUtil, SearchUtil } from '@server_1/core';
+import { AppConfigService, CommonFunctionsUtil, SearchUtil, TableListSortUtil } from '@server_1/core';
 
 @Injectable()
 export class UrineOutputService {
@@ -19,7 +19,11 @@ export class UrineOutputService {
 
     const { rows, count } = await this.urineOutputRepository.scope('list').findAndCountAll({
       where: whereCondition,
-      order: [['urineOutput', 'ASC']],
+      order: TableListSortUtil.orderFromAllowlist(
+        searchDto,
+        new Set(['urineOutputId', 'urineOutput', 'imagePath', 'active', 'createdAt', 'updatedAt']),
+        [['urineOutput', 'ASC']],
+      ),
       offset: offset,
       limit: pageSize,
       raw: true,

@@ -2,8 +2,9 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { TxnFaq } from '../models';
 import { IBasicSearch, IFaq, IManageFaq, IPublicFaq, IPublicTableList, ITableList } from '@eatfit247-shared-lib';
-import { BasicSearchDto, SearchUtil } from '@server_1/core';
+import { BasicSearchDto, SearchUtil, TableListSortUtil } from '@server_1/core';
 import { FaqCategoryService } from './faq-category.service';
+import { Order } from 'sequelize';
 
 @Injectable()
 export class FaqService {
@@ -17,12 +18,19 @@ export class FaqService {
     const pageNumber = searchDto.page || 0;
     const pageSize = searchDto.limit || 15;
     const offset = pageNumber === 0 ? 0 : pageNumber * pageSize;
+    const defaultFaqOrder: Order = [
+      ['faqCategoryId', 'ASC'],
+      ['faq', 'ASC'],
+    ];
+    const field = TableListSortUtil.resolveField(searchDto);
+    const order: Order =
+      field &&
+      new Set(['faqId', 'faq', 'faqCategoryId', 'answer', 'active', 'createdAt', 'updatedAt']).has(field)
+        ? ([[field, TableListSortUtil.resolveDirection(searchDto)]] as Order)
+        : defaultFaqOrder;
     const { rows, count } = await this.faqRepository.scope("list").findAndCountAll({
       where: whereCondition,
-      order: [
-        ["faqCategoryId", "ASC"],
-        ["faq", "ASC"]
-      ],
+      order,
       offset: offset,
       limit: pageSize,
       raw: true,

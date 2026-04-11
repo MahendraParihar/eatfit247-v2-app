@@ -8,7 +8,7 @@ import {
   ITableList,
   IWarehouse,
 } from '@eatfit247-shared-lib';
-import { CommonFunctionsUtil, SearchUtil } from '@server_1/core';
+import { CommonFunctionsUtil, SearchUtil, TableListSortUtil } from '@server_1/core';
 
 @Injectable()
 export class WarehouseService {
@@ -24,7 +24,21 @@ export class WarehouseService {
 
     const { rows, count } = await this.warehouseRepository.scope('list').findAndCountAll({
       where: whereCondition,
-      order: [['name', 'ASC']],
+      order: TableListSortUtil.orderFromAllowlist(
+        searchDto,
+        new Set([
+          'warehouseId',
+          'name',
+          'contactName',
+          'email',
+          'phone',
+          'franchiseId',
+          'active',
+          'createdAt',
+          'updatedAt',
+        ]),
+        [['name', 'ASC']],
+      ),
       offset,
       limit: pageSize,
       raw: true,

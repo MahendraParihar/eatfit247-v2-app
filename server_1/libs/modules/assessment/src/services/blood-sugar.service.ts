@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { MstBloodSugar } from '../models';
 import { IBasicSearch, IBloodSugar, IDropdownItem, IManageBloodSugar, ITableList } from '@eatfit247-shared-lib';
-import { AppConfigService, CommonFunctionsUtil, SearchUtil } from '@server_1/core';
+import { AppConfigService, CommonFunctionsUtil, SearchUtil, TableListSortUtil } from '@server_1/core';
 
 @Injectable()
 export class BloodSugarService {
@@ -19,7 +19,11 @@ export class BloodSugarService {
 
     const { rows, count } = await this.bloodSugarRepository.scope('list').findAndCountAll({
       where: whereCondition,
-      order: [['bloodSugar', 'ASC']],
+      order: TableListSortUtil.orderFromAllowlist(
+        searchDto,
+        new Set(['bloodSugarId', 'bloodSugar', 'imagePath', 'active', 'createdAt', 'updatedAt']),
+        [['bloodSugar', 'ASC']],
+      ),
       offset: offset,
       limit: pageSize,
       raw: true,

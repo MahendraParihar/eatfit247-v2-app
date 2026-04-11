@@ -18,10 +18,11 @@ import {
   MstAdminRole,
   MstAdminRolePermission,
   MstAdminUser,
+  TableListSortUtil,
   TxnAdminFranchise,
 } from '@server_1/core';
 import { AddressService } from '@server_1/platform';
-import { Op } from 'sequelize';
+import { Op, Order } from 'sequelize';
 
 @Injectable()
 export class AdminUserService {
@@ -110,12 +111,27 @@ export class AdminUserService {
     const pageNumber = searchDto.page || 0;
     const pageSize = searchDto.limit || 15;
     const offset = pageNumber === 0 ? 0 : pageNumber * pageSize;
-    const { rows, count } = await this.adminUserRepository.scope('list').findAndCountAll({
-      where: whereCondition,
-      order: [
+    const order = TableListSortUtil.orderFromAllowlist(
+      searchDto,
+      new Set([
+        'adminId',
+        'firstName',
+        'lastName',
+        'emailId',
+        'contactNumber',
+        'countryCode',
+        'active',
+        'createdAt',
+        'updatedAt',
+      ]),
+      [
         ['firstName', 'ASC'],
         ['lastName', 'ASC'],
-      ],
+      ] as Order,
+    );
+    const { rows, count } = await this.adminUserRepository.scope('list').findAndCountAll({
+      where: whereCondition,
+      order,
       offset: offset,
       limit: pageSize,
       raw: true,

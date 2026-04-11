@@ -8,7 +8,7 @@ import {
   ISleepingPattern,
   ITableList,
 } from '@eatfit247-shared-lib';
-import { AppConfigService, CommonFunctionsUtil, SearchUtil } from '@server_1/core';
+import { AppConfigService, CommonFunctionsUtil, SearchUtil, TableListSortUtil } from '@server_1/core';
 
 @Injectable()
 export class SleepingPatternService {
@@ -25,7 +25,11 @@ export class SleepingPatternService {
 
     const { rows, count } = await this.sleepingPatternRepository.scope('list').findAndCountAll({
       where: whereCondition,
-      order: [['sleepingPattern', 'ASC']],
+      order: TableListSortUtil.orderFromAllowlist(
+        searchDto,
+        new Set(['sleepingPatternId', 'sleepingPattern', 'imagePath', 'active', 'createdAt', 'updatedAt']),
+        [['sleepingPattern', 'ASC']],
+      ),
       offset: offset,
       limit: pageSize,
       raw: true,

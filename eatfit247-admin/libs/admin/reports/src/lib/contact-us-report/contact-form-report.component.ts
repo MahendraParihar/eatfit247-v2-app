@@ -11,7 +11,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { DataTableComponent, ITableAction, ITableColumn, ITableConfig } from '@shared';
+import { DataTableComponent, ITableAction, ITableColumn, ITableConfig, ITableSort } from '@shared';
 import { IContactFormReportFilter, IContactFormReportItem } from '@eatfit247-shared-lib';
 import { ContactFormReportApiService } from './api.service';
 import { ViewContactFormDetailsComponent } from './view-contact-form-details/view-contact-form-details.component';
@@ -52,6 +52,7 @@ export class ContactFormReportComponent implements OnInit {
   loading = false;
   tableConfig!: ITableConfig<IContactFormReportItem>;
   selectedQuickFilter: string | null = null;
+  private reportSort: { sortBy: string; sortOrder: 'asc' | 'desc' } | null = null;
 
   constructor() {
     this.initializeForm();
@@ -180,13 +181,7 @@ export class ContactFormReportComponent implements OnInit {
     }
     this.loading = true;
     try {
-      const formValue = this.filterForm.value;
-      const params: IContactFormReportFilter = {
-        startDate: this.formatDate(formValue.startDate),
-        endDate: this.formatDate(formValue.endDate),
-        search: formValue.search || '',
-        isResponded: formValue.isResponded
-      };
+      const params = this.buildReportParams();
       const response = await this.apiService.getContactFormReport(params);
       this.data = response.tableData;
       this.totalCount = response.count;
@@ -201,8 +196,28 @@ export class ContactFormReportComponent implements OnInit {
     await this.onSearch();
   }
 
-  async onSortChange(sort: any): Promise<void> {
+  async onSortChange(sort: ITableSort): Promise<void> {
+    if (sort.direction === 'asc' || sort.direction === 'desc') {
+      this.reportSort = { sortBy: sort.active, sortOrder: sort.direction };
+    } else {
+      this.reportSort = null;
+    }
     await this.onSearch();
+  }
+
+  private buildReportParams(): IContactFormReportFilter {
+    const formValue = this.filterForm.value;
+    const params: IContactFormReportFilter = {
+      startDate: this.formatDate(formValue.startDate),
+      endDate: this.formatDate(formValue.endDate),
+      search: formValue.search || '',
+      isResponded: formValue.isResponded,
+    };
+    if (this.reportSort) {
+      params.sortBy = this.reportSort.sortBy;
+      params.sortOrder = this.reportSort.sortOrder;
+    }
+    return params;
   }
 
   private formatDate(date: Date): string {

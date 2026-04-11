@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { MstMaritalStatus } from '../models';
 import { IBasicSearch, IDropdownItem, IManageMaritalStatus, IMaritalStatus, ITableList } from '@eatfit247-shared-lib';
-import { AppConfigService, CommonFunctionsUtil, SearchUtil } from '@server_1/core';
+import { AppConfigService, CommonFunctionsUtil, SearchUtil, TableListSortUtil } from '@server_1/core';
 
 @Injectable()
 export class MaritalStatusService {
@@ -19,7 +19,11 @@ export class MaritalStatusService {
 
     const { rows, count } = await this.maritalStatusRepository.scope('list').findAndCountAll({
       where: whereCondition,
-      order: [['maritalStatus', 'ASC']],
+      order: TableListSortUtil.orderFromAllowlist(
+        searchDto,
+        new Set(['maritalStatusId', 'maritalStatus', 'imagePath', 'active', 'createdAt', 'updatedAt']),
+        [['maritalStatus', 'ASC']],
+      ),
       offset: offset,
       limit: pageSize,
       raw: true,

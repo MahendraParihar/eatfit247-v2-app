@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { TxnMember, TxnMemberCallLog } from '../models';
-import { AppConfigService, CommonFunctionsUtil, MstAdminUser } from '@server_1/core';
+import { AppConfigService, CommonFunctionsUtil, MstAdminUser, TableListSortUtil } from '@server_1/core';
 import { GoogleService, ZoomService } from '@server_1/platform';
 import {
   CallLogStatusEnum,
@@ -61,7 +61,23 @@ export class MemberCallLogsService {
     const offset = pageNumber === 0 ? 0 : pageNumber * pageSize;
     const { rows, count } = await this.memberCallLogRepository.scope('list').findAndCountAll({
       where: whereCondition,
-      order: [['startTime', 'DESC']],
+      order: TableListSortUtil.orderFromAllowlist(
+        searchDto,
+        new Set([
+          'memberCallLogId',
+          'memberId',
+          'callTypeId',
+          'callPurposeId',
+          'callLogStatusId',
+          'nutritionistId',
+          'startTime',
+          'endTime',
+          'active',
+          'createdAt',
+          'updatedAt',
+        ]),
+        [['startTime', 'DESC']],
+      ),
       offset: offset,
       limit: pageSize,
       raw: true,

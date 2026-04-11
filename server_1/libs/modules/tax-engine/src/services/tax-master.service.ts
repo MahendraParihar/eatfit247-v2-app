@@ -4,7 +4,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { MstTaxMaster } from '../models';
 import { IBasicSearch, ITableList, ITaxMaster } from '@eatfit247-shared-lib';
-import { CommonFunctionsUtil, SearchUtil } from '@server_1/core';
+import { CommonFunctionsUtil, SearchUtil, TableListSortUtil } from '@server_1/core';
 import { CreateTaxMasterDto } from '../dto/tax-master.dto';
 
 @Injectable()
@@ -36,7 +36,23 @@ export class TaxMasterService {
     const offset = pageNumber === 0 ? 0 : pageNumber * pageSize;
     const { rows, count } = await this.mstTaxMaster.scope('list').findAndCountAll({
       where: whereCondition,
-      order: [['taxName', 'ASC']],
+      order: TableListSortUtil.orderFromAllowlist(
+        searchDto,
+        new Set([
+          'id',
+          'taxName',
+          'taxCode',
+          'franchiseId',
+          'referenceId',
+          'countryCode',
+          'effectiveFrom',
+          'effectiveTo',
+          'active',
+          'createdAt',
+          'updatedAt',
+        ]),
+        [['taxName', 'ASC']],
+      ),
       offset: offset,
       limit: pageSize,
       raw: true,

@@ -12,9 +12,12 @@ import {
   CommonFunctionsUtil,
   CryptoUtil,
   generateRandomPassword,
+  MstFranchise,
+  TableListSortUtil,
 } from '@server_1/core';
 import { FranchiseService } from '@server_1/modules/franchise';
-import { Op } from 'sequelize';
+import { MstCountry } from '@server_1/platform';
+import { Op, Order } from 'sequelize';
 
 @Injectable()
 export class MemberService {
@@ -51,12 +54,10 @@ export class MemberService {
     const pageNumber = searchDto.page || 0;
     const pageSize = searchDto.limit || 15;
     const offset = pageNumber === 0 ? 0 : pageNumber * pageSize;
+    const order = this.buildMemberListOrder(searchDto);
     const { rows, count } = await this.memberRepository.scope('list').findAndCountAll({
       where: whereCondition,
-      order: [
-        ['firstName', 'ASC'],
-        ['lastName', 'ASC'],
-      ],
+      order,
       offset: offset,
       limit: pageSize,
       raw: true,
@@ -66,6 +67,43 @@ export class MemberService {
       return this.convertToModel(item);
     });
     return { tableData: resList, count: count };
+  }
+
+  private buildMemberListOrder(searchDto: IBasicSearch & { franchiseId?: number; countryId?: number }): Order {
+    const defaultOrder: Order = [
+      ['firstName', 'ASC'],
+      ['lastName', 'ASC'],
+    ];
+    const field = TableListSortUtil.resolveField(searchDto);
+    if (!field) {
+      return defaultOrder;
+    }
+    const dir = TableListSortUtil.resolveDirection(searchDto);
+    if (field === 'country') {
+      return [[MstCountry, 'country', dir]] as Order;
+    }
+    if (field === 'franchise') {
+      return [[MstFranchise, 'companyName', dir]] as Order;
+    }
+    const allowed = new Set([
+      'memberId',
+      'firstName',
+      'lastName',
+      'emailId',
+      'contactNumber',
+      'countryId',
+      'franchiseId',
+      'referrerId',
+      'nutritionistId',
+      'active',
+      'hasAnyPlan',
+      'createdAt',
+      'updatedAt',
+    ]);
+    if (!allowed.has(field)) {
+      return defaultOrder;
+    }
+    return [[field, dir]];
   }
 
   private convertToModel(item: TxnMember): IMember {

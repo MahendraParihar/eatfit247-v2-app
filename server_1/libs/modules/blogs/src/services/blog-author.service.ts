@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { MstBlogAuthor } from '../models';
 import { IBasicSearch, IBlogAuthor, IManageBlogAuthor, IStatusChange, ITableList } from '@eatfit247-shared-lib';
-import { AppConfigService, CommonFunctionsUtil, SearchUtil } from '@server_1/core';
+import { AppConfigService, CommonFunctionsUtil, SearchUtil, TableListSortUtil } from '@server_1/core';
 
 @Injectable()
 export class BlogAuthorService {
@@ -18,7 +18,11 @@ export class BlogAuthorService {
     const offset = pageNumber === 0 ? 0 : pageNumber * pageSize;
     const { rows, count } = await this.blogAuthorRepository.scope('list').findAndCountAll({
       where: whereCondition,
-      order: [['firstName', 'ASC']],
+      order: TableListSortUtil.orderFromAllowlist(
+        searchDto,
+        new Set(['blogAuthorId', 'firstName', 'lastName', 'emailId', 'active', 'createdAt', 'updatedAt']),
+        [['firstName', 'ASC']],
+      ),
       offset: offset,
       limit: pageSize,
       raw: true,

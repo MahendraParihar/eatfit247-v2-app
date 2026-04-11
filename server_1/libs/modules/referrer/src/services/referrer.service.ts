@@ -11,7 +11,7 @@ import {
   ITableList,
   TableEnum,
 } from '@eatfit247-shared-lib';
-import { CommonFunctionsUtil, SearchUtil } from '@server_1/core';
+import { CommonFunctionsUtil, SearchUtil, TableListSortUtil } from '@server_1/core';
 import { AddressService } from '@server_1/platform';
 
 @Injectable()
@@ -28,7 +28,20 @@ export class ReferrerService {
     const offset = pageNumber === 0 ? 0 : pageNumber * pageSize;
     const { rows, count } = await this.referrerRepository.scope('list').findAndCountAll({
       where: whereCondition,
-      order: [['name', 'ASC']],
+      order: TableListSortUtil.orderFromAllowlist(
+        searchDto,
+        new Set([
+          'referrerId',
+          'name',
+          'companyName',
+          'emailId',
+          'contactNumber',
+          'active',
+          'createdAt',
+          'updatedAt',
+        ]),
+        [['name', 'ASC']],
+      ),
       offset: offset,
       limit: pageSize,
       nest: true,

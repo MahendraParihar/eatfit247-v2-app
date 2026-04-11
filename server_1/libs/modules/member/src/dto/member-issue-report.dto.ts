@@ -1,7 +1,8 @@
 import { IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 import { Type } from 'class-transformer';
+import { OptionalReportSortDto } from '@server_1/core';
 
-export class MemberIssueReportDto {
+export class MemberIssueReportDto extends OptionalReportSortDto {
   @IsNotEmpty()
   @IsString()
   startDate: string;

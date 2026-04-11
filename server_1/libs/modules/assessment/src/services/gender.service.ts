@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { MstGender } from '../models';
 import { IBasicSearch, IDropdownItem, IGender, IManageGender, ITableList } from '@eatfit247-shared-lib';
-import { AppConfigService, CommonFunctionsUtil, SearchUtil } from '@server_1/core';
+import { AppConfigService, CommonFunctionsUtil, SearchUtil, TableListSortUtil } from '@server_1/core';
 
 @Injectable()
 export class GenderService {
@@ -19,7 +19,11 @@ export class GenderService {
 
     const { rows, count } = await this.genderRepository.scope('list').findAndCountAll({
       where: whereCondition,
-      order: [['gender', 'ASC']],
+      order: TableListSortUtil.orderFromAllowlist(
+        searchDto,
+        new Set(['genderId', 'gender', 'imagePath', 'active', 'createdAt', 'updatedAt']),
+        [['gender', 'ASC']],
+      ),
       offset: offset,
       limit: pageSize,
       raw: true,

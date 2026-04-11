@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Op, Sequelize } from 'sequelize';
 import { MemberPlanService, TxnMember, TxnMemberPayment } from '@server_1/modules/member';
 import { BusinessTypeEnum, IPaymentReportItem, ITableList } from '@eatfit247-shared-lib';
-import { MstFranchise } from '@server_1/core';
+import { MstFranchise, ReportSortUtil } from '@server_1/core';
 import { PaymentReportDto } from '../dto/payment-report.dto';
 import archiver from 'archiver';
 import moment from 'moment/moment';
@@ -90,8 +90,15 @@ export class PaymentReportService {
       };
     });
 
+    const sorted = ReportSortUtil.sortInMemory(tableData, dto.sortBy, dto.sortOrder, {
+      memberName: (r) => r.memberName,
+      totalAmount: (r) => r.totalAmount,
+      paymentDate: (r) => r.paymentDate,
+      franchiseName: (r) => r.franchiseName,
+    });
+
     return {
-      tableData,
+      tableData: sorted,
       count,
     };
   }

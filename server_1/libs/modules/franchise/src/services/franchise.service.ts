@@ -12,7 +12,7 @@ import {
   ITableList,
   TableEnum,
 } from '@eatfit247-shared-lib';
-import { AppConfigService, CommonFunctionsUtil, MstFranchise, SearchUtil } from '@server_1/core';
+import { AppConfigService, CommonFunctionsUtil, MstFranchise, SearchUtil, TableListSortUtil } from '@server_1/core';
 import { AddressService } from '@server_1/platform';
 
 @Injectable()
@@ -30,7 +30,20 @@ export class FranchiseService {
     const offset = pageNumber === 0 ? 0 : pageNumber * pageSize;
     const { rows, count } = await this.franchiseRepository.scope('list').findAndCountAll({
       where: whereCondition,
-      order: [['companyName', 'ASC']],
+      order: TableListSortUtil.orderFromAllowlist(
+        searchDto,
+        new Set([
+          'franchiseId',
+          'companyName',
+          'franchiseCode',
+          'emailId',
+          'contactNumber',
+          'active',
+          'createdAt',
+          'updatedAt',
+        ]),
+        [['companyName', 'ASC']],
+      ),
       offset: offset,
       limit: pageSize,
       raw: true,

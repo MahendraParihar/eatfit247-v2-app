@@ -13,7 +13,7 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
-import { DataTableComponent, ITableAction, ITableColumn, ITableConfig } from '@shared';
+import { DataTableComponent, ITableAction, ITableColumn, ITableConfig, ITableSort } from '@shared';
 import { IPaymentReportFilter, IPaymentReportItem } from '@eatfit247-shared-lib';
 import { PaymentReportApiService } from './api.service';
 import { PaymentDetailsDialogComponent } from 'members';
@@ -57,6 +57,7 @@ export class PaymentReportComponent implements OnInit {
   startDatePicker: any;
   endDatePicker: any;
   selectedQuickFilter: string | null = null;
+  private reportSort: { sortBy: string; sortOrder: 'asc' | 'desc' } | null = null;
 
   constructor() {
     this.initializeForm();
@@ -185,12 +186,7 @@ export class PaymentReportComponent implements OnInit {
     }
     this.loading = true;
     try {
-      const formValue = this.filterForm.value;
-      const params: IPaymentReportFilter = {
-        startDate: this.formatDate(formValue.startDate),
-        endDate: this.formatDate(formValue.endDate),
-        franchiseId: formValue.franchiseId || undefined
-      };
+      const params = this.buildReportParams();
       const response = await this.apiService.getPaymentReport(params);
       this.data = response.tableData;
       this.totalCount = response.count;
@@ -207,9 +203,27 @@ export class PaymentReportComponent implements OnInit {
     await this.onSearch();
   }
 
-  async onSortChange(sort: any): Promise<void> {
-    // Sorting can be handled server-side if needed
+  async onSortChange(sort: ITableSort): Promise<void> {
+    if (sort.direction === 'asc' || sort.direction === 'desc') {
+      this.reportSort = { sortBy: sort.active, sortOrder: sort.direction };
+    } else {
+      this.reportSort = null;
+    }
     await this.onSearch();
+  }
+
+  private buildReportParams(): IPaymentReportFilter {
+    const formValue = this.filterForm.value;
+    const params: IPaymentReportFilter = {
+      startDate: this.formatDate(formValue.startDate),
+      endDate: this.formatDate(formValue.endDate),
+      franchiseId: formValue.franchiseId || undefined,
+    };
+    if (this.reportSort) {
+      params.sortBy = this.reportSort.sortBy;
+      params.sortOrder = this.reportSort.sortOrder;
+    }
+    return params;
   }
 
   viewInvoice(payment: IPaymentReportItem): void {

@@ -11,7 +11,7 @@ import {
   IManageDietTemplate,
   ITableList,
 } from '@eatfit247-shared-lib';
-import { CommonFunctionsUtil, SearchUtil } from '@server_1/core';
+import { CommonFunctionsUtil, SearchUtil, TableListSortUtil } from '@server_1/core';
 import { RecipeCategoryService, RecipeService } from '@server_1/modules/recipe';
 import { DietTemplateDetailDto } from '../dto';
 import * as _ from 'lodash';
@@ -35,7 +35,11 @@ export class DietTemplateService {
     const offset = pageNumber === 0 ? 0 : pageNumber * pageSize;
     const { rows, count } = await this.dietTemplateRepository.scope('list').findAndCountAll({
       where: whereCondition,
-      order: [['dietTemplate', 'ASC']],
+      order: TableListSortUtil.orderFromAllowlist(
+        searchDto,
+        new Set(['dietTemplateId', 'dietTemplate', 'active', 'createdAt', 'updatedAt']),
+        [['dietTemplate', 'ASC']],
+      ),
       offset: offset,
       limit: pageSize,
       raw: false,

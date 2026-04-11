@@ -5,6 +5,8 @@ export interface IMemberIssueReportFilter {
   issueStatusId?: number;
   issueCategoryId?: number;
   isOpen?: boolean;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
 }
 
 export interface IMemberIssueReportItem {

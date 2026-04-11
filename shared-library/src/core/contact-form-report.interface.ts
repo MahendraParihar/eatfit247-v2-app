@@ -3,6 +3,8 @@ export interface IContactFormReportFilter {
   endDate: string;
   search?: string;
   isResponded: boolean;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
 }
 
 export interface IContactFormReportItem {

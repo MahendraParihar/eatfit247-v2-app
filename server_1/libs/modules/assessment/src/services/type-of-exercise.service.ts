@@ -8,7 +8,7 @@ import {
   ITableList,
   ITypeOfExercise,
 } from '@eatfit247-shared-lib';
-import { AppConfigService, CommonFunctionsUtil, SearchUtil } from '@server_1/core';
+import { AppConfigService, CommonFunctionsUtil, SearchUtil, TableListSortUtil } from '@server_1/core';
 
 @Injectable()
 export class TypeOfExerciseService {
@@ -25,7 +25,11 @@ export class TypeOfExerciseService {
 
     const { rows, count } = await this.typeOfExerciseRepository.scope('list').findAndCountAll({
       where: whereCondition,
-      order: [['typeOfExercise', 'ASC']],
+      order: TableListSortUtil.orderFromAllowlist(
+        searchDto,
+        new Set(['typeOfExerciseId', 'typeOfExercise', 'imagePath', 'active', 'createdAt', 'updatedAt']),
+        [['typeOfExercise', 'ASC']],
+      ),
       offset: offset,
       limit: pageSize,
       raw: true,

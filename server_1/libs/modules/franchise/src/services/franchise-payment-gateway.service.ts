@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { IBasicSearch, ITableList } from '@eatfit247-shared-lib';
-import { CommonFunctionsUtil, SearchUtil } from '@server_1/core';
+import { CommonFunctionsUtil, SearchUtil, TableListSortUtil } from '@server_1/core';
 import { MstFranchisePaymentGateway } from '../models';
 import { CreateFranchisePaymentGatewayDto, UpdateFranchisePaymentGatewayDto } from '../dto';
 import { MstPaymentGateway } from '@server_1/platform';
@@ -23,7 +23,18 @@ export class FranchisePaymentGatewayService {
       .scope('list')
       .findAndCountAll({
         where: whereCondition,
-        order: [['franchisePaymentGatewayId', 'DESC']],
+        order: TableListSortUtil.orderFromAllowlist(
+          searchDto,
+          new Set([
+            'franchisePaymentGatewayId',
+            'franchiseId',
+            'paymentGatewayId',
+            'active',
+            'createdAt',
+            'updatedAt',
+          ]),
+          [['franchisePaymentGatewayId', 'DESC']],
+        ),
         offset: offset,
         limit: pageSize,
         raw: true,

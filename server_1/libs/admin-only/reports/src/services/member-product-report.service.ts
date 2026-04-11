@@ -8,7 +8,7 @@ import {
   IMemberProductReportShipment,
   ITableList,
 } from '@eatfit247-shared-lib';
-import { MstFranchise } from '@server_1/core';
+import { MstFranchise, ReportSortUtil } from '@server_1/core';
 import { MstCourierProvider, TxnShipment } from '@server_1/modules/delivery';
 import { MemberProductReportDto } from '../dto';
 import archiver from 'archiver';
@@ -171,7 +171,16 @@ export class MemberProductReportService {
       };
     });
 
-    return { tableData, count };
+    const sorted = ReportSortUtil.sortInMemory(tableData, dto.sortBy, dto.sortOrder, {
+      invoiceId: (r) => r.invoiceId ?? '',
+      memberName: (r) => r.memberName,
+      totalAmount: (r) => r.totalAmount,
+      paymentStatus: (r) => r.paymentStatus,
+      paymentDate: (r) => r.paymentDate,
+      franchiseName: (r) => r.franchiseName ?? '',
+    });
+
+    return { tableData: sorted, count };
   }
 
   /**

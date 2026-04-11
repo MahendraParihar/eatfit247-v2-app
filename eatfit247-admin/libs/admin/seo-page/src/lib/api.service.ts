@@ -13,13 +13,8 @@ export class SeoPageApiService extends ApiBaseService {
   }
 
   async getList(params?: any): Promise<ITableList<ISeoPage>> {
-    const res = await this.httpService.get<ISeoPage[]>(`${this.endpoint}/list`, { params });
-    const data = res.data as ISeoPage[];
-    // Convert array response to ITableList format
-    return {
-      tableData: data || [],
-      count: data?.length || 0
-    };
+    const res = await this.httpService.get<ITableList<ISeoPage>>(`${this.endpoint}/list`, { params });
+    return res.data as ITableList<ISeoPage>;
   }
 
   async getById(id: number): Promise<ISeoPage> {

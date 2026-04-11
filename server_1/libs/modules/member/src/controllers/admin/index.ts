@@ -3,6 +3,7 @@ export * from './member-health.controller';
 export * from './member-call-log.controller';
 export * from './member-content.controller';
 export * from './member-issue.controller';
+export * from './issue-admin.controller';
 export * from './member-plan.controller';
 export * from './member-product.controller';
 export * from './member-dashboard.controller';

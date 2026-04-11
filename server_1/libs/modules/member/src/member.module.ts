@@ -27,6 +27,7 @@ import {
   TxnMemberProductOrderItem,
 } from './models';
 import {
+  IssueAdminController,
   MemberCallLogController,
   MemberContentController,
   MemberController,
@@ -130,6 +131,7 @@ modelRegistry.register([
     MemberCallLogController,
     MemberContentController,
     MemberIssueController,
+    IssueAdminController,
     MemberPlanController,
     MemberProductController,
     MemberDashboardController,

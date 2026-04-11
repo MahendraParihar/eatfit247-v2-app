@@ -30,6 +30,8 @@ export interface IMemberProductReportFilter {
   paymentStatusId?: number;
   hasShipment?: boolean;
   shipmentStatus?: ShipmentStatusEnum;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
 }
 
 export interface IMemberProductReportItem extends IMemberProduct {

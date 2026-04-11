@@ -43,6 +43,8 @@ export interface ITableColumn<T> {
   label?: string;
   header?: ITableHeader<T>;
   dataKey?: string;
+  /** When set, sent as the sort field to the API instead of {@link dataKey} or {@link key}. */
+  sortField?: string;
   type?: 'image' | 'text' | 'number' | 'date' | 'boolean' | 'custom';
   sortable?: boolean;
   sortFn?: (a: T, b: T) => number;

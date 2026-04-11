@@ -10,7 +10,7 @@ import {
   IStatusChange,
   ITableList,
 } from '@eatfit247-shared-lib';
-import { CommonFunctionsUtil, SearchUtil } from '@server_1/core';
+import { CommonFunctionsUtil, SearchUtil, TableListSortUtil } from '@server_1/core';
 
 @Injectable()
 export class FaqCategoryService {
@@ -25,7 +25,11 @@ export class FaqCategoryService {
     const offset = pageNumber === 0 ? 0 : pageNumber * pageSize;
     const { rows, count } = await this.faqCategoryRepository.scope('list').findAndCountAll({
       where: whereCondition,
-      order: [['faqCategory', 'ASC']],
+      order: TableListSortUtil.orderFromAllowlist(
+        searchDto,
+        new Set(['faqCategoryId', 'faqCategory', 'url', 'active', 'createdAt', 'updatedAt']),
+        [['faqCategory', 'ASC']],
+      ),
       offset: offset,
       limit: pageSize,
       raw: true,

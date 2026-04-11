@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
-import { MstAdminUser, TxnContactForm } from '@server_1/core';
+import { MstAdminUser, ReportSortUtil, TxnContactForm } from '@server_1/core';
 import { IContactFormReportItem, ITableList } from '@eatfit247-shared-lib';
 import { ContactFormReportDto, SendContactFormResponseDto } from '../dto';
 import moment from 'moment';
@@ -82,8 +82,15 @@ export class ContactFormReportService {
         isResponded: !!item.respondedBy,
       };
     });
+    const sorted = ReportSortUtil.sortInMemory(tableData, dto.sortBy, dto.sortOrder, {
+      name: (r) => r.name,
+      emailId: (r) => r.emailId,
+      isResponded: (r) => r.isResponded,
+      createdAt: (r) => r.createdAt,
+    });
+
     return {
-      tableData,
+      tableData: sorted,
       count,
     };
   }

@@ -2,8 +2,16 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { TxnMember, TxnMemberIssue } from '../models';
-import { IDropdownItem, IIssueMasterData, IMemberIssue, IMemberIssueReportItem, ITableList } from '@eatfit247-shared-lib';
-import { CommonFunctionsUtil, MstAdminUser } from '@server_1/core';
+import {
+  IBasicSearch,
+  IDropdownItem,
+  IIssue,
+  IIssueMasterData,
+  IMemberIssue,
+  IMemberIssueReportItem,
+  ITableList,
+} from '@eatfit247-shared-lib';
+import { CommonFunctionsUtil, MstAdminUser, ReportSortUtil, TableListSortUtil } from '@server_1/core';
 import { MstIssueCategory, MstIssueStatus } from '@server_1/modules/issues';
 import { CreateMemberIssueDto, MemberIssueReportDto } from '../dto';
 import { TxnMemberIssueResponse } from '../models/txn-member-issue-response.model';
@@ -306,9 +314,133 @@ export class MemberIssueService {
       };
     });
 
+    const sortedTable = ReportSortUtil.sortInMemory(tableData, dto.sortBy, dto.sortOrder, {
+      memberName: (r) => r.memberName,
+      createdAt: (r) => r.createdAt,
+    });
+
     return {
-      tableData,
+      tableData: sortedTable,
       count,
+    };
+  }
+
+  /**
+   * Paginated list for the global admin Issues screen (`GET /issue/list`).
+   * Maps `TxnMemberIssue` rows to {@link IIssue} (subject/issueDate/resolvedDate aliases).
+   */
+  public async findAllForGlobalIssueAdmin(searchDto: IBasicSearch): Promise<ITableList<IIssue>> {
+    const whereCondition: Record<string, unknown> = {};
+    if (searchDto.search?.trim()) {
+      whereCondition.issue = { [Op.iLike]: `%${searchDto.search.trim()}%` };
+    }
+
+    const pageNumber = searchDto.page ?? 0;
+    const pageSize = searchDto.limit ?? 15;
+    const offset = pageNumber === 0 ? 0 : pageNumber * pageSize;
+
+    const sortMap: Record<string, string> = {
+      issueId: 'memberIssueId',
+      subject: 'issue',
+      issueDate: 'createdAt',
+      resolvedDate: 'updatedAt',
+      createdAt: 'createdAt',
+      updatedAt: 'updatedAt',
+    };
+    const apiField = TableListSortUtil.resolveField(searchDto);
+    const dbField = (apiField && sortMap[apiField]) || apiField;
+    const sortPayload: IBasicSearch = {
+      ...searchDto,
+      sortField: dbField,
+      sortBy: dbField,
+    };
+
+    const order = TableListSortUtil.orderFromAllowlist(
+      sortPayload,
+      new Set(['memberIssueId', 'issue', 'createdAt', 'updatedAt']),
+      [['createdAt', 'DESC']],
+    );
+
+    const { rows, count } = await this.memberIssueRepository.scope('list').findAndCountAll({
+      where: whereCondition,
+      include: [
+        {
+          model: TxnMember,
+          as: 'member',
+          required: false,
+          attributes: ['memberId', 'firstName', 'lastName'],
+        },
+      ],
+      order,
+      offset,
+      limit: pageSize,
+      raw: true,
+      nest: true,
+    });
+
+    return {
+      tableData: rows.map((r) => this.mapRowToIIssue(r as unknown as Record<string, unknown>)),
+      count,
+    };
+  }
+
+  public async getOneForGlobalIssueAdmin(issueId: number): Promise<IIssue> {
+    const row = await this.memberIssueRepository.scope('details').findByPk(issueId, {
+      include: [
+        {
+          model: TxnMember,
+          as: 'member',
+          required: false,
+          attributes: ['memberId', 'firstName', 'lastName', 'emailId', 'contactNumber'],
+        },
+      ],
+      raw: true,
+      nest: true,
+    });
+    if (!row) {
+      throw new NotFoundException('Issue not found');
+    }
+    return this.mapRowToIIssue(row as unknown as Record<string, unknown>);
+  }
+
+  private mapRowToIIssue(item: Record<string, unknown>): IIssue {
+    const issueStatus = item.issueStatus as { issueStatusId?: number; issueStatus?: string } | undefined;
+    const issueCategory = item.issueCategory as { issueCategoryId?: number; issueCategory?: string } | undefined;
+    const member = item.member as { memberId?: number; firstName?: string; lastName?: string } | undefined;
+    const createdByUser = item.createdByUser as Record<string, unknown> | undefined;
+    const updatedByUser = item.updatedByUser as Record<string, unknown> | undefined;
+
+    const memberIssueId = Number(item.memberIssueId ?? item.member_issue_id ?? 0);
+    const statusLabel = String(issueStatus?.issueStatus ?? '').toLowerCase();
+    const resolved = /closed|resolved|solved/.test(statusLabel);
+
+    return {
+      issueId: memberIssueId,
+      subject: String(item.issue ?? ''),
+      issueDate: item.createdAt as Date,
+      resolvedDate: resolved ? (item.updatedAt as Date) : undefined,
+      issueCategoryId: Number(item.issueCategoryId ?? item.issue_category_id ?? 0),
+      issueStatusId: Number(item.issueStatusId ?? item.issue_status_id ?? 0),
+      memberId: Number(item.memberId ?? item.member_id ?? member?.memberId ?? 0),
+      issueCategory: issueCategory as IIssue['issueCategory'],
+      issueStatus: issueStatus as IIssue['issueStatus'],
+      member: member
+        ? {
+            memberId: Number(member.memberId),
+            firstName: member.firstName,
+            lastName: member.lastName,
+          }
+        : undefined,
+      createdBy: Number(item.createdBy ?? item.created_by),
+      modifiedBy: Number(item.modifiedBy ?? item.modified_by),
+      createdAt: item.createdAt as Date,
+      updatedAt: item.updatedAt as Date,
+      createdByUser: createdByUser?.adminId
+        ? CommonFunctionsUtil.getAdminShortInfo(createdByUser, 'createdByUser') ?? undefined
+        : undefined,
+      updatedByUser: updatedByUser?.adminId
+        ? CommonFunctionsUtil.getAdminShortInfo(updatedByUser, 'updatedByUser') ?? undefined
+        : undefined,
     };
   }
 

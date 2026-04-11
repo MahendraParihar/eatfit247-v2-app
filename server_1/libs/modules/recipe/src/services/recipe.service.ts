@@ -8,7 +8,7 @@ import * as hbs from 'handlebars';
 import * as puppeteer from 'puppeteer';
 import { MstRecipe, MstRecipeCategoryMapping, MstRecipeCuisineMapping, MstRecipeType } from '../models';
 import { IBasicSearch, IManageRecipe, IRecipe, ITableList, MediaForEnum, TEMPLATE_FOLDER } from '@eatfit247-shared-lib';
-import { CommonFunctionsUtil, Env, SearchUtil } from '@server_1/core';
+import { CommonFunctionsUtil, Env, SearchUtil, TableListSortUtil } from '@server_1/core';
 import {
   IFileModel,
   PDF_HEADER_H_PADDING_DIET_RECIPE,
@@ -35,7 +35,11 @@ export class RecipeService {
     const offset = pageNumber === 0 ? 0 : pageNumber * pageSize;
     const { rows, count } = await this.recipeRepository.scope('list').findAndCountAll({
       where: whereCondition,
-      order: [['name', 'ASC']],
+      order: TableListSortUtil.orderFromAllowlist(
+        searchDto,
+        new Set(['recipeId', 'name', 'recipeTypeId', 'active', 'createdAt', 'updatedAt']),
+        [['name', 'ASC']],
+      ),
       offset: offset,
       limit: pageSize,
       nest: true,

@@ -13,7 +13,7 @@ import {
   IPublicTableList,
   ITableList,
 } from '@eatfit247-shared-lib';
-import { CommonFunctionsUtil, SearchUtil } from '@server_1/core';
+import { CommonFunctionsUtil, SearchUtil, TableListSortUtil } from '@server_1/core';
 
 @Injectable()
 export class ProductService {
@@ -34,7 +34,11 @@ export class ProductService {
     // Don't include variants in list query to avoid duplicates - variants are not needed for listing
     const { rows, count } = await this.productRepository.scope('list').findAndCountAll({
       where: whereCondition,
-      order: [['createdAt', 'DESC']],
+      order: TableListSortUtil.orderFromAllowlist(
+        searchDto,
+        new Set(['productId', 'name', 'active', 'createdAt', 'updatedAt']),
+        [['createdAt', 'DESC']],
+      ),
       offset: offset,
       limit: pageSize,
       nest: true,

@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { MstIssueStatus } from '../models';
 import { IBasicSearch, IDropdownItem, IIssueStatus, IManageIssueStatus, ITableList } from '@eatfit247-shared-lib';
-import { CommonFunctionsUtil, SearchUtil } from '@server_1/core';
+import { CommonFunctionsUtil, SearchUtil, TableListSortUtil } from '@server_1/core';
 
 @Injectable()
 export class IssueStatusService {
@@ -18,7 +18,11 @@ export class IssueStatusService {
 
     const { rows, count } = await this.issueStatusRepository.scope('list').findAndCountAll({
       where: whereCondition,
-      order: [['issueStatus', 'ASC']],
+      order: TableListSortUtil.orderFromAllowlist(
+        searchDto,
+        new Set(['issueStatusId', 'issueStatus', 'active', 'createdAt', 'updatedAt']),
+        [['issueStatus', 'ASC']],
+      ),
       offset: offset,
       limit: pageSize,
       raw: true,

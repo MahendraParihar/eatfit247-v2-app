@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { MstCallPurpose } from '../models';
 import { IBasicSearch, ICallPurpose, IDropdownItem, IManageCallPurpose, ITableList } from '@eatfit247-shared-lib';
-import { AppConfigService, CommonFunctionsUtil, SearchUtil } from '@server_1/core';
+import { AppConfigService, CommonFunctionsUtil, SearchUtil, TableListSortUtil } from '@server_1/core';
 
 @Injectable()
 export class CallPurposeService {
@@ -19,7 +19,11 @@ export class CallPurposeService {
 
     const { rows, count } = await this.callPurposeRepository.scope('list').findAndCountAll({
       where: whereCondition,
-      order: [['callPurpose', 'ASC']],
+      order: TableListSortUtil.orderFromAllowlist(
+        searchDto,
+        new Set(['callPurposeId', 'callPurpose', 'active', 'createdAt', 'updatedAt']),
+        [['callPurpose', 'ASC']],
+      ),
       offset: offset,
       limit: pageSize,
       raw: true,

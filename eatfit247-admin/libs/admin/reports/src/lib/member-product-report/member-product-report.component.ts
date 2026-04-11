@@ -23,6 +23,7 @@ import {
   ITableAction,
   ITableColumn,
   ITableConfig,
+  ITableSort,
 } from '@shared';
 import {
   IMemberProductReportFilter,
@@ -81,6 +82,7 @@ export class MemberProductReportComponent implements OnInit {
   selectedQuickFilter: string | null = null;
   selectedItems: IMemberProductReportItem[] = [];
   private readonly creatingShipmentOrderIds = new Set<number>();
+  private reportSort: { sortBy: string; sortOrder: 'asc' | 'desc' } | null = null;
 
   constructor() {
     this.initializeForm();
@@ -223,6 +225,7 @@ export class MemberProductReportComponent implements OnInit {
         key: 'franchise',
         label: 'Franchise',
         dataKey: 'franchise',
+        sortField: 'franchiseName',
         sortable: true,
       },
     ];
@@ -303,14 +306,7 @@ export class MemberProductReportComponent implements OnInit {
 
     this.loading = true;
     try {
-      const formValue = this.filterForm.value;
-      const params: IMemberProductReportFilter = {
-        startDate: this.formatDate(formValue.startDate),
-        endDate: this.formatDate(formValue.endDate),
-        franchiseId: formValue.franchiseId || undefined,
-        paymentStatusId: formValue.paymentStatusId || undefined,
-        ...this.buildShipmentFilterParams(formValue),
-      };
+      const params = this.buildReportParams();
 
       const response = await this.apiService.getMemberProductReport(params);
       this.data = response.tableData;
@@ -334,9 +330,29 @@ export class MemberProductReportComponent implements OnInit {
     await this.onSearch();
   }
 
-  async onSortChange(sort: any): Promise<void> {
-    // Sorting can be handled server-side if needed
+  async onSortChange(sort: ITableSort): Promise<void> {
+    if (sort.direction === 'asc' || sort.direction === 'desc') {
+      this.reportSort = { sortBy: sort.active, sortOrder: sort.direction };
+    } else {
+      this.reportSort = null;
+    }
     await this.onSearch();
+  }
+
+  private buildReportParams(): IMemberProductReportFilter {
+    const formValue = this.filterForm.value;
+    const params: IMemberProductReportFilter = {
+      startDate: this.formatDate(formValue.startDate),
+      endDate: this.formatDate(formValue.endDate),
+      franchiseId: formValue.franchiseId || undefined,
+      paymentStatusId: formValue.paymentStatusId || undefined,
+      ...this.buildShipmentFilterParams(formValue),
+    };
+    if (this.reportSort) {
+      params.sortBy = this.reportSort.sortBy;
+      params.sortOrder = this.reportSort.sortOrder;
+    }
+    return params;
   }
 
   private buildShipmentFilterParams(formValue: {

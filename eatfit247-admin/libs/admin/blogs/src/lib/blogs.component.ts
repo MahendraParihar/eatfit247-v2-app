@@ -73,6 +73,7 @@ export class Blogs implements OnInit {
         key: 'blogCategory',
         label: 'Category',
         dataKey: 'blogCategory',
+        sortField: 'blogCategoryId',
         sortable: true,
       },
       {

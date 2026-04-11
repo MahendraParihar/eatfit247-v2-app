@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { MstCallType } from '../models';
 import { IBasicSearch, ICallType, IDropdownItem, IManageCallType, ITableList } from '@eatfit247-shared-lib';
-import { AppConfigService, CommonFunctionsUtil, SearchUtil } from '@server_1/core';
+import { AppConfigService, CommonFunctionsUtil, SearchUtil, TableListSortUtil } from '@server_1/core';
 
 @Injectable()
 export class CallTypeService {
@@ -18,7 +18,11 @@ export class CallTypeService {
     const offset = pageNumber === 0 ? 0 : pageNumber * pageSize;
     const { rows, count } = await this.callTypeRepository.scope('list').findAndCountAll({
       where: whereCondition,
-      order: [['callType', 'ASC']],
+      order: TableListSortUtil.orderFromAllowlist(
+        searchDto,
+        new Set(['callTypeId', 'callType', 'active', 'createdAt', 'updatedAt']),
+        [['callType', 'ASC']],
+      ),
       offset: offset,
       limit: pageSize,
       raw: true,

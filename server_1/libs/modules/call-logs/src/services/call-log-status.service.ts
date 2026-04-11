@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { MstCallLogStatus } from '../models';
 import { IBasicSearch, ICallLogStatus, IDropdownItem, IManageCallLogStatus, ITableList } from '@eatfit247-shared-lib';
-import { CommonFunctionsUtil, SearchUtil } from '@server_1/core';
+import { CommonFunctionsUtil, SearchUtil, TableListSortUtil } from '@server_1/core';
 
 @Injectable()
 export class CallLogStatusService {
@@ -18,7 +18,11 @@ export class CallLogStatusService {
 
     const { rows, count } = await this.callLogStatusRepository.scope('list').findAndCountAll({
       where: whereCondition,
-      order: [['callLogStatus', 'ASC']],
+      order: TableListSortUtil.orderFromAllowlist(
+        searchDto,
+        new Set(['callLogStatusId', 'callLogStatus', 'active', 'createdAt', 'updatedAt']),
+        [['callLogStatus', 'ASC']],
+      ),
       offset: offset,
       limit: pageSize,
       raw: true,

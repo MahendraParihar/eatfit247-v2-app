@@ -8,7 +8,7 @@ import {
   IManageCourierProviderAccount,
   ITableList,
 } from '@eatfit247-shared-lib';
-import { CommonFunctionsUtil, CryptoUtil, SearchUtil } from '@server_1/core';
+import { CommonFunctionsUtil, CryptoUtil, SearchUtil, TableListSortUtil } from '@server_1/core';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -28,7 +28,18 @@ export class CourierProviderAccountService {
       .scope('list')
       .findAndCountAll({
         where: whereCondition,
-        order: [['providerAccountId', 'DESC']],
+        order: TableListSortUtil.orderFromAllowlist(
+          searchDto,
+          new Set([
+            'providerAccountId',
+            'courierProviderId',
+            'accountName',
+            'active',
+            'createdAt',
+            'updatedAt',
+          ]),
+          [['providerAccountId', 'DESC']],
+        ),
         offset: offset,
         limit: pageSize,
         raw: true,

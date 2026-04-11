@@ -1,6 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { ISeoPageData, ICreateSeoPageDto, IUpdateSeoPageDto } from '@eatfit247-shared-lib';
+import { IBasicSearch, ICreateSeoPageDto, ISeoPageData, ITableList, IUpdateSeoPageDto } from '@eatfit247-shared-lib';
+import { TableListSortUtil } from '@server_1/core';
+import { Op } from 'sequelize';
 import { SeoPageModel } from '../database/models/mst-seo-page.model';
 
 @Injectable()
@@ -50,6 +52,36 @@ export class SeoPageService {
     });
 
     return rows.map((item: any) => this.convertToModel(item));
+  }
+
+  public async findAllForAdmin(searchDto: IBasicSearch): Promise<ITableList<ISeoPageData>> {
+    const whereCondition: any = {};
+    if (searchDto.search?.trim()) {
+      const term = searchDto.search.trim();
+      whereCondition[Op.or] = [
+        { url: { [Op.iLike]: `%${term}%` } },
+        { metaTitle: { [Op.iLike]: `%${term}%` } },
+      ];
+    }
+    const pageNumber = searchDto.page || 0;
+    const pageSize = searchDto.limit || 15;
+    const offset = pageNumber === 0 ? 0 : pageNumber * pageSize;
+    const { rows, count } = await this.seoPageRepository.scope('list').findAndCountAll({
+      where: whereCondition,
+      order: TableListSortUtil.orderFromAllowlist(
+        searchDto,
+        new Set(['seoPageId', 'url', 'metaTitle', 'active', 'createdAt', 'updatedAt']),
+        [['url', 'ASC']],
+      ),
+      offset,
+      limit: pageSize,
+      raw: true,
+      nest: true,
+    });
+    return {
+      tableData: rows.map((item: any) => this.convertToModel(item)),
+      count,
+    };
   }
 
   public async findById(id: number): Promise<ISeoPageData> {

@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { IBasicSearch, ICountry, IDropdownItem, IManageCountry, ITableList, TaxTypeEnum } from '@eatfit247-shared-lib';
-import { CommonFunctionsUtil, SearchUtil } from '@server_1/core';
+import { CommonFunctionsUtil, SearchUtil, TableListSortUtil } from '@server_1/core';
 import { MstCountry } from '../database/models';
 
 @Injectable()
@@ -18,7 +18,21 @@ export class CountryService {
     const offset = pageNumber === 0 ? 0 : pageNumber * pageSize;
     const { rows, count } = await this.countryRepository.scope('list').findAndCountAll({
       where: whereCondition,
-      order: [['country', 'ASC']],
+      order: TableListSortUtil.orderFromAllowlist(
+        searchDto,
+        new Set([
+          'countryId',
+          'country',
+          'countryCode',
+          'phoneNumberCode',
+          'taxType',
+          'defaultTaxPercentage',
+          'active',
+          'createdAt',
+          'updatedAt',
+        ]),
+        [['country', 'ASC']],
+      ),
       offset: offset,
       limit: pageSize,
       raw: true,

@@ -1,11 +1,12 @@
 import { IsBoolean, IsDateString, IsEnum, IsNumber, IsOptional } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ShipmentStatusEnum } from '@eatfit247-shared-lib';
+import { OptionalReportSortDto } from '@server_1/core';
 
 /**
  * DTO for member product order report filtering
  */
-export class MemberProductReportDto {
+export class MemberProductReportDto extends OptionalReportSortDto {
   @IsDateString()
   startDate: string;
 

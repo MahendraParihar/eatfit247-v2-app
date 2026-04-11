@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { MstRecipeCuisine } from '../models';
 import { IBasicSearch, IDropdownItem, IManageRecipeCuisine, IRecipeCuisine, ITableList } from '@eatfit247-shared-lib';
-import { AppConfigService, CommonFunctionsUtil, SearchUtil } from '@server_1/core';
+import { AppConfigService, CommonFunctionsUtil, SearchUtil, TableListSortUtil } from '@server_1/core';
 
 @Injectable()
 export class RecipeCuisineService {
@@ -19,7 +19,11 @@ export class RecipeCuisineService {
 
     const { rows, count } = await this.recipeCuisineRepository.scope('list').findAndCountAll({
       where: whereCondition,
-      order: [['recipeCuisine', 'ASC']],
+      order: TableListSortUtil.orderFromAllowlist(
+        searchDto,
+        new Set(['recipeCuisineId', 'recipeCuisine', 'active', 'createdAt', 'updatedAt']),
+        [['recipeCuisine', 'ASC']],
+      ),
       offset: offset,
       limit: pageSize,
       raw: true,

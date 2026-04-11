@@ -8,7 +8,7 @@ import {
   IRecipeCategory,
   ITableList,
 } from '@eatfit247-shared-lib';
-import { AppConfigService, CommonFunctionsUtil, SearchUtil } from '@server_1/core';
+import { AppConfigService, CommonFunctionsUtil, SearchUtil, TableListSortUtil } from '@server_1/core';
 
 @Injectable()
 export class RecipeCategoryService {
@@ -25,7 +25,11 @@ export class RecipeCategoryService {
 
     const { rows, count } = await this.recipeCategoryRepository.scope('list').findAndCountAll({
       where: whereCondition,
-      order: [['sequence', 'ASC']],
+      order: TableListSortUtil.orderFromAllowlist(
+        searchDto,
+        new Set(['recipeCategoryId', 'recipeCategory', 'sequence', 'active', 'createdAt', 'updatedAt']),
+        [['sequence', 'ASC']],
+      ),
       offset: offset,
       limit: pageSize,
       raw: true,

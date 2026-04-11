@@ -8,7 +8,7 @@ import {
   IProgramCategory,
   ITableList,
 } from '@eatfit247-shared-lib';
-import { AppConfigService, CommonFunctionsUtil, SearchUtil } from '@server_1/core';
+import { AppConfigService, CommonFunctionsUtil, SearchUtil, TableListSortUtil } from '@server_1/core';
 
 @Injectable()
 export class ProgramCategoryService {
@@ -25,7 +25,11 @@ export class ProgramCategoryService {
 
     const { rows, count } = await this.programCategoryRepository.scope('list').findAndCountAll({
       where: whereCondition,
-      order: [['programCategory', 'ASC']],
+      order: TableListSortUtil.orderFromAllowlist(
+        searchDto,
+        new Set(['programCategoryId', 'programCategory', 'active', 'createdAt', 'updatedAt']),
+        [['programCategory', 'ASC']],
+      ),
       offset: offset,
       limit: pageSize,
       raw: true,

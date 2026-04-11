@@ -10,7 +10,7 @@ import {
   IPublicTableList,
   ITableList,
 } from '@eatfit247-shared-lib';
-import { CommonFunctionsUtil, SearchUtil } from '@server_1/core';
+import { CommonFunctionsUtil, SearchUtil, TableListSortUtil } from '@server_1/core';
 
 const PROGRAM_PLAN_LIST_SORT_FIELDS = new Set<string>([
   'programPlanId',
@@ -63,9 +63,9 @@ export class ProgramPlanService {
   }
 
   private buildProgramPlanListOrder(searchDto: IBasicSearch): Order {
-    const rawField = searchDto.sortField?.trim();
+    const rawField = TableListSortUtil.resolveField(searchDto);
     if (rawField && PROGRAM_PLAN_LIST_SORT_FIELDS.has(rawField)) {
-      const direction = searchDto.sortDirection === 'desc' ? 'DESC' : 'ASC';
+      const direction = TableListSortUtil.resolveDirection(searchDto);
       return [[rawField, direction]];
     }
     return [

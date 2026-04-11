@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { MstBlogCategory } from '../models';
 import { IBasicSearch, IBlogCategory, IManageBlogCategory, IStatusChange, ITableList } from '@eatfit247-shared-lib';
-import { AppConfigService, CommonFunctionsUtil, SearchUtil } from '@server_1/core';
+import { AppConfigService, CommonFunctionsUtil, SearchUtil, TableListSortUtil } from '@server_1/core';
 
 @Injectable()
 export class BlogCategoryService {
@@ -18,7 +18,11 @@ export class BlogCategoryService {
     const offset = pageNumber === 0 ? 0 : pageNumber * pageSize;
     const { rows, count } = await this.blogCategoryRepository.scope('list').findAndCountAll({
       where: whereCondition,
-      order: [['blogCategory', 'ASC']],
+      order: TableListSortUtil.orderFromAllowlist(
+        searchDto,
+        new Set(['blogCategoryId', 'blogCategory', 'url', 'active', 'createdAt', 'updatedAt']),
+        [['blogCategory', 'ASC']],
+      ),
       offset: offset,
       limit: pageSize,
       raw: true,

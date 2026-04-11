@@ -8,7 +8,7 @@ import {
   IManageCourierProvider,
   ITableList,
 } from '@eatfit247-shared-lib';
-import { AppConfigService, CommonFunctionsUtil, SearchUtil } from '@server_1/core';
+import { AppConfigService, CommonFunctionsUtil, SearchUtil, TableListSortUtil } from '@server_1/core';
 
 @Injectable()
 export class CourierProviderService {
@@ -29,10 +29,25 @@ export class CourierProviderService {
 
     const { rows, count } = await this.courierProviderRepository.scope('list').findAndCountAll({
       where: whereCondition,
-      order: [
-        ['priorityOrder', 'ASC'],
-        ['providerName', 'ASC'],
-      ],
+      order: TableListSortUtil.orderFromAllowlist(
+        searchDto,
+        new Set([
+          'courierProviderId',
+          'providerCode',
+          'providerName',
+          'authType',
+          'priorityOrder',
+          'supportsRateApi',
+          'supportsWebhook',
+          'active',
+          'createdAt',
+          'updatedAt',
+        ]),
+        [
+          ['priorityOrder', 'ASC'],
+          ['providerName', 'ASC'],
+        ],
+      ),
       offset: offset,
       limit: pageSize,
       raw: true,

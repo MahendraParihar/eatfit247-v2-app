@@ -8,7 +8,7 @@ import {
   IManageHealthParameter,
   ITableList,
 } from '@eatfit247-shared-lib';
-import { AppConfigService, CommonFunctionsUtil, SearchUtil } from '@server_1/core';
+import { AppConfigService, CommonFunctionsUtil, SearchUtil, TableListSortUtil } from '@server_1/core';
 
 @Injectable()
 export class HealthParameterService {
@@ -25,7 +25,22 @@ export class HealthParameterService {
 
     const { rows, count } = await this.healthParameterRepository.scope('list').findAndCountAll({
       where: whereCondition,
-      order: [['sequence', 'ASC'], ['healthParameter', 'ASC']],
+      order: TableListSortUtil.orderFromAllowlist(
+        searchDto,
+        new Set([
+          'healthParameterId',
+          'healthParameter',
+          'sequence',
+          'imagePath',
+          'active',
+          'createdAt',
+          'updatedAt',
+        ]),
+        [
+          ['sequence', 'ASC'],
+          ['healthParameter', 'ASC'],
+        ],
+      ),
       offset: offset,
       limit: pageSize,
       raw: true,

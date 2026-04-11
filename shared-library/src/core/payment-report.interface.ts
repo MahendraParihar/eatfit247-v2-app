@@ -4,6 +4,8 @@ export interface IPaymentReportFilter {
   startDate: string;
   endDate: string;
   franchiseId?: number;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
 }
 
 export interface IPaymentReportItem extends IMemberPayment {

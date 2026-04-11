@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { TxnSuccessStories } from '../models';
 import { IBasicSearch, IManageSuccessStory, ISuccessStory, ITableList } from '@eatfit247-shared-lib';
-import { CommonFunctionsUtil, SearchUtil } from '@server_1/core';
+import { CommonFunctionsUtil, SearchUtil, TableListSortUtil } from '@server_1/core';
 
 @Injectable()
 export class SuccessStoryService {
@@ -21,7 +21,22 @@ export class SuccessStoryService {
     const offset = pageNumber === 0 ? 0 : pageNumber * pageSize;
     const { rows, count } = await this.successStoryRepository.scope('list').findAndCountAll({
       where: whereCondition,
-      order: [['date', 'ASC'], ['name', 'ASC']],
+      order: TableListSortUtil.orderFromAllowlist(
+        searchDto,
+        new Set([
+          'successStoryId',
+          'name',
+          'title',
+          'date',
+          'active',
+          'createdAt',
+          'updatedAt',
+        ]),
+        [
+          ['date', 'ASC'],
+          ['name', 'ASC'],
+        ],
+      ),
       offset: offset,
       limit: pageSize,
       raw: true,

@@ -10,7 +10,7 @@ import {
   IPublicTableList,
   ITableList,
 } from '@eatfit247-shared-lib';
-import { AppConfigService, CommonFunctionsUtil, SearchUtil } from '@server_1/core';
+import { AppConfigService, CommonFunctionsUtil, SearchUtil, TableListSortUtil } from '@server_1/core';
 
 @Injectable()
 export class ProgramService {
@@ -26,10 +26,23 @@ export class ProgramService {
     const offset = pageNumber === 0 ? 0 : pageNumber * pageSize;
     const { rows, count } = await this.programRepository.scope('list').findAndCountAll({
       where: whereCondition,
-      order: [
-        ['programCategoryId', 'ASC'],
-        ['sequenceNumber', 'ASC'],
-      ],
+      order: TableListSortUtil.orderFromAllowlist(
+        searchDto,
+        new Set([
+          'programId',
+          'program',
+          'programCategoryId',
+          'sequenceNumber',
+          'url',
+          'active',
+          'createdAt',
+          'updatedAt',
+        ]),
+        [
+          ['programCategoryId', 'ASC'],
+          ['sequenceNumber', 'ASC'],
+        ],
+      ),
       offset: offset,
       limit: pageSize,
       nest: true,

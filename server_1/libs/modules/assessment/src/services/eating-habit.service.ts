@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { MstEatingHabit } from '../models';
 import { IBasicSearch, IDropdownItem, IEatingHabit, IManageEatingHabit, ITableList } from '@eatfit247-shared-lib';
-import { AppConfigService, CommonFunctionsUtil, SearchUtil } from '@server_1/core';
+import { AppConfigService, CommonFunctionsUtil, SearchUtil, TableListSortUtil } from '@server_1/core';
 
 @Injectable()
 export class EatingHabitService {
@@ -19,7 +19,11 @@ export class EatingHabitService {
 
     const { rows, count } = await this.eatingHabitRepository.scope('list').findAndCountAll({
       where: whereCondition,
-      order: [['eatingHabit', 'ASC']],
+      order: TableListSortUtil.orderFromAllowlist(
+        searchDto,
+        new Set(['eatingHabitId', 'eatingHabit', 'imagePath', 'active', 'createdAt', 'updatedAt']),
+        [['eatingHabit', 'ASC']],
+      ),
       offset: offset,
       limit: pageSize,
       raw: true,

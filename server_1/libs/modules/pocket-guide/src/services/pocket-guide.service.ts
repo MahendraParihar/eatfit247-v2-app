@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { MstPocketGuide } from '../models';
 import { IBasicSearch, IManagePocketGuide, IPocketGuide, ITableList } from '@eatfit247-shared-lib';
-import { AppConfigService, CommonFunctionsUtil, SearchUtil } from '@server_1/core';
+import { AppConfigService, CommonFunctionsUtil, SearchUtil, TableListSortUtil } from '@server_1/core';
 
 @Injectable()
 export class PocketGuideService {
@@ -18,7 +18,11 @@ export class PocketGuideService {
     const offset = pageNumber === 0 ? 0 : pageNumber * pageSize;
     const { rows, count } = await this.pocketGuideRepository.scope('list').findAndCountAll({
       where: whereCondition,
-      order: [['pocketGuide', 'ASC']],
+      order: TableListSortUtil.orderFromAllowlist(
+        searchDto,
+        new Set(['pocketGuideId', 'pocketGuide', 'description', 'active', 'createdAt', 'updatedAt']),
+        [['pocketGuide', 'ASC']],
+      ),
       offset: offset,
       limit: pageSize,
       raw: true,

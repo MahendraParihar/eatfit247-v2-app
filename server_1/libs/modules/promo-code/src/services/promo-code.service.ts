@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { InjectModel } from '@nestjs/sequelize';
 import { TxnPromoCode } from '../models';
 import { DiscountTypeEnum, IApplyPromoCodeResult, IBasicSearch, IPromoCode, ITableList } from '@eatfit247-shared-lib';
-import { CommonFunctionsUtil } from '@server_1/core';
+import { CommonFunctionsUtil, TableListSortUtil } from '@server_1/core';
 import { Op } from 'sequelize';
 import { ApplyPromoCodeDto, CreatePromoCodeDto } from '../dto';
 
@@ -31,7 +31,24 @@ export class PromoCodeService {
 
     const { rows, count } = await this.promoCodeRepository.scope('list').findAndCountAll({
       where: whereCondition,
-      order: [['createdAt', 'DESC']],
+      order: TableListSortUtil.orderFromAllowlist(
+        searchDto,
+        new Set([
+          'promoCodeId',
+          'code',
+          'discountType',
+          'discountValue',
+          'maxDiscount',
+          'minOrderAmount',
+          'usageLimit',
+          'usedCount',
+          'active',
+          'expiresAt',
+          'createdAt',
+          'updatedAt',
+        ]),
+        [['createdAt', 'DESC']],
+      ),
       offset: offset,
       limit: pageSize,
       raw: true,

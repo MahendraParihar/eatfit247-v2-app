@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { IBasicSearch, ILegalPageList, IManageLegalPage, IPublicLegalPage, ITableList } from '@eatfit247-shared-lib';
-import { AppConfigService, CommonFunctionsUtil, SearchUtil } from '@server_1/core';
+import { AppConfigService, CommonFunctionsUtil, SearchUtil, TableListSortUtil } from '@server_1/core';
 import { LegalPagesModel } from '../models';
 
 @Injectable()
@@ -18,7 +18,11 @@ export class LegalPagesService {
     const offset = pageNumber === 0 ? 0 : pageNumber * pageSize;
     const { rows, count } = await this.legalPagesRepository.scope('list').findAndCountAll({
       where: whereCondition,
-      order: [['title', 'ASC']],
+      order: TableListSortUtil.orderFromAllowlist(
+        searchDto,
+        new Set(['legalPageId', 'title', 'url', 'active', 'createdAt', 'updatedAt']),
+        [['title', 'ASC']],
+      ),
       offset: offset,
       limit: pageSize,
       raw: true,

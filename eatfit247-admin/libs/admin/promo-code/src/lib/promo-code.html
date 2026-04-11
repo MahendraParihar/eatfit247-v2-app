@@ -6,6 +6,7 @@
     [totalCount]="totalCount"
     (searchChange)="onSearch($event)"
     (pageChange)="onPageChange($event.pageIndex, $event.pageSize)"
+    (sortChange)="onSortChange($event)"
   >
     <div headerActions>
       <button mat-raised-button color="primary" (click)="navigateToCreate()">

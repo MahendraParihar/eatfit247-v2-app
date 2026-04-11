@@ -9,7 +9,7 @@ import {
   IPublicTableList,
   ITableList,
 } from '@eatfit247-shared-lib';
-import { AppConfigService, CommonFunctionsUtil, SearchUtil } from '@server_1/core';
+import { AppConfigService, CommonFunctionsUtil, SearchUtil, TableListSortUtil } from '@server_1/core';
 
 @Injectable()
 export class BannerService {
@@ -30,7 +30,11 @@ export class BannerService {
 
     const { rows, count } = await this.bannerRepository.scope('list').findAndCountAll({
       where: whereCondition,
-      order: [['createdAt', 'DESC']],
+      order: TableListSortUtil.orderFromAllowlist(
+        searchDto,
+        new Set(['bannerId', 'title', 'bannerFor', 'subTitle', 'active', 'createdAt', 'updatedAt']),
+        [['createdAt', 'DESC']],
+      ),
       offset: offset,
       limit: pageSize,
       raw: true,

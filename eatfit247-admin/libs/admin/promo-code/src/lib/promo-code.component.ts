@@ -9,6 +9,7 @@ import {
   ITableAction,
   ITableColumn,
   ITableConfig,
+  ITableSort,
   updatedByUserFormatter
 } from '@shared';
 import { DiscountTypeEnum, IPromoCode } from '@eatfit247-shared-lib';
@@ -35,6 +36,7 @@ export class PromoCode implements OnInit {
   tableConfig!: ITableConfig<IPromoCode>;
   private searchSubject = new Subject<string>();
   currentSearch = '';
+  private currentSort: Pick<ITableSort, 'active' | 'direction'> | null = null;
 
   constructor() {
     this.setupSearch();
@@ -174,7 +176,7 @@ export class PromoCode implements OnInit {
   private setupSearch(): void {
     this.searchSubject.pipe(debounceTime(300), distinctUntilChanged(), switchMap((search) => {
       this.loading = true;
-      return this.apiService.getList({ search, page: 0, limit: this.tableConfig.pageSize || 10 });
+      return this.apiService.getList(this.getListParams(0, this.tableConfig.pageSize || 10, search));
     })).subscribe({
       next: (result) => {
         this.data = result.tableData;
@@ -190,7 +192,7 @@ export class PromoCode implements OnInit {
   async loadData(page: number = 0, limit: number = 10, search: string = ''): Promise<void> {
     try {
       this.loading = true;
-      const result = await this.apiService.getList({ page, limit, search });
+      const result = await this.apiService.getList(this.getListParams(page, limit, search));
       this.data = result.tableData;
       this.totalCount = result.count;
     } catch (error) {
@@ -207,6 +209,36 @@ export class PromoCode implements OnInit {
 
   onPageChange(page: number, limit: number): void {
     this.loadData(page, limit, this.currentSearch?.trim() || '');
+  }
+
+  async onSortChange(sort: ITableSort): Promise<void> {
+    if (sort.direction === 'asc' || sort.direction === 'desc') {
+      this.currentSort = { active: sort.active, direction: sort.direction };
+    } else {
+      this.currentSort = null;
+    }
+    await this.loadData(0, this.tableConfig.pageSize || 10, this.currentSearch?.trim() || '');
+  }
+
+  private getListParams(
+    page: number,
+    limit: number,
+    search: string,
+  ): { page: number; limit: number; search?: string; sortBy?: string; sortOrder?: string } {
+    const params: { page: number; limit: number; search?: string; sortBy?: string; sortOrder?: string } = {
+      page,
+      limit,
+    };
+    const trimmed = search?.trim();
+    if (trimmed) {
+      params.search = trimmed;
+    }
+    const sort = this.currentSort;
+    if (sort && (sort.direction === 'asc' || sort.direction === 'desc')) {
+      params.sortBy = sort.active;
+      params.sortOrder = sort.direction;
+    }
+    return params;
   }
 
   editItem(row: IPromoCode): void {

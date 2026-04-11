@@ -42,6 +42,8 @@ export * from './lib/utils/crypto.util';
 export * from './lib/utils/checkout-token.util';
 export * from './lib/utils/common-functions.utils';
 export * from './lib/utils/search.util';
+export * from './lib/utils/table-list-sort.util';
+export * from './lib/utils/report-sort.util';
 export * from './lib/utils/model-scopes.utils';
 export * from './lib/utils/payment-validation.util';
 export * from './lib/dto/index';

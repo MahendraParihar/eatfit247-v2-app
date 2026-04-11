@@ -232,8 +232,8 @@ export class ProgramPlans implements OnInit {
 
   async onPageChange(page: ITablePagination): Promise<void> {
     const params: any = {
-      page: page,
-      limit: this.tableConfig.pageSize
+      page: page.pageIndex,
+      limit: page.pageSize
     };
     const searchTerm =
       (document.querySelector('input[type="search"]') as HTMLInputElement)

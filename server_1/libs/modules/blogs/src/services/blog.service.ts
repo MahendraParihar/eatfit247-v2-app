@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { TxnBlog } from '../models';
+import { MstBlogCategory, TxnBlog } from '../models';
 import {
   DB_DATE_FORMAT,
   DEFAULT_DATE_FORMAT,
@@ -11,8 +11,9 @@ import {
   IPublicTableList,
   ITableList,
 } from '@eatfit247-shared-lib';
-import { AppConfigService, BasicSearchDto, CommonFunctionsUtil, SearchUtil } from '@server_1/core';
+import { AppConfigService, BasicSearchDto, CommonFunctionsUtil, SearchUtil, TableListSortUtil } from '@server_1/core';
 import moment from 'moment';
+import { Order } from 'sequelize';
 
 @Injectable()
 export class BlogService {
@@ -26,9 +27,10 @@ export class BlogService {
     const pageNumber = searchDto.page || 0;
     const pageSize = searchDto.limit || 15;
     const offset = pageNumber === 0 ? 0 : pageNumber * pageSize;
+    const order = this.buildBlogListOrder(searchDto);
     const { rows, count } = await this.blogRepository.scope('list').findAndCountAll<TxnBlog>({
       where: whereCondition,
-      order: [['title', 'ASC']],
+      order,
       offset: offset,
       limit: pageSize,
       nest: true,
@@ -41,6 +43,23 @@ export class BlogService {
       tableData: resList,
       count: count,
     };
+  }
+
+  private buildBlogListOrder(searchDto: IBasicSearch): Order {
+    const defaultOrder: Order = [['title', 'ASC']];
+    const field = TableListSortUtil.resolveField(searchDto);
+    if (!field) {
+      return defaultOrder;
+    }
+    const dir = TableListSortUtil.resolveDirection(searchDto);
+    if (field === 'blogCategory') {
+      return [[MstBlogCategory, 'blogCategory', dir]] as Order;
+    }
+    return TableListSortUtil.orderFromAllowlist(
+      searchDto,
+      new Set(['blogId', 'title', 'blogCategoryId', 'blogAuthorId', 'active', 'createdAt', 'updatedAt']),
+      defaultOrder,
+    );
   }
 
   public async fetchById(id: number): Promise<IBlog> {

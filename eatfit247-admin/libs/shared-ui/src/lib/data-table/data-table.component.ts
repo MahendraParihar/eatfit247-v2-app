@@ -233,8 +233,13 @@ export class DataTableComponent<T> implements OnInit, OnChanges {
   }
 
   onSortChange(sort: Sort): void {
+    const column = this.config.columns.find((c) => c.key === sort.active);
+    const apiField =
+      column?.sortField ??
+      (typeof column?.dataKey === 'string' && column.dataKey.length > 0 ? column.dataKey : undefined) ??
+      sort.active;
     const tableSort: ITableSort = {
-      active: sort.active,
+      active: apiField,
       direction: sort.direction as 'asc' | 'desc' | '',
     };
     this.sortChange.emit(tableSort);

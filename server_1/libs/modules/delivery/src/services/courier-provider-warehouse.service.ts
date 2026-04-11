@@ -7,7 +7,7 @@ import {
   IManageCourierProviderWarehouse,
   ITableList,
 } from '@eatfit247-shared-lib';
-import { CommonFunctionsUtil, SearchUtil } from '@server_1/core';
+import { CommonFunctionsUtil, SearchUtil, TableListSortUtil } from '@server_1/core';
 
 @Injectable()
 export class CourierProviderWarehouseService {
@@ -29,7 +29,19 @@ export class CourierProviderWarehouseService {
       .scope('list')
       .findAndCountAll({
         where: whereCondition,
-        order: [['courierProviderWarehouseId', 'DESC']],
+        order: TableListSortUtil.orderFromAllowlist(
+          searchDto,
+          new Set([
+            'courierProviderWarehouseId',
+            'courierProviderId',
+            'warehouseId',
+            'providerWarehouseName',
+            'active',
+            'createdAt',
+            'updatedAt',
+          ]),
+          [['courierProviderWarehouseId', 'DESC']],
+        ),
         offset,
         limit: pageSize,
         raw: true,
