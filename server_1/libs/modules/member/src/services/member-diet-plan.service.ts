@@ -698,21 +698,9 @@ export class MemberDietPlanService {
         if (!body.dayNo || body.dayNo === 0) {
           // cycle plan
           dietEndDate = body.endDate ? moment(body.endDate) : null;
-          if (
-            dietEndDate &&
-            moment(dietEndDate, 'YYYY-MM-DD').isBefore(moment(moment(), 'YYYY-MM-DD'), 'date')
-          ) {
-            isEnd = true;
-          }
         } else if (body.dayNo === dietPlanDetail.daysInCycle) {
           // day plan
           dietEndDate = body.endDate ? moment(body.endDate) : null;
-          if (
-            dietEndDate &&
-            moment(dietEndDate, 'YYYY-MM-DD').isBefore(moment(moment(), 'YYYY-MM-DD'), 'date')
-          ) {
-            isEnd = true;
-          }
         }
       }
       const updateObj = {
