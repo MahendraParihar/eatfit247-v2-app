@@ -2,7 +2,7 @@
   "compileOnSave": false,
   "compilerOptions": {
     "allowSyntheticDefaultImports": true,
-    "rootDir": ".",
+    "rootDir": "..",
     "outDir": "./dist",
     "sourceMap": true,
     "declaration": false,
