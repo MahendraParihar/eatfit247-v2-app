@@ -761,6 +761,14 @@
   justify-content: flex-end;
   min-width: 24px;
   margin-left: var(--space-3);
+
+  mat-icon {
+    transition: transform 200ms ease;
+  }
+}
+
+mat-expansion-panel.mat-expanded .product-page__faq-toggle mat-icon {
+  transform: rotate(180deg);
 }
 
 .product-page__faq-answer {

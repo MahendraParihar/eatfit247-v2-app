@@ -1,37 +1,92 @@
 <!-- Hall of Fame -->
-<section class="home-page__section--hall-of-fame page-container">
-  <div class="section__header">
-    <p class="section__tagline section__hightlight">Those who believe they can change the world are the ones who
-      do.</p>
-    <h2 class="section__title">Hall of Fame</h2>
-    <p class="section__tagline">
-      Here's an assortment of our healthy superstars who decided to take charge and came out of the journey
-      healthier and happier. Let their story be the one that moves you to write yours.
-    </p>
-  </div>
-  <div class="home_page___section_hall-of_fame_container">
-    <div class="left-btn">
-      <button
-        (click)="prev()"
-        matMiniFab
-        aria-label="Previous story">
-        <mat-icon>arrow_back</mat-icon>
-      </button>
-    </div>
-    <div class="grid-section">
-      <img src="{{getStoryImage(stories[currentIndex])}}" [alt]="stories[currentIndex].name + ' — Success Story'" />
-      <div class="content">
-        <h5 class="heading-5">{{ stories[currentIndex].name }}</h5>
-        <p class="body-b6" [innerHTML]="stories[currentIndex].description"></p>
-      </div>
-    </div>
-    <div class="right-btn">
-      <button
-        (click)="next()"
-        matMiniFab
-        aria-label="Next story">
-        <mat-icon>arrow_forward</mat-icon>
-      </button>
-    </div>
-  </div>
-</section>
+@if (stories.length > 0) {
+    <section class="hall-of-fame">
+        <div class="section__header">
+            <span class="section__badge">
+                <span class="section__badge-text">Those who believe they can change the world are the ones who do.</span>
+            </span>
+            <h2 class="section__title">Hall of Fame</h2>
+            <p class="section__tagline">
+                Here's an assortment of our healthy superstars who decided to take charge and came out of the journey
+                healthier and happier. Let their story be the one that moves you to write yours.
+            </p>
+        </div>
+
+        <!-- Carousel -->
+        <div class="hall-of-fame__carousel"
+             (mouseenter)="onCarouselHover()"
+             (mouseleave)="onCarouselLeave()">
+
+            <!-- Left Arrow -->
+            <button
+                    class="hall-of-fame__arrow hall-of-fame__arrow--left"
+                    (click)="prev()"
+                    [disabled]="!canGoPrev"
+                    aria-label="Previous stories">
+                <mat-icon>chevron_left</mat-icon>
+            </button>
+
+            <!-- Track -->
+            <div class="hall-of-fame__viewport">
+                <div class="hall-of-fame__track"
+                     [style.transform]="'translateX(' + translateX + '%)'">
+                    @for (story of stories; track story.successStoryId) {
+                        <article class="hall-of-fame__slide"
+                                 [style.min-width.%]="100 / visibleCount"
+                                 [style.max-width.%]="100 / visibleCount">
+                            <div class="hall-of-fame__card">
+                                <div class="hall-of-fame__image-wrapper">
+                                    <img
+                                            [src]="getStoryImage(story)"
+                                            [alt]="story.name + ' — Success Story'"
+                                            loading="lazy"
+                                    />
+                                </div>
+                                <div class="hall-of-fame__content">
+                                    <h3 class="hall-of-fame__name">{{ story.name }}</h3>
+                                    <p class="hall-of-fame__description">{{ getPlainText(story.description) }}</p>
+                                </div>
+                            </div>
+                        </article>
+                    }
+                </div>
+            </div>
+
+            <!-- Right Arrow -->
+            <button
+                    class="hall-of-fame__arrow hall-of-fame__arrow--right"
+                    (click)="next()"
+                    [disabled]="!canGoNext"
+                    aria-label="Next stories">
+                <mat-icon>chevron_right</mat-icon>
+            </button>
+        </div>
+
+        <!-- Dots -->
+        @if (totalDots > 1) {
+            <div class="hall-of-fame__dots">
+                @for (dot of dots; track dot) {
+                    <button
+                            class="hall-of-fame__dot"
+                            [class.hall-of-fame__dot--active]="dot === currentIndex"
+                            (click)="goTo(dot)"
+                            [attr.aria-label]="'Go to slide ' + (dot + 1)">
+                    </button>
+                }
+            </div>
+        }
+
+        <!-- View All -->
+        <div class="hall-of-fame__actions">
+            <a
+                    routerLink="/success-stories"
+                    mat-stroked-button
+                    color="primary"
+                    class="secondary-action-button"
+                    aria-label="View all success stories">
+                View All Stories
+                <mat-icon iconPositionEnd>arrow_forward</mat-icon>
+            </a>
+        </div>
+    </section>
+}

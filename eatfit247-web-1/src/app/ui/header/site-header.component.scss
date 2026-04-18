@@ -8,8 +8,8 @@
   position: sticky;
   top: 0;
   z-index: 100;
-  background: #ffffff;
-  border-bottom: 1px solid var(--ef-border);
+  background: var(--color-surface-card);
+  border-bottom: 1px solid var(--color-border);
   box-shadow: 0 1px 4px rgba(17, 24, 39, 0.06);
 }
 
@@ -61,7 +61,7 @@
   font-family: 'Inter', sans-serif;
   font-size: 14px;
   font-weight: 500;
-  color: var(--ef-text-primary);
+  color: var(--color-text-primary);
   text-decoration: none;
   border-radius: 6px;
   background: transparent;
@@ -71,12 +71,12 @@
   white-space: nowrap;
 
   &:hover {
-    color: var(--ef-primary);
-    background: var(--ef-primary-light);
+    color: var(--color-primary);
+    background: color-mix(in srgb, var(--color-primary) 10%, transparent);
   }
 
   &.active {
-    color: var(--ef-primary);
+    color: var(--color-primary);
     font-weight: 600;
   }
 }
@@ -100,20 +100,44 @@
   background: transparent;
   border: none;
   cursor: pointer;
-  color: var(--ef-text-primary);
+  color: var(--color-text-primary);
   padding: 4px;
   border-radius: 4px;
 
   &:hover {
-    background: var(--ef-primary-light);
-    color: var(--ef-primary);
+    background: color-mix(in srgb, var(--color-primary) 10%, transparent);
+    color: var(--color-primary);
+  }
+}
+
+// Mobile Backdrop
+.mobile-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 99;
+  background-color: rgba(0, 0, 0, 0.4);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+
+  &--visible {
+    opacity: 1;
+    pointer-events: auto;
   }
 }
 
 // Mobile Nav
 .mobile-nav {
-  border-top: 1px solid var(--ef-border);
-  background: #ffffff;
+  border-top: 1px solid var(--color-border);
+  background: var(--color-surface-card);
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease-out;
+
+  &--open {
+    max-height: 100vh;
+  }
 }
 
 .mobile-nav-list {
@@ -131,14 +155,14 @@
   font-family: 'Inter', sans-serif;
   font-size: 15px;
   font-weight: 500;
-  color: var(--ef-text-primary);
+  color: var(--color-text-primary);
   text-decoration: none;
   border-radius: 6px;
   transition: background-color 0.15s ease, color 0.15s ease;
 
   &:hover, &.active {
-    color: var(--ef-primary);
-    background: var(--ef-primary-light);
+    color: var(--color-primary);
+    background: color-mix(in srgb, var(--color-primary) 10%, transparent);
   }
 }
 
@@ -155,6 +179,10 @@
 
   .mobile-toggle {
     display: flex;
+  }
+
+  .mobile-backdrop {
+    display: block;
   }
 
   .cta-btn {

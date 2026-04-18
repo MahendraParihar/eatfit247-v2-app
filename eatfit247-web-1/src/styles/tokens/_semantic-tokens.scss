@@ -17,6 +17,12 @@
   // Border Colors
   --color-border: var(--color-gray-200);
   --color-divider: var(--color-gray-200);
+
+  // Feedback Colors
+  --color-success-bg: #ecfdf3;
+  --color-success-text: #16a34a;
+  --color-error-bg: #ffebee;
+  --color-error-text: #b71c1c;
 }
 
 // Dark Theme Semantic Tokens
@@ -38,5 +44,11 @@
   // Border Colors
   --color-border: var(--color-gray-800);
   --color-divider: var(--color-gray-800);
+
+  // Feedback Colors
+  --color-success-bg: #052e16;
+  --color-success-text: #4ade80;
+  --color-error-bg: #450a0a;
+  --color-error-text: #fca5a5;
 }
 

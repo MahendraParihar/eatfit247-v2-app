@@ -39,7 +39,7 @@
   top: -24px;
   transform: translateX(-50%);
   background: var(--color-primary);
-  color: #fff;
+  color: var(--color-surface-white);
   font-size: 12px;
   font-weight: 700;
   padding: 4px 12px;
@@ -60,7 +60,7 @@
     height: 12px;
     border-radius: 50%;
     background: var(--color-primary);
-    border: 3px solid #fff;
+    border: 3px solid var(--color-surface-card);
     box-shadow: 0 0 0 2px var(--color-primary);
     z-index: 2;
   }
@@ -133,6 +133,13 @@
   }
 
   .entry-image {
-    display: none;
+    order: -1;
+    padding: 0;
+    margin-bottom: var(--space-3);
+  }
+
+  .entry-img {
+    max-height: 200px;
+    width: 100%;
   }
 }

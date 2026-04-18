@@ -55,7 +55,7 @@
   align-items: center;
   padding: var(--space-4) var(--space-4);
   border-radius: 16px;
-  background-color: #ffffff;
+  background-color: var(--color-surface-card);
   color: var(--color-text-primary);
   border: 1px solid var(--color-border);
   justify-content: flex-start;
@@ -67,7 +67,7 @@
 
   mat-icon {
     border-radius: 999px;
-    background: black;
+    background: var(--color-surface-black);
     padding: 8px;
     color: white;
   }
@@ -80,8 +80,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #111827;
-  color: #ffffff;
+  background-color: var(--color-gray-900);
+  color: var(--color-surface-white);
 }
 
 .contact-us__card-icon mat-icon,
@@ -96,12 +96,12 @@
 
 .contact-us__card-label {
   font-size: 0.8rem;
-  color: #6b7280;
+  color: var(--color-text-secondary);
 }
 
 .contact-us__card-value {
   font-weight: 600;
-  color: #111827;
+  color: var(--color-text-primary);
   text-decoration: none;
 }
 
@@ -151,13 +151,13 @@
 }
 
 .contact-us__message--success {
-  background-color: #e8f5e9;
-  color: #1b5e20;
+  background-color: var(--color-success-bg);
+  color: var(--color-success-text);
 }
 
 .contact-us__message--error {
-  background-color: #ffebee;
-  color: #b71c1c;
+  background-color: var(--color-error-bg);
+  color: var(--color-error-text);
 }
 
 .contact-us__message-icon {

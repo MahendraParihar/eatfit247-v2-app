@@ -14,10 +14,21 @@
   gap: var(--space-4);
 }
 
+.common-blog__actions {
+  display: flex;
+  justify-content: center;
+}
+
 // Responsive layouts
 @include breakpoints.respond(md) {
   .common-blog__grid {
     display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@include breakpoints.respond(lg) {
+  .common-blog__grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }

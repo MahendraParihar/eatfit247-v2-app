@@ -57,9 +57,15 @@
         </div>
     </div>
 
+    <!-- Mobile Backdrop -->
+    <div
+            class="mobile-backdrop"
+            [class.mobile-backdrop--visible]="mobileMenuOpen"
+            (click)="mobileMenuOpen = false"
+    ></div>
+
     <!-- Mobile Nav -->
-    @if (mobileMenuOpen) {
-        <nav class="mobile-nav" aria-label="Mobile navigation">
+    <nav class="mobile-nav" [class.mobile-nav--open]="mobileMenuOpen" aria-label="Mobile navigation">
             <ul class="mobile-nav-list">
                 @for (item of navItems; track item.label) {
                     @if (item.children) {
@@ -95,5 +101,4 @@
                 </li>
             </ul>
         </nav>
-    }
 </header>

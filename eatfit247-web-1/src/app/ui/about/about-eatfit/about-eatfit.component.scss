@@ -219,7 +219,7 @@
 .about-eatfit__section--join {
   padding-block: var(--space-fluid-lg);
   padding-left: var(--space-fluid-md);
-  background: linear-gradient(135deg, #FFF1F2 0%, #FFFBEB 100%);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--color-primary) 6%, var(--color-surface-page)), color-mix(in srgb, #facc15 6%, var(--color-surface-page)));
   border-radius: 24px;
 }
 

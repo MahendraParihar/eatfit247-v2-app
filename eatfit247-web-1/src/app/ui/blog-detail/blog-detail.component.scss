@@ -13,7 +13,7 @@
   align-items: center;
   font-size: 12px;
   line-height: 16px;
-  color: #797979;
+  color: var(--color-text-secondary);
   margin-bottom: var(--space-3);
   gap: var(--space-1);
 }
@@ -132,7 +132,7 @@
   h4 {
     margin: 16px 0 8px;
     font-weight: 600;
-    color: #393939;
+    color: var(--color-text-primary);
   }
 
   a {
@@ -157,7 +157,7 @@
 .share-card {
   border-radius: 16px;
   padding: var(--space-5);
-  background-color: #bf3232;
+  background-color: var(--color-primary-hover);
   color: #ffffff;
   display: flex;
   flex-direction: column;
@@ -183,7 +183,7 @@
 
 .share-card-title {
   margin: 0 0 var(--space-1);
-  color: white;
+  color: var(--color-surface-white);
   font-weight: 600;
 }
 
@@ -202,8 +202,8 @@
   border: none;
   border-radius: 999px;
   padding: var(--space-2) var(--space-4);
-  background-color: #ffffff;
-  color: #f84141;
+  background-color: var(--color-surface-white);
+  color: var(--color-primary);
   cursor: pointer;
   align-self: flex-start;
 
@@ -222,7 +222,7 @@
   width: 40px;
   height: 40px;
   border-radius: 999px;
-  background-color: #ffffff;
+  background-color: var(--color-surface-white);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -232,7 +232,7 @@
 .share-icon-label {
   font-size: 14px;
   font-weight: 600;
-  color: #f84141;
+  color: var(--color-primary);
   text-transform: uppercase;
 }
 
@@ -245,16 +245,16 @@
 
 .related-title {
   margin: 0;
-  color: #393939;
+  color: var(--color-text-primary);
 }
 
 .related-list {
   display: flex;
   flex-direction: column;
   border-radius: 16px;
-  border: 1px solid #e8e8e8;
+  border: 1px solid var(--color-border);
   overflow: hidden;
-  background-color: #ffffff;
+  background-color: var(--color-surface-card);
 }
 
 .related-card {
@@ -292,7 +292,7 @@
 .related-card-title {
   margin: 0;
   padding: var(--space-3);
-  color: #393939;
+  color: var(--color-text-primary);
 }
 
 .related-card-title-link {
@@ -311,14 +311,14 @@
   gap: 4px;
   font-size: 12px;
   line-height: 16px;
-  color: #797979;
+  color: var(--color-text-secondary);
 }
 
 .related-excerpt {
   margin: 0;
   font-size: 14px;
   line-height: 20px;
-  color: #393939;
+  color: var(--color-text-primary);
 }
 
 .related-read-more {
@@ -326,7 +326,7 @@
   font-size: 14px;
   line-height: 20px;
   font-weight: 500;
-  color: #fa8547;
+  color: var(--color-primary);
   text-decoration: none;
 
   &:hover {
@@ -349,7 +349,7 @@
 .skeleton-related-card {
   position: relative;
   overflow: hidden;
-  background-color: #f3f3f3;
+  background-color: var(--color-gray-100);
 }
 
 .skeleton-breadcrumb {

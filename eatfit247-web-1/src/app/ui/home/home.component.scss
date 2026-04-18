@@ -4,8 +4,15 @@
 .home-page__section {
   display: flex;
   flex-direction: column;
-  gap: var(--space-fluid-xl);
+  gap: clamp(48px, 6vw, 80px);
   padding-block: var(--space-fluid-xl);
+}
+
+.home-page__divider {
+  width: 120px;
+  height: 1px;
+  background-color: var(--color-divider);
+  margin-inline: auto;
 }
 
 // Hero CTA Strip
@@ -108,7 +115,7 @@
 .home-trust-bar__value {
   font-size: clamp(1.25rem, 3vw, 1.75rem);
   font-weight: 800;
-  color: #fff;
+  color: var(--color-surface-white);
   line-height: 1.2;
 }
 

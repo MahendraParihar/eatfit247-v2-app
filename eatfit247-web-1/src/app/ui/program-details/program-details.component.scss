@@ -317,6 +317,14 @@
   color: var(--color-text-secondary);
   justify-content: flex-end;
   min-width: 24px;
+
+  mat-icon {
+    transition: transform 200ms ease;
+  }
+}
+
+mat-expansion-panel.mat-expanded .program-details__faq-icon mat-icon {
+  transform: rotate(180deg);
 }
 
 .program-details__faq-answer {

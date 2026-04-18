@@ -1,5 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 import { CardComponent, ICardData } from '@shared-ui';
 import { BlogService } from '../../core/services';
 
@@ -8,7 +11,10 @@ import { BlogService } from '../../core/services';
   selector: 'app-common-blog',
   imports: [
     CommonModule,
-    CardComponent
+    RouterLink,
+    MatButtonModule,
+    MatIconModule,
+    CardComponent,
   ],
   templateUrl: './common-blog.component.html',
   styleUrl: './common-blog.component.scss'

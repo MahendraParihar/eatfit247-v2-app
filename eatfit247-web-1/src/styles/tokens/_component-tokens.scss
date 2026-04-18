@@ -9,9 +9,12 @@
   --button-padding-y: var(--space-2);
 
   // Card Tokens
-  --card-border-radius: var(--radius-none);
+  --card-border-radius: 16px;
   --card-padding: var(--space-5);
   --card-border: 1px solid var(--color-border);
+  --card-hover-transform: translateY(-2px);
+  --card-hover-shadow: 0 8px 24px rgba(15, 23, 42, 0.1);
+  --card-transition: border-color 150ms ease, box-shadow 150ms ease, transform 150ms ease;
 
   // Input Tokens
   --input-border-radius: var(--radius-none);
