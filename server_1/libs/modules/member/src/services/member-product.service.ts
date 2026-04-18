@@ -297,41 +297,42 @@ export class MemberProductService {
       invoiceNote?: string | null;
     }>
   > {
-    const orderItemObjs = [];
-    for (const item of tempOrderItems) {
-      const taxCalculationResult = await this.calculateTax(
-        item.productId,
-        franchise,
-        {
-          orderAmount: item.baseAmount,
+    const orderItemObjs = await Promise.all(
+      tempOrderItems.map(async (item) => {
+        const taxCalculationResult = await this.calculateTax(
+          item.productId,
+          franchise,
+          {
+            orderAmount: item.baseAmount,
+            discountAmount: item.discountAmount,
+            currency: item.currencyCode,
+          },
+          franchiseAddress,
+          billingAddress,
+        );
+        return {
+          productId: item.productId,
+          productVariantId: item.productVariantId,
+          productName: item.productName,
+          quantity: item.quantity,
+          quantityLabel: item.quantityLabel,
+          unitPrice: taxCalculationResult.orderAmount / item.quantity,
+          quantityValue: item.quantityValue,
+          quantityUnit: item.quantityUnit,
+          baseAmount: taxCalculationResult.orderAmount,
           discountAmount: item.discountAmount,
-          currency: item.currencyCode,
-        },
-        franchiseAddress,
-        billingAddress,
-      );
-      orderItemObjs.push({
-        productId: item.productId,
-        productVariantId: item.productVariantId,
-        productName: item.productName,
-        quantity: item.quantity,
-        quantityLabel: item.quantityLabel,
-        unitPrice: taxCalculationResult.orderAmount / item.quantity,
-        quantityValue: item.quantityValue,
-        quantityUnit: item.quantityUnit,
-        baseAmount: taxCalculationResult.orderAmount,
-        discountAmount: item.discountAmount,
-        taxAmount: taxCalculationResult.taxAmount,
-        effectiveTaxRate: taxCalculationResult.taxPercentage,
-        totalAmount: taxCalculationResult.totalAmount,
-        taxObj: taxCalculationResult.taxObj,
-        taxType: taxCalculationResult.taxType,
-        taxMode: taxCalculationResult.taxMode,
-        isLutApplied: taxCalculationResult.isLutApplied,
-        jurisdiction: taxCalculationResult.jurisdiction,
-        invoiceNote: taxCalculationResult.invoiceNote,
-      });
-    }
+          taxAmount: taxCalculationResult.taxAmount,
+          effectiveTaxRate: taxCalculationResult.taxPercentage,
+          totalAmount: taxCalculationResult.totalAmount,
+          taxObj: taxCalculationResult.taxObj,
+          taxType: taxCalculationResult.taxType,
+          taxMode: taxCalculationResult.taxMode,
+          isLutApplied: taxCalculationResult.isLutApplied,
+          jurisdiction: taxCalculationResult.jurisdiction,
+          invoiceNote: taxCalculationResult.invoiceNote,
+        };
+      }),
+    );
     return orderItemObjs;
   }
 

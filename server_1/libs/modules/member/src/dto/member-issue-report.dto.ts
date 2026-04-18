@@ -29,5 +29,15 @@ export class MemberIssueReportDto extends OptionalReportSortDto {
   @IsBoolean()
   @Type(() => Boolean)
   isOpen?: boolean;
+
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  page?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  limit?: number;
 }
 

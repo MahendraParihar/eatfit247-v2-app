@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { BannerComponent, LoaderComponent } from '@shared-ui';
-import { BannerService } from '../../core/services';
+import { BannerService, SEOService } from '../../core/services';
 import { BannerForEnum } from '@eatfit247-shared-library/enum';
 import { IPublicBanner, ISuccessStory } from '@eatfit247-shared-library/core';
 import { SuccessStoriesService } from '../../core/services/success-stories.service';
@@ -33,6 +33,7 @@ interface TrustStat {
 export class HomeComponent implements OnInit {
   private readonly bannerService = inject(BannerService);
   private readonly successStoriesService = inject(SuccessStoriesService);
+  private readonly seoService = inject(SEOService);
   readonly loading = signal(false);
   banners: IPublicBanner[] = [];
   stories: ISuccessStory[] = [];
@@ -45,6 +46,7 @@ export class HomeComponent implements OnInit {
   ];
 
   async ngOnInit(): Promise<void> {
+    this.seoService.updateSEO({ title: 'EatFit247 — Personalized Nutrition & Wellness', description: 'Transform your health with EatFit247. Personalized diet plans, expert nutrition coaching by Shweta Shah, and holistic wellness programs.', url: '/' });
     this.loading.set(true);
     try {
       await Promise.all([this.loadBannerData(), this.loadStories()]);

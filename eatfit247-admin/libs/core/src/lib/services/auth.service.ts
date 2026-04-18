@@ -183,11 +183,11 @@ export class AuthService extends ApiBaseService {
     this.storage.setToken(token);
   }
 
-  private decodeToken(token: string): any {
+  private decodeToken(token: string): { adminUserId?: string; adminId?: string; emailId?: string } | null {
     try {
       const payload = token.split('.')[1];
-      return JSON.parse(atob(payload));
-    } catch (e) {
+      return JSON.parse(atob(payload)) as { adminUserId?: string; adminId?: string; emailId?: string };
+    } catch {
       return null;
     }
   }

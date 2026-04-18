@@ -19,6 +19,7 @@ import {
   Req,
   Res,
   SetMetadata,
+  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import { Response } from 'express';
@@ -81,7 +82,7 @@ export class AuthController {
     // Read refresh token from HttpOnly cookie
     const refreshToken = req.cookies?.refreshToken;
     if (!refreshToken) {
-      throw new Error('Refresh token not found');
+      throw new UnauthorizedException('Refresh token not found');
     }
     // Refresh token with rotation (old token revoked, new token issued)
     const tokens = await this.authService.refreshToken(refreshToken);

@@ -42,7 +42,12 @@ export class ThemeService {
 
     effect(() => {
       const isDark = this.prefersDark?.();
-      const stored = localStorage.getItem(this.storageKey);
+      let stored: string | null = null;
+      try {
+        stored = localStorage.getItem(this.storageKey);
+      } catch {
+        // localStorage may be disabled
+      }
 
       // If no manual preference is stored, follow system
       if (!stored) {
@@ -70,9 +75,13 @@ export class ThemeService {
       return 'light';
     }
 
-    const stored = localStorage.getItem(this.storageKey) as Theme | null;
-    if (stored && (stored === 'light' || stored === 'dark')) {
-      return stored;
+    try {
+      const stored = localStorage.getItem(this.storageKey) as Theme | null;
+      if (stored && (stored === 'light' || stored === 'dark')) {
+        return stored;
+      }
+    } catch {
+      // localStorage may be disabled
     }
     return this.prefersDark?.() ? 'dark' : 'light';
   }

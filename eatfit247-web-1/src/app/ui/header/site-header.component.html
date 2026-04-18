@@ -16,6 +16,7 @@
                                     [matMenuTriggerFor]="subMenu"
                                     routerLinkActive="active"
                                     [routerLinkActiveOptions]="{ exact: false }"
+                                    [attr.aria-label]="'Open ' + item.label + ' menu'"
                             >
                                 {{ item.label }}
                                 <mat-icon class="dropdown-icon">expand_more</mat-icon>

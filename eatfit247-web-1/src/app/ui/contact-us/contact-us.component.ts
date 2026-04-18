@@ -7,7 +7,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { BannerComponent } from '@shared-ui';
-import { BannerService, HttpService, JsonLdService } from '../../core/services';
+import { BannerService, HttpService, JsonLdService, SEOService } from '../../core/services';
 import { BannerForEnum } from '@eatfit247-shared-library/enum';
 import { IPublicBanner } from '@eatfit247-shared-library/core';
 import { RecaptchaService } from '../../core/services/recaptcha.service';
@@ -41,6 +41,7 @@ export class ContactUsComponent implements OnInit {
   private readonly httpService = inject(HttpService);
   private readonly bannerService = inject(BannerService);
   private readonly jsonLdService = inject(JsonLdService);
+  private readonly seoService = inject(SEOService);
   contactForm!: FormGroup;
   formSubmitted = false;
   formSuccess = false;
@@ -65,6 +66,7 @@ export class ContactUsComponent implements OnInit {
   banners: IPublicBanner[] = [];
 
   ngOnInit(): void {
+    this.seoService.updateSEO({ title: 'Contact Us', description: 'Get in touch with EatFit247 for nutrition consultations, diet plan inquiries, and wellness support.', url: '/contact-us' });
     this.initForm();
     void this.loadBannerData();
     this.jsonLdService.setPageSchema({

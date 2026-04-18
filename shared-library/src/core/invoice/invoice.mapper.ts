@@ -53,12 +53,17 @@ export function mapPaymentToInvoiceDocument(
   // Build QR code value if enabled
   let qrCodeValue = '';
   if (qrCodeEnabled && franchise.gstNumber) {
+    const taxableAmount = payment.orderAmount;
     qrCodeValue = buildQrCodeValue(
       franchise.gstNumber,
       payment.invoiceId || '',
       payment.paymentDate.toString(),
       payment.totalAmount,
       payment.taxAmount,
+      taxableAmount,
+      payment.gstNumber,
+      items.length,
+      payment.taxObj,
     );
   }
   // Build seller (franchise) information
@@ -191,23 +196,55 @@ export function buildTaxRows(
 }
 
 /**
- * Builds QR code value for Indian GST invoices
- * Format: JSON string with required fields
+ * Builds QR code value for Indian GST invoices.
+ *
+ * Encodes the fields recommended by CBIC for dynamic QR on B2C invoices
+ * (Notification 14/2020 – Central Tax) and useful context for B2B:
+ *   - Supplier GSTIN, Buyer GSTIN (if B2B)
+ *   - Invoice number & date
+ *   - Total value, taxable value, tax amount
+ *   - Number of items, HSN summary
+ *   - Tax breakdown (CGST/SGST or IGST)
  */
 function buildQrCodeValue(
-  gstin: string,
+  supplierGstin: string,
   invoiceNumber: string,
   invoiceDate: string,
   totalAmount: number,
   taxAmount: number,
+  taxableAmount?: number,
+  buyerGstin?: string,
+  itemCount?: number,
+  taxBreakdown?: Record<string, { amount: number; taxPercentage: number }>,
 ): string {
-  const qrData = {
-    gstin,
+  const qrData: Record<string, unknown> = {
+    sellerGstin: supplierGstin,
     invoiceNumber,
     invoiceDate,
-    totalAmount: totalAmount.toFixed(2),
+    totalValue: totalAmount.toFixed(2),
+    taxableValue: (taxableAmount ?? totalAmount - taxAmount).toFixed(2),
     taxAmount: taxAmount.toFixed(2),
   };
+
+  if (buyerGstin) {
+    qrData.buyerGstin = buyerGstin;
+  }
+
+  if (itemCount !== undefined && itemCount > 0) {
+    qrData.itemCount = itemCount;
+  }
+
+  // Add tax component breakdown
+  if (taxBreakdown) {
+    if (taxBreakdown['CGST'] && taxBreakdown['SGST']) {
+      qrData.cgstAmount = taxBreakdown['CGST'].amount.toFixed(2);
+      qrData.sgstAmount = taxBreakdown['SGST'].amount.toFixed(2);
+    }
+    if (taxBreakdown['IGST']) {
+      qrData.igstAmount = taxBreakdown['IGST'].amount.toFixed(2);
+    }
+  }
+
   return JSON.stringify(qrData);
 }
 
@@ -361,12 +398,19 @@ export function mapProductOrderToInvoiceDocument(
   // Build QR code value if enabled
   let qrCodeValue = '';
   if (qrCodeEnabled && franchise.gstNumber) {
+    const taxableAmount = productOrder.subTotalAmount;
+    // Aggregate tax breakdown from first order item (same tax regime for all items in an order)
+    const firstItemTaxObj = productOrder.orderItems[0].taxObj;
     qrCodeValue = buildQrCodeValue(
       franchise.gstNumber,
       productOrder.invoiceId || '',
       productOrder.paymentDate?.toString() || '',
       productOrder.totalAmount,
       productOrder.taxAmount,
+      taxableAmount,
+      productOrder.gstNumber,
+      productOrder.orderItems.length,
+      firstItemTaxObj,
     );
   }
   // Build seller (franchise) information

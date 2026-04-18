@@ -277,28 +277,43 @@ export class MemberDietPlanService {
       dietPlan: this.convertDietDetail(categoryList, recipeList, s),
       isDeletable: false, // Will be set later based on conditions
     }));
-    // Group diet plan details by cycle
-    for (let i = 0; i < planList.length; i++) {
-      const cyclePlanList: ICyclePlan[] = [];
-      const tempCycleList: IMemberDietDetail[] = _.filter(dietPlanDetailList, {
-        dietPlanId: planList[i].memberDietPlanId,
-      });
-      const cycleNos = _.uniqWith(_.map(tempCycleList, 'cycleNo'), _.isEqual);
-      for (let j = 0; j < cycleNos.length; j++) {
-        const cS = _.filter(tempCycleList, { cycleNo: cycleNos[j] });
-        for (let k = 0; k < cS.length; k++) {
-          cS[k].isDeletable =
-            k === cS.length - 1 && j === cycleNos.length - 1 && planList[i].showActionBtn;
-        }
-        cyclePlanList.push({
-          cycleNo: cycleNos[j],
-          dietPlans: cS,
-          startDate: cS && cS.length > 0 ? cS[0].startDate : null,
-          endDate: cS && cS.length > 0 ? cS[cS.length - 1].endDate : null,
-          type: cS && cS.length > 0 ? cS[0].type : null,
-        } as ICyclePlan);
+    // Group diet plan details by planId → cycleNo using Maps (O(n) instead of O(n³))
+    const detailsByPlan = new Map<number, Map<number, IMemberDietDetail[]>>();
+    for (const detail of dietPlanDetailList) {
+      let cycleMap = detailsByPlan.get(detail.memberDietPlanId);
+      if (!cycleMap) {
+        cycleMap = new Map();
+        detailsByPlan.set(detail.memberDietPlanId, cycleMap);
       }
-      planList[i].cyclePlans = cyclePlanList;
+      let cycleDetails = cycleMap.get(detail.cycleNo);
+      if (!cycleDetails) {
+        cycleDetails = [];
+        cycleMap.set(detail.cycleNo, cycleDetails);
+      }
+      cycleDetails.push(detail);
+    }
+
+    for (const plan of planList) {
+      const cyclePlanList: ICyclePlan[] = [];
+      const cycleMap = detailsByPlan.get(plan.memberDietPlanId);
+      if (cycleMap) {
+        const cycleNos = Array.from(cycleMap.keys());
+        for (let j = 0; j < cycleNos.length; j++) {
+          const cS = cycleMap.get(cycleNos[j])!;
+          // Only the last day of the last cycle is deletable
+          if (plan.showActionBtn && j === cycleNos.length - 1 && cS.length > 0) {
+            cS[cS.length - 1].isDeletable = true;
+          }
+          cyclePlanList.push({
+            cycleNo: cycleNos[j],
+            dietPlans: cS,
+            startDate: cS.length > 0 ? cS[0].startDate : null,
+            endDate: cS.length > 0 ? cS[cS.length - 1].endDate : null,
+            type: cS.length > 0 ? cS[0].type : null,
+          } as ICyclePlan);
+        }
+      }
+      plan.cyclePlans = cyclePlanList;
     }
     return {
       list: planList,
@@ -472,7 +487,7 @@ export class MemberDietPlanService {
   }
 
   private async getRecipeDropdownList(): Promise<IDropdownItem[]> {
-    const result = await this.recipeService.findAll({ page: 0, limit: 1000 });
+    const result = await this.recipeService.findAll({ page: 0, limit: 200 });
     return result.tableData.map((recipe: any) => ({
       id: recipe.recipeId,
       label: recipe.name,
@@ -481,7 +496,7 @@ export class MemberDietPlanService {
   }
 
   private async getDietTemplateDropdownList(): Promise<IDropdownItem[]> {
-    const result = await this.dietTemplateService.findAll({ page: 0, limit: 1000 });
+    const result = await this.dietTemplateService.findAll({ page: 0, limit: 200 });
     return result.tableData.map((template: any) => ({
       id: template.dietTemplateId || template.id,
       label: template.dietTemplate,

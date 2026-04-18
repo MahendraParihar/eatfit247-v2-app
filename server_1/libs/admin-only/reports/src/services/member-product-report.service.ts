@@ -254,32 +254,36 @@ export class MemberProductReportService {
     const archive = archiver('zip', {
       zlib: { level: 9 }, // Maximum compression
     });
-    // Generate invoices for each product order and add to zip
-    const invoicePromises = productOrders.map(async (item: any) => {
-      try {
-        const productOrder = (this.memberProductService as any).convertToModel(item);
-        const memberId = productOrder.memberId;
-        const productId = productOrder.memberProductId;
-        // Generate invoice PDF
-        const invoiceFile = await this.memberProductService.generateInvoicePDF(memberId, productId);
-        // Convert base64 buffer to Buffer
-        const pdfBuffer = Buffer.from(invoiceFile.buffer, 'base64');
-        // Add to zip with a clean filename
-        const memberName = `${productOrder.memberName || 'Member'}_${memberId}`.replace(
-          /[^a-zA-Z0-9_]/g,
-          '_',
-        );
-        const fileName = `Product_Invoice_${memberName}_${productId}.pdf`;
-        archive.append(pdfBuffer, { name: fileName });
-      } catch (error) {
-        this.logger.error(`Failed to generate invoice for product order ${item.memberProductId}`, {
-          error,
-        });
-        // Continue with other invoices even if one fails
-      }
-    });
-    // Wait for all invoices to be added to the archive
-    await Promise.all(invoicePromises);
+    // Generate invoices in batches to avoid Puppeteer OOM
+    const BATCH_SIZE = 3;
+    for (let i = 0; i < productOrders.length; i += BATCH_SIZE) {
+      const batch = productOrders.slice(i, i + BATCH_SIZE);
+      await Promise.all(
+        batch.map(async (item: any) => {
+          try {
+            const productOrder = (this.memberProductService as any).convertToModel(item);
+            const memberId = productOrder.memberId;
+            const productId = productOrder.memberProductId;
+            // Generate invoice PDF
+            const invoiceFile = await this.memberProductService.generateInvoicePDF(memberId, productId);
+            // Convert base64 buffer to Buffer
+            const pdfBuffer = Buffer.from(invoiceFile.buffer, 'base64');
+            // Add to zip with a clean filename
+            const memberName = `${productOrder.memberName || 'Member'}_${memberId}`.replace(
+              /[^a-zA-Z0-9_]/g,
+              '_',
+            );
+            const fileName = `Product_Invoice_${memberName}_${productId}.pdf`;
+            archive.append(pdfBuffer, { name: fileName });
+          } catch (error) {
+            this.logger.error(`Failed to generate invoice for product order ${item.memberProductId}`, {
+              error,
+            });
+            // Continue with other invoices even if one fails
+          }
+        }),
+      );
+    }
     // Finalize the archive
     await archive.finalize();
     return archive;
@@ -345,32 +349,36 @@ export class MemberProductReportService {
     const archive = archiver('zip', {
       zlib: { level: 9 }, // Maximum compression
     });
-    // Generate invoices for each product order and add to zip
-    const invoicePromises = productOrders.map(async (item: any) => {
-      try {
-        const productOrder = (this.memberProductService as any).convertToModel(item);
-        const memberId = productOrder.memberId;
-        const productId = productOrder.memberProductId;
-        // Generate invoice PDF
-        const invoiceFile = await this.memberProductService.generateInvoicePDF(memberId, productId);
-        // Convert base64 buffer to Buffer
-        const pdfBuffer = Buffer.from(invoiceFile.buffer, 'base64');
-        // Add to zip with a clean filename
-        const memberName = `${productOrder.memberName || 'Member'}_${memberId}`.replace(
-          /[^a-zA-Z0-9_]/g,
-          '_',
-        );
-        const fileName = `Product_Invoice_${memberName}_${productId}.pdf`;
-        archive.append(pdfBuffer, { name: fileName });
-      } catch (error) {
-        this.logger.error(`Failed to generate invoice for product order ${item.memberProductId}`, {
-          error,
-        });
-        // Continue with other invoices even if one fails
-      }
-    });
-    // Wait for all invoices to be added to the archive
-    await Promise.all(invoicePromises);
+    // Generate invoices in batches to avoid Puppeteer OOM
+    const BATCH_SIZE = 3;
+    for (let i = 0; i < productOrders.length; i += BATCH_SIZE) {
+      const batch = productOrders.slice(i, i + BATCH_SIZE);
+      await Promise.all(
+        batch.map(async (item: any) => {
+          try {
+            const productOrder = (this.memberProductService as any).convertToModel(item);
+            const memberId = productOrder.memberId;
+            const productId = productOrder.memberProductId;
+            // Generate invoice PDF
+            const invoiceFile = await this.memberProductService.generateInvoicePDF(memberId, productId);
+            // Convert base64 buffer to Buffer
+            const pdfBuffer = Buffer.from(invoiceFile.buffer, 'base64');
+            // Add to zip with a clean filename
+            const memberName = `${productOrder.memberName || 'Member'}_${memberId}`.replace(
+              /[^a-zA-Z0-9_]/g,
+              '_',
+            );
+            const fileName = `Product_Invoice_${memberName}_${productId}.pdf`;
+            archive.append(pdfBuffer, { name: fileName });
+          } catch (error) {
+            this.logger.error(`Failed to generate invoice for product order ${item.memberProductId}`, {
+              error,
+            });
+            // Continue with other invoices even if one fails
+          }
+        }),
+      );
+    }
     // Finalize the archive
     await archive.finalize();
     return archive;

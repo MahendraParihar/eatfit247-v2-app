@@ -1,6 +1,7 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
+import { Subject, takeUntil } from 'rxjs';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -21,9 +22,10 @@ import { AdminUserApiService } from '../../api.service';
   templateUrl: './admin-dashboard.component.html',
   styleUrl: './admin-dashboard.component.scss',
 })
-export class AdminDashboardComponent implements OnInit {
+export class AdminDashboardComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private apiService = inject(AdminUserApiService);
+  private destroy$ = new Subject<void>();
 
   adminId!: number;
   loading = true;
@@ -31,7 +33,7 @@ export class AdminDashboardComponent implements OnInit {
   admin: any = null;
 
   ngOnInit(): void {
-    this.route.parent?.params.subscribe((params) => {
+    this.route.parent?.params.pipe(takeUntil(this.destroy$)).subscribe((params) => {
       this.adminId = +params['id'];
       if (this.adminId) {
         this.loadDashboardData();
@@ -45,11 +47,16 @@ export class AdminDashboardComponent implements OnInit {
 
     try {
       this.admin = await this.apiService.getById(this.adminId);
-    } catch (err: any) {
-      this.error = err?.message || 'Failed to load admin data';
+    } catch (err: unknown) {
+      this.error = err instanceof Error ? err.message : 'Failed to load admin data';
     } finally {
       this.loading = false;
     }
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   onRefresh(): void {

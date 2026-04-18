@@ -7,7 +7,7 @@ import {
   ICardData,
   LoaderComponent,
 } from '@shared-ui';
-import { BannerService } from '../../core/services';
+import { BannerService, SEOService } from '../../core/services';
 import { BannerForEnum } from '@eatfit247-shared-library/enum';
 import { IPublicBanner, ISuccessStory } from '@eatfit247-shared-library/core';
 import { SuccessStoriesService } from '../../core/services/success-stories.service';
@@ -30,6 +30,7 @@ export class SuccessStoriesComponent implements OnInit {
   private readonly bannerService = inject(BannerService);
   private readonly successStoriesService = inject(SuccessStoriesService);
   private readonly jsonLdService = inject(JsonLdService);
+  private readonly seoService = inject(SEOService);
   readonly loading = signal(false);
   banners: IPublicBanner[] = [];
   storiesByYear: Map<number, ISuccessStory[]> = new Map();
@@ -38,6 +39,7 @@ export class SuccessStoriesComponent implements OnInit {
   selectedYear: number | null = null;
 
   async ngOnInit(): Promise<void> {
+    this.seoService.updateSEO({ title: 'Success Stories — Hall of Fame', description: 'Real transformation stories from EatFit247 clients who achieved their health and wellness goals.', url: '/success-stories' });
     this.loading.set(true);
     try {
       await this.loadBannerData();

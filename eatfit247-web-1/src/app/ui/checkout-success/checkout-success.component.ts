@@ -1,5 +1,6 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, inject, OnDestroy, OnInit, PLATFORM_ID, signal } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { Subject, takeUntil } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
@@ -51,10 +52,12 @@ interface OrderDetails {
   templateUrl: './checkout-success.component.html',
   styleUrl: './checkout-success.component.scss'
 })
-export class CheckoutSuccessComponent implements OnInit {
+export class CheckoutSuccessComponent implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly checkoutService = inject(CheckoutService);
+  private readonly platformId = inject(PLATFORM_ID);
+  private destroy$ = new Subject<void>();
   loading = signal(true);
   error = signal(null);
   orderDetails: OrderDetails | null = null;
@@ -66,7 +69,7 @@ export class CheckoutSuccessComponent implements OnInit {
   };
 
   ngOnInit(): void {
-    this.route.queryParams.subscribe(async (params) => {
+    this.route.queryParams.pipe(takeUntil(this.destroy$)).subscribe(async (params) => {
       const orderId = params['orderId'];
       const planId = params['planId'];
       if (!orderId) {
@@ -78,13 +81,20 @@ export class CheckoutSuccessComponent implements OnInit {
         // Determine if it's a plan order or product order
         this.isPlanOrder = !!planId;
         await this.loadOrderDetails(orderId, this.isPlanOrder);
-      } catch (error: any) {
-        this.error.set(error.message ||
-          'Failed to load order details. Please contact support.');
+      } catch (error: unknown) {
+        this.error.set(
+          error instanceof Error ? error.message :
+          'Failed to load order details. Please contact support.',
+        );
       } finally {
         this.loading.set(false);
       }
     });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   /**
@@ -182,6 +192,9 @@ export class CheckoutSuccessComponent implements OnInit {
           orderId
         );
       if (result && result.buffer && result.fileName) {
+        if (!isPlatformBrowser(this.platformId)) {
+          throw new Error('Download is only available in browser');
+        }
         // Convert base64 buffer to blob and download
         const byteCharacters = atob(result.buffer);
         const byteNumbers = new Array(byteCharacters.length);
@@ -200,11 +213,12 @@ export class CheckoutSuccessComponent implements OnInit {
       } else {
         throw new Error('Invalid invoice data received');
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error downloading invoice:', error);
-      this.error =
-        error.message ||
-        'Failed to download invoice. Please try again or contact support.';
+      this.error.set(
+        error instanceof Error ? error.message :
+        'Failed to download invoice. Please try again or contact support.',
+      );
     } finally {
       this.downloadingInvoice = false;
     }

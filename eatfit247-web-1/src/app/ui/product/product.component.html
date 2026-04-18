@@ -274,7 +274,7 @@
                                 playsinline
                                 preload="none"
                                 class="product-page__consume-video"
-                                [poster]="productImages[0] || ''"
+                                [poster]="productImages[0] || '/assets/images/logo.png'"
                                 (error)="onVideoError($event)"
                                 (loadeddata)="onVideoLoaded()"
                         >
@@ -428,7 +428,7 @@
                                     playsinline
                                     preload="none"
                                     class="product-page__star-video"
-                                    [poster]="productImages[0] || ''"
+                                    [poster]="productImages[0] || '/assets/images/logo.png'"
                                     (error)="onVideoError($event)"
                                     (loadeddata)="onVideoLoaded()"
                             >
@@ -471,6 +471,34 @@
                         Buy Now
                     </button>
                 </div>
+            </section>
+        }
+
+        <!-- FAQ Section -->
+        @if (productFaqs.length > 0) {
+            <section class="product-page__section-block product-page__faq">
+                <header class="product-page__section-header">
+                    <h2 class="product-page__section-title">Frequently Asked Questions</h2>
+                    <p class="product-page__section-subtitle">
+                        Got questions? We've got answers.
+                    </p>
+                </header>
+
+                <mat-accordion class="product-page__faq-accordion" multi="false">
+                    @for (faq of productFaqs; track faq.faqId) {
+                        <mat-expansion-panel class="product-page__faq-panel" hideToggle>
+                            <mat-expansion-panel-header class="product-page__faq-header">
+                                <mat-panel-title class="product-page__faq-question">
+                                    {{ faq.faq }}
+                                </mat-panel-title>
+                                <mat-panel-description class="product-page__faq-toggle">
+                                    <mat-icon>expand_more</mat-icon>
+                                </mat-panel-description>
+                            </mat-expansion-panel-header>
+                            <p class="product-page__faq-answer">{{ faq.answer }}</p>
+                        </mat-expansion-panel>
+                    }
+                </mat-accordion>
             </section>
         }
     }

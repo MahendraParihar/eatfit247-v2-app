@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { BannerForEnum } from '@eatfit247-shared-library/enum';
-import { BannerService, JsonLdService, ReferrerService } from '../../../core/services';
+import { BannerService, JsonLdService, ReferrerService, SEOService } from '../../../core/services';
 import { BannerComponent, LoaderComponent, SocialSiteItem } from '@shared-ui';
 import { IPublicBanner, IPublicReferrer } from '@eatfit247-shared-library/core';
 import { buildMediaUrl } from '../../../core/utils/media-url.util';
@@ -21,6 +21,7 @@ export class AboutEatfitComponent implements OnInit {
   private readonly referrerService = inject(ReferrerService);
   private readonly bannerService = inject(BannerService);
   private readonly jsonLdService = inject(JsonLdService);
+  private readonly seoService = inject(SEOService);
   readonly loading = signal(false);
   banners: IPublicBanner[] = [];
   safeYoutubeUrl: SafeResourceUrl | null = null;
@@ -78,6 +79,7 @@ export class AboutEatfitComponent implements OnInit {
   ];
 
   async ngOnInit(): Promise<void> {
+    this.seoService.updateSEO({ title: 'About EatFit247', description: 'EatFit247 is a holistic nutrition and wellness platform offering personalized diet plans and health coaching.', url: '/about-us' });
     this.loading.set(true);
     try {
       await Promise.all([this.loadBannerData(), this.loadPartners()]);

@@ -4,7 +4,6 @@ import {
   Component,
   HostListener,
   inject,
-  OnDestroy,
   OnInit
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -48,7 +47,7 @@ import { DashboardApiService } from './api.service';
   styleUrl: './dashboard.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DashboardComponent implements OnInit, OnDestroy {
+export class DashboardComponent implements OnInit {
   kpis?: IDashboardKpis;
   revenueData?: IRevenueData;
   memberGrowthData?: IMemberGrowthData;
@@ -74,17 +73,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadAllData();
-    window.addEventListener('resize', this.onResize);
   }
 
-  ngOnDestroy(): void {
-    window.removeEventListener('resize', this.onResize);
-  }
-
-  @HostListener('window:resize', ['$event'])
-  onResize = (): void => {
+  @HostListener('window:resize')
+  onResize(): void {
     // Charts will handle their own resize
-  };
+  }
 
   async loadAllData(): Promise<void> {
     await Promise.all([
@@ -102,7 +96,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck();
     try {
       this.kpis = await this.apiService.getKpis();
-    } catch (error: any) {
+    } catch {
       // Error toast is handled by HttpErrorInterceptor
     } finally {
       this.loading.kpis = false;
@@ -115,7 +109,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck();
     try {
       this.revenueData = await this.apiService.getRevenueData();
-    } catch (error: any) {
+    } catch {
       // Error toast is handled by HttpErrorInterceptor
     } finally {
       this.loading.revenue = false;
@@ -128,7 +122,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck();
     try {
       this.memberGrowthData = await this.apiService.getMemberGrowthData(this.memberPeriod);
-    } catch (error: any) {
+    } catch {
       // Error toast is handled by HttpErrorInterceptor
     } finally {
       this.loading.members = false;
@@ -141,7 +135,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck();
     try {
       this.programPerformanceData = await this.apiService.getProgramPerformanceData();
-    } catch (error: any) {
+    } catch {
       // Error toast is handled by HttpErrorInterceptor
     } finally {
       this.loading.programs = false;
@@ -154,7 +148,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck();
     try {
       this.operationsSnapshot = await this.apiService.getOperationsSnapshot();
-    } catch (error: any) {
+    } catch {
       // Error toast is handled by HttpErrorInterceptor
     } finally {
       this.loading.operations = false;
@@ -167,7 +161,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck();
     try {
       this.engagementData = await this.apiService.getEngagementData();
-    } catch (error: any) {
+    } catch {
       // Error toast is handled by HttpErrorInterceptor
     } finally {
       this.loading.engagement = false;

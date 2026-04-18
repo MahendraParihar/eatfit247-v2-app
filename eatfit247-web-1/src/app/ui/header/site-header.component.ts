@@ -37,10 +37,11 @@ export class SiteHeaderComponent {
   mobileMenuOpen = false;
 
   navItems: NavItem[] = [
+    { label: 'Home', route: '/' },
     {
       label: 'About Us',
       children: [
-        { label: 'About EatFit', route: '/about-us' },
+        { label: 'About EatFit247', route: '/about-us' },
         { label: 'About Shweta Shah', route: '/about-shweta-shah' },
       ],
     },

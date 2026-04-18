@@ -722,6 +722,55 @@
   }
 }
 
+.product-page__faq {
+  max-width: 800px;
+  margin-inline: auto;
+  width: 100%;
+}
+
+.product-page__faq-accordion {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.product-page__faq-panel {
+  border-radius: 12px !important;
+  border: 1px solid var(--color-border) !important;
+  box-shadow: none !important;
+  overflow: hidden;
+
+  &::before {
+    display: none;
+  }
+}
+
+.product-page__faq-header {
+  min-height: 56px;
+}
+
+.product-page__faq-question {
+  font-size: var(--font-body-b3-size);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  flex: 1;
+}
+
+.product-page__faq-toggle {
+  color: var(--color-text-secondary);
+  justify-content: flex-end;
+  min-width: 24px;
+  margin-left: var(--space-3);
+}
+
+.product-page__faq-answer {
+  margin: 0;
+  font-size: var(--font-body-b3-size);
+  line-height: var(--font-body-b3-line-height);
+  color: var(--color-text-secondary);
+  padding-top: var(--space-1);
+}
+
 @media (max-width: 960px) {
   .product-page {
     padding-inline: var(--space-fluid-md);

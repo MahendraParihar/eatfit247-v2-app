@@ -5,7 +5,7 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { MatIconModule } from '@angular/material/icon';
 import { RouterLink } from '@angular/router';
 import { LoaderComponent } from '@shared-ui';
-import { JsonLdService } from '../../core/services';
+import { JsonLdService, SEOService } from '../../core/services';
 
 export interface FaqItem {
   question: string;
@@ -27,6 +27,7 @@ export interface FaqCategory {
 })
 export class FaqComponent implements OnInit {
   private readonly jsonLdService = inject(JsonLdService);
+  private readonly seoService = inject(SEOService);
   readonly loading = signal(false);
 
   readonly faqCategories: FaqCategory[] = [
@@ -137,6 +138,7 @@ export class FaqComponent implements OnInit {
   ];
 
   ngOnInit(): void {
+    this.seoService.updateSEO({ title: 'Frequently Asked Questions', description: 'Find answers to common questions about EatFit247 nutrition plans, diet programs, and wellness services.', url: '/faq' });
     const allFaqs = this.faqCategories.flatMap((c) => c.items);
     this.jsonLdService.setPageSchema(this.jsonLdService.buildFaqPage(allFaqs));
   }

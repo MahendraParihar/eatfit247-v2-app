@@ -3,7 +3,7 @@
  * 
  * ⚠️ DESIGN SYSTEM: See DESIGN_SYSTEM.md
  */
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import {
   AbstractControl,
   FormBuilder,
@@ -22,6 +22,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { AuthService } from '@core';
 import { IResetPasswordRequest } from '@eatfit247-shared-lib';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-reset-password',
@@ -39,7 +40,8 @@ import { IResetPasswordRequest } from '@eatfit247-shared-lib';
   templateUrl: './reset-password.component.html',
   styleUrl: './reset-password.component.scss',
 })
-export class ResetPasswordComponent implements OnInit {
+export class ResetPasswordComponent implements OnInit, OnDestroy {
+  private destroy$ = new Subject<void>();
   resetPasswordForm: FormGroup;
   loading = false;
   successMessage = '';
@@ -66,12 +68,17 @@ export class ResetPasswordComponent implements OnInit {
 
   ngOnInit(): void {
     // Get token from query params if available
-    this.route.queryParams.subscribe((params) => {
+    this.route.queryParams.pipe(takeUntil(this.destroy$)).subscribe((params) => {
       if (params['token']) {
         this.token = params['token'];
         this.resetPasswordForm.patchValue({ token: params['token'] });
       }
     });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
@@ -105,9 +112,10 @@ export class ResetPasswordComponent implements OnInit {
       this.loading = false;
       this.passwordReset = true;
       this.successMessage = 'Password has been reset successfully.';
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.loading = false;
-      this.errorMessage = error?.error?.message || error?.message || 'Failed to reset password. Please try again.';
+      const err = error as { error?: { message?: string }; message?: string };
+      this.errorMessage = err?.error?.message || err?.message || 'Failed to reset password. Please try again.';
     }
   }
 

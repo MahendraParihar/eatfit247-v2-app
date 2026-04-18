@@ -6,7 +6,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { LoaderComponent, EmptyStateComponent } from '@shared-ui';
 import { Program } from '../../core/interfaces/program.interface';
-import { JsonLdService } from '../../core/services';
+import { JsonLdService, SEOService } from '../../core/services';
 
 const ALL_PROGRAMS: Program[] = [
   {
@@ -110,6 +110,7 @@ export class ProgramDetailsComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly jsonLdService = inject(JsonLdService);
+  private readonly seoService = inject(SEOService);
 
   readonly loading = signal(true);
   readonly program = signal<Program | null>(null);
@@ -124,6 +125,7 @@ export class ProgramDetailsComponent implements OnInit {
     this.loading.set(false);
 
     if (found) {
+      this.seoService.updateSEO({ title: found.name, description: found.subtitle, url: `/our-programs/${found.id}` });
       this.jsonLdService.setPageSchema([
         {
           '@type': 'Service',

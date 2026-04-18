@@ -161,34 +161,37 @@ export class PaymentReportService {
       zlib: { level: 9 }, // Maximum compression
     });
 
-    // Generate invoices for each payment and add to zip
-    const invoicePromises = payments.map(async (item: any) => {
-      try {
-        const payment = (this.memberPaymentService as any).convertToModel(item);
-        const memberId = payment.memberId;
-        const paymentId = payment.memberPaymentId;
+    // Generate invoices sequentially in batches to avoid Puppeteer OOM
+    const BATCH_SIZE = 3;
+    for (let i = 0; i < payments.length; i += BATCH_SIZE) {
+      const batch = payments.slice(i, i + BATCH_SIZE);
+      await Promise.all(
+        batch.map(async (item: any) => {
+          try {
+            const payment = (this.memberPaymentService as any).convertToModel(item);
+            const memberId = payment.memberId;
+            const paymentId = payment.memberPaymentId;
 
-        // Generate invoice PDF
-        const invoiceFile = await this.memberPaymentService.generateInvoicePDF(memberId, paymentId);
+            // Generate invoice PDF
+            const invoiceFile = await this.memberPaymentService.generateInvoicePDF(memberId, paymentId);
 
-        // Convert base64 buffer to Buffer
-        const pdfBuffer = Buffer.from(invoiceFile.buffer, 'base64');
+            // Convert base64 buffer to Buffer
+            const pdfBuffer = Buffer.from(invoiceFile.buffer, 'base64');
 
-        // Add to zip with a clean filename
-        const memberName = `${payment.memberName || 'Member'}_${memberId}`.replace(/[^a-zA-Z0-9_]/g, '_');
-        const fileName = `Invoice_${memberName}_${paymentId}.pdf`;
-        archive.append(pdfBuffer, { name: fileName });
-      } catch (error) {
-        this.logger.error(
-          `Failed to generate invoice for payment ${item.memberPaymentId}`,
-          { error },
-        );
-        // Continue with other invoices even if one fails
-      }
-    });
-
-    // Wait for all invoices to be added to the archive
-    await Promise.all(invoicePromises);
+            // Add to zip with a clean filename
+            const memberName = `${payment.memberName || 'Member'}_${memberId}`.replace(/[^a-zA-Z0-9_]/g, '_');
+            const fileName = `Invoice_${memberName}_${paymentId}.pdf`;
+            archive.append(pdfBuffer, { name: fileName });
+          } catch (error) {
+            this.logger.error(
+              `Failed to generate invoice for payment ${item.memberPaymentId}`,
+              { error },
+            );
+            // Continue with other invoices even if one fails
+          }
+        }),
+      );
+    }
 
     // Finalize the archive
     await archive.finalize();

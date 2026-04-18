@@ -68,7 +68,11 @@ export class AuthInterceptor implements HttpInterceptor {
                 },
               });
               return next.handle(retryRequest);
-            })
+            }),
+            catchError((refreshError) => {
+              this.auth.logout();
+              return throwError(() => refreshError);
+            }),
           );
         }
         return throwError(() => err);

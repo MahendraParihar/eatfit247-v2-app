@@ -60,21 +60,27 @@ export class CryptoUtil {
    * are not broken.
    */
   static decryptData(encryptedData: string): string {
-    const decoded = Buffer.from(encryptedData, 'base64').toString('utf8');
+    try {
+      const decoded = Buffer.from(encryptedData, 'base64').toString('utf8');
 
-    if (decoded.startsWith(`${CIPHER_VERSION}:`)) {
-      const [, ivHex, cipherText] = decoded.split(':');
-      const decipher = crypto.createDecipheriv(
-        ENCRYPTION_METHOD,
-        this.key,
-        new Uint8Array(Buffer.from(ivHex, 'hex')),
+      if (decoded.startsWith(`${CIPHER_VERSION}:`)) {
+        const [, ivHex, cipherText] = decoded.split(':');
+        const decipher = crypto.createDecipheriv(
+          ENCRYPTION_METHOD,
+          this.key,
+          new Uint8Array(Buffer.from(ivHex, 'hex')),
+        );
+        return decipher.update(cipherText, 'hex', 'utf8') + decipher.final('utf8');
+      }
+
+      // Legacy format — static IV
+      const decipher = crypto.createDecipheriv(ENCRYPTION_METHOD, this.key, this.legacyIV);
+      return decipher.update(decoded, 'hex', 'utf8') + decipher.final('utf8');
+    } catch (error) {
+      throw new Error(
+        `Failed to decrypt data: ${error instanceof Error ? error.message : String(error)}`,
       );
-      return decipher.update(cipherText, 'hex', 'utf8') + decipher.final('utf8');
     }
-
-    // Legacy format — static IV
-    const decipher = crypto.createDecipheriv(ENCRYPTION_METHOD, this.key, this.legacyIV);
-    return decipher.update(decoded, 'hex', 'utf8') + decipher.final('utf8');
   }
 
   /**
@@ -93,21 +99,27 @@ export class CryptoUtil {
    * Supports both v2 (random IV) and legacy (static IV) formats.
    */
   static decryptApiData(encryptedData: string): string {
-    const decoded = Buffer.from(encryptedData, 'base64').toString('utf8');
+    try {
+      const decoded = Buffer.from(encryptedData, 'base64').toString('utf8');
 
-    if (decoded.startsWith(`${CIPHER_VERSION}:`)) {
-      const [, ivHex, cipherText] = decoded.split(':');
-      const decipher = crypto.createDecipheriv(
-        ENCRYPTION_METHOD,
-        this.apiKey,
-        new Uint8Array(Buffer.from(ivHex, 'hex')),
+      if (decoded.startsWith(`${CIPHER_VERSION}:`)) {
+        const [, ivHex, cipherText] = decoded.split(':');
+        const decipher = crypto.createDecipheriv(
+          ENCRYPTION_METHOD,
+          this.apiKey,
+          new Uint8Array(Buffer.from(ivHex, 'hex')),
+        );
+        return decipher.update(cipherText, 'hex', 'utf8') + decipher.final('utf8');
+      }
+
+      // Legacy format — static IV
+      const decipher = crypto.createDecipheriv(ENCRYPTION_METHOD, this.apiKey, this.legacyApiIV);
+      return decipher.update(decoded, 'hex', 'utf8') + decipher.final('utf8');
+    } catch (error) {
+      throw new Error(
+        `Failed to decrypt API data: ${error instanceof Error ? error.message : String(error)}`,
       );
-      return decipher.update(cipherText, 'hex', 'utf8') + decipher.final('utf8');
     }
-
-    // Legacy format — static IV
-    const decipher = crypto.createDecipheriv(ENCRYPTION_METHOD, this.apiKey, this.legacyApiIV);
-    return decipher.update(decoded, 'hex', 'utf8') + decipher.final('utf8');
   }
 
   static async generateHash(password: string, round = 12): Promise<string> {

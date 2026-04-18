@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
 import { BannerComponent } from '@shared-ui';
-import { BannerService } from '../../../core/services';
+import { BannerService, SEOService } from '../../../core/services';
 import { BannerForEnum } from '@eatfit247-shared-library/enum';
 import { IPublicBanner } from '@eatfit247-shared-library/core';
 
@@ -14,9 +14,11 @@ import { IPublicBanner } from '@eatfit247-shared-library/core';
 })
 export class KnowYourCurrentImmunityScoreComponent implements OnInit {
   private readonly bannerService = inject(BannerService);
+  private readonly seoService = inject(SEOService);
   banners: IPublicBanner[] = [];
 
   async ngOnInit(): Promise<void> {
+    this.seoService.updateSEO({ title: 'Know Your Current Immunity Score', description: 'Assess your immunity level with our interactive quiz and get personalized tips to boost your immune system.', url: '/know-your-current-immunity-score' });
     await this.loadBannerData();
   }
 

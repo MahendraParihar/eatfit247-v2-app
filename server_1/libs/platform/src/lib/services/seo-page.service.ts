@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import { IBasicSearch, ICreateSeoPageDto, ISeoPageData, ITableList, IUpdateSeoPageDto } from '@eatfit247-shared-lib';
 import { TableListSortUtil } from '@server_1/core';
 import { Op } from 'sequelize';
-import { SeoPageModel } from '../database/models/mst-seo-page.model';
+import { SeoPageModel } from '../database/models';
 
 @Injectable()
 export class SeoPageService {
@@ -47,6 +47,7 @@ export class SeoPageService {
     const rows = await this.seoPageRepository.scope('list').findAll({
       where: { active: true },
       order: [['url', 'ASC']],
+      limit: 500,
       raw: true,
       nest: true,
     });

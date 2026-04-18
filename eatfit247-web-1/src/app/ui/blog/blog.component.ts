@@ -1,7 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, PLATFORM_ID, signal } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
-import { BannerService, BlogService, JsonLdService } from '../../core/services';
+import { BannerService, BlogService, JsonLdService, SEOService } from '../../core/services';
 import { BannerComponent, CardComponent, EmptyStateComponent, ICardData, LoaderComponent } from '@shared-ui';
 import { BannerForEnum } from '@eatfit247-shared-library/enum';
 import { IPublicBanner } from '@eatfit247-shared-library/core';
@@ -24,6 +25,8 @@ export class BlogComponent implements OnInit {
   private readonly blogService = inject(BlogService);
   private readonly bannerService = inject(BannerService);
   private readonly jsonLdService = inject(JsonLdService);
+  private readonly seoService = inject(SEOService);
+  private readonly platformId = inject(PLATFORM_ID);
   readonly blogs = signal<ICardData[]>([]);
   readonly loading = signal(false);
   readonly totalBlogs = signal(0);
@@ -32,6 +35,7 @@ export class BlogComponent implements OnInit {
   readonly banners = signal<IPublicBanner[]>([]);
 
   ngOnInit(): void {
+    this.seoService.updateSEO({ title: 'Health & Nutrition Blog', description: 'Discover nutrition tips, healthy recipes, and wellness insights from EatFit247 experts.', url: '/blog' });
     void this.loadBannerData();
     void this.loadBlogs();
   }
@@ -52,11 +56,22 @@ export class BlogComponent implements OnInit {
         // Inject ItemList JSON-LD for blog listing
         this.jsonLdService.setPageSchema({
           '@type': 'ItemList',
-          itemListElement: response.tableData.slice(0, 10).map((blog, i) => ({
-            '@type': 'ListItem',
-            position: i + 1,
-            url: `https://eatfit24by7.com/blog/${blog.seo?.url || blog.title?.toLowerCase().replace(/\s+/g, '-')}`,
-          })),
+          name: 'EatFit247 Blog Articles',
+          itemListElement: response.tableData.slice(0, 10).map((blog: any, i: number) => {
+            const slug = blog.seo?.url || blog.title?.toLowerCase().replace(/\s+/g, '-');
+            const image = blog.imagePath?.[0]?.webUrl;
+            return {
+              '@type': 'ListItem',
+              position: i + 1,
+              item: {
+                '@type': 'BlogPosting',
+                headline: blog.title,
+                url: `https://eatfit24by7.com/blog/${slug}`,
+                ...(image ? { image } : {}),
+                ...(blog.writtenAt ? { datePublished: new Date(blog.writtenAt).toISOString() } : {}),
+              },
+            };
+          }),
         } as Record<string, unknown>);
       } else {
         this.blogs.set([]);
@@ -95,7 +110,9 @@ export class BlogComponent implements OnInit {
     this.pageSize.set(event.pageSize);
     void this.loadBlogs();
     // Scroll to top when page changes
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (isPlatformBrowser(this.platformId)) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   }
 }
 

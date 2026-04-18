@@ -1,5 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, PLATFORM_ID, signal } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { Subject, takeUntil } from 'rxjs';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { BlogService, JsonLdService, SEOService } from '../../core/services';
@@ -41,12 +43,14 @@ interface IBlogDetails {
   templateUrl: './blog-detail.component.html',
   styleUrl: './blog-detail.component.scss'
 })
-export class BlogDetailsComponent implements OnInit {
+export class BlogDetailsComponent implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
   private readonly blogService = inject(BlogService);
   private readonly seoService = inject(SEOService);
   private readonly jsonLdService = inject(JsonLdService);
   private readonly sanitizer = inject(DomSanitizer);
+  private readonly platformId = inject(PLATFORM_ID);
+  private destroy$ = new Subject<void>();
   blog: IBlogDetails | null = null;
   relatedArticles: ICardData[] = [];
   loading = signal(true);
@@ -89,7 +93,7 @@ export class BlogDetailsComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.route.paramMap.subscribe((params) => {
+    this.route.paramMap.pipe(takeUntil(this.destroy$)).subscribe((params) => {
       const slug = params.get('slug');
       if (slug) {
         this.loadBlogDetails(slug);
@@ -125,6 +129,7 @@ export class BlogDetailsComponent implements OnInit {
           '@type': 'BlogPosting',
           headline: this.blog.title,
           description: this.blog.excerpt,
+          articleBody: this.blog.contentHtml?.replace(/<[^>]*>/g, '').substring(0, 5000),
           image: this.blog.imageUrl,
           datePublished: this.blog.publishedAt?.toISOString(),
           author: { '@type': 'Person', name: 'Shweta Shah' },
@@ -289,11 +294,16 @@ export class BlogDetailsComponent implements OnInit {
     return `${day}${getOrdinal(day)} ${month}, ${year}`;
   }
 
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
   /**
    * Handle native share where available, falls back to copying URL/opening links.
    */
   async shareArticle(): Promise<void> {
-    if (!this.blog) {
+    if (!this.blog || !isPlatformBrowser(this.platformId)) {
       return;
     }
     const shareUrl = `${window.location.origin}/blog/${this.blog.slug}`;
@@ -327,7 +337,7 @@ export class BlogDetailsComponent implements OnInit {
   getShareLink(
     platform: 'facebook' | 'instagram' | 'pinterest' | 'linkedin' | 'telegram'
   ): string {
-    if (!this.blog) {
+    if (!this.blog || !isPlatformBrowser(this.platformId)) {
       return '#';
     }
     const url = encodeURIComponent(

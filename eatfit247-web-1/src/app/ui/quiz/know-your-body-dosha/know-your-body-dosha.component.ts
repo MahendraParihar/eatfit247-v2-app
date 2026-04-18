@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
 import { BannerComponent } from '@shared-ui';
 import { BannerService } from '../../../core/services/banner.service';
+import { SEOService } from '../../../core/services';
 import { BannerForEnum } from '@eatfit247-shared-library/enum';
 import { IPublicBanner } from '@eatfit247-shared-library/core';
 
@@ -14,9 +15,11 @@ import { IPublicBanner } from '@eatfit247-shared-library/core';
 })
 export class KnowYourBodyDoshaComponent implements OnInit {
   private readonly bannerService = inject(BannerService);
+  private readonly seoService = inject(SEOService);
   banners: IPublicBanner[] = [];
 
   async ngOnInit(): Promise<void> {
+    this.seoService.updateSEO({ title: 'Know Your Body Dosha', description: 'Discover your Ayurvedic body type with our interactive dosha quiz and get personalized nutrition recommendations.', url: '/know-your-body-dosha' });
     await this.loadBannerData();
   }
 

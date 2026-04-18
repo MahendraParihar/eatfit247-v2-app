@@ -7,7 +7,7 @@ import { BannerService } from '../../core/services/banner.service';
 import { BannerForEnum } from '@eatfit247-shared-library/enum';
 import { IPublicBanner } from '@eatfit247-shared-library/core';
 import { CommonProgramComponent } from '../common-program/common-program.component';
-import { JsonLdService } from '../../core/services';
+import { JsonLdService, SEOService } from '../../core/services';
 
 @Component({
   standalone: true,
@@ -19,6 +19,7 @@ import { JsonLdService } from '../../core/services';
 export class OurProgramsComponent implements OnInit {
   private readonly bannerService = inject(BannerService);
   private readonly jsonLdService = inject(JsonLdService);
+  private readonly seoService = inject(SEOService);
   banners: IPublicBanner[] = [];
 
   readonly howItWorksSteps = [
@@ -51,6 +52,7 @@ export class OurProgramsComponent implements OnInit {
   ];
 
   async ngOnInit(): Promise<void> {
+    this.seoService.updateSEO({ title: 'Our Nutrition & Wellness Programs', description: 'Explore EatFit247 personalized nutrition programs for weight management, detox, PCOS, and holistic wellness.', url: '/our-programs' });
     await this.loadBannerData();
     this.jsonLdService.setPageSchema(
       this.jsonLdService.buildBreadcrumb([

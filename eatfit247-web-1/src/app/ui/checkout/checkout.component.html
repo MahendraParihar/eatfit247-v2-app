@@ -348,11 +348,11 @@
 
 <!-- Payment Modal -->
 @if (showPaymentModal) {
-    <div class="payment-modal-overlay" (click)="showPaymentModal = false">
+    <div class="payment-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="payment-modal-title" (click)="showPaymentModal = false">
         <div class="payment-modal-content" (click)="$event.stopPropagation()">
             <div class="payment-modal-header">
-                <h3>Processing Payment</h3>
-                <button class="close-btn" (click)="showPaymentModal = false" [disabled]="processingPayment">
+                <h3 id="payment-modal-title">Processing Payment</h3>
+                <button type="button" class="close-btn" (click)="showPaymentModal = false" [disabled]="processingPayment" aria-label="Close payment modal">
                     <mat-icon>close</mat-icon>
                 </button>
             </div>

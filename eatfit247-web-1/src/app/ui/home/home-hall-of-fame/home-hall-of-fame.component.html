@@ -13,12 +13,13 @@
     <div class="left-btn">
       <button
         (click)="prev()"
-        matMiniFab>
+        matMiniFab
+        aria-label="Previous story">
         <mat-icon>arrow_back</mat-icon>
       </button>
     </div>
     <div class="grid-section">
-      <img src="{{getStoryImage(stories[currentIndex])}}" alt="Hall of Fame" />
+      <img src="{{getStoryImage(stories[currentIndex])}}" [alt]="stories[currentIndex].name + ' — Success Story'" />
       <div class="content">
         <h5 class="heading-5">{{ stories[currentIndex].name }}</h5>
         <p class="body-b6" [innerHTML]="stories[currentIndex].description"></p>
@@ -27,7 +28,8 @@
     <div class="right-btn">
       <button
         (click)="next()"
-        matMiniFab>
+        matMiniFab
+        aria-label="Next story">
         <mat-icon>arrow_forward</mat-icon>
       </button>
     </div>

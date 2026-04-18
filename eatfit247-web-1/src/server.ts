@@ -34,6 +34,21 @@ const STATIC_URLS: { loc: string; changefreq: string; priority: string }[] = [
   { loc: '/privacy-policy', changefreq: 'yearly', priority: '0.3' },
 ];
 
+/** Known route prefixes — requests not matching these get a 404 status */
+const KNOWN_ROUTES = new Set([
+  '/', '/about-us', '/about-shweta-shah', '/our-programs', '/success-stories',
+  '/blog', '/press-and-media', '/product', '/faq', '/contact-us',
+  '/terms-and-conditions', '/privacy-policy', '/checkout', '/checkout/success',
+  '/know-your-body-dosha', '/know-your-current-immunity-score',
+]);
+
+function isKnownRoute(url: string): boolean {
+  const path = url.split('?')[0];
+  if (KNOWN_ROUTES.has(path)) return true;
+  // Check dynamic route prefixes
+  return path.startsWith('/our-programs/') || path.startsWith('/blog/') || path.startsWith('/product/');
+}
+
 function buildSitemapXml(urls: { loc: string; lastmod?: string; changefreq: string; priority: string }[]): string {
   const today = new Date().toISOString().split('T')[0];
   const entries = urls
@@ -121,9 +136,17 @@ app.use(
 app.use('/**', (req, res, next) => {
   angularApp
     .handle(req)
-    .then((response) =>
-      response ? writeResponseToNodeResponse(response, res) : next(),
-    )
+    .then((response) => {
+      if (response) {
+        // Set 404 status for not-found pages
+        if (req.originalUrl && !isKnownRoute(req.originalUrl)) {
+          res.status(404);
+        }
+        writeResponseToNodeResponse(response, res);
+      } else {
+        next();
+      }
+    })
     .catch(next);
 });
 

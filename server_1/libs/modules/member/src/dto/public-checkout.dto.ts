@@ -16,6 +16,7 @@ import {
   IMemberProductOrderItemBasic,
   InputLengthEnum,
   PaymentSourceEnum,
+  PaymentStatusEnum,
 } from '@eatfit247-shared-lib';
 
 export class CreatePublicCheckoutPaymentLinkDto implements ICreatePaymentLinkRequest {
@@ -60,8 +61,8 @@ export class CreatePublicCheckoutOrderDto implements IManageMemberProduct {
   @IsDateString()
   paymentDate: Date;
   @IsNotEmpty()
-  @IsNumber()
-  paymentStatusId: number;
+  @IsEnum(PaymentStatusEnum)
+  paymentStatusId: PaymentStatusEnum;
   @IsNotEmpty()
   @IsString()
   @MaxLength(InputLengthEnum.CHAR_10)
@@ -127,8 +128,8 @@ export class CreatePublicCheckoutPlanOrderDto implements IManageMemberPayment {
   @IsDateString()
   paymentDate: Date;
   @IsNotEmpty()
-  @IsNumber()
-  paymentStatusId: number;
+  @IsEnum(PaymentStatusEnum)
+  paymentStatusId: PaymentStatusEnum;
   @IsOptional()
   @IsNumber()
   programId?: number;

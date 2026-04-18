@@ -3,9 +3,10 @@ import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
+import { MatExpansionModule } from '@angular/material/expansion';
 import { MatIconModule } from '@angular/material/icon';
 import { BannerComponent, LoaderComponent } from '@shared-ui';
-import { BannerService, JsonLdService, SEOService } from '../../core/services';
+import { BannerService, FaqService, JsonLdService, SEOService } from '../../core/services';
 import { ProductService } from '../../core/services/product.service';
 import {
   BannerForEnum,
@@ -18,6 +19,7 @@ import {
   IProjectConsumptionInstructionSection,
   IProjectStarEndorsedSection,
   IPublicBanner,
+  IPublicFaq,
   IPublicProduct,
 } from '@eatfit247-shared-library';
 
@@ -38,6 +40,7 @@ interface ISizeOption extends IProductFee {
     BannerComponent,
     LoaderComponent,
     MatButtonModule,
+    MatExpansionModule,
     MatIconModule,
   ],
   templateUrl: './product.component.html',
@@ -45,6 +48,7 @@ interface ISizeOption extends IProductFee {
 })
 export class ProductComponent implements OnInit, OnDestroy {
   private readonly bannerService = inject(BannerService);
+  private readonly faqService = inject(FaqService);
   private readonly productService = inject(ProductService);
   private readonly router = inject(Router);
   private readonly seoService = inject(SEOService);
@@ -72,6 +76,8 @@ export class ProductComponent implements OnInit, OnDestroy {
   private featureSliderTimer: any = null;
   private readonly featureSliderInterval = 5000; // 5 seconds
   productVideos: string[] = [];
+  // FAQ data
+  productFaqs: IPublicFaq[] = [];
 
   get sizes(): ISizeOption[] {
     const sizeOptions: ISizeOption[] = [];
@@ -236,6 +242,7 @@ export class ProductComponent implements OnInit, OnDestroy {
   async ngOnInit(): Promise<void> {
     await this.loadBannerData();
     await this.loadProductData();
+    await this.loadFaqData();
   }
 
   ngOnDestroy(): void {
@@ -631,6 +638,19 @@ export class ProductComponent implements OnInit, OnDestroy {
   onFeatureSliderLeave(): void {
     if (this.productImages1.length > 1) {
       this.startFeatureSliderAutoSwitch();
+    }
+  }
+
+  /**
+   * Load FAQ data for product page (category id = 9)
+   */
+  private async loadFaqData(): Promise<void> {
+    try {
+      this.productFaqs = await this.faqService.getFaqsByCategoryId(9);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to load FAQ data:', error);
+      this.productFaqs = [];
     }
   }
 

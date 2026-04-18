@@ -24,9 +24,13 @@ $theme: mat.define-theme((
 // Apply the theme
 html {
   @include mat.all-component-themes($theme);
-  
+
   // Set Material 3 form field filled container color to use custom surface page color
   --mat-form-field-filled-container-color: var(--color-surface-page);
+
+  // White background for expansion panels and menus in light theme
+  --mat-expansion-container-background-color: var(--color-surface-card);
+  --mat-menu-container-color: var(--color-surface-card);
 }
 
 // Dark theme support

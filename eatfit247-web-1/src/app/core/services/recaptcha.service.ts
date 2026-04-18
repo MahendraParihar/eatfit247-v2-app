@@ -75,13 +75,20 @@ export class RecaptchaService {
       return;
     }
     if (this.scriptLoading) {
-      return new Promise((resolve) => {
+      return new Promise((resolve, reject) => {
         const checkInterval = setInterval(() => {
           if (this.scriptLoaded) {
             clearInterval(checkInterval);
             resolve();
           }
         }, 100);
+        // Prevent infinite polling if script never loads
+        setTimeout(() => {
+          clearInterval(checkInterval);
+          if (!this.scriptLoaded) {
+            reject(new Error('reCAPTCHA script loading timeout'));
+          }
+        }, 10000);
       });
     }
     this.scriptLoading = true;
@@ -129,13 +136,13 @@ export class RecaptchaService {
               action
             });
             resolve(token);
-          } catch (error: any) {
-            reject(new Error(`Failed to execute reCAPTCHA: ${error.message}`));
+          } catch (error: unknown) {
+            reject(new Error(`Failed to execute reCAPTCHA: ${error instanceof Error ? error.message : String(error)}`));
           }
         });
       });
-    } catch (error: any) {
-      throw new Error(`Failed to get reCAPTCHA token: ${error.message}`);
+    } catch (error: unknown) {
+      throw new Error(`Failed to get reCAPTCHA token: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 

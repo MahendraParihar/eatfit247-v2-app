@@ -83,14 +83,17 @@ export class EmailNotificationService {
         }
       }
       // Replace {{variable}} placeholders in subject and body if replacements provided
-      if (params.replacements && subject && typeof subject === 'string') {
-        Object.keys(params.replacements).forEach((key) => {
-          const regex = new RegExp(`{{${key}}}`, 'g');
-          subject = subject.replace(regex, String(params.replacements![key]));
-          if (body && typeof body === 'string') {
-            body = body.replace(regex, String(params.replacements![key]));
-          }
-        });
+      if (params.replacements && (subject || body)) {
+        const replacements = params.replacements;
+        const pattern = /\{\{(\w+)\}\}/g;
+        const replacer = (_match: string, key: string) =>
+          key in replacements ? String(replacements[key]) : _match;
+        if (subject && typeof subject === 'string') {
+          subject = subject.replace(pattern, replacer);
+        }
+        if (body && typeof body === 'string') {
+          body = body.replace(pattern, replacer);
+        }
       }
       // Prepare recipients
       const recipients = Array.isArray(params.to) ? params.to : [params.to];
