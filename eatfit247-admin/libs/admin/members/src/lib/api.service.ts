@@ -703,11 +703,12 @@ export class MembersApiService extends ApiBaseService {
 
   async updateDietPlanStatus(
     memberId: number,
-    dietPlanId: number
+    dietPlanId: number,
+    statusId?: number
   ): Promise<void> {
     await this.httpService.put<void>(
       `${this.endpoint}/${memberId}/diet-plan/update-status/${dietPlanId}`,
-      null
+      { statusId }
     );
   }
 

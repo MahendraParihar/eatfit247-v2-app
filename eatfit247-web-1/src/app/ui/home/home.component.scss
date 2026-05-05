@@ -1,5 +1,5 @@
 @use '../../../styles/spacing-tokens';
-@use '../../../styles/breakpoints';
+@use '../../../styles/breakpoints' as *;
 
 .home-page__section {
   display: flex;
@@ -29,7 +29,7 @@
   border-radius: 24px;
   padding: var(--space-7) var(--space-6);
 
-  @media (min-width: 768px) {
+  @include respond(md) {
     flex-direction: row;
     align-items: stretch;
   }
@@ -81,7 +81,7 @@
   height: 1px;
   background-color: var(--color-divider);
 
-  @media (min-width: 768px) {
+  @include respond(md) {
     width: 1px;
     height: auto;
   }
@@ -94,14 +94,14 @@
 }
 
 .home-trust-bar__inner {
-  max-width: 1200px;
+  max-width: var(--container-max-width-lg, 1200px);
   margin-inline: auto;
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: var(--space-4);
   text-align: center;
 
-  @media (min-width: 640px) {
+  @include respond(sm) {
     grid-template-columns: repeat(4, 1fr);
   }
 }

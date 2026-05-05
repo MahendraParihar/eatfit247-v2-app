@@ -7,12 +7,13 @@ import { BannerComponent, LoaderComponent, SocialSiteItem } from '@shared-ui';
 import { IPublicBanner, IPublicReferrer } from '@eatfit247-shared-library/core';
 import { buildMediaUrl } from '../../../core/utils/media-url.util';
 import { MatIcon } from '@angular/material/icon';
-import { CommonBlogComponent } from '../../common-blogs/common-blog.component';
+import { MatButtonModule } from '@angular/material/button';
+import { RouterLink } from '@angular/router';
 
 @Component({
   standalone: true,
   selector: 'app-about-eatfit',
-  imports: [CommonModule, MatIcon, BannerComponent, CommonBlogComponent, LoaderComponent],
+  imports: [CommonModule, MatIcon, MatButtonModule, RouterLink, BannerComponent, LoaderComponent],
   templateUrl: './about-eatfit.component.html',
   styleUrl: './about-eatfit.component.scss'
 })
@@ -29,8 +30,8 @@ export class AboutEatfitComponent implements OnInit {
   partners: IPublicReferrer[] = [];
   // Statistics for a Knowledge & Experience section
   statistics = [
-    { number: '15+', label: 'Years of experience' },
-    { number: '2,000+', label: 'Happy clients' },
+    { number: '24+', label: 'Years of experience' },
+    { number: '3,000+', label: 'Happy clients' },
     { number: '100%', label: 'Satisfaction' },
     { number: '800+', label: 'Healthy recipes' }
   ];
@@ -84,7 +85,7 @@ export class AboutEatfitComponent implements OnInit {
     try {
       await Promise.all([this.loadBannerData(), this.loadPartners()]);
       this.setYoutubeVideo(
-        'https://www.youtube.com/embed/CDnrMp6LueA?feature=oembed'
+        'https://www.youtube.com/watch?v=YoHc6piJjt4'
       );
     } finally {
       this.loading.set(false);

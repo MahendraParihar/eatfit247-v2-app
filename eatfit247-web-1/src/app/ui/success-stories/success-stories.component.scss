@@ -1,3 +1,5 @@
+@use '../../../styles/breakpoints' as *;
+
 // Hall of Fame
 .section-header {
   margin-bottom: 60px;
@@ -16,28 +18,39 @@
   &::before {
     content: '';
     position: absolute;
-    left: 50%;
+    left: 16px;
     top: 0;
     bottom: 0;
     width: 2px;
     background: var(--color-border);
     transform: translateX(-50%);
+
+    @include respond(md) {
+      left: 50%;
+    }
   }
 }
 
+// Mobile: single column stacked layout
 .timeline-entry {
   display: grid;
-  grid-template-columns: 1fr 48px 1fr;
+  grid-template-columns: 1fr;
   gap: 0;
   align-items: center;
   position: relative;
+  padding-left: 40px;
+
+  @include respond(md) {
+    grid-template-columns: 1fr 48px 1fr;
+    padding-left: 0;
+  }
 }
 
 .timeline-year {
   position: absolute;
-  left: 50%;
+  left: 0;
   top: -24px;
-  transform: translateX(-50%);
+  transform: none;
   background: var(--color-primary);
   color: var(--color-surface-white);
   font-size: 12px;
@@ -45,11 +58,16 @@
   padding: 4px 12px;
   border-radius: 12px;
   z-index: 2;
+
+  @include respond(md) {
+    left: 50%;
+    transform: translateX(-50%);
+  }
 }
 
 .timeline-line {
   width: 48px;
-  display: flex;
+  display: none;
   align-items: center;
   justify-content: center;
   position: relative;
@@ -64,10 +82,22 @@
     box-shadow: 0 0 0 2px var(--color-primary);
     z-index: 2;
   }
+
+  @include respond(md) {
+    display: flex;
+  }
 }
 
 .entry-image {
-  padding: 16px;
+  padding: 0;
+  order: -1;
+  margin-bottom: var(--space-3);
+
+  @include respond(md) {
+    padding: 16px;
+    order: unset;
+    margin-bottom: 0;
+  }
 }
 
 .entry-img {
@@ -75,6 +105,11 @@
   border-radius: 12px;
   object-fit: cover;
   aspect-ratio: 4/3;
+  max-height: 200px;
+
+  @include respond(md) {
+    max-height: none;
+  }
 }
 
 .entry-content {
@@ -107,39 +142,19 @@
   margin: 0;
 }
 
-@media (max-width: 768px) {
-  .stories-hero-grid {
-    grid-template-columns: 1fr;
-  }
-  .stories-hero-image {
-    display: none;
-  }
+// Hero grid — mobile: single col, hide image
+.stories-hero-grid {
+  grid-template-columns: 1fr;
 
-  .timeline::before {
-    left: 16px;
+  @include respond(md) {
+    grid-template-columns: 1fr 1fr;
   }
+}
 
-  .timeline-entry {
-    grid-template-columns: 1fr;
-    padding-left: 40px;
-  }
+.stories-hero-image {
+  display: none;
 
-  .timeline-year {
-    left: 0;
-    transform: none;
-  }
-  .timeline-line {
-    display: none;
-  }
-
-  .entry-image {
-    order: -1;
-    padding: 0;
-    margin-bottom: var(--space-3);
-  }
-
-  .entry-img {
-    max-height: 200px;
-    width: 100%;
+  @include respond(md) {
+    display: block;
   }
 }

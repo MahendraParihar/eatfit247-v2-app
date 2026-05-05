@@ -1,3 +1,5 @@
+@use '../../../styles/breakpoints' as *;
+
 .contact-us__container {
 
 }
@@ -45,10 +47,13 @@
 
 .contact-us__cards {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  flex-wrap: wrap;
+  grid-template-columns: 1fr;
   gap: var(--space-3);
   margin-bottom: var(--space-4);
+
+  @include respond(sm) {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
 .contact-us__card {
@@ -118,8 +123,12 @@
 
 .contact-us__grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: 1fr;
   gap: var(--space-3);
+
+  @include respond(md) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 .contact-us__field--textarea textarea {

@@ -70,7 +70,7 @@ export class AuthService extends ApiBaseService {
           if (decoded) {
             // Create minimal user object from token
             const user: IAuthUser = {
-              adminId: decoded.adminUserId || decoded.adminId,
+              adminId: Number(decoded.adminUserId || decoded.adminId),
               emailId: decoded.emailId || '',
               roleKeys: [],
               franchiseIds: [],

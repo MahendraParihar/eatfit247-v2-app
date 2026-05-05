@@ -138,6 +138,14 @@
   }
 }
 
+.about-eatfit__card-tagline {
+  margin: 0;
+  font-size: var(--font-body-b2-size);
+  line-height: var(--font-body-b2-line-height);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary);
+}
+
 .about-eatfit__card-list {
   margin: 0;
   padding-left: var(--space-5);
@@ -227,7 +235,28 @@
   text-align: center;
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: var(--space-3);
+}
+
+.about-eatfit__join-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding-inline: var(--button-padding-x);
+  padding-block: var(--button-padding-y);
+  border-radius: var(--button-border-radius);
+  border: none;
+  background-color: var(--color-primary);
+  color: var(--color-surface-white);
+  font-size: var(--font-button-size);
+  font-weight: var(--font-button-weight);
+  text-decoration: none;
+  cursor: pointer;
+
+  &:hover {
+    background-color: var(--color-primary-hover);
+  }
 }
 
 // Blog

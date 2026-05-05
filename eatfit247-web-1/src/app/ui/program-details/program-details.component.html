@@ -77,27 +77,58 @@
     <section class="program-details__section" aria-labelledby="pricing-title">
       <h2 id="pricing-title" class="program-details__section-title">Choose Your Plan</h2>
       <div class="program-details__pricing-grid">
-        @for (price of prog.prices; track price.programPlanId) {
-          <div class="program-details__price-card">
-            <div class="program-details__price-card-header">
-              <p class="program-details__price-label" [innerHTML]="price.label"></p>
-              @if (price.note) {
-                <span class="program-details__price-badge">{{ price.note }}</span>
-              }
+        <div class="pricing-card">
+          <div class="pricing-card__top-bar"></div>
+          <div class="pricing-card__body">
+            <div class="pricing-card__header">
+              <h3 class="pricing-card__name">{{ prog.name }}</h3>
+              <p class="pricing-card__subtitle">{{ prog.subtitle }}</p>
             </div>
-            <p class="program-details__price-amount">{{ price.value }}</p>
+
+            <div class="pricing-card__plan-selector">
+              <p class="pricing-card__plan-label">CHOOSE YOUR PLAN</p>
+              <div class="pricing-card__badges">
+                @for (p of prog.prices; track p.programPlanId) {
+                  <div class="pricing-card__badge-wrapper">
+                    <button
+                      type="button"
+                      class="pricing-card__badge"
+                      [class.pricing-card__badge--active]="p.programPlanId === selectedPlanId()"
+                      (click)="selectPlan(p.programPlanId)"
+                    >
+                      <span class="pricing-card__badge-count">{{ getPlanCount(p.label) }}</span>
+                      <span class="pricing-card__badge-unit">{{ getPlanUnit(p.label) }}</span>
+                    </button>
+                    @if (p.note) {
+                      <span class="pricing-card__badge-note">{{ p.note }}</span>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+
+            <div class="pricing-card__features">
+              <p class="pricing-card__features-title">WHAT'S INCLUDED</p>
+              <ul class="pricing-card__features-list">
+                @for (feature of prog.features; track feature) {
+                  <li class="pricing-card__feature-item">
+                    <span class="pricing-card__check" aria-hidden="true">✓</span>
+                    <span>{{ feature }}</span>
+                  </li>
+                }
+              </ul>
+            </div>
+
             <button
               type="button"
               mat-flat-button
-              color="primary"
-              class="primary-action-button program-details__book-btn"
-              (click)="bookNow(price.programPlanId)"
-              [attr.aria-label]="'Book ' + price.label + ' for ' + price.value"
+              class="pricing-card__book-btn"
+              (click)="bookNow()"
             >
-              Book Now
+              Book Consultation
             </button>
           </div>
-        }
+        </div>
       </div>
     </section>
 

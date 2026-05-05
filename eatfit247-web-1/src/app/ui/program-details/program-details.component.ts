@@ -14,9 +14,9 @@ const ALL_PROGRAMS: Program[] = [
     name: 'Exclusively with Shweta Shah',
     subtitle: 'Personalised journey with celebrity expert guidance',
     prices: [
-      { programPlanId: 263, label: '1 Session', value: '₹20,000', note: '' },
-      { programPlanId: 261, label: '6 Sessions', value: '₹67,500', note: 'Save ₹52,500' },
-      { programPlanId: 262, label: '8 Sessions', value: '₹90,000', note: 'Save ₹70,000' },
+      { programPlanId: 263, label: '1 Session', note: '' },
+      { programPlanId: 261, label: '6 Sessions', note: 'Save ₹52,500' },
+      { programPlanId: 262, label: '8 Sessions', note: 'Save ₹70,000' },
     ],
     features: [
       'One-on-one consultation with Shweta Shah',
@@ -31,8 +31,8 @@ const ALL_PROGRAMS: Program[] = [
     name: 'Plan with Chief Nutritionist',
     subtitle: '16 years of clinical nutrition experience',
     prices: [
-      { programPlanId: 239, label: '3 Sessions', value: '₹15,000', note: '' },
-      { programPlanId: 266, label: '6 Sessions', value: '₹30,000', note: 'Save ₹60,000' },
+      { programPlanId: 239, label: '3 Sessions', note: '' },
+      { programPlanId: 266, label: '6 Sessions', note: 'Save ₹60,000' },
     ],
     features: [
       'One-on-one consultation with a Chief Nutritionist',
@@ -47,7 +47,7 @@ const ALL_PROGRAMS: Program[] = [
     name: 'Plan with Shweta + Team',
     subtitle: 'Collaborative, comprehensive approach',
     prices: [
-      { programPlanId: 264, label: '1+7 Sessions', value: '₹55,000', note: '' },
+      { programPlanId: 264, label: '1+7 Sessions', note: '' },
     ],
     features: [
       'Initial consultation with Shweta Shah',
@@ -114,6 +114,7 @@ export class ProgramDetailsComponent implements OnInit {
 
   readonly loading = signal(true);
   readonly program = signal<Program | null>(null);
+  readonly selectedPlanId = signal<number>(0);
 
   readonly outcomes = OUTCOMES;
   readonly faqs = FAQS;
@@ -125,6 +126,7 @@ export class ProgramDetailsComponent implements OnInit {
     this.loading.set(false);
 
     if (found) {
+      this.selectedPlanId.set(found.prices[0].programPlanId);
       this.seoService.updateSEO({ title: found.name, description: found.subtitle, url: `/our-programs/${found.id}` });
       this.jsonLdService.setPageSchema([
         {
@@ -145,8 +147,20 @@ export class ProgramDetailsComponent implements OnInit {
     }
   }
 
-  bookNow(programPlanId: number): void {
-    this.router.navigate(['/checkout'], { queryParams: { plan: programPlanId } });
+  selectPlan(planId: number): void {
+    this.selectedPlanId.set(planId);
+  }
+
+  getPlanCount(label: string): string {
+    return label.split(' ')[0];
+  }
+
+  getPlanUnit(label: string): string {
+    return label.split(' ').slice(1).join(' ');
+  }
+
+  bookNow(): void {
+    this.router.navigate(['/checkout'], { queryParams: { plan: this.selectedPlanId() } });
   }
 
   goToPrograms(): void {

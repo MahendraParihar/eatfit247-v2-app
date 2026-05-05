@@ -1,5 +1,5 @@
 @use '../../../styles/spacing-tokens';
-@use '../../../styles/breakpoints';
+@use '../../../styles/breakpoints' as *;
 
 .our-programs-page {
   display: flex;
@@ -142,7 +142,7 @@
   list-style-type: disc;
 }
 
-@include breakpoints.respond(md) {
+@include respond(md) {
   .our-programs__card {
     flex: 1;
   }
@@ -161,7 +161,7 @@
   gap: var(--space-4);
   align-items: stretch;
 
-  @media (min-width: 768px) {
+  @include respond(md) {
     flex-direction: row;
     align-items: flex-start;
   }
@@ -217,7 +217,7 @@
   align-self: center;
   display: none;
 
-  @media (min-width: 768px) {
+  @include respond(md) {
     display: block;
     margin-top: 28px;
   }

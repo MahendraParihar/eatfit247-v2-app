@@ -24,47 +24,17 @@
 
         <div class="our-programs__pricing">
           @for (price of program.prices; track price.programPlanId || $index) {
-            <div
-              class="our-programs__price-row"
-            >
-              @if (price.label) {
-                <div
-                  class="our-programs__price-label"
-                  [innerHTML]="price.label"
-                >
-                </div>
+            <div class="our-programs__price-row">
+              <span class="our-programs__price-count">{{ getPlanCount(price.label) }}</span>
+              <span class="our-programs__price-unit">{{ getPlanUnit(price.label) }}</span>
+              @if (price.note) {
+                <span class="our-programs__price-note">{{ price.note }}</span>
               }
-              <div class="our-programs__session">
-                <div class="our-programs__price-value">
-                  <span class="our-programs__price-amount">
-                    {{ price.value }}
-                  </span>
-                  @if (price.note) {
-                    <span
-                      class="our-programs__price-note"
-                    >
-                      {{ price.note }}
-                    </span>
-                  }
-                </div>
-
-                @if (!showReadMoreBtn) {
-                  <button
-                    type="button"
-                    mat-flat-button
-                    (click)="buyNow(price.programPlanId)"
-                    color="primary"
-                    class="primary-action-button heading-3"
-                  >
-                    Book Now
-                  </button>
-                }
-              </div>
             </div>
           }
         </div>
 
-        @if (showFeature && program.features && program.features.length > 0) {
+        @if (program.features && program.features.length > 0) {
           <div class="our-programs__divider"></div>
 
           <div class="our-programs__card-section">
@@ -74,27 +44,23 @@
 
             <ul class="our-programs__feature-list">
               @for (feature of program.features; track feature) {
-                <li
-                  class="our-programs__feature-item"
-                >
-                  <span class="our-programs__feature-icon">
-                    ✓
-                  </span>
-                  <span class="our-programs__feature-text">
-                    {{ feature }}
-                  </span>
+                <li class="our-programs__feature-item">
+                  <span class="our-programs__feature-icon">✓</span>
+                  <span class="our-programs__feature-text">{{ feature }}</span>
                 </li>
               }
             </ul>
           </div>
         }
 
-        @if (showReadMoreBtn) {
-          <a [routerLink]="'our-programs'" class="card-read-more">
-            Learn More
-            <mat-icon class="card-read-more-icon">arrow_forward</mat-icon>
-          </a>
-        }
+        <a
+          href="https://wa.me/919876543210"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="our-programs__book-btn"
+        >
+          Book Consultation
+        </a>
       </article>
     }
   </div>

@@ -1,3 +1,5 @@
+@use '../../../styles/breakpoints' as *;
+
 .checkout-success-container {
   display: flex;
   justify-content: center;
@@ -384,81 +386,112 @@
   }
 }
 
-// Responsive design
-@media (max-width: 768px) {
-  .checkout-success-container {
-    padding: 1rem;
+// Responsive — mobile-first overrides for desktop
+.checkout-success-container {
+  padding: 1rem;
 
-    .success-content {
-      .success-header {
-        h1 {
-          font-size: 2rem;
-        }
+  .success-content {
+    .success-header h1 {
+      font-size: 2rem;
+
+      @include respond(md) {
+        font-size: 2.5rem;
+      }
+    }
+
+    .order-details-card .order-info-grid {
+      grid-template-columns: 1fr;
+
+      @include respond(md) {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      }
+    }
+
+    .order-items-card .order-items-list .order-item {
+      flex-direction: column;
+      gap: 0.5rem;
+
+      .item-total {
+        align-self: flex-end;
       }
 
-      .order-details-card {
-        .order-info-grid {
-          grid-template-columns: 1fr;
+      @include respond(md) {
+        flex-direction: row;
+        gap: 0;
+
+        .item-total {
+          align-self: auto;
         }
       }
+    }
 
-      .order-items-card {
-        .order-items-list {
-          .order-item {
-            flex-direction: column;
-            gap: 0.5rem;
+    .invoice-card .invoice-section {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 1.5rem;
 
-            .item-total {
-              align-self: flex-end;
-            }
+      .invoice-info {
+        .invoice-icon {
+          font-size: 36px;
+          width: 36px;
+          height: 36px;
+          flex-shrink: 0;
+
+          @include respond(md) {
+            font-size: 48px;
+            width: 48px;
+            height: 48px;
+          }
+        }
+
+        .invoice-text h3 {
+          font-size: 1.25rem;
+
+          @include respond(md) {
+            font-size: 1.5rem;
+          }
+        }
+
+        .invoice-text .invoice-message {
+          font-size: 0.9rem;
+
+          @include respond(md) {
+            font-size: 1rem;
           }
         }
       }
 
-      .invoice-card {
-        .invoice-section {
-          flex-direction: column;
-          align-items: stretch;
-          gap: 1.5rem;
+      button {
+        width: 100%;
 
-          .invoice-info {
-            .invoice-icon {
-              font-size: 36px;
-              width: 36px;
-              height: 36px;
-              flex-shrink: 0;
-            }
-
-            .invoice-text {
-              h3 {
-                font-size: 1.25rem;
-              }
-
-              .invoice-message {
-                font-size: 0.9rem;
-              }
-            }
-          }
-
-          button {
-            width: 100%;
-          }
+        @include respond(md) {
+          width: auto;
         }
       }
 
-      .contact-info-card {
-        .contact-info {
-          .contact-details {
-            .contact-item {
-              flex-direction: column;
-              align-items: flex-start;
-              gap: 0.75rem;
+      @include respond(md) {
+        flex-direction: row;
+        align-items: center;
+        gap: 2rem;
+      }
+    }
 
-              .contact-item-content {
-                width: 100%;
-              }
-            }
-          }
+    .contact-info-card .contact-info .contact-details .contact-item {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.75rem;
+
+      .contact-item-content {
+        width: 100%;
+      }
+
+      @include respond(md) {
+        flex-direction: row;
+        align-items: center;
+        gap: 1rem;
+
+        .contact-item-content {
+          width: auto;
         }
       }
     }

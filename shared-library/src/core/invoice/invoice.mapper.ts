@@ -227,21 +227,21 @@ function buildQrCodeValue(
   };
 
   if (buyerGstin) {
-    qrData.buyerGstin = buyerGstin;
+    qrData['buyerGstin'] = buyerGstin;
   }
 
   if (itemCount !== undefined && itemCount > 0) {
-    qrData.itemCount = itemCount;
+    qrData['itemCount'] = itemCount;
   }
 
   // Add tax component breakdown
   if (taxBreakdown) {
     if (taxBreakdown['CGST'] && taxBreakdown['SGST']) {
-      qrData.cgstAmount = taxBreakdown['CGST'].amount.toFixed(2);
-      qrData.sgstAmount = taxBreakdown['SGST'].amount.toFixed(2);
+      qrData['cgstAmount'] = taxBreakdown['CGST'].amount.toFixed(2);
+      qrData['sgstAmount'] = taxBreakdown['SGST'].amount.toFixed(2);
     }
     if (taxBreakdown['IGST']) {
-      qrData.igstAmount = taxBreakdown['IGST'].amount.toFixed(2);
+      qrData['igstAmount'] = taxBreakdown['IGST'].amount.toFixed(2);
     }
   }
 

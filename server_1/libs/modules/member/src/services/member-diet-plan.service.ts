@@ -899,15 +899,17 @@ export class MemberDietPlanService {
   }
 
   /**
-   * Update diet plan status (completed/not completed)
+   * Update diet plan status
    * @param memberId - Member ID
    * @param dietPlanId - Diet plan ID
+   * @param statusId - Target status (DietPlanStatusEnum)
    * @param adminId - Admin ID
    * @param ip - Client IP
    */
   async updateStatus(
     memberId: number,
     dietPlanId: number,
+    statusId: number | undefined,
     adminId: number,
     ip: string,
   ): Promise<void> {
@@ -920,18 +922,29 @@ export class MemberDietPlanService {
     if (!dietPlan) {
       throw new NotFoundException('Diet plan not found');
     }
-    await this.memberDietPlanRepository.update(
-      {
-        isCompleted: !dietPlan.isCompleted,
-        modifiedBy: adminId,
-        modifiedIp: ip,
+
+    const updateData: Record<string, unknown> = {
+      modifiedBy: adminId,
+      modifiedIp: ip,
+    };
+
+    if (statusId === DietPlanStatusEnum.IN_PROGRESS) {
+      updateData.isCompleted = false;
+      if (!dietPlan.currentCycleNo || dietPlan.currentCycleNo <= 0) {
+        updateData.currentCycleNo = 1;
+      }
+    } else if (statusId === DietPlanStatusEnum.COMPLETED) {
+      updateData.isCompleted = true;
+    } else {
+      // Legacy toggle behavior
+      updateData.isCompleted = !dietPlan.isCompleted;
+    }
+
+    await this.memberDietPlanRepository.update(updateData, {
+      where: {
+        memberDietPlanId: dietPlanId,
       },
-      {
-        where: {
-          memberDietPlanId: dietPlanId,
-        },
-      },
-    );
+    });
   }
 
   /**

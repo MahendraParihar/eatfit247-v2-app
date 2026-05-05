@@ -1,3 +1,5 @@
+@use '../../../../styles/breakpoints' as *;
+
 .hall-of-fame {
   display: flex;
   flex-direction: column;
@@ -9,7 +11,11 @@
   position: relative;
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: 0;
+
+  @include respond(lg) {
+    gap: var(--space-2);
+  }
 }
 
 // --- Viewport clips overflowing slides ---
@@ -28,8 +34,12 @@
 // --- Each slide ---
 .hall-of-fame__slide {
   flex-shrink: 0;
-  padding: 0 var(--space-2);
+  padding: 0 var(--space-1);
   box-sizing: border-box;
+
+  @include respond(sm) {
+    padding: 0 var(--space-2);
+  }
 }
 
 // --- Card inside slide ---
@@ -88,9 +98,10 @@
 }
 
 // --- Left / Right arrows ---
+// Mobile: smaller overlaid arrows. Desktop: full-size alongside carousel.
 .hall-of-fame__arrow {
-  width: 44px;
-  height: 44px;
+  width: 36px;
+  height: 36px;
   flex-shrink: 0;
   border-radius: 999px;
   border: 1px solid var(--color-border);
@@ -102,6 +113,18 @@
   cursor: pointer;
   transition: background-color 150ms ease, opacity 150ms ease, box-shadow 150ms ease;
   z-index: 1;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
+
+  &--left {
+    left: -4px;
+  }
+
+  &--right {
+    right: -4px;
+  }
 
   &:hover:not(:disabled) {
     background-color: var(--color-gray-100);
@@ -111,6 +134,14 @@
   &:disabled {
     opacity: 0.35;
     cursor: default;
+  }
+
+  @include respond(lg) {
+    width: 44px;
+    height: 44px;
+    position: static;
+    transform: none;
+    box-shadow: none;
   }
 }
 
@@ -150,40 +181,4 @@
 .hall-of-fame__actions {
   display: flex;
   justify-content: center;
-}
-
-// --- Responsive ---
-
-// Tablet: hide arrows outside, overlay them
-@media (max-width: 1024px) {
-  .hall-of-fame__arrow {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
-
-    &--left {
-      left: -4px;
-    }
-
-    &--right {
-      right: -4px;
-    }
-  }
-
-  .hall-of-fame__carousel {
-    gap: 0;
-  }
-}
-
-// Mobile: smaller arrows
-@media (max-width: 640px) {
-  .hall-of-fame__arrow {
-    width: 36px;
-    height: 36px;
-  }
-
-  .hall-of-fame__slide {
-    padding: 0 var(--space-1);
-  }
 }

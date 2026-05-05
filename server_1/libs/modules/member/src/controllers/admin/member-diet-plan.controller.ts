@@ -172,9 +172,10 @@ export class MemberDietPlanController {
   async updateStatus(
     @Param('id') id: number,
     @Param('dietPlanId') dietPlanId: number,
+    @Body() body: { statusId?: number },
     @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
   ) {
-    return await this.service.updateStatus(id, dietPlanId, currentUser.adminId, requestedIp);
+    return await this.service.updateStatus(id, dietPlanId, body?.statusId, currentUser.adminId, requestedIp);
   }
 }
