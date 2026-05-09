@@ -223,11 +223,11 @@ The platform must provide operational visibility:
 ### BR-10: Appointment Management — *NEW FEATURE*
 The platform must support appointment scheduling for member consultations and new enquiries:
 - **Enquiry intake**: When a new enquiry comes in from the website (contact form), an Appointment Manager can view the enquiry and initiate appointment booking
-- **Calendar availability**: The Appointment Manager can view the Google Calendar availability of all admin users (nutritionists, franchise admins) present in the system to find open slots
+- **Calendar availability**: The Appointment Manager can view the Google Calendar availability of **nutritionists only**, scoped to their assigned franchise(s). Only nutritionists with an active Google Calendar connection are shown. If a nutritionist has not connected their Google Calendar, the system prompts the Appointment Manager to request that nutritionist to connect their Google Calendar before appointments can be booked with them
 - **Appointment booking**: Book an appointment with a specific admin user based on their availability, linking it to the enquiry/member
 - **Appointment CRUD**: Create, view, update, and cancel appointments with status tracking (Scheduled, Confirmed, Completed, Cancelled, No-Show)
 - **Notifications**: Send appointment confirmation and reminder notifications to both the member/enquirer and the assigned admin user via email and WhatsApp
-- **Calendar sync**: All booked appointments are synced to the assigned admin user's Google Calendar
+- **Calendar sync (two-way)**: All booked appointments are synced to the assigned admin user's Google Calendar. When an appointment is cancelled or rescheduled from the admin panel, the corresponding Google Calendar event must also be cancelled/updated automatically. The `google_event_id` is stored on the appointment record for sync operations
 - **Appointment history**: Track all past and upcoming appointments per member and per admin user
 - **Dashboard widget**: Show upcoming appointments count and next appointment details on the admin dashboard
 
