@@ -1,37 +1,13 @@
 import { Injectable } from '@angular/core';
-import { ApiBaseService } from '@core';
-import { IDropdownItem, IProduct, ITableList } from '@eatfit247-shared-lib';
+import { CrudApiService } from '@core';
+import { IDropdownItem, IProduct } from '@eatfit247-shared-lib';
 
 @Injectable({
   providedIn: 'root',
 })
-export class ProductsApiService extends ApiBaseService {
-  private readonly endpoint = '/product';
-
+export class ProductsApiService extends CrudApiService<IProduct> {
   constructor() {
-    super();
-  }
-
-  async getList(params?: any): Promise<ITableList<IProduct>> {
-    const res = await this.httpService.get<ITableList<IProduct>>(`${this.endpoint}/list`, { params });
-    return res.data as ITableList<IProduct>;
-  }
-
-  async getById(id: number): Promise<IProduct> {
-    const res = await this.httpService.get<IProduct>(`${this.endpoint}/manage/${id}`);
-    return res.data as IProduct;
-  }
-
-  async create(data: any): Promise<void> {
-    await this.httpService.post<void>(`${this.endpoint}/manage`, data);
-  }
-
-  async update(id: number, data: any): Promise<void> {
-    await this.httpService.put<void>(`${this.endpoint}/manage/${id}`, data);
-  }
-
-  async updateStatus(id: number, active: boolean): Promise<void> {
-    await this.httpService.patch<void>(`${this.endpoint}/update-status/${id}`, { active });
+    super('/product');
   }
 
   async getMasterData(): Promise<{ currencies: IDropdownItem[] }> {
@@ -39,4 +15,3 @@ export class ProductsApiService extends ApiBaseService {
     return res.data as { currencies: IDropdownItem[] };
   }
 }
-

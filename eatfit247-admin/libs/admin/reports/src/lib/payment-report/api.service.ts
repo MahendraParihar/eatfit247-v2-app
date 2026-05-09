@@ -1,11 +1,12 @@
-import { Injectable } from '@angular/core';
-import { ApiBaseService } from '@core';
+import { inject, Injectable } from '@angular/core';
+import { HttpService } from '@core';
 import { IDropdownItem, IPaymentReportFilter, IPaymentReportItem, ITableList } from '@eatfit247-shared-lib';
 
 @Injectable({
   providedIn: 'root'
 })
-export class PaymentReportApiService extends ApiBaseService {
+export class PaymentReportApiService {
+  private readonly httpService = inject(HttpService);
   private readonly endpoint = '/reports/payment';
 
   async getPaymentReport(params: IPaymentReportFilter): Promise<ITableList<IPaymentReportItem>> {

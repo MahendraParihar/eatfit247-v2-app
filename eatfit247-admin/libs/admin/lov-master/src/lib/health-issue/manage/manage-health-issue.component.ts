@@ -9,7 +9,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { MatCardModule } from '@angular/material/card';
 import { InputErrorComponent, UploadFormComponent, ValidationUtil } from '@shared';
-import { LovMasterApiService } from '../../api.service';
+import { HealthIssueApiService } from '../../api.service';
 import { FileTypeEnum, IHealthIssue, IManageHealthIssue, InputLengthEnum, MediaForEnum } from '@eatfit247-shared-lib';
 
 @Component({
@@ -33,7 +33,7 @@ import { FileTypeEnum, IHealthIssue, IManageHealthIssue, InputLengthEnum, MediaF
 export class ManageHealthIssue implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private apiService = inject(LovMasterApiService);
+  private apiService = inject(HealthIssueApiService);
 
   private fb: FormBuilder = inject(FormBuilder);
   formGroup: FormGroup = this.fb.group({
@@ -73,7 +73,7 @@ export class ManageHealthIssue implements OnInit {
   }
 
   async loadData(id: number): Promise<void> {
-    this.initialData = await this.apiService.getHealthIssueById(id);
+    this.initialData = await this.apiService.getById(id);
   }
 
   async onSubmit(): Promise<void> {
@@ -86,9 +86,9 @@ export class ManageHealthIssue implements OnInit {
       }
       if (this.isEditMode && this.initialData) {
         formValue.healthIssueId = this.initialData.healthIssueId;
-        await this.apiService.updateHealthIssue(this.initialData.healthIssueId, formValue);
+        await this.apiService.update(this.initialData.healthIssueId, formValue);
       } else {
-        await this.apiService.createHealthIssue(formValue);
+        await this.apiService.create(formValue);
       }
       this.router.navigate(['/lov-master/health-issue']);
     } else {

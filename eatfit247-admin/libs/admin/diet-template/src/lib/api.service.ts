@@ -1,16 +1,13 @@
-import { Injectable } from '@angular/core';
-import { ApiBaseService } from '@core';
+import { inject, Injectable } from '@angular/core';
+import { HttpService } from '@core';
 import { IDietPlanDetail, IDietTemplate, IDropdownItem, IManageDietTemplate, ITableList } from '@eatfit247-shared-lib';
 
 @Injectable({
   providedIn: 'root'
 })
-export class DietTemplateApiService extends ApiBaseService {
+export class DietTemplateApiService {
+  private readonly httpService = inject(HttpService);
   private readonly endpoint = '/diet-template';
-
-  constructor() {
-    super();
-  }
 
   async getList(params?: any): Promise<ITableList<IDietTemplate>> {
     const res = await this.httpService.get<ITableList<IDietTemplate>>(

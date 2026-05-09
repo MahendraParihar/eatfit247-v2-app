@@ -1,32 +1,12 @@
 import { Injectable } from '@angular/core';
-import { ApiBaseService } from '@core';
-import { IIssue, ITableList } from '@eatfit247-shared-lib';
+import { CrudApiService } from '@core';
+import { IIssue } from '@eatfit247-shared-lib';
 
 @Injectable({
   providedIn: 'root',
 })
-export class IssuesApiService extends ApiBaseService {
-  private readonly endpoint = '/issue';
-
+export class IssuesApiService extends CrudApiService<IIssue> {
   constructor() {
-    super();
-  }
-
-  async getList(params?: any): Promise<ITableList<IIssue>> {
-    const res = await this.httpService.get<ITableList<IIssue>>(`${this.endpoint}/list`, { params });
-    return res.data as ITableList<IIssue>;
-  }
-
-  async getById(id: number): Promise<IIssue> {
-    const res = await this.httpService.get<IIssue>(`${this.endpoint}/manage/${id}`);
-    return res.data as IIssue;
-  }
-
-  async create(data: any): Promise<void> {
-    await this.httpService.post<void>(`${this.endpoint}/manage`, data);
-  }
-
-  async update(id: number, data: any): Promise<void> {
-    await this.httpService.put<void>(`${this.endpoint}/manage/${id}`, data);
+    super('/issue');
   }
 }

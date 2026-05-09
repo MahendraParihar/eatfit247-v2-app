@@ -1,19 +1,24 @@
 /**
  * HTTP Error Interceptor
- * 
- * ⚠️ DESIGN SYSTEM: See DESIGN_SYSTEM.md
- * Handles general HTTP errors (403, 500+, etc.)
- * Note: 401 errors are handled by AuthInterceptor
+ *
+ * Classifies HTTP errors into typed discriminated unions (AppError)
+ * and delegates display to ErrorNotificationService.
+ *
+ * Components can suppress the default snackbar for specific requests
+ * by setting SUPPRESS_ERROR_NOTIFICATION in the HttpContext.
+ *
+ * Note: 401 errors are handled by AuthInterceptor.
  */
 import { inject, Injectable } from '@angular/core';
 import { HttpErrorResponse, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { ErrorNotificationService } from '../services/error-notification.service';
+import { AppError, SUPPRESS_ERROR_NOTIFICATION } from '../interfaces/app-error.interface';
 
 @Injectable()
 export class HttpErrorInterceptor implements HttpInterceptor {
-  private snackBar = inject(MatSnackBar);
+  private readonly errorNotification = inject(ErrorNotificationService);
 
   intercept(
     request: HttpRequest<unknown>,
@@ -26,31 +31,56 @@ export class HttpErrorInterceptor implements HttpInterceptor {
           return throwError(() => error);
         }
 
-        let errorMessage = 'An error occurred';
-        
-        if (error.status === 403) {
-          errorMessage = 'Access forbidden. You do not have permission to perform this action.';
-        } else if (error.status === 404) {
-          errorMessage = 'Resource not found. Please check your request and try again.';
-        } else if (error.status >= 500) {
-          errorMessage = 'Server error. Please try again later.';
-        } else if (error.status === 0) {
-          errorMessage = 'Network error. Please check your connection and try again.';
-        } else if (error.error?.message) {
-          errorMessage = error.error.message;
-        } else if (error.message) {
-          errorMessage = error.message;
+        const appError = this.classify(error);
+
+        if (!request.context.get(SUPPRESS_ERROR_NOTIFICATION)) {
+          this.errorNotification.emit(appError);
         }
 
-        this.snackBar.open(errorMessage, 'Close', {
-          duration: 5000,
-          horizontalPosition: 'center',
-          verticalPosition: 'bottom',
-        });
-
-        return throwError(() => error);
+        return throwError(() => appError);
       })
     );
   }
-}
 
+  private classify(error: HttpErrorResponse): AppError {
+    const base = {
+      status: error.status,
+      message: this.extractMessage(error),
+      originalError: error,
+    };
+
+    switch (error.status) {
+      case 0:
+        return { ...base, kind: 'network', status: 0 as const };
+      case 400:
+        return { ...base, kind: 'validation', status: 400 as const };
+      case 403:
+        return { ...base, kind: 'forbidden', status: 403 as const };
+      case 404:
+        return { ...base, kind: 'not-found', status: 404 as const };
+      case 422:
+        return { ...base, kind: 'validation', status: 422 as const };
+      default:
+        if (error.status >= 500) {
+          return { ...base, kind: 'server' };
+        }
+        return { ...base, kind: 'unknown' };
+    }
+  }
+
+  private extractMessage(error: HttpErrorResponse): string {
+    if (error.status === 403) {
+      return 'Access forbidden. You do not have permission to perform this action.';
+    }
+    if (error.status === 404) {
+      return 'Resource not found. Please check your request and try again.';
+    }
+    if (error.status >= 500) {
+      return 'Server error. Please try again later.';
+    }
+    if (error.status === 0) {
+      return 'Network error. Please check your connection and try again.';
+    }
+    return error.error?.message || error.message || 'An error occurred';
+  }
+}
