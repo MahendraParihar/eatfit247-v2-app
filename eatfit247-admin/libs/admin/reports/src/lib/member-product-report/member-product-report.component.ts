@@ -72,6 +72,7 @@ export class MemberProductReportComponent implements OnInit {
   totalCount = 0;
   loading = false;
   exporting = false;
+  exportingExcel = false;
   bulkExporting = false;
   tableConfig!: ITableConfig<IMemberProductReportItem>;
   franchiseOptions: { id: number | null; label: string }[] = [];
@@ -566,6 +567,41 @@ export class MemberProductReportComponent implements OnInit {
       );
     } finally {
       this.exporting = false;
+    }
+  }
+
+  async onExportExcel(): Promise<void> {
+    if (this.filterForm.invalid) {
+      return;
+    }
+
+    this.exportingExcel = true;
+    try {
+      const params = this.buildReportParams();
+      const blob = await this.apiService.exportMemberProductReportExcel(params);
+
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+
+      const startDateStr = params.startDate.replace(/-/g, '');
+      const endDateStr = params.endDate.replace(/-/g, '');
+      link.download = `member-product-report_${startDateStr}_to_${endDateStr}.xlsx`;
+
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      this.snackBar.open(
+        'Failed to export Excel report. Please try again.',
+        'Close',
+        {
+          duration: 5000,
+        }
+      );
+    } finally {
+      this.exportingExcel = false;
     }
   }
 

@@ -8,6 +8,7 @@ export * from './lib/services/theme.service';
 export * from './lib/services/error-notification.service';
 export * from './lib/services/token-refresh.service';
 export * from './lib/services/navigation.service';
+export * from './lib/services/permission.service';
 // Guards
 export * from './lib/guards/auth.guard';
 export * from './lib/guards/login.guard';

@@ -7,6 +7,7 @@ import { MstFranchise, ReportSortUtil } from '@server_1/core';
 import { PaymentReportDto } from '../dto/payment-report.dto';
 import archiver from 'archiver';
 import moment from 'moment/moment';
+import * as ExcelJS from 'exceljs';
 
 @Injectable()
 export class PaymentReportService {
@@ -197,6 +198,115 @@ export class PaymentReportService {
     await archive.finalize();
 
     return archive;
+  }
+
+  /**
+   * Export payment report as Excel file
+   * @param dto - Payment report filter DTO
+   * @returns ExcelJS workbook buffer
+   */
+  async exportPaymentReportExcel(dto: PaymentReportDto): Promise<Buffer> {
+    const startDateStr = moment(dto.startDate).startOf('day').utc().startOf('day');
+    const endDateStr = moment(dto.endDate).endOf('day').utc().endOf('day');
+    const whereCondition: any = {
+      active: true,
+      paymentDate: {
+        [Op.and]: {
+          [Op.gte]: startDateStr.format(),
+          [Op.lte]: endDateStr.format(),
+        },
+      },
+    };
+
+    const memberWhereCondition: any = {};
+    if (dto.franchiseId) {
+      memberWhereCondition.franchiseId = dto.franchiseId;
+    }
+
+    const includeConditions: any[] = [
+      {
+        model: TxnMember,
+        as: 'member',
+        required: true,
+        where: Object.keys(memberWhereCondition).length > 0 ? memberWhereCondition : undefined,
+        attributes: ['memberId', 'firstName', 'lastName', 'franchiseId'],
+        include: [
+          {
+            model: MstFranchise,
+            as: 'franchise',
+            required: true,
+            attributes: ['franchiseId', 'companyName'],
+            where: {
+              active: true,
+              [Op.and]: [
+                Sequelize.literal(`'${BusinessTypeEnum.SERVICE}'::public.business_type = ANY("business_type")`),
+              ],
+            },
+          },
+        ],
+      },
+    ];
+
+    const payments = await this.memberPaymentRepository.scope('list').findAll({
+      where: whereCondition,
+      include: includeConditions,
+      order: [['paymentDate', 'ASC']],
+      raw: true,
+      nest: true,
+    });
+
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet('Payment Report');
+
+    sheet.columns = [
+      { header: 'Invoice ID', key: 'invoiceId', width: 20 },
+      { header: 'Payment Date', key: 'paymentDate', width: 15 },
+      { header: 'First Name', key: 'firstName', width: 18 },
+      { header: 'Last Name', key: 'lastName', width: 18 },
+      { header: 'Company Name', key: 'companyName', width: 25 },
+      { header: 'Order Amount', key: 'orderAmount', width: 15 },
+      { header: 'Tax Amount', key: 'taxAmount', width: 15 },
+      { header: 'Tax %', key: 'taxPercentage', width: 10 },
+      { header: 'Total Amount', key: 'totalAmount', width: 15 },
+      { header: 'CGST', key: 'cgst', width: 12 },
+      { header: 'SGST', key: 'sgst', width: 12 },
+      { header: 'IGST', key: 'igst', width: 12 },
+      { header: 'Payment Mode', key: 'paymentMode', width: 18 },
+      { header: 'State', key: 'state', width: 20 },
+      { header: 'Country', key: 'country', width: 18 },
+    ];
+
+    const headerRow = sheet.getRow(1);
+    headerRow.font = { bold: true };
+    headerRow.alignment = { horizontal: 'center' };
+
+    for (const item of payments as any[]) {
+      const payment = (this.memberPaymentService as any).convertToModel(item);
+      const taxObj = payment.taxObj || {};
+      const memberAddress = payment.memberAddress || {};
+      const billingAddress = memberAddress.billingAddress || {};
+
+      sheet.addRow({
+        invoiceId: payment.invoiceId || '',
+        paymentDate: payment.paymentDate ? moment(payment.paymentDate).format('YYYY-MM-DD') : '',
+        firstName: item.member?.firstName || '',
+        lastName: item.member?.lastName || '',
+        companyName: item.member?.franchise?.companyName || '',
+        orderAmount: payment.orderAmount || 0,
+        taxAmount: payment.taxAmount || 0,
+        taxPercentage: payment.taxPercentage || 0,
+        totalAmount: payment.totalAmount || 0,
+        cgst: taxObj.CGST?.amount != null ? Number(taxObj.CGST.amount) : 0,
+        sgst: taxObj.SGST?.amount != null ? Number(taxObj.SGST.amount) : 0,
+        igst: taxObj.IGST?.amount != null ? Number(taxObj.IGST.amount) : 0,
+        paymentMode: payment.paymentMode || '',
+        state: billingAddress.state || '',
+        country: billingAddress.country || '',
+      });
+    }
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    return Buffer.from(buffer);
   }
 }
 

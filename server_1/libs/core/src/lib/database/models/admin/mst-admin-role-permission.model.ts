@@ -5,26 +5,26 @@ import { MstAdminRole } from './mst-admin-role.model';
 
 @Table({
   freezeTableName: true,
-  modelName: 'mst_admin_role_permissions',
+  modelName: 'txn_admin_user_roles',
   schema: 'public',
-  tableName: 'mst_admin_role_permissions',
+  tableName: 'txn_admin_user_roles',
   timestamps: false,
   indexes: [
     {
       unique: false,
       fields: ['admin_id'],
-      name: 'ix_mst_admin_role_permission_admin_id',
+      name: 'ix_txn_admin_user_roles_admin_id',
     },
   ],
 })
-export class MstAdminRolePermission extends Model<MstAdminRolePermission> {
+export class TxnAdminUserRole extends Model<TxnAdminUserRole> {
   @Column({
     type: DataType.INTEGER,
     primaryKey: true,
-    field: 'admin_role_permission_id',
+    field: 'admin_user_role_id',
     autoIncrement: true,
   })
-  declare adminRolePermissionId: number;
+  declare adminUserRoleId: number;
 
   @Column({
     allowNull: false,
@@ -100,3 +100,8 @@ export class MstAdminRolePermission extends Model<MstAdminRolePermission> {
   @BelongsTo(() => MstAdminRole, { foreignKey: 'roleId', targetKey: 'roleId', as: 'role' })
   declare role: MstAdminRole;
 }
+
+/** @deprecated Use TxnAdminUserRole instead */
+export const MstAdminRolePermission = TxnAdminUserRole;
+/** @deprecated Use TxnAdminUserRole instead */
+export type MstAdminRolePermission = TxnAdminUserRole;

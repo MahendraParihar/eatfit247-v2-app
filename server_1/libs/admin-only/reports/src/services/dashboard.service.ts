@@ -3,12 +3,23 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Op, Sequelize } from 'sequelize';
 import { TxnMember, TxnMemberDietPlan, TxnMemberIssue, TxnMemberPayment } from '@server_1/modules/member';
 import {
+  IAccountKpis,
+  IContentKpis,
   IDashboardKpis,
   IEngagementData,
+  IExpiringDietPlan,
+  IFranchiseKpis,
   IMemberGrowthData,
+  INutritionistKpis,
   IOperationsSnapshot,
+  IOrdersByStatus,
+  IPaymentCollectionStatus,
   IProgramPerformanceData,
+  IRecentContentActivity,
   IRevenueData,
+  IShippingKpis,
+  ITaxSummary,
+  IUpcomingAppointment,
   PaymentStatusEnum,
 } from '@eatfit247-shared-lib';
 import moment from 'moment';
@@ -294,5 +305,128 @@ export class DashboardService {
       avgHealthLogsPerMember: 0,
     };
     return data;
+  }
+
+  // ---- Nutritionist Dashboard ----
+
+  async getNutritionistKpis(adminId: number, franchiseIds: number[]): Promise<INutritionistKpis> {
+    // TODO: Implement with franchise-scoped queries
+    // - myClientsTotal: count members assigned to this nutritionist
+    // - myClientsActive: count active members assigned to this nutritionist
+    // - dietPlansDueToday: count diet plans expiring today for assigned members
+    // - pendingAssessments: count assessments pending for assigned members
+    // - expiringDietPlans: count diet plans expiring within 7 days
+    return {
+      myClientsTotal: 0,
+      myClientsActive: 0,
+      dietPlansDueToday: 0,
+      pendingAssessments: 0,
+      expiringDietPlans: 0,
+    };
+  }
+
+  async getUpcomingAppointments(adminId: number, franchiseIds: number[]): Promise<IUpcomingAppointment[]> {
+    // TODO: Query txn_appointments where assigned_admin_id = adminId
+    // and appointment_date >= today, ordered by date ASC, limit 10
+    return [];
+  }
+
+  async getExpiringDietPlans(adminId: number, franchiseIds: number[]): Promise<IExpiringDietPlan[]> {
+    // TODO: Query txn_member_diet_plans where end_date between today and today+7
+    // scoped by franchise for franchise-scoped users
+    return [];
+  }
+
+  // ---- Finance / Account Dashboard ----
+
+  async getAccountKpis(): Promise<IAccountKpis> {
+    // TODO: Implement with payment aggregate queries
+    // - monthlyRevenue: sum of paid payments this month
+    // - pendingPayments: sum of pending payments
+    // - collectedPayments: sum of collected payments this month
+    // - gstLiability: calculated from taxable amounts
+    return {
+      monthlyRevenue: 0,
+      pendingPayments: 0,
+      collectedPayments: 0,
+      gstLiability: 0,
+    };
+  }
+
+  async getTaxSummary(): Promise<ITaxSummary> {
+    // TODO: Calculate GST breakdown from payment data
+    // - totalTaxable: total taxable amount
+    // - cgst, sgst, igst: tax components
+    // - period: current month/year string
+    return {
+      totalTaxable: 0,
+      cgst: 0,
+      sgst: 0,
+      igst: 0,
+      totalGst: 0,
+      period: moment().format('MMMM YYYY'),
+    };
+  }
+
+  async getPaymentCollectionStatus(): Promise<IPaymentCollectionStatus> {
+    // TODO: Count payments by status
+    return {
+      paid: 0,
+      pending: 0,
+      overdue: 0,
+      total: 0,
+    };
+  }
+
+  // ---- Shipping / Product Dashboard ----
+
+  async getShippingKpis(): Promise<IShippingKpis> {
+    // TODO: Implement with product order and shipment queries
+    return {
+      newOrders: 0,
+      pendingShipments: 0,
+      inTransit: 0,
+      delivered: 0,
+      monthlyOrderVolume: 0,
+    };
+  }
+
+  async getOrdersByStatus(): Promise<IOrdersByStatus[]> {
+    // TODO: Group product orders by status with counts and percentages
+    return [];
+  }
+
+  async getMonthlyOrderVolume(): Promise<{ data: { month: string; orders: number }[] }> {
+    // TODO: Monthly order counts for the last 6 months
+    return { data: [] };
+  }
+
+  // ---- Franchise Dashboard ----
+
+  async getFranchiseKpis(franchiseIds: number[]): Promise<IFranchiseKpis> {
+    // TODO: Implement franchise-scoped KPIs
+    // Filter members, payments, and plans by franchiseIds
+    return {
+      franchiseRevenue: 0,
+      franchiseMemberCount: 0,
+      franchiseActivePlans: 0,
+    };
+  }
+
+  // ---- Content Dashboard ----
+
+  async getContentKpis(): Promise<IContentKpis> {
+    // TODO: Count blog posts, recipes, FAQs
+    return {
+      publishedPosts: 0,
+      pendingReviews: 0,
+      totalRecipes: 0,
+      totalFaqs: 0,
+    };
+  }
+
+  async getRecentContentActivity(): Promise<IRecentContentActivity[]> {
+    // TODO: Query recent blog/recipe/faq updates, ordered by date DESC, limit 10
+    return [];
   }
 }

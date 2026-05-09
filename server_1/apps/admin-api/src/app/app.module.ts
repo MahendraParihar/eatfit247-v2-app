@@ -37,6 +37,7 @@ import { ReportsModule } from '@server_1/admin-only/reports';
 import { ProductAdminModule } from '@server_1/modules/product';
 import { PagesAdminModule } from '@server_1/modules/pages';
 import { DeliveryModule } from '@server_1/modules/delivery';
+import { AppointmentModule } from '@server_1/modules/appointment';
 import { AuthModule } from '@server_1/modules/auth';
 
 @Module({
@@ -81,6 +82,7 @@ import { AuthModule } from '@server_1/modules/auth';
     SuccessStoriesModule,
     ProductAdminModule,
     DeliveryModule,
+    AppointmentModule,
     NotificationModule,
     CommonModule.forRoot(
       ['Common', 'Email', 'Google', 'Calendar', 'Payment', 'Invoice', 'Whatsapp'],

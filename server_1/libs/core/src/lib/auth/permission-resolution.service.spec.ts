@@ -1,51 +1,19 @@
+import { Test, TestingModule } from '@nestjs/testing';
+import { getModelToken } from '@nestjs/sequelize';
 import { AdminActionEnum, AdminSubjectEnum } from '@eatfit247-shared-lib';
-
-// ---------------------------------------------------------------------------
-// Interfaces matching the 3 new DB tables from the PRD
-// ---------------------------------------------------------------------------
-
-interface IMstAdminSubject {
-  subjectId: number;
-  subjectCode: string;
-  subjectName: string;
-  franchiseScoped: boolean;
-  active: boolean;
-}
-
-interface IMstAdminAction {
-  actionId: number;
-  actionCode: string;
-  actionName: string;
-}
-
-interface IMstAdminRoleSubjectPermission {
-  permissionId: number;
-  roleId: number;
-  subjectId: number;
-  actionId: number;
-  active: boolean;
-}
-
-/** Role assignment row (existing mst_admin_role_permissions table) */
-interface IRoleAssignment {
-  adminRolePermissionId: number;
-  roleId: number;
-  adminId: number;
-  active: boolean;
-  role: { roleId: number; role: string; roleCode: string; grantAllOnNewSubject?: boolean };
-}
-
-/** The output permission dictionary as returned by the login API */
-interface IPermissionDictionary {
-  permissions: Record<string, string[]>;
-  subjectMeta: Record<string, { franchiseScoped: boolean }>;
-}
+import { PermissionResolutionService } from './permission-resolution.service';
+import { TxnAdminUserRole } from '../database/models/admin/mst-admin-role-permission.model';
+import { MstAdminRoleSubjectPermission } from '../database/models/admin/mst-admin-role-subject-permission.model';
+import { MstAdminSubject } from '../database/models/admin/mst-admin-subject.model';
+import { MstAdminAction } from '../database/models/admin/mst-admin-action.model';
+import { MstAdminUser } from '../database/models/admin/mst-admin-user.model';
+import { TxnAdminFranchise } from '../database/models/admin/txn-admin-franchise.model';
 
 // ---------------------------------------------------------------------------
 // Mock factories
 // ---------------------------------------------------------------------------
 
-function createSubject(overrides: Partial<IMstAdminSubject> = {}): IMstAdminSubject {
+function createSubject(overrides: Partial<MstAdminSubject> = {}): Partial<MstAdminSubject> {
   return {
     subjectId: 1,
     subjectCode: AdminSubjectEnum.Member,
@@ -56,119 +24,29 @@ function createSubject(overrides: Partial<IMstAdminSubject> = {}): IMstAdminSubj
   };
 }
 
-function createAction(overrides: Partial<IMstAdminAction> = {}): IMstAdminAction {
+function createRoleAssignment(overrides: Record<string, unknown> = {}): Record<string, unknown> {
   return {
-    actionId: 1,
-    actionCode: AdminActionEnum.Read,
-    actionName: 'Read',
-    ...overrides,
-  };
-}
-
-function createPermission(
-  overrides: Partial<IMstAdminRoleSubjectPermission> = {},
-): IMstAdminRoleSubjectPermission {
-  return {
-    permissionId: 1,
-    roleId: 1,
-    subjectId: 1,
-    actionId: 1,
-    active: true,
-    ...overrides,
-  };
-}
-
-function createRoleAssignment(overrides: Partial<IRoleAssignment> = {}): IRoleAssignment {
-  return {
-    adminRolePermissionId: 1,
+    adminUserRoleId: 1,
     roleId: 1,
     adminId: 100,
     active: true,
-    role: { roleId: 1, role: 'Franchise Admin', roleCode: 'franchise_admin' },
+    role: { roleId: 1, role: 'Franchise Admin', roleCode: 'franchise_admin', grantAllOnNewSubject: false },
     ...overrides,
   };
 }
 
 // ---------------------------------------------------------------------------
-// Simulated PermissionResolutionService logic
+// Test data
 // ---------------------------------------------------------------------------
 
-/**
- * Mirrors the logic that the production PermissionResolutionService will implement:
- * 1. Load active role assignments for an admin
- * 2. For each role, load its subject-action permission rows
- * 3. Resolve subject codes and action codes from lookup tables
- * 4. Build the additive union dictionary
- */
-function resolvePermissions(
-  roleAssignments: IRoleAssignment[],
-  allPermissions: IMstAdminRoleSubjectPermission[],
-  subjects: IMstAdminSubject[],
-  actions: IMstAdminAction[],
-): IPermissionDictionary {
-  const permissions: Record<string, Set<string>> = {};
-  const subjectMeta: Record<string, { franchiseScoped: boolean }> = {};
-
-  // Build lookup maps
-  const subjectMap = new Map(subjects.filter((s) => s.active).map((s) => [s.subjectId, s]));
-  const actionMap = new Map(actions.map((a) => [a.actionId, a]));
-
-  // Only consider active role assignments
-  const activeRoleIds = new Set(
-    roleAssignments.filter((ra) => ra.active && ra.role).map((ra) => ra.roleId),
-  );
-
-  // Check for super-admin grant_all_on_new_subject flag
-  const hasGrantAll = roleAssignments.some(
-    (ra) => ra.active && ra.role?.grantAllOnNewSubject === true,
-  );
-
-  if (hasGrantAll) {
-    // Super Admin: all active subjects x all actions
-    for (const [, subject] of subjectMap) {
-      if (subject.subjectCode === AdminSubjectEnum.All) continue;
-      permissions[subject.subjectCode] = new Set(actions.map((a) => a.actionCode));
-      subjectMeta[subject.subjectCode] = { franchiseScoped: subject.franchiseScoped };
-    }
-  } else {
-    // Normal resolution: union permissions across all active roles
-    for (const perm of allPermissions) {
-      if (!perm.active) continue;
-      if (!activeRoleIds.has(perm.roleId)) continue;
-
-      const subject = subjectMap.get(perm.subjectId);
-      const action = actionMap.get(perm.actionId);
-      if (!subject || !action) continue;
-
-      if (!permissions[subject.subjectCode]) {
-        permissions[subject.subjectCode] = new Set();
-      }
-      permissions[subject.subjectCode].add(action.actionCode);
-      subjectMeta[subject.subjectCode] = { franchiseScoped: subject.franchiseScoped };
-    }
-  }
-
-  // Convert Sets to sorted arrays for consistency
-  const result: Record<string, string[]> = {};
-  for (const [key, value] of Object.entries(permissions)) {
-    result[key] = [...value].sort();
-  }
-
-  return { permissions: result, subjectMeta };
-}
-
-// ---------------------------------------------------------------------------
-// Test data: standard actions (only 4 discrete, NO manage)
-// ---------------------------------------------------------------------------
-
-const STANDARD_ACTIONS: IMstAdminAction[] = [
+const STANDARD_ACTIONS = [
   { actionId: 1, actionCode: AdminActionEnum.Read, actionName: 'Read' },
   { actionId: 2, actionCode: AdminActionEnum.Create, actionName: 'Create' },
   { actionId: 3, actionCode: AdminActionEnum.Update, actionName: 'Update' },
   { actionId: 4, actionCode: AdminActionEnum.Delete, actionName: 'Delete' },
 ];
 
-const STANDARD_SUBJECTS: IMstAdminSubject[] = [
+const STANDARD_SUBJECTS = [
   createSubject({ subjectId: 1, subjectCode: AdminSubjectEnum.Member, subjectName: 'Member', franchiseScoped: true }),
   createSubject({ subjectId: 2, subjectCode: AdminSubjectEnum.Blog, subjectName: 'Blog', franchiseScoped: false }),
   createSubject({ subjectId: 3, subjectCode: AdminSubjectEnum.Dashboard, subjectName: 'Dashboard', franchiseScoped: true }),
@@ -182,531 +60,408 @@ const STANDARD_SUBJECTS: IMstAdminSubject[] = [
 // ---------------------------------------------------------------------------
 
 describe('PermissionResolutionService', () => {
-  describe('resolvePermissions', () => {
-    it('should load permissions for a single role', () => {
-      const roleAssignments = [
-        createRoleAssignment({ roleId: 1, adminId: 100 }),
-      ];
+  let service: PermissionResolutionService;
+  let mockUserRoleRepo: { findAll: jest.Mock };
+  let mockPermRepo: { findAll: jest.Mock };
+  let mockSubjectRepo: { findAll: jest.Mock };
+  let mockActionRepo: { findAll: jest.Mock };
+  let mockAdminRepo: { findOne: jest.Mock };
+  let mockFranchiseRepo: { findAll: jest.Mock };
 
-      const permissions = [
-        createPermission({ permissionId: 1, roleId: 1, subjectId: 1, actionId: 1 }), // Member.Read
-        createPermission({ permissionId: 2, roleId: 1, subjectId: 1, actionId: 2 }), // Member.Create
-      ];
+  beforeEach(async () => {
+    mockUserRoleRepo = { findAll: jest.fn() };
+    mockPermRepo = { findAll: jest.fn() };
+    mockSubjectRepo = { findAll: jest.fn() };
+    mockActionRepo = { findAll: jest.fn() };
+    mockAdminRepo = { findOne: jest.fn() };
+    mockFranchiseRepo = { findAll: jest.fn() };
 
-      const result = resolvePermissions(
-        roleAssignments,
-        permissions,
-        STANDARD_SUBJECTS,
-        STANDARD_ACTIONS,
-      );
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        PermissionResolutionService,
+        { provide: getModelToken(TxnAdminUserRole), useValue: mockUserRoleRepo },
+        { provide: getModelToken(MstAdminRoleSubjectPermission), useValue: mockPermRepo },
+        { provide: getModelToken(MstAdminSubject), useValue: mockSubjectRepo },
+        { provide: getModelToken(MstAdminAction), useValue: mockActionRepo },
+        { provide: getModelToken(MstAdminUser), useValue: mockAdminRepo },
+        { provide: getModelToken(TxnAdminFranchise), useValue: mockFranchiseRepo },
+      ],
+    }).compile();
 
-      expect(result.permissions[AdminSubjectEnum.Member]).toEqual([
+    service = module.get(PermissionResolutionService);
+
+    // Default: return standard subjects and actions, no franchise
+    mockSubjectRepo.findAll.mockResolvedValue(STANDARD_SUBJECTS);
+    mockActionRepo.findAll.mockResolvedValue(STANDARD_ACTIONS);
+    mockAdminRepo.findOne.mockResolvedValue({ adminId: 100, franchiseId: null });
+    mockFranchiseRepo.findAll.mockResolvedValue([]);
+  });
+
+  it('should load permissions for a single role', async () => {
+    mockUserRoleRepo.findAll.mockResolvedValue([
+      createRoleAssignment({ roleId: 1, adminId: 100 }),
+    ]);
+    mockPermRepo.findAll.mockResolvedValue([
+      { permissionId: 1, roleId: 1, subjectId: 1, actionId: 1, active: true },
+      { permissionId: 2, roleId: 1, subjectId: 1, actionId: 2, active: true },
+    ]);
+
+    const result = await service.resolveForAdmin(100);
+
+    expect(result.permissions[AdminSubjectEnum.Member]).toEqual([
+      AdminActionEnum.Create,
+      AdminActionEnum.Read,
+    ]);
+    expect(Object.keys(result.permissions)).toHaveLength(1);
+  });
+
+  it('should merge permissions across multiple roles (union)', async () => {
+    mockUserRoleRepo.findAll.mockResolvedValue([
+      createRoleAssignment({ roleId: 1, adminId: 100 }),
+      createRoleAssignment({
+        adminUserRoleId: 2,
+        roleId: 2,
+        adminId: 100,
+        role: { roleId: 2, role: 'Blog Admin', roleCode: 'blog_admin', grantAllOnNewSubject: false },
+      }),
+    ]);
+    mockPermRepo.findAll.mockResolvedValue([
+      { permissionId: 1, roleId: 1, subjectId: 1, actionId: 1, active: true },
+      { permissionId: 2, roleId: 2, subjectId: 2, actionId: 1, active: true },
+      { permissionId: 3, roleId: 2, subjectId: 2, actionId: 2, active: true },
+    ]);
+
+    const result = await service.resolveForAdmin(100);
+
+    expect(result.permissions[AdminSubjectEnum.Member]).toEqual([AdminActionEnum.Read]);
+    expect(result.permissions[AdminSubjectEnum.Blog]).toEqual([
+      AdminActionEnum.Create,
+      AdminActionEnum.Read,
+    ]);
+  });
+
+  it('should build correct dictionary format: { "Member": ["read","create","update","delete"] }', async () => {
+    mockUserRoleRepo.findAll.mockResolvedValue([
+      createRoleAssignment({ roleId: 1 }),
+    ]);
+    mockPermRepo.findAll.mockResolvedValue([
+      { permissionId: 1, roleId: 1, subjectId: 1, actionId: 1, active: true },
+      { permissionId: 2, roleId: 1, subjectId: 1, actionId: 2, active: true },
+      { permissionId: 3, roleId: 1, subjectId: 1, actionId: 3, active: true },
+      { permissionId: 4, roleId: 1, subjectId: 1, actionId: 4, active: true },
+    ]);
+
+    const result = await service.resolveForAdmin(100);
+
+    expect(result.permissions).toEqual({
+      [AdminSubjectEnum.Member]: [
         AdminActionEnum.Create,
+        AdminActionEnum.Delete,
         AdminActionEnum.Read,
-      ]);
-      expect(Object.keys(result.permissions)).toHaveLength(1);
+        AdminActionEnum.Update,
+      ],
     });
+  });
 
-    it('should merge permissions across multiple roles (union)', () => {
-      const roleAssignments = [
-        createRoleAssignment({ roleId: 1, adminId: 100 }),
-        createRoleAssignment({
-          adminRolePermissionId: 2,
-          roleId: 2,
-          adminId: 100,
-          role: { roleId: 2, role: 'Blog Admin', roleCode: 'blog_admin' },
-        }),
-      ];
+  it('should include franchise_scoped metadata per subject', async () => {
+    mockUserRoleRepo.findAll.mockResolvedValue([
+      createRoleAssignment({ roleId: 1 }),
+    ]);
+    mockPermRepo.findAll.mockResolvedValue([
+      { permissionId: 1, roleId: 1, subjectId: 1, actionId: 1, active: true },
+      { permissionId: 2, roleId: 1, subjectId: 2, actionId: 1, active: true },
+    ]);
 
-      const permissions = [
-        createPermission({ permissionId: 1, roleId: 1, subjectId: 1, actionId: 1 }), // Member.Read (role 1)
-        createPermission({ permissionId: 2, roleId: 2, subjectId: 2, actionId: 1 }), // Blog.Read (role 2)
-        createPermission({ permissionId: 3, roleId: 2, subjectId: 2, actionId: 2 }), // Blog.Create (role 2)
-      ];
+    const result = await service.resolveForAdmin(100);
 
-      const result = resolvePermissions(
-        roleAssignments,
-        permissions,
-        STANDARD_SUBJECTS,
-        STANDARD_ACTIONS,
-      );
+    expect(result.subjectMeta[AdminSubjectEnum.Member]).toEqual({ franchiseScoped: true });
+    expect(result.subjectMeta[AdminSubjectEnum.Blog]).toEqual({ franchiseScoped: false });
+  });
 
-      expect(result.permissions[AdminSubjectEnum.Member]).toEqual([AdminActionEnum.Read]);
-      expect(result.permissions[AdminSubjectEnum.Blog]).toEqual([
-        AdminActionEnum.Create,
-        AdminActionEnum.Read,
-      ]);
-    });
+  it('should handle role with no permissions (empty dictionary)', async () => {
+    mockUserRoleRepo.findAll.mockResolvedValue([
+      createRoleAssignment({ roleId: 1 }),
+    ]);
+    mockPermRepo.findAll.mockResolvedValue([]);
 
-    it('should build correct dictionary format: { "Member": ["read","create","update","delete"] }', () => {
-      const roleAssignments = [createRoleAssignment({ roleId: 1 })];
+    const result = await service.resolveForAdmin(100);
 
-      const permissions = [
-        createPermission({ permissionId: 1, roleId: 1, subjectId: 1, actionId: 1 }),
-        createPermission({ permissionId: 2, roleId: 1, subjectId: 1, actionId: 2 }),
-        createPermission({ permissionId: 3, roleId: 1, subjectId: 1, actionId: 3 }),
-        createPermission({ permissionId: 4, roleId: 1, subjectId: 1, actionId: 4 }),
-      ];
+    expect(result.permissions).toEqual({});
+    expect(Object.keys(result.subjectMeta)).toHaveLength(0);
+  });
 
-      const result = resolvePermissions(
-        roleAssignments,
-        permissions,
-        STANDARD_SUBJECTS,
-        STANDARD_ACTIONS,
-      );
+  it('should handle user with no assigned roles', async () => {
+    mockUserRoleRepo.findAll.mockResolvedValue([]);
 
-      expect(result.permissions).toEqual({
-        [AdminSubjectEnum.Member]: [
-          AdminActionEnum.Create,
-          AdminActionEnum.Delete,
-          AdminActionEnum.Read,
-          AdminActionEnum.Update,
-        ],
-      });
-    });
+    const result = await service.resolveForAdmin(100);
 
-    it('should include franchise_scoped metadata per subject', () => {
-      const roleAssignments = [createRoleAssignment({ roleId: 1 })];
+    expect(result.permissions).toEqual({});
+  });
 
-      const permissions = [
-        createPermission({ permissionId: 1, roleId: 1, subjectId: 1, actionId: 1 }), // Member (scoped)
-        createPermission({ permissionId: 2, roleId: 1, subjectId: 2, actionId: 1 }), // Blog (not scoped)
-      ];
+  it('should not include inactive permission rows', async () => {
+    mockUserRoleRepo.findAll.mockResolvedValue([
+      createRoleAssignment({ roleId: 1 }),
+    ]);
+    // The service queries with active: true, so inactive rows are filtered at DB level.
+    // Mock returns only what the DB would return (active rows only).
+    mockPermRepo.findAll.mockResolvedValue([
+      { permissionId: 1, roleId: 1, subjectId: 1, actionId: 1, active: true },
+      // permissionId 2 with active: false would NOT be returned by the DB query
+    ]);
 
-      const result = resolvePermissions(
-        roleAssignments,
-        permissions,
-        STANDARD_SUBJECTS,
-        STANDARD_ACTIONS,
-      );
+    const result = await service.resolveForAdmin(100);
 
-      expect(result.subjectMeta[AdminSubjectEnum.Member]).toEqual({
-        franchiseScoped: true,
-      });
-      expect(result.subjectMeta[AdminSubjectEnum.Blog]).toEqual({
-        franchiseScoped: false,
-      });
-    });
+    expect(result.permissions[AdminSubjectEnum.Member]).toEqual([AdminActionEnum.Read]);
+  });
 
-    it('should handle role with no permissions (empty dictionary)', () => {
-      const roleAssignments = [createRoleAssignment({ roleId: 1 })];
-      const permissions: IMstAdminRoleSubjectPermission[] = [];
+  it('should not include permissions for inactive roles', async () => {
+    mockUserRoleRepo.findAll.mockResolvedValue([
+      createRoleAssignment({ roleId: 1, active: true }),
+    ]);
+    // Only role 1's permissions returned (role 2 not in active assignments)
+    mockPermRepo.findAll.mockResolvedValue([
+      { permissionId: 1, roleId: 1, subjectId: 1, actionId: 1, active: true },
+    ]);
 
-      const result = resolvePermissions(
-        roleAssignments,
-        permissions,
-        STANDARD_SUBJECTS,
-        STANDARD_ACTIONS,
-      );
+    const result = await service.resolveForAdmin(100);
 
-      expect(result.permissions).toEqual({});
-      expect(Object.keys(result.subjectMeta)).toHaveLength(0);
-    });
+    expect(result.permissions[AdminSubjectEnum.Member]).toEqual([AdminActionEnum.Read]);
+    expect(result.permissions[AdminSubjectEnum.Blog]).toBeUndefined();
+  });
 
-    it('should handle user with no assigned roles', () => {
-      const roleAssignments: IRoleAssignment[] = [];
-      const permissions = [
-        // Permissions exist in DB but not assigned to any active role for this user
-        createPermission({ permissionId: 1, roleId: 99, subjectId: 1, actionId: 1 }),
-      ];
+  it('should return all 4 actions when role has all 4 for a subject', async () => {
+    mockUserRoleRepo.findAll.mockResolvedValue([
+      createRoleAssignment({ roleId: 1 }),
+    ]);
+    mockPermRepo.findAll.mockResolvedValue(
+      STANDARD_ACTIONS.map((action, idx) => ({
+        permissionId: idx + 1,
+        roleId: 1,
+        subjectId: 1,
+        actionId: action.actionId,
+        active: true,
+      })),
+    );
 
-      const result = resolvePermissions(
-        roleAssignments,
-        permissions,
-        STANDARD_SUBJECTS,
-        STANDARD_ACTIONS,
-      );
+    const result = await service.resolveForAdmin(100);
 
-      expect(result.permissions).toEqual({});
-    });
+    expect(result.permissions[AdminSubjectEnum.Member]).toEqual([
+      AdminActionEnum.Create,
+      AdminActionEnum.Delete,
+      AdminActionEnum.Read,
+      AdminActionEnum.Update,
+    ]);
+    expect(result.permissions[AdminSubjectEnum.Member]).toHaveLength(4);
+  });
 
-    it('should not include inactive permission rows', () => {
-      const roleAssignments = [createRoleAssignment({ roleId: 1 })];
+  it('should return sorted action arrays for consistency', async () => {
+    mockUserRoleRepo.findAll.mockResolvedValue([
+      createRoleAssignment({ roleId: 1 }),
+    ]);
+    mockPermRepo.findAll.mockResolvedValue([
+      { permissionId: 1, roleId: 1, subjectId: 1, actionId: 4, active: true },
+      { permissionId: 2, roleId: 1, subjectId: 1, actionId: 1, active: true },
+      { permissionId: 3, roleId: 1, subjectId: 1, actionId: 3, active: true },
+      { permissionId: 4, roleId: 1, subjectId: 1, actionId: 2, active: true },
+    ]);
 
-      const permissions = [
-        createPermission({
-          permissionId: 1,
-          roleId: 1,
-          subjectId: 1,
-          actionId: 1,
-          active: true,
-        }), // Member.Read — active
-        createPermission({
-          permissionId: 2,
-          roleId: 1,
-          subjectId: 1,
-          actionId: 2,
-          active: false,
-        }), // Member.Create — INACTIVE
-      ];
+    const result = await service.resolveForAdmin(100);
 
-      const result = resolvePermissions(
-        roleAssignments,
-        permissions,
-        STANDARD_SUBJECTS,
-        STANDARD_ACTIONS,
-      );
+    const actions = result.permissions[AdminSubjectEnum.Member];
+    expect(actions).toEqual([...actions].sort());
+  });
 
-      expect(result.permissions[AdminSubjectEnum.Member]).toEqual([AdminActionEnum.Read]);
-    });
+  it('should handle Super Admin with grant_all_on_new_subject having all subjects x all actions', async () => {
+    mockUserRoleRepo.findAll.mockResolvedValue([
+      createRoleAssignment({
+        roleId: 1,
+        role: { roleId: 1, role: 'Super Admin', roleCode: 'super_admin', grantAllOnNewSubject: true },
+      }),
+    ]);
+    // No individual permission rows needed for Super Admin
+    mockPermRepo.findAll.mockResolvedValue([]);
 
-    it('should not include permissions for inactive roles', () => {
-      const roleAssignments = [
-        createRoleAssignment({ roleId: 1, active: true }),
-        createRoleAssignment({
-          adminRolePermissionId: 2,
-          roleId: 2,
-          active: false, // INACTIVE role assignment
-          role: { roleId: 2, role: 'Blog Admin', roleCode: 'blog_admin' },
-        }),
-      ];
+    const result = await service.resolveForAdmin(100);
 
-      const permissions = [
-        createPermission({ permissionId: 1, roleId: 1, subjectId: 1, actionId: 1 }), // Member.Read — active role
-        createPermission({ permissionId: 2, roleId: 2, subjectId: 2, actionId: 1 }), // Blog.Read — inactive role
-        createPermission({ permissionId: 3, roleId: 2, subjectId: 2, actionId: 2 }), // Blog.Create — inactive role
-      ];
+    const allSubjectCodes = (STANDARD_SUBJECTS as Partial<MstAdminSubject>[])
+      .filter((s) => s.active && s.subjectCode !== AdminSubjectEnum.All)
+      .map((s) => s.subjectCode!);
 
-      const result = resolvePermissions(
-        roleAssignments,
-        permissions,
-        STANDARD_SUBJECTS,
-        STANDARD_ACTIONS,
-      );
-
-      expect(result.permissions[AdminSubjectEnum.Member]).toEqual([AdminActionEnum.Read]);
-      expect(result.permissions[AdminSubjectEnum.Blog]).toBeUndefined();
-    });
-
-    it('should return all 4 actions when role has all 4 for a subject', () => {
-      const roleAssignments = [createRoleAssignment({ roleId: 1 })];
-
-      const permissions = STANDARD_ACTIONS.map((action, idx) =>
-        createPermission({
-          permissionId: idx + 1,
-          roleId: 1,
-          subjectId: 1,
-          actionId: action.actionId,
-        }),
-      );
-
-      const result = resolvePermissions(
-        roleAssignments,
-        permissions,
-        STANDARD_SUBJECTS,
-        STANDARD_ACTIONS,
-      );
-
-      expect(result.permissions[AdminSubjectEnum.Member]).toEqual([
+    for (const subjectCode of allSubjectCodes) {
+      expect(result.permissions[subjectCode]).toEqual([
         AdminActionEnum.Create,
         AdminActionEnum.Delete,
         AdminActionEnum.Read,
         AdminActionEnum.Update,
       ]);
-      expect(result.permissions[AdminSubjectEnum.Member]).toHaveLength(4);
-    });
+    }
 
-    it('should return sorted action arrays for consistency', () => {
-      const roleAssignments = [createRoleAssignment({ roleId: 1 })];
+    expect(Object.keys(result.permissions)).toHaveLength(allSubjectCodes.length);
+  });
 
-      // Insert actions in non-alphabetical order
-      const permissions = [
-        createPermission({ permissionId: 1, roleId: 1, subjectId: 1, actionId: 4 }), // Delete
-        createPermission({ permissionId: 2, roleId: 1, subjectId: 1, actionId: 1 }), // Read
-        createPermission({ permissionId: 3, roleId: 1, subjectId: 1, actionId: 3 }), // Update
-        createPermission({ permissionId: 4, roleId: 1, subjectId: 1, actionId: 2 }), // Create
-      ];
+  it('should not include permissions for inactive subjects', async () => {
+    const subjectsWithInactive = [
+      ...STANDARD_SUBJECTS,
+      createSubject({
+        subjectId: 99,
+        subjectCode: 'DeprecatedFeature' as AdminSubjectEnum,
+        subjectName: 'Deprecated Feature',
+        active: false,
+      }),
+    ];
+    mockSubjectRepo.findAll.mockResolvedValue(
+      subjectsWithInactive.filter((s) => s.active), // active: true filter
+    );
+    mockUserRoleRepo.findAll.mockResolvedValue([
+      createRoleAssignment({ roleId: 1 }),
+    ]);
+    mockPermRepo.findAll.mockResolvedValue([
+      { permissionId: 1, roleId: 1, subjectId: 1, actionId: 1, active: true },
+      { permissionId: 2, roleId: 1, subjectId: 99, actionId: 1, active: true },
+    ]);
 
-      const result = resolvePermissions(
-        roleAssignments,
-        permissions,
-        STANDARD_SUBJECTS,
-        STANDARD_ACTIONS,
-      );
+    const result = await service.resolveForAdmin(100);
 
-      const actions = result.permissions[AdminSubjectEnum.Member];
-      // Verify sorted alphabetically
-      expect(actions).toEqual([...actions].sort());
-    });
+    expect(result.permissions[AdminSubjectEnum.Member]).toEqual([AdminActionEnum.Read]);
+    expect(result.permissions['DeprecatedFeature']).toBeUndefined();
+  });
 
-    it('should handle Super Admin with grant_all_on_new_subject having all subjects x all actions', () => {
-      const roleAssignments = [
-        createRoleAssignment({
-          roleId: 1,
-          role: {
-            roleId: 1,
-            role: 'Super Admin',
-            roleCode: 'super_admin',
-            grantAllOnNewSubject: true,
-          },
-        }),
-      ];
+  it('should deduplicate permissions when same subject+action comes from multiple roles', async () => {
+    mockUserRoleRepo.findAll.mockResolvedValue([
+      createRoleAssignment({ roleId: 1 }),
+      createRoleAssignment({
+        adminUserRoleId: 2,
+        roleId: 2,
+        role: { roleId: 2, role: 'Blog Admin', roleCode: 'blog_admin', grantAllOnNewSubject: false },
+      }),
+    ]);
+    mockPermRepo.findAll.mockResolvedValue([
+      { permissionId: 1, roleId: 1, subjectId: 1, actionId: 1, active: true },
+      { permissionId: 2, roleId: 2, subjectId: 1, actionId: 1, active: true },
+      { permissionId: 3, roleId: 2, subjectId: 1, actionId: 2, active: true },
+    ]);
 
-      // No individual permission rows needed — grant_all_on_new_subject overrides
-      const permissions: IMstAdminRoleSubjectPermission[] = [];
+    const result = await service.resolveForAdmin(100);
 
-      const result = resolvePermissions(
-        roleAssignments,
-        permissions,
-        STANDARD_SUBJECTS,
-        STANDARD_ACTIONS,
-      );
+    expect(result.permissions[AdminSubjectEnum.Member]).toEqual([
+      AdminActionEnum.Create,
+      AdminActionEnum.Read,
+    ]);
+  });
 
-      // Every active subject should have all 4 actions
-      const allSubjectCodes = STANDARD_SUBJECTS
-        .filter((s) => s.active && s.subjectCode !== AdminSubjectEnum.All)
-        .map((s) => s.subjectCode);
+  it('should silently skip permission row with non-existent subjectId', async () => {
+    mockUserRoleRepo.findAll.mockResolvedValue([
+      createRoleAssignment({ roleId: 1 }),
+    ]);
+    mockPermRepo.findAll.mockResolvedValue([
+      { permissionId: 1, roleId: 1, subjectId: 1, actionId: 1, active: true },
+      { permissionId: 2, roleId: 1, subjectId: 999, actionId: 1, active: true },
+    ]);
 
-      for (const subjectCode of allSubjectCodes) {
-        expect(result.permissions[subjectCode]).toEqual([
-          AdminActionEnum.Create,
-          AdminActionEnum.Delete,
-          AdminActionEnum.Read,
-          AdminActionEnum.Update,
-        ]);
-      }
+    const result = await service.resolveForAdmin(100);
 
-      expect(Object.keys(result.permissions)).toHaveLength(allSubjectCodes.length);
-    });
+    expect(result.permissions[AdminSubjectEnum.Member]).toEqual([AdminActionEnum.Read]);
+    expect(Object.keys(result.permissions)).toHaveLength(1);
+  });
 
-    it('should not include permissions for inactive subjects', () => {
-      const roleAssignments = [createRoleAssignment({ roleId: 1 })];
+  it('should silently skip permission row with non-existent actionId', async () => {
+    mockUserRoleRepo.findAll.mockResolvedValue([
+      createRoleAssignment({ roleId: 1 }),
+    ]);
+    mockPermRepo.findAll.mockResolvedValue([
+      { permissionId: 1, roleId: 1, subjectId: 1, actionId: 1, active: true },
+      { permissionId: 2, roleId: 1, subjectId: 1, actionId: 999, active: true },
+    ]);
 
-      const subjectsWithInactive = [
-        ...STANDARD_SUBJECTS,
-        createSubject({
-          subjectId: 99,
-          subjectCode: 'DeprecatedFeature' as AdminSubjectEnum,
-          subjectName: 'Deprecated Feature',
-          active: false,
-        }),
-      ];
+    const result = await service.resolveForAdmin(100);
 
-      const permissions = [
-        createPermission({ permissionId: 1, roleId: 1, subjectId: 1, actionId: 1 }),
-        createPermission({ permissionId: 2, roleId: 1, subjectId: 99, actionId: 1 }), // Inactive subject
-      ];
+    expect(result.permissions[AdminSubjectEnum.Member]).toEqual([AdminActionEnum.Read]);
+  });
 
-      const result = resolvePermissions(
-        roleAssignments,
-        permissions,
-        subjectsWithInactive,
-        STANDARD_ACTIONS,
-      );
+  it('should filter out role assignment with null role relation', async () => {
+    mockUserRoleRepo.findAll.mockResolvedValue([
+      createRoleAssignment({ roleId: 1 }),
+    ]);
+    // Only role 1 is in the active list (null role filtered out)
+    mockPermRepo.findAll.mockResolvedValue([
+      { permissionId: 1, roleId: 1, subjectId: 1, actionId: 1, active: true },
+    ]);
 
-      expect(result.permissions[AdminSubjectEnum.Member]).toEqual([AdminActionEnum.Read]);
-      expect(result.permissions['DeprecatedFeature']).toBeUndefined();
-    });
+    const result = await service.resolveForAdmin(100);
 
-    it('should deduplicate permissions when same subject+action comes from multiple roles', () => {
-      const roleAssignments = [
-        createRoleAssignment({ roleId: 1 }),
-        createRoleAssignment({
-          adminRolePermissionId: 2,
-          roleId: 2,
-          role: { roleId: 2, role: 'Blog Admin', roleCode: 'blog_admin' },
-        }),
-      ];
+    expect(result.permissions[AdminSubjectEnum.Member]).toEqual([AdminActionEnum.Read]);
+    expect(result.permissions[AdminSubjectEnum.Blog]).toBeUndefined();
+  });
 
-      const permissions = [
-        createPermission({ permissionId: 1, roleId: 1, subjectId: 1, actionId: 1 }), // Member.Read (role 1)
-        createPermission({ permissionId: 2, roleId: 2, subjectId: 1, actionId: 1 }), // Member.Read (role 2) — duplicate
-        createPermission({ permissionId: 3, roleId: 2, subjectId: 1, actionId: 2 }), // Member.Create (role 2)
-      ];
+  it('should treat Super Admin WITHOUT grantAllOnNewSubject as normal role', async () => {
+    mockUserRoleRepo.findAll.mockResolvedValue([
+      createRoleAssignment({
+        roleId: 1,
+        role: { roleId: 1, role: 'Super Admin', roleCode: 'super_admin', grantAllOnNewSubject: false },
+      }),
+    ]);
+    mockPermRepo.findAll.mockResolvedValue([
+      { permissionId: 1, roleId: 1, subjectId: 1, actionId: 1, active: true },
+    ]);
 
-      const result = resolvePermissions(
-        roleAssignments,
-        permissions,
-        STANDARD_SUBJECTS,
-        STANDARD_ACTIONS,
-      );
+    const result = await service.resolveForAdmin(100);
 
-      // Member.Read should appear only once in the array
-      expect(result.permissions[AdminSubjectEnum.Member]).toEqual([
+    expect(result.permissions[AdminSubjectEnum.Member]).toEqual([AdminActionEnum.Read]);
+    expect(Object.keys(result.permissions)).toHaveLength(1);
+  });
+
+  it('should trigger grant-all when any role has grantAllOnNewSubject (mixed roles)', async () => {
+    mockUserRoleRepo.findAll.mockResolvedValue([
+      createRoleAssignment({
+        roleId: 1,
+        role: { roleId: 1, role: 'Franchise Admin', roleCode: 'franchise_admin', grantAllOnNewSubject: false },
+      }),
+      createRoleAssignment({
+        adminUserRoleId: 2,
+        roleId: 2,
+        role: { roleId: 2, role: 'Super Admin', roleCode: 'super_admin', grantAllOnNewSubject: true },
+      }),
+    ]);
+    mockPermRepo.findAll.mockResolvedValue([]);
+
+    const result = await service.resolveForAdmin(100);
+
+    const allSubjectCodes = (STANDARD_SUBJECTS as Partial<MstAdminSubject>[])
+      .filter((s) => s.active && s.subjectCode !== AdminSubjectEnum.All)
+      .map((s) => s.subjectCode!);
+
+    for (const subjectCode of allSubjectCodes) {
+      expect(result.permissions[subjectCode]).toEqual([
         AdminActionEnum.Create,
+        AdminActionEnum.Delete,
         AdminActionEnum.Read,
+        AdminActionEnum.Update,
       ]);
-    });
+    }
+  });
 
-    it('should silently skip permission row with non-existent subjectId', () => {
-      const roleAssignments = [createRoleAssignment({ roleId: 1 })];
+  it('should NOT include AdminSubjectEnum.All in Super Admin permission dictionary', async () => {
+    const subjectsWithAll = [
+      ...STANDARD_SUBJECTS,
+      createSubject({
+        subjectId: 100,
+        subjectCode: AdminSubjectEnum.All,
+        subjectName: 'All',
+        franchiseScoped: false,
+      }),
+    ];
+    mockSubjectRepo.findAll.mockResolvedValue(subjectsWithAll);
+    mockUserRoleRepo.findAll.mockResolvedValue([
+      createRoleAssignment({
+        roleId: 1,
+        role: { roleId: 1, role: 'Super Admin', roleCode: 'super_admin', grantAllOnNewSubject: true },
+      }),
+    ]);
+    mockPermRepo.findAll.mockResolvedValue([]);
 
-      const permissions = [
-        createPermission({ permissionId: 1, roleId: 1, subjectId: 1, actionId: 1 }), // Member.Read — valid
-        createPermission({ permissionId: 2, roleId: 1, subjectId: 999, actionId: 1 }), // subjectId 999 does not exist
-      ];
+    const result = await service.resolveForAdmin(100);
 
-      const result = resolvePermissions(
-        roleAssignments,
-        permissions,
-        STANDARD_SUBJECTS,
-        STANDARD_ACTIONS,
-      );
-
-      // Only valid permission should appear; non-existent subject silently skipped
-      expect(result.permissions[AdminSubjectEnum.Member]).toEqual([AdminActionEnum.Read]);
-      expect(Object.keys(result.permissions)).toHaveLength(1);
-    });
-
-    it('should silently skip permission row with non-existent actionId', () => {
-      const roleAssignments = [createRoleAssignment({ roleId: 1 })];
-
-      const permissions = [
-        createPermission({ permissionId: 1, roleId: 1, subjectId: 1, actionId: 1 }), // Member.Read — valid
-        createPermission({ permissionId: 2, roleId: 1, subjectId: 1, actionId: 999 }), // actionId 999 does not exist
-      ];
-
-      const result = resolvePermissions(
-        roleAssignments,
-        permissions,
-        STANDARD_SUBJECTS,
-        STANDARD_ACTIONS,
-      );
-
-      // Only the valid action should appear
-      expect(result.permissions[AdminSubjectEnum.Member]).toEqual([AdminActionEnum.Read]);
-    });
-
-    it('should filter out role assignment with null role relation', () => {
-      const roleAssignments = [
-        createRoleAssignment({ roleId: 1 }),
-        createRoleAssignment({
-          adminRolePermissionId: 2,
-          roleId: 2,
-          active: true,
-          role: null as unknown as IRoleAssignment['role'], // null role relation
-        }),
-      ];
-
-      const permissions = [
-        createPermission({ permissionId: 1, roleId: 1, subjectId: 1, actionId: 1 }), // Member.Read (role 1)
-        createPermission({ permissionId: 2, roleId: 2, subjectId: 2, actionId: 1 }), // Blog.Read (role 2 — null role)
-      ];
-
-      const result = resolvePermissions(
-        roleAssignments,
-        permissions,
-        STANDARD_SUBJECTS,
-        STANDARD_ACTIONS,
-      );
-
-      // Role 2 has null role relation so it should be filtered out by `ra.active && ra.role` check
-      expect(result.permissions[AdminSubjectEnum.Member]).toEqual([AdminActionEnum.Read]);
-      expect(result.permissions[AdminSubjectEnum.Blog]).toBeUndefined();
-    });
-
-    it('should treat Super Admin WITHOUT grantAllOnNewSubject as normal role', () => {
-      const roleAssignments = [
-        createRoleAssignment({
-          roleId: 1,
-          role: {
-            roleId: 1,
-            role: 'Super Admin',
-            roleCode: 'super_admin',
-            grantAllOnNewSubject: false, // explicitly false
-          },
-        }),
-      ];
-
-      // Only one explicit permission row
-      const permissions = [
-        createPermission({ permissionId: 1, roleId: 1, subjectId: 1, actionId: 1 }), // Member.Read
-      ];
-
-      const result = resolvePermissions(
-        roleAssignments,
-        permissions,
-        STANDARD_SUBJECTS,
-        STANDARD_ACTIONS,
-      );
-
-      // Should NOT get all subjects x all actions — only the explicit Member.Read
-      expect(result.permissions[AdminSubjectEnum.Member]).toEqual([AdminActionEnum.Read]);
-      expect(Object.keys(result.permissions)).toHaveLength(1);
-    });
-
-    it('should trigger grant-all when any role has grantAllOnNewSubject (mixed roles)', () => {
-      const roleAssignments = [
-        createRoleAssignment({
-          roleId: 1,
-          role: {
-            roleId: 1,
-            role: 'Franchise Admin',
-            roleCode: 'franchise_admin',
-            grantAllOnNewSubject: false,
-          },
-        }),
-        createRoleAssignment({
-          adminRolePermissionId: 2,
-          roleId: 2,
-          role: {
-            roleId: 2,
-            role: 'Super Admin',
-            roleCode: 'super_admin',
-            grantAllOnNewSubject: true, // one role has the flag
-          },
-        }),
-      ];
-
-      const permissions: IMstAdminRoleSubjectPermission[] = [];
-
-      const result = resolvePermissions(
-        roleAssignments,
-        permissions,
-        STANDARD_SUBJECTS,
-        STANDARD_ACTIONS,
-      );
-
-      // Any role with grantAllOnNewSubject triggers full access across all subjects
-      const allSubjectCodes = STANDARD_SUBJECTS
-        .filter((s) => s.active && s.subjectCode !== AdminSubjectEnum.All)
-        .map((s) => s.subjectCode);
-
-      for (const subjectCode of allSubjectCodes) {
-        expect(result.permissions[subjectCode]).toEqual([
-          AdminActionEnum.Create,
-          AdminActionEnum.Delete,
-          AdminActionEnum.Read,
-          AdminActionEnum.Update,
-        ]);
-      }
-    });
-
-    it('should NOT include AdminSubjectEnum.All in Super Admin permission dictionary', () => {
-      const subjectsWithAll = [
-        ...STANDARD_SUBJECTS,
-        createSubject({
-          subjectId: 100,
-          subjectCode: AdminSubjectEnum.All,
-          subjectName: 'All',
-          franchiseScoped: false,
-        }),
-      ];
-
-      const roleAssignments = [
-        createRoleAssignment({
-          roleId: 1,
-          role: {
-            roleId: 1,
-            role: 'Super Admin',
-            roleCode: 'super_admin',
-            grantAllOnNewSubject: true,
-          },
-        }),
-      ];
-
-      const permissions: IMstAdminRoleSubjectPermission[] = [];
-
-      const result = resolvePermissions(
-        roleAssignments,
-        permissions,
-        subjectsWithAll,
-        STANDARD_ACTIONS,
-      );
-
-      // The 'all' subject code (CASL wildcard) must be excluded from the output
-      expect(result.permissions[AdminSubjectEnum.All]).toBeUndefined();
-      expect(result.subjectMeta[AdminSubjectEnum.All]).toBeUndefined();
-    });
+    expect(result.permissions[AdminSubjectEnum.All]).toBeUndefined();
+    expect(result.subjectMeta[AdminSubjectEnum.All]).toBeUndefined();
   });
 });

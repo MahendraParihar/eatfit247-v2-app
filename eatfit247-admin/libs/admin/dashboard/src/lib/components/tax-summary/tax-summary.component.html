@@ -1,0 +1,40 @@
+<mat-card class="tax-summary-card">
+  <mat-card-header>
+    <mat-card-title>Tax Summary (GST)</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    @if (loading) {
+      <shared-ui-loader></shared-ui-loader>
+    } @else if (!data) {
+      <shared-ui-empty-state
+        title="No Tax Data"
+        description="Tax summary data is not available at the moment."
+        icon="receipt_long"
+      ></shared-ui-empty-state>
+    } @else {
+      <div class="tax-period">Period: {{ data.period }}</div>
+      <div class="tax-table">
+        <div class="tax-row">
+          <span class="tax-label">Total Taxable</span>
+          <span class="tax-value">{{ formatAmount(data.totalTaxable) }}</span>
+        </div>
+        <div class="tax-row">
+          <span class="tax-label">CGST</span>
+          <span class="tax-value">{{ formatAmount(data.cgst) }}</span>
+        </div>
+        <div class="tax-row">
+          <span class="tax-label">SGST</span>
+          <span class="tax-value">{{ formatAmount(data.sgst) }}</span>
+        </div>
+        <div class="tax-row">
+          <span class="tax-label">IGST</span>
+          <span class="tax-value">{{ formatAmount(data.igst) }}</span>
+        </div>
+        <div class="tax-row total-row">
+          <span class="tax-label">Total GST</span>
+          <span class="tax-value">{{ formatAmount(data.totalGst) }}</span>
+        </div>
+      </div>
+    }
+  </mat-card-content>
+</mat-card>

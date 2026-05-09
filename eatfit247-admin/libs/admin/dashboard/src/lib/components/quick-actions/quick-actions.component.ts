@@ -1,9 +1,65 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { PermissionService } from '@core';
+import { AdminSubjectEnum } from '@eatfit247-shared-lib';
+
+interface QuickAction {
+  label: string;
+  icon: string;
+  route?: string;
+  action?: string;
+  requiredSubject: AdminSubjectEnum;
+  requiredAction: string;
+}
+
+const ALL_ACTIONS: QuickAction[] = [
+  {
+    label: 'Add Member',
+    icon: 'person_add',
+    route: '/members/new',
+    requiredSubject: AdminSubjectEnum.Member,
+    requiredAction: 'create',
+  },
+  {
+    label: 'Create Diet Plan',
+    icon: 'restaurant_menu',
+    route: '/diet-template',
+    requiredSubject: AdminSubjectEnum.DietTemplate,
+    requiredAction: 'read',
+  },
+  {
+    label: 'Record Payment',
+    icon: 'payments',
+    route: '/payments/new',
+    requiredSubject: AdminSubjectEnum.MemberPayment,
+    requiredAction: 'create',
+  },
+  {
+    label: 'Generate Payment Link',
+    icon: 'link',
+    route: '/payments/generate',
+    requiredSubject: AdminSubjectEnum.MemberPayment,
+    requiredAction: 'create',
+  },
+  {
+    label: 'Send WhatsApp',
+    icon: 'chat',
+    action: 'whatsapp',
+    requiredSubject: AdminSubjectEnum.Notification,
+    requiredAction: 'create',
+  },
+  {
+    label: 'Send Email',
+    icon: 'email',
+    action: 'email',
+    requiredSubject: AdminSubjectEnum.Notification,
+    requiredAction: 'create',
+  },
+];
 
 @Component({
   selector: 'lib-quick-actions',
@@ -13,28 +69,22 @@ import { MatIconModule } from '@angular/material/icon';
   styleUrl: './quick-actions.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class QuickActionsComponent {
+export class QuickActionsComponent implements OnInit {
   private readonly router = inject(Router);
+  private readonly permissionService = inject(PermissionService);
 
-  constructor() {}
+  actions: QuickAction[] = [];
 
-  actions = [
-    { label: 'Add Member', icon: 'person_add', route: '/members/new', color: 'primary' },
-    { label: 'Create Diet Plan', icon: 'restaurant_menu', route: '/diet-template', color: 'primary' },
-    { label: 'Record Payment', icon: 'payments', route: '/payments/new', color: 'primary' },
-    { label: 'Generate Payment Link', icon: 'link', route: '/payments/generate', color: 'primary' },
-    { label: 'Send WhatsApp', icon: 'chat', action: 'whatsapp', color: 'primary' },
-    { label: 'Send Email', icon: 'email', action: 'email', color: 'primary' },
-  ];
+  ngOnInit(): void {
+    this.actions = ALL_ACTIONS.filter((a) =>
+      this.permissionService.hasPermission(a.requiredSubject, a.requiredAction),
+    );
+  }
 
-  onActionClick(action: any): void {
+  onActionClick(action: QuickAction): void {
     if (action.route) {
       this.router.navigate([action.route]);
-    } else if (action.action === 'whatsapp') {
-      // Handle WhatsApp action - TODO: Implement WhatsApp functionality
-    } else if (action.action === 'email') {
-      // Handle Email action - TODO: Implement Email functionality
     }
+    // WhatsApp and Email actions - TODO: Implement
   }
 }
-

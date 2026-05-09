@@ -8,9 +8,31 @@ type RoleScope = Record<string, unknown>;
 
 @Injectable()
 export class CaslAbilityFactory {
-  createForUser(user: Pick<IAuthUser, 'roleKeys' | 'franchiseIds'>): AppAbility {
+  createForUser(user: Pick<IAuthUser, 'roleKeys' | 'franchiseIds' | 'permissions' | 'subjectMeta'>): AppAbility {
     const { can, build } = new AbilityBuilder<AppAbility>(createMongoAbility);
 
+    // New DB-driven path: use permissions dictionary when available
+    if (user.permissions && Object.keys(user.permissions).length > 0) {
+      for (const [subjectCode, actions] of Object.entries(user.permissions)) {
+        const isFranchiseScoped = user.subjectMeta?.[subjectCode]?.franchiseScoped ?? false;
+
+        for (const actionCode of actions) {
+          if (isFranchiseScoped && user.franchiseIds.length > 0) {
+            // Type assertion needed: CASL's string-based subjects don't carry field types,
+            // but conditions are evaluated correctly at runtime via MongoQuery
+            (can as Function)(actionCode, subjectCode, {
+              franchiseId: { $in: user.franchiseIds },
+            });
+          } else {
+            can(actionCode as AdminActionEnum, subjectCode as AdminSubjectEnum);
+          }
+        }
+      }
+
+      return build();
+    }
+
+    // Backward-compat fallback: hardcoded role-based logic (pre-migration)
     if (user.roleKeys.includes(AdminRoleEnum.SuperAdmin)) {
       can(AdminActionEnum.Manage, AdminSubjectEnum.All);
       return build();
@@ -43,6 +65,8 @@ export class CaslAbilityFactory {
 
     return build();
   }
+
+  // ---- Legacy role-specific methods (kept for backward compat during migration) ----
 
   private scope(franchiseIds: number[]): RoleScope {
     return franchiseIds.length ? { franchiseId: { $in: franchiseIds } } : {};

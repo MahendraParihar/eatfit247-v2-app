@@ -84,6 +84,11 @@ export const appRoutes: Route[] = [
         loadChildren: () => import('call-logs').then((m) => m.callLogsRoutes),
       },
       {
+        path: 'appointments',
+        loadChildren: () =>
+          import('appointment').then((m) => m.appointmentRoutes),
+      },
+      {
         path: 'issues',
         loadChildren: () => import('issues').then((m) => m.issuesRoutes),
       },

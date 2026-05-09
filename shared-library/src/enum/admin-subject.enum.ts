@@ -54,4 +54,8 @@ export enum AdminSubjectEnum {
     PocketGuide      = 'PocketGuide',
     Notification     = 'Notification',
     GoogleCalendar   = 'GoogleCalendar',
+
+    // Scheduling domain
+    Appointment      = 'Appointment',
+    ContactForm      = 'ContactForm',
 }

@@ -65,7 +65,7 @@ function buildAbilityFromPermissionRows(
     if (!row.active) continue;
 
     if (row.franchiseScoped && franchiseIds.length > 0) {
-      can(row.actionCode, row.subjectCode, { franchiseId: { $in: franchiseIds } });
+      (can as Function)(row.actionCode, row.subjectCode, { franchiseId: { $in: franchiseIds } });
     } else {
       can(row.actionCode, row.subjectCode);
     }
@@ -359,7 +359,7 @@ describe('CaslAbilityFactory (DB-driven RBAC)', () => {
       expect(
         ability.can(
           AdminActionEnum.Read,
-          subject('Member' as AdminSubjectEnum, { franchiseId: 99 }),
+          subject('Member' as AdminSubjectEnum, { franchiseId: 99 }) as unknown as AdminSubjectEnum,
         ),
       ).toBe(false);
     });
@@ -379,7 +379,7 @@ describe('CaslAbilityFactory (DB-driven RBAC)', () => {
       expect(
         ability.can(
           AdminActionEnum.Read,
-          subject('Member' as AdminSubjectEnum, { franchiseId: 1 }),
+          subject('Member' as AdminSubjectEnum, { franchiseId: 1 }) as unknown as AdminSubjectEnum,
         ),
       ).toBe(true);
     });

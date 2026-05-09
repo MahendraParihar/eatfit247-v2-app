@@ -1,19 +1,19 @@
 import {
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   ElementRef,
   HostListener,
-  Input,
-  OnChanges,
+  inject,
   OnDestroy,
   OnInit,
-  SimpleChanges,
-  ViewChild
+  ViewChild,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { EmptyStateComponent, LoaderComponent } from '@shared';
 import { IProgramPerformanceData } from '@eatfit247-shared-lib';
+import { DashboardApiService } from '../../api.service';
 
 declare var echarts: any;
 
@@ -25,48 +25,45 @@ declare var echarts: any;
   styleUrl: './program-performance-chart.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ProgramPerformanceChartComponent implements OnInit, OnChanges, OnDestroy {
-  @Input() data?: IProgramPerformanceData[];
-  @Input() loading = false;
+export class ProgramPerformanceChartComponent implements OnInit, OnDestroy {
   @ViewChild('chart', { static: false }) chartRef!: ElementRef;
 
+  private readonly apiService = inject(DashboardApiService);
+  private readonly cdr = inject(ChangeDetectorRef);
   private chartInstance: any;
 
-  ngOnInit(): void {
-    if (typeof window !== 'undefined' && (window as any).echarts) {
-      this.initChart();
-    }
-    window.addEventListener('resize', this.onResize);
-  }
+  data?: IProgramPerformanceData[];
+  loading = false;
 
-  ngOnDestroy(): void {
-    window.removeEventListener('resize', this.onResize);
-    if (this.chartInstance) {
-      this.chartInstance.dispose();
-    }
-  }
-
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes['data'] && this.data && !this.loading) {
+  async ngOnInit(): Promise<void> {
+    this.loading = true;
+    this.cdr.markForCheck();
+    try {
+      this.data = await this.apiService.getProgramPerformanceData();
+    } catch {
+      // Error handled by HttpErrorInterceptor
+    } finally {
+      this.loading = false;
+      this.cdr.markForCheck();
       setTimeout(() => this.updateChart(), 100);
     }
   }
 
-  private initChart(): void {
-    if (this.chartRef?.nativeElement) {
-      this.chartInstance = echarts.init(this.chartRef.nativeElement);
-      this.updateChart();
-    }
+  ngOnDestroy(): void {
+    if (this.chartInstance) this.chartInstance.dispose();
   }
 
   private getCssVariable(name: string): string {
-    return getComputedStyle(document.documentElement)
-      .getPropertyValue(name)
-      .trim();
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
   }
 
   private updateChart(): void {
-    if (!this.data || this.data.length === 0 || !this.chartInstance) return;
+    if (!this.data || this.data.length === 0) return;
+
+    if (!this.chartInstance && this.chartRef?.nativeElement) {
+      this.chartInstance = echarts.init(this.chartRef.nativeElement);
+    }
+    if (!this.chartInstance) return;
 
     const top5 = this.data.slice(0, 5);
     const colors = [
@@ -86,53 +83,29 @@ export class ProgramPerformanceChartComponent implements OnInit, OnChanges, OnDe
         trigger: 'item',
         backgroundColor: surfaceColor,
         borderColor: outlineColor,
-        textStyle: {
-          color: onSurfaceColor,
-        },
-        formatter: (params: any) => {
-          return `${params.name}<br/>${params.seriesName}: ${params.value} (${params.percent}%)`;
-        },
+        textStyle: { color: onSurfaceColor },
+        formatter: (params: any) =>
+          `${params.name}<br/>${params.seriesName}: ${params.value} (${params.percent}%)`,
       },
       legend: {
-        orient: 'vertical',
-        left: 'left',
+        orient: 'vertical', left: 'left',
         data: top5.map((d) => d.programName),
-        textStyle: {
-          color: onSurfaceColor,
-        },
+        textStyle: { color: onSurfaceColor },
       },
       series: [
         {
-          name: 'Enrollment',
-          type: 'pie',
-          radius: ['40%', '70%'],
+          name: 'Enrollment', type: 'pie', radius: ['40%', '70%'],
           avoidLabelOverlap: false,
-          itemStyle: {
-            borderRadius: 0,
-            borderColor: surfaceColor,
-            borderWidth: 2,
-          },
-          label: {
-            show: false,
-            position: 'center',
-          },
+          itemStyle: { borderRadius: 0, borderColor: surfaceColor, borderWidth: 2 },
+          label: { show: false, position: 'center' },
           emphasis: {
-            label: {
-              show: true,
-              fontSize: 16,
-              fontWeight: 'bold',
-              color: onSurfaceColor,
-            },
+            label: { show: true, fontSize: 16, fontWeight: 'bold', color: onSurfaceColor },
           },
-          labelLine: {
-            show: false,
-          },
+          labelLine: { show: false },
           data: top5.map((d, index) => ({
             value: d.enrollment,
             name: d.programName,
-            itemStyle: {
-              color: colors[index % colors.length],
-            },
+            itemStyle: { color: colors[index % colors.length] },
           })),
         },
       ],
@@ -142,11 +115,8 @@ export class ProgramPerformanceChartComponent implements OnInit, OnChanges, OnDe
     this.chartInstance.resize();
   }
 
-  @HostListener('window:resize', ['$event'])
-  onResize = (): void => {
-    if (this.chartInstance) {
-      this.chartInstance.resize();
-    }
-  };
+  @HostListener('window:resize')
+  onResize(): void {
+    if (this.chartInstance) this.chartInstance.resize();
+  }
 }
-

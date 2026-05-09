@@ -18,16 +18,21 @@ import { HealthController } from './health/health.controller';
 import { AppConfigModule } from './config/app-config';
 import { AdminUserService } from './auth/admin-user.service';
 import { CaslAbilityFactory } from './auth/casl-ability.factory';
+import { PermissionResolutionService } from './auth/permission-resolution.service';
+import { RbacCacheService } from './auth/rbac-cache.service';
 import { AbilitiesGuard } from './guards/abilities.guard';
 import { CacheModule } from './cache/cache.module';
 // Models moved to core - import from there
 // Admin models from core
 import {
   AppConfigModel,
+  MstAdminAction,
   MstAdminRole,
-  MstAdminRolePermission,
+  MstAdminRoleSubjectPermission,
+  MstAdminSubject,
   MstAdminUser,
   MstFranchise,
+  TxnAdminUserRole,
   TxnAdminLastLoginDetail,
   TxnAdminPasswordResetToken,
   TxnAdminRefreshToken,
@@ -56,10 +61,14 @@ export class CommonModule {
     const coreModelsList = [
       AppConfigModel,
       MstAdminUser,
-      MstAdminRole, // Used in MstAdminRolePermission scopes
+      MstAdminRole,
       MstFranchise,
-      MstAdminRolePermission,
+      TxnAdminUserRole,
       TxnAdminFranchise,
+      // RBAC permission matrix tables
+      MstAdminSubject,
+      MstAdminAction,
+      MstAdminRoleSubjectPermission,
       // Transactional admin models
       TxnAdminLastLoginDetail,
       TxnAdminRefreshToken,
@@ -110,6 +119,8 @@ export class CommonModule {
           useClass: TransformInterceptor,
         },
         JwtStrategy,
+        PermissionResolutionService,
+        RbacCacheService,
         AdminUserService,
         CaslAbilityFactory,
         AbilitiesGuard,
@@ -119,6 +130,8 @@ export class CommonModule {
         JwtModule,
         PassportModule,
         AppConfigModule,
+        PermissionResolutionService,
+        RbacCacheService,
         AdminUserService,
         CaslAbilityFactory,
         AbilitiesGuard,

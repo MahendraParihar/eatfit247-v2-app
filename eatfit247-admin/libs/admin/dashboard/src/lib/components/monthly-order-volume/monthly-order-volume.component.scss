@@ -1,0 +1,24 @@
+@use 'styles' as *;
+
+.monthly-order-volume-card {
+  border-radius: var(--radius-card);
+  background: var(--md-sys-color-surface);
+  box-shadow: var(--elevation-level-1);
+  height: 100%;
+
+  mat-card-header {
+    margin-bottom: 16px;
+  }
+
+  mat-card-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--md-sys-color-on-surface);
+  }
+
+  .chart-container {
+    width: 100%;
+    height: 400px;
+    min-height: 400px;
+  }
+}

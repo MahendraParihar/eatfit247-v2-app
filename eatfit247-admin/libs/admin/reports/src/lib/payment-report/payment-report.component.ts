@@ -54,6 +54,7 @@ export class PaymentReportComponent implements OnInit, OnDestroy {
   totalCount = 0;
   loading = false;
   exporting = false;
+  exportingExcel = false;
   tableConfig!: ITableConfig<IPaymentReportItem>;
   franchiseOptions: { id: number | null; label: string }[] = [];
   selectedQuickFilter: string | null = null;
@@ -349,6 +350,38 @@ export class PaymentReportComponent implements OnInit, OnDestroy {
       });
     } finally {
       this.exporting = false;
+    }
+  }
+
+  async onExportExcel(): Promise<void> {
+    if (this.filterForm.invalid) {
+      return;
+    }
+    this.exportingExcel = true;
+    try {
+      const formValue = this.filterForm.value;
+      const params: IPaymentReportFilter = {
+        startDate: this.formatDate(formValue.startDate),
+        endDate: this.formatDate(formValue.endDate),
+        franchiseId: formValue.franchiseId || undefined
+      };
+      const blob = await this.apiService.exportPaymentReportExcel(params);
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      const startDateStr = params.startDate.replace(/-/g, '');
+      const endDateStr = params.endDate.replace(/-/g, '');
+      link.download = `payment-report_${startDateStr}_to_${endDateStr}.xlsx`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      this.snackBar.open('Failed to export Excel report. Please try again.', 'Close', {
+        duration: 5000,
+      });
+    } finally {
+      this.exportingExcel = false;
     }
   }
 }

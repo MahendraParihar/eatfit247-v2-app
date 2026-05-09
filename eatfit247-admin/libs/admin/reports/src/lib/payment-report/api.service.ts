@@ -23,5 +23,10 @@ export class PaymentReportApiService {
     const exportEndpoint = `${this.endpoint}/export`;
     return await this.httpService.postBlob(exportEndpoint, params);
   }
+
+  async exportPaymentReportExcel(params: IPaymentReportFilter): Promise<Blob> {
+    const exportEndpoint = `${this.endpoint}/export-excel`;
+    return await this.httpService.postBlob(exportEndpoint, params);
+  }
 }
 

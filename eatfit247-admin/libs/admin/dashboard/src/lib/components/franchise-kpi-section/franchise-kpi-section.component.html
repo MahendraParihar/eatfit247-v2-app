@@ -1,0 +1,25 @@
+@if (loading) {
+  <shared-ui-loader></shared-ui-loader>
+} @else if (kpis) {
+  <div class="kpi-grid">
+    <lib-kpi-card
+      icon="payments"
+      label="Franchise Revenue"
+      [value]="formatCurrency(kpis.franchiseRevenue)"
+      [trend]="kpis.trends?.franchiseRevenue"
+      trendLabel="vs last month"
+    ></lib-kpi-card>
+    <lib-kpi-card
+      icon="people"
+      label="Member Count"
+      [value]="kpis.franchiseMemberCount"
+      [trend]="kpis.trends?.franchiseMemberCount"
+      trendLabel="vs last month"
+    ></lib-kpi-card>
+    <lib-kpi-card
+      icon="assignment"
+      label="Active Plans"
+      [value]="kpis.franchiseActivePlans"
+    ></lib-kpi-card>
+  </div>
+}

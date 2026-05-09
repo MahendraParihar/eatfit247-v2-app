@@ -1,0 +1,40 @@
+<mat-card class="expiring-plans-card">
+  <mat-card-header>
+    <mat-card-title>Expiring Diet Plans</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    @if (loading) {
+      <shared-ui-loader></shared-ui-loader>
+    } @else if (plans.length === 0) {
+      <shared-ui-empty-state
+        title="No Expiring Plans"
+        description="There are no diet plans expiring soon."
+        icon="check_circle"
+      ></shared-ui-empty-state>
+    } @else {
+      <div class="plans-list">
+        @for (plan of plans; track plan.memberId) {
+          <div class="plan-item" [class]="getUrgencyClass(plan.daysRemaining)">
+            <div class="plan-icon">
+              <mat-icon>{{ getUrgencyIcon(plan.daysRemaining) }}</mat-icon>
+            </div>
+            <div class="plan-details">
+              <div class="plan-member">{{ plan.memberName }}</div>
+              <div class="plan-name">{{ plan.planName }}</div>
+              <div class="plan-meta">
+                <span class="plan-expiry">
+                  <mat-icon class="meta-icon">event</mat-icon>
+                  {{ plan.expiryDate | date: 'dd MMM yyyy' }}
+                </span>
+              </div>
+            </div>
+            <div class="plan-days-remaining">
+              <div class="days-count">{{ plan.daysRemaining }}</div>
+              <div class="days-label">{{ plan.daysRemaining === 1 ? 'day' : 'days' }} left</div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </mat-card-content>
+</mat-card>

@@ -1,29 +1,9 @@
+import { Test, TestingModule } from '@nestjs/testing';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { AdminActionEnum, AdminSubjectEnum } from '@eatfit247-shared-lib';
-
-// ---------------------------------------------------------------------------
-// Interfaces for the RBAC cache layer
-// ---------------------------------------------------------------------------
-
-/** The full cached permission payload stored per admin user */
-interface ICachedPermissions {
-  adminId: number;
-  roles: Array<{ roleId: number; role: string; roleCode: string }>;
-  permissions: Record<string, string[]>;
-  franchiseIds: number[];
-}
-
-/** Interface for the RbacCacheService that will be implemented */
-interface IRbacCacheService {
-  getPermissions(adminId: number): Promise<ICachedPermissions | null>;
-  setPermissions(adminId: number, data: ICachedPermissions): Promise<void>;
-  invalidatePermissions(adminIds: number[]): Promise<void>;
-  rebuildPermissions(adminId: number): Promise<ICachedPermissions>;
-}
-
-/** Interface for the permission resolution service (DB layer) */
-interface IPermissionResolutionService {
-  resolveForAdmin(adminId: number): Promise<ICachedPermissions>;
-}
+import { RbacCacheService } from './rbac-cache.service';
+import { PermissionResolutionService } from './permission-resolution.service';
+import { ICachedPermissions } from './rbac.interfaces';
 
 // ---------------------------------------------------------------------------
 // Mock factories
@@ -45,79 +25,9 @@ function createCachedPermissions(
       [AdminSubjectEnum.Dashboard]: [AdminActionEnum.Read],
     },
     franchiseIds: [1],
+    subjectMeta: {},
     ...overrides,
   };
-}
-
-// ---------------------------------------------------------------------------
-// Simulated RbacCacheService (the service that tests validate)
-// ---------------------------------------------------------------------------
-
-/**
- * Simulated implementation of the RbacCacheService.
- * In production this will be a NestJS Injectable that wraps cache-manager
- * with Redis pub/sub for invalidation.
- */
-class RbacCacheService implements IRbacCacheService {
-  private readonly CACHE_KEY_PREFIX = 'rbac:permissions:';
-  private readonly TTL_SECONDS = 3600;
-
-  constructor(
-    private readonly cacheManager: {
-      get: (key: string) => Promise<string | undefined>;
-      set: (key: string, value: string, ttl?: number) => Promise<void>;
-      del: (key: string) => Promise<void>;
-    },
-    private readonly permissionResolutionService: IPermissionResolutionService,
-  ) {}
-
-  async getPermissions(adminId: number): Promise<ICachedPermissions | null> {
-    try {
-      const cached = await this.cacheManager.get(
-        `${this.CACHE_KEY_PREFIX}${adminId}`,
-      );
-      if (cached) {
-        return JSON.parse(cached) as ICachedPermissions;
-      }
-    } catch {
-      // Redis unavailable — fall through to DB
-    }
-
-    // Cache miss or Redis down: load from DB
-    const resolved = await this.permissionResolutionService.resolveForAdmin(adminId);
-    try {
-      await this.setPermissions(adminId, resolved);
-    } catch {
-      // Cache write failure is non-fatal
-    }
-    return resolved;
-  }
-
-  async setPermissions(
-    adminId: number,
-    data: ICachedPermissions,
-  ): Promise<void> {
-    await this.cacheManager.set(
-      `${this.CACHE_KEY_PREFIX}${adminId}`,
-      JSON.stringify(data),
-      this.TTL_SECONDS,
-    );
-  }
-
-  async invalidatePermissions(adminIds: number[]): Promise<void> {
-    await Promise.all(
-      adminIds.map((id) =>
-        this.cacheManager.del(`${this.CACHE_KEY_PREFIX}${id}`),
-      ),
-    );
-  }
-
-  async rebuildPermissions(adminId: number): Promise<ICachedPermissions> {
-    await this.cacheManager.del(`${this.CACHE_KEY_PREFIX}${adminId}`);
-    const resolved = await this.permissionResolutionService.resolveForAdmin(adminId);
-    await this.setPermissions(adminId, resolved);
-    return resolved;
-  }
 }
 
 // ---------------------------------------------------------------------------
@@ -127,24 +37,32 @@ class RbacCacheService implements IRbacCacheService {
 describe('RbacCacheService', () => {
   let service: RbacCacheService;
   let mockCacheManager: {
-    get: jest.Mock<Promise<string | undefined>, [string]>;
-    set: jest.Mock<Promise<void>, [string, string, number?]>;
-    del: jest.Mock<Promise<void>, [string]>;
+    get: jest.Mock;
+    set: jest.Mock;
+    del: jest.Mock;
   };
-  let mockPermissionResolver: jest.Mocked<IPermissionResolutionService>;
+  let mockPermissionResolver: { resolveForAdmin: jest.Mock };
 
-  beforeEach(() => {
+  beforeEach(async () => {
     mockCacheManager = {
-      get: jest.fn<Promise<string | undefined>, [string]>(),
-      set: jest.fn<Promise<void>, [string, string, number?]>(),
-      del: jest.fn<Promise<void>, [string]>(),
+      get: jest.fn(),
+      set: jest.fn(),
+      del: jest.fn(),
     };
 
     mockPermissionResolver = {
-      resolveForAdmin: jest.fn<Promise<ICachedPermissions>, [number]>(),
+      resolveForAdmin: jest.fn(),
     };
 
-    service = new RbacCacheService(mockCacheManager, mockPermissionResolver);
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        RbacCacheService,
+        { provide: CACHE_MANAGER, useValue: mockCacheManager },
+        { provide: PermissionResolutionService, useValue: mockPermissionResolver },
+      ],
+    }).compile();
+
+    service = module.get(RbacCacheService);
   });
 
   afterEach(() => {
@@ -184,7 +102,6 @@ describe('RbacCacheService', () => {
       const resolved = createCachedPermissions({ adminId: 100 });
       mockCacheManager.get.mockRejectedValue(new Error('Redis connection refused'));
       mockPermissionResolver.resolveForAdmin.mockResolvedValue(resolved);
-      // set also fails since Redis is down
       mockCacheManager.set.mockRejectedValue(new Error('Redis connection refused'));
 
       const result = await service.getPermissions(100);
@@ -224,7 +141,6 @@ describe('RbacCacheService', () => {
       const result = await service.getPermissions(100);
 
       expect(result).toEqual(resolved);
-      // Verify the cached value contains all expected structures
       const cachedValue = JSON.parse(
         mockCacheManager.set.mock.calls[0][1],
       ) as ICachedPermissions;
@@ -244,7 +160,7 @@ describe('RbacCacheService', () => {
       expect(mockCacheManager.set).toHaveBeenCalledWith(
         'rbac:permissions:42',
         JSON.stringify(data),
-        3600, // TTL in seconds
+        3600,
       );
     });
   });
@@ -264,19 +180,17 @@ describe('RbacCacheService', () => {
     it('should handle concurrent cache invalidation events', async () => {
       mockCacheManager.del.mockResolvedValue(undefined);
 
-      // Simulate concurrent invalidation calls for overlapping admin IDs
       const promise1 = service.invalidatePermissions([100, 200]);
       const promise2 = service.invalidatePermissions([200, 300]);
 
       await Promise.all([promise1, promise2]);
 
-      // Admin 200 invalidated twice (once per event) — both should resolve
       expect(mockCacheManager.del).toHaveBeenCalledTimes(4);
-      const deletedKeys = mockCacheManager.del.mock.calls.map((call) => call[0]);
+      const deletedKeys = mockCacheManager.del.mock.calls.map((call: unknown[]) => call[0]);
       expect(deletedKeys).toContain('rbac:permissions:100');
       expect(deletedKeys).toContain('rbac:permissions:300');
       expect(
-        deletedKeys.filter((k) => k === 'rbac:permissions:200'),
+        deletedKeys.filter((k: string) => k === 'rbac:permissions:200'),
       ).toHaveLength(2);
     });
   });
@@ -299,11 +213,8 @@ describe('RbacCacheService', () => {
 
       const result = await service.rebuildPermissions(100);
 
-      // Should delete old entry first
       expect(mockCacheManager.del).toHaveBeenCalledWith('rbac:permissions:100');
-      // Then resolve from DB
       expect(mockPermissionResolver.resolveForAdmin).toHaveBeenCalledWith(100);
-      // Then cache the new value
       expect(mockCacheManager.set).toHaveBeenCalledWith(
         'rbac:permissions:100',
         JSON.stringify(freshData),
@@ -318,14 +229,12 @@ describe('RbacCacheService', () => {
         new Error('DB connection lost'),
       );
 
-      // Old cache is gone (del succeeded), but DB resolution fails — error must propagate
       await expect(service.rebuildPermissions(100)).rejects.toThrow(
         'DB connection lost',
       );
 
       expect(mockCacheManager.del).toHaveBeenCalledWith('rbac:permissions:100');
       expect(mockPermissionResolver.resolveForAdmin).toHaveBeenCalledWith(100);
-      // set should not have been called since resolveForAdmin failed
       expect(mockCacheManager.set).not.toHaveBeenCalled();
     });
   });
@@ -333,14 +242,12 @@ describe('RbacCacheService', () => {
   describe('edge cases', () => {
     it('should handle corrupted JSON in cache by falling through to DB', async () => {
       const resolved = createCachedPermissions({ adminId: 100 });
-      // Return invalid JSON from cache
       mockCacheManager.get.mockResolvedValue('{invalid-json}');
       mockPermissionResolver.resolveForAdmin.mockResolvedValue(resolved);
       mockCacheManager.set.mockResolvedValue(undefined);
 
       const result = await service.getPermissions(100);
 
-      // Should have fallen through to DB resolution because JSON.parse threw
       expect(result).toEqual(resolved);
       expect(mockPermissionResolver.resolveForAdmin).toHaveBeenCalledWith(100);
     });
@@ -353,15 +260,12 @@ describe('RbacCacheService', () => {
 
     it('should return resolved data even when cache set fails (set failure is non-fatal)', async () => {
       const resolved = createCachedPermissions({ adminId: 100 });
-      // get returns cache miss (undefined, not an error)
       mockCacheManager.get.mockResolvedValue(undefined);
       mockPermissionResolver.resolveForAdmin.mockResolvedValue(resolved);
-      // set fails
       mockCacheManager.set.mockRejectedValue(new Error('Redis write error'));
 
       const result = await service.getPermissions(100);
 
-      // Should still return the resolved data despite cache set failure
       expect(result).toEqual(resolved);
       expect(mockPermissionResolver.resolveForAdmin).toHaveBeenCalledWith(100);
     });
@@ -369,8 +273,6 @@ describe('RbacCacheService', () => {
     it('should handle pub/sub invalidation message by parsing adminIds and calling invalidatePermissions', async () => {
       mockCacheManager.del.mockResolvedValue(undefined);
 
-      // Simulate a handleInvalidationMessage method that would be called
-      // from a Redis pub/sub subscriber
       const message = JSON.stringify({ adminIds: [100, 200] });
       const parsed = JSON.parse(message) as { adminIds: number[] };
 

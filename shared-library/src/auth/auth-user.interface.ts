@@ -13,13 +13,19 @@ export interface IAuthUser {
   profilePicture?: object;
   countryCode?: string;
   contactNumber?: string;
-  /** `mst_admin_roles.role_code` values for active role assignments. */
+  /** @deprecated Use `roles` array instead. Kept for backward compat during migration. */
   roleKeys: string[];
   /**
    * Effective franchise scope: distinct union of `mst_admin_users.franchise_id`
    * and `txn_admin_franchises.franchise_id`. Empty for unscoped / global roles (e.g. Super Admin).
    */
   franchiseIds: number[];
+  /** Role assignments with display info for UI header/profile. */
+  roles?: Array<{ roleId: number; role: string; roleCode: string }>;
+  /** Effective permissions dictionary: { "Member": ["read","create","update","delete"], ... } */
+  permissions?: Record<string, string[]>;
+  /** Subject metadata for franchise scoping decisions in CASL. */
+  subjectMeta?: Record<string, { franchiseScoped: boolean }>;
 }
 
 export interface IChangePassword {

@@ -33,5 +33,10 @@ export class MemberProductReportApiService {
     const exportEndpoint = `${this.endpoint}/export/bulk`;
     return await this.httpService.postBlob(exportEndpoint, { memberProductIds });
   }
+
+  async exportMemberProductReportExcel(params: IMemberProductReportFilter): Promise<Blob> {
+    const exportEndpoint = `${this.endpoint}/export-excel`;
+    return await this.httpService.postBlob(exportEndpoint, params);
+  }
 }
 

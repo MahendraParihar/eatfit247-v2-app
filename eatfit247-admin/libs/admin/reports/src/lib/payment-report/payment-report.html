@@ -76,6 +76,18 @@
             <mat-icon>download</mat-icon>
             Export
           </button>
+
+          <button
+            mat-raised-button
+            color="accent"
+            type="button"
+            [disabled]="filterForm.invalid || loading || exportingExcel"
+            (click)="onExportExcel()"
+            class="export-button"
+          >
+            <mat-icon>table_chart</mat-icon>
+            Export Excel
+          </button>
         </div>
       </form>
     </mat-card-content>
