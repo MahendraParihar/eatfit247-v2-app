@@ -9,13 +9,15 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { MatCardModule } from '@angular/material/card';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Editor, NgxEditorComponent, NgxEditorMenuComponent } from 'ngx-editor';
 import { InputErrorComponent, SeoFormComponent, UploadFormComponent, ValidationUtil } from '@shared';
 import { ProgramsApiService } from '../api.service';
 import {
+  CommonUtil,
   FileTypeEnum,
-  IDropdownItem,
   IManageProgram,
   InputLengthEnum,
   IProgram,
@@ -35,6 +37,8 @@ import {
     MatSelectModule,
     MatCardModule,
     MatCheckboxModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
     MatSnackBarModule,
     FormsModule,
     NgxEditorComponent,
@@ -55,27 +59,28 @@ export class ManageProgram implements OnInit, OnDestroy {
   private fb: FormBuilder = inject(FormBuilder);
   formGroup: FormGroup = this.fb.group({
     program: ['', [Validators.required, Validators.minLength(InputLengthEnum.CHAR_2), Validators.maxLength(InputLengthEnum.CHAR_100)]],
-    programCategoryId: ['', [Validators.required]],
     punchLine: ['', [Validators.required, Validators.maxLength(InputLengthEnum.CHAR_250)]],
     details: ['', [Validators.required]],
     idealFor: ['', [Validators.maxLength(InputLengthEnum.CHAR_50)]],
     sequenceNumber: [0, [Validators.required, Validators.min(0)]],
     isSpecialProgram: [false, [Validators.required]],
+    startDate: [null as Date | null],
+    endDate: [null as Date | null],
+    maxPeopleCanRegister: [null as number | null, [Validators.min(0)]],
     videoUrl: ['', [Validators.maxLength(InputLengthEnum.CHAR_500)]],
     active: [true, [Validators.required]]
   });
   initialData!: IProgram;
   isEditMode = false;
   pageTitle = 'Create Program';
-  programCategoryOptions: IDropdownItem[] = [];
   mediaFor = MediaForEnum.PROGRAM;
   mediaType = FileTypeEnum.IMAGE;
   editor: Editor | null = null;
+  private urlManuallyEdited = false;
 
   async ngOnInit(): Promise<void> {
     this.initializeEditor();
     const id = this.route.snapshot.paramMap.get('id');
-    await this.loadMasterData();
     if (id && id !== 'new') {
       this.isEditMode = true;
       this.pageTitle = 'Edit Program';
@@ -84,6 +89,65 @@ export class ManageProgram implements OnInit, OnDestroy {
       this.pageTitle = 'Create Program';
     }
     this.patchFormValues();
+    this.applySpecialProgramValidators(this.formGroup.get('isSpecialProgram')?.value);
+    this.setupUrlAutoFill();
+    this.formGroup.get('isSpecialProgram')?.valueChanges.subscribe((isSpecial: boolean) => {
+      this.applySpecialProgramValidators(isSpecial);
+      if (!isSpecial) {
+        this.formGroup.patchValue({
+          startDate: null,
+          endDate: null,
+          maxPeopleCanRegister: null,
+        }, { emitEvent: false });
+      }
+    });
+  }
+
+  private setupUrlAutoFill(): void {
+    // The SEO sub-form is registered in SeoFormComponent.ngOnInit (child runs after parent),
+    // so defer until the child has attached the 'seo' control.
+    Promise.resolve().then(() => {
+      const urlControl = this.formGroup.get('seo.url');
+      if (!urlControl) {
+        return;
+      }
+      // In edit mode, treat an existing URL as user-owned — don't overwrite it.
+      if (this.isEditMode && urlControl.value) {
+        this.urlManuallyEdited = true;
+      }
+      urlControl.valueChanges.subscribe((value: string | null) => {
+        const programVal = this.formGroup.get('program')?.value || '';
+        const expectedSlug = CommonUtil.slugify(programVal);
+        // Mark as manually edited unless the change came from us (matches current slug).
+        if ((value || '') !== expectedSlug) {
+          this.urlManuallyEdited = true;
+        }
+      });
+      this.formGroup.get('program')?.valueChanges.subscribe((name: string) => {
+        if (this.urlManuallyEdited) {
+          return;
+        }
+        urlControl.setValue(CommonUtil.slugify(name || ''), { emitEvent: false });
+      });
+    });
+  }
+
+  private applySpecialProgramValidators(isSpecial: boolean): void {
+    const startDate = this.formGroup.get('startDate');
+    const endDate = this.formGroup.get('endDate');
+    const maxPeople = this.formGroup.get('maxPeopleCanRegister');
+    if (isSpecial) {
+      startDate?.setValidators([Validators.required]);
+      endDate?.setValidators([Validators.required]);
+      maxPeople?.setValidators([Validators.required, Validators.min(1)]);
+    } else {
+      startDate?.clearValidators();
+      endDate?.clearValidators();
+      maxPeople?.clearValidators();
+    }
+    startDate?.updateValueAndValidity({ emitEvent: false });
+    endDate?.updateValueAndValidity({ emitEvent: false });
+    maxPeople?.updateValueAndValidity({ emitEvent: false });
   }
 
   private initializeEditor(): void {
@@ -96,24 +160,17 @@ export class ManageProgram implements OnInit, OnDestroy {
     if (this.initialData) {
       this.formGroup.patchValue({
         program: this.initialData.program || '',
-        programCategoryId: this.initialData.programCategoryId || '',
         punchLine: this.initialData.punchLine || '',
         details: this.initialData.details || '',
         idealFor: this.initialData.idealFor || '',
         sequenceNumber: this.initialData.sequenceNumber || 0,
         isSpecialProgram: this.initialData.isSpecialProgram !== undefined ? this.initialData.isSpecialProgram : false,
+        startDate: this.initialData.startDate ? new Date(this.initialData.startDate as string) : null,
+        endDate: this.initialData.endDate ? new Date(this.initialData.endDate as string) : null,
+        maxPeopleCanRegister: this.initialData.maxPeopleCanRegister ?? null,
         videoUrl: this.initialData.videoUrl || '',
         active: this.initialData.active !== undefined ? this.initialData.active : true
       });
-    }
-  }
-
-  async loadMasterData(): Promise<void> {
-    try {
-      const masterData = await this.apiService.getMasterData();
-      this.programCategoryOptions = masterData.programCategory || [];
-    } catch (error) {
-      // Error toast is handled by HttpErrorInterceptor
     }
   }
 
@@ -156,6 +213,15 @@ export class ManageProgram implements OnInit, OnDestroy {
       if (!formValue.videoUrl) {
         delete formValue.videoUrl;
       }
+      if (formValue.isSpecialProgram) {
+        formValue.startDate = this.toIsoDate(formValue.startDate);
+        formValue.endDate = this.toIsoDate(formValue.endDate);
+        formValue.maxPeopleCanRegister = formValue.maxPeopleCanRegister ?? null;
+      } else {
+        formValue.startDate = null;
+        formValue.endDate = null;
+        formValue.maxPeopleCanRegister = null;
+      }
       try {
         if (this.isEditMode && this.initialData) {
           formValue.programId = this.initialData.programId;
@@ -180,6 +246,20 @@ export class ManageProgram implements OnInit, OnDestroy {
 
   onCancel(): void {
     this.router.navigate(['/programs']);
+  }
+
+  private toIsoDate(value: unknown): string | null {
+    if (!value) {
+      return null;
+    }
+    const d = value instanceof Date ? value : new Date(value as string);
+    if (isNaN(d.getTime())) {
+      return null;
+    }
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
   }
 
   ngOnDestroy(): void {

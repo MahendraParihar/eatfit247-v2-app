@@ -3,7 +3,6 @@ import { IMediaUpload } from './media-upload.interface';
 
 export interface IBaseProgram {
   program: string;
-  programCategoryId: number;
   punchLine: string;
   details: string;
   imagePath?: IMediaUpload[];
@@ -11,6 +10,9 @@ export interface IBaseProgram {
   sequenceNumber: number;
   isSpecialProgram: boolean;
   videoUrl?: string;
+  startDate?: string | Date | null;
+  endDate?: string | Date | null;
+  maxPeopleCanRegister?: number | null;
   seo: ICommonSEO;
 }
 
@@ -21,7 +23,5 @@ export interface IManageProgram extends IBaseProgram {
 
 export interface IProgram extends IBaseProgram, IAdminInfo {
   programId: number;
-  programCategory: string;
   active: boolean;
 }
-

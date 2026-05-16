@@ -45,9 +45,6 @@ import { ManageFaqCategory } from './faq-category/manage/manage-faq-category.com
 // Issues
 import { IssueCategory } from './issue-category/issue-category.component';
 import { IssueStatus } from './issue-status/issue-status.component';
-// Programs
-import { ProgramCategory } from './program-category/program-category.component';
-import { ManageProgramCategory } from './program-category/manage/manage-program-category.component';
 // Recipes
 import { RecipeCategory } from './recipe-category/recipe-category.component';
 import { RecipeCuisine } from './recipe-cuisine/recipe-cuisine.component';
@@ -121,10 +118,6 @@ export const lovMasterRoutes: Route[] = [
   // Issues
   { path: 'issue-category', component: IssueCategory, title: 'Issue Category' },
   { path: 'issue-status', component: IssueStatus, title: 'Issue Status' },
-  // Programs
-  { path: 'program-category', component: ProgramCategory, title: 'Program Category' },
-  { path: 'program-category/new', component: ManageProgramCategory, title: 'Create Program Category' },
-  { path: 'program-category/edit/:id', component: ManageProgramCategory, title: 'Edit Program Category' },
   // Recipes
   { path: 'recipe-category', component: RecipeCategory, title: 'Recipe Category' },
   { path: 'recipe-category/new', component: ManageRecipeCategory, title: 'Create Recipe Category' },

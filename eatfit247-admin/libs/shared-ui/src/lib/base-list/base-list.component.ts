@@ -107,13 +107,23 @@ export abstract class BaseListComponent<T> implements OnInit {
     return [];
   }
 
+  /** Override to supply extra query params (e.g. dropdown filters) merged into every list call. */
+  protected getExtraParams(): Record<string, any> {
+    return {};
+  }
+
+  /** Call after changing an extra filter to reload from page 0. */
+  protected async reloadWithFilters(): Promise<void> {
+    await this.loadData();
+  }
+
   private setupSearch(): void {
     this.searchSubject.pipe(
       debounceTime(300),
       distinctUntilChanged(),
       switchMap((search) => {
         this.loading = true;
-        return this.apiService.getList({ search, page: 0, limit: this.tableConfig?.pageSize ?? 10 });
+        return this.apiService.getList({ ...this.getExtraParams(), search, page: 0, limit: this.tableConfig?.pageSize ?? 10 });
       }),
     ).subscribe({
       next: (response) => {
@@ -129,6 +139,7 @@ export abstract class BaseListComponent<T> implements OnInit {
     this.loading = true;
     try {
       const response: ITableList<T> = await this.apiService.getList({
+        ...this.getExtraParams(),
         page: 0,
         limit: this.tableConfig.pageSize ?? 10,
         search: this.currentSearch?.trim() || undefined,
@@ -144,6 +155,7 @@ export abstract class BaseListComponent<T> implements OnInit {
     this.loading = true;
     try {
       const response: ITableList<T> = await this.apiService.getList({
+        ...this.getExtraParams(),
         page: pagination.pageIndex,
         limit: pagination.pageSize,
         search: this.currentSearch?.trim() || undefined,
@@ -159,6 +171,7 @@ export abstract class BaseListComponent<T> implements OnInit {
     this.loading = true;
     try {
       const response: ITableList<T> = await this.apiService.getList({
+        ...this.getExtraParams(),
         page: 0,
         limit: this.tableConfig.pageSize ?? 10,
         sortBy: sort.active,

@@ -8,7 +8,6 @@ export * from './legal-page.interface';
 export * from './blog.interface';
 export * from './faq.interface';
 export * from './press-media.interface';
-export * from './program-category.interface';
 export * from './program.interface';
 export * from './program-plan.interface';
 export * from './recipe.interface';

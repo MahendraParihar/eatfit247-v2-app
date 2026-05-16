@@ -222,11 +222,6 @@ const NAV_CONFIG: NavSection[] = [
             route: '/lov-master/issue-status',
           },
           {
-            label: 'Program Category',
-            icon: 'category',
-            route: '/lov-master/program-category',
-          },
-          {
             label: 'Recipe Category',
             icon: 'category',
             route: '/lov-master/recipe-category',

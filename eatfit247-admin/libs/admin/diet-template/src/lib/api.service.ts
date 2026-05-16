@@ -33,6 +33,7 @@ export class DietTemplateApiService {
     recipes: IDropdownItem[];
     diet: {
       dietTemplateId: number;
+      dietTemplate: string;
       cycleNo: number;
       dayNo?: number;
       noOfCycle: number;
@@ -48,6 +49,7 @@ export class DietTemplateApiService {
       recipes: IDropdownItem[];
       diet: {
         dietTemplateId: number;
+        dietTemplate: string;
         cycleNo: number;
         dayNo?: number;
         noOfCycle: number;
@@ -59,6 +61,7 @@ export class DietTemplateApiService {
       recipes: IDropdownItem[];
       diet: {
         dietTemplateId: number;
+        dietTemplate: string;
         cycleNo: number;
         dayNo?: number;
         noOfCycle: number;
@@ -99,5 +102,22 @@ export class DietTemplateApiService {
       `${this.endpoint}/update-status/${id}`,
       { active }
     );
+  }
+
+  async deleteCycleDetail(dietTemplateId: number, cycleNo: number): Promise<void> {
+    await this.httpService.delete<void>(
+      `${this.endpoint}/manage-detail/${dietTemplateId}/${cycleNo}`
+    );
+  }
+
+  async deleteDayDetail(dietTemplateId: number, cycleNo: number, dayNo: number): Promise<void> {
+    await this.httpService.delete<void>(
+      `${this.endpoint}/manage-detail/${dietTemplateId}/${cycleNo}/${dayNo}`
+    );
+  }
+
+  async getProgramDropdown(): Promise<IDropdownItem[]> {
+    const res = await this.httpService.get<IDropdownItem[]>('/program/dropdown');
+    return (res.data as IDropdownItem[]) || [];
   }
 }

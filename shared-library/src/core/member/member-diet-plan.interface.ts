@@ -19,7 +19,6 @@ export interface IManageMemberDietPlan extends IBasicMemberDietPlan {
 
 export interface IMemberDietPlan extends IBasicMemberDietPlan, IAdminInfo {
   program: string;
-  programCategory: string;
   dietPlanStatusId: number;
   dietPlanStatus: string;
   cyclePlans: any[];

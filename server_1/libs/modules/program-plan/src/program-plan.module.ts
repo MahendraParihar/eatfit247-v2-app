@@ -1,19 +1,17 @@
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { modelRegistry } from '@server_1/core';
-import { MstProgram, MstProgramCategory, MstProgramPlan, MstProgramPlanFees, MstProgramPlanType } from './models';
+import { MstProgram, MstProgramPlan, MstProgramPlanFees, MstProgramPlanType } from './models';
 import {
-  ProgramCategoryController,
   ProgramController,
   ProgramPlanController,
   PublicProgramController,
   PublicProgramPlanController,
 } from './controllers';
-import { ProgramCategoryService, ProgramPlanService, ProgramService } from './services';
+import { ProgramPlanService, ProgramService } from './services';
 // Register models with the model registry
 // These models have @Scopes decorator, so they MUST be registered for scopes to work
 modelRegistry.register([
-  MstProgramCategory,
   MstProgram,
   MstProgramPlanType,
   MstProgramPlan,
@@ -22,23 +20,21 @@ modelRegistry.register([
 
 @Module({
   imports: [
-    SequelizeModule.forFeature([MstProgramCategory, MstProgram, MstProgramPlanType, MstProgramPlan, MstProgramPlanFees]),
+    SequelizeModule.forFeature([MstProgram, MstProgramPlanType, MstProgramPlan, MstProgramPlanFees]),
   ],
   controllers: [
-    // Register public controllers first to avoid route conflicts
-    PublicProgramController,
-    PublicProgramPlanController,
-    ProgramCategoryController,
+    // Register admin controllers (with static sub-paths like 'program-master') before
+    // public controllers whose ':id' route would otherwise swallow those static paths.
     ProgramController,
     ProgramPlanController,
+    PublicProgramController,
+    PublicProgramPlanController,
   ],
   providers: [
-    ProgramCategoryService,
     ProgramService,
     ProgramPlanService,
   ],
   exports: [
-    ProgramCategoryService,
     ProgramService,
     ProgramPlanService,
     SequelizeModule,

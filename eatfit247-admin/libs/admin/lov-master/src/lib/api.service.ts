@@ -36,7 +36,6 @@ import {
   IManageIssueStatus,
   IManageLifestyle,
   IManageMaritalStatus,
-  IManageProgramCategory,
   IManageRecipeCategory,
   IManageRecipeCuisine,
   IManageRecipeType,
@@ -46,7 +45,6 @@ import {
   IManageTypeOfExercise,
   IManageUrineOutput,
   IMaritalStatus,
-  IProgramCategory,
   IRecipeCategory,
   IRecipeCuisine,
   IRecipeType,
@@ -165,12 +163,6 @@ export class IssueCategoryApiService extends CrudApiService<IIssueCategory, IMan
 @Injectable({ providedIn: 'root' })
 export class IssueStatusApiService extends CrudApiService<IIssueStatus, IManageIssueStatus> {
   constructor() { super('/issue-status'); }
-}
-
-// Programs
-@Injectable({ providedIn: 'root' })
-export class ProgramCategoryApiService extends CrudApiService<IProgramCategory, IManageProgramCategory> {
-  constructor() { super('/program-category'); }
 }
 
 // Recipes

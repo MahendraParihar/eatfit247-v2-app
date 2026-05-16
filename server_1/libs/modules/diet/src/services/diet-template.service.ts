@@ -66,13 +66,13 @@ export class DietTemplateService {
     const template = find.toJSON();
     const dietDetails = await this.dietTemplateDetailRepository.findAll({
       where: { dietTemplateId: id },
-      raw: false,
+      order: [['cycleNo', 'ASC'], ['dayNo', 'ASC']],
+      raw: true,
       nest: true,
     });
-    const dietDetail = dietDetails.length > 0 ? this.convertDetailToModel(dietDetails[0].toJSON()) : undefined;
     return {
       ...this.convertToModel(template),
-      dietDetail: dietDetail || {} as IDietTemplateDetail,
+      dietDetails: dietDetails.map((d: any) => this.convertDetailToModel(d)),
     };
   }
 
@@ -83,6 +83,7 @@ export class DietTemplateService {
         dietTemplate: obj.dietTemplate,
         noOfCycle: obj.noOfCycle || null,
         daysInCycle: obj.noOfDaysInCycle || null,
+        programId: obj.programId || null,
         active: true,
         createdBy: adminId,
         modifiedBy: adminId,
@@ -110,6 +111,7 @@ export class DietTemplateService {
         dietTemplate: obj.dietTemplate,
         noOfCycle: obj.noOfCycle,
         daysInCycle: obj.noOfDaysInCycle,
+        programId: obj.programId ?? null,
         modifiedBy: adminId,
         modifiedIp: cIp,
       };
@@ -148,6 +150,7 @@ export class DietTemplateService {
       dietTemplate: item.dietTemplate,
       noOfCycle: item.noOfCycle,
       noOfDaysInCycle: item.daysInCycle,
+      programId: item.programId ?? undefined,
       active: item.active,
       createdBy: item.createdBy,
       modifiedBy: item.modifiedBy,
@@ -161,7 +164,7 @@ export class DietTemplateService {
       updatedByUser: item.updatedByUser
         ? CommonFunctionsUtil.getAdminShortInfo(item.updatedByUser, 'updatedByUser')
         : undefined,
-      dietDetail: {} as IDietTemplateDetail, // Will be populated separately
+      dietDetails: [],
     };
   }
 
@@ -170,8 +173,8 @@ export class DietTemplateService {
       dietTemplateDietDetailId: item.dietTemplateDietDetailId,
       dietTemplateId: item.dietTemplateId,
       cycleNo: item.cycleNo,
-      dayNo: item.dayNo,
-      dietDetail: item.dietDetail,
+      dayNo: item.dayNo ?? undefined,
+      dietDetail: Array.isArray(item.dietDetail) ? item.dietDetail : [],
     };
   }
 
@@ -194,6 +197,7 @@ export class DietTemplateService {
     recipes: IDropdownItem[];
     diet: {
       dietTemplateId: number;
+      dietTemplate: string;
       cycleNo: number;
       dayNo?: number;
       noOfCycle: number;
@@ -248,6 +252,7 @@ export class DietTemplateService {
       recipes: recipeList as IDropdownItem[],
       diet: {
         dietTemplateId: templateDetail.dietTemplateId,
+        dietTemplate: templateDetail.dietTemplate,
         dayNo: dayNo,
         cycleNo: cycleNo,
         noOfCycle: templateDetail.noOfCycle,
@@ -329,6 +334,28 @@ export class DietTemplateService {
       await t.rollback();
       throw e;
     }
+  }
+
+  /**
+   * Delete all detail rows for a cycle (or specific day) of a template.
+   * Used when admin switches a cycle from "cycle plan" to "day plan" (or vice versa).
+   */
+  public async deleteDietTemplateDetail(
+    dietTemplateId: number,
+    cycleNo: number,
+    dayNo?: number,
+  ): Promise<void> {
+    const template = await this.dietTemplateRepository.findOne({
+      where: { dietTemplateId },
+    });
+    if (!template) {
+      throw new NotFoundException('Diet template not found');
+    }
+    const where: any = { dietTemplateId, cycleNo };
+    if (dayNo && dayNo > 0) {
+      where.dayNo = dayNo;
+    }
+    await this.dietTemplateDetailRepository.destroy({ where });
   }
 
   private convertDietDetail(

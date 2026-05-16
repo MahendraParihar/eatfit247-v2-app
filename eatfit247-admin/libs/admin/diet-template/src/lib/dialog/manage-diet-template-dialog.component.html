@@ -21,6 +21,14 @@
           <input matInput type="number" formControlName="noOfDaysInCycle" placeholder="Enter days in cycle">
           <shared-ui-input-error [control]="formGroup.get('noOfDaysInCycle')!" controlName="Days in Cycle"></shared-ui-input-error>
         </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Program (optional)</mat-label>
+          <mat-select formControlName="programId">
+            <mat-option [value]="null">None</mat-option>
+            <mat-option *ngFor="let p of programs" [value]="p.id">{{ p.label }}</mat-option>
+          </mat-select>
+        </mat-form-field>
       </div>
     </form>
   </mat-dialog-content>

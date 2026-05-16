@@ -11,7 +11,7 @@ export class CurrencyService {
 
   async getAllCurrencies(): Promise<MstCurrencyModel[]> {
     return await this.currencyModel.findAll({
-      order: [['currency', 'ASC']],
+      order: [['currencyCode', 'ASC']],
       limit: 200,
     }) as MstCurrencyModel[];
   }

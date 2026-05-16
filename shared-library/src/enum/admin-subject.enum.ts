@@ -39,7 +39,6 @@ export enum AdminSubjectEnum {
 
     // Program domain
     Program          = 'Program',
-    ProgramCategory  = 'ProgramCategory',
     ProgramPlan      = 'ProgramPlan',
     DietTemplate     = 'DietTemplate',
 

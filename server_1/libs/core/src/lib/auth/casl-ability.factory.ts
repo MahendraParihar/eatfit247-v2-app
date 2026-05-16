@@ -99,10 +99,6 @@ export class CaslAbilityFactory {
     );
     can(
       [AdminActionEnum.Read, AdminActionEnum.Create, AdminActionEnum.Update],
-      AdminSubjectEnum.ProgramCategory,
-    );
-    can(
-      [AdminActionEnum.Read, AdminActionEnum.Create, AdminActionEnum.Update],
       AdminSubjectEnum.ProgramPlan,
       scope,
     );
@@ -161,7 +157,6 @@ export class CaslAbilityFactory {
     memberSubjects.forEach((s) => can(AdminActionEnum.Manage, s, scope));
     can(AdminActionEnum.Read, AdminSubjectEnum.DietTemplate);
     can(AdminActionEnum.Read, AdminSubjectEnum.Program);
-    can(AdminActionEnum.Read, AdminSubjectEnum.ProgramCategory);
     can(AdminActionEnum.Read, AdminSubjectEnum.ProgramPlan);
     can(AdminActionEnum.Manage, AdminSubjectEnum.Recipe);
     can(AdminActionEnum.Read, AdminSubjectEnum.PocketGuide);

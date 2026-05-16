@@ -16,7 +16,7 @@ import {
   MediaForEnum,
 } from '@eatfit247-shared-lib';
 import { CommonFunctionsUtil, Env, MstAdminUser } from '@server_1/core';
-import { MstProgram, MstProgramCategory } from '@server_1/modules/program-plan';
+import { MstProgram } from '@server_1/modules/program-plan';
 import { RecipeCategoryService, RecipeService } from '@server_1/modules/recipe';
 import { DietTemplateService, TxnDietTemplateDietDetail } from '@server_1/modules/diet';
 import { DietPlanPdfService, IFileModel } from '@server_1/platform';
@@ -198,13 +198,6 @@ export class MemberDietPlanService {
               model: MstProgram,
               as: 'program',
               required: true,
-              include: [
-                {
-                  model: MstProgramCategory,
-                  as: 'programCategory',
-                  required: true,
-                },
-              ],
             },
           ],
         },
@@ -325,10 +318,8 @@ export class MemberDietPlanService {
   private convertDBObject(obj: any): IMemberDietPlan {
     const payment = obj.memberPayment || {};
     const program = payment.program || {};
-    const programCategory = program.programCategory || {};
     return {
       program: program.program,
-      programCategory: programCategory.programCategory,
       memberDietPlanId: obj.memberDietPlanId,
       memberPaymentId: obj.memberPaymentId,
       memberId: obj.memberId,
