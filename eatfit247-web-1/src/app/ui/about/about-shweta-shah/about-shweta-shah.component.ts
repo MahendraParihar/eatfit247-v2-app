@@ -1,16 +1,15 @@
-import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { BannerComponent, LoaderComponent } from '@shared-ui';
+import { BannerComponent, BreadcrumbsComponent, LoaderComponent } from '@shared-ui';
 import { BannerService, JsonLdService, SEOService } from '../../../core/services';
 import { BannerForEnum } from '@eatfit247-shared-library/enum';
 import { IPublicBanner, IPublicLegalPage } from '@eatfit247-shared-library/core';
 import { LegalPagesService } from '../../../core/services/legal-pages.service';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 
 @Component({
   standalone: true,
   selector: 'app-about-shweta-shah',
-  imports: [CommonModule, BannerComponent, LoaderComponent],
+  imports: [RouterLink, BannerComponent, LoaderComponent, BreadcrumbsComponent],
   templateUrl: './about-shweta-shah.component.html',
   styleUrl: './about-shweta-shah.component.scss'
 })

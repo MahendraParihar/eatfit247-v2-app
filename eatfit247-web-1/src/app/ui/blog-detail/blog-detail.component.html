@@ -2,151 +2,160 @@
   <app-loader page="blog-detail"></app-loader>
 }
 @if (!loading() && blog) {
-  <section class="blog-detail-page page-container">
-    <div class="blog-detail-container">
-      <!-- Breadcrumb -->
-      <nav class="blog-detail-breadcrumb" aria-label="Breadcrumb">
-        <a
-          class="breadcrumb-link"
-          routerLink="/blog"
-          aria-label="Back to Blog listing"
-        >
-          Blog
-        </a>
-        <span class="breadcrumb-separator" aria-hidden="true">&gt;</span>
-        <span class="breadcrumb-current">{{ blog.title }}</span>
-      </nav>
-
-      <!-- Layout: main content + sidebar -->
-      <div class="blog-detail-layout">
-        <!-- Left column: blog content -->
-        <article class="blog-detail-main">
-          <!-- Featured image -->
-          @if (blog.imageUrl) {
-            <figure class="blog-detail-image">
-              <!-- Category badge -->
-              @if (blog.category) {
-                <div class="section__badge">
-                  <span class="section__badge-text">{{ blog.category }}</span>
-                </div>
-              }
-              <img
-                [src]="blog.imageUrl"
-                [alt]="blog.imageAlt || blog.title"
-                loading="lazy"
-              />
-            </figure>
+  <div class="blog-detail-page">
+    <!-- Hero banner with image and overlay -->
+    <section class="article-banner" aria-labelledby="article-title">
+      @if (blog.imageUrl) {
+        <img class="article-banner__img" [src]="blog.imageUrl" [alt]="blog.imageAlt || blog.title"/>
+      }
+      <div class="article-banner__overlay"></div>
+      <div class="ef-container article-banner__inner">
+        <nav class="article-banner__crumbs" aria-label="Breadcrumb">
+          <a routerLink="/">Home</a>
+          <span class="mat-icon">chevron_right</span>
+          <a routerLink="/blog">Blog</a>
+          <span class="mat-icon">chevron_right</span>
+          <span>{{ blog.title }}</span>
+        </nav>
+        @if (blog.category) {
+          <a
+            class="article-banner__tag"
+            routerLink="/blog"
+            [queryParams]="{ tag: blog.category }"
+          >{{ blog.category }}</a>
+        }
+        <h1 id="article-title" class="article-banner__title">{{ blog.title }}</h1>
+        <div class="article-banner__meta">
+          <span><span class="mat-icon">person</span>Shweta Shah</span>
+          @if (blog.formattedDate) {
+            <span><span class="mat-icon">calendar_today</span>{{ blog.formattedDate }}</span>
           }
+          @if (blog.readTimeMinutes) {
+            <span><span class="mat-icon">schedule</span>{{ blog.readTimeMinutes }} min read</span>
+          }
+        </div>
+      </div>
+    </section>
 
-          <div class="blog-detail-content-wrapper">
-            <!-- Meta row -->
-            @if (blog.formattedDate || blog.readTimeMinutes) {
-              <div
-                class="blog-detail-meta body-b6"
-              >
-                @if (blog.formattedDate) {
-                  <span class="meta-item">
-                    {{ blog.formattedDate }}
-                  </span>
-                }
-                @if (blog.formattedDate && blog.readTimeMinutes) {
-                  <span
-                    class="meta-separator"
-                  >
-                    &bull;
-                  </span>
-                }
-                @if (blog.readTimeMinutes) {
-                  <span class="meta-item">
-                    {{ blog.readTimeMinutes }} min read
-                  </span>
-                }
-              </div>
-            }
+    <!-- Body: article + sticky aside -->
+    <section class="ef-container blog-detail-page__body">
+      <div class="article-layout">
+        <article class="article-main">
+          <div class="prose" [innerHTML]="blog.safeContentHtml"></div>
 
-            <!-- Title -->
-            <h1 class="blog-detail-title heading-2">
-              {{ blog.title }}
-            </h1>
-
-            <!-- Content -->
-            <div
-              class="blog-detail-content body-b3"
-              [innerHTML]="blog.safeContentHtml"
-            ></div>
+          <!-- Inline share row at article end -->
+          <div class="article-share" aria-label="Share this article">
+            <span class="article-share__label">Share this article</span>
+            <div class="article-share__icons">
+              <a [href]="getShareLink('facebook')" target="_blank" rel="noopener noreferrer" aria-label="Facebook" data-share="facebook" class="social-link">
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M13.5 21v-7.5h2.55l.38-2.97H13.5V8.66c0-.86.24-1.45 1.47-1.45H16.6V4.55c-.27-.04-1.2-.12-2.27-.12-2.25 0-3.79 1.37-3.79 3.89v2.21H8v2.97h2.54V21h2.96Z"/></svg>
+              </a>
+              <a [href]="getShareLink('twitter')" target="_blank" rel="noopener noreferrer" aria-label="Twitter / X" data-share="twitter" class="social-link">
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M18.244 2H21.5l-7.49 8.564L22.75 22h-6.844l-5.36-7.014L4.4 22H1.144l8.02-9.16L1.25 2h7.02l4.83 6.385L18.244 2Zm-1.2 18.2h1.86L7.05 3.7H5.06l11.984 16.5Z"/></svg>
+              </a>
+              <a [href]="getShareLink('linkedin')" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" data-share="linkedin" class="social-link">
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5ZM3 9.75h4V21H3V9.75ZM10 9.75h3.83v1.54h.05c.53-1 1.84-2.05 3.78-2.05 4.05 0 4.8 2.66 4.8 6.13V21h-4v-5.06c0-1.21-.02-2.77-1.69-2.77-1.7 0-1.96 1.32-1.96 2.68V21h-4V9.75Z"/></svg>
+              </a>
+              <a [href]="getShareLink('pinterest')" target="_blank" rel="noopener noreferrer" aria-label="Pinterest" data-share="pinterest" class="social-link">
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 2C6.48 2 2 6.48 2 12c0 4.23 2.62 7.85 6.32 9.32-.09-.79-.17-2 .04-2.86.19-.78 1.21-4.95 1.21-4.95s-.31-.62-.31-1.53c0-1.43.83-2.5 1.86-2.5.88 0 1.3.66 1.3 1.45 0 .88-.56 2.2-.85 3.43-.24 1.02.51 1.85 1.52 1.85 1.83 0 3.23-1.93 3.23-4.71 0-2.46-1.77-4.18-4.3-4.18-2.93 0-4.65 2.2-4.65 4.47 0 .89.34 1.84.77 2.36.08.1.09.19.07.29-.08.31-.25 1.02-.28 1.16-.04.18-.15.22-.34.13-1.27-.59-2.06-2.45-2.06-3.94 0-3.21 2.33-6.16 6.72-6.16 3.53 0 6.27 2.51 6.27 5.87 0 3.5-2.21 6.32-5.27 6.32-1.03 0-2-.54-2.33-1.17l-.63 2.41c-.23.88-.85 1.99-1.27 2.66.96.3 1.97.46 3.01.46 5.52 0 10-4.48 10-10S17.52 2 12 2Z"/></svg>
+              </a>
+              <a [href]="getShareLink('telegram')" target="_blank" rel="noopener noreferrer" aria-label="Telegram" data-share="telegram" class="social-link">
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9.78 15.32 9.6 19.5c.4 0 .57-.17.78-.37l1.87-1.78 3.88 2.84c.71.39 1.22.18 1.41-.66l2.56-12c.23-1.05-.38-1.46-1.07-1.2L4.43 11.9c-1.02.4-1 .97-.18 1.23l3.69 1.15 8.57-5.4c.4-.27.77-.12.46.15"/></svg>
+              </a>
+              <a [href]="getShareLink('whatsapp')" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp" data-share="whatsapp" class="social-link">
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M19.05 4.94A10 10 0 0 0 4.1 18.27L2 22l3.82-1.05A10 10 0 1 0 19.05 4.94ZM12.04 20.13h-.02a8.1 8.1 0 0 1-4.13-1.13l-.3-.18-2.27.62.6-2.22-.19-.31a8.13 8.13 0 1 1 6.31 3.22Zm4.46-6.06c-.24-.12-1.45-.72-1.67-.8-.22-.08-.39-.12-.55.12-.16.24-.63.8-.77.96-.14.16-.28.18-.52.06-.24-.12-1.02-.38-1.94-1.2-.72-.64-1.2-1.43-1.34-1.67-.14-.24-.02-.37.1-.49.1-.1.24-.28.36-.42.12-.14.16-.24.24-.4.08-.16.04-.3-.02-.42-.06-.12-.55-1.33-.75-1.82-.2-.48-.4-.42-.55-.42h-.47c-.16 0-.42.06-.64.3-.22.24-.84.83-.84 2.02 0 1.19.87 2.34.99 2.5.12.16 1.72 2.62 4.16 3.68.58.25 1.03.4 1.39.51.58.18 1.11.16 1.53.1.47-.07 1.45-.59 1.65-1.16.2-.57.2-1.07.14-1.17-.06-.1-.22-.16-.46-.28Z"/></svg>
+              </a>
+              <button type="button" (click)="copyShareLink()" [attr.aria-label]="linkCopied() ? 'Link copied' : 'Copy link'" class="social-link social-link--copy" [class.copied]="linkCopied()">
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3.9 12a3.1 3.1 0 0 1 3.1-3.1h4V7H7a5 5 0 1 0 0 10h4v-1.9H7A3.1 3.1 0 0 1 3.9 12Zm4.6 1h7v-2h-7v2Zm8.5-6h-4v1.9h4a3.1 3.1 0 1 1 0 6.2h-4V17h4a5 5 0 0 0 0-10Z"/></svg>
+              </button>
+            </div>
           </div>
         </article>
 
-        <!-- Right column: share + related (moves below content on mobile) -->
-        <aside class="blog-detail-sidebar" aria-label="Share and related articles">
-          <!-- Share section -->
-          <section class="share-card" aria-labelledby="share-card-title">
-            <div class="share-card-header">
-              <h3 id="share-card-title" class="share-card-title heading-2">
-                Share with your community!
-              </h3>
-            </div>
-
-            <div class="share-icons" aria-label="Share on social platforms">
-              <app-social-site
-                [items]="shareItems"
-                aria-label="Share this blog on social media"
-              ></app-social-site>
-            </div>
-          </section>
-
-          <!-- Related blogs -->
-          @if (relatedArticles.length > 0) {
-            <section
-              class="related-articles"
-              aria-labelledby="related-articles-title"
-            >
-              <h3 id="related-articles-title" class="related-title heading-3">
-                Related Blogs
-              </h3>
-
-              <div class="related-list">
-                @for (article of relatedArticles; track article.id || article.linkUrl) {
-                  <article
-                    class="related-card"
-                  >
-                    <!-- Related blog title only -->
-                    <h3 class="related-card-title body-b4">
-                      <a
-                        class="related-card-title-link"
-                        [routerLink]="article.linkUrl"
-                      >
-                        {{ article.title }}
-                      </a>
-                    </h3>
-                  </article>
+        <aside class="article-aside">
+          <!-- Categories -->
+          @if (categories.length > 0) {
+            <div class="aside-card">
+              <h3 class="aside-card__title"><span class="mat-icon">category</span>Categories</h3>
+              <ul class="category-list">
+                @for (cat of categories; track cat.name) {
+                  <li>
+                    <a
+                      routerLink="/blog"
+                      [queryParams]="{ tag: cat.name }"
+                      class="category-link"
+                      [class.is-active]="cat.name === blog.category"
+                    >
+                      <span class="category-link__name">{{ cat.name }}</span>
+                      <span class="category-link__count">{{ cat.count }}</span>
+                    </a>
+                  </li>
                 }
-              </div>
-            </section>
+              </ul>
+            </div>
           }
 
-          <!-- Programs CTA -->
-          <section class="blog-programs-cta" aria-labelledby="blog-programs-cta-title">
-            <h2 id="blog-programs-cta-title" class="blog-programs-cta__title">
-              Ready to start your journey?
-            </h2>
-            <p class="blog-programs-cta__desc">
-              Work 1-on-1 with Shweta Shah for a personalised nutrition plan.
-            </p>
-            <a
-              routerLink="/our-programs"
-              mat-flat-button
-              color="primary"
-              class="primary-action-button blog-programs-cta__btn"
-              aria-label="View our wellness programs"
-            >
-              View Programs
-            </a>
-          </section>
+          <!-- More in <tag> -->
+          @if (blog.category) {
+            <div class="aside-card aside-card--related">
+              <h3 class="aside-card__title">
+                <span class="mat-icon">collections_bookmark</span>More in {{ blog.category }}
+              </h3>
+              @if (relatedArticles.length === 0) {
+                <p class="aside-card__empty">No other articles in this category yet.</p>
+              } @else {
+                <div class="related-list">
+                  @for (article of relatedArticles; track article.id || article.linkUrl) {
+                    <a [routerLink]="article.linkUrl" class="related-item">
+                      <div class="related-item__media">
+                        @if (article.imageUrl) {
+                          <img [src]="article.imageUrl" [alt]="article.imageAlt || article.title" loading="lazy"/>
+                        }
+                      </div>
+                      <div class="related-item__body">
+                        <h4>{{ article.title }}</h4>
+                        @if (article.readTime) {
+                          <div class="related-item__meta">
+                            <span class="mat-icon">schedule</span>{{ article.readTime }} min read
+                          </div>
+                        }
+                      </div>
+                    </a>
+                  }
+                </div>
+              }
+            </div>
+          }
+
+          <!-- Recent posts -->
+          @if (recentArticles.length > 0) {
+            <div class="aside-card">
+              <h3 class="aside-card__title">
+                <span class="mat-icon">schedule</span>Recent posts
+              </h3>
+              <div class="related-list">
+                @for (article of recentArticles; track article.id || article.linkUrl) {
+                  <a [routerLink]="article.linkUrl" class="related-item">
+                    <div class="related-item__media">
+                      @if (article.imageUrl) {
+                        <img [src]="article.imageUrl" [alt]="article.imageAlt || article.title" loading="lazy"/>
+                      }
+                    </div>
+                    <div class="related-item__body">
+                      <h4>{{ article.title }}</h4>
+                      @if (article.readTime) {
+                        <div class="related-item__meta">
+                          <span class="mat-icon">schedule</span>{{ article.readTime }} min read
+                        </div>
+                      }
+                    </div>
+                  </a>
+                }
+              </div>
+            </div>
+          }
         </aside>
       </div>
-    </div>
-  </section>
+    </section>
+  </div>
 }
-
-

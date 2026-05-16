@@ -1,0 +1,95 @@
+<mat-card class="matrix-card">
+  <mat-card-header>
+    <mat-card-title>
+      Permission Matrix
+      @if (role) {
+        <span class="role-name"> &mdash; {{ role.role }} ({{ role.roleCode }})</span>
+      }
+    </mat-card-title>
+  </mat-card-header>
+
+  <mat-card-content>
+    @if (role.grantAllOnNewSubject) {
+      <div class="grant-all-banner">
+        <mat-icon>info</mat-icon>
+        <span>
+          This role has <strong>Grant All on New Subject</strong> enabled.
+          It automatically receives all permissions regardless of the matrix below.
+          Explicit grants shown here are for reference.
+        </span>
+      </div>
+    }
+
+    @if (loading) {
+      <div class="loading-container">
+        <mat-spinner diameter="48"></mat-spinner>
+      </div>
+    } @else {
+      <div class="matrix-table-wrapper">
+        <table class="matrix-table">
+          <thead>
+            <tr>
+              <th class="subject-header">Subject</th>
+              @for (action of actions; track action.actionId) {
+                <th class="action-header">
+                  <mat-checkbox
+                    color="primary"
+                    [checked]="isColumnAllChecked(action.actionId)"
+                    [indeterminate]="isColumnIndeterminate(action.actionId)"
+                    (change)="toggleColumn(action.actionId)"
+                  >{{ action.actionName }}</mat-checkbox>
+                </th>
+              }
+              <th class="select-all-header">All</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (subject of subjects; track subject.subjectId) {
+              <tr>
+                <td class="subject-cell">
+                  <span class="subject-name">{{ subject.subjectName }}</span>
+                  @if (subject.franchiseScoped) {
+                    <span class="franchise-badge">Franchise</span>
+                  }
+                </td>
+                @for (action of actions; track action.actionId) {
+                  <td class="action-cell">
+                    <mat-checkbox
+                      color="primary"
+                      [checked]="isChecked(subject.subjectId, action.actionId)"
+                      (change)="toggle(subject.subjectId, action.actionId)"
+                    ></mat-checkbox>
+                  </td>
+                }
+                <td class="select-all-cell">
+                  <mat-checkbox
+                    color="accent"
+                    [checked]="isRowAllChecked(subject.subjectId)"
+                    [indeterminate]="isRowIndeterminate(subject.subjectId)"
+                    (change)="toggleRow(subject.subjectId)"
+                  ></mat-checkbox>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" mat-stroked-button (click)="onCancel()">
+          <mat-icon>close</mat-icon>
+          Cancel
+        </button>
+        <button
+          mat-raised-button
+          color="primary"
+          [disabled]="saving"
+          (click)="onSave()"
+        >
+          <mat-icon>save</mat-icon>
+          {{ saving ? 'Saving...' : 'Save Permissions' }}
+        </button>
+      </div>
+    }
+  </mat-card-content>
+</mat-card>

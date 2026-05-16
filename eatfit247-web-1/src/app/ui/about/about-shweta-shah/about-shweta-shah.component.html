@@ -2,31 +2,75 @@
   <app-banner [banners]="banners"></app-banner>
 }
 
-<div class="about-shweta-shah page-container">
-  <header class="section__header">
-    <h1 class="section__title">
-      About Shweta Shah
-    </h1>
-  </header>
-  <div class="about-shweta-shah__content layout-grid layout-grid--2">
-    <div class="about-shweta-shah__image">
-      <img src="/shweta-shah.svg" alt="Shweta Shah" class="about-shweta-shah__photo" />
+<div class="shweta-page">
+
+  <!-- Hero / breadcrumbs -->
+  <section class="page-hero">
+    <div class="ef-container">
+      <div class="page-hero__inner">
+        <div>
+          <app-breadcrumbs [crumbs]="[{ label: 'Home', link: '/' }, { label: 'About Shweta Shah' }]"></app-breadcrumbs>
+          <h1>The <span class="accent">three Ns</span> behind EatFit247.</h1>
+          <p class="lead">Nutrition. Nature. Newness. Meet the dietitian who built a wellness practice on the belief that simple is honest, and simple is powerful.</p>
+        </div>
+        <div class="page-hero__visual" aria-hidden="true">
+          <div class="ring"></div>
+          <div class="ring ring--inner"></div>
+          <div class="disc shweta-disc">
+            <img src="/shweta-shah.svg" alt="" />
+          </div>
+          <div class="chip chip--a"><span class="mat-icon">verified</span>Entrepreneur</div>
+          <div class="chip chip--b"><span class="mat-icon">restaurant</span>Master Curator</div>
+        </div>
+      </div>
     </div>
-    <div class="about-shweta-shah-right">
-      <div class="about-shweta-shah__text">
-        @if (isLoading()) {
-          <app-loader page="about"></app-loader>
-        } @else if (errorMessage()) {
-          <section class="legal-section">
+  </section>
+
+  <!-- About body -->
+  <section class="about-shweta">
+    <div class="ef-container">
+      <h2 class="about-shweta__heading">About Shweta Shah</h2>
+
+      <div class="about-shweta__grid">
+
+        <!-- Portrait -->
+        <div class="portrait-frame">
+          <div class="portrait-frame__backdrop" aria-hidden="true"></div>
+          <div class="portrait-frame__accent" aria-hidden="true"></div>
+          <div class="portrait-frame__card">
+            <div class="portrait-frame__photo" role="img" aria-label="Portrait of Shweta Shah"></div>
+            <div class="portrait-frame__sig">Shweta Shah</div>
+          </div>
+        </div>
+
+        <!-- Bio -->
+        <div class="bio">
+          @if (isLoading()) {
+            <app-loader page="about"></app-loader>
+          } @else if (errorMessage()) {
             <p>{{ errorMessage() }}</p>
-          </section>
-        } @else if (pageData) {
-          <section [innerHTML]="pageData.details"></section>
-        }
-      </div>
-      <div class="about-shweta-sign__image">
-        <img src="/sign.svg" alt="Shweta Shah" class="about-shweta-sign__photo" />
+          } @else if (pageData) {
+            <div [innerHTML]="pageData.details"></div>
+          } @else {
+            <p>Shweta Shah is an entrepreneur, a change maker, a dietician and a master curator of healthy and amazingly delicious delicacies.</p>
+            <p>She is a firm believer of the therapeutic powers the ancient science of Ayurveda incorporates and lives by the mantra of 'Simple is honest, simple is powerful'.</p>
+            <p>Her venture EatFit247 is the amalgamation of the 3 Ns that she religiously believes in: <strong>Nutrition, Nature, Newness</strong>.</p>
+            <p>Her app and website not only curate diets for their clients but remains at their service 24 hours a day, 7 days a week.</p>
+            <p>She wanted the app and website to be welcoming and approachable, the last thing one needs when venturing onto a fitness journey is intimidating processes and jargon which ends up confusing someone more than helping them.</p>
+            <p>Hence, the whole process is extremely user-friendly.</p>
+            <p>Technology and nature might appear to be two opposites, but at EatFit247 these two come together to present you with a friend, a guide, and a coach that can administer all your activities throughout the day.</p>
+            <p>One of the reasons people often eat unhealthily or end up ordering from outside is because they feel eating healthy is boring and there is nothing new to be made, this is precisely the reason why the website virtually never runs out of recipes, you will always find something new, interesting and tasty to make.</p>
+          }
+
+          <div class="bio__signature">Shweta Shah</div>
+
+          <div class="bio__cta">
+            <a routerLink="/contact-us" class="mat-btn mat-btn--filled">Book appointment <span class="mat-icon">arrow_forward</span></a>
+          </div>
+        </div>
+
       </div>
     </div>
-  </div>
+  </section>
+
 </div>

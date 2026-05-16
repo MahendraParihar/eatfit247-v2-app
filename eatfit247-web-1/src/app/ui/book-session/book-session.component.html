@@ -1,0 +1,174 @@
+<section class="page-hero">
+  <div class="ef-container">
+    <div class="page-hero__inner">
+      <div>
+        <app-breadcrumbs
+          [crumbs]="[
+            { label: 'Home', link: '/' },
+            { label: 'Seasonal Plans', link: '/seasonal-plans' },
+            { label: isWaitlist() ? 'Join Waitlist' : 'Reserve Spot' }
+          ]"
+        ></app-breadcrumbs>
+        @if (isWaitlist()) {
+          <h1>Join the <span class="accent">waitlist</span> — be first in line.</h1>
+          <p class="lead">This plan isn't open for enrolment right now. Drop your details and we'll WhatsApp you the moment the next batch opens — no payment, no commitment.</p>
+        } @else {
+          <h1>Reserve your <span class="accent">spot</span> — we'll take it from here.</h1>
+          <p class="lead">A free reservation. No online payment on this site — share a few basics and our team will WhatsApp you to confirm your seat and share UPI / bank details.</p>
+        }
+      </div>
+      <div class="page-hero__visual" aria-hidden="true">
+        <div class="ring"></div>
+        <div class="ring ring--inner"></div>
+        <div class="disc">{{ isWaitlist() ? 'notifications_active' : 'how_to_reg' }}</div>
+        <div class="chip chip--a">
+          <span class="mat-icon">{{ isWaitlist() ? 'schedule' : 'verified' }}</span>
+          {{ isWaitlist() ? 'No commitment' : 'Free to reserve' }}
+        </div>
+        <div class="chip chip--b"><span class="mat-icon">chat</span>WhatsApp in 24h</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="ef-container">
+    @if (!submitted()) {
+      <div class="booking-shell">
+        <div class="booking-card">
+          @if (isWaitlist()) {
+            <div class="intent-banner">
+              <span class="mat-icon">notifications_active</span>
+              <span><strong>You're joining the waitlist.</strong> This plan isn't open for enrolment right now — we'll WhatsApp you the moment the batch opens so you can confirm your seat.</span>
+            </div>
+          }
+          <h2 style="margin:0 0 6px;font-size:clamp(20px,2.4vw,26px);letter-spacing:-0.01em;">
+            {{ isWaitlist() ? 'Waitlist details' : 'Your details' }}
+          </h2>
+          <p style="margin:0 0 var(--space-5);color:var(--color-text-secondary);font-size:14.5px;">
+            All fields marked <span style="color:var(--color-primary);">*</span> are required. We never share your info with third parties.
+          </p>
+
+          <form #bookForm="ngForm" (ngSubmit)="onSubmit(bookForm.valid ?? false)" novalidate>
+            <div class="form-grid">
+              <div class="field field--full">
+                <label for="f-plan">Choose your plan <span class="req">*</span></label>
+                <select id="f-plan" name="plan" required [(ngModel)]="form.plan" (change)="onPlanChange()">
+                  <option value="">— Select a plan —</option>
+                  @for (p of plans; track p.slug) {
+                    <option [value]="p.slug">{{ p.selectLabel }}</option>
+                  }
+                </select>
+              </div>
+
+              <div class="field">
+                <label for="f-name">Full name <span class="req">*</span></label>
+                <input type="text" id="f-name" name="name" autocomplete="name" required placeholder="e.g. Priya Mehta" [(ngModel)]="form.name" />
+              </div>
+              <div class="field">
+                <label for="f-phone">Phone (WhatsApp) <span class="req">*</span></label>
+                <input type="tel" id="f-phone" name="phone" autocomplete="tel" required placeholder="+91 98765 43210" [(ngModel)]="form.phone" />
+                <span class="hint">We'll WhatsApp you on this number.</span>
+              </div>
+
+              <div class="field">
+                <label for="f-email">Email <span class="req">*</span></label>
+                <input type="email" id="f-email" name="email" autocomplete="email" required placeholder="you@example.com" [(ngModel)]="form.email" />
+              </div>
+              <div class="field">
+                <label for="f-city">City</label>
+                <input type="text" id="f-city" name="city" autocomplete="address-level2" placeholder="e.g. Mumbai" [(ngModel)]="form.city" />
+              </div>
+
+              <div class="field field--full">
+                <label for="f-message">Anything else? <span style="font-weight:var(--font-weight-medium);color:var(--color-text-secondary);">(optional)</span></label>
+                <textarea id="f-message" name="message" placeholder="Goals, schedule constraints, questions for the team…" [(ngModel)]="form.message"></textarea>
+              </div>
+
+              <div class="field field--full">
+                <label>Preferred contact method</label>
+                <div class="field-radio-grid">
+                  <label class="field-radio"><input type="radio" name="contact" value="whatsapp" [(ngModel)]="form.contact" /> WhatsApp</label>
+                  <label class="field-radio"><input type="radio" name="contact" value="call" [(ngModel)]="form.contact" /> Phone call</label>
+                  <label class="field-radio"><input type="radio" name="contact" value="email" [(ngModel)]="form.contact" /> Email</label>
+                  <label class="field-radio"><input type="radio" name="contact" value="any" [(ngModel)]="form.contact" /> Any of the above</label>
+                </div>
+              </div>
+
+              <div class="field field--full" style="margin-top: var(--space-2);">
+                <label style="display:flex;gap:10px;align-items:flex-start;font-weight:var(--font-weight-medium);color:var(--color-text-secondary);font-size:13px;line-height:1.5;cursor:pointer;">
+                  <input type="checkbox" name="consent" required [(ngModel)]="form.consent" style="margin-top:4px;accent-color:var(--color-primary);" />
+                  I understand this is a free reservation. The EatFit247 team will contact me to confirm my spot and collect payment offline (UPI / bank transfer).
+                </label>
+              </div>
+
+              <div class="field field--full" style="margin-top: var(--space-3);">
+                <button type="submit" class="mat-btn mat-btn--filled" style="width:100%;justify-content:center;font-size:15px;padding-block:14px;">
+                  {{ isWaitlist() ? 'Join Waitlist' : 'Reserve My Spot' }} <span class="mat-icon">arrow_forward</span>
+                </button>
+                <span class="hint" style="text-align:center;margin-top:8px;">No payment now — our team will WhatsApp you to confirm.</span>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <aside class="booking-summary">
+          <h4>Reservation summary</h4>
+          <div class="booking-summary__plan">
+            {{ selectedPlan()?.name ?? 'Pick a plan to begin' }}
+          </div>
+
+          <div class="booking-summary__row"><span>Sessions</span><span>{{ selectedPlan()?.sessions ?? '—' }}</span></div>
+          <div class="booking-summary__row"><span>Days</span><span>{{ selectedPlan()?.days ?? '—' }}</span></div>
+          <div class="booking-summary__row"><span>Diets</span><span>{{ selectedPlan()?.diets ?? '—' }}</span></div>
+          <div class="booking-summary__row"><span>Starts</span><span>{{ selectedPlan()?.start ?? '—' }}</span></div>
+
+          <div style="display:flex;align-items:baseline;justify-content:space-between;padding-top:var(--space-3);border-top:1px solid var(--color-divider);">
+            <span style="color:var(--color-text-secondary);font-size:13px;">Flat fee</span>
+            <span class="booking-summary__price">{{ selectedPlan()?.price ?? '—' }}</span>
+          </div>
+
+          <div class="payment-note">
+            <span class="mat-icon">payments</span>
+            <span><strong>Offline payment only.</strong> UPI / bank transfer details shared once our team confirms your seat. Nothing is charged on this site.</span>
+          </div>
+
+          <div style="font-size:12px;color:var(--color-text-secondary);line-height:1.5;border-top:1px dashed var(--color-divider);padding-top:var(--space-3);">
+            <strong style="color:var(--color-text-primary);display:block;margin-bottom:8px;">Need to talk first?</strong>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <a href="https://wa.me/919876543210?text=Hi%2C%20I%20have%20a%20question%20about%20EatFit247%20seasonal%20plans" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;background:#25D366;color:#fff;text-decoration:none;font-weight:var(--font-weight-semibold);font-size:13px;">
+                <span class="mat-icon" style="font-family:'Material Icons','Material Symbols Outlined';font-feature-settings:'liga';font-size:18px;">chat</span>
+                <span>Message us on WhatsApp <span style="display:block;font-weight:400;font-size:11px;opacity:0.9;margin-top:1px;">Our team will reply soon</span></span>
+              </a>
+              <a [href]="'tel:' + contactNumber" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;border:1px solid var(--color-border);color:var(--color-text-primary);text-decoration:none;font-weight:var(--font-weight-semibold);font-size:13px;">
+                <span class="mat-icon" style="font-family:'Material Icons','Material Symbols Outlined';font-feature-settings:'liga';font-size:18px;color:var(--color-primary);">call</span>
+                <span>{{ contactNumber }}<span style="display:block;font-weight:400;font-size:11px;color:var(--color-text-secondary);margin-top:1px;">Or give us a call</span></span>
+              </a>
+            </div>
+          </div>
+        </aside>
+      </div>
+    } @else {
+      <div class="success-card">
+        <span class="success-card__icon">check_circle</span>
+        <h2>{{ isWaitlist() ? "You're on the waitlist!" : 'Spot reserved!' }}</h2>
+        @if (isWaitlist()) {
+          <p>Thanks <strong>{{ submittedName() }}</strong> — you're in line for the next <strong>{{ submittedPlanName() }}</strong> batch. We'll WhatsApp you the moment enrolment opens.</p>
+        } @else {
+          <p>Thanks <strong>{{ submittedName() }}</strong> — your reservation for <strong>{{ submittedPlanName() }}</strong> is in. Our admin team will WhatsApp you within 24 hours to confirm your batch and share payment details.</p>
+        }
+
+        <ul class="next-steps">
+          <li><span class="mat-icon">chat</span><span><strong>WhatsApp confirmation</strong> — our team reaches out on the number you shared.</span></li>
+          <li><span class="mat-icon">payments</span><span><strong>UPI / bank transfer</strong> — pay once we've confirmed your seat in the batch.</span></li>
+          <li><span class="mat-icon">restaurant_menu</span><span><strong>On batch start day</strong> — your day-by-day diet drops to your inbox and the WhatsApp group.</span></li>
+        </ul>
+
+        <div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-top:var(--space-5);">
+          <a routerLink="/seasonal-plans" class="mat-btn mat-btn--filled">Back to all plans <span class="mat-icon">arrow_forward</span></a>
+          <a routerLink="/" class="mat-btn mat-btn--outlined">Go to homepage</a>
+        </div>
+      </div>
+    }
+  </div>
+</section>

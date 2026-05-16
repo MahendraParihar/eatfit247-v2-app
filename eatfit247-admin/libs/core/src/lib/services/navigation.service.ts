@@ -104,6 +104,22 @@ const NAV_CONFIG: NavSection[] = [
         route: '/admin-user',
       },
       {
+        label: 'RBAC',
+        icon: 'security',
+        children: [
+          {
+            label: 'Roles',
+            icon: 'admin_panel_settings',
+            route: '/admin-rbac',
+          },
+          {
+            label: 'Subjects',
+            icon: 'subject',
+            route: '/admin-rbac/subjects',
+          },
+        ],
+      },
+      {
         label: 'LOV Master',
         icon: 'list',
         children: [

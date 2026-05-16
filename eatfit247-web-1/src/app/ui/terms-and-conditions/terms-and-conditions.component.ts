@@ -1,14 +1,14 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { IPublicLegalPage } from '@eatfit247-shared-library';
 import { LegalPagesService } from '../../core/services/legal-pages.service';
-import { LoaderComponent } from '@shared-ui';
+import { BreadcrumbsComponent, LoaderComponent } from '@shared-ui';
 
 @Component({
   selector: 'app-terms-and-conditions',
   standalone: true,
-  imports: [CommonModule, LoaderComponent],
+  imports: [CommonModule, RouterLink, LoaderComponent, BreadcrumbsComponent],
   templateUrl: './terms-and-conditions.component.html',
   styleUrl: './terms-and-conditions.component.scss'
 })

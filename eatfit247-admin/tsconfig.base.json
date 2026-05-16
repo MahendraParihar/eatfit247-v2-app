@@ -43,6 +43,7 @@
       "courier-provider-accounts": ["libs/admin/courier-provider-accounts/src/index.ts"],
       "warehouses": ["libs/admin/warehouses/src/index.ts"],
       "courier-provider-warehouses": ["libs/admin/courier-provider-warehouses/src/index.ts"],
+      "admin-rbac": ["libs/admin/admin-rbac/src/index.ts"],
       "@env": ["src/environments/environment.ts"],
       "@eatfit247-shared-lib": ["../shared-library/src/index.ts"],
       "@core": ["libs/core/src/index.ts"],

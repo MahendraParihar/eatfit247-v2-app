@@ -1,260 +1,52 @@
-@use '../../../styles/spacing-tokens';
-@use '../../../styles/breakpoints' as *;
+/*
+ * Page-specific overrides for Our Programs.
+ * The bulk of the design (page-hero, programs-grid, program-card, hiw-*,
+ * program-terms__*, faq) lives in the global design-components / design-pages
+ * stylesheets imported in styles.scss. This file only carries layout glue
+ * and FAQ section background tweaks lifted from the design HTML.
+ */
 
 .our-programs-page {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-fluid-xl);
+  display: block;
 }
 
-.our-programs__section {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-6);
+/* Terms section — design uses padding-top:0 to sit directly under the HIW section */
+.our-programs__terms-section {
+  padding-top: 0;
 }
 
-.our-programs__header {
+.our-programs__terms-container {
+  max-width: 920px;
+}
+
+.our-programs__terms-head {
+  margin-bottom: var(--space-5);
+}
+
+/* FAQ section — design uses a soft alt-surface background */
+.our-programs__faq-section {
+  background: var(--color-surface-alt, #fff7f3);
+}
+
+.our-programs__faq-container {
+  max-width: 920px;
+}
+
+.our-programs__faq-head {
+  margin-bottom: var(--space-6);
+}
+
+.our-programs__faq-cta {
   text-align: center;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
+  margin-top: var(--space-5);
 }
 
-.our-programs__title {
-  margin: 0;
-  font-size: var(--font-h1-size);
-  line-height: var(--font-h1-line-height);
-  font-weight: var(--font-h1-weight);
-}
-
-.our-programs__tagline {
-  margin: 0;
-  font-size: var(--font-body-b3-size);
-  line-height: var(--font-body-b3-line-height);
-  color: var(--color-text-secondary);
-  letter-spacing: 0.12em;
-}
-
-.our-programs__price-note {
-  font-size: 12px;
-  line-height: 16px;
-  color: var(--color-text-secondary);
-}
-
-.our-programs__divider {
-  height: 1px;
-  background-color: var(--color-divider);
-  margin-block: var(--space-2);
-}
-
-.our-programs__card-section {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-}
-
-.our-programs__section-label {
-  margin: 0;
-  font-size: 12px;
-  line-height: 18px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  font-weight: var(--font-weight-bold);
+.our-programs__faq-link {
   color: var(--color-primary);
+  text-decoration: underline;
 }
 
-.our-programs__feature-list {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
+/* HIW head spacing per design */
+.how-it-works__head {
+  margin-bottom: var(--space-6);
 }
-
-.our-programs__feature-item {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--space-2);
-}
-
-.our-programs__feature-icon {
-  width: 20px;
-  height: 20px;
-  border-radius: 999px;
-  background-color: #ecfdf3;
-  color: #16a34a;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
-  margin-top: 2px;
-}
-
-.our-programs__feature-text {
-  font-size: var(--font-body-b3-size);
-  line-height: var(--font-body-b3-line-height);
-  color: var(--color-text-secondary);
-}
-
-.our-programs__cta:hover {
-  background-color: var(--color-primary-hover);
-}
-
-.our-programs__section--terms {
-  align-items: center;
-  gap: var(--space-4);
-}
-
-.our-programs__terms-header {
-  text-align: center;
-}
-
-.our-programs__terms-title {
-  margin: 0;
-  font-size: var(--font-h2-size);
-  line-height: var(--font-h2-line-height);
-  font-weight: var(--font-h2-weight);
-}
-
-.our-programs__terms-card {
-  width: 100%;
-  max-width: 960px;
-  background-color: var(--color-surface-card);
-  border-radius: 20px;
-  padding: var(--space-5);
-  border: 1px solid var(--color-border);
-  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.06);
-}
-
-.our-programs__terms-list {
-  margin: 0;
-  padding-left: var(--space-5);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  font-size: var(--font-body-b3-size);
-  line-height: var(--font-body-b3-line-height);
-  color: var(--color-text-primary);
-}
-
-.our-programs__terms-item {
-  list-style-type: disc;
-}
-
-@include respond(md) {
-  .our-programs__card {
-    flex: 1;
-  }
-}
-
-// How It Works
-.our-programs__section--how {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-6);
-}
-
-.our-programs__steps {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-  align-items: stretch;
-
-  @include respond(md) {
-    flex-direction: row;
-    align-items: flex-start;
-  }
-}
-
-.our-programs__step {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: var(--space-3);
-  background-color: var(--color-surface-card);
-  border: 1px solid var(--color-border);
-  border-radius: 20px;
-  padding: var(--space-6) var(--space-5);
-}
-
-.our-programs__step-icon-wrap {
-  width: 56px;
-  height: 56px;
-  border-radius: 999px;
-  background-color: color-mix(in srgb, var(--color-primary) 10%, transparent);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.our-programs__step-icon {
-  color: var(--color-primary);
-  font-size: 28px;
-  width: 28px;
-  height: 28px;
-}
-
-.our-programs__step-title {
-  margin: 0;
-  font-size: var(--font-body-b3-size);
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-text-primary);
-}
-
-.our-programs__step-desc {
-  margin: 0;
-  font-size: var(--font-body-b5-size);
-  color: var(--color-text-secondary);
-  line-height: 1.6;
-}
-
-.our-programs__step-arrow {
-  color: var(--color-primary);
-  font-size: 24px;
-  align-self: center;
-  display: none;
-
-  @include respond(md) {
-    display: block;
-    margin-top: 28px;
-  }
-}
-
-// T&C accordion
-.our-programs__terms-accordion {
-  width: 100%;
-}
-
-.our-programs__terms-panel {
-  border-radius: 12px !important;
-  border: 1px solid var(--color-border) !important;
-  box-shadow: none !important;
-
-  &::before {
-    display: none;
-  }
-}
-
-.our-programs__terms-panel-title {
-  font-size: var(--font-body-b3-size);
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-text-primary);
-}
-
-.our-programs__terms-panel-icon {
-  justify-content: flex-end;
-  color: var(--color-text-secondary);
-  min-width: 24px;
-
-  mat-icon {
-    transition: transform 200ms ease;
-  }
-}
-
-mat-expansion-panel.mat-expanded .our-programs__terms-panel-icon mat-icon {
-  transform: rotate(180deg);
-}
-

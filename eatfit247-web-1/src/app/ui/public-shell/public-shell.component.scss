@@ -11,37 +11,8 @@ header {
   flex-shrink: 0;
 }
 
-main {
+.site-main {
   flex: 1 0 auto;
   background-color: var(--color-surface-page);
+  display: block;
 }
-
-footer {
-  flex-shrink: 0;
-}
-
-// Sticky mobile FAB — visible by default, hidden on md+
-.sticky-fab {
-  position: fixed;
-  bottom: 1.5rem;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 100;
-  transition: opacity 0.25s ease, transform 0.25s ease;
-
-  @include respond(md) {
-    display: none;
-  }
-}
-
-.sticky-fab--hidden {
-  opacity: 0;
-  pointer-events: none;
-  transform: translateX(-50%) translateY(80px);
-}
-
-.sticky-fab__btn {
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25) !important;
-  white-space: nowrap;
-}
-

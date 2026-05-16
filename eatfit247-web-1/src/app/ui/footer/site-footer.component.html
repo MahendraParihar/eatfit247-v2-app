@@ -1,78 +1,91 @@
-<footer class="site-footer">
+<footer class="site-footer" role="contentinfo">
   <div class="site-footer__inner">
-    <section class="site-footer__brand">
-      <img
-        class="site-footer__logo"
-        src="/logo-white.svg"
-        alt="EatFit 24/7"
-        loading="lazy"
-      />
-
-      <p class="site-footer__description body-b6">
+    <div class="site-footer__brand">
+      <a routerLink="/" class="site-footer__logo" aria-label="EatFit247 home">
+        <img
+          src="/logo-white.svg"
+          alt="EatFit 24/7"
+          class="brand-logo brand-logo--footer"
+          width="158"
+          height="56"
+        />
+      </a>
+      <p>
         Empowering you to achieve lasting wellness through personalized,
         evidence-based nutrition counseling and lifestyle coaching.
       </p>
-
-      <nav class="site-footer__social" aria-label="Social media">
-        <app-social-site [items]="socialLinks"></app-social-site>
-      </nav>
-    </section>
-
-    <section class="site-footer__column">
-      <h3 class="site-footer__heading body-b4">Quick Links</h3>
-
-      <nav class="site-footer__nav body-b6" aria-label="Quick links">
-        <a routerLink="/about-us" class="site-footer__link">About EatFit</a>
-        <a routerLink="/about-shweta-shah" class="site-footer__link">About Shweta Shah</a>
-        <a routerLink="/our-programs" class="site-footer__link">Our Programs</a>
-        <a routerLink="/success-stories" class="site-footer__link">Success Stories</a>
-        <a routerLink="/press-and-media" class="site-footer__link">Press &amp; Media</a>
-        <a routerLink="/blog" class="site-footer__link">Blog</a>
-        <a routerLink="/faq" class="site-footer__link">FAQ</a>
-        <a routerLink="/contact-us" class="site-footer__link">Contact Us</a>
-      </nav>
-    </section>
-
-    <section class="site-footer__column">
-      <h3 class="site-footer__heading body-b4">Products</h3>
-
-      <nav aria-label="Product links" class="site-footer__nav body-b6">
-        <a routerLink="/product" class="site-footer__link">Shop Debloat Powder</a>
-      </nav>
-
-    </section>
-
-    <section class="site-footer__column site-footer__column--contact">
-      <h3 class="site-footer__heading body-b4">Contact Us</h3>
-      <nav aria-label="Contact information" class="site-footer__nav body-b6">
-        <a href="tel:{{contactNumber}}" class="site-footer__link">
-          {{ contactNumber }}
+      <div class="site-footer__social" aria-label="Social media">
+        <a [href]="facebookUrl" aria-label="Facebook" class="social-link" target="_blank" rel="noopener noreferrer">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M13.5 21v-7.5h2.55l.38-2.97H13.5V8.66c0-.86.24-1.45 1.47-1.45H16.6V4.55c-.27-.04-1.2-.12-2.27-.12-2.25 0-3.79 1.37-3.79 3.89v2.21H8v2.97h2.54V21h2.96Z"/>
+          </svg>
         </a>
-        <a href="mailto:{{contactEmail}}" class="site-footer__link">
-          {{ contactEmail }}
+        <a [href]="instagramUrl" aria-label="Instagram" class="social-link" target="_blank" rel="noopener noreferrer">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M12 2.2c3.2 0 3.58.01 4.85.07 1.17.05 1.8.25 2.23.41.56.22.96.48 1.38.9.42.42.68.82.9 1.38.16.42.36 1.06.41 2.23.06 1.27.07 1.65.07 4.85s-.01 3.58-.07 4.85c-.05 1.17-.25 1.8-.41 2.23-.22.56-.48.96-.9 1.38-.42.42-.82.68-1.38.9-.42.16-1.06.36-2.23.41-1.27.06-1.65.07-4.85.07s-3.58-.01-4.85-.07c-1.17-.05-1.8-.25-2.23-.41a3.7 3.7 0 0 1-1.38-.9 3.7 3.7 0 0 1-.9-1.38c-.16-.42-.36-1.06-.41-2.23C2.21 15.58 2.2 15.2 2.2 12s.01-3.58.07-4.85c.05-1.17.25-1.8.41-2.23.22-.56.48-.96.9-1.38.42-.42.82-.68 1.38-.9.42-.16 1.06-.36 2.23-.41C8.42 2.21 8.8 2.2 12 2.2Zm0 1.8c-3.15 0-3.51.01-4.74.07-1 .05-1.55.21-1.91.36-.48.19-.82.41-1.18.77-.36.36-.58.7-.77 1.18-.14.36-.31.91-.36 1.91C3 8.49 3 8.85 3 12c0 3.15.01 3.51.07 4.74.05 1 .21 1.55.36 1.91.19.48.41.82.77 1.18.36.36.7.58 1.18.77.36.14.91.31 1.91.36 1.23.06 1.59.07 4.74.07 3.15 0 3.51-.01 4.74-.07 1-.05 1.55-.21 1.91-.36.48-.19.82-.41 1.18-.77.36-.36.58-.7.77-1.18.14-.36.31-.91.36-1.91.06-1.23.07-1.59.07-4.74 0-3.15-.01-3.51-.07-4.74-.05-1-.21-1.55-.36-1.91a3.18 3.18 0 0 0-.77-1.18 3.18 3.18 0 0 0-1.18-.77c-.36-.14-.91-.31-1.91-.36C15.51 4.01 15.15 4 12 4Zm0 3.05a4.95 4.95 0 1 1 0 9.9 4.95 4.95 0 0 1 0-9.9Zm0 1.8a3.15 3.15 0 1 0 0 6.3 3.15 3.15 0 0 0 0-6.3Zm5.16-2.04a1.16 1.16 0 1 1 0 2.32 1.16 1.16 0 0 1 0-2.32Z"/>
+          </svg>
         </a>
+        <a [href]="linkedinUrl" aria-label="LinkedIn" class="social-link" target="_blank" rel="noopener noreferrer">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5ZM3 9.75h4V21H3V9.75ZM10 9.75h3.83v1.54h.05c.53-1 1.84-2.05 3.78-2.05 4.05 0 4.8 2.66 4.8 6.13V21h-4v-5.06c0-1.21-.02-2.77-1.69-2.77-1.7 0-1.96 1.32-1.96 2.68V21h-4V9.75Z"/>
+          </svg>
+        </a>
+        <a [href]="pinterestUrl" aria-label="Pinterest" class="social-link" target="_blank" rel="noopener noreferrer">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M12 2C6.48 2 2 6.48 2 12c0 4.23 2.62 7.85 6.32 9.32-.09-.79-.17-2 .04-2.86.19-.78 1.21-4.95 1.21-4.95s-.31-.62-.31-1.53c0-1.43.83-2.5 1.86-2.5.88 0 1.3.66 1.3 1.45 0 .88-.56 2.2-.85 3.43-.24 1.02.51 1.85 1.52 1.85 1.83 0 3.23-1.93 3.23-4.71 0-2.46-1.77-4.18-4.3-4.18-2.93 0-4.65 2.2-4.65 4.47 0 .89.34 1.84.77 2.36.08.1.09.19.07.29-.08.31-.25 1.02-.28 1.16-.04.18-.15.22-.34.13-1.27-.59-2.06-2.45-2.06-3.94 0-3.21 2.33-6.16 6.72-6.16 3.53 0 6.27 2.51 6.27 5.87 0 3.5-2.21 6.32-5.27 6.32-1.03 0-2-.54-2.33-1.17l-.63 2.41c-.23.88-.85 1.99-1.27 2.66.96.3 1.97.46 3.01.46 5.52 0 10-4.48 10-10S17.52 2 12 2Z"/>
+          </svg>
+        </a>
+        <a [href]="telegramUrl" aria-label="Telegram" class="social-link" target="_blank" rel="noopener noreferrer">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M9.78 15.32 9.6 19.5c.4 0 .57-.17.78-.37l1.87-1.78 3.88 2.84c.71.39 1.22.18 1.41-.66l2.56-12c.23-1.05-.38-1.46-1.07-1.2L4.43 11.9c-1.02.4-1 .97-.18 1.23l3.69 1.15 8.57-5.4c.4-.27.77-.12.46.15"/>
+          </svg>
+        </a>
+        <a [href]="youtubeUrl" aria-label="YouTube" class="social-link" target="_blank" rel="noopener noreferrer">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M21.58 7.19a2.5 2.5 0 0 0-1.76-1.77C18.25 5 12 5 12 5s-6.25 0-7.82.42a2.5 2.5 0 0 0-1.76 1.77C2 8.77 2 12 2 12s0 3.23.42 4.81a2.5 2.5 0 0 0 1.76 1.77C5.75 19 12 19 12 19s6.25 0 7.82-.42a2.5 2.5 0 0 0 1.76-1.77C22 15.23 22 12 22 12s0-3.23-.42-4.81ZM10 15V9l5.2 3L10 15Z"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+
+    <div>
+      <h3 class="site-footer__heading">Quick Links</h3>
+      <nav class="site-footer__nav">
+        <a routerLink="/about-us">About EatFit247</a>
+        <a routerLink="/about-shweta-shah">About Shweta Shah</a>
+        <a routerLink="/our-programs">Our Programs</a>
+        <a routerLink="/seasonal-plans">Seasonal Plans</a>
+        <a routerLink="/success-stories">Success Stories</a>
+        <a routerLink="/press-and-media">Press &amp; Media</a>
+        <a routerLink="/blog">Blog</a>
+        <a routerLink="/faq">FAQ</a>
       </nav>
-      <h2 class="site-footer__heading body-b4 site-footer__heading--spaced">Legal</h2>
-      <nav aria-label="Legal links" class="site-footer__nav body-b6">
-        <a routerLink="/privacy-policy" class="site-footer__link">
-          Privacy Policy
-        </a>
-        <a routerLink="/terms-and-conditions" class="site-footer__link">
-          Terms &amp; Conditions
-        </a>
+    </div>
+
+    <div>
+      <h3 class="site-footer__heading">Products</h3>
+      <nav class="site-footer__nav">
+        <a routerLink="/product/de-bloat">Shop Debloat Powder</a>
       </nav>
-    </section>
+    </div>
+
+    <div>
+      <h3 class="site-footer__heading">Contact Us</h3>
+      <nav class="site-footer__nav">
+        <a [href]="'tel:' + contactNumber">{{ contactNumber }}</a>
+        <a [href]="'mailto:' + contactEmail">{{ contactEmail }}</a>
+      </nav>
+
+      <h3 class="site-footer__heading" style="margin-top: var(--space-5);">Legal</h3>
+      <nav class="site-footer__nav">
+        <a routerLink="/privacy-policy">Privacy Policy</a>
+        <a routerLink="/terms-and-conditions">Terms &amp; Conditions</a>
+      </nav>
+    </div>
   </div>
 
   <div class="site-footer__bottom">
-    <p class="site-footer__copyright">
-      © {{ currentYear }} EatFit24by7. All Rights Reserved
-    </p>
-
-    <p class="site-footer__made-with">
-      Made with <span aria-hidden="true">♥</span>
-      <span class="sr-only">love</span>
-      for your health.
-    </p>
+    <span>© {{ currentYear }} EatFit24by7. All Rights Reserved</span>
+    <span>Made with <span class="heart" aria-hidden="true">♥</span> for your health.</span>
   </div>
 </footer>

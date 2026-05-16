@@ -376,9 +376,9 @@
     <div class="party-title">Sold By</div>
     <div class="party-name">{{invoice.seller.name}}</div>
     <div class="party-address">
-      {{invoice.seller.address.line1}}<br>
+      {{#if invoice.seller.address.line1}}{{invoice.seller.address.line1}}<br>{{/if}}
       {{#if invoice.seller.address.line2}}{{invoice.seller.address.line2}}<br>{{/if}}
-      {{invoice.seller.address.city}}{{#if invoice.seller.address.state}}, {{invoice.seller.address.state}}{{/if}}<br>
+      {{invoice.seller.address.city}}{{#if invoice.seller.address.state}}, {{invoice.seller.address.state}}{{#if invoice.seller.address.stateCode}}({{invoice.seller.address.stateCode}}){{/if}}{{/if}}<br>
       {{invoice.seller.address.postalCode}}<br>
       {{invoice.seller.address.country}}
     </div>
@@ -404,9 +404,9 @@
     <div class="party-title">Bill To</div>
     <div class="party-name">{{invoice.buyer.name}}</div>
     <div class="party-address">
-      {{invoice.buyer.address.line1}}<br>
+      {{#if invoice.buyer.address.line1}}{{invoice.buyer.address.line1}}<br>{{/if}}
       {{#if invoice.buyer.address.line2}}{{invoice.buyer.address.line2}}<br>{{/if}}
-      {{invoice.buyer.address.city}}{{#if invoice.buyer.address.state}}, {{invoice.buyer.address.state}}{{/if}}<br>
+      {{invoice.buyer.address.city}}{{#if invoice.buyer.address.state}}, {{invoice.buyer.address.state}}{{#if invoice.buyer.address.stateCode}}({{invoice.buyer.address.stateCode}}){{/if}}{{/if}}<br>
       {{invoice.buyer.address.postalCode}}<br>
       {{invoice.buyer.address.country}}
     </div>

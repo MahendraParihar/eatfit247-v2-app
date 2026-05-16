@@ -97,6 +97,11 @@ export const appRoutes: Route[] = [
         loadChildren: () => import('admin-user').then((m) => m.adminUserRoutes),
       },
       {
+        path: 'admin-rbac',
+        loadChildren: () =>
+          import('admin-rbac').then((m) => m.adminRbacRoutes),
+      },
+      {
         path: 'promo-code',
         loadChildren: () => import('promo-code').then((m) => m.promoCodeRoutes),
       },

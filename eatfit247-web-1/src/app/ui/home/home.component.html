@@ -1,36 +1,308 @@
 @if (loading()) {
-    <app-loader page="home"></app-loader>
+  <app-loader page="home"></app-loader>
 }
 @if (!loading()) {
-    @if (banners.length > 0) {
-        <app-banner [banners]="banners"></app-banner>
-    }
+  <h1 class="visually-hidden">EatFit247 — Personalized Nutrition &amp; Wellness Programs</h1>
 
-    <!-- Trust Bar -->
-    <div class="home-trust-bar">
-        <div class="home-trust-bar__inner">
-            @for (stat of trustStats; track stat.label) {
-                <div class="home-trust-bar__item">
-                    <span class="home-trust-bar__value">{{ stat.value }}</span>
-                    <span class="home-trust-bar__label">{{ stat.label }}</span>
-                </div>
-            }
+  <!-- ============================ HERO ============================ -->
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="ef-container hero-inner">
+      <div class="hero-copy">
+        <h2 id="hero-title" class="hero-title">
+          Eat smarter. Live<br />
+          <span class="accent">lighter.</span> Feel stronger.
+        </h2>
+        <p class="hero-sub">
+          Personalized, evidence-based nutrition programs designed around your
+          lifestyle, goals and body type — with one-on-one coaching by certified
+          dietitian Shweta Shah.
+        </p>
+        <div class="hero-cta">
+          <a routerLink="/contact-us" class="mat-btn mat-btn--filled">
+            Book A Consultation
+            <span class="mat-icon">arrow_forward</span>
+          </a>
+          <a routerLink="/our-programs" class="mat-btn mat-btn--outlined">
+            <span class="mat-icon">play_circle</span>
+            Explore Programs
+          </a>
         </div>
+      </div>
+
+      <div class="hero-visual" aria-hidden="true">
+        <div class="hero-ring"></div>
+        <div class="hero-ring hero-ring--inner"></div>
+        <div class="hero-plate"></div>
+        <div class="hero-portrait">
+          <img src="/shweta-shah.svg" alt="" />
+        </div>
+
+        <div class="hero-floater hero-floater--a">
+          <span class="icon">local_dining</span>
+          <div>
+            <strong>Custom meal plans</strong>
+            <span>Tailored to you</span>
+          </div>
+        </div>
+        <div class="hero-floater hero-floater--b">
+          <span class="icon">favorite</span>
+          <div>
+            <strong>−8 kg in 12 weeks</strong>
+            <span>Avg. Weight Loss Plan</span>
+          </div>
+        </div>
+        <div class="hero-floater hero-floater--c">
+          <span class="icon">spa</span>
+          <div>
+            <strong>Holistic approach</strong>
+            <span>Ayurveda + science</span>
+          </div>
+        </div>
+      </div>
     </div>
+  </section>
 
-    <h1 class="visually-hidden">EatFit247 — Personalized Nutrition & Wellness Programs</h1>
-    <div class="home-page__section page-container">
-        <!-- Programs -->
-        <app-common-program></app-common-program>
+  <!-- ============================ FEATURES ============================ -->
+  <section class="section">
+    <div class="ef-container">
+      <header class="section-head">
+        <span class="section-eyebrow">Why EatFit247</span>
+        <h2 class="section-title">A plan built around you — not a template</h2>
+        <p class="section-sub">
+          Every program blends nutritional science with sustainable lifestyle
+          changes, structured coaching, and the accountability you need to see
+          results.
+        </p>
+      </header>
 
-        <div class="home-page__divider" aria-hidden="true"></div>
-
-        <!-- Hall of Fame -->
-        <app-home-hall-of-fame [stories]="stories"></app-home-hall-of-fame>
-
-        <div class="home-page__divider" aria-hidden="true"></div>
-
-        <!-- From Our Blog -->
-        <app-common-blog></app-common-blog>
+      <div class="features-grid">
+        @for (feature of features; track feature.title) {
+          <article class="feature-card">
+            <span class="feature-card__icon">{{ feature.icon }}</span>
+            <h3>{{ feature.title }}</h3>
+            <p>{{ feature.body }}</p>
+          </article>
+        }
+      </div>
     </div>
+  </section>
+
+  <!-- ============================ SEASONAL PLANS ============================ -->
+  <section class="section section--alt seasonal-section" id="programs">
+    <div class="ef-container">
+      <header class="section-head">
+        <span class="section-eyebrow">
+          <span class="mat-icon" style="font-family:'Material Symbols Outlined';font-size:16px;vertical-align:-3px;margin-right:4px;">calendar_month</span>
+          Seasonal Plans
+        </span>
+        <h2 class="section-title">Cohort plans, joined <span class="accent">together</span>.</h2>
+        <p class="section-sub">
+          Cohort-based diet programs around festivals, conditions and seasons. Only a couple run at any given time — reserve a spot while it's open, or join the waitlist for the next batch.
+        </p>
+        <div class="seasonal-callout">
+          <span class="mat-icon">info</span>
+          <span><strong>Free to reserve.</strong> Payment is collected offline — once your spot is confirmed, our team will WhatsApp you with UPI / bank details.</span>
+        </div>
+      </header>
+
+      <div class="seasonal-grid">
+        @for (plan of seasonalPlans; track plan.slug) {
+          <article
+            class="seasonal-card"
+            [class.seasonal-card--featured]="plan.featured"
+            [attr.data-status]="plan.status"
+            [attr.data-cover]="plan.coverMode === 'full' ? 'full' : null"
+          >
+            <div class="seasonal-card__cover" [ngStyle]="coverStyle(plan)">
+              <span class="seasonal-card__status" [class]="'seasonal-card__status--' + plan.status">
+                <span class="dot"></span>{{ plan.statusLabel }}
+              </span>
+              <span class="seasonal-card__word">{{ plan.word }}</span>
+              <span class="seasonal-card__date-pill">
+                <span class="mat-icon">event</span>{{ plan.datePill }}
+              </span>
+            </div>
+            <div class="seasonal-card__body">
+              <h3 class="seasonal-card__title">{{ plan.title }}</h3>
+              <p class="seasonal-card__sub">{{ plan.subtitle }}</p>
+
+              <div class="seasonal-stats">
+                @for (s of plan.stats; track $index) {
+                  <div class="seasonal-stat">
+                    <span class="seasonal-stat__num">{{ s.num }}</span>
+                    <span class="seasonal-stat__label">{{ s.label }}</span>
+                  </div>
+                }
+              </div>
+
+              <ul class="seasonal-card__bullets">
+                @for (b of plan.bullets; track b) {
+                  <li><span class="tick">✓</span>{{ b }}</li>
+                }
+              </ul>
+
+              <div class="seasonal-card__price-row">
+                <div class="seasonal-card__price">
+                  {{ plan.price }}@if (plan.priceSuffix) {<small>{{ plan.priceSuffix }}</small>}
+                </div>
+                <span class="seasonal-card__price-note">Excl. taxes</span>
+              </div>
+
+              <a
+                [routerLink]="['/book-session']"
+                [queryParams]="{ plan: plan.slug, intent: plan.ctaIntent === 'waitlist' ? 'waitlist' : null }"
+                class="mat-btn"
+                [class.mat-btn--filled]="plan.ctaIntent !== 'waitlist'"
+                [class.mat-btn--outlined]="plan.ctaIntent === 'waitlist'"
+              >
+                {{ plan.ctaLabel }}
+                <span class="mat-icon">{{ plan.ctaIcon }}</span>
+              </a>
+            </div>
+          </article>
+        }
+      </div>
+
+      <div style="text-align:center;margin-top:var(--space-6);">
+        <a routerLink="/seasonal-plans" class="mat-btn mat-btn--outlined">
+          See all seasonal plans <span class="mat-icon">arrow_forward</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ COACH / ABOUT ============================ -->
+  <section class="section" id="about">
+    <div class="ef-container coach-grid">
+      <div class="coach-image-wrap">
+        <img src="/shweta-shah.svg" alt="Portrait illustration of Shweta Shah" />
+        <div class="coach-stamp">
+          <span class="mat-icon">verified</span>
+          <div>
+            <strong>Shweta Shah, RD</strong>
+            <span>Registered Dietitian · Mumbai</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="coach-text">
+        <span class="section-eyebrow">Meet your coach</span>
+        <h2>Nutrition advice from someone who<br />actually listens.</h2>
+        <p>
+          With 15+ years of clinical practice and thousands of successful
+          transformations, Shweta combines evidence-based nutrition with a deep
+          respect for Indian food culture and every client's individual story.
+        </p>
+
+        <div class="coach-creds">
+          @for (cred of credentials; track cred.title) {
+            <div class="coach-cred">
+              <span class="mat-icon">{{ cred.icon }}</span>
+              <div>
+                <strong>{{ cred.title }}</strong>
+                <span>{{ cred.subtitle }}</span>
+              </div>
+            </div>
+          }
+        </div>
+
+        <div class="coach-cta-row">
+          <a routerLink="/contact-us" class="mat-btn mat-btn--filled">
+            Book appointment
+            <span class="mat-icon">arrow_forward</span>
+          </a>
+          <a routerLink="/about-shweta-shah" class="mat-btn mat-btn--outlined">
+            Read full bio
+            <span class="mat-icon">arrow_forward</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ TESTIMONIALS ============================ -->
+  <section class="section section--alt" id="stories">
+    <div class="ef-container">
+      <header class="section-head">
+        <span class="section-eyebrow">Success Stories</span>
+        <h2 class="section-title">Real people. Real transformations.</h2>
+        <p class="section-sub">What our clients say after finishing their EatFit247 program.</p>
+      </header>
+
+      <div class="testimonial-carousel">
+        <button
+          type="button"
+          class="testimonial-carousel__nav testimonial-carousel__nav--prev"
+          aria-label="Previous testimonial"
+          (click)="carouselPrev()"
+        >
+          <span class="mat-icon">chevron_left</span>
+        </button>
+        <div class="testimonial-carousel__viewport">
+          <div
+            class="testimonial-carousel__track"
+            [style.transform]="carouselTransform()"
+          >
+            @for (story of testimonialStories(); track story.name) {
+              <article class="testimonial">
+                <div class="testimonial__media">
+                  <img [src]="story.image" [alt]="story.name" loading="lazy" />
+                  @if (story.metric) {
+                    <span class="testimonial__metric">{{ story.metric }}</span>
+                  }
+                </div>
+                <div class="testimonial__body">
+                  <header class="testimonial__head">
+                    <h3 class="testimonial__name">{{ story.name }}</h3>
+                  </header>
+                  <p class="testimonial__quote">{{ story.quote }}</p>
+                </div>
+              </article>
+            }
+          </div>
+        </div>
+        <button
+          type="button"
+          class="testimonial-carousel__nav testimonial-carousel__nav--next"
+          aria-label="Next testimonial"
+          (click)="carouselNext()"
+        >
+          <span class="mat-icon">chevron_right</span>
+        </button>
+        <div class="testimonial-carousel__dots" role="tablist" aria-label="Choose testimonial">
+          @for (i of pageDots(); track i) {
+            <button
+              type="button"
+              class="testimonial-carousel__dot"
+              [class.is-active]="carouselIndex() === i"
+              [attr.aria-label]="'Go to slide ' + (i + 1)"
+              (click)="carouselGoTo(i)"
+            ></button>
+          }
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ CTA BAND ============================ -->
+  <section class="section">
+    <div class="ef-container">
+      <div class="cta-band">
+        <div>
+          <h2>Ready to start your transformation?</h2>
+          <p>Book a 15-minute discovery call. We'll assess your goals and suggest the right program — no obligation.</p>
+        </div>
+        <div class="cta-actions">
+          <a routerLink="/contact-us" class="mat-btn mat-btn--filled">
+            Book a Call
+            <span class="mat-icon">arrow_forward</span>
+          </a>
+          <a [href]="'tel:' + contactNumber" class="mat-btn mat-btn--outlined">
+            <span class="mat-icon">call</span>
+            {{ contactNumber }}
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
 }

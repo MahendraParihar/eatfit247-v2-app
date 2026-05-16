@@ -1,108 +1,172 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatExpansionModule } from '@angular/material/expansion';
-import { LoaderComponent, EmptyStateComponent } from '@shared-ui';
-import { Program } from '../../core/interfaces/program.interface';
+import { BreadcrumbsComponent, EmptyStateComponent, LoaderComponent } from '@shared-ui';
 import { JsonLdService, SEOService } from '../../core/services';
 
-const ALL_PROGRAMS: Program[] = [
+interface SessionChip {
+  readonly num: string;
+  readonly label: string;
+}
+
+interface PlanFeature {
+  readonly icon: string;
+  readonly title: string;
+  readonly copy: string;
+}
+
+interface TimelineStep {
+  readonly icon: string;
+  readonly title: string;
+  readonly copy: string;
+}
+
+interface FaqItem {
+  readonly q: string;
+  readonly a: string;
+  readonly aHtml?: boolean;
+}
+
+interface ProgramDetailPlan {
+  readonly id: string;
+  readonly title: string;
+  readonly subtitle: string;
+  readonly lead: string;
+  readonly icon: string;
+  readonly durationLabel: string;
+  readonly featured?: boolean;
+  readonly sessions: ReadonlyArray<SessionChip>;
+  readonly highlights: ReadonlyArray<string>;
+  readonly features: ReadonlyArray<PlanFeature>;
+  readonly timeline: ReadonlyArray<TimelineStep>;
+}
+
+const DEFAULT_TIMELINE: ReadonlyArray<TimelineStep> = [
+  { icon: 'chat', title: 'Week 0 · Discovery call', copy: '30 minutes to understand your goals, history and any conditions.' },
+  { icon: 'assignment', title: 'Week 1 · Deep assessment', copy: 'Intake questionnaire, recent labs, food log review. Your first plan drops on day 5.' },
+  { icon: 'trending_up', title: 'Weeks 2–11 · Weekly coaching', copy: 'Weekly 45-min 1:1 calls, bi-weekly plan adjustments, daily WhatsApp support.' },
+  { icon: 'flag', title: 'Week 12 · Maintenance plan', copy: 'A full review, habit consolidation, and a 6-month maintenance roadmap.' },
+];
+
+const PLANS: ReadonlyArray<ProgramDetailPlan> = [
   {
     id: 'exclusive-shweta',
-    name: 'Exclusively with Shweta Shah',
-    subtitle: 'Personalised journey with celebrity expert guidance',
-    prices: [
-      { programPlanId: 263, label: '1 Session', note: '' },
-      { programPlanId: 261, label: '6 Sessions', note: 'Save ₹52,500' },
-      { programPlanId: 262, label: '8 Sessions', note: 'Save ₹70,000' },
+    title: 'Exclusively with Shweta Shah',
+    subtitle: 'Personalised journey with expert guidance.',
+    lead: 'A one-on-one engagement directly with Shweta — for clients who want her undivided attention across every session, plan revision and follow-up.',
+    icon: 'diamond',
+    durationLabel: 'Personalised',
+    sessions: [
+      { num: '1', label: 'Session' },
+      { num: '6', label: 'Sessions' },
+      { num: '8', label: 'Sessions' },
     ],
-    features: [
+    highlights: [
       'One-on-one consultation with Shweta Shah',
       'Comprehensive health assessment',
       'Personalized nutrition plan',
       'Detailed dietary recommendations',
       'Follow-up guidelines',
     ],
+    features: [
+      { icon: 'diamond', title: '1:1 with Shweta', copy: 'Every session is held directly with Shweta Shah — no hand-offs.' },
+      { icon: 'assignment_ind', title: 'Personalised plan', copy: 'Built from your medical history, recent labs and food preferences.' },
+      { icon: 'restaurant', title: 'Dietary recommendations', copy: 'Practical, family-friendly recommendations that fit your kitchen.' },
+      { icon: 'support_agent', title: 'Follow-up guidelines', copy: 'Clear protocols so you always know the next step.' },
+    ],
+    timeline: DEFAULT_TIMELINE,
   },
   {
     id: 'chief-nutritionist',
-    name: 'Plan with Chief Nutritionist',
-    subtitle: '16 years of clinical nutrition experience',
-    prices: [
-      { programPlanId: 239, label: '3 Sessions', note: '' },
-      { programPlanId: 266, label: '6 Sessions', note: 'Save ₹60,000' },
+    title: 'Plan with Chief Nutritionist',
+    subtitle: 'Experience of 16 years.',
+    lead: 'Work directly with our Chief Nutritionist for a structured, results-driven journey backed by 16 years of clinical experience.',
+    icon: 'spa',
+    durationLabel: 'Structured',
+    featured: true,
+    sessions: [
+      { num: '3', label: 'Sessions' },
+      { num: '6', label: 'Sessions' },
     ],
-    features: [
-      'One-on-one consultation with a Chief Nutritionist',
+    highlights: [
+      'One-on-one consultation with Shweta Shah',
       'Comprehensive health assessment',
       'Personalized nutrition plan',
       'Detailed dietary recommendations',
       'Follow-up guidelines',
     ],
+    features: [
+      { icon: 'verified', title: 'Senior expertise', copy: '16+ years of clinical nutrition experience guiding every decision.' },
+      { icon: 'monitoring', title: 'Comprehensive assessment', copy: 'Deep dive into history, labs, lifestyle and goals.' },
+      { icon: 'menu_book', title: 'Personalised plan', copy: 'Aligned with your cuisine, schedule and medical context.' },
+      { icon: 'tune', title: 'Plan refinements', copy: 'Adjustments built into your sessions as your body responds.' },
+    ],
+    timeline: DEFAULT_TIMELINE,
   },
   {
     id: 'shweta-and-team',
-    name: 'Plan with Shweta + Team',
-    subtitle: 'Collaborative, comprehensive approach',
-    prices: [
-      { programPlanId: 264, label: '1+7 Sessions', note: '' },
-    ],
-    features: [
-      'Initial consultation with Shweta Shah',
-      '7 follow-up sessions with the expert team',
+    title: 'Plan with Shweta + Team',
+    subtitle: 'Collaborative approach.',
+    lead: 'Get the best of both worlds — start with Shweta, then continue with a dedicated expert team for sustained, high-touch follow-through.',
+    icon: 'favorite',
+    durationLabel: 'Collaborative',
+    sessions: [{ num: '1 + 7', label: 'Sessions' }],
+    highlights: [
+      'Initial consultation with Shweta',
+      '7 follow-up sessions with team',
       'Personalized nutrition plan',
       'Detailed dietary recommendations',
       'Follow-up guidelines',
     ],
+    features: [
+      { icon: 'diamond', title: 'Kick-off with Shweta', copy: 'Strategy session with Shweta to set direction.' },
+      { icon: 'groups', title: 'Expert team', copy: '7 follow-ups with an expert team trained in her methodology.' },
+      { icon: 'assignment_ind', title: 'Personalised plan', copy: 'Tailored across nutrition, sleep, movement and stress.' },
+      { icon: 'support_agent', title: 'Continuous support', copy: 'Cohesive hand-off so nothing gets lost between sessions.' },
+    ],
+    timeline: DEFAULT_TIMELINE,
   },
 ];
 
-const OUTCOMES: string[] = [
-  'Sustainable weight management',
-  'Improved gut health and digestion',
-  'Better energy and sleep quality',
-  'Balanced hormones and metabolism',
-  'Reduced inflammation and bloating',
-  'Science-backed, Ayurvedic nutrition approach',
-];
-
-const FAQS: { question: string; answer: string }[] = [
+const FAQS: ReadonlyArray<FaqItem> = [
   {
-    question: 'Are sessions conducted online or in person?',
-    answer:
-      'All sessions are conducted online via video call, so you can join from anywhere in the world.',
+    q: 'How are sessions delivered?',
+    a: 'All consultations happen online — secure video calls plus daily WhatsApp support. You can join from anywhere; you only need a phone or laptop with a stable connection.',
   },
   {
-    question: 'What happens if I need to reschedule?',
-    answer:
-      'You can reschedule a session with at least 24 hours\' notice. Our team will help you find a convenient new time.',
+    q: 'How quickly can I start after enrolling?',
+    a: 'Your discovery call is scheduled within 48 hours. Your first personalised plan is delivered by day 3–5 once we have your intake and any recent labs.',
   },
   {
-    question: 'Can this plan work for specific conditions like PCOD or thyroid?',
-    answer:
-      'Yes. Our plans are customised for your health history. Please share your medical details during the initial consultation.',
+    q: 'What if I have a medical condition like PCOS, thyroid or diabetes?',
+    a: "Most conditions are well-managed alongside our programs. We'll review your reports, coordinate with your physician where useful, and never ask you to stop prescribed medication.",
   },
   {
-    question: 'How soon will I see results?',
-    answer:
-      'Most clients notice positive changes within 2–3 weeks of following the plan consistently. Long-term results depend on adherence and individual response.',
+    q: 'Do I need to cook separate meals from my family?',
+    a: "No. Plans are built around what you already eat — Indian, vegetarian, vegan, eggetarian or non-vegetarian. We optimise portions, timing and small swaps; we don't replace your kitchen.",
+  },
+  {
+    q: 'Can I switch programs mid-way?',
+    a: 'Yes — at any point. Your progress, notes and history carry over and we credit unused sessions toward the new program.',
+  },
+  {
+    q: 'What if I miss a session?',
+    a: 'Reschedule up to 4 hours in advance. Missed sessions can be made up within the same month at no extra cost.',
+  },
+  {
+    q: 'Do you offer refunds?',
+    a: 'Payments are non-refundable & non-transferable; however, we may approve a pause of up to 20 days in genuine cases. Reach out to our team and we will review case by case.',
+  },
+  {
+    q: 'Is my health data private?',
+    a: 'All health data is encrypted in transit and at rest, and only your dedicated care team can access it. Full details on our privacy page.',
   },
 ];
 
 @Component({
   standalone: true,
   selector: 'app-program-details',
-  imports: [
-    CommonModule,
-    RouterLink,
-    MatButtonModule,
-    MatIconModule,
-    MatExpansionModule,
-    LoaderComponent,
-    EmptyStateComponent,
-  ],
+  imports: [CommonModule, RouterLink, LoaderComponent, EmptyStateComponent, BreadcrumbsComponent],
   templateUrl: './program-details.component.html',
   styleUrl: './program-details.component.scss',
 })
@@ -113,25 +177,31 @@ export class ProgramDetailsComponent implements OnInit {
   private readonly seoService = inject(SEOService);
 
   readonly loading = signal(true);
-  readonly program = signal<Program | null>(null);
-  readonly selectedPlanId = signal<number>(0);
+  readonly plan = signal<ProgramDetailPlan | null>(null);
 
-  readonly outcomes = OUTCOMES;
   readonly faqs = FAQS;
+  readonly relatedPlans = PLANS;
+  readonly relatedPlansFiltered = computed<ReadonlyArray<ProgramDetailPlan>>(() => {
+    const current = this.plan();
+    return current ? PLANS.filter((rp) => rp.id !== current.id) : PLANS;
+  });
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
-    const found = ALL_PROGRAMS.find((p) => p.id === id) ?? null;
-    this.program.set(found);
+    const found = PLANS.find((p) => p.id === id) ?? null;
+    this.plan.set(found);
     this.loading.set(false);
 
     if (found) {
-      this.selectedPlanId.set(found.prices[0].programPlanId);
-      this.seoService.updateSEO({ title: found.name, description: found.subtitle, url: `/our-programs/${found.id}` });
+      this.seoService.updateSEO({
+        title: found.title,
+        description: found.subtitle,
+        url: `/our-programs/${found.id}`,
+      });
       this.jsonLdService.setPageSchema([
         {
           '@type': 'Service',
-          name: found.name,
+          name: found.title,
           description: found.subtitle,
           provider: { '@type': 'Organization', name: 'EatFit247', url: 'https://eatfit24by7.com' },
           areaServed: 'Worldwide',
@@ -140,27 +210,11 @@ export class ProgramDetailsComponent implements OnInit {
         this.jsonLdService.buildBreadcrumb([
           { name: 'Home', url: 'https://eatfit24by7.com/' },
           { name: 'Programs', url: 'https://eatfit24by7.com/our-programs' },
-          { name: found.name, url: `https://eatfit24by7.com/our-programs/${found.id}` },
+          { name: found.title, url: `https://eatfit24by7.com/our-programs/${found.id}` },
         ]),
-        this.jsonLdService.buildFaqPage(FAQS),
+        this.jsonLdService.buildFaqPage(FAQS.map((f) => ({ question: f.q, answer: f.a }))),
       ]);
     }
-  }
-
-  selectPlan(planId: number): void {
-    this.selectedPlanId.set(planId);
-  }
-
-  getPlanCount(label: string): string {
-    return label.split(' ')[0];
-  }
-
-  getPlanUnit(label: string): string {
-    return label.split(' ').slice(1).join(' ');
-  }
-
-  bookNow(): void {
-    this.router.navigate(['/checkout'], { queryParams: { plan: this.selectedPlanId() } });
   }
 
   goToPrograms(): void {

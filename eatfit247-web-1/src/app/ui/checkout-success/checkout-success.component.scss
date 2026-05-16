@@ -1,499 +1,260 @@
-@use '../../../styles/breakpoints' as *;
+:host {
+  display: block;
+}
 
-.checkout-success-container {
+.checkout-success-section {
+  padding-block: var(--space-fluid-xl);
   display: flex;
-  justify-content: center;
-  align-items: flex-start;
+  flex-direction: column;
+  gap: var(--space-5);
+}
 
-  .error-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 60vh;
-    text-align: center;
+.success-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
 
-    mat-spinner {
-      margin-bottom: 1rem;
-    }
-
-    .error-icon {
-      font-size: 64px;
-      width: 64px;
-      height: 64px;
-      color: #f44336;
-      margin-bottom: 1rem;
-    }
-
-    h2 {
-      margin-bottom: 1rem;
-      color: #333;
-    }
-
-    p {
-      margin-bottom: 2rem;
-      color: #666;
-      max-width: 500px;
-    }
-  }
-
-  .success-content {
-    max-width: 900px;
-    width: 100%;
-
-    .success-header {
-      text-align: center;
-      margin-bottom: 2rem;
-
-      .success-icon-container {
-        margin-bottom: 1rem;
-
-        .success-icon {
-          font-size: 80px;
-          width: 80px;
-          height: 80px;
-          color: #4caf50;
-        }
-      }
-
-      h1 {
-        font-size: 2.5rem;
-        margin-bottom: 0.5rem;
-        color: #333;
-        font-weight: 600;
-      }
-
-      .success-message {
-        font-size: 1.1rem;
-        color: #666;
-        margin-bottom: 0;
-      }
-    }
-
-    mat-card {
-      margin-bottom: 1.5rem;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-
-      mat-card-header {
-        margin-bottom: 1rem;
-
-        mat-card-title {
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-          font-size: 1.25rem;
-          font-weight: 600;
-          color: #333;
-
-          mat-icon {
-            color: var(--color-primary);
-          }
-        }
-      }
-
-      mat-card-content {
-        padding-top: 0;
-      }
-    }
-
-    .order-details-card {
-      .order-info-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 1rem;
-
-        .info-item {
-          display: flex;
-          flex-direction: column;
-          gap: 0.25rem;
-
-          .info-label {
-            font-size: 0.875rem;
-            color: #666;
-            font-weight: 500;
-          }
-
-          .info-value {
-            font-size: 1rem;
-            color: #333;
-            font-weight: 600;
-
-            &.status-badge {
-              display: inline-block;
-              padding: 0.25rem 0.75rem;
-              background-color: #4caf50;
-              color: white;
-              border-radius: 4px;
-              font-size: 0.875rem;
-              width: fit-content;
-            }
-          }
-        }
-      }
-    }
-
-    .order-items-card {
-      .order-items-list {
-        .order-item {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-          padding: 1rem 0;
-          border-bottom: 1px solid #e0e0e0;
-
-          &:last-child {
-            border-bottom: none;
-          }
-
-          .item-details {
-            flex: 1;
-
-            h3 {
-              margin: 0 0 0.5rem 0;
-              font-size: 1.1rem;
-              color: #333;
-            }
-
-            .item-quantity,
-            .item-price {
-              margin: 0.25rem 0;
-              font-size: 0.875rem;
-              color: #666;
-            }
-          }
-
-          .item-total {
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: #333;
-          }
-        }
-      }
-    }
-
-    .order-summary-card {
-      .summary-row {
-        display: flex;
-        justify-content: space-between;
-        padding: 0.75rem 0;
-        border-bottom: 1px solid #e0e0e0;
-
-        &:last-child {
-          border-bottom: none;
-        }
-
-        &.total {
-          border-top: 2px solid #333;
-          margin-top: 0.5rem;
-          padding-top: 1rem;
-          font-size: 1.25rem;
-          font-weight: 600;
-        }
-
-        &.discount {
-          color: #4caf50;
-        }
-
-        .summary-label {
-          color: #666;
-        }
-
-        .summary-value {
-          color: #333;
-          font-weight: 600;
-        }
-      }
-    }
-
-    .customer-info-card,
-    .address-card {
-      .customer-info,
-      .address-info {
-        p {
-          margin: 0.5rem 0;
-          color: #333;
-          line-height: 1.6;
-
-          strong {
-            color: #666;
-            margin-right: 0.5rem;
-          }
-        }
-      }
-    }
-
-    .invoice-card {
-      background: linear-gradient(135deg, #FFF1F2 0%, #FFFBEB 100%);
-      color: var(--color-text-primary);
-      margin-bottom: 1.5rem;
-
-      mat-card-content {
-        padding: 1.5rem;
-      }
-
-      .invoice-section {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 2rem;
-
-        .invoice-info {
-          display: flex;
-          align-items: flex-start;
-          gap: 1rem;
-          flex: 1;
-
-          .invoice-icon {
-            font-size: 48px;
-            width: 48px;
-            height: 48px;
-            color: var(--color-text-primary);
-            margin-top: 0.25rem;
-            flex-shrink: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-          }
-
-          .invoice-text {
-            h3 {
-              margin: 0 0 0.5rem 0;
-              font-size: 1.5rem;
-              font-weight: 600;
-              color: var(--color-text-primary);
-            }
-
-            .invoice-message {
-              margin: 0;
-              font-size: 1rem;
-              line-height: 1.6;
-              color: var(--color-text-secondary);
-            }
-          }
-        }
-
-        button {
-          padding: 0.75rem 2rem;
-          font-size: 1rem;
-          white-space: nowrap;
-
-          mat-icon {
-            margin-right: 0.5rem;
-          }
-        }
-      }
-    }
-
-    .contact-info-card {
-      background-color: #f8f9fa;
-      border-left: 4px solid var(--color-primary);
-      margin-bottom: 1.5rem;
-
-      mat-card-header {
-        margin-bottom: 1rem;
-
-        mat-card-title {
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-          font-size: 1.25rem;
-          font-weight: 600;
-          color: var(--color-text-primary);
-
-          mat-icon {
-            color: var(--color-primary);
-          }
-        }
-      }
-
-      .contact-info {
-        .contact-message {
-          margin: 0 0 1.5rem 0;
-          color: var(--color-text-primary);
-          line-height: 1.6;
-          font-size: 1rem;
-        }
-
-        .contact-details {
-          display: flex;
-          flex-direction: column;
-          gap: 1rem;
-
-          .contact-item {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            padding: 1rem;
-            background-color: var(--color-surface-card);
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-
-            .contact-icon {
-              font-size: 32px;
-              width: 32px;
-              height: 32px;
-              color: var(--color-primary);
-            }
-
-            .contact-item-content {
-              display: flex;
-              flex-direction: column;
-              gap: 0.25rem;
-
-              .contact-label {
-                font-size: 0.875rem;
-                color: #666;
-                font-weight: 500;
-              }
-
-              .contact-link {
-                font-size: 1rem;
-                color: var(--color-primary);
-                text-decoration: none;
-                font-weight: 600;
-                transition: color 0.3s ease;
-
-                &:hover {
-                  color: var(--color-primary-hover);
-                  text-decoration: underline;
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-
-    .action-buttons {
-      display: flex;
-      justify-content: center;
-      gap: 1rem;
-      margin-top: 2rem;
-
-      button {
-        padding: 0.75rem 2rem;
-        font-size: 1rem;
-
-        mat-icon {
-          margin-right: 0.5rem;
-        }
-      }
-    }
-  }
-
-  .mat-mdc-card{
-   background-color: var(--color-surface-card);
+  @media (min-width: 760px) {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   }
 }
 
-// Responsive — mobile-first overrides for desktop
-.checkout-success-container {
-  padding: 1rem;
+.feature-card .mat-icon,
+.contact-link .mat-icon,
+.invoice-icon {
+  font-family: 'Material Symbols Outlined';
+}
 
-  .success-content {
-    .success-header h1 {
-      font-size: 2rem;
+.info-rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
 
-      @include respond(md) {
-        font-size: 2.5rem;
-      }
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-block: var(--space-2);
+  border-bottom: 1px dashed var(--color-border);
+
+  &:last-child {
+    border-bottom: 0;
+  }
+
+  .info-label {
+    color: var(--color-text-secondary);
+    font-size: var(--type-small-size);
+  }
+
+  .info-value {
+    color: var(--color-text-primary);
+    font-weight: 600;
+    text-align: right;
+  }
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  background: var(--color-primary);
+  color: var(--color-surface-white);
+  border-radius: 999px;
+  font-size: var(--type-small-size);
+  font-weight: 600;
+}
+
+.address-block {
+  margin-top: var(--space-2);
+
+  p {
+    margin: 0 0 4px;
+    color: var(--color-text-primary);
+    line-height: 1.6;
+  }
+}
+
+.items-card {
+  .order-items-list {
+    margin-top: var(--space-3);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .order-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--space-3);
+    padding: var(--space-3) 0;
+    border-bottom: 1px solid var(--color-border);
+
+    &:last-child {
+      border-bottom: 0;
     }
 
-    .order-details-card .order-info-grid {
-      grid-template-columns: 1fr;
-
-      @include respond(md) {
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      }
+    h4 {
+      margin: 0 0 4px;
+      font-size: var(--type-h3-size);
+      color: var(--color-text-primary);
     }
 
-    .order-items-card .order-items-list .order-item {
-      flex-direction: column;
-      gap: 0.5rem;
-
-      .item-total {
-        align-self: flex-end;
-      }
-
-      @include respond(md) {
-        flex-direction: row;
-        gap: 0;
-
-        .item-total {
-          align-self: auto;
-        }
-      }
+    p {
+      margin: 0 0 2px;
+      color: var(--color-text-secondary);
+      font-size: var(--type-small-size);
     }
 
-    .invoice-card .invoice-section {
-      flex-direction: column;
-      align-items: stretch;
-      gap: 1.5rem;
-
-      .invoice-info {
-        .invoice-icon {
-          font-size: 36px;
-          width: 36px;
-          height: 36px;
-          flex-shrink: 0;
-
-          @include respond(md) {
-            font-size: 48px;
-            width: 48px;
-            height: 48px;
-          }
-        }
-
-        .invoice-text h3 {
-          font-size: 1.25rem;
-
-          @include respond(md) {
-            font-size: 1.5rem;
-          }
-        }
-
-        .invoice-text .invoice-message {
-          font-size: 0.9rem;
-
-          @include respond(md) {
-            font-size: 1rem;
-          }
-        }
-      }
-
-      button {
-        width: 100%;
-
-        @include respond(md) {
-          width: auto;
-        }
-      }
-
-      @include respond(md) {
-        flex-direction: row;
-        align-items: center;
-        gap: 2rem;
-      }
-    }
-
-    .contact-info-card .contact-info .contact-details .contact-item {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 0.75rem;
-
-      .contact-item-content {
-        width: 100%;
-      }
-
-      @include respond(md) {
-        flex-direction: row;
-        align-items: center;
-        gap: 1rem;
-
-        .contact-item-content {
-          width: auto;
-        }
-      }
+    .item-total {
+      font-size: var(--type-h3-size);
+      font-weight: 700;
+      color: var(--color-text-primary);
+      white-space: nowrap;
     }
   }
+}
+
+.summary-card {
+  .summary-row {
+    display: flex;
+    justify-content: space-between;
+    padding: var(--space-2) 0;
+    border-bottom: 1px solid var(--color-border);
+
+    &:last-child {
+      border-bottom: 0;
+    }
+
+    &.total {
+      border-top: 2px solid var(--color-text-primary);
+      margin-top: var(--space-2);
+      padding-top: var(--space-3);
+      font-size: var(--type-h3-size);
+      font-weight: 700;
+    }
+
+    &.discount {
+      color: var(--color-primary);
+    }
+
+    .summary-label { color: var(--color-text-secondary); }
+    .summary-value { color: var(--color-text-primary); font-weight: 600; }
+  }
+}
+
+.invoice-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  align-items: stretch;
+
+  .invoice-info {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3);
+
+    .invoice-icon {
+      font-size: 40px;
+      color: var(--color-primary);
+      flex-shrink: 0;
+    }
+
+    h3 {
+      margin: 0 0 4px;
+      font-size: var(--type-h3-size);
+      color: var(--color-text-primary);
+    }
+
+    p {
+      margin: 0;
+      color: var(--color-text-secondary);
+      font-size: var(--type-small-size);
+      line-height: 1.6;
+    }
+  }
+
+  .mat-btn { align-self: flex-start; }
+
+  @media (min-width: 760px) {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-5);
+  }
+}
+
+.contact-card {
+  p {
+    margin: var(--space-2) 0;
+    color: var(--color-text-secondary);
+    line-height: 1.6;
+  }
+
+  .contact-details {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-3);
+    margin-top: var(--space-3);
+
+    @media (min-width: 600px) {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .contact-link {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3);
+    border-radius: 12px;
+    background: var(--color-surface-page);
+    border: 1px solid var(--color-border);
+    text-decoration: none;
+    color: var(--color-text-primary);
+    transition: border-color .2s ease, transform .2s ease;
+
+    &:hover {
+      border-color: var(--color-primary);
+      transform: translateY(-1px);
+    }
+
+    .mat-icon {
+      font-size: 28px;
+      color: var(--color-primary);
+    }
+
+    .contact-label {
+      display: block;
+      font-size: var(--type-small-size);
+      color: var(--color-text-secondary);
+    }
+
+    .contact-value {
+      display: block;
+      font-weight: 600;
+      color: var(--color-text-primary);
+    }
+  }
+}
+
+.error-card {
+  text-align: center;
+
+  .error-icon {
+    font-size: 56px;
+    color: var(--color-primary);
+    font-family: 'Material Symbols Outlined';
+  }
+
+  p {
+    margin-bottom: var(--space-3);
+  }
+}
+
+.action-buttons {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
 }

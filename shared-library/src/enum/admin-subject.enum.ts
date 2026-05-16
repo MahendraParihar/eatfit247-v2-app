@@ -55,6 +55,9 @@ export enum AdminSubjectEnum {
     Notification     = 'Notification',
     GoogleCalendar   = 'GoogleCalendar',
 
+    // RBAC domain
+    AdminRole        = 'AdminRole',
+
     // Scheduling domain
     Appointment      = 'Appointment',
     ContactForm      = 'ContactForm',

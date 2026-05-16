@@ -1,0 +1,256 @@
+<section class="page-hero">
+  <div class="ef-container">
+    <div class="page-hero__inner">
+      <div>
+        <app-breadcrumbs [crumbs]="[{ label: 'Home', link: '/' }, { label: 'Seasonal Plans' }]"></app-breadcrumbs>
+        <h1>Plans that <span class="accent">start together,</span> finish stronger.</h1>
+        <p class="lead">Fixed-date group diet programs around festivals, conditions and seasons. One daily plan, one cohort, one transparent flat fee.</p>
+        <div class="seasonal-callout" style="margin-top: var(--space-4);">
+          <span class="mat-icon">info</span>
+          <span><strong>Free to reserve.</strong> Payment is collected offline — once your spot is confirmed, our team will WhatsApp you with UPI / bank details.</span>
+        </div>
+      </div>
+      <div class="page-hero__visual" aria-hidden="true">
+        <div class="ring"></div>
+        <div class="ring ring--inner"></div>
+        <div class="disc">calendar_month</div>
+        <div class="chip chip--a"><span class="mat-icon">groups</span>Cohort plan</div>
+        <div class="chip chip--b"><span class="mat-icon">restaurant_menu</span>10 unique diets</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="ef-container">
+    <header class="section-head">
+      <span class="section-eyebrow">Year-round calendar</span>
+      <h2 class="section-title">Pick a plan that fits your season</h2>
+      <p class="section-sub">Most plans run only at a specific time of year. The three statuses below tell you what's open right now, what's coming, and what to add to your wishlist.</p>
+    </header>
+
+    @for (group of groups; track group.status) {
+      <div class="status-group" [class]="'status-group status-group--' + group.modifier">
+        <div class="status-group__head">
+          <h3>
+            <span class="dot" aria-hidden="true"></span>{{ group.heading }}
+            <span class="status-group__count" style="font-weight:500;color:var(--color-text-secondary);font-size:14px;">
+              · {{ group.plans.length }} {{ group.plans.length === 1 ? 'plan' : 'plans' }}
+            </span>
+          </h3>
+          <p>{{ group.blurb }}</p>
+        </div>
+
+        <div class="seasonal-grid">
+          @for (plan of group.plans; track plan.slug) {
+            <article
+              class="seasonal-card"
+              [id]="plan.slug"
+              [class.seasonal-card--featured]="plan.featured"
+              [attr.data-status]="plan.status"
+              [attr.data-cover]="plan.coverMode === 'full' ? 'full' : null"
+            >
+              <div class="seasonal-card__cover" [ngStyle]="coverStyle(plan)">
+                <span class="seasonal-card__status" [class]="'seasonal-card__status seasonal-card__status--' + plan.status">
+                  <span class="dot"></span>{{ plan.statusLabel }}
+                </span>
+                <span class="seasonal-card__word">{{ plan.word }}</span>
+                <span class="seasonal-card__date-pill">
+                  <span class="mat-icon">event</span>{{ plan.datePill }}
+                </span>
+              </div>
+              <div class="seasonal-card__body">
+                <h3 class="seasonal-card__title">{{ plan.title }}</h3>
+                <p class="seasonal-card__sub">{{ plan.subtitle }}</p>
+
+                <div class="seasonal-stats">
+                  @for (s of plan.stats; track $index) {
+                    <div class="seasonal-stat">
+                      <span class="seasonal-stat__num">{{ s.num }}</span>
+                      <span class="seasonal-stat__label">{{ s.label }}</span>
+                    </div>
+                  }
+                </div>
+
+                <ul class="seasonal-card__bullets">
+                  @for (b of plan.bullets; track b) {
+                    <li><span class="tick">✓</span>{{ b }}</li>
+                  }
+                </ul>
+
+                <div class="seasonal-card__price-row">
+                  <div class="seasonal-card__price">
+                    {{ plan.price }}@if (plan.priceSuffix) {<small>{{ plan.priceSuffix }}</small>}
+                  </div>
+                  <span class="seasonal-card__price-note">Excl. taxes</span>
+                </div>
+
+                <a
+                  [routerLink]="['/book-session']"
+                  [queryParams]="{ plan: plan.slug, intent: plan.primaryIntent === 'waitlist' ? 'waitlist' : null }"
+                  class="mat-btn"
+                  [class.mat-btn--filled]="plan.primaryVariant === 'filled'"
+                  [class.mat-btn--outlined]="plan.primaryVariant === 'outlined'"
+                  style="width:100%;justify-content:center;"
+                >
+                  {{ plan.primaryLabel }} <span class="mat-icon">{{ plan.primaryIcon }}</span>
+                </a>
+              </div>
+            </article>
+          }
+        </div>
+
+        <aside class="status-empty">
+          <span class="status-empty__icon">{{ group.emptyIcon }}</span>
+          <h3 class="status-empty__title">{{ group.emptyTitle }}</h3>
+          <p class="status-empty__copy">{{ group.emptyCopy }}</p>
+          <a routerLink="/contact-us" class="mat-btn mat-btn--outlined">
+            {{ group.emptyCtaLabel }} <span class="mat-icon">arrow_forward</span>
+          </a>
+        </aside>
+      </div>
+    }
+  </div>
+</section>
+
+<!-- Inside the plan — daily diet preview -->
+<section class="section section--alt" id="preview">
+  <div class="ef-container">
+    <header class="section-head">
+      <span class="section-eyebrow">
+        <span class="mat-icon" style="font-family:'Material Symbols Outlined';font-size:16px;vertical-align:-3px;">restaurant_menu</span>
+        Inside the plan
+      </span>
+      <h2 class="section-title">A different diet, every day</h2>
+      <p class="section-sub">Each seasonal plan rotates through a unique meal map — themes, key meals, and what to prep ahead. Reserve a spot and the full day-by-day schedule drops to your inbox on batch day zero.</p>
+    </header>
+
+    <div class="diet-days">
+      <article class="diet-day">
+        <div class="diet-day__head">
+          <span class="diet-day__num">Day <span class="diet-day__num-big">01</span></span>
+          <span class="diet-day__focus">Reset</span>
+        </div>
+        <h3 class="diet-day__theme">Warm, light start</h3>
+        <p class="diet-day__why">Gentle on digestion — sets the tone for the rotation.</p>
+        <ul class="diet-day__meals">
+          <li><b><span class="mat-icon">wb_sunny</span>Morning</b><span>Warm water with lemon · soaked almonds (5)</span></li>
+          <li><b><span class="mat-icon">free_breakfast</span>Breakfast</b><span>Moong dal chilla with mint chutney</span></li>
+          <li><b><span class="mat-icon">restaurant</span>Lunch</b><span>Khichdi + curd + sautéed seasonal greens</span></li>
+          <li><b><span class="mat-icon">nights_stay</span>Dinner</b><span>Vegetable soup + 1 small chapati</span></li>
+        </ul>
+        <div class="diet-day__foot">
+          <span class="diet-day__macro"><span class="mat-icon">local_fire_department</span>~1,450 kcal</span>
+          <span class="diet-day__prep"><span class="mat-icon">schedule</span>Prep 25 min</span>
+        </div>
+      </article>
+      <article class="diet-day">
+        <div class="diet-day__head">
+          <span class="diet-day__num">Day <span class="diet-day__num-big">02</span></span>
+          <span class="diet-day__focus">Energy</span>
+        </div>
+        <h3 class="diet-day__theme">Slow carbs, steady energy</h3>
+        <p class="diet-day__why">Complex carbs to keep you fuelled without the slump.</p>
+        <ul class="diet-day__meals">
+          <li><b><span class="mat-icon">wb_sunny</span>Morning</b><span>Cinnamon water · 1 date</span></li>
+          <li><b><span class="mat-icon">free_breakfast</span>Breakfast</b><span>Oats upma with peanuts &amp; veggies</span></li>
+          <li><b><span class="mat-icon">restaurant</span>Lunch</b><span>Brown rice + dal + lauki sabzi</span></li>
+          <li><b><span class="mat-icon">nights_stay</span>Dinner</b><span>Multigrain roti + paneer bhurji</span></li>
+        </ul>
+        <div class="diet-day__foot">
+          <span class="diet-day__macro"><span class="mat-icon">local_fire_department</span>~1,520 kcal</span>
+          <span class="diet-day__prep"><span class="mat-icon">schedule</span>Prep 30 min</span>
+        </div>
+      </article>
+      <article class="diet-day">
+        <div class="diet-day__head">
+          <span class="diet-day__num">Day <span class="diet-day__num-big">03</span></span>
+          <span class="diet-day__focus">Protein</span>
+        </div>
+        <h3 class="diet-day__theme">Protein-forward day</h3>
+        <p class="diet-day__why">Build, repair, satiety — without the heaviness.</p>
+        <ul class="diet-day__meals">
+          <li><b><span class="mat-icon">wb_sunny</span>Morning</b><span>Methi water · soaked walnuts (2)</span></li>
+          <li><b><span class="mat-icon">free_breakfast</span>Breakfast</b><span>Sprouts salad + boiled egg / paneer</span></li>
+          <li><b><span class="mat-icon">restaurant</span>Lunch</b><span>Rajma + jeera rice + cucumber raita</span></li>
+          <li><b><span class="mat-icon">nights_stay</span>Dinner</b><span>Grilled paneer / fish + sautéed veg</span></li>
+        </ul>
+        <div class="diet-day__foot">
+          <span class="diet-day__macro"><span class="mat-icon">local_fire_department</span>~1,580 kcal</span>
+          <span class="diet-day__prep"><span class="mat-icon">schedule</span>Prep 35 min</span>
+        </div>
+      </article>
+    </div>
+
+    <div style="text-align:center;margin-top:var(--space-6);">
+      <a routerLink="/book-session" class="mat-btn mat-btn--filled">
+        Reserve My Spot <span class="mat-icon">arrow_forward</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- How seasonal plans work -->
+<section class="section">
+  <div class="ef-container">
+    <header class="section-head section-head--center" style="margin-bottom: var(--space-6);">
+      <span class="section-eyebrow"><span class="mat-icon">route</span>How seasonal plans work</span>
+      <h2 class="section-head__title">Reserve, confirm, cook along</h2>
+      <p class="section-head__sub">Four simple steps — designed around the fact that you're joining a group on a fixed schedule.</p>
+    </header>
+
+    <div class="hiw-row hiw-row--four">
+      <article class="hiw-step">
+        <span class="hiw-step__num">01</span>
+        <span class="hiw-step__icon"><span class="mat-icon">bookmark_add</span></span>
+        <h3 class="hiw-step__title">Reserve Your Spot</h3>
+        <p class="hiw-step__copy">Pick a plan and tell us a few basics. Reservation is free — no online payment.</p>
+      </article>
+      <span class="hiw-arrow" aria-hidden="true"><span class="mat-icon">arrow_forward</span></span>
+      <article class="hiw-step">
+        <span class="hiw-step__num">02</span>
+        <span class="hiw-step__icon"><span class="mat-icon">support_agent</span></span>
+        <h3 class="hiw-step__title">We WhatsApp You</h3>
+        <p class="hiw-step__copy">Our admin team confirms your spot, answers questions and shares payment details (UPI / bank).</p>
+      </article>
+      <span class="hiw-arrow" aria-hidden="true"><span class="mat-icon">arrow_forward</span></span>
+      <article class="hiw-step">
+        <span class="hiw-step__num">03</span>
+        <span class="hiw-step__icon"><span class="mat-icon">restaurant</span></span>
+        <h3 class="hiw-step__title">Get the Plan</h3>
+        <p class="hiw-step__copy">On day zero, the full day-by-day diet drops to your inbox + WhatsApp group with prep notes.</p>
+      </article>
+      <span class="hiw-arrow" aria-hidden="true"><span class="mat-icon">arrow_forward</span></span>
+      <article class="hiw-step">
+        <span class="hiw-step__num">04</span>
+        <span class="hiw-step__icon"><span class="mat-icon">groups</span></span>
+        <h3 class="hiw-step__title">Cook Along</h3>
+        <p class="hiw-step__copy">Follow daily, ask questions in the group, share wins — finish stronger than you started.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- Terms -->
+<section class="section program-terms" style="padding-top: 0;">
+  <div class="ef-container" style="max-width: 920px;">
+    <header class="section-head section-head--center" style="margin-bottom: var(--space-5);">
+      <h2 class="section-head__title">Terms &amp; Conditions</h2>
+    </header>
+    <details class="program-terms__panel" open>
+      <summary class="program-terms__summary">
+        <span class="program-terms__title">View seasonal plan terms</span>
+        <span class="program-terms__chev mat-icon">expand_more</span>
+      </summary>
+      <ul class="program-terms__list">
+        <li>All seasonal plans are <strong>cohort-based</strong> — the start date is fixed for the whole batch.</li>
+        <li><strong>No online payment is accepted.</strong> Our team will WhatsApp you to confirm your spot and share UPI / bank transfer details.</li>
+        <li>Reservation is <strong>free and non-binding</strong> until payment is made.</li>
+        <li>Once payment is made, the fee is non-refundable &amp; non-transferable.</li>
+        <li>Diet plans are designed for the registered individual; please do not share with non-enrolled members.</li>
+        <li>Plans are not a substitute for medical advice — please consult your physician for ongoing conditions.</li>
+        <li>Prices are exclusive of applicable taxes.</li>
+      </ul>
+    </details>
+  </div>
+</section>

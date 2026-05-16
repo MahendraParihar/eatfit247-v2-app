@@ -1,5 +1,6 @@
 export * from './lib/layout';
 export * from './lib/banner';
+export * from './lib/breadcrumbs';
 export * from './lib/card';
 export * from './lib/empty-state';
 export * from './lib/loader';

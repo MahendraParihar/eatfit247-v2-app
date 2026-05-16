@@ -1,104 +1,112 @@
-<header class="site-header">
-    <div class="header-inner ef-container">
-        <!-- Logo -->
-        <a routerLink="/" class="logo-link">
-            <img src="/logo-white.svg" alt="EatFit 24/7" class="logo"/>
-        </a>
+<header class="site-header" role="banner">
+  <div class="ef-container header-inner">
+    <a routerLink="/" class="logo-link" aria-label="EatFit247 home">
+      <img
+        src="/logo-white.svg"
+        alt="EatFit 24/7"
+        class="brand-logo brand-logo--header"
+        width="158"
+        height="56"
+      />
+    </a>
 
-        <!-- Desktop Nav -->
-        <nav class="desktop-nav" aria-label="Main navigation">
-            <ul class="nav-list">
-                @for (item of navItems; track item.label) {
-                    @if (item.children) {
-                        <li class="nav-item has-dropdown">
-                            <button
-                                    class="nav-link dropdown-trigger"
-                                    [matMenuTriggerFor]="subMenu"
-                                    routerLinkActive="active"
-                                    [routerLinkActiveOptions]="{ exact: false }"
-                                    [attr.aria-label]="'Open ' + item.label + ' menu'"
-                            >
-                                {{ item.label }}
-                                <mat-icon class="dropdown-icon">expand_more</mat-icon>
-                            </button>
-                            <mat-menu #subMenu="matMenu" class="ef-submenu">
-                                @for (child of item.children; track child.route) {
-                                    <a mat-menu-item [routerLink]="child.route" class="submenu-link">
-                                        {{ child.label }}
-                                    </a>
-                                }
-                            </mat-menu>
-                        </li>
-                    } @else {
-                        <li class="nav-item">
-                            <a
-                                    class="nav-link"
-                                    [routerLink]="item.route"
-                                    routerLinkActive="active"
-                                    [routerLinkActiveOptions]="{ exact: item.route === '/' }"
-                            >{{ item.label }}</a>
-                        </li>
-                    }
+    <nav class="desktop-nav" aria-label="Main navigation">
+      <ul class="nav-list">
+        @for (item of navItems; track item.label) {
+          @if (item.children) {
+            <li class="nav-item has-dropdown">
+              <button
+                type="button"
+                class="nav-link"
+                aria-haspopup="true"
+                [routerLinkActive]="'active'"
+                [routerLinkActiveOptions]="{ exact: false }"
+              >
+                {{ item.label }}
+                <span class="chev mat-icon">expand_more</span>
+              </button>
+              <div class="nav-dropdown">
+                @for (child of item.children; track child.route) {
+                  <a
+                    [routerLink]="child.route"
+                    routerLinkActive="is-active"
+                    class="dropdown-link"
+                  >{{ child.label }}</a>
                 }
-            </ul>
-        </nav>
+              </div>
+            </li>
+          } @else {
+            <li class="nav-item">
+              <a
+                class="nav-link"
+                [routerLink]="item.route"
+                routerLinkActive="active"
+                [routerLinkActiveOptions]="{ exact: item.route === '/' }"
+              >{{ item.label }}</a>
+            </li>
+          }
+        }
+      </ul>
+    </nav>
 
-        <!-- CTA + Mobile Toggle -->
-        <div class="header-actions">
-            <button type="button"
-                    mat-flat-button
-                    color="primary"
-                    class="primary-action-button header-actions cta-btn" routerLink="/contact-us">
-                Book A Consultation
-            </button>
-            <button class="mobile-toggle" (click)="toggleMobileMenu()" aria-label="Toggle menu">
-                <mat-icon>{{ mobileMenuOpen ? 'close' : 'menu' }}</mat-icon>
-            </button>
-        </div>
+    <div class="header-actions">
+      <button
+        type="button"
+        class="theme-toggle"
+        (click)="toggleTheme()"
+        aria-label="Toggle theme"
+      >
+        <span class="mat-icon icon-moon">dark_mode</span>
+        <span class="mat-icon icon-sun">light_mode</span>
+      </button>
+      <a routerLink="/contact-us" class="mat-btn mat-btn--filled cta-desktop">
+        Book A Consultation <span class="mat-icon">arrow_forward</span>
+      </a>
+      <button
+        class="mobile-toggle"
+        (click)="toggleMobileMenu()"
+        [attr.aria-expanded]="mobileMenuOpen"
+        aria-label="Toggle menu"
+      >
+        <span class="mat-icon">{{ mobileMenuOpen ? 'close' : 'menu' }}</span>
+      </button>
     </div>
+  </div>
 
-    <!-- Mobile Backdrop -->
-    <div
-            class="mobile-backdrop"
-            [class.mobile-backdrop--visible]="mobileMenuOpen"
-            (click)="mobileMenuOpen = false"
-    ></div>
-
-    <!-- Mobile Nav -->
-    <nav class="mobile-nav" [class.mobile-nav--open]="mobileMenuOpen" aria-label="Mobile navigation">
-            <ul class="mobile-nav-list">
-                @for (item of navItems; track item.label) {
-                    @if (item.children) {
-                        @for (child of item.children; track child.route) {
-                            <li>
-                                <a
-                                        [routerLink]="child.route"
-                                        routerLinkActive="active"
-                                        class="mobile-nav-link"
-                                        (click)="mobileMenuOpen = false"
-                                >{{ child.label }}</a>
-                            </li>
-                        }
-                    } @else {
-                        <li>
-                            <a
-                                    [routerLink]="item.route"
-                                    routerLinkActive="active"
-                                    [routerLinkActiveOptions]="{ exact: item.route === '/' }"
-                                    class="mobile-nav-link"
-                                    (click)="mobileMenuOpen = false"
-                            >{{ item.label }}</a>
-                        </li>
-                    }
-                }
-                <li>
-                    <button routerLink="/contact-us" type="button"
-                       mat-flat-button
-                       color="primary"
-                       class="primary-action-button mobile-cta" (click)="mobileMenuOpen = false">
-                        Book A Consultation
-                    </button>
-                </li>
-            </ul>
-        </nav>
+  <nav
+    class="mobile-nav"
+    [class.open]="mobileMenuOpen"
+    aria-label="Mobile navigation"
+  >
+    <ul>
+      @for (item of navItems; track item.label) {
+        @if (item.children) {
+          <li class="mobile-group">{{ item.label }}</li>
+          @for (child of item.children; track child.route) {
+            <li>
+              <a
+                [routerLink]="child.route"
+                routerLinkActive="active"
+                (click)="closeMobileMenu()"
+              >{{ child.label }}</a>
+            </li>
+          }
+        } @else {
+          <li>
+            <a
+              [routerLink]="item.route"
+              routerLinkActive="active"
+              [routerLinkActiveOptions]="{ exact: item.route === '/' }"
+              (click)="closeMobileMenu()"
+            >{{ item.label }}</a>
+          </li>
+        }
+      }
+    </ul>
+    <a
+      routerLink="/contact-us"
+      class="mat-btn mat-btn--filled"
+      (click)="closeMobileMenu()"
+    >Book A Consultation</a>
+  </nav>
 </header>

@@ -40,6 +40,22 @@ export const appRoutes: Route[] = [
         title: 'Programs | EatFit247',
       },
       {
+        path: 'seasonal-plans',
+        loadComponent: () =>
+          import('./ui/seasonal-plans/seasonal-plans.component').then(
+            (m) => m.SeasonalPlansComponent
+          ),
+        title: 'Seasonal & Group Plans | EatFit247',
+      },
+      {
+        path: 'book-session',
+        loadComponent: () =>
+          import('./ui/book-session/book-session.component').then(
+            (m) => m.BookSessionComponent
+          ),
+        title: 'Reserve your spot | EatFit247',
+      },
+      {
         path: 'our-programs/:id',
         loadComponent: () =>
           import('./ui/program-details/program-details.component').then(

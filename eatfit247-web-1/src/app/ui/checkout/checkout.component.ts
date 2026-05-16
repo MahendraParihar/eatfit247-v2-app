@@ -6,7 +6,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { ActivatedRoute, Params, Router } from '@angular/router';
+import { ActivatedRoute, Params, Router, RouterLink } from '@angular/router';
 import { MatStepper, MatStepperModule } from '@angular/material/stepper';
 import {
   MAT_FORM_FIELD_DEFAULT_OPTIONS,
@@ -42,6 +42,7 @@ import {
   PaymentStatusEnum,
 } from '@eatfit247-shared-library';
 import { ProductService } from '../../core/services/product.service';
+import { BreadcrumbsComponent } from '@shared-ui';
 import { Subject, takeUntil } from 'rxjs';
 
 @Component({
@@ -49,6 +50,7 @@ import { Subject, takeUntil } from 'rxjs';
   standalone: true,
   imports: [
     CommonModule,
+    RouterLink,
     ReactiveFormsModule,
     MatStepperModule,
     MatFormFieldModule,
@@ -60,6 +62,7 @@ import { Subject, takeUntil } from 'rxjs';
     MatIconModule,
     MatCheckboxModule,
     MatRadioModule,
+    BreadcrumbsComponent,
   ],
   templateUrl: './checkout.component.html',
   styleUrl: './checkout.component.scss',

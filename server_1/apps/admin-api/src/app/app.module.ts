@@ -33,6 +33,7 @@ import { MemberTestimonialModule } from '@server_1/modules/member-testimonial';
 import { LovsModule } from '@server_1/modules/lovs';
 import { SuccessStoriesModule } from '@server_1/modules/success-stories';
 import { AdminUserModule } from '@server_1/admin-only/admin-user';
+import { AdminRbacModule } from '@server_1/admin-only/admin-rbac';
 import { ReportsModule } from '@server_1/admin-only/reports';
 import { ProductAdminModule } from '@server_1/modules/product';
 import { PagesAdminModule } from '@server_1/modules/pages';
@@ -90,6 +91,7 @@ import { AuthModule } from '@server_1/modules/auth';
     ),
     AuthModule,
     AdminUserModule,
+    AdminRbacModule,
     ReportsModule,
   ],
   controllers: [AppController],

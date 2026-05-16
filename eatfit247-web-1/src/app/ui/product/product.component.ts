@@ -1,11 +1,9 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
-import { MatButtonModule } from '@angular/material/button';
-import { MatExpansionModule } from '@angular/material/expansion';
-import { MatIconModule } from '@angular/material/icon';
-import { BannerComponent, LoaderComponent } from '@shared-ui';
+import { Router, RouterLink } from '@angular/router';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { BannerComponent, BreadcrumbsComponent, LoaderComponent } from '@shared-ui';
 import { BannerService, FaqService, JsonLdService, SEOService } from '../../core/services';
 import { ProductService } from '../../core/services/product.service';
 import {
@@ -31,17 +29,22 @@ interface ISizeOption extends IProductFee {
   productVariantId?: number | null;
 }
 
+/** Title + description pair used by the Benefits / Storage lists. */
+interface IBenefitLine {
+  title: string;
+  description: string;
+}
+
 @Component({
   standalone: true,
   selector: 'app-product',
   imports: [
     CommonModule,
     FormsModule,
+    RouterLink,
     BannerComponent,
     LoaderComponent,
-    MatButtonModule,
-    MatExpansionModule,
-    MatIconModule,
+    BreadcrumbsComponent,
   ],
   templateUrl: './product.component.html',
   styleUrl: './product.component.scss',
@@ -53,6 +56,7 @@ export class ProductComponent implements OnInit, OnDestroy {
   private readonly router = inject(Router);
   private readonly seoService = inject(SEOService);
   private readonly jsonLdService = inject(JsonLdService);
+  private readonly sanitizer = inject(DomSanitizer);
   // Banner media
   banners: IPublicBanner[] = [];
   // Product data
@@ -70,7 +74,7 @@ export class ProductComponent implements OnInit, OnDestroy {
   productImages1: string[] = [];
   selectedImageIndex = 0;
   // Star powder image (fallback)
-  starPowderImage = 'assets/images/products/start-powder.png';
+  starPowderImage = '/product_feature.jpg';
   // Custom slider for the feature section
   featureSliderCurrentIndex = 0;
   private featureSliderTimer: any = null;
@@ -78,6 +82,177 @@ export class ProductComponent implements OnInit, OnDestroy {
   productVideos: string[] = [];
   // FAQ data
   productFaqs: IPublicFaq[] = [];
+
+  /** Material symbol icons rotated for the Benefits list (per design). */
+  private readonly benefitIcons: string[] = [
+    'monitor_weight',
+    'water_drop',
+    'female',
+    'air',
+    'bolt',
+    'trending_down',
+  ];
+
+  /** Material symbol icons rotated for the Storage/Precautions list. */
+  private readonly precautionIcons: string[] = [
+    'event',
+    'ac_unit',
+    'wb_sunny',
+    'lock',
+  ];
+
+  /**
+   * Canonical benefit copy from the design HTML. Acts as a fallback when
+   * `additionalInfo.benefits` from the API is empty or returns a bare string[].
+   */
+  private readonly defaultBenefits: readonly IBenefitLine[] = [
+    { title: 'Bloat reduction', description: 'Calms post-meal heaviness within 30 minutes.' },
+    { title: 'Relieves hyperacidity', description: 'Soothes the stomach lining and balances pH.' },
+    { title: 'Period bloating & cramps', description: 'Eases water retention and abdominal discomfort.' },
+    { title: 'Relieves gas, burping & belching', description: 'Targets flatulence and post-meal discomfort at the source.' },
+    { title: 'Restores lost energy', description: "Better digestion frees up energy you didn't know you were spending." },
+    { title: 'Supports weight loss', description: 'A balanced gut speeds up metabolism and curbs cravings.' },
+  ];
+
+  /** Canonical storage / precaution copy from the design HTML. */
+  private readonly defaultPrecautions: readonly IBenefitLine[] = [
+    { title: 'Shelf life', description: '7–8 months from the date of manufacture.' },
+    { title: 'Store in a cool, dry place', description: 'Avoid humid spots like near the stove or sink.' },
+    { title: 'Keep away from direct sunlight', description: 'Sunlight can degrade the natural ingredients.' },
+    { title: 'Seal tightly after use', description: 'Press the zip-lock closed each time to preserve freshness.' },
+  ];
+
+  /** Step labels rotated through the How-to-use block when the API only
+   *  returns plain instruction strings (so we don't lose the design's
+   *  evocative "Measure / Mix / Sip" labels). */
+  private readonly defaultHowToUseStepNames: readonly string[] = [
+    'Measure',
+    'Mix',
+    'Sip',
+  ];
+
+  /** Static review list, matching the design landing (15 reviews, circular initials). */
+  readonly reviewList: ReadonlyArray<{
+    initials: string;
+    name: string;
+    role?: string;
+    quote: string;
+    featured?: boolean;
+  }> = [
+    {
+      initials: 'RM',
+      name: 'Romi Mehta',
+      role: 'Owner, Rain or Shine',
+      quote:
+        'In just two weeks I felt less bloated, my sugar cravings reduced, my weight went down and my skin began to glow. I highly recommend it to people with the same issues.',
+    },
+    {
+      initials: 'AP',
+      name: 'Arun Pandey',
+      role: 'Businessman',
+      quote:
+        "Since I travel a lot, food has always been an issue. This powder is like a miracle — I'm off my acidity medicines and have smooth bowel movements.",
+    },
+    {
+      initials: 'PP',
+      name: 'Pooja Puri',
+      role: 'Pilates instructor',
+      quote:
+        'In just two days I felt a lot lighter, with less gas and bloating. The best part — no painful cramps like other laxative powders. Very mild, very effective.',
+    },
+    {
+      initials: 'YK',
+      name: 'Yasmin Karachiwala',
+      role: 'Celebrity Pilates trainer',
+      featured: true,
+      quote:
+        "Although I eat well and exercise daily, I'm frequently bloated. Awesome product — worth every penny. A clean gut means a toxin-free body, and I see a noticeable change in my skin and hair quality.",
+    },
+    {
+      initials: 'DS',
+      name: 'Dimple Saboowala',
+      quote:
+        "This is my go-to essential. No taste, doesn't gum up, works quickly and without discomfort. The single-serve sachets are easy to carry. Solved my burping and bloating in weeks.",
+    },
+    {
+      initials: 'TR',
+      name: 'Tasheen Rahimtoola',
+      role: 'Food curator',
+      quote:
+        "I tried it after seeing the change in my mom's skin. It's truly magic — helped me get clear, glowing skin. A happy gut always leads to healthy skin.",
+    },
+    {
+      initials: 'KS',
+      name: 'Kinjal Shah',
+      role: 'Homemaker',
+      quote:
+        'An interesting mix of herbs. My whole family is hooked. Significant impact on our gut health and overall well-being. Very pleased with the ingredients.',
+    },
+    {
+      initials: 'GB',
+      name: 'Geeta Basra',
+      role: 'Actress',
+      quote:
+        'Totally got rid of my bloating. So glad we have homegrown brands promoting good health — and yes, this blend WORKS!',
+    },
+    {
+      initials: 'HS',
+      name: 'Harbhajan Singh',
+      role: 'Indian cricketer',
+      featured: true,
+      quote:
+        "I've faced acidity and bloating issues for a long time, but this powder has worked for me like a miracle. I've used it for over a year and highly recommend adding it to your daily routine to fix gut issues the natural way.",
+    },
+    {
+      initials: 'NS',
+      name: 'Nishith Shah',
+      role: 'Sales Director, APAC — Johnson Controls',
+      quote:
+        "Debloat Powder has changed my lifestyle. My dependency on isabgol and antacids has reduced completely. I'm on my third box and very happy with the results.",
+    },
+    {
+      initials: 'HS',
+      name: 'Hardik Shah',
+      role: 'Director, IG Financial Service Pvt Ltd',
+      quote:
+        'Has shown brilliant results — helped with constipation, bloating and even my migraines. Will continue taking this for a long time, plus it tastes great.',
+    },
+    {
+      initials: 'VP',
+      name: 'Veera Patel',
+      role: 'Head — Administration & Facilities, Essar House',
+      quote:
+        "The single-serving sachets make travelling easy. I feel great the next morning and can definitely tell the difference when I don't take it.",
+    },
+    {
+      initials: 'RL',
+      name: 'Rakhee Lad',
+      quote:
+        "I've had IBS for over ten years and I'm happy to say this supplement helped me in less than two weeks. It works.",
+    },
+    {
+      initials: 'V',
+      name: 'Vivek',
+      role: 'VP of Engineering',
+      quote:
+        'I had struggled with food intolerances that are hard to pin down. This works whenever a food sensitivity causes bloating — especially after a high-carb meal.',
+    },
+    {
+      initials: 'RM',
+      name: 'Rajesh Mulchandani',
+      role: 'Proprietor, IMC',
+      quote:
+        "I'm such a fan — it truly makes me feel better post-meal and through the day. I've tried several probiotics, but this is what's done the work. Felt results in just a few days.",
+    },
+  ];
+
+  benefitIcon(index: number): string {
+    return this.benefitIcons[index % this.benefitIcons.length];
+  }
+
+  precautionIcon(index: number): string {
+    return this.precautionIcons[index % this.precautionIcons.length];
+  }
 
   get sizes(): ISizeOption[] {
     const sizeOptions: ISizeOption[] = [];
@@ -182,8 +357,62 @@ export class ProductComponent implements OnInit, OnDestroy {
     return `₹ ${min}.00 – ₹ ${max}.00`;
   }
 
-  get productBenefits(): string[] {
-    return this.product?.additionalInfo?.benefits || [];
+  /**
+   * Benefits list as `{title, description}` pairs.
+   * Accepts API shape of `string[]` (legacy) or `{title, description}[]` (new)
+   * and falls back to the canonical design copy when both are missing.
+   */
+  get productBenefits(): IBenefitLine[] {
+    const raw = this.product?.additionalInfo?.benefits as unknown;
+    return this.normalizeBenefitLines(raw, this.defaultBenefits);
+  }
+
+  /** How-to-use step label for the given index. Falls back to `Step N`. */
+  howToUseStepName(index: number, instruction?: unknown): string {
+    if (instruction && typeof instruction === 'object') {
+      const obj = instruction as { title?: string; name?: string };
+      if (obj.title) return obj.title;
+      if (obj.name) return obj.name;
+    }
+    return this.defaultHowToUseStepNames[index] ?? `Step ${index + 1}`;
+  }
+
+  /** How-to-use step body — handles both string instructions and object form. */
+  howToUseStepBody(instruction: unknown): string {
+    if (typeof instruction === 'string') {
+      return instruction;
+    }
+    if (instruction && typeof instruction === 'object') {
+      const obj = instruction as { description?: string; body?: string; text?: string };
+      return obj.description ?? obj.body ?? obj.text ?? '';
+    }
+    return '';
+  }
+
+  private normalizeBenefitLines(
+    raw: unknown,
+    fallback: readonly IBenefitLine[],
+  ): IBenefitLine[] {
+    if (!Array.isArray(raw) || raw.length === 0) {
+      return [...fallback];
+    }
+    return raw.map((entry, i): IBenefitLine => {
+      if (typeof entry === 'string') {
+        // String list — pair with the description from the canonical fallback when available.
+        return {
+          title: entry,
+          description: fallback[i]?.description ?? '',
+        };
+      }
+      if (entry && typeof entry === 'object') {
+        const obj = entry as { title?: string; description?: string; name?: string };
+        return {
+          title: obj.title ?? obj.name ?? '',
+          description: obj.description ?? '',
+        };
+      }
+      return { title: '', description: '' };
+    });
   }
 
   get productDose(): string {
@@ -194,8 +423,97 @@ export class ProductComponent implements OnInit, OnDestroy {
     return this.product?.additionalInfo?.howToTake || '';
   }
 
-  get productPrecautions(): string[] {
-    return this.product?.additionalInfo?.precautions || [];
+  /** Storage / precaution list as `{title, description}` pairs (with fallback). */
+  get productPrecautions(): IBenefitLine[] {
+    const raw = this.product?.additionalInfo?.precautions as unknown;
+    return this.normalizeBenefitLines(raw, this.defaultPrecautions);
+  }
+
+  /**
+   * Extracts the YouTube video ID from a Shorts / watch / youtu.be URL,
+   * so the design's iframe-based embed can render the right video.
+   * Returns `null` when the input isn't a recognisable YouTube URL.
+   */
+  getYoutubeEmbedUrl(rawUrl?: string | null): string | null {
+    if (!rawUrl) {
+      return null;
+    }
+    const url = rawUrl.trim();
+    // youtube.com/shorts/<id>
+    const shortsMatch = url.match(/youtube\.com\/shorts\/([\w-]{6,})/i);
+    if (shortsMatch) {
+      return `https://www.youtube.com/embed/${shortsMatch[1]}?rel=0&modestbranding=1`;
+    }
+    // youtube.com/watch?v=<id>
+    const watchMatch = url.match(/[?&]v=([\w-]{6,})/i);
+    if (watchMatch) {
+      return `https://www.youtube.com/embed/${watchMatch[1]}?rel=0&modestbranding=1`;
+    }
+    // youtu.be/<id>
+    const shortMatch = url.match(/youtu\.be\/([\w-]{6,})/i);
+    if (shortMatch) {
+      return `https://www.youtube.com/embed/${shortMatch[1]}?rel=0&modestbranding=1`;
+    }
+    // Already an embed URL
+    if (/youtube\.com\/embed\//i.test(url)) {
+      return url;
+    }
+    return null;
+  }
+
+  /** YouTube link surfaced from the endorsement section, used for the
+   *  "Watch on YouTube" outline CTA. Falls back to a sensible default. */
+  get endorsementYoutubeUrl(): string {
+    const link = (this.productStartEndorsed as any)?.mediaData?.mediaLink?.[0]?.webUrl as
+      | string
+      | undefined;
+    if (link && /youtu/i.test(link)) {
+      return link;
+    }
+    const externalUrl = (this.productStartEndorsed as any)?.externalUrl as string | undefined;
+    if (externalUrl && /youtu/i.test(externalUrl)) {
+      return externalUrl;
+    }
+    return 'https://youtube.com/shorts/JfEkvT2csjE';
+  }
+
+  /** Sanitised embed URL ready to bind to an `<iframe [src]>`. */
+  get endorsementYoutubeEmbedSafe(): SafeResourceUrl | null {
+    const url = this.endorsementYoutubeEmbed;
+    return url ? this.sanitizer.bypassSecurityTrustResourceUrl(url) : null;
+  }
+
+  /** Embed URL for the trust-champions phone-frame player.
+   *  Returns `null` when the source is a non-YouTube video (in which case
+   *  the template renders the native `<video>` instead). */
+  get endorsementYoutubeEmbed(): string | null {
+    const link = (this.productStartEndorsed as any)?.mediaData?.mediaLink?.[0]?.webUrl as
+      | string
+      | undefined;
+    const embed = this.getYoutubeEmbedUrl(link);
+    if (embed) {
+      return embed;
+    }
+    // If the API supplies no YouTube link at all, fall back to the design's default short.
+    if (!link) {
+      return this.getYoutubeEmbedUrl(this.endorsementYoutubeUrl);
+    }
+    return null;
+  }
+
+  /** Optional quote / figcaption for the endorser (Harbhajan Singh fallback). */
+  get endorsementQuote(): { text: string; name: string; role?: string } {
+    const additional = this.product?.additionalInfo as any;
+    const quote = additional?.startEndorsed?.quote;
+    const name = additional?.startEndorsed?.endorserName || 'Harbhajan Singh';
+    const role = additional?.startEndorsed?.endorserRole || 'Former India cricketer';
+    return {
+      text:
+        quote ||
+        'A clean, honest product that actually does what it says — gentle, natural, and a part of my daily routine.',
+      name,
+      role,
+    };
   }
 
   get productIngredients(): IProductIngredientSection {
@@ -696,7 +1014,7 @@ export class ProductComponent implements OnInit, OnDestroy {
 
   get selectedImage(): string {
     if (this.productImages.length === 0) {
-      return 'assets/images/products/debloat-main-1200x1200.jpg';
+      return '/product_feature.jpg';
     }
     return this.productImages[this.selectedImageIndex] || this.productImages[0];
   }

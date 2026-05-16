@@ -2,8 +2,8 @@
   <app-loader page="program-details"></app-loader>
 }
 
-@if (!loading() && !program()) {
-  <div class="page-container">
+@if (!loading() && !plan()) {
+  <div class="ef-container program-details__empty">
     <app-empty-state
       title="Program not found"
       description="The program you're looking for doesn't exist. Browse all our available programs."
@@ -13,175 +13,174 @@
   </div>
 }
 
-@if (!loading() && program(); as prog) {
-  <div class="program-details-page page-container">
-
-    <!-- Breadcrumb -->
-    <nav class="program-details__breadcrumb" aria-label="Breadcrumb">
-      <a routerLink="/" class="breadcrumb-link">Home</a>
-      <mat-icon class="breadcrumb-sep" aria-hidden="true">chevron_right</mat-icon>
-      <a routerLink="/our-programs" class="breadcrumb-link">Programs</a>
-      <mat-icon class="breadcrumb-sep" aria-hidden="true">chevron_right</mat-icon>
-      <span class="breadcrumb-current">{{ prog.name }}</span>
-    </nav>
-
-    <!-- Hero -->
-    <header class="program-details__hero">
-      <div class="program-details__hero-content">
-        <span class="section__badge">
-          <span class="section__badge-text">Wellness Program</span>
-        </span>
-        <h1 class="program-details__title">{{ prog.name }}</h1>
-        <p class="program-details__subtitle">{{ prog.subtitle }}</p>
-
-        <div class="program-details__hero-actions">
-          <a
-            routerLink="/our-programs"
-            mat-stroked-button
-            color="primary"
-            class="secondary-action-button"
-          >
-            View All Programs
-          </a>
+@if (!loading() && plan(); as p) {
+  <div class="program-details-page" data-page="our-programs">
+    <!-- Page Hero -->
+    <section class="page-hero">
+      <div class="ef-container">
+        <div class="page-hero__inner">
+          <div>
+            <app-breadcrumbs
+              [crumbs]="[
+                { label: 'Home', link: '/' },
+                { label: 'Programs', link: '/our-programs' },
+                { label: p.title }
+              ]"
+            ></app-breadcrumbs>
+            <h1>{{ p.title }}</h1>
+            <p class="lead">{{ p.lead }}</p>
+          </div>
+          <div class="page-hero__visual" aria-hidden="true">
+            <div class="ring"></div>
+            <div class="ring ring--inner"></div>
+            <div class="disc">{{ p.icon }}</div>
+            <div class="chip chip--a">
+              <span class="mat-icon">schedule</span>{{ p.durationLabel }}
+            </div>
+            <div class="chip chip--b"><span class="mat-icon">verified</span>Evidence-based</div>
+          </div>
         </div>
       </div>
-    </header>
+    </section>
 
-    <!-- Outcomes -->
-    <section class="program-details__section" aria-labelledby="outcomes-title">
-      <h2 id="outcomes-title" class="program-details__section-title">What You'll Achieve</h2>
-      <div class="program-details__outcomes-grid">
-        @for (outcome of outcomes; track outcome) {
-          <div class="program-details__outcome-item">
-            <span class="program-details__outcome-icon" aria-hidden="true">✓</span>
-            <span class="program-details__outcome-text">{{ outcome }}</span>
+    <!-- What you'll get + sticky aside -->
+    <section class="ef-container program-details__main">
+      <div class="two-col two-col--narrow-right">
+        <div>
+          <h2 class="program-details__section-title">What you'll get</h2>
+          <div class="features__grid">
+            @for (f of p.features; track f.title) {
+              <div class="feature-card">
+                <div class="feature-card__icon"><span class="mat-icon">{{ f.icon }}</span></div>
+                <h3>{{ f.title }}</h3>
+                <p>{{ f.copy }}</p>
+              </div>
+            }
           </div>
-        }
+
+          <h2 class="program-details__section-title program-details__section-title--spaced">How it works</h2>
+          <div class="timeline program-details__timeline">
+            @for (step of p.timeline; track step.title) {
+              <div class="timeline-item">
+                <div class="timeline-dot">{{ step.icon }}</div>
+                <div class="timeline-body">
+                  <h4>{{ step.title }}</h4>
+                  <p>{{ step.copy }}</p>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+
+        <aside class="sticky-aside program-details__aside">
+          <div class="program-details__aside-eyebrow">Choose your plan</div>
+          <div class="program-sessions program-details__aside-sessions">
+            <div
+              class="program-sessions__grid"
+              [style.grid-template-columns]="'repeat(' + p.sessions.length + ', 1fr)'"
+            >
+              @for (s of p.sessions; track s.num + s.label) {
+                <span class="program-sessions__chip">
+                  <span class="program-sessions__chip-num">{{ s.num }}</span>
+                  <span class="program-sessions__chip-label">{{ s.label }}</span>
+                </span>
+              }
+            </div>
+            <span class="program-sessions__note">Price varies customer to customer</span>
+          </div>
+
+          <a routerLink="/contact-us" class="mat-btn mat-btn--filled program-details__aside-cta">
+            Book Consultation <span class="mat-icon">arrow_forward</span>
+          </a>
+          <a routerLink="/contact-us" class="mat-btn mat-btn--outlined program-details__aside-cta">
+            Talk to us first
+          </a>
+
+          <div class="program-details__aside-divider"></div>
+          <ul class="program-details__assurances">
+            <li><span class="mat-icon">check</span> Pause up to 20 days</li>
+            <li><span class="mat-icon">check</span> Online &amp; flexible</li>
+            <li><span class="mat-icon">check</span> Your data stays private</li>
+          </ul>
+        </aside>
       </div>
     </section>
 
-    <!-- What's Included -->
-    <section class="program-details__section" aria-labelledby="included-title">
-      <h2 id="included-title" class="program-details__section-title">What's Included</h2>
-      <ul class="program-details__feature-list" aria-label="Program features">
-        @for (feature of prog.features; track feature) {
-          <li class="program-details__feature-item">
-            <span class="program-details__feature-icon" aria-hidden="true">✓</span>
-            <span>{{ feature }}</span>
-          </li>
-        }
-      </ul>
-    </section>
+    <!-- Related programs -->
+    <section class="section section--alt" id="programs">
+      <div class="ef-container">
+        <header class="section-head">
+          <span class="section-eyebrow">Our Programs</span>
+          <h2 class="section-title">Pick the program that fits your goal</h2>
+          <p class="section-sub">Transparent pricing. No auto-renewals. Results-focused.</p>
+        </header>
 
-    <!-- Pricing -->
-    <section class="program-details__section" aria-labelledby="pricing-title">
-      <h2 id="pricing-title" class="program-details__section-title">Choose Your Plan</h2>
-      <div class="program-details__pricing-grid">
-        <div class="pricing-card">
-          <div class="pricing-card__top-bar"></div>
-          <div class="pricing-card__body">
-            <div class="pricing-card__header">
-              <h3 class="pricing-card__name">{{ prog.name }}</h3>
-              <p class="pricing-card__subtitle">{{ prog.subtitle }}</p>
-            </div>
-
-            <div class="pricing-card__plan-selector">
-              <p class="pricing-card__plan-label">CHOOSE YOUR PLAN</p>
-              <div class="pricing-card__badges">
-                @for (p of prog.prices; track p.programPlanId) {
-                  <div class="pricing-card__badge-wrapper">
-                    <button
-                      type="button"
-                      class="pricing-card__badge"
-                      [class.pricing-card__badge--active]="p.programPlanId === selectedPlanId()"
-                      (click)="selectPlan(p.programPlanId)"
-                    >
-                      <span class="pricing-card__badge-count">{{ getPlanCount(p.label) }}</span>
-                      <span class="pricing-card__badge-unit">{{ getPlanUnit(p.label) }}</span>
-                    </button>
-                    @if (p.note) {
-                      <span class="pricing-card__badge-note">{{ p.note }}</span>
-                    }
-                  </div>
-                }
+        <div class="programs-grid">
+          @for (rp of relatedPlansFiltered(); track rp.id) {
+            <article class="program-card" [class.program-card--featured]="rp.featured">
+              <div class="program-card__header">
+                <div>
+                  <h3 class="program-card__title">{{ rp.title }}</h3>
+                  <p class="program-card__subtitle">{{ rp.subtitle }}</p>
+                </div>
               </div>
-            </div>
-
-            <div class="pricing-card__features">
-              <p class="pricing-card__features-title">WHAT'S INCLUDED</p>
-              <ul class="pricing-card__features-list">
-                @for (feature of prog.features; track feature) {
-                  <li class="pricing-card__feature-item">
-                    <span class="pricing-card__check" aria-hidden="true">✓</span>
-                    <span>{{ feature }}</span>
-                  </li>
+              <div class="program-sessions">
+                <div
+                  class="program-sessions__grid"
+                  [style.grid-template-columns]="'repeat(' + rp.sessions.length + ', 1fr)'"
+                >
+                  @for (s of rp.sessions; track s.num + s.label) {
+                    <span class="program-sessions__chip">
+                      <span class="program-sessions__chip-num">{{ s.num }}</span>
+                      <span class="program-sessions__chip-label">{{ s.label }}</span>
+                    </span>
+                  }
+                </div>
+                <span class="program-sessions__note">Price varies customer to customer</span>
+              </div>
+              <ul class="program-features">
+                @for (h of rp.highlights; track h) {
+                  <li><span class="tick">✓</span>{{ h }}</li>
                 }
               </ul>
-            </div>
-
-            <button
-              type="button"
-              mat-flat-button
-              class="pricing-card__book-btn"
-              (click)="bookNow()"
-            >
-              Book Consultation
-            </button>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- How It Works -->
-    <section class="program-details__section" aria-labelledby="how-it-works-title">
-      <h2 id="how-it-works-title" class="program-details__section-title">How It Works</h2>
-      <div class="program-details__steps">
-        <div class="program-details__step">
-          <div class="program-details__step-number" aria-hidden="true">1</div>
-          <div class="program-details__step-content">
-            <h3 class="program-details__step-title">Book a Session</h3>
-            <p class="program-details__step-desc">Choose the plan that fits your goals and complete a quick, secure checkout.</p>
-          </div>
-        </div>
-        <mat-icon class="program-details__step-arrow" aria-hidden="true">arrow_forward</mat-icon>
-        <div class="program-details__step">
-          <div class="program-details__step-number" aria-hidden="true">2</div>
-          <div class="program-details__step-content">
-            <h3 class="program-details__step-title">Get Your Plan</h3>
-            <p class="program-details__step-desc">During your consultation, receive a personalised nutrition plan based on your body type and goals.</p>
-          </div>
-        </div>
-        <mat-icon class="program-details__step-arrow" aria-hidden="true">arrow_forward</mat-icon>
-        <div class="program-details__step">
-          <div class="program-details__step-number" aria-hidden="true">3</div>
-          <div class="program-details__step-content">
-            <h3 class="program-details__step-title">Transform</h3>
-            <p class="program-details__step-desc">Follow your plan with expert guidance and track your progress towards lasting wellness.</p>
-          </div>
+              <a
+                [routerLink]="['/our-programs', rp.id]"
+                class="mat-btn"
+                [class.mat-btn--filled]="rp.featured"
+                [class.mat-btn--outlined]="!rp.featured"
+              >
+                Book Consultation <span class="mat-icon">arrow_forward</span>
+              </a>
+            </article>
+          }
         </div>
       </div>
     </section>
 
     <!-- FAQ -->
-    <section class="program-details__section" aria-labelledby="faq-title">
-      <h2 id="faq-title" class="program-details__section-title">Frequently Asked Questions</h2>
-      <mat-accordion multi="false">
-        @for (faq of faqs; track faq.question) {
-          <mat-expansion-panel class="program-details__faq-panel" hideToggle>
-            <mat-expansion-panel-header>
-              <mat-panel-title class="program-details__faq-question">{{ faq.question }}</mat-panel-title>
-              <mat-panel-description class="program-details__faq-icon">
-                <mat-icon>expand_more</mat-icon>
-              </mat-panel-description>
-            </mat-expansion-panel-header>
-            <p class="program-details__faq-answer">{{ faq.answer }}</p>
-          </mat-expansion-panel>
-        }
-      </mat-accordion>
-      <p class="program-details__faq-more">
-        More questions? Visit our <a routerLink="/faq" class="program-details__faq-link">FAQ page</a> or <a routerLink="/contact-us" class="program-details__faq-link">contact us</a>.
-      </p>
-    </section>
+    <section class="section program-details__faq-section">
+      <div class="ef-container program-details__faq-container">
+        <header class="section-head section-head--center program-details__head">
+          <span class="section-eyebrow"><span class="mat-icon">help_outline</span>Before you enrol</span>
+          <h2 class="section-head__title">Frequently asked</h2>
+          <p class="section-head__sub">The questions clients most often ask before starting this program.</p>
+        </header>
 
+        <div class="faq-list">
+          @for (faq of faqs; track faq.q; let i = $index) {
+            <details class="faq" [open]="i === 0">
+              <summary>{{ faq.q }}<span class="mat-icon">add</span></summary>
+              <p>{{ faq.a }}</p>
+            </details>
+          }
+        </div>
+
+        <div class="program-details__faq-cta">
+          <a routerLink="/faq" class="mat-btn mat-btn--outlined">
+            See all FAQs <span class="mat-icon">arrow_forward</span>
+          </a>
+        </div>
+      </div>
+    </section>
   </div>
 }

@@ -1,505 +1,432 @@
-<!-- Banner Section -->
-@if (banners.length > 0) {
-    <app-banner [banners]="banners"></app-banner>
-}
-<!-- Main Content -->
-<div class="product-page__container page-container">
-    @if (loading()) {
-        <app-loader page="product"></app-loader>
-    } @else if (error()) {
-        <div class="product-page__state product-page__state--error">
-            <p>{{ error() }}</p>
-        </div>
-    } @else if (product) {
-        <!-- Product Details: 2-column -->
-        <div class="product-page__details">
-            <!-- Left: Images -->
-            <div class="product-page__image-column">
-                <div class="product-page__image-main">
-                    <img
-                            [src]="selectedImage"
-                            [alt]="productName"
-                            class="product-page__image-main-img"
-                            fetchpriority="high"
-                    />
-                </div>
+<div class="product-page">
+  @if (loading()) {
+    <app-loader page="product"></app-loader>
+  } @else if (error()) {
+    <div class="ef-container" style="padding-block: var(--space-fluid-xl);">
+      <p>{{ error() }}</p>
+    </div>
+  } @else if (product) {
 
-                @if (productImages.length > 1) {
-                    <div class="product-page__image-thumbs">
-                        @for (image of productImages; track $index) {
-                            <button
-                                    type="button"
-                                    class="product-page__thumb"
-                                    [class.product-page__thumb--active]="selectedImageIndex === $index"
-                                    (click)="selectImage($index)"
-                            >
-                                <img
-                                        [src]="image"
-                                        [alt]="productName + ' thumbnail ' + ($index + 1)"
-                                />
-                            </button>
-                        }
-                    </div>
+    <!-- Product hero: gallery + buy panel -->
+    <section class="product-hero">
+      <div class="ef-container">
+        <app-breadcrumbs
+          [crumbs]="[
+            { label: 'Home', link: '/' },
+            { label: 'Shop' },
+            { label: productName }
+          ]"
+        ></app-breadcrumbs>
+
+        <div class="product-hero__grid">
+          <!-- Gallery -->
+          <div class="product-gallery">
+            <div class="product-gallery__main">
+              <img [src]="selectedImage" [alt]="productName" fetchpriority="high"/>
+            </div>
+            @if (productImages.length > 1) {
+              <div class="product-gallery__thumbs" role="tablist" aria-label="Product images">
+                @for (image of productImages; track $index) {
+                  <button
+                    type="button"
+                    class="product-thumb"
+                    [class.is-active]="selectedImageIndex === $index"
+                    role="tab"
+                    [attr.aria-selected]="selectedImageIndex === $index"
+                    (click)="selectImage($index)"
+                  >
+                    <img [src]="image" [alt]="productName + ' thumbnail ' + ($index + 1)"/>
+                  </button>
                 }
-            </div>
+              </div>
+            }
+          </div>
 
-            <!-- Right: Info -->
-            <div class="product-page__info-column">
-                <div class="product-page__info">
-                    <!-- Natural Ingredients Badge -->
-                    <div class="section__badge">
-                        <span class="section__badge-text">100% Natural Ingredients</span>
-                    </div>
-                    <h1 class="section__title">{{ productName }}</h1>
-
-                    @if (productDescription && productDescription !== productName) {
-                        <p class="product-page__description">
-                            {{ productDescription }}
-                        </p>
-                    } @else {
-                        <p class="product-page__description">
-                            Experience post-meal discomfort, excessive burping or gas, acidity or indigestion? Debloat
-                            is your ideal
-                            solution.
-                        </p>
-                    }
-
-                    @if (priceRange) {
-                        <div class="product-page__price-range">
-                            <span>{{ priceRange }}</span>
-                        </div>
-                    }
-
-                    <p class="product-page__tax-note">Inclusive of all taxes.</p>
-
-                    <!-- Sizes -->
-                    <section class="product-page__section">
-                        <h2 class="product-page__section-label">CHOOSE YOUR SIZE</h2>
-                        <div class="product-page__sizes">
-                            @if (sizes.length === 0) {
-                                <p class="product-page__sizes-empty">
-                                    No sizes available
-                                </p>
-                            } @else {
-                                @for (size of sizes; track size.sku || size.label) {
-                                    <button
-                                            type="button"
-                                            class="product-page__size"
-                                            [class.product-page__size--selected]="
-                        selectedSize?.sku === size.sku &&
-                        selectedSize?.quantity === size.quantity
-                      "
-                                            (click)="onSizeChange(size)"
-                                    >
-                      <span class="product-page__size-label">
-                        {{ size.label }}
-                      </span>
-                                        <span class="product-page__size-price">
-                        {{ size.currency }} {{ size.price }}.00
-                      </span>
-                                    </button>
-                                }
-                            }
-                        </div>
-                    </section>
-
-                    <!-- Quantity + CTA -->
-                    <section class="product-page__section">
-                        <h2 class="product-page__section-label">Quantity</h2>
-                        <div class="product-page__qty-row">
-                            <div class="product-page__qty">
-                                <button
-                                        type="button"
-                                        class="product-page__qty-btn"
-                                        (click)="decrementQuantity()"
-                                        [disabled]="quantity <= 1"
-                                        aria-label="Decrease quantity"
-                                >
-                                    <mat-icon>remove</mat-icon>
-                                </button>
-                                <input
-                                        type="number"
-                                        class="product-page__qty-input"
-                                        [value]="quantity"
-                                        (input)="updateQuantity($any($event.target).value)"
-                                        min="1"
-                                        max="5"
-                                        aria-label="Quantity"
-                                />
-                                <button
-                                        type="button"
-                                        class="product-page__qty-btn"
-                                        (click)="incrementQuantity()"
-                                        [disabled]="quantity >= 5"
-                                        aria-label="Increase quantity"
-                                >
-                                    <mat-icon>add</mat-icon>
-                                </button>
-                            </div>
-
-                            <button
-                                    type="button"
-                                    mat-flat-button
-                                    color="primary"
-                                    class="primary-action-button"
-                                    (click)="onBuyNow()"
-                            >
-                                Buy Now
-                            </button>
-                        </div>
-                    </section>
-                </div>
-            </div>
-        </div>
-
-        <!-- Info: benefits / dose / how to take / precautions -->
-        <section class="product-page__info-grid">
-            @if (productBenefits.length > 0) {
-                <div class="product-page__info-col">
-                    <div class="product-page__card">
-                        <h2 class="product-page__card-title heading-3">Benefits</h2>
-                        <ul class="product-page__list product-page__list--benefits">
-                            @for (benefit of productBenefits; track $index) {
-                                <li>
-                                    <img src="/benefits.svg" alt="Benefits icon" class="product-page__checkmark"/>
-                                    <span>{{ benefit }}</span>
-                                </li>
-                            }
-                        </ul>
-                    </div>
-                </div>
+          <!-- Buy panel -->
+          <aside class="product-buy">
+            <span class="product-buy__pill">100% NATURAL INGREDIENTS</span>
+            <h1 class="product-buy__title">{{ productName }}</h1>
+            @if (productDescription && productDescription !== productName) {
+              <p class="product-buy__tag">{{ productDescription }}</p>
+            } @else {
+              <p class="product-buy__tag">
+                Experience post-meal discomfort, excessive burping or gas, acidity or indigestion? {{ productName }} is your ideal solution.
+              </p>
             }
 
-            @if (productPrecautions.length > 0) {
-                <div class="product-page__info-col">
-                    <div class="product-page__card">
-                        <h2 class="product-page__card-title heading-3">Precautions</h2>
-                        <ul class="product-page__list product-page__list--precautions">
-                            @for (precaution of productPrecautions; track $index) {
-                                <li>
-                                    <img src="/precautions.svg" alt="Precautions icon" class="product-page__checkbox"/>
-                                    <span>{{ precaution }}</span>
-                                </li>
-                            }
-                        </ul>
-                    </div>
-                </div>
+            @if (priceRange) {
+              <div class="product-buy__price">{{ priceRange }}</div>
             }
-        </section>
+            <p class="product-buy__taxes"><em>Inclusive of all taxes.</em></p>
 
-        <!-- Ingredients Section -->
-        @if (productIngredients && productIngredients.ingredients?.length) {
-            <section class="product-page__section-block">
-                <header class="product-page__section-header">
-                    @if (productIngredients.title) {
-                        <h2 class="product-page__section-title">
-                            {{ productIngredients.title }}
-                        </h2>
-                    } @else {
-                        <h2 class="product-page__section-title">
-                            Pure Ingredients, 100% Effective
-                        </h2>
-                    }
-                    @if (productIngredients.description) {
-                        <p class="product-page__section-subtitle">
-                            {{ productIngredients.description }}
-                        </p>
-                    } @else {
-                        <p class="product-page__section-subtitle">
-                            Potent ingredients, without any additives
-                        </p>
-                    }
-                </header>
-
-                <div class="product-page__ingredients-grid">
-                    @for (ingredient of productIngredients.ingredients; track ingredient.name) {
-                        <article class="product-page__ingredient">
-                            @if (ingredient.icon && ingredient.icon.length > 0) {
-                                <div class="product-page__ingredient-media">
-                                    <img
-                                            [src]="ingredient.icon[0].webUrl"
-                                            [alt]="ingredient.name"
-                                    />
-                                </div>
-                            }
-                            <h3 class="product-page__ingredient-name">
-                                {{ ingredient.name }}
-                            </h3>
-                            @if (ingredient.description) {
-                                <p class="product-page__ingredient-text">
-                                    {{ ingredient.description }}
-                                </p>
-                            }
-                        </article>
-                    }
-                </div>
-            </section>
-        }
-
-        <!-- How to Consume Section -->
-        @if (productConsumptionInstructions && productConsumptionInstructions.metaData) {
-            <section class="product-page__section-block product-page__section-block--split product-page__consume">
-                <div class="product-page__consume-content">
-                    @if (productConsumptionInstructions.metaData.howToConsume) {
-                        <div class="product-page__card">
-                            <h2 class="product-page__card-title heading-3">How to Consume</h2>
-                            <ul class="product-page__list product-page__list--doas">
-                                @for (instruction of productConsumptionInstructions.metaData.howToConsume; track $index) {
-                                    <li><span>{{ instruction }}</span></li>
-                                }
-                            </ul>
-                        </div>
-                    }
-
-                    @if (productConsumptionInstructions.metaData.whenToConsume) {
-                        <div class="product-page__card">
-                            <h2 class="product-page__card-title heading-3">When to Consume</h2>
-                            <ul class="product-page__list product-page__list--how-to">
-                                @for (timing of productConsumptionInstructions.metaData.whenToConsume; track $index) {
-                                    <li><span>{{ timing }}</span></li>
-                                }
-                            </ul>
-                        </div>
-                    }
-                </div>
-
-                @if (productConsumptionInstructions.mediaData.mediaLink &&
-                productConsumptionInstructions.mediaData.mediaType === 'video') {
-                    <div class="product-page__consume-media">
-                        <video
-                                [src]="productConsumptionInstructions.mediaData.mediaLink[0].webUrl"
-                                controls
-                                loop
-                                muted
-                                playsinline
-                                preload="none"
-                                class="product-page__consume-video"
-                                [poster]="productImages[0] || '/assets/images/logo.png'"
-                                (error)="onVideoError($event)"
-                                (loadeddata)="onVideoLoaded()"
-                        >
-                            Your browser does not support the video tag.
-                        </video>
-                    </div>
-                } @else if (productImages.length > 0) {
-                    <div class="product-page__consume-media">
-                        <img
-                                [src]="productImages[0]"
-                                [alt]="productName"
-                                class="product-page__consume-image"
-                        />
-                    </div>
-                }
-            </section>
-        }
-
-        <!-- Tried and Tested Section -->
-        @if (productReportSection && productReportSection.title) {
-            <section class="product-page__report">
-                <div class="product-page__report-inner">
-                    @if (productReportSection.title) {
-                        <h2 class="product-page__card-title heading-3">{{ productReportSection.title }}</h2>
-                    }
-                    @if (productReportSection.description) {
-                        <span class="product-page__report-text">{{ productReportSection.description }}</span>
-                    }
-                    @if (reportStats.length > 0) {
-                        <div class="product-page__report_stats_section">
-                            @for (stat of reportStats; track $index) {
-                                <div class="product-page__report-stats-section-item">
-                                    <div class="product-page__report-stats-section-item-count">{{ stat.value }}</div>
-                                    <div class="product-page__report-stats-section-item-label">{{ stat.label }}</div>
-                                </div>
-                            }
-                        </div>
-                    }
-                </div>
-            </section>
-        }
-
-        <!-- Efficient Outcomes Section -->
-        @if (outcomesObject) {
-            <section class="product-page__section-block">
-                <header class="product-page__section-header">
-                    @if (outcomesObject.title) {
-                        <h2 class="product-page__section-title">
-                            {{ outcomesObject.title }}
-                        </h2>
-                    } @else {
-                        <h2 class="product-page__section-title">
-                            Efficient Outcomes
-                        </h2>
-                    }
-                    @if (outcomesObject.description) {
-                        <p class="product-page__section-subtitle">
-                            {{ outcomesObject.description }}
-                        </p>
-                    } @else {
-                        <p class="product-page__section-subtitle">
-                            Instant Comfort, Powered by 100% Natural Ingredients
-                        </p>
-                    }
-                </header>
-
-                <div class="product-page__outcomes-grid">
-                    @for (outcome of productOutcomes; track outcome.title) {
-                        <article class="product-page__outcome">
-                            @if (outcome.icon) {
-                                <div class="product-page__outcome-media">
-                                    <img
-                                            [src]="outcome.icon[0].webUrl"
-                                            [alt]="outcome.title"
-                                    />
-                                </div>
-                            }
-                            <h3 class="product-page__outcome-title">
-                                {{ outcome.title }}
-                            </h3>
-                            <p class="product-page__outcome-text">
-                                {{ outcome.description }}
-                            </p>
-                        </article>
-                    }
-                </div>
-            </section>
-        }
-
-        <!-- Feature Section -->
-        @if (productFeature) {
-            <section class="product-page__feature">
-                <div class="product-page__feature-media">
-                    <div class="product-page__feature-media-inner">
-                        <img
-                                [src]="productImages1[featureSliderCurrentIndex] || productImages[0] || '/product_feature.jpg'"
-                                [alt]="productName + ' - feature image'"
-                                loading="lazy"
-                        />
-                    </div>
-                </div>
-
-                <div class="product-page__feature-content">
-                    @if (productFeature.title) {
-                        <h2 class="product-page__feature-title">
-                            {{ productFeature.title }}
-                        </h2>
-                    }
-
-                    @if (productFeature.description) {
-                        <h3 class="product-page__feature-subtitle body-b3">
-                            {{ productFeature.description }}
-                        </h3>
-                    }
-
-                    @if (productFeature.feature && productFeature.feature.length > 0) {
-                        <ul class="product-page__feature-list">
-                            @for (bullet of productFeature.feature; track $index) {
-                                <li class="product-page__feature-item">
-                                    <img src="/benefits.svg" alt="Benefits icon" class="product-page__checkmark"/>
-                                    <span class="product-page__feature-text">
-                      {{ bullet }}
-                    </span>
-                                </li>
-                            }
-                        </ul>
-                    }
-
-                    @if (productFeature.tagLine) {
-                        <p class="product-page__feature-tagline">
-                            {{ productFeature.tagLine }}
-                        </p>
-                    }
-                </div>
-            </section>
-        }
-
-        <!-- Star-Endorsed Excellence Section -->
-        @if (productStartEndorsed && productStartEndorsed.mediaData) {
-            <section class="product-page__section-block product-page__section-block--split">
-                <div class="product-page__star-media">
-                    <div class="product-page__star-media-inner">
-                        @if (productStartEndorsed.mediaData.mediaType === 'video' &&
-                        productStartEndorsed.mediaData.mediaLink &&
-                        productStartEndorsed.mediaData.mediaLink.length > 0) {
-                            <video
-                                    [src]="productStartEndorsed.mediaData.mediaLink[0].webUrl"
-                                    controls
-                                    loop
-                                    muted
-                                    playsinline
-                                    preload="none"
-                                    class="product-page__star-video"
-                                    [poster]="productImages[0] || '/assets/images/logo.png'"
-                                    (error)="onVideoError($event)"
-                                    (loadeddata)="onVideoLoaded()"
-                            >
-                                Your browser does not support the video tag.
-                            </video>
-                        } @else if (productStartEndorsed.mediaData.mediaLink &&
-                        productStartEndorsed.mediaData.mediaLink.length > 0) {
-                            <img
-                                    [src]="productStartEndorsed.mediaData.mediaLink[0].webUrl"
-                                    [alt]="productStartEndorsed.title || 'Star Endorsed'"
-                                    class="product-page__star-image"
-                            />
-                        } @else {
-                            <img
-                                    [src]="starPowderImage"
-                                    alt="Star Powder"
-                                    class="product-page__star-image"
-                            />
-                        }
-                    </div>
-                </div>
-
-                <div class="product-page__star-content">
-                    @if (productStartEndorsed.title) {
-                        <h2 class="product-page__section-title">
-                            {{ productStartEndorsed.title }}
-                        </h2>
-                    }
-                    @if (productStartEndorsed.description) {
-                        <p class="product-page__text">
-                            {{ productStartEndorsed.description }}
-                        </p>
-                    }
+            <div class="product-buy__field">
+              <span class="product-buy__label">CHOOSE YOUR SIZE</span>
+              <div class="product-sizes" role="radiogroup" aria-label="Choose your size">
+                @if (sizes.length === 0) {
+                  <p>No sizes available</p>
+                } @else {
+                  @for (size of sizes; track size.sku || size.label) {
                     <button
-                            mat-raised-button
-                            color="primary"
-                            class="product-page__buy-now"
-                            (click)="onBuyNow()"
+                      type="button"
+                      class="product-size"
+                      [class.is-active]="selectedSize?.sku === size.sku && selectedSize?.quantity === size.quantity"
+                      role="radio"
+                      [attr.aria-checked]="selectedSize?.sku === size.sku && selectedSize?.quantity === size.quantity"
+                      (click)="onSizeChange(size)"
                     >
-                        Buy Now
+                      <span class="product-size__label">{{ size.label }}</span>
+                      <span class="product-size__price">{{ size.currency }} {{ size.price }}.00</span>
                     </button>
+                  }
+                }
+              </div>
+            </div>
+
+            <div class="product-buy__field">
+              <span class="product-buy__label">QUANTITY</span>
+              <div class="product-buy__row">
+                <div class="qty-stepper" role="group" aria-label="Quantity">
+                  <button
+                    type="button"
+                    class="qty-btn"
+                    (click)="decrementQuantity()"
+                    [disabled]="quantity <= 1"
+                    aria-label="Decrease quantity"
+                  >
+                    <span class="mat-icon">remove</span>
+                  </button>
+                  <input
+                    type="text"
+                    class="qty-input"
+                    [value]="quantity"
+                    inputmode="numeric"
+                    (input)="updateQuantity($any($event.target).value)"
+                    aria-label="Quantity"
+                  />
+                  <button
+                    type="button"
+                    class="qty-btn"
+                    (click)="incrementQuantity()"
+                    [disabled]="quantity >= 5"
+                    aria-label="Increase quantity"
+                  >
+                    <span class="mat-icon">add</span>
+                  </button>
                 </div>
-            </section>
-        }
+                <button
+                  type="button"
+                  class="mat-btn mat-btn--filled product-buy__cta"
+                  (click)="onBuyNow()"
+                >
+                  Buy Now
+                </button>
+              </div>
+            </div>
 
-        <!-- FAQ Section -->
-        @if (productFaqs.length > 0) {
-            <section class="product-page__section-block product-page__faq">
-                <header class="product-page__section-header">
-                    <h2 class="product-page__section-title">Frequently Asked Questions</h2>
-                    <p class="product-page__section-subtitle">
-                        Got questions? We've got answers.
+            <ul class="product-buy__assurances">
+              <li><span class="mat-icon">verified</span> 100% Vegetarian &amp; Natural</li>
+              <li><span class="mat-icon">local_shipping</span> Ships pan-India</li>
+            </ul>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <!-- Combined product info: Description / How to use / Ingredients (no tabs) -->
+    <section class="section product-info">
+      <div class="ef-container product-info__inner">
+        <div class="product-sections product-sections--unified">
+          <article class="product-section product-section--combined">
+
+            <!-- Description -->
+            <div class="product-block" id="pt-desc">
+              <header class="product-section__head">
+                <span class="product-section__icon mat-icon">info</span>
+                <h3>Description</h3>
+              </header>
+              <div class="product-panel__grid">
+                <div class="product-panel__lead">
+                  <h4 class="product-panel__title">
+                    A refined solution for bloating, acidity &amp; discomfort
+                  </h4>
+                  @if (productDescription) {
+                    <p>{{ productDescription }}</p>
+                  } @else {
+                    <p>
+                      A 100% natural blend that helps reduce bloating, gas, burping, hyperacidity, and period cramps —
+                      while supporting digestion and metabolism.
                     </p>
-                </header>
+                  }
+                  <p class="product-panel__pull">
+                    True wellness isn't about quick fixes — it's about restoring balance, naturally.
+                  </p>
+                </div>
+                <ul class="product-panel__chips">
+                  <li><span class="mat-icon">spa</span>100% Ayurvedic</li>
+                  <li><span class="mat-icon">block</span>No additives</li>
+                  <li><span class="mat-icon">restaurant_menu</span>Vegetarian</li>
+                </ul>
+              </div>
+            </div>
 
-                <mat-accordion class="product-page__faq-accordion" multi="false">
-                    @for (faq of productFaqs; track faq.faqId) {
-                        <mat-expansion-panel class="product-page__faq-panel" hideToggle>
-                            <mat-expansion-panel-header class="product-page__faq-header">
-                                <mat-panel-title class="product-page__faq-question">
-                                    {{ faq.faq }}
-                                </mat-panel-title>
-                                <mat-panel-description class="product-page__faq-toggle">
-                                    <mat-icon>expand_more</mat-icon>
-                                </mat-panel-description>
-                            </mat-expansion-panel-header>
-                            <p class="product-page__faq-answer">{{ faq.answer }}</p>
-                        </mat-expansion-panel>
+            <!-- How to use -->
+            @if (productConsumptionInstructions && productConsumptionInstructions.metaData) {
+              <div class="product-block" id="pt-use">
+                <header class="product-section__head">
+                  <span class="product-section__icon mat-icon">restaurant</span>
+                  <h3>How to use</h3>
+                </header>
+                <div class="product-panel__steps">
+                  @if (productConsumptionInstructions.metaData.howToConsume?.length) {
+                    @for (instruction of productConsumptionInstructions.metaData.howToConsume; track $index) {
+                      <div class="product-step">
+                        <span class="product-step__num">{{ $index + 1 }}</span>
+                        <h4>{{ howToUseStepName($index, instruction) }}</h4>
+                        <p>{{ howToUseStepBody(instruction) }}</p>
+                      </div>
                     }
-                </mat-accordion>
-            </section>
-        }
+                  } @else {
+                    <div class="product-step">
+                      <span class="product-step__num">1</span>
+                      <h4>Measure</h4>
+                      <p>Take <strong>1 teaspoon</strong> of {{ productName }}.</p>
+                    </div>
+                    <div class="product-step">
+                      <span class="product-step__num">2</span>
+                      <h4>Mix</h4>
+                      <p>Stir into warm water, buttermilk, or coconut water.</p>
+                    </div>
+                    <div class="product-step">
+                      <span class="product-step__num">3</span>
+                      <h4>Sip</h4>
+                      <p>Take <strong>after each meal</strong>, twice a day.</p>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+
+            <!-- Ingredients -->
+            @if (productIngredients && productIngredients.ingredients?.length) {
+              <div class="product-block" id="pt-ing">
+                <header class="product-section__head">
+                  <span class="product-section__icon mat-icon">eco</span>
+                  <h3>{{ productIngredients.title || 'Pure Ingredients, 100% Effective' }}</h3>
+                </header>
+                <ul class="product-panel__ingredients">
+                  @for (ingredient of productIngredients.ingredients; track ingredient.name) {
+                    <li>
+                      <span class="product-panel__ing-img">
+                        @if (ingredient.icon && ingredient.icon.length > 0) {
+                          <img [src]="ingredient.icon[0].webUrl" [alt]="ingredient.name"/>
+                        }
+                      </span>
+                      <span class="product-panel__ing-name">{{ ingredient.name }}</span>
+                    </li>
+                  }
+                </ul>
+              </div>
+            }
+
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Benefits & Storage (2-col flex row of icon-line items, no boxes) -->
+    <section class="section product-info" style="padding-top: 0;">
+      <div class="ef-container product-info__inner">
+        <div class="product-sections product-sections--unified">
+          <article class="product-section product-section--combined">
+            <div class="product-block-row">
+
+              @if (productBenefits.length > 0) {
+                <div class="product-block" id="pt-ben">
+                  <header class="product-section__head">
+                    <span class="product-section__icon mat-icon">favorite</span>
+                    <h3>Benefits</h3>
+                  </header>
+                  <ul class="product-panel__benefits">
+                    @for (benefit of productBenefits; track $index) {
+                      <li>
+                        <span class="mat-icon">{{ benefitIcon($index) }}</span>
+                        <div>
+                          <strong>{{ benefit.title }}</strong>
+                          @if (benefit.description) {
+                            <span>{{ benefit.description }}</span>
+                          }
+                        </div>
+                      </li>
+                    }
+                  </ul>
+                </div>
+              }
+
+              @if (productPrecautions.length > 0) {
+                <div class="product-block" id="pt-storage">
+                  <header class="product-section__head">
+                    <span class="product-section__icon mat-icon">inventory_2</span>
+                    <h3>Storage info</h3>
+                  </header>
+                  <ul class="product-panel__benefits">
+                    @for (precaution of productPrecautions; track $index) {
+                      <li>
+                        <span class="mat-icon">{{ precautionIcon($index) }}</span>
+                        <div>
+                          <strong>{{ precaution.title }}</strong>
+                          @if (precaution.description) {
+                            <span>{{ precaution.description }}</span>
+                          }
+                        </div>
+                      </li>
+                    }
+                  </ul>
+                </div>
+              }
+
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Trusted by champions (phone-frame YouTube short) -->
+    @if (productStartEndorsed && productStartEndorsed.mediaData) {
+      <section class="section trust-champions" style="background: var(--color-surface-alt, #fff7f3);">
+        <div class="ef-container">
+          <div class="trust-champions__grid">
+            <div class="trust-champions__copy">
+              <span class="section-eyebrow">
+                <span class="mat-icon">workspace_premium</span>Trusted by champions
+              </span>
+              <h2 class="trust-champions__title">
+                {{ productStartEndorsed.title || 'Trusted by champions.' }}
+              </h2>
+              @if (productStartEndorsed.description) {
+                <p class="trust-champions__lead">{{ productStartEndorsed.description }}</p>
+              }
+              <figure class="trust-champions__quote">
+                <span class="mat-icon trust-champions__quote-mark">format_quote</span>
+                <blockquote>{{ endorsementQuote.text }}</blockquote>
+                <figcaption>
+                  <strong>{{ endorsementQuote.name }}</strong>
+                  @if (endorsementQuote.role) {
+                    <span>{{ endorsementQuote.role }}</span>
+                  }
+                </figcaption>
+              </figure>
+              <a
+                [href]="endorsementYoutubeUrl"
+                target="_blank"
+                rel="noopener"
+                class="mat-btn mat-btn--outlined"
+              >
+                <span class="mat-icon">play_circle</span>
+                Watch on YouTube
+              </a>
+            </div>
+            <div class="trust-champions__player" aria-label="Endorsement video">
+              <div class="trust-champions__phone">
+                @if (endorsementYoutubeEmbedSafe) {
+                  <iframe
+                    [src]="endorsementYoutubeEmbedSafe"
+                    [title]="productStartEndorsed.title || 'EatFit247 endorsement video'"
+                    frameborder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    referrerpolicy="strict-origin-when-cross-origin"
+                    allowfullscreen
+                  ></iframe>
+                } @else if (productStartEndorsed.mediaData.mediaType === 'video' &&
+                            productStartEndorsed.mediaData.mediaLink &&
+                            productStartEndorsed.mediaData.mediaLink.length > 0) {
+                  <video
+                    [src]="productStartEndorsed.mediaData.mediaLink[0].webUrl"
+                    controls
+                    loop
+                    muted
+                    playsinline
+                    preload="none"
+                    [poster]="productImages[0] || '/product_feature.jpg'"
+                    (error)="onVideoError($event)"
+                    (loadeddata)="onVideoLoaded()"
+                  >
+                    Your browser does not support the video tag.
+                  </video>
+                } @else if (productStartEndorsed.mediaData.mediaLink &&
+                            productStartEndorsed.mediaData.mediaLink.length > 0) {
+                  <img
+                    [src]="productStartEndorsed.mediaData.mediaLink[0].webUrl"
+                    [alt]="productStartEndorsed.title || 'Endorsement'"
+                  />
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
     }
+
+    <!-- Reviews grid (circular initials avatars) -->
+    @if (reviewList.length > 0) {
+      <section class="section product-reviews">
+        <div class="ef-container">
+          <header class="section-head section-head--center" style="margin-bottom: var(--space-6, 32px);">
+            <span class="section-eyebrow"><span class="mat-icon">reviews</span>What customers say</span>
+            <h2 class="section-head__title">Real people. Real results.</h2>
+            <p class="section-head__sub">
+              Honest reviews from clients, athletes and professionals who've made {{ productName }} part of their routine.
+            </p>
+          </header>
+
+          <div class="review-grid">
+            @for (review of reviewList; track $index) {
+              <figure class="review-card" [class.review-card--featured]="review.featured">
+                <figcaption class="review-card__person">
+                  <span class="review-card__avatar" aria-hidden="true">{{ review.initials }}</span>
+                  <span class="review-card__who">
+                    <strong>{{ review.name }}</strong>
+                    @if (review.role) {
+                      <span>{{ review.role }}</span>
+                    }
+                  </span>
+                </figcaption>
+                <blockquote>{{ review.quote }}</blockquote>
+              </figure>
+            }
+          </div>
+        </div>
+      </section>
+    }
+
+    <!-- FAQ Section -->
+    @if (productFaqs.length > 0) {
+      <section class="section product-faq" style="background: var(--color-surface-alt, #fff7f3);">
+        <div class="ef-container" style="max-width: 920px;">
+          <header class="section-head section-head--center" style="margin-bottom: var(--space-6, 32px);">
+            <span class="section-eyebrow"><span class="mat-icon">help_outline</span>Frequently asked</span>
+            <h2 class="section-head__title">Questions about {{ productName }}</h2>
+            <p class="section-head__sub">
+              Honest answers about how it works, who it's for, and what to expect.
+            </p>
+          </header>
+
+          <div class="faq-list">
+            @for (faq of productFaqs; track faq.faqId; let i = $index) {
+              <details class="faq" [attr.open]="i === 0 ? '' : null">
+                <summary>{{ faq.faq }}<span class="mat-icon">add</span></summary>
+                <p>{{ faq.answer }}</p>
+              </details>
+            }
+          </div>
+
+          <div class="product-faq__cta" style="text-align: center; margin-top: var(--space-5, 24px);">
+            <a routerLink="/faq" class="mat-btn mat-btn--outlined">
+              See all FAQs <span class="mat-icon">arrow_forward</span>
+            </a>
+          </div>
+        </div>
+      </section>
+    }
+
+  }
 </div>

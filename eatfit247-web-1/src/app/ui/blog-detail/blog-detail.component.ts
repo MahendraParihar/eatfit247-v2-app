@@ -7,8 +7,7 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { BlogService, JsonLdService, SEOService } from '../../core/services';
 import { buildMediaUrl } from '../../core/utils/media-url.util';
 import { IPublicBlog } from '@eatfit247-shared-library/core';
-import { ICardData, LoaderComponent, SocialSiteComponent, SocialSiteItem } from '@shared-ui';
-import { MatButton } from '@angular/material/button';
+import { ICardData, LoaderComponent } from '@shared-ui';
 
 /**
  * Interface for blog details data used on this page.
@@ -30,15 +29,18 @@ interface IBlogDetails {
   formattedDate?: string;
 }
 
+interface ICategoryItem {
+  name: string;
+  count: number;
+}
+
 @Component({
   standalone: true,
   selector: 'app-blog-details',
   imports: [
     CommonModule,
     RouterModule,
-    LoaderComponent,
-    SocialSiteComponent,
-    MatButton
+    LoaderComponent
   ],
   templateUrl: './blog-detail.component.html',
   styleUrl: './blog-detail.component.scss'
@@ -53,44 +55,13 @@ export class BlogDetailsComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   blog: IBlogDetails | null = null;
   relatedArticles: ICardData[] = [];
+  recentArticles: ICardData[] = [];
+  categories: ICategoryItem[] = [];
   loading = signal(true);
   error = signal(false);
-
-  /**
-   * Social share items for this blog, derived from `getShareLink`.
-   */
-  get shareItems(): SocialSiteItem[] {
-    if (!this.blog) {
-      return [];
-    }
-    return [
-      {
-        link: this.getShareLink('facebook'),
-        icon: 'facebook',
-        type: 'external'
-      },
-      {
-        link: this.getShareLink('instagram'),
-        icon: 'instagram',
-        type: 'external'
-      },
-      {
-        link: this.getShareLink('pinterest'),
-        icon: 'pinterest',
-        type: 'external'
-      },
-      {
-        link: this.getShareLink('linkedin'),
-        icon: 'linkedin',
-        type: 'external'
-      },
-      {
-        link: this.getShareLink('telegram'),
-        icon: 'telegram',
-        type: 'external'
-      }
-    ];
-  }
+  /** Tracks the "copied!" pulse on the share-row's copy button. */
+  readonly linkCopied = signal(false);
+  private copyResetTimer: ReturnType<typeof setTimeout> | null = null;
 
   ngOnInit(): void {
     this.route.paramMap.pipe(takeUntil(this.destroy$)).subscribe((params) => {
@@ -146,7 +117,10 @@ export class BlogDetailsComponent implements OnInit, OnDestroy {
           { name: this.blog.title, url: `https://eatfit24by7.com/blog/${this.blog.slug}` },
         ]),
       ]);
-      await this.loadRelatedArticles(apiBlog.blogCategoryId, apiBlog.blogId);
+      await Promise.all([
+        this.loadRelatedArticles(apiBlog.blogCategoryId, apiBlog.blogId),
+        this.loadRecentAndCategories(apiBlog.blogId, this.blog.category),
+      ]);
     } catch (err) {
       console.error('Error loading blog details:', err);
       this.blog = null;
@@ -232,6 +206,48 @@ export class BlogDetailsComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * Load recent posts and category list (counts by category).
+   */
+  private async loadRecentAndCategories(
+    currentBlogId?: number,
+    currentCategory?: string
+  ): Promise<void> {
+    try {
+      const response = await this.blogService.getBlogs(0, 50);
+      const all: IPublicBlog[] = response?.tableData ?? [];
+      // Recent: newest 4 (exclude current)
+      this.recentArticles = all
+        .filter((b) => b.blogId !== currentBlogId)
+        .sort((a, b) => {
+          const da = a.writtenAt ? new Date(a.writtenAt).getTime() : 0;
+          const db = b.writtenAt ? new Date(b.writtenAt).getTime() : 0;
+          return db - da;
+        })
+        .slice(0, 4)
+        .map((b) => this.mapBlogToRelatedCard(b));
+      // Categories: counts by blogCategory
+      const counts = new Map<string, number>();
+      for (const blog of all) {
+        const cat = blog.blogCategory;
+        if (cat) {
+          counts.set(cat, (counts.get(cat) ?? 0) + 1);
+        }
+      }
+      // Ensure current category appears even if all-list missed it
+      if (currentCategory && !counts.has(currentCategory)) {
+        counts.set(currentCategory, 1);
+      }
+      this.categories = Array.from(counts.entries())
+        .map(([name, count]) => ({ name, count }))
+        .sort((a, b) => b.count - a.count);
+    } catch (err) {
+      console.error('Error loading recent posts / categories:', err);
+      this.recentArticles = [];
+      this.categories = [];
+    }
+  }
+
+  /**
    * Map API blog object to related article card data.
    */
   private mapBlogToRelatedCard(blog: IPublicBlog): ICardData {
@@ -300,32 +316,23 @@ export class BlogDetailsComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Handle native share where available, falls back to copying URL/opening links.
+   * Copy current page URL to clipboard and flash the "copied" success state
+   * for ~1.6s so the green check icon is visible (matches the design).
    */
-  async shareArticle(): Promise<void> {
-    if (!this.blog || !isPlatformBrowser(this.platformId)) {
+  async copyShareLink(): Promise<void> {
+    if (!isPlatformBrowser(this.platformId)) {
       return;
     }
-    const shareUrl = `${window.location.origin}/blog/${this.blog.slug}`;
-    const shareTitle = this.blog.title;
-    const shareText = this.blog.excerpt;
-    if (typeof navigator !== 'undefined' && 'share' in navigator) {
-      try {
-        await (navigator as any).share({
-          title: shareTitle,
-          text: shareText,
-          url: shareUrl
-        });
-        return;
-      } catch (err) {
-        console.error('Native share failed:', err);
-        // Fall through to link-based sharing
-      }
-    }
-    // Fallback: copy URL to clipboard
     try {
-      await navigator.clipboard.writeText(shareUrl);
-      // Optional: we can add a toast here in future
+      await navigator.clipboard.writeText(window.location.href);
+      this.linkCopied.set(true);
+      if (this.copyResetTimer) {
+        clearTimeout(this.copyResetTimer);
+      }
+      this.copyResetTimer = setTimeout(() => {
+        this.linkCopied.set(false);
+        this.copyResetTimer = null;
+      }, 1600);
     } catch (err) {
       console.error('Failed to copy share URL:', err);
     }
@@ -335,7 +342,7 @@ export class BlogDetailsComponent implements OnInit, OnDestroy {
    * Utility to build share URLs for social platforms.
    */
   getShareLink(
-    platform: 'facebook' | 'instagram' | 'pinterest' | 'linkedin' | 'telegram'
+    platform: 'facebook' | 'twitter' | 'pinterest' | 'linkedin' | 'telegram' | 'whatsapp'
   ): string {
     if (!this.blog || !isPlatformBrowser(this.platformId)) {
       return '#';
@@ -347,18 +354,18 @@ export class BlogDetailsComponent implements OnInit, OnDestroy {
     switch (platform) {
       case 'facebook':
         return `https://www.facebook.com/sharer/sharer.php?u=${url}`;
-      case 'instagram':
-        return `https://www.instagram.com/sharer/sharer.php?u=${url}`;
+      case 'twitter':
+        return `https://twitter.com/intent/tweet?url=${url}&text=${text}`;
       case 'pinterest':
         return `https://pinterest.com/pin/create/button/?url=${url}&description=${text}`;
       case 'linkedin':
         return `https://www.linkedin.com/sharing/share-offsite/?url=${url}`;
       case 'telegram':
         return `https://t.me/share/url?url=${url}&text=${text}`;
+      case 'whatsapp':
+        return `https://wa.me/?text=${text}%20${url}`;
       default:
         return '#';
     }
   }
 }
-
-

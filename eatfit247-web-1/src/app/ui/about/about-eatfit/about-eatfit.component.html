@@ -6,131 +6,123 @@
     <app-banner [banners]="banners"></app-banner>
   }
 
-  <div class="about-eatfit-page page-container">
-    <!-- About Us / Hero -->
-    <section class="about-eatfit__section about-eatfit__section--hero">
-      <div class="about-eatfit__section-header">
-        <p class="about-eatfit__eyebrow">PROTECTING YOU FROM YOURSELF</p>
-        <h1 class="about-eatfit__title">About Us</h1>
-        <p class="about-eatfit__subtitle">24 years – 3000+ clients – one mission.</p>
-        <p class="about-eatfit__subtitle">A dream venture to lead you to your best self in the most natural way
-          possible.</p>
-        <p class="about-eatfit__subtitle">Lead a healthy life without tweaking your lifestyle.</p>
-        <p class="about-eatfit__subtitle">A decade long journey that encompasses fruitful encounters with the who’s who
-          of
-          industry, corporate, media and fitness industry.</p>
-      </div>
+  <div class="about-page">
 
-      <div class="about-eatfit__hero-content">
-        <div class="about-eatfit__video">
-          <!-- Video placeholder / embed -->
-          @if (safeYoutubeUrl) {
-            <div class="about-eatfit__video-placeholder">
-              <iframe
-                [src]="safeYoutubeUrl"
-                title="About EatFit247 video"
-                frameborder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                allowfullscreen
-              ></iframe>
-            </div>
-          } @else {
-            <div class="about-eatfit__video-placeholder">
-              <span>About Us Page Video Comes Here</span>
-            </div>
-          }
-        </div>
-
-        <div class="about-eatfit__cards">
-          <article class="about-eatfit__card">
-            <div class="about-eatfit__card-title-section">
-              <mat-icon class="about-eatfit__card-icon-section">lock</mat-icon>
-              <h3 class="about-eatfit__card-title">Vision</h3>
-            </div>
-            <ul class="about-eatfit__card-list">
-              <li>A pill-free lifestyle.</li>
-              <li>Blending ancient wisdom with today's lifestyle to make health simple and natural.</li>
-              <li>
-                Moving away from quick fixes and using food, spices, herbs, and small lifestyle changes to support the
-                body and manage everyday health challenges.
-              </li>
-            </ul>
-          </article>
-
-          <article class="about-eatfit__card">
-            <div class="about-eatfit__card-title-section">
-              <mat-icon class="about-eatfit__card-icon-section">lock</mat-icon>
-              <h3 class="about-eatfit__card-title">Mission</h3>
-            </div>
-            <ul class="about-eatfit__card-list">
-              <li>To bring back the power of natural healing by combining ancient wisdom with modern living in a simple,
-                relatable way.</li>
-              <li>Protecting you from yourself.</li>
-            </ul>
-          </article>
+    <!-- Compact hero -->
+    <section class="page-hero">
+      <div class="ef-container">
+        <div class="page-hero__inner">
+          <div>
+            <app-breadcrumbs [crumbs]="[{ label: 'Home', link: '/' }, { label: 'About EatFit247' }]"></app-breadcrumbs>
+            <h1>A dream venture to lead you to your <span class="accent">best self</span> — naturally.</h1>
+            <p class="lead">24 years. 3000+ clients. One mission — lead a healthy life without tweaking your lifestyle.</p>
+          </div>
+          <div class="page-hero__visual" aria-hidden="true">
+            <div class="ring"></div>
+            <div class="ring ring--inner"></div>
+            <div class="disc">favorite</div>
+            <div class="chip chip--a"><span class="mat-icon">spa</span>Pill-free</div>
+            <div class="chip chip--b"><span class="mat-icon">eco</span>Ancient + modern</div>
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- Partners / Associated With -->
-    @if (partners && partners.length > 0) {
-      <section class="about-eatfit__section about-eatfit__section--partners">
-        <div class="about-eatfit__section-header about-eatfit__section-header--center">
-          <p class="about-eatfit__eyebrow">PARTNERS IN HEALTH</p>
-          <h2 class="about-eatfit__title">We are Associated with</h2>
-          <p class="about-eatfit__subtitle about-eatfit__subtitle--narrow">
-            We believe the journey is better with like-minded people and we are in esteemed company when it comes to
-            having
-            collaborators.
-          </p>
-        </div>
+    <!-- Story · Stats · Video · Founder — single viewport -->
+    <section class="about-core" id="story">
+      <div class="ef-container">
+        <div class="about-core__grid">
 
-        <div class="about-eatfit__partners-grid">
-          @for (partner of partners; track partner.companyName) {
-            <article
-              class="about-eatfit__partner-card"
-            >
-              <div
-                class="about-eatfit__partner-avatar heading-2"
-                [ngClass]="{ 'about-eatfit__partner-avatar--logo': partner.logo }"
-              >
-                <img
-                  [src]="buildWebUrl(partner)"
-                  [alt]="partner.companyName"
-                  loading="lazy"
-                />
-              </div>
-              <div class="about-eatfit__partner-body">
-                <h3 class="about-eatfit__partner-name">
-                  {{ partner.name }}
-                </h3>
-                @if (partner.companyName) {
-                  <p
-                    class="about-eatfit__partner-tagline"
-                  >
-                    {{ partner.companyName }}
-                  </p>
-                }
-              </div>
-            </article>
-          }
+          <!-- Lead column: heading + intro + stats + pillars -->
+          <div class="about-core__lead">
+            <span class="about-core__eyebrow">Our story</span>
+            <h2 class="about-core__title">24 years, <em>3000+ clients,</em> one mission.</h2>
+            <p class="about-core__copy">A dream venture to lead you to your best self in the most natural way possible — without tweaking your lifestyle. A decade-long journey of fruitful encounters with the who's who of industry, corporate, media and the fitness world.</p>
+
+            <div class="stat-row">
+              @for (stat of stats; track stat.label) {
+                <div class="stat-row__cell">
+                  <span class="stat-row__num">{{ stat.number }}</span>
+                  <span class="stat-row__label">{{ stat.label }}</span>
+                </div>
+              }
+            </div>
+
+            <ul class="pillar-list">
+              @for (pillar of pillars; track pillar) {
+                <li>{{ pillar }}</li>
+              }
+            </ul>
+          </div>
+
+          <!-- Founder video -->
+          <div class="about-core__video" aria-label="Watch our story">
+            @if (safeYoutubeUrl) {
+              <iframe
+                [src]="safeYoutubeUrl"
+                title="EatFit247 — Our Story"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowfullscreen></iframe>
+            }
+          </div>
 
         </div>
-      </section>
-    }
 
+        <div class="about-core__cta">
+          <a routerLink="/contact-us" class="mat-btn mat-btn--filled">
+            Book appointment <span class="mat-icon">arrow_forward</span>
+          </a>
+          <a routerLink="/about-shweta-shah" class="mat-btn mat-btn--outlined">
+            About Shweta Shah <span class="mat-icon">arrow_forward</span>
+          </a>
+        </div>
+      </div>
+    </section>
 
-    <!-- Join Shweta Shah -->
-    <section class="about-eatfit__section about-eatfit__section--join">
-      <div class="about-eatfit__join-card">
-        <h2 class="about-eatfit__title about-eatfit__title--center">Join Shweta Shah</h2>
-        <p class="about-eatfit__subtitle about-eatfit__subtitle--center">
-          EatFit247 is a dream venture and your answer to weight loss reality and natural health care options without
-          compromising your lifestyle. We pride ourselves in creating a plan that not only meets your health goals but
-          allows
-          you to retain your foodie cravings.
-        </p>
-        <a mat-flat-button class="about-eatfit__join-btn" routerLink="/contact-us">Book Appointment</a>
+    <!-- Vision + Mission + Quote band -->
+    <section class="vm-band">
+      <div class="ef-container">
+        <div class="vm-band__inner">
+
+          <article class="vm-card">
+            <div class="vm-card__head">
+              <div class="vm-card__icon"><span class="mat-icon">visibility</span></div>
+              <div>
+                <span class="vm-card__kicker">Vision</span>
+                <h3>A pill-free lifestyle.</h3>
+              </div>
+            </div>
+            <p class="vm-card__lead">Blending ancient wisdom with today's lifestyle to make health simple and natural.</p>
+            <ul class="vm-list">
+              <li><span class="mat-icon">check_circle</span>Moving away from quick fixes — supporting the body, not silencing it.</li>
+              <li><span class="mat-icon">check_circle</span>Using food, spices, herbs and small lifestyle changes to manage everyday health challenges.</li>
+            </ul>
+          </article>
+
+          <article class="vm-card">
+            <div class="vm-card__head">
+              <div class="vm-card__icon"><span class="mat-icon">flag</span></div>
+              <div>
+                <span class="vm-card__kicker">Mission</span>
+                <h3>Bringing back natural healing.</h3>
+              </div>
+            </div>
+            <p class="vm-card__lead">Combining ancient wisdom with modern living — in a simple, relatable way.</p>
+            <ul class="vm-list">
+              <li><span class="mat-icon">check_circle</span>Make natural healing approachable for everyday life.</li>
+              <li><span class="mat-icon">check_circle</span>Protecting you from yourself — gently, consistently, sustainably.</li>
+            </ul>
+          </article>
+
+          <div class="vm-quote">
+            <span class="vm-quote__icon">format_quote</span>
+            <h2>Protecting you <em>from yourself.</em></h2>
+            <a routerLink="/contact-us" class="mat-btn mat-btn--filled vm-quote__cta">
+              Book appointment <span class="mat-icon">arrow_forward</span>
+            </a>
+          </div>
+
+        </div>
       </div>
     </section>
 
