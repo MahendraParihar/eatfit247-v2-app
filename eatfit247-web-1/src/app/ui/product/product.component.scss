@@ -6,12 +6,16 @@
 }
 
 /* ---- Gallery landings ---- */
-/* 4:5 main product image */
+/* 4:5 main product image (1:1 on large screens) */
 .product-page .product-gallery__main {
   aspect-ratio: 4 / 5;
   width: 100%;
   overflow: hidden;
   border-radius: 16px;
+
+  @include respond(lg) {
+    aspect-ratio: 1 / 1;
+  }
 }
 
 /* 80x80 left-aligned thumb row with NO background tint */
@@ -58,6 +62,15 @@
   background: transparent;
   border: none;
   padding: 0;
+}
+
+/* In the 2-col grid, side-by-side blocks must not inherit the stacked divider */
+.product-page .product-block-row > .product-block + .product-block {
+  @include respond(md) {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
+  }
 }
 
 /* Each benefit/storage line uses icon + text, no card chrome */

@@ -155,17 +155,11 @@
       </header>
 
       <div class="faq-list">
-        @for (faq of faqs; track faq.q; let i = $index) {
+        @for (faq of faqs(); track faq.faqId; let i = $index) {
           <details class="faq" [open]="i === 0">
-            <summary>{{ faq.q }}<span class="mat-icon">add</span></summary>
-            @if (faq.link) {
-              <p>
-                {{ faq.link.before }}<a [routerLink]="faq.link.route" class="our-programs__faq-link">{{ faq.link.label }}</a>{{ faq.link.after }}
-              </p>
-            } @else if (faq.aHtml) {
-              <p [innerHTML]="faq.a"></p>
-            } @else {
-              <p>{{ faq.a }}</p>
+            <summary>{{ faq.faq }}<span class="mat-icon">add</span></summary>
+            @if (faq.answer) {
+              <p [innerHTML]="faq.answer"></p>
             }
           </details>
         }

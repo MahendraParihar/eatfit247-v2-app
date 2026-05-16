@@ -1,7 +1,7 @@
 import { Component, inject, OnDestroy, OnInit, PLATFORM_ID, signal } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Subject, takeUntil } from 'rxjs';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { CheckoutService } from '../../core/services';
 import { IAddress } from '@eatfit247-shared-library/core';
 import { BreadcrumbsComponent, LoaderComponent } from '@shared-ui';
@@ -40,7 +40,6 @@ interface OrderDetails {
   imports: [
     CommonModule,
     LoaderComponent,
-    RouterLink,
     BreadcrumbsComponent
   ],
   templateUrl: './checkout-success.component.html',

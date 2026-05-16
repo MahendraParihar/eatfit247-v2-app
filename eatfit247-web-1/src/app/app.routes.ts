@@ -56,14 +56,6 @@ export const appRoutes: Route[] = [
         title: 'Reserve your spot | EatFit247',
       },
       {
-        path: 'our-programs/:id',
-        loadComponent: () =>
-          import('./ui/program-details/program-details.component').then(
-            (m) => m.ProgramDetailsComponent
-          ),
-        title: 'Program details | EatFit247',
-      },
-      {
         path: 'success-stories',
         loadComponent: () =>
           import('./ui/success-stories/success-stories.component').then(

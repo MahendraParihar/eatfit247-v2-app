@@ -1,4 +1,12 @@
-import { Component, inject, OnDestroy, OnInit, PLATFORM_ID, signal, ViewChild } from '@angular/core';
+import {
+  Component,
+  inject,
+  OnDestroy,
+  OnInit,
+  PLATFORM_ID,
+  signal,
+  ViewChild,
+} from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import {
   FormBuilder,
@@ -6,7 +14,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { ActivatedRoute, Params, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Params, Router } from '@angular/router';
 import { MatStepper, MatStepperModule } from '@angular/material/stepper';
 import {
   MAT_FORM_FIELD_DEFAULT_OPTIONS,
@@ -50,7 +58,6 @@ import { Subject, takeUntil } from 'rxjs';
   standalone: true,
   imports: [
     CommonModule,
-    RouterLink,
     ReactiveFormsModule,
     MatStepperModule,
     MatFormFieldModule,
@@ -148,9 +155,11 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     // Initialize forms first to prevent template errors
     this.initializeForms();
     await this.loadMasterData();
-    this.route.queryParams.pipe(takeUntil(this.destroy$)).subscribe(async (params) => {
-      await this.initFlow(params);
-    });
+    this.route.queryParams
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(async (params) => {
+        await this.initFlow(params);
+      });
   }
 
   ngOnDestroy(): void {
@@ -213,7 +222,8 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     // Watch for country changes to filter states
     this.basicDetailsForm
       .get('countryId')
-      ?.valueChanges.pipe(takeUntil(this.destroy$)).subscribe((countryId) => {
+      ?.valueChanges.pipe(takeUntil(this.destroy$))
+      .subscribe((countryId) => {
         this.filterStatesByCountry(countryId);
       });
     // Set the default country after forms are initialized (if master data is already loaded)
@@ -437,7 +447,10 @@ export class CheckoutComponent implements OnInit, OnDestroy {
       this.moveToStep(this.STEP_INDICES.PREVIEW);
     } catch (error: unknown) {
       console.error('Error proceeding from billing:', error);
-      this.error = error instanceof Error ? error.message : 'Failed to proceed. Please try again.';
+      this.error =
+        error instanceof Error
+          ? error.message
+          : 'Failed to proceed. Please try again.';
     } finally {
       this.loading = false;
     }
@@ -607,7 +620,9 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     } catch (error: unknown) {
       console.error('Error creating payment order:', error);
       this.error =
-        error instanceof Error ? error.message : 'Failed to create payment order. Please try again.';
+        error instanceof Error
+          ? error.message
+          : 'Failed to create payment order. Please try again.';
     } finally {
       this.loading = false;
     }
@@ -791,7 +806,10 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     this.processingPayment = false;
     this.showPaymentModal = false;
     this.paymentSuccess = false;
-    this.paymentError = error instanceof Error ? error.message : 'Payment failed. Please try again.';
+    this.paymentError =
+      error instanceof Error
+        ? error.message
+        : 'Payment failed. Please try again.';
     this.moveToStep(this.STEP_INDICES.RESULT);
   }
 
@@ -956,7 +974,10 @@ export class CheckoutComponent implements OnInit, OnDestroy {
       this.orderAmount = this.productPrice * this.productQuantity;
     } catch (error: unknown) {
       console.error('Error loading product details:', error);
-      this.error = error instanceof Error ? error.message : 'Failed to load product details.';
+      this.error =
+        error instanceof Error
+          ? error.message
+          : 'Failed to load product details.';
     } finally {
       this.loading = false;
     }

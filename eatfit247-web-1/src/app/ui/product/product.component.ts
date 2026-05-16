@@ -3,11 +3,10 @@ import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-import { BannerComponent, BreadcrumbsComponent, LoaderComponent } from '@shared-ui';
-import { BannerService, FaqService, JsonLdService, SEOService } from '../../core/services';
+import { BreadcrumbsComponent, LoaderComponent } from '@shared-ui';
+import { FaqService, JsonLdService, SEOService } from '../../core/services';
 import { ProductService } from '../../core/services/product.service';
 import {
-  BannerForEnum,
   IMediaUpload,
   IOutcomes,
   IOutcomeSection,
@@ -16,7 +15,6 @@ import {
   IProductReport,
   IProjectConsumptionInstructionSection,
   IProjectStarEndorsedSection,
-  IPublicBanner,
   IPublicFaq,
   IPublicProduct,
 } from '@eatfit247-shared-library';
@@ -42,7 +40,6 @@ interface IBenefitLine {
     CommonModule,
     FormsModule,
     RouterLink,
-    BannerComponent,
     LoaderComponent,
     BreadcrumbsComponent,
   ],
@@ -50,15 +47,12 @@ interface IBenefitLine {
   styleUrl: './product.component.scss',
 })
 export class ProductComponent implements OnInit, OnDestroy {
-  private readonly bannerService = inject(BannerService);
   private readonly faqService = inject(FaqService);
   private readonly productService = inject(ProductService);
   private readonly router = inject(Router);
   private readonly seoService = inject(SEOService);
   private readonly jsonLdService = inject(JsonLdService);
   private readonly sanitizer = inject(DomSanitizer);
-  // Banner media
-  banners: IPublicBanner[] = [];
   // Product data
   product!: IPublicProduct;
   productName = '';
@@ -106,20 +100,51 @@ export class ProductComponent implements OnInit, OnDestroy {
    * `additionalInfo.benefits` from the API is empty or returns a bare string[].
    */
   private readonly defaultBenefits: readonly IBenefitLine[] = [
-    { title: 'Bloat reduction', description: 'Calms post-meal heaviness within 30 minutes.' },
-    { title: 'Relieves hyperacidity', description: 'Soothes the stomach lining and balances pH.' },
-    { title: 'Period bloating & cramps', description: 'Eases water retention and abdominal discomfort.' },
-    { title: 'Relieves gas, burping & belching', description: 'Targets flatulence and post-meal discomfort at the source.' },
-    { title: 'Restores lost energy', description: "Better digestion frees up energy you didn't know you were spending." },
-    { title: 'Supports weight loss', description: 'A balanced gut speeds up metabolism and curbs cravings.' },
+    {
+      title: 'Bloat reduction',
+      description: 'Calms post-meal heaviness within 30 minutes.',
+    },
+    {
+      title: 'Relieves hyperacidity',
+      description: 'Soothes the stomach lining and balances pH.',
+    },
+    {
+      title: 'Period bloating & cramps',
+      description: 'Eases water retention and abdominal discomfort.',
+    },
+    {
+      title: 'Relieves gas, burping & belching',
+      description: 'Targets flatulence and post-meal discomfort at the source.',
+    },
+    {
+      title: 'Restores lost energy',
+      description:
+        "Better digestion frees up energy you didn't know you were spending.",
+    },
+    {
+      title: 'Supports weight loss',
+      description: 'A balanced gut speeds up metabolism and curbs cravings.',
+    },
   ];
 
   /** Canonical storage / precaution copy from the design HTML. */
   private readonly defaultPrecautions: readonly IBenefitLine[] = [
-    { title: 'Shelf life', description: '7–8 months from the date of manufacture.' },
-    { title: 'Store in a cool, dry place', description: 'Avoid humid spots like near the stove or sink.' },
-    { title: 'Keep away from direct sunlight', description: 'Sunlight can degrade the natural ingredients.' },
-    { title: 'Seal tightly after use', description: 'Press the zip-lock closed each time to preserve freshness.' },
+    {
+      title: 'Shelf life',
+      description: '7–8 months from the date of manufacture.',
+    },
+    {
+      title: 'Store in a cool, dry place',
+      description: 'Avoid humid spots like near the stove or sink.',
+    },
+    {
+      title: 'Keep away from direct sunlight',
+      description: 'Sunlight can degrade the natural ingredients.',
+    },
+    {
+      title: 'Seal tightly after use',
+      description: 'Press the zip-lock closed each time to preserve freshness.',
+    },
   ];
 
   /** Step labels rotated through the How-to-use block when the API only
@@ -383,7 +408,11 @@ export class ProductComponent implements OnInit, OnDestroy {
       return instruction;
     }
     if (instruction && typeof instruction === 'object') {
-      const obj = instruction as { description?: string; body?: string; text?: string };
+      const obj = instruction as {
+        description?: string;
+        body?: string;
+        text?: string;
+      };
       return obj.description ?? obj.body ?? obj.text ?? '';
     }
     return '';
@@ -405,7 +434,11 @@ export class ProductComponent implements OnInit, OnDestroy {
         };
       }
       if (entry && typeof entry === 'object') {
-        const obj = entry as { title?: string; description?: string; name?: string };
+        const obj = entry as {
+          title?: string;
+          description?: string;
+          name?: string;
+        };
         return {
           title: obj.title ?? obj.name ?? '',
           description: obj.description ?? '',
@@ -464,13 +497,14 @@ export class ProductComponent implements OnInit, OnDestroy {
   /** YouTube link surfaced from the endorsement section, used for the
    *  "Watch on YouTube" outline CTA. Falls back to a sensible default. */
   get endorsementYoutubeUrl(): string {
-    const link = (this.productStartEndorsed as any)?.mediaData?.mediaLink?.[0]?.webUrl as
-      | string
-      | undefined;
+    const link = (this.productStartEndorsed as any)?.mediaData?.mediaLink?.[0]
+      ?.webUrl as string | undefined;
     if (link && /youtu/i.test(link)) {
       return link;
     }
-    const externalUrl = (this.productStartEndorsed as any)?.externalUrl as string | undefined;
+    const externalUrl = (this.productStartEndorsed as any)?.externalUrl as
+      | string
+      | undefined;
     if (externalUrl && /youtu/i.test(externalUrl)) {
       return externalUrl;
     }
@@ -487,9 +521,8 @@ export class ProductComponent implements OnInit, OnDestroy {
    *  Returns `null` when the source is a non-YouTube video (in which case
    *  the template renders the native `<video>` instead). */
   get endorsementYoutubeEmbed(): string | null {
-    const link = (this.productStartEndorsed as any)?.mediaData?.mediaLink?.[0]?.webUrl as
-      | string
-      | undefined;
+    const link = (this.productStartEndorsed as any)?.mediaData?.mediaLink?.[0]
+      ?.webUrl as string | undefined;
     const embed = this.getYoutubeEmbedUrl(link);
     if (embed) {
       return embed;
@@ -506,7 +539,8 @@ export class ProductComponent implements OnInit, OnDestroy {
     const additional = this.product?.additionalInfo as any;
     const quote = additional?.startEndorsed?.quote;
     const name = additional?.startEndorsed?.endorserName || 'Harbhajan Singh';
-    const role = additional?.startEndorsed?.endorserRole || 'Former India cricketer';
+    const role =
+      additional?.startEndorsed?.endorserRole || 'Former India cricketer';
     return {
       text:
         quote ||
@@ -558,28 +592,12 @@ export class ProductComponent implements OnInit, OnDestroy {
   }
 
   async ngOnInit(): Promise<void> {
-    await this.loadBannerData();
     await this.loadProductData();
     await this.loadFaqData();
   }
 
   ngOnDestroy(): void {
     this.stopFeatureSliderAutoSwitch();
-  }
-
-  /**
-   * Load banner media data
-   */
-  private async loadBannerData(): Promise<void> {
-    try {
-      this.banners = await this.bannerService.getBannerMediaForPage(
-        BannerForEnum.PRODUCT,
-      );
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('Failed to load banner data for Product page:', error);
-      this.banners = [];
-    }
   }
 
   /**

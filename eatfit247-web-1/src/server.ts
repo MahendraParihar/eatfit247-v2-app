@@ -46,7 +46,7 @@ function isKnownRoute(url: string): boolean {
   const path = url.split('?')[0];
   if (KNOWN_ROUTES.has(path)) return true;
   // Check dynamic route prefixes
-  return path.startsWith('/our-programs/') || path.startsWith('/blog/') || path.startsWith('/product/');
+  return path.startsWith('/blog/') || path.startsWith('/product/');
 }
 
 function buildSitemapXml(urls: { loc: string; lastmod?: string; changefreq: string; priority: string }[]): string {

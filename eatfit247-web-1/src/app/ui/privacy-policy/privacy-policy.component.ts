@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { IPublicLegalPage } from '@eatfit247-shared-library/core';
 import { LegalPagesService } from '../../core/services/legal-pages.service';
 import { BreadcrumbsComponent, LoaderComponent } from '@shared-ui';
@@ -8,7 +8,7 @@ import { BreadcrumbsComponent, LoaderComponent } from '@shared-ui';
 @Component({
   selector: 'app-privacy-policy',
   standalone: true,
-  imports: [CommonModule, RouterLink, LoaderComponent, BreadcrumbsComponent],
+  imports: [CommonModule, LoaderComponent, BreadcrumbsComponent],
   templateUrl: './privacy-policy.component.html',
   styleUrl: './privacy-policy.component.scss'
 })

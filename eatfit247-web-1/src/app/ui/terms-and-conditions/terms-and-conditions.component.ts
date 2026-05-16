@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { IPublicLegalPage } from '@eatfit247-shared-library';
 import { LegalPagesService } from '../../core/services/legal-pages.service';
 import { BreadcrumbsComponent, LoaderComponent } from '@shared-ui';
@@ -8,9 +8,9 @@ import { BreadcrumbsComponent, LoaderComponent } from '@shared-ui';
 @Component({
   selector: 'app-terms-and-conditions',
   standalone: true,
-  imports: [CommonModule, RouterLink, LoaderComponent, BreadcrumbsComponent],
+  imports: [CommonModule, LoaderComponent, BreadcrumbsComponent],
   templateUrl: './terms-and-conditions.component.html',
-  styleUrl: './terms-and-conditions.component.scss'
+  styleUrl: './terms-and-conditions.component.scss',
 })
 export class TermsAndConditionsComponent implements OnInit {
   private readonly legalPagesService = inject(LegalPagesService);
@@ -29,7 +29,9 @@ export class TermsAndConditionsComponent implements OnInit {
     try {
       // Use the current route path (without leading slash) as the URL slug
       const currentPath = this.router.url.split('?')[0].replace(/^\/+/, '');
-      const data = await this.legalPagesService.getByUrl(currentPath || 'terms-and-conditions');
+      const data = await this.legalPagesService.getByUrl(
+        currentPath || 'terms-and-conditions',
+      );
       if (data) {
         this.pageData = data;
       } else {
@@ -42,5 +44,3 @@ export class TermsAndConditionsComponent implements OnInit {
     }
   }
 }
-
-

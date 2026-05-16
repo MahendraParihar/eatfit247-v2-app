@@ -1,11 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, signal, WritableSignal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { BannerComponent, BreadcrumbsComponent } from '@shared-ui';
 import { BannerService } from '../../core/services/banner.service';
-import { BannerForEnum } from '@eatfit247-shared-library/enum';
-import { IPublicBanner } from '@eatfit247-shared-library/core';
-import { JsonLdService, SEOService } from '../../core/services';
+import { IPublicBanner, IPublicFaq } from '@eatfit247-shared-library/core';
+import { FaqService, JsonLdService, SEOService } from '../../core/services';
 
 interface SessionChip {
   readonly num: string;
@@ -28,13 +27,6 @@ interface HowItWorksStep {
   readonly copy: string;
 }
 
-interface FaqItem {
-  readonly q: string;
-  readonly a: string;
-  readonly aHtml?: boolean;
-  readonly link?: { readonly route: string; readonly label: string; readonly before: string; readonly after: string };
-}
-
 @Component({
   standalone: true,
   selector: 'app-our-programs',
@@ -43,11 +35,12 @@ interface FaqItem {
   styleUrl: './our-programs.component.scss',
 })
 export class OurProgramsComponent implements OnInit {
-  private readonly bannerService = inject(BannerService);
   private readonly jsonLdService = inject(JsonLdService);
   private readonly seoService = inject(SEOService);
-
+  private readonly faqService = inject(FaqService);
+  PROGRAM_FAQ_CATEGORY_ID = 4;
   banners: IPublicBanner[] = [];
+  readonly faqs: WritableSignal<IPublicFaq[]> = signal<IPublicFaq[]>([]);
 
   readonly plans: ReadonlyArray<PlanCard> = [
     {
@@ -88,9 +81,7 @@ export class OurProgramsComponent implements OnInit {
       id: 'shweta-and-team',
       title: 'Plan with Shweta + Team',
       subtitle: 'Collaborative approach.',
-      sessions: [
-        { num: '1 + 7', label: 'Sessions' },
-      ],
+      sessions: [{ num: '1 + 7', label: 'Sessions' }],
       features: [
         'Initial consultation with Shweta',
         '7 follow-up sessions with team',
@@ -127,55 +118,12 @@ export class OurProgramsComponent implements OnInit {
       copy: 'The Nutrinist team stays by your side throughout — answering questions, troubleshooting plateaus and keeping you on track.',
     },
   ];
-
   readonly termsAndConditions: ReadonlyArray<string> = [
     'Payments are non-refundable & non-transferable.',
     'Program is valid only for the registered individual.',
     'Pause up to 20 days may be approved in genuine cases.',
     'Prices are valid till 31st Dec, 2026.',
     '**Prices are exclusive of tax — tax will be charged on the final payment.',
-  ];
-
-  readonly faqs: ReadonlyArray<FaqItem> = [
-    {
-      q: 'Which program is right for me?',
-      a: "If you've never worked with a dietitian, start with <strong>Weight Loss</strong> or a single-session consult. For lasting change across nutrition, sleep and stress, choose <strong>Complete Wellness</strong>. For PCOS, thyroid or hormonal issues, the <strong>PCOS &amp; Hormonal Care</strong> track is purpose-built.",
-      aHtml: true,
-    },
-    {
-      q: 'How are the plans personalised?',
-      a: 'Every client completes a detailed intake covering medical history, recent labs, food preferences, lifestyle and goals. Your dietitian designs the first plan from this and adjusts every two weeks based on progress.',
-    },
-    {
-      q: 'Are sessions online or in-person?',
-      a: 'All programs are delivered online — secure video calls and daily WhatsApp support — so you can access the same team from anywhere in the world.',
-    },
-    {
-      q: 'How long before I see results?',
-      a: 'Most clients notice better energy and digestion within 7–10 days. Measurable body composition and biomarker changes typically begin in week 3–4.',
-    },
-    {
-      q: 'Can I switch programs mid-way?',
-      a: 'Yes, at any time. Your progress, plan history and notes carry over, and we credit unused days toward the new program.',
-    },
-    {
-      q: 'I have a medical condition. Can I still join?',
-      a: "Most conditions — PCOS, thyroid, diabetes, hypertension, IBS — are manageable alongside our programs. We'll ask for recent labs and coordinate with your doctor where useful.",
-    },
-    {
-      q: 'Do you offer refunds?',
-      a: "Payments are non-refundable; however we offer the ability to pause for genuine reasons. Please reach out to our team for case-by-case support.",
-    },
-    {
-      q: 'Can I buy a program as a gift?',
-      a: '',
-      link: {
-        before: 'Absolutely. ',
-        route: '/contact-us',
-        label: 'Reach out',
-        after: " and we'll arrange a gift voucher your recipient can redeem when they're ready to start.",
-      },
-    },
   ];
 
   async ngOnInit(): Promise<void> {
@@ -185,21 +133,15 @@ export class OurProgramsComponent implements OnInit {
         'Explore EatFit247 personalized nutrition programs for weight management, detox, PCOS, and holistic wellness.',
       url: '/our-programs',
     });
-    await this.loadBannerData();
+    const programFaqs = await this.faqService.getFaqsByCategoryId(
+      this.PROGRAM_FAQ_CATEGORY_ID,
+    );
+    this.faqs.set(programFaqs);
     this.jsonLdService.setPageSchema(
       this.jsonLdService.buildBreadcrumb([
         { name: 'Home', url: 'https://eatfit24by7.com/' },
         { name: 'Programs', url: 'https://eatfit24by7.com/our-programs' },
       ]),
     );
-  }
-
-  private async loadBannerData(): Promise<void> {
-    try {
-      this.banners = await this.bannerService.getBannerMediaForPage(BannerForEnum.OUR_PROGRAM);
-    } catch (error) {
-      console.error('Failed to load banner data for Our Programs page:', error);
-      this.banners = [];
-    }
   }
 }

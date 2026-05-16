@@ -1,12 +1,22 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, OnInit, PLATFORM_ID, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  inject,
+  OnInit,
+  PLATFORM_ID,
+  signal,
+} from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
-import { BannerService, BlogService, JsonLdService, SEOService } from '../../core/services';
-import { BannerComponent, BreadcrumbsComponent, EmptyStateComponent, ICardData, LoaderComponent } from '@shared-ui';
-import { BannerForEnum } from '@eatfit247-shared-library/enum';
-import { IPublicBanner } from '@eatfit247-shared-library/core';
+import { BlogService, JsonLdService, SEOService } from '../../core/services';
+import {
+  BreadcrumbsComponent,
+  EmptyStateComponent,
+  ICardData,
+  LoaderComponent,
+} from '@shared-ui';
 
 interface IBlogTag {
   key: string;
@@ -22,26 +32,21 @@ interface IBlogTag {
     MatPaginatorModule,
     LoaderComponent,
     EmptyStateComponent,
-    BannerComponent,
-    BreadcrumbsComponent
+    BreadcrumbsComponent,
   ],
   templateUrl: './blog.component.html',
-  styleUrl: './blog.component.scss'
+  styleUrl: './blog.component.scss',
 })
 export class BlogComponent implements OnInit {
   private readonly blogService = inject(BlogService);
-  private readonly bannerService = inject(BannerService);
   private readonly jsonLdService = inject(JsonLdService);
   private readonly seoService = inject(SEOService);
   private readonly platformId = inject(PLATFORM_ID);
   private readonly route = inject(ActivatedRoute);
-  /** All blogs fetched from the API (full list — filtering is local). */
   private readonly allBlogs = signal<ICardData[]>([]);
   readonly loading = signal(false);
-  // 0 represents "All"
   readonly pageSize = signal(6);
   readonly currentPage = signal(0);
-  readonly banners = signal<IPublicBanner[]>([]);
 
   /** Tag filter — `all` shows every blog. */
   readonly activeTag = signal<string>('all');
@@ -79,20 +84,25 @@ export class BlogComponent implements OnInit {
   readonly totalBlogs = computed<number>(() => this.filteredBlogs().length);
 
   ngOnInit(): void {
-    this.seoService.updateSEO({ title: 'Health & Nutrition Blog', description: 'Discover nutrition tips, healthy recipes, and wellness insights from EatFit247 experts.', url: '/blog' });
+    this.seoService.updateSEO({
+      title: 'Health & Nutrition Blog',
+      description:
+        'Discover nutrition tips, healthy recipes, and wellness insights from EatFit247 experts.',
+      url: '/blog',
+    });
     // Preselect tag from `?tag=` query param (set by blog-detail category links).
     this.route.queryParamMap.subscribe((params) => {
       const tagParam = params.get('tag');
       if (tagParam) {
         const match = this.blogTags.find(
-          (t) => t.key.toLowerCase() === tagParam.toLowerCase() ||
-                 t.label.toLowerCase() === tagParam.toLowerCase()
+          (t) =>
+            t.key.toLowerCase() === tagParam.toLowerCase() ||
+            t.label.toLowerCase() === tagParam.toLowerCase(),
         );
         this.activeTag.set(match ? match.key : tagParam);
         this.currentPage.set(0);
       }
     });
-    void this.loadBannerData();
     void this.loadBlogs();
   }
 
@@ -115,21 +125,26 @@ export class BlogComponent implements OnInit {
         this.jsonLdService.setPageSchema({
           '@type': 'ItemList',
           name: 'EatFit247 Blog Articles',
-          itemListElement: response.tableData.slice(0, 10).map((blog: any, i: number) => {
-            const slug = blog.seo?.url || blog.title?.toLowerCase().replace(/\s+/g, '-');
-            const image = blog.imagePath?.[0]?.webUrl;
-            return {
-              '@type': 'ListItem',
-              position: i + 1,
-              item: {
-                '@type': 'BlogPosting',
-                headline: blog.title,
-                url: `https://eatfit24by7.com/blog/${slug}`,
-                ...(image ? { image } : {}),
-                ...(blog.writtenAt ? { datePublished: new Date(blog.writtenAt).toISOString() } : {}),
-              },
-            };
-          }),
+          itemListElement: response.tableData
+            .slice(0, 10)
+            .map((blog: any, i: number) => {
+              const slug =
+                blog.seo?.url || blog.title?.toLowerCase().replace(/\s+/g, '-');
+              const image = blog.imagePath?.[0]?.webUrl;
+              return {
+                '@type': 'ListItem',
+                position: i + 1,
+                item: {
+                  '@type': 'BlogPosting',
+                  headline: blog.title,
+                  url: `https://eatfit24by7.com/blog/${slug}`,
+                  ...(image ? { image } : {}),
+                  ...(blog.writtenAt
+                    ? { datePublished: new Date(blog.writtenAt).toISOString() }
+                    : {}),
+                },
+              };
+            }),
         } as Record<string, unknown>);
       } else {
         this.allBlogs.set([]);
@@ -138,23 +153,6 @@ export class BlogComponent implements OnInit {
       this.allBlogs.set([]);
     } finally {
       this.loading.set(false);
-    }
-  }
-
-  /**
-   * Load banner images for Blog listing page.
-   * Banner section will be hidden automatically if no banners are returned.
-   */
-  private async loadBannerData(): Promise<void> {
-    try {
-      const images = await this.bannerService.getBannerMediaForPage(
-        BannerForEnum.BLOGS
-      );
-      this.banners.set(images ?? []);
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('Error loading blog banners:', error);
-      this.banners.set([]);
     }
   }
 
@@ -188,7 +186,11 @@ export class BlogComponent implements OnInit {
     if (isNaN(d.getTime())) {
       return '';
     }
-    return d.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
+    return d.toLocaleDateString('en-US', {
+      month: 'short',
+      day: '2-digit',
+      year: 'numeric',
+    });
   }
 
   private scrollToTop(): void {
