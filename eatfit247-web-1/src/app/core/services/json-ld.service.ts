@@ -144,7 +144,7 @@ export class JsonLdService {
         contactPoint: {
           '@type': 'ContactPoint',
           contactType: 'customer support',
-          email: 'info@eatfit24by7.com',
+          email: 'eatfit24by7@gmail.com',
         },
       } satisfies Record<string, unknown>,
       {

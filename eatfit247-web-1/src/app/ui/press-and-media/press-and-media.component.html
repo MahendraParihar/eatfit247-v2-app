@@ -1,17 +1,11 @@
 <div class="press-page">
-  @if (banners.length > 0) {
-    <app-banner [banners]="banners"></app-banner>
-  }
-
   <section class="page-hero">
     <div class="ef-container">
       <div class="page-hero__inner">
         <div>
           <app-breadcrumbs [crumbs]="[{ label: 'Home', link: '/' }, { label: 'Press & Media' }]"></app-breadcrumbs>
-          <h1>As seen <span class="accent">in the press</span>.</h1>
+          <h1>A well-balanced diet that leads to a <span class="accent">well-balanced life</span>.</h1>
           <p class="lead">
-            Selected appearances and features. For media, contact
-            <a href="mailto:press@eatfit247.com" class="press-page__hero-mail">press&#64;eatfit247.com</a>.
           </p>
         </div>
         <div class="page-hero__visual" aria-hidden="true">
@@ -46,8 +40,12 @@
             rel="noopener"
             [style.--badge]="p.color"
           >
-            <div class="press-card__media">
-              <span class="mat-icon">{{ p.icon }}</span>
+            <div class="press-card__media" [class.press-card__media--has-image]="p.imageUrl">
+              @if (p.imageUrl) {
+                <img [src]="p.imageUrl" [alt]="p.title" loading="lazy" class="press-card__media-img" />
+              } @else {
+                <span class="mat-icon">{{ p.icon }}</span>
+              }
               <span class="press-card__media-outlet">{{ p.outlet }}</span>
             </div>
             <div class="press-card__body">
@@ -66,64 +64,17 @@
         }
       </div>
 
-      @if (totalPages() > 1) {
-        <nav class="press-paginator" aria-label="Press pagination">
-          <div class="press-paginator__size">
-            <label for="press-size">Items per page</label>
-            <select
-              id="press-size"
-              [value]="pageSize()"
-              (change)="setPageSize(+($any($event.target).value))"
-            >
-              @for (opt of pageSizeOptions; track opt) {
-                <option [value]="opt">{{ opt }}</option>
-              }
-            </select>
-          </div>
-
-          <div class="press-paginator__range">
-            Page {{ pageIndex() + 1 }} of {{ totalPages() }}
-          </div>
-
-          <div class="press-paginator__actions">
-            <button
-              type="button"
-              class="mat-btn mat-btn--outlined mat-btn--sm press-paginator__btn"
-              (click)="setPageIndex(0)"
-              [disabled]="pageIndex() === 0"
-              aria-label="First page"
-            >
-              <span class="mat-icon">first_page</span>
-            </button>
-            <button
-              type="button"
-              class="mat-btn mat-btn--outlined mat-btn--sm press-paginator__btn"
-              (click)="setPageIndex(pageIndex() - 1)"
-              [disabled]="pageIndex() === 0"
-              aria-label="Previous page"
-            >
-              <span class="mat-icon">chevron_left</span>
-            </button>
-            <button
-              type="button"
-              class="mat-btn mat-btn--outlined mat-btn--sm press-paginator__btn"
-              (click)="setPageIndex(pageIndex() + 1)"
-              [disabled]="pageIndex() >= totalPages() - 1"
-              aria-label="Next page"
-            >
-              <span class="mat-icon">chevron_right</span>
-            </button>
-            <button
-              type="button"
-              class="mat-btn mat-btn--outlined mat-btn--sm press-paginator__btn"
-              (click)="setPageIndex(totalPages() - 1)"
-              [disabled]="pageIndex() >= totalPages() - 1"
-              aria-label="Last page"
-            >
-              <span class="mat-icon">last_page</span>
-            </button>
-          </div>
-        </nav>
+      @if (totalLength() > pageSize()) {
+        <div class="press-pagination">
+          <mat-paginator
+            [length]="totalLength()"
+            [pageSize]="pageSize()"
+            [pageIndex]="pageIndex()"
+            [pageSizeOptions]="pageSizeOptions"
+            (page)="onPageChange($event)"
+            showFirstLastButtons
+          ></mat-paginator>
+        </div>
       }
     </section>
 

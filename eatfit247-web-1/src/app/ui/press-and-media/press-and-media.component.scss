@@ -1,9 +1,39 @@
 /* Press & Media — most styles (.page-hero, .press-grid, .press-card,
    .tip-grid, .tip-card, .section-head, .section-eyebrow) live in pages.css.
-   Local rules: paginator + section-2 background. */
+   Local rules: pagination wrapper + section-2 background. */
 
 .press-page__body {
   padding-block: var(--space-fluid-xl);
+}
+
+.press-grid,
+.tip-grid {
+  grid-template-columns: 1fr;
+
+  @media (min-width: 600px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (min-width: 1024px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.press-card__media--has-image {
+  background: var(--color-surface-card);
+
+  &::after {
+    display: none;
+  }
+}
+
+.press-card__media-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .press-page__hero-mail {
@@ -14,59 +44,7 @@
   background: var(--color-surface-alt, var(--color-surface-card));
 }
 
-.press-paginator {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-4);
-  margin-top: var(--space-6);
-  padding-top: var(--space-3);
-  border-top: 1px solid var(--color-border);
-  font-size: 13px;
-  color: var(--color-text-secondary);
-}
-
-.press-paginator__size {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-
-  select {
-    padding: 6px 10px;
-    border: 1px solid var(--color-border);
-    border-radius: 8px;
-    background: var(--color-surface-card);
-    color: var(--color-text-primary);
-    font: inherit;
-    font-size: 13px;
-  }
-}
-
-.press-paginator__range {
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-text-primary);
-}
-
-.press-paginator__actions {
-  display: inline-flex;
-  gap: 4px;
-
-  .press-paginator__btn {
-    width: 36px;
-    height: 36px;
-    min-height: 36px;
-    padding: 0;
-    border-radius: 8px;
-
-    &:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-    }
-
-    .mat-icon {
-      font-family: 'Material Symbols Outlined';
-      font-size: 18px;
-    }
-  }
+.press-pagination {
+  display: block;
+  margin-top: var(--space-4);
 }

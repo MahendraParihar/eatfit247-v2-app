@@ -24,6 +24,28 @@
   margin-top: var(--space-5);
 }
 
+.form-field {
+  .required {
+    color: var(--color-error, #d33);
+    margin-left: 2px;
+  }
+
+  &__error {
+    display: block;
+    margin-top: 4px;
+    font-size: 12px;
+    color: var(--color-error, #d33);
+  }
+
+  &__hint {
+    display: block;
+    margin-top: 4px;
+    font-size: 12px;
+    color: var(--color-text-secondary);
+    text-align: right;
+  }
+}
+
 .contact-form__notice {
   display: flex;
   align-items: center;

@@ -1,7 +1,19 @@
-import { CommonModule } from '@angular/common';
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import {
+  Component,
+  computed,
+  inject,
+  OnInit,
+  PLATFORM_ID,
+  signal,
+} from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { BreadcrumbsComponent, LoaderComponent } from '@shared-ui';
+import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
+import {
+  BreadcrumbsComponent,
+  EmptyStateComponent,
+  LoaderComponent,
+} from '@shared-ui';
 import { JsonLdService, SEOService } from '../../core/services';
 import { ISuccessStory } from '@eatfit247-shared-library/core';
 import { SuccessStoriesService } from '../../core/services/success-stories.service';
@@ -17,7 +29,14 @@ interface CelebView {
 @Component({
   standalone: true,
   selector: 'app-success-stories',
-  imports: [CommonModule, RouterLink, LoaderComponent, BreadcrumbsComponent],
+  imports: [
+    CommonModule,
+    RouterLink,
+    MatPaginatorModule,
+    LoaderComponent,
+    EmptyStateComponent,
+    BreadcrumbsComponent,
+  ],
   templateUrl: './success-stories.component.html',
   styleUrl: './success-stories.component.scss',
 })
@@ -25,11 +44,26 @@ export class SuccessStoriesComponent implements OnInit {
   private readonly successStoriesService = inject(SuccessStoriesService);
   private readonly jsonLdService = inject(JsonLdService);
   private readonly seoService = inject(SEOService);
+  private readonly platformId = inject(PLATFORM_ID);
 
   readonly loading = signal(false);
 
-  readonly celebs = signal<CelebView[]>([]);
-  readonly hasStories = computed(() => this.celebs().length > 0);
+  private readonly allStories = signal<CelebView[]>([]);
+  readonly pageSize = signal(6);
+  readonly currentPage = signal(0);
+
+  readonly totalStories = computed<number>(() => this.allStories().length);
+  readonly hasStories = computed(() => this.totalStories() > 0);
+
+  readonly celebs = computed<CelebView[]>(() => {
+    const list = this.allStories();
+    const size = this.pageSize();
+    if (size === 0) {
+      return list;
+    }
+    const start = this.currentPage() * size;
+    return list.slice(start, start + size);
+  });
 
   async ngOnInit(): Promise<void> {
     this.seoService.updateSEO({
@@ -62,17 +96,23 @@ export class SuccessStoriesComponent implements OnInit {
       quote: s.description,
     }));
 
+    this.allStories.set(mapped);
+
     this.jsonLdService.setPageSchema({
       '@type': 'ItemList',
       name: 'Success Stories — EatFit247',
-      itemListElement: this.celebs()
-        .slice(0, 10)
-        .map((c, i) => ({
-          '@type': 'ListItem',
-          position: i + 1,
-          name: c.name,
-        })),
+      itemListElement: mapped.slice(0, 10).map((c, i) => ({
+        '@type': 'ListItem',
+        position: i + 1,
+        name: c.name,
+      })),
     } as Record<string, unknown>);
+  }
+
+  onPageChange(event: PageEvent): void {
+    this.currentPage.set(event.pageIndex);
+    this.pageSize.set(event.pageSize);
+    this.scrollToGrid();
   }
 
   private formatMonthYear(d?: string | Date): string {
@@ -83,5 +123,17 @@ export class SuccessStoriesComponent implements OnInit {
       month: 'short',
       year: 'numeric',
     });
+  }
+
+  private scrollToGrid(): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
+    const grid = document.getElementById('stories-grid');
+    if (grid) {
+      grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return;
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 }

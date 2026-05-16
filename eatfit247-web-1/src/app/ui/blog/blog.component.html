@@ -31,7 +31,7 @@
     @if (!loading()) {
       <!-- Tag filter row -->
       <div class="blog-tags" role="tablist" aria-label="Filter articles by tag">
-        @for (tag of blogTags; track tag.key) {
+        @for (tag of blogTags(); track tag.key) {
           <button
             type="button"
             class="blog-tag"
@@ -41,32 +41,6 @@
             [attr.data-tag]="tag.key"
             (click)="setTag(tag.key)"
           >{{ tag.label }}</button>
-        }
-      </div>
-
-      <!-- Toolbar: page size selector -->
-      <div class="blog-page__toolbar">
-        <label class="blog-page__pagesize">
-          <span>Show</span>
-          <select
-            class="blog-page__pagesize-select"
-            [value]="pageSize()"
-            (change)="onPageSizeChange($any($event.target).value)"
-            aria-label="Articles per page"
-          >
-            <option value="3">3</option>
-            <option value="6">6</option>
-            <option value="9">9</option>
-            <option value="12">12</option>
-            <option value="24">24</option>
-            <option value="0">All</option>
-          </select>
-          <span>per page</span>
-        </label>
-        @if (totalBlogs() > 0) {
-          <span class="blog-page__count">
-            {{ totalBlogs() }} {{ totalBlogs() === 1 ? 'article' : 'articles' }}
-          </span>
         }
       </div>
 

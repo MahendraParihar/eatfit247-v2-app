@@ -54,6 +54,19 @@
   color: var(--color-text-secondary);
 }
 
+/* Responsive grid: 1 col mobile, 2 cols tablet, 3 cols desktop */
+.blog-page .blog-grid {
+  grid-template-columns: 1fr;
+
+  @include respond(md) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @include respond(lg) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
 /* Force a fixed media height (200px) per design */
 .blog-card__media {
   height: 200px;
@@ -70,7 +83,6 @@
 }
 
 .blog-pagination {
-  display: flex;
-  justify-content: center;
+  display: block;
   margin-top: var(--space-4);
 }

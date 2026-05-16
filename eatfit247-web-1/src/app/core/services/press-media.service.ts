@@ -25,7 +25,7 @@ export class PressMediaService {
       >('press-media/list', {
         params
       });
-      if (data) {
+      if (data.data) {
         return this.mapPressesToCards(data.data.tableData);
       }
       return [];

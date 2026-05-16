@@ -24,24 +24,44 @@
         <app-loader page="success-stories"></app-loader>
     } @else {
         <section class="ef-container stories-page__body">
-            <ul class="celeb-grid">
-                @for (c of celebs(); track c.id; let i = $index) {
-                    <li class="celeb-card" [style.--i]="i">
-                        <figure class="celeb-card__photo">
-                            @if (c.img) {
-                                <img [src]="c.img" [alt]="c.name" loading="lazy" referrerpolicy="no-referrer"/>
-                            }
-                        </figure>
-                        <div class="celeb-card__body">
-                            <p class="celeb-card__quote">&ldquo;{{ c.quote }}&rdquo;</p>
-                            <div class="celeb-card__meta">
-                                <h3 class="celeb-card__name">{{ c.name }}</h3>
-                                <span class="celeb-card__date">{{ c.date }}</span>
+            @if (hasStories()) {
+                <ul class="celeb-grid" id="stories-grid">
+                    @for (c of celebs(); track c.id; let i = $index) {
+                        <li class="celeb-card" [style.--i]="i">
+                            <figure class="celeb-card__photo">
+                                @if (c.img) {
+                                    <img [src]="c.img" [alt]="c.name" loading="lazy" referrerpolicy="no-referrer"/>
+                                }
+                            </figure>
+                            <div class="celeb-card__body">
+                                <p class="celeb-card__quote">&ldquo;{{ c.quote }}&rdquo;</p>
+                                <div class="celeb-card__meta">
+                                    <h3 class="celeb-card__name">{{ c.name }}</h3>
+                                    <span class="celeb-card__date">{{ c.date }}</span>
+                                </div>
                             </div>
-                        </div>
-                    </li>
+                        </li>
+                    }
+                </ul>
+
+                @if (pageSize() > 0 && totalStories() > pageSize()) {
+                    <div class="stories-pagination">
+                        <mat-paginator
+                                [length]="totalStories()"
+                                [pageSize]="pageSize()"
+                                [pageIndex]="currentPage()"
+                                [pageSizeOptions]="[3, 6, 9, 12, 24]"
+                                (page)="onPageChange($event)"
+                                showFirstLastButtons
+                        ></mat-paginator>
+                    </div>
                 }
-            </ul>
+            } @else {
+                <app-empty-state
+                        title="No success stories yet"
+                        description="We're collecting inspiring transformation stories. Check back soon!"
+                ></app-empty-state>
+            }
 
             <div class="cta-band stories-page__cta">
                 <div>

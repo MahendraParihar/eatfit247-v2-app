@@ -269,10 +269,10 @@
 .blog-card p { margin: 0; color: var(--color-text-secondary); font-size: var(--type-small-size); line-height: var(--type-small-line); }
 .blog-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: var(--space-5); }
 .blog-tag {
-  padding: 8px 14px; border-radius: var(--radius-chip);
+  padding: 6px 14px; border-radius: var(--radius-chip);
   background: var(--color-surface-card);
   border: 1px solid var(--color-border);
-  font-size: 13px; cursor: pointer; color: var(--color-text-primary);
+  font-size: 13px; line-height: 1.4; cursor: pointer; color: var(--color-text-primary);
   font-weight: var(--font-weight-medium);
   transition: all 140ms ease;
 }

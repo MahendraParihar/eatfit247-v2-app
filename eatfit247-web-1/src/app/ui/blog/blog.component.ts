@@ -23,6 +23,8 @@ interface IBlogTag {
   label: string;
 }
 
+const ALL_TAG: IBlogTag = { key: 'all', label: 'All' };
+
 @Component({
   standalone: true,
   selector: 'app-blog',
@@ -50,14 +52,8 @@ export class BlogComponent implements OnInit {
 
   /** Tag filter — `all` shows every blog. */
   readonly activeTag = signal<string>('all');
-  readonly blogTags: readonly IBlogTag[] = [
-    { key: 'all', label: 'All' },
-    { key: 'Weight', label: 'Weight' },
-    { key: 'PCOS', label: 'PCOS' },
-    { key: 'Diabetes', label: 'Diabetes' },
-    { key: 'Mindful', label: 'Mindful eating' },
-    { key: 'Recipes', label: 'Recipes' },
-  ];
+  /** Dynamic list of tags. "All" is always first, the rest come from the API. */
+  readonly blogTags = signal<IBlogTag[]>([ALL_TAG]);
 
   /** Blogs after the active tag filter is applied. */
   readonly filteredBlogs = computed<ICardData[]>(() => {
@@ -67,7 +63,9 @@ export class BlogComponent implements OnInit {
       return all;
     }
     const needle = tag.toLowerCase();
-    return all.filter((b) => (b.category || '').toLowerCase().includes(needle));
+    return all.filter(
+      (b) => (b.category || '').toLowerCase() === needle,
+    );
   });
 
   /** Visible page slice (after filter + pagination). */
@@ -94,7 +92,7 @@ export class BlogComponent implements OnInit {
     this.route.queryParamMap.subscribe((params) => {
       const tagParam = params.get('tag');
       if (tagParam) {
-        const match = this.blogTags.find(
+        const match = this.blogTags().find(
           (t) =>
             t.key.toLowerCase() === tagParam.toLowerCase() ||
             t.label.toLowerCase() === tagParam.toLowerCase(),
@@ -103,7 +101,30 @@ export class BlogComponent implements OnInit {
         this.currentPage.set(0);
       }
     });
+    void this.loadCategories();
     void this.loadBlogs();
+  }
+
+  /**
+   * Load active blog categories from API and build the tag list.
+   * "All" is always pinned as the first tag.
+   */
+  async loadCategories(): Promise<void> {
+    try {
+      const categories = await this.blogService.getBlogCategories();
+      const tags: IBlogTag[] = categories.map((c) => {
+        const name = this.unescapeName(c.blogCategory);
+        return { key: name, label: name };
+      });
+      this.blogTags.set([ALL_TAG, ...tags]);
+    } catch {
+      this.blogTags.set([ALL_TAG]);
+    }
+  }
+
+  /** DB stores names with escaped quotes (e.g. `Women\'s Health`). Strip them for display. */
+  private unescapeName(value: string): string {
+    return value.replace(/\\(['"])/g, '$1');
   }
 
   setTag(tag: string): void {

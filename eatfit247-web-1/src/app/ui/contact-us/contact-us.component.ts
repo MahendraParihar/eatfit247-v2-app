@@ -4,7 +4,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { RouterLink } from '@angular/router';
 import { BannerComponent, BreadcrumbsComponent } from '@shared-ui';
 import { BannerService, HttpService, JsonLdService, SEOService } from '../../core/services';
-import { BannerForEnum } from '@eatfit247-shared-library/enum';
+import { BannerForEnum, InputLengthEnum } from '@eatfit247-shared-library/enum';
 import { IPublicBanner } from '@eatfit247-shared-library/core';
 import { RecaptchaService } from '../../core/services/recaptcha.service';
 import { CONTACT_EMAIL, CONTACT_NUMBER } from '../../core/utils/constants';
@@ -35,6 +35,12 @@ export class ContactUsComponent implements OnInit {
   readonly emailAddress = CONTACT_EMAIL;
   readonly whatsappLink = `https://wa.me/${CONTACT_NUMBER.replace(/[^0-9]/g, '')}?text=Hi%20EatFit247%2C%20I%27d%20like%20to%20know%20more%20about%20your%20programs.`;
 
+  readonly maxNameLength = 49;
+  readonly maxEmailLength = InputLengthEnum.MAX_EMAIL;
+  readonly maxPhoneLength = InputLengthEnum.MAX_CONTACT_NUMBER;
+  readonly maxSubjectLength = InputLengthEnum.CHAR_200;
+  readonly maxMessageLength = InputLengthEnum.CHAR_1000;
+
   ngOnInit(): void {
     this.seoService.updateSEO({
       title: 'Contact Us',
@@ -59,11 +65,31 @@ export class ContactUsComponent implements OnInit {
 
   private initForm(): void {
     this.contactForm = this.fb.group({
-      firstName: ['', [Validators.required]],
-      lastName: ['', [Validators.required]],
-      email: ['', [Validators.required, Validators.email]],
-      phone: ['', [Validators.pattern(/^[0-9+\-\s()]+$/)]],
-      message: [''],
+      firstName: [
+        '',
+        [Validators.required, Validators.maxLength(this.maxNameLength)],
+      ],
+      lastName: [
+        '',
+        [Validators.required, Validators.maxLength(this.maxNameLength)],
+      ],
+      email: [
+        '',
+        [
+          Validators.required,
+          Validators.email,
+          Validators.maxLength(this.maxEmailLength),
+        ],
+      ],
+      phone: [
+        '',
+        [
+          Validators.pattern(/^[0-9+\-\s()]+$/),
+          Validators.maxLength(this.maxPhoneLength),
+        ],
+      ],
+      subject: ['', [Validators.maxLength(this.maxSubjectLength)]],
+      message: ['', [Validators.maxLength(this.maxMessageLength)]],
       agree: [false, [Validators.requiredTrue]],
     });
   }
@@ -103,14 +129,18 @@ export class ContactUsComponent implements OnInit {
           return;
         }
       }
-      const firstName: string = this.contactForm.value.firstName || '';
-      const lastName: string = this.contactForm.value.lastName || '';
+      const firstName: string = (this.contactForm.value.firstName || '').trim();
+      const lastName: string = (this.contactForm.value.lastName || '').trim();
       const fullName = `${firstName} ${lastName}`.trim();
+      const subject: string = (this.contactForm.value.subject || '').trim();
+      const phone: string = (this.contactForm.value.phone || '').trim();
+      const message: string = (this.contactForm.value.message || '').trim();
       const formData = {
         name: fullName,
-        email: this.contactForm.value.email,
-        phone: this.contactForm.value.phone || undefined,
-        message: this.contactForm.value.message || undefined,
+        email: (this.contactForm.value.email || '').trim(),
+        phone: phone || undefined,
+        subject: subject || undefined,
+        message: message || undefined,
       };
       const headers: { [key: string]: string } = {};
       if (recaptchaToken) {
