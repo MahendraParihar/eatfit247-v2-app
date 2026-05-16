@@ -1,24 +1,29 @@
-<section class="page-hero">
+<main class="checkout-page">
   <div class="ef-container">
-    <div class="page-hero__inner">
-      <div>
-        <app-breadcrumbs [crumbs]="[{ label: 'Home', link: '/' }, { label: 'Checkout' }]"></app-breadcrumbs>
-        <h1>Secure <span class="accent">checkout</span>.</h1>
-        <p class="lead">Review your details, confirm your order, and pay securely.</p>
-      </div>
-      <div class="page-hero__visual" aria-hidden="true">
-        <div class="ring"></div>
-        <div class="ring ring--inner"></div>
-        <div class="disc">shopping_bag</div>
-        <div class="chip chip--a"><span class="mat-icon">lock</span>Secure</div>
-        <div class="chip chip--b"><span class="mat-icon">verified</span>Trusted</div>
-      </div>
-    </div>
-  </div>
-</section>
+    <!-- Head -->
+    <header class="checkout-head">
+      <app-breadcrumbs [crumbs]="[{ label: 'Home', link: '/' }, { label: 'Checkout' }]"></app-breadcrumbs>
+      <h1>Checkout</h1>
+      <p class="checkout-head__sub">{{ currentSubheading() }}</p>
+    </header>
 
-<section class="ef-container checkout-container">
-  <div class="checkout-content">
+    <!-- Visual Stepper -->
+    <ol class="stepper" aria-label="Checkout progress">
+      @for (s of stepperSteps; let i = $index; track s.label) {
+        <li class="step"
+            [class.is-active]="currentStepIndex() === i"
+            [class.is-done]="currentStepIndex() > i"
+            [class.is-clickable]="currentStepIndex() > i"
+            (click)="currentStepIndex() > i && moveToStep(i)">
+          <span class="step__num">{{ i + 1 }}</span>
+          <div>
+            <span class="step__label">{{ s.label }}</span>
+            <span class="step__hint">{{ s.hint }}</span>
+          </div>
+        </li>
+      }
+    </ol>
+
     <!-- Error Message -->
     @if (error) {
       <div class="error-message">
@@ -27,312 +32,417 @@
       </div>
     }
 
-    <!-- Loading Spinner -->
+    <!-- Loading Overlay -->
     @if (loading && !processingPayment) {
       <div class="loading-overlay">
-        <mat-spinner></mat-spinner>
+        <mat-spinner diameter="32"></mat-spinner>
         <p>Processing...</p>
       </div>
     }
 
-    <!-- Stepper-based Checkout Flow -->
-    @if (formsInitialized && (!error || (error && currentStepIndex()))) {
-      <mat-stepper #stepper [linear]="true" class="checkout-stepper">
-        <!-- Step 1: Billing Details -->
-        <mat-step [stepControl]="basicDetailsForm" [editable]="true">
-          <ng-template matStepLabel>Billing Details</ng-template>
-          <div class="step-content feature-card step-card">
-            <h2 class="section-title">Billing Information</h2>
-            @if (basicDetailsForm) {
-              <form [formGroup]="basicDetailsForm" class="checkout-form">
-                <div class="checkout-grid">
-                  <mat-form-field>
-                    <mat-label>First Name *</mat-label>
-                    <input matInput formControlName="firstName" placeholder="Enter your first name">
-                    @if (basicDetailsForm.get('firstName')?.touched && basicDetailsForm.get('firstName')?.invalid) {
-                      <mat-error>First name is required</mat-error>
-                    }
-                  </mat-form-field>
-                  <mat-form-field>
-                    <mat-label>Last Name *</mat-label>
-                    <input matInput formControlName="lastName" placeholder="Enter your last name">
-                    @if (basicDetailsForm.get('lastName')?.touched && basicDetailsForm.get('lastName')?.invalid) {
-                      <mat-error>Last name is required</mat-error>
-                    }
-                  </mat-form-field>
+    <!-- Two-column grid -->
+    <div class="checkout-grid">
+      <!-- LEFT: stepper panes -->
+      <section class="checkout-main">
+        @if (formsInitialized && (!error || (error && currentStepIndex()))) {
+          <mat-stepper #stepper [linear]="true" class="checkout-stepper"
+                       (selectionChange)="onStepperSelectionChange($event.selectedIndex)">
 
-                  <mat-form-field>
-                    <mat-label>Phone *</mat-label>
-                    <input matInput formControlName="phone" placeholder="Enter phone number">
-                    @if (basicDetailsForm.get('phone')?.touched && basicDetailsForm.get('phone')?.invalid) {
-                      <mat-error>Phone is required</mat-error>
-                    }
-                  </mat-form-field>
+            <!-- Step 1: Billing Details -->
+            <mat-step [stepControl]="basicDetailsForm" [editable]="true">
+              <ng-template matStepLabel>Billing Details</ng-template>
+              <div class="checkout-panel">
+                <h2 class="checkout-panel__title">
+                  <span class="mat-icon">person</span> Billing Information
+                </h2>
 
-                  <mat-form-field>
-                    <mat-label>Email Address *</mat-label>
-                    <input matInput type="email" formControlName="email" placeholder="Enter email address">
-                    @if (basicDetailsForm.get('email')?.touched && basicDetailsForm.get('email')?.invalid) {
-                      <mat-error>{{ getFieldError('email') }}</mat-error>
-                    }
-                  </mat-form-field>
+                @if (basicDetailsForm) {
+                  <form [formGroup]="basicDetailsForm" class="checkout-form">
+                    <div class="form-grid">
+                      <mat-form-field>
+                        <mat-label>First Name</mat-label>
+                        <input matInput formControlName="firstName" placeholder="Enter your first name">
+                        @if (basicDetailsForm.get('firstName')?.touched && basicDetailsForm.get('firstName')?.invalid) {
+                          <mat-error>First name is required</mat-error>
+                        }
+                      </mat-form-field>
 
-                  <mat-form-field class="span-2">
-                    <mat-label>Apartment, suite, unit and street name *</mat-label>
-                    <input matInput formControlName="postalAddress" placeholder="Apartment, suite, unit and street name">
-                    @if (basicDetailsForm.get('postalAddress')?.touched && basicDetailsForm.get('postalAddress')?.invalid) {
-                      <mat-error>Street address is required</mat-error>
-                    }
-                  </mat-form-field>
+                      <mat-form-field>
+                        <mat-label>Last Name</mat-label>
+                        <input matInput formControlName="lastName" placeholder="Enter your last name">
+                        @if (basicDetailsForm.get('lastName')?.touched && basicDetailsForm.get('lastName')?.invalid) {
+                          <mat-error>Last name is required</mat-error>
+                        }
+                      </mat-form-field>
 
-                  <mat-form-field>
-                    <mat-label>Town / City *</mat-label>
-                    <input matInput formControlName="city" placeholder="Enter town or city">
-                    @if (basicDetailsForm.get('city')?.touched && basicDetailsForm.get('city')?.invalid) {
-                      <mat-error>Town / City is required</mat-error>
-                    }
-                  </mat-form-field>
+                      <mat-form-field>
+                        <mat-label>Phone</mat-label>
+                        <input matInput formControlName="phone" placeholder="Enter phone number">
+                        @if (basicDetailsForm.get('phone')?.touched && basicDetailsForm.get('phone')?.invalid) {
+                          <mat-error>Phone is required</mat-error>
+                        }
+                      </mat-form-field>
 
-                  <mat-form-field>
-                    <mat-label>Country/Region *</mat-label>
-                    <mat-select formControlName="countryId">
-                      <mat-option value="">Select Country</mat-option>
-                      @for (country of countryOptions; track country.id) {
-                        <mat-option [value]="country.id">{{ country.label }}</mat-option>
-                      }
-                    </mat-select>
-                    @if (basicDetailsForm.get('countryId')?.touched && basicDetailsForm.get('countryId')?.invalid) {
-                      <mat-error>Country is required</mat-error>
-                    }
-                  </mat-form-field>
+                      <mat-form-field>
+                        <mat-label>Email Address</mat-label>
+                        <input matInput type="email" formControlName="email" placeholder="Enter email address">
+                        @if (basicDetailsForm.get('email')?.touched && basicDetailsForm.get('email')?.invalid) {
+                          <mat-error>{{ getFieldError('email') }}</mat-error>
+                        }
+                      </mat-form-field>
 
-                  <mat-form-field>
-                    <mat-label>State *</mat-label>
-                    <mat-select formControlName="stateId">
-                      <mat-option value="">Select State</mat-option>
-                      @for (state of filteredStateOptions; track state.id) {
-                        <mat-option [value]="state.id">{{ state.label }}</mat-option>
-                      }
-                    </mat-select>
-                    @if (basicDetailsForm.get('stateId')?.touched && basicDetailsForm.get('stateId')?.invalid) {
-                      <mat-error>State is required</mat-error>
-                    }
-                  </mat-form-field>
+                      <mat-form-field class="span-2">
+                        <mat-label>Apartment, suite, unit and street name</mat-label>
+                        <input matInput formControlName="postalAddress" placeholder="Apartment, suite, unit and street name">
+                        @if (basicDetailsForm.get('postalAddress')?.touched && basicDetailsForm.get('postalAddress')?.invalid) {
+                          <mat-error>Street address is required</mat-error>
+                        }
+                      </mat-form-field>
 
-                  <mat-form-field>
-                    <mat-label>Postcode / ZIP *</mat-label>
-                    <input matInput formControlName="postcode" placeholder="Enter postcode">
-                    @if (basicDetailsForm.get('postcode')?.touched && basicDetailsForm.get('postcode')?.invalid) {
-                      <mat-error>Postcode is required</mat-error>
-                    }
-                  </mat-form-field>
+                      <mat-form-field>
+                        <mat-label>Town / City</mat-label>
+                        <input matInput formControlName="city" placeholder="Enter town or city">
+                        @if (basicDetailsForm.get('city')?.touched && basicDetailsForm.get('city')?.invalid) {
+                          <mat-error>Town / City is required</mat-error>
+                        }
+                      </mat-form-field>
 
-                  <mat-form-field class="span-2">
-                    <mat-label>Order Notes (optional)</mat-label>
-                    <textarea matInput formControlName="orderNotes" rows="4" placeholder="Notes about your order"></textarea>
-                  </mat-form-field>
-                </div>
+                      <mat-form-field>
+                        <mat-label>Postcode / ZIP</mat-label>
+                        <input matInput formControlName="postcode" placeholder="Enter postcode">
+                        @if (basicDetailsForm.get('postcode')?.touched && basicDetailsForm.get('postcode')?.invalid) {
+                          <mat-error>Postcode is required</mat-error>
+                        }
+                      </mat-form-field>
 
-                <div class="checkout-actions">
-                  <button type="button" class="mat-btn mat-btn--outlined" (click)="moveToPreviousStep()" [disabled]="loading">
-                    <span class="mat-icon">arrow_back</span>
-                    Back
-                  </button>
-                  <button type="button" class="mat-btn mat-btn--filled" (click)="proceedFromBilling()"
-                          [disabled]="!basicDetailsForm.valid || loading">
-                    Continue
-                  </button>
-                </div>
-              </form>
-            }
-          </div>
-        </mat-step>
+                      <mat-form-field>
+                        <mat-label>Country / Region</mat-label>
+                        <mat-select formControlName="countryId">
+                          <mat-option value="">Select Country</mat-option>
+                          @for (country of countryOptions; track country.id) {
+                            <mat-option [value]="country.id">{{ country.label }}</mat-option>
+                          }
+                        </mat-select>
+                        @if (basicDetailsForm.get('countryId')?.touched && basicDetailsForm.get('countryId')?.invalid) {
+                          <mat-error>Country is required</mat-error>
+                        }
+                      </mat-form-field>
 
-        <!-- Step 2: Preview Order -->
-        <mat-step [editable]="true">
-          <ng-template matStepLabel>Review Order</ng-template>
-          <div class="step-content">
-            <h2 class="section-title">Review Your Order</h2>
-            <div class="preview-grid">
-              <!-- Billing Address -->
-              <div class="feature-card preview-card">
-                <div class="feature-card__icon" aria-hidden="true">
-                  <span class="mat-icon">location_on</span>
-                </div>
-                <h3>Billing Address</h3>
-                <p class="user-name">{{ basicDetailsForm.get('firstName')?.value }} {{ basicDetailsForm.get('lastName')?.value }}</p>
-                <p class="address-line">{{ basicDetailsForm.get('postalAddress')?.value }}</p>
-                <p class="address-line">{{ basicDetailsForm.get('city')?.value }}, {{ getStateName(basicDetailsForm.get('stateId')?.value) }} {{ basicDetailsForm.get('postcode')?.value }}</p>
-                <p class="address-line">{{ getCountryName(basicDetailsForm.get('countryId')?.value) }}</p>
+                      <mat-form-field>
+                        <mat-label>State / Region</mat-label>
+                        <mat-select formControlName="stateId">
+                          <mat-option value="">Select State</mat-option>
+                          @for (state of filteredStateOptions; track state.id) {
+                            <mat-option [value]="state.id">{{ state.label }}</mat-option>
+                          }
+                        </mat-select>
+                        @if (basicDetailsForm.get('stateId')?.touched && basicDetailsForm.get('stateId')?.invalid) {
+                          <mat-error>State is required</mat-error>
+                        }
+                      </mat-form-field>
 
-                <div class="contact-info">
-                  <p><span class="mat-icon">phone</span> {{ basicDetailsForm.get('phone')?.value }}</p>
-                  <p><span class="mat-icon">email</span> {{ basicDetailsForm.get('email')?.value }}</p>
-                </div>
+                      <mat-form-field class="span-2">
+                        <mat-label>Order Notes (optional)</mat-label>
+                        <textarea matInput formControlName="orderNotes" rows="4"
+                                  placeholder="Notes about your order"></textarea>
+                      </mat-form-field>
+                    </div>
 
-                <button type="button" class="mat-btn mat-btn--ghost mat-btn--sm edit-btn"
-                        (click)="moveToStep(STEP_INDICES.BILLING)">
-                  <span class="mat-icon">edit</span>
-                  Edit
-                </button>
+                    <div class="step-actions">
+                      <button type="button" class="step-actions__back" hidden>
+                        <span class="mat-icon">arrow_back</span> Back
+                      </button>
+                      <button type="button" class="mat-btn mat-btn--filled step-actions__continue"
+                              (click)="proceedFromBilling()"
+                              [disabled]="!basicDetailsForm.valid || loading">
+                        Continue to Review
+                        <span class="mat-icon">arrow_forward</span>
+                      </button>
+                    </div>
+                  </form>
+                }
               </div>
+            </mat-step>
 
-              <!-- Order Items -->
-              <div class="feature-card preview-card items-card">
-                <div class="feature-card__icon" aria-hidden="true">
-                  <span class="mat-icon">shopping_basket</span>
+            <!-- Step 2: Review Order -->
+            <mat-step [editable]="true">
+              <ng-template matStepLabel>Review Order</ng-template>
+              <div class="checkout-panel">
+                <h2 class="checkout-panel__title">
+                  <span class="mat-icon">receipt_long</span> Review your order
+                </h2>
+
+                <!-- Billing summary -->
+                <div class="review-block">
+                  <div class="review-block__head">
+                    <h3>
+                      <span class="mat-icon">location_on</span>
+                      Billing Address
+                    </h3>
+                    <button type="button" class="review-block__edit" (click)="moveToStep(STEP_INDICES.BILLING)">
+                      <span class="mat-icon">edit</span> Edit
+                    </button>
+                  </div>
+                  <p class="review-block__name">
+                    {{ basicDetailsForm.get('firstName')?.value }} {{ basicDetailsForm.get('lastName')?.value }}
+                  </p>
+                  <p class="review-block__line">{{ basicDetailsForm.get('postalAddress')?.value }}</p>
+                  <p class="review-block__line">
+                    {{ basicDetailsForm.get('city')?.value }},
+                    {{ getStateName(basicDetailsForm.get('stateId')?.value) }}
+                    {{ basicDetailsForm.get('postcode')?.value }}
+                  </p>
+                  <p class="review-block__line">{{ getCountryName(basicDetailsForm.get('countryId')?.value) }}</p>
+                  <div class="review-block__contact">
+                    <span><span class="mat-icon">phone</span> {{ basicDetailsForm.get('phone')?.value }}</span>
+                    <span><span class="mat-icon">email</span> {{ basicDetailsForm.get('email')?.value }}</span>
+                  </div>
                 </div>
-                <h3>Order Items</h3>
+
+                <!-- Items breakdown -->
                 @if (taxCalculation) {
-                  <div class="table-responsive">
-                    <table class="review-table">
-                      <thead>
-                      <tr>
-                        <th>Product</th>
-                        @if (isProductCheckout) {
-                          <th>Unit</th>
-                        }
-                        <th class="text-right">Price</th>
-                        <th class="text-center">Qty</th>
-                        <th class="text-right">Tax</th>
-                        <th class="text-right">Total</th>
-                      </tr>
-                      </thead>
-                      <tbody>
-                        @for (product of taxCalculation.items; track product.productVariantId) {
+                  <div class="review-block">
+                    <div class="review-block__head">
+                      <h3>
+                        <span class="mat-icon">shopping_basket</span>
+                        Order Items
+                      </h3>
+                    </div>
+                    <div class="table-responsive">
+                      <table class="review-table">
+                        <thead>
                           <tr>
-                            <td class="product-name-cell">{{ isProductCheckout ? productName : programPlan?.plan }}</td>
-                            @if (isProductCheckout) {
-                              <td>{{ productUnit || '-' }}</td>
-                            }
-                            <td class="text-right">{{ product.currency }} {{ product.orderAmount | number:'1.2-2' }}</td>
-                            <td class="text-right">{{ productQuantity }}</td>
-                            <td class="text-right">{{ product.currency }} {{ product.taxAmount | number:'1.2-2' }}</td>
-                            <td class="text-right">{{ product.currency }} {{ product.totalAmount | number:'1.2-2' }}</td>
+                            <th>Product</th>
+                            @if (isProductCheckout) { <th>Unit</th> }
+                            <th class="text-right">Price</th>
+                            <th class="text-center">Qty</th>
+                            <th class="text-right">Tax</th>
+                            <th class="text-right">Total</th>
                           </tr>
+                        </thead>
+                        <tbody>
+                          @for (product of taxCalculation.items; track product.productVariantId) {
+                            <tr>
+                              <td class="product-name-cell">{{ isProductCheckout ? productName : programPlan?.plan }}</td>
+                              @if (isProductCheckout) { <td>{{ productUnit || '-' }}</td> }
+                              <td class="text-right">{{ product.currency }} {{ product.orderAmount | number:'1.2-2' }}</td>
+                              <td class="text-center">{{ productQuantity }}</td>
+                              <td class="text-right">{{ product.currency }} {{ product.taxAmount | number:'1.2-2' }}</td>
+                              <td class="text-right">{{ product.currency }} {{ product.totalAmount | number:'1.2-2' }}</td>
+                            </tr>
+                          }
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                }
+
+                <div class="tax-callout">
+                  <span class="mat-icon">verified_user</span>
+                  <div>
+                    <strong>Taxes &amp; secure payment</strong>
+                    <span>Applicable taxes are shown live in the sidebar. Payment is processed by
+                      <b>{{ selectedGateway?.gatewayName || 'our payment partner' }}</b> on a PCI-DSS secure gateway.</span>
+                  </div>
+                </div>
+
+                <div class="step-actions">
+                  <button type="button" class="step-actions__back" (click)="moveToPreviousStep()" [disabled]="loading">
+                    <span class="mat-icon">arrow_back</span> Back to Billing
+                  </button>
+                  <button type="button" class="mat-btn mat-btn--filled step-actions__continue"
+                          (click)="proceedFromPreview()"
+                          [disabled]="loading || (isProductCheckout && calculatingTax)">
+                    <span class="mat-icon">lock</span> Continue to Payment
+                  </button>
+                </div>
+              </div>
+            </mat-step>
+
+            <!-- Step 3: Payment -->
+            <mat-step [editable]="false">
+              <ng-template matStepLabel>Payment</ng-template>
+              <div class="checkout-panel">
+                <h2 class="checkout-panel__title">
+                  <span class="mat-icon">credit_card</span> Secure payment
+                </h2>
+                @if (processingPayment) {
+                  <div class="payment-state">
+                    <mat-spinner diameter="50"></mat-spinner>
+                    <p>Please complete the payment in the popup window…</p>
+                    <p class="payment-note">Do not close this window until payment is complete.</p>
+                  </div>
+                } @else {
+                  <div class="payment-state">
+                    <span class="mat-icon payment-state__icon">payment</span>
+                    <p>Payment gateway is ready. Click below to securely pay
+                      <strong>{{ (taxCalculation?.totalAmount ?? grandTotalDisplay) | currency:currencyCode:'symbol':'1.2-2' }}</strong>.
+                    </p>
+                    <button type="button" class="mat-btn mat-btn--filled"
+                            (click)="initializePaymentFlow()" [disabled]="loading">
+                      <span class="mat-icon">lock</span> Initialize Payment
+                    </button>
+                  </div>
+                }
+                <div class="pay-secure">
+                  <span class="mat-icon">lock</span>
+                  256-bit encrypted · PCI-DSS gateway
+                  <span class="pay-brands">
+                    <span class="pay-brand">VISA</span>
+                    <span class="pay-brand">MC</span>
+                    <span class="pay-brand">RuPay</span>
+                    <span class="pay-brand">UPI</span>
+                  </span>
+                </div>
+              </div>
+            </mat-step>
+
+            <!-- Step 4: Result -->
+            <mat-step [editable]="false">
+              <ng-template matStepLabel>Result</ng-template>
+              <div class="checkout-panel">
+                @if (paymentSuccess) {
+                  <div class="result">
+                    <span class="result__check"><span class="mat-icon">check</span></span>
+                    <h2>Order placed successfully</h2>
+                    <p class="result__sub">
+                      Thanks <strong>{{ basicDetailsForm.get('firstName')?.value }}</strong> — your order is confirmed.<br>
+                      A receipt has been sent to <strong>{{ basicDetailsForm.get('email')?.value }}</strong>.
+                    </p>
+
+                    <div class="result__timeline">
+                      <div class="trk-step is-current">
+                        <span class="mat-icon">task_alt</span>Confirmed
+                      </div>
+                      <div class="trk-step"><span class="mat-icon">inventory_2</span>Packed</div>
+                      <div class="trk-step"><span class="mat-icon">local_shipping</span>Shipped</div>
+                      <div class="trk-step"><span class="mat-icon">home</span>Delivered</div>
+                    </div>
+
+                    <div class="result__card">
+                      <div class="result__card-head">
+                        @if (orderId) {
+                          <div class="result__order-no">Order number<b>{{ orderId }}</b></div>
                         }
-                      </tbody>
-                    </table>
+                        @if (paymentId) {
+                          <div class="result__date">Payment ID<b>{{ paymentId }}</b></div>
+                        }
+                      </div>
+                    </div>
+
+                    <div class="result__actions">
+                      <button type="button" class="mat-btn mat-btn--filled" (click)="navigateToSuccess()">
+                        <span class="mat-icon">receipt_long</span> View Order Details
+                      </button>
+                      <a routerLink="/" class="mat-btn mat-btn--outlined">
+                        <span class="mat-icon">storefront</span> Continue Shopping
+                      </a>
+                    </div>
+                  </div>
+                } @else {
+                  <div class="result result--error">
+                    <span class="result__check result__check--error"><span class="mat-icon">close</span></span>
+                    <h2>Payment Failed</h2>
+                    <p class="result__sub">{{ paymentError || 'An error occurred during payment processing.' }}</p>
+                    <div class="step-actions step-actions--center">
+                      <button type="button" class="step-actions__back" (click)="moveToStep(STEP_INDICES.PREVIEW)">
+                        <span class="mat-icon">arrow_back</span> Go Back
+                      </button>
+                      <button type="button" class="mat-btn mat-btn--filled" (click)="initializePaymentFlow()">
+                        <span class="mat-icon">refresh</span> Retry Payment
+                      </button>
+                    </div>
                   </div>
                 }
+              </div>
+            </mat-step>
+          </mat-stepper>
+        }
+      </section>
+
+      <!-- RIGHT: order summary -->
+      <aside class="order-summary" aria-label="Order summary">
+        <h3>
+          <span class="mat-icon">shopping_bag</span> Order summary
+          <span class="os-count">{{ totalQuantity }} {{ totalQuantity === 1 ? 'item' : 'items' }}</span>
+        </h3>
+
+        <div class="os-items">
+          @for (item of sidebarItems; track item.key) {
+            <div class="os-item">
+              <div class="os-item__img">
+                @if (item.image) {
+                  <img [src]="item.image" [alt]="item.name" loading="lazy">
+                } @else {
+                  <span class="mat-icon">inventory_2</span>
+                }
+              </div>
+              <div class="os-item__main">
+                <div class="os-item__name">
+                  {{ item.name }} <span class="os-item__qty">× {{ item.qty }}</span>
+                </div>
+                @if (item.variant) {
+                  <div class="os-item__meta">
+                    {{ item.variant }} <span class="dot">•</span>
+                    <span class="os-item__unit">{{ item.price | currency:currencyCode:'symbol':'1.2-2' }} ea.</span>
+                  </div>
+                }
+              </div>
+              <div class="os-item__price">
+                {{ item.price * item.qty | currency:currencyCode:'symbol':'1.2-2' }}
               </div>
             </div>
+          }
+        </div>
 
-            <!-- Payment Summary -->
-            @if (taxCalculation) {
-              <div class="feature-card summary-card">
-                <h3>Payment Summary</h3>
-                <div class="summary-row">
-                  <span>Subtotal</span>
-                  <span>{{ taxCalculation.orderAmount | currency:'INR':'symbol':'1.2-2' }}</span>
-                </div>
-
-                @if (taxCalculation.taxAmount > 0) {
-                  <div class="summary-row tax-row">
-                    <span>Tax</span>
-                    <span>{{ taxCalculation.taxAmount | currency:'INR':'symbol':'1.2-2' }}</span>
-                  </div>
-                } @else if (calculatingTax) {
-                  <div class="summary-row calculating">
-                    <span>Calculating Tax...</span>
-                    <mat-spinner diameter="16"></mat-spinner>
-                  </div>
-                }
-
-                <div class="summary-row total-row">
-                  <span class="total-label">Total Amount</span>
-                  <span class="total-value">{{ taxCalculation.totalAmount | currency:'INR':'symbol':'1.2-2' }}</span>
-                </div>
-
-                <div class="gateway-info">
-                  <span class="mat-icon">security</span>
-                  <span>Secure Payment via {{ selectedGateway?.gatewayName || 'Payment Gateway' }}</span>
-                </div>
-              </div>
+        <div class="os-totals">
+          <div class="os-row">
+            <span>Subtotal</span>
+            <span>{{ subtotalDisplay | currency:currencyCode:'symbol':'1.2-2' }}</span>
+          </div>
+          <div class="os-row os-row--free">
+            <span>Shipping</span>
+            <span>FREE</span>
+          </div>
+          <div class="os-row">
+            <span>Tax</span>
+            @if (calculatingTax) {
+              <mat-spinner diameter="14"></mat-spinner>
+            } @else if (taxCalculation) {
+              <span>{{ taxCalculation.taxAmount | currency:currencyCode:'symbol':'1.2-2' }}</span>
+            } @else {
+              <span class="os-row__muted">—</span>
             }
-
-            <div class="checkout-actions">
-              <button type="button" class="mat-btn mat-btn--outlined" (click)="moveToPreviousStep()" [disabled]="loading">
-                <span class="mat-icon">arrow_back</span>
-                Back
-              </button>
-              <button type="button" class="mat-btn mat-btn--filled" (click)="proceedFromPreview()"
-                      [disabled]="loading || (isProductCheckout && calculatingTax)">
-                <span class="mat-icon">payment</span>
-                Proceed to Payment
-              </button>
+          </div>
+          @if (!taxCalculation && !calculatingTax) {
+            <div class="tax-pending">
+              <span class="mat-icon">info</span>
+              <span>Tax will be calculated once you confirm your <b>country &amp; state</b>.</span>
             </div>
-          </div>
-        </mat-step>
+          }
+        </div>
 
-        <!-- Step 3: Payment -->
-        <mat-step [editable]="false">
-          <ng-template matStepLabel>Payment</ng-template>
-          <div class="step-content feature-card step-card">
-            <h2 class="section-title">Processing Payment</h2>
-            @if (processingPayment) {
-              <div class="payment-processing">
-                <mat-spinner diameter="50"></mat-spinner>
-                <p>Please complete the payment in the popup window...</p>
-                <p class="payment-note">Do not close this window until payment is complete.</p>
-              </div>
-            } @else {
-              <div class="payment-ready">
-                <span class="mat-icon payment-icon">payment</span>
-                <p>Payment gateway is ready. Click below to proceed.</p>
-                <button type="button" class="mat-btn mat-btn--filled" (click)="initializePaymentFlow()"
-                        [disabled]="loading">
-                  <span class="mat-icon">payment</span>
-                  Initialize Payment
-                </button>
-              </div>
-            }
+        <div class="os-grand">
+          <div>
+            <span class="os-grand__label">Total</span>
+            <span class="os-grand__inclusive">
+              {{ taxCalculation ? 'Inclusive of all taxes' : 'Tax calculated at next step' }}
+            </span>
           </div>
-        </mat-step>
+          <span class="os-grand__value">
+            {{ grandTotalDisplay | currency:currencyCode:'symbol':'1.2-2' }}
+          </span>
+        </div>
 
-        <!-- Step 4: Result -->
-        <mat-step [editable]="false">
-          <ng-template matStepLabel>Result</ng-template>
-          <div class="step-content feature-card step-card">
-            @if (paymentSuccess) {
-              <div class="result-success">
-                <span class="mat-icon success-icon">check_circle</span>
-                <h2 class="section-title">Payment Successful!</h2>
-                <p>Your order has been placed successfully.</p>
-                @if (orderId) {
-                  <p><strong>Order ID:</strong> {{ orderId }}</p>
-                }
-                @if (paymentId) {
-                  <p><strong>Payment ID:</strong> {{ paymentId }}</p>
-                }
-                <button type="button" class="mat-btn mat-btn--filled" (click)="navigateToSuccess()">
-                  <span class="mat-icon">check</span>
-                  View Order Details
-                </button>
-              </div>
-            } @else {
-              <div class="result-error">
-                <span class="mat-icon error-icon">error</span>
-                <h2 class="section-title">Payment Failed</h2>
-                <p>{{ paymentError || 'An error occurred during payment processing.' }}</p>
-                <div class="checkout-actions">
-                  <button type="button" class="mat-btn mat-btn--outlined" (click)="moveToStep(STEP_INDICES.PREVIEW)">
-                    <span class="mat-icon">arrow_back</span>
-                    Go Back
-                  </button>
-                  <button type="button" class="mat-btn mat-btn--filled" (click)="initializePaymentFlow()">
-                    <span class="mat-icon">refresh</span>
-                    Retry Payment
-                  </button>
-                </div>
-              </div>
-            }
-          </div>
-        </mat-step>
-      </mat-stepper>
-    }
+        <ul class="os-trust">
+          <li><span class="mat-icon">verified_user</span> 100% secure checkout</li>
+          <li><span class="mat-icon">local_shipping</span> Pan-India shipping in 3–5 days</li>
+          <li><span class="mat-icon">replay</span> Easy 7-day replacement</li>
+        </ul>
+      </aside>
+    </div>
   </div>
-</section>
+</main>
 
 <!-- Payment Modal -->
 @if (showPaymentModal) {
@@ -348,9 +458,9 @@
       </div>
       <div class="payment-modal-body">
         @if (processingPayment) {
-          <div class="payment-processing">
+          <div class="payment-state">
             <mat-spinner diameter="50"></mat-spinner>
-            <p>Please complete the payment in the popup window...</p>
+            <p>Please complete the payment in the popup window…</p>
             <p class="payment-note">Do not close this window until payment is complete.</p>
           </div>
         }

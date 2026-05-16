@@ -20,6 +20,11 @@ const NAV_CONFIG: NavSection[] = [
         icon: 'emoji_events',
         route: '/success-stories',
       },
+      {
+        label: 'Google Reviews',
+        icon: 'rate_review',
+        route: '/google-reviews',
+      },
       { label: 'Legal Pages', icon: 'gavel', route: '/legal-pages' },
       { label: 'SEO Pages', icon: 'search', route: '/seo-page' },
     ],

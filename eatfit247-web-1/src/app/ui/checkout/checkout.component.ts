@@ -51,7 +51,17 @@ import {
 } from '@eatfit247-shared-library';
 import { ProductService } from '../../core/services/product.service';
 import { BreadcrumbsComponent } from '@shared-ui';
+import { RouterLink } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
+
+interface ICheckoutSidebarItem {
+  key: string;
+  name: string;
+  variant: string;
+  qty: number;
+  price: number;
+  image: string | null;
+}
 
 @Component({
   selector: 'app-checkout',
@@ -70,6 +80,7 @@ import { Subject, takeUntil } from 'rxjs';
     MatCheckboxModule,
     MatRadioModule,
     BreadcrumbsComponent,
+    RouterLink,
   ],
   templateUrl: './checkout.component.html',
   styleUrl: './checkout.component.scss',
@@ -1020,5 +1031,84 @@ export class CheckoutComponent implements OnInit, OnDestroy {
       return `Maximum length is ${maxLength} characters`;
     }
     return '';
+  }
+
+  /** Visual stepper config */
+  readonly stepperSteps = [
+    { label: 'Billing Details', hint: 'Who & where' },
+    { label: 'Review Order', hint: 'Items & tax' },
+    { label: 'Payment', hint: 'Secure gateway' },
+    { label: 'Result', hint: 'All done' },
+  ];
+
+  /** Sync currentStepIndex when mat-stepper changes */
+  onStepperSelectionChange(selectedIndex: number): void {
+    this.currentStepIndex.set(selectedIndex);
+  }
+
+  /** Page sub-heading driven by current step */
+  currentSubheading(): string {
+    switch (this.currentStepIndex()) {
+      case this.STEP_INDICES.BILLING:
+        return 'A few quick details and your order is on its way.';
+      case this.STEP_INDICES.PREVIEW:
+        return 'Review your order before confirming payment.';
+      case this.STEP_INDICES.PAYMENT:
+        return 'Pay securely via our PCI-DSS compliant gateway.';
+      case this.STEP_INDICES.RESULT:
+        return this.paymentSuccess
+          ? 'Your order has been placed successfully.'
+          : 'There was an issue with your payment.';
+      default:
+        return '';
+    }
+  }
+
+  /** Order summary sidebar items */
+  get sidebarItems(): ICheckoutSidebarItem[] {
+    if (this.isProductCheckout) {
+      const image = this.product?.imagePath?.[0]?.webUrl ?? null;
+      return [
+        {
+          key: `product-${this.productVariantId ?? 'na'}`,
+          name: this.productName || 'Product',
+          variant: this.productUnit || '',
+          qty: this.productQuantity,
+          price: this.productPrice,
+          image,
+        },
+      ];
+    }
+    if (this.programPlan) {
+      return [
+        {
+          key: `plan-${this.programPlanId ?? 'na'}`,
+          name: this.programPlan.plan || 'Plan',
+          variant: '',
+          qty: 1,
+          price: this.orderAmount,
+          image: null,
+        },
+      ];
+    }
+    return [];
+  }
+
+  get totalQuantity(): number {
+    return this.sidebarItems.reduce((s, i) => s + i.qty, 0);
+  }
+
+  get subtotalDisplay(): number {
+    if (this.taxCalculation) {
+      return this.taxCalculation.orderAmount;
+    }
+    return this.sidebarItems.reduce((s, i) => s + i.price * i.qty, 0);
+  }
+
+  get grandTotalDisplay(): number {
+    if (this.taxCalculation) {
+      return this.taxCalculation.totalAmount;
+    }
+    return this.subtotalDisplay;
   }
 }

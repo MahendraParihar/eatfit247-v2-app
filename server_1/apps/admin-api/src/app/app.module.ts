@@ -40,6 +40,7 @@ import { PagesAdminModule } from '@server_1/modules/pages';
 import { DeliveryModule } from '@server_1/modules/delivery';
 import { AppointmentModule } from '@server_1/modules/appointment';
 import { AuthModule } from '@server_1/modules/auth';
+import { GoogleReviewModule } from '@server_1/modules/google-review';
 
 @Module({
   imports: [
@@ -84,6 +85,7 @@ import { AuthModule } from '@server_1/modules/auth';
     ProductAdminModule,
     DeliveryModule,
     AppointmentModule,
+    GoogleReviewModule,
     NotificationModule,
     CommonModule.forRoot(
       ['Common', 'Email', 'Google', 'Calendar', 'Payment', 'Invoice', 'Whatsapp'],

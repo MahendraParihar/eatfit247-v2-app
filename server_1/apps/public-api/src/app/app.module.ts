@@ -19,6 +19,7 @@ import { LocationModule } from '@server_1/modules/locations';
 import { SuccessStoriesModule } from '@server_1/modules/success-stories';
 import { ProductPublicModule } from '@server_1/modules/product';
 import { ContactModule } from '@server_1/modules/contact';
+import { GoogleReviewModule } from '@server_1/modules/google-review';
 
 @Module({
   imports: [
@@ -46,6 +47,7 @@ import { ContactModule } from '@server_1/modules/contact';
     SuccessStoriesModule,
     ProductPublicModule,
     ContactModule,
+    GoogleReviewModule,
     NotificationModule,
     CommonModule.forRoot(['Common', 'Email', 'Google', 'Payment', 'Whatsapp'], PlatformModule.getModels()),
   ],

@@ -61,4 +61,7 @@ export enum AdminSubjectEnum {
     // Scheduling domain
     Appointment      = 'Appointment',
     ContactForm      = 'ContactForm',
+
+    // Reviews domain
+    GoogleReview     = 'GoogleReview',
 }

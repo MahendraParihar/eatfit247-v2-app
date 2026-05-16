@@ -124,6 +124,11 @@ export const appRoutes: Route[] = [
           import('success-stories').then((m) => m.successStoriesRoutes),
       },
       {
+        path: 'google-reviews',
+        loadChildren: () =>
+          import('google-reviews').then((m) => m.googleReviewsRoutes),
+      },
+      {
         path: 'products',
         loadChildren: () => import('products').then((m) => m.productsRoutes),
       },
