@@ -1,6 +1,8 @@
 import { BelongsTo, Column, CreatedAt, DataType, Model, Scopes, Table, UpdatedAt } from 'sequelize-typescript';
 import { getCreatedByUserInclude, getUpdatedByUserInclude, MstAdminUser } from '@server_1/core';
 import { IMediaUpload, InputLengthEnum } from '@eatfit247-shared-lib';
+import { MstProgramPlan } from './mst-program-plan.model';
+import { MstProgramPlanFees } from './mst-program-plan-fees.model';
 
 @Table({
   freezeTableName: true,
@@ -19,6 +21,19 @@ import { IMediaUpload, InputLengthEnum } from '@eatfit247-shared-lib';
     include: [
       getCreatedByUserInclude(false),
       getUpdatedByUserInclude(false),
+      {
+        model: MstProgramPlan,
+        as: 'programPlan',
+        required: false,
+        include: [
+          {
+            model: MstProgramPlanFees,
+            as: 'programPlanFees',
+            required: false,
+            attributes: ['programPlanFeesId', 'programPlanId', 'currencyCode', 'fees'],
+          },
+        ],
+      },
     ],
   },
 }))
@@ -115,6 +130,20 @@ export class MstProgram extends Model<MstProgram> {
     type: DataType.INTEGER,
   })
   declare maxPeopleCanRegister: number | null;
+
+  @Column({
+    allowNull: true,
+    field: 'program_plan_id',
+    type: DataType.INTEGER,
+  })
+  declare programPlanId: number | null;
+
+  @BelongsTo(() => MstProgramPlan, {
+    as: 'programPlan',
+    foreignKey: 'programPlanId',
+    targetKey: 'programPlanId',
+  })
+  declare programPlan: MstProgramPlan;
 
   @Column({
     allowNull: false,

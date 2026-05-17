@@ -54,7 +54,6 @@ export class ManageProgramPlan implements OnInit, OnDestroy {
   private fb: FormBuilder = inject(FormBuilder);
   formGroup: FormGroup = this.fb.group({
     plan: ['', [Validators.required, Validators.minLength(InputLengthEnum.CHAR_2), Validators.maxLength(InputLengthEnum.CHAR_100)]],
-    programPlanTypeId: ['', [Validators.required]],
     details: [''],
     sequenceNumber: [0, [Validators.required, Validators.min(0)]],
     noOfCycle: [1, [Validators.required, Validators.min(1)]],
@@ -68,7 +67,6 @@ export class ManageProgramPlan implements OnInit, OnDestroy {
   initialData!: IProgramPlan;
   isEditMode = false;
   pageTitle = 'Create Program Plan';
-  programPlanTypeOptions: IDropdownItem[] = [];
   currencyOptions: IDropdownItem[] = [];
   mediaFor = MediaForEnum.PROGRAM;
   mediaType = FileTypeEnum.IMAGE;
@@ -98,7 +96,6 @@ export class ManageProgramPlan implements OnInit, OnDestroy {
     if (this.initialData) {
       this.formGroup.patchValue({
         plan: this.initialData.plan || '',
-        programPlanTypeId: this.initialData.programPlanTypeId || '',
         details: this.initialData.details || '',
         sequenceNumber: this.initialData.sequenceNumber || 0,
         noOfCycle: this.initialData.noOfCycle || 1,
@@ -144,7 +141,6 @@ export class ManageProgramPlan implements OnInit, OnDestroy {
   async loadMasterData(): Promise<void> {
     try {
       const masterData = await this.apiService.getMasterData();
-      this.programPlanTypeOptions = masterData.programPlanType || [];
       this.currencyOptions = masterData.currencies || [];
     } catch (error) {
       // Error toast is handled by HttpErrorInterceptor

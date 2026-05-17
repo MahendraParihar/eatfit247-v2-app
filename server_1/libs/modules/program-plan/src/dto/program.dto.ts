@@ -2,6 +2,7 @@ import { IsBoolean, IsDateString, IsInt, IsNotEmpty, IsNumber, IsOptional, MaxLe
 import { Type } from 'class-transformer';
 import { IManageProgram, InputLengthEnum } from '@eatfit247-shared-lib';
 import { MediaUploadDto, SeoDto } from '@server_1/core';
+import { CreateProgramPlanDto } from './program-plan.dto';
 
 export class CreateProgramDto implements IManageProgram {
   @MinLength(InputLengthEnum.CHAR_2)
@@ -45,6 +46,13 @@ export class CreateProgramDto implements IManageProgram {
   @IsOptional()
   @IsNumber()
   programId?: number;
+  @IsOptional()
+  @IsNumber()
+  programPlanId?: number | null;
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => CreateProgramPlanDto)
+  programPlan?: CreateProgramPlanDto;
   @ValidateNested()
   @Type(() => SeoDto)
   seo!: SeoDto;

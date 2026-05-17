@@ -137,6 +137,100 @@
             />
             <shared-ui-input-error [control]="formGroup.get('maxPeopleCanRegister')" controlName="Max People Can Register"></shared-ui-input-error>
           </mat-form-field>
+
+          <mat-card class="form-card plan-card" formGroupName="programPlan">
+            <mat-card-header>
+              <mat-card-title>Program Plan</mat-card-title>
+              <mat-card-subtitle>Configure the plan and fees tagged to this seasonal program.</mat-card-subtitle>
+            </mat-card-header>
+            <mat-card-content>
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Plan Name</mat-label>
+                <input
+                  matInput
+                  formControlName="plan"
+                  readonly
+                  [maxlength]="100"
+                  [minlength]="2"
+                />
+                <mat-hint>Auto-filled from Program Name</mat-hint>
+                <shared-ui-input-error [control]="programPlanGroup.get('plan')" controlName="Plan Name"></shared-ui-input-error>
+              </mat-form-field>
+
+              <div class="row">
+                <mat-form-field appearance="outline" class="half-width">
+                  <mat-label>No. of Cycles</mat-label>
+                  <input
+                    matInput
+                    type="number"
+                    formControlName="noOfCycle"
+                    [min]="1"
+                  />
+                  <shared-ui-input-error [control]="programPlanGroup.get('noOfCycle')" controlName="No. of Cycles"></shared-ui-input-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="half-width">
+                  <mat-label>Days per Cycle</mat-label>
+                  <input
+                    matInput
+                    type="number"
+                    formControlName="noOfDaysInCycle"
+                    [min]="1"
+                  />
+                  <shared-ui-input-error [control]="programPlanGroup.get('noOfDaysInCycle')" controlName="Days per Cycle"></shared-ui-input-error>
+                </mat-form-field>
+              </div>
+
+              <div class="fees-section">
+                <div class="fees-header">
+                  <h4>Plan Fees</h4>
+                  <button type="button" mat-stroked-button color="primary" (click)="addFeeRow()">
+                    <mat-icon>add</mat-icon>
+                    Add Fee
+                  </button>
+                </div>
+
+                <div formArrayName="programPlanFees">
+                  @for (row of programPlanFees.controls; track $index; let i = $index) {
+                    <div class="row fee-row" [formGroupName]="i">
+                      <mat-form-field appearance="outline" class="half-width">
+                        <mat-label>Currency</mat-label>
+                        <mat-select formControlName="currencyCode">
+                          @for (c of currencies; track c.id) {
+                            <mat-option [value]="c.id">{{ c.label }}</mat-option>
+                          }
+                        </mat-select>
+                        <shared-ui-input-error [control]="row.get('currencyCode')" controlName="Currency"></shared-ui-input-error>
+                      </mat-form-field>
+
+                      <mat-form-field appearance="outline" class="half-width">
+                        <mat-label>Fees</mat-label>
+                        <input
+                          matInput
+                          type="number"
+                          formControlName="fees"
+                          [min]="0"
+                          placeholder="0.00"
+                        />
+                        <shared-ui-input-error [control]="row.get('fees')" controlName="Fees"></shared-ui-input-error>
+                      </mat-form-field>
+
+                      <button
+                        type="button"
+                        mat-icon-button
+                        color="warn"
+                        [disabled]="programPlanFees.length <= 1"
+                        (click)="removeFeeRow(i)"
+                        aria-label="Remove fee row"
+                      >
+                        <mat-icon>delete</mat-icon>
+                      </button>
+                    </div>
+                  }
+                </div>
+              </div>
+            </mat-card-content>
+          </mat-card>
         }
 
         <shared-ui-upload-form

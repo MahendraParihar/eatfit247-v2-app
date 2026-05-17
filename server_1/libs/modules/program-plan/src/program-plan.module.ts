@@ -1,12 +1,11 @@
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { modelRegistry } from '@server_1/core';
-import { MstProgram, MstProgramPlan, MstProgramPlanFees, MstProgramPlanType } from './models';
+import { MstProgram, MstProgramPlan, MstProgramPlanFees } from './models';
 import { ProgramPlanService, ProgramService } from './services';
 
 modelRegistry.register([
   MstProgram,
-  MstProgramPlanType,
   MstProgramPlan,
   MstProgramPlanFees,
 ]);
@@ -21,7 +20,7 @@ modelRegistry.register([
  */
 @Module({
   imports: [
-    SequelizeModule.forFeature([MstProgram, MstProgramPlanType, MstProgramPlan, MstProgramPlanFees]),
+    SequelizeModule.forFeature([MstProgram, MstProgramPlan, MstProgramPlanFees]),
   ],
   providers: [
     ProgramService,

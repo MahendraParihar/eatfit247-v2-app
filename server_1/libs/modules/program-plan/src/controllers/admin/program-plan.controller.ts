@@ -75,15 +75,10 @@ export class ProgramPlanController {
   @Get('program-plan-master')
   @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.ProgramPlan)
   async programPlanMasterData(): Promise<{
-    programPlanType: IDropdownItem[];
     currencies: IDropdownItem[];
   }> {
-    const [types, currencies] = await Promise.all([
-      this.service.getProgramPlanTypeList(),
-      await this.currencyService.getAllCurrencies(),
-    ]);
+    const currencies = await this.currencyService.getAllCurrencies();
     return {
-      programPlanType: types,
       currencies: currencies.map((s: any) => {
         return { id: s.currencyCode, label: s.label };
       }),

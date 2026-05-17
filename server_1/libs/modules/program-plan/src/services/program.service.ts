@@ -6,17 +6,20 @@ import {
   IDropdownItem,
   IManageProgram,
   IProgram,
+  IProgramPlan,
   IPublicProgram,
   IPublicTableList,
   ITableList,
 } from '@eatfit247-shared-lib';
 import { AppConfigService, CommonFunctionsUtil, SearchUtil, TableListSortUtil } from '@server_1/core';
+import { ProgramPlanService } from './program-plan.service';
 
 @Injectable()
 export class ProgramService {
   constructor(
     @InjectModel(MstProgram) private readonly programRepository: typeof MstProgram,
     private appConfigService: AppConfigService,
+    private readonly programPlanService: ProgramPlanService,
   ) {}
 
   public async findAll(searchDto: IBasicSearch): Promise<ITableList<IProgram>> {
@@ -81,6 +84,8 @@ export class ProgramService {
       startDate: item.startDate,
       endDate: item.endDate,
       maxPeopleCanRegister: item.maxPeopleCanRegister,
+      programPlanId: item.programPlanId ?? null,
+      programPlan: this.convertProgramPlan(item.programPlan),
       seo: {
         url: item.url,
       },
@@ -99,6 +104,31 @@ export class ProgramService {
     };
   }
 
+  private convertProgramPlan(plan: any): IProgramPlan | null {
+    if (!plan) {
+      return null;
+    }
+    const fees = Array.isArray(plan.programPlanFees)
+      ? plan.programPlanFees.map((s: any) => ({
+          fees: s.fees,
+          currencyCode: s.currencyCode,
+        }))
+      : [];
+    return <IProgramPlan>{
+      programPlanId: plan.programPlanId,
+      plan: plan.plan,
+      details: plan.details,
+      sequenceNumber: plan.sequenceNumber,
+      noOfCycle: plan.noOfCycle,
+      noOfDaysInCycle: plan.noOfDaysInCycle,
+      isOnline: plan.isOnline,
+      isVisibleOnWeb: plan.isVisibleOnWeb,
+      programPlanFees: fees,
+      imagePath: CommonFunctionsUtil.buildImageUrl(plan.imagePath),
+      active: plan.active,
+    };
+  }
+
   public async fetchById(id: number): Promise<IProgram> {
     const find = await this.programRepository.scope('details').findOne({
       where: { programId: id },
@@ -107,10 +137,14 @@ export class ProgramService {
     if (!find) {
       throw new NotFoundException('Program not found');
     }
-    return this.convertToModel(find);
+    return this.convertToModel(find.get({ plain: true }));
   }
 
   public async create(obj: IManageProgram, cIp: string, adminId: number): Promise<void> {
+    let programPlanId: number | null = null;
+    if (obj.isSpecialProgram && obj.programPlan) {
+      programPlanId = await this.programPlanService.create(obj.programPlan, cIp, adminId);
+    }
     const createObj = {
       program: obj.program,
       punchLine: obj.punchLine,
@@ -122,6 +156,7 @@ export class ProgramService {
       startDate: obj.isSpecialProgram ? this.toDateOnly(obj.startDate) : null,
       endDate: obj.isSpecialProgram ? this.toDateOnly(obj.endDate) : null,
       maxPeopleCanRegister: obj.isSpecialProgram ? obj.maxPeopleCanRegister ?? null : null,
+      programPlanId,
       url: obj.seo ? obj.seo.url : CommonFunctionsUtil.removeSpecialChar(obj.program.toString().toLowerCase(), '-'),
       imagePath: obj.imagePath && obj.imagePath.length > 0 ? obj.imagePath : null,
       active: obj.active,
@@ -140,6 +175,23 @@ export class ProgramService {
     if (!find) {
       throw new NotFoundException('Program not found');
     }
+    let programPlanId: number | null = find.programPlanId ?? null;
+    if (obj.isSpecialProgram) {
+      if (obj.programPlan) {
+        if (programPlanId) {
+          await this.programPlanService.update(programPlanId, obj.programPlan, cIp, adminId);
+        } else {
+          programPlanId = await this.programPlanService.create(obj.programPlan, cIp, adminId);
+        }
+      }
+    } else if (programPlanId) {
+      // Unlinking a previously-tagged plan when seasonal is turned off.
+      // Soft-delete the plan (active=false) so it disappears from active lists
+      // but is preserved for audit/history. The FK on the program is cleared.
+      // Frontend MUST confirm with the user before submitting this transition.
+      await this.programPlanService.changeStatus(programPlanId, false, cIp, adminId);
+      programPlanId = null;
+    }
     const updateObj = {
       program: obj.program,
       punchLine: obj.punchLine,
@@ -151,6 +203,7 @@ export class ProgramService {
       startDate: obj.isSpecialProgram ? this.toDateOnly(obj.startDate) : null,
       endDate: obj.isSpecialProgram ? this.toDateOnly(obj.endDate) : null,
       maxPeopleCanRegister: obj.isSpecialProgram ? obj.maxPeopleCanRegister ?? null : null,
+      programPlanId,
       url: obj.seo
         ? obj.seo.url
         : CommonFunctionsUtil.removeSpecialChar(obj.program.toString().toLowerCase(), '-'),

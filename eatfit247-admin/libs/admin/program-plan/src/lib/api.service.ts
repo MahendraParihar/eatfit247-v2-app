@@ -10,8 +10,8 @@ export class ProgramPlanApiService extends CrudApiService<IProgramPlan> {
     super('/program-plan');
   }
 
-  async getMasterData(): Promise<{ programPlanType: IDropdownItem[]; currencies: IDropdownItem[] }> {
-    const res = await this.httpService.get<{ programPlanType: IDropdownItem[]; currencies: IDropdownItem[] }>(`${this.endpoint}/program-plan-master`);
-    return res.data as { programPlanType: IDropdownItem[]; currencies: IDropdownItem[] };
+  async getMasterData(): Promise<{ currencies: IDropdownItem[] }> {
+    const res = await this.httpService.get<{ currencies: IDropdownItem[] }>(`${this.endpoint}/program-plan-master`);
+    return res.data as { currencies: IDropdownItem[] };
   }
 }
