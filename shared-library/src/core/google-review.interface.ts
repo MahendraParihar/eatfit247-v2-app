@@ -49,6 +49,7 @@ export interface IPublicGoogleReview {
   adminReply?: string | null;
   adminRepliedAt?: Date | null;
   helpfulCount: number;
+  displayOrder: number;
 }
 
 export interface IGoogleReviewSearch {

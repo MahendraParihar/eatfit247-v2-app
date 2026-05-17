@@ -269,6 +269,7 @@ export class GoogleReviewService {
       adminReply: item.adminReply,
       adminRepliedAt: item.adminRepliedAt,
       helpfulCount: item.helpfulCount,
+      displayOrder: item.displayOrder,
     };
   }
 }

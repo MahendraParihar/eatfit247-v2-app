@@ -11,4 +11,5 @@ export * from './payment.service';
 export * from './program-plan.service';
 export * from './program.service';
 export * from './faq.service';
+export * from './google-review.service';
 

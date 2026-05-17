@@ -4,9 +4,15 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { BreadcrumbsComponent, LoaderComponent } from '@shared-ui';
-import { FaqService, JsonLdService, SEOService } from '../../core/services';
+import {
+  FaqService,
+  GoogleReviewService,
+  JsonLdService,
+  SEOService,
+} from '../../core/services';
 import { ProductService } from '../../core/services/product.service';
 import {
+  GoogleReviewEntityTypeEnum,
   IMediaUpload,
   IOutcomes,
   IOutcomeSection,
@@ -16,6 +22,7 @@ import {
   IProjectConsumptionInstructionSection,
   IProjectStarEndorsedSection,
   IPublicFaq,
+  IPublicGoogleReview,
   IPublicProduct,
 } from '@eatfit247-shared-library';
 
@@ -48,6 +55,7 @@ interface IBenefitLine {
 })
 export class ProductComponent implements OnInit, OnDestroy {
   private readonly faqService = inject(FaqService);
+  private readonly googleReviewService = inject(GoogleReviewService);
   private readonly productService = inject(ProductService);
   private readonly router = inject(Router);
   private readonly seoService = inject(SEOService);
@@ -156,120 +164,38 @@ export class ProductComponent implements OnInit, OnDestroy {
     'Sip',
   ];
 
-  /** Static review list, matching the design landing (15 reviews, circular initials). */
-  readonly reviewList: ReadonlyArray<{
+  /** Product reviews loaded from txn_google_review for this product. */
+  productReviews: IPublicGoogleReview[] = [];
+
+  get reviewList(): ReadonlyArray<{
     initials: string;
     name: string;
     role?: string;
     quote: string;
     featured?: boolean;
-  }> = [
-    {
-      initials: 'RM',
-      name: 'Romi Mehta',
-      role: 'Owner, Rain or Shine',
-      quote:
-        'In just two weeks I felt less bloated, my sugar cravings reduced, my weight went down and my skin began to glow. I highly recommend it to people with the same issues.',
-    },
-    {
-      initials: 'AP',
-      name: 'Arun Pandey',
-      role: 'Businessman',
-      quote:
-        "Since I travel a lot, food has always been an issue. This powder is like a miracle — I'm off my acidity medicines and have smooth bowel movements.",
-    },
-    {
-      initials: 'PP',
-      name: 'Pooja Puri',
-      role: 'Pilates instructor',
-      quote:
-        'In just two days I felt a lot lighter, with less gas and bloating. The best part — no painful cramps like other laxative powders. Very mild, very effective.',
-    },
-    {
-      initials: 'YK',
-      name: 'Yasmin Karachiwala',
-      role: 'Celebrity Pilates trainer',
-      featured: true,
-      quote:
-        "Although I eat well and exercise daily, I'm frequently bloated. Awesome product — worth every penny. A clean gut means a toxin-free body, and I see a noticeable change in my skin and hair quality.",
-    },
-    {
-      initials: 'DS',
-      name: 'Dimple Saboowala',
-      quote:
-        "This is my go-to essential. No taste, doesn't gum up, works quickly and without discomfort. The single-serve sachets are easy to carry. Solved my burping and bloating in weeks.",
-    },
-    {
-      initials: 'TR',
-      name: 'Tasheen Rahimtoola',
-      role: 'Food curator',
-      quote:
-        "I tried it after seeing the change in my mom's skin. It's truly magic — helped me get clear, glowing skin. A happy gut always leads to healthy skin.",
-    },
-    {
-      initials: 'KS',
-      name: 'Kinjal Shah',
-      role: 'Homemaker',
-      quote:
-        'An interesting mix of herbs. My whole family is hooked. Significant impact on our gut health and overall well-being. Very pleased with the ingredients.',
-    },
-    {
-      initials: 'GB',
-      name: 'Geeta Basra',
-      role: 'Actress',
-      quote:
-        'Totally got rid of my bloating. So glad we have homegrown brands promoting good health — and yes, this blend WORKS!',
-    },
-    {
-      initials: 'HS',
-      name: 'Harbhajan Singh',
-      role: 'Indian cricketer',
-      featured: true,
-      quote:
-        "I've faced acidity and bloating issues for a long time, but this powder has worked for me like a miracle. I've used it for over a year and highly recommend adding it to your daily routine to fix gut issues the natural way.",
-    },
-    {
-      initials: 'NS',
-      name: 'Nishith Shah',
-      role: 'Sales Director, APAC — Johnson Controls',
-      quote:
-        "Debloat Powder has changed my lifestyle. My dependency on isabgol and antacids has reduced completely. I'm on my third box and very happy with the results.",
-    },
-    {
-      initials: 'HS',
-      name: 'Hardik Shah',
-      role: 'Director, IG Financial Service Pvt Ltd',
-      quote:
-        'Has shown brilliant results — helped with constipation, bloating and even my migraines. Will continue taking this for a long time, plus it tastes great.',
-    },
-    {
-      initials: 'VP',
-      name: 'Veera Patel',
-      role: 'Head — Administration & Facilities, Essar House',
-      quote:
-        "The single-serving sachets make travelling easy. I feel great the next morning and can definitely tell the difference when I don't take it.",
-    },
-    {
-      initials: 'RL',
-      name: 'Rakhee Lad',
-      quote:
-        "I've had IBS for over ten years and I'm happy to say this supplement helped me in less than two weeks. It works.",
-    },
-    {
-      initials: 'V',
-      name: 'Vivek',
-      role: 'VP of Engineering',
-      quote:
-        'I had struggled with food intolerances that are hard to pin down. This works whenever a food sensitivity causes bloating — especially after a high-carb meal.',
-    },
-    {
-      initials: 'RM',
-      name: 'Rajesh Mulchandani',
-      role: 'Proprietor, IMC',
-      quote:
-        "I'm such a fan — it truly makes me feel better post-meal and through the day. I've tried several probiotics, but this is what's done the work. Felt results in just a few days.",
-    },
-  ];
+  }> {
+    return this.productReviews.map((r) => ({
+      initials: this.buildInitials(r.reviewerName),
+      name: r.reviewerName,
+      role: r.reviewerRole ?? undefined,
+      quote: r.reviewText ?? '',
+      featured: r.displayOrder === 0,
+    }));
+  }
+
+  private buildInitials(name: string): string {
+    if (!name) {
+      return '';
+    }
+    const parts = name.trim().split(/\s+/).filter(Boolean);
+    if (parts.length === 0) {
+      return '';
+    }
+    if (parts.length === 1) {
+      return parts[0].charAt(0).toUpperCase();
+    }
+    return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+  }
 
   benefitIcon(index: number): string {
     return this.benefitIcons[index % this.benefitIcons.length];
@@ -593,7 +519,7 @@ export class ProductComponent implements OnInit, OnDestroy {
 
   async ngOnInit(): Promise<void> {
     await this.loadProductData();
-    await this.loadFaqData();
+    await Promise.all([this.loadFaqData(), this.loadProductReviews()]);
   }
 
   ngOnDestroy(): void {
@@ -975,6 +901,20 @@ export class ProductComponent implements OnInit, OnDestroy {
     if (this.productImages1.length > 1) {
       this.startFeatureSliderAutoSwitch();
     }
+  }
+
+  /**
+   * Load Google reviews for the currently loaded product from txn_google_review.
+   */
+  private async loadProductReviews(): Promise<void> {
+    if (!this.productId) {
+      this.productReviews = [];
+      return;
+    }
+    this.productReviews = await this.googleReviewService.getReviewsByEntity(
+      GoogleReviewEntityTypeEnum.Product,
+      this.productId,
+    );
   }
 
   /**
