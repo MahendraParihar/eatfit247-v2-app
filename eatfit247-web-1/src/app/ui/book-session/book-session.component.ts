@@ -10,19 +10,16 @@ import {
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { BreadcrumbsComponent } from '@shared-ui';
-import { SEOService } from '../../core/services';
+import {
+  HttpService,
+  ProgramService,
+  SEOService,
+  SeasonalProgramCard,
+} from '../../core/services';
+import { RecaptchaService } from '../../core/services/recaptcha.service';
 import { CONTACT_NUMBER } from '../../core/utils/constants';
 
-interface PlanMeta {
-  slug: string;
-  name: string;
-  sessions: string;
-  days: string;
-  diets: string;
-  price: string;
-  start: string;
-  selectLabel: string;
-}
+type ContactPreference = 'whatsapp' | 'call' | 'email' | 'any';
 
 @Component({
   standalone: true,
@@ -35,71 +32,14 @@ export class BookSessionComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly seoService = inject(SEOService);
   private readonly platformId = inject(PLATFORM_ID);
+  private readonly programService = inject(ProgramService);
+  private readonly httpService = inject(HttpService);
+  private readonly recaptchaService = inject(RecaptchaService);
 
   readonly contactNumber = CONTACT_NUMBER;
 
-  readonly plans: PlanMeta[] = [
-    {
-      slug: 'navratri',
-      name: 'Navratri Special',
-      sessions: '1',
-      days: '10',
-      diets: '10',
-      price: '₹1,500',
-      start: 'Oct 3, 2026',
-      selectLabel: 'Navratri Special — 1 session × 10 days · ₹1,500',
-    },
-    {
-      slug: 'diabetic',
-      name: 'Diabetic Care Plan',
-      sessions: '2',
-      days: '10 + 10',
-      diets: '20',
-      price: '₹2,000',
-      start: 'Next batch monthly',
-      selectLabel: 'Diabetic Care Plan — 2 sessions × 10 days · ₹2,000',
-    },
-    {
-      slug: 'monsoon',
-      name: 'Monsoon Detox',
-      sessions: '1',
-      days: '10',
-      diets: '10',
-      price: '₹1,800',
-      start: 'Jul 15, 2026',
-      selectLabel: 'Monsoon Detox — 1 session × 10 days · ₹1,800',
-    },
-    {
-      slug: 'winter',
-      name: 'Winter Immunity',
-      sessions: '1',
-      days: '14',
-      diets: '14',
-      price: '₹2,200',
-      start: 'Dec 1, 2026',
-      selectLabel: 'Winter Immunity — 1 session × 14 days · ₹2,200',
-    },
-    {
-      slug: 'summer',
-      name: 'Summer Cool-Down',
-      sessions: '1',
-      days: '10',
-      diets: '10',
-      price: '₹1,500',
-      start: 'Apr 10, 2026',
-      selectLabel: 'Summer Cool-Down — 1 session × 10 days · ₹1,500',
-    },
-    {
-      slug: 'postpartum',
-      name: 'Postpartum Recovery',
-      sessions: '3',
-      days: '30',
-      diets: '30',
-      price: '₹3,500',
-      start: 'Rolling start',
-      selectLabel: 'Postpartum Recovery — 3 sessions × 10 days · ₹3,500',
-    },
-  ];
+  readonly plans = signal<SeasonalProgramCard[]>([]);
+  readonly loadingPlans = signal(true);
 
   readonly form = {
     plan: '',
@@ -108,27 +48,22 @@ export class BookSessionComponent implements OnInit {
     email: '',
     city: '',
     message: '',
-    contact: 'whatsapp',
+    contact: 'whatsapp' as ContactPreference,
     consent: false,
   };
 
   readonly isWaitlist = signal(false);
+  readonly submitting = signal(false);
   readonly submitted = signal(false);
   readonly submittedName = signal('there');
   readonly submittedPlanName = signal('your plan');
+  readonly errorMessage = signal('');
 
-  readonly selectedPlan = computed<PlanMeta | undefined>(() =>
-    this.plans.find((p) => p.slug === this.form.plan),
+  readonly selectedPlan = computed<SeasonalProgramCard | undefined>(() =>
+    this.plans().find((p) => p.slug === this.form.plan),
   );
 
-  ngOnInit(): void {
-    const params = this.route.snapshot.queryParamMap;
-    const planSlug = params.get('plan');
-    if (planSlug && this.plans.some((p) => p.slug === planSlug)) {
-      this.form.plan = planSlug;
-    }
-    this.isWaitlist.set(params.get('intent') === 'waitlist');
-
+  async ngOnInit(): Promise<void> {
     this.seoService.updateSEO({
       title: this.isWaitlist()
         ? 'Join Waitlist | EatFit247'
@@ -137,21 +72,132 @@ export class BookSessionComponent implements OnInit {
         "Reserve your seat in an upcoming EatFit247 seasonal plan. Free reservation — our team WhatsApps you to confirm and shares offline payment details.",
       url: '/book-session',
     });
+
+    const params = this.route.snapshot.queryParamMap;
+    const planSlug = params.get('plan');
+    this.isWaitlist.set(params.get('intent') === 'waitlist');
+
+    this.loadingPlans.set(true);
+    try {
+      const programs = await this.programService.getSeasonalPrograms();
+      this.plans.set(programs);
+      if (planSlug && programs.some((p) => p.slug === planSlug)) {
+        this.form.plan = planSlug;
+      }
+    } finally {
+      this.loadingPlans.set(false);
+    }
   }
 
   onPlanChange(): void {
-    // selectedPlan is computed; nothing else to do here
+    const plan = this.selectedPlan();
+    if (plan) {
+      this.isWaitlist.set(plan.ctaIntent === 'waitlist');
+    }
   }
 
-  onSubmit(formValid: boolean): void {
-    if (!formValid) return;
+  async onSubmit(formValid: boolean): Promise<void> {
+    if (!formValid || this.submitting()) return;
     const plan = this.selectedPlan();
-    const firstName = (this.form.name || 'there').trim().split(/\s+/)[0] || 'there';
-    this.submittedName.set(firstName);
-    this.submittedPlanName.set(plan ? plan.name : 'your plan');
-    this.submitted.set(true);
-    if (isPlatformBrowser(this.platformId)) {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (!plan) return;
+
+    this.submitting.set(true);
+    this.errorMessage.set('');
+
+    try {
+      let recaptchaToken: string | undefined;
+      if (this.recaptchaService.isAvailable()) {
+        try {
+          recaptchaToken = await this.recaptchaService.getToken(
+            'contact_form_submit',
+          );
+        } catch {
+          this.errorMessage.set(
+            'Failed to verify reCAPTCHA. Please refresh the page and try again.',
+          );
+          this.submitting.set(false);
+          return;
+        }
+      }
+
+      const payload = this.buildContactPayload(plan);
+      const headers: Record<string, string> = {};
+      if (recaptchaToken) headers['X-Recaptcha-Token'] = recaptchaToken;
+
+      await this.httpService.post<{ contactFormId: number; message: string }>(
+        'contact/submit',
+        payload,
+        { headers },
+      );
+
+      const firstName =
+        (this.form.name || 'there').trim().split(/\s+/)[0] || 'there';
+      this.submittedName.set(firstName);
+      this.submittedPlanName.set(plan.title);
+      this.submitted.set(true);
+
+      if (isPlatformBrowser(this.platformId)) {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    } catch (error) {
+      const msg = (error as { message?: string })?.message;
+      this.errorMessage.set(
+        msg || 'Failed to submit. Please try again in a moment.',
+      );
+    } finally {
+      this.submitting.set(false);
+    }
+  }
+
+  private buildContactPayload(plan: SeasonalProgramCard): {
+    name: string;
+    email: string;
+    phone?: string;
+    subject?: string;
+    message?: string;
+  } {
+    const name = this.form.name.trim();
+    const email = this.form.email.trim();
+    const phone = this.form.phone.trim();
+    const city = this.form.city.trim();
+    const userMessage = this.form.message.trim();
+    const intent = this.isWaitlist() ? 'Waitlist' : 'Reservation';
+    const contactLabel = this.contactLabel(this.form.contact);
+
+    const subject = `[Seasonal Plan ${intent}] ${plan.title}`.slice(0, 200);
+
+    const lines: string[] = [
+      `Enquiry type: Seasonal plan ${intent.toLowerCase()}`,
+      `Plan: ${plan.title} (${plan.statusLabel})`,
+      `Schedule: ${plan.datePill}`,
+    ];
+    if (city) lines.push(`City: ${city}`);
+    lines.push(`Preferred contact: ${contactLabel}`);
+    if (userMessage) {
+      lines.push('');
+      lines.push('Message from user:');
+      lines.push(userMessage);
+    }
+
+    return {
+      name,
+      email,
+      phone: phone || undefined,
+      subject,
+      message: lines.join('\n').slice(0, 1000),
+    };
+  }
+
+  private contactLabel(pref: ContactPreference): string {
+    switch (pref) {
+      case 'whatsapp':
+        return 'WhatsApp';
+      case 'call':
+        return 'Phone call';
+      case 'email':
+        return 'Email';
+      default:
+        return 'Any of the above';
     }
   }
 }

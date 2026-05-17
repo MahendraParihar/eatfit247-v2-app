@@ -198,6 +198,9 @@ export class ProgramService {
     const whereCondition: any = SearchUtil.filterBasicSearch(searchDto, 'program');
     // Only show active programs for public
     whereCondition.active = true;
+    if (searchDto.isSpecialProgram !== null && searchDto.isSpecialProgram !== undefined) {
+      whereCondition.isSpecialProgram = searchDto.isSpecialProgram;
+    }
 
     const pageNumber = searchDto.page || 0;
     const pageSize = searchDto.limit || 15;

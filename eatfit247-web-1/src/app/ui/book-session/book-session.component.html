@@ -53,31 +53,33 @@
             <div class="form-grid">
               <div class="field field--full">
                 <label for="f-plan">Choose your plan <span class="req">*</span></label>
-                <select id="f-plan" name="plan" required [(ngModel)]="form.plan" (change)="onPlanChange()">
-                  <option value="">— Select a plan —</option>
-                  @for (p of plans; track p.slug) {
-                    <option [value]="p.slug">{{ p.selectLabel }}</option>
+                <select id="f-plan" name="plan" required [(ngModel)]="form.plan" (change)="onPlanChange()" [disabled]="loadingPlans()">
+                  <option value="">
+                    @if (loadingPlans()) { Loading plans… } @else if (plans().length === 0) { No plans available right now } @else { — Select a plan — }
+                  </option>
+                  @for (p of plans(); track p.slug) {
+                    <option [value]="p.slug">{{ p.title }} — {{ p.statusLabel }}</option>
                   }
                 </select>
               </div>
 
               <div class="field">
                 <label for="f-name">Full name <span class="req">*</span></label>
-                <input type="text" id="f-name" name="name" autocomplete="name" required placeholder="e.g. Priya Mehta" [(ngModel)]="form.name" />
+                <input type="text" id="f-name" name="name" autocomplete="name" required placeholder="Full name" [(ngModel)]="form.name" />
               </div>
               <div class="field">
-                <label for="f-phone">Phone (WhatsApp) <span class="req">*</span></label>
-                <input type="tel" id="f-phone" name="phone" autocomplete="tel" required placeholder="+91 98765 43210" [(ngModel)]="form.phone" />
+                <label for="f-phone">Phone <span class="req">*</span></label>
+                <input type="tel" id="f-phone" name="phone" autocomplete="tel" required placeholder="Number" [(ngModel)]="form.phone" />
                 <span class="hint">We'll WhatsApp you on this number.</span>
               </div>
 
               <div class="field">
                 <label for="f-email">Email <span class="req">*</span></label>
-                <input type="email" id="f-email" name="email" autocomplete="email" required placeholder="you@example.com" [(ngModel)]="form.email" />
+                <input type="email" id="f-email" name="email" autocomplete="email" required placeholder="Email id" [(ngModel)]="form.email" />
               </div>
               <div class="field">
                 <label for="f-city">City</label>
-                <input type="text" id="f-city" name="city" autocomplete="address-level2" placeholder="e.g. Mumbai" [(ngModel)]="form.city" />
+                <input type="text" id="f-city" name="city" autocomplete="address-level2" placeholder="City" [(ngModel)]="form.city" />
               </div>
 
               <div class="field field--full">
@@ -102,9 +104,22 @@
                 </label>
               </div>
 
+              @if (errorMessage()) {
+                <div class="field field--full" style="margin-top: var(--space-2);">
+                  <div class="intent-banner" style="background:rgba(220,53,69,0.08);border-color:rgba(220,53,69,0.25);color:var(--color-error,#b3261e);">
+                    <span class="mat-icon">error_outline</span>
+                    <span>{{ errorMessage() }}</span>
+                  </div>
+                </div>
+              }
+
               <div class="field field--full" style="margin-top: var(--space-3);">
-                <button type="submit" class="mat-btn mat-btn--filled" style="width:100%;justify-content:center;font-size:15px;padding-block:14px;">
-                  {{ isWaitlist() ? 'Join Waitlist' : 'Reserve My Spot' }} <span class="mat-icon">arrow_forward</span>
+                <button type="submit" class="mat-btn mat-btn--filled" [disabled]="submitting()" style="width:100%;justify-content:center;font-size:15px;padding-block:14px;">
+                  @if (submitting()) {
+                    Sending… <span class="mat-icon">hourglass_top</span>
+                  } @else {
+                    {{ isWaitlist() ? 'Join Waitlist' : 'Reserve My Spot' }} <span class="mat-icon">arrow_forward</span>
+                  }
                 </button>
                 <span class="hint" style="text-align:center;margin-top:8px;">No payment now — our team will WhatsApp you to confirm.</span>
               </div>
@@ -113,24 +128,28 @@
         </div>
 
         <aside class="booking-summary">
-          <h4>Reservation summary</h4>
+          <h4>{{ isWaitlist() ? 'Waitlist summary' : 'Reservation summary' }}</h4>
           <div class="booking-summary__plan">
-            {{ selectedPlan()?.name ?? 'Pick a plan to begin' }}
+            {{ selectedPlan()?.title ?? 'Pick a plan to begin' }}
           </div>
 
-          <div class="booking-summary__row"><span>Sessions</span><span>{{ selectedPlan()?.sessions ?? '—' }}</span></div>
-          <div class="booking-summary__row"><span>Days</span><span>{{ selectedPlan()?.days ?? '—' }}</span></div>
-          <div class="booking-summary__row"><span>Diets</span><span>{{ selectedPlan()?.diets ?? '—' }}</span></div>
-          <div class="booking-summary__row"><span>Starts</span><span>{{ selectedPlan()?.start ?? '—' }}</span></div>
-
-          <div style="display:flex;align-items:baseline;justify-content:space-between;padding-top:var(--space-3);border-top:1px solid var(--color-divider);">
-            <span style="color:var(--color-text-secondary);font-size:13px;">Flat fee</span>
-            <span class="booking-summary__price">{{ selectedPlan()?.price ?? '—' }}</span>
-          </div>
+          @if (selectedPlan()) {
+            <div class="booking-summary__row"><span>Status</span><span>{{ selectedPlan()?.statusLabel }}</span></div>
+            <div class="booking-summary__row"><span>Schedule</span><span>{{ selectedPlan()?.datePill }}</span></div>
+            @if (selectedPlan()?.subtitle) {
+              <div class="booking-summary__row"><span>Focus</span><span>{{ selectedPlan()?.subtitle }}</span></div>
+            }
+            @if (selectedPlan()?.maxPeopleCanRegister) {
+              <div class="booking-summary__row"><span>Batch size</span><span>Up to {{ selectedPlan()?.maxPeopleCanRegister }}</span></div>
+            }
+          } @else {
+            <div class="booking-summary__row"><span>Status</span><span>—</span></div>
+            <div class="booking-summary__row"><span>Schedule</span><span>—</span></div>
+          }
 
           <div class="payment-note">
-            <span class="mat-icon">payments</span>
-            <span><strong>Offline payment only.</strong> UPI / bank transfer details shared once our team confirms your seat. Nothing is charged on this site.</span>
+            <span class="mat-icon">support_agent</span>
+            <span><strong>What happens next?</strong> Our team will reach out on WhatsApp to confirm your seat and walk you through the next steps.</span>
           </div>
 
           <div style="font-size:12px;color:var(--color-text-secondary);line-height:1.5;border-top:1px dashed var(--color-divider);padding-top:var(--space-3);">
@@ -142,7 +161,7 @@
               </a>
               <a [href]="'tel:' + contactNumber" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;border:1px solid var(--color-border);color:var(--color-text-primary);text-decoration:none;font-weight:var(--font-weight-semibold);font-size:13px;">
                 <span class="mat-icon" style="font-family:'Material Icons','Material Symbols Outlined';font-feature-settings:'liga';font-size:18px;color:var(--color-primary);">call</span>
-                <span>{{ contactNumber }}<span style="display:block;font-weight:400;font-size:11px;color:var(--color-text-secondary);margin-top:1px;">Or give us a call</span></span>
+                <span>{{ contactNumber }}</span>
               </a>
             </div>
           </div>

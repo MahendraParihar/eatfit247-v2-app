@@ -11,7 +11,7 @@ import { AppService } from './app.service';
 // Import modules first so their modelRegistry.register() calls execute before CommonModule.forRoot()
 import { MemberModule } from '@server_1/modules/member';
 import { AssessmentModule } from '@server_1/modules/assessment';
-import { ProgramPlanModule } from '@server_1/modules/program-plan';
+import { ProgramPlanAdminModule } from '@server_1/modules/program-plan';
 import { CallLogsModule } from '@server_1/modules/call-logs';
 import { ContactModule } from '@server_1/modules/contact';
 import { TaxEngineModule } from '@server_1/modules/tax-engine';
@@ -60,7 +60,7 @@ import { GoogleReviewModule } from '@server_1/modules/google-review';
     // Import feature modules before CommonModule so modelRegistry.register() executes
     MemberModule,
     AssessmentModule,
-    ProgramPlanModule,
+    ProgramPlanAdminModule,
     CallLogsModule,
     ContactModule,
     TaxEngineModule,

@@ -9,5 +9,6 @@ export * from './blog.service';
 export * from './checkout.service';
 export * from './payment.service';
 export * from './program-plan.service';
+export * from './program.service';
 export * from './faq.service';
 

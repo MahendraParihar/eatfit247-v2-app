@@ -10,7 +10,7 @@ import {
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { LoaderComponent } from '@shared-ui';
-import { SEOService } from '../../core/services';
+import { ProgramService, SeasonalProgramCard, SEOService } from '../../core/services';
 import { ISuccessStory } from '@eatfit247-shared-library/core';
 import { SuccessStoriesService } from '../../core/services/success-stories.service';
 import { CONTACT_NUMBER } from '../../core/utils/constants';
@@ -19,37 +19,6 @@ interface FeatureCard {
   icon: string;
   title: string;
   body: string;
-}
-
-interface SeasonalStat {
-  num: string;
-  label: string;
-}
-
-type SeasonalStatus = 'live' | 'soon' | 'closed';
-
-interface SeasonalPlan {
-  slug: string;
-  title: string;
-  subtitle: string;
-  word: string;
-  status: SeasonalStatus;
-  statusLabel: string;
-  datePill: string;
-  stats: SeasonalStat[];
-  bullets: string[];
-  price: string;
-  priceSuffix?: string;
-  ctaLabel: string;
-  ctaIcon: string;
-  ctaIntent?: 'reserve' | 'waitlist';
-  featured?: boolean;
-  coverA?: string;
-  coverB?: string;
-  coverImg: string;
-  coverMode?: 'tinted' | 'full';
-  coverBg?: string;
-  coverPos?: string;
 }
 
 interface Credential {
@@ -74,12 +43,14 @@ interface TestimonialStory {
 })
 export class HomeComponent implements OnInit {
   private readonly successStoriesService = inject(SuccessStoriesService);
+  private readonly programService = inject(ProgramService);
   private readonly seoService = inject(SEOService);
   private readonly platformId = inject(PLATFORM_ID);
 
   readonly loading = signal(false);
   readonly contactNumber = CONTACT_NUMBER;
   stories: ISuccessStory[] = [];
+  readonly seasonalPlans = signal<SeasonalProgramCard[]>([]);
 
   readonly features: FeatureCard[] = [
     {
@@ -104,106 +75,8 @@ export class HomeComponent implements OnInit {
     },
   ];
 
-  readonly seasonalPlans: SeasonalPlan[] = [
-    {
-      slug: 'diabetic',
-      title: 'Diabetic Care Plan',
-      subtitle:
-        "Two 10-day sessions back-to-back, each with its own diet rotation — stabilise sugar levels and rebuild meal-time habits.",
-      word: 'DIABETIC',
-      status: 'live',
-      statusLabel: 'Open now',
-      datePill: 'New batch monthly',
-      stats: [
-        { num: '2', label: 'Sessions' },
-        { num: '10+10', label: 'Days' },
-        { num: '20', label: 'Diets' },
-      ],
-      bullets: [
-        'Two distinct 10-day diet rotations',
-        'Low-GI, fibre-rich, portion-mapped',
-        'Daily check-ins on glucose patterns',
-      ],
-      price: '₹2,000',
-      priceSuffix: 'flat',
-      ctaLabel: 'Reserve My Spot',
-      ctaIcon: 'arrow_forward',
-      ctaIntent: 'reserve',
-      featured: true,
-      coverA: '#14b8a6',
-      coverB: '#0f766e',
-      coverImg:
-        'https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=800&q=80&auto=format&fit=crop',
-    },
-    {
-      slug: 'monsoon',
-      title: 'Monsoon Detox',
-      subtitle:
-        "A 10-day light-cooking plan to fix bloating, sluggish digestion and the monsoon-cold loop — one warm, gut-friendly diet a day.",
-      word: 'MONSOON',
-      status: 'live',
-      statusLabel: 'Open now',
-      datePill: 'Starts Jul 15, 2026',
-      stats: [
-        { num: '1', label: 'Session' },
-        { num: '10', label: 'Days' },
-        { num: '10', label: 'Diets' },
-      ],
-      bullets: [
-        'Gut-rest meals, herbal infusions',
-        'Immunity-boost spice rotations',
-        'Daily prep notes & reminders',
-      ],
-      price: '₹1,800',
-      priceSuffix: 'flat',
-      ctaLabel: 'Reserve My Spot',
-      ctaIcon: 'arrow_forward',
-      ctaIntent: 'reserve',
-      coverA: '#06b6d4',
-      coverB: '#0e7490',
-      coverImg:
-        'https://images.unsplash.com/photo-1547573854-74d2a71d0826?w=800&q=80&auto=format&fit=crop',
-    },
-    {
-      slug: 'navratri',
-      title: 'Navratri Special',
-      subtitle:
-        'A fasting-friendly 10-day plan with a different sattvic diet each day — energy without the slump, all nine nights.',
-      word: 'NAVRATRI',
-      status: 'soon',
-      statusLabel: 'Opens Sep 1',
-      datePill: 'Starts Oct 11, 2026',
-      stats: [
-        { num: '1', label: 'Session' },
-        { num: '10', label: 'Days' },
-        { num: '10', label: 'Diets' },
-      ],
-      bullets: [
-        'Different sattvic meal plan every day',
-        'Vrat-compliant & gluten-free options',
-        'WhatsApp support through the 10 days',
-      ],
-      price: '₹1,500',
-      priceSuffix: 'flat',
-      ctaLabel: 'Notify Me',
-      ctaIcon: 'notifications_active',
-      ctaIntent: 'waitlist',
-      coverImg: '/seasonal-navratri.avif',
-      coverMode: 'full',
-      coverBg: '#fff7e8',
-      coverPos: 'left center',
-    },
-  ];
-
-  coverStyle(plan: SeasonalPlan): Record<string, string> {
-    const style: Record<string, string> = {
-      '--cover-img': `url('${plan.coverImg}')`,
-    };
-    if (plan.coverA) style['--cover-a'] = plan.coverA;
-    if (plan.coverB) style['--cover-b'] = plan.coverB;
-    if (plan.coverBg) style['--cover-bg'] = plan.coverBg;
-    if (plan.coverPos) style['--cover-pos'] = plan.coverPos;
-    return style;
+  coverStyle(plan: SeasonalProgramCard): Record<string, string> {
+    return plan.coverImg ? { '--cover-img': `url('${plan.coverImg}')` } : {};
   }
 
   readonly credentials: Credential[] = [
@@ -280,7 +153,7 @@ export class HomeComponent implements OnInit {
     });
     this.loading.set(true);
     try {
-      await this.loadStories();
+      await Promise.all([this.loadStories(), this.loadSeasonalPlans()]);
     } finally {
       this.loading.set(false);
     }
@@ -318,5 +191,12 @@ export class HomeComponent implements OnInit {
     } catch {
       this.stories = [];
     }
+  }
+
+  async loadSeasonalPlans(): Promise<void> {
+    const all = await this.programService.getSeasonalPrograms();
+    const priority: Record<SeasonalProgramCard['status'], number> = { live: 0, soon: 1, closed: 2 };
+    const sorted = [...all].sort((a, b) => priority[a.status] - priority[b.status]);
+    this.seasonalPlans.set(sorted.slice(0, 3));
   }
 }

@@ -149,7 +149,7 @@ export class ContactUsComponent implements OnInit {
       const response = await this.httpService.post<{
         contactFormId: number;
         message: string;
-      }>('public/contact/submit', formData, { headers });
+      }>('contact/submit', formData, { headers });
       if (response) {
         this.formSuccess = true;
         setTimeout(() => {

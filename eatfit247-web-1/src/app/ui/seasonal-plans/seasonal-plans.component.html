@@ -7,7 +7,7 @@
         <p class="lead">Fixed-date group diet programs around festivals, conditions and seasons. One daily plan, one cohort, one transparent flat fee.</p>
         <div class="seasonal-callout" style="margin-top: var(--space-4);">
           <span class="mat-icon">info</span>
-          <span><strong>Free to reserve.</strong> Payment is collected offline — once your spot is confirmed, our team will WhatsApp you with UPI / bank details.</span>
+          <span><strong>Free to reserve your spot.</strong> Once confirmed, our team will share secure UPI &amp; bank transfer details over WhatsApp to complete your enrollment.</span>
         </div>
       </div>
       <div class="page-hero__visual" aria-hidden="true">
@@ -29,7 +29,8 @@
       <p class="section-sub">Most plans run only at a specific time of year. The three statuses below tell you what's open right now, what's coming, and what to add to your wishlist.</p>
     </header>
 
-    @for (group of groups; track group.status) {
+    @for (group of groups(); track group.status) {
+      @if (group.status === 'live' || group.plans.length > 0) {
       <div class="status-group" [class]="'status-group status-group--' + group.modifier">
         <div class="status-group__head">
           <h3>
@@ -38,82 +39,85 @@
               · {{ group.plans.length }} {{ group.plans.length === 1 ? 'plan' : 'plans' }}
             </span>
           </h3>
-          <p>{{ group.blurb }}</p>
-        </div>
-
-        <div class="seasonal-grid">
-          @for (plan of group.plans; track plan.slug) {
-            <article
-              class="seasonal-card"
-              [id]="plan.slug"
-              [class.seasonal-card--featured]="plan.featured"
-              [attr.data-status]="plan.status"
-              [attr.data-cover]="plan.coverMode === 'full' ? 'full' : null"
-            >
-              <div class="seasonal-card__cover" [ngStyle]="coverStyle(plan)">
-                <span class="seasonal-card__status" [class]="'seasonal-card__status seasonal-card__status--' + plan.status">
-                  <span class="dot"></span>{{ plan.statusLabel }}
-                </span>
-                <span class="seasonal-card__word">{{ plan.word }}</span>
-                <span class="seasonal-card__date-pill">
-                  <span class="mat-icon">event</span>{{ plan.datePill }}
-                </span>
-              </div>
-              <div class="seasonal-card__body">
-                <h3 class="seasonal-card__title">{{ plan.title }}</h3>
-                <p class="seasonal-card__sub">{{ plan.subtitle }}</p>
-
-                <div class="seasonal-stats">
-                  @for (s of plan.stats; track $index) {
-                    <div class="seasonal-stat">
-                      <span class="seasonal-stat__num">{{ s.num }}</span>
-                      <span class="seasonal-stat__label">{{ s.label }}</span>
-                    </div>
-                  }
-                </div>
-
-                <ul class="seasonal-card__bullets">
-                  @for (b of plan.bullets; track b) {
-                    <li><span class="tick">✓</span>{{ b }}</li>
-                  }
-                </ul>
-
-                <div class="seasonal-card__price-row">
-                  <div class="seasonal-card__price">
-                    {{ plan.price }}@if (plan.priceSuffix) {<small>{{ plan.priceSuffix }}</small>}
-                  </div>
-                  <span class="seasonal-card__price-note">Excl. taxes</span>
-                </div>
-
-                <a
-                  [routerLink]="['/book-session']"
-                  [queryParams]="{ plan: plan.slug, intent: plan.primaryIntent === 'waitlist' ? 'waitlist' : null }"
-                  class="mat-btn"
-                  [class.mat-btn--filled]="plan.primaryVariant === 'filled'"
-                  [class.mat-btn--outlined]="plan.primaryVariant === 'outlined'"
-                  style="width:100%;justify-content:center;"
-                >
-                  {{ plan.primaryLabel }} <span class="mat-icon">{{ plan.primaryIcon }}</span>
-                </a>
-              </div>
-            </article>
+          @if (group.blurb) {
+            <p>{{ group.blurb }}</p>
           }
         </div>
 
-        <aside class="status-empty">
-          <span class="status-empty__icon">{{ group.emptyIcon }}</span>
-          <h3 class="status-empty__title">{{ group.emptyTitle }}</h3>
-          <p class="status-empty__copy">{{ group.emptyCopy }}</p>
-          <a routerLink="/contact-us" class="mat-btn mat-btn--outlined">
-            {{ group.emptyCtaLabel }} <span class="mat-icon">arrow_forward</span>
-          </a>
-        </aside>
+        @if (group.plans.length > 0) {
+          <div class="seasonal-grid">
+            @for (plan of group.plans; track plan.slug) {
+              <article
+                class="seasonal-card"
+                [id]="plan.slug"
+                [attr.data-status]="plan.status"
+              >
+                <div class="seasonal-card__cover" [ngStyle]="coverStyle(plan)">
+                  <span class="seasonal-card__status" [class]="'seasonal-card__status seasonal-card__status--' + plan.status">
+                    <span class="dot"></span>{{ plan.statusLabel }}
+                  </span>
+                  <span class="seasonal-card__word">{{ plan.word }}</span>
+                  <span class="seasonal-card__date-pill">
+                    <span class="mat-icon">event</span>{{ plan.datePill }}
+                  </span>
+                </div>
+                <div class="seasonal-card__body">
+                  <h3 class="seasonal-card__title">{{ plan.title }}</h3>
+                  @if (plan.subtitle) {
+                    <p class="seasonal-card__sub">{{ plan.subtitle }}</p>
+                  }
+
+                  @if (plan.bullets.length > 0) {
+                    <ul class="seasonal-card__bullets">
+                      @for (b of plan.bullets; track b) {
+                        <li><span class="tick">✓</span>{{ b }}</li>
+                      }
+                    </ul>
+                  }
+
+                  @if (plan.details) {
+                    @if (detailsHasList(plan.details)) {
+                      <ul class="seasonal-card__bullets seasonal-card__bullets--details">
+                        @for (item of detailsListItems(plan.details); track item) {
+                          <li><span class="tick">✓</span>{{ item }}</li>
+                        }
+                      </ul>
+                    } @else {
+                      <div class="seasonal-card__details" [innerHTML]="plan.details"></div>
+                    }
+                  }
+
+                  <a
+                    [routerLink]="['/book-session']"
+                    [queryParams]="{ plan: plan.slug, intent: plan.ctaIntent === 'waitlist' ? 'waitlist' : null }"
+                    class="mat-btn"
+                    [class.mat-btn--filled]="plan.ctaVariant === 'filled'"
+                    [class.mat-btn--outlined]="plan.ctaVariant === 'outlined'"
+                    style="width:100%;justify-content:center;"
+                  >
+                    {{ plan.ctaLabel }} <span class="mat-icon">{{ plan.ctaIcon }}</span>
+                  </a>
+                </div>
+              </article>
+            }
+          </div>
+        } @else {
+          <aside class="status-empty">
+            <span class="status-empty__icon">{{ group.emptyIcon }}</span>
+            <h3 class="status-empty__title">{{ group.emptyTitle }}</h3>
+            <p class="status-empty__copy">{{ group.emptyCopy }}</p>
+            <a routerLink="/contact-us" class="mat-btn mat-btn--outlined">
+              {{ group.emptyCtaLabel }} <span class="mat-icon">arrow_forward</span>
+            </a>
+          </aside>
+        }
       </div>
+      }
     }
   </div>
 </section>
 
-<!-- Inside the plan — daily diet preview -->
+<!-- Inside the plan — sample cycle preview -->
 <section class="section section--alt" id="preview">
   <div class="ef-container">
     <header class="section-head">
@@ -121,14 +125,19 @@
         <span class="mat-icon" style="font-family:'Material Symbols Outlined';font-size:16px;vertical-align:-3px;">restaurant_menu</span>
         Inside the plan
       </span>
-      <h2 class="section-title">A different diet, every day</h2>
-      <p class="section-sub">Each seasonal plan rotates through a unique meal map — themes, key meals, and what to prep ahead. Reserve a spot and the full day-by-day schedule drops to your inbox on batch day zero.</p>
+      <h2 class="section-title">A different diet, every cycle</h2>
+      <p class="section-sub">Seasonal plans rotate through multiple cycles — each cycle has its own theme, key meals and focus. The actual cycle count, themes and meals vary by plan; the cards below are illustrative only.</p>
     </header>
+
+    <div class="seasonal-callout seasonal-callout--warn" style="margin: var(--space-3) auto var(--space-5); max-width: 760px;">
+      <span class="mat-icon">info</span>
+      <span><strong>Sample preview only.</strong> These are <em>not</em> the actual diets for any plan. The day-by-day schedule for your chosen plan is shared by our team after your spot is confirmed.</span>
+    </div>
 
     <div class="diet-days">
       <article class="diet-day">
         <div class="diet-day__head">
-          <span class="diet-day__num">Day <span class="diet-day__num-big">01</span></span>
+          <span class="diet-day__num">Cycle <span class="diet-day__num-big">1</span></span>
           <span class="diet-day__focus">Reset</span>
         </div>
         <h3 class="diet-day__theme">Warm, light start</h3>
@@ -140,13 +149,12 @@
           <li><b><span class="mat-icon">nights_stay</span>Dinner</b><span>Vegetable soup + 1 small chapati</span></li>
         </ul>
         <div class="diet-day__foot">
-          <span class="diet-day__macro"><span class="mat-icon">local_fire_department</span>~1,450 kcal</span>
-          <span class="diet-day__prep"><span class="mat-icon">schedule</span>Prep 25 min</span>
+          <span class="diet-day__prep"><span class="mat-icon">schedule</span>Sample</span>
         </div>
       </article>
       <article class="diet-day">
         <div class="diet-day__head">
-          <span class="diet-day__num">Day <span class="diet-day__num-big">02</span></span>
+          <span class="diet-day__num">Cycle <span class="diet-day__num-big">2</span></span>
           <span class="diet-day__focus">Energy</span>
         </div>
         <h3 class="diet-day__theme">Slow carbs, steady energy</h3>
@@ -158,16 +166,15 @@
           <li><b><span class="mat-icon">nights_stay</span>Dinner</b><span>Multigrain roti + paneer bhurji</span></li>
         </ul>
         <div class="diet-day__foot">
-          <span class="diet-day__macro"><span class="mat-icon">local_fire_department</span>~1,520 kcal</span>
-          <span class="diet-day__prep"><span class="mat-icon">schedule</span>Prep 30 min</span>
+          <span class="diet-day__prep"><span class="mat-icon">schedule</span>Sample</span>
         </div>
       </article>
       <article class="diet-day">
         <div class="diet-day__head">
-          <span class="diet-day__num">Day <span class="diet-day__num-big">03</span></span>
+          <span class="diet-day__num">Cycle <span class="diet-day__num-big">3</span></span>
           <span class="diet-day__focus">Protein</span>
         </div>
-        <h3 class="diet-day__theme">Protein-forward day</h3>
+        <h3 class="diet-day__theme">Protein-forward focus</h3>
         <p class="diet-day__why">Build, repair, satiety — without the heaviness.</p>
         <ul class="diet-day__meals">
           <li><b><span class="mat-icon">wb_sunny</span>Morning</b><span>Methi water · soaked walnuts (2)</span></li>
@@ -176,8 +183,24 @@
           <li><b><span class="mat-icon">nights_stay</span>Dinner</b><span>Grilled paneer / fish + sautéed veg</span></li>
         </ul>
         <div class="diet-day__foot">
-          <span class="diet-day__macro"><span class="mat-icon">local_fire_department</span>~1,580 kcal</span>
-          <span class="diet-day__prep"><span class="mat-icon">schedule</span>Prep 35 min</span>
+          <span class="diet-day__prep"><span class="mat-icon">schedule</span>Sample</span>
+        </div>
+      </article>
+      <article class="diet-day">
+        <div class="diet-day__head">
+          <span class="diet-day__num">Cycle <span class="diet-day__num-big">4</span></span>
+          <span class="diet-day__focus">Sustain</span>
+        </div>
+        <h3 class="diet-day__theme">Maintain &amp; glow</h3>
+        <p class="diet-day__why">Lock in the gains — easy meals you can carry forward.</p>
+        <ul class="diet-day__meals">
+          <li><b><span class="mat-icon">wb_sunny</span>Morning</b><span>Jeera water · fresh seasonal fruit</span></li>
+          <li><b><span class="mat-icon">free_breakfast</span>Breakfast</b><span>Vegetable poha + curd</span></li>
+          <li><b><span class="mat-icon">restaurant</span>Lunch</b><span>Roti + mixed dal + bhindi sabzi + salad</span></li>
+          <li><b><span class="mat-icon">nights_stay</span>Dinner</b><span>Quinoa khichdi + steamed veggies</span></li>
+        </ul>
+        <div class="diet-day__foot">
+          <span class="diet-day__prep"><span class="mat-icon">schedule</span>Sample</span>
         </div>
       </article>
     </div>
@@ -254,3 +277,33 @@
     </details>
   </div>
 </section>
+
+<!-- FAQ -->
+@if (faqs().length > 0) {
+<section class="section">
+  <div class="ef-container" style="max-width: 920px;">
+    <header class="section-head section-head--center" style="margin-bottom: var(--space-5);">
+      <span class="section-eyebrow"><span class="mat-icon">help_outline</span>Frequently asked</span>
+      <h2 class="section-head__title">Seasonal plans, answered</h2>
+      <p class="section-head__sub">Quick answers about cohort start dates, payments and how the WhatsApp group works.</p>
+    </header>
+
+    <div class="faq-list">
+      @for (faq of faqs(); track faq.faqId; let i = $index) {
+        <details class="faq" [open]="i === 0">
+          <summary>{{ faq.faq }}<span class="mat-icon">add</span></summary>
+          @if (faq.answer) {
+            <p [innerHTML]="faq.answer"></p>
+          }
+        </details>
+      }
+    </div>
+
+    <div style="text-align:center;margin-top:var(--space-6);">
+      <a routerLink="/faq" class="mat-btn mat-btn--outlined">
+        See all FAQs <span class="mat-icon">arrow_forward</span>
+      </a>
+    </div>
+  </div>
+</section>
+}

@@ -88,6 +88,7 @@
   </section>
 
   <!-- ============================ SEASONAL PLANS ============================ -->
+  @if (seasonalPlans().length > 0) {
   <section class="section section--alt seasonal-section" id="programs">
     <div class="ef-container">
       <header class="section-head">
@@ -101,75 +102,62 @@
         </p>
         <div class="seasonal-callout">
           <span class="mat-icon">info</span>
-          <span><strong>Free to reserve.</strong> Payment is collected offline — once your spot is confirmed, our team will WhatsApp you with UPI / bank details.</span>
+          <span><strong>Book your spot.</strong> Our team will connect with you for the details.</span>
         </div>
       </header>
 
-      <div class="seasonal-grid">
-        @for (plan of seasonalPlans; track plan.slug) {
-          <article
-            class="seasonal-card"
-            [class.seasonal-card--featured]="plan.featured"
-            [attr.data-status]="plan.status"
-            [attr.data-cover]="plan.coverMode === 'full' ? 'full' : null"
-          >
-            <div class="seasonal-card__cover" [ngStyle]="coverStyle(plan)">
-              <span class="seasonal-card__status" [class]="'seasonal-card__status--' + plan.status">
-                <span class="dot"></span>{{ plan.statusLabel }}
-              </span>
-              <span class="seasonal-card__word">{{ plan.word }}</span>
-              <span class="seasonal-card__date-pill">
-                <span class="mat-icon">event</span>{{ plan.datePill }}
-              </span>
-            </div>
-            <div class="seasonal-card__body">
-              <h3 class="seasonal-card__title">{{ plan.title }}</h3>
-              <p class="seasonal-card__sub">{{ plan.subtitle }}</p>
-
-              <div class="seasonal-stats">
-                @for (s of plan.stats; track $index) {
-                  <div class="seasonal-stat">
-                    <span class="seasonal-stat__num">{{ s.num }}</span>
-                    <span class="seasonal-stat__label">{{ s.label }}</span>
-                  </div>
-                }
+        <div class="seasonal-grid">
+          @for (plan of seasonalPlans(); track plan.slug) {
+            <article
+              class="seasonal-card"
+              [attr.data-status]="plan.status"
+            >
+              <div class="seasonal-card__cover" [ngStyle]="coverStyle(plan)">
+                <span class="seasonal-card__status" [class]="'seasonal-card__status--' + plan.status">
+                  <span class="dot"></span>{{ plan.statusLabel }}
+                </span>
+                <span class="seasonal-card__word">{{ plan.word }}</span>
+                <span class="seasonal-card__date-pill">
+                  <span class="mat-icon">event</span>{{ plan.datePill }}
+                </span>
               </div>
-
-              <ul class="seasonal-card__bullets">
-                @for (b of plan.bullets; track b) {
-                  <li><span class="tick">✓</span>{{ b }}</li>
+              <div class="seasonal-card__body">
+                <h3 class="seasonal-card__title">{{ plan.title }}</h3>
+                @if (plan.subtitle) {
+                  <p class="seasonal-card__sub">{{ plan.subtitle }}</p>
                 }
-              </ul>
 
-              <div class="seasonal-card__price-row">
-                <div class="seasonal-card__price">
-                  {{ plan.price }}@if (plan.priceSuffix) {<small>{{ plan.priceSuffix }}</small>}
-                </div>
-                <span class="seasonal-card__price-note">Excl. taxes</span>
+                @if (plan.bullets.length > 0) {
+                  <ul class="seasonal-card__bullets">
+                    @for (b of plan.bullets; track b) {
+                      <li><span class="tick">✓</span>{{ b }}</li>
+                    }
+                  </ul>
+                }
+
+                <a
+                  [routerLink]="['/book-session']"
+                  [queryParams]="{ plan: plan.slug, intent: plan.ctaIntent === 'waitlist' ? 'waitlist' : null }"
+                  class="mat-btn"
+                  [class.mat-btn--filled]="plan.ctaIntent !== 'waitlist'"
+                  [class.mat-btn--outlined]="plan.ctaIntent === 'waitlist'"
+                >
+                  {{ plan.ctaLabel }}
+                  <span class="mat-icon">{{ plan.ctaIcon }}</span>
+                </a>
               </div>
+            </article>
+          }
+        </div>
 
-              <a
-                [routerLink]="['/book-session']"
-                [queryParams]="{ plan: plan.slug, intent: plan.ctaIntent === 'waitlist' ? 'waitlist' : null }"
-                class="mat-btn"
-                [class.mat-btn--filled]="plan.ctaIntent !== 'waitlist'"
-                [class.mat-btn--outlined]="plan.ctaIntent === 'waitlist'"
-              >
-                {{ plan.ctaLabel }}
-                <span class="mat-icon">{{ plan.ctaIcon }}</span>
-              </a>
-            </div>
-          </article>
-        }
-      </div>
-
-      <div style="text-align:center;margin-top:var(--space-6);">
-        <a routerLink="/seasonal-plans" class="mat-btn mat-btn--outlined">
-          See all seasonal plans <span class="mat-icon">arrow_forward</span>
-        </a>
-      </div>
+        <div style="text-align:center;margin-top:var(--space-6);">
+          <a routerLink="/seasonal-plans" class="mat-btn mat-btn--outlined">
+            See all seasonal plans <span class="mat-icon">arrow_forward</span>
+          </a>
+        </div>
     </div>
   </section>
+  }
 
   <!-- ============================ COACH / ABOUT ============================ -->
   <section class="section" id="about">
