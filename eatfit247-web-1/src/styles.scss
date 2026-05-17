@@ -54,13 +54,19 @@ body {
 *::before,
 *::after {
   box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 html,
 body {
-  height: 100%;
+  min-height: 100%;
   margin: 0;
-  overflow-x: clip;
+  overflow-x: hidden;
 }
 
 body {
@@ -68,6 +74,40 @@ body {
   background-color: var(--color-surface-page);
   color: var(--color-text-primary);
   transition: background-color 0.3s ease, color 0.3s ease;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+// Safari iOS form control resets — prevents default rounded corners,
+// inner shadows, and the 16px-zoom-on-focus behavior.
+input,
+select,
+textarea {
+  -webkit-appearance: none;
+  appearance: none;
+  border-radius: 0;
+  font-family: inherit;
+}
+
+button {
+  -webkit-appearance: none;
+  appearance: none;
+  font-family: inherit;
+}
+
+// Prevent iOS Safari from auto-zooming when focusing inputs with <16px text
+@supports (-webkit-touch-callout: none) {
+  input:not([type='checkbox']):not([type='radio']),
+  select,
+  textarea {
+    font-size: max(16px, 1em);
+  }
+}
+
+// Smooth momentum scrolling for any overflow containers on iOS
+.scroll-touch,
+[data-scroll-touch] {
+  -webkit-overflow-scrolling: touch;
 }
 
 // Light theme default
