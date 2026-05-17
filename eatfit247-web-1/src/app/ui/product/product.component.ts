@@ -165,21 +165,19 @@ export class ProductComponent implements OnInit, OnDestroy {
   ];
 
   /** Product reviews loaded from txn_google_review for this product. */
-  productReviews: IPublicGoogleReview[] = [];
+  productReviews = signal<IPublicGoogleReview[]>([]);
 
   get reviewList(): ReadonlyArray<{
     initials: string;
     name: string;
     role?: string;
     quote: string;
-    featured?: boolean;
   }> {
-    return this.productReviews.map((r) => ({
+    return this.productReviews().map((r) => ({
       initials: this.buildInitials(r.reviewerName),
       name: r.reviewerName,
       role: r.reviewerRole ?? undefined,
       quote: r.reviewText ?? '',
-      featured: r.displayOrder === 0,
     }));
   }
 
@@ -908,13 +906,14 @@ export class ProductComponent implements OnInit, OnDestroy {
    */
   private async loadProductReviews(): Promise<void> {
     if (!this.productId) {
-      this.productReviews = [];
+      this.productReviews.set([]);
       return;
     }
-    this.productReviews = await this.googleReviewService.getReviewsByEntity(
+    const reviews = await this.googleReviewService.getReviewsByEntity(
       GoogleReviewEntityTypeEnum.Product,
       this.productId,
     );
+    this.productReviews.set(reviews);
   }
 
   /**

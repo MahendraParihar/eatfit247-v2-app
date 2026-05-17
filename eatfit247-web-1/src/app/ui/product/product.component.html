@@ -380,7 +380,7 @@
 
           <div class="review-grid">
             @for (review of reviewList; track $index) {
-              <figure class="review-card" [class.review-card--featured]="review.featured">
+              <figure class="review-card">
                 <figcaption class="review-card__person">
                   <span class="review-card__avatar" aria-hidden="true">{{ review.initials }}</span>
                   <span class="review-card__who">
