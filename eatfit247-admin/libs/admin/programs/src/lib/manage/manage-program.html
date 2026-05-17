@@ -50,20 +50,6 @@
           <shared-ui-input-error [control]="formGroup.get('details')" controlName="Details"></shared-ui-input-error>
         </div>
 
-        <mat-form-field class="full-width">
-          <mat-label>Ideal For</mat-label>
-          <input
-            matInput
-            formControlName="idealFor"
-            placeholder="Enter ideal for (optional)"
-            [maxlength]="50"
-          />
-          <mat-hint align="end">
-            {{ formGroup.get('idealFor')?.value?.length || 0 }}/50
-          </mat-hint>
-          <shared-ui-input-error [control]="formGroup.get('idealFor')" controlName="Ideal For"></shared-ui-input-error>
-        </mat-form-field>
-
         <div class="row">
           <mat-form-field class="half-width">
             <mat-label>Sequence Number</mat-label>
@@ -127,7 +113,7 @@
           </div>
 
           <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Max People Can Register</mat-label>
+            <mat-label>Max People Can Register (Optional)</mat-label>
             <input
               matInput
               type="number"

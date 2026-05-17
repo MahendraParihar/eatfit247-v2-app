@@ -82,7 +82,6 @@ export class ManageProgram implements OnInit, OnDestroy {
     program: ['', [Validators.required, Validators.minLength(InputLengthEnum.CHAR_2), Validators.maxLength(InputLengthEnum.CHAR_100)]],
     punchLine: ['', [Validators.required, Validators.maxLength(InputLengthEnum.CHAR_250)]],
     details: ['', [Validators.required]],
-    idealFor: ['', [Validators.maxLength(InputLengthEnum.CHAR_50)]],
     sequenceNumber: [0, [Validators.required, Validators.min(0)]],
     isSpecialProgram: [false, [Validators.required]],
     startDate: [null as Date | null],
@@ -287,7 +286,7 @@ export class ManageProgram implements OnInit, OnDestroy {
     if (isSpecial) {
       startDate?.setValidators([Validators.required]);
       endDate?.setValidators([Validators.required]);
-      maxPeople?.setValidators([Validators.required, Validators.min(1)]);
+      maxPeople?.setValidators([Validators.min(1)]);
     } else {
       startDate?.clearValidators();
       endDate?.clearValidators();
@@ -348,7 +347,6 @@ export class ManageProgram implements OnInit, OnDestroy {
         program: this.initialData.program || '',
         punchLine: this.initialData.punchLine || '',
         details: this.initialData.details || '',
-        idealFor: this.initialData.idealFor || '',
         sequenceNumber: this.initialData.sequenceNumber || 0,
         isSpecialProgram: this.initialData.isSpecialProgram !== undefined ? this.initialData.isSpecialProgram : false,
         startDate: this.initialData.startDate ? new Date(this.initialData.startDate as string) : null,
@@ -404,7 +402,6 @@ export class ManageProgram implements OnInit, OnDestroy {
       program: raw.program,
       punchLine: raw.punchLine,
       details: raw.details,
-      idealFor: raw.idealFor,
       sequenceNumber: raw.sequenceNumber,
       isSpecialProgram: raw.isSpecialProgram,
       videoUrl: raw.videoUrl,
@@ -428,9 +425,6 @@ export class ManageProgram implements OnInit, OnDestroy {
       }
     } else {
       formValue.imagePath = undefined;
-    }
-    if (!formValue.idealFor) {
-      delete formValue.idealFor;
     }
     if (!formValue.videoUrl) {
       delete formValue.videoUrl;

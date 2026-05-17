@@ -7,7 +7,6 @@ export interface IBaseProgram {
   punchLine: string;
   details: string;
   imagePath?: IMediaUpload[];
-  idealFor?: string; // Stored as a string in DB, can be comma-separated
   sequenceNumber: number;
   isSpecialProgram: boolean;
   videoUrl?: string;

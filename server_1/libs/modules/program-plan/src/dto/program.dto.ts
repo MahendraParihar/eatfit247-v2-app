@@ -14,9 +14,6 @@ export class CreateProgramDto implements IManageProgram {
   punchLine!: string;
   @IsNotEmpty()
   details!: string;
-  @IsOptional()
-  @MaxLength(InputLengthEnum.CHAR_50)
-  idealFor?: string;
   @IsNotEmpty()
   @IsNumber()
   sequenceNumber!: number;

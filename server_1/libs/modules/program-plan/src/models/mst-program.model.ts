@@ -82,13 +82,6 @@ export class MstProgram extends Model<MstProgram> {
   declare imagePath: IMediaUpload[];
 
   @Column({
-    allowNull: true,
-    field: 'ideal_for',
-    type: DataType.STRING(50),
-  })
-  declare idealFor: string;
-
-  @Column({
     allowNull: false,
     field: 'sequence_number',
     type: DataType.INTEGER,

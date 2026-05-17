@@ -11,7 +11,6 @@ export interface SeasonalProgramCard {
   title: string;
   word: string;
   subtitle: string;
-  bullets: string[];
   details: string;
   status: SeasonalStatus;
   statusLabel: string;
@@ -46,17 +45,12 @@ export class ProgramService {
     const status = this.deriveStatus(p.startDate, p.endDate);
     const firstWord = (p.program ?? '').trim().split(/\s+/)[0] ?? '';
     const cover = p.imagePath && p.imagePath.length > 0 ? buildMediaUrl(p.imagePath[0]?.webUrl) : '';
-    const bullets = (p.idealFor ?? '')
-      .split(',')
-      .map((s) => s.trim())
-      .filter((s) => s.length > 0);
     return {
       programId: p.programId,
       slug: p.seo?.url ?? String(p.programId),
       title: p.program,
       word: firstWord.toUpperCase(),
       subtitle: p.punchLine ?? '',
-      bullets,
       details: p.details ?? '',
       status,
       statusLabel: this.statusLabel(status, p.startDate),

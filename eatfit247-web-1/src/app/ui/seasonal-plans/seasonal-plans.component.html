@@ -67,14 +67,6 @@
                     <p class="seasonal-card__sub">{{ plan.subtitle }}</p>
                   }
 
-                  @if (plan.bullets.length > 0) {
-                    <ul class="seasonal-card__bullets">
-                      @for (b of plan.bullets; track b) {
-                        <li><span class="tick">✓</span>{{ b }}</li>
-                      }
-                    </ul>
-                  }
-
                   @if (plan.details) {
                     @if (detailsHasList(plan.details)) {
                       <ul class="seasonal-card__bullets seasonal-card__bullets--details">
