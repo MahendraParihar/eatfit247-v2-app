@@ -18,7 +18,7 @@
           <mat-label>Financial Year</mat-label>
           <mat-select
             [(value)]="selectedFyStartYear"
-            [disabled]="!context || (context?.availableYears?.length ?? 0) === 0"
+            [disabled]="!context || (context.availableYears?.length ?? 0) === 0"
             (selectionChange)="onFyChange()"
           >
             @for (y of context?.availableYears ?? []; track y.fyStartYear) {
