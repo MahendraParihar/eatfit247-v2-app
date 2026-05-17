@@ -30,7 +30,13 @@ export class SiteHeaderComponent {
         { label: 'About Shweta Shah', route: '/about-shweta-shah' },
       ],
     },
-    { label: 'Programs', route: '/our-programs' },
+    {
+      label: 'Programs',
+      children: [
+        { label: '1:1 Programs', route: '/our-programs' },
+        { label: 'Seasonal Plans', route: '/seasonal-plans' },
+      ],
+    },
     { label: 'Product', route: '/product/de-bloat' },
     { label: 'Success Stories', route: '/success-stories' },
     { label: 'Press and Media', route: '/press-and-media' },
