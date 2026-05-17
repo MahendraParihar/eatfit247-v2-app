@@ -15,6 +15,19 @@ import { MstProgramPlanFees } from './mst-program-plan-fees.model';
     include: [
       getCreatedByUserInclude(false),
       getUpdatedByUserInclude(false),
+      {
+        model: MstProgramPlan,
+        as: 'programPlan',
+        required: false,
+        include: [
+          {
+            model: MstProgramPlanFees,
+            as: 'programPlanFees',
+            required: false,
+            attributes: ['programPlanFeesId', 'programPlanId', 'currencyCode', 'fees'],
+          },
+        ],
+      },
     ],
   },
   details: {

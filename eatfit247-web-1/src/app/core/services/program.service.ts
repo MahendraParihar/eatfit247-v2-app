@@ -21,6 +21,11 @@ export interface SeasonalProgramCard {
   ctaIcon: string;
   ctaIntent: 'reserve' | 'waitlist';
   ctaVariant: 'filled' | 'outlined';
+  noOfCycle: number | null;
+  noOfDaysInCycle: number | null;
+  feesAmount: number | null;
+  feesCurrency: string | null;
+  feesFormatted: string | null;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -45,6 +50,8 @@ export class ProgramService {
     const status = this.deriveStatus(p.startDate, p.endDate);
     const firstWord = (p.program ?? '').trim().split(/\s+/)[0] ?? '';
     const cover = p.imagePath && p.imagePath.length > 0 ? buildMediaUrl(p.imagePath[0]?.webUrl) : '';
+    const plan = p.programPlan ?? null;
+    const fee = this.pickInrFee(plan?.programPlanFees);
     return {
       programId: p.programId,
       slug: p.seo?.url ?? String(p.programId),
@@ -61,7 +68,34 @@ export class ProgramService {
       ctaIcon: status === 'live' ? 'arrow_forward' : status === 'soon' ? 'notifications_active' : 'arrow_forward',
       ctaIntent: status === 'live' ? 'reserve' : 'waitlist',
       ctaVariant: status === 'closed' ? 'outlined' : 'filled',
+      noOfCycle: plan?.noOfCycle ?? null,
+      noOfDaysInCycle: plan?.noOfDaysInCycle ?? null,
+      feesAmount: fee?.fees ?? null,
+      feesCurrency: fee?.currencyCode ?? null,
+      feesFormatted: fee ? this.formatFee(fee.fees, fee.currencyCode) : null,
     };
+  }
+
+  private pickInrFee(
+    fees: { fees: number; currencyCode: string }[] | undefined | null,
+  ): { fees: number; currencyCode: string } | null {
+    if (!fees || fees.length === 0) return null;
+    const inr = fees.find((f) => (f.currencyCode ?? '').toUpperCase() === 'INR');
+    return inr ?? fees[0];
+  }
+
+  private formatFee(amount: number, currency: string): string {
+    const code = (currency ?? 'INR').toUpperCase();
+    const locale = code === 'INR' ? 'en-IN' : 'en-US';
+    try {
+      return new Intl.NumberFormat(locale, {
+        style: 'currency',
+        currency: code,
+        maximumFractionDigits: 0,
+      }).format(amount);
+    } catch {
+      return `${code} ${amount}`;
+    }
   }
 
   private toDate(value: string | Date | null | undefined): Date | null {

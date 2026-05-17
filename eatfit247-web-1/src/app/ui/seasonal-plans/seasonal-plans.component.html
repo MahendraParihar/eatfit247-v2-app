@@ -79,6 +79,32 @@
                     }
                   }
 
+                  @if (plan.noOfCycle || plan.noOfDaysInCycle) {
+                    <div class="seasonal-stats">
+                      @if (plan.noOfCycle) {
+                        <div class="seasonal-stat">
+                          <span class="seasonal-stat__num">{{ plan.noOfCycle }}</span>
+                          <span class="seasonal-stat__label">{{ plan.noOfCycle === 1 ? 'Cycle' : 'Cycles' }}</span>
+                        </div>
+                      }
+                      @if (plan.noOfDaysInCycle) {
+                        <div class="seasonal-stat">
+                          <span class="seasonal-stat__num">{{ plan.noOfDaysInCycle }}</span>
+                          <span class="seasonal-stat__label">Days / Cycle</span>
+                        </div>
+                      }
+                    </div>
+                  }
+
+                  @if (plan.feesFormatted) {
+                    <div class="seasonal-card__price-row">
+                      <span class="seasonal-card__price">
+                        {{ plan.feesFormatted }}
+                      </span>
+                      <span class="seasonal-card__price-note">Taxes extra</span>
+                    </div>
+                  }
+
                   <a
                     [routerLink]="['/book-session']"
                     [queryParams]="{ plan: plan.slug, intent: plan.ctaIntent === 'waitlist' ? 'waitlist' : null }"
