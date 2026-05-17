@@ -267,6 +267,7 @@
   padding: 6px;
   background-color: rgba(0, 0, 0, 0.3);
   border-radius: 20px;
+  -webkit-backdrop-filter: blur(4px);
   backdrop-filter: blur(4px);
 
   .dot {
