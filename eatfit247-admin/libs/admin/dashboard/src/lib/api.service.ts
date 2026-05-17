@@ -2,6 +2,10 @@ import { inject, Injectable } from '@angular/core';
 import { HttpService } from '@core';
 import {
   IAccountKpis,
+  IAnnualFranchiseContext,
+  IAnnualOverview,
+  IAnnualTaxBreakdown,
+  IAnnualTopPlans,
   IContentKpis,
   IDashboardKpis,
   IEngagementData,
@@ -18,7 +22,13 @@ import {
   IShippingKpis,
   ITaxSummary,
   IUpcomingAppointment,
+  TopPlansMode,
 } from '@eatfit247-shared-lib';
+
+export interface IAnnualFranchiseSummary {
+  franchiseId: number;
+  companyName: string;
+}
 
 @Injectable({
   providedIn: 'root',
@@ -199,5 +209,75 @@ export class DashboardApiService {
       throw new Error('Invalid response format: missing data property');
     }
     return res.data as IRecentContentActivity[];
+  }
+
+  // ---- Annual (FY-aware) Dashboard ----
+
+  private readonly annualEndpoint = '/reports/annual-dashboard';
+
+  async getAnnualFranchises(): Promise<IAnnualFranchiseSummary[]> {
+    const res = await this.httpService.get<IAnnualFranchiseSummary[]>(
+      `${this.annualEndpoint}/franchises`,
+    );
+    if (!res || !res.data) {
+      throw new Error('Invalid response format: missing data property');
+    }
+    return res.data as IAnnualFranchiseSummary[];
+  }
+
+  async getAnnualContext(franchiseId?: number): Promise<IAnnualFranchiseContext> {
+    const params: Record<string, string> = {};
+    if (franchiseId !== undefined) params['franchiseId'] = String(franchiseId);
+    const res = await this.httpService.get<IAnnualFranchiseContext>(
+      `${this.annualEndpoint}/context`,
+      { params },
+    );
+    if (!res || !res.data) {
+      throw new Error('Invalid response format: missing data property');
+    }
+    return res.data as IAnnualFranchiseContext;
+  }
+
+  async getAnnualOverview(fyStartYear: number, franchiseId?: number): Promise<IAnnualOverview> {
+    const params: Record<string, string> = { fyStartYear: String(fyStartYear) };
+    if (franchiseId !== undefined) params['franchiseId'] = String(franchiseId);
+    const res = await this.httpService.get<IAnnualOverview>(`${this.annualEndpoint}/overview`, {
+      params,
+    });
+    if (!res || !res.data) {
+      throw new Error('Invalid response format: missing data property');
+    }
+    return res.data as IAnnualOverview;
+  }
+
+  async getAnnualTax(fyStartYear: number, franchiseId?: number): Promise<IAnnualTaxBreakdown> {
+    const params: Record<string, string> = { fyStartYear: String(fyStartYear) };
+    if (franchiseId !== undefined) params['franchiseId'] = String(franchiseId);
+    const res = await this.httpService.get<IAnnualTaxBreakdown>(`${this.annualEndpoint}/tax`, {
+      params,
+    });
+    if (!res || !res.data) {
+      throw new Error('Invalid response format: missing data property');
+    }
+    return res.data as IAnnualTaxBreakdown;
+  }
+
+  async getAnnualTopPlans(
+    fyStartYear: number,
+    mode: TopPlansMode,
+    franchiseId?: number,
+  ): Promise<IAnnualTopPlans> {
+    const params: Record<string, string> = {
+      fyStartYear: String(fyStartYear),
+      mode,
+    };
+    if (franchiseId !== undefined) params['franchiseId'] = String(franchiseId);
+    const res = await this.httpService.get<IAnnualTopPlans>(`${this.annualEndpoint}/top-plans`, {
+      params,
+    });
+    if (!res || !res.data) {
+      throw new Error('Invalid response format: missing data property');
+    }
+    return res.data as IAnnualTopPlans;
   }
 }

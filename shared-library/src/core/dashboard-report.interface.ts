@@ -178,3 +178,70 @@ export interface IRecentContentActivity {
   author: string;
 }
 
+// ---- Annual (FY-aware) Dashboard ----
+
+export interface IFinancialYearOption {
+  /** e.g. 2025 for calendar FY-2025, or 2024 for FY 24-25 (Apr 2024 - Mar 2025) */
+  fyStartYear: number;
+  /** Display label e.g. "FY-2025" or "FY 24-25" */
+  label: string;
+  /** ISO start date of this FY */
+  startDate: string;
+  /** ISO end date of this FY */
+  endDate: string;
+}
+
+export interface IAnnualFranchiseContext {
+  franchiseId: number;
+  companyName: string;
+  /** Month number (1 = Jan-Dec calendar, 4 = Apr-Mar Indian FY) */
+  fyStartMonth: number;
+  availableYears: IFinancialYearOption[];
+}
+
+export interface IAnnualOverviewMonth {
+  /** 1-12, in calendar order */
+  monthIndex: number;
+  /** Three-letter label e.g. "Apr", "May" */
+  monthLabel: string;
+  customerCount: number;
+  planSoldCount: number;
+}
+
+export interface IAnnualOverview {
+  fy: IFinancialYearOption;
+  months: IAnnualOverviewMonth[];
+}
+
+export interface IAnnualTaxRow {
+  monthIndex: number;
+  monthLabel: string;
+  taxableAmount: number;
+  taxAmount: number;
+  totalAmount: number;
+}
+
+export interface IAnnualTaxBreakdown {
+  fy: IFinancialYearOption;
+  rows: IAnnualTaxRow[];
+  totals: {
+    taxableAmount: number;
+    taxAmount: number;
+    totalAmount: number;
+  };
+}
+
+export type TopPlansMode = 'count' | 'revenue';
+
+export interface IAnnualTopPlanSlice {
+  programPlanId: number;
+  planName: string;
+  value: number;
+}
+
+export interface IAnnualTopPlans {
+  fy: IFinancialYearOption;
+  mode: TopPlansMode;
+  slices: IAnnualTopPlanSlice[];
+}
+

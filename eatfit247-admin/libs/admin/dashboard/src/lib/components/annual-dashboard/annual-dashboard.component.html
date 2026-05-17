@@ -1,0 +1,143 @@
+<div class="annual-dashboard">
+  <mat-card class="annual-toolbar">
+    <mat-card-content>
+      <div class="toolbar-row">
+        @if (showFranchiseFilter) {
+          <mat-form-field appearance="outline" class="toolbar-field franchise-field">
+            <mat-label>Franchise</mat-label>
+            <mat-select [(value)]="selectedFranchiseId" (selectionChange)="onFranchiseChange()">
+              <mat-option [value]="null">All franchises</mat-option>
+              @for (f of franchises; track f.franchiseId) {
+                <mat-option [value]="f.franchiseId">{{ f.companyName }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        }
+
+        <mat-form-field appearance="outline" class="toolbar-field fy-field">
+          <mat-label>Financial Year</mat-label>
+          <mat-select
+            [(value)]="selectedFyStartYear"
+            [disabled]="!context || (context?.availableYears?.length ?? 0) === 0"
+            (selectionChange)="onFyChange()"
+          >
+            @for (y of context?.availableYears ?? []; track y.fyStartYear) {
+              <mat-option [value]="y.fyStartYear">{{ y.label }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        @if (contextLoading || dataLoading) {
+          <mat-progress-spinner mode="indeterminate" diameter="24" class="toolbar-spinner" />
+        }
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <div class="annual-grid">
+    <mat-card class="widget widget-line">
+      <mat-card-header>
+        <mat-card-title>Monthly Customers &amp; Plans Sold</mat-card-title>
+        @if (overview) {
+          <mat-card-subtitle>{{ overview.fy.label }}</mat-card-subtitle>
+        }
+      </mat-card-header>
+      <mat-card-content>
+        @if (overview) {
+          <div
+            echarts
+            [options]="lineChartOptions"
+            class="echart line-chart"
+          ></div>
+        } @else if (!dataLoading) {
+          <div class="empty-state">No data available</div>
+        }
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="widget widget-tax">
+      <mat-card-header>
+        <mat-card-title>Monthly Tax Payable</mat-card-title>
+        @if (tax) {
+          <mat-card-subtitle>{{ tax.fy.label }}</mat-card-subtitle>
+        }
+      </mat-card-header>
+      <mat-card-content>
+        @if (tax && tax.rows.length > 0) {
+          <table mat-table [dataSource]="taxRows" class="tax-table">
+            <ng-container matColumnDef="monthLabel">
+              <th mat-header-cell *matHeaderCellDef>Month</th>
+              <td mat-cell *matCellDef="let row">{{ row.monthLabel }}</td>
+              <td mat-footer-cell *matFooterCellDef>Total</td>
+            </ng-container>
+
+            <ng-container matColumnDef="taxableAmount">
+              <th mat-header-cell *matHeaderCellDef class="num">Taxable</th>
+              <td mat-cell *matCellDef="let row" class="num">
+                {{ formatCurrency(row.taxableAmount) }}
+              </td>
+              <td mat-footer-cell *matFooterCellDef class="num">
+                {{ formatCurrency(tax.totals.taxableAmount) }}
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="taxAmount">
+              <th mat-header-cell *matHeaderCellDef class="num">Tax</th>
+              <td mat-cell *matCellDef="let row" class="num">
+                {{ formatCurrency(row.taxAmount) }}
+              </td>
+              <td mat-footer-cell *matFooterCellDef class="num">
+                {{ formatCurrency(tax.totals.taxAmount) }}
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="totalAmount">
+              <th mat-header-cell *matHeaderCellDef class="num">Total</th>
+              <td mat-cell *matCellDef="let row" class="num">
+                {{ formatCurrency(row.totalAmount) }}
+              </td>
+              <td mat-footer-cell *matFooterCellDef class="num">
+                {{ formatCurrency(tax.totals.totalAmount) }}
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="taxColumns; sticky: true"></tr>
+            <tr mat-row *matRowDef="let row; columns: taxColumns"></tr>
+            <tr mat-footer-row *matFooterRowDef="taxColumns; sticky: true" class="totals-row"></tr>
+          </table>
+        } @else if (!dataLoading) {
+          <div class="empty-state">No tax data for this period</div>
+        }
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="widget widget-pie">
+      <mat-card-header>
+        <mat-card-title>Top Performing Plans</mat-card-title>
+        @if (topPlans) {
+          <mat-card-subtitle>{{ topPlans.fy.label }}</mat-card-subtitle>
+        }
+      </mat-card-header>
+      <mat-card-content>
+        <div class="pie-toolbar">
+          <mat-button-toggle-group
+            [value]="topPlansMode"
+            (change)="onTopPlansModeChange($event.value)"
+          >
+            <mat-button-toggle value="count">By Count</mat-button-toggle>
+            <mat-button-toggle value="revenue">By Revenue</mat-button-toggle>
+          </mat-button-toggle-group>
+        </div>
+        @if (topPlans && topPlans.slices.length > 0) {
+          <div
+            echarts
+            [options]="pieChartOptions"
+            class="echart pie-chart"
+          ></div>
+        } @else if (!dataLoading) {
+          <div class="empty-state">No plans sold in this period</div>
+        }
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

@@ -3,6 +3,8 @@
     <div class="dashboard-loading">
       <span>Loading dashboard...</span>
     </div>
+  } @else if (useAnnualDashboard) {
+    <lib-annual-dashboard />
   } @else if (widgetEntries.length === 0) {
     <div class="dashboard-empty">
       <span>No dashboard widgets available for your role.</span>
