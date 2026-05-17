@@ -24,4 +24,5 @@ export * from "./courier-provider.enum";
 export * from "./admin-role.enum";
 export * from "./admin-action.enum";
 export * from "./admin-subject.enum";
+export * from "./google-review.enum";
 

@@ -1,5 +1,13 @@
-import { Component, inject, OnInit, signal, ViewChild } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import {
+  Component,
+  inject,
+  OnDestroy,
+  OnInit,
+  PLATFORM_ID,
+  signal,
+  ViewChild,
+} from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import {
   FormBuilder,
   FormGroup,
@@ -42,6 +50,18 @@ import {
   PaymentStatusEnum,
 } from '@eatfit247-shared-library';
 import { ProductService } from '../../core/services/product.service';
+import { BreadcrumbsComponent } from '@shared-ui';
+import { RouterLink } from '@angular/router';
+import { Subject, takeUntil } from 'rxjs';
+
+interface ICheckoutSidebarItem {
+  key: string;
+  name: string;
+  variant: string;
+  qty: number;
+  price: number;
+  image: string | null;
+}
 
 @Component({
   selector: 'app-checkout',
@@ -59,6 +79,8 @@ import { ProductService } from '../../core/services/product.service';
     MatIconModule,
     MatCheckboxModule,
     MatRadioModule,
+    BreadcrumbsComponent,
+    RouterLink,
   ],
   templateUrl: './checkout.component.html',
   styleUrl: './checkout.component.scss',
@@ -69,7 +91,8 @@ import { ProductService } from '../../core/services/product.service';
     },
   ],
 })
-export class CheckoutComponent implements OnInit {
+export class CheckoutComponent implements OnInit, OnDestroy {
+  private destroy$ = new Subject<void>();
   @ViewChild('stepper') stepper!: MatStepper;
   private readonly fb = inject(FormBuilder);
   private readonly router = inject(Router);
@@ -78,6 +101,7 @@ export class CheckoutComponent implements OnInit {
   private readonly recaptchaService = inject(RecaptchaService);
   private readonly paymentService = inject(PaymentService);
   private readonly productService = inject(ProductService);
+  private readonly platformId = inject(PLATFORM_ID);
   // Stepper state
   // SELECTION step removed – flow now starts from BILLING
   currentStepIndex = signal(0);
@@ -142,9 +166,16 @@ export class CheckoutComponent implements OnInit {
     // Initialize forms first to prevent template errors
     this.initializeForms();
     await this.loadMasterData();
-    this.route.queryParams.subscribe(async (params) => {
-      await this.initFlow(params);
-    });
+    this.route.queryParams
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(async (params) => {
+        await this.initFlow(params);
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   private async initFlow(params: Params): Promise<void> {
@@ -202,7 +233,8 @@ export class CheckoutComponent implements OnInit {
     // Watch for country changes to filter states
     this.basicDetailsForm
       .get('countryId')
-      ?.valueChanges.subscribe((countryId) => {
+      ?.valueChanges.pipe(takeUntil(this.destroy$))
+      .subscribe((countryId) => {
         this.filterStatesByCountry(countryId);
       });
     // Set the default country after forms are initialized (if master data is already loaded)
@@ -379,7 +411,7 @@ export class CheckoutComponent implements OnInit {
           try {
             recaptchaToken =
               await this.recaptchaService.getToken('member_creation');
-          } catch (recaptchaError: any) {
+          } catch (recaptchaError: unknown) {
             console.warn('Failed to get reCAPTCHA token:', recaptchaError);
           }
         }
@@ -391,7 +423,9 @@ export class CheckoutComponent implements OnInit {
           throw new Error('Failed to create member');
         }
         this.memberId = memberResult.memberId;
-        sessionStorage.setItem('checkoutToken', memberResult.checkoutToken);
+        if (memberResult.checkoutToken) {
+          sessionStorage.setItem('checkoutToken', memberResult.checkoutToken);
+        }
       }
       // Create address (skip if already exists)
       if (!this.addressId || !this.memberId) {
@@ -422,9 +456,12 @@ export class CheckoutComponent implements OnInit {
       }
       // Skip TAX step (index 2) and move directly to PREVIEW step (index 3)
       this.moveToStep(this.STEP_INDICES.PREVIEW);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error proceeding from billing:', error);
-      this.error = error.message || 'Failed to proceed. Please try again.';
+      this.error =
+        error instanceof Error
+          ? error.message
+          : 'Failed to proceed. Please try again.';
     } finally {
       this.loading = false;
     }
@@ -514,8 +551,8 @@ export class CheckoutComponent implements OnInit {
       } else {
         await this.checkPlanTax();
       }
-    } catch (e: any) {
-      this.error = e.message || 'Tax calculation failed';
+    } catch (e: unknown) {
+      this.error = e instanceof Error ? e.message : 'Tax calculation failed';
     } finally {
       this.calculatingTax = false;
     }
@@ -591,10 +628,12 @@ export class CheckoutComponent implements OnInit {
       // Move to a payment step
       this.moveToNextStep();
       await this.initializePaymentFlow();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error creating payment order:', error);
       this.error =
-        error.message || 'Failed to create payment order. Please try again.';
+        error instanceof Error
+          ? error.message
+          : 'Failed to create payment order. Please try again.';
     } finally {
       this.loading = false;
     }
@@ -618,12 +657,12 @@ export class CheckoutComponent implements OnInit {
           // Payment successful callback
           await this.handlePaymentSuccess(paymentId, orderId, signature);
         },
-        (error: any) => {
+        (error: unknown) => {
           // Payment failed callback
           this.handlePaymentError(error);
         },
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error initializing payment:', error);
       this.handlePaymentError(error);
     }
@@ -667,7 +706,7 @@ export class CheckoutComponent implements OnInit {
         try {
           recaptchaToken =
             await this.recaptchaService.getToken('checkout_order');
-        } catch (recaptchaError: any) {
+        } catch (recaptchaError: unknown) {
           console.warn(
             'Failed to get reCAPTCHA token for order:',
             recaptchaError,
@@ -758,10 +797,14 @@ export class CheckoutComponent implements OnInit {
       this.paymentId = paymentId;
       this.moveToNextStep();
       // Automatically navigate to success page after a short delay to let user see success state
-      setTimeout(() => {
+      if (isPlatformBrowser(this.platformId)) {
+        setTimeout(() => {
+          this.navigateToSuccess();
+        }, 1500);
+      } else {
         this.navigateToSuccess();
-      }, 1500);
-    } catch (error: any) {
+      }
+    } catch (error: unknown) {
       console.error('Error processing payment:', error);
       this.handlePaymentError(error);
     }
@@ -770,11 +813,14 @@ export class CheckoutComponent implements OnInit {
   /**
    * Handle payment error
    */
-  handlePaymentError(error: any): void {
+  handlePaymentError(error: unknown): void {
     this.processingPayment = false;
     this.showPaymentModal = false;
     this.paymentSuccess = false;
-    this.paymentError = error.message || 'Payment failed. Please try again.';
+    this.paymentError =
+      error instanceof Error
+        ? error.message
+        : 'Payment failed. Please try again.';
     this.moveToStep(this.STEP_INDICES.RESULT);
   }
 
@@ -782,7 +828,7 @@ export class CheckoutComponent implements OnInit {
    * Navigate to success page
    */
   navigateToSuccess(): void {
-    const queryParams: any = {
+    const queryParams: Record<string, string | number | null> = {
       orderId: this.orderId,
       paymentId: this.paymentId,
     };
@@ -937,9 +983,12 @@ export class CheckoutComponent implements OnInit {
       this.productName = this.product.name;
       this.productUnit = variant.quantityValue + ' ' + variant.quantityUnit;
       this.orderAmount = this.productPrice * this.productQuantity;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error loading product details:', error);
-      this.error = error.message || 'Failed to load product details.';
+      this.error =
+        error instanceof Error
+          ? error.message
+          : 'Failed to load product details.';
     } finally {
       this.loading = false;
     }
@@ -982,5 +1031,84 @@ export class CheckoutComponent implements OnInit {
       return `Maximum length is ${maxLength} characters`;
     }
     return '';
+  }
+
+  /** Visual stepper config */
+  readonly stepperSteps = [
+    { label: 'Billing Details', hint: 'Who & where' },
+    { label: 'Review Order', hint: 'Items & tax' },
+    { label: 'Payment', hint: 'Secure gateway' },
+    { label: 'Result', hint: 'All done' },
+  ];
+
+  /** Sync currentStepIndex when mat-stepper changes */
+  onStepperSelectionChange(selectedIndex: number): void {
+    this.currentStepIndex.set(selectedIndex);
+  }
+
+  /** Page sub-heading driven by current step */
+  currentSubheading(): string {
+    switch (this.currentStepIndex()) {
+      case this.STEP_INDICES.BILLING:
+        return 'A few quick details and your order is on its way.';
+      case this.STEP_INDICES.PREVIEW:
+        return 'Review your order before confirming payment.';
+      case this.STEP_INDICES.PAYMENT:
+        return 'Pay securely via our PCI-DSS compliant gateway.';
+      case this.STEP_INDICES.RESULT:
+        return this.paymentSuccess
+          ? 'Your order has been placed successfully.'
+          : 'There was an issue with your payment.';
+      default:
+        return '';
+    }
+  }
+
+  /** Order summary sidebar items */
+  get sidebarItems(): ICheckoutSidebarItem[] {
+    if (this.isProductCheckout) {
+      const image = this.product?.imagePath?.[0]?.webUrl ?? null;
+      return [
+        {
+          key: `product-${this.productVariantId ?? 'na'}`,
+          name: this.productName || 'Product',
+          variant: this.productUnit || '',
+          qty: this.productQuantity,
+          price: this.productPrice,
+          image,
+        },
+      ];
+    }
+    if (this.programPlan) {
+      return [
+        {
+          key: `plan-${this.programPlanId ?? 'na'}`,
+          name: this.programPlan.plan || 'Plan',
+          variant: '',
+          qty: 1,
+          price: this.orderAmount,
+          image: null,
+        },
+      ];
+    }
+    return [];
+  }
+
+  get totalQuantity(): number {
+    return this.sidebarItems.reduce((s, i) => s + i.qty, 0);
+  }
+
+  get subtotalDisplay(): number {
+    if (this.taxCalculation) {
+      return this.taxCalculation.orderAmount;
+    }
+    return this.sidebarItems.reduce((s, i) => s + i.price * i.qty, 0);
+  }
+
+  get grandTotalDisplay(): number {
+    if (this.taxCalculation) {
+      return this.taxCalculation.totalAmount;
+    }
+    return this.subtotalDisplay;
   }
 }

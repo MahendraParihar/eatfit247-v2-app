@@ -51,9 +51,9 @@ export class MemberService {
     if (searchDto.countryId !== undefined && searchDto.countryId !== null) {
       whereCondition.countryId = searchDto.countryId;
     }
-    const pageNumber = searchDto.page || 0;
-    const pageSize = searchDto.limit || 15;
-    const offset = pageNumber === 0 ? 0 : pageNumber * pageSize;
+    const pageNumber = Math.max(0, Math.floor(Number(searchDto.page) || 0));
+    const pageSize = Math.min(500, Math.max(1, Math.floor(Number(searchDto.limit) || 15)));
+    const offset = pageNumber * pageSize;
     const order = this.buildMemberListOrder(searchDto);
     const { rows, count } = await this.memberRepository.scope('list').findAndCountAll({
       where: whereCondition,
@@ -418,12 +418,34 @@ export class MemberService {
         modifiedIp: cIp,
       };
 
-      const newMember = await this.memberRepository.create(createObj);
-      return {
-        memberId: newMember.memberId,
-        isNew: true,
-        checkoutToken: CheckoutTokenUtil.sign(newMember.memberId),
-      };
+      try {
+        const newMember = await this.memberRepository.create(createObj);
+        return {
+          memberId: newMember.memberId,
+          isNew: true,
+          checkoutToken: CheckoutTokenUtil.sign(newMember.memberId),
+        };
+      } catch (error: unknown) {
+        // Handle race condition: if concurrent request already created the member
+        if (error instanceof Error && error.name === 'SequelizeUniqueConstraintError') {
+          const retryMember = await this.memberRepository.findOne({
+            where: {
+              [Op.or]: [
+                { emailId: obj.emailId },
+                { contactNumber: obj.contactNumber, countryCode: obj.countryCode },
+              ],
+            },
+          });
+          if (retryMember) {
+            return {
+              memberId: retryMember.memberId,
+              isNew: false,
+              checkoutToken: CheckoutTokenUtil.sign(retryMember.memberId),
+            };
+          }
+        }
+        throw error;
+      }
     }
   }
 

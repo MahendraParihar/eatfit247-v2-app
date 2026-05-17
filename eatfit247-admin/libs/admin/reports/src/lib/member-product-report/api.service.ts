@@ -1,11 +1,12 @@
-import { Injectable } from '@angular/core';
-import { ApiBaseService } from '@core';
+import { inject, Injectable } from '@angular/core';
+import { HttpService } from '@core';
 import { IDropdownItem, IMemberProductReportFilter, IMemberProductReportItem, ITableList } from '@eatfit247-shared-lib';
 
 @Injectable({
   providedIn: 'root'
 })
-export class MemberProductReportApiService extends ApiBaseService {
+export class MemberProductReportApiService {
+  private readonly httpService = inject(HttpService);
   private readonly endpoint = '/reports/member-product';
 
   async getMemberProductReport(params: IMemberProductReportFilter): Promise<ITableList<IMemberProductReportItem>> {
@@ -31,6 +32,11 @@ export class MemberProductReportApiService extends ApiBaseService {
   async exportMemberProductReportsBulk(memberProductIds: number[]): Promise<Blob> {
     const exportEndpoint = `${this.endpoint}/export/bulk`;
     return await this.httpService.postBlob(exportEndpoint, { memberProductIds });
+  }
+
+  async exportMemberProductReportExcel(params: IMemberProductReportFilter): Promise<Blob> {
+    const exportEndpoint = `${this.endpoint}/export-excel`;
+    return await this.httpService.postBlob(exportEndpoint, params);
   }
 }
 

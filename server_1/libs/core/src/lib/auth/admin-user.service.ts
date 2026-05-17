@@ -2,19 +2,21 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import {
   MstAdminRole,
-  MstAdminRolePermission,
   MstAdminUser,
   TxnAdminFranchise,
+  TxnAdminUserRole,
 } from '../database/models';
 import { IAuthUser } from '@eatfit247-shared-lib';
 import { CommonFunctionsUtil } from '../utils/common-functions.utils';
+import { RbacCacheService } from './rbac-cache.service';
 
 @Injectable()
 export class AdminUserService {
   constructor(
     @InjectModel(MstAdminUser) private readonly adminRepository: typeof MstAdminUser,
-    @InjectModel(MstAdminRolePermission) private readonly rolePermRepository: typeof MstAdminRolePermission,
+    @InjectModel(TxnAdminUserRole) private readonly rolePermRepository: typeof TxnAdminUserRole,
     @InjectModel(TxnAdminFranchise) private readonly adminFranchiseRepository: typeof TxnAdminFranchise,
+    private readonly rbacCacheService: RbacCacheService,
   ) {}
 
   async findById(adminId: number): Promise<MstAdminUser | null> {
@@ -25,7 +27,7 @@ export class AdminUserService {
 
   /**
    * Full session user for JWT validate and /auth/profile:
-   * profile fields, role codes, and franchise scope (user.franchise_id ∪ txn_admin_franchises).
+   * profile fields, DB-driven permissions (via Redis cache), and franchise scope.
    */
   async findAuthUserForSession(adminId: number): Promise<IAuthUser | null> {
     const adminUser = await this.adminRepository.findOne({
@@ -35,40 +37,11 @@ export class AdminUserService {
       return null;
     }
 
-    const [roleRows, franchiseRows] = await Promise.all([
-      this.rolePermRepository.findAll({
-        where: { adminId, active: true },
-        include: [
-          {
-            model: MstAdminRole,
-            as: 'role',
-            attributes: ['roleCode'],
-            required: true,
-          },
-        ],
-      }),
-      this.adminFranchiseRepository.findAll({
-        where: { adminId },
-        attributes: ['franchiseId'],
-      }),
-    ]);
+    // Load permissions from Redis cache (falls back to DB on cache miss)
+    const cachedPermissions = await this.rbacCacheService.getPermissions(adminId);
 
-    const roleKeys = [
-      ...new Set(
-        roleRows
-          .map((r) => r.role?.roleCode)
-          .filter((c): c is string => typeof c === 'string' && c.length > 0),
-      ),
-    ];
-
-    const franchiseIdSet = new Set<number>();
-    if (adminUser.franchiseId != null) {
-      franchiseIdSet.add(adminUser.franchiseId);
-    }
-    for (const row of franchiseRows) {
-      franchiseIdSet.add(row.franchiseId);
-    }
-    const franchiseIds = [...franchiseIdSet].sort((a, b) => a - b);
+    // Derive roleKeys for backward compat
+    const roleKeys = cachedPermissions?.roles.map((r) => r.roleCode) ?? [];
 
     return {
       adminId: adminUser.adminId,
@@ -80,7 +53,10 @@ export class AdminUserService {
       countryCode: adminUser.countryCode,
       contactNumber: adminUser.contactNumber,
       roleKeys,
-      franchiseIds,
+      franchiseIds: cachedPermissions?.franchiseIds ?? [],
+      roles: cachedPermissions?.roles,
+      permissions: cachedPermissions?.permissions,
+      subjectMeta: cachedPermissions?.subjectMeta,
     };
   }
 

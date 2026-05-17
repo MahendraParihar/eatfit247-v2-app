@@ -1,71 +1,96 @@
-<div class="faq-page page-container">
-  <header class="section__header">
-    <span class="section__badge">
-      <span class="section__badge-text">Got questions?</span>
-    </span>
-    <h1 class="section__title">Frequently Asked Questions</h1>
-    <p class="section__tagline">
-      Everything you need to know about diet consultancy, Debloat powder, and working with EatFit247.
-    </p>
-  </header>
+<div class="faq-page">
+  <section class="page-hero">
+    <div class="ef-container">
+      <div class="page-hero__inner">
+        <div>
+          <app-breadcrumbs [crumbs]="[{ label: 'Home', link: '/' }, { label: 'FAQ' }]"></app-breadcrumbs>
+          <h1>Good <span class="accent">questions</span> deserve careful answers.</h1>
+          <p class="lead">Everything we're asked most often about our programs and approach.</p>
+        </div>
+        <div class="page-hero__visual" aria-hidden="true">
+          <div class="ring"></div>
+          <div class="ring ring--inner"></div>
+          <div class="disc">quiz</div>
+          <div class="chip chip--a"><span class="mat-icon">forum</span>Ask us</div>
+          <div class="chip chip--b"><span class="mat-icon">support_agent</span>Mon–Sat</div>
+        </div>
+      </div>
+    </div>
+  </section>
 
   @if (loading()) {
     <app-loader page="faq"></app-loader>
-  }
+  } @else {
+    <section class="ef-container faq-page__body">
+      <div class="faq-shell">
+        <div class="faq-cats" role="tablist" aria-label="FAQ categories">
+          <button
+            type="button"
+            class="faq-cat"
+            [class.active]="activeCategory() === 'all'"
+            (click)="setCategory('all')"
+            role="tab"
+          >
+            <span class="mat-icon">apps</span>All<span class="count">{{ countFor('all') }}</span>
+          </button>
+          @for (cat of faqCategories; track cat.key) {
+            <button
+              type="button"
+              class="faq-cat"
+              [class.active]="activeCategory() === cat.key"
+              (click)="setCategory(cat.key)"
+              role="tab"
+            >
+              <span class="mat-icon">{{ cat.icon }}</span>{{ cat.category }}<span class="count">{{ countFor(cat.key) }}</span>
+            </button>
+          }
+        </div>
 
-  @if (!loading()) {
-    <div class="faq-categories">
-      @for (cat of faqCategories; track cat.category) {
-        <section class="faq-category" [attr.aria-labelledby]="'cat-' + $index">
-          <div class="faq-category__header">
-            <mat-icon class="faq-category__icon" aria-hidden="true">{{ cat.icon }}</mat-icon>
-            <h2 [id]="'cat-' + $index" class="faq-category__title">{{ cat.category }}</h2>
+        <div class="faq-search">
+          <span class="mat-icon faq-search__icon">search</span>
+          <input
+            type="search"
+            placeholder="Search questions…"
+            aria-label="Search FAQs"
+            [ngModel]="searchQuery()"
+            (ngModelChange)="searchQuery.set($event)"
+          />
+        </div>
+
+        @for (group of visibleGroups(); track group.key) {
+          <div class="faq-group">
+            <h2 class="faq-group__h"><span class="mat-icon">{{ group.icon }}</span>{{ group.category }}</h2>
+            <div class="faq-list">
+              @for (item of group.items; track item.question) {
+                <details class="faq">
+                  <summary>{{ item.question }}<span class="mat-icon">add</span></summary>
+                  @if (item.answerHtml) {
+                    <p [innerHTML]="item.answerHtml"></p>
+                  } @else {
+                    <p>{{ item.answer }}</p>
+                  }
+                </details>
+              }
+            </div>
           </div>
+        }
 
-          <mat-accordion class="faq-accordion" multi="false">
-            @for (item of cat.items; track item.question) {
-              <mat-expansion-panel class="faq-panel" hideToggle>
-                <mat-expansion-panel-header class="faq-panel__header">
-                  <mat-panel-title class="faq-panel__question">
-                    {{ item.question }}
-                  </mat-panel-title>
-                  <mat-panel-description class="faq-panel__toggle-icon">
-                    <mat-icon>expand_more</mat-icon>
-                  </mat-panel-description>
-                </mat-expansion-panel-header>
-                <p class="faq-panel__answer">{{ item.answer }}</p>
-              </mat-expansion-panel>
-            }
-          </mat-accordion>
-        </section>
-      }
-    </div>
+        @if (!hasResults()) {
+          <div class="faq-empty">
+            <span class="mat-icon faq-empty__icon">search_off</span>
+            <p>No questions match your search. <a routerLink="/contact-us">Ask us directly &rarr;</a></p>
+          </div>
+        }
 
-    <div class="faq-cta-block">
-      <h2 class="faq-cta-block__title">Still have questions?</h2>
-      <p class="faq-cta-block__subtitle">
-        Our team is happy to help. Reach out and we'll get back to you within 24 hours.
-      </p>
-      <div class="faq-cta-block__actions">
-        <a
-          routerLink="/contact-us"
-          mat-flat-button
-          color="primary"
-          class="primary-action-button"
-          aria-label="Go to Contact Us page"
-        >
-          Contact Us
-        </a>
-        <a
-          routerLink="/our-programs"
-          mat-stroked-button
-          color="primary"
-          class="secondary-action-button"
-          aria-label="View our wellness programs"
-        >
-          View Programs
-        </a>
+        <div class="faq-cta-card">
+          <span class="mat-icon faq-cta-card__icon">contact_support</span>
+          <h3 class="faq-cta-card__title">Still have questions?</h3>
+          <p class="faq-cta-card__sub">We reply within one business day.</p>
+          <a routerLink="/contact-us" class="mat-btn mat-btn--filled">
+            Contact us <span class="mat-icon">arrow_forward</span>
+          </a>
+        </div>
       </div>
-    </div>
+    </section>
   }
 </div>

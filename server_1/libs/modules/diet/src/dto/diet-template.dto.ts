@@ -13,7 +13,6 @@ import { Type } from 'class-transformer';
 import {
   IDietPlanDetail,
   IDietPlanRecipes,
-  IDietTemplateDetail,
   IDropdownItem,
   IManageDietTemplate,
   InputLengthEnum,
@@ -33,9 +32,8 @@ export class CreateDietTemplateDto implements IManageDietTemplate {
   @IsNumber()
   dietTemplateId?: number;
   @IsOptional()
-  @ValidateNested()
-  @Type(() => Object)
-  dietDetail?: IDietTemplateDetail;
+  @IsNumber()
+  programId?: number;
 }
 
 export class DietTemplateDetailDto {
@@ -47,7 +45,7 @@ export class DietTemplateDetailDto {
   @IsOptional()
   @IsNumber()
   @Max(365)
-  @Min(1)
+  @Min(0)
   dayNo?: number;
   @IsNumber()
   @IsNotEmpty()

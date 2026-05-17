@@ -8,7 +8,7 @@ import {
   RequireAbility,
   UpdateActiveDto,
 } from '@server_1/core';
-import { ProgramCategoryService, ProgramService } from '../../services';
+import { ProgramService } from '../../services';
 import { CreateProgramDto } from '../../dto';
 import {
   AdminActionEnum,
@@ -22,15 +22,17 @@ import {
 @Controller('program')
 @UseGuards(JwtAuthGuard, AbilitiesGuard)
 export class ProgramController {
-  constructor(
-    private readonly service: ProgramService,
-    private readonly programCategoryService: ProgramCategoryService,
-  ) {}
+  constructor(private readonly service: ProgramService) {}
 
   @Get('list')
   @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.Program)
   async list(@Query() req: BasicSearchDto): Promise<ITableList<IProgram>> {
     return await this.service.findAll(req);
+  }
+
+  @Get('dropdown')
+  async dropdown(): Promise<IDropdownItem[]> {
+    return await this.service.getProgramList();
   }
 
   @Get('manage/:id')
@@ -70,14 +72,4 @@ export class ProgramController {
   ): Promise<void> {
     await this.service.changeStatus(id, body.active, requestedIp, currentUser.adminId);
   }
-
-  @Get('program-master')
-  @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.Program)
-  async programMasterData(): Promise<{ programCategory: IDropdownItem[] }> {
-    const categories = await this.programCategoryService.getProgramCategoryList();
-    return {
-      programCategory: categories,
-    };
-  }
 }
-

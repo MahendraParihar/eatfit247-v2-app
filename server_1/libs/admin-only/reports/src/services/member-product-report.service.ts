@@ -13,6 +13,7 @@ import { MstCourierProvider, TxnShipment } from '@server_1/modules/delivery';
 import { MemberProductReportDto } from '../dto';
 import archiver from 'archiver';
 import moment from 'moment/moment';
+import * as ExcelJS from 'exceljs';
 
 @Injectable()
 export class MemberProductReportService {
@@ -254,32 +255,36 @@ export class MemberProductReportService {
     const archive = archiver('zip', {
       zlib: { level: 9 }, // Maximum compression
     });
-    // Generate invoices for each product order and add to zip
-    const invoicePromises = productOrders.map(async (item: any) => {
-      try {
-        const productOrder = (this.memberProductService as any).convertToModel(item);
-        const memberId = productOrder.memberId;
-        const productId = productOrder.memberProductId;
-        // Generate invoice PDF
-        const invoiceFile = await this.memberProductService.generateInvoicePDF(memberId, productId);
-        // Convert base64 buffer to Buffer
-        const pdfBuffer = Buffer.from(invoiceFile.buffer, 'base64');
-        // Add to zip with a clean filename
-        const memberName = `${productOrder.memberName || 'Member'}_${memberId}`.replace(
-          /[^a-zA-Z0-9_]/g,
-          '_',
-        );
-        const fileName = `Product_Invoice_${memberName}_${productId}.pdf`;
-        archive.append(pdfBuffer, { name: fileName });
-      } catch (error) {
-        this.logger.error(`Failed to generate invoice for product order ${item.memberProductId}`, {
-          error,
-        });
-        // Continue with other invoices even if one fails
-      }
-    });
-    // Wait for all invoices to be added to the archive
-    await Promise.all(invoicePromises);
+    // Generate invoices in batches to avoid Puppeteer OOM
+    const BATCH_SIZE = 3;
+    for (let i = 0; i < productOrders.length; i += BATCH_SIZE) {
+      const batch = productOrders.slice(i, i + BATCH_SIZE);
+      await Promise.all(
+        batch.map(async (item: any) => {
+          try {
+            const productOrder = (this.memberProductService as any).convertToModel(item);
+            const memberId = productOrder.memberId;
+            const productId = productOrder.memberProductId;
+            // Generate invoice PDF
+            const invoiceFile = await this.memberProductService.generateInvoicePDF(memberId, productId);
+            // Convert base64 buffer to Buffer
+            const pdfBuffer = Buffer.from(invoiceFile.buffer, 'base64');
+            // Add to zip with a clean filename
+            const memberName = `${productOrder.memberName || 'Member'}_${memberId}`.replace(
+              /[^a-zA-Z0-9_]/g,
+              '_',
+            );
+            const fileName = `Product_Invoice_${memberName}_${productId}.pdf`;
+            archive.append(pdfBuffer, { name: fileName });
+          } catch (error) {
+            this.logger.error(`Failed to generate invoice for product order ${item.memberProductId}`, {
+              error,
+            });
+            // Continue with other invoices even if one fails
+          }
+        }),
+      );
+    }
     // Finalize the archive
     await archive.finalize();
     return archive;
@@ -345,34 +350,127 @@ export class MemberProductReportService {
     const archive = archiver('zip', {
       zlib: { level: 9 }, // Maximum compression
     });
-    // Generate invoices for each product order and add to zip
-    const invoicePromises = productOrders.map(async (item: any) => {
-      try {
-        const productOrder = (this.memberProductService as any).convertToModel(item);
-        const memberId = productOrder.memberId;
-        const productId = productOrder.memberProductId;
-        // Generate invoice PDF
-        const invoiceFile = await this.memberProductService.generateInvoicePDF(memberId, productId);
-        // Convert base64 buffer to Buffer
-        const pdfBuffer = Buffer.from(invoiceFile.buffer, 'base64');
-        // Add to zip with a clean filename
-        const memberName = `${productOrder.memberName || 'Member'}_${memberId}`.replace(
-          /[^a-zA-Z0-9_]/g,
-          '_',
-        );
-        const fileName = `Product_Invoice_${memberName}_${productId}.pdf`;
-        archive.append(pdfBuffer, { name: fileName });
-      } catch (error) {
-        this.logger.error(`Failed to generate invoice for product order ${item.memberProductId}`, {
-          error,
-        });
-        // Continue with other invoices even if one fails
-      }
-    });
-    // Wait for all invoices to be added to the archive
-    await Promise.all(invoicePromises);
+    // Generate invoices in batches to avoid Puppeteer OOM
+    const BATCH_SIZE = 3;
+    for (let i = 0; i < productOrders.length; i += BATCH_SIZE) {
+      const batch = productOrders.slice(i, i + BATCH_SIZE);
+      await Promise.all(
+        batch.map(async (item: any) => {
+          try {
+            const productOrder = (this.memberProductService as any).convertToModel(item);
+            const memberId = productOrder.memberId;
+            const productId = productOrder.memberProductId;
+            // Generate invoice PDF
+            const invoiceFile = await this.memberProductService.generateInvoicePDF(memberId, productId);
+            // Convert base64 buffer to Buffer
+            const pdfBuffer = Buffer.from(invoiceFile.buffer, 'base64');
+            // Add to zip with a clean filename
+            const memberName = `${productOrder.memberName || 'Member'}_${memberId}`.replace(
+              /[^a-zA-Z0-9_]/g,
+              '_',
+            );
+            const fileName = `Product_Invoice_${memberName}_${productId}.pdf`;
+            archive.append(pdfBuffer, { name: fileName });
+          } catch (error) {
+            this.logger.error(`Failed to generate invoice for product order ${item.memberProductId}`, {
+              error,
+            });
+            // Continue with other invoices even if one fails
+          }
+        }),
+      );
+    }
     // Finalize the archive
     await archive.finalize();
     return archive;
+  }
+
+  /**
+   * Export member product report as Excel file
+   * @param dto - Member product report filter DTO
+   * @returns ExcelJS workbook buffer
+   */
+  async exportMemberProductReportExcel(dto: MemberProductReportDto): Promise<Buffer> {
+    const startDateStr = moment(dto.startDate).startOf('day').utc().startOf('day');
+    const endDateStr = moment(dto.endDate).endOf('day').utc().endOf('day');
+    const whereCondition: any = {
+      active: true,
+      paymentDate: {
+        [Op.and]: {
+          [Op.gte]: startDateStr.format(),
+          [Op.lte]: endDateStr.format(),
+        },
+      },
+    };
+
+    if (dto.paymentStatusId) {
+      whereCondition.paymentStatusId = dto.paymentStatusId;
+    }
+    if (dto.franchiseId) {
+      whereCondition.franchiseId = dto.franchiseId;
+    }
+
+    this.applyShipmentFilters(whereCondition, dto);
+
+    const productOrders = await this.memberProductRepository.scope('list').findAll({
+      where: whereCondition,
+      include: [
+        {
+          model: TxnMember,
+          as: 'member',
+          required: true,
+          attributes: ['memberId', 'firstName', 'lastName', 'emailId', 'contactNumber', 'franchiseId'],
+        },
+      ],
+      order: [['paymentDate', 'ASC']],
+      raw: true,
+      nest: true,
+    });
+
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet('Member Product Report');
+
+    sheet.columns = [
+      { header: 'Invoice ID', key: 'invoiceId', width: 20 },
+      { header: 'Payment Date', key: 'paymentDate', width: 15 },
+      { header: 'Member Name', key: 'memberName', width: 22 },
+      { header: 'Franchise', key: 'franchiseName', width: 25 },
+      { header: 'Sub Total', key: 'subTotalAmount', width: 15 },
+      { header: 'Discount', key: 'discountAmount', width: 12 },
+      { header: 'Tax Amount', key: 'taxAmount', width: 15 },
+      { header: 'Total Amount', key: 'totalAmount', width: 15 },
+      { header: 'Payment Status', key: 'paymentStatus', width: 18 },
+      { header: 'Payment Mode', key: 'paymentMode', width: 18 },
+      { header: 'State', key: 'state', width: 20 },
+      { header: 'Country', key: 'country', width: 18 },
+    ];
+
+    const headerRow = sheet.getRow(1);
+    headerRow.font = { bold: true };
+    headerRow.alignment = { horizontal: 'center' };
+
+    for (const item of productOrders as any[]) {
+      const productOrder = (this.memberProductService as any).convertToModel(item, []);
+      const memberAddress = productOrder.memberAddress || {};
+      const billingAddress = memberAddress.billingAddress || {};
+
+      sheet.addRow({
+        invoiceId: productOrder.invoiceId || '',
+        paymentDate: productOrder.paymentDate ? moment(productOrder.paymentDate).format('YYYY-MM-DD') : '',
+        memberName: productOrder.memberName || '',
+        franchiseName: productOrder.franchise || '',
+        subTotalAmount: productOrder.subTotalAmount || 0,
+        discountAmount: productOrder.discountAmount || 0,
+        taxAmount: productOrder.taxAmount || 0,
+        totalAmount: productOrder.totalAmount || 0,
+        paymentStatus: productOrder.paymentStatus || '',
+        paymentMode: productOrder.paymentMode || '',
+        state: billingAddress.state || '',
+        country: billingAddress.country || '',
+      });
+    }
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    return Buffer.from(buffer);
   }
 }

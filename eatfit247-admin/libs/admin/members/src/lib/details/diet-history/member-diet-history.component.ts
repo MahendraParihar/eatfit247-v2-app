@@ -32,7 +32,7 @@ export class MemberDietHistoryComponent implements OnInit, OnDestroy {
   memberId!: number;
   totalCount = signal(0);
   list = signal<IMemberDietPlan[]>([]);
-  columnsToDisplay: string[] = ['program', 'programCategory', 'noOfCycle', 'dietPlanStatus', 'startDate', 'endDate', 'updatedBy'];
+  columnsToDisplay: string[] = ['program', 'noOfCycle', 'dietPlanStatus', 'startDate', 'endDate', 'updatedBy'];
   dietPlanStatusEnum = DietPlanStatusEnum;
   loading = signal(false);
   private destroy$ = new Subject<void>();

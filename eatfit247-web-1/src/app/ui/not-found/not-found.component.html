@@ -1,49 +1,42 @@
-<div class="not-found-page page-container" role="main" aria-labelledby="not-found-title">
-  <div class="not-found-inner">
-    <p class="not-found__code" aria-hidden="true">404</p>
-    <h1 id="not-found-title" class="not-found__title">Page Not Found</h1>
-    <p class="not-found__subtitle">
-      Looks like this page has gone on a wellness retreat. Let's get you back on track.
-    </p>
-
-    <div class="not-found__actions">
-      <a
-        routerLink="/"
-        mat-flat-button
-        color="primary"
-        class="primary-action-button"
-        aria-label="Go to homepage"
-      >
-        <mat-icon>home</mat-icon>
-        Go to Home
-      </a>
-      <a
-        routerLink="/our-programs"
-        mat-stroked-button
-        color="primary"
-        class="secondary-action-button"
-        aria-label="View our wellness programs"
-      >
-        Our Programs
-      </a>
-      <a
-        routerLink="/product"
-        mat-stroked-button
-        color="primary"
-        class="secondary-action-button"
-        aria-label="Shop Debloat powder"
-      >
-        Shop Products
-      </a>
-      <a
-        routerLink="/blog"
-        mat-stroked-button
-        color="primary"
-        class="secondary-action-button"
-        aria-label="Read our health blog"
-      >
-        Read Blog
-      </a>
+<section class="page-hero">
+  <div class="ef-container">
+    <div class="page-hero__inner">
+      <div>
+        <app-breadcrumbs [crumbs]="[{ label: 'Home', link: '/' }, { label: '404' }]"></app-breadcrumbs>
+        <h1>This page took a <span class="accent">wellness retreat</span>.</h1>
+        <p class="lead">The link you followed may be broken or the page has moved. Let's get you back on track.</p>
+      </div>
+      <div class="page-hero__visual" aria-hidden="true">
+        <div class="ring"></div>
+        <div class="ring ring--inner"></div>
+        <div class="disc">explore_off</div>
+        <div class="chip chip--a"><span class="mat-icon">search</span>Lost page</div>
+        <div class="chip chip--b"><span class="mat-icon">home</span>Back home</div>
+      </div>
     </div>
   </div>
-</div>
+</section>
+
+<section class="ef-container not-found-section" role="main" aria-labelledby="not-found-title">
+  <p class="not-found__code" aria-hidden="true">404</p>
+  <h2 id="not-found-title" class="section-title">Page Not Found</h2>
+  <p class="not-found__subtitle">
+    Looks like this page has gone on a wellness retreat. Pick a destination below.
+  </p>
+
+  <div class="not-found__actions">
+    <a routerLink="/" class="mat-btn mat-btn--filled" aria-label="Go to homepage">
+      <span class="mat-icon">home</span>
+      Go to Home
+    </a>
+    <a routerLink="/our-programs" class="mat-btn mat-btn--outlined" aria-label="View our wellness programs">
+      Our Programs
+    </a>
+    <a routerLink="/product" class="mat-btn mat-btn--outlined" aria-label="Shop products">
+      Shop Products
+    </a>
+    <a routerLink="/blog" class="mat-btn mat-btn--outlined" aria-label="Read our health blog">
+      Read Blog
+    </a>
+  </div>
+</section>

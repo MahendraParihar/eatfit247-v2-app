@@ -1,17 +1,39 @@
 @if (isLoading()) {
   <app-loader page="default"></app-loader>
 }
-@if (!isLoading() && pageData) {
-  <div class="legal-container page-container">
-    <header class="section__header">
-      <h1 class="section__title">
-        {{ pageData.title }}
-      </h1>
-    </header>
-    <section
-      class="legal-section"
-      [innerHTML]="pageData.details"
-    ></section>
-  </div>
-}
+@if (!isLoading()) {
+  <section class="page-hero">
+    <div class="ef-container">
+      <div class="page-hero__inner">
+        <div>
+          <app-breadcrumbs
+            [crumbs]="[
+              { label: 'Home', link: '/' },
+              { label: pageData?.title || 'Privacy Policy' }
+            ]"
+          ></app-breadcrumbs>
+          <h1>Your data, <span class="accent">treated with care</span>.</h1>
+          <p class="lead">What we collect, why, and how we safeguard it.</p>
+        </div>
+        <div class="page-hero__visual" aria-hidden="true">
+          <div class="ring"></div>
+          <div class="ring ring--inner"></div>
+          <div class="disc">shield_person</div>
+          <div class="chip chip--a"><span class="mat-icon">lock</span>Encrypted</div>
+          <div class="chip chip--b"><span class="mat-icon">verified_user</span>Audited</div>
+        </div>
+      </div>
+    </div>
+  </section>
 
+  <section class="ef-container legal-section-wrap">
+    @if (errorMessage()) {
+      <div class="legal-error">
+        <span class="mat-icon">error</span>
+        <p>{{ errorMessage() }}</p>
+      </div>
+    } @else if (pageData) {
+      <div class="prose" [innerHTML]="pageData.details"></div>
+    }
+  </section>
+}

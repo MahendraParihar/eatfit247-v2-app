@@ -53,4 +53,20 @@ export class MemberProductReportController {
     archive.pipe(res);
   }
 
+  @Post('export-excel')
+  @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.Report)
+  async exportMemberProductReportExcel(
+    @Body() dto: MemberProductReportDto,
+    @Res() res: Response,
+  ): Promise<void> {
+    const buffer = await this.memberProductReportService.exportMemberProductReportExcel(dto);
+    const startDate = dto.startDate.replace(/-/g, '');
+    const endDate = dto.endDate.replace(/-/g, '');
+    const filename = `member-product-report_${startDate}_to_${endDate}.xlsx`;
+    res.set({
+      'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'Content-Disposition': `attachment; filename="${filename}"`,
+    });
+    res.send(buffer);
+  }
 }

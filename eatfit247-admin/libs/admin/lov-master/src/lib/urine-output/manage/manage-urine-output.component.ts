@@ -9,7 +9,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { MatCardModule } from '@angular/material/card';
 import { InputErrorComponent, UploadFormComponent, ValidationUtil } from '@shared';
-import { LovMasterApiService } from '../../api.service';
+import { UrineOutputApiService } from '../../api.service';
 import { FileTypeEnum, IManageUrineOutput, InputLengthEnum, IUrineOutput, MediaForEnum } from '@eatfit247-shared-lib';
 
 @Component({
@@ -33,7 +33,7 @@ import { FileTypeEnum, IManageUrineOutput, InputLengthEnum, IUrineOutput, MediaF
 export class ManageUrineOutput implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private apiService = inject(LovMasterApiService);
+  private apiService = inject(UrineOutputApiService);
 
   private fb: FormBuilder = inject(FormBuilder);
   formGroup: FormGroup = this.fb.group({
@@ -73,7 +73,7 @@ export class ManageUrineOutput implements OnInit {
   }
 
   async loadData(id: number): Promise<void> {
-    this.initialData = await this.apiService.getUrineOutputById(id);
+    this.initialData = await this.apiService.getById(id);
   }
 
   async onSubmit(): Promise<void> {
@@ -86,9 +86,9 @@ export class ManageUrineOutput implements OnInit {
       }
       if (this.isEditMode && this.initialData) {
         formValue.urineOutputId = this.initialData.urineOutputId;
-        await this.apiService.updateUrineOutput(this.initialData.urineOutputId, formValue);
+        await this.apiService.update(this.initialData.urineOutputId, formValue);
       } else {
-        await this.apiService.createUrineOutput(formValue);
+        await this.apiService.create(formValue);
       }
       this.router.navigate(['/lov-master/urine-output']);
     } else {

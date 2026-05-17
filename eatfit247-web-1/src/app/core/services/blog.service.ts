@@ -1,6 +1,10 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpService } from './http.service';
-import { IPublicBlog, IPublicTableList } from '@eatfit247-shared-library/core';
+import {
+  IBlogCategory,
+  IPublicBlog,
+  IPublicTableList,
+} from '@eatfit247-shared-library/core';
 import { ICardData } from '@shared-ui';
 import { buildMediaUrl } from '../utils/media-url.util';
 
@@ -44,6 +48,16 @@ export class BlogService {
       `blog/by-url/${encodedSlug}`
     );
     return res.data;
+  }
+
+  /**
+   * Load all active blog categories.
+   */
+  async getBlogCategories(): Promise<IBlogCategory[]> {
+    const res = await this.httpService.get<IBlogCategory[]>(
+      'blog-category/list',
+    );
+    return res.data ?? [];
   }
 
   /**
@@ -100,7 +114,9 @@ export class BlogService {
       linkUrl: blogUrl,
       imageUrl,
       imageAlt: blog.title,
-      category: blog.blogCategory || undefined,
+      category: blog.blogCategory
+        ? blog.blogCategory.replace(/\\(['"])/g, '$1')
+        : undefined,
       date: blog.writtenAt ? new Date(blog.writtenAt) : undefined,
       readTime: readTime > 0 ? readTime : undefined
     };

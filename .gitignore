@@ -1,5 +1,6 @@
 # Environment files
 /eatfit247-cms-api/.env
+/server_1/.env
 /infra/main.env
 
 # Build outputs

@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnInit, TemplateRef, ViewChild, inject } from '@angular/core';
+import { AfterViewInit, Component, OnDestroy, OnInit, TemplateRef, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -17,7 +17,7 @@ import {
 } from '@shared';
 import { IDropdownItem, IMember, ITableList } from '@eatfit247-shared-lib';
 import { MembersApiService } from './api.service';
-import { debounceTime, distinctUntilChanged, Subject, switchMap } from 'rxjs';
+import { debounceTime, distinctUntilChanged, Subject, switchMap, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'lib-members',
@@ -36,7 +36,7 @@ import { debounceTime, distinctUntilChanged, Subject, switchMap } from 'rxjs';
   templateUrl: './members.html',
   styleUrl: './members.scss',
 })
-export class Members implements OnInit, AfterViewInit {
+export class Members implements OnInit, AfterViewInit, OnDestroy {
   private apiService = inject(MembersApiService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
@@ -46,6 +46,7 @@ export class Members implements OnInit, AfterViewInit {
   loading = false;
   tableConfig!: ITableConfig<IMember>;
   private searchSubject = new Subject<string>();
+  private destroy$ = new Subject<void>();
   currentSearch = '';
 
   franchiseOptions: IDropdownItem[] = [];
@@ -169,8 +170,13 @@ export class Members implements OnInit, AfterViewInit {
     }
   }
 
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
   private setupSearch(): void {
-    this.searchSubject.pipe(debounceTime(300), distinctUntilChanged(), switchMap((search) => {
+    this.searchSubject.pipe(takeUntil(this.destroy$), debounceTime(300), distinctUntilChanged(), switchMap((search) => {
       this.loading = true;
       return this.apiService.getList(this.buildListParams({ search, page: 0 }));
     })).subscribe({

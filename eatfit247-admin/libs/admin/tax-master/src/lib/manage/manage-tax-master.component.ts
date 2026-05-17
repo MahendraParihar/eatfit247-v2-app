@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -14,6 +14,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { InputErrorComponent, ValidationUtil } from '@shared';
 import { IDropdownItem, ITaxMaster, TaxTypeEnum, TransactionType } from '@eatfit247-shared-lib';
+import { Subject, takeUntil } from 'rxjs';
 import { TaxMasterApiService } from '../api.service';
 import { FranchiseApiService } from 'franchise';
 import { ProductsApiService } from 'products';
@@ -40,7 +41,8 @@ import { ProductsApiService } from 'products';
   templateUrl: './manage-tax-master.html',
   styleUrl: './manage-tax-master.scss',
 })
-export class ManageTaxMasterComponent implements OnInit {
+export class ManageTaxMasterComponent implements OnInit, OnDestroy {
+  private destroy$ = new Subject<void>();
   private readonly fb = inject(FormBuilder);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -92,7 +94,7 @@ export class ManageTaxMasterComponent implements OnInit {
 
   private setupFormListeners(): void {
     // Listen to transaction type changes
-    this.formGroup.get('transactionType')?.valueChanges.subscribe((transactionType) => {
+    this.formGroup.get('transactionType')?.valueChanges.pipe(takeUntil(this.destroy$)).subscribe((transactionType) => {
       if (transactionType === TransactionType.SERVICE) {
         // Set referenceId to 1 for SERVICE
         this.formGroup.patchValue({ referenceId: 1 }, { emitEvent: false });
@@ -198,6 +200,11 @@ export class ManageTaxMasterComponent implements OnInit {
     } catch (error) {
       // Error toast is handled by HttpErrorInterceptor
     }
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   onCancel(): void {

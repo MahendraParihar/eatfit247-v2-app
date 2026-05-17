@@ -32,7 +32,6 @@ export enum NavigationPathEnum {
   FAQ_CATEGORY = 'lov-master/faq-category',
   ISSUE_CATEGORY = 'lov-master/issue-category',
   ISSUE_STATUS = 'lov-master/issue-status',
-  PROGRAM_CATEGORY = 'lov-master/program-category',
   COUNTRY = 'lov-master/country',
   STATE = 'lov-master/state',
 

@@ -39,9 +39,6 @@ export class CreateProgramPlanDto implements IManageProgramPlan {
   @IsNumber()
   noOfDaysInCycle!: number;
   @IsNotEmpty()
-  @IsNumber()
-  programPlanTypeId!: number;
-  @IsNotEmpty()
   @IsBoolean()
   isOnline!: boolean;
   @IsNotEmpty()

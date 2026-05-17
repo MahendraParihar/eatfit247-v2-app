@@ -9,7 +9,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { MatCardModule } from '@angular/material/card';
 import { InputErrorComponent, UploadFormComponent, ValidationUtil } from '@shared';
-import { LovMasterApiService } from '../../api.service';
+import { GenderApiService } from '../../api.service';
 import { FileTypeEnum, IGender, IManageGender, InputLengthEnum, MediaForEnum } from '@eatfit247-shared-lib';
 
 @Component({
@@ -33,7 +33,7 @@ import { FileTypeEnum, IGender, IManageGender, InputLengthEnum, MediaForEnum } f
 export class ManageGender implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private apiService = inject(LovMasterApiService);
+  private apiService = inject(GenderApiService);
 
   private fb: FormBuilder = inject(FormBuilder);
   formGroup: FormGroup = this.fb.group({
@@ -73,7 +73,7 @@ export class ManageGender implements OnInit {
   }
 
   async loadData(id: number): Promise<void> {
-    this.initialData = await this.apiService.getGenderById(id);
+    this.initialData = await this.apiService.getById(id);
   }
 
   async onSubmit(): Promise<void> {
@@ -86,9 +86,9 @@ export class ManageGender implements OnInit {
       }
       if (this.isEditMode && this.initialData) {
         formValue.genderId = this.initialData.genderId;
-        await this.apiService.updateGender(this.initialData.genderId, formValue);
+        await this.apiService.update(this.initialData.genderId, formValue);
       } else {
-        await this.apiService.createGender(formValue);
+        await this.apiService.create(formValue);
       }
       this.router.navigate(['/lov-master/gender']);
     } else {

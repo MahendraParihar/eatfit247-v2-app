@@ -1,7 +1,7 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { BasicSearchDto, Public } from '@server_1/core';
 import { SuccessStoryService } from '../../services';
-import { IGoogleReviewsResponse, ISuccessStory, ITableList } from '@eatfit247-shared-lib';
+import { IGoogleBusinessReviewsResponse, ISuccessStory, ITableList } from '@eatfit247-shared-lib';
 import { GoogleService } from '@server_1/platform';
 
 @Public()
@@ -25,7 +25,7 @@ export class PublicSuccessStoryController {
   }
 
   @Get('google-reviews')
-  async getGoogleReviews(@Query('placeId') placeId?: string): Promise<IGoogleReviewsResponse> {
+  async getGoogleReviews(@Query('placeId') placeId?: string): Promise<IGoogleBusinessReviewsResponse> {
     return await this.googleService.getGoogleBusinessReviews(placeId);
   }
 }

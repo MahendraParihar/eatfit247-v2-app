@@ -1,19 +1,10 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import {
-  createdByUserFormatter,
-  DataTableComponent,
-  ITableAction,
-  ITableColumn,
-  ITableConfig,
-  updatedByUserFormatter
-} from '@shared';
-import { ISleepingPattern, ITableList } from '@eatfit247-shared-lib';
-import { LovMasterApiService } from '../api.service';
-import { debounceTime, distinctUntilChanged, Subject, switchMap } from 'rxjs';
+import { BaseListComponent, DataTableComponent, ITableColumn } from '@shared';
+import { ISleepingPattern } from '@eatfit247-shared-lib';
+import { SleepingPatternApiService } from '../api.service';
 
 @Component({
   selector: 'lib-sleeping-pattern',
@@ -22,151 +13,24 @@ import { debounceTime, distinctUntilChanged, Subject, switchMap } from 'rxjs';
   templateUrl: './sleeping-pattern.html',
   styleUrl: './sleeping-pattern.scss',
 })
-export class SleepingPattern implements OnInit {
-  private apiService = inject(LovMasterApiService);
-  private router = inject(Router);
-  private route = inject(ActivatedRoute);
+export class SleepingPattern extends BaseListComponent<ISleepingPattern> {
+  protected apiService = inject(SleepingPatternApiService);
 
-  data: ISleepingPattern[] = [];
-  totalCount = 0;
-  loading = false;
-  tableConfig!: ITableConfig<ISleepingPattern>;
-  private searchSubject = new Subject<string>();
-  currentSearch = '';
+  protected listConfig = {
+    editRoute: '/lov-master/sleeping-pattern/edit',
+    createRoute: '/lov-master/sleeping-pattern/new',
+    searchPlaceholder: 'Search sleeping pattern...',
+    emptyMessage: 'No sleeping pattern records found',
+  };
 
-  constructor() {
-    this.setupSearch();
-  }
-
-  ngOnInit(): void {
-    this.initializeTable();
-    this.loadData();
-  }
-
-  private initializeTable(): void {
-    const columns: ITableColumn<ISleepingPattern>[] = [
+  protected buildEntityColumns(): ITableColumn<ISleepingPattern>[] {
+    return [
       { key: 'sleepingPatternId', label: 'ID', dataKey: 'sleepingPatternId', sortable: true, width: '80px' },
-      {
-        key: 'image',
-        label: 'Image',
-        dataKey: 'imagePath',
-        type: 'image',
-        isAvatar: true,
-        imageAlt: 'Sleeping Pattern Image',
-        sortable: false,
-        width: '80px',
-        align: 'center'
-      },
       { key: 'sleepingPattern', label: 'Sleeping Pattern', dataKey: 'sleepingPattern', sortable: true, searchable: true },
-      { key: 'active', label: 'Status', dataKey: 'active', sortable: true, width: '120px', align: 'center', formatter: (value) => (value ? 'Active' : 'Inactive') },
-      { key: 'createdByUser', label: 'Created By', dataKey: 'createdByUser', sortable: false, formatter: createdByUserFormatter() },
-      { key: 'updatedByUser', label: 'Updated By', dataKey: 'updatedByUser', sortable: false, formatter: updatedByUserFormatter() },
-      {
-        key: 'createdAt',
-        label: 'Created At',
-        dataKey: 'createdAt',
-        type: 'date',
-        sortable: true
-      },
-      {
-        key: 'updatedAt',
-        label: 'Updated At',
-        type: 'date',
-        dataKey: 'updatedAt',
-        sortable: true
-      },
+      { key: 'image', label: 'Image', dataKey: 'imagePath', type: 'image', isAvatar: true, imageAlt: 'Sleeping Pattern Image', sortable: false, width: '80px', align: 'center' },
     ];
-
-    const actions: ITableAction<ISleepingPattern>[] = [
-      { label: 'Edit', icon: 'edit', color: 'primary', onClick: (row) => this.editItem(row) },
-      { label: 'Active', icon: 'check_circle', color: 'primary', visible: (row) => row.active === true, onClick: (row) => this.toggleStatus(row) },
-      { label: 'Inactive', icon: 'cancel', color: 'warn', visible: (row) => row.active === false, onClick: (row) => this.toggleStatus(row) },
-    ];
-
-    this.tableConfig = {
-      columns,
-      actions,
-      showSearch: true,
-      searchPlaceholder: 'Search sleeping pattern...',
-      showPagination: true,
-      pageSize: 10,
-      pageSizeOptions: [5, 10, 25, 50],
-      showHeader: true,
-      emptyMessage: 'No sleeping pattern records found',
-    };
   }
 
-  private setupSearch(): void {
-    this.searchSubject.pipe(debounceTime(300), distinctUntilChanged(), switchMap((search) => {
-      this.loading = true;
-      return this.apiService.getSleepingPatternList({ search, page: 0, limit: this.tableConfig.pageSize || 10 });
-    })).subscribe({
-      next: (response) => { this.data = response.tableData; this.totalCount = response.count; this.loading = false; },
-      error: () => { this.loading = false; },
-    });
-  }
-
-  async loadData(): Promise<void> {
-    this.loading = true;
-    try {
-      const response: ITableList<ISleepingPattern> = await this.apiService.getSleepingPatternList({ page: 0, limit: this.tableConfig.pageSize || 10, search: this.currentSearch?.trim() || undefined });
-      this.data = response.tableData;
-      this.totalCount = response.count;
-      this.loading = false;
-    } catch {
-      this.loading = false;
-    }
-  }
-
-  async onPageChange(pagination: any): Promise<void> {
-    this.loading = true;
-    try {
-      const response: ITableList<ISleepingPattern> = await this.apiService.getSleepingPatternList({ page: pagination.pageIndex, limit: pagination.pageSize, search: this.currentSearch?.trim() || undefined });
-      this.data = response.tableData;
-      this.totalCount = response.count;
-      this.loading = false;
-    } catch {
-      this.loading = false;
-    }
-  }
-
-  async onSortChange(sort: any): Promise<void> {
-    this.loading = true;
-    try {
-      const response: ITableList<ISleepingPattern> = await this.apiService.getSleepingPatternList({ page: 0, limit: this.tableConfig.pageSize || 10, sortBy: sort.active, sortOrder: sort.direction, search: this.currentSearch?.trim() || undefined });
-      this.data = response.tableData;
-      this.totalCount = response.count;
-      this.loading = false;
-    } catch {
-      this.loading = false;
-    }
-  }
-
-  onSearchChange(search: string): void {
-    this.currentSearch = search;
-    this.searchSubject.next(search);
-  }
-
-  editItem(item: ISleepingPattern): void {
-    this.router.navigate(['/lov-master/sleeping-pattern/edit', item.sleepingPatternId]);
-  }
-
-  createItem(): void {
-    this.router.navigate(['/lov-master/sleeping-pattern/new']);
-  }
-
-  async toggleStatus(item: ISleepingPattern): Promise<void> {
-    const action = item.active ? 'deactivate' : 'activate';
-    const confirmed = confirm(`Are you sure you want to ${action} "${item.sleepingPattern}"?`);
-    if (confirmed) {
-      this.loading = true;
-      try {
-        await this.apiService.updateSleepingPatternStatus(item.sleepingPatternId, !item.active);
-        await this.loadData();
-      } catch {
-        this.loading = false;
-      }
-    }
-  }
+  protected getItemId(item: ISleepingPattern): number { return item.sleepingPatternId; }
+  protected getItemDisplayName(item: ISleepingPattern): string { return item.sleepingPattern; }
 }
-

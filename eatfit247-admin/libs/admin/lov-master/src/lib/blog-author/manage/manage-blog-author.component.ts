@@ -9,7 +9,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { MatCardModule } from '@angular/material/card';
 import { InputErrorComponent, UploadFormComponent, ValidationUtil } from '@shared';
-import { LovMasterApiService } from '../../api.service';
+import { BlogAuthorApiService } from '../../api.service';
 import { FileTypeEnum, IBlogAuthor, IManageBlogAuthor, InputLengthEnum, MediaForEnum } from '@eatfit247-shared-lib';
 
 @Component({
@@ -33,7 +33,7 @@ import { FileTypeEnum, IBlogAuthor, IManageBlogAuthor, InputLengthEnum, MediaFor
 export class ManageBlogAuthor implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private apiService = inject(LovMasterApiService);
+  private apiService = inject(BlogAuthorApiService);
 
   private fb: FormBuilder = inject(FormBuilder);
   formGroup: FormGroup = this.fb.group({
@@ -103,7 +103,7 @@ export class ManageBlogAuthor implements OnInit {
   }
 
   async loadData(id: number): Promise<void> {
-    this.initialData = await this.apiService.getBlogAuthorById(id);
+    this.initialData = await this.apiService.getById(id);
   }
 
   async onSubmit(): Promise<void> {
@@ -119,9 +119,9 @@ export class ManageBlogAuthor implements OnInit {
       }
       if (this.isEditMode && this.initialData) {
         formValue.blogAuthorId = this.initialData.blogAuthorId;
-        await this.apiService.updateBlogAuthor(this.initialData.blogAuthorId, formValue);
+        await this.apiService.update(this.initialData.blogAuthorId, formValue);
       } else {
-        await this.apiService.createBlogAuthor(formValue);
+        await this.apiService.create(formValue);
       }
       this.router.navigate(['/lov-master/blog-author']);
     } else {

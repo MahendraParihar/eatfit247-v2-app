@@ -1,0 +1,35 @@
+@if (loading) {
+  <shared-ui-loader></shared-ui-loader>
+} @else if (kpis) {
+  <div class="kpi-grid">
+    <lib-kpi-card
+      icon="shopping_cart"
+      label="New Orders"
+      [value]="kpis.newOrders"
+      [trend]="kpis.trends?.newOrders"
+      trendLabel="vs last month"
+    ></lib-kpi-card>
+    <lib-kpi-card
+      icon="inventory"
+      label="Pending Shipments"
+      [value]="kpis.pendingShipments"
+    ></lib-kpi-card>
+    <lib-kpi-card
+      icon="local_shipping"
+      label="In Transit"
+      [value]="kpis.inTransit"
+    ></lib-kpi-card>
+    <lib-kpi-card
+      icon="check_circle"
+      label="Delivered"
+      [value]="kpis.delivered"
+      [trend]="kpis.trends?.delivered"
+      trendLabel="vs last month"
+    ></lib-kpi-card>
+    <lib-kpi-card
+      icon="bar_chart"
+      label="Monthly Volume"
+      [value]="kpis.monthlyOrderVolume"
+    ></lib-kpi-card>
+  </div>
+}

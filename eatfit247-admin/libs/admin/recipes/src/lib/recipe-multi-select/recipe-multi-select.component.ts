@@ -7,7 +7,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatIconModule } from '@angular/material/icon';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { debounceTime, distinctUntilChanged, of, Subject, switchMap, takeUntil } from 'rxjs';
+import { debounceTime, distinctUntilChanged, from, of, Subject, switchMap, takeUntil } from 'rxjs';
 import { IDropdownItem } from '@eatfit247-shared-lib';
 import { RecipesApiService } from '../api.service';
 
@@ -150,15 +150,13 @@ export class RecipeMultiSelectComponent
           }
 
           this.loading = true;
-          return this.apiService
-            .searchDropdown({ search: term, page: 0, limit: 100 })
-            .then(
-              (res: Array<{ id: number; title: string; subtitle: string }>) => res,
-              () => null
-            );
+          return from(
+            this.apiService.searchDropdown({ search: term, page: 0, limit: 100 }),
+          );
         })
       )
-      .subscribe((res: Array<{ id: number; title: string; subtitle: string }> | null) => {
+      .subscribe({
+        next: (res: Array<{ id: number; title: string; subtitle: string }> | null) => {
         this.loading = false;
         if (!res) {
           this.filteredOptions = [];
@@ -181,6 +179,11 @@ export class RecipeMultiSelectComponent
         this.filteredOptions = options.filter(
           (opt) => !selectedIdSet.has(this.coerceId(opt.id))
         );
+        },
+        error: () => {
+          this.loading = false;
+          this.filteredOptions = [];
+        },
       });
   }
 

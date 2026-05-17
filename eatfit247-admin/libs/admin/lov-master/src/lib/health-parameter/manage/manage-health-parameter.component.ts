@@ -10,7 +10,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatCardModule } from '@angular/material/card';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { InputErrorComponent, UploadFormComponent, ValidationUtil } from '@shared';
-import { LovMasterApiService } from '../../api.service';
+import { HealthParameterApiService } from '../../api.service';
 import {
   FileTypeEnum,
   IHealthParameter,
@@ -41,7 +41,7 @@ import {
 export class ManageHealthParameter implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private apiService = inject(LovMasterApiService);
+  private apiService = inject(HealthParameterApiService);
 
   private fb: FormBuilder = inject(FormBuilder);
   formGroup: FormGroup = this.fb.group({
@@ -92,7 +92,7 @@ export class ManageHealthParameter implements OnInit {
   }
 
   async loadData(id: number): Promise<void> {
-    this.initialData = await this.apiService.getHealthParameterById(id);
+    this.initialData = await this.apiService.getById(id);
   }
 
   async onSubmit(): Promise<void> {
@@ -105,9 +105,9 @@ export class ManageHealthParameter implements OnInit {
       }
       if (this.isEditMode && this.initialData) {
         formValue.healthParameterId = this.initialData.healthParameterId;
-        await this.apiService.updateHealthParameter(this.initialData.healthParameterId, formValue);
+        await this.apiService.update(this.initialData.healthParameterId, formValue);
       } else {
-        await this.apiService.createHealthParameter(formValue);
+        await this.apiService.create(formValue);
       }
       this.router.navigate(['/lov-master/health-parameter']);
     } else {

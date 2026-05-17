@@ -16,7 +16,7 @@ import {
   MediaForEnum,
 } from '@eatfit247-shared-lib';
 import { CommonFunctionsUtil, Env, MstAdminUser } from '@server_1/core';
-import { MstProgram, MstProgramCategory } from '@server_1/modules/program-plan';
+import { MstProgram } from '@server_1/modules/program-plan';
 import { RecipeCategoryService, RecipeService } from '@server_1/modules/recipe';
 import { DietTemplateService, TxnDietTemplateDietDetail } from '@server_1/modules/diet';
 import { DietPlanPdfService, IFileModel } from '@server_1/platform';
@@ -198,13 +198,6 @@ export class MemberDietPlanService {
               model: MstProgram,
               as: 'program',
               required: true,
-              include: [
-                {
-                  model: MstProgramCategory,
-                  as: 'programCategory',
-                  required: true,
-                },
-              ],
             },
           ],
         },
@@ -277,28 +270,43 @@ export class MemberDietPlanService {
       dietPlan: this.convertDietDetail(categoryList, recipeList, s),
       isDeletable: false, // Will be set later based on conditions
     }));
-    // Group diet plan details by cycle
-    for (let i = 0; i < planList.length; i++) {
-      const cyclePlanList: ICyclePlan[] = [];
-      const tempCycleList: IMemberDietDetail[] = _.filter(dietPlanDetailList, {
-        dietPlanId: planList[i].memberDietPlanId,
-      });
-      const cycleNos = _.uniqWith(_.map(tempCycleList, 'cycleNo'), _.isEqual);
-      for (let j = 0; j < cycleNos.length; j++) {
-        const cS = _.filter(tempCycleList, { cycleNo: cycleNos[j] });
-        for (let k = 0; k < cS.length; k++) {
-          cS[k].isDeletable =
-            k === cS.length - 1 && j === cycleNos.length - 1 && planList[i].showActionBtn;
-        }
-        cyclePlanList.push({
-          cycleNo: cycleNos[j],
-          dietPlans: cS,
-          startDate: cS && cS.length > 0 ? cS[0].startDate : null,
-          endDate: cS && cS.length > 0 ? cS[cS.length - 1].endDate : null,
-          type: cS && cS.length > 0 ? cS[0].type : null,
-        } as ICyclePlan);
+    // Group diet plan details by planId → cycleNo using Maps (O(n) instead of O(n³))
+    const detailsByPlan = new Map<number, Map<number, IMemberDietDetail[]>>();
+    for (const detail of dietPlanDetailList) {
+      let cycleMap = detailsByPlan.get(detail.memberDietPlanId);
+      if (!cycleMap) {
+        cycleMap = new Map();
+        detailsByPlan.set(detail.memberDietPlanId, cycleMap);
       }
-      planList[i].cyclePlans = cyclePlanList;
+      let cycleDetails = cycleMap.get(detail.cycleNo);
+      if (!cycleDetails) {
+        cycleDetails = [];
+        cycleMap.set(detail.cycleNo, cycleDetails);
+      }
+      cycleDetails.push(detail);
+    }
+
+    for (const plan of planList) {
+      const cyclePlanList: ICyclePlan[] = [];
+      const cycleMap = detailsByPlan.get(plan.memberDietPlanId);
+      if (cycleMap) {
+        const cycleNos = Array.from(cycleMap.keys());
+        for (let j = 0; j < cycleNos.length; j++) {
+          const cS = cycleMap.get(cycleNos[j])!;
+          // Only the last day of the last cycle is deletable
+          if (plan.showActionBtn && j === cycleNos.length - 1 && cS.length > 0) {
+            cS[cS.length - 1].isDeletable = true;
+          }
+          cyclePlanList.push({
+            cycleNo: cycleNos[j],
+            dietPlans: cS,
+            startDate: cS.length > 0 ? cS[0].startDate : null,
+            endDate: cS.length > 0 ? cS[cS.length - 1].endDate : null,
+            type: cS.length > 0 ? cS[0].type : null,
+          } as ICyclePlan);
+        }
+      }
+      plan.cyclePlans = cyclePlanList;
     }
     return {
       list: planList,
@@ -310,10 +318,8 @@ export class MemberDietPlanService {
   private convertDBObject(obj: any): IMemberDietPlan {
     const payment = obj.memberPayment || {};
     const program = payment.program || {};
-    const programCategory = program.programCategory || {};
     return {
       program: program.program,
-      programCategory: programCategory.programCategory,
       memberDietPlanId: obj.memberDietPlanId,
       memberPaymentId: obj.memberPaymentId,
       memberId: obj.memberId,
@@ -472,7 +478,7 @@ export class MemberDietPlanService {
   }
 
   private async getRecipeDropdownList(): Promise<IDropdownItem[]> {
-    const result = await this.recipeService.findAll({ page: 0, limit: 1000 });
+    const result = await this.recipeService.findAll({ page: 0, limit: 200 });
     return result.tableData.map((recipe: any) => ({
       id: recipe.recipeId,
       label: recipe.name,
@@ -481,7 +487,7 @@ export class MemberDietPlanService {
   }
 
   private async getDietTemplateDropdownList(): Promise<IDropdownItem[]> {
-    const result = await this.dietTemplateService.findAll({ page: 0, limit: 1000 });
+    const result = await this.dietTemplateService.findAll({ page: 0, limit: 200 });
     return result.tableData.map((template: any) => ({
       id: template.dietTemplateId || template.id,
       label: template.dietTemplate,
@@ -884,15 +890,17 @@ export class MemberDietPlanService {
   }
 
   /**
-   * Update diet plan status (completed/not completed)
+   * Update diet plan status
    * @param memberId - Member ID
    * @param dietPlanId - Diet plan ID
+   * @param statusId - Target status (DietPlanStatusEnum)
    * @param adminId - Admin ID
    * @param ip - Client IP
    */
   async updateStatus(
     memberId: number,
     dietPlanId: number,
+    statusId: number | undefined,
     adminId: number,
     ip: string,
   ): Promise<void> {
@@ -905,18 +913,29 @@ export class MemberDietPlanService {
     if (!dietPlan) {
       throw new NotFoundException('Diet plan not found');
     }
-    await this.memberDietPlanRepository.update(
-      {
-        isCompleted: !dietPlan.isCompleted,
-        modifiedBy: adminId,
-        modifiedIp: ip,
+
+    const updateData: Record<string, unknown> = {
+      modifiedBy: adminId,
+      modifiedIp: ip,
+    };
+
+    if (statusId === DietPlanStatusEnum.IN_PROGRESS) {
+      updateData.isCompleted = false;
+      if (!dietPlan.currentCycleNo || dietPlan.currentCycleNo <= 0) {
+        updateData.currentCycleNo = 1;
+      }
+    } else if (statusId === DietPlanStatusEnum.COMPLETED) {
+      updateData.isCompleted = true;
+    } else {
+      // Legacy toggle behavior
+      updateData.isCompleted = !dietPlan.isCompleted;
+    }
+
+    await this.memberDietPlanRepository.update(updateData, {
+      where: {
+        memberDietPlanId: dietPlanId,
       },
-      {
-        where: {
-          memberDietPlanId: dietPlanId,
-        },
-      },
-    );
+    });
   }
 
   /**

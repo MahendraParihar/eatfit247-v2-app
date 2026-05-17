@@ -73,6 +73,15 @@ export class BasicSearchDto implements IBasicSearch {
   @Type(() => Number)
   @IsNumber()
   programId?: number;
+  @IsOptional()
+  @IsBoolean()
+  @Transform(({ value }) => {
+    if (value === null || value === undefined || value === '') {
+      return undefined;
+    }
+    return value === true || value === 'true' || value === 1 || value === '1';
+  })
+  isSpecialProgram?: boolean | null;
 }
 
 export class UpdateActiveDto implements IStatusChange {

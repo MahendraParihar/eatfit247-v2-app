@@ -14,7 +14,6 @@ import { InputErrorComponent, UploadFormComponent, ValidationUtil } from '@share
 import { ProgramPlanApiService } from '../../program-plan-api.service';
 import {
   FileTypeEnum,
-  IDropdownItem,
   IManageProgramPlan,
   InputLengthEnum,
   IProgramPlan,
@@ -47,7 +46,6 @@ export class ManageProgramPlan implements OnInit, OnDestroy {
   private fb: FormBuilder = inject(FormBuilder);
   formGroup: FormGroup = this.fb.group({
     plan: ['', [Validators.required, Validators.minLength(InputLengthEnum.CHAR_2), Validators.maxLength(InputLengthEnum.CHAR_100)]],
-    programPlanTypeId: ['', [Validators.required]],
     details: [''],
     sequenceNumber: [0, [Validators.required, Validators.min(0)]],
     inrAmount: [0, [Validators.required, Validators.min(0)]],
@@ -60,7 +58,6 @@ export class ManageProgramPlan implements OnInit, OnDestroy {
   initialData!: IProgramPlan;
   isEditMode = false;
   pageTitle = 'Create Program Plan';
-  programPlanTypeOptions: IDropdownItem[] = [];
   mediaFor = MediaForEnum.PROGRAM;
   mediaType = FileTypeEnum.IMAGE;
   editor: Editor | null = null;
@@ -99,10 +96,6 @@ export class ManageProgramPlan implements OnInit, OnDestroy {
           Validators.maxLength(InputLengthEnum.CHAR_100)
         ]
       ],
-      programPlanTypeId: [
-        this.initialData?.programPlanTypeId || '',
-        [Validators.required]
-      ],
       details: [
         this.initialData?.details || '',
         []
@@ -140,8 +133,7 @@ export class ManageProgramPlan implements OnInit, OnDestroy {
 
   async loadMasterData(): Promise<void> {
     try {
-      const masterData = await this.apiService.getMasterData();
-      this.programPlanTypeOptions = masterData.programPlanType || [];
+      await this.apiService.getMasterData();
     } catch (error) {
       // Error toast is handled by HttpErrorInterceptor
     }

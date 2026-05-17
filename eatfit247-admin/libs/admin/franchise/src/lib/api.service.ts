@@ -1,37 +1,13 @@
 import { Injectable } from '@angular/core';
-import { ApiBaseService } from '@core';
-import { IDropdownItem, IFranchise, ITableList } from '@eatfit247-shared-lib';
+import { CrudApiService } from '@core';
+import { IDropdownItem, IFranchise } from '@eatfit247-shared-lib';
 
 @Injectable({
   providedIn: 'root',
 })
-export class FranchiseApiService extends ApiBaseService {
-  private readonly endpoint = '/franchise';
-
+export class FranchiseApiService extends CrudApiService<IFranchise> {
   constructor() {
-    super();
-  }
-
-  async getList(params?: any): Promise<ITableList<IFranchise>> {
-    const res = await this.httpService.get<ITableList<IFranchise>>(`${this.endpoint}/list`, { params });
-    return res.data as ITableList<IFranchise>;
-  }
-
-  async getById(id: number): Promise<IFranchise> {
-    const res = await this.httpService.get<IFranchise>(`${this.endpoint}/manage/${id}`);
-    return res.data as IFranchise;
-  }
-
-  async create(data: any): Promise<void> {
-    await this.httpService.post<void>(`${this.endpoint}/manage`, data);
-  }
-
-  async update(id: number, data: any): Promise<void> {
-    await this.httpService.put<void>(`${this.endpoint}/manage/${id}`, data);
-  }
-
-  async updateStatus(id: number, active: boolean): Promise<void> {
-    await this.httpService.patch<void>(`${this.endpoint}/update-status/${id}`, { active });
+    super('/franchise');
   }
 
   async getMasterData(): Promise<{ taxApplicable: boolean }> {
@@ -40,7 +16,6 @@ export class FranchiseApiService extends ApiBaseService {
   }
 
   async getFranchiseDropdown(): Promise<IDropdownItem[]> {
-    const res = await this.httpService.get<IDropdownItem[]>(`${this.endpoint}/dropdown`);
-    return res.data as IDropdownItem[];
+    return this.getDropdown();
   }
 }

@@ -12,7 +12,7 @@
 .empty-icon {
   width: 64px;
   height: 64px;
-  color: #cccccc;
+  color: var(--color-gray-300);
   margin-bottom: var(--space-4);
   display: flex;
   align-items: center;
@@ -27,13 +27,13 @@
 .empty-title {
   font-size: 1.5rem;
   font-weight: 600;
-  color: #1a1a1a;
+  color: var(--color-text-primary);
   margin: 0 0 var(--space-2) 0;
 }
 
 .empty-description {
   font-size: 1rem;
-  color: #666666;
+  color: var(--color-text-secondary);
   margin: 0 0 var(--space-6) 0;
   max-width: 500px;
 }
@@ -42,15 +42,15 @@
   padding: var(--space-3) var(--space-6);
   font-size: 1rem;
   font-weight: 500;
-  color: #ffffff;
-  background-color: #d32f2f;
+  color: var(--color-surface-white);
+  background-color: var(--color-primary);
   border: none;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
 
   &:hover {
-    background-color: #b71c1c;
+    background-color: var(--color-primary-hover);
     transform: translateY(-1px);
     box-shadow: 0 4px 8px rgba(211, 47, 47, 0.3);
   }
@@ -60,7 +60,7 @@
   }
 
   &:focus-visible {
-    outline: 2px solid #d32f2f;
+    outline: 2px solid var(--color-primary);
     outline-offset: 2px;
   }
 }

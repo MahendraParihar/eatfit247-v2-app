@@ -1,7 +1,6 @@
 export interface ProgramPriceLine {
   programPlanId: number;
   label: string;
-  value: string;
   note?: string;
 }
 

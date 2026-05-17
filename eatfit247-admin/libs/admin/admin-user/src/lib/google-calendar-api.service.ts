@@ -1,16 +1,13 @@
-import { Injectable } from '@angular/core';
-import { ApiBaseService } from '@core';
+import { inject, Injectable } from '@angular/core';
+import { HttpService } from '@core';
 import { IGoogleCalendarStatus } from '@eatfit247-shared-lib';
 
 @Injectable({
   providedIn: 'root',
 })
-export class GoogleCalendarApiService extends ApiBaseService {
+export class GoogleCalendarApiService {
+  private readonly httpService = inject(HttpService);
   private readonly endpoint = '/google-calendar';
-
-  constructor() {
-    super();
-  }
 
   async getStatus(): Promise<IGoogleCalendarStatus> {
     const res = await this.httpService.get<IGoogleCalendarStatus>(

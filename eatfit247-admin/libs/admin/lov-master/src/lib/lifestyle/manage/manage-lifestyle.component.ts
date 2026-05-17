@@ -9,7 +9,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { MatCardModule } from '@angular/material/card';
 import { InputErrorComponent, UploadFormComponent, ValidationUtil } from '@shared';
-import { LovMasterApiService } from '../../api.service';
+import { LifestyleApiService } from '../../api.service';
 import { FileTypeEnum, ILifestyle, IManageLifestyle, InputLengthEnum, MediaForEnum } from '@eatfit247-shared-lib';
 
 @Component({
@@ -33,7 +33,7 @@ import { FileTypeEnum, ILifestyle, IManageLifestyle, InputLengthEnum, MediaForEn
 export class ManageLifestyle implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private apiService = inject(LovMasterApiService);
+  private apiService = inject(LifestyleApiService);
 
   private fb: FormBuilder = inject(FormBuilder);
   formGroup: FormGroup = this.fb.group({
@@ -73,7 +73,7 @@ export class ManageLifestyle implements OnInit {
   }
 
   async loadData(id: number): Promise<void> {
-    this.initialData = await this.apiService.getLifestyleById(id);
+    this.initialData = await this.apiService.getById(id);
   }
 
   async onSubmit(): Promise<void> {
@@ -86,9 +86,9 @@ export class ManageLifestyle implements OnInit {
       }
       if (this.isEditMode && this.initialData) {
         formValue.lifestyleId = this.initialData.lifestyleId;
-        await this.apiService.updateLifestyle(this.initialData.lifestyleId, formValue);
+        await this.apiService.update(this.initialData.lifestyleId, formValue);
       } else {
-        await this.apiService.createLifestyle(formValue);
+        await this.apiService.create(formValue);
       }
       this.router.navigate(['/lov-master/lifestyle']);
     } else {

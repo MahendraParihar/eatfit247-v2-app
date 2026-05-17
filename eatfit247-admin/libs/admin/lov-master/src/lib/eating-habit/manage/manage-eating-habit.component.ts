@@ -9,7 +9,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { MatCardModule } from '@angular/material/card';
 import { InputErrorComponent, UploadFormComponent, ValidationUtil } from '@shared';
-import { LovMasterApiService } from '../../api.service';
+import { EatingHabitApiService } from '../../api.service';
 import { FileTypeEnum, IEatingHabit, IManageEatingHabit, InputLengthEnum, MediaForEnum } from '@eatfit247-shared-lib';
 
 @Component({
@@ -33,7 +33,7 @@ import { FileTypeEnum, IEatingHabit, IManageEatingHabit, InputLengthEnum, MediaF
 export class ManageEatingHabit implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private apiService = inject(LovMasterApiService);
+  private apiService = inject(EatingHabitApiService);
 
   private fb: FormBuilder = inject(FormBuilder);
   formGroup: FormGroup = this.fb.group({
@@ -73,7 +73,7 @@ export class ManageEatingHabit implements OnInit {
   }
 
   async loadData(id: number): Promise<void> {
-    this.initialData = await this.apiService.getEatingHabitById(id);
+    this.initialData = await this.apiService.getById(id);
   }
 
   async onSubmit(): Promise<void> {
@@ -86,9 +86,9 @@ export class ManageEatingHabit implements OnInit {
       }
       if (this.isEditMode && this.initialData) {
         formValue.eatingHabitId = this.initialData.eatingHabitId;
-        await this.apiService.updateEatingHabit(this.initialData.eatingHabitId, formValue);
+        await this.apiService.update(this.initialData.eatingHabitId, formValue);
       } else {
-        await this.apiService.createEatingHabit(formValue);
+        await this.apiService.create(formValue);
       }
       this.router.navigate(['/lov-master/eating-habit']);
     } else {

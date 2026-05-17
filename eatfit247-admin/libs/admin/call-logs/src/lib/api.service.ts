@@ -1,32 +1,12 @@
 import { Injectable } from '@angular/core';
-import { ApiBaseService } from '@core';
-import { IMemberCallLog, ITableList } from '@eatfit247-shared-lib';
+import { CrudApiService } from '@core';
+import { IMemberCallLog } from '@eatfit247-shared-lib';
 
 @Injectable({
   providedIn: 'root',
 })
-export class CallLogsApiService extends ApiBaseService {
-  private readonly endpoint = '/call-log';
-
+export class CallLogsApiService extends CrudApiService<IMemberCallLog> {
   constructor() {
-    super();
-  }
-
-  async getList(params?: any): Promise<ITableList<IMemberCallLog>> {
-    const res = await this.httpService.get<ITableList<IMemberCallLog>>(`${this.endpoint}/list`, { params });
-    return res.data as ITableList<IMemberCallLog>;
-  }
-
-  async getById(id: number): Promise<IMemberCallLog> {
-    const res = await this.httpService.get<IMemberCallLog>(`${this.endpoint}/manage/${id}`);
-    return res.data as IMemberCallLog;
-  }
-
-  async create(data: any): Promise<void> {
-    await this.httpService.post<void>(`${this.endpoint}/manage`, data);
-  }
-
-  async update(id: number, data: any): Promise<void> {
-    await this.httpService.put<void>(`${this.endpoint}/manage/${id}`, data);
+    super('/call-log');
   }
 }

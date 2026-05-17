@@ -1,0 +1,50 @@
+<mat-card class="payment-collection-card">
+  <mat-card-header>
+    <mat-card-title>Payment Collection Status</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    @if (loading) {
+      <shared-ui-loader></shared-ui-loader>
+    } @else if (!data) {
+      <shared-ui-empty-state
+        title="No Payment Data"
+        description="Payment collection data is not available at the moment."
+        icon="payments"
+      ></shared-ui-empty-state>
+    } @else {
+      <div class="status-grid">
+        <div class="status-item status-paid">
+          <div class="status-indicator"></div>
+          <div class="status-details">
+            <div class="status-label">Paid</div>
+            <div class="status-count">{{ data.paid }}</div>
+          </div>
+          <mat-icon class="status-icon">check_circle</mat-icon>
+        </div>
+
+        <div class="status-item status-pending">
+          <div class="status-indicator"></div>
+          <div class="status-details">
+            <div class="status-label">Pending</div>
+            <div class="status-count">{{ data.pending }}</div>
+          </div>
+          <mat-icon class="status-icon">schedule</mat-icon>
+        </div>
+
+        <div class="status-item status-overdue">
+          <div class="status-indicator"></div>
+          <div class="status-details">
+            <div class="status-label">Overdue</div>
+            <div class="status-count">{{ data.overdue }}</div>
+          </div>
+          <mat-icon class="status-icon">warning</mat-icon>
+        </div>
+      </div>
+
+      <div class="total-row">
+        <span class="total-label">Total</span>
+        <span class="total-value">{{ data.total }}</span>
+      </div>
+    }
+  </mat-card-content>
+</mat-card>

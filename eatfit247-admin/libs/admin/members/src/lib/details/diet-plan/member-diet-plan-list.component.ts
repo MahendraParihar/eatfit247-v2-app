@@ -70,7 +70,6 @@ export class MemberDietPlanListComponent implements OnInit, OnDestroy {
   tableConfig!: ITableConfig<IMemberDietPlan>;
   displayedColumns = [
     "program",
-    "programCategory",
     "noOfCycle",
     "dietPlanStatus",
     "updatedBy",
@@ -114,12 +113,6 @@ export class MemberDietPlanListComponent implements OnInit, OnDestroy {
         dataKey: "",
         sortable: false,
         width: "50px"
-      },
-      {
-        key: "programCategory",
-        label: "Program Category",
-        dataKey: "programCategory",
-        sortable: false
       },
       {
         key: "program",
@@ -203,14 +196,28 @@ export class MemberDietPlanListComponent implements OnInit, OnDestroy {
         asMenuItem: true
       },
       {
+        label: "Mark as In Progress",
+        icon: "pending",
+        color: "primary",
+        tooltip: "Mark as In Progress",
+        visible: (row) => row.dietPlanStatusId === DietPlanStatusEnum.NOT_STARTED,
+        onClick: (row) => this.onStatusChangeDialog(row, DietPlanStatusEnum.IN_PROGRESS),
+        confirm: {
+          message: "Are you sure you want to mark this diet plan as In Progress?",
+          confirmText: "Yes",
+          cancelText: "No"
+        },
+        asMenuItem: true
+      },
+      {
         label: "Mark as Completed",
         icon: "check_circle",
         color: "primary",
         tooltip: "Mark as Completed",
         visible: (row) => row.dietPlanStatusId !== this.completedPlanStatus,
-        onClick: (row) => this.onStatusChangeDialog(row),
+        onClick: (row) => this.onStatusChangeDialog(row, DietPlanStatusEnum.COMPLETED),
         confirm: {
-          message: "Are you sure you want to change the status?",
+          message: "Are you sure you want to mark this diet plan as Completed?",
           confirmText: "Yes",
           cancelText: "No"
         },
@@ -355,9 +362,9 @@ export class MemberDietPlanListComponent implements OnInit, OnDestroy {
     }
   }
 
-  onStatusChangeDialog(item: IMemberDietPlan) {
+  onStatusChangeDialog(item: IMemberDietPlan, statusId?: number) {
     if (confirm("Are you sure you want to change the status?")) {
-      this.updateStatus(item.memberDietPlanId);
+      this.updateStatus(item.memberDietPlanId, statusId);
     }
   }
 
@@ -428,10 +435,10 @@ export class MemberDietPlanListComponent implements OnInit, OnDestroy {
     }
   }
 
-  async updateStatus(dietPlanId: number | undefined) {
+  async updateStatus(dietPlanId: number | undefined, statusId?: number) {
     if (!dietPlanId) return;
     try {
-      await this.apiService.updateDietPlanStatus(this.memberId, dietPlanId);
+      await this.apiService.updateDietPlanStatus(this.memberId, dietPlanId, statusId);
       this.snackBar.open("Status updated successfully", "Close", {
         duration: 3000
       });

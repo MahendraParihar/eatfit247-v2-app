@@ -1,16 +1,13 @@
-import { Injectable } from '@angular/core';
-import { ApiBaseService } from '@core';
+import { inject, Injectable } from '@angular/core';
+import { HttpService } from '@core';
 import { IContactFormReportFilter, IContactFormReportItem, ISendResponseDto, ITableList } from '@eatfit247-shared-lib';
 
 @Injectable({
   providedIn: 'root'
 })
-export class ContactFormReportApiService extends ApiBaseService {
+export class ContactFormReportApiService {
+  private readonly httpService = inject(HttpService);
   private readonly endpoint = '/reports/contact-form';
-
-  constructor() {
-    super();
-  }
 
   async getContactFormReport(params: IContactFormReportFilter): Promise<ITableList<IContactFormReportItem>> {
     const res = await this.httpService.post<ITableList<IContactFormReportItem>>(this.endpoint, params);

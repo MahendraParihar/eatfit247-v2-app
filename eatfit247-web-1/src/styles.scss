@@ -5,6 +5,8 @@
 @use './styles/typography-tokens';
 @use './styles/grid-utilities';
 @use './styles/accessibility';
+@use './styles/design-components';
+@use './styles/design-pages';
 
 // Include core Material styles
 @include mat.core();
@@ -24,9 +26,13 @@ $theme: mat.define-theme((
 // Apply the theme
 html {
   @include mat.all-component-themes($theme);
-  
-  // Set Material 3 form field filled container color to use custom surface page color
+}
+
+// Material component overrides — placed on body so theme tokens (.light-theme/.dark-theme) are available
+body {
   --mat-form-field-filled-container-color: var(--color-surface-page);
+  --mat-expansion-container-background-color: var(--color-surface-card);
+  --mat-menu-container-color: var(--color-surface-card);
 }
 
 // Dark theme support
@@ -44,10 +50,17 @@ html {
 // Angular CDK Overlay styles (required for Material dropdowns, dialogs, tooltips, etc.)
 @import '@angular/cdk/overlay-prebuilt.css';
 
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 html,
 body {
   height: 100%;
   margin: 0;
+  overflow-x: clip;
 }
 
 body {
@@ -55,7 +68,6 @@ body {
   background-color: var(--color-surface-page);
   color: var(--color-text-primary);
   transition: background-color 0.3s ease, color 0.3s ease;
-  overflow-x: hidden;
 }
 
 // Light theme default
@@ -73,6 +85,7 @@ body.dark-theme {
 
 .page-container {
   padding-block: var(--space-fluid-lg);
+  padding-inline: var(--space-fluid-md);
   max-width: var(--container-max-width-xl);
   margin-inline: auto;
 }

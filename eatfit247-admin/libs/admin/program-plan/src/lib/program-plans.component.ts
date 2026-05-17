@@ -61,12 +61,6 @@ export class ProgramPlans implements OnInit {
         searchable: true
       },
       {
-        key: 'programPlanType',
-        label: 'Type',
-        dataKey: 'programPlanType',
-        sortable: false
-      },
-      {
         key: 'noOfCycle',
         label: 'Cycles',
         dataKey: 'noOfCycle',

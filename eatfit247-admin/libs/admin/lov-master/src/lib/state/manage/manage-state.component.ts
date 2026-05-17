@@ -9,7 +9,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { MatCardModule } from '@angular/material/card';
 import { InputErrorComponent, ValidationUtil } from '@shared';
-import { LovMasterApiService } from '../../api.service';
+import { StateApiService, CountryApiService } from '../../api.service';
 import { IDropdownItem, IManageState, InputLengthEnum, IState } from '@eatfit247-shared-lib';
 
 @Component({
@@ -32,7 +32,8 @@ import { IDropdownItem, IManageState, InputLengthEnum, IState } from '@eatfit247
 export class ManageState implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private apiService = inject(LovMasterApiService);
+  private apiService = inject(StateApiService);
+  private countryApiService = inject(CountryApiService);
 
   private fb: FormBuilder = inject(FormBuilder);
   formGroup: FormGroup = this.fb.group({
@@ -61,7 +62,7 @@ export class ManageState implements OnInit {
   }
 
   private async loadCountryOptions(): Promise<void> {
-    this.countryOptions = await this.apiService.getCountryDropdown();
+    this.countryOptions = await this.countryApiService.getDropdown();
   }
 
   private buildForm(): void {
@@ -89,7 +90,7 @@ export class ManageState implements OnInit {
   }
 
   async loadData(id: number): Promise<void> {
-    this.initialData = await this.apiService.getStateById(id);
+    this.initialData = await this.apiService.getById(id);
   }
 
   async onSubmit(): Promise<void> {
@@ -98,9 +99,9 @@ export class ManageState implements OnInit {
       const formValue: IManageState = { ...this.formGroup.value };
       if (this.isEditMode && this.initialData) {
         formValue.stateId = this.initialData.stateId;
-        await this.apiService.updateState(this.initialData.stateId, formValue);
+        await this.apiService.update(this.initialData.stateId, formValue);
       } else {
-        await this.apiService.createState(formValue);
+        await this.apiService.create(formValue);
       }
       this.router.navigate(['/lov-master/state']);
     } else {

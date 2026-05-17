@@ -10,7 +10,7 @@ import {
   ICallLogSlot,
   IGoogleCalendarEvent,
   IGoogleCalendarStatus,
-  IGoogleReviewsResponse,
+  IGoogleBusinessReviewsResponse,
 } from '@eatfit247-shared-lib';
 import { InjectModel } from '@nestjs/sequelize';
 import moment from 'moment-timezone';
@@ -591,7 +591,7 @@ export class GoogleService {
    * @param placeId - Optional Google Place ID. If not provided, will try to get from config
    * @returns Promise with reviews, average rating, and total review count
    */
-  async getGoogleBusinessReviews(placeId?: string): Promise<IGoogleReviewsResponse> {
+  async getGoogleBusinessReviews(placeId?: string): Promise<IGoogleBusinessReviewsResponse> {
     try {
       const apiKey = this.appConfig.getString(ConfigParam.GOOGLE_KEY);
       if (!apiKey) {

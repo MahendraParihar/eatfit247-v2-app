@@ -1,0 +1,32 @@
+<mat-card class="recent-content-card">
+  <mat-card-header>
+    <mat-card-title>Recent Content Activity</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    @if (loading) {
+      <shared-ui-loader></shared-ui-loader>
+    } @else if (!data.length) {
+      <shared-ui-empty-state
+        title="No Recent Activity"
+        description="Content activity data is not available at the moment."
+        icon="history"
+      ></shared-ui-empty-state>
+    } @else {
+      <mat-list class="activity-list">
+        @for (item of data; track item.id) {
+          <mat-list-item class="activity-item">
+            <div matListItemIcon class="activity-icon-wrapper">
+              <mat-icon>{{ getTypeIcon(item.type) }}</mat-icon>
+            </div>
+            <div matListItemTitle class="activity-title">{{ item.title }}</div>
+            <div matListItemLine class="activity-meta">
+              <span class="action-badge" [class]="getActionClass(item.action)">{{ item.action }}</span>
+              <span class="activity-date">{{ item.date | date:'mediumDate' }}</span>
+              <span class="activity-author">by {{ item.author }}</span>
+            </div>
+          </mat-list-item>
+        }
+      </mat-list>
+    }
+  </mat-card-content>
+</mat-card>

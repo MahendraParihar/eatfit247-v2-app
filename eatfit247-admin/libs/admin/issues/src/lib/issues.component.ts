@@ -1,155 +1,65 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import {
-  createdByUserFormatter,
-  DataTableComponent,
-  ITableAction,
-  ITableColumn,
-  ITableConfig,
-  updatedByUserFormatter
-} from '@shared';
-import { ITableList } from '@eatfit247-shared-lib';
+import { BaseListComponent, DataTableComponent, ITableAction, ITableColumn } from '@shared';
+import { IIssue } from '@eatfit247-shared-lib';
 import { IssuesApiService } from './api.service';
-import { debounceTime, distinctUntilChanged, Subject, switchMap } from 'rxjs';
 
 @Component({
   selector: 'lib-issues',
   standalone: true,
-  imports: [CommonModule, DataTableComponent, MatButtonModule, MatIconModule, MatSnackBarModule],
+  imports: [CommonModule, DataTableComponent, MatButtonModule, MatIconModule],
   templateUrl: './issues.html',
   styleUrl: './issues.scss',
 })
-export class Issues implements OnInit {
-  private apiService = inject(IssuesApiService);
-  private router = inject(Router);
-  private route = inject(ActivatedRoute);
-  private snackBar = inject(MatSnackBar);
+export class Issues extends BaseListComponent<IIssue> {
+  protected apiService = inject(IssuesApiService);
 
-  data: any[] = [];
-  totalCount = 0;
-  loading = false;
-  tableConfig!: ITableConfig<any>;
-  private searchSubject = new Subject<string>();
-  currentSearch = '';
+  protected listConfig = {
+    editRoute: '/issues/edit',
+    createRoute: '/issues/new',
+    searchPlaceholder: 'Search issues...',
+    emptyMessage: 'No issues found',
+  };
 
-  constructor() {
-    this.setupSearch();
-  }
-
-  ngOnInit(): void {
-    this.initializeTable();
-    this.loadData();
-  }
-
-  private initializeTable(): void {
-    const columns: ITableColumn<any>[] = [
+  protected buildEntityColumns(): ITableColumn<IIssue>[] {
+    return [
       { key: 'issueId', label: 'ID', dataKey: 'issueId', sortable: true, width: '80px' },
-      { key: 'member', label: 'Member', dataKey: 'member', sortable: false, formatter: (value) => value ? `${value.firstName || ''} ${value.lastName || ''}`.trim() || '-' : '-' },
-      { key: 'issueCategory', label: 'Category', dataKey: 'issueCategory', sortable: false, formatter: (value) => value?.issueCategory || '-' },
-      { key: 'issueStatus', label: 'Status', dataKey: 'issueStatus', sortable: false, formatter: (value) => value?.issueStatus || '-' },
-      { key: 'subject', label: 'Subject', dataKey: 'subject', sortable: true, searchable: true },
-      { key: 'issueDate', label: 'Issue Date', dataKey: 'issueDate', sortable: true, formatter: (value) => (value ? new Date(value).toLocaleDateString() : '') },
-      { key: 'resolvedDate', label: 'Resolved Date', dataKey: 'resolvedDate', sortable: true, formatter: (value) => (value ? new Date(value).toLocaleDateString() : '-') },
-      { key: 'createdByUser', label: 'Created By', dataKey: 'createdByUser', sortable: false, formatter: createdByUserFormatter() },
-      { key: 'updatedByUser', label: 'Updated By', dataKey: 'updatedByUser', sortable: false, formatter: updatedByUserFormatter() },
       {
-        key: 'createdAt',
-        label: 'Created At',
-        dataKey: 'createdAt',
-        type: 'date',
-        sortable: true
+        key: 'member', label: 'Member', dataKey: 'member', sortable: false,
+        formatter: (value) => value ? `${value.firstName || ''} ${value.lastName || ''}`.trim() || '-' : '-',
       },
       {
-        key: 'updatedAt',
-        label: 'Updated At',
-        dataKey: 'updatedAt',
-        type: 'date',
-        sortable: true
+        key: 'issueCategory', label: 'Category', dataKey: 'issueCategory', sortable: false,
+        formatter: (value) => value?.issueCategory || '-',
+      },
+      {
+        key: 'issueStatus', label: 'Status', dataKey: 'issueStatus', sortable: false,
+        formatter: (value) => value?.issueStatus || '-',
+      },
+      { key: 'subject', label: 'Subject', dataKey: 'subject', sortable: true, searchable: true },
+      {
+        key: 'issueDate', label: 'Issue Date', dataKey: 'issueDate', sortable: true,
+        formatter: (value) => (value ? new Date(value).toLocaleDateString() : ''),
+      },
+      {
+        key: 'resolvedDate', label: 'Resolved Date', dataKey: 'resolvedDate', sortable: true,
+        formatter: (value) => (value ? new Date(value).toLocaleDateString() : '-'),
       },
     ];
+  }
 
-    const actions: ITableAction<any>[] = [
-      { label: 'Edit', icon: 'edit', color: 'primary', onClick: (row) => this.editItem(row) },
+  protected override buildExtraActions(): ITableAction<IIssue>[] {
+    return [
       { label: 'View', icon: 'visibility', color: 'primary', onClick: (row) => this.viewItem(row) },
     ];
-
-    this.tableConfig = {
-      columns,
-      actions,
-      showSearch: true,
-      searchPlaceholder: 'Search issues...',
-      showPagination: true,
-      pageSize: 10,
-      pageSizeOptions: [5, 10, 25, 50],
-      showHeader: true,
-      emptyMessage: 'No issues found',
-    };
   }
 
-  private setupSearch(): void {
-    this.searchSubject.pipe(debounceTime(300), distinctUntilChanged(), switchMap((search) => {
-      this.loading = true;
-      return this.apiService.getList({ search, page: 0, limit: this.tableConfig.pageSize || 10 });
-    })).subscribe({
-      next: (response) => { this.data = response.tableData; this.totalCount = response.count; this.loading = false; },
-      error: () => { this.loading = false; },
-    });
-  }
+  protected getItemId(item: IIssue): number { return item.issueId; }
+  protected getItemDisplayName(item: IIssue): string { return item.subject; }
 
-  async loadData(): Promise<void> {
-    this.loading = true;
-    try {
-      const response: ITableList<any> = await this.apiService.getList({ page: 0, limit: this.tableConfig.pageSize || 10, search: this.currentSearch?.trim() || undefined });
-      this.data = response.tableData;
-      this.totalCount = response.count;
-      this.loading = false;
-    } catch {
-      this.loading = false;
-    }
-  }
-
-  async onPageChange(pagination: any): Promise<void> {
-    this.loading = true;
-    try {
-      const response: ITableList<any> = await this.apiService.getList({ page: pagination.pageIndex, limit: pagination.pageSize, search: this.currentSearch?.trim() || undefined });
-      this.data = response.tableData;
-      this.totalCount = response.count;
-      this.loading = false;
-    } catch {
-      this.loading = false;
-    }
-  }
-
-  async onSortChange(sort: any): Promise<void> {
-    this.loading = true;
-    try {
-      const response: ITableList<any> = await this.apiService.getList({ page: 0, limit: this.tableConfig.pageSize || 10, sortBy: sort.active, sortOrder: sort.direction, search: this.currentSearch?.trim() || undefined });
-      this.data = response.tableData;
-      this.totalCount = response.count;
-      this.loading = false;
-    } catch {
-      this.loading = false;
-    }
-  }
-
-  onSearchChange(search: string): void {
-    this.currentSearch = search;
-    this.searchSubject.next(search);
-  }
-
-  editItem(item: any): void {
-    this.router.navigate(['/issues/edit', item.issueId]);
-  }
-
-  createItem(): void {
-    this.router.navigate(['/issues/new']);
-  }
-
-  viewItem(item: any): void {
+  viewItem(item: IIssue): void {
     // View functionality can be implemented here if needed
   }
 }

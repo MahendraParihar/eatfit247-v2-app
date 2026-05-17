@@ -1,0 +1,171 @@
+@use 'styles' as *;
+
+.expiring-plans-card {
+  border-radius: var(--radius-card);
+  background: var(--md-sys-color-surface);
+  box-shadow: var(--elevation-level-1);
+  height: 100%;
+
+  mat-card-header {
+    margin-bottom: 16px;
+  }
+
+  mat-card-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--md-sys-color-on-surface);
+  }
+
+  .plans-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .plan-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-radius: var(--radius-card);
+    background: var(--md-sys-color-surface-container);
+    border: 1px solid var(--md-sys-color-outline);
+
+    &.urgency-critical {
+      border-left: 4px solid var(--status-error);
+
+      .plan-icon {
+        background: var(--status-error-bg);
+
+        mat-icon {
+          color: var(--status-error);
+        }
+      }
+
+      .plan-days-remaining .days-count {
+        color: var(--status-error);
+      }
+    }
+
+    &.urgency-high {
+      border-left: 4px solid var(--status-warning);
+
+      .plan-icon {
+        background: var(--status-warning-bg);
+
+        mat-icon {
+          color: var(--status-warning);
+        }
+      }
+
+      .plan-days-remaining .days-count {
+        color: var(--status-warning);
+      }
+    }
+
+    &.urgency-medium {
+      border-left: 4px solid var(--status-info);
+
+      .plan-icon {
+        background: var(--status-info-bg);
+
+        mat-icon {
+          color: var(--status-info);
+        }
+      }
+
+      .plan-days-remaining .days-count {
+        color: var(--status-info);
+      }
+    }
+
+    &.urgency-low {
+      border-left: 4px solid var(--status-success);
+
+      .plan-icon {
+        background: var(--status-success-bg);
+
+        mat-icon {
+          color: var(--status-success);
+        }
+      }
+
+      .plan-days-remaining .days-count {
+        color: var(--status-success);
+      }
+    }
+
+    .plan-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      flex-shrink: 0;
+
+      mat-icon {
+        font-size: 24px;
+        width: 24px;
+        height: 24px;
+      }
+    }
+
+    .plan-details {
+      flex: 1;
+      min-width: 0;
+
+      .plan-member {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--md-sys-color-on-surface);
+        margin-bottom: 2px;
+      }
+
+      .plan-name {
+        font-size: 12px;
+        color: var(--md-sys-color-on-surface);
+        opacity: 0.8;
+        margin-bottom: 4px;
+      }
+
+      .plan-meta {
+        display: flex;
+        gap: 12px;
+        font-size: 12px;
+        color: var(--md-sys-color-on-surface);
+        opacity: 0.7;
+
+        .plan-expiry {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+        }
+
+        .meta-icon {
+          font-size: 14px;
+          width: 14px;
+          height: 14px;
+        }
+      }
+    }
+
+    .plan-days-remaining {
+      flex-shrink: 0;
+      text-align: center;
+      min-width: 60px;
+
+      .days-count {
+        font-size: 24px;
+        font-weight: 700;
+        line-height: 1.2;
+      }
+
+      .days-label {
+        font-size: 11px;
+        color: var(--md-sys-color-on-surface);
+        opacity: 0.7;
+      }
+    }
+  }
+}

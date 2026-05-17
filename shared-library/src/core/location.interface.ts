@@ -57,6 +57,7 @@ export interface IManageAddress extends IAddressBasic {
 export interface IAddress extends IManageAddress {
   addressId: number;
   state: string;
+  stateCode?: string;
   country: string;
   countryCode?: string;
   createdByUser?: IBaseAdminUser;

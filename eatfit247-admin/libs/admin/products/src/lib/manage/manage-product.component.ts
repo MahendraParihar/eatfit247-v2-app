@@ -1,4 +1,5 @@
 import { Component, inject, OnDestroy, OnInit } from '@angular/core';
+import { Subscription } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -49,6 +50,7 @@ export class ManageProduct implements OnInit, OnDestroy {
   private apiService = inject(ProductsApiService);
   private productFormService = inject(ProductFormService);
   private snackBar = inject(MatSnackBar);
+  private formSubscriptions = new Subscription();
 
   private fb: FormBuilder = inject(FormBuilder);
   formGroup: FormGroup = this.fb.group({
@@ -151,14 +153,18 @@ export class ManageProduct implements OnInit, OnDestroy {
 
   private setupPriceRangeAutoCalculation(): void {
     // Listen to changes in variantsArray to auto-calculate price range
-    this.variantsArray.valueChanges.subscribe(() => {
-      this.calculatePriceRange();
-    });
+    this.formSubscriptions.add(
+      this.variantsArray.valueChanges.subscribe(() => {
+        this.calculatePriceRange();
+      }),
+    );
     // Listen to when variants are added/removed to set up new listeners
-    this.variantsArray.statusChanges.subscribe(() => {
-      this.setupVariantPriceListeners();
-      this.calculatePriceRange();
-    });
+    this.formSubscriptions.add(
+      this.variantsArray.statusChanges.subscribe(() => {
+        this.setupVariantPriceListeners();
+        this.calculatePriceRange();
+      }),
+    );
     // Set up initial listeners
     this.setupVariantPriceListeners();
   }
@@ -171,16 +177,20 @@ export class ManageProduct implements OnInit, OnDestroy {
         pricesArray.controls.forEach((priceControl) => {
           const priceValueControl = priceControl.get('price');
           if (priceValueControl) {
-            priceValueControl.valueChanges.subscribe(() => {
-              this.calculatePriceRange();
-            });
+            this.formSubscriptions.add(
+              priceValueControl.valueChanges.subscribe(() => {
+                this.calculatePriceRange();
+              }),
+            );
           }
         });
         // Listen to when prices are added/removed
-        pricesArray.statusChanges.subscribe(() => {
-          this.setupVariantPriceListeners();
-          this.calculatePriceRange();
-        });
+        this.formSubscriptions.add(
+          pricesArray.statusChanges.subscribe(() => {
+            this.setupVariantPriceListeners();
+            this.calculatePriceRange();
+          }),
+        );
       }
     });
   }
@@ -599,6 +609,7 @@ export class ManageProduct implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.formSubscriptions.unsubscribe();
     if (this.editor) {
       try {
         this.editor.destroy();

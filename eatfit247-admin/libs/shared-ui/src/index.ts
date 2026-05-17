@@ -1,5 +1,6 @@
 export * from './lib/layout/base-layout.component';
 export * from './lib/utils';
+export * from './lib/base-list/base-list.component';
 
 // UI Components
 export * from './lib/data-table';

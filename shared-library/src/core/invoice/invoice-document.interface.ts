@@ -36,6 +36,7 @@ export interface IInvoiceParty {
     line2?: string;
     city: string;
     state?: string;
+    stateCode?: string;
     postalCode: string;
     country: string;
   };

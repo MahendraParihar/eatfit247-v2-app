@@ -49,6 +49,7 @@ export class DietTemplateDetailComponent implements OnInit, OnDestroy {
   copyFromDayNo?: number;
   dietPlanDetail = signal<{
     dietTemplateId: number;
+    dietTemplate: string;
     cycleNo: number;
     dayNo?: number;
     noOfCycle: number;
@@ -246,7 +247,7 @@ export class DietTemplateDetailComponent implements OnInit, OnDestroy {
       }
       await this.apiService.createDietTemplateDetail(this.dietTemplateId, payload);
       this.snackBar.open('Diet Template Saved Successfully.', 'Close', { duration: 3000 });
-      this.router.navigate(['/diet-template']);
+      this.router.navigate(['/diet-template/builder', this.dietTemplateId]);
     } catch (error) {
       // Error toast is handled by HttpErrorInterceptor
     }

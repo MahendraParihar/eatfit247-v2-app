@@ -123,18 +123,10 @@ export class DietTemplateComponent implements OnInit {
     const actions: ITableAction<IDietTemplate>[] = [
       { label: 'Edit', icon: 'edit', color: 'primary', onClick: (row) => this.editItem(row) },
       {
-        label: 'Add Day Plan',
-        icon: 'add',
+        label: 'Manage Details',
+        icon: 'tune',
         color: 'primary',
-        visible: (row) => !(row as any).isWeekly,
-        onClick: (row) => this.addDayPlan(row)
-      },
-      {
-        label: 'Add Cycle Plan',
-        icon: 'add',
-        color: 'primary',
-        visible: (row) => !!(row as any).isWeekly,
-        onClick: (row) => this.addCyclePlan(row)
+        onClick: (row) => this.manageDetails(row)
       },
       {
         label: 'Active',
@@ -262,18 +254,7 @@ export class DietTemplateComponent implements OnInit {
   }
 
   manageDetails(item: IDietTemplate): void {
-    // Navigate to cycle 1 by default, admin can navigate to other cycles from there
-    this.router.navigate(['/diet-template/details', item.dietTemplateId, 'cycle', 1]);
-  }
-
-  addDayPlan(item: IDietTemplate): void {
-    // Navigate to add day-wise diet details - start with cycle 1, day 1
-    this.router.navigate(['/diet-template/details', item.dietTemplateId, 'cycle', 1, 'day', 1]);
-  }
-
-  addCyclePlan(item: IDietTemplate): void {
-    // Navigate to add weekly diet details - start with cycle 1 (no day number)
-    this.router.navigate(['/diet-template/details', item.dietTemplateId, 'cycle', 1]);
+    this.router.navigate(['/diet-template/builder', item.dietTemplateId]);
   }
 
   createItem(): void {

@@ -1,5 +1,5 @@
-import { Injectable } from '@angular/core';
-import { ApiBaseService } from '@core';
+import { inject, Injectable } from '@angular/core';
+import { HttpService } from '@core';
 import { IShipment, ITrackingInfo } from '@eatfit247-shared-lib';
 
 export interface IShipmentManualRetryResult {
@@ -14,7 +14,8 @@ export interface IShipmentManualRetryResult {
 @Injectable({
   providedIn: 'root',
 })
-export class ShipmentAdminApiService extends ApiBaseService {
+export class ShipmentAdminApiService {
+  private readonly httpService = inject(HttpService);
   async getShipment(shipmentId: number): Promise<IShipment> {
     const res = await this.httpService.get<IShipment>(`shipment/${shipmentId}`);
     return res.data as IShipment;

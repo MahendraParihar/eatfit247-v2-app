@@ -8,7 +8,18 @@
     (sortChange)="onSortChange($event)"
     (searchChange)="onSearchChange($event)"
   >
-    <div headerActions>
+    <div headerActions class="header-actions">
+      <mat-form-field appearance="outline" class="filter-field">
+        <mat-label>Special Program</mat-label>
+        <mat-select
+          [(ngModel)]="isSpecialProgramFilter"
+          (selectionChange)="onSpecialProgramFilterChange()"
+        >
+          <mat-option [value]="null">All</mat-option>
+          <mat-option [value]="true">Yes</mat-option>
+          <mat-option [value]="false">No</mat-option>
+        </mat-select>
+      </mat-form-field>
       <button mat-raised-button color="primary" (click)="createItem()">
         <mat-icon>add</mat-icon>
         Create New

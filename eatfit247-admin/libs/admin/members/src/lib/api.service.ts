@@ -1,5 +1,5 @@
-import { Injectable } from '@angular/core';
-import { ApiBaseService } from '@core';
+import { inject, Injectable } from '@angular/core';
+import { HttpService } from '@core';
 import {
   IAddress,
   IAddressMaster,
@@ -54,12 +54,9 @@ import {
 @Injectable({
   providedIn: 'root',
 })
-export class MembersApiService extends ApiBaseService {
+export class MembersApiService {
+  private readonly httpService = inject(HttpService);
   private readonly endpoint = '/member';
-
-  constructor() {
-    super();
-  }
 
   async getList(
     params?: ITableListFilter & { sortBy?: string; sortOrder?: string; franchiseId?: number; countryId?: number }
@@ -703,11 +700,12 @@ export class MembersApiService extends ApiBaseService {
 
   async updateDietPlanStatus(
     memberId: number,
-    dietPlanId: number
+    dietPlanId: number,
+    statusId?: number
   ): Promise<void> {
     await this.httpService.put<void>(
       `${this.endpoint}/${memberId}/diet-plan/update-status/${dietPlanId}`,
-      null
+      { statusId }
     );
   }
 

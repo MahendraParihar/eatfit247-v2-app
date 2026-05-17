@@ -178,6 +178,7 @@ export class AddressService {
       latitude: item.latitude ? parseFloat(item.latitude) : undefined,
       longitude: item.longitude ? parseFloat(item.longitude) : undefined,
       state: item.state?.state || '',
+      stateCode: item.state?.code || '',
       country: item.country?.country || '',
       createdBy: item.createdBy,
       modifiedBy: item.modifiedBy,

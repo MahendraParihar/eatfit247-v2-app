@@ -2,4 +2,86 @@
   <app-banner [banners]="banners"></app-banner>
 }
 
-<p>Know Your Current Immunity Score works!</p>
+<section class="page-hero">
+  <div class="ef-container">
+    <div class="page-hero__inner">
+      <div>
+        <app-breadcrumbs [crumbs]="[{ label: 'Home', link: '/' }, { label: 'Know Your Immunity Score' }]"></app-breadcrumbs>
+        <h1>How <span class="accent">strong</span> is your immunity?</h1>
+        <p class="lead">A quick 5-question check to gauge how your daily habits support your immune system.</p>
+      </div>
+      <div class="page-hero__visual" aria-hidden="true">
+        <div class="ring"></div>
+        <div class="ring ring--inner"></div>
+        <div class="disc">health_and_safety</div>
+        <div class="chip chip--a"><span class="mat-icon">shield</span>Defence</div>
+        <div class="chip chip--b"><span class="mat-icon">monitor_heart</span>Wellness</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="ef-container quiz-section">
+  @if (!submitted()) {
+    <div class="quiz-progress">
+      <span>{{ answeredCount() }} of {{ questions.length }} answered</span>
+      <div class="quiz-progress__bar" role="progressbar" [attr.aria-valuenow]="answeredCount()" aria-valuemin="0" [attr.aria-valuemax]="questions.length">
+        <div class="quiz-progress__fill" [style.width.%]="(answeredCount() / questions.length) * 100"></div>
+      </div>
+    </div>
+
+    @for (q of questions; track q.id) {
+      <div class="feature-card quiz-card">
+        <div class="quiz-card__step">Q{{ q.id }}</div>
+        <h3>{{ q.prompt }}</h3>
+        <div class="quiz-options">
+          @for (opt of q.options; track opt.score) {
+            <button
+              type="button"
+              class="mat-btn"
+              [class.mat-btn--filled]="isSelected(q.id, opt.score)"
+              [class.mat-btn--outlined]="!isSelected(q.id, opt.score)"
+              (click)="selectOption(q.id, opt.score)"
+              [attr.aria-pressed]="isSelected(q.id, opt.score)">
+              @if (isSelected(q.id, opt.score)) {
+                <span class="mat-icon">check_circle</span>
+              }
+              {{ opt.label }}
+            </button>
+          }
+        </div>
+      </div>
+    }
+
+    <div class="quiz-actions">
+      <button type="button" class="mat-btn mat-btn--filled" (click)="submitQuiz()" [disabled]="!canSubmit()">
+        <span class="mat-icon">insights</span>
+        See My Score
+      </button>
+    </div>
+  } @else {
+    <div class="feature-card quiz-result">
+      <div class="feature-card__icon" aria-hidden="true">
+        <span class="mat-icon">health_and_safety</span>
+      </div>
+      <h3>Your immunity score is <span class="accent">{{ score().percent }}%</span></h3>
+      <p class="score-band">{{ score().band }}</p>
+      <p>You scored {{ score().total }} out of {{ score().max }}. Speak to our experts for a tailored plan that strengthens your daily defence.</p>
+
+      <div class="score-meter" aria-hidden="true">
+        <div class="score-meter__fill" [style.width.%]="score().percent"></div>
+      </div>
+
+      <div class="quiz-actions">
+        <button type="button" class="mat-btn mat-btn--outlined" (click)="resetQuiz()">
+          <span class="mat-icon">refresh</span>
+          Retake Quiz
+        </button>
+        <a routerLink="/our-programs" class="mat-btn mat-btn--filled">
+          <span class="mat-icon">arrow_forward</span>
+          Explore Programs
+        </a>
+      </div>
+    </div>
+  }
+</section>

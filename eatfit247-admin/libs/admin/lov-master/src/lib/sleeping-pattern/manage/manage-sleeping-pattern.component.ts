@@ -9,7 +9,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { MatCardModule } from '@angular/material/card';
 import { InputErrorComponent, UploadFormComponent, ValidationUtil } from '@shared';
-import { LovMasterApiService } from '../../api.service';
+import { SleepingPatternApiService } from '../../api.service';
 import {
   FileTypeEnum,
   IManageSleepingPattern,
@@ -39,7 +39,7 @@ import {
 export class ManageSleepingPattern implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private apiService = inject(LovMasterApiService);
+  private apiService = inject(SleepingPatternApiService);
 
   private fb: FormBuilder = inject(FormBuilder);
   formGroup: FormGroup = this.fb.group({
@@ -79,7 +79,7 @@ export class ManageSleepingPattern implements OnInit {
   }
 
   async loadData(id: number): Promise<void> {
-    this.initialData = await this.apiService.getSleepingPatternById(id);
+    this.initialData = await this.apiService.getById(id);
   }
 
   async onSubmit(): Promise<void> {
@@ -92,9 +92,9 @@ export class ManageSleepingPattern implements OnInit {
       }
       if (this.isEditMode && this.initialData) {
         formValue.sleepingPatternId = this.initialData.sleepingPatternId;
-        await this.apiService.updateSleepingPattern(this.initialData.sleepingPatternId, formValue);
+        await this.apiService.update(this.initialData.sleepingPatternId, formValue);
       } else {
-        await this.apiService.createSleepingPattern(formValue);
+        await this.apiService.create(formValue);
       }
       this.router.navigate(['/lov-master/sleeping-pattern']);
     } else {

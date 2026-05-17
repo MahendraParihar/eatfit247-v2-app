@@ -156,10 +156,12 @@ export class MemberPocketGuideService {
                 pocketGuideCount: newPocketGuides.length,
               },
             };
-            await this.emailNotificationService.sendEmailByType(emailData);
+            this.emailNotificationService.sendEmailByType(emailData).catch((emailError) => {
+              this.logger.error('Failed to send pocket guide email', { emailError });
+            });
           } catch (emailError) {
             // Log error but don't fail the operation
-            this.logger.error('Failed to send pocket guide email', { emailError });
+            this.logger.error('Failed to prepare pocket guide email', { emailError });
           }
         }
       } catch (error) {

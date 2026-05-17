@@ -9,7 +9,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { MatCardModule } from '@angular/material/card';
 import { InputErrorComponent, UploadFormComponent, ValidationUtil } from '@shared';
-import { LovMasterApiService } from '../../api.service';
+import { MaritalStatusApiService } from '../../api.service';
 import {
   FileTypeEnum,
   IManageMaritalStatus,
@@ -39,7 +39,7 @@ import {
 export class ManageMaritalStatus implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private apiService = inject(LovMasterApiService);
+  private apiService = inject(MaritalStatusApiService);
 
   private fb: FormBuilder = inject(FormBuilder);
   formGroup: FormGroup = this.fb.group({
@@ -79,7 +79,7 @@ export class ManageMaritalStatus implements OnInit {
   }
 
   async loadData(id: number): Promise<void> {
-    this.initialData = await this.apiService.getMaritalStatusById(id);
+    this.initialData = await this.apiService.getById(id);
   }
 
   async onSubmit(): Promise<void> {
@@ -92,9 +92,9 @@ export class ManageMaritalStatus implements OnInit {
       }
       if (this.isEditMode && this.initialData) {
         formValue.maritalStatusId = this.initialData.maritalStatusId;
-        await this.apiService.updateMaritalStatus(this.initialData.maritalStatusId, formValue);
+        await this.apiService.update(this.initialData.maritalStatusId, formValue);
       } else {
-        await this.apiService.createMaritalStatus(formValue);
+        await this.apiService.create(formValue);
       }
       this.router.navigate(['/lov-master/marital-status']);
     } else {

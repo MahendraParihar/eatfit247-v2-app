@@ -9,7 +9,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { MatCardModule } from '@angular/material/card';
 import { InputErrorComponent, UploadFormComponent, ValidationUtil } from '@shared';
-import { LovMasterApiService } from '../../api.service';
+import { BloodSugarApiService } from '../../api.service';
 import { FileTypeEnum, IBloodSugar, IManageBloodSugar, InputLengthEnum, MediaForEnum } from '@eatfit247-shared-lib';
 
 @Component({
@@ -33,7 +33,7 @@ import { FileTypeEnum, IBloodSugar, IManageBloodSugar, InputLengthEnum, MediaFor
 export class ManageBloodSugar implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private apiService = inject(LovMasterApiService);
+  private apiService = inject(BloodSugarApiService);
 
   private fb: FormBuilder = inject(FormBuilder);
   formGroup: FormGroup = this.fb.group({
@@ -73,7 +73,7 @@ export class ManageBloodSugar implements OnInit {
   }
 
   async loadData(id: number): Promise<void> {
-    this.initialData = await this.apiService.getBloodSugarById(id);
+    this.initialData = await this.apiService.getById(id);
   }
 
   async onSubmit(): Promise<void> {
@@ -86,9 +86,9 @@ export class ManageBloodSugar implements OnInit {
       }
       if (this.isEditMode && this.initialData) {
         formValue.bloodSugarId = this.initialData.bloodSugarId;
-        await this.apiService.updateBloodSugar(this.initialData.bloodSugarId, formValue);
+        await this.apiService.update(this.initialData.bloodSugarId, formValue);
       } else {
-        await this.apiService.createBloodSugar(formValue);
+        await this.apiService.create(formValue);
       }
       this.router.navigate(['/lov-master/blood-sugar']);
     } else {

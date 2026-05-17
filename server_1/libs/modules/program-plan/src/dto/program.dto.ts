@@ -1,7 +1,8 @@
-import { IsBoolean, IsNotEmpty, IsNumber, IsOptional, MaxLength, MinLength, ValidateNested } from 'class-validator';
+import { IsBoolean, IsDateString, IsInt, IsNotEmpty, IsNumber, IsOptional, MaxLength, Min, MinLength, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 import { IManageProgram, InputLengthEnum } from '@eatfit247-shared-lib';
 import { MediaUploadDto, SeoDto } from '@server_1/core';
+import { CreateProgramPlanDto } from './program-plan.dto';
 
 export class CreateProgramDto implements IManageProgram {
   @MinLength(InputLengthEnum.CHAR_2)
@@ -9,16 +10,10 @@ export class CreateProgramDto implements IManageProgram {
   @IsNotEmpty()
   program!: string;
   @IsNotEmpty()
-  @IsNumber()
-  programCategoryId!: number;
-  @IsNotEmpty()
   @MaxLength(InputLengthEnum.CHAR_250)
   punchLine!: string;
   @IsNotEmpty()
   details!: string;
-  @IsOptional()
-  @MaxLength(InputLengthEnum.CHAR_50)
-  idealFor?: string;
   @IsNotEmpty()
   @IsNumber()
   sequenceNumber!: number;
@@ -28,6 +23,16 @@ export class CreateProgramDto implements IManageProgram {
   @IsOptional()
   @MaxLength(InputLengthEnum.CHAR_500)
   videoUrl?: string;
+  @IsOptional()
+  @IsDateString()
+  startDate?: string | null;
+  @IsOptional()
+  @IsDateString()
+  endDate?: string | null;
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  maxPeopleCanRegister?: number | null;
   @IsNotEmpty()
   @IsBoolean()
   active!: boolean;
@@ -38,8 +43,14 @@ export class CreateProgramDto implements IManageProgram {
   @IsOptional()
   @IsNumber()
   programId?: number;
+  @IsOptional()
+  @IsNumber()
+  programPlanId?: number | null;
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => CreateProgramPlanDto)
+  programPlan?: CreateProgramPlanDto;
   @ValidateNested()
   @Type(() => SeoDto)
   seo!: SeoDto;
 }
-

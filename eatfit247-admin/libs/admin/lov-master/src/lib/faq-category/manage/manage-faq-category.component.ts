@@ -9,7 +9,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { MatCardModule } from '@angular/material/card';
 import { InputErrorComponent, ValidationUtil } from '@shared';
-import { LovMasterApiService } from '../../api.service';
+import { FaqCategoryApiService } from '../../api.service';
 import { IFaqCategory, IManageFaqCategory, InputLengthEnum } from '@eatfit247-shared-lib';
 
 @Component({
@@ -32,7 +32,7 @@ import { IFaqCategory, IManageFaqCategory, InputLengthEnum } from '@eatfit247-sh
 export class ManageFaqCategory implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private apiService = inject(LovMasterApiService);
+  private apiService = inject(FaqCategoryApiService);
 
   private fb: FormBuilder = inject(FormBuilder);
   formGroup: FormGroup = this.fb.group({
@@ -72,7 +72,7 @@ export class ManageFaqCategory implements OnInit {
   }
 
   async loadData(id: number): Promise<void> {
-    this.initialData = await this.apiService.getFaqCategoryById(id);
+    this.initialData = await this.apiService.getById(id);
   }
 
   async onSubmit(): Promise<void> {
@@ -84,9 +84,9 @@ export class ManageFaqCategory implements OnInit {
       }
       if (this.isEditMode && this.initialData) {
         formValue.faqCategoryId = this.initialData.faqCategoryId;
-        await this.apiService.updateFaqCategory(this.initialData.faqCategoryId, formValue);
+        await this.apiService.update(this.initialData.faqCategoryId, formValue);
       } else {
-        await this.apiService.createFaqCategory(formValue);
+        await this.apiService.create(formValue);
       }
       this.router.navigate(['/lov-master/faq-category']);
     } else {

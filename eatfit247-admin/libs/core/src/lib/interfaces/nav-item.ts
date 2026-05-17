@@ -1,11 +1,11 @@
-import { NavigationPathEnum } from '../enums/navigation-path-enum';
+export interface MenuItem {
+  label: string;
+  icon: string;
+  route?: string;
+  children?: MenuItem[];
+}
 
-export interface NavItem {
-  title: string;
-  disabled?: boolean;
-  isActive: boolean;
-  iconName: string;
-  path: NavigationPathEnum;
-  children?: NavItem[];
-  queryParams?: { [key: string]: string };
+export interface NavSection {
+  label: string;
+  items: MenuItem[];
 }

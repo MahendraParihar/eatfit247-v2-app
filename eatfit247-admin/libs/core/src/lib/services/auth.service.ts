@@ -12,7 +12,7 @@
  */
 import { inject, Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
-import { ApiBaseService } from './api-base.service';
+import { HttpService } from './http.service';
 import { StorageService } from './storage.service';
 import {
   IAuthUser,
@@ -27,14 +27,14 @@ import {
 @Injectable({
   providedIn: 'root'
 })
-export class AuthService extends ApiBaseService {
+export class AuthService {
+  private readonly httpService = inject(HttpService);
   private currentUserSubject = new BehaviorSubject<IAuthUser | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
   private readonly endpoint = '/auth';
   private readonly storage = inject(StorageService);
 
   constructor() {
-    super();
     // Load user from storage on init
     const user = this.storage.getUser();
     if (user) {
@@ -70,7 +70,7 @@ export class AuthService extends ApiBaseService {
           if (decoded) {
             // Create minimal user object from token
             const user: IAuthUser = {
-              adminId: decoded.adminUserId || decoded.adminId,
+              adminId: Number(decoded.adminUserId || decoded.adminId),
               emailId: decoded.emailId || '',
               roleKeys: [],
               franchiseIds: [],
@@ -183,11 +183,11 @@ export class AuthService extends ApiBaseService {
     this.storage.setToken(token);
   }
 
-  private decodeToken(token: string): any {
+  private decodeToken(token: string): { adminUserId?: string; adminId?: string; emailId?: string } | null {
     try {
       const payload = token.split('.')[1];
-      return JSON.parse(atob(payload));
-    } catch (e) {
+      return JSON.parse(atob(payload)) as { adminUserId?: string; adminId?: string; emailId?: string };
+    } catch {
       return null;
     }
   }

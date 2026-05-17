@@ -1,49 +1,104 @@
-<div class="blog-page page-container">
-  <!-- Banner -->
-  @if (banners().length > 0) {
-    <app-banner [banners]="banners()"></app-banner>
-  }
+<div class="blog-page">
+  <!-- Page Hero -->
+  <section class="page-hero">
+    <div class="ef-container">
+      <div class="page-hero__inner">
+        <div>
+          <app-breadcrumbs [crumbs]="[{ label: 'Home', link: '/' }, { label: 'Blog' }]"></app-breadcrumbs>
+          <h1>Evidence-based reads on <span class="accent">food, body &amp; health</span>.</h1>
+          <p class="lead">
+            Short, practical, research-backed. Written by our dietitians — not content farms.
+          </p>
+        </div>
+        <div class="page-hero__visual" aria-hidden="true">
+          <div class="ring"></div>
+          <div class="ring ring--inner"></div>
+          <div class="disc">menu_book</div>
+          <div class="chip chip--a"><span class="mat-icon">schedule</span>5 min reads</div>
+          <div class="chip chip--b"><span class="mat-icon">update</span>Weekly</div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-  <!-- Page Header -->
-  <header class="section__header">
-    <h1 class="section__title">Our Health Blog</h1>
-    <p class="section__tagline">
-      Science-backed nutrition insights, wellness tips, and healthy recipes from expert nutritionist Shweta Shah.
-    </p>
-  </header>
+  <!-- Content -->
+  <section class="ef-container blog-page__body">
+    <!-- Loading State -->
+    @if (loading()) {
+      <app-loader page="blog"></app-loader>
+    }
 
-  <!-- Loading State -->
-  @if (loading()) {
-    <app-loader page="blog"></app-loader>
-  }
-
-  @if (!loading()) {
-    <!-- Blogs Grid -->
-    @if (blogs().length > 0) {
-      <div class="blogs-grid">
-        @for (blog of blogs(); track blog.id) {
-          <app-card [data]="blog"></app-card>
+    @if (!loading()) {
+      <!-- Tag filter row -->
+      <div class="blog-tags" role="tablist" aria-label="Filter articles by tag">
+        @for (tag of blogTags(); track tag.key) {
+          <button
+            type="button"
+            class="blog-tag"
+            [class.active]="activeTag() === tag.key"
+            role="tab"
+            [attr.aria-selected]="activeTag() === tag.key"
+            [attr.data-tag]="tag.key"
+            (click)="setTag(tag.key)"
+          >{{ tag.label }}</button>
         }
       </div>
-    } @else {
-      <app-empty-state
-        title="No articles yet"
-        description="We're working on some great wellness content. Check back soon!"
-      ></app-empty-state>
-    }
 
-    <!-- Pagination -->
-    @if (totalBlogs() > pageSize()) {
-      <div class="blog-pagination">
-        <mat-paginator
-          [length]="totalBlogs()"
-          [pageSize]="pageSize()"
-          [pageIndex]="currentPage()"
-          [pageSizeOptions]="[6, 12, 24, 48]"
-          (page)="onPageChange($event)"
-          showFirstLastButtons
-        ></mat-paginator>
-      </div>
+      <!-- Blogs Grid -->
+      @if (blogs().length > 0) {
+        <div class="blog-grid" id="grid">
+          @for (blog of blogs(); track blog.id; let i = $index) {
+            <a
+              [routerLink]="blog.linkUrl"
+              class="blog-card"
+              [class.blog-card--1]="(i % 3) === 0"
+              [class.blog-card--2]="(i % 3) === 1"
+              [class.blog-card--3]="(i % 3) === 2"
+            >
+              <div class="blog-card__media">
+                @if (blog.imageUrl) {
+                  <img [src]="blog.imageUrl" [alt]="blog.imageAlt || blog.title" loading="lazy"/>
+                }
+                @if (blog.category) {
+                  <span class="blog-card__media-label">{{ blog.category }}</span>
+                }
+              </div>
+              <div class="blog-card__body">
+                <div class="blog-card__meta">
+                  @if (blog.date) {
+                    <span><span class="mat-icon">calendar_today</span>{{ formatDate(blog.date) }}</span>
+                  }
+                  @if (blog.readTime) {
+                    <span><span class="mat-icon">schedule</span>{{ blog.readTime }} min read</span>
+                  }
+                </div>
+                <h3>{{ blog.title }}</h3>
+                <p>{{ blog.summary }}</p>
+                <span class="read-more">Read more <span class="mat-icon">arrow_forward</span></span>
+              </div>
+            </a>
+          }
+        </div>
+      } @else {
+        <app-empty-state
+          title="No articles yet"
+          description="We're working on some great wellness content. Check back soon!"
+        ></app-empty-state>
+      }
+
+      <!-- Pagination -->
+      @if (pageSize() > 0 && totalBlogs() > pageSize()) {
+        <div class="blog-pagination">
+          <mat-paginator
+            [length]="totalBlogs()"
+            [pageSize]="pageSize()"
+            [pageIndex]="currentPage()"
+            [pageSizeOptions]="[3, 6, 9, 12, 24]"
+            (page)="onPageChange($event)"
+            showFirstLastButtons
+          ></mat-paginator>
+        </div>
+      }
     }
-  }
+  </section>
 </div>

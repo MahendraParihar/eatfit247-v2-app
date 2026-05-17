@@ -26,6 +26,7 @@ export interface IBasicSearch extends ITableListFilter {
   /** Query alias for `sortDirection` (admin UI / data table). */
   sortOrder?: string;
   programId?: number;
+  isSpecialProgram?: boolean | null;
 }
 
 export interface IRecipeSearch extends IBasicSearch {

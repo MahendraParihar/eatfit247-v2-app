@@ -19,6 +19,9 @@ import moment from 'moment';
 
 @Injectable()
 export class MemberIssueService {
+  private masterDataCache: { data: IIssueMasterData; expiresAt: number } | null = null;
+  private static readonly CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
+
   constructor(
     @InjectModel(TxnMemberIssue)
     private readonly memberIssueRepository: typeof TxnMemberIssue,
@@ -30,6 +33,9 @@ export class MemberIssueService {
   ) {}
 
   public async getIssuesMasterData(): Promise<IIssueMasterData> {
+    if (this.masterDataCache && Date.now() < this.masterDataCache.expiresAt) {
+      return this.masterDataCache.data;
+    }
     const [categories, status] = await Promise.all([
       this.issueCategory.findAll({
         attributes: ['issueCategoryId', 'issueCategory'],
@@ -40,7 +46,7 @@ export class MemberIssueService {
         where: { active: true },
       }),
     ]);
-    return <IIssueMasterData>{
+    const result = <IIssueMasterData>{
       categories: categories.map((p) => {
         return <IDropdownItem>{
           id: p.issueCategoryId,
@@ -54,6 +60,8 @@ export class MemberIssueService {
         };
       }),
     };
+    this.masterDataCache = { data: result, expiresAt: Date.now() + MemberIssueService.CACHE_TTL_MS };
+    return result;
   }
 
   public async findByMemberId(memberId: number): Promise<IMemberIssue[]> {
@@ -240,10 +248,14 @@ export class MemberIssueService {
       };
     }
 
+    const pageNumber = Math.max(0, Math.floor(Number(dto.page) || 0));
+    const pageSize = Math.min(500, Math.max(1, Math.floor(Number(dto.limit) || 50)));
     const { rows, count } = await this.memberIssueRepository.scope('list').findAndCountAll({
       where: whereCondition,
       include: includeConditions,
       order: [['createdAt', 'DESC']],
+      offset: pageNumber * pageSize,
+      limit: pageSize,
       raw: true,
       nest: true,
     });

@@ -1,17 +1,39 @@
 @if (isLoading()) {
   <app-loader page="default"></app-loader>
 }
-@if (!isLoading() && pageData) {
-  <div class="legal-container page-container">
-    <header class="section__header">
-      <h1 class="section__title">
-        {{ pageData.title }}
-      </h1>
-    </header>
-    <section
-      class="legal-section"
-      [innerHTML]="pageData.details"
-    ></section>
-  </div>
-}
+@if (!isLoading()) {
+  <section class="page-hero">
+    <div class="ef-container">
+      <div class="page-hero__inner">
+        <div>
+          <app-breadcrumbs
+            [crumbs]="[
+              { label: 'Home', link: '/' },
+              { label: pageData?.title || 'Terms & Conditions' }
+            ]"
+          ></app-breadcrumbs>
+          <h1>The <span class="accent">fine print</span>, in plain words.</h1>
+          <p class="lead">These terms govern your use of EatFit247's website, programs and products.</p>
+        </div>
+        <div class="page-hero__visual" aria-hidden="true">
+          <div class="ring"></div>
+          <div class="ring ring--inner"></div>
+          <div class="disc">gavel</div>
+          <div class="chip chip--a"><span class="mat-icon">receipt_long</span>14-day refund</div>
+          <div class="chip chip--b"><span class="mat-icon">cancel</span>Cancel anytime</div>
+        </div>
+      </div>
+    </div>
+  </section>
 
+  <section class="ef-container legal-section-wrap">
+    @if (errorMessage()) {
+      <div class="legal-error">
+        <span class="mat-icon">error</span>
+        <p>{{ errorMessage() }}</p>
+      </div>
+    } @else if (pageData) {
+      <div class="prose" [innerHTML]="pageData.details"></div>
+    }
+  </section>
+}

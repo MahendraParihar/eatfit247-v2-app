@@ -24,8 +24,6 @@ export * from './lib/faq-category/faq-category.component';
 // Issues
 export * from './lib/issue-category/issue-category.component';
 export * from './lib/issue-status/issue-status.component';
-// Programs
-export * from './lib/program-category/program-category.component';
 // Recipes
 export * from './lib/recipe-category/recipe-category.component';
 export * from './lib/recipe-cuisine/recipe-cuisine.component';

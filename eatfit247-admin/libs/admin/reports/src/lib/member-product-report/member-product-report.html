@@ -107,6 +107,18 @@
 
           <button
             mat-raised-button
+            color="accent"
+            type="button"
+            [disabled]="filterForm.invalid || loading || exportingExcel"
+            (click)="onExportExcel()"
+            class="export-button"
+          >
+            <mat-icon>table_chart</mat-icon>
+            Export Excel
+          </button>
+
+          <button
+            mat-raised-button
             color="primary"
             type="button"
             [disabled]="selectedItems.length === 0 || loading || bulkExporting"

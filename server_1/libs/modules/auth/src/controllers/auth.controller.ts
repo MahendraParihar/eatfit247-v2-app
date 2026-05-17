@@ -19,10 +19,11 @@ import {
   Req,
   Res,
   SetMetadata,
+  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import { Response } from 'express';
-import { IAuthUser, IToken, PUBLIC_API } from '@eatfit247-shared-lib';
+import { IAdminUserLogin, IAuthUser, IToken, PUBLIC_API } from '@eatfit247-shared-lib';
 import { CurrentUser, Env, JwtAuthGuard, RequestedIp } from '@server_1/core';
 import { AuthService } from '../services/auth.service';
 import { ChangePasswordDto, ForgotPasswordDto, LoginDto, ResetPasswordDto } from '../dto';
@@ -47,24 +48,24 @@ export class AuthController {
     @Req() req: any,
     @Res({ passthrough: true }) res: Response,
     @Body() body: LoginDto,
-  ): Promise<IToken> {
+  ): Promise<IAdminUserLogin> {
     const device = req.headers['user-agent'] || 'Unknown';
-    const tokens = await this.authService.signIn(body, req.ip, device);
+    const loginResult = await this.authService.signIn(body, req.ip, device);
     // Set refresh token as HttpOnly, Secure cookie
     const isProduction = Env.nodeEnv === 'production';
-    res.cookie('refreshToken', tokens.refreshToken, {
+    res.cookie('refreshToken', loginResult.refreshToken, {
       httpOnly: true, // Not accessible to JavaScript (XSS protection)
       secure: isProduction, // HTTPS only in production
       sameSite: 'strict', // CSRF protection
       maxAge: 7 * 24 * 60 * 60 * 1000, // 14 days in milliseconds
       path: '/',
     });
-    // Return only access token (refresh token is in cookie)
-    // Note: IToken requires refreshToken, but we're storing it in HttpOnly cookie
-    // The client should not receive refreshToken in response body for security
+    // Return access token + admin user with roles and permissions
+    // Refresh token is in HttpOnly cookie, not in response body
     return {
-      accessToken: tokens.accessToken,
+      accessToken: loginResult.accessToken,
       refreshToken: '', // Empty string - refresh token is in HttpOnly cookie
+      admin: loginResult.admin,
     };
   }
 
@@ -81,7 +82,7 @@ export class AuthController {
     // Read refresh token from HttpOnly cookie
     const refreshToken = req.cookies?.refreshToken;
     if (!refreshToken) {
-      throw new Error('Refresh token not found');
+      throw new UnauthorizedException('Refresh token not found');
     }
     // Refresh token with rotation (old token revoked, new token issued)
     const tokens = await this.authService.refreshToken(refreshToken);

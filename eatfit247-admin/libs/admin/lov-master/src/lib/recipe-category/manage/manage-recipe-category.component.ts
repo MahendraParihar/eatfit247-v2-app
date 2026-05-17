@@ -9,7 +9,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { MatCardModule } from '@angular/material/card';
 import { InputErrorComponent, UploadFormComponent, ValidationUtil } from '@shared';
-import { LovMasterApiService } from '../../api.service';
+import { RecipeCategoryApiService } from '../../api.service';
 import {
   FileTypeEnum,
   IManageRecipeCategory,
@@ -39,7 +39,7 @@ import {
 export class ManageRecipeCategory implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private apiService = inject(LovMasterApiService);
+  private apiService = inject(RecipeCategoryApiService);
 
   private fb: FormBuilder = inject(FormBuilder);
   formGroup: FormGroup = this.fb.group({
@@ -85,7 +85,7 @@ export class ManageRecipeCategory implements OnInit {
   }
 
   async loadData(id: number): Promise<void> {
-    this.initialData = await this.apiService.getRecipeCategoryById(id);
+    this.initialData = await this.apiService.getById(id);
   }
 
   async onSubmit(): Promise<void> {
@@ -98,9 +98,9 @@ export class ManageRecipeCategory implements OnInit {
       }
       if (this.isEditMode && this.initialData) {
         formValue.recipeCategoryId = this.initialData.recipeCategoryId;
-        await this.apiService.updateRecipeCategory(this.initialData.recipeCategoryId, formValue);
+        await this.apiService.update(this.initialData.recipeCategoryId, formValue);
       } else {
-        await this.apiService.createRecipeCategory(formValue);
+        await this.apiService.create(formValue);
       }
       this.router.navigate(['/lov-master/recipe-category']);
     } else {

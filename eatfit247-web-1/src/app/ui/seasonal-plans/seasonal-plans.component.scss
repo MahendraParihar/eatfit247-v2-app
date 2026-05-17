@@ -1,0 +1,13 @@
+:host {
+  display: block;
+}
+
+.seasonal-card .seasonal-stats {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.seasonal-card__cover {
+  --cover-a: transparent;
+  --cover-b: transparent;
+  background-color: var(--color-surface-sunken, #f3f4f6);
+}

@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -15,6 +15,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
 import { DataTableComponent, ITableAction, ITableColumn, ITableConfig, ITableSort } from '@shared';
 import { IPaymentReportFilter, IPaymentReportItem } from '@eatfit247-shared-lib';
+import { Subject, takeUntil } from 'rxjs';
 import { PaymentReportApiService } from './api.service';
 import { PaymentDetailsDialogComponent } from 'members';
 
@@ -40,7 +41,8 @@ import { PaymentDetailsDialogComponent } from 'members';
   templateUrl: './payment-report.html',
   styleUrl: './payment-report.scss'
 })
-export class PaymentReportComponent implements OnInit {
+export class PaymentReportComponent implements OnInit, OnDestroy {
+  private destroy$ = new Subject<void>();
   private fb = inject(FormBuilder);
   private apiService = inject(PaymentReportApiService);
   private dialog = inject(MatDialog);
@@ -52,10 +54,9 @@ export class PaymentReportComponent implements OnInit {
   totalCount = 0;
   loading = false;
   exporting = false;
+  exportingExcel = false;
   tableConfig!: ITableConfig<IPaymentReportItem>;
   franchiseOptions: { id: number | null; label: string }[] = [];
-  startDatePicker: any;
-  endDatePicker: any;
   selectedQuickFilter: string | null = null;
   private reportSort: { sortBy: string; sortOrder: 'asc' | 'desc' } | null = null;
 
@@ -75,16 +76,21 @@ export class PaymentReportComponent implements OnInit {
       endDate
     });
     // Reset quick filter when dates are manually changed
-    this.filterForm.get('startDate')?.valueChanges.subscribe(() => {
+    this.filterForm.get('startDate')?.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(() => {
       if (this.selectedQuickFilter) {
         this.selectedQuickFilter = null;
       }
     });
-    this.filterForm.get('endDate')?.valueChanges.subscribe(() => {
+    this.filterForm.get('endDate')?.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(() => {
       if (this.selectedQuickFilter) {
         this.selectedQuickFilter = null;
       }
     });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   onQuickFilterChange(value: string | null): void {
@@ -344,6 +350,38 @@ export class PaymentReportComponent implements OnInit {
       });
     } finally {
       this.exporting = false;
+    }
+  }
+
+  async onExportExcel(): Promise<void> {
+    if (this.filterForm.invalid) {
+      return;
+    }
+    this.exportingExcel = true;
+    try {
+      const formValue = this.filterForm.value;
+      const params: IPaymentReportFilter = {
+        startDate: this.formatDate(formValue.startDate),
+        endDate: this.formatDate(formValue.endDate),
+        franchiseId: formValue.franchiseId || undefined
+      };
+      const blob = await this.apiService.exportPaymentReportExcel(params);
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      const startDateStr = params.startDate.replace(/-/g, '');
+      const endDateStr = params.endDate.replace(/-/g, '');
+      link.download = `payment-report_${startDateStr}_to_${endDateStr}.xlsx`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      this.snackBar.open('Failed to export Excel report. Please try again.', 'Close', {
+        duration: 5000,
+      });
+    } finally {
+      this.exportingExcel = false;
     }
   }
 }

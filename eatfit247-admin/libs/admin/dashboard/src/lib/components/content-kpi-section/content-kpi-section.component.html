@@ -1,0 +1,30 @@
+@if (loading) {
+  <shared-ui-loader></shared-ui-loader>
+} @else if (kpis) {
+  <div class="kpi-grid">
+    <lib-kpi-card
+      icon="article"
+      label="Published Posts"
+      [value]="kpis.publishedPosts"
+      [trend]="kpis.trends?.publishedPosts"
+      trendLabel="vs last month"
+    ></lib-kpi-card>
+    <lib-kpi-card
+      icon="rate_review"
+      label="Pending Reviews"
+      [value]="kpis.pendingReviews"
+      [trend]="kpis.trends?.pendingReviews"
+      trendLabel="vs last month"
+    ></lib-kpi-card>
+    <lib-kpi-card
+      icon="restaurant"
+      label="Total Recipes"
+      [value]="kpis.totalRecipes"
+    ></lib-kpi-card>
+    <lib-kpi-card
+      icon="help"
+      label="Total FAQs"
+      [value]="kpis.totalFaqs"
+    ></lib-kpi-card>
+  </div>
+}

@@ -1,19 +1,10 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import {
-  createdByUserFormatter,
-  DataTableComponent,
-  ITableAction,
-  ITableColumn,
-  ITableConfig,
-  updatedByUserFormatter
-} from '@shared';
-import { ITableList, ITypeOfExercise } from '@eatfit247-shared-lib';
-import { LovMasterApiService } from '../api.service';
-import { debounceTime, distinctUntilChanged, Subject, switchMap } from 'rxjs';
+import { BaseListComponent, DataTableComponent, ITableColumn } from '@shared';
+import { ITypeOfExercise } from '@eatfit247-shared-lib';
+import { TypeOfExerciseApiService } from '../api.service';
 
 @Component({
   selector: 'lib-type-of-exercise',
@@ -22,151 +13,24 @@ import { debounceTime, distinctUntilChanged, Subject, switchMap } from 'rxjs';
   templateUrl: './type-of-exercise.html',
   styleUrl: './type-of-exercise.scss',
 })
-export class TypeOfExercise implements OnInit {
-  private apiService = inject(LovMasterApiService);
-  private router = inject(Router);
-  private route = inject(ActivatedRoute);
+export class TypeOfExercise extends BaseListComponent<ITypeOfExercise> {
+  protected apiService = inject(TypeOfExerciseApiService);
 
-  data: ITypeOfExercise[] = [];
-  totalCount = 0;
-  loading = false;
-  tableConfig!: ITableConfig<ITypeOfExercise>;
-  private searchSubject = new Subject<string>();
-  currentSearch = '';
+  protected listConfig = {
+    editRoute: '/lov-master/type-of-exercise/edit',
+    createRoute: '/lov-master/type-of-exercise/new',
+    searchPlaceholder: 'Search type of exercise...',
+    emptyMessage: 'No type of exercise records found',
+  };
 
-  constructor() {
-    this.setupSearch();
-  }
-
-  ngOnInit(): void {
-    this.initializeTable();
-    this.loadData();
-  }
-
-  private initializeTable(): void {
-    const columns: ITableColumn<ITypeOfExercise>[] = [
+  protected buildEntityColumns(): ITableColumn<ITypeOfExercise>[] {
+    return [
       { key: 'typeOfExerciseId', label: 'ID', dataKey: 'typeOfExerciseId', sortable: true, width: '80px' },
-      {
-        key: 'image',
-        label: 'Image',
-        dataKey: 'imagePath',
-        type: 'image',
-        isAvatar: true,
-        imageAlt: 'Type of Exercise Image',
-        sortable: false,
-        width: '80px',
-        align: 'center'
-      },
       { key: 'typeOfExercise', label: 'Type of Exercise', dataKey: 'typeOfExercise', sortable: true, searchable: true },
-      { key: 'active', label: 'Status', dataKey: 'active', sortable: true, width: '120px', align: 'center', formatter: (value) => (value ? 'Active' : 'Inactive') },
-      { key: 'createdByUser', label: 'Created By', dataKey: 'createdByUser', sortable: false, formatter: createdByUserFormatter() },
-      { key: 'updatedByUser', label: 'Updated By', dataKey: 'updatedByUser', sortable: false, formatter: updatedByUserFormatter() },
-      {
-        key: 'createdAt',
-        label: 'Created At',
-        dataKey: 'createdAt',
-        type: 'date',
-        sortable: true
-      },
-      {
-        key: 'updatedAt',
-        label: 'Updated At',
-        type: 'date',
-        dataKey: 'updatedAt',
-        sortable: true
-      },
+      { key: 'image', label: 'Image', dataKey: 'imagePath', type: 'image', isAvatar: true, imageAlt: 'Type of Exercise Image', sortable: false, width: '80px', align: 'center' },
     ];
-
-    const actions: ITableAction<ITypeOfExercise>[] = [
-      { label: 'Edit', icon: 'edit', color: 'primary', onClick: (row) => this.editItem(row) },
-      { label: 'Active', icon: 'check_circle', color: 'primary', visible: (row) => row.active === true, onClick: (row) => this.toggleStatus(row) },
-      { label: 'Inactive', icon: 'cancel', color: 'warn', visible: (row) => row.active === false, onClick: (row) => this.toggleStatus(row) },
-    ];
-
-    this.tableConfig = {
-      columns,
-      actions,
-      showSearch: true,
-      searchPlaceholder: 'Search type of exercise...',
-      showPagination: true,
-      pageSize: 10,
-      pageSizeOptions: [5, 10, 25, 50],
-      showHeader: true,
-      emptyMessage: 'No type of exercise records found',
-    };
   }
 
-  private setupSearch(): void {
-    this.searchSubject.pipe(debounceTime(300), distinctUntilChanged(), switchMap((search) => {
-      this.loading = true;
-      return this.apiService.getTypeOfExerciseList({ search, page: 0, limit: this.tableConfig.pageSize || 10 });
-    })).subscribe({
-      next: (response) => { this.data = response.tableData; this.totalCount = response.count; this.loading = false; },
-      error: () => { this.loading = false; },
-    });
-  }
-
-  async loadData(): Promise<void> {
-    this.loading = true;
-    try {
-      const response: ITableList<ITypeOfExercise> = await this.apiService.getTypeOfExerciseList({ page: 0, limit: this.tableConfig.pageSize || 10, search: this.currentSearch?.trim() || undefined });
-      this.data = response.tableData;
-      this.totalCount = response.count;
-      this.loading = false;
-    } catch {
-      this.loading = false;
-    }
-  }
-
-  async onPageChange(pagination: any): Promise<void> {
-    this.loading = true;
-    try {
-      const response: ITableList<ITypeOfExercise> = await this.apiService.getTypeOfExerciseList({ page: pagination.pageIndex, limit: pagination.pageSize, search: this.currentSearch?.trim() || undefined });
-      this.data = response.tableData;
-      this.totalCount = response.count;
-      this.loading = false;
-    } catch {
-      this.loading = false;
-    }
-  }
-
-  async onSortChange(sort: any): Promise<void> {
-    this.loading = true;
-    try {
-      const response: ITableList<ITypeOfExercise> = await this.apiService.getTypeOfExerciseList({ page: 0, limit: this.tableConfig.pageSize || 10, sortBy: sort.active, sortOrder: sort.direction, search: this.currentSearch?.trim() || undefined });
-      this.data = response.tableData;
-      this.totalCount = response.count;
-      this.loading = false;
-    } catch {
-      this.loading = false;
-    }
-  }
-
-  onSearchChange(search: string): void {
-    this.currentSearch = search;
-    this.searchSubject.next(search);
-  }
-
-  editItem(item: ITypeOfExercise): void {
-    this.router.navigate(['/lov-master/type-of-exercise/edit', item.typeOfExerciseId]);
-  }
-
-  createItem(): void {
-    this.router.navigate(['/lov-master/type-of-exercise/new']);
-  }
-
-  async toggleStatus(item: ITypeOfExercise): Promise<void> {
-    const action = item.active ? 'deactivate' : 'activate';
-    const confirmed = confirm(`Are you sure you want to ${action} "${item.typeOfExercise}"?`);
-    if (confirmed) {
-      this.loading = true;
-      try {
-        await this.apiService.updateTypeOfExerciseStatus(item.typeOfExerciseId, !item.active);
-        await this.loadData();
-      } catch {
-        this.loading = false;
-      }
-    }
-  }
+  protected getItemId(item: ITypeOfExercise): number { return item.typeOfExerciseId; }
+  protected getItemDisplayName(item: ITypeOfExercise): string { return item.typeOfExercise; }
 }
-

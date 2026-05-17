@@ -69,6 +69,13 @@ export class TxnDietTemplate extends Model<TxnDietTemplate> {
   declare daysInCycle: number;
 
   @Column({
+    allowNull: true,
+    field: 'program_id',
+    type: DataType.INTEGER,
+  })
+  declare programId: number;
+
+  @Column({
     allowNull: false,
     defaultValue: true,
     field: 'active',

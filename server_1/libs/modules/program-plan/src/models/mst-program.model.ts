@@ -1,7 +1,8 @@
 import { BelongsTo, Column, CreatedAt, DataType, Model, Scopes, Table, UpdatedAt } from 'sequelize-typescript';
 import { getCreatedByUserInclude, getUpdatedByUserInclude, MstAdminUser } from '@server_1/core';
 import { IMediaUpload, InputLengthEnum } from '@eatfit247-shared-lib';
-import { MstProgramCategory } from './mst-program-category.model';
+import { MstProgramPlan } from './mst-program-plan.model';
+import { MstProgramPlanFees } from './mst-program-plan-fees.model';
 
 @Table({
   freezeTableName: true,
@@ -15,10 +16,17 @@ import { MstProgramCategory } from './mst-program-category.model';
       getCreatedByUserInclude(false),
       getUpdatedByUserInclude(false),
       {
-        model: MstProgramCategory,
-        as: 'programCategory',
+        model: MstProgramPlan,
+        as: 'programPlan',
         required: false,
-        attributes: ['programCategoryId', 'programCategory'],
+        include: [
+          {
+            model: MstProgramPlanFees,
+            as: 'programPlanFees',
+            required: false,
+            attributes: ['programPlanFeesId', 'programPlanId', 'currencyCode', 'fees'],
+          },
+        ],
       },
     ],
   },
@@ -27,10 +35,17 @@ import { MstProgramCategory } from './mst-program-category.model';
       getCreatedByUserInclude(false),
       getUpdatedByUserInclude(false),
       {
-        model: MstProgramCategory,
-        as: 'programCategory',
+        model: MstProgramPlan,
+        as: 'programPlan',
         required: false,
-        attributes: ['programCategoryId', 'programCategory'],
+        include: [
+          {
+            model: MstProgramPlanFees,
+            as: 'programPlanFees',
+            required: false,
+            attributes: ['programPlanFeesId', 'programPlanId', 'currencyCode', 'fees'],
+          },
+        ],
       },
     ],
   },
@@ -50,16 +65,6 @@ export class MstProgram extends Model<MstProgram> {
     type: DataType.STRING(100),
   })
   declare program: string;
-
-  @BelongsTo(() => MstProgramCategory, { as: 'programCategory', foreignKey: 'programCategoryId', targetKey: 'programCategoryId' })
-  declare programCategory: MstProgramCategory;
-
-  @Column({
-    allowNull: false,
-    field: 'program_category_id',
-    type: DataType.INTEGER,
-  })
-  declare programCategoryId: number;
 
   @Column({
     allowNull: false,
@@ -90,13 +95,6 @@ export class MstProgram extends Model<MstProgram> {
   declare imagePath: IMediaUpload[];
 
   @Column({
-    allowNull: true,
-    field: 'ideal_for',
-    type: DataType.STRING(50),
-  })
-  declare idealFor: string;
-
-  @Column({
     allowNull: false,
     field: 'sequence_number',
     type: DataType.INTEGER,
@@ -117,6 +115,41 @@ export class MstProgram extends Model<MstProgram> {
     type: DataType.STRING(500),
   })
   declare videoUrl: string;
+
+  @Column({
+    allowNull: true,
+    field: 'start_date',
+    type: DataType.DATEONLY,
+  })
+  declare startDate: string | null;
+
+  @Column({
+    allowNull: true,
+    field: 'end_date',
+    type: DataType.DATEONLY,
+  })
+  declare endDate: string | null;
+
+  @Column({
+    allowNull: true,
+    field: 'max_people_can_register',
+    type: DataType.INTEGER,
+  })
+  declare maxPeopleCanRegister: number | null;
+
+  @Column({
+    allowNull: true,
+    field: 'program_plan_id',
+    type: DataType.INTEGER,
+  })
+  declare programPlanId: number | null;
+
+  @BelongsTo(() => MstProgramPlan, {
+    as: 'programPlan',
+    foreignKey: 'programPlanId',
+    targetKey: 'programPlanId',
+  })
+  declare programPlan: MstProgramPlan;
 
   @Column({
     allowNull: false,
@@ -174,4 +207,3 @@ export class MstProgram extends Model<MstProgram> {
   })
   declare modifiedIp: string;
 }
-

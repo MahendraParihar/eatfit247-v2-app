@@ -1,16 +1,13 @@
-import { Injectable } from '@angular/core';
-import { ApiBaseService } from '@core';
+import { inject, Injectable } from '@angular/core';
+import { HttpService } from '@core';
 import { IDropdownItem, IFaq, IFaqCategory, ITableList } from '@eatfit247-shared-lib';
 
 @Injectable({
   providedIn: 'root',
 })
-export class FaqApiService extends ApiBaseService {
+export class FaqApiService {
+  private readonly httpService = inject(HttpService);
   private readonly endpoint = '/faq';
-
-  constructor() {
-    super();
-  }
 
   async getList(params?: any): Promise<ITableList<IFaq>> {
     const res = await this.httpService.get<ITableList<IFaq>>(`${this.endpoint}/list`, { params });

@@ -51,5 +51,5 @@ export class TxnDietTemplateDietDetail extends Model<TxnDietTemplateDietDetail> 
     field: 'diet_detail',
     type: DataType.JSONB,
   })
-  declare dietDetail: IDietPlanDetail;
+  declare dietDetail: IDietPlanDetail[];
 }

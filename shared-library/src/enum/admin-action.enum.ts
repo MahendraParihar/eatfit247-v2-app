@@ -3,7 +3,8 @@
  * 'manage' is CASL's wildcard (all actions).
  */
 export enum AdminActionEnum {
-    Manage = 'manage',   // all actions — SuperAdmin only
+    /** @deprecated Roles are now DB-driven. Use discrete actions (Read/Create/Update/Delete). Kept for backward compat. */
+    Manage = 'manage',
     Read   = 'read',
     Create = 'create',
     Update = 'update',

@@ -1,0 +1,32 @@
+@if (loading) {
+  <shared-ui-loader></shared-ui-loader>
+} @else if (kpis) {
+  <div class="kpi-grid">
+    <lib-kpi-card
+      icon="payments"
+      label="Monthly Revenue"
+      [value]="formatCurrency(kpis.monthlyRevenue)"
+      [trend]="kpis.trends?.monthlyRevenue"
+      trendLabel="vs last month"
+    ></lib-kpi-card>
+    <lib-kpi-card
+      icon="pending"
+      label="Pending Payments"
+      [value]="formatCurrency(kpis.pendingPayments)"
+      [trend]="kpis.trends?.pendingPayments"
+      trendLabel="vs last month"
+    ></lib-kpi-card>
+    <lib-kpi-card
+      icon="check_circle"
+      label="Collected Payments"
+      [value]="formatCurrency(kpis.collectedPayments)"
+      [trend]="kpis.trends?.collectedPayments"
+      trendLabel="vs last month"
+    ></lib-kpi-card>
+    <lib-kpi-card
+      icon="receipt_long"
+      label="GST Liability"
+      [value]="formatCurrency(kpis.gstLiability)"
+    ></lib-kpi-card>
+  </div>
+}
