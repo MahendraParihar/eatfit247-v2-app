@@ -1,27 +1,33 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit, signal } from '@angular/core';
-import { MatButtonModule } from '@angular/material/button';
-import { MatExpansionModule } from '@angular/material/expansion';
-import { MatIconModule } from '@angular/material/icon';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { LoaderComponent } from '@shared-ui';
+import { BreadcrumbsComponent, LoaderComponent } from '@shared-ui';
 import { JsonLdService, SEOService } from '../../core/services';
 
 export interface FaqItem {
   question: string;
   answer: string;
+  /** Optional HTML answer with embedded markup. When set it is rendered as innerHTML. */
+  answerHtml?: string;
 }
 
 export interface FaqCategory {
+  key: string;
   category: string;
   icon: string;
   items: FaqItem[];
 }
 
+interface FaqCategoryView extends FaqCategory {
+  items: FaqItem[];
+  visibleCount: number;
+}
+
 @Component({
   standalone: true,
   selector: 'app-faq',
-  imports: [CommonModule, MatButtonModule, MatExpansionModule, MatIconModule, RouterLink, LoaderComponent],
+  imports: [CommonModule, FormsModule, RouterLink, LoaderComponent, BreadcrumbsComponent],
   templateUrl: './faq.component.html',
   styleUrl: './faq.component.scss',
 })
@@ -30,116 +36,225 @@ export class FaqComponent implements OnInit {
   private readonly seoService = inject(SEOService);
   readonly loading = signal(false);
 
+  readonly searchQuery = signal('');
+  readonly activeCategory = signal<string>('all');
+
   readonly faqCategories: FaqCategory[] = [
     {
-      category: 'Diet Consultancy & Programs',
-      icon: 'restaurant_menu',
+      key: 'programs',
+      category: 'Programs',
+      icon: 'fitness_center',
       items: [
         {
-          question: 'What is included in a nutrition consultation with Shweta Shah?',
+          question: 'What programs do you offer?',
           answer:
-            'Each session includes a comprehensive health assessment, a personalised nutrition plan tailored to your body type and goals, detailed dietary recommendations, and follow-up guidelines. Shweta uses an Ayurvedic and science-backed approach to help you achieve sustainable results.',
+            'We offer three flagship programs — Kickstart (4 weeks), Transform (12 weeks) and Elite (6 months) — plus specialised tracks for PCOS, diabetes, postpartum and children\'s nutrition.',
         },
         {
-          question: 'How many sessions do I need to see results?',
+          question: 'Which program is right for me?',
           answer:
-            'Most clients see meaningful changes within 4–6 weeks. We recommend starting with at least 3 sessions to allow your nutritionist to assess your response to the plan and make targeted adjustments. Our multi-session packages are designed to give you the best outcome at the best value.',
+            'If you\'re new, start with Kickstart. If you want measurable, lasting change, Transform is our most-chosen program. Elite is for those needing direct access to Shweta and concierge care.',
         },
         {
-          question: 'Are the programs done online or in person?',
+          question: 'Can I switch programs mid-way?',
           answer:
-            'All programs are conducted online via video consultation, so you can connect with Shweta and the team from the comfort of your home — anywhere in the world.',
+            'Yes — any time. Your progress, notes and plan history carry over. We\'ll credit unused days toward the new program.',
         },
         {
-          question: 'Can I book a single session before committing to a package?',
+          question: 'Do you help with children\'s nutrition?',
           answer:
-            'Yes. We offer single-session consultations so you can experience the EatFit247 approach before choosing a multi-session package. Visit our Programs page to see all available options.',
+            'Yes — our Child & Teen tracks focus on growth, energy and academic performance, and involve the whole family\'s eating environment.',
         },
         {
-          question: 'Are the diet plans customised for medical conditions (diabetes, thyroid, PCOD)?',
+          question: 'Do you work with athletes?',
           answer:
-            'Absolutely. Our nutritionists are experienced in managing chronic conditions including diabetes, hypothyroidism, PCOD/PCOS, gut disorders, and more. Your plan will be designed around your specific health history and goals.',
+            'Yes — we design fueling strategies for endurance, strength and team sports. Our Elite program is best-suited for competitive athletes.',
+        },
+        {
+          question: 'Can I buy programs as a gift?',
+          answer: 'Absolutely. Contact us and we\'ll arrange a gift voucher redeemable by your recipient.',
         },
       ],
     },
     {
-      category: 'Debloat Powder',
-      icon: 'spa',
+      key: 'process',
+      category: 'Process & Plans',
+      icon: 'route',
       items: [
         {
-          question: 'What is Debloat powder and how does it work?',
+          question: 'How are your plans personalised?',
           answer:
-            'Debloat is a 100% natural digestive wellness powder formulated with Ayurvedic herbs. It works by supporting healthy gut motility, reducing gas and bloating, and restoring digestive balance. Simply mix it with warm water as directed for best results.',
+            'Every client completes a detailed intake covering medical history, current labs, food preferences, lifestyle, schedule and goals. Your dietitian designs an initial plan from this data and adjusts it every two weeks based on progress.',
         },
         {
-          question: 'How long does one pack last and how often should I use it?',
+          question: 'Do I need to cook special meals?',
           answer:
-            'One pack is designed to last approximately 30 days with the recommended daily dosage. Consistency is key — most users report noticeable improvement within 10–14 days of regular use.',
+            'No — we design around what you already eat. We optimise portions, timing, and add small upgrades. You shouldn\'t have to cook a separate meal from your family.',
         },
         {
-          question: 'Is Debloat safe for everyone?',
+          question: 'How long before I see results?',
           answer:
-            'Debloat is made from natural, Ayurvedic ingredients and is generally safe for adults. However, if you are pregnant, breastfeeding, or have a known medical condition, please consult your doctor before use. It is not intended for children under 12.',
+            'Most clients notice better energy and digestion within 7–10 days. Measurable body composition changes typically start in week 3–4.',
         },
         {
-          question: 'How do I track my order?',
+          question: 'What if my plan isn\'t working?',
           answer:
-            'Once your order is placed and confirmed, you will receive a tracking link via email and SMS. Orders are typically dispatched within 1–2 business days and delivered within 3–7 business days depending on your location.',
+            'We adjust. Plans are living documents — we review progress weekly and update based on your biomarkers, feedback and adherence.',
         },
         {
-          question: 'What is the return/refund policy for Debloat?',
+          question: 'Do you provide recipes and grocery lists?',
           answer:
-            'We accept returns on unopened products within 7 days of delivery. If your product arrives damaged, please contact us immediately at info@eatfit24by7.com with a photo of the packaging. Refunds are processed within 5–7 business days.',
+            'Yes — Transform and Elite include a recipe library and auto-generated weekly grocery lists in the app.',
         },
       ],
     },
     {
-      category: 'Payments & Checkout',
-      icon: 'payment',
+      key: 'billing',
+      category: 'Billing & Refunds',
+      icon: 'credit_card',
       items: [
         {
-          question: 'What payment methods are accepted?',
+          question: 'Do you offer refunds?',
           answer:
-            'We accept all major credit/debit cards, UPI, net banking, and popular wallets through our secure Razorpay-powered checkout. All transactions are encrypted and PCI-DSS compliant.',
+            'Yes — if you\'ve been on a program for 14 days, followed the plan, and haven\'t seen results, we\'ll refund in full. We also offer month-by-month billing.',
         },
         {
-          question: 'Is my payment information safe?',
+          question: 'How do I pay?',
           answer:
-            'Yes. We use industry-standard SSL encryption and do not store your card details on our servers. Payments are processed securely through Razorpay, one of India\'s leading payment gateways.',
+            'We accept all major cards, UPI, net-banking and international wire. Monthly plans auto-renew until cancelled.',
         },
         {
-          question: 'Can I get a GST invoice for my purchase?',
+          question: 'Can I pause my subscription?',
           answer:
-            'Yes. A GST invoice is generated automatically for all purchases and sent to your registered email address. You can also access your invoice from the order confirmation page.',
+            'Yes — pause for up to 60 days from your account dashboard. Your plan and progress resume exactly where you left off.',
+        },
+        {
+          question: 'Is GST included?',
+          answer:
+            'All prices displayed include applicable GST for Indian residents. International clients see pre-tax pricing.',
         },
       ],
     },
     {
-      category: 'General',
-      icon: 'help_outline',
+      key: 'health',
+      category: 'Medical & Health',
+      icon: 'health_and_safety',
       items: [
         {
-          question: 'Who is Shweta Shah?',
+          question: 'Can I continue my medication while on a program?',
           answer:
-            'Shweta Shah is a celebrity nutritionist with over 16 years of experience in holistic nutrition and wellness. She is known for her evidence-based, Ayurvedic approach to health and has helped thousands of clients across India and internationally achieve sustainable transformations.',
+            'Absolutely. We never ask anyone to stop prescribed medication. Our dietitians collaborate with your physician.',
         },
         {
-          question: 'How can I contact the EatFit247 team?',
+          question: 'I have a medical condition. Can I still join?',
           answer:
-            'You can reach us via the Contact Us page on our website, by emailing info@eatfit24by7.com, or by calling during business hours. We typically respond within 24 hours on working days.',
+            'Most conditions are manageable alongside our programs — PCOS, thyroid, diabetes, hypertension, IBS. We\'ll ask for recent labs and may coordinate with your doctor.',
         },
         {
-          question: 'Do you offer corporate wellness programs?',
+          question: 'Do you work with PCOS?',
           answer:
-            'Yes. We provide customised corporate wellness workshops and group nutrition programs. Please reach out to us via the Contact Us page or email us directly to discuss a tailored solution for your organisation.',
+            'PCOS is one of our specialisations. We have protocols for insulin sensitivity, androgen markers, cycle regularity and related skin concerns.',
+        },
+        {
+          question: 'Is this safe during pregnancy?',
+          answer:
+            'Our pregnancy and postpartum track is designed by practitioners with maternal-nutrition training and follows medical guidelines.',
+        },
+        {
+          question: 'Do I need recent blood tests?',
+          answer:
+            'Not to start, but they help us personalise. Transform and Elite include a lab-review protocol and we can order tests where permitted.',
+        },
+      ],
+    },
+    {
+      key: 'support',
+      category: 'Support & Access',
+      icon: 'support_agent',
+      items: [
+        {
+          question: 'Is the consultation online or in-person?',
+          answer:
+            'All programs are delivered online via video call and chat. This lets you access the same team from anywhere in the world.',
+        },
+        {
+          question: 'How often do I speak with my dietitian?',
+          answer:
+            'Kickstart: 2 calls per month. Transform: weekly 45-min 1:1 calls. Elite: weekly calls with Shweta plus bi-weekly lab reviews.',
+        },
+        {
+          question: 'What are your support hours?',
+          answer:
+            'WhatsApp and chat: Mon–Sat, 9am–7pm IST. Response SLA within 4 working hours on Transform and Elite.',
+        },
+        {
+          question: 'Is my data private?',
+          answer:
+            'Yes — all health data is encrypted in transit and at rest. Only your dedicated care team can access it. Full policy on our privacy page.',
+          answerHtml:
+            'Yes — all health data is encrypted in transit and at rest. Only your dedicated care team can access it. Full policy on our <a href="/privacy-policy">privacy page</a>.',
         },
       ],
     },
   ];
 
+  readonly totalCount = computed(() =>
+    this.faqCategories.reduce((sum, c) => sum + c.items.length, 0),
+  );
+
+  readonly categoryCounts = computed(() => {
+    const query = this.searchQuery().trim().toLowerCase();
+    const map = new Map<string, number>();
+    let total = 0;
+    for (const cat of this.faqCategories) {
+      const count = cat.items.filter((i) => this.matches(i, query)).length;
+      map.set(cat.key, count);
+      total += count;
+    }
+    map.set('all', total);
+    return map;
+  });
+
+  readonly visibleGroups = computed<FaqCategoryView[]>(() => {
+    const query = this.searchQuery().trim().toLowerCase();
+    const active = this.activeCategory();
+    return this.faqCategories
+      .filter((c) => active === 'all' || active === c.key)
+      .map((c) => {
+        const items = c.items.filter((i) => this.matches(i, query));
+        return { ...c, items, visibleCount: items.length };
+      })
+      .filter((c) => c.visibleCount > 0);
+  });
+
+  readonly hasResults = computed(() => this.visibleGroups().length > 0);
+
   ngOnInit(): void {
-    this.seoService.updateSEO({ title: 'Frequently Asked Questions', description: 'Find answers to common questions about EatFit247 nutrition plans, diet programs, and wellness services.', url: '/faq' });
+    this.seoService.updateSEO({
+      title: 'Frequently Asked Questions',
+      description:
+        'Find answers to common questions about EatFit247 nutrition plans, diet programs, and wellness services.',
+      url: '/faq',
+    });
     const allFaqs = this.faqCategories.flatMap((c) => c.items);
     this.jsonLdService.setPageSchema(this.jsonLdService.buildFaqPage(allFaqs));
+  }
+
+  setCategory(key: string): void {
+    this.activeCategory.set(key);
+  }
+
+  countFor(key: string): number {
+    return this.categoryCounts().get(key) ?? 0;
+  }
+
+  private matches(item: FaqItem, query: string): boolean {
+    if (!query) {
+      return true;
+    }
+    return (
+      item.question.toLowerCase().includes(query) ||
+      item.answer.toLowerCase().includes(query)
+    );
   }
 }

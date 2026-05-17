@@ -1,142 +1,196 @@
-@if (banners.length > 0) {
-  <app-banner [banners]="banners"></app-banner>
-}
+<div class="contact-page">
+  @if (banners.length > 0) {
+    <app-banner [banners]="banners"></app-banner>
+  }
 
-<div class="contact-us__container page-container">
-  <div class="contact-us__content layout-grid layout-grid--2">
-    <div class="contact-us__image">
-      <img src="/shweta-shah.svg" alt="Shweta Shah" class="contact-us__photo" />
+  <section class="page-hero">
+    <div class="ef-container">
+      <div class="page-hero__inner">
+        <div>
+          <app-breadcrumbs [crumbs]="[{ label: 'Home', link: '/' }, { label: 'Contact' }]"></app-breadcrumbs>
+          <h1>Let's start <span class="accent">a conversation</span>.</h1>
+          <p class="lead">Book a 15-minute discovery call, or drop us a note. We reply within one business day.</p>
+        </div>
+        <div class="page-hero__visual" aria-hidden="true">
+          <div class="ring"></div>
+          <div class="ring ring--inner"></div>
+          <div class="disc">forum</div>
+          <div class="chip chip--a"><span class="mat-icon">call</span>{{ phoneNumber }}</div>
+          <div class="chip chip--b"><span class="mat-icon">mail</span>{{ emailAddress }}</div>
+        </div>
+      </div>
     </div>
-    <div class="contact-us-right">
-      <header class="section__header">
-        <h1 class="section__title">
-          Get Personal Health Guidance
-        </h1>
-        <p class="section__tagline">
-          Fill out this form and our nutrition experts will get back to you shortly.
-        </p>
-      </header>
+  </section>
 
-      @if (formSuccess) {
-        <div class="contact-us__message contact-us__message--success">
-              <span class="contact-us__message-icon">
-                <mat-icon>check_circle</mat-icon>
-              </span>
-          <div>
-            <p class="contact-us__message-title">Thank you!</p>
-            <p class="contact-us__message-text">
-              Your message has been submitted. We will get back to you within 24-48 hours.
-            </p>
-          </div>
-        </div>
-      }
-
-      @if (formError) {
-        <div class="contact-us__message contact-us__message--error">
-              <span class="contact-us__message-icon">
-                <mat-icon>error</mat-icon>
-              </span>
-          <div>
-            <p class="contact-us__message-title">Something went wrong</p>
-            <p class="contact-us__message-text">
-              {{ errorMessage || 'Failed to submit form. Please try again.' }}
-            </p>
-          </div>
-        </div>
-      }
-
+  <section class="ef-container contact-page__body">
+    <div class="two-col two-col--narrow-right">
       <form
-        class="contact-us__form"
+        class="contact-form"
         [formGroup]="contactForm"
         (ngSubmit)="onSubmit()"
         novalidate
       >
-        <div class="contact-us__grid">
-          <mat-form-field>
-            <mat-label>Full Name *</mat-label>
-            <input
-              matInput
-              type="text"
-              formControlName="name"
-              placeholder="Enter your Full Name"
-            />
-            @if (contactForm.get('name')?.touched && contactForm.get('name')?.invalid) {
-              <mat-error>{{ getFieldError('name') }}</mat-error>
-            }
-          </mat-form-field>
+        <h2 class="contact-form__title">Get in touch</h2>
 
-          <mat-form-field>
-            <mat-label>Email *</mat-label>
+        @if (formSuccess) {
+          <div class="contact-form__notice contact-form__notice--success">
+            <span class="mat-icon">check_circle</span>
+            Thanks — we'll be in touch within one business day.
+          </div>
+        }
+        @if (formError) {
+          <div class="contact-form__notice contact-form__notice--error">
+            <span class="mat-icon">error</span>
+            {{ errorMessage || 'Failed to submit form. Please try again.' }}
+          </div>
+        }
+
+        <div class="form-grid">
+          <div class="form-field">
+            <label for="c-first-name">First name <span class="required" aria-hidden="true">*</span></label>
             <input
-              matInput
+              id="c-first-name"
+              type="text"
+              formControlName="firstName"
+              [maxlength]="maxNameLength"
+              autocomplete="given-name"
+              placeholder="Enter your first name"
+            />
+            @if (contactForm.controls['firstName'].touched && contactForm.controls['firstName'].invalid) {
+              <small class="form-field__error">
+                @if (contactForm.controls['firstName'].errors?.['required']) {
+                  First name is required.
+                } @else if (contactForm.controls['firstName'].errors?.['maxlength']) {
+                  Max {{ maxNameLength }} characters.
+                }
+              </small>
+            }
+          </div>
+          <div class="form-field">
+            <label for="c-last-name">Last name <span class="required" aria-hidden="true">*</span></label>
+            <input
+              id="c-last-name"
+              type="text"
+              formControlName="lastName"
+              [maxlength]="maxNameLength"
+              autocomplete="family-name"
+              placeholder="Enter your last name"
+            />
+            @if (contactForm.controls['lastName'].touched && contactForm.controls['lastName'].invalid) {
+              <small class="form-field__error">
+                @if (contactForm.controls['lastName'].errors?.['required']) {
+                  Last name is required.
+                } @else if (contactForm.controls['lastName'].errors?.['maxlength']) {
+                  Max {{ maxNameLength }} characters.
+                }
+              </small>
+            }
+          </div>
+          <div class="form-field">
+            <label for="c-email">Email <span class="required" aria-hidden="true">*</span></label>
+            <input
+              id="c-email"
               type="email"
               formControlName="email"
-              placeholder="Enter your Email"
+              [maxlength]="maxEmailLength"
+              autocomplete="email"
+              placeholder="you@email.com"
             />
-            @if (contactForm.get('email')?.touched && contactForm.get('email')?.invalid) {
-              <mat-error>{{ getFieldError('email') }}</mat-error>
+            @if (contactForm.controls['email'].touched && contactForm.controls['email'].invalid) {
+              <small class="form-field__error">
+                @if (contactForm.controls['email'].errors?.['required']) {
+                  Email is required.
+                } @else if (contactForm.controls['email'].errors?.['email']) {
+                  Please enter a valid email.
+                } @else if (contactForm.controls['email'].errors?.['maxlength']) {
+                  Max {{ maxEmailLength }} characters.
+                }
+              </small>
             }
-          </mat-form-field>
-
-          <mat-form-field>
-            <mat-label>Phone Number *</mat-label>
+          </div>
+          <div class="form-field">
+            <label for="c-phone">Phone</label>
             <input
-              matInput
+              id="c-phone"
               type="tel"
               formControlName="phone"
-              placeholder="Enter your Number"
+              [maxlength]="maxPhoneLength"
+              autocomplete="tel"
+              placeholder="+91 98765 43210"
             />
-            @if (contactForm.get('phone')?.touched && contactForm.get('phone')?.invalid) {
-              <mat-error>{{ getFieldError('phone') }}</mat-error>
+            @if (contactForm.controls['phone'].touched && contactForm.controls['phone'].invalid) {
+              <small class="form-field__error">
+                @if (contactForm.controls['phone'].errors?.['pattern']) {
+                  Please enter a valid phone number.
+                } @else if (contactForm.controls['phone'].errors?.['maxlength']) {
+                  Max {{ maxPhoneLength }} characters.
+                }
+              </small>
             }
-          </mat-form-field>
-
-          <mat-form-field>
-            <mat-label>Your Location *</mat-label>
+          </div>
+          <div class="form-field full">
+            <label for="c-subject">Subject</label>
             <input
-              matInput
+              id="c-subject"
               type="text"
               formControlName="subject"
-              placeholder="Enter your Location"
+              [maxlength]="maxSubjectLength"
+              placeholder="What's this about?"
             />
-            @if (contactForm.get('subject')?.touched && contactForm.get('subject')?.invalid) {
-              <mat-error>{{ getFieldError('subject') }}</mat-error>
+            @if (contactForm.controls['subject'].touched && contactForm.controls['subject'].errors?.['maxlength']) {
+              <small class="form-field__error">Max {{ maxSubjectLength }} characters.</small>
             }
-          </mat-form-field>
+          </div>
+          <div class="form-field full">
+            <label for="c-message">Message</label>
+            <textarea
+              id="c-message"
+              formControlName="message"
+              [maxlength]="maxMessageLength"
+              placeholder="A little about your goals…"
+            ></textarea>
+            <small class="form-field__hint">
+              {{ contactForm.controls['message'].value?.length || 0 }} / {{ maxMessageLength }}
+            </small>
+          </div>
+          <div class="form-field full form-field--inline">
+            <input id="c-agree" type="checkbox" formControlName="agree" />
+            <label for="c-agree">I agree to the <a routerLink="/privacy-policy">privacy policy</a>.</label>
+          </div>
         </div>
 
-        <mat-form-field
-          class="contact-us__field contact-us__field--textarea contact-us__field--full"
+        <button
+          type="submit"
+          class="mat-btn mat-btn--filled contact-form__submit"
+          [disabled]="contactForm.invalid || formSubmitted"
         >
-          <mat-label>Message (Optional)</mat-label>
-          <textarea
-            matInput
-            formControlName="message"
-            rows="4"
-            placeholder="Enter your Message"
-          ></textarea>
-        </mat-form-field>
-
-        <div class="contact-us__actions">
-          <button
-            color="primary"
-            mat-flat-button
-            type="submit"
-            [disabled]="contactForm.invalid || formSubmitted"
-          >
-            <span>Send Message</span>
-          </button>
-        </div>
+          Send message <span class="mat-icon">send</span>
+        </button>
       </form>
 
-      <div class="contact-us__cards">
-        @for (contact of contactInfo; track contact.link) {
-          <a matFab extended [href]="contact.link" class="contact-us__card">
-            <mat-icon>{{ contact.icon }}</mat-icon>
-            {{contact.title}}
-          </a>
-        }
-      </div>
+      <aside class="sticky-aside contact-aside">
+        <h3>Other ways to reach us</h3>
+        <ul class="contact-aside__list">
+          <li>
+            <span class="mat-icon contact-aside__icon">call</span>
+            <div>
+              <a [href]="'tel:' + phoneNumber" class="contact-aside__link">{{ phoneNumber }}</a>
+            </div>
+          </li>
+          <li>
+            <span class="mat-icon contact-aside__icon">mail</span>
+            <div>
+              <a [href]="'mailto:' + emailAddress" class="contact-aside__link">{{ emailAddress }}</a>
+            </div>
+          </li>
+          <li>
+            <span class="mat-icon contact-aside__icon">chat</span>
+            <div>
+              <a [href]="whatsappLink" target="_blank" rel="noopener" class="contact-aside__link">Chat on WhatsApp</a>
+            </div>
+          </li>
+        </ul>
+      </aside>
     </div>
-  </div>
+  </section>
 </div>

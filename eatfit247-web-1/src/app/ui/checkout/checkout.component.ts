@@ -1,4 +1,12 @@
-import { Component, inject, OnDestroy, OnInit, PLATFORM_ID, signal, ViewChild } from '@angular/core';
+import {
+  Component,
+  inject,
+  OnDestroy,
+  OnInit,
+  PLATFORM_ID,
+  signal,
+  ViewChild,
+} from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import {
   FormBuilder,
@@ -42,7 +50,18 @@ import {
   PaymentStatusEnum,
 } from '@eatfit247-shared-library';
 import { ProductService } from '../../core/services/product.service';
+import { BreadcrumbsComponent } from '@shared-ui';
+import { RouterLink } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
+
+interface ICheckoutSidebarItem {
+  key: string;
+  name: string;
+  variant: string;
+  qty: number;
+  price: number;
+  image: string | null;
+}
 
 @Component({
   selector: 'app-checkout',
@@ -60,6 +79,8 @@ import { Subject, takeUntil } from 'rxjs';
     MatIconModule,
     MatCheckboxModule,
     MatRadioModule,
+    BreadcrumbsComponent,
+    RouterLink,
   ],
   templateUrl: './checkout.component.html',
   styleUrl: './checkout.component.scss',
@@ -145,9 +166,11 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     // Initialize forms first to prevent template errors
     this.initializeForms();
     await this.loadMasterData();
-    this.route.queryParams.pipe(takeUntil(this.destroy$)).subscribe(async (params) => {
-      await this.initFlow(params);
-    });
+    this.route.queryParams
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(async (params) => {
+        await this.initFlow(params);
+      });
   }
 
   ngOnDestroy(): void {
@@ -210,7 +233,8 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     // Watch for country changes to filter states
     this.basicDetailsForm
       .get('countryId')
-      ?.valueChanges.pipe(takeUntil(this.destroy$)).subscribe((countryId) => {
+      ?.valueChanges.pipe(takeUntil(this.destroy$))
+      .subscribe((countryId) => {
         this.filterStatesByCountry(countryId);
       });
     // Set the default country after forms are initialized (if master data is already loaded)
@@ -434,7 +458,10 @@ export class CheckoutComponent implements OnInit, OnDestroy {
       this.moveToStep(this.STEP_INDICES.PREVIEW);
     } catch (error: unknown) {
       console.error('Error proceeding from billing:', error);
-      this.error = error instanceof Error ? error.message : 'Failed to proceed. Please try again.';
+      this.error =
+        error instanceof Error
+          ? error.message
+          : 'Failed to proceed. Please try again.';
     } finally {
       this.loading = false;
     }
@@ -604,7 +631,9 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     } catch (error: unknown) {
       console.error('Error creating payment order:', error);
       this.error =
-        error instanceof Error ? error.message : 'Failed to create payment order. Please try again.';
+        error instanceof Error
+          ? error.message
+          : 'Failed to create payment order. Please try again.';
     } finally {
       this.loading = false;
     }
@@ -788,7 +817,10 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     this.processingPayment = false;
     this.showPaymentModal = false;
     this.paymentSuccess = false;
-    this.paymentError = error instanceof Error ? error.message : 'Payment failed. Please try again.';
+    this.paymentError =
+      error instanceof Error
+        ? error.message
+        : 'Payment failed. Please try again.';
     this.moveToStep(this.STEP_INDICES.RESULT);
   }
 
@@ -953,7 +985,10 @@ export class CheckoutComponent implements OnInit, OnDestroy {
       this.orderAmount = this.productPrice * this.productQuantity;
     } catch (error: unknown) {
       console.error('Error loading product details:', error);
-      this.error = error instanceof Error ? error.message : 'Failed to load product details.';
+      this.error =
+        error instanceof Error
+          ? error.message
+          : 'Failed to load product details.';
     } finally {
       this.loading = false;
     }
@@ -996,5 +1031,84 @@ export class CheckoutComponent implements OnInit, OnDestroy {
       return `Maximum length is ${maxLength} characters`;
     }
     return '';
+  }
+
+  /** Visual stepper config */
+  readonly stepperSteps = [
+    { label: 'Billing Details', hint: 'Who & where' },
+    { label: 'Review Order', hint: 'Items & tax' },
+    { label: 'Payment', hint: 'Secure gateway' },
+    { label: 'Result', hint: 'All done' },
+  ];
+
+  /** Sync currentStepIndex when mat-stepper changes */
+  onStepperSelectionChange(selectedIndex: number): void {
+    this.currentStepIndex.set(selectedIndex);
+  }
+
+  /** Page sub-heading driven by current step */
+  currentSubheading(): string {
+    switch (this.currentStepIndex()) {
+      case this.STEP_INDICES.BILLING:
+        return 'A few quick details and your order is on its way.';
+      case this.STEP_INDICES.PREVIEW:
+        return 'Review your order before confirming payment.';
+      case this.STEP_INDICES.PAYMENT:
+        return 'Pay securely via our PCI-DSS compliant gateway.';
+      case this.STEP_INDICES.RESULT:
+        return this.paymentSuccess
+          ? 'Your order has been placed successfully.'
+          : 'There was an issue with your payment.';
+      default:
+        return '';
+    }
+  }
+
+  /** Order summary sidebar items */
+  get sidebarItems(): ICheckoutSidebarItem[] {
+    if (this.isProductCheckout) {
+      const image = this.product?.imagePath?.[0]?.webUrl ?? null;
+      return [
+        {
+          key: `product-${this.productVariantId ?? 'na'}`,
+          name: this.productName || 'Product',
+          variant: this.productUnit || '',
+          qty: this.productQuantity,
+          price: this.productPrice,
+          image,
+        },
+      ];
+    }
+    if (this.programPlan) {
+      return [
+        {
+          key: `plan-${this.programPlanId ?? 'na'}`,
+          name: this.programPlan.plan || 'Plan',
+          variant: '',
+          qty: 1,
+          price: this.orderAmount,
+          image: null,
+        },
+      ];
+    }
+    return [];
+  }
+
+  get totalQuantity(): number {
+    return this.sidebarItems.reduce((s, i) => s + i.qty, 0);
+  }
+
+  get subtotalDisplay(): number {
+    if (this.taxCalculation) {
+      return this.taxCalculation.orderAmount;
+    }
+    return this.sidebarItems.reduce((s, i) => s + i.price * i.qty, 0);
+  }
+
+  get grandTotalDisplay(): number {
+    if (this.taxCalculation) {
+      return this.taxCalculation.totalAmount;
+    }
+    return this.subtotalDisplay;
   }
 }

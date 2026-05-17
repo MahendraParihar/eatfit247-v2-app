@@ -1,80 +1,123 @@
-@if (banners.length > 0) {
-  <app-banner [banners]="banners"></app-banner>
-}
-<!-- Loading State -->
-@if (loading()) {
-  <app-loader page="press-and-media"></app-loader>
-}
-@if (!loading()) {
-  <div class="press-and-media-page page-container">
-    <ng-container>
-      <header class="section__header">
-        <h1 class="section__title">
-          Press and Media
-        </h1>
-      </header>
-
-      <!-- Articles Grid -->
-      <div class="articles-grid">
-        @for (article of pressArticles; track article.id) {
-          <app-card [data]="article"></app-card>
-        } @empty {
-          <div class="no-articles">
-            <mat-icon class="empty-icon">search_off</mat-icon>
-            <p class="empty-message">No press articles found.</p>
-          </div>
-        }
+<div class="press-page">
+  <section class="page-hero">
+    <div class="ef-container">
+      <div class="page-hero__inner">
+        <div>
+          <app-breadcrumbs [crumbs]="[{ label: 'Home', link: '/' }, { label: 'Press & Media' }]"></app-breadcrumbs>
+          <h1>A well-balanced diet that leads to a <span class="accent">well-balanced life</span>.</h1>
+          <p class="lead">
+          </p>
+        </div>
+        <div class="page-hero__visual" aria-hidden="true">
+          <div class="ring"></div>
+          <div class="ring ring--inner"></div>
+          <div class="disc">campaign</div>
+          <div class="chip chip--a"><span class="mat-icon">podcasts</span>Podcasts</div>
+          <div class="chip chip--b"><span class="mat-icon">live_tv</span>TV &amp; print</div>
+        </div>
       </div>
-    </ng-container>
+    </div>
+  </section>
 
-    <ng-container>
-      <header class="section__header">
-        <h2 class="section__title">
-          Shweta Shah's Secret Tips & Tricks
-        </h2>
-        <p class="section__tagline">
-          Protecting you from yourself
-        </p>
-      </header>
+  @if (loading()) {
+    <app-loader page="press-and-media"></app-loader>
+  } @else {
+    <!-- SECTION 1: Press grid + paginator -->
+    <section class="ef-container press-page__body">
+      <div class="section-head">
+        <div>
+          <h2 class="section-head__title">Press &amp; Media</h2>
+          <p class="section-head__sub">Articles, podcasts and on-camera features.</p>
+        </div>
+      </div>
 
-      <!-- YouTube Videos Grid - Masonry Gallery -->
-      <div class="youtube-gallery-grid">
-        @for (article of youtubeArticles; track article.id; let i = $index) {
-          <mat-card
-            class="article-card youtube-card"
-            [class.gallery-item-small]="getGalleryItemSize(i) === 'small'"
-            [class.gallery-item-medium]="getGalleryItemSize(i) === 'medium'"
-            [class.gallery-item-large]="getGalleryItemSize(i) === 'large'"
-            [class.gallery-item-wide]="getGalleryItemSize(i) === 'wide'"
+      <div class="press-grid">
+        @for (p of pagedPress(); track p.id) {
+          <a
+            [href]="p.url"
+            class="press-card"
+            target="_blank"
+            rel="noopener"
+            [style.--badge]="p.color"
           >
-            <!-- YouTube Video -->
-            <div class="article-image-container">
-              @if (getSafeYoutubeUrl(article)) {
-                <div class="video-wrapper">
-                  <iframe
-                    [src]="getSafeYoutubeUrl(article)!"
-                    frameborder="0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowfullscreen
-                    class="youtube-iframe"
-                    [title]="article.title || 'YouTube video'"
-                  ></iframe>
-                </div>
+            <div class="press-card__media" [class.press-card__media--has-image]="p.imageUrl">
+              @if (p.imageUrl) {
+                <img [src]="p.imageUrl" [alt]="p.title" loading="lazy" class="press-card__media-img" />
               } @else {
-                <div class="article-image-placeholder">
-                  <mat-icon class="image-icon">play_circle</mat-icon>
-                </div>
+                <span class="mat-icon">{{ p.icon }}</span>
               }
+              <span class="press-card__media-outlet">{{ p.outlet }}</span>
             </div>
-          </mat-card>
-        } @empty {
-          <div class="no-articles">
-            <mat-icon class="empty-icon">video_library</mat-icon>
-            <p class="empty-message">No YouTube videos found.</p>
-          </div>
+            <div class="press-card__body">
+              <div class="press-card__top">
+                <span class="press-card__badge" [style.--badge]="p.color">
+                  <span class="mat-icon">{{ p.icon }}</span>{{ p.kind }}
+                </span>
+                <span class="press-card__date">{{ p.date }}</span>
+              </div>
+              <h4 class="press-card__title">{{ p.title }}</h4>
+              <span class="press-card__cta">
+                {{ p.kind }} article <span class="mat-icon">arrow_outward</span>
+              </span>
+            </div>
+          </a>
         }
       </div>
-    </ng-container>
-  </div>
-}
 
+      @if (totalLength() > pageSize()) {
+        <div class="press-pagination">
+          <mat-paginator
+            [length]="totalLength()"
+            [pageSize]="pageSize()"
+            [pageIndex]="pageIndex()"
+            [pageSizeOptions]="pageSizeOptions"
+            (page)="onPageChange($event)"
+            showFirstLastButtons
+          ></mat-paginator>
+        </div>
+      }
+    </section>
+
+    <!-- SECTION 2: Podcasts & much more -->
+    <section class="press-page__section-2">
+      <div class="ef-container press-page__body">
+        <div class="section-head section-head--center">
+          <span class="section-eyebrow"><span class="mat-icon">play_circle</span>Watch on YouTube</span>
+          <h2 class="section-head__title">Podcasts &amp; much more</h2>
+          <p class="section-head__sub">
+            Long-form conversations, panels, and bite-sized clips — wherever you like to watch or listen.
+          </p>
+        </div>
+
+        <div class="tip-grid">
+          @for (t of tipsList(); track t.id) {
+            <a [href]="t.url" target="_blank" rel="noopener" class="tip-card">
+              <div class="tip-card__thumb">
+                <img [src]="thumbUrl(t.videoId)" alt="" loading="lazy" referrerpolicy="no-referrer" />
+                <span class="tip-card__play" aria-hidden="true">
+                  <svg viewBox="0 0 68 48" width="56" height="40">
+                    <path d="M66.52 7.74a8 8 0 0 0-5.62-5.66C56.16.96 34 .96 34 .96s-22.16 0-26.9 1.12A8 8 0 0 0 1.48 7.74C.36 12.5.36 24 .36 24s0 11.5 1.12 16.26a8 8 0 0 0 5.62 5.66C11.84 47.04 34 47.04 34 47.04s22.16 0 26.9-1.12a8 8 0 0 0 5.62-5.66C67.64 35.5 67.64 24 67.64 24s0-11.5-1.12-16.26z" fill="#ff0000"/>
+                    <path d="M27.2 34.4 45.6 24 27.2 13.6z" fill="#fff"/>
+                  </svg>
+                </span>
+                @if (t.dur) {
+                  <span class="tip-card__dur">{{ t.dur }}</span>
+                }
+              </div>
+              <div class="tip-card__body">
+                <span class="tip-card__cat">{{ t.cat }}</span>
+                <h4 class="tip-card__title">{{ t.title }}</h4>
+              </div>
+            </a>
+          }
+        </div>
+
+        <div class="tip-cta">
+          <a href="https://www.youtube.com/&#64;shwetashahEatfit247" target="_blank" rel="noopener" class="mat-btn mat-btn--filled">
+            <span class="mat-icon">subscriptions</span>Subscribe on YouTube
+          </a>
+        </div>
+      </div>
+    </section>
+  }
+</div>

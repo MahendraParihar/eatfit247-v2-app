@@ -2,13 +2,9 @@ import { Component, inject, OnDestroy, OnInit, PLATFORM_ID, signal } from '@angu
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Subject, takeUntil } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
-import { MatCardModule } from '@angular/material/card';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { CheckoutService } from '../../core/services';
 import { IAddress } from '@eatfit247-shared-library/core';
-import { LoaderComponent } from '@shared-ui';
+import { BreadcrumbsComponent, LoaderComponent } from '@shared-ui';
 
 interface OrderDetails {
   memberOrderId: number;
@@ -43,11 +39,8 @@ interface OrderDetails {
   standalone: true,
   imports: [
     CommonModule,
-    MatCardModule,
-    MatButtonModule,
-    MatIconModule,
-    MatProgressSpinnerModule,
-    LoaderComponent
+    LoaderComponent,
+    BreadcrumbsComponent
   ],
   templateUrl: './checkout-success.component.html',
   styleUrl: './checkout-success.component.scss'

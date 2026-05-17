@@ -8,7 +8,6 @@ export * from './legal-page.interface';
 export * from './blog.interface';
 export * from './faq.interface';
 export * from './press-media.interface';
-export * from './program-category.interface';
 export * from './program.interface';
 export * from './program-plan.interface';
 export * from './recipe.interface';
@@ -45,4 +44,6 @@ export * from './razorpay-webhook.interface';
 export * from './courier/index';
 export * from './member/index';
 export * from './courier/warehouse.interface';
+export * from './admin-rbac.interface';
+export * from './google-review.interface';
 

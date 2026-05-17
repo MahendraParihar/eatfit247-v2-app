@@ -9,7 +9,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { MatCardModule } from '@angular/material/card';
 import { InputErrorComponent, ValidationUtil } from '@shared';
-import { LovMasterApiService } from '../../api.service';
+import { CountryApiService } from '../../api.service';
 import { ICountry, IManageCountry, InputLengthEnum, TaxTypeEnum } from '@eatfit247-shared-lib';
 
 @Component({
@@ -32,7 +32,7 @@ import { ICountry, IManageCountry, InputLengthEnum, TaxTypeEnum } from '@eatfit2
 export class ManageCountry implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private apiService = inject(LovMasterApiService);
+  private apiService = inject(CountryApiService);
 
   private fb: FormBuilder = inject(FormBuilder);
   formGroup: FormGroup = this.fb.group({
@@ -112,7 +112,7 @@ export class ManageCountry implements OnInit {
   }
 
   async loadData(id: number): Promise<void> {
-    this.initialData = await this.apiService.getCountryById(id);
+    this.initialData = await this.apiService.getById(id);
   }
 
   async onSubmit(): Promise<void> {
@@ -124,12 +124,12 @@ export class ManageCountry implements OnInit {
       }
       if (this.isEditMode && this.initialData) {
         formValue.countryId = this.initialData.countryId;
-        await this.apiService.updateCountry(
+        await this.apiService.update(
           this.initialData.countryId,
           formValue
         );
       } else {
-        await this.apiService.createCountry(formValue);
+        await this.apiService.create(formValue);
       }
       this.router.navigate(['/lov-master/country']);
     } else {

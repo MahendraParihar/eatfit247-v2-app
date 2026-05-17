@@ -2,187 +2,60 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
-  HostListener,
   inject,
-  OnInit
+  OnInit,
+  Type,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { MatCardModule } from '@angular/material/card';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { KpiCardComponent } from './components/kpi-card/kpi-card.component';
-import { RevenueChartComponent } from './components/revenue-chart/revenue-chart.component';
-import { MemberGrowthChartComponent } from './components/member-growth-chart/member-growth-chart.component';
-import {
-  ProgramPerformanceChartComponent
-} from './components/program-performance-chart/program-performance-chart.component';
-import { OperationsSummaryComponent } from './components/operations-summary/operations-summary.component';
-import { QuickActionsComponent } from './components/quick-actions/quick-actions.component';
-import {
-  IDashboardKpis,
-  IEngagementData,
-  IMemberGrowthData,
-  IOperationsSnapshot,
-  IProgramPerformanceData,
-  IRevenueData
-} from '@eatfit247-shared-lib';
-import { DashboardApiService } from './api.service';
+import { CommonModule, NgComponentOutlet } from '@angular/common';
+import { PermissionService } from '@core';
+import { resolveWidgetsForUser, WidgetConfig } from './widget-registry';
+import { AnnualDashboardComponent } from './components/annual-dashboard/annual-dashboard.component';
+
+interface WidgetEntry {
+  config: WidgetConfig;
+  component: Type<unknown>;
+}
+
+const ANNUAL_DASHBOARD_ROLES = ['super_admin', 'admin', 'franchise_admin'];
 
 @Component({
   selector: 'lib-dashboard',
   standalone: true,
-  imports: [
-    CommonModule,
-    MatCardModule,
-    MatProgressSpinnerModule,
-    MatSnackBarModule,
-    KpiCardComponent,
-    RevenueChartComponent,
-    MemberGrowthChartComponent,
-    ProgramPerformanceChartComponent,
-    OperationsSummaryComponent,
-    QuickActionsComponent,
-  ],
+  imports: [CommonModule, NgComponentOutlet, AnnualDashboardComponent],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DashboardComponent implements OnInit {
-  kpis?: IDashboardKpis;
-  revenueData?: IRevenueData;
-  memberGrowthData?: IMemberGrowthData;
-  programPerformanceData?: IProgramPerformanceData[];
-  operationsSnapshot?: IOperationsSnapshot;
-  engagementData?: IEngagementData;
-
-  loading = {
-    kpis: false,
-    revenue: false,
-    members: false,
-    programs: false,
-    operations: false,
-    engagement: false,
-  };
-
-  memberPeriod: 'weekly' | 'monthly' = 'monthly';
-  private readonly apiService = inject(DashboardApiService);
+  private readonly permissionService = inject(PermissionService);
   private readonly cdr = inject(ChangeDetectorRef);
-  private readonly snackBar = inject(MatSnackBar);
 
-  constructor() {}
+  widgetEntries: WidgetEntry[] = [];
+  loading = true;
+  useAnnualDashboard = false;
 
-  ngOnInit(): void {
-    this.loadAllData();
-  }
+  async ngOnInit(): Promise<void> {
+    const roleCodes = this.permissionService.getRoleCodes();
+    this.useAnnualDashboard = roleCodes.some((code) => ANNUAL_DASHBOARD_ROLES.includes(code));
 
-  @HostListener('window:resize')
-  onResize(): void {
-    // Charts will handle their own resize
-  }
-
-  async loadAllData(): Promise<void> {
-    await Promise.all([
-      this.loadKpis(),
-      this.loadRevenueData(),
-      this.loadMemberGrowthData(),
-      this.loadProgramPerformanceData(),
-      this.loadOperationsSnapshot(),
-      this.loadEngagementData(),
-    ]);
-  }
-
-  async loadKpis(): Promise<void> {
-    this.loading.kpis = true;
-    this.cdr.markForCheck();
-    try {
-      this.kpis = await this.apiService.getKpis();
-    } catch {
-      // Error toast is handled by HttpErrorInterceptor
-    } finally {
-      this.loading.kpis = false;
+    if (this.useAnnualDashboard) {
+      this.loading = false;
       this.cdr.markForCheck();
+      return;
     }
-  }
 
-  async loadRevenueData(): Promise<void> {
-    this.loading.revenue = true;
+    const permissions = this.permissionService.getPermissions();
+    const configs = resolveWidgetsForUser(permissions);
+
+    const loaded = await Promise.all(
+      configs.map(async (config) => ({
+        config,
+        component: await config.load(),
+      })),
+    );
+
+    this.widgetEntries = loaded;
+    this.loading = false;
     this.cdr.markForCheck();
-    try {
-      this.revenueData = await this.apiService.getRevenueData();
-    } catch {
-      // Error toast is handled by HttpErrorInterceptor
-    } finally {
-      this.loading.revenue = false;
-      this.cdr.markForCheck();
-    }
-  }
-
-  async loadMemberGrowthData(): Promise<void> {
-    this.loading.members = true;
-    this.cdr.markForCheck();
-    try {
-      this.memberGrowthData = await this.apiService.getMemberGrowthData(this.memberPeriod);
-    } catch {
-      // Error toast is handled by HttpErrorInterceptor
-    } finally {
-      this.loading.members = false;
-      this.cdr.markForCheck();
-    }
-  }
-
-  async loadProgramPerformanceData(): Promise<void> {
-    this.loading.programs = true;
-    this.cdr.markForCheck();
-    try {
-      this.programPerformanceData = await this.apiService.getProgramPerformanceData();
-    } catch {
-      // Error toast is handled by HttpErrorInterceptor
-    } finally {
-      this.loading.programs = false;
-      this.cdr.markForCheck();
-    }
-  }
-
-  async loadOperationsSnapshot(): Promise<void> {
-    this.loading.operations = true;
-    this.cdr.markForCheck();
-    try {
-      this.operationsSnapshot = await this.apiService.getOperationsSnapshot();
-    } catch {
-      // Error toast is handled by HttpErrorInterceptor
-    } finally {
-      this.loading.operations = false;
-      this.cdr.markForCheck();
-    }
-  }
-
-  async loadEngagementData(): Promise<void> {
-    this.loading.engagement = true;
-    this.cdr.markForCheck();
-    try {
-      this.engagementData = await this.apiService.getEngagementData();
-    } catch {
-      // Error toast is handled by HttpErrorInterceptor
-    } finally {
-      this.loading.engagement = false;
-      this.cdr.markForCheck();
-    }
-  }
-
-  onMemberPeriodChange(period: 'weekly' | 'monthly'): void {
-    this.memberPeriod = period;
-    this.loadMemberGrowthData();
-  }
-
-  formatCurrency(value: number): string {
-    if (value >= 10000000) {
-      return `₹${(value / 10000000).toFixed(1)}Cr`;
-    } else if (value >= 100000) {
-      return `₹${(value / 100000).toFixed(1)}L`;
-    } else if (value >= 1000) {
-      return `₹${(value / 1000).toFixed(1)}k`;
-    }
-    return `₹${value}`;
   }
 }
-

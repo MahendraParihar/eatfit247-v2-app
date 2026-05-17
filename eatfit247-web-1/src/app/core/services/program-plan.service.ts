@@ -10,8 +10,6 @@ export interface ProgramPlan {
   sequenceNumber: number;
   noOfCycle: number;
   noOfDaysInCycle: number;
-  programPlanTypeId: number;
-  programPlanType?: string;
   isOnline: boolean;
   isVisibleOnWeb: boolean;
   programPlanFees: { fees: number; currencyCode: string }[];

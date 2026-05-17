@@ -1,160 +1,16 @@
-@use '../../../styles/breakpoints' as *;
+/* Success Stories — re-skin uses .celeb-grid / .celeb-card from pages.css.
+   Local rules only add page-level spacing + CTA fallback. */
 
-// Hall of Fame
-.section-header {
-  margin-bottom: 60px;
-
-  h2 {
-    margin-block: 12px;
-  }
+.stories-page__body {
+  padding-block: var(--space-fluid-xl);
 }
 
-.timeline {
-  display: flex;
-  flex-direction: column;
-  gap: 48px;
-  position: relative;
-
-  &::before {
-    content: '';
-    position: absolute;
-    left: 16px;
-    top: 0;
-    bottom: 0;
-    width: 2px;
-    background: var(--color-border);
-    transform: translateX(-50%);
-
-    @include respond(md) {
-      left: 50%;
-    }
-  }
+.stories-page__cta {
+  margin-top: var(--space-fluid-xl);
 }
 
-// Mobile: single column stacked layout
-.timeline-entry {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 0;
-  align-items: center;
-  position: relative;
-  padding-left: 40px;
-
-  @include respond(md) {
-    grid-template-columns: 1fr 48px 1fr;
-    padding-left: 0;
-  }
+.stories-pagination {
+  display: block;
+  margin-top: var(--space-4);
 }
 
-.timeline-year {
-  position: absolute;
-  left: 0;
-  top: -24px;
-  transform: none;
-  background: var(--color-primary);
-  color: var(--color-surface-white);
-  font-size: 12px;
-  font-weight: 700;
-  padding: 4px 12px;
-  border-radius: 12px;
-  z-index: 2;
-
-  @include respond(md) {
-    left: 50%;
-    transform: translateX(-50%);
-  }
-}
-
-.timeline-line {
-  width: 48px;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-
-  &::before {
-    content: '';
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    background: var(--color-primary);
-    border: 3px solid var(--color-surface-card);
-    box-shadow: 0 0 0 2px var(--color-primary);
-    z-index: 2;
-  }
-
-  @include respond(md) {
-    display: flex;
-  }
-}
-
-.entry-image {
-  padding: 0;
-  order: -1;
-  margin-bottom: var(--space-3);
-
-  @include respond(md) {
-    padding: 16px;
-    order: unset;
-    margin-bottom: 0;
-  }
-}
-
-.entry-img {
-  width: 100%;
-  border-radius: 12px;
-  object-fit: cover;
-  aspect-ratio: 4/3;
-  max-height: 200px;
-
-  @include respond(md) {
-    max-height: none;
-  }
-}
-
-.entry-content {
-  padding: 24px;
-  background: var(--color-surface-card);
-  border: 1px solid var(--color-divider);
-  border-radius: 12px;
-
-  &.right-content {
-    margin-left: 0;
-  }
-
-  &.left-content {
-    margin-right: 0;
-  }
-}
-
-.entry-name {
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--color-text-primary);
-  margin: 0 0 8px;
-}
-
-.entry-quote {
-  font-size: 13px;
-  color: var(--color-text-secondary);
-  line-height: 1.7;
-  font-style: italic;
-  margin: 0;
-}
-
-// Hero grid — mobile: single col, hide image
-.stories-hero-grid {
-  grid-template-columns: 1fr;
-
-  @include respond(md) {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-
-.stories-hero-image {
-  display: none;
-
-  @include respond(md) {
-    display: block;
-  }
-}

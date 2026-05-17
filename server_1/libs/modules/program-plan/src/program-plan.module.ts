@@ -1,44 +1,32 @@
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { modelRegistry } from '@server_1/core';
-import { MstProgram, MstProgramCategory, MstProgramPlan, MstProgramPlanFees, MstProgramPlanType } from './models';
-import {
-  ProgramCategoryController,
-  ProgramController,
-  ProgramPlanController,
-  PublicProgramController,
-  PublicProgramPlanController,
-} from './controllers';
-import { ProgramCategoryService, ProgramPlanService, ProgramService } from './services';
-// Register models with the model registry
-// These models have @Scopes decorator, so they MUST be registered for scopes to work
+import { MstProgram, MstProgramPlan, MstProgramPlanFees } from './models';
+import { ProgramPlanService, ProgramService } from './services';
+
 modelRegistry.register([
-  MstProgramCategory,
   MstProgram,
-  MstProgramPlanType,
   MstProgramPlan,
   MstProgramPlanFees,
 ]);
 
+/**
+ * Services-only module. Imported by other modules (e.g. MemberModule) that
+ * need ProgramService/ProgramPlanService without dragging admin or public
+ * controllers into the importing app.
+ *
+ * Apps should import ProgramPlanAdminModule or ProgramPlanPublicModule
+ * instead of this module.
+ */
 @Module({
   imports: [
-    SequelizeModule.forFeature([MstProgramCategory, MstProgram, MstProgramPlanType, MstProgramPlan, MstProgramPlanFees]),
-  ],
-  controllers: [
-    // Register public controllers first to avoid route conflicts
-    PublicProgramController,
-    PublicProgramPlanController,
-    ProgramCategoryController,
-    ProgramController,
-    ProgramPlanController,
+    SequelizeModule.forFeature([MstProgram, MstProgramPlan, MstProgramPlanFees]),
   ],
   providers: [
-    ProgramCategoryService,
     ProgramService,
     ProgramPlanService,
   ],
   exports: [
-    ProgramCategoryService,
     ProgramService,
     ProgramPlanService,
     SequelizeModule,

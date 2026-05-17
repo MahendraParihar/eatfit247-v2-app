@@ -30,6 +30,14 @@ export class MstAdminRole extends Model<MstAdminRole> {
   })
   declare roleCode: string;
 
+  @Column({
+    allowNull: false,
+    field: 'grant_all_on_new_subject',
+    type: DataType.BOOLEAN,
+    defaultValue: false,
+  })
+  declare grantAllOnNewSubject: boolean;
+
   @CreatedAt
   @Column({
     allowNull: false,

@@ -5,6 +5,7 @@ export interface IBasicDietTemplate {
   dietTemplate: string;
   noOfCycle: number;
   noOfDaysInCycle: number;
+  programId?: number;
 }
 
 export interface IManageDietTemplate extends IBasicDietTemplate {
@@ -15,7 +16,7 @@ export interface IDietTemplate extends IBasicDietTemplate, IAdminInfo {
   dietTemplateId: number;
   showDaily: boolean;
   showWeekly: boolean;
-  dietDetail: IDietTemplateDetail;
+  dietDetails: IDietTemplateDetail[];
   active: boolean;
 }
 
@@ -43,5 +44,5 @@ export interface IDietTemplateDetail {
   dietTemplateId: number;
   cycleNo: number;
   dayNo?: number;
-  dietDetail?: IDietPlanDetail;
+  dietDetail?: IDietPlanDetail[];
 }

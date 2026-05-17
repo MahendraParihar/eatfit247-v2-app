@@ -1,0 +1,126 @@
+@use 'styles' as *;
+
+.payment-collection-card {
+  border-radius: var(--radius-card);
+  background: var(--md-sys-color-surface);
+  box-shadow: var(--elevation-level-1);
+  height: 100%;
+
+  mat-card-header {
+    margin-bottom: 16px;
+  }
+
+  mat-card-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--md-sys-color-on-surface);
+  }
+
+  .status-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .status-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    border-radius: var(--radius-card);
+    background: var(--md-sys-color-surface-container);
+    border: 1px solid var(--md-sys-color-outline);
+
+    .status-indicator {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .status-details {
+      flex: 1;
+      min-width: 0;
+
+      .status-label {
+        font-size: 12px;
+        color: var(--md-sys-color-on-surface);
+        opacity: 0.7;
+        margin-bottom: 2px;
+      }
+
+      .status-count {
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--md-sys-color-on-surface);
+        line-height: 1.2;
+      }
+    }
+
+    .status-icon {
+      flex-shrink: 0;
+      width: 24px;
+      height: 24px;
+      font-size: 24px;
+    }
+
+    &.status-paid {
+      border-left: 4px solid var(--status-success);
+
+      .status-indicator {
+        background: var(--status-success);
+      }
+
+      .status-icon {
+        color: var(--status-success);
+      }
+    }
+
+    &.status-pending {
+      border-left: 4px solid var(--status-warning);
+
+      .status-indicator {
+        background: var(--status-warning);
+      }
+
+      .status-icon {
+        color: var(--status-warning);
+      }
+    }
+
+    &.status-overdue {
+      border-left: 4px solid var(--status-error);
+
+      .status-indicator {
+        background: var(--status-error);
+      }
+
+      .status-icon {
+        color: var(--status-error);
+      }
+    }
+  }
+
+  .total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 16px;
+    padding: 16px;
+    background: var(--md-sys-color-surface-container);
+    border-radius: var(--radius-card);
+    border: 1px solid var(--md-sys-color-outline);
+
+    .total-label {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--md-sys-color-on-surface);
+    }
+
+    .total-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--md-sys-color-primary);
+    }
+  }
+}

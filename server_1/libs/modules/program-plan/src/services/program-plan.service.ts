@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { Order } from 'sequelize';
 import { InjectModel } from '@nestjs/sequelize';
-import { MstProgramPlan, MstProgramPlanFees, MstProgramPlanType } from '../models';
+import { MstProgramPlan, MstProgramPlanFees } from '../models';
 import {
   IBasicSearch,
   IDropdownItem,
@@ -29,8 +29,6 @@ const PROGRAM_PLAN_LIST_SORT_FIELDS = new Set<string>([
 export class ProgramPlanService {
   constructor(
     @InjectModel(MstProgramPlan) private readonly programPlanRepository: typeof MstProgramPlan,
-    @InjectModel(MstProgramPlanType)
-    private readonly programPlanTypeRepository: typeof MstProgramPlanType,
     @InjectModel(MstProgramPlanFees)
     private readonly programPlanFeesRepository: typeof MstProgramPlanFees,
   ) {}
@@ -89,8 +87,6 @@ export class ProgramPlanService {
       sequenceNumber: item.sequenceNumber,
       noOfCycle: item.noOfCycle,
       noOfDaysInCycle: item.noOfDaysInCycle,
-      programPlanTypeId: item.programPlanTypeId,
-      programPlanType: item.programPlanType?.programPlanType || '',
       isOnline: item.isOnline,
       isVisibleOnWeb: item.isVisibleOnWeb,
       programPlanFees: fees,
@@ -119,7 +115,7 @@ export class ProgramPlanService {
     return this.convertToModel(find.get({ plain: true }));
   }
 
-  public async create(obj: IManageProgramPlan, cIp: string, adminId: number): Promise<void> {
+  public async create(obj: IManageProgramPlan, cIp: string, adminId: number): Promise<number> {
     const createObj = {
       plan: obj.plan,
       url: CommonFunctionsUtil.removeSpecialChar(obj.plan.toString().toLowerCase(), '-'),
@@ -127,7 +123,6 @@ export class ProgramPlanService {
       sequenceNumber: obj.sequenceNumber,
       noOfCycle: obj.noOfCycle,
       noOfDaysInCycle: obj.noOfDaysInCycle,
-      programPlanTypeId: obj.programPlanTypeId,
       isOnline: obj.isOnline,
       isVisibleOnWeb: obj.isVisibleOnWeb,
       imagePath: obj.imagePath && obj.imagePath.length > 0 ? obj.imagePath : null,
@@ -160,6 +155,7 @@ export class ProgramPlanService {
       }));
       await this.programPlanFeesRepository.bulkCreate(feesToCreate);
     }
+    return created.programPlanId;
   }
 
   public async update(
@@ -181,7 +177,6 @@ export class ProgramPlanService {
       sequenceNumber: obj.sequenceNumber,
       noOfCycle: obj.noOfCycle,
       noOfDaysInCycle: obj.noOfDaysInCycle,
-      programPlanTypeId: obj.programPlanTypeId,
       isOnline: obj.isOnline,
       isVisibleOnWeb: obj.isVisibleOnWeb,
       imagePath: obj.imagePath && obj.imagePath.length > 0 ? obj.imagePath : null,
@@ -233,20 +228,6 @@ export class ProgramPlanService {
       modifiedIp: cIp,
     };
     await this.programPlanRepository.update(updateObj, { where: { programPlanId: id } });
-  }
-
-  public async getProgramPlanTypeList(): Promise<IDropdownItem[]> {
-    const tempList = await this.programPlanTypeRepository.findAll({
-      where: { active: true },
-      order: [['programPlanType', 'ASC']],
-      raw: true,
-      nest: true,
-    });
-    return tempList.map((t: any) => ({
-      id: t.programPlanTypeId,
-      label: t.programPlanType,
-      isActive: t.active,
-    }));
   }
 
   public async getProgramPlanList(): Promise<IDropdownItem[]> {

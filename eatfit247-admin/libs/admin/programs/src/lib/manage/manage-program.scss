@@ -60,8 +60,33 @@ textarea {
   .NgxEditor {
     min-height: 200px;
   }
-  
+
   .NgxEditor__Content {
     min-height: 200px;
+  }
+}
+
+.plan-card {
+  margin-top: 8px;
+}
+
+.fees-section {
+  margin-top: 8px;
+
+  .fees-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+
+    h4 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 500;
+    }
+  }
+
+  .fee-row {
+    align-items: center;
   }
 }

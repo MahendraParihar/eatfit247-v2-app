@@ -1,206 +1,52 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import {
-  createdByUserFormatter,
-  DataTableComponent,
-  ITableAction,
-  ITableColumn,
-  ITableConfig,
-  updatedByUserFormatter
-} from '@shared';
-import { IFaq, ITableList } from '@eatfit247-shared-lib';
+import { BaseListComponent, DataTableComponent, ITableAction, ITableColumn } from '@shared';
+import { IFaq } from '@eatfit247-shared-lib';
 import { FaqApiService } from './api.service';
-import { debounceTime, distinctUntilChanged, Subject, switchMap } from 'rxjs';
 
 @Component({
   selector: 'lib-faq',
   standalone: true,
   imports: [CommonModule, DataTableComponent, MatButtonModule, MatIconModule, MatSnackBarModule],
   templateUrl: './faq.html',
-  styleUrl: './faq.scss'
+  styleUrl: './faq.scss',
 })
-export class Faq implements OnInit {
-  private apiService = inject(FaqApiService);
-  private router = inject(Router);
-  private route = inject(ActivatedRoute);
+export class Faq extends BaseListComponent<IFaq> {
+  protected apiService = inject(FaqApiService);
   private snackBar = inject(MatSnackBar);
 
-  data: IFaq[] = [];
-  totalCount = 0;
-  loading = false;
-  tableConfig!: ITableConfig<IFaq>;
-  private searchSubject = new Subject<string>();
-  currentSearch = '';
+  protected listConfig = {
+    editRoute: '/faq/edit',
+    createRoute: '/faq/new',
+    searchPlaceholder: 'Search FAQ...',
+    emptyMessage: 'No FAQ records found',
+  };
 
-  constructor() {
-    this.setupSearch();
-  }
-
-  ngOnInit(): void {
-    this.initializeTable();
-    this.loadData();
-  }
-
-  private initializeTable(): void {
-    const columns: ITableColumn<IFaq>[] = [
+  protected buildEntityColumns(): ITableColumn<IFaq>[] {
+    return [
       { key: 'faqId', label: 'ID', dataKey: 'faqId', sortable: true, width: '80px' },
       { key: 'faq', label: 'Question', dataKey: 'faq', sortable: true, searchable: true },
       { key: 'faqCategory', label: 'Category', dataKey: 'faqCategory', sortable: false },
-      {
-        key: 'active',
-        label: 'Status',
-        dataKey: 'active',
-        sortable: true,
-        width: '120px',
-        align: 'center',
-        formatter: (value) => (value ? 'Active' : 'Inactive')
-      },
-      {
-        key: 'createdByUser',
-        label: 'Created By',
-        dataKey: 'createdByUser',
-        sortable: false,
-        formatter: createdByUserFormatter()
-      },
-      {
-        key: 'updatedByUser',
-        label: 'Updated By',
-        dataKey: 'updatedByUser',
-        sortable: false,
-        formatter: updatedByUserFormatter()
-      },
-      {
-        key: 'createdAt',
-        label: 'Created At',
-        dataKey: 'createdAt',
-        type: 'date',
-        sortable: true
-      },
-      {
-        key: 'updatedAt',
-        label: 'Updated At',
-        dataKey: 'updatedAt',
-        type: 'date',
-        sortable: true
-      }
     ];
-    const actions: ITableAction<IFaq>[] = [
-      { label: 'Edit', icon: 'edit', color: 'primary', onClick: (row) => this.editItem(row) },
+  }
+
+  protected override buildExtraActions(): ITableAction<IFaq>[] {
+    return [
       { label: 'View', icon: 'visibility', color: 'primary', onClick: (row) => this.viewItem(row) },
-      {
-        label: 'Active',
-        icon: 'check_circle',
-        color: 'primary',
-        visible: (row) => row.active === true,
-        onClick: (row) => this.toggleStatus(row)
-      },
-      {
-        label: 'Inactive',
-        icon: 'cancel',
-        color: 'warn',
-        visible: (row) => row.active === false,
-        onClick: (row) => this.toggleStatus(row)
-      }
     ];
-    this.tableConfig = {
-      columns,
-      actions,
-      showSearch: true,
-      searchPlaceholder: 'Search FAQ...',
-      showPagination: true,
-      pageSize: 10,
-      pageSizeOptions: [5, 10, 25, 50],
-      showHeader: true,
-      emptyMessage: 'No FAQ records found'
-    };
   }
 
-  private setupSearch(): void {
-    this.searchSubject.pipe(debounceTime(300), distinctUntilChanged(), switchMap((search) => {
-      this.loading = true;
-      return this.apiService.getList({ search, page: 0, limit: this.tableConfig.pageSize || 10 });
-    })).subscribe({
-      next: (response) => {
-        this.data = response.tableData;
-        this.totalCount = response.count;
-        this.loading = false;
-      },
-      error: () => { this.loading = false; }
-    });
-  }
-
-  async loadData(): Promise<void> {
-    this.loading = true;
-    try {
-      const response: ITableList<IFaq> = await this.apiService.getList({
-        page: 0,
-        limit: this.tableConfig.pageSize || 10,
-        search: this.currentSearch?.trim() || undefined
-      });
-      this.data = response.tableData;
-      this.totalCount = response.count;
-      this.loading = false;
-    } catch {
-      this.loading = false;
-    }
-  }
-
-  async onPageChange(pagination: any): Promise<void> {
-    this.loading = true;
-    try {
-      const response: ITableList<IFaq> = await this.apiService.getList({
-        page: pagination.pageIndex,
-        limit: pagination.pageSize,
-        search: this.currentSearch?.trim() || undefined
-      });
-      this.data = response.tableData;
-      this.totalCount = response.count;
-      this.loading = false;
-    } catch {
-      this.loading = false;
-    }
-  }
-
-  async onSortChange(sort: any): Promise<void> {
-    this.loading = true;
-    try {
-      const response: ITableList<IFaq> = await this.apiService.getList({
-        page: 0,
-        limit: this.tableConfig.pageSize || 10,
-        sortBy: sort.active,
-        sortOrder: sort.direction,
-        search: this.currentSearch?.trim() || undefined
-      });
-      this.data = response.tableData;
-      this.totalCount = response.count;
-      this.loading = false;
-    } catch {
-      this.loading = false;
-    }
-  }
-
-  onSearchChange(search: string): void {
-    this.currentSearch = search;
-    this.searchSubject.next(search);
-  }
-
-  editItem(item: IFaq): void {
-    this.router.navigate(['/faq/edit', item.faqId]);
-  }
-
-  createItem(): void {
-    this.router.navigate(['/faq/new']);
-  }
+  protected getItemId(item: IFaq): number { return item.faqId; }
+  protected getItemDisplayName(item: IFaq): string { return item.faq; }
 
   viewItem(item: IFaq): void {
     // View functionality can be implemented here if needed
   }
 
-  async toggleStatus(item: IFaq): Promise<void> {
+  override async toggleStatus(item: IFaq): Promise<void> {
     const action = item.active ? 'deactivate' : 'activate';
     const confirmed = confirm(`Are you sure you want to ${action} this FAQ?`);
     if (confirmed) {

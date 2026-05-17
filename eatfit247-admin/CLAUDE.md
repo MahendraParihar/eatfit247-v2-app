@@ -58,7 +58,7 @@ libs/admin/<module>/src/lib/
 | `AuthGuard` / `LoginGuard` | Route protection |
 | `AuthInterceptor` | Attaches JWT Bearer token to requests |
 | `HttpErrorInterceptor` | 401 → logout redirect |
-| `ApiBaseService` | Base HTTP service with typed responses |
+| `HttpService` | Centralized HTTP service with typed responses |
 | `AuthService` | Login/logout/refresh token management |
 | `StorageService` | In-memory token storage (no localStorage for access tokens) |
 

@@ -1,114 +1,139 @@
-import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit, signal } from '@angular/core';
-import { MatChipsModule } from '@angular/material/chips';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import {
-  BannerComponent,
+  Component,
+  computed,
+  inject,
+  OnInit,
+  PLATFORM_ID,
+  signal,
+} from '@angular/core';
+import { RouterLink } from '@angular/router';
+import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
+import {
+  BreadcrumbsComponent,
   EmptyStateComponent,
-  ICardData,
   LoaderComponent,
 } from '@shared-ui';
-import { BannerService, SEOService } from '../../core/services';
-import { BannerForEnum } from '@eatfit247-shared-library/enum';
-import { IPublicBanner, ISuccessStory } from '@eatfit247-shared-library/core';
+import { JsonLdService, SEOService } from '../../core/services';
+import { ISuccessStory } from '@eatfit247-shared-library/core';
 import { SuccessStoriesService } from '../../core/services/success-stories.service';
-import { JsonLdService } from '../../core/services';
+
+interface CelebView {
+  id: string | number;
+  name: string;
+  date: string;
+  img: string;
+  quote: string;
+}
 
 @Component({
   standalone: true,
   selector: 'app-success-stories',
   imports: [
     CommonModule,
-    MatChipsModule,
-    BannerComponent,
+    RouterLink,
+    MatPaginatorModule,
     LoaderComponent,
     EmptyStateComponent,
+    BreadcrumbsComponent,
   ],
   templateUrl: './success-stories.component.html',
   styleUrl: './success-stories.component.scss',
 })
 export class SuccessStoriesComponent implements OnInit {
-  private readonly bannerService = inject(BannerService);
   private readonly successStoriesService = inject(SuccessStoriesService);
   private readonly jsonLdService = inject(JsonLdService);
   private readonly seoService = inject(SEOService);
+  private readonly platformId = inject(PLATFORM_ID);
+
   readonly loading = signal(false);
-  banners: IPublicBanner[] = [];
-  storiesByYear: Map<number, ISuccessStory[]> = new Map();
-  years: number[] = [];
-  totalStories = 0;
-  selectedYear: number | null = null;
+
+  private readonly allStories = signal<CelebView[]>([]);
+  readonly pageSize = signal(6);
+  readonly currentPage = signal(0);
+
+  readonly totalStories = computed<number>(() => this.allStories().length);
+  readonly hasStories = computed(() => this.totalStories() > 0);
+
+  readonly celebs = computed<CelebView[]>(() => {
+    const list = this.allStories();
+    const size = this.pageSize();
+    if (size === 0) {
+      return list;
+    }
+    const start = this.currentPage() * size;
+    return list.slice(start, start + size);
+  });
 
   async ngOnInit(): Promise<void> {
-    this.seoService.updateSEO({ title: 'Success Stories — Hall of Fame', description: 'Real transformation stories from EatFit247 clients who achieved their health and wellness goals.', url: '/success-stories' });
+    this.seoService.updateSEO({
+      title: 'Celebrity Testimonials',
+      description:
+        'Real transformation stories from EatFit247 clients who achieved their health and wellness goals.',
+      url: '/success-stories',
+    });
     this.loading.set(true);
     try {
-      await this.loadBannerData();
       await this.loadStories();
     } finally {
       this.loading.set(false);
     }
   }
 
-  private async loadBannerData(): Promise<void> {
-    this.banners = await this.bannerService.getBannerMediaForPage(
-      BannerForEnum.SUCCESS_STORIES,
-    );
-  }
-
   async loadStories(): Promise<void> {
-    const allStories = await this.successStoriesService.loadStories();
-    this.storiesByYear.clear();
-    allStories.forEach((story: ISuccessStory) => {
-      const year = new Date(story.date).getFullYear();
-      if (!this.storiesByYear.has(year)) {
-        this.storiesByYear.set(year, []);
-      }
-      this.storiesByYear.get(year)!.push(story);
-    });
-    this.years = Array.from(this.storiesByYear.keys()).sort((a, b) => b - a);
-    this.totalStories = allStories.length;
+    let allStories: ISuccessStory[] = [];
+    try {
+      allStories = await this.successStoriesService.loadStories();
+    } catch {
+      allStories = [];
+    }
+
+    const mapped: CelebView[] = allStories.map((s) => ({
+      id: s.successStoryId,
+      name: s.name,
+      date: this.formatMonthYear(s.date),
+      img: s.imagePath && s.imagePath.length > 0 ? s.imagePath[0].webUrl : '',
+      quote: s.description,
+    }));
+
+    this.allStories.set(mapped);
 
     this.jsonLdService.setPageSchema({
       '@type': 'ItemList',
       name: 'Success Stories — EatFit247',
-      itemListElement: allStories.slice(0, 10).map((story, i) => ({
+      itemListElement: mapped.slice(0, 10).map((c, i) => ({
         '@type': 'ListItem',
         position: i + 1,
-        name: story.name,
+        name: c.name,
       })),
     } as Record<string, unknown>);
   }
 
-  get filteredYears(): number[] {
-    if (this.selectedYear !== null) {
-      return this.years.filter((y) => y === this.selectedYear);
+  onPageChange(event: PageEvent): void {
+    this.currentPage.set(event.pageIndex);
+    this.pageSize.set(event.pageSize);
+    this.scrollToGrid();
+  }
+
+  private formatMonthYear(d?: string | Date): string {
+    if (!d) return '';
+    const date = typeof d === 'string' ? new Date(d) : d;
+    if (isNaN(date.getTime())) return '';
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      year: 'numeric',
+    });
+  }
+
+  private scrollToGrid(): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
     }
-    return this.years;
-  }
-
-  get hasStories(): boolean {
-    return this.filteredYears.some((y) => this.getStoriesForYear(y).length > 0);
-  }
-
-  selectYear(year: number | null): void {
-    this.selectedYear = year;
-  }
-
-  getStoriesForYear(year: number): ISuccessStory[] {
-    return this.storiesByYear.get(year) || [];
-  }
-
-  mapToCardData(story: ISuccessStory): ICardData {
-    return {
-      id: story.successStoryId,
-      title: story.name,
-      summary: story.description,
-      imageUrl:
-        story.imagePath && story.imagePath.length > 0
-          ? story.imagePath[0].webUrl
-          : undefined,
-      date: story.date,
-      category: undefined,
-    };
+    const grid = document.getElementById('stories-grid');
+    if (grid) {
+      grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return;
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 }

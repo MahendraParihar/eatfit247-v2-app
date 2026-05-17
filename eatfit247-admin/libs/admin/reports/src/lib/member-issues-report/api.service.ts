@@ -1,5 +1,5 @@
-import { Injectable } from '@angular/core';
-import { ApiBaseService } from '@core';
+import { inject, Injectable } from '@angular/core';
+import { HttpService } from '@core';
 import {
   IIssueMasterData,
   IMemberIssue,
@@ -13,12 +13,9 @@ import {
 @Injectable({
   providedIn: 'root',
 })
-export class MemberIssuesReportApiService extends ApiBaseService {
+export class MemberIssuesReportApiService {
+  private readonly httpService = inject(HttpService);
   private readonly endpoint = '/member';
-
-  constructor() {
-    super();
-  }
 
   async getMemberIssuesReport(
     params: IMemberIssueReportFilter

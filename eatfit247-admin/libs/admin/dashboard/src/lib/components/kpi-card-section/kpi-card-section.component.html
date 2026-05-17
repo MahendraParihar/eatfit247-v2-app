@@ -1,0 +1,48 @@
+@if (loading) {
+  <shared-ui-loader></shared-ui-loader>
+} @else if (kpis) {
+  <div class="kpi-grid">
+    <lib-kpi-card
+      icon="people"
+      label="Total Members"
+      [value]="kpis.totalMembers"
+      [trend]="kpis.trends?.totalMembers"
+      trendLabel="vs last month"
+    ></lib-kpi-card>
+    <lib-kpi-card
+      icon="person_add"
+      label="New Members (30 days)"
+      [value]="kpis.newMembers"
+      [trend]="kpis.trends?.newMembers"
+      trendLabel="vs last month"
+    ></lib-kpi-card>
+    <lib-kpi-card
+      icon="payments"
+      label="Monthly Revenue"
+      [value]="formatCurrency(kpis.monthlyRevenue)"
+      [trend]="kpis.trends?.monthlyRevenue"
+      trendLabel="vs last month"
+    ></lib-kpi-card>
+    <lib-kpi-card
+      icon="pending"
+      label="Pending Payments"
+      [value]="kpis.pendingPayments"
+      [trend]="kpis.trends?.pendingPayments"
+      trendLabel="vs last month"
+    ></lib-kpi-card>
+    <lib-kpi-card
+      icon="restaurant_menu"
+      label="Diet Plans Sent (This Month)"
+      [value]="kpis.dietPlansSent"
+      [trend]="kpis.trends?.dietPlansSent"
+      trendLabel="vs last month"
+    ></lib-kpi-card>
+    <lib-kpi-card
+      icon="report_problem"
+      label="Open Issues"
+      [value]="kpis.openIssues"
+      [trend]="kpis.trends?.openIssues"
+      trendLabel="vs last month"
+    ></lib-kpi-card>
+  </div>
+}

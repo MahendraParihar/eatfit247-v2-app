@@ -1,0 +1,40 @@
+<mat-card class="orders-pipeline-card">
+  <mat-card-header>
+    <mat-card-title>Orders Pipeline</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    @if (loading) {
+      <shared-ui-loader></shared-ui-loader>
+    } @else if (!data.length) {
+      <shared-ui-empty-state
+        title="No Order Data"
+        description="Order pipeline data is not available at the moment."
+        icon="shopping_cart"
+      ></shared-ui-empty-state>
+    } @else {
+      <div class="pipeline-list">
+        @for (item of data; track item.status) {
+          <div class="pipeline-item">
+            <div class="pipeline-header">
+              <div class="pipeline-status">
+                <mat-icon [style.color]="getStatusColor(item.status)">{{ getStatusIcon(item.status) }}</mat-icon>
+                <span class="status-label">{{ item.status }}</span>
+              </div>
+              <div class="pipeline-count">
+                <span class="count-value">{{ item.count }}</span>
+                <span class="count-percentage">{{ item.percentage }}%</span>
+              </div>
+            </div>
+            <div class="pipeline-bar-track">
+              <div
+                class="pipeline-bar-fill"
+                [style.width.%]="item.percentage"
+                [style.background-color]="getStatusColor(item.status)"
+              ></div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </mat-card-content>
+</mat-card>

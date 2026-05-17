@@ -56,6 +56,7 @@
     "cookie-parser": "^1.4.7",
     "dotenv": "16.4.5",
     "eatfit247-shared-library": "file:../shared-library",
+    "exceljs": "^4.4.0",
     "googleapis": "^169.0.0",
     "handlebars": "^4.7.8",
     "helmet": "^7.1.0",

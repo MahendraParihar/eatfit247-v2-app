@@ -9,7 +9,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { MatCardModule } from '@angular/material/card';
 import { InputErrorComponent, ValidationUtil } from '@shared';
-import { LovMasterApiService } from '../../api.service';
+import { CallLogStatusApiService } from '../../api.service';
 import { ICallLogStatus, IManageCallLogStatus, InputLengthEnum } from '@eatfit247-shared-lib';
 
 @Component({
@@ -32,7 +32,7 @@ import { ICallLogStatus, IManageCallLogStatus, InputLengthEnum } from '@eatfit24
 export class ManageCallLogStatus implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private apiService = inject(LovMasterApiService);
+  private apiService = inject(CallLogStatusApiService);
 
   private fb: FormBuilder = inject(FormBuilder);
   formGroup: FormGroup = this.fb.group({
@@ -70,7 +70,7 @@ export class ManageCallLogStatus implements OnInit {
   }
 
   async loadData(id: number): Promise<void> {
-    this.initialData = await this.apiService.getCallLogStatusById(id);
+    this.initialData = await this.apiService.getById(id);
   }
 
   async onSubmit(): Promise<void> {
@@ -79,9 +79,9 @@ export class ManageCallLogStatus implements OnInit {
       const formValue: IManageCallLogStatus = { ...this.formGroup.value };
       if (this.isEditMode && this.initialData) {
         formValue.callLogStatusId = this.initialData.callLogStatusId;
-        await this.apiService.updateCallLogStatus(this.initialData.callLogStatusId, formValue);
+        await this.apiService.update(this.initialData.callLogStatusId, formValue);
       } else {
-        await this.apiService.createCallLogStatus(formValue);
+        await this.apiService.create(formValue);
       }
       this.router.navigate(['/lov-master/call-log-status']);
     } else {

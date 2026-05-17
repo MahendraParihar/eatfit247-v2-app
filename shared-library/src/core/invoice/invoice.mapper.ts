@@ -269,10 +269,11 @@ function buildSellerInfo(
   // Use franchise address if provided, otherwise use placeholders
   // Note: IAddress has state and country as strings (from relationships)
   const address = {
-    line1: franchiseAddress.postalAddress || '',
+    line1: (franchiseAddress.postalAddress || '').trim(),
     line2: franchiseAddress.addressName,
     city: franchiseAddress.cityVillage || '',
     state: franchiseAddress.state || '',
+    stateCode: franchiseAddress.stateCode || '',
     postalCode: franchiseAddress.pinCode || '',
     country: franchiseAddress.country || '',
   };
@@ -317,10 +318,11 @@ function buildBuyerInfo(
   return {
     name: memberName,
     address: {
-      line1: address.postalAddress || '',
+      line1: (address.postalAddress || '').trim(),
       line2: address.addressName,
       city: address.cityVillage || '',
       state: address.state || '',
+      stateCode: address.stateCode || '',
       postalCode: address.pinCode || '',
       country: address.country || '',
     },

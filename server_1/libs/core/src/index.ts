@@ -19,6 +19,9 @@ export * from './lib/guards/checkout-token.guard';
 // Auth
 export * from './lib/auth/admin-user.service';
 export * from './lib/auth/casl-ability.factory';
+export * from './lib/auth/permission-resolution.service';
+export * from './lib/auth/rbac-cache.service';
+export * from './lib/auth/rbac.interfaces';
 export * from './lib/decorators/require-ability.decorator';
 export * from './lib/guards/abilities.guard';
 // Filters

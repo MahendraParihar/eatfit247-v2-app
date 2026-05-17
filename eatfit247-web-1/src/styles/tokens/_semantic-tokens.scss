@@ -1,54 +1,108 @@
 // Light Theme Semantic Tokens
 .light-theme {
+  color-scheme: light;
+
   // Action Colors
   --color-primary: var(--color-red-500);
   --color-primary-hover: var(--color-red-600);
+  --color-primary-soft: #ffe9e9;
+  --color-primary-soft-2: #fff1f2;
 
   // Text Colors
   --color-text-primary: var(--color-gray-900);
   --color-text-secondary: var(--color-gray-500);
+  --color-text-muted: var(--color-gray-400);
 
   // Surface Colors
   --color-surface-page: var(--color-gray-50);
   --color-surface-card: var(--color-white);
+  --color-surface-elevated: #ffffff;
+  --color-surface-sunken: #f3f4f6;
+  --color-surface-alt: #fff7f3;
+  --color-surface-inverse: #050608;
   --color-surface-white: var(--color-white);
   --color-surface-black: var(--color-black);
 
   // Border Colors
   --color-border: var(--color-gray-200);
   --color-divider: var(--color-gray-200);
+  --color-border-strong: var(--color-gray-300);
 
-  // Feedback Colors
+  // Accent Greens
+  --color-success: #16a34a;
+  --color-success-soft: #ecfdf3;
+
+  // Feedback Colors (legacy)
   --color-success-bg: #ecfdf3;
   --color-success-text: #16a34a;
   --color-error-bg: #ffebee;
   --color-error-text: #b71c1c;
+  --color-warning: #d97706;
+  --color-warning-bg: #fff7ed;
+  --color-warning-text: #92400e;
+
+  // Shadows
+  --shadow-card: 0 18px 40px rgba(15, 23, 42, 0.08);
+  --shadow-card-hover: 0 24px 60px rgba(15, 23, 42, 0.14);
+  --shadow-sm: 0 1px 4px rgba(17, 24, 39, 0.06);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+
+  // Header
+  --color-header-bg: rgba(255, 255, 255, 0.85);
+  --color-header-border: var(--color-gray-200);
+
+  // Hero gradient stops
+  --hero-grad-a: #fff5f5;
+  --hero-grad-b: #fafafa;
+  --hero-grad-c: #fff1f2;
 }
 
 // Dark Theme Semantic Tokens
 .dark-theme {
-  // Action Colors
+  color-scheme: dark;
+
   --color-primary: var(--color-red-500);
   --color-primary-hover: var(--color-red-400);
+  --color-primary-soft: rgba(248, 65, 65, 0.14);
+  --color-primary-soft-2: rgba(248, 65, 65, 0.08);
 
-  // Text Colors
   --color-text-primary: var(--color-gray-100);
   --color-text-secondary: var(--color-gray-400);
+  --color-text-muted: var(--color-gray-500);
 
-  // Surface Colors
   --color-surface-page: var(--color-gray-950);
-  --color-surface-card: var(--color-gray-950);
+  --color-surface-card: #0b1220;
+  --color-surface-elevated: #111827;
+  --color-surface-sunken: #060a13;
+  --color-surface-alt: #111827;
+  --color-surface-inverse: #f9fafb;
   --color-surface-white: var(--color-white);
   --color-surface-black: var(--color-black);
 
-  // Border Colors
-  --color-border: var(--color-gray-800);
-  --color-divider: var(--color-gray-800);
+  --color-border: #1f2937;
+  --color-divider: #1f2937;
+  --color-border-strong: #2a3443;
 
-  // Feedback Colors
+  --color-success: #4ade80;
+  --color-success-soft: rgba(22, 163, 74, 0.16);
+
   --color-success-bg: #052e16;
   --color-success-text: #4ade80;
   --color-error-bg: #450a0a;
   --color-error-text: #fca5a5;
-}
+  --color-warning: #fbbf24;
+  --color-warning-bg: rgba(217, 119, 6, 0.16);
+  --color-warning-text: #fcd34d;
 
+  --shadow-card: 0 18px 40px rgba(0, 0, 0, 0.5);
+  --shadow-card-hover: 0 24px 60px rgba(0, 0, 0, 0.65);
+  --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.45);
+
+  --color-header-bg: rgba(5, 6, 8, 0.78);
+  --color-header-border: #1f2937;
+
+  --hero-grad-a: #0f1724;
+  --hero-grad-b: #020617;
+  --hero-grad-c: #1a0e13;
+}

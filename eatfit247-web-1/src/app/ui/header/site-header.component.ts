@@ -1,11 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterModule } from '@angular/router';
-import { MatToolbarModule } from '@angular/material/toolbar';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIcon, MatIconModule } from '@angular/material/icon';
-import { MatMenu, MatMenuItem, MatMenuModule } from '@angular/material/menu';
-import { MatSidenavModule } from '@angular/material/sidenav';
+import { ThemeService } from '../../core/services/theme.service';
 
 interface NavItem {
   label: string;
@@ -16,44 +12,47 @@ interface NavItem {
 @Component({
   standalone: true,
   selector: 'app-site-header',
-  imports: [
-    CommonModule,
-    RouterModule,
-    MatToolbarModule,
-    MatButtonModule,
-    MatIconModule,
-    MatMenuModule,
-    MatSidenavModule,
-    MatIcon,
-    MatMenu,
-    MatMenuItem,
-    RouterLink,
-    RouterLinkActive,
-  ],
+  imports: [CommonModule, RouterModule, RouterLink, RouterLinkActive],
   templateUrl: './site-header.component.html',
   styleUrl: './site-header.component.scss',
 })
 export class SiteHeaderComponent {
+  readonly theme = inject(ThemeService);
+
   mobileMenuOpen = false;
 
   navItems: NavItem[] = [
     { label: 'Home', route: '/' },
     {
-      label: 'About Us',
+      label: 'About',
       children: [
         { label: 'About EatFit247', route: '/about-us' },
         { label: 'About Shweta Shah', route: '/about-shweta-shah' },
       ],
     },
-    { label: 'Our Programs', route: '/our-programs' },
+    {
+      label: 'Programs',
+      children: [
+        { label: '1:1 Programs', route: '/our-programs' },
+        { label: 'Seasonal Plans', route: '/seasonal-plans' },
+      ],
+    },
     { label: 'Product', route: '/product/de-bloat' },
     { label: 'Success Stories', route: '/success-stories' },
-    { label: 'Press & Media', route: '/press-and-media' },
-    { label: 'Blog', route: '/blog' },
+    { label: 'Press and Media', route: '/press-and-media' },
+    { label: 'Blogs', route: '/blog' },
     { label: 'Contact Us', route: '/contact-us' },
   ];
 
   toggleMobileMenu(): void {
     this.mobileMenuOpen = !this.mobileMenuOpen;
+  }
+
+  closeMobileMenu(): void {
+    this.mobileMenuOpen = false;
+  }
+
+  toggleTheme(): void {
+    this.theme.toggleTheme();
   }
 }

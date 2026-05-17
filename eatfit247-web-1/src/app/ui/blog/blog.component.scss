@@ -1,20 +1,65 @@
 @use '../../../styles/spacing-tokens' as *;
 @use '../../../styles/breakpoints' as *;
 
+/* Page wrapper */
 .blog-page {
   display: flex;
   flex-direction: column;
-  gap: var(--space-fluid-xl);
 }
 
-.blogs-grid {
-  display: grid;
+.blog-page__body {
+  padding-block: var(--space-fluid-xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+/* Tag filter row — sits above the page-size toolbar.
+   The pill styles for `.blog-tags` / `.blog-tag` / `.blog-tag.active`
+   come from the global design pages stylesheet. */
+.blog-page :where(.blog-tags) {
+  margin-bottom: var(--space-3);
+}
+
+/* Toolbar above grid */
+.blog-page__toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.blog-page__pagesize {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--color-text-secondary);
+}
+
+.blog-page__pagesize-select {
+  padding: 6px 10px;
+  border-radius: var(--radius-chip, 999px);
+  background: var(--color-surface-card);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+  font-size: 14px;
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+}
+
+.blog-page__count {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+/* Responsive grid: 1 col mobile, 2 cols tablet, 3 cols desktop */
+.blog-page .blog-grid {
   grid-template-columns: 1fr;
-  gap: var(--space-4);
 
   @include respond(md) {
     grid-template-columns: repeat(2, 1fr);
-    gap: var(--space-6);
   }
 
   @include respond(lg) {
@@ -22,7 +67,22 @@
   }
 }
 
+/* Force a fixed media height (200px) per design */
+.blog-card__media {
+  height: 200px;
+  aspect-ratio: auto;
+  overflow: hidden;
+  position: relative;
+}
+
+.blog-card__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
 .blog-pagination {
-  display: flex;
-  justify-content: center;
+  display: block;
+  margin-top: var(--space-4);
 }

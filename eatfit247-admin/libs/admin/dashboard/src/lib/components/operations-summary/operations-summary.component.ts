@@ -1,9 +1,16 @@
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  inject,
+  OnInit,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { EmptyStateComponent, LoaderComponent } from '@shared';
 import { IOperationsSnapshot } from '@eatfit247-shared-lib';
+import { DashboardApiService } from '../../api.service';
 
 @Component({
   selector: 'lib-operations-summary',
@@ -13,9 +20,25 @@ import { IOperationsSnapshot } from '@eatfit247-shared-lib';
   styleUrl: './operations-summary.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class OperationsSummaryComponent {
-  @Input() data?: IOperationsSnapshot;
-  @Input() loading = false;
+export class OperationsSummaryComponent implements OnInit {
+  private readonly apiService = inject(DashboardApiService);
+  private readonly cdr = inject(ChangeDetectorRef);
+
+  data?: IOperationsSnapshot;
+  loading = false;
+
+  async ngOnInit(): Promise<void> {
+    this.loading = true;
+    this.cdr.markForCheck();
+    try {
+      this.data = await this.apiService.getOperationsSnapshot();
+    } catch {
+      // Error handled by HttpErrorInterceptor
+    } finally {
+      this.loading = false;
+      this.cdr.markForCheck();
+    }
+  }
 
   getStatusClass(value: number): 'info' | 'warning' | 'error' {
     if (value === 0) return 'info';
@@ -29,4 +52,3 @@ export class OperationsSummaryComponent {
     return 'error';
   }
 }
-

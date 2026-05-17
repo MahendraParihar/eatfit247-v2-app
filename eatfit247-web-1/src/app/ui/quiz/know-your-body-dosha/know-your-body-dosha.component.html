@@ -2,4 +2,96 @@
   <app-banner [banners]="banners"></app-banner>
 }
 
-<p>Know Your Body Dosha works!</p>
+<section class="page-hero">
+  <div class="ef-container">
+    <div class="page-hero__inner">
+      <div>
+        <app-breadcrumbs [crumbs]="[{ label: 'Home', link: '/' }, { label: 'Know Your Body Dosha' }]"></app-breadcrumbs>
+        <h1>Discover your <span class="accent">Ayurvedic type</span>.</h1>
+        <p class="lead">Answer a few quick questions to reveal your dominant dosha — Vata, Pitta or Kapha.</p>
+      </div>
+      <div class="page-hero__visual" aria-hidden="true">
+        <div class="ring"></div>
+        <div class="ring ring--inner"></div>
+        <div class="disc">self_improvement</div>
+        <div class="chip chip--a"><span class="mat-icon">spa</span>Ayurveda</div>
+        <div class="chip chip--b"><span class="mat-icon">quiz</span>5 questions</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="ef-container quiz-section">
+  @if (!submitted()) {
+    <div class="quiz-progress">
+      <span>{{ answeredCount() }} of {{ questions.length }} answered</span>
+      <div class="quiz-progress__bar" role="progressbar" [attr.aria-valuenow]="answeredCount()" aria-valuemin="0" [attr.aria-valuemax]="questions.length">
+        <div class="quiz-progress__fill" [style.width.%]="(answeredCount() / questions.length) * 100"></div>
+      </div>
+    </div>
+
+    @for (q of questions; track q.id) {
+      <div class="feature-card quiz-card">
+        <div class="quiz-card__step">Q{{ q.id }}</div>
+        <h3>{{ q.prompt }}</h3>
+        <div class="quiz-options">
+          @for (opt of q.options; track opt.value) {
+            <button
+              type="button"
+              class="mat-btn"
+              [class.mat-btn--filled]="isSelected(q.id, opt.value)"
+              [class.mat-btn--outlined]="!isSelected(q.id, opt.value)"
+              (click)="selectOption(q.id, opt.value)"
+              [attr.aria-pressed]="isSelected(q.id, opt.value)">
+              @if (isSelected(q.id, opt.value)) {
+                <span class="mat-icon">check_circle</span>
+              }
+              {{ opt.label }}
+            </button>
+          }
+        </div>
+      </div>
+    }
+
+    <div class="quiz-actions">
+      <button type="button" class="mat-btn mat-btn--filled" (click)="submitQuiz()" [disabled]="!canSubmit()">
+        <span class="mat-icon">insights</span>
+        See My Dosha
+      </button>
+    </div>
+  } @else {
+    <div class="feature-card quiz-result">
+      <div class="feature-card__icon" aria-hidden="true">
+        <span class="mat-icon">verified</span>
+      </div>
+      <h3>Your dominant dosha is <span class="accent">{{ doshaLabel(result().dominant) }}</span></h3>
+      <p>Based on your responses, your prakriti leans toward {{ doshaLabel(result().dominant) }}. Speak to our experts for a personalised plan aligned with your Ayurvedic constitution.</p>
+
+      <div class="quiz-counts">
+        <div class="quiz-counts__cell">
+          <span class="quiz-counts__label">Vata</span>
+          <span class="quiz-counts__num">{{ result().counts.vata }}</span>
+        </div>
+        <div class="quiz-counts__cell">
+          <span class="quiz-counts__label">Pitta</span>
+          <span class="quiz-counts__num">{{ result().counts.pitta }}</span>
+        </div>
+        <div class="quiz-counts__cell">
+          <span class="quiz-counts__label">Kapha</span>
+          <span class="quiz-counts__num">{{ result().counts.kapha }}</span>
+        </div>
+      </div>
+
+      <div class="quiz-actions">
+        <button type="button" class="mat-btn mat-btn--outlined" (click)="resetQuiz()">
+          <span class="mat-icon">refresh</span>
+          Retake Quiz
+        </button>
+        <a routerLink="/our-programs" class="mat-btn mat-btn--filled">
+          <span class="mat-icon">arrow_forward</span>
+          Explore Programs
+        </a>
+      </div>
+    </div>
+  }
+</section>

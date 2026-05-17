@@ -28,7 +28,7 @@ export interface IGoogleCalendarEvent {
   };
 }
 
-export interface IGoogleReview {
+export interface IGoogleBusinessReview {
   reviewId: string;
   reviewer: {
     displayName: string;
@@ -44,8 +44,8 @@ export interface IGoogleReview {
   };
 }
 
-export interface IGoogleReviewsResponse {
-  reviews: Array<IGoogleReview>;
+export interface IGoogleBusinessReviewsResponse {
+  reviews: Array<IGoogleBusinessReview>;
   averageRating?: number;
   totalReviewCount?: number;
 }

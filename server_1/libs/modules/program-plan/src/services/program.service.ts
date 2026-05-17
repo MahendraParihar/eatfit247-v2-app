@@ -6,21 +6,27 @@ import {
   IDropdownItem,
   IManageProgram,
   IProgram,
+  IProgramPlan,
   IPublicProgram,
   IPublicTableList,
   ITableList,
 } from '@eatfit247-shared-lib';
 import { AppConfigService, CommonFunctionsUtil, SearchUtil, TableListSortUtil } from '@server_1/core';
+import { ProgramPlanService } from './program-plan.service';
 
 @Injectable()
 export class ProgramService {
   constructor(
     @InjectModel(MstProgram) private readonly programRepository: typeof MstProgram,
     private appConfigService: AppConfigService,
+    private readonly programPlanService: ProgramPlanService,
   ) {}
 
   public async findAll(searchDto: IBasicSearch): Promise<ITableList<IProgram>> {
     const whereCondition: any = SearchUtil.filterBasicSearch(searchDto, 'program');
+    if (searchDto.isSpecialProgram !== null && searchDto.isSpecialProgram !== undefined) {
+      whereCondition.isSpecialProgram = searchDto.isSpecialProgram;
+    }
     const pageNumber = searchDto.page || 0;
     const pageSize = searchDto.limit || 15;
     const offset = pageNumber === 0 ? 0 : pageNumber * pageSize;
@@ -31,17 +37,13 @@ export class ProgramService {
         new Set([
           'programId',
           'program',
-          'programCategoryId',
           'sequenceNumber',
           'url',
           'active',
           'createdAt',
           'updatedAt',
         ]),
-        [
-          ['programCategoryId', 'ASC'],
-          ['sequenceNumber', 'ASC'],
-        ],
+        [['sequenceNumber', 'ASC']],
       ),
       offset: offset,
       limit: pageSize,
@@ -54,19 +56,35 @@ export class ProgramService {
     };
   }
 
+  private toDateOnly(value: string | Date | null | undefined): string | null {
+    if (!value) {
+      return null;
+    }
+    const d = value instanceof Date ? value : new Date(value);
+    if (isNaN(d.getTime())) {
+      return null;
+    }
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
   private convertToModel(item: any): IProgram {
     return <IProgram>{
       programId: item.programId,
       id: item.programId,
       program: item.program,
-      programCategoryId: item.programCategoryId,
-      programCategory: item.programCategory?.programCategory || '',
       punchLine: item.punchLine,
       details: item.details,
-      idealFor: item.idealFor,
       sequenceNumber: item.sequenceNumber,
       isSpecialProgram: item.isSpecialProgram,
       videoUrl: item.videoUrl,
+      startDate: item.startDate,
+      endDate: item.endDate,
+      maxPeopleCanRegister: item.maxPeopleCanRegister,
+      programPlanId: item.programPlanId ?? null,
+      programPlan: this.convertProgramPlan(item.programPlan),
       seo: {
         url: item.url,
       },
@@ -85,6 +103,31 @@ export class ProgramService {
     };
   }
 
+  private convertProgramPlan(plan: any): IProgramPlan | null {
+    if (!plan) {
+      return null;
+    }
+    const fees = Array.isArray(plan.programPlanFees)
+      ? plan.programPlanFees.map((s: any) => ({
+          fees: s.fees,
+          currencyCode: s.currencyCode,
+        }))
+      : [];
+    return <IProgramPlan>{
+      programPlanId: plan.programPlanId,
+      plan: plan.plan,
+      details: plan.details,
+      sequenceNumber: plan.sequenceNumber,
+      noOfCycle: plan.noOfCycle,
+      noOfDaysInCycle: plan.noOfDaysInCycle,
+      isOnline: plan.isOnline,
+      isVisibleOnWeb: plan.isVisibleOnWeb,
+      programPlanFees: fees,
+      imagePath: CommonFunctionsUtil.buildImageUrl(plan.imagePath),
+      active: plan.active,
+    };
+  }
+
   public async fetchById(id: number): Promise<IProgram> {
     const find = await this.programRepository.scope('details').findOne({
       where: { programId: id },
@@ -93,19 +136,25 @@ export class ProgramService {
     if (!find) {
       throw new NotFoundException('Program not found');
     }
-    return this.convertToModel(find);
+    return this.convertToModel(find.get({ plain: true }));
   }
 
   public async create(obj: IManageProgram, cIp: string, adminId: number): Promise<void> {
+    let programPlanId: number | null = null;
+    if (obj.isSpecialProgram && obj.programPlan) {
+      programPlanId = await this.programPlanService.create(obj.programPlan, cIp, adminId);
+    }
     const createObj = {
       program: obj.program,
-      programCategoryId: obj.programCategoryId,
       punchLine: obj.punchLine,
       details: obj.details,
-      idealFor: obj.idealFor,
       sequenceNumber: obj.sequenceNumber,
       isSpecialProgram: obj.isSpecialProgram,
       videoUrl: obj.videoUrl,
+      startDate: obj.isSpecialProgram ? this.toDateOnly(obj.startDate) : null,
+      endDate: obj.isSpecialProgram ? this.toDateOnly(obj.endDate) : null,
+      maxPeopleCanRegister: obj.isSpecialProgram ? obj.maxPeopleCanRegister ?? null : null,
+      programPlanId,
       url: obj.seo ? obj.seo.url : CommonFunctionsUtil.removeSpecialChar(obj.program.toString().toLowerCase(), '-'),
       imagePath: obj.imagePath && obj.imagePath.length > 0 ? obj.imagePath : null,
       active: obj.active,
@@ -124,15 +173,34 @@ export class ProgramService {
     if (!find) {
       throw new NotFoundException('Program not found');
     }
+    let programPlanId: number | null = find.programPlanId ?? null;
+    if (obj.isSpecialProgram) {
+      if (obj.programPlan) {
+        if (programPlanId) {
+          await this.programPlanService.update(programPlanId, obj.programPlan, cIp, adminId);
+        } else {
+          programPlanId = await this.programPlanService.create(obj.programPlan, cIp, adminId);
+        }
+      }
+    } else if (programPlanId) {
+      // Unlinking a previously-tagged plan when seasonal is turned off.
+      // Soft-delete the plan (active=false) so it disappears from active lists
+      // but is preserved for audit/history. The FK on the program is cleared.
+      // Frontend MUST confirm with the user before submitting this transition.
+      await this.programPlanService.changeStatus(programPlanId, false, cIp, adminId);
+      programPlanId = null;
+    }
     const updateObj = {
       program: obj.program,
-      programCategoryId: obj.programCategoryId,
       punchLine: obj.punchLine,
       details: obj.details,
-      idealFor: obj.idealFor,
       sequenceNumber: obj.sequenceNumber,
       isSpecialProgram: obj.isSpecialProgram,
       videoUrl: obj.videoUrl,
+      startDate: obj.isSpecialProgram ? this.toDateOnly(obj.startDate) : null,
+      endDate: obj.isSpecialProgram ? this.toDateOnly(obj.endDate) : null,
+      maxPeopleCanRegister: obj.isSpecialProgram ? obj.maxPeopleCanRegister ?? null : null,
+      programPlanId,
       url: obj.seo
         ? obj.seo.url
         : CommonFunctionsUtil.removeSpecialChar(obj.program.toString().toLowerCase(), '-'),
@@ -180,16 +248,16 @@ export class ProgramService {
     const whereCondition: any = SearchUtil.filterBasicSearch(searchDto, 'program');
     // Only show active programs for public
     whereCondition.active = true;
-    
+    if (searchDto.isSpecialProgram !== null && searchDto.isSpecialProgram !== undefined) {
+      whereCondition.isSpecialProgram = searchDto.isSpecialProgram;
+    }
+
     const pageNumber = searchDto.page || 0;
     const pageSize = searchDto.limit || 15;
     const offset = pageNumber === 0 ? 0 : pageNumber * pageSize;
     const { rows, count } = await this.programRepository.scope('list').findAndCountAll({
       where: whereCondition,
-      order: [
-        ['programCategoryId', 'ASC'],
-        ['sequenceNumber', 'ASC'],
-      ],
+      order: [['sequenceNumber', 'ASC']],
       offset: offset,
       limit: pageSize,
       nest: true,
@@ -243,4 +311,3 @@ export class ProgramService {
     return publicProgram as IPublicProgram;
   }
 }
-

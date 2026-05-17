@@ -1,0 +1,153 @@
+<mat-card class="form-card">
+  <mat-card-header>
+    <mat-card-title>{{ pageTitle }}</mat-card-title>
+  </mat-card-header>
+
+  <mat-card-content>
+    @if (loading) {
+      <div class="loading-container">
+        <mat-spinner diameter="40"></mat-spinner>
+      </div>
+    } @else {
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="appointment-form">
+        <div class="form-row">
+          <mat-form-field appearance="outline">
+            <mat-label>Nutritionist</mat-label>
+            <mat-select formControlName="assignedAdminId" required>
+              @for (nutritionist of nutritionists; track nutritionist.adminId) {
+                <mat-option [value]="nutritionist.adminId">
+                  {{ nutritionist.firstName }} {{ nutritionist.lastName }}
+                  @if (!nutritionist.hasGoogleCalendar) {
+                    (No Calendar)
+                  }
+                </mat-option>
+              }
+            </mat-select>
+            @if (form.get('assignedAdminId')?.hasError('required') && form.get('assignedAdminId')?.touched) {
+              <mat-error>Nutritionist is required</mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Appointment Date</mat-label>
+            <input matInput [matDatepicker]="picker" formControlName="appointmentDate" [min]="minDate" required>
+            <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-datepicker #picker></mat-datepicker>
+            @if (form.get('appointmentDate')?.hasError('required') && form.get('appointmentDate')?.touched) {
+              <mat-error>Date is required</mat-error>
+            }
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline">
+            <mat-label>Start Time</mat-label>
+            <input matInput type="time" formControlName="startTime" required>
+            @if (form.get('startTime')?.hasError('required') && form.get('startTime')?.touched) {
+              <mat-error>Start time is required</mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>End Time</mat-label>
+            <input matInput type="time" formControlName="endTime" required>
+            @if (form.get('endTime')?.hasError('required') && form.get('endTime')?.touched) {
+              <mat-error>End time is required</mat-error>
+            }
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline">
+            <mat-label>Appointment Type</mat-label>
+            <mat-select formControlName="appointmentType" required>
+              <mat-option [value]="1">Initial Consultation</mat-option>
+              <mat-option [value]="2">Follow-up</mat-option>
+              <mat-option [value]="3">Diet Review</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          @if (isEditMode) {
+            <mat-form-field appearance="outline">
+              <mat-label>Status</mat-label>
+              <mat-select formControlName="status">
+                @for (status of statusOptions; track status.value) {
+                  <mat-option [value]="status.value">{{ status.label }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          }
+        </div>
+
+        @if (showCancellationReason) {
+          <div class="form-row full-width">
+            <mat-form-field appearance="outline">
+              <mat-label>Cancellation Reason</mat-label>
+              <textarea matInput formControlName="cancellationReason" rows="2" maxlength="500"></textarea>
+            </mat-form-field>
+          </div>
+        }
+
+        <h3 class="section-title">Guest / Member Details</h3>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline">
+            <mat-label>Member ID (optional)</mat-label>
+            <input matInput type="number" formControlName="memberId">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Contact Form ID (optional)</mat-label>
+            <input matInput type="number" formControlName="contactFormId">
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline">
+            <mat-label>Guest Name</mat-label>
+            <input matInput formControlName="guestName" maxlength="100">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Guest Email</mat-label>
+            <input matInput type="email" formControlName="guestEmail" maxlength="100">
+            @if (form.get('guestEmail')?.hasError('email')) {
+              <mat-error>Invalid email format</mat-error>
+            }
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline">
+            <mat-label>Guest Phone</mat-label>
+            <input matInput formControlName="guestPhone" maxlength="25">
+          </mat-form-field>
+        </div>
+
+        <div class="form-row full-width">
+          <mat-form-field appearance="outline">
+            <mat-label>Notes</mat-label>
+            <textarea matInput formControlName="notes" rows="3"></textarea>
+          </mat-form-field>
+        </div>
+
+        <div class="form-actions">
+          <button mat-raised-button type="button" (click)="onCancel()">
+            <mat-icon>arrow_back</mat-icon>
+            Cancel
+          </button>
+          <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid || saving">
+            @if (saving) {
+              <mat-spinner diameter="20"></mat-spinner>
+            } @else {
+              <ng-container>
+                <mat-icon>save</mat-icon>
+                {{ isEditMode ? 'Update' : 'Book' }} Appointment
+              </ng-container>
+            }
+          </button>
+        </div>
+      </form>
+    }
+  </mat-card-content>
+</mat-card>

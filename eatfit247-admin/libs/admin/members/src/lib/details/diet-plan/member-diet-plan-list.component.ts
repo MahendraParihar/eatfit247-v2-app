@@ -70,7 +70,6 @@ export class MemberDietPlanListComponent implements OnInit, OnDestroy {
   tableConfig!: ITableConfig<IMemberDietPlan>;
   displayedColumns = [
     "program",
-    "programCategory",
     "noOfCycle",
     "dietPlanStatus",
     "updatedBy",
@@ -114,12 +113,6 @@ export class MemberDietPlanListComponent implements OnInit, OnDestroy {
         dataKey: "",
         sortable: false,
         width: "50px"
-      },
-      {
-        key: "programCategory",
-        label: "Program Category",
-        dataKey: "programCategory",
-        sortable: false
       },
       {
         key: "program",

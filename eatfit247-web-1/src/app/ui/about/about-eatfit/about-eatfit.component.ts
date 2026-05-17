@@ -1,89 +1,50 @@
-import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { BannerForEnum } from '@eatfit247-shared-library/enum';
-import { BannerService, JsonLdService, ReferrerService, SEOService } from '../../../core/services';
-import { BannerComponent, LoaderComponent, SocialSiteItem } from '@shared-ui';
-import { IPublicBanner, IPublicReferrer } from '@eatfit247-shared-library/core';
-import { buildMediaUrl } from '../../../core/utils/media-url.util';
-import { MatIcon } from '@angular/material/icon';
-import { MatButtonModule } from '@angular/material/button';
+import { BannerService, JsonLdService, SEOService } from '../../../core/services';
+import { BannerComponent, BreadcrumbsComponent, LoaderComponent } from '@shared-ui';
+import { IPublicBanner } from '@eatfit247-shared-library/core';
 import { RouterLink } from '@angular/router';
+
+interface StatItem {
+  number: string;
+  label: string;
+}
 
 @Component({
   standalone: true,
   selector: 'app-about-eatfit',
-  imports: [CommonModule, MatIcon, MatButtonModule, RouterLink, BannerComponent, LoaderComponent],
+  imports: [RouterLink, BannerComponent, LoaderComponent, BreadcrumbsComponent],
   templateUrl: './about-eatfit.component.html',
   styleUrl: './about-eatfit.component.scss'
 })
 export class AboutEatfitComponent implements OnInit {
   private readonly sanitizer = inject(DomSanitizer);
-  private readonly referrerService = inject(ReferrerService);
   private readonly bannerService = inject(BannerService);
   private readonly jsonLdService = inject(JsonLdService);
   private readonly seoService = inject(SEOService);
   readonly loading = signal(false);
   banners: IPublicBanner[] = [];
   safeYoutubeUrl: SafeResourceUrl | null = null;
-  // Partners data - loaded from API
-  partners: IPublicReferrer[] = [];
-  // Statistics for a Knowledge & Experience section
-  statistics = [
-    { number: '24+', label: 'Years of experience' },
-    { number: '3,000+', label: 'Happy clients' },
-    { number: '100%', label: 'Satisfaction' },
-    { number: '800+', label: 'Healthy recipes' }
+
+  // Key headline statistics shown in the story column
+  stats: StatItem[] = [
+    { number: '24', label: 'Years of practice' },
+    { number: '3000+', label: 'Clients guided' }
   ];
-  // Social media links for Shweta Shah section
-  socialLinks: SocialSiteItem[] = [
-    {
-      link: 'https://www.facebook.com/eatfit24by7',
-      icon: 'facebook',
-      type: 'external'
-    },
-    {
-      link: 'https://www.instagram.com/eatfit24by7',
-      icon: 'instagram',
-      type: 'external'
-    },
-    {
-      link: 'https://www.linkedin.com/company/eatfit24by7',
-      icon: 'linkedin',
-      type: 'external'
-    },
-    {
-      link: 'https://www.pinterest.com/eatfit24by7',
-      icon: 'pinterest',
-      type: 'external'
-    },
-    {
-      link: 'https://t.me/eatfit24by7',
-      icon: 'telegram',
-      type: 'external'
-    },
-    {
-      link: 'https://www.youtube.com/@shwetashahEatfit247',
-      icon: 'youtube',
-      type: 'external'
-    },
-    {
-      type: 'external',
-      icon: 'twitter',
-      link: 'https://twitter.com/eatfit247'
-    },
-    {
-      type: 'external',
-      icon: 'telegram',
-      link: 'https://telegram.me/eatfit247'
-    }
+
+  // Pillars / brief value bullets
+  pillars: string[] = [
+    'Industry, corporate, media & fitness leaders',
+    'Plans built around your real lifestyle',
+    'Natural, food-first methodology — no extremes'
   ];
 
   async ngOnInit(): Promise<void> {
     this.seoService.updateSEO({ title: 'About EatFit247', description: 'EatFit247 is a holistic nutrition and wellness platform offering personalized diet plans and health coaching.', url: '/about-us' });
     this.loading.set(true);
     try {
-      await Promise.all([this.loadBannerData(), this.loadPartners()]);
+      await this.loadBannerData();
       this.setYoutubeVideo(
         'https://www.youtube.com/watch?v=YoHc6piJjt4'
       );
@@ -112,19 +73,8 @@ export class AboutEatfitComponent implements OnInit {
       this.banners = await this.bannerService.getBannerMediaForPage(
         BannerForEnum.ABOUT_US
       );
-    } catch (error) {
+    } catch (_error) {
       this.banners = [];
-    }
-  }
-
-  /**
-   * Load partners from the referrer API
-   */
-  private async loadPartners(): Promise<void> {
-    try {
-      this.partners = await this.referrerService.getPartners();
-    } catch (error) {
-      this.partners = [];
     }
   }
 
@@ -132,7 +82,6 @@ export class AboutEatfitComponent implements OnInit {
    * Convert YouTube URL to embed format
    */
   private getEmbedUrl(url: string): string {
-    // Handle different YouTube URL formats
     const regExp =
       /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
     const match = url.match(regExp);
@@ -144,17 +93,11 @@ export class AboutEatfitComponent implements OnInit {
   }
 
   /**
-   * Set YouTube video URL (can be called from parent or set directly)
+   * Set YouTube video URL
    */
   setYoutubeVideo(url: string): void {
     this.safeYoutubeUrl = this.sanitizer.bypassSecurityTrustResourceUrl(
       this.getEmbedUrl(url)
     );
-  }
-
-  buildWebUrl(referrer: IPublicReferrer) {
-    const firstImage =
-      referrer.logo && referrer.logo.length > 0 ? referrer.logo[0] : null;
-    return buildMediaUrl(firstImage?.webUrl);
   }
 }

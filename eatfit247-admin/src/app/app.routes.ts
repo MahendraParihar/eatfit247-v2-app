@@ -84,12 +84,22 @@ export const appRoutes: Route[] = [
         loadChildren: () => import('call-logs').then((m) => m.callLogsRoutes),
       },
       {
+        path: 'appointments',
+        loadChildren: () =>
+          import('appointment').then((m) => m.appointmentRoutes),
+      },
+      {
         path: 'issues',
         loadChildren: () => import('issues').then((m) => m.issuesRoutes),
       },
       {
         path: 'admin-user',
         loadChildren: () => import('admin-user').then((m) => m.adminUserRoutes),
+      },
+      {
+        path: 'admin-rbac',
+        loadChildren: () =>
+          import('admin-rbac').then((m) => m.adminRbacRoutes),
       },
       {
         path: 'promo-code',
@@ -112,6 +122,11 @@ export const appRoutes: Route[] = [
         path: 'success-stories',
         loadChildren: () =>
           import('success-stories').then((m) => m.successStoriesRoutes),
+      },
+      {
+        path: 'google-reviews',
+        loadChildren: () =>
+          import('google-reviews').then((m) => m.googleReviewsRoutes),
       },
       {
         path: 'products',

@@ -1,0 +1,44 @@
+<mat-card class="appointments-card">
+  <mat-card-header>
+    <mat-card-title>Upcoming Appointments</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    @if (loading) {
+      <shared-ui-loader></shared-ui-loader>
+    } @else if (appointments.length === 0) {
+      <shared-ui-empty-state
+        title="No Upcoming Appointments"
+        description="There are no upcoming appointments scheduled."
+        icon="event"
+      ></shared-ui-empty-state>
+    } @else {
+      <div class="appointments-list">
+        @for (appointment of appointments; track appointment.appointmentId) {
+          <div class="appointment-item">
+            <div class="appointment-icon">
+              <mat-icon>event</mat-icon>
+            </div>
+            <div class="appointment-details">
+              <div class="appointment-member">{{ appointment.memberName }}</div>
+              <div class="appointment-meta">
+                <span class="appointment-datetime">
+                  <mat-icon class="meta-icon">schedule</mat-icon>
+                  {{ appointment.dateTime | date: 'dd MMM yyyy, hh:mm a' }}
+                </span>
+                <span class="appointment-type">
+                  <mat-icon class="meta-icon">category</mat-icon>
+                  {{ appointment.type }}
+                </span>
+              </div>
+            </div>
+            <div class="appointment-status">
+              <span class="status-badge" [class]="getStatusClass(appointment.status)">
+                {{ appointment.status }}
+              </span>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </mat-card-content>
+</mat-card>

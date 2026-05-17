@@ -8,7 +8,6 @@ export interface IBaseProgramPlan {
   sequenceNumber: number;
   noOfCycle: number;
   noOfDaysInCycle: number;
-  programPlanTypeId: number;
   isOnline: boolean;
   isVisibleOnWeb: boolean;
   programPlanFees: { fees: number; currencyCode: string }[];
@@ -21,7 +20,6 @@ export interface IManageProgramPlan extends IBaseProgramPlan {
 
 export interface IProgramPlan extends IBaseProgramPlan, IAdminInfo {
   programPlanId: number;
-  programPlanType?: string;
   active: boolean;
 }
 

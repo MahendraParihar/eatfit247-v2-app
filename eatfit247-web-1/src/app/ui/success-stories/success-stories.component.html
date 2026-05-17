@@ -1,70 +1,84 @@
-@if (loading()) {
-    <app-loader page="success-stories"></app-loader>
-}
-@if (!loading()) {
-    @if (banners.length > 0) {
-        <app-banner [banners]="banners"></app-banner>
-    }
-
-    <!-- Hall of Fame -->
-    <section class="page-container">
-        <header class="section-header">
-            <p class="section__hightlight">THOSE WHO BELIEVE THEY CAN CHANGE THE WORLD ARE THE ONES WHO DO.</p>
-            <h1 class="section__title">Hall of Fame</h1>
-            <p class="section__tagline">
-                Here's an assortment of our healthy superstars who decided to take charge and came out of the
-                journey healthier
-                and happier. Let their story be the one that moves you to write yours.
-            </p>
-        </header>
-        @if (!hasStories) {
-            <app-empty-state
-                    title="No stories found"
-                    description="No success stories available for this filter. Try a different year or check back soon!"
-                    buttonText="Show All"
-                    (buttonClick)="selectYear(null)"
-            ></app-empty-state>
-        } @else {
-
-        }
-        <div class="timeline">
-            @for (year of filteredYears; let i = $index; track $index) {
-                <div class="timeline-entry" [class.left]="i%2 === 0 ? 'left' : ''"
-                     [class.right]="i%2 !== 0 ? 'right': ''">
-                    <!-- Year marker -->
-                    <div class="timeline-year">{{ year }}</div>
-
-                    @if (i % 2 === 0) {
-                        @for (story of getStoriesForYear(year); track story.successStoryId) {
-                            <!-- Image left, content right -->
-                            <div class="entry-image">
-                                <img [src]="mapToCardData(story).imageUrl" [alt]="mapToCardData(story).imageAlt"
-                                     class="entry-img"/>
-                            </div>
-                            <div class="timeline-line"></div>
-                            <div class="entry-content right-content">
-                                <p class="entry-name">{{ mapToCardData(story).title }}</p>
-                                <p class="entry-quote">{{ mapToCardData(story).summary }}</p>
-                            </div>
-                        }
-
-                    } @else {
-                        @for (story of getStoriesForYear(year); track story.successStoryId) {
-                            <!-- Content left, image right -->
-                            <div class="entry-content left-content">
-                                <p class="entry-name">{{ mapToCardData(story).title }}</p>
-                                <p class="entry-quote">{{ mapToCardData(story).summary }}</p>
-                            </div>
-                            <div class="timeline-line"></div>
-                            <div class="entry-image">
-                                <img [src]="mapToCardData(story).imageUrl" [alt]="mapToCardData(story).imageAlt"
-                                     class="entry-img"/>
-                            </div>
-                        }
-                    }
-
+<div class="stories-page">
+    <section class="page-hero">
+        <div class="ef-container">
+            <div class="page-hero__inner">
+                <div>
+                    <app-breadcrumbs
+                            [crumbs]="[{ label: 'Home', link: '/' }, { label: 'Celebrity Testimonials' }]"></app-breadcrumbs>
+                    <h1>Every individual matters. <span class="accent">Every story is special.</span></h1>
+                    <p class="lead">Real people. Real transformations. Explore our clients' journeys and begin yours
+                        with confidence.</p>
                 </div>
-            }
+                <div class="page-hero__visual" aria-hidden="true">
+                    <div class="ring"></div>
+                    <div class="ring ring--inner"></div>
+                    <div class="disc">format_quote</div>
+                    <div class="chip chip--a"><span class="mat-icon">star</span>4.9 / 5</div>
+                    <div class="chip chip--b"><span class="mat-icon">verified</span>Verified</div>
+                </div>
+            </div>
         </div>
     </section>
-}
+
+    @if (loading()) {
+        <app-loader page="success-stories"></app-loader>
+    } @else {
+        <section class="ef-container stories-page__body">
+            @if (hasStories()) {
+                <ul class="celeb-grid" id="stories-grid">
+                    @for (c of celebs(); track c.id; let i = $index) {
+                        <li class="celeb-card" [style.--i]="i">
+                            <figure class="celeb-card__photo">
+                                @if (c.img) {
+                                    <img [src]="c.img" [alt]="c.name" loading="lazy" referrerpolicy="no-referrer"/>
+                                }
+                            </figure>
+                            <div class="celeb-card__body">
+                                <p class="celeb-card__quote">&ldquo;{{ c.quote }}&rdquo;</p>
+                                <div class="celeb-card__meta">
+                                    <h3 class="celeb-card__name">{{ c.name }}</h3>
+                                    <span class="celeb-card__date">{{ c.date }}</span>
+                                </div>
+                            </div>
+                        </li>
+                    }
+                </ul>
+
+                @if (pageSize() > 0 && totalStories() > pageSize()) {
+                    <div class="stories-pagination">
+                        <mat-paginator
+                                [length]="totalStories()"
+                                [pageSize]="pageSize()"
+                                [pageIndex]="currentPage()"
+                                [pageSizeOptions]="[3, 6, 9, 12, 24]"
+                                (page)="onPageChange($event)"
+                                showFirstLastButtons
+                        ></mat-paginator>
+                    </div>
+                }
+            } @else {
+                <app-empty-state
+                        title="No success stories yet"
+                        description="We're collecting inspiring transformation stories. Check back soon!"
+                ></app-empty-state>
+            }
+
+            <div class="cta-band stories-page__cta">
+                <div>
+                    <h2>Ready to write your own success story?</h2>
+                    <p>Book a 15-minute discovery call and we'll map out the right program for your goals, schedule and
+                        body.</p>
+                </div>
+                <div class="cta-actions">
+                    <a routerLink="/contact-us" class="mat-btn mat-btn--filled">
+                        Connect with us
+                        <span class="mat-icon">arrow_forward</span>
+                    </a>
+                    <a routerLink="/our-programs" class="mat-btn mat-btn--outlined">
+                        Explore programs
+                    </a>
+                </div>
+            </div>
+        </section>
+    }
+</div>

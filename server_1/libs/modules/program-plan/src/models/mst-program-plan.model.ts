@@ -1,7 +1,6 @@
 import { BelongsTo, Column, CreatedAt, DataType, HasMany, Model, Scopes, Table, UpdatedAt } from 'sequelize-typescript';
 import { getCreatedByUserInclude, getUpdatedByUserInclude, MstAdminUser } from '@server_1/core';
 import { IMediaUpload, InputLengthEnum } from '@eatfit247-shared-lib';
-import { MstProgramPlanType } from './mst-program-plan-type.model';
 import { MstProgramPlanFees } from './mst-program-plan-fees.model';
 
 @Table({
@@ -15,24 +14,12 @@ import { MstProgramPlanFees } from './mst-program-plan-fees.model';
     include: [
       getCreatedByUserInclude(false),
       getUpdatedByUserInclude(false),
-      {
-        model: MstProgramPlanType,
-        as: 'programPlanType',
-        required: false,
-        attributes: ['programPlanTypeId', 'programPlanType'],
-      },
     ],
   },
   details: {
     include: [
       getCreatedByUserInclude(false),
       getUpdatedByUserInclude(false),
-      {
-        model: MstProgramPlanType,
-        as: 'programPlanType',
-        required: false,
-        attributes: ['programPlanTypeId', 'programPlanType'],
-      },
       {
         model: MstProgramPlanFees,
         as: 'programPlanFees',
@@ -94,18 +81,6 @@ export class MstProgramPlan extends Model<MstProgramPlan> {
     type: DataType.INTEGER,
   })
   declare noOfDaysInCycle: number;
-  @BelongsTo(() => MstProgramPlanType, {
-    as: 'programPlanType',
-    foreignKey: 'programPlanTypeId',
-    targetKey: 'programPlanTypeId',
-  })
-  declare programPlanType: MstProgramPlanType;
-  @Column({
-    allowNull: false,
-    field: 'program_plan_type_id',
-    type: DataType.INTEGER,
-  })
-  declare programPlanTypeId: number;
   @Column({
     allowNull: false,
     defaultValue: true,

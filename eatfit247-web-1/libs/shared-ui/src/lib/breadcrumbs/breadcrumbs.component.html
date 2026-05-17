@@ -1,0 +1,14 @@
+<ol class="breadcrumbs">
+  @for (crumb of crumbs; track crumb.label; let last = $last) {
+    <li class="breadcrumbs__item">
+      @if (crumb.link && !last) {
+        <a class="breadcrumbs__link" [routerLink]="crumb.link">{{ crumb.label }}</a>
+      } @else {
+        <span class="breadcrumbs__current" [attr.aria-current]="last ? 'page' : null">{{ crumb.label }}</span>
+      }
+      @if (!last) {
+        <span class="breadcrumbs__sep" aria-hidden="true"></span>
+      }
+    </li>
+  }
+</ol>

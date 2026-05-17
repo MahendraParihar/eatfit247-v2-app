@@ -8,7 +8,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { InputErrorComponent, ValidationUtil } from '@shared';
 import { DietTemplateApiService } from '../api.service';
-import { IDietTemplate, IManageDietTemplate, InputLengthEnum } from '@eatfit247-shared-lib';
+import { IDietTemplate, IDropdownItem, IManageDietTemplate, InputLengthEnum } from '@eatfit247-shared-lib';
 
 export interface ManageDietTemplateDialogData {
   dietTemplate?: IDietTemplate;
@@ -39,6 +39,7 @@ export class ManageDietTemplateDialogComponent implements OnInit {
   formGroup!: FormGroup;
   isEditMode = false;
   loading = false;
+  programs: IDropdownItem[] = [];
   InputLengthEnum = InputLengthEnum;
 
   constructor() {
@@ -49,6 +50,7 @@ export class ManageDietTemplateDialogComponent implements OnInit {
   }
 
   async ngOnInit(): Promise<void> {
+    await this.loadPrograms();
     if (this.isEditMode && this.data.dietTemplate) {
       await this.loadData();
     }
@@ -59,7 +61,16 @@ export class ManageDietTemplateDialogComponent implements OnInit {
       dietTemplate: ['', [Validators.required, Validators.maxLength(InputLengthEnum.CHAR_100)]],
       noOfCycle: [null, [Validators.required, Validators.min(1)]],
       noOfDaysInCycle: [null, [Validators.required, Validators.min(1), Validators.max(365)]],
+      programId: [null],
     });
+  }
+
+  private async loadPrograms(): Promise<void> {
+    try {
+      this.programs = await this.apiService.getProgramDropdown();
+    } catch {
+      this.programs = [];
+    }
   }
 
   private async loadData(): Promise<void> {
@@ -69,7 +80,8 @@ export class ManageDietTemplateDialogComponent implements OnInit {
         this.formGroup.patchValue({
           dietTemplate: template.dietTemplate,
           noOfCycle: template.noOfCycle,
-          noOfDaysInCycle: template.noOfDaysInCycle
+          noOfDaysInCycle: template.noOfDaysInCycle,
+          programId: template.programId ?? null
         });
       } catch (error) {
         // Error toast is handled by HttpErrorInterceptor
@@ -82,8 +94,10 @@ export class ManageDietTemplateDialogComponent implements OnInit {
     if (this.formGroup.valid) {
       this.loading = true;
       try {
+        const raw = this.formGroup.value;
         const formValue: IManageDietTemplate = {
-          ...this.formGroup.value
+          ...raw,
+          programId: raw.programId ?? undefined,
         };
         if (this.isEditMode && this.data.dietTemplate) {
           formValue.dietTemplateId = this.data.dietTemplate.dietTemplateId;

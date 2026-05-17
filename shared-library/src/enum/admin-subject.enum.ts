@@ -39,7 +39,6 @@ export enum AdminSubjectEnum {
 
     // Program domain
     Program          = 'Program',
-    ProgramCategory  = 'ProgramCategory',
     ProgramPlan      = 'ProgramPlan',
     DietTemplate     = 'DietTemplate',
 
@@ -54,4 +53,14 @@ export enum AdminSubjectEnum {
     PocketGuide      = 'PocketGuide',
     Notification     = 'Notification',
     GoogleCalendar   = 'GoogleCalendar',
+
+    // RBAC domain
+    AdminRole        = 'AdminRole',
+
+    // Scheduling domain
+    Appointment      = 'Appointment',
+    ContactForm      = 'ContactForm',
+
+    // Reviews domain
+    GoogleReview     = 'GoogleReview',
 }

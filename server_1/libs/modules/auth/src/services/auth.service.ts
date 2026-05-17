@@ -24,6 +24,7 @@ import {
   EmailTemplateEnum,
   IAuthUser,
   IChangePassword,
+  IAdminUserLogin,
   IForgotPasswordRequest,
   ILogin,
   ISendEmailParams,
@@ -55,7 +56,7 @@ export class AuthService {
     return this.sessionAdminUserService.findAuthUserForSession(id);
   }
 
-  public async signIn(loginDto: ILogin, ipAddress: string, device: string): Promise<IToken> {
+  public async signIn(loginDto: ILogin, ipAddress: string, device: string): Promise<IAdminUserLogin> {
     const user = await this.findOneByEmail(loginDto.emailId);
     if (!user) {
       throw new UnauthorizedException('Invalid email or password');
@@ -94,7 +95,10 @@ export class AuthService {
       tokenHash: jti,
       expiresAt,
     });
-    return <IToken>{ accessToken, refreshToken };
+    // Load enriched user with roles, permissions, and franchise scope
+    const admin = await this.sessionAdminUserService.findAuthUserForSession(user.adminId);
+
+    return { accessToken, refreshToken, admin: admin! };
   }
 
   /**

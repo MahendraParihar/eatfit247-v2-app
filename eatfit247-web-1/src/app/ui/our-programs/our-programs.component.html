@@ -2,56 +2,174 @@
   <app-banner [banners]="banners"></app-banner>
 }
 
-<div class="our-programs-page page-container">
-  <!-- Programs listing -->
-  <app-common-program></app-common-program>
-
-  <!-- How It Works -->
-  <section class="our-programs__section our-programs__section--how" aria-labelledby="how-it-works-title">
-    <header class="section__header">
-      <h2 id="how-it-works-title" class="section__title">How It Works</h2>
-      <p class="section__tagline">Three simple steps to your healthiest self</p>
-    </header>
-    <div class="our-programs__steps">
-      @for (step of howItWorksSteps; track step.number) {
-        <div class="our-programs__step">
-          <div class="our-programs__step-icon-wrap" aria-hidden="true">
-            <mat-icon class="our-programs__step-icon">{{ step.icon }}</mat-icon>
-          </div>
-          <h3 class="our-programs__step-title">{{ step.title }}</h3>
-          <p class="our-programs__step-desc">{{ step.desc }}</p>
+<div class="our-programs-page" data-page="our-programs">
+  <!-- Page Hero -->
+  <section class="page-hero">
+    <div class="ef-container">
+      <div class="page-hero__inner">
+        <div>
+          <app-breadcrumbs [crumbs]="[{ label: 'Home', link: '/' }, { label: 'Our Programs' }]"></app-breadcrumbs>
+          <h1>One program <span class="accent">doesn't fit</span> everyone.</h1>
+          <p class="lead">
+            Three paths, each shaped around your goals, time, and commitment. Start small, go deep, or get the whole system — we'll help you choose.
+          </p>
         </div>
-        @if (!$last) {
-          <mat-icon class="our-programs__step-arrow" aria-hidden="true">arrow_forward</mat-icon>
-        }
-      }
+        <div class="page-hero__visual" aria-hidden="true">
+          <div class="ring"></div>
+          <div class="ring ring--inner"></div>
+          <div class="disc">restaurant_menu</div>
+          <div class="chip chip--a"><span class="mat-icon">rocket_launch</span>4 weeks</div>
+          <div class="chip chip--b"><span class="mat-icon">diamond</span>6 months</div>
+        </div>
+      </div>
     </div>
   </section>
 
-  <!-- Terms & Conditions accordion -->
-  <section class="our-programs__section our-programs__section--terms" aria-labelledby="terms-title">
-    <header class="our-programs__terms-header">
-      <h2 id="terms-title" class="our-programs__terms-title">
-        Terms &amp; Conditions
-      </h2>
-    </header>
+  <!-- Programs Grid -->
+  <section class="section section--alt" id="programs">
+    <div class="ef-container">
+      <header class="section-head">
+        <span class="section-eyebrow">Our Programs</span>
+        <h2 class="section-title">Pick the program that fits your goal</h2>
+        <p class="section-sub">Transparent pricing. No auto-renewals. Results-focused.</p>
+      </header>
 
-    <mat-accordion class="our-programs__terms-accordion">
-      <mat-expansion-panel class="our-programs__terms-panel" hideToggle>
-        <mat-expansion-panel-header>
-          <mat-panel-title class="our-programs__terms-panel-title">
-            View program terms &amp; conditions
-          </mat-panel-title>
-          <mat-panel-description class="our-programs__terms-panel-icon">
-            <mat-icon>expand_more</mat-icon>
-          </mat-panel-description>
-        </mat-expansion-panel-header>
-        <ul class="our-programs__terms-list">
+      <div class="programs-grid">
+        @for (plan of plans; track plan.id) {
+          <article class="program-card" [class.program-card--featured]="plan.featured">
+            <div class="program-card__header">
+              <div>
+                <h3 class="program-card__title">{{ plan.title }}</h3>
+                <p class="program-card__subtitle">{{ plan.subtitle }}</p>
+              </div>
+            </div>
+            <div class="program-sessions">
+              <div
+                class="program-sessions__grid"
+                [style.grid-template-columns]="'repeat(' + plan.sessions.length + ', 1fr)'"
+              >
+                @for (s of plan.sessions; track s.num + s.label) {
+                  <span class="program-sessions__chip">
+                    <span class="program-sessions__chip-num">{{ s.num }}</span>
+                    <span class="program-sessions__chip-label">{{ s.label }}</span>
+                  </span>
+                }
+              </div>
+              <span class="program-sessions__note">Price varies customer to customer</span>
+            </div>
+            <ul class="program-features">
+              @for (f of plan.features; track f) {
+                <li><span class="tick">✓</span>{{ f }}</li>
+              }
+            </ul>
+            <a
+              routerLink="/contact-us"
+              class="mat-btn"
+              [class.mat-btn--filled]="plan.featured"
+              [class.mat-btn--outlined]="!plan.featured"
+            >
+              Book Consultation
+              <span class="mat-icon">arrow_forward</span>
+            </a>
+          </article>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- Seasonal Plans CTA -->
+  <section class="section">
+    <div class="ef-container">
+      <div class="cta-band">
+        <div>
+          <h2 style="margin:0 0 6px;">Looking for shorter, group-based plans?</h2>
+          <p style="margin:0;">Our <strong>Seasonal &amp; Group Plans</strong> (Navratri, Diabetic Care, Monsoon Detox &amp; more) run as fixed-date cohorts at a flat fee. No online payment — reserve, we'll WhatsApp you to confirm.</p>
+        </div>
+        <div class="cta-actions">
+          <a routerLink="/seasonal-plans" class="mat-btn mat-btn--filled">
+            Browse seasonal plans <span class="mat-icon">arrow_forward</span>
+          </a>
+          <a routerLink="/book-session" class="mat-btn mat-btn--outlined">Reserve a spot</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works -->
+  <section class="section how-it-works">
+    <div class="ef-container">
+      <header class="section-head section-head--center how-it-works__head">
+        <span class="section-eyebrow"><span class="mat-icon">route</span>Your journey with us</span>
+        <h2 class="section-head__title">How It Works</h2>
+        <p class="section-head__sub">
+          From your first call to lasting transformation — four simple steps, with end-to-end support from the Nutrinist team.
+        </p>
+      </header>
+
+      <div class="hiw-row hiw-row--four">
+        @for (step of howItWorksSteps; track step.num; let last = $last) {
+          <article class="hiw-step">
+            <span class="hiw-step__num">{{ step.num }}</span>
+            <span class="hiw-step__icon"><span class="mat-icon">{{ step.icon }}</span></span>
+            <h3 class="hiw-step__title">{{ step.title }}</h3>
+            <p class="hiw-step__copy">{{ step.copy }}</p>
+          </article>
+          @if (!last) {
+            <span class="hiw-arrow" aria-hidden="true"><span class="mat-icon">arrow_forward</span></span>
+          }
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- Terms & Conditions -->
+  <section class="section program-terms our-programs__terms-section">
+    <div class="ef-container our-programs__terms-container">
+      <header class="section-head section-head--center our-programs__terms-head">
+        <h2 class="section-head__title">Terms &amp; Conditions</h2>
+      </header>
+
+      <details class="program-terms__panel" open>
+        <summary class="program-terms__summary">
+          <span class="program-terms__title">View program terms &amp; conditions</span>
+          <span class="program-terms__chev mat-icon">expand_more</span>
+        </summary>
+        <ul class="program-terms__list">
           @for (item of termsAndConditions; track item) {
-            <li class="our-programs__terms-item">{{ item }}</li>
+            <li>{{ item }}</li>
           }
         </ul>
-      </mat-expansion-panel>
-    </mat-accordion>
+      </details>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section our-programs__faq-section">
+    <div class="ef-container our-programs__faq-container">
+      <header class="section-head section-head--center our-programs__faq-head">
+        <span class="section-eyebrow"><span class="mat-icon">help_outline</span>Frequently asked</span>
+        <h2 class="section-head__title">Choosing the right program</h2>
+        <p class="section-head__sub">
+          Quick answers to help you pick the path that fits your goals and your schedule.
+        </p>
+      </header>
+
+      <div class="faq-list">
+        @for (faq of faqs(); track faq.faqId; let i = $index) {
+          <details class="faq" [open]="i === 0">
+            <summary>{{ faq.faq }}<span class="mat-icon">add</span></summary>
+            @if (faq.answer) {
+              <p [innerHTML]="faq.answer"></p>
+            }
+          </details>
+        }
+      </div>
+
+      <div class="our-programs__faq-cta">
+        <a routerLink="/faq" class="mat-btn mat-btn--outlined">
+          See all FAQs <span class="mat-icon">arrow_forward</span>
+        </a>
+      </div>
+    </div>
   </section>
 </div>

@@ -12,13 +12,14 @@ import { BannerPublicModule } from '@server_1/modules/banner';
 import { PagesPublicModule } from '@server_1/modules/pages';
 import { ReferrerPublicModule } from '@server_1/modules/referrer';
 import { PressMediaModule } from '@server_1/modules/press-media';
-import { ProgramPlanModule } from '@server_1/modules/program-plan';
+import { ProgramPlanPublicModule } from '@server_1/modules/program-plan';
 import { FaqModule } from '@server_1/modules/faq';
 import { MemberModule } from '@server_1/modules/member';
 import { LocationModule } from '@server_1/modules/locations';
 import { SuccessStoriesModule } from '@server_1/modules/success-stories';
 import { ProductPublicModule } from '@server_1/modules/product';
 import { ContactModule } from '@server_1/modules/contact';
+import { GoogleReviewModule } from '@server_1/modules/google-review';
 
 @Module({
   imports: [
@@ -39,13 +40,14 @@ import { ContactModule } from '@server_1/modules/contact';
     PagesPublicModule,
     ReferrerPublicModule,
     PressMediaModule,
-    ProgramPlanModule,
+    ProgramPlanPublicModule,
     FaqModule,
     MemberModule,
     LocationModule,
     SuccessStoriesModule,
     ProductPublicModule,
     ContactModule,
+    GoogleReviewModule,
     NotificationModule,
     CommonModule.forRoot(['Common', 'Email', 'Google', 'Payment', 'Whatsapp'], PlatformModule.getModels()),
   ],

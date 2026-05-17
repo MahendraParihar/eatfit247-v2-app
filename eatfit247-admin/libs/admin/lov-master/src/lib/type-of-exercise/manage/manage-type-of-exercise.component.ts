@@ -9,7 +9,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { MatCardModule } from '@angular/material/card';
 import { InputErrorComponent, UploadFormComponent, ValidationUtil } from '@shared';
-import { LovMasterApiService } from '../../api.service';
+import { TypeOfExerciseApiService } from '../../api.service';
 import {
   FileTypeEnum,
   IManageTypeOfExercise,
@@ -39,7 +39,7 @@ import {
 export class ManageTypeOfExercise implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private apiService = inject(LovMasterApiService);
+  private apiService = inject(TypeOfExerciseApiService);
 
   private fb: FormBuilder = inject(FormBuilder);
   formGroup: FormGroup = this.fb.group({
@@ -79,7 +79,7 @@ export class ManageTypeOfExercise implements OnInit {
   }
 
   async loadData(id: number): Promise<void> {
-    this.initialData = await this.apiService.getTypeOfExerciseById(id);
+    this.initialData = await this.apiService.getById(id);
   }
 
   async onSubmit(): Promise<void> {
@@ -92,9 +92,9 @@ export class ManageTypeOfExercise implements OnInit {
       }
       if (this.isEditMode && this.initialData) {
         formValue.typeOfExerciseId = this.initialData.typeOfExerciseId;
-        await this.apiService.updateTypeOfExercise(this.initialData.typeOfExerciseId, formValue);
+        await this.apiService.update(this.initialData.typeOfExerciseId, formValue);
       } else {
-        await this.apiService.createTypeOfExercise(formValue);
+        await this.apiService.create(formValue);
       }
       this.router.navigate(['/lov-master/type-of-exercise']);
     } else {

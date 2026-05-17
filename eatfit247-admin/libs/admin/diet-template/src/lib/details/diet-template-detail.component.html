@@ -4,12 +4,15 @@
     <!-- Header Row -->
     <mat-card-header>
       <mat-card-title>
-        @if (dayNo && dayNo > 0) {
-          <span>Diet Template For Cycle {{ cycleNo }} Day {{ dayNo }}</span>
-        }
-        @if (!dayNo || dayNo === 0) {
-          <span>Diet Template For Cycle {{ cycleNo }}</span>
-        }
+        <span>
+          {{ dietPlanDetail()?.dietTemplate }}
+          &nbsp;&middot;&nbsp;
+          Cycle {{ cycleNo }} of {{ dietPlanDetail()?.noOfCycle }}
+          @if (dayNo && dayNo > 0) {
+            &nbsp;&middot;&nbsp;
+            Day {{ dayNo }} of {{ dietPlanDetail()?.noOfDaysInCycle }}
+          }
+        </span>
       </mat-card-title>
     </mat-card-header>
 

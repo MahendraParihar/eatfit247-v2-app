@@ -1,15 +1,18 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
-import { MatButtonModule } from '@angular/material/button';
-import { MatExpansionModule } from '@angular/material/expansion';
-import { MatIconModule } from '@angular/material/icon';
-import { BannerComponent, LoaderComponent } from '@shared-ui';
-import { BannerService, FaqService, JsonLdService, SEOService } from '../../core/services';
+import { Router, RouterLink } from '@angular/router';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { BreadcrumbsComponent, LoaderComponent } from '@shared-ui';
+import {
+  FaqService,
+  GoogleReviewService,
+  JsonLdService,
+  SEOService,
+} from '../../core/services';
 import { ProductService } from '../../core/services/product.service';
 import {
-  BannerForEnum,
+  GoogleReviewEntityTypeEnum,
   IMediaUpload,
   IOutcomes,
   IOutcomeSection,
@@ -18,8 +21,8 @@ import {
   IProductReport,
   IProjectConsumptionInstructionSection,
   IProjectStarEndorsedSection,
-  IPublicBanner,
   IPublicFaq,
+  IPublicGoogleReview,
   IPublicProduct,
 } from '@eatfit247-shared-library';
 
@@ -31,30 +34,33 @@ interface ISizeOption extends IProductFee {
   productVariantId?: number | null;
 }
 
+/** Title + description pair used by the Benefits / Storage lists. */
+interface IBenefitLine {
+  title: string;
+  description: string;
+}
+
 @Component({
   standalone: true,
   selector: 'app-product',
   imports: [
     CommonModule,
     FormsModule,
-    BannerComponent,
+    RouterLink,
     LoaderComponent,
-    MatButtonModule,
-    MatExpansionModule,
-    MatIconModule,
+    BreadcrumbsComponent,
   ],
   templateUrl: './product.component.html',
   styleUrl: './product.component.scss',
 })
 export class ProductComponent implements OnInit, OnDestroy {
-  private readonly bannerService = inject(BannerService);
   private readonly faqService = inject(FaqService);
+  private readonly googleReviewService = inject(GoogleReviewService);
   private readonly productService = inject(ProductService);
   private readonly router = inject(Router);
   private readonly seoService = inject(SEOService);
   private readonly jsonLdService = inject(JsonLdService);
-  // Banner media
-  banners: IPublicBanner[] = [];
+  private readonly sanitizer = inject(DomSanitizer);
   // Product data
   product!: IPublicProduct;
   productName = '';
@@ -70,7 +76,7 @@ export class ProductComponent implements OnInit, OnDestroy {
   productImages1: string[] = [];
   selectedImageIndex = 0;
   // Star powder image (fallback)
-  starPowderImage = 'assets/images/products/start-powder.png';
+  starPowderImage = '/product_feature.jpg';
   // Custom slider for the feature section
   featureSliderCurrentIndex = 0;
   private featureSliderTimer: any = null;
@@ -78,6 +84,124 @@ export class ProductComponent implements OnInit, OnDestroy {
   productVideos: string[] = [];
   // FAQ data
   productFaqs: IPublicFaq[] = [];
+
+  /** Material symbol icons rotated for the Benefits list (per design). */
+  private readonly benefitIcons: string[] = [
+    'monitor_weight',
+    'water_drop',
+    'female',
+    'air',
+    'bolt',
+    'trending_down',
+  ];
+
+  /** Material symbol icons rotated for the Storage/Precautions list. */
+  private readonly precautionIcons: string[] = [
+    'event',
+    'ac_unit',
+    'wb_sunny',
+    'lock',
+  ];
+
+  /**
+   * Canonical benefit copy from the design HTML. Acts as a fallback when
+   * `additionalInfo.benefits` from the API is empty or returns a bare string[].
+   */
+  private readonly defaultBenefits: readonly IBenefitLine[] = [
+    {
+      title: 'Bloat reduction',
+      description: 'Calms post-meal heaviness within 30 minutes.',
+    },
+    {
+      title: 'Relieves hyperacidity',
+      description: 'Soothes the stomach lining and balances pH.',
+    },
+    {
+      title: 'Period bloating & cramps',
+      description: 'Eases water retention and abdominal discomfort.',
+    },
+    {
+      title: 'Relieves gas, burping & belching',
+      description: 'Targets flatulence and post-meal discomfort at the source.',
+    },
+    {
+      title: 'Restores lost energy',
+      description:
+        "Better digestion frees up energy you didn't know you were spending.",
+    },
+    {
+      title: 'Supports weight loss',
+      description: 'A balanced gut speeds up metabolism and curbs cravings.',
+    },
+  ];
+
+  /** Canonical storage / precaution copy from the design HTML. */
+  private readonly defaultPrecautions: readonly IBenefitLine[] = [
+    {
+      title: 'Shelf life',
+      description: '7–8 months from the date of manufacture.',
+    },
+    {
+      title: 'Store in a cool, dry place',
+      description: 'Avoid humid spots like near the stove or sink.',
+    },
+    {
+      title: 'Keep away from direct sunlight',
+      description: 'Sunlight can degrade the natural ingredients.',
+    },
+    {
+      title: 'Seal tightly after use',
+      description: 'Press the zip-lock closed each time to preserve freshness.',
+    },
+  ];
+
+  /** Step labels rotated through the How-to-use block when the API only
+   *  returns plain instruction strings (so we don't lose the design's
+   *  evocative "Measure / Mix / Sip" labels). */
+  private readonly defaultHowToUseStepNames: readonly string[] = [
+    'Measure',
+    'Mix',
+    'Sip',
+  ];
+
+  /** Product reviews loaded from txn_google_review for this product. */
+  productReviews = signal<IPublicGoogleReview[]>([]);
+
+  get reviewList(): ReadonlyArray<{
+    initials: string;
+    name: string;
+    role?: string;
+    quote: string;
+  }> {
+    return this.productReviews().map((r) => ({
+      initials: this.buildInitials(r.reviewerName),
+      name: r.reviewerName,
+      role: r.reviewerRole ?? undefined,
+      quote: r.reviewText ?? '',
+    }));
+  }
+
+  private buildInitials(name: string): string {
+    if (!name) {
+      return '';
+    }
+    const parts = name.trim().split(/\s+/).filter(Boolean);
+    if (parts.length === 0) {
+      return '';
+    }
+    if (parts.length === 1) {
+      return parts[0].charAt(0).toUpperCase();
+    }
+    return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+  }
+
+  benefitIcon(index: number): string {
+    return this.benefitIcons[index % this.benefitIcons.length];
+  }
+
+  precautionIcon(index: number): string {
+    return this.precautionIcons[index % this.precautionIcons.length];
+  }
 
   get sizes(): ISizeOption[] {
     const sizeOptions: ISizeOption[] = [];
@@ -182,8 +306,70 @@ export class ProductComponent implements OnInit, OnDestroy {
     return `₹ ${min}.00 – ₹ ${max}.00`;
   }
 
-  get productBenefits(): string[] {
-    return this.product?.additionalInfo?.benefits || [];
+  /**
+   * Benefits list as `{title, description}` pairs.
+   * Accepts API shape of `string[]` (legacy) or `{title, description}[]` (new)
+   * and falls back to the canonical design copy when both are missing.
+   */
+  get productBenefits(): IBenefitLine[] {
+    const raw = this.product?.additionalInfo?.benefits as unknown;
+    return this.normalizeBenefitLines(raw, this.defaultBenefits);
+  }
+
+  /** How-to-use step label for the given index. Falls back to `Step N`. */
+  howToUseStepName(index: number, instruction?: unknown): string {
+    if (instruction && typeof instruction === 'object') {
+      const obj = instruction as { title?: string; name?: string };
+      if (obj.title) return obj.title;
+      if (obj.name) return obj.name;
+    }
+    return this.defaultHowToUseStepNames[index] ?? `Step ${index + 1}`;
+  }
+
+  /** How-to-use step body — handles both string instructions and object form. */
+  howToUseStepBody(instruction: unknown): string {
+    if (typeof instruction === 'string') {
+      return instruction;
+    }
+    if (instruction && typeof instruction === 'object') {
+      const obj = instruction as {
+        description?: string;
+        body?: string;
+        text?: string;
+      };
+      return obj.description ?? obj.body ?? obj.text ?? '';
+    }
+    return '';
+  }
+
+  private normalizeBenefitLines(
+    raw: unknown,
+    fallback: readonly IBenefitLine[],
+  ): IBenefitLine[] {
+    if (!Array.isArray(raw) || raw.length === 0) {
+      return [...fallback];
+    }
+    return raw.map((entry, i): IBenefitLine => {
+      if (typeof entry === 'string') {
+        // String list — pair with the description from the canonical fallback when available.
+        return {
+          title: entry,
+          description: fallback[i]?.description ?? '',
+        };
+      }
+      if (entry && typeof entry === 'object') {
+        const obj = entry as {
+          title?: string;
+          description?: string;
+          name?: string;
+        };
+        return {
+          title: obj.title ?? obj.name ?? '',
+          description: obj.description ?? '',
+        };
+      }
+      return { title: '', description: '' };
+    });
   }
 
   get productDose(): string {
@@ -194,8 +380,98 @@ export class ProductComponent implements OnInit, OnDestroy {
     return this.product?.additionalInfo?.howToTake || '';
   }
 
-  get productPrecautions(): string[] {
-    return this.product?.additionalInfo?.precautions || [];
+  /** Storage / precaution list as `{title, description}` pairs (with fallback). */
+  get productPrecautions(): IBenefitLine[] {
+    const raw = this.product?.additionalInfo?.precautions as unknown;
+    return this.normalizeBenefitLines(raw, this.defaultPrecautions);
+  }
+
+  /**
+   * Extracts the YouTube video ID from a Shorts / watch / youtu.be URL,
+   * so the design's iframe-based embed can render the right video.
+   * Returns `null` when the input isn't a recognisable YouTube URL.
+   */
+  getYoutubeEmbedUrl(rawUrl?: string | null): string | null {
+    if (!rawUrl) {
+      return null;
+    }
+    const url = rawUrl.trim();
+    // youtube.com/shorts/<id>
+    const shortsMatch = url.match(/youtube\.com\/shorts\/([\w-]{6,})/i);
+    if (shortsMatch) {
+      return `https://www.youtube.com/embed/${shortsMatch[1]}?rel=0&modestbranding=1`;
+    }
+    // youtube.com/watch?v=<id>
+    const watchMatch = url.match(/[?&]v=([\w-]{6,})/i);
+    if (watchMatch) {
+      return `https://www.youtube.com/embed/${watchMatch[1]}?rel=0&modestbranding=1`;
+    }
+    // youtu.be/<id>
+    const shortMatch = url.match(/youtu\.be\/([\w-]{6,})/i);
+    if (shortMatch) {
+      return `https://www.youtube.com/embed/${shortMatch[1]}?rel=0&modestbranding=1`;
+    }
+    // Already an embed URL
+    if (/youtube\.com\/embed\//i.test(url)) {
+      return url;
+    }
+    return null;
+  }
+
+  /** YouTube link surfaced from the endorsement section, used for the
+   *  "Watch on YouTube" outline CTA. Falls back to a sensible default. */
+  get endorsementYoutubeUrl(): string {
+    const link = (this.productStartEndorsed as any)?.mediaData?.mediaLink?.[0]
+      ?.webUrl as string | undefined;
+    if (link && /youtu/i.test(link)) {
+      return link;
+    }
+    const externalUrl = (this.productStartEndorsed as any)?.externalUrl as
+      | string
+      | undefined;
+    if (externalUrl && /youtu/i.test(externalUrl)) {
+      return externalUrl;
+    }
+    return 'https://youtube.com/shorts/JfEkvT2csjE';
+  }
+
+  /** Sanitised embed URL ready to bind to an `<iframe [src]>`. */
+  get endorsementYoutubeEmbedSafe(): SafeResourceUrl | null {
+    const url = this.endorsementYoutubeEmbed;
+    return url ? this.sanitizer.bypassSecurityTrustResourceUrl(url) : null;
+  }
+
+  /** Embed URL for the trust-champions phone-frame player.
+   *  Returns `null` when the source is a non-YouTube video (in which case
+   *  the template renders the native `<video>` instead). */
+  get endorsementYoutubeEmbed(): string | null {
+    const link = (this.productStartEndorsed as any)?.mediaData?.mediaLink?.[0]
+      ?.webUrl as string | undefined;
+    const embed = this.getYoutubeEmbedUrl(link);
+    if (embed) {
+      return embed;
+    }
+    // If the API supplies no YouTube link at all, fall back to the design's default short.
+    if (!link) {
+      return this.getYoutubeEmbedUrl(this.endorsementYoutubeUrl);
+    }
+    return null;
+  }
+
+  /** Optional quote / figcaption for the endorser (Harbhajan Singh fallback). */
+  get endorsementQuote(): { text: string; name: string; role?: string } {
+    const additional = this.product?.additionalInfo as any;
+    const quote = additional?.startEndorsed?.quote;
+    const name = additional?.startEndorsed?.endorserName || 'Harbhajan Singh';
+    const role =
+      additional?.startEndorsed?.endorserRole || 'Former India cricketer';
+    return {
+      text:
+        quote ||
+        'A clean, honest product that actually does what it says — gentle, natural, and a part of my daily routine.',
+      name,
+      role,
+    };
   }
 
   get productIngredients(): IProductIngredientSection {
@@ -240,28 +516,12 @@ export class ProductComponent implements OnInit, OnDestroy {
   }
 
   async ngOnInit(): Promise<void> {
-    await this.loadBannerData();
     await this.loadProductData();
-    await this.loadFaqData();
+    await Promise.all([this.loadFaqData(), this.loadProductReviews()]);
   }
 
   ngOnDestroy(): void {
     this.stopFeatureSliderAutoSwitch();
-  }
-
-  /**
-   * Load banner media data
-   */
-  private async loadBannerData(): Promise<void> {
-    try {
-      this.banners = await this.bannerService.getBannerMediaForPage(
-        BannerForEnum.PRODUCT,
-      );
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('Failed to load banner data for Product page:', error);
-      this.banners = [];
-    }
   }
 
   /**
@@ -642,6 +902,21 @@ export class ProductComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * Load Google reviews for the currently loaded product from txn_google_review.
+   */
+  private async loadProductReviews(): Promise<void> {
+    if (!this.productId) {
+      this.productReviews.set([]);
+      return;
+    }
+    const reviews = await this.googleReviewService.getReviewsByEntity(
+      GoogleReviewEntityTypeEnum.Product,
+      this.productId,
+    );
+    this.productReviews.set(reviews);
+  }
+
+  /**
    * Load FAQ data for product page (category id = 9)
    */
   private async loadFaqData(): Promise<void> {
@@ -696,7 +971,7 @@ export class ProductComponent implements OnInit, OnDestroy {
 
   get selectedImage(): string {
     if (this.productImages.length === 0) {
-      return 'assets/images/products/debloat-main-1200x1200.jpg';
+      return '/product_feature.jpg';
     }
     return this.productImages[this.selectedImageIndex] || this.productImages[0];
   }

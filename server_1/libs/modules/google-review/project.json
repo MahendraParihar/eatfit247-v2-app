@@ -1,0 +1,7 @@
+{
+  "name": "google-review",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/modules/google-review/src",
+  "projectType": "library",
+  "tags": ["type:domain", "scope:google-review"]
+}

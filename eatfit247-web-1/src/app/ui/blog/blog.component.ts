@@ -1,104 +1,179 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit, PLATFORM_ID, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  inject,
+  OnInit,
+  PLATFORM_ID,
+  signal,
+} from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
-import { BannerService, BlogService, JsonLdService, SEOService } from '../../core/services';
-import { BannerComponent, CardComponent, EmptyStateComponent, ICardData, LoaderComponent } from '@shared-ui';
-import { BannerForEnum } from '@eatfit247-shared-library/enum';
-import { IPublicBanner } from '@eatfit247-shared-library/core';
+import { BlogService, JsonLdService, SEOService } from '../../core/services';
+import {
+  BreadcrumbsComponent,
+  EmptyStateComponent,
+  ICardData,
+  LoaderComponent,
+} from '@shared-ui';
+
+interface IBlogTag {
+  key: string;
+  label: string;
+}
+
+const ALL_TAG: IBlogTag = { key: 'all', label: 'All' };
 
 @Component({
   standalone: true,
   selector: 'app-blog',
   imports: [
     CommonModule,
+    RouterLink,
     MatPaginatorModule,
-    CardComponent,
     LoaderComponent,
     EmptyStateComponent,
-    BannerComponent
+    BreadcrumbsComponent,
   ],
   templateUrl: './blog.component.html',
-  styleUrl: './blog.component.scss'
+  styleUrl: './blog.component.scss',
 })
 export class BlogComponent implements OnInit {
   private readonly blogService = inject(BlogService);
-  private readonly bannerService = inject(BannerService);
   private readonly jsonLdService = inject(JsonLdService);
   private readonly seoService = inject(SEOService);
   private readonly platformId = inject(PLATFORM_ID);
-  readonly blogs = signal<ICardData[]>([]);
+  private readonly route = inject(ActivatedRoute);
+  private readonly allBlogs = signal<ICardData[]>([]);
   readonly loading = signal(false);
-  readonly totalBlogs = signal(0);
   readonly pageSize = signal(6);
   readonly currentPage = signal(0);
-  readonly banners = signal<IPublicBanner[]>([]);
+
+  /** Tag filter — `all` shows every blog. */
+  readonly activeTag = signal<string>('all');
+  /** Dynamic list of tags. "All" is always first, the rest come from the API. */
+  readonly blogTags = signal<IBlogTag[]>([ALL_TAG]);
+
+  /** Blogs after the active tag filter is applied. */
+  readonly filteredBlogs = computed<ICardData[]>(() => {
+    const tag = this.activeTag();
+    const all = this.allBlogs();
+    if (tag === 'all') {
+      return all;
+    }
+    const needle = tag.toLowerCase();
+    return all.filter(
+      (b) => (b.category || '').toLowerCase() === needle,
+    );
+  });
+
+  /** Visible page slice (after filter + pagination). */
+  readonly blogs = computed<ICardData[]>(() => {
+    const list = this.filteredBlogs();
+    const size = this.pageSize();
+    if (size === 0) {
+      return list;
+    }
+    const start = this.currentPage() * size;
+    return list.slice(start, start + size);
+  });
+
+  readonly totalBlogs = computed<number>(() => this.filteredBlogs().length);
 
   ngOnInit(): void {
-    this.seoService.updateSEO({ title: 'Health & Nutrition Blog', description: 'Discover nutrition tips, healthy recipes, and wellness insights from EatFit247 experts.', url: '/blog' });
-    void this.loadBannerData();
+    this.seoService.updateSEO({
+      title: 'Health & Nutrition Blog',
+      description:
+        'Discover nutrition tips, healthy recipes, and wellness insights from EatFit247 experts.',
+      url: '/blog',
+    });
+    // Preselect tag from `?tag=` query param (set by blog-detail category links).
+    this.route.queryParamMap.subscribe((params) => {
+      const tagParam = params.get('tag');
+      if (tagParam) {
+        const match = this.blogTags().find(
+          (t) =>
+            t.key.toLowerCase() === tagParam.toLowerCase() ||
+            t.label.toLowerCase() === tagParam.toLowerCase(),
+        );
+        this.activeTag.set(match ? match.key : tagParam);
+        this.currentPage.set(0);
+      }
+    });
+    void this.loadCategories();
     void this.loadBlogs();
   }
 
   /**
-   * Load blogs from API
+   * Load active blog categories from API and build the tag list.
+   * "All" is always pinned as the first tag.
+   */
+  async loadCategories(): Promise<void> {
+    try {
+      const categories = await this.blogService.getBlogCategories();
+      const tags: IBlogTag[] = categories.map((c) => {
+        const name = this.unescapeName(c.blogCategory);
+        return { key: name, label: name };
+      });
+      this.blogTags.set([ALL_TAG, ...tags]);
+    } catch {
+      this.blogTags.set([ALL_TAG]);
+    }
+  }
+
+  /** DB stores names with escaped quotes (e.g. `Women\'s Health`). Strip them for display. */
+  private unescapeName(value: string): string {
+    return value.replace(/\\(['"])/g, '$1');
+  }
+
+  setTag(tag: string): void {
+    this.activeTag.set(tag);
+    this.currentPage.set(0);
+  }
+
+  /**
+   * Load blogs from API. Fetch a single large page; filtering and pagination
+   * happen client-side so tag filters stay snappy.
    */
   async loadBlogs(): Promise<void> {
     this.loading.set(true);
     try {
-      const response = await this.blogService.getBlogs(
-        this.currentPage(),
-        this.pageSize()
-      );
+      const response = await this.blogService.getBlogs(0, 1000);
       if (response) {
-        this.totalBlogs.set(response.count);
-        this.blogs.set(this.blogService.mapBlogsToCards(response.tableData));
+        this.allBlogs.set(this.blogService.mapBlogsToCards(response.tableData));
         // Inject ItemList JSON-LD for blog listing
         this.jsonLdService.setPageSchema({
           '@type': 'ItemList',
           name: 'EatFit247 Blog Articles',
-          itemListElement: response.tableData.slice(0, 10).map((blog: any, i: number) => {
-            const slug = blog.seo?.url || blog.title?.toLowerCase().replace(/\s+/g, '-');
-            const image = blog.imagePath?.[0]?.webUrl;
-            return {
-              '@type': 'ListItem',
-              position: i + 1,
-              item: {
-                '@type': 'BlogPosting',
-                headline: blog.title,
-                url: `https://eatfit24by7.com/blog/${slug}`,
-                ...(image ? { image } : {}),
-                ...(blog.writtenAt ? { datePublished: new Date(blog.writtenAt).toISOString() } : {}),
-              },
-            };
-          }),
+          itemListElement: response.tableData
+            .slice(0, 10)
+            .map((blog: any, i: number) => {
+              const slug =
+                blog.seo?.url || blog.title?.toLowerCase().replace(/\s+/g, '-');
+              const image = blog.imagePath?.[0]?.webUrl;
+              return {
+                '@type': 'ListItem',
+                position: i + 1,
+                item: {
+                  '@type': 'BlogPosting',
+                  headline: blog.title,
+                  url: `https://eatfit24by7.com/blog/${slug}`,
+                  ...(image ? { image } : {}),
+                  ...(blog.writtenAt
+                    ? { datePublished: new Date(blog.writtenAt).toISOString() }
+                    : {}),
+                },
+              };
+            }),
         } as Record<string, unknown>);
       } else {
-        this.blogs.set([]);
-        this.totalBlogs.set(0);
+        this.allBlogs.set([]);
       }
     } catch (error) {
-      this.blogs.set([]);
-      this.totalBlogs.set(0);
+      this.allBlogs.set([]);
     } finally {
       this.loading.set(false);
-    }
-  }
-
-  /**
-   * Load banner images for Blog listing page.
-   * Banner section will be hidden automatically if no banners are returned.
-   */
-  private async loadBannerData(): Promise<void> {
-    try {
-      const images = await this.bannerService.getBannerMediaForPage(
-        BannerForEnum.BLOGS
-      );
-      this.banners.set(images ?? []);
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('Error loading blog banners:', error);
-      this.banners.set([]);
     }
   }
 
@@ -108,12 +183,47 @@ export class BlogComponent implements OnInit {
   onPageChange(event: PageEvent): void {
     this.currentPage.set(event.pageIndex);
     this.pageSize.set(event.pageSize);
-    void this.loadBlogs();
-    // Scroll to top when page changes
-    if (isPlatformBrowser(this.platformId)) {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+    this.scrollToTop();
+  }
+
+  /**
+   * Handle page-size dropdown change (3 / 6 / 9 / 12 / All)
+   */
+  onPageSizeChange(value: string): void {
+    const next = parseInt(value, 10);
+    this.pageSize.set(isNaN(next) ? 6 : next);
+    this.currentPage.set(0);
+    this.scrollToTop();
+  }
+
+  /**
+   * Format a date or string into "MMM dd, yyyy" e.g. May 22, 2026
+   */
+  formatDate(date: string | Date | undefined): string {
+    if (!date) {
+      return '';
     }
+    const d = date instanceof Date ? date : new Date(date);
+    if (isNaN(d.getTime())) {
+      return '';
+    }
+    return d.toLocaleDateString('en-US', {
+      month: 'short',
+      day: '2-digit',
+      year: 'numeric',
+    });
+  }
+
+  private scrollToTop(): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
+    // Mirror design: scroll the grid into view, not the whole page.
+    const grid = document.getElementById('grid');
+    if (grid) {
+      grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return;
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 }
-
-

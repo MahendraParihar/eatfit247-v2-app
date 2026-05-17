@@ -25,7 +25,6 @@ export enum MediaForEnum {
   LIFESTYLE = 'lifestyle',
   MARITAL_STATUS = 'marital-status',
   NUTRITIVE = 'nutritive',
-  PROGRAM_CATEGORY = 'program-category',
   RECIPE_CATEGORY = 'recipe-category',
   RECIPE_CUISINE = 'recipe-cuisine',
   RECIPE_TYPE = 'recipe-type',

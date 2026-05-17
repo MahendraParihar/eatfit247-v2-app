@@ -1,0 +1,37 @@
+@if (loading) {
+  <shared-ui-loader></shared-ui-loader>
+} @else if (kpis) {
+  <div class="kpi-grid">
+    <lib-kpi-card
+      icon="people"
+      label="My Clients"
+      [value]="kpis.myClientsTotal"
+    ></lib-kpi-card>
+    <lib-kpi-card
+      icon="group"
+      label="Active Clients"
+      [value]="kpis.myClientsActive"
+      [trend]="kpis.trends?.myClientsActive"
+      trendLabel="vs last month"
+    ></lib-kpi-card>
+    <lib-kpi-card
+      icon="restaurant_menu"
+      label="Diet Plans Due Today"
+      [value]="kpis.dietPlansDueToday"
+      [trend]="kpis.trends?.dietPlansDueToday"
+      trendLabel="vs last month"
+    ></lib-kpi-card>
+    <lib-kpi-card
+      icon="assignment_late"
+      label="Pending Assessments"
+      [value]="kpis.pendingAssessments"
+      [trend]="kpis.trends?.pendingAssessments"
+      trendLabel="vs last month"
+    ></lib-kpi-card>
+    <lib-kpi-card
+      icon="schedule"
+      label="Expiring Plans"
+      [value]="kpis.expiringDietPlans"
+    ></lib-kpi-card>
+  </div>
+}

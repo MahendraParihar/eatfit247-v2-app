@@ -11,7 +11,7 @@ import { AppService } from './app.service';
 // Import modules first so their modelRegistry.register() calls execute before CommonModule.forRoot()
 import { MemberModule } from '@server_1/modules/member';
 import { AssessmentModule } from '@server_1/modules/assessment';
-import { ProgramPlanModule } from '@server_1/modules/program-plan';
+import { ProgramPlanAdminModule } from '@server_1/modules/program-plan';
 import { CallLogsModule } from '@server_1/modules/call-logs';
 import { ContactModule } from '@server_1/modules/contact';
 import { TaxEngineModule } from '@server_1/modules/tax-engine';
@@ -33,11 +33,14 @@ import { MemberTestimonialModule } from '@server_1/modules/member-testimonial';
 import { LovsModule } from '@server_1/modules/lovs';
 import { SuccessStoriesModule } from '@server_1/modules/success-stories';
 import { AdminUserModule } from '@server_1/admin-only/admin-user';
+import { AdminRbacModule } from '@server_1/admin-only/admin-rbac';
 import { ReportsModule } from '@server_1/admin-only/reports';
 import { ProductAdminModule } from '@server_1/modules/product';
 import { PagesAdminModule } from '@server_1/modules/pages';
 import { DeliveryModule } from '@server_1/modules/delivery';
+import { AppointmentModule } from '@server_1/modules/appointment';
 import { AuthModule } from '@server_1/modules/auth';
+import { GoogleReviewModule } from '@server_1/modules/google-review';
 
 @Module({
   imports: [
@@ -57,7 +60,7 @@ import { AuthModule } from '@server_1/modules/auth';
     // Import feature modules before CommonModule so modelRegistry.register() executes
     MemberModule,
     AssessmentModule,
-    ProgramPlanModule,
+    ProgramPlanAdminModule,
     CallLogsModule,
     ContactModule,
     TaxEngineModule,
@@ -81,6 +84,8 @@ import { AuthModule } from '@server_1/modules/auth';
     SuccessStoriesModule,
     ProductAdminModule,
     DeliveryModule,
+    AppointmentModule,
+    GoogleReviewModule,
     NotificationModule,
     CommonModule.forRoot(
       ['Common', 'Email', 'Google', 'Calendar', 'Payment', 'Invoice', 'Whatsapp'],
@@ -88,6 +93,7 @@ import { AuthModule } from '@server_1/modules/auth';
     ),
     AuthModule,
     AdminUserModule,
+    AdminRbacModule,
     ReportsModule,
   ],
   controllers: [AppController],

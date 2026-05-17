@@ -9,7 +9,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { MatCardModule } from '@angular/material/card';
 import { InputErrorComponent, UploadFormComponent, ValidationUtil } from '@shared';
-import { LovMasterApiService } from '../../api.service';
+import { BlogCategoryApiService } from '../../api.service';
 import { FileTypeEnum, IBlogCategory, IManageBlogCategory, InputLengthEnum, MediaForEnum } from '@eatfit247-shared-lib';
 
 @Component({
@@ -33,7 +33,7 @@ import { FileTypeEnum, IBlogCategory, IManageBlogCategory, InputLengthEnum, Medi
 export class ManageBlogCategory implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private apiService = inject(LovMasterApiService);
+  private apiService = inject(BlogCategoryApiService);
 
   private fb: FormBuilder = inject(FormBuilder);
   formGroup: FormGroup = this.fb.group({
@@ -75,7 +75,7 @@ export class ManageBlogCategory implements OnInit {
   }
 
   async loadData(id: number): Promise<void> {
-    this.initialData = await this.apiService.getBlogCategoryById(id);
+    this.initialData = await this.apiService.getById(id);
   }
 
   async onSubmit(): Promise<void> {
@@ -91,9 +91,9 @@ export class ManageBlogCategory implements OnInit {
       }
       if (this.isEditMode && this.initialData) {
         formValue.blogCategoryId = this.initialData.blogCategoryId;
-        await this.apiService.updateBlogCategory(this.initialData.blogCategoryId, formValue);
+        await this.apiService.update(this.initialData.blogCategoryId, formValue);
       } else {
-        await this.apiService.createBlogCategory(formValue);
+        await this.apiService.create(formValue);
       }
       this.router.navigate(['/lov-master/blog-category']);
     } else {

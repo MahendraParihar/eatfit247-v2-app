@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { BasicSearchDto, CurrentUser, JwtAuthGuard, RequestedIp, UpdateActiveDto } from '@server_1/core';
 import { DietTemplateService } from '../../services';
 import { CreateDietTemplateDto, DietTemplateDetailDto } from '../../dto';
@@ -79,6 +79,23 @@ export class DietTemplateController {
     @RequestedIp() requestedIp: string,
   ): Promise<void> {
     await this.service.createDietTemplateDetail(dietTemplateId, body, requestedIp, currentUser.adminId);
+  }
+
+  @Delete('manage-detail/:dietTemplateId/:cycleNo')
+  async deleteCycleDetail(
+    @Param('dietTemplateId') dietTemplateId: number,
+    @Param('cycleNo') cycleNo: number,
+  ): Promise<void> {
+    await this.service.deleteDietTemplateDetail(dietTemplateId, cycleNo);
+  }
+
+  @Delete('manage-detail/:dietTemplateId/:cycleNo/:dayNo')
+  async deleteDayDetail(
+    @Param('dietTemplateId') dietTemplateId: number,
+    @Param('cycleNo') cycleNo: number,
+    @Param('dayNo') dayNo: number,
+  ): Promise<void> {
+    await this.service.deleteDietTemplateDetail(dietTemplateId, cycleNo, dayNo);
   }
 
   @Patch('update-status/:id')

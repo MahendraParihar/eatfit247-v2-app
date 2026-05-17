@@ -1,0 +1,190 @@
+@if (template(); as t) {
+  <div class="builder-container">
+    <mat-card class="header-card">
+      <mat-card-header>
+        <button mat-icon-button (click)="back()" matTooltip="Back to list">
+          <mat-icon>arrow_back</mat-icon>
+        </button>
+        <mat-card-title>{{ t.dietTemplate }}</mat-card-title>
+        <mat-card-subtitle>
+          {{ t.noOfCycle }} cycle{{ t.noOfCycle === 1 ? '' : 's' }}
+          &nbsp;&middot;&nbsp;
+          {{ t.noOfDaysInCycle }} day{{ t.noOfDaysInCycle === 1 ? '' : 's' }} per cycle
+        </mat-card-subtitle>
+      </mat-card-header>
+    </mat-card>
+
+    <mat-card class="table-card">
+      <table mat-table [dataSource]="cycles()" multiTemplateDataRows class="cycle-table">
+        <ng-container matColumnDef="expand">
+          <th mat-header-cell *matHeaderCellDef class="col-expand"></th>
+          <td mat-cell *matCellDef="let cycle" class="col-expand">
+            @if (cycle.type === 'DAY') {
+              <button
+                mat-icon-button
+                (click)="$event.stopPropagation(); toggleExpand(cycle)"
+                [attr.aria-label]="isExpanded(cycle) ? 'Collapse' : 'Expand'"
+                matTooltip="Show days"
+              >
+                <mat-icon>{{ isExpanded(cycle) ? 'expand_more' : 'chevron_right' }}</mat-icon>
+              </button>
+            }
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="cycleNo">
+          <th mat-header-cell *matHeaderCellDef class="col-cycle">Cycle</th>
+          <td mat-cell *matCellDef="let cycle" class="col-cycle">
+            <span class="cycle-no">{{ cycle.cycleNo }}</span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="type">
+          <th mat-header-cell *matHeaderCellDef class="col-type">Type</th>
+          <td mat-cell *matCellDef="let cycle" class="col-type">
+            @switch (cycle.type) {
+              @case ('UNCONFIGURED') {
+                <span class="chip chip-empty">Not configured</span>
+              }
+              @case ('CYCLE') {
+                <span class="chip chip-cycle">Cycle Plan</span>
+              }
+              @case ('DAY') {
+                <span class="chip chip-day">Day Plan</span>
+              }
+            }
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="summary">
+          <th mat-header-cell *matHeaderCellDef>Summary</th>
+          <td mat-cell *matCellDef="let cycle">
+            @switch (cycle.type) {
+              @case ('UNCONFIGURED') {
+                <span class="summary-muted">Not configured yet</span>
+              }
+              @case ('CYCLE') {
+                <span class="summary-text">
+                  <mat-icon class="summary-icon">check_circle</mat-icon>
+                  Whole Cycle configured
+                </span>
+              }
+              @case ('DAY') {
+                <span class="summary-text">
+                  <mat-icon class="summary-icon">check_circle</mat-icon>
+                  {{ cycle.filledDayCount }} / {{ t.noOfDaysInCycle }} days configured
+                </span>
+              }
+            }
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef class="col-actions">Actions</th>
+          <td mat-cell *matCellDef="let cycle" class="col-actions">
+            @if (cycle.type === 'UNCONFIGURED') {
+              <button mat-stroked-button color="primary" (click)="$event.stopPropagation(); configureAsCyclePlan(cycle)">
+                <mat-icon>view_module</mat-icon>
+                Cycle Plan
+              </button>
+              <button mat-stroked-button color="primary" (click)="$event.stopPropagation(); configureAsDayPlan(cycle)">
+                <mat-icon>calendar_view_week</mat-icon>
+                Day Plan
+              </button>
+            }
+            @if (cycle.type === 'CYCLE') {
+              <button mat-icon-button matTooltip="Edit" (click)="$event.stopPropagation(); editCycle(cycle)">
+                <mat-icon>edit</mat-icon>
+              </button>
+              @if (canCopyCycle(cycle)) {
+                <button mat-icon-button matTooltip="Copy to next empty cycle" (click)="$event.stopPropagation(); copyCycle(cycle)">
+                  <mat-icon>content_copy</mat-icon>
+                </button>
+              }
+              <button mat-icon-button matTooltip="Clear" (click)="$event.stopPropagation(); deleteCycle(cycle)">
+                <mat-icon>delete</mat-icon>
+              </button>
+            }
+            @if (cycle.type === 'DAY') {
+              @if (canCopyCycle(cycle)) {
+                <button mat-icon-button matTooltip="Copy to next empty cycle" (click)="$event.stopPropagation(); copyCycle(cycle)">
+                  <mat-icon>content_copy</mat-icon>
+                </button>
+              }
+              <button mat-icon-button matTooltip="Clear cycle" (click)="$event.stopPropagation(); deleteCycle(cycle)">
+                <mat-icon>delete</mat-icon>
+              </button>
+            }
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="expandedDetail">
+          <td mat-cell *matCellDef="let cycle" [attr.colspan]="displayedColumns.length" class="expand-cell">
+            <div
+              class="expand-content"
+              [@detailExpand]="isExpanded(cycle) ? 'expanded' : 'collapsed'"
+            >
+              @if (cycle.type === 'DAY') {
+                <div class="day-grid">
+                  @for (day of cycle.days; track day.dayNo) {
+                    <div
+                      class="day-tile"
+                      [class.filled]="day.filled"
+                      [class.empty]="!day.filled"
+                      role="button"
+                      tabindex="0"
+                      (click)="editDay(cycle, day)"
+                      (keydown.enter)="editDay(cycle, day)"
+                      (keydown.space)="$event.preventDefault(); editDay(cycle, day)"
+                    >
+                      <div class="day-title">Day {{ day.dayNo }}</div>
+                      <div class="day-status">
+                        @if (day.filled) {
+                          <mat-icon>check_circle</mat-icon>
+                          Configured
+                        } @else {
+                          <mat-icon>add_circle_outline</mat-icon>
+                          Empty
+                        }
+                      </div>
+                      @if (day.filled) {
+                        <div class="day-actions">
+                          <button mat-icon-button matTooltip="Edit" (click)="$event.stopPropagation(); editDay(cycle, day)">
+                            <mat-icon>edit</mat-icon>
+                          </button>
+                          @if (canCopyDay(cycle, day)) {
+                            <button mat-icon-button matTooltip="Copy to next empty day" (click)="$event.stopPropagation(); copyDay(cycle, day)">
+                              <mat-icon>content_copy</mat-icon>
+                            </button>
+                          }
+                          <button mat-icon-button matTooltip="Clear" (click)="$event.stopPropagation(); deleteDay(cycle, day)">
+                            <mat-icon>delete</mat-icon>
+                          </button>
+                        </div>
+                      }
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr
+          mat-row
+          *matRowDef="let row; columns: displayedColumns"
+          class="cycle-row"
+          [class.expandable]="row.type === 'DAY'"
+          [class.expanded]="isExpanded(row)"
+          (click)="toggleExpand(row)"
+        ></tr>
+        <tr
+          mat-row
+          *matRowDef="let row; columns: ['expandedDetail']"
+          class="detail-row"
+        ></tr>
+      </table>
+    </mat-card>
+  </div>
+}

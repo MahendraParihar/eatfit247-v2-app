@@ -1,10 +1,14 @@
 // Core services
 export * from './lib/services/auth.service';
 export * from './lib/services/storage.service';
-export * from './lib/services/api-base.service';
+export * from './lib/services/crud-api.service';
 export * from './lib/services/http.service';
 export * from './lib/services/breadcrumb.service';
 export * from './lib/services/theme.service';
+export * from './lib/services/error-notification.service';
+export * from './lib/services/token-refresh.service';
+export * from './lib/services/navigation.service';
+export * from './lib/services/permission.service';
 // Guards
 export * from './lib/guards/auth.guard';
 export * from './lib/guards/login.guard';

@@ -9,7 +9,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { MatCardModule } from '@angular/material/card';
 import { InputErrorComponent, UploadFormComponent, ValidationUtil } from '@shared';
-import { LovMasterApiService } from '../../api.service';
+import { CallTypeApiService } from '../../api.service';
 import { FileTypeEnum, ICallType, IManageCallType, InputLengthEnum, MediaForEnum } from '@eatfit247-shared-lib';
 
 @Component({
@@ -33,7 +33,7 @@ import { FileTypeEnum, ICallType, IManageCallType, InputLengthEnum, MediaForEnum
 export class ManageCallType implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private apiService = inject(LovMasterApiService);
+  private apiService = inject(CallTypeApiService);
 
   private fb: FormBuilder = inject(FormBuilder);
   formGroup: FormGroup = this.fb.group({
@@ -73,7 +73,7 @@ export class ManageCallType implements OnInit {
   }
 
   async loadData(id: number): Promise<void> {
-    this.initialData = await this.apiService.getCallTypeById(id);
+    this.initialData = await this.apiService.getById(id);
   }
 
   async onSubmit(): Promise<void> {
@@ -87,9 +87,9 @@ export class ManageCallType implements OnInit {
       }
       if (this.isEditMode && this.initialData) {
         formValue.callTypeId = this.initialData.callTypeId;
-        await this.apiService.updateCallType(this.initialData.callTypeId, formValue);
+        await this.apiService.update(this.initialData.callTypeId, formValue);
       } else {
-        await this.apiService.createCallType(formValue);
+        await this.apiService.create(formValue);
       }
       this.router.navigate(['/lov-master/call-type']);
     } else {
