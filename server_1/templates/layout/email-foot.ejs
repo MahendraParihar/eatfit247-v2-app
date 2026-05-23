@@ -1,0 +1,51 @@
+<%
+  /*
+   * Bulletproof responsive email foot.
+   * Closes body slot, then renders footer block + closes shell.
+   * Locals:
+   *   franchise (object, required) - { franchiseName, supportEmail, footerText, brandColor }
+   *   showUnsubscribe (boolean, optional) - render unsubscribe text line
+   *   unsubscribeUrl  (string, optional)  - link target for the line above
+   */
+  const _brandName   = (franchise && franchise.franchiseName) ? franchise.franchiseName : 'EatFit247';
+  const _supportEmail= (franchise && franchise.supportEmail)  ? franchise.supportEmail  : 'support@eatfit247.com';
+  const _brandColor  = (franchise && franchise.brandColor)    ? franchise.brandColor    : '#16a34a';
+  const _footerText  = (franchise && franchise.footerText)
+                        ? franchise.footerText
+                        : ('© ' + new Date().getFullYear() + ' ' + _brandName + '. All rights reserved.');
+  const _showUnsub   = (typeof showUnsubscribe !== 'undefined') ? !!showUnsubscribe : false;
+  const _unsubUrl    = (typeof unsubscribeUrl   !== 'undefined' && unsubscribeUrl) ? unsubscribeUrl : '';
+-%>
+            </td>
+          </tr>
+
+          <!-- Footer. -->
+          <tr>
+            <td class="ef-footer" style="background-color:#f9fafb;padding:24px 32px;border-top:1px solid #e5e7eb;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#6b7280;font-size:13px;line-height:1.5;text-align:center;">
+              <div style="margin:0 0 8px 0;color:#374151;font-weight:600;">
+                Need help? Email
+                <a href="mailto:<%= _supportEmail %>" style="color:<%= _brandColor %>;text-decoration:none;font-weight:600;"><%= _supportEmail %></a>
+              </div>
+              <div style="margin:0;color:#6b7280;">
+                <%= _footerText %>
+              </div>
+              <% if (_showUnsub && _unsubUrl) { %>
+              <div style="margin:12px 0 0 0;color:#9ca3af;font-size:12px;">
+                You're receiving this because you have an account with <%= _brandName %>.
+                <a href="<%= _unsubUrl %>" style="color:#9ca3af;text-decoration:underline;">Unsubscribe</a>
+              </div>
+              <% } %>
+            </td>
+          </tr>
+        </table>
+
+        <!--[if mso | IE]>
+        </td></tr></table>
+        <![endif]-->
+
+      </td>
+    </tr>
+  </table>
+
+</body>
+</html>

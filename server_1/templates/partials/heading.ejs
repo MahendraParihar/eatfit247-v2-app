@@ -1,0 +1,18 @@
+<%
+  /*
+   * Page-level heading block: small uppercase eyebrow + main title.
+   * Locals:
+   *   eyebrow (string, optional)  - small label above title (e.g. "Welcome", "Receipt")
+   *   title   (string, required)  - main heading
+   */
+  const _brandColor = (franchise && franchise.brandColor) ? franchise.brandColor : '#16a34a';
+  const _eyebrow    = (typeof eyebrow !== 'undefined' && eyebrow) ? eyebrow : '';
+-%>
+<% if (_eyebrow) { %>
+<div class="ef-muted" style="margin:0 0 8px 0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:12px;font-weight:700;line-height:1;color:<%= _brandColor %>;letter-spacing:1.5px;text-transform:uppercase;">
+  <%= _eyebrow %>
+</div>
+<% } %>
+<h1 class="ef-h1" style="margin:0 0 20px 0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:26px;font-weight:700;line-height:1.25;color:#111827;letter-spacing:-0.4px;">
+  <%= title %>
+</h1>

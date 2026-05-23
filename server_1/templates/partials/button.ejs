@@ -1,0 +1,41 @@
+<%
+  /*
+   * Bulletproof CTA button. Renders as a centred table with VML fallback for Outlook desktop.
+   * Locals:
+   *   href      (string, required)  - link target
+   *   label     (string, required)  - button text
+   *   color     (string, optional)  - background colour (defaults to franchise.brandColor)
+   *   textColor (string, optional)  - text colour (default #ffffff)
+   *   align     (string, optional)  - 'left' | 'center' | 'right' (default 'left')
+   */
+  const _bg     = (typeof color     !== 'undefined' && color)     ? color     : ((franchise && franchise.brandColor) ? franchise.brandColor : '#16a34a');
+  const _fg     = (typeof textColor !== 'undefined' && textColor) ? textColor : '#ffffff';
+  const _align  = (typeof align     !== 'undefined' && align)     ? align     : 'left';
+  const _href   = href;
+  const _label  = label;
+-%>
+<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin:24px 0;">
+  <tr>
+    <td align="<%= _align %>">
+      <!--[if mso]>
+      <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word"
+        href="<%= _href %>" style="height:48px;v-text-anchor:middle;width:240px;" arcsize="17%" strokecolor="<%= _bg %>" fillcolor="<%= _bg %>">
+        <w:anchorlock/>
+        <center style="color:<%= _fg %>;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:bold;"><%= _label %></center>
+      </v:roundrect>
+      <![endif]-->
+      <!--[if !mso]><!-- -->
+      <table role="presentation" class="ef-btn" cellspacing="0" cellpadding="0" border="0" style="border-collapse:separate;">
+        <tr>
+          <td align="center" bgcolor="<%= _bg %>" style="background-color:<%= _bg %>;border-radius:8px;mso-padding-alt:0;">
+            <a href="<%= _href %>"
+               style="display:inline-block;padding:14px 32px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:15px;font-weight:600;line-height:1;color:<%= _fg %>;background-color:<%= _bg %>;text-decoration:none;border-radius:8px;-webkit-text-size-adjust:none;mso-hide:all;">
+              <%= _label %>
+            </a>
+          </td>
+        </tr>
+      </table>
+      <!--<![endif]-->
+    </td>
+  </tr>
+</table>

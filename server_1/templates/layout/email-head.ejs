@@ -1,0 +1,135 @@
+<%
+  /*
+   * Bulletproof responsive email head.
+   * Renders: DOCTYPE → <head> with cross-client CSS → opening <body>/<table> → brand header.
+   * Locals:
+   *   subject    (string)             - <title> + browser tab
+   *   preheader  (string, optional)   - hidden preview text shown in inbox list
+   *   franchise  (object, required)   - { franchiseName, franchiseLogo, brandColor, supportEmail, footerText }
+   */
+  const _subject     = (typeof subject     !== 'undefined' && subject)     ? subject     : 'Notification';
+  const _preheader   = (typeof preheader   !== 'undefined' && preheader)   ? preheader   : '';
+  const _brandColor  = (franchise && franchise.brandColor)  ? franchise.brandColor  : '#16a34a';
+  const _logo        = (franchise && franchise.franchiseLogo) ? franchise.franchiseLogo : '';
+  const _brandName   = (franchise && franchise.franchiseName) ? franchise.franchiseName : 'EatFit247';
+-%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="x-apple-disable-message-reformatting" />
+  <meta name="format-detection" content="telephone=no,address=no,email=no,date=no,url=no" />
+  <meta name="color-scheme" content="light dark" />
+  <meta name="supported-color-schemes" content="light dark" />
+  <title><%= _subject %></title>
+
+  <!--[if mso]>
+  <noscript>
+    <xml>
+      <o:OfficeDocumentSettings xmlns:o="urn:schemas-microsoft-com:office:office">
+        <o:PixelsPerInch>96</o:PixelsPerInch>
+      </o:OfficeDocumentSettings>
+    </xml>
+  </noscript>
+  <style type="text/css">
+    table, td, div, h1, h2, h3, p, a { font-family: Arial, Helvetica, sans-serif !important; }
+    table { border-collapse: collapse; }
+  </style>
+  <![endif]-->
+
+  <style type="text/css">
+    /* Reset — clients add their own padding, normalise it. */
+    html, body { margin: 0 !important; padding: 0 !important; height: 100% !important; width: 100% !important; }
+    body { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+    body, table, td, p, a, li, blockquote { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+    table, td { mso-table-lspace: 0pt !important; mso-table-rspace: 0pt !important; border-collapse: collapse !important; }
+    img { -ms-interpolation-mode: bicubic; border: 0; height: auto; line-height: 100%; outline: none; text-decoration: none; display: block; }
+    a { text-decoration: none; }
+
+    /* Gmail/iOS auto-link colour neutralisation. */
+    .appleLinks a { color: inherit !important; text-decoration: none !important; }
+    u + #body a, #MessageViewBody a { color: inherit; text-decoration: none; font-size: inherit; font-family: inherit; font-weight: inherit; line-height: inherit; }
+
+    /* Mobile (≤ 600px) — single-column, full-width buttons, tighter padding. */
+    @media only screen and (max-width: 600px) {
+      .ef-container { width: 100% !important; max-width: 100% !important; }
+      .ef-px { padding-left: 20px !important; padding-right: 20px !important; }
+      .ef-py { padding-top: 24px !important; padding-bottom: 24px !important; }
+      .ef-hero-px { padding-left: 20px !important; padding-right: 20px !important; }
+      .ef-btn a { display: block !important; width: 100% !important; padding-left: 0 !important; padding-right: 0 !important; box-sizing: border-box; }
+      .ef-h1 { font-size: 22px !important; line-height: 30px !important; }
+      .ef-h2 { font-size: 18px !important; line-height: 26px !important; }
+      .ef-stack { display: block !important; width: 100% !important; }
+      .ef-stack-right { text-align: left !important; padding-top: 8px !important; }
+      .ef-info td { padding-top: 10px !important; padding-bottom: 10px !important; }
+      .ef-info td.ef-info-label { display: block !important; width: 100% !important; padding-bottom: 2px !important; }
+      .ef-info td.ef-info-value { display: block !important; width: 100% !important; padding-top: 0 !important; }
+    }
+
+    /* Dark mode (Apple Mail, iOS Mail, Outlook iOS only — Gmail ignores). */
+    @media (prefers-color-scheme: dark) {
+      body, .ef-body-bg { background-color: #0f172a !important; }
+      .ef-card { background-color: #111827 !important; }
+      .ef-section { background-color: #1f2937 !important; }
+      .ef-text, .ef-text * { color: #e5e7eb !important; }
+      .ef-muted, .ef-muted * { color: #9ca3af !important; }
+      .ef-h1, .ef-h2, .ef-h1 *, .ef-h2 * { color: #f9fafb !important; }
+      .ef-divider { border-color: #374151 !important; }
+      .ef-info td { border-color: #374151 !important; }
+      .ef-footer { background-color: #111827 !important; }
+      .ef-footer, .ef-footer * { color: #9ca3af !important; }
+    }
+    [data-ogsc] body, [data-ogsc] .ef-body-bg { background-color: #0f172a !important; }
+    [data-ogsc] .ef-card { background-color: #111827 !important; }
+    [data-ogsc] .ef-section { background-color: #1f2937 !important; }
+    [data-ogsc] .ef-text, [data-ogsc] .ef-text * { color: #e5e7eb !important; }
+    [data-ogsc] .ef-h1, [data-ogsc] .ef-h2 { color: #f9fafb !important; }
+  </style>
+</head>
+
+<body id="body" class="ef-body-bg" style="margin:0;padding:0;width:100%;background-color:#f3f4f6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+
+  <!-- Preheader: hidden but shown in inbox preview. -->
+  <div style="display:none;font-size:1px;line-height:1px;max-height:0px;max-width:0px;opacity:0;overflow:hidden;mso-hide:all;color:transparent;visibility:hidden;">
+    <%= _preheader %>
+    &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847;
+  </div>
+
+  <!-- Outer wrapper for full-width background. -->
+  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" class="ef-body-bg" style="background-color:#f3f4f6;">
+    <tr>
+      <td align="center" style="padding:24px 12px;">
+
+        <!--[if mso | IE]>
+        <table role="presentation" align="center" cellspacing="0" cellpadding="0" border="0" width="600"><tr><td>
+        <![endif]-->
+
+        <!-- 600px container card. -->
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" class="ef-container ef-card" style="width:100%;max-width:600px;background-color:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.04);">
+
+          <!-- Brand header. -->
+          <tr>
+            <td class="ef-hero-px" style="background-color:<%= _brandColor %>;padding:28px 32px;">
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                <tr>
+                  <td class="ef-stack" align="left" valign="middle" style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#ffffff;">
+                    <% if (_logo) { %>
+                      <img src="<%= _logo %>" alt="<%= _brandName %>" width="140" style="display:block;max-width:140px;max-height:48px;height:auto;border:0;outline:none;" />
+                    <% } else { %>
+                      <span style="font-size:22px;font-weight:700;letter-spacing:-0.2px;color:#ffffff;"><%= _brandName %></span>
+                    <% } %>
+                  </td>
+                  <td class="ef-stack ef-stack-right" align="right" valign="middle" style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:rgba(255,255,255,0.92);font-size:13px;font-weight:500;">
+                    <% if (_logo) { %><%= _brandName %><% } %>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Body slot (child template content goes here). -->
+          <tr>
+            <td class="ef-px ef-py ef-text" style="padding:36px 32px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#1f2937;font-size:16px;line-height:1.6;">

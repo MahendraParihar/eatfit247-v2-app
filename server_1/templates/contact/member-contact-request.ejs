@@ -1,36 +1,48 @@
-<h2>Thank You for Contacting Us</h2>
+<%- await include('../layout/email-head', {
+  subject: 'We’ve received your contact request',
+  preheader: 'Thanks for reaching out — we’ll be in touch within 24–48 hours.',
+  franchise: franchise
+}) %>
 
-<p>Dear <%= memberName || 'Valued Customer' %>,</p>
+<%- await include('../partials/heading', {
+  eyebrow: 'Request received',
+  title: 'Thanks for contacting us',
+  franchise: franchise
+}) %>
 
-<p>We have received your contact request and appreciate you reaching out to <%= franchise.franchiseName %>.</p>
+<p style="margin:0 0 16px 0;">
+  Dear <%= (typeof memberName !== 'undefined' && memberName) ? memberName : 'Valued Customer' %>,
+</p>
 
-<div style="background-color: #f9f9f9; padding: 20px; border-radius: 4px; margin: 20px 0;">
-  <h3 style="margin-top: 0;">Your Request Details</h3>
-  <table style="width: 100%; border-collapse: collapse;">
-    <tr>
-      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><strong>Request ID:</strong></td>
-      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><%= requestId || 'N/A' %></td>
-    </tr>
-    <tr>
-      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><strong>Subject:</strong></td>
-      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><%= subject %></td>
-    </tr>
-    <tr>
-      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><strong>Submitted On:</strong></td>
-      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><%= submittedDate || new Date().toLocaleString() %></td>
-    </tr>
-    <% if (message) { %>
-    <tr>
-      <td style="padding: 8px 0; vertical-align: top;"><strong>Your Message:</strong></td>
-      <td style="padding: 8px 0;"><%= message %></td>
-    </tr>
-    <% } %>
-  </table>
-</div>
+<p style="margin:0 0 24px 0;">
+  We’ve received your contact request and appreciate you reaching out to <%= franchise.franchiseName %>.
+</p>
 
-<p>Our team will review your request and get back to you as soon as possible, typically within 24-48 hours.</p>
+<%- await include('../partials/section-open', { heading: 'Your request details', franchise: franchise }) %>
+  <%- await include('../partials/info-row', { label: 'Request ID',  value: (typeof requestId !== 'undefined' && requestId) ? requestId : 'N/A' }) %>
+  <%- await include('../partials/info-row', { label: 'Subject',     value: subject }) %>
+  <%- await include('../partials/info-row', { label: 'Submitted on', value: (typeof submittedDate !== 'undefined' && submittedDate) ? submittedDate : new Date().toLocaleString() }) %>
+  <% if (typeof message !== 'undefined' && message) { %>
+    <%- await include('../partials/info-row', { label: 'Your message', value: message, last: true }) %>
+  <% } else { %>
+    <%- await include('../partials/info-row', { label: 'Status', value: 'Received', last: true }) %>
+  <% } %>
+<%- await include('../partials/section-close') %>
 
-<p>If you have any urgent concerns, please feel free to contact us directly at <a href="mailto:<%= franchise.supportEmail %>"><%= franchise.supportEmail %></a>.</p>
+<%- await include('../partials/alert', {
+  tone: 'info',
+  title: 'What happens next?',
+  text: 'Our team will review your request and get back to you within 24–48 hours.'
+}) %>
 
-<p>Best regards,<br>The <%= franchise.franchiseName %> Team</p>
+<p style="margin:0 0 16px 0;">
+  Urgent concern? Reach us directly at
+  <a href="mailto:<%= franchise.supportEmail %>" style="color:<%= franchise.brandColor || '#16a34a' %>;text-decoration:none;font-weight:600;"><%= franchise.supportEmail %></a>.
+</p>
 
+<p style="margin:0;color:#4b5563;">
+  Best regards,<br/>
+  <strong style="color:#111827;">The <%= franchise.franchiseName %> Team</strong>
+</p>
+
+<%- await include('../layout/email-foot', { franchise: franchise }) %>

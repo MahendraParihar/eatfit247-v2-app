@@ -1,58 +1,57 @@
-<h2>Plan Invoice</h2>
+<%
+  const _currency = (typeof currency !== 'undefined' && currency) ? currency : '₹';
+-%>
+<%- await include('../layout/email-head', {
+  subject: 'Invoice ' + invoiceNumber + ' — ' + franchise.franchiseName,
+  preheader: planName + ' — ' + _currency + amount + ' paid. Invoice attached.',
+  franchise: franchise
+}) %>
 
-<p>Dear <%= memberName %>,</p>
+<%- await include('../partials/heading', {
+  eyebrow: 'Receipt',
+  title: 'Thanks for your purchase',
+  franchise: franchise
+}) %>
 
-<p>Thank you for your purchase! Please find your plan invoice details below.</p>
+<p style="margin:0 0 16px 0;">Dear <%= memberName %>,</p>
 
-<div style="background-color: #f9f9f9; padding: 20px; border-radius: 4px; margin: 20px 0;">
-  <h3 style="margin-top: 0;">Invoice Details</h3>
-  <table style="width: 100%; border-collapse: collapse;">
-    <tr>
-      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><strong>Invoice Number:</strong></td>
-      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><%= invoiceNumber %></td>
-    </tr>
-    <tr>
-      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><strong>Invoice Date:</strong></td>
-      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><%= invoiceDate %></td>
-    </tr>
-    <tr>
-      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><strong>Plan Name:</strong></td>
-      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><%= planName %></td>
-    </tr>
-    <% if (planDuration) { %>
-    <tr>
-      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><strong>Duration:</strong></td>
-      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><%= planDuration %></td>
-    </tr>
-    <% } %>
-    <tr>
-      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><strong>Amount:</strong></td>
-      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><strong><%= currency || '₹' %><%= amount %></strong></td>
-    </tr>
-    <% if (paymentMethod) { %>
-    <tr>
-      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><strong>Payment Method:</strong></td>
-      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><%= paymentMethod %></td>
-    </tr>
-    <% } %>
-    <% if (transactionId) { %>
-    <tr>
-      <td style="padding: 8px 0;"><strong>Transaction ID:</strong></td>
-      <td style="padding: 8px 0;"><%= transactionId %></td>
-    </tr>
-    <% } %>
-  </table>
-</div>
-
-<% if (invoiceUrl) { %>
-<p>
-  <a href="<%= invoiceUrl %>" style="display: inline-block; padding: 12px 24px; background-color: <%= franchise.brandColor || '#4CAF50' %>; color: #ffffff; text-decoration: none; border-radius: 4px; margin: 20px 0;">
-    Download Invoice
-  </a>
+<p style="margin:0 0 24px 0;">
+  Your payment was successful. Here are the details of your plan invoice.
 </p>
+
+<%- await include('../partials/section-open', { heading: 'Invoice details', franchise: franchise }) %>
+  <%- await include('../partials/info-row', { label: 'Invoice number', value: invoiceNumber }) %>
+  <%- await include('../partials/info-row', { label: 'Invoice date',   value: invoiceDate }) %>
+  <%- await include('../partials/info-row', { label: 'Plan',           value: planName }) %>
+  <% if (typeof planDuration !== 'undefined' && planDuration) { %>
+    <%- await include('../partials/info-row', { label: 'Duration', value: planDuration }) %>
+  <% } %>
+  <% if (typeof paymentMethod !== 'undefined' && paymentMethod) { %>
+    <%- await include('../partials/info-row', { label: 'Payment method', value: paymentMethod }) %>
+  <% } %>
+  <% if (typeof transactionId !== 'undefined' && transactionId) { %>
+    <%- await include('../partials/info-row', { label: 'Transaction ID', value: transactionId }) %>
+  <% } %>
+  <%- await include('../partials/info-row', {
+    label: 'Amount paid',
+    value: '<span style="font-size:18px;color:' + (franchise.brandColor || '#16a34a') + ';font-weight:700;">' + _currency + amount + '</span>',
+    isHtml: true,
+    last: true
+  }) %>
+<%- await include('../partials/section-close') %>
+
+<% if (typeof invoiceUrl !== 'undefined' && invoiceUrl) { %>
+  <%- await include('../partials/button', { href: invoiceUrl, label: 'Download invoice (PDF)', franchise: franchise }) %>
 <% } %>
 
-<p>If you have any questions about this invoice, please contact our support team at <a href="mailto:<%= franchise.supportEmail %>"><%= franchise.supportEmail %></a>.</p>
+<p style="margin:0 0 16px 0;color:#4b5563;">
+  Questions about this invoice? Reach us at
+  <a href="mailto:<%= franchise.supportEmail %>" style="color:<%= franchise.brandColor || '#16a34a' %>;text-decoration:none;font-weight:600;"><%= franchise.supportEmail %></a>.
+</p>
 
-<p>Best regards,<br>The <%= franchise.franchiseName %> Team</p>
+<p style="margin:0;color:#4b5563;">
+  Best regards,<br/>
+  <strong style="color:#111827;">The <%= franchise.franchiseName %> Team</strong>
+</p>
 
+<%- await include('../layout/email-foot', { franchise: franchise }) %>

@@ -1,0 +1,22 @@
+<%
+  /*
+   * Single label/value row inside an info table (typically wrapped by section-open/close).
+   * Stacks label above value on mobile via the ef-info-label / ef-info-value class hooks.
+   * Locals:
+   *   label    (string, required) - left-hand label
+   *   value    (string|html, required) - right-hand value (caller must escape if untrusted)
+   *   isHtml   (boolean, optional) - render value as raw HTML (default false: escapes)
+   *   last     (boolean, optional) - hide bottom border on the final row
+   */
+  const _last   = (typeof last   !== 'undefined') ? !!last   : false;
+  const _isHtml = (typeof isHtml !== 'undefined') ? !!isHtml : false;
+  const _border = _last ? 'none' : '1px solid #e5e7eb';
+-%>
+<tr>
+  <td class="ef-info-label" valign="top" style="padding:12px 12px 12px 0;border-bottom:<%= _border %>;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:14px;line-height:1.5;color:#6b7280;font-weight:500;width:40%;">
+    <%= label %>
+  </td>
+  <td class="ef-info-value" valign="top" style="padding:12px 0;border-bottom:<%= _border %>;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:15px;line-height:1.5;color:#111827;font-weight:600;">
+    <% if (_isHtml) { %><%- value %><% } else { %><%= value %><% } %>
+  </td>
+</tr>

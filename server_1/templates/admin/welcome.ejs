@@ -1,42 +1,48 @@
-<h2>Welcome to <%= franchise.franchiseName %> Admin Portal</h2>
+<%- await include('../layout/email-head', {
+  subject: 'Welcome to ' + franchise.franchiseName + ' Admin Portal',
+  preheader: 'Your admin account is ready — see your access details below.',
+  franchise: franchise
+}) %>
 
-<p>Dear <%= adminName %>,</p>
+<%- await include('../partials/heading', {
+  eyebrow: 'Admin access',
+  title: 'Welcome to the ' + franchise.franchiseName + ' admin portal',
+  franchise: franchise
+}) %>
 
-<p>Your admin account has been successfully created for the <%= franchise.franchiseName %> system.</p>
+<p style="margin:0 0 16px 0;">Dear <%= adminName %>,</p>
 
-<div style="background-color: #f9f9f9; padding: 20px; border-radius: 4px; margin: 20px 0;">
-  <h3 style="margin-top: 0;">Account Details</h3>
-  <table style="width: 100%; border-collapse: collapse;">
-    <tr>
-      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><strong>Email:</strong></td>
-      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><%= adminEmail %></td>
-    </tr>
-    <% if (role) { %>
-    <tr>
-      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><strong>Role:</strong></td>
-      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><%= role %></td>
-    </tr>
-    <% } %>
-    <tr>
-      <td style="padding: 8px 0;"><strong>Account Created:</strong></td>
-      <td style="padding: 8px 0;"><%= createdDate || new Date().toLocaleString() %></td>
-    </tr>
-  </table>
-</div>
-
-<% if (loginUrl) { %>
-<p>
-  <a href="<%= loginUrl %>" style="display: inline-block; padding: 12px 24px; background-color: <%= franchise.brandColor || '#4CAF50' %>; color: #ffffff; text-decoration: none; border-radius: 4px; margin: 20px 0;">
-    Access Admin Portal
-  </a>
+<p style="margin:0 0 24px 0;">
+  Your admin account has been successfully created for the <%= franchise.franchiseName %> system.
 </p>
+
+<%- await include('../partials/section-open', { heading: 'Account details', franchise: franchise }) %>
+  <%- await include('../partials/info-row', { label: 'Email', value: adminEmail }) %>
+  <% if (typeof role !== 'undefined' && role) { %>
+    <%- await include('../partials/info-row', { label: 'Role', value: role }) %>
+  <% } %>
+  <%- await include('../partials/info-row', { label: 'Account created', value: createdDate || new Date().toLocaleString(), last: true }) %>
+<%- await include('../partials/section-close') %>
+
+<% if (typeof temporaryPassword !== 'undefined' && temporaryPassword) { %>
+  <%- await include('../partials/alert', {
+    tone: 'warning',
+    title: 'Temporary password',
+    text: 'Use the temporary password provided separately to log in. You’ll be required to change it on your first login.'
+  }) %>
 <% } %>
 
-<% if (temporaryPassword) { %>
-<p><strong>Important:</strong> Please use the temporary password provided separately to log in. You will be required to change it on your first login.</p>
+<% if (typeof loginUrl !== 'undefined' && loginUrl) { %>
+  <%- await include('../partials/button', { href: loginUrl, label: 'Access admin portal', franchise: franchise }) %>
 <% } %>
 
-<p>If you have any questions or need assistance, please contact the system administrator.</p>
+<p style="margin:0 0 16px 0;color:#4b5563;">
+  Questions? Contact the system administrator.
+</p>
 
-<p>Best regards,<br>The <%= franchise.franchiseName %> Team</p>
+<p style="margin:0;color:#4b5563;">
+  Best regards,<br/>
+  <strong style="color:#111827;">The <%= franchise.franchiseName %> Team</strong>
+</p>
 
+<%- await include('../layout/email-foot', { franchise: franchise }) %>

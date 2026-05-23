@@ -1,58 +1,56 @@
-<h2>Order Confirmation</h2>
+<%
+  const _currency = (typeof currency !== 'undefined' && currency) ? currency : '₹';
+-%>
+<%- await include('../layout/email-head', {
+  subject: 'Order confirmed: ' + orderNumber,
+  preheader: 'We’ve received your order — ' + productName + '. Estimated delivery info inside.',
+  franchise: franchise
+}) %>
 
-<p>Dear <%= memberName %>,</p>
+<%- await include('../partials/heading', {
+  eyebrow: 'Order confirmed',
+  title: 'Thanks for your order, ' + memberName,
+  franchise: franchise
+}) %>
 
-<p>Thank you for your order! We're excited to confirm that your order has been received and is being processed.</p>
-
-<div style="background-color: #f9f9f9; padding: 20px; border-radius: 4px; margin: 20px 0;">
-  <h3 style="margin-top: 0;">Order Details</h3>
-  <table style="width: 100%; border-collapse: collapse;">
-    <tr>
-      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><strong>Order Number:</strong></td>
-      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><%= orderNumber %></td>
-    </tr>
-    <tr>
-      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><strong>Order Date:</strong></td>
-      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><%= orderDate %></td>
-    </tr>
-    <tr>
-      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><strong>Product:</strong></td>
-      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><%= productName %></td>
-    </tr>
-    <% if (quantity) { %>
-    <tr>
-      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><strong>Quantity:</strong></td>
-      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><%= quantity %></td>
-    </tr>
-    <% } %>
-    <% if (shippingAddress) { %>
-    <tr>
-      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><strong>Shipping Address:</strong></td>
-      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><%= shippingAddress %></td>
-    </tr>
-    <% } %>
-    <% if (estimatedDelivery) { %>
-    <tr>
-      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><strong>Estimated Delivery:</strong></td>
-      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><%= estimatedDelivery %></td>
-    </tr>
-    <% } %>
-    <tr>
-      <td style="padding: 8px 0;"><strong>Total Amount:</strong></td>
-      <td style="padding: 8px 0;"><strong><%= currency || '₹' %><%= totalAmount %></strong></td>
-    </tr>
-  </table>
-</div>
-
-<% if (orderTrackingUrl) { %>
-<p>
-  <a href="<%= orderTrackingUrl %>" style="display: inline-block; padding: 12px 24px; background-color: <%= franchise.brandColor || '#4CAF50' %>; color: #ffffff; text-decoration: none; border-radius: 4px; margin: 20px 0;">
-    Track Your Order
-  </a>
+<p style="margin:0 0 24px 0;">
+  We’re excited to confirm we’ve received your order and started processing it.
+  We’ll email you again as soon as it ships.
 </p>
+
+<%- await include('../partials/section-open', { heading: 'Order details', franchise: franchise }) %>
+  <%- await include('../partials/info-row', { label: 'Order number', value: orderNumber }) %>
+  <%- await include('../partials/info-row', { label: 'Order date',   value: orderDate }) %>
+  <%- await include('../partials/info-row', { label: 'Product',      value: productName }) %>
+  <% if (typeof quantity !== 'undefined' && quantity) { %>
+    <%- await include('../partials/info-row', { label: 'Quantity', value: quantity }) %>
+  <% } %>
+  <% if (typeof shippingAddress !== 'undefined' && shippingAddress) { %>
+    <%- await include('../partials/info-row', { label: 'Ship to', value: shippingAddress }) %>
+  <% } %>
+  <% if (typeof estimatedDelivery !== 'undefined' && estimatedDelivery) { %>
+    <%- await include('../partials/info-row', { label: 'Est. delivery', value: estimatedDelivery }) %>
+  <% } %>
+  <%- await include('../partials/info-row', {
+    label: 'Total',
+    value: '<span style="font-size:18px;color:' + (franchise.brandColor || '#16a34a') + ';font-weight:700;">' + _currency + totalAmount + '</span>',
+    isHtml: true,
+    last: true
+  }) %>
+<%- await include('../partials/section-close') %>
+
+<% if (typeof orderTrackingUrl !== 'undefined' && orderTrackingUrl) { %>
+  <%- await include('../partials/button', { href: orderTrackingUrl, label: 'Track your order', franchise: franchise }) %>
 <% } %>
 
-<p>We'll send you another email once your order has been shipped. If you have any questions, please contact our support team at <a href="mailto:<%= franchise.supportEmail %>"><%= franchise.supportEmail %></a>.</p>
+<p style="margin:0 0 16px 0;color:#4b5563;">
+  Questions about your order? Email
+  <a href="mailto:<%= franchise.supportEmail %>" style="color:<%= franchise.brandColor || '#16a34a' %>;text-decoration:none;font-weight:600;"><%= franchise.supportEmail %></a>.
+</p>
 
-<p>Best regards,<br>The <%= franchise.franchiseName %> Team</p>
+<p style="margin:0;color:#4b5563;">
+  Best regards,<br/>
+  <strong style="color:#111827;">The <%= franchise.franchiseName %> Team</strong>
+</p>
 
+<%- await include('../layout/email-foot', { franchise: franchise }) %>

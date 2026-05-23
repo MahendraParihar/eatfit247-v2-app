@@ -1,32 +1,52 @@
-<div class="empty-state">
-  <div class="empty-icon">
-    <svg
-      width="64"
-      height="64"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      stroke-width="2"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-    >
-      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-    </svg>
+<aside
+  class="ef-empty"
+  [class.ef-empty--inline]="variant === 'inline'"
+  [class.ef-empty--center]="variant === 'center'"
+  aria-live="polite"
+>
+  <span class="ef-empty__icon mat-icon">{{ icon }}</span>
+  <div class="ef-empty__body">
+    <h3 class="ef-empty__title">{{ title }}</h3>
+    <p class="ef-empty__copy">{{ description }}</p>
+
+    @if (actions.length > 0 || buttonText) {
+      <div class="ef-empty__actions">
+        @for (action of actions; track action.label) {
+          @if (action.link) {
+            <a
+              [routerLink]="action.link"
+              [queryParams]="action.queryParams"
+              class="mat-btn"
+              [class.mat-btn--filled]="(action.variant ?? 'outlined') === 'filled'"
+              [class.mat-btn--outlined]="(action.variant ?? 'outlined') === 'outlined'"
+            >
+              {{ action.label }}
+              <span class="mat-icon">{{ action.icon ?? 'arrow_forward' }}</span>
+            </a>
+          } @else if (action.href) {
+            <a
+              [href]="action.href"
+              class="mat-btn"
+              [class.mat-btn--filled]="(action.variant ?? 'outlined') === 'filled'"
+              [class.mat-btn--outlined]="(action.variant ?? 'outlined') === 'outlined'"
+            >
+              {{ action.label }}
+              <span class="mat-icon">{{ action.icon ?? 'arrow_forward' }}</span>
+            </a>
+          }
+        }
+
+        @if (buttonText) {
+          <button
+            type="button"
+            class="mat-btn mat-btn--outlined"
+            (click)="onButtonClick()"
+          >
+            {{ buttonText }}
+            <span class="mat-icon">arrow_forward</span>
+          </button>
+        }
+      </div>
+    }
   </div>
-
-  <h3 class="empty-title">{{ title }}</h3>
-  <p class="empty-description">{{ description }}</p>
-
-  @if (buttonText) {
-    <button
-      type="button"
-      class="empty-button"
-      (click)="onButtonClick()"
-    >
-      {{ buttonText }}
-    </button>
-  }
-</div>
-
-
+</aside>

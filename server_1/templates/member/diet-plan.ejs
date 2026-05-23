@@ -1,46 +1,45 @@
-<h2>Your Diet Plan Has Been Assigned</h2>
+<%- await include('../layout/email-head', {
+  subject: 'Your diet plan is ready: ' + planName,
+  preheader: 'Your personalised diet plan has been assigned and is ready to view.',
+  franchise: franchise
+}) %>
 
-<p>Dear <%= memberName %>,</p>
+<%- await include('../partials/heading', {
+  eyebrow: 'Diet plan assigned',
+  title: 'Your plan is ready, ' + memberName,
+  franchise: franchise
+}) %>
 
-<p>Great news! Your personalized diet plan has been assigned and is now ready for you to view.</p>
-
-<div style="background-color: #f9f9f9; padding: 20px; border-radius: 4px; margin: 20px 0;">
-  <h3 style="margin-top: 0;">Diet Plan Details</h3>
-  <table style="width: 100%; border-collapse: collapse;">
-    <tr>
-      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><strong>Plan Name:</strong></td>
-      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><%= planName %></td>
-    </tr>
-    <% if (nutritionistName) { %>
-    <tr>
-      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><strong>Assigned By:</strong></td>
-      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><%= nutritionistName %></td>
-    </tr>
-    <% } %>
-    <tr>
-      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><strong>Assigned Date:</strong></td>
-      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><%= assignedDate %></td>
-    </tr>
-    <% if (planDuration) { %>
-    <tr>
-      <td style="padding: 8px 0;"><strong>Duration:</strong></td>
-      <td style="padding: 8px 0;"><%= planDuration %></td>
-    </tr>
-    <% } %>
-  </table>
-</div>
-
-<% if (planUrl) { %>
-<p>
-  <a href="<%= planUrl %>" style="display: inline-block; padding: 12px 24px; background-color: <%= franchise.brandColor || '#4CAF50' %>; color: #ffffff; text-decoration: none; border-radius: 4px; margin: 20px 0;">
-    View Your Diet Plan
-  </a>
+<p style="margin:0 0 24px 0;">
+  Great news — your personalised diet plan has been assigned and is ready for you to view.
+  Follow it consistently for the best results.
 </p>
+
+<%- await include('../partials/section-open', { heading: 'Plan details', franchise: franchise }) %>
+  <%- await include('../partials/info-row', { label: 'Plan name', value: planName }) %>
+  <% if (typeof nutritionistName !== 'undefined' && nutritionistName) { %>
+    <%- await include('../partials/info-row', { label: 'Assigned by', value: nutritionistName }) %>
+  <% } %>
+  <%- await include('../partials/info-row', { label: 'Assigned on', value: assignedDate }) %>
+  <% if (typeof planDuration !== 'undefined' && planDuration) { %>
+    <%- await include('../partials/info-row', { label: 'Duration', value: planDuration, last: true }) %>
+  <% } else { %>
+    <%- await include('../partials/info-row', { label: 'Account', value: franchise.franchiseName, last: true }) %>
+  <% } %>
+<%- await include('../partials/section-close') %>
+
+<% if (typeof planUrl !== 'undefined' && planUrl) { %>
+  <%- await include('../partials/button', { href: planUrl, label: 'View your diet plan', franchise: franchise }) %>
 <% } %>
 
-<p>Your diet plan has been carefully crafted based on your health goals and preferences. Make sure to follow it consistently for the best results.</p>
+<p style="margin:0 0 16px 0;color:#4b5563;">
+  Questions or need adjustments? Reach our team at
+  <a href="mailto:<%= franchise.supportEmail %>" style="color:<%= franchise.brandColor || '#16a34a' %>;text-decoration:none;font-weight:600;"><%= franchise.supportEmail %></a>.
+</p>
 
-<p>If you have any questions or need to make adjustments to your plan, please contact our support team at <a href="mailto:<%= franchise.supportEmail %>"><%= franchise.supportEmail %></a>.</p>
+<p style="margin:0;color:#4b5563;">
+  Best regards,<br/>
+  <strong style="color:#111827;">The <%= franchise.franchiseName %> Team</strong>
+</p>
 
-<p>Best regards,<br>The <%= franchise.franchiseName %> Team</p>
-
+<%- await include('../layout/email-foot', { franchise: franchise }) %>
