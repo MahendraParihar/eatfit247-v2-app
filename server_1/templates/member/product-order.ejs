@@ -3,54 +3,36 @@
 -%>
 <%- await include('../layout/email-head', {
   subject: 'Order confirmed: ' + orderNumber,
-  preheader: 'We’ve received your order — ' + productName + '. Estimated delivery info inside.',
-  franchise: franchise
+  preheader: 'Order ' + orderNumber + ' confirmed — we’ll let you know when it ships.',
+  franchise: franchise,
+  icon: '▦'
 }) %>
 
 <%- await include('../partials/heading', {
-  eyebrow: 'Order confirmed',
-  title: 'Thanks for your order, ' + memberName,
-  franchise: franchise
+  title: 'Order confirmed, ' + memberName + '!',
+  lead: 'Thanks for your order. We’re packing things up and will send another note when it leaves the warehouse.'
 }) %>
 
-<p style="margin:0 0 24px 0;">
-  We’re excited to confirm we’ve received your order and started processing it.
-  We’ll email you again as soon as it ships.
-</p>
-
-<%- await include('../partials/section-open', { heading: 'Order details', franchise: franchise }) %>
-  <%- await include('../partials/info-row', { label: 'Order number', value: orderNumber }) %>
-  <%- await include('../partials/info-row', { label: 'Order date',   value: orderDate }) %>
-  <%- await include('../partials/info-row', { label: 'Product',      value: productName }) %>
-  <% if (typeof quantity !== 'undefined' && quantity) { %>
-    <%- await include('../partials/info-row', { label: 'Quantity', value: quantity }) %>
-  <% } %>
+<%- await include('../partials/section-open', { eyebrow: 'Order summary' }) %>
+  <%- await include('../partials/info-row', { label: 'Order #',   value: orderNumber }) %>
+  <%- await include('../partials/info-row', { label: 'Placed',    value: orderDate }) %>
+  <%- await include('../partials/info-row', {
+    label: 'Item',
+    value: productName + ((typeof quantity !== 'undefined' && quantity) ? (' × ' + quantity) : '')
+  }) %>
   <% if (typeof shippingAddress !== 'undefined' && shippingAddress) { %>
     <%- await include('../partials/info-row', { label: 'Ship to', value: shippingAddress }) %>
   <% } %>
   <% if (typeof estimatedDelivery !== 'undefined' && estimatedDelivery) { %>
     <%- await include('../partials/info-row', { label: 'Est. delivery', value: estimatedDelivery }) %>
   <% } %>
-  <%- await include('../partials/info-row', {
-    label: 'Total',
-    value: '<span style="font-size:18px;color:' + (franchise.brandColor || '#16a34a') + ';font-weight:700;">' + _currency + totalAmount + '</span>',
-    isHtml: true,
-    last: true
-  }) %>
+  <%- await include('../partials/info-row', { label: 'Total', value: _currency + totalAmount, last: true, strong: true }) %>
 <%- await include('../partials/section-close') %>
 
 <% if (typeof orderTrackingUrl !== 'undefined' && orderTrackingUrl) { %>
-  <%- await include('../partials/button', { href: orderTrackingUrl, label: 'Track your order', franchise: franchise }) %>
+  <%- await include('../partials/button', { href: orderTrackingUrl, label: 'Track order', franchise: franchise }) %>
 <% } %>
 
-<p style="margin:0 0 16px 0;color:#4b5563;">
-  Questions about your order? Email
-  <a href="mailto:<%= franchise.supportEmail %>" style="color:<%= franchise.brandColor || '#16a34a' %>;text-decoration:none;font-weight:600;"><%= franchise.supportEmail %></a>.
-</p>
-
-<p style="margin:0;color:#4b5563;">
-  Best regards,<br/>
-  <strong style="color:#111827;">The <%= franchise.franchiseName %> Team</strong>
-</p>
+<%- await include('../partials/signoff', { closing: 'On its way,', franchise: franchise }) %>
 
 <%- await include('../layout/email-foot', { franchise: franchise }) %>

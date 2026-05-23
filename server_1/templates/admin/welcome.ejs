@@ -1,48 +1,34 @@
 <%- await include('../layout/email-head', {
-  subject: 'Welcome to ' + franchise.franchiseName + ' Admin Portal',
-  preheader: 'Your admin account is ready — see your access details below.',
-  franchise: franchise
+  subject: 'Welcome to the ' + franchise.franchiseName + ' console',
+  preheader: 'An admin account has been created for you — sign in to get started.',
+  franchise: franchise,
+  icon: '⌘'
 }) %>
 
 <%- await include('../partials/heading', {
-  eyebrow: 'Admin access',
-  title: 'Welcome to the ' + franchise.franchiseName + ' admin portal',
-  franchise: franchise
+  title: 'Welcome to the ' + franchise.franchiseName + ' console.',
+  lead: 'Hi ' + adminName + ' — your admin account is ready. Use the details below to sign in.'
 }) %>
 
-<p style="margin:0 0 16px 0;">Dear <%= adminName %>,</p>
-
-<p style="margin:0 0 24px 0;">
-  Your admin account has been successfully created for the <%= franchise.franchiseName %> system.
-</p>
-
-<%- await include('../partials/section-open', { heading: 'Account details', franchise: franchise }) %>
+<%- await include('../partials/section-open', { eyebrow: 'Your account' }) %>
   <%- await include('../partials/info-row', { label: 'Email', value: adminEmail }) %>
   <% if (typeof role !== 'undefined' && role) { %>
     <%- await include('../partials/info-row', { label: 'Role', value: role }) %>
   <% } %>
-  <%- await include('../partials/info-row', { label: 'Account created', value: createdDate || new Date().toLocaleString(), last: true }) %>
+  <%- await include('../partials/info-row', { label: 'Created', value: createdDate || new Date().toLocaleString(), last: true }) %>
 <%- await include('../partials/section-close') %>
 
 <% if (typeof temporaryPassword !== 'undefined' && temporaryPassword) { %>
   <%- await include('../partials/alert', {
     tone: 'warning',
-    title: 'Temporary password',
-    text: 'Use the temporary password provided separately to log in. You’ll be required to change it on your first login.'
+    text: 'A temporary password was sent separately. You’ll be asked to change it on first sign-in.'
   }) %>
 <% } %>
 
 <% if (typeof loginUrl !== 'undefined' && loginUrl) { %>
-  <%- await include('../partials/button', { href: loginUrl, label: 'Access admin portal', franchise: franchise }) %>
+  <%- await include('../partials/button', { href: loginUrl, label: 'Open the console', franchise: franchise }) %>
 <% } %>
 
-<p style="margin:0 0 16px 0;color:#4b5563;">
-  Questions? Contact the system administrator.
-</p>
-
-<p style="margin:0;color:#4b5563;">
-  Best regards,<br/>
-  <strong style="color:#111827;">The <%= franchise.franchiseName %> Team</strong>
-</p>
+<%- await include('../partials/signoff', { closing: 'Welcome aboard,', team: franchise.franchiseName + ' Operations', franchise: franchise }) %>
 
 <%- await include('../layout/email-foot', { franchise: franchise }) %>

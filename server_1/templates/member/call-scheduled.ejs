@@ -1,38 +1,23 @@
 <%- await include('../layout/email-head', {
-  subject: 'Call scheduled: ' + callDate + ' at ' + callTime,
-  preheader: 'Your consultation is booked for ' + callDate + ' at ' + callTime + '.',
-  franchise: franchise
+  subject: 'Call confirmed for ' + callDate + ' at ' + callTime,
+  preheader: 'Confirmed: ' + callDate + ' at ' + callTime + ((typeof nutritionistName !== 'undefined' && nutritionistName) ? (' with ' + nutritionistName) : '') + '.',
+  franchise: franchise,
+  icon: '◐'
 }) %>
 
 <%- await include('../partials/heading', {
-  eyebrow: 'Call scheduled',
-  title: 'You’re booked, ' + memberName,
-  franchise: franchise
+  title: 'You’re booked in, ' + memberName + '.',
+  lead: 'Here are the details for your upcoming consultation. We’ll send a reminder one hour before.'
 }) %>
 
-<p style="margin:0 0 24px 0;">
-  Your consultation call has been successfully scheduled. We’re looking forward to speaking with you!
-</p>
-
-<%- await include('../partials/section-open', { heading: 'Call details', franchise: franchise }) %>
+<%- await include('../partials/section-open', { eyebrow: 'Call details' }) %>
   <%- await include('../partials/info-row', { label: 'Date', value: callDate }) %>
-  <%- await include('../partials/info-row', { label: 'Time', value: callTime }) %>
-  <% if (typeof timezone !== 'undefined' && timezone) { %>
-    <%- await include('../partials/info-row', { label: 'Timezone', value: timezone }) %>
-  <% } %>
+  <%- await include('../partials/info-row', { label: 'Time', value: callTime + ((typeof timezone !== 'undefined' && timezone) ? ' (' + timezone + ')' : '') }) %>
   <% if (typeof nutritionistName !== 'undefined' && nutritionistName) { %>
     <%- await include('../partials/info-row', { label: 'With', value: nutritionistName }) %>
   <% } %>
   <% if (typeof callType !== 'undefined' && callType) { %>
-    <%- await include('../partials/info-row', { label: 'Call type', value: callType }) %>
-  <% } %>
-  <% if (typeof meetingLink !== 'undefined' && meetingLink) { %>
-    <%- await include('../partials/info-row', {
-      label: 'Meeting link',
-      value: '<a href="' + meetingLink + '" style="color:' + (franchise.brandColor || '#16a34a') + ';text-decoration:none;word-break:break-all;">' + meetingLink + '</a>',
-      isHtml: true,
-      last: true
-    }) %>
+    <%- await include('../partials/info-row', { label: 'Type', value: callType, last: true }) %>
   <% } else { %>
     <%- await include('../partials/info-row', { label: 'Status', value: 'Confirmed', last: true }) %>
   <% } %>
@@ -42,20 +27,10 @@
   <%- await include('../partials/button', { href: meetingLink, label: 'Join call', franchise: franchise }) %>
 <% } %>
 
-<%- await include('../partials/alert', {
-  tone: 'info',
-  title: 'A few tips before the call',
-  text: 'Be available 5 minutes early, have a stable internet connection, and jot down any questions you’d like to discuss.'
+<%- await include('../partials/prose', {
+  text: 'Tip: join 5 minutes early, have a stable connection, and jot down anything you want to discuss.'
 }) %>
 
-<p style="margin:0 0 16px 0;color:#4b5563;">
-  Need to reschedule? Email
-  <a href="mailto:<%= franchise.supportEmail %>" style="color:<%= franchise.brandColor || '#16a34a' %>;text-decoration:none;font-weight:600;"><%= franchise.supportEmail %></a>.
-</p>
-
-<p style="margin:0;color:#4b5563;">
-  Best regards,<br/>
-  <strong style="color:#111827;">The <%= franchise.franchiseName %> Team</strong>
-</p>
+<%- await include('../partials/signoff', { closing: 'See you soon,', franchise: franchise }) %>
 
 <%- await include('../layout/email-foot', { franchise: franchise }) %>

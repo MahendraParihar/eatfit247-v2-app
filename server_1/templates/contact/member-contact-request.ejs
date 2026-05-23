@@ -1,48 +1,28 @@
 <%- await include('../layout/email-head', {
-  subject: 'We’ve received your contact request',
-  preheader: 'Thanks for reaching out — we’ll be in touch within 24–48 hours.',
-  franchise: franchise
+  subject: 'Thanks for getting in touch — ' + franchise.franchiseName,
+  preheader: 'Thanks for reaching out — we’ll reply within 1 business day.',
+  franchise: franchise,
+  icon: '✉'
 }) %>
 
 <%- await include('../partials/heading', {
-  eyebrow: 'Request received',
-  title: 'Thanks for contacting us',
-  franchise: franchise
+  title: 'Thanks for reaching out, ' + ((typeof memberName !== 'undefined' && memberName) ? memberName : 'friend') + '.',
+  lead: 'We’ve received your message and a real human will reply within one business day. Here’s a copy for your records.'
 }) %>
 
-<p style="margin:0 0 16px 0;">
-  Dear <%= (typeof memberName !== 'undefined' && memberName) ? memberName : 'Valued Customer' %>,
-</p>
-
-<p style="margin:0 0 24px 0;">
-  We’ve received your contact request and appreciate you reaching out to <%= franchise.franchiseName %>.
-</p>
-
-<%- await include('../partials/section-open', { heading: 'Your request details', franchise: franchise }) %>
-  <%- await include('../partials/info-row', { label: 'Request ID',  value: (typeof requestId !== 'undefined' && requestId) ? requestId : 'N/A' }) %>
-  <%- await include('../partials/info-row', { label: 'Subject',     value: subject }) %>
-  <%- await include('../partials/info-row', { label: 'Submitted on', value: (typeof submittedDate !== 'undefined' && submittedDate) ? submittedDate : new Date().toLocaleString() }) %>
+<%- await include('../partials/section-open', { eyebrow: 'Your request' }) %>
+  <%- await include('../partials/info-row', { label: 'Reference', value: (typeof requestId !== 'undefined' && requestId) ? requestId : 'N/A' }) %>
+  <%- await include('../partials/info-row', { label: 'Subject',   value: subject }) %>
+  <%- await include('../partials/info-row', { label: 'Submitted', value: (typeof submittedDate !== 'undefined' && submittedDate) ? submittedDate : new Date().toLocaleString(), last: (typeof message === 'undefined' || !message) }) %>
   <% if (typeof message !== 'undefined' && message) { %>
     <%- await include('../partials/info-row', { label: 'Your message', value: message, last: true }) %>
-  <% } else { %>
-    <%- await include('../partials/info-row', { label: 'Status', value: 'Received', last: true }) %>
   <% } %>
 <%- await include('../partials/section-close') %>
 
-<%- await include('../partials/alert', {
-  tone: 'info',
-  title: 'What happens next?',
-  text: 'Our team will review your request and get back to you within 24–48 hours.'
+<%- await include('../partials/prose', {
+  text: 'Need to add something? Reply to this email and it’ll land on the same ticket.'
 }) %>
 
-<p style="margin:0 0 16px 0;">
-  Urgent concern? Reach us directly at
-  <a href="mailto:<%= franchise.supportEmail %>" style="color:<%= franchise.brandColor || '#16a34a' %>;text-decoration:none;font-weight:600;"><%= franchise.supportEmail %></a>.
-</p>
-
-<p style="margin:0;color:#4b5563;">
-  Best regards,<br/>
-  <strong style="color:#111827;">The <%= franchise.franchiseName %> Team</strong>
-</p>
+<%- await include('../partials/signoff', { closing: 'Talk soon,', franchise: franchise }) %>
 
 <%- await include('../layout/email-foot', { franchise: franchise }) %>

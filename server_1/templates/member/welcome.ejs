@@ -1,35 +1,28 @@
 <%- await include('../layout/email-head', {
   subject: 'Welcome to ' + franchise.franchiseName,
-  preheader: 'Your ' + franchise.franchiseName + ' account is ready — let’s get started.',
-  franchise: franchise
+  preheader: 'Your journey to a healthier you starts here.',
+  franchise: franchise,
+  icon: '★'
 }) %>
 
 <%- await include('../partials/heading', {
-  eyebrow: 'Welcome aboard',
-  title: 'Welcome to ' + franchise.franchiseName + '!',
-  franchise: franchise
+  title: 'Welcome, ' + memberName + '.',
+  lead: 'We’re so glad you’re here. Your account is ready — let’s set you up for your healthiest year yet.'
 }) %>
 
-<p style="margin:0 0 16px 0;">Dear <%= memberName %>,</p>
+<%- await include('../partials/prose', {
+  text: franchise.franchiseName + ' pairs you with a real nutritionist, builds a diet plan around your body and lifestyle, and keeps you on track with weekly check-ins.'
+}) %>
 
-<p style="margin:0 0 16px 0;">
-  We're thrilled to have you join the <%= franchise.franchiseName %> family.
-  Your account has been successfully created and you can now start your journey
-  towards a healthier lifestyle.
-</p>
+<%- await include('../partials/prose', {
+  text: 'Once your profile is in, your nutritionist will craft your first diet plan within 24 hours.',
+  tight: true
+}) %>
 
 <% if (typeof loginUrl !== 'undefined' && loginUrl) { %>
-  <%- await include('../partials/button', { href: loginUrl, label: 'Login to your account', align: 'left', franchise: franchise }) %>
+  <%- await include('../partials/button', { href: loginUrl, label: 'Open my account', franchise: franchise }) %>
 <% } %>
 
-<p style="margin:0 0 16px 0;color:#4b5563;">
-  Have questions? Reach our support team any time at
-  <a href="mailto:<%= franchise.supportEmail %>" style="color:<%= franchise.brandColor || '#16a34a' %>;text-decoration:none;font-weight:600;"><%= franchise.supportEmail %></a>.
-</p>
-
-<p style="margin:0;color:#4b5563;">
-  Best regards,<br/>
-  <strong style="color:#111827;">The <%= franchise.franchiseName %> Team</strong>
-</p>
+<%- await include('../partials/signoff', { closing: 'Stay nourished,', franchise: franchise }) %>
 
 <%- await include('../layout/email-foot', { franchise: franchise }) %>

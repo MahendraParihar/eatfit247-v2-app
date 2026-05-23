@@ -1,44 +1,29 @@
 <%- await include('../layout/email-head', {
-  subject: 'Response: ' + originalSubject,
-  preheader: 'We’ve responded to your contact request — details inside.',
-  franchise: franchise
+  subject: 'Response sent: ' + originalSubject,
+  preheader: 'Response delivered to ' + ((typeof memberName !== 'undefined' && memberName) ? memberName : 'the visitor') + ' on “' + originalSubject + '”.',
+  franchise: franchise,
+  icon: '↩'
 }) %>
 
 <%- await include('../partials/heading', {
-  eyebrow: 'Response received',
-  title: 'A response to your inquiry',
-  franchise: franchise
+  title: 'Response delivered',
+  lead: 'A reply has been sent to ' + ((typeof memberName !== 'undefined' && memberName) ? memberName : 'the visitor') + ' on the request below. Keep a copy for the ticket trail.'
 }) %>
 
-<p style="margin:0 0 16px 0;">
-  Dear <%= (typeof memberName !== 'undefined' && memberName) ? memberName : 'Valued Customer' %>,
-</p>
-
-<p style="margin:0 0 24px 0;">
-  Thank you for contacting <%= franchise.franchiseName %>. We’ve reviewed your request and our response is below.
-</p>
-
-<%- await include('../partials/section-open', { heading: 'Response details', franchise: franchise }) %>
-  <%- await include('../partials/info-row', { label: 'Original request', value: originalSubject }) %>
-  <%- await include('../partials/info-row', { label: 'Response date',    value: (typeof responseDate !== 'undefined' && responseDate) ? responseDate : new Date().toLocaleString() }) %>
+<%- await include('../partials/section-open', { eyebrow: 'Ticket' }) %>
+  <%- await include('../partials/info-row', { label: 'Subject',      value: originalSubject }) %>
+  <%- await include('../partials/info-row', { label: 'Responded on', value: (typeof responseDate !== 'undefined' && responseDate) ? responseDate : new Date().toLocaleString() }) %>
   <% if (typeof respondedBy !== 'undefined' && respondedBy) { %>
-    <%- await include('../partials/info-row', { label: 'Responded by', value: respondedBy }) %>
+    <%- await include('../partials/info-row', { label: 'By', value: respondedBy, last: true }) %>
+  <% } else { %>
+    <%- await include('../partials/info-row', { label: 'Status', value: 'Sent', last: true }) %>
   <% } %>
-  <%- await include('../partials/info-row', { label: 'Response', value: responseMessage, last: true }) %>
 <%- await include('../partials/section-close') %>
 
-<p style="margin:0 0 16px 0;">
-  Need further help? Email
-  <a href="mailto:<%= franchise.supportEmail %>" style="color:<%= franchise.brandColor || '#16a34a' %>;text-decoration:none;font-weight:600;"><%= franchise.supportEmail %></a>.
-</p>
+<%- await include('../partials/section-open', { eyebrow: 'Response' }) %>
+  <%- await include('../partials/info-row', { label: 'Message', value: responseMessage, last: true }) %>
+<%- await include('../partials/section-close') %>
 
-<p style="margin:0 0 16px 0;">
-  We appreciate your patience and look forward to serving you.
-</p>
-
-<p style="margin:0;color:#4b5563;">
-  Best regards,<br/>
-  <strong style="color:#111827;">The <%= franchise.franchiseName %> Team</strong>
-</p>
+<%- await include('../partials/signoff', { closing: 'Logged,', team: franchise.franchiseName + ' System', franchise: franchise }) %>
 
 <%- await include('../layout/email-foot', { franchise: franchise }) %>

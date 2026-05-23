@@ -20,9 +20,20 @@ const OUT_DIR = path.join(__dirname, 'previews');
 const franchise = {
   franchiseName: 'EatFit247',
   franchiseLogo: '', // set to a URL to render the image instead of the text wordmark
-  brandColor: '#16a34a',
-  supportEmail: 'support@eatfit247.com',
-  footerText: '© 2026 EatFit247 Pvt. Ltd. All rights reserved.',
+  brandColor: '#f84141',
+  supportEmail: 'hello@eatfit247.com',
+  address: 'EatFit247 Nutrition & Wellness Pvt. Ltd. · Mumbai, India',
+  phone: '+91 98765 43210',
+  socials: {
+    instagram: 'https://instagram.com/eatfit247',
+    youtube:   'https://youtube.com/@eatfit247',
+    facebook:  'https://facebook.com/eatfit247',
+    linkedin:  'https://linkedin.com/company/eatfit247',
+  },
+  preferencesUrl: 'https://eatfit247.com/account/preferences',
+  unsubscribeUrl: 'https://eatfit247.com/unsubscribe',
+  privacyUrl:     'https://eatfit247.com/privacy',
+  footerText: '© 2026 EatFit247. All rights reserved.',
 };
 
 const samples = {

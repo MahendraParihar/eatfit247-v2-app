@@ -1,48 +1,32 @@
 <%- await include('../layout/email-head', {
   subject: 'Your inquiry has been resolved',
-  preheader: 'We’ve resolved your recent inquiry — full details inside.',
-  franchise: franchise
+  preheader: 'We’ve responded to your inquiry' + ((typeof inquiryTitle !== 'undefined' && inquiryTitle) ? (': ' + inquiryTitle) : '') + '.',
+  franchise: franchise,
+  icon: '✓'
 }) %>
 
 <%- await include('../partials/heading', {
-  eyebrow: 'Inquiry resolved',
-  title: 'Your inquiry is now resolved',
-  franchise: franchise
+  title: 'Your inquiry has been resolved.',
+  lead: 'Hi ' + memberName + ' — our team has reviewed your inquiry and posted a response. Details below.'
 }) %>
 
-<p style="margin:0 0 16px 0;">Dear <%= memberName %>,</p>
-
-<p style="margin:0 0 24px 0;">
-  We’re pleased to let you know that your inquiry has been reviewed and resolved by our support team.
-</p>
-
-<%- await include('../partials/section-open', { heading: 'Resolution details', franchise: franchise }) %>
+<%- await include('../partials/section-open', { eyebrow: 'Resolution' }) %>
   <% if (typeof inquiryTitle !== 'undefined' && inquiryTitle) { %>
     <%- await include('../partials/info-row', { label: 'Inquiry', value: inquiryTitle }) %>
   <% } %>
   <% if (typeof resolvedBy !== 'undefined' && resolvedBy) { %>
     <%- await include('../partials/info-row', { label: 'Resolved by', value: resolvedBy }) %>
   <% } %>
-  <%- await include('../partials/info-row', { label: 'Resolved on', value: resolvedDate || new Date().toLocaleString() }) %>
+  <%- await include('../partials/info-row', { label: 'Resolved on', value: resolvedDate || new Date().toLocaleString(), last: (typeof resolutionNote === 'undefined' || !resolutionNote) }) %>
   <% if (typeof resolutionNote !== 'undefined' && resolutionNote) { %>
-    <%- await include('../partials/info-row', { label: 'Resolution note', value: resolutionNote, last: true }) %>
-  <% } else { %>
-    <%- await include('../partials/info-row', { label: 'Status', value: 'Resolved', last: true }) %>
+    <%- await include('../partials/info-row', { label: 'Notes', value: resolutionNote, last: true }) %>
   <% } %>
 <%- await include('../partials/section-close') %>
 
-<p style="margin:0 0 16px 0;">
-  We hope this resolves your concern. If you have further questions or need additional support, please reach out at
-  <a href="mailto:<%= franchise.supportEmail %>" style="color:<%= franchise.brandColor || '#16a34a' %>;text-decoration:none;font-weight:600;"><%= franchise.supportEmail %></a>.
-</p>
+<%- await include('../partials/prose', {
+  text: 'Anything else? Reply to this email and we’ll pick it up from there.'
+}) %>
 
-<p style="margin:0 0 16px 0;">
-  Thank you for being a valued member of the <%= franchise.franchiseName %> community.
-</p>
-
-<p style="margin:0;color:#4b5563;">
-  Best regards,<br/>
-  <strong style="color:#111827;">The <%= franchise.franchiseName %> Team</strong>
-</p>
+<%- await include('../partials/signoff', { closing: 'Thanks for being patient,', franchise: franchise }) %>
 
 <%- await include('../layout/email-foot', { franchise: franchise }) %>

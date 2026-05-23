@@ -1,66 +1,35 @@
 <%- await include('../layout/email-head', {
-  subject: 'Call rescheduled: ' + newCallDate + ' at ' + newCallTime,
-  preheader: 'Your consultation is now on ' + newCallDate + ' at ' + newCallTime + '.',
-  franchise: franchise
+  subject: 'Your call has been rescheduled',
+  preheader: 'Your consultation has been rescheduled to ' + newCallDate + ' at ' + newCallTime + '.',
+  franchise: franchise,
+  icon: '⟲'
 }) %>
 
 <%- await include('../partials/heading', {
-  eyebrow: 'Call rescheduled',
-  title: 'Your call has been moved',
-  franchise: franchise
+  title: 'Your call has been rescheduled.',
+  lead: 'Hi ' + memberName + ' — here’s the new time. Everything else stays the same.'
 }) %>
 
-<p style="margin:0 0 16px 0;">Dear <%= memberName %>,</p>
-
-<p style="margin:0 0 24px 0;">
-  Your consultation call has been successfully rescheduled. Please find the updated details below.
-</p>
-
-<%- await include('../partials/section-open', { heading: 'New call details', franchise: franchise }) %>
-  <%- await include('../partials/info-row', { label: 'New date', value: newCallDate }) %>
-  <%- await include('../partials/info-row', { label: 'New time', value: newCallTime }) %>
-  <% if (typeof timezone !== 'undefined' && timezone) { %>
-    <%- await include('../partials/info-row', { label: 'Timezone', value: timezone }) %>
-  <% } %>
+<%- await include('../partials/section-open', { eyebrow: 'New time' }) %>
+  <%- await include('../partials/info-row', { label: 'Date', value: newCallDate }) %>
+  <%- await include('../partials/info-row', { label: 'Time', value: newCallTime + ((typeof timezone !== 'undefined' && timezone) ? ' (' + timezone + ')' : '') }) %>
   <% if (typeof nutritionistName !== 'undefined' && nutritionistName) { %>
-    <%- await include('../partials/info-row', { label: 'With', value: nutritionistName }) %>
-  <% } %>
-  <% if (typeof meetingLink !== 'undefined' && meetingLink) { %>
-    <%- await include('../partials/info-row', {
-      label: 'Meeting link',
-      value: '<a href="' + meetingLink + '" style="color:' + (franchise.brandColor || '#16a34a') + ';text-decoration:none;word-break:break-all;">' + meetingLink + '</a>',
-      isHtml: true,
-      last: true
-    }) %>
+    <%- await include('../partials/info-row', { label: 'With', value: nutritionistName, last: true }) %>
   <% } else { %>
     <%- await include('../partials/info-row', { label: 'Status', value: 'Confirmed', last: true }) %>
   <% } %>
 <%- await include('../partials/section-close') %>
 
 <% if (typeof oldCallDate !== 'undefined' && oldCallDate) { %>
-  <p style="margin:0 0 24px 0;font-size:14px;color:#6b7280;font-style:italic;">
-    Previously scheduled: <%= oldCallDate %><% if (typeof oldCallTime !== 'undefined' && oldCallTime) { %> at <%= oldCallTime %><% } %>
-  </p>
+  <%- await include('../partials/section-open', { eyebrow: 'Previously' }) %>
+    <%- await include('../partials/info-row', { label: 'Was', value: oldCallDate + ((typeof oldCallTime !== 'undefined' && oldCallTime) ? (' at ' + oldCallTime) : ''), last: true }) %>
+  <%- await include('../partials/section-close') %>
 <% } %>
 
 <% if (typeof meetingLink !== 'undefined' && meetingLink) { %>
   <%- await include('../partials/button', { href: meetingLink, label: 'Join call', franchise: franchise }) %>
 <% } %>
 
-<%- await include('../partials/alert', {
-  tone: 'info',
-  title: 'Before the call',
-  text: 'Be available 5 minutes early, have a stable internet connection, and prepare any questions you’d like to discuss.'
-}) %>
-
-<p style="margin:0 0 16px 0;color:#4b5563;">
-  Need further changes? Email
-  <a href="mailto:<%= franchise.supportEmail %>" style="color:<%= franchise.brandColor || '#16a34a' %>;text-decoration:none;font-weight:600;"><%= franchise.supportEmail %></a>.
-</p>
-
-<p style="margin:0;color:#4b5563;">
-  Best regards,<br/>
-  <strong style="color:#111827;">The <%= franchise.franchiseName %> Team</strong>
-</p>
+<%- await include('../partials/signoff', { closing: 'See you then,', franchise: franchise }) %>
 
 <%- await include('../layout/email-foot', { franchise: franchise }) %>

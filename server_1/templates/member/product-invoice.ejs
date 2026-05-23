@@ -3,55 +3,42 @@
 -%>
 <%- await include('../layout/email-head', {
   subject: 'Invoice ' + invoiceNumber + ' — ' + franchise.franchiseName,
-  preheader: productName + ' — ' + _currency + amount + ' paid. Invoice attached.',
-  franchise: franchise
+  preheader: 'Tax invoice for invoice ' + invoiceNumber + ' — ' + _currency + amount + ' paid.',
+  franchise: franchise,
+  icon: '§'
 }) %>
 
 <%- await include('../partials/heading', {
-  eyebrow: 'Receipt',
-  title: 'Thanks for your purchase',
-  franchise: franchise
+  title: 'Here’s your invoice.',
+  lead: 'Thanks, ' + memberName + '. Payment was successful — keep this email for your records.'
 }) %>
 
-<p style="margin:0 0 16px 0;">Dear <%= memberName %>,</p>
-
-<p style="margin:0 0 24px 0;">
-  Your payment was successful. Here are the details of your product invoice.
-</p>
-
-<%- await include('../partials/section-open', { heading: 'Invoice details', franchise: franchise }) %>
-  <%- await include('../partials/info-row', { label: 'Invoice number', value: invoiceNumber }) %>
-  <%- await include('../partials/info-row', { label: 'Invoice date',   value: invoiceDate }) %>
-  <%- await include('../partials/info-row', { label: 'Product',        value: productName }) %>
-  <% if (typeof productQuantity !== 'undefined' && productQuantity) { %>
-    <%- await include('../partials/info-row', { label: 'Quantity', value: productQuantity }) %>
-  <% } %>
+<%- await include('../partials/section-open', { eyebrow: 'Invoice details' }) %>
+  <%- await include('../partials/info-row', { label: 'Invoice #', value: invoiceNumber }) %>
+  <%- await include('../partials/info-row', { label: 'Date',      value: invoiceDate }) %>
+  <%- await include('../partials/info-row', { label: 'Member',    value: memberName }) %>
+  <%- await include('../partials/info-row', {
+    label: 'Item',
+    value: productName + ((typeof productQuantity !== 'undefined' && productQuantity) ? (' × ' + productQuantity) : '')
+  }) %>
   <% if (typeof paymentMethod !== 'undefined' && paymentMethod) { %>
     <%- await include('../partials/info-row', { label: 'Payment method', value: paymentMethod }) %>
   <% } %>
   <% if (typeof transactionId !== 'undefined' && transactionId) { %>
-    <%- await include('../partials/info-row', { label: 'Transaction ID', value: transactionId }) %>
+    <%- await include('../partials/info-row', { label: 'Transaction ID', value: transactionId, last: true }) %>
+  <% } else { %>
+    <%- await include('../partials/info-row', { label: 'Status', value: 'Paid', last: true }) %>
   <% } %>
-  <%- await include('../partials/info-row', {
-    label: 'Amount paid',
-    value: '<span style="font-size:18px;color:' + (franchise.brandColor || '#16a34a') + ';font-weight:700;">' + _currency + amount + '</span>',
-    isHtml: true,
-    last: true
-  }) %>
+<%- await include('../partials/section-close') %>
+
+<%- await include('../partials/section-open', { eyebrow: 'Charges' }) %>
+  <%- await include('../partials/info-row', { label: productName, value: _currency + amount, last: true, strong: true }) %>
 <%- await include('../partials/section-close') %>
 
 <% if (typeof invoiceUrl !== 'undefined' && invoiceUrl) { %>
-  <%- await include('../partials/button', { href: invoiceUrl, label: 'Download invoice (PDF)', franchise: franchise }) %>
+  <%- await include('../partials/button', { href: invoiceUrl, label: 'Download invoice (PDF)', franchise: franchise, width: '260' }) %>
 <% } %>
 
-<p style="margin:0 0 16px 0;color:#4b5563;">
-  Questions about this invoice? Reach us at
-  <a href="mailto:<%= franchise.supportEmail %>" style="color:<%= franchise.brandColor || '#16a34a' %>;text-decoration:none;font-weight:600;"><%= franchise.supportEmail %></a>.
-</p>
-
-<p style="margin:0;color:#4b5563;">
-  Best regards,<br/>
-  <strong style="color:#111827;">The <%= franchise.franchiseName %> Team</strong>
-</p>
+<%- await include('../partials/signoff', { closing: 'Thank you,', team: franchise.franchiseName + ' Billing', franchise: franchise }) %>
 
 <%- await include('../layout/email-foot', { franchise: franchise }) %>

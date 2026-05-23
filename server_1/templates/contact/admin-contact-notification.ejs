@@ -1,49 +1,40 @@
 <%- await include('../layout/email-head', {
-  subject: 'New contact request from ' + contactName,
-  preheader: subject + ' — submitted by ' + contactName + ' (' + contactEmail + ').',
-  franchise: franchise
+  subject: 'New contact form submission — ' + (subject || 'no subject'),
+  preheader: 'A new contact form was submitted by ' + contactName + ' — needs your attention.',
+  franchise: franchise,
+  icon: '!'
 }) %>
 
 <%- await include('../partials/heading', {
-  eyebrow: 'New contact request',
-  title: 'Action needed: respond to ' + contactName,
-  franchise: franchise
+  title: 'New contact form submission',
+  lead: contactName + ' just submitted a request through the ' + franchise.franchiseName + ' website. Reply within one business day.'
 }) %>
 
-<p style="margin:0 0 24px 0;">
-  A new contact request has been submitted through the <%= franchise.franchiseName %> website.
-</p>
-
-<%- await include('../partials/section-open', { heading: 'Contact request details', franchise: franchise }) %>
-  <%- await include('../partials/info-row', { label: 'Request ID', value: (typeof requestId !== 'undefined' && requestId) ? requestId : 'N/A' }) %>
-  <%- await include('../partials/info-row', { label: 'Name',       value: contactName }) %>
+<%- await include('../partials/section-open', { eyebrow: 'Submission' }) %>
+  <%- await include('../partials/info-row', { label: 'Reference', value: (typeof requestId !== 'undefined' && requestId) ? requestId : 'N/A' }) %>
+  <%- await include('../partials/info-row', { label: 'Name',      value: contactName }) %>
   <%- await include('../partials/info-row', {
     label: 'Email',
-    value: '<a href="mailto:' + contactEmail + '" style="color:' + (franchise.brandColor || '#16a34a') + ';text-decoration:none;">' + contactEmail + '</a>',
+    value: '<a href="mailto:' + contactEmail + '" style="color:' + (franchise.brandColor || '#f84141') + ';text-decoration:none;">' + contactEmail + '</a>',
     isHtml: true
   }) %>
   <% if (typeof contactPhone !== 'undefined' && contactPhone) { %>
     <%- await include('../partials/info-row', { label: 'Phone', value: contactPhone }) %>
   <% } %>
   <%- await include('../partials/info-row', { label: 'Subject', value: subject }) %>
-  <%- await include('../partials/info-row', { label: 'Submitted on', value: (typeof submittedDate !== 'undefined' && submittedDate) ? submittedDate : new Date().toLocaleString() }) %>
+  <%- await include('../partials/info-row', { label: 'Submitted', value: (typeof submittedDate !== 'undefined' && submittedDate) ? submittedDate : new Date().toLocaleString(), last: (typeof message === 'undefined' || !message) && (typeof memberId === 'undefined' || !memberId) }) %>
   <% if (typeof message !== 'undefined' && message) { %>
-    <%- await include('../partials/info-row', { label: 'Message', value: message }) %>
+    <%- await include('../partials/info-row', { label: 'Message', value: message, last: (typeof memberId === 'undefined' || !memberId) }) %>
   <% } %>
   <% if (typeof memberId !== 'undefined' && memberId) { %>
     <%- await include('../partials/info-row', { label: 'Member ID', value: memberId, last: true }) %>
-  <% } else { %>
-    <%- await include('../partials/info-row', { label: 'Status', value: 'Awaiting response', last: true }) %>
   <% } %>
 <%- await include('../partials/section-close') %>
 
 <% if (typeof adminUrl !== 'undefined' && adminUrl) { %>
-  <%- await include('../partials/button', { href: adminUrl, label: 'View in admin panel', franchise: franchise }) %>
+  <%- await include('../partials/button', { href: adminUrl, label: 'Open in admin', franchise: franchise }) %>
 <% } %>
 
-<p style="margin:0;color:#4b5563;">
-  Please review and respond at your earliest convenience.<br/>
-  <strong style="color:#111827;"><%= franchise.franchiseName %> system</strong>
-</p>
+<%- await include('../partials/signoff', { closing: 'On the queue,', team: franchise.franchiseName + ' System', franchise: franchise }) %>
 
 <%- await include('../layout/email-foot', { franchise: franchise }) %>

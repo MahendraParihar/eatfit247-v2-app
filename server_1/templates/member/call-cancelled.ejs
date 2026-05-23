@@ -1,24 +1,18 @@
 <%- await include('../layout/email-head', {
-  subject: 'Call cancelled — ' + franchise.franchiseName,
-  preheader: 'Your consultation on ' + callDate + ' at ' + callTime + ' has been cancelled.',
-  franchise: franchise
+  subject: 'Your call has been cancelled',
+  preheader: 'Your consultation scheduled for ' + callDate + ' at ' + callTime + ' has been cancelled.',
+  franchise: franchise,
+  icon: '✕'
 }) %>
 
 <%- await include('../partials/heading', {
-  eyebrow: 'Call cancelled',
-  title: 'Your call has been cancelled',
-  franchise: franchise
+  title: 'Your call has been cancelled.',
+  lead: 'Hi ' + memberName + ' — the consultation below won’t take place. You can book a new one any time.'
 }) %>
 
-<p style="margin:0 0 16px 0;">Dear <%= memberName %>,</p>
-
-<p style="margin:0 0 24px 0;">
-  This is to confirm that your scheduled consultation call has been cancelled.
-</p>
-
-<%- await include('../partials/section-open', { heading: 'Cancelled call details', franchise: franchise }) %>
-  <%- await include('../partials/info-row', { label: 'Original date', value: callDate }) %>
-  <%- await include('../partials/info-row', { label: 'Original time', value: callTime }) %>
+<%- await include('../partials/section-open', { eyebrow: 'Cancelled slot' }) %>
+  <%- await include('../partials/info-row', { label: 'Was on', value: callDate }) %>
+  <%- await include('../partials/info-row', { label: 'At',     value: callTime }) %>
   <% if (typeof cancellationReason !== 'undefined' && cancellationReason) { %>
     <%- await include('../partials/info-row', { label: 'Reason', value: cancellationReason }) %>
   <% } %>
@@ -26,18 +20,9 @@
 <%- await include('../partials/section-close') %>
 
 <% if (typeof rescheduleUrl !== 'undefined' && rescheduleUrl) { %>
-  <%- await include('../partials/button', { href: rescheduleUrl, label: 'Schedule a new call', franchise: franchise }) %>
+  <%- await include('../partials/button', { href: rescheduleUrl, label: 'Book a new call', franchise: franchise, width: '200' }) %>
 <% } %>
 
-<p style="margin:0 0 16px 0;color:#4b5563;">
-  Want to book again? Email
-  <a href="mailto:<%= franchise.supportEmail %>" style="color:<%= franchise.brandColor || '#16a34a' %>;text-decoration:none;font-weight:600;"><%= franchise.supportEmail %></a>
-  and our team will help you find a new slot.
-</p>
-
-<p style="margin:0;color:#4b5563;">
-  Best regards,<br/>
-  <strong style="color:#111827;">The <%= franchise.franchiseName %> Team</strong>
-</p>
+<%- await include('../partials/signoff', { closing: 'Talk soon,', franchise: franchise }) %>
 
 <%- await include('../layout/email-foot', { franchise: franchise }) %>

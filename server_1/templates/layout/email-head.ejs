@@ -1,135 +1,140 @@
 <%
   /*
-   * Bulletproof responsive email head.
-   * Renders: DOCTYPE → <head> with cross-client CSS → opening <body>/<table> → brand header.
+   * Bulletproof responsive email head — EatFit247 brand system.
+   * Opens: DOCTYPE → <head> (Inter font, MSO conditionals, mobile @media at 620px,
+   *        dark-mode hints) → <body> → outer wrapper table → brand wordmark header
+   *        → card shell (with 4px gradient strip) → optional icon tile.
+   * Pair with layout/email-foot.ejs.
+   *
    * Locals:
-   *   subject    (string)             - <title> + browser tab
-   *   preheader  (string, optional)   - hidden preview text shown in inbox list
-   *   franchise  (object, required)   - { franchiseName, franchiseLogo, brandColor, supportEmail, footerText }
+   *   subject    (string)            - <title> + browser tab.
+   *   preheader  (string, optional)  - hidden inbox-preview text.
+   *   franchise  (object, required)  - { franchiseName, franchiseLogo, brandColor,
+   *                                      supportEmail, footerText, address, phone, socials }.
+   *   icon       (string, optional)  - single character/glyph for the icon tile (e.g. '★', '⚿', '✓', '₹').
+   *                                    Omit to skip the tile entirely.
    */
-  const _subject     = (typeof subject     !== 'undefined' && subject)     ? subject     : 'Notification';
+  const _subject     = (typeof subject     !== 'undefined' && subject)     ? subject     : 'EatFit247';
   const _preheader   = (typeof preheader   !== 'undefined' && preheader)   ? preheader   : '';
-  const _brandColor  = (franchise && franchise.brandColor)  ? franchise.brandColor  : '#16a34a';
+  const _brand       = (franchise && franchise.brandColor)    ? franchise.brandColor    : '#f84141';
   const _logo        = (franchise && franchise.franchiseLogo) ? franchise.franchiseLogo : '';
   const _brandName   = (franchise && franchise.franchiseName) ? franchise.franchiseName : 'EatFit247';
+  const _icon        = (typeof icon !== 'undefined' && icon)  ? icon : '';
+  // Render the EatFit247 wordmark with the middle word in brand colour, or fall back
+  // to the franchise name as a single string for white-label tenants.
+  const _isEatfit    = /^eatfit247$/i.test(String(_brandName).replace(/\s+/g, ''));
 -%>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<!DOCTYPE html>
+<html lang="en" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
 <head>
-  <meta charset="utf-8" />
-  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="x-apple-disable-message-reformatting" />
-  <meta name="format-detection" content="telephone=no,address=no,email=no,date=no,url=no" />
-  <meta name="color-scheme" content="light dark" />
-  <meta name="supported-color-schemes" content="light dark" />
-  <title><%= _subject %></title>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+<meta name="x-apple-disable-message-reformatting"/>
+<meta name="format-detection" content="telephone=no,address=no,email=no,date=no,url=no"/>
+<meta name="color-scheme" content="light dark"/>
+<meta name="supported-color-schemes" content="light dark"/>
+<title><%= _subject %></title>
 
-  <!--[if mso]>
-  <noscript>
-    <xml>
-      <o:OfficeDocumentSettings xmlns:o="urn:schemas-microsoft-com:office:office">
-        <o:PixelsPerInch>96</o:PixelsPerInch>
-      </o:OfficeDocumentSettings>
-    </xml>
-  </noscript>
-  <style type="text/css">
-    table, td, div, h1, h2, h3, p, a { font-family: Arial, Helvetica, sans-serif !important; }
-    table { border-collapse: collapse; }
-  </style>
-  <![endif]-->
+<!--[if mso]>
+<noscript>
+<xml>
+<o:OfficeDocumentSettings>
+<o:PixelsPerInch>96</o:PixelsPerInch>
+</o:OfficeDocumentSettings>
+</xml>
+</noscript>
+<style>
+  table, td, div, h1, h2, h3, p, a { font-family: Helvetica, Arial, sans-serif !important; }
+</style>
+<![endif]-->
 
-  <style type="text/css">
-    /* Reset — clients add their own padding, normalise it. */
-    html, body { margin: 0 !important; padding: 0 !important; height: 100% !important; width: 100% !important; }
-    body { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
-    body, table, td, p, a, li, blockquote { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
-    table, td { mso-table-lspace: 0pt !important; mso-table-rspace: 0pt !important; border-collapse: collapse !important; }
-    img { -ms-interpolation-mode: bicubic; border: 0; height: auto; line-height: 100%; outline: none; text-decoration: none; display: block; }
-    a { text-decoration: none; }
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" type="text/css"/>
 
-    /* Gmail/iOS auto-link colour neutralisation. */
-    .appleLinks a { color: inherit !important; text-decoration: none !important; }
-    u + #body a, #MessageViewBody a { color: inherit; text-decoration: none; font-size: inherit; font-family: inherit; font-weight: inherit; line-height: inherit; }
+<style type="text/css">
+  /* Client resets */
+  body, table, td, a { -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%; }
+  table, td { mso-table-lspace:0pt; mso-table-rspace:0pt; border-collapse:collapse; }
+  img { -ms-interpolation-mode:bicubic; border:0; outline:none; text-decoration:none; display:block; }
+  body { margin:0 !important; padding:0 !important; width:100% !important; background-color:#f9fafb; }
+  a { color:<%= _brand %>; text-decoration:none; }
+  a:hover { text-decoration:underline; }
+  table { border-spacing:0; }
+  /* Outlook line-height fix */
+  .ExternalClass, .ExternalClass p, .ExternalClass span, .ExternalClass font, .ExternalClass td, .ExternalClass div { line-height:100%; }
+  /* Mobile */
+  @media screen and (max-width: 620px) {
+    .container { width:100% !important; max-width:100% !important; }
+    .px { padding-left:20px !important; padding-right:20px !important; }
+    .py-lg { padding-top:28px !important; padding-bottom:28px !important; }
+    .h-display { font-size:24px !important; line-height:32px !important; }
+    .h-title { font-size:20px !important; line-height:28px !important; }
+    .stack, .stack > tbody > tr > td { display:block !important; width:100% !important; box-sizing:border-box; }
+    .stack-gap { height:12px !important; }
+    .btn-block a { display:block !important; width:auto !important; }
+    .hide-mobile { display:none !important; max-height:0 !important; overflow:hidden !important; }
+    .show-mobile { display:block !important; max-height:none !important; }
+    .meta-grid td { padding-top:6px !important; padding-bottom:6px !important; }
+  }
+  /* Dark-mode hints (Apple Mail, iOS Mail) — keep palette stable */
+  @media (prefers-color-scheme: dark) {
+    .dark-bg { background-color:#0b1220 !important; }
+    .dark-card { background-color:#111827 !important; }
+    .dark-text { color:#f9fafb !important; }
+    .dark-muted { color:#9ca3af !important; }
+    .dark-border { border-color:#1f2937 !important; }
+  }
+</style>
 
-    /* Mobile (≤ 600px) — single-column, full-width buttons, tighter padding. */
-    @media only screen and (max-width: 600px) {
-      .ef-container { width: 100% !important; max-width: 100% !important; }
-      .ef-px { padding-left: 20px !important; padding-right: 20px !important; }
-      .ef-py { padding-top: 24px !important; padding-bottom: 24px !important; }
-      .ef-hero-px { padding-left: 20px !important; padding-right: 20px !important; }
-      .ef-btn a { display: block !important; width: 100% !important; padding-left: 0 !important; padding-right: 0 !important; box-sizing: border-box; }
-      .ef-h1 { font-size: 22px !important; line-height: 30px !important; }
-      .ef-h2 { font-size: 18px !important; line-height: 26px !important; }
-      .ef-stack { display: block !important; width: 100% !important; }
-      .ef-stack-right { text-align: left !important; padding-top: 8px !important; }
-      .ef-info td { padding-top: 10px !important; padding-bottom: 10px !important; }
-      .ef-info td.ef-info-label { display: block !important; width: 100% !important; padding-bottom: 2px !important; }
-      .ef-info td.ef-info-value { display: block !important; width: 100% !important; padding-top: 0 !important; }
-    }
-
-    /* Dark mode (Apple Mail, iOS Mail, Outlook iOS only — Gmail ignores). */
-    @media (prefers-color-scheme: dark) {
-      body, .ef-body-bg { background-color: #0f172a !important; }
-      .ef-card { background-color: #111827 !important; }
-      .ef-section { background-color: #1f2937 !important; }
-      .ef-text, .ef-text * { color: #e5e7eb !important; }
-      .ef-muted, .ef-muted * { color: #9ca3af !important; }
-      .ef-h1, .ef-h2, .ef-h1 *, .ef-h2 * { color: #f9fafb !important; }
-      .ef-divider { border-color: #374151 !important; }
-      .ef-info td { border-color: #374151 !important; }
-      .ef-footer { background-color: #111827 !important; }
-      .ef-footer, .ef-footer * { color: #9ca3af !important; }
-    }
-    [data-ogsc] body, [data-ogsc] .ef-body-bg { background-color: #0f172a !important; }
-    [data-ogsc] .ef-card { background-color: #111827 !important; }
-    [data-ogsc] .ef-section { background-color: #1f2937 !important; }
-    [data-ogsc] .ef-text, [data-ogsc] .ef-text * { color: #e5e7eb !important; }
-    [data-ogsc] .ef-h1, [data-ogsc] .ef-h2 { color: #f9fafb !important; }
-  </style>
 </head>
+<body style="margin:0; padding:0; width:100%; background-color:#f9fafb; font-family:Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;" class="dark-bg">
 
-<body id="body" class="ef-body-bg" style="margin:0;padding:0;width:100%;background-color:#f3f4f6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+<!-- Preheader: shown in inbox preview, hidden in body. -->
+<div style="display:none; max-height:0; overflow:hidden; mso-hide:all; font-size:1px; line-height:1px; color:#f9fafb; opacity:0;"><%= _preheader %></div>
+<div style="display:none; max-height:0; overflow:hidden;">&#847; &zwnj; &nbsp; &#847; &zwnj; &nbsp; &#847; &zwnj; &nbsp; &#847; &zwnj; &nbsp; &#847; &zwnj; &nbsp; &#847; &zwnj; &nbsp; &#847; &zwnj; &nbsp;</div>
 
-  <!-- Preheader: hidden but shown in inbox preview. -->
-  <div style="display:none;font-size:1px;line-height:1px;max-height:0px;max-width:0px;opacity:0;overflow:hidden;mso-hide:all;color:transparent;visibility:hidden;">
-    <%= _preheader %>
-    &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847;
-  </div>
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#f9fafb;" class="dark-bg">
 
-  <!-- Outer wrapper for full-width background. -->
-  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" class="ef-body-bg" style="background-color:#f3f4f6;">
-    <tr>
-      <td align="center" style="padding:24px 12px;">
+  <!-- Brand wordmark, above the card. -->
+  <tr>
+    <td align="center" class="dark-bg" style="background-color:#f9fafb;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" class="container" style="width:600px; max-width:600px;">
+        <tr>
+          <td align="center" style="padding: 28px 24px 20px;">
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 auto;">
+              <tr>
+                <td align="center" style="font-family:Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size:22px; font-weight:800; letter-spacing:-0.02em; color:#111827; line-height:1;" class="dark-text">
+                  <% if (_logo) { %>
+                    <img src="<%= _logo %>" alt="<%= _brandName %>" height="32" style="display:inline-block; max-height:32px; vertical-align:middle; border:0;" />
+                  <% } else { %>
+                    <span style="display:inline-block; width:10px; height:10px; background:<%= _brand %>; border-radius:999px; margin-right:8px; vertical-align:middle;"></span><span style="vertical-align:middle;"><% if (_isEatfit) { %>Eat<span style="color:<%= _brand %>;">Fit</span>247<% } else { %><%= _brandName %><% } %></span>
+                  <% } %>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
 
-        <!--[if mso | IE]>
-        <table role="presentation" align="center" cellspacing="0" cellpadding="0" border="0" width="600"><tr><td>
-        <![endif]-->
+  <!-- Card shell. -->
+  <tr>
+    <td align="center" class="dark-bg" style="background-color:#f9fafb; padding:0 16px 16px;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" class="container dark-card" style="width:600px; max-width:600px; background-color:#ffffff; border-radius:16px; overflow:hidden; border:1px solid #e5e7eb;">
 
-        <!-- 600px container card. -->
-        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" class="ef-container ef-card" style="width:100%;max-width:600px;background-color:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.04);">
+        <!-- 4px brand gradient strip. -->
+        <tr><td style="height:4px; line-height:4px; font-size:4px; background:linear-gradient(90deg, #f84141 0%, #FA8547 50%, #4CDAF3 100%); background-color:<%= _brand %>;">&nbsp;</td></tr>
 
-          <!-- Brand header. -->
-          <tr>
-            <td class="ef-hero-px" style="background-color:<%= _brandColor %>;padding:28px 32px;">
-              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
-                <tr>
-                  <td class="ef-stack" align="left" valign="middle" style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#ffffff;">
-                    <% if (_logo) { %>
-                      <img src="<%= _logo %>" alt="<%= _brandName %>" width="140" style="display:block;max-width:140px;max-height:48px;height:auto;border:0;outline:none;" />
-                    <% } else { %>
-                      <span style="font-size:22px;font-weight:700;letter-spacing:-0.2px;color:#ffffff;"><%= _brandName %></span>
-                    <% } %>
-                  </td>
-                  <td class="ef-stack ef-stack-right" align="right" valign="middle" style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:rgba(255,255,255,0.92);font-size:13px;font-weight:500;">
-                    <% if (_logo) { %><%= _brandName %><% } %>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-
-          <!-- Body slot (child template content goes here). -->
-          <tr>
-            <td class="ef-px ef-py ef-text" style="padding:36px 32px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#1f2937;font-size:16px;line-height:1.6;">
+        <% if (_icon) { %>
+        <!-- Icon tile -->
+        <tr>
+          <td class="px" style="padding: 28px 40px 4px;">
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="left">
+              <tr>
+                <td width="56" height="56" align="center" valign="middle" bgcolor="#fff1f2" style="width:56px; height:56px; background-color:#fff1f2; border-radius:14px; font-family:Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size:24px; color:<%= _brand %>; font-weight:700; line-height:1;"><%= _icon %></td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+        <% } %>

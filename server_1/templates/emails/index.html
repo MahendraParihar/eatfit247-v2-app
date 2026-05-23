@@ -1,620 +1,643 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>EatFit247 — Email Design System</title>
-  <style>
-    :root {
-      --brand: #16a34a;
-      --bg: #f3f4f6;
-      --card: #ffffff;
-      --text: #111827;
-      --muted: #6b7280;
-      --border: #e5e7eb;
-      --section: #f9fafb;
-    }
-    * { box-sizing: border-box; }
-    html, body {
-      margin: 0;
-      padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-      color: var(--text);
-      background: var(--bg);
-      -webkit-font-smoothing: antialiased;
-    }
-    .page { max-width: 1280px; margin: 0 auto; padding: 48px 24px 96px; }
-    header.hero {
-      background: linear-gradient(135deg, var(--brand) 0%, #0ea35a 100%);
-      color: #fff;
-      border-radius: 16px;
-      padding: 40px 36px;
-      margin-bottom: 40px;
-      box-shadow: 0 10px 30px rgba(22,163,74,0.15);
-    }
-    header.hero h1 {
-      margin: 0 0 8px 0;
-      font-size: 32px;
-      font-weight: 700;
-      letter-spacing: -0.5px;
-    }
-    header.hero p {
-      margin: 0;
-      font-size: 16px;
-      opacity: 0.92;
-      max-width: 720px;
-      line-height: 1.55;
-    }
-    header.hero .pill-row { margin-top: 20px; display: flex; gap: 8px; flex-wrap: wrap; }
-    header.hero .pill {
-      background: rgba(255,255,255,0.18);
-      backdrop-filter: blur(8px);
-      padding: 6px 14px;
-      border-radius: 999px;
-      font-size: 12px;
-      font-weight: 600;
-      letter-spacing: 0.3px;
-    }
-    h2.section-title {
-      margin: 56px 0 20px;
-      font-size: 22px;
-      font-weight: 700;
-      letter-spacing: -0.3px;
-      color: var(--text);
-    }
-    h2.section-title:first-of-type { margin-top: 0; }
-    h2.section-title .count {
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--muted);
-      margin-left: 8px;
-    }
-    .tokens {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-      gap: 16px;
-    }
-    .token {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 18px 20px;
-    }
-    .token-label {
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.8px;
-      margin-bottom: 8px;
-    }
-    .token-value {
-      font-size: 18px;
-      font-weight: 600;
-      color: var(--text);
-      margin-bottom: 12px;
-    }
-    .swatch {
-      height: 56px;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-    }
-    .type-sample {
-      color: var(--text);
-      line-height: 1.4;
-    }
-    .components {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-      gap: 16px;
-    }
-    .component {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 20px;
-    }
-    .component h3 {
-      margin: 0 0 4px 0;
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--text);
-    }
-    .component p {
-      margin: 0 0 16px 0;
-      font-size: 13px;
-      color: var(--muted);
-      line-height: 1.5;
-    }
-    .demo-btn {
-      display: inline-block;
-      padding: 14px 32px;
-      background: var(--brand);
-      color: #fff;
-      border-radius: 8px;
-      font-size: 15px;
-      font-weight: 600;
-      text-decoration: none;
-    }
-    .demo-info {
-      background: var(--section);
-      border-radius: 10px;
-      padding: 16px;
-      font-size: 14px;
-    }
-    .demo-info .row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); }
-    .demo-info .row:last-child { border-bottom: 0; }
-    .demo-info .row .lbl { color: var(--muted); font-weight: 500; }
-    .demo-info .row .val { color: var(--text); font-weight: 600; }
-    .demo-alert {
-      background: #fffbeb;
-      border: 1px solid #fde68a;
-      border-left: 4px solid #b45309;
-      border-radius: 8px;
-      padding: 12px 16px;
-      font-size: 13px;
-      color: #78350f;
-    }
-    .demo-alert strong { display: block; color: #b45309; margin-bottom: 4px; }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>EatFit247 — Email Templates</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --color-red-500: #f84141;
+    --color-red-600: #bf3232;
+    --color-gray-100: #f9fafb;
+    --color-gray-200: #e5e7eb;
+    --color-gray-300: #d1d5db;
+    --color-gray-400: #9ca3af;
+    --color-gray-500: #6b7280;
+    --color-gray-600: #4b5563;
+    --color-gray-700: #374151;
+    --color-gray-900: #111827;
+    --color-primary: var(--color-red-500);
+    --color-text-primary: var(--color-gray-900);
+    --color-text-secondary: var(--color-gray-500);
+    --color-text-muted: var(--color-gray-400);
+    --color-surface-page: #fafafa;
+    --color-surface-card: #ffffff;
+    --color-border: var(--color-gray-200);
+    --color-divider: var(--color-gray-200);
+    --shadow-card: 0 18px 40px rgba(15, 23, 42, 0.08);
+    --hero-grad-a: #fff5f5;
+    --hero-grad-b: #fafafa;
+    --hero-grad-c: #fff1f2;
+    --font-family-inter: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: var(--font-family-inter);
+    background-color: var(--color-surface-page);
+    color: var(--color-text-primary);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overflow-x: hidden;
+  }
+  img { max-width: 100%; display: block; }
+  a { color: inherit; }
+  button { font-family: inherit; }
 
-    /* Gallery */
-    .gallery {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
-      gap: 24px;
-    }
-    .gallery-card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
-      transition: transform 0.15s ease, box-shadow 0.15s ease;
-    }
-    .gallery-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 10px 28px rgba(0,0,0,0.08);
-    }
-    .gallery-meta {
-      padding: 16px 20px;
-      border-bottom: 1px solid var(--border);
-    }
-    .gallery-meta .tag {
-      display: inline-block;
-      padding: 3px 10px;
-      border-radius: 999px;
-      background: var(--section);
-      color: var(--muted);
-      font-size: 11px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.6px;
-      margin-bottom: 8px;
-    }
-    .gallery-meta .tag.member { background: #ecfdf5; color: #047857; }
-    .gallery-meta .tag.admin  { background: #eff6ff; color: #1d4ed8; }
-    .gallery-meta .tag.contact{ background: #faf5ff; color: #7e22ce; }
-    .gallery-meta h3 {
-      margin: 0 0 4px 0;
-      font-size: 16px;
-      font-weight: 700;
-      color: var(--text);
-      letter-spacing: -0.2px;
-    }
-    .gallery-meta p {
-      margin: 0;
-      font-size: 13px;
-      color: var(--muted);
-      line-height: 1.5;
-    }
-    .iframe-wrap {
-      position: relative;
-      background: var(--bg);
-      height: 520px;
-      overflow: hidden;
-    }
-    .iframe-wrap iframe {
-      width: 100%;
-      height: 100%;
-      border: 0;
-      display: block;
-    }
-    .gallery-foot {
-      display: flex;
-      gap: 8px;
-      padding: 12px 20px;
-      border-top: 1px solid var(--border);
-      background: var(--section);
-    }
-    .gallery-foot a {
-      flex: 1;
-      text-align: center;
-      padding: 8px 12px;
-      border-radius: 6px;
-      font-size: 13px;
-      font-weight: 600;
-      text-decoration: none;
-      color: var(--brand);
-      background: #fff;
-      border: 1px solid var(--border);
-    }
-    .gallery-foot a:hover { background: var(--bg); }
+  .page-hero {
+    background: linear-gradient(180deg, var(--hero-grad-a), var(--hero-grad-b) 60%, var(--hero-grad-c));
+    padding: 56px 0 28px;
+    border-bottom: 1px solid var(--color-divider);
+  }
+  .wrap {
+    max-width: 1320px;
+    margin-inline: auto;
+    padding-inline: 24px;
+  }
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    font-size: 18px;
+    margin-bottom: 18px;
+  }
+  .brand .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    background: var(--color-primary);
+  }
+  .brand .accent { color: var(--color-primary); }
+  .h1 {
+    font-size: clamp(28px, 4vw, 40px);
+    line-height: 1.1;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin: 0 0 10px;
+  }
+  .lead {
+    color: var(--color-text-secondary);
+    max-width: 640px;
+    margin: 0 0 22px;
+    font-size: 17px;
+    line-height: 1.55;
+  }
+  .pill-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px; }
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: #fff;
+    border: 1px solid var(--color-border);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition: all .15s;
+    font-family: inherit;
+  }
+  .pill:hover { color: var(--color-text-primary); border-color: var(--color-text-muted); }
+  .pill.active {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: #fff;
+  }
+  .pill .count { font-weight: 500; opacity: 0.7; }
+  .pill.active .count { opacity: 0.85; }
 
-    .usage {
-      background: #0f172a;
-      color: #e2e8f0;
-      border-radius: 12px;
-      padding: 24px 28px;
-      font-family: ui-monospace, 'SF Mono', 'Monaco', 'Cascadia Mono', 'Menlo', monospace;
-      font-size: 13px;
-      line-height: 1.7;
-      overflow-x: auto;
-    }
-    .usage .c { color: #94a3b8; }
-    .usage .k { color: #c084fc; }
-    .usage .s { color: #86efac; }
-    .usage .v { color: #fbbf24; }
-  </style>
+  .features {
+    display: flex;
+    gap: 18px;
+    flex-wrap: wrap;
+    font-size: 13px;
+    color: var(--color-text-secondary);
+  }
+  .features span::before { content: '✓ '; color: var(--color-primary); font-weight: 700; }
+
+  .section-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin: 40px 0 18px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--color-divider);
+  }
+  .section-head h2 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+  .section-head .meta { color: var(--color-text-muted); font-size: 13px; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+    gap: 24px;
+  }
+  .card {
+    background: var(--color-surface-card);
+    border: 1px solid var(--color-border);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: var(--shadow-card);
+    display: flex;
+    flex-direction: column;
+  }
+  .card-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 18px 20px;
+    border-bottom: 1px solid var(--color-divider);
+  }
+  .card-head .eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-primary);
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .card-head h3 {
+    margin: 0 0 4px;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+  .card-head code {
+    font-size: 12px;
+    color: var(--color-text-muted);
+    font-family: 'JetBrains Mono', Menlo, Consolas, monospace;
+  }
+  .actions { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    border: 1px solid var(--color-border);
+    background: #fff;
+    color: var(--color-text-secondary);
+    text-decoration: none;
+    cursor: pointer;
+    line-height: 1;
+    font-family: inherit;
+  }
+  .btn:hover { color: var(--color-text-primary); border-color: var(--color-text-muted); }
+  .btn[data-active="true"] { background: var(--color-primary); border-color: var(--color-primary); color: #fff; }
+  .preview-wrap {
+    background: #ececec;
+    padding: 20px;
+    min-height: 540px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+  }
+  .frame-shell {
+    background: #fff;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
+    border-radius: 6px;
+    overflow: hidden;
+    width: 100%;
+    max-width: 100%;
+    transition: max-width .2s;
+  }
+  .preview-wrap[data-view="mobile"] .frame-shell { max-width: 380px; }
+  iframe { display: block; width: 100%; height: 620px; border: 0; background: #fff; }
+  .preview-wrap[data-view="mobile"] iframe { height: 680px; }
+  @media (max-width: 768px) {
+    .grid { grid-template-columns: 1fr; }
+    iframe { height: 540px; }
+    .card-head { flex-direction: column; }
+  }
+</style>
 </head>
-<body>
-  <main class="page">
+<body class="light-theme">
 
-    <header class="hero">
-      <h1>EatFit247 Email Design System</h1>
-      <p>A bulletproof responsive email framework rendered by the <code style="background:rgba(255,255,255,0.18);padding:2px 8px;border-radius:4px;font-family:ui-monospace,monospace;font-size:14px;">EmailNotificationService</code> via EJS partials. Tested in Gmail, Apple Mail (iOS &amp; macOS Safari), Outlook (desktop, web, iOS), Yahoo Mail, ProtonMail.</p>
-      <div class="pill-row">
-        <span class="pill">17 templates</span>
-        <span class="pill">Mobile-first</span>
-        <span class="pill">Safari / iOS optimised</span>
-        <span class="pill">Outlook MSO</span>
-        <span class="pill">Dark mode</span>
-        <span class="pill">Multi-tenant brand colour</span>
-      </div>
-    </header>
-
-    <h2 class="section-title">Design tokens</h2>
-    <div class="tokens">
-      <div class="token">
-        <div class="token-label">Brand</div>
-        <div class="token-value">franchise.brandColor</div>
-        <div class="swatch" style="background:#16a34a;"></div>
-        <div style="font-size:12px;color:var(--muted);margin-top:8px;">Default <code>#16a34a</code> — overridden per franchise.</div>
-      </div>
-      <div class="token">
-        <div class="token-label">Surface</div>
-        <div class="token-value">#ffffff / #f9fafb</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
-          <div class="swatch" style="background:#ffffff;"></div>
-          <div class="swatch" style="background:#f9fafb;"></div>
-        </div>
-      </div>
-      <div class="token">
-        <div class="token-label">Body background</div>
-        <div class="token-value">#f3f4f6</div>
-        <div class="swatch" style="background:#f3f4f6;"></div>
-      </div>
-      <div class="token">
-        <div class="token-label">Type — H1</div>
-        <div class="type-sample" style="font-size:26px;font-weight:700;letter-spacing:-0.4px;">Reset your password</div>
-        <div style="font-size:12px;color:var(--muted);margin-top:6px;">26px / 700 / -0.4px (22px on mobile)</div>
-      </div>
-      <div class="token">
-        <div class="token-label">Type — Eyebrow</div>
-        <div class="type-sample" style="font-size:12px;font-weight:700;color:#16a34a;letter-spacing:1.5px;text-transform:uppercase;">PASSWORD RESET</div>
-        <div style="font-size:12px;color:var(--muted);margin-top:6px;">12px / 700 / brand colour</div>
-      </div>
-      <div class="token">
-        <div class="token-label">Type — Body</div>
-        <div class="type-sample" style="font-size:16px;line-height:1.6;color:#1f2937;">We received a request to reset your password. Click the button below to choose a new password.</div>
-        <div style="font-size:12px;color:var(--muted);margin-top:6px;">16px / 1.6 lh / #1f2937</div>
-      </div>
-      <div class="token">
-        <div class="token-label">Container</div>
-        <div class="token-value">600 × auto px</div>
-        <div style="font-size:13px;color:var(--muted);line-height:1.5;">Email-safe fixed width on desktop, fluid on mobile (≤ 600px).</div>
-      </div>
-      <div class="token">
-        <div class="token-label">Radius</div>
-        <div class="token-value">12 / 10 / 8</div>
-        <div style="font-size:13px;color:var(--muted);line-height:1.5;">Card 12px · section 10px · button 8px.</div>
-      </div>
+<header class="page-hero">
+  <div class="wrap">
+    <div class="brand">
+      <span class="dot"></span>
+      Eat<span class="accent">Fit</span>247
     </div>
-
-    <h2 class="section-title">Components <span class="count">— reusable EJS partials</span></h2>
-    <div class="components">
-      <div class="component">
-        <h3>Button (CTA)</h3>
-        <p>partials/button.ejs — bulletproof table + VML for Outlook desktop.</p>
-        <a class="demo-btn" href="#">Reset password</a>
-      </div>
-      <div class="component">
-        <h3>Info section</h3>
-        <p>partials/section-open.ejs + info-row.ejs — receipt-style label/value pairs that stack on mobile.</p>
-        <div class="demo-info">
-          <div class="row"><span class="lbl">Invoice number</span><span class="val">INV-2026-0042</span></div>
-          <div class="row"><span class="lbl">Plan</span><span class="val">Premium Coaching</span></div>
-          <div class="row"><span class="lbl">Amount paid</span><span class="val" style="color:#16a34a;">₹7,499</span></div>
-        </div>
-      </div>
-      <div class="component">
-        <h3>Alert / callout</h3>
-        <p>partials/alert.ejs — info / warning / success / danger tones with title + body.</p>
-        <div class="demo-alert">
-          <strong>Didn’t make this change?</strong>
-          Contact support immediately to secure your account.
-        </div>
-      </div>
-      <div class="component">
-        <h3>Heading block</h3>
-        <p>partials/heading.ejs — eyebrow label + page title.</p>
-        <div style="font-size:11px;font-weight:700;color:#16a34a;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px;">PASSWORD RESET</div>
-        <div style="font-size:22px;font-weight:700;letter-spacing:-0.3px;">Reset your password</div>
-      </div>
+    <h1 class="h1">Transactional email templates</h1>
+    <p class="lead">Seventeen bulletproof email designs in EatFit247’s brand voice — responsive, accessible, and tested against Safari Mail, Apple Mail, Gmail, and every Outlook from 2007 to 365. Hover any card to preview, click “Open ↗” to view full-screen.</p>
+    <div class="pill-row" id="filters">
+      <button class="pill active" data-filter="all" type="button">All <span class="count">17</span></button>
+      <button class="pill" data-filter="customer" type="button">Customer <span class="count">12</span></button>
+      <button class="pill" data-filter="admin" type="button">Admin <span class="count">5</span></button>
     </div>
-
-    <h2 class="section-title">Member templates <span class="count">— 11 templates</span></h2>
-    <div class="gallery">
-      <article class="gallery-card">
-        <div class="gallery-meta">
-          <span class="tag member">Member</span>
-          <h3>Welcome</h3>
-          <p>Sent when a new member completes signup. Includes login CTA.</p>
-        </div>
-        <div class="iframe-wrap"><iframe src="previews/member__welcome.html" loading="lazy"></iframe></div>
-        <div class="gallery-foot">
-          <a href="previews/member__welcome.html" target="_blank">Open preview</a>
-          <a href="../member/welcome.ejs" target="_blank">View source</a>
-        </div>
-      </article>
-
-      <article class="gallery-card">
-        <div class="gallery-meta">
-          <span class="tag member">Member</span>
-          <h3>Password reset</h3>
-          <p>Secure reset link with expiry. Includes copy-paste fallback URL.</p>
-        </div>
-        <div class="iframe-wrap"><iframe src="previews/member__reset-password.html" loading="lazy"></iframe></div>
-        <div class="gallery-foot">
-          <a href="previews/member__reset-password.html" target="_blank">Open preview</a>
-          <a href="../member/reset-password.ejs" target="_blank">View source</a>
-        </div>
-      </article>
-
-      <article class="gallery-card">
-        <div class="gallery-meta">
-          <span class="tag member">Member</span>
-          <h3>Password changed</h3>
-          <p>Security confirmation with change context (date, IP).</p>
-        </div>
-        <div class="iframe-wrap"><iframe src="previews/member__success-password.html" loading="lazy"></iframe></div>
-        <div class="gallery-foot">
-          <a href="previews/member__success-password.html" target="_blank">Open preview</a>
-          <a href="../member/success-password.ejs" target="_blank">View source</a>
-        </div>
-      </article>
-
-      <article class="gallery-card">
-        <div class="gallery-meta">
-          <span class="tag member">Member</span>
-          <h3>Plan invoice</h3>
-          <p>Receipt for subscription plan purchase. PDF download CTA.</p>
-        </div>
-        <div class="iframe-wrap"><iframe src="previews/member__plan-invoice.html" loading="lazy"></iframe></div>
-        <div class="gallery-foot">
-          <a href="previews/member__plan-invoice.html" target="_blank">Open preview</a>
-          <a href="../member/plan-invoice.ejs" target="_blank">View source</a>
-        </div>
-      </article>
-
-      <article class="gallery-card">
-        <div class="gallery-meta">
-          <span class="tag member">Member</span>
-          <h3>Product invoice</h3>
-          <p>Receipt for physical product purchase.</p>
-        </div>
-        <div class="iframe-wrap"><iframe src="previews/member__product-invoice.html" loading="lazy"></iframe></div>
-        <div class="gallery-foot">
-          <a href="previews/member__product-invoice.html" target="_blank">Open preview</a>
-          <a href="../member/product-invoice.ejs" target="_blank">View source</a>
-        </div>
-      </article>
-
-      <article class="gallery-card">
-        <div class="gallery-meta">
-          <span class="tag member">Member</span>
-          <h3>Order confirmation</h3>
-          <p>Sent after product order placed. Includes shipping + tracking CTA.</p>
-        </div>
-        <div class="iframe-wrap"><iframe src="previews/member__product-order.html" loading="lazy"></iframe></div>
-        <div class="gallery-foot">
-          <a href="previews/member__product-order.html" target="_blank">Open preview</a>
-          <a href="../member/product-order.ejs" target="_blank">View source</a>
-        </div>
-      </article>
-
-      <article class="gallery-card">
-        <div class="gallery-meta">
-          <span class="tag member">Member</span>
-          <h3>Diet plan assigned</h3>
-          <p>Notifies member of a new personalised diet plan.</p>
-        </div>
-        <div class="iframe-wrap"><iframe src="previews/member__diet-plan.html" loading="lazy"></iframe></div>
-        <div class="gallery-foot">
-          <a href="previews/member__diet-plan.html" target="_blank">Open preview</a>
-          <a href="../member/diet-plan.ejs" target="_blank">View source</a>
-        </div>
-      </article>
-
-      <article class="gallery-card">
-        <div class="gallery-meta">
-          <span class="tag member">Member</span>
-          <h3>Call scheduled</h3>
-          <p>Booking confirmation with join link + prep tips.</p>
-        </div>
-        <div class="iframe-wrap"><iframe src="previews/member__call-scheduled.html" loading="lazy"></iframe></div>
-        <div class="gallery-foot">
-          <a href="previews/member__call-scheduled.html" target="_blank">Open preview</a>
-          <a href="../member/call-scheduled.ejs" target="_blank">View source</a>
-        </div>
-      </article>
-
-      <article class="gallery-card">
-        <div class="gallery-meta">
-          <span class="tag member">Member</span>
-          <h3>Call rescheduled</h3>
-          <p>New date/time + reference to previous slot.</p>
-        </div>
-        <div class="iframe-wrap"><iframe src="previews/member__call-rescheduled.html" loading="lazy"></iframe></div>
-        <div class="gallery-foot">
-          <a href="previews/member__call-rescheduled.html" target="_blank">Open preview</a>
-          <a href="../member/call-rescheduled.ejs" target="_blank">View source</a>
-        </div>
-      </article>
-
-      <article class="gallery-card">
-        <div class="gallery-meta">
-          <span class="tag member">Member</span>
-          <h3>Call cancelled</h3>
-          <p>Cancellation confirmation with reason + rebook CTA.</p>
-        </div>
-        <div class="iframe-wrap"><iframe src="previews/member__call-cancelled.html" loading="lazy"></iframe></div>
-        <div class="gallery-foot">
-          <a href="previews/member__call-cancelled.html" target="_blank">Open preview</a>
-          <a href="../member/call-cancelled.ejs" target="_blank">View source</a>
-        </div>
-      </article>
-
-      <article class="gallery-card">
-        <div class="gallery-meta">
-          <span class="tag member">Member</span>
-          <h3>Inquiry resolved</h3>
-          <p>Support ticket resolution notification.</p>
-        </div>
-        <div class="iframe-wrap"><iframe src="previews/member__inquiry-resolved.html" loading="lazy"></iframe></div>
-        <div class="gallery-foot">
-          <a href="previews/member__inquiry-resolved.html" target="_blank">Open preview</a>
-          <a href="../member/inquiry-resolved.ejs" target="_blank">View source</a>
-        </div>
-      </article>
+    <div class="features">
+      <span>Table-based · MSO-safe</span>
+      <span>600px container, mobile breakpoint at 620px</span>
+      <span>VML buttons for Outlook</span>
+      <span>Dark-mode adaptive</span>
+      <span>Preheader text + EJS variables</span>
     </div>
+  </div>
+</header>
 
-    <h2 class="section-title">Admin templates <span class="count">— 3 templates</span></h2>
-    <div class="gallery">
-      <article class="gallery-card">
-        <div class="gallery-meta">
-          <span class="tag admin">Admin</span>
-          <h3>Admin welcome</h3>
-          <p>Sent to a newly-provisioned admin user with portal access.</p>
-        </div>
-        <div class="iframe-wrap"><iframe src="previews/admin__welcome.html" loading="lazy"></iframe></div>
-        <div class="gallery-foot">
-          <a href="previews/admin__welcome.html" target="_blank">Open preview</a>
-          <a href="../admin/welcome.ejs" target="_blank">View source</a>
-        </div>
-      </article>
+<main class="wrap" style="padding-block: 28px 80px;">
 
-      <article class="gallery-card">
-        <div class="gallery-meta">
-          <span class="tag admin">Admin</span>
-          <h3>Admin password reset</h3>
-          <p>Reset request from the admin portal.</p>
-        </div>
-        <div class="iframe-wrap"><iframe src="previews/admin__forgot-password.html" loading="lazy"></iframe></div>
-        <div class="gallery-foot">
-          <a href="previews/admin__forgot-password.html" target="_blank">Open preview</a>
-          <a href="../admin/forgot-password.ejs" target="_blank">View source</a>
-        </div>
-      </article>
-
-      <article class="gallery-card">
-        <div class="gallery-meta">
-          <span class="tag admin">Admin</span>
-          <h3>Admin password changed</h3>
-          <p>Security audit notification with IP + device.</p>
-        </div>
-        <div class="iframe-wrap"><iframe src="previews/admin__success-password.html" loading="lazy"></iframe></div>
-        <div class="gallery-foot">
-          <a href="previews/admin__success-password.html" target="_blank">Open preview</a>
-          <a href="../admin/success-password.ejs" target="_blank">View source</a>
-        </div>
-      </article>
+  <section data-section="customer">
+    <div class="section-head">
+      <h2>Customer emails</h2>
+      <span class="meta">12 templates · sent to members</span>
     </div>
+    <div class="grid">
 
-    <h2 class="section-title">Contact templates <span class="count">— 3 templates</span></h2>
-    <div class="gallery">
-      <article class="gallery-card">
-        <div class="gallery-meta">
-          <span class="tag contact">Contact</span>
-          <h3>Admin: new contact request</h3>
-          <p>Internal notification when a website visitor submits the contact form.</p>
-        </div>
-        <div class="iframe-wrap"><iframe src="previews/contact__admin-contact-notification.html" loading="lazy"></iframe></div>
-        <div class="gallery-foot">
-          <a href="previews/contact__admin-contact-notification.html" target="_blank">Open preview</a>
-          <a href="../contact/admin-contact-notification.ejs" target="_blank">View source</a>
+      <article class="card" data-slug="member_welcome">
+        <header class="card-head">
+          <div>
+            <div class="eyebrow">Customer</div>
+            <h3>Welcome — new member</h3>
+            <code>member/welcome.ejs</code>
+          </div>
+          <div class="actions">
+            <a class="btn" href="previews/member__welcome.html" target="_blank" rel="noopener">Open ↗</a>
+            <button class="btn" data-view="desktop" type="button">Desktop</button>
+            <button class="btn" data-view="mobile" type="button">Mobile</button>
+          </div>
+        </header>
+        <div class="preview-wrap" data-view="desktop">
+          <div class="frame-shell">
+            <iframe loading="lazy" src="previews/member__welcome.html" title="Welcome — new member"></iframe>
+          </div>
         </div>
       </article>
 
-      <article class="gallery-card">
-        <div class="gallery-meta">
-          <span class="tag contact">Contact</span>
-          <h3>Member: request received</h3>
-          <p>Acknowledgement to the visitor that we got their request.</p>
-        </div>
-        <div class="iframe-wrap"><iframe src="previews/contact__member-contact-request.html" loading="lazy"></iframe></div>
-        <div class="gallery-foot">
-          <a href="previews/contact__member-contact-request.html" target="_blank">Open preview</a>
-          <a href="../contact/member-contact-request.ejs" target="_blank">View source</a>
+      <article class="card" data-slug="member_reset_password">
+        <header class="card-head">
+          <div>
+            <div class="eyebrow">Customer</div>
+            <h3>Password — reset request</h3>
+            <code>member/reset-password.ejs</code>
+          </div>
+          <div class="actions">
+            <a class="btn" href="previews/member__reset-password.html" target="_blank" rel="noopener">Open ↗</a>
+            <button class="btn" data-view="desktop" type="button">Desktop</button>
+            <button class="btn" data-view="mobile" type="button">Mobile</button>
+          </div>
+        </header>
+        <div class="preview-wrap" data-view="desktop">
+          <div class="frame-shell">
+            <iframe loading="lazy" src="previews/member__reset-password.html" title="Password — reset request"></iframe>
+          </div>
         </div>
       </article>
 
-      <article class="gallery-card">
-        <div class="gallery-meta">
-          <span class="tag contact">Contact</span>
-          <h3>Member: response received</h3>
-          <p>Sent after the admin responds to a contact request.</p>
-        </div>
-        <div class="iframe-wrap"><iframe src="previews/contact__admin-contact-response.html" loading="lazy"></iframe></div>
-        <div class="gallery-foot">
-          <a href="previews/contact__admin-contact-response.html" target="_blank">Open preview</a>
-          <a href="../contact/admin-contact-response.ejs" target="_blank">View source</a>
+      <article class="card" data-slug="member_success_password">
+        <header class="card-head">
+          <div>
+            <div class="eyebrow">Customer</div>
+            <h3>Password — changed</h3>
+            <code>member/success-password.ejs</code>
+          </div>
+          <div class="actions">
+            <a class="btn" href="previews/member__success-password.html" target="_blank" rel="noopener">Open ↗</a>
+            <button class="btn" data-view="desktop" type="button">Desktop</button>
+            <button class="btn" data-view="mobile" type="button">Mobile</button>
+          </div>
+        </header>
+        <div class="preview-wrap" data-view="desktop">
+          <div class="frame-shell">
+            <iframe loading="lazy" src="previews/member__success-password.html" title="Password — changed"></iframe>
+          </div>
         </div>
       </article>
+
+      <article class="card" data-slug="member_diet_plan">
+        <header class="card-head">
+          <div>
+            <div class="eyebrow">Customer</div>
+            <h3>Diet plan — ready</h3>
+            <code>member/diet-plan.ejs</code>
+          </div>
+          <div class="actions">
+            <a class="btn" href="previews/member__diet-plan.html" target="_blank" rel="noopener">Open ↗</a>
+            <button class="btn" data-view="desktop" type="button">Desktop</button>
+            <button class="btn" data-view="mobile" type="button">Mobile</button>
+          </div>
+        </header>
+        <div class="preview-wrap" data-view="desktop">
+          <div class="frame-shell">
+            <iframe loading="lazy" src="previews/member__diet-plan.html" title="Diet plan — ready"></iframe>
+          </div>
+        </div>
+      </article>
+
+      <article class="card" data-slug="member_plan_invoice">
+        <header class="card-head">
+          <div>
+            <div class="eyebrow">Customer</div>
+            <h3>Invoice — plan subscription</h3>
+            <code>member/plan-invoice.ejs</code>
+          </div>
+          <div class="actions">
+            <a class="btn" href="previews/member__plan-invoice.html" target="_blank" rel="noopener">Open ↗</a>
+            <button class="btn" data-view="desktop" type="button">Desktop</button>
+            <button class="btn" data-view="mobile" type="button">Mobile</button>
+          </div>
+        </header>
+        <div class="preview-wrap" data-view="desktop">
+          <div class="frame-shell">
+            <iframe loading="lazy" src="previews/member__plan-invoice.html" title="Invoice — plan subscription"></iframe>
+          </div>
+        </div>
+      </article>
+
+      <article class="card" data-slug="member_product_order">
+        <header class="card-head">
+          <div>
+            <div class="eyebrow">Customer</div>
+            <h3>Order — confirmation</h3>
+            <code>member/product-order.ejs</code>
+          </div>
+          <div class="actions">
+            <a class="btn" href="previews/member__product-order.html" target="_blank" rel="noopener">Open ↗</a>
+            <button class="btn" data-view="desktop" type="button">Desktop</button>
+            <button class="btn" data-view="mobile" type="button">Mobile</button>
+          </div>
+        </header>
+        <div class="preview-wrap" data-view="desktop">
+          <div class="frame-shell">
+            <iframe loading="lazy" src="previews/member__product-order.html" title="Order — confirmation"></iframe>
+          </div>
+        </div>
+      </article>
+
+      <article class="card" data-slug="member_product_invoice">
+        <header class="card-head">
+          <div>
+            <div class="eyebrow">Customer</div>
+            <h3>Invoice — product order</h3>
+            <code>member/product-invoice.ejs</code>
+          </div>
+          <div class="actions">
+            <a class="btn" href="previews/member__product-invoice.html" target="_blank" rel="noopener">Open ↗</a>
+            <button class="btn" data-view="desktop" type="button">Desktop</button>
+            <button class="btn" data-view="mobile" type="button">Mobile</button>
+          </div>
+        </header>
+        <div class="preview-wrap" data-view="desktop">
+          <div class="frame-shell">
+            <iframe loading="lazy" src="previews/member__product-invoice.html" title="Invoice — product order"></iframe>
+          </div>
+        </div>
+      </article>
+
+      <article class="card" data-slug="member_call_scheduled">
+        <header class="card-head">
+          <div>
+            <div class="eyebrow">Customer</div>
+            <h3>Call — scheduled</h3>
+            <code>member/call-scheduled.ejs</code>
+          </div>
+          <div class="actions">
+            <a class="btn" href="previews/member__call-scheduled.html" target="_blank" rel="noopener">Open ↗</a>
+            <button class="btn" data-view="desktop" type="button">Desktop</button>
+            <button class="btn" data-view="mobile" type="button">Mobile</button>
+          </div>
+        </header>
+        <div class="preview-wrap" data-view="desktop">
+          <div class="frame-shell">
+            <iframe loading="lazy" src="previews/member__call-scheduled.html" title="Call — scheduled"></iframe>
+          </div>
+        </div>
+      </article>
+
+      <article class="card" data-slug="member_call_rescheduled">
+        <header class="card-head">
+          <div>
+            <div class="eyebrow">Customer</div>
+            <h3>Call — rescheduled</h3>
+            <code>member/call-rescheduled.ejs</code>
+          </div>
+          <div class="actions">
+            <a class="btn" href="previews/member__call-rescheduled.html" target="_blank" rel="noopener">Open ↗</a>
+            <button class="btn" data-view="desktop" type="button">Desktop</button>
+            <button class="btn" data-view="mobile" type="button">Mobile</button>
+          </div>
+        </header>
+        <div class="preview-wrap" data-view="desktop">
+          <div class="frame-shell">
+            <iframe loading="lazy" src="previews/member__call-rescheduled.html" title="Call — rescheduled"></iframe>
+          </div>
+        </div>
+      </article>
+
+      <article class="card" data-slug="member_call_cancelled">
+        <header class="card-head">
+          <div>
+            <div class="eyebrow">Customer</div>
+            <h3>Call — cancelled</h3>
+            <code>member/call-cancelled.ejs</code>
+          </div>
+          <div class="actions">
+            <a class="btn" href="previews/member__call-cancelled.html" target="_blank" rel="noopener">Open ↗</a>
+            <button class="btn" data-view="desktop" type="button">Desktop</button>
+            <button class="btn" data-view="mobile" type="button">Mobile</button>
+          </div>
+        </header>
+        <div class="preview-wrap" data-view="desktop">
+          <div class="frame-shell">
+            <iframe loading="lazy" src="previews/member__call-cancelled.html" title="Call — cancelled"></iframe>
+          </div>
+        </div>
+      </article>
+
+      <article class="card" data-slug="member_inquiry_resolved">
+        <header class="card-head">
+          <div>
+            <div class="eyebrow">Customer</div>
+            <h3>Inquiry — resolved</h3>
+            <code>member/inquiry-resolved.ejs</code>
+          </div>
+          <div class="actions">
+            <a class="btn" href="previews/member__inquiry-resolved.html" target="_blank" rel="noopener">Open ↗</a>
+            <button class="btn" data-view="desktop" type="button">Desktop</button>
+            <button class="btn" data-view="mobile" type="button">Mobile</button>
+          </div>
+        </header>
+        <div class="preview-wrap" data-view="desktop">
+          <div class="frame-shell">
+            <iframe loading="lazy" src="previews/member__inquiry-resolved.html" title="Inquiry — resolved"></iframe>
+          </div>
+        </div>
+      </article>
+
+      <article class="card" data-slug="contact_member_request">
+        <header class="card-head">
+          <div>
+            <div class="eyebrow">Customer</div>
+            <h3>Contact — request received (to member)</h3>
+            <code>contact/member-contact-request.ejs</code>
+          </div>
+          <div class="actions">
+            <a class="btn" href="previews/contact__member-contact-request.html" target="_blank" rel="noopener">Open ↗</a>
+            <button class="btn" data-view="desktop" type="button">Desktop</button>
+            <button class="btn" data-view="mobile" type="button">Mobile</button>
+          </div>
+        </header>
+        <div class="preview-wrap" data-view="desktop">
+          <div class="frame-shell">
+            <iframe loading="lazy" src="previews/contact__member-contact-request.html" title="Contact — request received (to member)"></iframe>
+          </div>
+        </div>
+      </article>
+
     </div>
+  </section>
 
-    <h2 class="section-title">Authoring a new template</h2>
-    <pre class="usage"><span class="c">// templates/member/your-template.ejs</span>
-<span class="k">&lt;%-</span> <span class="v">await</span> include(<span class="s">'../layout/email-head'</span>, {
-  subject: <span class="s">'Your subject line'</span>,
-  preheader: <span class="s">'Inbox preview line — sets the tone.'</span>,
-  franchise: franchise
-}) <span class="k">%&gt;</span>
+  <section data-section="admin">
+    <div class="section-head">
+      <h2>Admin emails</h2>
+      <span class="meta">5 templates · sent to the EatFit247 team</span>
+    </div>
+    <div class="grid">
 
-<span class="k">&lt;%-</span> <span class="v">await</span> include(<span class="s">'../partials/heading'</span>, {
-  eyebrow: <span class="s">'CATEGORY'</span>,
-  title: <span class="s">'Your H1 headline'</span>,
-  franchise: franchise
-}) <span class="k">%&gt;</span>
+      <article class="card" data-slug="admin_welcome">
+        <header class="card-head">
+          <div>
+            <div class="eyebrow">Admin</div>
+            <h3>Admin — account created</h3>
+            <code>admin/welcome.ejs</code>
+          </div>
+          <div class="actions">
+            <a class="btn" href="previews/admin__welcome.html" target="_blank" rel="noopener">Open ↗</a>
+            <button class="btn" data-view="desktop" type="button">Desktop</button>
+            <button class="btn" data-view="mobile" type="button">Mobile</button>
+          </div>
+        </header>
+        <div class="preview-wrap" data-view="desktop">
+          <div class="frame-shell">
+            <iframe loading="lazy" src="previews/admin__welcome.html" title="Admin — account created"></iframe>
+          </div>
+        </div>
+      </article>
 
-<span class="k">&lt;p</span> style=<span class="s">"margin:0 0 16px 0;"</span><span class="k">&gt;</span>Dear <span class="k">&lt;%=</span> memberName <span class="k">%&gt;</span>,<span class="k">&lt;/p&gt;</span>
+      <article class="card" data-slug="admin_forgot_password">
+        <header class="card-head">
+          <div>
+            <div class="eyebrow">Admin</div>
+            <h3>Admin — password reset</h3>
+            <code>admin/forgot-password.ejs</code>
+          </div>
+          <div class="actions">
+            <a class="btn" href="previews/admin__forgot-password.html" target="_blank" rel="noopener">Open ↗</a>
+            <button class="btn" data-view="desktop" type="button">Desktop</button>
+            <button class="btn" data-view="mobile" type="button">Mobile</button>
+          </div>
+        </header>
+        <div class="preview-wrap" data-view="desktop">
+          <div class="frame-shell">
+            <iframe loading="lazy" src="previews/admin__forgot-password.html" title="Admin — password reset"></iframe>
+          </div>
+        </div>
+      </article>
 
-<span class="k">&lt;%-</span> <span class="v">await</span> include(<span class="s">'../partials/section-open'</span>, { heading: <span class="s">'Details'</span>, franchise: franchise }) <span class="k">%&gt;</span>
-  <span class="k">&lt;%-</span> <span class="v">await</span> include(<span class="s">'../partials/info-row'</span>, { label: <span class="s">'Field'</span>, value: yourValue, last: <span class="v">true</span> }) <span class="k">%&gt;</span>
-<span class="k">&lt;%-</span> <span class="v">await</span> include(<span class="s">'../partials/section-close'</span>) <span class="k">%&gt;</span>
+      <article class="card" data-slug="admin_success_password">
+        <header class="card-head">
+          <div>
+            <div class="eyebrow">Admin</div>
+            <h3>Admin — password changed</h3>
+            <code>admin/success-password.ejs</code>
+          </div>
+          <div class="actions">
+            <a class="btn" href="previews/admin__success-password.html" target="_blank" rel="noopener">Open ↗</a>
+            <button class="btn" data-view="desktop" type="button">Desktop</button>
+            <button class="btn" data-view="mobile" type="button">Mobile</button>
+          </div>
+        </header>
+        <div class="preview-wrap" data-view="desktop">
+          <div class="frame-shell">
+            <iframe loading="lazy" src="previews/admin__success-password.html" title="Admin — password changed"></iframe>
+          </div>
+        </div>
+      </article>
 
-<span class="k">&lt;%-</span> <span class="v">await</span> include(<span class="s">'../partials/button'</span>, { href: ctaUrl, label: <span class="s">'Take action'</span>, franchise: franchise }) <span class="k">%&gt;</span>
+      <article class="card" data-slug="contact_admin_notification">
+        <header class="card-head">
+          <div>
+            <div class="eyebrow">Admin</div>
+            <h3>Contact — new submission (to admin)</h3>
+            <code>contact/admin-contact-notification.ejs</code>
+          </div>
+          <div class="actions">
+            <a class="btn" href="previews/contact__admin-contact-notification.html" target="_blank" rel="noopener">Open ↗</a>
+            <button class="btn" data-view="desktop" type="button">Desktop</button>
+            <button class="btn" data-view="mobile" type="button">Mobile</button>
+          </div>
+        </header>
+        <div class="preview-wrap" data-view="desktop">
+          <div class="frame-shell">
+            <iframe loading="lazy" src="previews/contact__admin-contact-notification.html" title="Contact — new submission (to admin)"></iframe>
+          </div>
+        </div>
+      </article>
 
-<span class="k">&lt;%-</span> <span class="v">await</span> include(<span class="s">'../layout/email-foot'</span>, { franchise: franchise }) <span class="k">%&gt;</span>
-</pre>
+      <article class="card" data-slug="contact_admin_response">
+        <header class="card-head">
+          <div>
+            <div class="eyebrow">Admin</div>
+            <h3>Contact — visitor replied (to admin)</h3>
+            <code>contact/admin-contact-response.ejs</code>
+          </div>
+          <div class="actions">
+            <a class="btn" href="previews/contact__admin-contact-response.html" target="_blank" rel="noopener">Open ↗</a>
+            <button class="btn" data-view="desktop" type="button">Desktop</button>
+            <button class="btn" data-view="mobile" type="button">Mobile</button>
+          </div>
+        </header>
+        <div class="preview-wrap" data-view="desktop">
+          <div class="frame-shell">
+            <iframe loading="lazy" src="previews/contact__admin-contact-response.html" title="Contact — visitor replied (to admin)"></iframe>
+          </div>
+        </div>
+      </article>
 
-    <h2 class="section-title">Regenerate previews</h2>
-    <pre class="usage"><span class="c"># from server_1/</span>
-node templates/emails/render-previews.js
+    </div>
+  </section>
 
-<span class="c"># sample data lives at the top of render-previews.js — edit there to test edge cases</span></pre>
+</main>
 
-  </main>
+<script>
+  // Filter pills
+  const pills = document.querySelectorAll('#filters .pill');
+  const sections = document.querySelectorAll('main [data-section]');
+  pills.forEach(p => p.addEventListener('click', () => {
+    pills.forEach(x => x.classList.remove('active'));
+    p.classList.add('active');
+    const f = p.dataset.filter;
+    sections.forEach(s => {
+      s.style.display = (f === 'all' || s.dataset.section === f) ? '' : 'none';
+    });
+  }));
+
+  // Per-card desktop/mobile toggle
+  document.querySelectorAll('.card').forEach(card => {
+    const wrap = card.querySelector('.preview-wrap');
+    card.querySelectorAll('[data-view]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        wrap.dataset.view = btn.dataset.view;
+        card.querySelectorAll('[data-view]').forEach(b => b.dataset.active = (b === btn));
+      });
+    });
+    card.querySelector('[data-view="desktop"]').dataset.active = 'true';
+  });
+</script>
+
 </body>
 </html>
