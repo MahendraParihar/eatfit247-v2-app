@@ -42,8 +42,6 @@
 
 .product-page .product-section--combined .product-block + .product-block {
   margin-top: var(--space-6);
-  padding-top: var(--space-6);
-  border-top: 1px solid var(--color-divider);
 }
 
 /* ---- Benefits/Storage: 2-col flex row, line-by-line with icons, NO boxes ---- */
@@ -56,6 +54,14 @@
     grid-template-columns: 1fr 1fr;
     gap: var(--space-6);
   }
+}
+
+/* ---- Mobile: tighten and equalise gaps between collapsible sections ---- */
+@media (max-width: 760px) {
+  .product-page .product-info { padding-block: 14px; }
+  .product-page .product-section--combined .product-block + .product-block { margin-top: 14px; }
+  .product-page .product-block-row { gap: 14px; }
+  .product-page .product-section__head { margin-bottom: 0; padding-bottom: 8px; }
 }
 
 .product-page .product-block-row > .product-block {

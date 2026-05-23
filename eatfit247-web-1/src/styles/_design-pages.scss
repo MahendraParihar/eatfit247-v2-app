@@ -1330,13 +1330,6 @@ html body .sitemap a .mat-icon {
 }
 .product-block + .product-block {
   margin-top: clamp(28px, 4vw, 44px);
-  border-top: 1px solid var(--color-border);
-  padding-top: clamp(28px, 4vw, 44px);
-}
-/* When the previous block is a collapsed details, tighten the gap */
-.product-block--collapsible:not([open]) + .product-block {
-  margin-top: 0;
-  padding-top: clamp(14px, 1.5vw, 18px);
 }
 .product-section__head {
   display: flex;
@@ -1347,6 +1340,7 @@ html body .sitemap a .mat-icon {
   border-bottom: 1px solid var(--color-border);
 }
 
+
 /* Collapsible product-block (uses <details>/<summary>) */
 .product-block--collapsible { display: block; }
 .product-block--collapsible > summary.product-section__head {
@@ -1356,11 +1350,6 @@ html body .sitemap a .mat-icon {
 }
 .product-block--collapsible > summary.product-section__head::-webkit-details-marker { display: none; }
 .product-block--collapsible > summary.product-section__head::marker { content: ''; }
-.product-block--collapsible:not([open]) > summary.product-section__head {
-  margin-bottom: 0;
-  padding-bottom: 0;
-  border-bottom-color: transparent;
-}
 .product-block--collapsible > summary.product-section__head h3 { flex: 1; }
 .product-section__toggle,
 html body span.product-section__toggle.mat-icon {
