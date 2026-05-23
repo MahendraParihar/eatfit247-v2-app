@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>EatFit247 — Email Templates</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --color-red-500: #f84141;
+    --color-red-600: #bf3232;
+    --color-gray-100: #f9fafb;
+    --color-gray-200: #e5e7eb;
+    --color-gray-300: #d1d5db;
+    --color-gray-400: #9ca3af;
+    --color-gray-500: #6b7280;
+    --color-gray-600: #4b5563;
+    --color-gray-700: #374151;
+    --color-gray-900: #111827;
+    --color-primary: var(--color-red-500);
+    --color-text-primary: var(--color-gray-900);
+    --color-text-secondary: var(--color-gray-500);
+    --color-text-muted: var(--color-gray-400);
+    --color-surface-page: #fafafa;
+    --color-surface-card: #ffffff;
+    --color-border: var(--color-gray-200);
+    --color-divider: var(--color-gray-200);
+    --shadow-card: 0 18px 40px rgba(15, 23, 42, 0.08);
+    --hero-grad-a: #fff5f5;
+    --hero-grad-b: #fafafa;
+    --hero-grad-c: #fff1f2;
+    --font-family-inter: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: var(--font-family-inter);
+    background-color: var(--color-surface-page);
+    color: var(--color-text-primary);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overflow-x: hidden;
+  }
+  img { max-width: 100%; display: block; }
+  a { color: inherit; }
+  button { font-family: inherit; }
+
+  .page-hero {
+    background: linear-gradient(180deg, var(--hero-grad-a), var(--hero-grad-b) 60%, var(--hero-grad-c));
+    padding: 56px 0 28px;
+    border-bottom: 1px solid var(--color-divider);
+  }
+  .wrap {
+    max-width: 1320px;
+    margin-inline: auto;
+    padding-inline: 24px;
+  }
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    font-size: 18px;
+    margin-bottom: 18px;
+  }
+  .brand .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    background: var(--color-primary);
+  }
+  .brand .accent { color: var(--color-primary); }
+  .h1 {
+    font-size: clamp(28px, 4vw, 40px);
+    line-height: 1.1;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin: 0 0 10px;
+  }
+  .lead {
+    color: var(--color-text-secondary);
+    max-width: 640px;
+    margin: 0 0 22px;
+    font-size: 17px;
+    line-height: 1.55;
+  }
+  .pill-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px; }
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: #fff;
+    border: 1px solid var(--color-border);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition: all .15s;
+    font-family: inherit;
+  }
+  .pill:hover { color: var(--color-text-primary); border-color: var(--color-text-muted); }
+  .pill.active {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: #fff;
+  }
+  .pill .count { font-weight: 500; opacity: 0.7; }
+  .pill.active .count { opacity: 0.85; }
+
+  .features {
+    display: flex;
+    gap: 18px;
+    flex-wrap: wrap;
+    font-size: 13px;
+    color: var(--color-text-secondary);
+  }
+  .features span::before { content: '✓ '; color: var(--color-primary); font-weight: 700; }
+
+  .section-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin: 40px 0 18px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--color-divider);
+  }
+  .section-head h2 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+  .section-head .meta { color: var(--color-text-muted); font-size: 13px; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+    gap: 24px;
+  }
+  .card {
+    background: var(--color-surface-card);
+    border: 1px solid var(--color-border);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: var(--shadow-card);
+    display: flex;
+    flex-direction: column;
+  }
+  .card-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 18px 20px;
+    border-bottom: 1px solid var(--color-divider);
+  }
+  .card-head .eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-primary);
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .card-head h3 {
+    margin: 0 0 4px;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+  .card-head code {
+    font-size: 12px;
+    color: var(--color-text-muted);
+    font-family: 'JetBrains Mono', Menlo, Consolas, monospace;
+  }
+  .actions { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    border: 1px solid var(--color-border);
+    background: #fff;
+    color: var(--color-text-secondary);
+    text-decoration: none;
+    cursor: pointer;
+    line-height: 1;
+    font-family: inherit;
+  }
+  .btn:hover { color: var(--color-text-primary); border-color: var(--color-text-muted); }
+  .btn[data-active="true"] { background: var(--color-primary); border-color: var(--color-primary); color: #fff; }
+  .preview-wrap {
+    background: #ececec;
+    padding: 20px;
+    min-height: 540px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+  }
+  .frame-shell {
+    background: #fff;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
+    border-radius: 6px;
+    overflow: hidden;
+    width: 100%;
+    max-width: 100%;
+    transition: max-width .2s;
+  }
+  .preview-wrap[data-view="mobile"] .frame-shell { max-width: 380px; }
+  iframe { display: block; width: 100%; height: 620px; border: 0; background: #fff; }
+  .preview-wrap[data-view="mobile"] iframe { height: 680px; }
+  @media (max-width: 768px) {
+    .grid { grid-template-columns: 1fr; }
+    iframe { height: 540px; }
+    .card-head { flex-direction: column; }
+  }
+</style>
+</head>
+<body class="light-theme">
+
+<header class="page-hero">
+  <div class="wrap">
+    <div class="brand">
+      <span class="dot"></span>
+      Eat<span class="accent">Fit</span>247
+    </div>
+    <h1 class="h1">Transactional email templates</h1>
+    <p class="lead">Seventeen bulletproof email designs in EatFit247’s brand voice — responsive, accessible, and tested against Safari Mail, Apple Mail, Gmail, and every Outlook from 2007 to 365. Hover any card to preview, click “Open ↗” to view full-screen.</p>
+    <div class="pill-row" id="filters">
+      <button class="pill active" data-filter="all" type="button">All <span class="count">17</span></button>
+      <button class="pill" data-filter="customer" type="button">Customer <span class="count">12</span></button>
+      <button class="pill" data-filter="admin" type="button">Admin <span class="count">5</span></button>
+    </div>
+    <div class="features">
+      <span>Table-based · MSO-safe</span>
+      <span>600px container, mobile breakpoint at 620px</span>
+      <span>VML buttons for Outlook</span>
+      <span>Dark-mode adaptive</span>
+      <span>Preheader text + EJS variables</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap" style="padding-block: 28px 80px;">
+
+  <section data-section="customer">
+    <div class="section-head">
+      <h2>Customer emails</h2>
+      <span class="meta">12 templates · sent to members</span>
+    </div>
+    <div class="grid">
+
+      <article class="card" data-slug="member_welcome">
+        <header class="card-head">
+          <div>
+            <div class="eyebrow">Customer</div>
+            <h3>Welcome — new member</h3>
+            <code>member/welcome.ejs</code>
+          </div>
+          <div class="actions">
+            <a class="btn" href="previews/member__welcome.html" target="_blank" rel="noopener">Open ↗</a>
+            <button class="btn" data-view="desktop" type="button">Desktop</button>
+            <button class="btn" data-view="mobile" type="button">Mobile</button>
+          </div>
+        </header>
+        <div class="preview-wrap" data-view="desktop">
+          <div class="frame-shell">
+            <iframe loading="lazy" src="previews/member__welcome.html" title="Welcome — new member"></iframe>
+          </div>
+        </div>
+      </article>
+
+      <article class="card" data-slug="member_reset_password">
+        <header class="card-head">
+          <div>
+            <div class="eyebrow">Customer</div>
+            <h3>Password — reset request</h3>
+            <code>member/reset-password.ejs</code>
+          </div>
+          <div class="actions">
+            <a class="btn" href="previews/member__reset-password.html" target="_blank" rel="noopener">Open ↗</a>
+            <button class="btn" data-view="desktop" type="button">Desktop</button>
+            <button class="btn" data-view="mobile" type="button">Mobile</button>
+          </div>
+        </header>
+        <div class="preview-wrap" data-view="desktop">
+          <div class="frame-shell">
+            <iframe loading="lazy" src="previews/member__reset-password.html" title="Password — reset request"></iframe>
+          </div>
+        </div>
+      </article>
+
+      <article class="card" data-slug="member_success_password">
+        <header class="card-head">
+          <div>
+            <div class="eyebrow">Customer</div>
+            <h3>Password — changed</h3>
+            <code>member/success-password.ejs</code>
+          </div>
+          <div class="actions">
+            <a class="btn" href="previews/member__success-password.html" target="_blank" rel="noopener">Open ↗</a>
+            <button class="btn" data-view="desktop" type="button">Desktop</button>
+            <button class="btn" data-view="mobile" type="button">Mobile</button>
+          </div>
+        </header>
+        <div class="preview-wrap" data-view="desktop">
+          <div class="frame-shell">
+            <iframe loading="lazy" src="previews/member__success-password.html" title="Password — changed"></iframe>
+          </div>
+        </div>
+      </article>
+
+      <article class="card" data-slug="member_diet_plan">
+        <header class="card-head">
+          <div>
+            <div class="eyebrow">Customer</div>
+            <h3>Diet plan — ready</h3>
+            <code>member/diet-plan.ejs</code>
+          </div>
+          <div class="actions">
+            <a class="btn" href="previews/member__diet-plan.html" target="_blank" rel="noopener">Open ↗</a>
+            <button class="btn" data-view="desktop" type="button">Desktop</button>
+            <button class="btn" data-view="mobile" type="button">Mobile</button>
+          </div>
+        </header>
+        <div class="preview-wrap" data-view="desktop">
+          <div class="frame-shell">
+            <iframe loading="lazy" src="previews/member__diet-plan.html" title="Diet plan — ready"></iframe>
+          </div>
+        </div>
+      </article>
+
+      <article class="card" data-slug="member_plan_invoice">
+        <header class="card-head">
+          <div>
+            <div class="eyebrow">Customer</div>
+            <h3>Invoice — plan subscription</h3>
+            <code>member/plan-invoice.ejs</code>
+          </div>
+          <div class="actions">
+            <a class="btn" href="previews/member__plan-invoice.html" target="_blank" rel="noopener">Open ↗</a>
+            <button class="btn" data-view="desktop" type="button">Desktop</button>
+            <button class="btn" data-view="mobile" type="button">Mobile</button>
+          </div>
+        </header>
+        <div class="preview-wrap" data-view="desktop">
+          <div class="frame-shell">
+            <iframe loading="lazy" src="previews/member__plan-invoice.html" title="Invoice — plan subscription"></iframe>
+          </div>
+        </div>
+      </article>
+
+      <article class="card" data-slug="member_product_order">
+        <header class="card-head">
+          <div>
+            <div class="eyebrow">Customer</div>
+            <h3>Order — confirmation</h3>
+            <code>member/product-order.ejs</code>
+          </div>
+          <div class="actions">
+            <a class="btn" href="previews/member__product-order.html" target="_blank" rel="noopener">Open ↗</a>
+            <button class="btn" data-view="desktop" type="button">Desktop</button>
+            <button class="btn" data-view="mobile" type="button">Mobile</button>
+          </div>
+        </header>
+        <div class="preview-wrap" data-view="desktop">
+          <div class="frame-shell">
+            <iframe loading="lazy" src="previews/member__product-order.html" title="Order — confirmation"></iframe>
+          </div>
+        </div>
+      </article>
+
+      <article class="card" data-slug="member_product_invoice">
+        <header class="card-head">
+          <div>
+            <div class="eyebrow">Customer</div>
+            <h3>Invoice — product order</h3>
+            <code>member/product-invoice.ejs</code>
+          </div>
+          <div class="actions">
+            <a class="btn" href="previews/member__product-invoice.html" target="_blank" rel="noopener">Open ↗</a>
+            <button class="btn" data-view="desktop" type="button">Desktop</button>
+            <button class="btn" data-view="mobile" type="button">Mobile</button>
+          </div>
+        </header>
+        <div class="preview-wrap" data-view="desktop">
+          <div class="frame-shell">
+            <iframe loading="lazy" src="previews/member__product-invoice.html" title="Invoice — product order"></iframe>
+          </div>
+        </div>
+      </article>
+
+      <article class="card" data-slug="member_call_scheduled">
+        <header class="card-head">
+          <div>
+            <div class="eyebrow">Customer</div>
+            <h3>Call — scheduled</h3>
+            <code>member/call-scheduled.ejs</code>
+          </div>
+          <div class="actions">
+            <a class="btn" href="previews/member__call-scheduled.html" target="_blank" rel="noopener">Open ↗</a>
+            <button class="btn" data-view="desktop" type="button">Desktop</button>
+            <button class="btn" data-view="mobile" type="button">Mobile</button>
+          </div>
+        </header>
+        <div class="preview-wrap" data-view="desktop">
+          <div class="frame-shell">
+            <iframe loading="lazy" src="previews/member__call-scheduled.html" title="Call — scheduled"></iframe>
+          </div>
+        </div>
+      </article>
+
+      <article class="card" data-slug="member_call_rescheduled">
+        <header class="card-head">
+          <div>
+            <div class="eyebrow">Customer</div>
+            <h3>Call — rescheduled</h3>
+            <code>member/call-rescheduled.ejs</code>
+          </div>
+          <div class="actions">
+            <a class="btn" href="previews/member__call-rescheduled.html" target="_blank" rel="noopener">Open ↗</a>
+            <button class="btn" data-view="desktop" type="button">Desktop</button>
+            <button class="btn" data-view="mobile" type="button">Mobile</button>
+          </div>
+        </header>
+        <div class="preview-wrap" data-view="desktop">
+          <div class="frame-shell">
+            <iframe loading="lazy" src="previews/member__call-rescheduled.html" title="Call — rescheduled"></iframe>
+          </div>
+        </div>
+      </article>
+
+      <article class="card" data-slug="member_call_cancelled">
+        <header class="card-head">
+          <div>
+            <div class="eyebrow">Customer</div>
+            <h3>Call — cancelled</h3>
+            <code>member/call-cancelled.ejs</code>
+          </div>
+          <div class="actions">
+            <a class="btn" href="previews/member__call-cancelled.html" target="_blank" rel="noopener">Open ↗</a>
+            <button class="btn" data-view="desktop" type="button">Desktop</button>
+            <button class="btn" data-view="mobile" type="button">Mobile</button>
+          </div>
+        </header>
+        <div class="preview-wrap" data-view="desktop">
+          <div class="frame-shell">
+            <iframe loading="lazy" src="previews/member__call-cancelled.html" title="Call — cancelled"></iframe>
+          </div>
+        </div>
+      </article>
+
+      <article class="card" data-slug="member_inquiry_resolved">
+        <header class="card-head">
+          <div>
+            <div class="eyebrow">Customer</div>
+            <h3>Inquiry — resolved</h3>
+            <code>member/inquiry-resolved.ejs</code>
+          </div>
+          <div class="actions">
+            <a class="btn" href="previews/member__inquiry-resolved.html" target="_blank" rel="noopener">Open ↗</a>
+            <button class="btn" data-view="desktop" type="button">Desktop</button>
+            <button class="btn" data-view="mobile" type="button">Mobile</button>
+          </div>
+        </header>
+        <div class="preview-wrap" data-view="desktop">
+          <div class="frame-shell">
+            <iframe loading="lazy" src="previews/member__inquiry-resolved.html" title="Inquiry — resolved"></iframe>
+          </div>
+        </div>
+      </article>
+
+      <article class="card" data-slug="contact_member_request">
+        <header class="card-head">
+          <div>
+            <div class="eyebrow">Customer</div>
+            <h3>Contact — request received (to member)</h3>
+            <code>contact/member-contact-request.ejs</code>
+          </div>
+          <div class="actions">
+            <a class="btn" href="previews/contact__member-contact-request.html" target="_blank" rel="noopener">Open ↗</a>
+            <button class="btn" data-view="desktop" type="button">Desktop</button>
+            <button class="btn" data-view="mobile" type="button">Mobile</button>
+          </div>
+        </header>
+        <div class="preview-wrap" data-view="desktop">
+          <div class="frame-shell">
+            <iframe loading="lazy" src="previews/contact__member-contact-request.html" title="Contact — request received (to member)"></iframe>
+          </div>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <section data-section="admin">
+    <div class="section-head">
+      <h2>Admin emails</h2>
+      <span class="meta">5 templates · sent to the EatFit247 team</span>
+    </div>
+    <div class="grid">
+
+      <article class="card" data-slug="admin_welcome">
+        <header class="card-head">
+          <div>
+            <div class="eyebrow">Admin</div>
+            <h3>Admin — account created</h3>
+            <code>admin/welcome.ejs</code>
+          </div>
+          <div class="actions">
+            <a class="btn" href="previews/admin__welcome.html" target="_blank" rel="noopener">Open ↗</a>
+            <button class="btn" data-view="desktop" type="button">Desktop</button>
+            <button class="btn" data-view="mobile" type="button">Mobile</button>
+          </div>
+        </header>
+        <div class="preview-wrap" data-view="desktop">
+          <div class="frame-shell">
+            <iframe loading="lazy" src="previews/admin__welcome.html" title="Admin — account created"></iframe>
+          </div>
+        </div>
+      </article>
+
+      <article class="card" data-slug="admin_forgot_password">
+        <header class="card-head">
+          <div>
+            <div class="eyebrow">Admin</div>
+            <h3>Admin — password reset</h3>
+            <code>admin/forgot-password.ejs</code>
+          </div>
+          <div class="actions">
+            <a class="btn" href="previews/admin__forgot-password.html" target="_blank" rel="noopener">Open ↗</a>
+            <button class="btn" data-view="desktop" type="button">Desktop</button>
+            <button class="btn" data-view="mobile" type="button">Mobile</button>
+          </div>
+        </header>
+        <div class="preview-wrap" data-view="desktop">
+          <div class="frame-shell">
+            <iframe loading="lazy" src="previews/admin__forgot-password.html" title="Admin — password reset"></iframe>
+          </div>
+        </div>
+      </article>
+
+      <article class="card" data-slug="admin_success_password">
+        <header class="card-head">
+          <div>
+            <div class="eyebrow">Admin</div>
+            <h3>Admin — password changed</h3>
+            <code>admin/success-password.ejs</code>
+          </div>
+          <div class="actions">
+            <a class="btn" href="previews/admin__success-password.html" target="_blank" rel="noopener">Open ↗</a>
+            <button class="btn" data-view="desktop" type="button">Desktop</button>
+            <button class="btn" data-view="mobile" type="button">Mobile</button>
+          </div>
+        </header>
+        <div class="preview-wrap" data-view="desktop">
+          <div class="frame-shell">
+            <iframe loading="lazy" src="previews/admin__success-password.html" title="Admin — password changed"></iframe>
+          </div>
+        </div>
+      </article>
+
+      <article class="card" data-slug="contact_admin_notification">
+        <header class="card-head">
+          <div>
+            <div class="eyebrow">Admin</div>
+            <h3>Contact — new submission (to admin)</h3>
+            <code>contact/admin-contact-notification.ejs</code>
+          </div>
+          <div class="actions">
+            <a class="btn" href="previews/contact__admin-contact-notification.html" target="_blank" rel="noopener">Open ↗</a>
+            <button class="btn" data-view="desktop" type="button">Desktop</button>
+            <button class="btn" data-view="mobile" type="button">Mobile</button>
+          </div>
+        </header>
+        <div class="preview-wrap" data-view="desktop">
+          <div class="frame-shell">
+            <iframe loading="lazy" src="previews/contact__admin-contact-notification.html" title="Contact — new submission (to admin)"></iframe>
+          </div>
+        </div>
+      </article>
+
+      <article class="card" data-slug="contact_admin_response">
+        <header class="card-head">
+          <div>
+            <div class="eyebrow">Admin</div>
+            <h3>Contact — visitor replied (to admin)</h3>
+            <code>contact/admin-contact-response.ejs</code>
+          </div>
+          <div class="actions">
+            <a class="btn" href="previews/contact__admin-contact-response.html" target="_blank" rel="noopener">Open ↗</a>
+            <button class="btn" data-view="desktop" type="button">Desktop</button>
+            <button class="btn" data-view="mobile" type="button">Mobile</button>
+          </div>
+        </header>
+        <div class="preview-wrap" data-view="desktop">
+          <div class="frame-shell">
+            <iframe loading="lazy" src="previews/contact__admin-contact-response.html" title="Contact — visitor replied (to admin)"></iframe>
+          </div>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+</main>
+
+<script>
+  // Filter pills
+  const pills = document.querySelectorAll('#filters .pill');
+  const sections = document.querySelectorAll('main [data-section]');
+  pills.forEach(p => p.addEventListener('click', () => {
+    pills.forEach(x => x.classList.remove('active'));
+    p.classList.add('active');
+    const f = p.dataset.filter;
+    sections.forEach(s => {
+      s.style.display = (f === 'all' || s.dataset.section === f) ? '' : 'none';
+    });
+  }));
+
+  // Per-card desktop/mobile toggle
+  document.querySelectorAll('.card').forEach(card => {
+    const wrap = card.querySelector('.preview-wrap');
+    card.querySelectorAll('[data-view]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        wrap.dataset.view = btn.dataset.view;
+        card.querySelectorAll('[data-view]').forEach(b => b.dataset.active = (b === btn));
+      });
+    });
+    card.querySelector('[data-view="desktop"]').dataset.active = 'true';
+  });
+</script>
+
+</body>
+</html>

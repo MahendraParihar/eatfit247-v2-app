@@ -1,36 +1,29 @@
-<h2>Response to Your Contact Request</h2>
+<%- await include('../layout/email-head', {
+  subject: 'Response sent: ' + originalSubject,
+  preheader: 'Response delivered to ' + ((typeof memberName !== 'undefined' && memberName) ? memberName : 'the visitor') + ' on “' + originalSubject + '”.',
+  franchise: franchise,
+  icon: '↩'
+}) %>
 
-<p>Dear <%= memberName || 'Valued Customer' %>,</p>
+<%- await include('../partials/heading', {
+  title: 'Response delivered',
+  lead: 'A reply has been sent to ' + ((typeof memberName !== 'undefined' && memberName) ? memberName : 'the visitor') + ' on the request below. Keep a copy for the ticket trail.'
+}) %>
 
-<p>Thank you for contacting <%= franchise.franchiseName %>. We have reviewed your request and are pleased to provide the following response:</p>
+<%- await include('../partials/section-open', { eyebrow: 'Ticket' }) %>
+  <%- await include('../partials/info-row', { label: 'Subject',      value: originalSubject }) %>
+  <%- await include('../partials/info-row', { label: 'Responded on', value: (typeof responseDate !== 'undefined' && responseDate) ? responseDate : new Date().toLocaleString() }) %>
+  <% if (typeof respondedBy !== 'undefined' && respondedBy) { %>
+    <%- await include('../partials/info-row', { label: 'By', value: respondedBy, last: true }) %>
+  <% } else { %>
+    <%- await include('../partials/info-row', { label: 'Status', value: 'Sent', last: true }) %>
+  <% } %>
+<%- await include('../partials/section-close') %>
 
-<div style="background-color: #f9f9f9; padding: 20px; border-radius: 4px; margin: 20px 0;">
-  <h3 style="margin-top: 0;">Response Details</h3>
-  <table style="width: 100%; border-collapse: collapse;">
-    <tr>
-      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><strong>Original Request:</strong></td>
-      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><%= originalSubject %></td>
-    </tr>
-    <tr>
-      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><strong>Response Date:</strong></td>
-      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><%= responseDate || new Date().toLocaleString() %></td>
-    </tr>
-    <% if (respondedBy) { %>
-    <tr>
-      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><strong>Responded By:</strong></td>
-      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><%= respondedBy %></td>
-    </tr>
-    <% } %>
-    <tr>
-      <td style="padding: 8px 0; vertical-align: top;"><strong>Response:</strong></td>
-      <td style="padding: 8px 0;"><%= responseMessage %></td>
-    </tr>
-  </table>
-</div>
+<%- await include('../partials/section-open', { eyebrow: 'Response' }) %>
+  <%- await include('../partials/info-row', { label: 'Message', value: responseMessage, last: true }) %>
+<%- await include('../partials/section-close') %>
 
-<p>If you have any further questions or need additional assistance, please don't hesitate to contact us at <a href="mailto:<%= franchise.supportEmail %>"><%= franchise.supportEmail %></a>.</p>
+<%- await include('../partials/signoff', { closing: 'Logged,', team: franchise.franchiseName + ' System', franchise: franchise }) %>
 
-<p>We appreciate your patience and look forward to serving you.</p>
-
-<p>Best regards,<br>The <%= franchise.franchiseName %> Team</p>
-
+<%- await include('../layout/email-foot', { franchise: franchise }) %>

@@ -1,0 +1,19 @@
+<%
+  /*
+   * Card heading block: H1 + optional lead paragraph.
+   * Sits below the icon tile (or at the top of the card body when no icon is rendered).
+   *
+   * Locals:
+   *   title (string, required) - main heading
+   *   lead  (string, optional) - subtitle paragraph in muted colour
+   */
+  const _lead = (typeof lead !== 'undefined' && lead) ? lead : '';
+-%>
+<tr>
+  <td class="px py-lg" style="padding: 36px 40px 8px;">
+    <h1 class="h-display dark-text" style="margin:0 0 8px; font-family:Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size:28px; line-height:36px; font-weight:800; letter-spacing:-0.02em; color:#111827;"><%= title %></h1>
+    <% if (_lead) { %>
+      <p class="dark-muted" style="margin:0; font-family:Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size:15px; line-height:24px; color:#4b5563;"><%= _lead %></p>
+    <% } %>
+  </td>
+</tr>
