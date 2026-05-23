@@ -44,15 +44,7 @@
 
           <!-- Buy panel -->
           <aside class="product-buy">
-            <span class="product-buy__pill">100% NATURAL INGREDIENTS</span>
             <h1 class="product-buy__title">{{ productName }}</h1>
-            @if (productDescription && productDescription !== productName) {
-              <p class="product-buy__tag">{{ productDescription }}</p>
-            } @else {
-              <p class="product-buy__tag">
-                Experience post-meal discomfort, excessive burping or gas, acidity or indigestion? {{ productName }} is your ideal solution.
-              </p>
-            }
 
             @if (priceRange) {
               <div class="product-buy__price">{{ priceRange }}</div>
@@ -122,11 +114,6 @@
                 </button>
               </div>
             </div>
-
-            <ul class="product-buy__assurances">
-              <li><span class="mat-icon">verified</span> 100% Vegetarian &amp; Natural</li>
-              <li><span class="mat-icon">local_shipping</span> Ships pan-India</li>
-            </ul>
           </aside>
         </div>
       </div>
@@ -139,93 +126,81 @@
           <article class="product-section product-section--combined">
 
             <!-- Description -->
-            <div class="product-block" id="pt-desc">
-              <header class="product-section__head">
+            <details class="product-block product-block--collapsible" id="pt-desc" open>
+              <summary class="product-section__head">
                 <span class="product-section__icon mat-icon">info</span>
                 <h3>Description</h3>
-              </header>
-              <div class="product-panel__grid">
-                <div class="product-panel__lead">
-                  <h4 class="product-panel__title">
-                    A refined solution for bloating, acidity &amp; discomfort
-                  </h4>
-                  @if (productDescription) {
-                    <p>{{ productDescription }}</p>
-                  } @else {
-                    <p>
-                      A 100% natural blend that helps reduce bloating, gas, burping, hyperacidity, and period cramps —
-                      while supporting digestion and metabolism.
-                    </p>
-                  }
-                  <p class="product-panel__pull">
-                    True wellness isn't about quick fixes — it's about restoring balance, naturally.
-                  </p>
+                <span class="product-section__toggle mat-icon" aria-hidden="true">expand_more</span>
+              </summary>
+              <div class="product-block__body">
+                <div class="product-panel__grid">
+                  <div class="product-panel__lead">
+                    @if (productDescription) {
+                      <div class="product-panel__description" [innerHTML]="productDescriptionHtml"></div>
+                    }
+                  </div>
                 </div>
-                <ul class="product-panel__chips">
-                  <li><span class="mat-icon">spa</span>100% Ayurvedic</li>
-                  <li><span class="mat-icon">block</span>No additives</li>
-                  <li><span class="mat-icon">restaurant_menu</span>Vegetarian</li>
-                </ul>
               </div>
-            </div>
+            </details>
 
             <!-- How to use -->
-            @if (productConsumptionInstructions && productConsumptionInstructions.metaData) {
-              <div class="product-block" id="pt-use">
-                <header class="product-section__head">
+            @if (productConsumptionInstructions && productConsumptionInstructions.metaData?.howToConsume?.length) {
+              <details class="product-block product-block--collapsible" id="pt-use" open>
+                <summary class="product-section__head">
                   <span class="product-section__icon mat-icon">restaurant</span>
-                  <h3>How to use</h3>
-                </header>
-                <div class="product-panel__steps">
-                  @if (productConsumptionInstructions.metaData.howToConsume?.length) {
-                    @for (instruction of productConsumptionInstructions.metaData.howToConsume; track $index) {
-                      <div class="product-step">
-                        <span class="product-step__num">{{ $index + 1 }}</span>
-                        <h4>{{ howToUseStepName($index, instruction) }}</h4>
-                        <p>{{ howToUseStepBody(instruction) }}</p>
+                  <h3>{{ productConsumptionInstructions.title || 'How to use' }}</h3>
+                  <span class="product-section__toggle mat-icon" aria-hidden="true">expand_more</span>
+                </summary>
+                <div class="product-block__body">
+                  <div class="product-howtouse__grid" [class.product-howtouse__grid--single]="!consumptionYoutubeEmbedSafe">
+                    <div class="product-howtouse__text">
+                      @for (instruction of productConsumptionInstructions.metaData.howToConsume; track $index) {
+                        <p class="product-howtouse__line">
+                          <span class="product-howtouse__num">{{ $index + 1 }}.</span>
+                          <span class="product-howtouse__copy">{{ howToUseStepBody(instruction) }}</span>
+                        </p>
+                      }
+                    </div>
+                    @if (consumptionYoutubeEmbedSafe) {
+                      <div class="product-howtouse__video" aria-label="How to use video">
+                        <iframe
+                          [src]="consumptionYoutubeEmbedSafe"
+                          [title]="productConsumptionInstructions.title || 'How to use ' + productName"
+                          frameborder="0"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                          referrerpolicy="strict-origin-when-cross-origin"
+                          allowfullscreen
+                        ></iframe>
                       </div>
                     }
-                  } @else {
-                    <div class="product-step">
-                      <span class="product-step__num">1</span>
-                      <h4>Measure</h4>
-                      <p>Take <strong>1 teaspoon</strong> of {{ productName }}.</p>
-                    </div>
-                    <div class="product-step">
-                      <span class="product-step__num">2</span>
-                      <h4>Mix</h4>
-                      <p>Stir into warm water, buttermilk, or coconut water.</p>
-                    </div>
-                    <div class="product-step">
-                      <span class="product-step__num">3</span>
-                      <h4>Sip</h4>
-                      <p>Take <strong>after each meal</strong>, twice a day.</p>
-                    </div>
-                  }
+                  </div>
                 </div>
-              </div>
+              </details>
             }
 
             <!-- Ingredients -->
             @if (productIngredients && productIngredients.ingredients?.length) {
-              <div class="product-block" id="pt-ing">
-                <header class="product-section__head">
+              <details class="product-block product-block--collapsible" id="pt-ing" open>
+                <summary class="product-section__head">
                   <span class="product-section__icon mat-icon">eco</span>
-                  <h3>{{ productIngredients.title || 'Pure Ingredients, 100% Effective' }}</h3>
-                </header>
-                <ul class="product-panel__ingredients">
-                  @for (ingredient of productIngredients.ingredients; track ingredient.name) {
-                    <li>
-                      <span class="product-panel__ing-img">
-                        @if (ingredient.icon && ingredient.icon.length > 0) {
-                          <img [src]="ingredient.icon[0].webUrl" [alt]="ingredient.name"/>
-                        }
-                      </span>
-                      <span class="product-panel__ing-name">{{ ingredient.name }}</span>
-                    </li>
-                  }
-                </ul>
-              </div>
+                  <h3>{{ productIngredients.title }}</h3>
+                  <span class="product-section__toggle mat-icon" aria-hidden="true">expand_more</span>
+                </summary>
+                <div class="product-block__body">
+                  <ul class="product-panel__ingredients">
+                    @for (ingredient of productIngredients.ingredients; track ingredient.name) {
+                      <li>
+                        <span class="product-panel__ing-img">
+                          @if (ingredient.icon && ingredient.icon.length > 0) {
+                            <img [src]="ingredient.icon[0].webUrl" [alt]="ingredient.name"/>
+                          }
+                        </span>
+                        <span class="product-panel__ing-name">{{ ingredient.name }}</span>
+                      </li>
+                    }
+                  </ul>
+                </div>
+              </details>
             }
 
           </article>
@@ -241,47 +216,49 @@
             <div class="product-block-row">
 
               @if (productBenefits.length > 0) {
-                <div class="product-block" id="pt-ben">
-                  <header class="product-section__head">
+                <details class="product-block product-block--collapsible" id="pt-ben" open>
+                  <summary class="product-section__head">
                     <span class="product-section__icon mat-icon">favorite</span>
                     <h3>Benefits</h3>
-                  </header>
-                  <ul class="product-panel__benefits">
-                    @for (benefit of productBenefits; track $index) {
-                      <li>
-                        <span class="mat-icon">{{ benefitIcon($index) }}</span>
-                        <div>
-                          <strong>{{ benefit.title }}</strong>
-                          @if (benefit.description) {
-                            <span>{{ benefit.description }}</span>
-                          }
-                        </div>
-                      </li>
-                    }
-                  </ul>
-                </div>
+                    <span class="product-section__toggle mat-icon" aria-hidden="true">expand_more</span>
+                  </summary>
+                  <div class="product-block__body">
+                    <ul class="product-panel__benefits">
+                      @for (benefit of productBenefits; track $index) {
+                        <li>
+                          <div>
+                            @if (benefit.title) {
+                              <span>{{ benefit.title }}</span>
+                            }
+                          </div>
+                        </li>
+                      }
+                    </ul>
+                  </div>
+                </details>
               }
 
               @if (productPrecautions.length > 0) {
-                <div class="product-block" id="pt-storage">
-                  <header class="product-section__head">
+                <details class="product-block product-block--collapsible" id="pt-storage" open>
+                  <summary class="product-section__head">
                     <span class="product-section__icon mat-icon">inventory_2</span>
                     <h3>Storage info</h3>
-                  </header>
-                  <ul class="product-panel__benefits">
-                    @for (precaution of productPrecautions; track $index) {
-                      <li>
-                        <span class="mat-icon">{{ precautionIcon($index) }}</span>
-                        <div>
-                          <strong>{{ precaution.title }}</strong>
-                          @if (precaution.description) {
-                            <span>{{ precaution.description }}</span>
-                          }
-                        </div>
-                      </li>
-                    }
-                  </ul>
-                </div>
+                    <span class="product-section__toggle mat-icon" aria-hidden="true">expand_more</span>
+                  </summary>
+                  <div class="product-block__body">
+                    <ul class="product-panel__benefits">
+                      @for (precaution of productPrecautions; track $index) {
+                        <li>
+                          <div>
+                            @if (precaution.title) {
+                              <span>{{ precaution.title }}</span>
+                            }
+                          </div>
+                        </li>
+                      }
+                    </ul>
+                  </div>
+                </details>
               }
 
             </div>
@@ -291,30 +268,17 @@
     </section>
 
     <!-- Trusted by champions (phone-frame YouTube short) -->
-    @if (productStartEndorsed && productStartEndorsed.mediaData) {
+    @if (productStartEndorsed && productStartEndorsed.videoUrl) {
       <section class="section trust-champions" style="background: var(--color-surface-alt, #fff7f3);">
         <div class="ef-container">
           <div class="trust-champions__grid">
             <div class="trust-champions__copy">
-              <span class="section-eyebrow">
-                <span class="mat-icon">workspace_premium</span>Trusted by champions
-              </span>
               <h2 class="trust-champions__title">
-                {{ productStartEndorsed.title || 'Trusted by champions.' }}
+                {{ productStartEndorsed.title }}
               </h2>
               @if (productStartEndorsed.description) {
                 <p class="trust-champions__lead">{{ productStartEndorsed.description }}</p>
               }
-              <figure class="trust-champions__quote">
-                <span class="mat-icon trust-champions__quote-mark">format_quote</span>
-                <blockquote>{{ endorsementQuote.text }}</blockquote>
-                <figcaption>
-                  <strong>{{ endorsementQuote.name }}</strong>
-                  @if (endorsementQuote.role) {
-                    <span>{{ endorsementQuote.role }}</span>
-                  }
-                </figcaption>
-              </figure>
               <a
                 [href]="endorsementYoutubeUrl"
                 target="_blank"
@@ -336,28 +300,6 @@
                     referrerpolicy="strict-origin-when-cross-origin"
                     allowfullscreen
                   ></iframe>
-                } @else if (productStartEndorsed.mediaData.mediaType === 'video' &&
-                            productStartEndorsed.mediaData.mediaLink &&
-                            productStartEndorsed.mediaData.mediaLink.length > 0) {
-                  <video
-                    [src]="productStartEndorsed.mediaData.mediaLink[0].webUrl"
-                    controls
-                    loop
-                    muted
-                    playsinline
-                    preload="none"
-                    [poster]="productImages[0] || '/product_feature.jpg'"
-                    (error)="onVideoError($event)"
-                    (loadeddata)="onVideoLoaded()"
-                  >
-                    Your browser does not support the video tag.
-                  </video>
-                } @else if (productStartEndorsed.mediaData.mediaLink &&
-                            productStartEndorsed.mediaData.mediaLink.length > 0) {
-                  <img
-                    [src]="productStartEndorsed.mediaData.mediaLink[0].webUrl"
-                    [alt]="productStartEndorsed.title || 'Endorsement'"
-                  />
                 }
               </div>
             </div>
