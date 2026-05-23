@@ -1,0 +1,19 @@
+<%
+  /*
+   * A body paragraph row inside the card body. Use for narrative text between
+   * the heading and structured sections / buttons.
+   *
+   * Locals:
+   *   text   (string, required) - paragraph text (escaped)
+   *   isHtml (boolean, optional) - render text as raw HTML (default false)
+   *   tight  (boolean, optional) - reduce vertical padding (use between consecutive paragraphs)
+   */
+  const _isHtml = (typeof isHtml !== 'undefined') ? !!isHtml : false;
+  const _tight  = (typeof tight  !== 'undefined') ? !!tight  : false;
+  const _pad    = _tight ? '4px 40px 8px' : '12px 40px';
+-%>
+<tr>
+  <td class="px dark-muted" style="padding: <%= _pad %>; font-family:Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size:15px; line-height:24px; color:#4b5563;">
+    <% if (_isHtml) { %><%- text %><% } else { %><%= text %><% } %>
+  </td>
+</tr>

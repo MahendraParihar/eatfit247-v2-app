@@ -1,42 +1,28 @@
-<h2>Call Cancelled</h2>
+<%- await include('../layout/email-head', {
+  subject: 'Your call has been cancelled',
+  preheader: 'Your consultation scheduled for ' + callDate + ' at ' + callTime + ' has been cancelled.',
+  franchise: franchise,
+  icon: '✕'
+}) %>
 
-<p>Dear <%= memberName %>,</p>
+<%- await include('../partials/heading', {
+  title: 'Your call has been cancelled.',
+  lead: 'Hi ' + memberName + ' — the consultation below won’t take place. You can book a new one any time.'
+}) %>
 
-<p>This is to confirm that your scheduled consultation call has been cancelled.</p>
+<%- await include('../partials/section-open', { eyebrow: 'Cancelled slot' }) %>
+  <%- await include('../partials/info-row', { label: 'Was on', value: callDate }) %>
+  <%- await include('../partials/info-row', { label: 'At',     value: callTime }) %>
+  <% if (typeof cancellationReason !== 'undefined' && cancellationReason) { %>
+    <%- await include('../partials/info-row', { label: 'Reason', value: cancellationReason }) %>
+  <% } %>
+  <%- await include('../partials/info-row', { label: 'Cancelled on', value: cancelledDate || new Date().toLocaleString(), last: true }) %>
+<%- await include('../partials/section-close') %>
 
-<div style="background-color: #f9f9f9; padding: 20px; border-radius: 4px; margin: 20px 0;">
-  <h3 style="margin-top: 0;">Cancelled Call Details</h3>
-  <table style="width: 100%; border-collapse: collapse;">
-    <tr>
-      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><strong>Original Date:</strong></td>
-      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><%= callDate %></td>
-    </tr>
-    <tr>
-      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><strong>Original Time:</strong></td>
-      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><%= callTime %></td>
-    </tr>
-    <% if (cancellationReason) { %>
-    <tr>
-      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><strong>Reason:</strong></td>
-      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><%= cancellationReason %></td>
-    </tr>
-    <% } %>
-    <tr>
-      <td style="padding: 8px 0;"><strong>Cancelled On:</strong></td>
-      <td style="padding: 8px 0;"><%= cancelledDate || new Date().toLocaleString() %></td>
-    </tr>
-  </table>
-</div>
-
-<% if (rescheduleUrl) { %>
-<p>
-  <a href="<%= rescheduleUrl %>" style="display: inline-block; padding: 12px 24px; background-color: <%= franchise.brandColor || '#4CAF50' %>; color: #ffffff; text-decoration: none; border-radius: 4px; margin: 20px 0;">
-    Schedule a New Call
-  </a>
-</p>
+<% if (typeof rescheduleUrl !== 'undefined' && rescheduleUrl) { %>
+  <%- await include('../partials/button', { href: rescheduleUrl, label: 'Book a new call', franchise: franchise, width: '200' }) %>
 <% } %>
 
-<p>If you'd like to schedule a new call, please contact our support team at <a href="mailto:<%= franchise.supportEmail %>"><%= franchise.supportEmail %></a>.</p>
+<%- await include('../partials/signoff', { closing: 'Talk soon,', franchise: franchise }) %>
 
-<p>Best regards,<br>The <%= franchise.franchiseName %> Team</p>
-
+<%- await include('../layout/email-foot', { franchise: franchise }) %>

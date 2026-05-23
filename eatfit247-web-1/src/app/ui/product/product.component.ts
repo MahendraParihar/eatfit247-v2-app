@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { DomSanitizer, SafeHtml, SafeResourceUrl } from '@angular/platform-browser';
 import { BreadcrumbsComponent, LoaderComponent } from '@shared-ui';
 import {
   FaqService,
@@ -14,11 +14,8 @@ import { ProductService } from '../../core/services/product.service';
 import {
   GoogleReviewEntityTypeEnum,
   IMediaUpload,
-  IOutcomes,
-  IOutcomeSection,
   IProductFee,
   IProductIngredientSection,
-  IProductReport,
   IProjectConsumptionInstructionSection,
   IProjectStarEndorsedSection,
   IPublicFaq,
@@ -81,79 +78,17 @@ export class ProductComponent implements OnInit, OnDestroy {
   featureSliderCurrentIndex = 0;
   private featureSliderTimer: any = null;
   private readonly featureSliderInterval = 5000; // 5 seconds
-  productVideos: string[] = [];
   // FAQ data
   productFaqs: IPublicFaq[] = [];
-
-  /** Material symbol icons rotated for the Benefits list (per design). */
-  private readonly benefitIcons: string[] = [
-    'monitor_weight',
-    'water_drop',
-    'female',
-    'air',
-    'bolt',
-    'trending_down',
-  ];
-
-  /** Material symbol icons rotated for the Storage/Precautions list. */
-  private readonly precautionIcons: string[] = [
-    'event',
-    'ac_unit',
-    'wb_sunny',
-    'lock',
-  ];
 
   /**
    * Canonical benefit copy from the design HTML. Acts as a fallback when
    * `additionalInfo.benefits` from the API is empty or returns a bare string[].
    */
-  private readonly defaultBenefits: readonly IBenefitLine[] = [
-    {
-      title: 'Bloat reduction',
-      description: 'Calms post-meal heaviness within 30 minutes.',
-    },
-    {
-      title: 'Relieves hyperacidity',
-      description: 'Soothes the stomach lining and balances pH.',
-    },
-    {
-      title: 'Period bloating & cramps',
-      description: 'Eases water retention and abdominal discomfort.',
-    },
-    {
-      title: 'Relieves gas, burping & belching',
-      description: 'Targets flatulence and post-meal discomfort at the source.',
-    },
-    {
-      title: 'Restores lost energy',
-      description:
-        "Better digestion frees up energy you didn't know you were spending.",
-    },
-    {
-      title: 'Supports weight loss',
-      description: 'A balanced gut speeds up metabolism and curbs cravings.',
-    },
-  ];
+  private readonly defaultBenefits: readonly IBenefitLine[] = [];
 
   /** Canonical storage / precaution copy from the design HTML. */
-  private readonly defaultPrecautions: readonly IBenefitLine[] = [
-    {
-      title: 'Shelf life',
-      description: '7–8 months from the date of manufacture.',
-    },
-    {
-      title: 'Store in a cool, dry place',
-      description: 'Avoid humid spots like near the stove or sink.',
-    },
-    {
-      title: 'Keep away from direct sunlight',
-      description: 'Sunlight can degrade the natural ingredients.',
-    },
-    {
-      title: 'Seal tightly after use',
-      description: 'Press the zip-lock closed each time to preserve freshness.',
-    },
-  ];
+  private readonly defaultPrecautions: readonly IBenefitLine[] = [];
 
   /** Step labels rotated through the How-to-use block when the API only
    *  returns plain instruction strings (so we don't lose the design's
@@ -193,14 +128,6 @@ export class ProductComponent implements OnInit, OnDestroy {
       return parts[0].charAt(0).toUpperCase();
     }
     return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
-  }
-
-  benefitIcon(index: number): string {
-    return this.benefitIcons[index % this.benefitIcons.length];
-  }
-
-  precautionIcon(index: number): string {
-    return this.precautionIcons[index % this.precautionIcons.length];
   }
 
   get sizes(): ISizeOption[] {
@@ -421,16 +348,9 @@ export class ProductComponent implements OnInit, OnDestroy {
   /** YouTube link surfaced from the endorsement section, used for the
    *  "Watch on YouTube" outline CTA. Falls back to a sensible default. */
   get endorsementYoutubeUrl(): string {
-    const link = (this.productStartEndorsed as any)?.mediaData?.mediaLink?.[0]
-      ?.webUrl as string | undefined;
+    const link = this.productStartEndorsed?.videoUrl;
     if (link && /youtu/i.test(link)) {
       return link;
-    }
-    const externalUrl = (this.productStartEndorsed as any)?.externalUrl as
-      | string
-      | undefined;
-    if (externalUrl && /youtu/i.test(externalUrl)) {
-      return externalUrl;
     }
     return 'https://youtube.com/shorts/JfEkvT2csjE';
   }
@@ -441,21 +361,15 @@ export class ProductComponent implements OnInit, OnDestroy {
     return url ? this.sanitizer.bypassSecurityTrustResourceUrl(url) : null;
   }
 
-  /** Embed URL for the trust-champions phone-frame player.
-   *  Returns `null` when the source is a non-YouTube video (in which case
-   *  the template renders the native `<video>` instead). */
+  /** Embed URL for the trust-champions phone-frame player. */
   get endorsementYoutubeEmbed(): string | null {
-    const link = (this.productStartEndorsed as any)?.mediaData?.mediaLink?.[0]
-      ?.webUrl as string | undefined;
-    const embed = this.getYoutubeEmbedUrl(link);
-    if (embed) {
-      return embed;
-    }
-    // If the API supplies no YouTube link at all, fall back to the design's default short.
-    if (!link) {
-      return this.getYoutubeEmbedUrl(this.endorsementYoutubeUrl);
-    }
-    return null;
+    return this.getYoutubeEmbedUrl(this.endorsementYoutubeUrl);
+  }
+
+  /** Sanitised embed URL for the How-to-use YouTube video. */
+  get consumptionYoutubeEmbedSafe(): SafeResourceUrl | null {
+    const url = this.getYoutubeEmbedUrl(this.productConsumptionInstructions?.videoUrl);
+    return url ? this.sanitizer.bypassSecurityTrustResourceUrl(url) : null;
   }
 
   /** Optional quote / figcaption for the endorser (Harbhajan Singh fallback). */
@@ -474,6 +388,17 @@ export class ProductComponent implements OnInit, OnDestroy {
     };
   }
 
+  get productDescriptionHtml(): SafeHtml {
+    return this.sanitizer.bypassSecurityTrustHtml(this.productDescription || '');
+  }
+
+  private stripHtml(html: string): string {
+    if (!html) {
+      return '';
+    }
+    return html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+  }
+
   get productIngredients(): IProductIngredientSection {
     return (this.product?.additionalInfo?.ingredients ||
       {}) as IProductIngredientSection;
@@ -484,35 +409,9 @@ export class ProductComponent implements OnInit, OnDestroy {
       {}) as IProjectConsumptionInstructionSection;
   }
 
-  get productReportSection(): IProductReport {
-    return (this.product?.additionalInfo?.report || {}) as IProductReport;
-  }
-
-  get outcomesObject(): IOutcomeSection {
-    return (this.product?.additionalInfo?.outcomes || {}) as IOutcomeSection;
-  }
-
-  get productOutcomes(): IOutcomes[] {
-    return this.outcomesObject?.outcome || [];
-  }
-
-  get productFeature(): any {
-    return this.product?.additionalInfo?.feature;
-  }
-
   get productStartEndorsed(): IProjectStarEndorsedSection {
     return (this.product?.additionalInfo?.startEndorsed ||
       {}) as IProjectStarEndorsedSection;
-  }
-
-  get reportStats(): { value: string; label: string }[] {
-    const stats = (
-      this.productReportSection as unknown as Record<string, unknown>
-    )?.stats;
-    if (Array.isArray(stats)) {
-      return stats as { value: string; label: string }[];
-    }
-    return [];
   }
 
   async ngOnInit(): Promise<void> {
@@ -666,9 +565,7 @@ export class ProductComponent implements OnInit, OnDestroy {
     const normalizedProduct = this.normalizeProductData(product);
     this.product = normalizedProduct;
     this.productName = normalizedProduct.name as unknown as string;
-    this.productDescription =
-      (normalizedProduct as any).additionalInfo?.feature?.tagLine ||
-      (normalizedProduct.name as unknown as string);
+    this.productDescription = normalizedProduct.additionalInfo?.description || '';
     this.productId = (normalizedProduct as any).productId || null;
     if (
       (normalizedProduct as any).imagePath &&
@@ -678,27 +575,6 @@ export class ProductComponent implements OnInit, OnDestroy {
         (img: IMediaUpload) => img.webUrl,
       );
       this.productImages1 = [...this.productImages];
-    }
-    if ((normalizedProduct as any).additionalInfo?.feature?.images) {
-      const featureImages = (
-        normalizedProduct as any
-      ).additionalInfo.feature.images.map((img: IMediaUpload) => img.webUrl);
-      if (featureImages.length > 0) {
-        this.productImages1 = featureImages;
-      }
-    }
-    if (
-      (normalizedProduct as any).additionalInfo?.consumptionInstructions
-        ?.mediaData?.mediaLink
-    ) {
-      const videos = (
-        normalizedProduct as any
-      ).additionalInfo.consumptionInstructions.mediaData.mediaLink.map(
-        (media: IMediaUpload) => media.webUrl,
-      );
-      if (videos.length > 0) {
-        this.productVideos = videos;
-      }
     }
     const defaultCurrency = 'INR';
     if (normalizedProduct.variants && normalizedProduct.variants.length > 0) {
@@ -769,10 +645,11 @@ export class ProductComponent implements OnInit, OnDestroy {
     if (this.productImages1.length > 1) {
       this.startFeatureSliderAutoSwitch();
     }
+    const plainDescription = this.stripHtml(this.productDescription);
     // Update SEO meta data for this product
     this.seoService.updateSEO({
       title: this.productName,
-      description: this.productDescription,
+      description: plainDescription,
       url: this.router.url,
       type: 'product',
     });
@@ -781,7 +658,7 @@ export class ProductComponent implements OnInit, OnDestroy {
       {
         '@type': 'Product',
         name: this.productName,
-        description: this.productDescription,
+        description: plainDescription,
         image: this.productImages.length > 0 ? this.productImages : undefined,
         brand: { '@type': 'Brand', name: 'EatFit247' },
         offers: this.currentPrice

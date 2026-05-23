@@ -14,7 +14,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { Editor } from 'ngx-editor';
+import { Editor, NgxEditorComponent, NgxEditorMenuComponent } from 'ngx-editor';
 import { InputErrorComponent, UploadFormComponent, ValidationUtil } from '@shared';
 import { ProductsApiService } from 'products';
 import { ProductFormService } from './product-form.service';
@@ -38,6 +38,8 @@ import { FileTypeEnum, IDropdownItem, InputLengthEnum, IProduct, MediaForEnum } 
     MatNativeDateModule,
     MatSnackBarModule,
     FormsModule,
+    NgxEditorComponent,
+    NgxEditorMenuComponent,
     InputErrorComponent,
     UploadFormComponent
   ],
@@ -64,8 +66,7 @@ export class ManageProduct implements OnInit, OnDestroy {
         max: [0, [Validators.required, Validators.min(0)]]
       }),
       benefits: this.fb.array([]),
-      dose: ['', [Validators.maxLength(InputLengthEnum.CHAR_200)]],
-      howToTake: [''],
+      description: [''],
       precautions: this.fb.array([]),
       ingredients: this.fb.group({
         title: [''],
@@ -77,42 +78,14 @@ export class ManageProduct implements OnInit, OnDestroy {
         description: [''],
         mediaDirection: ['left'],
         metaData: this.fb.group({
-          howToConsume: this.fb.array([]),
-          whenToConsume: this.fb.array([])
+          howToConsume: this.fb.array([])
         }),
-        mediaData: this.fb.group({
-          mediaType: ['image'],
-          mediaLink: this.fb.array([])
-        })
-      }),
-      outcomes: this.fb.group({
-        title: [''],
-        description: [''],
-        outcome: this.fb.array([])
-      }),
-      feature: this.fb.group({
-        title: [''],
-        description: [''],
-        images: this.fb.array([]),
-        feature: this.fb.array([]),
-        tagLine: ['']
-      }),
-      report: this.fb.group({
-        title: [''],
-        description: [''],
-        mediaDirection: ['left'],
-        mediaData: this.fb.group({
-          mediaType: ['image'],
-          mediaLink: this.fb.array([])
-        })
+        videoUrl: ['']
       }),
       startEndorsed: this.fb.group({
         title: [''],
         description: [''],
-        mediaData: this.fb.group({
-          mediaType: ['image'],
-          mediaLink: this.fb.array([])
-        })
+        videoUrl: ['']
       })
     }),
     active: [true, [Validators.required]]
@@ -261,6 +234,8 @@ export class ManageProduct implements OnInit, OnDestroy {
 
   addVariant(): void {
     const variantGroup = this.fb.group({
+      productVariantId: [0],
+      productId: [0],
       quantityValue: [1, [Validators.required, Validators.min(0.01)]],
       quantityUnit: ['', Validators.required],
       sku: [''],
@@ -302,7 +277,10 @@ export class ManageProduct implements OnInit, OnDestroy {
     if (!pricesArray) {
       return;
     }
+    const variantId = (variant as FormGroup).get('productVariantId')?.value || 0;
     const priceGroup = this.fb.group({
+      id: [0],
+      productVariantId: [variantId],
       currency: ['INR', Validators.required],
       price: [0, [Validators.required, Validators.min(0)]],
       active: [true],
@@ -385,41 +363,6 @@ export class ManageProduct implements OnInit, OnDestroy {
     return iconArray ? iconArray.value : [];
   }
 
-  // Outcome methods
-  get outcomesGroup(): FormGroup {
-    return (this.formGroup.get('additionalInfo') as FormGroup).get('outcomes') as FormGroup;
-  }
-
-  get outcomesArray(): FormArray {
-    return this.outcomesGroup.get('outcome') as FormArray;
-  }
-
-  addOutcome(): void {
-    this.outcomesArray.push(this.fb.group({
-      title: ['', Validators.required],
-      description: ['', Validators.required],
-      icon: this.fb.array([])
-    }));
-  }
-
-  removeOutcome(index: number): void {
-    this.outcomesArray.removeAt(index);
-  }
-
-  getOutcomeIconArray(index: number): FormArray {
-    return (this.outcomesArray.at(index) as FormGroup).get('icon') as FormArray;
-  }
-
-  getOutcomeFormGroup(index: number): FormGroup {
-    return this.outcomesArray.at(index) as FormGroup;
-  }
-
-  getOutcomeUploadedMediaList(index: number): any[] {
-    // Return current form state instead of initial data
-    const iconArray = this.getOutcomeIconArray(index);
-    return iconArray ? iconArray.value : [];
-  }
-
   // FormGroup getters
   get additionalInfoGroup(): FormGroup {
     return this.formGroup.get('additionalInfo') as FormGroup;
@@ -437,14 +380,6 @@ export class ManageProduct implements OnInit, OnDestroy {
     return this.additionalInfoGroup.get('consumptionInstructions') as FormGroup;
   }
 
-  get featureGroup(): FormGroup {
-    return this.additionalInfoGroup.get('feature') as FormGroup;
-  }
-
-  get reportGroup(): FormGroup {
-    return this.additionalInfoGroup.get('report') as FormGroup;
-  }
-
   get startEndorsedGroup(): FormGroup {
     return this.additionalInfoGroup.get('startEndorsed') as FormGroup;
   }
@@ -460,122 +395,6 @@ export class ManageProduct implements OnInit, OnDestroy {
 
   removeHowToConsume(index: number): void {
     this.howToConsumeArray.removeAt(index);
-  }
-
-  // Consumption Instructions - When to Consume methods
-  get whenToConsumeArray(): FormArray {
-    return (this.consumptionInstructionsGroup.get('metaData') as FormGroup).get('whenToConsume') as FormArray;
-  }
-
-  addWhenToConsume(): void {
-    this.whenToConsumeArray.push(this.fb.control('', Validators.required));
-  }
-
-  removeWhenToConsume(index: number): void {
-    this.whenToConsumeArray.removeAt(index);
-  }
-
-  // Consumption Instructions - Media Link methods
-  get consumptionInstructionsMediaLinkArray(): FormArray {
-    return (this.consumptionInstructionsGroup.get('mediaData') as FormGroup).get('mediaLink') as FormArray;
-  }
-
-  get consumptionInstructionsMediaDataGroup(): FormGroup {
-    return this.consumptionInstructionsGroup.get('mediaData') as FormGroup;
-  }
-
-  get consumptionInstructionsMediaDataFormGroup(): FormGroup {
-    return this.consumptionInstructionsMediaDataGroup;
-  }
-
-  get consumptionInstructionsMediaType(): FileTypeEnum {
-    const mediaType = this.consumptionInstructionsMediaDataGroup?.get('mediaType')?.value;
-    return mediaType === 'video' ? FileTypeEnum.VIDEO : FileTypeEnum.IMAGE;
-  }
-
-  get consumptionInstructionsUploadedMediaList(): any[] {
-    return this.initialData?.additionalInfo?.consumptionInstructions?.mediaData?.mediaLink || [];
-  }
-
-  addConsumptionInstructionsMediaLink(): void {
-    this.consumptionInstructionsMediaLinkArray.push(this.fb.control('', Validators.required));
-  }
-
-  removeConsumptionInstructionsMediaLink(index: number): void {
-    this.consumptionInstructionsMediaLinkArray.removeAt(index);
-  }
-
-  // Feature methods
-  get featuresArray(): FormArray {
-    return this.featureGroup.get('feature') as FormArray;
-  }
-
-  addFeature(): void {
-    this.featuresArray.push(this.fb.control('', Validators.required));
-  }
-
-  removeFeature(index: number): void {
-    this.featuresArray.removeAt(index);
-  }
-
-  // Report - Media Link methods
-  get reportMediaLinkArray(): FormArray {
-    return (this.reportGroup.get('mediaData') as FormGroup).get('mediaLink') as FormArray;
-  }
-
-  get reportMediaDataGroup(): FormGroup {
-    return this.reportGroup.get('mediaData') as FormGroup;
-  }
-
-  get reportMediaDataFormGroup(): FormGroup {
-    return this.reportMediaDataGroup;
-  }
-
-  get reportMediaType(): FileTypeEnum {
-    const mediaType = this.reportMediaDataGroup?.get('mediaType')?.value;
-    return mediaType === 'video' ? FileTypeEnum.VIDEO : FileTypeEnum.IMAGE;
-  }
-
-  get reportUploadedMediaList(): any[] {
-    return this.initialData?.additionalInfo?.report?.mediaData?.mediaLink || [];
-  }
-
-  addReportMediaLink(): void {
-    this.reportMediaLinkArray.push(this.fb.control('', Validators.required));
-  }
-
-  removeReportMediaLink(index: number): void {
-    this.reportMediaLinkArray.removeAt(index);
-  }
-
-  // Star Endorsed - Media Link methods
-  get startEndorsedMediaLinkArray(): FormArray {
-    return (this.startEndorsedGroup.get('mediaData') as FormGroup).get('mediaLink') as FormArray;
-  }
-
-  get startEndorsedMediaDataGroup(): FormGroup {
-    return this.startEndorsedGroup.get('mediaData') as FormGroup;
-  }
-
-  get startEndorsedMediaDataFormGroup(): FormGroup {
-    return this.startEndorsedMediaDataGroup;
-  }
-
-  get startEndorsedMediaType(): FileTypeEnum {
-    const mediaType = this.startEndorsedMediaDataGroup?.get('mediaType')?.value;
-    return mediaType === 'video' ? FileTypeEnum.VIDEO : FileTypeEnum.IMAGE;
-  }
-
-  get startEndorsedUploadedMediaList(): any[] {
-    return this.initialData?.additionalInfo?.startEndorsed?.mediaData?.mediaLink || [];
-  }
-
-  addStartEndorsedMediaLink(): void {
-    this.startEndorsedMediaLinkArray.push(this.fb.control('', Validators.required));
-  }
-
-  removeStartEndorsedMediaLink(index: number): void {
-    this.startEndorsedMediaLinkArray.removeAt(index);
   }
 
   async onSubmit(): Promise<void> {

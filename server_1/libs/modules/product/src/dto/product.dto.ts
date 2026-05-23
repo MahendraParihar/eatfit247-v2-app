@@ -17,8 +17,6 @@ import {
   IManageProduct,
   IMediaUpload,
   InputLengthEnum,
-  IOutcomes,
-  IOutcomeSection,
   IProductAdditionalInfo,
   IProductFee,
   IProductIngredientSection,
@@ -97,32 +95,6 @@ class ProductVariantDto implements IProductVariant {
   prices?: ProductPriceDto[];
 }
 
-class OutcomeSection implements IOutcomeSection {
-  @IsOptional()
-  @IsString()
-  title!: string;
-  @IsOptional()
-  @IsString()
-  description!: string;
-  @IsArray()
-  @ValidateNested({ each: true })
-  outcome: OutcomeDto[];
-}
-
-class OutcomeDto implements IOutcomes {
-  @IsNotEmpty()
-  @IsString()
-  title!: string;
-  @IsNotEmpty()
-  @IsString()
-  description!: string;
-  @IsOptional()
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => MediaUploadDto)
-  icon?: MediaUploadDto[];
-}
-
 export class IngredientDto implements IIngredient {
   @IsOptional()
   @IsString()
@@ -164,19 +136,13 @@ class ProductAdditionalInfoDto implements IProductAdditionalInfo {
   benefits?: string[];
   @IsOptional()
   @IsString()
+  description?: string;
+  @IsOptional()
+  @IsString()
   dose?: string;
   @IsOptional()
   @IsString()
   howToTake?: string;
-  @IsOptional()
-  @IsObject()
-  feature?: {
-    title: string;
-    description: string;
-    images: any[];
-    feature: string[];
-    tagLine: string;
-  };
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
@@ -189,37 +155,15 @@ class ProductAdditionalInfoDto implements IProductAdditionalInfo {
     mediaDirection: 'left' | 'right' | 'center';
     metaData: {
       howToConsume: string[];
-      whenToConsume: string[];
     };
-    mediaData: {
-      mediaType: 'image' | 'video';
-      mediaLink: any[];
-    };
+    videoUrl?: string;
   };
-  @IsOptional()
-  @IsObject()
-  report?: {
-    title: string;
-    description: string;
-    mediaDirection: 'left' | 'right' | 'center';
-    mediaData: {
-      mediaType: 'image' | 'video';
-      mediaLink: any[];
-    };
-  };
-  @IsOptional()
-  @IsObject()
-  @Type(() => OutcomeSection)
-  outcomes?: OutcomeSection;
   @IsOptional()
   @IsObject()
   startEndorsed?: {
     title: string;
     description: string;
-    mediaData: {
-      mediaType: 'image' | 'video';
-      mediaLink: any[];
-    };
+    videoUrl: string;
   };
 }
 

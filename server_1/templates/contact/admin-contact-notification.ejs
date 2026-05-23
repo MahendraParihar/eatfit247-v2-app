@@ -1,62 +1,40 @@
-<h2>New Contact Request Received</h2>
+<%- await include('../layout/email-head', {
+  subject: 'New contact form submission — ' + (subject || 'no subject'),
+  preheader: 'A new contact form was submitted by ' + contactName + ' — needs your attention.',
+  franchise: franchise,
+  icon: '!'
+}) %>
 
-<p>Dear Admin Team,</p>
+<%- await include('../partials/heading', {
+  title: 'New contact form submission',
+  lead: contactName + ' just submitted a request through the ' + franchise.franchiseName + ' website. Reply within one business day.'
+}) %>
 
-<p>A new contact request has been submitted through the <%= franchise.franchiseName %> website.</p>
+<%- await include('../partials/section-open', { eyebrow: 'Submission' }) %>
+  <%- await include('../partials/info-row', { label: 'Reference', value: (typeof requestId !== 'undefined' && requestId) ? requestId : 'N/A' }) %>
+  <%- await include('../partials/info-row', { label: 'Name',      value: contactName }) %>
+  <%- await include('../partials/info-row', {
+    label: 'Email',
+    value: '<a href="mailto:' + contactEmail + '" style="color:' + (franchise.brandColor || '#f84141') + ';text-decoration:none;">' + contactEmail + '</a>',
+    isHtml: true
+  }) %>
+  <% if (typeof contactPhone !== 'undefined' && contactPhone) { %>
+    <%- await include('../partials/info-row', { label: 'Phone', value: contactPhone }) %>
+  <% } %>
+  <%- await include('../partials/info-row', { label: 'Subject', value: subject }) %>
+  <%- await include('../partials/info-row', { label: 'Submitted', value: (typeof submittedDate !== 'undefined' && submittedDate) ? submittedDate : new Date().toLocaleString(), last: (typeof message === 'undefined' || !message) && (typeof memberId === 'undefined' || !memberId) }) %>
+  <% if (typeof message !== 'undefined' && message) { %>
+    <%- await include('../partials/info-row', { label: 'Message', value: message, last: (typeof memberId === 'undefined' || !memberId) }) %>
+  <% } %>
+  <% if (typeof memberId !== 'undefined' && memberId) { %>
+    <%- await include('../partials/info-row', { label: 'Member ID', value: memberId, last: true }) %>
+  <% } %>
+<%- await include('../partials/section-close') %>
 
-<div style="background-color: #f9f9f9; padding: 20px; border-radius: 4px; margin: 20px 0;">
-  <h3 style="margin-top: 0;">Contact Request Details</h3>
-  <table style="width: 100%; border-collapse: collapse;">
-    <tr>
-      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><strong>Request ID:</strong></td>
-      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><%= requestId || 'N/A' %></td>
-    </tr>
-    <tr>
-      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><strong>Name:</strong></td>
-      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><%= contactName %></td>
-    </tr>
-    <tr>
-      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><strong>Email:</strong></td>
-      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><a href="mailto:<%= contactEmail %>"><%= contactEmail %></a></td>
-    </tr>
-    <% if (contactPhone) { %>
-    <tr>
-      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><strong>Phone:</strong></td>
-      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><%= contactPhone %></td>
-    </tr>
-    <% } %>
-    <tr>
-      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><strong>Subject:</strong></td>
-      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><%= subject %></td>
-    </tr>
-    <tr>
-      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><strong>Submitted On:</strong></td>
-      <td style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;"><%= submittedDate || new Date().toLocaleString() %></td>
-    </tr>
-    <% if (message) { %>
-    <tr>
-      <td style="padding: 8px 0; vertical-align: top;"><strong>Message:</strong></td>
-      <td style="padding: 8px 0;"><%= message %></td>
-    </tr>
-    <% } %>
-    <% if (memberId) { %>
-    <tr>
-      <td style="padding: 8px 0;"><strong>Member ID:</strong></td>
-      <td style="padding: 8px 0;"><%= memberId %></td>
-    </tr>
-    <% } %>
-  </table>
-</div>
-
-<% if (adminUrl) { %>
-<p>
-  <a href="<%= adminUrl %>" style="display: inline-block; padding: 12px 24px; background-color: <%= franchise.brandColor || '#4CAF50' %>; color: #ffffff; text-decoration: none; border-radius: 4px; margin: 20px 0;">
-    View in Admin Panel
-  </a>
-</p>
+<% if (typeof adminUrl !== 'undefined' && adminUrl) { %>
+  <%- await include('../partials/button', { href: adminUrl, label: 'Open in admin', franchise: franchise }) %>
 <% } %>
 
-<p>Please review and respond to this contact request at your earliest convenience.</p>
+<%- await include('../partials/signoff', { closing: 'On the queue,', team: franchise.franchiseName + ' System', franchise: franchise }) %>
 
-<p>Best regards,<br><%= franchise.franchiseName %> System</p>
-
+<%- await include('../layout/email-foot', { franchise: franchise }) %>

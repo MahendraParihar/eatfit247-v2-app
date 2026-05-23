@@ -1,0 +1,78 @@
+<%
+  /*
+   * Closes the card and renders the EatFit247 footer outside the card on the page
+   * background — social links · address · contact · prefs/unsubscribe/privacy · copyright.
+   *
+   * Locals:
+   *   franchise (object, required) - { franchiseName, supportEmail, brandColor,
+   *                                    address, phone, socials: {instagram, youtube, facebook, linkedin},
+   *                                    unsubscribeUrl, preferencesUrl, privacyUrl, footerText }
+   */
+  const _brand     = (franchise && franchise.brandColor)    ? franchise.brandColor    : '#f84141';
+  const _name      = (franchise && franchise.franchiseName) ? franchise.franchiseName : 'EatFit247';
+  const _support   = (franchise && franchise.supportEmail)  ? franchise.supportEmail  : 'hello@eatfit247.com';
+  const _address   = (franchise && franchise.address)       ? franchise.address       : 'EatFit247 Nutrition & Wellness Pvt. Ltd. · Mumbai, India';
+  const _phone     = (franchise && franchise.phone)         ? franchise.phone         : '';
+  const _socials   = (franchise && franchise.socials)       ? franchise.socials       : {};
+  const _prefsUrl  = (franchise && franchise.preferencesUrl)? franchise.preferencesUrl: '#';
+  const _unsubUrl  = (franchise && franchise.unsubscribeUrl)? franchise.unsubscribeUrl: '#';
+  const _privUrl   = (franchise && franchise.privacyUrl)    ? franchise.privacyUrl    : '#';
+  const _copy      = (franchise && franchise.footerText)
+                     ? franchise.footerText
+                     : ('© ' + new Date().getFullYear() + ' ' + _name + '. All rights reserved.');
+  const _socialList = [
+    { label: 'Instagram', url: _socials.instagram },
+    { label: 'YouTube',   url: _socials.youtube },
+    { label: 'Facebook',  url: _socials.facebook },
+    { label: 'LinkedIn',  url: _socials.linkedin },
+  ].filter(s => s.url);
+-%>
+      </table>
+    </td>
+  </tr>
+
+  <!-- Footer, outside the card. -->
+  <tr>
+    <td align="center" class="dark-bg" style="background-color:#f9fafb; padding:24px 24px 36px;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" class="container" style="width:600px; max-width:600px;">
+        <tr>
+          <td align="center" style="font-family:Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size:13px; line-height:20px; color:#9ca3af;" class="dark-muted">
+
+            <% if (_socialList.length) { %>
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:0 auto 14px;">
+              <tr>
+                <% _socialList.forEach(function(s, i) { %>
+                  <% if (i > 0) { %><td style="color:#e5e7eb;">·</td><% } %>
+                  <td style="padding:0 8px;"><a href="<%= s.url %>" style="color:#4b5563; font-weight:600; font-size:13px;"><%= s.label %></a></td>
+                <% }); %>
+              </tr>
+            </table>
+            <% } %>
+
+            <div style="margin-bottom:8px;"><%= _address %></div>
+
+            <div style="margin-bottom:8px;">
+              <a href="mailto:<%= _support %>" style="color:#4b5563;"><%= _support %></a>
+              <% if (_phone) { %>
+                &nbsp;·&nbsp; <a href="tel:<%= _phone.replace(/[^+0-9]/g, '') %>" style="color:#4b5563;"><%= _phone %></a>
+              <% } %>
+            </div>
+
+            <div style="font-size:12px; color:#9ca3af;">
+              <a href="<%= _prefsUrl %>" style="color:#9ca3af;">Manage preferences</a>
+              &nbsp;·&nbsp;
+              <a href="<%= _unsubUrl %>" style="color:#9ca3af;">Unsubscribe</a>
+              &nbsp;·&nbsp;
+              <a href="<%= _privUrl %>" style="color:#9ca3af;">Privacy</a>
+            </div>
+
+            <div style="font-size:12px; color:#9ca3af; margin-top:14px;"><%= _copy %></div>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+</table>
+</body>
+</html>

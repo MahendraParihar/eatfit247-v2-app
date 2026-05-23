@@ -9,6 +9,9 @@ import {
   IBasicSearch,
   IManageProduct,
   IProduct,
+  IProductFee,
+  IProductPrice,
+  IProductVariant,
   IPublicProduct,
   IPublicTableList,
   ITableList,
@@ -371,9 +374,7 @@ export class ProductService {
       modifiedIp: cIp,
     };
     const product = await this.productRepository.create(createObj);
-    // Transform variants or fees to the format needed for replaceProductVariantsAndPrices
-    const fees = this.transformToFeesFormat(obj);
-    await this.replaceProductVariantsAndPrices(product.productId, fees);
+    await this.upsertVariantsAndPrices(product.productId, this.resolveIncomingVariants(obj));
   }
 
   public async update(
@@ -400,9 +401,7 @@ export class ProductService {
     await this.productRepository.update(updateObj, {
       where: { productId: id },
     });
-    // Transform variants or fees to the format needed for replaceProductVariantsAndPrices
-    const fees = this.transformToFeesFormat(obj);
-    await this.replaceProductVariantsAndPrices(id, fees);
+    await this.upsertVariantsAndPrices(id, this.resolveIncomingVariants(obj));
   }
 
   public async changeStatus(
@@ -436,132 +435,112 @@ export class ProductService {
     return products.map((item: any) => this.convertToModel(item));
   }
 
-  /**
-   * Transform IManageProduct variants or fees to the fees format needed by replaceProductVariantsAndPrices
-   */
-  private transformToFeesFormat(obj: IManageProduct): {
-    quantity: number;
-    unit: string;
-    currency: string;
-    price: number;
-    isActive?: boolean;
-    validFrom?: Date | string | null;
-    validTo?: Date | string | null;
-  }[] {
-    const fees: {
-      quantity: number;
-      unit: string;
-      currency: string;
-      price: number;
-      isActive?: boolean;
-      validFrom?: Date | string | null;
-      validTo?: Date | string | null;
-    }[] = [];
-    // If variants are provided, transform them to fees format
+  private resolveIncomingVariants(obj: IManageProduct): IProductVariant[] {
     if (obj.variants && obj.variants.length > 0) {
-      for (const variant of obj.variants) {
-        if (variant.prices && variant.prices.length > 0) {
-          for (const price of variant.prices) {
-            fees.push({
-              quantity: variant.quantityValue,
-              unit: variant.quantityUnit,
-              currency: price.currency,
-              price: price.price,
-              isActive: price.active !== undefined ? price.active : true,
-              validFrom: price.validFrom !== undefined ? price.validFrom : null,
-              validTo: price.validTo !== undefined ? price.validTo : null,
-            });
-          }
-        }
-      }
+      return obj.variants;
     }
-    // If fees are provided directly, use them
-    else if (obj.fees && obj.fees.length > 0) {
-      for (const fee of obj.fees) {
-        fees.push({
-          quantity: fee.quantity,
-          unit: fee.unit,
-          currency: fee.currency,
-          price: fee.price,
-          isActive: fee.isActive !== undefined ? fee.isActive : true,
-          validFrom: fee.validFrom,
-          validTo: fee.validTo,
-        });
-      }
+    if (obj.fees && obj.fees.length > 0) {
+      return this.feesToVariants(obj.fees);
     }
-    return fees;
+    return [];
   }
 
-  /**
-   * Helper to rebuild variants and prices for a product from the
-   * existing fees payload (quantity/unit/currency/price).
-   */
-  private async replaceProductVariantsAndPrices(
-    productId: number,
-    fees: {
-      quantity: number;
-      unit: string;
-      currency: string;
-      price: number;
-      isActive?: boolean;
-      validFrom?: Date | string | null;
-      validTo?: Date | string | null;
-    }[],
-  ): Promise<void> {
-    // Remove existing prices and variants for this product
-    const existingVariants = await this.productVariantRepository.findAll({
-      where: { productId },
-    });
-    const variantIds = existingVariants.map((v) => v.productVariantId);
-    if (variantIds.length > 0) {
-      await this.productPriceRepository.destroy({
-        where: { productVariantId: variantIds },
-      });
-      await this.productVariantRepository.destroy({
-        where: { productId },
-      });
-    }
-    // Create new variants and prices from the provided fees
-    // Group fees by quantity and unit to create variants
-    const variantMap = new Map<string, { quantity: number; unit: string; prices: typeof fees }>();
+  private feesToVariants(fees: IProductFee[]): IProductVariant[] {
+    const variantMap = new Map<string, IProductVariant>();
     for (const fee of fees) {
       const key = `${fee.quantity}_${fee.unit}`;
-      if (!variantMap.has(key)) {
-        variantMap.set(key, {
-          quantity: fee.quantity,
-          unit: fee.unit,
+      let variant = variantMap.get(key);
+      if (!variant) {
+        variant = {
+          productVariantId: 0,
+          quantityValue: fee.quantity,
+          quantityUnit: fee.unit,
+          sku: fee.sku,
           prices: [],
-        });
+        };
+        variantMap.set(key, variant);
       }
-      variantMap.get(key)!.prices.push(fee);
-    }
-    // Create variants and their prices
-    for (const [key, variantData] of variantMap) {
-      const variant = await this.productVariantRepository.create({
-        productId,
-        quantityValue: variantData.quantity,
-        quantityUnit: variantData.unit,
+      variant.prices!.push({
+        currency: fee.currency,
+        price: fee.price,
+        active: fee.isActive !== undefined ? fee.isActive : true,
+        validFrom: fee.validFrom ?? null,
+        validTo: fee.validTo ?? null,
       });
-      // Create prices for this variant
-      for (const priceData of variantData.prices) {
-        await this.productPriceRepository.create({
-          productVariantId: variant.productVariantId,
-          currency: priceData.currency,
-          price: priceData.price,
-          active: priceData.isActive !== undefined ? priceData.isActive : true,
-          validFrom: priceData.validFrom
-            ? typeof priceData.validFrom === 'string'
-              ? new Date(priceData.validFrom)
-              : priceData.validFrom
-            : null,
-          validTo: priceData.validTo
-            ? typeof priceData.validTo === 'string'
-              ? new Date(priceData.validTo)
-              : priceData.validTo
-            : null,
+    }
+    return Array.from(variantMap.values());
+  }
+
+  // Upsert variants by productVariantId: existing rows are updated in place
+  // (keeps FKs from txn_member_product_order_items intact); new rows are created;
+  // variants no longer in the payload stay in the table but all their prices are
+  // marked inactive so they disappear from public/admin listings.
+  private async upsertVariantsAndPrices(
+    productId: number,
+    incomingVariants: IProductVariant[],
+  ): Promise<void> {
+    const existing = await this.productVariantRepository.findAll({ where: { productId } });
+    const existingById = new Map(existing.map((v) => [v.productVariantId, v]));
+    const keptIds = new Set<number>();
+
+    for (const variant of incomingVariants) {
+      const incomingId = variant.productVariantId ?? 0;
+      if (incomingId > 0 && existingById.has(incomingId)) {
+        await this.productVariantRepository.update(
+          {
+            quantityValue: variant.quantityValue,
+            quantityUnit: variant.quantityUnit,
+            sku: variant.sku || null,
+          },
+          { where: { productVariantId: incomingId } },
+        );
+        await this.productPriceRepository.destroy({
+          where: { productVariantId: incomingId },
         });
+        await this.createPricesForVariant(incomingId, variant.prices || []);
+        keptIds.add(incomingId);
+      } else {
+        const created = await this.productVariantRepository.create({
+          productId,
+          quantityValue: variant.quantityValue,
+          quantityUnit: variant.quantityUnit,
+          sku: variant.sku || null,
+        });
+        await this.createPricesForVariant(created.productVariantId, variant.prices || []);
       }
     }
+
+    for (const existingVariant of existing) {
+      if (!keptIds.has(existingVariant.productVariantId)) {
+        await this.productPriceRepository.update(
+          { active: false },
+          { where: { productVariantId: existingVariant.productVariantId } },
+        );
+      }
+    }
+  }
+
+  private async createPricesForVariant(
+    productVariantId: number,
+    prices: IProductPrice[],
+  ): Promise<void> {
+    for (const price of prices) {
+      await this.productPriceRepository.create({
+        productVariantId,
+        currency: price.currency,
+        price: price.price,
+        active: price.active !== undefined ? price.active : true,
+        validFrom: this.toDateOrNull(price.validFrom),
+        validTo: this.toDateOrNull(price.validTo),
+      });
+    }
+  }
+
+  private toDateOrNull(value: Date | string | null | undefined): Date | null {
+    if (!value) {
+      return null;
+    }
+    return typeof value === 'string' ? new Date(value) : value;
   }
 }
 

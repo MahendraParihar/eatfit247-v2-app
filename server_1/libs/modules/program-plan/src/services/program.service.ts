@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
+import { Op } from 'sequelize';
 import { MstProgram } from '../models';
 import {
   IBasicSearch,
@@ -251,6 +252,13 @@ export class ProgramService {
     if (searchDto.isSpecialProgram !== null && searchDto.isSpecialProgram !== undefined) {
       whereCondition.isSpecialProgram = searchDto.isSpecialProgram;
     }
+    // Admins deactivate a seasonal offering via its program plan (mst_program_plans.active).
+    // Hide programs whose linked plan is inactive; programs without a linked plan
+    // (programPlanId null) remain visible.
+    whereCondition[Op.or as unknown as string] = [
+      { programPlanId: null },
+      { '$programPlan.active$': true },
+    ];
 
     const pageNumber = searchDto.page || 0;
     const pageSize = searchDto.limit || 15;
@@ -260,6 +268,7 @@ export class ProgramService {
       order: [['sequenceNumber', 'ASC']],
       offset: offset,
       limit: pageSize,
+      subQuery: false,
       nest: true,
     });
     const resList: IPublicProgram[] = rows.map((item: any) => this.convertToPublic(this.convertToModel(item)));
@@ -277,7 +286,12 @@ export class ProgramService {
       where: {
         programId: id,
         active: true,
+        [Op.or]: [
+          { programPlanId: null },
+          { '$programPlan.active$': true },
+        ],
       },
+      subQuery: false,
       nest: true,
     });
     if (!find) {
@@ -294,7 +308,12 @@ export class ProgramService {
       where: {
         url: url,
         active: true,
+        [Op.or]: [
+          { programPlanId: null },
+          { '$programPlan.active$': true },
+        ],
       },
+      subQuery: false,
       nest: true,
     });
     if (!find) {

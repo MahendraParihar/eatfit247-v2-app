@@ -1325,13 +1325,11 @@ html body .sitemap a .mat-icon {
   box-shadow: none;
 }
 .product-section--combined {
-  display: grid;
-  gap: clamp(28px, 4vw, 44px);
+  display: block;
   padding: 0;
 }
 .product-block + .product-block {
-  border-top: 1px solid var(--color-border);
-  padding-top: clamp(28px, 4vw, 44px);
+  margin-top: clamp(28px, 4vw, 44px);
 }
 .product-section__head {
   display: flex;
@@ -1341,6 +1339,43 @@ html body .sitemap a .mat-icon {
   padding-bottom: clamp(12px, 1.5vw, 16px);
   border-bottom: 1px solid var(--color-border);
 }
+
+
+/* Collapsible product-block (uses <details>/<summary>) */
+.product-block--collapsible { display: block; }
+.product-block--collapsible > summary.product-section__head {
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+.product-block--collapsible > summary.product-section__head::-webkit-details-marker { display: none; }
+.product-block--collapsible > summary.product-section__head::marker { content: ''; }
+.product-block--collapsible > summary.product-section__head h3 { flex: 1; }
+.product-section__toggle,
+html body span.product-section__toggle.mat-icon {
+  margin-left: auto;
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  color: var(--color-text-secondary);
+  font-family: 'Material Icons', 'Material Symbols Outlined';
+  font-size: 22px;
+  line-height: 1;
+  transition: transform 200ms ease, color 200ms ease, background 200ms ease;
+  background: transparent;
+}
+.product-block--collapsible:hover > summary.product-section__head .product-section__toggle {
+  color: var(--color-primary);
+  background: color-mix(in oklab, var(--color-primary) 10%, transparent);
+}
+.product-block--collapsible[open] > summary.product-section__head .product-section__toggle {
+  transform: rotate(180deg);
+  color: var(--color-primary);
+}
+.product-block__body { padding-top: clamp(4px, 1vw, 8px); }
 .product-section__head h3 {
   margin: 0;
   font-size: var(--type-h3-size);
@@ -1375,8 +1410,7 @@ html body span.product-section__icon.mat-icon {
 .product-panel__benefits li { align-items: start; }
 
 .product-panel__grid {
-  display: grid;
-  gap: clamp(20px, 3vw, 32px);
+  grid-template-columns: 1.4fr 1fr; align-items: center;
 }
 @media (min-width: 760px) { .product-panel__grid { grid-template-columns: 1.4fr 1fr; align-items: center; } }
 .product-panel__title {
@@ -1463,6 +1497,61 @@ html body span.product-section__icon.mat-icon {
   color: var(--color-text-secondary);
   font-size: 14px;
   line-height: 1.55;
+}
+
+/* How-to-use: 2-column layout (text + YouTube video) */
+.product-howtouse__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-5, 24px);
+  align-items: start;
+  margin-bottom: 18px;
+}
+.product-howtouse__text {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  order: 1;
+}
+.product-howtouse__line {
+  display: flex;
+  gap: 10px;
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--type-body-size);
+  line-height: var(--type-body-line);
+}
+.product-howtouse__num {
+  color: var(--color-primary);
+  font-weight: var(--font-weight-bold);
+  flex-shrink: 0;
+}
+.product-howtouse__copy { flex: 1; }
+.product-howtouse__copy strong { color: var(--color-text-primary); }
+.product-howtouse__video {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #000;
+  order: 2;
+}
+.product-howtouse__video iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+}
+@media (min-width: 760px) {
+  .product-howtouse__grid {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-6, 32px);
+    align-items: start;
+  }
+  .product-howtouse__grid--single { grid-template-columns: 1fr; }
+  .product-howtouse__text { order: 0; }
+  .product-howtouse__video { order: 0; }
 }
 
 /* Note row used by use + ingredients tabs */

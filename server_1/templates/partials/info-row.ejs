@@ -1,0 +1,25 @@
+<%
+  /*
+   * Single label/value row inside a meta-card (see section-open.ejs).
+   * Renders a row of cells + a 1px divider row beneath it (omitted when last=true).
+   *
+   * Locals:
+   *   label    (string, required)        - left-hand label (muted, 13px)
+   *   value    (string|html, required)   - right-hand value (15px / 600 weight / strong)
+   *   isHtml   (boolean, optional)       - render value as raw HTML (default false: escapes)
+   *   last     (boolean, optional)       - hide the divider row beneath
+   *   strong   (boolean, optional)       - render value larger (18px) for totals
+   */
+  const _last   = (typeof last   !== 'undefined') ? !!last   : false;
+  const _isHtml = (typeof isHtml !== 'undefined') ? !!isHtml : false;
+  const _strong = (typeof strong !== 'undefined') ? !!strong : false;
+  const _valSize    = _strong ? '18px' : '14px';
+  const _labelStyle = _strong ? 'font-size:15px; color:#111827;' : '';
+-%>
+<tr>
+  <td style="padding:8px 0; font-family:Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size:13px; color:#4b5563; vertical-align:top; width:42%;" class="dark-muted"><span style="<%= _labelStyle %>"><%= label %></span></td>
+  <td style="padding:8px 0; font-family:Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size:<%= _valSize %>; color:#111827; font-weight:600; vertical-align:top; text-align:right;" class="dark-text"><% if (_isHtml) { %><%- value %><% } else { %><%= value %><% } %></td>
+</tr>
+<% if (!_last) { %>
+<tr><td colspan="2" style="border-bottom:1px solid #e5e7eb; line-height:0; font-size:0;" class="dark-border">&nbsp;</td></tr>
+<% } %>

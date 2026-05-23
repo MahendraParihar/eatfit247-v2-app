@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { BreadcrumbsComponent } from '@shared-ui';
+import { BreadcrumbsComponent, EmptyStateAction, EmptyStateComponent } from '@shared-ui';
 import { IPublicFaq } from '@eatfit247-shared-library/core';
 import { FaqService, ProgramService, SeasonalProgramCard, SeasonalStatus, SEOService } from '../../core/services';
 
@@ -10,17 +10,13 @@ interface StatusGroup {
   modifier: 'live' | 'soon' | 'closed';
   heading: string;
   blurb: string;
-  emptyIcon: string;
-  emptyTitle: string;
-  emptyCopy: string;
-  emptyCtaLabel: string;
   plans: SeasonalProgramCard[];
 }
 
 @Component({
   standalone: true,
   selector: 'app-seasonal-plans',
-  imports: [CommonModule, RouterLink, BreadcrumbsComponent],
+  imports: [CommonModule, RouterLink, BreadcrumbsComponent, EmptyStateComponent],
   templateUrl: './seasonal-plans.component.html',
   styleUrl: './seasonal-plans.component.scss',
 })
@@ -42,11 +38,6 @@ export class SeasonalPlansComponent implements OnInit {
         modifier: 'live',
         heading: 'Open for enrolment now',
         blurb: '',
-        emptyIcon: 'event_busy',
-        emptyTitle: 'No plans are open for enrolment right now.',
-        emptyCopy:
-          "Most seasonal plans run only at a specific time of year. Add your interest below and we'll WhatsApp you the moment the next batch opens.",
-        emptyCtaLabel: 'Tell us your interest',
         plans: all.filter((p) => p.status === 'live'),
       },
       {
@@ -55,11 +46,6 @@ export class SeasonalPlansComponent implements OnInit {
         heading: 'Coming up — join the waitlist',
         blurb:
           "Enrolment opens closer to the batch start. Add yourself to the waitlist now and we'll notify you the moment it opens.",
-        emptyIcon: 'event_upcoming',
-        emptyTitle: 'Nothing on the calendar just yet.',
-        emptyCopy:
-          'Upcoming batches will appear here as soon as dates are confirmed. Drop your details to be first in line.',
-        emptyCtaLabel: 'Get notified',
         plans: all.filter((p) => p.status === 'soon'),
       },
       {
@@ -68,15 +54,17 @@ export class SeasonalPlansComponent implements OnInit {
         heading: 'Off-season — next batch later',
         blurb:
           "These plans run only at certain times of year. Drop your details and we'll WhatsApp you when the next batch opens.",
-        emptyIcon: 'event_available',
-        emptyTitle: 'No off-season plans archived right now.',
-        emptyCopy:
-          'Plans that have wrapped up for the year will show here so you can request a re-run.',
-        emptyCtaLabel: 'Request a plan',
         plans: all.filter((p) => p.status === 'closed'),
       },
     ];
   });
+
+  readonly allGroupsEmpty = computed<boolean>(() => this.groups().every((g) => g.plans.length === 0));
+
+  readonly sectionEmptyActions: EmptyStateAction[] = [
+    { label: 'Tell us your interest', link: '/contact-us', variant: 'filled' },
+    { label: 'Explore one-on-one programs', link: '/our-programs', variant: 'outlined' },
+  ];
 
   async ngOnInit(): Promise<void> {
     this.seoService.updateSEO({

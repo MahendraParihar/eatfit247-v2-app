@@ -1,0 +1,41 @@
+<%
+  /*
+   * Bulletproof CTA button. Renders as a row in the card body table.
+   * Uses VML for Outlook desktop and a styled anchor everywhere else.
+   *
+   * Locals:
+   *   href      (string, required) - link target
+   *   label     (string, required) - button text
+   *   color     (string, optional) - background colour (defaults to franchise.brandColor or #f84141)
+   *   textColor (string, optional) - text colour (default #ffffff)
+   *   width     (string, optional) - VML width (default '220')
+   */
+  const _bg    = (typeof color     !== 'undefined' && color)     ? color     : ((franchise && franchise.brandColor) ? franchise.brandColor : '#f84141');
+  const _fg    = (typeof textColor !== 'undefined' && textColor) ? textColor : '#ffffff';
+  const _w     = (typeof width     !== 'undefined' && width)     ? width     : '220';
+-%>
+<tr>
+  <td class="px" style="padding: 16px 40px 8px;">
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+      <tr>
+        <td>
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="left" class="btn-block">
+            <tr>
+              <td align="center" bgcolor="<%= _bg %>" style="border-radius:12px;">
+                <!--[if mso]>
+                <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="<%= href %>" style="height:48px;v-text-anchor:middle;width:<%= _w %>px;" arcsize="25%" stroke="f" fillcolor="<%= _bg %>">
+                <w:anchorlock/>
+                <center style="color:<%= _fg %>;font-family:Helvetica,Arial,sans-serif;font-size:15px;font-weight:bold;"><%= label %></center>
+                </v:roundrect>
+                <![endif]-->
+                <!--[if !mso]><!-- -->
+                <a href="<%= href %>" style="display:inline-block; padding:14px 28px; font-family:Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size:15px; font-weight:600; color:<%= _fg %>; text-decoration:none; border-radius:12px; background-color:<%= _bg %>; line-height:1.2; mso-padding-alt:0; min-width:160px; text-align:center;"><%= label %></a>
+                <!--<![endif]-->
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </td>
+</tr>

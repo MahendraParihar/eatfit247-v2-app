@@ -66,6 +66,11 @@ html,
 body {
   min-height: 100%;
   margin: 0;
+}
+
+// overflow-x:hidden only on body — setting it on html turns html into a scroll
+// container and breaks position:sticky for the header on mobile.
+body {
   overflow-x: hidden;
 }
 

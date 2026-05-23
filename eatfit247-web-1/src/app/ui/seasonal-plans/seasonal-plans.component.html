@@ -30,7 +30,7 @@
     </header>
 
     @for (group of groups(); track group.status) {
-      @if (group.status === 'live' || group.plans.length > 0) {
+      @if (group.plans.length > 0) {
       <div class="status-group" [class]="'status-group status-group--' + group.modifier">
         <div class="status-group__head">
           <h3>
@@ -44,97 +44,97 @@
           }
         </div>
 
-        @if (group.plans.length > 0) {
-          <div class="seasonal-grid">
-            @for (plan of group.plans; track plan.slug) {
-              <article
-                class="seasonal-card"
-                [id]="plan.slug"
-                [attr.data-status]="plan.status"
-              >
-                <div class="seasonal-card__cover" [ngStyle]="coverStyle(plan)">
-                  <span class="seasonal-card__status" [class]="'seasonal-card__status seasonal-card__status--' + plan.status">
-                    <span class="dot"></span>{{ plan.statusLabel }}
-                  </span>
-                  <span class="seasonal-card__word">{{ plan.word }}</span>
-                  <span class="seasonal-card__date-pill">
-                    <span class="mat-icon">event</span>{{ plan.datePill }}
-                  </span>
-                </div>
-                <div class="seasonal-card__body">
-                  <h3 class="seasonal-card__title">{{ plan.title }}</h3>
-                  @if (plan.subtitle) {
-                    <p class="seasonal-card__sub">{{ plan.subtitle }}</p>
-                  }
+        <div class="seasonal-grid">
+          @for (plan of group.plans; track plan.slug) {
+            <article
+              class="seasonal-card"
+              [id]="plan.slug"
+              [attr.data-status]="plan.status"
+            >
+              <div class="seasonal-card__cover" [ngStyle]="coverStyle(plan)">
+                <span class="seasonal-card__status" [class]="'seasonal-card__status seasonal-card__status--' + plan.status">
+                  <span class="dot"></span>{{ plan.statusLabel }}
+                </span>
+                <span class="seasonal-card__word">{{ plan.word }}</span>
+                <span class="seasonal-card__date-pill">
+                  <span class="mat-icon">event</span>{{ plan.datePill }}
+                </span>
+              </div>
+              <div class="seasonal-card__body">
+                <h3 class="seasonal-card__title">{{ plan.title }}</h3>
+                @if (plan.subtitle) {
+                  <p class="seasonal-card__sub">{{ plan.subtitle }}</p>
+                }
 
-                  @if (plan.details) {
-                    @if (detailsHasList(plan.details)) {
-                      <ul class="seasonal-card__bullets seasonal-card__bullets--details">
-                        @for (item of detailsListItems(plan.details); track item) {
-                          <li><span class="tick">✓</span>{{ item }}</li>
-                        }
-                      </ul>
-                    } @else {
-                      <div class="seasonal-card__details" [innerHTML]="plan.details"></div>
+                @if (plan.details) {
+                  @if (detailsHasList(plan.details)) {
+                    <ul class="seasonal-card__bullets seasonal-card__bullets--details">
+                      @for (item of detailsListItems(plan.details); track item) {
+                        <li><span class="tick">✓</span>{{ item }}</li>
+                      }
+                    </ul>
+                  } @else {
+                    <div class="seasonal-card__details" [innerHTML]="plan.details"></div>
+                  }
+                }
+
+                @if (plan.noOfCycle || plan.noOfDaysInCycle) {
+                  <div class="seasonal-stats">
+                    @if (plan.noOfCycle) {
+                      <div class="seasonal-stat">
+                        <span class="seasonal-stat__num">{{ plan.noOfCycle }}</span>
+                        <span class="seasonal-stat__label">{{ plan.noOfCycle === 1 ? 'Cycle' : 'Cycles' }}</span>
+                      </div>
                     }
-                  }
+                    @if (plan.noOfDaysInCycle) {
+                      <div class="seasonal-stat">
+                        <span class="seasonal-stat__num">{{ plan.noOfDaysInCycle }}</span>
+                        <span class="seasonal-stat__label">Days / Cycle</span>
+                      </div>
+                    }
+                  </div>
+                }
 
-                  @if (plan.noOfCycle || plan.noOfDaysInCycle) {
-                    <div class="seasonal-stats">
-                      @if (plan.noOfCycle) {
-                        <div class="seasonal-stat">
-                          <span class="seasonal-stat__num">{{ plan.noOfCycle }}</span>
-                          <span class="seasonal-stat__label">{{ plan.noOfCycle === 1 ? 'Cycle' : 'Cycles' }}</span>
-                        </div>
-                      }
-                      @if (plan.noOfDaysInCycle) {
-                        <div class="seasonal-stat">
-                          <span class="seasonal-stat__num">{{ plan.noOfDaysInCycle }}</span>
-                          <span class="seasonal-stat__label">Days / Cycle</span>
-                        </div>
-                      }
-                    </div>
-                  }
+                @if (plan.feesFormatted) {
+                  <div class="seasonal-card__price-row">
+                    <span class="seasonal-card__price">
+                      {{ plan.feesFormatted }}
+                    </span>
+                    <span class="seasonal-card__price-note">Taxes extra</span>
+                  </div>
+                }
 
-                  @if (plan.feesFormatted) {
-                    <div class="seasonal-card__price-row">
-                      <span class="seasonal-card__price">
-                        {{ plan.feesFormatted }}
-                      </span>
-                      <span class="seasonal-card__price-note">Taxes extra</span>
-                    </div>
-                  }
-
-                  <a
-                    [routerLink]="['/book-session']"
-                    [queryParams]="{ plan: plan.slug, intent: plan.ctaIntent === 'waitlist' ? 'waitlist' : null }"
-                    class="mat-btn"
-                    [class.mat-btn--filled]="plan.ctaVariant === 'filled'"
-                    [class.mat-btn--outlined]="plan.ctaVariant === 'outlined'"
-                    style="width:100%;justify-content:center;"
-                  >
-                    {{ plan.ctaLabel }} <span class="mat-icon">{{ plan.ctaIcon }}</span>
-                  </a>
-                </div>
-              </article>
-            }
-          </div>
-        } @else {
-          <aside class="status-empty">
-            <span class="status-empty__icon">{{ group.emptyIcon }}</span>
-            <h3 class="status-empty__title">{{ group.emptyTitle }}</h3>
-            <p class="status-empty__copy">{{ group.emptyCopy }}</p>
-            <a routerLink="/contact-us" class="mat-btn mat-btn--outlined">
-              {{ group.emptyCtaLabel }} <span class="mat-icon">arrow_forward</span>
-            </a>
-          </aside>
-        }
+                <a
+                  [routerLink]="['/book-session']"
+                  [queryParams]="{ plan: plan.slug, intent: plan.ctaIntent === 'waitlist' ? 'waitlist' : null }"
+                  class="mat-btn"
+                  [class.mat-btn--filled]="plan.ctaVariant === 'filled'"
+                  [class.mat-btn--outlined]="plan.ctaVariant === 'outlined'"
+                  style="width:100%;justify-content:center;"
+                >
+                  {{ plan.ctaLabel }} <span class="mat-icon">{{ plan.ctaIcon }}</span>
+                </a>
+              </div>
+            </article>
+          }
+        </div>
       </div>
       }
+    }
+
+    @if (allGroupsEmpty()) {
+      <app-empty-state
+        variant="hero"
+        icon="event_busy"
+        title="No seasonal plans are scheduled right now."
+        description="All our cohort programs run at specific times of year. Tell us what you'd like to see next and we'll WhatsApp you the moment a batch opens — whether it's a festival, condition or season-specific plan."
+        [actions]="sectionEmptyActions"
+      ></app-empty-state>
     }
   </div>
 </section>
 
+@if (!allGroupsEmpty()) {
 <!-- Inside the plan — sample cycle preview -->
 <section class="section section--alt" id="preview">
   <div class="ef-container">
@@ -230,7 +230,9 @@
     </div>
   </div>
 </section>
+}
 
+@if (!allGroupsEmpty()) {
 <!-- How seasonal plans work -->
 <section class="section">
   <div class="ef-container">
@@ -324,4 +326,5 @@
     </div>
   </div>
 </section>
+}
 }
