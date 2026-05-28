@@ -578,6 +578,25 @@ export class MemberDietPlanService {
     if (!planDetail) {
       throw new NotFoundException('Diet plan not found');
     }
+    // Backfill recipe labels for any saved IDs that fall outside the top-N dropdown
+    if (dietDetail && Array.isArray(dietDetail.dietPlan)) {
+      const knownIds = new Set(recipeList.map((r) => Number(r.id)));
+      const missingIds = new Set<number>();
+      for (const item of dietDetail.dietPlan) {
+        if (item && Array.isArray(item.recipeIds)) {
+          for (const rid of item.recipeIds) {
+            const numericId = Number(rid);
+            if (!Number.isNaN(numericId) && !knownIds.has(numericId)) {
+              missingIds.add(numericId);
+            }
+          }
+        }
+      }
+      if (missingIds.size > 0) {
+        const extras = await this.recipeService.findDropdownByIds([...missingIds]);
+        recipeList.push(...extras);
+      }
+    }
     dietCategory = this.convertDietDetail(categoryList, recipeList, dietDetail);
     // Calculate start and end date
     if (cycleNo && cycleNo === 1 && (!dayNo || dayNo === 0)) {
