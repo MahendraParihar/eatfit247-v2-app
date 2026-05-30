@@ -44,42 +44,17 @@
         <div class="vtest-viewport">
           <ul class="vtest-track" [ngStyle]="vtTrackStyle()">
             @for (v of videos(); track trackByVideoName($index, v); let i = $index) {
-              <li class="vtest-card">
-                @if (v.youtubeId || v.videoSrc) {
-                  <button
-                    type="button"
-                    class="vtest-media"
-                    [class.is-playing]="vtIsPlaying(i)"
-                    [attr.aria-label]="'Play ' + v.name + '\'s testimonial'"
-                    (click)="vtPlay(i)"
-                  >
-                    @if (!vtIsPlaying(i)) {
-                      <img [src]="v.thumb" [alt]="v.name" loading="lazy" referrerpolicy="no-referrer" />
-                      @if (v.duration) {
-                        <span class="vtest-dur">{{ v.duration }}</span>
-                      }
-                      <span class="vtest-play"><span class="mat-icon">play_arrow</span></span>
-                    } @else if (v.youtubeId) {
-                      <iframe
-                        [src]="vtEmbedUrl(v.youtubeId)"
-                        title="Testimonial video"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                        referrerpolicy="strict-origin-when-cross-origin"
-                        allowfullscreen
-                      ></iframe>
-                    } @else if (v.videoSrc) {
-                      <video [src]="v.videoSrc" controls autoplay playsinline></video>
-                    }
-                  </button>
-                } @else {
-                  <figure class="vtest-media vtest-media--image" [attr.aria-label]="v.name">
-                    <img [src]="v.thumb" [alt]="v.name" loading="lazy" referrerpolicy="no-referrer" />
-                  </figure>
-                }
-                <div class="vtest-body">
-                  <h3 class="vtest-name">{{ v.name }}</h3>
-                  <span class="vtest-role">{{ v.role }}</span>
-                </div>
+              <li class="vtest-item">
+                <app-story-card
+                  [name]="v.name"
+                  [title]="v.role"
+                  [quote]="v.description"
+                  [mediaType]="v.mediaType"
+                  [posterUrl]="v.posterUrl"
+                  [videoSrc]="v.videoSrc"
+                  [youtubeId]="v.youtubeId"
+                  [index]="i"
+                ></app-story-card>
               </li>
             }
           </ul>

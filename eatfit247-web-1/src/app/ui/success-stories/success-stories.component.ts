@@ -12,17 +12,25 @@ import {
   BreadcrumbsComponent,
   EmptyStateComponent,
   LoaderComponent,
+  StoryCardComponent,
 } from '@shared-ui';
 import { JsonLdService, SEOService } from '../../core/services';
-import { ISuccessStory } from '@eatfit247-shared-library/core';
+import {
+  ISuccessStory,
+  SuccessStoryMediaType,
+} from '@eatfit247-shared-library/core';
 import { SuccessStoriesService } from '../../core/services/success-stories.service';
+import { buildMediaUrl } from '../../core/utils/media-url.util';
 
 interface CelebView {
   id: string | number;
   name: string;
   date: string;
-  img: string;
+  posterUrl?: string;
   quote: string;
+  mediaType: SuccessStoryMediaType;
+  videoSrc?: string;
+  youtubeId?: string;
 }
 
 @Component({
@@ -34,6 +42,7 @@ interface CelebView {
     LoaderComponent,
     EmptyStateComponent,
     BreadcrumbsComponent,
+    StoryCardComponent,
   ],
   templateUrl: './success-stories.component.html',
   styleUrl: './success-stories.component.scss',
@@ -86,13 +95,7 @@ export class SuccessStoriesComponent implements OnInit {
       allStories = [];
     }
 
-    const mapped: CelebView[] = allStories.map((s) => ({
-      id: s.successStoryId,
-      name: s.name,
-      date: this.formatMonthYear(s.date),
-      img: s.imagePath && s.imagePath.length > 0 ? s.imagePath[0].webUrl : '',
-      quote: s.description,
-    }));
+    const mapped: CelebView[] = allStories.map((s) => this.toCelebView(s));
 
     this.allStories.set(mapped);
 
@@ -121,6 +124,58 @@ export class SuccessStoriesComponent implements OnInit {
       month: 'short',
       year: 'numeric',
     });
+  }
+
+  private toCelebView(s: ISuccessStory): CelebView {
+    const mediaType: SuccessStoryMediaType = s.mediaType ?? 'image';
+    const media = s.imagePath ?? [];
+    const posterItem = media.find((m) => m.mimetype?.startsWith('image/'));
+    const videoItem = media.find((m) => m.mimetype?.startsWith('video/'));
+    const posterUrl = buildMediaUrl(posterItem?.webUrl);
+    const videoUrl = buildMediaUrl(videoItem?.webUrl ?? media[0]?.webUrl);
+
+    if (mediaType === 'youtube') {
+      const youtubeId = this.extractYouTubeId(s.youtubeUrl ?? '');
+      const thumb =
+        posterUrl ||
+        (youtubeId ? `https://i.ytimg.com/vi/${youtubeId}/hqdefault.jpg` : '');
+      return {
+        id: s.successStoryId,
+        name: s.name,
+        date: this.formatMonthYear(s.date),
+        posterUrl: thumb,
+        quote: s.description,
+        mediaType,
+        youtubeId,
+      };
+    }
+
+    if (mediaType === 'video') {
+      return {
+        id: s.successStoryId,
+        name: s.name,
+        date: this.formatMonthYear(s.date),
+        posterUrl,
+        quote: s.description,
+        mediaType,
+        videoSrc: videoUrl,
+      };
+    }
+
+    return {
+      id: s.successStoryId,
+      name: s.name,
+      date: this.formatMonthYear(s.date),
+      posterUrl: posterUrl || buildMediaUrl(media[0]?.webUrl),
+      quote: s.description,
+      mediaType: 'image',
+    };
+  }
+
+  private extractYouTubeId(url: string): string | undefined {
+    if (!url) return undefined;
+    const m = url.match(/(?:v=|youtu\.be\/|embed\/|shorts\/)([\w-]{11})/);
+    return m ? m[1] : undefined;
   }
 
   private scrollToGrid(): void {

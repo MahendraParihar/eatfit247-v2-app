@@ -8,6 +8,11 @@ export function buildMediaUrl(webUrl: string | undefined | null): string {
   }
   // Normalize path - remove leading slash if present
   const normalizedPath = webUrl.startsWith('/') ? webUrl.substring(1) : webUrl;
-  return `${normalizedPath}`;
+  // Encode each path segment so filenames containing '#', '?', spaces, or
+  // unicode (e.g. emojis) don't break the URL when used as a src.
+  return normalizedPath
+    .split('/')
+    .map((seg) => encodeURIComponent(seg))
+    .join('/');
 }
 

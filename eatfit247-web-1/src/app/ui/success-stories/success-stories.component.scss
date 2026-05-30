@@ -1,5 +1,4 @@
-/* Success Stories — re-skin uses .celeb-grid / .celeb-card from pages.css.
-   Local rules only add page-level spacing + CTA fallback. */
+/* Success Stories — grid layout only. Card visuals live in <app-story-card>. */
 
 .stories-page__body {
   padding-block: var(--space-fluid-xl);
@@ -14,3 +13,22 @@
   margin-top: var(--space-4);
 }
 
+.celeb-grid {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--space-5);
+}
+
+.celeb-grid__item {
+  display: block;
+}
+
+@media (max-width: 560px) {
+  .celeb-grid {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: var(--space-4);
+  }
+}

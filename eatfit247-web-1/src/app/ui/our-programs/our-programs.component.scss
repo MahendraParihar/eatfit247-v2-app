@@ -38,55 +38,7 @@
   @media (max-width: 820px)  { .vtest-track { grid-auto-columns: calc((100% - var(--space-5)) / 2); } }
   @media (max-width: 540px)  { .vtest-track { grid-auto-columns: 100%; } }
 
-  .vtest-card {
-    background: var(--color-surface-card);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-card);
-    overflow: hidden;
-    box-shadow: var(--shadow-sm);
-    display: flex; flex-direction: column;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-  }
-  .vtest-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-card-hover); }
-
-  .vtest-media {
-    position: relative; aspect-ratio: 9 / 11; overflow: hidden; margin: 0;
-    background: var(--color-surface-subtle); cursor: pointer; border: 0; padding: 0; width: 100%; display: block;
-  }
-  .vtest-media--image { cursor: default; }
-  .vtest-media img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.4s ease; }
-  .vtest-card:hover .vtest-media img { transform: scale(1.04); }
-  .vtest-media iframe,
-  .vtest-media video {
-    position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: #000; object-fit: cover;
-  }
-  .vtest-media::after {
-    content: ""; position: absolute; inset: 0;
-    background: linear-gradient(180deg, rgba(20,16,12,0) 45%, rgba(20,16,12,0.55) 100%);
-    pointer-events: none;
-  }
-  .vtest-media.is-playing::after { display: none; }
-
-  .vtest-play {
-    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    width: 56px; height: 56px; border-radius: 999px;
-    background: rgba(255,255,255,0.92); color: var(--color-primary);
-    display: grid; place-items: center;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.28);
-    transition: transform 0.2s ease, background 0.2s ease;
-  }
-  .vtest-card:hover .vtest-play { transform: translate(-50%, -50%) scale(1.08); }
-  .vtest-play .mat-icon { font-family: 'Material Symbols Outlined'; font-variation-settings: 'FILL' 1; font-size: 34px; }
-  .vtest-dur {
-    position: absolute; right: 10px; bottom: 10px; z-index: 1;
-    padding: 3px 9px; border-radius: 999px;
-    background: rgba(20,16,12,0.72); color: #fff;
-    font-size: 12px; font-weight: var(--font-weight-bold); letter-spacing: 0.01em;
-  }
-
-  .vtest-body { padding: var(--space-4) var(--space-5) var(--space-5); display: flex; flex-direction: column; gap: 4px; }
-  .vtest-name { margin: 0; font-size: 16px; font-weight: var(--font-weight-bold); letter-spacing: -0.01em; color: var(--color-text-primary); }
-  .vtest-role { font-size: 13px; color: var(--color-text-secondary); line-height: 1.4; }
+  .vtest-item { display: block; height: 100%; }
 
   .vtest-nav {
     position: absolute; top: 50%; transform: translateY(-50%);

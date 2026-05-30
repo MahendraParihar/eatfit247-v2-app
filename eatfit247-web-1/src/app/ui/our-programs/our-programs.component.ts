@@ -9,14 +9,15 @@ import {
   signal,
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-import { BreadcrumbsComponent } from '@shared-ui';
+import { BreadcrumbsComponent, StoryCardComponent } from '@shared-ui';
 import {
   ISuccessStory,
+  SuccessStoryMediaType,
 } from '@eatfit247-shared-library/core';
 import { JsonLdService, SEOService } from '../../core/services';
 import { SuccessStoriesService } from '../../core/services/success-stories.service';
 import { WHATSAPP_LINK } from '../../core/utils/constants';
+import { buildMediaUrl } from '../../core/utils/media-url.util';
 
 interface HowWeWorkStep {
   readonly num: string;
@@ -28,8 +29,9 @@ interface HowWeWorkStep {
 interface VideoTestimonial {
   readonly name: string;
   readonly role: string;
-  readonly thumb: string;
-  readonly duration?: string;
+  readonly description: string;
+  readonly posterUrl?: string;
+  readonly mediaType: SuccessStoryMediaType;
   readonly youtubeId?: string;
   readonly videoSrc?: string;
 }
@@ -44,7 +46,7 @@ interface ExpertCard {
 @Component({
   standalone: true,
   selector: 'app-our-programs',
-  imports: [CommonModule, RouterLink, BreadcrumbsComponent],
+  imports: [CommonModule, RouterLink, BreadcrumbsComponent, StoryCardComponent],
   templateUrl: './our-programs.component.html',
   styleUrl: './our-programs.component.scss',
 })
@@ -53,8 +55,6 @@ export class OurProgramsComponent implements OnInit {
   private readonly seoService = inject(SEOService);
   private readonly successStoriesService = inject(SuccessStoriesService);
   private readonly platformId = inject(PLATFORM_ID);
-  private readonly sanitizer = inject(DomSanitizer);
-  private readonly embedCache = new Map<string, SafeResourceUrl>();
 
   readonly whatsappLink = WHATSAPP_LINK;
 
@@ -121,7 +121,6 @@ export class OurProgramsComponent implements OnInit {
 
   readonly vtIndex = signal(0);
   readonly vtPerView = signal(4);
-  readonly vtPlaying = signal<Record<number, true>>({});
 
   readonly vtMaxIndex = computed(() =>
     Math.max(0, this.videos().length - this.vtPerView()),
@@ -146,23 +145,6 @@ export class OurProgramsComponent implements OnInit {
   }
   vtGoTo(i: number): void {
     this.vtIndex.set(Math.min(this.vtMaxIndex(), Math.max(0, i)));
-  }
-  vtPlay(i: number): void {
-    const v = this.videos()[i];
-    if (!v?.youtubeId && !v?.videoSrc) return;
-    this.vtPlaying.update((prev) => ({ ...prev, [i]: true }));
-  }
-  vtIsPlaying(i: number): boolean {
-    return !!this.vtPlaying()[i];
-  }
-  vtEmbedUrl(youtubeId: string): SafeResourceUrl {
-    const cached = this.embedCache.get(youtubeId);
-    if (cached) return cached;
-    const url = this.sanitizer.bypassSecurityTrustResourceUrl(
-      `https://www.youtube.com/embed/${youtubeId}?autoplay=1&rel=0&modestbranding=1`,
-    );
-    this.embedCache.set(youtubeId, url);
-    return url;
   }
 
   @HostListener('window:resize')
@@ -214,14 +196,48 @@ export class OurProgramsComponent implements OnInit {
   }
 
   private toVideoTestimonial(s: ISuccessStory): VideoTestimonial | null {
-    const thumb = s.imagePath?.[0]?.webUrl;
-    if (!thumb && !s.youtubeUrl) return null;
-    const youtubeId = this.extractYoutubeId(s.youtubeUrl);
+    const mediaType: SuccessStoryMediaType = s.mediaType ?? 'image';
+    const media = s.imagePath ?? [];
+    const posterItem = media.find((m) => m.mimetype?.startsWith('image/'));
+    const videoItem = media.find((m) => m.mimetype?.startsWith('video/'));
+    const posterUrl = buildMediaUrl(posterItem?.webUrl);
+    const videoUrl = buildMediaUrl(videoItem?.webUrl ?? media[0]?.webUrl);
+
+    if (mediaType === 'youtube') {
+      const youtubeId = this.extractYoutubeId(s.youtubeUrl);
+      if (!youtubeId && !posterUrl) return null;
+      const thumb = posterUrl ||
+        (youtubeId ? `https://i.ytimg.com/vi/${youtubeId}/hqdefault.jpg` : '');
+      return {
+        name: s.name,
+        role: s.title ?? '',
+        description: s.description ?? '',
+        posterUrl: thumb,
+        mediaType,
+        youtubeId,
+      };
+    }
+
+    if (mediaType === 'video') {
+      if (!videoUrl) return null;
+      return {
+        name: s.name,
+        role: s.title ?? '',
+        description: s.description ?? '',
+        posterUrl,
+        mediaType,
+        videoSrc: videoUrl,
+      };
+    }
+
+    const imageUrl = posterUrl || buildMediaUrl(media[0]?.webUrl);
+    if (!imageUrl) return null;
     return {
       name: s.name,
       role: s.title ?? '',
-      thumb: thumb ?? '',
-      youtubeId,
+      description: s.description ?? '',
+      posterUrl: imageUrl,
+      mediaType: 'image',
     };
   }
 

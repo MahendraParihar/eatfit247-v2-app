@@ -112,18 +112,17 @@
             class="testimonial-carousel__track"
             [style.transform]="carouselTransform()"
           >
-            @for (story of testimonialStories(); track story.name) {
-              <article class="testimonial">
-                <div class="testimonial__media">
-                  <img [src]="story.image" [alt]="story.name" loading="lazy" />
-                </div>
-                <div class="testimonial__body">
-                  <header class="testimonial__head">
-                    <h3 class="testimonial__name">{{ story.name }}</h3>
-                  </header>
-                  <p class="testimonial__quote">{{ story.quote }}</p>
-                </div>
-              </article>
+            @for (story of testimonialStories(); track story.name; let i = $index) {
+              <app-story-card
+                class="testimonial-carousel__item"
+                [name]="story.name"
+                [quote]="story.quote"
+                [mediaType]="story.mediaType"
+                [posterUrl]="story.posterUrl"
+                [videoSrc]="story.videoSrc"
+                [youtubeId]="story.youtubeId"
+                [index]="i"
+              ></app-story-card>
             }
           </div>
         </div>
