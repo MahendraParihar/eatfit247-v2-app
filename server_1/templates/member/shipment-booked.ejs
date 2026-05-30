@@ -1,0 +1,29 @@
+<%- await include('../layout/email-head', {
+  subject: 'Order shipped: ' + orderNumber,
+  preheader: 'Your order ' + orderNumber + ' is on its way.',
+  franchise: franchise,
+  icon: '✈'
+}) %>
+
+<%- await include('../partials/heading', {
+  title: 'Your order is on the way, ' + memberName + '!',
+  lead: 'Order ' + orderNumber + ' has been handed to ' + (providerName || 'our courier partner') + '. You can follow it from the moment it leaves our warehouse.'
+}) %>
+
+<%- await include('../partials/section-open', { eyebrow: 'Tracking details' }) %>
+  <%- await include('../partials/info-row', { label: 'Order #',   value: orderNumber }) %>
+  <% if (typeof awbNumber !== 'undefined' && awbNumber) { %>
+    <%- await include('../partials/info-row', { label: 'AWB',       value: awbNumber }) %>
+  <% } %>
+  <% if (typeof providerName !== 'undefined' && providerName) { %>
+    <%- await include('../partials/info-row', { label: 'Carrier',   value: providerName, last: true }) %>
+  <% } %>
+<%- await include('../partials/section-close') %>
+
+<% if (typeof trackingUrl !== 'undefined' && trackingUrl) { %>
+  <%- await include('../partials/button', { href: trackingUrl, label: 'Track shipment', franchise: franchise }) %>
+<% } %>
+
+<%- await include('../partials/signoff', { closing: 'See you soon,', franchise: franchise }) %>
+
+<%- await include('../layout/email-foot', { franchise: franchise }) %>

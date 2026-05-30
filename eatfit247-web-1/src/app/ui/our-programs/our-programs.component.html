@@ -1,7 +1,3 @@
-@if (banners.length > 0) {
-  <app-banner [banners]="banners"></app-banner>
-}
-
 <div class="our-programs-page" data-page="our-programs">
   <!-- Page Hero -->
   <section class="page-hero">
@@ -9,9 +5,9 @@
       <div class="page-hero__inner">
         <div>
           <app-breadcrumbs [crumbs]="[{ label: 'Home', link: '/' }, { label: 'Our Programs' }]"></app-breadcrumbs>
-          <h1>One program <span class="accent">doesn't fit</span> everyone.</h1>
+          <h1>Shweta Shah's <span class="accent">Eatfit24by7</span></h1>
           <p class="lead">
-            Three paths, each shaped around your goals, time, and commitment. Start small, go deep, or get the whole system — we'll help you choose.
+            5200+ Clients healed from 62 Countries.
           </p>
         </div>
         <div class="page-hero__visual" aria-hidden="true">
@@ -25,149 +21,148 @@
     </div>
   </section>
 
-  <!-- Programs Grid -->
-  <section class="section section--alt" id="programs">
+  <!-- Video Testimonials -->
+  <section class="section section--alt vtest" id="video-testimonials">
+    <div class="ef-container">
+      <header class="section-head section-head--center">
+        <span class="section-eyebrow"><span class="mat-icon">play_circle</span>In their own words</span>
+        <h2 class="section-title">Real clients, <span class="accent">real stories</span></h2>
+        <p class="section-sub">Hear directly from people who reshaped their health with us — no scripts, just honest journeys.</p>
+      </header>
+
+      <div class="vtest-carousel">
+        <button
+          type="button"
+          class="vtest-nav vtest-nav--prev"
+          aria-label="Previous testimonials"
+          [disabled]="vtIndex() <= 0"
+          (click)="vtPrev()"
+        >
+          <span class="mat-icon">chevron_left</span>
+        </button>
+
+        <div class="vtest-viewport">
+          <ul class="vtest-track" [ngStyle]="vtTrackStyle()">
+            @for (v of videos(); track trackByVideoName($index, v); let i = $index) {
+              <li class="vtest-card">
+                @if (v.youtubeId || v.videoSrc) {
+                  <button
+                    type="button"
+                    class="vtest-media"
+                    [class.is-playing]="vtIsPlaying(i)"
+                    [attr.aria-label]="'Play ' + v.name + '\'s testimonial'"
+                    (click)="vtPlay(i)"
+                  >
+                    @if (!vtIsPlaying(i)) {
+                      <img [src]="v.thumb" [alt]="v.name" loading="lazy" referrerpolicy="no-referrer" />
+                      @if (v.duration) {
+                        <span class="vtest-dur">{{ v.duration }}</span>
+                      }
+                      <span class="vtest-play"><span class="mat-icon">play_arrow</span></span>
+                    } @else if (v.youtubeId) {
+                      <iframe
+                        [src]="vtEmbedUrl(v.youtubeId)"
+                        title="Testimonial video"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        referrerpolicy="strict-origin-when-cross-origin"
+                        allowfullscreen
+                      ></iframe>
+                    } @else if (v.videoSrc) {
+                      <video [src]="v.videoSrc" controls autoplay playsinline></video>
+                    }
+                  </button>
+                } @else {
+                  <figure class="vtest-media vtest-media--image" [attr.aria-label]="v.name">
+                    <img [src]="v.thumb" [alt]="v.name" loading="lazy" referrerpolicy="no-referrer" />
+                  </figure>
+                }
+                <div class="vtest-body">
+                  <h3 class="vtest-name">{{ v.name }}</h3>
+                  <span class="vtest-role">{{ v.role }}</span>
+                </div>
+              </li>
+            }
+          </ul>
+        </div>
+
+        <button
+          type="button"
+          class="vtest-nav vtest-nav--next"
+          aria-label="Next testimonials"
+          [disabled]="vtIndex() >= vtMaxIndex()"
+          (click)="vtNext()"
+        >
+          <span class="mat-icon">chevron_right</span>
+        </button>
+      </div>
+
+      <div class="vtest-dots" aria-hidden="true">
+        @for (p of vtPages(); track p) {
+          <button
+            type="button"
+            class="vtest-dot"
+            [class.is-active]="vtIndex() === p"
+            [attr.aria-label]="'Go to slide ' + (p + 1)"
+            (click)="vtGoTo(p)"
+          ></button>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- How We Work -->
+  <section class="section how-we-work" id="how-we-work">
     <div class="ef-container">
       <header class="section-head">
-        <span class="section-eyebrow">Our Programs</span>
-        <h2 class="section-title">Pick the program that fits your goal</h2>
-        <p class="section-sub">Transparent pricing. No auto-renewals. Results-focused.</p>
+        <span class="section-eyebrow">Our Process</span>
+        <h2 class="section-title">How we <span class="accent">work</span></h2>
+        <p class="section-sub">A five-step path from understanding your body to healing the root cause — never a template, never a shortcut.</p>
       </header>
 
-      <div class="programs-grid">
-        @for (plan of plans; track plan.id) {
-          <article class="program-card" [class.program-card--featured]="plan.featured">
-            <div class="program-card__header">
-              <div>
-                <h3 class="program-card__title">{{ plan.title }}</h3>
-                <p class="program-card__subtitle">{{ plan.subtitle }}</p>
-              </div>
+      <div class="hww-steps">
+        @for (step of howWeWorkSteps; track step.num) {
+          <div class="hww-step" [style.--step]="step.stepColor">
+            <div class="hww-num">{{ step.num }}</div>
+            <div class="hww-node"></div>
+            <div class="hww-card">
+              <span class="hww-pin"></span>
+              <h3 class="hww-title">{{ step.title }}</h3>
             </div>
-            <div class="program-sessions">
-              <div
-                class="program-sessions__grid"
-                [style.grid-template-columns]="'repeat(' + plan.sessions.length + ', 1fr)'"
-              >
-                @for (s of plan.sessions; track s.num + s.label) {
-                  <span class="program-sessions__chip">
-                    <span class="program-sessions__chip-num">{{ s.num }}</span>
-                    <span class="program-sessions__chip-label">{{ s.label }}</span>
-                  </span>
-                }
-              </div>
-              <span class="program-sessions__note">Price varies customer to customer</span>
+            <p class="hww-desc">{{ step.description }}</p>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- Pick Your Expert -->
+  <section class="section section--alt pick-expert" id="pick-expert">
+    <div class="ef-container">
+      <header class="section-head section-head--center">
+        <h2 class="section-title">
+          Pick the program that fits your <span class="accent">goal</span>
+        </h2>
+      </header>
+
+      <div class="pick-expert__grid">
+        @for (expert of expertCards; track expert.name) {
+          <article class="pe-card">
+            <div class="pe-photo">
+              <img [src]="expert.image" [alt]="expert.name" loading="lazy" />
             </div>
-            <ul class="program-features">
-              @for (f of plan.features; track f) {
-                <li><span class="tick">✓</span>{{ f }}</li>
-              }
-            </ul>
-            <a
-              routerLink="/contact-us"
-              class="mat-btn"
-              [class.mat-btn--filled]="plan.featured"
-              [class.mat-btn--outlined]="!plan.featured"
-            >
-              Book Consultation
-              <span class="mat-icon">arrow_forward</span>
-            </a>
+            <h3 class="pe-name">{{ expert.name }}</h3>
+            <p class="pe-desc">{{ expert.description }}</p>
+            <a [routerLink]="expert.link" class="pe-btn">Know More</a>
           </article>
         }
       </div>
-    </div>
-  </section>
 
-  <!-- Seasonal Plans CTA -->
-  <section class="section">
-    <div class="ef-container">
-      <div class="cta-band">
-        <div>
-          <h2 style="margin:0 0 6px;">Looking for shorter, group-based plans?</h2>
-          <p style="margin:0;">Our <strong>Seasonal &amp; Group Plans</strong> (Navratri, Diabetic Care, Monsoon Detox &amp; more) run as fixed-date cohorts at a flat fee. No online payment — reserve, we'll WhatsApp you to confirm.</p>
-        </div>
-        <div class="cta-actions">
-          <a routerLink="/seasonal-plans" class="mat-btn mat-btn--filled">
-            Browse seasonal plans <span class="mat-icon">arrow_forward</span>
-          </a>
-          <a routerLink="/book-session" class="mat-btn mat-btn--outlined">Reserve a spot</a>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- How It Works -->
-  <section class="section how-it-works">
-    <div class="ef-container">
-      <header class="section-head section-head--center how-it-works__head">
-        <span class="section-eyebrow"><span class="mat-icon">route</span>Your journey with us</span>
-        <h2 class="section-head__title">How It Works</h2>
-        <p class="section-head__sub">
-          From your first call to lasting transformation — four simple steps, with end-to-end support from the Nutrinist team.
-        </p>
-      </header>
-
-      <div class="hiw-row hiw-row--four">
-        @for (step of howItWorksSteps; track step.num; let last = $last) {
-          <article class="hiw-step">
-            <span class="hiw-step__num">{{ step.num }}</span>
-            <span class="hiw-step__icon"><span class="mat-icon">{{ step.icon }}</span></span>
-            <h3 class="hiw-step__title">{{ step.title }}</h3>
-            <p class="hiw-step__copy">{{ step.copy }}</p>
-          </article>
-          @if (!last) {
-            <span class="hiw-arrow" aria-hidden="true"><span class="mat-icon">arrow_forward</span></span>
-          }
-        }
-      </div>
-    </div>
-  </section>
-
-  <!-- Terms & Conditions -->
-  <section class="section program-terms our-programs__terms-section">
-    <div class="ef-container our-programs__terms-container">
-      <header class="section-head section-head--center our-programs__terms-head">
-        <h2 class="section-head__title">Terms &amp; Conditions</h2>
-      </header>
-
-      <details class="program-terms__panel" open>
-        <summary class="program-terms__summary">
-          <span class="program-terms__title">View program terms &amp; conditions</span>
-          <span class="program-terms__chev mat-icon">expand_more</span>
-        </summary>
-        <ul class="program-terms__list">
-          @for (item of termsAndConditions; track item) {
-            <li>{{ item }}</li>
-          }
-        </ul>
-      </details>
-    </div>
-  </section>
-
-  <!-- FAQ -->
-  <section class="section our-programs__faq-section">
-    <div class="ef-container our-programs__faq-container">
-      <header class="section-head section-head--center our-programs__faq-head">
-        <span class="section-eyebrow"><span class="mat-icon">help_outline</span>Frequently asked</span>
-        <h2 class="section-head__title">Choosing the right program</h2>
-        <p class="section-head__sub">
-          Quick answers to help you pick the path that fits your goals and your schedule.
-        </p>
-      </header>
-
-      <div class="faq-list">
-        @for (faq of faqs(); track faq.faqId; let i = $index) {
-          <details class="faq" [open]="i === 0">
-            <summary>{{ faq.faq }}<span class="mat-icon">add</span></summary>
-            @if (faq.answer) {
-              <p [innerHTML]="faq.answer"></p>
-            }
-          </details>
-        }
-      </div>
-
-      <div class="our-programs__faq-cta">
-        <a routerLink="/faq" class="mat-btn mat-btn--outlined">
-          See all FAQs <span class="mat-icon">arrow_forward</span>
+      <div class="pick-expert__cta">
+        <a [href]="whatsappLink" target="_blank" rel="noopener" class="pe-whatsapp">
+          <svg viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" fill="currentColor">
+            <path d="M16 3C9.4 3 4 8.4 4 15c0 2.1.6 4.2 1.6 6L4 29l8.2-1.6c1.7.9 3.7 1.4 5.8 1.4 6.6 0 12-5.4 12-12S22.6 3 16 3zm0 21.8c-1.8 0-3.6-.5-5.1-1.4l-.4-.2-4.9.9.9-4.7-.3-.4A9.8 9.8 0 016.2 15c0-5.4 4.4-9.8 9.8-9.8s9.8 4.4 9.8 9.8-4.4 9.8-9.8 9.8zm5.4-7.3c-.3-.1-1.7-.9-2-1-.3-.1-.5-.1-.7.1-.2.3-.7 1-.9 1.2-.2.2-.3.2-.6.1-.3-.1-1.2-.5-2.3-1.4-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.5.1-.6l.5-.5c.1-.2.2-.3.3-.5 0-.2 0-.4-.1-.5l-.9-2.2c-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.2.2 2.1 3.3 5.2 4.6.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.7-.7 2-1.4.2-.7.2-1.2.2-1.4-.1-.1-.3-.2-.6-.3z" />
+          </svg>
+          Whatsapp us for more details
         </a>
       </div>
     </div>

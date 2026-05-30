@@ -23,7 +23,7 @@
     @if (loading()) {
         <app-loader page="success-stories"></app-loader>
     } @else {
-        <section class="ef-container stories-page__body">
+        <section class="section section--alt ef-container stories-page__body">
             @if (hasStories()) {
                 <ul class="celeb-grid" id="stories-grid">
                     @for (c of celebs(); track c.id; let i = $index) {
@@ -64,23 +64,6 @@
                         description="We're adding new client transformations as fast as we can. Want yours featured next? Start your journey today."
                 ></app-empty-state>
             }
-
-            <div class="cta-band stories-page__cta">
-                <div>
-                    <h2>Ready to write your own success story?</h2>
-                    <p>Book a 15-minute discovery call and we'll map out the right program for your goals, schedule and
-                        body.</p>
-                </div>
-                <div class="cta-actions">
-                    <a routerLink="/contact-us" class="mat-btn mat-btn--filled">
-                        Connect with us
-                        <span class="mat-icon">arrow_forward</span>
-                    </a>
-                    <a routerLink="/our-programs" class="mat-btn mat-btn--outlined">
-                        Explore programs
-                    </a>
-                </div>
-            </div>
         </section>
     }
 </div>

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { TxnSuccessStories } from '../models';
 import { IBasicSearch, IManageSuccessStory, ISuccessStory, ITableList } from '@eatfit247-shared-lib';
@@ -59,7 +59,9 @@ export class SuccessStoryService {
       title: item.title,
       date: item.date,
       description: item.description,
+      mediaType: item.mediaType,
       imagePath: CommonFunctionsUtil.buildImageUrl(item.imagePath),
+      youtubeUrl: item.youtubeUrl,
       active: item.active,
       createdBy: item.createdBy,
       modifiedBy: item.updatedBy,
@@ -87,12 +89,15 @@ export class SuccessStoryService {
   }
 
   public async create(obj: IManageSuccessStory, cIp: string, adminId: number): Promise<void> {
+    const { imagePath, youtubeUrl } = this.resolveMediaFields(obj);
     const createObj = {
       name: obj.name,
       title: obj.title || null,
       date: obj.date,
       description: obj.description,
-      imagePath: obj.imagePath && obj.imagePath.length > 0 ? obj.imagePath : [],
+      mediaType: obj.mediaType,
+      imagePath,
+      youtubeUrl,
       active: obj.active,
       createdBy: adminId,
       updatedBy: adminId,
@@ -109,17 +114,34 @@ export class SuccessStoryService {
     if (!find) {
       throw new NotFoundException('Success story not found');
     }
+    const { imagePath, youtubeUrl } = this.resolveMediaFields(obj);
     const updateObj = {
       name: obj.name,
       title: obj.title,
       date: obj.date,
       description: obj.description,
-      imagePath: obj.imagePath && obj.imagePath.length > 0 ? obj.imagePath : [],
+      mediaType: obj.mediaType,
+      imagePath,
+      youtubeUrl,
       active: obj.active,
       updatedBy: adminId,
       modifiedIp: cIp,
     };
     await this.successStoryRepository.update(updateObj, { where: { successStoryId: id } });
+  }
+
+  private resolveMediaFields(obj: IManageSuccessStory): { imagePath: any; youtubeUrl: string | null } {
+    if (obj.mediaType === 'youtube') {
+      const link = obj.youtubeUrl?.trim();
+      if (!link) {
+        throw new BadRequestException('YouTube URL is required when media type is youtube');
+      }
+      return { imagePath: null, youtubeUrl: link };
+    }
+    if (!obj.imagePath || obj.imagePath.length === 0) {
+      throw new BadRequestException(`A ${obj.mediaType} upload is required`);
+    }
+    return { imagePath: obj.imagePath, youtubeUrl: null };
   }
 
   public async changeStatus(id: number, active: boolean, cIp: string, adminId: number): Promise<void> {

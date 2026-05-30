@@ -2,6 +2,7 @@ import { SocialSiteItem } from '@shared-ui';
 
 export const CONTACT_EMAIL = 'eatfit24by7@gmail.com';
 export const CONTACT_NUMBER = '+91-8591854209';
+export const WHATSAPP_LINK = 'https://api.whatsapp.com/send?phone=918591854209';
 export const SOCIAL_LINKS: SocialSiteItem[] = [
   {
     link: 'https://www.facebook.com/eatfit24by7',

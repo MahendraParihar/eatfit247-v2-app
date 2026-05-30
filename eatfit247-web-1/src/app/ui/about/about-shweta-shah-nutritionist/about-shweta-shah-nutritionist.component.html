@@ -1,0 +1,142 @@
+<div class="about-chief" data-page="about-chief-nutritionist">
+  <!-- Page Hero -->
+  <section class="page-hero">
+    <div class="ef-container">
+      <div class="page-hero__inner">
+        <div>
+          <app-breadcrumbs
+            [crumbs]="[
+              { label: 'Home', link: '/' },
+              { label: 'Our Programs', link: '/our-programs' },
+              { label: 'Chief Nutritionist' }
+            ]"
+          ></app-breadcrumbs>
+          <h1>
+            Exclusive Consultation with <span class="accent">Nutritionist Shweta Shah</span>
+          </h1>
+          <p class="lead">
+            Meet Shweta Shah — celebrity nutritionist with over two decades of experience,
+            blending the wisdom of Ayurveda with modern nutritional science to craft personalised
+            Dosha-based plans that make wellness accessible and effortless.
+          </p>
+        </div>
+        <div class="page-hero__visual" aria-hidden="true">
+          <div class="ring"></div>
+          <div class="ring ring--inner"></div>
+          <div class="disc disc--photo">
+            <img src="/nutritionist/shweta-shah.png" alt="" />
+          </div>
+          <div class="chip chip--a"><span class="mat-icon">workspace_premium</span>20+ yrs experience</div>
+          <div class="chip chip--b"><span class="mat-icon">school</span>PG Dietetics &amp; Nutrition</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- About body -->
+  <section class="section section--alt about-shweta">
+    <div class="ef-container">
+      <h2 class="about-shweta__heading">About Shweta Shah — Nutritionist</h2>
+
+      <div class="about-shweta__grid">
+        <!-- Portrait -->
+        <div>
+          <div class="portrait-frame">
+            <div class="portrait-frame__backdrop" aria-hidden="true"></div>
+            <div class="portrait-frame__accent" aria-hidden="true"></div>
+            <div class="portrait-frame__card">
+              <div
+                class="portrait-frame__photo"
+                role="img"
+                aria-label="Portrait of Birangi Shah"
+              ></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bio -->
+        <div class="bio">
+          <p>
+            <strong>Shweta Shah</strong> is a celebrity nutritionist, renowned for her innovative
+            approach that merges the wisdom of Ayurveda with the precision of modern nutritional
+            science. With a career spanning over <strong>2 decades</strong>, she specialises in
+            curating personalised nutrition plans, based on the Ayurvedic Doshas of Kapha, Pitta
+            &amp; Vata.
+          </p>
+          <p>
+            A postgraduate in <strong>Dietetics and Applied Nutrition</strong> from Nirmala Niketan,
+            Mumbai, Shweta's impact on the wellness industry is evident in her work — including
+            <strong>EatFit24/7</strong>, her digital platform venture sharing healthy recipes and
+            tips to inspire a more nutritious lifestyle.
+          </p>
+          <p>
+            Her initiatives collectively embody her vision of making wellness accessible to all
+            and effortless.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Program Plans -->
+  <section class="section prog-plans" id="program-plans">
+    <div class="ef-container">
+      <header class="section-head section-head--center">
+        <span class="section-eyebrow"><span class="mat-icon">workspace_premium</span>Program</span>
+        <h2 class="section-title">Plans crafted <span class="accent">personally by Birangi</span></h2>
+        <p class="section-sub">
+          Pick the depth of guidance that fits you. Transparent pricing, no auto-renewals — every
+          plan is Dosha-based and built around your body.
+        </p>
+      </header>
+
+      <div class="pp-grid">
+        @for (plan of plans; track plan.sessions) {
+          <article class="pp-card">
+            <div class="pp-head"><b>{{ plan.sessions }}</b> {{ plan.sessionsLabel }}</div>
+            <ul class="pp-features">
+              @for (feature of plan.features; track feature) {
+                <li [innerHTML]="renderFeature(feature)"></li>
+              }
+            </ul>
+            <div class="pp-price">
+              <b>{{ plan.price }}</b> <span>+ taxes</span>
+            </div>
+            <a [href]="whatsappLink" target="_blank" rel="noopener" class="pp-cta">
+              <svg viewBox="0 0 32 32" width="20" height="20" aria-hidden="true" fill="currentColor">
+                <path d="M16 3C9.4 3 4 8.4 4 15c0 2.1.6 4.2 1.6 6L4 29l8.2-1.6c1.7.9 3.7 1.4 5.8 1.4 6.6 0 12-5.4 12-12S22.6 3 16 3zm0 21.8c-1.8 0-3.6-.5-5.1-1.4l-.4-.2-4.9.9.9-4.7-.3-.4A9.8 9.8 0 016.2 15c0-5.4 4.4-9.8 9.8-9.8s9.8 4.4 9.8 9.8-4.4 9.8-9.8 9.8zm5.4-7.3c-.3-.1-1.7-.9-2-1-.3-.1-.5-.1-.7.1-.2.3-.7 1-.9 1.2-.2.2-.3.2-.6.1-.3-.1-1.2-.5-2.3-1.4-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.5.1-.6l.5-.5c.1-.2.2-.3.3-.5 0-.2 0-.4-.1-.5l-.9-2.2c-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.2.2 2.1 3.3 5.2 4.6.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.7-.7 2-1.4.2-.7.2-1.2.2-1.4-.1-.1-.3-.2-.6-.3z" />
+              </svg>
+              <span>Whatsapp Now To Book Slot</span>
+            </a>
+          </article>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  @if (faqs().length > 0) {
+    <section class="section section--alt about-chief__faq">
+      <div class="ef-container about-chief__faq-container">
+        <header class="section-head section-head--center about-chief__faq-head">
+          <span class="section-eyebrow"><span class="mat-icon">help_outline</span>Good to know</span>
+          <h2 class="section-head__title">Frequently asked</h2>
+          <p class="section-head__sub">
+            The questions clients most often ask before booking with Birangi.
+          </p>
+        </header>
+
+        <div class="faq-list">
+          @for (faq of faqs(); track faq.faqId; let i = $index) {
+            <details class="faq" [open]="i === 0">
+              <summary>{{ faq.faq }}<span class="mat-icon">add</span></summary>
+              @if (faq.answer) {
+                <p [innerHTML]="faq.answer"></p>
+              }
+            </details>
+          }
+        </div>
+      </div>
+    </section>
+  }
+</div>

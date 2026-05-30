@@ -31,9 +31,9 @@ export class SiteHeaderComponent {
       ],
     },
     {
-      label: 'Programs',
+      label: 'Consultations',
       children: [
-        { label: '1:1 Programs', route: '/our-programs' },
+        { label: 'Consultations', route: '/our-programs' },
         { label: 'Seasonal Plans', route: '/seasonal-plans' },
       ],
     },

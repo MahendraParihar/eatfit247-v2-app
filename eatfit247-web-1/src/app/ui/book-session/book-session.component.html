@@ -31,7 +31,7 @@
   </div>
 </section>
 
-<section class="section">
+<section class="section section--alt">
   <div class="ef-container">
     @if (!submitted()) {
       <div class="booking-shell">
@@ -155,7 +155,7 @@
           <div style="font-size:12px;color:var(--color-text-secondary);line-height:1.5;border-top:1px dashed var(--color-divider);padding-top:var(--space-3);">
             <strong style="color:var(--color-text-primary);display:block;margin-bottom:8px;">Need to talk first?</strong>
             <div style="display:flex;flex-direction:column;gap:8px;">
-              <a href="https://wa.me/919876543210?text=Hi%2C%20I%20have%20a%20question%20about%20EatFit247%20seasonal%20plans" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;background:#25D366;color:#fff;text-decoration:none;font-weight:var(--font-weight-semibold);font-size:13px;">
+              <a [href]="whatsappLink" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;background:#25D366;color:#fff;text-decoration:none;font-weight:var(--font-weight-semibold);font-size:13px;">
                 <span class="mat-icon" style="font-family:'Material Icons','Material Symbols Outlined';font-feature-settings:'liga';font-size:18px;">chat</span>
                 <span>Message us on WhatsApp <span style="display:block;font-weight:400;font-size:11px;opacity:0.9;margin-top:1px;">Our team will reply soon</span></span>
               </a>

@@ -7,7 +7,7 @@ import * as path from 'path';
 import * as hbs from 'handlebars';
 import * as puppeteer from 'puppeteer';
 import { MstRecipe, MstRecipeCategoryMapping, MstRecipeCuisineMapping, MstRecipeType } from '../models';
-import { IBasicSearch, IManageRecipe, IRecipe, ITableList, MediaForEnum, TEMPLATE_FOLDER } from '@eatfit247-shared-lib';
+import { IBasicSearch, IDropdownItem, IManageRecipe, IRecipe, ITableList, MediaForEnum, TEMPLATE_FOLDER } from '@eatfit247-shared-lib';
 import { CommonFunctionsUtil, Env, SearchUtil, TableListSortUtil } from '@server_1/core';
 import {
   IFileModel,
@@ -105,6 +105,22 @@ export class RecipeService {
       recipeCategoryMappings: categories,
       recipeCuisineMappings: cuisines,
     };
+  }
+
+  public async findDropdownByIds(ids: number[]): Promise<IDropdownItem[]> {
+    if (!ids || ids.length === 0) {
+      return [];
+    }
+    const rows = await this.recipeRepository.findAll({
+      where: { recipeId: { [Op.in]: ids } },
+      attributes: ['recipeId', 'name', 'active'],
+      raw: true,
+    });
+    return rows.map((r: any) => ({
+      id: r.recipeId,
+      label: r.name,
+      isActive: r.active,
+    }));
   }
 
   public async fetchById(id: number): Promise<IRecipe> {

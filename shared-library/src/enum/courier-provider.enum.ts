@@ -1,4 +1,5 @@
 export enum CourierProvider {
   NIMBUS = 'NIMBUS',
-  SHIPROCKET = 'SHIPROCKET'
+  SHIPROCKET = 'SHIPROCKET',
+  SHIPWAY = 'SHIPWAY'
 }

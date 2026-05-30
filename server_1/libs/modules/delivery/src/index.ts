@@ -1,4 +1,5 @@
 export * from './delivery.module';
+export * from './delivery-webhook.module';
 export * from './models';
 export * from './services';
 export * from './controllers';

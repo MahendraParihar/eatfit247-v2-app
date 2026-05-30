@@ -17,7 +17,7 @@ import {
   SeasonalProgramCard,
 } from '../../core/services';
 import { RecaptchaService } from '../../core/services/recaptcha.service';
-import { CONTACT_NUMBER } from '../../core/utils/constants';
+import { CONTACT_NUMBER, WHATSAPP_LINK } from '../../core/utils/constants';
 
 type ContactPreference = 'whatsapp' | 'call' | 'email' | 'any';
 
@@ -37,6 +37,7 @@ export class BookSessionComponent implements OnInit {
   private readonly recaptchaService = inject(RecaptchaService);
 
   readonly contactNumber = CONTACT_NUMBER;
+  readonly whatsappLink = `${WHATSAPP_LINK}&text=Hi%2C%20I%20have%20a%20question%20about%20EatFit247%20seasonal%20plans`;
 
   readonly plans = signal<SeasonalProgramCard[]>([]);
   readonly loadingPlans = signal(true);

@@ -605,6 +605,24 @@
 .section--alt {
   background: var(--color-surface-sunken);
 }
+/* Full-bleed background when section--alt is combined with the .ef-container
+   (used by pages where the section itself is the container). */
+.section--alt.ef-container {
+  background: transparent;
+  position: relative;
+  isolation: isolate;
+}
+.section--alt.ef-container::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 100vw;
+  transform: translateX(-50%);
+  background: var(--color-surface-sunken);
+  z-index: -1;
+}
 
 /* Section heads — single canonical style (also serves .section-head--center) */
 .section-head {

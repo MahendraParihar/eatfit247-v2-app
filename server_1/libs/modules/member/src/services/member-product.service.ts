@@ -107,7 +107,8 @@ export class MemberProductService {
       },
       order: [['paymentDate', 'DESC']],
     });
-    const shipmentDetails: IShipment[] = [];
+    const orderIds = rows.map((row) => row.memberProductId);
+    const shipmentDetails = await this.fetchShipmentsByOrderIds(orderIds);
     return <ITableList<IMemberProduct>>{
       tableData: rows.map((item: any) => this.convertToModel(item, shipmentDetails)),
       count,
@@ -133,8 +134,88 @@ export class MemberProductService {
     if (!product) {
       throw new NotFoundException('Member product not found');
     }
-    const shipmentDetails: IShipment[] = [];
+    const shipmentDetails = await this.fetchShipmentsByOrderIds([productId]);
     return this.convertToModel(product, shipmentDetails);
+  }
+
+  /**
+   * Cross-module lookup of shipments by order id.
+   *
+   * NestJS module boundary rules (and the project's NX tags) forbid `member`
+   * statically importing from `delivery`. We use the project-documented escape
+   * hatch — resolve TxnShipment + TxnShipmentTrackingEvent by string model
+   * name on the shared Sequelize instance — so the build graph doesn't see a
+   * member→delivery edge.
+   *
+   * Returns a flat IShipment[] (one per shipment) with the latest tracking
+   * events attached. convertToModel filters to the order it cares about.
+   */
+  private async fetchShipmentsByOrderIds(orderIds: number[]): Promise<IShipment[]> {
+    if (orderIds.length === 0) return [];
+
+    const shipmentModel = this.sequelize.models['txn_shipments'];
+    const trackingModel = this.sequelize.models['txn_shipment_tracking_events'];
+    if (!shipmentModel) return [];
+
+    const shipments = (await shipmentModel.findAll({
+      where: { order_id: orderIds },
+      order: [['shipment_id', 'DESC']],
+      raw: true,
+    })) as any[];
+
+    if (shipments.length === 0) return [];
+
+    let trackingByShipment: Record<number, any[]> = {};
+    if (trackingModel) {
+      const shipmentIds = shipments.map((s) => s.shipment_id);
+      const events = (await trackingModel.findAll({
+        where: { shipment_id: shipmentIds },
+        order: [['event_time', 'DESC']],
+        raw: true,
+      })) as any[];
+      trackingByShipment = events.reduce<Record<number, any[]>>((acc, ev) => {
+        const sid = ev.shipment_id as number;
+        if (!acc[sid]) acc[sid] = [];
+        acc[sid].push(ev);
+        return acc;
+      }, {});
+    }
+
+    return shipments.map((row) => {
+      const events = trackingByShipment[row.shipment_id] ?? [];
+      return <IShipment>{
+        shipmentId: row.shipment_id,
+        orderId: row.order_id,
+        shipmentNumber: row.shipment_number,
+        courierProviderId: row.courier_provider_id ?? undefined,
+        providerAccountId: row.provider_account_id ?? undefined,
+        franchiseId: row.franchise_id,
+        warehouseId: row.warehouse_id,
+        trackingNumber: row.tracking_number ?? undefined,
+        trackingUrl: row.tracking_url ?? undefined,
+        totalAmount:
+          row.total_amount != null ? CommonFunctionsUtil.toNumber(row.total_amount) : undefined,
+        currency: row.currency ?? undefined,
+        status: row.status,
+        metaData: row.meta_data ?? undefined,
+        lastError: row.last_error ?? undefined,
+        retryCount: row.retry_count,
+        nextRetryAt: row.next_retry_at ?? undefined,
+        trackingEvents: events.map((e) => ({
+          shipmentTrackingEventId: e.tracking_event_id,
+          shipmentId: e.shipment_id,
+          status: e.internal_status,
+          description: e.description,
+          eventTime: e.event_time,
+          source: e.source,
+          createdAt: e.created_at,
+        })),
+        createdBy: row.created_by,
+        modifiedBy: row.modified_by,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at,
+      };
+    });
   }
 
   /**
@@ -340,30 +421,7 @@ export class MemberProductService {
    * Convert database model to IMemberProduct interface
    */
   private convertToModel(item: TxnMemberProduct, shipments: IShipment[]): IMemberProduct {
-    const memberProductOrderItemIds: number[] = item.orderItems
-      ? map(item.orderItems, 'memberProductOrderItemId')
-      : [];
-
-    const productShipments: IShipment[] = [];
-
-    // for (const shipment of shipments) {
-    //   if (!shipment.shipmentItems || shipment.shipmentItems.length === 0) {
-    //     continue;
-    //   }
-    //
-    //   const matchingItems = shipment.shipmentItems.filter(
-    //     (shipmentItem) =>
-    //       shipmentItem.memberProductOrderItemId !== undefined &&
-    //       memberProductOrderItemIds.includes(shipmentItem.memberProductOrderItemId),
-    //   );
-    //
-    //   if (matchingItems.length > 0) {
-    //     productShipments.push({
-    //       ...shipment,
-    //       shipmentItems: matchingItems,
-    //     });
-    //   }
-    // }
+    const productShipments = shipments.filter((s) => s.orderId === item.memberProductId);
 
     return <IMemberProduct>{
       memberProductId: item.memberProductId,

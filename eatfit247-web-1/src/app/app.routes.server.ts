@@ -4,6 +4,8 @@ export const serverRoutes: ServerRoute[] = [
   { path: '', renderMode: RenderMode.Server },
   { path: 'about-us', renderMode: RenderMode.Server },
   { path: 'about-shweta-shah', renderMode: RenderMode.Server },
+  { path: 'our-programs/about-chief-nutritionist', renderMode: RenderMode.Server },
+  { path: 'our-programs/about-shweta-shah-nutritionist', renderMode: RenderMode.Server },
   { path: 'our-programs', renderMode: RenderMode.Server },
   { path: 'success-stories', renderMode: RenderMode.Server },
   { path: 'blog', renderMode: RenderMode.Server },

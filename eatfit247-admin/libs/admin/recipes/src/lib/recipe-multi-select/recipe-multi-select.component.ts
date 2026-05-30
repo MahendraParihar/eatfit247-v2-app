@@ -200,8 +200,8 @@ export class RecipeMultiSelectComponent
       return;
     }
     this._initialOptions.forEach((opt) => {
-      if (opt && typeof opt.id === 'number') {
-        this.allKnownOptions.set(opt.id, opt);
+      if (opt && opt.id !== null && opt.id !== undefined) {
+        this.allKnownOptions.set(this.coerceId(opt.id), opt);
       }
     });
     this.syncSelectedItemsFromIds();
@@ -214,7 +214,7 @@ export class RecipeMultiSelectComponent
     }
     const items: IDropdownItem[] = [];
     this.selectedIds.forEach((id) => {
-      const existing = this.allKnownOptions.get(id);
+      const existing = this.allKnownOptions.get(this.coerceId(id));
       if (existing) {
         items.push(existing);
       } else {

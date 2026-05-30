@@ -1,0 +1,11 @@
+Hello {{memberName}}! ✈
+
+Your order is on the way.
+
+*Order No:* {{orderNumber}}
+*AWB:* {{awbNumber}}
+*Carrier:* {{providerName}}
+
+Track it any time: {{trackingUrl}}
+
+— Team {{franchiseName}}

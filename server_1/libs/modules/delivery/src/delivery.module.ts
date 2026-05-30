@@ -35,8 +35,18 @@ import {
   ShipmentOrchestrationService,
   ShipmentRetryCron,
 } from './services';
-import { ShipmentListener } from './listeners';
-import { CourierFactory, NimbusAdapter, ShiprocketAdapter } from './providers';
+import { ShipmentListener, ShipmentNotificationListener } from './listeners';
+import { NotificationModule } from '@server_1/modules/notification';
+import {
+  CourierFactory,
+  NimbusAdapter,
+  NimbusWebhookStrategy,
+  ShiprocketAdapter,
+  ShiprocketWebhookStrategy,
+  ShipwayAdapter,
+  ShipwayWebhookStrategy,
+  WebhookStrategyFactory,
+} from './providers';
 
 // Register models with the model registry
 modelRegistry.register([
@@ -73,6 +83,7 @@ modelRegistry.register([
       TxnCourierWebhookLog,
     ]),
     ScheduleModule.forRoot(),
+    NotificationModule,
   ],
   controllers: [
     CourierProviderController,
@@ -94,8 +105,14 @@ modelRegistry.register([
     CourierFactory,
     NimbusAdapter,
     ShiprocketAdapter,
+    ShipwayAdapter,
+    NimbusWebhookStrategy,
+    ShiprocketWebhookStrategy,
+    ShipwayWebhookStrategy,
+    WebhookStrategyFactory,
     HttpService,
     ShipmentListener,
+    ShipmentNotificationListener,
   ],
   exports: [
     CourierProviderService,

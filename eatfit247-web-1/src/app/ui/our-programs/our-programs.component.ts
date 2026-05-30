@@ -1,130 +1,186 @@
-import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit, signal, WritableSignal } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import {
+  Component,
+  computed,
+  HostListener,
+  inject,
+  OnInit,
+  PLATFORM_ID,
+  signal,
+} from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { BannerComponent, BreadcrumbsComponent } from '@shared-ui';
-import { BannerService } from '../../core/services/banner.service';
-import { IPublicBanner, IPublicFaq } from '@eatfit247-shared-library/core';
-import { FaqService, JsonLdService, SEOService } from '../../core/services';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { BreadcrumbsComponent } from '@shared-ui';
+import {
+  ISuccessStory,
+} from '@eatfit247-shared-library/core';
+import { JsonLdService, SEOService } from '../../core/services';
+import { SuccessStoriesService } from '../../core/services/success-stories.service';
+import { WHATSAPP_LINK } from '../../core/utils/constants';
 
-interface SessionChip {
+interface HowWeWorkStep {
   readonly num: string;
-  readonly label: string;
+  readonly stepColor: string;
+  readonly title: string;
+  readonly description: string;
 }
 
-interface PlanCard {
-  readonly id: string;
-  readonly title: string;
-  readonly subtitle: string;
-  readonly featured?: boolean;
-  readonly sessions: ReadonlyArray<SessionChip>;
-  readonly features: ReadonlyArray<string>;
+interface VideoTestimonial {
+  readonly name: string;
+  readonly role: string;
+  readonly thumb: string;
+  readonly duration?: string;
+  readonly youtubeId?: string;
+  readonly videoSrc?: string;
 }
 
-interface HowItWorksStep {
-  readonly num: string;
-  readonly icon: string;
-  readonly title: string;
-  readonly copy: string;
+interface ExpertCard {
+  readonly name: string;
+  readonly image: string;
+  readonly description: string;
+  readonly link: string;
 }
 
 @Component({
   standalone: true,
   selector: 'app-our-programs',
-  imports: [CommonModule, RouterLink, BannerComponent, BreadcrumbsComponent],
+  imports: [CommonModule, RouterLink, BreadcrumbsComponent],
   templateUrl: './our-programs.component.html',
   styleUrl: './our-programs.component.scss',
 })
 export class OurProgramsComponent implements OnInit {
   private readonly jsonLdService = inject(JsonLdService);
   private readonly seoService = inject(SEOService);
-  private readonly faqService = inject(FaqService);
-  PROGRAM_FAQ_CATEGORY_ID = 4;
-  banners: IPublicBanner[] = [];
-  readonly faqs: WritableSignal<IPublicFaq[]> = signal<IPublicFaq[]>([]);
+  private readonly successStoriesService = inject(SuccessStoriesService);
+  private readonly platformId = inject(PLATFORM_ID);
+  private readonly sanitizer = inject(DomSanitizer);
+  private readonly embedCache = new Map<string, SafeResourceUrl>();
 
-  readonly plans: ReadonlyArray<PlanCard> = [
-    {
-      id: 'exclusive-shweta',
-      title: 'Exclusively with Shweta Shah',
-      subtitle: 'Personalised journey with expert guidance.',
-      sessions: [
-        { num: '1', label: 'Session' },
-        { num: '6', label: 'Sessions' },
-        { num: '8', label: 'Sessions' },
-      ],
-      features: [
-        'One-on-one consultation with Shweta Shah',
-        'Comprehensive health assessment',
-        'Personalized nutrition plan',
-        'Detailed dietary recommendations',
-        'Follow-up guidelines',
-      ],
-    },
-    {
-      id: 'chief-nutritionist',
-      title: 'Plan with Chief Nutritionist',
-      subtitle: 'Experience of 16 years.',
-      featured: true,
-      sessions: [
-        { num: '3', label: 'Sessions' },
-        { num: '6', label: 'Sessions' },
-      ],
-      features: [
-        'One-on-one consultation with Shweta Shah',
-        'Comprehensive health assessment',
-        'Personalized nutrition plan',
-        'Detailed dietary recommendations',
-        'Follow-up guidelines',
-      ],
-    },
-    {
-      id: 'shweta-and-team',
-      title: 'Plan with Shweta + Team',
-      subtitle: 'Collaborative approach.',
-      sessions: [{ num: '1 + 7', label: 'Sessions' }],
-      features: [
-        'Initial consultation with Shweta',
-        '7 follow-up sessions with team',
-        'Personalized nutrition plan',
-        'Detailed dietary recommendations',
-        'Follow-up guidelines',
-      ],
-    },
-  ];
+  readonly whatsappLink = WHATSAPP_LINK;
 
-  readonly howItWorksSteps: ReadonlyArray<HowItWorksStep> = [
+  // ============== How We Work — 5 steps ==============
+  readonly howWeWorkSteps: ReadonlyArray<HowWeWorkStep> = [
     {
       num: '01',
-      icon: 'event_available',
-      title: 'Book a 1:1 Appointment',
-      copy: 'Schedule a one-on-one consultation at a time that suits you and tell us about your goals, history and lifestyle.',
+      stepColor: '#f4a23c',
+      title: 'Understand You Deeply',
+      description:
+        'We begin with a detailed consultation, health history review & Ayurvedic Prakriti Analysis (Vata–Pitta–Kapha) to understand your body type, imbalances & root causes.',
     },
     {
       num: '02',
-      icon: 'assignment_ind',
-      title: 'Get Your Custom Plan',
-      copy: 'Receive a fully personalised nutrition plan built around your body type, food preferences and medical context.',
+      stepColor: '#ee6f5d',
+      title: 'Personalised Nutrition Plan',
+      description:
+        'No generic diets. We create a 100% customised food & lifestyle plan designed around your health goals, routine, preferences & body needs.',
     },
     {
       num: '03',
-      icon: 'trending_up',
-      title: 'Transform Your Journey',
-      copy: 'Follow your guided plan with regular follow-ups, weekly check-ins and adjustments that move with your progress.',
+      stepColor: '#19b3b3',
+      title: 'Ayurveda + Modern Nutrition',
+      description:
+        'We combine Ayurvedic wisdom with practical modern nutrition — focusing on gut health, metabolism, hormones, digestion, sleep & sustainable healing.',
     },
     {
       num: '04',
-      icon: 'support_agent',
-      title: 'End-to-End Support',
-      copy: 'The Nutrinist team stays by your side throughout — answering questions, troubleshooting plateaus and keeping you on track.',
+      stepColor: '#2378c3',
+      title: 'Ongoing Guidance & Support',
+      description:
+        'Through follow-ups, expert guidance, WhatsApp support (depending on the plan), remedies, breathwork & exercise, we help you stay consistent.',
+    },
+    {
+      num: '05',
+      stepColor: '#3e5871',
+      title: 'Heal the Root Cause',
+      description:
+        "We don't believe in shortcuts, harsh restrictions or symptom management. We work on the root cause to help you build habits that last a lifetime.",
     },
   ];
-  readonly termsAndConditions: ReadonlyArray<string> = [
-    'Payments are non-refundable & non-transferable.',
-    'Program is valid only for the registered individual.',
-    'Pause up to 20 days may be approved in genuine cases.',
-    'Prices are valid till 31st Dec, 2026.',
-    '**Prices are exclusive of tax — tax will be charged on the final payment.',
+
+  // ============== Pick the Expert — 2 cards ==============
+  readonly expertCards: ReadonlyArray<ExpertCard> = [
+    {
+      name: 'Exclusively with Shweta Shah',
+      image: '/nutritionist/shweta-shah.png',
+      description:
+        'Celebrity Nutritionist, renowned for her innovative approach that merges the wisdom of Ayurveda with the precision of modern nutritional science.',
+      link: '/our-programs/about-shweta-shah-nutritionist',
+    },
+    {
+      name: 'Plan with Chief Nutritionist',
+      image: '/nutritionist/birangi.png',
+      description:
+        'Experience of 16 years & trained under Shweta Shah, follows the same approach.',
+      link: '/our-programs/about-chief-nutritionist',
+    },
   ];
+
+  // ============== Video testimonials ==============
+
+  readonly videos = signal<ReadonlyArray<VideoTestimonial>>([]);
+
+  readonly vtIndex = signal(0);
+  readonly vtPerView = signal(4);
+  readonly vtPlaying = signal<Record<number, true>>({});
+
+  readonly vtMaxIndex = computed(() =>
+    Math.max(0, this.videos().length - this.vtPerView()),
+  );
+  readonly vtPageCount = computed(() => this.vtMaxIndex() + 1);
+  readonly vtPages = computed(() =>
+    Array.from({ length: this.vtPageCount() }, (_, i) => i),
+  );
+  readonly vtTrackStyle = computed(() => {
+    const i = this.vtIndex();
+    const pv = this.vtPerView();
+    return {
+      transform: `translateX(calc((-100% / ${pv} - var(--space-5)) * ${i}))`,
+    };
+  });
+
+  vtPrev(): void {
+    this.vtIndex.set(Math.max(0, this.vtIndex() - 1));
+  }
+  vtNext(): void {
+    this.vtIndex.set(Math.min(this.vtMaxIndex(), this.vtIndex() + 1));
+  }
+  vtGoTo(i: number): void {
+    this.vtIndex.set(Math.min(this.vtMaxIndex(), Math.max(0, i)));
+  }
+  vtPlay(i: number): void {
+    const v = this.videos()[i];
+    if (!v?.youtubeId && !v?.videoSrc) return;
+    this.vtPlaying.update((prev) => ({ ...prev, [i]: true }));
+  }
+  vtIsPlaying(i: number): boolean {
+    return !!this.vtPlaying()[i];
+  }
+  vtEmbedUrl(youtubeId: string): SafeResourceUrl {
+    const cached = this.embedCache.get(youtubeId);
+    if (cached) return cached;
+    const url = this.sanitizer.bypassSecurityTrustResourceUrl(
+      `https://www.youtube.com/embed/${youtubeId}?autoplay=1&rel=0&modestbranding=1`,
+    );
+    this.embedCache.set(youtubeId, url);
+    return url;
+  }
+
+  @HostListener('window:resize')
+  onResize(): void {
+    this.recomputeVtPerView();
+  }
+  private recomputeVtPerView(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    const w = window.innerWidth;
+    let pv = 4;
+    if (w <= 540) pv = 1;
+    else if (w <= 820) pv = 2;
+    else if (w <= 1100) pv = 3;
+    this.vtPerView.set(pv);
+    if (this.vtIndex() > this.vtMaxIndex()) {
+      this.vtIndex.set(this.vtMaxIndex());
+    }
+  }
 
   async ngOnInit(): Promise<void> {
     this.seoService.updateSEO({
@@ -133,10 +189,8 @@ export class OurProgramsComponent implements OnInit {
         'Explore EatFit247 personalized nutrition programs for weight management, detox, PCOS, and holistic wellness.',
       url: '/our-programs',
     });
-    const programFaqs = await this.faqService.getFaqsByCategoryId(
-      this.PROGRAM_FAQ_CATEGORY_ID,
-    );
-    this.faqs.set(programFaqs);
+    await this.loadVideoTestimonials();
+    this.recomputeVtPerView();
     this.jsonLdService.setPageSchema(
       this.jsonLdService.buildBreadcrumb([
         { name: 'Home', url: 'https://eatfit24by7.com/' },
@@ -144,4 +198,38 @@ export class OurProgramsComponent implements OnInit {
       ]),
     );
   }
+
+  private async loadVideoTestimonials(): Promise<void> {
+    try {
+      const stories = await this.successStoriesService.loadStories();
+      const mapped = stories
+        .map((s) => this.toVideoTestimonial(s))
+        .filter((v): v is VideoTestimonial => v !== null);
+      if (mapped.length > 0) {
+        this.videos.set(mapped);
+      }
+    } catch {
+      // keep fallback
+    }
+  }
+
+  private toVideoTestimonial(s: ISuccessStory): VideoTestimonial | null {
+    const thumb = s.imagePath?.[0]?.webUrl;
+    if (!thumb && !s.youtubeUrl) return null;
+    const youtubeId = this.extractYoutubeId(s.youtubeUrl);
+    return {
+      name: s.name,
+      role: s.title ?? '',
+      thumb: thumb ?? '',
+      youtubeId,
+    };
+  }
+
+  private extractYoutubeId(url: string | undefined): string | undefined {
+    if (!url) return undefined;
+    const m = url.match(/(?:v=|youtu\.be\/|embed\/|shorts\/)([\w-]{11})/);
+    return m ? m[1] : url;
+  }
+
+  trackByVideoName = (_: number, v: VideoTestimonial): string => v.name;
 }

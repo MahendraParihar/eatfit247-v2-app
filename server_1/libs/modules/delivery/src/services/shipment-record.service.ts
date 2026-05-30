@@ -1,5 +1,6 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Op } from 'sequelize';
 import { BasicSearchDto, CommonFunctionsUtil, SearchUtil } from '@server_1/core';
 import {
@@ -22,6 +23,21 @@ import {
 } from '../models';
 import { BookingResponseDto } from '../dto';
 
+/**
+ * Payload for the 'shipment.status.changed' event.
+ * Subscribers: ShipmentNotificationListener (member-facing email/WhatsApp).
+ */
+export interface IShipmentStatusChangedEvent {
+  shipmentId: number;
+  orderId: number;
+  previousStatus: string | null;
+  newStatus: string;
+  awbNumber?: string | null;
+  trackingNumber?: string | null;
+  trackingUrl?: string | null;
+  source: 'BOOKING' | 'WEBHOOK' | 'POLLING' | 'MANUAL';
+}
+
 @Injectable()
 export class ShipmentRecordService {
   private readonly logger = new Logger(ShipmentRecordService.name);
@@ -35,6 +51,7 @@ export class ShipmentRecordService {
     private readonly rateQuoteRepository: typeof TxnShipmentRateQuote,
     @InjectModel(TxnShipmentTrackingEvent)
     private readonly trackingRepository: typeof TxnShipmentTrackingEvent,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   // ── Creation ──────────────────────────────────────────────────────────────
@@ -244,6 +261,7 @@ export class ShipmentRecordService {
     booking: BookingResponseDto,
     metadata: Record<string, unknown> = {},
   ): Promise<void> {
+    const previous = await this.shipmentRepository.findByPk(shipmentId, { raw: true });
     await this.shipmentRepository.update(
       {
         providerShipmentId: booking.providerShipmentId ?? null,
@@ -263,6 +281,19 @@ export class ShipmentRecordService {
       { where: { shipmentId } },
     );
     this.logger.log(`Shipment ${shipmentId} BOOKED — AWB: ${booking.trackingNumber ?? 'N/A'}`);
+
+    if (previous) {
+      this.emitStatusChanged({
+        shipmentId,
+        orderId: previous.orderId,
+        previousStatus: previous.status ?? null,
+        newStatus: ShipmentStatusEnum.BOOKED,
+        awbNumber: booking.awbNumber ?? booking.trackingNumber ?? null,
+        trackingNumber: booking.trackingNumber ?? null,
+        trackingUrl: booking.trackingUrl ?? null,
+        source: 'BOOKING',
+      });
+    }
   }
 
   public async markFailed(
@@ -309,10 +340,38 @@ export class ShipmentRecordService {
 
     const latest = [...events].sort((a, b) => b.eventTime.getTime() - a.eventTime.getTime())[0];
     const mappedStatus = this.mapProviderStatus(latest.status);
+    const previous = await this.shipmentRepository.findByPk(shipmentId, { raw: true });
+
     await this.shipmentRepository.update(
       { status: mappedStatus, lastKnownStatus: mappedStatus },
       { where: { shipmentId } },
     );
+
+    if (previous && previous.status !== mappedStatus) {
+      this.emitStatusChanged({
+        shipmentId,
+        orderId: previous.orderId,
+        previousStatus: previous.status ?? null,
+        newStatus: mappedStatus,
+        awbNumber: previous.trackingNumber ?? null,
+        trackingNumber: previous.trackingNumber ?? null,
+        trackingUrl: previous.trackingUrl ?? null,
+        source,
+      });
+    }
+  }
+
+  private emitStatusChanged(payload: IShipmentStatusChangedEvent): void {
+    // Fire-and-forget — listeners must not block the persistence path.
+    try {
+      this.eventEmitter.emit('shipment.status.changed', payload);
+    } catch (err) {
+      this.logger.warn(
+        `Failed to emit shipment.status.changed for ${payload.shipmentId}: ${
+          err instanceof Error ? err.message : String(err)
+        }`,
+      );
+    }
   }
 
   public async getTrackingInfo(shipmentId: number): Promise<ITrackingInfo> {
