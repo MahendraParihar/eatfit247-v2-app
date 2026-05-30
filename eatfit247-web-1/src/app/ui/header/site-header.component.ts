@@ -33,7 +33,7 @@ export class SiteHeaderComponent {
     {
       label: 'Programs',
       children: [
-        { label: '1:1 Programs', route: '/our-programs' },
+        { label: 'Consultation', route: '/our-programs' },
         { label: 'Seasonal Plans', route: '/seasonal-plans' },
       ],
     },

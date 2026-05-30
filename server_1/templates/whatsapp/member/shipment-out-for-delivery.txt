@@ -1,0 +1,12 @@
+Hello {{memberName}}! 🚚
+
+Your order is out for delivery today.
+
+*Order No:* {{orderNumber}}
+*AWB:* {{awbNumber}}
+
+Live tracking: {{trackingUrl}}
+
+Please keep your phone handy in case the courier needs to reach you.
+
+— Team {{franchiseName}}

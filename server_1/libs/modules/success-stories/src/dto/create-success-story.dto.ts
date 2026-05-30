@@ -1,6 +1,8 @@
 import {
+  IsArray,
   IsBoolean,
   IsDateString,
+  IsEnum,
   IsNotEmpty,
   IsNumber,
   IsOptional,
@@ -9,7 +11,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { IManageSuccessStory, InputLengthEnum } from '@eatfit247-shared-lib';
+import { IManageSuccessStory, InputLengthEnum, SuccessStoryMediaType } from '@eatfit247-shared-lib';
 import { MediaUploadDto } from '@server_1/core';
 
 export class CreateSuccessStoryDto implements IManageSuccessStory {
@@ -28,9 +30,17 @@ export class CreateSuccessStoryDto implements IManageSuccessStory {
   @IsString()
   description!: string;
   @IsNotEmpty()
+  @IsEnum(['image', 'video', 'youtube'] as const)
+  mediaType!: SuccessStoryMediaType;
+  @IsOptional()
+  @IsArray()
   @ValidateNested({ each: true })
   @Type(() => MediaUploadDto)
-  imagePath!: MediaUploadDto[];
+  imagePath?: MediaUploadDto[];
+  @IsOptional()
+  @IsString()
+  @MaxLength(InputLengthEnum.CHAR_500)
+  youtubeUrl?: string;
   @IsNotEmpty()
   @IsBoolean()
   active!: boolean;
@@ -38,4 +48,3 @@ export class CreateSuccessStoryDto implements IManageSuccessStory {
   @IsNumber()
   successStoryId?: number;
 }
-

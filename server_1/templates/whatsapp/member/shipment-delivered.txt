@@ -1,0 +1,10 @@
+Hello {{memberName}}! ✓
+
+Your order has been delivered.
+
+*Order No:* {{orderNumber}}
+*AWB:* {{awbNumber}}
+
+We hope everything is in order. If anything looks off, just reply to this message.
+
+— Team {{franchiseName}}

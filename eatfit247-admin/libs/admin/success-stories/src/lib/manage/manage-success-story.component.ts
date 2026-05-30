@@ -1,7 +1,7 @@
 import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
@@ -13,7 +13,14 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { InputErrorComponent, UploadFormComponent, ValidationUtil } from '@shared';
 import { SuccessStoriesApiService } from '../api.service';
-import { FileTypeEnum, InputLengthEnum, ISuccessStory, MediaForEnum } from '@eatfit247-shared-lib';
+import {
+  FileTypeEnum,
+  IMediaUpload,
+  InputLengthEnum,
+  ISuccessStory,
+  MediaForEnum,
+  SuccessStoryMediaType,
+} from '@eatfit247-shared-lib';
 import { Editor, NgxEditorComponent, NgxEditorMenuComponent, Toolbar } from 'ngx-editor';
 
 @Component({
@@ -47,24 +54,20 @@ export class ManageSuccessStory implements OnInit, OnDestroy {
 
   private fb: FormBuilder = inject(FormBuilder);
   formGroup: FormGroup = this.fb.group({
-    name: [
-      '',
-      [Validators.required, Validators.maxLength(InputLengthEnum.CHAR_250)],
-    ],
-    title: [
-      '',
-      [Validators.required, Validators.maxLength(InputLengthEnum.CHAR_250)],
-    ],
+    name: ['', [Validators.required, Validators.maxLength(InputLengthEnum.CHAR_250)]],
+    title: ['', [Validators.required, Validators.maxLength(InputLengthEnum.CHAR_250)]],
     date: ['', [Validators.required]],
     description: ['', [Validators.required]],
-    imagePath: [[], [Validators.required]],
+    mediaType: ['image' as SuccessStoryMediaType, [Validators.required]],
+    youtubeUrl: ['', [Validators.maxLength(InputLengthEnum.CHAR_500)]],
     active: [true, [Validators.required]],
   });
   initialData!: ISuccessStory;
+  initialMediaList: IMediaUpload[] = [];
   isEditMode = false;
   pageTitle = 'Create Success Story';
   mediaFor = MediaForEnum.SUCCESS_STORY;
-  mediaType = FileTypeEnum.IMAGE;
+  mediaTypeEnum = FileTypeEnum;
   editor: Editor | null = null;
   toolbar: Toolbar = [
     ['bold', 'italic'],
@@ -76,9 +79,25 @@ export class ManageSuccessStory implements OnInit, OnDestroy {
     ['text_color', 'background_color'],
     ['align_left', 'align_center', 'align_right', 'align_justify'],
   ];
+  mediaTypeOptions: { value: SuccessStoryMediaType; label: string }[] = [
+    { value: 'image', label: 'Image' },
+    { value: 'video', label: 'Video' },
+    { value: 'youtube', label: 'YouTube Link' },
+  ];
+
+  get mediaType(): SuccessStoryMediaType {
+    return this.formGroup.get('mediaType')?.value as SuccessStoryMediaType;
+  }
+
+  get uploadFileType(): FileTypeEnum {
+    return this.mediaType === 'video' ? FileTypeEnum.VIDEO : FileTypeEnum.IMAGE;
+  }
 
   ngOnInit(): void {
     this.initializeEditor();
+    this.formGroup.get('mediaType')?.valueChanges.subscribe((value: SuccessStoryMediaType) => {
+      this.onMediaTypeChange(value);
+    });
     const id = this.route.snapshot.paramMap.get('id');
     if (id && id !== 'new') {
       this.isEditMode = true;
@@ -86,6 +105,7 @@ export class ManageSuccessStory implements OnInit, OnDestroy {
       this.loadData(+id);
     } else {
       this.pageTitle = 'Create Success Story';
+      this.applyMediaTypeValidators(this.mediaType);
     }
   }
 
@@ -93,25 +113,59 @@ export class ManageSuccessStory implements OnInit, OnDestroy {
     this.editor = new Editor();
   }
 
-  private patchFormValues(): void {
-    if (this.initialData) {
-      // Format date for date picker (YYYY-MM-DD)
-      const dateValue =
-        this.initialData.date instanceof Date
-          ? this.initialData.date
-          : new Date(this.initialData.date);
+  private onMediaTypeChange(value: SuccessStoryMediaType): void {
+    this.applyMediaTypeValidators(value);
+    // Reset opposite-side controls so stale data does not leak across types.
+    const youtubeCtrl = this.formGroup.get('youtubeUrl');
+    const imageCtrl = this.formGroup.get('imagePath');
+    if (value === 'youtube') {
+      if (imageCtrl instanceof FormArray) {
+        imageCtrl.clear();
+      } else if (imageCtrl) {
+        imageCtrl.setValue([]);
+      }
+      this.initialMediaList = [];
+    } else {
+      youtubeCtrl?.setValue('');
+    }
+  }
 
-      this.formGroup.patchValue({
+  private applyMediaTypeValidators(value: SuccessStoryMediaType): void {
+    const youtubeCtrl = this.formGroup.get('youtubeUrl');
+    if (value === 'youtube') {
+      youtubeCtrl?.setValidators([
+        Validators.required,
+        Validators.maxLength(InputLengthEnum.CHAR_500),
+      ]);
+    } else {
+      youtubeCtrl?.setValidators([Validators.maxLength(InputLengthEnum.CHAR_500)]);
+    }
+    youtubeCtrl?.updateValueAndValidity({ emitEvent: false });
+  }
+
+  private patchFormValues(): void {
+    if (!this.initialData) {
+      return;
+    }
+    const dateValue =
+      this.initialData.date instanceof Date
+        ? this.initialData.date
+        : new Date(this.initialData.date);
+    const mediaType: SuccessStoryMediaType = this.initialData.mediaType || 'image';
+    this.formGroup.patchValue(
+      {
         name: this.initialData.name || '',
         title: this.initialData.title || '',
         date: dateValue,
         description: this.initialData.description || '',
-        active:
-          this.initialData.active !== undefined
-            ? this.initialData.active
-            : true,
-      });
-    }
+        mediaType,
+        youtubeUrl: this.initialData.youtubeUrl || '',
+        active: this.initialData.active !== undefined ? this.initialData.active : true,
+      },
+      { emitEvent: false },
+    );
+    this.initialMediaList = mediaType === 'youtube' ? [] : this.initialData.imagePath || [];
+    this.applyMediaTypeValidators(mediaType);
   }
 
   async loadData(id: number): Promise<void> {
@@ -130,46 +184,46 @@ export class ManageSuccessStory implements OnInit, OnDestroy {
 
   async onSubmit(): Promise<void> {
     ValidationUtil.validateAllFormFields(this.formGroup);
-    if (this.formGroup.valid) {
-      const formValue: any = { ...this.formGroup.value };
+    const mediaType = this.mediaType;
+    const imageCtrl = this.formGroup.get('imagePath');
+    const uploadedFiles = imageCtrl instanceof FormArray ? imageCtrl.value : imageCtrl?.value;
 
-      // Format date as YYYY-MM-DD string
-      if (formValue.date instanceof Date) {
-        formValue.date = formValue.date.toISOString().split('T')[0];
-      }
+    if (mediaType !== 'youtube' && (!Array.isArray(uploadedFiles) || uploadedFiles.length === 0)) {
+      this.snackBar.open(`Please upload a ${mediaType} file before saving.`, 'Close', {
+        duration: 4000,
+      });
+      return;
+    }
 
-      // Handle imagePath from upload form
-      const imagePathControl = this.formGroup.get('imagePath');
-      if (imagePathControl) {
-        const imagePathValue = imagePathControl.value;
-        if (Array.isArray(imagePathValue) && imagePathValue.length > 0) {
-          formValue.imagePath = imagePathValue;
-        } else {
-          formValue.imagePath = [];
-        }
-      } else {
-        formValue.imagePath = [];
-      }
-
-      try {
-        if (this.isEditMode && this.initialData) {
-          const successStoryId = (this.initialData as any).successStoryId;
-          await this.apiService.update(successStoryId, formValue);
-          this.snackBar.open('Success story updated successfully', 'Close', {
-            duration: 3000,
-          });
-        } else {
-          await this.apiService.create(formValue);
-          this.snackBar.open('Success story created successfully', 'Close', {
-            duration: 3000,
-          });
-        }
-        this.router.navigate(['/success-stories']);
-      } catch (error) {
-        // Error toast is handled by HttpErrorInterceptor
-      }
-    } else {
+    if (!this.formGroup.valid) {
       this.formGroup.markAllAsTouched();
+      return;
+    }
+
+    const formValue: any = { ...this.formGroup.value };
+    if (formValue.date instanceof Date) {
+      formValue.date = formValue.date.toISOString().split('T')[0];
+    }
+    if (mediaType === 'youtube') {
+      formValue.imagePath = [];
+      formValue.youtubeUrl = (formValue.youtubeUrl || '').trim();
+    } else {
+      formValue.imagePath = Array.isArray(uploadedFiles) ? uploadedFiles : [];
+      formValue.youtubeUrl = undefined;
+    }
+
+    try {
+      if (this.isEditMode && this.initialData) {
+        const successStoryId = (this.initialData as any).successStoryId;
+        await this.apiService.update(successStoryId, formValue);
+        this.snackBar.open('Success story updated successfully', 'Close', { duration: 3000 });
+      } else {
+        await this.apiService.create(formValue);
+        this.snackBar.open('Success story created successfully', 'Close', { duration: 3000 });
+      }
+      this.router.navigate(['/success-stories']);
+    } catch (error) {
+      // Error toast is handled by HttpErrorInterceptor
     }
   }
 
@@ -183,4 +237,3 @@ export class ManageSuccessStory implements OnInit, OnDestroy {
     }
   }
 }
-

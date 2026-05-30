@@ -64,15 +64,42 @@
           <shared-ui-input-error [control]="formGroup.get('description')" controlName="Description"></shared-ui-input-error>
         </div>
 
-        <shared-ui-upload-form
-          [formGroup]="formGroup"
-          [isMultiFile]="false"
-          [isRequired]="true"
-          [uploadedMediaList]="initialData && initialData.imagePath ? initialData.imagePath : []"
-          controlName="imagePath"
-          [mediaFor]="mediaFor"
-          [mediaType]="mediaType"
-        ></shared-ui-upload-form>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Media Type</mat-label>
+          <mat-select formControlName="mediaType" required>
+            @for (option of mediaTypeOptions; track option.value) {
+              <mat-option [value]="option.value">{{ option.label }}</mat-option>
+            }
+          </mat-select>
+          <shared-ui-input-error [control]="formGroup.get('mediaType')" controlName="Media Type"></shared-ui-input-error>
+        </mat-form-field>
+
+        @if (mediaType === 'youtube') {
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>YouTube URL</mat-label>
+            <input
+              matInput
+              formControlName="youtubeUrl"
+              placeholder="https://www.youtube.com/watch?v=..."
+              [maxlength]="500"
+              required
+            />
+            <mat-hint align="end">
+              {{ formGroup.get('youtubeUrl')?.value?.length || 0 }}/500
+            </mat-hint>
+            <shared-ui-input-error [control]="formGroup.get('youtubeUrl')" controlName="YouTube URL"></shared-ui-input-error>
+          </mat-form-field>
+        } @else {
+          <shared-ui-upload-form
+            [formGroup]="formGroup"
+            [isMultiFile]="false"
+            [isRequired]="true"
+            [uploadedMediaList]="initialMediaList"
+            controlName="imagePath"
+            [mediaFor]="mediaFor"
+            [mediaType]="uploadFileType"
+          ></shared-ui-upload-form>
+        }
 
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Status</mat-label>
@@ -105,4 +132,3 @@
     </form>
   </mat-card-content>
 </mat-card>
-
