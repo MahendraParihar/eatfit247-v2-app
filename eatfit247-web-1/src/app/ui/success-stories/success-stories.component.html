@@ -27,19 +27,17 @@
             @if (hasStories()) {
                 <ul class="celeb-grid" id="stories-grid">
                     @for (c of celebs(); track c.id; let i = $index) {
-                        <li class="celeb-card" [style.--i]="i">
-                            <figure class="celeb-card__photo">
-                                @if (c.img) {
-                                    <img [src]="c.img" [alt]="c.name" loading="lazy" referrerpolicy="no-referrer"/>
-                                }
-                            </figure>
-                            <div class="celeb-card__body">
-                                <p class="celeb-card__quote">&ldquo;{{ c.quote }}&rdquo;</p>
-                                <div class="celeb-card__meta">
-                                    <h3 class="celeb-card__name">{{ c.name }}</h3>
-                                    <span class="celeb-card__date">{{ c.date }}</span>
-                                </div>
-                            </div>
+                        <li class="celeb-grid__item">
+                            <app-story-card
+                                [name]="c.name"
+                                [date]="c.date"
+                                [quote]="c.quote"
+                                [mediaType]="c.mediaType"
+                                [posterUrl]="c.posterUrl"
+                                [videoSrc]="c.videoSrc"
+                                [youtubeId]="c.youtubeId"
+                                [index]="i"
+                            ></app-story-card>
                         </li>
                     }
                 </ul>

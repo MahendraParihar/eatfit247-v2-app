@@ -9,14 +9,18 @@ import {
   signal,
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { LoaderComponent } from '@shared-ui';
+import { LoaderComponent, StoryCardComponent } from '@shared-ui';
 import {
   BannerService,
   ProgramService,
   SeasonalProgramCard,
   SEOService,
 } from '../../core/services';
-import { IPublicBanner, ISuccessStory } from '@eatfit247-shared-library/core';
+import {
+  IPublicBanner,
+  ISuccessStory,
+  SuccessStoryMediaType,
+} from '@eatfit247-shared-library/core';
 import { BannerForEnum } from '@eatfit247-shared-library/enum';
 import { SuccessStoriesService } from '../../core/services/success-stories.service';
 import { PressMediaService } from '../../core/services/press-media.service';
@@ -52,14 +56,17 @@ interface TipCard {
 
 interface TestimonialStory {
   readonly name: string;
-  readonly image: string;
+  readonly posterUrl?: string;
   readonly quote: string;
+  readonly mediaType: SuccessStoryMediaType;
+  readonly youtubeId?: string;
+  readonly videoSrc?: string;
 }
 
 @Component({
   standalone: true,
   selector: 'app-home',
-  imports: [CommonModule, RouterLink, LoaderComponent],
+  imports: [CommonModule, RouterLink, LoaderComponent, StoryCardComponent],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss',
 })
@@ -132,15 +139,10 @@ export class HomeComponent implements OnInit {
 
   readonly testimonialStories = computed<ReadonlyArray<TestimonialStory>>(
     () => {
-      if (this.stories?.length) {
-        return this.stories.map((s) => ({
-          name: s.name,
-          image: s.imagePath?.[0]?.webUrl,
-          quote: s.description ?? '',
-          metric: s.title ?? undefined,
-        }));
-      }
-      return [];
+      if (!this.stories?.length) return [];
+      return this.stories
+        .map((s) => this.toTestimonialStory(s))
+        .filter((t): t is TestimonialStory => t !== null);
     },
   );
 
@@ -279,7 +281,7 @@ export class HomeComponent implements OnInit {
   private recomputePerView(): void {
     if (!isPlatformBrowser(this.platformId)) return;
     const w = window.innerWidth;
-    this.perView.set(w >= 1024 ? 3 : w >= 640 ? 2 : 1);
+    this.perView.set(w >= 1024 ? 4 : w >= 640 ? 2 : 1);
     if (this.carouselIndex() >= this.pageCount()) {
       this.carouselIndex.set(Math.max(0, this.pageCount() - 1));
     }
@@ -331,6 +333,50 @@ export class HomeComponent implements OnInit {
       /^.*(youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
     const match = url.match(regExp);
     return match && match[2].length === 11 ? match[2] : null;
+  }
+
+  // -------- Testimonial media helpers --------
+  private toTestimonialStory(s: ISuccessStory): TestimonialStory | null {
+    const mediaType: SuccessStoryMediaType = s.mediaType ?? 'image';
+    const media = s.imagePath ?? [];
+    const posterItem = media.find((m) => m.mimetype?.startsWith('image/'));
+    const videoItem = media.find((m) => m.mimetype?.startsWith('video/'));
+    const posterUrl = buildMediaUrl(posterItem?.webUrl);
+    const videoUrl = buildMediaUrl(videoItem?.webUrl ?? media[0]?.webUrl);
+
+    if (mediaType === 'youtube') {
+      const youtubeId = this.extractYouTubeId(s.youtubeUrl ?? '') ?? undefined;
+      if (!youtubeId && !posterUrl) return null;
+      const thumb = posterUrl ||
+        (youtubeId ? `https://i.ytimg.com/vi/${youtubeId}/hqdefault.jpg` : '');
+      return {
+        name: s.name,
+        posterUrl: thumb,
+        quote: s.description ?? '',
+        mediaType,
+        youtubeId,
+      };
+    }
+
+    if (mediaType === 'video') {
+      if (!videoUrl) return null;
+      return {
+        name: s.name,
+        posterUrl,
+        quote: s.description ?? '',
+        mediaType,
+        videoSrc: videoUrl,
+      };
+    }
+
+    const imageUrl = posterUrl || buildMediaUrl(media[0]?.webUrl);
+    if (!imageUrl) return null;
+    return {
+      name: s.name,
+      posterUrl: imageUrl,
+      quote: s.description ?? '',
+      mediaType: 'image',
+    };
   }
 
   async loadSeasonalPlans(): Promise<void> {

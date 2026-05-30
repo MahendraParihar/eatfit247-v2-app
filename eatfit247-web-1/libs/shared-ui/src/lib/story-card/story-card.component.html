@@ -1,0 +1,65 @@
+<article class="story-card" [style.--i]="index">
+  @if (!isPlayable) {
+    <figure class="story-card__media">
+      @if (posterUrl) {
+        <img [src]="posterUrl" [alt]="name" loading="lazy" referrerpolicy="no-referrer" />
+      }
+    </figure>
+  } @else if (!playing()) {
+    <button
+      type="button"
+      class="story-card__media story-card__media--playable"
+      [attr.aria-label]="'Play ' + name + ' testimonial'"
+      (click)="play()"
+    >
+      @if (posterUrl) {
+        <img [src]="posterUrl" [alt]="name" loading="lazy" referrerpolicy="no-referrer" />
+      } @else if (mediaType === 'video' && videoSrc) {
+        <video
+          [src]="videoSrc + '#t=0.5'"
+          preload="metadata"
+          muted
+          playsinline
+          aria-hidden="true"
+        ></video>
+      }
+      <span class="story-card__play" aria-hidden="true">
+        <span class="mat-icon">play_arrow</span>
+      </span>
+    </button>
+  } @else {
+    <div class="story-card__media story-card__media--playable is-playing">
+      @if (mediaType === 'youtube' && youtubeId && embedUrl()) {
+        <iframe
+          [src]="embedUrl()!"
+          title="Testimonial video"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          referrerpolicy="strict-origin-when-cross-origin"
+          allowfullscreen
+        ></iframe>
+      } @else if (mediaType === 'video' && videoSrc) {
+        <video [src]="videoSrc" controls autoplay playsinline></video>
+      }
+    </div>
+  }
+
+  <div class="story-card__body">
+    <h3 class="story-card__name">{{ name }}</h3>
+    @if (hasMeta) {
+      <div class="story-card__meta">
+        @if (title) {
+          <span class="story-card__role">{{ title }}</span>
+        }
+        @if (title && date) {
+          <span class="story-card__meta-sep" aria-hidden="true">·</span>
+        }
+        @if (date) {
+          <span class="story-card__date">{{ date }}</span>
+        }
+      </div>
+    }
+    @if (quote) {
+      <div class="story-card__quote" [innerHTML]="quote"></div>
+    }
+  </div>
+</article>
