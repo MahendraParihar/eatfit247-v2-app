@@ -113,9 +113,18 @@ export class NimbusAdapter extends BaseCourierAdapter {
           undefined,
           headers,
         ),
-        5_000,
+        15_000,
         'rate fetch',
       );
+      // Nimbus returns { status: false, message: "..." } with no `data` when route is
+      // unserviceable / weight invalid / COD disabled etc. Surface the real reason
+      // instead of letting `.map` throw a useless TypeError that gets swallowed upstream.
+      if (!response || response.status === false || !Array.isArray(response.data)) {
+        const reason =
+          (response as unknown as { message?: string })?.message ??
+          `Nimbus serviceability returned no data (origin=${originPostcode}, destination=${destPostcode}, weight=${ratePayload.weight}g)`;
+        throw new Error(`${this.providerCode} ${reason}`);
+      }
       return response.data.map((rate: INimbusServiceabilityDataItem) => ({
         providerAccountId: credentials.providerAccountId,
         serviceName: rate.name,
@@ -200,7 +209,7 @@ export class NimbusAdapter extends BaseCourierAdapter {
         typeof shipmentPayload === 'object' ? shipmentPayload : { shipmentPayload },
       );
       const response = await this.withTimeout(
-        this.httpService.post(
+        this.httpService.post<INimbusShipmentResponse>(
           `${credentials.apiBaseUrl}/shipments`,
           shipmentPayload,
           undefined,
@@ -209,25 +218,26 @@ export class NimbusAdapter extends BaseCourierAdapter {
         10_000,
         'shipment booking',
       );
-      const shipment = (response?.data || response) as INimbusShipmentResponse;
-      if (!shipment) {
-        throw new Error(`${this.providerCode} Invalid response format from Nimbus shipment API`);
+      // httpService.post returns the parsed Nimbus body directly:
+      //   { status: boolean, message: string, data: { shipment_id, awb_number, label, ... } }
+      if (!response) {
+        throw new Error(`${this.providerCode} Empty response from Nimbus shipment API`);
       }
-      // Provider may return status: false when booking fails - do not treat as success
-      const rawStatus = shipment.status;
-      if (rawStatus === false) {
-        const errMsg = shipment.message;
-        throw new Error(`${this.providerCode} ${errMsg}`);
+      if (response.status === false || !response.data) {
+        throw new Error(
+          `${this.providerCode} ${response.message ?? 'shipment booking rejected (no data in response)'}`,
+        );
       }
+      const data = response.data;
       return {
-        providerShipmentId: shipment.data.shipment_id.toString(),
-        trackingNumber: shipment.data.awb_number,
+        providerShipmentId: data.shipment_id.toString(),
+        trackingNumber: data.awb_number,
         trackingUrl: '',
-        labelUrl: shipment.data.label,
-        awbNumber: shipment.data.awb_number,
-        status: shipment.data.status,
+        labelUrl: data.label,
+        awbNumber: data.awb_number,
+        status: data.status,
         metadata: {
-          ...shipment,
+          ...response,
         },
       };
     });
@@ -255,22 +265,27 @@ export class NimbusAdapter extends BaseCourierAdapter {
 
       const response = await this.withTimeout(
         this.httpService.get(
-          `${credentials.apiBaseUrl}/tracking/${trackingNumber.trim()}`,
+          `${credentials.apiBaseUrl}/shipments/track/${trackingNumber.trim()}`,
           undefined,
           headers,
         ),
         10_000,
         'tracking fetch',
       );
+      // Nimbus shape: { status, data: { order_number, shipment_status, history: [...] } }
+      // Older/alternate shapes are also accepted to stay defensive.
       const events = Array.isArray(response)
         ? response
-        : response?.data?.events ||
+        : response?.data?.history ||
+          response?.data?.events ||
           response?.events ||
           response?.data?.tracking ||
-          response?.data ||
+          (Array.isArray(response?.data) ? response.data : null) ||
           [];
       if (!Array.isArray(events)) {
-        throw new Error(`${this.providerCode} Invalid response format from Nimbus tracking API`);
+        throw new Error(
+          `${this.providerCode} Unexpected tracking response shape: ${JSON.stringify(response).slice(0, 500)}`,
+        );
       }
       // If no events, return empty array (shipment might not be tracked yet)
       if (events.length === 0) {
@@ -280,9 +295,18 @@ export class NimbusAdapter extends BaseCourierAdapter {
       return events.map(
         (event: any) =>
           <ITrackingEvent>{
-            status: event.status || event.event_status || event.current_status || 'UNKNOWN',
+            status:
+              event.status_code ||
+              event.status ||
+              event.event_status ||
+              event.current_status ||
+              'UNKNOWN',
             description:
-              event.description || event.event_description || event.message || event.remarks || '',
+              event.message ||
+              event.description ||
+              event.event_description ||
+              event.remarks ||
+              '',
             eventTime: event.event_time
               ? new Date(event.event_time)
               : event.timestamp
@@ -326,14 +350,11 @@ export class NimbusAdapter extends BaseCourierAdapter {
       // Get authentication headers
       const headers = await this.getAuthHeaders(credentials);
 
-      const cancelPayload: any = {
-        reason: 'Customer request',
-      };
-      // Some APIs require shipment_id instead of tracking number
-      // Try with tracking number first, API will handle the mapping
+      // Nimbus cancel API takes the AWB(s) in the body and a single fixed endpoint.
+      const cancelPayload = { awbs: [trackingNumber.trim()] };
       await this.withTimeout(
         this.httpService.post(
-          `${credentials.apiBaseUrl}/shipments/${trackingNumber.trim()}/cancel`,
+          `${credentials.apiBaseUrl}/shipments/cancel`,
           cancelPayload,
           undefined,
           headers,

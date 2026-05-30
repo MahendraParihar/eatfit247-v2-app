@@ -294,14 +294,22 @@ export class ShipmentOrchestrationService {
       const rateReq = this.buildRateRequest(shipment, deliveryPincode);
       this.logger.debug(`[Shipment:${shipmentId}] Built rate request payload`);
 
-      await Promise.allSettled(
+      const results = await Promise.allSettled(
         pairs.map((pair) => this.fetchAndSaveRatesForPair(shipmentId, pair, rateReq)),
       );
+      const providerErrors = results
+        .map((r, i) =>
+          r.status === 'rejected' ? `${pairs[i].providerCode}: ${this.errMsg(r.reason)}` : null,
+        )
+        .filter((x): x is string => x !== null);
 
       // ── Step C: Load all saved quotes and pick the best ──────────────────
       const savedQuotes = await this.shipmentRecordService.getRateQuotes(shipmentId);
       if (savedQuotes.length === 0) {
-        throw new Error('No rate quotes returned from any provider — all may be unserviceable');
+        const detail = providerErrors.length
+          ? ` Provider errors: ${providerErrors.join(' | ')}`
+          : '';
+        throw new Error(`No rate quotes returned from any provider.${detail}`);
       }
 
       // Attach priorityOrder from the resolved pairs for sorting
@@ -430,10 +438,7 @@ export class ShipmentOrchestrationService {
     rateReq: IRateRequest,
   ): Promise<void> {
     if (!pair.warehousePincode?.trim()) {
-      this.logger.warn(
-        `[Shipment:${shipmentId}] Skipping provider ${pair.providerCode} — no warehouse pincode`,
-      );
-      return;
+      throw new Error(`no warehouse pincode for provider ${pair.providerCode}`);
     }
 
     try {
@@ -469,7 +474,8 @@ export class ShipmentOrchestrationService {
           pair.providerCode
         }: ${this.errMsg(err)}`,
       );
-      // Non-fatal: other providers may still succeed
+      // Re-throw so Promise.allSettled records the reason for the aggregate error
+      throw err;
     }
   }
 

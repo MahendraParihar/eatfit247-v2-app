@@ -16,6 +16,14 @@ export class MemberProductReportController {
     return await this.memberProductReportService.getMemberProductReport(dto);
   }
 
+  @Post('pending-shipment')
+  @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.Report)
+  async getPendingShipmentOrders(
+    @Body() dto: MemberProductReportDto,
+  ): Promise<ITableList<any>> {
+    return await this.memberProductReportService.getPendingShipmentOrders(dto);
+  }
+
   @Post('export')
   @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.Report)
   async exportMemberProductReports(

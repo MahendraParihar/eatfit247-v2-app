@@ -14,6 +14,16 @@ export class MemberProductReportApiService {
     return res.data as ITableList<IMemberProductReportItem>;
   }
 
+  async getPendingShipmentOrders(
+    params: IMemberProductReportFilter,
+  ): Promise<ITableList<IMemberProductReportItem>> {
+    const res = await this.httpService.post<ITableList<IMemberProductReportItem>>(
+      `${this.endpoint}/pending-shipment`,
+      params,
+    );
+    return res.data as ITableList<IMemberProductReportItem>;
+  }
+
   async getFranchiseDropdown(): Promise<IDropdownItem[]> {
     const res = await this.httpService.get<IDropdownItem[]>('/franchise/dropdown');
     return res.data as IDropdownItem[];

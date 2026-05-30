@@ -9,6 +9,7 @@ import {
   ITableList,
 } from '@eatfit247-shared-lib';
 import { MstFranchise, ReportSortUtil } from '@server_1/core';
+import { MstPaymentStatus } from '@server_1/platform';
 import { MstCourierProvider, TxnShipment } from '@server_1/modules/delivery';
 import { MemberProductReportDto } from '../dto';
 import archiver from 'archiver';
@@ -162,7 +163,7 @@ export class MemberProductReportService {
     });
 
     const tableData = rows.map((item: any) => {
-      const productOrder = (this.memberProductService as any).convertToModel(item);
+      const productOrder = (this.memberProductService as any).convertToModel(item, []);
       return {
         ...productOrder,
         franchiseName: item.member?.franchise?.companyName || 'N/A',
@@ -177,6 +178,112 @@ export class MemberProductReportService {
       memberName: (r) => r.memberName,
       totalAmount: (r) => r.totalAmount,
       paymentStatus: (r) => r.paymentStatus,
+      paymentDate: (r) => r.paymentDate,
+      franchiseName: (r) => r.franchiseName ?? '',
+    });
+
+    return { tableData: sorted, count };
+  }
+
+  /**
+   * Fetch product orders that don't yet have a shipment record.
+   *
+   * Independent of {@link MemberProductService.convertToModel} so the admin
+   * can still see actionable orders (and create shipments) even if the main
+   * report mapping regresses. Uses direct field projection.
+   */
+  async getPendingShipmentOrders(
+    dto: MemberProductReportDto,
+  ): Promise<ITableList<IMemberProductReportItem>> {
+    const startDateStr = moment(dto.startDate).startOf('day').utc().startOf('day');
+    const endDateStr = moment(dto.endDate).endOf('day').utc().endOf('day');
+    const whereCondition: any = {
+      active: true,
+      paymentDate: {
+        [Op.and]: {
+          [Op.gte]: startDateStr.format(),
+          [Op.lte]: endDateStr.format(),
+        },
+      },
+      memberProductId: {
+        [Op.notIn]: Sequelize.literal('(SELECT order_id FROM public.txn_shipments)'),
+      },
+    };
+    if (dto.paymentStatusId) {
+      whereCondition.paymentStatusId = dto.paymentStatusId;
+    }
+    if (dto.franchiseId) {
+      whereCondition.franchiseId = dto.franchiseId;
+    }
+
+    const { rows, count } = await this.memberProductRepository.findAndCountAll({
+      where: whereCondition,
+      attributes: [
+        'memberProductId',
+        'memberId',
+        'invoiceId',
+        'paymentDate',
+        'paymentStatusId',
+        'subTotalAmount',
+        'discountAmount',
+        'taxAmount',
+        'totalAmount',
+        'currency',
+        'franchiseId',
+      ],
+      include: [
+        {
+          model: TxnMember,
+          as: 'member',
+          required: true,
+          attributes: ['memberId', 'firstName', 'lastName', 'emailId', 'contactNumber'],
+          include: [
+            {
+              model: MstFranchise,
+              as: 'franchise',
+              required: false,
+              attributes: ['franchiseId', 'companyName'],
+            },
+          ],
+        },
+        {
+          model: MstPaymentStatus,
+          as: 'paymentStatus',
+          required: false,
+          attributes: ['paymentStatusId', 'paymentStatus'],
+        },
+      ],
+      order: [['paymentDate', 'DESC']],
+      raw: true,
+      nest: true,
+    });
+
+    const tableData = rows.map((item: any) => ({
+      memberProductId: item.memberProductId,
+      memberId: item.memberId,
+      memberName: `${item.member?.firstName || ''} ${item.member?.lastName || ''}`.trim(),
+      memberEmail: item.member?.emailId || '',
+      memberContactNumber: item.member?.contactNumber || '',
+      invoiceId: item.invoiceId,
+      paymentDate: item.paymentDate,
+      paymentStatusId: item.paymentStatusId,
+      paymentStatus: item.paymentStatus?.paymentStatus,
+      subTotalAmount: Number(item.subTotalAmount) || 0,
+      discountAmount: Number(item.discountAmount) || 0,
+      taxAmount: Number(item.taxAmount) || 0,
+      totalAmount: Number(item.totalAmount) || 0,
+      currency: item.currency,
+      franchiseId: item.franchiseId,
+      franchise: item.member?.franchise?.companyName || 'N/A',
+      franchiseName: item.member?.franchise?.companyName || 'N/A',
+      shipment: null,
+    })) as IMemberProductReportItem[];
+
+    const sorted = ReportSortUtil.sortInMemory(tableData, dto.sortBy, dto.sortOrder, {
+      invoiceId: (r) => r.invoiceId ?? '',
+      memberName: (r) => r.memberName,
+      totalAmount: (r) => r.totalAmount,
+      paymentStatus: (r) => r.paymentStatus ?? '',
       paymentDate: (r) => r.paymentDate,
       franchiseName: (r) => r.franchiseName ?? '',
     });
@@ -262,7 +369,7 @@ export class MemberProductReportService {
       await Promise.all(
         batch.map(async (item: any) => {
           try {
-            const productOrder = (this.memberProductService as any).convertToModel(item);
+            const productOrder = (this.memberProductService as any).convertToModel(item, []);
             const memberId = productOrder.memberId;
             const productId = productOrder.memberProductId;
             // Generate invoice PDF
@@ -357,7 +464,7 @@ export class MemberProductReportService {
       await Promise.all(
         batch.map(async (item: any) => {
           try {
-            const productOrder = (this.memberProductService as any).convertToModel(item);
+            const productOrder = (this.memberProductService as any).convertToModel(item, []);
             const memberId = productOrder.memberId;
             const productId = productOrder.memberProductId;
             // Generate invoice PDF

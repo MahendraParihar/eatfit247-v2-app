@@ -82,6 +82,8 @@ export class MemberProductReportComponent implements OnInit {
   endDatePicker: any;
   selectedQuickFilter: string | null = null;
   selectedItems: IMemberProductReportItem[] = [];
+  pendingShipmentMode = false;
+  pendingShipmentFallback = false;
   private readonly creatingShipmentOrderIds = new Set<number>();
   private reportSort: { sortBy: string; sortOrder: 'asc' | 'desc' } | null = null;
 
@@ -124,6 +126,30 @@ export class MemberProductReportComponent implements OnInit {
     } else {
       this.selectedQuickFilter = null;
     }
+  }
+
+  onResetFilters(): void {
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - 30);
+
+    this.selectedQuickFilter = null;
+    this.reportSort = null;
+    this.pendingShipmentMode = false;
+    this.pendingShipmentFallback = false;
+
+    this.filterForm.reset({
+      startDate,
+      endDate,
+      franchiseId: null,
+      paymentStatusId: null,
+      shipmentPresence: 'all',
+      shipmentStatus: null,
+    });
+
+    this.data = [];
+    this.totalCount = 0;
+    this.selectedItems = [];
   }
 
   private initializeForm(): void {
@@ -306,19 +332,45 @@ export class MemberProductReportComponent implements OnInit {
     }
 
     this.loading = true;
+    this.pendingShipmentFallback = false;
     try {
       const params = this.buildReportParams();
 
-      const response = await this.apiService.getMemberProductReport(params);
-      this.data = response.tableData;
-      this.totalCount = response.count;
-      // Clear selection when new data is loaded
+      if (this.pendingShipmentMode) {
+        const response = await this.apiService.getPendingShipmentOrders(params);
+        this.data = response.tableData;
+        this.totalCount = response.count;
+      } else {
+        try {
+          const response = await this.apiService.getMemberProductReport(params);
+          this.data = response.tableData;
+          this.totalCount = response.count;
+        } catch {
+          // Main report failed — fall back to pending-shipment orders so
+          // admin can still act on orders that need a shipment.
+          const fallback = await this.apiService.getPendingShipmentOrders(params);
+          this.data = fallback.tableData;
+          this.totalCount = fallback.count;
+          this.pendingShipmentFallback = true;
+          this.snackBar.open(
+            'Report failed to load. Showing orders without shipment so you can still create shipments.',
+            'Close',
+            { duration: 6000 },
+          );
+        }
+      }
       this.selectedItems = [];
-    } catch (error) {
+    } catch {
       // Error toast is handled by HttpErrorInterceptor
     } finally {
       this.loading = false;
     }
+  }
+
+  togglePendingShipmentMode(): void {
+    this.pendingShipmentMode = !this.pendingShipmentMode;
+    this.pendingShipmentFallback = false;
+    void this.onSearch();
   }
 
   onSelectionChange(selectedItems: IMemberProductReportItem[]): void {

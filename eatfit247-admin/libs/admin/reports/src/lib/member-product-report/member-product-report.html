@@ -19,119 +19,169 @@
           <mat-button-toggle value="lastFinancialYear">Last Financial Year</mat-button-toggle>
         </mat-button-toggle-group>
       </div>
+
       <form [formGroup]="filterForm" (ngSubmit)="onSearch()">
-        <div class="filter-row">
-          <mat-form-field appearance="outline" class="filter-field">
-            <mat-label>Start Date</mat-label>
-            <input
-              matInput
-              [matDatepicker]="startDatePicker"
-              formControlName="startDate"
-              readonly
-            />
-            <mat-datepicker-toggle matSuffix [for]="startDatePicker"></mat-datepicker-toggle>
-            <mat-datepicker #startDatePicker></mat-datepicker>
-          </mat-form-field>
+        <div class="filter-section">
+          <div class="filter-section-label">Date Range</div>
+          <div class="filter-grid filter-grid--dates">
+            <mat-form-field appearance="outline" class="filter-field">
+              <mat-label>Start Date</mat-label>
+              <input
+                matInput
+                [matDatepicker]="startDatePicker"
+                formControlName="startDate"
+                readonly
+              />
+              <mat-datepicker-toggle matSuffix [for]="startDatePicker"></mat-datepicker-toggle>
+              <mat-datepicker #startDatePicker></mat-datepicker>
+            </mat-form-field>
 
-          <mat-form-field appearance="outline" class="filter-field">
-            <mat-label>End Date</mat-label>
-            <input
-              matInput
-              [matDatepicker]="endDatePicker"
-              formControlName="endDate"
-              readonly
-            />
-            <mat-datepicker-toggle matSuffix [for]="endDatePicker"></mat-datepicker-toggle>
-            <mat-datepicker #endDatePicker></mat-datepicker>
-          </mat-form-field>
+            <mat-form-field appearance="outline" class="filter-field">
+              <mat-label>End Date</mat-label>
+              <input
+                matInput
+                [matDatepicker]="endDatePicker"
+                formControlName="endDate"
+                readonly
+              />
+              <mat-datepicker-toggle matSuffix [for]="endDatePicker"></mat-datepicker-toggle>
+              <mat-datepicker #endDatePicker></mat-datepicker>
+            </mat-form-field>
+          </div>
+        </div>
 
-          <mat-form-field appearance="outline" class="filter-field">
-            <mat-label>Franchise</mat-label>
-            <mat-select formControlName="franchiseId">
-              @for (franchise of franchiseOptions; track franchise.id) {
-                <mat-option [value]="franchise.id">{{ franchise.label }}</mat-option>
-              }
-            </mat-select>
-          </mat-form-field>
+        <div class="filter-section">
+          <div class="filter-section-label">Order Filters</div>
+          <div class="filter-grid filter-grid--main">
+            <mat-form-field appearance="outline" class="filter-field">
+              <mat-label>Franchise</mat-label>
+              <mat-select formControlName="franchiseId">
+                @for (franchise of franchiseOptions; track franchise.id) {
+                  <mat-option [value]="franchise.id">{{ franchise.label }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
 
-          <mat-form-field appearance="outline" class="filter-field">
-            <mat-label>Payment Status</mat-label>
-            <mat-select formControlName="paymentStatusId">
-              @for (status of paymentStatusOptions; track status.id) {
-                <mat-option [value]="status.id">{{ status.label }}</mat-option>
-              }
-            </mat-select>
-          </mat-form-field>
+            <mat-form-field appearance="outline" class="filter-field">
+              <mat-label>Payment Status</mat-label>
+              <mat-select formControlName="paymentStatusId">
+                @for (status of paymentStatusOptions; track status.id) {
+                  <mat-option [value]="status.id">{{ status.label }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
 
-          <mat-form-field appearance="outline" class="filter-field">
-            <mat-label>Shipment</mat-label>
-            <mat-select formControlName="shipmentPresence">
-              <mat-option value="all">All orders</mat-option>
-              <mat-option value="yes">Has shipment</mat-option>
-              <mat-option value="no">No shipment</mat-option>
-            </mat-select>
-          </mat-form-field>
+            <mat-form-field appearance="outline" class="filter-field">
+              <mat-label>Shipment</mat-label>
+              <mat-select formControlName="shipmentPresence">
+                <mat-option value="all">All orders</mat-option>
+                <mat-option value="yes">Has shipment</mat-option>
+                <mat-option value="no">No shipment</mat-option>
+              </mat-select>
+            </mat-form-field>
 
-          <mat-form-field appearance="outline" class="filter-field">
-            <mat-label>Shipment status</mat-label>
-            <mat-select formControlName="shipmentStatus">
-              <mat-option [value]="null">Any status</mat-option>
-              @for (st of shipmentStatusEnumValues; track st) {
-                <mat-option [value]="st">{{ formatShipmentStatusLabel(st) }}</mat-option>
-              }
-            </mat-select>
-          </mat-form-field>
+            <mat-form-field appearance="outline" class="filter-field">
+              <mat-label>Shipment Status</mat-label>
+              <mat-select formControlName="shipmentStatus">
+                <mat-option [value]="null">Any status</mat-option>
+                @for (st of shipmentStatusEnumValues; track st) {
+                  <mat-option [value]="st">{{ formatShipmentStatusLabel(st) }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </div>
+        </div>
 
-          <button
-            mat-raised-button
-            color="primary"
-            type="submit"
-            [disabled]="filterForm.invalid || loading"
-            class="search-button"
-          >
-            <mat-icon>search</mat-icon>
-            Search
-          </button>
+        <div class="filter-actions">
+          <div class="filter-actions__primary">
+            <button
+              mat-raised-button
+              color="primary"
+              type="submit"
+              [disabled]="filterForm.invalid || loading"
+              class="action-button"
+            >
+              <mat-icon>search</mat-icon>
+              Search
+            </button>
 
-          <button
-            mat-raised-button
-            color="accent"
-            type="button"
-            [disabled]="filterForm.invalid || loading || exporting"
-            (click)="onExport()"
-            class="export-button"
-          >
-            <mat-icon>download</mat-icon>
-            Export All
-          </button>
+            <button
+              mat-stroked-button
+              type="button"
+              [disabled]="loading"
+              (click)="onResetFilters()"
+              class="action-button"
+            >
+              <mat-icon>refresh</mat-icon>
+              Reset
+            </button>
 
-          <button
-            mat-raised-button
-            color="accent"
-            type="button"
-            [disabled]="filterForm.invalid || loading || exportingExcel"
-            (click)="onExportExcel()"
-            class="export-button"
-          >
-            <mat-icon>table_chart</mat-icon>
-            Export Excel
-          </button>
+            <button
+              mat-stroked-button
+              type="button"
+              [color]="pendingShipmentMode ? 'accent' : ''"
+              [disabled]="filterForm.invalid || loading"
+              (click)="togglePendingShipmentMode()"
+              class="action-button"
+            >
+              <mat-icon>local_shipping</mat-icon>
+              {{ pendingShipmentMode ? 'Show All Orders' : 'Pending Shipment Only' }}
+            </button>
+          </div>
 
-          <button
-            mat-raised-button
-            color="primary"
-            type="button"
-            [disabled]="selectedItems.length === 0 || loading || bulkExporting"
-            (click)="onBulkExport()"
-            class="bulk-export-button"
-          >
-            <mat-icon>file_download</mat-icon>
-            Bulk Export ({{ selectedItems.length }})
-          </button>
+          <div class="filter-actions__secondary">
+            <button
+              mat-raised-button
+              color="accent"
+              type="button"
+              [disabled]="filterForm.invalid || loading || exporting"
+              (click)="onExport()"
+              class="action-button"
+            >
+              <mat-icon>download</mat-icon>
+              Export All
+            </button>
+
+            <button
+              mat-raised-button
+              color="accent"
+              type="button"
+              [disabled]="filterForm.invalid || loading || exportingExcel"
+              (click)="onExportExcel()"
+              class="action-button"
+            >
+              <mat-icon>table_chart</mat-icon>
+              Export Excel
+            </button>
+
+            <button
+              mat-raised-button
+              color="primary"
+              type="button"
+              [disabled]="selectedItems.length === 0 || loading || bulkExporting"
+              (click)="onBulkExport()"
+              class="action-button"
+            >
+              <mat-icon>file_download</mat-icon>
+              Bulk Export ({{ selectedItems.length }})
+            </button>
+          </div>
         </div>
       </form>
     </mat-card-content>
   </mat-card>
+
+  @if (pendingShipmentFallback) {
+    <div class="fallback-notice">
+      <mat-icon>warning_amber</mat-icon>
+      <span>The full report could not be loaded. Showing orders without a shipment so you can still create shipments.</span>
+    </div>
+  } @else if (pendingShipmentMode) {
+    <div class="fallback-notice fallback-notice--info">
+      <mat-icon>local_shipping</mat-icon>
+      <span>Showing orders that don't have a shipment yet. Use "Show All Orders" to return to the full report.</span>
+    </div>
+  }
 
   @if (data.length > 0 || loading) {
     <shared-ui-data-table
@@ -145,4 +195,3 @@
     ></shared-ui-data-table>
   }
 </div>
-
