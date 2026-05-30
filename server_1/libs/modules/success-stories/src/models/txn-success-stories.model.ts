@@ -1,6 +1,6 @@
 import { BelongsTo, Column, CreatedAt, DataType, Model, Scopes, Table, UpdatedAt } from 'sequelize-typescript';
 import { getCreatedByUserInclude, getUpdatedByUserInclude, MstAdminUser } from '@server_1/core';
-import { IMediaUpload, InputLengthEnum } from '@eatfit247-shared-lib';
+import { IMediaUpload, InputLengthEnum, SuccessStoryMediaType } from '@eatfit247-shared-lib';
 
 @Table({
   freezeTableName: true,
@@ -51,11 +51,25 @@ export class TxnSuccessStories extends Model<TxnSuccessStories> {
   declare description: string;
   @Column({
     allowNull: false,
+    field: 'media_type',
+    type: DataType.ENUM('image', 'video', 'youtube'),
+    defaultValue: 'image',
+  })
+  declare mediaType: SuccessStoryMediaType;
+  @Column({
+    allowNull: true,
     field: 'image_path',
     type: DataType.JSONB,
-    defaultValue: [],
+    defaultValue: null,
   })
-  declare imagePath: IMediaUpload[];
+  declare imagePath: IMediaUpload[] | null;
+  @Column({
+    allowNull: true,
+    field: 'youtube_url',
+    type: DataType.TEXT,
+    defaultValue: null,
+  })
+  declare youtubeUrl: string | null;
   @Column({
     allowNull: false,
     defaultValue: true,

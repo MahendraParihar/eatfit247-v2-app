@@ -14,9 +14,9 @@ export class PressMediaService {
    * Get all press/media articles
    * Mirrors legacy eatfit247-web PressMediaService
    */
-  async getAllArticles(type?: 'press' | 'youtube'): Promise<ICardData[]> {
+  async getAllArticles(type?: 'press' | 'youtube', limit = 10): Promise<ICardData[]> {
     try {
-      const params: Record<string, string> = { limit: '10' };
+      const params: Record<string, string> = { limit: String(limit) };
       if (type) {
         Object.assign(params, { type });
       }

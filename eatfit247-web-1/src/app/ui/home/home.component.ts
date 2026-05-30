@@ -10,28 +10,50 @@ import {
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { LoaderComponent } from '@shared-ui';
-import { ProgramService, SeasonalProgramCard, SEOService } from '../../core/services';
-import { ISuccessStory } from '@eatfit247-shared-library/core';
+import {
+  BannerService,
+  ProgramService,
+  SeasonalProgramCard,
+  SEOService,
+} from '../../core/services';
+import { IPublicBanner, ISuccessStory } from '@eatfit247-shared-library/core';
+import { BannerForEnum } from '@eatfit247-shared-library/enum';
 import { SuccessStoriesService } from '../../core/services/success-stories.service';
-import { CONTACT_NUMBER } from '../../core/utils/constants';
+import { PressMediaService } from '../../core/services/press-media.service';
+import { buildMediaUrl } from '../../core/utils/media-url.util';
 
-interface FeatureCard {
-  icon: string;
-  title: string;
-  body: string;
+interface HeroSlide {
+  readonly bg: string;
+  readonly eyebrowIcon: string;
+  readonly eyebrowText: string;
+  readonly titleLead: string;
+  readonly titleAccent: string;
+  readonly sub: string;
+  readonly primaryText: string;
+  readonly primaryRoute: ReadonlyArray<string>;
+  readonly secondaryText: string;
+  readonly secondaryRoute?: ReadonlyArray<string>;
+  readonly secondaryAnchor?: string;
 }
 
-interface Credential {
-  icon: string;
-  title: string;
-  subtitle: string;
+interface SpecialiseCard {
+  readonly title: string;
+  readonly image: string;
+  readonly coverA: string;
+  readonly coverB: string;
+  readonly conditions: ReadonlyArray<string>;
+}
+
+interface TipCard {
+  readonly thumb: string;
+  readonly title: string;
+  readonly url: string;
 }
 
 interface TestimonialStory {
-  name: string;
-  image: string;
-  quote: string;
-  metric?: string;
+  readonly name: string;
+  readonly image: string;
+  readonly quote: string;
 }
 
 @Component({
@@ -44,91 +66,83 @@ interface TestimonialStory {
 export class HomeComponent implements OnInit {
   private readonly successStoriesService = inject(SuccessStoriesService);
   private readonly programService = inject(ProgramService);
+  private readonly bannerService = inject(BannerService);
+  private readonly pressMediaService = inject(PressMediaService);
   private readonly seoService = inject(SEOService);
   private readonly platformId = inject(PLATFORM_ID);
 
   readonly loading = signal(false);
-  readonly contactNumber = CONTACT_NUMBER;
-  stories: ISuccessStory[] = [];
-  readonly seasonalPlans = signal<SeasonalProgramCard[]>([]);
 
-  readonly features: FeatureCard[] = [
+  // -------- Hero banner --------
+  readonly heroSlides = signal<ReadonlyArray<HeroSlide>>([]);
+  readonly heroIndex = signal(0);
+  private heroTimer: ReturnType<typeof setInterval> | null = null;
+
+  // -------- Specialise / Condition programs (used by template) --------
+  readonly specialiseCards: ReadonlyArray<SpecialiseCard> = [
     {
-      icon: 'restaurant_menu',
-      title: 'Personalized Meal Plans',
-      body: 'Weekly menus built around your preferences, culture, allergies, budget and schedule.',
+      title: "Women's Wellness",
+      image: '/programs/women-wellness.png',
+      coverA: '#fb7185',
+      coverB: '#e11d48',
+      conditions: ['PCOS', 'Hormonal Health', 'Endometriosis', 'Fertility'],
     },
     {
-      icon: 'monitoring',
-      title: 'Data-Backed Progress',
-      body: 'Track weight, energy, sleep and mood. Plans adapt every two weeks based on outcomes.',
+      title: 'Lifestyle Disease',
+      image: '/programs/lifestyle-disease.png',
+      coverA: '#22d3ee',
+      coverB: '#0e7490',
+      conditions: [
+        'Diabetes',
+        'Cholesterol',
+        'Blood Pressure',
+        'Thyroid',
+        'Autoimmune disease',
+      ],
     },
     {
-      icon: 'support_agent',
-      title: '1:1 Coaching',
-      body: 'Direct messaging with your dietitian between sessions. Never hit a plateau alone.',
+      title: 'Pregnancy Poshan Program',
+      image: '/programs/pregnancy-poshan-program.png',
+      coverA: '#f9a8d4',
+      coverB: '#be185d',
+      conditions: ['Pregnancy', 'Lactation', 'Postpartum Recovery'],
     },
     {
-      icon: 'self_improvement',
-      title: 'Body & Mind',
-      body: 'Nutrition paired with mindful habits, sleep hygiene and stress-management practices.',
+      title: 'Gut Health Programs',
+      image: '/programs/gut-health-programs.png',
+      coverA: '#fdba74',
+      coverB: '#c2410c',
+      conditions: ['Gas & bloating', 'IBS', 'Acidity', 'SIBO', 'Fatty Liver'],
     },
   ];
 
+  // -------- Podcasts / tip cards (used by template) --------
+  readonly tipCards = signal<ReadonlyArray<TipCard>>([]);
+
+  readonly youtubeChannelUrl = 'https://www.youtube.com/@eatfit247';
+
+  // -------- Seasonal plans --------
+  readonly seasonalPlans = signal<SeasonalProgramCard[]>([]);
   coverStyle(plan: SeasonalProgramCard): Record<string, string> {
     return plan.coverImg ? { '--cover-img': `url('${plan.coverImg}')` } : {};
   }
 
-  readonly credentials: Credential[] = [
-    { icon: 'school', title: 'M.Sc. Clinical Nutrition', subtitle: 'SNDT University, Mumbai' },
-    { icon: 'workspace_premium', title: 'Registered Dietitian (IDA)', subtitle: 'Indian Dietetic Association' },
-    { icon: 'groups', title: '12,000+ clients', subtitle: 'Across 28 countries' },
-    { icon: 'menu_book', title: 'Published author', subtitle: 'Featured in Vogue, TOI' },
-  ];
+  // -------- Testimonials --------
+  stories: ISuccessStory[] = [];
 
-  readonly fallbackTestimonials: TestimonialStory[] = [
-    {
-      name: 'Priya R.',
-      image: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=600&q=80&auto=format&fit=crop',
-      quote: "I'd tried every fad diet out there. Shweta's plan finally felt like something I could do forever — and the weight just kept coming off.",
-      metric: '−9 kg in 14 weeks',
+  readonly testimonialStories = computed<ReadonlyArray<TestimonialStory>>(
+    () => {
+      if (this.stories?.length) {
+        return this.stories.map((s) => ({
+          name: s.name,
+          image: s.imagePath?.[0]?.webUrl,
+          quote: s.description ?? '',
+          metric: s.title ?? undefined,
+        }));
+      }
+      return [];
     },
-    {
-      name: 'Anjali K.',
-      image: 'https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=600&q=80&auto=format&fit=crop',
-      quote: 'My cycles are regular for the first time in six years. The fact that the plan respects Gujarati food culture made it so much easier to stick to.',
-    },
-    {
-      name: 'Vikram D.',
-      image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&q=80&auto=format&fit=crop',
-      quote: 'I expected a diet. I got a lifestyle rewire. Sleep, stress, meals — everything clicks together now. Best investment I have made in myself.',
-      metric: 'Energy up, fog gone',
-    },
-    {
-      name: 'Sneha M.',
-      image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=600&q=80&auto=format&fit=crop',
-      quote: 'Six months in and my reports look like a different person. Practical food, no punishing rules — my family eats the same meals.',
-      metric: 'Thyroid stable',
-    },
-    {
-      name: 'Rohit S.',
-      image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=600&q=80&auto=format&fit=crop',
-      quote: 'I dropped 12kg in 5 months and — most importantly — it stayed off. The check-ins kept me honest without being a chore.',
-      metric: '−12 kg · sustained 1 yr',
-    },
-  ];
-
-  readonly testimonialStories = computed<TestimonialStory[]>(() => {
-    if (this.stories?.length) {
-      return this.stories.map((s) => ({
-        name: s.name,
-        image: s.imagePath?.[0]?.webUrl ?? this.fallbackTestimonials[0].image,
-        quote: s.description ?? '',
-        metric: s.title ?? undefined,
-      }));
-    }
-    return this.fallbackTestimonials;
-  });
+  );
 
   readonly carouselIndex = signal(0);
   readonly perView = signal(1);
@@ -141,7 +155,7 @@ export class HomeComponent implements OnInit {
   readonly carouselTransform = computed(() => {
     const i = this.carouselIndex();
     const pv = this.perView();
-    return `translateX(calc(${-i * 100 / pv}% - ${i} * var(--space-5)))`;
+    return `translateX(calc(${(-i * 100) / pv}% - ${i} * var(--space-5)))`;
   });
 
   async ngOnInit(): Promise<void> {
@@ -153,13 +167,110 @@ export class HomeComponent implements OnInit {
     });
     this.loading.set(true);
     try {
-      await Promise.all([this.loadStories(), this.loadSeasonalPlans()]);
+      await Promise.all([
+        this.loadStories(),
+        this.loadSeasonalPlans(),
+        this.loadBanners(),
+        this.loadTipCards(),
+      ]);
     } finally {
       this.loading.set(false);
     }
     this.recomputePerView();
+    this.startHeroTimer();
   }
 
+  // -------- Banner --------
+  private async loadBanners(): Promise<void> {
+    try {
+      const banners = await this.bannerService.getBannerMediaForPage(
+        BannerForEnum.HOME,
+      );
+      const mapped = this.mapBannersToSlides(banners);
+      if (mapped.length > 0) {
+        this.heroSlides.set(mapped);
+      }
+    } catch {
+      // keep fallback
+    }
+  }
+
+  private mapBannersToSlides(banners: IPublicBanner[]): HeroSlide[] {
+    const slides: HeroSlide[] = [];
+    for (const b of banners) {
+      const bg = buildMediaUrl(b.imagePath?.[0]?.webUrl);
+      if (!bg) continue;
+      const titleParts = this.splitTitle(b.title ?? '');
+      slides.push({
+        bg,
+        eyebrowIcon: b.titleIcon || 'star',
+        eyebrowText: b.subTitle ?? '',
+        titleLead: titleParts.lead,
+        titleAccent: titleParts.accent,
+        sub: b.description ?? '',
+        primaryText: b.primaryActionText || 'Learn more',
+        primaryRoute: b.primaryActionUrl
+          ? [b.primaryActionUrl]
+          : ['/contact-us'],
+        secondaryText: b.secondaryActionText || 'Read more',
+        secondaryRoute: b.secondaryActionUrl
+          ? [b.secondaryActionUrl]
+          : undefined,
+      });
+    }
+    return slides;
+  }
+
+  private splitTitle(title: string): { lead: string; accent: string } {
+    const trimmed = title.trim();
+    if (!trimmed) return { lead: '', accent: '' };
+    const words = trimmed.split(/\s+/);
+    if (words.length < 3) return { lead: trimmed, accent: '' };
+    const accentCount = Math.max(1, Math.round(words.length / 3));
+    const accent = words.slice(-accentCount).join(' ');
+    const lead = words.slice(0, -accentCount).join(' ');
+    return { lead, accent };
+  }
+
+  heroGoTo(i: number): void {
+    const len = this.heroSlides().length;
+    if (len === 0) return;
+    this.heroIndex.set(((i % len) + len) % len);
+    this.restartHeroTimer();
+  }
+  heroNext(): void {
+    this.heroGoTo(this.heroIndex() + 1);
+  }
+  heroPrev(): void {
+    this.heroGoTo(this.heroIndex() - 1);
+  }
+  private startHeroTimer(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    this.stopHeroTimer();
+    this.heroTimer = setInterval(() => {
+      const len = this.heroSlides().length;
+      if (len === 0) return;
+      this.heroIndex.set((this.heroIndex() + 1) % len);
+    }, 6000);
+  }
+  private stopHeroTimer(): void {
+    if (this.heroTimer) {
+      clearInterval(this.heroTimer);
+      this.heroTimer = null;
+    }
+  }
+  private restartHeroTimer(): void {
+    this.stopHeroTimer();
+    this.startHeroTimer();
+  }
+  heroMouseEnter(): void {
+    this.stopHeroTimer();
+  }
+  heroMouseLeave(): void {
+    this.startHeroTimer();
+  }
+
+  // -------- Testimonial carousel --------
   @HostListener('window:resize')
   onResize(): void {
     this.recomputePerView();
@@ -185,6 +296,7 @@ export class HomeComponent implements OnInit {
     this.carouselIndex.set(i);
   }
 
+  // -------- Data loaders --------
   async loadStories(): Promise<void> {
     try {
       this.stories = await this.successStoriesService.loadStories();
@@ -193,10 +305,44 @@ export class HomeComponent implements OnInit {
     }
   }
 
+  async loadTipCards(): Promise<void> {
+    try {
+      const articles = await this.pressMediaService.getAllArticles('youtube', 4);
+      const mapped = articles
+        .map<TipCard | null>((a) => {
+          const url = a.linkUrl ?? '';
+          const videoId = this.extractYouTubeId(url);
+          const thumb =
+            a.imageUrl ||
+            (videoId ? `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg` : '');
+          if (!thumb || !url) return null;
+          return { thumb, title: a.title, url };
+        })
+        .filter((x): x is TipCard => x !== null);
+      this.tipCards.set(mapped);
+    } catch {
+      this.tipCards.set([]);
+    }
+  }
+
+  private extractYouTubeId(url: string): string | null {
+    if (!url) return null;
+    const regExp =
+      /^.*(youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+    return match && match[2].length === 11 ? match[2] : null;
+  }
+
   async loadSeasonalPlans(): Promise<void> {
     const all = await this.programService.getSeasonalPrograms();
-    const priority: Record<SeasonalProgramCard['status'], number> = { live: 0, soon: 1, closed: 2 };
-    const sorted = [...all].sort((a, b) => priority[a.status] - priority[b.status]);
+    const priority: Record<SeasonalProgramCard['status'], number> = {
+      live: 0,
+      soon: 1,
+      closed: 2,
+    };
+    const sorted = [...all].sort(
+      (a, b) => priority[a.status] - priority[b.status],
+    );
     this.seasonalPlans.set(sorted.slice(0, 3));
   }
 }

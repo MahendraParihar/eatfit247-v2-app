@@ -20,6 +20,7 @@ import { SuccessStoriesModule } from '@server_1/modules/success-stories';
 import { ProductPublicModule } from '@server_1/modules/product';
 import { ContactModule } from '@server_1/modules/contact';
 import { GoogleReviewModule } from '@server_1/modules/google-review';
+import { DeliveryWebhookModule } from '@server_1/modules/delivery';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { GoogleReviewModule } from '@server_1/modules/google-review';
     ContactModule,
     GoogleReviewModule,
     NotificationModule,
+    DeliveryWebhookModule,
     CommonModule.forRoot(['Common', 'Email', 'Google', 'Payment', 'Whatsapp'], PlatformModule.getModels()),
   ],
   controllers: [AppController],
