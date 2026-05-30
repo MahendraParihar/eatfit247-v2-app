@@ -9,7 +9,12 @@ import {
   IPublicTableList,
   ITableList,
 } from '@eatfit247-shared-lib';
-import { AppConfigService, CommonFunctionsUtil, SearchUtil, TableListSortUtil } from '@server_1/core';
+import {
+  AppConfigService,
+  CommonFunctionsUtil,
+  SearchUtil,
+  TableListSortUtil,
+} from '@server_1/core';
 
 @Injectable()
 export class BannerService {
@@ -18,7 +23,9 @@ export class BannerService {
     private appConfigService: AppConfigService,
   ) {}
 
-  public async findAll(searchDto: IBasicSearch & { bannerFor?: string }): Promise<ITableList<IBanner>> {
+  public async findAll(
+    searchDto: IBasicSearch & { bannerFor?: string },
+  ): Promise<ITableList<IBanner>> {
     const whereCondition: any = SearchUtil.filterBasicSearch(searchDto, 'title');
     // Add bannerFor filter if provided
     if (searchDto.bannerFor) {
@@ -41,14 +48,18 @@ export class BannerService {
       nest: true,
     });
 
-    const resList: IBanner[] = rows.map((item: any) => {return this.convertToModel(item);});
+    const resList: IBanner[] = rows.map((item: any) => {
+      return this.convertToModel(item);
+    });
     return {
       tableData: resList,
       count: count,
     };
   }
 
-  public async findAllPublic(searchDto: IBasicSearch & { bannerFor?: string }): Promise<IPublicTableList<IPublicBanner>> {
+  public async findAllPublic(
+    searchDto: IBasicSearch & { bannerFor?: string },
+  ): Promise<IPublicTableList<IPublicBanner>> {
     const whereCondition: any = SearchUtil.filterBasicSearch(searchDto, 'title');
     // Add bannerFor filter if provided
     if (searchDto.bannerFor) {
@@ -68,7 +79,9 @@ export class BannerService {
       nest: true,
     });
 
-    const resList: IPublicBanner[] = rows.map((item: any) => {return this.convertToPublic(this.convertToModel(item));});
+    const resList: IPublicBanner[] = rows.map((item: any) => {
+      return this.convertToPublic(this.convertToModel(item));
+    });
     return {
       tableData: resList,
       count: count,
@@ -107,7 +120,16 @@ export class BannerService {
    * Omits: createdBy, updatedBy, modifiedBy, createdAt, updatedAt, createdIp, updatedIp, modifiedIp, active, createdByUser, updatedByUser
    */
   private convertToPublic(banner: IBanner): IPublicBanner {
-    const { createdBy, modifiedBy, createdAt, updatedAt, active, createdByUser, updatedByUser, ...publicBanner } = banner;
+    const {
+      createdBy,
+      modifiedBy,
+      createdAt,
+      updatedAt,
+      active,
+      createdByUser,
+      updatedByUser,
+      ...publicBanner
+    } = banner;
     return publicBanner as IPublicBanner;
   }
 
@@ -129,9 +151,14 @@ export class BannerService {
       subTitle: obj.subTitle || null,
       active: obj.active,
       bannerFor: obj.bannerFor,
-      imagePath: (obj.imagePath && obj.imagePath.length > 0) ? obj.imagePath : null,
+      imagePath: obj.imagePath && obj.imagePath.length > 0 ? obj.imagePath : null,
       createdBy: adminId,
       updatedBy: adminId,
+      description: obj.description,
+      primaryActionText: obj.primaryActionText,
+      primaryActionUrl: obj.primaryActionUrl,
+      secondaryActionText: obj.secondaryActionText,
+      secondaryActionUrl: obj.secondaryActionUrl,
       createdIp: cIp,
       modifiedIp: cIp,
     };
@@ -150,14 +177,24 @@ export class BannerService {
       subTitle: obj.subTitle || null,
       active: obj.active,
       bannerFor: obj.bannerFor,
-      imagePath: (obj.imagePath && obj.imagePath.length > 0) ? obj.imagePath : null,
+      imagePath: obj.imagePath && obj.imagePath.length > 0 ? obj.imagePath : null,
+      description: obj.description,
+      primaryActionText: obj.primaryActionText,
+      primaryActionUrl: obj.primaryActionUrl,
+      secondaryActionText: obj.secondaryActionText,
+      secondaryActionUrl: obj.secondaryActionUrl,
       updatedBy: adminId,
       modifiedIp: cIp,
     };
     await this.bannerRepository.update(updateObj, { where: { bannerId: id } });
   }
 
-  public async changeStatus(id: number, active: boolean, cIp: string, adminId: number): Promise<void> {
+  public async changeStatus(
+    id: number,
+    active: boolean,
+    cIp: string,
+    adminId: number,
+  ): Promise<void> {
     const find = await this.bannerRepository.findOne({
       where: { bannerId: id },
     });

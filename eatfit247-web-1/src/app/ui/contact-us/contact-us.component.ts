@@ -7,7 +7,7 @@ import { BannerService, HttpService, JsonLdService, SEOService } from '../../cor
 import { BannerForEnum, InputLengthEnum } from '@eatfit247-shared-library/enum';
 import { IPublicBanner } from '@eatfit247-shared-library/core';
 import { RecaptchaService } from '../../core/services/recaptcha.service';
-import { CONTACT_EMAIL, CONTACT_NUMBER } from '../../core/utils/constants';
+import { CONTACT_EMAIL, CONTACT_NUMBER, WHATSAPP_LINK } from '../../core/utils/constants';
 
 @Component({
   standalone: true,
@@ -33,7 +33,7 @@ export class ContactUsComponent implements OnInit {
 
   readonly phoneNumber = CONTACT_NUMBER;
   readonly emailAddress = CONTACT_EMAIL;
-  readonly whatsappLink = `https://wa.me/${CONTACT_NUMBER.replace(/[^0-9]/g, '')}?text=Hi%20EatFit247%2C%20I%27d%20like%20to%20know%20more%20about%20your%20programs.`;
+  readonly whatsappLink = `${WHATSAPP_LINK}&text=Hi%20EatFit247%2C%20I%27d%20like%20to%20know%20more%20about%20your%20programs.`;
 
   readonly maxNameLength = 49;
   readonly maxEmailLength = InputLengthEnum.MAX_EMAIL;

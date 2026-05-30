@@ -1,0 +1,293 @@
+// =============================================================================
+// Design additions (2026-05-30)
+// Ported from the new design bundle. New global classes used across the
+// redesigned home, our-programs and about-chief-nutritionist pages.
+// =============================================================================
+
+/* ============================ HERO BANNER (home) ============================ */
+.banner {
+  position: relative;
+  background: #0a0a0b;
+  border-bottom: 1px solid var(--color-border);
+  overflow: hidden;
+}
+.banner__track {
+  position: relative;
+  min-height: clamp(460px, 54vw, 640px);
+}
+.banner__slide {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  opacity: 0;
+  visibility: hidden;
+  background-size: cover;
+  background-position: center right;
+  background-repeat: no-repeat;
+  transition: opacity 0.9s ease, visibility 0s linear 0.9s;
+}
+.banner__slide.is-active {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.9s ease;
+}
+.banner__slide::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+      90deg,
+      rgba(6, 6, 8, 0.92) 0%,
+      rgba(6, 6, 8, 0.78) 28%,
+      rgba(6, 6, 8, 0.42) 50%,
+      rgba(6, 6, 8, 0.05) 70%,
+      rgba(6, 6, 8, 0) 82%
+  );
+}
+.banner__inner {
+  position: relative;
+  z-index: 2;
+  max-width: 560px;
+}
+.banner .ef-container {
+  max-width: none;
+  margin-inline: 0;
+  padding-inline: clamp(20px, 4vw, 64px);
+}
+.banner__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking);
+  text-transform: uppercase;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  padding: 6px 13px;
+  border-radius: var(--radius-chip);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+.banner__eyebrow .mat-icon {
+  font-family: 'Material Symbols Outlined' !important;
+  font-size: 16px !important;
+  line-height: 1 !important;
+  color: var(--color-primary);
+}
+.banner__title {
+  margin: 18px 0 0;
+  color: #fff;
+  font-size: clamp(30px, 4.4vw, 54px);
+  line-height: 1.05;
+  letter-spacing: -0.022em;
+  font-weight: 800;
+  text-wrap: balance;
+}
+.banner__title .accent {
+  color: var(--color-primary);
+}
+.banner__sub {
+  margin: 16px 0 0;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: clamp(15px, 1.5vw, 18px);
+  line-height: 1.6;
+  max-width: 46ch;
+  text-wrap: pretty;
+}
+.banner__cta {
+  margin-top: var(--space-6);
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+.banner .mat-btn--outlined {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.04);
+}
+.banner .mat-btn--outlined:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.7);
+}
+.banner__slide .banner__inner > * {
+  opacity: 0;
+  transform: translateY(16px);
+}
+.banner__slide.is-active .banner__inner > * {
+  animation: bannerRise 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+.banner__slide.is-active .banner__inner > *:nth-child(2) { animation-delay: 0.08s; }
+.banner__slide.is-active .banner__inner > *:nth-child(3) { animation-delay: 0.16s; }
+.banner__slide.is-active .banner__inner > *:nth-child(4) { animation-delay: 0.24s; }
+@keyframes bannerRise {
+  to { opacity: 1; transform: none; }
+}
+.banner__nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 4;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-chip);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  transition: background 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
+}
+.banner__nav:hover {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+}
+.banner__nav:active { transform: translateY(-50%) scale(0.94); }
+.banner__nav .mat-icon {
+  font-family: 'Material Symbols Outlined' !important;
+  font-size: 26px !important;
+  line-height: 1 !important;
+  color: inherit !important;
+}
+.banner__nav--prev { left: 20px; }
+.banner__nav--next { right: 20px; }
+.banner__dots {
+  position: absolute;
+  left: 50%;
+  bottom: 22px;
+  transform: translateX(-50%);
+  z-index: 4;
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+.banner__dot {
+  width: 8px;
+  height: 8px;
+  min-width: 8px;
+  min-height: 8px;
+  border-radius: 999px;
+  background: var(--color-border);
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: background 0.18s ease, transform 0.18s ease, width 0.18s ease;
+}
+.banner__dot.is-active {
+  background: var(--color-primary);
+  width: 24px;
+  min-width: 24px;
+}
+@media (max-width: 768px) {
+  .banner__track { min-height: clamp(420px, 86vw, 520px); }
+  .banner__slide {
+    background-position: 78% center;
+    align-items: flex-end;
+  }
+  .banner__slide::before {
+    background: linear-gradient(
+        0deg,
+        rgba(6, 6, 8, 0.94) 0%,
+        rgba(6, 6, 8, 0.78) 34%,
+        rgba(6, 6, 8, 0.45) 62%,
+        rgba(6, 6, 8, 0.2) 100%
+    );
+  }
+  .banner__inner { padding-bottom: 64px; }
+  .banner__nav { display: none; }
+}
+
+/* ============================ SPECIALISE / CONDITION CARDS (home) ============================ */
+.specialise-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+  margin-top: var(--space-6);
+}
+@media (min-width: 640px) {
+  .specialise-grid { grid-template-columns: repeat(2, 1fr); gap: var(--space-5); }
+}
+@media (min-width: 1024px) {
+  .specialise-grid { grid-template-columns: repeat(4, 1fr); gap: var(--space-5); }
+}
+
+.specialise-card {
+  background: var(--color-surface-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.specialise-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-card-hover);
+}
+.specialise-card__media {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  border-radius: calc(var(--radius-card) - 6px);
+  background-color: var(--color-surface);
+  background-image: var(--cover-img);
+  background-size: cover;
+  background-position: center;
+  border: 1px solid var(--color-border);
+}
+.specialise-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  flex: 1;
+}
+.specialise-card__title {
+  margin: 0;
+  font-size: var(--type-h3-size);
+  font-weight: var(--type-h3-weight);
+  line-height: var(--type-h3-line);
+  letter-spacing: var(--type-h3-tracking);
+  color: var(--color-text-primary);
+}
+.specialise-card__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+.specialise-card__list li {
+  position: relative;
+  padding-left: 20px;
+  font-size: var(--type-small-size);
+  line-height: var(--type-small-line);
+  color: var(--color-text-secondary);
+}
+.specialise-card__list li::before {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 0.55em;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-primary);
+}
+.specialise-card .mat-btn {
+  width: 100%;
+  justify-content: center;
+}
+
+/* ============================ TIP CTA (home, podcasts row) ============================ */
+.tip-cta { text-align: center; margin-top: var(--space-6); }
+.tip-cta .mat-btn { display: inline-flex; align-items: center; gap: 8px; }
+.tip-cta .mat-btn .mat-icon { font-size: 18px; }

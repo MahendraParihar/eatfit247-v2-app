@@ -4,83 +4,254 @@
 @if (!loading()) {
   <h1 class="visually-hidden">EatFit247 — Personalized Nutrition &amp; Wellness Programs</h1>
 
-  <!-- ============================ HERO ============================ -->
-  <section class="hero" aria-labelledby="hero-title">
-    <div class="ef-container hero-inner">
-      <div class="hero-copy">
-        <h2 id="hero-title" class="hero-title">
-          Eat smarter. Live<br />
-          <span class="accent">lighter.</span> Feel stronger.
-        </h2>
-        <p class="hero-sub">
-          Personalized, evidence-based nutrition programs designed around your
-          lifestyle, goals and body type — with one-on-one coaching by certified
-          dietitian Shweta Shah.
-        </p>
-        <div class="hero-cta">
-          <a routerLink="/contact-us" class="mat-btn mat-btn--filled">
-            Book A Consultation
-            <span class="mat-icon">arrow_forward</span>
-          </a>
-          <a routerLink="/our-programs" class="mat-btn mat-btn--outlined">
-            <span class="mat-icon">play_circle</span>
-            Explore Programs
-          </a>
+  <!-- ============================ HERO BANNER SLIDER ============================ -->
+  <section
+    class="banner"
+    aria-roledescription="carousel"
+    aria-label="Featured highlights"
+    (mouseenter)="heroMouseEnter()"
+    (mouseleave)="heroMouseLeave()"
+  >
+    <div class="banner__track">
+      @for (slide of heroSlides(); track $index; let i = $index) {
+        <div
+          class="banner__slide"
+          [class.is-active]="heroIndex() === i"
+          role="group"
+          aria-roledescription="slide"
+          [attr.aria-label]="(i + 1) + ' of ' + heroSlides().length"
+          [style.background-image]="'url(\'' + slide.bg + '\')'"
+        >
+          <div class="ef-container">
+            <div class="banner__inner">
+              <span class="banner__eyebrow">
+                <span class="mat-icon">{{ slide.eyebrowIcon }}</span>
+                {{ slide.eyebrowText }}
+              </span>
+              <h2 class="banner__title">
+                {{ slide.titleLead }}
+                @if (slide.titleAccent) {
+                  <span class="accent">{{ slide.titleAccent }}</span>
+                }
+              </h2>
+              @if (slide.sub) {
+                <p class="banner__sub">{{ slide.sub }}</p>
+              }
+              <div class="banner__cta">
+                <a [routerLink]="slide.primaryRoute" class="mat-btn mat-btn--filled">
+                  {{ slide.primaryText }}
+                  <span class="mat-icon">arrow_forward</span>
+                </a>
+                @if (slide.secondaryRoute) {
+                  <a [routerLink]="slide.secondaryRoute" class="mat-btn mat-btn--outlined">
+                    {{ slide.secondaryText }}
+                  </a>
+                } @else if (slide.secondaryAnchor) {
+                  <a [href]="slide.secondaryAnchor" class="mat-btn mat-btn--outlined">
+                    {{ slide.secondaryText }}
+                  </a>
+                }
+              </div>
+            </div>
+          </div>
         </div>
+      }
+    </div>
+
+    @if (heroSlides().length > 1) {
+      <button
+        type="button"
+        class="banner__nav banner__nav--prev"
+        aria-label="Previous slide"
+        (click)="heroPrev()"
+      >
+        <span class="mat-icon">chevron_left</span>
+      </button>
+      <button
+        type="button"
+        class="banner__nav banner__nav--next"
+        aria-label="Next slide"
+        (click)="heroNext()"
+      >
+        <span class="mat-icon">chevron_right</span>
+      </button>
+      <div class="banner__dots" role="tablist" aria-label="Choose slide">
+        @for (_ of heroSlides(); track $index; let i = $index) {
+          <button
+            type="button"
+            class="banner__dot"
+            [class.is-active]="heroIndex() === i"
+            [attr.aria-label]="'Go to slide ' + (i + 1)"
+            (click)="heroGoTo(i)"
+          ></button>
+        }
       </div>
+    }
+  </section>
 
-      <div class="hero-visual" aria-hidden="true">
-        <div class="hero-ring"></div>
-        <div class="hero-ring hero-ring--inner"></div>
-        <div class="hero-plate"></div>
-        <div class="hero-portrait">
-          <img src="/shweta_shah_pic.png" alt="Shweta Shah" />
-        </div>
+  <!-- ============================ TESTIMONIALS (Celebrity Clients) ============================ -->
+  <section class="section section--alt" id="stories">
+    <div class="ef-container">
+      <header class="section-head">
+        <span class="section-eyebrow">Success Stories</span>
+        <h2 class="section-title">Our Celebrity Clients</h2>
+        <p class="section-sub">The celebrities and public figures who trust Shweta with their nutrition.</p>
+      </header>
 
-        <div class="hero-floater hero-floater--a">
-          <span class="icon">local_dining</span>
-          <div>
-            <strong>Custom meal plans</strong>
-            <span>Tailored to you</span>
+      <div class="testimonial-carousel">
+        <button
+          type="button"
+          class="testimonial-carousel__nav testimonial-carousel__nav--prev"
+          aria-label="Previous testimonial"
+          (click)="carouselPrev()"
+        >
+          <span class="mat-icon">chevron_left</span>
+        </button>
+        <div class="testimonial-carousel__viewport">
+          <div
+            class="testimonial-carousel__track"
+            [style.transform]="carouselTransform()"
+          >
+            @for (story of testimonialStories(); track story.name) {
+              <article class="testimonial">
+                <div class="testimonial__media">
+                  <img [src]="story.image" [alt]="story.name" loading="lazy" />
+                </div>
+                <div class="testimonial__body">
+                  <header class="testimonial__head">
+                    <h3 class="testimonial__name">{{ story.name }}</h3>
+                  </header>
+                  <p class="testimonial__quote">{{ story.quote }}</p>
+                </div>
+              </article>
+            }
           </div>
         </div>
-        <div class="hero-floater hero-floater--b">
-          <span class="icon">favorite</span>
-          <div>
-            <strong>−8 kg in 12 weeks</strong>
-            <span>Avg. Weight Loss Plan</span>
-          </div>
-        </div>
-        <div class="hero-floater hero-floater--c">
-          <span class="icon">spa</span>
-          <div>
-            <strong>Holistic approach</strong>
-            <span>Ayurveda + science</span>
-          </div>
+        <button
+          type="button"
+          class="testimonial-carousel__nav testimonial-carousel__nav--next"
+          aria-label="Next testimonial"
+          (click)="carouselNext()"
+        >
+          <span class="mat-icon">chevron_right</span>
+        </button>
+        <div class="testimonial-carousel__dots" role="tablist" aria-label="Choose testimonial">
+          @for (i of pageDots(); track i) {
+            <button
+              type="button"
+              class="testimonial-carousel__dot"
+              [class.is-active]="carouselIndex() === i"
+              [attr.aria-label]="'Go to slide ' + (i + 1)"
+              (click)="carouselGoTo(i)"
+            ></button>
+          }
         </div>
       </div>
     </div>
   </section>
 
-  <!-- ============================ FEATURES ============================ -->
-  <section class="section">
+  <!-- ============================ COACH / ABOUT ============================ -->
+  <section class="section" id="about">
+    <div class="ef-container coach-grid">
+      <div class="coach-image-wrap">
+        <img src="/nutritionist/shweta-shah.png" alt="Portrait illustration of Shweta Shah" />
+        <div class="coach-stamp">
+          <span class="mat-icon">verified</span>
+          <div>
+            <strong>Shweta Shah</strong>
+            <span>Celebrity Nutritionist · Mumbai</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="coach-text">
+        <span class="section-eyebrow">Meet Shweta Shah</span>
+        <h2>Where Ancient Ayurveda Meets Modern Nutrition.</h2>
+        <p>
+          With 24+ years of experience and 5200+ success stories, Shweta follows a
+          holistic, Ayurveda-rooted approach to nutrition. Specialising in personalised
+          diets based on Prakriti — Vata, Pitta &amp; Kapha, she believes true wellness
+          begins by understanding every individual's unique body type.
+        </p>
+        <p>
+          Her philosophy is simple: "Simple is honest. Simple is powerful." No complicated
+          rules or unrealistic plans — just practical, easy-to-follow diets inspired by
+          Ayurvedic principles, Indian food wisdom, and sustainable lifestyle habits that
+          create lasting results.
+        </p>
+
+        <div class="coach-creds">
+          <div class="coach-cred">
+            <span class="mat-icon">school</span>
+            <div>
+              <strong>Postgraduate qualified</strong>
+              <span>Dietetics &amp; Applied Nutrition</span>
+            </div>
+          </div>
+          <div class="coach-cred">
+            <span class="mat-icon">workspace_premium</span>
+            <div>
+              <strong>Nationally felicitated</strong>
+              <span>Bharat Ke Anmol &amp; Dainik Jagran Award</span>
+            </div>
+          </div>
+          <div class="coach-cred">
+            <span class="mat-icon">public</span>
+            <div>
+              <strong>5200+ Client Stories</strong>
+              <span>Across 62 countries</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="coach-cta-row">
+          <a routerLink="/contact-us" class="mat-btn mat-btn--filled">
+            Book appointment
+            <span class="mat-icon">arrow_forward</span>
+          </a>
+          <a routerLink="/about-shweta-shah" class="mat-btn mat-btn--outlined">
+            Read full bio
+            <span class="mat-icon">arrow_forward</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ WELLNESS PROGRAMS WE SPECIALISE IN ============================ -->
+  <section class="section section--alt" id="specialise">
     <div class="ef-container">
       <header class="section-head">
-        <span class="section-eyebrow">Why EatFit247</span>
-        <h2 class="section-title">A plan built around you — not a template</h2>
+        <span class="section-eyebrow">What we treat</span>
+        <h2 class="section-title">
+          Wellness programs we <span class="accent">specialise in</span>
+        </h2>
         <p class="section-sub">
-          Every program blends nutritional science with sustainable lifestyle
-          changes, structured coaching, and the accountability you need to see
-          results.
+          Focused, condition-specific tracks — each built on dosha-aware nutrition
+          and guided one-on-one by our team.
         </p>
       </header>
 
-      <div class="features-grid">
-        @for (feature of features; track feature.title) {
-          <article class="feature-card">
-            <span class="feature-card__icon">{{ feature.icon }}</span>
-            <h3>{{ feature.title }}</h3>
-            <p>{{ feature.body }}</p>
+      <div class="specialise-grid">
+        @for (card of specialiseCards; track card.title) {
+          <article class="specialise-card">
+            <div
+              class="specialise-card__media"
+              [style.--cover-a]="card.coverA"
+              [style.--cover-b]="card.coverB"
+              [style.--cover-img]="'url(\'' + card.image + '\')'"
+            ></div>
+            <div class="specialise-card__body">
+              <h3 class="specialise-card__title">{{ card.title }}</h3>
+              <ul class="specialise-card__list">
+                @for (c of card.conditions; track c) {
+                  <li>{{ c }}</li>
+                }
+              </ul>
+              <a routerLink="/our-programs" class="mat-btn mat-btn--filled">
+                Know more <span class="mat-icon">arrow_forward</span>
+              </a>
+            </div>
           </article>
         }
       </div>
@@ -89,29 +260,26 @@
 
   <!-- ============================ SEASONAL PLANS ============================ -->
   @if (seasonalPlans().length > 0) {
-  <section class="section section--alt seasonal-section" id="programs">
-    <div class="ef-container">
-      <header class="section-head">
-        <span class="section-eyebrow">
-          <span class="mat-icon" style="font-family:'Material Symbols Outlined';font-size:16px;vertical-align:-3px;margin-right:4px;">calendar_month</span>
-          Seasonal Plans
-        </span>
-        <h2 class="section-title">Cohort plans, joined <span class="accent">together</span>.</h2>
-        <p class="section-sub">
-          Cohort-based diet programs around festivals, conditions and seasons. Only a couple run at any given time — reserve a spot while it's open, or join the waitlist for the next batch.
-        </p>
-        <div class="seasonal-callout">
-          <span class="mat-icon">info</span>
-          <span><strong>Book your spot.</strong> Our team will connect with you for the details.</span>
-        </div>
-      </header>
+    <section class="section seasonal-section" id="programs">
+      <div class="ef-container">
+        <header class="section-head">
+          <span class="section-eyebrow">
+            <span class="mat-icon">calendar_month</span>
+            Seasonal Plans
+          </span>
+          <h2 class="section-title">Cohort plans, joined <span class="accent">together</span>.</h2>
+          <p class="section-sub">
+            Cohort-based diet programs around festivals, conditions and seasons. Only a couple run at any given time — reserve a spot while it's open, or join the waitlist for the next batch.
+          </p>
+          <div class="seasonal-callout">
+            <span class="mat-icon">info</span>
+            <span><strong>Book your spot.</strong> Our team will connect with you for the details.</span>
+          </div>
+        </header>
 
         <div class="seasonal-grid">
           @for (plan of seasonalPlans(); track plan.slug) {
-            <article
-              class="seasonal-card"
-              [attr.data-status]="plan.status"
-            >
+            <article class="seasonal-card" [attr.data-status]="plan.status">
               <div class="seasonal-card__cover" [ngStyle]="coverStyle(plan)">
                 <span class="seasonal-card__status" [class]="'seasonal-card__status--' + plan.status">
                   <span class="dot"></span>{{ plan.statusLabel }}
@@ -147,137 +315,44 @@
             See all seasonal plans <span class="mat-icon">arrow_forward</span>
           </a>
         </div>
-    </div>
-  </section>
+      </div>
+    </section>
   }
 
-  <!-- ============================ COACH / ABOUT ============================ -->
-  <section class="section" id="about">
-    <div class="ef-container coach-grid">
-      <div class="coach-image-wrap">
-        <img src="/shweta_shah_pic.png" alt="Portrait of Shweta Shah" />
-        <div class="coach-stamp">
-          <span class="mat-icon">verified</span>
-          <div>
-            <strong>Shweta Shah, RD</strong>
-            <span>Registered Dietitian · Mumbai</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="coach-text">
-        <span class="section-eyebrow">Meet Shweta Shah</span>
-        <h2>Where Ancient Ayurveda Meets Modern Nutrition</h2>
-        <p>With 24+ years of experience and 5200+ success stories, Shweta follows a holistic, Ayurveda-rooted approach to nutrition. Specialising in personalised diets based on Prakriti — Vata, Pitta & Kapha, she believes true wellness begins by understanding every individual’s unique body type . Her philosophy is simple: “Simple is honest. Simple is powerful.” No complicated rules or unrealistic plans — just practical, easy-to-follow diets inspired by Ayurvedic principles, Indian food wisdom, and sustainable lifestyle habits that create lasting results.</p>
-
-        <div class="coach-creds">
-          @for (cred of credentials; track cred.title) {
-            <div class="coach-cred">
-              <span class="mat-icon">{{ cred.icon }}</span>
-              <div>
-                <strong>{{ cred.title }}</strong>
-                <span>{{ cred.subtitle }}</span>
-              </div>
-            </div>
-          }
-        </div>
-
-        <div class="coach-cta-row">
-          <a routerLink="/contact-us" class="mat-btn mat-btn--filled">
-            Book appointment
-            <span class="mat-icon">arrow_forward</span>
-          </a>
-          <a routerLink="/about-shweta-shah" class="mat-btn mat-btn--outlined">
-            Read full bio
-            <span class="mat-icon">arrow_forward</span>
-          </a>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ============================ TESTIMONIALS ============================ -->
-  <section class="section section--alt" id="stories">
+  <!-- ============================ PODCASTS & MEDIA ============================ -->
+  <section class="section section--alt" id="podcasts">
     <div class="ef-container">
       <header class="section-head">
-        <span class="section-eyebrow">Success Stories</span>
-        <h2 class="section-title">Real people. Real transformations.</h2>
-        <p class="section-sub">What our clients say after finishing their EatFit247 program.</p>
+        <span class="section-eyebrow">Watch on YouTube</span>
+        <h2 class="section-title">Podcasts &amp; <span class="accent">much more</span></h2>
+        <p class="section-sub">
+          Long-form conversations, panels and bite-sized clips — wherever you like to watch or listen.
+        </p>
       </header>
 
-      <div class="testimonial-carousel">
-        <button
-          type="button"
-          class="testimonial-carousel__nav testimonial-carousel__nav--prev"
-          aria-label="Previous testimonial"
-          (click)="carouselPrev()"
-        >
-          <span class="mat-icon">chevron_left</span>
-        </button>
-        <div class="testimonial-carousel__viewport">
-          <div
-            class="testimonial-carousel__track"
-            [style.transform]="carouselTransform()"
-          >
-            @for (story of testimonialStories(); track story.name) {
-              <article class="testimonial">
-                <div class="testimonial__media">
-                  <img [src]="story.image" [alt]="story.name" loading="lazy" />
-                  @if (story.metric) {
-                    <span class="testimonial__metric">{{ story.metric }}</span>
-                  }
-                </div>
-                <div class="testimonial__body">
-                  <header class="testimonial__head">
-                    <h3 class="testimonial__name">{{ story.name }}</h3>
-                  </header>
-                  <p class="testimonial__quote">{{ story.quote }}</p>
-                </div>
-              </article>
-            }
-          </div>
-        </div>
-        <button
-          type="button"
-          class="testimonial-carousel__nav testimonial-carousel__nav--next"
-          aria-label="Next testimonial"
-          (click)="carouselNext()"
-        >
-          <span class="mat-icon">chevron_right</span>
-        </button>
-        <div class="testimonial-carousel__dots" role="tablist" aria-label="Choose testimonial">
-          @for (i of pageDots(); track i) {
-            <button
-              type="button"
-              class="testimonial-carousel__dot"
-              [class.is-active]="carouselIndex() === i"
-              [attr.aria-label]="'Go to slide ' + (i + 1)"
-              (click)="carouselGoTo(i)"
-            ></button>
-          }
-        </div>
+      <div class="tip-grid">
+        @for (tip of tipCards(); track tip.url) {
+          <a [href]="tip.url" target="_blank" rel="noopener" class="tip-card">
+            <div class="tip-card__thumb">
+              <img [src]="tip.thumb" [alt]="tip.title" loading="lazy" referrerpolicy="no-referrer" />
+              <span class="tip-card__play" aria-hidden="true">
+                <svg viewBox="0 0 68 48" width="56" height="40">
+                  <path d="M66.52 7.74a8 8 0 0 0-5.62-5.66C56.16.96 34 .96 34 .96s-22.16 0-26.9 1.12A8 8 0 0 0 1.48 7.74C.36 12.5.36 24 .36 24s0 11.5 1.12 16.26a8 8 0 0 0 5.62 5.66C11.84 47.04 34 47.04 34 47.04s22.16 0 26.9-1.12a8 8 0 0 0 5.62-5.66C67.64 35.5 67.64 24 67.64 24s0-11.5-1.12-16.26z" fill="#ff0000" />
+                  <path d="M27.2 34.4 45.6 24 27.2 13.6z" fill="#fff" />
+                </svg>
+              </span>
+            </div>
+            <div class="tip-card__body">
+              <h4 class="tip-card__title">{{ tip.title }}</h4>
+            </div>
+          </a>
+        }
       </div>
-    </div>
-  </section>
 
-  <!-- ============================ CTA BAND ============================ -->
-  <section class="section">
-    <div class="ef-container">
-      <div class="cta-band">
-        <div>
-          <h2>Ready to start your transformation?</h2>
-          <p>Book a 15-minute discovery call. We'll assess your goals and suggest the right program — no obligation.</p>
-        </div>
-        <div class="cta-actions">
-          <a routerLink="/contact-us" class="mat-btn mat-btn--filled">
-            Book a Call
-            <span class="mat-icon">arrow_forward</span>
-          </a>
-          <a [href]="'tel:' + contactNumber" class="mat-btn mat-btn--outlined">
-            <span class="mat-icon">call</span>
-            {{ contactNumber }}
-          </a>
-        </div>
+      <div class="tip-cta">
+        <a [href]="youtubeChannelUrl" target="_blank" rel="noopener" class="mat-btn mat-btn--filled">
+          <span class="mat-icon">subscriptions</span>Subscribe on YouTube
+        </a>
       </div>
     </div>
   </section>

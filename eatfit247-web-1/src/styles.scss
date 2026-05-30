@@ -7,6 +7,7 @@
 @use './styles/accessibility';
 @use './styles/design-components';
 @use './styles/design-pages';
+@use './styles/design-additions';
 
 // Include core Material styles
 @include mat.core();

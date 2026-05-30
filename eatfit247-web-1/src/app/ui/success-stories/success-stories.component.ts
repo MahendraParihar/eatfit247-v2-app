@@ -7,7 +7,6 @@ import {
   PLATFORM_ID,
   signal,
 } from '@angular/core';
-import { RouterLink } from '@angular/router';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import {
   BreadcrumbsComponent,
@@ -31,7 +30,6 @@ interface CelebView {
   selector: 'app-success-stories',
   imports: [
     CommonModule,
-    RouterLink,
     MatPaginatorModule,
     LoaderComponent,
     EmptyStateComponent,
