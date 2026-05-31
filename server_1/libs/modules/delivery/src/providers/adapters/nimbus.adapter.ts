@@ -473,13 +473,14 @@ export class NimbusAdapter extends BaseCourierAdapter {
       this.logger.log(
         `Nimbus cancel raw response for AWB ${trackingNumber}: ${JSON.stringify(response).slice(0, 1000)}`,
       );
-      // Nimbus returns HTTP 200 even on logical failure — body carries
-      // status:false + a reason. Treat that as an error so the orchestration
-      // layer doesn't flip our local row to CANCELLED while the carrier still
-      // shows BOOKED.
-      if (response && response.status === false) {
+      // Per Nimbus docs (POST /shipments/cancel): success → {status:true,
+      // message:"Shipment Cancelled"}, failure → {status:false, message:"..."}.
+      // Anything other than an explicit status:true means the carrier did not
+      // accept the cancel — throw so the orchestration layer leaves the local
+      // row as-is rather than flipping to CANCELLED.
+      if (!response || response.status !== true) {
         throw new Error(
-          `${this.providerCode} ${response.message ?? 'cancel rejected by carrier'}`,
+          `${this.providerCode} ${response?.message ?? 'cancel rejected by carrier'}`,
         );
       }
       this.logger.log(`Successfully cancelled shipment with tracking number: ${trackingNumber}`);

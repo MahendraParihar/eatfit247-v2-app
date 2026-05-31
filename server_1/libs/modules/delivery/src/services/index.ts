@@ -7,5 +7,6 @@ export * from './warehouse-resolver.service';
 export * from './rate-selector.service';
 export * from './shipment-orchestration.service';
 export * from './shipment-retry.cron';
+export * from './shipment-status-sync.cron';
 export * from './courier-webhook.service';
 

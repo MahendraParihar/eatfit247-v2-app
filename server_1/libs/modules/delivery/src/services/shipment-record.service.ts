@@ -198,6 +198,34 @@ export class ShipmentRecordService {
     });
   }
 
+  /**
+   * Returns non-terminal shipments that should be re-polled against the
+   * carrier — webhook fallback for cases where the carrier's webhook was
+   * missed (system was down) or where the cancel/status flip is async on the
+   * carrier side (Shiprocket explicitly queues cancellations).
+   *
+   * Ordered oldest-`updatedAt` first so the cron naturally rotates through
+   * stale records instead of repeatedly hammering the same recent ones.
+   */
+  public async getStatusSyncCandidates(limit = 50): Promise<TxnShipment[]> {
+    return this.shipmentRepository.findAll({
+      where: {
+        status: {
+          [Op.in]: [
+            ShipmentStatusEnum.BOOKED,
+            ShipmentStatusEnum.PICKUP_SCHEDULED,
+            ShipmentStatusEnum.IN_TRANSIT,
+            ShipmentStatusEnum.OUT_FOR_DELIVERY,
+          ],
+        },
+        trackingNumber: { [Op.ne]: null },
+        courierProviderId: { [Op.ne]: null },
+      },
+      order: [['updatedAt', 'ASC']],
+      limit,
+    });
+  }
+
   // ── Status transitions ────────────────────────────────────────────────────
 
   public async replaceRateQuotes(

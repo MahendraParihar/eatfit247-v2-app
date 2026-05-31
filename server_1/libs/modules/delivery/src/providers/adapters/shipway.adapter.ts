@@ -274,6 +274,26 @@ export class ShipwayAdapter extends BaseCourierAdapter {
     });
   }
 
+  /**
+   * Cancel shipment with Shipway API.
+   * Endpoint: POST /api/Cancel/   body: { awb_number: [trackingNumber] }
+   *
+   * The previously-used `/api/cancelOrder` endpoint does not exist in Shipway's
+   * documented API — calls were silently no-ops, which is why our DB flipped to
+   * CANCELLED while the carrier kept the shipment active.
+   *
+   * Response shape per docs:
+   *   success (HTTP 200): {
+   *     error: false, success: true, message: "...",
+   *     shipment_success_tracking_numbers: "<awb>",
+   *     invalid_tracking_numbers: "",
+   *     shipment_failed_tracking_numbers: ""
+   *   }
+   *   failure (HTTP 201): {
+   *     error: true, success: false, message: "...",
+   *     invalid_tracking_numbers: "<csv>"
+   *   }
+   */
   async cancelShipment(
     trackingNumber: string,
     credentials: ICourierProviderCredentials,
@@ -282,19 +302,53 @@ export class ShipwayAdapter extends BaseCourierAdapter {
       if (!trackingNumber || trackingNumber.trim().length === 0) {
         throw new Error(`${this.providerCode} Tracking number is required for cancellation`);
       }
+      const awb = trackingNumber.trim();
       const { username, password } = this.extractCredentials(credentials);
       const headers = await this.getAuthHeaders();
 
-      await this.withTimeout(
-        this.httpService.post(
-          `${credentials.apiBaseUrl}/api/cancelOrder`,
-          { username, password, order_id: trackingNumber.trim() },
+      const response = await this.withTimeout(
+        this.httpService.post<{
+          error?: boolean;
+          success?: boolean;
+          message?: string;
+          invalid_tracking_numbers?: string;
+          shipment_failed_tracking_numbers?: string;
+          shipment_success_tracking_numbers?: string;
+        }>(
+          `${credentials.apiBaseUrl}/api/Cancel/`,
+          { username, password, awb_number: [awb] },
           undefined,
           headers,
         ),
         10_000,
         'shipment cancellation',
       );
+      this.logger.log(
+        `Shipway cancel raw response for AWB ${awb}: ${JSON.stringify(response).slice(0, 1000)}`,
+      );
+
+      if (!response) {
+        throw new Error(`${this.providerCode} empty response from Cancel API`);
+      }
+      const inCsv = (csv: string | undefined): boolean =>
+        !!csv && csv.split(',').map((s) => s.trim()).includes(awb);
+      if (
+        response.error === true ||
+        response.success === false ||
+        inCsv(response.invalid_tracking_numbers) ||
+        inCsv(response.shipment_failed_tracking_numbers)
+      ) {
+        throw new Error(
+          `${this.providerCode} ${response.message ?? 'cancel rejected by Shipway'}`,
+        );
+      }
+      if (!inCsv(response.shipment_success_tracking_numbers)) {
+        throw new Error(
+          `${this.providerCode} cancel response did not acknowledge AWB ${awb} as cancelled (msg: ${
+            response.message ?? 'no message'
+          })`,
+        );
+      }
     });
   }
 }
