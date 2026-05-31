@@ -52,17 +52,17 @@ export interface IShipmentItemDimensions{
     width:number;
 }
 
-export interface IShipmentMetaData{
-  idempotencyKeys?: {[key:string]: string};
-    weight?: number;
-    dimensions?: IShipmentItemDimensions;
-    codAmount:number;
-    orderId?: string;
+export interface IShipmentMetaData {
+  idempotencyKeys?: { [key: string]: string };
+  weight?: number;
+  dimensions?: IShipmentItemDimensions;
+  codAmount?: number;
+  orderId?: string;
   bookingResponse?: Record<string, any>;
   labelUrl?: string;
   awbNumber?: string;
-  orderDate?: Date;
-  serviceName?:string;
+  orderDate?: Date | string;
+  serviceName?: string;
 }
 
 export interface IShipment extends IAdminInfo {
@@ -73,16 +73,27 @@ export interface IShipment extends IAdminInfo {
   providerAccountId?: number;
   franchiseId: number;
   warehouseId: number;
+  providerShipmentId?: string;
   trackingNumber?: string;
   trackingUrl?: string;
   totalWeightKg?: number;
+  lengthCm?: number;
+  widthCm?: number;
+  heightCm?: number;
+  receiverName?: string;
+  receiverPhone?: string;
+  receiverAddress?: string;
+  receiverCity?: string;
+  receiverState?: string;
+  receiverPincode?: string;
+  receiverCountry?: string;
   totalAmount?: number;
   rateAmount?: number;
   currency?: string;
   status: string;
   providerName?: string;
   serviceName?: string;
-  metaData?: object;
+  metaData?: IShipmentMetaData;
   lastError?: string | null;
   retryCount?: number;
   nextRetryAt?: Date | null;

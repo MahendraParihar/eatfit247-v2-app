@@ -272,19 +272,125 @@ export class NimbusAdapter extends BaseCourierAdapter {
         10_000,
         'tracking fetch',
       );
+      // Diagnostic: log the raw Nimbus response so we can confirm the actual
+      // shape (shipment_status field path, history field path) for each AWB.
+      this.logger.log(
+        `Nimbus track raw response for AWB ${trackingNumber}: ${JSON.stringify(response).slice(0, 1500)}`,
+      );
       // Nimbus shape: { status, data: { order_number, shipment_status, history: [...] } }
       // Older/alternate shapes are also accepted to stay defensive.
-      const events = Array.isArray(response)
+      const events: any[] = Array.isArray(response)
         ? response
         : response?.data?.history ||
           response?.data?.events ||
           response?.events ||
           response?.data?.tracking ||
+          response?.history ||
+          response?.tracking ||
           (Array.isArray(response?.data) ? response.data : null) ||
           [];
       if (!Array.isArray(events)) {
         throw new Error(
           `${this.providerCode} Unexpected tracking response shape: ${JSON.stringify(response).slice(0, 500)}`,
+        );
+      }
+      // Nimbus's top-level shipment_status is authoritative — when a shipment
+      // is cancelled on the Nimbus admin portal, that field flips but the
+      // history array doesn't necessarily get a new entry. Try multiple field
+      // paths since Nimbus's track response shape isn't strictly nailed down.
+      const shipmentStatus: string | undefined =
+        response?.data?.shipment_status ||
+        response?.data?.status ||
+        response?.data?.current_status ||
+        response?.data?.order_status ||
+        response?.shipment_status ||
+        response?.current_status ||
+        response?.order_status;
+      if (typeof shipmentStatus === 'string' && shipmentStatus.trim().length > 0) {
+        const normalized = shipmentStatus.toUpperCase().replace(/[\s-]+/g, '_');
+        const isTerminal = /CANCEL|DELIVER|RTO|RETURN|LOST|FAIL/.test(normalized);
+        const alreadyInHistory = events.some((e) => {
+          const eventStatus = (
+            e?.status_code ||
+            e?.status ||
+            e?.event_status ||
+            e?.current_status ||
+            ''
+          )
+            .toString()
+            .toUpperCase()
+            .replace(/[\s-]+/g, '_');
+          return eventStatus === normalized;
+        });
+        if (isTerminal && !alreadyInHistory) {
+          // Use the carrier's own timestamp for when the state changed so the
+          // synthesized event reflects when Nimbus cancelled the shipment, not
+          // when the admin clicked refresh. Nimbus's track payload isn't
+          // strictly schematized, so check the common field paths.
+          const carrierTimestampRaw =
+            response?.data?.cancelled_at ||
+            response?.data?.cancellation_date ||
+            response?.data?.cancelled_on ||
+            response?.data?.cancel_date ||
+            response?.data?.status_updated_at ||
+            response?.data?.last_status_update ||
+            response?.data?.updated_at ||
+            response?.data?.last_updated ||
+            response?.cancelled_at ||
+            response?.updated_at ||
+            null;
+          let carrierTimestamp: Date | null = null;
+          if (carrierTimestampRaw) {
+            const parsed = new Date(carrierTimestampRaw);
+            if (!isNaN(parsed.getTime())) {
+              carrierTimestamp = parsed;
+            }
+          }
+          // If the carrier didn't expose its own status-change timestamp, fall
+          // back to the most recent history event's time (still carrier-side,
+          // not the refresh click time). Only as a last resort use now().
+          if (!carrierTimestamp && events.length > 0) {
+            const historyTimestamps = events
+              .map((e: any) => e?.event_time || e?.timestamp || e?.created_at || e?.date)
+              .filter(Boolean)
+              .map((v: any) => new Date(v))
+              .filter((d: Date) => !isNaN(d.getTime()))
+              .sort((a: Date, b: Date) => b.getTime() - a.getTime());
+            if (historyTimestamps.length > 0) {
+              // Bump by 1 second so it sorts strictly after the last history
+              // entry without colliding on the unique (shipment, status, time).
+              carrierTimestamp = new Date(historyTimestamps[0].getTime() + 1000);
+            }
+          }
+          if (!carrierTimestamp) {
+            carrierTimestamp = new Date();
+            this.logger.warn(
+              `Nimbus AWB ${trackingNumber} synthesizing "${shipmentStatus}" event with current time — no carrier timestamp found in response`,
+            );
+          }
+          events.push({
+            status: shipmentStatus,
+            description: `Carrier shipment_status = ${shipmentStatus}`,
+            event_time: carrierTimestamp.toISOString(),
+            source: 'nimbus.shipment_status',
+          });
+          this.logger.log(
+            `Nimbus AWB ${trackingNumber} top-level shipment_status="${shipmentStatus}" not in history — synthesized event at ${carrierTimestamp.toISOString()}`,
+          );
+        } else {
+          this.logger.log(
+            `Nimbus AWB ${trackingNumber} shipment_status="${shipmentStatus}" isTerminal=${isTerminal} alreadyInHistory=${alreadyInHistory}`,
+          );
+        }
+      } else {
+        this.logger.warn(
+          `Nimbus AWB ${trackingNumber} no shipment_status field found in response (keys: ${
+            response && typeof response === 'object' ? Object.keys(response).join(',') : typeof response
+          }; data keys: ${
+            response?.data && typeof response.data === 'object'
+              ? Object.keys(response.data).join(',')
+              : typeof response?.data
+          })`,
         );
       }
       // If no events, return empty array (shipment might not be tracked yet)
@@ -350,10 +456,12 @@ export class NimbusAdapter extends BaseCourierAdapter {
       // Get authentication headers
       const headers = await this.getAuthHeaders(credentials);
 
-      // Nimbus cancel API takes the AWB(s) in the body and a single fixed endpoint.
-      const cancelPayload = { awbs: [trackingNumber.trim()] };
-      await this.withTimeout(
-        this.httpService.post(
+      // Nimbus cancel API expects { "awb": "<single AWB string>" } — singular,
+      // not an array. Sending { awbs: [...] } returns HTTP 200 with
+      // status:false and the carrier silently does nothing.
+      const cancelPayload = { awb: trackingNumber.trim() };
+      const response = await this.withTimeout(
+        this.httpService.post<{ status?: boolean; message?: string; data?: unknown }>(
           `${credentials.apiBaseUrl}/shipments/cancel`,
           cancelPayload,
           undefined,
@@ -362,6 +470,18 @@ export class NimbusAdapter extends BaseCourierAdapter {
         10_000,
         'shipment cancellation',
       );
+      this.logger.log(
+        `Nimbus cancel raw response for AWB ${trackingNumber}: ${JSON.stringify(response).slice(0, 1000)}`,
+      );
+      // Nimbus returns HTTP 200 even on logical failure — body carries
+      // status:false + a reason. Treat that as an error so the orchestration
+      // layer doesn't flip our local row to CANCELLED while the carrier still
+      // shows BOOKED.
+      if (response && response.status === false) {
+        throw new Error(
+          `${this.providerCode} ${response.message ?? 'cancel rejected by carrier'}`,
+        );
+      }
       this.logger.log(`Successfully cancelled shipment with tracking number: ${trackingNumber}`);
     });
   }

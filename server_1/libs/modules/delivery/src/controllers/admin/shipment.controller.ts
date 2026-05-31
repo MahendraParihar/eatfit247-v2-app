@@ -31,6 +31,20 @@ export class ShipmentController {
     );
   }
 
+  @Post(':shipmentId/cancel')
+  @RequireAbility(AdminActionEnum.Update, AdminSubjectEnum.Shipment)
+  async cancel(
+    @Param('shipmentId') shipmentId: number,
+    @CurrentUser() currentUser: IAuthUser,
+    @RequestedIp() requestedIp: string,
+  ): Promise<IShipment> {
+    return this.shipmentOrchestrationService.cancelShipment(
+      shipmentId,
+      currentUser.adminId,
+      requestedIp,
+    );
+  }
+
   @Post(':memberProductId')
   @RequireAbility(AdminActionEnum.Create, AdminSubjectEnum.Shipment)
   async create(

@@ -34,14 +34,26 @@ export class MemberProductReportService {
       (whereCondition as any).memberProductId = {
         [Op.notIn]: Sequelize.literal('(SELECT order_id FROM public.txn_shipments)'),
       };
-    } else if (dto.hasShipment === true || dto.shipmentStatus) {
-      let subQuery = '(SELECT order_id FROM public.txn_shipments';
-      if (dto.shipmentStatus) {
-        subQuery += ` WHERE status = ${sequelize.escape(dto.shipmentStatus)}`;
-      }
-      subQuery += ')';
+      return;
+    }
+    if (dto.shipmentStatus) {
+      // After a cancel + rebook there are multiple rows per order_id. The
+      // user's mental model is "what's the *current* state of this order's
+      // shipment", so filter against the latest row per order_id only.
+      const subQuery =
+        '(SELECT order_id FROM (' +
+        'SELECT DISTINCT ON (order_id) order_id, status ' +
+        'FROM public.txn_shipments ' +
+        'ORDER BY order_id, created_at DESC' +
+        ') latest WHERE status = ' +
+        sequelize.escape(dto.shipmentStatus) +
+        ')';
       (whereCondition as any).memberProductId = {
         [Op.in]: Sequelize.literal(subQuery),
+      };
+    } else if (dto.hasShipment === true) {
+      (whereCondition as any).memberProductId = {
+        [Op.in]: Sequelize.literal('(SELECT order_id FROM public.txn_shipments)'),
       };
     }
   }
@@ -125,7 +137,10 @@ export class MemberProductReportService {
       return { tableData: [], count: 0 };
     }
 
-    // Fetch shipment for each returned order (separate query — TxnShipment is in delivery lib)
+    // Fetch shipment for each returned order (separate query — TxnShipment is in delivery lib).
+    // Order by createdAt DESC so that after a cancel+rebook (multiple rows per
+    // orderId), the first row per order we see in the map-build below is the
+    // most recent one — which is the one the dialog should drive actions on.
     const orderIds = rows.map((item: any) => item.memberProductId);
     const shipments = await this.shipmentRepository.findAll({
       where: { orderId: { [Op.in]: orderIds } },
@@ -143,6 +158,7 @@ export class MemberProductReportService {
         'receiverPincode',
         'lastError',
         'retryCount',
+        'createdAt',
       ],
       include: [
         {
@@ -152,14 +168,17 @@ export class MemberProductReportService {
           attributes: ['courierProviderId', 'providerCode', 'providerName'],
         },
       ],
+      order: [['createdAt', 'DESC']],
       raw: true,
       nest: true,
     });
 
-    // orderId → shipment lookup map
+    // orderId → latest shipment lookup map (first-wins because list is sorted DESC)
     const shipmentMap: Record<number, any> = {};
     shipments.forEach((s: any) => {
-      shipmentMap[s.orderId] = s;
+      if (!(s.orderId in shipmentMap)) {
+        shipmentMap[s.orderId] = s;
+      }
     });
 
     const tableData = rows.map((item: any) => {

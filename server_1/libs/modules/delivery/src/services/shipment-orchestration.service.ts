@@ -1,4 +1,4 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import {
   IBookingItem,
   IBookingRequest,
@@ -84,11 +84,25 @@ export class ShipmentOrchestrationService {
   ): Promise<void> {
     this.logger.log(`[Order:${orderId}] Shipment initiation started`);
 
-    // Guard: already has a shipment for this order?
+    // Guard: already has an active shipment for this order? Allow rebook only
+    // when the prior shipment ended in a terminal-failure state (CANCELLED or
+    // FAILED) — those carry no live carrier booking, so a new shipment record
+    // is the right action. The old shipment row stays as historical audit.
     const existing = await this.shipmentRecordService.getByOrderId(orderId);
-    if (existing) {
-      this.logger.warn(`[Order:${orderId}] Already has shipment ${existing.shipmentId} — skipping`);
+    if (
+      existing &&
+      existing.status !== ShipmentStatusEnum.CANCELLED &&
+      existing.status !== ShipmentStatusEnum.FAILED
+    ) {
+      this.logger.warn(
+        `[Order:${orderId}] Already has active shipment ${existing.shipmentId} (status=${existing.status}) — skipping`,
+      );
       return;
+    }
+    if (existing) {
+      this.logger.log(
+        `[Order:${orderId}] Prior shipment ${existing.shipmentId} is ${existing.status} — proceeding with rebook`,
+      );
     }
 
     // Step 1: Load order with member + items
@@ -133,12 +147,16 @@ export class ShipmentOrchestrationService {
       return;
     }
 
-    // Step 4: Create shipment record (DRAFT)
+    // Step 4: Create shipment record (DRAFT). Suffix with a rebook sequence
+    // number when prior shipments exist for this order — the shipment_number
+    // column is uniquely indexed, and the date+orderId prefix alone is not
+    // unique across rebooks of the same order on the same day.
+    const priorCount = await this.shipmentRecordService.countByOrderId(orderId);
     const totalWeightKg = this.calculateTotalWeight(order);
     const createPayload: ICreateShipmentPayload = {
       orderId,
       franchiseId: order.franchiseId,
-      shipmentNumber: this.generateShipmentNumber(orderId),
+      shipmentNumber: this.generateShipmentNumber(orderId, priorCount),
       totalAmount: Number(order.totalAmount),
       currency: order.currency,
       totalWeightKg,
@@ -245,6 +263,18 @@ export class ShipmentOrchestrationService {
       throw new NotFoundException(`Provider missing for shipment ${shipmentId}`);
     }
 
+    // Once local status is terminal (CANCELLED / DELIVERED / RTO), the carrier
+    // won't produce further state changes — re-polling would only re-trigger
+    // the synthetic-event path and grow duplicate tracking rows. Just return
+    // the already-persisted tracking info.
+    if (
+      shipment.status === ShipmentStatusEnum.CANCELLED ||
+      shipment.status === ShipmentStatusEnum.DELIVERED ||
+      shipment.status === ShipmentStatusEnum.RTO
+    ) {
+      return this.shipmentRecordService.getTrackingInfo(shipmentId);
+    }
+
     const pair = await this.warehouseResolverService.resolvePairByProvider(
       shipment,
       shipment.courierProviderId,
@@ -260,6 +290,51 @@ export class ShipmentOrchestrationService {
   }
 
   public async getShipment(shipmentId: number): Promise<IShipment> {
+    return this.shipmentRecordService.getById(shipmentId);
+  }
+
+  /**
+   * Admin-triggered cancel: hits the carrier (if AWB exists), then flips
+   * local status to CANCELLED and appends a manual tracking event.
+   * Throws if the shipment is already CANCELLED or DELIVERED.
+   */
+  public async cancelShipment(
+    shipmentId: number,
+    adminId: number,
+    adminIp: string,
+  ): Promise<IShipment> {
+    const shipment = await this.shipmentRecordService.getEntityById(shipmentId);
+
+    if (
+      shipment.status === ShipmentStatusEnum.CANCELLED ||
+      shipment.status === ShipmentStatusEnum.DELIVERED
+    ) {
+      throw new BadRequestException(
+        `Shipment ${shipmentId} cannot be cancelled (status=${shipment.status})`,
+      );
+    }
+
+    // Only call carrier if we actually booked one (have AWB + provider).
+    if (shipment.trackingNumber && shipment.courierProviderId) {
+      const pair = await this.warehouseResolverService.resolvePairByProvider(
+        shipment,
+        shipment.courierProviderId,
+      );
+      if (!pair) {
+        throw new NotFoundException(`Provider account not found for shipment ${shipmentId}`);
+      }
+      const adapter = this.courierFactory.getAdapter(pair.providerCode);
+      await adapter.cancelShipment(shipment.trackingNumber, pair.credentials);
+      this.logger.log(
+        `[Shipment:${shipmentId}] Carrier cancel acknowledged (AWB ${shipment.trackingNumber})`,
+      );
+    } else {
+      this.logger.log(
+        `[Shipment:${shipmentId}] No AWB/provider — skipping carrier cancel, local cancel only`,
+      );
+    }
+
+    await this.shipmentRecordService.markCancelled(shipmentId, adminId, adminIp);
     return this.shipmentRecordService.getById(shipmentId);
   }
 
@@ -577,19 +652,42 @@ export class ShipmentOrchestrationService {
   // ────────────────────────────────────────────────────────────────────────
 
   /**
-   * Generates a unique shipment number: SHP-{YYYYMMDD}-{orderId padded to 6}
-   * e.g. SHP-20260307-000123
+   * Generates a unique shipment number: SHP-{YYYYMMDD}-{orderId padded to 6}.
+   * On rebook (priorCount > 0) appends -R{attempt} so the number stays unique
+   * even when the same order is rebooked on the same day.
+   *   e.g. first attempt: SHP-20260307-000123
+   *        first rebook : SHP-20260307-000123-R2
    */
-  private generateShipmentNumber(orderId: number): string {
+  private generateShipmentNumber(orderId: number, priorCount = 0): string {
     const now = new Date();
     const datePart = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(
       now.getDate(),
     ).padStart(2, '0')}`;
     const idPart = String(orderId).padStart(6, '0');
-    return `SHP-${datePart}-${idPart}`;
+    const base = `SHP-${datePart}-${idPart}`;
+    return priorCount > 0 ? `${base}-R${priorCount + 1}` : base;
   }
 
   private errMsg(err: unknown): string {
-    return err instanceof Error ? err.message : 'unknown error';
+    if (!(err instanceof Error)) return 'unknown error';
+    // Sequelize wraps validation/unique failures in a generic "Validation
+    // error" message — unpack the inner per-field errors so the log actually
+    // tells us which column blew up.
+    const anyErr = err as any;
+    const detailParts: string[] = [];
+    if (Array.isArray(anyErr.errors)) {
+      for (const e of anyErr.errors) {
+        const path = e?.path ?? '?';
+        const validatorKey = e?.validatorKey ?? '?';
+        const value = e?.value === undefined ? 'undefined' : JSON.stringify(e.value);
+        const msg = e?.message ?? '';
+        detailParts.push(`${path}[${validatorKey}]=${value}: ${msg}`);
+      }
+    }
+    if (anyErr.original?.detail) detailParts.push(`pg: ${anyErr.original.detail}`);
+    if (anyErr.parent?.detail && anyErr.parent.detail !== anyErr.original?.detail) {
+      detailParts.push(`pg: ${anyErr.parent.detail}`);
+    }
+    return detailParts.length > 0 ? `${err.message} — ${detailParts.join('; ')}` : err.message;
   }
 }
