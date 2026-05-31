@@ -26,6 +26,16 @@ export class ShipmentStatusSyncCron {
 
     this.logger.log(`Status-sync cron picked ${candidates.length} shipment(s)`);
     for (const shipment of candidates) {
+      // Shared claim with the retry cron — both crons mutate the same
+      // shipment row, so a single retry_claimed_at marker prevents either
+      // cron (or another instance) from double-processing.
+      const claimed = await this.shipmentRecordService.tryClaim(shipment.shipmentId);
+      if (!claimed) {
+        this.logger.debug(
+          `Shipment ${shipment.shipmentId} already claimed by another worker — skipping`,
+        );
+        continue;
+      }
       try {
         await this.shipmentOrchestrationService.trackShipment(shipment.shipmentId);
       } catch (error: unknown) {
@@ -35,6 +45,8 @@ export class ShipmentStatusSyncCron {
             shipment.trackingNumber ?? '?'
           }): ${message}`,
         );
+      } finally {
+        await this.shipmentRecordService.releaseClaim(shipment.shipmentId);
       }
     }
   }

@@ -2,6 +2,8 @@ import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Op } from 'sequelize';
+import { Sequelize } from 'sequelize-typescript';
+import { randomUUID } from 'node:crypto';
 import { BasicSearchDto, CommonFunctionsUtil, SearchUtil } from '@server_1/core';
 import {
   ICreateShipmentPayload,
@@ -52,6 +54,7 @@ export class ShipmentRecordService {
     @InjectModel(TxnShipmentTrackingEvent)
     private readonly trackingRepository: typeof TxnShipmentTrackingEvent,
     private readonly eventEmitter: EventEmitter2,
+    private readonly sequelize: Sequelize,
   ) {}
 
   // ── Creation ──────────────────────────────────────────────────────────────
@@ -62,6 +65,7 @@ export class ShipmentRecordService {
    */
   public async createForOrder(payload: ICreateShipmentPayload): Promise<TxnShipment> {
     const shipment = await this.shipmentRepository.create({
+      idempotencyKey: randomUUID(),
       orderId: payload.orderId,
       franchiseId: payload.franchiseId,
       shipmentNumber: payload.shipmentNumber,
@@ -182,6 +186,7 @@ export class ShipmentRecordService {
    *   status IN (FAILED, BOOKING_REQUESTED)
    *   AND retry_count < MAX_RETRIES
    *   AND next_retry_at <= NOW()
+   *   AND (retry_claimed_at IS NULL OR retry_claimed_at < NOW() - claimTtl)
    */
   public async getRetryableShipments(limit = 20): Promise<TxnShipment[]> {
     return this.shipmentRepository.findAll({
@@ -189,6 +194,10 @@ export class ShipmentRecordService {
         status: { [Op.in]: [ShipmentStatusEnum.BOOKING_REQUESTED, ShipmentStatusEnum.FAILED] },
         retryCount: { [Op.lt]: SHIPMENT_CONFIG.MAX_RETRIES },
         nextRetryAt: { [Op.lte]: new Date() },
+        [Op.or]: [
+          { retryClaimedAt: null as unknown as Date },
+          { retryClaimedAt: { [Op.lt]: this.claimStaleCutoff() } },
+        ],
       },
       order: [
         ['nextRetryAt', 'ASC'],
@@ -220,10 +229,53 @@ export class ShipmentRecordService {
         },
         trackingNumber: { [Op.ne]: null },
         courierProviderId: { [Op.ne]: null },
+        [Op.or]: [
+          { retryClaimedAt: null as unknown as Date },
+          { retryClaimedAt: { [Op.lt]: this.claimStaleCutoff() } },
+        ],
       },
       order: [['updatedAt', 'ASC']],
       limit,
     });
+  }
+
+  /**
+   * Cooperative claim for cron processing. Uses a conditional UPDATE — under
+   * PostgreSQL READ COMMITTED, the first worker to UPDATE locks the row, and
+   * a concurrent worker's UPDATE rechecks the WHERE post-lock so it sees the
+   * already-claimed row and matches zero rows.
+   *
+   * Returns true if this caller now owns the row; false if another worker
+   * claimed it first. Stale claims (older than ttlMinutes) are recoverable so
+   * a crashed worker doesn't permanently freeze a shipment.
+   */
+  public async tryClaim(shipmentId: number, ttlMinutes = 10): Promise<boolean> {
+    const staleCutoff = new Date(Date.now() - ttlMinutes * 60 * 1000);
+    const [affected] = await this.shipmentRepository.update(
+      { retryClaimedAt: new Date() },
+      {
+        where: {
+          shipmentId,
+          [Op.or]: [
+            { retryClaimedAt: null as unknown as Date },
+            { retryClaimedAt: { [Op.lt]: staleCutoff } },
+          ],
+        },
+      },
+    );
+    return affected > 0;
+  }
+
+  /** Releases a claim taken by tryClaim. Safe to call even if not held. */
+  public async releaseClaim(shipmentId: number): Promise<void> {
+    await this.shipmentRepository.update(
+      { retryClaimedAt: null as unknown as Date },
+      { where: { shipmentId } },
+    );
+  }
+
+  private claimStaleCutoff(ttlMinutes = 10): Date {
+    return new Date(Date.now() - ttlMinutes * 60 * 1000);
   }
 
   // ── Status transitions ────────────────────────────────────────────────────
@@ -235,28 +287,43 @@ export class ShipmentRecordService {
     warehouseId: number,
     quotes: IRateQuote[],
   ): Promise<TxnShipmentRateQuote[]> {
-    await this.rateQuoteRepository.destroy({
-      where: { shipmentId, providerAccountId, isSelected: false },
-    });
+    // Wrap delete + bulkCreate + status flip in one transaction so a concurrent
+    // run for the same shipment can't see a half-replaced quote set.
+    const transaction = await this.sequelize.transaction();
+    try {
+      await this.rateQuoteRepository.destroy({
+        where: { shipmentId, providerAccountId, isSelected: false },
+        transaction,
+      });
 
-    if (quotes.length > 0) {
-      await this.rateQuoteRepository.bulkCreate(
-        quotes.map((q) => ({
-          shipmentId,
-          warehouseId: warehouseId,
-          courierProviderId: courierProviderId,
-          providerAccountId,
-          serviceName: q.serviceName,
-          estimatedDays: q.estimatedDays ?? null,
-          rateAmount: q.rateAmount,
-          currency: q.currency,
-          isSelected: false,
-          rawResponse: q.metadata ?? null,
-        })),
+      if (quotes.length > 0) {
+        await this.rateQuoteRepository.bulkCreate(
+          quotes.map((q) => ({
+            shipmentId,
+            warehouseId: warehouseId,
+            courierProviderId: courierProviderId,
+            providerAccountId,
+            serviceName: q.serviceName,
+            estimatedDays: q.estimatedDays ?? null,
+            rateAmount: q.rateAmount,
+            currency: q.currency,
+            isSelected: false,
+            rawResponse: q.metadata ?? null,
+          })),
+          { transaction },
+        );
+      }
+
+      await this.shipmentRepository.update(
+        { status: ShipmentStatusEnum.RATE_REQUESTED, lastKnownStatus: ShipmentStatusEnum.RATE_REQUESTED },
+        { where: { shipmentId }, transaction },
       );
-    }
 
-    await this.updateShipmentStatus(shipmentId, ShipmentStatusEnum.RATE_REQUESTED);
+      await transaction.commit();
+    } catch (err) {
+      await transaction.rollback();
+      throw err;
+    }
     return this.getRateQuotes(shipmentId);
   }
 
@@ -269,23 +336,34 @@ export class ShipmentRecordService {
       throw new NotFoundException(`Rate quote ${rateQuoteId} not found for shipment ${shipmentId}`);
     }
 
-    await this.rateQuoteRepository.update({ isSelected: false }, { where: { shipmentId } });
-    await this.rateQuoteRepository.update(
-      { isSelected: true },
-      { where: { shipmentId, rateQuoteId } },
-    );
-
-    await this.shipmentRepository.update(
-      {
-        courierProviderId: quote.courierProviderId,
-        providerAccountId: quote.providerAccountId,
-        rateAmount: quote.rateAmount,
-        currency: quote.currency,
-        status: ShipmentStatusEnum.RATE_SELECTED,
-        lastKnownStatus: ShipmentStatusEnum.RATE_SELECTED,
-      },
-      { where: { shipmentId } },
-    );
+    // Three writes must agree on the same selected quote — race between two
+    // selectRateQuote calls previously left isSelected set on two rows.
+    const transaction = await this.sequelize.transaction();
+    try {
+      await this.rateQuoteRepository.update(
+        { isSelected: false },
+        { where: { shipmentId }, transaction },
+      );
+      await this.rateQuoteRepository.update(
+        { isSelected: true },
+        { where: { shipmentId, rateQuoteId }, transaction },
+      );
+      await this.shipmentRepository.update(
+        {
+          courierProviderId: quote.courierProviderId,
+          providerAccountId: quote.providerAccountId,
+          rateAmount: quote.rateAmount,
+          currency: quote.currency,
+          status: ShipmentStatusEnum.RATE_SELECTED,
+          lastKnownStatus: ShipmentStatusEnum.RATE_SELECTED,
+        },
+        { where: { shipmentId }, transaction },
+      );
+      await transaction.commit();
+    } catch (err) {
+      await transaction.rollback();
+      throw err;
+    }
     return quote;
   }
 
@@ -419,6 +497,10 @@ export class ShipmentRecordService {
   ): Promise<void> {
     if (events.length === 0) return;
 
+    // History rows are always recorded (composite unique guards duplicates).
+    // The status flip below is gated by an event-time high-water mark so an
+    // out-of-order webhook (e.g. a stale IN_TRANSIT after DELIVERED) cannot
+    // regress the local status.
     await this.trackingRepository.bulkCreate(
       events.map((event) => ({
         shipmentId,
@@ -436,13 +518,31 @@ export class ShipmentRecordService {
     const latest = [...events].sort((a, b) => b.eventTime.getTime() - a.eventTime.getTime())[0];
     const mappedStatus = this.mapProviderStatus(latest.status);
     const previous = await this.shipmentRepository.findByPk(shipmentId, { raw: true });
+    if (!previous) return;
+
+    const newEventTime = new Date(latest.eventTime);
+    const watermark = previous.lastStatusEventAt ? new Date(previous.lastStatusEventAt) : null;
+    const isNewer = !watermark || newEventTime.getTime() > watermark.getTime();
+
+    if (!isNewer) {
+      this.logger.warn(
+        `[Shipment:${shipmentId}] Out-of-order event ignored for status flip — ` +
+          `eventTime=${newEventTime.toISOString()} <= watermark=${watermark?.toISOString()}; ` +
+          `current status=${previous.status} (source=${source})`,
+      );
+      return;
+    }
 
     await this.shipmentRepository.update(
-      { status: mappedStatus, lastKnownStatus: mappedStatus },
+      {
+        status: mappedStatus,
+        lastKnownStatus: mappedStatus,
+        lastStatusEventAt: newEventTime,
+      },
       { where: { shipmentId } },
     );
 
-    if (previous && previous.status !== mappedStatus) {
+    if (previous.status !== mappedStatus) {
       this.emitStatusChanged({
         shipmentId,
         orderId: previous.orderId,

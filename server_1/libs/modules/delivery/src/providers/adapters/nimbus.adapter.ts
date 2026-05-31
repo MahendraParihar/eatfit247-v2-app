@@ -163,7 +163,11 @@ export class NimbusAdapter extends BaseCourierAdapter {
       // Build shipment request payload according to Nimbus API specification
       const shipmentPayload: INimbusShipmentPayload = {
         courier_id: 1,
-        order_number: payload.shipmentId.toString(),
+        // Stable per-shipment UUID. NOTE: Nimbus does not server-enforce
+        // order_number uniqueness, so this is best-effort dedup only — true
+        // protection requires the deferred findByIdempotencyKey adapter
+        // method (see Task #15).
+        order_number: payload.idempotencyKey ?? payload.shipmentId.toString(),
         payment_type: 'prepaid',
         order_amount: Number(payload.orderAmount),
         cod_charges: 0,

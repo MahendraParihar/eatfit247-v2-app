@@ -36,22 +36,19 @@ export class ShipmentOrchestrationService {
   ) {}
 
   /**
-   * Converts a quantity value to kg based on its unit.
-   * Non-weight units (piece, pack, bottle, box, sachet) return 0 — no physical weight known.
+   * Converts a quantity value to kg. Catalogue policy: every shippable product
+   * is stocked in weight units (kg / g / gm) only. Any other unit is bad
+   * master data — failing loud here is preferable to silently shipping a
+   * 0 kg package and letting carriers reject or mis-rate downstream.
    */
   private toKg(value: number, unit: string): number {
-    switch ((unit ?? '').toLowerCase().trim()) {
-      case 'kg':    return value;
-      case 'gm':
-      case 'g':     return value / 1000;
-      case 'mg':    return value / 1_000_000;
-      case 'lb':    return value * 0.453592;
-      case 'oz':    return value * 0.0283495;
-      case 'l':
-      case 'ltr':   return value;        // 1 litre ≈ 1 kg (water-based liquids)
-      case 'ml':    return value / 1000; // 1 ml ≈ 1 g
-      default:      return 0;            // piece, pack, bottle, box, sachet — no weight
-    }
+    const u = (unit ?? '').toLowerCase().trim();
+    if (u === 'kg') return value;
+    if (u === 'g' || u === 'gm') return value / 1000;
+    throw new BadRequestException(
+      `Unsupported quantity unit '${unit}' — products must be stocked in kg/g/gm only. ` +
+        `Fix master data before this order can be shipped.`,
+    );
   }
 
   /**
@@ -451,6 +448,29 @@ export class ShipmentOrchestrationService {
       throw new NotFoundException(`Shipment ${shipmentId} has no provider set — cannot book`);
     }
 
+    // Defence against retrying a shipment that already produced an AWB. If
+    // trackingNumber is set the carrier has already accepted this shipment;
+    // calling createShipment again would either produce a duplicate AWB
+    // (Nimbus does not server-enforce order_number uniqueness) or surface a
+    // confusing duplicate-order error (Shiprocket/Shipway). Return the
+    // existing booking and treat this call as a no-op.
+    if (shipment.trackingNumber) {
+      this.logger.warn(
+        `[Shipment:${shipmentId}] bookWithSelectedQuote called with AWB already set ` +
+          `(${shipment.trackingNumber}); skipping carrier call.`,
+      );
+      return {
+        shipmentId: shipment.shipmentId,
+        shipmentNumber: shipment.shipmentNumber,
+        status: ShipmentStatusEnum.BOOKED,
+        courierProviderId: shipment.courierProviderId,
+        providerAccountId: shipment.providerAccountId,
+        providerShipmentId: shipment.providerShipmentId ?? undefined,
+        trackingNumber: shipment.trackingNumber,
+        trackingUrl: shipment.trackingUrl ?? undefined,
+      };
+    }
+
     const pair = await this.warehouseResolverService.resolvePairByProvider(
       shipment,
       shipment.courierProviderId,
@@ -609,6 +629,10 @@ export class ShipmentOrchestrationService {
   private buildBookingRequest(shipment: TxnShipment): IBookingRequest {
     return {
       ...this.buildRateRequest(shipment),
+      // Stable carrier-facing order key. Reused on every retry so carriers
+      // that enforce uniqueness (Shiprocket, Shipway) reject duplicates
+      // server-side instead of issuing a second AWB.
+      idempotencyKey: shipment.idempotencyKey,
       pickup: {
         address: shipment.warehouse.addressLine1,
         address2: shipment.warehouse.addressLine2,

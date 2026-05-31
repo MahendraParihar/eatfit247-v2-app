@@ -133,7 +133,12 @@ export class ShipwayAdapter extends BaseCourierAdapter {
       const bookingPayload: Record<string, unknown> = {
         username,
         password,
-        order_id: payload.shipmentId?.toString() ?? payload.shipmentNumber ?? '',
+        // Stable per-shipment UUID — Shipway enforces uniqueness on order_id.
+        order_id:
+          payload.idempotencyKey ??
+          payload.shipmentId?.toString() ??
+          payload.shipmentNumber ??
+          '',
         order_date: new Date().toISOString().split('T')[0],
         first_name: payload.delivery.name,
         last_name: '',

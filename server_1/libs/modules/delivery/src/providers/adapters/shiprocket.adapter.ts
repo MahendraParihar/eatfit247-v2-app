@@ -167,7 +167,11 @@ export class ShiprocketAdapter extends BaseCourierAdapter {
         : [];
 
       const requestBody = {
-        order_id: payload.shipmentId,
+        // Stable per-shipment UUID — Shiprocket enforces uniqueness on
+        // order_id, so retries with the same key are server-side dedup'd.
+        // Falls back to shipmentId for any caller still passing the legacy
+        // shape (e.g. unit tests).
+        order_id: payload.idempotencyKey ?? payload.shipmentId,
         order_date: new Date().toISOString().split('T')[0],
         pickup_location: payload.pickup.name,
         billing_customer_name: payload.delivery.name,
