@@ -145,9 +145,22 @@ export class ShipmentRecordService {
     return shipment.toJSON();
   }
 
-  /** Prevents duplicate shipments — called before creating */
+  /**
+   * Returns the latest shipment for an order. Used by the rebook guard and by
+   * any caller that wants "the current shipment" — after a cancel + rebook
+   * there can be multiple rows for the same orderId, so we always need the
+   * most recent one.
+   */
   public async getByOrderId(orderId: number): Promise<TxnShipment | null> {
-    return this.shipmentRepository.findOne({ where: { orderId } });
+    return this.shipmentRepository.findOne({
+      where: { orderId },
+      order: [['createdAt', 'DESC']],
+    });
+  }
+
+  /** How many shipment rows exist for an order (used to suffix rebook numbers). */
+  public async countByOrderId(orderId: number): Promise<number> {
+    return this.shipmentRepository.count({ where: { orderId } });
   }
 
   public async getRateQuotes(shipmentId: number): Promise<TxnShipmentRateQuote[]> {
@@ -315,6 +328,60 @@ export class ShipmentRecordService {
     this.logger.warn(`Shipment ${shipmentId} FAILED (attempt ${retryCount}): ${errorMessage}`);
   }
 
+  /**
+   * Marks a shipment CANCELLED and appends a manual tracking event.
+   * Called by ShipmentOrchestrationService.cancelShipment() after the
+   * carrier-side cancel succeeds.
+   */
+  public async markCancelled(
+    shipmentId: number,
+    adminId: number,
+    adminIp: string,
+    reason = 'Cancelled by admin',
+  ): Promise<void> {
+    const previous = await this.shipmentRepository.findByPk(shipmentId, { raw: true });
+
+    await this.shipmentRepository.update(
+      {
+        status: ShipmentStatusEnum.CANCELLED,
+        lastKnownStatus: ShipmentStatusEnum.CANCELLED,
+        nextRetryAt: null,
+        modifiedBy: adminId,
+        modifiedIp: adminIp,
+      },
+      { where: { shipmentId } },
+    );
+
+    await this.trackingRepository.create(
+      {
+        shipmentId,
+        providerStatus: ShipmentStatusEnum.CANCELLED,
+        internalStatus: ShipmentStatusEnum.CANCELLED,
+        description: reason,
+        eventTime: new Date(),
+        location: null,
+        source: ShipmentTrackingSourceEnum.MANUAL,
+        rawPayload: null,
+      } as unknown as TxnShipmentTrackingEvent,
+      { ignoreDuplicates: true },
+    );
+
+    this.logger.log(`Shipment ${shipmentId} CANCELLED by admin ${adminId}: ${reason}`);
+
+    if (previous) {
+      this.emitStatusChanged({
+        shipmentId,
+        orderId: previous.orderId,
+        previousStatus: previous.status ?? null,
+        newStatus: ShipmentStatusEnum.CANCELLED,
+        awbNumber: previous.trackingNumber ?? null,
+        trackingNumber: previous.trackingNumber ?? null,
+        trackingUrl: previous.trackingUrl ?? null,
+        source: 'MANUAL',
+      });
+    }
+  }
+
   // ── Tracking ──────────────────────────────────────────────────────────────
 
   public async saveTrackingEvents(
@@ -421,14 +488,18 @@ export class ShipmentRecordService {
   }
 
   private mapProviderStatus(providerStatus: string): ShipmentStatusEnum {
-    const s = providerStatus?.toUpperCase() ?? '';
+    // Carriers send free-text ("In Transit", "Out for Delivery", "RTO Initiated").
+    // Normalize whitespace/hyphens to underscores so the substring checks match
+    // regardless of separator style.
+    const s = (providerStatus ?? '').toUpperCase().replace(/[\s-]+/g, '_');
     if (s.includes('DELIVERED')) return ShipmentStatusEnum.DELIVERED;
     if (s.includes('OUT_FOR_DELIVERY')) return ShipmentStatusEnum.OUT_FOR_DELIVERY;
-    if (s.includes('IN_TRANSIT')) return ShipmentStatusEnum.IN_TRANSIT;
-    if (s.includes('PICKUP')) return ShipmentStatusEnum.PICKUP_SCHEDULED;
-    if (s.includes('RTO')) return ShipmentStatusEnum.RTO;
     if (s.includes('CANCEL')) return ShipmentStatusEnum.CANCELLED;
-    if (s.includes('FAIL')) return ShipmentStatusEnum.FAILED;
+    if (s.includes('RTO')) return ShipmentStatusEnum.RTO;
+    if (s.includes('FAIL') || s.includes('LOST')) return ShipmentStatusEnum.FAILED;
+    if (s.includes('IN_TRANSIT') || s.includes('TRANSIT') || s.includes('SHIPPED'))
+      return ShipmentStatusEnum.IN_TRANSIT;
+    if (s.includes('PICKUP')) return ShipmentStatusEnum.PICKUP_SCHEDULED;
     if (s.includes('BOOK')) return ShipmentStatusEnum.BOOKED;
     return ShipmentStatusEnum.IN_TRANSIT;
   }
@@ -452,12 +523,26 @@ export class ShipmentRecordService {
       providerAccountId: shipment.providerAccountId,
       franchiseId: shipment.franchiseId,
       warehouseId: shipment.warehouseId,
+      providerShipmentId: shipment.providerShipmentId ?? undefined,
       trackingNumber: shipment.trackingNumber,
       trackingUrl: shipment.trackingUrl,
       totalWeightKg:
         shipment.totalWeightKg != null
           ? CommonFunctionsUtil.toNumber(shipment.totalWeightKg)
           : undefined,
+      lengthCm:
+        shipment.lengthCm != null ? CommonFunctionsUtil.toNumber(shipment.lengthCm) : undefined,
+      widthCm:
+        shipment.widthCm != null ? CommonFunctionsUtil.toNumber(shipment.widthCm) : undefined,
+      heightCm:
+        shipment.heightCm != null ? CommonFunctionsUtil.toNumber(shipment.heightCm) : undefined,
+      receiverName: shipment.receiverName ?? undefined,
+      receiverPhone: shipment.receiverPhone ?? undefined,
+      receiverAddress: shipment.receiverAddress ?? undefined,
+      receiverCity: shipment.receiverCity ?? undefined,
+      receiverState: shipment.receiverState ?? undefined,
+      receiverPincode: shipment.receiverPincode ?? undefined,
+      receiverCountry: shipment.receiverCountry ?? undefined,
       totalAmount:
         shipment.totalAmount != null
           ? CommonFunctionsUtil.toNumber(shipment.totalAmount)
@@ -470,7 +555,7 @@ export class ShipmentRecordService {
       status: shipment.status,
       providerName: shipment.courierProvider?.providerName,
       serviceName: selectedQuote?.serviceName,
-      metaData: shipment.metaData,
+      metaData: shipment.metaData as IShipment['metaData'],
       lastError: shipment.lastError ?? undefined,
       retryCount: shipment.retryCount,
       nextRetryAt: shipment.nextRetryAt ?? undefined,

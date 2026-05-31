@@ -37,4 +37,9 @@ export class ShipmentAdminApiService {
   async createShipmentForMemberProductOrder(memberProductId: number): Promise<void> {
     await this.httpService.post(`shipment/${memberProductId}`, {});
   }
+
+  async cancelShipment(shipmentId: number): Promise<IShipment> {
+    const res = await this.httpService.post<IShipment>(`shipment/${shipmentId}/cancel`, {});
+    return res.data as IShipment;
+  }
 }

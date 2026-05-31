@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
@@ -17,7 +17,6 @@ import { MatCardModule } from '@angular/material/card';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
-import { Router } from '@angular/router';
 import {
   DataTableComponent,
   ITableAction,
@@ -31,11 +30,11 @@ import {
   ShipmentStatusEnum,
 } from '@eatfit247-shared-lib';
 import { MemberProductReportApiService } from './api.service';
-import { ShipmentAdminApiService } from './shipment-admin-api.service';
 import {
-  MemberProductShipmentStatusDialogComponent,
-  MemberProductShipmentStatusDialogData,
-} from './shipment-status-dialog/shipment-status-dialog.component';
+  OrderDetailsDialogComponent,
+  OrderDetailsDialogData,
+  OrderDetailsDialogResult,
+} from './order-details-dialog/order-details-dialog.component';
 
 @Component({
   selector: 'lib-member-product-report',
@@ -61,11 +60,8 @@ import {
 export class MemberProductReportComponent implements OnInit {
   private fb = inject(FormBuilder);
   private apiService = inject(MemberProductReportApiService);
-  private shipmentAdminApi = inject(ShipmentAdminApiService);
-  private router = inject(Router);
   private snackBar = inject(MatSnackBar);
   private dialog = inject(MatDialog);
-  private cdr = inject(ChangeDetectorRef);
 
   filterForm!: FormGroup;
   data: IMemberProductReportItem[] = [];
@@ -84,7 +80,6 @@ export class MemberProductReportComponent implements OnInit {
   selectedItems: IMemberProductReportItem[] = [];
   pendingShipmentMode = false;
   pendingShipmentFallback = false;
-  private readonly creatingShipmentOrderIds = new Set<number>();
   private reportSort: { sortBy: string; sortOrder: 'asc' | 'desc' } | null = null;
 
   constructor() {
@@ -262,24 +257,7 @@ export class MemberProductReportComponent implements OnInit {
         label: 'View Order',
         icon: 'shopping_cart',
         color: 'primary',
-        onClick: (row) => this.viewOrder(row),
-      },
-      {
-        label: 'Create shipment',
-        icon: 'add_box',
-        color: 'accent',
-        visible: (row) => !row.shipment?.shipmentId,
-        disabled: (row) => this.creatingShipmentOrderIds.has(row.memberProductId),
-        onClick: (row) => {
-          void this.createShipmentForRow(row);
-        },
-      },
-      {
-        label: 'Shipping',
-        icon: 'local_shipping',
-        color: 'primary',
-        visible: (row) => !!row.shipment?.shipmentId,
-        onClick: (row) => this.openShipmentDialog(row),
+        onClick: (row) => this.openOrderDetails(row),
       },
     ];
 
@@ -441,57 +419,23 @@ export class MemberProductReportComponent implements OnInit {
       .join(' ');
   }
 
-  async createShipmentForRow(row: IMemberProductReportItem): Promise<void> {
-    if (row.shipment?.shipmentId) {
-      return;
-    }
-    const orderId = row.memberProductId;
-    if (this.creatingShipmentOrderIds.has(orderId)) {
-      return;
-    }
-    this.creatingShipmentOrderIds.add(orderId);
-    this.cdr.markForCheck();
-    try {
-      await this.shipmentAdminApi.createShipmentForMemberProductOrder(orderId);
-      this.snackBar.open('Shipment creation requested.', 'Close', {
-        duration: 4000,
-      });
-      await this.onSearch();
-    } catch {
-      // Error toast is handled by HttpErrorInterceptor
-    } finally {
-      this.creatingShipmentOrderIds.delete(orderId);
-      this.cdr.markForCheck();
-    }
-  }
-
-  openShipmentDialog(row: IMemberProductReportItem): void {
-    const shipmentId = row.shipment?.shipmentId;
-    if (!shipmentId) {
-      return;
-    }
-    const data: MemberProductShipmentStatusDialogData = { shipmentId };
-    const ref = this.dialog.open(MemberProductShipmentStatusDialogComponent, {
-      width: '560px',
+  openOrderDetails(row: IMemberProductReportItem): void {
+    const data: OrderDetailsDialogData = {
+      memberId: row.memberId,
+      memberProductId: row.memberProductId,
+      shipmentId: row.shipment?.shipmentId ?? null,
+    };
+    const ref = this.dialog.open(OrderDetailsDialogComponent, {
+      width: '900px',
       maxWidth: '95vw',
+      maxHeight: '90vh',
       data,
     });
-    ref.afterClosed().subscribe((result) => {
-      if (result?.retried) {
+    ref.afterClosed().subscribe((result: OrderDetailsDialogResult | undefined) => {
+      if (result?.refresh) {
         void this.onSearch();
       }
     });
-  }
-
-  viewOrder(productOrder: IMemberProductReportItem): void {
-    const url = this.router.serializeUrl(
-      this.router.createUrlTree([
-        '/members/details',
-        productOrder.memberId,
-        'product-orders',
-      ])
-    );
-    window.open(url, '_blank');
   }
 
   private formatDate(date: Date): string {

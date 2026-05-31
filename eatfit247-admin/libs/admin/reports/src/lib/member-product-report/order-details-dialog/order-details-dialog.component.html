@@ -1,0 +1,477 @@
+<div class="dialog-container">
+  <div class="dialog-header">
+    <h2 mat-dialog-title>
+      <mat-icon>receipt_long</mat-icon>
+      Order &amp; Shipment Details
+    </h2>
+    <button mat-icon-button (click)="close()" class="close-button">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <mat-dialog-content>
+    @if (loadingOrder()) {
+      <div class="loading-container">
+        <mat-spinner diameter="40"></mat-spinner>
+        <p>Loading order details...</p>
+      </div>
+    }
+
+    @if (!loadingOrder() && productOrder()) {
+      <div class="order-details">
+        <!-- Payment Link Section (if not paid) -->
+        @if (isNotPaid && hasPaymentLink) {
+          <mat-card class="payment-link-card">
+            <mat-card-content>
+              <div class="payment-link-section">
+                <div class="payment-link-header">
+                  <mat-icon>link</mat-icon>
+                  <h3>Payment Link</h3>
+                </div>
+                <div class="payment-link-content">
+                  <p class="payment-link-text">{{ productOrder()?.paymentLink }}</p>
+                  <button
+                    mat-raised-button
+                    color="primary"
+                    (click)="copyPaymentLink()"
+                    class="copy-button">
+                    <mat-icon>content_copy</mat-icon>
+                    Copy Payment Link
+                  </button>
+                </div>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        }
+
+        <!-- Order Summary -->
+        <mat-card class="summary-card">
+          <mat-card-header>
+            <mat-card-title>Order Summary</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="details-grid">
+              <div class="detail-item">
+                <span class="label">Invoice ID:</span>
+                <span class="value">{{ productOrder()?.invoiceId || 'N/A' }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="label">Payment Status:</span>
+                <mat-chip [class]="getStatusClass(productOrder()?.paymentStatus)">
+                  {{ productOrder()?.paymentStatus || 'N/A' }}
+                </mat-chip>
+              </div>
+              <div class="detail-item">
+                <span class="label">Order Date:</span>
+                <span class="value">{{ (productOrder()?.paymentDate | date:'medium') ?? 'N/A' }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="label">Payment Mode:</span>
+                <span class="value">{{ productOrder()?.paymentMode || 'N/A' }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="label">Payment Source:</span>
+                <span class="value">{{ productOrder()?.paymentSource || 'N/A' }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="label">Franchise:</span>
+                <span class="value">{{ productOrder()?.franchise || 'N/A' }}</span>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Order Items -->
+        @if (productOrder()?.orderItems && productOrder()!.orderItems!.length > 0) {
+          <mat-card class="items-card">
+            <mat-card-header>
+              <mat-card-title>Order Items</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <div class="table-container">
+                <table mat-table [dataSource]="productOrder()!.orderItems!" class="order-items-table">
+                  <ng-container matColumnDef="productName">
+                    <th mat-header-cell *matHeaderCellDef>Product</th>
+                    <td mat-cell *matCellDef="let item">{{ item.productName }}</td>
+                  </ng-container>
+                  <ng-container matColumnDef="quantityLabel">
+                    <th mat-header-cell *matHeaderCellDef>Size</th>
+                    <td mat-cell *matCellDef="let item">{{ item.quantityLabel }}</td>
+                  </ng-container>
+                  <ng-container matColumnDef="unitPrice">
+                    <th mat-header-cell *matHeaderCellDef>Unit Price</th>
+                    <td mat-cell *matCellDef="let item" class="amount-cell">
+                      {{ item.unitPrice | formatCurrency }}
+                    </td>
+                  </ng-container>
+                  <ng-container matColumnDef="quantity">
+                    <th mat-header-cell *matHeaderCellDef>Qty</th>
+                    <td mat-cell *matCellDef="let item" class="quantity-cell">{{ item.quantity }}</td>
+                  </ng-container>
+                  <ng-container matColumnDef="baseAmount">
+                    <th mat-header-cell *matHeaderCellDef>Base Amount</th>
+                    <td mat-cell *matCellDef="let item" class="amount-cell">
+                      {{ item.baseAmount | formatCurrency }}
+                    </td>
+                  </ng-container>
+                  <ng-container matColumnDef="discountAmount">
+                    <th mat-header-cell *matHeaderCellDef>Discount</th>
+                    <td mat-cell *matCellDef="let item" class="amount-cell discount">
+                      {{ item.discountAmount ? '-' + (item.discountAmount | formatCurrency) : '-' }}
+                    </td>
+                  </ng-container>
+                  <ng-container matColumnDef="taxAmount">
+                    <th mat-header-cell *matHeaderCellDef>Tax</th>
+                    <td mat-cell *matCellDef="let item" class="amount-cell">
+                      {{ item.taxAmount ? (item.taxAmount | formatCurrency) : '-' }}
+                    </td>
+                  </ng-container>
+                  <ng-container matColumnDef="totalAmount">
+                    <th mat-header-cell *matHeaderCellDef>Total</th>
+                    <td mat-cell *matCellDef="let item" class="amount-cell total">
+                      {{ item.totalAmount | formatCurrency }}
+                    </td>
+                  </ng-container>
+                  <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                  <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+                </table>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        }
+
+        <!-- Amount Breakdown -->
+        <mat-card class="amount-card">
+          <mat-card-header>
+            <mat-card-title>Amount Breakdown</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="amount-breakdown">
+              <div class="amount-row">
+                <span class="label">Subtotal:</span>
+                <span class="value">{{ productOrder()?.subTotalAmount | formatCurrency }}</span>
+              </div>
+              @if (productOrder()?.discountAmount && productOrder()!.discountAmount! > 0) {
+                <div class="amount-row discount">
+                  <span class="label">Discount:</span>
+                  <span class="value">-{{ productOrder()?.discountAmount | formatCurrency }}</span>
+                </div>
+              }
+              @if (productOrder()?.taxAmount && productOrder()!.taxAmount! > 0) {
+                <div class="amount-row">
+                  <span class="label">Tax:</span>
+                  <span class="value">{{ productOrder()?.taxAmount | formatCurrency }}</span>
+                </div>
+              }
+              <mat-divider></mat-divider>
+              <div class="amount-row total">
+                <span class="label">Total Amount:</span>
+                <span class="value">{{ productOrder()?.totalAmount | formatCurrency }}</span>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Shipping Address -->
+        @if (productOrder()?.memberAddress?.address) {
+          <mat-card class="address-card">
+            <mat-card-header>
+              <mat-card-title>Shipping Address</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <div class="address-content">
+                <p>{{ productOrder()?.memberAddress?.address?.postalAddress }}</p>
+                <p>
+                  {{ productOrder()?.memberAddress?.address?.cityVillage }}@if (productOrder()?.memberAddress?.address?.state) {, {{ productOrder()?.memberAddress?.address?.state }}}
+                </p>
+                <p>
+                  {{ productOrder()?.memberAddress?.address?.country }}@if (productOrder()?.memberAddress?.address?.pinCode) { - {{ productOrder()?.memberAddress?.address?.pinCode }}}
+                </p>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        }
+
+        <!-- Shipment Section -->
+        <mat-card class="shipment-card">
+          <mat-card-header>
+            <mat-card-title>Shipment</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            @if (loadingShipment()) {
+              <div class="loading-container small">
+                <mat-spinner diameter="32"></mat-spinner>
+              </div>
+            } @else if (!shipment()) {
+              <div class="empty-shipment">
+                <mat-icon>local_shipping</mat-icon>
+                <p>No shipment created yet for this order.</p>
+                <button
+                  mat-flat-button
+                  color="primary"
+                  [disabled]="creatingShipment()"
+                  (click)="createShipment()">
+                  @if (creatingShipment()) {
+                    <mat-spinner diameter="18"></mat-spinner>
+                  } @else {
+                    <mat-icon>add_box</mat-icon>
+                  }
+                  Create Shipment
+                </button>
+              </div>
+            } @else {
+              <div class="shipment-summary">
+                <div class="detail-item">
+                  <span class="label">Shipment #</span>
+                  <span class="value mono">{{ shipment()!.shipmentNumber }}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="label">Status</span>
+                  <mat-chip [class]="shipmentStatusClass(shipment()!.status)">
+                    {{ formatShipmentStatus(shipment()!.status) }}
+                  </mat-chip>
+                </div>
+                @if (shipment()!.providerName) {
+                  <div class="detail-item">
+                    <span class="label">Carrier</span>
+                    <span class="value">{{ shipment()!.providerName }}</span>
+                  </div>
+                }
+                @if (serviceLabel) {
+                  <div class="detail-item">
+                    <span class="label">Service</span>
+                    <span class="value">{{ serviceLabel }}</span>
+                  </div>
+                }
+                @if (awbNumber) {
+                  <div class="detail-item">
+                    <span class="label">AWB #</span>
+                    <span class="value mono with-copy">
+                      {{ awbNumber }}
+                      <button
+                        mat-icon-button
+                        type="button"
+                        class="inline-copy"
+                        matTooltip="Copy AWB"
+                        (click)="copyToClipboard(awbNumber, 'AWB')">
+                        <mat-icon>content_copy</mat-icon>
+                      </button>
+                    </span>
+                  </div>
+                }
+                @if (shipment()!.trackingNumber && shipment()!.trackingNumber !== awbNumber) {
+                  <div class="detail-item">
+                    <span class="label">Tracking #</span>
+                    <span class="value mono">{{ shipment()!.trackingNumber }}</span>
+                  </div>
+                }
+                @if (shipment()!.providerShipmentId) {
+                  <div class="detail-item">
+                    <span class="label">Provider Shipment ID</span>
+                    <span class="value mono">{{ shipment()!.providerShipmentId }}</span>
+                  </div>
+                }
+                @if (shipment()!.trackingUrl) {
+                  <div class="detail-item">
+                    <span class="label">Track on carrier</span>
+                    <a [href]="shipment()!.trackingUrl" target="_blank" rel="noopener noreferrer">
+                      <mat-icon class="link-icon">open_in_new</mat-icon>
+                      Open tracking page
+                    </a>
+                  </div>
+                }
+                @if (labelUrl) {
+                  <div class="detail-item">
+                    <span class="label">Shipping label</span>
+                    <a [href]="labelUrl" target="_blank" rel="noopener noreferrer">
+                      <mat-icon class="link-icon">download</mat-icon>
+                      Download label
+                    </a>
+                  </div>
+                }
+                @if (shipment()!.rateAmount != null) {
+                  <div class="detail-item">
+                    <span class="label">Carrier charges</span>
+                    <span class="value mono">{{ shipment()!.rateAmount | formatCurrency }}</span>
+                  </div>
+                }
+                @if (shipment()!.totalAmount != null) {
+                  <div class="detail-item">
+                    <span class="label">Order amount (declared)</span>
+                    <span class="value mono">{{ shipment()!.totalAmount | formatCurrency }}</span>
+                  </div>
+                }
+                @if (codAmount != null) {
+                  <div class="detail-item">
+                    <span class="label">COD amount</span>
+                    <span class="value mono">{{ codAmount | formatCurrency }}</span>
+                  </div>
+                }
+                @if (weightLabel) {
+                  <div class="detail-item">
+                    <span class="label">Weight</span>
+                    <span class="value">{{ weightLabel }}</span>
+                  </div>
+                }
+                @if (dimensionsLabel) {
+                  <div class="detail-item">
+                    <span class="label">Dimensions (L × B × H)</span>
+                    <span class="value">{{ dimensionsLabel }}</span>
+                  </div>
+                }
+                @if (shipment()!.createdAt) {
+                  <div class="detail-item">
+                    <span class="label">Booked at</span>
+                    <span class="value">{{ shipment()!.createdAt | date:'medium' }}</span>
+                  </div>
+                }
+                @if (shipment()!.nextRetryAt) {
+                  <div class="detail-item">
+                    <span class="label">Next retry at</span>
+                    <span class="value">{{ shipment()!.nextRetryAt | date:'medium' }}</span>
+                  </div>
+                }
+                @if (shipment()!.retryCount && shipment()!.retryCount! > 0) {
+                  <div class="detail-item">
+                    <span class="label">Retry attempts</span>
+                    <span class="value">{{ shipment()!.retryCount }}</span>
+                  </div>
+                }
+              </div>
+
+              @if (receiverLines.length > 0) {
+                <div class="receiver-block">
+                  <div class="receiver-header">
+                    <mat-icon>place</mat-icon>
+                    <span>Shipping to (as sent to carrier)</span>
+                  </div>
+                  <div class="receiver-body">
+                    @for (line of receiverLines; track line) {
+                      <div>{{ line }}</div>
+                    }
+                  </div>
+                </div>
+              }
+
+              @if (bookingResponseJson) {
+                <details class="raw-payload">
+                  <summary>Raw booking response from carrier</summary>
+                  <pre>{{ bookingResponseJson }}</pre>
+                </details>
+              }
+
+              @if (shipment()!.lastError) {
+                <div class="error-box">
+                  <mat-icon>error_outline</mat-icon>
+                  <span>{{ shipment()!.lastError }}</span>
+                </div>
+              }
+
+              <mat-divider></mat-divider>
+
+              <div class="events-header">
+                <h4>Tracking events</h4>
+                <button
+                  mat-stroked-button
+                  type="button"
+                  color="primary"
+                  [disabled]="!canRefreshFromCarrier || refreshingTracking()"
+                  (click)="refreshTracking()">
+                  @if (refreshingTracking()) {
+                    <mat-spinner diameter="18"></mat-spinner>
+                  } @else {
+                    <mat-icon>sync</mat-icon>
+                  }
+                  Refresh from carrier
+                </button>
+              </div>
+
+              @if (trackError()) {
+                <p class="track-error">{{ trackError() }}</p>
+              }
+
+              @if (trackingEvents().length === 0) {
+                <p class="empty muted">No tracking events stored yet. Use "Refresh from carrier" once the shipment is booked.</p>
+              } @else {
+                <ul class="event-list">
+                  @for (ev of trackingEvents(); track trackEventId(ev)) {
+                    <li class="event-item">
+                      <div class="event-time">{{ ev.eventTime | date: 'medium' }}</div>
+                      <div class="event-main">
+                        <div class="event-title">{{ eventTitle(ev) }}</div>
+                        @if (eventDescription(ev)) {
+                          <div class="event-desc">{{ eventDescription(ev) }}</div>
+                        }
+                        @if (providerStatus(ev)) {
+                          <div class="event-provider">Carrier: {{ providerStatus(ev) }}</div>
+                        }
+                      </div>
+                    </li>
+                  }
+                </ul>
+              }
+            }
+          </mat-card-content>
+        </mat-card>
+      </div>
+    }
+
+    @if (!loadingOrder() && !productOrder()) {
+      <div class="error-container">
+        <mat-icon color="warn">error_outline</mat-icon>
+        <p>Failed to load order details.</p>
+      </div>
+    }
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    @if (hasShipment) {
+      @if (canRetry) {
+        <button
+          mat-stroked-button
+          color="warn"
+          type="button"
+          [disabled]="retrying()"
+          (click)="retryShipment()">
+          @if (retrying()) {
+            <mat-spinner diameter="18"></mat-spinner>
+          } @else {
+            <mat-icon>replay</mat-icon>
+          }
+          Retry Booking
+        </button>
+      }
+      @if (canCancel) {
+        <button
+          mat-stroked-button
+          color="warn"
+          type="button"
+          [disabled]="cancelling()"
+          (click)="cancelShipment()">
+          @if (cancelling()) {
+            <mat-spinner diameter="18"></mat-spinner>
+          } @else {
+            <mat-icon>cancel</mat-icon>
+          }
+          Cancel Shipment
+        </button>
+      }
+      @if (canRebook) {
+        <button
+          mat-flat-button
+          color="primary"
+          type="button"
+          [disabled]="creatingShipment()"
+          (click)="createShipment()">
+          @if (creatingShipment()) {
+            <mat-spinner diameter="18"></mat-spinner>
+          } @else {
+            <mat-icon>local_shipping</mat-icon>
+          }
+          Create New Shipment
+        </button>
+      }
+    }
+    <button mat-raised-button (click)="close()">Close</button>
+  </mat-dialog-actions>
+</div>
