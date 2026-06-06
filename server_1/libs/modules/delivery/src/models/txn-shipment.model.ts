@@ -72,6 +72,16 @@ import { TxnMemberProductOrderItem } from '@server_1/modules/member/models';
       fields: ['shipment_number'],
       name: 'ix_uq_txn_shipment_shipment_number',
     },
+    {
+      unique: true,
+      fields: ['idempotency_key'],
+      name: 'ix_uq_txn_shipments_idempotency_key',
+    },
+    {
+      unique: false,
+      fields: ['retry_claimed_at'],
+      name: 'idx_shipments_retry_claimed_at',
+    },
   ],
 })
 @Scopes(() => ({
@@ -440,6 +450,37 @@ export class TxnShipment extends Model<TxnShipment> {
     type: DataType.DATE,
   })
   declare nextRetryAt: Date;
+
+  // Carrier-facing stable identifier — sent as order_id/order_number to all
+  // courier adapters. Generated once at DRAFT creation and reused across
+  // every retry so carriers can server-side reject duplicate bookings.
+  @Column({
+    allowNull: false,
+    field: 'idempotency_key',
+    type: DataType.UUID,
+    defaultValue: DataType.UUIDV4,
+  })
+  declare idempotencyKey: string;
+
+  // High-water mark of the most recent provider event_time accepted for this
+  // shipment. saveTrackingEvents refuses to flip status when an incoming
+  // event is older than this value (out-of-order webhook / polling guard).
+  @Column({
+    allowNull: true,
+    field: 'last_status_event_at',
+    type: DataType.DATE,
+  })
+  declare lastStatusEventAt: Date;
+
+  // Cooperative claim marker for the retry & status-sync crons. Each cron
+  // worker conditionally UPDATEs this column with a stale-claim TTL; only
+  // one worker wins. Prevents two API instances from picking the same row.
+  @Column({
+    allowNull: true,
+    field: 'retry_claimed_at',
+    type: DataType.DATE,
+  })
+  declare retryClaimedAt: Date;
 
   @Column({
     allowNull: true,

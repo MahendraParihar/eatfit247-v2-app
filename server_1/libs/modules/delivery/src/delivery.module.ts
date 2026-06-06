@@ -34,6 +34,7 @@ import {
   RateSelectorService,
   ShipmentOrchestrationService,
   ShipmentRetryCron,
+  ShipmentStatusSyncCron,
 } from './services';
 import { ShipmentListener, ShipmentNotificationListener } from './listeners';
 import { NotificationModule } from '@server_1/modules/notification';
@@ -102,6 +103,7 @@ modelRegistry.register([
     RateSelectorService,
     ShipmentOrchestrationService,
     ShipmentRetryCron,
+    ShipmentStatusSyncCron,
     CourierFactory,
     NimbusAdapter,
     ShiprocketAdapter,

@@ -262,8 +262,10 @@ export class MemberDietPlanService {
       cycleNo: s.cycleNo,
       memberDietPlanId: s.memberDietPlanId,
       dietPlanId: s.memberDietPlanId,
-      startDate: s.startDate ? moment(s.startDate).toDate() : null,
-      endDate: s.endDate ? moment(s.endDate).toDate() : null,
+      // Emit DATEONLY values as YYYY-MM-DD strings so the calendar day
+      // survives JSON serialization without timezone shifting on the client.
+      startDate: s.startDate ? moment(s.startDate).format('YYYY-MM-DD') : null,
+      endDate: s.endDate ? moment(s.endDate).format('YYYY-MM-DD') : null,
       type: s.type,
       noOfCycle: 0,
       noOfDaysInCycle: 0,
@@ -337,8 +339,8 @@ export class MemberDietPlanService {
         : obj.currentCycleNo && obj.currentCycleNo > 0
           ? 'In Progress'
           : 'Not Started',
-      startDate: obj.startDate ? moment(obj.startDate).toDate() : null,
-      endDate: obj.endDate ? moment(obj.endDate).toDate() : null,
+      startDate: obj.startDate ? moment(obj.startDate).format('YYYY-MM-DD') : null,
+      endDate: obj.endDate ? moment(obj.endDate).format('YYYY-MM-DD') : null,
       active: obj.active,
       deletable: false,
       createdBy: obj.createdBy,
@@ -598,32 +600,41 @@ export class MemberDietPlanService {
       }
     }
     dietCategory = this.convertDietDetail(categoryList, recipeList, dietDetail);
-    // Calculate start and end date
-    if (cycleNo && cycleNo === 1 && (!dayNo || dayNo === 0)) {
-      // cycle plan
-      dietPlanStartDate = moment().format('YYYY-MM-DD');
+    // If an existing detail row was loaded (edit mode, not copy-from), echo
+    // its stored calendar days so the form prefills with the actual dates the
+    // admin previously saved.
+    const isEditingExisting = !!dietDetail && !copyFromCycleNo && !copyFromDayNo;
+    if (isEditingExisting) {
+      dietPlanStartDate = moment(dietDetail.startDate).format('YYYY-MM-DD');
+      dietPlanEndDate = moment(dietDetail.endDate).format('YYYY-MM-DD');
     } else {
-      const lastDietPlan = await this.memberDietPlanDetailRepository.findOne({
-        where: {
-          memberDietPlanId: dietPlanId,
-        },
-        order: [
-          ['cycleNo', 'DESC'],
-          ['dayNo', 'DESC'],
-        ],
-      });
-      if (lastDietPlan) {
-        dietPlanStartDate = moment(lastDietPlan.endDate).add(1, 'day').format('YYYY-MM-DD');
-      } else {
+      // Calculate suggested start/end for a new cycle or day.
+      if (cycleNo && cycleNo === 1 && (!dayNo || dayNo === 0)) {
+        // cycle plan
         dietPlanStartDate = moment().format('YYYY-MM-DD');
+      } else {
+        const lastDietPlan = await this.memberDietPlanDetailRepository.findOne({
+          where: {
+            memberDietPlanId: dietPlanId,
+          },
+          order: [
+            ['cycleNo', 'DESC'],
+            ['dayNo', 'DESC'],
+          ],
+        });
+        if (lastDietPlan) {
+          dietPlanStartDate = moment(lastDietPlan.endDate).add(1, 'day').format('YYYY-MM-DD');
+        } else {
+          dietPlanStartDate = moment().format('YYYY-MM-DD');
+        }
       }
-    }
-    if (!dayNo || dayNo === 0) {
-      dietPlanEndDate = moment(dietPlanStartDate)
-        .add(planDetail.daysInCycle - 1, 'day')
-        .format('YYYY-MM-DD');
-    } else {
-      dietPlanEndDate = dietPlanStartDate;
+      if (!dayNo || dayNo === 0) {
+        dietPlanEndDate = moment(dietPlanStartDate)
+          .add(planDetail.daysInCycle - 1, 'day')
+          .format('YYYY-MM-DD');
+      } else {
+        dietPlanEndDate = dietPlanStartDate;
+      }
     }
     return {
       memberName: '',
@@ -635,8 +646,8 @@ export class MemberDietPlanService {
         dietPlanId: dietPlanId,
         noOfCycle: planDetail.noOfCycle,
         noOfDaysInCycle: planDetail.daysInCycle,
-        startDate: dietPlanStartDate ? new Date(dietPlanStartDate) : null,
-        endDate: dietPlanEndDate ? new Date(dietPlanEndDate) : null,
+        startDate: dietPlanStartDate || null,
+        endDate: dietPlanEndDate || null,
         dietPlan: dietCategory,
         type: DietTypeEnum.CYCLE,
         isDeletable: false,
@@ -686,11 +697,19 @@ export class MemberDietPlanService {
         where: condition,
         transaction: t,
       });
+      // Frontend sends startDate/endDate as YYYY-MM-DD calendar days
+      // (parsed into UTC-midnight Date by class-transformer). Format from
+      // UTC so the DATEONLY column stores exactly that calendar day
+      // regardless of the server's timezone.
+      const startDateOnly = moment.utc(body.startDate).format('YYYY-MM-DD');
+      const endDateOnly = body.endDate
+        ? moment.utc(body.endDate).format('YYYY-MM-DD')
+        : null;
       const dietDObj: any = {
         cycleNo: body.cycleNo,
         memberDietPlanId: body.dietPlanId,
-        startDate: moment(body.startDate),
-        endDate: body.endDate ? moment(body.endDate) : null,
+        startDate: startDateOnly,
+        endDate: endDateOnly,
         dayNo: body.dayNo && body.dayNo > 0 ? body.dayNo : null,
         type: body.dayNo && body.dayNo > 0 ? DietTypeEnum.DAY : DietTypeEnum.CYCLE,
         dietPlan: planArray,
@@ -713,19 +732,19 @@ export class MemberDietPlanService {
       if (body.cycleNo === 1) {
         if (!body.dayNo || body.dayNo === 0) {
           // weekly start date
-          dietStartDate = moment(body.startDate);
+          dietStartDate = startDateOnly;
         } else if (body.dayNo && body.dayNo === 1) {
           // daily diet plan start date
-          dietStartDate = moment(body.startDate);
+          dietStartDate = startDateOnly;
         }
       }
       if (body.cycleNo === dietPlanDetail.noOfCycle) {
         if (!body.dayNo || body.dayNo === 0) {
           // cycle plan
-          dietEndDate = body.endDate ? moment(body.endDate) : null;
+          dietEndDate = endDateOnly;
         } else if (body.dayNo === dietPlanDetail.daysInCycle) {
           // day plan
-          dietEndDate = body.endDate ? moment(body.endDate) : null;
+          dietEndDate = endDateOnly;
         }
       }
       const updateObj = {

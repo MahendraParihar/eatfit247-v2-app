@@ -68,6 +68,15 @@
       vertical-align: top;
     }
 
+    .diet-plan-table td p {
+      margin: 0 0 4px 0;
+      min-height: 1em;
+    }
+
+    .diet-plan-table td p:empty::after {
+      content: "\00a0";
+    }
+
     .diet-plan-table th:nth-child(1),
     .diet-plan-table td:nth-child(1) {
       width: 20%;

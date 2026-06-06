@@ -202,12 +202,23 @@ export class MemberDietPlanDetailComponent implements OnInit, OnDestroy {
       this.dietPlanDetail.set(res.diet);
       this.recipeList.set(res.recipes as IDropdownItem[]);
       const diet = res.diet;
+      // Parse only the YYYY-MM-DD calendar portion and build a local-midnight
+      // Date so MatDatepicker shows the same day the server stored, in any
+      // viewer timezone.
+      const toLocalDate = (value: string | Date | null | undefined): Date | null => {
+        if (!value) return null;
+        const iso = value instanceof Date ? value.toISOString() : String(value);
+        const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso);
+        if (!match) return new Date(value as string | number | Date);
+        const [, year, month, day] = match;
+        return new Date(Number(year), Number(month) - 1, Number(day));
+      };
       this.formGroup.patchValue({
         dietPlanId: (diet as any).dietPlanId || diet.memberDietPlanId,
         cycleNo: diet.cycleNo,
         dayNo: diet.dayNo,
-        startDate: diet.startDate ? new Date(diet.startDate) : null,
-        endDate: diet.endDate ? new Date(diet.endDate) : null
+        startDate: toLocalDate(diet.startDate),
+        endDate: toLocalDate(diet.endDate)
       });
       if (diet.noOfCycle) {
         this.formGroup.get('cycleNo')?.setValidators([
@@ -308,9 +319,13 @@ export class MemberDietPlanDetailComponent implements OnInit, OnDestroy {
       return;
     }
     try {
+      // Send the user-picked calendar day as a YYYY-MM-DD string so the
+      // backend DATEONLY column doesn't get shifted by UTC conversion.
+      const toCalendarDay = (d: Date | string | null | undefined) =>
+        d ? moment(d).format('YYYY-MM-DD') : d;
       const payload: IMemberDietPlanDetail = {
-        startDate: this.formGroup.value.startDate,
-        endDate: this.formGroup.value.endDate,
+        startDate: toCalendarDay(this.formGroup.value.startDate) as unknown as Date,
+        endDate: toCalendarDay(this.formGroup.value.endDate) as unknown as Date,
         cycleNo: this.formGroup.value.cycleNo,
         dietPlanId: this.formGroup.value.dietPlanId,
         dietPlan: this.formGroup.value.dietPlan
