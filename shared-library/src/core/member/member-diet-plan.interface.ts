@@ -8,8 +8,8 @@ export interface IBasicMemberDietPlan {
   daysInCycle: number;
   currentCycleNo?: number;
   currentDayNo?: number;
-  startDate: Date;
-  endDate?: Date;
+  startDate: string | Date;
+  endDate?: string | Date;
   isCompleted: boolean;
 }
 

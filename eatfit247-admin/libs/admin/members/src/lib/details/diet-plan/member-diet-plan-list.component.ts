@@ -596,15 +596,19 @@ export class MemberDietPlanListComponent implements OnInit, OnDestroy {
   }
 
   formatDateRange(startDate: string | Date, endDate: string | Date): string {
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-    const formatDate = (date: Date) => {
-      const day = date.getDate().toString().padStart(2, "0");
-      const month = date.toLocaleString("default", { month: "short" });
-      const year = date.getFullYear();
-      return `${day}-${month}-${year}`;
+    // Parse only the YYYY-MM-DD calendar portion so display is not shifted
+    // by the viewer's timezone (DATEONLY values arrive as date-only or
+    // as a midnight ISO timestamp; we want the calendar day either way).
+    const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const formatDate = (value: string | Date) => {
+      const iso = value instanceof Date ? value.toISOString() : String(value);
+      const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso);
+      if (!match) return String(value);
+      const [, year, month, day] = match;
+      return `${day}-${MONTHS[Number(month) - 1]}-${year}`;
     };
-    return `${formatDate(start)} - ${formatDate(end)}`;
+    return `${formatDate(startDate)} - ${formatDate(endDate)}`;
   }
 
   /**
