@@ -288,11 +288,19 @@ export class DietPlanPdfService {
    */
   private formatDate(dateStr: string | Date): string {
     try {
-      const date = dateStr instanceof Date ? dateStr : new Date(dateStr);
+      // Pull the YYYY-MM-DD calendar portion so the formatted day matches
+      // what was stored (and what the admin picked), independent of the
+      // Puppeteer/runtime timezone.
+      const iso = dateStr instanceof Date ? dateStr.toISOString() : String(dateStr);
+      const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso);
+      if (!match) return String(dateStr);
+      const [, year, month, day] = match;
+      const date = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)));
       return date.toLocaleDateString('en-IN', {
         year: 'numeric',
         month: 'long',
         day: 'numeric',
+        timeZone: 'UTC',
       });
     } catch {
       return String(dateStr);

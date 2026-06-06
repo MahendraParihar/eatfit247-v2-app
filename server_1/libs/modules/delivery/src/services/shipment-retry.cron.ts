@@ -21,6 +21,17 @@ export class ShipmentRetryCron {
 
     this.logger.log(`Shipment retry cron picked ${pendingShipments.length} shipment(s)`);
     for (const shipment of pendingShipments) {
+      // Cooperative cron claim — under multi-instance deploy the same row
+      // may be returned by getRetryableShipments on two workers within the
+      // claim's TTL window. tryClaim atomically updates retry_claimed_at and
+      // returns false on the loser so only one worker proceeds.
+      const claimed = await this.shipmentRecordService.tryClaim(shipment.shipmentId);
+      if (!claimed) {
+        this.logger.debug(
+          `Shipment ${shipment.shipmentId} already claimed by another worker — skipping`,
+        );
+        continue;
+      }
       try {
         await this.shipmentOrchestrationService.retryBooking(
           shipment.shipmentId,
@@ -29,6 +40,8 @@ export class ShipmentRetryCron {
       } catch (error: unknown) {
         const message = error instanceof Error ? error.message : 'unknown error';
         this.logger.error(`Retry failed for shipment ${shipment.shipmentId}: ${message}`);
+      } finally {
+        await this.shipmentRecordService.releaseClaim(shipment.shipmentId);
       }
     }
   }

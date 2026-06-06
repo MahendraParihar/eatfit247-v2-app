@@ -167,7 +167,11 @@ export class ShiprocketAdapter extends BaseCourierAdapter {
         : [];
 
       const requestBody = {
-        order_id: payload.shipmentId,
+        // Stable per-shipment UUID — Shiprocket enforces uniqueness on
+        // order_id, so retries with the same key are server-side dedup'd.
+        // Falls back to shipmentId for any caller still passing the legacy
+        // shape (e.g. unit tests).
+        order_id: payload.idempotencyKey ?? payload.shipmentId,
         order_date: new Date().toISOString().split('T')[0],
         pickup_location: payload.pickup.name,
         billing_customer_name: payload.delivery.name,
@@ -301,31 +305,48 @@ export class ShiprocketAdapter extends BaseCourierAdapter {
 
   /**
    * Cancel shipment with Shiprocket API
-   * (apiBaseUrl in DB includes prefix e.g. /api/v1)
+   * Endpoint: POST /orders/cancel/shipment/awbs   body: { awbs: [trackingNumber] }
+   *
+   * Per Shiprocket docs the cancel is ASYNC — a 2xx response means the request
+   * has been queued ("Bulk Shipment cancellation is in progress. Please wait
+   * for some time."), NOT that the carrier has actually cancelled. Failure
+   * shapes carry `status_code >= 400` and/or an `errors` map. We throw on those
+   * synchronous-failure shapes here; the genuine carrier-side confirmation has
+   * to come from a later track-poll (handled by ShipmentStatusSyncCron) or a
+   * webhook.
    */
   async cancelShipment(
     trackingNumber: string,
     credentials: ICourierProviderCredentials,
   ): Promise<void> {
     await this.executeWithLogging('cancelShipment', async () => {
-      // Ensure valid token before making API call
-      await this.ensureValidToken(credentials);
+      if (!trackingNumber || trackingNumber.trim().length === 0) {
+        throw new Error(`${this.providerCode} Tracking number is required for cancellation`);
+      }
 
-      // Get authentication headers
+      await this.ensureValidToken(credentials);
       const headers = await this.getAuthHeaders(credentials);
 
-      await this.withTimeout(
-        this.httpService.post(
+      const response = await this.withTimeout(
+        this.httpService.post<{ message?: string; status_code?: number; errors?: unknown }>(
           `${credentials.apiBaseUrl}/orders/cancel/shipment/awbs`,
-          {
-            awbs: [trackingNumber],
-          },
+          { awbs: [trackingNumber.trim()] },
           undefined,
           headers,
         ),
         10_000,
         'shipment cancellation',
       );
+      this.logger.log(
+        `Shiprocket cancel raw response for AWB ${trackingNumber}: ${JSON.stringify(response).slice(0, 1000)}`,
+      );
+
+      const statusCode = response?.status_code;
+      if ((typeof statusCode === 'number' && statusCode >= 400) || response?.errors) {
+        throw new Error(
+          `${this.providerCode} ${response?.message ?? 'cancel rejected by Shiprocket'}`,
+        );
+      }
     });
   }
 
