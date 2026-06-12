@@ -166,8 +166,11 @@ export class NimbusAdapter extends BaseCourierAdapter {
         // Stable per-shipment UUID. NOTE: Nimbus does not server-enforce
         // order_number uniqueness, so this is best-effort dedup only — true
         // protection requires the deferred findByIdempotencyKey adapter
-        // method (see Task #15).
-        order_number: payload.idempotencyKey ?? payload.shipmentId.toString(),
+        // method (see Task #15). Nimbus caps order_number at 30 chars, so
+        // strip UUID dashes and truncate.
+        order_number: (payload.idempotencyKey ?? payload.shipmentId.toString())
+          .replace(/-/g, '')
+          .slice(0, 30),
         payment_type: 'prepaid',
         order_amount: Number(payload.orderAmount),
         cod_charges: 0,
