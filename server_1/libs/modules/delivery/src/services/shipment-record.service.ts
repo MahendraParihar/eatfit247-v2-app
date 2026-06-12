@@ -688,8 +688,8 @@ export class ShipmentRecordService {
       retryCount: shipment.retryCount,
       nextRetryAt: shipment.nextRetryAt ?? undefined,
       shipmentItems,
-      createdBy: shipment.createdBy,
-      modifiedBy: shipment.modifiedBy,
+      createdBy: shipment.createdBy ?? 0,
+      modifiedBy: shipment.modifiedBy ?? 0,
       createdAt: shipment.createdAt,
       updatedAt: shipment.updatedAt,
       trackingEvents: Array.isArray(shipment.trackingEvents)

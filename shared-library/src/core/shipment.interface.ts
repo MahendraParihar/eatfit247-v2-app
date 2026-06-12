@@ -19,7 +19,7 @@ export interface ICreateShipmentPayload {
   receiverPincode: string;
   receiverCountry: string;
   items: ICreateShipmentItemPayload[];
-  createdBy: number;
+  createdBy: number | null;
   createdIp: string;
 }
 

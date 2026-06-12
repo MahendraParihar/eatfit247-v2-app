@@ -4,7 +4,7 @@ import { ShipmentOrchestrationService } from '../services';
 
 export interface OrderProductPaidPayload {
   memberProductId: number;
-  createdBy: number;
+  createdBy: number | null;
   createdIp: string;
 }
 

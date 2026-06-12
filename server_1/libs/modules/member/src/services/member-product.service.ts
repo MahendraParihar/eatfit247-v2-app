@@ -1208,7 +1208,7 @@ export class MemberProductService {
       if (obj.paymentStatusId === PaymentStatusEnum.PAID) {
         this.eventEmitter.emit('order.product.paid', {
           memberProductId: productOrder.memberProductId,
-          createdBy: adminId || 0,
+          createdBy: adminId ?? null,
           createdIp: requestedIp,
         });
       }
