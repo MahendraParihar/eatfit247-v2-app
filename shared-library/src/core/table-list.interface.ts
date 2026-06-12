@@ -17,6 +17,7 @@ export interface IBasicSearch extends ITableListFilter {
   createdFrom?: Date | null;
   createdTo?: Date | null;
   active?: boolean | null;
+  showOnWebsite?: boolean | null;
   includeAdminRoles?: boolean;
   /** Declared for list endpoints; each module applies its own allowlist. */
   sortField?: string;

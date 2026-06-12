@@ -77,6 +77,20 @@ export class TxnSuccessStories extends Model<TxnSuccessStories> {
     type: DataType.BOOLEAN,
   })
   declare active: boolean;
+  @Column({
+    allowNull: false,
+    defaultValue: false,
+    field: 'show_on_website',
+    type: DataType.BOOLEAN,
+  })
+  declare showOnWebsite: boolean;
+  @Column({
+    allowNull: false,
+    defaultValue: 0,
+    field: 'sequence',
+    type: DataType.INTEGER,
+  })
+  declare sequence: number;
   @BelongsTo(() => MstAdminUser, {
     as: 'createdByUser',
     foreignKey: 'createdBy',

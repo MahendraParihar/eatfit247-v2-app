@@ -26,11 +26,13 @@ export class SuccessStories extends BaseListComponent<ISuccessStory> {
   protected buildEntityColumns(): ITableColumn<ISuccessStory>[] {
     return [
       { key: 'successStoryId', label: 'ID', dataKey: 'successStoryId', sortable: true, width: '80px' },
+      { key: 'sequence', label: 'Seq', dataKey: 'sequence', sortable: true, width: '80px', align: 'center', type: 'number' },
       { key: 'name', label: 'Name', dataKey: 'name', sortable: true, searchable: true },
       { key: 'title', label: 'Title', dataKey: 'title', sortable: true, searchable: true },
       { key: 'date', label: 'Date', dataKey: 'date', sortable: true, type: 'date', width: '120px' },
       { key: 'mediaType', label: 'Media', dataKey: 'mediaType', sortable: true, width: '100px' },
       { key: 'image', label: 'Image', dataKey: 'imagePath', sortable: false, width: '100px', align: 'center', isAvatar: true, type: 'image' },
+      { key: 'showOnWebsite', label: 'On Website', dataKey: 'showOnWebsite', sortable: true, width: '120px', align: 'center', type: 'boolean' },
     ];
   }
 

@@ -109,6 +109,30 @@
           </mat-select>
           <shared-ui-input-error [control]="formGroup.get('active')" controlName="Status"></shared-ui-input-error>
         </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Show On Website</mat-label>
+          <mat-select formControlName="showOnWebsite">
+            <mat-option [value]="true">Yes</mat-option>
+            <mat-option [value]="false">No</mat-option>
+          </mat-select>
+          <mat-hint>Only stories set to Yes appear on the public website.</mat-hint>
+          <shared-ui-input-error [control]="formGroup.get('showOnWebsite')" controlName="Show On Website"></shared-ui-input-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Sequence</mat-label>
+          <input
+            matInput
+            type="number"
+            formControlName="sequence"
+            placeholder="Order on the website (lower comes first)"
+            min="0"
+            required
+          />
+          <mat-hint>Lower numbers appear first on the website.</mat-hint>
+          <shared-ui-input-error [control]="formGroup.get('sequence')" controlName="Sequence"></shared-ui-input-error>
+        </mat-form-field>
       </div>
 
       <div class="form-actions">

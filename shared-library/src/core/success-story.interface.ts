@@ -11,6 +11,8 @@ export interface IBaseSuccessStory {
   mediaType: SuccessStoryMediaType;
   imagePath?: IMediaUpload[];
   youtubeUrl?: string;
+  showOnWebsite: boolean;
+  sequence: number;
 }
 
 export interface IManageSuccessStory extends IBaseSuccessStory {

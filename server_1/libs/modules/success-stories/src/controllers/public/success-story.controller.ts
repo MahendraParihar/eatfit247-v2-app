@@ -14,9 +14,11 @@ export class PublicSuccessStoryController {
 
   @Get('list')
   async list(
-    @Query() req: BasicSearchDto & { active?: boolean },
+    @Query() req: BasicSearchDto,
   ): Promise<ITableList<ISuccessStory>> {
-    // For public endpoints, only show active success stories by default
+    // Public endpoint always restricts to active stories. The `showOnWebsite`
+    // filter is opt-in by the caller (home page passes it; the full success
+    // stories page does not, since it lists every active story).
     const searchDto: BasicSearchDto = {
       ...req,
       active: true,

@@ -44,6 +44,12 @@ export class CreateSuccessStoryDto implements IManageSuccessStory {
   @IsNotEmpty()
   @IsBoolean()
   active!: boolean;
+  @IsNotEmpty()
+  @IsBoolean()
+  showOnWebsite!: boolean;
+  @IsNotEmpty()
+  @IsNumber()
+  sequence!: number;
   @IsOptional()
   @IsNumber()
   successStoryId?: number;

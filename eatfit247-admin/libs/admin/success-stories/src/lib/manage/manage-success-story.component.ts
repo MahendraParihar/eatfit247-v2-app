@@ -61,6 +61,8 @@ export class ManageSuccessStory implements OnInit, OnDestroy {
     mediaType: ['image' as SuccessStoryMediaType, [Validators.required]],
     youtubeUrl: ['', [Validators.maxLength(InputLengthEnum.CHAR_500)]],
     active: [true, [Validators.required]],
+    showOnWebsite: [false, [Validators.required]],
+    sequence: [0, [Validators.required, Validators.min(0)]],
   });
   initialData!: ISuccessStory;
   initialMediaList: IMediaUpload[] = [];
@@ -161,6 +163,9 @@ export class ManageSuccessStory implements OnInit, OnDestroy {
         mediaType,
         youtubeUrl: this.initialData.youtubeUrl || '',
         active: this.initialData.active !== undefined ? this.initialData.active : true,
+        showOnWebsite:
+          this.initialData.showOnWebsite !== undefined ? this.initialData.showOnWebsite : false,
+        sequence: this.initialData.sequence ?? 0,
       },
       { emitEvent: false },
     );
