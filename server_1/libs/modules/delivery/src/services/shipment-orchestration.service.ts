@@ -76,7 +76,7 @@ export class ShipmentOrchestrationService {
    */
   public async initiateFromOrder(
     orderId: number,
-    createdBy: number,
+    createdBy: number | null,
     createdIp: string,
   ): Promise<void> {
     this.logger.log(`[Order:${orderId}] Shipment initiation started`);

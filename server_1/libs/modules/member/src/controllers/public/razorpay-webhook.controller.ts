@@ -846,7 +846,7 @@ export class RazorpayWebhookController {
       if (updateData.paymentStatusId === PaymentStatusEnum.PAID) {
         this.eventEmitter.emit('order.product.paid', {
           memberProductId: productOrder.memberProductId,
-          createdBy: 0,
+          createdBy: null,
           createdIp: updateData.modifiedIp,
         });
       }
@@ -1030,7 +1030,7 @@ export class RazorpayWebhookController {
       if (updateData.paymentStatusId === PaymentStatusEnum.PAID) {
         this.eventEmitter.emit('order.product.paid', {
           memberProductId: productOrder.memberProductId,
-          createdBy: 0,
+          createdBy: null,
           createdIp: updateData.modifiedIp,
         });
       }

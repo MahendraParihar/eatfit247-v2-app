@@ -534,11 +534,11 @@ export class TxnShipment extends Model<TxnShipment> {
   declare updatedByUser: MstAdminUser;
 
   @Column({
-    allowNull: false,
+    allowNull: true,
     field: 'created_by',
     type: DataType.INTEGER,
   })
-  declare createdBy: number;
+  declare createdBy: number | null;
 
   @CreatedAt
   @Column({
@@ -548,11 +548,11 @@ export class TxnShipment extends Model<TxnShipment> {
   declare createdAt: Date;
 
   @Column({
-    allowNull: false,
+    allowNull: true,
     field: 'modified_by',
     type: DataType.INTEGER,
   })
-  declare modifiedBy: number;
+  declare modifiedBy: number | null;
 
   @UpdatedAt
   @Column({
