@@ -16,6 +16,9 @@ export class SuccessStoryService {
     if (searchDto.active !== undefined) {
       whereCondition.active = searchDto.active;
     }
+    if (searchDto.showOnWebsite !== undefined && searchDto.showOnWebsite !== null) {
+      whereCondition.showOnWebsite = searchDto.showOnWebsite;
+    }
     const pageNumber = searchDto.page || 0;
     const pageSize = searchDto.limit || 15;
     const offset = pageNumber === 0 ? 0 : pageNumber * pageSize;
@@ -29,11 +32,14 @@ export class SuccessStoryService {
           'title',
           'date',
           'active',
+          'showOnWebsite',
+          'sequence',
           'createdAt',
           'updatedAt',
         ]),
         [
-          ['date', 'ASC'],
+          ['sequence', 'ASC'],
+          ['date', 'DESC'],
           ['name', 'ASC'],
         ],
       ),
@@ -63,6 +69,8 @@ export class SuccessStoryService {
       imagePath: CommonFunctionsUtil.buildImageUrl(item.imagePath),
       youtubeUrl: item.youtubeUrl,
       active: item.active,
+      showOnWebsite: item.showOnWebsite,
+      sequence: item.sequence,
       createdBy: item.createdBy,
       modifiedBy: item.updatedBy,
       createdAt: item.createdAt,
@@ -99,6 +107,8 @@ export class SuccessStoryService {
       imagePath,
       youtubeUrl,
       active: obj.active,
+      showOnWebsite: obj.showOnWebsite,
+      sequence: obj.sequence ?? 0,
       createdBy: adminId,
       updatedBy: adminId,
       createdIp: cIp,
@@ -124,6 +134,8 @@ export class SuccessStoryService {
       imagePath,
       youtubeUrl,
       active: obj.active,
+      showOnWebsite: obj.showOnWebsite,
+      sequence: obj.sequence ?? 0,
       updatedBy: adminId,
       modifiedIp: cIp,
     };

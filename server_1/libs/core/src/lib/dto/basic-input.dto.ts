@@ -25,6 +25,15 @@ export class BasicSearchDto implements IBasicSearch {
   @IsOptional()
   active?: boolean | null;
   @IsOptional()
+  @IsBoolean()
+  @Transform(({ value }) => {
+    if (value === null || value === undefined || value === '') {
+      return undefined;
+    }
+    return value === true || value === 'true' || value === 1 || value === '1';
+  })
+  showOnWebsite?: boolean | null;
+  @IsOptional()
   ids?: number[];
   @IsOptional()
   @Type(() => Number)

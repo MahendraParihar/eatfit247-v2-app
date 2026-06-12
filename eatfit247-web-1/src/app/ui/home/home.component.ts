@@ -301,7 +301,7 @@ export class HomeComponent implements OnInit {
   // -------- Data loaders --------
   async loadStories(): Promise<void> {
     try {
-      this.stories = await this.successStoriesService.loadStories();
+      this.stories = await this.successStoriesService.loadStories({ showOnWebsite: true });
     } catch {
       this.stories = [];
     }

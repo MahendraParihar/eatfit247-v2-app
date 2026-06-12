@@ -32,6 +32,9 @@
   visibility: visible;
   transition: opacity 0.9s ease;
 }
+.banner__img {
+  display: none;
+}
 .banner__slide::before {
   content: '';
   position: absolute;
@@ -184,22 +187,47 @@
   min-width: 24px;
 }
 @media (max-width: 768px) {
-  .banner__track { min-height: clamp(420px, 86vw, 520px); }
+  // Let the natural image dictate height: full width, auto height per device.
+  .banner__track { min-height: 0; }
   .banner__slide {
-    background-position: 78% center;
+    position: relative;
+    inset: auto;
+    background-image: none !important;
+    align-items: flex-end;
+  }
+  .banner__slide:not(.is-active) {
+    display: none;
+  }
+  .banner__img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  .banner .ef-container {
+    position: absolute;
+    inset: 0;
+    display: flex;
     align-items: flex-end;
   }
   .banner__slide::before {
     background: linear-gradient(
         0deg,
         rgba(6, 6, 8, 0.94) 0%,
-        rgba(6, 6, 8, 0.78) 34%,
-        rgba(6, 6, 8, 0.45) 62%,
-        rgba(6, 6, 8, 0.2) 100%
+        rgba(6, 6, 8, 0.72) 34%,
+        rgba(6, 6, 8, 0.35) 62%,
+        rgba(6, 6, 8, 0.1) 100%
     );
   }
-  .banner__inner { padding-bottom: 64px; }
+  .banner__inner { padding-bottom: 64px; max-width: none; }
   .banner__nav { display: none; }
+}
+
+@media (max-width: 480px) {
+  .banner__title { font-size: clamp(26px, 7vw, 34px); }
+  .banner__sub { font-size: clamp(14px, 3.6vw, 16px); }
+  .banner__cta { gap: var(--space-2); }
+  .banner__cta .mat-btn { flex: 1 1 auto; justify-content: center; }
+  .banner__inner { padding-bottom: 56px; }
 }
 
 /* ============================ SPECIALISE / CONDITION CARDS (home) ============================ */

@@ -22,6 +22,13 @@
           [attr.aria-label]="(i + 1) + ' of ' + heroSlides().length"
           [style.background-image]="'url(\'' + slide.bg + '\')'"
         >
+          <img
+            class="banner__img"
+            [src]="slide.bg"
+            [alt]="slide.titleLead + ' ' + slide.titleAccent"
+            loading="eager"
+            decoding="async"
+          />
           <div class="ef-container">
             <div class="banner__inner">
               <span class="banner__eyebrow">
