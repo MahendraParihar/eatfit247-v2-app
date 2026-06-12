@@ -8,3 +8,7 @@
 -- attributed to an admin. Matches the convention already in use on
 -- txn_member_product.created_by.
 -- -----------------------------------------------------------------------------
+
+ALTER TABLE public.txn_shipments
+    ALTER COLUMN created_by  DROP NOT NULL,
+    ALTER COLUMN modified_by DROP NOT NULL;
