@@ -188,12 +188,14 @@
 }
 @media (max-width: 768px) {
   // Let the natural image dictate height: full width, auto height per device.
+  .banner { overflow: hidden; }
   .banner__track { min-height: 0; }
   .banner__slide {
     position: relative;
     inset: auto;
     background-image: none !important;
     align-items: flex-end;
+    overflow: hidden;
   }
   .banner__slide:not(.is-active) {
     display: none;
@@ -208,6 +210,8 @@
     inset: 0;
     display: flex;
     align-items: flex-end;
+    padding-inline: clamp(16px, 5vw, 28px);
+    box-sizing: border-box;
   }
   .banner__slide::before {
     background: linear-gradient(
@@ -218,13 +222,24 @@
         rgba(6, 6, 8, 0.1) 100%
     );
   }
-  .banner__inner { padding-bottom: 64px; max-width: none; }
+  .banner__inner {
+    width: 100%;
+    max-width: 100%;
+    padding-bottom: 64px;
+    box-sizing: border-box;
+  }
+  .banner__title {
+    font-size: clamp(22px, 6vw, 34px);
+    line-height: 1.15;
+    overflow-wrap: anywhere;
+  }
+  .banner__sub { font-size: clamp(14px, 3.6vw, 16px); max-width: 100%; }
   .banner__nav { display: none; }
 }
 
 @media (max-width: 480px) {
-  .banner__title { font-size: clamp(26px, 7vw, 34px); }
-  .banner__sub { font-size: clamp(14px, 3.6vw, 16px); }
+  .banner__title { font-size: clamp(20px, 6.5vw, 28px); }
+  .banner__sub { font-size: clamp(13px, 3.4vw, 15px); }
   .banner__cta { gap: var(--space-2); }
   .banner__cta .mat-btn { flex: 1 1 auto; justify-content: center; }
   .banner__inner { padding-bottom: 56px; }
