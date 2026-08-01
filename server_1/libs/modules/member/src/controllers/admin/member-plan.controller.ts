@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Header, Param, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Header, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { AbilitiesGuard, CurrentUser, JwtAuthGuard, RequestedIp, RequireAbility } from '@server_1/core';
 import { MemberPlanService } from '../../services';
 import {
@@ -7,6 +7,7 @@ import {
   IAuthUser,
   IMemberPayment,
   IMemberPaymentMasterData,
+  IMemberPaymentUpdatePreview,
   IPaymentLinkResponse,
   IProgramPlan,
   ITableList,
@@ -16,6 +17,8 @@ import {
   CreateMemberPaymentDto,
   CreatePaymentLinkDto,
   PlanTaxCalculationRequestDto,
+  PreviewMemberPaymentUpdateDto,
+  UpdateMemberPaymentDto,
 } from '../../dto';
 import { ProgramPlanService } from '@server_1/modules/program-plan';
 import { IFileModel } from '@server_1/platform';
@@ -79,6 +82,36 @@ export class MemberPlanController {
   ): Promise<IMemberPayment> {
     body.memberId = id;
     return await this.memberPaymentService.create(id, body, requestedIp, currentUser.adminId);
+  }
+
+  @Post(':paymentId/preview-update')
+  @RequireAbility(AdminActionEnum.Update, AdminSubjectEnum.MemberPayment)
+  async previewPaymentUpdate(
+    @Param('id') id: number,
+    @Param('paymentId') paymentId: number,
+    @Body() body: PreviewMemberPaymentUpdateDto,
+  ): Promise<IMemberPaymentUpdatePreview> {
+    body.memberId = id;
+    return await this.memberPaymentService.previewUpdate(id, paymentId, body);
+  }
+
+  @Put(':paymentId')
+  @RequireAbility(AdminActionEnum.Update, AdminSubjectEnum.MemberPayment)
+  async updatePayment(
+    @Param('id') id: number,
+    @Param('paymentId') paymentId: number,
+    @Body() body: UpdateMemberPaymentDto,
+    @CurrentUser() currentUser: IAuthUser,
+    @RequestedIp() requestedIp: string,
+  ): Promise<IMemberPayment> {
+    body.memberId = id;
+    return await this.memberPaymentService.update(
+      id,
+      paymentId,
+      body,
+      requestedIp,
+      currentUser.adminId,
+    );
   }
 
   @Get('program-plan/:programPlanId')

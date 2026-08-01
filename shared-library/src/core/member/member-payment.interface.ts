@@ -103,3 +103,50 @@ export interface IPlanTaxCalculationRequest {
   addressId?: number;
   billingAddressId?: number;
 }
+
+export interface IMemberPaymentUpdateChange {
+  field: string;
+  label: string;
+  oldValue: string | number | null;
+  newValue: string | number | null;
+  changed: boolean;
+}
+
+export interface IMemberDietPlanOverLimitDetail {
+  memberDietDetailId: number;
+  cycleNo: number;
+  dayNo?: number | null;
+  type: string;
+  startDate?: string | Date | null;
+  endDate?: string | Date | null;
+}
+
+export interface IMemberDietPlanLimitImpact {
+  hasDietPlan: boolean;
+  memberDietPlanId?: number;
+  currentNoOfCycle?: number;
+  currentDaysInCycle?: number;
+  newNoOfCycle: number;
+  newDaysInCycle: number;
+  currentCycleNo?: number | null;
+  currentDayNo?: number | null;
+  maxCreatedCycleNo?: number | null;
+  maxCreatedDayNo?: number | null;
+  extraCyclesGiven: number;
+  extraDaysGiven: number;
+  detailRowsBeyondNewLimits: IMemberDietPlanOverLimitDetail[];
+  cycleChanged: boolean;
+  daysInCycleChanged: boolean;
+  hasOverLimitDietDetails: boolean;
+  highlights: string[];
+  warnings: string[];
+}
+
+export interface IMemberPaymentUpdatePreview {
+  memberPaymentId: number;
+  requiresConfirmation: boolean;
+  changes: IMemberPaymentUpdateChange[];
+  dietPlanImpact: IMemberDietPlanLimitImpact;
+  highlights: string[];
+  warnings: string[];
+}

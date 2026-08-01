@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { BaseListComponent, DataTableComponent, ITableAction, ITableColumn } from '@shared';
 import { IRecipe } from '@eatfit247-shared-lib';
 import { RecipesApiService } from './api.service';
@@ -18,6 +19,7 @@ import { ViewRecipeDialogComponent } from './view-recipe-dialog/view-recipe-dial
 export class Recipes extends BaseListComponent<IRecipe> {
   protected apiService = inject(RecipesApiService);
   private dialog = inject(MatDialog);
+  private snackBar = inject(MatSnackBar);
 
   protected listConfig = {
     editRoute: '/recipes/edit',
@@ -94,7 +96,9 @@ export class Recipes extends BaseListComponent<IRecipe> {
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Error downloading PDF:', error);
-      alert('Failed to download recipe PDF. Please try again.');
+      this.snackBar.open('Failed to download recipe PDF. Please try again.', 'Close', {
+        duration: 5000,
+      });
     } finally {
       this.loading = false;
     }

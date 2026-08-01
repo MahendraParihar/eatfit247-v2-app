@@ -107,3 +107,7 @@ export class PlanTaxCalculationRequestDto implements IPlanTaxCalculationRequest 
   @IsNumber()
   addressId?: number;
 }
+
+export class PreviewMemberPaymentUpdateDto extends CreateMemberPaymentDto {}
+
+export class UpdateMemberPaymentDto extends CreateMemberPaymentDto {}
