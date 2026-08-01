@@ -8,7 +8,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { Subject, takeUntil } from 'rxjs';
+import { firstValueFrom, Subject, takeUntil } from 'rxjs';
 import { animate, state, style, transition, trigger } from '@angular/animations';
 import {
   createdByUserFormatter,
@@ -18,7 +18,9 @@ import {
   ITableColumn,
   ITableConfig,
   LoaderComponent,
-  updatedByUserFormatter
+  updatedByUserFormatter,
+  WarningDialogComponent,
+  WarningDialogData
 } from '@shared';
 import { MembersApiService } from '../../api.service';
 import { MemberDietPlanDatasource } from './member-diet-plan.datasource';
@@ -362,16 +364,40 @@ export class MemberDietPlanListComponent implements OnInit, OnDestroy {
     }
   }
 
-  onStatusChangeDialog(item: IMemberDietPlan, statusId?: number) {
-    if (confirm("Are you sure you want to change the status?")) {
+  async onStatusChangeDialog(item: IMemberDietPlan, statusId?: number): Promise<void> {
+    const confirmed = await this.confirmWarning({
+      title: "Change Diet Plan Status",
+      message: "Are you sure you want to change the status?",
+      confirmText: "Change",
+      cancelText: "Cancel"
+    });
+    if (confirmed) {
       this.updateStatus(item.memberDietPlanId, statusId);
     }
   }
 
   async onDeleteDietPlan(dietPlan: IMemberDietDetail) {
-    if (confirm("Are you sure you want to delete this diet plan?")) {
+    const confirmed = await this.confirmWarning({
+      title: "Delete Diet Plan",
+      message: "Are you sure you want to delete this diet plan? This action cannot be undone.",
+      confirmText: "Delete",
+      cancelText: "Cancel"
+    });
+    if (confirmed) {
       await this.deleteDietPlanTask(dietPlan);
     }
+  }
+
+  /**
+   * Opens the shared Angular Material warning dialog and resolves to true when the
+   * admin confirms. Replaces the native window.confirm() browser alert box.
+   */
+  private async confirmWarning(data: WarningDialogData): Promise<boolean> {
+    const dialogRef = this.dialog.open(WarningDialogComponent, {
+      width: "500px",
+      data
+    });
+    return (await firstValueFrom(dialogRef.afterClosed())) === true;
   }
 
   async deleteDietPlanTask(dietPlan: IMemberDietDetail) {
@@ -590,7 +616,13 @@ export class MemberDietPlanListComponent implements OnInit, OnDestroy {
   ): Promise<void> {
     if (!cyclePlan.dietPlans || cyclePlan.dietPlans.length === 0) return;
     const dietPlan = cyclePlan.dietPlans[0] as IMemberDietDetail;
-    if (confirm("Are you sure you want to delete this diet plan?")) {
+    const confirmed = await this.confirmWarning({
+      title: "Delete Diet Plan",
+      message: "Are you sure you want to delete this diet plan? This action cannot be undone.",
+      confirmText: "Delete",
+      cancelText: "Cancel"
+    });
+    if (confirmed) {
       await this.deleteDietPlanTask(dietPlan);
     }
   }
