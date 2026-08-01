@@ -2,7 +2,8 @@ import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
-import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { firstValueFrom } from 'rxjs';
+import { MAT_DIALOG_DATA, MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -28,6 +29,7 @@ import {
 } from '@eatfit247-shared-lib';
 import { MembersApiService } from '../../../api.service';
 import { PaymentFormService } from './payment-form.service';
+import { MemberPaymentUpdatePreviewDialogComponent } from './member-payment-update-preview-dialog.component';
 
 export interface ManageMemberPaymentData {
   memberId: number;
@@ -63,6 +65,7 @@ export class ManageMemberPaymentComponent implements OnInit {
   private paymentFormService: PaymentFormService = inject(PaymentFormService);
   private fb: FormBuilder = inject(FormBuilder);
   private snackBar: MatSnackBar = inject(MatSnackBar);
+  private dialog: MatDialog = inject(MatDialog);
   public dialogRef: MatDialogRef<ManageMemberPaymentComponent> = inject(
     MatDialogRef<ManageMemberPaymentComponent>
   );
@@ -622,11 +625,25 @@ export class ManageMemberPaymentComponent implements OnInit {
           this.step1FormGroup
         );
         if (this.isEditMode && this.data.payment?.memberPaymentId) {
-          await this.apiService.updatePayment(
+          const paymentId = this.data.payment.memberPaymentId;
+          // Recalculate on the server and show the admin a preview of every change
+          // (plan, tax, totals, diet-plan cycle/day impact) before committing.
+          const preview = await this.apiService.previewPaymentUpdate(
             this.data.memberId,
-            this.data.payment.memberPaymentId,
+            paymentId,
             formValue
           );
+          const previewRef = this.dialog.open(MemberPaymentUpdatePreviewDialogComponent, {
+            width: '640px',
+            maxWidth: '92vw',
+            maxHeight: '90vh',
+            data: preview,
+          });
+          const confirmed = await firstValueFrom(previewRef.afterClosed());
+          if (confirmed !== true) {
+            return;
+          }
+          await this.apiService.updatePayment(this.data.memberId, paymentId, formValue);
         } else {
           await this.apiService.createPayment(this.data.memberId, formValue);
         }

@@ -38,6 +38,7 @@ import {
   IMemberIssuesSummary,
   IMemberPayment,
   IMemberPaymentMasterData,
+  IMemberPaymentUpdatePreview,
   IMemberPaymentsSummary,
   IMemberPocketGuide,
   IMemberProduct,
@@ -470,6 +471,18 @@ export class MembersApiService {
       data
     );
     return res.data as IMemberPayment;
+  }
+
+  async previewPaymentUpdate(
+    memberId: number,
+    paymentId: number,
+    data: IManageMemberPayment
+  ): Promise<IMemberPaymentUpdatePreview> {
+    const res = await this.httpService.post<IResponse<IMemberPaymentUpdatePreview>>(
+      `${this.endpoint}/${memberId}/payment-history/${paymentId}/preview-update`,
+      data
+    );
+    return res.data as IMemberPaymentUpdatePreview;
   }
 
   async deletePayment(memberId: number, paymentId: number): Promise<void> {

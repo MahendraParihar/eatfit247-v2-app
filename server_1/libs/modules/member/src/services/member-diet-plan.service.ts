@@ -11,6 +11,8 @@ import {
   IDietPlanDetail,
   IDietPlanRecipes,
   IDropdownItem,
+  IMemberDietPlanLimitImpact,
+  IMemberDietPlanOverLimitDetail,
   IMemberDietDetail,
   IMemberDietPlan,
   MediaForEnum,
@@ -169,6 +171,156 @@ export class MemberDietPlanService {
         modifiedIp: requestedIp,
       },
       { transaction },
+    );
+  }
+
+  public async getPaymentPlanLimitImpact(
+    memberId: number,
+    memberPaymentId: number,
+    newNoOfCycle: number,
+    newDaysInCycle: number,
+    transaction?: Transaction,
+  ): Promise<IMemberDietPlanLimitImpact> {
+    const dietPlan = await this.memberDietPlanRepository.findOne({
+      where: {
+        memberId,
+        memberPaymentId,
+        active: true,
+      },
+      transaction,
+    });
+
+    if (!dietPlan) {
+      return {
+        hasDietPlan: false,
+        newNoOfCycle,
+        newDaysInCycle,
+        extraCyclesGiven: 0,
+        extraDaysGiven: 0,
+        detailRowsBeyondNewLimits: [],
+        cycleChanged: false,
+        daysInCycleChanged: false,
+        hasOverLimitDietDetails: false,
+        highlights: [],
+        warnings: ['No linked diet plan header was found for this payment.'],
+      };
+    }
+
+    const detailRows = await this.memberDietPlanDetailRepository.findAll({
+      where: {
+        memberDietPlanId: dietPlan.memberDietPlanId,
+      },
+      order: [
+        ['cycleNo', 'ASC'],
+        ['dayNo', 'ASC'],
+      ],
+      raw: true,
+      nest: true,
+      transaction,
+    });
+
+    const overLimitDetails: IMemberDietPlanOverLimitDetail[] = detailRows
+      .filter((detail: TxnMemberDietDetail) => {
+        const dayNo = detail.dayNo ? Number(detail.dayNo) : null;
+        return Number(detail.cycleNo) > newNoOfCycle || (!!dayNo && dayNo > newDaysInCycle);
+      })
+      .map((detail: TxnMemberDietDetail) => ({
+        memberDietDetailId: detail.memberDietDetailId,
+        cycleNo: detail.cycleNo,
+        dayNo: detail.dayNo,
+        type: detail.type,
+        startDate: detail.startDate ? moment(detail.startDate).format('YYYY-MM-DD') : null,
+        endDate: detail.endDate ? moment(detail.endDate).format('YYYY-MM-DD') : null,
+      }));
+
+    const maxCreatedCycleNo =
+      detailRows.length > 0 ? Math.max(...detailRows.map((detail) => Number(detail.cycleNo))) : null;
+    const maxCreatedDayNo =
+      detailRows.length > 0
+        ? Math.max(...detailRows.map((detail) => Number(detail.dayNo || 0)))
+        : null;
+
+    // How many cycles / days have already been delivered beyond the new plan limits.
+    // We highlight these to the admin but never block the update.
+    const extraCyclesGiven = Math.max(0, (maxCreatedCycleNo ?? 0) - newNoOfCycle);
+    const extraDaysGiven = Math.max(0, (maxCreatedDayNo ?? 0) - newDaysInCycle);
+
+    const highlights: string[] = [];
+    const warnings: string[] = [];
+
+    if (extraCyclesGiven > 0) {
+      highlights.push(
+        `${extraCyclesGiven} cycle(s) already delivered beyond the new plan limit of ${newNoOfCycle}.`,
+      );
+    }
+    if (extraDaysGiven > 0) {
+      highlights.push(
+        `${extraDaysGiven} day(s) already delivered beyond the new limit of ${newDaysInCycle} day(s) per cycle.`,
+      );
+    }
+    if (dietPlan.currentCycleNo && Number(dietPlan.currentCycleNo) > newNoOfCycle) {
+      highlights.push(
+        `Member is currently on cycle ${dietPlan.currentCycleNo}, beyond the new limit of ${newNoOfCycle}.`,
+      );
+    }
+    if (dietPlan.currentDayNo && Number(dietPlan.currentDayNo) > newDaysInCycle) {
+      highlights.push(
+        `Member is currently on day ${dietPlan.currentDayNo}, beyond the new limit of ${newDaysInCycle}.`,
+      );
+    }
+    if (newNoOfCycle > dietPlan.noOfCycle) {
+      warnings.push('New plan adds cycles. No diet detail rows will be created automatically.');
+    }
+    if (newDaysInCycle > dietPlan.daysInCycle) {
+      warnings.push('New plan adds days in each cycle. New day diet details can be added later.');
+    }
+
+    return {
+      hasDietPlan: true,
+      memberDietPlanId: dietPlan.memberDietPlanId,
+      currentNoOfCycle: dietPlan.noOfCycle,
+      currentDaysInCycle: dietPlan.daysInCycle,
+      newNoOfCycle,
+      newDaysInCycle,
+      currentCycleNo: dietPlan.currentCycleNo,
+      currentDayNo: dietPlan.currentDayNo,
+      maxCreatedCycleNo,
+      maxCreatedDayNo,
+      extraCyclesGiven,
+      extraDaysGiven,
+      detailRowsBeyondNewLimits: overLimitDetails,
+      cycleChanged: dietPlan.noOfCycle !== newNoOfCycle,
+      daysInCycleChanged: dietPlan.daysInCycle !== newDaysInCycle,
+      hasOverLimitDietDetails: overLimitDetails.length > 0,
+      highlights,
+      warnings,
+    };
+  }
+
+  public async updateLimitsForPayment(
+    memberId: number,
+    memberPaymentId: number,
+    newNoOfCycle: number,
+    newDaysInCycle: number,
+    requestedIp: string,
+    adminId: number,
+    transaction: Transaction,
+  ): Promise<void> {
+    await this.memberDietPlanRepository.update(
+      {
+        noOfCycle: newNoOfCycle,
+        daysInCycle: newDaysInCycle,
+        modifiedIp: requestedIp,
+        modifiedBy: adminId,
+      },
+      {
+        where: {
+          memberId,
+          memberPaymentId,
+          active: true,
+        },
+        transaction,
+      },
     );
   }
 
@@ -1141,4 +1293,3 @@ export class MemberDietPlanService {
     }));
   }
 }
-

@@ -1,0 +1,105 @@
+<h2 mat-dialog-title>Review Payment Changes</h2>
+
+<mat-dialog-content class="preview-content">
+  @if (data.highlights.length > 0) {
+    <section class="section section-highlight">
+      <div class="section-title">
+        <mat-icon>priority_high</mat-icon>
+        <span>Please Review</span>
+      </div>
+      @for (highlight of data.highlights; track highlight) {
+        <p>{{ highlight }}</p>
+      }
+    </section>
+  }
+
+  @if (changedItems.length > 0) {
+    <section class="section">
+      <div class="section-title">
+        <mat-icon>compare_arrows</mat-icon>
+        <span>Changes</span>
+      </div>
+      <div class="change-list">
+        @for (change of changedItems; track change.field) {
+          <div class="change-row">
+            <span class="change-label">{{ change.label }}</span>
+            <span class="change-value old">{{ change.oldValue || 'N/A' }}</span>
+            <mat-icon>arrow_forward</mat-icon>
+            <span class="change-value new">{{ change.newValue || 'N/A' }}</span>
+          </div>
+        }
+      </div>
+    </section>
+  } @else {
+    <section class="section">
+      <div class="section-title">
+        <mat-icon>check_circle</mat-icon>
+        <span>No Value Changes</span>
+      </div>
+      <p>The recalculated payment values match the current saved payment.</p>
+    </section>
+  }
+
+  @if (data.dietPlanImpact.hasDietPlan) {
+    <section class="section">
+      <div class="section-title">
+        <mat-icon>restaurant_menu</mat-icon>
+        <span>Diet Plan Impact</span>
+      </div>
+      <div class="impact-grid">
+        <span>Cycles</span>
+        <strong>{{ data.dietPlanImpact.currentNoOfCycle }} -> {{ data.dietPlanImpact.newNoOfCycle }}</strong>
+        <span>Days in cycle</span>
+        <strong>{{ data.dietPlanImpact.currentDaysInCycle }} -> {{ data.dietPlanImpact.newDaysInCycle }}</strong>
+        <span>Current progress</span>
+        <strong>Cycle {{ data.dietPlanImpact.currentCycleNo || 0 }}, Day {{ data.dietPlanImpact.currentDayNo || 0 }}</strong>
+        <span>Delivered up to</span>
+        <strong>Cycle {{ data.dietPlanImpact.maxCreatedCycleNo || 0 }}, Day {{ data.dietPlanImpact.maxCreatedDayNo || 0 }}</strong>
+      </div>
+
+      @if (data.dietPlanImpact.extraCyclesGiven > 0 || data.dietPlanImpact.extraDaysGiven > 0) {
+        <div class="extra-given">
+          @if (data.dietPlanImpact.extraCyclesGiven > 0) {
+            <span class="extra-chip">{{ data.dietPlanImpact.extraCyclesGiven }} extra cycle(s) already delivered</span>
+          }
+          @if (data.dietPlanImpact.extraDaysGiven > 0) {
+            <span class="extra-chip">{{ data.dietPlanImpact.extraDaysGiven }} extra day(s) already delivered</span>
+          }
+        </div>
+      }
+
+      @if (data.dietPlanImpact.detailRowsBeyondNewLimits.length > 0) {
+        <div class="over-limit-list">
+          <p>Diet rows outside the new limits (kept, not deleted):</p>
+          @for (detail of data.dietPlanImpact.detailRowsBeyondNewLimits; track detail.memberDietDetailId) {
+            <span class="over-limit-item">
+              Cycle {{ detail.cycleNo }}
+              @if (detail.dayNo) {
+                <span>Day {{ detail.dayNo }}</span>
+              }
+            </span>
+          }
+        </div>
+      }
+    </section>
+  }
+
+  @if (data.warnings.length > 0) {
+    <section class="section section-warning">
+      <div class="section-title">
+        <mat-icon>warning</mat-icon>
+        <span>Warnings</span>
+      </div>
+      @for (warning of data.warnings; track warning) {
+        <p>{{ warning }}</p>
+      }
+    </section>
+  }
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button type="button" (click)="cancel()">Cancel</button>
+  <button mat-raised-button color="primary" type="button" (click)="confirm()">
+    Approve & Update
+  </button>
+</mat-dialog-actions>

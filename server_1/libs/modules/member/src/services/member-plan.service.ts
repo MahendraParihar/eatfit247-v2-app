@@ -14,9 +14,12 @@ import {
   IMemberInfo,
   IMemberPayment,
   IMemberPaymentMasterData,
+  IMemberPaymentUpdateChange,
+  IMemberPaymentUpdatePreview,
   IPaymentGateway,
   IPaymentLinkResponse,
   IPlanTaxCalculationRequest,
+  IProgramPlan,
   ITableList,
   mapPaymentToInvoiceDocument,
   MediaForEnum,
@@ -52,6 +55,7 @@ import { Sequelize } from 'sequelize-typescript';
 import { MemberDietPlanService } from './member-diet-plan.service';
 import { promises as fs } from 'fs';
 import { find } from 'lodash';
+import moment from 'moment';
 
 @Injectable()
 export class MemberPlanService {
@@ -441,6 +445,320 @@ export class MemberPlanService {
       await t.rollback();
       throw error;
     }
+  }
+
+  public async previewUpdate(
+    memberId: number,
+    paymentId: number,
+    obj: IManageMemberPayment,
+  ): Promise<IMemberPaymentUpdatePreview> {
+    const payment = await this.memberPaymentRepository.scope('details').findOne({
+      where: {
+        memberPaymentId: paymentId,
+        memberId,
+        active: true,
+      },
+    });
+    if (!payment) {
+      throw new NotFoundException('Payment not found');
+    }
+
+    const draft = await this.buildPaymentDraft(memberId, obj);
+    const oldPayment = this.convertToModel(payment.get({ plain: true }));
+    const dietPlanImpact = await this.memberDietPlanService.getPaymentPlanLimitImpact(
+      memberId,
+      paymentId,
+      draft.noOfCycle,
+      draft.noOfDaysInCycle,
+    );
+    const changes = this.buildUpdatePreviewChanges(oldPayment, draft, obj);
+    const changedFields = changes.filter((change) => change.changed);
+    const highlights = [...dietPlanImpact.highlights];
+    const warnings = [...dietPlanImpact.warnings];
+    const financialChanged = changedFields.some((change) =>
+      ['programPlan', 'currency', 'billingAddress', 'orderAmount', 'discountAmount', 'taxAmount', 'totalAmount'].includes(
+        change.field,
+      ),
+    );
+
+    if (payment.invoiceId && financialChanged) {
+      warnings.push('This payment already has an invoice. Changing billing or amount values may require finance review.');
+    }
+    if (payment.paymentStatusId === PaymentStatusEnum.PAID && financialChanged) {
+      warnings.push('This payment is already marked as paid. Confirm before changing payment amounts.');
+    }
+    if (payment.paymentSource !== PaymentSourceEnum.MANUAL && financialChanged) {
+      warnings.push('Existing payment gateway link/order may no longer match the updated amount or currency.');
+    }
+
+    return {
+      memberPaymentId: paymentId,
+      requiresConfirmation: changedFields.length > 0 || warnings.length > 0 || highlights.length > 0,
+      changes,
+      dietPlanImpact,
+      highlights,
+      warnings,
+    };
+  }
+
+  public async update(
+    memberId: number,
+    paymentId: number,
+    obj: IManageMemberPayment,
+    requestedIp: string,
+    adminId: number,
+  ): Promise<IMemberPayment> {
+    const payment = await this.memberPaymentRepository.findOne({
+      where: {
+        memberPaymentId: paymentId,
+        memberId,
+        active: true,
+      },
+    });
+    if (!payment) {
+      throw new NotFoundException('Payment not found');
+    }
+
+    PaymentValidationUtil.validateManualPaymentSource({
+      paymentSource: obj.paymentSource,
+      paymentModeId: obj.paymentModeId,
+      paymentDate: obj.paymentDate,
+      paymentStatusId: obj.paymentStatusId,
+      transactionId: obj.transactionId,
+    });
+
+    const draft = await this.buildPaymentDraft(memberId, obj);
+    const t = await this.sequelize.transaction();
+    try {
+      payment.paymentModeId = obj.paymentModeId;
+      payment.programPlanId = obj.programPlanId;
+      payment.programId = obj.programId;
+      payment.addressId = obj.addressId || null;
+      payment.billingAddressId = obj.billingAddressId || null;
+      payment.transactionId = obj.transactionId || null;
+      payment.paymentDate = obj.paymentDate;
+      payment.paymentStatusId = obj.paymentStatusId;
+      payment.promoCode = obj.promoCode || null;
+      payment.paymentGatewayResponse = obj.paymentGatewayResponse || null;
+      payment.gstNumber = obj.gstNumber || null;
+      payment.memberAddress = draft.memberAddressSnapshot;
+      payment.paymentSource = obj.paymentSource;
+      payment.orderAmount = draft.paymentObj.orderAmount;
+      payment.discountAmount = draft.paymentObj.discountAmount;
+      payment.taxAmount = draft.paymentObj.taxAmount;
+      payment.totalAmount = draft.paymentObj.totalAmount;
+      payment.currency = draft.paymentObj.currency;
+      payment.taxType = draft.paymentObj.taxType;
+      payment.taxMode = draft.paymentObj.taxMode;
+      payment.taxPercentage = draft.paymentObj.taxPercentage;
+      payment.isLutApplied = draft.paymentObj.isLutApplied;
+      payment.taxObj = draft.paymentObj.taxObj;
+      payment.jurisdiction = draft.paymentObj.jurisdiction;
+      // payment.invoiceNote = draft.paymentObj.invoiceNote;
+      payment.noOfCycle = draft.noOfCycle;
+      payment.daysInCycle = draft.noOfDaysInCycle;
+      payment.modifiedIp = requestedIp;
+      payment.modifiedBy = adminId;
+
+      if (obj.paymentSource === PaymentSourceEnum.PAYMENT_GATEWAY) {
+        payment.paymentLink = obj.paymentLink || null;
+        payment.gatewayOrderId = obj.gatewayOrderId || null;
+        payment.gatewayProvider = obj.gatewayProvider || null;
+      } else {
+        payment.paymentLink = null;
+        payment.gatewayOrderId = null;
+        payment.gatewayProvider = null;
+        payment.gatewayPaymentId = null;
+      }
+
+      // Invoice number is never generated or changed during edit — it is issued only on
+      // create. Any existing payment.invoiceId is preserved untouched.
+
+      await payment.save({ transaction: t });
+      await this.memberDietPlanService.updateLimitsForPayment(
+        memberId,
+        paymentId,
+        draft.noOfCycle,
+        draft.noOfDaysInCycle,
+        requestedIp,
+        adminId,
+        t,
+      );
+      await t.commit();
+
+      const updatedPayment = await this.memberPaymentRepository.scope('details').findOne({
+        where: { memberPaymentId: paymentId, memberId },
+        raw: true,
+        nest: true,
+      });
+      if (!updatedPayment) {
+        throw new NotFoundException('Payment not found after update');
+      }
+      return this.convertToModel(updatedPayment);
+    } catch (error) {
+      await t.rollback();
+      throw error;
+    }
+  }
+
+  private async buildPaymentDraft(memberId: number, obj: IManageMemberPayment): Promise<{
+    member: TxnMember;
+    programPlan: IProgramPlan;
+    paymentObj: ICalculateTaxResponse;
+    memberAddressSnapshot: {
+      address: IAddress | null;
+      billingAddress: IAddress | null;
+    };
+    noOfCycle: number;
+    noOfDaysInCycle: number;
+  }> {
+    const member = await this.memberRepository.scope('details').findOne({
+      where: { memberId },
+      include: [
+        {
+          model: MstFranchise,
+          as: 'franchise',
+          required: false,
+        },
+      ],
+    });
+    if (!member) {
+      throw new NotFoundException('Member not found');
+    }
+
+    const addresses = await this.addressService.filterByTableIdAndPk(TableEnum.TXN_MEMBER, memberId);
+    const billingAddress =
+      (obj.billingAddressId && addresses.find((a) => a.addressId === obj.billingAddressId)) || null;
+    const primaryAddress =
+      (obj.addressId && addresses.find((a) => a.addressId === obj.addressId)) || null;
+
+    if (billingAddress && !billingAddress.countryId) {
+      throw new BadRequestException('Billing address country is required when tax is applicable');
+    }
+
+    let franchiseAddress: IAddress | null = null;
+    if (member.franchiseId) {
+      const franchiseAddresses = await this.addressService.filterByTableIdAndPk(
+        TableEnum.MST_FRANCHISES,
+        member.franchiseId,
+      );
+      franchiseAddress =
+        franchiseAddresses && franchiseAddresses.length > 0 ? franchiseAddresses[0] : null;
+    }
+
+    const programPlan = await this.programPlanService.fetchById(obj.programPlanId);
+    const fees = find(programPlan.programPlanFees, { currencyCode: obj.currency });
+    if (!fees) {
+      throw new BadRequestException('Selected currency is not configured for this program plan');
+    }
+
+    const paymentObj = await this.calculatePaymentObject(
+      {
+        orderAmount: fees.fees,
+        discountAmount: obj.discountAmount || 0,
+        currencyCode: obj.currency,
+      },
+      billingAddress,
+      franchiseAddress,
+    );
+
+    return {
+      member,
+      programPlan,
+      paymentObj,
+      memberAddressSnapshot: {
+        address: primaryAddress,
+        billingAddress,
+      },
+      noOfCycle: programPlan.noOfCycle,
+      noOfDaysInCycle: programPlan.noOfDaysInCycle,
+    };
+  }
+
+  private buildUpdatePreviewChanges(
+    oldPayment: IMemberPayment,
+    draft: {
+      programPlan: IProgramPlan;
+      paymentObj: ICalculateTaxResponse;
+      memberAddressSnapshot: {
+        address: IAddress | null;
+        billingAddress: IAddress | null;
+      };
+      noOfCycle: number;
+      noOfDaysInCycle: number;
+    },
+    obj: IManageMemberPayment,
+  ): IMemberPaymentUpdateChange[] {
+    return [
+      this.createPreviewChange('programPlan', 'Plan', oldPayment.programPlan, draft.programPlan.plan),
+      this.createPreviewChange(
+        'paymentDate',
+        'Payment Date',
+        this.formatDateLabel(oldPayment.paymentDate),
+        this.formatDateLabel(obj.paymentDate),
+      ),
+      this.createPreviewChange(
+        'billingAddress',
+        'Billing Address',
+        this.formatAddressLabel(oldPayment.memberAddress?.billingAddress),
+        this.formatAddressLabel(draft.memberAddressSnapshot.billingAddress),
+      ),
+      this.createPreviewChange('currency', 'Currency', oldPayment.currency, draft.paymentObj.currency),
+      this.createPreviewChange('orderAmount', 'Plan Fees', oldPayment.orderAmount, draft.paymentObj.orderAmount),
+      this.createPreviewChange(
+        'discountAmount',
+        'Discount',
+        oldPayment.discountAmount,
+        draft.paymentObj.discountAmount,
+      ),
+      this.createPreviewChange('taxAmount', 'Tax Amount', oldPayment.taxAmount, draft.paymentObj.taxAmount),
+      this.createPreviewChange('totalAmount', 'Total Amount', oldPayment.totalAmount, draft.paymentObj.totalAmount),
+      this.createPreviewChange('noOfCycle', 'No. of Cycles', oldPayment.noOfCycle, draft.noOfCycle),
+      this.createPreviewChange(
+        'noOfDaysInCycle',
+        'Days in Cycle',
+        oldPayment.noOfDaysInCycle,
+        draft.noOfDaysInCycle,
+      ),
+    ];
+  }
+
+  private createPreviewChange(
+    field: string,
+    label: string,
+    oldValue: string | number | null,
+    newValue: string | number | null,
+  ): IMemberPaymentUpdateChange {
+    const normalize = (value: string | number | null) => {
+      if (typeof value === 'number') {
+        return Number(value).toFixed(2);
+      }
+      return value ?? '';
+    };
+    return {
+      field,
+      label,
+      oldValue,
+      newValue,
+      changed: normalize(oldValue) !== normalize(newValue),
+    };
+  }
+
+  private formatAddressLabel(address: any): string | null {
+    if (!address) {
+      return null;
+    }
+    return [address.postalAddress, address.cityVillage, address.pinCode]
+      .filter((value) => !!value)
+      .join(', ');
+  }
+
+  private formatDateLabel(value: Date | string | null | undefined): string | null {
+    if (!value) {
+      return null;
+    }
+    const parsed = moment(value);
+    return parsed.isValid() ? parsed.format('YYYY-MM-DD') : null;
   }
 
   /**

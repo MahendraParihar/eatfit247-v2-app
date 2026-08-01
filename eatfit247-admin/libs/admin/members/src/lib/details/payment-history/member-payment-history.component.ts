@@ -123,6 +123,12 @@ export class MemberPaymentHistoryComponent implements OnInit, OnDestroy {
     ];
     const actions: ITableAction<IMemberPayment>[] = [
       {
+        label: 'Edit',
+        icon: 'edit',
+        color: 'primary',
+        onClick: (row) => this.editPayment(row)
+      },
+      {
         label: 'Details',
         icon: 'info',
         color: 'primary',
@@ -181,6 +187,24 @@ export class MemberPaymentHistoryComponent implements OnInit, OnDestroy {
     dialogRef.afterClosed().subscribe((result) => {
       if (result === true) {
         // Reload payments after a successful create / update
+        this.loadPayments();
+      }
+    });
+  }
+
+  editPayment(payment: IMemberPayment): void {
+    const dialogData: ManageMemberPaymentData = {
+      memberId: this.memberId,
+      payment
+    };
+    const dialogRef = this.dialog.open(ManageMemberPaymentComponent, {
+      width: '1000px',
+      maxWidth: '90vw',
+      maxHeight: '90vh',
+      data: dialogData
+    });
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result === true) {
         this.loadPayments();
       }
     });

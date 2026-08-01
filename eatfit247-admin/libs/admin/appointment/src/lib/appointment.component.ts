@@ -4,17 +4,20 @@ import { Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatDialog } from '@angular/material/dialog';
 import {
   DataTableComponent,
   ITableAction,
   ITableColumn,
   ITableConfig,
+  WarningDialogComponent,
+  WarningDialogData,
   createdByUserFormatter,
   updatedByUserFormatter,
 } from '@shared';
 import { ITableList } from '@eatfit247-shared-lib';
 import { AppointmentApiService, IAppointment } from './api.service';
-import { debounceTime, distinctUntilChanged, Subject, switchMap } from 'rxjs';
+import { debounceTime, distinctUntilChanged, firstValueFrom, Subject, switchMap } from 'rxjs';
 
 const STATUS_LABELS: Record<number, string> = {
   1: 'Scheduled',
@@ -34,6 +37,7 @@ const STATUS_LABELS: Record<number, string> = {
 export class AppointmentList implements OnInit {
   private apiService = inject(AppointmentApiService);
   private router = inject(Router);
+  private dialog = inject(MatDialog);
 
   data: IAppointment[] = [];
   totalCount = 0;
@@ -248,13 +252,25 @@ export class AppointmentList implements OnInit {
   }
 
   async deleteItem(item: IAppointment): Promise<void> {
-    if (confirm('Are you sure you want to delete this appointment?')) {
-      try {
-        await this.apiService.delete(item.appointmentId);
-        await this.loadData();
-      } catch {
-        // Error handled by interceptor
-      }
+    const dialogData: WarningDialogData = {
+      title: 'Delete Appointment',
+      message: 'Are you sure you want to delete this appointment? This action cannot be undone.',
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+    };
+    const dialogRef = this.dialog.open(WarningDialogComponent, {
+      width: '500px',
+      data: dialogData,
+    });
+    const confirmed = (await firstValueFrom(dialogRef.afterClosed())) === true;
+    if (!confirmed) {
+      return;
+    }
+    try {
+      await this.apiService.delete(item.appointmentId);
+      await this.loadData();
+    } catch {
+      // Error handled by interceptor
     }
   }
 }

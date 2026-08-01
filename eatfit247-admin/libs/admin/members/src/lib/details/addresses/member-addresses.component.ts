@@ -14,11 +14,13 @@ import {
   ITableAction,
   ITableColumn,
   ITableConfig,
-  LoaderComponent
+  LoaderComponent,
+  WarningDialogComponent,
+  WarningDialogData
 } from '@shared';
 import { IAddress } from '@eatfit247-shared-lib';
 import { MembersApiService } from '../../api.service';
-import { Subject, takeUntil } from 'rxjs';
+import { firstValueFrom, Subject, takeUntil } from 'rxjs';
 import {
   ManageMemberAddressComponent,
   ManageMemberAddressData
@@ -200,7 +202,18 @@ export class MemberAddressesComponent implements OnInit, OnDestroy {
   }
 
   async deleteAddress(address: IAddress): Promise<void> {
-    if (!confirm(`Are you sure you want to delete this address?`)) {
+    const dialogData: WarningDialogData = {
+      title: 'Delete Address',
+      message: 'Are you sure you want to delete this address? This action cannot be undone.',
+      confirmText: 'Delete',
+      cancelText: 'Cancel'
+    };
+    const dialogRef = this.dialog.open(WarningDialogComponent, {
+      width: '500px',
+      data: dialogData
+    });
+    const confirmed = (await firstValueFrom(dialogRef.afterClosed())) === true;
+    if (!confirmed) {
       return;
     }
     try {

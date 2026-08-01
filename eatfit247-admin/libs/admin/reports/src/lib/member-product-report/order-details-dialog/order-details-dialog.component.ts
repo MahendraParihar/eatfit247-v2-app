@@ -1,6 +1,6 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
-import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -19,9 +19,10 @@ import {
   ITrackingInfo,
   ShipmentStatusEnum,
 } from '@eatfit247-shared-lib';
-import { FormatCurrencyPipe } from '@shared';
+import { FormatCurrencyPipe, WarningDialogComponent, WarningDialogData } from '@shared';
 import { MembersApiService } from 'members';
 import { ShipmentAdminApiService } from '../shipment-admin-api.service';
+import { firstValueFrom } from 'rxjs';
 
 export interface OrderDetailsDialogData {
   memberId: number;
@@ -62,6 +63,7 @@ export class OrderDetailsDialogComponent implements OnInit {
   private membersApi = inject(MembersApiService);
   private shipmentApi = inject(ShipmentAdminApiService);
   private snackBar = inject(MatSnackBar);
+  private dialog = inject(MatDialog);
 
   readonly ShipmentStatusEnum = ShipmentStatusEnum;
   readonly displayedColumns = [
@@ -226,9 +228,18 @@ export class OrderDetailsDialogComponent implements OnInit {
   async cancelShipment(): Promise<void> {
     const shipmentId = this.shipment()?.shipmentId;
     if (!shipmentId) return;
-    const ok = window.confirm(
-      'Cancel this shipment? The carrier will be notified and the shipment status will be set to CANCELLED.',
-    );
+    const dialogData: WarningDialogData = {
+      title: 'Cancel Shipment',
+      message:
+        'Cancel this shipment? The carrier will be notified and the shipment status will be set to CANCELLED.',
+      confirmText: 'Cancel Shipment',
+      cancelText: 'Keep Shipment',
+    };
+    const dialogRef = this.dialog.open(WarningDialogComponent, {
+      width: '500px',
+      data: dialogData,
+    });
+    const ok = (await firstValueFrom(dialogRef.afterClosed())) === true;
     if (!ok) return;
     this.cancelling.set(true);
     try {
