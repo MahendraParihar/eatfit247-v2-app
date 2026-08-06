@@ -1,0 +1,13 @@
+.shared-multi-select {
+  width: 100%;
+
+  // Chips can wrap to several rows; keep the field from growing unbounded.
+  ::ng-deep .mat-mdc-chip-set .mdc-evolution-chip-set__chips {
+    max-height: 96px;
+    overflow-y: auto;
+  }
+
+  ::ng-deep .mat-mdc-chip {
+    font-size: 12px;
+  }
+}

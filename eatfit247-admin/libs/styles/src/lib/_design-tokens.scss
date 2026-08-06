@@ -29,6 +29,8 @@ $brand-primary: #fc2305;
   --md-sys-color-outline: #e0e0e0;
   --md-sys-color-outline-variant: #d6d6d6;
   --md-sys-color-on-surface: #1c1b1f;
+  // Muted on-surface for secondary labels/captions. 4.6:1 on --md-sys-color-surface.
+  --md-sys-color-on-surface-variant: #5c5b60;
 
   // Additional Material 3 tokens (kept for compatibility)
   --md-sys-color-secondary: #625b71;
@@ -94,6 +96,8 @@ $brand-primary: #fc2305;
   --md-sys-color-outline: #3a3a3a;
   --md-sys-color-outline-variant: #444444;
   --md-sys-color-on-surface: #e6e6e6;
+  // Muted on-surface for secondary labels/captions. 6.4:1 on --md-sys-color-surface.
+  --md-sys-color-on-surface-variant: #a8a6ad;
 
   // Additional Material 3 tokens (kept for compatibility)
   --md-sys-color-secondary: #ccc2dc;

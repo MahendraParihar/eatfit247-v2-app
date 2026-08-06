@@ -762,6 +762,13 @@ export class MemberPlanService {
   }
 
   /**
+   * Public mapper for report services that hydrate payment rows outside this module.
+   */
+  public toPaymentModel(item: TxnMemberPayment): IMemberPayment {
+    return this.convertToModel(item);
+  }
+
+  /**
    * Convert database model to IMemberPayment interface
    */
   private convertToModel(item: TxnMemberPayment): IMemberPayment {

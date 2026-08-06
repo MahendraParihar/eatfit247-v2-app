@@ -1,0 +1,40 @@
+<mat-form-field class="shared-multi-select" appearance="outline">
+  <mat-label>{{ label }}</mat-label>
+
+  <mat-chip-grid #chipGrid [attr.aria-label]="label">
+    @for (item of selectedOptions; track item.id) {
+      <mat-chip-row (removed)="remove(item)" [disabled]="isDisabled">
+        {{ item.label }}
+        @if (!isDisabled) {
+          <button matChipRemove type="button" [attr.aria-label]="'Remove ' + item.label">
+            <mat-icon>cancel</mat-icon>
+          </button>
+        }
+      </mat-chip-row>
+    }
+
+    <input
+      #searchInput
+      matInput
+      [placeholder]="selectedIds.length ? '' : placeholder"
+      [matAutocomplete]="auto"
+      [formControl]="searchControl"
+      [matChipInputFor]="chipGrid"
+      [matChipInputAddOnBlur]="false"
+      (blur)="onTouched()"
+    />
+  </mat-chip-grid>
+
+  <mat-autocomplete
+    #auto="matAutocomplete"
+    [displayWith]="displayEmpty"
+    (optionSelected)="onOptionSelected($event)"
+  >
+    @for (option of filteredOptions; track option.id) {
+      <mat-option [value]="option">{{ option.label }}</mat-option>
+    }
+    @if (!filteredOptions.length) {
+      <mat-option disabled>{{ emptyMessage }}</mat-option>
+    }
+  </mat-autocomplete>
+</mat-form-field>

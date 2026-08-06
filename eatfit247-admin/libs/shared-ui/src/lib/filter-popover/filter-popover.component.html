@@ -1,0 +1,49 @@
+<button
+  mat-stroked-button
+  type="button"
+  class="filter-popover__trigger"
+  cdkOverlayOrigin
+  #trigger="cdkOverlayOrigin"
+  [disabled]="disabled"
+  [class.filter-popover__trigger--active]="activeCount > 0"
+  [attr.aria-expanded]="isOpen"
+  aria-haspopup="dialog"
+  (click)="toggle()"
+>
+  <mat-icon>{{ icon }}</mat-icon>
+  {{ label }}
+  @if (activeCount > 0) {
+    <span class="filter-popover__count">{{ activeCount }}</span>
+  }
+  <mat-icon iconPositionEnd class="filter-popover__caret">{{
+    isOpen ? 'arrow_drop_up' : 'arrow_drop_down'
+  }}</mat-icon>
+</button>
+
+<ng-template
+  cdkConnectedOverlay
+  [cdkConnectedOverlayOrigin]="trigger"
+  [cdkConnectedOverlayOpen]="isOpen"
+  [cdkConnectedOverlayPositions]="positions"
+  [cdkConnectedOverlayHasBackdrop]="true"
+  cdkConnectedOverlayBackdropClass="cdk-overlay-transparent-backdrop"
+  [cdkConnectedOverlayFlexibleDimensions]="true"
+  [cdkConnectedOverlayPush]="true"
+  [cdkConnectedOverlayViewportMargin]="16"
+  (backdropClick)="close()"
+  (detach)="close()"
+  (overlayKeydown)="$event.key === 'Escape' && close()"
+>
+  <div class="filter-popover__panel" role="dialog" [attr.aria-label]="label">
+    <div class="filter-popover__content">
+      <ng-content></ng-content>
+    </div>
+
+    <div class="filter-popover__actions">
+      <button mat-button type="button" (click)="onClear()">{{ clearLabel }}</button>
+      <button mat-raised-button color="primary" type="button" (click)="onApply()">
+        {{ applyLabel }}
+      </button>
+    </div>
+  </div>
+</ng-template>

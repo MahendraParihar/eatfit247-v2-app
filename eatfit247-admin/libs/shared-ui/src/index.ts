@@ -18,6 +18,8 @@ export * from './lib/social-link/social-link-form.component';
 export * from './lib/upload-form/upload-form.component';
 export * from './lib/address-form/address-form.component';
 export * from './lib/breadcrumb/breadcrumb.component';
+export * from './lib/filter-popover/filter-popover.component';
+export * from './lib/multi-select/multi-select.component';
 
 // Pipes
 export * from './lib/pipes';
