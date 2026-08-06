@@ -1,97 +1,187 @@
 <div class="payment-report-container">
-  <mat-card class="filter-card">
-    <mat-card-header>
-      <mat-card-title>Payment Report Filters</mat-card-title>
-    </mat-card-header>
-    <mat-card-content>
-      <div class="quick-filters">
-        <span class="quick-filters-label">Quick Filters:</span>
-        <mat-button-toggle-group
-          [value]="selectedQuickFilter"
-          (change)="onQuickFilterChange($event.value)"
-          class="quick-filter-group"
-        >
-          <mat-button-toggle value="today">Today</mat-button-toggle>
-          <mat-button-toggle value="currentMonth">Current Month</mat-button-toggle>
-          <mat-button-toggle value="lastMonth">Last Month</mat-button-toggle>
-          <mat-button-toggle value="thisQuarter">This Quarter</mat-button-toggle>
-          <mat-button-toggle value="thisFinancialYear">This Financial Year</mat-button-toggle>
-          <mat-button-toggle value="lastFinancialYear">Last Financial Year</mat-button-toggle>
-        </mat-button-toggle-group>
-      </div>
-      <form [formGroup]="filterForm" (ngSubmit)="onSearch()">
-        <div class="filter-row">
+  <form [formGroup]="filterForm" class="filter-bar">
+    <shared-ui-filter-popover
+      label="Filters"
+      icon="filter_list"
+      applyLabel="Apply"
+      [activeCount]="activeFilterCount"
+      [disabled]="loading"
+      (applied)="onSearch()"
+      (cleared)="onResetFilters()"
+    >
+      <div class="filter-panel">
+        <div class="filter-section">
+          <div class="filter-section-label">Period</div>
           <mat-form-field appearance="outline" class="filter-field">
-            <mat-label>Start Date</mat-label>
-            <input
-              matInput
-              [matDatepicker]="startDatePicker"
-              formControlName="startDate"
-              readonly
-            />
-            <mat-datepicker-toggle matSuffix [for]="startDatePicker"></mat-datepicker-toggle>
-            <mat-datepicker #startDatePicker></mat-datepicker>
+            <mat-label>Period</mat-label>
+            <mat-select formControlName="periodPreset" (selectionChange)="onPeriodPresetChange($event.value)">
+              <mat-optgroup label="Recent">
+                <mat-option value="today">Today</mat-option>
+                <mat-option value="currentMonth">Current Month</mat-option>
+                <mat-option value="lastMonth">Last Month</mat-option>
+                <mat-option value="last7">Last 7 days</mat-option>
+                <mat-option value="last30">Last 30 days</mat-option>
+                <mat-option value="last90">Last 90 days</mat-option>
+              </mat-optgroup>
+
+              <mat-optgroup label="Quarter">
+                <mat-option value="thisQuarter">This Quarter</mat-option>
+                <mat-option value="lastQuarter">Last Quarter</mat-option>
+                @for (quarter of quarterOptions; track quarter.quarter) {
+                  <mat-option [value]="'q:' + quarterFyStartYear + ':' + quarter.quarter">
+                    {{ quarter.label }} · {{ currentFyLabel }}
+                  </mat-option>
+                }
+              </mat-optgroup>
+
+              <mat-optgroup label="Financial year">
+                <mat-option value="thisFy">This Financial Year</mat-option>
+                <mat-option value="lastFy">Last Financial Year</mat-option>
+                @for (fy of context?.availableYears ?? []; track fy.fyStartYear) {
+                  <mat-option [value]="'fy:' + fy.fyStartYear">{{ fy.label }}</mat-option>
+                }
+              </mat-optgroup>
+
+              <mat-option value="custom">Custom range</mat-option>
+            </mat-select>
           </mat-form-field>
 
-          <mat-form-field appearance="outline" class="filter-field">
-            <mat-label>End Date</mat-label>
-            <input
-              matInput
-              [matDatepicker]="endDatePicker"
-              formControlName="endDate"
-              readonly
-            />
-            <mat-datepicker-toggle matSuffix [for]="endDatePicker"></mat-datepicker-toggle>
-            <mat-datepicker #endDatePicker></mat-datepicker>
-          </mat-form-field>
+          <div class="filter-grid filter-grid--pair">
+            <mat-form-field appearance="outline" class="filter-field">
+              <mat-label>Start Date</mat-label>
+              <input matInput [matDatepicker]="startDatePicker" formControlName="startDate" readonly />
+              <mat-datepicker-toggle matSuffix [for]="startDatePicker"></mat-datepicker-toggle>
+              <mat-datepicker #startDatePicker></mat-datepicker>
+            </mat-form-field>
 
+            <mat-form-field appearance="outline" class="filter-field">
+              <mat-label>End Date</mat-label>
+              <input matInput [matDatepicker]="endDatePicker" formControlName="endDate" readonly />
+              <mat-datepicker-toggle matSuffix [for]="endDatePicker"></mat-datepicker-toggle>
+              <mat-datepicker #endDatePicker></mat-datepicker>
+            </mat-form-field>
+          </div>
+        </div>
+
+        <div class="filter-section">
+          <div class="filter-section-label">Scope</div>
           <mat-form-field appearance="outline" class="filter-field">
             <mat-label>Franchise</mat-label>
-            <mat-select formControlName="franchiseId">
+            <mat-select formControlName="franchiseId" (selectionChange)="onFranchiseChange()">
+              <mat-option [value]="null">All Franchises</mat-option>
               @for (franchise of franchiseOptions; track franchise.id) {
                 <mat-option [value]="franchise.id">{{ franchise.label }}</mat-option>
               }
             </mat-select>
           </mat-form-field>
 
-          <button
-            mat-raised-button
-            color="primary"
-            type="submit"
-            [disabled]="filterForm.invalid || loading"
-            class="search-button"
-          >
-            <mat-icon>search</mat-icon>
-            Search
-          </button>
-
-          <button
-            mat-raised-button
-            color="accent"
-            type="button"
-            [disabled]="filterForm.invalid || loading || exporting"
-            (click)="onExport()"
-            class="export-button"
-          >
-            <mat-icon>download</mat-icon>
-            Export
-          </button>
-
-          <button
-            mat-raised-button
-            color="accent"
-            type="button"
-            [disabled]="filterForm.invalid || loading || exportingExcel"
-            (click)="onExportExcel()"
-            class="export-button"
-          >
-            <mat-icon>table_chart</mat-icon>
-            Export Excel
-          </button>
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>Member</mat-label>
+            <input
+              matInput
+              formControlName="memberSearch"
+              placeholder="Name, email or phone"
+              maxlength="150"
+              (keydown.enter)="$event.preventDefault(); onSearch()"
+            />
+            <mat-icon matPrefix>person_search</mat-icon>
+          </mat-form-field>
         </div>
-      </form>
-    </mat-card-content>
-  </mat-card>
+
+        <div class="filter-section">
+          <div class="filter-section-label">Country</div>
+          <div class="toggle-field">
+            <span class="toggle-field__label">Match</span>
+            <mat-button-toggle-group formControlName="countryMode" class="toggle-group">
+              <mat-button-toggle value="in">Is one of</mat-button-toggle>
+              <mat-button-toggle value="notIn">Is not one of</mat-button-toggle>
+            </mat-button-toggle-group>
+          </div>
+          <div class="toggle-field">
+            <span class="toggle-field__label">Against</span>
+            <mat-button-toggle-group formControlName="countrySource" class="toggle-group">
+              <mat-button-toggle value="member">Member country</mat-button-toggle>
+              <mat-button-toggle value="billing">Billing country</mat-button-toggle>
+            </mat-button-toggle-group>
+          </div>
+          <shared-ui-multi-select
+            label="Countries"
+            placeholder="Any country"
+            emptyMessage="No countries found"
+            [options]="countryOptions"
+            formControlName="countryIds"
+          ></shared-ui-multi-select>
+        </div>
+
+        <div class="filter-section">
+          <div class="filter-section-label">Total Amount</div>
+          <div class="filter-grid filter-grid--pair">
+            <mat-form-field appearance="outline" class="filter-field">
+              <mat-label>Minimum</mat-label>
+              <input matInput type="number" min="0" step="0.01" formControlName="minTotalAmount" />
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="filter-field">
+              <mat-label>Maximum</mat-label>
+              <input matInput type="number" min="0" step="0.01" formControlName="maxTotalAmount" />
+            </mat-form-field>
+          </div>
+        </div>
+
+        <div class="filter-section">
+          <div class="filter-section-label">Tax &amp; GST</div>
+          <shared-ui-multi-select
+            label="Tax Type"
+            placeholder="Any tax type"
+            [options]="taxTypeOptions"
+            formControlName="taxTypes"
+          ></shared-ui-multi-select>
+          <shared-ui-multi-select
+            label="Tax Mode"
+            placeholder="Any tax mode"
+            [options]="taxModeOptions"
+            formControlName="taxModes"
+          ></shared-ui-multi-select>
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>Taxable</mat-label>
+            <mat-select formControlName="isTaxApplicable">
+              <mat-option [value]="null">All payments</mat-option>
+              <mat-option [value]="true">Taxable only</mat-option>
+              <mat-option [value]="false">Non-taxable only</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </div>
+    </shared-ui-filter-popover>
+
+    <div class="filter-bar__summary">
+      <span class="filter-bar__period">{{ periodLabel }}</span>
+      <span class="filter-bar__range">{{ rangeLabel }}</span>
+    </div>
+
+    <div class="filter-bar__spacer"></div>
+
+    <button
+      mat-stroked-button
+      type="button"
+      [matMenuTriggerFor]="exportMenu"
+      [disabled]="filterForm.invalid || loading || exporting || exportingExcel"
+    >
+      <mat-icon>download</mat-icon>
+      Export
+      <mat-icon iconPositionEnd>arrow_drop_down</mat-icon>
+    </button>
+  </form>
+
+  <mat-menu #exportMenu="matMenu">
+    <button mat-menu-item type="button" [disabled]="exporting" (click)="onExport()">
+      <mat-icon>picture_as_pdf</mat-icon>
+      <span>Export Invoices (ZIP)</span>
+    </button>
+    <button mat-menu-item type="button" [disabled]="exportingExcel" (click)="onExportExcel()">
+      <mat-icon>table_chart</mat-icon>
+      <span>Export Excel</span>
+    </button>
+  </mat-menu>
 
   @if (data.length > 0 || loading) {
     <shared-ui-data-table
@@ -104,4 +194,3 @@
     ></shared-ui-data-table>
   }
 </div>
-

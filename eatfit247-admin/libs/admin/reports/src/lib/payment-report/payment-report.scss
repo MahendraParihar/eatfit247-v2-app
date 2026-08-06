@@ -1,62 +1,92 @@
 .payment-report-container {
+  // Single compact row: filter trigger, the resolved range, and exports.
+  .filter-bar {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 12px;
 
-  .filter-card {
-    margin-bottom: 24px;
-
-    .quick-filters {
+    &__summary {
       display: flex;
+      align-items: baseline;
       gap: 8px;
-      flex-wrap: wrap;
-      align-items: center;
-      margin-bottom: 16px;
-      padding-bottom: 16px;
-      border-bottom: 1px solid rgba(0, 0, 0, 0.12);
-      justify-content: space-between;
-
-      .quick-filters-label {
-        font-weight: 500;
-        margin-right: 8px;
-        color: var(--md-sys-color-on-surface);
-      }
-
-      .quick-filter-group {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0;
-
-        ::ng-deep .mat-button-toggle {
-          min-width: auto;
-          padding: 0 12px;
-          font-size: 13px;
-          text-transform: none;
-          border-radius: 0;
-
-          &:first-child {
-            border-top-left-radius: 4px;
-            border-bottom-left-radius: 4px;
-          }
-
-          &:last-child {
-            border-top-right-radius: 4px;
-            border-bottom-right-radius: 4px;
-          }
-        }
-      }
+      min-width: 0;
     }
 
-    .filter-row {
-      display: flex;
-      gap: 16px;
-      flex-wrap: wrap;
-      align-items: center;
+    &__period {
+      font-weight: 600;
+      color: var(--md-sys-color-on-surface);
+      white-space: nowrap;
+    }
 
-      .filter-field {
-        flex: 1;
-        min-width: 200px;
-      }
+    &__range {
+      font-size: 12px;
+      color: var(--md-sys-color-on-surface-variant);
+      white-space: nowrap;
+    }
 
-      .search-button {
-        height: 56px;
+    &__spacer {
+      flex: 1 1 auto;
+    }
+  }
+}
+
+// Rendered inside the filter popover's CDK overlay, not the container above.
+.filter-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+
+  .filter-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .filter-section-label {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--md-sys-color-on-surface-variant);
+  }
+
+  .filter-grid {
+    display: grid;
+    gap: 12px;
+
+    &--pair {
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    }
+  }
+
+  .filter-field {
+    width: 100%;
+    min-width: 0;
+
+    // These filters have no hint or error text, so drop the reserved space.
+    ::ng-deep .mat-mdc-form-field-subscript-wrapper {
+      display: none;
+    }
+  }
+
+  .toggle-field {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    &__label {
+      font-size: 12px;
+      color: var(--md-sys-color-on-surface-variant);
+      min-width: 56px;
+    }
+
+    .toggle-group {
+      flex: 1 1 auto;
+
+      ::ng-deep .mat-button-toggle {
+        font-size: 12px;
       }
     }
   }
@@ -66,27 +96,20 @@
   .payment-report-container {
     padding: 16px;
 
-    .filter-card {
-      .quick-filters {
-        .quick-filters-label {
-          width: 100%;
-          margin-bottom: 8px;
-        }
+    .filter-bar {
+      &__spacer {
+        display: none;
       }
 
-      .filter-row {
-        flex-direction: column;
-
-        .filter-field {
-          width: 100%;
-        }
-
-        .search-button {
-          width: 100%;
-          margin-top: 0;
-        }
+      &__summary {
+        flex: 1 1 100%;
       }
     }
   }
-}
 
+  .filter-panel .toggle-field {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+  }
+}
