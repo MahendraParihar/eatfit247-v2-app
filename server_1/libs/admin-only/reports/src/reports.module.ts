@@ -19,6 +19,7 @@ import {
 import {
   AnnualDashboardService,
   DashboardService,
+  FinancialYearService,
   MemberProductReportService,
   PaymentReportService,
 } from './services';
@@ -44,6 +45,7 @@ import {
     MemberProductReportController,
   ],
   providers: [
+    FinancialYearService,
     DashboardService,
     AnnualDashboardService,
     PaymentReportService,
@@ -51,6 +53,7 @@ import {
   ],
   exports: [
     SequelizeModule,
+    FinancialYearService,
     DashboardService,
     AnnualDashboardService,
     PaymentReportService,
