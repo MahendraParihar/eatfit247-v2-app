@@ -1,0 +1,48 @@
+<%
+  /*
+   * Sent when a nutritionist assigns new pocket guides to a member
+   * (MemberPocketGuideService.sendAssignmentEmail). The PDFs are attached;
+   * guides that are missing or over the attachment limit have attached=false.
+   *
+   * Locals: franchise, memberName, guides [{ name, attached }], attachedCount
+   */
+  const _notAttached = guides.filter(function (g) { return !g.attached; });
+-%>
+<%- await include('../layout/email-head', {
+  subject: 'Your pocket guides are here',
+  preheader: attachedCount > 0
+    ? 'Your nutritionist has picked ' + guides.length + ' pocket guide' + (guides.length === 1 ? '' : 's') + ' for you. They are attached to this email.'
+    : 'Your nutritionist has picked ' + guides.length + ' pocket guide' + (guides.length === 1 ? '' : 's') + ' for you.',
+  franchise: franchise,
+  icon: '✎'
+}) %>
+
+<%- await include('../partials/heading', {
+  title: 'Your pocket guides are here, ' + memberName + '.',
+  lead: 'Your nutritionist has picked these guides for your plan. Keep them handy for everyday choices, eating out and special occasions.'
+}) %>
+
+<%- await include('../partials/section-open', { eyebrow: 'Pocket guides' }) %>
+  <% for (let i = 0; i < guides.length; i++) { %>
+    <%- await include('../partials/info-row', {
+      label: guides[i].name,
+      value: guides[i].attached ? 'Attached' : 'Shared separately',
+      last: i === guides.length - 1
+    }) %>
+  <% } %>
+<%- await include('../partials/section-close') %>
+
+<% if (_notAttached.length > 0) { %>
+  <%- await include('../partials/alert', {
+    tone: 'info',
+    text: (_notAttached.length === 1 ? 'One guide could' : _notAttached.length + ' guides could') + ' not be attached to this email. Your nutritionist will share ' + (_notAttached.length === 1 ? 'it' : 'them') + ' with you directly.'
+  }) %>
+<% } %>
+
+<%- await include('../partials/prose', {
+  text: 'These guides are for your personal use. Questions about any of them? Reply to this email or message your nutritionist.'
+}) %>
+
+<%- await include('../partials/signoff', { closing: 'Eat well,', franchise: franchise }) %>
+
+<%- await include('../layout/email-foot', { franchise: franchise }) %>

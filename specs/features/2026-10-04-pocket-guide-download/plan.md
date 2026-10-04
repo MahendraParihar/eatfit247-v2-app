@@ -42,11 +42,26 @@ Notes (as built):
 
 ## Group 4: Backend Download + Email (server_1)
 
-- [ ] 4.1 `PocketGuideService.getFileStream(id, user)` and `GET pocket-guide/:id/download` with `@RequireAbility(Read, PocketGuide)`. Inactive guides are downloadable too. Fill `downloadFileName` in list/detail, using the same helper as the `Content-Disposition` filename (title + extension, e.g. `Khichdi Diet R.pdf`, not `1694279594335-390517095.pdf`).
-- [ ] 4.2 `MemberPocketGuideService`: return `hasFile` + `downloadFileName` in `getList`; add `getFileStream(memberId, pocketGuideId, user)` that checks the guide is assigned and the member is in the caller's franchises
-- [ ] 4.3 `GET member/:id/pocket-guide/:pocketGuideId/download` with `@RequireAbility(Read, MemberPocketGuide)`
-- [ ] 4.4 Assignment email: attach the newly assigned PDFs from private storage; if a file is missing, log it and still send. Switch from `sendEmailByType(MEMBER_POCKET_GUIDE_ASSIGNED)` to `getNotificationTemplate('member_pocket_guide_assigned')` + `sendEmailFromTemplate` (as `notification.listener.ts` does), and add `templates/member/pocket-guide-assigned.ejs`, which doesn't exist yet. Without that file the email is skipped.
-- [ ] 4.5 Jest tests for both services: file flag mapping, assignment check, franchise check, missing file, email attachments
+- [x] 4.1 `PocketGuideService.getFileStream(id, user)` and `GET pocket-guide/:id/download` with `@RequireAbility(Read, PocketGuide)`. Inactive guides are downloadable too. Fill `downloadFileName` in list/detail, using the same helper as the `Content-Disposition` filename (title + extension, e.g. `Khichdi Diet R.pdf`, not `1694279594335-390517095.pdf`).
+- [x] 4.2 `MemberPocketGuideService`: return `hasFile` + `downloadFileName` in `getList`; add `getFileStream(memberId, pocketGuideId, user)` that checks the guide is assigned and the member is in the caller's franchises
+- [x] 4.3 `GET member/:id/pocket-guide/:pocketGuideId/download` with `@RequireAbility(Read, MemberPocketGuide)`
+- [x] 4.4 Assignment email: attach the newly assigned PDFs from private storage; if a file is missing, log it and still send. Switch from `sendEmailByType(MEMBER_POCKET_GUIDE_ASSIGNED)` to `getNotificationTemplate('member_pocket_guide_assigned')` + `sendEmailFromTemplate` (as `notification.listener.ts` does), and add `templates/member/pocket-guide-assigned.ejs`, which doesn't exist yet. Without that file the email is skipped.
+- [x] 4.5 Jest tests for both services: file flag mapping, assignment check, franchise check, missing file, email attachments
+
+Notes (as built):
+- `PocketGuideFileUtil` (pocket-guide module, exported) is the shared helper:
+  - `hasFile` (true only for a `private://` reference) and `downloadFileName`;
+  - `locate()`, which never throws: a bad or escaping reference counts as missing;
+  - the RFC 6266 `Content-Disposition` header and `send()`. Downloads use `@Res()` because `TransformInterceptor` would wrap a `StreamableFile`.
+- 404 messages: `Pocket guide not found` / `Member not found` / `Pocket guide is not assigned to this member` / `This pocket guide has no file` / `Pocket guide file is missing on the server`. A member outside the caller's franchises gets the same 404 as an unknown member, as in `AppointmentService`; empty `franchiseIds` means unscoped. Missing files are logged as errors.
+- The member route lives in `MemberContentController`, the registered controller. `MemberPocketGuideController` is not registered in `MemberModule` (dead code), so it was left alone.
+- `getList(required=true)`, the member tab, now includes **inactive** assigned guides so they stay downloadable. The picker (`required=false`) still shows active guides only, so saving from the picker drops inactive assignments. That was already the behaviour.
+- **Email:** `sendAssignmentEmail()` uses `getNotificationTemplate('member_pocket_guide_assigned')` + `sendEmailFromTemplate`. It replaces `{{franchiseName}}` in the subject, passes `franchise: { franchiseName }`, which every EJS layout needs, and stays fire-and-forget from `manage()`.
+- **Attachment size (owner to confirm):** the default is a cap, `POCKET_GUIDE_EMAIL_ATTACHMENT_LIMIT_BYTES` = 15 MB total, filled in assignment order. Guides that don't fit, or whose file is missing, are listed as "Shared separately" with an info alert, and logged.
+- New template `templates/member/pocket-guide-assigned.ejs`, with a sample in `render-previews.js`.
+- **Tests:** `jest.config.ts` + `tsconfig.spec.json` added for `pocket-guide` and `member`, using the shared `jest.env-setup.ts` (dummy env, temp private folder). ts-jest runs transpile-only (`isolatedModules`) because its type-check trips on an `@types/node` 18 / TS 5.9 mismatch in `file-upload.controller.ts`; the specs are type-checked with `tsc -p tsconfig.spec.json` instead. 19 + 16 tests pass.
+  - `razorpay-webhook.controller.spec.ts` was already stale before these configs existed (it calls `handleWebhook` with 3 of its 4 arguments). It is ignored in member's jest config until it's fixed.
+
 
 ## Group 5: Admin CMS (eatfit247-admin)
 

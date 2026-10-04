@@ -1,11 +1,14 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { MstPocketGuide } from '../models';
-import { IBasicSearch, IManagePocketGuide, IMediaUpload, IPocketGuide, ITableList } from '@eatfit247-shared-lib';
+import { IBasicSearch, IManagePocketGuide, IPocketGuide, ITableList } from '@eatfit247-shared-lib';
 import { AppConfigService, CommonFunctionsUtil, SearchUtil, TableListSortUtil } from '@server_1/core';
+import { IPocketGuideFile, PocketGuideFileUtil } from '../utils';
 
 @Injectable()
 export class PocketGuideService {
+  private readonly logger = new Logger(PocketGuideService.name);
+
   constructor(
     @InjectModel(MstPocketGuide) private readonly pocketGuideRepository: typeof MstPocketGuide,
     private appConfigService: AppConfigService,
@@ -41,7 +44,8 @@ export class PocketGuideService {
       id: item.pocketGuideId,
       pocketGuide: item.pocketGuide,
       filePath: CommonFunctionsUtil.buildImageUrl(item.filePath),
-      hasFile: Array.isArray(item.filePath) && item.filePath.some((file: IMediaUpload) => !!file.webUrl),
+      hasFile: PocketGuideFileUtil.hasFile(item.filePath),
+      downloadFileName: PocketGuideFileUtil.downloadFileNameFor(item.pocketGuide, item.filePath),
       description: item.description,
       imagePath: CommonFunctionsUtil.buildImageUrl(item.imagePath),
       active: item.active,
@@ -64,6 +68,26 @@ export class PocketGuideService {
       throw new NotFoundException('Pocket guide not found');
     }
     return this.convertToModel(find);
+  }
+
+  /** The guide's PDF for download. Inactive guides are included (only new assignments are blocked). */
+  public async getDownloadFile(id: number): Promise<IPocketGuideFile> {
+    const guide = await this.pocketGuideRepository.findOne({
+      where: { pocketGuideId: id },
+      attributes: ['pocketGuideId', 'pocketGuide', 'filePath'],
+    });
+    if (!guide) {
+      throw new NotFoundException('Pocket guide not found');
+    }
+    const lookup = await PocketGuideFileUtil.locate(guide.pocketGuide, guide.filePath);
+    if (lookup.found === false) {
+      if (lookup.reason === 'missing') {
+        this.logger.error(`Pocket guide ${id} file missing on disk: ${lookup.reference}`);
+        throw new NotFoundException('Pocket guide file is missing on the server');
+      }
+      throw new NotFoundException('This pocket guide has no file');
+    }
+    return lookup.file;
   }
 
   public async create(obj: IManagePocketGuide, cIp: string, adminId: number): Promise<void> {

@@ -1,4 +1,5 @@
-import { Body, Controller, Get, Param, Put, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseIntPipe, Put, Res, UseGuards } from '@nestjs/common';
+import { Response } from 'express';
 import {
   AbilitiesGuard,
   CurrentUser,
@@ -7,6 +8,7 @@ import {
   RequireAbility,
   UpdatePocketGuideIdsDto,
 } from '@server_1/core';
+import { PocketGuideFileUtil } from '@server_1/modules/pocket-guide';
 import { MemberDietPlanService, MemberPocketGuideService } from '../../services';
 import {
   AdminActionEnum,
@@ -44,6 +46,17 @@ export class MemberContentController {
   @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.MemberPocketGuide)
   async getPocketGuideList(@Param('id') id: number): Promise<ITableList<IMemberPocketGuide>> {
     return await this.memberPocketGuideService.getList(id, false);
+  }
+
+  @Get('pocket-guide/:pocketGuideId/download')
+  @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.MemberPocketGuide)
+  async downloadPocketGuide(
+    @Param('id', ParseIntPipe) id: number,
+    @Param('pocketGuideId', ParseIntPipe) pocketGuideId: number,
+    @CurrentUser() currentUser: IAuthUser,
+    @Res() res: Response,
+  ): Promise<void> {
+    PocketGuideFileUtil.send(res, await this.memberPocketGuideService.getDownloadFile(id, pocketGuideId, currentUser));
   }
 
   @Put('pocket-guide/manage')

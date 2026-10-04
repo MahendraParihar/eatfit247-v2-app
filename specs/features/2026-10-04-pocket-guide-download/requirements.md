@@ -78,4 +78,4 @@ Other gaps today:
 ## Open Questions
 
 - [x] ~~Inactive guide downloads~~: allowed for all roles with `PocketGuide` read (owner, 2026-10-04)
-- [ ] Production PDF sizes: if the total attachment size for a multi-guide assignment can exceed about 15 MB, split it across emails or cap it. (The local copies are about 4 KB placeholders.)
+- [ ] Production PDF sizes: real guides are up to 5.6 MB (Travel guide), so a multi-guide assignment can exceed mail limits. **Built default:** cap the attachments at 15 MB total and list the rest as "Shared separately" (plan 4.4). Owner to confirm, or choose splitting across emails.
