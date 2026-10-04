@@ -79,7 +79,7 @@ Notes (as built):
 
 ## Group 6: Close-out
 
-- [ ] 6.1 Every check in `validation.md` passes. **Partly done:** the automated checks, curl checks, Jest and the deep review are done (see `validation.md`). The edit-screen UI run passes 17/17 (it found and fixed the `file_path` NOT NULL 500). A7 is N/A, because production has no email service. Still open: Franchise Admin runs, A6 (no such user locally), a production copy (A12, migration + move-script dry run), and the RBAC cache flush on release.
+- [ ] 6.1 Every check in `validation.md` passes. **Partly done:** the automated checks, curl checks, Jest and the deep review are done (see `validation.md`). The edit-screen UI run passes 17/17 (it found and fixed the `file_path` NOT NULL 500). A7 is N/A, because production has no email service. Role runs with local QA users pass: Franchise Admin A1/A11, cross-franchise A4, and Social A6 API 403. Left for the production release only: A12 (migration + move script on real data), A3 through Nginx, and the RBAC cache flush. A6's menu is not permission-filtered (static `NAV_CONFIG`); that predates this feature and needs a follow-up.
 - [ ] 6.2 `requirements.md` status → Shipped; roadmap item 4.2 → ✅ with a link to this folder. **Set to "Implemented" / 🚧 with the link instead.** Flip both once 6.1 passes after rollout.
 - [x] 6.3 Replanning note: the BRD/PRD "personalized with member names" wording is updated (`docs/BRD.md`, `docs/PRD.md`). "Private storage" in `tech-stack.md § Runtime and Infrastructure` is a constitution change, so it went on branch `replan/private-storage` (see CLAUDE.md).
 

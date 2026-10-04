@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Implemented (code complete 2026-10-04). Becomes **Shipped** after production rollout and the open checks in `validation.md` (A1–A3, A6–A8, A10–A12). |
+| Status | Implemented (code complete 2026-10-04). Becomes **Shipped** after production rollout and the release smoke test (A3 through Nginx, A12). A7 is N/A until email is configured. A6's menu part is a gap that predates this feature, tracked separately. |
 | Branch | `invoice-seq-non-gst` (owner decision for this session); PR into `m3-cms-update` |
 | Roadmap | Phase 4: 4.2 Pocket-guide download URL |
 | References | BR-7 (Pocket Guides), PRD §3 story 20 |
