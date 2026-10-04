@@ -79,6 +79,15 @@ Notes (as built):
 
 ## Group 6: Close-out
 
-- [ ] 6.1 Every check in `validation.md` passes
-- [ ] 6.2 `requirements.md` status → Shipped; roadmap item 4.2 → ✅ with a link to this folder
-- [ ] 6.3 Replanning note: update the BRD's "personalized with member names" wording; add "private storage" to `tech-stack.md § Runtime and Infrastructure`
+- [ ] 6.1 Every check in `validation.md` passes. **Partly done:** the automated checks, curl checks, Jest and the deep review are done (see `validation.md`). Still open: the browser checks (incl. Franchise Admin), a real inbox (A7), A6 (no such user locally), a production copy (A12, migration + move-script dry run), and the RBAC cache flush on release.
+- [ ] 6.2 `requirements.md` status → Shipped; roadmap item 4.2 → ✅ with a link to this folder. **Set to "Implemented" / 🚧 with the link instead.** Flip both once 6.1 passes after rollout.
+- [x] 6.3 Replanning note: the BRD/PRD "personalized with member names" wording is updated (`docs/BRD.md`, `docs/PRD.md`). "Private storage" in `tech-stack.md § Runtime and Infrastructure` is a constitution change, so it went on branch `replan/private-storage` (see CLAUDE.md).
+
+Notes (close-out):
+- Review fixes, commit `6c7b7e0e`:
+  - franchise scope on the member list, picker and assign endpoints;
+  - inactive assignments kept on edit;
+  - unique names for private uploads (an upload could overwrite another guide's file);
+  - clean headers on stream errors.
+- Admin fixes, commits `2ed9cbac` and `68ced0a2`: action icons centred in data tables; uploaded PDFs show a PDF icon instead of a broken `<img>`.
+- Attachment cap (15 MB, list the rest as "Shared separately") is still **owner to confirm** (`requirements.md` open question).

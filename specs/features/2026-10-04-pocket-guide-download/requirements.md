@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | In Review |
+| Status | Implemented (code complete 2026-10-04). Becomes **Shipped** after production rollout and the open checks in `validation.md` (A1–A3, A6–A8, A10–A12). |
 | Branch | `invoice-seq-non-gst` (owner decision for this session); PR into `m3-cms-update` |
 | Roadmap | Phase 4: 4.2 Pocket-guide download URL |
 | References | BR-7 (Pocket Guides), PRD §3 story 20 |
@@ -64,6 +64,7 @@ Other gaps today:
 - **API (admin-api):** a file-stream response with `Content-Type: application/pdf` and a friendly `Content-Disposition` filename. List and detail responses stop exposing a downloadable URL for the PDF, and instead expose a flag such as `hasFile`.
 - **Contract:** update `IPocketGuide` and `IMemberPocketGuide` in shared-library to carry what the UI needs (file present, display filename). Remove nothing that other screens still use.
 - **RBAC:** `PocketGuide` (not franchise-scoped) for the master download. `MemberPocketGuide` (franchise-scoped) for the member download. The member must belong to one of the caller's franchises, unless the caller has the grant-all role.
+  - *As built:* "unscoped" means empty `franchiseIds`, the codebase-wide convention (`CaslAbilityFactory`, `AppointmentService`). A scoped role saved with no franchise is therefore unscoped. Tightening this to grant-all is deferred to roadmap 4.4 (franchise-scope audit). The same check now also covers the member list, picker and assign endpoints.
 - **Email:** attachments are read from private storage on the server. A missing file must not block the assignment; log it and send without that attachment.
 - **Soft delete:** an inactive guide can't be newly assigned (existing behaviour) but can still be downloaded from the master list and from members it was already assigned to. `delete` permission means deactivation only; rows are never removed.
 

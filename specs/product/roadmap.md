@@ -21,7 +21,7 @@ v2 is live in production.
 ## Phase 4: Finance and Content Fixes 🚧 (now)
 
 - 🚧 **4.1 Invoice numbering for non-Indian customers of the Indian franchise.** Use the correct non-GST / export-of-service invoice sequence for foreign customers billed by EatFit247 India. Branch `invoice-seq-non-gst`.
-- 📋 **4.2 Pocket-guide download URL.** Provide a working download link in the admin Pocket Guide screen and the member's Pocket Guide tab.
+- 🚧 **4.2 Pocket-guide download URL.** Provide a working download link in the admin Pocket Guide screen and the member's Pocket Guide tab. Code complete; awaiting production rollout and the remaining manual checks. See [specs/features/2026-10-04-pocket-guide-download](../features/2026-10-04-pocket-guide-download/).
 - 📋 **4.3 Apr–Jun 2026 invoice regeneration.** Reconcile `txn_member_payments` with the client Excel (Name + Amount + Location + Mode), fix dates, reissue `invoice_id`, and reset `mst_invoice_sequences`. (Data operation; depends on 4.1.)
 - 🔍 **4.4 Franchise-scope audit.** Check whether CASL franchise conditions are actually enforced (PRD-RBAC §4 finding 1: `ability.can(action, subject('X', { franchiseId }))`) across admin endpoints, especially for nutritionists mapped to several franchises and for partner-franchise owners. Fix any leakage, with tests.
 
