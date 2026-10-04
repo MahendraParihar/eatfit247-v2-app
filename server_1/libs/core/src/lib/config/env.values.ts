@@ -1,5 +1,5 @@
 import * as dotenv from 'dotenv';
-import { converterFactory, valueToBoolean, valueToNumber, valueToString } from './config.utils';
+import { converterFactory, resolvePrivateAssetPath, valueToBoolean, valueToNumber, valueToString } from './config.utils';
 
 dotenv.config();
 export const envExtractor = (key: string) => process.env[key];
@@ -26,6 +26,11 @@ export class Env {
   public static readonly staticAssetPath = envToString('ASSET_PATH');
   public static readonly nodeEnv = envToString('NODE_ENV');
   public static readonly persistentStorageAssetPath = `${Env.staticAssetPath}`;
+  // Never served: kept outside the ServeStaticModule root (e.g. pocket-guide PDFs)
+  public static readonly privateAssetPath = resolvePrivateAssetPath(
+    Env.staticAssetPath,
+    envToString('PRIVATE_ASSET_PATH', false),
+  );
   public static readonly recaptchaSecretKey = envToString('RECAPTCHA_SECRET_KEY', false);
   public static readonly sentryDSN = envToString('SENTRY_DSN', false);
 

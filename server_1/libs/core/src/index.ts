@@ -49,6 +49,7 @@ export * from './lib/utils/table-list-sort.util';
 export * from './lib/utils/report-sort.util';
 export * from './lib/utils/model-scopes.utils';
 export * from './lib/utils/payment-validation.util';
+export * from './lib/utils/private-storage.util';
 export * from './lib/dto/index';
 export { getCreatedByUserInclude, getUpdatedByUserInclude, CommonScopes } from './lib/utils/model-scopes.utils';
 // Services

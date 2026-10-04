@@ -6,10 +6,17 @@
 
 ## Group 1: Private Storage (server_1 + infra)
 
-- [ ] 1.1 Add a private storage root to config (env var + default), separate from `Env.staticAssetPath` / the `ServeStaticModule` root
-- [ ] 1.2 File upload: when `mediaFor = pocket-guide` and the file is a PDF/document, write it to private storage and store a non-public reference in `file_path`. Images keep the current public path.
-- [ ] 1.3 Infra: mount the private folder on the persistent volume in `docker-compose.yml`; add it to `infra/backup-media.sh` and `init-media-dirs.sh`
-- [ ] 1.4 Confirm that no Nginx or serve-static path exposes the private folder
+- [x] 1.1 Add a private storage root to config (env var + default), separate from `Env.staticAssetPath` / the `ServeStaticModule` root
+- [x] 1.2 File upload: when `mediaFor = pocket-guide` and the file is a PDF/document, write it to private storage and store a non-public reference in `file_path`. Images keep the current public path.
+- [x] 1.3 Infra: mount the private folder on the persistent volume in `docker-compose.yml`; add it to `infra/backup-media.sh` and `init-media-dirs.sh`
+- [x] 1.4 Confirm that no Nginx or serve-static path exposes the private folder
+
+Notes (as built):
+- `Env.privateAssetPath` reads `PRIVATE_ASSET_PATH`, which defaults to `<ASSET_PATH>/../private-files`. Boot fails if the two roots overlap.
+- `PrivateStorageUtil` (core) handles the private side. It stores a private file's `webUrl` as `private://<mediaFor>/<fileName>`, e.g. `private://pocket-guide/DetoxDiet.pdf`. `resolvePath()` maps that reference to an absolute path and rejects any path that escapes the root. Groups 2 and 4 use the same format.
+- Fail-closed rule: in `pocket-guide`, a file stays public only when both its mimetype and its extension are image types.
+- The folder is bind-mounted into **admin-api only**; public-api never reads it. Host path: `PRIVATE_FILES_PATH`, default `../private-files`, which is gitignored.
+- 1.4 check: every Nginx `/media-files` location proxies to admin-api, whose `ServeStaticModule` serves `ASSET_PATH` only. No Nginx `root`/`alias` points at media, and no Nginx container mounts the private folder. Against local admin-api, a probe file in `private-files/pocket-guide/` returned 404 on direct, `../`, `%2e%2e` and `..%2f` paths.
 
 ## Group 2: Data Migration (db_changes + ops)
 
