@@ -13,17 +13,41 @@ Verification on 2026-10-04 used local admin-api with short-lived tokens signed b
 | A4 | Given a member in franchise B, when a Nutritionist mapped only to franchise A calls the member download endpoint, then the response is 403/404 | curl with that nutritionist's token; Jest | ✅ Nutritionist (franchise 1) → member 5850 (franchise 2): 404 "Member not found"; Super Admin on the same member gets past the franchise check. Jest covers download, list and assign. |
 | A5 | Given a guide that is **not** assigned to the member, when the member download endpoint is called for it, then the response is 404 | curl; Jest | ✅ 404 "Pocket guide is not assigned to this member" (curl + Jest) |
 | A6 | Given a role without `PocketGuide` read (e.g. Social Content Manager), when it calls the master download, then the response is 403 and the menu item is hidden | curl + browser | ☐ No local user with such a role. The route uses the same `@RequireAbility(Read, PocketGuide)` as the existing list endpoint. |
-| A7 | When a nutritionist assigns new guides, then the member's email has those PDFs attached (only the newly assigned ones) | Local mail catcher / test inbox | ◐ Jest: only new guides are sent, attachments carry friendly names, 15 MB cap. The template renders (`render-previews.js`). A real inbox was not checked. |
+| A7 | When a nutritionist assigns new guides, then the member's email has those PDFs attached (only the newly assigned ones) | Local mail catcher / test inbox | **N/A for this release.** No email service is configured in production (owner, 2026-10-04), and locally SMTP is refused (`log_errors`: `ECONNREFUSED …:587`). The code path is covered by Jest (only new guides, friendly names, 15 MB cap) and the template renders. Delivery failures are logged and never block the assignment. Re-test once SMTP is configured. |
 | A8 | Given a guide whose file is missing on disk, then assignment still succeeds, the email sends without that attachment, the error is logged, and the download shows a clear error | Jest + browser | ◐ Jest: email still sent, guide listed as not attached, error logged. curl: 404 "Pocket guide file is missing on the server" (guide 34). The snackbar was not seen in a browser. |
 | A9 | After a new PDF is uploaded through admin, it lands in private storage (not under the static root) and downloads correctly | Browser + `ls` on the volume | ✅ Owner uploaded `AlcoholGuide.pdf` through admin: the file is in `private-files/pocket-guide/`, the DB holds `private://pocket-guide/AlcoholGuide.pdf`, and it downloads. New uploads now get a unique name prefix (review fix). |
-| A10 | The admin list has no broken columns (URL/Views/Shares/Visible are gone), and the member tab button reads "Assign Pocket Guide" | Browser | ◐ Code + `ng build`. Owner screenshots show the member-tab Download action; the list columns and the label have not been seen yet. |
-| A11 | Given an **inactive** guide, a Franchise Admin and a Nutritionist can download it from the master list; both roles can also create, edit and deactivate guides | Browser (both roles) | ◐ Jest: no active filter on either download. Migration 136 seeds all 4 actions for both roles (checked in a rolled-back run). No inactive guide or Franchise Admin exists locally. |
+| A10 | The admin list has no broken columns (URL/Views/Shares/Visible are gone), and the member tab button reads "Assign Pocket Guide" | Browser | ✅ UI run E5 (list headers: Image, Title, Status, Created/Updated By/At, Actions; no View button) and E13 ("Assign Pocket Guide"). |
+| A11 | Given an **inactive** guide, a Franchise Admin and a Nutritionist can download it from the master list; both roles can also create, edit and deactivate guides | Browser (both roles) | ◐ UI run: Super Admin edits and deactivates guide 22, then downloads it from the list (E12) and from the member tab (E13). Nutritionist opens the edit screen (Update shown, Edit action in the list) and downloads the inactive guide (E17). Jest covers both downloads. Franchise Admin is still open (no local user). |
 | A12 | Existing production guides still download after migration `136` and the file-move script | Run on a copy of the production DB + media | ☐ Needs a production copy. |
+
+## Edit Screen UI Run (2026-10-04)
+
+`/pocket-guide/edit/22`, driven in headless Chromium against the local admin and admin-api. The session came from a dev-signed token; everything else was real. Guide 22 was snapshotted and restored exactly afterwards, and the test uploads were deleted. **17/17 pass** after fix `9562ea9b`:
+
+| # | Case | Result |
+|---|------|--------|
+| E1 | Loads saved title, description and status | ✅ |
+| E2 | Saved PDF shows a PDF icon + file name (no broken `<img>`) | ✅ |
+| E3 | Saved thumbnail renders | ✅ |
+| E4 | Update with no changes keeps `private://pocket-guide/AlcoholGuide.pdf` | ✅ |
+| E5 | List: URL/Views/Shares/Visible columns and View button gone; Download shown | ✅ |
+| E6 | List Download saves `Alcohol Guide.pdf` (2,796,044 bytes, `%PDF-`) | ✅ |
+| E7 | Adding a second PDF shows the "Only one file" alert | ✅ |
+| E8 | A PNG dropped on the PDF field is ignored (no upload). Note: no message is shown to the user | ✅ |
+| E9 | New PDF upload goes to `private-files/` as `<timestamp>-<hex>-name.pdf`, never `media-files/` | ✅ |
+| E10 | Update saves it; list Download returns the new bytes as `Alcohol Guide.pdf` | ✅ |
+| E11 | Empty title blocks Update ("Pocket Guide Title is required", no request) | ✅ |
+| E12 | Rename + Inactive saves; the inactive guide still downloads as `Alcohol Guide QA.pdf` | ✅ |
+| E13 | Member tab lists the inactive assigned guide and downloads it; button reads "Assign Pocket Guide" | ✅ |
+| E14 | Image upload stays public (`media-files/pocket-guide/…`) | ✅ |
+| E15 | Cancel returns to the list without saving | ✅ |
+| E16 | Removing the PDF + Update hides Download; API says "This pocket guide has no file" | ✅ after fix. It was a **500**: `file_path` is NOT NULL and the service wrote `null` (an older bug). It now writes `[]`. |
+| E17 | Nutritionist: edit screen with Update, Edit action in the list, inactive guide downloads | ✅ |
 
 ## Automated Checks
 
 - [x] `cd shared-library && npm run build`
-- [x] server_1 tests: `pocket-guide` 19/19, `member` 21/21 (A4, A5, A7, A8). `core` 117/118: the one failure is already in `abilities.guard.spec.ts` (mock identity), and this feature doesn't touch it.
+- [x] server_1 tests: `pocket-guide` 21/21, `member` 21/21 (A4, A5, A7, A8). `core` 117/118: the one failure is already in `abilities.guard.spec.ts` (mock identity), and this feature doesn't touch it.
 - [x] server_1 build: `admin-api` + `public-api` (uncached)
 - [ ] server_1 lint: **not runnable**. server_1 has no ESLint config and no `lint` target.
 - [x] eatfit247-admin `ng build`
