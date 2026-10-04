@@ -7,8 +7,8 @@ Verification on 2026-10-04 used local admin-api with short-lived tokens signed b
 
 | # | Criterion | How verified | Result |
 |---|-----------|--------------|--------|
-| A1 | Given a guide with a PDF, when a Nutritionist or Franchise Admin clicks **Download** in the Pocket Guide list, then the PDF is saved with a readable filename | Browser (both roles) | ◐ API as Nutritionist: 200 `application/pdf`, `Party guide.pdf` / `Detox Diet.pdf`. Browser click and Franchise Admin (no local user) still open. |
-| A2 | Given a member with assigned guides, when staff with access click **Download** on the member's Pocket Guide tab, then that guide's PDF is saved | Browser | ◐ API as Super Admin and Nutritionist: 200, 2.8 MB `%PDF-`, `Alcohol Guide.pdf`. Owner saw the button; a confirmed save is still open. |
+| A1 | Given a guide with a PDF, when a Nutritionist or Franchise Admin clicks **Download** in the Pocket Guide list, then the PDF is saved with a readable filename | Browser (both roles) | ◐ API as Nutritionist: 200 `application/pdf`, `Party guide.pdf` / `Detox Diet.pdf`. Owner downloaded from the master list in the browser (2026-10-04). A Franchise Admin run is still open (no local user). |
+| A2 | Given a member with assigned guides, when staff with access click **Download** on the member's Pocket Guide tab, then that guide's PDF is saved | Browser | ✅ API as Super Admin and Nutritionist: 200, 2.8 MB `%PDF-`, `Alcohol Guide.pdf`. Owner downloaded from the member tab in the browser (2026-10-04). |
 | A3 | Given **no** login, when anyone requests the PDF by any URL (`/media-files/pocket-guide/*.pdf`, the old `webUrl`, direct private paths), then they get 401/403/404 and never the file | curl against local Docker + Nginx | ◐ Against local admin-api: download routes 401; `/media-files/pocket-guide/DetoxDiet.pdf`, `AlcoholGuide.pdf`, `../private-files`, `%2e%2e/private-files`, `/private-files` and `private:` all 404. Docker + Nginx were not run (config reviewed: every `/media-files` block proxies admin-api's static root only). |
 | A4 | Given a member in franchise B, when a Nutritionist mapped only to franchise A calls the member download endpoint, then the response is 403/404 | curl with that nutritionist's token; Jest | ✅ Nutritionist (franchise 1) → member 5850 (franchise 2): 404 "Member not found"; Super Admin on the same member gets past the franchise check. Jest covers download, list and assign. |
 | A5 | Given a guide that is **not** assigned to the member, when the member download endpoint is called for it, then the response is 404 | curl; Jest | ✅ 404 "Pocket guide is not assigned to this member" (curl + Jest) |
@@ -35,7 +35,7 @@ Verification on 2026-10-04 used local admin-api with short-lived tokens signed b
 ## Manual Checks
 
 - [x] curl: authenticated master and member downloads return `200` with `Content-Type: application/pdf` and a friendly `Content-Disposition`; unauthenticated returns `401`
-- [ ] Browser: admin Pocket Guide list + member tab as Super Admin, Franchise Admin and Nutritionist
+- [ ] Browser: admin Pocket Guide list + member tab as Super Admin, Franchise Admin and Nutritionist. **Owner, 2026-10-04:** editing a guide works (the private `filePath` survives a save), master-list download works, member-tab download works. Not yet run per role: Franchise Admin.
 - [ ] RBAC cache flushed (or users re-logged-in) after the permission seed; Franchise Admin now sees the Pocket Guide menu, and both roles see Create/Edit/Status actions
 
 ## Deferred (Phase 5 harness)
