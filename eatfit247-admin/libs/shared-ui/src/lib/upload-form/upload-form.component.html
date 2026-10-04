@@ -30,7 +30,12 @@
     <div class="file-upload-list" style="margin-top: 20px;">
       @for (file of uploadedFiles; track $index) {
         <div class="file-upload-list-item">
-          <img [src]="file.url" alt="" />
+          @if (mediaType === mediaTypeEnum.PDF) {
+            <!-- A PDF can't render in <img>, and private files have no public URL -->
+            <mat-icon class="file-upload-list-icon">picture_as_pdf</mat-icon>
+          } @else {
+            <img [src]="file.url" alt="" />
+          }
           <div class="file-upload-list-text">
             @if (file.file) {
               <span class="title">{{ file.file.name }}</span>

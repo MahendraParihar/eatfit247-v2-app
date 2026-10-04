@@ -1,3 +1,5 @@
+import * as path from 'path';
+
 export const createUniqueHashFromString = (str: string): number => {
   let hash = 0,
     i,
@@ -29,6 +31,25 @@ export function converterFactory<T>(
     }
     return defaultValue;
   };
+}
+
+/**
+ * Resolves the private storage root (files that must never be served publicly).
+ * Defaults to a `private-files` folder next to the static asset root, and refuses
+ * any location that overlaps the static root, because ServeStaticModule exposes
+ * everything under it at /media-files.
+ */
+export function resolvePrivateAssetPath(staticAssetPath: string, configuredPath?: string): string {
+  const staticRoot = path.resolve(staticAssetPath);
+  const privateRoot = path.resolve(configuredPath || path.join(staticRoot, '..', 'private-files'));
+  const isInside = (parent: string, child: string): boolean => {
+    const relative = path.relative(parent, child);
+    return relative === '' || (relative.split(path.sep)[0] !== '..' && !path.isAbsolute(relative));
+  };
+  if (isInside(staticRoot, privateRoot) || isInside(privateRoot, staticRoot)) {
+    throw Error(`PRIVATE_ASSET_PATH (${privateRoot}) must not overlap ASSET_PATH (${staticRoot})`);
+  }
+  return privateRoot;
 }
 
 export function valueToString(flag: string): string {

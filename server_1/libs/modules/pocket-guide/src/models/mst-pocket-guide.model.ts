@@ -27,7 +27,8 @@ export class MstPocketGuide extends Model<MstPocketGuide> {
   })
   declare pocketGuide: string;
   @Column({
-    allowNull: true,
+    allowNull: false,
+    defaultValue: [],
     field: 'file_path',
     type: DataType.JSONB,
   })

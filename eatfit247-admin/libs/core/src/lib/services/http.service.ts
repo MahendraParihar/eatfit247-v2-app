@@ -265,6 +265,33 @@ export class HttpService {
   }
 
   /**
+   * GET request for blob downloads (protected files)
+   * Errors come back as a Blob too; their JSON body is parsed so callers get the server message.
+   * @param endpoint API endpoint
+   * @returns Promise<Blob> - The blob file data
+   */
+  async getBlob(endpoint: string): Promise<Blob> {
+    const url = this.buildUrl(endpoint);
+    try {
+      return await firstValueFrom(this.http.get(url, { responseType: 'blob' }));
+    } catch (error: unknown) {
+      if (error instanceof HttpErrorResponse) {
+        let message = error.message;
+        if (error.error instanceof Blob) {
+          try {
+            const body = JSON.parse(await error.error.text()) as { message?: string };
+            message = body.message || message;
+          } catch {
+            // Not JSON: keep the HTTP message
+          }
+        }
+        throw { status: error.status, message, error: error.error };
+      }
+      throw error;
+    }
+  }
+
+  /**
    * POST request for blob downloads (file exports)
    * @param endpoint API endpoint
    * @param body Request body

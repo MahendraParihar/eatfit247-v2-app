@@ -32,6 +32,15 @@
       border-radius: var(--shape-xs);
     }
 
+    .file-upload-list-icon {
+      width: 64px;
+      height: 64px;
+      font-size: 56px;
+      line-height: 64px;
+      text-align: center;
+      color: var(--md-sys-color-primary);
+    }
+
     .file-upload-list-text {
       display: flex;
       flex-direction: column;

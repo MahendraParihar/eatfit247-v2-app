@@ -114,7 +114,7 @@ The platform must provide content to drive member engagement:
 - **Blog System**: Articles with authors, categories, tags, images, comments with admin responses, and email distribution to subscribers
 - **Success Stories**: Member transformation stories with before/after imagery and progress metrics
 - **Testimonials**: Member reviews with rating system and approval workflow, categorized into two types: **Program Testimonials** (feedback on coaching/diet programs) and **Product Testimonials** (feedback on purchased products)
-- **Pocket Guides**: Downloadable educational PDFs personalized with member names
+- **Pocket Guides**: Standard educational PDFs (EatFit247 property) assigned to members by need. Staff download them through the authenticated admin, and newly assigned guides are attached to the member's email. They are not personalised and have no public URL (see `specs/features/2026-10-04-pocket-guide-download`).
 - **FAQ**: Program-specific frequently asked questions
 
 ### BR-8: Admin & Role-Based Access Control (RBAC)

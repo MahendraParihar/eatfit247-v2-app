@@ -53,9 +53,16 @@ export class AuthInterceptor implements HttpInterceptor {
       });
     }
 
+    // Auth endpoints should not attempt token refresh on 401
+    const isAuthRequest = clonedRequest.url.includes('/auth/login') ||
+                          clonedRequest.url.includes('/auth/refresh') ||
+                          clonedRequest.url.includes('/auth/forgot-password') ||
+                          clonedRequest.url.includes('/auth/reset-password') ||
+                          clonedRequest.url.includes('/auth/change-password');
+
     return next.handle(clonedRequest).pipe(
       catchError((err: HttpErrorResponse) => {
-        if (err.status === 401) {
+        if (err.status === 401 && !isAuthRequest) {
           // Delegate to TokenRefreshService — concurrent 401s share a single refresh call
           return from(this.tokenRefresh.ensureFreshToken()).pipe(
             switchMap((newToken) => {

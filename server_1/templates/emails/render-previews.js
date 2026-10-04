@@ -104,6 +104,16 @@ const samples = {
     planDuration: '12 weeks',
     planUrl: 'https://eatfit247.com/diet-plan/77',
   },
+  'member/pocket-guide-assigned': {
+    franchise,
+    memberName: 'Karan Saldhana',
+    guides: [
+      { name: 'Detox Diet', attached: true },
+      { name: 'Restaurant Guide Veg', attached: true },
+      { name: 'Travel guide', attached: false },
+    ],
+    attachedCount: 2,
+  },
   'member/call-scheduled': {
     franchise,
     memberName: 'Karan Saldhana',
