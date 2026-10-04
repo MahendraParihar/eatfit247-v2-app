@@ -57,7 +57,9 @@ Both API services share the same `eatfit-server` image; the `command` field sele
 
 Copy `main.env.example` to `main.env` and fill in database, JWT, payment gateway, and other credentials.
 
-Shared volume `assets` + bind mount `media-files` provide persistent file storage across containers.
+Copy `.env.example` to `.env` for the compose-level variables (`MEDIA_FILES_PATH`, `PRIVATE_FILES_PATH`, `ASSET_PATH`, `PRIVATE_ASSET_PATH`). Compose uses `infra/.env` (or the shell) to fill in `${...}` in `docker-compose.yml`. It never reads `main.env` for this, because `env_file` only passes values into the containers. Unset values fall back to the defaults in `docker-compose.yml`.
+
+Shared volume `assets` + bind mount `media-files` provide persistent file storage across containers. Bind mount `private-files` (admin-api only) holds pocket-guide PDFs. Create it on the host before the first `up`: `mkdir -p private-files/pocket-guide`. If it is missing, Docker creates it owned by root.
 
 ## Utility Scripts
 

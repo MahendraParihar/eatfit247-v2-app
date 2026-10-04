@@ -83,7 +83,7 @@ Verification on 2026-10-04 used local admin-api with short-lived tokens signed b
 
 Order matters: the code must be live before files move (new uploads already go to private storage), and the files must move before the DB references change. Every step is safe to re-run.
 
-1. **Deploy code** with `PRIVATE_ASSET_PATH` set in `infra/main.env`, matching the admin-api `private-files` mount in `docker-compose.yml`. Run `init-media-dirs.sh` or `mkdir -p <PRIVATE_ASSET_PATH>/pocket-guide`. Take a backup first: `infra/backup-media.sh backup`.
+1. **Deploy code** with `PRIVATE_ASSET_PATH` set in `infra/main.env`, matching the admin-api `private-files` mount in `docker-compose.yml`. The mount's host folder comes from `PRIVATE_FILES_PATH`, a compose variable read from `infra/.env` or the shell, never from `main.env` (see `infra/.env.example`). Unset, it defaults to `<repo>/private-files`. Create it on the host before `up`: `mkdir -p private-files/pocket-guide`. Take a backup first: `infra/backup-media.sh backup`.
 2. **Move the files** inside admin-api, which has both folders mounted and the DB env:
    ```bash
    docker cp scripts/pocket-guide-move-private.ts eatfit-admin-api:/home/app/server_1/

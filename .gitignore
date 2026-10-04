@@ -2,6 +2,7 @@
 /eatfit247-cms-api/.env
 /server_1/.env
 /infra/main.env
+/infra/.env
 
 # Build outputs
 /eatfit247-cms-api/dist/
