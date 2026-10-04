@@ -97,6 +97,9 @@ export class PocketGuideFileUtil {
       if (res.headersSent) {
         res.destroy();
       } else {
+        res.removeHeader('Content-Type');
+        res.removeHeader('Content-Disposition');
+        res.removeHeader('Content-Length');
         res.status(500).json({ code: 500, message: 'Could not read the pocket guide file' });
       }
     });

@@ -38,14 +38,20 @@ export class MemberContentController {
 
   @Get('pocket-guide')
   @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.MemberPocketGuide)
-  async getPocketGuides(@Param('id') id: number): Promise<ITableList<IMemberPocketGuide>> {
-    return await this.memberPocketGuideService.getList(id, true);
+  async getPocketGuides(
+    @Param('id') id: number,
+    @CurrentUser() currentUser: IAuthUser,
+  ): Promise<ITableList<IMemberPocketGuide>> {
+    return await this.memberPocketGuideService.getList(id, true, currentUser);
   }
 
   @Get('pocket-guide/list')
   @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.MemberPocketGuide)
-  async getPocketGuideList(@Param('id') id: number): Promise<ITableList<IMemberPocketGuide>> {
-    return await this.memberPocketGuideService.getList(id, false);
+  async getPocketGuideList(
+    @Param('id') id: number,
+    @CurrentUser() currentUser: IAuthUser,
+  ): Promise<ITableList<IMemberPocketGuide>> {
+    return await this.memberPocketGuideService.getList(id, false, currentUser);
   }
 
   @Get('pocket-guide/:pocketGuideId/download')
@@ -71,7 +77,7 @@ export class MemberContentController {
       id,
       body.pocketGuideIds,
       requestedIp,
-      currentUser.adminId,
+      currentUser,
     );
   }
 

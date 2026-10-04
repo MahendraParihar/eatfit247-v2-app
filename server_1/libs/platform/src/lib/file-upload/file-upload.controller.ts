@@ -8,6 +8,7 @@ import {
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
+import { randomBytes } from 'crypto';
 import { promises as fs } from 'fs';
 import * as path from 'path';
 import { Env, PrivateStorageUtil } from '@server_1/core';
@@ -36,9 +37,11 @@ export class FileUploadController {
       throw new BadRequestException('Invalid media category');
     }
 
-    const fileName = path.basename(file.originalname).replace(/[/\\?%*:|"<>]/g, '-');
-    // Private documents (e.g. pocket-guide PDFs) go outside the served /media-files root
-    const isPrivate = PrivateStorageUtil.isPrivateUpload(mediaDto.mediaFor, fileName, file.mimetype);
+    const safeName = path.basename(file.originalname).replace(/[/\\?%*:|"<>]/g, '-');
+    // Private documents (e.g. pocket-guide PDFs) go outside the served /media-files root, under a
+    // unique name so an upload can never replace a file another guide already points to
+    const isPrivate = PrivateStorageUtil.isPrivateUpload(mediaDto.mediaFor, safeName, file.mimetype);
+    const fileName = isPrivate ? `${Date.now()}-${randomBytes(4).toString('hex')}-${safeName}` : safeName;
     const destinationFolderPath = isPrivate
       ? PrivateStorageUtil.folderPath(mediaDto.mediaFor)
       : path.resolve(`${this.rootFolderPath}/${mediaDto.mediaFor}`);

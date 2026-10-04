@@ -1,6 +1,6 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Op } from 'sequelize';
+import { Includeable, Op } from 'sequelize';
 import { TxnMember, TxnMemberPocketGuide } from '../models';
 import {
   ADMIN_USER_SHORT_INFO_ATTRIBUTE,
@@ -47,15 +47,10 @@ export class MemberPocketGuideService {
 
   public async getList(
     memberId: number,
-    required: boolean = false,
+    required: boolean,
+    user: IAuthUser,
   ): Promise<ITableList<IMemberPocketGuide>> {
-    // Verify member exists
-    const member = await this.memberRepository.findOne({
-      where: { memberId },
-    });
-    if (!member) {
-      throw new NotFoundException('Member not found');
-    }
+    await this.findMemberInScope(memberId, user, ['memberId', 'franchiseId']);
     MstPocketGuide.belongsTo(TxnMemberPocketGuide, {
       targetKey: 'pocketGuideId',
       foreignKey: 'pocketGuideId',
@@ -97,90 +92,86 @@ export class MemberPocketGuideService {
     };
   }
 
-  public async manage(
-    memberId: number,
-    pocketGuideIds: number[],
-    cIp: string,
-    adminId: number,
-  ): Promise<void> {
-    // Verify member exists
-    const member = await this.memberRepository.findOne({
-      where: { memberId },
-      attributes: ['memberId', 'emailId', 'firstName', 'lastName'],
-      include: [{ association: 'franchise', attributes: ['companyName'], required: false }],
-    });
-    if (!member) {
-      throw new NotFoundException('Member not found');
-    }
-    // Get existing pocket guide IDs before update
-    const existingPocketGuides = await this.memberPocketGuideRepository.findAll({
+  /**
+   * Replaces the member's assignments with `pocketGuideIds` and emails the newly assigned guides.
+   * Inactive guides that are already assigned are kept: the picker only offers active guides,
+   * so their absence from the submitted list is not an unassignment.
+   */
+  public async manage(memberId: number, pocketGuideIds: number[], cIp: string, user: IAuthUser): Promise<void> {
+    const member = await this.findMemberInScope(
+      memberId,
+      user,
+      ['memberId', 'franchiseId', 'emailId', 'firstName', 'lastName'],
+      [{ association: 'franchise', attributes: ['companyName'], required: false }],
+    );
+    const existingAssignments = (await this.memberPocketGuideRepository.findAll({
       where: { memberId },
       attributes: ['pocketGuideId'],
       raw: true,
-    });
-    const existingIds = new Set(existingPocketGuides.map((pg: any) => pg.pocketGuideId));
-    if (pocketGuideIds.length > 0) {
-      const validPocketGuides = await this.pocketGuideRepository.findAll({
-        where: {
-          pocketGuideId: {
-            [Op.in]: pocketGuideIds,
+    })) as unknown as Array<{ pocketGuideId: number }>;
+    const existingIds = existingAssignments.map((assignment) => assignment.pocketGuideId);
+    const requestedIds = [...new Set(pocketGuideIds)];
+
+    // A requested guide must be active, unless it is already assigned
+    const validPocketGuides = requestedIds.length
+      ? ((await this.pocketGuideRepository.findAll({
+          where: {
+            pocketGuideId: { [Op.in]: requestedIds },
+            [Op.or]: [{ active: true }, { pocketGuideId: { [Op.in]: existingIds } }],
           },
-          active: true,
-        },
-        attributes: ['pocketGuideId', 'pocketGuide', 'filePath'],
-        raw: true,
-      });
-      const validIds = new Set(validPocketGuides.map((pg: any) => pg.pocketGuideId));
-      const invalidIds = pocketGuideIds.filter((id) => !validIds.has(id));
-      if (invalidIds.length > 0) {
-        throw new NotFoundException(
-          `Invalid or inactive pocket guide IDs: ${invalidIds.join(', ')}`,
+          attributes: ['pocketGuideId', 'pocketGuide', 'filePath'],
+          raw: true,
+        })) as unknown as IAssignedPocketGuide[])
+      : [];
+    const validIds = new Set(validPocketGuides.map((pg) => pg.pocketGuideId));
+    const invalidIds = requestedIds.filter((id) => !validIds.has(id));
+    if (invalidIds.length > 0) {
+      throw new NotFoundException(`Invalid or inactive pocket guide IDs: ${invalidIds.join(', ')}`);
+    }
+
+    const inactiveAssigned = existingIds.length
+      ? ((await this.pocketGuideRepository.findAll({
+          where: { pocketGuideId: { [Op.in]: existingIds }, active: false },
+          attributes: ['pocketGuideId'],
+          raw: true,
+        })) as unknown as Array<{ pocketGuideId: number }>)
+      : [];
+    const finalIds = [...new Set([...requestedIds, ...inactiveAssigned.map((pg) => pg.pocketGuideId)])];
+    const newPocketGuideIds = requestedIds.filter((id) => !existingIds.includes(id));
+
+    const transaction = await this.sequelize.transaction();
+    try {
+      await this.memberPocketGuideRepository.destroy({ where: { memberId }, transaction });
+      if (finalIds.length > 0) {
+        await this.memberPocketGuideRepository.bulkCreate(
+          finalIds.map((pocketGuideId) => ({
+            memberId,
+            pocketGuideId,
+            createdBy: user.adminId,
+            modifiedBy: user.adminId,
+            createdIp: cIp,
+            modifiedIp: cIp,
+          })),
+          { transaction },
         );
       }
-      // Find new pocket guides (ones that weren't previously assigned)
-      const newPocketGuideIds = pocketGuideIds.filter((id) => !existingIds.has(id));
-      // Use transaction for atomic operation
-      const transaction = await this.sequelize.transaction();
-      try {
-        // Remove existing associations
-        await this.memberPocketGuideRepository.destroy({
-          where: { memberId },
-          transaction,
-        });
-        // Create new associations
-        const createData = pocketGuideIds.map((pocketGuideId) => ({
-          memberId,
-          pocketGuideId,
-          createdBy: adminId,
-          modifiedBy: adminId,
-          createdIp: cIp,
-          modifiedIp: cIp,
-        }));
-        await this.memberPocketGuideRepository.bulkCreate(createData, { transaction });
-        await transaction.commit();
-        // Email the newly assigned guides; fire-and-forget so SMTP never delays or fails the save
-        if (newPocketGuideIds.length > 0 && member.emailId) {
-          const newPocketGuides = (validPocketGuides as unknown as IAssignedPocketGuide[]).filter((pg) =>
-            newPocketGuideIds.includes(pg.pocketGuideId),
-          );
-          const recipient: IPocketGuideEmailRecipient = {
-            memberId,
-            emailId: member.emailId,
-            memberName: `${member.firstName ?? ''} ${member.lastName ?? ''}`.trim(),
-            franchiseName: member.franchise?.companyName || undefined,
-          };
-          this.sendAssignmentEmail(recipient, newPocketGuides).catch((emailError: Error) => {
-            this.logger.error(`Failed to send pocket guide email for member ${memberId}: ${emailError.message}`);
-          });
-        }
-      } catch (error) {
-        await transaction.rollback();
-        throw error;
-      }
-    } else {
-      // If no pocket guides selected, just remove existing ones
-      await this.memberPocketGuideRepository.destroy({
-        where: { memberId },
+      await transaction.commit();
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
+    }
+
+    // Email the newly assigned guides; fire-and-forget so SMTP never delays or fails the save
+    if (newPocketGuideIds.length > 0 && member.emailId) {
+      const recipient: IPocketGuideEmailRecipient = {
+        memberId,
+        emailId: member.emailId,
+        memberName: `${member.firstName ?? ''} ${member.lastName ?? ''}`.trim(),
+        franchiseName: member.franchise?.companyName || undefined,
+      };
+      const newPocketGuides = validPocketGuides.filter((pg) => newPocketGuideIds.includes(pg.pocketGuideId));
+      this.sendAssignmentEmail(recipient, newPocketGuides).catch((emailError: Error) => {
+        this.logger.error(`Failed to send pocket guide email for member ${memberId}: ${emailError.message}`);
       });
     }
   }
@@ -191,13 +182,7 @@ export class MemberPocketGuideService {
    * assigned to the member, or when the file is absent. Inactive guides are allowed.
    */
   public async getDownloadFile(memberId: number, pocketGuideId: number, user: IAuthUser): Promise<IPocketGuideFile> {
-    const member = await this.memberRepository.findOne({
-      where: { memberId },
-      attributes: ['memberId', 'franchiseId'],
-    });
-    if (!member || (user.franchiseIds.length > 0 && !user.franchiseIds.includes(member.franchiseId))) {
-      throw new NotFoundException('Member not found');
-    }
+    await this.findMemberInScope(memberId, user, ['memberId', 'franchiseId']);
     const assignment = await this.memberPocketGuideRepository.findOne({
       where: { memberId, pocketGuideId },
       attributes: ['memberPocketGuideId'],
@@ -276,6 +261,24 @@ export class MemberPocketGuideService {
       },
       attachments,
     });
+  }
+
+  /**
+   * The member, if it is in one of the caller's franchises. Empty franchiseIds means unscoped
+   * (Super Admin), the same convention as CaslAbilityFactory and AppointmentService; see roadmap 4.4.
+   * Out-of-scope members get the same 404 as unknown ones.
+   */
+  private async findMemberInScope(
+    memberId: number,
+    user: IAuthUser,
+    attributes: string[],
+    include?: Includeable[],
+  ): Promise<TxnMember> {
+    const member = await this.memberRepository.findOne({ where: { memberId }, attributes, include });
+    if (!member || (user.franchiseIds.length > 0 && !user.franchiseIds.includes(member.franchiseId))) {
+      throw new NotFoundException('Member not found');
+    }
+    return member;
   }
 
   private convertToModel(item: any, memberId: number): IMemberPocketGuide {

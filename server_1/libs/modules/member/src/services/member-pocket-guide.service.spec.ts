@@ -196,28 +196,73 @@ describe('MemberPocketGuideService', () => {
   });
 
   describe('manage', () => {
-    it('emails only the newly assigned guides', async () => {
-      const sendSpy = jest.spyOn(service, 'sendAssignmentEmail').mockResolvedValue();
-      memberRepository.findOne.mockResolvedValue({
-        memberId: 1,
-        emailId: 'member@example.com',
-        firstName: 'Karan',
-        lastName: 'Saldhana',
-        franchise: { companyName: 'EatFit247 Mumbai' },
-      });
-      assignmentRepository.findAll.mockResolvedValue([{ pocketGuideId: 9 }]);
-      const detox = { pocketGuideId: 9, pocketGuide: 'Detox Diet', filePath: [upload('private://pocket-guide/DetoxDiet.pdf')] };
-      const travel = { pocketGuideId: 13, pocketGuide: 'Travel guide', filePath: null };
-      pocketGuideRepository.findAll.mockResolvedValue([detox, travel]);
+    const member = {
+      memberId: 1,
+      franchiseId: 10,
+      emailId: 'member@example.com',
+      firstName: 'Karan',
+      lastName: 'Saldhana',
+      franchise: { companyName: 'EatFit247 Mumbai' },
+    };
+    const detox = { pocketGuideId: 9, pocketGuide: 'Detox Diet', filePath: [upload('private://pocket-guide/DetoxDiet.pdf')] };
+    const travel = { pocketGuideId: 13, pocketGuide: 'Travel guide', filePath: null };
+    let sendSpy: jest.SpyInstance;
 
-      await service.manage(1, [9, 13], '127.0.0.1', 7);
+    beforeEach(() => {
+      sendSpy = jest.spyOn(service, 'sendAssignmentEmail').mockResolvedValue();
+      memberRepository.findOne.mockResolvedValue(member);
+    });
+    afterEach(() => sendSpy.mockRestore());
+
+    const createdIds = (): number[] =>
+      (assignmentRepository.bulkCreate.mock.calls[0][0] as Array<{ pocketGuideId: number }>).map((row) => row.pocketGuideId);
+
+    it('emails only the newly assigned guides', async () => {
+      assignmentRepository.findAll.mockResolvedValue([{ pocketGuideId: 9 }]);
+      pocketGuideRepository.findAll.mockResolvedValueOnce([detox, travel]).mockResolvedValueOnce([]);
+
+      await service.manage(1, [9, 13], '127.0.0.1', user([10]));
 
       expect(transaction.commit).toHaveBeenCalled();
+      expect(createdIds()).toEqual([9, 13]);
       expect(sendSpy).toHaveBeenCalledWith(
         { memberId: 1, emailId: 'member@example.com', memberName: 'Karan Saldhana', franchiseName: 'EatFit247 Mumbai' },
         [travel],
       );
-      sendSpy.mockRestore();
+    });
+
+    it('keeps an assigned guide that was deactivated, even though the picker did not send it', async () => {
+      assignmentRepository.findAll.mockResolvedValue([{ pocketGuideId: 9 }, { pocketGuideId: 7 }]);
+      pocketGuideRepository.findAll.mockResolvedValueOnce([detox]).mockResolvedValueOnce([{ pocketGuideId: 7 }]);
+
+      await service.manage(1, [9], '127.0.0.1', user([10]));
+
+      expect(createdIds()).toEqual([9, 7]);
+      expect(sendSpy).not.toHaveBeenCalled();
+    });
+
+    it('keeps inactive assignments when every active guide is unselected', async () => {
+      assignmentRepository.findAll.mockResolvedValue([{ pocketGuideId: 9 }, { pocketGuideId: 7 }]);
+      pocketGuideRepository.findAll.mockResolvedValueOnce([{ pocketGuideId: 7 }]);
+
+      await service.manage(1, [], '127.0.0.1', user([10]));
+
+      expect(assignmentRepository.destroy).toHaveBeenCalled();
+      expect(createdIds()).toEqual([7]);
+    });
+
+    it('rejects a guide that is inactive and not already assigned', async () => {
+      assignmentRepository.findAll.mockResolvedValue([]);
+      pocketGuideRepository.findAll.mockResolvedValueOnce([]);
+
+      await expect(service.manage(1, [7], '127.0.0.1', user([10]))).rejects.toThrow('Invalid or inactive pocket guide IDs: 7');
+      expect(transaction.commit).not.toHaveBeenCalled();
+    });
+
+    it("404s for a member outside the caller's franchises, without changing anything", async () => {
+      await expect(service.manage(1, [9], '127.0.0.1', user([20]))).rejects.toThrow(new NotFoundException('Member not found'));
+      expect(assignmentRepository.destroy).not.toHaveBeenCalled();
+      expect(sendSpy).not.toHaveBeenCalled();
     });
   });
 
@@ -230,22 +275,27 @@ describe('MemberPocketGuideService', () => {
     });
 
     beforeEach(() => {
-      memberRepository.findOne.mockResolvedValue({ memberId: 1 });
+      memberRepository.findOne.mockResolvedValue({ memberId: 1, franchiseId: 10 });
       jest.spyOn(MstPocketGuide, 'belongsTo').mockReturnValue(undefined as unknown as ReturnType<typeof MstPocketGuide.belongsTo>);
     });
 
     it('maps the file flag and download name', async () => {
       pocketGuideRepository.findAndCountAll.mockResolvedValue({ rows: [row([upload('private://pocket-guide/DetoxDiet.pdf')])], count: 1 });
-      const list = await service.getList(1, true);
+      const list = await service.getList(1, true, user([10]));
       expect(list.tableData[0]).toEqual(expect.objectContaining({ hasFile: true, downloadFileName: 'Detox Diet.pdf', isSelected: true }));
     });
 
     it('keeps inactive guides in the assigned list but not in the picker', async () => {
       pocketGuideRepository.findAndCountAll.mockResolvedValue({ rows: [row(null)], count: 1 });
-      await service.getList(1, true);
+      await service.getList(1, true, user([10]));
       expect(pocketGuideRepository.findAndCountAll).toHaveBeenLastCalledWith(expect.objectContaining({ where: {} }));
-      await service.getList(1, false);
+      await service.getList(1, false, user([10]));
       expect(pocketGuideRepository.findAndCountAll).toHaveBeenLastCalledWith(expect.objectContaining({ where: { active: true } }));
+    });
+
+    it("404s for a member outside the caller's franchises", async () => {
+      await expect(service.getList(1, true, user([20]))).rejects.toThrow('Member not found');
+      expect(pocketGuideRepository.findAndCountAll).not.toHaveBeenCalled();
     });
   });
 });
