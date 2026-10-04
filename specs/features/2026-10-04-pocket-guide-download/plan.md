@@ -20,9 +20,15 @@ Notes (as built):
 
 ## Group 2: Data Migration (db_changes + ops)
 
-- [ ] 2.1 `db_changes/136_pocket_guide_private_files.sql`: back up the current `file_path` values (for rollback); rewrite `mst_pocket_guides.file_path` to the private reference; seed `franchise_admin` and `nutritionist` → `PocketGuide` → all 4 actions (skip rows that already exist); insert the `MEMBER_POCKET_GUIDE_ASSIGNED` template if it's missing
-- [ ] 2.2 Ops script (TypeScript under `scripts/`) that moves the existing `<static>/pocket-guide/*.pdf` files to private storage. Idempotent, with a dry-run mode, and it reports any row whose file is missing.
-- [ ] 2.3 Write the release runbook in `validation.md § Rollout` (order: deploy code → move files → apply migration → flush the RBAC cache)
+- [x] 2.1 `db_changes/136_pocket_guide_private_files.sql`: back up the current `file_path` values (for rollback); rewrite `mst_pocket_guides.file_path` to the private reference; seed `franchise_admin` and `nutritionist` → `PocketGuide` → all 4 actions (skip rows that already exist); insert the `MEMBER_POCKET_GUIDE_ASSIGNED` template if it's missing
+- [x] 2.2 Ops script (TypeScript under `scripts/`) that moves the existing `<static>/pocket-guide/*.pdf` files to private storage. Idempotent, with a dry-run mode, and it reports any row whose file is missing.
+- [x] 2.3 Write the release runbook in `validation.md § Rollout` (order: deploy code → move files → apply migration → flush the RBAC cache)
+
+Notes (as built):
+- Backup table: `bkp_136_mst_pocket_guides_file_path`, keyed by guide. The first run's values win.
+- The private name comes from the `webUrl` basename, not from `fileName`, because they can differ. For example, guide 6 has webUrl `RestaurantGuide-NonVeg.pdf` but fileName `RestaurantGuideNonVeg.pdf`.
+- **Template name:** the row is seeded as `member_pocket_guide_assigned` (lowercase, like every other row), with file `member/pocket-guide-assigned`. Today `MemberPocketGuideService` calls `sendEmailByType` with the uppercase enum value, which never matches. It is the only caller of that method. Group 4.4 fixes that, see below.
+- Script: `scripts/pocket-guide-move-private.ts`. Dry run by default, `--apply` to act. It moves every document in the public folder, referenced or not. It renames on case-only mismatches, because Linux is case-sensitive. It falls back to copy + unlink across Docker mounts (EXDEV), never overwrites, and exits with code 2 on missing files or conflicts.
 
 ## Group 3: Shared Library
 
@@ -34,7 +40,7 @@ Notes (as built):
 - [ ] 4.1 `PocketGuideService.getFileStream(id, user)` and `GET pocket-guide/:id/download` with `@RequireAbility(Read, PocketGuide)`. Inactive guides are downloadable too.
 - [ ] 4.2 `MemberPocketGuideService`: return the file flag in `getList`; add `getFileStream(memberId, pocketGuideId, user)` that checks the guide is assigned and the member is in the caller's franchises
 - [ ] 4.3 `GET member/:id/pocket-guide/:pocketGuideId/download` with `@RequireAbility(Read, MemberPocketGuide)`
-- [ ] 4.4 Assignment email: attach the newly assigned PDFs from private storage; if a file is missing, log it and still send
+- [ ] 4.4 Assignment email: attach the newly assigned PDFs from private storage; if a file is missing, log it and still send. Switch from `sendEmailByType(MEMBER_POCKET_GUIDE_ASSIGNED)` to `getNotificationTemplate('member_pocket_guide_assigned')` + `sendEmailFromTemplate` (as `notification.listener.ts` does), and add `templates/member/pocket-guide-assigned.ejs`, which doesn't exist yet. Without that file the email is skipped.
 - [ ] 4.5 Jest tests for both services: file flag mapping, assignment check, franchise check, missing file, email attachments
 
 ## Group 5: Admin CMS (eatfit247-admin)

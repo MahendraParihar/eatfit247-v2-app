@@ -60,7 +60,7 @@ Other gaps today:
 ## Technical Constraints
 
 - **Storage:** a new private storage root (env-configured, on the persistent Docker volume, **included in `infra/backup-media.sh`**). Uploads with `mediaFor = pocket-guide` and a PDF/document file are written there. The stored `file_path` must not resolve to a public URL.
-- **Data:** migration `db_changes/136_pocket_guide_private_files.sql` rewrites `mst_pocket_guides.file_path` to the private location, seeds `franchise_admin` → `PocketGuide` → `read`, and inserts the `MEMBER_POCKET_GUIDE_ASSIGNED` email template if it's missing. Existing PDFs are moved on the VPS as a scripted ops step, applied in the same release.
+- **Data:** migration `db_changes/136_pocket_guide_private_files.sql` rewrites `mst_pocket_guides.file_path` to the private location, seeds `franchise_admin` and `nutritionist` → `PocketGuide` → read/create/update/delete (decision 6), and inserts the assignment email template (`member_pocket_guide_assigned`) if it's missing. Existing PDFs are moved on the VPS as a scripted ops step, applied in the same release.
 - **API (admin-api):** a file-stream response with `Content-Type: application/pdf` and a friendly `Content-Disposition` filename. List and detail responses stop exposing a downloadable URL for the PDF, and instead expose a flag such as `hasFile`.
 - **Contract:** update `IPocketGuide` and `IMemberPocketGuide` in shared-library to carry what the UI needs (file present, display filename). Remove nothing that other screens still use.
 - **RBAC:** `PocketGuide` (not franchise-scoped) for the master download. `MemberPocketGuide` (franchise-scoped) for the member download. The member must belong to one of the caller's franchises, unless the caller has the grant-all role.

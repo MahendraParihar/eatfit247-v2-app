@@ -44,10 +44,29 @@
 
 ## Rollout
 
-1. Deploy code (the private storage root exists, and uploads go there).
-2. Run the file-move script on the VPS (dry run first).
-3. Apply `db_changes/136_pocket_guide_private_files.sql`.
-4. Flush the RBAC permission cache.
-5. Smoke test A1–A3 in production.
+Order matters: the code must be live before files move (new uploads already go to private storage), and the files must move before the DB references change. Every step is safe to re-run.
 
-Rollback: the old public files are **moved, not copied**. To roll back, move them back and restore `file_path` from the migration's backup table or file.
+1. **Deploy code** with `PRIVATE_ASSET_PATH` set in `infra/main.env`, matching the admin-api `private-files` mount in `docker-compose.yml`. Run `init-media-dirs.sh` or `mkdir -p <PRIVATE_ASSET_PATH>/pocket-guide`. Take a backup first: `infra/backup-media.sh backup`.
+2. **Move the files** inside admin-api, which has both folders mounted and the DB env:
+   ```bash
+   docker cp scripts/pocket-guide-move-private.ts eatfit-admin-api:/home/app/server_1/
+   docker exec -w /home/app/server_1 eatfit-admin-api node --experimental-strip-types pocket-guide-move-private.ts          # dry run
+   docker exec -w /home/app/server_1 eatfit-admin-api node --experimental-strip-types pocket-guide-move-private.ts --apply
+   ```
+   Read the dry run first. `missing` rows have no file anywhere: re-upload those guides in admin after release. `conflict` rows need a manual decision. Exit code 2 means at least one of these exists. Case-only differences (the DB says `PartyGuide.pdf`, the disk has `Partyguide.pdf`) are fixed automatically by renaming the file.
+3. **Apply the migration:** `psql … -v ON_ERROR_STOP=1 -f db_changes/136_pocket_guide_private_files.sql`. Any `NOTICE … still has a public file reference` line points to a row to fix by hand.
+4. **Flush the RBAC cache.** In production, permissions are cached in Redis for 1 h under `rbac:permissions:<adminId>`:
+   ```bash
+   redis-cli -h "$REDIS_HOST" --scan --pattern 'rbac:permissions:*' | xargs -r redis-cli -h "$REDIS_HOST" del
+   ```
+   Outside production the cache is in memory, so restarting admin-api is enough.
+5. **Smoke test** A1–A3 in production. `curl -I https://<admin-host>/media-files/pocket-guide/DetoxDiet.pdf` must return 404.
+
+**Rollback.** The script **moves** the files, it doesn't copy them, and there is no reverse script.
+1. Move the PDFs from `<PRIVATE_ASSET_PATH>/pocket-guide/` back to `<ASSET_PATH>/pocket-guide/`, or restore the `private-backup-*` archive and copy from it.
+2. Restore `file_path` with the `UPDATE … FROM bkp_136_mst_pocket_guides_file_path` block at the bottom of migration 136. The backup table keeps the values from the first run.
+3. Redeploy the previous code.
+
+The permission rows and the email template can stay.
+
+**Local dev (2026-10-04):** files already moved by hand into `private-files/pocket-guide/`. The dry run reports 19 already private, 1 case fix (`Partyguide.pdf` → `PartyGuide.pdf`, guide 24), and 2 missing: guides 34 and 35 (Khichdi Diet R / Khichdi Diet, `1694279594335-390517095.pdf` and `1694279571195-587037212.pdf`). Migration 136 was dry-run in a rolled-back transaction: 22 rows rewritten, 7 permission rows, 1 template. A second run in the same transaction changed nothing.
