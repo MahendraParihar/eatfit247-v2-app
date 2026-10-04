@@ -25,7 +25,9 @@ interface IGuideRow {
 
 describe('PocketGuideService', () => {
   const findOne = jest.fn<Promise<IGuideRow | null>, [unknown]>();
-  const repository = { findOne, scope: jest.fn(() => ({ findOne })) };
+  const update = jest.fn();
+  const create = jest.fn();
+  const repository = { findOne, update, create, scope: jest.fn(() => ({ findOne })) };
   const service = new PocketGuideService(
     repository as unknown as typeof MstPocketGuide,
     {} as AppConfigService,
@@ -40,7 +42,11 @@ describe('PocketGuideService', () => {
     await fs.rm(Env.privateAssetPath, { recursive: true, force: true });
   });
 
-  beforeEach(() => findOne.mockReset());
+  beforeEach(() => {
+    findOne.mockReset();
+    update.mockReset();
+    create.mockReset();
+  });
 
   describe('fetchById', () => {
     it('flags a private file and gives its download name', async () => {
@@ -100,6 +106,20 @@ describe('PocketGuideService', () => {
         active: true,
       });
       await expect(service.getDownloadFile(9)).rejects.toThrow('Pocket guide file is missing on the server');
+    });
+  });
+
+  describe('saving without a file', () => {
+    // file_path is NOT NULL in the DB; null made "remove the PDF and save" fail with a 500
+    it('update writes an empty array, not null', async () => {
+      findOne.mockResolvedValue({ pocketGuideId: 22, pocketGuide: 'Alcohol Guide', filePath: null, active: true });
+      await service.update(22, { pocketGuide: 'Alcohol Guide', active: true }, '127.0.0.1', 1);
+      expect(update).toHaveBeenCalledWith(expect.objectContaining({ filePath: [] }), { where: { pocketGuideId: 22 } });
+    });
+
+    it('create writes an empty array, not null', async () => {
+      await service.create({ pocketGuide: 'New Guide', active: true }, '127.0.0.1', 1);
+      expect(create).toHaveBeenCalledWith(expect.objectContaining({ filePath: [] }));
     });
   });
 });

@@ -93,7 +93,8 @@ export class PocketGuideService {
   public async create(obj: IManagePocketGuide, cIp: string, adminId: number): Promise<void> {
     const createObj = <MstPocketGuide>{
       pocketGuide: obj.pocketGuide,
-      filePath: obj.filePath && obj.filePath.length > 0 ? obj.filePath : null,
+      // file_path is NOT NULL in the DB: an empty array means "no file"
+      filePath: obj.filePath && obj.filePath.length > 0 ? obj.filePath : [],
       description: obj.description || null,
       imagePath: obj.imagePath && obj.imagePath.length > 0 ? obj.imagePath : null,
       active: obj.active,
@@ -114,7 +115,8 @@ export class PocketGuideService {
     }
     const updateObj = <MstPocketGuide>{
       pocketGuide: obj.pocketGuide,
-      filePath: obj.filePath && obj.filePath.length > 0 ? obj.filePath : null,
+      // file_path is NOT NULL in the DB: an empty array means "no file"
+      filePath: obj.filePath && obj.filePath.length > 0 ? obj.filePath : [],
       description: obj.description || null,
       imagePath: obj.imagePath && obj.imagePath.length > 0 ? obj.imagePath : null,
       active: obj.active,
