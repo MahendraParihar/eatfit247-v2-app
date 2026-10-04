@@ -32,13 +32,18 @@ Notes (as built):
 
 ## Group 3: Shared Library
 
-- [ ] 3.1 Update `IPocketGuide` / `IMemberPocketGuide`: add the file-present flag and display filename; the PDF is no longer exposed as a public `webUrl`
-- [ ] 3.2 `npm run build`
+- [x] 3.1 Update `IPocketGuide` / `IMemberPocketGuide`: add the file-present flag and display filename; the PDF is no longer exposed as a public `webUrl`
+- [x] 3.2 `npm run build`
+
+Notes (as built):
+- Both interfaces gain `hasFile: boolean` (required) and `downloadFileName?: string`.
+- `IBasePocketGuide.filePath` **stays**. The edit form sends it back on save, and `PocketGuideService.update` clears the file when it's empty, so dropping it would wipe the PDF on every edit. Since group 2 it only holds the `private://` reference, which is not a URL (JSDoc added).
+- Because `hasFile` is required, `PocketGuideService.convertToModel` now sets it, which keeps server_1 compiling. `MemberPocketGuideService` still has to (4.2).
 
 ## Group 4: Backend Download + Email (server_1)
 
-- [ ] 4.1 `PocketGuideService.getFileStream(id, user)` and `GET pocket-guide/:id/download` with `@RequireAbility(Read, PocketGuide)`. Inactive guides are downloadable too.
-- [ ] 4.2 `MemberPocketGuideService`: return the file flag in `getList`; add `getFileStream(memberId, pocketGuideId, user)` that checks the guide is assigned and the member is in the caller's franchises
+- [ ] 4.1 `PocketGuideService.getFileStream(id, user)` and `GET pocket-guide/:id/download` with `@RequireAbility(Read, PocketGuide)`. Inactive guides are downloadable too. Fill `downloadFileName` in list/detail, using the same helper as the `Content-Disposition` filename (title + extension, e.g. `Khichdi Diet R.pdf`, not `1694279594335-390517095.pdf`).
+- [ ] 4.2 `MemberPocketGuideService`: return `hasFile` + `downloadFileName` in `getList`; add `getFileStream(memberId, pocketGuideId, user)` that checks the guide is assigned and the member is in the caller's franchises
 - [ ] 4.3 `GET member/:id/pocket-guide/:pocketGuideId/download` with `@RequireAbility(Read, MemberPocketGuide)`
 - [ ] 4.4 Assignment email: attach the newly assigned PDFs from private storage; if a file is missing, log it and still send. Switch from `sendEmailByType(MEMBER_POCKET_GUIDE_ASSIGNED)` to `getNotificationTemplate('member_pocket_guide_assigned')` + `sendEmailFromTemplate` (as `notification.listener.ts` does), and add `templates/member/pocket-guide-assigned.ejs`, which doesn't exist yet. Without that file the email is skipped.
 - [ ] 4.5 Jest tests for both services: file flag mapping, assignment check, franchise check, missing file, email attachments

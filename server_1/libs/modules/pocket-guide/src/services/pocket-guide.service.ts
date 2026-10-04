@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { MstPocketGuide } from '../models';
-import { IBasicSearch, IManagePocketGuide, IPocketGuide, ITableList } from '@eatfit247-shared-lib';
+import { IBasicSearch, IManagePocketGuide, IMediaUpload, IPocketGuide, ITableList } from '@eatfit247-shared-lib';
 import { AppConfigService, CommonFunctionsUtil, SearchUtil, TableListSortUtil } from '@server_1/core';
 
 @Injectable()
@@ -41,6 +41,7 @@ export class PocketGuideService {
       id: item.pocketGuideId,
       pocketGuide: item.pocketGuide,
       filePath: CommonFunctionsUtil.buildImageUrl(item.filePath),
+      hasFile: Array.isArray(item.filePath) && item.filePath.some((file: IMediaUpload) => !!file.webUrl),
       description: item.description,
       imagePath: CommonFunctionsUtil.buildImageUrl(item.imagePath),
       active: item.active,
