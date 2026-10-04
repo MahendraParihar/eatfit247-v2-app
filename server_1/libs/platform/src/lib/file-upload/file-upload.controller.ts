@@ -8,9 +8,10 @@ import {
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
+import { randomBytes } from 'crypto';
 import { promises as fs } from 'fs';
 import * as path from 'path';
-import { Env } from '@server_1/core';
+import { Env, PrivateStorageUtil } from '@server_1/core';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { MediaDto } from './dto/media-for.dto';
 import 'multer';
@@ -36,8 +37,14 @@ export class FileUploadController {
       throw new BadRequestException('Invalid media category');
     }
 
-    const fileName = path.basename(file.originalname).replace(/[/\\?%*:|"<>]/g, '-');
-    const destinationFolderPath = path.resolve(`${this.rootFolderPath}/${mediaDto.mediaFor}`);
+    const safeName = path.basename(file.originalname).replace(/[/\\?%*:|"<>]/g, '-');
+    // Private documents (e.g. pocket-guide PDFs) go outside the served /media-files root, under a
+    // unique name so an upload can never replace a file another guide already points to
+    const isPrivate = PrivateStorageUtil.isPrivateUpload(mediaDto.mediaFor, safeName, file.mimetype);
+    const fileName = isPrivate ? `${Date.now()}-${randomBytes(4).toString('hex')}-${safeName}` : safeName;
+    const destinationFolderPath = isPrivate
+      ? PrivateStorageUtil.folderPath(mediaDto.mediaFor)
+      : path.resolve(`${this.rootFolderPath}/${mediaDto.mediaFor}`);
     const destinationPath = path.resolve(`${destinationFolderPath}/${fileName}`);
     // Prevent path traversal attacks
     if (!destinationPath.startsWith(destinationFolderPath)) {
@@ -56,7 +63,9 @@ export class FileUploadController {
       encoding: file.encoding,
       mimetype: file.mimetype,
       size: file.size,
-      webUrl: `media-files/${mediaDto.mediaFor}/${fileName}`,
+      webUrl: isPrivate
+        ? PrivateStorageUtil.toReference(mediaDto.mediaFor, fileName)
+        : `media-files/${mediaDto.mediaFor}/${fileName}`,
     };
   }
 }

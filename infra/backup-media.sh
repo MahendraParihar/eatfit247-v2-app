@@ -9,6 +9,8 @@ BACKUP_DIR="./media-backups"
 VOLUME_NAME="infra_media_files"
 CONTAINER_NAME="eatfit247-cms-api"
 MEDIA_PATH="/home/app/assets/media-files"
+# Host folder bind-mounted into admin-api as PRIVATE_ASSET_PATH (pocket-guide PDFs, never served)
+PRIVATE_FILES_PATH="${PRIVATE_FILES_PATH:-../private-files}"
 
 # Function to create backup
 backup_media() {
@@ -26,6 +28,23 @@ backup_media() {
     
     echo "Backup created: $BACKUP_FILE"
     ls -lh "$BACKUP_FILE"
+
+    backup_private "$TIMESTAMP"
+}
+
+# Function to back up private files (separate archive, owner-only permissions)
+backup_private() {
+    if [ ! -d "$PRIVATE_FILES_PATH" ]; then
+        echo "⚠️  Private files folder not found, skipping: $PRIVATE_FILES_PATH"
+        return
+    fi
+
+    PRIVATE_BACKUP_FILE="$BACKUP_DIR/private-backup-$1.tar.gz"
+    tar czf "$PRIVATE_BACKUP_FILE" -C "$PRIVATE_FILES_PATH" .
+    chmod 600 "$PRIVATE_BACKUP_FILE"
+
+    echo "Private backup created: $PRIVATE_BACKUP_FILE"
+    ls -lh "$PRIVATE_BACKUP_FILE"
 }
 
 # Function to restore from backup
@@ -50,6 +69,13 @@ restore_media() {
     echo
     
     if [[ $REPLY =~ ^[Yy]$ ]]; then
+        if [[ "$(basename "$BACKUP_FILE")" == private-backup-* ]]; then
+            # Restore private files to the host folder
+            mkdir -p "$PRIVATE_FILES_PATH"
+            tar xzf "$BACKUP_FILE" -C "$PRIVATE_FILES_PATH"
+            echo "Private files restored successfully!"
+            return
+        fi
         # Restore backup to volume
         docker run --rm -v "$VOLUME_NAME":/target -v "$(pwd)":/backup alpine sh -c "cd /target && tar xzf /backup/$(basename $BACKUP_FILE)"
         echo "Media files restored successfully!"
@@ -116,8 +142,8 @@ case "$1" in
         echo "Usage: $0 {backup|restore|list|check}"
         echo ""
         echo "Commands:"
-        echo "  backup           - Create a timestamped backup of media files"
-        echo "  restore <file>   - Restore media files from backup"
+        echo "  backup           - Create timestamped backups of media files and private files"
+        echo "  restore <file>   - Restore media files (or private files, for a private-backup-* file) from backup"
         echo "  list             - List available backups"
         echo "  check            - Check volume and container status"
         echo ""

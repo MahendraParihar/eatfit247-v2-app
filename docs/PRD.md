@@ -52,7 +52,7 @@ The platform handles multi-geography operations (India, UAE, international) with
 17. As a member, I want each recipe in my diet plan to include ingredients, preparation method, serving size, and nutritional values, so that I can follow it accurately.
 18. As a member, I want to download my diet plan as a PDF, so that I can access it offline.
 19. As a member, I want to view recipes categorized by meal type, cuisine, and dietary preference (veg/non-veg/vegan), so that I can explore alternatives.
-20. As a member, I want to access pocket guides (educational PDFs) personalized with my name, so that I have reference material for healthy eating.
+20. As a member, I want to receive the pocket guides (standard educational PDFs) my nutritionist assigns me, attached to an email or shared by staff, so that I have reference material for healthy eating. (Self-service download on the website: roadmap 9.2.)
 
 ### Health Tracking & Progress
 21. As a member, I want to log my daily health parameters (weight, blood pressure, blood sugar, cholesterol), so that my progress is tracked over time.

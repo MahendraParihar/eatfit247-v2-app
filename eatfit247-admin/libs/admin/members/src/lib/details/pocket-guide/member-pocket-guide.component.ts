@@ -14,6 +14,8 @@ import {
   ITableColumn,
   ITableConfig,
   LoaderComponent,
+  saveBlobAsFile,
+  downloadErrorMessage,
   updatedByUserFormatter
 } from '@shared';
 import { IMemberPocketGuide } from '@eatfit247-shared-lib';
@@ -101,8 +103,29 @@ export class MemberPocketGuideComponent implements OnInit, OnDestroy {
       pageSizeOptions: [10, 25, 50, 100],
       showPagination: false,
       showSearch: false,
-      showHeader: true
+      showHeader: true,
+      actionsConfig: {
+        buttons: [
+          {
+            label: "Download",
+            icon: "download",
+            tooltip: "Download PDF",
+            visible: (row: IMemberPocketGuide) => row.hasFile,
+            onClick: (row: IMemberPocketGuide) => this.downloadPocketGuide(row)
+          }
+        ]
+      }
     };
+  }
+
+  async downloadPocketGuide(pocketGuide: IMemberPocketGuide): Promise<void> {
+    try {
+      const blob = await this.apiService.downloadPocketGuide(this.memberId, pocketGuide.pocketGuideId);
+      saveBlobAsFile(blob, pocketGuide.downloadFileName || `${pocketGuide.pocketGuide}.pdf`);
+    } catch (error) {
+      const text = downloadErrorMessage(error, "pocket guide");
+      this.snackBar.open(text, "Close", { duration: 5000 });
+    }
   }
 
   async loadPocketGuides(): Promise<void> {

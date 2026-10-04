@@ -58,6 +58,17 @@ Import path across all projects: `@eatfit247-shared-lib`
 
 Any interface used by both frontend and backend **must** be defined here. Frontend-only or backend-only interfaces stay in their respective projects.
 
+## Spec-Driven Development
+
+Non-trivial work follows the spec loop in [specs/README.md](specs/README.md): **Constitution → Plan → Implement → Validate → Replan**.
+
+- **Before any spec or feature code**, read the constitution: [mission.md](specs/product/mission.md) (product principles), [tech-stack.md](specs/product/tech-stack.md) (conventions), [roadmap.md](specs/product/roadmap.md).
+- Integration branch is **`m3-cms-update`** (not `main`). Branch from it and open PRs against it.
+- One feature = one branch (`feature/<slug>`) = one folder `specs/features/YYYY-MM-DD-<slug>/` with `requirements.md`, `plan.md` and `validation.md` (from `specs/templates/`). In Claude Code, start one with the `/feature-spec` skill.
+- Implement from `plan.md` task groups, and work one group at a time for payments, tax, RBAC and migrations. Finish by passing `validation.md`.
+- If the code needs to deviate from the spec, update the spec first. Fix review findings in both the spec and the code.
+- Constitution changes go on a `replan/<topic>` branch. Tick shipped items in `roadmap.md`.
+
 ## Cross-Project Conventions
 
 - **TypeScript only** — never create `.js` files

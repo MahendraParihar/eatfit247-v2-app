@@ -27,6 +27,9 @@
 /infra/certs/*.crt
 /infra/certs/*.pem
 
+# Private files (pocket-guide PDFs, never committed or served)
+/private-files/
+
 # Backup files
 /infra/media-backups/
 .nx/installation

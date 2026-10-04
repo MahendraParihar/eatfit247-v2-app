@@ -1,4 +1,5 @@
-import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseIntPipe, Patch, Post, Put, Query, Res, UseGuards } from '@nestjs/common';
+import { Response } from 'express';
 import {
   AbilitiesGuard,
   BasicSearchDto,
@@ -9,6 +10,7 @@ import {
   UpdateActiveDto,
 } from '@server_1/core';
 import { PocketGuideService } from '../../services';
+import { PocketGuideFileUtil } from '../../utils';
 import { CreatePocketGuideDto } from '../../dto';
 import {
   AdminActionEnum,
@@ -33,6 +35,12 @@ export class PocketGuideController {
   @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.PocketGuide)
   async getById(@Param('id') id: number): Promise<IPocketGuide> {
     return await this.service.fetchById(id);
+  }
+
+  @Get(':id/download')
+  @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.PocketGuide)
+  async download(@Param('id', ParseIntPipe) id: number, @Res() res: Response): Promise<void> {
+    PocketGuideFileUtil.send(res, await this.service.getDownloadFile(id));
   }
 
   @Post('manage')

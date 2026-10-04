@@ -9,7 +9,7 @@
     <div headerActions>
       <button mat-raised-button color="primary" (click)="addPocketGuide()">
         <mat-icon>add</mat-icon>
-        Add Body Stats Log
+        Assign Pocket Guide
       </button>
     </div>
   </shared-ui-data-table>
@@ -17,7 +17,7 @@
 @if (!loading && pocketGuides.length === 0) {
   <shared-ui-empty-state
     [type]="EmptyStateType.MEMBER_POCKET_GUIDE"
-    buttonLabel="Add Pocket Guide"
+    buttonLabel="Assign Pocket Guide"
     buttonIcon="add"
     (buttonClick)="addPocketGuide()">
   </shared-ui-empty-state>

@@ -2,6 +2,8 @@
 
 # Initialize media directories if they don't exist
 MEDIA_PATH="/home/app/assets/media-files"
+# Private files (pocket-guide PDFs): never served, kept outside MEDIA_PATH
+PRIVATE_PATH="${PRIVATE_ASSET_PATH:-/home/app/assets/private-files}"
 
 echo "Initializing media directories at $MEDIA_PATH"
 
@@ -24,8 +26,13 @@ mkdir -p "$MEDIA_PATH/program"
 mkdir -p "$MEDIA_PATH/recipe"
 mkdir -p "$MEDIA_PATH/referrer"
 
+# Create private directories
+mkdir -p "$PRIVATE_PATH/pocket-guide"
+
 # Set proper permissions
 chmod -R 755 "$MEDIA_PATH"
+chmod -R 750 "$PRIVATE_PATH"
 
 echo "Media directories initialized successfully"
 ls -la "$MEDIA_PATH"
+ls -la "$PRIVATE_PATH"
