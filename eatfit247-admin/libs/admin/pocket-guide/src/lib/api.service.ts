@@ -9,4 +9,8 @@ export class PocketGuideApiService extends CrudApiService<IPocketGuide> {
   constructor() {
     super('/pocket-guide');
   }
+
+  async download(id: number): Promise<Blob> {
+    return this.httpService.getBlob(`${this.endpoint}/${id}/download`);
+  }
 }

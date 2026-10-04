@@ -343,6 +343,10 @@ export class MembersApiService {
     return res.data as ITableList<IMemberPocketGuide>;
   }
 
+  async downloadPocketGuide(memberId: number, pocketGuideId: number): Promise<Blob> {
+    return this.httpService.getBlob(`${this.endpoint}/${memberId}/pocket-guide/${pocketGuideId}/download`);
+  }
+
   async getPocketGuideList(
     memberId: number
   ): Promise<ITableList<IMemberPocketGuide>> {

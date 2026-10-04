@@ -65,10 +65,17 @@ Notes (as built):
 
 ## Group 5: Admin CMS (eatfit247-admin)
 
-- [ ] 5.1 API services: download methods returning a blob, plus a small shared save-file helper (reuse it if one already exists in `@shared`)
-- [ ] 5.2 Pocket Guide list: replace the "View" stub with a **Download** action (shown when the guide has a file); remove the URL / Views / Shares / Visible columns
-- [ ] 5.3 Member → Pocket Guide tab: add a **Download** action per assigned guide; rename the header button to "Assign Pocket Guide"
-- [ ] 5.4 Snackbar errors for 403 / 404 / missing file. Material components and tokens only.
+- [x] 5.1 API services: download methods returning a blob, plus a small shared save-file helper (reuse it if one already exists in `@shared`)
+- [x] 5.2 Pocket Guide list: replace the "View" stub with a **Download** action (shown when the guide has a file); remove the URL / Views / Shares / Visible columns
+- [x] 5.3 Member → Pocket Guide tab: add a **Download** action per assigned guide; rename the header button to "Assign Pocket Guide"
+- [x] 5.4 Snackbar errors for 403 / 404 / missing file. Material components and tokens only.
+
+Notes (as built):
+- `HttpService.getBlob()` parses the JSON error body out of the Blob, so the snackbar shows the server message.
+- `@shared` utils gained `saveBlobAsFile()` and `downloadErrorMessage()`: 403 → no access, 404 → the server message (e.g. "Pocket guide file is missing on the server"), anything else → retry.
+- Download shows only when `hasFile` is true, in both the list and the member tab. The member tab's empty-state button also reads "Assign Pocket Guide".
+- Verified against local admin-api with dev-signed tokens: Super Admin and Nutritionist get the real PDF with a friendly filename; unassigned and missing files return 404 with clear messages. Admin `ng build` passes. ESLint shows only existing `@nx/enforce-module-boundaries` circular-dependency errors on existing `@eatfit247-shared-lib`/`@env` imports.
+- Known, already the case: the edit form's upload field renders existing files with `<img [src]=webUrl>`, so a PDF shows a broken thumbnail (now with a `private://` src).
 
 ## Group 6: Close-out
 
