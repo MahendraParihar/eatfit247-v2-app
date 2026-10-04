@@ -57,7 +57,7 @@ Notes (as built):
 - The member route lives in `MemberContentController`, the registered controller. `MemberPocketGuideController` is not registered in `MemberModule` (dead code), so it was left alone.
 - `getList(required=true)`, the member tab, now includes **inactive** assigned guides so they stay downloadable. The picker (`required=false`) still shows active guides only, so saving from the picker drops inactive assignments. That was already the behaviour.
 - **Email:** `sendAssignmentEmail()` uses `getNotificationTemplate('member_pocket_guide_assigned')` + `sendEmailFromTemplate`. It replaces `{{franchiseName}}` in the subject, passes `franchise: { franchiseName }`, which every EJS layout needs, and stays fire-and-forget from `manage()`.
-- **Attachment size (owner to confirm):** the default is a cap, `POCKET_GUIDE_EMAIL_ATTACHMENT_LIMIT_BYTES` = 15 MB total, filled in assignment order. Guides that don't fit, or whose file is missing, are listed as "Shared separately" with an info alert, and logged.
+- **Attachment size (owner confirmed 2026-10-04):** a cap, `POCKET_GUIDE_EMAIL_ATTACHMENT_LIMIT_BYTES` = 15 MB total, filled in assignment order. Guides that don't fit, or whose file is missing, are listed as "Shared separately" with an info alert, and logged.
 - New template `templates/member/pocket-guide-assigned.ejs`, with a sample in `render-previews.js`.
 - **Tests:** `jest.config.ts` + `tsconfig.spec.json` added for `pocket-guide` and `member`, using the shared `jest.env-setup.ts` (dummy env, temp private folder). ts-jest runs transpile-only (`isolatedModules`) because its type-check trips on an `@types/node` 18 / TS 5.9 mismatch in `file-upload.controller.ts`; the specs are type-checked with `tsc -p tsconfig.spec.json` instead. 19 + 16 tests pass.
   - `razorpay-webhook.controller.spec.ts` was already stale before these configs existed (it calls `handleWebhook` with 3 of its 4 arguments). It is ignored in member's jest config until it's fixed.
@@ -90,4 +90,4 @@ Notes (close-out):
   - unique names for private uploads (an upload could overwrite another guide's file);
   - clean headers on stream errors.
 - Admin fixes, commits `2ed9cbac` and `68ced0a2`: action icons centred in data tables; uploaded PDFs show a PDF icon instead of a broken `<img>`.
-- Attachment cap (15 MB, list the rest as "Shared separately") is still **owner to confirm** (`requirements.md` open question).
+- Attachment cap: 15 MB, the rest listed as "Shared separately". Confirmed by the owner, 2026-10-04.
