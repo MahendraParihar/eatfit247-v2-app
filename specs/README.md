@@ -45,7 +45,7 @@ Before starting, check for a clean slate:
 
 Then:
 
-1. Create the branch `feature/<slug>` from `main`.
+1. Create the branch `feature/<slug>` from an up-to-date **`m3-cms-update`**, the integration branch. PRs target `m3-cms-update`; `main` is stale.
 2. Have the agent **interview you** (scope, key decisions, validation approach) and write `features/<date>-<slug>/{requirements,plan,validation}.md` from the templates. In Claude Code, the `/feature-spec` skill does this.
 3. **Review all three files.** Ask the agent to make fixes so the three stay consistent. Give context the agent lacks, but don't over-steer it with low-level details.
 4. Commit the spec on its own: `spec: <feature>`.

@@ -10,8 +10,8 @@ Plan one roadmap feature following `specs/README.md`. **Do not write any applica
 ## Steps
 
 1. **Load context.** Read `specs/README.md`, `specs/product/mission.md`, `specs/product/tech-stack.md` and `specs/product/roadmap.md`. If the user didn't name an item, propose the next 📋 item and confirm it.
-2. **Check for a clean slate.** Run `git status` and `git branch --show-current`. If there are uncommitted changes, or you aren't on `main`, stop and tell the user. Don't stash, reset or discard anything yourself.
-3. **Branch.** `git checkout -b feature/<slug>` from an up-to-date `main`.
+2. **Check for a clean slate.** Run `git status` and `git branch --show-current`. If there are uncommitted changes, stop and tell the user which files are dirty and ask how to proceed (the user may choose to stay on the current branch). Don't stash, reset or discard anything yourself.
+3. **Branch.** By default, `git checkout -b feature/<slug>` from an up-to-date `m3-cms-update` (the integration branch; `main` is stale). If the user says to stay on the current branch, do that.
 4. **Research.** Explore the code this feature touches: existing modules, models, migrations, related `docs/` sections. Use subagents for broad searches.
 5. **Interview.** Use AskUserQuestion, at most 4 questions per round and as many rounds as needed, to settle:
    - scope (what's in and out, and whether to split the feature into smaller roadmap items)
