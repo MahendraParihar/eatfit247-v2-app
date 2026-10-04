@@ -25,7 +25,7 @@ Build order: `shared-library`, then `server_1`, then the frontends. Every projec
 | Containers | Docker Compose (`infra/docker-compose.yml`), multi-stage Dockerfiles per app |
 | Reverse proxy / TLS | Nginx (`infra/nginx*.conf`, `infra/certs`) |
 | Non-Docker process manager | PM2 (`ecosystem.config.js`) |
-| File storage | Local filesystem (`media-files/`), backed up with `infra/backup-media.sh` |
+| File storage | Local filesystem. **Public** media in `media-files/` (`ASSET_PATH`, served at `/media-files`). **Private** files in `private-files/` (`PRIVATE_ASSET_PATH`, never served, must not overlap `ASSET_PATH`; mounted into admin-api only), stored as `private://<mediaFor>/<file>` references and read through `PrivateStorageUtil` for authenticated downloads and email attachments. Pocket-guide PDFs are the first user. Both are backed up with `infra/backup-media.sh`. |
 | Hosting | **Single VPS running Docker Compose** (APIs, admin, web, Nginx) |
 | CI | GitHub Actions under `server_1/.github/workflows` (lint, test, build, `npm audit`). **Target:** root `.github/workflows` covering all projects |
 
