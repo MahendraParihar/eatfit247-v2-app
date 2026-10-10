@@ -483,7 +483,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
   }
 
   private async checkProductTax(): Promise<string | undefined> {
-    if (!this.productId || !this.productVariantId) {
+    if (!this.memberId || !this.productId || !this.productVariantId) {
       throw new Error('Product ID or Variant ID missing');
     }
     const productTaxRequest: IPublicProductTaxCalculationRequest = {
@@ -500,7 +500,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
       promoCode: this.appliedPromoCode() ?? undefined,
     };
     const result = await this.checkoutService.calculateProductTax(
-      this.memberId!,
+      this.memberId,
       productTaxRequest,
     );
     this.taxCalculation = result;
@@ -511,15 +511,18 @@ export class CheckoutComponent implements OnInit, OnDestroy {
   }
 
   private async checkPlanTax(): Promise<string | undefined> {
+    if (!this.memberId || !this.programPlanId) {
+      throw new Error('Program Plan ID missing');
+    }
     const taxRequest: IPublicPlanTaxCalculationRequest = {
-      programPlanId: this.programPlanId!,
+      programPlanId: this.programPlanId,
       currency: this.currencyCode,
       addressId: this.addressId ?? undefined,
       billingAddressId: this.addressId ?? undefined,
       promoCode: this.appliedPromoCode() ?? undefined,
     };
     const tempTaxCalculation = await this.checkoutService.calculateTax(
-      this.memberId!,
+      this.memberId,
       taxRequest,
     );
     if (!tempTaxCalculation) {

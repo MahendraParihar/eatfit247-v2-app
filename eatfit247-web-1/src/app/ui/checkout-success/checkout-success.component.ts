@@ -109,7 +109,8 @@ export class CheckoutSuccessComponent implements OnInit, OnDestroy {
 
   /** While the order is PENDING, re-read it until the server marks it PAID or FAILED. */
   private schedulePollIfPending(): void {
-    if (!isPlatformBrowser(this.platformId) || this.orderStatus() !== 'pending' || !this.gatewayOrderId) {
+    const gatewayOrderId = this.gatewayOrderId;
+    if (!isPlatformBrowser(this.platformId) || this.orderStatus() !== 'pending' || !gatewayOrderId) {
       return;
     }
     if (this.pollAttempts >= STATUS_POLL_MAX_ATTEMPTS) {
@@ -119,7 +120,7 @@ export class CheckoutSuccessComponent implements OnInit, OnDestroy {
     this.pollTimer = setTimeout(async () => {
       this.pollAttempts += 1;
       try {
-        await this.loadOrderDetails(this.gatewayOrderId!, this.isPlanOrder);
+        await this.loadOrderDetails(gatewayOrderId, this.isPlanOrder);
       } catch (error: unknown) {
         console.warn('Could not refresh order status:', error);
       }
