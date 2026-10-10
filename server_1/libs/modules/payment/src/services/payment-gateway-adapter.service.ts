@@ -1,6 +1,6 @@
 import { PaymentGatewayEnum } from '@eatfit247-shared-lib';
 import { Injectable } from '@nestjs/common';
-import { RazorpayService, StripeService, TelrService } from '@server_1/platform';
+import { IGatewayPaymentDetails, RazorpayService, StripeService, TelrService } from '@server_1/platform';
 
 /**
  * Payment Gateway Adapter Interface
@@ -69,6 +69,19 @@ export interface PaymentGatewayAdapter {
       keySecret?: string;
     },
   ): Promise<{ verified: boolean; paymentDetails?: any }>;
+
+  /**
+   * Fetch a payment from the gateway API (status, amount in minor units)
+   * @param paymentId - Payment ID from gateway
+   * @param credentials - Payment gateway credentials
+   */
+  fetchPayment?(
+    paymentId: string,
+    credentials: {
+      keyId: string;
+      keySecret: string;
+    },
+  ): Promise<IGatewayPaymentDetails>;
 
   /**
    * Process a refund
@@ -158,6 +171,16 @@ export class RazorpayAdapter implements PaymentGatewayAdapter {
       signature,
       credentials?.keySecret,
     );
+  }
+
+  async fetchPayment(
+    paymentId: string,
+    credentials: {
+      keyId: string;
+      keySecret: string;
+    },
+  ): Promise<IGatewayPaymentDetails> {
+    return await this.razorpayService.fetchPayment(paymentId, credentials.keyId, credentials.keySecret);
   }
 }
 

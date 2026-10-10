@@ -8,18 +8,14 @@ import {
 } from '@server_1/core';
 import { AddressService, RecaptchaGuard } from '@server_1/platform';
 import { MemberProductService } from '../../services';
-import {
-  CalculateProductVariantTaxDto,
-  CalculateProductVariantTaxResponseDto,
-  CreatePublicCheckoutOrderDto,
-  CreatePublicCheckoutPaymentLinkDto,
-  VerifyPaymentDto,
-} from '../../dto';
+import { PublicProductOrderDto, PublicProductTaxCalculationDto, PublicVerifyPaymentDto } from '../../dto';
 import {
   IAddress,
   IManageAddress,
   IPaymentGateway,
-  IPaymentLinkResponse,
+  IPublicCheckoutOrderResponse,
+  IPublicProductTaxCalculationResponse,
+  IPublicVerifyPaymentResponse,
   TableEnum,
 } from '@eatfit247-shared-lib';
 
@@ -85,65 +81,29 @@ export class PublicCheckoutController {
 
   @Public()
   @UseGuards(CheckoutTokenGuard)
-  @Post('member/:memberId/product/payment-link')
-  async createPaymentLink(
-    @Param('memberId') memberId: number,
-    @Body() body: CreatePublicCheckoutPaymentLinkDto,
-  ): Promise<IPaymentLinkResponse> {
-    let franchisePaymentGatewayId = body.franchisePaymentGatewayId;
-    if (!franchisePaymentGatewayId) {
-      const gateways = await this.memberProductService.getSupportedPaymentGatewaysForCheckout(
-        body.currency,
-      );
-      if (gateways.length === 0) {
-        throw new Error('No payment gateway available');
-      }
-      const selectedGateway = gateways.find((g) => g.isPrimary) || gateways[0];
-      franchisePaymentGatewayId = selectedGateway.franchisePaymentGatewayId;
-    }
-    return await this.memberProductService.createPaymentLink(memberId, {
-      amount: body.amount,
-      currency: body.currency,
-      franchisePaymentGatewayId,
-      description: body.description,
-      customer: body.customer,
-      notes: body.notes,
-    });
-  }
-
-  @Public()
-  @UseGuards(CheckoutTokenGuard)
-  @Post('member/:memberId/product/payment-order')
-  async createPaymentOrder(
-    @Param('memberId') memberId: number,
-    @Body() body: CreatePublicCheckoutPaymentLinkDto,
-  ) {
-    return await this.memberProductService.createPaymentOrder(memberId, body);
-  }
-
-  @Public()
-  @UseGuards(CheckoutTokenGuard)
   @Post('member/:memberId/product/verify-payment')
-  async verifyPayment(@Param('memberId') memberId: number, @Body() body: VerifyPaymentDto) {
-    return await this.memberProductService.verifyPayment(
-      memberId,
-      body.gatewayCode,
-      body.paymentId,
-      body.orderId,
-      body.signature,
-    );
+  async verifyPayment(
+    @Param('memberId') memberId: number,
+    @Body() body: PublicVerifyPaymentDto,
+    @RequestedIp() requestedIp: string,
+  ): Promise<IPublicVerifyPaymentResponse> {
+    return await this.memberProductService.verifyPublicPayment(memberId, body, requestedIp);
   }
 
+  /**
+   * Create-before-pay: prices the variants on the server, creates the PENDING order and
+   * the gateway order for its total, and returns the gateway checkout payload.
+   */
   @Public()
   @UseGuards(CheckoutTokenGuard, RecaptchaGuard)
   @RequireRecaptcha('checkout_order', 0.5)
   @Post('member/:memberId/product/order')
   async createProductOrder(
     @Param('memberId') memberId: number,
-    @Body() body: CreatePublicCheckoutOrderDto,
+    @Body() body: PublicProductOrderDto,
     @RequestedIp() requestedIp: string,
-  ) {
-    return await this.memberProductService.create(memberId, body, requestedIp);
+  ): Promise<IPublicCheckoutOrderResponse> {
+    return await this.memberProductService.createPublicCheckoutOrder(memberId, body, requestedIp);
   }
 
   @Public()
@@ -165,8 +125,8 @@ export class PublicCheckoutController {
   @Post('member/:memberId/calculate-tax')
   async calculateTax(
     @Param('memberId') memberId: number,
-    @Body() body: CalculateProductVariantTaxDto,
-  ): Promise<CalculateProductVariantTaxResponseDto> {
-    return await this.memberProductService.calculateProductTax(memberId, body);
+    @Body() body: PublicProductTaxCalculationDto,
+  ): Promise<IPublicProductTaxCalculationResponse> {
+    return await this.memberProductService.calculatePublicProductTax(memberId, body);
   }
 }

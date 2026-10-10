@@ -9,6 +9,7 @@
 import { PaymentGatewayEnum, PaymentStatusEnum, TaxMode, TaxTypeEnum } from '../enum';
 import { IPaymentLinkCustomer } from './payment-gateway.interface';
 import { ICalculateTaxResponse } from './tax-calculation.interface';
+import { ICalculateProductVariantTaxResponse } from './member/member-product.interface';
 
 /** `POST checkout/plan/member/:memberId/order` */
 export interface IPublicPlanOrderRequest {
@@ -111,4 +112,40 @@ export interface IPublicPlanTaxCalculationRequest {
 export interface IPublicPlanTaxCalculationResponse extends ICalculateTaxResponse {
   promoCode: string | null;
   promoMessage?: string;
+}
+
+/**
+ * `POST checkout/member/:memberId/calculate-tax` (public product checkout).
+ * Admin keeps using `ICalculateProductVariantTaxRequest`.
+ */
+export interface IPublicProductTaxCalculationRequest {
+  items: IPublicProductOrderItem[];
+  currency: string;
+  addressId?: number;
+  billingAddressId?: number;
+  promoCode?: string;
+}
+
+export interface IPublicProductTaxCalculationResponse extends ICalculateProductVariantTaxResponse {
+  promoCode: string | null;
+  promoMessage?: string;
+}
+
+/** `POST …/verify-payment` (plan and product): the gateway's checkout callback values. */
+export interface IPublicVerifyPaymentRequest {
+  /** Gateway order id returned by `…/order`. */
+  orderId: string;
+  paymentId: string;
+  signature: string;
+}
+
+export interface IPublicVerifyPaymentResponse {
+  /** True once the record is PAID (by this call or an earlier webhook). */
+  verified: boolean;
+  recordId: number;
+  paymentStatusId: PaymentStatusEnum;
+  invoiceId: string | null;
+  /** Gateway payment status when not verified, e.g. `authorized`, `failed`. */
+  gatewayStatus?: string;
+  message?: string;
 }

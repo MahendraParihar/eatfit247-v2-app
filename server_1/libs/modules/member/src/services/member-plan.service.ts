@@ -20,6 +20,12 @@ import {
   IPaymentLinkResponse,
   IPlanTaxCalculationRequest,
   IProgramPlan,
+  IPublicCheckoutOrderResponse,
+  IPublicPlanOrderRequest,
+  IPublicPlanTaxCalculationRequest,
+  IPublicPlanTaxCalculationResponse,
+  IPublicVerifyPaymentRequest,
+  IPublicVerifyPaymentResponse,
   ITableList,
   mapPaymentToInvoiceDocument,
   MediaForEnum,
@@ -53,6 +59,7 @@ import {
 } from '@server_1/modules/payment';
 import { Sequelize } from 'sequelize-typescript';
 import { MemberDietPlanService } from './member-diet-plan.service';
+import { CheckoutGatewayService } from './checkout-gateway.service';
 import { promises as fs } from 'fs';
 import { find } from 'lodash';
 import moment from 'moment';
@@ -83,6 +90,7 @@ export class MemberPlanService {
     private readonly paymentGatewayCredentialService: PaymentGatewayCredentialService,
     private readonly invoicePdfService: InvoicePdfService,
     private readonly invoiceSequenceService: InvoiceSequenceService,
+    private readonly checkoutGatewayService: CheckoutGatewayService,
   ) {}
 
   /**
@@ -1106,7 +1114,7 @@ export class MemberPlanService {
       paymentModel.memberName,
       '-',
       false,
-    )}-${paymentModel.paymentDate}.pdf`;
+    )}-${paymentModel.paymentDate ?? 'proforma'}.pdf`;
     const relativePath = `${MediaForEnum.DOWNLOADS}/${memberId}/invoices`;
     const destinationFolderPath = `${this.rootFolderPath}/${relativePath}`;
     //CREATE DIRECTORY IF NOT EXISTS (async)
@@ -1288,240 +1296,223 @@ export class MemberPlanService {
   }
 
   /**
-   * Create payment order for embedded checkout (for plans)
-   * Returns order details that can be used with payment gateway SDKs
+   * Public plan tax preview: price from the plan fee, promo applied on the server.
    */
-  public async createPaymentOrder(
+  public async calculatePublicTax(
     memberId: number,
-    payload: ICreatePaymentLinkRequest,
-  ): Promise<{
-    orderId: string;
-    gatewayCode: string;
-    keyId: string;
-    amount: number;
-    currency: string;
-    customer: {
-      name?: string;
-      email?: string;
-      contact?: string;
-    };
-    notes: Record<string, any>;
-  }> {
-    // Verify a member exists
-    const member = await this.memberRepository.findOne({
-      where: { memberId: memberId },
-    });
-    if (!member) {
-      throw new NotFoundException('Member not found');
-    }
-    // Get franchise for services (plans)
-    const franchise = await this.franchiseService.franchiseByBusinessType(BusinessTypeEnum.SERVICE);
-    if (!franchise || franchise.length === 0) {
-      throw new BadRequestException('Franchise not found for services');
-    }
-    if (payload.amount <= 0) {
-      throw new BadRequestException('Invalid amount');
-    }
-    // Use PaymentGatewayResolverService to find the gateway
-    let resolvedGateway;
-    try {
-      resolvedGateway = await this.paymentGatewayResolverService.resolve({
-        franchiseId: franchise[0].id as number,
-        currency: payload.currency,
-        isInternational: false,
-        amount: payload.amount,
-      });
-    } catch (error) {
-      throw new BadRequestException(
-        error instanceof Error ? error.message : 'Failed to resolve payment gateway',
-      );
-    }
-    // If a specific gateway ID was provided, validate it matches the resolved gateway
-    if (
-      payload.franchisePaymentGatewayId &&
-      resolvedGateway.franchisePaymentGatewayId !== payload.franchisePaymentGatewayId
-    ) {
-      throw new BadRequestException(
-        'Selected payment gateway is not available for the given criteria',
-      );
-    }
-    const gatewayCode = resolvedGateway.gatewayCode;
-    // Get payment gateway credentials
-    const credentialMode = this.appConfigService.getString(ConfigParam.PAYMENT_MODE);
-    const credentials = await this.paymentGatewayCredentialService.getActiveCredentials(
-      resolvedGateway.franchisePaymentGatewayId,
-      credentialMode,
+    payload: IPublicPlanTaxCalculationRequest,
+  ): Promise<IPublicPlanTaxCalculationResponse> {
+    const programPlan = await this.programPlanService.fetchById(payload.programPlanId);
+    const fee = this.findPlanFee(programPlan, payload.currency);
+    const promo = await this.checkoutGatewayService.applyPromoCode(
+      payload.promoCode,
+      Number(fee.fees),
+      fee.currencyCode,
     );
-    if (!credentials) {
-      throw new BadRequestException(
-        `Payment gateway credentials not found for gateway ID: ${resolvedGateway.franchisePaymentGatewayId} in mode: ${credentialMode}`,
-      );
-    }
-    const keyId = credentials.apiKeyEncrypted;
-    const keySecret = credentials.apiSecretEncrypted;
-    // Prepare customer details from member if not provided
-    const customerDetails = payload.customer || {
-      name: member.firstName ? `${member.firstName} ${member.lastName || ''}`.trim() : undefined,
-      email: member.emailId || undefined,
-      contact: member.contactNumber || undefined,
-    };
-    // Prepare description
-    const paymentDescription = payload.description || `Plan Payment for Member ID: ${memberId}`;
-    // Prepare notes with member ID and order type
-    const paymentNotes = {
-      memberId: memberId.toString(),
-      franchisePaymentGatewayId: resolvedGateway.franchisePaymentGatewayId.toString(),
-      type: 'plan',
-      ...payload.notes,
-    };
-    const adaptor = this.paymentGatewayFactory.getAdapter(gatewayCode);
-    // Create order based on a gateway type
-    let orderId: string;
-    const receipt = `order_${memberId}_${Date.now()}`;
-    switch (gatewayCode) {
-      case PaymentGatewayEnum.RAZORPAY: {
-        if (!adaptor.createOrder) {
-          throw new BadRequestException('Razorpay createOrder method not available');
-        }
-        const order = await adaptor.createOrder(
-          payload.amount,
-          receipt,
-          payload.currency,
-          paymentNotes,
-          {
-            keyId,
-            keySecret,
-          },
-        );
-        orderId = order.id;
-      }
-        break;
-      case PaymentGatewayEnum.STRIPE: {
-        const stripeAdapter = adaptor as any;
-        if (stripeAdapter.createPaymentIntent) {
-          const paymentIntent = await stripeAdapter.createPaymentIntent(
-            payload.amount,
-            payload.currency,
-            paymentDescription,
-            customerDetails,
-            paymentNotes,
-          );
-          orderId = paymentIntent.id;
-        } else {
-          // Fallback to payment link if payment intent is not available
-          const paymentLink = await adaptor.createPaymentLink(
-            payload.amount,
-            payload.currency,
-            paymentDescription,
-            customerDetails,
-            paymentNotes,
-            {
-              keyId,
-              keySecret,
-            },
-          );
-          orderId = paymentLink.id;
-        }
-      }
-        break;
-      case PaymentGatewayEnum.TELR: {
-        if (!adaptor.createOrder) {
-          throw new BadRequestException('Telr createOrder method not available');
-        }
-        const order = await adaptor.createOrder(
-          payload.amount,
-          receipt,
-          payload.currency,
-          paymentNotes,
-          {
-            keyId,
-            keySecret,
-          },
-        );
-        orderId = order.order?.ref || order.id || receipt;
-      }
-        break;
-      default:
-        throw new BadRequestException(`Unsupported payment gateway: ${gatewayCode}`);
-    }
-    return {
-      orderId,
-      gatewayCode,
-      keyId, // Return keyId for frontend SDK initialization
-      amount: payload.amount,
-      currency: payload.currency,
-      customer: customerDetails,
-      notes: paymentNotes,
-    };
+    const tax = await this.calculateTax(memberId, {
+      programPlanId: payload.programPlanId,
+      discountAmount: promo.discountAmount,
+      currency: fee.currencyCode,
+      addressId: payload.addressId,
+      billingAddressId: payload.billingAddressId,
+    });
+    return { ...tax, promoCode: promo.promoCode, promoMessage: promo.message };
   }
 
   /**
-   * Verify payment after completion (for plans)
+   * Order-first plan checkout. In one transaction: price from the plan fee, promo and tax,
+   * create the PENDING record (no payment date), create the gateway order for the stored
+   * total and store its id. A gateway failure rolls the record back.
    */
-  public async verifyPayment(
+  public async createPublicCheckoutOrder(
     memberId: number,
-    gatewayCode: string,
-    paymentId: string,
-    orderId?: string,
-    signature?: string,
-  ): Promise<{ verified: boolean; paymentDetails?: any }> {
-    // Verify a member exists
-    const member = await this.memberRepository.findOne({
-      where: { memberId: memberId },
-    });
-    if (!member) {
-      throw new NotFoundException('Member not found');
-    }
-    // Get franchise for services (plans)
-    const franchise = await this.franchiseService.franchiseByBusinessType(BusinessTypeEnum.SERVICE);
-    if (!franchise || franchise.length === 0) {
-      throw new BadRequestException('Franchise not found for services');
-    }
-    // Get payment gateway credentials
-    const gateways = await this.getSupportedPaymentGatewaysForCheckout('INR');
-    const gateway = gateways.find((g) => g.gatewayCode === gatewayCode);
-    if (!gateway) {
-      throw new BadRequestException(`Payment gateway not found: ${gatewayCode}`);
-    }
-    const credentialMode = this.appConfigService.getString(ConfigParam.PAYMENT_MODE);
-    const credentials = await this.paymentGatewayCredentialService.getActiveCredentials(
-      gateway.franchisePaymentGatewayId,
-      credentialMode,
-    );
-    if (!credentials) {
-      throw new BadRequestException(
-        `Payment gateway credentials not found for gateway: ${gatewayCode}`,
-      );
-    }
-    const adaptor = this.paymentGatewayFactory.getAdapter(gatewayCode);
-    if (!adaptor.verifyPayment) {
-      throw new BadRequestException(
-        `Payment verification not supported for gateway: ${gatewayCode}`,
-      );
-    }
-    // Extract credentials for verification
-    const keyId = credentials.apiKeyEncrypted;
-    const keySecret = credentials.apiSecretEncrypted;
-    return await adaptor.verifyPayment(paymentId, orderId, signature, {
-      keyId,
-      keySecret,
-    });
-  }
-
-  /**
-   * Create a payment order for public checkout (no admin required)
-   * Similar to create() but uses system admin ID (0) for public orders
-   * @param memberId - Member ID
-   * @param obj - Payment data
-   * @param requestedIp - Request IP
-   * @returns Created payment
-   */
-  public async createPublicOrder(
-    memberId: number,
-    obj: IManageMemberPayment,
+    obj: IPublicPlanOrderRequest,
     requestedIp: string,
-  ): Promise<IMemberPayment> {
-    return await this.create(memberId, obj, requestedIp, null);
+  ): Promise<IPublicCheckoutOrderResponse> {
+    const member = await this.memberRepository.findOne({ where: { memberId } });
+    if (!member) {
+      throw new NotFoundException('Member not found');
+    }
+    const addresses = await this.addressService.filterByTableIdAndPk(TableEnum.TXN_MEMBER, memberId);
+    const primaryAddress = addresses.find((a) => a.addressId === obj.addressId) || null;
+    const billingAddress = addresses.find((a) => a.addressId === obj.billingAddressId) || null;
+    if (!primaryAddress || !billingAddress) {
+      throw new BadRequestException('Address does not belong to this member');
+    }
+    if (!billingAddress.countryId) {
+      throw new BadRequestException('Billing address country is required when tax is applicable');
+    }
+    let franchiseAddress: IAddress | null = null;
+    if (member.franchiseId) {
+      const franchiseAddresses = await this.addressService.filterByTableIdAndPk(
+        TableEnum.MST_FRANCHISES,
+        member.franchiseId,
+      );
+      franchiseAddress = franchiseAddresses?.[0] || null;
+    }
+    const programPlan = await this.programPlanService.fetchById(obj.programPlanId);
+    if (!programPlan.active) {
+      throw new BadRequestException('This plan is not available');
+    }
+    const fee = this.findPlanFee(programPlan, obj.currency);
+    const currency = fee.currencyCode;
+    const promo = await this.checkoutGatewayService.applyPromoCode(obj.promoCode, Number(fee.fees), currency);
+    const paymentObj = await this.calculatePaymentObject(
+      { orderAmount: Number(fee.fees), discountAmount: promo.discountAmount, currencyCode: currency },
+      billingAddress,
+      franchiseAddress,
+    );
+    const serviceFranchise = await this.franchiseService.franchiseByBusinessType(BusinessTypeEnum.SERVICE);
+    if (!serviceFranchise?.length) {
+      throw new BadRequestException('Franchise not found for services');
+    }
+
+    const t = await this.sequelize.transaction();
+    try {
+      const payment = await this.memberPaymentRepository.create(
+        {
+          memberId,
+          franchiseId: member.franchiseId,
+          paymentModeId: null,
+          programPlanId: obj.programPlanId,
+          programId: 1,
+          addressId: obj.addressId,
+          billingAddressId: obj.billingAddressId,
+          transactionId: null,
+          paymentDate: null,
+          paymentStatusId: PaymentStatusEnum.PENDING,
+          promoCode: promo.promoCode,
+          isTaxApplicable: true,
+          refundObj: null,
+          paymentGatewayResponse: null,
+          gstNumber: obj.gstNumber || null,
+          memberAddress: { address: primaryAddress, billingAddress },
+          paymentSource: PaymentSourceEnum.PAYMENT_GATEWAY,
+          orderAmount: paymentObj.orderAmount,
+          discountAmount: paymentObj.discountAmount,
+          taxAmount: paymentObj.taxAmount,
+          totalAmount: paymentObj.totalAmount,
+          currency: paymentObj.currency,
+          taxType: paymentObj.taxType,
+          taxMode: paymentObj.taxMode,
+          taxPercentage: paymentObj.taxPercentage,
+          isLutApplied: paymentObj.isLutApplied,
+          taxObj: paymentObj.taxObj,
+          jurisdiction: paymentObj.jurisdiction,
+          invoiceNote: paymentObj.invoiceNote,
+          noOfCycle: programPlan.noOfCycle,
+          daysInCycle: programPlan.noOfDaysInCycle,
+          active: true,
+          createdIp: requestedIp,
+          modifiedIp: requestedIp,
+        } as Partial<TxnMemberPayment> as TxnMemberPayment,
+        { transaction: t },
+      );
+      await this.memberDietPlanService.createIfNotExists(
+        memberId,
+        payment.memberPaymentId,
+        programPlan.noOfCycle,
+        programPlan.noOfDaysInCycle,
+        requestedIp,
+        null,
+        t,
+      );
+      // The gateway is charged the total as stored (DECIMAL-rounded), not the in-memory figure.
+      await payment.reload({ transaction: t });
+      const gateway = await this.checkoutGatewayService.createGatewayOrder({
+        franchiseId: serviceFranchise[0].id as number,
+        currency,
+        amount: Number(payment.totalAmount),
+        requestedGatewayId: obj.franchisePaymentGatewayId,
+        receipt: `plan_${payment.memberPaymentId}`,
+        description: `${programPlan.plan} plan for member ${memberId}`,
+        customer: {
+          name: `${member.firstName || ''} ${member.lastName || ''}`.trim() || undefined,
+          email: member.emailId || undefined,
+          contact: member.contactNumber || undefined,
+        },
+        notes: {
+          memberId: memberId.toString(),
+          type: 'plan',
+          memberPaymentId: payment.memberPaymentId.toString(),
+        },
+      });
+      await payment.update(
+        {
+          gatewayOrderId: gateway.gatewayOrderId,
+          gatewayProvider: gateway.gatewayCode,
+          franchisePaymentGatewayId: gateway.franchisePaymentGatewayId,
+        },
+        { transaction: t },
+      );
+      await t.commit();
+      const { franchisePaymentGatewayId, ...gatewayPayload } = gateway;
+      void franchisePaymentGatewayId;
+      return {
+        recordId: payment.memberPaymentId,
+        paymentStatusId: PaymentStatusEnum.PENDING,
+        breakdown: {
+          currency,
+          orderAmount: Number(payment.orderAmount),
+          promoCode: payment.promoCode,
+          discountAmount: Number(payment.discountAmount || 0),
+          taxableAmount: Number(payment.orderAmount) - Number(payment.discountAmount || 0),
+          taxPercentage: Number(payment.taxPercentage || 0),
+          taxAmount: Number(payment.taxAmount),
+          totalAmount: Number(payment.totalAmount),
+          taxType: payment.taxType as TaxTypeEnum,
+          taxMode: payment.taxMode as TaxMode,
+          taxObj: payment.taxObj,
+        },
+        gateway: gatewayPayload,
+      };
+    } catch (error) {
+      await t.rollback();
+      throw error;
+    }
+  }
+
+  /**
+   * After the checkout callback: verify with the record's gateway and confirm if captured.
+   * Never trusts the browser; the webhook remains the backstop.
+   */
+  public async verifyPublicPayment(
+    memberId: number,
+    body: IPublicVerifyPaymentRequest,
+    requestedIp: string,
+  ): Promise<IPublicVerifyPaymentResponse> {
+    const payment = await this.memberPaymentRepository.findOne({
+      where: { gatewayOrderId: body.orderId, memberId, active: true },
+    });
+    if (!payment) {
+      throw new NotFoundException('Order not found');
+    }
+    const result = await this.checkoutGatewayService.verifyAndConfirm({
+      gatewayOrderId: payment.gatewayOrderId,
+      gatewayProvider: payment.gatewayProvider,
+      franchisePaymentGatewayId: payment.franchisePaymentGatewayId,
+      paymentId: body.paymentId,
+      signature: body.signature,
+      requestedIp,
+    });
+    await payment.reload();
+    return {
+      verified: payment.paymentStatusId === PaymentStatusEnum.PAID,
+      recordId: payment.memberPaymentId,
+      paymentStatusId: payment.paymentStatusId,
+      invoiceId: payment.invoiceId || null,
+      gatewayStatus: result.gatewayStatus,
+      message: result.message,
+    };
+  }
+
+  private findPlanFee(programPlan: IProgramPlan, currency: string): { fees: number; currencyCode: string } {
+    const code = (currency || '').toUpperCase();
+    const fee = (programPlan.programPlanFees || []).find((f) => (f.currencyCode || '').toUpperCase() === code);
+    if (!fee) {
+      throw new BadRequestException(`This plan is not available in ${currency}`);
+    }
+    return fee;
   }
 
   /**

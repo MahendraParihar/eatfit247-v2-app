@@ -75,8 +75,8 @@
 
 ## Group 4: Order-first public checkout
 
-- [ ] 4.1 Replace `CreatePublicCheckoutPlanOrderDto` and `CreatePublicCheckoutOrderDto` with whitelisted DTOs that implement the new interfaces, with no money-state fields. Confirm the `ValidationPipe` has `whitelist` and `forbidNonWhitelisted` on public-api (add it at controller level if the global setting differs).
-- [ ] 4.2 Plan `POST …/order`:
+- [x] 4.1 Replace `CreatePublicCheckoutPlanOrderDto` and `CreatePublicCheckoutOrderDto` with whitelisted DTOs that implement the new interfaces, with no money-state fields. Confirm the `ValidationPipe` has `whitelist` and `forbidNonWhitelisted` on public-api (add it at controller level if the global setting differs).
+- [x] 4.2 Plan `POST …/order`:
   1. Validate the member against the checkout token.
   2. Price from the program plan fee in the requested currency, plus `applyPromoCode` (400 if invalid), plus tax (the existing `calculatePaymentObject`).
   3. Create the PENDING record with source PAYMENT_GATEWAY and a NULL payment date.
@@ -85,25 +85,42 @@
   6. Return `IPublicCheckoutOrderResponse`.
 
   Do it all in one transaction. If the gateway call fails, roll back.
-- [ ] 4.3 Product `POST …/product/order`: same approach, priced from `mst_product_prices` for each variant and currency, plus promo and per-line tax (existing code).
-- [ ] 4.4 `verify-payment` (plan and product):
+- [x] 4.3 Product `POST …/product/order`: same approach, priced from `mst_product_prices` for each variant and currency, plus promo and per-line tax (existing code).
+- [x] 4.4 `verify-payment` (plan and product):
   1. Look up the record by `orderId` for that member.
   2. Verify the signature with the record's stored gateway.
   3. Fetch the payment from the gateway API (status and amount).
   4. If captured, call `confirmGatewayPayment` and return the record's status.
   5. Otherwise return `verified: false` with the status.
-- [ ] 4.5 `payment-order` and `payment-link` public endpoints: drop `amount`. Either remove them, if the website doesn't use them (open question), or make them take a PENDING record id and use its stored total.
-- [ ] 4.6 Plan tax-calculation endpoint: accept `promoCode` and apply it on the server.
-- [ ] 4.7 Diet-plan gate (decision 11): find the server-side check that blocks diet-plan work before payment. Make sure it requires a PAID payment, not just an existing row. Fix it if needed and add a test.
-- [ ] 4.7a `payment_date` NULL audit: server_1 has `strictNullChecks` off, so the compiler won't flag the roughly 58 server reads of `paymentDate`. Before PENDING public records (with NULL payment date) can exist, check the reports, invoice/FY logic, the admin payment list/detail and the emails for NULL handling.
-- [ ] 4.8 Unit tests:
+- [x] 4.5 `payment-order` and `payment-link` public endpoints: drop `amount`. Either remove them, if the website doesn't use them (open question), or make them take a PENDING record id and use its stored total.
+- [x] 4.6 Plan tax-calculation endpoint: accept `promoCode` and apply it on the server.
+- [x] 4.7 Diet-plan gate (decision 11): find the server-side check that blocks diet-plan work before payment. Make sure it requires a PAID payment, not just an existing row. Fix it if needed and add a test.
+- [x] 4.7a `payment_date` NULL audit: server_1 has `strictNullChecks` off, so the compiler won't flag the roughly 58 server reads of `paymentDate`. Before PENDING public records (with NULL payment date) can exist, check the reports, invoice/FY logic, the admin payment list/detail and the emails for NULL handling.
+- [x] 4.8 Unit tests:
   - a client-sent `paymentStatusId` gets 400
   - pricing comes from master data, not the client
   - an invalid promo gets 400
   - gateway order amount = stored total
   - verify with a forged signature → not verified
   - verify with an uncaptured payment → stays PENDING
-- [ ] 4.9 Lint, test and build, then commit.
+- [x] 4.9 Lint, test and build, then commit.
+- **As built (group 4):**
+  - 4.1 The global public-api `ValidationPipe` already had `whitelist` + `forbidNonWhitelisted` + `forbidUnknownValues`, so nothing was needed at controller level. New DTOs in `public-checkout.dto.ts`: `PublicPlanOrderDto`, `PublicProductOrderDto`, `PublicPlanTaxCalculationDto`, `PublicProductTaxCalculationDto` and `PublicVerifyPaymentDto`. The old `CreatePublicCheckout*` DTOs and `VerifyPaymentDto` were removed.
+  - New `CheckoutGatewayService` (member module), shared by plan and product:
+    - `applyPromoCode`: 400 with the promo message; the discount is rounded to the currency and capped at the order amount.
+    - `createGatewayOrder`: resolves the gateway, creates the order for the stored total and adds `franchisePaymentGatewayId` to the notes. Only RAZORPAY is allowed; Telr and Stripe return 400 until Phase 8.
+    - `verifyAndConfirm`: checks the signature with the record's stored gateway credentials, then `fetchPayment` (new on `RazorpayService` and the adapter). It confirms only if the payment is `captured` and its `order_id` matches. A gateway fetch error comes back as not verified, not 500.
+  - The record is created, `reload`ed (so the gateway is charged the DECIMAL-rounded stored total), gets its gateway order, and is committed. Program id stays 1, as the old controller did.
+  - The public routes `payment-order` and `payment-link` (plan and product) were **removed**: the website never calls the link endpoints, and `…/order` replaces `payment-order` (open question resolved).
+  - New contract in shared-library (beyond group 1): `IPublicVerifyPaymentRequest`/`Response`, and `IPublicProductTaxCalculationRequest`/`Response`, so the public product tax preview also takes `promoCode` instead of a client `discountAmount`.
+  - 4.7 There was **no** server-side payment gate at all. `MemberDietPlanService.assertDietPlanPaid` now requires a PAID payment for `manage` (detail create/update), `update-details` (apply template) and send-email. Reads, downloads and deletes are not gated.
+  - 4.7a NULL audit: the reports filter on date ranges (so PENDING rows drop out) and the exports already guard. Two fixes: the shared plan invoice mapper called `paymentDate.toString()` (it would crash on a PENDING proforma), and the plan invoice filename used `null`. Admin member lists sort `paymentDate DESC`, so PENDING rows show first.
+  - `buildOrderItem` now returns 400 when a variant has no price in the requested currency (it used to throw a TypeError, which surfaced as a 500).
+  - Tests: member jest passes (8 suites, 103 tests); both apps pass type checks and builds.
+  - Live (member 4945, Razorpay TEST): promo tax preview; invalid promo → 400; client `discountAmount` → 400; order without reCAPTCHA → 400; removed endpoint → 404. The plan order creates a PENDING row and a test Razorpay order for exactly the stored total. A forged verify, and a verify for an unknown payment, both stay PENDING; another member's ID gets 403. The webhook capture sets PAID, the invoice and promo usage, after which verify returns verified=true and the diet gate opens. The product order creates a PENDING row and its gateway order. Test rows were soft-deleted, and three local invoice numbers were used.
+  - **Found for 4.6 (not fixed here):**
+    - `MemberProductService.calculateOrderItemsTax` passes the franchise and billing addresses to `calculateTax` in swapped order. Domestic results are unchanged, but exports and place of supply are wrong.
+    - Product prices are treated as tax-inclusive, so the preview shows an unrounded `orderAmount` (e.g. 2142.857).
 
 ## Group 5: Website checkout (`eatfit247-web-1`)
 

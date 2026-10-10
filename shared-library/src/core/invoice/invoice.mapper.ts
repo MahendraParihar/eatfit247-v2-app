@@ -57,7 +57,8 @@ export function mapPaymentToInvoiceDocument(
     qrCodeValue = buildQrCodeValue(
       franchise.gstNumber,
       payment.invoiceId || '',
-      payment.paymentDate.toString(),
+      // PENDING online-checkout payments have no payment date yet (proforma)
+      payment.paymentDate?.toString() || '',
       payment.totalAmount,
       payment.taxAmount,
       taxableAmount,
@@ -84,7 +85,7 @@ export function mapPaymentToInvoiceDocument(
       brandName: franchise.companyName,
       title: taxType === TaxTypeEnum.GST ? 'TAX INVOICE' : 'INVOICE',
       invoiceNumber: payment.invoiceId || `INV-${payment.memberPaymentId}`,
-      invoiceDate: payment.paymentDate.toString(),
+      invoiceDate: payment.paymentDate?.toString() || new Date().toISOString(),
       currency: payment.currency,
     },
     seller,

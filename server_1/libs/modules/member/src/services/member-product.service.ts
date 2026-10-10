@@ -20,6 +20,12 @@ import {
   IPaymentLinkResponse,
   IProductPrice,
   IProductVariantTaxResult,
+  IPublicCheckoutOrderResponse,
+  IPublicProductOrderRequest,
+  IPublicProductTaxCalculationRequest,
+  IPublicProductTaxCalculationResponse,
+  IPublicVerifyPaymentRequest,
+  IPublicVerifyPaymentResponse,
   IShipment,
   ITableList,
   mapProductOrderToInvoiceDocument,
@@ -61,6 +67,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { promises as fs } from 'fs';
 import { find, map, sumBy } from 'lodash';
 import { MemberService } from './member.service';
+import { CheckoutGatewayService } from './checkout-gateway.service';
 
 @Injectable()
 export class MemberProductService {
@@ -90,6 +97,7 @@ export class MemberProductService {
     private readonly memberProductOrderItemRepository: typeof TxnMemberProductOrderItem,
     private sequelize: Sequelize,
     private readonly eventEmitter: EventEmitter2,
+    private readonly checkoutGatewayService: CheckoutGatewayService,
   ) {}
 
   /**
@@ -622,182 +630,6 @@ export class MemberProductService {
   }
 
   /**
-   * Create payment order for embedded checkout
-   * Returns order details that can be used with payment gateway SDKs
-   */
-  public async createPaymentOrder(
-    memberId: number,
-    payload: ICreatePaymentLinkRequest,
-  ): Promise<{
-    orderId: string;
-    gatewayCode: string;
-    keyId: string;
-    amount: number;
-    currency: string;
-    customer: {
-      name?: string;
-      email?: string;
-      contact?: string;
-    };
-    notes: Record<string, any>;
-  }> {
-    // Verify a member exists
-    const member = await this.memberService.verifyMember(memberId);
-    // Get franchise for products
-    const franchise = await this.getProductFranchise();
-    if (payload.amount <= 0) {
-      throw new BadRequestException('Invalid amount');
-    }
-    // Resolve gateway and get credentials
-    const { resolvedGateway, keyId, keySecret, gatewayCode } =
-      await this.resolveGatewayAndCredentials(
-        franchise[0].id as number,
-        payload.currency,
-        payload.amount,
-        payload.franchisePaymentGatewayId,
-      );
-    // Prepare customer details from member if not provided
-    const customerDetails = this.prepareCustomerDetails(member, payload.customer);
-    // Prepare description
-    const paymentDescription =
-      payload.description || `Product Order Payment for Member ID: ${memberId}`;
-    // Prepare notes with member ID and order type
-    const paymentNotes = {
-      memberId: memberId.toString(),
-      franchisePaymentGatewayId: resolvedGateway.franchisePaymentGatewayId.toString(),
-      type: 'product',
-      ...payload.notes,
-    };
-    const adaptor = this.paymentGatewayFactory.getAdapter(gatewayCode);
-    // Create order based on a gateway type
-    let orderId: string;
-    const receipt = `order_${memberId}_${Date.now()}`;
-    switch (gatewayCode) {
-      case PaymentGatewayEnum.RAZORPAY:
-        {
-          if (!adaptor.createOrder) {
-            throw new BadRequestException('Razorpay createOrder method not available');
-          }
-          const order = await adaptor.createOrder(
-            payload.amount,
-            receipt,
-            payload.currency,
-            paymentNotes,
-            {
-              keyId,
-              keySecret,
-            },
-          );
-          orderId = order.id;
-        }
-        break;
-      case PaymentGatewayEnum.STRIPE:
-        {
-          const stripeAdapter = adaptor as any;
-          if (stripeAdapter.createPaymentIntent) {
-            const paymentIntent = await stripeAdapter.createPaymentIntent(
-              payload.amount,
-              payload.currency,
-              paymentDescription,
-              customerDetails,
-              paymentNotes,
-            );
-            orderId = paymentIntent.id;
-          } else {
-            // Fallback to payment link if payment intent is not available
-            const paymentLink = await adaptor.createPaymentLink(
-              payload.amount,
-              payload.currency,
-              paymentDescription,
-              customerDetails,
-              paymentNotes,
-              {
-                keyId,
-                keySecret,
-              },
-            );
-            orderId = paymentLink.id;
-          }
-        }
-        break;
-      case PaymentGatewayEnum.TELR:
-        {
-          if (!adaptor.createOrder) {
-            throw new BadRequestException('Telr createOrder method not available');
-          }
-          const order = await adaptor.createOrder(
-            payload.amount,
-            receipt,
-            payload.currency,
-            paymentNotes,
-            {
-              keyId,
-              keySecret,
-            },
-          );
-          orderId = order.order?.ref || order.id || receipt;
-        }
-        break;
-      default:
-        throw new BadRequestException(`Unsupported payment gateway: ${gatewayCode}`);
-    }
-    return {
-      orderId,
-      gatewayCode,
-      keyId, // Return keyId for frontend SDK initialization
-      amount: payload.amount,
-      currency: payload.currency,
-      customer: customerDetails,
-      notes: paymentNotes,
-    };
-  }
-
-  /**
-   * Verify payment after completion
-   */
-  public async verifyPayment(
-    memberId: number,
-    gatewayCode: string,
-    paymentId: string,
-    orderId?: string,
-    signature?: string,
-  ): Promise<{ verified: boolean; paymentDetails?: any }> {
-    // Verify a member exists
-    await this.memberService.verifyMember(memberId);
-    // Get franchise for products
-    await this.getProductFranchise();
-    // Get payment gateway credentials
-    const gateways = await this.getSupportedPaymentGatewaysForCheckout('INR');
-    const gateway = gateways.find((g) => g.gatewayCode === gatewayCode);
-    if (!gateway) {
-      throw new BadRequestException(`Payment gateway not found: ${gatewayCode}`);
-    }
-    const credentialMode = this.appConfigService.getString(ConfigParam.PAYMENT_MODE);
-    const credentials = await this.paymentGatewayCredentialService.getActiveCredentials(
-      gateway.franchisePaymentGatewayId,
-      credentialMode,
-    );
-    if (!credentials) {
-      throw new BadRequestException(
-        `Payment gateway credentials not found for gateway: ${gatewayCode}`,
-      );
-    }
-    const adaptor = this.paymentGatewayFactory.getAdapter(gatewayCode);
-    if (!adaptor.verifyPayment) {
-      throw new BadRequestException(
-        `Payment verification not supported for gateway: ${gatewayCode}`,
-      );
-    }
-    // Extract credentials for verification
-    const keyId = credentials.apiKeyEncrypted;
-    const keySecret = credentials.apiSecretEncrypted;
-    return await adaptor.verifyPayment(paymentId, orderId, signature, {
-      keyId,
-      keySecret,
-    });
-  }
-
-  /**
    * Generate invoice PDF for a member product order using the universal invoice system
    * @param memberId - Member ID
    * @param productId - Product order ID
@@ -1058,6 +890,11 @@ export class MemberProductService {
           );
         }
         const variantFees: IProductPrice = find(variant.prices, { currency: item.currency });
+        if (!variantFees) {
+          throw new BadRequestException(
+            `${product.name} (${variant.quantityValue} ${variant.quantityUnit}) is not available in ${item.currency}`,
+          );
+        }
         // Calculate tax if not already calculated
         orderItemObjs.push({
           productId: item.productId,
@@ -1072,13 +909,19 @@ export class MemberProductService {
         });
       }
     }
-    const orderSubtotal = sumBy(orderItemObjs, 'baseAmount');
-    // Apply discount logic
-    for (const orderItem of orderItemObjs) {
-      // Allocate discount proportionally by item value:
-      orderItem.discountAmount = (orderItem.baseAmount / orderSubtotal) * discountAmount;
-    }
+    this.allocateDiscount(orderItemObjs, discountAmount);
     return orderItemObjs;
+  }
+
+  /** Spread an order-level discount over the lines in proportion to their value. */
+  private allocateDiscount(
+    orderItems: Array<{ baseAmount: number; discountAmount?: number }>,
+    discountAmount: number,
+  ): void {
+    const orderSubtotal = sumBy(orderItems, 'baseAmount');
+    for (const orderItem of orderItems) {
+      orderItem.discountAmount = orderSubtotal > 0 ? (orderItem.baseAmount / orderSubtotal) * discountAmount : 0;
+    }
   }
 
   /**
@@ -1309,6 +1152,185 @@ export class MemberProductService {
     }
     // Convert to IMemberProduct and return
     return this.convertToModel(updatedProductOrder, []);
+  }
+
+  /**
+   * Public product tax preview: master prices, promo applied on the server.
+   */
+  public async calculatePublicProductTax(
+    memberId: number,
+    payload: IPublicProductTaxCalculationRequest,
+  ): Promise<IPublicProductTaxCalculationResponse> {
+    const currency = payload.currency.toUpperCase();
+    const items = payload.items.map((item) => ({ ...item, currency }));
+    const subtotal = sumBy(await this.buildOrderItem(items, 0), 'baseAmount');
+    const promo = await this.checkoutGatewayService.applyPromoCode(payload.promoCode, subtotal, currency);
+    const tax = await this.calculateProductTax(memberId, {
+      items,
+      addressId: payload.addressId,
+      billingAddressId: payload.billingAddressId,
+      discountAmount: promo.discountAmount,
+    });
+    return { ...tax, promoCode: promo.promoCode, promoMessage: promo.message };
+  }
+
+  /**
+   * Order-first product checkout. In one transaction: price each variant from
+   * mst_product_prices, apply the promo and per-line tax, create the PENDING order and
+   * its lines (no payment date), create the gateway order for the stored total and store
+   * its id. A gateway failure rolls everything back.
+   */
+  public async createPublicCheckoutOrder(
+    memberId: number,
+    obj: IPublicProductOrderRequest,
+    requestedIp: string,
+  ): Promise<IPublicCheckoutOrderResponse> {
+    const member = await this.memberService.verifyMember(memberId);
+    const franchise = await this.getProductFranchise();
+    const addresses = await this.findAddresses(franchise[0], memberId, obj.addressId, obj.billingAddressId);
+    const memberAddressSnapshot = addresses.memberAddressSnapshot;
+    if (!memberAddressSnapshot.address || !memberAddressSnapshot.billingAddress) {
+      throw new BadRequestException('Address does not belong to this member');
+    }
+    const currency = obj.currency.toUpperCase();
+    const items = obj.items.map((item) => ({ ...item, currency }));
+    const tempOrderItems = await this.buildOrderItem(items, 0);
+    const subtotal = sumBy(tempOrderItems, 'baseAmount');
+    const promo = await this.checkoutGatewayService.applyPromoCode(obj.promoCode, subtotal, currency);
+    this.allocateDiscount(tempOrderItems, promo.discountAmount);
+    const orderItemObjs = await this.calculateOrderItemsTax(
+      tempOrderItems.map((item) => ({ ...item, currencyCode: currency })),
+      franchise[0],
+      addresses.franchiseAddress,
+      memberAddressSnapshot.billingAddress,
+    );
+
+    const t = await this.sequelize.transaction();
+    try {
+      const productOrder = await this.memberProductRepository.create(
+        {
+          memberId,
+          franchiseId: franchise[0].id as number,
+          paymentModeId: null,
+          addressId: obj.addressId,
+          billingAddressId: obj.billingAddressId,
+          transactionId: null,
+          paymentDate: null,
+          paymentStatusId: PaymentStatusEnum.PENDING,
+          promoCode: promo.promoCode,
+          isTaxApplicable: true,
+          currency,
+          refundObj: null,
+          paymentGatewayResponse: null,
+          gstNumber: obj.gstNumber || null,
+          memberAddress: memberAddressSnapshot,
+          paymentSource: PaymentSourceEnum.PAYMENT_GATEWAY,
+          subTotalAmount: sumBy(orderItemObjs, 'baseAmount'),
+          discountAmount: sumBy(orderItemObjs, 'discountAmount'),
+          taxAmount: sumBy(orderItemObjs, 'taxAmount'),
+          totalAmount: sumBy(orderItemObjs, 'totalAmount'),
+          active: true,
+          createdIp: requestedIp,
+          modifiedIp: requestedIp,
+        } as Partial<TxnMemberProduct> as TxnMemberProduct,
+        { transaction: t },
+      );
+      await this.memberProductOrderItemRepository.bulkCreate(
+        orderItemObjs.map((item) => ({ ...item, memberProductId: productOrder.memberProductId })) as TxnMemberProductOrderItem[],
+        { transaction: t },
+      );
+      // The gateway is charged the total as stored (DECIMAL-rounded), not the in-memory figure.
+      await productOrder.reload({ transaction: t });
+      const gateway = await this.checkoutGatewayService.createGatewayOrder({
+        franchiseId: franchise[0].id as number,
+        currency,
+        amount: Number(productOrder.totalAmount),
+        requestedGatewayId: obj.franchisePaymentGatewayId,
+        receipt: `product_${productOrder.memberProductId}`,
+        description: `Payment for products: ${orderItemObjs.map((item) => item.productName).join(', ')}`,
+        customer: this.prepareCustomerDetails(member),
+        notes: {
+          memberId: memberId.toString(),
+          type: 'product',
+          memberProductId: productOrder.memberProductId.toString(),
+        },
+      });
+      await productOrder.update(
+        {
+          gatewayOrderId: gateway.gatewayOrderId,
+          gatewayProvider: gateway.gatewayCode,
+          franchisePaymentGatewayId: gateway.franchisePaymentGatewayId,
+        },
+        { transaction: t },
+      );
+      await t.commit();
+      const { franchisePaymentGatewayId, ...gatewayPayload } = gateway;
+      void franchisePaymentGatewayId;
+      const subTotalAmount = Number(productOrder.subTotalAmount);
+      const discountAmount = Number(productOrder.discountAmount || 0);
+      return {
+        recordId: productOrder.memberProductId,
+        paymentStatusId: PaymentStatusEnum.PENDING,
+        breakdown: {
+          currency,
+          orderAmount: subTotalAmount,
+          promoCode: productOrder.promoCode,
+          discountAmount,
+          taxableAmount: subTotalAmount - discountAmount,
+          taxAmount: Number(productOrder.taxAmount),
+          totalAmount: Number(productOrder.totalAmount),
+          items: orderItemObjs.map((item) => ({
+            productId: item.productId,
+            productVariantId: item.productVariantId,
+            quantity: item.quantity,
+            unitPrice: item.unitPrice,
+            orderAmount: item.baseAmount,
+            discountAmount: item.discountAmount,
+            taxableAmount: item.baseAmount - item.discountAmount,
+            taxPercentage: item.effectiveTaxRate,
+            taxAmount: item.taxAmount,
+            totalAmount: item.totalAmount,
+          })),
+        },
+        gateway: gatewayPayload,
+      };
+    } catch (error) {
+      await t.rollback();
+      throw error;
+    }
+  }
+
+  /**
+   * After the checkout callback: verify with the order's gateway and confirm if captured.
+   */
+  public async verifyPublicPayment(
+    memberId: number,
+    body: IPublicVerifyPaymentRequest,
+    requestedIp: string,
+  ): Promise<IPublicVerifyPaymentResponse> {
+    const productOrder = await this.memberProductRepository.findOne({
+      where: { gatewayOrderId: body.orderId, memberId, active: true },
+    });
+    if (!productOrder) {
+      throw new NotFoundException('Order not found');
+    }
+    const result = await this.checkoutGatewayService.verifyAndConfirm({
+      gatewayOrderId: productOrder.gatewayOrderId,
+      gatewayProvider: productOrder.gatewayProvider,
+      franchisePaymentGatewayId: productOrder.franchisePaymentGatewayId,
+      paymentId: body.paymentId,
+      signature: body.signature,
+      requestedIp,
+    });
+    await productOrder.reload();
+    return {
+      verified: productOrder.paymentStatusId === PaymentStatusEnum.PAID,
+      recordId: productOrder.memberProductId,
+      paymentStatusId: productOrder.paymentStatusId,
+      invoiceId: productOrder.invoiceId || null,
+      gatewayStatus: result.gatewayStatus,
+      message: result.message,
+    };
   }
 
   /**

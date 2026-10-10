@@ -31,26 +31,3 @@ export class CreatePaymentLinkDto implements ICreatePaymentLinkRequest {
   @IsObject()
   notes?: Record<string, any>;
 }
-
-export class VerifyPaymentDto {
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(100)
-  gatewayCode!: string;
-
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(200)
-  paymentId!: string;
-
-  @IsString()
-  @IsOptional()
-  @MaxLength(200)
-  orderId?: string;
-
-  @IsString()
-  @IsOptional()
-  @MaxLength(512)
-  signature?: string;
-}
-

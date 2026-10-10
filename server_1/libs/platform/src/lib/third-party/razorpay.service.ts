@@ -3,6 +3,18 @@ import { Injectable } from '@nestjs/common';
 import * as crypto from 'crypto';
 import { CurrencyUtil } from '@eatfit247-shared-lib';
 
+/** Gateway-agnostic view of a payment fetched from the gateway API. */
+export interface IGatewayPaymentDetails {
+  id: string;
+  orderId: string | null;
+  /** Gateway status, e.g. Razorpay `created` | `authorized` | `captured` | `refunded` | `failed`. */
+  status: string;
+  amountMinor: number;
+  currency: string;
+  createdAt: Date;
+  raw: Record<string, unknown>;
+}
+
 @Injectable()
 export class RazorpayService {
   private razorpay: Razorpay;
@@ -69,6 +81,28 @@ export class RazorpayService {
       customer: customer || {},
       notes: notes || {},
     });
+  }
+
+  /**
+   * Fetch a payment from the Razorpay API (status, amount in minor units, order id).
+   * The checkout verify path trusts this, never the browser.
+   */
+  async fetchPayment(
+    paymentId: string,
+    keyId: string,
+    keySecret: string,
+  ): Promise<IGatewayPaymentDetails> {
+    const razorpay = this.getRazorpayInstance(keyId, keySecret);
+    const payment = await razorpay.payments.fetch(paymentId);
+    return {
+      id: payment.id,
+      orderId: payment.order_id ?? null,
+      status: payment.status,
+      amountMinor: Number(payment.amount),
+      currency: payment.currency,
+      createdAt: new Date(Number(payment.created_at) * 1000),
+      raw: payment as unknown as Record<string, unknown>,
+    };
   }
 
   /**

@@ -59,6 +59,7 @@ import {
   MemberPocketGuideService,
   MemberProductService,
   MemberService,
+  CheckoutGatewayService,
   PaymentConfirmationService,
   RazorpayWebhookService,
 } from './services';
@@ -164,6 +165,7 @@ modelRegistry.register([
     MemberDashboardService,
     PaymentConfirmationService,
     RazorpayWebhookService,
+    CheckoutGatewayService,
   ],
   exports: [MemberService, MemberPlanService, MemberProductService, SequelizeModule],
 })
