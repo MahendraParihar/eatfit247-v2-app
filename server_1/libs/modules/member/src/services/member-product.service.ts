@@ -627,7 +627,7 @@ export class MemberProductService {
     const { invoiceDoc, productModel } = await this.prepareInvoiceDocument(memberId, productId, checkoutSessionId);
     // An order without an invoice number downloads as a proforma (decision 11)
     const fileName = productModel.invoiceId
-      ? `invoice-${productModel.memberProductId}.pdf`
+      ? `Invoice-${productModel.invoiceId.replace(/[^A-Za-z0-9]+/g, '-')}.pdf`
       : `proforma-${productModel.memberProductId}.pdf`;
     const relativePath = `${MediaForEnum.DOWNLOADS}/${memberId}/invoices`;
     const destinationFolderPath = `${this.rootFolderPath}/${relativePath}`;

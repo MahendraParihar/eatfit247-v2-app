@@ -1243,7 +1243,7 @@ export class MemberPlanService {
     // An entry without an invoice number downloads as a proforma (decision 11)
     const memberSlug = CommonFunctionsUtil.removeSpecialChar(paymentModel.memberName, '-', false);
     const fileName = paymentModel.invoiceId
-      ? `Invoice-${memberSlug}-${paymentModel.invoiceDate ?? paymentModel.paymentDate}.pdf`
+      ? `Invoice-${paymentModel.invoiceId.replace(/[^A-Za-z0-9]+/g, '-')}-${memberSlug}.pdf`
       : `Proforma-${memberSlug}-${paymentModel.memberPaymentId}.pdf`;
     const relativePath = `${MediaForEnum.DOWNLOADS}/${memberId}/invoices`;
     const destinationFolderPath = `${this.rootFolderPath}/${relativePath}`;
