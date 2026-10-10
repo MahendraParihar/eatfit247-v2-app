@@ -6,12 +6,13 @@ import { MstFranchiseLut, MstTaxMaster } from './models';
 import { TaxMasterService } from './services/tax-master.service';
 import { LutService } from './services/lut.service';
 import { TaxMasterController } from './controllers/admin/tax-master.controller';
+import { FranchiseLutController } from './controllers/admin/franchise-lut.controller';
 // Register models with the model registry
 modelRegistry.register([MstTaxMaster, MstFranchiseLut]);
 
 @Module({
   imports: [CommonModule, SequelizeModule.forFeature([MstTaxMaster, MstFranchiseLut, MstFranchise])],
-  controllers: [TaxMasterController],
+  controllers: [TaxMasterController, FranchiseLutController],
   providers: [TaxEngineService, IndiaGstService, VatService, UsSalesTaxService, TaxMasterService, LutService],
   exports: [TaxEngineService, IndiaGstService, VatService, UsSalesTaxService, LutService, SequelizeModule],
 })

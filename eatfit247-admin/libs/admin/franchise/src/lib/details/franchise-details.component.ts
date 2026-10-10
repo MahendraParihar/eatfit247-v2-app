@@ -46,6 +46,7 @@ export class FranchiseDetailsComponent implements OnInit, OnDestroy {
   private snackBar = inject(MatSnackBar);
   menuItems: MenuItem[] = [
     { label: 'Dashboard', icon: 'dashboard', route: 'dashboard' },
+    { label: 'LUT Register', icon: 'verified', route: 'lut-register' },
   ];
 
   ngOnInit(): void {

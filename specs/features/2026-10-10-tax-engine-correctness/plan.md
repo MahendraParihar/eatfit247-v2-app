@@ -70,9 +70,15 @@
 
 ## Group 3: LUT register (backend + admin + RBAC)
 
-- [ ] 3.1 Admin endpoints: list / create / update / update-status for a franchise's LUTs. Validation: ARN format, FY matches the dates, no overlap. Franchise-scoped, with `@RequireAbility`.
-- [ ] 3.2 RBAC seed for the subject (in 140 or a follow-up data block), granted to Super Admin and Finance roles.
-- [ ] 3.3 Admin UI: an "LUT register" tab on franchise details (list, add/edit dialog, status chip valid / expiring in 30 days / expired). Material, tokens, `.html`/`.scss`.
+- [x] 3.1 Admin endpoints: list / create / update / update-status for a franchise's LUTs. Validation: ARN format, FY matches the dates, no overlap. Franchise-scoped, with `@RequireAbility`.
+- [x] 3.2 RBAC seed for the subject (in 140 or a follow-up data block), granted to Super Admin and Finance roles.
+- [x] 3.3 Admin UI: an "LUT register" tab on franchise details (list, add/edit dialog, status chip valid / expiring in 30 days / expired). Material, tokens, `.html`/`.scss`.
+
+> **As built (group 3):**
+> - API (admin): `GET/POST /franchise-luts/:franchiseId`, `PUT /franchise-luts/:franchiseId/:lutId`, `PATCH …/:lutId/status` with `@RequireAbility(…, FranchiseLut)`. `LutService` enforces: ARN `AD` + 13 chars, FY `YYYY-YY` consecutive, dates inside 1 April – 31 March of that FY, no overlap with another active LUT of the franchise, unique ARN per franchise, franchise scope (an admin with `franchiseIds` only reaches those). Soft activate/deactivate only. `status` (VALID / EXPIRING ≤30 days / EXPIRED / FUTURE / INCOMPLETE / INACTIVE) is computed for today (IST).
+> - RBAC: subject `FranchiseLut` seeded in 140 (Super Admin auto-granted by the subject trigger). Finance and other roles are granted in the RBAC screens (permissions live in data, principle 5).
+> - Admin: franchise details → "LUT Register" tab (Material table, status chip, add/edit dialog with "use the whole financial year", activate/deactivate). Dev build green; the production build's existing size-budget errors (dashboard SCSS etc.) are unrelated.
+> - Tests: `member/src/tax/lut.service.spec.ts` (11). Live (local DB): created `AD270326000001T` for EFMUM (kept as local test config), an overlapping LUT and a Dubai-scoped admin are refused, and EFMUM US+USD is now 0% under that LUT with the Rule 46 endorsement.
 
 ## Group 4: Wire callers (plans + products, admin + public)
 

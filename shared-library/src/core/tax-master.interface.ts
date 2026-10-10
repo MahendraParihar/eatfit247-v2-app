@@ -31,7 +31,11 @@ export interface IFranchiseLut {
   validFrom: string | null;
   validTo: string | null;
   active: boolean;
+  /** Computed for today: VALID, EXPIRING (≤ 30 days left), EXPIRED, FUTURE, INCOMPLETE (no dates), INACTIVE */
+  status: FranchiseLutStatus;
 }
+
+export type FranchiseLutStatus = 'VALID' | 'EXPIRING' | 'EXPIRED' | 'FUTURE' | 'INCOMPLETE' | 'INACTIVE';
 
 export interface IManageFranchiseLut {
   arn: string;
