@@ -1,5 +1,5 @@
 import {IAddress, IMemberAddress} from "../location.interface";
-import {InvoiceSeriesEnum, PaymentSourceEnum, TaxMode, TaxTypeEnum} from "../../enum";
+import {InvoiceSeriesEnum, PaymentRouteEnum, PaymentSourceEnum, TaxCategoryEnum, TaxMode, TaxTypeEnum} from "../../enum";
 import {IAdminInfo, IDropdownItem} from "../../base.interface";
 
 export interface IMemberAddressSnapshot {
@@ -48,6 +48,12 @@ export interface IBasicMemberPayment {
     placeOfSupply: string;
   };
   invoiceNote?: string;
+  taxCategory?: TaxCategoryEnum | null;
+  lutArn?: string | null;
+  taxDecisionReason?: string | null;
+  paymentRoute?: PaymentRouteEnum | null;
+  /** FIRC / e-FIRA / bank reference proving the money came from abroad */
+  remittanceReference?: string | null;
 }
 
 export interface IMemberPayment extends IBasicMemberPayment, IAdminInfo {
@@ -90,6 +96,9 @@ export interface IManageMemberPayment {
   paymentGatewayResponse?: object | null;
   discountAmount: number;
   currency?: string;
+  /** Manual payments only: how the money arrived (decides export vs IGST for foreign clients) */
+  paymentRoute?: PaymentRouteEnum | null;
+  remittanceReference?: string | null;
 }
 
 export interface IMemberPaymentMasterData {

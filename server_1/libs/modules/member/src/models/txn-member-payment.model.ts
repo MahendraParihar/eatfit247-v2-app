@@ -28,10 +28,12 @@ import { TxnMemberDietPlan } from './txn-member-diet-plan.model';
 import {
   IMemberAddress,
   InputLengthEnum,
+  InvoiceSeriesEnum,
+  PaymentRouteEnum,
   PaymentSourceEnum,
+  TaxCategoryEnum,
   TaxMode,
   TaxTypeEnum,
-  InvoiceSeriesEnum,
 } from '@eatfit247-shared-lib';
 
 @Table({
@@ -493,6 +495,42 @@ export class TxnMemberPayment extends Model<TxnMemberPayment> {
     customerCountry: string;
     placeOfSupply: string;
   };
+  @Column({
+    allowNull: true,
+    field: 'invoice_note',
+    type: DataType.TEXT,
+  })
+  declare invoiceNote: string | null;
+  @Column({
+    allowNull: true,
+    field: 'tax_category',
+    type: DataType.STRING(20),
+  })
+  declare taxCategory: TaxCategoryEnum | null;
+  @Column({
+    allowNull: true,
+    field: 'lut_arn',
+    type: DataType.STRING(30),
+  })
+  declare lutArn: string | null;
+  @Column({
+    allowNull: true,
+    field: 'tax_decision_reason',
+    type: DataType.STRING(255),
+  })
+  declare taxDecisionReason: string | null;
+  @Column({
+    allowNull: true,
+    field: 'payment_route',
+    type: DataType.ENUM(...Object.values(PaymentRouteEnum)),
+  })
+  declare paymentRoute: PaymentRouteEnum | null;
+  @Column({
+    allowNull: true,
+    field: 'remittance_reference',
+    type: DataType.STRING(100),
+  })
+  declare remittanceReference: string | null;
 
   @Column({
     allowNull: false,

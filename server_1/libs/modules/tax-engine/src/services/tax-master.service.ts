@@ -3,7 +3,7 @@ import { ITaxCalculationInput } from '../interfaces/tax.interface';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { MstTaxMaster } from '../models';
-import { IBasicSearch, ITableList, ITaxMaster } from '@eatfit247-shared-lib';
+import { IBasicSearch, ITableList, ITaxMaster, TaxCategoryEnum } from '@eatfit247-shared-lib';
 import { CommonFunctionsUtil, SearchUtil, TableListSortUtil } from '@server_1/core';
 import { CreateTaxMasterDto } from '../dto/tax-master.dto';
 
@@ -78,6 +78,7 @@ export class TaxMasterService {
       taxPercent: item.taxPercent,
       applyOn: item.applyOn,
       isTaxInclusive: item.isTaxInclusive,
+      taxCategory: item.taxCategory,
       effectiveFrom: item.effectiveFrom,
       effectiveTo: item.effectiveTo,
       active: item.active,
@@ -123,6 +124,7 @@ export class TaxMasterService {
       taxPercent: obj.taxPercent,
       applyOn: obj.applyOn,
       isTaxInclusive: obj.isTaxInclusive,
+      taxCategory: obj.taxCategory || TaxCategoryEnum.STANDARD,
       effectiveFrom: obj.effectiveFrom,
       effectiveTo: obj.effectiveTo || null,
       createdBy: adminId,
@@ -152,6 +154,7 @@ export class TaxMasterService {
     updateObj.taxPercent = obj.taxPercent;
     updateObj.applyOn = obj.applyOn;
     updateObj.isTaxInclusive = obj.isTaxInclusive;
+    if (obj.taxCategory !== undefined) updateObj.taxCategory = obj.taxCategory;
     updateObj.effectiveFrom = obj.effectiveFrom;
     updateObj.effectiveTo = obj.effectiveTo || null;
     updateObj.modifiedBy = adminId;

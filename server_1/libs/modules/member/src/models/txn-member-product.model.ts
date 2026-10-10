@@ -17,7 +17,12 @@ import {
 } from '@server_1/core';
 import { MstPaymentMode, MstPaymentStatus, TxnAddress } from '@server_1/platform';
 import { TxnMember } from './txn-member.model';
-import { InputLengthEnum, InvoiceSeriesEnum, PaymentSourceEnum } from '@eatfit247-shared-lib';
+import {
+  InputLengthEnum,
+  InvoiceSeriesEnum,
+  PaymentRouteEnum,
+  PaymentSourceEnum,
+} from '@eatfit247-shared-lib';
 import { TxnMemberProductOrderItem } from './txn-member-product-order-item.model';
 import { MstProduct } from '@server_1/models/product';
 
@@ -349,6 +354,19 @@ export class TxnMemberProduct extends Model<TxnMemberProduct> {
     type: DataType.STRING(500),
   })
   declare paymentLink: string;
+
+  @Column({
+    allowNull: true,
+    field: 'payment_route',
+    type: DataType.ENUM(...Object.values(PaymentRouteEnum)),
+  })
+  declare paymentRoute: PaymentRouteEnum | null;
+  @Column({
+    allowNull: true,
+    field: 'remittance_reference',
+    type: DataType.STRING(100),
+  })
+  declare remittanceReference: string | null;
 
   @Column({
     allowNull: true,

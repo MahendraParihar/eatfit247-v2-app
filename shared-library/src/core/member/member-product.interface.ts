@@ -1,4 +1,4 @@
-import {InvoiceSeriesEnum, PaymentSourceEnum, TaxMode, TaxTypeEnum} from "../../enum";
+import {InvoiceSeriesEnum, PaymentRouteEnum, PaymentSourceEnum, TaxCategoryEnum, TaxMode, TaxTypeEnum} from "../../enum";
 import {IAdminInfo, IDropdownItem} from "../../base.interface";
 import {IAddress} from "../location.interface";
 import {IShipment} from "../shipment.interface";
@@ -56,6 +56,9 @@ export interface IMemberProductOrderItem {
   isLutApplied?: boolean;
   jurisdiction?: any;
   invoiceNote?: string;
+  taxCategory?: TaxCategoryEnum | null;
+  lutArn?: string | null;
+  taxDecisionReason?: string | null;
 }
 
 export interface IBasicMemberProduct {
@@ -89,6 +92,8 @@ export interface IBasicMemberProduct {
   gatewayOrderId?: string;
   gatewayPaymentId?: string;
   paymentLink?: string;
+  paymentRoute?: PaymentRouteEnum | null;
+  remittanceReference?: string | null;
 }
 
 export interface IManageMemberProduct {
@@ -111,6 +116,9 @@ export interface IManageMemberProduct {
   /** Admin's gateway choice for a PAYMENT_GATEWAY record; the server creates the link after saving. */
   franchisePaymentGatewayId?: number;
   gatewayPaymentId?: string;
+  /** Manual orders only: how the money arrived */
+  paymentRoute?: PaymentRouteEnum | null;
+  remittanceReference?: string | null;
   orderItems: IMemberProductOrderItemBasic[];
 }
 

@@ -10,7 +10,7 @@ import {
   MinLength,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { TaxTypeEnum, TransactionType } from '@eatfit247-shared-lib';
+import { TaxCategoryEnum, TaxTypeEnum, TransactionType } from '@eatfit247-shared-lib';
 
 export class CreateTaxMasterDto {
   @IsNotEmpty()
@@ -57,6 +57,11 @@ export class CreateTaxMasterDto {
   @IsNotEmpty()
   @IsBoolean()
   isTaxInclusive!: boolean;
+
+  /** VAT category; defaults to STANDARD */
+  @IsOptional()
+  @IsEnum(TaxCategoryEnum)
+  taxCategory?: TaxCategoryEnum;
 
   @IsNotEmpty()
   @IsDate()

@@ -8,7 +8,7 @@
 
 ## Group 1: Tax-core migration and contract
 
-- [ ] 1.1 `db_changes/140_tax_engine_correctness.sql` (idempotent, in a transaction):
+- [x] 1.1 `db_changes/140_tax_engine_correctness.sql` (idempotent, in a transaction):
   - `tax_mode` + `EXPORT_OF_GOODS`
   - `mst_tax_master.tax_category` (STANDARD / ZERO_RATED / EXEMPT / OUT_OF_SCOPE, default STANDARD) and a check that 0% VAT rules aren't STANDARD
   - `mst_franchise_luts` (franchise_id, arn, financial_year, valid_from, valid_to, audit columns, active; no overlapping active periods per franchise)
@@ -16,13 +16,19 @@
   - `payment_route`, `remittance_reference` on `txn_member_payments` and `txn_member_products`
   - `tax_category`, `lut_arn`, `tax_decision_reason` on `txn_member_payments` and `txn_member_product_order_items`
   - backfill: HCUAE's AE service rule → ZERO_RATED; copy a non-empty `mst_franchises.lut_number` into the register as a row to be completed (FY and dates entered by Finance)
-- [ ] 1.2 Test 140 on a fresh DB and on a pre-140 clone (applies twice without error).
-- [ ] 1.3 shared-library:
+- [x] 1.2 Test 140 on a fresh DB and on a pre-140 clone (applies twice without error).
+- [x] 1.3 shared-library:
   - enums `TaxCategoryEnum`, `PaymentRouteEnum`, and `TaxMode.EXPORT_OF_GOODS`
   - an `IFranchiseLut` interface
   - decision fields (`taxCategory`, `paymentRoute`, `remittanceReference`, `lutArn`, `taxDecisionReason`) on the tax-calculation, member-payment and product interfaces
   - build
-- [ ] 1.4 Models: new columns on `TxnMemberPayment` (including the missing `invoiceNote` attribute), `TxnMemberProduct`, the order-item model and `MstTaxMaster`; new `MstFranchiseLut`.
+- [x] 1.4 Models: new columns on `TxnMemberPayment` (including the missing `invoiceNote` attribute), `TxnMemberProduct`, the order-item model and `MstTaxMaster`; new `MstFranchiseLut`.
+
+> **As built (group 1):**
+> - 140 adds `EXPORT_OF_GOODS` with `ALTER TYPE … ADD VALUE IF NOT EXISTS` before the transaction. It creates `mst_franchise_luts` with nullable `valid_from` / `valid_to`, so a copied `lut_number` row is never valid until Finance enters dates; overlap checks live in the service (group 3). `payment_route` is a Postgres enum; `tax_category`, `lut_arn`, `tax_decision_reason` are on payments and order items. Existing 0% VAT rules become ZERO_RATED (HCUAE AE service). RBAC subject `FranchiseLut` (franchise-scoped) is seeded; the subject trigger granted it to Super Admin.
+> - Applied twice locally without error.
+> - Shared: `TaxCategoryEnum`, `PaymentRouteEnum` (`NRE_FCNR_ACCOUNT` per the NRE answer), `EXPORT_TAX_MODES`, `IFranchiseLut` / `IManageFranchiseLut`, decision fields on `ICalculateTaxResponse`, payments, products and order items; `ITaxMaster.taxCategory`.
+> - Models: the missing `TxnMemberPayment.invoiceNote` is now mapped; new `MstFranchiseLut` (tax-engine lib); tax-master DTO/service carry `taxCategory`.
 
 ## Group 2: Tax decision engine (pure logic + unit test matrix)
 
