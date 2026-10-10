@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Draft |
+| Status | Implemented — awaiting owner validation (A16, A17, production migration); see validation.md |
 | Branch | `feature/10-10-2026-checkout-lockdown`; PR into `m3-cms-update` |
 | Roadmap | Phase 4: **4.5** Checkout and webhook lockdown (P0) |
 | References | [Accounting audit](../../backlog/2026-10-10-accounting-audit.md) findings C1, H7, M5; [mission.md](../../product/mission.md) principles 7, 10, 11 |
@@ -117,6 +117,6 @@ Product checkout (`checkout/member/:id/product/...`) follows the same pattern.
 
 ## Open Questions
 
-- [ ] Does the website ever use the payment-link flow (`payment-link` endpoints), or only the embedded order flow? If unused, remove the public payment-link endpoints instead of adapting them.
-- [ ] Promo eligibility: should codes be limited by plan, product or franchise? Today `applyPromoCode` checks only active, expiry, minimum amount and usage. Keep that for 4.5 unless Accounts says otherwise.
+- [x] Does the website ever use the payment-link flow (`payment-link` endpoints), or only the embedded order flow? **Resolved:** the website never called them (its `createPaymentLink` was dead code with a wrong URL), so the public `payment-link` and `payment-order` endpoints were removed.
+- [ ] Promo eligibility: should codes be limited by plan, product or franchise? Today `applyPromoCode` checks only active, expiry, minimum amount and usage. Kept that for 4.5. **Also decide currency:** promo codes have no currency, so a FLAT INR code would apply as-is to a USD/AED order (plan.md 8.x). Only INR gateways are active today.
 - [ ] Whether to show the suspicious-records report to the owner before Accounts sees it.

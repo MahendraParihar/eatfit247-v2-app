@@ -195,6 +195,16 @@ An independent subagent reviewed the whole diff (`5e9cb61a..06fa02e7`) for payme
 
 - [ ] 7.1 Every check in `validation.md` passes.
 - [ ] 7.2 Set `requirements.md` status to Shipped. Mark roadmap 4.5 ✅ with a link.
-- [ ] 7.3 Replan notes:
+- [x] 7.3 Replan notes:
   - The state matrix and confirmation service become the contract for 8.1 (Telr) and 8.2 (Stripe).
   - 4.9 picks up refund events from `txn_payment_gateway_events`.
+  - New follow-ups found during 4.5:
+    - **Security (High, existing):** `POST member/create` gives a checkout token for any existing member matched by email or phone (invoice download, profile overwrite). Needs its own roadmap item.
+    - **4.6:** product tax passes the franchise and billing addresses in swapped order to `calculateTax`; product totals have rounding drift.
+    - **4.8:** create admin payment links from the stored record total; review `payment_gateway_event_exceptions.sql` daily until then.
+    - **Website:** the checkout component (zoneless, plain fields) doesn't re-render after its initial loads ("0 items" until interaction) and logs NG0100. Convert its state to signals.
+    - **Promo:** decide currency and eligibility before enabling foreign-currency checkout.
+- **Close-out status (2026-10-10):**
+  - 7.1: the agent-run checks pass, and the scorecard records 15 of 18 criteria ✅. **Still open for the owner:** A16 (product, foreign currency, Safari, mobile), A17 and 6.2 (production-copy run, gateway reconciliation, sharing with Accounts), the migration on a production copy, the remaining manual Razorpay cases, and sign-off on the review section.
+  - 7.2: not done yet. Set `requirements.md` to Shipped and roadmap 4.5 to ✅ after those checks and the PR merge into `m3-cms-update`.
+
