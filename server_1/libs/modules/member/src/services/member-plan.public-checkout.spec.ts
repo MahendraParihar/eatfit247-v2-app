@@ -7,7 +7,6 @@ import {
   AddressService,
   CountryService,
   InvoicePdfService,
-  InvoiceSequenceService,
   PaymentModeService,
   PaymentStatusService,
   StateService,
@@ -25,6 +24,7 @@ import { TxnMember, TxnMemberPayment } from '../models';
 import { MemberPlanService } from './member-plan.service';
 import { MemberDietPlanService } from './member-diet-plan.service';
 import { CheckoutGatewayService } from './checkout-gateway.service';
+import { InvoiceIssueService } from './invoice-issue.service';
 
 describe('MemberPlanService public checkout', () => {
   let service: MemberPlanService;
@@ -190,7 +190,7 @@ describe('MemberPlanService public checkout', () => {
         { provide: PaymentGatewayFactory, useValue: {} },
         { provide: PaymentGatewayCredentialService, useValue: {} },
         { provide: InvoicePdfService, useValue: {} },
-        { provide: InvoiceSequenceService, useValue: {} },
+        { provide: InvoiceIssueService, useValue: {} },
       ],
     }).compile();
     service = moduleRef.get(MemberPlanService);

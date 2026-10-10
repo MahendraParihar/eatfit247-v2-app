@@ -86,6 +86,7 @@ export class FranchiseService {
       paymentGatewayConfigId: item.paymentGatewayConfigId,
       brandName: item.brandName,
       lutNumber: item.lutNumber,
+      timeZone: item.timeZone,
       internationalTaxMode: item.internationalTaxMode,
       startDate: item.startDate,
       endDate: item.endDate,

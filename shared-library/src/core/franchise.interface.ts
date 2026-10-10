@@ -23,6 +23,8 @@ export interface IBaseFranchise {
   brandName?: string;
   lutNumber?: string;
   internationalTaxMode?: string;
+  /** IANA zone for invoice dates (e.g. Asia/Kolkata, Asia/Dubai) */
+  timeZone?: string;
   startDate: Date;
   endDate?: Date;
   isPrimary: boolean;

@@ -1,14 +1,15 @@
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Sequelize } from 'sequelize-typescript';
-import { InvoiceSequenceService } from '@server_1/platform';
+import { AddressService, CountryService, FranchiseDateUtil, InvoiceSequenceService } from '@server_1/platform';
 import { FranchiseService } from '@server_1/modules/franchise';
 import { PromoCodeService } from '@server_1/modules/promo-code';
-import { BusinessTypeEnum, GatewayEventResultEnum, PaymentStatusEnum } from '@eatfit247-shared-lib';
+import { BusinessTypeEnum, GatewayEventResultEnum, InvoiceSeriesEnum, PaymentStatusEnum } from '@eatfit247-shared-lib';
 import { TxnMemberPayment, TxnMemberProduct } from '../models';
 import {
   IConfirmGatewayPaymentInput,
   PaymentConfirmationService,
 } from './payment-confirmation.service';
+import { InvoiceIssueService } from './invoice-issue.service';
 
 interface IFakeRecord {
   memberPaymentId?: number;
@@ -25,6 +26,10 @@ interface IFakeRecord {
   paymentGatewayResponse: object | null;
   refundObj: object | null;
   modifiedIp: string | null;
+  memberAddress: { address: object | null; billingAddress: object | null } | null;
+  taxAmount: string;
+  invoiceSeries?: InvoiceSeriesEnum | null;
+  invoiceDate?: string | null;
   save: jest.Mock;
 }
 
@@ -42,6 +47,8 @@ const makeRecord = (overrides: Partial<IFakeRecord> = {}): IFakeRecord => ({
   paymentGatewayResponse: null,
   refundObj: null,
   modifiedIp: null,
+  memberAddress: { address: null, billingAddress: { countryCode: 'IN', country: 'India' } },
+  taxAmount: '180.00',
   save: jest.fn().mockResolvedValue(undefined),
   ...overrides,
 });
@@ -79,9 +86,13 @@ describe('PaymentConfirmationService', () => {
     paymentFindAll = jest.fn();
     productFindAll = jest.fn();
     invoiceCounter = 0;
-    generateInvoiceNumber = jest.fn().mockImplementation(async () => {
+    generateInvoiceNumber = jest.fn().mockImplementation(async (request: { series: InvoiceSeriesEnum; invoiceDate: string }) => {
       invoiceCounter += 1;
-      return `EF/2026-27/S/${String(invoiceCounter).padStart(6, '0')}`;
+      return {
+        invoiceId: `EF/2026-27/S/${String(invoiceCounter).padStart(6, '0')}`,
+        invoiceSeries: request.series,
+        invoiceDate: request.invoiceDate,
+      };
     });
     recordUsage = jest.fn().mockResolvedValue({ overLimit: false });
     emit = jest.fn();
@@ -90,10 +101,14 @@ describe('PaymentConfirmationService', () => {
       { findAll: paymentFindAll, findOne: jest.fn() } as unknown as typeof TxnMemberPayment,
       { findAll: productFindAll, findOne: jest.fn() } as unknown as typeof TxnMemberProduct,
       { transaction: jest.fn().mockResolvedValue(transaction), query: jest.fn().mockResolvedValue(undefined) } as unknown as Sequelize,
-      {
-        fetchById: jest.fn().mockResolvedValue({ financialYear: 4, franchiseCode: 'EF' }),
-      } as unknown as FranchiseService,
-      { generateInvoiceNumber } as unknown as InvoiceSequenceService,
+      new InvoiceIssueService(
+        { generateInvoiceNumber } as unknown as InvoiceSequenceService,
+        {
+          fetchById: jest.fn().mockResolvedValue({ financialYear: 4, franchiseCode: 'EF', timeZone: 'Asia/Kolkata' }),
+        } as unknown as FranchiseService,
+        { filterByTableIdAndPk: jest.fn().mockResolvedValue([{ countryId: 101 }]) } as unknown as AddressService,
+        { fetchById: jest.fn().mockResolvedValue({ countryCode: 'IN' }) } as unknown as CountryService,
+      ),
       { recordUsage } as unknown as PromoCodeService,
       { emit } as unknown as EventEmitter2,
     );
@@ -157,12 +172,33 @@ describe('PaymentConfirmationService', () => {
       paymentStatusId: PaymentStatusEnum.PAID,
       invoiceId: 'EF/2026-27/S/000001',
     });
-    expect(record.paymentDate).toEqual(input.capturedAt);
+    // Plan payment_date is the capture day in the franchise's timezone (noon UTC of that day)
+    expect(record.paymentDate).toEqual(FranchiseDateUtil.calendarDate('2026-10-10'));
+    expect(record).toMatchObject({ invoiceSeries: InvoiceSeriesEnum.DOMESTIC, invoiceDate: '2026-10-10' });
     expect(record.gatewayPaymentId).toBe('pay_1');
     expect(record.transactionId).toBe('pay_1');
     expect(generateInvoiceNumber).toHaveBeenCalledTimes(1);
     expect(transaction.commit.mock.invocationCallOrder[0]).toBeLessThan(emit.mock.invocationCallOrder[0]);
     expect(emit).toHaveBeenCalledWith('order.plan.paid', expect.objectContaining({ memberPaymentId: 101 }));
+  });
+
+  it('issues the EXPORT series for a foreign client of an Indian franchise who was charged no tax', async () => {
+    const record = makeRecord({
+      memberAddress: { address: null, billingAddress: { countryCode: 'US', country: 'United States' } },
+      taxAmount: '0.00',
+      totalAmount: '1000.00',
+    });
+    givenRecords([record]);
+
+    await service.confirmGatewayPayment(confirmInput({ amountMinor: 100000 }));
+
+    expect(generateInvoiceNumber.mock.calls[0][0]).toMatchObject({
+      series: InvoiceSeriesEnum.EXPORT,
+      invoiceDate: '2026-10-10',
+      fyStartMonth: 4,
+      franchiseCode: 'EF',
+    });
+    expect(record.invoiceSeries).toBe(InvoiceSeriesEnum.EXPORT);
   });
 
   it('issues a PRODUCT invoice and emits order.product.paid for a product record', async () => {
@@ -172,7 +208,7 @@ describe('PaymentConfirmationService', () => {
     const outcome = await service.confirmGatewayPayment(confirmInput());
 
     expect(outcome.recordType).toBe('product');
-    expect(generateInvoiceNumber.mock.calls[0][3]).toBe(BusinessTypeEnum.PRODUCT);
+    expect(generateInvoiceNumber.mock.calls[0][0].invoiceType).toBe(BusinessTypeEnum.PRODUCT);
     expect(emit).toHaveBeenCalledWith('order.product.paid', expect.objectContaining({ memberProductId: 55 }));
   });
 

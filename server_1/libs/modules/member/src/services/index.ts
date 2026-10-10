@@ -12,5 +12,6 @@ export * from './member-diet-plan.service';
 export * from './member-dashboard.service';
 
 export * from './payment-confirmation.service';
+export * from './invoice-issue.service';
 export * from './razorpay-webhook.service';
 export * from './checkout-gateway.service';

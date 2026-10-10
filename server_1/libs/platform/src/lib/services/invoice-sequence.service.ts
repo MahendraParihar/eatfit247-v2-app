@@ -2,7 +2,25 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Transaction } from 'sequelize';
 import { InvoiceSequenceModel } from '../database/models';
-import { BusinessTypeEnum } from '@eatfit247-shared-lib';
+import { BusinessTypeEnum, InvoiceSeriesEnum } from '@eatfit247-shared-lib';
+import { FranchiseDateUtil } from '../utils/franchise-date.util';
+
+export interface IInvoiceNumberRequest {
+  franchiseId: number;
+  franchiseCode: string;
+  /** Month the franchise's financial year starts (4 = April, 1 = January) */
+  fyStartMonth: number;
+  invoiceType: BusinessTypeEnum;
+  series: InvoiceSeriesEnum;
+  /** Date of issue, `YYYY-MM-DD` in the franchise's timezone; the FY comes from it */
+  invoiceDate: string;
+}
+
+export interface IIssuedInvoiceNumber {
+  invoiceId: string;
+  invoiceSeries: InvoiceSeriesEnum;
+  invoiceDate: string;
+}
 
 @Injectable()
 export class InvoiceSequenceService {
@@ -12,27 +30,19 @@ export class InvoiceSequenceService {
   ) {}
 
   /**
-   * Generate a unique invoice number based on entity, invoice type, and financial year
-   * @param franchiseId
-   * @param startMonth
-   * @param franchiseCode
-   * @param invoiceType - Type of invoice: 'PRODUCT' or 'SERVICE'
-   * @param trx - Database transaction
-   * @returns Generated invoice number in format: {entityCode}/{financialYear}/{typeCode}/{sequenceNumber}
+   * Next gap-free invoice number for (franchise, type, FY, series), inside the caller's transaction.
+   * The counter row is created on first use and locked FOR UPDATE until the caller commits.
+   *
+   * Formats: DOMESTIC `{code}/{FY}/{S|P}/{000001}`, EXPORT `{code}/EXP/{FY}/{S|P}/{000001}`.
    */
-  async generateInvoiceNumber(
-    franchiseId: number,
-    startMonth: number,
-    franchiseCode: string,
-    invoiceType: BusinessTypeEnum,
-    trx: Transaction,
-  ) {
-    const fy = this.getFinancialYear(new Date(), startMonth);
+  async generateInvoiceNumber(request: IInvoiceNumberRequest, trx: Transaction): Promise<IIssuedInvoiceNumber> {
+    const fy = FranchiseDateUtil.financialYear(request.invoiceDate, request.fyStartMonth);
     const [sequence] = await this.invoiceSequenceModel.findOrCreate({
       where: {
-        franchiseId: franchiseId,
-        invoiceType,
+        franchiseId: request.franchiseId,
+        invoiceType: request.invoiceType,
         financialYear: fy,
+        series: request.series,
       },
       defaults: { currentNumber: 0 },
       transaction: trx,
@@ -40,18 +50,13 @@ export class InvoiceSequenceService {
     });
     sequence.currentNumber += 1;
     await sequence.save({ transaction: trx });
-    const typeCode = invoiceType === BusinessTypeEnum.PRODUCT ? 'P' : 'S';
-    return `${franchiseCode}/${fy}/${typeCode}/${String(sequence.currentNumber).padStart(6, '0')}`;
-  }
-
-  private getFinancialYear(date: Date, fyStartMonth: number) {
-    const year = date.getFullYear();
-    const month = date.getMonth() + 1;
-    if (month >= fyStartMonth) {
-      return fyStartMonth === 1 ? `${year}` : `${year}-${String(year + 1).slice(-2)}`;
-    } else {
-      return fyStartMonth === 1 ? `${year - 1}` : `${year - 1}-${String(year).slice(-2)}`;
-    }
+    const typeCode = request.invoiceType === BusinessTypeEnum.PRODUCT ? 'P' : 'S';
+    const seriesPart = request.series === InvoiceSeriesEnum.EXPORT ? 'EXP/' : '';
+    const sequenceNumber = String(sequence.currentNumber).padStart(6, '0');
+    return {
+      invoiceId: `${request.franchiseCode}/${seriesPart}${fy}/${typeCode}/${sequenceNumber}`,
+      invoiceSeries: request.series,
+      invoiceDate: request.invoiceDate,
+    };
   }
 }
-

@@ -61,6 +61,7 @@ import {
   MemberService,
   CheckoutGatewayService,
   PaymentConfirmationService,
+  InvoiceIssueService,
   RazorpayWebhookService,
 } from './services';
 import { FranchiseModule } from '@server_1/modules/franchise';
@@ -164,6 +165,7 @@ modelRegistry.register([
     MemberDietPlanService,
     MemberDashboardService,
     PaymentConfirmationService,
+    InvoiceIssueService,
     RazorpayWebhookService,
     CheckoutGatewayService,
   ],

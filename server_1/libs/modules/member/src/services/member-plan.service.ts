@@ -44,7 +44,6 @@ import {
   CountryService,
   IFileModel,
   InvoicePdfService,
-  InvoiceSequenceService,
   PaymentModeService,
   PaymentStatusService,
   PaymentUtil,
@@ -64,6 +63,7 @@ import { CheckoutGatewayService, ICheckoutPaymentLink } from './checkout-gateway
 import { promises as fs } from 'fs';
 import { find } from 'lodash';
 import moment from 'moment';
+import { InvoiceIssueService } from './invoice-issue.service';
 
 @Injectable()
 export class MemberPlanService {
@@ -91,7 +91,7 @@ export class MemberPlanService {
     private readonly paymentGatewayFactory: PaymentGatewayFactory,
     private readonly paymentGatewayCredentialService: PaymentGatewayCredentialService,
     private readonly invoicePdfService: InvoicePdfService,
-    private readonly invoiceSequenceService: InvoiceSequenceService,
+    private readonly invoiceIssueService: InvoiceIssueService,
     private readonly checkoutGatewayService: CheckoutGatewayService,
   ) {}
 
@@ -470,15 +470,7 @@ export class MemberPlanService {
       // Generate an invoice number if payment status is PAID and invoiceId is not already set
       if (payment.paymentStatusId === PaymentStatusEnum.PAID && !payment.invoiceId) {
         if (member.franchiseId) {
-          const franchiseDetails = await this.franchiseService.fetchById(member.franchiseId);
-          const invoiceNumber = await this.invoiceSequenceService.generateInvoiceNumber(
-            member.franchiseId,
-            franchiseDetails.financialYear,
-            franchiseDetails.franchiseCode,
-            BusinessTypeEnum.SERVICE,
-            t,
-          );
-          payment.invoiceId = invoiceNumber;
+          await this.invoiceIssueService.issue(payment, 'plan', member.franchiseId, t);
           await payment.save({ transaction: t });
         }
       }

@@ -3,16 +3,15 @@ import { InjectModel } from '@nestjs/sequelize';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Sequelize } from 'sequelize-typescript';
 import { Transaction } from 'sequelize';
-import { InvoiceSequenceService } from '@server_1/platform';
-import { FranchiseService } from '@server_1/modules/franchise';
+import { FranchiseDateUtil } from '@server_1/platform';
 import { PromoCodeService } from '@server_1/modules/promo-code';
 import {
-  BusinessTypeEnum,
   CurrencyUtil,
   GatewayEventResultEnum,
   PaymentStatusEnum,
 } from '@eatfit247-shared-lib';
 import { TxnMemberPayment, TxnMemberProduct } from '../models';
+import { InvoiceIssueService } from './invoice-issue.service';
 
 export type GatewayRecordType = 'plan' | 'product';
 
@@ -92,8 +91,7 @@ export class PaymentConfirmationService {
     @InjectModel(TxnMemberProduct)
     private readonly memberProductRepository: typeof TxnMemberProduct,
     private readonly sequelize: Sequelize,
-    private readonly franchiseService: FranchiseService,
-    private readonly invoiceSequenceService: InvoiceSequenceService,
+    private readonly invoiceIssueService: InvoiceIssueService,
     private readonly promoCodeService: PromoCodeService,
     private readonly eventEmitter: EventEmitter2,
   ) {}
@@ -138,7 +136,14 @@ export class PaymentConfirmationService {
       }
 
       record.paymentStatusId = PaymentStatusEnum.PAID;
-      record.paymentDate = input.capturedAt;
+      const franchiseContext = record.franchiseId
+        ? await this.invoiceIssueService.franchiseContext(record.franchiseId)
+        : undefined;
+      record.paymentDate =
+        recordType === 'plan' && franchiseContext
+          ? // Plan payment_date is a calendar date: use the capture day in the franchise's timezone
+            FranchiseDateUtil.calendarDate(FranchiseDateUtil.localDate(input.capturedAt, franchiseContext.timeZone))
+          : input.capturedAt;
       record.gatewayPaymentId = input.gatewayPaymentId as string;
       record.transactionId = input.gatewayPaymentId as string;
       if (input.gatewayResponse) {
@@ -148,7 +153,14 @@ export class PaymentConfirmationService {
       await record.save({ transaction });
 
       if (!record.invoiceId && record.franchiseId) {
-        record.invoiceId = await this.issueInvoiceNumber(record.franchiseId, recordType, transaction);
+        await this.invoiceIssueService.issue(
+          record,
+          recordType,
+          record.franchiseId,
+          transaction,
+          input.capturedAt,
+          franchiseContext,
+        );
         await record.save({ transaction });
       }
 
@@ -353,21 +365,6 @@ export class PaymentConfirmationService {
       return `Amount mismatch: stored ${expectedMinor}, gateway ${amountMinor} (${storedCurrency} minor units)`;
     }
     return null;
-  }
-
-  private async issueInvoiceNumber(
-    franchiseId: number,
-    recordType: GatewayRecordType,
-    transaction: Transaction,
-  ): Promise<string> {
-    const franchise = await this.franchiseService.fetchById(franchiseId);
-    return this.invoiceSequenceService.generateInvoiceNumber(
-      franchiseId,
-      franchise.financialYear,
-      franchise.franchiseCode,
-      recordType === 'product' ? BusinessTypeEnum.PRODUCT : BusinessTypeEnum.SERVICE,
-      transaction,
-    );
   }
 
   private baseResult(recordType: GatewayRecordType, record: GatewayRecord): IGatewayConfirmationResult {

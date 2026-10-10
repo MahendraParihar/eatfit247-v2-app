@@ -20,4 +20,6 @@ export * from './lib/platform.module';
 export * from './lib/guards/recaptcha.guard';
 // Utils
 export * from './lib/utils/payment.util';
+export * from './lib/utils/franchise-date.util';
+export * from './lib/utils/invoice-series.util';
 

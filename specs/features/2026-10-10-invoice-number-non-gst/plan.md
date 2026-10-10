@@ -37,30 +37,38 @@
 
 ## Group 3: Backend numbering (`server_1`)
 
-- [ ] 3.1 Add a franchise-local date helper (platform lib). It takes a `Date` and an IANA zone and returns `YYYY-MM-DD`, using `Intl.DateTimeFormat` (no new dependency).
-- [ ] 3.2 `InvoiceSequenceService.generateInvoiceNumber(franchise, invoiceType, series, invoiceDate, trx)`:
+- [x] 3.1 Add a franchise-local date helper (platform lib). It takes a `Date` and an IANA zone and returns `YYYY-MM-DD`, using `Intl.DateTimeFormat` (no new dependency).
+- [x] 3.2 `InvoiceSequenceService.generateInvoiceNumber(franchise, invoiceType, series, invoiceDate, trx)`:
   - Take the FY from `invoiceDate`.
   - Use `findOrCreate` with `LOCK.UPDATE`, keyed by series as well.
   - EXPORT numbers format as `{code}/EXP/{fy}/{S|P}/{seq}`.
   - Return `{ invoiceId, invoiceSeries, invoiceDate }` so callers store all three.
-- [ ] 3.3 Add a pure helper `resolveInvoiceSeries({ franchiseCountryCode, billingCountryCode, taxAmount })` (decision 1 interim rule):
+- [x] 3.3 Add a pure helper `resolveInvoiceSeries({ franchiseCountryCode, billingCountryCode, taxAmount })` (decision 1 interim rule):
   - EXPORT if the franchise is Indian, the billing country from the stored `member_address` snapshot is not India, and `taxAmount = 0`.
   - DOMESTIC otherwise.
   - Product orders: the order's total tax and its single billing snapshot (so mixed-item series can't happen).
   - Share the country resolution with migration 138 (decision 13) so both give the same answer. 4.6 later swaps the body to the stored tax mode.
-- [ ] 3.4 Wire the existing issuing paths, each storing `invoice_id`, `invoice_series` and `invoice_date`:
+- [x] 3.4 Wire the existing issuing paths, each storing `invoice_id`, `invoice_series` and `invoice_date`:
   - plan create (`paymentObj.taxMode`)
   - product create (the items' `taxMode`s)
   - webhook `generateInvoiceForPlan` (`paymentRecord.taxMode`)
   - webhook `generateInvoiceForProduct` (load the items' `taxMode` in the same transaction)
   - **If 4.5 has shipped** (expected), the gateway paths issue invoices inside `PaymentConfirmationService.confirmGatewayPayment`. Wire the series and invoice date there, not in the old webhook helpers.
-- [ ] 3.5 Webhook and confirmation: derive `payment_date` from the gateway capture timestamp in the franchise's `time_zone`.
-- [ ] 3.6 Unit tests:
+- [x] 3.5 Webhook and confirmation: derive `payment_date` from the gateway capture timestamp in the franchise's `time_zone`.
+- [x] 3.6 Unit tests:
   - service: both series × both types; FY boundary at 31 Mar / 1 Apr in IST and at 31 Dec / 1 Jan for HCUAE; separate counters; lock requested
   - helper: truth table
   - local-date helper: across the UTC/IST midnight
   - `razorpay-webhook.controller.spec.ts`: export plan, export product, domestic plan, replay
-- [ ] 3.7 `npx nx affected --target=lint,test,build` is green. Commit.
+- [x] 3.7 `npx nx affected --target=lint,test,build` is green. Commit.
+
+> **As built (group 3):**
+> - Platform: `FranchiseDateUtil` (`localDate`, `financialYear`, `calendarDate`) and `InvoiceSeriesUtil` (`resolve`, `snapshotCountry`, `normalize`). `InvoiceSequenceService.generateInvoiceNumber(request, trx)` now takes `{ franchiseId, franchiseCode, fyStartMonth, invoiceType, series, invoiceDate }` and returns `{ invoiceId, invoiceSeries, invoiceDate }`.
+> - Member lib: new `InvoiceIssueService` is the **only** code that assigns `invoice_id`. It loads the franchise (code, FY start, `timeZone`) and its country (from its address), resolves the billing country (snapshot code → country id → country name), picks the series and sets `invoiceId` / `invoiceSeries` / `invoiceDate` on the record. Admin plan create, admin product create and `PaymentConfirmationService.confirmGatewayPayment` call it (4.5 removed the old webhook helpers).
+> - 3.5: for **plans**, `payment_date` (a `date` column) is the capture day in the franchise's timezone, written as noon UTC so Sequelize formats the same day on any server. Product `payment_date` is a timestamp, so it keeps the capture instant. The gateway invoice date is the capture day in the franchise's timezone.
+> - Unknown billing country → DOMESTIC with a warning log.
+> - Tests: `invoice/invoice-numbering.spec.ts` (28: date/FY boundaries, series truth table, sequence formats and lock, issue service), `payment-confirmation.service.spec.ts` (+export case, now 26). The webhook spec items in 3.6 are covered by the confirmation spec, since the webhook delegates to it. Member jest 185/185. `nx build admin-api` and `public-api` green.
+> - Live (local DB, rolled back): 5128 (US, INR, no tax) → `EFMUM/EXP/2026-27/S/000001`; 5124 (India, GST) → `EFMUM/2026-27/S/000010`; 5126 (HCUAE) → `HCUAE/2026/S/000004`; counters unchanged after rollback.
 
 ## Group 4: Issue on PAID and edit guard (`member-plan.service.ts`)
 
