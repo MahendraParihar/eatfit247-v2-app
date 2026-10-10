@@ -124,14 +124,35 @@
 
 ## Group 5: Website checkout (`eatfit247-web-1`)
 
-- [ ] 5.1 `checkout.service.ts` / `payment.service.ts`:
+- [x] 5.1 `checkout.service.ts` / `payment.service.ts`:
   - call `…/order` **before** opening the gateway, with the new request
   - use the returned gateway payload to open Razorpay
   - remove the post-payment create call
   - after success, call `verify-payment` and route on the returned status
-- [ ] 5.2 Promo field in the checkout summary (Material form field): apply it through the tax-calculation endpoint, show the discount or the error message, and send `promoCode` with the order.
-- [ ] 5.3 Success page: read status from the server (the existing `checkout/order/:gatewayOrderId` endpoints). Show a "payment processing" state while the status is PENDING and verify didn't confirm it.
-- [ ] 5.4 `npx nx build` (SSR). Manual flow in Razorpay test mode. Commit.
+- [x] 5.2 Promo field in the checkout summary (Material form field): apply it through the tax-calculation endpoint, show the discount or the error message, and send `promoCode` with the order.
+- [x] 5.3 Success page: read status from the server (the existing `checkout/order/:gatewayOrderId` endpoints). Show a "payment processing" state while the status is PENDING and verify didn't confirm it.
+- [x] 5.4 `npx nx build` (SSR). Manual flow in Razorpay test mode. Commit.
+- **As built (group 5):**
+  - `checkout.service.ts` and `payment.service.ts` use the public contract (`IPublicPlanOrderRequest`, `IPublicProductOrderRequest`, `IPublicCheckoutOrderResponse`, the public tax request/response types and the verify request/response).
+    - The dead `createPaymentLink` (it called a URL that doesn't exist) and the payment-order calls are removed.
+    - Razorpay opens with the server's `gatewayOrderId`, `keyId` and `amountMinor`, so no client `* 100`, and its options are now typed (no `any`).
+    - reCAPTCHA goes only in the `X-Recaptcha-Token` header.
+  - In `checkout.component.ts`, `…/order` runs before the gateway opens. Paying again for the same selection reuses the same PENDING order, compared by request key.
+  - After the gateway callback the component calls verify. Either way it routes to the success page; a verify network error is tolerated because the webhook is the backstop.
+  - API errors arrive as `{status, message}`, so a helper now shows the server's message (e.g. "Invalid promo code").
+  - Promo field: a Material form field in the order summary on the review step, with a discount row. Its state is **signals**, because the app is zoneless and plain fields set after an `await` never re-render (found in browser testing).
+  - The success page derives the status from `paymentStatusId`. PENDING shows "Confirming your payment" and polls every 3 s for up to 60 s; FAILED shows "Payment not completed". The invoice download and "Paid" chips appear only when PAID, and the payment date shows only when set.
+  - Checks: `nx build` (SSR) passes. ESLint on the changed files is slow; its result is recorded separately.
+  - **Manual Razorpay test mode (member 4945, plan 271, Chrome):**
+    - Invalid promo → inline "Invalid promo code".
+    - `LOCKWEB100` → ₹1,000 − ₹100 + 18% tax = ₹1,062.
+    - "Continue to Payment" created PENDING record 4744 and a Razorpay test order for 106200 paise.
+    - The payment was completed in the Razorpay popup; verify then set PAID, invoice `EFMUM/2026-27/S/000004` and promo `used_count` 1. No webhook was involved (Razorpay can't reach localhost).
+    - The success page shows Paid with the invoice; the admin Payment History for 4945 shows the row as Paid ₹1,062.
+  - **Already there, not fixed (UI):**
+    - The checkout component (zoneless, plain fields) doesn't re-render after its initial async loads, so the summary shows "0 items" until the user interacts.
+    - The page logs `NG0100 ExpressionChangedAfterItHasBeenChecked`.
+    - Both happen without these changes. Converting the component's state to signals is a separate fix.
 
 ## Group 6: Suspicious-records report
 
