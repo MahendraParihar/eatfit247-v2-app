@@ -90,6 +90,7 @@ export function mapPaymentToInvoiceDocument(
       invoiceDate,
       isProforma,
       currency: payment.currency,
+      ...placeOfSupplyOf(taxType, taxMode, memberAddress, payment.jurisdiction?.placeOfSupply),
     },
     seller,
     buyer,
@@ -107,6 +108,8 @@ export function mapPaymentToInvoiceDocument(
       rows: taxRows,
       totalTax: payment.taxAmount,
       note: taxNote,
+      lutArn: payment.isLutApplied ? payment.lutArn || undefined : undefined,
+      taxCategory: payment.taxCategory || undefined,
     },
     total: {
       label: 'Total Amount Payable',
@@ -142,14 +145,12 @@ export function buildTaxRows(
   if (taxMode === TaxMode.NO_TAX || taxMode === TaxMode.RCM_IMPORT_SERVICE) {
     return [];
   }
-  if (taxMode === TaxMode.EXPORT_OF_SERVICE) {
-    return [
-      {
-        label: 'GST',
-        amount: 0,
-        percentage: 0,
-      },
-    ];
+  if (taxMode === TaxMode.EXPORT_OF_SERVICE || taxMode === TaxMode.EXPORT_OF_GOODS) {
+    // Export without a valid LUT: IGST is charged (and refundable); under LUT: IGST at 0%
+    if (taxObj['IGST']) {
+      return [{ label: 'IGST', amount: taxObj['IGST'].amount, percentage: taxObj['IGST'].taxPercentage }];
+    }
+    return [{ label: 'IGST', amount: 0, percentage: 0 }];
   }
   const rows: IInvoiceTaxRow[] = [];
   // For GST (DOMESTIC_GST)
@@ -260,15 +261,19 @@ function buildSellerInfo(
   taxType: TaxTypeEnum,
   franchiseAddress: IAddress,
 ): IInvoiceDocument['seller'] {
-  // Determine tax ID and label based on a tax type
+  // The supplier's own registration, printed whenever it is registered (roadmap 4.6, decision 18):
+  // an Indian franchise shows its GSTIN, any other its VAT number (UAE: TRN). An unregistered
+  // franchise has neither and shows none.
+  const supplierCountry = (franchiseAddress.countryCode || '').trim().toUpperCase();
+  const isIndian = supplierCountry ? supplierCountry === 'IN' : taxType === TaxTypeEnum.GST;
   let taxId: string | undefined;
   let taxIdLabel: string | undefined;
-  if (taxType === TaxTypeEnum.GST) {
-    taxId = franchise.gstNumber;
+  if (isIndian && franchise.gstNumber?.trim()) {
+    taxId = franchise.gstNumber.trim();
     taxIdLabel = 'GSTIN';
-  } else if (taxType === TaxTypeEnum.VAT) {
-    taxId = franchise.vatNumber;
-    taxIdLabel = 'VAT No.';
+  } else if (!isIndian && franchise.vatNumber?.trim()) {
+    taxId = franchise.vatNumber.trim();
+    taxIdLabel = supplierCountry === 'AE' ? 'TRN' : 'VAT No.';
   }
   // Use franchise address if provided, otherwise use placeholders
   // Note: IAddress has state and country as strings (from relationships)
@@ -339,6 +344,33 @@ function buildBuyerInfo(
 }
 
 export const PROFORMA_TITLE = 'PROFORMA INVOICE';
+
+/**
+ * Indian GST invoices (Rule 46): place of supply as "State (code)" for domestic supplies, the
+ * country for exports, plus the country of destination for exports.
+ */
+function placeOfSupplyOf(
+  taxType: TaxTypeEnum,
+  taxMode: TaxMode,
+  buyerAddress: IAddress,
+  storedPlaceOfSupply?: string,
+): { placeOfSupply?: string; countryOfDestination?: string } {
+  if (taxType !== TaxTypeEnum.GST) {
+    return {};
+  }
+  if (taxMode === TaxMode.EXPORT_OF_SERVICE || taxMode === TaxMode.EXPORT_OF_GOODS) {
+    const country = storedPlaceOfSupply || buyerAddress.country || '';
+    return { placeOfSupply: country || undefined, countryOfDestination: country || undefined };
+  }
+  const state = (buyerAddress.state || '').trim();
+  const code = (buyerAddress.stateCode || '').trim();
+  const isIndianBuyer = (buyerAddress.countryCode || '').toUpperCase() === 'IN' || (buyerAddress.country || '').toLowerCase() === 'india';
+  if (state && isIndianBuyer) {
+    return { placeOfSupply: code ? `${state} (${code})` : state };
+  }
+  // A foreign client taxed IGST (not an export): the place of supply is their country
+  return storedPlaceOfSupply ? { placeOfSupply: storedPlaceOfSupply } : {};
+}
 
 function invoiceTitle(isProforma: boolean, taxType: TaxTypeEnum): string {
   if (isProforma) return PROFORMA_TITLE;
@@ -475,6 +507,12 @@ export function mapProductOrderToInvoiceDocument(
       invoiceDate,
       isProforma,
       currency: productOrder.currency,
+      ...placeOfSupplyOf(
+        productOrder.orderItems[0].taxType,
+        productOrder.orderItems[0].taxMode,
+        memberAddress,
+        productOrder.orderItems[0].jurisdiction?.placeOfSupply,
+      ),
     },
     seller,
     buyer,
@@ -492,6 +530,8 @@ export function mapProductOrderToInvoiceDocument(
       rows: [],
       totalTax: productOrder.taxAmount,
       note: taxNote,
+      lutArn: productOrder.orderItems[0].isLutApplied ? productOrder.orderItems[0].lutArn || undefined : undefined,
+      taxCategory: productOrder.orderItems[0].taxCategory || undefined,
     },
     total: {
       label: 'Total Amount Payable',

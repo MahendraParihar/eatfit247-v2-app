@@ -123,4 +123,99 @@ describe('invoice mapper: proforma and invoice date', () => {
     expect(issued.header.invoiceNumber).toBe('MEMUM/EXP/2026-27/P/000001');
     expect(issued.header.invoiceDate).toBe('2026-10-12');
   });
+
+  describe('Indian GST particulars (roadmap 4.6 group 7)', () => {
+    const indianSeller = { countryCode: 'IN', country: 'India', state: 'Maharashtra', stateCode: '27' } as unknown as IAddress;
+    const indianBuyer = { countryCode: 'IN', country: 'India', state: 'Karnataka', stateCode: '29' } as unknown as IAddress;
+    const usBuyer = { countryCode: 'US', country: 'United States', state: 'New York', stateCode: 'US-NY' } as unknown as IAddress;
+    const issued = { invoiceId: 'EFMUM/2026-27/S/000010', invoiceDate: '2026-10-12' };
+
+    it('domestic: place of supply is the buyer state with its code, seller GSTIN printed', () => {
+      const doc = mapPaymentToInvoiceDocument(payment({ ...issued, taxObj: { IGST: { amount: 180, taxPercentage: 18 } } }), franchise, indianBuyer, indianSeller, []);
+      expect(doc.header.placeOfSupply).toBe('Karnataka (29)');
+      expect(doc.header.countryOfDestination).toBeUndefined();
+      expect(doc.seller).toMatchObject({ taxId: '27CSEPS5397E1Z8', taxIdLabel: 'GSTIN' });
+    });
+
+    it('export under LUT: TAX INVOICE, Rule 46 endorsement, LUT ARN, IGST 0 row, country of destination', () => {
+      const doc = mapPaymentToInvoiceDocument(
+        payment({
+          ...issued,
+          invoiceId: 'EFMUM/EXP/2026-27/S/000001',
+          taxMode: TaxMode.EXPORT_OF_SERVICE,
+          taxAmount: 0,
+          totalAmount: 1000,
+          taxObj: {},
+          isLutApplied: true,
+          lutArn: 'AD270326000001T',
+          invoiceNote: 'SUPPLY MEANT FOR EXPORT UNDER BOND OR LETTER OF UNDERTAKING WITHOUT PAYMENT OF INTEGRATED TAX',
+          jurisdiction: { entityCountry: 'India', customerCountry: 'United States', placeOfSupply: 'United States' },
+        }),
+        franchise,
+        usBuyer,
+        indianSeller,
+        [],
+      );
+      expect(doc.header.title).toBe('TAX INVOICE');
+      expect(doc.header).toMatchObject({ placeOfSupply: 'United States', countryOfDestination: 'United States' });
+      expect(doc.tax).toMatchObject({ lutArn: 'AD270326000001T', rows: [{ label: 'IGST', amount: 0, percentage: 0 }] });
+      expect(doc.tax.note).toContain('LETTER OF UNDERTAKING WITHOUT PAYMENT OF INTEGRATED TAX');
+    });
+
+    it('export without a LUT: the IGST charged is shown and no ARN', () => {
+      const doc = mapPaymentToInvoiceDocument(
+        payment({
+          ...issued,
+          taxMode: TaxMode.EXPORT_OF_SERVICE,
+          taxObj: { IGST: { amount: 180, taxPercentage: 18 } },
+          isLutApplied: false,
+          invoiceNote: 'SUPPLY MEANT FOR EXPORT ON PAYMENT OF INTEGRATED TAX',
+        }),
+        franchise,
+        usBuyer,
+        indianSeller,
+        [],
+      );
+      expect(doc.tax.rows).toEqual([{ label: 'IGST', amount: 180, percentage: 18 }]);
+      expect(doc.tax.lutArn).toBeUndefined();
+    });
+
+    it('foreign client taxed IGST (not an export): place of supply is their country, no destination line', () => {
+      const doc = mapPaymentToInvoiceDocument(
+        payment({
+          ...issued,
+          taxObj: { IGST: { amount: 180, taxPercentage: 18 } },
+          jurisdiction: { entityCountry: 'India', customerCountry: 'United States', placeOfSupply: 'United States' },
+        }),
+        franchise,
+        usBuyer,
+        indianSeller,
+        [],
+      );
+      expect(doc.header.placeOfSupply).toBe('United States');
+      expect(doc.header.countryOfDestination).toBeUndefined();
+    });
+
+    it('supplier tax ID: TRN for a UAE franchise, none for an unregistered one', () => {
+      const uaeSeller = { countryCode: 'AE', country: 'United Arab Emirates' } as unknown as IAddress;
+      const uae = { companyName: 'Healuxe', gstNumber: '27CSEPS5397E1Z8', vatNumber: '100000000000003' } as unknown as IFranchise;
+      const vatDoc = mapPaymentToInvoiceDocument(
+        payment({ ...issued, taxType: TaxTypeEnum.VAT, taxMode: TaxMode.VAT, taxAmount: 0, taxObj: { VAT: { amount: 0, taxPercentage: 0 } } }),
+        uae,
+        usBuyer,
+        uaeSeller,
+        [],
+      );
+      expect(vatDoc.seller).toMatchObject({ taxId: '100000000000003', taxIdLabel: 'TRN' });
+      const unregistered = { companyName: 'Mahi', gstNumber: null, vatNumber: null } as unknown as IFranchise;
+      const noneDoc = mapPaymentToInvoiceDocument(
+        payment({ ...issued, taxType: TaxTypeEnum.NONE, taxMode: TaxMode.NO_TAX, taxAmount: 0, taxObj: {} }),
+        unregistered,
+        indianBuyer,
+        indianSeller,
+        [],
+      );
+      expect(noneDoc.seller.taxId).toBeUndefined();
+    });
+  });
 });

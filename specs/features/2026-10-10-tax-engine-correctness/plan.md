@@ -139,13 +139,15 @@
 
 ## Group 7: Invoice rendering, India (shared mapper + template)
 
-- [ ] 7.1 Mapper and `invoice.hbs`:
+- [x] 7.1 Mapper and `invoice.hbs`:
   - the exact Rule 46 endorsement from the saved `invoiceNote`, the LUT ARN and FY
   - country of destination for exports
   - place of supply (state name and code, or country), fixing the misspelt `playOfSupply` / `formatDate` binding
   - title "TAX INVOICE" for GST invoices, including exports
-- [ ] 7.2 The supplier tax ID is printed whenever the franchise is registered (GSTIN for EFMUM, TRN for HCUAE), including on export and zero-rated invoices. An unregistered franchise (`NONE` rule) prints no tax ID and no tax line.
-- [ ] 7.3 Mapper unit tests (new spec file): domestic, export LUT, export IGST, foreign + INR IGST, goods export.
+- [x] 7.2 The supplier tax ID is printed whenever the franchise is registered (GSTIN for EFMUM, TRN for HCUAE), including on export and zero-rated invoices. An unregistered franchise (`NONE` rule) prints no tax ID and no tax line.
+- [x] 7.3 Mapper unit tests (new spec file): domestic, export LUT, export IGST, foreign + INR IGST, goods export.
+
+> **As built (group 7):** mapper adds `header.placeOfSupply` ("State (code)" for domestic GST; the country for exports and for a foreign client taxed IGST) and `header.countryOfDestination` (exports), `tax.lutArn` (0% exports) and `tax.taxCategory`. Export tax rows show IGST (0 under LUT, the charged amount without one) for services and goods. The supplier tax ID is chosen by the franchise's country: Indian → GSTIN, otherwise VAT number labelled TRN for the UAE; printed whenever present, including on no-tax invoices. `invoice.hbs`: the misspelt `playOfSupply` / `formatDate` binding is replaced; country of destination and the LUT ARN are printed. GST invoices (exports included) are titled "TAX INVOICE". Tests: 5 more mapper cases (10). Render check: 5132 → "TAX INVOICE", `EFMUM/EXP/2026-27/S/000002`, place of supply / destination United States, IGST 0%, Rule 46 endorsement, LUT ARN, GSTIN.
 
 ## Group 8: UAE VAT invoices
 

@@ -362,10 +362,16 @@
       <span class="invoice-meta-label">{{#if invoice.header.isProforma}}Date:{{else}}Invoice Date:{{/if}}</span>
       <span>{{formatDate invoice.header.invoiceDate}}</span>
     </div>
-    {{#if invoice.header.playOfSupply}}
+    {{#if invoice.header.placeOfSupply}}
       <div class="invoice-meta-item">
         <span class="invoice-meta-label">Place of Supply:</span>
-        <span>{{formatDate invoice.header.playOfSupply}}</span>
+        <span>{{invoice.header.placeOfSupply}}</span>
+      </div>
+    {{/if}}
+    {{#if invoice.header.countryOfDestination}}
+      <div class="invoice-meta-item">
+        <span class="invoice-meta-label">Country of Destination:</span>
+        <span>{{invoice.header.countryOfDestination}}</span>
       </div>
     {{/if}}
   </div>
@@ -617,6 +623,7 @@
 {{#if invoice.tax.note}}
   <div class="tax-note">
     <strong>Note:</strong> {{invoice.tax.note}}
+    {{#if invoice.tax.lutArn}}<br /><strong>LUT ARN:</strong> {{invoice.tax.lutArn}}{{/if}}
   </div>
 {{/if}}
 
