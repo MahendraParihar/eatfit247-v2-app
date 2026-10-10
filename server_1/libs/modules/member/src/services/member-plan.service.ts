@@ -151,23 +151,18 @@ export class MemberPlanService {
     // Get billing address (customer address)
     // Billing address is required for accurate tax calculation
     let billingAddress: IAddress | null = null;
+    // Same rule as saving: the billing address is required (no fallback to the shipping address)
     if (payload.billingAddressId) {
       const addresses = await this.addressService.filterByTableIdAndPk(
         TableEnum.TXN_MEMBER,
         memberId,
       );
       billingAddress = addresses.find((a) => a.addressId === payload.billingAddressId) || null;
-    } else if (payload.addressId) {
-      const addresses = await this.addressService.filterByTableIdAndPk(
-        TableEnum.TXN_MEMBER,
-        memberId,
-      );
-      billingAddress = addresses.find((a) => a.addressId === payload.addressId) || null;
     }
     // Validate billing address is provided when tax is applicable
     if (!billingAddress) {
       throw new BadRequestException(
-        'Billing address is required for tax calculation. Please provide billingAddressId or addressId.',
+        'Billing address is required for tax calculation. Please provide billingAddressId.',
       );
     }
     // Get franchise address (supplier address)
@@ -501,7 +496,10 @@ export class MemberPlanService {
       throw new NotFoundException('Payment not found');
     }
 
-    const draft = await this.buildPaymentDraft(memberId, obj);
+    const isGatewayRecord = payment.paymentSource === PaymentSourceEnum.PAYMENT_GATEWAY;
+    const amountsLocked = isGatewayRecord || !!payment.invoiceId;
+    const lockedChange = amountsLocked && this.isFinancialChange(payment, obj);
+    const draft = await this.buildPaymentDraft(memberId, obj, amountsLocked ? payment : undefined);
     const oldPayment = this.convertToModel(payment.get({ plain: true }));
     const dietPlanImpact = await this.memberDietPlanService.getPaymentPlanLimitImpact(
       memberId,
@@ -528,7 +526,9 @@ export class MemberPlanService {
     if (payment.paymentSource !== PaymentSourceEnum.MANUAL && financialChanged) {
       warnings.push('Existing payment gateway link/order may no longer match the updated amount or currency.');
     }
-    const blockReason = await this.findSeriesChange(payment, draft);
+    const blockReason = lockedChange
+      ? this.lockedChangeMessage(payment, isGatewayRecord)
+      : await this.findSeriesChange(payment, draft);
 
     return {
       memberPaymentId: paymentId,
@@ -570,14 +570,12 @@ export class MemberPlanService {
     if (!isGatewayRecord && obj.paymentSource === PaymentSourceEnum.PAYMENT_GATEWAY) {
       throw new BadRequestException('To collect online, create a new payment with the payment gateway.');
     }
-    // The amount of a gateway payment is what the gateway charges or charged (PAID or not)
-    const amountsLocked = isGatewayRecord;
+    // The amount of a gateway payment is what the gateway charges or charged (PAID or not), and an
+    // issued invoice's amounts and tax never change (principle 10; corrections are credit notes)
+    const invoiceLocked = !!payment.invoiceId;
+    const amountsLocked = isGatewayRecord || invoiceLocked;
     if (amountsLocked && this.isFinancialChange(payment, obj)) {
-      throw new BadRequestException(
-        payment.paymentStatusId === PaymentStatusEnum.PAID
-          ? 'The amount of a paid gateway payment cannot be changed.'
-          : 'This payment has an open payment link. Cancel the link and create a new payment to change the amount.',
-      );
+      throw new BadRequestException(this.lockedChangeMessage(payment, isGatewayRecord));
     }
     if (!isGatewayRecord) {
       PaymentValidationUtil.validateManualPaymentSource({
@@ -589,7 +587,9 @@ export class MemberPlanService {
       });
     }
 
-    const draft = await this.buildPaymentDraft(memberId, obj);
+    // Locked records keep their stored price and tax: no recalculation (it could also fail on
+    // configuration that changed since, e.g. a missing TRN)
+    const draft = await this.buildPaymentDraft(memberId, obj, amountsLocked ? payment : undefined);
     const t = await this.sequelize.transaction();
     try {
       // Lock the row and re-read it, so two concurrent saves to PAID can't both issue a number
@@ -615,7 +615,16 @@ export class MemberPlanService {
         };
       } else {
         payment.programId = obj.programId;
-        payment.memberAddress = draft.memberAddressSnapshot;
+        if (invoiceLocked) {
+          // The issued invoice keeps the billing snapshot it was priced on; only shipping changes
+          const stored = (payment.memberAddress || {}) as { address?: IAddress | null; billingAddress?: IAddress | null };
+          payment.memberAddress = {
+            address: draft.memberAddressSnapshot.address,
+            billingAddress: stored.billingAddress ?? stored.address ?? null,
+          };
+        } else {
+          payment.memberAddress = draft.memberAddressSnapshot;
+        }
         payment.paymentModeId = obj.paymentModeId;
         payment.transactionId = obj.transactionId || null;
         payment.paymentDate = obj.paymentDate;
@@ -626,7 +635,12 @@ export class MemberPlanService {
         payment.gatewayOrderId = null;
         payment.gatewayProvider = null;
         payment.gatewayPaymentId = null;
-        this.applyPaymentDraft(payment, obj, draft);
+        if (invoiceLocked) {
+          // Evidence can still be added to an issued invoice; its price and tax stay as issued
+          payment.remittanceReference = obj.remittanceReference?.trim() || payment.remittanceReference || null;
+        } else {
+          this.applyPaymentDraft(payment, obj, draft);
+        }
       }
 
       // Decision 8: the number is issued the first time the payment is PAID, here as on create or
@@ -671,8 +685,45 @@ export class MemberPlanService {
       Number(obj.programPlanId) !== Number(payment.programPlanId) ||
       (obj.currency || '').toUpperCase() !== (payment.currency || '').toUpperCase() ||
       Math.abs(Number(obj.discountAmount || 0) - Number(payment.discountAmount || 0)) > 0.001 ||
-      Number(obj.billingAddressId || 0) !== Number(payment.billingAddressId || 0)
+      Number(obj.billingAddressId || 0) !== Number(payment.billingAddressId || 0) ||
+      (payment.paymentSource === PaymentSourceEnum.MANUAL &&
+        (obj.paymentRoute || PaymentRouteEnum.DOMESTIC) !== (payment.paymentRoute || PaymentRouteEnum.DOMESTIC))
     );
+  }
+
+  /** Why an edit to a locked (gateway or invoiced) payment's money fields is refused. */
+  private lockedChangeMessage(payment: TxnMemberPayment, isGatewayRecord: boolean): string {
+    if (payment.invoiceId) {
+      return `Invoice ${payment.invoiceId} is issued: its plan, currency, discount, billing address and payment route can't change. Issue a credit note and record a new payment instead.`;
+    }
+    return payment.paymentStatusId === PaymentStatusEnum.PAID || !isGatewayRecord
+      ? 'The amount of a paid gateway payment cannot be changed.'
+      : 'This payment has an open payment link. Cancel the link and create a new payment to change the amount.';
+  }
+
+  /** The stored price and tax of a payment, in the shape of a fresh calculation. */
+  private storedPaymentObj(payment: TxnMemberPayment): ICalculateTaxResponse {
+    const orderAmount = Number(payment.orderAmount || 0);
+    const discountAmount = Number(payment.discountAmount || 0);
+    return {
+      orderAmount,
+      discountAmount,
+      taxableAmount: orderAmount - discountAmount,
+      taxAmount: Number(payment.taxAmount || 0),
+      totalAmount: Number(payment.totalAmount || 0),
+      taxPercentage: Number(payment.taxPercentage || 0),
+      taxObj: payment.taxObj || {},
+      taxType: payment.taxType,
+      taxMode: payment.taxMode,
+      currency: payment.currency,
+      isLutApplied: !!payment.isLutApplied,
+      jurisdiction: payment.jurisdiction,
+      invoiceNote: payment.invoiceNote ?? undefined,
+      taxCategory: payment.taxCategory ?? null,
+      lutArn: payment.lutArn ?? null,
+      paymentRoute: payment.paymentRoute ?? null,
+      taxDecisionReason: payment.taxDecisionReason ?? null,
+    };
   }
 
   /**
@@ -742,7 +793,11 @@ export class MemberPlanService {
     payment.daysInCycle = draft.noOfDaysInCycle;
   }
 
-  private async buildPaymentDraft(memberId: number, obj: IManageMemberPayment): Promise<{
+  private async buildPaymentDraft(
+    memberId: number,
+    obj: IManageMemberPayment,
+    storedPricing?: TxnMemberPayment,
+  ): Promise<{
     member: TxnMember;
     programPlan: IProgramPlan;
     paymentObj: ICalculateTaxResponse;
@@ -788,6 +843,16 @@ export class MemberPlanService {
     }
 
     const programPlan = await this.programPlanService.fetchById(obj.programPlanId);
+    if (storedPricing) {
+      return {
+        member,
+        programPlan,
+        paymentObj: this.storedPaymentObj(storedPricing),
+        memberAddressSnapshot: { address: primaryAddress, billingAddress },
+        noOfCycle: programPlan.noOfCycle,
+        noOfDaysInCycle: programPlan.noOfDaysInCycle,
+      };
+    }
     const fees = find(programPlan.programPlanFees, { currencyCode: obj.currency });
     if (!fees) {
       throw new BadRequestException('Selected currency is not configured for this program plan');
@@ -1063,6 +1128,7 @@ export class MemberPlanService {
     const manual = paymentSource === PaymentSourceEnum.MANUAL;
     return {
       franchiseId: franchiseId ?? null,
+      // The engine treats any non-INR payment as foreign money, whatever route is chosen
       paymentRoute: manual ? paymentRoute || PaymentRouteEnum.DOMESTIC : null,
       supplyDate: manual ? paymentDate ?? null : null,
     };

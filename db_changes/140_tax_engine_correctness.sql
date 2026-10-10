@@ -9,8 +9,9 @@
 --
 --   2. mst_tax_master.tax_category
 --      STANDARD | ZERO_RATED | EXEMPT | OUT_OF_SCOPE (UAE VAT categories S/Z/E/O).
---      A VAT rule at 0% must be ZERO_RATED or EXEMPT. Existing 0% VAT rules
---      (HCUAE's AE service rule) become ZERO_RATED.
+--      VAT: a rate above 0% is STANDARD; a 0% rule is ZERO_RATED, EXEMPT or
+--      OUT_OF_SCOPE. Existing 0% VAT rules (HCUAE's AE service rule) become
+--      ZERO_RATED.
 --
 --   3. mst_franchise_luts
 --      Letter of Undertaking register: ARN, financial year, validity. The LUT
@@ -55,10 +56,15 @@ BEGIN
             ADD CONSTRAINT chk_mst_tax_master_tax_category
                 CHECK (tax_category IN ('STANDARD', 'ZERO_RATED', 'EXEMPT', 'OUT_OF_SCOPE'));
     END IF;
-    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'chk_mst_tax_master_zero_vat_category') THEN
+    -- Earlier drafts of this file added a 0%-only check; replace it with the full category/rate rule
+    ALTER TABLE public.mst_tax_master DROP CONSTRAINT IF EXISTS chk_mst_tax_master_zero_vat_category;
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'chk_mst_tax_master_vat_category_rate') THEN
+        -- VAT: a rate above 0% is STANDARD; ZERO_RATED / EXEMPT / OUT_OF_SCOPE are 0%; 0% isn't STANDARD
         ALTER TABLE public.mst_tax_master
-            ADD CONSTRAINT chk_mst_tax_master_zero_vat_category
-                CHECK (NOT (tax_system = 'VAT' AND COALESCE(tax_percent, 0) = 0 AND tax_category = 'STANDARD'));
+            ADD CONSTRAINT chk_mst_tax_master_vat_category_rate
+                CHECK (tax_system <> 'VAT'
+                    OR (COALESCE(tax_percent, 0) > 0 AND tax_category = 'STANDARD')
+                    OR (COALESCE(tax_percent, 0) = 0 AND tax_category <> 'STANDARD'));
     END IF;
 END
 $$;
@@ -100,7 +106,8 @@ SELECT f.franchise_id,
            ELSE (extract(YEAR FROM current_date)::INT - 1) || '-' || right(extract(YEAR FROM current_date)::INT::TEXT, 2)
            END
 FROM public.mst_franchises f
-WHERE NULLIF(trim(f.lut_number), '') IS NOT NULL
+-- Only values shaped like an LUT ARN; free text stays in lut_number for Finance to re-enter
+WHERE upper(trim(f.lut_number)) ~ '^AD[0-9A-Z]{13}$'
 ON CONFLICT (franchise_id, arn) DO NOTHING;
 
 -- ----------------------------------------------------------- 4. payment route

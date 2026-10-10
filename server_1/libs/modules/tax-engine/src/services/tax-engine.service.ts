@@ -79,7 +79,7 @@ export class TaxEngineService {
       referenceId: input.referenceId,
       transactionType: input.transactionType,
       countryCode: supplier,
-      onDate: new Date(`${supplyDate}T00:00:00Z`),
+      onDate: supplyDate,
     });
     if (!rule) {
       throw new BadRequestException(
@@ -98,8 +98,12 @@ export class TaxEngineService {
       countries.tableData.find((c) => this.normalize(c.countryCode) === code)?.country || code;
     const context: ITaxContext = { input, rule, taxable, supplier, customer, supplyDate, countryName };
 
+    if (input.transactionType === TransactionType.PRODUCT && !this.normalize(input.deliveryCountryCode)) {
+      // Goods are taxed where they are delivered (decision 3); the billing country isn't a substitute
+      throw new BadRequestException('A shipping address with a country is required for product orders.');
+    }
     const placeOfSupplyCountry =
-      input.transactionType === TransactionType.PRODUCT ? this.normalize(input.deliveryCountryCode) || customer : customer;
+      input.transactionType === TransactionType.PRODUCT ? (this.normalize(input.deliveryCountryCode) as string) : customer;
     const result =
       placeOfSupplyCountry === supplier
         ? await this.domestic(context)
@@ -299,12 +303,14 @@ export class TaxEngineService {
 
   /** Gateway records: non-INR orders can only be paid from abroad; INR may be paid domestically. */
   private route(input: TaxInput): PaymentRouteEnum {
+    const foreignCurrency = (input.currency || '').toUpperCase() !== 'INR';
     if (input.paymentRoute) {
-      return input.paymentRoute;
+      // Money received in a foreign currency is foreign money whatever route was picked (decision 2)
+      return foreignCurrency && input.paymentRoute === PaymentRouteEnum.DOMESTIC
+        ? PaymentRouteEnum.FOREIGN_REMITTANCE
+        : input.paymentRoute;
     }
-    return (input.currency || '').toUpperCase() === 'INR'
-      ? PaymentRouteEnum.DOMESTIC
-      : PaymentRouteEnum.INTERNATIONAL_CARD_GATEWAY;
+    return foreignCurrency ? PaymentRouteEnum.INTERNATIONAL_CARD_GATEWAY : PaymentRouteEnum.DOMESTIC;
   }
 
   private routeLabel(route: PaymentRouteEnum): string {
@@ -347,8 +353,9 @@ export class TaxEngineService {
   }
 
   private toLocalDate(value: Date | string | null | undefined): string {
-    if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}/.test(value)) {
-      return value.slice(0, 10);
+    // A plain calendar date is already local; a timestamp is converted to the Indian calendar day
+    if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+      return value;
     }
     const date = value ? new Date(value) : new Date();
     return FranchiseDateUtil.localDate(Number.isNaN(date.getTime()) ? new Date() : date, 'Asia/Kolkata');

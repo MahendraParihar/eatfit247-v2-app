@@ -239,15 +239,40 @@ describe('MemberPlanService update: invoice on PAID and series guard', () => {
     expect(preview.blocked).toBe(false);
   });
 
-  it('does not guard a Q1 legacy row (no stored series)', async () => {
+  it('an issued invoice keeps its price and tax on a non-financial edit (no recalculation)', async () => {
+    const record = stored({
+      paymentStatusId: PaymentStatusEnum.PAID,
+      invoiceId: 'EFMUM/2026-27/S/000002',
+      taxAmount: '0.00',
+      totalAmount: '5085.00',
+      taxMode: 'NO_TAX',
+    });
+    paymentFindOne.mockResolvedValue(record);
+    const draftSpy = jest.spyOn(service as unknown as { buildPaymentDraft: (...args: unknown[]) => Promise<unknown> }, 'buildPaymentDraft');
+    draftWith(US, 915.3);
+
+    await service.update(4945, 900, edit({ transactionId: 'fixed-typo' }), '127.0.0.1', 7);
+    expect(record.save).toHaveBeenCalled();
+    expect(record).toMatchObject({ transactionId: 'fixed-typo', taxAmount: '0.00', totalAmount: '5085.00', taxMode: 'NO_TAX' });
+    // The draft is built from the stored pricing, never re-priced
+    expect(draftSpy.mock.calls[0][2]).toBe(record);
+    expect(generateInvoiceNumber).not.toHaveBeenCalled();
+  });
+
+  it('an issued invoice refuses a financial or route change (credit note instead), and the preview says so', async () => {
     const record = stored({ paymentStatusId: PaymentStatusEnum.PAID, invoiceId: 'EFMUM/2026-27/S/000002' });
     paymentFindOne.mockResolvedValue(record);
     draftWith(US, 0);
 
-    await service.update(4945, 900, edit(), '127.0.0.1', 7);
-    expect(record.save).toHaveBeenCalled();
-    expect(record.invoiceSeries).toBeNull();
-    expect(generateInvoiceNumber).not.toHaveBeenCalled();
+    await expect(service.update(4945, 900, edit({ discountAmount: 100 }), '127.0.0.1', 7)).rejects.toThrow(
+      'Invoice EFMUM/2026-27/S/000002 is issued',
+    );
+    await expect(
+      service.update(4945, 900, edit({ paymentRoute: 'NRE_FCNR_ACCOUNT' as never }), '127.0.0.1', 7),
+    ).rejects.toThrow('credit note');
+    const preview = await service.previewUpdate(4945, 900, edit({ discountAmount: 100 }));
+    expect(preview).toMatchObject({ blocked: true });
+    expect(record.save).not.toHaveBeenCalled();
   });
 
   it('a backdated payment date does not backdate the invoice date or change the FY', async () => {

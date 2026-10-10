@@ -854,10 +854,13 @@ export class MemberProductService {
 
   /** Manual orders: the admin's route (default DOMESTIC); gateway orders: by currency (decision 11). */
   private orderRoute(paymentSource: PaymentSourceEnum, currency: string, chosen?: PaymentRouteEnum | null): PaymentRouteEnum {
+    const foreignCurrency = (currency || '').toUpperCase() !== 'INR';
     if (paymentSource === PaymentSourceEnum.MANUAL) {
-      return chosen || PaymentRouteEnum.DOMESTIC;
+      const route = chosen || PaymentRouteEnum.DOMESTIC;
+      // Money received in a foreign currency is foreign money whatever route was picked
+      return foreignCurrency && route === PaymentRouteEnum.DOMESTIC ? PaymentRouteEnum.FOREIGN_REMITTANCE : route;
     }
-    return (currency || '').toUpperCase() === 'INR' ? PaymentRouteEnum.DOMESTIC : PaymentRouteEnum.INTERNATIONAL_CARD_GATEWAY;
+    return foreignCurrency ? PaymentRouteEnum.INTERNATIONAL_CARD_GATEWAY : PaymentRouteEnum.DOMESTIC;
   }
 
   private async findAddresses(

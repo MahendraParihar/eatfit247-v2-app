@@ -145,6 +145,13 @@ describe('TaxEngineService decision matrix', () => {
       }
     });
 
+    it('a manual USD payment left on the DOMESTIC route is still foreign money → export', async () => {
+      const r = await engine.calculate(
+        service({ customerCountryCode: 'US', currency: 'USD', paymentRoute: PaymentRouteEnum.DOMESTIC }),
+      );
+      expect(r).toMatchObject({ taxMode: TaxMode.EXPORT_OF_SERVICE, paymentRoute: PaymentRouteEnum.FOREIGN_REMITTANCE });
+    });
+
     it.each([PaymentRouteEnum.FOREIGN_REMITTANCE, PaymentRouteEnum.RUPEE_VOSTRO, PaymentRouteEnum.NRE_FCNR_ACCOUNT])(
       'A6/A7 US client paying INR via %s → export (0% under LUT)',
       async (paymentRoute) => {
@@ -169,6 +176,12 @@ describe('TaxEngineService decision matrix', () => {
       const r = await engine.calculate(goods({ customerCountryCode: 'US', deliveryCountryCode: 'US' }));
       expect(r).toMatchObject({ taxMode: TaxMode.EXPORT_OF_GOODS, invoiceNote: EXPORT_WITH_IGST_NOTE });
       expect(r.taxAmount).toBeCloseTo(120, 2);
+    });
+
+    it('a product order without a shipping address is refused (not taxed by the billing country)', async () => {
+      await expect(engine.calculate(goods({ customerCountryCode: 'US', deliveryCountryCode: null }))).rejects.toThrow(
+        'shipping address',
+      );
     });
 
     it('A8 delivered in India → GST by the delivery state', async () => {
@@ -227,7 +240,7 @@ describe('TaxEngineService decision matrix', () => {
       expect(getApplicableTaxRule).toHaveBeenCalledWith(
         expect.objectContaining({ franchiseId: EFMUM, countryCode: 'IN', transactionType: TransactionType.SERVICE }),
       );
-      expect(getApplicableTaxRule.mock.calls[0][0].onDate.toISOString().slice(0, 10)).toBe('2026-10-12');
+      expect(getApplicableTaxRule.mock.calls[0][0].onDate).toBe('2026-10-12');
     });
 
     it('missing franchise country or billing country → 400', async () => {

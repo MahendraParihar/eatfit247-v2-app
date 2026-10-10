@@ -6,8 +6,8 @@ export interface ITaxRuleLookup {
   transactionType: TransactionType;
   /** Country of the rule: the supplier's own country (decision 1) */
   countryCode: string;
-  /** Date the rule must be effective on (supply date) */
-  onDate: Date;
+  /** Date the rule must be effective on (supply date, YYYY-MM-DD) */
+  onDate: string;
 }
 
 export interface TaxInput {

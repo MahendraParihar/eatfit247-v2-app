@@ -39,8 +39,12 @@ export class TaxMasterService {
    */
   private async assertConsistentRule(obj: CreateTaxMasterDto): Promise<void> {
     const category = obj.taxCategory || TaxCategoryEnum.STANDARD;
-    if (obj.taxSystem === TaxTypeEnum.VAT && Number(obj.taxPercent || 0) === 0 && category === TaxCategoryEnum.STANDARD) {
+    const rate = Number(obj.taxPercent || 0);
+    if (obj.taxSystem === TaxTypeEnum.VAT && rate === 0 && category === TaxCategoryEnum.STANDARD) {
       throw new BadRequestException('A 0% VAT rule must be zero-rated or exempt.');
+    }
+    if (obj.taxSystem === TaxTypeEnum.VAT && rate > 0 && category !== TaxCategoryEnum.STANDARD) {
+      throw new BadRequestException(`A ${rate}% VAT rule is standard-rated; zero-rated, exempt and out-of-scope rules are 0%.`);
     }
     if (obj.taxSystem !== TaxTypeEnum.GST && obj.taxSystem !== TaxTypeEnum.VAT) {
       return;

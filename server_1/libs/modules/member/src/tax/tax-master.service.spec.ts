@@ -42,6 +42,10 @@ describe('TaxMasterService rule consistency', () => {
     await expect(service.create(rule({ taxCategory: TaxCategoryEnum.STANDARD }), 'ip', 1)).rejects.toThrow('zero-rated or exempt');
   });
 
+  it('refuses a 5% VAT rule that is still marked zero-rated', async () => {
+    await expect(service.create(rule({ taxPercent: 5 }), 'ip', 1)).rejects.toThrow('standard-rated');
+  });
+
   it('refuses a VAT rule without a TRN and a GST rule without a GSTIN', async () => {
     franchise = { gstNumber: null, vatNumber: '' };
     await expect(service.create(rule({}), 'ip', 1)).rejects.toThrow('TRN');

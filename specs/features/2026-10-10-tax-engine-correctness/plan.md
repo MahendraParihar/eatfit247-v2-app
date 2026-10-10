@@ -149,6 +149,18 @@
 
 > **As built (group 7):** mapper adds `header.placeOfSupply` ("State (code)" for domestic GST; the country for exports and for a foreign client taxed IGST) and `header.countryOfDestination` (exports), `tax.lutArn` (0% exports) and `tax.taxCategory`. Export tax rows show IGST (0 under LUT, the charged amount without one) for services and goods. The supplier tax ID is chosen by the franchise's country: Indian → GSTIN, otherwise VAT number labelled TRN for the UAE; printed whenever present, including on no-tax invoices. `invoice.hbs`: the misspelt `playOfSupply` / `formatDate` binding is replaced; country of destination and the LUT ARN are printed. GST invoices (exports included) are titled "TAX INVOICE". Tests: 5 more mapper cases (10). Render check: 5132 → "TAX INVOICE", `EFMUM/EXP/2026-27/S/000002`, place of supply / destination United States, IGST 0%, Rule 46 endorsement, LUT ARN, GSTIN.
 
+## Group 7b: Review fixes (groups 1–4)
+
+- [x] 7b.1 **Issued invoices are locked like gateway records** (decision 11/17, principle 10): a manual payment with an `invoice_id` refuses a plan / currency / discount / billing-address / route change ("Issue a credit note…"), keeps its stored price, tax and billing snapshot on any other edit (no recalculation), and may still record a FIRC reference. The preview reports the same block. Before this, fixing a transaction id on an issued foreign-client invoice re-priced it with 18% IGST.
+- [x] 7b.2 Locked records (gateway or invoiced) build the edit draft from their stored pricing, so an edit never fails on configuration that changed since (e.g. a missing TRN).
+- [x] 7b.3 A non-INR payment is foreign money whatever route was picked: an explicit DOMESTIC with a foreign currency is treated and stored as FOREIGN_REMITTANCE (engine, product orders).
+- [x] 7b.4 Goods need a shipping address with a country; the billing country is no longer used as the place of supply.
+- [x] 7b.5 140: only ARN-shaped `lut_number` values are copied into the register (long free text would abort the migration); VAT category vs rate constraint `chk_mst_tax_master_vat_category_rate` (rate > 0 ⇒ STANDARD; 0% ⇒ not STANDARD) replaces the 0%-only check; `TaxMasterService` refuses the same combinations.
+- [x] 7b.6 The admin tax preview requires the billing address like saving does (no fallback to the shipping address).
+- [x] 7b.7 Rule and LUT lookups use the supply date as `YYYY-MM-DD` strings (no UTC-midnight edge); timestamp supply dates are converted to the Indian calendar day.
+- [x] 7b.8 Logged, not changed: product rules are keyed by product id — **every production product needs its own tax rule before deploy** (release check); the "order lines disagree" error can only come from a bug (all lines share one address); LUT create has no exclusion constraint (single-admin screen; overlap is checked in the service); the tax-engine admin controllers are also mounted on public-api behind JwtAuthGuard + AbilitiesGuard (existing pattern).
+- [x] 7b.9 Tests: issued-invoice lock (2), USD on DOMESTIC route, product without shipping address, 5% zero-rated rule. Member jest 246/246. Live: editing 5128's transaction id keeps NO_TAX / 5085; a discount change is refused with the credit-note message.
+
 ## Group 8: UAE VAT invoices
 
 - [ ] 8.1 Title "TAX INVOICE" with the TRN for VAT-registered franchises (any VAT rule, including 0%); plain "INVOICE" for a `NONE` rule.
