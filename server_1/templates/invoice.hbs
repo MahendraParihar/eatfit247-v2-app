@@ -361,12 +361,12 @@
   <div class="invoice-header-invoice-meta">
     {{#unless invoice.header.isProforma}}
       <div class="invoice-meta-item">
-        <span class="invoice-meta-label">Invoice No:</span>
+        <span class="invoice-meta-label">{{#if invoice.header.numberLabel}}{{invoice.header.numberLabel}}:{{else}}Invoice No:{{/if}}</span>
         <span>{{invoice.header.invoiceNumber}}</span>
       </div>
     {{/unless}}
     <div class="invoice-meta-item">
-      <span class="invoice-meta-label">{{#if invoice.header.isProforma}}Date:{{else}}Invoice Date:{{/if}}</span>
+      <span class="invoice-meta-label">{{#if invoice.header.isProforma}}Date:{{else}}{{#if invoice.header.numberLabel}}Date:{{else}}Invoice Date:{{/if}}{{/if}}</span>
       <span>{{formatDate invoice.header.invoiceDate}}</span>
     </div>
     {{#if invoice.header.placeOfSupply}}
@@ -651,13 +651,15 @@
   </div>
 {{/if}}
 
-<!-- Payment Information -->
+<!-- Payment Information (not on credit notes, which carry their own number label) -->
+{{#unless invoice.header.numberLabel}}
 <div class="payment-info">
   <strong>Payment Information:</strong><br>
   <strong>Status:</strong> {{invoice.payment.status}}<br>
   <strong>Method:</strong> {{#each invoice.payment.methods}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}
   {{#if invoice.payment.transactionId}}<br><strong>Transaction ID:</strong> {{invoice.payment.transactionId}}{{/if}}
 </div>
+{{/unless}}
 
 <!-- Footer -->
 <div class="footer">

@@ -33,7 +33,8 @@ export class InvoiceSequenceModel extends Model<InvoiceSequenceModel> {
     field: 'invoice_type',
     type: DataType.STRING(10),
   })
-  declare invoiceType: 'PRODUCT' | 'SERVICE';
+  /** 'service' | 'product' for invoices, 'credit' for credit notes */
+  declare invoiceType: string;
   @Column({
     allowNull: false,
     field: 'financial_year',

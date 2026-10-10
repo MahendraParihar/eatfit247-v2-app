@@ -13,3 +13,5 @@ export * from './txn-member-diet-plan.model';
 export * from './txn-member-diet-detail.model';
 export * from './txn-assessment.model';
 export * from './txn-payment-gateway-event.model';
+export * from './txn-credit-note.model';
+export * from './txn-credit-note-item.model';

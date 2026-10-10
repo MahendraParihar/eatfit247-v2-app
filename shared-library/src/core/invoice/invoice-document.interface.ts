@@ -28,6 +28,7 @@ export interface IInvoiceHeader {
   invoiceNumber: string;
   invoiceDate: string; // ISO date string
   isProforma?: boolean; // true when no invoice number has been issued (unpaid entry)
+  numberLabel?: string; // label of the document number (default "Invoice No"; credit notes: "Credit Note No")
   placeOfSupply?: string; // Indian GST: state name and code (domestic) or country (export)
   countryOfDestination?: string; // exports: the customer's country
   dueDate?: string; // ISO date string (optional)

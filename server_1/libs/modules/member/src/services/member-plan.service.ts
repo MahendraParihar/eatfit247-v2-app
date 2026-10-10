@@ -38,6 +38,7 @@ import {
   TaxMode,
   TaxTypeEnum,
   TransactionType,
+  IInvoiceDocument,
 } from '@eatfit247-shared-lib';
 import { AppConfigService, CommonFunctionsUtil, Env, MstFranchise, PaymentValidationUtil } from '@server_1/core';
 import {
@@ -1211,6 +1212,43 @@ export class MemberPlanService {
     paymentId: number,
     checkoutSessionId?: string | null,
   ): Promise<IFileModel> {
+    const { invoiceDoc, paymentModel } = await this.prepareInvoiceDocument(memberId, paymentId, checkoutSessionId);
+    // An entry without an invoice number downloads as a proforma (decision 11)
+    const memberSlug = CommonFunctionsUtil.removeSpecialChar(paymentModel.memberName, '-', false);
+    const fileName = paymentModel.invoiceId
+      ? `Invoice-${memberSlug}-${paymentModel.invoiceDate ?? paymentModel.paymentDate}.pdf`
+      : `Proforma-${memberSlug}-${paymentModel.memberPaymentId}.pdf`;
+    const relativePath = `${MediaForEnum.DOWNLOADS}/${memberId}/invoices`;
+    const destinationFolderPath = `${this.rootFolderPath}/${relativePath}`;
+    //CREATE DIRECTORY IF NOT EXISTS (async)
+    try {
+      await fs.access(destinationFolderPath);
+    } catch {
+      await fs.mkdir(destinationFolderPath, { recursive: true });
+    }
+    const destinationPath = `${destinationFolderPath}/${fileName}`;
+    // Generate PDF using the new InvoicePdfService
+    const pdfBuffer = await this.invoicePdfService.generateInvoicePdf(invoiceDoc);
+    const base64Buffer = pdfBuffer.toString('base64');
+    // Write a PDF buffer to the destination folder (async)
+    await fs.writeFile(destinationPath, pdfBuffer as Uint8Array);
+    return {
+      filePath: relativePath,
+      fileName: fileName,
+      buffer: base64Buffer,
+    } as IFileModel;
+  }
+
+  /** The invoice document of a record (used for the PDF and for credit notes against it). */
+  public async buildInvoiceDocument(memberId: number, paymentId: number): Promise<IInvoiceDocument> {
+    return (await this.prepareInvoiceDocument(memberId, paymentId)).invoiceDoc;
+  }
+
+  private async prepareInvoiceDocument(
+    memberId: number,
+    paymentId: number,
+    checkoutSessionId?: string | null,
+  ) {
     if (checkoutSessionId !== undefined && !checkoutSessionId) {
       throw new NotFoundException('Payment not found');
     }
@@ -1267,30 +1305,7 @@ export class MemberPlanService {
         `Payment confirms acceptance of ${payment.franchise.companyName} terms and service validity conditions.`,
       ],
     );
-    // An entry without an invoice number downloads as a proforma (decision 11)
-    const memberSlug = CommonFunctionsUtil.removeSpecialChar(paymentModel.memberName, '-', false);
-    const fileName = paymentModel.invoiceId
-      ? `Invoice-${memberSlug}-${paymentModel.invoiceDate ?? paymentModel.paymentDate}.pdf`
-      : `Proforma-${memberSlug}-${paymentModel.memberPaymentId}.pdf`;
-    const relativePath = `${MediaForEnum.DOWNLOADS}/${memberId}/invoices`;
-    const destinationFolderPath = `${this.rootFolderPath}/${relativePath}`;
-    //CREATE DIRECTORY IF NOT EXISTS (async)
-    try {
-      await fs.access(destinationFolderPath);
-    } catch {
-      await fs.mkdir(destinationFolderPath, { recursive: true });
-    }
-    const destinationPath = `${destinationFolderPath}/${fileName}`;
-    // Generate PDF using the new InvoicePdfService
-    const pdfBuffer = await this.invoicePdfService.generateInvoicePdf(invoiceDoc);
-    const base64Buffer = pdfBuffer.toString('base64');
-    // Write a PDF buffer to the destination folder (async)
-    await fs.writeFile(destinationPath, pdfBuffer as Uint8Array);
-    return {
-      filePath: relativePath,
-      fileName: fileName,
-      buffer: base64Buffer,
-    } as IFileModel;
+    return { invoiceDoc, paymentModel };
   }
 
   /**

@@ -80,3 +80,37 @@ export interface IInvoiceFx {
   functionalTaxAmount?: number | null;
 }
 
+/** A Tax Credit Note against an issued invoice (roadmap 4.6, group 10). */
+export interface ICreditNote extends IInvoiceFx {
+  creditNoteId: number;
+  franchiseId: number;
+  memberId: number;
+  memberPaymentId: number | null;
+  memberProductId: number | null;
+  originalInvoiceId: string;
+  originalInvoiceDate: string | null;
+  creditNoteNumber: string;
+  creditNoteDate: string;
+  eventDate: string;
+  reason: string;
+  currency: string;
+  taxableAmount: number;
+  taxAmount: number;
+  totalAmount: number;
+  taxCategory: string | null;
+  taxPercentage: number | null;
+  /** Issued more than 14 days after the event (UAE deadline) */
+  lateIssue: boolean;
+}
+
+export interface ICreateCreditNote {
+  /** The invoiced record: a plan payment or a product order */
+  recordType: 'plan' | 'product';
+  recordId: number;
+  /** Amount to credit, including VAT, in the invoice currency (≤ what is still creditable) */
+  amount: number;
+  reason: string;
+  /** Date of the event that triggers the credit (refund agreed, service reduced, …) */
+  eventDate: string;
+}
+

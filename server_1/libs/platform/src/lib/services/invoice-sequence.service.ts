@@ -5,6 +5,9 @@ import { InvoiceSequenceModel } from '../database/models';
 import { BusinessTypeEnum, InvoiceSeriesEnum } from '@eatfit247-shared-lib';
 import { FranchiseDateUtil } from '../utils/franchise-date.util';
 
+/** Counter type of credit notes in mst_invoice_sequences. */
+export const CREDIT_NOTE_SEQUENCE_TYPE = 'credit';
+
 export interface IInvoiceNumberRequest {
   franchiseId: number;
   franchiseCode: string;
@@ -58,5 +61,30 @@ export class InvoiceSequenceService {
       invoiceSeries: request.series,
       invoiceDate: request.invoiceDate,
     };
+  }
+
+  /**
+   * Next gap-free credit-note number for (franchise, FY), inside the caller's transaction:
+   * `{code}/{FY}/CN/{000001}` (counter rows with invoice_type 'credit').
+   */
+  async generateCreditNoteNumber(
+    request: Pick<IInvoiceNumberRequest, 'franchiseId' | 'franchiseCode' | 'fyStartMonth' | 'invoiceDate'>,
+    trx: Transaction,
+  ): Promise<string> {
+    const fy = FranchiseDateUtil.financialYear(request.invoiceDate, request.fyStartMonth);
+    const [sequence] = await this.invoiceSequenceModel.findOrCreate({
+      where: {
+        franchiseId: request.franchiseId,
+        invoiceType: CREDIT_NOTE_SEQUENCE_TYPE,
+        financialYear: fy,
+        series: InvoiceSeriesEnum.DOMESTIC,
+      },
+      defaults: { currentNumber: 0 },
+      transaction: trx,
+      lock: trx.LOCK.UPDATE,
+    });
+    sequence.currentNumber += 1;
+    await sequence.save({ transaction: trx });
+    return `${request.franchiseCode}/${fy}/CN/${String(sequence.currentNumber).padStart(6, '0')}`;
   }
 }

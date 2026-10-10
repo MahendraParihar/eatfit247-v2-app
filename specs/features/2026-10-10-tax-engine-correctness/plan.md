@@ -197,21 +197,28 @@
 
 ## Group 10: UAE Tax Credit Notes
 
-- [ ] 10.1 `db_changes/142_credit_notes.sql`:
+- [x] 10.1 `db_changes/142_credit_notes.sql`:
   - `txn_credit_notes` (franchise, original payment/product ref, original invoice number and date, credit-note number, date, reason, event date, currency, amounts, tax category/rate, FX copied from the original, audit columns, active)
   - `txn_credit_note_items`
   - a credit-note series in the invoice-sequence mechanism (`{code}/{FY}/CN/{seq}`)
   - RBAC subject seed
-- [ ] 10.2 Shared interfaces; `CreditNoteService.create`:
+- [x] 10.2 Shared interfaces; `CreditNoteService.create`:
   - row-lock the original
   - check it's an issued invoice of a VAT franchise
   - amount ≤ invoice total − earlier credit notes
   - VAT reversed at the original rate and category
   - number issued inside the transaction (no gaps)
   - a warning flag when issued more than 14 days after the event date
-- [ ] 10.3 Admin endpoints (create, list per member/payment, PDF) and a "Tax credit note" action on the payment-history and product-order rows of VAT franchises.
-- [ ] 10.4 PDF template "TAX CREDIT NOTE": supplier TRN, credit-note number/date, original invoice number/date, reason, VAT reversed, AED values.
-- [ ] 10.5 Tests: amount limits, sequential numbers under concurrency, partial credits, rejection for GST franchises (4.9).
+- [x] 10.3 Admin endpoints (create, list per member/payment, PDF) and a "Tax credit note" action on the payment-history and product-order rows of VAT franchises.
+- [x] 10.4 PDF template "TAX CREDIT NOTE": supplier TRN, credit-note number/date, original invoice number/date, reason, VAT reversed, AED values.
+- [x] 10.5 Tests: amount limits, sequential numbers under concurrency, partial credits, rejection for GST franchises (4.9).
+
+> **As built (group 10):**
+> - 142: `txn_credit_notes` (one source: plan payment or product order; original invoice number and date; positive amounts; tax type, category and rate; FX copied from the original; `late_issue`), `txn_credit_note_items`, unique credit-note number, RBAC subject `CreditNote` (franchise-scoped). Numbers come from `mst_invoice_sequences` rows with `invoice_type = 'credit'` (`{code}/{FY}/CN/{seq}`, `InvoiceSequenceService.generateCreditNoteNumber`, row-locked in the creating transaction).
+> - `CreditNoteService.create`: locks the invoiced record FOR UPDATE, requires an issued VAT invoice (GST → "roadmap 4.9"), franchise scope, amount ≤ invoice total − active credit notes; VAT reversed in proportion to the original (its rate and category); credit-note date in the franchise's timezone; late flag after 14 days. `list`, `generatePdf` ("TAX CREDIT NOTE", "Credit Note No", the original's parties via the new `buildInvoiceDocument`, one credited line, the VAT row, a reference note, no payment block, FX from the original).
+> - Admin API `GET/POST /member/:id/credit-notes`, `GET /member/:id/credit-notes/:creditNoteId/pdf`. Admin UI: "Tax Credit Note" action on VAT invoices in payment history → dialog (amount incl. VAT, reason, event date) → issues and downloads the PDF. Product orders: backend supports them; HCUAE sells no products, so no UI yet.
+> - `MemberPlanService` / `MemberProductService.generateInvoicePDF` now build through `buildInvoiceDocument` (shared with credit notes). Template: optional `header.numberLabel`; the payment block is hidden on documents that set it.
+> - Tests: `member/src/tax/credit-note.service.spec.ts` (5). Live (local DB; HCUAE given a test TRN and its GSTIN cleared per decision 18): 5888 manual AED payment → `HCUAE/2026/S/000004`, VAT 0% ZERO_RATED; two concurrent credit notes → `HCUAE/2026/CN/000001` (500) and `000002` (400), no gap; a credit beyond the remaining 3352 AED refused; PDF checked.
 
 ## Group 11: Config, live validation and close-out
 

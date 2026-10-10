@@ -37,6 +37,7 @@ import {
   PaymentStatusEnum,
   TableEnum,
   TransactionType,
+  IInvoiceDocument,
 } from '@eatfit247-shared-lib';
 import {
   AppConfigService,
@@ -623,6 +624,42 @@ export class MemberProductService {
     productId: number,
     checkoutSessionId?: string | null,
   ): Promise<IFileModel> {
+    const { invoiceDoc, productModel } = await this.prepareInvoiceDocument(memberId, productId, checkoutSessionId);
+    // An order without an invoice number downloads as a proforma (decision 11)
+    const fileName = productModel.invoiceId
+      ? `invoice-${productModel.memberProductId}.pdf`
+      : `proforma-${productModel.memberProductId}.pdf`;
+    const relativePath = `${MediaForEnum.DOWNLOADS}/${memberId}/invoices`;
+    const destinationFolderPath = `${this.rootFolderPath}/${relativePath}`;
+    // CREATE DIRECTORY IF NOT EXISTS (async)
+    try {
+      await fs.access(destinationFolderPath);
+    } catch {
+      await fs.mkdir(destinationFolderPath, { recursive: true });
+    }
+    const destinationPath = `${destinationFolderPath}/${fileName}`;
+    // Generate PDF using the InvoicePdfService
+    const pdfBuffer = await this.invoicePdfService.generateInvoicePdf(invoiceDoc);
+    const base64Buffer = pdfBuffer.toString('base64');
+    // Write PDF buffer to destination folder (async)
+    await fs.writeFile(destinationPath, pdfBuffer as Uint8Array);
+    return {
+      filePath: relativePath,
+      fileName: fileName,
+      buffer: base64Buffer,
+    } as IFileModel;
+  }
+
+  /** The invoice document of a record (used for the PDF and for credit notes against it). */
+  public async buildInvoiceDocument(memberId: number, productId: number): Promise<IInvoiceDocument> {
+    return (await this.prepareInvoiceDocument(memberId, productId)).invoiceDoc;
+  }
+
+  private async prepareInvoiceDocument(
+    memberId: number,
+    productId: number,
+    checkoutSessionId?: string | null,
+  ) {
     if (checkoutSessionId !== undefined && !checkoutSessionId) {
       throw new NotFoundException('Product order not found');
     }
@@ -679,29 +716,7 @@ export class MemberProductService {
         `Payment confirms acceptance of ${productOrder.franchise.companyName} terms and service validity conditions.`,
       ],
     );
-    // An order without an invoice number downloads as a proforma (decision 11)
-    const fileName = productModel.invoiceId
-      ? `invoice-${productModel.memberProductId}.pdf`
-      : `proforma-${productModel.memberProductId}.pdf`;
-    const relativePath = `${MediaForEnum.DOWNLOADS}/${memberId}/invoices`;
-    const destinationFolderPath = `${this.rootFolderPath}/${relativePath}`;
-    // CREATE DIRECTORY IF NOT EXISTS (async)
-    try {
-      await fs.access(destinationFolderPath);
-    } catch {
-      await fs.mkdir(destinationFolderPath, { recursive: true });
-    }
-    const destinationPath = `${destinationFolderPath}/${fileName}`;
-    // Generate PDF using the InvoicePdfService
-    const pdfBuffer = await this.invoicePdfService.generateInvoicePdf(invoiceDoc);
-    const base64Buffer = pdfBuffer.toString('base64');
-    // Write PDF buffer to destination folder (async)
-    await fs.writeFile(destinationPath, pdfBuffer as Uint8Array);
-    return {
-      filePath: relativePath,
-      fileName: fileName,
-      buffer: base64Buffer,
-    } as IFileModel;
+    return { invoiceDoc, productModel };
   }
 
   public async calculateProductTax(

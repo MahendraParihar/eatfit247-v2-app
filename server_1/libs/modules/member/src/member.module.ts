@@ -25,6 +25,8 @@ import {
   TxnMemberPocketGuide,
   TxnMemberProduct,
   TxnMemberProductOrderItem,
+  TxnCreditNote,
+  TxnCreditNoteItem,
   TxnPaymentGatewayEvent,
 } from './models';
 import {
@@ -87,8 +89,12 @@ modelRegistry.register([
   TxnMemberDietPlan,
   TxnMemberDietDetail,
   TxnPaymentGatewayEvent,
+  TxnCreditNote,
+  TxnCreditNoteItem,
 ]);
 
+import { MemberCreditNoteController } from './controllers/admin/member-credit-note.controller';
+import { CreditNoteService } from './services/credit-note.service';
 @Module({
   imports: [
     // Import ProgramPlanModule to use ProgramService and ProgramPlanService
@@ -122,6 +128,8 @@ modelRegistry.register([
       TxnMemberDietPlan,
       TxnMemberDietDetail,
       TxnPaymentGatewayEvent,
+      TxnCreditNote,
+      TxnCreditNoteItem,
       // Diet template models
       TxnDietTemplateDietDetail,
       // Core/platform models (allowed)
@@ -136,6 +144,7 @@ modelRegistry.register([
     ]),
   ],
   controllers: [
+    MemberCreditNoteController,
     MemberController,
     MemberHealthController,
     MemberCallLogController,
@@ -168,6 +177,7 @@ modelRegistry.register([
     PaymentConfirmationService,
     InvoiceIssueService,
     InvoiceFxCron,
+    CreditNoteService,
     RazorpayWebhookService,
     CheckoutGatewayService,
   ],

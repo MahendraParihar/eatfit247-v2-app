@@ -49,7 +49,9 @@ import {
   IResponse,
   IStatusChangeCallLog,
   ITableList,
-  ITableListFilter
+  ITableListFilter,
+  ICreateCreditNote,
+  ICreditNote,
 } from '@eatfit247-shared-lib';
 
 @Injectable({
@@ -987,4 +989,17 @@ export class MembersApiService {
     );
   }
   // endregion
+
+  /** Tax Credit Notes (roadmap 4.6) */
+  async createCreditNote(memberId: number, data: ICreateCreditNote): Promise<ICreditNote> {
+    const res = await this.httpService.post<ICreditNote>(`${this.endpoint}/${memberId}/credit-notes`, data);
+    return res.data as ICreditNote;
+  }
+
+  async downloadCreditNote(memberId: number, creditNoteId: number): Promise<{ buffer: string; fileName: string }> {
+    const res = await this.httpService.get<{ buffer: string; fileName: string }>(
+      `${this.endpoint}/${memberId}/credit-notes/${creditNoteId}/pdf`,
+    );
+    return res.data as { buffer: string; fileName: string };
+  }
 }

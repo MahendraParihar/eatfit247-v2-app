@@ -15,7 +15,8 @@ import {
   ITableConfig,
   LoaderComponent
 } from '@shared';
-import { IMemberPayment, PaymentSourceEnum, PaymentStatusEnum } from '@eatfit247-shared-lib';
+import { IMemberPayment, PaymentSourceEnum, PaymentStatusEnum, TaxTypeEnum } from '@eatfit247-shared-lib';
+import { CreditNoteDialogComponent } from './credit-note-dialog/credit-note-dialog.component';
 import { MembersApiService } from '../../api.service';
 import {
   ManageMemberPaymentComponent,
@@ -165,6 +166,14 @@ export class MemberPaymentHistoryComponent implements OnInit, OnDestroy {
         onClick: (row) => this.downloadInvoice(row)
       },
       {
+        // UAE VAT invoices: corrections and refunds go through a Tax Credit Note
+        label: 'Tax Credit Note',
+        icon: 'receipt_long',
+        color: 'accent',
+        visible: (row) => !!row.invoiceId && row.taxType === TaxTypeEnum.VAT,
+        onClick: (row) => this.openCreditNote(row)
+      },
+      {
         // No invoice number yet: the PDF is a proforma, not a tax invoice
         label: 'Download Proforma',
         icon: 'request_quote',
@@ -242,6 +251,19 @@ export class MemberPaymentHistoryComponent implements OnInit, OnDestroy {
       maxWidth: '90vw',
       maxHeight: '90vh',
       data: dialogData
+    });
+  }
+
+  openCreditNote(payment: IMemberPayment): void {
+    const ref = this.dialog.open(CreditNoteDialogComponent, {
+      width: '520px',
+      maxWidth: '92vw',
+      data: { memberId: this.memberId, payment },
+    });
+    ref.afterClosed().subscribe((created) => {
+      if (created) {
+        this.snackBar.open('Tax credit note issued', 'Close', { duration: 3000 });
+      }
     });
   }
 

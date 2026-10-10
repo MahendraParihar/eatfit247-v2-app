@@ -16,3 +16,4 @@ export * from './invoice-issue.service';
 export * from './razorpay-webhook.service';
 export * from './checkout-gateway.service';
 export * from './invoice-fx.cron';
+export * from './credit-note.service';
