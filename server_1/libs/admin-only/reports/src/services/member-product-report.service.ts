@@ -16,6 +16,9 @@ import archiver from 'archiver';
 import moment from 'moment/moment';
 import * as ExcelJS from 'exceljs';
 
+/** An issued invoice number (proformas have none). */
+const HAS_INVOICE_NUMBER = { [Op.and]: [{ [Op.ne]: null }, { [Op.ne]: '' }] };
+
 @Injectable()
 export class MemberProductReportService {
   private readonly logger = new Logger(MemberProductReportService.name);
@@ -320,6 +323,8 @@ export class MemberProductReportService {
     const endDateStr = moment(dto.endDate).endOf('day').utc().endOf('day');
     const whereCondition: any = {
       active: true,
+      // Only issued invoices: orders without a number are proformas (roadmap 4.7 decision 11)
+      invoiceId: HAS_INVOICE_NUMBER,
       paymentDate: {
         [Op.and]: {
           [Op.gte]: startDateStr.format(),
@@ -431,6 +436,8 @@ export class MemberProductReportService {
       memberProductId: {
         [Op.in]: memberProductIds,
       },
+      // Only issued invoices: orders without a number are proformas (roadmap 4.7 decision 11)
+      invoiceId: HAS_INVOICE_NUMBER,
     };
     // Build include conditions
     const includeConditions: any[] = [

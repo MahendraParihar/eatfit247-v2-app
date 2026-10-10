@@ -9,7 +9,6 @@ export * from './member-plan.dto';
 export * from './member-product.dto';
 export * from './member-diet-plan-detail.dto';
 export * from './public-member.dto';
-export * from './create-payment-link.dto';
 export * from './public-checkout.dto';
 export * from './tax-calculation.dto';
 

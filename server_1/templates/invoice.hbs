@@ -52,6 +52,13 @@
       object-fit: contain;
     }
 
+    .fx-note {
+      margin-top: 6px;
+      font-size: 10px;
+      color: #555;
+      text-align: right;
+    }
+
     .invoice-header-title {
       flex: 1;
       text-align: center;
@@ -352,18 +359,26 @@
   </div>
   <div class="invoice-header-title">{{invoice.header.title}}</div>
   <div class="invoice-header-invoice-meta">
+    {{#unless invoice.header.isProforma}}
+      <div class="invoice-meta-item">
+        <span class="invoice-meta-label">{{#if invoice.header.numberLabel}}{{invoice.header.numberLabel}}:{{else}}Invoice No:{{/if}}</span>
+        <span>{{invoice.header.invoiceNumber}}</span>
+      </div>
+    {{/unless}}
     <div class="invoice-meta-item">
-      <span class="invoice-meta-label">Invoice No:</span>
-      <span>{{invoice.header.invoiceNumber}}</span>
-    </div>
-    <div class="invoice-meta-item">
-      <span class="invoice-meta-label">Invoice Date:</span>
+      <span class="invoice-meta-label">{{#if invoice.header.isProforma}}Date:{{else}}{{#if invoice.header.numberLabel}}Date:{{else}}Invoice Date:{{/if}}{{/if}}</span>
       <span>{{formatDate invoice.header.invoiceDate}}</span>
     </div>
-    {{#if invoice.header.playOfSupply}}
+    {{#if invoice.header.placeOfSupply}}
       <div class="invoice-meta-item">
         <span class="invoice-meta-label">Place of Supply:</span>
-        <span>{{formatDate invoice.header.playOfSupply}}</span>
+        <span>{{invoice.header.placeOfSupply}}</span>
+      </div>
+    {{/if}}
+    {{#if invoice.header.countryOfDestination}}
+      <div class="invoice-meta-item">
+        <span class="invoice-meta-label">Country of Destination:</span>
+        <span>{{invoice.header.countryOfDestination}}</span>
       </div>
     {{/if}}
   </div>
@@ -547,11 +562,21 @@
         <td class="text-right"><strong>{{formatCurrency invoice.pricing.taxableAmount }}</strong></td>
       </tr>
     {{/if}}
-    {{#if invoice.pricing.taxAmount}}
-      <tr>
-        <td><strong>Tax</strong></td>
-        <td class="text-right"><strong>{{formatCurrency invoice.pricing.taxAmount }}</strong></td>
-      </tr>
+    {{#if isGstTaxType}}
+      {{#if invoice.pricing.taxAmount}}
+        <tr>
+          <td><strong>Tax</strong></td>
+          <td class="text-right"><strong>{{formatCurrency invoice.pricing.taxAmount }}</strong></td>
+        </tr>
+      {{/if}}
+    {{else}}
+      {{!-- VAT and other systems: each tax line with its category and rate, shown even at 0% --}}
+      {{#each invoice.tax.rows}}
+        <tr>
+          <td><strong>{{taxRowLabel this}}</strong></td>
+          <td class="text-right"><strong>{{formatCurrency this.amount}}</strong></td>
+        </tr>
+      {{/each}}
     {{/if}}
     {{#if invoice.pricing.totalAmount}}
       <tr class="total-row">
@@ -560,6 +585,13 @@
       </tr>
     {{/if}}
   </table>
+  {{#if invoice.fx}}
+    <div class="fx-note">
+      Exchange rate: 1 {{invoice.fx.fromCurrency}} = {{invoice.fx.rate}} {{invoice.fx.currency}}
+      ({{invoice.fx.source}}, {{formatDate invoice.fx.rateDate}}) ·
+      Total {{invoice.fx.currency}} {{formatCurrency invoice.fx.totalAmount}} · Tax {{invoice.fx.currency}} {{formatCurrency invoice.fx.taxAmount}}
+    </div>
+  {{/if}}
 </div>
 
 <!-- Three Column Section: Terms, QR Code, Notes -->
@@ -615,16 +647,19 @@
 {{#if invoice.tax.note}}
   <div class="tax-note">
     <strong>Note:</strong> {{invoice.tax.note}}
+    {{#if invoice.tax.lutArn}}<br /><strong>LUT ARN:</strong> {{invoice.tax.lutArn}}{{/if}}
   </div>
 {{/if}}
 
-<!-- Payment Information -->
+<!-- Payment Information (not on credit notes, which carry their own number label) -->
+{{#unless invoice.header.numberLabel}}
 <div class="payment-info">
   <strong>Payment Information:</strong><br>
   <strong>Status:</strong> {{invoice.payment.status}}<br>
   <strong>Method:</strong> {{#each invoice.payment.methods}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}
   {{#if invoice.payment.transactionId}}<br><strong>Transaction ID:</strong> {{invoice.payment.transactionId}}{{/if}}
 </div>
+{{/unless}}
 
 <!-- Footer -->
 <div class="footer">

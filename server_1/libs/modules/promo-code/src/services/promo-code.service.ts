@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import { TxnPromoCode } from '../models';
 import { DiscountTypeEnum, IApplyPromoCodeResult, IBasicSearch, IPromoCode, ITableList } from '@eatfit247-shared-lib';
 import { CommonFunctionsUtil, TableListSortUtil } from '@server_1/core';
-import { Op } from 'sequelize';
+import { Op, Transaction } from 'sequelize';
 import { ApplyPromoCodeDto, CreatePromoCodeDto } from '../dto';
 
 @Injectable()
@@ -206,7 +206,7 @@ export class PromoCodeService {
     }
 
     // Check minimum order amount
-    if (promoCode.minOrderAmount && dto.orderAmount < promoCode.minOrderAmount) {
+    if (promoCode.minOrderAmount && dto.orderAmount < Number(promoCode.minOrderAmount)) {
       return {
         valid: false,
         discountAmount: 0,
@@ -225,18 +225,24 @@ export class PromoCodeService {
       };
     }
 
+    // DECIMAL columns arrive as strings; compare as numbers (e.g. "500.00" > "1000.00" is true as text)
+    const discountValue = Number(promoCode.discountValue) || 0;
+    const maxDiscount = promoCode.maxDiscount === null ? null : Number(promoCode.maxDiscount);
+
     // Calculate discount
     let discountAmount = 0;
     if (promoCode.discountType === DiscountTypeEnum.FLAT) {
-      discountAmount = promoCode.discountValue;
+      discountAmount = discountValue;
     } else if (promoCode.discountType === DiscountTypeEnum.PERCENT) {
-      discountAmount = (dto.orderAmount * promoCode.discountValue) / 100;
+      discountAmount = (dto.orderAmount * discountValue) / 100;
     }
 
     // Apply max discount limit if set
-    if (promoCode.maxDiscount && discountAmount > promoCode.maxDiscount) {
-      discountAmount = promoCode.maxDiscount;
+    if (maxDiscount && discountAmount > maxDiscount) {
+      discountAmount = maxDiscount;
     }
+    // Never more than the order itself
+    discountAmount = Math.min(discountAmount, dto.orderAmount);
 
     const finalAmount = Math.max(0, dto.orderAmount - discountAmount);
 
@@ -247,5 +253,25 @@ export class PromoCodeService {
       message: 'Promo code applied successfully',
     };
   }
-}
 
+  /**
+   * Count one paid use of a promo code, under a row lock in the caller's transaction.
+   * The payment is already taken, so a code that has reached its limit is still counted
+   * and reported as `overLimit` for Accounts instead of being refused.
+   * Returns null when the code does not exist.
+   */
+  public async recordUsage(code: string, transaction: Transaction): Promise<{ overLimit: boolean } | null> {
+    const promoCode = await this.promoCodeRepository.findOne({
+      where: { code: code.toUpperCase() },
+      transaction,
+      lock: transaction.LOCK.UPDATE,
+    });
+    if (!promoCode) {
+      return null;
+    }
+    const usedCount = Number(promoCode.usedCount || 0);
+    const overLimit = !!promoCode.usageLimit && usedCount >= Number(promoCode.usageLimit);
+    await promoCode.update({ usedCount: usedCount + 1 }, { transaction });
+    return { overLimit };
+  }
+}

@@ -1,14 +1,20 @@
 import { Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
-import { CheckoutTokenGuard, Public, RequestedIp, RequireRecaptcha } from '@server_1/core';
+import {
+  CheckoutTokenGuard,
+  CheckoutSessionId,
+  Public,
+  RequestedIp,
+  RequireRecaptcha,
+} from '@server_1/core';
 import { RecaptchaGuard } from '@server_1/platform';
 import { MemberPlanService } from '../../services';
+import { PublicPlanOrderDto, PublicPlanTaxCalculationDto, PublicVerifyPaymentDto } from '../../dto';
 import {
-  CalculateTaxResponseDto,
-  CreatePublicCheckoutPaymentLinkDto,
-  CreatePublicCheckoutPlanOrderDto,
-  PlanTaxCalculationRequestDto,
-} from '../../dto';
-import { IManageMemberPayment, IPaymentGateway, IPaymentLinkResponse } from '@eatfit247-shared-lib';
+  IPaymentGateway,
+  IPublicCheckoutOrderResponse,
+  IPublicPlanTaxCalculationResponse,
+  IPublicVerifyPaymentResponse,
+} from '@eatfit247-shared-lib';
 
 @Public()
 @Controller('checkout/plan')
@@ -19,9 +25,9 @@ export class PublicCheckoutPlanController {
   @Post('member/:memberId/calculate-tax')
   async calculateTax(
     @Param('memberId') memberId: number,
-    @Body() body: PlanTaxCalculationRequestDto,
-  ): Promise<CalculateTaxResponseDto> {
-    return await this.memberPaymentService.calculateTax(memberId, body);
+    @Body() body: PublicPlanTaxCalculationDto,
+  ): Promise<IPublicPlanTaxCalculationResponse> {
+    return await this.memberPaymentService.calculatePublicTax(memberId, body);
   }
 
   @Get('supported-gateways')
@@ -37,97 +43,33 @@ export class PublicCheckoutPlanController {
   }
 
   /**
-   * Create a payment link for plan checkout
-   */
-  @UseGuards(CheckoutTokenGuard)
-  @Post('member/:memberId/payment-link')
-  async createPaymentLink(
-    @Param('memberId') memberId: number,
-    @Body() body: CreatePublicCheckoutPaymentLinkDto,
-  ): Promise<IPaymentLinkResponse> {
-    // Resolve gateway if not provided
-    let franchisePaymentGatewayId = body.franchisePaymentGatewayId;
-    if (!franchisePaymentGatewayId) {
-      const gateways = await this.memberPaymentService.getSupportedPaymentGatewaysForCheckout(
-        body.currency || 'INR',
-      );
-      if (gateways.length === 0) {
-        throw new Error('No payment gateway available');
-      }
-      // Use the primary gateway or first available
-      const selectedGateway = gateways.find((g) => g.isPrimary) || gateways[0];
-      franchisePaymentGatewayId = selectedGateway.franchisePaymentGatewayId;
-    }
-    const paymentLinkRequest = {
-      amount: body.amount,
-      currency: body.currency,
-      franchisePaymentGatewayId,
-      description: body.description,
-      customer: body.customer,
-      notes: body.notes,
-    };
-    return await this.memberPaymentService.createPaymentLink(memberId, paymentLinkRequest);
-  }
-
-  /**
-   * Create payment order for embedded checkout
-   * Returns order details that can be used with payment gateway SDKs
-   */
-  @UseGuards(CheckoutTokenGuard)
-  @Post('member/:memberId/payment-order')
-  async createPaymentOrder(
-    @Param('memberId') memberId: number,
-    @Body() body: CreatePublicCheckoutPaymentLinkDto,
-  ) {
-    const paymentOrderRequest = {
-      amount: body.amount,
-      currency: body.currency,
-      franchisePaymentGatewayId: body.franchisePaymentGatewayId,
-      description: body.description,
-      customer: body.customer,
-      notes: body.notes,
-    };
-    return await this.memberPaymentService.createPaymentOrder(memberId, paymentOrderRequest);
-  }
-
-  /**
-   * Verify payment after completion
+   * Verify payment after the gateway checkout callback. The server checks the signature
+   * with the order's gateway, fetches the payment, and confirms it only if captured.
    */
   @UseGuards(CheckoutTokenGuard)
   @Post('member/:memberId/verify-payment')
   async verifyPayment(
     @Param('memberId') memberId: number,
-    @Body()
-    body: {
-      gatewayCode: string;
-      paymentId: string;
-      orderId?: string;
-      signature?: string;
-    },
-  ) {
-    return await this.memberPaymentService.verifyPayment(
-      memberId,
-      body.gatewayCode,
-      body.paymentId,
-      body.orderId,
-      body.signature,
-    );
+    @Body() body: PublicVerifyPaymentDto,
+    @RequestedIp() requestedIp: string,
+  ): Promise<IPublicVerifyPaymentResponse> {
+    return await this.memberPaymentService.verifyPublicPayment(memberId, body, requestedIp);
   }
 
   /**
-   * Create plan order for checkout
-   * This creates the order in the txn_member_payments table
+   * Create-before-pay: prices the plan on the server, creates the PENDING payment and
+   * the gateway order for its total, and returns the gateway checkout payload.
    */
   @UseGuards(CheckoutTokenGuard, RecaptchaGuard)
   @RequireRecaptcha('checkout_order', 0.5)
   @Post('member/:memberId/order')
   async createPlanOrder(
     @Param('memberId') memberId: number,
-    @Body() body: CreatePublicCheckoutPlanOrderDto,
+    @Body() body: PublicPlanOrderDto,
     @RequestedIp() requestedIp: string,
-  ) {
-    body.programId = 1;
-    return await this.memberPaymentService.create(memberId, body, requestedIp);
+    @CheckoutSessionId() checkoutSessionId: string | null,
+  ): Promise<IPublicCheckoutOrderResponse> {
+    return await this.memberPaymentService.createPublicCheckoutOrder(memberId, body, requestedIp, checkoutSessionId);
   }
 
   /**
@@ -139,8 +81,13 @@ export class PublicCheckoutPlanController {
   async downloadInvoice(
     @Param('memberId') memberId: number,
     @Param('paymentId') paymentId: number,
+    @CheckoutSessionId() checkoutSessionId: string | null,
   ): Promise<{ buffer: string; fileName: string }> {
-    const invoiceFile = await this.memberPaymentService.generateInvoicePDF(memberId, paymentId);
+    const invoiceFile = await this.memberPaymentService.generateInvoicePDF(
+      memberId,
+      paymentId,
+      checkoutSessionId,
+    );
     return {
       buffer: invoiceFile.buffer || '',
       fileName: invoiceFile.fileName,

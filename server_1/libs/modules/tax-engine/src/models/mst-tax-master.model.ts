@@ -1,6 +1,10 @@
 import { BelongsTo, Column, CreatedAt, DataType, Model, Scopes, Table, UpdatedAt } from 'sequelize-typescript';
 import { getCreatedByUserInclude, getUpdatedByUserInclude, MstAdminUser, MstFranchise } from '@server_1/core';
-import { TaxTypeEnum, TransactionType } from '@eatfit247-shared-lib';
+import {
+  TaxCategoryEnum,
+  TaxTypeEnum,
+  TransactionType,
+} from '@eatfit247-shared-lib';
 
 @Table({
   freezeTableName: true,
@@ -116,6 +120,14 @@ export class MstTaxMaster extends Model<MstTaxMaster> {
     type: DataType.BOOLEAN,
   })
   declare isTaxInclusive: boolean;
+
+  @Column({
+    allowNull: false,
+    defaultValue: TaxCategoryEnum.STANDARD,
+    field: 'tax_category',
+    type: DataType.STRING(20),
+  })
+  declare taxCategory: TaxCategoryEnum;
 
   @Column({
     allowNull: false,

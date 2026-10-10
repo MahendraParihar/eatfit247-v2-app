@@ -3,19 +3,19 @@ import { isPlatformBrowser } from '@angular/common';
 import { HttpService } from './http.service';
 import { ProgramPlan, ProgramPlanService } from './program-plan.service';
 import {
-  ICalculateProductVariantTaxRequest,
-  ICalculateProductVariantTaxResponse,
-  ICalculateTaxResponse,
   ICheckoutAddressData,
   ICheckoutMemberData,
   ICheckoutMemberResponse,
-  ICreatePaymentLinkRequest,
-  IManageMemberPayment,
-  IManageMemberProduct,
+  IMemberPayment,
   IMemberProduct,
   IPaymentGateway,
-  IPaymentLinkResponse,
-  IPlanTaxCalculationRequest
+  IPublicCheckoutOrderResponse,
+  IPublicPlanOrderRequest,
+  IPublicPlanTaxCalculationRequest,
+  IPublicPlanTaxCalculationResponse,
+  IPublicProductOrderRequest,
+  IPublicProductTaxCalculationRequest,
+  IPublicProductTaxCalculationResponse,
 } from '@eatfit247-shared-library';
 
 /**
@@ -98,14 +98,14 @@ export class CheckoutService {
   }
 
   /**
-   * Calculate tax for payment (for plans)
+   * Calculate tax for a plan (promo code applied on the server)
    */
   async calculateTax(
     memberId: number,
-    taxData: IPlanTaxCalculationRequest
-  ): Promise<ICalculateTaxResponse | null> {
+    taxData: IPublicPlanTaxCalculationRequest
+  ): Promise<IPublicPlanTaxCalculationResponse | null> {
     try {
-      const res = await this.httpService.post<ICalculateTaxResponse>(
+      const res = await this.httpService.post<IPublicPlanTaxCalculationResponse>(
         `checkout/plan/member/${memberId}/calculate-tax`,
         taxData,
         { headers: this.getCheckoutAuthHeaders() }
@@ -118,16 +118,15 @@ export class CheckoutService {
   }
 
   /**
-   * Calculate tax for product checkout
-   * Uses ICalculateProductVariantTaxRequest payload
+   * Calculate tax for product checkout (promo code applied on the server)
    */
   async calculateProductTax(
     memberId: number,
-    taxData: ICalculateProductVariantTaxRequest
-  ): Promise<ICalculateProductVariantTaxResponse | null> {
+    taxData: IPublicProductTaxCalculationRequest
+  ): Promise<IPublicProductTaxCalculationResponse | null> {
     try {
       const res =
-        await this.httpService.post<ICalculateProductVariantTaxResponse>(
+        await this.httpService.post<IPublicProductTaxCalculationResponse>(
           `checkout/member/${memberId}/calculate-tax`,
           taxData,
           { headers: this.getCheckoutAuthHeaders() }
@@ -135,30 +134,6 @@ export class CheckoutService {
       return res.data || null;
     } catch (error) {
       console.error('Error calculating product tax:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Create payment link
-   */
-  async createPaymentLink(
-    memberId: number,
-    paymentData: Omit<
-      ICreatePaymentLinkRequest,
-      'franchisePaymentGatewayId'
-    > & {
-      franchisePaymentGatewayId?: number;
-    }
-  ): Promise<IPaymentLinkResponse | null> {
-    try {
-      const res = await this.httpService.post<IPaymentLinkResponse>(
-        `checkout/member/${memberId}/payment-link`,
-        paymentData
-      );
-      return res.data || null;
-    } catch (error) {
-      console.error('Error creating payment link:', error);
       throw error;
     }
   }
@@ -253,23 +228,21 @@ export class CheckoutService {
   }
 
   /**
-   * Create product order in txn_member_products table
-   * Follows the same pattern as Admin-side Member Product order creation
-   * @param memberId - Member ID
-   * @param orderData - Order data
-   * @param recaptchaToken - Optional reCAPTCHA token (passed in headers)
+   * Create the PENDING product order and its gateway order (before payment).
+   * The server prices it; the response carries the gateway checkout payload.
+   * @param recaptchaToken - reCAPTCHA token (passed in headers)
    */
   async createProductOrder(
     memberId: number,
-    orderData: IManageMemberProduct,
+    orderData: IPublicProductOrderRequest,
     recaptchaToken?: string
-  ): Promise<any> {
+  ): Promise<IPublicCheckoutOrderResponse | null> {
     try {
       const headers: { [key: string]: string } = { ...this.getCheckoutAuthHeaders() };
       if (recaptchaToken) {
         headers['X-Recaptcha-Token'] = recaptchaToken;
       }
-      const res = await this.httpService.post(
+      const res = await this.httpService.post<IPublicCheckoutOrderResponse>(
         `checkout/member/${memberId}/product/order`,
         orderData,
         { headers }
@@ -282,23 +255,21 @@ export class CheckoutService {
   }
 
   /**
-   * Create plan order in txn_member_payments table
-   * Uses member-payment.service for plan orders
-   * @param memberId - Member ID
-   * @param orderData - Order data
-   * @param recaptchaToken - Optional reCAPTCHA token (passed in headers)
+   * Create the PENDING plan payment and its gateway order (before payment).
+   * The server prices it; the response carries the gateway checkout payload.
+   * @param recaptchaToken - reCAPTCHA token (passed in headers)
    */
   async createPlanOrder(
     memberId: number,
-    orderData: IManageMemberPayment,
+    orderData: IPublicPlanOrderRequest,
     recaptchaToken?: string
-  ): Promise<any> {
+  ): Promise<IPublicCheckoutOrderResponse | null> {
     try {
       const headers: { [key: string]: string } = { ...this.getCheckoutAuthHeaders() };
       if (recaptchaToken) {
         headers['X-Recaptcha-Token'] = recaptchaToken;
       }
-      const res = await this.httpService.post(
+      const res = await this.httpService.post<IPublicCheckoutOrderResponse>(
         `checkout/plan/member/${memberId}/order`,
         orderData,
         { headers }
@@ -381,12 +352,12 @@ export class CheckoutService {
 
   /**
    * Get plan order details by gateway order ID
-   * Uses member-payment/order/plan/:gatewayOrderId endpoint
+   * Uses checkout/plan/:gatewayOrderId endpoint
    * @param gatewayOrderId - Gateway order ID
    */
-  async getPlanOrderDetails(gatewayOrderId: string): Promise<IMemberProduct> {
+  async getPlanOrderDetails(gatewayOrderId: string): Promise<IMemberPayment | null> {
     try {
-      const res = await this.httpService.get<IMemberProduct>(
+      const res = await this.httpService.get<IMemberPayment>(
         `checkout/plan/${gatewayOrderId}`,
         { headers: this.getCheckoutAuthHeaders() }
       );

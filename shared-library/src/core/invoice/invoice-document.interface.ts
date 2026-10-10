@@ -6,6 +6,8 @@ import { TaxMode, TaxTypeEnum, TransactionType } from '../../enum';
  * Used for PDF generation, UI preview, and email attachments
  */
 export interface IInvoiceDocument {
+  /** Functional-currency equivalents (foreign-currency invoices; absent while FX is pending) */
+  fx?: IInvoiceFxSection;
   header: IInvoiceHeader;
   seller: IInvoiceParty;
   buyer: IInvoiceParty;
@@ -25,6 +27,10 @@ export interface IInvoiceHeader {
   title: string; // e.g., "TAX INVOICE", "INVOICE"
   invoiceNumber: string;
   invoiceDate: string; // ISO date string
+  isProforma?: boolean; // true when no invoice number has been issued (unpaid entry)
+  numberLabel?: string; // label of the document number (default "Invoice No"; credit notes: "Credit Note No")
+  placeOfSupply?: string; // Indian GST: state name and code (domestic) or country (export)
+  countryOfDestination?: string; // exports: the customer's country
   dueDate?: string; // ISO date string (optional)
   currency: string; // ISO currency code (INR, USD, AED, etc.)
 }
@@ -73,12 +79,25 @@ export interface IInvoicePricing {
   totalAmount: number;
 }
 
+/** The invoice converted to the supplier's functional currency (INR / AED) at the saved rate. */
+export interface IInvoiceFxSection {
+  rate: number;
+  rateDate: string;
+  source: string;
+  fromCurrency: string;
+  currency: string;
+  totalAmount: number;
+  taxAmount: number;
+}
+
 export interface IInvoiceTax {
   taxType: TaxTypeEnum; // GST, VAT, NONE, etc.
   taxMode: TaxMode; // DOMESTIC_GST, EXPORT_OF_SERVICE, VAT, RCM_IMPORT_SERVICE, NO_TAX
   rows: IInvoiceTaxRow[]; // Individual tax components (CGST, SGST, IGST, VAT, etc.)
   totalTax: number; // Sum of all tax rows
   note?: string; // Tax-related notes (e.g., LUT note, RCM note)
+  lutArn?: string; // LUT acknowledgement number of a 0% Indian export
+  taxCategory?: string; // VAT category (STANDARD / ZERO_RATED / EXEMPT / OUT_OF_SCOPE)
 }
 
 export interface IInvoiceTaxRow {

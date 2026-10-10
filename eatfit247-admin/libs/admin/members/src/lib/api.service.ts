@@ -49,7 +49,9 @@ import {
   IResponse,
   IStatusChangeCallLog,
   ITableList,
-  ITableListFilter
+  ITableListFilter,
+  ICreateCreditNote,
+  ICreditNote,
 } from '@eatfit247-shared-lib';
 
 @Injectable({
@@ -618,23 +620,24 @@ export class MembersApiService {
     }>;
   }
 
-  async createPaymentLink(
-    memberId: number,
-    data: ICreatePaymentLinkRequest
-  ): Promise<IPaymentLinkResponse> {
-    const res = await this.httpService.post<IResponse<IPaymentLinkResponse>>(
-      `${this.endpoint}/${memberId}/payment-history/create-payment-link`,
-      data
+
+  /** Cancel the open payment link at the gateway; the payment becomes FAILED (decision 14). */
+  async cancelPaymentLink(memberId: number, paymentId: number, expectedGatewayOrderId?: string | null): Promise<IMemberPayment> {
+    const res = await this.httpService.post<IResponse<IMemberPayment>>(
+      `${this.endpoint}/${memberId}/payment-history/${paymentId}/cancel-payment-link`,
+      { expectedGatewayOrderId: expectedGatewayOrderId || undefined }
     );
-    return res.data as IPaymentLinkResponse;
+    return res.data as IMemberPayment;
   }
 
   async regeneratePaymentLink(
     memberId: number,
-    paymentId: number
+    paymentId: number,
+    expectedGatewayOrderId?: string | null
   ): Promise<IMemberPayment> {
     const res = await this.httpService.post<IResponse<IMemberPayment>>(
-      `${this.endpoint}/${memberId}/payment-history/${paymentId}/regenerate-payment-link`
+      `${this.endpoint}/${memberId}/payment-history/${paymentId}/regenerate-payment-link`,
+      { expectedGatewayOrderId: expectedGatewayOrderId || undefined }
     );
     return res.data as IMemberPayment;
   }
@@ -912,23 +915,24 @@ export class MembersApiService {
     return res.data as { buffer: string; fileName: string };
   }
 
-  async createProductPaymentLink(
-    memberId: number,
-    data: ICreatePaymentLinkRequest
-  ): Promise<IPaymentLinkResponse> {
-    const res = await this.httpService.post<IResponse<IPaymentLinkResponse>>(
-      `${this.endpoint}/${memberId}/product/create-payment-link`,
-      data
+
+  /** Cancel the open payment link at the gateway; the order becomes FAILED (decision 14). */
+  async cancelProductPaymentLink(memberId: number, productId: number, expectedGatewayOrderId?: string | null): Promise<IMemberProduct> {
+    const res = await this.httpService.post<IResponse<IMemberProduct>>(
+      `${this.endpoint}/${memberId}/product/${productId}/cancel-payment-link`,
+      { expectedGatewayOrderId: expectedGatewayOrderId || undefined }
     );
-    return res.data as IPaymentLinkResponse;
+    return res.data as IMemberProduct;
   }
 
   async regenerateProductPaymentLink(
     memberId: number,
-    productId: number
+    productId: number,
+    expectedGatewayOrderId?: string | null
   ): Promise<IMemberProduct> {
     const res = await this.httpService.post<IResponse<IMemberProduct>>(
-      `${this.endpoint}/${memberId}/product/${productId}/regenerate-payment-link`
+      `${this.endpoint}/${memberId}/product/${productId}/regenerate-payment-link`,
+      { expectedGatewayOrderId: expectedGatewayOrderId || undefined }
     );
     return res.data as IMemberProduct;
   }
@@ -985,4 +989,17 @@ export class MembersApiService {
     );
   }
   // endregion
+
+  /** Tax Credit Notes (roadmap 4.6) */
+  async createCreditNote(memberId: number, data: ICreateCreditNote): Promise<ICreditNote> {
+    const res = await this.httpService.post<ICreditNote>(`${this.endpoint}/${memberId}/credit-notes`, data);
+    return res.data as ICreditNote;
+  }
+
+  async downloadCreditNote(memberId: number, creditNoteId: number): Promise<{ buffer: string; fileName: string }> {
+    const res = await this.httpService.get<{ buffer: string; fileName: string }>(
+      `${this.endpoint}/${memberId}/credit-notes/${creditNoteId}/pdf`,
+    );
+    return res.data as { buffer: string; fileName: string };
+  }
 }

@@ -1,4 +1,5 @@
 import {
+  ChangeDetectorRef,
   Component,
   inject,
   OnDestroy,
@@ -10,6 +11,7 @@ import {
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import {
   FormBuilder,
+  FormControl,
   FormGroup,
   ReactiveFormsModule,
   Validators,
@@ -35,19 +37,21 @@ import {
 } from '../../core/services';
 import { RecaptchaService } from '../../core/services/recaptcha.service';
 import {
-  ICalculateProductVariantTaxRequest,
   ICalculateProductVariantTaxResponse,
   ICheckoutAddressData,
   ICheckoutMemberData,
   IDropdownItem,
-  IManageMemberPayment,
-  IManageMemberProduct,
   IPaymentGateway,
-  IPlanTaxCalculationRequest,
   IProductVariantTaxResult,
+  IPublicCheckoutOrderResponse,
+  IPublicPlanOrderRequest,
+  IPublicPlanTaxCalculationRequest,
   IPublicProduct,
-  PaymentSourceEnum,
-  PaymentStatusEnum,
+  IPublicProductOrderRequest,
+  IPublicProductTaxCalculationRequest,
+  TaxCategoryEnum,
+  TaxMode,
+  TaxTypeEnum,
 } from '@eatfit247-shared-library';
 import { ProductService } from '../../core/services/product.service';
 import { BreadcrumbsComponent } from '@shared-ui';
@@ -102,6 +106,8 @@ export class CheckoutComponent implements OnInit, OnDestroy {
   private readonly paymentService = inject(PaymentService);
   private readonly productService = inject(ProductService);
   private readonly platformId = inject(PLATFORM_ID);
+  /** Zoneless: plain fields changed after an await only render once marked. */
+  private readonly cdr = inject(ChangeDetectorRef);
   // Stepper state
   // SELECTION step removed – flow now starts from BILLING
   currentStepIndex = signal(0);
@@ -150,7 +156,20 @@ export class CheckoutComponent implements OnInit, OnDestroy {
   // Embedded payment
   showPaymentModal = false;
   processingPayment = false;
-  paymentOrderResponse: any = null;
+  /** Server-created PENDING order and its gateway checkout payload. */
+  checkoutOrder: IPublicCheckoutOrderResponse | null = null;
+  /** The request that produced `checkoutOrder`, so a retry reuses the same order. */
+  private checkoutOrderKey: string | null = null;
+  // Promo code (validated and applied on the server)
+  readonly promoCodeControl = new FormControl<string>('', {
+    nonNullable: true,
+    validators: [Validators.maxLength(50)],
+  });
+  // Signals: this app is zoneless, so async updates only re-render through signals.
+  readonly appliedPromoCode = signal<string | null>(null);
+  readonly promoMessage = signal<string | null>(null);
+  readonly promoError = signal<string | null>(null);
+  readonly applyingPromo = signal(false);
   // Plan details
   orderAmount = 0;
   discountAmount = 0;
@@ -158,6 +177,8 @@ export class CheckoutComponent implements OnInit, OnDestroy {
   product!: IPublicProduct;
   // Result state
   paymentSuccess = false;
+  /** Gateway reported success but the server has not confirmed PAID yet. */
+  paymentPending = false;
   paymentError: string | null = null;
   orderId: string | null = null;
   paymentId: string | null = null;
@@ -166,10 +187,12 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     // Initialize forms first to prevent template errors
     this.initializeForms();
     await this.loadMasterData();
+    this.cdr.markForCheck();
     this.route.queryParams
       .pipe(takeUntil(this.destroy$))
       .subscribe(async (params) => {
         await this.initFlow(params);
+        this.cdr.markForCheck();
       });
   }
 
@@ -236,7 +259,12 @@ export class CheckoutComponent implements OnInit, OnDestroy {
       ?.valueChanges.pipe(takeUntil(this.destroy$))
       .subscribe((countryId) => {
         this.filterStatesByCountry(countryId);
+        this.resetSavedAddress();
       });
+    this.basicDetailsForm
+      .get('stateId')
+      ?.valueChanges.pipe(takeUntil(this.destroy$))
+      .subscribe(() => this.resetSavedAddress());
     // Set the default country after forms are initialized (if master data is already loaded)
     this.setDefaultCountry();
     // Mark forms as initialized
@@ -275,6 +303,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     } catch (error) {
       this.error = 'Failed to load program plan details.';
     } finally {
+      this.cdr.markForCheck();
       this.loading = false;
     }
   }
@@ -446,8 +475,16 @@ export class CheckoutComponent implements OnInit, OnDestroy {
         }
         this.addressId = addressResult.addressId;
       }
+      // Foreign billing country: charge the plan's foreign-currency fee, so the sale is an export
+      this.applyPlanCurrencyForBillingCountry();
       // Calculate tax first, then skip to preview step
       await this.calculateTaxForCurrentStep();
+      // Stay on billing with the server's message (e.g. a product not sold in this currency);
+      // the gateway check below would otherwise clear it and show an empty review step
+      if (this.error || !this.taxCalculation) {
+        this.error = this.error || 'Tax calculation failed. Please try again.';
+        return;
+      }
       // Load payment gateways before moving to preview
       await this.checkPaymentGatewayAvailability();
       if (!this.isPaymentGatewayAvailable || !this.selectedGateway) {
@@ -463,49 +500,57 @@ export class CheckoutComponent implements OnInit, OnDestroy {
           ? error.message
           : 'Failed to proceed. Please try again.';
     } finally {
+      this.cdr.markForCheck();
       this.loading = false;
     }
   }
 
-  private async checkProductTax() {
-    if (!this.productId || !this.productVariantId) {
+  private async checkProductTax(): Promise<string | undefined> {
+    if (!this.memberId || !this.productId || !this.productVariantId) {
       throw new Error('Product ID or Variant ID missing');
     }
-    const productTaxRequest: ICalculateProductVariantTaxRequest = {
+    const productTaxRequest: IPublicProductTaxCalculationRequest = {
       items: [
         {
           productId: this.productId,
           productVariantId: this.productVariantId,
           quantity: this.productQuantity,
-          currency: this.currencyCode,
         },
       ],
-      addressId: this.addressId,
-      billingAddressId: this.addressId,
-      discountAmount: 0,
+      currency: this.currencyCode,
+      addressId: this.addressId ?? undefined,
+      billingAddressId: this.addressId ?? undefined,
+      promoCode: this.appliedPromoCode() ?? undefined,
     };
-    if (this.isProductCheckout) {
-      this.taxCalculation = await this.checkoutService.calculateProductTax(
-        this.memberId,
-        productTaxRequest,
-      );
-    }
+    const result = await this.checkoutService.calculateProductTax(
+      this.memberId,
+      productTaxRequest,
+    );
+    this.taxCalculation = result;
     if (this.taxCalculation) {
       this.isTaxApplicable = this.taxCalculation.taxAmount > 0;
     }
+    return result?.promoMessage;
   }
 
-  private async checkPlanTax() {
-    const taxRequest = <IPlanTaxCalculationRequest>{
+  private async checkPlanTax(): Promise<string | undefined> {
+    if (!this.memberId || !this.programPlanId) {
+      throw new Error('Program Plan ID missing');
+    }
+    const taxRequest: IPublicPlanTaxCalculationRequest = {
       programPlanId: this.programPlanId,
-      billingAddressId: this.addressId,
       currency: this.currencyCode,
-      discountAmount: 0,
+      addressId: this.addressId ?? undefined,
+      billingAddressId: this.addressId ?? undefined,
+      promoCode: this.appliedPromoCode() ?? undefined,
     };
     const tempTaxCalculation = await this.checkoutService.calculateTax(
       this.memberId,
       taxRequest,
     );
+    if (!tempTaxCalculation) {
+      throw new Error('Tax calculation failed');
+    }
     const item: IProductVariantTaxResult[] = [];
     item.push(<IProductVariantTaxResult>{
       taxPercentage: tempTaxCalculation.taxPercentage,
@@ -521,6 +566,9 @@ export class CheckoutComponent implements OnInit, OnDestroy {
       currency: tempTaxCalculation.currency,
       isLutApplied: tempTaxCalculation.isLutApplied,
       jurisdiction: tempTaxCalculation.jurisdiction,
+      taxCategory: tempTaxCalculation.taxCategory,
+      lutArn: tempTaxCalculation.lutArn,
+      taxDecisionReason: tempTaxCalculation.taxDecisionReason,
     });
     this.taxCalculation = <ICalculateProductVariantTaxResponse>{
       items: item,
@@ -532,6 +580,51 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     };
     if (this.taxCalculation) {
       this.isTaxApplicable = this.taxCalculation.taxAmount > 0;
+    }
+    return tempTaxCalculation.promoMessage;
+  }
+
+  /** Re-price with the current promo code; throws the API error (e.g. an invalid code). */
+  private async refreshTax(): Promise<string | undefined> {
+    return this.isProductCheckout ? this.checkProductTax() : this.checkPlanTax();
+  }
+
+  /**
+   * Apply the promo code: the server validates it and returns the discounted price.
+   */
+  async applyPromoCode(): Promise<void> {
+    const code = this.promoCodeControl.value.trim();
+    if (!code || this.applyingPromo() || !this.memberId || !this.addressId) {
+      return;
+    }
+    const previousCode = this.appliedPromoCode();
+    this.applyingPromo.set(true);
+    this.promoError.set(null);
+    this.promoMessage.set(null);
+    this.appliedPromoCode.set(code);
+    try {
+      this.promoMessage.set((await this.refreshTax()) || 'Promo code applied');
+    } catch (error: unknown) {
+      this.appliedPromoCode.set(previousCode);
+      this.promoError.set(this.errorMessage(error, 'This promo code could not be applied.'));
+    } finally {
+      this.cdr.markForCheck();
+      this.applyingPromo.set(false);
+    }
+  }
+
+  async removePromoCode(): Promise<void> {
+    this.appliedPromoCode.set(null);
+    this.promoMessage.set(null);
+    this.promoError.set(null);
+    this.promoCodeControl.reset('');
+    // Toggling the signal around the async call re-renders the new totals (zoneless)
+    this.applyingPromo.set(true);
+    try {
+      await this.calculateTaxForCurrentStep();
+    } finally {
+      this.cdr.markForCheck();
+      this.applyingPromo.set(false);
     }
   }
 
@@ -546,20 +639,18 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     this.calculatingTax = true;
     this.error = null;
     try {
-      if (this.isProductCheckout) {
-        await this.checkProductTax();
-      } else {
-        await this.checkPlanTax();
-      }
+      await this.refreshTax();
     } catch (e: unknown) {
-      this.error = e instanceof Error ? e.message : 'Tax calculation failed';
+      this.error = this.errorMessage(e, 'Tax calculation failed');
     } finally {
+      this.cdr.markForCheck();
       this.calculatingTax = false;
     }
   }
 
   /**
-   * Step 4: Create payment order and initialize payment
+   * Step 4: Create the order on the server (PENDING, priced there), then open the gateway
+   * for that order. Nothing about price or payment state is sent from here.
    */
   async proceedFromPreview(): Promise<void> {
     if (!this.memberId || !this.addressId || !this.selectedGateway) {
@@ -569,96 +660,88 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     try {
       this.loading = true;
       this.error = null;
-      const totalAmount =
-        this.taxCalculation?.totalAmount ||
-        (this.isProductCheckout ? this.productTotal : this.totalAmount);
-      const customerName = `${this.basicDetailsForm.get('firstName')?.value} ${
-        this.basicDetailsForm.get('lastName')?.value
-      }`;
-      // Create a payment order
+      const common = {
+        currency: this.currencyCode,
+        addressId: this.addressId,
+        billingAddressId: this.addressId,
+        promoCode: this.appliedPromoCode() ?? undefined,
+        franchisePaymentGatewayId: this.selectedGateway.franchisePaymentGatewayId,
+      };
+      let request: IPublicProductOrderRequest | IPublicPlanOrderRequest;
       if (this.isProductCheckout) {
         if (!this.productId || !this.productVariantId) {
           throw new Error('Product ID or Variant ID missing');
         }
-        this.paymentOrderResponse =
-          await this.paymentService.createPaymentOrder(this.memberId, {
-            amount: totalAmount,
-            currency: this.currencyCode,
-            description: `Payment for ${this.productName}`,
-            franchisePaymentGatewayId:
-              this.selectedGateway.franchisePaymentGatewayId,
-            customer: {
-              name: customerName,
-              email: this.basicDetailsForm.get('email')?.value,
-              contact: this.basicDetailsForm.get('phone')?.value,
-            },
-            notes: {
-              productName: this.productName,
-              productSku: this.productSku,
+        request = {
+          ...common,
+          items: [
+            {
+              productId: this.productId,
+              productVariantId: this.productVariantId,
               quantity: this.productQuantity,
-              addressId: this.addressId,
-              orderNotes:
-                this.basicDetailsForm.get('orderNotes')?.value || undefined,
             },
-          });
+          ],
+        };
       } else {
         if (!this.programPlanId) {
           throw new Error('Program Plan ID missing');
         }
-        this.paymentOrderResponse =
-          await this.paymentService.createPlanPaymentOrder(this.memberId, {
-            amount: totalAmount,
-            currency: this.currencyCode,
-            description: `Payment for ${this.programPlan?.plan || 'Plan'}`,
-            franchisePaymentGatewayId:
-              this.selectedGateway.franchisePaymentGatewayId,
-            customer: {
-              name: customerName,
-              email: this.basicDetailsForm.get('email')?.value,
-              contact: this.basicDetailsForm.get('phone')?.value,
-            },
-            notes: {
-              programPlanId: this.programPlanId,
-              addressId: this.addressId,
-              orderNotes:
-                this.basicDetailsForm.get('orderNotes')?.value || undefined,
-            },
-          });
+        request = { ...common, programPlanId: this.programPlanId };
+      }
+      // Going back and paying again for the same selection reuses the same PENDING order.
+      const requestKey = JSON.stringify(request);
+      if (!this.checkoutOrder || this.checkoutOrderKey !== requestKey) {
+        const recaptchaToken = await this.getRecaptchaToken('checkout_order');
+        this.checkoutOrder = this.isProductCheckout
+          ? await this.checkoutService.createProductOrder(
+              this.memberId,
+              request as IPublicProductOrderRequest,
+              recaptchaToken,
+            )
+          : await this.checkoutService.createPlanOrder(
+              this.memberId,
+              request as IPublicPlanOrderRequest,
+              recaptchaToken,
+            );
+        if (!this.checkoutOrder) {
+          throw new Error('Failed to create your order. Please try again.');
+        }
+        this.checkoutOrderKey = requestKey;
       }
       // Move to a payment step
       this.moveToNextStep();
       await this.initializePaymentFlow();
     } catch (error: unknown) {
-      console.error('Error creating payment order:', error);
-      this.error =
-        error instanceof Error
-          ? error.message
-          : 'Failed to create payment order. Please try again.';
+      console.error('Error creating order:', error);
+      this.error = this.errorMessage(error, 'Failed to create your order. Please try again.');
     } finally {
+      this.cdr.markForCheck();
       this.loading = false;
     }
   }
 
   /**
-   * Step 5: Initialize payment flow
+   * Step 5: Open the gateway checkout for the server-created order
    */
   async initializePaymentFlow(): Promise<void> {
-    if (!this.paymentOrderResponse) {
-      this.error = 'Payment order not created. Please go back and try again.';
+    if (!this.checkoutOrder) {
+      this.error = 'Order not created. Please go back and try again.';
       return;
     }
     try {
       this.processingPayment = true;
       this.showPaymentModal = true;
       this.error = null;
+      const description = this.isProductCheckout
+        ? `Payment for ${this.productName || 'products'}`
+        : `Payment for ${this.programPlan?.plan || 'plan'}`;
       await this.paymentService.initializePayment(
-        this.paymentOrderResponse,
-        async (paymentId: string, orderId: string, signature?: string) => {
-          // Payment successful callback
+        this.checkoutOrder.gateway,
+        description,
+        async (paymentId: string, orderId: string, signature: string) => {
           await this.handlePaymentSuccess(paymentId, orderId, signature);
         },
-        (error: unknown) => {
-          // Payment failed callback
+        (error: Error) => {
           this.handlePaymentError(error);
         },
       );
@@ -669,145 +752,68 @@ export class CheckoutComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Handle successful payment
+   * The gateway reported success: ask the server to verify it with the gateway.
+   * If it cannot confirm yet, the webhook will; the success page shows the live status.
    */
   async handlePaymentSuccess(
     paymentId: string,
     orderId: string,
-    signature?: string,
+    signature: string,
   ): Promise<void> {
+    this.orderId = orderId;
+    this.paymentId = paymentId;
+    let verified = false;
     try {
       if (!this.memberId) {
         throw new Error('Member ID is required');
       }
-      // Verify payment
+      const verifyRequest = { orderId, paymentId, signature };
       const verifyResponse = this.isProductCheckout
-        ? await this.paymentService.verifyPayment(this.memberId, {
-            gatewayCode: this.paymentOrderResponse.gatewayCode,
-            paymentId: paymentId,
-            orderId: orderId,
-            signature: signature,
-          })
-        : await this.paymentService.verifyPlanPayment(this.memberId, {
-            gatewayCode: this.paymentOrderResponse.gatewayCode,
-            paymentId: paymentId,
-            orderId: orderId,
-            signature: signature,
-          });
-      if (!verifyResponse.verified) {
-        throw new Error('Payment verification failed');
-      }
-      const discountAmount = this.taxCalculation?.discountAmount || 0;
-      const totalAmount =
-        this.taxCalculation?.totalAmount ||
-        (this.isProductCheckout ? this.productTotal : this.totalAmount);
-      let recaptchaToken: string | undefined;
-      if (this.recaptchaService.isAvailable()) {
-        try {
-          recaptchaToken =
-            await this.recaptchaService.getToken('checkout_order');
-        } catch (recaptchaError: unknown) {
-          console.warn(
-            'Failed to get reCAPTCHA token for order:',
-            recaptchaError,
-          );
-        }
-      }
-      if (this.isProductCheckout) {
-        if (!this.productId || !this.productVariantId) {
-          throw new Error('Product ID or Variant ID missing');
-        }
-        const orderData: IManageMemberProduct = {
-          paymentModeId: null,
-          billingAddressId: this.addressId!,
-          addressId: this.addressId!,
-          transactionId: paymentId,
-          paymentStatusId: PaymentStatusEnum.PAID,
-          paymentDate: new Date(),
-          currency: this.currencyCode,
-          promoCode: undefined,
-          gstNumber: undefined,
-          paymentSource: PaymentSourceEnum.PAYMENT_GATEWAY,
-          discountAmount: discountAmount,
-          paymentLink: undefined,
-          gatewayProvider: this.paymentOrderResponse.gatewayCode,
-          gatewayOrderId: orderId,
-          gatewayPaymentId: paymentId,
-          paymentGatewayResponse: verifyResponse.paymentDetails || {
-            paymentId: paymentId,
-            orderId: orderId,
-            signature: signature,
-            gatewayCode: this.paymentOrderResponse.gatewayCode,
-            verified: verifyResponse.verified,
-          },
-          orderItems: [
-            {
-              productId: this.productId,
-              productVariantId: this.productVariantId,
-              quantity: this.productQuantity,
-              currency: this.currencyCode,
-            },
-          ],
-        };
-        await this.checkoutService.createProductOrder(
-          this.memberId,
-          orderData,
-          recaptchaToken,
-        );
-      } else {
-        if (!this.programPlanId) {
-          throw new Error('Program Plan ID missing');
-        }
-        const orderData: IManageMemberPayment = {
-          memberId: this.memberId,
-          paymentModeId: null,
-          billingAddressId: this.addressId,
-          addressId: this.addressId,
-          transactionId: paymentId,
-          paymentDate: new Date(),
-          paymentStatusId: PaymentStatusEnum.PAID,
-          programPlanId: this.programPlanId,
-          currency: this.currencyCode,
-          promoCode: undefined,
-          gstNumber: undefined,
-          paymentSource: PaymentSourceEnum.PAYMENT_GATEWAY,
-          discountAmount: discountAmount,
-          gatewayProvider: this.paymentOrderResponse.gatewayCode,
-          gatewayOrderId: orderId,
-          gatewayPaymentId: paymentId,
-          paymentGatewayResponse: verifyResponse.paymentDetails || {
-            paymentId: paymentId,
-            orderId: orderId,
-            signature: signature,
-            gatewayCode: this.paymentOrderResponse.gatewayCode,
-            verified: verifyResponse.verified,
-          },
-        };
-        await this.checkoutService.createPlanOrder(
-          this.memberId,
-          orderData,
-          recaptchaToken,
-        );
-      }
-      // Success - move to a result step
-      this.processingPayment = false;
-      this.showPaymentModal = false;
-      this.paymentSuccess = true;
-      this.orderId = orderId;
-      this.paymentId = paymentId;
-      this.moveToNextStep();
-      // Automatically navigate to success page after a short delay to let user see success state
-      if (isPlatformBrowser(this.platformId)) {
-        setTimeout(() => {
-          this.navigateToSuccess();
-        }, 1500);
-      } else {
-        this.navigateToSuccess();
-      }
+        ? await this.paymentService.verifyPayment(this.memberId, verifyRequest)
+        : await this.paymentService.verifyPlanPayment(this.memberId, verifyRequest);
+      verified = verifyResponse.verified;
     } catch (error: unknown) {
-      console.error('Error processing payment:', error);
-      this.handlePaymentError(error);
+      console.warn('Payment verification did not complete; the webhook will confirm it:', error);
     }
+    this.processingPayment = false;
+    this.showPaymentModal = false;
+    this.paymentSuccess = true;
+    this.paymentPending = !verified;
+    this.moveToStep(this.STEP_INDICES.RESULT);
+    // Let the customer see the result, then show the order (and its live status)
+    if (isPlatformBrowser(this.platformId)) {
+      setTimeout(() => {
+        this.navigateToSuccess();
+      }, 1500);
+    } else {
+      this.navigateToSuccess();
+    }
+  }
+
+  private async getRecaptchaToken(action: string): Promise<string | undefined> {
+    if (!this.recaptchaService.isAvailable()) {
+      return undefined;
+    }
+    try {
+      return await this.recaptchaService.getToken(action);
+    } catch (recaptchaError: unknown) {
+      console.warn('Failed to get reCAPTCHA token:', recaptchaError);
+      return undefined;
+    }
+  }
+
+  /** API errors arrive as `{ status, message }` objects, not Error instances. */
+  private errorMessage(error: unknown, fallback: string): string {
+    if (error instanceof Error && error.message) {
+      return error.message;
+    }
+    if (typeof error === 'object' && error !== null && 'message' in error) {
+      const message = (error as { message: unknown }).message;
+      if (typeof message === 'string' && message) {
+        return message;
+      }
+    }
+    return fallback;
   }
 
   /**
@@ -817,10 +823,8 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     this.processingPayment = false;
     this.showPaymentModal = false;
     this.paymentSuccess = false;
-    this.paymentError =
-      error instanceof Error
-        ? error.message
-        : 'Payment failed. Please try again.';
+    this.paymentPending = false;
+    this.paymentError = this.errorMessage(error, 'Payment failed. Please try again.');
     this.moveToStep(this.STEP_INDICES.RESULT);
   }
 
@@ -952,6 +956,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
       this.error =
         'Failed to check payment gateway availability. Please try again.';
     } finally {
+      this.cdr.markForCheck();
       this.paymentGatewayLoading = false;
     }
   }
@@ -990,6 +995,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
           ? error.message
           : 'Failed to load product details.';
     } finally {
+      this.cdr.markForCheck();
       this.loading = false;
     }
   }
@@ -1061,6 +1067,65 @@ export class CheckoutComponent implements OnInit, OnDestroy {
           : 'There was an issue with your payment.';
       default:
         return '';
+    }
+  }
+
+  /**
+   * Plans: an Indian billing address pays the INR fee; any other country pays the plan's
+   * foreign-currency fee when one exists (USD first), which makes the sale an export at 0%.
+   * Without one the INR fee applies and the server adds IGST (roadmap 4.6, decision 12).
+   */
+  private applyPlanCurrencyForBillingCountry(): void {
+    const fees = this.programPlan?.programPlanFees ?? [];
+    if (this.isProductCheckout || fees.length === 0) {
+      return;
+    }
+    const countryId = Number(this.basicDetailsForm.get('countryId')?.value);
+    const country = this.countryOptions.find((c) => Number(c.id) === countryId);
+    const isIndia = (country?.label || '').trim().toLowerCase() === 'india';
+    const inr = fees.find((f) => f.currencyCode === 'INR');
+    const foreign = fees.find((f) => f.currencyCode === 'USD') ?? fees.find((f) => f.currencyCode !== 'INR');
+    const fee = isIndia ? inr ?? fees[0] : foreign ?? inr ?? fees[0];
+    if (fee.currencyCode !== this.currencyCode) {
+      // A different currency is a different order: drop the previous quote
+      this.taxCalculation = null;
+    }
+    this.currencyCode = fee.currencyCode;
+    this.orderAmount = fee.fees;
+  }
+
+  /**
+   * The billing address decides currency and tax: once it changes after being saved, the next
+   * step saves a new address and prices a new order instead of reusing the old one.
+   */
+  private resetSavedAddress(): void {
+    if (!this.addressId) {
+      return;
+    }
+    this.addressId = null;
+    this.checkoutOrder = null;
+    this.taxCalculation = null;
+  }
+
+  /** Customer-facing label for the tax the server decided. */
+  get taxLabel(): string {
+    const line = this.taxCalculation?.items?.[0];
+    if (!line) {
+      return 'Tax';
+    }
+    const pct = Number(line.taxPercentage || 0);
+    switch (line.taxMode) {
+      case TaxMode.EXPORT_OF_SERVICE:
+      case TaxMode.EXPORT_OF_GOODS:
+        return line.isLutApplied ? 'Export – 0% (LUT)' : `IGST ${pct}% (export)`;
+      case TaxMode.VAT:
+        if (line.taxCategory === TaxCategoryEnum.ZERO_RATED) return 'VAT 0% (zero-rated)';
+        if (line.taxCategory === TaxCategoryEnum.EXEMPT) return 'VAT exempt';
+        return `VAT ${pct}%`;
+      case TaxMode.DOMESTIC_GST:
+        return line.taxObj && 'IGST' in line.taxObj ? `IGST ${pct}%` : `GST ${pct}%`;
+      default:
+        return line.taxType === TaxTypeEnum.NONE ? 'No tax' : 'Tax';
     }
   }
 

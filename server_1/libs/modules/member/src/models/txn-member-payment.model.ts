@@ -28,7 +28,10 @@ import { TxnMemberDietPlan } from './txn-member-diet-plan.model';
 import {
   IMemberAddress,
   InputLengthEnum,
+  InvoiceSeriesEnum,
+  PaymentRouteEnum,
   PaymentSourceEnum,
+  TaxCategoryEnum,
   TaxMode,
   TaxTypeEnum,
 } from '@eatfit247-shared-lib';
@@ -285,12 +288,13 @@ export class TxnMemberPayment extends Model<TxnMemberPayment> {
     type: DataType.STRING(250),
   })
   declare transactionId: string;
+  // NULL while a public-checkout record is PENDING; set from the gateway capture time on PAID.
   @Column({
-    allowNull: false,
+    allowNull: true,
     field: 'payment_date',
     type: DataType.DATE,
   })
-  declare paymentDate: Date;
+  declare paymentDate: Date | null;
   @Column({
     allowNull: true,
     unique: true,
@@ -298,6 +302,30 @@ export class TxnMemberPayment extends Model<TxnMemberPayment> {
     type: DataType.STRING(100),
   })
   declare invoiceId: string;
+  @Column({
+    allowNull: true,
+    field: 'invoice_series',
+    type: DataType.STRING(10),
+  })
+  declare invoiceSeries: InvoiceSeriesEnum | null;
+  @Column({
+    allowNull: true,
+    field: 'invoice_date',
+    type: DataType.DATEONLY,
+  })
+  declare invoiceDate: string | null;
+  @Column({ allowNull: true, field: 'fx_rate', type: DataType.DECIMAL(18, 8) })
+  declare fxRate: number | null;
+  @Column({ allowNull: true, field: 'fx_rate_date', type: DataType.DATEONLY })
+  declare fxRateDate: string | null;
+  @Column({ allowNull: true, field: 'fx_source', type: DataType.STRING(20) })
+  declare fxSource: string | null;
+  @Column({ allowNull: true, field: 'functional_currency', type: DataType.STRING(3) })
+  declare functionalCurrency: string | null;
+  @Column({ allowNull: true, field: 'functional_total_amount', type: DataType.DECIMAL(14, 3) })
+  declare functionalTotalAmount: number | null;
+  @Column({ allowNull: true, field: 'functional_tax_amount', type: DataType.DECIMAL(14, 3) })
+  declare functionalTaxAmount: number | null;
   @Column({
     allowNull: false,
     field: 'payment_status_id',
@@ -383,6 +411,19 @@ export class TxnMemberPayment extends Model<TxnMemberPayment> {
   declare gatewayPaymentId: string;
   @Column({
     allowNull: true,
+    field: 'franchise_payment_gateway_id',
+    type: DataType.INTEGER,
+  })
+  declare franchisePaymentGatewayId: number | null;
+  /** Checkout token (jti) that created a public-checkout record; scopes public invoice downloads. */
+  @Column({
+    allowNull: true,
+    field: 'checkout_session_id',
+    type: DataType.STRING(64),
+  })
+  declare checkoutSessionId: string | null;
+  @Column({
+    allowNull: true,
     field: 'payment_link',
     type: DataType.STRING(500),
   })
@@ -466,6 +507,42 @@ export class TxnMemberPayment extends Model<TxnMemberPayment> {
     customerCountry: string;
     placeOfSupply: string;
   };
+  @Column({
+    allowNull: true,
+    field: 'invoice_note',
+    type: DataType.TEXT,
+  })
+  declare invoiceNote: string | null;
+  @Column({
+    allowNull: true,
+    field: 'tax_category',
+    type: DataType.STRING(20),
+  })
+  declare taxCategory: TaxCategoryEnum | null;
+  @Column({
+    allowNull: true,
+    field: 'lut_arn',
+    type: DataType.STRING(30),
+  })
+  declare lutArn: string | null;
+  @Column({
+    allowNull: true,
+    field: 'tax_decision_reason',
+    type: DataType.STRING(255),
+  })
+  declare taxDecisionReason: string | null;
+  @Column({
+    allowNull: true,
+    field: 'payment_route',
+    type: DataType.ENUM(...Object.values(PaymentRouteEnum)),
+  })
+  declare paymentRoute: PaymentRouteEnum | null;
+  @Column({
+    allowNull: true,
+    field: 'remittance_reference',
+    type: DataType.STRING(100),
+  })
+  declare remittanceReference: string | null;
 
   @Column({
     allowNull: false,

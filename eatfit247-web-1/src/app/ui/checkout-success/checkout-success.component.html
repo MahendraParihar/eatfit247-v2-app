@@ -10,6 +10,17 @@
           @if (error()) {
             <h1>Something went <span class="accent">wrong</span>.</h1>
             <p class="lead">{{ error() }}</p>
+          } @else if (orderStatus() === 'pending') {
+            <h1>Confirming your <span class="accent">payment</span>.</h1>
+            @if (statusCheckExhausted) {
+              <p class="lead">This is taking longer than usual. If money was deducted, your order will be confirmed
+                automatically; you can refresh this page or contact us with your order number.</p>
+            } @else {
+              <p class="lead">We are confirming your payment with the payment gateway. This page updates on its own.</p>
+            }
+          } @else if (orderStatus() === 'failed') {
+            <h1>Payment <span class="accent">not completed</span>.</h1>
+            <p class="lead">Your payment did not go through and no order has been confirmed. Please try again or contact us.</p>
           } @else {
             <h1>Order placed <span class="accent">successfully</span>.</h1>
             <p class="lead">Thank you for your order. We've received your payment and will process your order shortly.</p>
@@ -18,8 +29,8 @@
         <div class="page-hero__visual" aria-hidden="true">
           <div class="ring"></div>
           <div class="ring ring--inner"></div>
-          <div class="disc">{{ error() ? 'error' : 'verified' }}</div>
-          @if (!error()) {
+          <div class="disc">{{ error() ? 'error' : orderStatus() === 'pending' ? 'hourglass_top' : orderStatus() === 'failed' ? 'cancel' : 'verified' }}</div>
+          @if (!error() && orderStatus() === 'paid') {
             <div class="chip chip--a"><span class="mat-icon">payments</span>Paid</div>
             <div class="chip chip--b"><span class="mat-icon">local_shipping</span>Processing</div>
           }
@@ -54,10 +65,12 @@
                 <span class="info-value">{{ orderDetails.invoiceId }}</span>
               </div>
             }
-            <div class="info-row">
-              <span class="info-label">Order Date</span>
-              <span class="info-value">{{ orderDetails.paymentDate | date : 'medium' }}</span>
-            </div>
+            @if (orderDetails.paymentDate) {
+              <div class="info-row">
+                <span class="info-label">Payment Date</span>
+                <span class="info-value">{{ orderDetails.paymentDate | date : 'medium' }}</span>
+              </div>
+            }
             @if (orderDetails.paymentStatus) {
               <div class="info-row">
                 <span class="info-label">Payment Status</span>
@@ -164,7 +177,8 @@
         </div>
       </div>
 
-      <!-- Invoice -->
+      <!-- Invoice (only once the payment is confirmed) -->
+      @if (canDownloadInvoice) {
       <div class="feature-card invoice-card">
         <div class="invoice-info">
           <span class="mat-icon invoice-icon">description</span>
@@ -182,6 +196,7 @@
           @if (downloadingInvoice) { Downloading... } @else { Download Invoice }
         </button>
       </div>
+      }
 
       <!-- Contact -->
       <div class="feature-card contact-card">

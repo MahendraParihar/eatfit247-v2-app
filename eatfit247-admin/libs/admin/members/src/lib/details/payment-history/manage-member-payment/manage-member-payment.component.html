@@ -217,6 +217,18 @@
                       <p><strong>Note:</strong> {{ invoiceNote }}</p>
                     </div>
                   }
+                  @if (taxDecisionReason) {
+                    <div class="tax-reason">
+                      <mat-icon>info</mat-icon>
+                      <span>{{ taxDecisionReason }}</span>
+                    </div>
+                  }
+                  @for (warning of taxWarnings; track warning) {
+                    <div class="tax-warning">
+                      <mat-icon>warning</mat-icon>
+                      <span>{{ warning }}</span>
+                    </div>
+                  }
                 </div>
               }
 
@@ -291,6 +303,7 @@
 
                     <mat-form-field appearance="outline" class="half-width">
                       <mat-label>Transaction ID*</mat-label>
+                      <mat-hint>For a payment from abroad, the FIRC / e-FIRA number</mat-hint>
                       <input
                         matInput
                         formControlName="transactionId"
@@ -338,41 +351,32 @@
                       <shared-ui-input-error [control]="formGroup.get('franchisePaymentGatewayId')"></shared-ui-input-error>
                     </mat-form-field>
 
-                    @if (formGroup.get('franchisePaymentGatewayId')?.value) {
-                      <div class="payment-link-section">
-                        @if (!paymentLink()) {
-                          <button
-                            mat-raised-button
-                            color="primary"
-                            (click)="createPaymentLinkIfNeeded()"
-                            [disabled]="creatingPaymentLink() || totalAmount <= 0">
-                            @if (creatingPaymentLink()) {
-                              <mat-spinner diameter="20" style="display: inline-block; margin-right: 8px"></mat-spinner>
-                            }
-                            Generate Payment Link
-                          </button>
-                        } @else {
-                          <div class="payment-link-display">
-                            <h4>Payment Link Generated</h4>
-                            <div class="link-container">
-                              <input 
-                                matInput 
-                                [value]="paymentLink()" 
-                                readonly 
-                                class="link-input"
-                              />
-                              <button mat-icon-button (click)="copyPaymentLink()" matTooltip="Copy link">
-                                <mat-icon>content_copy</mat-icon>
-                              </button>
-                              <button mat-icon-button (click)="sharePaymentLink()" matTooltip="Share link">
-                                <mat-icon>share</mat-icon>
-                              </button>
-                            </div>
-                            <p class="link-hint">Share this link with the member to complete payment</p>
+                    <div class="payment-link-section">
+                      @if (paymentLink()) {
+                        <div class="payment-link-display">
+                          <h4>{{ linkCreatedOnSave() ? 'Payment saved — link created' : 'Payment Link' }}</h4>
+                          <div class="link-container">
+                            <input matInput [value]="paymentLink()" readonly class="link-input" />
+                            <button mat-icon-button (click)="copyPaymentLink()" matTooltip="Copy link">
+                              <mat-icon>content_copy</mat-icon>
+                            </button>
+                            <button mat-icon-button (click)="sharePaymentLink()" matTooltip="Share link">
+                              <mat-icon>share</mat-icon>
+                            </button>
                           </div>
-                        }
-                      </div>
-                    }
+                          <p class="link-hint">Share this link with the member. The payment becomes Paid when the gateway confirms it.</p>
+                        </div>
+                      } @else if (!isEditMode) {
+                        <p class="link-hint">
+                          The payment link is created when you save, for the saved total. Status and payment date are set by the gateway.
+                        </p>
+                      }
+                      @if (isGatewayPaymentEdit()) {
+                        <p class="link-hint">
+                          The plan, currency, discount and billing address of a gateway payment are locked (they are what the gateway charges). To change them, cancel the link from the payment history and create a new payment.
+                        </p>
+                      }
+                    </div>
                   }
                 </div>
               }
@@ -380,17 +384,25 @@
               <div class="step-actions">
                 <button mat-button (click)="stepper.previous()">Previous</button>
                 <button mat-button (click)="onCancel()">Cancel</button>
-                <button
-                  mat-raised-button
-                  color="primary"
-                  (click)="onSubmit()"
-                  [disabled]="submitting() || formGroup.invalid || (isManualPaymentSource() && !canProceedToStep3()) || !isPaymentLinkRequiredAndGenerated()"
-                >
-                  @if (submitting()) {
-                    <mat-spinner diameter="20" style="display: inline-block; margin-right: 8px"></mat-spinner>
-                  }
-                  {{ isEditMode ? 'Update' : 'Create' }} Payment
-                </button>
+                @if (linkCreatedOnSave()) {
+                  <button mat-raised-button color="primary" (click)="dialogRef.close(true)">Done</button>
+                } @else {
+                  <button
+                    mat-raised-button
+                    color="primary"
+                    (click)="onSubmit()"
+                    [disabled]="submitting() || formGroup.invalid || (isManualPaymentSource() && !canProceedToStep3()) || !isPaymentLinkRequiredAndGenerated()"
+                  >
+                    @if (submitting()) {
+                      <mat-spinner diameter="20" style="display: inline-block; margin-right: 8px"></mat-spinner>
+                    }
+                    @if (!isEditMode && !isManualPaymentSource()) {
+                      Save &amp; Create Payment Link
+                    } @else {
+                      {{ isEditMode ? 'Update' : 'Create' }} Payment
+                    }
+                  </button>
+                }
               </div>
             </div>
           </mat-step>

@@ -2,12 +2,14 @@ import {
   IsArray,
   IsDateString,
   IsEnum,
+  IsInt,
   IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
   MaxLength,
   Min,
+  ValidateIf,
   ValidateNested,
 } from 'class-validator';
 import {
@@ -17,6 +19,7 @@ import {
   IMemberProductOrderItemBasic,
   IProductVariantTaxResult,
   InputLengthEnum,
+  PaymentRouteEnum,
   PaymentSourceEnum,
 } from '@eatfit247-shared-lib';
 import { Type } from 'class-transformer';
@@ -42,9 +45,12 @@ export class CreateMemberProductDto implements IManageMemberProduct {
   @IsString()
   @MaxLength(InputLengthEnum.CHAR_250)
   transactionId?: string;
+  // Manual payments only: a payment-gateway record's status and date are set by the gateway
+  @ValidateIf((o: { paymentSource?: PaymentSourceEnum }) => o.paymentSource === PaymentSourceEnum.MANUAL)
   @IsNotEmpty()
   @IsDateString()
   paymentDate!: Date;
+  @ValidateIf((o: { paymentSource?: PaymentSourceEnum }) => o.paymentSource === PaymentSourceEnum.MANUAL)
   @IsNotEmpty()
   @IsNumber()
   paymentStatusId!: number;
@@ -76,6 +82,20 @@ export class CreateMemberProductDto implements IManageMemberProduct {
   @IsOptional()
   @IsString()
   gatewayOrderId?: string;
+  /** Payment-gateway records: the admin's gateway choice; the server creates the link after saving. */
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  franchisePaymentGatewayId?: number;
+  /** Manual orders only: how the money arrived (gateway routes are set by the server) */
+  @IsOptional()
+  @IsEnum(PaymentRouteEnum)
+  paymentRoute?: PaymentRouteEnum | null;
+  /** FIRC / e-FIRA / bank reference for a foreign route */
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  remittanceReference?: string | null;
   @IsOptional()
   @IsString()
   @MaxLength(InputLengthEnum.CHAR_100)

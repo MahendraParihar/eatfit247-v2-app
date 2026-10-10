@@ -3,13 +3,11 @@ import { FormGroup } from '@angular/forms';
 import {
   CommonUtil,
   ICalculateTaxResponse,
-  ICreatePaymentLinkRequest,
   IDropdownItem,
   IManageMemberPayment,
   IMemberPayment,
-  IPaymentLinkResponse,
   IPlanTaxCalculationRequest,
-  PaymentSourceEnum
+  PaymentSourceEnum,
 } from '@eatfit247-shared-lib';
 import { MembersApiService } from '../../../api.service';
 
@@ -20,6 +18,10 @@ export interface PaymentFormData {
   currencyCode: string;
   billingAddressId?: number;
   addressId?: number;
+  /** Manual payments: how the money arrived and when (tax decision, roadmap 4.6) */
+  paymentSource?: PaymentSourceEnum;
+  paymentModeId?: number | null;
+  paymentDate?: string | null;
 }
 
 @Injectable({
@@ -45,6 +47,9 @@ export class PaymentFormService {
       currency: formData.currencyCode,
       billingAddressId: formData.billingAddressId,
       addressId: formData.addressId,
+      paymentSource: formData.paymentSource,
+      paymentModeId: formData.paymentSource === PaymentSourceEnum.MANUAL ? formData.paymentModeId || null : null,
+      paymentDate: formData.paymentSource === PaymentSourceEnum.MANUAL ? formData.paymentDate || null : null,
     };
     try {
       return await this.apiService.calculateTax(memberId, request);
@@ -120,7 +125,8 @@ export class PaymentFormService {
       noOfDaysInCycle: Number(
         getValue('noOfDaysInCycle') || formGroup.value.noOfDaysInCycle || 0
       ),
-      paymentSource: formGroup.value.paymentSource,
+      // get(): the source control is disabled when editing a gateway payment
+      paymentSource: formGroup.get('paymentSource')?.value,
       currency:
         getValue('currencyCode') || formGroup.value.currencyCode || 'INR',
       discountAmount: Number(
@@ -129,43 +135,18 @@ export class PaymentFormService {
       promoCode: '',
       paymentDate: formattedPaymentDate || CommonUtil.formatDateForAPI(new Date()) || undefined,
     };
-    // Add gateway-specific fields for non-manual payments
-    const paymentSource = formGroup.value.paymentSource;
+    // Gateway payments: only the gateway choice is sent. The server saves the record first,
+    // then creates the link for the stored total (status, date and ids are the gateway's).
+    const paymentSource = formGroup.get('paymentSource')?.value;
     const isManual =
       paymentSource === PaymentSourceEnum?.MANUAL || paymentSource === 'MANUAL';
     if (!isManual) {
-      payload.paymentLink = formGroup.value.paymentLink;
-      payload.gatewayProvider = formGroup.value.gatewayProvider;
-      payload.gatewayOrderId = formGroup.value.gatewayOrderId;
+      payload.franchisePaymentGatewayId = formGroup.get('franchisePaymentGatewayId')?.value || undefined;
+      delete payload.paymentStatusId;
+      delete payload.paymentDate;
+      delete payload.transactionId;
     }
     return payload as IManageMemberPayment;
-  }
-
-  /**
-   * Create payment link
-   */
-  async createPaymentLink(
-    memberId: number,
-    totalAmount: number,
-    currencyCode: string,
-    franchisePaymentGatewayId: number,
-    programId: number,
-    programPlanId: number,
-    programName: string,
-    planName: string
-  ): Promise<IPaymentLinkResponse> {
-    const request: ICreatePaymentLinkRequest = {
-      amount: totalAmount,
-      currency: currencyCode,
-      franchisePaymentGatewayId,
-      description: `Payment for ${programName} - ${planName}`,
-      notes: {
-        memberId: memberId.toString(),
-        programId: programId?.toString(),
-        programPlanId: programPlanId?.toString(),
-      },
-    };
-    return await this.apiService.createPaymentLink(memberId, request);
   }
 
   /**
@@ -201,6 +182,11 @@ export class PaymentFormService {
       addressId:
         step1FormGroup?.get('addressId')?.value ||
         formGroup.get('addressId')?.value,
+      paymentSource: formGroup.get('paymentSource')?.value,
+      paymentModeId: formGroup.get('paymentModeId')?.value || null,
+      paymentDate: formGroup.get('paymentDate')?.value
+        ? CommonUtil.formatDateForAPI(formGroup.get('paymentDate')?.value) || null
+        : null,
     };
   }
 

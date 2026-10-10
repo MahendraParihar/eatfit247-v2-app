@@ -47,17 +47,21 @@ export function mapPaymentToInvoiceDocument(
     payment.taxObj || {},
     taxType,
     taxMode,
+    payment.taxCategory,
   );
+  // An entry without an invoice number is a proforma (no tax invoice, no QR)
+  const isProforma = !payment.invoiceId;
   // Determine if QR code should be enabled
-  const qrCodeEnabled = taxType === TaxTypeEnum.GST && taxMode === TaxMode.DOMESTIC_GST;
+  const qrCodeEnabled = !isProforma && taxType === TaxTypeEnum.GST && taxMode === TaxMode.DOMESTIC_GST;
   // Build QR code value if enabled
   let qrCodeValue = '';
+  const invoiceDate = invoiceDateOf(payment.invoiceDate, payment.paymentDate);
   if (qrCodeEnabled && franchise.gstNumber) {
     const taxableAmount = payment.orderAmount;
     qrCodeValue = buildQrCodeValue(
       franchise.gstNumber,
       payment.invoiceId || '',
-      payment.paymentDate.toString(),
+      invoiceDate,
       payment.totalAmount,
       payment.taxAmount,
       taxableAmount,
@@ -78,18 +82,21 @@ export function mapPaymentToInvoiceDocument(
     },
   );
   // Build tax note
-  const taxNote = buildTaxNote(taxMode, payment.invoiceNote);
+  const taxNote = withProformaNote(isProforma, taxType, buildTaxNote(taxMode, payment.invoiceNote));
   return {
     header: {
       brandName: franchise.companyName,
-      title: taxType === TaxTypeEnum.GST ? 'TAX INVOICE' : 'INVOICE',
-      invoiceNumber: payment.invoiceId || `INV-${payment.memberPaymentId}`,
-      invoiceDate: payment.paymentDate.toString(),
+      title: invoiceTitle(isProforma, taxType),
+      invoiceNumber: payment.invoiceId || '',
+      invoiceDate,
+      isProforma,
       currency: payment.currency,
+      ...placeOfSupplyOf(taxType, taxMode, memberAddress, payment.jurisdiction?.placeOfSupply),
     },
     seller,
     buyer,
     items,
+    fx: fxSectionOf(payment),
     pricing: {
       subtotal: payment.orderAmount,
       discount: payment.discountAmount,
@@ -103,6 +110,8 @@ export function mapPaymentToInvoiceDocument(
       rows: taxRows,
       totalTax: payment.taxAmount,
       note: taxNote,
+      lutArn: payment.isLutApplied ? payment.lutArn || undefined : undefined,
+      taxCategory: payment.taxCategory || undefined,
     },
     total: {
       label: 'Total Amount Payable',
@@ -130,22 +139,29 @@ export function mapPaymentToInvoiceDocument(
 /**
  * Builds tax rows from taxObj
  */
+/** UAE VAT category letters for invoice lines (Executive Regulation Art 59). */
+const VAT_CATEGORY_CODES: Record<string, string> = {
+  STANDARD: 'S',
+  ZERO_RATED: 'Z',
+  EXEMPT: 'E',
+  OUT_OF_SCOPE: 'O',
+};
+
 export function buildTaxRows(
   taxObj: Record<string, { amount: number; taxPercentage: number }>,
   taxType: TaxTypeEnum,
   taxMode: TaxMode,
+  taxCategory?: string | null,
 ): IInvoiceTaxRow[] {
   if (taxMode === TaxMode.NO_TAX || taxMode === TaxMode.RCM_IMPORT_SERVICE) {
     return [];
   }
-  if (taxMode === TaxMode.EXPORT_OF_SERVICE) {
-    return [
-      {
-        label: 'GST',
-        amount: 0,
-        percentage: 0,
-      },
-    ];
+  if (taxMode === TaxMode.EXPORT_OF_SERVICE || taxMode === TaxMode.EXPORT_OF_GOODS) {
+    // Export without a valid LUT: IGST is charged (and refundable); under LUT: IGST at 0%
+    if (taxObj['IGST']) {
+      return [{ label: 'IGST', amount: taxObj['IGST'].amount, percentage: taxObj['IGST'].taxPercentage }];
+    }
+    return [{ label: 'IGST', amount: 0, percentage: 0 }];
   }
   const rows: IInvoiceTaxRow[] = [];
   // For GST (DOMESTIC_GST)
@@ -174,13 +190,13 @@ export function buildTaxRows(
   }
   // For VAT
   if (taxType === TaxTypeEnum.VAT && taxMode === TaxMode.VAT) {
-    if (taxObj['VAT']) {
-      rows.push({
-        label: 'VAT',
-        amount: taxObj['VAT'].amount,
-        percentage: taxObj['VAT'].taxPercentage,
-      });
-    }
+    const code = taxCategory ? VAT_CATEGORY_CODES[taxCategory] : undefined;
+    const vat = taxObj['VAT'] ?? { amount: 0, taxPercentage: 0 };
+    rows.push({
+      label: code ? `VAT (${code})` : 'VAT',
+      amount: vat.amount,
+      percentage: vat.taxPercentage,
+    });
   }
   // For US Sales Tax
   if (taxType === TaxTypeEnum.SALES_TAX) {
@@ -256,15 +272,19 @@ function buildSellerInfo(
   taxType: TaxTypeEnum,
   franchiseAddress: IAddress,
 ): IInvoiceDocument['seller'] {
-  // Determine tax ID and label based on a tax type
+  // The supplier's own registration, printed whenever it is registered (roadmap 4.6, decision 18):
+  // an Indian franchise shows its GSTIN, any other its VAT number (UAE: TRN). An unregistered
+  // franchise has neither and shows none.
+  const supplierCountry = (franchiseAddress.countryCode || '').trim().toUpperCase();
+  const isIndian = supplierCountry ? supplierCountry === 'IN' : taxType === TaxTypeEnum.GST;
   let taxId: string | undefined;
   let taxIdLabel: string | undefined;
-  if (taxType === TaxTypeEnum.GST) {
-    taxId = franchise.gstNumber;
+  if (isIndian && franchise.gstNumber?.trim()) {
+    taxId = franchise.gstNumber.trim();
     taxIdLabel = 'GSTIN';
-  } else if (taxType === TaxTypeEnum.VAT) {
-    taxId = franchise.vatNumber;
-    taxIdLabel = 'VAT No.';
+  } else if (!isIndian && franchise.vatNumber?.trim()) {
+    taxId = franchise.vatNumber.trim();
+    taxIdLabel = supplierCountry === 'AE' ? 'TRN' : 'VAT No.';
   }
   // Use franchise address if provided, otherwise use placeholders
   // Note: IAddress has state and country as strings (from relationships)
@@ -334,6 +354,93 @@ function buildBuyerInfo(
   };
 }
 
+export const PROFORMA_TITLE = 'PROFORMA INVOICE';
+
+/** How each exchange-rate source is named on the invoice. */
+const FX_SOURCE_LABELS: Record<string, string> = {
+  FBIL: 'FBIL reference rate',
+  CBUAE_PEG: 'UAE Central Bank peg',
+  CBIC_CUSTOMS: 'CBIC customs rate',
+  MANUAL: 'manual entry',
+};
+
+/** Functional-currency equivalents saved at issue; absent for same-currency invoices or while FX is pending. */
+function fxSectionOf(record: {
+  currency: string;
+  fxRate?: number | null;
+  fxRateDate?: string | null;
+  fxSource?: string | null;
+  functionalCurrency?: string | null;
+  functionalTotalAmount?: number | null;
+  functionalTaxAmount?: number | null;
+}): IInvoiceDocument['fx'] {
+  if (!record.fxRate || !record.functionalCurrency || !record.fxRateDate) {
+    return undefined;
+  }
+  return {
+    // Readable on the PDF: six decimals for the rate
+    rate: Math.round(Number(record.fxRate) * 1e6) / 1e6,
+    rateDate: String(record.fxRateDate),
+    source: FX_SOURCE_LABELS[record.fxSource || ''] ?? record.fxSource ?? '',
+    fromCurrency: record.currency,
+    currency: record.functionalCurrency,
+    totalAmount: Number(record.functionalTotalAmount || 0),
+    taxAmount: Number(record.functionalTaxAmount || 0),
+  };
+}
+
+/**
+ * Indian GST invoices (Rule 46): place of supply as "State (code)" for domestic supplies, the
+ * country for exports, plus the country of destination for exports.
+ */
+function placeOfSupplyOf(
+  taxType: TaxTypeEnum,
+  taxMode: TaxMode,
+  buyerAddress: IAddress,
+  storedPlaceOfSupply?: string,
+): { placeOfSupply?: string; countryOfDestination?: string } {
+  if (taxType !== TaxTypeEnum.GST) {
+    return {};
+  }
+  if (taxMode === TaxMode.EXPORT_OF_SERVICE || taxMode === TaxMode.EXPORT_OF_GOODS) {
+    const country = storedPlaceOfSupply || buyerAddress.country || '';
+    return { placeOfSupply: country || undefined, countryOfDestination: country || undefined };
+  }
+  const state = (buyerAddress.state || '').trim();
+  const code = (buyerAddress.stateCode || '').trim();
+  const isIndianBuyer = (buyerAddress.countryCode || '').toUpperCase() === 'IN' || (buyerAddress.country || '').toLowerCase() === 'india';
+  if (state && isIndianBuyer) {
+    return { placeOfSupply: code ? `${state} (${code})` : state };
+  }
+  // A foreign client taxed IGST (not an export): the place of supply is their country
+  return storedPlaceOfSupply ? { placeOfSupply: storedPlaceOfSupply } : {};
+}
+
+function invoiceTitle(isProforma: boolean, taxType: TaxTypeEnum): string {
+  if (isProforma) return PROFORMA_TITLE;
+  // GST-registered (India) and VAT-registered (UAE, incl. 0% rules) suppliers issue tax invoices;
+  // an unregistered supplier (NONE rule) issues a plain invoice
+  return taxType === TaxTypeEnum.GST || taxType === TaxTypeEnum.VAT ? 'TAX INVOICE' : 'INVOICE';
+}
+
+/**
+ * The stored date of issue wins. Rows issued before invoice_date existed fall back to the payment
+ * date (what the PDF always printed). A proforma has neither, so it shows today.
+ */
+function invoiceDateOf(invoiceDate?: string | null, paymentDate?: Date | string | null): string {
+  return invoiceDate || paymentDate?.toString() || new Date().toISOString();
+}
+
+/** A proforma creates no tax liability, and says so before any tax note. */
+function withProformaNote(isProforma: boolean, taxType: TaxTypeEnum, taxNote?: string): string | undefined {
+  if (!isProforma) return taxNote;
+  const proformaNote =
+    taxType === TaxTypeEnum.GST
+      ? 'This is a proforma invoice and not a tax invoice under GST.'
+      : 'This is a proforma invoice and not a tax invoice.';
+  return taxNote ? `${proformaNote} ${taxNote}` : proformaNote;
+}
+
 /**
  * Builds tax note based on tax mode
  */
@@ -395,10 +502,16 @@ export function mapProductOrderToInvoiceDocument(
 ): IInvoiceDocument {
   const items = buildInvoiceOrderItem(productOrder);
 
+  // An entry without an invoice number is a proforma (no tax invoice, no QR)
+  const isProforma = !productOrder.invoiceId;
   // Determine if QR code should be enabled
-  const qrCodeEnabled = productOrder.orderItems[0].taxType === TaxTypeEnum.GST && productOrder.orderItems[0].taxMode === TaxMode.DOMESTIC_GST;
+  const qrCodeEnabled =
+    !isProforma &&
+    productOrder.orderItems[0].taxType === TaxTypeEnum.GST &&
+    productOrder.orderItems[0].taxMode === TaxMode.DOMESTIC_GST;
   // Build QR code value if enabled
   let qrCodeValue = '';
+  const invoiceDate = invoiceDateOf(productOrder.invoiceDate, productOrder.paymentDate);
   if (qrCodeEnabled && franchise.gstNumber) {
     const taxableAmount = productOrder.subTotalAmount;
     // Aggregate tax breakdown from first order item (same tax regime for all items in an order)
@@ -406,7 +519,7 @@ export function mapProductOrderToInvoiceDocument(
     qrCodeValue = buildQrCodeValue(
       franchise.gstNumber,
       productOrder.invoiceId || '',
-      productOrder.paymentDate?.toString() || '',
+      invoiceDate,
       productOrder.totalAmount,
       productOrder.taxAmount,
       taxableAmount,
@@ -427,18 +540,31 @@ export function mapProductOrderToInvoiceDocument(
     },
   );
   // Build tax note
-  const taxNote = buildTaxNote(productOrder.orderItems[0].taxMode, productOrder.orderItems[0].invoiceNote);
+  const taxNote = withProformaNote(
+    isProforma,
+    productOrder.orderItems[0].taxType,
+    buildTaxNote(productOrder.orderItems[0].taxMode, productOrder.orderItems[0].invoiceNote),
+  );
   return {
     header: {
       brandName: franchise.companyName,
-      title: productOrder.orderItems[0].taxType === TaxTypeEnum.GST ? 'TAX INVOICE' : 'INVOICE',
-      invoiceNumber: productOrder.invoiceId || `INV-${productOrder.memberProductId}`,
-      invoiceDate: productOrder.paymentDate?.toString() || new Date().toISOString(),
+      title: invoiceTitle(isProforma, productOrder.orderItems[0].taxType),
+      invoiceNumber: productOrder.invoiceId || '',
+      invoiceDate,
+      isProforma,
       currency: productOrder.currency,
+      // Goods: the place of supply is where they are delivered (the order's shipping snapshot)
+      ...placeOfSupplyOf(
+        productOrder.orderItems[0].taxType,
+        productOrder.orderItems[0].taxMode,
+        (productOrder.memberAddress?.address as IAddress | undefined) ?? memberAddress,
+        productOrder.orderItems[0].jurisdiction?.placeOfSupply,
+      ),
     },
     seller,
     buyer,
     items,
+    fx: fxSectionOf(productOrder),
     pricing: {
       subtotal: productOrder.subTotalAmount,
       discount: productOrder.discountAmount,
@@ -452,6 +578,8 @@ export function mapProductOrderToInvoiceDocument(
       rows: [],
       totalTax: productOrder.taxAmount,
       note: taxNote,
+      lutArn: productOrder.orderItems[0].isLutApplied ? productOrder.orderItems[0].lutArn || undefined : undefined,
+      taxCategory: productOrder.orderItems[0].taxCategory || undefined,
     },
     total: {
       label: 'Total Amount Payable',

@@ -1,7 +1,11 @@
 import { BelongsTo, Column, DataType, ForeignKey, Model, Table } from 'sequelize-typescript';
 import { TxnMemberProduct } from './txn-member-product.model';
 import { MstProduct, MstProductVariant } from '@server_1/models/product';
-import { TaxMode, TaxTypeEnum } from '@eatfit247-shared-lib';
+import {
+  TaxCategoryEnum,
+  TaxMode,
+  TaxTypeEnum,
+} from '@eatfit247-shared-lib';
 
 @Table({
   freezeTableName: true,
@@ -168,5 +172,23 @@ export class TxnMemberProductOrderItem extends Model<TxnMemberProductOrderItem> 
     type: DataType.TEXT,
   })
   declare invoiceNote: string;
+  @Column({
+    allowNull: true,
+    field: 'tax_category',
+    type: DataType.STRING(20),
+  })
+  declare taxCategory: TaxCategoryEnum | null;
+  @Column({
+    allowNull: true,
+    field: 'lut_arn',
+    type: DataType.STRING(30),
+  })
+  declare lutArn: string | null;
+  @Column({
+    allowNull: true,
+    field: 'tax_decision_reason',
+    type: DataType.STRING(255),
+  })
+  declare taxDecisionReason: string | null;
 }
 

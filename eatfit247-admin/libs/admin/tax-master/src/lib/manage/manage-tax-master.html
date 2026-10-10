@@ -109,6 +109,16 @@
             <shared-ui-input-error [control]="formGroup.get('effectiveTo')"></shared-ui-input-error>
           </mat-form-field>
 
+          <mat-form-field appearance="outline">
+            <mat-label>Tax category</mat-label>
+            <mat-select formControlName="taxCategory">
+              @for (category of taxCategories; track category.value) {
+                <mat-option [value]="category.value">{{ category.label }}</mat-option>
+              }
+            </mat-select>
+            <mat-hint>For VAT: a 0% rule must be zero-rated or exempt. Use tax system NONE for a franchise that isn't registered.</mat-hint>
+          </mat-form-field>
+
           <div class="checkbox-group">
             <mat-checkbox formControlName="isTaxInclusive">
               Tax Inclusive

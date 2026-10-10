@@ -1,6 +1,6 @@
 import { PaymentGatewayEnum } from '@eatfit247-shared-lib';
 import { Injectable } from '@nestjs/common';
-import { RazorpayService, StripeService, TelrService } from '@server_1/platform';
+import { IGatewayPaymentDetails, RazorpayService, StripeService, TelrService } from '@server_1/platform';
 
 /**
  * Payment Gateway Adapter Interface
@@ -71,6 +71,30 @@ export interface PaymentGatewayAdapter {
   ): Promise<{ verified: boolean; paymentDetails?: any }>;
 
   /**
+   * Fetch a payment from the gateway API (status, amount in minor units)
+   * @param paymentId - Payment ID from gateway
+   * @param credentials - Payment gateway credentials
+   */
+  fetchPayment?(
+    paymentId: string,
+    credentials: {
+      keyId: string;
+      keySecret: string;
+    },
+  ): Promise<IGatewayPaymentDetails>;
+
+  /**
+   * Cancel a payment link; returns the link's resulting status ('paid' if it was already paid)
+   */
+  cancelPaymentLink?(
+    paymentLinkId: string,
+    credentials: {
+      keyId: string;
+      keySecret: string;
+    },
+  ): Promise<{ status: string }>;
+
+  /**
    * Process a refund
    * @param paymentId - Payment ID from gateway
    * @param amount - Refund amount (optional, full refund if not provided)
@@ -130,6 +154,7 @@ export class RazorpayAdapter implements PaymentGatewayAdapter {
     return await this.razorpayService.createOrder(
       amount,
       receipt,
+      currency,
       notes,
       credentials?.keyId,
       credentials?.keySecret,
@@ -157,6 +182,26 @@ export class RazorpayAdapter implements PaymentGatewayAdapter {
       signature,
       credentials?.keySecret,
     );
+  }
+
+  async fetchPayment(
+    paymentId: string,
+    credentials: {
+      keyId: string;
+      keySecret: string;
+    },
+  ): Promise<IGatewayPaymentDetails> {
+    return await this.razorpayService.fetchPayment(paymentId, credentials.keyId, credentials.keySecret);
+  }
+
+  async cancelPaymentLink(
+    paymentLinkId: string,
+    credentials: {
+      keyId: string;
+      keySecret: string;
+    },
+  ): Promise<{ status: string }> {
+    return await this.razorpayService.cancelPaymentLink(paymentLinkId, credentials.keyId, credentials.keySecret);
   }
 }
 

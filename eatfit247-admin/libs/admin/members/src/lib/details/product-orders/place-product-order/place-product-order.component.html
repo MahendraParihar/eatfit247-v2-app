@@ -333,6 +333,12 @@
                       <tr mat-row *matRowDef="let row; columns: taxComputationColumns"></tr>
                     </table>
 
+                    @if (taxDecisionReason) {
+                      <div class="tax-reason">
+                        <mat-icon>info</mat-icon>
+                        <span>{{ taxDecisionReason }}</span>
+                      </div>
+                    }
                     <div class="tax-computation-summary">
                       <div class="summary-row">
                         <span class="label">Subtotal:</span>
@@ -484,18 +490,9 @@
                         </mat-card-content>
                       </mat-card>
                     } @else {
-                      <button
-                        mat-raised-button
-                        color="primary"
-                        (click)="createPaymentLinkIfNeeded()"
-                        [disabled]="creatingPaymentLink() || !step4FormGroup.get('franchisePaymentGatewayId')?.value">
-                        @if (creatingPaymentLink()) {
-                          <mat-spinner diameter="20" class="spinner-inline"></mat-spinner>
-                        } @else {
-                          <mat-icon>link</mat-icon>
-                        }
-                        Generate Payment Link
-                      </button>
+                      <p class="link-hint">
+                        The payment link is created when you place the order, for the saved total. Status and payment date are set by the gateway.
+                      </p>
                     }
                   }
                 </div>
@@ -504,17 +501,23 @@
               <div class="step-actions">
                 <button mat-button (click)="stepper.previous()">Previous</button>
                 <button mat-button (click)="onCancel()">Cancel</button>
-                <button
-                  mat-raised-button
-                  color="primary"
-                  (click)="onSubmit()"
-                  [disabled]="submitting() || !isPaymentLinkRequiredAndGenerated()">
-                  @if (submitting()) {
-                    <mat-spinner diameter="20" class="spinner-inline"></mat-spinner>
-                  } @else {
-                    Place Order
-                  }
-                </button>
+                @if (linkCreatedOnSave()) {
+                  <button mat-raised-button color="primary" (click)="dialogRef.close(true)">Done</button>
+                } @else {
+                  <button
+                    mat-raised-button
+                    color="primary"
+                    (click)="onSubmit()"
+                    [disabled]="submitting() || !isPaymentLinkRequiredAndGenerated()">
+                    @if (submitting()) {
+                      <mat-spinner diameter="20" class="spinner-inline"></mat-spinner>
+                    } @else if (isManualPaymentSource()) {
+                      Place Order
+                    } @else {
+                      Place Order &amp; Create Payment Link
+                    }
+                  </button>
+                }
               </div>
             </div>
           </mat-step>

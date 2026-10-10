@@ -17,7 +17,12 @@ import {
 } from '@server_1/core';
 import { MstPaymentMode, MstPaymentStatus, TxnAddress } from '@server_1/platform';
 import { TxnMember } from './txn-member.model';
-import { InputLengthEnum, PaymentSourceEnum } from '@eatfit247-shared-lib';
+import {
+  InputLengthEnum,
+  InvoiceSeriesEnum,
+  PaymentRouteEnum,
+  PaymentSourceEnum,
+} from '@eatfit247-shared-lib';
 import { TxnMemberProductOrderItem } from './txn-member-product-order-item.model';
 import { MstProduct } from '@server_1/models/product';
 
@@ -237,6 +242,30 @@ export class TxnMemberProduct extends Model<TxnMemberProduct> {
     type: DataType.STRING(100),
   })
   declare invoiceId: string;
+  @Column({
+    allowNull: true,
+    field: 'invoice_series',
+    type: DataType.STRING(10),
+  })
+  declare invoiceSeries: InvoiceSeriesEnum | null;
+  @Column({
+    allowNull: true,
+    field: 'invoice_date',
+    type: DataType.DATEONLY,
+  })
+  declare invoiceDate: string | null;
+  @Column({ allowNull: true, field: 'fx_rate', type: DataType.DECIMAL(18, 8) })
+  declare fxRate: number | null;
+  @Column({ allowNull: true, field: 'fx_rate_date', type: DataType.DATEONLY })
+  declare fxRateDate: string | null;
+  @Column({ allowNull: true, field: 'fx_source', type: DataType.STRING(20) })
+  declare fxSource: string | null;
+  @Column({ allowNull: true, field: 'functional_currency', type: DataType.STRING(3) })
+  declare functionalCurrency: string | null;
+  @Column({ allowNull: true, field: 'functional_total_amount', type: DataType.DECIMAL(14, 3) })
+  declare functionalTotalAmount: number | null;
+  @Column({ allowNull: true, field: 'functional_tax_amount', type: DataType.DECIMAL(14, 3) })
+  declare functionalTaxAmount: number | null;
 
   @Column({
     allowNull: false,
@@ -319,10 +348,37 @@ export class TxnMemberProduct extends Model<TxnMemberProduct> {
 
   @Column({
     allowNull: true,
+    field: 'franchise_payment_gateway_id',
+    type: DataType.INTEGER,
+  })
+  declare franchisePaymentGatewayId: number | null;
+  /** Checkout token (jti) that created a public-checkout record; scopes public invoice downloads. */
+  @Column({
+    allowNull: true,
+    field: 'checkout_session_id',
+    type: DataType.STRING(64),
+  })
+  declare checkoutSessionId: string | null;
+
+  @Column({
+    allowNull: true,
     field: 'payment_link',
     type: DataType.STRING(500),
   })
   declare paymentLink: string;
+
+  @Column({
+    allowNull: true,
+    field: 'payment_route',
+    type: DataType.ENUM(...Object.values(PaymentRouteEnum)),
+  })
+  declare paymentRoute: PaymentRouteEnum | null;
+  @Column({
+    allowNull: true,
+    field: 'remittance_reference',
+    type: DataType.STRING(100),
+  })
+  declare remittanceReference: string | null;
 
   @Column({
     allowNull: true,

@@ -15,7 +15,8 @@ import {
   ITableConfig,
   LoaderComponent
 } from '@shared';
-import { IMemberPayment, PaymentSourceEnum, PaymentStatusEnum } from '@eatfit247-shared-lib';
+import { IMemberPayment, PaymentSourceEnum, PaymentStatusEnum, TaxTypeEnum } from '@eatfit247-shared-lib';
+import { CreditNoteDialogComponent } from './credit-note-dialog/credit-note-dialog.component';
 import { MembersApiService } from '../../api.service';
 import {
   ManageMemberPaymentComponent,
@@ -51,6 +52,8 @@ export class MemberPaymentHistoryComponent implements OnInit, OnDestroy {
   payments: IMemberPayment[] = [];
   loading = false;
   tableConfig!: ITableConfig<IMemberPayment>;
+  /** Payments with a regenerate/cancel request in flight (their actions are disabled). */
+  private readonly busyPaymentIds = new Set<number>();
   EmptyStateType = EmptyStateType;
   private routeParamsSubscription: any;
 
@@ -138,15 +141,44 @@ export class MemberPaymentHistoryComponent implements OnInit, OnDestroy {
         label: 'Regenerate Payment Link',
         icon: 'refresh',
         color: 'accent',
-        visible: (row) => 
-          row.paymentSource !== PaymentSourceEnum.MANUAL && 
-          row.paymentStatusId === PaymentStatusEnum.PENDING,
+        visible: (row) =>
+          row.paymentSource === PaymentSourceEnum.PAYMENT_GATEWAY &&
+          row.paymentStatusId === PaymentStatusEnum.PENDING &&
+          !!row.gatewayOrderId?.startsWith('plink_'),
+        disabled: (row) => this.busyPaymentIds.has(row.memberPaymentId),
         onClick: (row) => this.regeneratePaymentLink(row)
+      },
+      {
+        label: 'Cancel Payment Link',
+        icon: 'link_off',
+        color: 'warn',
+        visible: (row) =>
+          row.paymentSource === PaymentSourceEnum.PAYMENT_GATEWAY &&
+          row.paymentStatusId === PaymentStatusEnum.PENDING,
+        disabled: (row) => this.busyPaymentIds.has(row.memberPaymentId),
+        onClick: (row) => this.cancelPaymentLink(row)
       },
       {
         label: 'Download Invoice',
         icon: 'download',
         color: 'accent',
+        visible: (row) => !!row.invoiceId,
+        onClick: (row) => this.downloadInvoice(row)
+      },
+      {
+        // UAE VAT invoices: corrections and refunds go through a Tax Credit Note
+        label: 'Tax Credit Note',
+        icon: 'receipt_long',
+        color: 'accent',
+        visible: (row) => !!row.invoiceId && row.taxType === TaxTypeEnum.VAT,
+        onClick: (row) => this.openCreditNote(row)
+      },
+      {
+        // No invoice number yet: the PDF is a proforma, not a tax invoice
+        label: 'Download Proforma',
+        icon: 'request_quote',
+        color: 'accent',
+        visible: (row) => !row.invoiceId,
         onClick: (row) => this.downloadInvoice(row)
       }
     ];
@@ -222,6 +254,19 @@ export class MemberPaymentHistoryComponent implements OnInit, OnDestroy {
     });
   }
 
+  openCreditNote(payment: IMemberPayment): void {
+    const ref = this.dialog.open(CreditNoteDialogComponent, {
+      width: '520px',
+      maxWidth: '92vw',
+      data: { memberId: this.memberId, payment },
+    });
+    ref.afterClosed().subscribe((created) => {
+      if (created) {
+        this.snackBar.open('Tax credit note issued', 'Close', { duration: 3000 });
+      }
+    });
+  }
+
   async downloadInvoice(payment: IMemberPayment): Promise<void> {
     if (!payment.memberPaymentId) {
       this.snackBar.open('Payment ID not found', 'Close', {
@@ -257,6 +302,26 @@ export class MemberPaymentHistoryComponent implements OnInit, OnDestroy {
     }
   }
 
+  async cancelPaymentLink(payment: IMemberPayment): Promise<void> {
+    // Same browser confirm the shared data table uses for its confirm actions
+    const confirmed = confirm(
+      'Cancel this payment link? The member will no longer be able to pay it and the payment will be marked Failed. Create a new payment to collect again.'
+    );
+    if (!confirmed || this.busyPaymentIds.has(payment.memberPaymentId)) {
+      return;
+    }
+    this.busyPaymentIds.add(payment.memberPaymentId);
+    try {
+      await this.apiService.cancelPaymentLink(this.memberId, payment.memberPaymentId, payment.gatewayOrderId);
+      this.snackBar.open('Payment link cancelled; the payment is marked Failed', 'Close', { duration: 3000 });
+      await this.loadPayments();
+    } catch {
+      // Error toast is handled by HttpErrorInterceptor (e.g. the link was already paid)
+    } finally {
+      this.busyPaymentIds.delete(payment.memberPaymentId);
+    }
+  }
+
   async regeneratePaymentLink(payment: IMemberPayment): Promise<void> {
     if (!payment.memberPaymentId) {
       this.snackBar.open('Payment ID not found', 'Close', {
@@ -265,10 +330,15 @@ export class MemberPaymentHistoryComponent implements OnInit, OnDestroy {
       return;
     }
 
+    if (this.busyPaymentIds.has(payment.memberPaymentId)) {
+      return;
+    }
+    this.busyPaymentIds.add(payment.memberPaymentId);
     try {
       await this.apiService.regeneratePaymentLink(
         this.memberId,
-        payment.memberPaymentId
+        payment.memberPaymentId,
+        payment.gatewayOrderId
       );
 
       this.snackBar.open('Payment link regenerated successfully', 'Close', {
@@ -285,6 +355,8 @@ export class MemberPaymentHistoryComponent implements OnInit, OnDestroy {
           duration: 3000
         }
       );
+    } finally {
+      this.busyPaymentIds.delete(payment.memberPaymentId);
     }
   }
 }

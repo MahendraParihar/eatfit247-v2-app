@@ -197,11 +197,11 @@
 
         <div class="row">
           <mat-form-field class="half-width">
-            <mat-label>GST Number</mat-label>
+            <mat-label>GSTIN</mat-label>
             <input
               matInput
               formControlName="gstNumber"
-              placeholder="Enter GST number"
+              placeholder="Leave empty if not GST-registered"
             />
             @if (getMaxLength('gstNumber')) {
               <mat-hint align="end">
@@ -212,18 +212,18 @@
           </mat-form-field>
 
           <mat-form-field class="half-width">
-            <mat-label>VAT Number</mat-label>
+            <mat-label>VAT number / TRN</mat-label>
             <input
               matInput
               formControlName="vatNumber"
-              placeholder="Enter VAT number"
+              placeholder="UAE: 15-digit TRN"
             />
             @if (getMaxLength('vatNumber')) {
               <mat-hint align="end">
                 {{ getCurrentLength('vatNumber') }}/{{ getMaxLength('vatNumber') }}
               </mat-hint>
             }
-            <shared-ui-input-error [control]="formGroup.get('vatNumber')" controlName="VAT Number"></shared-ui-input-error>
+            <shared-ui-input-error [control]="formGroup.get('vatNumber')" controlName="VAT number / TRN"></shared-ui-input-error>
           </mat-form-field>
         </div>
 

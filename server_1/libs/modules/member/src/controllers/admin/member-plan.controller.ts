@@ -8,17 +8,16 @@ import {
   IMemberPayment,
   IMemberPaymentMasterData,
   IMemberPaymentUpdatePreview,
-  IPaymentLinkResponse,
   IProgramPlan,
   ITableList,
 } from '@eatfit247-shared-lib';
 import {
   CalculateTaxResponseDto,
   CreateMemberPaymentDto,
-  CreatePaymentLinkDto,
   PlanTaxCalculationRequestDto,
   PreviewMemberPaymentUpdateDto,
   UpdateMemberPaymentDto,
+  PaymentLinkActionDto,
 } from '../../dto';
 import { ProgramPlanService } from '@server_1/modules/program-plan';
 import { IFileModel } from '@server_1/platform';
@@ -131,13 +130,22 @@ export class MemberPlanController {
     return await this.memberPaymentService.calculateTax(id, body);
   }
 
-  @Post('create-payment-link')
-  @RequireAbility(AdminActionEnum.Create, AdminSubjectEnum.MemberPayment)
-  async createPaymentLink(
+  @Post(':paymentId/cancel-payment-link')
+  @RequireAbility(AdminActionEnum.Update, AdminSubjectEnum.MemberPayment)
+  async cancelPaymentLink(
     @Param('id') id: number,
-    @Body() body: CreatePaymentLinkDto,
-  ): Promise<IPaymentLinkResponse> {
-    return await this.memberPaymentService.createPaymentLink(id, body);
+    @Param('paymentId') paymentId: number,
+    @Body() body: PaymentLinkActionDto,
+    @CurrentUser() currentUser: IAuthUser,
+    @RequestedIp() requestedIp: string,
+  ): Promise<IMemberPayment> {
+    return await this.memberPaymentService.cancelPaymentLink(
+      id,
+      paymentId,
+      requestedIp,
+      currentUser.adminId,
+      body?.expectedGatewayOrderId,
+    );
   }
 
   @Post(':paymentId/regenerate-payment-link')
@@ -145,8 +153,9 @@ export class MemberPlanController {
   async regeneratePaymentLink(
     @Param('id') id: number,
     @Param('paymentId') paymentId: number,
+    @Body() body: PaymentLinkActionDto,
   ): Promise<IMemberPayment> {
-    return await this.memberPaymentService.regeneratePaymentLink(id, paymentId);
+    return await this.memberPaymentService.regeneratePaymentLink(id, paymentId, body?.expectedGatewayOrderId);
   }
 
   @Get(':paymentId/invoice')

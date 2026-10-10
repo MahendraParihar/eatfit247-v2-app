@@ -93,8 +93,13 @@ export class ManageFranchise implements OnInit, OnDestroy {
     alternateContactNumber: ['', [Validators.required, Validators.maxLength(InputLengthEnum.MAX_CONTACT_NUMBER)]],
     panNumber: ['', [Validators.maxLength(InputLengthEnum.CHAR_20)]],
     tanNumber: ['', [Validators.maxLength(InputLengthEnum.CHAR_20)]],
-    gstNumber: ['', [Validators.maxLength(InputLengthEnum.CHAR_50)]],
-    vatNumber: ['', [Validators.maxLength(InputLengthEnum.CHAR_100)]],
+    // Indian GSTIN (15 characters) when the franchise is GST-registered; empty otherwise
+    gstNumber: [
+      '',
+      [Validators.maxLength(InputLengthEnum.CHAR_50), Validators.pattern(/^\d{2}[A-Z]{5}\d{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/)],
+    ],
+    // VAT registration number; for the UAE, the 15-digit TRN
+    vatNumber: ['', [Validators.maxLength(InputLengthEnum.CHAR_100), Validators.pattern(/^[0-9A-Z]{8,20}$/)]],
     bankAccountId: ['', [Validators.maxLength(InputLengthEnum.CHAR_100)]],
     paymentGatewayConfigId: [null],
     brandName: ['', [Validators.maxLength(InputLengthEnum.CHAR_100)]],
@@ -168,7 +173,7 @@ export class ManageFranchise implements OnInit, OnDestroy {
         panNumber: this.initialData.panNumber || '',
         tanNumber: this.initialData.tanNumber || '',
         gstNumber: this.initialData.gstNumber || '',
-        vatNumber: (this.initialData as any).vatNumber || '',
+        vatNumber: this.initialData.vatNumber || '',
         bankAccountId: (this.initialData as any).bankAccountId || '',
         paymentGatewayConfigId: (this.initialData as any).paymentGatewayConfigId || null,
         brandName: (this.initialData as any).brandName || '',

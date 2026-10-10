@@ -1,13 +1,14 @@
 import {IAddress, IMemberAddress} from "../location.interface";
-import {PaymentSourceEnum, TaxMode, TaxTypeEnum} from "../../enum";
+import {InvoiceSeriesEnum, PaymentRouteEnum, PaymentSourceEnum, TaxCategoryEnum, TaxMode, TaxTypeEnum} from "../../enum";
 import {IAdminInfo, IDropdownItem} from "../../base.interface";
+import {IInvoiceFx} from "../tax-master.interface";
 
 export interface IMemberAddressSnapshot {
   address: IMemberAddress | null;
   billingAddress: IMemberAddress | null;
 }
 
-export interface IBasicMemberPayment {
+export interface IBasicMemberPayment extends IInvoiceFx {
   memberId: number;
   paymentModeId: number;
   programPlanId: number;
@@ -16,6 +17,10 @@ export interface IBasicMemberPayment {
   transactionId?: string;
   paymentDate: Date;
   invoiceId?: string;
+  /** Series of `invoiceId`, set when the number is issued (null for Q1 FY 2026-27 and earlier) */
+  invoiceSeries?: InvoiceSeriesEnum | null;
+  /** Date of issue in the franchise's timezone (YYYY-MM-DD); the FY in the number comes from it */
+  invoiceDate?: string | null;
   paymentStatusId: number;
   promoCode?: string;
   refundObj?: object | null;
@@ -44,6 +49,12 @@ export interface IBasicMemberPayment {
     placeOfSupply: string;
   };
   invoiceNote?: string;
+  taxCategory?: TaxCategoryEnum | null;
+  lutArn?: string | null;
+  taxDecisionReason?: string | null;
+  paymentRoute?: PaymentRouteEnum | null;
+  /** FIRC / e-FIRA / bank reference proving the money came from abroad */
+  remittanceReference?: string | null;
 }
 
 export interface IMemberPayment extends IBasicMemberPayment, IAdminInfo {
@@ -80,10 +91,15 @@ export interface IManageMemberPayment {
   paymentLink?: string;
   gatewayProvider?: string;
   gatewayOrderId?: string;
+  /** Admin's gateway choice for a PAYMENT_GATEWAY record; the server creates the link after saving. */
+  franchisePaymentGatewayId?: number;
   gatewayPaymentId?: string;
   paymentGatewayResponse?: object | null;
   discountAmount: number;
   currency?: string;
+  /** Set by the server from the payment mode (decision 11); ignored when sent */
+  paymentRoute?: PaymentRouteEnum | null;
+  remittanceReference?: string | null;
 }
 
 export interface IMemberPaymentMasterData {
@@ -102,6 +118,13 @@ export interface IPlanTaxCalculationRequest {
   currency: string;
   addressId?: number;
   billingAddressId?: number;
+  /** Admin preview: the route only applies to manual payments; gateway routes follow the currency */
+  paymentSource?: PaymentSourceEnum;
+  /** Manual payments: the payment mode decides the route (decision 11) */
+  paymentModeId?: number | null;
+  paymentRoute?: PaymentRouteEnum | null;
+  /** Date of supply (manual payment date) for the LUT check; defaults to today */
+  paymentDate?: Date | string | null;
 }
 
 export interface IMemberPaymentUpdateChange {
@@ -149,4 +172,7 @@ export interface IMemberPaymentUpdatePreview {
   dietPlanImpact: IMemberDietPlanLimitImpact;
   highlights: string[];
   warnings: string[];
+  /** True when the edit would move an issued invoice to the other series (save is refused) */
+  blocked: boolean;
+  blockReason?: string;
 }

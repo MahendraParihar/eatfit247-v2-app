@@ -25,6 +25,9 @@ import {
   TxnMemberPocketGuide,
   TxnMemberProduct,
   TxnMemberProductOrderItem,
+  TxnCreditNote,
+  TxnCreditNoteItem,
+  TxnPaymentGatewayEvent,
 } from './models';
 import {
   IssueAdminController,
@@ -58,10 +61,16 @@ import {
   MemberPocketGuideService,
   MemberProductService,
   MemberService,
+  CheckoutGatewayService,
+  PaymentConfirmationService,
+  InvoiceIssueService,
+  InvoiceFxCron,
+  RazorpayWebhookService,
 } from './services';
 import { FranchiseModule } from '@server_1/modules/franchise';
 import { PaymentModule } from '@server_1/modules/payment';
 import { ProductModule } from '@server_1/modules/product';
+import { PromoCodeServiceModule } from '@server_1/modules/promo-code';
 import { DeliveryModule } from '../../delivery';
 // Register models with the model registry
 modelRegistry.register([
@@ -79,8 +88,13 @@ modelRegistry.register([
   TxnMemberProductOrderItem,
   TxnMemberDietPlan,
   TxnMemberDietDetail,
+  TxnPaymentGatewayEvent,
+  TxnCreditNote,
+  TxnCreditNoteItem,
 ]);
 
+import { MemberCreditNoteController } from './controllers/admin/member-credit-note.controller';
+import { CreditNoteService } from './services/credit-note.service';
 @Module({
   imports: [
     // Import ProgramPlanModule to use ProgramService and ProgramPlanService
@@ -93,6 +107,7 @@ modelRegistry.register([
     FranchiseModule,
     PaymentModule,
     ProductModule,
+    PromoCodeServiceModule,
     RecipeModule,
     DietModule,
     DeliveryModule,
@@ -112,6 +127,9 @@ modelRegistry.register([
       TxnMemberProductOrderItem,
       TxnMemberDietPlan,
       TxnMemberDietDetail,
+      TxnPaymentGatewayEvent,
+      TxnCreditNote,
+      TxnCreditNoteItem,
       // Diet template models
       TxnDietTemplateDietDetail,
       // Core/platform models (allowed)
@@ -126,6 +144,7 @@ modelRegistry.register([
     ]),
   ],
   controllers: [
+    MemberCreditNoteController,
     MemberController,
     MemberHealthController,
     MemberCallLogController,
@@ -155,6 +174,12 @@ modelRegistry.register([
     MemberProductService,
     MemberDietPlanService,
     MemberDashboardService,
+    PaymentConfirmationService,
+    InvoiceIssueService,
+    InvoiceFxCron,
+    CreditNoteService,
+    RazorpayWebhookService,
+    CheckoutGatewayService,
   ],
   exports: [MemberService, MemberPlanService, MemberProductService, SequelizeModule],
 })

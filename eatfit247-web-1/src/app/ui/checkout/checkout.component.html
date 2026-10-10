@@ -301,7 +301,21 @@
             <mat-step [editable]="false">
               <ng-template matStepLabel>Result</ng-template>
               <div class="checkout-panel">
-                @if (paymentSuccess) {
+                @if (paymentSuccess && paymentPending) {
+                  <div class="result">
+                    <mat-spinner diameter="48"></mat-spinner>
+                    <h2>Confirming your payment</h2>
+                    <p class="result__sub">
+                      Thanks <strong>{{ basicDetailsForm.get('firstName')?.value }}</strong> — we have received the payment
+                      from the gateway and are confirming it. This usually takes a few seconds.
+                    </p>
+                    <div class="result__actions">
+                      <button type="button" class="mat-btn mat-btn--filled" (click)="navigateToSuccess()">
+                        <span class="mat-icon">receipt_long</span> View Order Status
+                      </button>
+                    </div>
+                  </div>
+                } @else if (paymentSuccess) {
                   <div class="result">
                     <span class="result__check"><span class="mat-icon">check</span></span>
                     <h2>Order placed successfully</h2>
@@ -395,17 +409,51 @@
           }
         </div>
 
+        @if (taxCalculation && currentStepIndex() === STEP_INDICES.PREVIEW) {
+          <div class="os-promo">
+            @if (appliedPromoCode()) {
+              <div class="os-promo__applied">
+                <span class="mat-icon">sell</span>
+                <span class="os-promo__code">{{ appliedPromoCode() }}</span>
+                <span class="os-promo__msg">{{ promoMessage() }}</span>
+                <button mat-button type="button" (click)="removePromoCode()" [disabled]="calculatingTax || loading">
+                  Remove
+                </button>
+              </div>
+            } @else {
+              <mat-form-field class="os-promo__field" subscriptSizing="dynamic">
+                <mat-label>Promo code</mat-label>
+                <input matInput [formControl]="promoCodeControl" maxlength="50"
+                       autocomplete="off" (keydown.enter)="applyPromoCode()">
+                <button mat-button matSuffix type="button" (click)="applyPromoCode()"
+                        [disabled]="applyingPromo() || !promoCodeControl.value.trim()">
+                  @if (applyingPromo()) { <mat-spinner diameter="16"></mat-spinner> } @else { Apply }
+                </button>
+                @if (promoError()) {
+                  <mat-hint class="os-promo__error">{{ promoError() }}</mat-hint>
+                }
+              </mat-form-field>
+            }
+          </div>
+        }
+
         <div class="os-totals">
           <div class="os-row">
             <span>Subtotal</span>
             <span>{{ subtotalDisplay | currency:currencyCode:'symbol':'1.2-2' }}</span>
           </div>
+          @if (taxCalculation && taxCalculation.discountAmount > 0) {
+            <div class="os-row os-row--discount">
+              <span>Discount{{ appliedPromoCode() ? ' (' + appliedPromoCode() + ')' : '' }}</span>
+              <span>−{{ taxCalculation.discountAmount | currency:currencyCode:'symbol':'1.2-2' }}</span>
+            </div>
+          }
           <div class="os-row os-row--free">
             <span>Shipping</span>
             <span>FREE</span>
           </div>
           <div class="os-row">
-            <span>Tax</span>
+            <span>{{ taxLabel }}</span>
             @if (calculatingTax) {
               <mat-spinner diameter="14"></mat-spinner>
             } @else if (taxCalculation) {
