@@ -174,7 +174,11 @@ describe('PaymentConfirmationService', () => {
     });
     // Plan payment_date is the capture day in the franchise's timezone (noon UTC of that day)
     expect(record.paymentDate).toEqual(FranchiseDateUtil.calendarDate('2026-10-10'));
-    expect(record).toMatchObject({ invoiceSeries: InvoiceSeriesEnum.DOMESTIC, invoiceDate: '2026-10-10' });
+    // The invoice is dated when issued (today in the franchise's zone), not on the capture day
+    expect(record).toMatchObject({
+      invoiceSeries: InvoiceSeriesEnum.DOMESTIC,
+      invoiceDate: FranchiseDateUtil.localDate(new Date(), 'Asia/Kolkata'),
+    });
     expect(record.gatewayPaymentId).toBe('pay_1');
     expect(record.transactionId).toBe('pay_1');
     expect(generateInvoiceNumber).toHaveBeenCalledTimes(1);
@@ -194,7 +198,7 @@ describe('PaymentConfirmationService', () => {
 
     expect(generateInvoiceNumber.mock.calls[0][0]).toMatchObject({
       series: InvoiceSeriesEnum.EXPORT,
-      invoiceDate: '2026-10-10',
+      invoiceDate: FranchiseDateUtil.localDate(new Date(), 'Asia/Kolkata'),
       fyStartMonth: 4,
       franchiseCode: 'EF',
     });

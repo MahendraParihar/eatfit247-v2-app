@@ -58,6 +58,25 @@ BEGIN
         EXECUTE format('ALTER TABLE public.mst_invoice_sequences DROP CONSTRAINT %I', old_name);
     END IF;
 
+    -- A standalone unique index on the same three columns (e.g. one created by a
+    -- Sequelize sync as uq_mst_invoice_sequences_franchise_type_year) would also block
+    -- the EXPORT counter rows
+    FOR old_name IN
+        SELECT ic.relname
+        FROM pg_index i
+                 JOIN pg_class ic ON ic.oid = i.indexrelid
+        WHERE i.indrelid = 'public.mst_invoice_sequences'::regclass
+          AND i.indisunique
+          AND NOT i.indisprimary
+          AND NOT EXISTS (SELECT 1 FROM pg_constraint c WHERE c.conindid = i.indexrelid)
+          AND (SELECT array_agg(a.attname::TEXT ORDER BY a.attname)
+               FROM unnest(i.indkey::SMALLINT[]) k(attnum)
+                        JOIN pg_attribute a ON a.attrelid = i.indrelid AND a.attnum = k.attnum)
+            = ARRAY ['financial_year', 'franchise_id', 'invoice_type']
+        LOOP
+            EXECUTE format('DROP INDEX public.%I', old_name);
+        END LOOP;
+
     IF NOT EXISTS (SELECT 1
                    FROM pg_constraint
                    WHERE conname = 'uq_mst_invoice_sequences_franchise_type_year_series') THEN

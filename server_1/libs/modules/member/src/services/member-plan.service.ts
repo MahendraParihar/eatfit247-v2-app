@@ -630,6 +630,8 @@ export class MemberPlanService {
     }
     const t = await this.sequelize.transaction();
     try {
+      // Lock the row and re-read it, so two concurrent saves to PAID can't both issue a number
+      await payment.reload({ transaction: t, lock: t.LOCK.UPDATE });
       payment.addressId = obj.addressId || null;
       payment.gstNumber = obj.gstNumber || null;
       payment.modifiedIp = requestedIp;

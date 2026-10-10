@@ -153,12 +153,14 @@ export class PaymentConfirmationService {
       await record.save({ transaction });
 
       if (!record.invoiceId && record.franchiseId) {
+        // Dated when issued (decision 12), which can be after the capture day if the
+        // gateway confirms late; payment_date keeps the capture day
         await this.invoiceIssueService.issue(
           record,
           recordType,
           record.franchiseId,
           transaction,
-          input.capturedAt,
+          new Date(),
           franchiseContext,
         );
         await record.save({ transaction });

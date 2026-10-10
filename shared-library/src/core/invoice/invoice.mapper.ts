@@ -54,13 +54,13 @@ export function mapPaymentToInvoiceDocument(
   const qrCodeEnabled = !isProforma && taxType === TaxTypeEnum.GST && taxMode === TaxMode.DOMESTIC_GST;
   // Build QR code value if enabled
   let qrCodeValue = '';
+  const invoiceDate = invoiceDateOf(payment.invoiceDate, payment.paymentDate);
   if (qrCodeEnabled && franchise.gstNumber) {
     const taxableAmount = payment.orderAmount;
     qrCodeValue = buildQrCodeValue(
       franchise.gstNumber,
       payment.invoiceId || '',
-      // PENDING online-checkout payments have no payment date yet (proforma)
-      payment.paymentDate?.toString() || '',
+      invoiceDate,
       payment.totalAmount,
       payment.taxAmount,
       taxableAmount,
@@ -87,7 +87,7 @@ export function mapPaymentToInvoiceDocument(
       brandName: franchise.companyName,
       title: invoiceTitle(isProforma, taxType),
       invoiceNumber: payment.invoiceId || '',
-      invoiceDate: invoiceDateOf(payment.invoiceDate, payment.paymentDate),
+      invoiceDate,
       isProforma,
       currency: payment.currency,
     },
@@ -433,6 +433,7 @@ export function mapProductOrderToInvoiceDocument(
     productOrder.orderItems[0].taxMode === TaxMode.DOMESTIC_GST;
   // Build QR code value if enabled
   let qrCodeValue = '';
+  const invoiceDate = invoiceDateOf(productOrder.invoiceDate, productOrder.paymentDate);
   if (qrCodeEnabled && franchise.gstNumber) {
     const taxableAmount = productOrder.subTotalAmount;
     // Aggregate tax breakdown from first order item (same tax regime for all items in an order)
@@ -440,7 +441,7 @@ export function mapProductOrderToInvoiceDocument(
     qrCodeValue = buildQrCodeValue(
       franchise.gstNumber,
       productOrder.invoiceId || '',
-      productOrder.paymentDate?.toString() || '',
+      invoiceDate,
       productOrder.totalAmount,
       productOrder.taxAmount,
       taxableAmount,
@@ -471,7 +472,7 @@ export function mapProductOrderToInvoiceDocument(
       brandName: franchise.companyName,
       title: invoiceTitle(isProforma, productOrder.orderItems[0].taxType),
       invoiceNumber: productOrder.invoiceId || '',
-      invoiceDate: invoiceDateOf(productOrder.invoiceDate, productOrder.paymentDate),
+      invoiceDate,
       isProforma,
       currency: productOrder.currency,
     },

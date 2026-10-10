@@ -36,7 +36,7 @@ describe('MemberPlanService update: invoice on PAID and series guard', () => {
   let service: MemberPlanService;
   let paymentFindOne: jest.Mock;
   let generateInvoiceNumber: jest.Mock;
-  let transaction: { commit: jest.Mock; rollback: jest.Mock };
+  let transaction: { commit: jest.Mock; rollback: jest.Mock; LOCK: { UPDATE: string } };
   let issuedCount: number;
 
   const US = { countryCode: 'US', country: 'United States' };
@@ -62,6 +62,7 @@ describe('MemberPlanService update: invoice on PAID and series guard', () => {
     noOfCycle: 4,
     daysInCycle: 7,
     save: jest.fn().mockResolvedValue(undefined),
+    reload: jest.fn().mockResolvedValue(undefined),
     get: jest.fn().mockReturnValue({}),
     ...overrides,
   });
@@ -94,7 +95,7 @@ describe('MemberPlanService update: invoice on PAID and series guard', () => {
   };
 
   beforeEach(async () => {
-    transaction = { commit: jest.fn(), rollback: jest.fn() };
+    transaction = { commit: jest.fn(), rollback: jest.fn(), LOCK: { UPDATE: 'UPDATE' } };
     paymentFindOne = jest.fn();
     issuedCount = 0;
     generateInvoiceNumber = jest.fn().mockImplementation(async (request: { series: InvoiceSeriesEnum; invoiceDate: string }) => {
@@ -167,6 +168,9 @@ describe('MemberPlanService update: invoice on PAID and series guard', () => {
 
     await service.update(4945, 900, edit(), '127.0.0.1', 7);
     expect(record).toMatchObject({ invoiceId: 'EFMUM/EXP/2026-27/S/000001', invoiceSeries: InvoiceSeriesEnum.EXPORT });
+    // The row is locked and re-read inside the transaction before the number is issued
+    expect(record.reload).toHaveBeenCalledWith({ transaction, lock: 'UPDATE' });
+    expect(record.reload.mock.invocationCallOrder[0]).toBeLessThan(generateInvoiceNumber.mock.invocationCallOrder[0]);
     expect(record.invoiceDate).toMatch(/^\d{4}-\d{2}-\d{2}$/);
 
     await service.update(4945, 900, edit(), '127.0.0.1', 7);

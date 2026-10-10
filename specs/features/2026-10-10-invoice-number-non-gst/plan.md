@@ -101,6 +101,16 @@
 
 > **As built (group 5):** neither PDF method had a status gate. File names: plans `Invoice-<name>-<invoice date>.pdf` / `Proforma-<name>-<paymentId>.pdf`; products `invoice-<id>.pdf` / `proforma-<id>.pdf`. Payment ZIP export and both product ZIP exports (filtered and bulk) only include rows with a non-empty `invoice_id`. Admin: payment-history and product-order rows show "Download Invoice" when there is a number and "Download Proforma" otherwise (two actions with `visible`). The update-preview dialog shows a red "This change can't be saved" section with `blockReason` and disables "Approve & Update" when `blocked`. Render check (local): proforma 5130 → "PROFORMA INVOICE", no number, "Date:", proforma note; export 5129 → `EFMUM/EXP/2026-27/S/000001` (title and "No Tax Applicable" stay until 4.6 stores the export mode); domestic 4744 unchanged.
 
+## Group 5b: Review fixes (groups 1–4)
+
+- [x] 5b.1 `update` locks and re-reads the payment row (`reload` with `LOCK.UPDATE`) inside its transaction before issuing, so two concurrent saves to PAID can't both take a number (a gap).
+- [x] 5b.2 Gateway confirmation dates the invoice when it is issued (decision 12), not on the capture day; plan `payment_date` keeps the capture day. A late confirmation after 31 March therefore lands in the new FY.
+- [x] 5b.3 The GST QR payload uses the same date as the printed invoice date (plans and products).
+- [x] 5b.4 `InvoiceIssueService` logs a warning when the franchise's country can't be resolved (every invoice would fall back to DOMESTIC).
+- [x] 5b.5 137 also drops a standalone unique **index** on `(franchise_id, invoice_type, financial_year)` (e.g. from a Sequelize sync), not only the constraint. Tested locally with such an index.
+- [x] 5b.6 Not changed: the pool (`max: 5`) concern about extra franchise/country reads during confirmation is the same pattern as before, at a smaller scale; logged for roadmap 5.x. A PAID row without a number (member without a franchise) renders as a proforma, which matches decision 11.
+- [x] 5b.7 For 138: JSON `null` snapshots must fall back to the address (`jsonb_typeof(...) = 'object'`), and the country chain is code → id → name, the same as `InvoiceSeriesUtil` / `InvoiceIssueService`.
+
 ## Group 6: Data migration (FY 2026-27, Q2 onwards)
 
 - [ ] 6.1 `scripts/invoice-renumber/preview_fy2026_27_q2.sql` (read-only). For every row in the window it outputs:

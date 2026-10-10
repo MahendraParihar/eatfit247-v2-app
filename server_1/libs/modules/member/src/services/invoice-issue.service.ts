@@ -44,6 +44,10 @@ export class InvoiceIssueService {
     const addresses = await this.addressService.filterByTableIdAndPk(TableEnum.MST_FRANCHISES, franchiseId);
     const countryId = addresses?.[0]?.countryId;
     const countryCode = countryId ? await this.countryCodeById(countryId) : null;
+    if (!countryCode) {
+      // Without the franchise's country every invoice falls back to the domestic series
+      this.logger.warn(`Country unknown for franchise ${franchiseId}; invoices use the domestic series`);
+    }
     return {
       franchise,
       countryCode,

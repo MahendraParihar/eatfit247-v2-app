@@ -383,6 +383,7 @@ describe('MemberPlanService public checkout', () => {
         noOfCycle: 4,
         daysInCycle: 7,
         save: jest.fn(),
+        reload: jest.fn(),
       });
 
       it('cannot switch a gateway payment to manual', async () => {
