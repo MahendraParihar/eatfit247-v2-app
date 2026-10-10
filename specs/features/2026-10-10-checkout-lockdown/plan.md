@@ -156,8 +156,19 @@
 
 ## Group 6: Suspicious-records report
 
-- [ ] 6.1 `scripts/audit/public_checkout_suspicious_paid.sql`, a read-only query (decision 12) covering plans and products, with member, franchise, invoice, amounts, the reason codes, and created/updated times.
+- [x] 6.1 `scripts/audit/public_checkout_suspicious_paid.sql`, a read-only query (decision 12) covering plans and products, with member, franchise, invoice, amounts, the reason codes, and created/updated times.
 - [ ] 6.2 Run it on a production copy. Share the CSV with the owner and Accounts. Commit the SQL only.
+- **As built (group 6):**
+  - The script runs inside `BEGIN TRANSACTION READ ONLY`. It selects "public checkout" rows: PAID, `PAYMENT_GATEWAY`, and `created_by IS NULL` (admin payment links always have a creator).
+  - Reason codes: NO_GATEWAY_PAYMENT_ID, DISCOUNT_WITHOUT_VALID_PROMO, DISCOUNT_EXCEEDS_PROMO, NO_MASTER_PRICE, PRICE_NOT_MASTER, TOTAL_INCONSISTENT, DUPLICATE_GATEWAY_ORDER.
+  - Price comparisons:
+    - Plans compare `order_amount` with the plan fee (fees are tax-exclusive).
+    - Product lines match the variant price either tax-exclusive or **tax-inclusive** (product prices are stored including tax), within `valid_from`/`valid_to`.
+  - Plan fees have no price history, so a fee changed after a sale is a known false positive. This is noted in the header.
+  - Local checks:
+    - The real data returns 0 rows; the one public PAID record is the legitimate Razorpay test payment 4744.
+    - A rolled-back test with one crafted row per reason code flagged every case and left the clean control unflagged.
+- [ ] 6.2 Run it on a production copy and share the CSV with the owner and Accounts. **This is the owner's step:** there is no production copy locally. The command is in the file header (`psql … -A -F ',' -f scripts/audit/public_checkout_suspicious_paid.sql > suspicious_paid.csv`). Open question: should the owner see it before Accounts?
 
 ## Group 7: Close-out
 
