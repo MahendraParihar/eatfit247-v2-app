@@ -18,12 +18,14 @@
 
 ## Group 2: Database
 
-- [ ] 2.1 `db_changes/<next>_payment_gateway_events.sql`. Take the next free number after those reserved by 4.7 (137 and 138).
-  - Create `txn_payment_gateway_events` with: id, provider, event_id, event_type, gateway_order_id, gateway_payment_id, amount, currency, signature_valid, payload JSONB, result, message, member_payment_id NULL, member_product_id NULL, received_at, and the audit columns.
-  - Add a unique index on `(provider, event_id)`.
-- [ ] 2.2 Add `franchise_payment_gateway_id` to `txn_member_payments` and `txn_member_products` if it doesn't exist.
-- [ ] 2.3 Allow NULL in `payment_date` on both tables. Check the current constraint first.
-- [ ] 2.4 Add the models, apply the migration locally, and commit.
+- [x] 2.1 `db_changes/139_payment_gateway_events.sql` (137 and 138 are reserved by 4.7).
+  - Creates `txn_payment_gateway_events` with: id, provider, event_id, event_type, gateway_order_id, gateway_payment_id, amount (major units, NUMERIC(14,3)), currency, signature_valid, payload JSONB, result (NULL while processing; a CHECK limits it to the enum values), message, `promo_over_limit` (the flag from 3.1 step 6), member_payment_id NULL, member_product_id NULL, received_at, and the audit columns.
+  - Adds a unique index on `(provider, event_id)`, plus lookup indexes on the event's gateway_order_id and its linked records.
+  - Adds partial indexes on `gateway_order_id` in both payment tables, for the webhook and verify lookups. They are not unique, because decision 12 expects existing duplicates.
+- [x] 2.2 Add `franchise_payment_gateway_id` (FK to `mst_franchise_payment_gateway`) to `txn_member_payments` and `txn_member_products`. Neither table had it.
+- [x] 2.3 `txn_member_payments.payment_date` had NOT NULL, which is now dropped. `txn_member_products.payment_date` already allowed NULL.
+- [x] 2.4 Models: new `TxnPaymentGatewayEvent` (member module, registered), `franchisePaymentGatewayId` added to both payment models, and `TxnMemberPayment.paymentDate` is now `Date | null`. Applied locally; re-running the migration is safe. Committed.
+  - Note for group 3: Sequelize returns DECIMAL as a string (e.g. `amount` = `"1499.500"`), so wrap it in `Number()` before comparing.
 
 ## Group 3: Confirmation service and webhook (`server_1`)
 
@@ -81,6 +83,7 @@
 - [ ] 4.5 `payment-order` and `payment-link` public endpoints: drop `amount`. Either remove them, if the website doesn't use them (open question), or make them take a PENDING record id and use its stored total.
 - [ ] 4.6 Plan tax-calculation endpoint: accept `promoCode` and apply it on the server.
 - [ ] 4.7 Diet-plan gate (decision 11): find the server-side check that blocks diet-plan work before payment. Make sure it requires a PAID payment, not just an existing row. Fix it if needed and add a test.
+- [ ] 4.7a `payment_date` NULL audit: server_1 has `strictNullChecks` off, so the compiler won't flag the roughly 58 server reads of `paymentDate`. Before PENDING public records (with NULL payment date) can exist, check the reports, invoice/FY logic, the admin payment list/detail and the emails for NULL handling.
 - [ ] 4.8 Unit tests:
   - a client-sent `paymentStatusId` gets 400
   - pricing comes from master data, not the client

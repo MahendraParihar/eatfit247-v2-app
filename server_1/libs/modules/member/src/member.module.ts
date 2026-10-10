@@ -25,6 +25,7 @@ import {
   TxnMemberPocketGuide,
   TxnMemberProduct,
   TxnMemberProductOrderItem,
+  TxnPaymentGatewayEvent,
 } from './models';
 import {
   IssueAdminController,
@@ -79,6 +80,7 @@ modelRegistry.register([
   TxnMemberProductOrderItem,
   TxnMemberDietPlan,
   TxnMemberDietDetail,
+  TxnPaymentGatewayEvent,
 ]);
 
 @Module({
@@ -112,6 +114,7 @@ modelRegistry.register([
       TxnMemberProductOrderItem,
       TxnMemberDietPlan,
       TxnMemberDietDetail,
+      TxnPaymentGatewayEvent,
       // Diet template models
       TxnDietTemplateDietDetail,
       // Core/platform models (allowed)

@@ -319,6 +319,13 @@ export class TxnMemberProduct extends Model<TxnMemberProduct> {
 
   @Column({
     allowNull: true,
+    field: 'franchise_payment_gateway_id',
+    type: DataType.INTEGER,
+  })
+  declare franchisePaymentGatewayId: number | null;
+
+  @Column({
+    allowNull: true,
     field: 'payment_link',
     type: DataType.STRING(500),
   })

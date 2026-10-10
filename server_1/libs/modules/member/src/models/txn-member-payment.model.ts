@@ -285,12 +285,13 @@ export class TxnMemberPayment extends Model<TxnMemberPayment> {
     type: DataType.STRING(250),
   })
   declare transactionId: string;
+  // NULL while a public-checkout record is PENDING; set from the gateway capture time on PAID.
   @Column({
-    allowNull: false,
+    allowNull: true,
     field: 'payment_date',
     type: DataType.DATE,
   })
-  declare paymentDate: Date;
+  declare paymentDate: Date | null;
   @Column({
     allowNull: true,
     unique: true,
@@ -381,6 +382,12 @@ export class TxnMemberPayment extends Model<TxnMemberPayment> {
     type: DataType.STRING(100),
   })
   declare gatewayPaymentId: string;
+  @Column({
+    allowNull: true,
+    field: 'franchise_payment_gateway_id',
+    type: DataType.INTEGER,
+  })
+  declare franchisePaymentGatewayId: number | null;
   @Column({
     allowNull: true,
     field: 'payment_link',
