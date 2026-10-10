@@ -52,7 +52,7 @@
 | A22 | ✅ | `tax-engine.spec`, `tax-master.service.spec` |
 | A23 | ✅ | rows carry source FBIL / CBUAE_PEG / CBIC_CUSTOMS / MANUAL (manual requires a note) |
 
-Automated: member jest **263/263**; `nx build admin-api` and `public-api` green; website SSR build green; admin dev build green (the production build's size-budget errors are pre-existing). Migrations 137, 138 (clones), 139, 140, 141, 142 apply cleanly and re-run without error.
+Automated: member jest **264/264**; `nx build admin-api` and `public-api` green; website SSR build green; admin dev build green (the production build's size-budget errors are pre-existing). Migrations 137, 138 (clones), 139, 140, 141, 142 apply cleanly and re-run without error.
 
 ## Release runbook (4.5 + 4.7 + 4.6 ship together)
 
