@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { ITaxCalculationInput } from '../interfaces/tax.interface';
+import { ITaxRuleLookup } from '../interfaces/tax.interface';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { MstTaxMaster } from '../models';
@@ -11,21 +11,22 @@ import { CreateTaxMasterDto } from '../dto/tax-master.dto';
 export class TaxMasterService {
   constructor(@InjectModel(MstTaxMaster) private readonly mstTaxMaster: typeof MstTaxMaster) {}
 
-  async getApplicableTaxRule(input: ITaxCalculationInput) {
-    const today = new Date();
+  /**
+   * The active rule for (franchise, reference, transaction type, country) effective on the date,
+   * newest first. Null when none is configured (the engine turns that into an error).
+   */
+  async getApplicableTaxRule(input: ITaxRuleLookup): Promise<MstTaxMaster | null> {
     return this.mstTaxMaster.findOne({
       where: {
         franchiseId: input.franchiseId,
         referenceId: input.referenceId,
-        countryCode: input.buyerCountryCode,
-        effectiveFrom: {
-          [Op.lte]: today,
-        },
-        [Op.or]: [
-          { effectiveTo: null },
-          { effectiveTo: { [Op.gte]: today } },
-        ],
+        transactionType: input.transactionType,
+        countryCode: input.countryCode,
+        active: true,
+        effectiveFrom: { [Op.lte]: input.onDate },
+        [Op.or]: [{ effectiveTo: null }, { effectiveTo: { [Op.gte]: input.onDate } }],
       },
+      order: [['effectiveFrom', 'DESC']],
     });
   }
 

@@ -32,33 +32,41 @@
 
 ## Group 2: Tax decision engine (pure logic + unit test matrix)
 
-- [ ] 2.1 `TaxMasterService.getApplicableTaxRule`:
+- [x] 2.1 `TaxMasterService.getApplicableTaxRule`:
   - filter `active`, `transactionType` and the effective date
   - `ORDER BY effective_from DESC`
   - trim the country code
   - throw a typed "no tax rule for {franchise} / {country} / {type}" error instead of returning null
-- [ ] 2.2 Rewrite `TaxEngineService.calculate` as a decision with these inputs:
+- [x] 2.2 Rewrite `TaxEngineService.calculate` as a decision with these inputs:
   - supplier country/state (franchise address; missing → typed error)
   - customer country/state (billing; missing → error)
   - delivery country (goods)
   - currency, payment route, transaction type
   - the supply date (for LUT and rule dates)
-- [ ] 2.3 Branches:
+- [x] 2.3 Branches:
   - **Indian customer + non-IN franchise:** refuse (decision 6).
   - **Registration check (decision 18):** a GST rule without a franchise GSTIN, a VAT rule without a TRN, or an export (LUT) by an unregistered franchise → typed error.
   - **Same country:** the own-country rule. GST gives CGST+SGST/IGST and requires the state. VAT gives the rate + category. `NONE` gives no tax. A 0% VAT rule is saved as VAT 0% with its category.
   - **IN supplier, services, foreign customer:** route/currency per decision 2 → export (LUT valid → 0% + ARN; else IGST 18% export), or domestic IGST 18% with the reason.
   - **IN supplier, goods:** delivery country ≠ IN → `EXPORT_OF_GOODS` (LUT → 0%; else IGST).
   - **VAT supplier, foreign customer:** zero-rated export (Z, 0%) with the evidence reason; a `NONE` (unregistered) own rule → no VAT.
-- [ ] 2.4 `LutService.findValid(franchiseId, date)` (register lookup, used by 2.3).
-- [ ] 2.5 The result carries `taxMode`, `taxCategory`, `isLutApplied`, `lutArn`, `invoiceNote` (exact Rule 46 endorsement or zero-rating text), `taxDecisionReason`, and the jurisdiction (entity country, customer country, place of supply / country of destination). It never returns empty jurisdiction strings.
-- [ ] 2.6 Remove the dead code: the old export branch, the raw INR throw, and the unused `CountryTaxInfo`/EU constants (if still unused).
-- [ ] 2.7 Unit tests, one row per case in validation A1–A12:
+- [x] 2.4 `LutService.findValid(franchiseId, date)` (register lookup, used by 2.3).
+- [x] 2.5 The result carries `taxMode`, `taxCategory`, `isLutApplied`, `lutArn`, `invoiceNote` (exact Rule 46 endorsement or zero-rating text), `taxDecisionReason`, and the jurisdiction (entity country, customer country, place of supply / country of destination). It never returns empty jurisdiction strings.
+- [x] 2.6 Remove the dead code: the old export branch, the raw INR throw, and the unused `CountryTaxInfo`/EU constants (if still unused).
+- [x] 2.7 Unit tests, one row per case in validation A1–A12:
   - EFMUM: IN same state, IN other state, IN without state, US+USD with LUT, US+USD without LUT, US+INR domestic, US+INR FOREIGN_REMITTANCE, US+INR NRE_FCNR (export)
   - MEMUM: goods delivered abroad, goods delivered in India
   - HCUAE: AE 0% Z, AE 5% S (config change), US zero-rated, IN refused, unregistered (`NONE`)
   - missing rule; missing franchise address
   - registration: GST rule on a franchise without a GSTIN refused; unregistered franchise with a `NONE` rule → plain invoice, no tax
+
+> **As built (group 2):**
+> - `TaxEngineService.calculate` rewritten as the decision in decisions 1–10/18: supplier country (franchise address) vs place of supply (billing; **delivery address for goods**, which also drives the domestic GST state for products, per GST place-of-supply for goods). Rule = franchise's own-country rule (`getApplicableTaxRule` now filters active + transaction type + effective on the supply date, newest first). Errors are 400 `BadRequestException`s with admin-readable messages (no rule; missing franchise/billing country or state; Indian client under a non-IN franchise; GST rule without GSTIN / VAT rule without TRN; export by an unregistered Indian franchise).
+> - Route for services: explicit `paymentRoute`, else non-INR → INTERNATIONAL_CARD_GATEWAY, INR → DOMESTIC. Every route except DOMESTIC is export (NRE/FCNR included). INR on DOMESTIC → IGST with `taxMode DOMESTIC_GST` and a "not an export" reason.
+> - Export notes are the exact Rule 46 texts (`constants/tax-notes.constant.ts`); UAE zero-rated exports carry an evidence note. LUT lookup: `LutService.findValid(franchiseId, date)` (dates required). Supply date defaults to today (IST).
+> - `TaxResult` adds `taxCategory`, `lutArn`, `paymentRoute`, `taxDecisionReason`; jurisdiction strings are country names, never empty. Removed: the old export branch, the raw INR throw, `ITaxCalculationInput`, `CountryTaxInfo` / `StateTaxInfo`, `eu-countries.constant.ts`.
+> - Tests: `member/src/tax/tax-engine.spec.ts` (23, the A1–A12/A22 matrix; the tax-engine lib has no jest project). Member jest 215/215.
+> - Live (local config): EFMUM IN same state → CGST+SGST; US+USD and US+INR via NRE → export with IGST (no LUT row locally); US+INR → IGST not export; HCUAE UAE client → 400 "VAT rule but no TRN" (**release blocker: HCUAE's TRN must be entered in production before deploy**); Indian client under HCUAE → refused.
 
 ## Group 3: LUT register (backend + admin + RBAC)
 
