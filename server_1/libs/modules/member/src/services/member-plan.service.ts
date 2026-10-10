@@ -325,6 +325,7 @@ export class MemberPlanService {
       transactionId: obj.transactionId,
     });
     let createdLink: ICheckoutPaymentLink | null = null;
+    let committed = false;
     const t = await this.sequelize.transaction();
     try {
       // Handle address if provided
@@ -482,6 +483,7 @@ export class MemberPlanService {
         }
       }
       await t.commit();
+      committed = true;
       // Fetch the created payment with relationships
       const createdPayment = await this.memberPaymentRepository.scope('details').findOne({
         where: { memberPaymentId: payment.memberPaymentId },
@@ -490,8 +492,16 @@ export class MemberPlanService {
       });
       return this.convertToModel(createdPayment!);
     } catch (error) {
-      await t.rollback();
-      await this.cancelOrphanLink(createdLink, member.franchiseId);
+      // After a successful commit the payment exists: never roll back or cancel its link
+      if (!committed) {
+        await t.rollback().catch(() => undefined);
+        // A failed COMMIT may still have been applied: cancel the link only if no record has it
+        const linkId = createdLink?.paymentLinkId;
+        const recorded = linkId ? await this.memberPaymentRepository.findOne({ attributes: ['memberPaymentId'], where: { gatewayOrderId: linkId } }) : null;
+        if (!recorded) {
+          await this.cancelOrphanLink(createdLink, member.franchiseId);
+        }
+      }
       throw error;
     }
   }
@@ -628,10 +638,11 @@ export class MemberPlanService {
         // Status, date, transaction, gateway ids, source, programme and amounts stay as stored;
         // only the shipping address and GSTIN change. The billing snapshot the tax was
         // calculated on is kept.
-        const stored = (payment.memberAddress || {}) as { billingAddress?: IAddress | null };
+        // The invoice bills the stored billing address, or the stored address when none was saved
+        const stored = (payment.memberAddress || {}) as { address?: IAddress | null; billingAddress?: IAddress | null };
         payment.memberAddress = {
           address: draft.memberAddressSnapshot.address,
-          billingAddress: stored.billingAddress ?? null,
+          billingAddress: stored.billingAddress ?? stored.address ?? null,
         };
       } else {
         payment.programId = obj.programId;
@@ -1150,35 +1161,56 @@ export class MemberPlanService {
   }
 
   /**
-   * Replace a PENDING payment's link (e.g. expired). Under a row lock: the gateway is checked
-   * first, the old link is cancelled at the gateway (refused if already paid), then a new link
-   * is created for the stored total. A concurrent regenerate/cancel waits and rechecks.
+   * Replace a PENDING payment's link (e.g. expired). Both gateways are prepared before the row
+   * is locked (no pool connection or Razorpay wait is needed for them under the lock). Under
+   * the lock: the link must still be the one the admin saw, the old link is cancelled at the
+   * gateway (refused if paid), then a new link is created for the stored total. If saving the
+   * new link fails, it is cancelled again.
    */
-  public async regeneratePaymentLink(memberId: number, paymentId: number): Promise<IMemberPayment> {
+  public async regeneratePaymentLink(
+    memberId: number,
+    paymentId: number,
+    expectedGatewayOrderId?: string | null,
+  ): Promise<IMemberPayment> {
     const member = await this.memberRepository.findOne({ where: { memberId } });
     if (!member?.franchiseId) {
       throw new BadRequestException('Member does not have an associated franchise');
     }
+    const snapshot = await this.findGatewayPayment(memberId, paymentId);
+    if (snapshot.gatewayOrderId && !this.checkoutGatewayService.isPaymentLink(snapshot.gatewayOrderId)) {
+      throw new BadRequestException('A website checkout payment has no payment link to regenerate');
+    }
+    const amount = Number(snapshot.totalAmount);
+    const oldLinkContext = snapshot.gatewayOrderId
+      ? await this.checkoutGatewayService.prepareGateway({
+          franchiseId: member.franchiseId,
+          currency: snapshot.currency,
+          amount,
+          franchisePaymentGatewayId: snapshot.franchisePaymentGatewayId,
+          gatewayProvider: snapshot.gatewayProvider,
+        })
+      : null;
+    const newLinkContext = await this.checkoutGatewayService.prepareGateway({
+      franchiseId: member.franchiseId,
+      currency: snapshot.currency,
+      amount,
+    });
+
     const t = await this.sequelize.transaction();
+    let committed = false;
+    let newLink: ICheckoutPaymentLink | null = null;
     try {
-      const payment = await this.lockGatewayPayment(memberId, paymentId, t);
-      const oldLinkId = this.checkoutGatewayService.requirePaymentLinkId(payment.gatewayOrderId);
-      const amount = Number(payment.totalAmount);
-      await this.checkoutGatewayService.assertGatewayAvailable(member.franchiseId, payment.currency, amount);
-      const { cancelled } = await this.checkoutGatewayService.cancelGatewayPaymentLink({
-        paymentLinkId: oldLinkId,
-        gatewayProvider: payment.gatewayProvider,
-        franchisePaymentGatewayId: payment.franchisePaymentGatewayId,
-        fallback: { franchiseId: member.franchiseId, currency: payment.currency, amount },
-      });
-      if (!cancelled) {
-        throw new ConflictException('The current link has already been paid; the payment will be confirmed by the gateway.');
+      await this.checkoutGatewayService.setAdminLockTimeout(t);
+      const payment = await this.lockGatewayPayment(memberId, paymentId, t, expectedGatewayOrderId ?? snapshot.gatewayOrderId);
+      if (oldLinkContext && payment.gatewayOrderId) {
+        const { cancelled } = await this.checkoutGatewayService.cancelLinkWith(oldLinkContext, payment.gatewayOrderId);
+        if (!cancelled) {
+          throw new ConflictException('The current link has already been paid; the payment will be confirmed by the gateway.');
+        }
       }
-      const link = await this.checkoutGatewayService.createGatewayPaymentLink({
-        franchiseId: member.franchiseId,
+      newLink = await this.checkoutGatewayService.createLinkWith(newLinkContext, {
         currency: payment.currency,
         amount,
-        receipt: `plan_${payment.memberPaymentId}`,
         description: `Payment for member ${memberId}`,
         customer: {
           name: `${member.firstName || ''} ${member.lastName || ''}`.trim() || undefined,
@@ -1189,58 +1221,77 @@ export class MemberPlanService {
       });
       await payment.update(
         {
-          paymentLink: link.shortUrl,
-          gatewayOrderId: link.paymentLinkId,
-          gatewayProvider: link.gatewayCode,
-          franchisePaymentGatewayId: link.franchisePaymentGatewayId,
+          paymentLink: newLink.shortUrl,
+          gatewayOrderId: newLink.paymentLinkId,
+          gatewayProvider: newLink.gatewayCode,
+          franchisePaymentGatewayId: newLink.franchisePaymentGatewayId,
         },
         { transaction: t },
       );
       await t.commit();
+      committed = true;
     } catch (error) {
-      await t.rollback();
-      throw error;
+      if (!committed) {
+        await t.rollback().catch(() => undefined);
+        if (newLink) {
+          await this.cancelOrphanLink(newLink, member.franchiseId);
+        }
+      }
+      throw this.checkoutGatewayService.mapLockTimeout(error);
     }
     return this.findById(memberId, paymentId);
   }
 
   /**
-   * Decision 14 "Cancel payment link", under a row lock: the link is cancelled at the gateway
-   * (refused if already paid) and the payment becomes FAILED. A website-checkout payment
-   * (gateway order, no link) is just marked FAILED; a later capture still moves FAILED → PAID.
+   * Decision 14 "Cancel payment link". The gateway is prepared before the row is locked; under
+   * the lock the link must still be the one the admin saw, it is cancelled at the gateway
+   * (refused if paid), and the payment becomes FAILED. A website-checkout payment (gateway
+   * order, no link) is just marked FAILED; a later capture still moves FAILED → PAID.
    */
   public async cancelPaymentLink(
     memberId: number,
     paymentId: number,
     requestedIp: string,
     adminId: number,
+    expectedGatewayOrderId?: string | null,
   ): Promise<IMemberPayment> {
     const member = await this.memberRepository.findOne({ where: { memberId } });
+    const snapshot = await this.findGatewayPayment(memberId, paymentId);
+    const isLink = this.checkoutGatewayService.isPaymentLink(snapshot.gatewayOrderId);
+    if (isLink && !snapshot.franchisePaymentGatewayId && !member?.franchiseId) {
+      throw new BadRequestException('This payment has no gateway to cancel the link with');
+    }
+    const linkContext = isLink
+      ? await this.checkoutGatewayService.prepareGateway({
+          franchiseId: member?.franchiseId ?? 0,
+          currency: snapshot.currency,
+          amount: Number(snapshot.totalAmount),
+          franchisePaymentGatewayId: snapshot.franchisePaymentGatewayId,
+          gatewayProvider: snapshot.gatewayProvider,
+        })
+      : null;
+
     const t = await this.sequelize.transaction();
+    let committed = false;
     try {
-      const payment = await this.lockGatewayPayment(memberId, paymentId, t);
+      await this.checkoutGatewayService.setAdminLockTimeout(t);
+      const payment = await this.lockGatewayPayment(memberId, paymentId, t, expectedGatewayOrderId ?? snapshot.gatewayOrderId);
       let linkStatus = 'no-link';
-      if (this.checkoutGatewayService.isPaymentLink(payment.gatewayOrderId)) {
-        const result = await this.checkoutGatewayService.cancelGatewayPaymentLink({
-          paymentLinkId: payment.gatewayOrderId,
-          gatewayProvider: payment.gatewayProvider,
-          franchisePaymentGatewayId: payment.franchisePaymentGatewayId,
-          fallback: member?.franchiseId
-            ? { franchiseId: member.franchiseId, currency: payment.currency, amount: Number(payment.totalAmount) }
-            : undefined,
-        });
+      if (linkContext && payment.gatewayOrderId) {
+        const result = await this.checkoutGatewayService.cancelLinkWith(linkContext, payment.gatewayOrderId);
         if (!result.cancelled) {
           throw new ConflictException('This payment link has already been paid; the payment will be confirmed by the gateway.');
         }
         linkStatus = result.status;
       }
+      const previous = payment.paymentGatewayResponse;
       await payment.update(
         {
           paymentStatusId: PaymentStatusEnum.FAILED,
+          // Keep earlier gateway evidence (e.g. a payment.failed entity) and add the cancellation
           paymentGatewayResponse: {
-            cancelledByAdminId: adminId,
-            cancelledAt: new Date().toISOString(),
-            paymentLinkStatus: linkStatus,
+            ...(previous && typeof previous === 'object' && !Array.isArray(previous) ? previous : {}),
+            adminCancellation: { adminId, cancelledAt: new Date().toISOString(), paymentLinkStatus: linkStatus },
           },
           modifiedBy: adminId,
           modifiedIp: requestedIp,
@@ -1248,15 +1299,38 @@ export class MemberPlanService {
         { transaction: t },
       );
       await t.commit();
+      committed = true;
     } catch (error) {
-      await t.rollback();
-      throw error;
+      if (!committed) {
+        await t.rollback().catch(() => undefined);
+      }
+      throw this.checkoutGatewayService.mapLockTimeout(error);
     }
     return this.findById(memberId, paymentId);
   }
 
-  /** The PENDING gateway payment, row-locked in `t` (rechecked after any concurrent request). */
-  private async lockGatewayPayment(memberId: number, paymentId: number, t: Transaction): Promise<TxnMemberPayment> {
+  /** Unlocked read of the PENDING gateway payment, to prepare the gateway before locking. */
+  private async findGatewayPayment(memberId: number, paymentId: number): Promise<TxnMemberPayment> {
+    const payment = await this.memberPaymentRepository.findOne({
+      where: { memberPaymentId: paymentId, memberId, active: true },
+    });
+    if (!payment) {
+      throw new NotFoundException('Payment not found');
+    }
+    this.assertPendingGatewayPayment(payment);
+    return payment;
+  }
+
+  /**
+   * The PENDING gateway payment, row-locked in `t`. Rechecked under the lock: still PENDING,
+   * and still on the link the admin acted on (a concurrent request may have replaced it).
+   */
+  private async lockGatewayPayment(
+    memberId: number,
+    paymentId: number,
+    t: Transaction,
+    expectedGatewayOrderId: string | null,
+  ): Promise<TxnMemberPayment> {
     const payment = await this.memberPaymentRepository.findOne({
       where: { memberPaymentId: paymentId, memberId, active: true },
       transaction: t,
@@ -1265,10 +1339,17 @@ export class MemberPlanService {
     if (!payment) {
       throw new NotFoundException('Payment not found');
     }
+    this.assertPendingGatewayPayment(payment);
+    if ((payment.gatewayOrderId ?? null) !== (expectedGatewayOrderId ?? null)) {
+      throw new ConflictException('This payment link was changed by another request; refresh and try again.');
+    }
+    return payment;
+  }
+
+  private assertPendingGatewayPayment(payment: TxnMemberPayment): void {
     if (payment.paymentSource !== PaymentSourceEnum.PAYMENT_GATEWAY || payment.paymentStatusId !== PaymentStatusEnum.PENDING) {
       throw new BadRequestException('Only a pending payment-gateway payment has a link to cancel or regenerate');
     }
-    return payment;
   }
 
   /**

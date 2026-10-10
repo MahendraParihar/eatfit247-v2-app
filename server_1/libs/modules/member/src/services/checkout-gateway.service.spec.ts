@@ -8,6 +8,7 @@ import {
 import { PromoCodeService } from '@server_1/modules/promo-code';
 import { GatewayEventResultEnum } from '@eatfit247-shared-lib';
 import { UniqueConstraintError } from 'sequelize';
+import { Sequelize } from 'sequelize-typescript';
 import { CheckoutGatewayService } from './checkout-gateway.service';
 import { TxnPaymentGatewayEvent } from '../models';
 import { PaymentConfirmationService } from './payment-confirmation.service';
@@ -66,6 +67,7 @@ describe('CheckoutGatewayService', () => {
       { applyPromoCode } as unknown as PromoCodeService,
       { confirmGatewayPayment } as unknown as PaymentConfirmationService,
       { create: eventCreate } as unknown as typeof TxnPaymentGatewayEvent,
+      { query: jest.fn() } as unknown as Sequelize,
     );
   });
 
@@ -273,6 +275,17 @@ describe('CheckoutGatewayService', () => {
           franchiseId: 1, currency: 'INR', amount: 1180, receipt: 'r', description: 'd', customer: {}, notes: {},
         }),
       ).rejects.toBeInstanceOf(ConflictException);
+
+      adaptor.cancelPaymentLink.mockRejectedValue({ error: { description: 'Link is unpaid and cannot be expired yet' } });
+      await expect(
+        service.cancelGatewayPaymentLink({ paymentLinkId: 'plink_1', gatewayProvider: 'RAZORPAY', franchisePaymentGatewayId: 7 }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+    });
+
+    it('maps a Postgres lock timeout (55P03) to 409 and leaves other errors alone', () => {
+      expect(service.mapLockTimeout({ original: { code: '55P03' } })).toBeInstanceOf(ConflictException);
+      const other = new Error('boom');
+      expect(service.mapLockTimeout(other)).toBe(other);
     });
   });
 });

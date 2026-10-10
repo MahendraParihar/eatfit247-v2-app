@@ -34,16 +34,18 @@ describe('RazorpayWebhookController', () => {
   let controller: RazorpayWebhookController;
   let getActiveCredentials: jest.Mock;
   let handleVerifiedEvent: jest.Mock;
+  let findStoredGatewayId: jest.Mock;
 
   beforeEach(() => {
     getActiveCredentials = jest.fn().mockResolvedValue({ webhookSecretEncrypted: webhookSecret });
     handleVerifiedEvent = jest
       .fn()
       .mockResolvedValue({ status: 'success', result: GatewayEventResultEnum.APPLIED });
+    findStoredGatewayId = jest.fn().mockResolvedValue(null);
     controller = new RazorpayWebhookController(
       { getActiveCredentials } as unknown as PaymentGatewayCredentialService,
       { getString: jest.fn().mockReturnValue('test') } as unknown as AppConfigService,
-      { handleVerifiedEvent } as unknown as RazorpayWebhookService,
+      { handleVerifiedEvent, findStoredGatewayId } as unknown as RazorpayWebhookService,
     );
   });
 
@@ -100,6 +102,22 @@ describe('RazorpayWebhookController', () => {
 
     expect(getActiveCredentials).toHaveBeenCalledWith(1, 'test');
     expect(handleVerifiedEvent).toHaveBeenCalled();
+  });
+
+  it('uses the gateway stored on the record when no notes carry it (signature still checked)', async () => {
+    const noNotes = JSON.stringify({
+      entity: 'event',
+      event: 'payment.captured',
+      payload: { payment: { entity: { id: 'pay_1', order_id: 'order_1', amount: 100, currency: 'INR', notes: [] } } },
+    });
+    findStoredGatewayId.mockResolvedValue(3);
+
+    await controller.handleWebhook({ rawBody: noNotes }, sign(noNotes), '127.0.0.1', 'evt_nn');
+    expect(getActiveCredentials).toHaveBeenCalledWith(3, 'test');
+
+    await expect(controller.handleWebhook({ rawBody: noNotes }, sign('forged'), '127.0.0.1', 'evt_nn2')).rejects.toThrow(
+      UnauthorizedException,
+    );
   });
 
   it('rejects a body that is not JSON or not an event', async () => {

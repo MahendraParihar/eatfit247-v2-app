@@ -281,7 +281,7 @@ export class MemberPaymentHistoryComponent implements OnInit, OnDestroy {
     }
     this.busyPaymentIds.add(payment.memberPaymentId);
     try {
-      await this.apiService.cancelPaymentLink(this.memberId, payment.memberPaymentId);
+      await this.apiService.cancelPaymentLink(this.memberId, payment.memberPaymentId, payment.gatewayOrderId);
       this.snackBar.open('Payment link cancelled; the payment is marked Failed', 'Close', { duration: 3000 });
       await this.loadPayments();
     } catch {
@@ -306,7 +306,8 @@ export class MemberPaymentHistoryComponent implements OnInit, OnDestroy {
     try {
       await this.apiService.regeneratePaymentLink(
         this.memberId,
-        payment.memberPaymentId
+        payment.memberPaymentId,
+        payment.gatewayOrderId
       );
 
       this.snackBar.open('Payment link regenerated successfully', 'Close', {

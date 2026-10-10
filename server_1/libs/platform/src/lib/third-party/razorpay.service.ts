@@ -15,6 +15,8 @@ export interface IGatewayPaymentDetails {
   raw: Record<string, unknown>;
 }
 
+const RAZORPAY_TIMEOUT_MS = 15_000;
+
 @Injectable()
 export class RazorpayService {
   private razorpay: Razorpay;
@@ -43,6 +45,18 @@ export class RazorpayService {
     return this.razorpay;
   }
 
+  /**
+   * The SDK sets no request timeout; callers may hold a row lock while waiting, so every call
+   * is bounded (the request itself may still finish at Razorpay).
+   */
+  private withTimeout<T>(label: string, request: Promise<T>, ms = RAZORPAY_TIMEOUT_MS): Promise<T> {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const timeout = new Promise<never>((_, reject) => {
+      timer = setTimeout(() => reject(new Error(`Razorpay ${label} timed out after ${ms / 1000}s`)), ms);
+    });
+    return Promise.race([request, timeout]).finally(() => clearTimeout(timer));
+  }
+
   async createOrder(
     amount: number,
     receipt: string,
@@ -52,12 +66,12 @@ export class RazorpayService {
     keySecret?: string,
   ) {
     const razorpay = this.getRazorpayInstance(keyId, keySecret);
-    return razorpay.orders.create({
+    return this.withTimeout('order create', razorpay.orders.create({
       amount: CurrencyUtil.toMinor(amount, currency),
       currency: currency.toUpperCase(),
       receipt,
       notes,
-    });
+    }));
   }
 
   async createPaymentLink(
@@ -74,13 +88,13 @@ export class RazorpayService {
     keySecret?: string,
   ) {
     const razorpay = this.getRazorpayInstance(keyId, keySecret);
-    return razorpay.paymentLink.create({
+    return this.withTimeout('payment link create', razorpay.paymentLink.create({
       amount: CurrencyUtil.toMinor(amount, currency),
       currency: currency,
       description,
       customer: customer || {},
       notes: notes || {},
-    });
+    }));
   }
 
   /**
@@ -93,11 +107,11 @@ export class RazorpayService {
     keySecret: string,
   ): Promise<{ status: string }> {
     const razorpay = this.getRazorpayInstance(keyId, keySecret);
-    const link = await razorpay.paymentLink.fetch(paymentLinkId);
+    const link = await this.withTimeout('payment link fetch', razorpay.paymentLink.fetch(paymentLinkId));
     if (['paid', 'cancelled', 'expired'].includes(String(link.status))) {
       return { status: String(link.status) };
     }
-    const cancelled = await razorpay.paymentLink.cancel(paymentLinkId);
+    const cancelled = await this.withTimeout('payment link cancel', razorpay.paymentLink.cancel(paymentLinkId));
     return { status: String(cancelled.status) };
   }
 
@@ -111,7 +125,7 @@ export class RazorpayService {
     keySecret: string,
   ): Promise<IGatewayPaymentDetails> {
     const razorpay = this.getRazorpayInstance(keyId, keySecret);
-    const payment = await razorpay.payments.fetch(paymentId);
+    const payment = await this.withTimeout('payment fetch', razorpay.payments.fetch(paymentId));
     return {
       id: payment.id,
       orderId: payment.order_id ?? null,

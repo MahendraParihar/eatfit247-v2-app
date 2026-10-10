@@ -35,7 +35,7 @@ These need production data, a non-INR gateway, or devices the agent can't reach.
 - [ ] Review `scripts/audit/payment_gateway_event_exceptions.sql` daily for the first weeks (ERROR, ORDER_NOT_FOUND, over-limit promo, unfinished events).
 - [ ] A16 remainder: Safari, mobile width, and a foreign-currency checkout once a non-INR gateway exists (promos are INR-only until promo codes get a currency).
 - [ ] Watch the first real webhooks in `txn_payment_gateway_events` (localhost can't receive them).
-- [ ] Cancel the test NimbusPost shipment booked from local testing: shipment 37, AWB 4152922405330.
+- [x] Cancel the test NimbusPost shipment booked from local testing: shipment 37, AWB 4152922405330 (cancelled by the owner, 2026-10-10).
 
 ## Automated Checks
 
@@ -43,7 +43,7 @@ These need production data, a non-INR gateway, or devices the agent can't reach.
 - [x] `cd server_1`: `nx build` for public-api and admin-api passes; jest passes for member (9 suites, 113 tests) and pocket-guide. **lint:** no `lint` target exists and the eslintrc ignores `libs/`, so it couldn't run. Already failing before 4.5: core `AbilitiesGuard` spec (1 test), platform `google.service.spec` (doesn't load)
 - [x] `cd eatfit247-web-1 && npx nx build` (SSR). ESLint on the changed files: no new problems (10 errors and 6 warnings, all already there; it ran with `@nx/enforce-module-boundaries` off, because that rule hangs building the project graph)
 - [x] New or updated specs pass: `payment-confirmation.service.spec.ts` (state matrix, races, amounts, promo), `razorpay-webhook.controller.spec.ts`, public checkout controller/DTO specs, minor-unit helper spec
-- [ ] The event-log migration applies on a fresh DB and on a copy of production. *Applied locally and re-runs cleanly; a production copy is still needed*
+- [ ] The event-log migration applies on a fresh DB and on a copy of production. *Applied locally and re-runs cleanly. Also applied twice to a scratch clone reverted to its pre-139 state (table, both columns on both tables, nullable `payment_date`); the clone was dropped. A production copy is still needed*
 - [ ] **When roadmap 5.3/5.4 land, add:**
   - integration tests for order → webhook → PAID, and for duplicate and late events
   - Playwright e2e for website checkout with Razorpay test mode

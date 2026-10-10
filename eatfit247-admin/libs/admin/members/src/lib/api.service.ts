@@ -620,19 +620,22 @@ export class MembersApiService {
 
 
   /** Cancel the open payment link at the gateway; the payment becomes FAILED (decision 14). */
-  async cancelPaymentLink(memberId: number, paymentId: number): Promise<IMemberPayment> {
+  async cancelPaymentLink(memberId: number, paymentId: number, expectedGatewayOrderId?: string | null): Promise<IMemberPayment> {
     const res = await this.httpService.post<IResponse<IMemberPayment>>(
-      `${this.endpoint}/${memberId}/payment-history/${paymentId}/cancel-payment-link`
+      `${this.endpoint}/${memberId}/payment-history/${paymentId}/cancel-payment-link`,
+      { expectedGatewayOrderId: expectedGatewayOrderId || undefined }
     );
     return res.data as IMemberPayment;
   }
 
   async regeneratePaymentLink(
     memberId: number,
-    paymentId: number
+    paymentId: number,
+    expectedGatewayOrderId?: string | null
   ): Promise<IMemberPayment> {
     const res = await this.httpService.post<IResponse<IMemberPayment>>(
-      `${this.endpoint}/${memberId}/payment-history/${paymentId}/regenerate-payment-link`
+      `${this.endpoint}/${memberId}/payment-history/${paymentId}/regenerate-payment-link`,
+      { expectedGatewayOrderId: expectedGatewayOrderId || undefined }
     );
     return res.data as IMemberPayment;
   }
@@ -912,19 +915,22 @@ export class MembersApiService {
 
 
   /** Cancel the open payment link at the gateway; the order becomes FAILED (decision 14). */
-  async cancelProductPaymentLink(memberId: number, productId: number): Promise<IMemberProduct> {
+  async cancelProductPaymentLink(memberId: number, productId: number, expectedGatewayOrderId?: string | null): Promise<IMemberProduct> {
     const res = await this.httpService.post<IResponse<IMemberProduct>>(
-      `${this.endpoint}/${memberId}/product/${productId}/cancel-payment-link`
+      `${this.endpoint}/${memberId}/product/${productId}/cancel-payment-link`,
+      { expectedGatewayOrderId: expectedGatewayOrderId || undefined }
     );
     return res.data as IMemberProduct;
   }
 
   async regenerateProductPaymentLink(
     memberId: number,
-    productId: number
+    productId: number,
+    expectedGatewayOrderId?: string | null
   ): Promise<IMemberProduct> {
     const res = await this.httpService.post<IResponse<IMemberProduct>>(
-      `${this.endpoint}/${memberId}/product/${productId}/regenerate-payment-link`
+      `${this.endpoint}/${memberId}/product/${productId}/regenerate-payment-link`,
+      { expectedGatewayOrderId: expectedGatewayOrderId || undefined }
     );
     return res.data as IMemberProduct;
   }

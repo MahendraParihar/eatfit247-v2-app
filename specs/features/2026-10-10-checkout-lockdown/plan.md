@@ -307,6 +307,38 @@ The independent review of `81d3a676` found no admin path to PAID without the gat
     - A Razorpay "Too many requests" during testing came back as a clean 400.
     - No live link exists without a record.
 
+## Group 13: Review of group 12 (2026-10-10)
+
+The independent review of `7c892aa4` found no Critical or High issue. Fixes:
+
+- [x] 13.1 (Medium) No connection or lock is held while waiting on Razorpay without a limit:
+  - Regenerate and cancel resolve the gateway and credentials **before** opening the transaction, so no other pool connection is needed while the row is locked.
+  - Admin locks set `lock_timeout` (a busy row returns 409), and the webhook/verify lock has its own `lock_timeout`.
+  - Razorpay API calls have a 15 s timeout.
+- [x] 13.2 (Medium) `create()` (plan and product) only rolls back if not committed. After a failed commit it cancels the link only if the record doesn't exist, and the original error is rethrown.
+- [x] 13.3 (Medium) If saving fails after regenerate created the new link, that link is cancelled.
+- [x] 13.4 (Low) Regenerate and cancel take the row's current link id from the UI (`expectedGatewayOrderId`) and return 409 if it changed. Regenerate also works for a legacy record with no link. A cancel keeps the earlier gateway response. The 409 classification only matches "already paid" messages.
+- [x] 13.5 (Low) Editing a gateway record freezes the invoice (billing) address, falling back to the stored address when no billing address was saved.
+- [x] 13.6 (Low) Webhook: when no notes carry the gateway id, the gateway stored on the matching record (by order or link id) chooses the secret. An ORDER_NOT_FOUND event is linked to the record named in its signed notes, so Accounts can follow up.
+- **As built (group 13):**
+  - `CheckoutGatewayService.prepareGateway` does the database reads. `createLinkWith` and `cancelLinkWith` only call the gateway, so regenerate and cancel prepare both gateways before `FOR UPDATE`, and the locked transaction needs no other connection.
+  - `setAdminLockTimeout` (5 s) and `mapLockTimeout` (55P03 → 409). The webhook/verify lock uses `lock_timeout` 10 s, after which it fails and the gateway retries.
+  - `RazorpayService.withTimeout` gives every Razorpay call a 15 s limit.
+  - `create()` uses a `committed` flag: it rolls back only if not committed, and after a failed commit it cancels the link only if no record has it. Regenerate cancels its new link if the save fails.
+  - Regenerate and cancel take `expectedGatewayOrderId` (body `PaymentLinkActionDto`; the UI sends the row's id) and return 409 if the link changed. Regenerate creates a first link for a legacy record that had none.
+  - A cancel merges `adminCancellation` into the existing `paymentGatewayResponse`.
+  - The 409 classification only matches "already paid / has been paid / link is paid".
+  - Gateway record edits freeze `billingAddress` (falling back to the stored `address`).
+  - Webhook: when no notes carry the gateway, the record's stored `franchise_payment_gateway_id` (looked up by order or link id) selects the secret. ORDER_NOT_FOUND events are linked to the `memberPaymentId`/`memberProductId` named in the signed notes, when that record exists.
+  - Tests: member jest passes (156 tests); both apps and the admin UI build.
+  - Live (Razorpay TEST):
+    - Regenerate with the expected link: old link `cancelled`, new one live.
+    - A stale link id gets 409.
+    - Cancel while another transaction held the row gets 409 after 5.1 s (not an indefinite wait).
+    - Cancel keeps the earlier response.
+    - `payment.captured` with `notes: []` → 200 APPLIED through the stored gateway (invoice `…/S/000007`).
+    - Test rows were soft-deleted and their links closed.
+
 ## Group 7: Close-out
 
 - [x] 7.1 Every check in `validation.md` that can run before merge passes: 16 of 18 criteria ✅, and A16/A17 are partial with their remaining parts listed under "Post-ship".
@@ -320,4 +352,4 @@ The independent review of `81d3a676` found no admin path to PAID without the gat
     - **4.8:** create admin payment links from the stored record total; review `payment_gateway_event_exceptions.sql` daily until then.
     - **Website:** the checkout component (zoneless, plain fields) doesn't re-render after its initial loads ("0 items" until interaction) and logs NG0100. Convert its state to signals.
     - **Promo:** decide currency and eligibility before enabling foreign-currency checkout.
-- **Close-out (2026-10-10):** Groups 1–10 are done; each was tested (unit tests and live against the local servers, plus two Razorpay test-mode payments in Chrome) and reviewed before the next. Owner steps after merge are listed in validation.md "Post-ship".
+- **Close-out (2026-10-10):** Groups 1–13 are done (11–13 added the admin gateway flow by owner decision, plus its two reviews); each was tested (unit tests and live against the local servers, plus two Razorpay test-mode payments in Chrome) and reviewed before the next. Owner steps after merge are listed in validation.md "Post-ship".

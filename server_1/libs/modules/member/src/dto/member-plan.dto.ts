@@ -121,3 +121,11 @@ export class PlanTaxCalculationRequestDto implements IPlanTaxCalculationRequest 
 export class PreviewMemberPaymentUpdateDto extends CreateMemberPaymentDto {}
 
 export class UpdateMemberPaymentDto extends CreateMemberPaymentDto {}
+
+/** Regenerate / cancel payment link: the link the admin saw (409 if another request changed it). */
+export class PaymentLinkActionDto {
+  @IsOptional()
+  @IsString()
+  @MaxLength(InputLengthEnum.CHAR_100)
+  expectedGatewayOrderId?: string;
+}

@@ -17,6 +17,7 @@ import {
   PlanTaxCalculationRequestDto,
   PreviewMemberPaymentUpdateDto,
   UpdateMemberPaymentDto,
+  PaymentLinkActionDto,
 } from '../../dto';
 import { ProgramPlanService } from '@server_1/modules/program-plan';
 import { IFileModel } from '@server_1/platform';
@@ -134,10 +135,17 @@ export class MemberPlanController {
   async cancelPaymentLink(
     @Param('id') id: number,
     @Param('paymentId') paymentId: number,
+    @Body() body: PaymentLinkActionDto,
     @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
   ): Promise<IMemberPayment> {
-    return await this.memberPaymentService.cancelPaymentLink(id, paymentId, requestedIp, currentUser.adminId);
+    return await this.memberPaymentService.cancelPaymentLink(
+      id,
+      paymentId,
+      requestedIp,
+      currentUser.adminId,
+      body?.expectedGatewayOrderId,
+    );
   }
 
   @Post(':paymentId/regenerate-payment-link')
@@ -145,8 +153,9 @@ export class MemberPlanController {
   async regeneratePaymentLink(
     @Param('id') id: number,
     @Param('paymentId') paymentId: number,
+    @Body() body: PaymentLinkActionDto,
   ): Promise<IMemberPayment> {
-    return await this.memberPaymentService.regeneratePaymentLink(id, paymentId);
+    return await this.memberPaymentService.regeneratePaymentLink(id, paymentId, body?.expectedGatewayOrderId);
   }
 
   @Get(':paymentId/invoice')

@@ -1,4 +1,4 @@
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, ConflictException } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize-typescript';
@@ -42,6 +42,11 @@ describe('MemberPlanService public checkout', () => {
     requirePaymentLinkId: jest.Mock;
     assertGatewayAvailable: jest.Mock;
     isPaymentLink: jest.Mock;
+    prepareGateway: jest.Mock;
+    createLinkWith: jest.Mock;
+    cancelLinkWith: jest.Mock;
+    setAdminLockTimeout: jest.Mock;
+    mapLockTimeout: jest.Mock;
   };
   let detailsFindOne: jest.Mock;
   let createIfNotExists: jest.Mock;
@@ -56,7 +61,11 @@ describe('MemberPlanService public checkout', () => {
   };
 
   beforeEach(async () => {
-    transaction = { commit: jest.fn(), rollback: jest.fn(), LOCK: { UPDATE: 'UPDATE' } } as typeof transaction;
+    transaction = {
+      commit: jest.fn().mockResolvedValue(undefined),
+      rollback: jest.fn().mockResolvedValue(undefined),
+      LOCK: { UPDATE: 'UPDATE' },
+    } as typeof transaction;
     createdPayment = {
       memberPaymentId: 900,
       promoCode: 'SAVE10',
@@ -109,6 +118,16 @@ describe('MemberPlanService public checkout', () => {
       requirePaymentLinkId: jest.fn().mockImplementation((id: string) => id),
       assertGatewayAvailable: jest.fn().mockResolvedValue(undefined),
       isPaymentLink: jest.fn().mockImplementation((id: string | null) => !!id && id.startsWith('plink_')),
+      prepareGateway: jest.fn().mockResolvedValue({ franchisePaymentGatewayId: 1, gatewayCode: 'RAZORPAY', credentials: { keyId: 'k', keySecret: 's' } }),
+      createLinkWith: jest.fn().mockResolvedValue({
+        gatewayCode: 'RAZORPAY',
+        paymentLinkId: 'plink_new',
+        shortUrl: 'https://rzp.io/l/new',
+        franchisePaymentGatewayId: 1,
+      }),
+      cancelLinkWith: jest.fn().mockResolvedValue({ cancelled: true, status: 'cancelled' }),
+      setAdminLockTimeout: jest.fn().mockResolvedValue(undefined),
+      mapLockTimeout: jest.fn().mockImplementation((error: unknown) => error),
     };
     detailsFindOne = jest.fn().mockResolvedValue({ memberPaymentId: 900, memberId: 4945 });
     createIfNotExists = jest.fn().mockResolvedValue(undefined);
@@ -426,23 +445,31 @@ describe('MemberPlanService public checkout', () => {
       franchisePaymentGatewayId: 1,
       currency: 'INR',
       totalAmount: '1062.00',
+      paymentGatewayResponse: { id: 'pay_failed_1', status: 'failed' },
       update: jest.fn(),
       ...overrides,
     });
-
-    it('cancel payment link locks the row, cancels at the gateway and marks the payment FAILED', async () => {
-      const record = pendingGatewayRecord();
-      paymentFindOne.mockResolvedValue(record);
+    const stubFindById = () =>
       jest.spyOn(service, 'findById').mockResolvedValue({} as Awaited<ReturnType<MemberPlanService['findById']>>);
 
-      await service.cancelPaymentLink(4945, 900, '127.0.0.1', 7);
+    it('cancel: gateway prepared before the lock; under a short lock timeout the link is cancelled and the payment FAILED', async () => {
+      const record = pendingGatewayRecord();
+      paymentFindOne.mockResolvedValue(record);
+      stubFindById();
 
+      await service.cancelPaymentLink(4945, 900, '127.0.0.1', 7, 'plink_old');
+
+      expect(checkout.prepareGateway).toHaveBeenCalledWith(expect.objectContaining({ franchisePaymentGatewayId: 1, franchiseId: 1 }));
+      expect(checkout.prepareGateway.mock.invocationCallOrder[0]).toBeLessThan(checkout.setAdminLockTimeout.mock.invocationCallOrder[0]);
       expect(paymentFindOne).toHaveBeenCalledWith(expect.objectContaining({ transaction, lock: 'UPDATE' }));
-      expect(checkout.cancelGatewayPaymentLink).toHaveBeenCalledWith(
-        expect.objectContaining({ paymentLinkId: 'plink_old', franchisePaymentGatewayId: 1, fallback: expect.objectContaining({ franchiseId: 1 }) }),
-      );
+      expect(checkout.cancelLinkWith).toHaveBeenCalledWith(expect.objectContaining({ franchisePaymentGatewayId: 1 }), 'plink_old');
       expect(record.update).toHaveBeenCalledWith(
-        expect.objectContaining({ paymentStatusId: PaymentStatusEnum.FAILED, modifiedBy: 7 }),
+        expect.objectContaining({
+          paymentStatusId: PaymentStatusEnum.FAILED,
+          modifiedBy: 7,
+          // earlier gateway evidence is kept
+          paymentGatewayResponse: expect.objectContaining({ id: 'pay_failed_1', adminCancellation: expect.objectContaining({ adminId: 7 }) }),
+        }),
         { transaction },
       );
       expect(transaction.commit).toHaveBeenCalled();
@@ -451,64 +478,113 @@ describe('MemberPlanService public checkout', () => {
     it('cancel refuses a link that was already paid and leaves the payment PENDING', async () => {
       const record = pendingGatewayRecord();
       paymentFindOne.mockResolvedValue(record);
-      checkout.cancelGatewayPaymentLink.mockResolvedValue({ cancelled: false, status: 'paid' });
+      checkout.cancelLinkWith.mockResolvedValue({ cancelled: false, status: 'paid' });
 
       await expect(service.cancelPaymentLink(4945, 900, '127.0.0.1', 7)).rejects.toThrow('already been paid');
       expect(record.update).not.toHaveBeenCalled();
       expect(transaction.rollback).toHaveBeenCalled();
     });
 
+    it('cancel and regenerate refuse when the link changed since the admin saw it (409)', async () => {
+      paymentFindOne.mockResolvedValue(pendingGatewayRecord({ gatewayOrderId: 'plink_newer' }));
+
+      await expect(service.cancelPaymentLink(4945, 900, '127.0.0.1', 7, 'plink_old')).rejects.toThrow('changed by another request');
+      await expect(service.regeneratePaymentLink(4945, 900, 'plink_old')).rejects.toThrow('changed by another request');
+      expect(checkout.cancelLinkWith).not.toHaveBeenCalled();
+      expect(checkout.createLinkWith).not.toHaveBeenCalled();
+    });
+
     it('a website-checkout payment (gateway order, no link) is marked FAILED without a gateway call', async () => {
       const record = pendingGatewayRecord({ gatewayOrderId: 'order_web1' });
       paymentFindOne.mockResolvedValue(record);
-      jest.spyOn(service, 'findById').mockResolvedValue({} as Awaited<ReturnType<MemberPlanService['findById']>>);
+      stubFindById();
 
       await service.cancelPaymentLink(4945, 900, '127.0.0.1', 7);
 
-      expect(checkout.cancelGatewayPaymentLink).not.toHaveBeenCalled();
+      expect(checkout.cancelLinkWith).not.toHaveBeenCalled();
       expect(record.update).toHaveBeenCalledWith(expect.objectContaining({ paymentStatusId: PaymentStatusEnum.FAILED }), { transaction });
+      await expect(service.regeneratePaymentLink(4945, 900)).rejects.toThrow('no payment link to regenerate');
     });
 
-    it('a second cancel/regenerate that waited on the lock sees the new status and is refused', async () => {
+    it('a payment that is no longer PENDING is refused before any gateway work', async () => {
       paymentFindOne.mockResolvedValue(pendingGatewayRecord({ paymentStatusId: PaymentStatusEnum.FAILED }));
 
       await expect(service.cancelPaymentLink(4945, 900, '127.0.0.1', 7)).rejects.toThrow('Only a pending payment-gateway payment');
       await expect(service.regeneratePaymentLink(4945, 900)).rejects.toThrow('Only a pending payment-gateway payment');
-      expect(checkout.cancelGatewayPaymentLink).not.toHaveBeenCalled();
+      expect(checkout.prepareGateway).not.toHaveBeenCalled();
     });
 
-    it('regenerate under the lock: checks the gateway, cancels the old link, then creates the new one', async () => {
+    it('regenerate: both gateways prepared before the lock, then cancel old → create new → save', async () => {
       const record = pendingGatewayRecord();
       paymentFindOne.mockResolvedValue(record);
-      jest.spyOn(service, 'findById').mockResolvedValue({} as Awaited<ReturnType<MemberPlanService['findById']>>);
+      stubFindById();
 
-      await service.regeneratePaymentLink(4945, 900);
+      await service.regeneratePaymentLink(4945, 900, 'plink_old');
 
-      expect(paymentFindOne).toHaveBeenCalledWith(expect.objectContaining({ transaction, lock: 'UPDATE' }));
-      expect(checkout.assertGatewayAvailable.mock.invocationCallOrder[0]).toBeLessThan(
-        checkout.cancelGatewayPaymentLink.mock.invocationCallOrder[0],
-      );
-      expect(checkout.cancelGatewayPaymentLink.mock.invocationCallOrder[0]).toBeLessThan(
-        checkout.createGatewayPaymentLink.mock.invocationCallOrder[0],
-      );
+      expect(checkout.prepareGateway).toHaveBeenCalledTimes(2);
+      expect(checkout.prepareGateway.mock.invocationCallOrder[1]).toBeLessThan(checkout.setAdminLockTimeout.mock.invocationCallOrder[0]);
+      expect(checkout.cancelLinkWith.mock.invocationCallOrder[0]).toBeLessThan(checkout.createLinkWith.mock.invocationCallOrder[0]);
+      expect(checkout.createLinkWith).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ amount: 1062 }));
       expect(record.update).toHaveBeenCalledWith(expect.objectContaining({ gatewayOrderId: 'plink_new' }), { transaction });
       expect(transaction.commit).toHaveBeenCalled();
     });
 
-    it('regenerate does not cancel the old link when no new link can be created for the gateway', async () => {
+    it('regenerate does nothing at the gateway when no new link can be prepared', async () => {
       paymentFindOne.mockResolvedValue(pendingGatewayRecord());
-      checkout.assertGatewayAvailable.mockRejectedValue(new BadRequestException('No payment gateway configured'));
+      checkout.prepareGateway
+        .mockResolvedValueOnce({ franchisePaymentGatewayId: 1, gatewayCode: 'RAZORPAY', credentials: { keyId: 'k', keySecret: 's' } })
+        .mockRejectedValueOnce(new BadRequestException('No payment gateway configured'));
 
       await expect(service.regeneratePaymentLink(4945, 900)).rejects.toThrow('No payment gateway configured');
-      expect(checkout.cancelGatewayPaymentLink).not.toHaveBeenCalled();
+      expect(checkout.cancelLinkWith).not.toHaveBeenCalled();
     });
 
-    it('a failed save after the link was created cancels that link', async () => {
+    it('regenerate works for a legacy record that never had a link', async () => {
+      const record = pendingGatewayRecord({ gatewayOrderId: null, franchisePaymentGatewayId: null });
+      paymentFindOne.mockResolvedValue(record);
+      stubFindById();
+
+      await service.regeneratePaymentLink(4945, 900);
+
+      expect(checkout.cancelLinkWith).not.toHaveBeenCalled();
+      expect(record.update).toHaveBeenCalledWith(expect.objectContaining({ gatewayOrderId: 'plink_new' }), { transaction });
+    });
+
+    it('regenerate cancels the new link again when saving it fails', async () => {
+      const record = pendingGatewayRecord();
+      record.update.mockRejectedValue(new Error('db write failed'));
+      paymentFindOne.mockResolvedValue(record);
+
+      await expect(service.regeneratePaymentLink(4945, 900)).rejects.toThrow('db write failed');
+      expect(transaction.rollback).toHaveBeenCalled();
+      expect(checkout.cancelGatewayPaymentLink).toHaveBeenCalledWith(expect.objectContaining({ paymentLinkId: 'plink_new' }));
+    });
+
+    it('a busy row (lock timeout) is reported through mapLockTimeout', async () => {
+      paymentFindOne.mockResolvedValue(pendingGatewayRecord());
+      const lockError = Object.assign(new Error('canceling statement due to lock timeout'), { original: { code: '55P03' } });
+      paymentFindOne.mockResolvedValueOnce(pendingGatewayRecord()).mockRejectedValueOnce(lockError);
+      checkout.mapLockTimeout.mockReturnValue(new ConflictException('busy'));
+
+      await expect(service.cancelPaymentLink(4945, 900, '127.0.0.1', 7)).rejects.toThrow('busy');
+      expect(checkout.mapLockTimeout).toHaveBeenCalledWith(lockError);
+    });
+
+    it('a failed save after the link was created cancels that link (no record has it)', async () => {
       createdPayment.update.mockRejectedValueOnce(new Error('db write failed'));
+      paymentFindOne.mockResolvedValue(null);
 
       await expect(service.create(4945, adminGatewayPayment, '127.0.0.1', 7)).rejects.toThrow('db write failed');
       expect(transaction.rollback).toHaveBeenCalled();
       expect(checkout.cancelGatewayPaymentLink).toHaveBeenCalledWith(expect.objectContaining({ paymentLinkId: 'plink_new' }));
+    });
+
+    it('a failed COMMIT that was actually applied does not cancel the recorded link', async () => {
+      transaction.commit.mockRejectedValueOnce(new Error('connection lost during commit'));
+      paymentFindOne.mockResolvedValue({ memberPaymentId: 900 });
+
+      await expect(service.create(4945, adminGatewayPayment, '127.0.0.1', 7)).rejects.toThrow('connection lost during commit');
+      expect(checkout.cancelGatewayPaymentLink).not.toHaveBeenCalled();
     });
   });
 });

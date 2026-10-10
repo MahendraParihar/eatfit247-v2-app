@@ -89,7 +89,7 @@ describe('PaymentConfirmationService', () => {
     service = new PaymentConfirmationService(
       { findAll: paymentFindAll, findOne: jest.fn() } as unknown as typeof TxnMemberPayment,
       { findAll: productFindAll, findOne: jest.fn() } as unknown as typeof TxnMemberProduct,
-      { transaction: jest.fn().mockResolvedValue(transaction) } as unknown as Sequelize,
+      { transaction: jest.fn().mockResolvedValue(transaction), query: jest.fn().mockResolvedValue(undefined) } as unknown as Sequelize,
       {
         fetchById: jest.fn().mockResolvedValue({ financialYear: 4, franchiseCode: 'EF' }),
       } as unknown as FranchiseService,

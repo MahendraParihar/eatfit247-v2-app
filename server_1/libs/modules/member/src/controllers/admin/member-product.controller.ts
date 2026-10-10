@@ -13,6 +13,7 @@ import {
   CalculateProductVariantTaxDto,
   CalculateProductVariantTaxResponseDto,
   CreateMemberProductDto,
+  PaymentLinkActionDto,
 } from '../../dto';
 import { IFileModel } from '@server_1/platform';
 
@@ -97,10 +98,17 @@ export class MemberProductController {
   async cancelPaymentLink(
     @Param('id') id: number,
     @Param('productId') productId: number,
+    @Body() body: PaymentLinkActionDto,
     @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
   ): Promise<IMemberProduct> {
-    return await this.memberProductService.cancelPaymentLink(id, productId, requestedIp, currentUser.adminId);
+    return await this.memberProductService.cancelPaymentLink(
+      id,
+      productId,
+      requestedIp,
+      currentUser.adminId,
+      body?.expectedGatewayOrderId,
+    );
   }
 
   @Post(':productId/regenerate-payment-link')
@@ -108,7 +116,8 @@ export class MemberProductController {
   async regeneratePaymentLink(
     @Param('id') id: number,
     @Param('productId') productId: number,
+    @Body() body: PaymentLinkActionDto,
   ): Promise<IMemberProduct> {
-    return await this.memberProductService.regeneratePaymentLink(id, productId);
+    return await this.memberProductService.regeneratePaymentLink(id, productId, body?.expectedGatewayOrderId);
   }
 }

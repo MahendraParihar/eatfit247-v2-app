@@ -44,6 +44,7 @@ describe('RazorpayWebhookService', () => {
     markGatewayPaymentFailed: jest.Mock;
     recordGatewayRefund: jest.Mock;
     findRecordRef: jest.Mock;
+    findExistingRecordIds: jest.Mock;
   };
 
   beforeEach(() => {
@@ -55,6 +56,7 @@ describe('RazorpayWebhookService', () => {
       markGatewayPaymentFailed: jest.fn().mockResolvedValue(applied),
       recordGatewayRefund: jest.fn().mockResolvedValue(applied),
       findRecordRef: jest.fn().mockResolvedValue({ recordType: 'plan', memberPaymentId: 101, memberProductId: null }),
+      findExistingRecordIds: jest.fn().mockResolvedValue({ memberPaymentId: 777, memberProductId: null }),
     };
     service = new RazorpayWebhookService(
       { create, findOne } as unknown as typeof TxnPaymentGatewayEvent,
@@ -246,6 +248,23 @@ describe('RazorpayWebhookService', () => {
       expect(eventRow.update).toHaveBeenCalledWith(expect.objectContaining({ memberPaymentId: 101 }));
     },
   );
+
+  it('an ORDER_NOT_FOUND event is linked to the record its signed notes name', async () => {
+    confirmation.confirmGatewayPayment.mockResolvedValue({ ...applied, result: GatewayEventResultEnum.ORDER_NOT_FOUND, memberPaymentId: null });
+
+    await service.handleVerifiedEvent(
+      'evt_nf',
+      event('payment.captured', {
+        payment: { entity: { ...paymentEntity, notes: { franchisePaymentGatewayId: '1', memberPaymentId: '777' } } },
+      } as RazorpayWebhookPayload['payload']),
+      '1.2.3.4',
+    );
+
+    expect(confirmation.findExistingRecordIds).toHaveBeenCalledWith({ memberPaymentId: 777, memberProductId: null });
+    expect(eventRow.update).toHaveBeenCalledWith(
+      expect.objectContaining({ result: GatewayEventResultEnum.ORDER_NOT_FOUND, memberPaymentId: 777 }),
+    );
+  });
 
   it('records ERROR on the event and rethrows when processing throws', async () => {
     confirmation.confirmGatewayPayment.mockRejectedValue(new Error('db down'));

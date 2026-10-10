@@ -1,6 +1,7 @@
 import { BadRequestException, ConflictException, HttpException, Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { UniqueConstraintError } from 'sequelize';
+import { Transaction, UniqueConstraintError } from 'sequelize';
+import { Sequelize } from 'sequelize-typescript';
 import { AppConfigService } from '@server_1/core';
 import {
   PaymentGatewayCredentialService,
@@ -50,6 +51,13 @@ export interface ICheckoutPaymentLink {
   franchisePaymentGatewayId: number;
 }
 
+/** A resolved gateway and its credentials, prepared before any row lock is taken. */
+export interface IGatewayContext {
+  franchisePaymentGatewayId: number;
+  gatewayCode: string;
+  credentials: { keyId: string; keySecret: string };
+}
+
 export interface IVerifyCheckoutPaymentInput {
   gatewayOrderId: string;
   gatewayProvider: string | null;
@@ -73,6 +81,9 @@ export interface IVerifyCheckoutPaymentResult {
  */
 const PROMO_CODE_CURRENCY = 'INR';
 
+/** How long an admin link action waits for a row another request is updating. */
+const ADMIN_LOCK_TIMEOUT = '5s';
+
 /** Gateways whose server-side confirmation is implemented (Telr/Stripe: Phase 8). */
 const CHECKOUT_GATEWAYS: ReadonlySet<string> = new Set([PaymentGatewayEnum.RAZORPAY]);
 
@@ -94,6 +105,7 @@ export class CheckoutGatewayService {
     private readonly paymentConfirmationService: PaymentConfirmationService,
     @InjectModel(TxnPaymentGatewayEvent)
     private readonly gatewayEventRepository: typeof TxnPaymentGatewayEvent,
+    private readonly sequelize: Sequelize,
   ) {}
 
   /** Validates the code for this order amount; an invalid code is a 400 with the service's message. */
@@ -246,61 +258,116 @@ export class CheckoutGatewayService {
   }
 
   /**
-   * Admin gateway payments (decision 13): a payment link for exactly the record's stored total,
-   * created only after the record is saved.
+   * Gateway + credentials for a link operation (database reads only). Callers that hold a row
+   * lock prepare this first, so the locked transaction needs no other pool connection.
+   * With a stored gateway (`franchisePaymentGatewayId`) that gateway is used; otherwise it is
+   * resolved for the franchise and currency (records from before 4.5 have none stored).
    */
-  public async createGatewayPaymentLink(input: ICreateCheckoutGatewayOrderInput): Promise<ICheckoutPaymentLink> {
+  public async prepareGateway(input: {
+    franchiseId: number;
+    currency: string;
+    amount: number;
+    requestedGatewayId?: number;
+    franchisePaymentGatewayId?: number | null;
+    gatewayProvider?: string | null;
+  }): Promise<IGatewayContext> {
+    if (input.franchisePaymentGatewayId) {
+      return {
+        franchisePaymentGatewayId: input.franchisePaymentGatewayId,
+        gatewayCode: input.gatewayProvider || PaymentGatewayEnum.RAZORPAY,
+        credentials: await this.getCredentials(input.franchisePaymentGatewayId),
+      };
+    }
     const resolved = await this.resolveGateway(input.franchiseId, input.currency, input.amount, input.requestedGatewayId);
-    const credentials = await this.getCredentials(resolved.franchisePaymentGatewayId);
-    const notes = {
-      ...input.notes,
-      franchisePaymentGatewayId: resolved.franchisePaymentGatewayId.toString(),
+    return {
+      franchisePaymentGatewayId: resolved.franchisePaymentGatewayId,
+      gatewayCode: resolved.gatewayCode,
+      credentials: await this.getCredentials(resolved.franchisePaymentGatewayId),
     };
-    const adaptor = this.paymentGatewayFactory.getAdapter(resolved.gatewayCode);
+  }
+
+  /** Create a payment link with a prepared gateway (gateway API call only, no database). */
+  public async createLinkWith(
+    context: IGatewayContext,
+    input: Pick<ICreateCheckoutGatewayOrderInput, 'currency' | 'amount' | 'description' | 'customer' | 'notes'>,
+  ): Promise<ICheckoutPaymentLink> {
+    const notes = { ...input.notes, franchisePaymentGatewayId: context.franchisePaymentGatewayId.toString() };
+    const adaptor = this.paymentGatewayFactory.getAdapter(context.gatewayCode);
     let link: { id: string; short_url: string };
     try {
-      link = await adaptor.createPaymentLink(input.amount, input.currency, input.description, input.customer, notes, credentials);
+      link = await adaptor.createPaymentLink(input.amount, input.currency, input.description, input.customer, notes, context.credentials);
     } catch (error) {
       throw this.toGatewayError(error, 'The payment link could not be created');
     }
     return {
-      gatewayCode: resolved.gatewayCode as PaymentGatewayEnum,
+      gatewayCode: context.gatewayCode as PaymentGatewayEnum,
       paymentLinkId: link.id,
       shortUrl: link.short_url,
-      franchisePaymentGatewayId: resolved.franchisePaymentGatewayId,
+      franchisePaymentGatewayId: context.franchisePaymentGatewayId,
     };
   }
 
   /**
-   * Cancel a record's open payment link at the gateway (decision 14). Returns cancelled=false
-   * when the link had already been paid. Records from before 4.5 have no stored gateway, so
-   * it is resolved from the record's franchise and currency.
+   * Cancel a payment link with a prepared gateway (gateway API call only). cancelled=false
+   * means it had already been paid.
    */
+  public async cancelLinkWith(context: IGatewayContext, paymentLinkId: string): Promise<{ cancelled: boolean; status: string }> {
+    const adaptor = this.paymentGatewayFactory.getAdapter(context.gatewayCode);
+    if (!adaptor.cancelPaymentLink) {
+      throw new BadRequestException(`Cancelling payment links is not supported for ${context.gatewayCode}`);
+    }
+    try {
+      const { status } = await adaptor.cancelPaymentLink(paymentLinkId, context.credentials);
+      return { cancelled: status !== 'paid', status };
+    } catch (error) {
+      throw this.toGatewayError(error, `The payment link ${paymentLinkId} could not be cancelled`);
+    }
+  }
+
+  /** Admin create (decision 13): link for exactly the record's stored total. */
+  public async createGatewayPaymentLink(input: ICreateCheckoutGatewayOrderInput): Promise<ICheckoutPaymentLink> {
+    const context = await this.prepareGateway({
+      franchiseId: input.franchiseId,
+      currency: input.currency,
+      amount: input.amount,
+      requestedGatewayId: input.requestedGatewayId,
+    });
+    return this.createLinkWith(context, input);
+  }
+
+  /** Cancel a link that is not row-locked by the caller (e.g. cleanup after a failed save). */
   public async cancelGatewayPaymentLink(input: {
     paymentLinkId: string;
     gatewayProvider: string | null;
     franchisePaymentGatewayId: number | null;
     fallback?: { franchiseId: number; currency: string; amount: number };
   }): Promise<{ cancelled: boolean; status: string }> {
-    let franchisePaymentGatewayId = input.franchisePaymentGatewayId;
-    if (!franchisePaymentGatewayId && input.fallback) {
-      const resolved = await this.resolveGateway(input.fallback.franchiseId, input.fallback.currency, input.fallback.amount);
-      franchisePaymentGatewayId = resolved.franchisePaymentGatewayId;
-    }
-    if (!franchisePaymentGatewayId) {
+    if (!input.franchisePaymentGatewayId && !input.fallback) {
       throw new BadRequestException('This payment has no gateway to cancel the link with');
     }
-    const adaptor = this.paymentGatewayFactory.getAdapter(input.gatewayProvider || PaymentGatewayEnum.RAZORPAY);
-    if (!adaptor.cancelPaymentLink) {
-      throw new BadRequestException(`Cancelling payment links is not supported for ${input.gatewayProvider}`);
-    }
-    const credentials = await this.getCredentials(franchisePaymentGatewayId);
-    try {
-      const { status } = await adaptor.cancelPaymentLink(input.paymentLinkId, credentials);
-      return { cancelled: status !== 'paid', status };
-    } catch (error) {
-      throw this.toGatewayError(error, 'The payment link could not be cancelled');
-    }
+    const context = await this.prepareGateway({
+      franchiseId: input.fallback?.franchiseId ?? 0,
+      currency: input.fallback?.currency ?? '',
+      amount: input.fallback?.amount ?? 0,
+      franchisePaymentGatewayId: input.franchisePaymentGatewayId,
+      gatewayProvider: input.gatewayProvider,
+    });
+    return this.cancelLinkWith(context, input.paymentLinkId);
+  }
+
+  /**
+   * Admin link actions lock the row only briefly: a second admin on the same payment gets a
+   * quick 409 instead of waiting (Postgres `lock_timeout`, local to the transaction).
+   */
+  public async setAdminLockTimeout(transaction: Transaction): Promise<void> {
+    await this.sequelize.query(`SET LOCAL lock_timeout = '${ADMIN_LOCK_TIMEOUT}'`, { transaction });
+  }
+
+  /** Postgres lock_not_available (55P03) → 409, any other error unchanged. */
+  public mapLockTimeout(error: unknown): unknown {
+    const code = (error as { original?: { code?: string }; parent?: { code?: string } } | null)?.original?.code
+      ?? (error as { parent?: { code?: string } } | null)?.parent?.code;
+    return code === '55P03' ? new ConflictException('This payment is being updated by another request; please try again.') : error;
   }
 
   /** Validates that a link can be created (regenerate checks this before cancelling the old one). */
@@ -326,7 +393,9 @@ export class CheckoutGatewayService {
     const gatewayError = error as { error?: { description?: string }; message?: string } | null;
     const message = gatewayError?.error?.description || gatewayError?.message || fallbackMessage;
     this.logger.warn(`Gateway error: ${message}`);
-    return /already|paid/i.test(message) ? new ConflictException(message) : new BadRequestException(message);
+    return /already (been )?paid|has been paid|link is paid/i.test(message)
+      ? new ConflictException(message)
+      : new BadRequestException(message);
   }
 
   /** Admin links are Razorpay payment links (`plink_…`); website orders (`order_…`) have none. */

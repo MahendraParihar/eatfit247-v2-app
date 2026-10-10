@@ -52,7 +52,10 @@ export class RazorpayWebhookController {
     const payload = this.parsePayload(rawBody);
     // The franchise payment gateway id in the notes selects the webhook secret
     const notes = this.extractNotes(payload);
-    const franchisePaymentGatewayId = this.extractFranchisePaymentGatewayId(notes);
+    // No notes with the gateway (e.g. empty notes on a payment): use the gateway stored on the
+    // record for this order or link. The signature below is still checked with its secret.
+    const franchisePaymentGatewayId =
+      this.extractFranchisePaymentGatewayId(notes) ?? (await this.razorpayWebhookService.findStoredGatewayId(payload));
     if (!franchisePaymentGatewayId) {
       this.logger.warn('Franchise payment gateway ID not found in webhook payload', {
         event: payload.event,

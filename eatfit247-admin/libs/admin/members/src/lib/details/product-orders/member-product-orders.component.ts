@@ -363,7 +363,7 @@ export class MemberProductOrdersComponent implements OnInit, OnDestroy {
     }
     this.busyOrderIds.add(productOrder.memberProductId);
     try {
-      await this.apiService.cancelProductPaymentLink(this.memberId, productOrder.memberProductId);
+      await this.apiService.cancelProductPaymentLink(this.memberId, productOrder.memberProductId, productOrder.gatewayOrderId);
       this.snackBar.open('Payment link cancelled; the order is marked Failed', 'Close', { duration: 3000 });
       await this.loadProductOrders();
     } catch {
@@ -391,7 +391,8 @@ export class MemberProductOrdersComponent implements OnInit, OnDestroy {
     try {
       await this.apiService.regenerateProductPaymentLink(
         this.memberId,
-        productOrder.memberProductId
+        productOrder.memberProductId,
+        productOrder.gatewayOrderId
       );
       this.snackBar.open('Payment link regenerated successfully', 'Close', {
         duration: 3000,

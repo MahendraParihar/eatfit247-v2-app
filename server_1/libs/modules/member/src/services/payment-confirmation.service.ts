@@ -68,6 +68,9 @@ interface ILockedRecord {
   record: GatewayRecord;
 }
 
+/** How long a webhook/verify confirmation waits for a row lock before failing (and retrying). */
+const GATEWAY_LOCK_TIMEOUT = '10s';
+
 /** Statuses a gateway confirmation may move to PAID (decision 6). */
 const CONFIRMABLE_STATUSES: ReadonlySet<PaymentStatusEnum> = new Set([
   PaymentStatusEnum.PENDING,
@@ -253,6 +256,34 @@ export class PaymentConfirmationService {
     }
   }
 
+  /** The gateway stored on the record with this gateway order or link id (webhook secret fallback). */
+  public async findStoredGatewayId(gatewayOrderId: string): Promise<number | null> {
+    const payment = await this.memberPaymentRepository.findOne({
+      attributes: ['franchisePaymentGatewayId'],
+      where: { gatewayOrderId },
+    });
+    if (payment?.franchisePaymentGatewayId) {
+      return payment.franchisePaymentGatewayId;
+    }
+    const product = await this.memberProductRepository.findOne({
+      attributes: ['franchisePaymentGatewayId'],
+      where: { gatewayOrderId },
+    });
+    return product?.franchisePaymentGatewayId ?? null;
+  }
+
+  /** Existing record ids among those named in a verified event's notes (for linking evidence). */
+  public async findExistingRecordIds(ids: {
+    memberPaymentId: number | null;
+    memberProductId: number | null;
+  }): Promise<{ memberPaymentId: number | null; memberProductId: number | null }> {
+    const [payment, product] = await Promise.all([
+      ids.memberPaymentId ? this.memberPaymentRepository.findByPk(ids.memberPaymentId, { attributes: ['memberPaymentId'] }) : null,
+      ids.memberProductId ? this.memberProductRepository.findByPk(ids.memberProductId, { attributes: ['memberProductId'] }) : null,
+    ]);
+    return { memberPaymentId: payment?.memberPaymentId ?? null, memberProductId: product?.memberProductId ?? null };
+  }
+
   /** Read-only lookup used to link log-only events to their record. */
   public async findRecordRef(gatewayOrderId: string): Promise<IGatewayRecordRef | null> {
     const payment = await this.memberPaymentRepository.findOne({
@@ -276,6 +307,8 @@ export class PaymentConfirmationService {
     gatewayOrderId: string,
     transaction: Transaction,
   ): Promise<ILockedRecord | IGatewayConfirmationResult> {
+    // Don't wait forever behind an admin action on the same row; the gateway retries a 5xx
+    await this.sequelize.query(`SET LOCAL lock_timeout = '${GATEWAY_LOCK_TIMEOUT}'`, { transaction });
     const where = { gatewayOrderId, active: true };
     const lock = transaction.LOCK.UPDATE;
     const [payments, products] = await Promise.all([

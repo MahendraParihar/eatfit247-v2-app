@@ -92,6 +92,11 @@ export class RazorpayWebhookService {
       throw error;
     }
 
+    if (outcome.result === GatewayEventResultEnum.ORDER_NOT_FOUND && !outcome.memberPaymentId && !outcome.memberProductId) {
+      // Signed notes name the record this payment was meant for; link it so Accounts can follow up
+      const named = await this.paymentConfirmationService.findExistingRecordIds(this.recordIdsFromNotes(payload));
+      outcome = { ...outcome, ...named };
+    }
     await eventRow.update({
       result: outcome.result,
       message: outcome.message ?? null,
@@ -236,6 +241,26 @@ export class RazorpayWebhookService {
       memberProductId: confirmation.memberProductId,
       promoOverLimit: confirmation.promoOverLimit,
     };
+  }
+
+  /** The gateway stored on the record this event refers to (used when its notes carry none). */
+  public async findStoredGatewayId(payload: RazorpayWebhookPayload): Promise<number | null> {
+    const gatewayOrderId = this.extractFacts(payload).gatewayOrderId;
+    return gatewayOrderId ? this.paymentConfirmationService.findStoredGatewayId(gatewayOrderId) : null;
+  }
+
+  private recordIdsFromNotes(payload: RazorpayWebhookPayload): { memberPaymentId: number | null; memberProductId: number | null } {
+    const toId = (value: unknown): number | null => {
+      const id = Number(value);
+      return Number.isInteger(id) && id > 0 ? id : null;
+    };
+    const notesList = [
+      payload.payload.payment_link?.entity?.notes,
+      payload.payload.payment?.entity?.notes,
+      payload.payload.order?.entity?.notes,
+    ].filter((notes): notes is Record<string, unknown> => !!notes && typeof notes === 'object' && !Array.isArray(notes));
+    const pick = (key: string): number | null => notesList.map((notes) => toId(notes[key])).find((id) => id !== null) ?? null;
+    return { memberPaymentId: pick('memberPaymentId'), memberProductId: pick('memberProductId') };
   }
 
   /** Order or link id, payment id, and amount (minor units) the event refers to. */
