@@ -1,6 +1,6 @@
 # Product Mission
 
-> Last updated: 2026-10-04 (constitution interview) · Sources: owner interview, [docs/BRD.md](../../docs/BRD.md), [docs/PRD.md](../../docs/PRD.md), [docs/PRD-RBAC-Appointment.md](../../docs/PRD-RBAC-Appointment.md)
+> Last updated: 2026-10-10 (replan after the accounting audit) · Sources: owner interview, [docs/BRD.md](../../docs/BRD.md), [docs/PRD.md](../../docs/PRD.md), [docs/PRD-RBAC-Appointment.md](../../docs/PRD-RBAC-Appointment.md)
 
 ## Pitch
 
@@ -67,7 +67,7 @@ Telr (UAE) and Stripe (international) integrations exist in code but are **not l
 ## Differentiators
 
 1. **Franchise-native and shared-coach model.** Data is isolated per franchise owner, while EatFit247 nutritionists serve customers across franchises.
-2. **Compliance by construction.** Tax is calculated at payment time, and invoices are numbered with no gaps per franchise, invoice type and financial year, with separate GST and non-GST sequences.
+2. **Compliance by construction.** Tax is calculated at payment time, and invoices are numbered with no gaps per franchise, invoice type and financial year, with separate domestic and export sequences (in progress: roadmap 4.5–4.13).
 3. **One platform for coaching and commerce.** Programs, diet plans, recipes, products and courier delivery share one member record.
 4. **Access is configuration, not code.** RBAC lives in the database. Super Admin can change roles and onboard franchises without a deployment.
 
@@ -75,8 +75,8 @@ Telr (UAE) and Stripe (international) integrations exist in code but are **not l
 
 These are non-negotiable. Every feature spec must respect them or explicitly argue for an exception.
 
-1. **Tax at payment.** Tax is computed and stored when the payment is recorded. Invoices and PDFs only render stored values.
-2. **No invoice gaps.** Sequences are strictly sequential per franchise, invoice type and financial year (GST and non-GST are separate).
+1. **Tax at payment.** Tax is computed and stored when the payment is recorded. Invoices and PDFs only render stored values. Domestic vs export is decided by comparing the supplier's country with the customer's country, and that decision is stored too.
+2. **No invoice gaps.** Sequences are strictly sequential per franchise, invoice type, financial year and series (domestic and export are separate). A tax-invoice number is issued only when a payment becomes PAID, and once issued it is never removed, changed or reused. *Exception:* Q1 FY 2026-27 numbers stay as filed, with foreign clients in the domestic series.
 3. **Franchise isolation.** A franchise owner never sees another franchise's data. Every admin query is scoped, enforced in services *and* in the CASL ability check.
 4. **Nutritionists cross franchises; data does not.** A nutritionist mapped to several franchises sees members of those franchises only.
 5. **Permissions live in data.** Never write `if (role === …)`. Access comes from `mst_admin_role_subject_permissions`.
@@ -84,6 +84,8 @@ These are non-negotiable. Every feature spec must respect them or explicitly arg
 7. **Ordered journey.** Assessment comes before the plan, and payment comes before the diet plan. Both are enforced on the server.
 8. **One contract.** Shapes shared by the frontend and backend live in `shared-library`.
 9. **Automated proof.** Every feature should ship with automated backend integration and end-to-end tests. Manual checks are a stopgap (see `tech-stack.md § Testing`).
+10. **Issued invoices are immutable.** After an invoice is issued, its financial content is never edited. Corrections are made with credit or debit notes, and every change to a financial record is logged (who, when, before and after).
+11. **The server owns money state.** Public endpoints never accept payment status, source, date, amount or discount from the client. Only verified gateway events or authorised admin actions move a payment to PAID.
 
 ## Success Metrics
 
