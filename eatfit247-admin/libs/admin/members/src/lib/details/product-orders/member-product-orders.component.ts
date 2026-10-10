@@ -58,6 +58,8 @@ export class MemberProductOrdersComponent implements OnInit, OnDestroy {
   productOrders: IMemberProduct[] = [];
   loading = false;
   tableConfig!: ITableConfig<IMemberProduct>;
+  /** Orders with a regenerate/cancel request in flight (their actions are disabled). */
+  private readonly busyOrderIds = new Set<number>();
   EmptyStateType = EmptyStateType;
   private routeParamsSubscription: Subscription | null = null;
 
@@ -182,7 +184,9 @@ export class MemberProductOrdersComponent implements OnInit, OnDestroy {
             onClick: (row: IMemberProduct) => this.regeneratePaymentLink(row),
             visible: (row: IMemberProduct) =>
               row.paymentStatusId === PaymentStatusEnum.PENDING &&
-              row.paymentSource === PaymentSourceEnum.PAYMENT_GATEWAY,
+              row.paymentSource === PaymentSourceEnum.PAYMENT_GATEWAY &&
+              !!row.gatewayOrderId?.startsWith('plink_'),
+            disabled: (row: IMemberProduct) => this.busyOrderIds.has(row.memberProductId),
           },
           {
             label: 'Cancel Payment Link',
@@ -192,6 +196,7 @@ export class MemberProductOrdersComponent implements OnInit, OnDestroy {
             visible: (row: IMemberProduct) =>
               row.paymentStatusId === PaymentStatusEnum.PENDING &&
               row.paymentSource === PaymentSourceEnum.PAYMENT_GATEWAY,
+            disabled: (row: IMemberProduct) => this.busyOrderIds.has(row.memberProductId),
             confirm: {
               title: 'Cancel payment link',
               message:
@@ -353,15 +358,18 @@ export class MemberProductOrdersComponent implements OnInit, OnDestroy {
   }
 
   async cancelPaymentLink(productOrder: IMemberProduct): Promise<void> {
-    if (!this.memberId) {
+    if (!this.memberId || this.busyOrderIds.has(productOrder.memberProductId)) {
       return;
     }
+    this.busyOrderIds.add(productOrder.memberProductId);
     try {
       await this.apiService.cancelProductPaymentLink(this.memberId, productOrder.memberProductId);
       this.snackBar.open('Payment link cancelled; the order is marked Failed', 'Close', { duration: 3000 });
       await this.loadProductOrders();
     } catch {
       // Error toast is handled by HttpErrorInterceptor (e.g. the link was already paid)
+    } finally {
+      this.busyOrderIds.delete(productOrder.memberProductId);
     }
   }
 
@@ -376,6 +384,10 @@ export class MemberProductOrdersComponent implements OnInit, OnDestroy {
       );
       return;
     }
+    if (this.busyOrderIds.has(productOrder.memberProductId)) {
+      return;
+    }
+    this.busyOrderIds.add(productOrder.memberProductId);
     try {
       await this.apiService.regenerateProductPaymentLink(
         this.memberId,
@@ -388,6 +400,8 @@ export class MemberProductOrdersComponent implements OnInit, OnDestroy {
       await this.loadProductOrders();
     } catch (error) {
       // Error toast is handled by HttpErrorInterceptor
+    } finally {
+      this.busyOrderIds.delete(productOrder.memberProductId);
     }
   }
 

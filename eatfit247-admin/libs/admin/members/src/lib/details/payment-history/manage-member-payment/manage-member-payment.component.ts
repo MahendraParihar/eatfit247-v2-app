@@ -544,18 +544,16 @@ export class ManageMemberPaymentComponent implements OnInit {
   }
 
   /**
-   * Decision 14: a gateway payment's source can't change, and while its link is open the
-   * amount it charges can't change either (cancel the link and create a new payment instead).
+   * Decision 14: a gateway payment's source and amounts can't change, paid or not (the stored
+   * total is what the gateway charges or charged). Cancel the link and create a new payment.
    */
   private lockGatewayPaymentFields(): void {
     if (!this.isGatewayPaymentEdit()) {
       return;
     }
     this.formGroup.get('paymentSource')?.disable({ emitEvent: false });
-    if (this.data.payment?.paymentStatusId !== PaymentStatusEnum.PAID) {
-      for (const key of ['programId', 'programPlanId', 'currencyCode', 'discountAmount', 'billingAddressId']) {
-        this.step1FormGroup.get(key)?.disable({ emitEvent: false });
-      }
+    for (const key of ['programId', 'programPlanId', 'currencyCode', 'discountAmount', 'billingAddressId']) {
+      this.step1FormGroup.get(key)?.disable({ emitEvent: false });
     }
   }
 
@@ -600,6 +598,8 @@ export class ManageMemberPaymentComponent implements OnInit {
             this.paymentLink.set(created.paymentLink);
             this.paymentLinkId.set(created.gatewayOrderId || null);
             this.linkCreatedOnSave.set(true);
+            // The record exists now: close only via Done/Cancel, which refresh the list
+            this.dialogRef.disableClose = true;
             return;
           }
         }
@@ -615,7 +615,8 @@ export class ManageMemberPaymentComponent implements OnInit {
   }
 
   onCancel(): void {
-    this.dialogRef.close(false);
+    // After "Save & Create" the payment exists, so the list must refresh
+    this.dialogRef.close(this.linkCreatedOnSave());
   }
 
   get paymentModeOptions(): IDropdownItem[] {

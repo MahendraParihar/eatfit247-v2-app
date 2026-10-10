@@ -1,4 +1,4 @@
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, ConflictException } from '@nestjs/common';
 import { AppConfigService } from '@server_1/core';
 import {
   PaymentGatewayCredentialService,
@@ -16,7 +16,13 @@ describe('CheckoutGatewayService', () => {
   let service: CheckoutGatewayService;
   let applyPromoCode: jest.Mock;
   let resolve: jest.Mock;
-  let adaptor: { createOrder: jest.Mock; verifyPayment: jest.Mock; fetchPayment: jest.Mock };
+  let adaptor: {
+    createOrder: jest.Mock;
+    verifyPayment: jest.Mock;
+    fetchPayment: jest.Mock;
+    createPaymentLink: jest.Mock;
+    cancelPaymentLink: jest.Mock;
+  };
   let confirmGatewayPayment: jest.Mock;
   let eventCreate: jest.Mock;
 
@@ -30,6 +36,8 @@ describe('CheckoutGatewayService', () => {
     });
     adaptor = {
       createOrder: jest.fn().mockResolvedValue({ id: 'order_new' }),
+      createPaymentLink: jest.fn().mockResolvedValue({ id: 'plink_new', short_url: 'https://rzp.io/l/x' }),
+      cancelPaymentLink: jest.fn().mockResolvedValue({ status: 'cancelled' }),
       verifyPayment: jest.fn().mockResolvedValue({ verified: true }),
       fetchPayment: jest.fn().mockResolvedValue({
         id: 'pay_1',
@@ -225,6 +233,46 @@ describe('CheckoutGatewayService', () => {
       await expect(service.verifyAndConfirm({ ...input, franchisePaymentGatewayId: null })).rejects.toBeInstanceOf(
         BadRequestException,
       );
+    });
+  });
+
+  describe('payment links (admin)', () => {
+    it('cancels with the stored gateway, or resolves it for records from before 4.5', async () => {
+      await expect(
+        service.cancelGatewayPaymentLink({ paymentLinkId: 'plink_1', gatewayProvider: 'RAZORPAY', franchisePaymentGatewayId: 7 }),
+      ).resolves.toEqual({ cancelled: true, status: 'cancelled' });
+
+      resolve.mockClear();
+      await service.cancelGatewayPaymentLink({
+        paymentLinkId: 'plink_old',
+        gatewayProvider: null,
+        franchisePaymentGatewayId: null,
+        fallback: { franchiseId: 1, currency: 'INR', amount: 1180 },
+      });
+      expect(resolve).toHaveBeenCalledWith(expect.objectContaining({ franchiseId: 1, currency: 'INR' }));
+      expect(adaptor.cancelPaymentLink).toHaveBeenLastCalledWith('plink_old', { keyId: 'rzp_key', keySecret: 'secret' });
+    });
+
+    it('reports an already-paid link as not cancelled', async () => {
+      adaptor.cancelPaymentLink.mockResolvedValue({ status: 'paid' });
+
+      await expect(
+        service.cancelGatewayPaymentLink({ paymentLinkId: 'plink_1', gatewayProvider: 'RAZORPAY', franchisePaymentGatewayId: 7 }),
+      ).resolves.toEqual({ cancelled: false, status: 'paid' });
+    });
+
+    it('turns a Razorpay SDK rejection (a plain object) into 400/409 instead of a 500', async () => {
+      adaptor.cancelPaymentLink.mockRejectedValue({ statusCode: 400, error: { description: 'cannot cancel or expire a cancelled link' } });
+      await expect(
+        service.cancelGatewayPaymentLink({ paymentLinkId: 'plink_1', gatewayProvider: 'RAZORPAY', franchisePaymentGatewayId: 7 }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+
+      adaptor.createPaymentLink.mockRejectedValue({ statusCode: 400, error: { description: 'Payment link already paid' } });
+      await expect(
+        service.createGatewayPaymentLink({
+          franchiseId: 1, currency: 'INR', amount: 1180, receipt: 'r', description: 'd', customer: {}, notes: {},
+        }),
+      ).rejects.toBeInstanceOf(ConflictException);
     });
   });
 });

@@ -85,6 +85,23 @@ describe('RazorpayWebhookController', () => {
     expect(handleVerifiedEvent).toHaveBeenCalledWith('evt_link', JSON.parse(realBody), '127.0.0.1');
   });
 
+  it('finds the gateway in the link notes when the payment notes are an empty array', async () => {
+    const linkPaid = JSON.stringify({
+      entity: 'event',
+      event: 'payment_link.paid',
+      contains: ['payment_link', 'payment'],
+      payload: {
+        payment_link: { entity: { id: 'plink_1', amount: 118000, amount_paid: 118000, currency: 'INR', notes: { franchisePaymentGatewayId: '1' } } },
+        payment: { entity: { id: 'pay_1', amount: 118000, currency: 'INR', status: 'captured', notes: [] } },
+      },
+    });
+
+    await controller.handleWebhook({ rawBody: linkPaid }, sign(linkPaid), '127.0.0.1', 'evt_arr');
+
+    expect(getActiveCredentials).toHaveBeenCalledWith(1, 'test');
+    expect(handleVerifiedEvent).toHaveBeenCalled();
+  });
+
   it('rejects a body that is not JSON or not an event', async () => {
     await expect(controller.handleWebhook({ rawBody: 'not json' }, sign('not json'), '127.0.0.1')).rejects.toThrow(
       'not valid JSON',

@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, ConflictException, HttpException, Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { UniqueConstraintError } from 'sequelize';
 import { AppConfigService } from '@server_1/core';
@@ -257,14 +257,12 @@ export class CheckoutGatewayService {
       franchisePaymentGatewayId: resolved.franchisePaymentGatewayId.toString(),
     };
     const adaptor = this.paymentGatewayFactory.getAdapter(resolved.gatewayCode);
-    const link = await adaptor.createPaymentLink(
-      input.amount,
-      input.currency,
-      input.description,
-      input.customer,
-      notes,
-      credentials,
-    );
+    let link: { id: string; short_url: string };
+    try {
+      link = await adaptor.createPaymentLink(input.amount, input.currency, input.description, input.customer, notes, credentials);
+    } catch (error) {
+      throw this.toGatewayError(error, 'The payment link could not be created');
+    }
     return {
       gatewayCode: resolved.gatewayCode as PaymentGatewayEnum,
       paymentLinkId: link.id,
@@ -274,61 +272,69 @@ export class CheckoutGatewayService {
   }
 
   /**
-   * Cancel a record's open payment link at the gateway (decision 14). Returns false when the
-   * link had already been paid, so the caller must not treat the record as abandoned.
+   * Cancel a record's open payment link at the gateway (decision 14). Returns cancelled=false
+   * when the link had already been paid. Records from before 4.5 have no stored gateway, so
+   * it is resolved from the record's franchise and currency.
    */
   public async cancelGatewayPaymentLink(input: {
     paymentLinkId: string;
     gatewayProvider: string | null;
     franchisePaymentGatewayId: number | null;
+    fallback?: { franchiseId: number; currency: string; amount: number };
   }): Promise<{ cancelled: boolean; status: string }> {
-    if (!input.franchisePaymentGatewayId) {
+    let franchisePaymentGatewayId = input.franchisePaymentGatewayId;
+    if (!franchisePaymentGatewayId && input.fallback) {
+      const resolved = await this.resolveGateway(input.fallback.franchiseId, input.fallback.currency, input.fallback.amount);
+      franchisePaymentGatewayId = resolved.franchisePaymentGatewayId;
+    }
+    if (!franchisePaymentGatewayId) {
       throw new BadRequestException('This payment has no gateway to cancel the link with');
     }
     const adaptor = this.paymentGatewayFactory.getAdapter(input.gatewayProvider || PaymentGatewayEnum.RAZORPAY);
     if (!adaptor.cancelPaymentLink) {
       throw new BadRequestException(`Cancelling payment links is not supported for ${input.gatewayProvider}`);
     }
-    const credentials = await this.getCredentials(input.franchisePaymentGatewayId);
-    const { status } = await adaptor.cancelPaymentLink(input.paymentLinkId, credentials);
-    return { cancelled: status !== 'paid', status };
+    const credentials = await this.getCredentials(franchisePaymentGatewayId);
+    try {
+      const { status } = await adaptor.cancelPaymentLink(input.paymentLinkId, credentials);
+      return { cancelled: status !== 'paid', status };
+    } catch (error) {
+      throw this.toGatewayError(error, 'The payment link could not be cancelled');
+    }
   }
 
-  /**
-   * Decision 14 "Cancel payment link": cancel the record's link at the gateway, then move the
-   * record PENDING → FAILED through the confirmation service (row lock, state matrix).
-   * A link that was already paid is left for the webhook to confirm (409).
-   */
-  public async cancelRecordPaymentLink(record: {
-    gatewayOrderId: string | null;
-    gatewayProvider: string | null;
-    franchisePaymentGatewayId: number | null;
-    requestedIp: string;
-    adminId: number;
-  }): Promise<IGatewayConfirmationResult> {
-    const paymentLinkId = this.requirePaymentLinkId(record.gatewayOrderId);
-    const { cancelled, status } = await this.cancelGatewayPaymentLink({
-      paymentLinkId,
-      gatewayProvider: record.gatewayProvider,
-      franchisePaymentGatewayId: record.franchisePaymentGatewayId,
-    });
-    if (!cancelled) {
-      throw new ConflictException('This payment link has already been paid; the payment will be confirmed by the gateway.');
+  /** Validates that a link can be created (regenerate checks this before cancelling the old one). */
+  public async assertGatewayAvailable(
+    franchiseId: number,
+    currency: string,
+    amount: number,
+    requestedGatewayId?: number,
+  ): Promise<void> {
+    await this.resolveGateway(franchiseId, currency, amount, requestedGatewayId);
+  }
+
+  /** Razorpay payment links start with `plink_`; website checkout orders (`order_…`) have none. */
+  public isPaymentLink(gatewayOrderId: string | null): boolean {
+    return !!gatewayOrderId && gatewayOrderId.startsWith('plink_');
+  }
+
+  /** Gateway SDK rejections are plain objects (not Errors); surface them as 400/409, not 500. */
+  private toGatewayError(error: unknown, fallbackMessage: string): HttpException {
+    if (error instanceof HttpException) {
+      return error;
     }
-    return this.paymentConfirmationService.markGatewayPaymentFailed({
-      gatewayOrderId: paymentLinkId,
-      gatewayPaymentId: null,
-      gatewayResponse: { paymentLinkStatus: status, cancelledByAdminId: record.adminId, cancelledAt: new Date().toISOString() },
-      requestedIp: record.requestedIp,
-    });
+    const gatewayError = error as { error?: { description?: string }; message?: string } | null;
+    const message = gatewayError?.error?.description || gatewayError?.message || fallbackMessage;
+    this.logger.warn(`Gateway error: ${message}`);
+    return /already|paid/i.test(message) ? new ConflictException(message) : new BadRequestException(message);
   }
 
   /** Admin links are Razorpay payment links (`plink_…`); website orders (`order_…`) have none. */
   public requirePaymentLinkId(gatewayOrderId: string | null): string {
-    if (!gatewayOrderId || !gatewayOrderId.startsWith('plink_')) {
+    if (!this.isPaymentLink(gatewayOrderId)) {
       throw new BadRequestException('This payment has no payment link');
     }
-    return gatewayOrderId;
+    return gatewayOrderId as string;
   }
 
   private async resolveGateway(

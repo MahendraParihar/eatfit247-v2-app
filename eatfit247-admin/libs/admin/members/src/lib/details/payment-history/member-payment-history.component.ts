@@ -51,6 +51,8 @@ export class MemberPaymentHistoryComponent implements OnInit, OnDestroy {
   payments: IMemberPayment[] = [];
   loading = false;
   tableConfig!: ITableConfig<IMemberPayment>;
+  /** Payments with a regenerate/cancel request in flight (their actions are disabled). */
+  private readonly busyPaymentIds = new Set<number>();
   EmptyStateType = EmptyStateType;
   private routeParamsSubscription: any;
 
@@ -138,9 +140,11 @@ export class MemberPaymentHistoryComponent implements OnInit, OnDestroy {
         label: 'Regenerate Payment Link',
         icon: 'refresh',
         color: 'accent',
-        visible: (row) => 
-          row.paymentSource !== PaymentSourceEnum.MANUAL && 
-          row.paymentStatusId === PaymentStatusEnum.PENDING,
+        visible: (row) =>
+          row.paymentSource === PaymentSourceEnum.PAYMENT_GATEWAY &&
+          row.paymentStatusId === PaymentStatusEnum.PENDING &&
+          !!row.gatewayOrderId?.startsWith('plink_'),
+        disabled: (row) => this.busyPaymentIds.has(row.memberPaymentId),
         onClick: (row) => this.regeneratePaymentLink(row)
       },
       {
@@ -150,6 +154,7 @@ export class MemberPaymentHistoryComponent implements OnInit, OnDestroy {
         visible: (row) =>
           row.paymentSource === PaymentSourceEnum.PAYMENT_GATEWAY &&
           row.paymentStatusId === PaymentStatusEnum.PENDING,
+        disabled: (row) => this.busyPaymentIds.has(row.memberPaymentId),
         onClick: (row) => this.cancelPaymentLink(row)
       },
       {
@@ -271,15 +276,18 @@ export class MemberPaymentHistoryComponent implements OnInit, OnDestroy {
     const confirmed = confirm(
       'Cancel this payment link? The member will no longer be able to pay it and the payment will be marked Failed. Create a new payment to collect again.'
     );
-    if (!confirmed) {
+    if (!confirmed || this.busyPaymentIds.has(payment.memberPaymentId)) {
       return;
     }
+    this.busyPaymentIds.add(payment.memberPaymentId);
     try {
       await this.apiService.cancelPaymentLink(this.memberId, payment.memberPaymentId);
       this.snackBar.open('Payment link cancelled; the payment is marked Failed', 'Close', { duration: 3000 });
       await this.loadPayments();
     } catch {
       // Error toast is handled by HttpErrorInterceptor (e.g. the link was already paid)
+    } finally {
+      this.busyPaymentIds.delete(payment.memberPaymentId);
     }
   }
 
@@ -291,6 +299,10 @@ export class MemberPaymentHistoryComponent implements OnInit, OnDestroy {
       return;
     }
 
+    if (this.busyPaymentIds.has(payment.memberPaymentId)) {
+      return;
+    }
+    this.busyPaymentIds.add(payment.memberPaymentId);
     try {
       await this.apiService.regeneratePaymentLink(
         this.memberId,
@@ -311,6 +323,8 @@ export class MemberPaymentHistoryComponent implements OnInit, OnDestroy {
           duration: 3000
         }
       );
+    } finally {
+      this.busyPaymentIds.delete(payment.memberPaymentId);
     }
   }
 }

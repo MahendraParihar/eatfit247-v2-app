@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { TxnMember, TxnMemberProduct, TxnMemberProductOrderItem } from '../models';
 import {
@@ -64,14 +64,16 @@ import {
   PaymentGatewayResolverService,
 } from '@server_1/modules/payment';
 import { Sequelize } from 'sequelize-typescript';
+import { Transaction } from 'sequelize';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { promises as fs } from 'fs';
 import { find, map, sumBy } from 'lodash';
 import { MemberService } from './member.service';
-import { CheckoutGatewayService } from './checkout-gateway.service';
+import { CheckoutGatewayService, ICheckoutPaymentLink } from './checkout-gateway.service';
 
 @Injectable()
 export class MemberProductService {
+  private readonly logger = new Logger(MemberProductService.name);
   rootFolderPath = `${Env.persistentStorageAssetPath}`;
 
   constructor(
@@ -991,6 +993,7 @@ export class MemberProductService {
     });
     // Get franchise for products
     const franchise = await this.getProductFranchise();
+    let createdLink: ICheckoutPaymentLink | null = null;
     const t = await this.sequelize.transaction();
     try {
       const addresses = await this.findAddresses(
@@ -1071,7 +1074,7 @@ export class MemberProductService {
       if (isGatewayPayment) {
         // Decision 13: link for exactly the stored total, after the order exists
         await productOrder.reload({ transaction: t });
-        const link = await this.checkoutGatewayService.createGatewayPaymentLink({
+        createdLink = await this.checkoutGatewayService.createGatewayPaymentLink({
           franchiseId: franchise[0].id as number,
           currency: productOrder.currency,
           amount: Number(productOrder.totalAmount),
@@ -1087,10 +1090,10 @@ export class MemberProductService {
         });
         await productOrder.update(
           {
-            paymentLink: link.shortUrl,
-            gatewayOrderId: link.paymentLinkId,
-            gatewayProvider: link.gatewayCode,
-            franchisePaymentGatewayId: link.franchisePaymentGatewayId,
+            paymentLink: createdLink.shortUrl,
+            gatewayOrderId: createdLink.paymentLinkId,
+            gatewayProvider: createdLink.gatewayCode,
+            franchisePaymentGatewayId: createdLink.franchisePaymentGatewayId,
           },
           { transaction: t },
         );
@@ -1123,66 +1126,131 @@ export class MemberProductService {
       return this.convertToModel(createdOrder!, []);
     } catch (error) {
       await t.rollback();
+      // The save failed after the link was created: cancel it so no unrecorded link stays payable
+      if (createdLink) {
+        await this.checkoutGatewayService
+          .cancelGatewayPaymentLink({
+            paymentLinkId: createdLink.paymentLinkId,
+            gatewayProvider: createdLink.gatewayCode,
+            franchisePaymentGatewayId: createdLink.franchisePaymentGatewayId,
+          })
+          .catch((cancelError: unknown) =>
+            this.logger.error('Could not cancel the payment link of a failed save; cancel it in the gateway dashboard', {
+              paymentLinkId: createdLink?.paymentLinkId,
+              error: cancelError instanceof Error ? cancelError.message : String(cancelError),
+            }),
+          );
+      }
       throw error;
     }
   }
 
   /**
-   * Replace a PENDING order's link (e.g. expired): the old link is cancelled at the gateway
-   * first so it can't be paid as well, then a new one is created for the stored total.
+   * Replace a PENDING order's link (e.g. expired). Under a row lock: the gateway is checked
+   * first, the old link is cancelled at the gateway (refused if already paid), then a new link
+   * is created for the stored total. A concurrent regenerate/cancel waits and rechecks.
    */
   public async regeneratePaymentLink(memberId: number, productId: number): Promise<IMemberProduct> {
-    const productOrder = await this.memberProductRepository.findOne({
-      where: { memberProductId: productId, memberId, active: true },
-    });
-    if (!productOrder) {
-      throw new NotFoundException('Product order not found');
-    }
-    if (productOrder.paymentStatusId !== PaymentStatusEnum.PENDING) {
-      throw new BadRequestException('Payment link can only be regenerated for orders with PENDING status');
-    }
-    if (productOrder.paymentSource !== PaymentSourceEnum.PAYMENT_GATEWAY) {
-      throw new BadRequestException('Payment link cannot be regenerated for manual payments');
-    }
     const member = await this.memberService.verifyMember(memberId);
-    if (productOrder.gatewayOrderId) {
+    const t = await this.sequelize.transaction();
+    try {
+      const productOrder = await this.lockGatewayOrder(memberId, productId, t);
+      const oldLinkId = this.checkoutGatewayService.requirePaymentLinkId(productOrder.gatewayOrderId);
+      const amount = Number(productOrder.totalAmount);
+      await this.checkoutGatewayService.assertGatewayAvailable(productOrder.franchiseId, productOrder.currency, amount);
       const { cancelled } = await this.checkoutGatewayService.cancelGatewayPaymentLink({
-        paymentLinkId: this.checkoutGatewayService.requirePaymentLinkId(productOrder.gatewayOrderId),
+        paymentLinkId: oldLinkId,
         gatewayProvider: productOrder.gatewayProvider,
         franchisePaymentGatewayId: productOrder.franchisePaymentGatewayId,
+        fallback: { franchiseId: productOrder.franchiseId, currency: productOrder.currency, amount },
       });
       if (!cancelled) {
         throw new ConflictException('The current link has already been paid; the payment will be confirmed by the gateway.');
       }
+      const link = await this.checkoutGatewayService.createGatewayPaymentLink({
+        franchiseId: productOrder.franchiseId,
+        currency: productOrder.currency,
+        amount,
+        receipt: `product_${productId}`,
+        description: `Product Order Payment for Member ID: ${memberId}`,
+        customer: this.prepareCustomerDetails(member),
+        notes: { memberId: memberId.toString(), type: 'product', memberProductId: productId.toString() },
+      });
+      await productOrder.update(
+        {
+          paymentLink: link.shortUrl,
+          gatewayOrderId: link.paymentLinkId,
+          gatewayProvider: link.gatewayCode,
+          franchisePaymentGatewayId: link.franchisePaymentGatewayId,
+        },
+        { transaction: t },
+      );
+      await t.commit();
+    } catch (error) {
+      await t.rollback();
+      throw error;
     }
-    const link = await this.checkoutGatewayService.createGatewayPaymentLink({
-      franchiseId: productOrder.franchiseId,
-      currency: productOrder.currency,
-      amount: Number(productOrder.totalAmount),
-      requestedGatewayId: productOrder.franchisePaymentGatewayId ?? undefined,
-      receipt: `product_${productId}`,
-      description: `Product Order Payment for Member ID: ${memberId}`,
-      customer: this.prepareCustomerDetails(member),
-      notes: { memberId: memberId.toString(), type: 'product', memberProductId: productId.toString() },
-    });
-    await productOrder.update({
-      paymentLink: link.shortUrl,
-      gatewayOrderId: link.paymentLinkId,
-      gatewayProvider: link.gatewayCode,
-      franchisePaymentGatewayId: link.franchisePaymentGatewayId,
-    });
     return this.findById(memberId, productId);
   }
 
-  /** Decision 14: cancel the open link at the gateway; the order becomes FAILED. */
+  /**
+   * Decision 14 "Cancel payment link", under a row lock: the link is cancelled at the gateway
+   * (refused if already paid) and the order becomes FAILED. A website-checkout order (gateway
+   * order, no link) is just marked FAILED; a later capture still moves FAILED → PAID.
+   */
   public async cancelPaymentLink(
     memberId: number,
     productId: number,
     requestedIp: string,
     adminId: number,
   ): Promise<IMemberProduct> {
+    const t = await this.sequelize.transaction();
+    try {
+      const productOrder = await this.lockGatewayOrder(memberId, productId, t);
+      let linkStatus = 'no-link';
+      if (this.checkoutGatewayService.isPaymentLink(productOrder.gatewayOrderId)) {
+        const result = await this.checkoutGatewayService.cancelGatewayPaymentLink({
+          paymentLinkId: productOrder.gatewayOrderId,
+          gatewayProvider: productOrder.gatewayProvider,
+          franchisePaymentGatewayId: productOrder.franchisePaymentGatewayId,
+          fallback: {
+            franchiseId: productOrder.franchiseId,
+            currency: productOrder.currency,
+            amount: Number(productOrder.totalAmount),
+          },
+        });
+        if (!result.cancelled) {
+          throw new ConflictException('This payment link has already been paid; the payment will be confirmed by the gateway.');
+        }
+        linkStatus = result.status;
+      }
+      await productOrder.update(
+        {
+          paymentStatusId: PaymentStatusEnum.FAILED,
+          paymentGatewayResponse: {
+            cancelledByAdminId: adminId,
+            cancelledAt: new Date().toISOString(),
+            paymentLinkStatus: linkStatus,
+          },
+          modifiedBy: adminId,
+          modifiedIp: requestedIp,
+        },
+        { transaction: t },
+      );
+      await t.commit();
+    } catch (error) {
+      await t.rollback();
+      throw error;
+    }
+    return this.findById(memberId, productId);
+  }
+
+  /** The PENDING gateway order, row-locked in `t` (rechecked after any concurrent request). */
+  private async lockGatewayOrder(memberId: number, productId: number, t: Transaction): Promise<TxnMemberProduct> {
     const productOrder = await this.memberProductRepository.findOne({
       where: { memberProductId: productId, memberId, active: true },
+      transaction: t,
+      lock: t.LOCK.UPDATE,
     });
     if (!productOrder) {
       throw new NotFoundException('Product order not found');
@@ -1191,16 +1259,9 @@ export class MemberProductService {
       productOrder.paymentSource !== PaymentSourceEnum.PAYMENT_GATEWAY ||
       productOrder.paymentStatusId !== PaymentStatusEnum.PENDING
     ) {
-      throw new BadRequestException('Only a pending payment-gateway order has a link to cancel');
+      throw new BadRequestException('Only a pending payment-gateway order has a link to cancel or regenerate');
     }
-    await this.checkoutGatewayService.cancelRecordPaymentLink({
-      gatewayOrderId: productOrder.gatewayOrderId,
-      gatewayProvider: productOrder.gatewayProvider,
-      franchisePaymentGatewayId: productOrder.franchisePaymentGatewayId,
-      requestedIp,
-      adminId,
-    });
-    return this.findById(memberId, productId);
+    return productOrder;
   }
 
   /**

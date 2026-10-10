@@ -272,6 +272,41 @@ The admin dialogs (`manage-member-payment`, `place-product-order`) created the R
     - Product: order 47 PENDING with its link for the stored ₹1,200, then cancelled → FAILED (not paid, so no shipment).
     - Test rows were soft-deleted and their test links cancelled.
 
+## Group 12: Review of group 11 (2026-10-10)
+
+The independent review of `81d3a676` found no admin path to PAID without the gateway. Fixes:
+
+- [x] 12.1 (High) Regenerate and Cancel run under a row lock (`FOR UPDATE` in one transaction), recheck PENDING and the expected link id, and treat any non-applied outcome as an error. The UI disables a row's actions while a request is running.
+- [x] 12.2 (Medium) Records from the old admin flow have no `franchise_payment_gateway_id`. Cancel and regenerate resolve the gateway from the record's franchise and currency.
+- [x] 12.3 (Medium) If saving fails after the link was created, the link is cancelled at Razorpay (best effort, logged).
+- [x] 12.4 (Medium) The webhook reads the gateway id from the notes object that actually contains it (link notes first for `payment_link.*`). Razorpay sends empty notes as `[]`.
+- [x] 12.5 (Medium) The amounts of a gateway record are locked whether PAID or not (decision 14 updated). The programme is ignored, and the billing snapshot is kept.
+- [x] 12.6 (Low) Razorpay SDK errors become 400/409 instead of 500. Regenerate checks the gateway before cancelling the old link. Website-checkout records (`order_…`) can be marked Failed with Cancel (a later capture still moves FAILED → PAID), and Regenerate shows only for `plink_` records.
+- [x] 12.7 (Low) UI: after "Save & Create" the dialog can only close via Done (the list refreshes), and the product dialog preselects the primary gateway in the right form.
+- **As built (group 12):**
+  - `lockGatewayPayment` / `lockGatewayOrder` (`FOR UPDATE` in the request's transaction) guard regenerate and cancel, and the PENDING status is rechecked under the lock.
+  - Cancel sets FAILED inside that same transaction. It no longer calls `markGatewayPaymentFailed`, which would wait on the same row from a second connection.
+  - Regenerate calls `assertGatewayAvailable` before cancelling the old link.
+  - `cancelGatewayPaymentLink(fallback)` resolves the gateway for records with no stored id.
+  - `toGatewayError` maps SDK rejections to 400, or 409 for "already/paid".
+  - A failed create cancels the link it made (best effort, logged).
+  - Webhook `extractNotes` picks the first notes object that contains `franchisePaymentGatewayId`, checking link notes first for `payment_link.*` (Razorpay sends empty notes as `[]`).
+  - Gateway records: amounts are locked whether PAID or not; the programme isn't taken from the client; the billing snapshot is kept, and only shipping address and GSTIN change.
+  - UI:
+    - Regenerate shows only for `plink_` records.
+    - Cancel shows for every PENDING gateway record (a website order is marked FAILED).
+    - A row's actions are disabled while its request runs.
+    - After the save the dialog sets `disableClose`, and Cancel closes with refresh.
+    - The product dialog preselects the gateway in `step4FormGroup`.
+  - Tests: member jest passes (148 tests); both apps and the admin UI build.
+  - Live (Razorpay TEST), checked against every recent link in the Razorpay list:
+    - Two concurrent regenerates ran in order: both older links `cancelled`, exactly one live link, the one on the record.
+    - Regenerate racing cancel: the record ended FAILED with all links cancelled.
+    - A record with no stored gateway can be cancelled (fallback).
+    - A website order is marked FAILED by Cancel.
+    - A Razorpay "Too many requests" during testing came back as a clean 400.
+    - No live link exists without a record.
+
 ## Group 7: Close-out
 
 - [x] 7.1 Every check in `validation.md` that can run before merge passes: 16 of 18 criteria ✅, and A16/A17 are partial with their remaining parts listed under "Post-ship".

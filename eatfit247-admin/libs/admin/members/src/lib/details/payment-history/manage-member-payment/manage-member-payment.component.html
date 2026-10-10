@@ -358,9 +358,9 @@
                           The payment link is created when you save, for the saved total. Status and payment date are set by the gateway.
                         </p>
                       }
-                      @if (isGatewayPaymentEdit() && data.payment?.paymentStatusId !== PaymentStatusEnum.PAID) {
+                      @if (isGatewayPaymentEdit()) {
                         <p class="link-hint">
-                          The plan, currency, discount and billing address are locked while this link is open. To change them, cancel the link from the payment history and create a new payment.
+                          The plan, currency, discount and billing address of a gateway payment are locked (they are what the gateway charges). To change them, cancel the link from the payment history and create a new payment.
                         </p>
                       }
                     </div>
@@ -506,9 +506,9 @@
                           The payment link is created when you save, for the saved total. Status and payment date are set by the gateway.
                         </p>
                       }
-                      @if (isGatewayPaymentEdit() && data.payment?.paymentStatusId !== PaymentStatusEnum.PAID) {
+                      @if (isGatewayPaymentEdit()) {
                         <p class="link-hint">
-                          The plan, currency, discount and billing address are locked while this link is open. To change them, cancel the link from the payment history and create a new payment.
+                          The plan, currency, discount and billing address of a gateway payment are locked (they are what the gateway charges). To change them, cancel the link from the payment history and create a new payment.
                         </p>
                       }
                     </div>

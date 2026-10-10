@@ -128,15 +128,22 @@ export class RazorpayWebhookController {
   }
 
   /**
-   * Extract notes from webhook payload
+   * The notes object that carries the gateway id. Razorpay sends empty notes as `[]` (truthy),
+   * so each candidate must be a plain object that actually has the key; payment-link events
+   * look at the link's notes first.
    */
   private extractNotes(payload: RazorpayWebhookPayload): Record<string, unknown> {
-    return (
-      payload.payload.payment?.entity?.notes ||
-      payload.payload.payment_link?.entity?.notes ||
-      payload.payload.order?.entity?.notes ||
-      {}
+    const fromLink = payload.payload.payment_link?.entity?.notes;
+    const fromPayment = payload.payload.payment?.entity?.notes;
+    const fromOrder = payload.payload.order?.entity?.notes;
+    const candidates = payload.event.startsWith('payment_link.')
+      ? [fromLink, fromPayment, fromOrder]
+      : [fromPayment, fromOrder, fromLink];
+    const notes = candidates.find(
+      (candidate): candidate is Record<string, unknown> =>
+        !!candidate && typeof candidate === 'object' && !Array.isArray(candidate) && 'franchisePaymentGatewayId' in candidate,
     );
+    return notes ?? {};
   }
 
   /**

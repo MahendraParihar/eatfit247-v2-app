@@ -553,6 +553,10 @@ export class PlaceProductOrderComponent implements OnInit {
       const primaryGateway = gateways.find((g) => g.isPrimary);
       if (primaryGateway && !this.selectedGatewayId()) {
         this.selectedGatewayId.set(primaryGateway.franchisePaymentGatewayId);
+        // The submit button and payload read the gateway from step 4
+        this.step4FormGroup.patchValue({
+          franchisePaymentGatewayId: primaryGateway.franchisePaymentGatewayId,
+        });
         this.formGroup.patchValue({
           franchisePaymentGatewayId: primaryGateway.franchisePaymentGatewayId,
         });
@@ -620,6 +624,8 @@ export class PlaceProductOrderComponent implements OnInit {
           this.paymentLink.set(created.paymentLink);
           this.paymentLinkId.set(created.gatewayOrderId || null);
           this.linkCreatedOnSave.set(true);
+          // The order exists now: close only via Done/Cancel, which refresh the list
+          this.dialogRef.disableClose = true;
           return;
         }
         this.snackBar.open('Product order created successfully', 'Close', {
@@ -679,7 +685,8 @@ export class PlaceProductOrderComponent implements OnInit {
   }
 
   onCancel(): void {
-    this.dialogRef.close(false);
+    // After "Place Order & Create" the order exists, so the list must refresh
+    this.dialogRef.close(this.linkCreatedOnSave());
   }
 
   get paymentModeOptions(): IDropdownItem[] {
