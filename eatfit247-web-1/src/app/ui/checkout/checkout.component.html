@@ -453,7 +453,7 @@
             <span>FREE</span>
           </div>
           <div class="os-row">
-            <span>Tax</span>
+            <span>{{ taxLabel }}</span>
             @if (calculatingTax) {
               <mat-spinner diameter="14"></mat-spinner>
             } @else if (taxCalculation) {

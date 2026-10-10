@@ -49,6 +49,9 @@ import {
   IPublicProduct,
   IPublicProductOrderRequest,
   IPublicProductTaxCalculationRequest,
+  TaxCategoryEnum,
+  TaxMode,
+  TaxTypeEnum,
 } from '@eatfit247-shared-library';
 import { ProductService } from '../../core/services/product.service';
 import { BreadcrumbsComponent } from '@shared-ui';
@@ -467,6 +470,8 @@ export class CheckoutComponent implements OnInit, OnDestroy {
         }
         this.addressId = addressResult.addressId;
       }
+      // Foreign billing country: charge the plan's foreign-currency fee, so the sale is an export
+      this.applyPlanCurrencyForBillingCountry();
       // Calculate tax first, then skip to preview step
       await this.calculateTaxForCurrentStep();
       // Stay on billing with the server's message (e.g. a product not sold in this currency);
@@ -556,6 +561,9 @@ export class CheckoutComponent implements OnInit, OnDestroy {
       currency: tempTaxCalculation.currency,
       isLutApplied: tempTaxCalculation.isLutApplied,
       jurisdiction: tempTaxCalculation.jurisdiction,
+      taxCategory: tempTaxCalculation.taxCategory,
+      lutArn: tempTaxCalculation.lutArn,
+      taxDecisionReason: tempTaxCalculation.taxDecisionReason,
     });
     this.taxCalculation = <ICalculateProductVariantTaxResponse>{
       items: item,
@@ -1054,6 +1062,50 @@ export class CheckoutComponent implements OnInit, OnDestroy {
           : 'There was an issue with your payment.';
       default:
         return '';
+    }
+  }
+
+  /**
+   * Plans: an Indian billing address pays the INR fee; any other country pays the plan's
+   * foreign-currency fee when one exists (USD first), which makes the sale an export at 0%.
+   * Without one the INR fee applies and the server adds IGST (roadmap 4.6, decision 12).
+   */
+  private applyPlanCurrencyForBillingCountry(): void {
+    const fees = this.programPlan?.programPlanFees ?? [];
+    if (this.isProductCheckout || fees.length === 0) {
+      return;
+    }
+    const countryId = Number(this.basicDetailsForm.get('countryId')?.value);
+    const country = this.countryOptions.find((c) => Number(c.id) === countryId);
+    const isIndia = (country?.label || '').trim().toLowerCase() === 'india';
+    const inr = fees.find((f) => f.currencyCode === 'INR');
+    const foreign = fees.find((f) => f.currencyCode === 'USD') ?? fees.find((f) => f.currencyCode !== 'INR');
+    const fee = isIndia ? inr ?? fees[0] : foreign ?? inr ?? fees[0];
+    if (fee.currencyCode !== this.currencyCode) {
+      // A different currency is a different order: drop the previous quote
+      this.taxCalculation = null;
+    }
+    this.currencyCode = fee.currencyCode;
+    this.orderAmount = fee.fees;
+  }
+
+  /** Customer-facing label for the tax the server decided. */
+  get taxLabel(): string {
+    const line = this.taxCalculation?.items?.[0];
+    if (!line) {
+      return 'Tax';
+    }
+    const pct = Number(line.taxPercentage || 0);
+    switch (line.taxMode) {
+      case TaxMode.EXPORT_OF_SERVICE:
+      case TaxMode.EXPORT_OF_GOODS:
+        return line.isLutApplied ? 'Export – 0% (LUT)' : `IGST ${pct}% (export)`;
+      case TaxMode.VAT:
+        return line.taxCategory === TaxCategoryEnum.ZERO_RATED ? `VAT 0% (zero-rated)` : `VAT ${pct}%`;
+      case TaxMode.DOMESTIC_GST:
+        return line.taxObj && 'IGST' in line.taxObj ? `IGST ${pct}%` : `GST ${pct}%`;
+      default:
+        return line.taxType === TaxTypeEnum.NONE ? 'No tax' : 'Tax';
     }
   }
 

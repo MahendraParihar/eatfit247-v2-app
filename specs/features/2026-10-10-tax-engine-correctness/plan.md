@@ -109,9 +109,11 @@
 
 ## Group 5: Website checkout (`eatfit247-web-1`)
 
-- [ ] 5.1 Pick the plan fee by billing country: outside India → the plan's non-INR fee if present, else INR. Send the chosen currency (an existing plan fee only; the server re-validates it).
-- [ ] 5.2 The summary shows the server-decided tax label ("Export – 0% (LUT)", "IGST 18%", "VAT 0% (zero-rated)") and the currency. Zoneless: signals only.
-- [ ] 5.3 Product checkout: shows the export-of-goods result for foreign delivery addresses.
+- [x] 5.1 Pick the plan fee by billing country: outside India → the plan's non-INR fee if present, else INR. Send the chosen currency (an existing plan fee only; the server re-validates it).
+- [x] 5.2 The summary shows the server-decided tax label ("Export – 0% (LUT)", "IGST 18%", "VAT 0% (zero-rated)") and the currency. Zoneless: signals only.
+- [x] 5.3 Product checkout: shows the export-of-goods result for foreign delivery addresses.
+
+> **As built (group 5):** plan checkout picks the fee after the billing step: India → INR; other countries → the plan's USD fee, else any non-INR fee, else INR (the server prices INR + IGST); a currency change drops the previous quote. The server still accepts only an existing plan fee. The sidebar's "Tax" row shows the server's treatment (`Export – 0% (LUT)`, `IGST 18% (export)`, `VAT 0% (zero-rated)`, `GST 18%` / `IGST 18%`, `No tax`) for plans and products; plan summaries now pass `taxCategory` / `lutArn` / `taxDecisionReason` through. SSR build green; the checkout file's lint error (empty catch at line 350) already existed. **Browser check pending:** needs the API restarted on this code and a USD fee on a test plan (group 11.1).
 
 ## Group 6: Admin payment and product forms (`eatfit247-admin`)
 
