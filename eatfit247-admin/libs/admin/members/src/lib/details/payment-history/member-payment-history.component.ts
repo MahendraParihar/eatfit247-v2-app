@@ -161,6 +161,15 @@ export class MemberPaymentHistoryComponent implements OnInit, OnDestroy {
         label: 'Download Invoice',
         icon: 'download',
         color: 'accent',
+        visible: (row) => !!row.invoiceId,
+        onClick: (row) => this.downloadInvoice(row)
+      },
+      {
+        // No invoice number yet: the PDF is a proforma, not a tax invoice
+        label: 'Download Proforma',
+        icon: 'request_quote',
+        color: 'accent',
+        visible: (row) => !row.invoiceId,
         onClick: (row) => this.downloadInvoice(row)
       }
     ];

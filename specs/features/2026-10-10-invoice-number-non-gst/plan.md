@@ -92,12 +92,14 @@
 
 ## Group 5: Proforma (backend + admin)
 
-- [ ] 5.1 Plan and product `generateInvoicePDF`: no status gate. The mapper renders the proforma; name the file `Proforma-…pdf` when there is no invoice.
-- [ ] 5.2 `payment-report.service.ts` ZIP export: add `invoice_id IS NOT NULL`. Check the product report export for the same issue.
-- [ ] 5.3 Admin:
+- [x] 5.1 Plan and product `generateInvoicePDF`: no status gate. The mapper renders the proforma; name the file `Proforma-…pdf` when there is no invoice.
+- [x] 5.2 `payment-report.service.ts` ZIP export: add `invoice_id IS NOT NULL`. Check the product report export for the same issue.
+- [x] 5.3 Admin:
   - `member-payment-history.component.ts` and `member-product-orders.component.ts`: label the action "Download Proforma" when there is no `invoiceId`, otherwise "Download Invoice".
   - `manage-member-payment`: show the preview's `blockReason` and disable Save when it is blocked.
-- [ ] 5.4 Render check: a proforma, a domestic tax invoice and an export tax invoice. Commit.
+- [x] 5.4 Render check: a proforma, a domestic tax invoice and an export tax invoice. Commit.
+
+> **As built (group 5):** neither PDF method had a status gate. File names: plans `Invoice-<name>-<invoice date>.pdf` / `Proforma-<name>-<paymentId>.pdf`; products `invoice-<id>.pdf` / `proforma-<id>.pdf`. Payment ZIP export and both product ZIP exports (filtered and bulk) only include rows with a non-empty `invoice_id`. Admin: payment-history and product-order rows show "Download Invoice" when there is a number and "Download Proforma" otherwise (two actions with `visible`). The update-preview dialog shows a red "This change can't be saved" section with `blockReason` and disables "Approve & Update" when `blocked`. Render check (local): proforma 5130 → "PROFORMA INVOICE", no number, "Date:", proforma note; export 5129 → `EFMUM/EXP/2026-27/S/000001` (title and "No Tax Applicable" stay until 4.6 stores the export mode); domestic 4744 unchanged.
 
 ## Group 6: Data migration (FY 2026-27, Q2 onwards)
 

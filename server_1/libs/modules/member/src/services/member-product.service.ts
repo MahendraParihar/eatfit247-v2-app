@@ -650,7 +650,10 @@ export class MemberProductService {
         `Payment confirms acceptance of ${productOrder.franchise.companyName} terms and service validity conditions.`,
       ],
     );
-    const fileName = `invoice-${productModel.memberProductId}.pdf`;
+    // An order without an invoice number downloads as a proforma (decision 11)
+    const fileName = productModel.invoiceId
+      ? `invoice-${productModel.memberProductId}.pdf`
+      : `proforma-${productModel.memberProductId}.pdf`;
     const relativePath = `${MediaForEnum.DOWNLOADS}/${memberId}/invoices`;
     const destinationFolderPath = `${this.rootFolderPath}/${relativePath}`;
     // CREATE DIRECTORY IF NOT EXISTS (async)

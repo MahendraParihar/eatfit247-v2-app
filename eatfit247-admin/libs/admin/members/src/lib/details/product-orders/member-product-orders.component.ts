@@ -175,6 +175,15 @@ export class MemberProductOrdersComponent implements OnInit, OnDestroy {
             label: 'Download Invoice',
             icon: 'download',
             tooltip: 'Download Invoice',
+            visible: (row: IMemberProduct) => !!row.invoiceId,
+            onClick: (row: IMemberProduct) => this.downloadInvoice(row),
+          },
+          {
+            // No invoice number yet: the PDF is a proforma, not a tax invoice
+            label: 'Download Proforma',
+            icon: 'request_quote',
+            tooltip: 'Download Proforma',
+            visible: (row: IMemberProduct) => !row.invoiceId,
             onClick: (row: IMemberProduct) => this.downloadInvoice(row),
           },
           {

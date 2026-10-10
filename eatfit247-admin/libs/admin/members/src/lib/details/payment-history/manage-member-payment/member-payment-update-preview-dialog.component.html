@@ -1,6 +1,16 @@
 <h2 mat-dialog-title>Review Payment Changes</h2>
 
 <mat-dialog-content class="preview-content">
+  @if (data.blocked) {
+    <section class="section section-blocked" role="alert">
+      <div class="section-title">
+        <mat-icon>block</mat-icon>
+        <span>This change can't be saved</span>
+      </div>
+      <p>{{ data.blockReason }}</p>
+    </section>
+  }
+
   @if (data.highlights.length > 0) {
     <section class="section section-highlight">
       <div class="section-title">
@@ -99,7 +109,7 @@
 
 <mat-dialog-actions align="end">
   <button mat-button type="button" (click)="cancel()">Cancel</button>
-  <button mat-raised-button color="primary" type="button" (click)="confirm()">
+  <button mat-raised-button color="primary" type="button" [disabled]="data.blocked" (click)="confirm()">
     Approve & Update
   </button>
 </mat-dialog-actions>

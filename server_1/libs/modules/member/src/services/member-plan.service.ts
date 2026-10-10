@@ -1174,11 +1174,11 @@ export class MemberPlanService {
         `Payment confirms acceptance of ${payment.franchise.companyName} terms and service validity conditions.`,
       ],
     );
-    const fileName = `Invoice-${CommonFunctionsUtil.removeSpecialChar(
-      paymentModel.memberName,
-      '-',
-      false,
-    )}-${paymentModel.paymentDate ?? 'proforma'}.pdf`;
+    // An entry without an invoice number downloads as a proforma (decision 11)
+    const memberSlug = CommonFunctionsUtil.removeSpecialChar(paymentModel.memberName, '-', false);
+    const fileName = paymentModel.invoiceId
+      ? `Invoice-${memberSlug}-${paymentModel.invoiceDate ?? paymentModel.paymentDate}.pdf`
+      : `Proforma-${memberSlug}-${paymentModel.memberPaymentId}.pdf`;
     const relativePath = `${MediaForEnum.DOWNLOADS}/${memberId}/invoices`;
     const destinationFolderPath = `${this.rootFolderPath}/${relativePath}`;
     //CREATE DIRECTORY IF NOT EXISTS (async)
