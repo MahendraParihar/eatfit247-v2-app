@@ -2,19 +2,21 @@
 -- preview_fy2026_27_q2.sql — READ-ONLY preview of db_changes/138
 -- Invoice series (roadmap 4.7). Changes nothing.
 -- =============================================================================
--- Lists every FY 2026-27 invoice of EFMUM / MEMUM dated on or after 1 July 2026
--- with its resolved billing country, tax, stored tax mode, derived series and
--- old → new invoice number, exactly as 138 would assign them. Rows whose billing
--- country cannot be resolved show series DOMESTIC and new number '?' (138 aborts
--- on them). The classification block is copied verbatim from 138.
+-- Part 1 lists every FY 2026-27 invoice of EFMUM / MEMUM dated on or after
+-- 1 July 2026 with its resolved billing country, tax, stored tax mode, derived
+-- series and old → new number, exactly as 138 would assign them, plus a
+-- `blocks_138` column naming any guard that row would trip (138 aborts if any
+-- row has one). Part 2 lists FY 2026-27 numbers 138 cannot classify (also abort).
+-- The classification block is copied verbatim from 138.
 --
 -- Run (CSV for Accounts' sign-off):
---   psql "$DB_URL" -X -A -F ',' --pset footer=off \
+--   psql "$DB_URL" -X -q --csv \
 --     -f scripts/invoice-renumber/preview_fy2026_27_q2.sql > invoice_renumber_preview.csv
 -- =============================================================================
 
 BEGIN TRANSACTION READ ONLY;
 
+-- Part 1: the renumbering
 WITH rows_138 AS (
 -- BEGIN CLASSIFICATION
 WITH franchises AS (
@@ -117,20 +119,24 @@ SELECT r.source_table,
 FROM resolved r
 -- END CLASSIFICATION
 ),
+q1_max AS (
+    SELECT franchise_id, invoice_type, max(substring(old_invoice_id FROM '(\d{6})$')::INTEGER) AS q1_max
+    FROM rows_138
+    WHERE NOT in_window
+    GROUP BY franchise_id, invoice_type
+),
 base AS (
     SELECT f.franchise_id,
            t.invoice_type,
-           COALESCE((SELECT max(substring(r.old_invoice_id FROM '(\d{6})$')::INTEGER)
-                     FROM rows_138 r
-                     WHERE NOT r.in_window
-                       AND r.franchise_id = f.franchise_id
-                       AND r.invoice_type = t.invoice_type), 0) AS q1_base
+           COALESCE(q.q1_max, 0) AS q1_base
     FROM public.mst_franchises f
              CROSS JOIN (VALUES ('service'), ('product')) t(invoice_type)
+             LEFT JOIN q1_max q ON q.franchise_id = f.franchise_id AND q.invoice_type = t.invoice_type
     WHERE f.franchise_code IN ('EFMUM', 'MEMUM')
 ),
 mapped AS (
     SELECT r.*,
+           b.q1_base,
            CASE WHEN r.series = 'DOMESTIC' THEN b.q1_base ELSE 0 END
                + row_number() OVER (PARTITION BY r.franchise_id, r.invoice_type, r.series
                                     ORDER BY r.local_payment_date, r.created_at, r.pk) AS new_seq
@@ -144,6 +150,7 @@ SELECT m.source_table,
        m.invoice_type,
        TRIM(CONCAT(mem.first_name, ' ', mem.last_name)) AS member_name,
        m.local_payment_date                            AS payment_date,
+       m.created_at::DATE                              AS created_on,
        m.active,
        ps.payment_status                               AS status,
        COALESCE(m.billing_country, '?')                AS billing_country,
@@ -156,10 +163,30 @@ SELECT m.source_table,
            ELSE m.franchise_code
                     || CASE WHEN m.series = 'EXPORT' THEN '/EXP' ELSE '' END
                     || '/2026-27/' || m.type_code || '/' || lpad(m.new_seq::TEXT, 6, '0')
-           END                                         AS new_invoice_id
+           END                                         AS new_invoice_id,
+       NULLIF(concat_ws('; ',
+                        CASE WHEN m.billing_country IS NULL THEN 'billing country unknown' END,
+                        CASE WHEN m.local_payment_date >= DATE '2027-04-01' THEN 'dated FY 2027-28' END,
+                        CASE WHEN m.old_invoice_id NOT LIKE '%/EXP/%'
+                                  AND substring(m.old_invoice_id FROM '(\d{6})$')::INTEGER < m.q1_base
+                                 THEN 'numbered below the highest Q1 number (Q1/Q2 overlap)' END), '') AS blocks_138
 FROM mapped m
          LEFT JOIN public.txn_members mem ON mem.member_id = m.member_id
          LEFT JOIN public.mst_payment_status ps ON ps.payment_status_id = m.payment_status_id
 ORDER BY m.franchise_code, m.invoice_type, m.series, m.new_seq;
+
+-- Part 2: FY 2026-27 numbers of EFMUM / MEMUM that 138 cannot classify (138 aborts on any)
+SELECT t.source_table, t.pk, t.invoice_id, t.franchise_id, f.franchise_code AS row_franchise_code
+FROM (SELECT 'txn_member_payments'::TEXT AS source_table, member_payment_id AS pk, invoice_id, franchise_id
+      FROM public.txn_member_payments
+      WHERE upper(trim(invoice_id)) ~ '^(EFMUM|MEMUM)/(EXP/)?2026-27/'
+      UNION ALL
+      SELECT 'txn_member_products', member_product_id, invoice_id, franchise_id
+      FROM public.txn_member_products
+      WHERE upper(trim(invoice_id)) ~ '^(EFMUM|MEMUM)/(EXP/)?2026-27/') t
+         LEFT JOIN public.mst_franchises f ON f.franchise_id = t.franchise_id
+WHERE f.franchise_code IS NULL
+   OR NOT (t.invoice_id LIKE f.franchise_code || '/2026-27/%' OR t.invoice_id LIKE f.franchise_code || '/EXP/2026-27/%')
+ORDER BY 1, 2;
 
 COMMIT;

@@ -22,7 +22,15 @@
 -- Run AFTER 137, with public-api and admin-api STOPPED (no invoice may be issued
 -- meanwhile). Preview first: scripts/invoice-renumber/preview_fy2026_27_q2.sql
 -- (same classification query). The script aborts, changing nothing, if any guard
--- fails, and refuses to run twice (bkp_138_invoice_renumber exists).
+-- fails, and refuses to run twice (bkp_138_invoice_renumber exists). Guards that
+-- need Accounts / CA input before a re-run:
+--   * an FY 2026-27 number of EFMUM/MEMUM that the window can't classify (the
+--     franchise on the row differs from the code in the number, NULL franchise,
+--     odd casing/spaces);
+--   * Q1 and Q2 numbers overlap (a backdated June payment numbered after July
+--     rows, or a filed Q1 invoice whose payment date was moved into July):
+--     renumbering would leave a gap or change a filed invoice;
+--   * an FY 2026-27 number on a payment dated 1 April 2027 or later.
 --
 -- -----------------------------------------------------------------------------
 -- ROLLBACK (not executed; run by hand inside a transaction if ever needed, and
@@ -45,8 +53,10 @@
 --    WHERE b.source_table = 'txn_member_products' AND b.pk = m.member_product_id;
 --   UPDATE mst_invoice_sequences s SET current_number = c.old_current_number
 --     FROM bkp_138_invoice_counters c WHERE c.id = s.id;
+--   -- counter rows 138 created (none existed before): back to 0
 --   UPDATE mst_invoice_sequences s SET current_number = 0
---    WHERE s.series = 'EXPORT' AND s.financial_year = '2026-27'
+--    WHERE s.financial_year = '2026-27'
+--      AND s.franchise_id IN (SELECT franchise_id FROM mst_franchises WHERE franchise_code IN ('EFMUM', 'MEMUM'))
 --      AND NOT EXISTS (SELECT 1 FROM bkp_138_invoice_counters c WHERE c.id = s.id);
 --   COMMIT;
 -- =============================================================================
@@ -212,6 +222,49 @@ BEGIN
     WHERE NOT in_window AND old_invoice_id LIKE '%/EXP/%';
     IF bad IS NOT NULL THEN
         RAISE EXCEPTION '138: export-series numbers dated before 1 July 2026: %', bad;
+    END IF;
+
+    SELECT string_agg(source_table || ':' || pk || ' (' || old_invoice_id || ', ' || local_payment_date || ')', ', ')
+    INTO bad
+    FROM tmp_138_rows
+    WHERE local_payment_date >= DATE '2027-04-01';
+    IF bad IS NOT NULL THEN
+        RAISE EXCEPTION '138: FY 2026-27 numbers on payments dated in FY 2027-28 or later: %', bad;
+    END IF;
+
+    -- Every FY 2026-27 number of EFMUM / MEMUM must be one the window classifies
+    -- (a skipped row would be missed by the base and the counters, and a later
+    -- issue would hit the unique index)
+    SELECT string_agg(t.source_table || ':' || t.pk || ' (' || t.invoice_id || ', franchise ' || COALESCE(t.franchise_id::TEXT, 'NULL') || ')', ', ')
+    INTO bad
+    FROM (SELECT 'txn_member_payments'::TEXT AS source_table, member_payment_id AS pk, invoice_id, franchise_id
+          FROM public.txn_member_payments
+          WHERE upper(trim(invoice_id)) ~ '^(EFMUM|MEMUM)/(EXP/)?2026-27/'
+          UNION ALL
+          SELECT 'txn_member_products', member_product_id, invoice_id, franchise_id
+          FROM public.txn_member_products
+          WHERE upper(trim(invoice_id)) ~ '^(EFMUM|MEMUM)/(EXP/)?2026-27/') t
+    WHERE NOT EXISTS (SELECT 1 FROM tmp_138_rows r WHERE r.source_table = t.source_table AND r.pk = t.pk);
+    IF bad IS NOT NULL THEN
+        RAISE EXCEPTION '138: FY 2026-27 invoice numbers the window cannot classify (fix the franchise or the number first): %', bad;
+    END IF;
+
+    -- Q1 and Q2 numbers must not overlap: renumbering after the Q1 maximum would
+    -- otherwise leave unused numbers, or move a filed Q1 invoice
+    SELECT string_agg(w.source_table || ':' || w.pk || ' (' || w.old_invoice_id || ', paid ' || w.local_payment_date
+                          || ', created ' || w.created_at::DATE || ')', ', ')
+    INTO bad
+    FROM tmp_138_rows w
+             JOIN (SELECT franchise_id, invoice_type, max(substring(old_invoice_id FROM '(\d{6})$')::INTEGER) AS q1_max
+                   FROM tmp_138_rows
+                   WHERE NOT in_window
+                   GROUP BY franchise_id, invoice_type) q
+                  ON q.franchise_id = w.franchise_id AND q.invoice_type = w.invoice_type
+    WHERE w.in_window
+      AND w.old_invoice_id NOT LIKE '%/EXP/%'
+      AND substring(w.old_invoice_id FROM '(\d{6})$')::INTEGER < q.q1_max;
+    IF bad IS NOT NULL THEN
+        RAISE EXCEPTION '138: Q1 and Q2 invoice numbers overlap; Accounts / CA must decide first. Q2 rows numbered below the highest Q1 number: %', bad;
     END IF;
 END
 $$;
@@ -407,6 +460,28 @@ BEGIN
       AND s.current_number <> m.hi;
     IF bad IS NOT NULL THEN
         RAISE EXCEPTION '138: counters do not match the renumbered series: %', bad;
+    END IF;
+
+    -- No issued FY 2026-27 number of these franchises is above its counter
+    SELECT string_agg(DISTINCT n.franchise_code || '/' || n.invoice_type || '/' || n.series, ', ')
+    INTO bad
+    FROM (SELECT f.franchise_id, f.franchise_code,
+                 CASE WHEN split_part(upper(x.invoice_id), '/', 2) = 'EXP' THEN 'EXPORT' ELSE 'DOMESTIC' END AS series,
+                 CASE WHEN upper(x.invoice_id) ~ '/P/\d{6}$' THEN 'product' ELSE 'service' END              AS invoice_type,
+                 substring(x.invoice_id FROM '(\d{6})$')::INTEGER                                             AS seq
+          FROM (SELECT invoice_id FROM public.txn_member_payments
+                UNION ALL
+                SELECT invoice_id FROM public.txn_member_products) x
+                   JOIN public.mst_franchises f
+                        ON upper(trim(x.invoice_id)) LIKE f.franchise_code || '/%2026-27/%'
+          WHERE f.franchise_code IN ('EFMUM', 'MEMUM')
+            AND x.invoice_id ~ '\d{6}$') n
+             LEFT JOIN public.mst_invoice_sequences s
+                       ON s.franchise_id = n.franchise_id AND s.invoice_type = n.invoice_type
+                           AND s.series = n.series AND s.financial_year = '2026-27'
+    WHERE n.seq > COALESCE(s.current_number, 0);
+    IF bad IS NOT NULL THEN
+        RAISE EXCEPTION '138: issued numbers above their counter: %', bad;
     END IF;
 END
 $$;

@@ -163,6 +163,16 @@
 > - The preview (`scripts/invoice-renumber/preview_fy2026_27_q2.sql`, read-only) embeds the classification block **generated from 138** (copied between the markers), so the two can't drift.
 > - Rehearsal on local clones: preview = run; 5125/5128 (US, no tax) → `EFMUM/EXP/2026-27/S/000001/2`; domestic counter 9 → 7 (contiguous); second run aborts ("already applied"). Synthetic clone with Q1 rows: Q1 untouched (a US client dated June keeps its filed domestic number), Q2 domestic continues from the Q1 maximum (9–12), name-only billing country resolves, unresolvable billing aborts and names the row. App on the renumbered clone then issues `EXP/…/000004` and `S/000008` (no gaps). Clones dropped.
 
+## Group 6b: Review fixes (groups 4–6)
+
+- [x] 6b.1 **138: Q1/Q2 overlap guard.** Numbers were issued in creation order, not payment-date order, so a backdated June payment numbered after July rows (or a filed Q1 invoice whose date moved into July) would leave unused numbers or renumber a filed invoice, and the post-asserts couldn't see it. 138 now aborts, listing the rows, when any Q2 domestic number is below the highest Q1 number; Accounts / CA decide before a re-run. The preview flags such rows in `blocks_138`.
+- [x] 6b.2 **138: unclassifiable rows guard.** An FY 2026-27 `EFMUM/…` / `MEMUM/…` number on a row whose franchise differs (or is NULL), or with odd casing/spaces, was skipped and its counter could be set below it (later issues would hit the unique index, blocking every issue). 138 aborts listing them; a new post-assert checks no issued FY 2026-27 number of these franchises is above its counter. The preview lists them (part 2).
+- [x] 6b.3 **138: upper bound.** Aborts on an FY 2026-27 number whose payment is dated 1 April 2027 or later.
+- [x] 6b.4 Rollback snippet resets every FY 2026-27 counter row of EFMUM/MEMUM that 138 created (either series).
+- [x] 6b.5 Preview CSV command uses `--csv -q` (quoted names, no command tags).
+- [x] 6b.6 `update`: the series guard runs on the row locked and re-read inside the transaction; issuing a number also sets the payment's `franchise_id` when it was empty.
+- [x] 6b.7 Re-rehearsed on clones: a normal run commits (11 rows); overlap, unclassifiable-row and FY 2027-28 scenarios each abort with the rows listed and no backup table (nothing changed). Clones dropped.
+
 ## Group 7: Release
 
 - [ ] 7.1 PR runbook:

@@ -623,15 +623,15 @@ export class MemberPlanService {
     }
 
     const draft = await this.buildPaymentDraft(memberId, obj);
-    // Decision 10: an issued invoice can't move to the other series
-    const blockReason = await this.findSeriesChange(payment, draft);
-    if (blockReason) {
-      throw new BadRequestException(blockReason);
-    }
     const t = await this.sequelize.transaction();
     try {
       // Lock the row and re-read it, so two concurrent saves to PAID can't both issue a number
       await payment.reload({ transaction: t, lock: t.LOCK.UPDATE });
+      // Decision 10: an issued invoice can't move to the other series (checked on the locked row)
+      const blockReason = await this.findSeriesChange(payment, draft);
+      if (blockReason) {
+        throw new BadRequestException(blockReason);
+      }
       payment.addressId = obj.addressId || null;
       payment.gstNumber = obj.gstNumber || null;
       payment.modifiedIp = requestedIp;
@@ -666,6 +666,8 @@ export class MemberPlanService {
       // by the gateway. An issued number, series and date are never changed (decision 9).
       const invoiceFranchiseId = payment.franchiseId || draft.member?.franchiseId;
       if (payment.paymentStatusId === PaymentStatusEnum.PAID && !payment.invoiceId && invoiceFranchiseId) {
+        // The invoice belongs to the franchise that numbers it
+        payment.franchiseId = invoiceFranchiseId;
         await this.invoiceIssueService.issue(payment, 'plan', invoiceFranchiseId, t);
       }
 
