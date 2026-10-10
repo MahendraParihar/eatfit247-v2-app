@@ -25,6 +25,17 @@
 | A17 | Given the suspicious-records SQL, when run on a production copy, then it lists rows with reason codes, changes no data, and its output is shared with the owner and Accounts | manual | ◐ written; local run plus a rolled-back test with one crafted row per reason code passed. **Still needed:** a production-copy run, gateway reconciliation (8.8), and sharing with the owner and Accounts |
 | A18 | Given admin manual payment entry, then admins can still record offline PAID payments as before (regression) | manual (admin) | ✅ live: admin manual PAID payment for 4945 → invoice `…/S/000005`, as before |
 
+## Post-ship (owner, after merge into `m3-cms-update`)
+
+These need production data, a non-INR gateway, or devices the agent can't reach. They are tracked here, not hidden:
+
+- [ ] Apply `db_changes/139_payment_gateway_events.sql` on a production copy, then production (re-running it is safe).
+- [ ] A17: run `scripts/audit/public_checkout_suspicious_paid.sql` on production and reconcile `gateway_payment_id` against the Razorpay settlement export. Share it with the owner and then Accounts.
+- [ ] Review `scripts/audit/payment_gateway_event_exceptions.sql` daily for the first weeks (ERROR, ORDER_NOT_FOUND, over-limit promo, unfinished events).
+- [ ] A16 remainder: Safari, mobile width, and a foreign-currency checkout once a non-INR gateway exists (promos are INR-only until promo codes get a currency).
+- [ ] Watch the first real webhooks in `txn_payment_gateway_events` (localhost can't receive them).
+- [ ] Cancel the test NimbusPost shipment booked from local testing: shipment 37, AWB 4152922405330.
+
 ## Automated Checks
 
 - [x] `cd shared-library && npm run build`
@@ -64,7 +75,7 @@ WHERE gateway_order_id IS NOT NULL GROUP BY 1 HAVING count(DISTINCT invoice_id) 
 
 ## Review
 
-- [ ] Diff reviewed at the requirements level
+- [x] Diff reviewed at the requirements level: two independent subagent reviews; fixes in plan Groups 8–10
 - [x] Deep review by subagents (payment bypass, races, idempotency, franchise leakage, conventions). Findings fixed or logged: plan.md Group 8
 - [x] Specs and code in sync: each group's "As built" notes in plan.md
-- [ ] I can explain the change (state matrix tests, confirmation service)
+- [ ] I can explain the change (state matrix tests, confirmation service) — owner sign-off

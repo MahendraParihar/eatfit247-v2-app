@@ -29,13 +29,14 @@ v2 is live in production.
 
 Build in this order: each item depends on the ones above it. Audit finding IDs are in brackets. Tax and invoice items are implemented one task group at a time.
 
-- 📋 **4.5 Checkout and webhook lockdown (P0).**
+- ✅ **4.5 Checkout and webhook lockdown (P0).** Shipped 2026-10-10 on `feature/10-10-2026-checkout-lockdown` ([spec](../features/2026-10-10-checkout-lockdown/requirements.md)).
   - Public checkout can no longer set payment status, source, date or discount; the server decides them, and promo codes are validated on the server.
   - Razorpay webhook statuses only move forward (a late "failed" can't overwrite PAID), and the payment row is locked before an invoice number is issued.
   - [C1, H7, M5]
+  - Owner steps after merge (validation.md "Post-ship"): migration 139 on production, the suspicious-records run with Razorpay reconciliation for Accounts, and Safari, mobile and foreign-currency checks.
 - 📋 **4.6 Tax-engine correctness (P0).**
   - Export vs domestic is decided by supplier country vs customer country, and the export branch actually runs.
-  - Fix the swapped supplier/customer arguments in product tax, and add an export-of-goods tax mode.
+  - ~~Fix the swapped supplier/customer arguments in product tax~~ (done in 4.5, plan 9.5); add an export-of-goods tax mode.
   - Rule for foreign clients who pay in INR.
   - LUT register with validity dates.
   - Required billing address (country and state) before tax is calculated; tax rule looked up by date and active flag.

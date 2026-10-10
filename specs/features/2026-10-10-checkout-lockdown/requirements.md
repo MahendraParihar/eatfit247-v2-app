@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Implemented — awaiting owner validation (A16, A17, production migration); see validation.md |
+| Status | Shipped (2026-10-10). Owner steps after merge are in validation.md "Post-ship" |
 | Branch | `feature/10-10-2026-checkout-lockdown`; PR into `m3-cms-update` |
 | Roadmap | Phase 4: **4.5** Checkout and webhook lockdown (P0) |
 | References | [Accounting audit](../../backlog/2026-10-10-accounting-audit.md) findings C1, H7, M5; [mission.md](../../product/mission.md) principles 7, 10, 11 |

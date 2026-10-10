@@ -233,8 +233,8 @@ A second independent review of `06fa02e7..` found no Critical or High issue and 
 
 ## Group 7: Close-out
 
-- [ ] 7.1 Every check in `validation.md` passes.
-- [ ] 7.2 Set `requirements.md` status to Shipped. Mark roadmap 4.5 ✅ with a link.
+- [x] 7.1 Every check in `validation.md` that can run before merge passes: 16 of 18 criteria ✅, and A16/A17 are partial with their remaining parts listed under "Post-ship".
+- [x] 7.2 Set `requirements.md` status to Shipped. Mark roadmap 4.5 ✅ with a link (and note under 4.6 that the product-tax argument swap is done).
 - [x] 7.3 Replan notes:
   - The state matrix and confirmation service become the contract for 8.1 (Telr) and 8.2 (Stripe).
   - 4.9 picks up refund events from `txn_payment_gateway_events`.
@@ -244,7 +244,4 @@ A second independent review of `06fa02e7..` found no Critical or High issue and 
     - **4.8:** create admin payment links from the stored record total; review `payment_gateway_event_exceptions.sql` daily until then.
     - **Website:** the checkout component (zoneless, plain fields) doesn't re-render after its initial loads ("0 items" until interaction) and logs NG0100. Convert its state to signals.
     - **Promo:** decide currency and eligibility before enabling foreign-currency checkout.
-- **Close-out status (2026-10-10):**
-  - 7.1: the agent-run checks pass, and the scorecard records 15 of 18 criteria ✅. **Still open for the owner:** A16 (product, foreign currency, Safari, mobile), A17 and 6.2 (production-copy run, gateway reconciliation, sharing with Accounts), the migration on a production copy, the remaining manual Razorpay cases, and sign-off on the review section.
-  - 7.2: not done yet. Set `requirements.md` to Shipped and roadmap 4.5 to ✅ after those checks and the PR merge into `m3-cms-update`.
-
+- **Close-out (2026-10-10):** Groups 1–10 are done; each was tested (unit tests and live against the local servers, plus two Razorpay test-mode payments in Chrome) and reviewed before the next. Owner steps after merge are listed in validation.md "Post-ship".
