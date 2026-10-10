@@ -21,7 +21,7 @@
 | A13 | Given amounts in a 0-decimal or 3-decimal currency, then the conversion uses the right exponent | unit | ✅ unit: JPY (0), KWD (3), USD/INR (2) |
 | A14 | Given a PENDING checkout record, then diet-plan work for that payment is blocked until it becomes PAID | unit + manual (admin) | ✅ unit + live service check: blocked while PENDING, allowed once PAID (manage, update-details, send-email). Admin UI not clicked |
 | A15 | Given a refund webhook, then it is logged and `refundObj` stored, and the status and invoice are unchanged | unit | ✅ unit: refund logged, `refundObj` stored, status and invoice unchanged; refunds only grow (8.5) |
-| A16 | Given the website, when a customer completes checkout (plan and product, INR and one foreign currency) in Razorpay test mode, then the success page shows the paid order from the server | manual (browser; Safari + mobile width) | ◐ plan INR in Chrome passed (success page shows PAID from the server). **Still needed:** product order, a foreign currency (no USD gateway locally), Safari, mobile width |
+| A16 | Given the website, when a customer completes checkout (plan and product, INR and one foreign currency) in Razorpay test mode, then the success page shows the paid order from the server | manual (browser; Safari + mobile width) | ◐ Chrome, Razorpay test mode: plan INR (record 4744) and product INR (order 46) both paid, and the success page shows PAID from the server. **Still needed:** a foreign currency (no non-INR gateway is configured; promos are INR-only, 9.1), Safari, mobile width (the automated window resize had no effect) |
 | A17 | Given the suspicious-records SQL, when run on a production copy, then it lists rows with reason codes, changes no data, and its output is shared with the owner and Accounts | manual | ◐ written; local run plus a rolled-back test with one crafted row per reason code passed. **Still needed:** a production-copy run, gateway reconciliation (8.8), and sharing with the owner and Accounts |
 | A18 | Given admin manual payment entry, then admins can still record offline PAID payments as before (regression) | manual (admin) | ✅ live: admin manual PAID payment for 4945 → invoice `…/S/000005`, as before |
 
@@ -58,7 +58,7 @@ WHERE gateway_order_id IS NOT NULL GROUP BY 1 HAVING count(DISTINCT invoice_id) 
   - a failed payment
   - a closed modal (abandoned)
   - replay events from the Razorpay dashboard
-- [ ] Website: promo applied, then removed; invalid promo; success page during a delayed webhook (*applied ✅ and invalid ✅ in Chrome; remove, and the delayed-webhook PENDING state, not yet clicked*)
+- [ ] Website: promo applied, then removed; invalid promo; success page during a delayed webhook (*applied ✅, removed ✅ and invalid ✅ in Chrome; the delayed-webhook PENDING state is covered by code and SSR, not clicked*)
 - [x] Admin: record a manual PAID payment (A18): service-level, the admin create path is unchanged
 - [ ] Suspicious-records report run and shared (A17)
 

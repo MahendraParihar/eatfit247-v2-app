@@ -60,6 +60,12 @@ export interface IVerifyCheckoutPaymentResult {
   confirmation?: IGatewayConfirmationResult;
 }
 
+/**
+ * Promo codes have no currency yet: FLAT values and min/max amounts are rupees.
+ * Until txn_promo_codes gets a currency, codes are only accepted for INR payments.
+ */
+const PROMO_CODE_CURRENCY = 'INR';
+
 /** Gateways whose server-side confirmation is implemented (Telr/Stripe: Phase 8). */
 const CHECKOUT_GATEWAYS: ReadonlySet<string> = new Set([PaymentGatewayEnum.RAZORPAY]);
 
@@ -92,6 +98,9 @@ export class CheckoutGatewayService {
     const code = (promoCode || '').trim();
     if (!code) {
       return { promoCode: null, discountAmount: 0 };
+    }
+    if ((currency || '').toUpperCase() !== PROMO_CODE_CURRENCY) {
+      throw new BadRequestException(`Promo codes can only be used for ${PROMO_CODE_CURRENCY} payments`);
     }
     const result = await this.promoCodeService.applyPromoCode({ code, orderAmount });
     if (!result.valid) {

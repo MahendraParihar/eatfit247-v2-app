@@ -75,6 +75,13 @@ describe('CheckoutGatewayService', () => {
       );
     });
 
+    it('promo codes (rupee amounts, no currency yet) are refused for non-INR payments', async () => {
+      await expect(service.applyPromoCode('SAVE10', 100, 'USD')).rejects.toThrow(
+        'Promo codes can only be used for INR payments',
+      );
+      expect(applyPromoCode).not.toHaveBeenCalled();
+    });
+
     it('rounds the discount to the currency and caps it at the order amount', async () => {
       applyPromoCode.mockResolvedValue({ valid: true, discountAmount: '333.3333', finalAmount: 0, message: 'ok' });
       await expect(service.applyPromoCode(' save10 ', 1000, 'INR')).resolves.toMatchObject({

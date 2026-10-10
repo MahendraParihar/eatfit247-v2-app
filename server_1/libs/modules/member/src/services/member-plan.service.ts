@@ -58,6 +58,7 @@ import {
   PaymentGatewayResolverService,
 } from '@server_1/modules/payment';
 import { Sequelize } from 'sequelize-typescript';
+import { Op } from 'sequelize';
 import { MemberDietPlanService } from './member-diet-plan.service';
 import { CheckoutGatewayService } from './checkout-gateway.service';
 import { promises as fs } from 'fs';
@@ -1057,13 +1058,21 @@ export class MemberPlanService {
    * @param paymentId - Payment ID
    * @returns File model with PDF details
    */
-  public async generateInvoicePDF(memberId: number, paymentId: number): Promise<IFileModel> {
+  /**
+   * @param createdOnOrAfter - public checkout: only records created in the token's session
+   */
+  public async generateInvoicePDF(
+    memberId: number,
+    paymentId: number,
+    createdOnOrAfter?: Date,
+  ): Promise<IFileModel> {
     // Get payment with all details
     const payment: TxnMemberPayment = await this.memberPaymentRepository.scope('invoice').findOne({
       where: {
         memberPaymentId: paymentId,
         memberId,
         active: true,
+        ...(createdOnOrAfter ? { createdAt: { [Op.gte]: createdOnOrAfter } } : {}),
       },
     });
     if (!payment) {
@@ -1351,7 +1360,8 @@ export class MemberPlanService {
       franchiseAddress = franchiseAddresses?.[0] || null;
     }
     const programPlan = await this.programPlanService.fetchById(obj.programPlanId);
-    if (!programPlan.active) {
+    // Only plans the website offers can be bought online
+    if (!programPlan.active || !programPlan.isVisibleOnWeb) {
       throw new BadRequestException('This plan is not available');
     }
     const fee = this.findPlanFee(programPlan, obj.currency);

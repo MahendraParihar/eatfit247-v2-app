@@ -1,5 +1,12 @@
 import { Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
-import { CheckoutTokenGuard, Public, RequestedIp, RequireRecaptcha } from '@server_1/core';
+import {
+  CheckoutTokenGuard,
+  CheckoutTokenIssuedAt,
+  checkoutSessionStart,
+  Public,
+  RequestedIp,
+  RequireRecaptcha,
+} from '@server_1/core';
 import { RecaptchaGuard } from '@server_1/platform';
 import { MemberPlanService } from '../../services';
 import { PublicPlanOrderDto, PublicPlanTaxCalculationDto, PublicVerifyPaymentDto } from '../../dto';
@@ -74,8 +81,13 @@ export class PublicCheckoutPlanController {
   async downloadInvoice(
     @Param('memberId') memberId: number,
     @Param('paymentId') paymentId: number,
+    @CheckoutTokenIssuedAt() tokenIssuedAt: number | null,
   ): Promise<{ buffer: string; fileName: string }> {
-    const invoiceFile = await this.memberPaymentService.generateInvoicePDF(memberId, paymentId);
+    const invoiceFile = await this.memberPaymentService.generateInvoicePDF(
+      memberId,
+      paymentId,
+      checkoutSessionStart(tokenIssuedAt),
+    );
     return {
       buffer: invoiceFile.buffer || '',
       fileName: invoiceFile.fileName,

@@ -4,6 +4,7 @@ import { TxnMember, TxnMemberProduct, TxnMemberProductOrderItem } from '../model
 import {
   BusinessTypeEnum,
   ConfigParam,
+  CurrencyUtil,
   IAddress,
   ICalculateProductVariantTaxRequest,
   ICalculateProductVariantTaxResponse,
@@ -63,6 +64,7 @@ import {
   PaymentGatewayResolverService,
 } from '@server_1/modules/payment';
 import { Sequelize } from 'sequelize-typescript';
+import { Op } from 'sequelize';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { promises as fs } from 'fs';
 import { find, map, sumBy } from 'lodash';
@@ -396,8 +398,9 @@ export class MemberProductService {
             discountAmount: item.discountAmount,
             currency: item.currencyCode,
           },
-          franchiseAddress,
+          // calculateTax takes (billingAddress, franchiseAddress); these were swapped
           billingAddress,
+          franchiseAddress,
         );
         return {
           productId: item.productId,
@@ -635,13 +638,21 @@ export class MemberProductService {
    * @param productId - Product order ID
    * @returns File model with PDF details
    */
-  public async generateInvoicePDF(memberId: number, productId: number): Promise<IFileModel> {
+  /**
+   * @param createdOnOrAfter - public checkout: only records created in the token's session
+   */
+  public async generateInvoicePDF(
+    memberId: number,
+    productId: number,
+    createdOnOrAfter?: Date,
+  ): Promise<IFileModel> {
     // Get product order with all details
     const productOrder = await this.memberProductRepository.scope('invoice').findOne({
       where: {
         memberProductId: productId,
         memberId,
         active: true,
+        ...(createdOnOrAfter ? { createdAt: { [Op.gte]: createdOnOrAfter } } : {}),
       },
     });
     if (!productOrder) {
@@ -931,16 +942,24 @@ export class MemberProductService {
     return orderItemObjs;
   }
 
-  /** The active price for the currency that is valid now (variants that were removed have no active price). */
+  /**
+   * The active price for the currency that is valid now (variants that were removed have no
+   * active price). An end date before the start date means "no end": the admin stores an
+   * empty "valid to" as 1970-01-01.
+   */
   private findSellablePrice(prices: IProductPrice[], currency: string): IProductPrice | undefined {
     const now = Date.now();
-    return prices.find(
-      (p) =>
+    return prices.find((p) => {
+      const from = p.validFrom ? new Date(p.validFrom).getTime() : null;
+      const to = p.validTo ? new Date(p.validTo).getTime() : null;
+      const openEnded = to === null || (from !== null && to < from) || to <= 0;
+      return (
         (p.currency || '').toUpperCase() === currency.toUpperCase() &&
         p.active !== false &&
-        (!p.validFrom || new Date(p.validFrom).getTime() <= now) &&
-        (!p.validTo || new Date(p.validTo).getTime() >= now),
-    );
+        (from === null || from <= now) &&
+        (openEnded || to >= now)
+      );
+    });
   }
 
   /** Spread an order-level discount over the lines in proportion to their value. */
@@ -1228,12 +1247,23 @@ export class MemberProductService {
     const subtotal = sumBy(tempOrderItems, 'baseAmount');
     const promo = await this.checkoutGatewayService.applyPromoCode(obj.promoCode, subtotal, currency);
     this.allocateDiscount(tempOrderItems, promo.discountAmount);
-    const orderItemObjs = await this.calculateOrderItemsTax(
+    const pricedItems = await this.calculateOrderItemsTax(
       tempOrderItems.map((item) => ({ ...item, currencyCode: currency })),
       franchise[0],
       addresses.franchiseAddress,
       memberAddressSnapshot.billingAddress,
     );
+    // Round each line to the currency first, so the stored lines add up to the charged total.
+    const round = (amount: number): number =>
+      CurrencyUtil.fromMinor(CurrencyUtil.toMinor(Number(amount) || 0, currency), currency);
+    const orderItemObjs = pricedItems.map((item) => ({
+      ...item,
+      unitPrice: round(item.unitPrice),
+      baseAmount: round(item.baseAmount),
+      discountAmount: round(item.discountAmount),
+      taxAmount: round(item.taxAmount),
+      totalAmount: round(item.totalAmount),
+    }));
 
     const t = await this.sequelize.transaction();
     try {
@@ -1255,10 +1285,10 @@ export class MemberProductService {
           gstNumber: obj.gstNumber || null,
           memberAddress: memberAddressSnapshot,
           paymentSource: PaymentSourceEnum.PAYMENT_GATEWAY,
-          subTotalAmount: sumBy(orderItemObjs, 'baseAmount'),
-          discountAmount: sumBy(orderItemObjs, 'discountAmount'),
-          taxAmount: sumBy(orderItemObjs, 'taxAmount'),
-          totalAmount: sumBy(orderItemObjs, 'totalAmount'),
+          subTotalAmount: round(sumBy(orderItemObjs, 'baseAmount')),
+          discountAmount: round(sumBy(orderItemObjs, 'discountAmount')),
+          taxAmount: round(sumBy(orderItemObjs, 'taxAmount')),
+          totalAmount: round(sumBy(orderItemObjs, 'totalAmount')),
           active: true,
           createdIp: requestedIp,
           modifiedIp: requestedIp,

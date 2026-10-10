@@ -191,6 +191,28 @@ An independent subagent reviewed the whole diff (`5e9cb61a..06fa02e7`) for payme
   - **(High, already there, outside 4.5) `POST member/create` gives a checkout token to anyone who knows an existing member's email or phone**, and overwrites that profile (including `hasAnyPlan=false`). That token can download the member's invoices. Not a payment bypass, but it needs its own roadmap item.
 - Checks: member jest passes (9 suites, 113 tests); both apps pass type checks. Live: promo math, public lookup redaction.
 
+## Group 9: Remaining review findings (2026-10-10)
+
+The items Group 8 had only logged are now fixed, except admin payment links (4.8):
+
+- [x] 9.1 **Promo currency (interim):** promo codes have no currency (FLAT values and min/max are rupees), so `applyPromoCode` refuses non-INR payments ("Promo codes can only be used for INR payments") until `txn_promo_codes` gets a currency column. Only INR gateways are active today.
+- [x] 9.2 **Hidden plans:** public plan orders require `active` **and** `isVisibleOnWeb`. All 278 plan fees are active, so the fee `active` flag is not checked (the `details` scope doesn't select it).
+- [x] 9.3 **`POST member/create` (High, already there):**
+  - It no longer changes an existing member's profile (it used to overwrite name, franchise, referrer and reset `hasAnyPlan`).
+  - Checkout tokens only reach invoices of records created in their own session. `CheckoutTokenGuard` exposes the token's `iat` (`@CheckoutTokenIssuedAt()`), and the public invoice downloads pass `checkoutSessionStart(iat)` (iat minus 5 minutes) to `generateInvoicePDF`; admin calls are unchanged.
+  - The token still lets a returning customer check out; checking ownership with OTP is left for a separate auth item.
+- [x] 9.4 **Dashboard pending amount** excludes abandoned website checkouts (`PAYMENT_GATEWAY` with no admin creator).
+- [x] 9.5 **Product tax (4.6 bug):** `calculateOrderItemsTax` passed the franchise and billing addresses to `calculateTax` in swapped order; fixed for admin and public. Domestic GST results are unchanged; export and place-of-supply are now correct.
+- [x] 9.6 **Product rounding:** public product lines are rounded to the currency before summing, so the stored lines add up exactly to the charged total (live: 1 line = ₹2,288 = order total).
+- [x] 9.7 **Website rendering:** `CheckoutComponent` now calls `markForCheck()` once each async step settles (zoneless), so the summary and status render with no interaction. The NG0100 error is gone in both the browser and SSR.
+- [x] 9.8 **Website:** a tax error kept the customer on a blank review step, because the gateway check cleared `error`. Billing now stops and shows the server message.
+- [x] 9.9 **Regression from 8.2 (caught in browser testing):** the admin stores an empty product "valid to" as **1970-01-01**, and the sellable-price filter treated it as expired, blocking all product checkouts. An end date before the start (or at the epoch) now means no end date, in both `findSellablePrice` and the suspicious-records SQL (which would otherwise flag every product order).
+- Still logged: create admin payment links from the stored record total (4.8). The daily `payment_gateway_event_exceptions.sql` catches mismatches until then.
+- Checks:
+  - member jest passes (11 suites, 121 tests); core still has the old AbilitiesGuard failure (1 test); both apps and the website build; web lint shows no new problems.
+  - Live, in Chrome: the product checkout (₹1,200 × 2) rendered at once; promo applied, then removed; PENDING order 46 for ₹2,288. You completed the Razorpay test payment, and verify set PAID, invoice `MEMUM/2026-27/P/000005`, promo `used_count` 2 and the `verify:` event row. The success page shows Paid.
+  - **Side effect:** the paid event booked a **live NimbusPost shipment** (Delhivery AWB 4152922405330, shipment 37), because local data has the production courier account. Cancel it in the admin or NimbusPost.
+
 ## Group 7: Close-out
 
 - [ ] 7.1 Every check in `validation.md` passes.

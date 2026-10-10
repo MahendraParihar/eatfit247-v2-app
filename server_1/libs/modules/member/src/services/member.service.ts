@@ -349,36 +349,9 @@ export class MemberService {
     });
 
     if (existingMember) {
-      // Update existing member
-      const updateObj: any = {
-        firstName: obj.firstName,
-        lastName: obj.lastName,
-        countryCode: obj.countryCode,
-        franchiseId: franchiseId,
-        countryId: obj.countryId,
-        referrerId: obj.referrerId || null,
-        nutritionistId: obj.nutritionistId || null,
-        active: obj.active !== undefined ? obj.active : existingMember.active,
-        hasAnyPlan: obj.hasAnyPlan !== undefined ? obj.hasAnyPlan : existingMember.hasAnyPlan,
-        modifiedIp: cIp,
-      };
-
-      // Update password if provided
-      if (obj.password) {
-        const hashedPassword = await CryptoUtil.generateHash(obj.password);
-        updateObj.password = hashedPassword;
-        updateObj.passwordTemp = hashedPassword;
-      }
-
-      // Update profile picture if provided
-      if (obj.profilePicture && obj.profilePicture.length > 0) {
-        updateObj.profilePicture = obj.profilePicture;
-      }
-
-      await this.memberRepository.update(updateObj, {
-        where: { memberId: existingMember.memberId },
-      });
-
+      // This route is unauthenticated (anyone can type an email or phone), so an existing
+      // member's profile is never changed here. The checkout token it returns only reaches
+      // orders created in this session (see CheckoutTokenGuard `checkoutTokenIssuedAt`).
       return {
         memberId: existingMember.memberId,
         isNew: false,

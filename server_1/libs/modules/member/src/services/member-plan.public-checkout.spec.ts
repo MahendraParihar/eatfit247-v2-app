@@ -35,6 +35,7 @@ describe('MemberPlanService public checkout', () => {
   let taxCalculate: jest.Mock;
   let checkout: { applyPromoCode: jest.Mock; createGatewayOrder: jest.Mock; verifyAndConfirm: jest.Mock };
   let createIfNotExists: jest.Mock;
+  let fetchPlan: jest.Mock;
 
   const order = {
     programPlanId: 3,
@@ -116,10 +117,11 @@ describe('MemberPlanService public checkout', () => {
         {
           provide: ProgramPlanService,
           useValue: {
-            fetchById: jest.fn().mockResolvedValue({
+            fetchById: fetchPlan = jest.fn().mockResolvedValue({
               programPlanId: 3,
               plan: 'Gold',
               active: true,
+              isVisibleOnWeb: true,
               noOfCycle: 4,
               noOfDaysInCycle: 7,
               programPlanFees: [{ fees: 1000, currencyCode: 'INR' }],
@@ -211,6 +213,21 @@ describe('MemberPlanService public checkout', () => {
     await expect(service.createPublicCheckoutOrder(4945, { ...order, currency: 'USD' }, '127.0.0.1')).rejects.toThrow(
       'This plan is not available in USD',
     );
+    expect(paymentCreate).not.toHaveBeenCalled();
+  });
+
+  it('a plan that is not offered on the website cannot be bought by id', async () => {
+    fetchPlan.mockResolvedValue({
+      programPlanId: 9,
+      plan: 'Hidden',
+      active: true,
+      isVisibleOnWeb: false,
+      noOfCycle: 1,
+      noOfDaysInCycle: 7,
+      programPlanFees: [{ fees: 100, currencyCode: 'INR' }],
+    });
+
+    await expect(service.createPublicCheckoutOrder(4945, order, '127.0.0.1')).rejects.toThrow('This plan is not available');
     expect(paymentCreate).not.toHaveBeenCalled();
   });
 

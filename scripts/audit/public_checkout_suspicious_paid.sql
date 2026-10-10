@@ -112,7 +112,10 @@ product_lines AS (
             WHERE pp.product_variant_id = i.product_variant_id
               AND UPPER(pp.currency) = UPPER(mp.currency)
               AND (pp.valid_from IS NULL OR pp.valid_from <= mp.created_at)
-              AND (pp.valid_to IS NULL OR pp.valid_to >= mp.created_at)
+              -- An end date before the start (the admin stores an empty "valid to" as
+              -- 1970-01-01) means no end date
+              AND (pp.valid_to IS NULL OR pp.valid_to < pp.valid_from
+                   OR pp.valid_to <= DATE '1970-01-01' OR pp.valid_to >= mp.created_at)
               AND (
                     ABS(i.base_amount - pp.price * i.quantity) <= 0.01
                  OR ABS(i.base_amount * (1 + COALESCE(i.effective_tax_rate, 0) / 100) - pp.price * i.quantity) <= 0.02

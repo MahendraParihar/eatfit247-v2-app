@@ -1,4 +1,5 @@
 import {
+  ChangeDetectorRef,
   Component,
   inject,
   OnDestroy,
@@ -102,6 +103,8 @@ export class CheckoutComponent implements OnInit, OnDestroy {
   private readonly paymentService = inject(PaymentService);
   private readonly productService = inject(ProductService);
   private readonly platformId = inject(PLATFORM_ID);
+  /** Zoneless: plain fields changed after an await only render once marked. */
+  private readonly cdr = inject(ChangeDetectorRef);
   // Stepper state
   // SELECTION step removed – flow now starts from BILLING
   currentStepIndex = signal(0);
@@ -181,10 +184,12 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     // Initialize forms first to prevent template errors
     this.initializeForms();
     await this.loadMasterData();
+    this.cdr.markForCheck();
     this.route.queryParams
       .pipe(takeUntil(this.destroy$))
       .subscribe(async (params) => {
         await this.initFlow(params);
+        this.cdr.markForCheck();
       });
   }
 
@@ -290,6 +295,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     } catch (error) {
       this.error = 'Failed to load program plan details.';
     } finally {
+      this.cdr.markForCheck();
       this.loading = false;
     }
   }
@@ -463,6 +469,12 @@ export class CheckoutComponent implements OnInit, OnDestroy {
       }
       // Calculate tax first, then skip to preview step
       await this.calculateTaxForCurrentStep();
+      // Stay on billing with the server's message (e.g. a product not sold in this currency);
+      // the gateway check below would otherwise clear it and show an empty review step
+      if (this.error || !this.taxCalculation) {
+        this.error = this.error || 'Tax calculation failed. Please try again.';
+        return;
+      }
       // Load payment gateways before moving to preview
       await this.checkPaymentGatewayAvailability();
       if (!this.isPaymentGatewayAvailable || !this.selectedGateway) {
@@ -478,6 +490,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
           ? error.message
           : 'Failed to proceed. Please try again.';
     } finally {
+      this.cdr.markForCheck();
       this.loading = false;
     }
   }
@@ -582,6 +595,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
       this.appliedPromoCode.set(previousCode);
       this.promoError.set(this.errorMessage(error, 'This promo code could not be applied.'));
     } finally {
+      this.cdr.markForCheck();
       this.applyingPromo.set(false);
     }
   }
@@ -596,6 +610,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     try {
       await this.calculateTaxForCurrentStep();
     } finally {
+      this.cdr.markForCheck();
       this.applyingPromo.set(false);
     }
   }
@@ -615,6 +630,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     } catch (e: unknown) {
       this.error = this.errorMessage(e, 'Tax calculation failed');
     } finally {
+      this.cdr.markForCheck();
       this.calculatingTax = false;
     }
   }
@@ -686,6 +702,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
       console.error('Error creating order:', error);
       this.error = this.errorMessage(error, 'Failed to create your order. Please try again.');
     } finally {
+      this.cdr.markForCheck();
       this.loading = false;
     }
   }
@@ -926,6 +943,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
       this.error =
         'Failed to check payment gateway availability. Please try again.';
     } finally {
+      this.cdr.markForCheck();
       this.paymentGatewayLoading = false;
     }
   }
@@ -964,6 +982,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
           ? error.message
           : 'Failed to load product details.';
     } finally {
+      this.cdr.markForCheck();
       this.loading = false;
     }
   }

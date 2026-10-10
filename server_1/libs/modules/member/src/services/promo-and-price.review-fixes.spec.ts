@@ -49,6 +49,14 @@ describe('MemberProductService public pricing', () => {
     expect(pick(prices, 'inr')?.price).toBe(1200);
   });
 
+  it('treats the admin\'s empty "valid to" (stored as 1970-01-01) as no end date', () => {
+    const prices: IProductPrice[] = [
+      { currency: 'INR', price: 1200, active: true, validFrom: '2026-05-01', validTo: '1970-01-01' },
+    ];
+
+    expect(pick(prices, 'INR')?.price).toBe(1200);
+  });
+
   it('a removed variant (only inactive prices) has no sellable price', () => {
     expect(pick([{ currency: 'INR', price: 1200, active: false }], 'INR')).toBeUndefined();
   });

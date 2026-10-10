@@ -1,5 +1,6 @@
 import {
   CanActivate,
+  createParamDecorator,
   ExecutionContext,
   ForbiddenException,
   Injectable,
@@ -25,6 +26,22 @@ import { CheckoutTokenUtil } from '../utils/checkout-token.util';
  * Attach to any checkout route that operates on a specific member:
  *   @UseGuards(CheckoutTokenGuard)
  */
+/** `iat` (seconds) of the verified checkout token, set by CheckoutTokenGuard. */
+export const CheckoutTokenIssuedAt = createParamDecorator(
+  (_data: unknown, context: ExecutionContext): number | null =>
+    context.switchToHttp().getRequest<Request & { checkoutTokenIssuedAt?: number | null }>()
+      .checkoutTokenIssuedAt ?? null,
+);
+
+/**
+ * A checkout token can be obtained by anyone who knows a member's email or phone, so it
+ * only reaches records created in its own session. Allows for small clock skew.
+ */
+export function checkoutSessionStart(issuedAtSeconds: number | null): Date {
+  const SKEW_MS = 5 * 60 * 1000;
+  return issuedAtSeconds ? new Date(issuedAtSeconds * 1000 - SKEW_MS) : new Date();
+}
+
 @Injectable()
 export class CheckoutTokenGuard implements CanActivate {
   canActivate(context: ExecutionContext): boolean {
@@ -53,6 +70,9 @@ export class CheckoutTokenGuard implements CanActivate {
 
     // Expose the verified memberId downstream (controllers can read it via @Req())
     (request as Request & { checkoutMemberId: number }).checkoutMemberId = payload.sub;
+    // Lets routes limit a session to records created after the token was issued
+    (request as Request & { checkoutTokenIssuedAt: number | null }).checkoutTokenIssuedAt =
+      payload.iat ?? null;
 
     return true;
   }

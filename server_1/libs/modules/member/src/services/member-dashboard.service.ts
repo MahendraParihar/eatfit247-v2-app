@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectConnection, InjectModel } from '@nestjs/sequelize';
-import { Sequelize } from 'sequelize';
+import { Op, Sequelize } from 'sequelize';
 import {
   TxnAssessment,
   TxnMember,
@@ -9,7 +9,7 @@ import {
   TxnMemberIssue,
   TxnMemberPayment,
 } from '../models';
-import { PaymentStatusEnum } from '@eatfit247-shared-lib';
+import { PaymentSourceEnum, PaymentStatusEnum } from '@eatfit247-shared-lib';
 import { MemberService } from './member.service';
 import { MemberPlanService } from './member-plan.service';
 import { MemberIssueService } from './member-issue.service';
@@ -103,6 +103,8 @@ export class MemberDashboardService {
           memberId,
           paymentStatusId: PaymentStatusEnum.PENDING,
           active: true,
+          // An abandoned website checkout (created before payment, decision 10) is not money owed
+          [Op.not]: { paymentSource: PaymentSourceEnum.PAYMENT_GATEWAY, createdBy: null },
         },
         raw: true,
       }),
