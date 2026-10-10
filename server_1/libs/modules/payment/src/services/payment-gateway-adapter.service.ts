@@ -130,6 +130,7 @@ export class RazorpayAdapter implements PaymentGatewayAdapter {
     return await this.razorpayService.createOrder(
       amount,
       receipt,
+      currency,
       notes,
       credentials?.keyId,
       credentials?.keySecret,

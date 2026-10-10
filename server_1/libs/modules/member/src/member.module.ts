@@ -59,10 +59,13 @@ import {
   MemberPocketGuideService,
   MemberProductService,
   MemberService,
+  PaymentConfirmationService,
+  RazorpayWebhookService,
 } from './services';
 import { FranchiseModule } from '@server_1/modules/franchise';
 import { PaymentModule } from '@server_1/modules/payment';
 import { ProductModule } from '@server_1/modules/product';
+import { PromoCodeServiceModule } from '@server_1/modules/promo-code';
 import { DeliveryModule } from '../../delivery';
 // Register models with the model registry
 modelRegistry.register([
@@ -95,6 +98,7 @@ modelRegistry.register([
     FranchiseModule,
     PaymentModule,
     ProductModule,
+    PromoCodeServiceModule,
     RecipeModule,
     DietModule,
     DeliveryModule,
@@ -158,6 +162,8 @@ modelRegistry.register([
     MemberProductService,
     MemberDietPlanService,
     MemberDashboardService,
+    PaymentConfirmationService,
+    RazorpayWebhookService,
   ],
   exports: [MemberService, MemberPlanService, MemberProductService, SequelizeModule],
 })

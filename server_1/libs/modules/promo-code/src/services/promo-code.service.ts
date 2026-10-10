@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import { TxnPromoCode } from '../models';
 import { DiscountTypeEnum, IApplyPromoCodeResult, IBasicSearch, IPromoCode, ITableList } from '@eatfit247-shared-lib';
 import { CommonFunctionsUtil, TableListSortUtil } from '@server_1/core';
-import { Op } from 'sequelize';
+import { Op, Transaction } from 'sequelize';
 import { ApplyPromoCodeDto, CreatePromoCodeDto } from '../dto';
 
 @Injectable()
@@ -247,5 +247,25 @@ export class PromoCodeService {
       message: 'Promo code applied successfully',
     };
   }
-}
 
+  /**
+   * Count one paid use of a promo code, under a row lock in the caller's transaction.
+   * The payment is already taken, so a code that has reached its limit is still counted
+   * and reported as `overLimit` for Accounts instead of being refused.
+   * Returns null when the code does not exist.
+   */
+  public async recordUsage(code: string, transaction: Transaction): Promise<{ overLimit: boolean } | null> {
+    const promoCode = await this.promoCodeRepository.findOne({
+      where: { code: code.toUpperCase() },
+      transaction,
+      lock: transaction.LOCK.UPDATE,
+    });
+    if (!promoCode) {
+      return null;
+    }
+    const usedCount = Number(promoCode.usedCount || 0);
+    const overLimit = !!promoCode.usageLimit && usedCount >= Number(promoCode.usageLimit);
+    await promoCode.update({ usedCount: usedCount + 1 }, { transaction });
+    return { overLimit };
+  }
+}

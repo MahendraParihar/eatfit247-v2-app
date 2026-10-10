@@ -29,7 +29,7 @@
 
 ## Group 3: Confirmation service and webhook (`server_1`)
 
-- [ ] 3.1 Add `PaymentConfirmationService.confirmGatewayPayment({ provider, gatewayOrderId, gatewayPaymentId, capturedAt, amountMinor, currency })`. In one transaction:
+- [x] 3.1 Add `PaymentConfirmationService.confirmGatewayPayment({ provider, gatewayOrderId, gatewayPaymentId, capturedAt, amountMinor, currency })`. In one transaction:
   1. Find the plan or product record by gateway order id, `FOR UPDATE`.
   2. Apply the state matrix: PENDING or FAILED → PAID; anything else → IGNORED_STATE.
   3. Check the amount and currency against the stored total (using the minor-unit helper).
@@ -39,7 +39,7 @@
   7. Commit, then emit the paid event.
 
   Return the result enum.
-- [ ] 3.2 Webhook controller:
+- [x] 3.2 Webhook controller:
   1. Verify the signature.
   2. Insert the event (on a duplicate, return 200 with IGNORED_DUPLICATE).
   3. Route the event:
@@ -50,7 +50,7 @@
   4. Update the event result.
 
   Replace every hard-coded `/100` with the minor-unit helper.
-- [ ] 3.3 Unit tests:
+- [x] 3.3 Unit tests:
   - state matrix (every pair)
   - duplicate event id
   - captured and order.paid racing (the second one is IGNORED_STATE, with only one invoice number)
@@ -59,7 +59,19 @@
   - 0- and 3-decimal currencies
   - promo usage incremented once
   - over-limit promo flagged
-- [ ] 3.4 Update `razorpay-webhook.controller.spec.ts`. Lint, test and build, then commit.
+- [x] 3.4 Update `razorpay-webhook.controller.spec.ts`. Lint, test and build, then commit.
+- **As built (group 3):**
+  - `PaymentConfirmationService` (member module) also covers `markGatewayPaymentFailed` (PENDING→FAILED only), `recordGatewayRefund` (stores `refundObj` with no status change) and `findRecordRef`. It looks in both tables by gateway order id, locking with `FOR UPDATE`. Two matching rows return ERROR.
+  - Plan PAID now emits a new `order.plan.paid` event after commit. No listener exists yet; products keep `order.product.paid`.
+  - `RazorpayWebhookService` handles the event log and routing; the controller keeps only raw-body and signature checks. The event id comes from `x-razorpay-event-id` (or a sha256 of the raw body if that header is missing). The stored and routed payload is the signed raw body.
+  - Invalid-signature requests are **not** stored: an unsigned caller could otherwise claim a real event id ahead of Razorpay and turn the genuine event into a "duplicate". So `signature_valid` is always true for now.
+  - A redelivered event whose stored result is ERROR or NULL (crashed mid-way) is processed again on the same row. APPLIED, IGNORED_STATE and ORDER_NOT_FOUND count as final.
+  - Amount and currency mismatches and ORDER_NOT_FOUND return 200 with the result logged, because a gateway retry wouldn't change them. Unexpected exceptions return 5xx so Razorpay retries.
+  - `payment_link.cancelled` and `expired` no longer set FAILED; they are logged only (plan 3.2 and decision 10).
+  - Promo: a new controller-free `PromoCodeServiceModule`, because importing `PromoCodeModule` into the member module would mount the admin promo controller on public-api. `PromoCodeService.recordUsage` locks the code row.
+  - `RazorpayService.createOrder` always created **INR** orders (it dropped the currency), and both it and `createPaymentLink` hard-coded `* 100`. Both now pass the currency and use `CurrencyUtil.toMinor`.
+  - Checks: member jest passes (4 suites, 65 tests); both apps pass type checks and `nx build`; the live HTTP test covers the race, duplicate, late failure, mismatch, FAILED→PAID, bad signature and over-limit promo cases.
+  - Lint can't run: there is no `lint` target for the member project, and the eslintrc ignore patterns cover `libs/`. The platform jest suite already fails before this change (`google.service.spec`: `InputLengthEnum` undefined).
 
 ## Group 4: Order-first public checkout
 

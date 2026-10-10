@@ -1,24 +1,15 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { UnauthorizedException } from '@nestjs/common';
-import { Sequelize } from 'sequelize-typescript';
-import { RazorpayWebhookController } from './razorpay-webhook.controller';
-import { PaymentGatewayCredentialService } from '@server_1/modules/payment';
-import { AppConfigService } from '@server_1/core';
-import { FranchiseService } from '@server_1/modules/franchise';
-import { InvoiceSequenceService } from '@server_1/platform';
-import { TxnMemberPayment, TxnMemberProduct } from '../../models';
 import * as crypto from 'crypto';
+import { AppConfigService } from '@server_1/core';
+import { PaymentGatewayCredentialService } from '@server_1/modules/payment';
+import { GatewayEventResultEnum } from '@eatfit247-shared-lib';
+import { RazorpayWebhookController } from './razorpay-webhook.controller';
+import { RazorpayWebhookService } from '../../services/razorpay-webhook.service';
+import { RazorpayWebhookDto } from '../../dto/razorpay-webhook.dto';
 
 describe('RazorpayWebhookController', () => {
-  let controller: RazorpayWebhookController;
-  let paymentGatewayCredentialService: jest.Mocked<PaymentGatewayCredentialService>;
-  let appConfigService: jest.Mocked<AppConfigService>;
-  let memberPaymentRepository: jest.Mocked<typeof TxnMemberPayment>;
-  let memberProductRepository: jest.Mocked<typeof TxnMemberProduct>;
-  let sequelize: jest.Mocked<Sequelize>;
-
-  const mockWebhookSecret = 'test_webhook_secret';
-  const mockRawBody = JSON.stringify({
+  const webhookSecret = 'test_webhook_secret';
+  const body = {
     entity: 'event',
     account_id: 'acc_test',
     event: 'payment.captured',
@@ -28,182 +19,81 @@ describe('RazorpayWebhookController', () => {
         entity: {
           id: 'pay_test123',
           entity: 'payment',
-          amount: 10000, // 100.00 in paise
+          amount: 10000,
           currency: 'INR',
           status: 'captured',
           order_id: 'order_test123',
-          captured: true,
-          email: 'test@example.com',
-          contact: '1234567890',
-          notes: {
-            type: 'plan',
-            franchisePaymentGatewayId: '1',
-            memberId: '123',
-          },
-          created_at: Math.floor(Date.now() / 1000),
+          notes: { franchisePaymentGatewayId: '1' },
+          created_at: 1760072400,
         },
       },
     },
+  };
+  const rawBody = JSON.stringify(body);
+  const sign = (raw: string): string => crypto.createHmac('sha256', webhookSecret).update(raw).digest('hex');
+  const dto = body as unknown as RazorpayWebhookDto;
+
+  let controller: RazorpayWebhookController;
+  let getActiveCredentials: jest.Mock;
+  let handleVerifiedEvent: jest.Mock;
+
+  beforeEach(() => {
+    getActiveCredentials = jest.fn().mockResolvedValue({ webhookSecretEncrypted: webhookSecret });
+    handleVerifiedEvent = jest
+      .fn()
+      .mockResolvedValue({ status: 'success', result: GatewayEventResultEnum.APPLIED });
+    controller = new RazorpayWebhookController(
+      { getActiveCredentials } as unknown as PaymentGatewayCredentialService,
+      { getString: jest.fn().mockReturnValue('test') } as unknown as AppConfigService,
+      { handleVerifiedEvent } as unknown as RazorpayWebhookService,
+    );
   });
 
-  beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      controllers: [RazorpayWebhookController],
-      providers: [
-        {
-          provide: PaymentGatewayCredentialService,
-          useValue: {
-            getActiveCredentials: jest.fn(),
-          },
-        },
-        {
-          provide: AppConfigService,
-          useValue: {
-            getString: jest.fn(),
-          },
-        },
-        {
-          provide: FranchiseService,
-          useValue: {},
-        },
-        {
-          provide: InvoiceSequenceService,
-          useValue: {},
-        },
-        {
-          provide: TxnMemberPayment,
-          useValue: {
-            findOne: jest.fn(),
-            update: jest.fn(),
-          },
-        },
-        {
-          provide: TxnMemberProduct,
-          useValue: {
-            findOne: jest.fn(),
-            update: jest.fn(),
-          },
-        },
-        {
-          provide: Sequelize,
-          useValue: {
-            transaction: jest.fn(),
-          },
-        },
-      ],
-    }).compile();
+  it('verifies the signature and hands the raw-body payload and event id to the service', async () => {
+    const res = await controller.handleWebhook({ rawBody }, dto, sign(rawBody), '127.0.0.1', 'evt_123');
 
-    controller = module.get<RazorpayWebhookController>(RazorpayWebhookController);
-    paymentGatewayCredentialService = module.get(PaymentGatewayCredentialService);
-    appConfigService = module.get(AppConfigService);
-    memberPaymentRepository = module.get(TxnMemberPayment);
-    memberProductRepository = module.get(TxnMemberProduct);
-    sequelize = module.get(Sequelize);
+    expect(getActiveCredentials).toHaveBeenCalledWith(1, 'test');
+    expect(handleVerifiedEvent).toHaveBeenCalledWith('evt_123', body, '127.0.0.1');
+    expect(res.result).toBe(GatewayEventResultEnum.APPLIED);
   });
 
-  describe('handleWebhook', () => {
-    it('should verify webhook signature successfully', async () => {
-      // Generate valid signature
-      const signature = crypto
-        .createHmac('sha256', mockWebhookSecret)
-        .update(mockRawBody)
-        .digest('hex');
+  it('falls back to a hash of the raw body when the event id header is missing', async () => {
+    await controller.handleWebhook({ rawBody }, dto, sign(rawBody), '127.0.0.1');
 
-      appConfigService.getString.mockReturnValue('live');
-      paymentGatewayCredentialService.getActiveCredentials.mockResolvedValue({
-        webhookSecretEncrypted: mockWebhookSecret,
-      } as any);
-
-      const req = { rawBody: mockRawBody };
-      const result = await controller.handleWebhook(
-        req as any,
-        signature,
-        '127.0.0.1',
-      );
-
-      expect(result.status).toBe('success');
-    });
-
-    it('should reject invalid webhook signature', async () => {
-      const invalidSignature = 'invalid_signature';
-
-      appConfigService.getString.mockReturnValue('live');
-      paymentGatewayCredentialService.getActiveCredentials.mockResolvedValue({
-        webhookSecretEncrypted: mockWebhookSecret,
-      } as any);
-
-      const req = { rawBody: mockRawBody };
-
-      await expect(
-        controller.handleWebhook(req as any, invalidSignature, '127.0.0.1'),
-      ).rejects.toThrow(UnauthorizedException);
-    });
-
-    it('should reject webhook with missing signature header', async () => {
-      const req = { rawBody: mockRawBody };
-
-      await expect(
-        controller.handleWebhook(req as any, '', '127.0.0.1'),
-      ).rejects.toThrow(UnauthorizedException);
-    });
-
-    it('should reject webhook with missing raw body', async () => {
-      const signature = crypto
-        .createHmac('sha256', mockWebhookSecret)
-        .update(mockRawBody)
-        .digest('hex');
-
-      const req = { rawBody: null };
-
-      await expect(
-        controller.handleWebhook(req as any, signature, '127.0.0.1'),
-      ).rejects.toThrow(UnauthorizedException);
-    });
-
-    it('should handle duplicate webhook events (idempotency)', async () => {
-      const signature = crypto
-        .createHmac('sha256', mockWebhookSecret)
-        .update(mockRawBody)
-        .digest('hex');
-
-      appConfigService.getString.mockReturnValue('live');
-      paymentGatewayCredentialService.getActiveCredentials.mockResolvedValue({
-        webhookSecretEncrypted: mockWebhookSecret,
-      } as any);
-
-      const req = { rawBody: mockRawBody };
-
-      // First call should succeed
-      const firstResult = await controller.handleWebhook(
-        req as any,
-        signature,
-        '127.0.0.1',
-      );
-      expect(firstResult.status).toBe('success');
-
-      // Second call with same event should return duplicate
-      const secondResult = await controller.handleWebhook(
-        req as any,
-        signature,
-        '127.0.0.1',
-      );
-      expect(secondResult.status).toBe('duplicate');
-    });
+    const expectedId = crypto.createHash('sha256').update(rawBody).digest('hex');
+    expect(handleVerifiedEvent).toHaveBeenCalledWith(expectedId, body, '127.0.0.1');
   });
 
-  describe('verifySignature', () => {
-    it('should verify valid signature using timing-safe comparison', () => {
-      const rawBody = 'test_body';
-      const secret = 'test_secret';
-      const expectedSignature = crypto
-        .createHmac('sha256', secret)
-        .update(rawBody)
-        .digest('hex');
+  it('rejects an invalid signature without processing or logging the event', async () => {
+    await expect(
+      controller.handleWebhook({ rawBody }, dto, sign('tampered'), '127.0.0.1', 'evt_123'),
+    ).rejects.toThrow(UnauthorizedException);
+    expect(handleVerifiedEvent).not.toHaveBeenCalled();
+  });
 
-      // Access private method via reflection or make it public for testing
-      // For now, testing through public handleWebhook method
-      expect(expectedSignature).toBeTruthy();
-    });
+  it('rejects a body changed after signing', async () => {
+    const tampered = rawBody.replace('10000', '1');
+    await expect(
+      controller.handleWebhook({ rawBody: tampered }, dto, sign(rawBody), '127.0.0.1', 'evt_123'),
+    ).rejects.toThrow(UnauthorizedException);
+  });
+
+  it('rejects a missing signature header', async () => {
+    await expect(controller.handleWebhook({ rawBody }, dto, '', '127.0.0.1')).rejects.toThrow(
+      UnauthorizedException,
+    );
+  });
+
+  it('rejects a missing raw body', async () => {
+    await expect(
+      controller.handleWebhook({ rawBody: null }, dto, sign(rawBody), '127.0.0.1'),
+    ).rejects.toThrow(UnauthorizedException);
+  });
+
+  it('rejects when no gateway credentials exist', async () => {
+    getActiveCredentials.mockResolvedValue(null);
+    await expect(
+      controller.handleWebhook({ rawBody }, dto, sign(rawBody), '127.0.0.1'),
+    ).rejects.toThrow(UnauthorizedException);
   });
 });
-

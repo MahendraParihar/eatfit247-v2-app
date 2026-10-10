@@ -1,6 +1,7 @@
 import Razorpay from 'razorpay';
 import { Injectable } from '@nestjs/common';
 import * as crypto from 'crypto';
+import { CurrencyUtil } from '@eatfit247-shared-lib';
 
 @Injectable()
 export class RazorpayService {
@@ -33,14 +34,15 @@ export class RazorpayService {
   async createOrder(
     amount: number,
     receipt: string,
+    currency: string,
     notes?: Record<string, any>,
     keyId?: string,
     keySecret?: string,
   ) {
     const razorpay = this.getRazorpayInstance(keyId, keySecret);
     return razorpay.orders.create({
-      amount: Math.round(amount * 100), // INR → paise
-      currency: 'INR',
+      amount: CurrencyUtil.toMinor(amount, currency),
+      currency: currency.toUpperCase(),
       receipt,
       notes,
     });
@@ -61,7 +63,7 @@ export class RazorpayService {
   ) {
     const razorpay = this.getRazorpayInstance(keyId, keySecret);
     return razorpay.paymentLink.create({
-      amount: Math.round(amount * 100), // Convert to smallest currency unit (paise for INR)
+      amount: CurrencyUtil.toMinor(amount, currency),
       currency: currency,
       description,
       customer: customer || {},
